@@ -1,0 +1,15 @@
+D:\source\repos\LYBTZYZS\src\Server\Modules\BIN\Debug\net8.0\LYBT.Module.Herbs.deps.json
+D:\source\repos\LYBTZYZS\src\Server\Modules\BIN\Debug\net8.0\LYBT.Module.Herbs.runtimeconfig.json
+D:\source\repos\LYBTZYZS\src\Server\Modules\BIN\Debug\net8.0\LYBT.Module.Herbs.dll
+D:\source\repos\LYBTZYZS\src\Server\Modules\BIN\Debug\net8.0\LYBT.Module.Herbs.pdb
+D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.Herbs\obj\Debug\net8.0\LYBT.Module.Herbs.csproj.AssemblyReference.cache
+D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.Herbs\obj\Debug\net8.0\LYBT.Module.Herbs.GeneratedMSBuildEditorConfig.editorconfig
+D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.Herbs\obj\Debug\net8.0\LYBT.Module.Herbs.AssemblyInfoInputs.cache
+D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.Herbs\obj\Debug\net8.0\LYBT.Module.Herbs.csproj.CoreCompileInputs.cache
+D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.Herbs\obj\Debug\net8.0\LYBT.Module.Herbs.sourcelink.json
+D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.Herbs\obj\Debug\net8.0\LYBT.Mod.F911CE01.Up2Date
+D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.Herbs\obj\Debug\net8.0\LYBT.Module.Herbs.dll
+D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.Herbs\obj\Debug\net8.0\refint\LYBT.Module.Herbs.dll
+D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.Herbs\obj\Debug\net8.0\LYBT.Module.Herbs.pdb
+D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.Herbs\obj\Debug\net8.0\LYBT.Module.Herbs.genruntimeconfig.cache
+D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.Herbs\obj\Debug\net8.0\ref\LYBT.Module.Herbs.dll

@@ -1,0 +1,12 @@
+D:\source\repos\LYBTZYZS\src\Client\Desktop\Modules\Herbs\obj\Release\net8.0-windows\LYBT.Desktop.Herbs.csproj.AssemblyReference.cache
+D:\source\repos\LYBTZYZS\src\Client\Desktop\Modules\Herbs\obj\Release\net8.0-windows\Views\HerbAddEditDialog.baml
+D:\source\repos\LYBTZYZS\src\Client\Desktop\Modules\Herbs\obj\Release\net8.0-windows\Views\HerbManagementView.baml
+D:\source\repos\LYBTZYZS\src\Client\Desktop\Modules\Herbs\obj\Release\net8.0-windows\Views\HerbAddEditDialog.g.cs
+D:\source\repos\LYBTZYZS\src\Client\Desktop\Modules\Herbs\obj\Release\net8.0-windows\Views\HerbManagementView.g.cs
+D:\source\repos\LYBTZYZS\src\Client\Desktop\Modules\Herbs\obj\Release\net8.0-windows\LYBT.Desktop.Herbs_MarkupCompile.cache
+D:\source\repos\LYBTZYZS\src\Client\Desktop\Modules\Herbs\obj\Release\net8.0-windows\LYBT.Desktop.Herbs.g.resources
+D:\source\repos\LYBTZYZS\src\Client\Desktop\Modules\Herbs\obj\Release\net8.0-windows\LYBT.Desktop.Herbs.GeneratedMSBuildEditorConfig.editorconfig
+D:\source\repos\LYBTZYZS\src\Client\Desktop\Modules\Herbs\obj\Release\net8.0-windows\LYBT.Desktop.Herbs.AssemblyInfoInputs.cache
+D:\source\repos\LYBTZYZS\src\Client\Desktop\Modules\Herbs\obj\Release\net8.0-windows\LYBT.Desktop.Herbs.AssemblyInfo.cs
+D:\source\repos\LYBTZYZS\src\Client\Desktop\Modules\Herbs\obj\Release\net8.0-windows\LYBT.Desktop.Herbs.csproj.CoreCompileInputs.cache
+D:\source\repos\LYBTZYZS\src\Client\Desktop\Modules\Herbs\obj\Release\net8.0-windows\LYBT.Desktop.Herbs.sourcelink.json

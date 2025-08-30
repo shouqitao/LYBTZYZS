@@ -1,0 +1,5 @@
+D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.Patients\obj\Release\net8.0\LYBT.Module.Patients.csproj.AssemblyReference.cache
+D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.Patients\obj\Release\net8.0\LYBT.Module.Patients.GeneratedMSBuildEditorConfig.editorconfig
+D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.Patients\obj\Release\net8.0\LYBT.Module.Patients.AssemblyInfoInputs.cache
+D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.Patients\obj\Release\net8.0\LYBT.Module.Patients.csproj.CoreCompileInputs.cache
+D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.Patients\obj\Release\net8.0\LYBT.Module.Patients.sourcelink.json

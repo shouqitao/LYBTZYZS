@@ -1,0 +1,13 @@
+D:\source\repos\LYBTZYZS\src\BIN\Release\net8.0\LYBT.Shared.Utilities.deps.json
+D:\source\repos\LYBTZYZS\src\BIN\Release\net8.0\LYBT.Shared.Utilities.dll
+D:\source\repos\LYBTZYZS\src\BIN\Release\net8.0\LYBT.Shared.Utilities.pdb
+D:\source\repos\LYBTZYZS\src\Shared\LYBT.Shared.Utilities\obj\Release\net8.0\LYBT.Shared.Utilities.csproj.AssemblyReference.cache
+D:\source\repos\LYBTZYZS\src\Shared\LYBT.Shared.Utilities\obj\Release\net8.0\LYBT.Shared.Utilities.GeneratedMSBuildEditorConfig.editorconfig
+D:\source\repos\LYBTZYZS\src\Shared\LYBT.Shared.Utilities\obj\Release\net8.0\LYBT.Shared.Utilities.AssemblyInfoInputs.cache
+D:\source\repos\LYBTZYZS\src\Shared\LYBT.Shared.Utilities\obj\Release\net8.0\LYBT.Shared.Utilities.csproj.CoreCompileInputs.cache
+D:\source\repos\LYBTZYZS\src\Shared\LYBT.Shared.Utilities\obj\Release\net8.0\LYBT.Shared.Utilities.sourcelink.json
+D:\source\repos\LYBTZYZS\src\Shared\LYBT.Shared.Utilities\obj\Release\net8.0\LYBT.Sha.1452A0AD.Up2Date
+D:\source\repos\LYBTZYZS\src\Shared\LYBT.Shared.Utilities\obj\Release\net8.0\LYBT.Shared.Utilities.dll
+D:\source\repos\LYBTZYZS\src\Shared\LYBT.Shared.Utilities\obj\Release\net8.0\refint\LYBT.Shared.Utilities.dll
+D:\source\repos\LYBTZYZS\src\Shared\LYBT.Shared.Utilities\obj\Release\net8.0\LYBT.Shared.Utilities.pdb
+D:\source\repos\LYBTZYZS\src\Shared\LYBT.Shared.Utilities\obj\Release\net8.0\ref\LYBT.Shared.Utilities.dll

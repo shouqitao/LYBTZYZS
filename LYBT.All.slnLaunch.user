@@ -1,0 +1,15 @@
+[
+  {
+    "Name": "LYBTZYZS",
+    "Projects": [
+      {
+        "Path": "src\\Server\\Services\\LYBT.WebAPI\\LYBT.WebAPI.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "src\\Client\\Desktop\\Shell\\LYBT.Desktop.Shell.csproj",
+        "Action": "Start"
+      }
+    ]
+  }
+]

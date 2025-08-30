@@ -1,0 +1,3920 @@
+[
+  {
+    "ContainingType": "LYBT.WebAPI.Examples.ExampleController",
+    "Method": "HealthCheck",
+    "RelativePath": "api/v{version}/Example/health",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "version",
+        "Type": "",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Examples.ExampleController",
+    "Method": "HealthCheck",
+    "RelativePath": "api/v{version}/Example/health",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "version",
+        "Type": "",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Examples.ExampleController",
+    "Method": "HealthCheck",
+    "RelativePath": "api/v{version}/Example/health",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "version",
+        "Type": "",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.AuthController",
+    "Method": "ChangeSysAdminPasswordAsync",
+    "RelativePath": "api/v1/Auth/changeSysAdminPassword",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "LYBT.Shared.Models.Contracts.Auth.ChangeSysAdminPassword",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.AuthController",
+    "Method": "LoginAsync",
+    "RelativePath": "api/v1/Auth/login",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "LYBT.Shared.Models.Contracts.Auth.LoginRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[LYBT.Shared.Models.Contracts.Auth.LoginResponse, LYBT.Shared.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.AuthController",
+    "Method": "LogoutAsync",
+    "RelativePath": "api/v1/Auth/logout",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "LYBT.Shared.Models.Contracts.Auth.LogoutRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.AuthController",
+    "Method": "RefreshTokenAsync",
+    "RelativePath": "api/v1/Auth/refresh",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "refreshToken",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[LYBT.Shared.Models.Contracts.Auth.LoginResponse, LYBT.Shared.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.AuthController",
+    "Method": "ValidateTokenAsync",
+    "RelativePath": "api/v1/Auth/validate",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "token",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[System.Boolean, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.ConsultationController",
+    "Method": "GetPaged",
+    "RelativePath": "api/v1/Consultation",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "page",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "keyword",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[LYBT.Shared.Models.Contracts.Common.PagedResult\u00601[[LYBT.Shared.Models.Contracts.Consultation.ConsultationDto, LYBT.Shared.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]], LYBT.Shared.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.ConsultationController",
+    "Method": "SaveFourDiagnosis",
+    "RelativePath": "api/v1/Consultation/{consultationId}/four-diagnosis",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "consultationId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "fourDiagnosisData",
+        "Type": "System.Object",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.ConsultationController",
+    "Method": "GetById",
+    "RelativePath": "api/v1/Consultation/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[LYBT.Shared.Models.Contracts.Consultation.ConsultationDetailDto, LYBT.Shared.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.ConsultationController",
+    "Method": "Update",
+    "RelativePath": "api/v1/Consultation/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "LYBT.Shared.Models.Contracts.Consultation.ConsultationDetailDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[LYBT.Shared.Models.Contracts.Consultation.ConsultationDto, LYBT.Shared.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.ConsultationController",
+    "Method": "Delete",
+    "RelativePath": "api/v1/Consultation/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.ConsultationController",
+    "Method": "CancelConsultation",
+    "RelativePath": "api/v1/Consultation/{id}/cancel",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "LYBT.WebAPI.Controllers.CancelConsultationDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.ConsultationController",
+    "Method": "CompleteConsultation",
+    "RelativePath": "api/v1/Consultation/{id}/complete",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "LYBT.Shared.Models.Contracts.Consultation.ConsultationCompleteDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.ConsultationController",
+    "Method": "GetByDoctorId",
+    "RelativePath": "api/v1/Consultation/doctor/{doctorId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "doctorId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[System.Collections.Generic.List\u00601[[LYBT.Shared.Models.Contracts.Consultation.ConsultationDto, LYBT.Shared.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.ConsultationController",
+    "Method": "GetByMedicalCaseId",
+    "RelativePath": "api/v1/Consultation/medical-case/{medicalCaseId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "medicalCaseId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[System.Collections.Generic.List\u00601[[LYBT.Shared.Models.Contracts.Consultation.ConsultationDto, LYBT.Shared.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.ConsultationController",
+    "Method": "GetFourDiagnosis",
+    "RelativePath": "api/v1/Consultation/medical-case/{medicalCaseId}/four-diagnosis",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "medicalCaseId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[System.Object, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.ConsultationController",
+    "Method": "GetByPatientId",
+    "RelativePath": "api/v1/Consultation/patient/{patientId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "patientId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[System.Collections.Generic.List\u00601[[LYBT.Shared.Models.Contracts.Consultation.ConsultationDto, LYBT.Shared.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.ConsultationController",
+    "Method": "GetPatientHistory",
+    "RelativePath": "api/v1/Consultation/patient/{patientId}/history",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "patientId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[System.Collections.Generic.List\u00601[[LYBT.Shared.Models.Contracts.Consultation.ConsultationDto, LYBT.Shared.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.ConsultationController",
+    "Method": "Search",
+    "RelativePath": "api/v1/Consultation/search",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "keyword",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[System.Collections.Generic.List\u00601[[LYBT.Shared.Models.Contracts.Consultation.ConsultationDto, LYBT.Shared.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.ConsultationController",
+    "Method": "StartConsultation",
+    "RelativePath": "api/v1/Consultation/start",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "LYBT.Shared.Models.Contracts.Consultation.ConsultationStartDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[LYBT.Shared.Models.Contracts.Consultation.ConsultationDto, LYBT.Shared.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.ConsultationController",
+    "Method": "GetStatistics",
+    "RelativePath": "api/v1/Consultation/statistics",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "startDate",
+        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "endDate",
+        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[System.Object, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.DebugController",
+    "Method": "TestConnection",
+    "RelativePath": "api/v1/Debug/connection",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.DebugController",
+    "Method": "TestHerbs",
+    "RelativePath": "api/v1/Debug/herbs",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.DebugController",
+    "Method": "TestPatients",
+    "RelativePath": "api/v1/Debug/patients",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.DebugController",
+    "Method": "CheckTableStructure",
+    "RelativePath": "api/v1/Debug/table-structure/{tableName}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "tableName",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.DebugController",
+    "Method": "ListTables",
+    "RelativePath": "api/v1/Debug/tables",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.DebugController",
+    "Method": "TestUsers",
+    "RelativePath": "api/v1/Debug/users",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Examples.ExampleController",
+    "Method": "GetV1",
+    "RelativePath": "api/v1/Example",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Examples.ExampleController",
+    "Method": "CreateV1",
+    "RelativePath": "api/v1/Example",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "LYBT.WebAPI.Examples.CreateRequestV1",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.FormulasController",
+    "Method": "GetList",
+    "RelativePath": "api/v1/Formulas",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "page",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "keyword",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "category",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "formulaType",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[LYBT.Shared.Models.Contracts.Common.PagedResult\u00601[[LYBT.Shared.Models.Contracts.Formula.FormulaDto, LYBT.Shared.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]], LYBT.Shared.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.FormulasController",
+    "Method": "Add",
+    "RelativePath": "api/v1/Formulas",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "LYBT.Shared.Models.Contracts.Formula.FormulaCreateDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[LYBT.Shared.Models.Contracts.Formula.FormulaDto, LYBT.Shared.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.FormulasController",
+    "Method": "GetById",
+    "RelativePath": "api/v1/Formulas/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[LYBT.Shared.Models.Contracts.Formula.FormulaDto, LYBT.Shared.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.FormulasController",
+    "Method": "Update",
+    "RelativePath": "api/v1/Formulas/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "LYBT.Shared.Models.Contracts.Formula.FormulaUpdateDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[LYBT.Shared.Models.Contracts.Formula.FormulaDto, LYBT.Shared.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.FormulasController",
+    "Method": "Delete",
+    "RelativePath": "api/v1/Formulas/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.FormulasController",
+    "Method": "AnalyzeFormula",
+    "RelativePath": "api/v1/Formulas/{id}/analyze",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[LYBT.Shared.Models.Contracts.Formula.FormulaAnalysisResult, LYBT.Shared.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.FormulasController",
+    "Method": "Copy",
+    "RelativePath": "api/v1/Formulas/{id}/copy",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "LYBT.WebAPI.Controllers.CopyFormulaDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[LYBT.Shared.Models.Contracts.Formula.FormulaDto, LYBT.Shared.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.FormulasController",
+    "Method": "ShareFormula",
+    "RelativePath": "api/v1/Formulas/{id}/share",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.FormulasController",
+    "Method": "ToggleStatus",
+    "RelativePath": "api/v1/Formulas/{id}/toggle-status",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.FormulasController",
+    "Method": "UnshareFormula",
+    "RelativePath": "api/v1/Formulas/{id}/unshare",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.FormulasController",
+    "Method": "GetByType",
+    "RelativePath": "api/v1/Formulas/by-type/{type}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "type",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[System.Collections.Generic.List\u00601[[LYBT.Shared.Models.Contracts.Formula.FormulaDto, LYBT.Shared.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.FormulasController",
+    "Method": "GetCategories",
+    "RelativePath": "api/v1/Formulas/categories",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[System.Collections.Generic.List\u00601[[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.FormulasController",
+    "Method": "CreateFromPrescription",
+    "RelativePath": "api/v1/Formulas/from-prescription/{prescriptionId}",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "prescriptionId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "LYBT.WebAPI.Controllers.CreateFromPrescriptionDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[LYBT.Shared.Models.Contracts.Formula.FormulaDto, LYBT.Shared.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.FormulasController",
+    "Method": "GetRecommendations",
+    "RelativePath": "api/v1/Formulas/recommendations",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "symptoms",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "diagnosis",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "doctorId",
+        "Type": "System.Guid",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[System.Collections.Generic.List\u00601[[LYBT.Shared.Models.Contracts.Formula.FormulaRecommendationDto, LYBT.Shared.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.FormulasController",
+    "Method": "GetRecommendationsBySyndrome",
+    "RelativePath": "api/v1/Formulas/recommendations/syndrome/{syndrome}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "syndrome",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[System.Collections.Generic.List\u00601[[LYBT.Shared.Models.Contracts.Formula.FormulaRecommendationDto, LYBT.Shared.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.FormulasController",
+    "Method": "Search",
+    "RelativePath": "api/v1/Formulas/search",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "page",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "keyword",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[LYBT.Shared.Models.Contracts.Common.PagedResult\u00601[[LYBT.Shared.Models.Contracts.Formula.FormulaDto, LYBT.Shared.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]], LYBT.Shared.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.FormulasController",
+    "Method": "GetTemplates",
+    "RelativePath": "api/v1/Formulas/templates",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[System.Collections.Generic.List\u00601[[LYBT.Shared.Models.Contracts.Formula.FormulaDto, LYBT.Shared.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.HealthController",
+    "Method": "Get",
+    "RelativePath": "api/v1/Health",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.HealthController",
+    "Method": "Get",
+    "RelativePath": "api/v1/Health",
+    "HttpMethod": "HEAD",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.HealthController",
+    "Method": "GetLiveness",
+    "RelativePath": "api/v1/Health/alive",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.HealthController",
+    "Method": "GetDatabaseHealth",
+    "RelativePath": "api/v1/Health/database",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.HealthController",
+    "Method": "GetDetailed",
+    "RelativePath": "api/v1/Health/detailed",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.HealthController",
+    "Method": "GetApplicationMetrics",
+    "RelativePath": "api/v1/Health/metrics",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.HealthController",
+    "Method": "GetReadiness",
+    "RelativePath": "api/v1/Health/ready",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.HealthController",
+    "Method": "GetHealthReport",
+    "RelativePath": "api/v1/Health/report",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.HealthController",
+    "Method": "GetSystemResources",
+    "RelativePath": "api/v1/Health/resources",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.HealthController",
+    "Method": "GetStartupStatus",
+    "RelativePath": "api/v1/Health/started",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.HealthController",
+    "Method": "GetVersion",
+    "RelativePath": "api/v1/Health/version",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.HerbsController",
+    "Method": "GetList",
+    "RelativePath": "api/v1/Herbs",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "page",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "keyword",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[LYBT.Shared.Models.Contracts.Common.PagedResult\u00601[[LYBT.Shared.Models.Contracts.Herbs.HerbDto, LYBT.Shared.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]], LYBT.Shared.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.HerbsController",
+    "Method": "Create",
+    "RelativePath": "api/v1/Herbs",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "LYBT.Shared.Models.Contracts.Herbs.HerbCreateDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[LYBT.Shared.Models.Contracts.Herbs.HerbDto, LYBT.Shared.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.HerbsController",
+    "Method": "GetById",
+    "RelativePath": "api/v1/Herbs/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[LYBT.Shared.Models.Contracts.Herbs.HerbDto, LYBT.Shared.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.HerbsController",
+    "Method": "Update",
+    "RelativePath": "api/v1/Herbs/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "LYBT.Shared.Models.Contracts.Herbs.HerbUpdateDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[LYBT.Shared.Models.Contracts.Herbs.HerbDto, LYBT.Shared.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.HerbsController",
+    "Method": "Delete",
+    "RelativePath": "api/v1/Herbs/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.HerbsController",
+    "Method": "GetCategories",
+    "RelativePath": "api/v1/Herbs/categories",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[System.Collections.Generic.List\u00601[[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.HerbImportExportController",
+    "Method": "Export",
+    "RelativePath": "api/v1/herbs/export",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "format",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[System.Collections.Generic.List\u00601[[LYBT.Shared.Models.Contracts.Herbs.HerbDto, LYBT.Shared.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.HerbImportExportController",
+    "Method": "ExportTemplate",
+    "RelativePath": "api/v1/herbs/export-template",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.HerbImportExportController",
+    "Method": "Import",
+    "RelativePath": "api/v1/herbs/import",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dtos",
+        "Type": "System.Collections.Generic.List\u00601[[LYBT.Shared.Models.Contracts.Herbs.HerbImportDto, LYBT.Shared.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.HerbsController",
+    "Method": "Search",
+    "RelativePath": "api/v1/Herbs/search",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "keyword",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[System.Collections.Generic.List\u00601[[LYBT.Shared.Models.Contracts.Herbs.HerbDto, LYBT.Shared.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.HerbImportExportController",
+    "Method": "ValidateImport",
+    "RelativePath": "api/v1/herbs/validate-import",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dtos",
+        "Type": "System.Collections.Generic.List\u00601[[LYBT.Shared.Models.Contracts.Herbs.HerbImportDto, LYBT.Shared.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.MedicalCaseController",
+    "Method": "GetPaged",
+    "RelativePath": "api/v1/MedicalCase",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "page",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "keyword",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[LYBT.Shared.Models.Contracts.Common.PagedResult\u00601[[LYBT.Shared.Models.Contracts.MedicalCase.MedicalCaseDto, LYBT.Shared.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]], LYBT.Shared.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.MedicalCaseController",
+    "Method": "Create",
+    "RelativePath": "api/v1/MedicalCase",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "LYBT.Shared.Models.Contracts.MedicalCase.MedicalCaseCreateDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[LYBT.Shared.Models.Contracts.MedicalCase.MedicalCaseDto, LYBT.Shared.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.MedicalCaseController",
+    "Method": "GetById",
+    "RelativePath": "api/v1/MedicalCase/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[LYBT.Shared.Models.Contracts.MedicalCase.MedicalCaseDetailDto, LYBT.Shared.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.MedicalCaseController",
+    "Method": "Update",
+    "RelativePath": "api/v1/MedicalCase/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "LYBT.Shared.Models.Contracts.MedicalCase.MedicalCaseUpdateDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[LYBT.Shared.Models.Contracts.MedicalCase.MedicalCaseDto, LYBT.Shared.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.MedicalCaseController",
+    "Method": "Delete",
+    "RelativePath": "api/v1/MedicalCase/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.MedicalCaseController",
+    "Method": "Archive",
+    "RelativePath": "api/v1/MedicalCase/{id}/archive",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "LYBT.WebAPI.Controllers.ArchiveMedicalCaseDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.MedicalCaseController",
+    "Method": "Complete",
+    "RelativePath": "api/v1/MedicalCase/{id}/complete",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "LYBT.WebAPI.Controllers.CompleteMedicalCaseDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.MedicalCaseController",
+    "Method": "GetHistory",
+    "RelativePath": "api/v1/MedicalCase/{id}/history",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[System.Collections.Generic.List\u00601[[System.Object, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.MedicalCaseController",
+    "Method": "Resume",
+    "RelativePath": "api/v1/MedicalCase/{id}/resume",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.MedicalCaseController",
+    "Method": "UpdateStatus",
+    "RelativePath": "api/v1/MedicalCase/{id}/status",
+    "HttpMethod": "PATCH",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "LYBT.WebAPI.Controllers.UpdateMedicalCaseStatusDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.MedicalCaseController",
+    "Method": "Suspend",
+    "RelativePath": "api/v1/MedicalCase/{id}/suspend",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "LYBT.WebAPI.Controllers.SuspendMedicalCaseDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.MedicalCaseController",
+    "Method": "GetByPatientId",
+    "RelativePath": "api/v1/MedicalCase/patient/{patientId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "patientId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[System.Collections.Generic.List\u00601[[LYBT.Shared.Models.Contracts.MedicalCase.MedicalCaseDto, LYBT.Shared.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.MedicalCaseController",
+    "Method": "GetActiveByPatientId",
+    "RelativePath": "api/v1/MedicalCase/patient/{patientId}/active",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "patientId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[LYBT.Shared.Models.Contracts.MedicalCase.MedicalCaseDto, LYBT.Shared.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.MedicalCaseController",
+    "Method": "Search",
+    "RelativePath": "api/v1/MedicalCase/search",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "keyword",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[System.Collections.Generic.List\u00601[[LYBT.Shared.Models.Contracts.MedicalCase.MedicalCaseDto, LYBT.Shared.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.MedicalCaseController",
+    "Method": "GetStatistics",
+    "RelativePath": "api/v1/MedicalCase/statistics",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "startDate",
+        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "endDate",
+        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[System.Object, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.MonitoringController",
+    "Method": "GetActiveAlerts",
+    "RelativePath": "api/v1/Monitoring/alerts",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.MonitoringController",
+    "Method": "GetHotApiEndpoints",
+    "RelativePath": "api/v1/Monitoring/api/hotspots",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "count",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.MonitoringController",
+    "Method": "GetApiPerformanceStats",
+    "RelativePath": "api/v1/Monitoring/api/performance",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.MonitoringController",
+    "Method": "CleanupExpiredData",
+    "RelativePath": "api/v1/Monitoring/cleanup",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.MonitoringController",
+    "Method": "GetMonitoringConfig",
+    "RelativePath": "api/v1/Monitoring/config",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.MonitoringController",
+    "Method": "GetDashboardData",
+    "RelativePath": "api/v1/Monitoring/dashboard",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.MonitoringController",
+    "Method": "GetErrorStats",
+    "RelativePath": "api/v1/Monitoring/errors",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.MonitoringController",
+    "Method": "GetHealth",
+    "RelativePath": "api/v1/Monitoring/health",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.MonitoringController",
+    "Method": "GetPrometheusMetrics",
+    "RelativePath": "api/v1/Monitoring/metrics",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.MonitoringController",
+    "Method": "GetPerformanceTrend",
+    "RelativePath": "api/v1/Monitoring/performance/trend",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "period",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.MonitoringController",
+    "Method": "GetRealtimeStatus",
+    "RelativePath": "api/v1/Monitoring/status/realtime",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.MonitoringController",
+    "Method": "ReceiveAlertManagerWebhook",
+    "RelativePath": "api/v1/Monitoring/webhooks/alertmanager",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "webhook",
+        "Type": "LYBT.WebAPI.Controllers.AlertManagerWebhook",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.MonitoringController",
+    "Method": "ReceiveCriticalAlert",
+    "RelativePath": "api/v1/Monitoring/webhooks/critical",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "webhook",
+        "Type": "LYBT.WebAPI.Controllers.AlertManagerWebhook",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.MonitoringController",
+    "Method": "ReceiveSecurityAlert",
+    "RelativePath": "api/v1/Monitoring/webhooks/security",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "webhook",
+        "Type": "LYBT.WebAPI.Controllers.AlertManagerWebhook",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.PatientsController",
+    "Method": "GetList",
+    "RelativePath": "api/v1/Patients",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "page",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "keyword",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "name",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "phone",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "idCard",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "isActive",
+        "Type": "System.Nullable\u00601[[System.Boolean, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[LYBT.Shared.Models.Contracts.Common.PagedResult\u00601[[LYBT.Shared.Models.Contracts.Patients.PatientDto, LYBT.Shared.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]], LYBT.Shared.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.PatientsController",
+    "Method": "Add",
+    "RelativePath": "api/v1/Patients",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "LYBT.Shared.Models.Contracts.Patients.PatientCreateDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[LYBT.Shared.Models.Contracts.Patients.PatientDto, LYBT.Shared.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.PatientsController",
+    "Method": "GetById",
+    "RelativePath": "api/v1/Patients/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[LYBT.Shared.Models.Contracts.Patients.PatientDto, LYBT.Shared.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.PatientsController",
+    "Method": "Update",
+    "RelativePath": "api/v1/Patients/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "LYBT.Shared.Models.Contracts.Patients.PatientUpdateDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[LYBT.Shared.Models.Contracts.Patients.PatientDto, LYBT.Shared.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.PatientsController",
+    "Method": "Delete",
+    "RelativePath": "api/v1/Patients/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.PatientsController",
+    "Method": "Disable",
+    "RelativePath": "api/v1/Patients/{id}/disable",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.PatientsController",
+    "Method": "Enable",
+    "RelativePath": "api/v1/Patients/{id}/enable",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.PatientsController",
+    "Method": "GetAgeStatistics",
+    "RelativePath": "api/v1/Patients/age-statistics",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[System.Collections.Generic.List\u00601[[System.Object, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.PatientsController",
+    "Method": "GetByIdCard",
+    "RelativePath": "api/v1/Patients/by-idcard/{idCard}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "idCard",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[LYBT.Shared.Models.Contracts.Patients.PatientDto, LYBT.Shared.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.PatientsController",
+    "Method": "GetByPhone",
+    "RelativePath": "api/v1/Patients/by-phone/{phone}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "phone",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[System.Collections.Generic.List\u00601[[LYBT.Shared.Models.Contracts.Patients.PatientDto, LYBT.Shared.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.PatientsController",
+    "Method": "Search",
+    "RelativePath": "api/v1/Patients/search",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "keyword",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[System.Collections.Generic.List\u00601[[LYBT.Shared.Models.Contracts.Patients.PatientDto, LYBT.Shared.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.PatientsController",
+    "Method": "GetStatistics",
+    "RelativePath": "api/v1/Patients/statistics",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[LYBT.Shared.Models.Contracts.Patients.PatientStatisticsDto, LYBT.Shared.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.PerformanceController",
+    "Method": "GetAllOperationsStats",
+    "RelativePath": "api/v1/Performance/cqrs/operations",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "version",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "X-Version",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.Dictionary\u00602[[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[LYBT.Infrastructure.Performance.CQRSOperationStats, LYBT.Infrastructure, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.PerformanceController",
+    "Method": "GetOperationStats",
+    "RelativePath": "api/v1/Performance/cqrs/operations/{operationType}/{operationName}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "operationType",
+        "Type": "System.String",
+        "IsRequired": true
+      },
+      {
+        "Name": "operationName",
+        "Type": "System.String",
+        "IsRequired": true
+      },
+      {
+        "Name": "version",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "X-Version",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Infrastructure.Performance.CQRSOperationStats",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.PerformanceController",
+    "Method": "GetCQRSReport",
+    "RelativePath": "api/v1/Performance/cqrs/report",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "version",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "X-Version",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Infrastructure.Performance.CQRSPerformanceReport",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.PerformanceController",
+    "Method": "GetErrorProneOperations",
+    "RelativePath": "api/v1/Performance/error-prone-operations",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "maxSuccessRate",
+        "Type": "System.Double",
+        "IsRequired": false
+      },
+      {
+        "Name": "version",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "X-Version",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.List\u00601[[LYBT.Infrastructure.Performance.CQRSOperationStats, LYBT.Infrastructure, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.PerformanceController",
+    "Method": "GetHealthCheck",
+    "RelativePath": "api/v1/Performance/health-check",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "version",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "X-Version",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.PerformanceController",
+    "Method": "GetMetrics",
+    "RelativePath": "api/v1/Performance/metrics",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "from",
+        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "to",
+        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "limit",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "version",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "X-Version",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.List\u00601[[LYBT.Infrastructure.Performance.PerformanceMetric, LYBT.Infrastructure, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.PerformanceController",
+    "Method": "ClearMetrics",
+    "RelativePath": "api/v1/Performance/metrics",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "version",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "X-Version",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.PerformanceController",
+    "Method": "GetOptimizationReport",
+    "RelativePath": "api/v1/Performance/optimization-report",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "version",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "X-Version",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Infrastructure.Performance.PerformanceOptimizationReport",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.PerformanceController",
+    "Method": "GetSlowOperations",
+    "RelativePath": "api/v1/Performance/slow-operations",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "thresholdMs",
+        "Type": "System.Double",
+        "IsRequired": false
+      },
+      {
+        "Name": "version",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "X-Version",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.List\u00601[[LYBT.Infrastructure.Performance.CQRSOperationStats, LYBT.Infrastructure, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.PerformanceController",
+    "Method": "GetSystemSnapshot",
+    "RelativePath": "api/v1/Performance/system/snapshot",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "version",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "X-Version",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Infrastructure.Performance.SystemPerformanceInfo",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.PerformanceController",
+    "Method": "GetPerformanceTrends",
+    "RelativePath": "api/v1/Performance/trends",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "durationMinutes",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "version",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "X-Version",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.WebAPI.Controllers.PerformanceTrends",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.PrescriptionsController",
+    "Method": "GetList",
+    "RelativePath": "api/v1/Prescriptions",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "page",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "keyword",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "patientName",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "doctorName",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "diagnosis",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "status",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "startDate",
+        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "endDate",
+        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "minDosageCount",
+        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "maxDosageCount",
+        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[LYBT.Shared.Models.Contracts.Common.PagedResult\u00601[[LYBT.Shared.Models.Contracts.Prescriptions.PrescriptionDto, LYBT.Shared.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]], LYBT.Shared.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.PrescriptionsController",
+    "Method": "Add",
+    "RelativePath": "api/v1/Prescriptions",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "LYBT.Shared.Models.Contracts.Prescriptions.PrescriptionCreateDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[LYBT.Shared.Models.Contracts.Prescriptions.PrescriptionDto, LYBT.Shared.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.PrescriptionsController",
+    "Method": "GetById",
+    "RelativePath": "api/v1/Prescriptions/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[LYBT.Shared.Models.Contracts.Prescriptions.PrescriptionDto, LYBT.Shared.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.PrescriptionsController",
+    "Method": "Update",
+    "RelativePath": "api/v1/Prescriptions/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "LYBT.Shared.Models.Contracts.Prescriptions.PrescriptionEditDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[LYBT.Shared.Models.Contracts.Prescriptions.PrescriptionDto, LYBT.Shared.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.PrescriptionsController",
+    "Method": "Delete",
+    "RelativePath": "api/v1/Prescriptions/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.SecurityController",
+    "Method": "GetSecuritySummary",
+    "RelativePath": "api/v1/Security/configuration/summary",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.SecurityController",
+    "Method": "ValidateSecurityConfiguration",
+    "RelativePath": "api/v1/Security/configuration/validation",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.SecurityController",
+    "Method": "ValidateJwtConfiguration",
+    "RelativePath": "api/v1/Security/jwt/validation",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.SecurityController",
+    "Method": "GenerateSecurePassword",
+    "RelativePath": "api/v1/Security/password/generate",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "LYBT.WebAPI.Controllers.GeneratePasswordRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.SecurityController",
+    "Method": "ValidatePassword",
+    "RelativePath": "api/v1/Security/password/validation",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "LYBT.WebAPI.Controllers.ValidatePasswordRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.TestController",
+    "Method": "ComprehensiveTest",
+    "RelativePath": "api/v1/Test/comprehensive",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[System.Object, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.TestController",
+    "Method": "GetHerbsCount",
+    "RelativePath": "api/v1/Test/herbs/count",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[System.Object, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.TestController",
+    "Method": "GetPatientsCount",
+    "RelativePath": "api/v1/Test/patients/count",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[System.Object, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.TestController",
+    "Method": "GetStatus",
+    "RelativePath": "api/v1/Test/status",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[System.Object, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.TestController",
+    "Method": "GetUsersCount",
+    "RelativePath": "api/v1/Test/users/count",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[System.Object, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.UnifiedConfigController",
+    "Method": "RefreshAllCache",
+    "RelativePath": "api/v1/UnifiedConfig/cache/refresh-all",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.UnifiedConfigController",
+    "Method": "RefreshSettingCache",
+    "RelativePath": "api/v1/UnifiedConfig/cache/refresh-settings",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.UnifiedConfigController",
+    "Method": "GetDiagnosisCatalogs",
+    "RelativePath": "api/v1/UnifiedConfig/diagnosis-catalogs",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.List\u00601[[LYBT.Shared.Models.Contracts.Configuration.DiagnosisCatalogDto, LYBT.Shared.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.UnifiedConfigController",
+    "Method": "CreateDiagnosisCatalog",
+    "RelativePath": "api/v1/UnifiedConfig/diagnosis-catalogs",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "diagnosisCatalogDto",
+        "Type": "LYBT.Shared.Models.Contracts.Configuration.DiagnosisCatalogDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.UnifiedConfigController",
+    "Method": "UpdateDiagnosisCatalog",
+    "RelativePath": "api/v1/UnifiedConfig/diagnosis-catalogs",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "diagnosisCatalogDto",
+        "Type": "LYBT.Shared.Models.Contracts.Configuration.DiagnosisCatalogDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.UnifiedConfigController",
+    "Method": "GetDiagnosisCatalog",
+    "RelativePath": "api/v1/UnifiedConfig/diagnosis-catalogs/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Configuration.DiagnosisCatalogDto",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.UnifiedConfigController",
+    "Method": "DeleteDiagnosisCatalog",
+    "RelativePath": "api/v1/UnifiedConfig/diagnosis-catalogs/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.UnifiedConfigController",
+    "Method": "GetDiagnosisCatalogsPaged",
+    "RelativePath": "api/v1/UnifiedConfig/diagnosis-catalogs/paged",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "keyword",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "isEnabled",
+        "Type": "System.Nullable\u00601[[System.Boolean, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageIndex",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.PagedResult\u00601[[LYBT.Shared.Models.Contracts.Configuration.DiagnosisCatalogDto, LYBT.Shared.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.UnifiedConfigController",
+    "Method": "GetGlobalSettings",
+    "RelativePath": "api/v1/UnifiedConfig/global-settings",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Configuration.GlobalSettingsDto",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.UnifiedConfigController",
+    "Method": "UpdateGlobalSettings",
+    "RelativePath": "api/v1/UnifiedConfig/global-settings",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "globalSettingsDto",
+        "Type": "LYBT.Shared.Models.Contracts.Configuration.GlobalSettingsDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.UnifiedConfigController",
+    "Method": "SetSetting",
+    "RelativePath": "api/v1/UnifiedConfig/settings",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "LYBT.WebAPI.Controllers.SetSettingRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.UnifiedConfigController",
+    "Method": "GetSettings",
+    "RelativePath": "api/v1/UnifiedConfig/settings",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "group",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "keyword",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageIndex",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.PagedResult\u00601[[LYBT.Shared.Models.Contracts.Configuration.SettingsDto, LYBT.Shared.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.UnifiedConfigController",
+    "Method": "GetSetting",
+    "RelativePath": "api/v1/UnifiedConfig/settings/{key}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "key",
+        "Type": "System.String",
+        "IsRequired": true
+      },
+      {
+        "Name": "defaultValue",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.String",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.UnifiedConfigController",
+    "Method": "DeleteSetting",
+    "RelativePath": "api/v1/UnifiedConfig/settings/{key}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "key",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.UnifiedConfigController",
+    "Method": "GetSettingsByGroup",
+    "RelativePath": "api/v1/UnifiedConfig/settings/group/{group}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "group",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.Dictionary\u00602[[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.UnifiedConfigController",
+    "Method": "GetTreatmentCatalogs",
+    "RelativePath": "api/v1/UnifiedConfig/treatment-catalogs",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.List\u00601[[LYBT.Shared.Models.Contracts.Configuration.TreatmentCatalogDto, LYBT.Shared.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.UsersController",
+    "Method": "GetUsers",
+    "RelativePath": "api/v1/Users",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "page",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "keyword",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "username",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "realName",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "email",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "phoneNumber",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "role",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "isActive",
+        "Type": "System.Nullable\u00601[[System.Boolean, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[LYBT.Shared.Models.Contracts.Common.PagedResult\u00601[[LYBT.Shared.Models.Contracts.Users.UserDto, LYBT.Shared.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]], LYBT.Shared.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.UsersController",
+    "Method": "CreateUser",
+    "RelativePath": "api/v1/Users",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "LYBT.Shared.Models.Contracts.Users.UserCreateDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[LYBT.Shared.Models.Contracts.Users.UserDto, LYBT.Shared.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.UsersController",
+    "Method": "GetUser",
+    "RelativePath": "api/v1/Users/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[LYBT.Shared.Models.Contracts.Users.UserDto, LYBT.Shared.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.UsersController",
+    "Method": "UpdateUser",
+    "RelativePath": "api/v1/Users/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "LYBT.Shared.Models.Contracts.Users.UserUpdateDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[LYBT.Shared.Models.Contracts.Users.UserDto, LYBT.Shared.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.UsersController",
+    "Method": "ToggleStatus",
+    "RelativePath": "api/v1/Users/{id}/toggle-status",
+    "HttpMethod": "PATCH",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.UsersController",
+    "Method": "GetActiveUsers",
+    "RelativePath": "api/v1/Users/active",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[System.Collections.Generic.IEnumerable\u00601[[LYBT.Shared.Models.Contracts.Users.UserDto, LYBT.Shared.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.UsersController",
+    "Method": "ChangePassword",
+    "RelativePath": "api/v1/Users/password",
+    "HttpMethod": "PATCH",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "LYBT.Shared.Models.Contracts.Users.ChangePasswordDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.UsersController",
+    "Method": "GetProfile",
+    "RelativePath": "api/v1/Users/profile",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[LYBT.Shared.Models.Contracts.Users.UserDto, LYBT.Shared.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.UsersController",
+    "Method": "ChangeProfile",
+    "RelativePath": "api/v1/Users/profile",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "LYBT.Shared.Models.Contracts.Users.ChangeProfileDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.UsersController",
+    "Method": "ResetPassword",
+    "RelativePath": "api/v1/Users/reset-password/{id}",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.UsersController",
+    "Method": "GetRoles",
+    "RelativePath": "api/v1/Users/roles",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[System.Collections.Generic.IEnumerable\u00601[[System.Object, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Examples.ExampleController",
+    "Method": "GetV2",
+    "RelativePath": "api/v2/Example",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Examples.ExampleController",
+    "Method": "CreateV2",
+    "RelativePath": "api/v2/Example",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "LYBT.WebAPI.Examples.CreateRequestV2",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Examples.ExampleController",
+    "Method": "BatchOperationV2",
+    "RelativePath": "api/v2/Example/batch",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "LYBT.WebAPI.Examples.BatchRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Examples.ExampleController",
+    "Method": "GetV3",
+    "RelativePath": "api/v3/Example",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  }
+]

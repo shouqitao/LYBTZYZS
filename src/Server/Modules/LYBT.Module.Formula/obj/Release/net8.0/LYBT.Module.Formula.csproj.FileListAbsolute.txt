@@ -1,0 +1,13 @@
+D:\source\repos\LYBTZYZS\src\Server\Modules\BIN\Release\net8.0\LYBT.Module.Formula.deps.json
+D:\source\repos\LYBTZYZS\src\Server\Modules\BIN\Release\net8.0\LYBT.Module.Formula.dll
+D:\source\repos\LYBTZYZS\src\Server\Modules\BIN\Release\net8.0\LYBT.Module.Formula.pdb
+D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.Formula\obj\Release\net8.0\LYBT.Module.Formula.csproj.AssemblyReference.cache
+D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.Formula\obj\Release\net8.0\LYBT.Module.Formula.GeneratedMSBuildEditorConfig.editorconfig
+D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.Formula\obj\Release\net8.0\LYBT.Module.Formula.AssemblyInfoInputs.cache
+D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.Formula\obj\Release\net8.0\LYBT.Module.Formula.csproj.CoreCompileInputs.cache
+D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.Formula\obj\Release\net8.0\LYBT.Module.Formula.sourcelink.json
+D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.Formula\obj\Release\net8.0\LYBT.Mod.27BCC7AD.Up2Date
+D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.Formula\obj\Release\net8.0\LYBT.Module.Formula.dll
+D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.Formula\obj\Release\net8.0\refint\LYBT.Module.Formula.dll
+D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.Formula\obj\Release\net8.0\LYBT.Module.Formula.pdb
+D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.Formula\obj\Release\net8.0\ref\LYBT.Module.Formula.dll

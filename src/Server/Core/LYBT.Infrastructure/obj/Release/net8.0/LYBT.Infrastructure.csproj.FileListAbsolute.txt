@@ -1,0 +1,15 @@
+D:\source\repos\LYBTZYZS\src\Server\Core\BIN\Release\net8.0\LYBT.Infrastructure.deps.json
+D:\source\repos\LYBTZYZS\src\Server\Core\BIN\Release\net8.0\LYBT.Infrastructure.runtimeconfig.json
+D:\source\repos\LYBTZYZS\src\Server\Core\BIN\Release\net8.0\LYBT.Infrastructure.dll
+D:\source\repos\LYBTZYZS\src\Server\Core\BIN\Release\net8.0\LYBT.Infrastructure.pdb
+D:\source\repos\LYBTZYZS\src\Server\Core\LYBT.Infrastructure\obj\Release\net8.0\LYBT.Infrastructure.csproj.AssemblyReference.cache
+D:\source\repos\LYBTZYZS\src\Server\Core\LYBT.Infrastructure\obj\Release\net8.0\LYBT.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+D:\source\repos\LYBTZYZS\src\Server\Core\LYBT.Infrastructure\obj\Release\net8.0\LYBT.Infrastructure.AssemblyInfoInputs.cache
+D:\source\repos\LYBTZYZS\src\Server\Core\LYBT.Infrastructure\obj\Release\net8.0\LYBT.Infrastructure.csproj.CoreCompileInputs.cache
+D:\source\repos\LYBTZYZS\src\Server\Core\LYBT.Infrastructure\obj\Release\net8.0\LYBT.Infrastructure.sourcelink.json
+D:\source\repos\LYBTZYZS\src\Server\Core\LYBT.Infrastructure\obj\Release\net8.0\LYBT.Inf.53B61A7F.Up2Date
+D:\source\repos\LYBTZYZS\src\Server\Core\LYBT.Infrastructure\obj\Release\net8.0\LYBT.Infrastructure.dll
+D:\source\repos\LYBTZYZS\src\Server\Core\LYBT.Infrastructure\obj\Release\net8.0\refint\LYBT.Infrastructure.dll
+D:\source\repos\LYBTZYZS\src\Server\Core\LYBT.Infrastructure\obj\Release\net8.0\LYBT.Infrastructure.pdb
+D:\source\repos\LYBTZYZS\src\Server\Core\LYBT.Infrastructure\obj\Release\net8.0\LYBT.Infrastructure.genruntimeconfig.cache
+D:\source\repos\LYBTZYZS\src\Server\Core\LYBT.Infrastructure\obj\Release\net8.0\ref\LYBT.Infrastructure.dll

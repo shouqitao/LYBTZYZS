@@ -114,21 +114,7 @@ namespace LYBT.Module.Consultation.Services
             return await _coreService.DeleteAsync(id);
         }
 
-        /// <summary>
-        /// [Shared] 完成看诊
-        /// </summary>
-        public async Task<ServiceResult<bool>> CompleteConsultationAsync(Guid id, ConsultationCompleteDto dto)
-        {
-            return await _businessService.CompleteConsultationAsync(id, dto);
-        }
 
-        /// <summary>
-        /// [Shared] 取消看诊
-        /// </summary>
-        public async Task<ServiceResult<bool>> CancelConsultationAsync(Guid id, string reason)
-        {
-            return await _businessService.CancelConsultationAsync(id, reason);
-        }
 
         /// <summary>
         /// [Shared] 获取患者历史就诊记录

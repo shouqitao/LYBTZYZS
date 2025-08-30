@@ -1,0 +1,13 @@
+D:\source\repos\LYBTZYZS\src\Server\Modules\BIN\Debug\net8.0\LYBT.Module.MedicalCase.deps.json
+D:\source\repos\LYBTZYZS\src\Server\Modules\BIN\Debug\net8.0\LYBT.Module.MedicalCase.dll
+D:\source\repos\LYBTZYZS\src\Server\Modules\BIN\Debug\net8.0\LYBT.Module.MedicalCase.pdb
+D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.MedicalCase\obj\Debug\net8.0\LYBT.Module.MedicalCase.csproj.AssemblyReference.cache
+D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.MedicalCase\obj\Debug\net8.0\LYBT.Module.MedicalCase.GeneratedMSBuildEditorConfig.editorconfig
+D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.MedicalCase\obj\Debug\net8.0\LYBT.Module.MedicalCase.AssemblyInfoInputs.cache
+D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.MedicalCase\obj\Debug\net8.0\LYBT.Module.MedicalCase.csproj.CoreCompileInputs.cache
+D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.MedicalCase\obj\Debug\net8.0\LYBT.Module.MedicalCase.sourcelink.json
+D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.MedicalCase\obj\Debug\net8.0\LYBT.Mod.FE08CA17.Up2Date
+D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.MedicalCase\obj\Debug\net8.0\LYBT.Module.MedicalCase.dll
+D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.MedicalCase\obj\Debug\net8.0\refint\LYBT.Module.MedicalCase.dll
+D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.MedicalCase\obj\Debug\net8.0\LYBT.Module.MedicalCase.pdb
+D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.MedicalCase\obj\Debug\net8.0\ref\LYBT.Module.MedicalCase.dll

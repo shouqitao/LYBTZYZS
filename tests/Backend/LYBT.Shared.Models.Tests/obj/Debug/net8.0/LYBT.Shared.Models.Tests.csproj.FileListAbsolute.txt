@@ -1,0 +1,6 @@
+D:\source\repos\LYBTZYZS\tests\Backend\LYBT.Shared.Models.Tests\bin\Debug\net8.0\CoverletSourceRootsMapping_LYBT.Shared.Models.Tests
+D:\source\repos\LYBTZYZS\tests\Backend\LYBT.Shared.Models.Tests\obj\Debug\net8.0\LYBT.Shared.Models.Tests.csproj.AssemblyReference.cache
+D:\source\repos\LYBTZYZS\tests\Backend\LYBT.Shared.Models.Tests\obj\Debug\net8.0\LYBT.Shared.Models.Tests.GeneratedMSBuildEditorConfig.editorconfig
+D:\source\repos\LYBTZYZS\tests\Backend\LYBT.Shared.Models.Tests\obj\Debug\net8.0\LYBT.Shared.Models.Tests.AssemblyInfoInputs.cache
+D:\source\repos\LYBTZYZS\tests\Backend\LYBT.Shared.Models.Tests\obj\Debug\net8.0\LYBT.Shared.Models.Tests.csproj.CoreCompileInputs.cache
+D:\source\repos\LYBTZYZS\tests\Backend\LYBT.Shared.Models.Tests\obj\Debug\net8.0\LYBT.Shared.Models.Tests.sourcelink.json

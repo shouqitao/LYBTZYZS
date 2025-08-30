@@ -1,0 +1,13 @@
+D:\source\repos\LYBTZYZS\src\Server\Core\BIN\Release\net8.0\LYBT.Entities.deps.json
+D:\source\repos\LYBTZYZS\src\Server\Core\BIN\Release\net8.0\LYBT.Entities.dll
+D:\source\repos\LYBTZYZS\src\Server\Core\BIN\Release\net8.0\LYBT.Entities.pdb
+D:\source\repos\LYBTZYZS\src\Server\Core\LYBT.Entities\obj\Release\net8.0\LYBT.Entities.csproj.AssemblyReference.cache
+D:\source\repos\LYBTZYZS\src\Server\Core\LYBT.Entities\obj\Release\net8.0\LYBT.Entities.GeneratedMSBuildEditorConfig.editorconfig
+D:\source\repos\LYBTZYZS\src\Server\Core\LYBT.Entities\obj\Release\net8.0\LYBT.Entities.AssemblyInfoInputs.cache
+D:\source\repos\LYBTZYZS\src\Server\Core\LYBT.Entities\obj\Release\net8.0\LYBT.Entities.csproj.CoreCompileInputs.cache
+D:\source\repos\LYBTZYZS\src\Server\Core\LYBT.Entities\obj\Release\net8.0\LYBT.Entities.sourcelink.json
+D:\source\repos\LYBTZYZS\src\Server\Core\LYBT.Entities\obj\Release\net8.0\LYBT.Ent.1AA5A5A2.Up2Date
+D:\source\repos\LYBTZYZS\src\Server\Core\LYBT.Entities\obj\Release\net8.0\LYBT.Entities.dll
+D:\source\repos\LYBTZYZS\src\Server\Core\LYBT.Entities\obj\Release\net8.0\refint\LYBT.Entities.dll
+D:\source\repos\LYBTZYZS\src\Server\Core\LYBT.Entities\obj\Release\net8.0\LYBT.Entities.pdb
+D:\source\repos\LYBTZYZS\src\Server\Core\LYBT.Entities\obj\Release\net8.0\ref\LYBT.Entities.dll

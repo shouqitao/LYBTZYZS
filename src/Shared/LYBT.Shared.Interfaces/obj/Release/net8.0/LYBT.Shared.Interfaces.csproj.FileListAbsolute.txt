@@ -1,0 +1,15 @@
+D:\source\repos\LYBTZYZS\src\Shared\LYBT.Shared.Interfaces\bin\Release\net8.0\LYBT.Shared.Interfaces.deps.json
+D:\source\repos\LYBTZYZS\src\Shared\LYBT.Shared.Interfaces\bin\Release\net8.0\LYBT.Shared.Interfaces.dll
+D:\source\repos\LYBTZYZS\src\Shared\LYBT.Shared.Interfaces\bin\Release\net8.0\LYBT.Shared.Interfaces.pdb
+D:\source\repos\LYBTZYZS\src\Shared\LYBT.Shared.Interfaces\bin\Release\net8.0\LYBT.Shared.Models.dll
+D:\source\repos\LYBTZYZS\src\Shared\LYBT.Shared.Interfaces\bin\Release\net8.0\LYBT.Shared.Models.pdb
+D:\source\repos\LYBTZYZS\src\Shared\LYBT.Shared.Interfaces\obj\Release\net8.0\LYBT.Shared.Interfaces.csproj.AssemblyReference.cache
+D:\source\repos\LYBTZYZS\src\Shared\LYBT.Shared.Interfaces\obj\Release\net8.0\LYBT.Shared.Interfaces.GeneratedMSBuildEditorConfig.editorconfig
+D:\source\repos\LYBTZYZS\src\Shared\LYBT.Shared.Interfaces\obj\Release\net8.0\LYBT.Shared.Interfaces.AssemblyInfoInputs.cache
+D:\source\repos\LYBTZYZS\src\Shared\LYBT.Shared.Interfaces\obj\Release\net8.0\LYBT.Shared.Interfaces.csproj.CoreCompileInputs.cache
+D:\source\repos\LYBTZYZS\src\Shared\LYBT.Shared.Interfaces\obj\Release\net8.0\LYBT.Shared.Interfaces.sourcelink.json
+D:\source\repos\LYBTZYZS\src\Shared\LYBT.Shared.Interfaces\obj\Release\net8.0\LYBT.Sha.D9AA8429.Up2Date
+D:\source\repos\LYBTZYZS\src\Shared\LYBT.Shared.Interfaces\obj\Release\net8.0\LYBT.Shared.Interfaces.dll
+D:\source\repos\LYBTZYZS\src\Shared\LYBT.Shared.Interfaces\obj\Release\net8.0\refint\LYBT.Shared.Interfaces.dll
+D:\source\repos\LYBTZYZS\src\Shared\LYBT.Shared.Interfaces\obj\Release\net8.0\LYBT.Shared.Interfaces.pdb
+D:\source\repos\LYBTZYZS\src\Shared\LYBT.Shared.Interfaces\obj\Release\net8.0\ref\LYBT.Shared.Interfaces.dll

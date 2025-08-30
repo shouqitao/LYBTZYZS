@@ -1,0 +1,15 @@
+D:\source\repos\LYBTZYZS\src\Server\Modules\BIN\Release\net8.0\LYBT.Module.Users.deps.json
+D:\source\repos\LYBTZYZS\src\Server\Modules\BIN\Release\net8.0\LYBT.Module.Users.runtimeconfig.json
+D:\source\repos\LYBTZYZS\src\Server\Modules\BIN\Release\net8.0\LYBT.Module.Users.dll
+D:\source\repos\LYBTZYZS\src\Server\Modules\BIN\Release\net8.0\LYBT.Module.Users.pdb
+D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.Users\obj\Release\net8.0\LYBT.Module.Users.csproj.AssemblyReference.cache
+D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.Users\obj\Release\net8.0\LYBT.Module.Users.GeneratedMSBuildEditorConfig.editorconfig
+D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.Users\obj\Release\net8.0\LYBT.Module.Users.AssemblyInfoInputs.cache
+D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.Users\obj\Release\net8.0\LYBT.Module.Users.csproj.CoreCompileInputs.cache
+D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.Users\obj\Release\net8.0\LYBT.Module.Users.sourcelink.json
+D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.Users\obj\Release\net8.0\LYBT.Mod.87B1ACB3.Up2Date
+D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.Users\obj\Release\net8.0\LYBT.Module.Users.dll
+D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.Users\obj\Release\net8.0\refint\LYBT.Module.Users.dll
+D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.Users\obj\Release\net8.0\LYBT.Module.Users.pdb
+D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.Users\obj\Release\net8.0\LYBT.Module.Users.genruntimeconfig.cache
+D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.Users\obj\Release\net8.0\ref\LYBT.Module.Users.dll

@@ -134,45 +134,7 @@ public class ConsultationController : BaseApiController
         }
     }
 
-    /// <summary>
-    /// 完成看诊 - 统一API响应格式
-    /// </summary>
-    [HttpPost("{id}/complete")]
-    public async Task<ActionResult<ApiResponse>> CompleteConsultation(Guid id, [FromBody] ConsultationCompleteDto dto)
-    {
-        try
-        {
-            var validation = ValidateGuid(id, "看诊ID");
-            if (validation != null) return validation;
 
-            var result = await _consultationService.CompleteConsultationAsync(id, dto);
-            return HandleBoolServiceResult(result, "看诊完成成功");
-        }
-        catch (Exception ex)
-        {
-            return HandleException(ex, "完成看诊", new { id, dto });
-        }
-    }
-
-    /// <summary>
-    /// 取消看诊 - 统一API响应格式
-    /// </summary>
-    [HttpPost("{id}/cancel")]
-    public async Task<ActionResult<ApiResponse>> CancelConsultation(Guid id, [FromBody] CancelConsultationDto dto)
-    {
-        try
-        {
-            var validation = ValidateGuid(id, "看诊ID");
-            if (validation != null) return validation;
-
-            var result = await _consultationService.CancelConsultationAsync(id, dto.Reason ?? "未提供原因");
-            return HandleBoolServiceResult(result, "看诊取消成功");
-        }
-        catch (Exception ex)
-        {
-            return HandleException(ex, "取消看诊", new { id, dto });
-        }
-    }
 
     /// <summary>
     /// 根据患者ID获取看诊历史 - 统一API响应格式

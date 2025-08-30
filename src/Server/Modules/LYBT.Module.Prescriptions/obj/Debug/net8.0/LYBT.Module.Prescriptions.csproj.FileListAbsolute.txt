@@ -1,0 +1,15 @@
+D:\source\repos\LYBTZYZS\src\Server\Modules\BIN\Debug\net8.0\LYBT.Module.Prescriptions.deps.json
+D:\source\repos\LYBTZYZS\src\Server\Modules\BIN\Debug\net8.0\LYBT.Module.Prescriptions.runtimeconfig.json
+D:\source\repos\LYBTZYZS\src\Server\Modules\BIN\Debug\net8.0\LYBT.Module.Prescriptions.dll
+D:\source\repos\LYBTZYZS\src\Server\Modules\BIN\Debug\net8.0\LYBT.Module.Prescriptions.pdb
+D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.Prescriptions\obj\Debug\net8.0\LYBT.Module.Prescriptions.csproj.AssemblyReference.cache
+D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.Prescriptions\obj\Debug\net8.0\LYBT.Module.Prescriptions.GeneratedMSBuildEditorConfig.editorconfig
+D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.Prescriptions\obj\Debug\net8.0\LYBT.Module.Prescriptions.AssemblyInfoInputs.cache
+D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.Prescriptions\obj\Debug\net8.0\LYBT.Module.Prescriptions.csproj.CoreCompileInputs.cache
+D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.Prescriptions\obj\Debug\net8.0\LYBT.Module.Prescriptions.sourcelink.json
+D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.Prescriptions\obj\Debug\net8.0\LYBT.Mod.0EBBB241.Up2Date
+D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.Prescriptions\obj\Debug\net8.0\LYBT.Module.Prescriptions.dll
+D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.Prescriptions\obj\Debug\net8.0\refint\LYBT.Module.Prescriptions.dll
+D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.Prescriptions\obj\Debug\net8.0\LYBT.Module.Prescriptions.pdb
+D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.Prescriptions\obj\Debug\net8.0\LYBT.Module.Prescriptions.genruntimeconfig.cache
+D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.Prescriptions\obj\Debug\net8.0\ref\LYBT.Module.Prescriptions.dll

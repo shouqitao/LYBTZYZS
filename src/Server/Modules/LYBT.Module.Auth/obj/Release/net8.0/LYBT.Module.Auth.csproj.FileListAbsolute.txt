@@ -1,0 +1,15 @@
+D:\source\repos\LYBTZYZS\src\Server\Modules\BIN\Release\net8.0\LYBT.Module.Auth.deps.json
+D:\source\repos\LYBTZYZS\src\Server\Modules\BIN\Release\net8.0\LYBT.Module.Auth.runtimeconfig.json
+D:\source\repos\LYBTZYZS\src\Server\Modules\BIN\Release\net8.0\LYBT.Module.Auth.dll
+D:\source\repos\LYBTZYZS\src\Server\Modules\BIN\Release\net8.0\LYBT.Module.Auth.pdb
+D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.Auth\obj\Release\net8.0\LYBT.Module.Auth.csproj.AssemblyReference.cache
+D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.Auth\obj\Release\net8.0\LYBT.Module.Auth.GeneratedMSBuildEditorConfig.editorconfig
+D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.Auth\obj\Release\net8.0\LYBT.Module.Auth.AssemblyInfoInputs.cache
+D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.Auth\obj\Release\net8.0\LYBT.Module.Auth.csproj.CoreCompileInputs.cache
+D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.Auth\obj\Release\net8.0\LYBT.Module.Auth.sourcelink.json
+D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.Auth\obj\Release\net8.0\LYBT.Mod.18A0790E.Up2Date
+D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.Auth\obj\Release\net8.0\LYBT.Module.Auth.dll
+D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.Auth\obj\Release\net8.0\refint\LYBT.Module.Auth.dll
+D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.Auth\obj\Release\net8.0\LYBT.Module.Auth.pdb
+D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.Auth\obj\Release\net8.0\LYBT.Module.Auth.genruntimeconfig.cache
+D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.Auth\obj\Release\net8.0\ref\LYBT.Module.Auth.dll

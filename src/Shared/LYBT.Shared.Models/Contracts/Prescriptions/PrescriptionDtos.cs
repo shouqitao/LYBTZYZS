@@ -364,4 +364,60 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
         [DisplayName("升序排序")]
         public bool IsAscending { get; set; } = false;
     }
+
+    /// <summary>
+    /// 处方高级搜索DTO - 支持多条件搜索
+    /// </summary>
+    public class PrescriptionSearchDto
+    {
+        [DisplayName("关键词")]
+        public string? Keyword { get; set; }
+        
+        [DisplayName("患者姓名")]
+        public string? PatientName { get; set; }
+        
+        [DisplayName("医生姓名")]
+        public string? DoctorName { get; set; }
+        
+        [DisplayName("诊断")]
+        public string? Diagnosis { get; set; }
+        
+        [DisplayName("处方状态")]
+        public PrescriptionStatus? Status { get; set; }
+        
+        [DisplayName("开始日期")]
+        public DateTime? StartDate { get; set; }
+        
+        [DisplayName("结束日期")]
+        public DateTime? EndDate { get; set; }
+        
+        [DisplayName("最小剂数")]
+        public int? MinDosageCount { get; set; }
+        
+        [DisplayName("最大剂数")]
+        public int? MaxDosageCount { get; set; }
+        
+        [DisplayName("药材名称")]
+        public string? HerbName { get; set; }
+    }
+
+    /// <summary>
+    /// 处方复制DTO - 用于复制现有处方
+    /// </summary>
+    public class PrescriptionCopyDto
+    {
+        [Required(ErrorMessage = "新处方名称不能为空")]
+        [StringLength(200, ErrorMessage = "新处方名称不能超过200个字符")]
+        [DisplayName("新处方名称")]
+        public string NewName { get; set; } = string.Empty;
+        
+        [DisplayName("复制处方项目")]
+        public bool CopyItems { get; set; } = true;
+        
+        [DisplayName("复制用法用量")]
+        public bool CopyUsage { get; set; } = true;
+        
+        [DisplayName("复制备注")]
+        public bool CopyRemark { get; set; } = false;
+    }
 }

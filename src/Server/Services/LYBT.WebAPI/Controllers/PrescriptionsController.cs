@@ -214,6 +214,126 @@ namespace LYBT.WebAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// 根据患者ID获取处方历史 - 统一API响应格式
+        /// </summary>
+        [HttpGet("patient/{patientId}")]
+        public async Task<ActionResult<ApiResponse<List<PrescriptionDto>>>> GetByPatientId(Guid patientId)
+        {
+            try
+            {
+                var validation = ValidateGuid<List<PrescriptionDto>>(patientId, "患者ID");
+                if (validation != null) return validation;
+
+                var result = await _service.GetByPatientIdAsync(patientId);
+                return HandleServiceResult(result, "查询成功");
+            }
+            catch (Exception ex)
+            {
+                return HandleException<List<PrescriptionDto>>(ex, "获取患者处方历史", patientId);
+            }
+        }
+
+        /// <summary>
+        /// 根据医案ID获取处方记录 - 统一API响应格式
+        /// </summary>
+        [HttpGet("medical-case/{caseId}")]
+        public async Task<ActionResult<ApiResponse<List<PrescriptionDto>>>> GetByMedicalCaseId(Guid caseId)
+        {
+            try
+            {
+                var validation = ValidateGuid<List<PrescriptionDto>>(caseId, "医案ID");
+                if (validation != null) return validation;
+
+                var result = await _service.GetByMedicalCaseIdAsync(caseId);
+                return HandleServiceResult(result, "查询成功");
+            }
+            catch (Exception ex)
+            {
+                return HandleException<List<PrescriptionDto>>(ex, "获取医案处方记录", caseId);
+            }
+        }
+
+        /// <summary>
+        /// 高级搜索处方 - 统一API响应格式
+        /// </summary>
+        [HttpPost("search")]
+        public async Task<ActionResult<ApiResponse<List<PrescriptionDto>>>> AdvancedSearch([FromBody] PrescriptionSearchDto criteria)
+        {
+            try
+            {
+                var validation = ValidateModel<List<PrescriptionDto>>();
+                if (validation != null) return validation;
+
+                // 如果提供了基础搜索关键词，使用基础搜索
+                if (!string.IsNullOrEmpty(criteria.Keyword))
+                {
+                    var result = await _service.SearchAsync(criteria.Keyword);
+                    return HandleServiceResult(result, $"搜索完成，找到{result.Data?.Count ?? 0}条记录");
+                }
+
+                // 否则返回空结果（暂不支持复杂搜索条件）
+                var emptyResult = ServiceResult<List<PrescriptionDto>>.Success(new List<PrescriptionDto>());
+                return HandleServiceResult(emptyResult, "高级搜索功能待完善，请使用基础关键词搜索");
+            }
+            catch (Exception ex)
+            {
+                return HandleException<List<PrescriptionDto>>(ex, "高级搜索处方", criteria);
+            }
+        }
+
+        /// <summary>
+        /// 复制处方 - 统一API响应格式
+        /// </summary>
+        [HttpPost("{id}/copy")]
+        public async Task<ActionResult<ApiResponse<PrescriptionDto>>> Copy(Guid id, [FromBody] PrescriptionCopyDto dto)
+        {
+            try
+            {
+                var validation = ValidateGuid<PrescriptionDto>(id, "处方ID");
+                if (validation != null) return validation;
+
+                if (string.IsNullOrWhiteSpace(dto?.NewName))
+                {
+                    return ValidationFail<PrescriptionDto>("新处方名称不能为空");
+                }
+
+                var (operatorId, operatorName, _) = GetOperator();
+                var result = await _service.CopyAsync(id, dto.NewName);
+                
+                if (result.IsSuccess && result.Data != null)
+                {
+                    LogOperation("复制处方", result.Data, result.Data.Id);
+                }
+                
+                return HandleServiceResult(result, "处方复制成功");
+            }
+            catch (Exception ex)
+            {
+                return HandleException<PrescriptionDto>(ex, "复制处方", new { id, dto });
+            }
+        }
+
+        /// <summary>
+        /// 验证处方数据 - 统一API响应格式
+        /// </summary>
+        [HttpPost("validate")]
+        public async Task<ActionResult<ApiResponse<PrescriptionValidationResult>>> Validate([FromBody] PrescriptionCreateDto dto)
+        {
+            try
+            {
+                var validation = ValidateModel<PrescriptionValidationResult>();
+                if (validation != null) return validation;
+
+                var result = await _service.ValidateAsync(dto);
+                return HandleServiceResult(result, "验证完成");
+            }
+            catch (Exception ex)
+            {
+                return HandleException<PrescriptionValidationResult>(ex, "验证处方数据", dto);
+            }
+        }
+
 
     }
 }

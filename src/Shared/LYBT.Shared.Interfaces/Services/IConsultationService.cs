@@ -51,15 +51,7 @@ namespace LYBT.Shared.Interfaces.Services
         /// </summary>
         Task<ServiceResult<List<ConsultationDto>>> GetByDoctorIdAsync(Guid doctorId);
         
-        /// <summary>
-        /// 完成看诊
-        /// </summary>
-        Task<ServiceResult<bool>> CompleteConsultationAsync(Guid id, ConsultationCompleteDto dto);
-        
-        /// <summary>
-        /// 取消看诊
-        /// </summary>
-        Task<ServiceResult<bool>> CancelConsultationAsync(Guid id, string reason);
+
         
         /// <summary>
         /// 获取看诊统计信息

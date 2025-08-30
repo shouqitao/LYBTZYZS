@@ -1,0 +1,12 @@
+D:\source\repos\LYBTZYZS\src\Shared\LYBT.Shared.Models\bin\Debug\net8.0\LYBT.Shared.Models.deps.json
+D:\source\repos\LYBTZYZS\src\Shared\LYBT.Shared.Models\bin\Debug\net8.0\LYBT.Shared.Models.dll
+D:\source\repos\LYBTZYZS\src\Shared\LYBT.Shared.Models\bin\Debug\net8.0\LYBT.Shared.Models.pdb
+D:\source\repos\LYBTZYZS\src\Shared\LYBT.Shared.Models\obj\Debug\net8.0\LYBT.Shared.Models.csproj.AssemblyReference.cache
+D:\source\repos\LYBTZYZS\src\Shared\LYBT.Shared.Models\obj\Debug\net8.0\LYBT.Shared.Models.GeneratedMSBuildEditorConfig.editorconfig
+D:\source\repos\LYBTZYZS\src\Shared\LYBT.Shared.Models\obj\Debug\net8.0\LYBT.Shared.Models.AssemblyInfoInputs.cache
+D:\source\repos\LYBTZYZS\src\Shared\LYBT.Shared.Models\obj\Debug\net8.0\LYBT.Shared.Models.csproj.CoreCompileInputs.cache
+D:\source\repos\LYBTZYZS\src\Shared\LYBT.Shared.Models\obj\Debug\net8.0\LYBT.Shared.Models.sourcelink.json
+D:\source\repos\LYBTZYZS\src\Shared\LYBT.Shared.Models\obj\Debug\net8.0\LYBT.Shared.Models.dll
+D:\source\repos\LYBTZYZS\src\Shared\LYBT.Shared.Models\obj\Debug\net8.0\refint\LYBT.Shared.Models.dll
+D:\source\repos\LYBTZYZS\src\Shared\LYBT.Shared.Models\obj\Debug\net8.0\LYBT.Shared.Models.pdb
+D:\source\repos\LYBTZYZS\src\Shared\LYBT.Shared.Models\obj\Debug\net8.0\ref\LYBT.Shared.Models.dll

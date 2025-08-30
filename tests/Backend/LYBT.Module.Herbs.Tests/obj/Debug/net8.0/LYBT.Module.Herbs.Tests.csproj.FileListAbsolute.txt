@@ -1,0 +1,6 @@
+D:\source\repos\LYBTZYZS\tests\Backend\LYBT.Module.Herbs.Tests\bin\Debug\net8.0\CoverletSourceRootsMapping_LYBT.Module.Herbs.Tests
+D:\source\repos\LYBTZYZS\tests\Backend\LYBT.Module.Herbs.Tests\obj\Debug\net8.0\LYBT.Module.Herbs.Tests.csproj.AssemblyReference.cache
+D:\source\repos\LYBTZYZS\tests\Backend\LYBT.Module.Herbs.Tests\obj\Debug\net8.0\LYBT.Module.Herbs.Tests.GeneratedMSBuildEditorConfig.editorconfig
+D:\source\repos\LYBTZYZS\tests\Backend\LYBT.Module.Herbs.Tests\obj\Debug\net8.0\LYBT.Module.Herbs.Tests.AssemblyInfoInputs.cache
+D:\source\repos\LYBTZYZS\tests\Backend\LYBT.Module.Herbs.Tests\obj\Debug\net8.0\LYBT.Module.Herbs.Tests.csproj.CoreCompileInputs.cache
+D:\source\repos\LYBTZYZS\tests\Backend\LYBT.Module.Herbs.Tests\obj\Debug\net8.0\LYBT.Module.Herbs.Tests.sourcelink.json

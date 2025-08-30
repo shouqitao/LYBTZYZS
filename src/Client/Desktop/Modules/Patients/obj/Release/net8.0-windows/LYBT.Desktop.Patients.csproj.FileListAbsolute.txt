@@ -1,0 +1,12 @@
+D:\source\repos\LYBTZYZS\src\Client\Desktop\Modules\Patients\obj\Release\net8.0-windows\LYBT.Desktop.Patients.csproj.AssemblyReference.cache
+D:\source\repos\LYBTZYZS\src\Client\Desktop\Modules\Patients\obj\Release\net8.0-windows\Views\PatientAddEditDialog.baml
+D:\source\repos\LYBTZYZS\src\Client\Desktop\Modules\Patients\obj\Release\net8.0-windows\Views\PatientManagementView.baml
+D:\source\repos\LYBTZYZS\src\Client\Desktop\Modules\Patients\obj\Release\net8.0-windows\Views\PatientAddEditDialog.g.cs
+D:\source\repos\LYBTZYZS\src\Client\Desktop\Modules\Patients\obj\Release\net8.0-windows\Views\PatientManagementView.g.cs
+D:\source\repos\LYBTZYZS\src\Client\Desktop\Modules\Patients\obj\Release\net8.0-windows\LYBT.Desktop.Patients_MarkupCompile.cache
+D:\source\repos\LYBTZYZS\src\Client\Desktop\Modules\Patients\obj\Release\net8.0-windows\LYBT.Desktop.Patients.g.resources
+D:\source\repos\LYBTZYZS\src\Client\Desktop\Modules\Patients\obj\Release\net8.0-windows\LYBT.Desktop.Patients.GeneratedMSBuildEditorConfig.editorconfig
+D:\source\repos\LYBTZYZS\src\Client\Desktop\Modules\Patients\obj\Release\net8.0-windows\LYBT.Desktop.Patients.AssemblyInfoInputs.cache
+D:\source\repos\LYBTZYZS\src\Client\Desktop\Modules\Patients\obj\Release\net8.0-windows\LYBT.Desktop.Patients.AssemblyInfo.cs
+D:\source\repos\LYBTZYZS\src\Client\Desktop\Modules\Patients\obj\Release\net8.0-windows\LYBT.Desktop.Patients.csproj.CoreCompileInputs.cache
+D:\source\repos\LYBTZYZS\src\Client\Desktop\Modules\Patients\obj\Release\net8.0-windows\LYBT.Desktop.Patients.sourcelink.json
