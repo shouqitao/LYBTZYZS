@@ -536,6 +536,25 @@ public class UserService : IUserService                    // 50行纯委托
 
 **总计**: 252个编译错误全部解决，实现零编译警告标准。
 
+### 最新修复完成 (2025-08-30)
+
+**✅ Formula模块编译错误修复** (commit: a6bf6487):
+- 修复FormulaHerbItemItem → FormulaHerbItem类型名错误
+- 修复Prescription实体属性引用错误 (Diagnosis → Indication, Usage → Advice)
+- 移除FormulaHerbItem中不存在的属性引用
+
+**✅ 依赖注入服务注册完成** (commit: a6bf6487):  
+- 添加缺失的PatientQueryService、ConsultationQueryService、HerbQueryService注册
+- 添加缺失的PatientBusinessService、ConsultationBusinessService、HerbBusinessService注册
+- UltraThink三层架构服务注册完整：Core + Query + Business层全覆盖
+- 解决运行时System.AggregateException依赖注入构造失败问题
+
+**✅ 密码验证问题修复**:
+- 识别并修复数据库中损坏的密码哈希格式
+- 使用PasswordHelper重新生成正确的AspNetCore Identity哈希
+- 更新AdminSecrets表中sysadmin用户密码哈希
+- 验证登录功能恢复正常 (用户名: sysadmin, 密码: Admin@123456)
+
 ## 高层架构
 
 ### 整体技术栈

@@ -96,7 +96,6 @@ D:\source\repos\LYBTZYZS\src\Server\Services\LYBT.WebAPI\bin\Debug\net8.0\System
 D:\source\repos\LYBTZYZS\src\Server\Services\LYBT.WebAPI\bin\Debug\net8.0\System.Runtime.Caching.dll
 D:\source\repos\LYBTZYZS\src\Server\Services\LYBT.WebAPI\bin\Debug\net8.0\System.Security.Cryptography.Pkcs.dll
 D:\source\repos\LYBTZYZS\src\Server\Services\LYBT.WebAPI\bin\Debug\net8.0\System.Security.Cryptography.ProtectedData.dll
-D:\source\repos\LYBTZYZS\src\Server\Services\LYBT.WebAPI\bin\Debug\net8.0\System.Security.Permissions.dll
 D:\source\repos\LYBTZYZS\src\Server\Services\LYBT.WebAPI\bin\Debug\net8.0\System.Text.Encodings.Web.dll
 D:\source\repos\LYBTZYZS\src\Server\Services\LYBT.WebAPI\bin\Debug\net8.0\System.Text.Json.dll
 D:\source\repos\LYBTZYZS\src\Server\Services\LYBT.WebAPI\bin\Debug\net8.0\cs\Microsoft.CodeAnalysis.resources.dll
@@ -213,4 +212,7 @@ D:\source\repos\LYBTZYZS\src\Server\Services\LYBT.WebAPI\obj\Debug\net8.0\LYBT.W
 D:\source\repos\LYBTZYZS\src\Server\Services\LYBT.WebAPI\obj\Debug\net8.0\LYBT.WebAPI.genruntimeconfig.cache
 D:\source\repos\LYBTZYZS\src\Server\Services\LYBT.WebAPI\obj\Debug\net8.0\ref\LYBT.WebAPI.dll
 D:\source\repos\LYBTZYZS\src\Server\Services\LYBT.WebAPI\obj\Debug\net8.0\LYBT.WebAPI.MvcApplicationPartsAssemblyInfo.cs
-D:\source\repos\LYBTZYZS\src\Server\Services\LYBT.WebAPI\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
+D:\source\repos\LYBTZYZS\src\Server\Services\LYBT.WebAPI\bin\Debug\net8.0\Microsoft.Extensions.Diagnostics.Abstractions.dll
+D:\source\repos\LYBTZYZS\src\Server\Services\LYBT.WebAPI\bin\Debug\net8.0\Microsoft.Extensions.Hosting.Abstractions.dll
+D:\source\repos\LYBTZYZS\src\Server\Services\LYBT.WebAPI\bin\Debug\net8.0\Microsoft.Extensions.WebEncoders.dll
+D:\source\repos\LYBTZYZS\src\Server\Services\LYBT.WebAPI\bin\Debug\net8.0\System.Security.Cryptography.Xml.dll

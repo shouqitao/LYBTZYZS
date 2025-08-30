@@ -58,7 +58,7 @@ public static class UnifiedServiceRegistration
         IConfiguration configuration)
     {
         // =========== 统一配置管理系统 ===========
-        services.AddUnifiedConfiguration(configuration);
+        // UltraThink深度清理：移除未使用的统一配置抽象
         services.AddScoped<ISecretManager, SecretManager>();
         services.AddScoped<IEnvironmentManager, EnvironmentManager>();
         services.AddScoped<IEnvironmentVariableReplacer, EnvironmentVariableReplacer>();
@@ -153,32 +153,29 @@ public static class UnifiedServiceRegistration
     }
 
     /// <summary>
-    /// 注册性能优化服务
+    /// 注册性能优化服务 - UltraThink简化版本
+    /// 移除过度设计的性能组件，使用.NET内置服务
     /// </summary>
     private static IServiceCollection RegisterPerformanceServices(
         this IServiceCollection services, 
         LYBT.Infrastructure.Configuration.IConfigurationManager configManager)
     {
-        // =========== 统一缓存管理 ===========
-        var cacheOptions = configManager.GetSection<LYBT.Infrastructure.Configuration.Options.CacheOptions>("CacheOptions");
-        var unifiedCacheOptions = new LYBT.Infrastructure.Performance.Cache.CacheOptions
+        // =========== 简化缓存管理 ===========
+        // UltraThink简化：使用内置IMemoryCache替代复杂的UnifiedCacheManager
+        services.AddMemoryCache(options =>
         {
-            DefaultExpiration = TimeSpan.FromMinutes(cacheOptions?.DefaultExpiryMinutes ?? 30),
-            EnableCompression = cacheOptions?.Performance?.EnableCompression ?? true,
-            CompressionThreshold = cacheOptions?.Performance?.CompressionThreshold ?? 1024
-        };
-        
-        services.AddSingleton(unifiedCacheOptions);
-        services.AddScoped<LYBT.Infrastructure.Performance.Cache.IUnifiedCacheManager, LYBT.Infrastructure.Performance.Cache.UnifiedCacheManager>();
+            // 使用默认配置，避免复杂的配置选项
+            options.SizeLimit = 1000; // 简化：使用固定的缓存大小限制
+        });
 
         // =========== 数据库性能优化 ===========
         // UltraThink v2.0: 禁用复杂数据库性能优化 - 20人以下小诊所不需要复杂的数据库性能监控和优化
         // services.AddScoped<LYBT.Infrastructure.Performance.Database.IUnifiedDatabaseOptimizer, LYBT.Infrastructure.Performance.Database.UnifiedDatabaseOptimizer>();
 
         // =========== 异步处理管理 ===========
-        services.AddSingleton<LYBT.Infrastructure.Performance.Async.IUnifiedAsyncProcessor, LYBT.Infrastructure.Performance.Async.UnifiedAsyncProcessor>();
-        services.AddHostedService(provider => 
-            (LYBT.Infrastructure.Performance.Async.UnifiedAsyncProcessor)provider.GetRequiredService<LYBT.Infrastructure.Performance.Async.IUnifiedAsyncProcessor>());
+        // UltraThink简化：移除复杂的异步处理器，使用简单的后台服务即可
+        // services.AddSingleton<LYBT.Infrastructure.Performance.Async.IUnifiedAsyncProcessor, LYBT.Infrastructure.Performance.Async.UnifiedAsyncProcessor>();
+        // services.AddHostedService(provider => (LYBT.Infrastructure.Performance.Async.UnifiedAsyncProcessor)provider.GetRequiredService<LYBT.Infrastructure.Performance.Async.IUnifiedAsyncProcessor>());
 
         return services;
     }

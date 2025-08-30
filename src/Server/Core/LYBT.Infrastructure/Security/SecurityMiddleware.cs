@@ -17,20 +17,19 @@ namespace LYBT.Infrastructure.Security
         private readonly RequestDelegate _next;
         private readonly ILogger<SecurityMiddleware> _logger;
         private readonly IInputValidationService _validationService;
-        private readonly ISecurityAuditService _auditService;
+
         private readonly SecurityMiddlewareOptions _options;
 
         public SecurityMiddleware(
             RequestDelegate next,
             ILogger<SecurityMiddleware> logger,
             IInputValidationService validationService,
-            ISecurityAuditService auditService,
             SecurityMiddlewareOptions options)
         {
             _next = next;
             _logger = logger;
             _validationService = validationService;
-            _auditService = auditService;
+
             _options = options;
         }
 
@@ -166,7 +165,7 @@ namespace LYBT.Infrastructure.Security
                 {
                     result.IsValid = false;
                     result.Reason = $"请求体大小超过限制 ({_options.MaxRequestSize} bytes)";
-                    result.ThreatLevel = ThreatLevel.Medium;
+                    result.ThreatLevel = "Medium";
                     return result;
                 }
 
@@ -175,7 +174,7 @@ namespace LYBT.Infrastructure.Security
                 {
                     result.IsValid = false;
                     result.Reason = "缺少User-Agent头部";
-                    result.ThreatLevel = ThreatLevel.Low;
+                    result.ThreatLevel = "Low";
                     return result;
                 }
 
@@ -200,7 +199,7 @@ namespace LYBT.Infrastructure.Security
                 _logger.LogError(ex, "请求验证过程中发生错误");
                 result.IsValid = false;
                 result.Reason = "请求验证失败";
-                result.ThreatLevel = ThreatLevel.High;
+                result.ThreatLevel = "$1";
                 return result;
             }
         }
@@ -218,7 +217,7 @@ namespace LYBT.Infrastructure.Security
                 {
                     result.IsValid = false;
                     result.Reason = $"请求头名称包含恶意内容: {header.Key}";
-                    result.ThreatLevel = ThreatLevel.High;
+                    result.ThreatLevel = "High";
                     result.ThreatType = nameValidation.ThreatType;
                     return;
                 }
@@ -233,7 +232,7 @@ namespace LYBT.Infrastructure.Security
                     {
                         result.IsValid = false;
                         result.Reason = $"请求头值包含恶意内容: {header.Key}";
-                        result.ThreatLevel = ThreatLevel.High;
+                        result.ThreatLevel = "High";
                         result.ThreatType = valueValidation.ThreatType;
                         return;
                     }
@@ -254,7 +253,7 @@ namespace LYBT.Infrastructure.Security
                 {
                     result.IsValid = false;
                     result.Reason = $"查询参数名包含恶意内容: {param.Key}";
-                    result.ThreatLevel = ThreatLevel.High;
+                    result.ThreatLevel = "High";
                     result.ThreatType = nameValidation.ThreatType;
                     return;
                 }
@@ -269,7 +268,7 @@ namespace LYBT.Infrastructure.Security
                     {
                         result.IsValid = false;
                         result.Reason = $"查询参数值包含恶意内容: {param.Key}";
-                        result.ThreatLevel = ThreatLevel.High;
+                        result.ThreatLevel = "High";
                         result.ThreatType = valueValidation.ThreatType;
                         return;
                     }
@@ -294,7 +293,7 @@ namespace LYBT.Infrastructure.Security
                     {
                         result.IsValid = false;
                         result.Reason = $"表单字段名包含恶意内容: {field.Key}";
-                        result.ThreatLevel = ThreatLevel.High;
+                        result.ThreatLevel = "High";
                         result.ThreatType = nameValidation.ThreatType;
                         return;
                     }
@@ -309,7 +308,7 @@ namespace LYBT.Infrastructure.Security
                         {
                             result.IsValid = false;
                             result.Reason = $"表单字段值包含恶意内容: {field.Key}";
-                            result.ThreatLevel = ThreatLevel.High;
+                            result.ThreatLevel = "High";
                             result.ThreatType = valueValidation.ThreatType;
                             return;
                         }
@@ -321,7 +320,7 @@ namespace LYBT.Infrastructure.Security
                 _logger.LogError(ex, "验证表单数据时发生错误");
                 result.IsValid = false;
                 result.Reason = "表单数据验证失败";
-                result.ThreatLevel = ThreatLevel.Medium;
+                result.ThreatLevel = "$1";
             }
         }
 
@@ -335,17 +334,11 @@ namespace LYBT.Infrastructure.Security
             _logger.LogWarning("阻止恶意请求 [RequestId: {RequestId}]: {Reason}, IP: {ClientIP}, Path: {Path}",
                 requestId, validationResult.Reason, clientIP, context.Request.Path);
 
-            // 记录安全审计
-            await _auditService.LogSecurityExceptionAsync(new SecurityExceptionAuditEvent
-            {
-                ExceptionType = "MaliciousRequest",
-                ExceptionMessage = validationResult.Reason ?? "恶意请求被阻止",
-                ClientIP = clientIP,
-                UserAgent = context.Request.Headers.UserAgent,
-                RequestPath = context.Request.Path,
-                ThreatLevel = validationResult.ThreatLevel,
-                SessionId = requestId
-            });
+            // 记录安全日志
+            _logger.LogWarning("恶意请求审计: 类型={ExceptionType}, 消息={Message}, IP={ClientIP}, UA={UserAgent}, 路径={Path}, 威胁级别={ThreatLevel}, 会话={SessionId}",
+                "MaliciousRequest", validationResult.Reason ?? "恶意请求被阻止", clientIP, 
+                context.Request.Headers.UserAgent.ToString(), context.Request.Path, 
+                validationResult.ThreatLevel, requestId);
 
             // 返回错误响应
             context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
@@ -371,18 +364,10 @@ namespace LYBT.Infrastructure.Security
             
             _logger.LogError(ex, "请求处理异常 [RequestId: {RequestId}]: {Message}", requestId, ex.Message);
 
-            // 记录安全审计
-            await _auditService.LogSecurityExceptionAsync(new SecurityExceptionAuditEvent
-            {
-                ExceptionType = ex.GetType().Name,
-                ExceptionMessage = ex.Message,
-                StackTrace = ex.StackTrace,
-                ClientIP = clientIP,
-                UserAgent = context.Request.Headers.UserAgent,
-                RequestPath = context.Request.Path,
-                ThreatLevel = ThreatLevel.Medium,
-                SessionId = requestId
-            });
+            // 记录异常安全日志
+            _logger.LogError("异常安全审计: 类型={ExceptionType}, 消息={Message}, IP={ClientIP}, UA={UserAgent}, 路径={Path}, 威胁级别=Medium, 会话={SessionId}",
+                ex.GetType().Name, ex.Message, clientIP, 
+                context.Request.Headers.UserAgent.ToString(), context.Request.Path, requestId);
 
             // 记录API访问失败
             if (ShouldAuditRequest(context))
@@ -400,19 +385,9 @@ namespace LYBT.Infrastructure.Security
                 ? Guid.TryParse(context.User.FindFirst("sub")?.Value, out var id) ? (Guid?)id : null
                 : null;
 
-            await _auditService.LogApiAccessAsync(new ApiAccessAuditEvent
-            {
-                UserId = userId,
-                UserName = context.User?.Identity?.Name,
-                ClientIP = GetClientIP(context),
-                UserAgent = context.Request.Headers.UserAgent,
-                Endpoint = context.Request.Path,
-                HttpMethod = context.Request.Method,
-                StatusCode = context.Response.StatusCode,
-                IsSuccess = isSuccess,
-                ResponseTimeMs = responseTimeMs,
-                RequestId = requestId
-            });
+            _logger.LogInformation("API访问审计: 用户={UserId}, IP={ClientIP}, 端点={Endpoint}, 方法={HttpMethod}, 状态码={StatusCode}, 成功={IsSuccess}, 响应时间={ResponseTimeMs}ms, 请求ID={RequestId}",
+                userId, GetClientIP(context), context.Request.Path, context.Request.Method, context.Response.StatusCode, isSuccess, responseTimeMs, requestId);
+            await Task.CompletedTask;
         }
 
         /// <summary>
@@ -453,7 +428,7 @@ namespace LYBT.Infrastructure.Security
     {
         public bool IsValid { get; set; }
         public string? Reason { get; set; }
-        public ThreatLevel ThreatLevel { get; set; } = ThreatLevel.Low;
+        public string ThreatLevel { get; set; } = "Low";
         public ThreatType ThreatType { get; set; } = ThreatType.None;
     }
 

@@ -329,68 +329,6 @@
   },
   {
     "ContainingType": "LYBT.WebAPI.Controllers.ConsultationController",
-    "Method": "CancelConsultation",
-    "RelativePath": "api/v1/Consultation/{id}/cancel",
-    "HttpMethod": "POST",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "id",
-        "Type": "System.Guid",
-        "IsRequired": true
-      },
-      {
-        "Name": "dto",
-        "Type": "LYBT.WebAPI.Controllers.CancelConsultationDto",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": [
-      {
-        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 200
-      }
-    ]
-  },
-  {
-    "ContainingType": "LYBT.WebAPI.Controllers.ConsultationController",
-    "Method": "CompleteConsultation",
-    "RelativePath": "api/v1/Consultation/{id}/complete",
-    "HttpMethod": "POST",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "id",
-        "Type": "System.Guid",
-        "IsRequired": true
-      },
-      {
-        "Name": "dto",
-        "Type": "LYBT.Shared.Models.Contracts.Consultation.ConsultationCompleteDto",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": [
-      {
-        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 200
-      }
-    ]
-  },
-  {
-    "ContainingType": "LYBT.WebAPI.Controllers.ConsultationController",
     "Method": "GetByDoctorId",
     "RelativePath": "api/v1/Consultation/doctor/{doctorId}",
     "HttpMethod": "GET",
@@ -3040,6 +2978,141 @@
     "ReturnTypes": [
       {
         "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.PrescriptionsController",
+    "Method": "Copy",
+    "RelativePath": "api/v1/Prescriptions/{id}/copy",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "LYBT.Shared.Models.Contracts.Prescriptions.PrescriptionCopyDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[LYBT.Shared.Models.Contracts.Prescriptions.PrescriptionDto, LYBT.Shared.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.PrescriptionsController",
+    "Method": "GetByMedicalCaseId",
+    "RelativePath": "api/v1/Prescriptions/medical-case/{caseId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "caseId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[System.Collections.Generic.List\u00601[[LYBT.Shared.Models.Contracts.Prescriptions.PrescriptionDto, LYBT.Shared.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.PrescriptionsController",
+    "Method": "GetByPatientId",
+    "RelativePath": "api/v1/Prescriptions/patient/{patientId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "patientId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[System.Collections.Generic.List\u00601[[LYBT.Shared.Models.Contracts.Prescriptions.PrescriptionDto, LYBT.Shared.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.PrescriptionsController",
+    "Method": "AdvancedSearch",
+    "RelativePath": "api/v1/Prescriptions/search",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "criteria",
+        "Type": "LYBT.Shared.Models.Contracts.Prescriptions.PrescriptionSearchDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[System.Collections.Generic.List\u00601[[LYBT.Shared.Models.Contracts.Prescriptions.PrescriptionDto, LYBT.Shared.Models, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LYBT.WebAPI.Controllers.PrescriptionsController",
+    "Method": "Validate",
+    "RelativePath": "api/v1/Prescriptions/validate",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "LYBT.Shared.Models.Contracts.Prescriptions.PrescriptionCreateDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LYBT.Shared.Models.Contracts.Common.ApiResponse\u00601[[LYBT.Shared.Interfaces.Services.PrescriptionValidationResult, LYBT.Shared.Interfaces, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]]",
         "MediaTypes": [
           "text/plain",
           "application/json",

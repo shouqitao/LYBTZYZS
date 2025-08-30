@@ -485,124 +485,6 @@
         }
       }
     },
-    "/api/v1/Consultation/{id}/complete": {
-      "post": {
-        "tags": [
-          "Consultation"
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/LYBTSharedModelsContractsConsultationConsultationCompleteDto"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/LYBTSharedModelsContractsConsultationConsultationCompleteDto"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/LYBTSharedModelsContractsConsultationConsultationCompleteDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/LYBTSharedModelsContractsCommonApiResponse"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/LYBTSharedModelsContractsCommonApiResponse"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/LYBTSharedModelsContractsCommonApiResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/Consultation/{id}/cancel": {
-      "post": {
-        "tags": [
-          "Consultation"
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/LYBTWebAPIControllersCancelConsultationDto"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/LYBTWebAPIControllersCancelConsultationDto"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/LYBTWebAPIControllersCancelConsultationDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/LYBTSharedModelsContractsCommonApiResponse"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/LYBTSharedModelsContractsCommonApiResponse"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/LYBTSharedModelsContractsCommonApiResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/v1/Consultation/patient/{patientId}": {
       "get": {
         "tags": [
@@ -4802,6 +4684,241 @@
         }
       }
     },
+    "/api/v1/Prescriptions/patient/{patientId}": {
+      "get": {
+        "tags": [
+          "Prescriptions"
+        ],
+        "parameters": [
+          {
+            "name": "patientId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/LYBTSharedModelsContractsCommonApiResponseOfListOfPrescriptionDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LYBTSharedModelsContractsCommonApiResponseOfListOfPrescriptionDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LYBTSharedModelsContractsCommonApiResponseOfListOfPrescriptionDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/Prescriptions/medical-case/{caseId}": {
+      "get": {
+        "tags": [
+          "Prescriptions"
+        ],
+        "parameters": [
+          {
+            "name": "caseId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/LYBTSharedModelsContractsCommonApiResponseOfListOfPrescriptionDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LYBTSharedModelsContractsCommonApiResponseOfListOfPrescriptionDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LYBTSharedModelsContractsCommonApiResponseOfListOfPrescriptionDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/Prescriptions/search": {
+      "post": {
+        "tags": [
+          "Prescriptions"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LYBTSharedModelsContractsPrescriptionsPrescriptionSearchDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LYBTSharedModelsContractsPrescriptionsPrescriptionSearchDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/LYBTSharedModelsContractsPrescriptionsPrescriptionSearchDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/LYBTSharedModelsContractsCommonApiResponseOfListOfPrescriptionDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LYBTSharedModelsContractsCommonApiResponseOfListOfPrescriptionDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LYBTSharedModelsContractsCommonApiResponseOfListOfPrescriptionDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/Prescriptions/{id}/copy": {
+      "post": {
+        "tags": [
+          "Prescriptions"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LYBTSharedModelsContractsPrescriptionsPrescriptionCopyDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LYBTSharedModelsContractsPrescriptionsPrescriptionCopyDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/LYBTSharedModelsContractsPrescriptionsPrescriptionCopyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/LYBTSharedModelsContractsCommonApiResponseOfPrescriptionDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LYBTSharedModelsContractsCommonApiResponseOfPrescriptionDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LYBTSharedModelsContractsCommonApiResponseOfPrescriptionDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/Prescriptions/validate": {
+      "post": {
+        "tags": [
+          "Prescriptions"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LYBTSharedModelsContractsPrescriptionsPrescriptionCreateDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LYBTSharedModelsContractsPrescriptionsPrescriptionCreateDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/LYBTSharedModelsContractsPrescriptionsPrescriptionCreateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/LYBTSharedModelsContractsCommonApiResponseOfPrescriptionValidationResult"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LYBTSharedModelsContractsCommonApiResponseOfPrescriptionValidationResult"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LYBTSharedModelsContractsCommonApiResponseOfPrescriptionValidationResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/Security/configuration/validation": {
       "get": {
         "tags": [
@@ -6395,6 +6512,29 @@
         },
         "additionalProperties": false
       },
+      "LYBTSharedInterfacesServicesPrescriptionValidationResult": {
+        "type": "object",
+        "properties": {
+          "isValid": {
+            "type": "boolean"
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "warnings": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "LYBTSharedModelsContractsAuthChangeSysAdminPassword": {
         "type": "object",
         "properties": {
@@ -6942,6 +7082,37 @@
         },
         "additionalProperties": false
       },
+      "LYBTSharedModelsContractsCommonApiResponseOfListOfPrescriptionDto": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LYBTSharedModelsContractsPrescriptionsPrescriptionDto"
+            },
+            "nullable": true
+          },
+          "errors": {
+            "nullable": true
+          },
+          "timestamp": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "requestId": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "LYBTSharedModelsContractsCommonApiResponseOfListOfString": {
         "type": "object",
         "properties": {
@@ -7336,6 +7507,33 @@
           },
           "data": {
             "$ref": "#/components/schemas/LYBTSharedModelsContractsPrescriptionsPrescriptionDto"
+          },
+          "errors": {
+            "nullable": true
+          },
+          "timestamp": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "requestId": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "LYBTSharedModelsContractsCommonApiResponseOfPrescriptionValidationResult": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/LYBTSharedInterfacesServicesPrescriptionValidationResult"
           },
           "errors": {
             "nullable": true
@@ -8031,76 +8229,6 @@
           "updateTime": {
             "type": "string",
             "format": "date-time",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "LYBTSharedModelsContractsConsultationConsultationCompleteDto": {
-        "required": [
-          "diagnosis",
-          "id"
-        ],
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "diagnosis": {
-            "maxLength": 500,
-            "minLength": 0,
-            "type": "string"
-          },
-          "tcmDiagnosis": {
-            "maxLength": 500,
-            "minLength": 0,
-            "type": "string",
-            "nullable": true
-          },
-          "treatmentPrinciple": {
-            "maxLength": 500,
-            "minLength": 0,
-            "type": "string",
-            "nullable": true
-          },
-          "medicalAdvice": {
-            "maxLength": 1000,
-            "minLength": 0,
-            "type": "string",
-            "nullable": true
-          },
-          "treatmentAdvice": {
-            "maxLength": 1000,
-            "minLength": 0,
-            "type": "string",
-            "nullable": true
-          },
-          "followUpAdvice": {
-            "maxLength": 500,
-            "minLength": 0,
-            "type": "string",
-            "nullable": true
-          },
-          "nextVisitDate": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "summary": {
-            "maxLength": 1000,
-            "minLength": 0,
-            "type": "string",
-            "nullable": true
-          },
-          "completeTime": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "remark": {
-            "maxLength": 500,
-            "minLength": 0,
-            "type": "string",
             "nullable": true
           }
         },
@@ -9864,6 +9992,29 @@
         },
         "additionalProperties": false
       },
+      "LYBTSharedModelsContractsPrescriptionsPrescriptionCopyDto": {
+        "required": [
+          "newName"
+        ],
+        "type": "object",
+        "properties": {
+          "newName": {
+            "maxLength": 200,
+            "minLength": 0,
+            "type": "string"
+          },
+          "copyItems": {
+            "type": "boolean"
+          },
+          "copyUsage": {
+            "type": "boolean"
+          },
+          "copyRemark": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
       "LYBTSharedModelsContractsPrescriptionsPrescriptionCreateDto": {
         "required": [
           "diagnosis",
@@ -10247,6 +10398,55 @@
         },
         "additionalProperties": false
       },
+      "LYBTSharedModelsContractsPrescriptionsPrescriptionSearchDto": {
+        "type": "object",
+        "properties": {
+          "keyword": {
+            "type": "string",
+            "nullable": true
+          },
+          "patientName": {
+            "type": "string",
+            "nullable": true
+          },
+          "doctorName": {
+            "type": "string",
+            "nullable": true
+          },
+          "diagnosis": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "$ref": "#/components/schemas/LYBTSharedModelsEnumsPrescriptionStatus"
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "minDosageCount": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "maxDosageCount": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "herbName": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "LYBTSharedModelsContractsUsersChangePasswordDto": {
         "required": [
           "newPassword",
@@ -10599,16 +10799,6 @@
         "type": "object",
         "properties": {
           "archiveReason": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "LYBTWebAPIControllersCancelConsultationDto": {
-        "type": "object",
-        "properties": {
-          "reason": {
             "type": "string",
             "nullable": true
           }

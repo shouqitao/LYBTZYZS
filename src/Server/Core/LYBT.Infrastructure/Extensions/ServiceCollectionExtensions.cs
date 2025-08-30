@@ -132,28 +132,6 @@ namespace LYBT.Infrastructure.Extensions
             return services;
         }
 
-        /// <summary>
-        /// 添加缓存服务
-        /// </summary>
-        /// <param name="services">服务集合</param>
-        /// <param name="configuration">配置</param>
-        /// <returns>服务集合</returns>
-        public static IServiceCollection AddCachingServices(this IServiceCollection services, IConfiguration configuration)
-        {
-            // 缓存服务已移除，保留空方法以维持接口兼容性
-            return services;
-        }
-
-        /// <summary>
-        /// 添加API版本控制（已禁用）
-        /// </summary>
-        /// <param name="services">服务集合</param>
-        /// <returns>服务集合</returns>
-        public static IServiceCollection AddApiVersioningDisabled(this IServiceCollection services)
-        {
-            // 方法已重命名以完全避免冲突
-            return services;
-        }
 
         /// <summary>
         /// 添加基础设施数据库上下文
@@ -188,28 +166,6 @@ namespace LYBT.Infrastructure.Extensions
             return services;
         }
 
-        /// <summary>
-        /// 添加统一日志服务
-        /// </summary>
-        /// <param name="services">服务集合</param>
-        /// <returns>服务集合</returns>
-        public static IServiceCollection AddUnifiedLogging(this IServiceCollection services)
-        {
-            // UltraThink重构：删除复杂日志服务，使用标准Microsoft.Extensions.Logging
-            // 标准日志已由ASP.NET Core默认提供，无需额外注册
-            return services;
-        }
-
-        /// <summary>
-        /// 添加统一配置服务
-        /// </summary>
-        /// <param name="services">服务集合</param>
-        /// <returns>服务集合</returns>
-        public static IServiceCollection AddUnifiedConfiguration(this IServiceCollection services)
-        {
-            // 统一配置服务已移除，保留空方法以维持接口兼容性
-            return services;
-        }
 
 
         /// <summary>
@@ -220,24 +176,15 @@ namespace LYBT.Infrastructure.Extensions
         /// <returns>服务集合</returns>
         public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
         {
+            // UltraThink深度清理：只保留实际需要的服务
             // 添加数据库上下文
             services.AddInfrastructureDbContext(configuration);
-
-
-            // 添加缓存服务
-            services.AddCachingServices(configuration);
 
             // 添加JWT认证
             services.AddJwtAuthentication(configuration);
 
             // 添加认证配置
             services.AddAuthConfiguration(configuration);
-
-            // 添加统一日志服务
-            services.AddUnifiedLogging();
-
-            // 添加统一配置服务
-            services.AddUnifiedConfiguration();
 
             // 添加CORS策略
             services.AddCorsPolicies();

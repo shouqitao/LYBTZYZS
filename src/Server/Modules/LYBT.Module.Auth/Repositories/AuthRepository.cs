@@ -79,7 +79,7 @@ namespace LYBT.Module.Auth.Repositories
         public async Task UpdateUserLoginProtectionAsync(User user)
         {
             // UltraThink v2.0简化：User实体不再包含FailedLoginCount和LockoutEnd字段
-            // 登录保护信息通过AuthSession或SecurityAuditLog记录，此方法仅保留接口兼容性
+            // 登录保护信息通过AuthSession记录，此方法仅保留接口兼容性
             await Task.CompletedTask;
         }
 

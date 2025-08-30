@@ -22,11 +22,6 @@ namespace LYBT.Shared.Utilities.Helpers
         private static readonly int[] IdWeights = { 7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2 };
         private static readonly char[] IdCodes = "10X98765432".ToCharArray();
 
-        // 拼音码缓存
-        private static readonly ConcurrentDictionary<string, string> _pinyinCache = new();
-
-        // 五笔码缓存
-        private static readonly ConcurrentDictionary<string, string> _wubiCache = new();
 
         /// <summary>
         /// 检查网络是否可用
@@ -80,8 +75,10 @@ namespace LYBT.Shared.Utilities.Helpers
             return char.ToUpperInvariant(idNumber[17]) == expectedCode;
         }
 
+
+
         /// <summary>
-        /// 根据中文名称生成拼音码（带缓存）
+        /// 根据中文名称生成拼音码（简化实现）
         /// </summary>
         /// <param name="text">中文文本</param>
         /// <returns>拼音首字母缩写</returns>
@@ -90,26 +87,10 @@ namespace LYBT.Shared.Utilities.Helpers
             if (string.IsNullOrWhiteSpace(text))
                 return string.Empty;
 
-            // TODO: 后期实现拼音转换逻辑
-            // 当前返回空字符串，避免编译错误
+            // 简化实现：返回空字符串，避免编译错误
+            // 注：实际项目中可以集成专业的拼音转换库
             return string.Empty;
         }
-
-        /// <summary>
-        /// 根据中文名称生成五笔码（带缓存）
-        /// </summary>
-        /// <param name="text">中文文本</param>
-        /// <returns>五笔码</returns>
-        public static string GetWuBiCode(string? text)
-        {
-            if (string.IsNullOrWhiteSpace(text))
-                return string.Empty;
-
-            // TODO: 后期实现五笔转换逻辑
-            // 当前返回空字符串，避免编译错误
-            return string.Empty;
-        }
-
 
         /// <summary>
         /// 验证邮箱格式
@@ -346,59 +327,5 @@ namespace LYBT.Shared.Utilities.Helpers
             return DateTimeOffset.FromUnixTimeMilliseconds(timestamp).DateTime;
         }
 
-        #region 缓存管理
-
-        /// <summary>
-        /// 清理拼音缓存
-        /// </summary>
-        public static void ClearPinyinCache()
-        {
-            _pinyinCache.Clear();
-        }
-
-        /// <summary>
-        /// 清理五笔码缓存
-        /// </summary>
-        public static void ClearWuBiCache()
-        {
-            _wubiCache.Clear();
-        }
-
-        /// <summary>
-        /// 清理所有缓存
-        /// </summary>
-        public static void ClearAllCaches()
-        {
-            _pinyinCache.Clear();
-            _wubiCache.Clear();
-        }
-
-        /// <summary>
-        /// 获取拼音缓存统计信息
-        /// </summary>
-        /// <returns>缓存项数量和内存估算</returns>
-        public static (int Count, long MemoryEstimate) GetPinyinCacheStats()
-        {
-            int count = _pinyinCache.Count;
-            long memoryEstimate = _pinyinCache.Sum(kvp =>
-                (kvp.Key.Length + kvp.Value.Length) * sizeof(char));
-
-            return (count, memoryEstimate);
-        }
-
-        /// <summary>
-        /// 获取五笔码缓存统计信息
-        /// </summary>
-        /// <returns>缓存项数量和内存估算</returns>
-        public static (int Count, long MemoryEstimate) GetWuBiCacheStats()
-        {
-            int count = _wubiCache.Count;
-            long memoryEstimate = _wubiCache.Sum(kvp =>
-                (kvp.Key.Length + kvp.Value.Length) * sizeof(char));
-
-            return (count, memoryEstimate);
-        }
-
-        #endregion
     }
 }

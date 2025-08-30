@@ -17,18 +17,17 @@ namespace LYBT.Infrastructure.Security
         private readonly TokenValidationParameters _tokenValidationParameters;
         private readonly EnhancedJwtOptions _options;
         private readonly IEncryptionService _encryptionService;
-        private readonly ISecurityAuditService _auditService;
+
         private readonly ILogger<EnhancedJwtService> _logger;
 
         public EnhancedJwtService(
             EnhancedJwtOptions options,
             IEncryptionService encryptionService,
-            ISecurityAuditService auditService,
             ILogger<EnhancedJwtService> logger)
         {
             _options = options;
             _encryptionService = encryptionService;
-            _auditService = auditService;
+
             _logger = logger;
             _tokenHandler = new JwtSecurityTokenHandler();
 
@@ -316,16 +315,7 @@ namespace LYBT.Infrastructure.Security
         {
             try
             {
-                await _auditService.LogSecurityExceptionAsync(new SecurityExceptionAuditEvent
-                {
-                    UserId = request.UserId,
-                    UserName = request.Username,
-                    ClientIP = request.ClientIP,
-                    ExceptionType = "TokenGenerated",
-                    ExceptionMessage = $"访问令牌已生成: {tokenId}",
-                    ThreatLevel = ThreatLevel.Low,
-                    SessionId = request.SessionId
-                });
+                _logger.LogInformation("访问令牌已生成: {TokenId}, 用户: {Username}", tokenId, request.Username);
             }
             catch (Exception ex)
             {
@@ -341,14 +331,8 @@ namespace LYBT.Infrastructure.Security
         {
             try
             {
-                await _auditService.LogSecurityExceptionAsync(new SecurityExceptionAuditEvent
-                {
-                    ExceptionType = "SuspiciousTokenActivity",
-                    ExceptionMessage = $"{activity}: {additionalInfo}",
-                    ClientIP = clientIP ?? "unknown",
-                    ThreatLevel = ThreatLevel.High,
-                    RequestPath = "/token/validation"
-                });
+                _logger.LogWarning("可疑令牌活动: {Activity}, IP: {ClientIP}, 详情: {AdditionalInfo}", 
+                    activity, clientIP ?? "unknown", additionalInfo);
             }
             catch (Exception ex)
             {

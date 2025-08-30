@@ -219,11 +219,7 @@ namespace LYBT.Desktop.Shell.Extensions
         /// </summary>
         private static void RegisterPerformanceServices(IContainerRegistry containerRegistry)
         {
-            // 注册UI性能优化器
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Services.Performance.IUIPerformanceOptimizer, 
-                LYBT.Desktop.Core.Services.Performance.UIPerformanceOptimizer>();
-                
-            // UltraThink Phase 9: 注册模块加载协调器
+            // UltraThink深度清理: 只保留实际使用的模块加载协调器
             containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Services.Performance.IModuleLoadingCoordinator,
                 LYBT.Desktop.Core.Services.Performance.ModuleLoadingCoordinator>();
         }

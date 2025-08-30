@@ -11,96 +11,59 @@ using LYBT.Infrastructure.Web;
 namespace LYBT.WebAPI.Controllers
 {
     /// <summary>
-    /// 性能监控控制器 - UltraThink重构性能优化架构
-    /// 提供系统性能数据的REST API接口
+    /// 性能监控控制器 - UltraThink简化版本
+    /// 提供系统性能数据的REST API接口，移除过度设计的CQRS监控
     /// </summary>
     [ApiController]
     [Route("api/v1/[controller]")]
     [Authorize] // 性能数据需要身份验证
     public class PerformanceController : BaseSystemController
     {
-        private readonly CQRSPerformanceMonitor _cqrsMonitor;
         private readonly IPerformanceCollector _performanceCollector;
-        private readonly ILogger<PerformanceController> _logger;
+        // 移除过度设计的CQRS监控器：private readonly CQRSPerformanceMonitor _cqrsMonitor;
 
         public PerformanceController(
-            CQRSPerformanceMonitor cqrsMonitor,
             IPerformanceCollector performanceCollector,
             ILogger<PerformanceController> logger)
             : base(logger) // 传递给BaseSystemController
         {
-            _cqrsMonitor = cqrsMonitor;
             _performanceCollector = performanceCollector;
-            _logger = logger;
         }
 
         /// <summary>
-        /// 获取CQRS性能报告
+        /// 获取简化性能报告 - UltraThink简化版本
         /// </summary>
-        [HttpGet("cqrs/report")]
-        public async Task<ActionResult<CQRSPerformanceReport>> GetCQRSReport()
+        [HttpGet("simple-report")]
+        public async Task<ActionResult<object>> GetSimpleReport()
         {
             try
             {
-                var report = _cqrsMonitor.GetPerformanceReport();
+                using var systemMonitor = new SystemPerformanceMonitor();
+                var systemInfo = systemMonitor.GetCurrentInfo();
+
+                var report = new
+                {
+                    timestamp = DateTime.UtcNow,
+                    system_performance = new
+                    {
+                        cpu_usage_percent = systemInfo.CpuUsagePercent,
+                        memory_used_mb = systemInfo.MemoryUsedBytes / (1024.0 * 1024.0),
+                        thread_count = systemInfo.ThreadCount,
+                        gc_collections = systemInfo.GcGen0Collections + systemInfo.GcGen1Collections + systemInfo.GcGen2Collections
+                    },
+                    status = systemInfo.CpuUsagePercent > 80 ? "Warning" : "Healthy"
+                };
+
                 return Ok(report);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error generating CQRS performance report");
-                return StatusCode(500, new { message = "获取CQRS性能报告失败", error = ex.Message });
+                _logger.LogError(ex, "Error generating simple performance report");
+                return StatusCode(500, new { message = "获取性能报告失败", error = ex.Message });
             }
         }
 
-        /// <summary>
-        /// 获取特定操作的性能统计
-        /// </summary>
-        [HttpGet("cqrs/operations/{operationType}/{operationName}")]
-        public async Task<ActionResult<CQRSOperationStats>> GetOperationStats(
-            string operationType, 
-            string operationName)
-        {
-            try
-            {
-                if (string.IsNullOrWhiteSpace(operationType) || string.IsNullOrWhiteSpace(operationName))
-                {
-                    return BadRequest(new { message = "操作类型和操作名称不能为空" });
-                }
-
-                var stats = _cqrsMonitor.GetOperationStats(operationType, operationName);
-                
-                if (stats == null)
-                {
-                    return NotFound(new { message = $"未找到操作 {operationType}.{operationName} 的统计数据" });
-                }
-
-                return Ok(stats);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error getting operation stats for {OperationType}.{OperationName}", 
-                    operationType, operationName);
-                return StatusCode(500, new { message = "获取操作统计数据失败", error = ex.Message });
-            }
-        }
-
-        /// <summary>
-        /// 获取所有操作的性能统计概览
-        /// </summary>
-        [HttpGet("cqrs/operations")]
-        public async Task<ActionResult<Dictionary<string, CQRSOperationStats>>> GetAllOperationsStats()
-        {
-            try
-            {
-                var allStats = _cqrsMonitor.GetOperationStats();
-                return Ok(allStats);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error getting all operations stats");
-                return StatusCode(500, new { message = "获取所有操作统计数据失败", error = ex.Message });
-            }
-        }
+        // UltraThink简化：移除复杂的CQRS操作统计，20人以下诊所不需要如此详细的监控
 
         /// <summary>
         /// 获取系统性能快照
@@ -165,144 +128,38 @@ namespace LYBT.WebAPI.Controllers
             }
         }
 
-        /// <summary>
-        /// 获取慢操作列表
-        /// </summary>
-        [HttpGet("slow-operations")]
-        public async Task<ActionResult<List<CQRSOperationStats>>> GetSlowOperations(
-            [FromQuery] double thresholdMs = 1000)
-        {
-            try
-            {
-                var allStats = _cqrsMonitor.GetOperationStats();
-                var slowOperations = allStats.Values
-                    .Where(s => s.AverageExecutionTimeMs > thresholdMs)
-                    .OrderByDescending(s => s.AverageExecutionTimeMs)
-                    .ToList();
+        // UltraThink简化：移除复杂的慢操作和错误操作统计，使用简单的系统监控即可
 
-                return Ok(slowOperations);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error getting slow operations");
-                return StatusCode(500, new { message = "获取慢操作列表失败", error = ex.Message });
-            }
-        }
+        // UltraThink简化：移除复杂的性能趋势分析，20人以下诊所不需要详细趋势统计
 
         /// <summary>
-        /// 获取错误率高的操作列表
-        /// </summary>
-        [HttpGet("error-prone-operations")]
-        public async Task<ActionResult<List<CQRSOperationStats>>> GetErrorProneOperations(
-            [FromQuery] double maxSuccessRate = 0.95)
-        {
-            try
-            {
-                var allStats = _cqrsMonitor.GetOperationStats();
-                var errorProneOperations = allStats.Values
-                    .Where(s => s.ExecutionCount >= 10 && s.SuccessRate < maxSuccessRate) // 至少执行10次且成功率低于阈值
-                    .OrderBy(s => s.SuccessRate)
-                    .ToList();
-
-                return Ok(errorProneOperations);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error getting error-prone operations");
-                return StatusCode(500, new { message = "获取高错误率操作列表失败", error = ex.Message });
-            }
-        }
-
-        /// <summary>
-        /// 获取性能趋势数据
-        /// </summary>
-        [HttpGet("trends")]
-        public async Task<ActionResult<PerformanceTrends>> GetPerformanceTrends(
-            [FromQuery] int durationMinutes = 60)
-        {
-            try
-            {
-                if (_performanceCollector is InMemoryPerformanceCollector memoryCollector)
-                {
-                    var endTime = DateTime.UtcNow;
-                    var startTime = endTime.AddMinutes(-durationMinutes);
-                    
-                    var metrics = memoryCollector.GetMetrics(startTime, endTime);
-                    
-                    var trends = new PerformanceTrends
-                    {
-                        StartTime = startTime,
-                        EndTime = endTime,
-                        DurationMinutes = durationMinutes,
-                        TotalMetrics = metrics.Count
-                    };
-
-                    // 计算命令和查询的趋势
-                    var commandMetrics = metrics
-                        .Where(m => m.Tags.ContainsKey("operation_type") && 
-                                   m.Tags["operation_type"].ToString() == "Command")
-                        .ToList();
-                    
-                    var queryMetrics = metrics
-                        .Where(m => m.Tags.ContainsKey("operation_type") && 
-                                   m.Tags["operation_type"].ToString() == "Query")
-                        .ToList();
-
-                    if (commandMetrics.Any())
-                    {
-                        trends.CommandTrends = new OperationTrends
-                        {
-                            TotalCount = commandMetrics.Count,
-                            AverageResponseTime = commandMetrics.Where(m => m.Unit == "ms").Average(m => m.Value),
-                            MaxResponseTime = commandMetrics.Where(m => m.Unit == "ms").Max(m => m.Value),
-                            MinResponseTime = commandMetrics.Where(m => m.Unit == "ms").Min(m => m.Value)
-                        };
-                    }
-
-                    if (queryMetrics.Any())
-                    {
-                        trends.QueryTrends = new OperationTrends
-                        {
-                            TotalCount = queryMetrics.Count,
-                            AverageResponseTime = queryMetrics.Where(m => m.Unit == "ms").Average(m => m.Value),
-                            MaxResponseTime = queryMetrics.Where(m => m.Unit == "ms").Max(m => m.Value),
-                            MinResponseTime = queryMetrics.Where(m => m.Unit == "ms").Min(m => m.Value)
-                        };
-                    }
-
-                    return Ok(trends);
-                }
-                else
-                {
-                    return BadRequest(new { message = "当前性能收集器不支持趋势数据查询" });
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error getting performance trends");
-                return StatusCode(500, new { message = "获取性能趋势数据失败", error = ex.Message });
-            }
-        }
-
-        /// <summary>
-        /// 获取性能优化建议
+        /// 获取性能优化建议 - UltraThink简化版本
         /// </summary>
         [HttpGet("optimization-report")]
         [Authorize(Roles = "Admin")] // 仅管理员可查看优化建议
-        public async Task<ActionResult<PerformanceOptimizationReport>> GetOptimizationReport()
+        public async Task<ActionResult<object>> GetOptimizationReport()
         {
             try
             {
-                // 注入性能优化引擎
-                var optimizationEngine = HttpContext.RequestServices.GetService<PerformanceOptimizationEngine>();
-                
-                if (optimizationEngine == null)
-                {
-                    return BadRequest(new { message = "性能优化引擎未配置" });
-                }
+                // UltraThink简化：提供基础性能建议，移除复杂的CQRS监控
+                using var systemMonitor = new SystemPerformanceMonitor();
+                var systemInfo = systemMonitor.GetCurrentInfo();
 
-                var report = await optimizationEngine.GenerateOptimizationReportAsync();
-                return Ok(report);
+                var basicReport = new
+                {
+                    timestamp = DateTime.UtcNow,
+                    system_status = GetSimpleHealthStatus(systemInfo),
+                    recommendations = GetBasicRecommendations(systemInfo),
+                    performance_summary = new
+                    {
+                        cpu_usage = systemInfo.CpuUsagePercent,
+                        memory_usage_mb = systemInfo.MemoryUsedBytes / (1024.0 * 1024.0),
+                        thread_count = systemInfo.ThreadCount,
+                        gc_collections = systemInfo.GcGen0Collections + systemInfo.GcGen1Collections + systemInfo.GcGen2Collections
+                    }
+                };
+
+                return Ok(basicReport);
             }
             catch (Exception ex)
             {
@@ -312,30 +169,21 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 获取性能健康检查
+        /// 获取性能健康检查 - UltraThink简化版本
         /// </summary>
         [HttpGet("health-check")]
         public async Task<ActionResult<object>> GetHealthCheck()
         {
             try
             {
-                var cqrsReport = _cqrsMonitor.GetPerformanceReport();
-                
+                // UltraThink简化：移除复杂的CQRS监控，只保留基础系统监控
                 using var systemMonitor = new SystemPerformanceMonitor();
                 var systemInfo = systemMonitor.GetCurrentInfo();
 
                 var healthStatus = new
                 {
                     timestamp = DateTime.UtcNow,
-                    overall_status = GetSimpleHealthStatus(cqrsReport, systemInfo),
-                    cqrs_metrics = new
-                    {
-                        total_operations = cqrsReport.TotalOperations,
-                        average_response_time = cqrsReport.AverageResponseTime,
-                        success_rate = cqrsReport.OverallSuccessRate,
-                        slow_operations_count = cqrsReport.SlowOperations.Count,
-                        error_operations_count = cqrsReport.ErrorProneOperations.Count
-                    },
+                    overall_status = GetSimpleHealthStatus(systemInfo),
                     system_metrics = new
                     {
                         cpu_usage = systemInfo.CpuUsagePercent,
@@ -382,23 +230,77 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 获取简单健康状态
+        /// 获取简单健康状态 - UltraThink简化版本
         /// </summary>
-        private string GetSimpleHealthStatus(CQRSPerformanceReport cqrsReport, SystemPerformanceInfo systemInfo)
+        private string GetSimpleHealthStatus(SystemPerformanceInfo systemInfo)
         {
-            if (cqrsReport.AverageResponseTime > 2000 || systemInfo.CpuUsagePercent > 90 || 
-                cqrsReport.OverallSuccessRate < 0.9)
+            // UltraThink简化：仅基于系统资源使用率判断健康状态
+            if (systemInfo.CpuUsagePercent > 90)
             {
                 return "Critical";
             }
             
-            if (cqrsReport.AverageResponseTime > 1000 || systemInfo.CpuUsagePercent > 80 || 
-                cqrsReport.OverallSuccessRate < 0.95)
+            if (systemInfo.CpuUsagePercent > 80)
+            {
+                return "Warning";
+            }
+            
+            var memoryUsageMB = systemInfo.MemoryUsedBytes / (1024.0 * 1024.0);
+            if (memoryUsageMB > 2000) // 内存使用超过2GB为警告
             {
                 return "Warning";
             }
             
             return "Healthy";
+        }
+
+        /// <summary>
+        /// 获取基础性能建议 - UltraThink简化版本
+        /// </summary>
+        private List<string> GetBasicRecommendations(SystemPerformanceInfo systemInfo)
+        {
+            var recommendations = new List<string>();
+
+            // CPU使用率建议
+            if (systemInfo.CpuUsagePercent > 90)
+            {
+                recommendations.Add("CPU使用率过高(>90%)，建议检查CPU密集型操作");
+            }
+            else if (systemInfo.CpuUsagePercent > 80)
+            {
+                recommendations.Add("CPU使用率偏高(>80%)，建议监控系统负载");
+            }
+
+            // 内存使用建议
+            var memoryUsageMB = systemInfo.MemoryUsedBytes / (1024.0 * 1024.0);
+            if (memoryUsageMB > 2000)
+            {
+                recommendations.Add($"内存使用量较高({memoryUsageMB:F1}MB)，建议检查内存泄露");
+            }
+            else if (memoryUsageMB > 1000)
+            {
+                recommendations.Add($"内存使用量偏高({memoryUsageMB:F1}MB)，建议监控内存使用趋势");
+            }
+
+            // 线程数建议
+            if (systemInfo.ThreadCount > 200)
+            {
+                recommendations.Add($"系统线程数较多({systemInfo.ThreadCount})，建议检查线程池配置");
+            }
+
+            // GC建议
+            var totalGC = systemInfo.GcGen0Collections + systemInfo.GcGen1Collections + systemInfo.GcGen2Collections;
+            if (totalGC > 1000)
+            {
+                recommendations.Add($"GC回收次数较多({totalGC})，建议优化对象生命周期管理");
+            }
+
+            if (recommendations.Count == 0)
+            {
+                recommendations.Add("系统运行状态良好，无特殊优化建议");
+            }
+
+            return recommendations;
         }
     }
 

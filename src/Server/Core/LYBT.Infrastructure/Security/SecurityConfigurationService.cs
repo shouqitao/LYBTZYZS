@@ -97,13 +97,13 @@ namespace LYBT.Infrastructure.Security
         }
 
         /// <summary>
-        /// 获取限流配置
+        /// 获取限流配置 (已移除过度设计的RateLimitOptions)
         /// </summary>
-        public RateLimitOptions GetRateLimitOptions()
-        {
-            var config = GetSecurityConfiguration();
-            return config.RateLimitOptions;
-        }
+        // public RateLimitOptions GetRateLimitOptions()
+        // {
+        //     var config = GetSecurityConfiguration();
+        //     return config.RateLimitOptions;
+        // }
 
         /// <summary>
         /// 获取输入验证配置

@@ -26,9 +26,9 @@ namespace LYBT.Infrastructure.Security
         EnhancedJwtOptions GetJwtOptions();
 
         /// <summary>
-        /// 获取限流配置
+        /// 获取限流配置 (已移除过度设计的RateLimitOptions)
         /// </summary>
-        RateLimitOptions GetRateLimitOptions();
+        // RateLimitOptions GetRateLimitOptions();
 
         /// <summary>
         /// 获取输入验证配置
@@ -68,7 +68,7 @@ namespace LYBT.Infrastructure.Security
     {
         public PasswordPolicy PasswordPolicy { get; set; } = new();
         public EnhancedJwtOptions JwtOptions { get; set; } = new();
-        public RateLimitOptions RateLimitOptions { get; set; } = new();
+        // public RateLimitOptions RateLimitOptions { get; set; } = new(); // 已移除过度设计的限流功能
         public InputValidationOptions InputValidationOptions { get; set; } = new();
         public SecurityHeadersOptions SecurityHeadersOptions { get; set; } = new();
         public Dictionary<string, string> EncryptionKeys { get; set; } = new();

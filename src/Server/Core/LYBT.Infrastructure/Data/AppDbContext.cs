@@ -40,8 +40,7 @@ namespace LYBT.Infrastructure.Data
         // public DbSet<LoginAttempt> LoginAttempts { get; set; } // UltraThink简化：暂时移除
         // public DbSet<SecurityLog> SecurityLogs { get; set; } // UltraThink简化：暂时移除
 
-        // 安全审计 - UltraThink重构安全架构
-        public DbSet<SecurityAuditLog> SecurityAuditLogs { get; set; }
+        // 安全审计 - UltraThink重构安全架构 (已移除过度设计的SecurityAuditLog)
 
         // 患者管理
         public DbSet<Patient> Patients { get; set; }
@@ -380,34 +379,11 @@ namespace LYBT.Infrastructure.Data
 
         /// <summary>
         /// 配置安全审计实体 - UltraThink重构安全审计架构
+        /// 注意：SecurityAuditLog已在深度清理中移除，简化为日志记录
         /// </summary>
         private static void ConfigureSecurityAudit(ModelBuilder modelBuilder)
         {
-            // 安全审计日志配置
-            modelBuilder.Entity<SecurityAuditLog>(entity =>
-            {
-                entity.ToTable("SecurityAuditLogs");
-                entity.HasKey(e => e.Id);
-                entity.Property(e => e.EventType).HasConversion<string>();
-                entity.Property(e => e.UserName).HasMaxLength(100);
-                entity.Property(e => e.ClientIP).HasMaxLength(45).IsRequired();
-                entity.Property(e => e.UserAgent).HasMaxLength(500);
-                entity.Property(e => e.EventData).HasColumnType("nvarchar(max)");
-                entity.Property(e => e.SessionId).HasMaxLength(100);
-                entity.Property(e => e.ThreatLevel).HasConversion<string>();
-                entity.Property(e => e.GeoLocation).HasMaxLength(200);
-                entity.Property(e => e.EventHash).HasMaxLength(64);
-                
-                // 索引配置
-                entity.HasIndex(e => new { e.UserId, e.CreatedAt })
-                      .HasDatabaseName("IX_SecurityAuditLogs_UserId_CreatedAt");
-                entity.HasIndex(e => new { e.ClientIP, e.CreatedAt })
-                      .HasDatabaseName("IX_SecurityAuditLogs_ClientIP_CreatedAt");
-                entity.HasIndex(e => new { e.EventType, e.CreatedAt })
-                      .HasDatabaseName("IX_SecurityAuditLogs_EventType_CreatedAt");
-                entity.HasIndex(e => e.IsSuccess);
-                entity.HasIndex(e => e.ThreatLevel);
-            });
+            // SecurityAuditLog实体已被移除，转为简化的日志记录方式
         }
     }
 }
