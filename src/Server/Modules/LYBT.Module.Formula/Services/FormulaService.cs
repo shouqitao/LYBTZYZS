@@ -91,9 +91,10 @@ namespace LYBT.Module.Formula.Services
             return await _queryService.SearchFormulasAsync(query);
         }
 
-        public async Task<ServiceResult<List<FormulaDto>>> GetFormulasAsync(string? keyword = null)
+        // 修复方法签名：GetFormulasAsync - 支持两个参数
+        public async Task<ServiceResult<List<FormulaDto>>> GetFormulasAsync(string? keyword = null, string? category = null)
         {
-            return await _queryService.GetFormulasAsync(keyword);
+            return await _queryService.GetFormulasAsync(keyword, category);
         }
 
         public async Task<ServiceResult<List<FormulaDto>>> GetAllFormulasAsync()
@@ -106,9 +107,28 @@ namespace LYBT.Module.Formula.Services
             return await _queryService.GetCategoriesAsync();
         }
 
-        public async Task<ServiceResult<List<object>>> GetRecommendationsAsync(string syndrome)
+        // 新增方法：GetTemplatesAsync
+        public async Task<ServiceResult<List<FormulaDto>>> GetTemplatesAsync()
         {
-            return await _queryService.GetRecommendationsAsync(syndrome);
+            return await _queryService.GetTemplatesAsync();
+        }
+
+        // 新增方法：GetByTypeAsync
+        public async Task<ServiceResult<List<FormulaDto>>> GetByTypeAsync(string formulaType)
+        {
+            return await _queryService.GetByTypeAsync(formulaType);
+        }
+
+        // 修复方法签名：GetRecommendationsAsync - 返回正确的类型
+        public async Task<ServiceResult<List<FormulaRecommendationDto>>> GetRecommendationsAsync(string syndrome)
+        {
+            return await _queryService.GetRecommendationsForSyndromeAsync(syndrome);
+        }
+
+        // 新增方法：GetRecommendationsAsync - 重载版本
+        public async Task<ServiceResult<List<FormulaRecommendationDto>>> GetRecommendationsAsync(string symptoms, string diagnosis, Guid doctorId)
+        {
+            return await _queryService.GetRecommendationsAsync(symptoms, diagnosis, doctorId);
         }
 
         #endregion
@@ -120,19 +140,28 @@ namespace LYBT.Module.Formula.Services
             return await _businessService.CopyAsync(id, newName);
         }
 
-        public async Task<ServiceResult<object>> AnalyzeFormulaAsync(Guid formulaId)
+        // 修复方法签名：AnalyzeFormulaAsync - 返回正确的类型
+        public async Task<ServiceResult<FormulaAnalysisResult>> AnalyzeFormulaAsync(Guid formulaId)
         {
             return await _businessService.AnalyzeFormulaAsync(formulaId);
         }
 
-        public async Task<ServiceResult<bool>> ShareFormulaAsync(Guid id)
+        // 新增方法：CreateFromPrescriptionAsync
+        public async Task<ServiceResult<FormulaDto>> CreateFromPrescriptionAsync(Guid prescriptionId, string name)
         {
-            return await _businessService.ShareFormulaAsync(id);
+            return await _businessService.CreateFromPrescriptionAsync(prescriptionId, name);
         }
 
-        public async Task<ServiceResult<bool>> UnshareFormulaAsync(Guid id)
+        // 修复方法签名：ShareFormulaAsync - 匹配接口参数
+        public async Task<ServiceResult<bool>> ShareFormulaAsync(Guid id, Guid operatorId, string operatorName)
         {
-            return await _businessService.UnshareFormulaAsync(id);
+            return await _businessService.ShareFormulaAsync(id, operatorId, operatorName);
+        }
+
+        // 修复方法签名：UnshareFormulaAsync - 匹配接口参数
+        public async Task<ServiceResult<bool>> UnshareFormulaAsync(Guid id, Guid operatorId, string operatorName)
+        {
+            return await _businessService.UnshareFormulaAsync(id, operatorId, operatorName);
         }
 
         #endregion

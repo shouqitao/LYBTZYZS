@@ -67,7 +67,7 @@ public static class ServiceCollectionExtension
         services.AddScoped<IMedicalCaseRepository, MedicalCaseRepository>();
         services.AddScoped<IMedicalCaseService, MedicalCaseService>();
         // 注册三层服务
-        services.AddScoped<Core.MedicalCaseServiceCore>();
+        services.AddScoped<LYBT.Module.MedicalCase.Services.Core.MedicalCaseServiceCore>();
         services.AddScoped<MedicalCaseQueryService>();
         services.AddScoped<MedicalCaseBusinessService>();
 
