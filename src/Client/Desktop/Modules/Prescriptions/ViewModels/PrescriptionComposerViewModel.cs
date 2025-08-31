@@ -242,7 +242,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         /// <summary>
         /// 添加药材
         /// </summary>
-        private async Task OnAddHerbAsync()
+        private Task OnAddHerbAsync()
         {
             try
             {
@@ -263,12 +263,13 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             {
                 _logger.LogError(ex, "添加药材时发生错误");
             }
+            return Task.CompletedTask;
         }
 
         /// <summary>
         /// 导入验方
         /// </summary>
-        private async Task OnImportFormulaAsync()
+        private Task OnImportFormulaAsync()
         {
             try
             {
@@ -289,6 +290,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             {
                 _logger.LogError(ex, "导入验方时发生错误");
             }
+            return Task.CompletedTask;
         }
 
         /// <summary>
@@ -651,7 +653,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         /// <summary>
         /// 加载医疗案例信息
         /// </summary>
-        private async Task LoadMedicalCaseInfoAsync(Guid medicalCaseId)
+        private Task LoadMedicalCaseInfoAsync(Guid medicalCaseId)
         {
             try
             {
@@ -665,6 +667,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             {
                 _logger.LogError(ex, "加载医疗案例信息失败: {MedicalCaseId}", medicalCaseId);
             }
+            return Task.CompletedTask;
         }
 
         #endregion

@@ -38,7 +38,9 @@ namespace LYBT.Desktop.Prescriptions.Services
         #region 缓存字段
 
         private readonly Dictionary<Guid, int> _formulaUsageCount = new();
+        #pragma warning disable CS0414 // 字段已分配但未使用，保留以便未来缓存功能实现
         private List<FormulaDto>? _cachedFormulas;
+        #pragma warning restore CS0414
 
         #endregion
 
