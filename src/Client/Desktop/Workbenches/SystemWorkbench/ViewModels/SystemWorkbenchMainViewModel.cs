@@ -21,7 +21,7 @@ namespace LYBT.Desktop.Workbench.Admin.ViewModels
     public class SystemWorkbenchMainViewModel : ServiceViewModel
     {
         private readonly IRegionManager _regionManager;
-        private readonly IEventAggregator _eventAggregator;
+        private readonly IEventAggregator? _eventAggregator;
         private readonly IWorkbenchRouter _workbenchRouter;
         private readonly IPatientService? _patientService;
         private readonly IUserService? _userService;
@@ -104,7 +104,7 @@ namespace LYBT.Desktop.Workbench.Admin.ViewModels
         #region Commands
 
         public DelegateCommand<NavigationItem> NavigateCommand { get; private set; } = null!;
-        public DelegateCommand RefreshCommand { get; private set; } = null!;
+        public new DelegateCommand RefreshCommand { get; private set; } = null!;
         public DelegateCommand SettingsCommand { get; private set; } = null!;
 
         #endregion
@@ -142,7 +142,7 @@ ViewModel实例化成功: True
             RaisePropertyChanged(nameof(NavigationItems));
             RaisePropertyChanged(nameof(CurrentViewTitle));
             
-            System.Diagnostics.Debug.WriteLine($"[SystemWorkbench] LoadNavigationItems完成 - 项目数: {NavigationItems.Count}");
+            System.Diagnostics.Debug.WriteLine($"[SystemWorkbench] LoadNavigationItems完成 - 项目数: {NavigationItems?.Count ?? 0}");
         }
 
         private void NavigateToDefaultView()
@@ -320,7 +320,7 @@ ViewModel实例化成功: True
             }, parameters);
         }
 
-        private void ExecuteRefresh()
+        private new void ExecuteRefresh()
         {
             // 刷新当前视图
             if (SelectedNavigationItem != null)
