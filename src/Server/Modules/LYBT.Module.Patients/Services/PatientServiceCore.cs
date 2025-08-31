@@ -71,7 +71,7 @@ namespace LYBT.Module.Patients.Services
                 // 数据验证
                 var validationResult = ValidateCreateDto(dto);
                 if (!validationResult.IsSuccess)
-                    return ServiceResult<PatientDto>.Failure(validationResult.ErrorMessage);
+                    return ServiceResult<PatientDto>.Failure(validationResult.ErrorMessage ?? "数据验证失败");
 
                 // 检查重复 - 手机号码唯一性
                 var existingPatient = await _context.Patients
@@ -129,7 +129,7 @@ namespace LYBT.Module.Patients.Services
                 // 数据验证
                 var validationResult = ValidateUpdateDto(dto);
                 if (!validationResult.IsSuccess)
-                    return ServiceResult<PatientDto>.Failure(validationResult.ErrorMessage);
+                    return ServiceResult<PatientDto>.Failure(validationResult.ErrorMessage ?? "数据验证失败");
 
                 var patient = await _context.Patients
                     .FirstOrDefaultAsync(p => p.Id == id);

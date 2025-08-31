@@ -130,7 +130,7 @@ namespace LYBT.WebAPI.Controllers
         /// 导出药材模板
         /// </summary>
         [HttpGet("export-template")]
-        public async Task<ActionResult<object>> ExportTemplate()
+        public Task<ActionResult<object>> ExportTemplate()
         {
             try
             {
@@ -155,14 +155,14 @@ namespace LYBT.WebAPI.Controllers
                 var templateData = new List<object> { template };
                 
                 LogOperation("导出药材导入模板", null, null);
-                return Ok(new { 
+                return Task.FromResult<ActionResult<object>>(Ok(new { 
                     message = "药材导入模板",
                     template = templateData
-                });
+                }));
             }
             catch (Exception ex)
             {
-                return HandleException(ex, "导出药材导入模板");
+                return Task.FromResult<ActionResult<object>>(HandleException(ex, "导出药材导入模板"));
             }
         }
 
@@ -236,7 +236,7 @@ namespace LYBT.WebAPI.Controllers
         /// <summary>
         /// 异步验证导入数据（包含数据库检查）
         /// </summary>
-        private async Task<List<ImportValidationResult>> ValidateImportDataAsync(List<HerbImportDto> dtos)
+        private Task<List<ImportValidationResult>> ValidateImportDataAsync(List<HerbImportDto> dtos)
         {
             var results = new List<ImportValidationResult>();
 
@@ -275,7 +275,7 @@ namespace LYBT.WebAPI.Controllers
                 results.Add(result);
             }
 
-            return results;
+            return Task.FromResult(results);
         }
 
         #endregion

@@ -61,7 +61,7 @@ namespace LYBT.Infrastructure.Configuration
 
                 // 构建临时配置以获取当前值
                 var tempConfig = configurationBuilder.Build();
-                var replacements = new Dictionary<string, string>();
+                var replacements = new Dictionary<string, string?>();
 
                 // 遍历所有配置项，替换其中的环境变量占位符
                 foreach (var kvp in tempConfig.AsEnumerable())

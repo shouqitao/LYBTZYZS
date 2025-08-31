@@ -59,9 +59,11 @@ namespace LYBT.Module.Prescriptions.Helpers
                 {
                     return ServiceResult<PrescriptionDto>.Failure(validationResult.ErrorMessage ?? "验证失败");                }
 
-                if (!validationResult.Data.IsValid)
+                if (validationResult.Data != null && !validationResult.Data.IsValid)
                 {
-                    var errors = string.Join("; ", validationResult.Data.Errors);                    return ServiceResult<PrescriptionDto>.Failure($"数据验证失败: {errors}");                }
+                    var errors = string.Join("; ", validationResult.Data.Errors);
+                    return ServiceResult<PrescriptionDto>.Failure($"数据验证失败: {errors}");
+                }
 
                 // 映射到实体
                 var model = _mapper.Map<LYBT.Entities.Prescriptions.Prescription>(dto);
@@ -111,9 +113,11 @@ namespace LYBT.Module.Prescriptions.Helpers
                 {
                     return ServiceResult<bool>.Failure(validationResult.ErrorMessage ?? "验证失败");                }
 
-                if (!validationResult.Data.IsValid)
+                if (validationResult.Data != null && !validationResult.Data.IsValid)
                 {
-                    var errors = string.Join("; ", validationResult.Data.Errors);                    return ServiceResult<bool>.Failure($"数据验证失败: {errors}");                }
+                    var errors = string.Join("; ", validationResult.Data.Errors);
+                    return ServiceResult<bool>.Failure($"数据验证失败: {errors}");
+                }
 
                 // 获取现有处方
                 var existingPrescription = await _repository.GetByIdAsync(dto.Id);
@@ -513,12 +517,12 @@ namespace LYBT.Module.Prescriptions.Helpers
         /// <summary>
         /// 执行智能检查（药材重复和可用性）
         /// </summary>
-        private async Task PerformIntelligentChecks(List<PrescriptionItemCreateDto> items, Guid prescriptionId, string operatorName)
+        private Task PerformIntelligentChecks(List<PrescriptionItemCreateDto> items, Guid prescriptionId, string operatorName)
         {
             try
             {
                 if (items == null || !items.Any())
-                    return;
+                    return Task.CompletedTask;
 
                 // 转换为DTO格式
                 var prescriptionItems = items.Select(item => new PrescriptionItemDto
@@ -534,7 +538,7 @@ namespace LYBT.Module.Prescriptions.Helpers
 
                 // 使用简化的重复药材检测
                 var duplicateResult = _intelligentService.DetectDuplicateHerbs(prescriptionItems);
-                if (duplicateResult.IsSuccess && duplicateResult.Data.Count < prescriptionItems.Count)
+                if (duplicateResult.IsSuccess && duplicateResult.Data != null && duplicateResult.Data.Count < prescriptionItems.Count)
                 {
                     _logger.LogWarning("处方重复药材警告 - 操作者: {OperatorName}, 处方ID: {PrescriptionId}, 原始数量: {Original}, 去重后数量: {Deduplicated}",
                         operatorName, prescriptionId, prescriptionItems.Count, duplicateResult.Data.Count);
@@ -542,15 +546,18 @@ namespace LYBT.Module.Prescriptions.Helpers
 
                 // 计算处方价格 - 替代药材可用性检查
                 var calculationResult = _intelligentService.CalculatePrescriptionPrice(prescriptionItems, 7);
-                if (calculationResult.IsSuccess)
+                if (calculationResult.IsSuccess && calculationResult.Data != null)
                 {
                     _logger.LogInformation("处方价格计算 - 操作者: {OperatorName}, 处方ID: {PrescriptionId}, 单剂价格: {SinglePrice}, 总价: {TotalPrice}",
                         operatorName, prescriptionId, calculationResult.Data.SingleDosagePrice, calculationResult.Data.TotalPrice);
                 }
+
+                return Task.CompletedTask;
             }
             catch (Exception ex)
             {
                 _logger.LogWarning(ex, "执行智能检查失败 - 操作者: {OperatorName}, 处方ID: {PrescriptionId}", operatorName, prescriptionId);
+                return Task.CompletedTask;
             }
         }
 

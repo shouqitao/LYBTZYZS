@@ -206,7 +206,7 @@ public static class UnifiedApplicationInitialization
     /// <summary>
     /// 处理初始化错误
     /// </summary>
-    private static async Task HandleInitializationErrorAsync(this WebApplication app, IServiceScope scope, Exception ex)
+    private static Task HandleInitializationErrorAsync(this WebApplication app, IServiceScope scope, Exception ex)
     {
         var logger = scope.ServiceProvider.GetService<ILogger<Program>>();
         logger?.LogError(ex, "❌ 应用程序初始化失败: {ErrorMessage}", ex.Message);
@@ -219,6 +219,7 @@ public static class UnifiedApplicationInitialization
 
         // 可以选择是否继续启动或抛出异常
         // throw; // 如果希望初始化失败时停止应用
+        return Task.CompletedTask;
     }
 
     /// <summary>

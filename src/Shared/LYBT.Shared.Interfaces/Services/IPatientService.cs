@@ -35,6 +35,16 @@ namespace LYBT.Shared.Interfaces.Services
         /// 删除患者（软删除）
         /// </summary>
         Task<ServiceResult<bool>> DeleteAsync(Guid id);
+
+        /// <summary>
+        /// 删除患者（带操作者信息）
+        /// </summary>
+        Task<bool> DeleteAsync(Guid id, Guid operatorId, string operatorName);
+
+        /// <summary>
+        /// 设置患者状态（启用/禁用）
+        /// </summary>
+        Task<bool> SetStatusAsync(Guid id, bool isActive, Guid operatorId, string operatorName);
         
         /// <summary>
         /// 启用患者
@@ -60,21 +70,37 @@ namespace LYBT.Shared.Interfaces.Services
         /// 搜索患者（按姓名或身份证）
         /// </summary>
         Task<ServiceResult<List<PatientDto>>> SearchAsync(string keyword);
-        
+
         /// <summary>
-        /// 获取患者统计信息
+        /// 获取所有患者列表
         /// </summary>
-        Task<ServiceResult<PatientStatisticsDto>> GetStatisticsAsync();
-        
+        Task<List<PatientDto>> GetAllAsync();
+
         /// <summary>
-        /// 获取患者档案概览
+        /// 获取可用患者列表
         /// </summary>
-        Task<ServiceResult<object>> GetArchiveAsync(Guid id);
-        
+        Task<List<PatientDto>> GetActivePatientsAsync();
+
         /// <summary>
-        /// 更新患者档案
+        /// 根据手机号查找患者
         /// </summary>
-        Task<ServiceResult<bool>> UpdateArchiveAsync(Guid id, object dto);
+        Task<PatientDto?> GetByPhoneNumberAsync(string phoneNumber);
+
+        /// <summary>
+        /// 根据身份证号查找患者
+        /// </summary>
+        Task<PatientDto?> GetByIDNumberAsync(string idNumber);
+
+        /// <summary>
+        /// 高级搜索患者
+        /// </summary>
+        Task<PagedResult<PatientDto>> AdvancedSearchAsync(PatientAdvancedSearchDto query);
+
+        /// <summary>
+        /// 检查重复患者
+        /// </summary>
+        Task<List<PatientDto>> CheckDuplicatePatientsAsync(string idNumber, string phoneNumber);
+        
         
         /// <summary>
         /// 批量导入患者
@@ -90,10 +116,11 @@ namespace LYBT.Shared.Interfaces.Services
         /// 验证患者信息
         /// </summary>
         Task<ServiceResult<object>> ValidatePatientAsync(PatientCreateDto dto);
-        
+
         /// <summary>
-        /// 获取患者年龄分布统计
+        /// 获取导入模板
         /// </summary>
-        Task<ServiceResult<List<object>>> GetAgeStatisticsAsync();
+        Task<ServiceResult<byte[]>> GetImportTemplateAsync();
+        
     }
 }

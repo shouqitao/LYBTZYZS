@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -52,7 +52,9 @@ namespace LYBT.Module.Herbs.Helpers
                 var validationResult = await _validationHelper.ValidateImportAsync(herbs);
                 if (!validationResult.IsSuccess || (validationResult.Data?.Any() == true))
                 {
-                    var errors = validationResult.Data ?? new List<string> { "验证失败" };                    return ServiceResult<int>.Failure($"导入验证失败: {string.Join("; ", errors)}");                }
+                    var errors = validationResult.Data ?? new List<string> { "验证失败" };
+                    return ServiceResult<int>.Failure($"导入验证失败: {string.Join("; ", errors)}");
+                }
 
                 // 开始事务
                 using var transaction = await _context.Database.BeginTransactionAsync();
@@ -70,8 +72,11 @@ namespace LYBT.Module.Herbs.Helpers
 
                     var result = await _repository.AddRangeAsync(models);
                     if (!result)
-                        return ServiceResult<int>.Failure("批量保存药材失败");                    await transaction.CommitAsync();
-                    _logger.LogInformation("批量导入药材成功: {Count}条", models.Count);                    return ServiceResult<int>.Success(models.Count);
+                        return ServiceResult<int>.Failure("批量保存药材失败");
+                    
+                    await transaction.CommitAsync();
+                    _logger.LogInformation("批量导入药材成功: {Count}条", models.Count);
+                    return ServiceResult<int>.Success(models.Count);
                 }
                 catch (Exception)
                 {
@@ -81,7 +86,9 @@ namespace LYBT.Module.Herbs.Helpers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "导入药材失败");                return ServiceResult<int>.Failure("导入药材失败");            }
+                _logger.LogError(ex, "导入药材失败");
+                return ServiceResult<int>.Failure("导入药材失败");
+            }
         }
 
         /// <summary>
@@ -101,9 +108,12 @@ namespace LYBT.Module.Herbs.Helpers
                 var model = await _repository.GetByIdAsync(id);
                 if (model == null)
                 {
-                    return ServiceResult<HerbDto>.Failure("药材不存在");                }
+                    return ServiceResult<HerbDto>.Failure("药材不存在");
+                }
 
-                _logger.LogInformation("更新药材: {HerbId} - {HerbName}", id, dto.Name);                // 🎯 UltraThink修复：使用AutoMapper全量映射，避免字段遗漏
+                _logger.LogInformation("更新药材: {HerbId} - {HerbName}", id, dto.Name);
+                
+                // 🎯 UltraThink修复：使用AutoMapper全量映射，避免字段遗漏
                 _mapper.Map(dto, model);
                 
                 // 业务逻辑处理：重新生成拼音码（如果名称变更了）
@@ -115,14 +125,18 @@ namespace LYBT.Module.Herbs.Helpers
                 var result = await _repository.UpdateAsync(model);
                 if (result == null)
                 {
-                    return ServiceResult<HerbDto>.Failure("更新药材失败");                }
+                    return ServiceResult<HerbDto>.Failure("更新药材失败");
+                }
 
                 var herbDto = _mapper.Map<HerbDto>(result);
-                _logger.LogInformation("更新药材成功: {HerbName} (ID: {HerbId})", result.Name, id);                return ServiceResult<HerbDto>.Success(herbDto);
+                _logger.LogInformation("更新药材成功: {HerbName} (ID: {HerbId})", result.Name, id);
+                return ServiceResult<HerbDto>.Success(herbDto);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "更新药材失败: {Id}", id);                return ServiceResult<HerbDto>.Failure("更新药材失败");            }
+                _logger.LogError(ex, "更新药材失败: {Id}", id);
+                return ServiceResult<HerbDto>.Failure("更新药材失败");
+            }
         }
 
         /// <summary>
@@ -144,11 +158,16 @@ namespace LYBT.Module.Herbs.Helpers
                     .ExecuteUpdateAsync(setters => setters
                         .SetProperty(h => h.Status, newStatus));
 
-                var operation = dto.Status ? "启用" : "禁用";                _logger.LogInformation("批量{Operation}药材成功: 影响{Count}条记录", operation, affectedCount);                return ServiceResult<int>.Success(affectedCount);
+                var operation = dto.Status ? "启用" : "禁用";
+                _logger.LogInformation("批量{Operation}药材成功: 影响{Count}条记录", operation, affectedCount);
+                return ServiceResult<int>.Success(affectedCount);
             }
             catch (Exception ex)
             {
-                var operation = dto.Status ? "启用" : "禁用";                _logger.LogError(ex, "批量{Operation}药材失败", operation);                return ServiceResult<int>.Failure($"批量{operation}药材失败", ex);            }
+                var operation = dto.Status ? "启用" : "禁用";
+                _logger.LogError(ex, "批量{Operation}药材失败", operation);
+                return ServiceResult<int>.Failure($"批量{operation}药材失败", ex);
+            }
         }
 
         /// <summary>
@@ -170,13 +189,15 @@ namespace LYBT.Module.Herbs.Helpers
                         var validation = await _validationHelper.ValidatePriceUpdateAsync(update.Id, update);
                         if (!validation.IsSuccess)
                         {
-                            errors.Add($"ID {update.Id}: {validation.ErrorMessage}");                            continue;
+                            errors.Add($"ID {update.Id}: {validation.ErrorMessage}");
+                            continue;
                         }
 
                         var herb = await _repository.GetByIdAsync(update.Id);
                         if (herb == null)
                         {
-                            errors.Add($"ID {update.Id}: 药材不存在");                            continue;
+                            errors.Add($"ID {update.Id}: 药材不存在");
+                            continue;
                         }
 
                         // 更新价格
@@ -189,14 +210,17 @@ namespace LYBT.Module.Herbs.Helpers
                         if (result != null)
                             successCount++;
                         else
-                            errors.Add($"ID {update.Id}: 更新失败");                    }
+                            errors.Add($"ID {update.Id}: 更新失败");
+                    }
 
                     await transaction.CommitAsync();
-                    _logger.LogInformation("批量更新价格完成: 成功{SuccessCount}条, 失败{ErrorCount}条",                         successCount, errors.Count);
+                    _logger.LogInformation("批量更新价格完成: 成功{SuccessCount}条, 失败{ErrorCount}条",
+                        successCount, errors.Count);
 
                     if (errors.Any())
                     {
-                        return ServiceResult<int>.Failure($"批量更新完成，但有{errors.Count}条失败: {string.Join("; ", errors.Take(3))}");                    }
+                        return ServiceResult<int>.Failure($"批量更新完成，但有{errors.Count}条失败: {string.Join("; ", errors.Take(3))}");
+                    }
 
                     return ServiceResult<int>.Success(successCount);
                 }
@@ -208,7 +232,9 @@ namespace LYBT.Module.Herbs.Helpers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "批量更新价格失败");                return ServiceResult<int>.Failure("批量更新价格失败");            }
+                _logger.LogError(ex, "批量更新价格失败");
+                return ServiceResult<int>.Failure("批量更新价格失败");
+            }
         }
 
         /// <summary>
@@ -232,12 +258,17 @@ namespace LYBT.Module.Herbs.Helpers
 
                 var result = await _repository.AddAsync(model);
                 if (result == null)
-                    return ServiceResult<HerbDto>.Failure("新增药材失败");                var herbDto = _mapper.Map<HerbDto>(model);
-                _logger.LogInformation("创建药材成功: {HerbName} (ID: {HerbId})", model.Name, model.Id);                return ServiceResult<HerbDto>.Success(herbDto);
+                    return ServiceResult<HerbDto>.Failure("新增药材失败");
+                
+                var herbDto = _mapper.Map<HerbDto>(model);
+                _logger.LogInformation("创建药材成功: {HerbName} (ID: {HerbId})", model.Name, model.Id);
+                return ServiceResult<HerbDto>.Success(herbDto);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "创建药材失败");                return ServiceResult<HerbDto>.Failure("新增药材失败");            }
+                _logger.LogError(ex, "创建药材失败");
+                return ServiceResult<HerbDto>.Failure("新增药材失败");
+            }
         }
 
         /// <summary>
@@ -344,7 +375,7 @@ namespace LYBT.Module.Herbs.Helpers
         /// <summary>
         /// 导出药材数据
         /// </summary>
-        public async Task<ServiceResult<byte[]>> ExportHerbsAsync(PagedQueryBaseDto query)
+        public Task<ServiceResult<byte[]>> ExportHerbsAsync(PagedQueryBaseDto query)
         {
             try
             {
@@ -353,12 +384,12 @@ namespace LYBT.Module.Herbs.Helpers
                 
                 // TODO: 实现Excel导出逻辑
                 var emptyData = new byte[0];
-                return ServiceResult<byte[]>.Success(emptyData);
+                return Task.FromResult(ServiceResult<byte[]>.Success(emptyData));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "导出药材数据失败");
-                return ServiceResult<byte[]>.Failure("导出药材数据失败", ex);
+                return Task.FromResult(ServiceResult<byte[]>.Failure("导出药材数据失败", ex));
             }
         }
 
@@ -379,7 +410,7 @@ namespace LYBT.Module.Herbs.Helpers
                     ["CanUpdatePrice"] = herb.Status == CommonStatus.Enabled, // 只能更新启用药材的价格
                     ["IsExpensive"] = herb.Price > 100, // 标记高价药材
                     ["HasValidPinyin"] = !string.IsNullOrEmpty(herb.PinYinCode), // 拼音码完整性
-                    ["PriceMargin"] = herb.Price - herb.CostPrice // 价格利润
+                    ["PriceMargin"] = herb.Price - (herb.CostPrice ?? 0) // 价格利润
                 };
 
                 return ServiceResult<Dictionary<string, object>>.Success(rules);
@@ -392,5 +423,3 @@ namespace LYBT.Module.Herbs.Helpers
         }
     }
 }
-
-

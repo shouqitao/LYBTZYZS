@@ -15,7 +15,7 @@ namespace LYBT.WebAPI.Services
         string GetClinicName();
         string GetPrescriptionPrefix();
         int GetDefaultDosage();
-        PricingRules GetPricingRules();
+        PricingRules? GetPricingRules();
         bool UpdateConfig(ClinicConfig config);
     }
 
@@ -24,7 +24,7 @@ namespace LYBT.WebAPI.Services
         private readonly IConfiguration _configuration;
         private readonly ILogger<ClinicConfigService> _logger;
         private readonly string _configPath;
-        private ClinicConfig _cachedConfig;
+        private ClinicConfig _cachedConfig = new();
         private DateTime _lastLoadTime;
         private readonly TimeSpan _cacheExpiration = TimeSpan.FromMinutes(5);
 
@@ -43,7 +43,7 @@ namespace LYBT.WebAPI.Services
             {
                 LoadConfig();
             }
-            return _cachedConfig;
+            return _cachedConfig ?? GetDefaultConfig();
         }
 
         public string GetClinicName()
@@ -61,7 +61,7 @@ namespace LYBT.WebAPI.Services
             return GetConfig()?.ClinicSettings?.Prescription?.DefaultDosage ?? 7;
         }
 
-        public PricingRules GetPricingRules()
+        public PricingRules? GetPricingRules()
         {
             return GetConfig()?.ClinicSettings?.Pricing;
         }
@@ -100,7 +100,7 @@ namespace LYBT.WebAPI.Services
                     _cachedConfig = JsonSerializer.Deserialize<ClinicConfig>(json, new JsonSerializerOptions
                     {
                         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-                    });
+                    }) ?? GetDefaultConfig();
                 }
                 else
                 {
@@ -145,35 +145,35 @@ namespace LYBT.WebAPI.Services
     // 配置模型类
     public class ClinicConfig
     {
-        public ClinicSettings ClinicSettings { get; set; }
+        public ClinicSettings ClinicSettings { get; set; } = new();
     }
 
     public class ClinicSettings
     {
-        public BasicInfo Basic { get; set; }
-        public PrescriptionSettings Prescription { get; set; }
-        public PricingRules Pricing { get; set; }
-        public SystemSettings System { get; set; }
-        public PrintTemplate PrintTemplate { get; set; }
-        public BusinessRules BusinessRules { get; set; }
-        public Features Features { get; set; }
+        public BasicInfo? Basic { get; set; }
+        public PrescriptionSettings? Prescription { get; set; }
+        public PricingRules? Pricing { get; set; }
+        public SystemSettings? System { get; set; }
+        public PrintTemplate? PrintTemplate { get; set; }
+        public BusinessRules? BusinessRules { get; set; }
+        public Features? Features { get; set; }
     }
 
     public class BasicInfo
     {
-        public string Name { get; set; }
-        public string Address { get; set; }
-        public string Phone { get; set; }
-        public string Email { get; set; }
-        public string Logo { get; set; }
-        public string Slogan { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Address { get; set; } = string.Empty;
+        public string Phone { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string Logo { get; set; } = string.Empty;
+        public string Slogan { get; set; } = string.Empty;
     }
 
     public class PrescriptionSettings
     {
-        public string Prefix { get; set; }
+        public string Prefix { get; set; } = string.Empty;
         public int DefaultDosage { get; set; }
-        public string DefaultUsage { get; set; }
+        public string DefaultUsage { get; set; } = string.Empty;
         public int PrintCopies { get; set; }
         public bool ShowPrice { get; set; }
         public bool ShowDiagnosis { get; set; }
@@ -182,16 +182,16 @@ namespace LYBT.WebAPI.Services
 
     public class PricingRules
     {
-        public string Currency { get; set; }
-        public string CurrencySymbol { get; set; }
-        public DiscountRules DefaultDiscountRules { get; set; }
+        public string Currency { get; set; } = string.Empty;
+        public string CurrencySymbol { get; set; } = string.Empty;
+        public DiscountRules? DefaultDiscountRules { get; set; }
     }
 
     public class DiscountRules
     {
-        public DiscountRange Doctor { get; set; }
-        public DiscountRange ChiefDoctor { get; set; }
-        public DiscountRange Admin { get; set; }
+        public DiscountRange? Doctor { get; set; }
+        public DiscountRange? ChiefDoctor { get; set; }
+        public DiscountRange? Admin { get; set; }
     }
 
     public class DiscountRange
@@ -202,8 +202,8 @@ namespace LYBT.WebAPI.Services
 
     public class SystemSettings
     {
-        public string SystemName { get; set; }
-        public string Version { get; set; }
+        public string SystemName { get; set; } = string.Empty;
+        public string Version { get; set; } = string.Empty;
         public bool MultiClinicMode { get; set; }
         public bool DataIsolation { get; set; }
         public bool EnableAudit { get; set; }
@@ -211,13 +211,13 @@ namespace LYBT.WebAPI.Services
 
     public class PrintTemplate
     {
-        public string PageSize { get; set; }
-        public string Orientation { get; set; }
+        public string PageSize { get; set; } = string.Empty;
+        public string Orientation { get; set; } = string.Empty;
         public int MarginTop { get; set; }
         public int MarginBottom { get; set; }
         public int MarginLeft { get; set; }
         public int MarginRight { get; set; }
-        public string FontFamily { get; set; }
+        public string FontFamily { get; set; } = string.Empty;
         public int FontSize { get; set; }
         public int HeaderHeight { get; set; }
         public int FooterHeight { get; set; }

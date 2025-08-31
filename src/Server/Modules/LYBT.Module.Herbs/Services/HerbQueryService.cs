@@ -72,9 +72,9 @@ namespace LYBT.Module.Herbs.Services
                     var keyword = query.Keyword.Trim();
                     queryable = queryable.Where(h => 
                         h.Name.Contains(keyword) ||
-                        h.PinYinCode.Contains(keyword) ||
-                        h.Origin.Contains(keyword) ||
-                        h.Effect.Contains(keyword));
+                        (h.PinYinCode != null && h.PinYinCode.Contains(keyword)) ||
+                        (h.Origin != null && h.Origin.Contains(keyword)) ||
+                        (h.Effect != null && h.Effect.Contains(keyword)));
                 }
 
                 // 价格范围筛选
@@ -133,9 +133,9 @@ namespace LYBT.Module.Herbs.Services
                 keyword = keyword.Trim();
 
                 var herbs = await BuildBaseQuery()
-                    .Where(h => h.Name.Contains(keyword) || h.PinYinCode.Contains(keyword))
+                    .Where(h => h.Name.Contains(keyword) || (h.PinYinCode != null && h.PinYinCode.Contains(keyword)))
                     .OrderByDescending(h => h.Name.StartsWith(keyword))  // 以关键词开头的排前面
-                    .ThenByDescending(h => h.PinYinCode.StartsWith(keyword.ToUpper()))
+                    .ThenByDescending(h => h.PinYinCode != null && h.PinYinCode.StartsWith(keyword.ToUpper()))
                     .ThenBy(h => h.Name)
                     .Take(50)  // 限制搜索结果数量
                     .ToListAsync();

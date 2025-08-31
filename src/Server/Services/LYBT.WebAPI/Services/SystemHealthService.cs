@@ -180,7 +180,7 @@ namespace LYBT.WebAPI.Services
             }
         }
 
-        public async Task<ApplicationMetrics> GetApplicationMetricsAsync()
+        public Task<ApplicationMetrics> GetApplicationMetricsAsync()
         {
             try
             {
@@ -194,7 +194,7 @@ namespace LYBT.WebAPI.Services
                 var gen1Collections = GC.CollectionCount(1);
                 var gen2Collections = GC.CollectionCount(2);
 
-                return new ApplicationMetrics
+                return Task.FromResult(new ApplicationMetrics
                 {
                     CacheHitRate = cacheHitRate,
                     CacheKeyCount = cacheKeyCount,
@@ -205,7 +205,7 @@ namespace LYBT.WebAPI.Services
                     ThreadPoolActiveThreads = ThreadPool.ThreadCount,
                     ThreadPoolCompletedWorkItems = ThreadPool.CompletedWorkItemCount,
                     MeasuredAt = DateTime.UtcNow
-                };
+                });
             }
             catch (Exception ex)
             {
@@ -233,7 +233,7 @@ namespace LYBT.WebAPI.Services
             };
         }
 
-        private async Task<ComponentHealthStatus> GetCacheHealthAsync()
+        private Task<ComponentHealthStatus> GetCacheHealthAsync()
         {
             var stopwatch = Stopwatch.StartNew();
 
@@ -251,7 +251,7 @@ namespace LYBT.WebAPI.Services
                     ? "内存缓存运行正常" 
                     : "内存缓存读写异常";
 
-                return new ComponentHealthStatus
+                return Task.FromResult(new ComponentHealthStatus
                 {
                     Component = "Cache",
                     Status = status,
@@ -263,19 +263,19 @@ namespace LYBT.WebAPI.Services
                         ["CanWrite"] = true,
                         ["CanRead"] = canRead
                     }
-                };
+                });
             }
             catch (Exception ex)
             {
                 stopwatch.Stop();
-                return new ComponentHealthStatus
+                return Task.FromResult(new ComponentHealthStatus
                 {
                     Component = "Cache",
                     Status = HealthStatus.Unhealthy,
                     ResponseTime = stopwatch.Elapsed,
                     Description = $"缓存检查失败: {ex.Message}",
                     Error = ex.Message
-                };
+                });
             }
         }
 

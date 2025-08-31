@@ -5,7 +5,7 @@ using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Contracts.Common;
 
-namespace LYBT.Module.Users.Interfaces
+namespace LYBT.Module.Users.Services.Interfaces
 {
     /// <summary>
     /// 用户查询服务接口 - UltraThink三层架构

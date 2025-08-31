@@ -60,7 +60,7 @@ namespace LYBT.Module.Patients.Services.Business
                 _logger.LogInformation("获取患者就诊历史成功 {PatientId}, 记录数 {Count}",
                     patientId, visitHistory?.VisitRecords?.Count ?? 0);
                 
-                return ServiceResult<PatientVisitHistoryDto>.Success(visitHistory);
+                return ServiceResult<PatientVisitHistoryDto>.Success(visitHistory ?? new PatientVisitHistoryDto());
             }
             catch (Exception ex)
             {

@@ -20,13 +20,13 @@ namespace LYBT.Module.Prescriptions.Services
         /// <summary>
         /// 智能组合多个验方模板生成处方
         /// </summary>
-        public async Task<ServiceResult<PrescriptionDto>> ComposeFromFormulasAsync(List<Guid> formulaIds, int dosageCount = 7)
+        public Task<ServiceResult<PrescriptionDto>> ComposeFromFormulasAsync(List<Guid> formulaIds, int dosageCount = 7)
         {
             try
             {
                 if (formulaIds == null || !formulaIds.Any())
                 {
-                    return ServiceResult<PrescriptionDto>.Failure("请选择要组合的验方模板");
+                    return Task.FromResult(ServiceResult<PrescriptionDto>.Failure("请选择要组合的验方模板"));
                 }
 
                 // TODO: 实现验方组合逻辑
@@ -36,12 +36,12 @@ namespace LYBT.Module.Prescriptions.Services
                 // 4. 生成新处方
                 
                 _logger.LogInformation("验方组合功能待实现 - 验方数量: {Count}", formulaIds.Count);
-                return ServiceResult<PrescriptionDto>.Failure("验方组合功能开发中");
+                return Task.FromResult(ServiceResult<PrescriptionDto>.Failure("验方组合功能开发中"));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "验方组合失败");
-                return ServiceResult<PrescriptionDto>.Failure("验方组合失败");
+                return Task.FromResult(ServiceResult<PrescriptionDto>.Failure("验方组合失败"));
             }
         }
 

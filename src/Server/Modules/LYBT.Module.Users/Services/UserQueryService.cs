@@ -10,7 +10,7 @@ using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using LYBT.Module.Users.Interfaces;
+using LYBT.Module.Users.Services.Interfaces;
 
 namespace LYBT.Module.Users.Services
 {

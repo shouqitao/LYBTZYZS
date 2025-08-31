@@ -19,12 +19,14 @@ namespace LYBT.Module.Patients.Services.Status
 
         /// <summary>
         /// 启用患者
-        /// </summary>        /// <param name="id">患者ID</param>        /// <returns>操作结果</returns>
+        /// </summary>
+        /// <param name="id">患者ID</param>        /// <returns>操作结果</returns>
         Task<ServiceResult<bool>> EnablePatientAsync(Guid id);
 
         /// <summary>
         /// 禁用患者
-        /// </summary>        /// <param name="id">患者ID</param>
+        /// </summary>
+        /// <param name="id">患者ID</param>
         /// <returns>操作结果</returns>
         Task<ServiceResult<bool>> DisablePatientAsync(Guid id);
     }

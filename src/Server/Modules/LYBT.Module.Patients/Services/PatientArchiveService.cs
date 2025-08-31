@@ -77,7 +77,8 @@ namespace LYBT.Module.Patients.Services
 
             var result = await _patientRepository.UpdateAsync(patient);
             if (result != null)
-            {                await LogPatientOperationAsync(operatorId, operatorName, "Update",                    $"更新患者过敏史：{result.Name}",                    JsonSerializer.Serialize(new { OldValue = oldValue, NewValue = allergyHistory }));
+            {
+                await LogPatientOperationAsync(operatorId, operatorName, "Update",                    $"更新患者过敏史：{result.Name}",                    JsonSerializer.Serialize(new { OldValue = oldValue, NewValue = allergyHistory }));
             }
 
             return result != null;
@@ -117,13 +118,16 @@ namespace LYBT.Module.Patients.Services
                     }
                     else
                     {
-                        result.FailedCount++;                        result.FailedRecords.Add($"{dto.Name} - 保存失败");                    }
+                        result.FailedCount++;
+                        result.FailedRecords.Add($"{dto.Name} - 保存失败");                    }
                 }
                 catch (Exception ex)
                 {
-                    result.FailedCount++;                    result.FailedRecords.Add($"{dto.Name} - {ex.Message}");                }
+                    result.FailedCount++;
+                    result.FailedRecords.Add($"{dto.Name} - {ex.Message}");                }
             }
-            await LogPatientOperationAsync(operatorId, operatorName, "Create",                $"批量导入患者，成功：{result.SuccessCount}，失败：{result.FailedCount}，重复：{result.DuplicateCount}",                JsonSerializer.Serialize(result));
+
+            await LogPatientOperationAsync(operatorId, operatorName, "Create",                $"批量导入患者，成功：{result.SuccessCount}，失败：{result.FailedCount}，重复：{result.DuplicateCount}",                JsonSerializer.Serialize(result));
 
             return result;
         }
@@ -144,7 +148,8 @@ namespace LYBT.Module.Patients.Services
                 PhoneNumber = p.PhoneNumber,
                 Address = p.Address,
                 AllergyHistory = p.AllergyHistory,
-                VisitCount = p.VisitCount,                LastVisitDate = p.LastVisitTime?.ToString("yyyy-MM-dd"),                // CreateTime字段已删除 - UltraThink v2.0简化
+                VisitCount = p.VisitCount,
+                LastVisitDate = p.LastVisitTime?.ToString("yyyy-MM-dd") ?? "",                // CreateTime字段已删除 - UltraThink v2.0简化
             }).ToList();
         }
 
@@ -169,9 +174,11 @@ namespace LYBT.Module.Patients.Services
             }
 
             // 禁用重复患者
-            duplicate.Status = CommonStatus.Disabled;            duplicate.DisableReason = $"与患者{primary.Name}(ID:{primaryId})合并";            await _patientRepository.UpdateAsync(primary);
+            duplicate.Status = CommonStatus.Disabled;
+            duplicate.DisableReason = $"与患者{primary.Name}(ID:{primaryId})合并";            await _patientRepository.UpdateAsync(primary);
             await _patientRepository.UpdateAsync(duplicate);
-            await LogPatientOperationAsync(operatorId, operatorName, "Update",                $"合并患者档案：{duplicate.Name} -> {primary.Name}",                JsonSerializer.Serialize(new { PrimaryId = primaryId, DuplicateId = duplicateId }));
+
+            await LogPatientOperationAsync(operatorId, operatorName, "Update",                $"合并患者档案：{duplicate.Name} -> {primary.Name}",                JsonSerializer.Serialize(new { PrimaryId = primaryId, DuplicateId = duplicateId }));
 
             return true;
         }
@@ -189,7 +196,8 @@ namespace LYBT.Module.Patients.Services
         /// 设置患者标签（简化实现）
         /// </summary>
         public async Task<bool> SetPatientTagsAsync(Guid patientId, List<string> tags, Guid operatorId, string operatorName)
-        {            await LogPatientOperationAsync(operatorId, operatorName, "Update",                $"设置患者标签",                JsonSerializer.Serialize(new { PatientId = patientId, Tags = tags }));
+        {
+            await LogPatientOperationAsync(operatorId, operatorName, "Update",                $"设置患者标签",                JsonSerializer.Serialize(new { PatientId = patientId, Tags = tags }));
             return true;
         }
 
@@ -205,13 +213,15 @@ namespace LYBT.Module.Patients.Services
             if (!string.IsNullOrEmpty(dto.IdCardNumber))
             {
                 if (await _patientRepository.IsIdNumberExistsAsync(dto.IdCardNumber))
-                {                    messages.Add($"{dto.Name} - 身份证号重复：{dto.IdCardNumber}");                }
+                {
+                    messages.Add($"{dto.Name} - 身份证号重复：{dto.IdCardNumber}");                }
             }
 
             if (!string.IsNullOrEmpty(dto.PhoneNumber))
             {
                 if (await _patientRepository.IsPhoneNumberExistsAsync(dto.PhoneNumber))
-                {                    messages.Add($"{dto.Name} - 手机号重复：{dto.PhoneNumber}");                }
+                {
+                    messages.Add($"{dto.Name} - 手机号重复：{dto.PhoneNumber}");                }
             }
 
             return (messages.Any(), messages);
@@ -236,10 +246,12 @@ namespace LYBT.Module.Patients.Services
         /// <summary>
         /// 统一的患者操作日志记录
         /// </summary>
-        private async Task LogPatientOperationAsync(Guid operatorId, string operatorName,
+        private Task LogPatientOperationAsync(Guid operatorId, string operatorName,
             string actionType, string content, string? parameters = null)
-        {            _logger.LogInformation("患者档案操作 - 操作者: {OperatorName} ({OperatorId}), 操作类型: {ActionType}, 内容: {Content}",
+        {
+            _logger.LogInformation("患者档案操作 - 操作者: {OperatorName} ({OperatorId}), 操作类型: {ActionType}, 内容: {Content}",
                 operatorName, operatorId, actionType, content);
+            return Task.CompletedTask;
         }
 
         #endregion

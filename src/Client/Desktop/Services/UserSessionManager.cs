@@ -11,7 +11,7 @@ using LYBT.Shared.Models.Contracts.Users;
 namespace LYBT.Desktop.Services
 {
     /// <summary>
-    /// 用户会话管理器实现
+    /// 用户会话管理器 - UltraThink精简版
     /// </summary>
     public class UserSessionManager : IUserSessionManager, ITokenManager
     {
@@ -25,31 +25,11 @@ namespace LYBT.Desktop.Services
             _permissionService = permissionService;
         }
 
-        /// <summary>
-        /// 当前登录用户
-        /// </summary>
         public UserDto? CurrentUser => _currentUser;
-
-        /// <summary>
-        /// 是否已登录
-        /// </summary>
         public bool IsLoggedIn => _currentUser != null && !string.IsNullOrEmpty(_sessionToken);
-
-        /// <summary>
-        /// 登录时间
-        /// </summary>
         public DateTime? LoginTime => _loginTime;
-
-        /// <summary>
-        /// 会话令牌
-        /// </summary>
         public string? SessionToken => _sessionToken;
 
-        /// <summary>
-        /// 设置用户会话
-        /// </summary>
-        /// <param name="user">用户信息</param>
-        /// <param name="token">会话令牌</param>
         public void SetUserSession(UserDto user, string token)
         {
             _currentUser = user ?? throw new ArgumentNullException(nameof(user));
@@ -57,9 +37,6 @@ namespace LYBT.Desktop.Services
             _loginTime = DateTime.Now;
         }
 
-        /// <summary>
-        /// 清除用户会话
-        /// </summary>
         public void ClearUserSession()
         {
             _currentUser = null;
@@ -67,178 +44,64 @@ namespace LYBT.Desktop.Services
             _loginTime = null;
         }
 
-        /// <summary>
-        /// 检查用户是否有指定权限
-        /// </summary>
-        /// <param name="permission">权限名称</param>
-        /// <returns>是否有权限</returns>
         public bool HasPermission(string permission)
-        {
-            if (_currentUser == null) return false;
-            return _permissionService.HasPermission(_currentUser, permission);
-        }
+            => _currentUser != null && _permissionService.HasPermission(_currentUser, permission);
 
-        /// <summary>
-        /// 检查用户是否有指定角色
-        /// </summary>
-        /// <param name="role">角色</param>
-        /// <returns>是否有该角色</returns>
-        public bool HasRole(string role)
-        {
-            // 不再有角色概念
-            return false;
-        }
+        public bool HasRole(string role) => false; // 已废弃
 
-        /// <summary>
-        /// 检查用户是否有管理员权限
-        /// </summary>
-        /// <returns>是否有管理员权限</returns>
-        public bool IsAdmin()
-        {
-            return _currentUser?.Username == "sysadmin";
-        }
+        public bool IsAdmin() => _currentUser?.Username == "sysadmin";
 
-        /// <summary>
-        /// 检查用户是否有超级管理员权限
-        /// </summary>
-        /// <returns>是否有超级管理员权限</returns>
-        public bool IsSuperAdmin()
-        {
-            return _currentUser?.Username == "sysadmin";
-        }
+        public bool IsSuperAdmin() => IsAdmin(); // 简化：与IsAdmin相同
 
-        /// <summary>
-        /// 获取当前用户的角色显示名称
-        /// </summary>
-        /// <returns>角色显示名称</returns>
         public string GetCurrentUserRoleDisplay()
-        {
-            if (_currentUser == null) return "未登录";
-            return _currentUser?.Username == "sysadmin" ? "管理员" : "用户";
-        }
+            => _currentUser == null ? "未登录" : (IsAdmin() ? "管理员" : "医生");
 
-        /// <summary>
-        /// 刷新用户信息
-        /// </summary>
-        /// <param name="user">更新的用户信息</param>
         public void RefreshUserInfo(UserDto user)
         {
-            if (_currentUser != null && user.Id == _currentUser.Id)
-            {
+            if (_currentUser?.Id == user?.Id)
                 _currentUser = user;
-            }
         }
 
-        
-        /// <summary>
-        /// 获取当前用户角色
-        /// </summary>
-        /// <returns>当前用户角色</returns>
         public UserRole? GetCurrentUserRole()
-        {
-            if (_currentUser == null) return UserRole.Admin; // 默认角色
+            => _currentUser == null ? UserRole.Doctor : (IsAdmin() ? UserRole.Admin : UserRole.Doctor);
 
-            // 简化的角色判断逻辑：只有管理员和普通用户
-            return _currentUser.Username == "sysadmin" ? UserRole.Admin : UserRole.Doctor;
-        }
-
-        /// <summary>
-        /// 检查用户是否有指定角色
-        /// </summary>
-        /// <param name="role">角色</param>
-        /// <returns>是否有该角色</returns>
         public bool HasUserRole(UserRole role)
-        {
-            var currentRole = GetCurrentUserRole();
-            return currentRole.HasValue && currentRole.Value == role;
-        }
+            => GetCurrentUserRole() == role;
 
-        /// <summary>
-        /// 检查是否可访问指定模块
-        /// </summary>
-        /// <param name="moduleName">模块名称</param>
-        /// <returns>是否可访问</returns>
         public bool CanAccessModule(string moduleName)
         {
-            var currentRole = GetCurrentUserRole();
-            return currentRole.HasValue && _permissionService.CanAccessModule(currentRole.Value, moduleName);
+            var role = GetCurrentUserRole();
+            return role.HasValue && _permissionService.CanAccessModule(role.Value, moduleName);
         }
 
-        /// <summary>
-        /// 获取可访问的模块列表
-        /// </summary>
-        /// <returns>模块列表</returns>
         public IEnumerable<string> GetAccessibleModules()
         {
-            var currentRole = GetCurrentUserRole();
-            return currentRole.HasValue ? _permissionService.GetAccessibleModules(currentRole.Value) : 
-                   Enumerable.Empty<string>();
+            var role = GetCurrentUserRole();
+            return role.HasValue ? _permissionService.GetAccessibleModules(role.Value) : Enumerable.Empty<string>();
         }
 
-        /// <summary>
-        /// 检查是否有管理权限
-        /// </summary>
-        /// <returns>是否有管理权限</returns>
         public bool HasManagementAccess()
         {
-            var currentRole = GetCurrentUserRole();
-            return currentRole.HasValue && _permissionService.HasManagementAccess(currentRole.Value);
+            var role = GetCurrentUserRole();
+            return role.HasValue && _permissionService.HasManagementAccess(role.Value);
         }
 
-        /// <summary>
-        /// 检查是否有医疗权限
-        /// </summary>
-        /// <returns>是否有医疗权限</returns>
         public bool HasMedicalAccess()
         {
-            var currentRole = GetCurrentUserRole();
-            return currentRole.HasValue && _permissionService.HasMedicalAccess(currentRole.Value);
+            var role = GetCurrentUserRole();
+            return role.HasValue && _permissionService.HasMedicalAccess(role.Value);
         }
 
-        /// <summary>
-        /// 获取当前用户工作台类型
-        /// </summary>
-        /// <returns>工作台类型</returns>
-        public string GetCurrentUserWorkbench()
-        {
-            // 所有角色使用统一的ConsultationWorkbench
-            // 通过权限控制功能访问，避免工作台架构冗余
-            var currentRole = GetCurrentUserRole();
-            return currentRole switch
-            {
-                UserRole.Admin => "ConsultationWorkbench",      // 修复：AdminWorkbench已删除
-                UserRole.Doctor => "ConsultationWorkbench", 
-                UserRole.Receptionist => "ConsultationWorkbench", // 统一：移除角色特定工作台
-                UserRole.Cashier => "ConsultationWorkbench",       // 统一：移除角色特定工作台
-                UserRole.Pharmacist => "ConsultationWorkbench",    // 统一：移除角色特定工作台
-                UserRole.Therapist => "ConsultationWorkbench",     // 统一：移除角色特定工作台
-                null => "ConsultationWorkbench",
-                _ => "ConsultationWorkbench"
-            };
-        }
+        public string GetCurrentUserWorkbench() => "MainWorkspace"; // 主工作区
 
         #region ITokenManager 实现
 
-        /// <summary>
-        /// 获取当前Token
-        /// </summary>
         public string? GetToken() => _sessionToken;
 
-        /// <summary>
-        /// 设置Token
-        /// </summary>
         public void SetToken(string token)
-        {
-            _sessionToken = token ?? throw new ArgumentNullException(nameof(token));
-        }
+            => _sessionToken = token ?? throw new ArgumentNullException(nameof(token));
 
-        /// <summary>
-        /// 清除Token
-        /// </summary>
-        public void ClearToken()
-        {
-            _sessionToken = null;
-        }
+        public void ClearToken() => _sessionToken = null;
 
         #endregion
     }

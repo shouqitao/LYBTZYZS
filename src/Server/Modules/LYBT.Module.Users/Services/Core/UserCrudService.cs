@@ -6,11 +6,9 @@ using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Options;
 using LYBT.Entities.Users;
 using LYBT.Shared.Models.Common;
-using LYBT.Entities.Users;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
-using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Utilities.Helpers;
 using LYBT.Module.Users.Interfaces;
 using LYBT.Module.Users.Helpers;
@@ -25,30 +23,20 @@ namespace LYBT.Module.Users.Services.Core
     /// UltraThink重构：单一职责原则，只负责用户的基础增删改查操作
     /// 代码行数：约150行，符合500行以下标准
     /// </summary>
-    public class UserCrudService : IUserCrudService
+    public class UserCrudService(
+        AppDbContext context,
+        IUserRepository userRepository,
+        IMapper mapper,
+        ILogger<UserCrudService> logger,
+        IOptions<UserOptions> options,
+        UserValidationHelper validationHelper) : IUserCrudService
     {
-        private readonly AppDbContext _context;
-        private readonly IUserRepository _userRepository;
-        private readonly IMapper _mapper;
-        private readonly ILogger<UserCrudService> _logger;
-        private readonly UserOptions _options;
-        private readonly UserValidationHelper _validationHelper;
-
-        public UserCrudService(
-            AppDbContext context,
-            IUserRepository userRepository,
-            IMapper mapper,
-            ILogger<UserCrudService> logger,
-            IOptions<UserOptions> options,
-            UserValidationHelper validationHelper)
-        {
-            _context = context ?? throw new ArgumentNullException(nameof(context));
-            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
-            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _options = options.Value ?? throw new ArgumentNullException(nameof(options));
-            _validationHelper = validationHelper ?? throw new ArgumentNullException(nameof(validationHelper));
-        }
+        private readonly AppDbContext _context = context ?? throw new ArgumentNullException(nameof(context));
+        private readonly IUserRepository _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
+        private readonly IMapper _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+        private readonly ILogger<UserCrudService> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        private readonly UserOptions _options = options.Value ?? throw new ArgumentNullException(nameof(options));
+        private readonly UserValidationHelper _validationHelper = validationHelper ?? throw new ArgumentNullException(nameof(validationHelper));
 
         /// <summary>
         /// 创建用户并自动处理业务逻辑
@@ -235,7 +223,7 @@ namespace LYBT.Module.Users.Services.Core
         /// <summary>
         /// 记录用户操作日志
         /// </summary>
-        private async Task LogUserOperation(
+        private Task LogUserOperation(
             Guid targetUserId, ActionType actionType, Guid operatorId, string operatorName, 
             string description, object? oldValue = null, object? newValue = null)
         {
@@ -249,12 +237,14 @@ namespace LYBT.Module.Users.Services.Core
             {
                 _logger.LogWarning(ex, "记录用户操作日志失败");
             }
+            
+            return Task.CompletedTask;
         }
 
         /// <summary>
         /// 验证用户变更DTO - 临时内联验证（后续Helper更新后会统一）
         /// </summary>
-        private ServiceResult<bool> ValidateMutationDto(UserMutationDto dto, bool isCreateOperation)
+        private static ServiceResult<bool> ValidateMutationDto(UserMutationDto dto, bool isCreateOperation)
         {
             if (dto == null)
                 return ServiceResult<bool>.Failure("用户信息不能为空");

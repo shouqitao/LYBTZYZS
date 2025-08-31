@@ -34,11 +34,11 @@ namespace LYBT.Module.Auth.Repositories
         /// <summary>
         /// 根据用户名获取活跃会话 - UltraThink v2.0简化版（功能移除）
         /// </summary>
-        public async Task<List<AuthSession>> GetActiveSessionsByUsernameAsync(string username)
+        public Task<List<AuthSession>> GetActiveSessionsByUsernameAsync(string username)
         {
             // UltraThink v2.0简化版：AuthSession实体中没有Username字段
             // 功能已简化，返回空列表
-            return new List<AuthSession>();
+            return Task.FromResult(new List<AuthSession>());
         }
 
         /// <summary>
@@ -53,11 +53,11 @@ namespace LYBT.Module.Auth.Repositories
         /// <summary>
         /// 根据刷新令牌哈希查找会话 - UltraThink v2.0简化版（功能移除）
         /// </summary>
-        public async Task<AuthSession?> GetByRefreshTokenHashAsync(string refreshTokenHash)
+        public Task<AuthSession?> GetByRefreshTokenHashAsync(string refreshTokenHash)
         {
             // UltraThink v2.0简化版：AuthSession实体中没有RefreshTokenHash字段
             // 刷新令牌功能已简化，返回null
-            return null;
+            return Task.FromResult<AuthSession?>(null);
         }
 
         /// <summary>
@@ -198,11 +198,11 @@ namespace LYBT.Module.Auth.Repositories
         /// <summary>
         /// 根据设备信息获取会话 - UltraThink v2.0简化版（功能移除）
         /// </summary>
-        public async Task<List<AuthSession>> GetSessionsByDeviceInfoAsync(string deviceInfo, TimeSpan? withinTimeSpan = null)
+        public Task<List<AuthSession>> GetSessionsByDeviceInfoAsync(string deviceInfo, TimeSpan? withinTimeSpan = null)
         {
             // UltraThink v2.0简化版：AuthSession实体中没有DeviceInfo字段
             // 设备信息功能已简化，返回空列表
-            return new List<AuthSession>();
+            return Task.FromResult(new List<AuthSession>());
         }
     }
 }

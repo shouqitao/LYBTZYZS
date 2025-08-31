@@ -17,21 +17,14 @@ namespace LYBT.Module.Users.Services.Batch
     /// UltraThink重构：专注于用户的批量操作功能
     /// 代码行数：约150行，符合500行以下标准
     /// </summary>
-    public class UserBatchService : IUserBatchService
+    public class UserBatchService(
+        AppDbContext context,
+        UserValidationHelper validationHelper,
+        ILogger<UserBatchService> logger) : IUserBatchService
     {
-        private readonly AppDbContext _context;
-        private readonly UserValidationHelper _validationHelper;
-        private readonly ILogger<UserBatchService> _logger;
-
-        public UserBatchService(
-            AppDbContext context,
-            UserValidationHelper validationHelper,
-            ILogger<UserBatchService> logger)
-        {
-            _context = context ?? throw new ArgumentNullException(nameof(context));
-            _validationHelper = validationHelper ?? throw new ArgumentNullException(nameof(validationHelper));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        }
+        private readonly AppDbContext _context = context ?? throw new ArgumentNullException(nameof(context));
+        private readonly UserValidationHelper _validationHelper = validationHelper ?? throw new ArgumentNullException(nameof(validationHelper));
+        private readonly ILogger<UserBatchService> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
         /// <summary>
         /// 批量启用用户（优化版 - 使用ExecuteUpdate）
@@ -134,8 +127,8 @@ namespace LYBT.Module.Users.Services.Batch
         /// <summary>
         /// 记录批量用户操作日志
         /// </summary>
-        private async Task LogBatchUserOperation(
-            List<Guid> targetUserIds, ActionType actionType, Guid operatorId, string operatorName,
+        private Task LogBatchUserOperation(
+            List<Guid> targetUserIds, ActionType actionType, Guid _operatorId, string operatorName,
             string description)
         {
             try
@@ -148,6 +141,8 @@ namespace LYBT.Module.Users.Services.Batch
             {
                 _logger.LogWarning(ex, "记录批量用户操作日志失败");
             }
+            
+            return Task.CompletedTask;
         }
 
         #endregion

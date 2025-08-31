@@ -1,12 +1,7 @@
-﻿using System;
-using System.Text.Json;
-using System.Threading.Tasks;
+﻿using System.Text.Json;
 using LYBT.Entities.Users;
 using LYBT.Shared.Models.Enums;
 using LYBT.Module.Users.Helpers;
-using LYBT.Infrastructure.Data;
-using LYBT.Entities.Users;
-using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Utilities.Helpers;
 using LYBT.Module.Users.Interfaces;
@@ -19,21 +14,14 @@ namespace LYBT.Module.Users.Services.Account
     /// UltraThink重构：专注于用户账户状态和个人资料管理
     /// 代码行数：约120行，符合500行以下标准
     /// </summary>
-    public class UserAccountService : IUserAccountService
+    public class UserAccountService(
+        IUserRepository userRepository,
+        UserValidationHelper validationHelper,
+        ILogger<UserAccountService> logger) : IUserAccountService
     {
-        private readonly IUserRepository _userRepository;
-        private readonly UserValidationHelper _validationHelper;
-        private readonly ILogger<UserAccountService> _logger;
-
-        public UserAccountService(
-            IUserRepository userRepository,
-            UserValidationHelper validationHelper,
-            ILogger<UserAccountService> logger)
-        {
-            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
-            _validationHelper = validationHelper ?? throw new ArgumentNullException(nameof(validationHelper));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        }
+        private readonly IUserRepository _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
+        private readonly UserValidationHelper _validationHelper = validationHelper ?? throw new ArgumentNullException(nameof(validationHelper));
+        private readonly ILogger<UserAccountService> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
         /// <summary>
         /// 启用用户
@@ -48,7 +36,7 @@ namespace LYBT.Module.Users.Services.Account
                 if (result)
                 {
                     await LogUserOperation(
-                        id, ActionType.Update, Guid.Empty, "System",                        $"启用用户：{user.Username}",                        oldValue: JsonSerializer.Serialize(user)
+                        id, ActionType.Update, Guid.Empty, "System",                        $"启用用户：{user.Username}",                        _oldValue: JsonSerializer.Serialize(user)
                     );
 
                     _logger.LogInformation("启用用户成功: {Username} (ID: {UserId})", user.Username, id);                }
@@ -73,7 +61,7 @@ namespace LYBT.Module.Users.Services.Account
                 if (result)
                 {
                     await LogUserOperation(
-                        id, ActionType.Update, Guid.Empty, "System",                        $"禁用用户：{user.Username}",                        oldValue: JsonSerializer.Serialize(user)
+                        id, ActionType.Update, Guid.Empty, "System",                        $"禁用用户：{user.Username}",                        _oldValue: JsonSerializer.Serialize(user)
                     );
 
                     _logger.LogInformation("禁用用户成功: {Username} (ID: {UserId})", user.Username, id);                }
@@ -109,7 +97,7 @@ namespace LYBT.Module.Users.Services.Account
                 {
                     await LogUserOperation(
                         id, ActionType.Update, id, user.RealName,
-                        "用户修改个人资料",                        oldValue: oldSnapshot, newValue: JsonSerializer.Serialize(result)
+                        "用户修改个人资料",                        _oldValue: oldSnapshot, _newValue: JsonSerializer.Serialize(result)
                     );
 
                     _logger.LogInformation("用户修改个人资料成功: {Username} (ID: {UserId})", user.Username, id);                    return ServiceResult<bool>.Success(true);
@@ -138,9 +126,9 @@ namespace LYBT.Module.Users.Services.Account
         /// <summary>
         /// 记录用户操作日志
         /// </summary>
-        private async Task LogUserOperation(
-            Guid targetUserId, ActionType actionType, Guid operatorId, string operatorName, 
-            string description, object? oldValue = null, object? newValue = null)
+        private Task LogUserOperation(
+            Guid targetUserId, ActionType actionType, Guid _operatorId, string operatorName, 
+            string description, object? _oldValue = null, object? _newValue = null)
         {
             try
             {
@@ -152,6 +140,8 @@ namespace LYBT.Module.Users.Services.Account
             {
                 _logger.LogWarning(ex, "记录用户账户操作日志失败");
             }
+            
+            return Task.CompletedTask;
         }
 
         #endregion

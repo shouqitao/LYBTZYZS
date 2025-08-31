@@ -19,24 +19,16 @@ namespace LYBT.Module.Users.Helpers
     /// UserService验证助手类 - UltraThink Helper模式
     /// 负责所有业务验证、规则检查和参数验证逻辑
     /// </summary>
-    public class UserValidationHelper : BaseValidationHelper
+    public class UserValidationHelper(
+        IUserRepository userRepository,
+        IMapper mapper,
+        ILogger<UserValidationHelper> logger,
+        IOptions<UserOptions> options) : BaseValidationHelper
     {
-        private readonly IUserRepository _userRepository;
-        private readonly IMapper _mapper;
-        private readonly ILogger<UserValidationHelper> _logger;
-        private readonly UserOptions _options;
-
-        public UserValidationHelper(
-            IUserRepository userRepository, 
-            IMapper mapper, 
-            ILogger<UserValidationHelper> logger,
-            IOptions<UserOptions> options)
-        {
-            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
-            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _options = options.Value ?? throw new ArgumentNullException(nameof(options));
-        }
+        private readonly IUserRepository _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
+        private readonly IMapper _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+        private readonly ILogger<UserValidationHelper> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        private readonly UserOptions _options = options.Value ?? throw new ArgumentNullException(nameof(options));
 
         /// <summary>
         /// 验证用户Mutation请求（统一的创建和更新验证）
@@ -54,7 +46,7 @@ namespace LYBT.Module.Users.Helpers
                 if (!realNameLengthValidation.IsSuccess) return realNameLengthValidation;
                 
                 // 电话号码格式验证（如果提供）
-                var phoneValidation = ValidatePhoneNumber(dto.PhoneNumber, "电话号码");
+                var phoneValidation = ValidatePhoneNumber(dto.PhoneNumber ?? "", "电话号码");
                 if (!phoneValidation.IsSuccess) return phoneValidation;
 
                 // 创建操作特有验证
@@ -243,7 +235,7 @@ namespace LYBT.Module.Users.Helpers
         /// <summary>
         /// 验证GUID是否有效
         /// </summary>
-        public bool IsValidGuid(Guid id)
+        public static bool IsValidGuid(Guid id)
         {
             return id != Guid.Empty;
         }
@@ -272,7 +264,7 @@ namespace LYBT.Module.Users.Helpers
         /// <summary>
         /// 验证密码强度
         /// </summary>
-        private ServiceResult<bool> ValidatePasswordStrength(string password)
+        private static ServiceResult<bool> ValidatePasswordStrength(string password)
         {
             if (string.IsNullOrWhiteSpace(password))
                 return ServiceResult<bool>.Failure("密码不能为空");            if (password.Length < 6)
@@ -300,7 +292,7 @@ namespace LYBT.Module.Users.Helpers
         /// <summary>
         /// 验证字符串是否为有效搜索关键词
         /// </summary>
-        public bool IsValidSearchKeyword(string? keyword)
+        public static bool IsValidSearchKeyword(string? keyword)
         {
             return !string.IsNullOrWhiteSpace(keyword) && keyword.Trim().Length >= 1;
         }
@@ -308,7 +300,7 @@ namespace LYBT.Module.Users.Helpers
         /// <summary>
         /// 验证用户状态是否有效
         /// </summary>
-        public bool IsValidUserStatus(CommonStatus status)
+        public static bool IsValidUserStatus(CommonStatus status)
         {
             return status == CommonStatus.Enabled || status == CommonStatus.Disabled;
         }

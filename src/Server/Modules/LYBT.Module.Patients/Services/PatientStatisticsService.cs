@@ -42,7 +42,7 @@ namespace LYBT.Module.Patients.Services
                 InactivePatients = allPatients.Count(p => p.Status == CommonStatus.Disabled),
                 MalePatients = allPatients.Count(p => p.Gender == Gender.Male),
                 FemalePatients = allPatients.Count(p => p.Gender == Gender.Female),
-                AverageAge = allPatients.Any() ? (decimal)allPatients.Average(p => p.Age) : 0,
+                AverageAge = allPatients.Any() ? (decimal)(allPatients.Average(p => p.Age) ?? 0) : 0,
                 TotalVisits = allPatients.Sum(p => p.VisitCount),
                 AverageVisits = allPatients.Any() ? (decimal)allPatients.Average(p => p.VisitCount) : 0,
                 PatientsWithAllergy = allPatients.Count(p => !string.IsNullOrEmpty(p.AllergyHistory)),
@@ -116,7 +116,7 @@ namespace LYBT.Module.Patients.Services
             // UltraThink v2.0: 使用LastVisitTime替代已删除的CreateTime
             var monthlyData = patients
                 .Where(p => p.LastVisitTime.HasValue && p.LastVisitTime.Value >= startDate)
-                .GroupBy(p => new { p.LastVisitTime.Value.Year, p.LastVisitTime.Value.Month })
+                .GroupBy(p => new { Year = p.LastVisitTime!.Value.Year, Month = p.LastVisitTime!.Value.Month })
                 .OrderBy(g => g.Key.Year).ThenBy(g => g.Key.Month)
                 .Select(g =>
                 {

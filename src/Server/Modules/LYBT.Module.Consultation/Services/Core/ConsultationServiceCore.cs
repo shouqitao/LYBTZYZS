@@ -89,7 +89,7 @@ namespace LYBT.Module.Consultation.Services.Core
                 await transaction.CommitAsync();
 
                 _logger.LogInformation("创建看诊记录成功: {ChiefComplaint} ({Id})", 
-                    consultation.ChiefComplaint, consultation.Id);
+                    consultation.ChiefComplaint ?? "无主诉", consultation.Id);
 
                 var resultDto = _mapper.Map<ConsultationDto>(consultation);
                 return ServiceResult<ConsultationDto>.Success(resultDto);
@@ -131,7 +131,7 @@ namespace LYBT.Module.Consultation.Services.Core
                 await _context.SaveChangesAsync();
 
                 _logger.LogInformation("更新看诊记录成功: {ChiefComplaint} ({Id})", 
-                    consultation.ChiefComplaint, consultation.Id);
+                    consultation.ChiefComplaint ?? "无主诉", consultation.Id);
 
                 var resultDto = _mapper.Map<ConsultationDto>(consultation);
                 return ServiceResult<ConsultationDto>.Success(resultDto);
@@ -167,7 +167,7 @@ namespace LYBT.Module.Consultation.Services.Core
                 await _context.SaveChangesAsync();
 
                 _logger.LogInformation("软删除看诊记录成功: {ChiefComplaint} ({Id})", 
-                    consultation.ChiefComplaint, consultation.Id);
+                    consultation.ChiefComplaint ?? "无主诉", consultation.Id);
                 return ServiceResult<bool>.Success(true);
             }
             catch (Exception ex)
@@ -202,7 +202,7 @@ namespace LYBT.Module.Consultation.Services.Core
                 await _context.SaveChangesAsync();
 
                 _logger.LogInformation("更新看诊状态成功: {ChiefComplaint} ({Id}) {OldStatus} -> {NewStatus}", 
-                    consultation.ChiefComplaint, consultation.Id, oldStatus, status);
+                    consultation.ChiefComplaint ?? "无主诉", consultation.Id, oldStatus, status);
 
                 return ServiceResult<bool>.Success(true);
             }

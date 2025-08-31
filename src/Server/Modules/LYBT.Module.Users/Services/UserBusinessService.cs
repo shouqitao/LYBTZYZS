@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using AutoMapper;
 using LYBT.Infrastructure.Data;
@@ -13,7 +14,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using LYBT.Shared.Utilities.Helpers;
 using LYBT.Module.Users;
-using LYBT.Module.Users.Interfaces;
+using LYBT.Module.Users.Services.Interfaces;
 
 namespace LYBT.Module.Users.Services
 {
@@ -21,24 +22,38 @@ namespace LYBT.Module.Users.Services
     /// 用户业务服务 - UltraThink架构
     /// 职责：业务逻辑，状态管理，密码管理，批量操作
     /// </summary>
-    public class UserBusinessService : IUserBusinessService
+    public partial class UserBusinessService(
+        AppDbContext context,
+        IMapper mapper,
+        ILogger<UserBusinessService> logger,
+        IOptions<UserOptions> options) : IUserBusinessService
     {
-        private readonly AppDbContext _context;
-        private readonly IMapper _mapper;
-        private readonly ILogger<UserBusinessService> _logger;
-        private readonly UserOptions _options;
+        private readonly AppDbContext _context = context ?? throw new ArgumentNullException(nameof(context));
+        private readonly IMapper _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+        private readonly ILogger<UserBusinessService> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        private readonly UserOptions _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
 
-        public UserBusinessService(
-            AppDbContext context,
-            IMapper mapper,
-            ILogger<UserBusinessService> logger,
-            IOptions<UserOptions> options)
-        {
-            _context = context ?? throw new ArgumentNullException(nameof(context));
-            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
-        }
+        #region 生成的正则表达式 - SYSLIB1045 优化
+
+        /// <summary>
+        /// 用户名验证正则表达式 - 只允许字母、数字、下划线
+        /// </summary>
+        [GeneratedRegex(@"^[a-zA-Z0-9_]+$")]
+        private static partial Regex UsernameValidationRegex();
+
+        /// <summary>
+        /// 邮箱验证正则表达式
+        /// </summary>
+        [GeneratedRegex(@"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")]
+        private static partial Regex EmailValidationRegex();
+
+        /// <summary>
+        /// 手机号验证正则表达式 - 中国手机号格式
+        /// </summary>
+        [GeneratedRegex(@"^1[3-9]\d{9}$")]
+        private static partial Regex PhoneValidationRegex();
+
+        #endregion
 
         /// <summary>
         /// 禁用用户
@@ -113,11 +128,11 @@ namespace LYBT.Module.Users.Services
         {
             try
             {
-                if (ids == null || !ids.Any())
+                if (ids == null || ids.Count == 0)
                     return ServiceResult<int>.Failure("用户ID列表不能为空");
 
                 var validIds = ids.Where(id => id != Guid.Empty).ToList();
-                if (!validIds.Any())
+                if (validIds.Count == 0)
                     return ServiceResult<int>.Failure("没有有效的用户ID");
 
                 var affectedRows = await _context.Users
@@ -142,11 +157,11 @@ namespace LYBT.Module.Users.Services
         {
             try
             {
-                if (ids == null || !ids.Any())
+                if (ids == null || ids.Count == 0)
                     return ServiceResult<int>.Failure("用户ID列表不能为空");
 
                 var validIds = ids.Where(id => id != Guid.Empty).ToList();
-                if (!validIds.Any())
+                if (validIds.Count == 0)
                     return ServiceResult<int>.Failure("没有有效的用户ID");
 
                 var affectedRows = await _context.Users
@@ -292,7 +307,7 @@ namespace LYBT.Module.Users.Services
                 // 业务规则验证
                 var validationResult = await ValidateUserMutationAsync(dto, true); // true for create operation
                 if (!validationResult.IsSuccess)
-                    return ServiceResult<UserDto>.Failure(validationResult.ErrorMessage);
+                    return ServiceResult<UserDto>.Failure(validationResult.ErrorMessage ?? "用户数据验证失败");
 
                 // 检查用户名是否重复
                 var existingUser = await _context.Users
@@ -353,7 +368,7 @@ namespace LYBT.Module.Users.Services
                 // 业务规则验证
                 var validationResult = await ValidateUserMutationAsync(dto, false, id); // false for update operation
                 if (!validationResult.IsSuccess)
-                    return ServiceResult<UserDto>.Failure(validationResult.ErrorMessage);
+                    return ServiceResult<UserDto>.Failure(validationResult.ErrorMessage ?? "用户数据验证失败");
 
                 var user = await _context.Users
                     .FirstOrDefaultAsync(u => u.Id == id);
@@ -445,7 +460,7 @@ namespace LYBT.Module.Users.Services
         /// <summary>
         /// 统一用户变更DTO验证 - UltraThink现代化DTO设计
         /// </summary>
-        private async Task<ServiceResult<bool>> ValidateUserMutationAsync(UserMutationDto dto, bool isCreateOperation, Guid? existingUserId = null)
+        private static async Task<ServiceResult<bool>> ValidateUserMutationAsync(UserMutationDto dto, bool isCreateOperation, Guid? _existingUserId = null)
         {
             if (dto == null)
                 return ServiceResult<bool>.Failure("用户信息不能为空");
@@ -459,8 +474,8 @@ namespace LYBT.Module.Users.Services
                 if (dto.Username.Length < 3 || dto.Username.Length > 50)
                     return ServiceResult<bool>.Failure("用户名长度必须在3-50字符之间");
 
-                // 检查用户名格式（只能包含字母、数字、下划线）
-                if (!System.Text.RegularExpressions.Regex.IsMatch(dto.Username, @"^[a-zA-Z0-9_]+$"))
+                // 检查用户名格式（只能包含字母、数字、下划线）- 使用生成的正则表达式
+                if (!UsernameValidationRegex().IsMatch(dto.Username))
                     return ServiceResult<bool>.Failure("用户名只能包含字母、数字和下划线");
             }
 
@@ -468,19 +483,17 @@ namespace LYBT.Module.Users.Services
             if (string.IsNullOrWhiteSpace(dto.RealName))
                 return ServiceResult<bool>.Failure("真实姓名不能为空");
 
-            // 邮箱格式验证（如果提供）
+            // 邮箱格式验证（如果提供）- 使用生成的正则表达式
             if (!string.IsNullOrWhiteSpace(dto.Email))
             {
-                var emailRegex = @"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$";
-                if (!System.Text.RegularExpressions.Regex.IsMatch(dto.Email, emailRegex))
+                if (!EmailValidationRegex().IsMatch(dto.Email))
                     return ServiceResult<bool>.Failure("邮箱格式不正确");
             }
 
-            // 手机号格式验证（如果提供）
+            // 手机号格式验证（如果提供）- 使用生成的正则表达式
             if (!string.IsNullOrWhiteSpace(dto.PhoneNumber))
             {
-                var phoneRegex = @"^1[3-9]\d{9}$";
-                if (!System.Text.RegularExpressions.Regex.IsMatch(dto.PhoneNumber, phoneRegex))
+                if (!PhoneValidationRegex().IsMatch(dto.PhoneNumber))
                     return ServiceResult<bool>.Failure("手机号格式不正确");
             }
 

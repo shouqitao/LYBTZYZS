@@ -1,4 +1,4 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using System.Linq;
 using System;
 using AutoMapper;
@@ -77,7 +77,9 @@ namespace LYBT.Module.Consultation.Helpers
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                _logger.LogError(ex, "开始看诊失败");                return ServiceResult<ConsultationDto>.Failure("开始看诊失败");            }
+                _logger.LogError(ex, "开始看诊失败");
+                return ServiceResult<ConsultationDto>.Failure("开始看诊失败");
+            }
         }
 
         /// <summary>
@@ -91,19 +93,22 @@ namespace LYBT.Module.Consultation.Helpers
                 var consultationResult = await _validationHelper.ValidateConsultationExistsAsync(id);
                 if (!consultationResult.IsSuccess)
                 {
-                    return ServiceResult<bool>.Failure(consultationResult.Message);
+                    return ServiceResult<bool>.Failure(consultationResult.Message ?? "验证诊断记录失败");
                 }
 
                 var consultation = consultationResult.Data;
                 if (consultation == null)
                     return ServiceResult<bool>.Failure("看诊记录不存在");
 
-                // 更新基础信息
-                consultation.TreatmentPrinciple = dto.TreatmentPrinciple;
-                consultation.MedicalAdvice = dto.MedicalAdvice;
+                if (consultation != null)
+                {
+                    // 更新基础信息
+                    consultation.TreatmentPrinciple = dto.TreatmentPrinciple;
+                    consultation.MedicalAdvice = dto.MedicalAdvice;
 
-                // 更新医疗案例状态
-                await UpdateMedicalCaseStatusByConsultationAsync(consultation.Id, MedicalCaseStatus.Completed);
+                    // 更新医疗案例状态
+                    await UpdateMedicalCaseStatusByConsultationAsync(consultation.Id, MedicalCaseStatus.Completed);
+                }
 
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
@@ -112,7 +117,10 @@ namespace LYBT.Module.Consultation.Helpers
             }
             catch (Exception ex)
             {
-                await transaction.RollbackAsync();                _logger.LogError(ex, "完成看诊失败: {Id}", id);                return ServiceResult<bool>.Failure("完成看诊失败");            }
+                await transaction.RollbackAsync();
+                _logger.LogError(ex, "完成看诊失败: {Id}", id);
+                return ServiceResult<bool>.Failure("完成看诊失败");
+            }
         }
 
         /// <summary>
@@ -125,20 +133,32 @@ namespace LYBT.Module.Consultation.Helpers
                 var consultationResult = await _validationHelper.ValidateConsultationExistsAsync(id);
                 if (!consultationResult.IsSuccess)
                 {
-                    return ServiceResult<bool>.Failure(consultationResult.Message);
+                    return ServiceResult<bool>.Failure(consultationResult.Message ?? "验证诊断记录失败");
                 }
 
                 var consultation = consultationResult.Data;
+                if (consultation == null)
+                    return ServiceResult<bool>.Failure("看诊记录不存在");
 
-                consultation.Status = CommonStatus.Disabled;
-                consultation.Remark = string.IsNullOrWhiteSpace(consultation.Remark)                    ? $"取消原因: {reason}"                    : $"{consultation.Remark}\n\n取消原因: {reason}";                // 更新医疗案例状态
-                await UpdateMedicalCaseStatusByConsultationAsync(consultation.Id, MedicalCaseStatus.Cancelled);
+                if (consultation != null)
+                {
+                    consultation.Status = CommonStatus.Disabled;
+                    consultation.Remark = string.IsNullOrWhiteSpace(consultation.Remark)
+                        ? $"取消原因: {reason}"
+                        : $"{consultation.Remark}\n\n取消原因: {reason}";
+                    
+                    // 更新医疗案例状态
+                    await UpdateMedicalCaseStatusByConsultationAsync(consultation.Id, MedicalCaseStatus.Cancelled);
+                }
 
                 await _context.SaveChangesAsync();
                 return ServiceResult<bool>.Success(true);
             }
             catch (Exception ex)
-            {                _logger.LogError(ex, "取消看诊失败: {Id}", id);                return ServiceResult<bool>.Failure("取消看诊失败");            }
+            {
+                _logger.LogError(ex, "取消看诊失败: {Id}", id);
+                return ServiceResult<bool>.Failure("取消看诊失败");
+            }
         }
 
         /// <summary>
@@ -151,26 +171,40 @@ namespace LYBT.Module.Consultation.Helpers
                 var consultationResult = await _validationHelper.ValidateConsultationExistsAsync(id);
                 if (!consultationResult.IsSuccess)
                 {
-                    return ServiceResult<ConsultationDto>.Failure(consultationResult.Message);
+                    return ServiceResult<ConsultationDto>.Failure(consultationResult.Message ?? "验证诊断记录失败");
                 }
 
                 var consultation = consultationResult.Data;
-                _logger.LogInformation("更新看诊记录: {ConsultationId}", id);                // 🎯 UltraThink修复：使用AutoMapper全量映射，避免字段遗漏
-                var oldTCMDiagnosis = consultation.TCMDiagnosis;
+                if (consultation == null)
+                    return ServiceResult<ConsultationDto>.Failure("看诊记录不存在");
+
+                _logger.LogInformation("更新看诊记录: {ConsultationId}", id);
+                
+                // 🎯 UltraThink修复：使用AutoMapper全量映射，避免字段遗漏
+                var oldTCMDiagnosis = consultation?.TCMDiagnosis;
                 _mapper.Map(dto, consultation);
                 
                 // 记录诊断变更日志
-                if (consultation.TCMDiagnosis != oldTCMDiagnosis)
-                {                    _logger.LogInformation("更新诊断记录: {ConsultationId} {OldDiagnosis} -> {NewDiagnosis}",                         id, oldTCMDiagnosis, consultation.TCMDiagnosis);
+                if (consultation?.TCMDiagnosis != oldTCMDiagnosis)
+                {
+                    _logger.LogInformation("更新诊断记录: {ConsultationId} {OldDiagnosis} -> {NewDiagnosis}",
+                         id, oldTCMDiagnosis ?? "空", consultation?.TCMDiagnosis ?? "空");
                 }
 
                 await _context.SaveChangesAsync();
 
-                // 转换为DTO返回
-                var consultationDto = _validationHelper.ConvertToSimpleDto(consultation);                _logger.LogInformation("看诊记录更新成功: {ConsultationId}", id);                return ServiceResult<ConsultationDto>.Success(consultationDto);
+                // 转换为DTO返回  
+                var consultationDto = consultation != null ? _validationHelper.ConvertToSimpleDto(consultation) : null;
+                if (consultationDto == null)
+                    return ServiceResult<ConsultationDto>.Failure("转换DTO失败");
+                _logger.LogInformation("看诊记录更新成功: {ConsultationId}", id);
+                return ServiceResult<ConsultationDto>.Success(consultationDto);
             }
             catch (Exception ex)
-            {                _logger.LogError(ex, "更新看诊信息失败: {Id}", id);                return ServiceResult<ConsultationDto>.Failure("更新看诊信息失败");            }
+            {
+                _logger.LogError(ex, "更新看诊信息失败: {Id}", id);
+                return ServiceResult<ConsultationDto>.Failure("更新看诊信息失败");
+            }
         }
 
         /// <summary>
@@ -183,25 +217,28 @@ namespace LYBT.Module.Consultation.Helpers
                 var consultationResult = await _validationHelper.ValidateConsultationExistsAsync(id);
                 if (!consultationResult.IsSuccess)
                 {
-                    return ServiceResult<bool>.Failure(consultationResult.Message);
+                    return ServiceResult<bool>.Failure(consultationResult.Message ?? "验证诊断记录失败");
                 }
 
                 var consultation = consultationResult.Data;
-                consultation.Status = CommonStatus.Disabled;
+                if (consultation == null)
+                    return ServiceResult<bool>.Failure("看诊记录不存在");
+
+                if (consultation != null)
+                    consultation.Status = CommonStatus.Disabled;
 
                 await _context.SaveChangesAsync();
                 return ServiceResult<bool>.Success(true);
             }
             catch (Exception ex)
-            {                _logger.LogError(ex, "删除看诊记录失败: {Id}", id);                return ServiceResult<bool>.Failure("删除看诊记录失败");
+            {
+                _logger.LogError(ex, "删除看诊记录失败: {Id}", id);
+                return ServiceResult<bool>.Failure("删除看诊记录失败");
             }
         }
 
         #region Private Methods
 
-        /// <summary>
-        /// 更新医疗案例状态
-        /// </summary>
         /// <summary>
         /// 更新医疗案例状态
         /// </summary>
@@ -221,9 +258,6 @@ namespace LYBT.Module.Consultation.Helpers
         /// <summary>
         /// 根据看诊ID更新医疗案例状态
         /// </summary>
-        /// <summary>
-        /// 根据看诊ID更新医疗案例状态
-        /// </summary>
         private async Task UpdateMedicalCaseStatusByConsultationAsync(Guid consultationId, MedicalCaseStatus status)
         {
             // 修复：通过Consultation找到对应的MedicalCase，因为现在是一对多关系
@@ -240,4 +274,3 @@ namespace LYBT.Module.Consultation.Helpers
         #endregion
     }
 }
-

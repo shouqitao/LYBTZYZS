@@ -78,8 +78,8 @@ namespace LYBT.Module.Formula.Services
                 {
                     queryable = queryable.Where(f => 
                         f.Name.Contains(query.Keyword) ||
-                        f.Effect.Contains(query.Keyword) ||
-                        f.Usage.Contains(query.Keyword));
+                        (f.Effect != null && f.Effect.Contains(query.Keyword)) ||
+                        (f.Usage != null && f.Usage.Contains(query.Keyword)));
                 }
 
                 var totalCount = await queryable.CountAsync();
@@ -111,18 +111,18 @@ namespace LYBT.Module.Formula.Services
 
         #region 分类和模板查询
 
-        public async Task<ServiceResult<List<string>>> GetCategoriesAsync()
+        public Task<ServiceResult<List<string>>> GetCategoriesAsync()
         {
             try
             {
                 // Formula实体没有Category属性，返回基本分类
                 var categories = new List<string> { "经典验方", "临床验方", "个人验方" };
-                return ServiceResult<List<string>>.Success(categories);
+                return Task.FromResult(ServiceResult<List<string>>.Success(categories));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "获取验方分类失败");
-                return ServiceResult<List<string>>.Failure($"获取分类失败: {ex.Message}");
+                return Task.FromResult(ServiceResult<List<string>>.Failure($"获取分类失败: {ex.Message}"));
             }
         }
 
@@ -212,7 +212,7 @@ namespace LYBT.Module.Formula.Services
                     
                     .Where(f => f.Status == CommonStatus.Enabled &&
                                (f.Name.Contains(formulaType) || 
-                                f.Effect.Contains(formulaType)))
+                                (f.Effect != null && f.Effect.Contains(formulaType))))
                     .OrderBy(f => f.Name)
                     .ToListAsync();
 
@@ -239,8 +239,8 @@ namespace LYBT.Module.Formula.Services
                 // 根据症候推荐验方
                 var formulas = await _dbContext.Formulas
                     .Where(f => f.Status == CommonStatus.Enabled &&
-                               (f.Effect.Contains(syndrome) || 
-                                f.Usage.Contains(syndrome)))
+                               ((f.Effect != null && f.Effect.Contains(syndrome)) || 
+                                (f.Usage != null && f.Usage.Contains(syndrome))))
                     .OrderBy(f => f.Name)
                     .Take(10)
                     .ToListAsync();
@@ -282,8 +282,8 @@ namespace LYBT.Module.Formula.Services
                 var formulas = await _dbContext.Formulas
                     .Where(f => f.Status == CommonStatus.Enabled &&
                                searchTerms.Any(term => 
-                                   f.Effect.Contains(term) || 
-                                   f.Usage.Contains(term)))
+                                   (f.Effect != null && f.Effect.Contains(term)) || 
+                                   (f.Usage != null && f.Usage.Contains(term))))
                     .OrderBy(f => f.Name)
                     .Take(10)
                     .ToListAsync();
@@ -317,14 +317,14 @@ namespace LYBT.Module.Formula.Services
                 if (!string.IsNullOrWhiteSpace(keyword))
                 {
                     queryable = queryable.Where(f => f.Name.Contains(keyword) || 
-                                                    f.Effect.Contains(keyword));
+                                                    (f.Effect != null && f.Effect.Contains(keyword)));
                 }
 
                 if (!string.IsNullOrWhiteSpace(category))
                 {
                     // 根据分类过滤（基于名称或效果匹配分类）
                     queryable = queryable.Where(f => f.Name.Contains(category) || 
-                                                    f.Effect.Contains(category));
+                                                    (f.Effect != null && f.Effect.Contains(category)));
                 }
 
                 var formulas = await queryable
@@ -353,8 +353,8 @@ namespace LYBT.Module.Formula.Services
                 // 根据症候推荐验方
                 var formulas = await _dbContext.Formulas
                     .Where(f => f.Status == CommonStatus.Enabled &&
-                               (f.Effect.Contains(syndrome) || 
-                                f.Usage.Contains(syndrome)))
+                               ((f.Effect != null && f.Effect.Contains(syndrome)) || 
+                                (f.Usage != null && f.Usage.Contains(syndrome))))
                     .OrderBy(f => f.Name)
                     .Take(10)
                     .ToListAsync();
@@ -392,7 +392,7 @@ namespace LYBT.Module.Formula.Services
             if (!string.IsNullOrWhiteSpace(queryDto.Keyword))
             {
                 query = query.Where(f => f.Name.Contains(queryDto.Keyword) ||
-                                       f.Effect.Contains(queryDto.Keyword));
+                                       (f.Effect != null && f.Effect.Contains(queryDto.Keyword)));
             }
 
             if (queryDto.Status.HasValue)

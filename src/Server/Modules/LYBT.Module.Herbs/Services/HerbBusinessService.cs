@@ -201,7 +201,7 @@ namespace LYBT.Module.Herbs.Services
                 // 数据验证
                 var validationResult = ValidateCreateDto(dto);
                 if (!validationResult.IsSuccess)
-                    return ServiceResult<HerbDto>.Failure(validationResult.ErrorMessage);
+                    return ServiceResult<HerbDto>.Failure(validationResult.ErrorMessage ?? "数据验证失败");
 
                 // 检查名称重复
                 var existingHerb = await _context.Herbs

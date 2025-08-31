@@ -34,7 +34,7 @@ namespace LYBT.Module.Prescriptions.Helpers
         /// <summary>
         /// 验证处方创建数据
         /// </summary>
-        public async Task<ServiceResult<PrescriptionValidationResult>> ValidateCreateAsync(PrescriptionCreateDto dto)
+        public Task<ServiceResult<PrescriptionValidationResult>> ValidateCreateAsync(PrescriptionCreateDto dto)
         {
             try
             {
@@ -49,21 +49,23 @@ namespace LYBT.Module.Prescriptions.Helpers
                 // 智能验证（药材重复和可用性检查）
                 if (dto.Items != null && dto.Items.Any() && !result.Errors.Any())
                 {
-                    await ValidateIntelligentChecks(dto.Items, result);
+                    ValidateIntelligentChecks(dto.Items, result);
                 }
 
                 result.IsValid = !result.Errors.Any();
-                return ServiceResult<PrescriptionValidationResult>.Success(result);
+                return Task.FromResult(ServiceResult<PrescriptionValidationResult>.Success(result));
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "验证处方创建数据失败");                return ServiceResult<PrescriptionValidationResult>.Failure("验证处方创建数据失败");            }
+                _logger.LogError(ex, "验证处方创建数据失败");
+                return Task.FromResult(ServiceResult<PrescriptionValidationResult>.Failure("验证处方创建数据失败"));
+            }
         }
 
         /// <summary>
         /// 验证处方更新数据
         /// </summary>
-        public async Task<ServiceResult<PrescriptionValidationResult>> ValidateUpdateAsync(PrescriptionEditDto dto)
+        public Task<ServiceResult<PrescriptionValidationResult>> ValidateUpdateAsync(PrescriptionEditDto dto)
         {
             try
             {
@@ -72,11 +74,13 @@ namespace LYBT.Module.Prescriptions.Helpers
                 // 基本字段验证
                 if (dto.Id == Guid.Empty)
                 {
-                    result.Errors.Add("处方ID不能为空");                }
+                    result.Errors.Add("处方ID不能为空");
+                }
 
                 if (dto.PatientId == Guid.Empty)
                 {
-                    result.Errors.Add("患者ID不能为空");                }
+                    result.Errors.Add("患者ID不能为空");
+                }
 
                 // 处方项目验证
                 ValidatePrescriptionItems(dto.Items, result);
@@ -95,15 +99,17 @@ namespace LYBT.Module.Prescriptions.Helpers
                         Remark = item.Remark
                     }).ToList();
 
-                    await ValidateIntelligentChecks(createItems, result);
+                    ValidateIntelligentChecks(createItems, result);
                 }
 
                 result.IsValid = !result.Errors.Any();
-                return ServiceResult<PrescriptionValidationResult>.Success(result);
+                return Task.FromResult(ServiceResult<PrescriptionValidationResult>.Success(result));
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "验证处方更新数据失败");                return ServiceResult<PrescriptionValidationResult>.Failure("验证处方更新数据失败");            }
+                _logger.LogError(ex, "验证处方更新数据失败");
+                return Task.FromResult(ServiceResult<PrescriptionValidationResult>.Failure("验证处方更新数据失败"));
+            }
         }
 
         /// <summary>
@@ -217,7 +223,7 @@ namespace LYBT.Module.Prescriptions.Helpers
         /// <summary>
         /// 智能验证检查（药材重复和可用性）
         /// </summary>
-        private async Task ValidateIntelligentChecks(List<PrescriptionItemCreateDto> items, PrescriptionValidationResult result)
+        private void ValidateIntelligentChecks(List<PrescriptionItemCreateDto> items, PrescriptionValidationResult result)
         {
             try
             {
@@ -500,7 +506,8 @@ namespace LYBT.Module.Prescriptions.Helpers
                 }
 
                 // 服用方法长度验证
-                var adviceValidation = ValidateStringLength(dto.Advice, "服用方法", 1000, false);                if (!adviceValidation.IsSuccess)
+                var adviceValidation = ValidateStringLength(dto.Advice ?? string.Empty, "服用方法", 1000, false);
+                if (!adviceValidation.IsSuccess)
                 {
                     return adviceValidation;
                 }

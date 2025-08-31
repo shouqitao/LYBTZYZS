@@ -306,48 +306,6 @@ namespace LYBT.WebAPI.Controllers
             }
         }
 
-        /// <summary>
-        /// 获取患者统计信息
-        /// </summary>
-        [HttpGet("statistics")]
-        public async Task<ActionResult<ApiResponse<PatientStatisticsDto>>> GetStatistics()
-        {
-            try
-            {
-                var result = await _service.GetStatisticsAsync();
-                if (!result.IsSuccess || result.Data == null)
-                {
-                    return BusinessFail<PatientStatisticsDto>(result.ErrorMessage ?? "获取统计信息失败", ApiErrorCodes.INTERNAL_ERROR);
-                }
-
-                return Success(result.Data, "统计查询成功");
-            }
-            catch (Exception ex)
-            {
-                return HandleException<PatientStatisticsDto>(ex, "获取患者统计", null);
-            }
-        }
-
-        /// <summary>
-        /// 获取患者年龄分布统计
-        /// </summary>
-        [HttpGet("age-statistics")]
-        public async Task<ActionResult<ApiResponse<List<object>>>> GetAgeStatistics()
-        {
-            try
-            {
-                var result = await _service.GetAgeStatisticsAsync();
-                if (!result.IsSuccess || result.Data == null)
-                {
-                    return BusinessFail<List<object>>(result.ErrorMessage ?? "获取年龄统计失败", ApiErrorCodes.INTERNAL_ERROR);
-                }
-
-                return Success(result.Data, "年龄统计查询成功");
-            }
-            catch (Exception ex)
-            {
-                return HandleException<List<object>>(ex, "获取年龄统计", null);
-            }
-        }
+        // UltraThink精简：统计功能已废弃 - 小诊所不需要复杂统计分析
     }
 }

@@ -49,7 +49,7 @@ namespace LYBT.Module.Prescriptions.Helpers
                 var validation = ValidatePagedQuery(query);
                 if (!validation.IsSuccess)
                 {
-                    return ServiceResult<PagedResult<PrescriptionDto>>.Failure(validation.ErrorMessage);
+                    return ServiceResult<PagedResult<PrescriptionDto>>.Failure(validation.ErrorMessage ?? "查询参数验证失败");
                 }
 
                 var dbQuery = _dbContext.Prescriptions
@@ -120,9 +120,10 @@ namespace LYBT.Module.Prescriptions.Helpers
                 var pagedResult = await GetPagedAsync(query);
                 if (!pagedResult.IsSuccess)
                 {
-                    return ServiceResult<List<PrescriptionDto>>.Failure(pagedResult.ErrorMessage ?? "搜索失败");                }
+                    return ServiceResult<List<PrescriptionDto>>.Failure(pagedResult.ErrorMessage ?? "搜索失败");
+                }
 
-                return ServiceResult<List<PrescriptionDto>>.Success(pagedResult.Data.Items.ToList());
+                return ServiceResult<List<PrescriptionDto>>.Success(pagedResult.Data?.Items.ToList() ?? new List<PrescriptionDto>());
             }
             catch (Exception ex)
             {
@@ -136,7 +137,7 @@ namespace LYBT.Module.Prescriptions.Helpers
             Guid? patientId = null, 
             Guid? doctorId = null, 
             PrescriptionStatus? status = null,
-            string keyword = null)
+            string? keyword = null)
         {
             try
             {

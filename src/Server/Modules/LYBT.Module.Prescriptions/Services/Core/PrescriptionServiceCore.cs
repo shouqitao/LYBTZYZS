@@ -70,7 +70,7 @@ namespace LYBT.Module.Prescriptions.Services.Core
                 // 数据验证
                 var validationResult = ValidateCreateDto(dto);
                 if (!validationResult.IsSuccess)
-                    return ServiceResult<PrescriptionDto>.Failure(validationResult.ErrorMessage);
+                    return ServiceResult<PrescriptionDto>.Failure(validationResult.ErrorMessage ?? "数据验证失败");
 
                 // 创建新处方
                 var prescription = new Prescription
@@ -140,7 +140,7 @@ namespace LYBT.Module.Prescriptions.Services.Core
                 // 数据验证
                 var validationResult = ValidateUpdateDto(dto);
                 if (!validationResult.IsSuccess)
-                    return ServiceResult<PrescriptionDto>.Failure(validationResult.ErrorMessage);
+                    return ServiceResult<PrescriptionDto>.Failure(validationResult.ErrorMessage ?? "数据验证失败");
 
                 var prescription = await _context.Prescriptions
                     .FirstOrDefaultAsync(p => p.Id == id);

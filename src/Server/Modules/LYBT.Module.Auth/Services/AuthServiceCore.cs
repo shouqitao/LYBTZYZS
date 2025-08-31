@@ -170,52 +170,52 @@ namespace LYBT.Module.Auth.Services
         /// <summary>
         /// 记录登录失败
         /// </summary>
-        public async Task<ServiceResult<bool>> RecordLoginFailureAsync(User user)
+        public Task<ServiceResult<bool>> RecordLoginFailureAsync(User user)
         {
             try
             {
                 if (user == null)
-                    return ServiceResult<bool>.Success(true); // 用户不存在时跳过记录
+                    return Task.FromResult(ServiceResult<bool>.Success(true)); // 用户不存在时跳过记录
 
                 // 系统管理员跳过失败记录
                 if (user.Username.Equals("sysadmin", StringComparison.OrdinalIgnoreCase))
-                    return ServiceResult<bool>.Success(true);
+                    return Task.FromResult(ServiceResult<bool>.Success(true));
 
                 // 这里应该更新用户的失败登录次数（如果User实体有这个字段）
                 // user.FailedLoginCount++;
                 // user.LastFailedLoginTime = DateTime.UtcNow;
                 // await _authRepository.UpdateUserAsync(user);
 
-                return ServiceResult<bool>.Success(true);
+                return Task.FromResult(ServiceResult<bool>.Success(true));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "记录登录失败异常: {Username}", user?.Username);
-                return ServiceResult<bool>.Failure("记录登录失败异常");
+                return Task.FromResult(ServiceResult<bool>.Failure("记录登录失败异常"));
             }
         }
 
         /// <summary>
         /// 重置失败尝试次数
         /// </summary>
-        public async Task<ServiceResult<bool>> ResetFailedAttemptsAsync(User user)
+        public Task<ServiceResult<bool>> ResetFailedAttemptsAsync(User user)
         {
             try
             {
                 if (user == null || user.Username.Equals("sysadmin", StringComparison.OrdinalIgnoreCase))
-                    return ServiceResult<bool>.Success(true);
+                    return Task.FromResult(ServiceResult<bool>.Success(true));
 
                 // 这里应该重置用户的失败登录次数（如果User实体有这个字段）
                 // user.FailedLoginCount = 0;
                 // user.LockoutEnd = null;
                 // await _authRepository.UpdateUserAsync(user);
 
-                return ServiceResult<bool>.Success(true);
+                return Task.FromResult(ServiceResult<bool>.Success(true));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "重置失败尝试次数异常: {Username}", user?.Username);
-                return ServiceResult<bool>.Failure("重置失败尝试次数异常");
+                return Task.FromResult(ServiceResult<bool>.Failure("重置失败尝试次数异常"));
             }
         }
 

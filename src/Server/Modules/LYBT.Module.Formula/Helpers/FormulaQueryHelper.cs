@@ -299,7 +299,7 @@ namespace LYBT.Module.Formula.Helpers
         /// <summary>
         /// 获取导入历史记录
         /// </summary>
-        public async Task<ServiceResult<PagedResult<FormulaImportResultDto>>> GetImportHistoryAsync(
+        public Task<ServiceResult<PagedResult<FormulaImportResultDto>>> GetImportHistoryAsync(
             int pageIndex = 1,
             int pageSize = 20,
             string? importBatch = null)
@@ -318,10 +318,10 @@ namespace LYBT.Module.Formula.Helpers
                     PageSize = pageSize
                 };
 
-                return ServiceResult<PagedResult<FormulaImportResultDto>>.Success(result);
+                return Task.FromResult(ServiceResult<PagedResult<FormulaImportResultDto>>.Success(result));
             }
             catch (Exception ex)
-            {                _logger.LogError(ex, "获取导入历史记录异常");                return ServiceResult<PagedResult<FormulaImportResultDto>>.Failure($"获取导入历史记录异常: {ex.Message}", ex);            }
+            {                _logger.LogError(ex, "获取导入历史记录异常");                return Task.FromResult(ServiceResult<PagedResult<FormulaImportResultDto>>.Failure($"获取导入历史记录异常: {ex.Message}", ex));            }
         }
 
         /// <summary>

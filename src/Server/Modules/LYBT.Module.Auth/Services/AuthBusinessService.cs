@@ -51,8 +51,8 @@ namespace LYBT.Module.Auth.Services
                 var validationResult = ValidateLoginRequest(request);
                 if (!validationResult.IsSuccess)
                 {
-                    await LogFailedLoginAsync(request.Username, validationResult.ErrorMessage, request);
-                    return ServiceResult<LoginResponse>.Failure(validationResult.ErrorMessage);
+                    await LogFailedLoginAsync(request.Username, validationResult.ErrorMessage ?? "登录请求验证失败", request);
+                    return ServiceResult<LoginResponse>.Failure(validationResult.ErrorMessage ?? "登录请求验证失败");
                 }
 
                 // 2. 获取用户信息
@@ -64,21 +64,26 @@ namespace LYBT.Module.Auth.Services
                 }
 
                 var user = userResult.Data;
+                if (user == null)
+                {
+                    await LogFailedLoginAsync(request.Username, "用户信息获取失败", request);
+                    return ServiceResult<LoginResponse>.Failure("用户名或密码错误");
+                }
 
                 // 3. 检查账户锁定状态
                 var lockoutCheck = _coreService.CheckAccountLockout(user);
                 if (!lockoutCheck.IsSuccess)
                 {
-                    await LogFailedLoginAsync(user.Username, lockoutCheck.ErrorMessage, request);
-                    return ServiceResult<LoginResponse>.Failure(lockoutCheck.ErrorMessage);
+                    await LogFailedLoginAsync(user.Username, lockoutCheck.ErrorMessage ?? "账户锁定检查失败", request);
+                    return ServiceResult<LoginResponse>.Failure(lockoutCheck.ErrorMessage ?? "账户锁定检查失败");
                 }
 
                 // 4. 验证用户状态
                 var statusCheck = _coreService.ValidateUserStatus(user);
                 if (!statusCheck.IsSuccess)
                 {
-                    await LogFailedLoginAsync(user.Username, statusCheck.ErrorMessage, request);
-                    return ServiceResult<LoginResponse>.Failure(statusCheck.ErrorMessage);
+                    await LogFailedLoginAsync(user.Username, statusCheck.ErrorMessage ?? "用户状态验证失败", request);
+                    return ServiceResult<LoginResponse>.Failure(statusCheck.ErrorMessage ?? "用户状态验证失败");
                 }
 
                 // 5. 验证密码
@@ -114,7 +119,7 @@ namespace LYBT.Module.Auth.Services
                 {
                     Token = jwtToken,
                     User = userDto,
-                    RefreshToken = refreshToken.IsSuccess ? refreshToken.Data : string.Empty,
+                    RefreshToken = refreshToken.IsSuccess ? (refreshToken.Data ?? string.Empty) : string.Empty,
                     ExpiresAt = DateTime.UtcNow.AddMinutes(request.RememberMe ? 43200 : 480)
                 };
 
@@ -220,7 +225,7 @@ namespace LYBT.Module.Auth.Services
         /// <summary>
         /// 验证登录请求
         /// </summary>
-        private ServiceResult<bool> ValidateLoginRequest(LoginRequest request)
+        private static ServiceResult<bool> ValidateLoginRequest(LoginRequest request)
         {
             if (request == null)
                 return ServiceResult<bool>.Failure("登录请求不能为空");
@@ -243,7 +248,7 @@ namespace LYBT.Module.Auth.Services
         /// <summary>
         /// 创建用户DTO
         /// </summary>
-        private UserDto CreateUserDto(User user)
+        private static UserDto CreateUserDto(User user)
         {
             return new UserDto
             {

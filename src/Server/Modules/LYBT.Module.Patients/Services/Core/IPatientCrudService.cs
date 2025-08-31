@@ -20,17 +20,20 @@ namespace LYBT.Module.Patients.Services.Core
 
         /// <summary>
         /// 更新患者信息
-        /// </summary>        /// <param name="id">患者ID</param>        /// <param name="dto">患者更新DTO</param>        /// <returns>更新结果</returns>
+        /// </summary>
+        /// <param name="id">患者ID</param>        /// <param name="dto">患者更新DTO</param>        /// <returns>更新结果</returns>
         Task<ServiceResult<PatientDto>> UpdatePatientAsync(Guid id, PatientUpdateDto dto);
 
         /// <summary>
         /// 删除患者（软删除）
-        /// </summary>        /// <param name="id">患者ID</param>        /// <returns>删除结果</returns>
+        /// </summary>
+        /// <param name="id">患者ID</param>        /// <returns>删除结果</returns>
         Task<ServiceResult<bool>> DeletePatientAsync(Guid id);
 
         /// <summary>
         /// 删除患者（带操作者信息）
-        /// </summary>        /// <param name="id">患者ID</param>        /// <param name="operatorId">操作者ID</param>        /// <param name="operatorName">操作者姓名</param>
+        /// </summary>
+        /// <param name="id">患者ID</param>        /// <param name="operatorId">操作者ID</param>        /// <param name="operatorName">操作者姓名</param>
         /// <returns>删除结果</returns>
         Task<ServiceResult<bool>> DeletePatientAsync(Guid id, Guid operatorId, string operatorName);
     }

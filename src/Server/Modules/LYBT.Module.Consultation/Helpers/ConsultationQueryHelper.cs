@@ -234,7 +234,7 @@ namespace LYBT.Module.Consultation.Helpers
                     .FirstOrDefaultAsync(c => c.MedicalCaseId == medicalCaseId && c.Status == CommonStatus.Enabled);
 
                 if (consultation == null)
-                    return ServiceResult<object>.Success(null);
+                    return ServiceResult<object>.Success(new { Message = "暂无诊断记录" });
 
                 // 返回四诊数据
                 var fourDiagnosisData = new

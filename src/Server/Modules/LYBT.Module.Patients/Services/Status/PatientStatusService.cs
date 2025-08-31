@@ -42,15 +42,18 @@ namespace LYBT.Module.Patients.Services.Status
                     action = "鍚敤";                }
                 else
                 {
-                    result = await _patientRepository.DisableAsync(id);                    action = "绂佺敤";                }
+                    result = await _patientRepository.DisableAsync(id);
+                    action = "绂佺敤";                }
 
                 if (result)
-                {                    _logger.LogInformation("鎮ｈ€呯姸鎬佸彉鏇?- 鎿嶄綔鑰? {OperatorName} ({OperatorId}), 鎮ｈ€匢D: {PatientId}, 鎿嶄綔: {Action}",                        operatorName, operatorId, id, action);
+                {
+                    _logger.LogInformation("鎮ｈ€呯姸鎬佸彉鏇?- 鎿嶄綔鑰? {OperatorName} ({OperatorId}), 鎮ｈ€匢D: {PatientId}, 鎿嶄綔: {Action}",                        operatorName, operatorId, id, action);
                 }
                 return ServiceResult<bool>.Success(result);
             }
             catch (Exception ex)
-            {                _logger.LogError(ex, "璁剧疆鎮ｈ€呯姸鎬佸け璐? {PatientId}", id);                return ServiceResult<bool>.Failure("设置患者状态失败");            }
+            {
+                _logger.LogError(ex, "璁剧疆鎮ｈ€呯姸鎬佸け璐? {PatientId}", id);                return ServiceResult<bool>.Failure("设置患者状态失败");            }
         }
 
         /// <summary>
@@ -61,16 +64,19 @@ namespace LYBT.Module.Patients.Services.Status
             try
             {
                 var model = await _patientRepository.GetByIdAsync(id, true);
-                if (model == null)                    return ServiceResult<bool>.Failure("鎮ｈ€呬笉瀛樺湪");                model.Status = CommonStatus.Enabled;
+                if (model == null)
+                    return ServiceResult<bool>.Failure("鎮ｈ€呬笉瀛樺湪");                model.Status = CommonStatus.Enabled;
 
                 var result = await _patientRepository.UpdateAsync(model);
                 if (result != null)
-                {                    _logger.LogInformation("鎮ｈ€呭惎鐢ㄦ垚鍔? {PatientId}", id);                    return ServiceResult<bool>.Success(true);
+                {
+                    _logger.LogInformation("鎮ｈ€呭惎鐢ㄦ垚鍔? {PatientId}", id);                    return ServiceResult<bool>.Success(true);
                 }
                 return ServiceResult<bool>.Success(false);
             }
             catch (Exception ex)
-            {                _logger.LogError(ex, "鍚敤鎮ｈ€呭け璐? {PatientId}", id);                return ServiceResult<bool>.Failure("鍚敤鎮ｈ€呭け璐?");            }
+            {
+                _logger.LogError(ex, "鍚敤鎮ｈ€呭け璐? {PatientId}", id);                return ServiceResult<bool>.Failure("鍚敤鎮ｈ€呭け璐?");            }
         }
 
         /// <summary>
@@ -81,16 +87,19 @@ namespace LYBT.Module.Patients.Services.Status
             try
             {
                 var model = await _patientRepository.GetByIdAsync(id, true);
-                if (model == null)                    return ServiceResult<bool>.Failure("鎮ｈ€呬笉瀛樺湪");                model.Status = CommonStatus.Disabled;
+                if (model == null)
+                    return ServiceResult<bool>.Failure("鎮ｈ€呬笉瀛樺湪");                model.Status = CommonStatus.Disabled;
 
                 var result = await _patientRepository.UpdateAsync(model);
                 if (result != null)
-                {                    _logger.LogInformation("鎮ｈ€呯鐢ㄦ垚鍔? {PatientId}", id);                    return ServiceResult<bool>.Success(true);
+                {
+                    _logger.LogInformation("鎮ｈ€呯鐢ㄦ垚鍔? {PatientId}", id);                    return ServiceResult<bool>.Success(true);
                 }
                 return ServiceResult<bool>.Success(false);
             }
             catch (Exception ex)
-            {                _logger.LogError(ex, "绂佺敤鎮ｈ€呭け璐? {PatientId}", id);                return ServiceResult<bool>.Failure("绂佺敤鎮ｈ€呭け璐?");
+            {
+                _logger.LogError(ex, "绂佺敤鎮ｈ€呭け璐? {PatientId}", id);                return ServiceResult<bool>.Failure("绂佺敤鎮ｈ€呭け璐?");
             }
         }
     }

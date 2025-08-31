@@ -46,7 +46,8 @@ namespace LYBT.Module.Auth.Services
 
             var createdSession = await _sessionRepository.AddAsync(sessionModel);
             var baseSession = _mapper.Map<BaseAuthSession>(createdSession);
-            _logger.LogInformation("创建新会话 - 用户ID: {UserId}, 会话ID: {SessionId}, IP: {IpAddress}",                 userId, createdSession.Id, ipAddress);
+
+            _logger.LogInformation("创建新会话 - 用户ID: {UserId}, 会话ID: {SessionId}, IP: {IpAddress}",                 userId, createdSession.Id, ipAddress);
 
             return baseSession;
         }
@@ -58,18 +59,21 @@ namespace LYBT.Module.Auth.Services
         {
             var sessionModel = await _sessionRepository.GetByTokenHashAsync(tokenHash);
             if (sessionModel == null)
-            {                _logger.LogWarning("会话验证失败 - 无效的令牌哈希: {TokenHash}", tokenHash[..10] + "...");                return null;
+            {
+                _logger.LogWarning("会话验证失败 - 无效的令牌哈希: {TokenHash}", tokenHash[..10] + "...");                return null;
             }
 
             // 检查会话状态
             if (sessionModel.Status != CommonStatus.Enabled)
-            {                _logger.LogWarning("会话验证失败 - 会话状态无效: {Status}, 会话ID: {SessionId}",                     sessionModel.Status, sessionModel.Id);
+            {
+                _logger.LogWarning("会话验证失败 - 会话状态无效: {Status}, 会话ID: {SessionId}",                     sessionModel.Status, sessionModel.Id);
                 return null;
             }
 
             // 检查是否被撤销
             if (sessionModel.IsRevoked)
-            {                _logger.LogWarning("会话验证失败 - 会话已被撤销: {SessionId}", sessionModel.Id);                return null;
+            {
+                _logger.LogWarning("会话验证失败 - 会话已被撤销: {SessionId}", sessionModel.Id);                return null;
             }
 
             // 检查令牌是否过期
@@ -80,7 +84,8 @@ namespace LYBT.Module.Auth.Services
                 sessionModel.Status = CommonStatus.Disabled;
                 sessionModel.LogoutTime = DateTime.Now;
                 await _sessionRepository.UpdateAsync(sessionModel);
-                _logger.LogInformation("会话令牌已过期 - 会话ID: {SessionId}", sessionModel.Id);                return null;
+
+                _logger.LogInformation("会话令牌已过期 - 会话ID: {SessionId}", sessionModel.Id);                return null;
             }
 
             return _mapper.Map<BaseAuthSession>(sessionModel);
@@ -93,7 +98,8 @@ namespace LYBT.Module.Auth.Services
         {
             var sessionModel = await _sessionRepository.GetByTokenHashAsync(currentTokenHash);
             if (sessionModel == null || sessionModel.Status != CommonStatus.Enabled || sessionModel.IsRevoked)
-            {                _logger.LogWarning("令牌刷新失败 - 无效的令牌: {Token}", currentTokenHash[..10] + "...");                return null;
+            {
+                _logger.LogWarning("令牌刷新失败 - 无效的令牌: {Token}", currentTokenHash[..10] + "...");                return null;
             }
 
             // 更新令牌信息
@@ -101,7 +107,8 @@ namespace LYBT.Module.Auth.Services
             sessionModel.ExpiryTime = newExpiryTime;
 
             await _sessionRepository.UpdateAsync(sessionModel);
-            _logger.LogInformation("令牌刷新成功 - 会话ID: {SessionId}", sessionModel.Id);            return _mapper.Map<BaseAuthSession>(sessionModel);
+
+            _logger.LogInformation("令牌刷新成功 - 会话ID: {SessionId}", sessionModel.Id);            return _mapper.Map<BaseAuthSession>(sessionModel);
         }
 
         /// <summary>
@@ -109,14 +116,16 @@ namespace LYBT.Module.Auth.Services
         /// </summary>
         public async Task RevokeAllUserSessionsAsync(Guid userId, string reason, Guid? revokedBy = null)
         {
-            await _sessionRepository.RevokeAllUserSessionsAsync(userId, reason, revokedBy);            _logger.LogInformation("撤销用户所有会话 - 用户ID: {UserId}, 原因: {Reason}", userId, reason);        }
+            await _sessionRepository.RevokeAllUserSessionsAsync(userId, reason, revokedBy);
+            _logger.LogInformation("撤销用户所有会话 - 用户ID: {UserId}, 原因: {Reason}", userId, reason);        }
 
         /// <summary>
         /// 撤销特定会话
         /// </summary>
         public async Task RevokeSessionAsync(Guid sessionId, string reason, Guid? revokedBy = null)
         {
-            await _sessionRepository.RevokeSessionAsync(sessionId, reason, revokedBy);            _logger.LogInformation("撤销会话 - 会话ID: {SessionId}, 原因: {Reason}", sessionId, reason);        }
+            await _sessionRepository.RevokeSessionAsync(sessionId, reason, revokedBy);
+            _logger.LogInformation("撤销会话 - 会话ID: {SessionId}, 原因: {Reason}", sessionId, reason);        }
 
         /// <summary>
         /// 用户登出 - UltraThink v2.0简化版
@@ -130,7 +139,8 @@ namespace LYBT.Module.Auth.Services
                 sessionModel.Status = CommonStatus.Disabled;
                 sessionModel.LogoutTime = DateTime.Now;
                 await _sessionRepository.UpdateAsync(sessionModel);
-                _logger.LogInformation("用户登出 - 会话ID: {SessionId}, 用户ID: {UserId}",                     sessionId, sessionModel.UserId);
+
+                _logger.LogInformation("用户登出 - 会话ID: {SessionId}, 用户ID: {UserId}",                     sessionId, sessionModel.UserId);
             }
         }
 
@@ -149,7 +159,8 @@ namespace LYBT.Module.Auth.Services
         public async Task UpdateSessionActivityAsync(Guid sessionId, DateTime lastActivity)
         {
             // UltraThink v2.0简化版：暂时移除最后活跃时间功能
-            // 原因：AuthSession实体中没有LastActivityTime字段            _logger.LogDebug("会话活动更新请求 - 会话ID: {SessionId} (功能已简化)", sessionId);            await Task.CompletedTask;
+            // 原因：AuthSession实体中没有LastActivityTime字段
+            _logger.LogDebug("会话活动更新请求 - 会话ID: {SessionId} (功能已简化)", sessionId);            await Task.CompletedTask;
         }
 
         /// <summary>
@@ -157,7 +168,8 @@ namespace LYBT.Module.Auth.Services
         /// </summary>
         public async Task CleanupExpiredSessionsAsync()
         {
-            await _sessionRepository.CleanupExpiredSessionsAsync();            _logger.LogInformation("清理过期会话完成");        }
+            await _sessionRepository.CleanupExpiredSessionsAsync();
+            _logger.LogInformation("清理过期会话完成");        }
 
         /// <summary>
         /// 获取会话统计信息
@@ -199,7 +211,8 @@ namespace LYBT.Module.Auth.Services
                 sessionModel.Status = CommonStatus.Disabled;
                 await _sessionRepository.UpdateAsync(sessionModel);
             }
-                        _logger.LogWarning("标记会话异常并撤销 - 会话ID: {SessionId}, 描述: {Description}", sessionId, description);        }
+            
+            _logger.LogWarning("标记会话异常并撤销 - 会话ID: {SessionId}, 描述: {Description}", sessionId, description);        }
 
         /// <summary>
         /// 批量更新会话状态 - UltraThink v2.0简化版
@@ -219,15 +232,18 @@ namespace LYBT.Module.Auth.Services
                     }
                     await _sessionRepository.UpdateAsync(session);
                 }
-            }            _logger.LogInformation("批量更新会话状态 - 数量: {Count}, 状态: {Status}", sessionIds.Count, status);        }
+            }
+            _logger.LogInformation("批量更新会话状态 - 数量: {Count}, 状态: {Status}", sessionIds.Count, status);        }
 
         /// <summary>
         /// 根据设备信息查找会话 - UltraThink v2.0简化版（功能移除）
         /// </summary>
-        public async Task<List<BaseAuthSession>> GetSessionsByDeviceAsync(string deviceInfo, TimeSpan? timeWindow = null)
+        public Task<List<BaseAuthSession>> GetSessionsByDeviceAsync(string deviceInfo, TimeSpan? timeWindow = null)
         {
             // UltraThink v2.0简化版：AuthSession实体中没有DeviceInfo字段
-            // 返回空列表，记录请求日志            _logger.LogDebug("设备会话查询请求 - 设备信息: {DeviceInfo} (功能已简化)", deviceInfo);            return new List<BaseAuthSession>();
+            // 返回空列表，记录请求日志
+            _logger.LogDebug("设备会话查询请求 - 设备信息: {DeviceInfo} (功能已简化)", deviceInfo);
+            return Task.FromResult(new List<BaseAuthSession>());
         }
 
         /// <summary>
@@ -257,7 +273,8 @@ namespace LYBT.Module.Auth.Services
                 // 进一步检查IP地址的地理位置变化（这里简化处理）
                 var uniqueIps = recentSessions.Select(s => s.IpAddress).Distinct().Count();
                 if (uniqueIps > 0) // 用户有登录历史且这是新IP
-                {                    _logger.LogWarning("检测到可疑登录位置 - 用户ID: {UserId}, IP: {IpAddress}", userId, ipAddress);                    return true;
+                {
+                    _logger.LogWarning("检测到可疑登录位置 - 用户ID: {UserId}, IP: {IpAddress}", userId, ipAddress);                    return true;
                 }
             }
 
@@ -270,14 +287,16 @@ namespace LYBT.Module.Auth.Services
         public async Task SetSessionExtendedDataAsync(Guid sessionId, string extendedData)
         {
             // UltraThink v2.0简化版：AuthSession实体中没有ExtendedData字段
-            // 功能已移除，仅记录请求日志            _logger.LogDebug("会话扩展数据设置请求 - 会话ID: {SessionId} (功能已简化)", sessionId);            await Task.CompletedTask;
+            // 功能已移除，仅记录请求日志
+            _logger.LogDebug("会话扩展数据设置请求 - 会话ID: {SessionId} (功能已简化)", sessionId);            await Task.CompletedTask;
         }
 
         /// <summary>
         /// 强制用户重新登录（管理员操作）
         /// </summary>
         public async Task ForceUserReloginAsync(Guid userId, string reason, Guid operatorId)
-        {            await RevokeAllUserSessionsAsync(userId, $"管理员强制重新登录: {reason}", operatorId);            _logger.LogInformation("强制用户重新登录 - 用户ID: {UserId}, 操作员ID: {OperatorId}, 原因: {Reason}", 
+        {
+            await RevokeAllUserSessionsAsync(userId, $"管理员强制重新登录: {reason}", operatorId);            _logger.LogInformation("强制用户重新登录 - 用户ID: {UserId}, 操作员ID: {OperatorId}, 原因: {Reason}", 
                 userId, operatorId, reason);
         }
     }

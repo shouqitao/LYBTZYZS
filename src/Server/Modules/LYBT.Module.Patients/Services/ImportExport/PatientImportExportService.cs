@@ -41,7 +41,8 @@ namespace LYBT.Module.Patients.Services.ImportExport
                 return ServiceResult<PatientImportResultDto>.Success(result);
             }
             catch (Exception ex)
-            {                _logger.LogError(ex, "批量导入患者失败 - 操作者: {OperatorName}", operatorName);                return ServiceResult<PatientImportResultDto>.Failure("批量导入患者失败");            }
+            {
+                _logger.LogError(ex, "批量导入患者失败 - 操作者: {OperatorName}", operatorName);                return ServiceResult<PatientImportResultDto>.Failure("批量导入患者失败");            }
         }
 
         /// <summary>
@@ -57,11 +58,14 @@ namespace LYBT.Module.Patients.Services.ImportExport
                 var result = new 
                 { 
                     ImportedCount = patients.Count, 
-                    FailedCount = 0,                    Message = $"成功导入 {patients.Count} 个患者档案"                };
-                                _logger.LogInformation("简化批量导入患者完成 - 数量: {Count}", patients.Count);                return ServiceResult<object>.Success(result);
+                    FailedCount = 0,
+                    Message = $"成功导入 {patients.Count} 个患者档案"                };
+                
+                _logger.LogInformation("简化批量导入患者完成 - 数量: {Count}", patients.Count);                return ServiceResult<object>.Success(result);
             }
             catch (Exception ex)
-            {                _logger.LogError(ex, "简化批量导入患者失败");                return ServiceResult<object>.Failure("批量导入患者失败");            }
+            {
+                _logger.LogError(ex, "简化批量导入患者失败");                return ServiceResult<object>.Failure("批量导入患者失败");            }
         }
 
         /// <summary>
@@ -71,12 +75,14 @@ namespace LYBT.Module.Patients.Services.ImportExport
         {
             try
             {
-                var result = await _archiveService.ExportPatientsAsync(query);                _logger.LogInformation("导出患者数据完成 - 条件: {@Query}, 导出数量: {Count}",                    query, result.Count);
+                var result = await _archiveService.ExportPatientsAsync(query);
+                _logger.LogInformation("导出患者数据完成 - 条件: {@Query}, 导出数量: {Count}",                    query, result.Count);
                 
                 return ServiceResult<List<PatientExportDto>>.Success(result);
             }
             catch (Exception ex)
-            {                _logger.LogError(ex, "导出患者数据失败");                return ServiceResult<List<PatientExportDto>>.Failure("导出患者数据失败", ex);            }
+            {
+                _logger.LogError(ex, "导出患者数据失败");                return ServiceResult<List<PatientExportDto>>.Failure("导出患者数据失败", ex);            }
         }
 
         /// <summary>
@@ -88,13 +94,16 @@ namespace LYBT.Module.Patients.Services.ImportExport
             {
                 // 简化实现：生成示例导出文件
                 await Task.Delay(100); // 模拟处理时间
-                                var exportContent = $"患者数据导出\n导出时间: {DateTime.Now:yyyy-MM-dd HH:mm:ss}\n查询条件: {query.Keyword}\n页码: {query.PageIndex}, 页大小: {query.PageSize}";                var data = Encoding.UTF8.GetBytes(exportContent);
-                                _logger.LogInformation("简化导出患者数据完成 - 查询: {@Query}, 文件大小: {Size} bytes",                    query, data.Length);
+                
+                var exportContent = $"患者数据导出\n导出时间: {DateTime.Now:yyyy-MM-dd HH:mm:ss}\n查询条件: {query.Keyword}\n页码: {query.PageIndex}, 页大小: {query.PageSize}";                var data = Encoding.UTF8.GetBytes(exportContent);
+                
+                _logger.LogInformation("简化导出患者数据完成 - 查询: {@Query}, 文件大小: {Size} bytes",                    query, data.Length);
                 
                 return ServiceResult<byte[]>.Success(data);
             }
             catch (Exception ex)
-            {                _logger.LogError(ex, "简化导出患者数据失败");                return ServiceResult<byte[]>.Failure("导出患者数据失败");
+            {
+                _logger.LogError(ex, "简化导出患者数据失败");                return ServiceResult<byte[]>.Failure("导出患者数据失败");
             }
         }
     }

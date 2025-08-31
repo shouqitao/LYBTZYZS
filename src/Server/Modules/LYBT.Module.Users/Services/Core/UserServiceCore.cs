@@ -20,24 +20,16 @@ namespace LYBT.Module.Users.Services.Core
     /// 用户核心CRUD服务 - UltraThink架构
     /// 职责：基础增删改查操作，状态管理，数据验证
     /// </summary>
-    public class UserServiceCore : IUserServiceCore
+    public class UserServiceCore(
+        AppDbContext context,
+        IMapper mapper,
+        ILogger<UserServiceCore> logger,
+        IOptions<UserOptions> options) : IUserServiceCore
     {
-        private readonly AppDbContext _context;
-        private readonly IMapper _mapper;
-        private readonly ILogger<UserServiceCore> _logger;
-        private readonly UserOptions _options;
-
-        public UserServiceCore(
-            AppDbContext context,
-            IMapper mapper,
-            ILogger<UserServiceCore> logger,
-            IOptions<UserOptions> options)
-        {
-            _context = context ?? throw new ArgumentNullException(nameof(context));
-            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
-        }
+        private readonly AppDbContext _context = context ?? throw new ArgumentNullException(nameof(context));
+        private readonly IMapper _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+        private readonly ILogger<UserServiceCore> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        private readonly UserOptions _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
 
         /// <summary>
         /// 根据ID获取用户详情
@@ -75,7 +67,7 @@ namespace LYBT.Module.Users.Services.Core
                 // 数据验证
                 var validationResult = ValidateMutationDto(dto, true); // true for create operation
                 if (!validationResult.IsSuccess)
-                    return ServiceResult<UserDto>.Failure(validationResult.ErrorMessage);
+                    return ServiceResult<UserDto>.Failure(validationResult.ErrorMessage ?? "用户数据验证失败");
 
                 // 检查用户名是否重复
                 var existingUser = await _context.Users
@@ -127,7 +119,7 @@ namespace LYBT.Module.Users.Services.Core
                 // 数据验证
                 var validationResult = ValidateMutationDto(dto, false); // false for update operation
                 if (!validationResult.IsSuccess)
-                    return ServiceResult<UserDto>.Failure(validationResult.ErrorMessage);
+                    return ServiceResult<UserDto>.Failure(validationResult.ErrorMessage ?? "用户数据验证失败");
 
                 var user = await _context.Users
                     .FirstOrDefaultAsync(u => u.Id == id);
@@ -229,7 +221,7 @@ namespace LYBT.Module.Users.Services.Core
         /// <summary>
         /// 验证用户变更DTO - UltraThink现代化DTO设计
         /// </summary>
-        private ServiceResult<bool> ValidateMutationDto(UserMutationDto dto, bool isCreateOperation)
+        private static ServiceResult<bool> ValidateMutationDto(UserMutationDto dto, bool isCreateOperation)
         {
             if (dto == null)
                 return ServiceResult<bool>.Failure("用户信息不能为空");

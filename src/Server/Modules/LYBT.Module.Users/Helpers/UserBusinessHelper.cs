@@ -23,30 +23,20 @@ namespace LYBT.Module.Users.Helpers
     /// UserService业务助手类 - UltraThink Helper模式
     /// 负责复杂业务流程、用户管理、密码管理和批量操作逻辑
     /// </summary>
-    public class UserBusinessHelper
+    public class UserBusinessHelper(
+        AppDbContext context,
+        IUserRepository userRepository,
+        IMapper mapper,
+        ILogger<UserBusinessHelper> logger,
+        IOptions<UserOptions> options,
+        UserValidationHelper validationHelper)
     {
-        private readonly AppDbContext _context;
-        private readonly IUserRepository _userRepository;
-        private readonly IMapper _mapper;
-        private readonly ILogger<UserBusinessHelper> _logger;
-        private readonly UserOptions _options;
-        private readonly UserValidationHelper _validationHelper;
-
-        public UserBusinessHelper(
-            AppDbContext context,
-            IUserRepository userRepository,
-            IMapper mapper,
-            ILogger<UserBusinessHelper> logger,
-            IOptions<UserOptions> options,
-            UserValidationHelper validationHelper)
-        {
-            _context = context ?? throw new ArgumentNullException(nameof(context));
-            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
-            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _options = options.Value ?? throw new ArgumentNullException(nameof(options));
-            _validationHelper = validationHelper ?? throw new ArgumentNullException(nameof(validationHelper));
-        }
+        private readonly AppDbContext _context = context ?? throw new ArgumentNullException(nameof(context));
+        private readonly IUserRepository _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
+        private readonly IMapper _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+        private readonly ILogger<UserBusinessHelper> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        private readonly UserOptions _options = options.Value ?? throw new ArgumentNullException(nameof(options));
+        private readonly UserValidationHelper _validationHelper = validationHelper ?? throw new ArgumentNullException(nameof(validationHelper));
 
         /// <summary>
         /// 创建用户（现代化版本，使用UserMutationDto）
@@ -398,7 +388,7 @@ namespace LYBT.Module.Users.Helpers
                 {
                     _logger.LogInformation("软删除用户成功: ID {UserId}", id);                    return ServiceResult<bool>.Success(result.Data);
                 }
-                return ServiceResult<bool>.Failure(result.ErrorMessage);
+                return ServiceResult<bool>.Failure(result.ErrorMessage ?? "删除用户失败");
             }
             catch (Exception ex)
             {
@@ -431,7 +421,7 @@ namespace LYBT.Module.Users.Helpers
         /// <summary>
         /// 使用UserMutationDto更新用户模型（现代化版本）
         /// </summary>
-        private void UpdateUserFromMutationDto(User user, UserMutationDto dto)
+        private static void UpdateUserFromMutationDto(User user, UserMutationDto dto)
         {
             user.RealName = dto.RealName;
             user.PinYinCode = CommonHelper.GetPinyinCode(dto.RealName);

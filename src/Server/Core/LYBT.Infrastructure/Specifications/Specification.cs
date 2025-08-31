@@ -333,7 +333,7 @@ namespace LYBT.Infrastructure.Specifications
         {
             public override Expression<Func<T, bool>> ToExpression()
             {
-                return entity => !EF.Property<bool>(entity, "IsDeleted");
+                return entity => !EF.Property<bool>(entity!, "IsDeleted");
             }
         }
 
@@ -344,7 +344,7 @@ namespace LYBT.Infrastructure.Specifications
         {
             public override Expression<Func<T, bool>> ToExpression()
             {
-                return entity => EF.Property<bool>(entity, "IsActive");
+                return entity => EF.Property<bool>(entity!, "IsActive");
             }
         }
     }

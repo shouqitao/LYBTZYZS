@@ -30,86 +30,44 @@ namespace LYBT.Module.Auth.Services
 
         #region Core Authentication Operations (委托给CoreService)
 
-        /// <summary>
-        /// 验证凭据（委托给CoreService）
-        /// </summary>
         public async Task<ServiceResult<string>> VerifyCredentialsAsync(LoginRequest request)
         {
-            try
-            {
-                // 获取用户信息
-                var userResult = await _coreService.GetUserForAuthenticationAsync(request.Username);
-                if (!userResult.IsSuccess)
-                    return ServiceResult<string>.Failure(userResult.ErrorMessage);
+            var userResult = await _coreService.GetUserForAuthenticationAsync(request.Username);
+            if (!userResult.IsSuccess)
+                return ServiceResult<string>.Failure(userResult.ErrorMessage ?? "获取用户信息失败");
 
-                // 验证密码
-                var passwordResult = await _coreService.ValidatePasswordAsync(userResult.Data, request.Password);
-                if (!passwordResult.IsSuccess || !passwordResult.Data)
-                    return ServiceResult<string>.Failure("用户名或密码错误");
+            var passwordResult = await _coreService.ValidatePasswordAsync(userResult.Data!, request.Password);
+            if (!passwordResult.IsSuccess || !passwordResult.Data)
+                return ServiceResult<string>.Failure("用户名或密码错误");
 
-                return ServiceResult<string>.Success("凭据验证成功");
-            }
-            catch (Exception ex)
-            {
-                return ServiceResult<string>.Failure($"验证凭据失败: {ex.Message}");
-            }
+            return ServiceResult<string>.Success("凭据验证成功");
         }
 
-        /// <summary>
-        /// 修改系统管理员密码（委托给CoreService）
-        /// </summary>
         public async Task<ServiceResult<bool>> ChangeSysAdminPasswordAsync(ChangeSysAdminPassword request)
-        {
-            return await _coreService.ChangeSysAdminPasswordAsync(request.NewPassword);
-        }
+            => await _coreService.ChangeSysAdminPasswordAsync(request.NewPassword);
 
         #endregion
 
-        #region Query Operations (委托给QueryService)
+        #region Query Operations
 
-        /// <summary>
-        /// 验证Token（委托给QueryService）
-        /// </summary>
         public async Task<ServiceResult<bool>> ValidateTokenAsync(string token)
-        {
-            return await _queryService.ValidateTokenAsync(token);
-        }
+            => await _queryService.ValidateTokenAsync(token);
 
-        /// <summary>
-        /// 获取会话信息（委托给QueryService）
-        /// </summary>
         public async Task<ServiceResult<object>> GetSessionInfoAsync(string token)
-        {
-            return await _queryService.GetSessionInfoAsync(token);
-        }
+            => await _queryService.GetSessionInfoAsync(token);
 
         #endregion
 
-        #region Business Operations (委托给BusinessService)
+        #region Business Operations
 
-        /// <summary>
-        /// 用户登录（委托给BusinessService处理完整流程）
-        /// </summary>
         public async Task<ServiceResult<LoginResponse>> LoginAsync(LoginRequest request)
-        {
-            return await _businessService.ProcessLoginAsync(request);
-        }
+            => await _businessService.ProcessLoginAsync(request);
 
-        /// <summary>
-        /// 用户登出（委托给BusinessService）
-        /// </summary>
         public async Task<ServiceResult<bool>> LogoutAsync(LogoutRequest request)
-        {
-            return await _businessService.ProcessLogoutAsync(request);
-        }
+            => await _businessService.ProcessLogoutAsync(request);
 
-        /// <summary>
-        /// 刷新Token（委托给BusinessService）
-        /// </summary>
         public async Task<ServiceResult<LoginResponse>> RefreshTokenAsync(string refreshToken)
-        {
-            return await _businessService.RefreshAccessTokenAsync(refreshToken);
-        }
+            => await _businessService.RefreshAccessTokenAsync(refreshToken);
 
         #endregion
     }

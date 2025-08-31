@@ -79,7 +79,7 @@ namespace LYBT.Module.Auth.Services
                 // 验证Token
                 var tokenValidation = await ValidateTokenAsync(token);
                 if (!tokenValidation.IsSuccess)
-                    return ServiceResult<object>.Failure(tokenValidation.ErrorMessage);
+                    return ServiceResult<object>.Failure(tokenValidation.ErrorMessage ?? "Token验证失败");
 
                 // 从Token中提取用户ID
                 var userId = ExtractUserIdFromToken(token);
@@ -89,7 +89,7 @@ namespace LYBT.Module.Auth.Services
                 // 获取当前用户信息
                 var userResult = await GetCurrentUserAsync(userId);
                 if (!userResult.IsSuccess)
-                    return ServiceResult<object>.Failure(userResult.ErrorMessage);
+                    return ServiceResult<object>.Failure(userResult.ErrorMessage ?? "获取用户信息失败");
 
                 // 构建会话信息
                 var sessionInfo = new

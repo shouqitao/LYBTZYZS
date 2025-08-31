@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -49,12 +49,16 @@ namespace LYBT.Module.Patients.Helpers
                 var model = await _patientRepository.GetByIdAsync(id, includeDisabled);
                 
                 if (model == null)
-                    return ServiceResult<PatientDto>.Failure("患者不存在");                    
+                    return ServiceResult<PatientDto>.Failure("患者不存在");
+                    
                 var dto = _mapper.Map<PatientDto>(model);
                 return ServiceResult<PatientDto>.Success(dto);
             }
             catch (Exception ex)
-            {                _logger.LogError(ex, "获取患者详情失败: {PatientId}", id);                return ServiceResult<PatientDto>.Failure("获取患者详情失败");            }
+            {
+                _logger.LogError(ex, "获取患者详情失败: {PatientId}", id);
+                return ServiceResult<PatientDto>.Failure("获取患者详情失败");
+            }
         }
 
         /// <summary>
@@ -69,7 +73,10 @@ namespace LYBT.Module.Patients.Helpers
                 return ServiceResult<List<PatientDto>>.Success(dtos);
             }
             catch (Exception ex)
-            {                _logger.LogError(ex, "获取所有患者失败");                return ServiceResult<List<PatientDto>>.Failure("获取所有患者失败", ex);            }
+            {
+                _logger.LogError(ex, "获取所有患者失败");
+                return ServiceResult<List<PatientDto>>.Failure("获取所有患者失败", ex);
+            }
         }
 
         /// <summary>
@@ -99,7 +106,10 @@ namespace LYBT.Module.Patients.Helpers
                 return ServiceResult<PagedResult<PatientDto>>.Success(result);
             }
             catch (Exception ex)
-            {                _logger.LogError(ex, "分页查询患者失败");                return ServiceResult<PagedResult<PatientDto>>.Failure("分页查询患者失败", ex);            }
+            {
+                _logger.LogError(ex, "分页查询患者失败");
+                return ServiceResult<PagedResult<PatientDto>>.Failure("分页查询患者失败", ex);
+            }
         }
 
         /// <summary>
@@ -114,7 +124,10 @@ namespace LYBT.Module.Patients.Helpers
                 return ServiceResult<List<PatientDto>>.Success(dtos);
             }
             catch (Exception ex)
-            {                _logger.LogError(ex, "获取活跃患者失败");                return ServiceResult<List<PatientDto>>.Failure("获取活跃患者失败", ex);            }
+            {
+                _logger.LogError(ex, "获取活跃患者失败");
+                return ServiceResult<List<PatientDto>>.Failure("获取活跃患者失败", ex);
+            }
         }
 
         #endregion
@@ -133,7 +146,10 @@ namespace LYBT.Module.Patients.Helpers
                 return ServiceResult<PatientDto?>.Success(dto);
             }
             catch (Exception ex)
-            {                _logger.LogError(ex, "根据手机号查找患者失败: {PhoneNumber}", phoneNumber);                return ServiceResult<PatientDto?>.Failure("根据手机号查找患者失败");            }
+            {
+                _logger.LogError(ex, "根据手机号查找患者失败: {PhoneNumber}", phoneNumber);
+                return ServiceResult<PatientDto?>.Failure("根据手机号查找患者失败");
+            }
         }
 
         /// <summary>
@@ -148,7 +164,10 @@ namespace LYBT.Module.Patients.Helpers
                 return ServiceResult<PatientDto?>.Success(dto);
             }
             catch (Exception ex)
-            {                _logger.LogError(ex, "根据身份证号查找患者失败: {IdNumber}", idNumber);                return ServiceResult<PatientDto?>.Failure("根据身份证号查找患者失败");            }
+            {
+                _logger.LogError(ex, "根据身份证号查找患者失败: {IdNumber}", idNumber);
+                return ServiceResult<PatientDto?>.Failure("根据身份证号查找患者失败");
+            }
         }
 
         /// <summary>
@@ -163,7 +182,10 @@ namespace LYBT.Module.Patients.Helpers
                 return ServiceResult<List<PatientDto>>.Success(dtos);
             }
             catch (Exception ex)
-            {                _logger.LogError(ex, "搜索患者失败: {Keyword}", keyword);                return ServiceResult<List<PatientDto>>.Failure("搜索患者失败", ex);            }
+            {
+                _logger.LogError(ex, "搜索患者失败: {Keyword}", keyword);
+                return ServiceResult<List<PatientDto>>.Failure("搜索患者失败", ex);
+            }
         }
 
         /// <summary>
@@ -203,7 +225,10 @@ namespace LYBT.Module.Patients.Helpers
                 return ServiceResult<PagedResult<PatientDto>>.Success(emptyResult);
             }
             catch (Exception ex)
-            {                _logger.LogError(ex, "高级搜索患者失败");                return ServiceResult<PagedResult<PatientDto>>.Failure("高级搜索患者失败", ex);            }
+            {
+                _logger.LogError(ex, "高级搜索患者失败");
+                return ServiceResult<PagedResult<PatientDto>>.Failure("高级搜索患者失败", ex);
+            }
         }
 
         #endregion
@@ -218,11 +243,17 @@ namespace LYBT.Module.Patients.Helpers
             try
             {
                 var model = await _patientRepository.GetByIdNumberAsync(idCard);
-                if (model == null)                    return ServiceResult<PatientDto>.Failure("未找到该身份证号对应的患者");                var dto = _mapper.Map<PatientDto>(model);
+                if (model == null)
+                    return ServiceResult<PatientDto>.Failure("未找到该身份证号对应的患者");
+                
+                var dto = _mapper.Map<PatientDto>(model);
                 return ServiceResult<PatientDto>.Success(dto);
             }
             catch (Exception ex)
-            {                _logger.LogError(ex, "根据身份证号查找患者失败: {IdCard}", idCard);                return ServiceResult<PatientDto>.Failure("查找患者失败");            }
+            {
+                _logger.LogError(ex, "根据身份证号查找患者失败: {IdCard}", idCard);
+                return ServiceResult<PatientDto>.Failure("查找患者失败");
+            }
         }
 
         /// <summary>
@@ -243,7 +274,10 @@ namespace LYBT.Module.Patients.Helpers
                 return ServiceResult<List<PatientDto>>.Success(result);
             }
             catch (Exception ex)
-            {                _logger.LogError(ex, "根据电话号码查找患者失败: {Phone}", phone);                return ServiceResult<List<PatientDto>>.Failure("查找患者失败", ex);            }
+            {
+                _logger.LogError(ex, "根据电话号码查找患者失败: {Phone}", phone);
+                return ServiceResult<List<PatientDto>>.Failure("查找患者失败", ex);
+            }
         }
 
         #endregion
@@ -261,7 +295,10 @@ namespace LYBT.Module.Patients.Helpers
                 return ServiceResult<PatientStatisticsDto>.Success(stats);
             }
             catch (Exception ex)
-            {                _logger.LogError(ex, "获取患者统计失败");                return ServiceResult<PatientStatisticsDto>.Failure("获取统计信息失败");            }
+            {
+                _logger.LogError(ex, "获取患者统计失败");
+                return ServiceResult<PatientStatisticsDto>.Failure("获取统计信息失败");
+            }
         }
 
         /// <summary>
@@ -274,7 +311,9 @@ namespace LYBT.Module.Patients.Helpers
                 // 简化实现：获取患者详情和就诊历史
                 var patient = await GetByIdAsync(id);
                 if (!patient.IsSuccess || patient.Data == null)
-                {                    return ServiceResult<object>.Failure("患者不存在");                }
+                {
+                    return ServiceResult<object>.Failure("患者不存在");
+                }
 
                 var visitHistory = await archiveService.GetVisitHistoryAsync(id);
                 var archive = new
@@ -286,7 +325,10 @@ namespace LYBT.Module.Patients.Helpers
                 return ServiceResult<object>.Success(archive);
             }
             catch (Exception ex)
-            {                _logger.LogError(ex, "获取患者档案失败: {PatientId}", id);                return ServiceResult<object>.Failure("获取患者档案失败");            }
+            {
+                _logger.LogError(ex, "获取患者档案失败: {PatientId}", id);
+                return ServiceResult<object>.Failure("获取患者档案失败");
+            }
         }
 
         /// <summary>
@@ -301,7 +343,10 @@ namespace LYBT.Module.Patients.Helpers
                 return ServiceResult<List<object>>.Success(result);
             }
             catch (Exception ex)
-            {                _logger.LogError(ex, "获取年龄统计失败");                return ServiceResult<List<object>>.Failure("获取年龄统计失败", ex);            }
+            {
+                _logger.LogError(ex, "获取年龄统计失败");
+                return ServiceResult<List<object>>.Failure("获取年龄统计失败", ex);
+            }
         }
 
         #endregion
@@ -319,7 +364,10 @@ namespace LYBT.Module.Patients.Helpers
                 return ServiceResult<bool>.Success(patient != null);
             }
             catch (Exception ex)
-            {                _logger.LogError(ex, "检查患者是否存在失败: {PatientId}", id);                return ServiceResult<bool>.Failure("检查患者是否存在失败");            }
+            {
+                _logger.LogError(ex, "检查患者是否存在失败: {PatientId}", id);
+                return ServiceResult<bool>.Failure("检查患者是否存在失败");
+            }
         }
 
         /// <summary>
@@ -327,7 +375,17 @@ namespace LYBT.Module.Patients.Helpers
         /// </summary>
         public ServiceResult<bool> ValidatePagedQuery(PatientPagedQueryDto query)
         {
-            if (query == null)                return ServiceResult<bool>.Failure("查询参数不能为空");            if (query.PageIndex < 1)                return ServiceResult<bool>.Failure("页码必须大于0");            if (query.PageSize < 1)                return ServiceResult<bool>.Failure("页大小必须大于0");            if (query.PageSize > 1000)                return ServiceResult<bool>.Failure("页大小不能超过1000");
+            if (query == null)
+                return ServiceResult<bool>.Failure("查询参数不能为空");
+            
+            if (query.PageIndex < 1)
+                return ServiceResult<bool>.Failure("页码必须大于0");
+            
+            if (query.PageSize < 1)
+                return ServiceResult<bool>.Failure("页大小必须大于0");
+            
+            if (query.PageSize > 1000)
+                return ServiceResult<bool>.Failure("页大小不能超过1000");
 
             return ServiceResult<bool>.Success(true);
         }
@@ -335,5 +393,3 @@ namespace LYBT.Module.Patients.Helpers
         #endregion
     }
 }
-
-

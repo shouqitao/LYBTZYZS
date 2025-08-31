@@ -218,7 +218,7 @@ namespace LYBT.Infrastructure.Web
         {
             if (serviceResult.IsSuccess)
             {
-                return Success(serviceResult.Data, successMessage ?? "操作成功");
+                return Success(serviceResult.Data!, successMessage ?? "操作成功");
             }
             else
             {

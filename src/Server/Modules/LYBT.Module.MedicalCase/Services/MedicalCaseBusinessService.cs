@@ -42,7 +42,7 @@ namespace LYBT.Module.MedicalCase.Services
                 // 数据验证
                 var validationResult = ValidateCreateDto(dto);
                 if (!validationResult.IsSuccess)
-                    return ServiceResult<MedicalCaseDto>.Failure(validationResult.ErrorMessage);
+                    return ServiceResult<MedicalCaseDto>.Failure(validationResult.ErrorMessage ?? "数据验证失败");
 
                 // 业务规则：检查患者是否有活跃案例
                 var hasActiveCase = await _context.MedicalCases
@@ -94,7 +94,7 @@ namespace LYBT.Module.MedicalCase.Services
                 // 数据验证
                 var validationResult = ValidateUpdateDto(dto);
                 if (!validationResult.IsSuccess)
-                    return ServiceResult<MedicalCaseDto>.Failure(validationResult.ErrorMessage);
+                    return ServiceResult<MedicalCaseDto>.Failure(validationResult.ErrorMessage ?? "数据验证失败");
 
                 var medicalCase = await _context.MedicalCases
                     .FirstOrDefaultAsync(mc => mc.Id == id);

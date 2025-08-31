@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using LYBT.Shared.Models.Contracts.Common;
 using System.Threading.Tasks;
 using LYBT.Shared.Models.Common;
@@ -6,27 +6,32 @@ using LYBT.Shared.Models.Common;
 namespace LYBT.Module.Users.Services.Account
 {
     /// <summary>
-    /// 鐢ㄦ埛璐︽埛鐘舵€佺鐞嗘湇鍔℃帴鍙?
-    /// UltraThink閲嶆瀯锛氫笓娉ㄤ簬鐢ㄦ埛璐︽埛鐘舵€佸拰涓汉璧勬枡绠＄悊
+    /// 用户账户状态管理服务接口
+    /// UltraThink重构：专注于用户账户状态和个人资料管理
     /// </summary>
     public interface IUserAccountService
     {
         /// <summary>
-        /// 鍚敤鐢ㄦ埛
+        /// 启用用户
         /// </summary>
-        /// <param name="id">鐢ㄦ埛ID</param>        /// <returns>鎿嶄綔缁撴灉</returns>
+        /// <param name="id">用户ID</param>
+        /// <returns>操作结果</returns>
         Task<ServiceResult<bool>> EnableUserAsync(Guid id);
 
         /// <summary>
-        /// 绂佺敤鐢ㄦ埛
-        /// </summary>        /// <param name="id">鐢ㄦ埛ID</param>        /// <returns>鎿嶄綔缁撴灉</returns>
+        /// 禁用用户
+        /// </summary>
+        /// <param name="id">用户ID</param>
+        /// <returns>操作结果</returns>
         Task<ServiceResult<bool>> DisableUserAsync(Guid id);
 
         /// <summary>
-        /// 鐢ㄦ埛淇敼涓汉璧勬枡
-        /// </summary>        /// <param name="id">鐢ㄦ埛ID</param>        /// <param name="realName">鐪熷疄濮撳悕</param>        /// <param name="phoneNumber">鐢佃瘽鍙风爜</param>
-        /// <returns>鎿嶄綔缁撴灉</returns>
+        /// 用户修改个人资料
+        /// </summary>
+        /// <param name="id">用户ID</param>
+        /// <param name="realName">真实姓名</param>
+        /// <param name="phoneNumber">电话号码</param>
+        /// <returns>操作结果</returns>
         Task<ServiceResult<bool>> ChangeProfileAsync(Guid id, string realName, string phoneNumber);
     }
 }
-

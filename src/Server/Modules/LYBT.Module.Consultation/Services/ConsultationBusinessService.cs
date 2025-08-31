@@ -60,7 +60,7 @@ namespace LYBT.Module.Consultation.Services
                 // 这里需要根据具体的四诊数据结构进行实现
                 // 目前暂时记录日志
                 _logger.LogInformation("保存四诊数据 - 看诊: {ChiefComplaint} ({Id})", 
-                    consultation.ChiefComplaint, consultation.Id);
+                    consultation.ChiefComplaint ?? "无主诉", consultation.Id);
 
                 // consultation.UpdatedTime = DateTime.Now; // 实体中无此字段
                 _context.Consultations.Update(consultation);

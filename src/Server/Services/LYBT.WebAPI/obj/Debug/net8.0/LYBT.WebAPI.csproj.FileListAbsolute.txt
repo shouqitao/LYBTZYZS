@@ -199,7 +199,6 @@ D:\source\repos\LYBTZYZS\src\Server\Services\LYBT.WebAPI\obj\Debug\net8.0\rpswa.
 D:\source\repos\LYBTZYZS\src\Server\Services\LYBT.WebAPI\obj\Debug\net8.0\LYBT.WebAPI.GeneratedMSBuildEditorConfig.editorconfig
 D:\source\repos\LYBTZYZS\src\Server\Services\LYBT.WebAPI\obj\Debug\net8.0\LYBT.WebAPI.AssemblyInfoInputs.cache
 D:\source\repos\LYBTZYZS\src\Server\Services\LYBT.WebAPI\obj\Debug\net8.0\LYBT.WebAPI.csproj.CoreCompileInputs.cache
-D:\source\repos\LYBTZYZS\src\Server\Services\LYBT.WebAPI\obj\Debug\net8.0\LYBT.WebAPI.MvcApplicationPartsAssemblyInfo.cs
 D:\source\repos\LYBTZYZS\src\Server\Services\LYBT.WebAPI\obj\Debug\net8.0\LYBT.WebAPI.MvcApplicationPartsAssemblyInfo.cache
 D:\source\repos\LYBTZYZS\src\Server\Services\LYBT.WebAPI\obj\Debug\net8.0\LYBT.WebAPI.sourcelink.json
 D:\source\repos\LYBTZYZS\src\Server\Services\LYBT.WebAPI\obj\Debug\net8.0\rjimswa.dswa.cache.json
@@ -210,10 +209,10 @@ D:\source\repos\LYBTZYZS\src\Server\Services\LYBT.WebAPI\obj\Debug\net8.0\static
 D:\source\repos\LYBTZYZS\src\Server\Services\LYBT.WebAPI\obj\Debug\net8.0\staticwebassets.build.json.cache
 D:\source\repos\LYBTZYZS\src\Server\Services\LYBT.WebAPI\obj\Debug\net8.0\staticwebassets.development.json
 D:\source\repos\LYBTZYZS\src\Server\Services\LYBT.WebAPI\obj\Debug\net8.0\staticwebassets.build.endpoints.json
-D:\source\repos\LYBTZYZS\src\Server\Services\LYBT.WebAPI\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
 D:\source\repos\LYBTZYZS\src\Server\Services\LYBT.WebAPI\obj\Debug\net8.0\LYBT.Web.99313491.Up2Date
 D:\source\repos\LYBTZYZS\src\Server\Services\LYBT.WebAPI\obj\Debug\net8.0\LYBT.WebAPI.dll
 D:\source\repos\LYBTZYZS\src\Server\Services\LYBT.WebAPI\obj\Debug\net8.0\refint\LYBT.WebAPI.dll
 D:\source\repos\LYBTZYZS\src\Server\Services\LYBT.WebAPI\obj\Debug\net8.0\LYBT.WebAPI.pdb
 D:\source\repos\LYBTZYZS\src\Server\Services\LYBT.WebAPI\obj\Debug\net8.0\LYBT.WebAPI.genruntimeconfig.cache
 D:\source\repos\LYBTZYZS\src\Server\Services\LYBT.WebAPI\obj\Debug\net8.0\ref\LYBT.WebAPI.dll
+D:\source\repos\LYBTZYZS\src\Server\Services\LYBT.WebAPI\obj\Debug\net8.0\LYBT.WebAPI.MvcApplicationPartsAssemblyInfo.cs

@@ -33,136 +33,81 @@ namespace LYBT.Module.Formula.Services
         #region IFormulaService 基础CRUD实现 - 委托给CoreService
 
         public async Task<ServiceResult<FormulaDto>> GetByIdAsync(Guid id)
-        {
-            return await _coreService.GetByIdAsync(id);
-        }
+            => await _coreService.GetByIdAsync(id);
 
         public async Task<ServiceResult<FormulaDto>> CreateAsync(FormulaCreateDto dto)
-        {
-            return await _coreService.CreateAsync(dto);
-        }
+            => await _coreService.CreateAsync(dto);
 
         public async Task<ServiceResult<FormulaDto>> UpdateAsync(Guid id, FormulaUpdateDto dto)
-        {
-            return await _coreService.UpdateAsync(id, dto);
-        }
+            => await _coreService.UpdateAsync(id, dto);
 
         public async Task<ServiceResult<bool>> DeleteAsync(Guid id)
-        {
-            return await _coreService.DeleteAsync(id);
-        }
+            => await _coreService.DeleteAsync(id);
 
         public async Task<ServiceResult> EnableAsync(Guid id)
-        {
-            return await _coreService.EnableAsync(id);
-        }
+            => await _coreService.EnableAsync(id);
 
         public async Task<ServiceResult> DisableAsync(Guid id)
-        {
-            return await _coreService.DisableAsync(id);
-        }
+            => await _coreService.DisableAsync(id);
 
         public async Task<ServiceResult<bool>> ToggleStatusAsync(Guid id)
-        {
-            return await _coreService.ToggleStatusAsync(id);
-        }
+            => await _coreService.ToggleStatusAsync(id);
 
         public async Task<bool> ExistsAsync(Guid id)
-        {
-            return await _coreService.ExistsAsync(id);
-        }
+            => await _coreService.ExistsAsync(id);
 
         public async Task<bool> IsNameDuplicatedAsync(string name, Guid? excludeId = null)
-        {
-            return await _coreService.IsNameDuplicatedAsync(name, excludeId);
-        }
+            => await _coreService.IsNameDuplicatedAsync(name, excludeId);
 
         #endregion
 
         #region IFormulaService 查询功能实现 - 委托给QueryService
 
         public async Task<ServiceResult<PagedResult<FormulaDto>>> GetPagedAsync(FormulaQueryDto query)
-        {
-            return await _queryService.GetPagedAsync(query);
-        }
+            => await _queryService.GetPagedAsync(query);
 
         public async Task<ServiceResult<PagedResult<FormulaDto>>> SearchFormulasAsync(PagedQueryBaseDto query)
-        {
-            return await _queryService.SearchFormulasAsync(query);
-        }
+            => await _queryService.SearchFormulasAsync(query);
 
-        // 修复方法签名：GetFormulasAsync - 支持两个参数
         public async Task<ServiceResult<List<FormulaDto>>> GetFormulasAsync(string? keyword = null, string? category = null)
-        {
-            return await _queryService.GetFormulasAsync(keyword, category);
-        }
+            => await _queryService.GetFormulasAsync(keyword, category);
 
         public async Task<ServiceResult<List<FormulaDto>>> GetAllFormulasAsync()
-        {
-            return await _queryService.GetAllFormulasAsync();
-        }
+            => await _queryService.GetAllFormulasAsync();
 
         public async Task<ServiceResult<List<string>>> GetCategoriesAsync()
-        {
-            return await _queryService.GetCategoriesAsync();
-        }
+            => await _queryService.GetCategoriesAsync();
 
-        // 新增方法：GetTemplatesAsync
         public async Task<ServiceResult<List<FormulaDto>>> GetTemplatesAsync()
-        {
-            return await _queryService.GetTemplatesAsync();
-        }
+            => await _queryService.GetTemplatesAsync();
 
-        // 新增方法：GetByTypeAsync
         public async Task<ServiceResult<List<FormulaDto>>> GetByTypeAsync(string formulaType)
-        {
-            return await _queryService.GetByTypeAsync(formulaType);
-        }
+            => await _queryService.GetByTypeAsync(formulaType);
 
-        // 修复方法签名：GetRecommendationsAsync - 返回正确的类型
         public async Task<ServiceResult<List<FormulaRecommendationDto>>> GetRecommendationsAsync(string syndrome)
-        {
-            return await _queryService.GetRecommendationsForSyndromeAsync(syndrome);
-        }
+            => await _queryService.GetRecommendationsForSyndromeAsync(syndrome);
 
-        // 新增方法：GetRecommendationsAsync - 重载版本
         public async Task<ServiceResult<List<FormulaRecommendationDto>>> GetRecommendationsAsync(string symptoms, string diagnosis, Guid doctorId)
-        {
-            return await _queryService.GetRecommendationsAsync(symptoms, diagnosis, doctorId);
-        }
+            => await _queryService.GetRecommendationsAsync(symptoms, diagnosis, doctorId);
 
         #endregion
 
         #region IFormulaService 业务功能实现 - 委托给BusinessService
 
         public async Task<ServiceResult<FormulaDto>> CopyAsync(Guid id, string newName)
-        {
-            return await _businessService.CopyAsync(id, newName);
-        }
+            => await _businessService.CopyAsync(id, newName);
 
-        // 修复方法签名：AnalyzeFormulaAsync - 返回正确的类型
         public async Task<ServiceResult<FormulaAnalysisResult>> AnalyzeFormulaAsync(Guid formulaId)
-        {
-            return await _businessService.AnalyzeFormulaAsync(formulaId);
-        }
+            => await _businessService.AnalyzeFormulaAsync(formulaId);
 
-        // 新增方法：CreateFromPrescriptionAsync
         public async Task<ServiceResult<FormulaDto>> CreateFromPrescriptionAsync(Guid prescriptionId, string name)
-        {
-            return await _businessService.CreateFromPrescriptionAsync(prescriptionId, name);
-        }
+            => await _businessService.CreateFromPrescriptionAsync(prescriptionId, name);
 
-        // 修复方法签名：ShareFormulaAsync - 匹配接口参数
         public async Task<ServiceResult<bool>> ShareFormulaAsync(Guid id, Guid operatorId, string operatorName)
-        {
-            return await _businessService.ShareFormulaAsync(id, operatorId, operatorName);
-        }
+            => await _businessService.ShareFormulaAsync(id, operatorId, operatorName);
 
-        // 修复方法签名：UnshareFormulaAsync - 匹配接口参数
         public async Task<ServiceResult<bool>> UnshareFormulaAsync(Guid id, Guid operatorId, string operatorName)
-        {
-            return await _businessService.UnshareFormulaAsync(id, operatorId, operatorName);
-        }
+            => await _businessService.UnshareFormulaAsync(id, operatorId, operatorName);
 
         #endregion
     }

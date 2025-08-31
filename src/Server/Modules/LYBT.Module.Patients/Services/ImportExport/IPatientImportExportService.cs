@@ -21,17 +21,20 @@ namespace LYBT.Module.Patients.Services.ImportExport
 
         /// <summary>
         /// 批量导入患者（简化版）
-        /// </summary>        /// <param name="patients">患者创建数据</param>        /// <returns>导入结果</returns>
+        /// </summary>
+        /// <param name="patients">患者创建数据</param>        /// <returns>导入结果</returns>
         Task<ServiceResult<object>> ImportPatientsAsync(List<PatientCreateDto> patients);
 
         /// <summary>
         /// 导出患者数据（完整版）
-        /// </summary>        /// <param name="query">导出查询条件</param>        /// <returns>导出结果</returns>
+        /// </summary>
+        /// <param name="query">导出查询条件</param>        /// <returns>导出结果</returns>
         Task<ServiceResult<List<PatientExportDto>>> ExportPatientsAsync(PatientExportQueryDto query);
 
         /// <summary>
         /// 导出患者数据（简化版）
-        /// </summary>        /// <param name="query">分页查询条件</param>
+        /// </summary>
+        /// <param name="query">分页查询条件</param>
         /// <returns>导出文件数据</returns>
         Task<ServiceResult<byte[]>> ExportPatientsAsync(PagedQueryBaseDto query);
     }
