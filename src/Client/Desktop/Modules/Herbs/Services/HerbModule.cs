@@ -96,7 +96,7 @@ namespace LYBT.Desktop.Herbs.Services
                 var validationResult = await ValidateCreateDtoAsync(createDto);
                 if (!validationResult.IsSuccess)
                 {
-                    return ServiceResult<HerbDto>.Failure(validationResult.ErrorMessage);
+                    return ServiceResult<HerbDto>.Failure(validationResult.ErrorMessage ?? "验证失败");
                 }
                 
                 // 检查中药材名称是否已存在
@@ -131,7 +131,7 @@ namespace LYBT.Desktop.Herbs.Services
                 var validationResult = await ValidateUpdateDtoAsync(updateDto);
                 if (!validationResult.IsSuccess)
                 {
-                    return ServiceResult<HerbDto>.Failure(validationResult.ErrorMessage);
+                    return ServiceResult<HerbDto>.Failure(validationResult.ErrorMessage ?? "验证失败");
                 }
                 
                 // 检查中药材名称是否已被其他中药材使用
@@ -143,7 +143,7 @@ namespace LYBT.Desktop.Herbs.Services
                 
                 // API调用
                 var apiResult = await _apiService.UpdateHerbAsync(updateDto.Id, updateDto);
-                if (!apiResult.IsSuccessStatusCode || apiResult.Content == null)
+                if (!apiResult.IsSuccessStatusCode)
                 {
                     return ServiceResult<HerbDto>.Failure(
                         apiResult.Error?.Message ?? "更新中药材失败");
@@ -218,10 +218,10 @@ namespace LYBT.Desktop.Herbs.Services
                 var result = await GetPagedAsync(query);
                 if (!result.IsSuccess)
                 {
-                    return ServiceResult<HerbDto>.Failure(result.ErrorMessage);
+                    return ServiceResult<HerbDto>.Failure(result.ErrorMessage ?? "查找中药材失败");
                 }
                 
-                var herb = result.Data.Items.FirstOrDefault(h => h.Name == name);
+                var herb = result.Data?.Items?.FirstOrDefault(h => h.Name == name);
                 if (herb == null)
                 {
                     return ServiceResult<HerbDto>.Failure("未找到指定中药材");
@@ -330,7 +330,7 @@ namespace LYBT.Desktop.Herbs.Services
                     return ServiceResult<bool>.Success(false);
                 }
                 
-                var exists = excludeId == null || herbResult.Data.Id != excludeId.Value;
+                var exists = excludeId == null || herbResult.Data?.Id != excludeId.Value;
                 return ServiceResult<bool>.Success(exists);
             }
             catch (Exception ex)
@@ -414,7 +414,7 @@ namespace LYBT.Desktop.Herbs.Services
 
                 // API调用批量导入
                 var apiResponse = await _apiService.ImportHerbsAsync(herbs);
-                if (!apiResponse.IsSuccessStatusCode || apiResponse.Content == null)
+                if (!apiResponse.IsSuccessStatusCode)
                 {
                     return ServiceResult<int>.Failure("批量导入药材失败");
                 }
@@ -488,10 +488,10 @@ namespace LYBT.Desktop.Herbs.Services
                 var result = await GetPagedAsync(query);
                 if (!result.IsSuccess)
                 {
-                    return ServiceResult<List<HerbDto>>.Failure(result.ErrorMessage);
+                    return ServiceResult<List<HerbDto>>.Failure(result.ErrorMessage ?? "获取中药材失败");
                 }
                 
-                return ServiceResult<List<HerbDto>>.Success(result.Data.Items);
+                return ServiceResult<List<HerbDto>>.Success(result.Data?.Items ?? new List<HerbDto>());
             }
             catch (Exception ex)
             {
