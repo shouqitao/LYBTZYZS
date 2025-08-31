@@ -21,7 +21,6 @@ namespace LYBT.Desktop.Workbench.Admin.ViewModels
     public class SystemWorkbenchMainViewModel : ServiceViewModel
     {
         private readonly IRegionManager _regionManager;
-        private readonly IEventAggregator? _eventAggregator;
         private readonly IWorkbenchRouter _workbenchRouter;
         private readonly IPatientService? _patientService;
         private readonly IUserService? _userService;

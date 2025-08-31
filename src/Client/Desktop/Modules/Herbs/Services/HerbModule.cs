@@ -610,7 +610,7 @@ namespace LYBT.Desktop.Herbs.Services
                     return ServiceResult<List<HerbDto>>.Failure(result.ErrorMessage ?? "操作失败");
                 }
                 
-                return ServiceResult<List<HerbDto>>.Success(result.Data.Items);
+                return ServiceResult<List<HerbDto>>.Success(result.Data!.Items);
             }
             catch (Exception ex)
             {
@@ -652,7 +652,7 @@ namespace LYBT.Desktop.Herbs.Services
                     return ServiceResult<List<HerbDto>>.Failure(result.ErrorMessage ?? "操作失败");
                 }
                 
-                return ServiceResult<List<HerbDto>>.Success(result.Data.Items);
+                return ServiceResult<List<HerbDto>>.Success(result.Data!.Items);
             }
             catch (Exception ex)
             {
@@ -679,7 +679,7 @@ namespace LYBT.Desktop.Herbs.Services
                     return ServiceResult<List<HerbDto>>.Failure(result.ErrorMessage ?? "操作失败");
                 }
                 
-                var availableHerbs = result.Data.Items
+                var availableHerbs = result.Data!.Items
                     .Where(h => h.IsEnabled && h.Status == CommonStatus.Enabled)
                     .ToList();
                 
@@ -717,14 +717,14 @@ namespace LYBT.Desktop.Herbs.Services
                 var allHerbs = await GetAllAsync();
                 if (!allHerbs.IsSuccess)
                 {
-                    return ServiceResult<Dictionary<int, int>>.Failure(allHerbs.ErrorMessage);
+                    return ServiceResult<Dictionary<int, int>>.Failure(allHerbs.ErrorMessage ?? "获取中药材统计失败");
                 }
                 
                 var stats = new Dictionary<int, int>
                 {
-                    { 1, allHerbs.Data.Count }, // 总数
-                    { 2, allHerbs.Data.Count(h => h.IsEnabled) }, // 可用数量
-                    { 3, allHerbs.Data.Count(h => !h.IsEnabled) } // 禁用数量
+                    { 1, allHerbs.Data!.Count }, // 总数
+                    { 2, allHerbs.Data!.Count(h => h.IsEnabled) }, // 可用数量
+                    { 3, allHerbs.Data!.Count(h => !h.IsEnabled) } // 禁用数量
                 };
                 
                 return ServiceResult<Dictionary<int, int>>.Success(stats);
@@ -760,7 +760,7 @@ namespace LYBT.Desktop.Herbs.Services
                     return ServiceResult<List<HerbDto>>.Failure(result.ErrorMessage ?? "操作失败");
                 }
                 
-                return ServiceResult<List<HerbDto>>.Success(result.Data.Items);
+                return ServiceResult<List<HerbDto>>.Success(result.Data!.Items);
             }
             catch (Exception ex)
             {
