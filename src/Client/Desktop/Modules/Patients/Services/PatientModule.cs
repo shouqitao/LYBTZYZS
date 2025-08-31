@@ -580,7 +580,7 @@ namespace LYBT.Desktop.Patients.Services
             }
             catch (Exception ex)
             {
-                return ServiceResult<PatientStatisticsDto>.Failure($"获取患者统计信息异常: {ex.Message}");
+                return Task.FromResult(ServiceResult<PatientStatisticsDto>.Failure($"获取患者统计信息异常: {ex.Message}"));
             }
         }
         
@@ -617,7 +617,7 @@ namespace LYBT.Desktop.Patients.Services
             }
             catch (Exception ex)
             {
-                return ServiceResult<bool>.Failure($"更新患者档案异常: {ex.Message}");
+                return Task.FromResult(ServiceResult<bool>.Failure($"更新患者档案异常: {ex.Message}"));
             }
         }
         
@@ -723,7 +723,7 @@ namespace LYBT.Desktop.Patients.Services
             }
             catch (Exception ex)
             {
-                return ServiceResult<List<object>>.Failure($"获取患者年龄分布统计异常: {ex.Message}");
+                return Task.FromResult(ServiceResult<List<object>>.Failure($"获取患者年龄分布统计异常: {ex.Message}"));
             }
         }
         

@@ -184,6 +184,12 @@ namespace LYBT.Desktop.Prescriptions.Components
     /// </summary>
     public class PriceCalculationResult
     {
+        /// <summary>计算是否成功</summary>
+        public bool IsSuccess { get; set; } = true;
+
+        /// <summary>错误信息</summary>
+        public string? ErrorMessage { get; set; }
+
         /// <summary>单剂价格</summary>
         public decimal SingleDosePrice { get; set; }
 
