@@ -187,23 +187,25 @@
             </Button.Style>
         </Button>
 
-        <!-- 状态消息 -->
-        <TextBlock Grid.Row="10" 
-                   Text="{Binding StatusMessage}" 
-                   Foreground="Green" 
-                   FontSize="12" 
-                   HorizontalAlignment="Center"
-                   TextWrapping="Wrap"
-                   Visibility="{Binding StatusMessage, Converter={StaticResource StringToVisibilityConverter}}"/>
-        
-        <!-- 错误消息 -->
-        <TextBlock Grid.Row="10" 
-                   Text="{Binding ErrorMessage}" 
-                   Foreground="Red" 
-                   FontSize="12" 
-                   HorizontalAlignment="Center"
-                   TextWrapping="Wrap"
-                   Visibility="{Binding ErrorMessage, Converter={StaticResource StringToVisibilityConverter}}"/>
+        <!-- 状态和错误消息区域 -->
+        <Border Grid.Row="10" Background="#F8F9FA" CornerRadius="4" Padding="10,5" Margin="0,5,0,0"
+                Visibility="{Binding HasMessage, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <!-- 状态消息 -->
+            <TextBlock Text="{Binding StatusMessage}" 
+                       Foreground="Green" 
+                       FontSize="12" 
+                       HorizontalAlignment="Center"
+                       TextWrapping="Wrap"
+                       Visibility="{Binding StatusMessage, Converter={StaticResource StringToVisibilityConverter}}"/>
+            
+            <!-- 错误消息 -->
+            <TextBlock Text="{Binding ErrorMessage}" 
+                       Foreground="Red" 
+                       FontSize="12" 
+                       HorizontalAlignment="Center"
+                       TextWrapping="Wrap"
+                       Visibility="{Binding ErrorMessage, Converter={StaticResource StringToVisibilityConverter}}"/>
+        </Border>
 
         <!-- 加载遮罩 -->
         <Grid Grid.RowSpan="12" 
