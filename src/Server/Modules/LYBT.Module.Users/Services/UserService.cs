@@ -10,21 +10,14 @@ namespace LYBT.Module.Users.Services
     /// <summary>
     /// 用户服务 - UltraThink三层架构纯委托模式
     /// </summary>
-    public class UserService : LYBT.Shared.Interfaces.Services.IUserService
+    public class UserService(
+        Core.IUserServiceCore coreService,
+        IUserQueryService queryService,
+        IUserBusinessService businessService) : LYBT.Shared.Interfaces.Services.IUserService
     {
-        private readonly Core.IUserServiceCore _coreService;
-        private readonly IUserQueryService _queryService;
-        private readonly IUserBusinessService _businessService;
-
-        public UserService(
-            Core.IUserServiceCore coreService,
-            IUserQueryService queryService,
-            IUserBusinessService businessService)
-        {
-            _coreService = coreService ?? throw new ArgumentNullException(nameof(coreService));
-            _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
-            _businessService = businessService ?? throw new ArgumentNullException(nameof(businessService));
-        }
+        private readonly Core.IUserServiceCore _coreService = coreService ?? throw new ArgumentNullException(nameof(coreService));
+        private readonly IUserQueryService _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
+        private readonly IUserBusinessService _businessService = businessService ?? throw new ArgumentNullException(nameof(businessService));
 
         #region 查询操作
 

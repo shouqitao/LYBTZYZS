@@ -14,7 +14,7 @@ namespace LYBT.Shared.Models.Common
         /// </summary>
         [Required(ErrorMessage = "ID集合不能为空")]
         [MinLength(1, ErrorMessage = "至少需要选择一项")]
-        public List<Guid> Ids { get; set; } = new List<Guid>();
+        public List<Guid> Ids { get; set; } = [];
 
         /// <summary>
         /// 操作原因（可选）

@@ -460,7 +460,7 @@ namespace LYBT.Module.Users.Services
         /// <summary>
         /// 统一用户变更DTO验证 - UltraThink现代化DTO设计
         /// </summary>
-        private static async Task<ServiceResult<bool>> ValidateUserMutationAsync(UserMutationDto dto, bool isCreateOperation, Guid? _existingUserId = null)
+        private static async Task<ServiceResult<bool>> ValidateUserMutationAsync(UserMutationDto dto, bool isCreateOperation, Guid? _ = null)
         {
             if (dto == null)
                 return ServiceResult<bool>.Failure("用户信息不能为空");

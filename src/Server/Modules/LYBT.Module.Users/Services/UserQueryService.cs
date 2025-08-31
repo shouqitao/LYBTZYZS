@@ -18,21 +18,14 @@ namespace LYBT.Module.Users.Services
     /// 用户查询服务 - UltraThink架构
     /// 职责：分页查询，搜索筛选，用户查询，角色获取
     /// </summary>
-    public class UserQueryService : IUserQueryService
+    public class UserQueryService(
+        AppDbContext context,
+        IMapper mapper,
+        ILogger<UserQueryService> logger) : IUserQueryService
     {
-        private readonly AppDbContext _context;
-        private readonly IMapper _mapper;
-        private readonly ILogger<UserQueryService> _logger;
-
-        public UserQueryService(
-            AppDbContext context,
-            IMapper mapper,
-            ILogger<UserQueryService> logger)
-        {
-            _context = context ?? throw new ArgumentNullException(nameof(context));
-            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        }
+        private readonly AppDbContext _context = context ?? throw new ArgumentNullException(nameof(context));
+        private readonly IMapper _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+        private readonly ILogger<UserQueryService> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
         /// <summary>
         /// 根据ID获取用户详情
@@ -253,7 +246,7 @@ namespace LYBT.Module.Users.Services
                     })
                     .FirstOrDefaultAsync();
 
-                var logs = new List<object>();
+                List<object> logs = [];
                 if (user != null)
                 {
                     logs.Add(user);

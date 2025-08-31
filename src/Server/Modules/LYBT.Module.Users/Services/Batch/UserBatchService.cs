@@ -128,7 +128,7 @@ namespace LYBT.Module.Users.Services.Batch
         /// 记录批量用户操作日志
         /// </summary>
         private Task LogBatchUserOperation(
-            List<Guid> targetUserIds, ActionType actionType, Guid _operatorId, string operatorName,
+            List<Guid> targetUserIds, ActionType actionType, Guid _, string operatorName,
             string description)
         {
             try

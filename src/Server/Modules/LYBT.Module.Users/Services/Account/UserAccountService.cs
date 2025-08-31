@@ -36,7 +36,7 @@ namespace LYBT.Module.Users.Services.Account
                 if (result)
                 {
                     await LogUserOperation(
-                        id, ActionType.Update, Guid.Empty, "System",                        $"启用用户：{user.Username}",                        _oldValue: JsonSerializer.Serialize(user)
+                        id, ActionType.Update, Guid.Empty, "System",                        $"启用用户：{user.Username}",                        _1: JsonSerializer.Serialize(user)
                     );
 
                     _logger.LogInformation("启用用户成功: {Username} (ID: {UserId})", user.Username, id);                }
@@ -61,7 +61,7 @@ namespace LYBT.Module.Users.Services.Account
                 if (result)
                 {
                     await LogUserOperation(
-                        id, ActionType.Update, Guid.Empty, "System",                        $"禁用用户：{user.Username}",                        _oldValue: JsonSerializer.Serialize(user)
+                        id, ActionType.Update, Guid.Empty, "System",                        $"禁用用户：{user.Username}",                        _1: JsonSerializer.Serialize(user)
                     );
 
                     _logger.LogInformation("禁用用户成功: {Username} (ID: {UserId})", user.Username, id);                }
@@ -97,7 +97,7 @@ namespace LYBT.Module.Users.Services.Account
                 {
                     await LogUserOperation(
                         id, ActionType.Update, id, user.RealName,
-                        "用户修改个人资料",                        _oldValue: oldSnapshot, _newValue: JsonSerializer.Serialize(result)
+                        "用户修改个人资料",                        _1: oldSnapshot, _2: JsonSerializer.Serialize(result)
                     );
 
                     _logger.LogInformation("用户修改个人资料成功: {Username} (ID: {UserId})", user.Username, id);                    return ServiceResult<bool>.Success(true);
@@ -118,17 +118,15 @@ namespace LYBT.Module.Users.Services.Account
         private async Task<User> GetExistingUser(Guid id)
         {
             var user = await _userRepository.GetByIdAsync(id);
-            if (user == null)
-                throw new InvalidOperationException($"用户不存在: {id}");            
-            return user;
+            return user ?? throw new InvalidOperationException($"用户不存在: {id}");
         }
 
         /// <summary>
         /// 记录用户操作日志
         /// </summary>
         private Task LogUserOperation(
-            Guid targetUserId, ActionType actionType, Guid _operatorId, string operatorName, 
-            string description, object? _oldValue = null, object? _newValue = null)
+            Guid targetUserId, ActionType actionType, Guid _, string operatorName, 
+            string description, object? _1 = null, object? _2 = null)
         {
             try
             {
