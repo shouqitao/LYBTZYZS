@@ -23,7 +23,7 @@ namespace LYBT.Desktop.Workbench.Consultation.ViewModels
         private readonly IRegionManager _regionManager;
         private readonly IWorkbenchRouter _workbenchRouter;
         private readonly IConsultationWorkbenchNavigator _navigator;
-        private readonly IPatientService _patientService;
+        private readonly IPatientService? _patientService;
         
         #region Properties
 
@@ -68,7 +68,7 @@ namespace LYBT.Desktop.Workbench.Consultation.ViewModels
             IWorkbenchRouter workbenchRouter,
             IConsultationWorkbenchNavigator navigator,
             IErrorHandlingService errorHandlingService,
-            IPatientService patientService = null)
+            IPatientService? patientService = null)
             : base(eventAggregator, errorHandlingService)
         {
             _regionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));

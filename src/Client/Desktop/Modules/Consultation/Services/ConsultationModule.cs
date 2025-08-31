@@ -412,20 +412,20 @@ namespace LYBT.Desktop.Consultation.Services
             }
         }
 
-        public async Task<ServiceResult<bool>> CanDeleteAsync(Guid id)
+        public Task<ServiceResult<bool>> CanDeleteAsync(Guid id)
         {
             // 简化：只检查ID是否有效
-            return id != Guid.Empty 
+            return Task.FromResult(id != Guid.Empty 
                 ? ServiceResult<bool>.Success(true)
-                : ServiceResult<bool>.Failure("无效的ID");
+                : ServiceResult<bool>.Failure("无效的ID"));
         }
 
-        public async Task<ServiceResult<bool>> CanModifyAsync(Guid id)
+        public Task<ServiceResult<bool>> CanModifyAsync(Guid id)
         {
             // 简化：只检查ID是否有效
-            return id != Guid.Empty 
+            return Task.FromResult(id != Guid.Empty 
                 ? ServiceResult<bool>.Success(true)
-                : ServiceResult<bool>.Failure("无效的ID");
+                : ServiceResult<bool>.Failure("无效的ID"));
         }
 
         public async Task<ServiceResult> UpdateDiagnosisAsync(Guid consultationId, ConsultationUpdateDto diagnosisData)
@@ -510,7 +510,7 @@ namespace LYBT.Desktop.Consultation.Services
                     return ServiceResult<object>.Failure("未找到对应的看诊记录");
                 }
 
-                var consultation = consultationsResult.Data.First();
+                var consultation = consultationsResult.Data!.First();
                 var fourDiagnosis = new
                 {
                     Inspection = consultation.Inspection,
