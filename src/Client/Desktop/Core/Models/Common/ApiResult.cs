@@ -12,7 +12,7 @@ namespace LYBT.Desktop.Core.Models.Common
         /// <summary>
         /// 是否成功
         /// </summary>
-        public bool IsSuccess { get; set; }
+        public bool IsSuccess { get; set; } = false;
 
         /// <summary>
         /// 返回数据

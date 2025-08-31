@@ -42,10 +42,10 @@ namespace LYBT.Desktop.Core.Events
     /// </summary>
     public class PatientSelectedData : EventDataBase
     {
-        public Guid PatientId { get; set; }
+        public Guid PatientId { get; set; } = Guid.Empty;
         public string PatientName { get; set; } = string.Empty;
         public string? PatientIdNumber { get; set; }
-        public int PatientAge { get; set; }
+        public int PatientAge { get; set; } = 0;
         public string? Gender { get; set; }
     }
 
@@ -54,12 +54,12 @@ namespace LYBT.Desktop.Core.Events
     /// </summary>
     public class ConsultationStartedData : EventDataBase
     {
-        public Guid ConsultationId { get; set; }
-        public Guid PatientId { get; set; }
+        public Guid ConsultationId { get; set; } = Guid.Empty;
+        public Guid PatientId { get; set; } = Guid.Empty;
         public string PatientName { get; set; } = string.Empty;
-        public Guid DoctorId { get; set; }
+        public Guid DoctorId { get; set; } = Guid.Empty;
         public string? DoctorName { get; set; }
-        public Guid MedicalCaseId { get; set; }
+        public Guid MedicalCaseId { get; set; } = Guid.Empty;
     }
 
     /// <summary>
@@ -67,10 +67,10 @@ namespace LYBT.Desktop.Core.Events
     /// </summary>
     public class ConsultationCompletedDataNew : EventDataBase
     {
-        public Guid ConsultationId { get; set; }
-        public Guid PatientId { get; set; }
+        public Guid ConsultationId { get; set; } = Guid.Empty;
+        public Guid PatientId { get; set; } = Guid.Empty;
         public string PatientName { get; set; } = string.Empty;
-        public bool IsSuccessful { get; set; }
+        public bool IsSuccessful { get; set; } = false;
         public string? ErrorMessage { get; set; }
         public Guid? PrescriptionId { get; set; }
         public decimal? TotalAmount { get; set; }
@@ -81,12 +81,12 @@ namespace LYBT.Desktop.Core.Events
     /// </summary>
     public class PrescriptionSavedData : EventDataBase
     {
-        public Guid PrescriptionId { get; set; }
-        public Guid PatientId { get; set; }
+        public Guid PrescriptionId { get; set; } = Guid.Empty;
+        public Guid PatientId { get; set; } = Guid.Empty;
         public string PatientName { get; set; } = string.Empty;
-        public Guid ConsultationId { get; set; }
-        public decimal TotalAmount { get; set; }
-        public int HerbCount { get; set; }
+        public Guid ConsultationId { get; set; } = Guid.Empty;
+        public decimal TotalAmount { get; set; } = 0m;
+        public int HerbCount { get; set; } = 0;
         public string? PrescriptionNumber { get; set; }
     }
 
@@ -95,9 +95,9 @@ namespace LYBT.Desktop.Core.Events
     /// </summary>
     public class DataRefreshRequestData : EventDataBase
     {
-        public DataRefreshScope RefreshScope { get; set; }
+        public DataRefreshScope RefreshScope { get; set; } = DataRefreshScope.All;
         public string? TargetModule { get; set; }
-        public bool ForceRefresh { get; set; }
+        public bool ForceRefresh { get; set; } = false;
     }
 
     /// <summary>
@@ -115,7 +115,7 @@ namespace LYBT.Desktop.Core.Events
     /// </summary>
     public class StatusMessageData : EventDataBase
     {
-        public StatusMessageType MessageType { get; set; }
+        public StatusMessageType MessageType { get; set; } = 0;
         public int DisplayDuration { get; set; } = 3000; // 毫秒
         public bool IsAutoDismiss { get; set; } = true;
     }

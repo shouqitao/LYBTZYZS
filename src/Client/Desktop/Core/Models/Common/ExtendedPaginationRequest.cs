@@ -26,6 +26,6 @@ namespace LYBT.Desktop.Core.Models.Common
         /// <summary>
         /// 是否降序排序
         /// </summary>
-        public new bool IsDescending { get; set; }
+        public new bool IsDescending { get; set; } = false;
     }
 }

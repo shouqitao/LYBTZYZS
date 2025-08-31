@@ -131,9 +131,9 @@ namespace LYBT.Desktop.Core.Events
     /// </summary>
     public class ConsultationSessionData
     {
-        public Guid PatientId { get; set; }
-        public Guid MedicalCaseId { get; set; }
-        public Guid ConsultationId { get; set; }
+        public Guid PatientId { get; set; } = Guid.Empty;
+        public Guid MedicalCaseId { get; set; } = Guid.Empty;
+        public Guid ConsultationId { get; set; } = Guid.Empty;
         public DateTime SessionStartTime { get; set; } = DateTime.Now;
     }
 
@@ -156,12 +156,12 @@ namespace LYBT.Desktop.Core.Events
     /// </summary>
     public class PrescriptionCreatedData
     {
-        public Guid PrescriptionId { get; set; }
-        public Guid PatientId { get; set; }
-        public Guid MedicalCaseId { get; set; }
-        public Guid ConsultationId { get; set; }
+        public Guid PrescriptionId { get; set; } = Guid.Empty;
+        public Guid PatientId { get; set; } = Guid.Empty;
+        public Guid MedicalCaseId { get; set; } = Guid.Empty;
+        public Guid ConsultationId { get; set; } = Guid.Empty;
         public string PrescriptionNumber { get; set; } = string.Empty;
-        public decimal TotalAmount { get; set; }
+        public decimal TotalAmount { get; set; } = 0m;
     }
 
     /// <summary>
@@ -169,11 +169,11 @@ namespace LYBT.Desktop.Core.Events
     /// </summary>
     public class ConsultationCompletedData
     {
-        public Guid ConsultationId { get; set; }
-        public Guid PrescriptionId { get; set; }
-        public Guid PatientId { get; set; }
+        public Guid ConsultationId { get; set; } = Guid.Empty;
+        public Guid PrescriptionId { get; set; } = Guid.Empty;
+        public Guid PatientId { get; set; } = Guid.Empty;
         public DateTime CompletedTime { get; set; } = DateTime.Now;
-        public bool IsSuccessful { get; set; }
+        public bool IsSuccessful { get; set; } = false;
         public string? ErrorMessage { get; set; }
     }
 
@@ -182,10 +182,10 @@ namespace LYBT.Desktop.Core.Events
     /// </summary>
     public class ConsultationNavigationData
     {
-        public ConsultationStep CurrentStep { get; set; }
+        public ConsultationStep CurrentStep { get; set; } = ConsultationStep.PatientSelection;
         public ConsultationStep? NextStep { get; set; }
-        public bool CanGoBack { get; set; }
-        public bool CanGoForward { get; set; }
+        public bool CanGoBack { get; set; } = false;
+        public bool CanGoForward { get; set; } = false;
     }
 
     /// <summary>
@@ -206,8 +206,8 @@ namespace LYBT.Desktop.Core.Events
     /// </summary>
     public class MedicalCaseSelectedEventArgs
     {
-        public Guid MedicalCaseId { get; set; }
-        public Guid PatientId { get; set; }
+        public Guid MedicalCaseId { get; set; } = Guid.Empty;
+        public Guid PatientId { get; set; } = Guid.Empty;
         public string PatientName { get; set; } = string.Empty;
         public DateTime SelectionTime { get; set; } = DateTime.Now;
 
@@ -235,7 +235,7 @@ namespace LYBT.Desktop.Core.Events
     public class PrescriptionComposerClosedEventArgs
     {
         public Guid? PrescriptionId { get; set; }
-        public bool IsSaved { get; set; }
+        public bool IsSaved { get; set; } = false;
         public DateTime CloseTime { get; set; } = DateTime.Now;
 
         public PrescriptionComposerClosedEventArgs()

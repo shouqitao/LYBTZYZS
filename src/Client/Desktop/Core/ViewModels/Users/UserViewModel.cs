@@ -203,7 +203,7 @@ namespace LYBT.Desktop.Core.ViewModels.Users
             return userData != null && Id == userData.Id;
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return obj is UserViewModel other && IsSameUser(other);
         }

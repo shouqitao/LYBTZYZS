@@ -9,7 +9,7 @@ namespace LYBT.Desktop.Core.Models
     /// <typeparam name="T">包装的数据类型</typeparam>
     public class SelectableItem<T> : BindableBase
     {
-        private bool _isSelected;
+        private bool _isSelected = false;
         private T _data = default!;
 
         /// <summary>

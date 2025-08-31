@@ -45,7 +45,7 @@ namespace LYBT.Desktop.Core.Views.Dialogs
                 DataContext is HerbSelectionDialogViewModel viewModel)
             {
                 var columnName = header.Content.ToString();
-                if (viewModel.SortCommand.CanExecute(columnName))
+                if (!string.IsNullOrEmpty(columnName) && viewModel.SortCommand.CanExecute(columnName))
                 {
                     viewModel.SortCommand.Execute(columnName);
                 }

@@ -24,13 +24,13 @@ namespace LYBT.Desktop.Core.Models.Prescriptions
         private int _dosageCount = 7;
         private string _remark = string.Empty;
         private List<PrescriptionTemplateItem> _items = new();
-        private bool _isPublic;
+        private bool _isPublic = false;
         private bool _isActive = true;
-        private Guid _creatorId;
+        private Guid _creatorId = Guid.Empty;
         private string _creatorName = string.Empty;
         private DateTime _createTime = DateTime.Now;
         private DateTime? _updateTime;
-        private int _usageCount;
+        private int _usageCount = 0;
 
         /// <summary>
         /// 模板ID
@@ -286,15 +286,15 @@ namespace LYBT.Desktop.Core.Models.Prescriptions
     public class PrescriptionTemplateItem : INotifyPropertyChanged
     {
         private Guid _id = Guid.NewGuid();
-        private Guid _templateId;
-        private Guid _herbId;
+        private Guid _templateId = Guid.Empty;
+        private Guid _herbId = Guid.Empty;
         private string _herbName = string.Empty;
-        private decimal _quantity;
+        private decimal _quantity = 0m;
         private string _unit = "g";
-        private decimal _estimatedPrice;
+        private decimal _estimatedPrice = 0m;
         private string _processMethod = string.Empty;
         private string _remark = string.Empty;
-        private int _sortOrder;
+        private int _sortOrder = 0;
 
         /// <summary>
         /// 项目ID

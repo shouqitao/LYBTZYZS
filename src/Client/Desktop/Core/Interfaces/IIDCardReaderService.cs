@@ -33,12 +33,12 @@ namespace LYBT.Desktop.Core.Interfaces
         /// <summary>
         /// 读卡器状态变化事件
         /// </summary>
-        event EventHandler<IDCardReaderStatusChangedEventArgs> StatusChanged;
+        event EventHandler<IDCardReaderStatusChangedEventArgs>? StatusChanged;
 
         /// <summary>
         /// 读卡成功事件
         /// </summary>
-        event EventHandler<IDCardReadEventArgs> CardRead;
+        event EventHandler<IDCardReadEventArgs>? CardRead;
     }
 
     /// <summary>

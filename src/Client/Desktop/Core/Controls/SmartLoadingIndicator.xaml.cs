@@ -61,7 +61,6 @@ namespace LYBT.Desktop.Core.Controls
 
         #region 私有字段
 
-        private ILoadingOperation? _currentOperation;
         private bool _isVisible;
         private string _loadingMessage = "加载中...";
         private int _progressValue;

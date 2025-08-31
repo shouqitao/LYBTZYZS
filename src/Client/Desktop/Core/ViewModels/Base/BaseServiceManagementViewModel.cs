@@ -119,47 +119,47 @@ namespace LYBT.Desktop.Core.ViewModels.Base
         /// <summary>
         /// 搜索命令
         /// </summary>
-        public DelegateCommand SearchCommand { get; set; }
+        public DelegateCommand SearchCommand { get; set; } = null!;
 
         /// <summary>
         /// 刷新命令
         /// </summary>
-        public new DelegateCommand RefreshCommand { get; set; }
+        public new DelegateCommand RefreshCommand { get; set; } = null!;
 
         /// <summary>
         /// 添加命令
         /// </summary>
-        public DelegateCommand AddCommand { get; set; }
+        public DelegateCommand AddCommand { get; set; } = null!;
 
         /// <summary>
         /// 编辑命令
         /// </summary>
-        public DelegateCommand<TModel> EditCommand { get; set; }
+        public DelegateCommand<TModel> EditCommand { get; set; } = null!;
 
         /// <summary>
         /// 删除命令
         /// </summary>
-        public DelegateCommand<TModel> DeleteCommand { get; set; }
+        public DelegateCommand<TModel> DeleteCommand { get; set; } = null!;
 
         /// <summary>
         /// 第一页命令
         /// </summary>
-        public DelegateCommand FirstPageCommand { get; set; }
+        public DelegateCommand FirstPageCommand { get; set; } = null!;
 
         /// <summary>
         /// 上一页命令
         /// </summary>
-        public DelegateCommand PreviousPageCommand { get; set; }
+        public DelegateCommand PreviousPageCommand { get; set; } = null!;
 
         /// <summary>
         /// 下一页命令
         /// </summary>
-        public DelegateCommand NextPageCommand { get; set; }
+        public DelegateCommand NextPageCommand { get; set; } = null!;
 
         /// <summary>
         /// 最后一页命令
         /// </summary>
-        public DelegateCommand LastPageCommand { get; set; }
+        public DelegateCommand LastPageCommand { get; set; } = null!;
 
         #endregion
 

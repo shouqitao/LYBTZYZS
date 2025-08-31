@@ -20,7 +20,7 @@ namespace LYBT.Desktop.Core.Models.Consultation
     /// </summary>
     public class WorkflowStepData
     {
-        public WorkflowStep Step { get; set; }
+        public WorkflowStep Step { get; set; } = WorkflowStep.PatientSelection;
         public object? Data { get; set; }
         public DateTime Timestamp { get; set; } = DateTime.Now;
     }
@@ -53,9 +53,9 @@ namespace LYBT.Desktop.Core.Models.Consultation
     public class PrescriptionData
     {
         public List<PrescriptionItem> Items { get; set; } = new();
-        public int Dosage { get; set; }
+        public int Dosage { get; set; } = 0;
         public string Usage { get; set; } = string.Empty;
-        public decimal TotalPrice { get; set; }
+        public decimal TotalPrice { get; set; } = 0m;
         public decimal Discount { get; set; } = 1.0m;
     }
 
@@ -64,11 +64,11 @@ namespace LYBT.Desktop.Core.Models.Consultation
     /// </summary>
     public class PrescriptionItem
     {
-        public Guid HerbId { get; set; }
+        public Guid HerbId { get; set; } = Guid.Empty;
         public string HerbName { get; set; } = string.Empty;
-        public decimal Quantity { get; set; }
+        public decimal Quantity { get; set; } = 0m;
         public string Unit { get; set; } = "g";
-        public decimal UnitPrice { get; set; }
+        public decimal UnitPrice { get; set; } = 0m;
         public string? ImportSource { get; set; }
     }
 
@@ -77,8 +77,8 @@ namespace LYBT.Desktop.Core.Models.Consultation
     /// </summary>
     public class ConsultationData
     {
-        public Guid MedicalCaseId { get; set; }
-        public Guid PatientId { get; set; }
+        public Guid MedicalCaseId { get; set; } = Guid.Empty;
+        public Guid PatientId { get; set; } = Guid.Empty;
         public FourDiagnosisData? FourDiagnosis { get; set; }
         public DifferentiationData? Differentiation { get; set; }
         public PrescriptionData? Prescription { get; set; }

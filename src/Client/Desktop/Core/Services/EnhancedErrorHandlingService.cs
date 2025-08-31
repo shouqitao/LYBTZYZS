@@ -323,6 +323,8 @@ namespace LYBT.Desktop.Core.Services
         /// </summary>
         private async Task CheckErrorPatternsAsync(SharedCommon.HandledError handledError)
         {
+            if (handledError.Exception == null) return;
+            
             var patternKey = GetErrorPatternKey(handledError.Exception);
             var pattern = _errorPatterns.GetOrAdd(patternKey, _ => new ErrorPattern());
             
@@ -416,9 +418,9 @@ namespace LYBT.Desktop.Core.Services
         private void UpdateErrorSeverityBasedOnHistory(SharedCommon.HandledError handledError)
         {
             var stats = _statisticsCollector.GetStatistics();
-            var errorType = handledError.Exception.GetType();
+            var errorType = handledError.Exception?.GetType();
             
-            if (stats.ErrorCounts.TryGetValue(errorType, out var count) && count > 10)
+            if (errorType != null && stats.ErrorCounts.TryGetValue(errorType, out var count) && count > 10)
             {
                 // 如果某类错误发生频繁，可能需要降低严重程度
                 if (handledError.Severity == SharedCommon.ErrorSeverity.Error && count > 50)
@@ -440,7 +442,7 @@ namespace LYBT.Desktop.Core.Services
         private async Task EscalateErrorAsync(SharedCommon.HandledError handledError, ErrorPattern pattern)
         {
             _logger.LogWarning("Error pattern escalation triggered for {ErrorType}, count: {Count}",
-                handledError.Exception.GetType().Name, pattern.OccurrenceCount);
+                handledError.Exception?.GetType()?.Name ?? "Unknown", pattern.OccurrenceCount);
 
             // 可以在这里添加更多的升级逻辑，如发送通知给管理员等
             await Task.CompletedTask;
@@ -526,12 +528,16 @@ namespace LYBT.Desktop.Core.Services
 
         public void RecordError(SharedCommon.HandledError handledError)
         {
+            if (handledError.Exception == null) return;
+            
             var errorType = handledError.Exception.GetType();
             _errorCounts.AddOrUpdate(errorType, 1, (_, count) => count + 1);
         }
 
         public void RecordPerformanceImpact(SharedCommon.HandledError handledError)
         {
+            if (handledError.Exception == null) return;
+            
             var errorType = handledError.Exception.GetType();
             var impact = TimeSpan.FromMilliseconds(100); // 简化处理
             _performanceImpacts.AddOrUpdate(errorType, impact, (_, existing) => existing.Add(impact));
@@ -579,6 +585,8 @@ namespace LYBT.Desktop.Core.Services
 
         public IErrorRecoveryStrategy? GetRecoveryStrategy(SharedCommon.HandledError handledError)
         {
+            if (handledError.Exception == null) return null;
+            
             var exceptionType = handledError.Exception.GetType();
             return _strategies.TryGetValue(exceptionType, out var strategy) ? strategy : null;
         }

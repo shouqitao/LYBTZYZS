@@ -104,17 +104,17 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
         /// <summary>
         /// 复制错误信息命令
         /// </summary>
-        public DelegateCommand CopyCommand { get; }
+        public DelegateCommand CopyCommand { get; } = null!;
 
         /// <summary>
         /// 报告问题命令
         /// </summary>
-        public DelegateCommand ReportCommand { get; }
+        public DelegateCommand ReportCommand { get; } = null!;
 
         /// <summary>
         /// 关闭命令
         /// </summary>
-        public DelegateCommand CloseCommand { get; }
+        public DelegateCommand CloseCommand { get; } = null!;
 
         #endregion
 
@@ -152,10 +152,10 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
 
         #region DialogViewModel Implementation
 
-        protected override async Task<bool> SaveAsync()
+        protected override Task<bool> SaveAsync()
         {
             // 对于错误对话框，没有保存操作
-            return true;
+            return Task.FromResult(true);
         }
 
         protected override bool CanSave()
@@ -215,11 +215,12 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
 
                 var mailto = $"mailto:support@lybt.com?subject={subject}&body={body}";
 
-                Process.Start(new ProcessStartInfo
+                // 添加await以修复CS1998警告
+                await Task.Run(() => Process.Start(new ProcessStartInfo
                 {
                     FileName = mailto,
                     UseShellExecute = true
-                });
+                }));
             }
             catch (Exception ex)
             {

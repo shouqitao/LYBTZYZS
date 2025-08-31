@@ -107,7 +107,7 @@ namespace LYBT.Desktop.Core.Controls
         /// <summary>
         /// DataGrid滚动事件处理（实现懒加载）
         /// </summary>
-        private async void DataGrid_ScrollChanged(object sender, ScrollChangedEventArgs e)
+        private void DataGrid_ScrollChanged(object sender, ScrollChangedEventArgs e)
         {
             // Fire-and-forget pattern with exception handling
             _ = Task.Run(async () =>
@@ -171,7 +171,9 @@ namespace LYBT.Desktop.Core.Controls
     /// </summary>
     public class VirtualizedDataGridViewModel : INotifyPropertyChanged
     {
-        private readonly ILogger<VirtualizedDataGridViewModel>? _logger;
+#pragma warning disable CS0649 // Field is never assigned to, and will always have its default value null
+        private ILogger<VirtualizedDataGridViewModel>? _logger;
+#pragma warning restore CS0649
         private ObservableCollection<object> _items = new();
         private bool _isLoading;
         private string _searchKeyword = string.Empty;
@@ -613,9 +615,9 @@ namespace LYBT.Desktop.Core.Controls
     public class PagedDataResult
     {
         public System.Collections.IEnumerable Items { get; set; } = null!;
-        public int TotalCount { get; set; }
-        public int CurrentPage { get; set; }
-        public int PageSize { get; set; }
+        public int TotalCount { get; set; } = 0;
+        public int CurrentPage { get; set; } = 1;
+        public int PageSize { get; set; } = 20;
     }
 
     /// <summary>
@@ -623,8 +625,8 @@ namespace LYBT.Desktop.Core.Controls
     /// </summary>
     public class PageNumberInfo
     {
-        public int Number { get; set; }
-        public bool IsCurrent { get; set; }
+        public int Number { get; set; } = 1;
+        public bool IsCurrent { get; set; } = false;
     }
 
     #endregion

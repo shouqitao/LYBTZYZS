@@ -25,7 +25,7 @@ namespace LYBT.Desktop.Core.ViewModels.Base
         protected readonly TService Service;
         
         private ObservableCollection<TModel> _items = new();
-        private ICollectionView _itemsView;
+        private ICollectionView _itemsView = null!;
         private TModel? _selectedItem;
         private string _searchText = string.Empty;
         private bool _isRefreshing;
@@ -140,16 +140,16 @@ namespace LYBT.Desktop.Core.ViewModels.Base
 
         #region 命令
 
-        public DelegateCommand AddCommand { get; protected set; }
-        public DelegateCommand EditCommand { get; protected set; }
-        public DelegateCommand DeleteCommand { get; protected set; }
-        public DelegateCommand SearchCommand { get; protected set; }
-        public DelegateCommand ClearSearchCommand { get; protected set; }
-        public DelegateCommand FirstPageCommand { get; protected set; }
-        public DelegateCommand PreviousPageCommand { get; protected set; }
-        public DelegateCommand NextPageCommand { get; protected set; }
-        public DelegateCommand LastPageCommand { get; protected set; }
-        public DelegateCommand<int> GoToPageCommand { get; protected set; }
+        public DelegateCommand AddCommand { get; private set; } = null!;
+        public DelegateCommand EditCommand { get; private set; } = null!;
+        public DelegateCommand DeleteCommand { get; private set; } = null!;
+        public DelegateCommand SearchCommand { get; private set; } = null!;
+        public DelegateCommand ClearSearchCommand { get; private set; } = null!;
+        public DelegateCommand FirstPageCommand { get; private set; } = null!;
+        public DelegateCommand PreviousPageCommand { get; private set; } = null!;
+        public DelegateCommand NextPageCommand { get; private set; } = null!;
+        public DelegateCommand LastPageCommand { get; private set; } = null!;
+        public DelegateCommand<int> GoToPageCommand { get; private set; } = null!;
 
         #endregion
 

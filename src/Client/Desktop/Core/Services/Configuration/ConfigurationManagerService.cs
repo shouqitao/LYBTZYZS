@@ -129,7 +129,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
             var builder = new ConfigurationBuilder()
                 .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
-                .AddInMemoryCollection(GetDefaultSettings());
+                .AddInMemoryCollection(GetDefaultSettings().Select(kvp => new KeyValuePair<string, string?>(kvp.Key, kvp.Value)));
             
             _configurations[ConfigurationLayer.Default] = builder.Build();
             _logger.LogDebug("默认配置加载完成");
@@ -171,7 +171,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
         {
             var dynamicConfig = new Dictionary<string, string>();
             _configurations[ConfigurationLayer.Dynamic] = new ConfigurationBuilder()
-                .AddInMemoryCollection(dynamicConfig!)
+                .AddInMemoryCollection(dynamicConfig.Select(kvp => new KeyValuePair<string, string?>(kvp.Key, kvp.Value)))
                 .Build();
             
             _logger.LogDebug("动态配置初始化完成");

@@ -17,11 +17,11 @@ namespace LYBT.Desktop.Core.Events
     /// </summary>
     public class StepValidationResponse
     {
-        public Guid RequestId { get; set; }
-        public WorkflowStep Step { get; set; }
-        public bool IsValid { get; set; }
+        public Guid RequestId { get; set; } = Guid.Empty;
+        public WorkflowStep Step { get; set; } = 0;
+        public bool IsValid { get; set; } = false;
         public string? ErrorMessage { get; set; }
-        public ValidationSeverity Severity { get; set; }
+        public ValidationSeverity Severity { get; set; } = ValidationSeverity.Info;
     }
 
     /// <summary>

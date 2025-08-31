@@ -230,7 +230,7 @@ namespace LYBT.Desktop.Core.ViewModels.Patients
             return patientData != null && Id == patientData.Id;
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return obj is PatientViewModel other && IsSamePatient(other);
         }

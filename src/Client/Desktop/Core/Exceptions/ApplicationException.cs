@@ -101,6 +101,7 @@ namespace LYBT.Desktop.Core.Exceptions
             IsRetryable = DetermineRetryability(category);
         }
         
+        [Obsolete("This API supports obsolete formatter-based serialization.")]
         protected AppException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
@@ -116,6 +117,7 @@ namespace LYBT.Desktop.Core.Exceptions
             IsRetryable = info.GetBoolean(nameof(IsRetryable));
         }
         
+        [Obsolete("This API supports obsolete formatter-based serialization.")]
         public override void GetObjectData(SerializationInfo info, StreamingContext context)
         {
             base.GetObjectData(info, context);

@@ -43,7 +43,7 @@ namespace LYBT.Desktop.Core.Configuration
         /// <summary>
         /// 获取配置值
         /// </summary>
-        T GetValue<T>(string key, T defaultValue = default);
+        T GetValue<T>(string key, T defaultValue = default!);
 
         /// <summary>
         /// 设置配置值

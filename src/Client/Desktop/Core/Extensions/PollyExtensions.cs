@@ -103,7 +103,7 @@ namespace LYBT.Desktop.Core.Extensions
         public static IAsyncPolicy<T> CreateRetryPolicyWithLogging<T>(
             int retryCount,
             Action<string> logAction,
-            Func<T, bool> resultPredicate = null)
+            Func<T, bool>? resultPredicate = null)
         {
             if (resultPredicate != null)
             {

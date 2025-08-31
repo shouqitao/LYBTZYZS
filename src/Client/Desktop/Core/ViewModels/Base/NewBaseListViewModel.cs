@@ -20,6 +20,7 @@ namespace LYBT.Desktop.Core.ViewModels.Base
     /// 单一职责原则，只负责列表展示和基本操作，替代臃肿的BaseServiceManagementViewModel
     /// </summary>
     /// <typeparam name="TItem">列表项类型</typeparam>
+    [Obsolete("使用 ModernManagementViewModel<T> 替代。此类将在架构统一完成后删除。")]
     public abstract class NewBaseListViewModel<TItem> : SessionAwareViewModel
         where TItem : class
     {
@@ -100,17 +101,17 @@ namespace LYBT.Desktop.Core.ViewModels.Base
         /// <summary>
         /// 刷新命令
         /// </summary>
-        public DelegateCommand RefreshCommand { get; private set; }
+        public DelegateCommand RefreshCommand { get; private set; } = null!;
 
         /// <summary>
         /// 清除错误命令
         /// </summary>
-        public DelegateCommand ClearErrorCommand { get; private set; }
+        public DelegateCommand ClearErrorCommand { get; private set; } = null!;
 
         /// <summary>
         /// 选择项命令
         /// </summary>
-        public DelegateCommand<TItem> SelectItemCommand { get; private set; }
+        public DelegateCommand<TItem> SelectItemCommand { get; private set; } = null!;
 
         #endregion
 

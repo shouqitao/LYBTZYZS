@@ -121,7 +121,7 @@ namespace LYBT.Desktop.Core.ViewModels.Base
         /// <summary>
         /// 是否正在加载
         /// </summary>
-        public bool IsLoading
+        public new bool IsLoading
         {
             get => _isLoading;
             set => SetProperty(ref _isLoading, value);
@@ -250,7 +250,7 @@ namespace LYBT.Desktop.Core.ViewModels.Base
         #region 命令
 
         public ICommand AddCommand { get; private set; } = null!;
-        public ICommand RefreshCommand { get; private set; } = null!;
+        public new ICommand RefreshCommand { get; private set; } = null!;
         public ICommand BatchDisableCommand { get; private set; } = null!;
         public ICommand FirstPageCommand { get; private set; } = null!;
         public ICommand PreviousPageCommand { get; private set; } = null!;

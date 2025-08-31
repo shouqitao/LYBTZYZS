@@ -176,7 +176,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
 
         #region 核心功能
 
-        public async Task<T?> GetSecureValueAsync<T>(string key, string? passphrase = null)
+        public Task<T?> GetSecureValueAsync<T>(string key, string? passphrase = null)
         {
             try
             {
@@ -188,7 +188,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
                     if (!_secureConfigs.TryGetValue(key, out var entry))
                     {
                         _logger.LogDebug("安全配置项未找到: {Key}", key);
-                        return default;
+                        return Task.FromResult<T?>(default);
                     }
                     
                     // 检查过期
@@ -196,7 +196,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
                     {
                         _logger.LogWarning("安全配置已过期: {Key}", key);
                         _secureConfigs.Remove(key);
-                        return default;
+                        return Task.FromResult<T?>(default);
                     }
                     
                     // 解密值
@@ -216,7 +216,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
                     entry.LastAccessed = DateTime.Now;
                     entry.AccessCount++;
                     
-                    return value;
+                    return Task.FromResult<T?>(value);
                 }
             }
             catch (Exception ex)
@@ -227,7 +227,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
             }
         }
 
-        public async Task SetSecureValueAsync<T>(string key, T value, string? passphrase = null)
+        public Task SetSecureValueAsync<T>(string key, T value, string? passphrase = null)
         {
             try
             {
@@ -278,9 +278,10 @@ namespace LYBT.Desktop.Core.Services.Configuration
                 _logger.LogError(ex, "设置安全配置失败: {Key}", key);
                 throw;
             }
+            return Task.CompletedTask;
         }
 
-        public async Task RemoveSecureValueAsync(string key)
+        public Task RemoveSecureValueAsync(string key)
         {
             try
             {
@@ -295,6 +296,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
                         _logger.LogInformation("安全配置已删除: {Key}", key);
                     }
                 }
+                return Task.CompletedTask;
             }
             catch (Exception ex)
             {
@@ -324,7 +326,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
 
         #region 导入导出
 
-        public async Task<string> ExportSecureConfigurationAsync(string passphrase)
+        public Task<string> ExportSecureConfigurationAsync(string passphrase)
         {
             try
             {
@@ -353,7 +355,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
                     
                     LogAccess("*", "Export", true);
                     
-                    return Convert.ToBase64String(encryptedData);
+                    return Task.FromResult(Convert.ToBase64String(encryptedData));
                 }
             }
             catch (Exception ex)
@@ -364,7 +366,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
             }
         }
 
-        public async Task ImportSecureConfigurationAsync(string encryptedData, string passphrase)
+        public Task ImportSecureConfigurationAsync(string encryptedData, string passphrase)
         {
             try
             {
@@ -413,6 +415,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
                         throw;
                     }
                 }
+                return Task.CompletedTask;
             }
             catch (Exception ex)
             {
@@ -426,7 +429,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
 
         #region 密钥管理
 
-        public async Task RotateEncryptionKeyAsync(string oldPassphrase, string newPassphrase)
+        public Task RotateEncryptionKeyAsync(string oldPassphrase, string newPassphrase)
         {
             try
             {
@@ -472,6 +475,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
                     LogAccess("*", "KeyRotation", true);
                     _logger.LogInformation("密钥轮换完成，更新了 {Count} 个配置项", reencryptedConfigs.Count);
                 }
+                return Task.CompletedTask;
             }
             catch (Exception ex)
             {
@@ -485,7 +489,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
 
         #region 完整性和审计
 
-        public async Task<IntegrityCheckResult> VerifyIntegrityAsync()
+        public Task<IntegrityCheckResult> VerifyIntegrityAsync()
         {
             var result = new IntegrityCheckResult
             {
@@ -546,7 +550,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
             _logger.LogInformation("完整性检查完成: {Valid}/{Total} 配置有效", 
                 result.ValidConfigs, result.TotalConfigs);
             
-            return result;
+            return Task.FromResult(result);
         }
 
         public List<SecurityAuditEntry> GetAuditLog(DateTime? startTime = null, DateTime? endTime = null)
@@ -578,7 +582,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
             }
         }
 
-        public async Task<int> CleanupExpiredConfigurationsAsync()
+        public Task<int> CleanupExpiredConfigurationsAsync()
         {
             var removed = 0;
             
@@ -603,7 +607,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
             }
             
             _logger.LogInformation("清理了 {Count} 个过期的安全配置", removed);
-            return removed;
+            return Task.FromResult(removed);
         }
 
         #endregion

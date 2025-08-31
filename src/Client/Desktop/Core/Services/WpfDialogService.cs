@@ -215,28 +215,88 @@ namespace LYBT.Desktop.Core.Services
                     var dialogType = _dialogRegistry[dialogName];
                     var dialog = (Window)_container.Resolve(dialogType);
                     
-                    // 为特殊对话框设置ViewModel
-                    if (dialogName == "HerbSelectionDialog" && dialog is Views.Dialogs.HerbSelectionDialog herbDialog)
+                    // 处方编辑对话框特殊处理
+                    if (dialogName == "PrescriptionEditorDialog")
                     {
-                        var viewModel = _container.Resolve<ViewModels.Dialogs.HerbSelectionDialogViewModel>();
-                        herbDialog.SetViewModel(viewModel);
-                        // 新的DialogViewModelBase架构不需要OnDialogOpened方法
-                        // 参数通过构造函数或其他方式处理
-                    }
-                    else if (dialogName == "FormulaSelectionDialog" && dialog is Views.Dialogs.FormulaSelectionDialog formulaDialog)
-                    {
-                        var viewModel = _container.Resolve<ViewModels.Dialogs.FormulaSelectionDialogViewModel>();
-                        formulaDialog.SetViewModel(viewModel);
-                        // FormulaSelectionDialogViewModel现在继承DialogViewModelBase，不需要OnDialogOpened调用
-                        // 参数处理已经在DialogViewModelBase中标准化
-                    }
-                    else if (dialogName == "InputDialog" && dialog is Views.Dialogs.InputDialog inputDialog)
-                    {
-                        var viewModel = new ViewModels.Dialogs.InputDialogViewModel();
-                        inputDialog.SetViewModel(viewModel);
-                        if (parameters != null)
+                        var viewModelTypeName = "LYBT.Desktop.Prescriptions.ViewModels.PrescriptionEditorDialogViewModel";
+                        var assembly = dialog.GetType().Assembly;
+                        var viewModelType = assembly.GetType(viewModelTypeName);
+                        
+                        if (viewModelType != null)
                         {
-                            viewModel.OnDialogOpened(parameters);
+                            var viewModel = _container.Resolve(viewModelType);
+                            dialog.DataContext = viewModel;
+                            
+                            // 调用InitializeWithContextAsync方法传递参数
+                            if (parameters != null)
+                            {
+                                var initMethod = viewModelType.GetMethod("InitializeWithContextAsync");
+                                if (initMethod != null)
+                                {
+                                    // 异步调用初始化方法
+                                    _ = Task.Run(async () => 
+                                    {
+                                        try
+                                        {
+                                            var task = initMethod.Invoke(viewModel, new object[] { parameters }) as Task;
+                                            if (task != null)
+                                            {
+                                                await task;
+                                            }
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            _logger.LogError(ex, "初始化PrescriptionEditorDialog参数时发生错误");
+                                        }
+                                    });
+                                }
+                            }
+                        }
+                        else
+                        {
+                            _logger.LogWarning("无法找到PrescriptionEditorDialogViewModel类型");
+                        }
+                    }
+                    // 药材选择对话框特殊处理
+                    else if (dialogName == "HerbSelectionDialog")
+                    {
+                        var viewModelTypeName = "LYBT.Desktop.Prescriptions.ViewModels.HerbSelectionDialogViewModel";
+                        var assembly = dialog.GetType().Assembly;
+                        var viewModelType = assembly.GetType(viewModelTypeName);
+                        
+                        if (viewModelType != null)
+                        {
+                            var viewModel = _container.Resolve(viewModelType);
+                            dialog.DataContext = viewModel;
+                            
+                            // 调用InitializeWithParametersAsync方法传递参数
+                            if (parameters != null)
+                            {
+                                var initMethod = viewModelType.GetMethod("InitializeWithParametersAsync");
+                                if (initMethod != null)
+                                {
+                                    // 异步调用初始化方法
+                                    _ = Task.Run(async () => 
+                                    {
+                                        try
+                                        {
+                                            var task = initMethod.Invoke(viewModel, new object[] { parameters }) as Task;
+                                            if (task != null)
+                                            {
+                                                await task;
+                                            }
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            _logger.LogError(ex, "初始化HerbSelectionDialog参数时发生错误");
+                                        }
+                                    });
+                                }
+                            }
+                        }
+                        else
+                        {
+                            _logger.LogWarning("无法找到HerbSelectionDialogViewModel类型");
                         }
                     }
                     else if (dialogName == "PatientAddEditDialog")
@@ -369,6 +429,28 @@ namespace LYBT.Desktop.Core.Services
                         else
                         {
                             _logger.LogWarning("无法找到ViewFormulaDialogViewModel类型");
+                        }
+                    }
+                    else if (dialogName == "CreateMedicalCaseDialog")
+                    {
+                        // 医案创建对话框
+                        var viewModelTypeName = "LYBT.Desktop.MedicalCase.ViewModels.CreateMedicalCaseDialogViewModel";
+                        var assembly = dialog.GetType().Assembly;
+                        var viewModelType = assembly.GetType(viewModelTypeName);
+                        
+                        if (viewModelType != null)
+                        {
+                            var viewModel = _container.Resolve(viewModelType);
+                            dialog.DataContext = viewModel;
+                            
+                            if (parameters != null && viewModel is ICustomDialogAware dialogAware)
+                            {
+                                dialogAware.OnDialogOpened(parameters);
+                            }
+                        }
+                        else
+                        {
+                            _logger.LogWarning("无法找到CreateMedicalCaseDialogViewModel类型");
                         }
                     }
                     // 通用处理：如果DataContext已经是ICustomDialogAware

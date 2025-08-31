@@ -328,7 +328,7 @@ namespace LYBT.Desktop.Core.ViewModels.Herbs
                    string.Equals(HerbData.Spec, other.HerbData.Spec, StringComparison.OrdinalIgnoreCase);
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return obj is HerbViewModel other && IsSameHerb(other);
         }

@@ -12,7 +12,7 @@ namespace LYBT.Desktop.Core.Models.Prescriptions
         public List<PrescriptionItem> Items { get; set; } = new();
         public int Dosage { get; set; } = 7;  // 默认7剂
         public string Usage { get; set; } = "每日1剂，水煎服，分早晚两次温服";
-        public decimal TotalPrice { get; set; }
+        public decimal TotalPrice { get; set; } = 0m;
         public decimal Discount { get; set; } = 1.0m;
     }
 
@@ -21,11 +21,11 @@ namespace LYBT.Desktop.Core.Models.Prescriptions
     /// </summary>
     public class PrescriptionItem
     {
-        public Guid HerbId { get; set; }
+        public Guid HerbId { get; set; } = Guid.Empty;
         public string HerbName { get; set; } = "";
-        public decimal Quantity { get; set; }
+        public decimal Quantity { get; set; } = 0m;
         public string Unit { get; set; } = "g";
-        public decimal UnitPrice { get; set; }
+        public decimal UnitPrice { get; set; } = 0m;
         public string? ImportSource { get; set; }
         public string Remark { get; set; } = "";
         

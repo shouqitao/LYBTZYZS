@@ -39,14 +39,14 @@ namespace LYBT.Desktop.Core.ViewModels.Base
         }
 
         /// <summary>
-        /// 保存命令
+        /// 保存命令 - 零警告初始化
         /// </summary>
-        public DelegateCommand SaveCommand { get; protected set; }
+        public DelegateCommand SaveCommand { get; }
 
         /// <summary>
-        /// 取消命令
+        /// 取消命令 - 零警告初始化
         /// </summary>
-        public DelegateCommand CancelCommand { get; protected set; }
+        public DelegateCommand CancelCommand { get; }
 
         /// <summary>
         /// 对话框结果回调
@@ -56,16 +56,14 @@ namespace LYBT.Desktop.Core.ViewModels.Base
         public DialogViewModel(IEventAggregator eventAggregator, IErrorHandlingService errorHandlingService)
             : base(eventAggregator, errorHandlingService)
         {
-            InitializeCommands();
+            // 零警告命令初始化
+            SaveCommand = new DelegateCommand(async () => await ExecuteSaveAsync(), CanExecuteSave);
+            CancelCommand = new DelegateCommand(ExecuteCancel, CanExecuteCancel);
         }
 
         public DialogViewModel(IEventAggregator eventAggregator) : base(eventAggregator)
         {
-            InitializeCommands();
-        }
-
-        private void InitializeCommands()
-        {
+            // 零警告命令初始化
             SaveCommand = new DelegateCommand(async () => await ExecuteSaveAsync(), CanExecuteSave);
             CancelCommand = new DelegateCommand(ExecuteCancel, CanExecuteCancel);
         }
@@ -144,11 +142,19 @@ namespace LYBT.Desktop.Core.ViewModels.Base
             return !IsSaving;
         }
 
+        /// <summary>
+        /// 重写Command状态更新
+        /// </summary>
+        protected override void RaiseCanExecuteChanged()
+        {
+            base.RaiseCanExecuteChanged();
+            SaveCommand.RaiseCanExecuteChanged();
+            CancelCommand.RaiseCanExecuteChanged();
+        }
+
         protected override void OnLoadingStateChanged(bool isLoading)
         {
             base.OnLoadingStateChanged(isLoading);
-            SaveCommand.RaiseCanExecuteChanged();
-            CancelCommand.RaiseCanExecuteChanged();
         }
     }
 }

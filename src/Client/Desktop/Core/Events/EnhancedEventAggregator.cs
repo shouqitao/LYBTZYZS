@@ -51,7 +51,6 @@ namespace LYBT.Desktop.Core.Events
         private readonly WeakEventManager<EventArgs> _weakEventManager = new();
         private readonly ConcurrentDictionary<SubscriptionToken, IEventSubscription> _subscriptions = new();
         private readonly object _lock = new();
-        private int _subscriptionIdCounter;
         private bool _debugMode;
         private ILogger? _logger;
 

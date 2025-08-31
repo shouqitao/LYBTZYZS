@@ -98,7 +98,7 @@ namespace LYBT.Desktop.Core.Events
     {
         public string FromStep { get; set; } = string.Empty;
         public string ToStep { get; set; } = string.Empty;
-        public Guid MedicalCaseId { get; set; }
+        public Guid MedicalCaseId { get; set; } = Guid.Empty;
         public DateTime NavigatedAt { get; set; } = DateTime.Now;
     }
 
@@ -107,7 +107,7 @@ namespace LYBT.Desktop.Core.Events
     /// </summary>
     public class WorkflowCompletionData
     {
-        public DateTime CompletionTime { get; set; }
-        public TimeSpan TotalDuration { get; set; }
+        public DateTime CompletionTime { get; set; } = DateTime.Now;
+        public TimeSpan TotalDuration { get; set; } = TimeSpan.Zero;
     }
 }

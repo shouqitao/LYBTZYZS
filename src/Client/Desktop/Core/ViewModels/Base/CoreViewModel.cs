@@ -29,8 +29,11 @@ namespace LYBT.Desktop.Core.ViewModels.Base
             get => _isLoading;
             set
             {
-                SetProperty(ref _isLoading, value);
-                OnLoadingStateChanged(value);
+                if (SetProperty(ref _isLoading, value))
+                {
+                    OnLoadingStateChanged(value);
+                    RaiseCanExecuteChanged();
+                }
             }
         }
 
@@ -68,7 +71,7 @@ namespace LYBT.Desktop.Core.ViewModels.Base
         /// <summary>
         /// 清除错误命令
         /// </summary>
-        public DelegateCommand ClearErrorCommand { get; protected set; }
+        public DelegateCommand ClearErrorCommand { get; }
 
         protected CoreViewModel(IEventAggregator eventAggregator)
         {
@@ -82,6 +85,14 @@ namespace LYBT.Desktop.Core.ViewModels.Base
         protected virtual void OnLoadingStateChanged(bool isLoading)
         {
             // 子类可以重写此方法
+        }
+
+        /// <summary>
+        /// 所有Command的CanExecute状态更新 - 子类可重写
+        /// </summary>
+        protected virtual void RaiseCanExecuteChanged()
+        {
+            ClearErrorCommand.RaiseCanExecuteChanged();
         }
 
         /// <summary>

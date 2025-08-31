@@ -362,7 +362,7 @@ namespace LYBT.Desktop.Core.Http
     {
         public static TValue? GetOrDefault<TKey, TValue>(
             this ConcurrentDictionary<TKey, TValue> dictionary,
-            TKey key) where TValue : class
+            TKey key) where TKey : notnull where TValue : class
         {
             return dictionary.TryGetValue(key, out var value) ? value : null;
         }

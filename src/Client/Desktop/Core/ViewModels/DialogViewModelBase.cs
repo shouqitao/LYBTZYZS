@@ -42,14 +42,14 @@ namespace LYBT.Desktop.Core.ViewModels
         }
 
         /// <summary>
-        /// 确认命令
+        /// 确认命令 - 零警告初始化
         /// </summary>
-        public DelegateCommand ConfirmCommand { get; protected set; }
+        public DelegateCommand ConfirmCommand { get; }
 
         /// <summary>
-        /// 取消命令
+        /// 取消命令 - 零警告初始化
         /// </summary>
-        public DelegateCommand CancelCommand { get; protected set; }
+        public DelegateCommand CancelCommand { get; }
 
         /// <summary>
         /// 关闭对话框事件
@@ -135,10 +135,19 @@ namespace LYBT.Desktop.Core.ViewModels
         /// <summary>
         /// 加载状态变化时更新命令状态
         /// </summary>
+        /// <summary>
+        /// 重写Command状态更新
+        /// </summary>
+        protected override void RaiseCanExecuteChanged()
+        {
+            base.RaiseCanExecuteChanged();
+            ConfirmCommand?.RaiseCanExecuteChanged();
+            CancelCommand?.RaiseCanExecuteChanged();
+        }
+
         protected override void OnLoadingStateChanged(bool isLoading)
         {
             base.OnLoadingStateChanged(isLoading);
-            ConfirmCommand?.RaiseCanExecuteChanged();
         }
     }
 }

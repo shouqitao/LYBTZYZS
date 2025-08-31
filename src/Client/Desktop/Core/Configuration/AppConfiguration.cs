@@ -20,9 +20,9 @@ namespace LYBT.Desktop.Core.Configuration
         public int ConnectionTimeout => GetValue("ConnectionTimeout", 30);
         public bool IsDebugMode => GetValue("IsDebugMode", false);
         
-        public CacheConfiguration Cache { get; private set; }
-        public LoggingConfiguration Logging { get; private set; }
-        public PerformanceConfiguration Performance { get; private set; }
+        public CacheConfiguration Cache { get; private set; } = null!;
+        public LoggingConfiguration Logging { get; private set; } = null!;
+        public PerformanceConfiguration Performance { get; private set; } = null!;
 
         private AppConfiguration(IConfiguration configuration)
         {
@@ -67,7 +67,7 @@ namespace LYBT.Desktop.Core.Configuration
 #endif
         }
 
-        public T GetValue<T>(string key, T defaultValue = default)
+        public T GetValue<T>(string key, T? defaultValue = default)
         {
             // 优先从运行时值获取
             if (_runtimeValues.TryGetValue(key, out var runtimeValue) && runtimeValue is T typedValue)
@@ -99,7 +99,7 @@ namespace LYBT.Desktop.Core.Configuration
                     }
                     
                     // 尝试JSON反序列化
-                    return JsonSerializer.Deserialize<T>(configValue);
+                    return JsonSerializer.Deserialize<T>(configValue) ?? defaultValue!;
                 }
                 catch
                 {
@@ -107,12 +107,12 @@ namespace LYBT.Desktop.Core.Configuration
                 }
             }
 
-            return defaultValue;
+            return defaultValue!;
         }
 
         public void SetValue<T>(string key, T value)
         {
-            _runtimeValues[key] = value;
+            _runtimeValues[key] = value ?? (object)string.Empty;
         }
 
         public bool HasKey(string key)
@@ -146,7 +146,7 @@ namespace LYBT.Desktop.Core.Configuration
             };
 
             var builder = new ConfigurationBuilder()
-                .AddInMemoryCollection(inMemoryConfig)
+                .AddInMemoryCollection(inMemoryConfig.Select(kvp => new KeyValuePair<string, string?>(kvp.Key, kvp.Value)))
                 .AddEnvironmentVariables();
 
             var configuration = builder.Build();
@@ -167,7 +167,7 @@ namespace LYBT.Desktop.Core.Configuration
             };
 
             var builder = new ConfigurationBuilder()
-                .AddInMemoryCollection(configValues)
+                .AddInMemoryCollection(configValues.Select(kvp => new KeyValuePair<string, string?>(kvp.Key, kvp.Value)))
                 .AddEnvironmentVariables();
 
             return new AppConfiguration(builder.Build());

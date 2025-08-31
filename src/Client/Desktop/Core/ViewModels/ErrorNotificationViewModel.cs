@@ -67,9 +67,9 @@ namespace LYBT.Desktop.Core.ViewModels
         }
 
         // 命令
-        public DelegateCommand CloseCommand { get; }
-        public DelegateCommand RetryCommand { get; }
-        public DelegateCommand ShowDetailsCommand { get; }
+        public DelegateCommand CloseCommand { get; } = null!;
+        public DelegateCommand RetryCommand { get; } = null!;
+        public DelegateCommand ShowDetailsCommand { get; } = null!;
 
         // 事件
         public event EventHandler? CloseRequested;

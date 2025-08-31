@@ -411,7 +411,7 @@ namespace LYBT.Desktop.Core.Mvvm
         
         public bool CanExecute(object? parameter) => _command.CanExecute(parameter);
         
-        public async void Execute(object? parameter)
+        public void Execute(object? parameter)
         {
             // Fire-and-forget pattern with exception handling
             _ = Task.Run(async () =>

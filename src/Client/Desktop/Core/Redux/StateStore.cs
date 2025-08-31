@@ -101,7 +101,10 @@ namespace LYBT.Desktop.Core.Redux
             InitializeMiddlewares();
 
             // 记录初始状态
-            RecordSnapshot(initialState, null);
+            if (initialState != null)
+            {
+                RecordSnapshot(initialState, null);
+            }
         }
 
         /// <summary>

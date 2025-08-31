@@ -37,7 +37,7 @@ namespace LYBT.Desktop.Core.Events
     /// </summary>
     public class PatientSelectedEventArgs : ConsultationEventArgsBase
     {
-        public Guid PatientId { get; set; }
+        public Guid PatientId { get; set; } = Guid.Empty;
         public string PatientName { get; set; } = string.Empty;
 
         public PatientSelectedEventArgs() { }
@@ -56,8 +56,8 @@ namespace LYBT.Desktop.Core.Events
     /// </summary>
     public class ConsultationStartedEventArgs : ConsultationEventArgsBase
     {
-        public Guid ConsultationId { get; set; }
-        public Guid PatientId { get; set; }
+        public Guid ConsultationId { get; set; } = Guid.Empty;
+        public Guid PatientId { get; set; } = Guid.Empty;
 
         public ConsultationStartedEventArgs() { }
 
@@ -75,8 +75,8 @@ namespace LYBT.Desktop.Core.Events
     /// </summary>
     public class ConsultationCompletedEventArgs : ConsultationEventArgsBase
     {
-        public Guid ConsultationId { get; set; }
-        public bool IsSuccess { get; set; }
+        public Guid ConsultationId { get; set; } = Guid.Empty;
+        public bool IsSuccess { get; set; } = false;
 
         public ConsultationCompletedEventArgs() { }
 
@@ -151,7 +151,7 @@ namespace LYBT.Desktop.Core.Events
     /// </summary>
     public class TCMDataUpdatedEventArgs : ConsultationEventArgsBase
     {
-        public Guid ConsultationId { get; set; }
+        public Guid ConsultationId { get; set; } = Guid.Empty;
         public string UpdatedSection { get; set; } = string.Empty;
         public Dictionary<string, object> UpdatedData { get; set; } = new();
 

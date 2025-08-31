@@ -17,17 +17,17 @@ namespace LYBT.Desktop.Core.ViewModels.Base
     /// </summary>
     public abstract class ServiceViewModel : CoreViewModel
     {
-        protected readonly IErrorHandlingService ErrorHandlingService;
+        protected readonly IErrorHandlingService ErrorHandlingService = null!;
 
         /// <summary>
-        /// 刷新命令
+        /// 刷新命令 - 零警告初始化
         /// </summary>
-        public DelegateCommand RefreshCommand { get; protected set; }
+        public DelegateCommand RefreshCommand { get; }
 
         /// <summary>
-        /// 异步刷新命令
+        /// 异步刷新命令 - 零警告初始化
         /// </summary>
-        public DelegateCommand RefreshAsyncCommand { get; protected set; }
+        public DelegateCommand RefreshAsyncCommand { get; }
 
         public ServiceViewModel(IEventAggregator eventAggregator, IErrorHandlingService errorHandlingService)
             : base(eventAggregator)
@@ -48,7 +48,7 @@ namespace LYBT.Desktop.Core.ViewModels.Base
             {
                 if (Prism.Ioc.ContainerLocator.Container != null)
                 {
-                    ErrorHandlingService = Prism.Ioc.ContainerLocator.Container.Resolve(typeof(IErrorHandlingService)) as IErrorHandlingService;
+                    ErrorHandlingService = Prism.Ioc.ContainerLocator.Container.Resolve(typeof(IErrorHandlingService)) as IErrorHandlingService ?? null!;
                 }
                 else
                 {
@@ -235,11 +235,19 @@ namespace LYBT.Desktop.Core.ViewModels.Base
             // 子类可以重写此方法添加特定信息
         }
 
+        /// <summary>
+        /// 重写Command状态更新
+        /// </summary>
+        protected override void RaiseCanExecuteChanged()
+        {
+            base.RaiseCanExecuteChanged();
+            RefreshCommand.RaiseCanExecuteChanged();
+            RefreshAsyncCommand.RaiseCanExecuteChanged();
+        }
+
         protected override void OnLoadingStateChanged(bool isLoading)
         {
             base.OnLoadingStateChanged(isLoading);
-            RefreshCommand.RaiseCanExecuteChanged();
-            RefreshAsyncCommand.RaiseCanExecuteChanged();
         }
 
         #region 刷新命令实现

@@ -84,7 +84,7 @@ namespace LYBT.Desktop.Core.Services
                         {
                             _logger.LogDebug("执行防抖API请求: {Key}", key);
                             var result = await ((Func<Task<T>>)request.ApiCall)();
-                            request.TaskCompletionSource.SetResult(result);
+                            request.TaskCompletionSource.SetResult(result!);
                         }
                         catch (Exception ex)
                         {

@@ -386,7 +386,7 @@ namespace LYBT.Desktop.Core.Memory
                 _method = handler.Method;
             }
 
-            public void Handler(object sender, TEventArgs e)
+            public void Handler(object? sender, TEventArgs e)
             {
                 var target = _weakTarget?.Target;
                 if (_weakTarget == null || target != null)

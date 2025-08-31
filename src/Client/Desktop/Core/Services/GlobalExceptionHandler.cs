@@ -176,7 +176,7 @@ namespace LYBT.Desktop.Core.Services
         
         #region 事件处理器
         
-        private void OnAppDomainUnhandledException(object sender, UnhandledExceptionEventArgs e)
+        private void OnAppDomainUnhandledException(object? sender, UnhandledExceptionEventArgs e)
         {
             var exception = e.ExceptionObject as Exception ?? new Exception("未知的非托管异常");
             var isTerminating = e.IsTerminating;
@@ -195,7 +195,7 @@ namespace LYBT.Desktop.Core.Services
             }
         }
         
-        private void OnUnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)
+        private void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
         {
             _logger.LogError(e.Exception, "Task未观察异常");
             
@@ -208,7 +208,7 @@ namespace LYBT.Desktop.Core.Services
             }
         }
         
-        private void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
+        private void OnDispatcherUnhandledException(object? sender, DispatcherUnhandledExceptionEventArgs e)
         {
             _logger.LogError(e.Exception, "WPF Dispatcher未处理异常");
             
@@ -221,7 +221,7 @@ namespace LYBT.Desktop.Core.Services
             }
         }
         
-        private void OnFirstChanceException(object sender, System.Runtime.ExceptionServices.FirstChanceExceptionEventArgs e)
+        private void OnFirstChanceException(object? sender, System.Runtime.ExceptionServices.FirstChanceExceptionEventArgs e)
         {
             // 仅在调试模式下记录第一次机会异常
             if (e.Exception is AppException appEx)
@@ -445,17 +445,17 @@ namespace LYBT.Desktop.Core.Services
         private class CrashReport
         {
             public DateTime Timestamp { get; set; }
-            public string Exception { get; set; }
+            public string Exception { get; set; } = null!;
             public int TotalExceptionsHandled { get; set; }
             public int CriticalExceptionsCount { get; set; }
-            public SystemInfo SystemInfo { get; set; }
+            public SystemInfo SystemInfo { get; set; } = null!;
         }
         
         private class SystemInfo
         {
-            public string OSVersion { get; set; }
-            public string CLRVersion { get; set; }
-            public string MachineName { get; set; }
+            public string OSVersion { get; set; } = null!;
+            public string CLRVersion { get; set; } = null!;
+            public string MachineName { get; set; } = null!;
             public int ProcessorCount { get; set; }
             public long WorkingSet { get; set; }
             public bool Is64Bit { get; set; }

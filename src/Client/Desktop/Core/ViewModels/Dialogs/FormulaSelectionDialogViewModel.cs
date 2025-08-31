@@ -65,7 +65,7 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
         /// <summary>
         /// 搜索命令
         /// </summary>
-        public DelegateCommand SearchCommand { get; }
+        public DelegateCommand SearchCommand { get; } = null!;
 
         #endregion
 

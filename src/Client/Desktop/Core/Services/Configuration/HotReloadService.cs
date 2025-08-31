@@ -153,13 +153,13 @@ namespace LYBT.Desktop.Core.Services.Configuration
             }
         }
 
-        public async Task StopAsync()
+        public Task StopAsync()
         {
             lock (_lock)
             {
                 if (_status != HotReloadStatus.Running)
                 {
-                    return;
+                    return Task.CompletedTask;
                 }
                 
                 _status = HotReloadStatus.Stopping;
@@ -193,6 +193,8 @@ namespace LYBT.Desktop.Core.Services.Configuration
                     Type = ReloadType.ServiceStop,
                     Description = "热更新服务停止"
                 });
+                
+                return Task.CompletedTask;
             }
             catch (Exception ex)
             {
@@ -315,7 +317,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
 
         #region 私有方法
 
-        private async Task InitializeCacheAsync()
+        private Task InitializeCacheAsync()
         {
             // 缓存当前配置值
             var commonKeys = new[]
@@ -344,6 +346,8 @@ namespace LYBT.Desktop.Core.Services.Configuration
             
             _logger.LogDebug("初始化配置缓存完成，缓存了 {ConfigCount} 个配置项和 {FeatureCount} 个特性",
                 _configCache.Count, _featureCache.Count);
+                
+            return Task.CompletedTask;
         }
 
         private void SetupFileWatchers()

@@ -82,12 +82,12 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
         /// <summary>
         /// 搜索命令
         /// </summary>
-        public DelegateCommand SearchCommand { get; }
+        public DelegateCommand SearchCommand { get; } = null!;
 
         /// <summary>
         /// 排序命令 - UltraThink Command绑定优化
         /// </summary>
-        public DelegateCommand<string> SortCommand { get; }
+        public DelegateCommand<string> SortCommand { get; } = null!;
 
         /// <summary>
         /// 构造函数
@@ -222,7 +222,7 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
                     }
                 });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 // 排序失败时记录错误但不中断用户操作
                 StatusMessage = "排序失败，请重试";
