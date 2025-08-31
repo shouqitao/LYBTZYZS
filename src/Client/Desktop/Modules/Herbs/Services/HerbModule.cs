@@ -115,7 +115,7 @@ namespace LYBT.Desktop.Herbs.Services
                 }
                 
                 // UltraThink v2.0: 直接返回DTO
-                return ServiceResult<HerbDto>.Success(apiResult.Content);
+                return ServiceResult<HerbDto>.Success(apiResult.Content!);
             }
             catch (Exception ex)
             {
@@ -150,7 +150,7 @@ namespace LYBT.Desktop.Herbs.Services
                 }
                 
                 // UltraThink v2.0: 直接返回DTO
-                return ServiceResult<HerbDto>.Success(apiResult.Content);
+                return ServiceResult<HerbDto>.Success(apiResult.Content!);
             }
             catch (Exception ex)
             {
@@ -514,10 +514,10 @@ namespace LYBT.Desktop.Herbs.Services
                 var allHerbs = await GetAllAsync();
                 if (!allHerbs.IsSuccess)
                 {
-                    return ServiceResult<List<HerbDto>>.Failure(allHerbs.ErrorMessage);
+                    return ServiceResult<List<HerbDto>>.Failure(allHerbs.ErrorMessage ?? "获取中药材失败");
                 }
                 
-                var filteredHerbs = allHerbs.Data.Where(h => ids.Contains(h.Id)).ToList();
+                var filteredHerbs = allHerbs.Data?.Where(h => ids.Contains(h.Id)).ToList() ?? new List<HerbDto>();
                 return ServiceResult<List<HerbDto>>.Success(filteredHerbs);
             }
             catch (Exception ex)
@@ -562,9 +562,10 @@ namespace LYBT.Desktop.Herbs.Services
                 var updateDto = new HerbUpdateDto
                 {
                     Id = id,
-                    Name = herbResult.Data.Name,
+                    Name = herbResult.Data?.Name ?? "",
+
                     Price = dto.Price ?? 0m,
-                    Unit = herbResult.Data.Unit
+                    Unit = herbResult.Data?.Unit ?? ""
                 };
                 
                 var updateResult = await UpdateAsync(id, updateDto);
@@ -606,7 +607,7 @@ namespace LYBT.Desktop.Herbs.Services
                 var result = await GetPagedAsync(query);
                 if (!result.IsSuccess)
                 {
-                    return ServiceResult<List<HerbDto>>.Failure(result.ErrorMessage);
+                    return ServiceResult<List<HerbDto>>.Failure(result.ErrorMessage ?? "操作失败");
                 }
                 
                 return ServiceResult<List<HerbDto>>.Success(result.Data.Items);
@@ -648,7 +649,7 @@ namespace LYBT.Desktop.Herbs.Services
                 var result = await GetPagedAsync(query);
                 if (!result.IsSuccess)
                 {
-                    return ServiceResult<List<HerbDto>>.Failure(result.ErrorMessage);
+                    return ServiceResult<List<HerbDto>>.Failure(result.ErrorMessage ?? "操作失败");
                 }
                 
                 return ServiceResult<List<HerbDto>>.Success(result.Data.Items);
@@ -675,7 +676,7 @@ namespace LYBT.Desktop.Herbs.Services
                 var result = await GetPagedAsync(query);
                 if (!result.IsSuccess)
                 {
-                    return ServiceResult<List<HerbDto>>.Failure(result.ErrorMessage);
+                    return ServiceResult<List<HerbDto>>.Failure(result.ErrorMessage ?? "操作失败");
                 }
                 
                 var availableHerbs = result.Data.Items
@@ -756,7 +757,7 @@ namespace LYBT.Desktop.Herbs.Services
                 var result = await GetPagedAsync(query);
                 if (!result.IsSuccess)
                 {
-                    return ServiceResult<List<HerbDto>>.Failure(result.ErrorMessage);
+                    return ServiceResult<List<HerbDto>>.Failure(result.ErrorMessage ?? "操作失败");
                 }
                 
                 return ServiceResult<List<HerbDto>>.Success(result.Data.Items);

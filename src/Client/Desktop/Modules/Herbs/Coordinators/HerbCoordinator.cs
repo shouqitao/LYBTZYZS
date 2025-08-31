@@ -30,7 +30,9 @@ namespace LYBT.Desktop.Core.Coordinators
         #region Events
 
         public event EventHandler<DataChangedEventArgs<HerbDto>>? DataChanged;
+        #pragma warning disable CS0067 // 事件从未使用，保留以便未来扩展
         public event EventHandler<OperationProgressEventArgs>? OperationProgress;
+        #pragma warning restore CS0067
 
         /// <summary>
         /// 价格变化事件
@@ -40,7 +42,9 @@ namespace LYBT.Desktop.Core.Coordinators
         /// <summary>
         /// 库存警告事件
         /// </summary>
+        #pragma warning disable CS0067 // 事件从未使用，保留以便未来扩展
         public event EventHandler<HerbStockWarningEventArgs>? StockWarning;
+        #pragma warning restore CS0067
 
         #endregion
 
