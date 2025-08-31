@@ -79,6 +79,73 @@ namespace LYBT.Desktop.Shell.ViewModels
         public DelegateCommand QuickStartConsultationCommand { get; }
         public DelegateCommand ShowHelpCommand { get; }
         public DelegateCommand ShowSettingsCommand { get; }
+        // Phase I: 主题切换命令
+        public DelegateCommand ToggleThemeCommand { get; }
+        /// <summary>
+        /// Phase I: 简化主题切换功能
+        /// </summary>
+        private async Task ExecuteToggleThemeAsync()
+        {
+            try
+            {
+                // 简单的明暗主题切换
+                var isDark = Application.Current.Resources.Contains("IsDarkTheme") && 
+                           (bool)Application.Current.Resources["IsDarkTheme"];
+                
+                await Application.Current.Dispatcher.InvokeAsync(() =>
+                {
+                    if (isDark)
+                    {
+                        // 切换到浅色主题
+                        ApplyLightTheme();
+                        Application.Current.Resources["IsDarkTheme"] = false;
+                    }
+                    else
+                    {
+                        // 切换到深色主题
+                        ApplyDarkTheme();
+                        Application.Current.Resources["IsDarkTheme"] = true;
+                    }
+                });
+                
+                await _servicesFacade.CustomDialogService.ShowInformationAsync("主题已切换", "提示");
+            }
+            catch (Exception ex)
+            {
+                await _servicesFacade.CustomDialogService.ShowErrorAsync($"主题切换失败：{ex.Message}", "错误");
+            }
+        }
+
+        private void ApplyLightTheme()
+        {
+            var resources = Application.Current.Resources;
+            // 浅色主题
+            UpdateThemeColor(resources, "BackgroundColor", "#FFF8F9FA");
+            UpdateThemeColor(resources, "SurfaceColor", "#FFFFFFFF");
+            UpdateThemeColor(resources, "TextPrimaryColor", "#FF1A1A1A");
+        }
+
+        private void ApplyDarkTheme()
+        {
+            var resources = Application.Current.Resources;
+            // 深色主题
+            UpdateThemeColor(resources, "BackgroundColor", "#FF1E1E1E");
+            UpdateThemeColor(resources, "SurfaceColor", "#FF2D2D2D");
+            UpdateThemeColor(resources, "TextPrimaryColor", "#FFFFFFFF");
+        }
+
+        private void UpdateThemeColor(ResourceDictionary resources, string colorKey, string colorValue)
+        {
+            try
+            {
+                var color = (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString(colorValue);
+                var brushKey = colorKey.Replace("Color", "Brush");
+                
+                if (resources.Contains(colorKey)) resources[colorKey] = color;
+                if (resources.Contains(brushKey)) resources[brushKey] = new System.Windows.Media.SolidColorBrush(color);
+            }
+            catch { /* 忽略主题更新错误 */ }
+        }
 
         public MainWindowViewModel(
             IRegionManager regionManager,

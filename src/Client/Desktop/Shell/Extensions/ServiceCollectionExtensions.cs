@@ -38,6 +38,11 @@ namespace LYBT.Desktop.Shell.Extensions
             // ViewModels和Views通过Prism的ViewModelLocator自动解析，无需手动注册
         }
 
+            
+            // Phase I: 简化主题服务
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Services.Theming.IThemeService,
+                LYBT.Desktop.Core.Services.Theming.ThemeService>();
+
             // UltraThink Phase H: 高级功能优化服务
             containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Services.Performance.IStartupOptimizationService,
                 LYBT.Desktop.Core.Services.Performance.StartupOptimizationService>();
