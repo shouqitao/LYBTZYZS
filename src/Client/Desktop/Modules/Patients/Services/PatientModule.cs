@@ -91,7 +91,7 @@ namespace LYBT.Desktop.Patients.Services
                 var validationResult = await ValidateCreateDtoAsync(createDto);
                 if (!validationResult.IsSuccess)
                 {
-                    return ServiceResult<PatientDto>.Failure(validationResult.ErrorMessage);
+                    return ServiceResult<PatientDto>.Failure(validationResult.ErrorMessage ?? "验证失败");
                 }
                 
                 // 检查电话号码是否已存在
@@ -138,7 +138,7 @@ namespace LYBT.Desktop.Patients.Services
                 var validationResult = await ValidateUpdateDtoAsync(updateDto);
                 if (!validationResult.IsSuccess)
                 {
-                    return ServiceResult<PatientDto>.Failure(validationResult.ErrorMessage);
+                    return ServiceResult<PatientDto>.Failure(validationResult.ErrorMessage ?? "验证失败");
                 }
                 
                 // 检查电话号码是否已被其他患者使用
@@ -246,10 +246,10 @@ namespace LYBT.Desktop.Patients.Services
                 var result = await GetPagedAsync(query);
                 if (!result.IsSuccess)
                 {
-                    return ServiceResult<IEnumerable<PatientDto>>.Failure(result.ErrorMessage);
+                    return ServiceResult<IEnumerable<PatientDto>>.Failure(result.ErrorMessage ?? "获取数据失败");
                 }
                 
-                return ServiceResult<IEnumerable<PatientDto>>.Success(result.Data.Items);
+                return ServiceResult<IEnumerable<PatientDto>>.Success(result.Data?.Items ?? new List<PatientDto>());
             }
             catch (Exception ex)
             {
@@ -258,36 +258,36 @@ namespace LYBT.Desktop.Patients.Services
         }
         
         // UltraThink v2.0: 简化验证方法 - 移除冗余的通用验证，合并Create/Update验证逻辑
-        private async Task<ServiceResult> ValidateCreateDtoAsync(PatientCreateDto createDto)
+        private Task<ServiceResult> ValidateCreateDtoAsync(PatientCreateDto createDto)
         {
-            if (createDto == null) return ServiceResult.Failure("创建患者信息不能为空");
-            if (string.IsNullOrWhiteSpace(createDto.Name)) return ServiceResult.Failure("患者姓名不能为空");
-            if (createDto.Name.Length > 50) return ServiceResult.Failure("患者姓名长度不能超过50个字符");
+            if (createDto == null) return Task.FromResult(ServiceResult.Failure("创建患者信息不能为空"));
+            if (string.IsNullOrWhiteSpace(createDto.Name)) return Task.FromResult(ServiceResult.Failure("患者姓名不能为空"));
+            if (createDto.Name.Length > 50) return Task.FromResult(ServiceResult.Failure("患者姓名长度不能超过50个字符"));
             
             // UltraThink v2.0: Age是计算属性，不验证存储值
             // 验证出生日期的合理性
             if (createDto.BirthDate.HasValue && createDto.BirthDate.Value > DateTime.Today)
             {
-                return ServiceResult.Failure("出生日期不能晚于今天");
+                return Task.FromResult(ServiceResult.Failure("出生日期不能晚于今天"));
             }
             
-            return ServiceResult.Success();
+            return Task.FromResult(ServiceResult.Success());
         }
         
-        private async Task<ServiceResult> ValidateUpdateDtoAsync(PatientUpdateDto updateDto)
+        private Task<ServiceResult> ValidateUpdateDtoAsync(PatientUpdateDto updateDto)
         {
-            if (updateDto == null) return ServiceResult.Failure("更新患者信息不能为空");
-            if (string.IsNullOrWhiteSpace(updateDto.Name)) return ServiceResult.Failure("患者姓名不能为空");
-            if (updateDto.Name.Length > 50) return ServiceResult.Failure("患者姓名长度不能超过50个字符");
+            if (updateDto == null) return Task.FromResult(ServiceResult.Failure("更新患者信息不能为空"));
+            if (string.IsNullOrWhiteSpace(updateDto.Name)) return Task.FromResult(ServiceResult.Failure("患者姓名不能为空"));
+            if (updateDto.Name.Length > 50) return Task.FromResult(ServiceResult.Failure("患者姓名长度不能超过50个字符"));
             
             // UltraThink v2.0: Age是计算属性，不验证存储值
             // 验证出生日期的合理性
             if (updateDto.BirthDate.HasValue && updateDto.BirthDate.Value > DateTime.Today)
             {
-                return ServiceResult.Failure("出生日期不能晚于今天");
+                return Task.FromResult(ServiceResult.Failure("出生日期不能晚于今天"));
             }
             
-            return ServiceResult.Success();
+            return Task.FromResult(ServiceResult.Success());
         }
         
         public async Task<ServiceResult<bool>> IsPhoneExistsAsync(string phone, Guid? excludeId = null)
@@ -304,12 +304,12 @@ namespace LYBT.Desktop.Patients.Services
                 var searchResult = await SearchByKeywordAsync(phone);
                 if (!searchResult.IsSuccess)
                 {
-                    return ServiceResult<bool>.Failure(searchResult.ErrorMessage);
+                    return ServiceResult<bool>.Failure(searchResult.ErrorMessage ?? "检查电话号码失败");
                 }
                 
-                var exists = searchResult.Data.Any(p => 
+                var exists = searchResult.Data?.Any(p => 
                     p.PhoneNumber == phone && 
-                    (excludeId == null || p.Id != excludeId.Value));
+                    (excludeId == null || p.Id != excludeId.Value)) ?? false;
                 
                 return ServiceResult<bool>.Success(exists);
             }
@@ -333,12 +333,12 @@ namespace LYBT.Desktop.Patients.Services
                 var searchResult = await SearchByKeywordAsync(idCard);
                 if (!searchResult.IsSuccess)
                 {
-                    return ServiceResult<bool>.Failure(searchResult.ErrorMessage);
+                    return ServiceResult<bool>.Failure(searchResult.ErrorMessage ?? "检查身份证号失败");
                 }
                 
-                var exists = searchResult.Data.Any(p => 
+                var exists = searchResult.Data?.Any(p => 
                     p.IdNumber == idCard && 
-                    (excludeId == null || p.Id != excludeId.Value));
+                    (excludeId == null || p.Id != excludeId.Value)) ?? false;
                 
                 return ServiceResult<bool>.Success(exists);
             }
@@ -420,7 +420,7 @@ namespace LYBT.Desktop.Patients.Services
 
                 // API调用批量导入
                 var apiResponse = await _apiService.ImportPatientsAsync(patients);
-                if (!apiResponse.IsSuccessStatusCode || apiResponse.Content == null)
+                if (!apiResponse.IsSuccessStatusCode)
                 {
                     return ServiceResult<int>.Failure("批量导入患者失败");
                 }
@@ -496,10 +496,10 @@ namespace LYBT.Desktop.Patients.Services
                 var searchResult = await SearchByKeywordAsync(idCard);
                 if (!searchResult.IsSuccess)
                 {
-                    return ServiceResult<PatientDto>.Failure(searchResult.ErrorMessage);
+                    return ServiceResult<PatientDto>.Failure(searchResult.ErrorMessage ?? "查找患者失败");
                 }
                 
-                var patient = searchResult.Data.FirstOrDefault(p => p.IdNumber == idCard);
+                var patient = searchResult.Data?.FirstOrDefault(p => p.IdNumber == idCard);
                 if (patient == null)
                 {
                     return ServiceResult<PatientDto>.Failure("未找到匹配的患者");
@@ -528,10 +528,10 @@ namespace LYBT.Desktop.Patients.Services
                 var searchResult = await SearchByKeywordAsync(phone);
                 if (!searchResult.IsSuccess)
                 {
-                    return ServiceResult<List<PatientDto>>.Failure(searchResult.ErrorMessage);
+                    return ServiceResult<List<PatientDto>>.Failure(searchResult.ErrorMessage ?? "查找患者失败");
                 }
                 
-                var patients = searchResult.Data.Where(p => p.PhoneNumber == phone).ToList();
+                var patients = searchResult.Data?.Where(p => p.PhoneNumber == phone).ToList() ?? new List<PatientDto>();
                 return ServiceResult<List<PatientDto>>.Success(patients);
             }
             catch (Exception ex)
@@ -550,10 +550,10 @@ namespace LYBT.Desktop.Patients.Services
                 var result = await SearchByKeywordAsync(keyword);
                 if (!result.IsSuccess)
                 {
-                    return ServiceResult<List<PatientDto>>.Failure(result.ErrorMessage);
+                    return ServiceResult<List<PatientDto>>.Failure(result.ErrorMessage ?? "获取数据失败");
                 }
                 
-                return ServiceResult<List<PatientDto>>.Success(result.Data.ToList());
+                return ServiceResult<List<PatientDto>>.Success(result.Data?.ToList() ?? new List<PatientDto>());
             }
             catch (Exception ex)
             {
@@ -564,7 +564,7 @@ namespace LYBT.Desktop.Patients.Services
         /// <summary>
         /// 获取患者统计信息
         /// </summary>
-        public async Task<ServiceResult<PatientStatisticsDto>> GetStatisticsAsync()
+        public Task<ServiceResult<PatientStatisticsDto>> GetStatisticsAsync()
         {
             try
             {
@@ -576,7 +576,7 @@ namespace LYBT.Desktop.Patients.Services
                     InactivePatients = 0
                 };
                 
-                return ServiceResult<PatientStatisticsDto>.Success(statistics);
+                return Task.FromResult(ServiceResult<PatientStatisticsDto>.Success(statistics));
             }
             catch (Exception ex)
             {
@@ -594,10 +594,10 @@ namespace LYBT.Desktop.Patients.Services
                 var patientResult = await GetByIdAsync(id);
                 if (!patientResult.IsSuccess)
                 {
-                    return ServiceResult<object>.Failure(patientResult.ErrorMessage);
+                    return ServiceResult<object>.Failure(patientResult.ErrorMessage ?? "获取患者档案失败");
                 }
                 
-                return ServiceResult<object>.Success(patientResult.Data);
+                return ServiceResult<object>.Success(patientResult.Data!);
             }
             catch (Exception ex)
             {
@@ -608,12 +608,12 @@ namespace LYBT.Desktop.Patients.Services
         /// <summary>
         /// 更新患者档案
         /// </summary>
-        public async Task<ServiceResult<bool>> UpdateArchiveAsync(Guid id, object dto)
+        public Task<ServiceResult<bool>> UpdateArchiveAsync(Guid id, object dto)
         {
             try
             {
                 // 简化实现，实际应该根据dto类型进行处理
-                return ServiceResult<bool>.Success(true);
+                return Task.FromResult(ServiceResult<bool>.Success(true));
             }
             catch (Exception ex)
             {
@@ -668,11 +668,11 @@ namespace LYBT.Desktop.Patients.Services
                 var exportResult = await ExportPatientsAsync();
                 if (!exportResult.IsSuccess)
                 {
-                    return ServiceResult<byte[]>.Failure(exportResult.ErrorMessage);
+                    return ServiceResult<byte[]>.Failure(exportResult.ErrorMessage ?? "导出患者数据失败");
                 }
                 
                 // 简化实现，实际应该将导出的患者数据转换为字节数组
-                var data = System.Text.Encoding.UTF8.GetBytes(exportResult.Data.Count.ToString());
+                var data = System.Text.Encoding.UTF8.GetBytes((exportResult.Data?.Count ?? 0).ToString());
                 return ServiceResult<byte[]>.Success(data);
             }
             catch (Exception ex)
@@ -691,7 +691,7 @@ namespace LYBT.Desktop.Patients.Services
                 var validationResult = await ValidateCreateDtoAsync(dto);
                 if (!validationResult.IsSuccess)
                 {
-                    return ServiceResult<object>.Failure(validationResult.ErrorMessage);
+                    return ServiceResult<object>.Failure(validationResult.ErrorMessage ?? "验证失败");
                 }
                 
                 return ServiceResult<object>.Success(new { IsValid = true, Message = "患者信息验证通过" });
@@ -705,7 +705,7 @@ namespace LYBT.Desktop.Patients.Services
         /// <summary>
         /// 获取患者年龄分布统计
         /// </summary>
-        public async Task<ServiceResult<List<object>>> GetAgeStatisticsAsync()
+        public Task<ServiceResult<List<object>>> GetAgeStatisticsAsync()
         {
             try
             {
@@ -719,7 +719,7 @@ namespace LYBT.Desktop.Patients.Services
                     new { AgeRange = "65+", Count = 0 }
                 };
                 
-                return ServiceResult<List<object>>.Success(ageStats);
+                return Task.FromResult(ServiceResult<List<object>>.Success(ageStats));
             }
             catch (Exception ex)
             {
