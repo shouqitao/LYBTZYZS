@@ -362,7 +362,7 @@ namespace LYBT.Desktop.Core.Coordinators
         /// <summary>
         /// 评估治疗效果
         /// </summary>
-        public async Task<ServiceResult<TreatmentEffectivenessAssessment>> EvaluateTreatmentEffectivenessAsync(
+        public Task<ServiceResult<TreatmentEffectivenessAssessment>> EvaluateTreatmentEffectivenessAsync(
             Guid caseId, 
             EffectivenessEvaluationCriteria criteria)
         {
@@ -370,7 +370,7 @@ namespace LYBT.Desktop.Core.Coordinators
             {
                 if (!_activeWorkflows.TryGetValue(caseId, out var workflow))
                 {
-                    return ServiceResult<TreatmentEffectivenessAssessment>.Failure("找不到指定的医疗案例");
+                    return Task.FromResult(ServiceResult<TreatmentEffectivenessAssessment>.Failure("找不到指定的医疗案例"));
                 }
 
                 var assessment = new TreatmentEffectivenessAssessment
@@ -435,12 +435,12 @@ namespace LYBT.Desktop.Core.Coordinators
                     RecommendationCount = assessment.Recommendations.Count
                 });
 
-                return ServiceResult<TreatmentEffectivenessAssessment>.Success(assessment);
+                return Task.FromResult(ServiceResult<TreatmentEffectivenessAssessment>.Success(assessment));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "评估治疗效果失败: CaseId={CaseId}", caseId);
-                return ServiceResult<TreatmentEffectivenessAssessment>.Failure($"评估治疗效果失败: {ex.Message}", ex);
+                return Task.FromResult(ServiceResult<TreatmentEffectivenessAssessment>.Failure($"评估治疗效果失败: {ex.Message}", ex));
             }
         }
 
@@ -505,7 +505,7 @@ namespace LYBT.Desktop.Core.Coordinators
         /// <summary>
         /// 检查复诊提醒
         /// </summary>
-        public async Task<ServiceResult<List<FollowUpReminder>>> CheckFollowUpRemindersAsync()
+        public Task<ServiceResult<List<FollowUpReminder>>> CheckFollowUpRemindersAsync()
         {
             try
             {
@@ -551,12 +551,12 @@ namespace LYBT.Desktop.Core.Coordinators
 
                 _logger.LogInformation("复诊提醒检查完成: 提醒数量={Count}", reminders.Count);
 
-                return ServiceResult<List<FollowUpReminder>>.Success(reminders);
+                return Task.FromResult(ServiceResult<List<FollowUpReminder>>.Success(reminders));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "检查复诊提醒失败");
-                return ServiceResult<List<FollowUpReminder>>.Failure($"检查复诊提醒失败: {ex.Message}", ex);
+                return Task.FromResult(ServiceResult<List<FollowUpReminder>>.Failure($"检查复诊提醒失败: {ex.Message}", ex));
             }
         }
 
@@ -567,7 +567,7 @@ namespace LYBT.Desktop.Core.Coordinators
         /// <summary>
         /// 生成案例分析报告
         /// </summary>
-        public async Task<ServiceResult<CaseAnalysisReport>> GenerateCaseAnalysisReportAsync(
+        public Task<ServiceResult<CaseAnalysisReport>> GenerateCaseAnalysisReportAsync(
             Guid caseId, 
             ReportGenerationOptions options)
         {
@@ -575,7 +575,7 @@ namespace LYBT.Desktop.Core.Coordinators
             {
                 if (!_activeWorkflows.TryGetValue(caseId, out var workflow))
                 {
-                    return ServiceResult<CaseAnalysisReport>.Failure("找不到指定的医疗案例");
+                    return Task.FromResult(ServiceResult<CaseAnalysisReport>.Failure("找不到指定的医疗案例"));
                 }
 
                 var report = new CaseAnalysisReport
@@ -623,12 +623,12 @@ namespace LYBT.Desktop.Core.Coordinators
                 _logger.LogInformation("案例分析报告生成完成: CaseId={CaseId}, TimelineEvents={Timeline}, Recommendations={Recommendations}", 
                     caseId, report.TreatmentTimeline.Count, report.Recommendations.Count);
 
-                return ServiceResult<CaseAnalysisReport>.Success(report);
+                return Task.FromResult(ServiceResult<CaseAnalysisReport>.Success(report));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "生成案例分析报告失败: CaseId={CaseId}", caseId);
-                return ServiceResult<CaseAnalysisReport>.Failure($"生成案例分析报告失败: {ex.Message}", ex);
+                return Task.FromResult(ServiceResult<CaseAnalysisReport>.Failure($"生成案例分析报告失败: {ex.Message}", ex));
             }
         }
 
@@ -636,21 +636,22 @@ namespace LYBT.Desktop.Core.Coordinators
 
         #region Private Helper Methods
 
-        private async Task<ServiceResult<bool>> ApplyCaseTemplateAsync(MedicalCaseWorkflow workflow, string templateId)
+        private Task<ServiceResult<bool>> ApplyCaseTemplateAsync(MedicalCaseWorkflow workflow, string templateId)
         {
             // 应用案例模板的逻辑
-            return ServiceResult<bool>.Success(true);
+            return Task.FromResult(ServiceResult<bool>.Success(true));
         }
 
-        private async Task RecordCaseEventAsync(Guid caseId, CaseEvent caseEvent)
+        private Task RecordCaseEventAsync(Guid caseId, CaseEvent caseEvent)
         {
             if (!_eventHistory.ContainsKey(caseId))
                 _eventHistory[caseId] = new List<CaseEvent>();
 
             _eventHistory[caseId].Add(caseEvent);
+            return Task.CompletedTask;
         }
 
-        private async Task<ServiceResult<SymptomTrend>> AnalyzeSymptomChangesAsync(MedicalCaseWorkflow workflow)
+        private Task<ServiceResult<SymptomTrend>> AnalyzeSymptomChangesAsync(MedicalCaseWorkflow workflow)
         {
             // 分析症状变化趋势
             var trend = new SymptomTrend
@@ -659,10 +660,10 @@ namespace LYBT.Desktop.Core.Coordinators
                 ChangeRate = 0.15,
                 KeySymptoms = new List<string>()
             };
-            return ServiceResult<SymptomTrend>.Success(trend);
+            return Task.FromResult(ServiceResult<SymptomTrend>.Success(trend));
         }
 
-        private async Task<ServiceResult<PrescriptionTrend>> AnalyzePrescriptionTrendsAsync(MedicalCaseWorkflow workflow)
+        private Task<ServiceResult<PrescriptionTrend>> AnalyzePrescriptionTrendsAsync(MedicalCaseWorkflow workflow)
         {
             // 分析处方变化趋势
             var trend = new PrescriptionTrend
@@ -671,10 +672,10 @@ namespace LYBT.Desktop.Core.Coordinators
                 AverageDosage = (double)workflow.PrescriptionHistory.SelectMany(p => p.Herbs).Average(h => h.Quantity), // decimal转double
                 CommonHerbs = new List<string>()
             };
-            return ServiceResult<PrescriptionTrend>.Success(trend);
+            return Task.FromResult(ServiceResult<PrescriptionTrend>.Success(trend));
         }
 
-        private async Task<ServiceResult<FinalAssessment>> GenerateFinalAssessmentAsync(MedicalCaseWorkflow workflow)
+        private Task<ServiceResult<FinalAssessment>> GenerateFinalAssessmentAsync(MedicalCaseWorkflow workflow)
         {
             // 生成最终评估
             var assessment = new FinalAssessment
@@ -683,7 +684,7 @@ namespace LYBT.Desktop.Core.Coordinators
                 OverallSatisfaction = 0.85,
                 Recommendations = new List<string> { "继续当前治疗方案", "定期复查" }
             };
-            return ServiceResult<FinalAssessment>.Success(assessment);
+            return Task.FromResult(ServiceResult<FinalAssessment>.Success(assessment));
         }
 
         private double CalculateOverallEffectiveness(TreatmentEffectivenessAssessment assessment)

@@ -263,7 +263,7 @@ namespace LYBT.Desktop.MedicalCase.Services
                 if (result.IsSuccess && !string.IsNullOrWhiteSpace(diagnosis))
                 {
                     var caseResult = await GetByIdAsync(id);
-                    if (caseResult.IsSuccess)
+                    if (caseResult.IsSuccess && caseResult.Data != null)
                     {
                         // UltraThink v2.0: 直接使用DTO创建更新对象
                         var updateDto = new MedicalCaseUpdateDto
@@ -464,7 +464,7 @@ namespace LYBT.Desktop.MedicalCase.Services
                 {
                     // 更新归档信息
                     var caseResult = await GetByIdAsync(id);
-                    if (caseResult.IsSuccess)
+                    if (caseResult.IsSuccess && caseResult.Data != null)
                     {
                         var updateDto = new MedicalCaseUpdateDto
                         {
@@ -606,26 +606,26 @@ namespace LYBT.Desktop.MedicalCase.Services
         
         // UltraThink v2.0: 移除通用验证方法 - 验证逻辑已整合到Create/Update方法中
         
-        private async Task<ServiceResult> ValidateCreateDtoAsync(MedicalCaseCreateDto createDto)
+        private Task<ServiceResult> ValidateCreateDtoAsync(MedicalCaseCreateDto createDto)
         {
-            if (createDto == null) return ServiceResult.Failure("创建医疗案例信息不能为空");
-            if (createDto.PatientId == Guid.Empty) return ServiceResult.Failure("患者ID不能为空");
-            if (createDto.DoctorId == Guid.Empty) return ServiceResult.Failure("医生ID不能为空");
+            if (createDto == null) return Task.FromResult(ServiceResult.Failure("创建医疗案例信息不能为空"));
+            if (createDto.PatientId == Guid.Empty) return Task.FromResult(ServiceResult.Failure("患者ID不能为空"));
+            if (createDto.DoctorId == Guid.Empty) return Task.FromResult(ServiceResult.Failure("医生ID不能为空"));
             // 验证DiagnosisSummary而不是ChiefComplaint
             if (!string.IsNullOrWhiteSpace(createDto.DiagnosisSummary) && createDto.DiagnosisSummary.Length > 200)
             {
-                return ServiceResult.Failure("诊断摘要长度不能超过200个字符");
+                return Task.FromResult(ServiceResult.Failure("诊断摘要长度不能超过200个字符"));
             }
-            return ServiceResult.Success();
+            return Task.FromResult(ServiceResult.Success());
         }
         
-        private async Task<ServiceResult> ValidateUpdateDtoAsync(Guid id, MedicalCaseUpdateDto updateDto)
+        private Task<ServiceResult> ValidateUpdateDtoAsync(Guid id, MedicalCaseUpdateDto updateDto)
         {
-            if (updateDto == null) return ServiceResult.Failure("更新医疗案例信息不能为空");
-            if (updateDto.Id == Guid.Empty) return ServiceResult.Failure("医疗案例ID不能为空");
-            if (updateDto.PatientId == Guid.Empty) return ServiceResult.Failure("患者ID不能为空");
-            if (updateDto.DoctorId == Guid.Empty) return ServiceResult.Failure("医生ID不能为空");
-            return ServiceResult.Success();
+            if (updateDto == null) return Task.FromResult(ServiceResult.Failure("更新医疗案例信息不能为空"));
+            if (updateDto.Id == Guid.Empty) return Task.FromResult(ServiceResult.Failure("医疗案例ID不能为空"));
+            if (updateDto.PatientId == Guid.Empty) return Task.FromResult(ServiceResult.Failure("患者ID不能为空"));
+            if (updateDto.DoctorId == Guid.Empty) return Task.FromResult(ServiceResult.Failure("医生ID不能为空"));
+            return Task.FromResult(ServiceResult.Success());
         }
         
         // UltraThink v2.0: 移除权限检查方法 - 权限验证应由业务层统一处理
