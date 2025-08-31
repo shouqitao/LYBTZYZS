@@ -38,7 +38,6 @@ namespace LYBT.Desktop.Prescriptions.Services
         #region 缓存字段
 
         private readonly Dictionary<Guid, int> _formulaUsageCount = new();
-        private List<FormulaDto>? _cachedFormulas;
 
         #endregion
 

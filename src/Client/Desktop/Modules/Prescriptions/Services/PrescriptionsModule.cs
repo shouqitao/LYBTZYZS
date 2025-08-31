@@ -94,7 +94,7 @@ namespace LYBT.Desktop.Prescriptions.Services
                 var validationResult = await ValidateCreateDtoAsync(createDto);
                 if (!validationResult.IsSuccess)
                 {
-                    return ServiceResult<PrescriptionDto>.Failure(validationResult.ErrorMessage);
+                    return ServiceResult<PrescriptionDto>.Failure(validationResult.ErrorMessage ?? "创建处方验证失败");
                 }
                 
                 // API调用
@@ -122,7 +122,7 @@ namespace LYBT.Desktop.Prescriptions.Services
                 var validationResult = await ValidateEditDtoAsync(updateDto);
                 if (!validationResult.IsSuccess)
                 {
-                    return ServiceResult<PrescriptionDto>.Failure(validationResult.ErrorMessage);
+                    return ServiceResult<PrescriptionDto>.Failure(validationResult.ErrorMessage ?? "更新处方验证失败");
                 }
                 
                 // 检查是否可以修改
@@ -224,7 +224,7 @@ namespace LYBT.Desktop.Prescriptions.Services
                 }
                 
                 var prescription = prescriptionResult.Data;
-                if (!prescription.Items.Any())
+                if (prescription == null || !prescription.Items.Any())
                 {
                     return ServiceResult.Failure("处方必须包含药材才能完成");
                 }
@@ -283,10 +283,10 @@ namespace LYBT.Desktop.Prescriptions.Services
                 var pagedResult = await GetPagedAsync(query);
                 if (!pagedResult.IsSuccess)
                 {
-                    return ServiceResult<List<PrescriptionDto>>.Failure(pagedResult.ErrorMessage);
+                    return ServiceResult<List<PrescriptionDto>>.Failure(pagedResult.ErrorMessage ?? "搜索处方失败");
                 }
                 
-                return ServiceResult<List<PrescriptionDto>>.Success(pagedResult.Data.Items.ToList());
+                return ServiceResult<List<PrescriptionDto>>.Success(pagedResult.Data?.Items?.ToList() ?? new List<PrescriptionDto>());
             }
             catch (Exception ex)
             {
@@ -338,14 +338,14 @@ namespace LYBT.Desktop.Prescriptions.Services
         {
             var prescriptionResult = await GetByIdAsync(id);
             if (!prescriptionResult.IsSuccess) return ServiceResult<bool>.Failure("获取处方信息失败");
-            return ServiceResult<bool>.Success(prescriptionResult.Data.Status == CommonStatus.Enabled);
+            return ServiceResult<bool>.Success(prescriptionResult.Data?.Status == CommonStatus.Enabled);
         }
         
         private async Task<ServiceResult<bool>> CanDeleteAsync(Guid id)
         {
             var prescriptionResult = await GetByIdAsync(id);
             if (!prescriptionResult.IsSuccess) return ServiceResult<bool>.Failure("获取处方信息失败");
-            return ServiceResult<bool>.Success(prescriptionResult.Data.Status == CommonStatus.Enabled);
+            return ServiceResult<bool>.Success(prescriptionResult.Data?.Status == CommonStatus.Enabled);
         }
         
         // UltraThink v2.0: 删除过度设计的验证方法 - 简化为基础验证即可
@@ -399,10 +399,10 @@ namespace LYBT.Desktop.Prescriptions.Services
                 var result = await GetPagedAsync(query);
                 if (!result.IsSuccess)
                 {
-                    return ServiceResult<List<PrescriptionDto>>.Failure(result.ErrorMessage);
+                    return ServiceResult<List<PrescriptionDto>>.Failure(result.ErrorMessage ?? "根据患者ID获取处方列表失败");
                 }
                 
-                return ServiceResult<List<PrescriptionDto>>.Success(result.Data.Items.ToList());
+                return ServiceResult<List<PrescriptionDto>>.Success(result.Data?.Items?.ToList() ?? new List<PrescriptionDto>());
             }
             catch (Exception ex)
             {
@@ -433,11 +433,11 @@ namespace LYBT.Desktop.Prescriptions.Services
                 var result = await GetPagedAsync(query);
                 if (!result.IsSuccess)
                 {
-                    return ServiceResult<List<PrescriptionDto>>.Failure(result.ErrorMessage);
+                    return ServiceResult<List<PrescriptionDto>>.Failure(result.ErrorMessage ?? "根据医疗案例ID获取处方列表失败");
                 }
                 
                 // 筛选出匹配的处方
-                var filteredPrescriptions = result.Data.Items.Where(p => p.MedicalCaseId == medicalCaseId).ToList();
+                var filteredPrescriptions = result.Data?.Items?.Where(p => p.MedicalCaseId == medicalCaseId).ToList() ?? new List<PrescriptionDto>();
                 return ServiceResult<List<PrescriptionDto>>.Success(filteredPrescriptions);
             }
             catch (Exception ex)
@@ -539,6 +539,10 @@ namespace LYBT.Desktop.Prescriptions.Services
                 }
                 
                 var original = originalResult.Data;
+                if (original == null)
+                {
+                    return ServiceResult<PrescriptionDto>.Failure("原始处方信息不存在");
+                }
                 
                 // 创建新处方
                 var createDto = new PrescriptionCreateDto

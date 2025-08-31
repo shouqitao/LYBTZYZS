@@ -38,7 +38,7 @@ namespace LYBT.Desktop.Prescriptions.Components
                 }
 
                 // 验证诊断
-                ValidateDiagnosis(prescription.Diagnosis, result);
+                ValidateDiagnosis(prescription.Diagnosis ?? "", result);
 
                 // 验证剂数
                 ValidateDosageCount(prescription.DosageCount, result);

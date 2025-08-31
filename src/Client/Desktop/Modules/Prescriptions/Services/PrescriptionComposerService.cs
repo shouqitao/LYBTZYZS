@@ -187,6 +187,12 @@ namespace LYBT.Desktop.Prescriptions.Services
             try
             {
                 _logger.LogDebug("验证处方: {PrescriptionId}", prescription?.Id);
+                if (prescription == null)
+                {
+                    var errorResult = new ValidationResult();
+                    errorResult.AddError("处方信息不能为空");
+                    return errorResult;
+                }
                 return _basicValidator.ValidatePrescription(prescription);
             }
             catch (Exception ex)
@@ -208,6 +214,10 @@ namespace LYBT.Desktop.Prescriptions.Services
             try
             {
                 _logger.LogDebug("计算处方价格: {PrescriptionId}", prescription?.Id);
+                if (prescription == null)
+                {
+                    return new PriceCalculationResult { IsSuccess = false, ErrorMessage = "处方信息不能为空" };
+                }
                 return _priceCalculator.CalculatePrescriptionPrice(prescription);
             }
             catch (Exception ex)

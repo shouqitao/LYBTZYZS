@@ -355,7 +355,7 @@ namespace LYBT.Desktop.Core.Coordinators
         /// <summary>
         /// 检测处方冲突
         /// </summary>
-        public async Task<ServiceResult<List<PrescriptionConflict>>> DetectConflictsAsync(
+        public Task<ServiceResult<List<PrescriptionConflict>>> DetectConflictsAsync(
             List<PrescriptionDraft> prescriptions)
         {
             try
@@ -393,19 +393,19 @@ namespace LYBT.Desktop.Core.Coordinators
                     });
                 }
 
-                return ServiceResult<List<PrescriptionConflict>>.Success(conflicts);
+                return Task.FromResult(ServiceResult<List<PrescriptionConflict>>.Success(conflicts));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "检测处方冲突失败");
-                return ServiceResult<List<PrescriptionConflict>>.Failure($"检测处方冲突失败: {ex.Message}", ex);
+                return Task.FromResult(ServiceResult<List<PrescriptionConflict>>.Failure($"检测处方冲突失败: {ex.Message}", ex));
             }
         }
 
         /// <summary>
         /// 解决处方冲突
         /// </summary>
-        public async Task<ServiceResult<ConflictResolutionResult>> ResolveConflictsAsync(
+        public Task<ServiceResult<ConflictResolutionResult>> ResolveConflictsAsync(
             List<PrescriptionConflict> conflicts, 
             ConflictResolutionStrategy strategy)
         {
@@ -445,12 +445,12 @@ namespace LYBT.Desktop.Core.Coordinators
                 _logger.LogInformation("处方冲突解决完成: TotalConflicts={Total}, Resolved={Resolved}", 
                     conflicts.Count, resolvedConflicts.Count); // result.ResolvedConflicts.Count, result.ResolutionRate); // 属性不存在
 
-                return ServiceResult<ConflictResolutionResult>.Success(result);
+                return Task.FromResult(ServiceResult<ConflictResolutionResult>.Success(result));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "解决处方冲突失败");
-                return ServiceResult<ConflictResolutionResult>.Failure($"解决处方冲突失败: {ex.Message}", ex);
+                return Task.FromResult(ServiceResult<ConflictResolutionResult>.Failure($"解决处方冲突失败: {ex.Message}", ex));
             }
         }
 
