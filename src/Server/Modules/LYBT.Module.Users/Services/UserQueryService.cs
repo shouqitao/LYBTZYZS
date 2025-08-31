@@ -176,7 +176,7 @@ namespace LYBT.Module.Users.Services
             try
             {
                 if (string.IsNullOrWhiteSpace(keyword))
-                    return ServiceResult<List<UserDto>>.Success(new List<UserDto>());
+                    return ServiceResult<List<UserDto>>.Success([]);
 
                 var searchTerm = keyword.Trim();
                 var users = await _context.Users
@@ -238,7 +238,7 @@ namespace LYBT.Module.Users.Services
                     .Where(u => u.Id == userId)
                     .Select(u => new
                     {
-                        Id = u.Id,
+                        u.Id,
                         Action = "用户创建",
                         Timestamp = u.CreatedTime,
                         Details = $"用户: {u.RealName}({u.Username})",
