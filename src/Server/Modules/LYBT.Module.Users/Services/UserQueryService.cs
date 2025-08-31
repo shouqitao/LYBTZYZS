@@ -10,6 +10,7 @@ using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using LYBT.Module.Users.Interfaces;
 
 namespace LYBT.Module.Users.Services
 {
@@ -17,7 +18,7 @@ namespace LYBT.Module.Users.Services
     /// 用户查询服务 - UltraThink架构
     /// 职责：分页查询，搜索筛选，用户查询，角色获取
     /// </summary>
-    public class UserQueryService
+    public class UserQueryService : IUserQueryService
     {
         private readonly AppDbContext _context;
         private readonly IMapper _mapper;

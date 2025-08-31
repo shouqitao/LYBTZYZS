@@ -34,7 +34,7 @@ namespace LYBT.Desktop.Users.ViewModels
         private RoleItem? _selectedRole;
         private bool _isRoleSelectionEnabled;
 
-        public List<RoleItem> Roles { get; }
+        public List<RoleItem> Roles { get; } = null!;
 
         /// <summary>角色选择是否启用（新建用户时禁用，固定为普通用户）</summary>
         public bool IsRoleSelectionEnabled

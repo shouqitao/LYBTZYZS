@@ -121,13 +121,13 @@ namespace LYBT.Desktop.Users.Services
                 
                 System.Diagnostics.Debug.WriteLine($"✅ UserModule.GetPagedAsync 成功: 总数={totalCount}, 当前页项目数={itemCount}");
                 
-                if (itemCount > 0 && result.Items != null)
+                if (itemCount > 0 && result?.Items != null)
                 {
                     var firstUser = result.Items.First();
                     System.Diagnostics.Debug.WriteLine($"📄 第一个用户: {firstUser.Username} - {firstUser.RealName}");
                 }
                 
-                return ServiceResult<PagedResult<UserDto>>.Success(result);
+                return ServiceResult<PagedResult<UserDto>>.Success(result ?? new PagedResult<UserDto>(new List<UserDto>(), 0, 1, 20));
             }
             catch (Exception ex)
             {
@@ -152,7 +152,7 @@ namespace LYBT.Desktop.Users.Services
                 var validationResult = await ValidateMutationDtoAsync(dto);
                 if (!validationResult.IsSuccess)
                 {
-                    return ServiceResult<UserDto>.Failure(validationResult.ErrorMessage);
+                    return ServiceResult<UserDto>.Failure(validationResult.ErrorMessage ?? "创建用户验证失败");
                 }
                 
                 // 检查用户名是否已存在
@@ -213,7 +213,7 @@ namespace LYBT.Desktop.Users.Services
                 var validationResult = await ValidateMutationDtoAsync(dto);
                 if (!validationResult.IsSuccess)
                 {
-                    return ServiceResult<UserDto>.Failure(validationResult.ErrorMessage);
+                    return ServiceResult<UserDto>.Failure(validationResult.ErrorMessage ?? "更新用户验证失败");
                 }
                 
                 // 检查用户名是否已被其他用户使用
@@ -363,10 +363,10 @@ namespace LYBT.Desktop.Users.Services
                 var result = await GetPagedAsync(query);
                 if (!result.IsSuccess)
                 {
-                    return ServiceResult<UserDto>.Failure(result.ErrorMessage);
+                    return ServiceResult<UserDto>.Failure(result.ErrorMessage ?? "获取用户失败");
                 }
                 
-                var user = result.Data.Items.FirstOrDefault(u => u.Username == username);
+                var user = result.Data?.Items?.FirstOrDefault(u => u.Username == username);
                 if (user == null)
                 {
                     return ServiceResult<UserDto>.Failure("未找到指定用户");
@@ -457,10 +457,10 @@ namespace LYBT.Desktop.Users.Services
                 var result = await GetPagedAsync(query);
                 if (!result.IsSuccess)
                 {
-                    return ServiceResult<List<UserDto>>.Failure(result.ErrorMessage);
+                    return ServiceResult<List<UserDto>>.Failure(result.ErrorMessage ?? "搜索用户失败");
                 }
                 
-                return ServiceResult<List<UserDto>>.Success(result.Data.Items.ToList());
+                return ServiceResult<List<UserDto>>.Success(result.Data?.Items?.ToList() ?? new List<UserDto>());
             }
             catch (Exception ex)
             {
@@ -485,11 +485,11 @@ namespace LYBT.Desktop.Users.Services
                 var result = await GetPagedAsync(query);
                 if (!result.IsSuccess)
                 {
-                    return ServiceResult<List<UserDto>>.Failure(result.ErrorMessage);
+                    return ServiceResult<List<UserDto>>.Failure(result.ErrorMessage ?? "获取用户列表失败");
                 }
                 
                 // 过滤活跃用户
-                var activeUsers = result.Data.Items.Where(u => u.IsActive).ToList();
+                var activeUsers = result.Data?.Items?.Where(u => u.IsActive).ToList() ?? new List<UserDto>();
                 return ServiceResult<List<UserDto>>.Success(activeUsers);
             }
             catch (Exception ex)
@@ -606,8 +606,12 @@ namespace LYBT.Desktop.Users.Services
                 }
                 
                 var existingUser = existingUserResult.Data;
-                // 直接使用UserMutationDto，无需额外转换
+                if (existingUser == null)
+                {
+                    return ServiceResult<bool>.Failure("用户信息不存在");
+                }
                 
+                // 直接使用UserMutationDto，无需额外转换
                 var updateResult = await UpdateAsync(new UserMutationDto
                 {
                     Id = dto.UserId,
@@ -622,7 +626,7 @@ namespace LYBT.Desktop.Users.Services
                 
                 if (!updateResult.IsSuccess)
                 {
-                    return ServiceResult<bool>.Failure(updateResult.ErrorMessage);
+                    return ServiceResult<bool>.Failure(updateResult.ErrorMessage ?? "修改个人信息失败");
                 }
                 
                 return ServiceResult<bool>.Success(true);
@@ -640,7 +644,7 @@ namespace LYBT.Desktop.Users.Services
         /// <summary>
         /// 获取所有角色列表
         /// </summary>
-        public async Task<ServiceResult<List<object>>> GetRolesAsync()
+        public Task<ServiceResult<List<object>>> GetRolesAsync()
         {
             try
             {
@@ -653,11 +657,11 @@ namespace LYBT.Desktop.Users.Services
                     .Cast<object>()
                     .ToList();
                 
-                return ServiceResult<List<object>>.Success(roles);
+                return Task.FromResult(ServiceResult<List<object>>.Success(roles));
             }
             catch (Exception ex)
             {
-                return ServiceResult<List<object>>.Failure($"获取角色列表异常: {ex.Message}");
+                return Task.FromResult(ServiceResult<List<object>>.Failure($"获取角色列表异常: {ex.Message}"));
             }
         }
         
@@ -695,7 +699,7 @@ namespace LYBT.Desktop.Users.Services
         /// <summary>
         /// 获取用户操作日志
         /// </summary>
-        public async Task<ServiceResult<PagedResult<object>>> GetOperationLogsAsync(Guid userId, PagedQueryBaseDto query)
+        public Task<ServiceResult<PagedResult<object>>> GetOperationLogsAsync(Guid userId, PagedQueryBaseDto query)
         {
             try
             {
@@ -707,11 +711,11 @@ namespace LYBT.Desktop.Users.Services
                     query.PageIndex, 
                     query.PageSize);
                 
-                return ServiceResult<PagedResult<object>>.Success(emptyResult);
+                return Task.FromResult(ServiceResult<PagedResult<object>>.Success(emptyResult));
             }
             catch (Exception ex)
             {
-                return ServiceResult<PagedResult<object>>.Failure($"获取操作日志异常: {ex.Message}");
+                return Task.FromResult(ServiceResult<PagedResult<object>>.Failure($"获取操作日志异常: {ex.Message}"));
             }
         }
         
@@ -723,19 +727,19 @@ namespace LYBT.Desktop.Users.Services
         /// <summary>
         /// 统一的UserMutationDto验证方法 - UltraThink v2.0优化
         /// </summary>
-        private async Task<ServiceResult> ValidateMutationDtoAsync(UserMutationDto dto)
+        private Task<ServiceResult> ValidateMutationDtoAsync(UserMutationDto dto)
         {
-            if (dto == null) return ServiceResult.Failure("用户信息不能为空");
-            if (string.IsNullOrWhiteSpace(dto.Username)) return ServiceResult.Failure("用户名不能为空");
-            if (dto.Username.Length < 3 || dto.Username.Length > 50) return ServiceResult.Failure("用户名长度必须在3到50个字符之间");
-            if (string.IsNullOrWhiteSpace(dto.RealName)) return ServiceResult.Failure("真实姓名不能为空");
-            if (dto.RealName.Length > 50) return ServiceResult.Failure("真实姓名长度不能超过50个字符");
+            if (dto == null) return Task.FromResult(ServiceResult.Failure("用户信息不能为空"));
+            if (string.IsNullOrWhiteSpace(dto.Username)) return Task.FromResult(ServiceResult.Failure("用户名不能为空"));
+            if (dto.Username.Length < 3 || dto.Username.Length > 50) return Task.FromResult(ServiceResult.Failure("用户名长度必须在3到50个字符之间"));
+            if (string.IsNullOrWhiteSpace(dto.RealName)) return Task.FromResult(ServiceResult.Failure("真实姓名不能为空"));
+            if (dto.RealName.Length > 50) return Task.FromResult(ServiceResult.Failure("真实姓名长度不能超过50个字符"));
             
             // 创建操作时密码必填
             if (dto.IsCreateOperation && string.IsNullOrWhiteSpace(dto.Password))
-                return ServiceResult.Failure("创建用户时密码不能为空");
+                return Task.FromResult(ServiceResult.Failure("创建用户时密码不能为空"));
                 
-            return ServiceResult.Success();
+            return Task.FromResult(ServiceResult.Success());
         }
         
 private async Task<ServiceResult<bool>> IsUsernameExistsAsync(string username, Guid? excludeId = null)
@@ -748,9 +752,9 @@ private async Task<ServiceResult<bool>> IsUsernameExistsAsync(string username, G
                     return ServiceResult<bool>.Success(false); // 检查失败时假设不存在
                 }
                 
-                var exists = searchResult.Data.Any(u => 
+                var exists = searchResult.Data?.Any(u => 
                     u.Username == username && 
-                    (excludeId == null || u.Id != excludeId.Value));
+                    (excludeId == null || u.Id != excludeId.Value)) ?? false;
                 
                 return ServiceResult<bool>.Success(exists);
             }
@@ -770,9 +774,9 @@ private async Task<ServiceResult<bool>> IsUsernameExistsAsync(string username, G
                     return ServiceResult<bool>.Success(false); // 检查失败时假设不存在
                 }
                 
-                var exists = searchResult.Data.Any(u => 
+                var exists = searchResult.Data?.Any(u => 
                     u.PhoneNumber == phoneNumber && 
-                    (excludeId == null || u.Id != excludeId.Value));
+                    (excludeId == null || u.Id != excludeId.Value)) ?? false;
                 
                 return ServiceResult<bool>.Success(exists);
             }

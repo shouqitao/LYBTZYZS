@@ -141,24 +141,6 @@ namespace LYBT.WebAPI.Examples
 
         #region Version 3.0 APIs (Deprecated)
 
-        /// <summary>
-        /// 获取数据 - v3.0（已弃用）
-        /// </summary>
-        [HttpGet]
-        [MapToApiVersion("3.0")]
-        [Obsolete("此版本已弃用，请使用v2.0")]
-        public IActionResult GetV3()
-        {
-            Response.Headers.Append("X-API-Deprecation-Warning", "API v3.0 is deprecated and will be removed in future releases. Please migrate to v2.0.");
-            Response.Headers.Append("X-API-Deprecation-Date", "2024-12-31");
-            
-            return Ok(new
-            {
-                version = "3.0",
-                warning = "此API版本已弃用，将于2024年12月31日停止支持",
-                data = new { id = 1, name = "示例数据" }
-            });
-        }
 
         #endregion
 

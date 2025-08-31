@@ -52,7 +52,7 @@ namespace LYBT.Infrastructure.Repositories.Base
             }
             
             return await DbSet.AsNoTracking()
-                .FirstOrDefaultAsync(e => EF.Property<TKey>(e, "Id").Equals(id));
+                .FirstOrDefaultAsync(e => EF.Property<TKey>(e, "Id") != null && EF.Property<TKey>(e, "Id").Equals(id));
         }
 
         public virtual async Task<List<TEntity>> GetAllAsync()
@@ -126,7 +126,7 @@ namespace LYBT.Infrastructure.Repositories.Base
             };
         }
 
-        public virtual async Task<int> CountAsync(Expression<Func<TEntity, bool>> predicate = null)
+        public virtual async Task<int> CountAsync(Expression<Func<TEntity, bool>>? predicate = null)
         {
             Logger.LogDebug("Counting entities of type {EntityType}", typeof(TEntity).Name);
             

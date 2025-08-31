@@ -139,12 +139,12 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
 
         #region 命令
 
-        public DelegateCommand SearchCommand { get; }
-        public DelegateCommand RefreshCommand { get; }
-        public DelegateCommand ConfirmCommand { get; }
-        public DelegateCommand CancelCommand { get; }
-        public DelegateCommand<FormulaDto> SelectFormulaCommand { get; }
-        public DelegateCommand<FormulaDto> ViewDetailsCommand { get; }
+        public DelegateCommand SearchCommand { get; } = null!;
+        public DelegateCommand RefreshCommand { get; } = null!;
+        public DelegateCommand ConfirmCommand { get; } = null!;
+        public DelegateCommand CancelCommand { get; } = null!;
+        public DelegateCommand<FormulaDto> SelectFormulaCommand { get; } = null!;
+        public DelegateCommand<FormulaDto> ViewDetailsCommand { get; } = null!;
 
         #endregion
 
@@ -359,6 +359,6 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
     {
         public string Name { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
-        public int Count { get; set; }
+        public int Count { get; set; } = 0;
     }
 }

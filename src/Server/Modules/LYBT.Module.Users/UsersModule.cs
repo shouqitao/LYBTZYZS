@@ -23,10 +23,10 @@ namespace LYBT.Module.Users
             // 仓储层
             services.AddScoped<IUserRepository, UserRepository>();
             
-            // UltraThink三层架构服务
-            services.AddScoped<Services.Core.UserServiceCore>();
-            services.AddScoped<UserQueryService>();
-            services.AddScoped<UserBusinessService>();
+            // UltraThink三层架构服务 - 注册接口和实现
+            services.AddScoped<Services.Core.IUserServiceCore, Services.Core.UserServiceCore>();
+            services.AddScoped<IUserQueryService, UserQueryService>();
+            services.AddScoped<IUserBusinessService, UserBusinessService>();
             
             // 业务层 - UltraThink重构：纯委托主服务，委托给三层专业服务
             services.AddScoped<IUserService, UserService>();
@@ -34,25 +34,5 @@ namespace LYBT.Module.Users
             return services;
         }
 
-        /// <summary>
-        /// 注册本模块所有服务到 DI 容器（保留原方法用于兼容性）
-        /// </summary>
-        [Obsolete("请使用 AddUsersModuleServices() 方法，统一使用 AppDbContext")]
-        public static IServiceCollection AddUsersModule(this IServiceCollection services, string connectionString)
-        {
-            // 已弃用：改为使用统一的 AppDbContext
-            // 仓储层
-            services.AddScoped<IUserRepository, UserRepository>();
-            
-            // UltraThink三层架构服务
-            services.AddScoped<Services.Core.UserServiceCore>();
-            services.AddScoped<UserQueryService>();
-            services.AddScoped<UserBusinessService>();
-            
-            // 业务层 - UltraThink重构：纯委托主服务，委托给三层专业服务
-            services.AddScoped<IUserService, UserService>();
-            
-            return services;
-        }
     }
 }

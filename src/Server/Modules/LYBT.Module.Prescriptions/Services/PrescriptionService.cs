@@ -99,14 +99,6 @@ namespace LYBT.Module.Prescriptions.Services
             return await _queryService.GetByMedicalCaseIdAsync(medicalCaseId);
         }
 
-        /// <summary>
-        /// [Shared] 根据看诊ID获取处方列表 [已废弃]
-        /// </summary>
-        [Obsolete("请使用GetByMedicalCaseIdAsync方法")]
-        public async Task<ServiceResult<List<PrescriptionDto>>> GetByConsultationIdAsync(Guid consultationId)
-        {
-            return await _queryService.GetByConsultationIdAsync(consultationId);
-        }
 
         /// <summary>
         /// [Shared] 验证处方数据

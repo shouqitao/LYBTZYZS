@@ -5,6 +5,7 @@ using Prism.Commands;
 using Prism.Mvvm;
 using Prism.Regions;
 using Prism.Events;
+using LYBT.Desktop.Core.ViewModels;
 using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
 using LYBT.Desktop.Core.Events;
@@ -22,7 +23,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
     /// 2. 管理工作流模式（处方编辑/历史管理）
     /// 3. 处理模块间通信
     /// </summary>
-    public class PrescriptionsMainViewModel : BindableBase, INavigationAware
+    public class PrescriptionsMainViewModel : ModernViewModelBase, INavigationAware
     {
         #region 依赖服务
 
@@ -36,7 +37,6 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         #region 属性
 
         private Guid _currentMedicalCaseId = Guid.Empty;
-        private bool _isLoading;
         private string _loadingMessage = "正在加载...";
         private object? _currentWorkflowContent;
 
@@ -57,12 +57,6 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         /// <summary>是否有关联的医疗案例</summary>
         public bool HasMedicalCase => CurrentMedicalCaseId != Guid.Empty;
 
-        /// <summary>是否正在加载</summary>
-        public bool IsLoading
-        {
-            get => _isLoading;
-            set => SetProperty(ref _isLoading, value);
-        }
 
         /// <summary>加载消息</summary>
         public string LoadingMessage
@@ -82,9 +76,9 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
 
         #region 命令
 
-        public ICommand SwitchToManagementCommand { get; }
-        public ICommand CreateNewPrescriptionCommand { get; }
-        public ICommand ReturnToSourceCommand { get; }
+        public DelegateCommand SwitchToManagementCommand { get; } = null!;
+        public DelegateCommand CreateNewPrescriptionCommand { get; } = null!;
+        public DelegateCommand ReturnToSourceCommand { get; } = null!;
 
         #endregion
 
@@ -93,6 +87,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             IEventAggregator eventAggregator,
             ICustomDialogService dialogService,
             ILogger<PrescriptionsMainViewModel> logger)
+            : base(eventAggregator)
         {
             _regionManager = regionManager;
             _eventAggregator = eventAggregator;
@@ -101,7 +96,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
 
             // 初始化命令
             SwitchToManagementCommand = new DelegateCommand(ExecuteSwitchToManagement);
-            CreateNewPrescriptionCommand = new DelegateCommand(async () => await ExecuteCreateNewPrescription());
+            CreateNewPrescriptionCommand = new DelegateCommand(() => _ = ExecuteAsync(async () => await ExecuteCreateNewPrescription(), "创建新处方"));
             ReturnToSourceCommand = new DelegateCommand(ExecuteReturnToSource);
 
             _logger.LogInformation("处方模块主视图模型已初始化");
@@ -283,7 +278,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                     });
 
                 // 导航回看诊模块
-                var navigationParameters = new NavigationParameters();
+                var navigationParameters = new Prism.Regions.NavigationParameters();
                 if (HasMedicalCase)
                 {
                     navigationParameters.Add("MedicalCaseId", CurrentMedicalCaseId);

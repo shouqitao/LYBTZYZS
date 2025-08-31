@@ -72,12 +72,12 @@ namespace LYBT.Desktop.Formula.ViewModels
 
         #region Commands
 
-        public DelegateCommand SaveCommand { get; }
-        public DelegateCommand CancelCommand { get; }
-        public DelegateCommand AddHerbCommand { get; }
-        public DelegateCommand<FormulaHerbItemDto> RemoveHerbCommand { get; }
-        public DelegateCommand<FormulaHerbItemDto> EditHerbCommand { get; }
-        public DelegateCommand LoadDataCommand { get; }
+        public DelegateCommand SaveCommand { get; } = null!;
+        public DelegateCommand CancelCommand { get; } = null!;
+        public DelegateCommand AddHerbCommand { get; } = null!;
+        public DelegateCommand<FormulaHerbItemDto> RemoveHerbCommand { get; } = null!;
+        public DelegateCommand<FormulaHerbItemDto> EditHerbCommand { get; } = null!;
+        public DelegateCommand LoadDataCommand { get; } = null!;
 
         #endregion
 

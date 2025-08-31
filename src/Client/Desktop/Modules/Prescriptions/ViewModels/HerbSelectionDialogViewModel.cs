@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -81,7 +82,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         /// <summary>
         /// 搜索命令
         /// </summary>
-        public DelegateCommand SearchCommand { get; }
+        public DelegateCommand SearchCommand { get; } = null!;
 
         /// <summary>
         /// 选中的中药材信息（用于返回结果）
@@ -97,6 +98,57 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             
             // 初始化加载中药材列表
             _ = LoadHerbsAsync();
+        }
+
+        /// <summary>
+        /// 使用参数初始化（支持编辑模式）
+        /// </summary>
+        public async Task InitializeWithParametersAsync(Dictionary<string, object>? parameters = null)
+        {
+            if (parameters == null) return;
+
+            try
+            {
+                // 检查编辑模式
+                if (parameters.ContainsKey("EditMode") && parameters["EditMode"] is bool editMode && editMode)
+                {
+                    Title = "编辑药材";
+                }
+
+                // 设置初始数量和单位
+                if (parameters.ContainsKey("Quantity") && parameters["Quantity"] is decimal quantity)
+                {
+                    Quantity = quantity;
+                }
+
+                if (parameters.ContainsKey("Unit") && parameters["Unit"] is string unit)
+                {
+                    Unit = unit;
+                }
+
+                // 如果提供了HerbId，预选中对应的药材
+                if (parameters.ContainsKey("HerbId") && parameters["HerbId"] is Guid herbId && herbId != Guid.Empty)
+                {
+                    // 等待药材列表加载完成
+                    await LoadHerbsAsync();
+                    
+                    // 查找并选中指定的药材
+                    var targetHerb = AvailableHerbs.FirstOrDefault(h => h.Id == herbId);
+                    if (targetHerb != null)
+                    {
+                        SelectedHerb = targetHerb;
+                        // 使用选中药材的单位作为默认值（如果参数没有提供单位）
+                        if (!parameters.ContainsKey("Unit") && !string.IsNullOrEmpty(targetHerb.Unit))
+                        {
+                            Unit = targetHerb.Unit;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                await HandleErrorAsync("初始化编辑参数", ex);
+            }
         }
 
         /// <summary>
@@ -171,9 +223,10 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                 HerbId = SelectedHerb.Id,
                 HerbName = SelectedHerb.Name,
                 Quantity = Quantity,
-                Unit = Unit,
-                Price = SelectedHerb.Price,
-                Subtotal = SelectedHerb.Price * Quantity
+                UnitPrice = SelectedHerb.Price,
+                // UltraThink v2.0: 使用正确的属性名
+                Usage = SelectedHerb.Spec ?? "",
+                Unit = SelectedHerb.Unit
             };
 
             return Task.FromResult(true);

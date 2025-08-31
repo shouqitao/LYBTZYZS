@@ -80,7 +80,7 @@ namespace LYBT.Desktop.Shell.ViewModels
         public DelegateCommand ShowHelpCommand { get; }
         public DelegateCommand ShowSettingsCommand { get; }
         // Phase I: 主题切换命令
-        public DelegateCommand ToggleThemeCommand { get; }
+        public DelegateCommand ToggleThemeCommand { get; } = null!;
         /// <summary>
         /// Phase I: 简化主题切换功能
         /// </summary>
@@ -174,6 +174,8 @@ namespace LYBT.Desktop.Shell.ViewModels
             QuickStartConsultationCommand = new DelegateCommand(async () => await ExecuteQuickStartConsultationAsync(), () => _isLoggedIn);
             ShowHelpCommand = new DelegateCommand(ExecuteShowHelp);
             ShowSettingsCommand = new DelegateCommand(ExecuteShowSettings, () => _isLoggedIn);
+            // UltraThink修复: 初始化主题切换命令
+            ToggleThemeCommand = new DelegateCommand(async () => await ExecuteToggleThemeAsync());
 
             // 订阅登录成功事件
             EventAggregator.GetEvent<LoginSuccessEvent>().Subscribe(OnLoginSuccess);
@@ -186,7 +188,7 @@ namespace LYBT.Desktop.Shell.ViewModels
         }
 
         /// <summary>时钟计时器事件</summary>
-        private void OnClockTick(object sender, EventArgs e)
+        private void OnClockTick(object? sender, EventArgs e)
         {
             CurrentTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
         }

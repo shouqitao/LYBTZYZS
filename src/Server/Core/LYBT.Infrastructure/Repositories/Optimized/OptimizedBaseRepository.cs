@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -107,7 +108,7 @@ namespace LYBT.Infrastructure.Repositories.Optimized
         /// 获取所有实体（流式处理）
         /// </summary>
         public virtual async IAsyncEnumerable<TEntity> GetAllStreamAsync(
-            CancellationToken cancellationToken = default)
+            [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             var query = _dbSet.AsNoTracking();
             
@@ -850,7 +851,7 @@ namespace LYBT.Infrastructure.Repositories.Optimized
             var key = $"{CacheKeyPrefix}{operation}";
             foreach (var param in parameters.Where(p => p != null))
             {
-                key += $":{param.GetHashCode()}";
+                key += $":{param!.GetHashCode()}";
             }
             return key;
         }

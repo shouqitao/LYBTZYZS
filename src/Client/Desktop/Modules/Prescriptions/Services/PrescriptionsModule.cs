@@ -446,22 +446,6 @@ namespace LYBT.Desktop.Prescriptions.Services
             }
         }
         
-        /// <summary>
-        /// 根据看诊ID获取处方列表 [已废弃]
-        /// </summary>
-        [Obsolete("请使用GetByMedicalCaseIdAsync方法。处方应该通过MedicalCaseId关联，不直接关联ConsultationId。")]
-        public Task<ServiceResult<List<PrescriptionDto>>> GetByConsultationIdAsync(Guid consultationId)
-        {
-            try
-            {
-                // 返回空列表，因为此方法已废弃
-                return Task.FromResult(ServiceResult<List<PrescriptionDto>>.Success(new List<PrescriptionDto>()));
-            }
-            catch (Exception ex)
-            {
-                return Task.FromResult(ServiceResult<List<PrescriptionDto>>.Failure($"根据看诊ID获取处方列表异常: {ex.Message}"));
-            }
-        }
         
         /// <summary>
         /// 验证处方数据

@@ -35,10 +35,15 @@ namespace LYBT.Desktop.Shell.Extensions
             RegisterBusinessServices(containerRegistry);
             RegisterDialogs(containerRegistry);
             RegisterPerformanceServices(containerRegistry);
+            RegisterUltraThinkServices(containerRegistry);
             // ViewModels和Views通过Prism的ViewModelLocator自动解析，无需手动注册
         }
 
-            
+        /// <summary>
+        /// 注册UltraThink高级服务
+        /// </summary>
+        private static void RegisterUltraThinkServices(IContainerRegistry containerRegistry)
+        {
             // Phase I: 简化主题服务
             containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Services.Theming.IThemeService,
                 LYBT.Desktop.Core.Services.Theming.ThemeService>();
@@ -49,6 +54,7 @@ namespace LYBT.Desktop.Shell.Extensions
             
             containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Services.Settings.IUserPreferencesService,
                 LYBT.Desktop.Core.Services.Settings.UserPreferencesService>();
+        }
 
         /// <summary>
         /// 注册日志服务

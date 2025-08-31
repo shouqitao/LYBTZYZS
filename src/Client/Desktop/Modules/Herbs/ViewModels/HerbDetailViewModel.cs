@@ -10,6 +10,7 @@ using Prism.Events;
 using LYBT.Desktop.Core.Constants;
 using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.ViewModels.Base;
+using LYBT.Desktop.Core.ViewModels;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
@@ -17,10 +18,10 @@ using LYBT.Shared.Models.Enums;
 namespace LYBT.Desktop.Herbs.ViewModels
 {
     /// <summary>
-    /// 中药材详情视图模型 - UltraThink v2.0架构
+    /// 中药材详情视图模型 - UltraThink ModernViewModel架构
     /// 提供中药材详细信息查看和编辑功能
     /// </summary>
-    public class HerbDetailViewModel : ServiceViewModel, INavigationAware
+    public class HerbDetailViewModel : ModernViewModelBase, INavigationAware
     {
         #region 私有字段
 
@@ -31,7 +32,6 @@ namespace LYBT.Desktop.Herbs.ViewModels
 
         private Guid _herbId;
         private HerbDto? _herb;
-        private bool _isLoading;
         private bool _isReadOnly = true;
 
         #endregion
@@ -50,11 +50,6 @@ namespace LYBT.Desktop.Herbs.ViewModels
             set => SetProperty(ref _herb, value);
         }
 
-        public new bool IsLoading
-        {
-            get => _isLoading;
-            set => SetProperty(ref _isLoading, value);
-        }
 
         public bool IsReadOnly
         {
@@ -80,13 +75,13 @@ namespace LYBT.Desktop.Herbs.ViewModels
 
         #region 命令
 
-        public ICommand LoadDataCommand { get; }
-        public ICommand BackCommand { get; }
-        public ICommand EditCommand { get; }
-        public ICommand SaveCommand { get; }
-        public ICommand CancelEditCommand { get; }
-        public ICommand PrintCommand { get; }
-        public ICommand ViewUsageHistoryCommand { get; }
+        public DelegateCommand LoadDataCommand { get; }
+        public DelegateCommand BackCommand { get; }
+        public DelegateCommand EditCommand { get; }
+        public DelegateCommand SaveCommand { get; }
+        public DelegateCommand CancelEditCommand { get; }
+        public DelegateCommand PrintCommand { get; }
+        public DelegateCommand ViewUsageHistoryCommand { get; }
 
         #endregion
 
@@ -162,10 +157,8 @@ namespace LYBT.Desktop.Herbs.ViewModels
         {
             if (HerbId == Guid.Empty) return;
 
-            try
+            await ExecuteAsync(async () =>
             {
-                IsLoading = true;
-
                 var result = await _herbService.GetByIdAsync(HerbId);
                 
                 if (result.IsSuccess && result.Data != null)
@@ -177,25 +170,15 @@ namespace LYBT.Desktop.Herbs.ViewModels
                 {
                     await _dialogService.ShowErrorAsync($"加载中药材详情失败: {result.ErrorMessage}", "错误");
                 }
-            }
-            catch (Exception ex)
-            {
-                await _dialogService.ShowErrorAsync($"加载中药材详情失败: {ex.Message}", "错误");
-            }
-            finally
-            {
-                IsLoading = false;
-            }
+            }, "加载中药材详情");
         }
 
         private async Task SaveAsync()
         {
             if (Herb == null) return;
 
-            try
+            await ExecuteAsync(async () =>
             {
-                IsLoading = true;
-
                 var updateDto = _mapper.Map<HerbUpdateDto>(Herb);
                 
                 var result = await _herbService.UpdateAsync(Herb.Id, updateDto);
@@ -213,15 +196,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
                 {
                     await _dialogService.ShowErrorAsync($"保存失败: {result.ErrorMessage}", "错误");
                 }
-            }
-            catch (Exception ex)
-            {
-                await _dialogService.ShowErrorAsync($"保存失败: {ex.Message}", "错误");
-            }
-            finally
-            {
-                IsLoading = false;
-            }
+            }, "保存中药材信息");
         }
 
         #endregion
@@ -248,45 +223,42 @@ namespace LYBT.Desktop.Herbs.ViewModels
 
         private async Task PrintHerbAsync()
         {
-            try
+            await ExecuteAsync(async () =>
             {
                 await _dialogService.ShowInformationAsync("打印功能正在开发中", "提示");
-            }
-            catch (Exception ex)
-            {
-                await _dialogService.ShowErrorAsync($"打印失败: {ex.Message}", "错误");
-            }
+            }, "打印中药材信息");
         }
 
         private async Task ViewUsageHistoryAsync()
         {
             if (Herb == null) return;
             
-            try
+            await ExecuteAsync(async () =>
             {
                 await _dialogService.ShowInformationAsync("使用历史功能正在开发中", "提示");
-            }
-            catch (Exception ex)
-            {
-                await _dialogService.ShowErrorAsync($"操作失败: {ex.Message}", "错误");
-            }
+            }, "查看使用历史");
         }
 
         #endregion
 
         #region 命令状态
 
-        private bool CanEdit() => Herb != null && IsReadOnly && !IsLoading;
+        private bool CanEdit() => Herb != null && IsReadOnly && !base.IsLoading;
         
-        private bool CanSave() => Herb != null && !IsReadOnly && !IsLoading;
+        private bool CanSave() => Herb != null && !IsReadOnly && !base.IsLoading;
         
-        private bool CanCancelEdit() => Herb != null && !IsReadOnly && !IsLoading;
+        private bool CanCancelEdit() => Herb != null && !IsReadOnly && !base.IsLoading;
 
-        private void RaiseCanExecuteChanged()
+        protected override void RaiseCanExecuteChanged()
         {
-            ((DelegateCommand)EditCommand).RaiseCanExecuteChanged();
-            ((DelegateCommand)SaveCommand).RaiseCanExecuteChanged();
-            ((DelegateCommand)CancelEditCommand).RaiseCanExecuteChanged();
+            base.RaiseCanExecuteChanged();
+            EditCommand?.RaiseCanExecuteChanged();
+            SaveCommand?.RaiseCanExecuteChanged();
+            CancelEditCommand?.RaiseCanExecuteChanged();
+            LoadDataCommand?.RaiseCanExecuteChanged();
+            BackCommand?.RaiseCanExecuteChanged();
+            PrintCommand?.RaiseCanExecuteChanged();
+            ViewUsageHistoryCommand?.RaiseCanExecuteChanged();
         }
 
         #endregion

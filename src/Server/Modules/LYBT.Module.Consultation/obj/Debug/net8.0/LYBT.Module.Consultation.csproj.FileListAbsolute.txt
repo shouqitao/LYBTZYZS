@@ -1,11 +1,11 @@
+D:\source\repos\LYBTZYZS\src\Server\Modules\BIN\Debug\net8.0\LYBT.Module.Consultation.deps.json
+D:\source\repos\LYBTZYZS\src\Server\Modules\BIN\Debug\net8.0\LYBT.Module.Consultation.dll
+D:\source\repos\LYBTZYZS\src\Server\Modules\BIN\Debug\net8.0\LYBT.Module.Consultation.pdb
 D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.Consultation\obj\Debug\net8.0\LYBT.Module.Consultation.csproj.AssemblyReference.cache
 D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.Consultation\obj\Debug\net8.0\LYBT.Module.Consultation.GeneratedMSBuildEditorConfig.editorconfig
 D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.Consultation\obj\Debug\net8.0\LYBT.Module.Consultation.AssemblyInfoInputs.cache
 D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.Consultation\obj\Debug\net8.0\LYBT.Module.Consultation.csproj.CoreCompileInputs.cache
 D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.Consultation\obj\Debug\net8.0\LYBT.Module.Consultation.sourcelink.json
-D:\source\repos\LYBTZYZS\src\Server\Modules\BIN\Debug\net8.0\LYBT.Module.Consultation.deps.json
-D:\source\repos\LYBTZYZS\src\Server\Modules\BIN\Debug\net8.0\LYBT.Module.Consultation.dll
-D:\source\repos\LYBTZYZS\src\Server\Modules\BIN\Debug\net8.0\LYBT.Module.Consultation.pdb
 D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.Consultation\obj\Debug\net8.0\LYBT.Mod.D11E6DBF.Up2Date
 D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.Consultation\obj\Debug\net8.0\LYBT.Module.Consultation.dll
 D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.Consultation\obj\Debug\net8.0\refint\LYBT.Module.Consultation.dll

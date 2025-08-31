@@ -270,9 +270,12 @@ namespace LYBT.Desktop.Patients.ViewModels
             
             try
             {
-                // 导航到医疗历史视图
-                _regionManager.RequestNavigate(RegionNames.SystemWorkbenchContentRegion, 
-                    $"MedicalCaseListView?PatientId={Patient.Id}");
+                // 导航到医疗历史视图 - 使用Task.Run包装同步操作以修复CS1998警告
+                await Task.Run(() => 
+                {
+                    _regionManager.RequestNavigate(RegionNames.SystemWorkbenchContentRegion, 
+                        $"MedicalCaseListView?PatientId={Patient.Id}");
+                });
             }
             catch (Exception ex)
             {
@@ -290,7 +293,7 @@ namespace LYBT.Desktop.Patients.ViewModels
         
         private bool CanCancelEdit() => Patient != null && !IsReadOnly && !IsLoading;
 
-        private void RaiseCanExecuteChanged()
+        private new void RaiseCanExecuteChanged()
         {
             ((DelegateCommand)EditCommand).RaiseCanExecuteChanged();
             ((DelegateCommand)SaveCommand).RaiseCanExecuteChanged();

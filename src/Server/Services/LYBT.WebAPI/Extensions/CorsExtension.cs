@@ -94,17 +94,4 @@ public static class CorsExtension
         return services;
     }
 
-    /// <summary>
-    /// 保留向后兼容的方法（已废弃）
-    /// </summary>
-    [Obsolete("请使用 AddSecureCorsPolicy 方法")]
-    public static IServiceCollection AddCorsPolicy(this IServiceCollection services)
-    {
-        services.AddCors(options =>
-        {
-            options.AddPolicy("AllowAll", builder =>
-                builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
-        });
-        return services;
-    }
 }

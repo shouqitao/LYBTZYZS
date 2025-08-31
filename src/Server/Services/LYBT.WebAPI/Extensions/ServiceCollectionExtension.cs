@@ -103,15 +103,4 @@ public static class ServiceCollectionExtension
         return services;
     }
 
-    /// <summary>
-    /// 添加AutoMapper配置映射（已废弃，请使用 AddAutoMapperConfiguration）
-    /// </summary>
-    /// <param name="services">服务集合</param>
-    /// <returns>服务集合</returns>
-    [Obsolete("请使用 AddAutoMapperConfiguration 替代")]
-    public static IServiceCollection AddLybtAutoMapperProfiles(this IServiceCollection services)
-    {
-        // 调用新的配置方法
-        return services.AddAutoMapperConfiguration();
-    }
 }

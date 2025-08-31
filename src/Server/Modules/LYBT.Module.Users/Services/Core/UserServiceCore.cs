@@ -12,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using LYBT.Shared.Utilities.Helpers;
 using LYBT.Module.Users;
+using LYBT.Module.Users.Interfaces;
 
 namespace LYBT.Module.Users.Services.Core
 {
@@ -19,7 +20,7 @@ namespace LYBT.Module.Users.Services.Core
     /// 用户核心CRUD服务 - UltraThink架构
     /// 职责：基础增删改查操作，状态管理，数据验证
     /// </summary>
-    public class UserServiceCore
+    public class UserServiceCore : IUserServiceCore
     {
         private readonly AppDbContext _context;
         private readonly IMapper _mapper;
@@ -67,12 +68,12 @@ namespace LYBT.Module.Users.Services.Core
         /// <summary>
         /// 创建用户
         /// </summary>
-        public async Task<ServiceResult<UserDto>> CreateAsync(UserCreateDto dto)
+        public async Task<ServiceResult<UserDto>> CreateAsync(UserMutationDto dto)
         {
             try
             {
                 // 数据验证
-                var validationResult = ValidateCreateDto(dto);
+                var validationResult = ValidateMutationDto(dto, true); // true for create operation
                 if (!validationResult.IsSuccess)
                     return ServiceResult<UserDto>.Failure(validationResult.ErrorMessage);
 
@@ -116,7 +117,7 @@ namespace LYBT.Module.Users.Services.Core
         /// <summary>
         /// 更新用户信息
         /// </summary>
-        public async Task<ServiceResult<UserDto>> UpdateAsync(Guid id, UserUpdateDto dto)
+        public async Task<ServiceResult<UserDto>> UpdateAsync(Guid id, UserMutationDto dto)
         {
             try
             {
@@ -124,7 +125,7 @@ namespace LYBT.Module.Users.Services.Core
                     return ServiceResult<UserDto>.Failure("用户ID不能为空");
 
                 // 数据验证
-                var validationResult = ValidateUpdateDto(dto);
+                var validationResult = ValidateMutationDto(dto, false); // false for update operation
                 if (!validationResult.IsSuccess)
                     return ServiceResult<UserDto>.Failure(validationResult.ErrorMessage);
 
@@ -226,33 +227,24 @@ namespace LYBT.Module.Users.Services.Core
         #region 私有方法
 
         /// <summary>
-        /// 验证创建DTO
+        /// 验证用户变更DTO - UltraThink现代化DTO设计
         /// </summary>
-        private ServiceResult<bool> ValidateCreateDto(UserCreateDto dto)
+        private ServiceResult<bool> ValidateMutationDto(UserMutationDto dto, bool isCreateOperation)
         {
             if (dto == null)
                 return ServiceResult<bool>.Failure("用户信息不能为空");
 
-            if (string.IsNullOrWhiteSpace(dto.Username))
-                return ServiceResult<bool>.Failure("用户名不能为空");
+            // 创建操作的额外验证
+            if (isCreateOperation)
+            {
+                if (string.IsNullOrWhiteSpace(dto.Username))
+                    return ServiceResult<bool>.Failure("用户名不能为空");
 
-            if (dto.Username.Length < 3 || dto.Username.Length > 50)
-                return ServiceResult<bool>.Failure("用户名长度必须在3-50字符之间");
+                if (dto.Username.Length < 3 || dto.Username.Length > 50)
+                    return ServiceResult<bool>.Failure("用户名长度必须在3-50字符之间");
+            }
 
-            if (string.IsNullOrWhiteSpace(dto.RealName))
-                return ServiceResult<bool>.Failure("真实姓名不能为空");
-
-            return ServiceResult<bool>.Success(true);
-        }
-
-        /// <summary>
-        /// 验证更新DTO
-        /// </summary>
-        private ServiceResult<bool> ValidateUpdateDto(UserUpdateDto dto)
-        {
-            if (dto == null)
-                return ServiceResult<bool>.Failure("用户信息不能为空");
-
+            // 通用验证（创建和更新都需要）
             if (string.IsNullOrWhiteSpace(dto.RealName))
                 return ServiceResult<bool>.Failure("真实姓名不能为空");
 

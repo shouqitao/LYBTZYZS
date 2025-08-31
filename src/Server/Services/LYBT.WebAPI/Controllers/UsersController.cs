@@ -291,31 +291,17 @@ public class UsersController : BaseApiController {
     }
 
     /// <summary>
-    /// 创建新用户 (RESTful POST /Users) - 统一API响应格式
+    /// 创建新用户 (现代化版本，直接使用UserMutationDto) - 统一API响应格式
     /// </summary>
     [HttpPost]
-    public async Task<ActionResult<ApiResponse<UserDto>>> CreateUser([FromBody] LYBT.Shared.Models.Contracts.Users.UserCreateDto dto) {
+    public async Task<ActionResult<ApiResponse<UserDto>>> CreateUser([FromBody] UserMutationDto dto) {
         try {
             var validation = ValidateModel<UserDto>();
             if (validation != null)
                 return validation;
 
-            var (operatorId, operatorName, _) = GetOperator();
-            // 转换为UserMutationDto
-            var mutationDto = new UserMutationDto
-            {
-                Username = dto.Username,
-                Password = dto.Password,
-                ConfirmPassword = dto.ConfirmPassword,
-                RealName = dto.RealName,
-                Role = dto.Role,
-                PhoneNumber = dto.PhoneNumber,
-                Email = dto.Email,
-                Status = dto.Status,
-                IsCreateOperation = true
-            };
-            
-            var result = await _userService.CreateAsync(mutationDto);
+            dto.IsCreateOperation = true; // 标记为创建操作
+            var result = await _userService.CreateAsync(dto);
 
             if (result.IsSuccess && result.Data != null) {
                 LogOperation("创建用户", result.Data, result.Data.Id);
@@ -328,11 +314,13 @@ public class UsersController : BaseApiController {
         }
     }
 
+
+
     /// <summary>
-    /// 更新用户信息 (RESTful PUT /Users/{id}) - 统一API响应格式
+    /// 更新用户信息 (现代化版本，直接使用UserMutationDto) - 统一API响应格式
     /// </summary>
     [HttpPut("{id}")]
-    public async Task<ActionResult<ApiResponse<UserDto>>> UpdateUser(Guid id, [FromBody] LYBT.Shared.Models.Contracts.Users.UserUpdateDto dto) {
+    public async Task<ActionResult<ApiResponse<UserDto>>> UpdateUser(Guid id, [FromBody] UserMutationDto dto) {
         try {
             var idValidation = ValidateGuid<UserDto>(id, "用户ID");
             if (idValidation != null)
@@ -347,32 +335,16 @@ public class UsersController : BaseApiController {
                 return ValidationFail<UserDto>("URL中的ID与请求体中的ID不匹配");
             }
 
-            var (operatorId, operatorName, _) = GetOperator();
-            // 转换为UserMutationDto
-            var mutationDto = new UserMutationDto
-            {
-                Id = id,
-                Username = dto.Username,
-                RealName = dto.RealName,
-                Role = dto.Role,
-                PhoneNumber = dto.PhoneNumber,
-                Email = dto.Email,
-                Status = dto.Status,
-                IsCreateOperation = false
-            };
-            
-            var result = await _userService.UpdateAsync(mutationDto);
+            dto.IsCreateOperation = false; // 标记为更新操作
+            var result = await _userService.UpdateAsync(dto);
 
-            if (result.IsSuccess && result.Data != null) {
-                LogOperation("更新用户信息", result.Data, id);
-            }
             return HandleServiceResult(result, "用户信息更新成功");
-        } catch (InvalidOperationException ex) when (ex.Message.Contains("用户不存在")) {
-            return NotFound<UserDto>(ex.Message, ApiErrorCodes.USER_NOT_FOUND);
         } catch (Exception ex) {
             return HandleException<UserDto>(ex, "更新用户信息", new { id, dto });
         }
     }
+
+
 
     // 注意：本系统采用软删除策略，不提供DELETE接口
     // 请使用 PATCH /Users/{id}/toggle-status 来切换用户状态

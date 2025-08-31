@@ -99,9 +99,9 @@ namespace LYBT.Desktop.Formula.ViewModels
 
         #region Commands
 
-        public DelegateCommand AddHerbCommand { get; }
-        public DelegateCommand<FormulaHerbItemDto> RemoveHerbCommand { get; }
-        public DelegateCommand LoadHerbsCommand { get; }
+        public DelegateCommand AddHerbCommand { get; } = null!;
+        public DelegateCommand<FormulaHerbItemDto> RemoveHerbCommand { get; } = null!;
+        public DelegateCommand LoadHerbsCommand { get; } = null!;
 
         #endregion
 

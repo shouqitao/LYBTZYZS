@@ -422,10 +422,10 @@ namespace LYBT.Desktop.Services
         private static Exception CreateEnhancedException(ApiErrorInfo errorInfo)
         {
             var message = $"API调用失败 - {errorInfo.ErrorMessage} (状态码: {errorInfo.StatusCode}, 操作: {errorInfo.OperationName ?? "未知"})";
-            return new ApiCallException(message, errorInfo.Exception)
+            return new ApiCallException(message, errorInfo.Exception!)
             {
                 StatusCode = errorInfo.StatusCode,
-                OperationName = errorInfo.OperationName,
+                OperationName = errorInfo.OperationName ?? string.Empty,
                 AttemptNumber = errorInfo.AttemptNumber
             };
         }

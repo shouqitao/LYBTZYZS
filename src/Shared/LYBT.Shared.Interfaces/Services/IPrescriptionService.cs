@@ -46,11 +46,6 @@ namespace LYBT.Shared.Interfaces.Services
         /// </summary>
         Task<ServiceResult<List<PrescriptionDto>>> GetByMedicalCaseIdAsync(Guid medicalCaseId);
         
-        /// <summary>
-        /// 根据看诊ID获取处方列表 [已废弃 - 请使用GetByMedicalCaseIdAsync]
-        /// </summary>
-        [Obsolete("请使用GetByMedicalCaseIdAsync方法。处方应该通过MedicalCaseId关联，不直接关联ConsultationId。")]
-        Task<ServiceResult<List<PrescriptionDto>>> GetByConsultationIdAsync(Guid consultationId);
         
         /// <summary>
         /// 验证处方数据

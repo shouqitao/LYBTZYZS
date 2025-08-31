@@ -103,10 +103,11 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         #region Commands
 
-        public DelegateCommand SaveCommand { get; }
-        public DelegateCommand CancelCommand { get; }
-        public DelegateCommand SearchPatientCommand { get; }
-        public DelegateCommand CreateNewPatientCommand { get; }
+        // UltraThink修复: 使用new关键字隐藏基类成员，并初始化为null!
+        public new DelegateCommand SaveCommand { get; } = null!;
+        public new DelegateCommand CancelCommand { get; } = null!;
+        public DelegateCommand SearchPatientCommand { get; } = null!;
+        public DelegateCommand CreateNewPatientCommand { get; } = null!;
 
         #endregion
 
@@ -342,8 +343,43 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         private async Task CreateNewPatientAsync()
         {
-            // TODO: Implement patient creation dialog integration
-            await _dialogService.ShowInformationAsync("新增患者功能将在患者模块中实现", "提示");
+            try
+            {
+                // 打开新建患者对话框
+                
+                var parameters = new Dictionary<string, object>
+                {
+                    ["IsEditMode"] = false
+                };
+
+                var result = await _dialogService.ShowDialogAsync("PatientAddEditDialog", parameters);
+                
+                if (result.Result == true)
+                {
+                    // 患者创建成功，刷新患者列表
+                    
+                    // 刷新患者列表
+                    await LoadPatientsAsync();
+                    
+                    // 如果有返回的患者数据，自动选择该患者
+                    if (result.Data is Dictionary<string, object> data && data.ContainsKey("Patient") && data["Patient"] is PatientDto newPatient)
+                    {
+                        await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
+                        {
+                            SelectedPatient = newPatient;
+                        });
+                        
+                        // 已自动选择新创建的患者
+                    }
+                    
+                    await _dialogService.ShowSuccessAsync("患者创建成功", "成功");
+                }
+            }
+            catch (Exception ex)
+            {
+                await HandleErrorAsync("创建患者", ex);
+                await _dialogService.ShowErrorAsync($"创建患者失败: {ex.Message}", "错误");
+            }
         }
 
 

@@ -49,18 +49,20 @@ namespace LYBT.Module.Users.Helpers
         /// <summary>
         /// 创建用户
         /// </summary>
-        public async Task<ServiceResult<UserDto>> CreateUserAsync(UserCreateDto dto)
+        public async Task<ServiceResult<UserDto>> CreateUserAsync(UserMutationDto dto)
         {
             _logger.LogInformation("开始创建用户 - 用户名: {Username}", dto.Username);
+            dto.IsCreateOperation = true; // 标记为创建操作
             return await _crudService.CreateUserAsync(dto);
         }
 
         /// <summary>
         /// 更新用户信息
         /// </summary>
-        public async Task<ServiceResult<UserDto>> UpdateUserAsync(Guid id, UserUpdateDto dto)
+        public async Task<ServiceResult<UserDto>> UpdateUserAsync(Guid id, UserMutationDto dto)
         {
             _logger.LogInformation("开始更新用户信息 - 用户ID: {UserId}", id);
+            dto.IsCreateOperation = false; // 标记为更新操作
             return await _crudService.UpdateUserAsync(id, dto);
         }
 
@@ -164,10 +166,11 @@ namespace LYBT.Module.Users.Helpers
         /// <summary>
         /// 创建用户并发送通知 (组合业务操作)
         /// </summary>
-        public async Task<ServiceResult<UserDto>> CreateUserWithNotificationAsync(UserCreateDto dto, bool sendNotification = true)
+        public async Task<ServiceResult<UserDto>> CreateUserWithNotificationAsync(UserMutationDto dto, bool sendNotification = true)
         {
             _logger.LogInformation("开始创建用户并发送通知 - 用户名: {Username}", dto.Username);
             
+            dto.IsCreateOperation = true; // 标记为创建操作
             var result = await _crudService.CreateUserAsync(dto);
             
             if (sendNotification && result != null)

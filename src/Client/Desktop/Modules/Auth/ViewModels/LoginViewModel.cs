@@ -5,6 +5,8 @@ using System.Windows.Controls;
 using AutoMapper;
 using LYBT.Desktop.Core.Events;
 using LYBT.Desktop.Core.ViewModels.Base;
+using LYBT.Desktop.Core.ViewModels;
+using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Auth.Services;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Users;
@@ -18,7 +20,7 @@ namespace LYBT.Desktop.Auth.ViewModels
     /// 完全使用AuthModule实现模块自包含，符合四层架构规范
     /// Layer 4: Desktop层，使用DTO模型，通过模块化服务与底层交互
     /// </summary>
-    public class LoginViewModel : ServiceViewModel
+    public class LoginViewModel : ModernViewModelBase
     {
         #region 私有字段
 
@@ -31,8 +33,15 @@ namespace LYBT.Desktop.Auth.ViewModels
 
         #region 公共属性
 
+        /// <summary>
+        /// 登录命令 - 零警告初始化
+        /// </summary>
         public DelegateCommand LoginCommand { get; }
-        public DelegateCommand<PasswordBox>? PasswordChangedCommand { get; set; }
+
+        /// <summary>
+        /// 密码变更命令 - 零警告初始化
+        /// </summary>
+        public DelegateCommand<PasswordBox> PasswordChangedCommand { get; }
 
         /// <summary>登录请求模型</summary>
         public LoginRequest LoginRequest
@@ -40,8 +49,10 @@ namespace LYBT.Desktop.Auth.ViewModels
             get => _loginRequest;
             set
             {
-                SetProperty(ref _loginRequest, value);
-                LoginCommand.RaiseCanExecuteChanged();
+                if (SetProperty(ref _loginRequest, value))
+                {
+                    RaiseCanExecuteChanged();
+                }
             }
         }
 
@@ -55,7 +66,7 @@ namespace LYBT.Desktop.Auth.ViewModels
                 {
                     LoginRequest.Username = value;
                     RaisePropertyChanged(nameof(Username));
-                    LoginCommand.RaiseCanExecuteChanged();
+                    RaiseCanExecuteChanged();
                 }
             }
         }
@@ -70,7 +81,7 @@ namespace LYBT.Desktop.Auth.ViewModels
                 {
                     LoginRequest.Password = value;
                     RaisePropertyChanged(nameof(Password));
-                    LoginCommand.RaiseCanExecuteChanged();
+                    RaiseCanExecuteChanged();
                 }
             }
         }
@@ -90,7 +101,7 @@ namespace LYBT.Desktop.Auth.ViewModels
         }
 
         /// <summary>是否有保存的密码</summary>
-        public bool HasSavedPassword { get; set; }
+        public bool HasSavedPassword { get; set; } = false;
 
         /// <summary>API是否在线</summary>
         public bool IsApiOnline { get; set; } = true;
@@ -109,17 +120,20 @@ namespace LYBT.Desktop.Auth.ViewModels
         public LoginViewModel(
             IEventAggregator eventAggregator,
             AuthModule authModule,
-            IMapper mapper)
-            : base(eventAggregator)
+            IMapper mapper,
+            IErrorHandlingService? errorHandlingService = null)
+            : base(eventAggregator, errorHandlingService)
         {
             _authModule = authModule ?? throw new ArgumentNullException(nameof(authModule));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
 
+            // 零警告命令初始化
+            LoginCommand = new DelegateCommand(async () => await ExecuteLoginAsync(), CanExecuteLogin);
+            PasswordChangedCommand = new DelegateCommand<PasswordBox>(OnPasswordChanged);
+
             // 初始化登录信息
             LoginRequest.UserAgent = "LYBT.WPF.Client";
             LoginRequest.LoginType = "Password";
-
-            LoginCommand = new DelegateCommand(async () => await ExecuteLoginAsync(), CanExecuteLogin);
 
             // 监听登出事件以清除登录状态消息
             EventAggregator.GetEvent<LogoutEvent>().Subscribe(OnLogout, ThreadOption.UIThread);
@@ -136,13 +150,20 @@ namespace LYBT.Desktop.Auth.ViewModels
 
         #endregion
 
-        #region 命令处理
+        #region Command 重写
 
-        protected override void OnLoadingStateChanged(bool isLoading)
+        /// <summary>
+        /// 重写Command状态更新
+        /// </summary>
+        protected override void RaiseCanExecuteChanged()
         {
-            base.OnLoadingStateChanged(isLoading);
+            base.RaiseCanExecuteChanged();
             LoginCommand.RaiseCanExecuteChanged();
         }
+
+        #endregion
+
+        #region 命令处理
 
         private bool CanExecuteLogin()
         {
@@ -153,11 +174,8 @@ namespace LYBT.Desktop.Auth.ViewModels
 
         private async Task ExecuteLoginAsync()
         {
-            try
+            var success = await ExecuteAsync(async () =>
             {
-                IsLoading = true;
-                ClearError();
-
                 // UltraThink四层架构：使用模块化服务执行登录
                 var result = await _authModule.LoginAsync(LoginRequest);
 
@@ -166,11 +184,11 @@ namespace LYBT.Desktop.Auth.ViewModels
                     // 设置状态消息
                     if (result.Data.User?.Username?.Equals("sysadmin", StringComparison.OrdinalIgnoreCase) == true)
                     {
-                        StatusMessage = "超级管理员登录成功，正在跳转...";
+                        SetStatus("超级管理员登录成功，正在跳转...");
                     }
                     else
                     {
-                        StatusMessage = $"用户登录成功，正在跳转...";
+                        SetStatus("用户登录成功，正在跳转...");
                     }
 
                     // 等待一下让用户看到成功消息
@@ -181,16 +199,16 @@ namespace LYBT.Desktop.Auth.ViewModels
                 }
                 else
                 {
-                    ErrorMessage = result.ErrorMessage ?? "登录失败，请检查用户名和密码";
+                    SetError(result.ErrorMessage ?? "登录失败，请检查用户名和密码");
                 }
-            }
-            catch (Exception ex)
+            }, "登录");
+        }
+
+        private void OnPasswordChanged(PasswordBox? passwordBox)
+        {
+            if (passwordBox != null)
             {
-                HandleError("登录", ex);
-            }
-            finally
-            {
-                IsLoading = false;
+                Password = passwordBox.Password;
             }
         }
 
@@ -243,7 +261,7 @@ namespace LYBT.Desktop.Auth.ViewModels
             }
             catch (Exception ex)
             {
-                HandleError("认证状态更新", ex);
+                _ = HandleErrorAsync("认证状态更新", ex, false);
             }
         }
 
@@ -253,11 +271,11 @@ namespace LYBT.Desktop.Auth.ViewModels
             {
                 if (e.IsLoggedIn)
                 {
-                    StatusMessage = e.Message;
+                    SetStatus(e.Message);
                 }
                 else
                 {
-                    ErrorMessage = e.Message;
+                    SetError(e.Message);
                 }
             }
         }
@@ -288,7 +306,7 @@ namespace LYBT.Desktop.Auth.ViewModels
             }
             catch (Exception ex)
             {
-                HandleError("API状态更新", ex);
+                _ = HandleErrorAsync("API状态更新", ex, false);
             }
         }
 
@@ -297,7 +315,7 @@ namespace LYBT.Desktop.Auth.ViewModels
             IsApiOnline = e.IsConnected;
             ApiStatus = e.Message;
             RaisePropertyChanged(nameof(IsApiOnline));
-            LoginCommand.RaiseCanExecuteChanged();
+            RaiseCanExecuteChanged();
         }
 
         #endregion
@@ -336,7 +354,7 @@ namespace LYBT.Desktop.Auth.ViewModels
             {
                 // 静默处理错误，避免影响用户体验
                 HasSavedPassword = false;
-                HandleError("加载凭据", ex);
+                _ = HandleErrorAsync("加载凭据", ex, false);
             }
         }
 
@@ -347,7 +365,7 @@ namespace LYBT.Desktop.Auth.ViewModels
         /// <summary>
         /// 清理资源
         /// </summary>
-        public new void Dispose()
+        protected override void OnDisposing()
         {
             // 取消事件订阅
             if (_authModule != null)
@@ -356,7 +374,7 @@ namespace LYBT.Desktop.Auth.ViewModels
                 _authModule.ApiConnectionChanged -= OnApiConnectionChanged;
             }
 
-            base.Dispose();
+            base.OnDisposing();
         }
 
         #endregion

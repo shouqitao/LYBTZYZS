@@ -39,22 +39,15 @@ namespace LYBT.Module.Users.Helpers
         }
 
         /// <summary>
-        /// 验证用户创建请求
+        /// 验证用户Mutation请求（统一的创建和更新验证）
         /// </summary>
-        public async Task<ServiceResult<bool>> ValidateUserCreationAsync(UserCreateDto dto)
+        public async Task<ServiceResult<bool>> ValidateUserMutationAsync(UserMutationDto dto, bool isCreateOperation, Guid? existingUserId = null)
         {
             try
             {
                 // 基础字段验证
-                var usernameValidation = ValidateRequiredString(dto.Username, "用户名");
-                if (!usernameValidation.IsSuccess) return usernameValidation;
-                
                 var realNameValidation = ValidateRequiredString(dto.RealName, "真实姓名");
                 if (!realNameValidation.IsSuccess) return realNameValidation;
-                
-                // 用户名长度验证
-                var usernameLengthValidation = ValidateStringLength(dto.Username, "用户名", 50, 2);
-                if (!usernameLengthValidation.IsSuccess) return usernameLengthValidation;
                 
                 // 真实姓名长度验证
                 var realNameLengthValidation = ValidateStringLength(dto.RealName, "真实姓名", 50);
@@ -62,44 +55,67 @@ namespace LYBT.Module.Users.Helpers
                 
                 // 电话号码格式验证（如果提供）
                 var phoneValidation = ValidatePhoneNumber(dto.PhoneNumber, "电话号码");
-                if (!phoneValidation.IsSuccess) return phoneValidation;                // 检查用户名是否已存在
-                var usernameExists = await _userRepository.ExistsByUsernameAsync(dto.Username);
-                if (usernameExists)
-                    return ServiceResult<bool>.Failure("用户名已存在");                // 单一角色架构下，角色验证已通过Required特性和默认值处理
+                if (!phoneValidation.IsSuccess) return phoneValidation;
+
+                // 创建操作特有验证
+                if (isCreateOperation)
+                {
+                    // 用户名验证（创建时必需）
+                    var usernameValidation = ValidateRequiredString(dto.Username, "用户名");
+                    if (!usernameValidation.IsSuccess) return usernameValidation;
+                    
+                    // 用户名长度验证
+                    var usernameLengthValidation = ValidateStringLength(dto.Username, "用户名", 50, 2);
+                    if (!usernameLengthValidation.IsSuccess) return usernameLengthValidation;
+                    
+                    // 检查用户名是否已存在
+                    var usernameExists = await _userRepository.ExistsByUsernameAsync(dto.Username!);
+                    if (usernameExists)
+                        return ServiceResult<bool>.Failure("用户名已存在");
+
+                    // 密码验证（创建时如果提供了密码）
+                    if (!string.IsNullOrWhiteSpace(dto.Password))
+                    {
+                        var passwordValidation = ValidatePasswordStrength(dto.Password);
+                        if (!passwordValidation.IsSuccess) return passwordValidation;
+
+                        if (dto.Password != dto.ConfirmPassword)
+                            return ServiceResult<bool>.Failure("密码和确认密码不匹配");
+                    }
+                }
+                else
+                {
+                    // 更新操作：检查用户是否存在
+                    if (existingUserId.HasValue)
+                    {
+                        var userExists = await _userRepository.GetByIdAsync(existingUserId.Value, includeDisabled: true);
+                        if (userExists == null)
+                            return ServiceResult<bool>.Failure("要更新的用户不存在");
+                    }
+                }
+
+                // 单一角色架构下，角色验证已通过Required特性和默认值处理
                 
                 return ServiceResult<bool>.Success(true);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "验证用户创建请求失败");                return ServiceResult<bool>.Failure("验证用户创建请求失败");            }
+                _logger.LogError(ex, "验证用户Mutation请求失败");
+                return ServiceResult<bool>.Failure("验证用户请求失败");
+            }
         }
 
+
+
         /// <summary>
-        /// 验证用户更新请求
+        /// 验证用户更新请求（现代化版本，使用UserMutationDto）
         /// </summary>
-        public async Task<ServiceResult<bool>> ValidateUserUpdateAsync(Guid id, UserUpdateDto dto)
+        public async Task<ServiceResult<bool>> ValidateUserUpdateAsync(Guid id, UserMutationDto dto)
         {
-            try
-            {
-                // 基础字段验证
-                var realNameValidation = ValidateRequiredString(dto.RealName, "真实姓名");
-                if (!realNameValidation.IsSuccess) return realNameValidation;
-                
-                // 真实姓名长度验证
-                var realNameLengthValidation = ValidateStringLength(dto.RealName, "真实姓名", 50);
-                if (!realNameLengthValidation.IsSuccess) return realNameLengthValidation;
-                
-                // 电话号码格式验证（如果提供）
-                var phoneValidation = ValidatePhoneNumber(dto.PhoneNumber, "电话号码");
-                if (!phoneValidation.IsSuccess) return phoneValidation;                // 检查用户是否存在
-                var userExists = await _userRepository.GetByIdAsync(id, includeDisabled: true);
-                if (userExists == null)
-                    return ServiceResult<bool>.Failure("要更新的用户不存在");                return ServiceResult<bool>.Success(true);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "验证用户更新请求失败: {Id}", id);                return ServiceResult<bool>.Failure("验证用户更新请求失败");            }
+            return await ValidateUserMutationAsync(dto, isCreateOperation: false, existingUserId: id);
         }
+
+
 
         /// <summary>
         /// 验证用户名是否可用

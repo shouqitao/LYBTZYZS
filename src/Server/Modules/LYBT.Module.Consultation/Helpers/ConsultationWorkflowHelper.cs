@@ -49,7 +49,7 @@ namespace LYBT.Module.Consultation.Helpers
                 var validationResult = await _validationHelper.ValidateMedicalCaseConsultationAsync(dto.MedicalCaseId);
                 if (!validationResult.IsSuccess)
                 {
-                    return ServiceResult<ConsultationDto>.Failure(validationResult.Message);
+                    return ServiceResult<ConsultationDto>.Failure(validationResult.Message ?? "验证失败");
                 }
 
                 // 创建看诊记录
@@ -95,6 +95,8 @@ namespace LYBT.Module.Consultation.Helpers
                 }
 
                 var consultation = consultationResult.Data;
+                if (consultation == null)
+                    return ServiceResult<bool>.Failure("看诊记录不存在");
 
                 // 更新基础信息
                 consultation.TreatmentPrinciple = dto.TreatmentPrinciple;

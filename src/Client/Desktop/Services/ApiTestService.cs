@@ -128,7 +128,7 @@ namespace LYBT.Desktop.Services
                 {
                     return $"❌ 用户分页查询失败: {usersResult.ErrorMessage}";
                 }
-                var users = usersResult.Data;
+                var users = usersResult.Data!;
                 result += $"✅ 用户分页查询成功\n";
                 result += $"   总用户数: {users.TotalCount}\n";
                 result += $"   当前页用户数: {users.Items.Count}\n";

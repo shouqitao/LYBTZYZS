@@ -63,12 +63,12 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         /// <summary>
         /// 搜索命令
         /// </summary>
-        public DelegateCommand SearchCommand { get; }
+        public DelegateCommand SearchCommand { get; } = null!;
 
         /// <summary>
         /// 查看详情命令
         /// </summary>
-        public DelegateCommand<FormulaDto> ViewDetailsCommand { get; }
+        public DelegateCommand<FormulaDto> ViewDetailsCommand { get; } = null!;
 
         /// <summary>
         /// 选中的验方模板（用于返回结果）

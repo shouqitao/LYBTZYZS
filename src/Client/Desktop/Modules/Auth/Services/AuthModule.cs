@@ -81,7 +81,7 @@ namespace LYBT.Desktop.Auth.Services
                 _logger.LogInformation("开始用户登录: {Username}", loginRequest.Username);
 
                 // UltraThink v2.0: 直接使用DTO进行业务验证
-                var validation = await ValidateLoginRequestAsync(loginRequest);
+                var validation = ValidateLoginRequest(loginRequest);
                 if (!validation.IsSuccess)
                 {
                     return ServiceResult<LoginResponse>.Failure(validation.ErrorMessage ?? "登录信息验证失败");
@@ -436,7 +436,7 @@ namespace LYBT.Desktop.Auth.Services
         #region 安全功能
 
         // UltraThink v2.0: 新增DTO验证方法
-        public async Task<ServiceResult> ValidateLoginRequestAsync(LoginRequest loginRequest)
+        public ServiceResult ValidateLoginRequest(LoginRequest loginRequest)
         {
             try
             {

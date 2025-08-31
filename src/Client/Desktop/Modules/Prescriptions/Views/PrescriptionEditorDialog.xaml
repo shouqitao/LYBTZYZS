@@ -65,19 +65,69 @@
                                 <ComboBoxItem Content="已取消" Tag="4"/>
                             </ComboBox>
 
-                            <!-- 第二行 -->
+                            <!-- 第二行 - 患者选择区域 -->
                             <Grid Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <TextBox Grid.Column="0" Text="{Binding Prescription.PatientName}"
-                                         materialDesign:HintAssist.Hint="患者姓名" IsReadOnly="True"
-                                         Style="{StaticResource MaterialDesignFloatingHintTextBox}" Margin="0,0,8,8"/>
-                                <Button Grid.Column="1" Command="{Binding SelectPatientCommand}"
-                                        Style="{StaticResource MaterialDesignRaisedButton}"
-                                        IsEnabled="{Binding IsViewMode, Converter={StaticResource InverseBooleanConverter}}"
-                                        Content="选择患者" Margin="0,0,8,8"/>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                
+                                <!-- 上下文模式：显示患者信息（只读） -->
+                                <Grid Grid.Row="0" Visibility="{Binding IsContextMode, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                    <TextBox Text="{Binding Prescription.PatientName}"
+                                             materialDesign:HintAssist.Hint="患者姓名（来自医案）" 
+                                             IsReadOnly="True"
+                                             Style="{StaticResource MaterialDesignFloatingHintTextBox}" 
+                                             Margin="0,0,0,8"
+                                             Background="#F5F5F5"/>
+                                </Grid>
+                                
+                                <!-- 常规模式：患者搜索和操作 -->
+                                <Grid Grid.Row="1" Visibility="{Binding IsContextMode, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    
+                                    <TextBox Grid.Column="0" Text="{Binding PatientSearchKeyword, UpdateSourceTrigger=PropertyChanged}"
+                                             materialDesign:HintAssist.Hint="搜索患者 (姓名/手机号)" 
+                                             IsReadOnly="{Binding IsViewMode}"
+                                             Style="{StaticResource MaterialDesignFloatingHintTextBox}" Margin="0,0,4,4">
+                                        <TextBox.InputBindings>
+                                            <KeyBinding Key="Enter" Command="{Binding SearchPatientsCommand}"/>
+                                        </TextBox.InputBindings>
+                                    </TextBox>
+                                    
+                                    <Button Grid.Column="1" Command="{Binding SearchPatientsCommand}"
+                                            Style="{StaticResource MaterialDesignFlatButton}"
+                                            IsEnabled="{Binding IsViewMode, Converter={StaticResource InverseBooleanConverter}}"
+                                            Content="搜索" Margin="4,0,4,4"/>
+                                            
+                                    <Button Grid.Column="2" Command="{Binding CreateNewPatientCommand}"
+                                            Style="{StaticResource MaterialDesignRaisedButton}"
+                                            IsEnabled="{Binding IsViewMode, Converter={StaticResource InverseBooleanConverter}}"
+                                            Content="新建患者" Margin="4,0,0,4"/>
+                                </Grid>
+                                
+                                <!-- 常规模式：患者选择下拉列表 -->
+                                <ComboBox Grid.Row="2" ItemsSource="{Binding AvailablePatients}"
+                                          SelectedItem="{Binding SelectedPatientFromList}"
+                                          materialDesign:HintAssist.Hint="选择患者" 
+                                          IsEnabled="{Binding IsViewMode, Converter={StaticResource InverseBooleanConverter}}"
+                                          Style="{StaticResource MaterialDesignFloatingHintComboBox}" 
+                                          Visibility="{Binding IsContextMode, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
+                                          Margin="0,0,0,8" MinHeight="56">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel>
+                                                <TextBlock Text="{Binding Name}" FontWeight="Bold"/>
+                                                <TextBlock Text="{Binding PhoneNumber}" FontSize="12" Opacity="0.7"/>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
                             </Grid>
 
                             <TextBox Grid.Row="1" Grid.Column="2" Text="{Binding Prescription.DoctorName}"

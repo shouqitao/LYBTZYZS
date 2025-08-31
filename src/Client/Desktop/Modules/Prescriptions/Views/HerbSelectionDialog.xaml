@@ -26,50 +26,46 @@
         <!-- 搜索栏 -->
         <Grid Grid.Row="1" Margin="16,16,16,8">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="150"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <TextBlock Grid.Column="0" Text="分类：" VerticalAlignment="Center" Margin="0,0,8,0"/>
-            <ComboBox Grid.Column="1" ItemsSource="{Binding Categories}" 
-                      SelectedItem="{Binding SelectedCategory}"
-                      Margin="0,0,16,0"/>
+            <TextBox Grid.Column="0" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                     materialDesign:HintAssist.Hint="搜索药材名称、拼音码..."
+                     Style="{StaticResource MaterialDesignFloatingHintTextBox}">
+                <TextBox.InputBindings>
+                    <KeyBinding Key="Enter" Command="{Binding SearchCommand}"/>
+                </TextBox.InputBindings>
+            </TextBox>
 
-            <TextBox Grid.Column="2" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
-                     materialDesign:HintAssist.Hint="搜索药材名称、拼音、别名..."
-                     Style="{StaticResource MaterialDesignFloatingHintTextBox}"/>
-
-            <Button Grid.Column="3" Command="{Binding RefreshCommand}" 
-                    Style="{StaticResource MaterialDesignIconButton}"
-                    ToolTip="刷新" Margin="8,0,0,0">
-                <materialDesign:PackIcon Kind="Refresh"/>
-            </Button>
+            <Button Grid.Column="1" Command="{Binding SearchCommand}" 
+                    Style="{StaticResource MaterialDesignRaisedButton}"
+                    Content="搜索" Margin="8,0,0,0" MinWidth="80"/>
         </Grid>
 
         <!-- 药材列表 -->
-        <DataGrid Grid.Row="2" ItemsSource="{Binding FilteredHerbs}" 
+        <DataGrid Grid.Row="2" ItemsSource="{Binding AvailableHerbs}" 
                   SelectedItem="{Binding SelectedHerb}"
                   AutoGenerateColumns="False" CanUserAddRows="False"
                   IsReadOnly="True" Margin="16,0,16,8">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="名称" Binding="{Binding Name}" Width="120"/>
-                <DataGridTextColumn Header="拼音" Binding="{Binding PinYin}" Width="100"/>
-                <DataGridTextColumn Header="别名" Binding="{Binding Alias}" Width="100"/>
-                <DataGridTextColumn Header="规格" Binding="{Binding Specification}" Width="80"/>
+                <DataGridTextColumn Header="名称" Binding="{Binding Name}" Width="140"/>
+                <DataGridTextColumn Header="拼音码" Binding="{Binding PinYinCode}" Width="100"/>
+                <DataGridTextColumn Header="规格" Binding="{Binding Spec}" Width="100"/>
                 <DataGridTextColumn Header="单位" Binding="{Binding Unit}" Width="60"/>
                 <DataGridTextColumn Header="单价" Binding="{Binding Price, StringFormat='￥{0:F2}'}" Width="80"/>
-                <DataGridTextColumn Header="库存" Binding="{Binding Stock}" Width="80"/>
-                <DataGridTextColumn Header="分类" Binding="{Binding Category}" Width="*"/>
+                <DataGridTextColumn Header="产地" Binding="{Binding Origin}" Width="100"/>
+                <DataGridTextColumn Header="功效" Binding="{Binding Effect}" Width="*"/>
             </DataGrid.Columns>
         </DataGrid>
 
         <!-- 用量设置 -->
-        <Grid Grid.Row="3" Margin="16,0,16,16" Visibility="{Binding IsEditMode, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+        <Grid Grid.Row="3" Margin="16,0,16,16">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="100"/>
+                <ColumnDefinition Width="120"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="120"/>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
@@ -79,7 +75,12 @@
                      materialDesign:HintAssist.Hint="数量"
                      Style="{StaticResource MaterialDesignFloatingHintTextBox}"/>
             <TextBlock Grid.Column="2" Text="{Binding SelectedHerb.Unit}" 
-                       VerticalAlignment="Center" Margin="8,0,0,0"/>
+                       VerticalAlignment="Center" Margin="8,0,16,0"/>
+            
+            <TextBlock Grid.Column="3" Text="单位：" VerticalAlignment="Center" Margin="0,0,8,0"/>
+            <TextBox Grid.Column="4" Text="{Binding Unit}" 
+                     materialDesign:HintAssist.Hint="单位"
+                     Style="{StaticResource MaterialDesignFloatingHintTextBox}"/>
         </Grid>
 
         <!-- 按钮栏 -->

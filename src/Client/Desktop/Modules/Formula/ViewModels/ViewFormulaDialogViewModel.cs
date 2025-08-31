@@ -61,9 +61,9 @@ namespace LYBT.Desktop.Formula.ViewModels
 
         #region Commands
 
-        public DelegateCommand CloseCommand { get; }
-        public DelegateCommand PrintCommand { get; }
-        public DelegateCommand ExportCommand { get; }
+        public DelegateCommand CloseCommand { get; } = null!;
+        public DelegateCommand PrintCommand { get; } = null!;
+        public DelegateCommand ExportCommand { get; } = null!;
 
         #endregion
 

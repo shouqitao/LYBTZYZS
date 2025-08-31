@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using LYBT.Shared.Models.Contracts.Prescriptions;
+using LYBT.Shared.Models.Contracts.Patients;
 using AutoMapper;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Enums;
@@ -24,6 +25,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         private readonly IPatientService _patientService;
         private readonly IHerbService _herbService;
         private readonly ICustomDialogService _dialogService;
+        private readonly IUserSessionManager _userSessionManager;
         private readonly ILogger<PrescriptionEditorDialogViewModel> _logger;
         private readonly IMapper _mapper;
 
@@ -92,6 +94,53 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             set => SetProperty(ref _statusMessage, value);
         }
 
+        // 患者选择相关属性
+        private ObservableCollection<PatientDto> _availablePatients = new();
+        public ObservableCollection<PatientDto> AvailablePatients
+        {
+            get => _availablePatients;
+            set => SetProperty(ref _availablePatients, value);
+        }
+
+        private PatientDto? _selectedPatientFromList;
+        public PatientDto? SelectedPatientFromList
+        {
+            get => _selectedPatientFromList;
+            set
+            {
+                if (SetProperty(ref _selectedPatientFromList, value) && value != null)
+                {
+                    // 选择患者后自动填充处方信息
+                    Prescription.PatientId = value.Id;
+                    Prescription.PatientName = value.Name;
+                    SaveCommand.RaiseCanExecuteChanged();
+                    _logger.LogInformation("从列表选择患者: {PatientName} (ID: {PatientId})", value.Name, value.Id);
+                }
+            }
+        }
+
+        private string _patientSearchKeyword = string.Empty;
+        public string PatientSearchKeyword
+        {
+            get => _patientSearchKeyword;
+            set => SetProperty(ref _patientSearchKeyword, value);
+        }
+
+        // 上下文模式相关属性
+        private bool _isContextMode;
+        public bool IsContextMode
+        {
+            get => _isContextMode;
+            set => SetProperty(ref _isContextMode, value);
+        }
+
+        private Guid _medicalCaseId = Guid.Empty;
+        public Guid MedicalCaseId
+        {
+            get => _medicalCaseId;
+            set => SetProperty(ref _medicalCaseId, value);
+        }
+
         private decimal _totalAmount;
         public decimal TotalAmount
         {
@@ -116,14 +165,16 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
 
         #region Commands
 
-        public DelegateCommand SaveCommand { get; }
-        public DelegateCommand CancelCommand { get; }
-        public DelegateCommand AddHerbCommand { get; }
-        public DelegateCommand<PrescriptionItemDto> RemoveHerbCommand { get; }
-        public DelegateCommand<PrescriptionItemDto> EditHerbCommand { get; }
-        public DelegateCommand LoadFormulaTemplateCommand { get; }
-        public DelegateCommand SelectPatientCommand { get; }
-        public DelegateCommand PreviewCommand { get; }
+        public DelegateCommand SaveCommand { get; } = null!;
+        public DelegateCommand CancelCommand { get; } = null!;
+        public DelegateCommand AddHerbCommand { get; } = null!;
+        public DelegateCommand<PrescriptionItemDto> RemoveHerbCommand { get; } = null!;
+        public DelegateCommand<PrescriptionItemDto> EditHerbCommand { get; } = null!;
+        public DelegateCommand LoadFormulaTemplateCommand { get; } = null!;
+        public DelegateCommand SelectPatientCommand { get; } = null!;
+        public DelegateCommand SearchPatientsCommand { get; } = null!;
+        public DelegateCommand CreateNewPatientCommand { get; } = null!;
+        public DelegateCommand PreviewCommand { get; } = null!;
 
         #endregion
 
@@ -134,6 +185,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             IPatientService patientService,
             IHerbService herbService,
             ICustomDialogService dialogService,
+            IUserSessionManager userSessionManager,
             ILogger<PrescriptionEditorDialogViewModel> logger,
             IMapper mapper)
         {
@@ -141,6 +193,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             _patientService = patientService ?? throw new ArgumentNullException(nameof(patientService));
             _herbService = herbService ?? throw new ArgumentNullException(nameof(herbService));
             _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
+            _userSessionManager = userSessionManager ?? throw new ArgumentNullException(nameof(userSessionManager));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
 
@@ -148,23 +201,29 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             SaveCommand = new DelegateCommand(async () => await SavePrescriptionAsync(), CanSave)
                 .ObservesProperty(() => IsViewMode);
             CancelCommand = new DelegateCommand(Cancel);
-            AddHerbCommand = new DelegateCommand(AddHerb, () => !IsViewMode)
+            AddHerbCommand = new DelegateCommand(async () => await AddHerbAsync(), () => !IsViewMode)
                 .ObservesProperty(() => IsViewMode);
             RemoveHerbCommand = new DelegateCommand<PrescriptionItemDto>(RemoveHerb, (item) => !IsViewMode && item != null)
                 .ObservesProperty(() => IsViewMode);
-            EditHerbCommand = new DelegateCommand<PrescriptionItemDto>(EditHerb, (item) => !IsViewMode && item != null)
+            EditHerbCommand = new DelegateCommand<PrescriptionItemDto>(async (item) => await EditHerbAsync(item), (item) => !IsViewMode && item != null)
                 .ObservesProperty(() => IsViewMode);
             LoadFormulaTemplateCommand = new DelegateCommand(LoadFormulaTemplate, () => !IsViewMode)
                 .ObservesProperty(() => IsViewMode);
             SelectPatientCommand = new DelegateCommand(SelectPatient, () => !IsViewMode)
                 .ObservesProperty(() => IsViewMode);
-            PreviewCommand = new DelegateCommand(PreviewPrescription);
+            SearchPatientsCommand = new DelegateCommand(async () => await SearchPatientsAsync());
+            CreateNewPatientCommand = new DelegateCommand(async () => await CreateNewPatientAsync(), () => !IsViewMode)
+                .ObservesProperty(() => IsViewMode);
+            PreviewCommand = new DelegateCommand(async () => await PreviewPrescriptionAsync());
 
             // 监听处方项目变化
             PrescriptionItems.CollectionChanged += (s, e) => CalculateTotalAmount();
             
             // Initialize since we can't use OnDialogOpened
             Initialize();
+            
+            // 加载患者列表
+            _ = Task.Run(async () => await LoadPatientsAsync());
         }
 
         #endregion
@@ -213,6 +272,63 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             InitializeNewPrescription();
         }
 
+        /// <summary>
+        /// 使用上下文参数初始化（支持从医案跳转）
+        /// </summary>
+        public async Task InitializeWithContextAsync(Dictionary<string, object>? parameters = null)
+        {
+            if (parameters == null)
+            {
+                InitializeNewPrescription();
+                return;
+            }
+
+            try
+            {
+                // 检查是否是上下文模式（从医案跳转）
+                if (parameters.ContainsKey("ContextMode") && parameters["ContextMode"].ToString() == "MedicalCase")
+                {
+                    IsContextMode = true;
+                    
+                    // 获取医案ID
+                    if (parameters.ContainsKey("MedicalCaseId") && parameters["MedicalCaseId"] is Guid medicalCaseId)
+                    {
+                        MedicalCaseId = medicalCaseId;
+                    }
+
+                    // 获取患者信息
+                    if (parameters.ContainsKey("PatientId") && parameters["PatientId"] is Guid patientId)
+                    {
+                        // 初始化新处方并设置患者信息
+                        InitializeNewPrescription();
+                        
+                        // 加载患者详细信息
+                        await LoadPatientInfoAsync(patientId);
+                        
+                        // 在上下文模式下，不需要加载患者列表
+                        StatusMessage = $"正在为患者 {Prescription.PatientName} 开具处方（来自医案 {MedicalCaseId}）";
+                        
+                        _logger.LogInformation("上下文模式初始化完成，医案ID: {MedicalCaseId}，患者: {PatientName}", 
+                            MedicalCaseId, Prescription.PatientName);
+                    }
+                }
+                else
+                {
+                    // 常规模式
+                    InitializeNewPrescription();
+                    _ = Task.Run(async () => await LoadPatientsAsync());
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "初始化处方编辑器上下文时发生错误");
+                StatusMessage = $"初始化失败: {ex.Message}";
+                
+                // 回退到常规模式
+                InitializeNewPrescription();
+            }
+        }
+
         #endregion
 
         #region Methods
@@ -221,11 +337,15 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         {
             Prescription = new PrescriptionDto
             {
-                UserId = Guid.Empty, // TODO: 从当前登录用户获取
+                UserId = _userSessionManager.CurrentUser?.Id ?? Guid.Empty,
                 Status = CommonStatus.Enabled, // UltraThink v2.0: 使用CommonStatus，通过业务逻辑映射到处方状态
-                DosageCount = 1
+                DosageCount = 1,
+                PrescriptionNo = GeneratePrescriptionNo(),
+                CreateTime = DateTime.Now
             };
             TotalDoses = 1;
+            
+            _logger.LogInformation("初始化新处方，医生ID: {DoctorId}", Prescription.UserId);
         }
 
         private string GeneratePrescriptionNo()
@@ -377,6 +497,15 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                         }).ToList()
                     };
                     
+                    // UltraThink v2.0: 在上下文模式下关联医案（如果支持）
+                    if (IsContextMode && MedicalCaseId != Guid.Empty)
+                    {
+                        _logger.LogInformation("处方将关联医案: {MedicalCaseId}", MedicalCaseId);
+                        // 注意：需要检查PrescriptionCreateDto是否有MedicalCaseId属性
+                        // 如果没有，可以在处方备注中记录医案关联
+                        // createDto.MedicalCaseId = MedicalCaseId; // 待DTO支持
+                    }
+                    
                     var result = await _prescriptionService.CreateAsync(createDto);
                     if (result.IsSuccess)
                     {
@@ -409,31 +538,42 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             // RequestClose?.Invoke(new DialogResult(ButtonResult.Cancel));
         }
 
-        private void AddHerb()
+        private async Task AddHerbAsync()
         {
-            // TODO: Implement dialog logic when Prism dialog support is added
-            // _dialogService.ShowDialog("HerbSelectionDialog", new DialogParameters(), (result) =>
-            // {
-            //     if (result.Result == ButtonResult.OK && result.Parameters.ContainsKey("SelectedHerb"))
-            //     {
-            //         var herb = result.Parameters.GetValue<HerbDto>("SelectedHerb");
-            //         var quantity = result.Parameters.GetValue<decimal>("Quantity");
-                    
-            //         var item = new PrescriptionItemInfo
-            //         {
-            //             HerbId = herb.Id,
-            //             HerbName = herb.Name,
-            //             Specification = herb.Specification,
-            //             Unit = herb.Unit,
-            //             Quantity = quantity,
-            //             UnitPrice = herb.Price,
-            //             Amount = quantity * herb.Price
-            //         };
+            try
+            {
+                _logger.LogInformation("打开药材选择对话框");
+                
+                var parameters = new Dictionary<string, object>
+                {
+                    ["Title"] = "选择药材"
+                };
 
-            //         PrescriptionItems.Add(item);
-            //         CalculateTotalAmount();
-            //     }
-            // });
+                var result = await _dialogService.ShowDialogAsync("HerbSelectionDialog", parameters);
+                
+                if (result.Result == true && result.Data is Dictionary<string, object> data)
+                {
+                    if (data.ContainsKey("SelectedItem") && data["SelectedItem"] is PrescriptionItemDto selectedItem)
+                    {
+                        // 生成新的ID和计算金额
+                        selectedItem.Id = Guid.NewGuid();
+                        
+                        // 添加到处方项目列表
+                        PrescriptionItems.Add(selectedItem);
+                        CalculateTotalAmount();
+                        
+                        StatusMessage = $"已添加药材: {selectedItem.HerbName}";
+                        _logger.LogInformation("添加药材成功: {HerbName}, 数量: {Quantity}", 
+                            selectedItem.HerbName, selectedItem.Quantity);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "添加药材时发生错误");
+                StatusMessage = $"添加药材失败: {ex.Message}";
+                await _dialogService.ShowErrorAsync($"添加药材失败: {ex.Message}", "错误");
+            }
         }
 
         private void RemoveHerb(PrescriptionItemDto? item)
@@ -445,25 +585,53 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             }
         }
 
-        private void EditHerb(PrescriptionItemDto? item)
+        private async Task EditHerbAsync(PrescriptionItemDto? item)
+{
+    if (item == null) return;
+
+    try
+    {
+        _logger.LogInformation("编辑药材: {HerbName}", item.HerbName);
+        
+        var parameters = new Dictionary<string, object>
         {
-            if (item == null) return;
+            ["Title"] = "编辑药材",
+            ["EditMode"] = true,
+            ["HerbId"] = item.HerbId,
+            ["Quantity"] = item.Quantity,
+            ["Unit"] = item.Unit
+        };
 
-            // TODO: Implement dialog logic when Prism dialog support is added
-            // var parameters = new DialogParameters
-            // {
-            //     { "HerbItem", item },
-            //     { "EditMode", true }
-            // };
-
-            // _dialogService.ShowDialog("HerbSelectionDialog", parameters, (result) =>
-            // {
-            //     if (result.Result == ButtonResult.OK)
-            //     {
-            //         CalculateTotalAmount();
-            //     }
-            // });
+        var result = await _dialogService.ShowDialogAsync("HerbSelectionDialog", parameters);
+        
+        if (result.Result == true && result.Data is Dictionary<string, object> data)
+        {
+            if (data.ContainsKey("SelectedItem") && data["SelectedItem"] is PrescriptionItemDto editedItem)
+            {
+                // 保持原有的ID
+                editedItem.Id = item.Id;
+                
+                // 找到并替换原项目
+                var index = PrescriptionItems.IndexOf(item);
+                if (index >= 0)
+                {
+                    PrescriptionItems[index] = editedItem;
+                    CalculateTotalAmount();
+                    
+                    StatusMessage = $"已更新药材: {editedItem.HerbName}";
+                    _logger.LogInformation("编辑药材成功: {HerbName}, 数量: {Quantity}", 
+                        editedItem.HerbName, editedItem.Quantity);
+                }
+            }
         }
+    }
+    catch (Exception ex)
+    {
+        _logger.LogError(ex, "编辑药材时发生错误");
+        StatusMessage = $"编辑药材失败: {ex.Message}";
+        await _dialogService.ShowErrorAsync($"编辑药材失败: {ex.Message}", "错误");
+    }
+}
 
         private void LoadFormulaTemplate()
         {
@@ -499,15 +667,249 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
 
         private void SelectPatient()
         {
-            // TODO: 实现患者选择对话框
-            StatusMessage = "患者选择功能待实现";
+            // 这个方法用于UI绑定，实际选择通过SelectedPatientFromList属性处理
+            StatusMessage = "请从患者列表中选择，或搜索患者";
         }
 
-        private void PreviewPrescription()
+        private async Task LoadPatientsAsync()
         {
-            // TODO: 实现处方预览功能
-            StatusMessage = "处方预览功能待实现";
+            try
+            {
+                IsLoading = true;
+                StatusMessage = "加载患者列表...";
+
+                // 获取活跃患者列表
+                var result = await _patientService.SearchAsync(""); // 获取所有活跃患者
+                if (result.IsSuccess && result.Data != null)
+                {
+                    await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
+                    {
+                        AvailablePatients.Clear();
+                        foreach (var patientDto in result.Data)
+                        {
+                            AvailablePatients.Add(patientDto);
+                        }
+                    });
+                    
+                    _logger.LogInformation("患者列表加载完成，共 {Count} 个患者", result.Data.Count);
+                }
+                else
+                {
+                    StatusMessage = $"加载患者列表失败: {result.ErrorMessage}";
+                    _logger.LogError("加载患者列表失败: {ErrorMessage}", result.ErrorMessage);
+                }
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"加载患者列表时发生错误: {ex.Message}";
+                _logger.LogError(ex, "加载患者列表时发生错误");
+            }
+            finally
+            {
+                IsLoading = false;
+                if (StatusMessage.Contains("加载患者列表"))
+                {
+                    StatusMessage = "";
+                }
+            }
         }
+
+        private async Task SearchPatientsAsync()
+        {
+            if (string.IsNullOrWhiteSpace(PatientSearchKeyword))
+            {
+                await LoadPatientsAsync();
+                return;
+            }
+
+            try
+            {
+                IsLoading = true;
+                StatusMessage = "搜索患者...";
+
+                var result = await _patientService.SearchAsync(PatientSearchKeyword);
+                if (result.IsSuccess && result.Data != null)
+                {
+                    await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
+                    {
+                        AvailablePatients.Clear();
+                        foreach (var patientDto in result.Data)
+                        {
+                            AvailablePatients.Add(patientDto);
+                        }
+                    });
+
+                    StatusMessage = $"找到 {result.Data.Count} 个匹配的患者";
+                    _logger.LogInformation("患者搜索完成，关键词: {Keyword}，结果: {Count}", 
+                        PatientSearchKeyword, result.Data.Count);
+                }
+                else
+                {
+                    StatusMessage = $"搜索患者失败: {result.ErrorMessage}";
+                }
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"搜索患者时发生错误: {ex.Message}";
+                _logger.LogError(ex, "搜索患者时发生错误");
+            }
+            finally
+            {
+                IsLoading = false;
+            }
+        }
+
+        private async Task CreateNewPatientAsync()
+        {
+            try
+            {
+                _logger.LogInformation("打开新建患者对话框");
+                
+                var parameters = new Dictionary<string, object>
+                {
+                    ["IsEditMode"] = false
+                };
+
+                var result = await _dialogService.ShowDialogAsync("PatientAddEditDialog", parameters);
+                
+                if (result.Result == true)
+                {
+                    _logger.LogInformation("患者创建成功，刷新患者列表");
+                    
+                    // 刷新患者列表
+                    await LoadPatientsAsync();
+                    
+                    // 如果有返回的患者数据，自动选择该患者
+                    if (result.Data is Dictionary<string, object> data && data.ContainsKey("Patient") && data["Patient"] is PatientDto newPatient)
+                    {
+                        await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
+                        {
+                            SelectedPatientFromList = newPatient;
+                        });
+                        
+                        _logger.LogInformation("已自动选择新创建的患者: {PatientName}", newPatient.Name);
+                    }
+                    
+                    await _dialogService.ShowSuccessAsync("患者创建成功", "成功");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "创建患者时发生错误");
+                await _dialogService.ShowErrorAsync($"创建患者失败: {ex.Message}", "错误");
+            }
+        }
+
+        private async Task PreviewPrescriptionAsync()
+{
+    try
+    {
+        if (Prescription.PatientId == Guid.Empty || PrescriptionItems.Count == 0)
+        {
+            await _dialogService.ShowWarningAsync("请先选择患者并添加药材后再进行预览", "预览提醒");
+            return;
+        }
+
+        StatusMessage = "正在生成处方预览...";
+        
+        // 创建打印数据
+        var printData = CreatePrintData();
+        
+        // 显示预览对话框
+        var parameters = new Dictionary<string, object>
+        {
+            ["PrintData"] = printData,
+            ["Title"] = "处方预览"
+        };
+
+        // 简单的文本预览实现
+        await _dialogService.ShowInformationAsync(printData, "处方预览");
+        
+        StatusMessage = "预览完成";
+        _logger.LogInformation("处方预览成功，处方号: {PrescriptionNo}", Prescription.PrescriptionNo);
+    }
+    catch (Exception ex)
+    {
+        _logger.LogError(ex, "生成处方预览时发生错误");
+        StatusMessage = $"预览失败: {ex.Message}";
+        await _dialogService.ShowErrorAsync($"预览失败: {ex.Message}", "错误");
+    }
+}
+
+/// <summary>
+/// 创建打印数据
+/// </summary>
+private string CreatePrintData()
+{
+    var sb = new System.Text.StringBuilder();
+    
+    // 处方头部信息
+    sb.AppendLine("=============================================");
+    sb.AppendLine("                中医处方                    ");
+    sb.AppendLine("=============================================");
+    sb.AppendLine();
+    
+    // 基础信息
+    sb.AppendLine($"处方编号：{Prescription.PrescriptionNo}");
+    sb.AppendLine($"患者姓名：{Prescription.PatientName}");
+    sb.AppendLine($"开方日期：{Prescription.CreateTime:yyyy-MM-dd HH:mm}");
+    sb.AppendLine($"医生：{_userSessionManager.CurrentUser?.RealName ?? "未知"}");
+    sb.AppendLine();
+    
+    // 药材列表
+    sb.AppendLine("药材明细：");
+    sb.AppendLine("---------------------------------------------");
+    sb.AppendLine("药材名称\t\t规格\t\t数量\t\t单价\t\t金额");
+    sb.AppendLine("---------------------------------------------");
+    
+    decimal totalItemAmount = 0;
+    foreach (var item in PrescriptionItems)
+    {
+        var amount = item.Quantity * item.UnitPrice;
+        totalItemAmount += amount;
+        
+        sb.AppendLine($"{item.HerbName?.PadRight(12) ?? "未知".PadRight(12)}\t" +
+                     $"{(item.Usage ?? "").PadRight(8)}\t" +
+                     $"{item.Quantity}\t\t" +
+                     $"¥{item.UnitPrice:F2}\t\t" +
+                     $"¥{amount:F2}");
+    }
+    
+    sb.AppendLine("---------------------------------------------");
+    sb.AppendLine($"单次金额：¥{totalItemAmount:F2}");
+    sb.AppendLine($"药付数：{TotalDoses} 付");
+    sb.AppendLine($"总金额：¥{TotalAmount:F2}");
+    sb.AppendLine();
+    
+    // 用法用量（如果有）
+    if (!string.IsNullOrEmpty(Prescription.Usage))
+    {
+        sb.AppendLine("用法用量：");
+        sb.AppendLine(Prescription.Usage);
+        sb.AppendLine();
+    }
+    
+    // 医嘱（如果有）
+    if (!string.IsNullOrEmpty(Prescription.Advice))
+    {
+        sb.AppendLine("医嘱：");
+        sb.AppendLine(Prescription.Advice);
+        sb.AppendLine();
+    }
+    
+    // 备注（如果有）
+    if (!string.IsNullOrEmpty(Prescription.Remark))
+    {
+        sb.AppendLine("备注：");
+        sb.AppendLine(Prescription.Remark);
+        sb.AppendLine();
+    }
+    
+    sb.AppendLine("=============================================");
+    sb.AppendLine($"生成时间：{DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+    
+    return sb.ToString();
+}
 
         #endregion
     }

@@ -131,29 +131,6 @@ namespace LYBT.Shared.Models.Contracts.Users
         public bool IsCreateOperation { get; set; }
     }
 
-    /// <summary>
-    /// 用户创建DTO - UltraThink兼容性别名，继承统一变更DTO
-    /// </summary>
-    [Obsolete("请使用 UserMutationDto 替代，设置 IsCreateOperation = true")]
-    public class UserCreateDto : UserMutationDto
-    {
-        public UserCreateDto() 
-        { 
-            IsCreateOperation = true; 
-        }
-    }
-
-    /// <summary>
-    /// 用户更新DTO - UltraThink兼容性别名，继承统一变更DTO  
-    /// </summary>
-    [Obsolete("请使用 UserMutationDto 替代，设置 IsCreateOperation = false")]
-    public class UserUpdateDto : UserMutationDto
-    {
-        public UserUpdateDto() 
-        { 
-            IsCreateOperation = false; 
-        }
-    }
 
     /// <summary>
     /// 用户统计DTO

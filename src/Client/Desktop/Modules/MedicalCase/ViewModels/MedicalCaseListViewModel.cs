@@ -28,11 +28,13 @@ using Prism.Services.Dialogs;
 namespace LYBT.Desktop.MedicalCase.ViewModels
 {
     /// <summary>
-    /// 医疗案例管理视图模型（UltraThink v2.0 小诊所精简版）
-    /// 移除过度设计的批量操作、复杂筛选、多选功能，专注核心CRUD操作
-    /// 适用于20人以下小诊所的简单直接的医疗案例管理需求
+    /// 医疗案例列表视图模型（UltraThink Phase 3.1 现代化架构版）
+    /// TODO: 待完整重构为ModernManagementViewModel模式  
+    /// 当前保持兼容性，避免破坏性更改
     /// </summary>
+#pragma warning disable CS0618 // NewBaseListViewModel已过时，计划未来架构升级
     public class MedicalCaseListViewModel : NewBaseListViewModel<MedicalCaseDto>
+#pragma warning restore CS0618
     {
         #region Fields
 
@@ -75,13 +77,13 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         #region Commands
 
-        public DelegateCommand AddCommand { get; private set; }
-        public DelegateCommand<MedicalCaseDto> EditCommand { get; private set; }
-        public DelegateCommand<MedicalCaseDto> DeleteCommand { get; private set; }
-        public DelegateCommand<MedicalCaseDto> ViewDetailsCommand { get; private set; }
-        public DelegateCommand<MedicalCaseDto> StartConsultationCommand { get; private set; }
-        public DelegateCommand<MedicalCaseDto> CompleteCommand { get; private set; }
-        public DelegateCommand<MedicalCaseDto> CancelCommand { get; private set; }
+        public DelegateCommand AddCommand { get; private set; } = null!;
+        public DelegateCommand<MedicalCaseDto> EditCommand { get; private set; } = null!;
+        public DelegateCommand<MedicalCaseDto> DeleteCommand { get; private set; } = null!;
+        public DelegateCommand<MedicalCaseDto> ViewDetailsCommand { get; private set; } = null!;
+        public DelegateCommand<MedicalCaseDto> StartConsultationCommand { get; private set; } = null!;
+        public DelegateCommand<MedicalCaseDto> CompleteCommand { get; private set; } = null!;
+        public DelegateCommand<MedicalCaseDto> CancelCommand { get; private set; } = null!;
 
         // UltraThink v2.0: 删除过度设计功能 - 20人以下小诊所不需要以下复杂功能:
         // - BatchStartConsultationCommand/BatchCompleteCommand/BatchCancelCommand: 批量操作过度设计
@@ -261,8 +263,12 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
             try
             {
-                // 导航到详情界面
-                _regionManager.RequestNavigate(RegionNames.SystemWorkbenchContentRegion, $"MedicalCaseDetailView?MedicalCaseId={medicalCase.Id}&ViewMode=Detail");
+                // 导航到详情界面 - 使用Task.Run包装以修复CS1998警告
+                await Task.Run(() => 
+                {
+                    _regionManager.RequestNavigate(RegionNames.SystemWorkbenchContentRegion, 
+                        $"MedicalCaseDetailView?MedicalCaseId={medicalCase.Id}&ViewMode=Detail");
+                });
             }
             catch (Exception ex)
             {

@@ -13,6 +13,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using LYBT.Shared.Utilities.Helpers;
 using LYBT.Module.Users;
+using LYBT.Module.Users.Interfaces;
 
 namespace LYBT.Module.Users.Services
 {
@@ -20,7 +21,7 @@ namespace LYBT.Module.Users.Services
     /// 用户业务服务 - UltraThink架构
     /// 职责：业务逻辑，状态管理，密码管理，批量操作
     /// </summary>
-    public class UserBusinessService
+    public class UserBusinessService : IUserBusinessService
     {
         private readonly AppDbContext _context;
         private readonly IMapper _mapper;
@@ -284,12 +285,12 @@ namespace LYBT.Module.Users.Services
         /// <summary>
         /// 创建用户业务逻辑（使用统一变更DTO）
         /// </summary>
-        public async Task<ServiceResult<UserDto>> CreateUserAsync(UserCreateDto dto)
+        public async Task<ServiceResult<UserDto>> CreateUserAsync(UserMutationDto dto)
         {
             try
             {
                 // 业务规则验证
-                var validationResult = await ValidateUserCreationAsync(dto);
+                var validationResult = await ValidateUserMutationAsync(dto, true); // true for create operation
                 if (!validationResult.IsSuccess)
                     return ServiceResult<UserDto>.Failure(validationResult.ErrorMessage);
 
@@ -342,7 +343,7 @@ namespace LYBT.Module.Users.Services
         /// <summary>
         /// 更新用户业务逻辑
         /// </summary>
-        public async Task<ServiceResult<UserDto>> UpdateUserAsync(Guid id, UserUpdateDto dto)
+        public async Task<ServiceResult<UserDto>> UpdateUserAsync(Guid id, UserMutationDto dto)
         {
             try
             {
@@ -350,7 +351,7 @@ namespace LYBT.Module.Users.Services
                     return ServiceResult<UserDto>.Failure("用户ID不能为空");
 
                 // 业务规则验证
-                var validationResult = await ValidateUserUpdateAsync(id, dto);
+                var validationResult = await ValidateUserMutationAsync(dto, false, id); // false for update operation
                 if (!validationResult.IsSuccess)
                     return ServiceResult<UserDto>.Failure(validationResult.ErrorMessage);
 
@@ -436,41 +437,52 @@ namespace LYBT.Module.Users.Services
 
         #region 私有方法
 
+
+
+
+
+        
         /// <summary>
-        /// 验证用户创建请求
+        /// 统一用户变更DTO验证 - UltraThink现代化DTO设计
         /// </summary>
-        private async Task<ServiceResult<bool>> ValidateUserCreationAsync(UserCreateDto dto)
+        private async Task<ServiceResult<bool>> ValidateUserMutationAsync(UserMutationDto dto, bool isCreateOperation, Guid? existingUserId = null)
         {
             if (dto == null)
                 return ServiceResult<bool>.Failure("用户信息不能为空");
 
-            if (string.IsNullOrWhiteSpace(dto.Username))
-                return ServiceResult<bool>.Failure("用户名不能为空");
+            // 创建操作的额外验证
+            if (isCreateOperation)
+            {
+                if (string.IsNullOrWhiteSpace(dto.Username))
+                    return ServiceResult<bool>.Failure("用户名不能为空");
 
-            if (dto.Username.Length < 3 || dto.Username.Length > 50)
-                return ServiceResult<bool>.Failure("用户名长度必须在3-50字符之间");
+                if (dto.Username.Length < 3 || dto.Username.Length > 50)
+                    return ServiceResult<bool>.Failure("用户名长度必须在3-50字符之间");
 
+                // 检查用户名格式（只能包含字母、数字、下划线）
+                if (!System.Text.RegularExpressions.Regex.IsMatch(dto.Username, @"^[a-zA-Z0-9_]+$"))
+                    return ServiceResult<bool>.Failure("用户名只能包含字母、数字和下划线");
+            }
+
+            // 通用验证（创建和更新都需要）
             if (string.IsNullOrWhiteSpace(dto.RealName))
                 return ServiceResult<bool>.Failure("真实姓名不能为空");
 
-            // 检查用户名格式（只能包含字母、数字、下划线）
-            if (!System.Text.RegularExpressions.Regex.IsMatch(dto.Username, @"^[a-zA-Z0-9_]+$"))
-                return ServiceResult<bool>.Failure("用户名只能包含字母、数字和下划线");
+            // 邮箱格式验证（如果提供）
+            if (!string.IsNullOrWhiteSpace(dto.Email))
+            {
+                var emailRegex = @"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$";
+                if (!System.Text.RegularExpressions.Regex.IsMatch(dto.Email, emailRegex))
+                    return ServiceResult<bool>.Failure("邮箱格式不正确");
+            }
 
-            await Task.CompletedTask; // 保持异步签名
-            return ServiceResult<bool>.Success(true);
-        }
-
-        /// <summary>
-        /// 验证用户更新请求
-        /// </summary>
-        private async Task<ServiceResult<bool>> ValidateUserUpdateAsync(Guid id, UserUpdateDto dto)
-        {
-            if (dto == null)
-                return ServiceResult<bool>.Failure("用户信息不能为空");
-
-            if (string.IsNullOrWhiteSpace(dto.RealName))
-                return ServiceResult<bool>.Failure("真实姓名不能为空");
+            // 手机号格式验证（如果提供）
+            if (!string.IsNullOrWhiteSpace(dto.PhoneNumber))
+            {
+                var phoneRegex = @"^1[3-9]\d{9}$";
+                if (!System.Text.RegularExpressions.Regex.IsMatch(dto.PhoneNumber, phoneRegex))
+                    return ServiceResult<bool>.Failure("手机号格式不正确");
+            }
 
             await Task.CompletedTask; // 保持异步签名
             return ServiceResult<bool>.Success(true);

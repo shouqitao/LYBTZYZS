@@ -70,7 +70,7 @@ namespace LYBT.Module.Consultation.Services.Core
                 // 数据验证
                 var validationResult = ValidateCreateDto(dto);
                 if (!validationResult.IsSuccess)
-                    return ServiceResult<ConsultationDto>.Failure(validationResult.ErrorMessage);
+                    return ServiceResult<ConsultationDto>.Failure(validationResult.ErrorMessage ?? "验证失败");
 
                 // 创建新看诊记录
                 var consultation = new LYBT.Entities.Consultation.Consultation
@@ -115,7 +115,7 @@ namespace LYBT.Module.Consultation.Services.Core
                 // 数据验证
                 var validationResult = ValidateUpdateDto(dto);
                 if (!validationResult.IsSuccess)
-                    return ServiceResult<ConsultationDto>.Failure(validationResult.ErrorMessage);
+                    return ServiceResult<ConsultationDto>.Failure(validationResult.ErrorMessage ?? "验证失败");
 
                 var consultation = await _context.Consultations
                     .FirstOrDefaultAsync(c => c.Id == id);

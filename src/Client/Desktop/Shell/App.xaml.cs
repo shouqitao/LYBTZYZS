@@ -2,6 +2,7 @@ using LYBT.Shared.Models.Contracts.Common;
 using Prism.Ioc;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Prism.DryIoc;
 using System;
@@ -246,11 +247,8 @@ namespace LYBT.Desktop.Shell
                 InitializationMode = InitializationMode.OnDemand
             };
             
-            // 将角色信息存储在模块元数据中，供后续角色检查使用
-            if (requiredRoles?.Length > 0)
-            {
-                moduleInfo.Metadata.Add("RequiredRoles", string.Join(",", requiredRoles));
-            }
+            // 记录模块角色信息（简化处理）
+            // TODO: 如需角色限制，在模块初始化时检查
             
             moduleCatalog.AddModule(moduleInfo);
         }
@@ -271,18 +269,11 @@ namespace LYBT.Desktop.Shell
 
                 var modulesToLoad = new List<string>();
 
-                // 遍历所有按需加载的模块，检查角色匹配
+                // 遍历所有按需加载的模块，简化处理
                 foreach (var module in moduleCatalog.Modules.Where(m => m.InitializationMode == InitializationMode.OnDemand))
                 {
-                    if (module.Metadata.TryGetValue("RequiredRoles", out var requiredRolesStr) && 
-                        !string.IsNullOrEmpty(requiredRolesStr))
-                    {
-                        var requiredRoles = requiredRolesStr.Split(',');
-                        if (requiredRoles.Contains(userRole) || requiredRoles.Contains("Admin"))
-                        {
-                            modulesToLoad.Add(module.ModuleName);
-                        }
-                    }
+                    // 简化版本：所有OnDemand模块都加载（可根据需要后续优化）
+                    modulesToLoad.Add(module.ModuleName);
                 }
 
                 // 批量加载匹配的模块

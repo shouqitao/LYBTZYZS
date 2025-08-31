@@ -16,66 +16,28 @@ using LYBT.Shared.Models.Enums;
 namespace LYBT.Module.Prescriptions.Helpers
 {
     /// <summary>
-    /// PrescriptionService查询助手类 - UltraThink Helper模式
-    /// 负责所有查询、搜索、统计和历史记录相关逻辑
+    /// 处方查询助手类
     /// </summary>
     public class PrescriptionQueryHelper
     {
         private readonly IPrescriptionRepository _repository;
-        private readonly AppDbContext _dbContext;
         private readonly IMapper _mapper;
+        private readonly AppDbContext _dbContext;
         private readonly ILogger<PrescriptionQueryHelper> _logger;
 
         public PrescriptionQueryHelper(
             IPrescriptionRepository repository,
-            AppDbContext dbContext,
             IMapper mapper,
+            AppDbContext dbContext,
             ILogger<PrescriptionQueryHelper> logger)
         {
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
-            _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        #region 基础查询
-
-        /// <summary>
-        /// 获取所有处方列表
-        /// </summary>
-        public async Task<ServiceResult<List<PrescriptionDto>>> GetAllAsync()
-        {
-            try
-            {
-                var list = await _repository.GetListAsync();
-                var dtos = _mapper.Map<List<PrescriptionDto>>(list);
-                return ServiceResult<List<PrescriptionDto>>.Success(dtos);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取所有处方失败");                return ServiceResult<List<PrescriptionDto>>.Failure("获取所有处方失败", ex);            }
-        }
-
-        /// <summary>
-        /// 根据ID获取处方详情
-        /// </summary>
-        public async Task<ServiceResult<PrescriptionDetailDto>> GetByIdAsync(string id)
-        {
-            try
-            {
-                if (!Guid.TryParse(id, out var guid))
-                {                    return ServiceResult<PrescriptionDetailDto>.Failure("无效的处方ID格式");                }
-
-                var model = await _repository.GetByIdAsync(guid);
-                if (model == null)
-                {                    return ServiceResult<PrescriptionDetailDto>.Failure("处方不存在");                }
-
-                var dto = _mapper.Map<PrescriptionDetailDto>(model);
-                return ServiceResult<PrescriptionDetailDto>.Success(dto);
-            }
-            catch (Exception ex)
-            {                _logger.LogError(ex, "获取处方详情失败: {PrescriptionId}", id);                return ServiceResult<PrescriptionDetailDto>.Failure("获取处方详情失败");            }
-        }
+        #region 分页查询
 
         /// <summary>
         /// 分页获取处方列表
@@ -84,127 +46,52 @@ namespace LYBT.Module.Prescriptions.Helpers
         {
             try
             {
-                // 使用IQueryable在数据库层进行查询
+                var validation = ValidatePagedQuery(query);
+                if (!validation.IsSuccess)
+                {
+                    return ServiceResult<PagedResult<PrescriptionDto>>.Failure(validation.ErrorMessage);
+                }
+
                 var dbQuery = _dbContext.Prescriptions
                     .Include(p => p.Items)
                     .AsQueryable();
 
-                // 如果有搜索关键字，在数据库层进行搜索过滤
-                if (!string.IsNullOrEmpty(query.Keyword))
+                // 关键字搜索
+                if (!string.IsNullOrWhiteSpace(query.Keyword))
                 {
-                    dbQuery = dbQuery.Where(x =>
-                        x.Id.ToString().Contains(query.Keyword) ||
-                        x.PatientId.ToString().Contains(query.Keyword) ||
-                        x.UserId.ToString().Contains(query.Keyword) ||
-                        (x.Remark != null && x.Remark.Contains(query.Keyword)) ||
-                        (x.Advice != null && x.Advice.Contains(query.Keyword))
+                    var keyword = query.Keyword.Trim().ToLower();
+                    dbQuery = dbQuery.Where(p =>
+                        (p.Remark != null && p.Remark.ToLower().Contains(keyword)) ||
+                        (p.Advice != null && p.Advice.ToLower().Contains(keyword))
                     );
                 }
 
-                // 排序 - UltraThink v2.0简化：按Id排序（时间字段已删除）
-                dbQuery = dbQuery.OrderByDescending(x => x.Id);
+                // 计算总数
+                var totalCount = await dbQuery.CountAsync();
 
-                // 获取总数
-                var total = await dbQuery.CountAsync();
-
-                // 分页 - 在数据库层执行
-                var pagedModels = await dbQuery
+                // 分页查询
+                var items = await dbQuery
+                    .OrderByDescending(p => p.Id)
                     .Skip((query.PageIndex - 1) * query.PageSize)
                     .Take(query.PageSize)
                     .ToListAsync();
 
-                // 映射到DTO
-                var pagedList = _mapper.Map<List<PrescriptionDto>>(pagedModels);
+                var dtos = _mapper.Map<List<PrescriptionDto>>(items);
 
-                var result = new PagedResult<PrescriptionDto>(pagedList, total, query.PageIndex, query.PageSize);
+                var result = new PagedResult<PrescriptionDto>
+                {
+                    Items = dtos,
+                    TotalCount = totalCount,
+                    PageSize = query.PageSize
+                };
+
                 return ServiceResult<PagedResult<PrescriptionDto>>.Success(result);
             }
             catch (Exception ex)
-            {                _logger.LogError(ex, "分页查询处方失败");                return ServiceResult<PagedResult<PrescriptionDto>>.Failure("分页查询处方失败", ex);            }
-        }
-
-        #endregion
-
-        #region 历史查询
-
-        /// <summary>
-        /// 获取患者历史处方
-        /// </summary>
-        public async Task<ServiceResult<List<PrescriptionDto>>> GetPatientHistoryAsync(Guid patientId, int limit = 10)
-        {
-            try
             {
-                var allPrescriptions = await _repository.GetListAsync();
-                var patientPrescriptions = allPrescriptions
-                    .Where(p => p.PatientId == patientId)
-                    .OrderByDescending(p => p.Id) // UltraThink v2.0简化：按Id排序（时间字段已删除）
-                    .Take(limit)
-                    .ToList();
-
-                var dtos = _mapper.Map<List<PrescriptionDto>>(patientPrescriptions);
-                return ServiceResult<List<PrescriptionDto>>.Success(dtos);
+                _logger.LogError(ex, "分页获取处方列表失败");
+                return ServiceResult<PagedResult<PrescriptionDto>>.Failure("分页获取处方列表失败", ex);
             }
-            catch (Exception ex)
-            {                _logger.LogError(ex, "获取患者历史处方失败: {PatientId}", patientId);                return ServiceResult<List<PrescriptionDto>>.Failure("获取患者历史处方失败", ex);            }
-        }
-
-        /// <summary>
-        /// 获取医生今日处方（简化版：返回医生所有处方）
-        /// </summary>
-        public async Task<ServiceResult<List<PrescriptionDto>>> GetDoctorTodayPrescriptionsAsync(Guid doctorId)
-        {
-            try
-            {
-                var allPrescriptions = await _repository.GetListAsync();
-                var doctorPrescriptions = allPrescriptions
-                    .Where(p => p.UserId == doctorId) // UltraThink v2.0简化：时间字段已删除，无法按日期筛选
-                    .OrderByDescending(p => p.Id) // UltraThink v2.0简化：按Id排序（时间字段已删除）
-                    .ToList();
-
-                var dtos = _mapper.Map<List<PrescriptionDto>>(doctorPrescriptions);
-                return ServiceResult<List<PrescriptionDto>>.Success(dtos);
-            }
-            catch (Exception ex)
-            {                _logger.LogError(ex, "获取医生今日处方失败: {DoctorId}", doctorId);                return ServiceResult<List<PrescriptionDto>>.Failure("获取医生今日处方失败", ex);            }
-        }
-
-        /// <summary>
-        /// 根据医疗案例ID获取处方列表
-        /// </summary>
-        public async Task<ServiceResult<List<PrescriptionDto>>> GetByMedicalCaseIdAsync(Guid medicalCaseId)
-        {
-            try
-            {
-                var allPrescriptions = await _repository.GetListAsync();
-                var medicalCasePrescriptions = allPrescriptions
-                    .Where(p => p.MedicalCaseId == medicalCaseId) // 正确：根据MedicalCaseId查询
-                    .ToList();
-
-                var dtos = _mapper.Map<List<PrescriptionDto>>(medicalCasePrescriptions);
-                return ServiceResult<List<PrescriptionDto>>.Success(dtos);
-            }
-            catch (Exception ex)
-            {                _logger.LogError(ex, "获取医疗案例处方失败: {MedicalCaseId}", medicalCaseId);                return ServiceResult<List<PrescriptionDto>>.Failure("获取医疗案例处方失败", ex);            }
-        }
-
-        /// <summary>
-        /// 根据看诊ID获取处方列表 [已废弃 - 数据模型中处方直接关联医疗案例，不关联看诊]
-        /// </summary>        [Obsolete("请使用GetByMedicalCaseIdAsync方法。处方实体没有ConsultationId字段，应该通过MedicalCaseId关联。")]        public async Task<ServiceResult<List<PrescriptionDto>>> GetByConsultationIdAsync(Guid consultationId)
-        {
-            try
-            {
-                // 错误的实现：假设consultationId对应PatientId
-                // 保留此方法仅为向后兼容，应该使用GetByMedicalCaseIdAsync
-                var allPrescriptions = await _repository.GetListAsync();
-                var consultationPrescriptions = allPrescriptions
-                    .Where(p => p.PatientId == consultationId) // 简化：假设consultationId对应PatientId
-                    .ToList();
-
-                var dtos = _mapper.Map<List<PrescriptionDto>>(consultationPrescriptions);
-                return ServiceResult<List<PrescriptionDto>>.Success(dtos);
-            }
-            catch (Exception ex)
-            {                _logger.LogError(ex, "获取看诊处方失败: {ConsultationId}", consultationId);                return ServiceResult<List<PrescriptionDto>>.Failure("获取看诊处方失败", ex);            }
         }
 
         #endregion
@@ -232,12 +119,14 @@ namespace LYBT.Module.Prescriptions.Helpers
 
                 var pagedResult = await GetPagedAsync(query);
                 if (!pagedResult.IsSuccess)
-                {                    return ServiceResult<List<PrescriptionDto>>.Failure(pagedResult.ErrorMessage ?? "搜索失败");                }
+                {
+                    return ServiceResult<List<PrescriptionDto>>.Failure(pagedResult.ErrorMessage ?? "搜索失败");                }
 
                 return ServiceResult<List<PrescriptionDto>>.Success(pagedResult.Data.Items.ToList());
             }
             catch (Exception ex)
-            {                _logger.LogError(ex, "搜索处方失败: {Keyword}", keyword);                return ServiceResult<List<PrescriptionDto>>.Failure("搜索处方失败", ex);            }
+            {
+                _logger.LogError(ex, "搜索处方失败: {Keyword}", keyword);                return ServiceResult<List<PrescriptionDto>>.Failure("搜索处方失败", ex);            }
         }
 
         /// <summary>
@@ -292,7 +181,8 @@ namespace LYBT.Module.Prescriptions.Helpers
                 return ServiceResult<List<PrescriptionDto>>.Success(dtos);
             }
             catch (Exception ex)
-            {                _logger.LogError(ex, "高级搜索处方失败");                return ServiceResult<List<PrescriptionDto>>.Failure("高级搜索处方失败", ex);            }
+            {
+                _logger.LogError(ex, "高级搜索处方失败");                return ServiceResult<List<PrescriptionDto>>.Failure("高级搜索处方失败", ex);            }
         }
 
         #endregion
@@ -337,7 +227,8 @@ namespace LYBT.Module.Prescriptions.Helpers
                 return ServiceResult<PrescriptionStatisticsDto>.Success(statistics);
             }
             catch (Exception ex)
-            {                _logger.LogError(ex, "获取处方统计失败");                return ServiceResult<PrescriptionStatisticsDto>.Failure("获取处方统计失败");            }
+            {
+                _logger.LogError(ex, "获取处方统计失败");                return ServiceResult<PrescriptionStatisticsDto>.Failure("获取处方统计失败");            }
         }
 
         /// <summary>
@@ -355,7 +246,8 @@ namespace LYBT.Module.Prescriptions.Helpers
                 return ServiceResult<Dictionary<Guid, int>>.Success(doctorCounts);
             }
             catch (Exception ex)
-            {                _logger.LogError(ex, "获取医生处方统计失败");                return ServiceResult<Dictionary<Guid, int>>.Failure("获取医生处方统计失败", ex);            }
+            {
+                _logger.LogError(ex, "获取医生处方统计失败");                return ServiceResult<Dictionary<Guid, int>>.Failure("获取医生处方统计失败", ex);            }
         }
 
         /// <summary>
@@ -373,7 +265,8 @@ namespace LYBT.Module.Prescriptions.Helpers
                 return ServiceResult<Dictionary<Guid, int>>.Success(patientCounts);
             }
             catch (Exception ex)
-            {                _logger.LogError(ex, "获取患者处方统计失败");                return ServiceResult<Dictionary<Guid, int>>.Failure("获取患者处方统计失败", ex);            }
+            {
+                _logger.LogError(ex, "获取患者处方统计失败");                return ServiceResult<Dictionary<Guid, int>>.Failure("获取患者处方统计失败", ex);            }
         }
 
         /// <summary>
@@ -391,7 +284,8 @@ namespace LYBT.Module.Prescriptions.Helpers
                 return ServiceResult<Dictionary<PrescriptionStatus, int>>.Success(statusCounts);
             }
             catch (Exception ex)
-            {                _logger.LogError(ex, "获取处方状态分布统计失败");                return ServiceResult<Dictionary<PrescriptionStatus, int>>.Failure("获取处方状态分布统计失败", ex);            }
+            {
+                _logger.LogError(ex, "获取处方状态分布统计失败");                return ServiceResult<Dictionary<PrescriptionStatus, int>>.Failure("获取处方状态分布统计失败", ex);            }
         }
 
         #endregion
@@ -403,7 +297,11 @@ namespace LYBT.Module.Prescriptions.Helpers
         /// </summary>
         public ServiceResult<bool> ValidatePagedQuery(PagedQueryBaseDto query)
         {
-            if (query == null)                return ServiceResult<bool>.Failure("查询参数不能为空");            if (query.PageIndex < 1)                return ServiceResult<bool>.Failure("页码必须大于0");            if (query.PageSize < 1)                return ServiceResult<bool>.Failure("页大小必须大于0");            if (query.PageSize > 1000)                return ServiceResult<bool>.Failure("页大小不能超过1000");            return ServiceResult<bool>.Success(true);
+            if (query == null)
+                return ServiceResult<bool>.Failure("查询参数不能为空");            if (query.PageIndex < 1)
+                return ServiceResult<bool>.Failure("页码必须大于0");            if (query.PageSize < 1)
+                return ServiceResult<bool>.Failure("页大小必须大于0");            if (query.PageSize > 1000)
+                return ServiceResult<bool>.Failure("页大小不能超过1000");            return ServiceResult<bool>.Success(true);
         }
 
         /// <summary>
@@ -417,7 +315,8 @@ namespace LYBT.Module.Prescriptions.Helpers
                 return ServiceResult<bool>.Success(exists);
             }
             catch (Exception ex)
-            {                _logger.LogError(ex, "检查处方是否存在失败: {PrescriptionId}", id);                return ServiceResult<bool>.Failure("检查处方是否存在失败");
+            {
+                _logger.LogError(ex, "检查处方是否存在失败: {PrescriptionId}", id);                return ServiceResult<bool>.Failure("检查处方是否存在失败");
             }
         }
 

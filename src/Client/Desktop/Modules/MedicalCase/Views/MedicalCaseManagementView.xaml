@@ -260,7 +260,7 @@
                 </DataGridTemplateColumn>
                 
                 <!-- 操作 -->
-                <DataGridTemplateColumn Header="操作" Width="320">
+                <DataGridTemplateColumn Header="操作" Width="400">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
@@ -284,6 +284,13 @@
                                         FontSize="12"
                                         Margin="2"
                                         Command="{Binding DataContext.ViewConsultationCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                        CommandParameter="{Binding}"/>
+                                <Button Content="开具处方" 
+                                        Style="{StaticResource WarningButton}"
+                                        Padding="8,4"
+                                        FontSize="12"
+                                        Margin="2"
+                                        Command="{Binding DataContext.CreatePrescriptionCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                         CommandParameter="{Binding}"/>
                                 <Button Content="打印" 
                                         Style="{StaticResource SecondaryButton}"

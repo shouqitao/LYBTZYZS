@@ -464,7 +464,7 @@ namespace LYBT.Desktop.Services
             }
         }
 
-        private async void OnDispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
+        private void OnDispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
         {
             e.Handled = true;
             
@@ -512,7 +512,7 @@ namespace LYBT.Desktop.Services
             });
         }
 
-        private async void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
+        private void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
         {
             e.SetObserved();
             
@@ -549,7 +549,7 @@ namespace LYBT.Desktop.Services
             });
         }
 
-        private async void OnDomainUnhandledException(object sender, UnhandledExceptionEventArgs e)
+        private void OnDomainUnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
             // Fire-and-forget pattern with proper exception isolation
             _ = Task.Run(async () =>

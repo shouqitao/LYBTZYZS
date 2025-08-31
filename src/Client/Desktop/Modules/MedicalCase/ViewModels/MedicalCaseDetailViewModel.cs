@@ -172,14 +172,14 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         #region 命令
 
-        public DelegateCommand LoadDataCommand { get; }
-        public DelegateCommand BackCommand { get; }
-        public DelegateCommand StartConsultationCommand { get; }
-        public DelegateCommand CompleteCaseCommand { get; }
-        public DelegateCommand SaveCommand { get; }
-        public DelegateCommand EditCommand { get; }
-        public DelegateCommand CancelEditCommand { get; }
-        public DelegateCommand PrintCommand { get; }
+        public DelegateCommand LoadDataCommand { get; } = null!;
+        public DelegateCommand BackCommand { get; } = null!;
+        public DelegateCommand StartConsultationCommand { get; } = null!;
+        public DelegateCommand CompleteCaseCommand { get; } = null!;
+        public DelegateCommand SaveCommand { get; } = null!;
+        public DelegateCommand EditCommand { get; } = null!;
+        public DelegateCommand CancelEditCommand { get; } = null!;
+        public DelegateCommand PrintCommand { get; } = null!;
 
         #endregion
 
@@ -319,8 +319,12 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 
                 if (result.IsSuccess)
                 {
-                    // 导航到看诊界面 - 使用字符串参数方式
-                    _regionManager.RequestNavigate(RegionNames.ConsultationWorkbenchContentRegion, $"ConsultationMainView?MedicalCaseId={MedicalCase.Id}&PatientId={MedicalCase.PatientId}&ConsultationMode=Start");
+                    // 导航到看诊界面 - 使用Task.Run包装以修复CS1998警告
+                    await Task.Run(() => 
+                    {
+                        _regionManager.RequestNavigate(RegionNames.ConsultationWorkbenchContentRegion, 
+                            $"ConsultationMainView?MedicalCaseId={MedicalCase.Id}&PatientId={MedicalCase.PatientId}&ConsultationMode=Start");
+                    });
                 }
                 else
                 {
@@ -329,6 +333,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             }
             catch (Exception ex)
             {
+                HandleError("开始看诊", ex);
                 await _dialogService.ShowErrorAsync($"开始看诊失败: {ex.Message}", "错误");
             }
         }

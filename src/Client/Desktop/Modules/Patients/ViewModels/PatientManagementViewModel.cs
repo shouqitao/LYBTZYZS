@@ -8,7 +8,6 @@ using LYBT.Desktop.Core.Coordinators;
 using LYBT.Desktop.Core.Managers;
 using LYBT.Desktop.Core.Services;
 using LYBT.Desktop.Core.ViewModels.Base;
-using LYBT.Desktop.Core.ViewModels.Patients;
 using LYBT.Desktop.Services;
 using LYBT.Desktop.Patients.Services;
 using LYBT.Shared.Interfaces.Services;
@@ -25,11 +24,13 @@ using LYBT.Desktop.Core.Interfaces.Services;
 namespace LYBT.Desktop.Patients.ViewModels
 {
     /// <summary>
-    /// 患者管理视图模型（UltraThink v2.0 小诊所精简版）
-    /// 移除过度设计的批量操作、多选功能，专注核心CRUD操作
-    /// 适用于20人以下小诊所的简单直接的患者管理需求
+    /// 患者管理视图模型（UltraThink Phase 3.1 现代化架构版）
+    /// TODO: 待完整重构为ModernManagementViewModel模式
+    /// 当前保持兼容性，避免破坏性更改
     /// </summary>
+#pragma warning disable CS0618 // NewBaseListViewModel已过时，计划未来架构升级
     public class PatientManagementViewModel : NewBaseListViewModel<PatientDto>
+#pragma warning restore CS0618
     {
         #region Fields
 
@@ -68,14 +69,14 @@ namespace LYBT.Desktop.Patients.ViewModels
             set => SearchManager.SearchKeyword = value;
         }
 
-        public DelegateCommand SearchCommand { get; private set; }
+        public DelegateCommand SearchCommand { get; private set; } = null!;
 
         public int CurrentPage => PaginationCoordinator.CurrentPage;
         public int TotalPages => PaginationCoordinator.TotalPages;
-        public DelegateCommand FirstPageCommand { get; private set; }
-        public DelegateCommand PreviousPageCommand { get; private set; }
-        public DelegateCommand NextPageCommand { get; private set; }
-        public DelegateCommand LastPageCommand { get; private set; }
+        public DelegateCommand FirstPageCommand { get; private set; } = null!;
+        public DelegateCommand PreviousPageCommand { get; private set; } = null!;
+        public DelegateCommand NextPageCommand { get; private set; } = null!;
+        public DelegateCommand LastPageCommand { get; private set; } = null!;
 
         public string StatusText => $"共 {PaginationCoordinator.TotalCount} 条记录";
 
@@ -86,11 +87,11 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         #region Commands
 
-        public DelegateCommand AddCommand { get; private set; }
-        public DelegateCommand<PatientDto> EditCommand { get; private set; }
-        public DelegateCommand<PatientDto> DeleteCommand { get; private set; }
-        public DelegateCommand<PatientDto> ToggleStatusCommand { get; private set; }
-        public DelegateCommand<PatientDto> ViewDetailsCommand { get; private set; }
+        public DelegateCommand AddCommand { get; private set; } = null!;
+        public DelegateCommand<PatientDto> EditCommand { get; private set; } = null!;
+        public DelegateCommand<PatientDto> DeleteCommand { get; private set; } = null!;
+        public DelegateCommand<PatientDto> ToggleStatusCommand { get; private set; } = null!;
+        public DelegateCommand<PatientDto> ViewDetailsCommand { get; private set; } = null!;
 
         // UltraThink v2.0: 删除过度设计功能 - 20人以下小诊所不需要以下复杂功能:
         // - BatchEnableCommand/BatchDisableCommand: 批量操作过度设计

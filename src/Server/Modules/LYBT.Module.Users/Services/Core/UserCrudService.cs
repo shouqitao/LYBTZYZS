@@ -53,12 +53,12 @@ namespace LYBT.Module.Users.Services.Core
         /// <summary>
         /// 创建用户并自动处理业务逻辑
         /// </summary>
-        public async Task<ServiceResult<UserDto>> CreateUserAsync(UserCreateDto dto)
+        public async Task<ServiceResult<UserDto>> CreateUserAsync(UserMutationDto dto)
         {
             try
             {
-                // 验证创建请求
-                var validation = await _validationHelper.ValidateUserCreationAsync(dto);
+                // 验证创建请求 - 临时使用内联验证，稍后Helper会被更新
+                var validation = ValidateMutationDto(dto, true); // true for create
                 if (!validation.IsSuccess)
                     return ServiceResult<UserDto>.Failure(validation.ErrorMessage!);
 
@@ -79,16 +79,20 @@ namespace LYBT.Module.Users.Services.Core
                         {
                             // 记录操作日志
                             await LogUserOperation(
-                                user.Id, ActionType.Create, Guid.Empty, "System",                                $"新增用户：{user.Username}",                                newValue: user
+                                user.Id, ActionType.Create, Guid.Empty, "System",
+                                $"新增用户：{user.Username}",
+                                newValue: user
                             );
 
                             await transaction.CommitAsync();
                             var userDto = _mapper.Map<UserDto>(user);
-                            _logger.LogInformation("创建用户成功: {Username} (ID: {UserId})", user.Username, user.Id);                            return ServiceResult<UserDto>.Success(userDto);
+                            _logger.LogInformation("创建用户成功: {Username} (ID: {UserId})", user.Username, user.Id);
+                            return ServiceResult<UserDto>.Success(userDto);
                         }
 
                         await transaction.RollbackAsync();
-                        return ServiceResult<UserDto>.Failure("用户创建失败");                    }
+                        return ServiceResult<UserDto>.Failure("用户创建失败");
+                    }
                     catch (Exception)
                     {
                         await transaction.RollbackAsync();
@@ -98,18 +102,20 @@ namespace LYBT.Module.Users.Services.Core
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "创建用户失败, Username: {Username}", dto.Username);                return ServiceResult<UserDto>.Failure($"创建用户失败: {ex.Message}", ex);            }
+                _logger.LogError(ex, "创建用户失败, Username: {Username}", dto.Username);
+                return ServiceResult<UserDto>.Failure($"创建用户失败: {ex.Message}", ex);
+            }
         }
 
         /// <summary>
         /// 更新用户信息并处理业务逻辑
         /// </summary>
-        public async Task<ServiceResult<UserDto>> UpdateUserAsync(Guid id, UserUpdateDto dto)
+        public async Task<ServiceResult<UserDto>> UpdateUserAsync(Guid id, UserMutationDto dto)
         {
             try
             {
-                // 验证更新请求
-                var validation = await _validationHelper.ValidateUserUpdateAsync(id, dto);
+                // 验证更新请求 - 临时使用内联验证，稍后Helper会被更新
+                var validation = ValidateMutationDto(dto, false); // false for update
                 if (!validation.IsSuccess)
                     return ServiceResult<UserDto>.Failure(validation.ErrorMessage!);
 
@@ -123,8 +129,13 @@ namespace LYBT.Module.Users.Services.Core
                     using var transaction = await _context.Database.BeginTransactionAsync();
                     try
                     {
-                        // 使用AutoMapper确保字段更新完整性
-                        _mapper.Map(dto, existingUser);
+                        // 手动更新字段而不是使用AutoMapper，因为DTO结构改变了
+                        existingUser.RealName = dto.RealName;
+                        existingUser.Role = Enum.TryParse<UserRole>(dto.Role, out var role) ? role : UserRole.Doctor;
+                        existingUser.PhoneNumber = dto.PhoneNumber;
+                        existingUser.Email = dto.Email;
+                        existingUser.Status = dto.Status;
+                        existingUser.PinYinCode = CommonHelper.GetPinyinCode(dto.RealName ?? existingUser.Username);
                         
                         // 更新实体但不保存，让事务统一处理保存
                         _context.Users.Update(existingUser);
@@ -133,16 +144,20 @@ namespace LYBT.Module.Users.Services.Core
                         if (existingUser != null)
                         {
                             await LogUserOperation(
-                                existingUser.Id, ActionType.Update, Guid.Empty, "System",                                $"修改用户信息：{existingUser.Username}",                                oldValue: oldSnapshot, newValue: JsonSerializer.Serialize(existingUser)
+                                existingUser.Id, ActionType.Update, Guid.Empty, "System",
+                                $"修改用户信息：{existingUser.Username}",
+                                oldValue: oldSnapshot, newValue: JsonSerializer.Serialize(existingUser)
                             );
 
                             await transaction.CommitAsync();
                             var userDto = _mapper.Map<UserDto>(existingUser);
-                            _logger.LogInformation("更新用户成功: {Username} (ID: {UserId})", existingUser.Username, id);                            return ServiceResult<UserDto>.Success(userDto);
+                            _logger.LogInformation("更新用户成功: {Username} (ID: {UserId})", existingUser.Username, id);
+                            return ServiceResult<UserDto>.Success(userDto);
                         }
 
                         await transaction.RollbackAsync();
-                        return ServiceResult<UserDto>.Failure("用户更新失败");                    }
+                        return ServiceResult<UserDto>.Failure("用户更新失败");
+                    }
                     catch (Exception)
                     {
                         await transaction.RollbackAsync();
@@ -152,7 +167,9 @@ namespace LYBT.Module.Users.Services.Core
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "更新用户失败, ID: {UserId}", id);                return ServiceResult<UserDto>.Failure($"更新用户失败: {ex.Message}", ex);            }
+                _logger.LogError(ex, "更新用户失败, ID: {UserId}", id);
+                return ServiceResult<UserDto>.Failure($"更新用户失败: {ex.Message}", ex);
+            }
         }
 
         /// <summary>
@@ -185,14 +202,21 @@ namespace LYBT.Module.Users.Services.Core
         /// <summary>
         /// 从DTO创建用户实体
         /// </summary>
-        private User CreateUserFromDto(UserCreateDto dto)
+        private User CreateUserFromDto(UserMutationDto dto)
         {
-            var user = _mapper.Map<User>(dto);
-            user.Id = Guid.NewGuid();
-            user.CreatedTime = DateTime.Now;
-            user.Status = CommonStatus.Enabled;
-            user.PasswordHash = PasswordHelper.Hash(dto.Password ?? _options.DefaultUserPassword);
-            user.PinYinCode = CommonHelper.GetPinyinCode(dto.RealName ?? dto.Username);
+            var user = new User
+            {
+                Id = Guid.NewGuid(),
+                Username = dto.Username,
+                RealName = dto.RealName,
+                Role = Enum.TryParse<UserRole>(dto.Role, out var role) ? role : UserRole.Doctor,
+                PhoneNumber = dto.PhoneNumber,
+                Email = dto.Email,
+                Status = dto.Status,
+                CreatedTime = DateTime.Now,
+                PasswordHash = PasswordHelper.Hash(dto.Password ?? _options.DefaultUserPassword),
+                PinYinCode = CommonHelper.GetPinyinCode(dto.RealName ?? dto.Username)
+            };
             
             return user;
         }
@@ -225,6 +249,31 @@ namespace LYBT.Module.Users.Services.Core
             {
                 _logger.LogWarning(ex, "记录用户操作日志失败");
             }
+        }
+
+        /// <summary>
+        /// 验证用户变更DTO - 临时内联验证（后续Helper更新后会统一）
+        /// </summary>
+        private ServiceResult<bool> ValidateMutationDto(UserMutationDto dto, bool isCreateOperation)
+        {
+            if (dto == null)
+                return ServiceResult<bool>.Failure("用户信息不能为空");
+
+            // 创建操作的额外验证
+            if (isCreateOperation)
+            {
+                if (string.IsNullOrWhiteSpace(dto.Username))
+                    return ServiceResult<bool>.Failure("用户名不能为空");
+
+                if (dto.Username.Length < 3 || dto.Username.Length > 50)
+                    return ServiceResult<bool>.Failure("用户名长度必须在3-50字符之间");
+            }
+
+            // 通用验证（创建和更新都需要）
+            if (string.IsNullOrWhiteSpace(dto.RealName))
+                return ServiceResult<bool>.Failure("真实姓名不能为空");
+
+            return ServiceResult<bool>.Success(true);
         }
 
         #endregion
