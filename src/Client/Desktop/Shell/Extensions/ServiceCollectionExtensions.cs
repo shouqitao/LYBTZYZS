@@ -38,6 +38,13 @@ namespace LYBT.Desktop.Shell.Extensions
             // ViewModels和Views通过Prism的ViewModelLocator自动解析，无需手动注册
         }
 
+            // UltraThink Phase H: 高级功能优化服务
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Services.Performance.IStartupOptimizationService,
+                LYBT.Desktop.Core.Services.Performance.StartupOptimizationService>();
+            
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Services.Settings.IUserPreferencesService,
+                LYBT.Desktop.Core.Services.Settings.UserPreferencesService>();
+
         /// <summary>
         /// 注册日志服务
         /// </summary>

@@ -74,6 +74,11 @@ namespace LYBT.Desktop.Shell.ViewModels
         public DelegateCommand LogoutCommand { get; }
         public DelegateCommand TestApiCommand { get; }
         public DelegateCommand ShowControlExamplesCommand { get; }
+        // UltraThink Phase H: 键盘快捷键命令支持
+        public DelegateCommand QuickAddPatientCommand { get; }
+        public DelegateCommand QuickStartConsultationCommand { get; }
+        public DelegateCommand ShowHelpCommand { get; }
+        public DelegateCommand ShowSettingsCommand { get; }
 
         public MainWindowViewModel(
             IRegionManager regionManager,
@@ -96,6 +101,12 @@ namespace LYBT.Desktop.Shell.ViewModels
             LogoutCommand = new DelegateCommand(async () => await ExecuteLogoutAsync());
             TestApiCommand = new DelegateCommand(async () => await ExecuteTestApiAsync(), () => _isLoggedIn);
             ShowControlExamplesCommand = new DelegateCommand(ExecuteShowControlExamples, () => _isLoggedIn);
+            
+            // UltraThink Phase H: 初始化键盘快捷键命令
+            QuickAddPatientCommand = new DelegateCommand(async () => await ExecuteQuickAddPatientAsync(), () => _isLoggedIn);
+            QuickStartConsultationCommand = new DelegateCommand(async () => await ExecuteQuickStartConsultationAsync(), () => _isLoggedIn);
+            ShowHelpCommand = new DelegateCommand(ExecuteShowHelp);
+            ShowSettingsCommand = new DelegateCommand(ExecuteShowSettings, () => _isLoggedIn);
 
             // 订阅登录成功事件
             EventAggregator.GetEvent<LoginSuccessEvent>().Subscribe(OnLoginSuccess);
@@ -191,6 +202,7 @@ namespace LYBT.Desktop.Shell.ViewModels
                         // 更新命令状态
                         TestApiCommand.RaiseCanExecuteChanged();
                         ShowControlExamplesCommand.RaiseCanExecuteChanged();
+                        UpdateKeyboardShortcutCommands();
                         
                         System.Diagnostics.Debug.WriteLine("🚀 准备加载主界面内容...");
                         LoadMainContent();
@@ -329,6 +341,106 @@ namespace LYBT.Desktop.Shell.ViewModels
                 throw new InvalidOperationException($"打开控件示例页面失败: {ex.Message}", ex);
             }
         }
+
+        #region UltraThink Phase H: 键盘快捷键功能实现
+
+        /// <summary>
+        /// 快速添加患者 (Ctrl+N)
+        /// </summary>
+        private async Task ExecuteQuickAddPatientAsync()
+        {
+            try
+            {
+                // 导航到患者管理页面并触发新增患者对话框
+                var navigationParams = new NavigationParameters();
+                navigationParams.Add("Action", "AddNew");
+                
+                _regionManager.RequestNavigate(RegionNames.ContentRegion, "PatientManagementView", navigationParams);
+                
+                // 显示成功提示
+                await _servicesFacade.CustomDialogService.ShowInformationAsync("已切换到患者管理页面，准备添加新患者", "快速操作");
+            }
+            catch (Exception ex)
+            {
+                await _servicesFacade.CustomDialogService.ShowErrorAsync($"快速添加患者失败：{ex.Message}", "错误");
+            }
+        }
+
+        /// <summary>
+        /// 快速开始看诊 (Ctrl+Shift+C)
+        /// </summary>
+        private async Task ExecuteQuickStartConsultationAsync()
+        {
+            try
+            {
+                // 导航到看诊工作台
+                _regionManager.RequestNavigate(RegionNames.ContentRegion, "ConsultationWorkbenchMainView", navigationResult =>
+                {
+                    if (navigationResult.Result == true)
+                    {
+                        // 成功导航后，可以发送事件触发快速开始看诊流程
+                        EventAggregator.GetEvent<QuickStartConsultationEvent>().Publish();
+                    }
+                });
+                
+                await _servicesFacade.CustomDialogService.ShowInformationAsync("已切换到看诊工作台，准备开始看诊", "快速操作");
+            }
+            catch (Exception ex)
+            {
+                await _servicesFacade.CustomDialogService.ShowErrorAsync($"快速开始看诊失败：{ex.Message}", "错误");
+            }
+        }
+
+        /// <summary>
+        /// 显示帮助信息 (F1)
+        /// </summary>
+        private void ExecuteShowHelp()
+        {
+            try
+            {
+                var helpMessage = "系统快捷键说明：\n\n" +
+                    "• Ctrl+N - 快速添加患者\n" +
+                    "• Ctrl+Shift+C - 快速开始看诊\n" +
+                    "• F1 - 显示帮助\n" +
+                    "• Alt+F4 - 退出系统\n" +
+                    "• Ctrl+, - 打开设置\n\n" +
+                    "更多功能正在开发中...";
+                    
+                _ = _servicesFacade.CustomDialogService.ShowInformationAsync(helpMessage, "系统帮助");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"显示帮助失败: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 显示设置页面 (Ctrl+,)
+        /// </summary>
+        private void ExecuteShowSettings()
+        {
+            try
+            {
+                // 将来可以导航到设置页面
+                _ = _servicesFacade.CustomDialogService.ShowInformationAsync("用户设置功能将在未来版本中实现", "设置");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"显示设置失败: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 更新所有键盘快捷键命令的可用状态
+        /// </summary>
+        private void UpdateKeyboardShortcutCommands()
+        {
+            QuickAddPatientCommand?.RaiseCanExecuteChanged();
+            QuickStartConsultationCommand?.RaiseCanExecuteChanged();
+            ShowSettingsCommand?.RaiseCanExecuteChanged();
+        }
+
+        #endregion
 
         #region 私有转换方法
 

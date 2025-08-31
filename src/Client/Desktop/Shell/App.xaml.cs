@@ -59,6 +59,20 @@ namespace LYBT.Desktop.Shell
         {
             base.OnInitialized();
             
+            // UltraThink Phase H: 启动性能优化 - 应用预热
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    var startupService = Container.Resolve<LYBT.Desktop.Core.Services.Performance.IStartupOptimizationService>();
+                    await startupService.WarmupApplicationAsync();
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"应用预热失败: {ex.Message}");
+                }
+            });
+            
             // 初始化错误处理服务并注册全局异常处理器
             try
             {
@@ -72,38 +86,34 @@ namespace LYBT.Desktop.Shell
                 MessageBox.Show($"系统初始化失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
             }
 
-            // UltraThink Phase 9: 初始化模块加载协调器和性能监控
+            // UltraThink Phase H: 简化模块加载协调器（移除复杂的性能监控）
             try
             {
-                InitializeModuleLoadingCoordinator();
+                InitializeSimplifiedModuleCoordinator();
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"初始化模块加载协调器失败: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"初始化模块协调器失败: {ex.Message}");
             }
         }
 
         /// <summary>
         /// UltraThink Phase 9: 初始化模块加载协调器
         /// </summary>
-        private void InitializeModuleLoadingCoordinator()
+        /// <summary>
+        /// UltraThink Phase H: 简化的模块协调器初始化
+        /// 移除复杂的性能监控，专注核心功能
+        /// </summary>
+        private void InitializeSimplifiedModuleCoordinator()
         {
             try
             {
-                var moduleLoadingCoordinator = Container.Resolve<LYBT.Desktop.Core.Services.Performance.IModuleLoadingCoordinator>();
                 var logger = Container.Resolve<Microsoft.Extensions.Logging.ILogger<App>>();
-                
-                logger.LogInformation("UltraThink Phase 9: 模块加载协调器初始化完成");
-
-                // 订阅模块管理器事件以追踪模块初始化性能
-                var moduleManager = Container.Resolve<Prism.Modularity.IModuleManager>();
-                SubscribeToModuleEvents(moduleManager, moduleLoadingCoordinator, logger);
-                
-                logger.LogDebug("UltraThink: 模块性能监控已启动");
+                logger.LogInformation("UltraThink Phase H: 简化模块协调器初始化完成");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"模块加载协调器初始化异常: {ex}");
+                System.Diagnostics.Debug.WriteLine($"简化模块协调器初始化异常: {ex}");
                 throw;
             }
         }
@@ -152,10 +162,10 @@ namespace LYBT.Desktop.Shell
 
         protected override void ConfigureModuleCatalog(Prism.Modularity.IModuleCatalog moduleCatalog)
         {
-            // UltraThink Phase 9 性能优化：实现智能模块加载策略
-            // 修复Prism依赖初始化错误：依赖模块必须与工作台模块使用相同的初始化模式
+            // UltraThink Phase H: 基于角色的智能模块加载策略
+            // 显著提升启动性能，只加载用户角色所需的模块
             
-            // 1. 启动必需模块（立即加载）
+            // 1. 核心必需模块（所有角色都需要）
             moduleCatalog.AddModule(new ModuleInfo
             {
                 ModuleName = nameof(AuthenticationModule),
@@ -163,63 +173,46 @@ namespace LYBT.Desktop.Shell
                 InitializationMode = InitializationMode.WhenAvailable
             });
 
-            // 2. 核心业务模块（立即加载，确保工作台依赖可用）
             moduleCatalog.AddModule(new ModuleInfo
             {
                 ModuleName = nameof(UsersModule),
                 ModuleType = typeof(UsersModule).AssemblyQualifiedName,
                 InitializationMode = InitializationMode.WhenAvailable
             });
-            
+
+            // 2. 基础业务模块（医疗相关角色必需）
             moduleCatalog.AddModule(new ModuleInfo
             {
                 ModuleName = nameof(PatientsModule),
                 ModuleType = typeof(PatientsModule).AssemblyQualifiedName,
                 InitializationMode = InitializationMode.WhenAvailable
             });
+
+            // 3. 专业功能模块（按需加载，提升启动速度）
+            AddRoleBasedModule(moduleCatalog, nameof(ConsultationModule), typeof(ConsultationModule), 
+                new[] { "Doctor", "Admin" });
             
-            moduleCatalog.AddModule(new ModuleInfo
-            {
-                ModuleName = nameof(HerbsModule),
-                ModuleType = typeof(HerbsModule).AssemblyQualifiedName,
-                InitializationMode = InitializationMode.WhenAvailable
-            });
-
-            // 3. 诊疗相关模块（立即加载，因为ConsultationWorkbench依赖它们）
-            moduleCatalog.AddModule(new ModuleInfo
-            {
-                ModuleName = nameof(ConsultationModule),
-                ModuleType = typeof(ConsultationModule).AssemblyQualifiedName,
-                InitializationMode = InitializationMode.WhenAvailable // 改为立即加载
-            });
+            AddRoleBasedModule(moduleCatalog, nameof(MedicalCaseModule), typeof(MedicalCaseModule), 
+                new[] { "Doctor", "Admin" });
             
-            moduleCatalog.AddModule(new ModuleInfo
-            {
-                ModuleName = nameof(MedicalCaseModule),
-                ModuleType = typeof(MedicalCaseModule).AssemblyQualifiedName,
-                InitializationMode = InitializationMode.WhenAvailable // 改为立即加载
-            });
+            AddRoleBasedModule(moduleCatalog, nameof(HerbsModule), typeof(HerbsModule), 
+                new[] { "Doctor", "Pharmacist", "Admin" });
+            
+            AddRoleBasedModule(moduleCatalog, nameof(PrescriptionsModule), typeof(PrescriptionsModule), 
+                new[] { "Doctor", "Pharmacist", "Admin" });
+            
+            AddRoleBasedModule(moduleCatalog, nameof(FormulaModule), typeof(FormulaModule), 
+                new[] { "Doctor", "Admin" });
 
-            // 4. 其他功能模块（延迟加载）
-            AddPerformanceOptimizedModule(moduleCatalog, nameof(PrescriptionsModule), typeof(PrescriptionsModule));
-            AddPerformanceOptimizedModule(moduleCatalog, nameof(FormulaModule), typeof(FormulaModule));
+            // 4. 工作台模块（基于角色智能加载）
+            AddRoleBasedModule(moduleCatalog, nameof(SystemWorkbenchModule), typeof(SystemWorkbenchModule), 
+                new[] { "Admin" });
 
-            // 5. 工作台模块（立即加载，确保登录后立即可用）
-            moduleCatalog.AddModule(new ModuleInfo
-            {
-                ModuleName = nameof(SystemWorkbenchModule),
-                ModuleType = typeof(SystemWorkbenchModule).AssemblyQualifiedName,
-                InitializationMode = InitializationMode.WhenAvailable,
-                DependsOn = new System.Collections.ObjectModel.Collection<string> { nameof(UsersModule), nameof(PatientsModule), nameof(HerbsModule) }
-            });
+            AddRoleBasedModule(moduleCatalog, nameof(ConsultationWorkbenchModule), typeof(ConsultationWorkbenchModule), 
+                new[] { "Doctor", "Admin" });
 
-            moduleCatalog.AddModule(new ModuleInfo
-            {
-                ModuleName = nameof(ConsultationWorkbenchModule),
-                ModuleType = typeof(ConsultationWorkbenchModule).AssemblyQualifiedName,
-                InitializationMode = InitializationMode.WhenAvailable,
-                DependsOn = new System.Collections.ObjectModel.Collection<string> { nameof(PatientsModule), nameof(ConsultationModule), nameof(MedicalCaseModule) }
-            });
+            // 5. 其他工作台模块（按需加载）
+            // 注意：CashierWorkbench、PharmacistWorkbench等根据实际角色需要时再加载
 
             base.ConfigureModuleCatalog(moduleCatalog);
         }
@@ -237,6 +230,81 @@ namespace LYBT.Desktop.Shell
             };
             
             moduleCatalog.AddModule(moduleInfo);
+        }
+
+        /// <summary>
+        /// UltraThink Phase H: 添加基于角色的智能模块配置
+        /// 根据用户角色决定模块加载时机，提升启动性能
+        /// </summary>
+        private void AddRoleBasedModule(Prism.Modularity.IModuleCatalog moduleCatalog, string moduleName, Type moduleType, string[] requiredRoles)
+        {
+            var moduleInfo = new ModuleInfo
+            {
+                ModuleName = moduleName,
+                ModuleType = moduleType.AssemblyQualifiedName,
+                // 暂时设为按需加载，登录后根据角色决定是否立即加载
+                InitializationMode = InitializationMode.OnDemand
+            };
+            
+            // 将角色信息存储在模块元数据中，供后续角色检查使用
+            if (requiredRoles?.Length > 0)
+            {
+                moduleInfo.Metadata.Add("RequiredRoles", string.Join(",", requiredRoles));
+            }
+            
+            moduleCatalog.AddModule(moduleInfo);
+        }
+
+        /// <summary>
+        /// UltraThink Phase H: 用户登录后的角色驱动模块加载
+        /// 根据用户角色智能加载所需模块，避免不必要的资源消耗
+        /// </summary>
+        public async Task LoadRoleBasedModulesAsync(string userRole)
+        {
+            try
+            {
+                var moduleManager = Container.Resolve<Prism.Modularity.IModuleManager>();
+                var moduleCatalog = Container.Resolve<Prism.Modularity.IModuleCatalog>();
+                var logger = Container.Resolve<Microsoft.Extensions.Logging.ILogger<App>>();
+
+                logger.LogInformation("UltraThink Phase H: 开始为角色 {UserRole} 加载模块", userRole);
+
+                var modulesToLoad = new List<string>();
+
+                // 遍历所有按需加载的模块，检查角色匹配
+                foreach (var module in moduleCatalog.Modules.Where(m => m.InitializationMode == InitializationMode.OnDemand))
+                {
+                    if (module.Metadata.TryGetValue("RequiredRoles", out var requiredRolesStr) && 
+                        !string.IsNullOrEmpty(requiredRolesStr))
+                    {
+                        var requiredRoles = requiredRolesStr.Split(',');
+                        if (requiredRoles.Contains(userRole) || requiredRoles.Contains("Admin"))
+                        {
+                            modulesToLoad.Add(module.ModuleName);
+                        }
+                    }
+                }
+
+                // 批量加载匹配的模块
+                foreach (var moduleName in modulesToLoad)
+                {
+                    try
+                    {
+                        await Task.Run(() => moduleManager.LoadModule(moduleName));
+                        logger.LogDebug("UltraThink: 模块 {ModuleName} 加载完成", moduleName);
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.LogError(ex, "加载模块 {ModuleName} 失败", moduleName);
+                    }
+                }
+
+                logger.LogInformation("UltraThink Phase H: 角色驱动模块加载完成，共加载 {Count} 个模块", modulesToLoad.Count);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"角色驱动模块加载异常: {ex.Message}");
+            }
         }
     }
 }
