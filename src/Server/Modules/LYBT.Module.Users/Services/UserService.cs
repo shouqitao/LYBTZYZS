@@ -11,11 +11,9 @@ namespace LYBT.Module.Users.Services
     /// 用户服务 - UltraThink三层架构纯委托模式
     /// </summary>
     public class UserService(
-        Core.IUserServiceCore coreService,
         IUserQueryService queryService,
         IUserBusinessService businessService) : LYBT.Shared.Interfaces.Services.IUserService
     {
-        private readonly Core.IUserServiceCore _coreService = coreService ?? throw new ArgumentNullException(nameof(coreService));
         private readonly IUserQueryService _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
         private readonly IUserBusinessService _businessService = businessService ?? throw new ArgumentNullException(nameof(businessService));
 
