@@ -88,14 +88,14 @@ namespace LYBT.Desktop.Formula.ViewModels
 
         #region 命令
 
-        public ICommand LoadDataCommand { get; }
-        public ICommand BackCommand { get; }
-        public ICommand EditCommand { get; }
-        public ICommand SaveCommand { get; }
-        public ICommand CancelEditCommand { get; }
-        public ICommand PrintCommand { get; }
-        public ICommand CopyFormulaCommand { get; }
-        public ICommand ViewUsageHistoryCommand { get; }
+        public ICommand LoadDataCommand { get; } = null!;
+        public ICommand BackCommand { get; } = null!;
+        public ICommand EditCommand { get; } = null!;
+        public ICommand SaveCommand { get; } = null!;
+        public ICommand CancelEditCommand { get; } = null!;
+        public ICommand PrintCommand { get; } = null!;
+        public ICommand CopyFormulaCommand { get; } = null!;
+        public ICommand ViewUsageHistoryCommand { get; } = null!;
 
         #endregion
 
@@ -334,7 +334,7 @@ namespace LYBT.Desktop.Formula.ViewModels
         
         private bool CanCancelEdit() => Formula != null && !IsReadOnly && !IsLoading;
 
-        private void RaiseCanExecuteChanged()
+        private new void RaiseCanExecuteChanged()
         {
             ((DelegateCommand)EditCommand).RaiseCanExecuteChanged();
             ((DelegateCommand)SaveCommand).RaiseCanExecuteChanged();

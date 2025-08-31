@@ -502,33 +502,33 @@ namespace LYBT.Desktop.Formula.Services
         /// <summary>
         /// 从处方创建验方 - UltraThink v2.0暂不支持
         /// </summary>
-        public async Task<ServiceResult<FormulaDto>> CreateFromPrescriptionAsync(Guid prescriptionId, string name)
+        public Task<ServiceResult<FormulaDto>> CreateFromPrescriptionAsync(Guid prescriptionId, string name)
         {
-            return ServiceResult<FormulaDto>.Failure("UltraThink v2.0版本暂不支持从处方创建验方功能");
+            return Task.FromResult(ServiceResult<FormulaDto>.Failure("UltraThink v2.0版本暂不支持从处方创建验方功能"));
         }
         
         /// <summary>
         /// 分析验方 - UltraThink v2.0暂不支持
         /// </summary>
-        public async Task<ServiceResult<FormulaAnalysisResult>> AnalyzeFormulaAsync(Guid formulaId)
+        public Task<ServiceResult<FormulaAnalysisResult>> AnalyzeFormulaAsync(Guid formulaId)
         {
-            return ServiceResult<FormulaAnalysisResult>.Failure("UltraThink v2.0版本暂不支持验方分析功能");
+            return Task.FromResult(ServiceResult<FormulaAnalysisResult>.Failure("UltraThink v2.0版本暂不支持验方分析功能"));
         }
         
         /// <summary>
         /// 根据证候获取推荐验方 - UltraThink v2.0暂不支持
         /// </summary>
-        public async Task<ServiceResult<List<FormulaRecommendationDto>>> GetRecommendationsAsync(string syndrome)
+        public Task<ServiceResult<List<FormulaRecommendationDto>>> GetRecommendationsAsync(string syndrome)
         {
-            return ServiceResult<List<FormulaRecommendationDto>>.Success(new List<FormulaRecommendationDto>());
+            return Task.FromResult(ServiceResult<List<FormulaRecommendationDto>>.Success(new List<FormulaRecommendationDto>()));
         }
         
         /// <summary>
         /// 根据症状和诊断获取推荐验方 - UltraThink v2.0暂不支持
         /// </summary>
-        public async Task<ServiceResult<List<FormulaRecommendationDto>>> GetRecommendationsAsync(string symptoms, string diagnosis, Guid doctorId)
+        public Task<ServiceResult<List<FormulaRecommendationDto>>> GetRecommendationsAsync(string symptoms, string diagnosis, Guid doctorId)
         {
-            return ServiceResult<List<FormulaRecommendationDto>>.Success(new List<FormulaRecommendationDto>());
+            return Task.FromResult(ServiceResult<List<FormulaRecommendationDto>>.Success(new List<FormulaRecommendationDto>()));
         }
         
         /// <summary>
@@ -603,8 +603,8 @@ namespace LYBT.Desktop.Formula.Services
                 var createDto = new FormulaCreateDto
                 {
                     Name = newName,
-                    Effect = originalResult.Data?.Effect,
-                    Usage = originalResult.Data?.Usage,
+                    Effect = originalResult.Data?.Effect ?? string.Empty,
+                    Usage = originalResult.Data?.Usage ?? string.Empty,
                     Remark = $"复制自：{originalResult.Data?.Name}"
                 };
                 
@@ -646,17 +646,17 @@ namespace LYBT.Desktop.Formula.Services
         /// <summary>
         /// 分享验方 - UltraThink v2.0暂不支持
         /// </summary>
-        public async Task<ServiceResult<bool>> ShareFormulaAsync(Guid id, Guid operatorId, string operatorName)
+        public Task<ServiceResult<bool>> ShareFormulaAsync(Guid id, Guid operatorId, string operatorName)
         {
-            return ServiceResult<bool>.Failure("UltraThink v2.0版本暂不支持验方分享功能");
+            return Task.FromResult(ServiceResult<bool>.Failure("UltraThink v2.0版本暂不支持验方分享功能"));
         }
         
         /// <summary>
         /// 取消分享验方 - UltraThink v2.0暂不支持
         /// </summary>
-        public async Task<ServiceResult<bool>> UnshareFormulaAsync(Guid id, Guid operatorId, string operatorName)
+        public Task<ServiceResult<bool>> UnshareFormulaAsync(Guid id, Guid operatorId, string operatorName)
         {
-            return ServiceResult<bool>.Failure("UltraThink v2.0版本暂不支持验方分享功能");
+            return Task.FromResult(ServiceResult<bool>.Failure("UltraThink v2.0版本暂不支持验方分享功能"));
         }
         
         #endregion
