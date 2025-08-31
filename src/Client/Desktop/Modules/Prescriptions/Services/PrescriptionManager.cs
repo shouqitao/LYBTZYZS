@@ -285,14 +285,14 @@ namespace LYBT.Desktop.Prescriptions.Services
         /// <summary>
         /// 验证整个处方
         /// </summary>
-        public async Task<bool> ValidatePrescriptionAsync()
+        public Task<bool> ValidatePrescriptionAsync()
         {
             try
             {
                 if (!_prescriptionItems.Any())
                 {
                     _logger.LogWarning("处方为空");
-                    return false;
+                    return Task.FromResult(false);
                 }
 
                 // UltraThink v2.0: 简化验证逻辑，使用PatientDto
@@ -310,15 +310,15 @@ namespace LYBT.Desktop.Prescriptions.Services
                 if (!canPrescribe)
                 {
                     _logger.LogWarning("处方验证失败: 处方为空或无有效药材");
-                    return false;
+                    return Task.FromResult(false);
                 }
 
-                return true;
+                return Task.FromResult(true);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "验证处方时发生异常");
-                return false;
+                return Task.FromResult(false);
             }
         }
 
