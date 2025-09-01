@@ -18,6 +18,29 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - 不使用技巧性代码 - 选择直白解决方案
 - 如果需要解释，就说明太复杂了
 
+#### 📚 文档驱动开发原则 (UltraThink核心原则)
+**项目重要原则**: 文档与代码严格同步，确保系统的可维护性和一致性
+
+1. **文档优先原则**:
+   - **文档有要求的代码得有** - 所有文档中描述的功能必须在代码中实现
+   - **文档没要求的不增加代码** - 避免过度设计和功能蔓延
+   - **需要增加功能的先有文档再有代码** - 任何新功能必须先完善文档设计
+
+2. **文档同步要求**:
+   - 代码变更必须同步更新相关文档
+   - 文档更新必须在代码实现之前完成
+   - 保持README、API文档、架构文档与实际代码100%一致
+
+3. **文档完整性**:
+   - 每个模块必须有完整的README文档
+   - 每个API必须有完整的接口文档
+   - 每个重要决策必须有设计文档记录
+
+4. **质量控制**:
+   - 代码Review必须检查文档同步性
+   - 不允许实现未在文档中定义的功能
+   - 文档不一致视为阻塞性问题，必须立即修复
+
 ### 开发流程
 
 #### 1. 规划与分阶段
@@ -128,11 +151,59 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - 从现有实现中学习
 - 3次尝试失败后停止并重新评估
 
+## 🔒 架构约束与不变要求
+
+### 强制性架构标准
+
+这些是基于需求文档完善后的不可变架构要求，所有开发必须严格遵守：
+
+#### 1. 文档驱动开发约束 (最高优先级)
+- **代码跟文档走**: 文档完善后，代码实现必须严格按照需求文档执行
+- **禁止随意添加功能**: 所有新功能必须先在需求文档中定义，经用户明确同意后才能实现
+- **需求文档权威性**: 需求文档是功能定义的单一真相来源，与需求文档不符的代码视为错误
+
+#### 2. UltraThink双层架构标准 (强制)
+- **统一架构**: 所有8个业务模块必须遵循 `Service(委托) + QueryService + BusinessService` 架构
+- **职责分离**: 
+  - QueryService: 专注复杂查询、搜索、统计功能
+  - BusinessService: 处理业务逻辑和基础CRUD操作
+  - 主Service: 纯委托模式，统一服务入口
+- **严禁倒退**: 禁止回退到Helper模式 (XxxQueryHelper, XxxBusinessHelper)
+
+#### 3. 数据安全标准 (零妥协)
+- **零SQL注入**: 必须使用LINQ查询 + EF Core参数化查询，严禁原生SQL
+- **统一数据访问**: 所有模块共享AppDbContext，禁止独立数据库连接
+- **完整审计**: Auth模块必须实现完整的安全审计日志系统
+
+#### 4. 认证授权标准 (不可变)
+- **JWT认证**: JWT Bearer Token + 8小时过期策略 + Remember Me 30天
+- **RBAC权限**: 仅支持 Doctor/Admin 两种角色，禁止扩展复杂权限体系
+- **会话管理**: 完整会话生命周期管理，包括强制下线功能
+
+#### 5. API设计标准 (统一)
+- **RESTful规范**: 严格遵循小写命名规范 (如: `/api/v1/users`)
+- **统一响应**: 所有API必须使用 `ApiResponse<T>` 响应格式
+- **异常处理**: 完整的异常处理和标准化错误返回
+
+#### 6. 功能实现约束 (严格)
+- **实用主义**: 专注2-5人小诊所需求，避免企业级过度设计
+- **简化优先**: 移除复杂统计、AI功能、归档等非核心功能
+- **医疗特化**: 支持中医四诊、药材配伍、验方管理等专业功能
+
+### 架构冲突检测
+
+**如果发现以下情况，必须立即提醒用户并停止开发**：
+1. 尝试添加需求文档未定义的新功能
+2. 违反UltraThink双层架构标准
+3. 引入SQL注入风险的代码
+4. 偏离小诊所定位的企业级功能
+5. 绕过认证授权的安全检查
+
 ## 🔄 项目感知与上下文
 
 ### 项目概述
 
-**凌隐宝堂中医诊所诊疗系统 (LYBTZYZS)** - 基于 .NET 8 的企业级纯中医诊所管理系统，采用 Web API 后端 + WPF 桌面前端架构。
+**凌隐宝堂中医诊所诊疗系统 (LYBTZYZS)** - 基于 .NET 8 的简单诊所实用管理系统，专为2-5人小诊所设计，采用 Web API 后端 + WPF 桌面前端架构。
 
 **项目状态**: ✅ UltraThink三层架构重构完成 | ✅ 8模块零编译警告 | ✅ 生产就绪 | ✅ 28个项目A+质量 | ✅ API系统完全可用
 
@@ -163,7 +234,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### 开始新对话时必须
 
 - **始终先阅读本文档** 了解项目架构、目标、风格和约束
-- **检查 `docs/TODO-Latest-UltraThink-Compilation-Zero-Warnings-Complete.md`** 了解最新编译告警清零完成状态
+- **查看需求文档** [`docs/requirements/`](docs/requirements/) 了解当前系统需求状态
 - **查看 `CLAUDE.local.md`** 了解用户特定的开发环境配置
 - **使用一致的命名约定、文件结构和架构模式**
 
@@ -1204,14 +1275,27 @@ public async Task<Result> MethodName(Type param)
 
 - 文档同时保留一份中文版，一份英文版。
 
-## 开发规范文档
+## 📚 文档体系
 
+### 需求文档 (始终最新)
+- [需求文档总目录](docs/requirements/) - 系统当前需求的权威参考
+- [系统总览](docs/requirements/system-overview.md) - 系统定位、架构、模块总览
+- [功能需求规格](docs/requirements/functional-requirements.md) - 详细功能需求定义
+- [技术需求规格](docs/requirements/technical-requirements.md) - 技术栈、性能、安全要求  
+- [架构设计](docs/requirements/architecture-design.md) - 系统架构设计方案
+
+### 过程文档 (历史记录)
+- [过程文档总目录](docs/process/) - 项目过程和决策历史
+- [重构过程记录](docs/process/refactoring/) - 各轮重构的详细过程
+- [设计决策记录](docs/process/decisions/) - 重要架构和功能决策
+- [分析报告](docs/process/analysis/) - 项目分析过程和发现问题
+
+### 开发规范文档
 - [开发规范](docs/开发规范.md) - 完整的开发规范指南
 - [前后端契约规范](docs/前后端契约规范.md) - 前后端接口约定
 - [API响应标准](docs/API响应标准.md) - API 响应格式规范
 
-### 🎆 UltraThink三层架构文档 (2025-08-30)
-
+### UltraThink架构文档
 - [UltraThink三层架构重构完成报告](docs/ultrathink/ultrathink-three-layer-refactoring-complete-20250830.md) - 重构总结与成果
 - [UltraThink API响应标准](docs/architecture/ultrathink-api-response-standards-20250817.md) - API设计标准
 - [UltraThink控制器设计模式](docs/architecture/ultrathink-controller-design-patterns-20250817.md) - 控制器架构

@@ -142,17 +142,9 @@
               "target": "Package",
               "version": "[15.0.1, )"
             },
-            "EPPlus": {
-              "target": "Package",
-              "version": "[7.4.2, )"
-            },
             "FluentValidation": {
               "target": "Package",
               "version": "[11.11.0, )"
-            },
-            "MediatR": {
-              "target": "Package",
-              "version": "[12.4.1, )"
             },
             "Microsoft.AspNetCore.Authentication.JwtBearer": {
               "target": "Package",
@@ -192,14 +184,6 @@
               "target": "Package",
               "version": "[9.0.0, )"
             },
-            "Microsoft.Extensions.Caching.SqlServer": {
-              "target": "Package",
-              "version": "[9.0.0, )"
-            },
-            "Microsoft.Extensions.Caching.StackExchangeRedis": {
-              "target": "Package",
-              "version": "[9.0.0, )"
-            },
             "Microsoft.Extensions.Configuration": {
               "target": "Package",
               "version": "[9.0.0, )"
@@ -235,10 +219,6 @@
             "Microsoft.IdentityModel.Tokens": {
               "target": "Package",
               "version": "[8.3.0, )"
-            },
-            "System.Diagnostics.PerformanceCounter": {
-              "target": "Package",
-              "version": "[9.0.8, )"
             },
             "System.IdentityModel.Tokens.Jwt": {
               "target": "Package",

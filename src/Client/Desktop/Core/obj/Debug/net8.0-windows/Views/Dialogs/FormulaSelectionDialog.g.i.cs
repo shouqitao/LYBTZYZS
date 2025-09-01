@@ -52,7 +52,7 @@ namespace LYBT.Desktop.Core.Views.Dialogs {
                 return;
             }
             _contentLoaded = true;
-            System.Uri resourceLocater = new System.Uri("/LYBT.Desktop.Core;component/views/dialogs/formulaselectiondialog.xaml", System.UriKind.Relative);
+            System.Uri resourceLocater = new System.Uri("/LYBT.Desktop.Core;V1.0.0.0;component/views/dialogs/formulaselectiondialog.xaml", System.UriKind.Relative);
             
             #line 1 "..\..\..\..\..\Views\Dialogs\FormulaSelectionDialog.xaml"
             System.Windows.Application.LoadComponent(this, resourceLocater);

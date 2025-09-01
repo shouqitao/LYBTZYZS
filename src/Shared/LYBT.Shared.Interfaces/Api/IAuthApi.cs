@@ -7,8 +7,8 @@ using LYBT.Shared.Models.Contracts.Common;
 namespace LYBT.Shared.Interfaces.Api
 {
     /// <summary>
-    /// 认证API客户端接口 - UltraThink v2.0统一标准
-    /// 使用简化的API响应格式，与其他模块保持一致
+    /// 认证API客户端接口 - UltraThink统一API客户端管理器标准
+    /// 保持与现有项目兼容的响应格式和类型系统
     /// </summary>
     public interface IAuthApi
     {
@@ -23,12 +23,6 @@ namespace LYBT.Shared.Interfaces.Api
         /// </summary>
         [Post("/api/v1/auth/logout")]
         Task<LYBT.Shared.Models.Contracts.Common.ApiResponse<object>> LogoutAsync();
-
-        /// <summary>
-        /// 健康检查
-        /// </summary>
-        [Get("/api/v1/health/alive")]
-        Task<string> HealthCheckAsync();
 
         /// <summary>
         /// 获取当前用户信息
@@ -47,5 +41,11 @@ namespace LYBT.Shared.Interfaces.Api
         /// </summary>
         [Post("/api/v1/auth/change-password")]
         Task<LYBT.Shared.Models.Contracts.Common.ApiResponse<object>> ChangePasswordAsync([Body] ChangePasswordRequest changePasswordRequest);
+
+        /// <summary>
+        /// 健康检查
+        /// </summary>
+        [Get("/api/v1/health/alive")]
+        Task<string> HealthCheckAsync();
     }
 }

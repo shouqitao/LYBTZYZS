@@ -3,7 +3,6 @@ using Prism.Modularity;
 using LYBT.Desktop.Patients.ViewModels;
 using LYBT.Desktop.Patients.Views;
 using LYBT.Desktop.Patients.Services;
-using LYBT.Desktop.Patients.Coordinators;
 using LYBT.Shared.Interfaces.Services;
 
 namespace LYBT.Desktop.Patients
@@ -14,25 +13,28 @@ namespace LYBT.Desktop.Patients
     /// 遵循原始设计：前后端模块一一对应
     /// </summary>
     public class PatientsModule : IModule
+{
+    public void OnInitialized(IContainerProvider containerProvider)
     {
-        public void OnInitialized(IContainerProvider containerProvider)
-        {
-            // 模块初始化完成后的操作
-        }
-
-        public void RegisterTypes(IContainerRegistry containerRegistry)
-        {
-            // UltraThink修复：模块自己注册服务接口实现
-            containerRegistry.RegisterSingleton<PatientModule>();
-            containerRegistry.RegisterSingleton<IPatientService>(container => container.Resolve<PatientModule>());
-            
-            // UltraThink P1重构：注册模块业务协调器
-            containerRegistry.RegisterSingleton<PatientCoordinator>();
-            
-            // 注册视图和视图模型
-            containerRegistry.RegisterForNavigation<PatientManagementView, PatientManagementViewModel>();
-            containerRegistry.RegisterForNavigation<PatientAddEditDialog, PatientAddEditDialogViewModel>();
-            containerRegistry.RegisterForNavigation<PatientDetailView, PatientDetailViewModel>();
-        }
+        // 模块初始化完成后的操作
     }
+
+    public void RegisterTypes(IContainerRegistry containerRegistry)
+    {
+        // UltraThink三层架构服务注册
+        containerRegistry.RegisterSingleton<IPatientCoreService, PatientCoreService>();
+        containerRegistry.RegisterSingleton<IPatientQueryService, PatientQueryService>();
+        containerRegistry.RegisterSingleton<IPatientBusinessService, PatientBusinessService>();
+        
+        // UltraThink纯委托主服务注册
+        containerRegistry.RegisterSingleton<PatientModule>();
+        containerRegistry.RegisterSingleton<IPatientService>(container => container.Resolve<PatientModule>());
+        containerRegistry.RegisterSingleton<IPatientModule>(container => container.Resolve<PatientModule>());
+        
+        // 注册视图和视图模型
+        containerRegistry.RegisterForNavigation<PatientManagementView, PatientManagementViewModel>();
+        containerRegistry.RegisterForNavigation<PatientAddEditDialog, PatientAddEditDialogViewModel>();
+        containerRegistry.RegisterForNavigation<PatientDetailView, PatientDetailViewModel>();
+    }
+}
 }

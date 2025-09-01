@@ -1,4 +1,4 @@
-using System;
+﻿ using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -380,65 +380,6 @@ namespace LYBT.Desktop.Users.Services
             }
         }
         
-        /// <summary>
-        /// 批量启用用户
-        /// </summary>
-        public async Task<ServiceResult<int>> BatchEnableAsync(List<Guid> ids)
-        {
-            try
-            {
-                if (ids == null || !ids.Any())
-                {
-                    return ServiceResult<int>.Failure("用户ID列表不能为空");
-                }
-                
-                int successCount = 0;
-                foreach (var id in ids)
-                {
-                    var result = await EnableAsync(id);
-                    if (result.IsSuccess)
-                    {
-                        successCount++;
-                    }
-                }
-                
-                return ServiceResult<int>.Success(successCount);
-            }
-            catch (Exception ex)
-            {
-                return ServiceResult<int>.Failure($"批量启用用户异常: {ex.Message}");
-            }
-        }
-        
-        /// <summary>
-        /// 批量禁用用户
-        /// </summary>
-        public async Task<ServiceResult<int>> BatchDisableAsync(List<Guid> ids)
-        {
-            try
-            {
-                if (ids == null || !ids.Any())
-                {
-                    return ServiceResult<int>.Failure("用户ID列表不能为空");
-                }
-                
-                int successCount = 0;
-                foreach (var id in ids)
-                {
-                    var result = await DisableAsync(id);
-                    if (result.IsSuccess)
-                    {
-                        successCount++;
-                    }
-                }
-                
-                return ServiceResult<int>.Success(successCount);
-            }
-            catch (Exception ex)
-            {
-                return ServiceResult<int>.Failure($"批量禁用用户异常: {ex.Message}");
-            }
-        }
         
         /// <summary>
         /// 搜索用户
@@ -639,33 +580,6 @@ namespace LYBT.Desktop.Users.Services
         
         #endregion
         
-        #region 角色管理
-        
-        /// <summary>
-        /// 获取所有角色列表
-        /// </summary>
-        public Task<ServiceResult<List<object>>> GetRolesAsync()
-        {
-            try
-            {
-                var roles = Enum.GetNames(typeof(UserRole))
-                    .Select(name => new { 
-                        Value = name, 
-                        Text = name,
-                        EnumValue = (int)Enum.Parse(typeof(UserRole), name)
-                    })
-                    .Cast<object>()
-                    .ToList();
-                
-                return Task.FromResult(ServiceResult<List<object>>.Success(roles));
-            }
-            catch (Exception ex)
-            {
-                return Task.FromResult(ServiceResult<List<object>>.Failure($"获取角色列表异常: {ex.Message}"));
-            }
-        }
-        
-        #endregion
         
         #region 验证和辅助方法
         
@@ -696,28 +610,6 @@ namespace LYBT.Desktop.Users.Services
             }
         }
         
-        /// <summary>
-        /// 获取用户操作日志
-        /// </summary>
-        public Task<ServiceResult<PagedResult<object>>> GetOperationLogsAsync(Guid userId, PagedQueryBaseDto query)
-        {
-            try
-            {
-                // UltraThink v2.0: 简化版实现 - 20人以下小诊所不需要复杂的操作日志
-                // 返回空结果，避免过度设计
-                var emptyResult = new PagedResult<object>(
-                    new List<object>(), 
-                    0, 
-                    query.PageIndex, 
-                    query.PageSize);
-                
-                return Task.FromResult(ServiceResult<PagedResult<object>>.Success(emptyResult));
-            }
-            catch (Exception ex)
-            {
-                return Task.FromResult(ServiceResult<PagedResult<object>>.Failure($"获取操作日志异常: {ex.Message}"));
-            }
-        }
         
         #endregion
         
@@ -784,6 +676,48 @@ private async Task<ServiceResult<bool>> IsUsernameExistsAsync(string username, G
             {
                 return ServiceResult<bool>.Success(false); // 检查失败时假设不存在
             }
+        }
+        
+        #endregion
+        
+        #region UltraThink简化：企业级功能标记为不支持
+        
+        /// <summary>
+        /// 批量启用用户 - UltraThink简化：小诊所不需要批量操作
+        /// </summary>
+        public Task<ServiceResult<int>> BatchEnableAsync(List<Guid> ids)
+        {
+            return Task.FromResult(ServiceResult<int>.Failure("简单诊所版本不支持批量操作，请逐个操作用户"));
+        }
+        
+        /// <summary>
+        /// 批量禁用用户 - UltraThink简化：小诊所不需要批量操作
+        /// </summary>
+        public Task<ServiceResult<int>> BatchDisableAsync(List<Guid> ids)
+        {
+            return Task.FromResult(ServiceResult<int>.Failure("简单诊所版本不支持批量操作，请逐个操作用户"));
+        }
+        
+        /// <summary>
+        /// 获取角色列表 - UltraThink简化：只支持医生/管理员两种角色
+        /// </summary>
+        public Task<ServiceResult<List<object>>> GetRolesAsync()
+        {
+            var roles = new List<object>
+            {
+                new { Value = "Doctor", Text = "医生", EnumValue = 1 },
+                new { Value = "Admin", Text = "管理员", EnumValue = 2 }
+            };
+            return Task.FromResult(ServiceResult<List<object>>.Success(roles));
+        }
+        
+        /// <summary>
+        /// 获取操作日志 - UltraThink简化：小诊所不需要操作审计
+        /// </summary>
+        public Task<ServiceResult<PagedResult<object>>> GetOperationLogsAsync(Guid userId, PagedQueryBaseDto query)
+        {
+            var emptyResult = new PagedResult<object>(new List<object>(), 0, query.PageIndex, query.PageSize);
+            return Task.FromResult(ServiceResult<PagedResult<object>>.Success(emptyResult));
         }
         
         #endregion

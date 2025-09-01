@@ -451,4 +451,13 @@ namespace LYBT.Shared.Models.Contracts.Consultation
 
         #endregion
     }
+
+    /// <summary>
+    /// 看诊验证结果DTO
+    /// </summary>
+    public class ConsultationValidationResult
+    {
+        public bool IsValid { get; set; } = true;
+        public List<string> Errors { get; set; } = new();
+    }
 }

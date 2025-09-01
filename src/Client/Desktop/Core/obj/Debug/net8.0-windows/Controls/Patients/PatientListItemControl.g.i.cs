@@ -52,7 +52,8 @@ namespace LYBT.WPF.Client.Controls.Patients {
                 return;
             }
             _contentLoaded = true;
-            System.Uri resourceLocater = new System.Uri("/LYBT.Desktop.Core;component/controls/patients/patientlistitemcontrol.xaml", System.UriKind.Relative);
+            System.Uri resourceLocater = new System.Uri("/LYBT.Desktop.Core;V1.0.0.0;component/controls/patients/patientlistitemcontrol.xa" +
+                    "ml", System.UriKind.Relative);
             
             #line 1 "..\..\..\..\..\Controls\Patients\PatientListItemControl.xaml"
             System.Windows.Application.LoadComponent(this, resourceLocater);

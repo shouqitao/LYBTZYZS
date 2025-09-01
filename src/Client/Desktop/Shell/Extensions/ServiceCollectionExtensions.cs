@@ -106,22 +106,34 @@ namespace LYBT.Desktop.Shell.Extensions
         }
 
         /// <summary>
-        /// 注册API服务
+        /// 注册API服务 - UltraThink统一API客户端管理器
         /// </summary>
         private static void RegisterApiServices(IContainerRegistry containerRegistry)
         {
             // 注册认证处理器
             containerRegistry.Register<AuthHeaderHandler>();
             
-            // 注册Refit API客户端 - 完整的8个API接口
-            RegisterApiService<LYBT.Shared.Interfaces.Api.IAuthApi>(containerRegistry);
-            RegisterApiService<LYBT.Shared.Interfaces.Api.IUserApi>(containerRegistry);
-            RegisterApiService<LYBT.Shared.Interfaces.Api.IPatientApi>(containerRegistry);
-            RegisterApiService<LYBT.Shared.Interfaces.Api.IHerbApi>(containerRegistry);
-            RegisterApiService<LYBT.Shared.Interfaces.Api.IFormulaApi>(containerRegistry);
-            RegisterApiService<LYBT.Shared.Interfaces.Api.IConsultationApi>(containerRegistry);
-            RegisterApiService<LYBT.Shared.Interfaces.Api.IPrescriptionApi>(containerRegistry);
-            RegisterApiService<LYBT.Shared.Interfaces.Api.IMedicalCaseApi>(containerRegistry);
+            // 注册统一API客户端管理器 - 替代原有8个独立API客户端
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Infrastructure.Api.IUnifiedApiClientManager, 
+                LYBT.Desktop.Infrastructure.Api.UnifiedApiClientManager>();
+            
+            // 注册各个API接口的便捷访问器（委托给统一管理器）
+            containerRegistry.Register<LYBT.Shared.Interfaces.Api.IAuthApi>(container => 
+                container.Resolve<LYBT.Desktop.Infrastructure.Api.IUnifiedApiClientManager>().AuthApi);
+            containerRegistry.Register<LYBT.Shared.Interfaces.Api.IUserApi>(container => 
+                container.Resolve<LYBT.Desktop.Infrastructure.Api.IUnifiedApiClientManager>().UserApi);
+            containerRegistry.Register<LYBT.Shared.Interfaces.Api.IPatientApi>(container => 
+                container.Resolve<LYBT.Desktop.Infrastructure.Api.IUnifiedApiClientManager>().PatientApi);
+            containerRegistry.Register<LYBT.Shared.Interfaces.Api.IHerbApi>(container => 
+                container.Resolve<LYBT.Desktop.Infrastructure.Api.IUnifiedApiClientManager>().HerbApi);
+            containerRegistry.Register<LYBT.Shared.Interfaces.Api.IFormulaApi>(container => 
+                container.Resolve<LYBT.Desktop.Infrastructure.Api.IUnifiedApiClientManager>().FormulaApi);
+            containerRegistry.Register<LYBT.Shared.Interfaces.Api.IConsultationApi>(container => 
+                container.Resolve<LYBT.Desktop.Infrastructure.Api.IUnifiedApiClientManager>().ConsultationApi);
+            containerRegistry.Register<LYBT.Shared.Interfaces.Api.IPrescriptionApi>(container => 
+                container.Resolve<LYBT.Desktop.Infrastructure.Api.IUnifiedApiClientManager>().PrescriptionApi);
+            containerRegistry.Register<LYBT.Shared.Interfaces.Api.IMedicalCaseApi>(container => 
+                container.Resolve<LYBT.Desktop.Infrastructure.Api.IUnifiedApiClientManager>().MedicalCaseApi);
             
             // 注册通用API服务
             containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Services.IApiService, LYBT.Desktop.Services.ApiService>();
@@ -240,20 +252,8 @@ namespace LYBT.Desktop.Shell.Extensions
 
 
         #region 辅助方法
-
-        /// <summary>
-        /// 注册API服务
-        /// </summary>
-        private static void RegisterApiService<T>(IContainerRegistry containerRegistry) where T : class
-        {
-            containerRegistry.RegisterSingleton<T>((container) =>
-            {
-                var authHandler = container.Resolve<AuthHeaderHandler>();
-                var httpClient = HttpClientFactory.CreateAuthenticatedClient(authHandler, ApiConfiguration.BaseUrl);
-                return RestService.For<T>(httpClient);
-            });
-        }
-
+        // UltraThink统一API客户端管理器已替代原有的独立API服务注册方式
+        // 所有API客户端现由UnifiedApiClientManager统一管理，提供更好的一致性和可维护性
         #endregion
     }
 }

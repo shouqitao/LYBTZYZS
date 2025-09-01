@@ -68,7 +68,7 @@ namespace LYBT.Desktop.Core.Views.Base {
                 return;
             }
             _contentLoaded = true;
-            System.Uri resourceLocater = new System.Uri("/LYBT.Desktop.Core;component/views/base/baselistview.xaml", System.UriKind.Relative);
+            System.Uri resourceLocater = new System.Uri("/LYBT.Desktop.Core;V1.0.0.0;component/views/base/baselistview.xaml", System.UriKind.Relative);
             
             #line 1 "..\..\..\..\..\Views\Base\BaseListView.xaml"
             System.Windows.Application.LoadComponent(this, resourceLocater);

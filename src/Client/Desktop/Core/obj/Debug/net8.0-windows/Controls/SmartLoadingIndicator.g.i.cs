@@ -61,7 +61,7 @@ namespace LYBT.Desktop.Core.Controls {
                 return;
             }
             _contentLoaded = true;
-            System.Uri resourceLocater = new System.Uri("/LYBT.Desktop.Core;component/controls/smartloadingindicator.xaml", System.UriKind.Relative);
+            System.Uri resourceLocater = new System.Uri("/LYBT.Desktop.Core;V1.0.0.0;component/controls/smartloadingindicator.xaml", System.UriKind.Relative);
             
             #line 1 "..\..\..\..\Controls\SmartLoadingIndicator.xaml"
             System.Windows.Application.LoadComponent(this, resourceLocater);

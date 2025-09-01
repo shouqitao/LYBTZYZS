@@ -77,7 +77,7 @@ namespace LYBT.Desktop.Consultation.Views {
                 return;
             }
             _contentLoaded = true;
-            System.Uri resourceLocater = new System.Uri("/LYBT.Desktop.Consultation;component/views/consultationmainview.xaml", System.UriKind.Relative);
+            System.Uri resourceLocater = new System.Uri("/LYBT.Desktop.Consultation;V1.0.0.0;component/views/consultationmainview.xaml", System.UriKind.Relative);
             
             #line 1 "..\..\..\..\Views\ConsultationMainView.xaml"
             System.Windows.Application.LoadComponent(this, resourceLocater);

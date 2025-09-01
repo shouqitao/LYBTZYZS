@@ -60,7 +60,7 @@ namespace LYBT.Desktop.Core.Views.Dialogs {
                 return;
             }
             _contentLoaded = true;
-            System.Uri resourceLocater = new System.Uri("/LYBT.Desktop.Core;component/views/dialogs/inputdialog.xaml", System.UriKind.Relative);
+            System.Uri resourceLocater = new System.Uri("/LYBT.Desktop.Core;V1.0.0.0;component/views/dialogs/inputdialog.xaml", System.UriKind.Relative);
             
             #line 1 "..\..\..\..\..\Views\Dialogs\InputDialog.xaml"
             System.Windows.Application.LoadComponent(this, resourceLocater);

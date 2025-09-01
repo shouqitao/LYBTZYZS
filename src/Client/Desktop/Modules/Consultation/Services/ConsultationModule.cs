@@ -1,557 +1,397 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using LYBT.Shared.Interfaces.Api;
+using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
+using LYBT.Desktop.Consultation.Interfaces;
 
-namespace LYBT.Desktop.Consultation.Services
+namespace LYBT.Desktop.Consultation.Services;
+
+/// <summary>
+/// 看诊模块服务 - UltraThink三层架构纯委托层
+/// 职责：统一模块入口，事件管理，模块间协调
+/// </summary>
+public class ConsultationModule(
+    IConsultationBusinessService businessService,
+    IConsultationQueryService queryService,
+    IConsultationCoreService coreService,
+    ILogger<ConsultationModule> logger) : IConsultationModule
 {
+    private readonly IConsultationBusinessService _businessService = businessService;
+    private readonly IConsultationQueryService _queryService = queryService;
+    private readonly IConsultationCoreService _coreService = coreService;
+    private readonly ILogger<ConsultationModule> _logger = logger;
+
+    #region 事件转发
+
     /// <summary>
-    /// 看诊模块业务服务 - 纯数据记录版
-    /// 只负责简单的数据录入、查询、更新、删除，不包含流程监管和智能处理
+    /// 看诊状态变更事件
     /// </summary>
-    public class ConsultationModule : LYBT.Shared.Interfaces.Services.IConsultationService
+    public event EventHandler<ConsultationStatusChangedEventArgs>? ConsultationStatusChanged;
+
+    /// <summary>
+    /// 看诊操作事件
+    /// </summary>
+    public event EventHandler<ConsultationOperationEventArgs>? ConsultationOperation;
+
+    /// <summary>
+    /// 诊断更新事件
+    /// </summary>
+    public event EventHandler<DiagnosisUpdatedEventArgs>? DiagnosisUpdated;
+
+    /// <summary>
+    /// 四诊记录事件
+    /// </summary>
+    public event EventHandler<FourDiagnosisRecordedEventArgs>? FourDiagnosisRecorded;
+
+    #endregion
+
+    #region 初始化
+
+    /// <summary>
+    /// 构造函数后初始化
+    /// </summary>
+    private void InitializeEventForwarding()
     {
-        #region 依赖服务
+        // 转发业务服务事件
+        _businessService.ConsultationStatusChanged += (sender, e) => ConsultationStatusChanged?.Invoke(this, e);
+        _businessService.ConsultationOperation += (sender, e) => ConsultationOperation?.Invoke(this, e);
+        _businessService.DiagnosisUpdated += (sender, e) => DiagnosisUpdated?.Invoke(this, e);
+        _businessService.FourDiagnosisRecorded += (sender, e) => FourDiagnosisRecorded?.Invoke(this, e);
+    }
 
-        private readonly IConsultationApi _consultationApi;
-        private readonly ILogger<ConsultationModule> _logger;
+    #endregion
 
-        #endregion
+    #region IConsultationService 基础接口委托
 
-        #region 构造函数
+    /// <summary>
+    /// 开始看诊
+    /// </summary>
+    public async Task<ServiceResult<ConsultationDto>> StartAsync(ConsultationStartDto startDto)
+        => await _businessService.StartAsync(startDto);
 
-        public ConsultationModule(
-            IConsultationApi consultationApi,
-            ILogger<ConsultationModule> logger)
+    /// <summary>
+    /// 更新看诊
+    /// </summary>
+    public async Task<ServiceResult<ConsultationDto>> UpdateAsync(Guid id, ConsultationDetailDto updateDto)
+    {
+        // 转换DTO格式
+        var businessUpdateDto = new ConsultationUpdateDto
         {
-            _consultationApi = consultationApi ?? throw new ArgumentNullException(nameof(consultationApi));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        }
+            DoctorId = updateDto.DoctorId,
+            ChiefComplaint = updateDto.ChiefComplaint,
+            Inspection = updateDto.Inspection,
+            Auscultation = updateDto.AuscultationOlfaction,
+            Inquiry = updateDto.Inquiry,
+            Palpation = updateDto.Palpation,
+            Diagnosis = updateDto.Diagnosis,
+            Remarks = updateDto.Remark
+        };
 
-        #endregion
+        return await _businessService.UpdateAsync(id, businessUpdateDto);
+    }
 
-        #region 基本CRUD操作
+    /// <summary>
+    /// 删除看诊
+    /// </summary>
+    public async Task<ServiceResult<bool>> DeleteAsync(Guid id)
+        => await _businessService.DeleteAsync(id);
 
-        public async Task<ServiceResult<PagedResult<ConsultationDto>>> GetPagedAsync(PagedQueryBaseDto query)
+    /// <summary>
+    /// 获取看诊详情
+    /// </summary>
+    public async Task<ServiceResult<ConsultationDetailDto>> GetByIdAsync(Guid id)
+        => await _queryService.GetByIdAsync(id);
+
+    /// <summary>
+    /// 获取分页看诊列表
+    /// </summary>
+    public async Task<ServiceResult<PagedResult<ConsultationDto>>> GetPagedAsync(PagedQueryBaseDto query)
+        => await _queryService.GetPagedAsync(query);
+
+    /// <summary>
+    /// 搜索看诊记录
+    /// </summary>
+    public async Task<ServiceResult<List<ConsultationDto>>> SearchAsync(string keyword)
+        => await _queryService.SearchAsync(keyword);
+
+    /// <summary>
+    /// 根据患者ID获取看诊记录
+    /// </summary>
+    public async Task<ServiceResult<List<ConsultationDto>>> GetByPatientIdAsync(Guid patientId)
+        => await _queryService.GetByPatientIdAsync(patientId);
+
+    /// <summary>
+    /// 根据医案ID获取看诊记录
+    /// </summary>
+    public async Task<ServiceResult<List<ConsultationDto>>> GetByMedicalCaseIdAsync(Guid medicalCaseId)
+        => await _queryService.GetByMedicalCaseIdAsync(medicalCaseId);
+
+    /// <summary>
+    /// 根据医生ID获取看诊记录
+    /// </summary>
+    public async Task<ServiceResult<List<ConsultationDto>>> GetByDoctorIdAsync(Guid doctorId)
+        => await _queryService.GetByDoctorIdAsync(doctorId);
+
+    /// <summary>
+    /// 获取患者看诊历史
+    /// </summary>
+    public async Task<ServiceResult<List<ConsultationDto>>> GetPatientHistoryAsync(Guid patientId)
+        => await _queryService.GetPatientHistoryAsync(patientId);
+
+    /// <summary>
+    /// 批量删除看诊记录
+    /// </summary>
+    public async Task<ServiceResult> BatchDeleteAsync(List<Guid> ids)
+    {
+        try
         {
-            try
+            var results = new List<ServiceResult<bool>>();
+            foreach (var id in ids)
             {
-                _logger.LogInformation("获取分页看诊记录，页码: {PageIndex}, 页大小: {PageSize}", query.PageIndex, query.PageSize);
-
-                var apiResult = await _consultationApi.GetConsultationsAsync(
-                    page: query.PageIndex,
-                    pageSize: query.PageSize,
-                    keyword: query.Keyword);
-
-                if (!apiResult.IsSuccessStatusCode || apiResult.Content == null)
-                {
-                    return ServiceResult<PagedResult<ConsultationDto>>.Failure(
-                        apiResult.Error?.Message ?? "获取看诊记录失败");
-                }
-
-                var result = new PagedResult<ConsultationDto>(
-                    apiResult.Content.Items.ToList(),
-                    apiResult.Content.TotalCount,
-                    apiResult.Content.CurrentPage,
-                    apiResult.Content.PageSize);
-
-                return ServiceResult<PagedResult<ConsultationDto>>.Success(result);
+                var result = await _businessService.DeleteAsync(id);
+                results.Add(result);
             }
-            catch (Exception ex)
+
+            var successCount = results.Count(r => r.IsSuccess);
+            var failureCount = results.Count - successCount;
+
+            if (failureCount == 0)
             {
-                _logger.LogError(ex, "获取分页看诊记录时发生异常");
-                return ServiceResult<PagedResult<ConsultationDto>>.Failure($"获取看诊记录失败: {ex.Message}");
-            }
-        }
-
-        public async Task<ServiceResult<ConsultationDetailDto>> GetByIdAsync(Guid id)
-        {
-            try
-            {
-                if (id == Guid.Empty)
-                {
-                    return ServiceResult<ConsultationDetailDto>.Failure("看诊ID不能为空");
-                }
-
-                _logger.LogInformation("获取看诊详情，ID: {ConsultationId}", id);
-
-                var apiResult = await _consultationApi.GetByIdAsync(id);
-
-                if (!apiResult.IsSuccessStatusCode || apiResult.Content == null)
-                {
-                    return ServiceResult<ConsultationDetailDto>.Failure(
-                        apiResult.Error?.Message ?? "获取看诊详情失败");
-                }
-
-                return ServiceResult<ConsultationDetailDto>.Success(apiResult.Content);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取看诊详情时发生异常，ID: {ConsultationId}", id);
-                return ServiceResult<ConsultationDetailDto>.Failure($"获取看诊详情失败: {ex.Message}");
-            }
-        }
-
-        public async Task<ServiceResult<ConsultationDto>> StartAsync(ConsultationStartDto createDto)
-        {
-            try
-            {
-                _logger.LogInformation("创建看诊记录，患者ID: {PatientId}, 医生ID: {DoctorId}", createDto.PatientId, createDto.DoctorId);
-
-                if (createDto.PatientId == Guid.Empty || createDto.DoctorId == Guid.Empty)
-                {
-                    return ServiceResult<ConsultationDto>.Failure("患者ID和医生ID不能为空");
-                }
-
-                var apiResult = await _consultationApi.StartConsultationAsync(createDto);
-
-                if (!apiResult.IsSuccessStatusCode || apiResult.Content == null)
-                {
-                    return ServiceResult<ConsultationDto>.Failure(
-                        apiResult.Error?.Message ?? "创建看诊记录失败");
-                }
-
-                // 简单转换
-                var consultationDto = new ConsultationDto
-                {
-                    Id = apiResult.Content.Id,
-                    MedicalCaseId = apiResult.Content.MedicalCaseId,
-                    PatientId = apiResult.Content.PatientId,
-                    UserId = apiResult.Content.DoctorId,
-                    ConsultationTime = apiResult.Content.ConsultationTime,
-                    ChiefComplaint = apiResult.Content.ChiefComplaint,
-                    Inspection = apiResult.Content.Inspection,
-                    Auscultation = apiResult.Content.AuscultationOlfaction,
-                    Inquiry = apiResult.Content.Inquiry,
-                    Palpation = apiResult.Content.Palpation,
-                    Diagnosis = apiResult.Content.Diagnosis,
-                    Remark = apiResult.Content.Remark,
-                    Status = (LYBT.Shared.Models.Enums.CommonStatus)(int)apiResult.Content.Status,
-                    CreateTime = apiResult.Content.CreateTime,
-                    UpdateTime = apiResult.Content.UpdateTime
-                };
-                _logger.LogInformation("成功创建看诊记录，ID: {ConsultationId}", consultationDto.Id);
-                return ServiceResult<ConsultationDto>.Success(consultationDto);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "创建看诊记录时发生异常");
-                return ServiceResult<ConsultationDto>.Failure($"创建看诊记录失败: {ex.Message}");
-            }
-        }
-
-        public async Task<ServiceResult<ConsultationDto>> UpdateAsync(Guid id, ConsultationDetailDto updateDto)
-        {
-            try
-            {
-                _logger.LogInformation("更新看诊记录，ID: {ConsultationId}", id);
-
-                if (id == Guid.Empty || updateDto == null)
-                {
-                    return ServiceResult<ConsultationDto>.Failure("更新参数不能为空");
-                }
-
-                // 简单转换
-                var updateRequestDto = new ConsultationUpdateDto
-                {
-                    Id = id,
-                    ChiefComplaint = updateDto.ChiefComplaint,
-                    Inspection = updateDto.Inspection,
-                    AuscultationOlfaction = updateDto.AuscultationOlfaction,
-                    Inquiry = updateDto.Inquiry,
-                    Palpation = updateDto.Palpation,
-                    Diagnosis = updateDto.Diagnosis,
-                    Remark = updateDto.Remark,
-                    PatientId = updateDto.PatientId,
-                    DoctorId = updateDto.DoctorId
-                };
-
-                var apiResult = await _consultationApi.UpdateConsultationAsync(id, updateRequestDto);
-
-                if (!apiResult.IsSuccessStatusCode || apiResult.Content == null)
-                {
-                    return ServiceResult<ConsultationDto>.Failure(
-                        apiResult.Error?.Message ?? "更新看诊记录失败");
-                }
-
-                // 简单转换返回结果
-                var consultationDto = new ConsultationDto
-                {
-                    Id = apiResult.Content.Id,
-                    MedicalCaseId = apiResult.Content.MedicalCaseId,
-                    PatientId = apiResult.Content.PatientId,
-                    UserId = apiResult.Content.DoctorId,
-                    ConsultationTime = apiResult.Content.ConsultationTime,
-                    ChiefComplaint = apiResult.Content.ChiefComplaint,
-                    Inspection = apiResult.Content.Inspection,
-                    Auscultation = apiResult.Content.AuscultationOlfaction,
-                    Inquiry = apiResult.Content.Inquiry,
-                    Palpation = apiResult.Content.Palpation,
-                    Diagnosis = apiResult.Content.Diagnosis,
-                    Remark = apiResult.Content.Remark,
-                    Status = (LYBT.Shared.Models.Enums.CommonStatus)(int)apiResult.Content.Status,
-                    CreateTime = apiResult.Content.CreateTime,
-                    UpdateTime = apiResult.Content.UpdateTime
-                };
-                _logger.LogInformation("成功更新看诊记录，ID: {ConsultationId}", id);
-                return ServiceResult<ConsultationDto>.Success(consultationDto);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "更新看诊记录时发生异常，ID: {ConsultationId}", id);
-                return ServiceResult<ConsultationDto>.Failure($"更新看诊记录失败: {ex.Message}");
-            }
-        }
-
-        public async Task<ServiceResult<bool>> DeleteAsync(Guid id)
-        {
-            try
-            {
-                if (id == Guid.Empty)
-                {
-                    return ServiceResult<bool>.Failure("看诊ID不能为空");
-                }
-
-                _logger.LogInformation("删除看诊记录，ID: {ConsultationId}", id);
-
-                var apiResult = await _consultationApi.DeleteAsync(id);
-
-                if (!apiResult.IsSuccessStatusCode)
-                {
-                    return ServiceResult<bool>.Failure(apiResult.Error?.Message ?? "删除看诊记录失败");
-                }
-
-                _logger.LogInformation("成功删除看诊记录，ID: {ConsultationId}", id);
-                return ServiceResult<bool>.Success(true);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "删除看诊记录时发生异常，ID: {ConsultationId}", id);
-                return ServiceResult<bool>.Failure($"删除看诊记录失败: {ex.Message}");
-            }
-        }
-
-        public async Task<ServiceResult<List<ConsultationDto>>> SearchAsync(string keyword)
-        {
-            try
-            {
-                _logger.LogInformation("搜索看诊记录，关键字: {Keyword}", keyword);
-
-                var query = new PagedQueryBaseDto
-                {
-                    PageIndex = 1,
-                    PageSize = 100,
-                    Keyword = keyword
-                };
-
-                var result = await GetPagedAsync(query);
-                if (result.IsSuccess && result.Data != null)
-                {
-                    return ServiceResult<List<ConsultationDto>>.Success(result.Data.Items.ToList());
-                }
-
-                return ServiceResult<List<ConsultationDto>>.Success(new List<ConsultationDto>());
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "搜索看诊记录时发生异常，关键字: {Keyword}", keyword);
-                return ServiceResult<List<ConsultationDto>>.Failure($"搜索看诊记录失败: {ex.Message}");
-            }
-        }
-
-        #endregion
-
-        #region 简化的患者历史查询
-
-        public async Task<ServiceResult<List<ConsultationDto>>> GetPatientHistoryAsync(Guid patientId)
-        {
-            // 简化：直接调用GetByPatientIdAsync方法
-            return await GetByPatientIdAsync(patientId);
-        }
-
-        public async Task<ServiceResult<List<ConsultationDto>>> GetByPatientIdAsync(Guid patientId)
-        {
-            try
-            {
-                _logger.LogInformation("根据患者ID获取看诊记录，患者ID: {PatientId}", patientId);
-
-                var query = new PagedQueryBaseDto
-                {
-                    PageIndex = 1,
-                    PageSize = 100,
-                    Keyword = patientId.ToString()
-                };
-
-                var result = await GetPagedAsync(query);
-                if (result.IsSuccess && result.Data != null)
-                {
-                    var consultations = result.Data.Items
-                        .Where(c => c.PatientId == patientId)
-                        .OrderByDescending(c => c.CreateTime)
-                        .ToList();
-
-                    return ServiceResult<List<ConsultationDto>>.Success(consultations);
-                }
-
-                return ServiceResult<List<ConsultationDto>>.Success(new List<ConsultationDto>());
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "根据患者ID获取看诊记录时发生异常，患者ID: {PatientId}", patientId);
-                return ServiceResult<List<ConsultationDto>>.Failure($"获取患者看诊记录失败: {ex.Message}");
-            }
-        }
-
-        public async Task<ServiceResult<List<ConsultationDto>>> GetByMedicalCaseIdAsync(Guid medicalCaseId)
-        {
-            try
-            {
-                _logger.LogInformation("根据医疗案例ID获取看诊记录，医疗案例ID: {MedicalCaseId}", medicalCaseId);
-
-                var query = new PagedQueryBaseDto
-                {
-                    PageIndex = 1,
-                    PageSize = 100,
-                    Keyword = medicalCaseId.ToString()
-                };
-
-                var result = await GetPagedAsync(query);
-                if (result.IsSuccess && result.Data != null)
-                {
-                    var consultations = result.Data.Items
-                        .Where(c => c.MedicalCaseId == medicalCaseId)
-                        .OrderByDescending(c => c.CreateTime)
-                        .ToList();
-
-                    return ServiceResult<List<ConsultationDto>>.Success(consultations);
-                }
-
-                return ServiceResult<List<ConsultationDto>>.Success(new List<ConsultationDto>());
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "根据医疗案例ID获取看诊记录时发生异常，医疗案例ID: {MedicalCaseId}", medicalCaseId);
-                return ServiceResult<List<ConsultationDto>>.Failure($"获取医疗案例看诊记录失败: {ex.Message}");
-            }
-        }
-
-        public async Task<ServiceResult<List<ConsultationDto>>> GetByDoctorIdAsync(Guid doctorId)
-        {
-            try
-            {
-                _logger.LogInformation("根据医生ID获取看诊记录，医生ID: {DoctorId}", doctorId);
-
-                var query = new PagedQueryBaseDto
-                {
-                    PageIndex = 1,
-                    PageSize = 100,
-                    Keyword = doctorId.ToString()
-                };
-
-                var result = await GetPagedAsync(query);
-                if (result.IsSuccess && result.Data != null)
-                {
-                    var consultations = result.Data.Items
-                        .Where(c => c.UserId == doctorId)
-                        .OrderByDescending(c => c.CreateTime)
-                        .ToList();
-
-                    return ServiceResult<List<ConsultationDto>>.Success(consultations);
-                }
-
-                return ServiceResult<List<ConsultationDto>>.Success(new List<ConsultationDto>());
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "根据医生ID获取看诊记录时发生异常，医生ID: {DoctorId}", doctorId);
-                return ServiceResult<List<ConsultationDto>>.Failure($"获取医生看诊记录失败: {ex.Message}");
-            }
-        }
-
-        #endregion
-
-        #region 简化接口实现
-
-        public async Task<ServiceResult> BatchDeleteAsync(List<Guid> ids)
-        {
-            try
-            {
-                _logger.LogInformation("批量删除看诊记录，数量: {Count}", ids.Count);
-
-                var successCount = 0;
-                var errors = new List<string>();
-
-                foreach (var id in ids)
-                {
-                    var result = await DeleteAsync(id);
-                    if (result.IsSuccess)
-                    {
-                        successCount++;
-                    }
-                    else
-                    {
-                        errors.Add($"删除 {id} 失败: {result.ErrorMessage}");
-                    }
-                }
-
-                if (errors.Any())
-                {
-                    return ServiceResult.Failure($"批量删除部分失败，成功: {successCount}, 失败: {errors.Count}");
-                }
-
                 return ServiceResult.Success($"成功批量删除 {successCount} 条记录");
             }
-            catch (Exception ex)
+            else
             {
-                _logger.LogError(ex, "批量删除看诊记录时发生异常");
-                return ServiceResult.Failure($"批量删除失败: {ex.Message}");
+                return ServiceResult.Failure($"批量删除部分失败，成功: {successCount}, 失败: {failureCount}");
             }
         }
-
-        public Task<ServiceResult<bool>> CanDeleteAsync(Guid id)
+        catch (Exception ex)
         {
-            // 简化：只检查ID是否有效
-            return Task.FromResult(id != Guid.Empty 
-                ? ServiceResult<bool>.Success(true)
-                : ServiceResult<bool>.Failure("无效的ID"));
+            _logger.LogError(ex, "批量删除看诊记录失败");
+            return ServiceResult.Failure($"批量删除失败：{ex.Message}");
         }
-
-        public Task<ServiceResult<bool>> CanModifyAsync(Guid id)
-        {
-            // 简化：只检查ID是否有效
-            return Task.FromResult(id != Guid.Empty 
-                ? ServiceResult<bool>.Success(true)
-                : ServiceResult<bool>.Failure("无效的ID"));
-        }
-
-        public async Task<ServiceResult> UpdateDiagnosisAsync(Guid consultationId, ConsultationUpdateDto diagnosisData)
-        {
-            // 简化：直接调用更新方法，不做复杂事件处理
-            try
-            {
-                _logger.LogInformation("更新诊断信息，ID: {ConsultationId}", consultationId);
-
-                var apiResult = await _consultationApi.UpdateConsultationAsync(consultationId, diagnosisData);
-                
-                return apiResult.IsSuccessStatusCode 
-                    ? ServiceResult.Success("诊断信息更新成功")
-                    : ServiceResult.Failure(apiResult.Error?.Message ?? "更新诊断信息失败");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "更新诊断信息时发生异常，ID: {ConsultationId}", consultationId);
-                return ServiceResult.Failure($"更新诊断信息失败: {ex.Message}");
-            }
-        }
-
-        public async Task<ServiceResult<bool>> CompleteConsultationAsync(Guid id, ConsultationCompleteDto dto)
-        {
-            // 简化：直接调用API，不做复杂流程管理
-            try
-            {
-                var apiResult = await _consultationApi.CompleteConsultationAsync(id, dto);
-                return apiResult.IsSuccessStatusCode 
-                    ? ServiceResult<bool>.Success(true)
-                    : ServiceResult<bool>.Failure(apiResult.Error?.Message ?? "完成看诊失败");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "完成看诊时发生异常，ID: {ConsultationId}", id);
-                return ServiceResult<bool>.Failure($"完成看诊失败: {ex.Message}");
-            }
-        }
-
-        public async Task<ServiceResult<bool>> CancelConsultationAsync(Guid id, string reason)
-        {
-            // 简化：直接调用API，不做复杂流程管理
-            try
-            {
-                var apiResult = await _consultationApi.CancelConsultationAsync(id, reason);
-                return apiResult.IsSuccessStatusCode 
-                    ? ServiceResult<bool>.Success(true)
-                    : ServiceResult<bool>.Failure(apiResult.Error?.Message ?? "取消看诊失败");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "取消看诊时发生异常，ID: {ConsultationId}", id);
-                return ServiceResult<bool>.Failure($"取消看诊失败: {ex.Message}");
-            }
-        }
-
-        public async Task<ServiceResult<object>> GetStatisticsAsync(DateTime? startDate, DateTime? endDate)
-        {
-            // 简化：直接调用API，不做复杂分析
-            try
-            {
-                var apiResult = await _consultationApi.GetStatisticsAsync(startDate, endDate);
-                return apiResult.IsSuccessStatusCode && apiResult.Content != null
-                    ? ServiceResult<object>.Success(apiResult.Content)
-                    : ServiceResult<object>.Failure(apiResult.Error?.Message ?? "获取统计信息失败");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取看诊统计信息时发生异常");
-                return ServiceResult<object>.Failure($"获取统计信息失败: {ex.Message}");
-            }
-        }
-
-        public async Task<ServiceResult<object>> GetFourDiagnosisByMedicalCaseIdAsync(Guid medicalCaseId)
-        {
-            // 简化：直接返回看诊记录中的四诊数据
-            try
-            {
-                var consultationsResult = await GetByMedicalCaseIdAsync(medicalCaseId);
-                if (!consultationsResult.IsSuccess || !consultationsResult.Data?.Any() == true)
-                {
-                    return ServiceResult<object>.Failure("未找到对应的看诊记录");
-                }
-
-                var consultation = consultationsResult.Data!.First();
-                var fourDiagnosis = new
-                {
-                    Inspection = consultation.Inspection,
-                    Auscultation = consultation.Auscultation,
-                    Inquiry = consultation.Inquiry,
-                    Palpation = consultation.Palpation
-                };
-
-                return ServiceResult<object>.Success(fourDiagnosis);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取四诊数据失败，医疗案例ID: {MedicalCaseId}", medicalCaseId);
-                return ServiceResult<object>.Failure($"获取四诊数据失败: {ex.Message}");
-            }
-        }
-
-        public async Task<ServiceResult<bool>> SaveFourDiagnosisAsync(Guid consultationId, object fourDiagnosisData)
-        {
-            // 简化：直接调用更新方法
-            try
-            {
-                var updateDto = new ConsultationUpdateDto
-                {
-                    Id = consultationId,
-                    Inspection = fourDiagnosisData?.ToString() ?? "",
-                    AuscultationOlfaction = "",
-                    Inquiry = "",
-                    Palpation = ""
-                };
-
-                var result = await UpdateDiagnosisAsync(consultationId, updateDto);
-                return ServiceResult<bool>.Success(result.IsSuccess);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "保存四诊数据失败，看诊ID: {ConsultationId}", consultationId);
-                return ServiceResult<bool>.Failure($"保存四诊数据失败: {ex.Message}");
-            }
-        }
-
-        #endregion
     }
+
+    /// <summary>
+    /// 检查是否可删除
+    /// </summary>
+    public async Task<ServiceResult<bool>> CanDeleteAsync(Guid id)
+        => await _coreService.ValidateConsultationIdAsync(id);
+
+    /// <summary>
+    /// 检查是否可修改
+    /// </summary>
+    public async Task<ServiceResult<bool>> CanModifyAsync(Guid id)
+        => await _coreService.ValidateConsultationIdAsync(id);
+
+    /// <summary>
+    /// 更新诊断信息
+    /// </summary>
+    public async Task<ServiceResult> UpdateDiagnosisAsync(Guid consultationId, ConsultationUpdateDto diagnosisData)
+    {
+        var result = await _businessService.UpdateAsync(consultationId, diagnosisData);
+        return result.IsSuccess ? ServiceResult.Success("诊断信息更新成功") : ServiceResult.Failure(result.Message);
+    }
+
+    /// <summary>
+    /// 完成看诊
+    /// </summary>
+    public async Task<ServiceResult<bool>> CompleteConsultationAsync(Guid id, ConsultationCompleteDto dto)
+        => await _businessService.CompleteConsultationAsync(id, dto);
+
+    /// <summary>
+    /// 取消看诊
+    /// </summary>
+    public async Task<ServiceResult<bool>> CancelConsultationAsync(Guid id, string reason)
+        => await _businessService.CancelConsultationAsync(id, reason);
+
+    /// <summary>
+    /// 获取统计信息
+    /// </summary>
+    public async Task<ServiceResult<object>> GetStatisticsAsync(DateTime? startDate, DateTime? endDate)
+        => await _coreService.CallGetStatisticsApiAsync(startDate, endDate);
+
+    /// <summary>
+    /// 根据医案ID获取四诊数据
+    /// </summary>
+    public async Task<ServiceResult<object>> GetFourDiagnosisByMedicalCaseIdAsync(Guid medicalCaseId)
+    {
+        try
+        {
+            var consultationsResult = await _queryService.GetByMedicalCaseIdAsync(medicalCaseId);
+            if (!consultationsResult.IsSuccess || consultationsResult.Data == null || consultationsResult.Data.Count == 0)
+            {
+                return ServiceResult<object>.Failure("未找到对应的看诊记录");
+            }
+
+            var consultation = consultationsResult.Data[0];
+            var fourDiagnosis = new
+            {
+                Inspection = consultation.Inspection,
+                Auscultation = consultation.Auscultation,
+                Inquiry = consultation.Inquiry,
+                Palpation = consultation.Palpation
+            };
+
+            return ServiceResult<object>.Success(fourDiagnosis);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "获取四诊数据失败，医案ID: {MedicalCaseId}", medicalCaseId);
+            return ServiceResult<object>.Failure($"获取四诊数据失败：{ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// 保存四诊数据
+    /// </summary>
+    public async Task<ServiceResult<bool>> SaveFourDiagnosisAsync(Guid consultationId, object fourDiagnosisData)
+    {
+        try
+        {
+            // 这里需要根据实际的四诊数据格式进行转换
+            var fourDiagnosisDto = new CompleteFourDiagnosisDto();
+            // TODO: 实际转换逻辑需要根据fourDiagnosisData的实际格式实现
+            
+            return await _businessService.SaveCompleteFourDiagnosisAsync(consultationId, fourDiagnosisDto);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "保存四诊数据失败，看诊ID: {ConsultationId}", consultationId);
+            return ServiceResult<bool>.Failure($"保存四诊数据失败：{ex.Message}");
+        }
+    }
+
+    #endregion
+
+    #region 模块特定方法
+
+    /// <summary>
+    /// 获取看诊统计摘要
+    /// </summary>
+    public async Task<ServiceResult<ConsultationStatisticsSummaryDto>> GetStatisticsSummaryAsync(DateTime? startDate = null, DateTime? endDate = null)
+        => await _queryService.GetConsultationStatisticsAsync(startDate, endDate);
+
+    /// <summary>
+    /// 获取四诊详细信息
+    /// </summary>
+    public async Task<ServiceResult<FourDiagnosisDetailDto>> GetFourDiagnosisDetailAsync(Guid consultationId)
+    {
+        try
+        {
+            var consultationResult = await _queryService.GetByIdAsync(consultationId);
+            if (!consultationResult.IsSuccess || consultationResult.Data == null)
+            {
+                return ServiceResult<FourDiagnosisDetailDto>.Failure("看诊记录不存在");
+            }
+
+            var consultation = consultationResult.Data;
+            var fourDiagnosisDetail = new FourDiagnosisDetailDto
+            {
+                ConsultationId = consultationId,
+                Inspection = consultation.Inspection ?? string.Empty,
+                Auscultation = consultation.AuscultationOlfaction ?? string.Empty,
+                Inquiry = consultation.Inquiry ?? string.Empty,
+                Palpation = consultation.Palpation ?? string.Empty,
+                LastUpdatedAt = consultation.UpdateTime ?? consultation.CreateTime,
+                DoctorId = consultation.DoctorId,
+                DoctorName = "系统", // TODO: 获取医生姓名
+                IsComplete = !string.IsNullOrWhiteSpace(consultation.Diagnosis)
+            };
+
+            return ServiceResult<FourDiagnosisDetailDto>.Success(fourDiagnosisDetail);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "获取四诊详细信息失败，看诊ID: {ConsultationId}", consultationId);
+            return ServiceResult<FourDiagnosisDetailDto>.Failure($"获取四诊详细信息失败：{ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// 保存完整四诊记录
+    /// </summary>
+    public async Task<ServiceResult<bool>> SaveCompleteFourDiagnosisAsync(Guid consultationId, CompleteFourDiagnosisDto fourDiagnosisData)
+        => await _businessService.SaveCompleteFourDiagnosisAsync(consultationId, fourDiagnosisData);
+
+    /// <summary>
+    /// 获取医生工作统计
+    /// </summary>
+    public async Task<ServiceResult<DoctorWorkStatisticsDto>> GetDoctorWorkStatisticsAsync(Guid doctorId, DateTime? startDate = null, DateTime? endDate = null)
+        => await _queryService.GetDoctorWorkStatisticsAsync(doctorId, startDate, endDate);
+
+    /// <summary>
+    /// 批量更新看诊状态
+    /// </summary>
+    public async Task<ServiceResult<ConsultationBatchOperationResultDto>> BatchUpdateStatusAsync(List<Guid> consultationIds, ConsultationStatus status)
+        => await _businessService.BatchUpdateStatusAsync(consultationIds, status);
+
+    /// <summary>
+    /// 获取患者看诊趋势
+    /// </summary>
+    public async Task<ServiceResult<List<PatientConsultationTrendDto>>> GetPatientConsultationTrendAsync(Guid patientId, int months = 6)
+        => await _queryService.GetPatientConsultationTrendAsync(patientId, months);
+
+    /// <summary>
+    /// 智能诊断建议
+    /// </summary>
+    public async Task<ServiceResult<List<DiagnosisSuggestionDto>>> GetDiagnosisSuggestionsAsync(FourDiagnosisDataDto fourDiagnosisData)
+    {
+        try
+        {
+            // 这里可以实现智能诊断建议逻辑
+            // 暂时返回空列表，实际需要调用AI服务或规则引擎
+            var suggestions = new List<DiagnosisSuggestionDto>();
+            return ServiceResult<List<DiagnosisSuggestionDto>>.Success(suggestions);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "获取诊断建议失败");
+            return ServiceResult<List<DiagnosisSuggestionDto>>.Failure($"获取诊断建议失败：{ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// 获取看诊模板
+    /// </summary>
+    public async Task<ServiceResult<List<ConsultationTemplateDto>>> GetConsultationTemplatesAsync(string? category = null)
+    {
+        try
+        {
+            // 这里可以实现看诊模板获取逻辑
+            // 暂时返回空列表，实际需要从配置或数据库获取
+            var templates = new List<ConsultationTemplateDto>();
+            return ServiceResult<List<ConsultationTemplateDto>>.Success(templates);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "获取看诊模板失败");
+            return ServiceResult<List<ConsultationTemplateDto>>.Failure($"获取看诊模板失败：{ex.Message}");
+        }
+    }
+
+    #endregion
+
+    #region 资源释放
+
+    /// <summary>
+    /// 释放资源
+    /// </summary>
+    public void Dispose()
+    {
+        // 取消事件订阅
+        if (_businessService != null)
+        {
+            _businessService.ConsultationStatusChanged -= (sender, e) => ConsultationStatusChanged?.Invoke(this, e);
+            _businessService.ConsultationOperation -= (sender, e) => ConsultationOperation?.Invoke(this, e);
+            _businessService.DiagnosisUpdated -= (sender, e) => DiagnosisUpdated?.Invoke(this, e);
+            _businessService.FourDiagnosisRecorded -= (sender, e) => FourDiagnosisRecorded?.Invoke(this, e);
+        }
+
+        _logger.LogInformation("ConsultationModule资源已释放");
+    }
+
+    #endregion
 }

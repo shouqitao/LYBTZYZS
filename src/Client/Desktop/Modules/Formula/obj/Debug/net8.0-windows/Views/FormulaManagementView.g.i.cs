@@ -61,7 +61,7 @@ namespace LYBT.Desktop.Formula.Views {
                 return;
             }
             _contentLoaded = true;
-            System.Uri resourceLocater = new System.Uri("/LYBT.Desktop.Formula;component/views/formulamanagementview.xaml", System.UriKind.Relative);
+            System.Uri resourceLocater = new System.Uri("/LYBT.Desktop.Formula;V1.0.0.0;component/views/formulamanagementview.xaml", System.UriKind.Relative);
             
             #line 1 "..\..\..\..\Views\FormulaManagementView.xaml"
             System.Windows.Application.LoadComponent(this, resourceLocater);

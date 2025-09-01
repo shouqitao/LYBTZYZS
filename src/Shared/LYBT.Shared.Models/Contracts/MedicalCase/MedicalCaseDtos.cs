@@ -250,4 +250,395 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
         [DisplayName("月度趋势")]
         public Dictionary<string, int> MonthlyTrend { get; set; } = new();
     }
+
+    /// <summary>
+    /// 医案验证结果DTO
+    /// </summary>
+    public class MedicalCaseValidationResult
+    {
+        public bool IsValid { get; set; } = true;
+        public List<string> Errors { get; set; } = new();
+    }
+
+    /// <summary>
+    /// 医案统计摘要DTO
+    /// </summary>
+    public class MedicalCaseStatisticsSummaryDto
+    {
+        [DisplayName("总医案数")]
+        public int TotalMedicalCases { get; set; }
+
+        [DisplayName("已登记数")]
+        public int RegisteredCases { get; set; }
+
+        [DisplayName("看诊中数")]
+        public int InConsultationCases { get; set; }
+
+        [DisplayName("已完成数")]
+        public int CompletedCases { get; set; }
+
+        [DisplayName("已取消数")]
+        public int CancelledCases { get; set; }
+
+        [DisplayName("平均看诊时长(分钟)")]
+        public double AverageConsultationDuration { get; set; }
+
+        [DisplayName("完成率")]
+        public decimal CompletionRate => TotalMedicalCases > 0 ? (decimal)CompletedCases / TotalMedicalCases * 100 : 0;
+    }
+
+    /// <summary>
+    /// 患者医案统计DTO
+    /// </summary>
+    public class PatientMedicalCaseStatDto
+    {
+        public Guid PatientId { get; set; }
+        
+        [DisplayName("患者姓名")]
+        public string PatientName { get; set; } = string.Empty;
+
+        [DisplayName("总医案数")]
+        public int TotalMedicalCases { get; set; }
+
+        [DisplayName("完成医案数")]
+        public int CompletedCases { get; set; }
+
+        [DisplayName("完成率")]
+        public decimal CompletionRate { get; set; }
+
+        [DisplayName("首次就诊时间")]
+        public DateTime? FirstVisitDate { get; set; }
+
+        [DisplayName("最近就诊时间")]
+        public DateTime? LastVisitDate { get; set; }
+
+        [DisplayName("平均就诊间隔(天)")]
+        public decimal AverageVisitInterval { get; set; }
+    }
+
+    /// <summary>
+    /// 医生医案统计DTO
+    /// </summary>
+    public class DoctorMedicalCaseStatisticsDto
+    {
+        public Guid DoctorId { get; set; }
+
+        [DisplayName("医生姓名")]
+        public string DoctorName { get; set; } = string.Empty;
+
+        [DisplayName("总医案数")]
+        public int TotalMedicalCases { get; set; }
+
+        [DisplayName("完成医案数")]
+        public int CompletedCases { get; set; }
+
+        [DisplayName("完成率")]
+        public decimal CompletionRate { get; set; }
+
+        [DisplayName("平均看诊时长(分钟)")]
+        public decimal AverageConsultationTime { get; set; }
+
+        [DisplayName("总患者数")]
+        public int TotalPatients { get; set; }
+    }
+
+    /// <summary>
+    /// 医案批量操作结果DTO
+    /// </summary>
+    public class MedicalCaseBatchOperationResultDto
+    {
+        [DisplayName("总数量")]
+        public int TotalCount { get; set; }
+
+        [DisplayName("成功数量")]
+        public int SuccessCount { get; set; }
+
+        [DisplayName("失败数量")]
+        public int FailureCount { get; set; }
+
+        [DisplayName("成功的ID列表")]
+        public List<Guid> SuccessfulIds { get; set; } = new();
+
+        [DisplayName("失败的ID列表")]
+        public List<Guid> FailedIds { get; set; } = new();
+
+        [DisplayName("错误信息列表")]
+        public List<string> ErrorMessages { get; set; } = new();
+
+        [DisplayName("操作成功率")]
+        public decimal SuccessRate => TotalCount > 0 ? (decimal)SuccessCount / TotalCount * 100 : 0;
+    }
+
+    /// <summary>
+    /// 诊疗流程状态DTO
+    /// </summary>
+    public class ConsultationWorkflowStatusDto
+    {
+        public Guid MedicalCaseId { get; set; }
+
+        [DisplayName("当前状态")]
+        public MedicalCaseStatus CurrentStatus { get; set; }
+
+        [DisplayName("当前步骤")]
+        public string CurrentStep { get; set; } = string.Empty;
+
+        [DisplayName("最后更新时间")]
+        public DateTime LastUpdatedAt { get; set; }
+
+        public Guid DoctorId { get; set; }
+
+        [DisplayName("医生姓名")]
+        public string DoctorName { get; set; } = string.Empty;
+
+        [DisplayName("已完成步骤")]
+        public List<string> CompletedSteps { get; set; } = new();
+
+        [DisplayName("待处理步骤")]
+        public List<string> PendingSteps { get; set; } = new();
+
+        [DisplayName("可进行下一步")]
+        public bool CanProceedToNext { get; set; }
+    }
+
+    /// <summary>
+    /// 医案高级搜索DTO
+    /// </summary>
+    public class MedicalCaseAdvancedSearchDto : PagedQueryBaseDto
+    {
+        [DisplayName("患者ID")]
+        public Guid? PatientId { get; set; }
+
+        [DisplayName("医生ID")]
+        public Guid? DoctorId { get; set; }
+
+        [DisplayName("状态")]
+        public MedicalCaseStatus? Status { get; set; }
+
+        [DisplayName("开始日期")]
+        public DateTime? StartDate { get; set; }
+
+        [DisplayName("结束日期")]
+        public DateTime? EndDate { get; set; }
+
+        [DisplayName("诊断关键词")]
+        public string? DiagnosisKeyword { get; set; }
+    }
+
+    /// <summary>
+    /// 诊断频次统计DTO
+    /// </summary>
+    public class DiagnosisFrequencyDto
+    {
+        [DisplayName("诊断名称")]
+        public string DiagnosisName { get; set; } = string.Empty;
+
+        [DisplayName("出现次数")]
+        public int Count { get; set; }
+
+        [DisplayName("百分比")]
+        public decimal Percentage { get; set; }
+    }
+
+    /// <summary>
+    /// 医案时长分布DTO
+    /// </summary>
+    public class MedicalCaseDurationDistributionDto
+    {
+        [DisplayName("平均时长(分钟)")]
+        public double AverageMinutes { get; set; }
+
+        [DisplayName("中位数时长(分钟)")]
+        public double MedianMinutes { get; set; }
+
+        [DisplayName("最短时长(分钟)")]
+        public double MinMinutes { get; set; }
+
+        [DisplayName("最长时长(分钟)")]
+        public double MaxMinutes { get; set; }
+    }
+
+    /// <summary>
+    /// 月度医案趋势DTO
+    /// </summary>
+    public class MonthlyMedicalCaseTrendDto
+    {
+        [DisplayName("月份")]
+        public string Month { get; set; } = string.Empty;
+
+        [DisplayName("医案数量")]
+        public int Count { get; set; }
+
+        [DisplayName("完成数量")]
+        public int CompletedCount { get; set; }
+
+        [DisplayName("环比增长率")]
+        public decimal GrowthRate { get; set; }
+    }
+
+    /// <summary>
+    /// 医案高峰时段DTO
+    /// </summary>
+    public class MedicalCasePeakHourDto
+    {
+        [DisplayName("小时")]
+        public int Hour { get; set; }
+
+        [DisplayName("医案数量")]
+        public int Count { get; set; }
+
+        [DisplayName("占比")]
+        public decimal Percentage { get; set; }
+    }
+
+    /// <summary>
+    /// 频繁就诊患者DTO
+    /// </summary>
+    public class FrequentPatientDto
+    {
+        public Guid PatientId { get; set; }
+
+        [DisplayName("患者姓名")]
+        public string PatientName { get; set; } = string.Empty;
+
+        [DisplayName("就诊次数")]
+        public int VisitCount { get; set; }
+
+        [DisplayName("天数内")]
+        public int DaysWithin { get; set; }
+
+        [DisplayName("最近就诊时间")]
+        public DateTime LastVisitDate { get; set; }
+    }
+
+    /// <summary>
+    /// 医案模式分析DTO
+    /// </summary>
+    public class MedicalCasePatternDto
+    {
+        [DisplayName("模式名称")]
+        public string PatternName { get; set; } = string.Empty;
+
+        [DisplayName("出现次数")]
+        public int OccurrenceCount { get; set; }
+
+        [DisplayName("模式描述")]
+        public string Description { get; set; } = string.Empty;
+    }
+
+    /// <summary>
+    /// 患者医案趋势DTO
+    /// </summary>
+    public class PatientMedicalCaseTrendDto
+    {
+        [DisplayName("月份")]
+        public string Month { get; set; } = string.Empty;
+
+        [DisplayName("医案数量")]
+        public int Count { get; set; }
+
+        [DisplayName("趋势方向")]
+        public string Trend { get; set; } = string.Empty; // "上升"、"下降"、"稳定"
+    }
+
+    /// <summary>
+    /// 医案患者信息DTO
+    /// </summary>
+    public class MedicalCasePatientInfoDto
+    {
+        public Guid MedicalCaseId { get; set; }
+        public Guid PatientId { get; set; }
+
+        [DisplayName("患者姓名")]
+        public string PatientName { get; set; } = string.Empty;
+
+        [DisplayName("患者电话")]
+        public string? PatientPhone { get; set; }
+
+        [DisplayName("患者年龄")]
+        public int? PatientAge { get; set; }
+    }
+
+    /// <summary>
+    /// 医案看诊信息DTO
+    /// </summary>
+    public class MedicalCaseConsultationInfoDto
+    {
+        public Guid MedicalCaseId { get; set; }
+        public Guid? ConsultationId { get; set; }
+
+        [DisplayName("看诊状态")]
+        public string ConsultationStatus { get; set; } = string.Empty;
+
+        [DisplayName("诊断结果")]
+        public string? DiagnosisResult { get; set; }
+    }
+
+    /// <summary>
+    /// 医案完整信息DTO
+    /// </summary>
+    public class MedicalCaseCompleteInfoDto : MedicalCaseDetailDto
+    {
+        [DisplayName("患者完整信息")]
+        public string PatientFullInfo { get; set; } = string.Empty;
+
+        [DisplayName("医生完整信息")]
+        public string DoctorFullInfo { get; set; } = string.Empty;
+
+        [DisplayName("看诊完整记录")]
+        public string ConsultationFullRecord { get; set; } = string.Empty;
+    }
+
+    /// <summary>
+    /// 医案缓存统计DTO
+    /// </summary>
+    public class MedicalCaseCacheStatisticsDto
+    {
+        [DisplayName("缓存项总数")]
+        public int TotalCacheItems { get; set; }
+
+        [DisplayName("医案缓存数量")]
+        public int MedicalCaseCacheCount { get; set; }
+
+        [DisplayName("患者医案缓存数量")]
+        public int PatientMedicalCaseCacheCount { get; set; }
+
+        [DisplayName("医生医案缓存数量")]
+        public int DoctorMedicalCaseCacheCount { get; set; }
+
+        [DisplayName("总内存使用(字节)")]
+        public long TotalMemoryUsage { get; set; }
+
+        [DisplayName("命中率")]
+        public double HitRate { get; set; }
+
+        [DisplayName("最后清理时间")]
+        public DateTime LastClearTime { get; set; }
+    }
+
+    /// <summary>
+    /// 医案查询性能统计DTO
+    /// </summary>
+    public class MedicalCaseQueryPerformanceStatDto
+    {
+        [DisplayName("总查询次数")]
+        public long TotalQueries { get; set; }
+
+        [DisplayName("平均响应时间(毫秒)")]
+        public double AverageResponseTime { get; set; }
+
+        [DisplayName("最慢查询时间(毫秒)")]
+        public double SlowestQueryTime { get; set; }
+
+        [DisplayName("最快查询时间(毫秒)")]
+        public double FastestQueryTime { get; set; }
+
+        [DisplayName("缓存命中次数")]
+        public long CacheHits { get; set; }
+
+        [DisplayName("缓存未命中次数")]
+        public long CacheMisses { get; set; }
+
+        [DisplayName("缓存命中率")]
+        public double CacheHitRate => (CacheHits + CacheMisses) > 0 ? (double)CacheHits / (CacheHits + CacheMisses) * 100 : 0;
+    }
 }
