@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 // UltraThink v2.0: 移除Info模型引用，直接使用DTO
 using LYBT.Desktop.Core.Models.Common;
-using LYBT.Desktop.Modules.Prescriptions.Api;
+using LYBT.Shared.Interfaces.Api;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;

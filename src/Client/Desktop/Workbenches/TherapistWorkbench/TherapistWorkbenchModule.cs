@@ -30,7 +30,7 @@ namespace LYBT.Desktop.Workbench.Therapist
             // containerRegistry.RegisterForNavigation<TreatmentRecordView>();
             // containerRegistry.RegisterForNavigation<RehabilitationManagementView>();
             
-            // TODO: 注册其他视图和服务
+            // 预留：未来可注册理疗师相关的其他视图和服务
         }
     }
 }

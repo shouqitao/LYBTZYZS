@@ -86,12 +86,12 @@ namespace LYBT.Module.Auth.Services
                 if (user.Username.Equals("sysadmin", StringComparison.OrdinalIgnoreCase))
                 {
                     var passwordHash = await _sysAdminHandler.GetSysAdminPasswordHashAsync();
-                    var isValidSysAdmin = PasswordHelper.Verify(password, passwordHash ?? string.Empty);
+                    var isValidSysAdmin = PasswordHelper.Verify(passwordHash ?? string.Empty, password);
                     return ServiceResult<bool>.Success(isValidSysAdmin);
                 }
 
                 // 普通用户密码验证
-                var isValid = PasswordHelper.Verify(password, user.PasswordHash);
+                var isValid = PasswordHelper.Verify(user.PasswordHash, password);
                 return ServiceResult<bool>.Success(isValid);
             }
             catch (Exception ex)

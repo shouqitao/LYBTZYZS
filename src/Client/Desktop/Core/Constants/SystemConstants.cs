@@ -231,9 +231,19 @@ namespace LYBT.Desktop.Core.Constants
         public const string FeatureUnderDevelopmentMessage = "该功能正在开发中，敬请期待";
 
         /// <summary>
-        /// TODO功能提示模板
+        /// 功能开发中消息模板
         /// </summary>
-        public const string TodoFeatureMessageTemplate = "{0}功能开发中";
+        public const string FeatureInDevelopmentTemplate = "{0}功能开发中";
+
+        /// <summary>
+        /// 功能待实现消息模板
+        /// </summary>
+        public const string FeaturePendingTemplate = "{0}功能待实现";
+
+        /// <summary>
+        /// 功能尚未实现消息
+        /// </summary>
+        public const string FeatureNotImplementedMessage = "功能尚未实现";
 
         #endregion
     }

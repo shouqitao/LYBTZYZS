@@ -7,7 +7,7 @@ using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Common;
-using LYBT.Desktop.Modules.Users.Api;
+using LYBT.Shared.Interfaces.Api;
 using LYBT.Shared.Interfaces.Services;
 
 namespace LYBT.Desktop.Users.Services

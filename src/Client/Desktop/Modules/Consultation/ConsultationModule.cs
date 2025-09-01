@@ -4,6 +4,7 @@ using Prism.Mvvm;
 using LYBT.Desktop.Consultation.Views;
 using LYBT.Desktop.Consultation.ViewModels;
 using LYBT.Desktop.Consultation.Services;
+using LYBT.Shared.Interfaces.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -22,8 +23,9 @@ namespace LYBT.Desktop.Consultation
 
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            // 简化后的服务注册 - 只保留纯数据记录功能
+            // UltraThink模块自治：注册业务服务接口实现
             containerRegistry.RegisterSingleton<Services.ConsultationModule>();
+            containerRegistry.RegisterSingleton<IConsultationService>(container => container.Resolve<Services.ConsultationModule>());
 
             // 注册简化后的视图模型
             containerRegistry.Register<ConsultationMainViewModel>();

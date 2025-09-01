@@ -4,6 +4,7 @@ using LYBT.Desktop.Prescriptions.ViewModels;
 using LYBT.Desktop.Prescriptions.Views;
 using LYBT.Desktop.Prescriptions.Services;
 using LYBT.Desktop.Prescriptions.Components;
+using LYBT.Shared.Interfaces.Services;
 
 namespace LYBT.Desktop.Prescriptions
 {
@@ -29,7 +30,10 @@ namespace LYBT.Desktop.Prescriptions
             
             // 简化服务
             containerRegistry.RegisterSingleton<IPrescriptionComposerService, PrescriptionComposerService>();
+            
+            // UltraThink模块自治：注册业务服务接口实现
             containerRegistry.RegisterSingleton<PrescriptionsModule>();
+            containerRegistry.RegisterSingleton<IPrescriptionService>(container => container.Resolve<PrescriptionsModule>());
             
             // UltraThink核心视图：专注处方组成编辑
             

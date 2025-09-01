@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Interfaces.Services;
+using LYBT.Desktop.Core.Constants;
 using Prism.Commands;
 using Prism.Mvvm;
 using Microsoft.Extensions.Logging;
@@ -254,7 +255,7 @@ namespace LYBT.Desktop.Formula.ViewModels
             if (item == null) return;
             
             // TODO: 实现编辑药材对话框
-            StatusMessage = $"编辑药材 '{item.HerbName}' 功能待实现";
+            StatusMessage = string.Format(SystemConstants.FeaturePendingTemplate, $"编辑药材 '{item.HerbName}'");
         }
 
         #endregion

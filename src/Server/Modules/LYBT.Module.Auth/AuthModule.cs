@@ -4,7 +4,6 @@ using LYBT.Module.Auth.Interfaces;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Module.Auth.Repositories;
 using LYBT.Module.Auth.Services;
-using LYBT.Module.Auth.Helpers;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace LYBT.Module.Auth
@@ -31,8 +30,7 @@ namespace LYBT.Module.Auth
             // 注册原有服务
             services.AddScoped<SysAdminHandler>();
 
-            // 注册UltraThink三层架构服务
-            services.AddScoped<AuthServiceCore>();        // Core层：基础CRUD和认证
+            // 注册UltraThink双层架构服务
             services.AddScoped<AuthQueryService>();       // Query层：查询和Token验证
             services.AddScoped<AuthBusinessService>();    // Business层：复杂业务逻辑
             services.AddScoped<IAuthService, AuthService>(); // 主服务：纯委托模式

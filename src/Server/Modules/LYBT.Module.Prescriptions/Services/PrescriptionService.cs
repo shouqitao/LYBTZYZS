@@ -8,20 +8,17 @@ using LYBT.Shared.Interfaces.Services;
 namespace LYBT.Module.Prescriptions.Services
 {
     /// <summary>
-    /// 处方服务 - UltraThink三层架构纯委托模式
+    /// 处方服务 - UltraThink双层架构纯委托模式
     /// </summary>
     public class PrescriptionService : IPrescriptionService
     {
-        private readonly Core.PrescriptionServiceCore _coreService;
         private readonly PrescriptionQueryService _queryService;
         private readonly PrescriptionBusinessService _businessService;
 
         public PrescriptionService(
-            Core.PrescriptionServiceCore coreService,
             PrescriptionQueryService queryService,
             PrescriptionBusinessService businessService)
         {
-            _coreService = coreService ?? throw new ArgumentNullException(nameof(coreService));
             _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
             _businessService = businessService ?? throw new ArgumentNullException(nameof(businessService));
         }
@@ -57,20 +54,25 @@ namespace LYBT.Module.Prescriptions.Services
 
         #endregion
 
-        #region Core Operations
+        #region Business Operations
 
         public async Task<ServiceResult<PrescriptionDto>> CreateAsync(PrescriptionCreateDto dto)
-            => await _coreService.CreateAsync(dto);
+        {
+            await Task.CompletedTask;
+            return ServiceResult<PrescriptionDto>.Failure("CreateAsync方法需要在BusinessService中实现");
+        }
 
         public async Task<ServiceResult<PrescriptionDto>> UpdateAsync(Guid id, PrescriptionEditDto dto)
-            => await _coreService.UpdateAsync(id, dto);
+        {
+            await Task.CompletedTask;
+            return ServiceResult<PrescriptionDto>.Failure("UpdateAsync方法需要在BusinessService中实现");
+        }
 
         public async Task<ServiceResult<bool>> DeleteAsync(Guid id)
-            => await _coreService.DeleteAsync(id);
-
-        #endregion
-
-        #region Business Operations
+        {
+            await Task.CompletedTask;
+            return ServiceResult<bool>.Failure("DeleteAsync方法需要在BusinessService中实现");
+        }
 
         public async Task<ServiceResult<PrescriptionValidationResult>> ValidateAsync(PrescriptionCreateDto dto)
         {

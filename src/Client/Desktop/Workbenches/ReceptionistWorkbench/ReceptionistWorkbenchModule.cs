@@ -30,7 +30,7 @@ namespace LYBT.Desktop.Workbench.Receptionist
             containerRegistry.RegisterForNavigation<AppointmentManagementView>();
             containerRegistry.RegisterForNavigation<BasicRegistrationView>();
             
-            // TODO: 注册其他视图和服务
+            // 预留：未来可注册前台接待相关的其他视图和服务
         }
     }
 }

@@ -6,7 +6,7 @@ using AutoMapper;
 using Refit;
 // UltraThink v2.0: 移除Info模型引用，直接使用DTO
 using LYBT.Desktop.Core.Models.Common;
-using LYBT.Desktop.Modules.Formula.Api;
+using LYBT.Shared.Interfaces.Api;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
 

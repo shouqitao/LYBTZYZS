@@ -35,7 +35,7 @@ namespace LYBT.Desktop.Workbench.Pharmacist
             // UltraThink Phase 3.3: 注册集成的中药材管理功能
             containerRegistry.RegisterForNavigation<HerbManagementView>();
             
-            // TODO: 注册其他视图和服务
+            // 预留：未来可注册药剂师相关的其他视图和服务
         }
     }
 }

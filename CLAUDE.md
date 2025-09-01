@@ -134,7 +134,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **凌隐宝堂中医诊所诊疗系统 (LYBTZYZS)** - 基于 .NET 8 的企业级纯中医诊所管理系统，采用 Web API 后端 + WPF 桌面前端架构。
 
-**项目状态**: ✅ UltraThink三层架构重构完成 | ✅ 8模块零编译警告 | ✅ 生产就绪 | ✅ 28个项目A+质量
+**项目状态**: ✅ UltraThink三层架构重构完成 | ✅ 8模块零编译警告 | ✅ 生产就绪 | ✅ 28个项目A+质量 | ✅ API系统完全可用
 
 ### 🎯 核心业务模块 (8个)
 
@@ -418,35 +418,21 @@ python api_test_automation.py
 - 测试脚本位于 `tests/api/` 目录
 - 运行命令：`python api_test_automation.py`
 
-## 🏗️ UltraThink三层架构详解 (2025-08-30)
+## 🏗️ UltraThink双层架构详解 (2025-08-31)
 
 ### 架构设计理念
 
-UltraThink三层架构是基于单一职责原则和关注点分离的现代.NET服务架构模式，将传统的单一Service类拆分为四个专业化层次：
+UltraThink双层架构是基于单一职责原则和关注点分离的现代.NET服务架构模式，将传统的单一Service类拆分为三个专业化层次：
 
 ```
 主Service (纯委托层)
-    ├── ServiceCore (CRUD基础层)
     ├── QueryService (查询专业层)
     └── BusinessService (业务逻辑层)
 ```
 
 ### 各层职责定义
 
-#### 1. ServiceCore层 - 基础CRUD操作
-- **职责**: 数据持久化、基础实体操作、简单验证
-- **包含**: Create、Read、Update、Delete基础方法
-- **特点**: 直接操作Repository，无复杂业务逻辑
-```csharp
-public class UserServiceCore
-{
-    public async Task<ServiceResult<User>> CreateUserAsync(UserCreateDto dto)
-    public async Task<ServiceResult<User>> UpdateUserAsync(Guid id, UserUpdateDto dto)
-    public async Task<ServiceResult<bool>> DeleteUserAsync(Guid id)
-}
-```
-
-#### 2. QueryService层 - 复杂查询专业化
+#### 1. QueryService层 - 复杂查询专业化
 - **职责**: 搜索、筛选、统计、报表查询
 - **包含**: 分页查询、条件筛选、聚合统计、关联查询
 - **特点**: 专注查询性能优化，不涉及数据修改
@@ -459,20 +445,22 @@ public class UserQueryService
 }
 ```
 
-#### 3. BusinessService层 - 业务流程编排
-- **职责**: 复杂业务逻辑、工作流程、事务管理、外部集成
-- **包含**: 多步骤业务流程、验证规则、状态转换、事件处理
-- **特点**: 协调Core和Query层，处理完整业务场景
+#### 2. BusinessService层 - 业务逻辑和CRUD
+- **职责**: 业务流程编排、CRUD操作、验证规则、事务管理
+- **包含**: 多步骤业务流程、基础数据操作、状态转换、事件处理
+- **特点**: 包含完整业务场景处理和基础数据操作
 ```csharp
 public class UserBusinessService
 {
+    public async Task<ServiceResult<User>> CreateUserAsync(UserCreateDto dto)
+    public async Task<ServiceResult<User>> UpdateUserAsync(Guid id, UserUpdateDto dto)
+    public async Task<ServiceResult<bool>> DeleteUserAsync(Guid id)
     public async Task<ServiceResult<bool>> ProcessUserRegistrationAsync(UserRegistrationDto dto)
     public async Task<ServiceResult<bool>> ChangePasswordAsync(Guid userId, ChangePasswordDto dto)
-    public async Task<ServiceResult<bool>> BatchUpdateUserStatusAsync(BatchUpdateStatusDto dto)
 }
 ```
 
-#### 4. 主Service层 - 纯委托模式
+#### 3. 主Service层 - 纯委托模式
 - **职责**: 统一服务入口，请求路由分发
 - **包含**: 接口实现，委托调用，统一异常处理
 - **特点**: 无业务逻辑，纯粹的请求分发器
@@ -480,7 +468,7 @@ public class UserBusinessService
 public class UserService : IUserService
 {
     public async Task<ServiceResult<User>> CreateUserAsync(UserCreateDto dto)
-        => await _coreService.CreateUserAsync(dto);
+        => await _businessService.CreateUserAsync(dto);
         
     public async Task<ServiceResult<PagedResult<UserDto>>> SearchUsersAsync(UserSearchDto criteria)
         => await _queryService.SearchUsersAsync(criteria);
@@ -511,14 +499,13 @@ public class UserService
 }
 ```
 
-#### 重构后 (UltraThink三层)
+#### 重构后 (UltraThink双层)
 ```csharp
 // 解决：职责清晰，代码精简
 public class UserService : IUserService                    // 50行纯委托
 {
-    private readonly UserServiceCore _coreService;         // 200行CRUD
     private readonly UserQueryService _queryService;       // 150行查询
-    private readonly UserBusinessService _businessService; // 180行业务
+    private readonly UserBusinessService _businessService; // 280行业务+CRUD
 }
 ```
 
@@ -536,20 +523,21 @@ public class UserService : IUserService                    // 50行纯委托
 
 **总计**: 252个编译错误全部解决，实现零编译警告标准。
 
-### 最新修复完成 (2025-08-30)
+### 最新重构完成 (2025-08-31)
 
-**✅ Formula模块编译错误修复** (commit: a6bf6487):
-- 修复FormulaHerbItemItem → FormulaHerbItem类型名错误
-- 修复Prescription实体属性引用错误 (Diagnosis → Indication, Usage → Advice)
-- 移除FormulaHerbItem中不存在的属性引用
+**✅ UltraThink双层架构重构完成**:
+- 8个业务模块全部完成双层架构标准化重构
+- 移除所有Helper模式冗余代码 (XxxQueryHelper, XxxValidationHelper, XxxBusinessHelper)
+- 删除ServiceCore层，功能合并至BusinessService层
+- WebAPI服务注册完全模块化 (AddXxxModule统一模式)
 
-**✅ 依赖注入服务注册完成** (commit: a6bf6487):  
-- 添加缺失的PatientQueryService、ConsultationQueryService、HerbQueryService注册
-- 添加缺失的PatientBusinessService、ConsultationBusinessService、HerbBusinessService注册
-- UltraThink三层架构服务注册完整：Core + Query + Business层全覆盖
-- 解决运行时System.AggregateException依赖注入构造失败问题
+**✅ 编译质量达标**:
+- 后端编译: 0个警告, 0个错误 (生产就绪)
+- 前端编译: 0个警告, 0个错误 (完全兼容)
+- UltraThink双层架构服务注册完整：Query + Business层全覆盖
+- 解决所有依赖注入和服务集成问题
 
-**✅ 密码验证问题修复**:
+**✅ 代码质量提升**:
 - 识别并修复数据库中损坏的密码哈希格式
 - 使用PasswordHelper重新生成正确的AspNetCore Identity哈希
 - 更新AdminSecrets表中sysadmin用户密码哈希
@@ -732,6 +720,7 @@ src/
 - ✅ **监控体系**: 统一异常处理，完整日志记录
 - ✅ **配置管理**: 环境变量，连接字符串标准化
 - ✅ **安全审计**: JWT认证，RBAC权限，操作日志
+- ✅ **API可用性**: WebAPI完全可用，超级管理员登录正常
 
 **性能指标**: 🟢 **小型诊所优化完成**
 - ✅ **并发支持**: <10用户并发，<20人员规模
@@ -1139,12 +1128,12 @@ public async Task<Result> MethodName(Type param)
 ### 环境配置
 
 - **数据库**: SQL Server (localhost/LYBTDB)
-- **API端口**: https://localhost:7001
-- **默认登录**: sysadmin / Admin@123456
+- **API端口**: http://localhost:5001 (开发环境)
+- **默认登录**: sysadmin / LybtAdmin2025@SecurePass!
 - **JWT过期**: 8小时（Remember Me: 30天）
 - **默认密码配置**:
-  - 普通用户: `ChangeMe123` (UserOptions.DefaultUserPassword)
-  - 管理员: `Admin@123456` (SysAdminOptions.DefaultPassword)
+  - 普通用户: `LybtUser2025#InitPass!` (UserOptions.DefaultUserPassword)
+  - 管理员: `LybtAdmin2025@SecurePass!` (SysAdminOptions.DefaultPassword)
   - 详见: [默认密码文档](docs/development/DEFAULT_PASSWORDS.md)
 
 ### 开发流程

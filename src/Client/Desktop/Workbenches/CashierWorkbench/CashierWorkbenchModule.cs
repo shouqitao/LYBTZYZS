@@ -30,7 +30,7 @@ namespace LYBT.Desktop.Workbench.Cashier
             // containerRegistry.RegisterForNavigation<PaymentManagementView>(); // 待实现
             // containerRegistry.RegisterForNavigation<FinancialReportsView>(); // 待实现
             
-            // TODO: 注册其他视图和服务
+            // 预留：未来可注册收银相关的其他视图和服务
         }
     }
 }

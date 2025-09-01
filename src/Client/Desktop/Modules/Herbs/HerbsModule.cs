@@ -4,6 +4,7 @@ using Prism.Modularity;
 using LYBT.Desktop.Herbs.ViewModels;
 using LYBT.Desktop.Herbs.Views;
 using LYBT.Desktop.Herbs.Services;
+using LYBT.Shared.Interfaces.Services;
 
 namespace LYBT.Desktop.Herbs
 {
@@ -21,8 +22,9 @@ namespace LYBT.Desktop.Herbs
 
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            // UltraThink v2.0简化架构：直接注册服务实现
+            // UltraThink模块自治：注册业务服务接口实现
             containerRegistry.RegisterSingleton<HerbModule>();
+            containerRegistry.RegisterSingleton<IHerbService>(container => container.Resolve<HerbModule>());
             
             // UltraThink四层架构：注册标准ViewModel
             containerRegistry.RegisterForNavigation<HerbManagementView, HerbManagementViewModel>();

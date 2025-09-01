@@ -216,4 +216,3 @@ D:\source\repos\LYBTZYZS\src\Server\Services\LYBT.WebAPI\obj\Debug\net8.0\LYBT.W
 D:\source\repos\LYBTZYZS\src\Server\Services\LYBT.WebAPI\obj\Debug\net8.0\LYBT.WebAPI.genruntimeconfig.cache
 D:\source\repos\LYBTZYZS\src\Server\Services\LYBT.WebAPI\obj\Debug\net8.0\ref\LYBT.WebAPI.dll
 D:\source\repos\LYBTZYZS\src\Server\Services\LYBT.WebAPI\obj\Debug\net8.0\LYBT.WebAPI.MvcApplicationPartsAssemblyInfo.cs
-D:\source\repos\LYBTZYZS\src\Server\Services\LYBT.WebAPI\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt

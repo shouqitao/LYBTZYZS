@@ -5,14 +5,10 @@ namespace LYBT.Desktop.Core.Interfaces.Services
 {
     /// <summary>
     /// 主窗口服务门面，用于简化MainWindowViewModel的依赖注入
+    /// UltraThink统一架构：移除双重认证服务引用，只保留AuthModule
     /// </summary>
     public interface IMainWindowServicesFacade
     {
-        /// <summary>
-        /// 认证服务
-        /// </summary>
-        IAuthenticationService AuthenticationService { get; }
-
         /// <summary>
         /// 对话框服务
         /// </summary>
@@ -27,5 +23,10 @@ namespace LYBT.Desktop.Core.Interfaces.Services
         /// 患者服务
         /// </summary>
         IPatientService PatientService { get; }
+
+        /// <summary>
+        /// 认证服务 - 统一的认证服务接口，AuthModule实现
+        /// </summary>
+        IAuthenticationService AuthenticationService { get; }
     }
 }

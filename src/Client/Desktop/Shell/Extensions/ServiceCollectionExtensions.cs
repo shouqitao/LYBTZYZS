@@ -12,8 +12,7 @@ using LYBT.Desktop.Infrastructure;
 using LYBT.Desktop.Services;
 using LYBT.Desktop.Services.Handlers;
 using LYBT.Shared.Interfaces.Services;
-using LYBT.Desktop.Modules.Users.Api;
-using LYBT.Desktop.Modules.Patients.Api;
+using LYBT.Shared.Interfaces.Api;
 
 namespace LYBT.Desktop.Shell.Extensions
 {
@@ -116,13 +115,13 @@ namespace LYBT.Desktop.Shell.Extensions
             
             // 注册Refit API客户端 - 完整的8个API接口
             RegisterApiService<LYBT.Shared.Interfaces.Api.IAuthApi>(containerRegistry);
-            RegisterApiService<IUserApi>(containerRegistry);
-            RegisterApiService<IPatientApi>(containerRegistry);
-            RegisterApiService<LYBT.Desktop.Modules.Herbs.Api.IHerbApi>(containerRegistry);
-            RegisterApiService<LYBT.Desktop.Modules.Formula.Api.IFormulaApi>(containerRegistry);
-            RegisterApiService<LYBT.Desktop.Modules.Consultation.Api.IConsultationApi>(containerRegistry);
-            RegisterApiService<LYBT.Desktop.Modules.Prescriptions.Api.IPrescriptionApi>(containerRegistry);
-            RegisterApiService<LYBT.Desktop.Modules.MedicalCase.Api.IMedicalCaseApi>(containerRegistry);
+            RegisterApiService<LYBT.Shared.Interfaces.Api.IUserApi>(containerRegistry);
+            RegisterApiService<LYBT.Shared.Interfaces.Api.IPatientApi>(containerRegistry);
+            RegisterApiService<LYBT.Shared.Interfaces.Api.IHerbApi>(containerRegistry);
+            RegisterApiService<LYBT.Shared.Interfaces.Api.IFormulaApi>(containerRegistry);
+            RegisterApiService<LYBT.Shared.Interfaces.Api.IConsultationApi>(containerRegistry);
+            RegisterApiService<LYBT.Shared.Interfaces.Api.IPrescriptionApi>(containerRegistry);
+            RegisterApiService<LYBT.Shared.Interfaces.Api.IMedicalCaseApi>(containerRegistry);
             
             // 注册通用API服务
             containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Services.IApiService, LYBT.Desktop.Services.ApiService>();
@@ -155,7 +154,10 @@ namespace LYBT.Desktop.Shell.Extensions
                 LYBT.Desktop.Core.Services.SessionManager>();
             containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.INotificationService, 
                 LYBT.Desktop.Core.Services.NotificationService>();
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.IAuthenticationService, SimplifiedAuthenticationService>();
+            // UltraThink统一架构: AuthModule直接实现IAuthenticationService，消除双重服务
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Auth.Services.AuthModule>();
+            containerRegistry.Register<LYBT.Desktop.Core.Interfaces.Services.IAuthenticationService>(container => 
+                container.Resolve<LYBT.Desktop.Auth.Services.AuthModule>());
             containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.IErrorHandlingService>(container =>
                 new ErrorHandlingService(container.Resolve<LYBT.Desktop.Core.Interfaces.Services.ICustomDialogService>()));
             containerRegistry.RegisterSingleton<LYBT.Desktop.Workbench.Core.IWorkbenchRouter, LYBT.Desktop.Workbench.Core.WorkbenchRouter>();
@@ -173,15 +175,9 @@ namespace LYBT.Desktop.Shell.Extensions
             // API测试服务
             containerRegistry.RegisterSingleton<ApiTestService>();
             
-            // 模块业务服务注册 - 简化版
-            // UltraThink修复：IUserService和IPatientService由各自模块注册，避免时序冲突
-            // containerRegistry.RegisterSingleton<IUserService, LYBT.Desktop.Users.Services.UserModule>();
-            // containerRegistry.RegisterSingleton<IPatientService, LYBT.Desktop.Patients.Services.PatientModule>();
-            containerRegistry.RegisterSingleton<IPrescriptionService, LYBT.Desktop.Prescriptions.Services.PrescriptionsModule>();
-            containerRegistry.RegisterSingleton<IHerbService, LYBT.Desktop.Herbs.Services.HerbModule>();
-            containerRegistry.RegisterSingleton<IFormulaService, LYBT.Desktop.Formula.Services.FormulaModule>();
-            containerRegistry.RegisterSingleton<IConsultationService, LYBT.Desktop.Consultation.Services.ConsultationModule>();
-            containerRegistry.RegisterSingleton<IMedicalCaseService, LYBT.Desktop.MedicalCase.Services.MedicalCaseModule>();
+            // UltraThink统一架构：所有业务模块服务由各自模块注册，实现模块自治
+            // 8个业务模块(Auth/Users/Patients/Herbs/Formula/Consultation/Prescriptions/MedicalCase)
+            // 均在各自的XxxModule.RegisterTypes中注册服务接口实现
         }
 
         /// <summary>

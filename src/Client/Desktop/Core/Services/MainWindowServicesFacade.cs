@@ -7,27 +7,22 @@ namespace LYBT.Desktop.Core.Services
 {
     /// <summary>
     /// 主窗口服务门面实现，用于简化MainWindowViewModel的依赖注入
+    /// UltraThink统一架构：移除双重认证服务，AuthModule统一实现
     /// </summary>
     public class MainWindowServicesFacade : IMainWindowServicesFacade
     {
         private readonly IContainerProvider _containerProvider;
         
         // 缓存已解析的服务以提高性能
-        private IAuthenticationService? _authenticationService;
         private ICustomDialogService? _customDialogService;
         private IUserService? _userService;
         private IPatientService? _patientService;
+        private IAuthenticationService? _authenticationService;
 
         public MainWindowServicesFacade(IContainerProvider containerProvider)
         {
             _containerProvider = containerProvider ?? throw new ArgumentNullException(nameof(containerProvider));
         }
-
-        /// <summary>
-        /// 认证服务
-        /// </summary>
-        public IAuthenticationService AuthenticationService =>
-            _authenticationService ??= _containerProvider.Resolve<IAuthenticationService>();
 
         /// <summary>
         /// 对话框服务
@@ -46,5 +41,12 @@ namespace LYBT.Desktop.Core.Services
         /// </summary>
         public IPatientService PatientService =>
             _patientService ??= _containerProvider.Resolve<IPatientService>();
+
+        /// <summary>
+        /// 认证服务 - 统一的认证服务接口，AuthModule实现
+        /// UltraThink统一架构：AuthModule是唯一的认证服务实现
+        /// </summary>
+        public IAuthenticationService AuthenticationService =>
+            _authenticationService ??= _containerProvider.Resolve<IAuthenticationService>();
     }
 }

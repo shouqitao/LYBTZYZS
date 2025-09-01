@@ -13,6 +13,7 @@ using Prism.Mvvm;
 // // using Prism.Dialogs; // Removed for Prism 8.1.97 compatibility // Temporarily disabled due to Prism 9 compatibility
 using Microsoft.Extensions.Logging;
 using LYBT.Desktop.Core.ViewModels;
+using LYBT.Desktop.Core.Constants;
 
 namespace LYBT.Desktop.Prescriptions.ViewModels
 {
@@ -153,7 +154,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         {
             if (formula == null) return;
             
-            StatusMessage = $"查看验方 '{formula.Name}' 详情功能待实现";
+            StatusMessage = string.Format(SystemConstants.FeaturePendingTemplate, $"查看验方 '{formula.Name}' 详情");
         }
 
         /// <summary>

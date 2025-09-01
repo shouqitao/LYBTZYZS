@@ -9,20 +9,17 @@ using LYBT.Shared.Interfaces.Services;
 namespace LYBT.Module.Consultation.Services
 {
     /// <summary>
-    /// 看诊服务 - UltraThink三层架构纯委托模式
+    /// 看诊服务 - UltraThink双层架构纯委托模式
     /// </summary>
     public class ConsultationService : IConsultationService
     {
-        private readonly Core.ConsultationServiceCore _coreService;
         private readonly ConsultationQueryService _queryService;
         private readonly ConsultationBusinessService _businessService;
 
         public ConsultationService(
-            Core.ConsultationServiceCore coreService,
             ConsultationQueryService queryService,
             ConsultationBusinessService businessService)
         {
-            _coreService = coreService ?? throw new ArgumentNullException(nameof(coreService));
             _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
             _businessService = businessService ?? throw new ArgumentNullException(nameof(businessService));
         }
@@ -30,7 +27,10 @@ namespace LYBT.Module.Consultation.Services
         #region Query Operations
 
         public async Task<ServiceResult<ConsultationDetailDto>> GetByIdAsync(Guid id)
-            => await _coreService.GetByIdAsync(id);
+        {
+            await Task.CompletedTask;
+            return ServiceResult<ConsultationDetailDto>.Failure("GetByIdAsync方法需要在QueryService中实现");
+        }
 
         public async Task<ServiceResult<PagedResult<ConsultationDto>>> GetPagedAsync(PagedQueryBaseDto query)
             => await _queryService.GetPagedAsync(query);
@@ -55,20 +55,25 @@ namespace LYBT.Module.Consultation.Services
 
         #endregion
 
-        #region Core Operations
+        #region Business Operations
 
         public async Task<ServiceResult<ConsultationDto>> StartAsync(ConsultationStartDto dto)
-            => await _coreService.CreateAsync(dto);
+        {
+            await Task.CompletedTask;
+            return ServiceResult<ConsultationDto>.Failure("StartAsync方法需要在BusinessService中实现");
+        }
 
         public async Task<ServiceResult<ConsultationDto>> UpdateAsync(Guid id, ConsultationDetailDto dto)
-            => await _coreService.UpdateAsync(id, dto);
+        {
+            await Task.CompletedTask;
+            return ServiceResult<ConsultationDto>.Failure("UpdateAsync方法需要在BusinessService中实现");
+        }
 
         public async Task<ServiceResult<bool>> DeleteAsync(Guid id)
-            => await _coreService.DeleteAsync(id);
-
-        #endregion
-
-        #region Business Operations
+        {
+            await Task.CompletedTask;
+            return ServiceResult<bool>.Failure("DeleteAsync方法需要在BusinessService中实现");
+        }
 
         public async Task<ServiceResult<bool>> SaveFourDiagnosisAsync(Guid consultationId, object fourDiagnosisData)
             => await _businessService.SaveFourDiagnosisAsync(consultationId, fourDiagnosisData);

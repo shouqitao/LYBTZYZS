@@ -1,30 +1,12 @@
-// TODO: UltraThink v2.0 Refactor - 暂时禁用有问题的模块using语句
-// using LYBT.Module.Auth.Interfaces;
-// using LYBT.Module.Auth.Repositories;
-// using LYBT.Module.Auth.Services;
-// 启用Consultation模块
-using LYBT.Module.Consultation.Interfaces;
-using LYBT.Module.Consultation.Repositories;
-using LYBT.Module.Consultation.Services;
-using LYBT.Module.Consultation.Helpers;
-using LYBT.Module.Formula.Extensions;
-using LYBT.Module.MedicalCase.Interfaces;
-using LYBT.Module.MedicalCase.Repositories;
-using LYBT.Module.MedicalCase.Services;
-using LYBT.Module.MedicalCase.Helpers;
-using LYBT.Module.Herbs.Interfaces;
-using LYBT.Module.Herbs.Repositories;
-using LYBT.Module.Herbs.Services;
-using LYBT.Module.Herbs.Helpers;
-using LYBT.Module.Patients.Interfaces;
-using LYBT.Module.Patients.Repositories;
-using LYBT.Module.Patients.Services;
-using LYBT.Module.Patients.Helpers;
+// UltraThink架构 - 模块化注册扩展
+using LYBT.Module.Auth;
+using LYBT.Module.Users;
+using LYBT.Module.Patients;
+using LYBT.Module.MedicalCase;
+using LYBT.Module.Consultation;
 using LYBT.Module.Prescriptions;
-using LYBT.Module.Users.Interfaces;
-using LYBT.Module.Users.Repositories;
-using LYBT.Module.Users.Services;
-using LYBT.Shared.Interfaces.Services;
+using LYBT.Module.Herbs;
+using LYBT.Module.Formula;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace LYBT.WebAPI.Extensions;
@@ -35,71 +17,41 @@ namespace LYBT.WebAPI.Extensions;
 public static class ServiceCollectionExtension
 {
     /// <summary>
-    /// 注册所有LYBT业务模块服务
+    /// 注册所有LYBT业务模块服务 - UltraThink模块化架构
     /// </summary>
     /// <param name="services">服务集合</param>
     /// <returns>服务集合</returns>
     public static IServiceCollection AddAllModules(this IServiceCollection services)
     {
-        // 认证模块 - 已迁移到AuthModule.AddAuthModule()统一管理
-
-        // 用户模块 - 已通过AddUsersModuleServices()在UnifiedServiceRegistration中注册
-
+        // UltraThink模块化架构 - 统一使用AddXxxModule()扩展方法
+        
+        // 认证模块
+        services.AddAuthModule();
+        
+        // 用户模块
+        services.AddUsersModuleServices();
+        
         // 患者模块
-        services.AddScoped<IPatientService, PatientService>();
-        services.AddScoped<IPatientRepository, PatientRepository>();
-        services.AddScoped<PatientValidationService>();
-        services.AddScoped<PatientArchiveService>();
-        services.AddScoped<PatientStatisticsService>();
-        // 注册UltraThink三层服务
-        services.AddScoped<LYBT.Module.Patients.Services.PatientServiceCore>();
-        services.AddScoped<LYBT.Module.Patients.Services.PatientQueryService>();
-        services.AddScoped<LYBT.Module.Patients.Services.PatientBusinessService>();
-        // 注册Helper类
-        services.AddScoped<PatientQueryHelper>();
-        services.AddScoped<PatientValidationHelper>();
-        services.AddScoped<PatientBusinessHelper>();
-
-        // 看诊模块 - 已启用
-        services.AddScoped<IConsultationRepository, ConsultationRepository>();
-        services.AddScoped<IConsultationService, ConsultationService>();
-        // 注册UltraThink三层服务
-        services.AddScoped<LYBT.Module.Consultation.Services.Core.ConsultationServiceCore>();
-        services.AddScoped<LYBT.Module.Consultation.Services.ConsultationQueryService>();
-        services.AddScoped<LYBT.Module.Consultation.Services.ConsultationBusinessService>();
-        // 注册Helper类
-        services.AddScoped<ConsultationQueryHelper>();
-        services.AddScoped<ConsultationValidationHelper>();
-        services.AddScoped<ConsultationWorkflowHelper>();
-        // 医疗案例模块 - UltraThink三层架构
-        services.AddScoped<IMedicalCaseRepository, MedicalCaseRepository>();
-        services.AddScoped<IMedicalCaseService, MedicalCaseService>();
-        // 注册三层服务
-        services.AddScoped<LYBT.Module.MedicalCase.Services.Core.MedicalCaseServiceCore>();
-        services.AddScoped<MedicalCaseQueryService>();
-        services.AddScoped<MedicalCaseBusinessService>();
-
+        services.AddPatientsModuleServices();
+        
+        // 医疗案例模块
+        services.AddMedicalCaseModule();
+        
+        // 看诊模块
+        services.AddConsultationModule();
+        
+        // 处方模块
+        services.AddPrescriptionsModule();
+        
         // 药材模块
-        services.AddScoped<IHerbService, HerbService>();
-        services.AddScoped<IHerbRepository, HerbRepository>();
-        // 注册UltraThink三层服务
-        services.AddScoped<LYBT.Module.Herbs.Services.Core.HerbServiceCore>();
-        services.AddScoped<LYBT.Module.Herbs.Services.HerbQueryService>();
-        services.AddScoped<LYBT.Module.Herbs.Services.HerbBusinessService>();
-        // 注册Helper类
-        services.AddScoped<HerbQueryHelper>();
-        services.AddScoped<HerbValidationHelper>();
-        services.AddScoped<HerbBusinessHelper>();
-
-        // 验方模块（重构完成）
+        services.AddHerbsModule();
+        
+        // 验方模块
         services.AddFormulaModule();
 
-        // 处方模块（使用模块化注册）
-        services.AddPrescriptionsModule();
-
-        // 收银模块（原Billing）
-        // 药房模块
-        // 理疗室模块
+        // 收银模块（原Billing）- 计划v2.0
+        // 药房模块 - 计划v2.0  
+        // 理疗室模块 - 计划v2.0
         return services;
     }
 

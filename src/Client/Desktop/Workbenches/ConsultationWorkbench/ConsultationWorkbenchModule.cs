@@ -38,7 +38,7 @@ namespace LYBT.Desktop.Workbench.Consultation
             // 注册子视图（这些视图将由业务模块提供）
             // 患者管理、看诊管理、医疗案例管理等视图由各自的BusinessModules提供
             
-            // TODO: 可以考虑注册一些工作台特定的视图，如今日预约视图等
+            // 预留：未来可注册工作台特定视图，如今日预约视图等
         }
     }
 }

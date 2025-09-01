@@ -3,34 +3,33 @@ using LYBT.Module.Consultation.Interfaces;
 using LYBT.Module.Consultation.Repositories;
 using LYBT.Module.Consultation.Services;
 using LYBT.Module.Consultation.Mapping;
-using LYBT.Module.Consultation.Helpers;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace LYBT.Module.Consultation
 {
     /// <summary>
-    /// 看诊模块注册 - 模块标准化重构
+    /// 看诊模块注册 - UltraThink标准化重构
     /// 负责注册看诊相关的所有服务、仓储和映射配置
+    /// 采用UltraThink双层架构：QueryService + BusinessService 专业分离
     /// </summary>
     public static class ConsultationModule
     {
         /// <summary>
-        /// 注册看诊模块服务 - UltraThink三层架构
+        /// 注册看诊模块服务 - UltraThink双层架构标准
         /// </summary>
         public static IServiceCollection AddConsultationModule(this IServiceCollection services)
         {
-            // 注册仓储服务
+            // 仓储层
             services.AddScoped<IConsultationRepository, ConsultationRepository>();
 
-            // UltraThink三层架构服务 - 替代Helper模式
-            services.AddScoped<Services.Core.ConsultationServiceCore>();
+            // UltraThink双层架构服务 - 查询和业务逻辑分离
             services.AddScoped<ConsultationQueryService>();
             services.AddScoped<ConsultationBusinessService>();
 
-            // 注册业务服务
+            // 主服务 - UltraThink纯委托模式，委托给专业服务层
             services.AddScoped<IConsultationService, ConsultationService>();
 
-            // 注册AutoMapper配置
+            // AutoMapper配置
             services.AddAutoMapper(cfg => 
             {
                 cfg.AddProfile<ConsultationMappingProfile>();

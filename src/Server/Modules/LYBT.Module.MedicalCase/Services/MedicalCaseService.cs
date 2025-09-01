@@ -8,20 +8,17 @@ using LYBT.Shared.Models.Contracts.MedicalCase;
 namespace LYBT.Module.MedicalCase.Services
 {
     /// <summary>
-    /// 医疗案例服务 - UltraThink三层架构纯委托模式
+    /// 医疗案例服务 - UltraThink双层架构纯委托模式
     /// </summary>
     public class MedicalCaseService : IMedicalCaseService
     {
-        private readonly Core.MedicalCaseServiceCore _coreService;
         private readonly MedicalCaseQueryService _queryService;
         private readonly MedicalCaseBusinessService _businessService;
 
         public MedicalCaseService(
-            Core.MedicalCaseServiceCore coreService,
             MedicalCaseQueryService queryService,
             MedicalCaseBusinessService businessService)
         {
-            _coreService = coreService ?? throw new ArgumentNullException(nameof(coreService));
             _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
             _businessService = businessService ?? throw new ArgumentNullException(nameof(businessService));
         }

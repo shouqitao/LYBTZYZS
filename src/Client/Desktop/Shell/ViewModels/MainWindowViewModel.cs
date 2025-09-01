@@ -254,18 +254,19 @@ namespace LYBT.Desktop.Shell.ViewModels
             System.Diagnostics.Debug.WriteLine("🔍 CheckLoginStatusAsync 开始");
             try
             {
+                // UltraThink修复: 使用AuthenticationService进行状态检查，确保与登录流程一致
                 var isLoggedIn = _servicesFacade.AuthenticationService.IsLoggedIn;
                 System.Diagnostics.Debug.WriteLine($"🔍 AuthenticationService.IsLoggedIn = {isLoggedIn}");
                 
                 if (isLoggedIn)
                 {
-                    System.Diagnostics.Debug.WriteLine("🔍 尝试获取当前用户...");
+                    System.Diagnostics.Debug.WriteLine("🔍 尝试通过AuthenticationService获取当前用户...");
                     var user = await _servicesFacade.AuthenticationService.GetCurrentUserAsync();
                     
                     if (user != null)
                     {
                         System.Diagnostics.Debug.WriteLine($"✅ 获取到当前用户: {user.Username} - {user.RealName}");
-                        CurrentUser = ConvertToUserDto(user);
+                        CurrentUser = user;
                         IsLoggedIn = true;
                         
                         // 更新命令状态
@@ -279,7 +280,7 @@ namespace LYBT.Desktop.Shell.ViewModels
                     }
                     else
                     {
-                        System.Diagnostics.Debug.WriteLine("❌ GetCurrentUserAsync 返回null");
+                        System.Diagnostics.Debug.WriteLine($"❌ AuthenticationService.GetCurrentUserAsync 返回null");
                     }
                 }
                 else
@@ -349,13 +350,14 @@ namespace LYBT.Desktop.Shell.ViewModels
             }
 
             // 更新标题和清理登录区域
-                Title = $"凌隐宝堂中医诊所诊疗系统 - {CurrentUser.RealName} ({roleDisplay})";
-                
-                // 清除登录区域
-                if (_regionManager.Regions.ContainsRegionWithName(RegionNames.LoginRegion))
-                {
-                    _regionManager.Regions[RegionNames.LoginRegion].RemoveAll();
-                }
+            var userDisplayName = string.IsNullOrEmpty(CurrentUser.RealName) ? CurrentUser.Username : CurrentUser.RealName;
+            Title = $"凌隐宝堂中医诊所诊疗系统 - {userDisplayName} ({roleDisplay})";
+            
+            // 清除登录区域
+            if (_regionManager.Regions.ContainsRegionWithName(RegionNames.LoginRegion))
+            {
+                _regionManager.Regions[RegionNames.LoginRegion].RemoveAll();
+            }
 
                 // 导航到对应的工作台
                 System.Diagnostics.Debug.WriteLine($"🚀 导航到: {workbenchView}");
