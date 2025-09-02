@@ -5,22 +5,31 @@
 [![Code Quality](https://img.shields.io/badge/quality-A%2B%20Enterprise-gold)](docs/reports/)
 [![.NET](https://img.shields.io/badge/.NET-8.0-purple)](https://dotnet.microsoft.com/download/dotnet/8.0)
 [![WPF](https://img.shields.io/badge/frontend-WPF-lightblue)](https://docs.microsoft.com/en-us/dotnet/desktop/wpf/)
+[![Projects](https://img.shields.io/badge/projects-48-blue)](#项目结构)
 
-> **🎆 重大里程碑**: UltraThink双层架构重构历史性完成！删除近15,000行冗余代码，实现93%+架构精简 (2025-08-31)
+> **🏆 重大里程碑**: UltraThink双层架构重构历史性完成！前端8模块零编译错误，删除近15,000行冗余代码 (2025-09-02)
 
 ## 📋 项目概述
 
 凌隐宝堂中医诊所诊疗系统是基于 .NET 8 的企业级纯中医诊所管理系统，采用 Web API 后端 + WPF 桌面前端架构，专为中医诊所量身定制的完整诊疗解决方案。
 
-**当前状态**: ✅ **生产就绪** | 🎆 **UltraThink双层架构完成** | 🏆 **零编译警告标准**
+**当前状态**: ✅ **生产就绪** | 🎆 **前端UltraThink双层架构完成** | 🏆 **零编译警告标准** | 📊 **48个项目**
 
 ## 🎯 核心特性
 
-### 🏗️ UltraThink双层架构 (2025-08-31重构完成)
-- **QueryService层**: 复杂查询专业化处理
+### 🏗️ 混合架构设计 (2025-09-02最新状态)
+
+**前端WPF客户端**: UltraThink双层架构 (✅ 完成)
+- **QueryService层**: 复杂查询专业化处理 
 - **BusinessService层**: 业务逻辑+CRUD统一管理
-- **主Service层**: 纯委托模式统一入口
-- **架构精简**: 相比传统架构减少93%+冗余代码
+- **主Module层**: 纯委托模式统一入口
+- **8个模块**: Auth, Users, Patients, MedicalCase, Consultation, Prescriptions, Herbs, Formula
+
+**后端Web API**: 传统三层架构 (稳定运行)
+- **Repository层**: 数据访问和持久化
+- **Service层**: 业务逻辑处理
+- **Controller层**: API接口暴露
+- **8个模块**: 对应前端模块提供API支持
 
 ### 🩺 中医诊疗核心功能
 - **患者档案管理**: 完整的患者基础信息和就诊历史
@@ -36,47 +45,73 @@
 - **智能缓存**: IMemoryCache性能优化，适配小型部署
 - **健康监控**: 8个端点覆盖数据库/缓存/系统资源
 
-## 🏗️ 项目架构
+## 🏗️ 项目架构 (48个项目)
 
-本项目采用标准的三层企业级架构，专注于中医诊所业务：
+本项目采用混合架构设计，前端UltraThink双层架构+后端传统三层架构：
 
 ```
 LYBTZYZS/
-├── LYBT.All.sln                # 总解决方案（所有项目）
-├── LYBT.Server.sln             # 后端解决方案
-├── LYBT.Desktop.sln            # 桌面客户端解决方案
-├── src/                        # 源代码
-│   ├── Server/                 # 后端服务 (.NET 8 Web API)
-│   │   ├── Core/               # 核心基础设施
-│   │   │   ├── LYBT.Infrastructure/  # 数据访问层
-│   │   │   └── LYBT.Entities/        # 实体模型
-│   │   ├── Modules/            # 8个业务模块
-│   │   │   ├── Auth/           # 认证授权
-│   │   │   ├── Users/          # 用户管理
-│   │   │   ├── Patients/       # 患者档案
-│   │   │   ├── MedicalCase/    # 医疗案例
-│   │   │   ├── Consultation/   # 看诊诊断
-│   │   │   ├── Prescriptions/  # 处方管理
-│   │   │   ├── Herbs/          # 药材管理
-│   │   │   └── Formula/        # 验方管理
-│   │   └── Services/           # API服务层
-│   │       └── LYBT.WebAPI/    # Web API入口
-│   ├── Client/                 # 前端应用
-│   │   └── Desktop/            # WPF桌面客户端
-│   │       ├── Core/           # 核心基础设施
-│   │       ├── Infrastructure/ # 基础设施层
-│   │       ├── Services/       # 服务层
-│   │       ├── Modules/        # 8个业务模块
-│   │       ├── Workbenches/    # 6个工作台
-│   │       └── Shell/          # 应用外壳
-│   └── Shared/                 # 共享组件
-│       ├── Models/             # 数据传输对象
-│       ├── Interfaces/         # 服务接口定义
-│       └── Utilities/          # 通用工具类
-├── tests/                      # 测试项目（14个）
-├── docs/                       # 完整文档库
-├── scripts/                    # 自动化脚本
-└── tools/                      # 用户工具
+├── 📁 解决方案文件 (3个)
+│   ├── LYBT.All.sln              # 总解决方案（48个项目）
+│   ├── LYBT.Server.sln           # 后端解决方案（11个项目）
+│   └── LYBT.Desktop.sln          # 桌面客户端解决方案（20个项目）
+│
+├── 📁 src/ 源代码 (31个项目)
+│   ├── 🖥️ Server/                # 后端服务 (.NET 8 Web API) - 11个项目
+│   │   ├── Core/                # 核心基础设施 (2个)
+│   │   │   ├── LYBT.Infrastructure/  # EF Core数据访问层
+│   │   │   └── LYBT.Entities/        # 实体模型定义
+│   │   ├── Modules/             # 8个业务模块 (传统三层架构)
+│   │   │   ├── LYBT.Module.Auth/           # 认证授权
+│   │   │   ├── LYBT.Module.Users/          # 用户管理
+│   │   │   ├── LYBT.Module.Patients/       # 患者档案
+│   │   │   ├── LYBT.Module.MedicalCase/    # 医疗案例
+│   │   │   ├── LYBT.Module.Consultation/   # 看诊诊断
+│   │   │   ├── LYBT.Module.Prescriptions/  # 处方管理
+│   │   │   ├── LYBT.Module.Herbs/          # 药材管理
+│   │   │   └── LYBT.Module.Formula/        # 验方管理
+│   │   └── Services/            # API服务层 (1个)
+│   │       └── LYBT.WebAPI/     # Web API入口点
+│   │
+│   ├── 🖥️ Client/               # 前端应用 (17个项目)
+│   │   └── Desktop/             # WPF桌面客户端
+│   │       ├── Core/            # 核心基础设施 (1个)
+│   │       ├── Infrastructure/  # 基础设施层 (1个)
+│   │       ├── Services/        # 服务层 (1个)
+│   │       ├── Modules/         # 8个业务模块 (UltraThink双层架构)
+│   │       │   ├── LYBT.Desktop.Auth/
+│   │       │   ├── LYBT.Desktop.Users/
+│   │       │   ├── LYBT.Desktop.Patients/
+│   │       │   ├── LYBT.Desktop.MedicalCase/
+│   │       │   ├── LYBT.Desktop.Consultation/
+│   │       │   ├── LYBT.Desktop.Prescriptions/
+│   │       │   ├── LYBT.Desktop.Herbs/
+│   │       │   └── LYBT.Desktop.Formula/
+│   │       ├── Workbenches/     # 7个工作台
+│   │       │   ├── Core/                    # 工作台核心
+│   │       │   ├── CashierWorkbench/        # 收银工作台
+│   │       │   ├── ConsultationWorkbench/   # 诊疗工作台
+│   │       │   ├── PharmacistWorkbench/     # 药师工作台
+│   │       │   ├── ReceptionistWorkbench/   # 接待工作台
+│   │       │   ├── SystemWorkbench/         # 系统管理工作台
+│   │       │   └── TherapistWorkbench/      # 治疗师工作台
+│   │       └── Shell/           # 应用外壳 (1个)
+│   │
+│   └── 📁 Shared/               # 共享组件 (3个项目)
+│       ├── LYBT.Shared.Models/      # 数据传输对象
+│       ├── LYBT.Shared.Interfaces/  # 服务接口定义
+│       └── LYBT.Shared.Utilities/   # 通用工具类
+│
+├── 📁 tests/                   # 测试项目 (14个项目)
+│   ├── Backend/                # 后端测试 (10个)
+│   ├── Client/                 # 客户端测试 (2个)
+│   └── UltraThink/             # UltraThink测试基础设施 (2个)
+│
+├── 📁 docs/                    # 完整文档库
+├── 📁 scripts/                 # 自动化脚本
+└── 📁 tools/                   # 用户工具
+
+📊 项目统计: 48个.csproj项目，前后端协同开发
 ```
 
 ## 🚀 快速开始
@@ -107,18 +142,22 @@ scripts\start-dev.bat
 
 ## 📚 核心功能
 
-### 8个核心模块（架构标准化完成 ✅）
+### 8个核心业务模块 (前后端架构对比)
 
-| 模块 | 功能描述 | 状态 |
-|-----|---------|------|
-| **Auth** | 身份认证和授权、JWT管理 | ✅ 完成 |
-| **Users** | 用户管理（包含医生功能） | ✅ 完成 |
-| **Patients** | 患者档案管理和基础接待 | ✅ 完成 |
-| **Herbs** | 中药材管理（仅处方用药） | ✅ 完成 |
-| **Formula** | 验方管理（经典处方模板） | ✅ 完成 |
-| **Consultation** | 看诊管理（中医四诊） | ✅ 完成 |
-| **MedicalCase** | 医疗案例（诊疗流程聚合根） | ✅ 完成 |
-| **Prescriptions** | 处方管理和智能建议 | ✅ 完成 |
+| 模块 | 功能描述 | 前端架构 | 后端架构 | 状态 |
+|-----|---------|---------|---------|------|
+| **Auth** | 身份认证和授权、JWT管理 | UltraThink双层 | 传统三层 | ✅ 完成 |
+| **Users** | 用户管理（包含医生功能） | UltraThink双层 | 传统三层 | ✅ 完成 |
+| **Patients** | 患者档案管理和基础接待 | UltraThink双层 | 传统三层 | ✅ 完成 |
+| **MedicalCase** | 医疗案例（诊疗流程聚合根） | UltraThink双层 | 传统三层 | ✅ 完成 |
+| **Consultation** | 看诊管理（中医四诊） | UltraThink双层 | 传统三层 | ✅ 完成 |
+| **Prescriptions** | 处方管理和智能建议 | UltraThink双层 | 传统三层 | ✅ 完成 |
+| **Herbs** | 中药材管理（仅处方用药） | UltraThink双层 | 传统三层 | ✅ 完成 |
+| **Formula** | 验方管理（经典处方模板） | UltraThink双层 | 传统三层 | ✅ 完成 |
+
+**架构说明**：
+- **前端UltraThink双层架构**: QueryService + BusinessService + Module (纯委托)
+- **后端传统三层架构**: Repository + Service + Controller (稳定可靠)
 
 **核心诊疗流程**：
 ```
@@ -199,10 +238,10 @@ scripts\start-dev.bat
 
 ```bash
 # 添加迁移 - 必须使用Infrastructure项目
-dotnet ef migrations add MigrationName --project src/Backend/Core/LYBT.Infrastructure --startup-project src/Backend/Services/LYBT.WebAPI
+dotnet ef migrations add MigrationName --project src/Server/Core/LYBT.Infrastructure --startup-project src/Server/Services/LYBT.WebAPI
 
 # 更新数据库
-dotnet ef database update --project src/Backend/Core/LYBT.Infrastructure --startup-project src/Backend/Services/LYBT.WebAPI
+dotnet ef database update --project src/Server/Core/LYBT.Infrastructure --startup-project src/Server/Services/LYBT.WebAPI
 
 # 运行所有测试
 dotnet test
@@ -213,11 +252,11 @@ dotnet test --collect:"XPlat Code Coverage" --results-directory coverage-report
 
 ## 🎯 开发路线图
 
-### 已完成里程碑（Q3 2025）✅
-- ✅ **UltraThink编译质量保证**：28个项目零编译警告 (2025-08-25)
-- ✅ **UltraThink项目文档标准化**：7个项目README现代化 (2025-08-23)
-- ✅ **架构重构完成**：8个核心业务模块标准化
-- ✅ **生产就绪基础**：零编译警告，工业级质量
+### 已完成里程碑（Q3-Q4 2025）✅
+- ✅ **UltraThink前端架构重构历史性完成**：8个模块零编译错误 (2025-09-02)
+- ✅ **48个项目架构标准化**：前端UltraThink双层+后端传统三层 (2025-09-02)
+- ✅ **UltraThink编译质量保证**：前后端零编译警告零错误 (2025-08-25)
+- ✅ **生产就绪基础**：工业级质量标准，可立即部署
 
 ### 当前阶段：测试体系建设（Q4 2025）
 
