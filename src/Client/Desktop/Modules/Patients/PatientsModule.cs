@@ -21,15 +21,13 @@ namespace LYBT.Desktop.Patients
 
     public void RegisterTypes(IContainerRegistry containerRegistry)
     {
-        // UltraThink三层架构服务注册
-        containerRegistry.RegisterSingleton<IPatientCoreService, PatientCoreService>();
-        containerRegistry.RegisterSingleton<IPatientQueryService, PatientQueryService>();
-        containerRegistry.RegisterSingleton<IPatientBusinessService, PatientBusinessService>();
+        // UltraThink双层架构服务注册
+        containerRegistry.RegisterSingleton<LYBT.Desktop.Patients.Interfaces.IPatientQueryService, PatientQueryService>();
+        containerRegistry.RegisterSingleton<LYBT.Desktop.Patients.Interfaces.IPatientBusinessService, PatientBusinessService>();
         
         // UltraThink纯委托主服务注册
-        containerRegistry.RegisterSingleton<PatientModule>();
-        containerRegistry.RegisterSingleton<IPatientService>(container => container.Resolve<PatientModule>());
-        containerRegistry.RegisterSingleton<IPatientModule>(container => container.Resolve<PatientModule>());
+        containerRegistry.RegisterSingleton<Services.PatientModule>();
+        containerRegistry.RegisterSingleton<LYBT.Desktop.Patients.Interfaces.IPatientModule>(container => container.Resolve<Services.PatientModule>());
         
         // 注册视图和视图模型
         containerRegistry.RegisterForNavigation<PatientManagementView, PatientManagementViewModel>();

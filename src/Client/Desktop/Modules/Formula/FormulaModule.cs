@@ -4,6 +4,7 @@ using Prism.Modularity;
 using LYBT.Desktop.Formula.Views;
 using LYBT.Desktop.Formula.ViewModels;
 using LYBT.Desktop.Formula.Services;
+using LYBT.Desktop.Formula.Interfaces;
 using LYBT.Shared.Interfaces.Services;
 
 namespace LYBT.Desktop.Formula
@@ -20,11 +21,16 @@ namespace LYBT.Desktop.Formula
 
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            // UltraThink模块自治：注册业务服务接口实现
+            // UltraThink双层架构服务注册
+            containerRegistry.RegisterSingleton<IFormulaQueryService, FormulaQueryService>();
+            containerRegistry.RegisterSingleton<IFormulaBusinessService, FormulaBusinessService>();
+            
+            // UltraThink纯委托主服务注册
             containerRegistry.RegisterSingleton<Services.FormulaModule>();
             containerRegistry.RegisterSingleton<IFormulaService>(container => container.Resolve<Services.FormulaModule>());
+            containerRegistry.RegisterSingleton<IFormulaModule>(container => container.Resolve<Services.FormulaModule>());
             
-            // UltraThink四层架构：注册标准ViewModel
+            // 注册视图和视图模型
             containerRegistry.RegisterForNavigation<FormulaManagementView, FormulaManagementViewModel>();
             
             // 注册对话框

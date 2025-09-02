@@ -260,7 +260,7 @@ namespace LYBT.Desktop.Patients.ViewModels
             {
                 try
                 {
-                    ServiceResult result;
+                    ServiceResult<bool> result;
                     if (isEnabled)
                     {
                         result = await _patientService.DisableAsync(patient.Id);

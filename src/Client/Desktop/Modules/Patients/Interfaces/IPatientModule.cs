@@ -8,27 +8,20 @@ using LYBT.Shared.Models.Contracts.Patients;
 namespace LYBT.Desktop.Patients.Interfaces;
 
 /// <summary>
-/// 患者模块统一接口 - UltraThink三层架构统一入口
-/// 继承共享接口以保持向后兼容性
+/// 患者模块 - UltraThink双层架构纯委托层
+/// 职责：统一服务入口，请求路由分发
 /// </summary>
-public interface IPatientModule : LYBT.Shared.Interfaces.Services.IPatientService
+public interface IPatientModule
 {
-    #region 模块特定方法（不在共享接口中）
+    /// <summary>
+    /// 分页查询患者
+    /// </summary>
+    Task<ServiceResult<PagedResult<PatientDto>>> GetPagedAsync(PatientPagedQueryDto query);
     
     /// <summary>
-    /// 根据姓名获取患者
+    /// 根据ID获取患者
     /// </summary>
-    Task<ServiceResult<PatientDto>> GetByNameAsync(string name);
-    
-    /// <summary>
-    /// 根据手机号获取患者
-    /// </summary>
-    Task<ServiceResult<PatientDto>> GetByPhoneAsync(string phone);
-    
-    /// <summary>
-    /// 根据身份证号获取患者
-    /// </summary>
-    Task<ServiceResult<PatientDto>> GetByIdCardAsync(string idCard);
+    Task<ServiceResult<PatientDto>> GetByIdAsync(Guid id);
     
     /// <summary>
     /// 搜索患者
@@ -36,59 +29,32 @@ public interface IPatientModule : LYBT.Shared.Interfaces.Services.IPatientServic
     Task<ServiceResult<List<PatientDto>>> SearchAsync(string keyword);
     
     /// <summary>
-    /// 获取活跃患者列表
+    /// 获取患者统计
     /// </summary>
-    Task<ServiceResult<List<PatientDto>>> GetActivePatientsAsync();
+    Task<ServiceResult<PatientStatisticsDto>> GetStatisticsAsync();
     
     /// <summary>
-    /// 完善患者档案
+    /// 创建患者
     /// </summary>
-    Task<ServiceResult<PatientDto>> CompletePatientProfileAsync(Guid patientId, PatientProfileDto profileDto);
+    Task<ServiceResult<PatientDto>> CreateAsync(PatientCreateDto createDto);
     
     /// <summary>
-    /// 记录患者就诊
+    /// 更新患者
     /// </summary>
-    Task<ServiceResult> RecordPatientVisitAsync(Guid patientId, PatientVisitDto visitInfo);
+    Task<ServiceResult<PatientDto>> UpdateAsync(Guid id, PatientUpdateDto updateDto);
     
     /// <summary>
-    /// 获取患者就诊历史
+    /// 启用患者
     /// </summary>
-    Task<ServiceResult<List<PatientVisitHistoryDto>>> GetPatientVisitHistoryAsync(Guid patientId);
+    Task<ServiceResult<bool>> EnableAsync(Guid patientId);
     
     /// <summary>
-    /// 导入患者数据
+    /// 禁用患者
     /// </summary>
-    Task<ServiceResult<PatientImportResultDto>> ImportPatientsAsync(PatientImportDto importDto);
+    Task<ServiceResult<bool>> DisableAsync(Guid patientId);
     
     /// <summary>
-    /// 导出患者数据
+    /// 删除患者
     /// </summary>
-    Task<ServiceResult<PatientExportResultDto>> ExportPatientsAsync(PatientExportQueryDto exportQuery);
-    
-    /// <summary>
-    /// 批量启用患者
-    /// </summary>
-    Task<ServiceResult<int>> BatchEnableAsync(List<Guid> ids);
-    
-    /// <summary>
-    /// 批量禁用患者
-    /// </summary>
-    Task<ServiceResult<int>> BatchDisableAsync(List<Guid> ids);
-    
-    /// <summary>
-    /// 获取患者统计信息
-    /// </summary>
-    Task<ServiceResult<PatientStatisticsDto>> GetPatientStatisticsAsync();
-    
-    /// <summary>
-    /// 检查手机号可用性
-    /// </summary>
-    Task<ServiceResult<bool>> CheckPhoneAvailabilityAsync(string phone, Guid? excludePatientId = null);
-    
-    /// <summary>
-    /// 检查身份证号可用性
-    /// </summary>
-    Task<ServiceResult<bool>> CheckIdCardAvailabilityAsync(string idCard, Guid? excludePatientId = null);
-    
-    #endregion
+    Task<ServiceResult<bool>> DeleteAsync(Guid patientId);
 }

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Shared.Models.Contracts.Formulas;
+using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Interfaces.Services;
 
 namespace LYBT.Desktop.Formula.Interfaces;
@@ -55,15 +55,6 @@ public interface IFormulaModule : IFormulaService, IDisposable
     /// </summary>
     Task<ServiceResult<FormulaDto>> CloneFormulaAsync(Guid formulaId, string newName, Guid userId);
 
-    /// <summary>
-    /// 验证验方完整性
-    /// </summary>
-    Task<ServiceResult<FormulaValidationResultDto>> ValidateFormulaCompletenessAsync(Guid formulaId);
-
-    /// <summary>
-    /// 获取验方使用历史
-    /// </summary>
-    Task<ServiceResult<List<FormulaUsageHistoryDto>>> GetFormulaUsageHistoryAsync(Guid formulaId);
 
     /// <summary>
     /// 批量启用验方
@@ -90,10 +81,6 @@ public interface IFormulaModule : IFormulaService, IDisposable
     /// </summary>
     Task<ServiceResult<FormulaImportResultDto>> ImportFormulasAsync(FormulaImportDto importDto);
 
-    /// <summary>
-    /// 导出验方
-    /// </summary>
-    Task<ServiceResult<FormulaExportResultDto>> ExportFormulasAsync(FormulaExportQueryDto exportQuery);
 
     #endregion
 }

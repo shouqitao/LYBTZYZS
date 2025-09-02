@@ -138,12 +138,7 @@ namespace LYBT.Desktop.Auth.ViewModels
             // 监听登出事件以清除登录状态消息
             EventAggregator.GetEvent<LogoutEvent>().Subscribe(OnLogout, ThreadOption.UIThread);
 
-            // 订阅模块服务事件
-            _authModule.AuthStatusChanged += OnAuthStatusChanged;
-            _authModule.ApiConnectionChanged += OnApiConnectionChanged;
-
-            // 立即加载保存的凭据
-            LoadSavedCredentials();
+            // 简化版本：不订阅复杂事件，不自动加载凭据
 
             // 模块服务会自动启动API连接监控
         }
@@ -327,35 +322,8 @@ namespace LYBT.Desktop.Auth.ViewModels
         /// </summary>
         private void LoadSavedCredentials()
         {
-            try
-            {
-                // UltraThink四层架构：使用模块化服务加载凭据
-                var result = _authModule.LoadSavedCredentials();
-                if (result.IsSuccess && result.Data != null)
-                {
-                    var savedRequest = result.Data;
-                    LoginRequest.Username = savedRequest.Username;
-                    LoginRequest.Password = savedRequest.Password;
-                    LoginRequest.RememberMe = savedRequest.RememberMe;
-                    HasSavedPassword = !string.IsNullOrEmpty(savedRequest.Password);
-                }
-                else
-                {
-                    HasSavedPassword = false;
-                }
-
-                // 触发属性变更通知
-                RaisePropertyChanged(nameof(Username));
-                RaisePropertyChanged(nameof(Password));
-                RaisePropertyChanged(nameof(RememberMe));
-                RaisePropertyChanged(nameof(HasSavedPassword));
-            }
-            catch (Exception ex)
-            {
-                // 静默处理错误，避免影响用户体验
-                HasSavedPassword = false;
-                _ = HandleErrorAsync("加载凭据", ex, false);
-            }
+            // 简化版本：不支持保存凭据功能
+            HasSavedPassword = false;
         }
 
         #endregion
@@ -370,8 +338,7 @@ namespace LYBT.Desktop.Auth.ViewModels
             // 取消事件订阅
             if (_authModule != null)
             {
-                _authModule.AuthStatusChanged -= OnAuthStatusChanged;
-                _authModule.ApiConnectionChanged -= OnApiConnectionChanged;
+                // 简化版本：无事件订阅需要清理
             }
 
             base.OnDisposing();
