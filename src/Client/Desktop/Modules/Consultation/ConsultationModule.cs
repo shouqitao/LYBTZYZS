@@ -23,9 +23,13 @@ namespace LYBT.Desktop.Consultation
 
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            // UltraThink模块自治：注册业务服务接口实现
+            // UltraThink双层架构服务注册
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Consultation.Interfaces.IConsultationQueryService, ConsultationQueryService>();
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Consultation.Interfaces.IConsultationBusinessService, ConsultationBusinessService>();
+            
+            // UltraThink纯委托主服务注册
             containerRegistry.RegisterSingleton<Services.ConsultationModule>();
-            containerRegistry.RegisterSingleton<IConsultationService>(container => container.Resolve<Services.ConsultationModule>());
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Consultation.Interfaces.IConsultationModule>(container => container.Resolve<Services.ConsultationModule>());
 
             // 注册简化后的视图模型
             containerRegistry.Register<ConsultationMainViewModel>();

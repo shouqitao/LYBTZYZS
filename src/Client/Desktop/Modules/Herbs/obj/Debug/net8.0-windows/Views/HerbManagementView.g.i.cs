@@ -60,7 +60,7 @@ namespace LYBT.Desktop.Herbs.Views {
                 return;
             }
             _contentLoaded = true;
-            System.Uri resourceLocater = new System.Uri("/LYBT.Desktop.Herbs;V1.0.0.0;component/views/herbmanagementview.xaml", System.UriKind.Relative);
+            System.Uri resourceLocater = new System.Uri("/LYBT.Desktop.Herbs;component/views/herbmanagementview.xaml", System.UriKind.Relative);
             
             #line 1 "..\..\..\..\Views\HerbManagementView.xaml"
             System.Windows.Application.LoadComponent(this, resourceLocater);

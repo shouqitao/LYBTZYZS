@@ -75,4 +75,81 @@ namespace LYBT.Shared.Models.Contracts.Formula
         [DisplayName("备注")]
         public string? Notes { get; set; }
     }
+
+    /// <summary>
+    /// 验方类型枚举DTO
+    /// </summary>
+    public class FormulaTypeDto
+    {
+        public string Type { get; set; } = string.Empty;
+        public string DisplayName { get; set; } = string.Empty;
+        public string? Description { get; set; }
+        public int Count { get; set; }
+    }
+
+    /// <summary>
+    /// 验方搜索DTO
+    /// </summary>
+    public class FormulaSearchDto : PagedQueryBaseDto
+    {
+        [DisplayName("验方名称")]
+        public string? Name { get; set; }
+
+        [DisplayName("功效关键词")]
+        public string? Effect { get; set; }
+
+        [DisplayName("验方类型")]
+        public string? Type { get; set; }
+
+        [DisplayName("包含药材")]
+        public List<Guid>? HerbIds { get; set; }
+
+        [DisplayName("症状关键词")]
+        public string? Symptoms { get; set; }
+
+        [DisplayName("创建者")]
+        public Guid? CreatedBy { get; set; }
+    }
+
+
+    /// <summary>
+    /// 验方复制结果DTO
+    /// </summary>
+    public class FormulaCopyResultDto
+    {
+        public Guid NewFormulaId { get; set; }
+        public string NewFormulaName { get; set; } = string.Empty;
+        public bool IsSuccess { get; set; }
+        public string? Message { get; set; }
+        public DateTime CopyTime { get; set; }
+        public string? CopiedBy { get; set; }
+    }
+
+    /// <summary>
+    /// 验方使用统计DTO
+    /// </summary>
+    public class FormulaUsageStatDto
+    {
+        public Guid FormulaId { get; set; }
+        public string FormulaName { get; set; } = string.Empty;
+        public int UsageCount { get; set; }
+        public int PatientCount { get; set; } // 使用过的患者数
+        public decimal SuccessRate { get; set; } // 成功率
+        public DateTime LastUsedDate { get; set; }
+        public List<string> CommonSymptoms { get; set; } = new List<string>();
+    }
+
+    /// <summary>
+    /// 验方效果评估DTO
+    /// </summary>
+    public class FormulaEffectivenessDto
+    {
+        public Guid FormulaId { get; set; }
+        public string FormulaName { get; set; } = string.Empty;
+        public decimal OverallRating { get; set; } // 1-5分
+        public int TotalReviews { get; set; }
+        public List<string> PositiveEffects { get; set; } = new List<string>();
+        public List<string> SideEffects { get; set; } = new List<string>();
+        public string? RecommendationLevel { get; set; }
+    }
 }

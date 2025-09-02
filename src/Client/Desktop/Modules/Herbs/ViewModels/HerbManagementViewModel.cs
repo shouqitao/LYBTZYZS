@@ -208,7 +208,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
 
             if (confirm)
             {
-                ServiceResult result = isEnabled 
+                ServiceResult<bool> result = isEnabled 
                     ? await _herbService.DisableAsync(herb.Id)
                     : await _herbService.EnableAsync(herb.Id);
 

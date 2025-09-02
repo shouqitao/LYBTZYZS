@@ -1,128 +1,73 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.MedicalCase;
-using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Desktop.MedicalCase.Interfaces;
 
 /// <summary>
-/// 医案模块接口 - UltraThink三层架构模块层
-/// 职责：统一模块入口，事件管理，模块间协调
+/// 医案模块接口 - UltraThink双层架构简化版
+/// 职责：统一服务入口，纯委托模式
 /// </summary>
-public interface IMedicalCaseModule : IMedicalCaseService, IDisposable
+public interface IMedicalCaseModule : IDisposable
 {
-    #region 事件定义
+    #region 基础查询操作 - 简化版本
 
     /// <summary>
-    /// 医案状态变更事件
+    /// 根据ID获取医案
     /// </summary>
-    event EventHandler<MedicalCaseStatusChangedEventArgs>? MedicalCaseStatusChanged;
+    Task<ServiceResult<MedicalCaseDetailDto>> GetByIdAsync(Guid id);
 
     /// <summary>
-    /// 医案操作事件
+    /// 分页查询医案
     /// </summary>
-    event EventHandler<MedicalCaseOperationEventArgs>? MedicalCaseOperation;
+    Task<ServiceResult<PagedResult<MedicalCaseDto>>> GetPagedAsync(PagedQueryBaseDto query);
 
     /// <summary>
-    /// 诊疗流程事件
+    /// 根据患者ID获取医案列表
     /// </summary>
-    event EventHandler<ConsultationWorkflowEventArgs>? ConsultationWorkflow;
+    Task<ServiceResult<List<MedicalCaseDto>>> GetByPatientIdAsync(Guid patientId);
+
+    /// <summary>
+    /// 获取患者活跃医案
+    /// </summary>
+    Task<ServiceResult<MedicalCaseDto?>> GetActiveByPatientIdAsync(Guid patientId);
 
     #endregion
 
-    #region 模块特定方法
+    #region 基础业务操作 - 简化版本
 
     /// <summary>
-    /// 获取医案统计摘要
+    /// 创建医案
     /// </summary>
-    Task<ServiceResult<MedicalCaseStatisticsSummaryDto>> GetStatisticsSummaryAsync(DateTime? startDate = null, DateTime? endDate = null);
+    Task<ServiceResult<MedicalCaseDto>> CreateAsync(MedicalCaseCreateDto dto);
 
     /// <summary>
-    /// 获取患者医案历史统计
+    /// 更新医案
     /// </summary>
-    Task<ServiceResult<PatientMedicalCaseStatDto>> GetPatientMedicalCaseStatAsync(Guid patientId, DateTime? startDate = null, DateTime? endDate = null);
+    Task<ServiceResult<MedicalCaseDto>> UpdateAsync(Guid id, MedicalCaseDetailDto dto);
 
     /// <summary>
-    /// 获取医生工作统计
+    /// 删除医案
     /// </summary>
-    Task<ServiceResult<DoctorMedicalCaseStatisticsDto>> GetDoctorMedicalCaseStatisticsAsync(Guid doctorId, DateTime? startDate = null, DateTime? endDate = null);
+    Task<ServiceResult<bool>> DeleteAsync(Guid id);
 
     /// <summary>
-    /// 批量更新医案状态
+    /// 开始医案
     /// </summary>
-    Task<ServiceResult<MedicalCaseBatchOperationResultDto>> BatchUpdateStatusAsync(List<Guid> medicalCaseIds, MedicalCaseStatus status);
+    Task<ServiceResult<bool>> StartAsync(Guid id);
 
     /// <summary>
-    /// 获取诊疗流程状态
+    /// 完成医案
     /// </summary>
-    Task<ServiceResult<ConsultationWorkflowStatusDto>> GetConsultationWorkflowStatusAsync(Guid medicalCaseId);
+    Task<ServiceResult<bool>> CompleteAsync(Guid id);
 
     /// <summary>
-    /// 开始看诊流程
+    /// 取消医案
     /// </summary>
-    Task<ServiceResult<bool>> StartConsultationWorkflowAsync(Guid medicalCaseId);
-
-    /// <summary>
-    /// 完成看诊流程
-    /// </summary>
-    Task<ServiceResult<bool>> CompleteConsultationWorkflowAsync(Guid medicalCaseId, string completionNotes);
-
-    /// <summary>
-    /// 暂停看诊流程
-    /// </summary>
-    Task<ServiceResult<bool>> PauseConsultationWorkflowAsync(Guid medicalCaseId, string pauseReason);
-
-    /// <summary>
-    /// 恢复看诊流程
-    /// </summary>
-    Task<ServiceResult<bool>> ResumeConsultationWorkflowAsync(Guid medicalCaseId);
+    Task<ServiceResult<bool>> CancelAsync(Guid id);
 
     #endregion
-}
-
-/// <summary>
-/// 医案状态变更事件参数
-/// </summary>
-public class MedicalCaseStatusChangedEventArgs : EventArgs
-{
-    public Guid MedicalCaseId { get; set; }
-    public MedicalCaseStatus OldStatus { get; set; }
-    public MedicalCaseStatus NewStatus { get; set; }
-    public string Reason { get; set; } = string.Empty;
-    public DateTime ChangedAt { get; set; }
-    public Guid DoctorId { get; set; }
-    public string DoctorName { get; set; } = string.Empty;
-}
-
-/// <summary>
-/// 医案操作事件参数
-/// </summary>
-public class MedicalCaseOperationEventArgs : EventArgs
-{
-    public Guid MedicalCaseId { get; set; }
-    public string Operation { get; set; } = string.Empty;
-    public string OperationDetails { get; set; } = string.Empty;
-    public DateTime OperatedAt { get; set; }
-    public Guid OperatorId { get; set; }
-    public string OperatorName { get; set; } = string.Empty;
-    public bool IsSuccess { get; set; }
-    public string? ErrorMessage { get; set; }
-}
-
-/// <summary>
-/// 诊疗流程事件参数
-/// </summary>
-public class ConsultationWorkflowEventArgs : EventArgs
-{
-    public Guid MedicalCaseId { get; set; }
-    public string WorkflowStep { get; set; } = string.Empty;
-    public string StepDetails { get; set; } = string.Empty;
-    public DateTime StepExecutedAt { get; set; }
-    public Guid DoctorId { get; set; }
-    public string DoctorName { get; set; } = string.Empty;
-    public bool IsCompleted { get; set; }
 }

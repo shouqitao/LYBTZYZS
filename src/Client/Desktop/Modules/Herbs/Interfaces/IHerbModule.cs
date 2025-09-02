@@ -1,93 +1,68 @@
-using LYBT.Shared.Models;
-using LYBT.Shared.Models.Herbs;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Herbs;
 
 namespace LYBT.Desktop.Herbs.Interfaces;
 
 /// <summary>
-/// 中药材模块主接口 - UltraThink三层架构纯委托层
-/// 职责：统一服务入口，纯委托模式，无业务逻辑
+/// 药材模块接口 - UltraThink双层架构简化版
+/// 职责：统一服务入口，纯委托模式
 /// </summary>
-public interface IHerbModule
+public interface IHerbModule : IDisposable
 {
-    #region 基础CRUD操作 (委托给CoreService)
+    #region 基础查询操作
     
     /// <summary>
-    /// 根据ID获取中药材信息
+    /// 分页查询药材
     /// </summary>
-    Task<ServiceResult<HerbDto>> GetHerbByIdAsync(Guid id);
+    Task<ServiceResult<PagedResult<HerbDto>>> GetPagedAsync(HerbPagedQueryDto query);
     
     /// <summary>
-    /// 获取所有中药材列表
+    /// 根据ID获取药材
     /// </summary>
-    Task<ServiceResult<List<HerbDto>>> GetAllHerbsAsync();
+    Task<ServiceResult<HerbDto>> GetByIdAsync(Guid id);
     
     /// <summary>
-    /// 创建新的中药材
+    /// 搜索药材
     /// </summary>
-    Task<ServiceResult<HerbDto>> CreateHerbAsync(HerbCreateDto createDto);
+    Task<ServiceResult<List<HerbDto>>> SearchAsync(string keyword);
     
     /// <summary>
-    /// 更新中药材信息
+    /// 获取药材统计
     /// </summary>
-    Task<ServiceResult<HerbDto>> UpdateHerbAsync(Guid id, HerbUpdateDto updateDto);
-    
-    /// <summary>
-    /// 删除中药材
-    /// </summary>
-    Task<ServiceResult<bool>> DeleteHerbAsync(Guid id);
+    Task<ServiceResult<HerbStatisticsDto>> GetStatisticsAsync();
     
     #endregion
     
-    #region 查询和搜索功能 (委托给QueryService)
+    #region 基础业务操作
     
     /// <summary>
-    /// 搜索中药材
+    /// 创建药材
     /// </summary>
-    Task<ServiceResult<PagedResult<HerbDto>>> SearchHerbsAsync(HerbSearchDto searchDto);
+    Task<ServiceResult<HerbDto>> CreateAsync(HerbCreateDto createDto);
     
     /// <summary>
-    /// 按分类筛选中药材
+    /// 更新药材
     /// </summary>
-    Task<ServiceResult<List<HerbDto>>> GetHerbsByCategoryAsync(string category);
+    Task<ServiceResult<HerbDto>> UpdateAsync(Guid id, HerbUpdateDto updateDto);
     
     /// <summary>
-    /// 获取中药材统计信息
+    /// 启用药材
     /// </summary>
-    Task<ServiceResult<HerbStatisticsDto>> GetHerbStatisticsAsync();
+    Task<ServiceResult<bool>> EnableAsync(Guid herbId);
     
     /// <summary>
-    /// 获取价格趋势分析
+    /// 禁用药材
     /// </summary>
-    Task<ServiceResult<List<HerbPriceTrendDto>>> GetPriceTrendsAsync(Guid herbId, int days = 30);
-    
-    #endregion
-    
-    #region 业务逻辑功能 (委托给BusinessService)
+    Task<ServiceResult<bool>> DisableAsync(Guid herbId);
     
     /// <summary>
-    /// 检查药材配伍禁忌
+    /// 删除药材
     /// </summary>
-    Task<ServiceResult<CompatibilityCheckResult>> CheckCompatibilityAsync(List<Guid> herbIds);
-    
-    /// <summary>
-    /// 计算处方总价
-    /// </summary>
-    Task<ServiceResult<decimal>> CalculateFormulaPriceAsync(List<HerbDosageDto> herbDosages);
-    
-    /// <summary>
-    /// 获取价格变更历史
-    /// </summary>
-    Task<ServiceResult<List<HerbPriceHistoryDto>>> GetPriceHistoryAsync(Guid herbId);
-    
-    /// <summary>
-    /// 批量导入中药材数据
-    /// </summary>
-    Task<ServiceResult<HerbImportResultDto>> ImportHerbsFromExcelAsync(string filePath);
-    
-    /// <summary>
-    /// 导出中药材数据到Excel
-    /// </summary>
-    Task<ServiceResult<string>> ExportHerbsToExcelAsync(HerbExportDto exportDto);
+    Task<ServiceResult<bool>> DeleteAsync(Guid herbId);
     
     #endregion
 }

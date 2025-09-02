@@ -442,4 +442,235 @@ namespace LYBT.Shared.Models.Contracts.Herbs
             }
         }
     }
+
+    /// <summary>
+    /// 药材用量DTO (处方中的药材用量信息) - HerbDosageDto的别名
+    /// </summary>
+    public class HerbDosageDto : FormulaIngredientDto
+    {
+        /// <summary>用法说明</summary>
+        [DisplayName("用法说明")]
+        public string? Usage { get; set; }
+
+        /// <summary>特殊要求</summary>
+        [DisplayName("特殊要求")]
+        public string? SpecialInstructions { get; set; }
+    }
+
+    /// <summary>
+    /// 药材价格更新结果DTO
+    /// </summary>
+    public class HerbPriceUpdateResultDto
+    {
+        public Guid HerbId { get; set; }
+        public string HerbName { get; set; } = string.Empty;
+        public decimal OldPrice { get; set; }
+        public decimal NewPrice { get; set; }
+        public bool IsSuccess { get; set; }
+        public string? Message { get; set; }
+        public DateTime UpdateTime { get; set; }
+        public string? UpdatedBy { get; set; }
+    }
+
+    /// <summary>
+    /// 配伍禁忌检查结果
+    /// </summary>
+    public class CompatibilityCheckResult
+    {
+        /// <summary>是否安全（无配伍禁忌）</summary>
+        public bool IsSafe { get; set; }
+
+        /// <summary>配伍冲突列表</summary>
+        public List<CompatibilityConflict> Conflicts { get; set; } = new List<CompatibilityConflict>();
+
+        /// <summary>警告信息</summary>
+        public List<string> Warnings { get; set; } = new List<string>();
+
+        /// <summary>建议信息</summary>
+        public List<string> Suggestions { get; set; } = new List<string>();
+    }
+
+    /// <summary>
+    /// 配伍冲突信息
+    /// </summary>
+    public class CompatibilityConflict
+    {
+        public Guid Herb1Id { get; set; }
+        public string Herb1Name { get; set; } = string.Empty;
+        public Guid Herb2Id { get; set; }
+        public string Herb2Name { get; set; } = string.Empty;
+        public string ConflictType { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public string Severity { get; set; } = "Medium"; // Low, Medium, High, Critical
+    }
+
+    /// <summary>
+    /// 处方验证结果
+    /// </summary>
+    public class PrescriptionValidationResult
+    {
+        public bool IsValid { get; set; }
+        public List<string> Errors { get; set; } = new List<string>();
+        public List<string> Warnings { get; set; } = new List<string>();
+        public CompatibilityCheckResult? CompatibilityResult { get; set; }
+        public decimal TotalPrice { get; set; }
+    }
+
+    /// <summary>
+    /// 药材使用注意事项DTO
+    /// </summary>
+    public class HerbUsagePrecautionDto
+    {
+        public Guid HerbId { get; set; }
+        public string HerbName { get; set; } = string.Empty;
+        public List<string> Precautions { get; set; } = new List<string>();
+        public List<string> Contraindications { get; set; } = new List<string>();
+        public List<string> SideEffects { get; set; } = new List<string>();
+        public string? MaxDailyDosage { get; set; }
+        public string? PregnancyCategory { get; set; }
+    }
+
+    /// <summary>
+    /// 配伍建议DTO
+    /// </summary>
+    public class CompatibilitySuggestionDto
+    {
+        public Guid HerbId { get; set; }
+        public string HerbName { get; set; } = string.Empty;
+        public string SuggestionType { get; set; } = string.Empty; // Enhance, Reduce, Replace
+        public string Reason { get; set; } = string.Empty;
+        public decimal RecommendedDosage { get; set; }
+        public string? Usage { get; set; }
+    }
+
+    /// <summary>
+    /// 处方价格计算结果DTO
+    /// </summary>
+    public class PrescriptionPriceCalculationDto
+    {
+        public List<HerbDosageDto> HerbItems { get; set; } = new List<HerbDosageDto>();
+        public decimal SubTotal { get; set; }
+        public decimal DiscountAmount { get; set; }
+        public decimal TaxAmount { get; set; }
+        public decimal TotalAmount { get; set; }
+        public string? DiscountReason { get; set; }
+        public string? PaymentMethod { get; set; }
+    }
+
+    /// <summary>
+    /// 药材导入结果DTO
+    /// </summary>
+    public class HerbImportResultDto
+    {
+        public int TotalCount { get; set; }
+        public int SuccessCount { get; set; }
+        public int FailedCount { get; set; }
+        public List<string> Errors { get; set; } = new List<string>();
+        public List<string> Warnings { get; set; } = new List<string>();
+        public string ImportedBy { get; set; } = string.Empty;
+        public DateTime ImportTime { get; set; }
+    }
+
+    /// <summary>
+    /// 药材导出设置DTO
+    /// </summary>
+    public class HerbExportDto
+    {
+        public List<Guid> HerbIds { get; set; } = new List<Guid>();
+        public string ExportFormat { get; set; } = "Excel"; // Excel, CSV, PDF
+        public bool IncludePriceInfo { get; set; } = true;
+        public bool IncludeStockInfo { get; set; } = true;
+        public string? FileName { get; set; }
+    }
+
+    /// <summary>
+    /// 药材导入验证结果DTO
+    /// </summary>
+    public class HerbImportValidationDto
+    {
+        public bool IsValid { get; set; }
+        public List<string> Errors { get; set; } = new List<string>();
+        public List<string> Warnings { get; set; } = new List<string>();
+        public int ValidRowCount { get; set; }
+        public int InvalidRowCount { get; set; }
+    }
+
+    /// <summary>
+    /// 药材审核信息DTO
+    /// </summary>
+    public class HerbApprovalDto
+    {
+        public bool IsApproved { get; set; }
+        public string? ApprovalReason { get; set; }
+        public string? RejectionReason { get; set; }
+        public string? ApprovedBy { get; set; }
+        public DateTime? ApprovalTime { get; set; }
+    }
+
+    /// <summary>
+    /// 药材推荐DTO
+    /// </summary>
+    public class HerbRecommendationDto
+    {
+        public Guid HerbId { get; set; }
+        public string HerbName { get; set; } = string.Empty;
+        public decimal RecommendedDosage { get; set; }
+        public string Unit { get; set; } = "克";
+        public string? Effect { get; set; }
+        public string RecommendationReason { get; set; } = string.Empty;
+        public decimal MatchScore { get; set; } // 0-100的匹配分数
+    }
+
+    /// <summary>
+    /// 药材使用模式分析DTO
+    /// </summary>
+    public class HerbUsagePatternDto
+    {
+        public List<HerbUsageStatDto> UsageStats { get; set; } = new List<HerbUsageStatDto>();
+        public int TotalPrescriptions { get; set; }
+        public DateTime AnalysisPeriodStart { get; set; }
+        public DateTime AnalysisPeriodEnd { get; set; }
+    }
+
+    /// <summary>
+    /// 药材使用统计DTO
+    /// </summary>
+    public class HerbUsageStatDto
+    {
+        public Guid HerbId { get; set; }
+        public string HerbName { get; set; } = string.Empty;
+        public int UsageCount { get; set; }
+        public decimal TotalQuantity { get; set; }
+        public decimal AverageDosage { get; set; }
+        public decimal UsagePercentage { get; set; }
+    }
+
+    /// <summary>
+    /// 药材采购建议DTO
+    /// </summary>
+    public class HerbPurchaseSuggestionDto
+    {
+        public Guid HerbId { get; set; }
+        public string HerbName { get; set; } = string.Empty;
+        public decimal CurrentStock { get; set; }
+        public decimal RecommendedPurchaseQuantity { get; set; }
+        public decimal EstimatedUsage { get; set; }
+        public string Unit { get; set; } = "克";
+        public string? Supplier { get; set; }
+        public decimal EstimatedCost { get; set; }
+        public string Priority { get; set; } = "Normal"; // Low, Normal, High, Urgent
+    }
+
+    /// <summary>
+    /// 处方优化建议DTO
+    /// </summary>
+    public class PrescriptionOptimizationDto
+    {
+        public List<HerbDosageDto> OptimizedFormula { get; set; } = new List<HerbDosageDto>();
+        public List<string> Improvements { get; set; } = new List<string>();
+        public decimal OriginalCost { get; set; }
+        public decimal OptimizedCost { get; set; }
+        public decimal CostSavings { get; set; }
+        public string? OptimizationReason { get; set; }
+    }
 }

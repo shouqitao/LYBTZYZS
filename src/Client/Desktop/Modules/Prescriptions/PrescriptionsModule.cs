@@ -22,18 +22,13 @@ namespace LYBT.Desktop.Prescriptions
 
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            // UltraThink简化架构：注册核心组件和服务
+            // UltraThink双层架构服务注册
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Prescriptions.Interfaces.IPrescriptionsQueryService, PrescriptionsQueryService>();
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Prescriptions.Interfaces.IPrescriptionsBusinessService, PrescriptionsBusinessService>();
             
-            // 核心组件（简化版）
-            containerRegistry.RegisterSingleton<PriceCalculator>();
-            containerRegistry.RegisterSingleton<BasicValidator>();
-            
-            // 简化服务
-            containerRegistry.RegisterSingleton<IPrescriptionComposerService, PrescriptionComposerService>();
-            
-            // UltraThink模块自治：注册业务服务接口实现
-            containerRegistry.RegisterSingleton<PrescriptionsModule>();
-            containerRegistry.RegisterSingleton<IPrescriptionService>(container => container.Resolve<PrescriptionsModule>());
+            // UltraThink纯委托主服务注册
+            containerRegistry.RegisterSingleton<Services.PrescriptionsModule>();
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Prescriptions.Interfaces.IPrescriptionsModule>(container => container.Resolve<Services.PrescriptionsModule>());
             
             // UltraThink核心视图：专注处方组成编辑
             

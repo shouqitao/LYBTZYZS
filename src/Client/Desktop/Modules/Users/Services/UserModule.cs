@@ -1,725 +1,119 @@
-﻿ using System;
-using System.Linq;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
-using AutoMapper;
+using LYBT.Desktop.Users.Interfaces;
+using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
-using LYBT.Shared.Models.Enums;
-using LYBT.Shared.Models.Common;
-using LYBT.Shared.Interfaces.Api;
-using LYBT.Shared.Interfaces.Services;
 
-namespace LYBT.Desktop.Users.Services
+namespace LYBT.Desktop.Users.Services;
+
+/// <summary>
+/// 用户模块 - UltraThink双层架构纯委托层
+/// 职责：统一服务入口，请求路由分发
+/// 简化版：仅支持基础操作
+/// </summary>
+public class UserModule(
+    IUserQueryService queryService,
+    IUserBusinessService businessService) : IUserModule, IDisposable
 {
+    private readonly IUserQueryService _queryService = queryService;
+    private readonly IUserBusinessService _businessService = businessService;
+
+    #region 基础查询操作 - 对应简化接口
+
     /// <summary>
-    /// User模块核心业务服务实现
-    /// UltraThink v2.0架构：直接使用DTO，移除Info层转换逻辑
-    /// 实现IUserService接口以支持依赖注入
+    /// 分页查询用户
     /// </summary>
-    public class UserModule : IUserService
+    public async Task<ServiceResult<PagedResult<UserDto>>> GetPagedAsync(UserPagedQueryDto query)
+        => await _queryService.GetPagedAsync(query);
+
+    /// <summary>
+    /// 根据ID获取用户
+    /// </summary>
+    public async Task<ServiceResult<UserDto>> GetByIdAsync(Guid id)
+        => await _queryService.GetByIdAsync(id);
+
+    /// <summary>
+    /// 获取当前用户个人信息
+    /// </summary>
+    public async Task<ServiceResult<UserDto>> GetProfileAsync()
+        => await _queryService.GetProfileAsync();
+
+    /// <summary>
+    /// 获取所有角色列表
+    /// </summary>
+    public async Task<ServiceResult<IEnumerable<object>>> GetRolesAsync()
+        => await _queryService.GetRolesAsync();
+
+    /// <summary>
+    /// 获取启用用户列表
+    /// </summary>
+    public async Task<ServiceResult<IEnumerable<UserDto>>> GetActiveUsersAsync()
+        => await _queryService.GetActiveUsersAsync();
+
+    /// <summary>
+    /// 获取用户基础统计
+    /// </summary>
+    public async Task<ServiceResult<UserStatisticsDto>> GetBasicStatisticsAsync()
+        => await _queryService.GetBasicStatisticsAsync();
+
+    #endregion
+
+    #region 基础业务操作 - 对应简化接口
+
+    /// <summary>
+    /// 创建用户
+    /// </summary>
+    public async Task<ServiceResult<UserDto>> CreateAsync(UserMutationDto createDto)
+        => await _businessService.CreateAsync(createDto);
+
+    /// <summary>
+    /// 更新用户信息
+    /// </summary>
+    public async Task<ServiceResult<UserDto>> UpdateAsync(Guid id, UserMutationDto updateDto)
+        => await _businessService.UpdateAsync(id, updateDto);
+
+    /// <summary>
+    /// 启用用户
+    /// </summary>
+    public async Task<ServiceResult<bool>> EnableAsync(Guid userId)
+        => await _businessService.EnableAsync(userId);
+
+    /// <summary>
+    /// 禁用用户
+    /// </summary>
+    public async Task<ServiceResult<bool>> DisableAsync(Guid userId)
+        => await _businessService.DisableAsync(userId);
+
+    /// <summary>
+    /// 重置用户密码
+    /// </summary>
+    public async Task<ServiceResult<bool>> ResetPasswordAsync(Guid userId, string defaultPassword)
+        => await _businessService.ResetPasswordAsync(userId, defaultPassword);
+
+    /// <summary>
+    /// 修改用户密码
+    /// </summary>
+    public async Task<ServiceResult<bool>> ChangeUserPasswordAsync(string oldPassword, string newPassword)
+        => await _businessService.ChangeUserPasswordAsync(oldPassword, newPassword);
+
+    /// <summary>
+    /// 修改个人信息
+    /// </summary>
+    public async Task<ServiceResult<bool>> ChangeProfileAsync(ChangeProfileDto profileDto)
+        => await _businessService.ChangeProfileAsync(profileDto);
+
+    #endregion
+
+    #region 资源清理
+
+    public void Dispose()
     {
-        private readonly IUserApi _apiService;
-        private readonly IMapper _mapper;
-        
-        public UserModule(IUserApi apiService, IMapper mapper)
-        {
-            _apiService = apiService ?? throw new ArgumentNullException(nameof(apiService));
-            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-        }
-        
-        #region 基础CRUD操作
-        
-        /// <summary>
-        /// 根据ID获取用户详情
-        /// </summary>
-        public async Task<ServiceResult<UserDto>> GetByIdAsync(Guid id)
-        {
-            try
-            {
-                if (id == Guid.Empty)
-                {
-                    return ServiceResult<UserDto>.Failure("用户ID不能为空");
-                }
-                
-                // UltraThink v2.0: 调用Refit API客户端，处理ApiResponse包装格式
-                var apiResponse = await _apiService.GetUserByIdAsync(id);
-                if (!apiResponse.IsSuccessStatusCode || apiResponse.Content == null)
-                {
-                    return ServiceResult<UserDto>.Failure("获取用户详情失败");
-                }
-                
-                // 手动解包ApiResponse包装格式
-                var wrappedResponse = apiResponse.Content;
-                if (!wrappedResponse.Success || wrappedResponse.Data == null)
-                {
-                    return ServiceResult<UserDto>.Failure(wrappedResponse.Message ?? "获取用户详情失败");
-                }
-                
-                return ServiceResult<UserDto>.Success(wrappedResponse.Data);
-            }
-            catch (Exception ex)
-            {
-                return ServiceResult<UserDto>.Failure($"获取用户详情异常: {ex.Message}");
-            }
-        }
-        
-        /// <summary>
-        /// 分页查询用户 - 实现IUserService接口
-        /// </summary>
-        public async Task<ServiceResult<PagedResult<UserDto>>> GetPagedAsync(UserPagedQueryDto query)
-        {
-            System.Diagnostics.Debug.WriteLine($"🔄 UserModule.GetPagedAsync 开始: PageIndex={query.PageIndex}, PageSize={query.PageSize}, Keyword='{query.Keyword}'");
-            
-            try
-            {
-                // 转换为基础查询DTO
-                var baseQuery = new PagedQueryBaseDto
-                {
-                    PageIndex = query.PageIndex,
-                    PageSize = query.PageSize,
-                    Keyword = query.Keyword
-                };
-                
-                System.Diagnostics.Debug.WriteLine($"🌐 准备调用API: page={baseQuery.PageIndex}, pageSize={baseQuery.PageSize}, keyword='{baseQuery.Keyword}'");
-                
-                // UltraThink v2.0: 调用Refit API客户端，处理ApiResponse包装格式
-                var apiResponse = await _apiService.GetUsersAsync(
-                    page: baseQuery.PageIndex,
-                    pageSize: baseQuery.PageSize,
-                    keyword: baseQuery.Keyword);
-                
-                System.Diagnostics.Debug.WriteLine($"🌐 API响应: StatusCode={apiResponse.StatusCode}, IsSuccess={apiResponse.IsSuccessStatusCode}");
-                
-                if (!apiResponse.IsSuccessStatusCode)
-                {
-                    var errorMsg = $"API调用失败: {apiResponse.StatusCode} - {apiResponse.ReasonPhrase}";
-                    System.Diagnostics.Debug.WriteLine($"❌ {errorMsg}");
-                    return ServiceResult<PagedResult<UserDto>>.Failure(errorMsg);
-                }
-                
-                if (apiResponse.Content == null)
-                {
-                    System.Diagnostics.Debug.WriteLine($"❌ API响应内容为空");
-                    return ServiceResult<PagedResult<UserDto>>.Failure("API响应内容为空");
-                }
-                
-                // UltraThink v2.0: 手动解包ApiResponse包装格式
-                var wrappedResponse = apiResponse.Content;
-                System.Diagnostics.Debug.WriteLine($"🔍 解包响应: Success={wrappedResponse.Success}, Message='{wrappedResponse.Message}'");
-                
-                if (!wrappedResponse.Success || wrappedResponse.Data == null)
-                {
-                    var errorMsg = wrappedResponse.Message ?? "获取用户列表失败";
-                    System.Diagnostics.Debug.WriteLine($"❌ {errorMsg}");
-                    return ServiceResult<PagedResult<UserDto>>.Failure(errorMsg);
-                }
-                
-                var result = wrappedResponse.Data;
-                var totalCount = result?.TotalCount ?? 0;
-                var itemCount = result?.Items?.Count ?? 0;
-                
-                System.Diagnostics.Debug.WriteLine($"✅ UserModule.GetPagedAsync 成功: 总数={totalCount}, 当前页项目数={itemCount}");
-                
-                if (itemCount > 0 && result?.Items != null)
-                {
-                    var firstUser = result.Items.First();
-                    System.Diagnostics.Debug.WriteLine($"📄 第一个用户: {firstUser.Username} - {firstUser.RealName}");
-                }
-                
-                return ServiceResult<PagedResult<UserDto>>.Success(result ?? new PagedResult<UserDto>(new List<UserDto>(), 0, 1, 20));
-            }
-            catch (Exception ex)
-            {
-                var errorMsg = $"获取用户列表异常: {ex.Message}";
-                System.Diagnostics.Debug.WriteLine($"💥 UserModule.GetPagedAsync 异常: {errorMsg}");
-                System.Diagnostics.Debug.WriteLine($"💥 异常堆栈: {ex}");
-                return ServiceResult<PagedResult<UserDto>>.Failure(errorMsg);
-            }
-        }
-        
-        /// <summary>
-        /// 创建新用户 - UltraThink优化：使用统一变更DTO
-        /// </summary>
-        public async Task<ServiceResult<UserDto>> CreateAsync(UserMutationDto dto)
-        {
-            try
-            {
-                // 设置为创建操作
-                dto.IsCreateOperation = true;
-                
-                // UltraThink v2.0: 直接使用UserMutationDto进行业务验证
-                var validationResult = await ValidateMutationDtoAsync(dto);
-                if (!validationResult.IsSuccess)
-                {
-                    return ServiceResult<UserDto>.Failure(validationResult.ErrorMessage ?? "创建用户验证失败");
-                }
-                
-                // 检查用户名是否已存在
-                var usernameExistsResult = await IsUsernameExistsAsync(dto.Username);
-                if (usernameExistsResult.IsSuccess && usernameExistsResult.Data)
-                {
-                    return ServiceResult<UserDto>.Failure("该用户名已被使用");
-                }
-                
-                // 检查电话号码是否已存在
-                if (!string.IsNullOrEmpty(dto.PhoneNumber))
-                {
-                    var phoneExistsResult = await IsPhoneExistsAsync(dto.PhoneNumber);
-                    if (phoneExistsResult.IsSuccess && phoneExistsResult.Data)
-                    {
-                        return ServiceResult<UserDto>.Failure("该电话号码已被使用");
-                    }
-                }
-                
-                // UltraThink v2.0: 调用Refit API客户端，处理ApiResponse包装格式
-                var apiResponse = await _apiService.CreateUserAsync(dto);
-                if (!apiResponse.IsSuccessStatusCode || apiResponse.Content == null)
-                {
-                    return ServiceResult<UserDto>.Failure("创建用户失败");
-                }
-                
-                // 手动解包ApiResponse包装格式
-                var wrappedResponse = apiResponse.Content;
-                if (!wrappedResponse.Success || wrappedResponse.Data == null)
-                {
-                    return ServiceResult<UserDto>.Failure(wrappedResponse.Message ?? "创建用户失败");
-                }
-                
-                return ServiceResult<UserDto>.Success(wrappedResponse.Data);
-            }
-            catch (Exception ex)
-            {
-                return ServiceResult<UserDto>.Failure($"创建用户异常: {ex.Message}");
-            }
-        }
-        
-        /// <summary>
-        /// 更新用户信息 - UltraThink优化：使用统一变更DTO
-        /// </summary>
-        public async Task<ServiceResult<UserDto>> UpdateAsync(UserMutationDto dto)
-        {
-            try
-            {
-                if (dto.Id == Guid.Empty)
-                {
-                    return ServiceResult<UserDto>.Failure("用户ID不能为空");
-                }
-                
-                // 设置为更新操作
-                dto.IsCreateOperation = false;
-                
-                // UltraThink v2.0: 直接使用UserMutationDto进行业务验证
-                var validationResult = await ValidateMutationDtoAsync(dto);
-                if (!validationResult.IsSuccess)
-                {
-                    return ServiceResult<UserDto>.Failure(validationResult.ErrorMessage ?? "更新用户验证失败");
-                }
-                
-                // 检查用户名是否已被其他用户使用
-                var usernameExistsResult = await IsUsernameExistsAsync(dto.Username, dto.Id);
-                if (usernameExistsResult.IsSuccess && usernameExistsResult.Data)
-                {
-                    return ServiceResult<UserDto>.Failure("该用户名已被其他用户使用");
-                }
-                
-                // 检查电话号码是否已被其他用户使用
-                if (!string.IsNullOrEmpty(dto.PhoneNumber))
-                {
-                    var phoneExistsResult = await IsPhoneExistsAsync(dto.PhoneNumber, dto.Id);
-                    if (phoneExistsResult.IsSuccess && phoneExistsResult.Data)
-                    {
-                        return ServiceResult<UserDto>.Failure("该电话号码已被其他用户使用");
-                    }
-                }
-                
-                // UltraThink v2.0: 调用Refit API客户端，处理ApiResponse包装格式
-                var apiResponse = await _apiService.UpdateUserAsync(dto.Id, dto);
-                if (!apiResponse.IsSuccessStatusCode || apiResponse.Content == null)
-                {
-                    return ServiceResult<UserDto>.Failure("更新用户失败");
-                }
-                
-                // 手动解包ApiResponse包装格式
-                var wrappedResponse = apiResponse.Content;
-                if (!wrappedResponse.Success || wrappedResponse.Data == null)
-                {
-                    return ServiceResult<UserDto>.Failure(wrappedResponse.Message ?? "更新用户失败");
-                }
-                
-                return ServiceResult<UserDto>.Success(wrappedResponse.Data);
-            }
-            catch (Exception ex)
-            {
-                return ServiceResult<UserDto>.Failure($"更新用户异常: {ex.Message}");
-            }
-        }
-        
-        /// <summary>
-        /// 删除用户（软删除）- 实现IUserService接口签名
-        /// </summary>
-        public async Task<ServiceResult<bool>> DeleteAsync(Guid id)
-        {
-            try
-            {
-                if (id == Guid.Empty)
-                {
-                    return ServiceResult<bool>.Failure("用户ID不能为空");
-                }
-                
-                var apiResponse = await _apiService.ToggleStatusAsync(id);
-                if (!apiResponse.IsSuccessStatusCode)
-                {
-                    return ServiceResult<bool>.Failure("删除用户失败");
-                }
-                
-                return ServiceResult<bool>.Success(true);
-            }
-            catch (Exception ex)
-            {
-                return ServiceResult<bool>.Failure($"删除用户异常: {ex.Message}");
-            }
-        }
-        
-        #endregion
-        
-        #region 状态管理
-        
-        /// <summary>
-        /// 启用用户 - 实现IUserService接口签名
-        /// </summary>
-        public async Task<ServiceResult<bool>> EnableAsync(Guid id)
-        {
-            try
-            {
-                if (id == Guid.Empty)
-                {
-                    return ServiceResult<bool>.Failure("用户ID不能为空");
-                }
-                
-                var apiResponse = await _apiService.ToggleStatusAsync(id);
-                if (!apiResponse.IsSuccessStatusCode)
-                {
-                    return ServiceResult<bool>.Failure("启用用户失败");
-                }
-                
-                return ServiceResult<bool>.Success(true);
-            }
-            catch (Exception ex)
-            {
-                return ServiceResult<bool>.Failure($"启用用户异常: {ex.Message}");
-            }
-        }
-        
-        /// <summary>
-        /// 禁用用户 - 实现IUserService接口签名
-        /// </summary>
-        public async Task<ServiceResult<bool>> DisableAsync(Guid id)
-        {
-            try
-            {
-                if (id == Guid.Empty)
-                {
-                    return ServiceResult<bool>.Failure("用户ID不能为空");
-                }
-                
-                var apiResponse = await _apiService.ToggleStatusAsync(id);
-                if (!apiResponse.IsSuccessStatusCode)
-                {
-                    return ServiceResult<bool>.Failure("禁用用户失败");
-                }
-                
-                return ServiceResult<bool>.Success(true);
-            }
-            catch (Exception ex)
-            {
-                return ServiceResult<bool>.Failure($"禁用用户异常: {ex.Message}");
-            }
-        }
-        
-        #endregion
-        
-        #region 业务特定操作
-        
-        /// <summary>
-        /// 根据用户名获取用户
-        /// </summary>
-        public async Task<ServiceResult<UserDto>> GetByUsernameAsync(string username)
-        {
-            try
-            {
-                if (string.IsNullOrWhiteSpace(username))
-                {
-                    return ServiceResult<UserDto>.Failure("用户名不能为空");
-                }
-                
-                var query = new UserPagedQueryDto
-                {
-                    PageIndex = 1,
-                    PageSize = 1,
-                    Keyword = username
-                };
-                
-                var result = await GetPagedAsync(query);
-                if (!result.IsSuccess)
-                {
-                    return ServiceResult<UserDto>.Failure(result.ErrorMessage ?? "获取用户失败");
-                }
-                
-                var user = result.Data?.Items?.FirstOrDefault(u => u.Username == username);
-                if (user == null)
-                {
-                    return ServiceResult<UserDto>.Failure("未找到指定用户");
-                }
-                
-                return ServiceResult<UserDto>.Success(user);
-            }
-            catch (Exception ex)
-            {
-                return ServiceResult<UserDto>.Failure($"根据用户名获取用户异常: {ex.Message}");
-            }
-        }
-        
-        
-        /// <summary>
-        /// 搜索用户
-        /// </summary>
-        public async Task<ServiceResult<List<UserDto>>> SearchAsync(string keyword)
-        {
-            try
-            {
-                var query = new UserPagedQueryDto
-                {
-                    PageIndex = 1,
-                    PageSize = 100, // 搜索时使用较大的页面大小
-                    Keyword = keyword
-                };
-                
-                var result = await GetPagedAsync(query);
-                if (!result.IsSuccess)
-                {
-                    return ServiceResult<List<UserDto>>.Failure(result.ErrorMessage ?? "搜索用户失败");
-                }
-                
-                return ServiceResult<List<UserDto>>.Success(result.Data?.Items?.ToList() ?? new List<UserDto>());
-            }
-            catch (Exception ex)
-            {
-                return ServiceResult<List<UserDto>>.Failure($"搜索用户异常: {ex.Message}");
-            }
-        }
-        
-        /// <summary>
-        /// 获取活跃用户列表
-        /// </summary>
-        public async Task<ServiceResult<List<UserDto>>> GetActiveUsersAsync()
-        {
-            try
-            {
-                var query = new UserPagedQueryDto
-                {
-                    PageIndex = 1,
-                    PageSize = 1000, // 获取所有活跃用户
-                    Keyword = string.Empty
-                };
-                
-                var result = await GetPagedAsync(query);
-                if (!result.IsSuccess)
-                {
-                    return ServiceResult<List<UserDto>>.Failure(result.ErrorMessage ?? "获取用户列表失败");
-                }
-                
-                // 过滤活跃用户
-                var activeUsers = result.Data?.Items?.Where(u => u.IsActive).ToList() ?? new List<UserDto>();
-                return ServiceResult<List<UserDto>>.Success(activeUsers);
-            }
-            catch (Exception ex)
-            {
-                return ServiceResult<List<UserDto>>.Failure($"获取活跃用户列表异常: {ex.Message}");
-            }
-        }
-        
-        #endregion
-        
-        #region 密码管理
-        
-        /// <summary>
-        /// 重置用户密码 - 实现IUserService接口签名
-        /// </summary>
-        public async Task<ServiceResult<bool>> ResetPasswordAsync(Guid id, string newPassword)
-        {
-            try
-            {
-                if (id == Guid.Empty)
-                {
-                    return ServiceResult<bool>.Failure("用户ID不能为空");
-                }
-                
-                if (string.IsNullOrWhiteSpace(newPassword))
-                {
-                    return ServiceResult<bool>.Failure("新密码不能为空");
-                }
-                
-                if (newPassword.Length < 6)
-                {
-                    return ServiceResult<bool>.Failure("新密码长度不能少于6个字符");
-                }
-                
-                var apiResponse = await _apiService.ResetPasswordAsync(id);
-                if (!apiResponse.IsSuccessStatusCode)
-                {
-                    return ServiceResult<bool>.Failure("重置密码失败");
-                }
-                
-                return ServiceResult<bool>.Success(true);
-            }
-            catch (Exception ex)
-            {
-                return ServiceResult<bool>.Failure($"重置密码异常: {ex.Message}");
-            }
-        }
-        
-        /// <summary>
-        /// 修改用户密码 - 实现IUserService接口签名
-        /// </summary>
-        public async Task<ServiceResult<bool>> ChangePasswordAsync(Guid id, string oldPassword, string newPassword)
-        {
-            try
-            {
-                if (id == Guid.Empty)
-                {
-                    return ServiceResult<bool>.Failure("用户ID不能为空");
-                }
-                
-                if (string.IsNullOrWhiteSpace(oldPassword))
-                {
-                    return ServiceResult<bool>.Failure("原密码不能为空");
-                }
-                
-                if (string.IsNullOrWhiteSpace(newPassword))
-                {
-                    return ServiceResult<bool>.Failure("新密码不能为空");
-                }
-                
-                if (newPassword.Length < 6)
-                {
-                    return ServiceResult<bool>.Failure("新密码长度不能少于6个字符");
-                }
-                
-                var changePasswordDto = new ChangePasswordDto
-                {
-                    UserId = id,
-                    OldPassword = oldPassword,
-                    NewPassword = newPassword
-                };
-                
-                var apiResponse = await _apiService.ChangePasswordAsync(changePasswordDto);
-                if (!apiResponse.IsSuccessStatusCode)
-                {
-                    return ServiceResult<bool>.Failure("更改密码失败");
-                }
-                
-                return ServiceResult<bool>.Success(true);
-            }
-            catch (Exception ex)
-            {
-                return ServiceResult<bool>.Failure($"更改密码异常: {ex.Message}");
-            }
-        }
-        
-        /// <summary>
-        /// 修改用户个人信息 - UltraThink优化：使用DTO模式保持一致性
-        /// </summary>
-        public async Task<ServiceResult<bool>> ChangeProfileAsync(ChangeProfileDto dto)
-        {
-            try
-            {
-                if (dto.UserId == Guid.Empty)
-                {
-                    return ServiceResult<bool>.Failure("用户ID不能为空");
-                }
-                
-                // 获取现有用户信息
-                var existingUserResult = await GetByIdAsync(dto.UserId);
-                if (!existingUserResult.IsSuccess)
-                {
-                    return ServiceResult<bool>.Failure("获取用户信息失败");
-                }
-                
-                var existingUser = existingUserResult.Data;
-                if (existingUser == null)
-                {
-                    return ServiceResult<bool>.Failure("用户信息不存在");
-                }
-                
-                // 直接使用UserMutationDto，无需额外转换
-                var updateResult = await UpdateAsync(new UserMutationDto
-                {
-                    Id = dto.UserId,
-                    Username = existingUser.Username,
-                    RealName = dto.RealName,
-                    PhoneNumber = dto.PhoneNumber,
-                    Email = dto.Email,
-                    Role = existingUser.Role,
-                    Status = existingUser.IsActive ? CommonStatus.Enabled : CommonStatus.Disabled,
-                    IsCreateOperation = false
-                });
-                
-                if (!updateResult.IsSuccess)
-                {
-                    return ServiceResult<bool>.Failure(updateResult.ErrorMessage ?? "修改个人信息失败");
-                }
-                
-                return ServiceResult<bool>.Success(true);
-            }
-            catch (Exception ex)
-            {
-                return ServiceResult<bool>.Failure($"修改个人信息异常: {ex.Message}");
-            }
-        }
-        
-        #endregion
-        
-        
-        #region 验证和辅助方法
-        
-        /// <summary>
-        /// 验证用户名是否可用
-        /// </summary>
-        public async Task<ServiceResult<bool>> ValidateUsernameAsync(string username)
-        {
-            try
-            {
-                if (string.IsNullOrWhiteSpace(username))
-                {
-                    return ServiceResult<bool>.Failure("用户名不能为空");
-                }
-                
-                var existsResult = await IsUsernameExistsAsync(username);
-                if (!existsResult.IsSuccess)
-                {
-                    return ServiceResult<bool>.Failure("验证用户名时发生错误");
-                }
-                
-                // 返回true表示用户名可用（不存在）
-                return ServiceResult<bool>.Success(!existsResult.Data);
-            }
-            catch (Exception ex)
-            {
-                return ServiceResult<bool>.Failure($"验证用户名异常: {ex.Message}");
-            }
-        }
-        
-        
-        #endregion
-        
-        #region 私有方法
-        
-        // UltraThink v2.0: 简化验证方法 - 移除冗余的通用验证，合并Create/Update验证逻辑
-        /// <summary>
-        /// 统一的UserMutationDto验证方法 - UltraThink v2.0优化
-        /// </summary>
-        private Task<ServiceResult> ValidateMutationDtoAsync(UserMutationDto dto)
-        {
-            if (dto == null) return Task.FromResult(ServiceResult.Failure("用户信息不能为空"));
-            if (string.IsNullOrWhiteSpace(dto.Username)) return Task.FromResult(ServiceResult.Failure("用户名不能为空"));
-            if (dto.Username.Length < 3 || dto.Username.Length > 50) return Task.FromResult(ServiceResult.Failure("用户名长度必须在3到50个字符之间"));
-            if (string.IsNullOrWhiteSpace(dto.RealName)) return Task.FromResult(ServiceResult.Failure("真实姓名不能为空"));
-            if (dto.RealName.Length > 50) return Task.FromResult(ServiceResult.Failure("真实姓名长度不能超过50个字符"));
-            
-            // 创建操作时密码必填
-            if (dto.IsCreateOperation && string.IsNullOrWhiteSpace(dto.Password))
-                return Task.FromResult(ServiceResult.Failure("创建用户时密码不能为空"));
-                
-            return Task.FromResult(ServiceResult.Success());
-        }
-        
-private async Task<ServiceResult<bool>> IsUsernameExistsAsync(string username, Guid? excludeId = null)
-        {
-            try
-            {
-                var searchResult = await SearchAsync(username);
-                if (!searchResult.IsSuccess)
-                {
-                    return ServiceResult<bool>.Success(false); // 检查失败时假设不存在
-                }
-                
-                var exists = searchResult.Data?.Any(u => 
-                    u.Username == username && 
-                    (excludeId == null || u.Id != excludeId.Value)) ?? false;
-                
-                return ServiceResult<bool>.Success(exists);
-            }
-            catch
-            {
-                return ServiceResult<bool>.Success(false); // 检查失败时假设不存在
-            }
-        }
-        
-        private async Task<ServiceResult<bool>> IsPhoneExistsAsync(string phoneNumber, Guid? excludeId = null)
-        {
-            try
-            {
-                var searchResult = await SearchAsync(phoneNumber);
-                if (!searchResult.IsSuccess)
-                {
-                    return ServiceResult<bool>.Success(false); // 检查失败时假设不存在
-                }
-                
-                var exists = searchResult.Data?.Any(u => 
-                    u.PhoneNumber == phoneNumber && 
-                    (excludeId == null || u.Id != excludeId.Value)) ?? false;
-                
-                return ServiceResult<bool>.Success(exists);
-            }
-            catch
-            {
-                return ServiceResult<bool>.Success(false); // 检查失败时假设不存在
-            }
-        }
-        
-        #endregion
-        
-        #region UltraThink简化：企业级功能标记为不支持
-        
-        /// <summary>
-        /// 批量启用用户 - UltraThink简化：小诊所不需要批量操作
-        /// </summary>
-        public Task<ServiceResult<int>> BatchEnableAsync(List<Guid> ids)
-        {
-            return Task.FromResult(ServiceResult<int>.Failure("简单诊所版本不支持批量操作，请逐个操作用户"));
-        }
-        
-        /// <summary>
-        /// 批量禁用用户 - UltraThink简化：小诊所不需要批量操作
-        /// </summary>
-        public Task<ServiceResult<int>> BatchDisableAsync(List<Guid> ids)
-        {
-            return Task.FromResult(ServiceResult<int>.Failure("简单诊所版本不支持批量操作，请逐个操作用户"));
-        }
-        
-        /// <summary>
-        /// 获取角色列表 - UltraThink简化：只支持医生/管理员两种角色
-        /// </summary>
-        public Task<ServiceResult<List<object>>> GetRolesAsync()
-        {
-            var roles = new List<object>
-            {
-                new { Value = "Doctor", Text = "医生", EnumValue = 1 },
-                new { Value = "Admin", Text = "管理员", EnumValue = 2 }
-            };
-            return Task.FromResult(ServiceResult<List<object>>.Success(roles));
-        }
-        
-        /// <summary>
-        /// 获取操作日志 - UltraThink简化：小诊所不需要操作审计
-        /// </summary>
-        public Task<ServiceResult<PagedResult<object>>> GetOperationLogsAsync(Guid userId, PagedQueryBaseDto query)
-        {
-            var emptyResult = new PagedResult<object>(new List<object>(), 0, query.PageIndex, query.PageSize);
-            return Task.FromResult(ServiceResult<PagedResult<object>>.Success(emptyResult));
-        }
-        
-        #endregion
+        // 简化版本无需特殊清理
+        GC.SuppressFinalize(this);
     }
+
+    #endregion
 }

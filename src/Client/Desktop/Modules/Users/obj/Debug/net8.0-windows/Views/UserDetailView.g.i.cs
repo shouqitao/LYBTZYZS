@@ -60,7 +60,7 @@ namespace LYBT.Desktop.Users.Views {
                 return;
             }
             _contentLoaded = true;
-            System.Uri resourceLocater = new System.Uri("/LYBT.Desktop.Users;V1.0.0.0;component/views/userdetailview.xaml", System.UriKind.Relative);
+            System.Uri resourceLocater = new System.Uri("/LYBT.Desktop.Users;component/views/userdetailview.xaml", System.UriKind.Relative);
             
             #line 1 "..\..\..\..\Views\UserDetailView.xaml"
             System.Windows.Application.LoadComponent(this, resourceLocater);
