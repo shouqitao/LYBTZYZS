@@ -1,36 +1,51 @@
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Repositories;
+using LYBT.Infrastructure.Repositories.Optimized;
 using LYBT.Entities.Users;
 using LYBT.Module.Auth.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace LYBT.Module.Auth.Repositories
 {
     /// <summary>
     /// 登录验证仓储实现 - 数据层统一化重构
-    /// 继承BaseRepository获得通用CRUD功能，扩展认证特有业务方法
+    /// 继承OptimizedBaseRepository获得缓存和性能优化，扩展认证特有业务方法
     /// </summary>
-    public class AuthRepository : BaseRepository<User>, IAuthRepository
+    public class AuthRepository : OptimizedBaseRepository<User>, IAuthRepository
     {
-        /// <summary>
-        /// 初始化仓储并注入统一数据库上下文
-        /// </summary>
-        /// <param name="context">统一数据库上下文</param>
-        public AuthRepository(AppDbContext context) : base(context)
+        public AuthRepository(
+            AppDbContext context,
+            ILogger<AuthRepository> logger,
+            IMemoryCache cache) : base(context, logger, cache)
         {
         }
 
-        // 注意：基础CRUD方法由BaseRepository提供
+        // 注意：基础CRUD方法由OptimizedBaseRepository提供，带有缓存优化
         // 这里只实现认证特有的业务方法
 
         /// <summary>
-        /// 通过用户名获取用户信息
+        /// 通过用户名获取用户信息 - 缓存优化版
         /// </summary>
         /// <param name="userName">用户名</param>
         /// <returns>用户实体或 null</returns>
         public async Task<User?> GetByUsernameAsync(string userName)
         {
-            return await _dbSet.FirstOrDefaultAsync(u => u.Username == userName);
+            var cacheKey = $"{CacheKeyPrefix}username:{userName}";
+            
+            if (_cache.TryGetValue<User?>(cacheKey, out var cached))
+            {
+                _logger.LogDebug("从缓存获取用户信息 {Username}", userName);
+                return cached;
+            }
+            
+            var user = await _dbSet
+                .AsNoTracking()
+                .FirstOrDefaultAsync(u => u.Username == userName);
+                
+            _cache.Set(cacheKey, user, DefaultCacheDuration);
+            return user;
         }
 
         /// <summary>

@@ -1,34 +1,50 @@
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Repositories;
+using LYBT.Infrastructure.Repositories.Optimized;
 using LYBT.Entities.Auth;
 using LYBT.Module.Auth.Interfaces;
 using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace LYBT.Module.Auth.Repositories
 {
     /// <summary>
     /// 认证会话仓储实现 - 管理用户登录会话的完整生命周期
-    /// 继承BaseRepository获得通用CRUD功能，扩展会话管理特有业务方法
+    /// 继承OptimizedBaseRepository获得缓存和性能优化，扩展会话管理特有业务方法
     /// </summary>
-    public class AuthSessionRepository : BaseRepository<AuthSession>, IAuthSessionRepository
+    public class AuthSessionRepository : OptimizedBaseRepository<AuthSession>, IAuthSessionRepository
     {
-        /// <summary>
-        /// 初始化仓储并注入统一数据库上下文
-        /// </summary>
-        public AuthSessionRepository(AppDbContext context) : base(context)
+        public AuthSessionRepository(
+            AppDbContext context,
+            ILogger<AuthSessionRepository> logger,
+            IMemoryCache cache) : base(context, logger, cache)
         {
         }
 
         /// <summary>
-        /// 根据用户ID获取活跃会话 - UltraThink v2.0简化版
+        /// 根据用户ID获取活跃会话 - 缓存优化版
         /// </summary>
         public async Task<List<AuthSession>> GetActiveSessionsByUserIdAsync(Guid userId)
         {
-            return await _dbSet
+            var cacheKey = $"{CacheKeyPrefix}active:user:{userId}";
+            
+            if (_cache.TryGetValue<List<AuthSession>>(cacheKey, out var cached) && cached != null)
+            {
+                _logger.LogDebug("从缓存获取用户活跃会话 {UserId}", userId);
+                return cached;
+            }
+            
+            var sessions = await _dbSet
+                .AsNoTracking()
                 .Where(s => s.UserId == userId && s.Status == CommonStatus.Enabled && !s.IsRevoked)
                 .OrderByDescending(s => s.LoginTime)
                 .ToListAsync();
+                
+            // 短缓存时间，因为会话状态变化频繁
+            _cache.Set(cacheKey, sessions, TimeSpan.FromMinutes(2));
+            return sessions;
         }
 
         /// <summary>
@@ -42,12 +58,25 @@ namespace LYBT.Module.Auth.Repositories
         }
 
         /// <summary>
-        /// 根据JWT令牌哈希查找会话 - UltraThink v2.0简化版
+        /// 根据JWT令牌哈希查找会话 - 缓存优化版
         /// </summary>
         public async Task<AuthSession?> GetByTokenHashAsync(string tokenHash)
         {
-            return await _dbSet
+            var cacheKey = $"{CacheKeyPrefix}token:{tokenHash}";
+            
+            if (_cache.TryGetValue<AuthSession?>(cacheKey, out var cached))
+            {
+                _logger.LogDebug("从缓存获取令牌会话 {TokenHash}", tokenHash.Substring(0, 8) + "...");
+                return cached;
+            }
+            
+            var session = await _dbSet
+                .AsNoTracking()
                 .FirstOrDefaultAsync(s => s.TokenHash == tokenHash && !s.IsRevoked);
+                
+            // 短缓存时间，因为令牌验证频繁且安全敏感
+            _cache.Set(cacheKey, session, TimeSpan.FromMinutes(1));
+            return session;
         }
 
         /// <summary>
