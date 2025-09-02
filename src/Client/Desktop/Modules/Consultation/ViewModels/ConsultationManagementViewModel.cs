@@ -81,14 +81,15 @@ namespace LYBT.Desktop.Consultation.ViewModels
             ViewDetailsCommand = new DelegateCommand(ViewDetails, () => SelectedConsultation != null)
                 .ObservesProperty(() => SelectedConsultation);
 
-            InitializeAsync();
+            // ✅ 修复: 使用Task.Run安全初始化，防止未处理异常
+            _ = Task.Run(async () => await InitializeAsync());
         }
 
         #endregion
 
         #region 初始化
 
-        private async void InitializeAsync()
+        private async Task InitializeAsync()
         {
             try
             {
@@ -97,6 +98,8 @@ namespace LYBT.Desktop.Consultation.ViewModels
             catch (Exception ex)
             {
                 LogError(ex, "初始化看诊管理失败");
+                // 提供用户友好的错误提示
+                ShowError("看诊管理模块初始化失败，请尝试刷新页面");
             }
         }
 

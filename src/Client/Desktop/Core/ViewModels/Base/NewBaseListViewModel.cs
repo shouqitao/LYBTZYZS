@@ -149,13 +149,22 @@ namespace LYBT.Desktop.Core.ViewModels.Base
         }
 
         /// <summary>
-        /// 执行刷新命令 - 修复async void问题
+        /// 执行刷新命令 - ✅ 修复async void问题，使用fire-and-forget模式
         /// </summary>
-        private async void ExecuteRefresh()
+        private void ExecuteRefresh()
+        {
+            System.Diagnostics.Debug.WriteLine("🔄 RefreshCommand 被点击 - ExecuteRefresh执行");
+            // 使用安全的fire-and-forget模式，异常由ExecuteRefreshAsync处理
+            _ = ExecuteRefreshAsync();
+        }
+
+        /// <summary>
+        /// 异步执行刷新命令
+        /// </summary>
+        private async Task ExecuteRefreshAsync()
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine("🔄 RefreshCommand 被点击 - ExecuteRefresh执行");
                 await RefreshDataAsync();
                 System.Diagnostics.Debug.WriteLine("✅ RefreshCommand 执行完成");
             }

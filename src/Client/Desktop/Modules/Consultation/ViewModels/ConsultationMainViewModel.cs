@@ -101,14 +101,15 @@ namespace LYBT.Desktop.Consultation.ViewModels
             SaveConsultationCommand = new DelegateCommand(async () => await SaveConsultationAsync());
             ClearDataCommand = new DelegateCommand(ClearData);
 
-            InitializeAsync();
+            // ✅ 修复: 使用Task.Run等待初始化，防止fire-and-forget
+            _ = Task.Run(async () => await InitializeAsync());
         }
 
         #endregion
 
         #region 初始化
 
-        private async void InitializeAsync()
+        private async Task InitializeAsync()
         {
             try
             {
@@ -117,6 +118,8 @@ namespace LYBT.Desktop.Consultation.ViewModels
             catch (Exception ex)
             {
                 LogError(ex, "初始化失败");
+                // 可以考虑显示用户友好的错误消息
+                ShowError("系统初始化失败，请稍后重试");
             }
         }
 

@@ -6,6 +6,7 @@ using LYBT.Desktop.Core.ViewModels.Base;
 using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.Managers;
 using LYBT.Desktop.Core.Coordinators;
+using LYBT.Desktop.Core.Mvvm; // ✅ 添加AsyncRelayCommand支持
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Common;
@@ -83,15 +84,16 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         #region Commands
 
-        public DelegateCommand SearchCommand { get; private set; } = null!;
-        // 注意：RefreshCommand由基类NewBaseListViewModel提供，不需要重复定义
-        public DelegateCommand AddCommand { get; private set; } = null!;
-        public DelegateCommand<MedicalCaseDto> ViewDetailsCommand { get; private set; } = null!;
-        public DelegateCommand<MedicalCaseDto> EditCommand { get; private set; } = null!;
-        public DelegateCommand<MedicalCaseDto> ViewConsultationCommand { get; private set; } = null!;
-        public DelegateCommand<MedicalCaseDto> CreatePrescriptionCommand { get; private set; } = null!;
-        public DelegateCommand<MedicalCaseDto> PrintCommand { get; private set; } = null!;
-        public DelegateCommand<MedicalCaseDto> DeleteCommand { get; private set; } = null!;
+        // ✅ 使用AsyncRelayCommand替代DelegateCommand避免async void
+        public AsyncRelayCommand SearchCommand { get; private set; } = null!;
+        // 注意：RefreshCommand由基类NewBaseListViewModel提供，已修复async void问题
+        public AsyncRelayCommand AddCommand { get; private set; } = null!;
+        public AsyncRelayCommand<MedicalCaseDto> ViewDetailsCommand { get; private set; } = null!;
+        public AsyncRelayCommand<MedicalCaseDto> EditCommand { get; private set; } = null!;
+        public AsyncRelayCommand<MedicalCaseDto> ViewConsultationCommand { get; private set; } = null!;
+        public AsyncRelayCommand<MedicalCaseDto> CreatePrescriptionCommand { get; private set; } = null!;
+        public AsyncRelayCommand<MedicalCaseDto> PrintCommand { get; private set; } = null!;
+        public AsyncRelayCommand<MedicalCaseDto> DeleteCommand { get; private set; } = null!;
 
         // 分页命令
         public DelegateCommand FirstPageCommand { get; private set; } = null!;
@@ -126,15 +128,16 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         {
             base.InitializeCommands();
             
-            SearchCommand = new DelegateCommand(async () => await SearchAsync());
+            // ✅ 修复: 使用AsyncRelayCommand替代async void模式
+            SearchCommand = new AsyncRelayCommand(SearchAsync);
             // RefreshCommand由基类提供，已修复async void问题
-            AddCommand = new DelegateCommand(async () => await AddCaseAsync());
-            ViewDetailsCommand = new DelegateCommand<MedicalCaseDto>(async dto => await ViewDetailsAsync(dto));
-            EditCommand = new DelegateCommand<MedicalCaseDto>(async dto => await EditCaseAsync(dto));
-            ViewConsultationCommand = new DelegateCommand<MedicalCaseDto>(async dto => await ViewConsultationAsync(dto));
-            CreatePrescriptionCommand = new DelegateCommand<MedicalCaseDto>(async dto => await CreatePrescriptionAsync(dto));
-            PrintCommand = new DelegateCommand<MedicalCaseDto>(async dto => await PrintCaseAsync(dto));
-            DeleteCommand = new DelegateCommand<MedicalCaseDto>(async dto => await DeleteCaseAsync(dto));
+            AddCommand = new AsyncRelayCommand(AddCaseAsync);
+            ViewDetailsCommand = new AsyncRelayCommand<MedicalCaseDto>(ViewDetailsAsync);
+            EditCommand = new AsyncRelayCommand<MedicalCaseDto>(EditCaseAsync);
+            ViewConsultationCommand = new AsyncRelayCommand<MedicalCaseDto>(ViewConsultationAsync);
+            CreatePrescriptionCommand = new AsyncRelayCommand<MedicalCaseDto>(CreatePrescriptionAsync);
+            PrintCommand = new AsyncRelayCommand<MedicalCaseDto>(PrintCaseAsync);
+            DeleteCommand = new AsyncRelayCommand<MedicalCaseDto>(DeleteCaseAsync);
             
             // 初始化分页命令
             FirstPageCommand = new DelegateCommand(async () => await PaginationCoordinator.GoToFirstPageAsync());
