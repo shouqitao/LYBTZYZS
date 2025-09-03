@@ -10,47 +10,44 @@ using LYBT.Shared.Models.Contracts.Patients;
 namespace LYBT.Module.Patients.Services
 {
     /// <summary>
-    /// 患者服务 - UltraThink三层架构纯委托模式
+    /// 患者服务 - UltraThink简化架构纯委托模式
     /// </summary>
     public class PatientService : IPatientService
     {
-        private readonly PatientServiceCore _coreService;
         private readonly PatientQueryService _queryService;
         private readonly PatientBusinessService _businessService;
 
         public PatientService(
-            PatientServiceCore coreService,
             PatientQueryService queryService,
             PatientBusinessService businessService)
         {
-            _coreService = coreService ?? throw new ArgumentNullException(nameof(coreService));
             _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
             _businessService = businessService ?? throw new ArgumentNullException(nameof(businessService));
         }
 
-        #region Core Operations
+        #region Core Operations - 委托给BusinessService
 
         public async Task<ServiceResult<PatientDto>> GetByIdAsync(Guid id)
-            => await _coreService.GetByIdAsync(id);
+            => await _businessService.GetByIdAsync(id);
 
         public async Task<ServiceResult<PatientDto>> CreateAsync(PatientCreateDto dto)
-            => await _coreService.CreateAsync(dto);
+            => await _businessService.CreateAsync(dto);
 
         public async Task<ServiceResult<PatientDto>> UpdateAsync(Guid id, PatientUpdateDto dto)
-            => await _coreService.UpdateAsync(id, dto);
+            => await _businessService.UpdateAsync(id, dto);
 
         public async Task<ServiceResult<bool>> DeleteAsync(Guid id)
-            => await _coreService.DeleteAsync(id);
+            => await _businessService.DeleteAsync(id);
 
         public async Task<bool> DeleteAsync(Guid id, Guid operatorId, string operatorName)
         {
-            var result = await _coreService.DeleteAsync(id);
+            var result = await _businessService.DeleteAsync(id);
             return result.IsSuccess && result.Data;
         }
 
         public async Task<bool> SetStatusAsync(Guid id, bool isActive, Guid operatorId, string operatorName)
         {
-            var result = await _coreService.UpdateStatusAsync(id, isActive);
+            var result = await _businessService.UpdateStatusAsync(id, isActive);
             return result.IsSuccess && result.Data;
         }
 

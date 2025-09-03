@@ -68,7 +68,7 @@ namespace LYBT.Desktop.Auth.Views {
                 return;
             }
             _contentLoaded = true;
-            System.Uri resourceLocater = new System.Uri("/LYBT.Desktop.Auth;component/views/loginview.xaml", System.UriKind.Relative);
+            System.Uri resourceLocater = new System.Uri("/LYBT.Desktop.Auth;V2.1.0.0;component/views/loginview.xaml", System.UriKind.Relative);
             
             #line 1 "..\..\..\..\Views\LoginView.xaml"
             System.Windows.Application.LoadComponent(this, resourceLocater);

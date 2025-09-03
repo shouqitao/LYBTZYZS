@@ -2,22 +2,69 @@
 
   <PropertyGroup>
     <TargetFramework>net8.0-windows</TargetFramework>
+    <LangVersion>12.0</LangVersion>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningsAsErrors />
+    
+    <!-- Assembly Information -->
+    <AssemblyTitle>LYBT.Desktop.Infrastructure</AssemblyTitle>
+    <AssemblyDescription>凌隐宝堂中医诊所系统 - WPF基础设施服务库 | API客户端管理 | HTTP通信层 | 数据访问抽象</AssemblyDescription>
+    <AssemblyCompany>凌隐宝堂中医诊所</AssemblyCompany>
+    <AssemblyProduct>LYBT诊疗管理系统</AssemblyProduct>
+    <AssemblyCopyright>Copyright © 凌隐宝堂中医诊所 2025</AssemblyCopyright>
+    <AssemblyVersion>2.1.0.0</AssemblyVersion>
+    <FileVersion>2.1.0.0</FileVersion>
+    <InformationalVersion>2.1.0-infrastructure-enterprise</InformationalVersion>
+    
+    <!-- Package Information -->
+    <PackageId>LYBT.Desktop.Infrastructure</PackageId>
+    <PackageVersion>2.1.0</PackageVersion>
+    <Authors>LYBT开发团队</Authors>
+    <PackageDescription>LYBT WPF基础设施服务 - Refit API客户端、HTTP通信、错误处理、服务发现 | 企业级通信层</PackageDescription>
+    <PackageTags>WPF;基础设施;API客户端;HTTP;中医;诊所;Refit;Polly</PackageTags>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <RepositoryUrl>https://github.com/shouqitao/LYBTZYZS</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
   </PropertyGroup>
 
-  <ItemGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DocumentationFile>bin\Debug\net8.0-windows\LYBT.Desktop.Infrastructure.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DefineConstants>TRACE</DefineConstants>
+    <DocumentationFile>bin\Release\net8.0-windows\LYBT.Desktop.Infrastructure.xml</DocumentationFile>
+    <Optimize>true</Optimize>
+  </PropertyGroup>
+
+  <!-- WPF and UI Dependencies -->
+  <ItemGroup Label="WPF Framework">
     <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.135" />
     <PackageReference Include="NPOI" Version="2.7.4" />
+  </ItemGroup>
+
+  <!-- HTTP Communication -->
+  <ItemGroup Label="HTTP and API">
     <PackageReference Include="Refit" Version="8.0.0" />
     <PackageReference Include="Refit.Newtonsoft.Json" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Http.Polly" Version="8.0.0" />
     <PackageReference Include="Polly.Extensions.Http" Version="3.0.0" />
   </ItemGroup>
 
-  <ItemGroup>
+  <!-- Project References -->
+  <ItemGroup Label="Local Dependencies">
     <ProjectReference Include="..\Core\LYBT.Desktop.Core.csproj" />
   </ItemGroup>
 
+  <!-- Resource Files -->
+  <ItemGroup Label="Documentation">
+    <None Include="README.md" />
+  </ItemGroup>
 
 </Project>

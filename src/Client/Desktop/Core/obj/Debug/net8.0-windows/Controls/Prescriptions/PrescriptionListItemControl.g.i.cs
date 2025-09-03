@@ -53,7 +53,7 @@ namespace LYBT.WPF.Client.Controls.Prescriptions {
                 return;
             }
             _contentLoaded = true;
-            System.Uri resourceLocater = new System.Uri("/LYBT.Desktop.Core;V1.0.0.0;component/controls/prescriptions/prescriptionlistitem" +
+            System.Uri resourceLocater = new System.Uri("/LYBT.Desktop.Core;V2.1.0.0;component/controls/prescriptions/prescriptionlistitem" +
                     "control.xaml", System.UriKind.Relative);
             
             #line 1 "..\..\..\..\..\Controls\Prescriptions\PrescriptionListItemControl.xaml"

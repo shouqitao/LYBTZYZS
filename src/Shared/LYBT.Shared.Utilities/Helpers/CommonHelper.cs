@@ -1,7 +1,9 @@
 using System.Collections.Concurrent;
 using System.Net.NetworkInformation;
 using System.Text;
+using System.Text.Json;
 using System.Text.RegularExpressions;
+using System.Globalization;
 
 namespace LYBT.Shared.Utilities.Helpers
 {
@@ -327,5 +329,237 @@ namespace LYBT.Shared.Utilities.Helpers
             return DateTimeOffset.FromUnixTimeMilliseconds(timestamp).DateTime;
         }
 
+        /// <summary>
+        /// JSON序列化
+        /// </summary>
+        /// <typeparam name="T">对象类型</typeparam>
+        /// <param name="obj">要序列化的对象</param>
+        /// <param name="options">JSON选项</param>
+        /// <returns>JSON字符串</returns>
+        public static string ToJson<T>(T obj, JsonSerializerOptions? options = null)
+        {
+            options ??= new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                WriteIndented = true,
+                Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+            };
+            
+            return JsonSerializer.Serialize(obj, options);
+        }
+
+        /// <summary>
+        /// JSON反序列化
+        /// </summary>
+        /// <typeparam name="T">目标类型</typeparam>
+        /// <param name="json">JSON字符串</param>
+        /// <param name="options">JSON选项</param>
+        /// <returns>反序列化的对象</returns>
+        public static T? FromJson<T>(string json, JsonSerializerOptions? options = null)
+        {
+            if (string.IsNullOrWhiteSpace(json))
+                return default;
+
+            options ??= new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                PropertyNameCaseInsensitive = true
+            };
+
+            try
+            {
+                return JsonSerializer.Deserialize<T>(json, options);
+            }
+            catch
+            {
+                return default;
+            }
+        }
+
+        /// <summary>
+        /// 格式化日期为中文格式
+        /// </summary>
+        /// <param name="dateTime">日期时间</param>
+        /// <param name="includeTime">是否包含时间</param>
+        /// <returns>格式化的中文日期</returns>
+        public static string FormatChineseDate(DateTime dateTime, bool includeTime = false)
+        {
+            return includeTime 
+                ? dateTime.ToString("yyyy年MM月dd日 HH:mm:ss", CultureInfo.InvariantCulture)
+                : dateTime.ToString("yyyy年MM月dd日", CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>
+        /// 格式化日期为短格式
+        /// </summary>
+        /// <param name="dateTime">日期时间</param>
+        /// <returns>短格式日期 (yyyy-MM-dd)</returns>
+        public static string FormatShortDate(DateTime dateTime)
+        {
+            return dateTime.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>
+        /// 格式化日期时间为完整格式
+        /// </summary>
+        /// <param name="dateTime">日期时间</param>
+        /// <returns>完整格式日期时间 (yyyy-MM-dd HH:mm:ss)</returns>
+        public static string FormatDateTime(DateTime dateTime)
+        {
+            return dateTime.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>
+        /// 计算年龄
+        /// </summary>
+        /// <param name="birthDate">出生日期</param>
+        /// <param name="referenceDate">参考日期（默认为当前日期）</param>
+        /// <returns>年龄</returns>
+        public static int CalculateAge(DateTime birthDate, DateTime? referenceDate = null)
+        {
+            var reference = referenceDate ?? DateTime.Today;
+            var age = reference.Year - birthDate.Year;
+            
+            if (birthDate.Date > reference.AddYears(-age))
+                age--;
+                
+            return Math.Max(0, age);
+        }
+
+        /// <summary>
+        /// 计算两个日期之间的天数
+        /// </summary>
+        /// <param name="startDate">开始日期</param>
+        /// <param name="endDate">结束日期</param>
+        /// <returns>天数差</returns>
+        public static int CalculateDaysBetween(DateTime startDate, DateTime endDate)
+        {
+            return (int)(endDate.Date - startDate.Date).TotalDays;
+        }
+
+        /// <summary>
+        /// 友好的时间显示（几分钟前、几小时前等）
+        /// </summary>
+        /// <param name="dateTime">时间</param>
+        /// <returns>友好的时间显示</returns>
+        public static string FormatFriendlyTime(DateTime dateTime)
+        {
+            var timeSpan = DateTime.Now - dateTime;
+            
+            return timeSpan.TotalDays switch
+            {
+                >= 365 => $"{(int)(timeSpan.TotalDays / 365)}年前",
+                >= 30 => $"{(int)(timeSpan.TotalDays / 30)}个月前", 
+                >= 7 => $"{(int)(timeSpan.TotalDays / 7)}周前",
+                >= 1 => $"{(int)timeSpan.TotalDays}天前",
+                _ => timeSpan.TotalHours switch
+                {
+                    >= 1 => $"{(int)timeSpan.TotalHours}小时前",
+                    _ => timeSpan.TotalMinutes switch
+                    {
+                        >= 1 => $"{(int)timeSpan.TotalMinutes}分钟前",
+                        _ => "刚刚"
+                    }
+                }
+            };
+        }
+
+        /// <summary>
+        /// 安全地获取字符串的指定长度子串
+        /// </summary>
+        /// <param name="text">原始字符串</param>
+        /// <param name="maxLength">最大长度</param>
+        /// <param name="suffix">超长时的后缀（默认为...）</param>
+        /// <returns>截取后的字符串</returns>
+        public static string SafeSubstring(string? text, int maxLength, string suffix = "...")
+        {
+            if (string.IsNullOrEmpty(text) || text.Length <= maxLength)
+                return text ?? string.Empty;
+
+            return text[..(maxLength - suffix.Length)] + suffix;
+        }
+
+        /// <summary>
+        /// 移除字符串中的HTML标签
+        /// </summary>
+        /// <param name="html">包含HTML的字符串</param>
+        /// <returns>纯文本</returns>
+        public static string StripHtmlTags(string? html)
+        {
+            if (string.IsNullOrWhiteSpace(html))
+                return string.Empty;
+
+            return HtmlTagRegex().Replace(html, string.Empty).Trim();
+        }
+
+        [GeneratedRegex(@"<[^>]+>", RegexOptions.Compiled)]
+        private static partial Regex HtmlTagRegex();
+
+        /// <summary>
+        /// 验证是否为有效的中国手机号
+        /// </summary>
+        /// <param name="phone">手机号</param>
+        /// <returns>验证结果</returns>
+        public static bool IsValidChinesePhone(string? phone)
+        {
+            if (string.IsNullOrWhiteSpace(phone))
+                return false;
+
+            var digits = PhoneDigitsRegex().Replace(phone, string.Empty);
+            return ChinesePhoneRegex().IsMatch(digits);
+        }
+
+        [GeneratedRegex(@"^1[3-9]\d{9}$", RegexOptions.Compiled)]
+        private static partial Regex ChinesePhoneRegex();
+
+        /// <summary>
+        /// 生成指定范围的随机数
+        /// </summary>
+        /// <param name="min">最小值（包含）</param>
+        /// <param name="max">最大值（不包含）</param>
+        /// <returns>随机数</returns>
+        public static int GenerateRandomNumber(int min, int max)
+        {
+            return Random.Shared.Next(min, max);
+        }
+
+        /// <summary>
+        /// 生成随机颜色代码
+        /// </summary>
+        /// <returns>十六进制颜色代码（如 #FF5733）</returns>
+        public static string GenerateRandomColor()
+        {
+            var random = Random.Shared;
+            return $"#{random.Next(0x1000000):X6}";
+        }
+
+        /// <summary>
+        /// 字符串转为Title Case（首字母大写）
+        /// </summary>
+        /// <param name="text">原始字符串</param>
+        /// <returns>Title Case字符串</returns>
+        public static string ToTitleCase(string? text)
+        {
+            if (string.IsNullOrWhiteSpace(text))
+                return string.Empty;
+
+            return CultureInfo.InvariantCulture.TextInfo.ToTitleCase(text.ToLower());
+        }
+
+        /// <summary>
+        /// 压缩字符串中的多余空白字符
+        /// </summary>
+        /// <param name="text">原始字符串</param>
+        /// <returns>压缩空白后的字符串</returns>
+        public static string CompressWhitespace(string? text)
+        {
+            if (string.IsNullOrWhiteSpace(text))
+                return string.Empty;
+
+            return WhitespaceRegex().Replace(text.Trim(), " ");
+        }
+
+        [GeneratedRegex(@"\s+", RegexOptions.Compiled)]
+        private static partial Regex WhitespaceRegex();
     }
 }

@@ -76,7 +76,7 @@ namespace LYBT.Desktop.MedicalCase.Views {
                 return;
             }
             _contentLoaded = true;
-            System.Uri resourceLocater = new System.Uri("/LYBT.Desktop.MedicalCase;component/views/medicalcaselistview.xaml", System.UriKind.Relative);
+            System.Uri resourceLocater = new System.Uri("/LYBT.Desktop.MedicalCase;V2.1.0.0;component/views/medicalcaselistview.xaml", System.UriKind.Relative);
             
             #line 1 "..\..\..\..\Views\MedicalCaseListView.xaml"
             System.Windows.Application.LoadComponent(this, resourceLocater);

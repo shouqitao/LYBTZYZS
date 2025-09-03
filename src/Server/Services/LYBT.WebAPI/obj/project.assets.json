@@ -2490,7 +2490,7 @@
           "AutoMapper": "15.0.1",
           "FluentValidation": "11.11.0",
           "LYBT.Entities": "1.0.0",
-          "LYBT.Shared.Interfaces": "1.0.0",
+          "LYBT.Shared.Interfaces": "2.1.0",
           "LYBT.Shared.Models": "1.0.0",
           "LYBT.Shared.Utilities": "1.0.0",
           "Microsoft.AspNetCore.Authentication.JwtBearer": "8.0.17",
@@ -2669,12 +2669,13 @@
           "bin/placeholder/LYBT.Module.Users.dll": {}
         }
       },
-      "LYBT.Shared.Interfaces/1.0.0": {
+      "LYBT.Shared.Interfaces/2.1.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v8.0",
         "dependencies": {
           "LYBT.Shared.Models": "1.0.0",
-          "Refit": "8.0.0"
+          "Refit": "8.0.0",
+          "System.ComponentModel.Annotations": "5.0.0"
         },
         "compile": {
           "bin/placeholder/LYBT.Shared.Interfaces.dll": {}
@@ -2703,7 +2704,9 @@
         "framework": ".NETCoreApp,Version=v8.0",
         "dependencies": {
           "LYBT.Shared.Models": "1.0.0",
-          "Microsoft.AspNetCore.Identity": "2.3.1"
+          "Microsoft.AspNetCore.Identity": "2.3.1",
+          "System.ComponentModel.Annotations": "5.0.0",
+          "System.Text.Json": "8.0.5"
         },
         "compile": {
           "bin/placeholder/LYBT.Shared.Utilities.dll": {}
@@ -6304,7 +6307,7 @@
       "path": "../../Modules/LYBT.Module.Users/LYBT.Module.Users.csproj",
       "msbuildProject": "../../Modules/LYBT.Module.Users/LYBT.Module.Users.csproj"
     },
-    "LYBT.Shared.Interfaces/1.0.0": {
+    "LYBT.Shared.Interfaces/2.1.0": {
       "type": "project",
       "path": "../../../Shared/LYBT.Shared.Interfaces/LYBT.Shared.Interfaces.csproj",
       "msbuildProject": "../../../Shared/LYBT.Shared.Interfaces/LYBT.Shared.Interfaces.csproj"

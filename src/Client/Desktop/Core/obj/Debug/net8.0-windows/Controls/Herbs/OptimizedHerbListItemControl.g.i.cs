@@ -52,7 +52,7 @@ namespace LYBT.Desktop.Core.Controls.Herbs {
                 return;
             }
             _contentLoaded = true;
-            System.Uri resourceLocater = new System.Uri("/LYBT.Desktop.Core;V1.0.0.0;component/controls/herbs/optimizedherblistitemcontrol" +
+            System.Uri resourceLocater = new System.Uri("/LYBT.Desktop.Core;V2.1.0.0;component/controls/herbs/optimizedherblistitemcontrol" +
                     ".xaml", System.UriKind.Relative);
             
             #line 1 "..\..\..\..\..\Controls\Herbs\OptimizedHerbListItemControl.xaml"

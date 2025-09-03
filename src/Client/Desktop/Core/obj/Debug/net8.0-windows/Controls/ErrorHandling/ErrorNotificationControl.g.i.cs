@@ -52,7 +52,7 @@ namespace LYBT.Desktop.Core.Controls.ErrorHandling {
                 return;
             }
             _contentLoaded = true;
-            System.Uri resourceLocater = new System.Uri("/LYBT.Desktop.Core;V1.0.0.0;component/controls/errorhandling/errornotificationcon" +
+            System.Uri resourceLocater = new System.Uri("/LYBT.Desktop.Core;V2.1.0.0;component/controls/errorhandling/errornotificationcon" +
                     "trol.xaml", System.UriKind.Relative);
             
             #line 1 "..\..\..\..\..\Controls\ErrorHandling\ErrorNotificationControl.xaml"

@@ -330,7 +330,7 @@
       }
     },
     "D:\\source\\repos\\LYBTZYZS\\src\\Shared\\LYBT.Shared.Interfaces\\LYBT.Shared.Interfaces.csproj": {
-      "version": "1.0.0",
+      "version": "2.1.0",
       "restore": {
         "projectUniqueName": "D:\\source\\repos\\LYBTZYZS\\src\\Shared\\LYBT.Shared.Interfaces\\LYBT.Shared.Interfaces.csproj",
         "projectName": "LYBT.Shared.Interfaces",
@@ -363,11 +363,6 @@
             }
           }
         },
-        "warningProperties": {
-          "warnAsError": [
-            "NU1605"
-          ]
-        },
         "restoreAuditProperties": {
           "enableAudit": "true",
           "auditLevel": "low",
@@ -382,6 +377,10 @@
             "Refit": {
               "target": "Package",
               "version": "[8.0.0, )"
+            },
+            "System.ComponentModel.Annotations": {
+              "target": "Package",
+              "version": "[5.0.0, )"
             }
           },
           "imports": [
@@ -517,11 +516,6 @@
             }
           }
         },
-        "warningProperties": {
-          "warnAsError": [
-            "NU1605"
-          ]
-        },
         "restoreAuditProperties": {
           "enableAudit": "true",
           "auditLevel": "low",
@@ -536,6 +530,14 @@
             "Microsoft.AspNetCore.Identity": {
               "target": "Package",
               "version": "[2.3.1, )"
+            },
+            "System.ComponentModel.Annotations": {
+              "target": "Package",
+              "version": "[5.0.0, )"
+            },
+            "System.Text.Json": {
+              "target": "Package",
+              "version": "[8.0.5, )"
             }
           },
           "imports": [

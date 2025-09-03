@@ -53,7 +53,7 @@ namespace LYBT.Desktop.Shell.Dialogs.Views {
                 return;
             }
             _contentLoaded = true;
-            System.Uri resourceLocater = new System.Uri("/LYBT.Desktop.Shell;V1.0.0.0;component/dialogs/views/errordetailsdialog.xaml", System.UriKind.Relative);
+            System.Uri resourceLocater = new System.Uri("/LYBT.Desktop.Shell;V2.1.0.0;component/dialogs/views/errordetailsdialog.xaml", System.UriKind.Relative);
             
             #line 1 "..\..\..\..\..\Dialogs\Views\ErrorDetailsDialog.xaml"
             System.Windows.Application.LoadComponent(this, resourceLocater);

@@ -76,7 +76,7 @@ namespace LYBT.Desktop.Users.Views {
                 return;
             }
             _contentLoaded = true;
-            System.Uri resourceLocater = new System.Uri("/LYBT.Desktop.Users;component/views/resetpassworddialog.xaml", System.UriKind.Relative);
+            System.Uri resourceLocater = new System.Uri("/LYBT.Desktop.Users;V2.1.0.0;component/views/resetpassworddialog.xaml", System.UriKind.Relative);
             
             #line 1 "..\..\..\..\Views\ResetPasswordDialog.xaml"
             System.Windows.Application.LoadComponent(this, resourceLocater);

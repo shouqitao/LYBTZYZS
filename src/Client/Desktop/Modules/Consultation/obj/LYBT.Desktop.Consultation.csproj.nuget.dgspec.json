@@ -5,7 +5,7 @@
   },
   "projects": {
     "D:\\source\\repos\\LYBTZYZS\\src\\Client\\Desktop\\Core\\LYBT.Desktop.Core.csproj": {
-      "version": "1.0.0",
+      "version": "2.1.0",
       "restore": {
         "projectUniqueName": "D:\\source\\repos\\LYBTZYZS\\src\\Client\\Desktop\\Core\\LYBT.Desktop.Core.csproj",
         "projectName": "LYBT.Desktop.Core",
@@ -44,11 +44,6 @@
             }
           }
         },
-        "warningProperties": {
-          "warnAsError": [
-            "NU1605"
-          ]
-        },
         "restoreAuditProperties": {
           "enableAudit": "true",
           "auditLevel": "low",
@@ -78,11 +73,11 @@
             },
             "Microsoft.Extensions.Configuration": {
               "target": "Package",
-              "version": "[9.0.7, )"
+              "version": "[9.0.0, )"
             },
             "Microsoft.Extensions.Configuration.Binder": {
               "target": "Package",
-              "version": "[9.0.7, )"
+              "version": "[9.0.0, )"
             },
             "Microsoft.Extensions.Configuration.EnvironmentVariables": {
               "target": "Package",
@@ -90,11 +85,11 @@
             },
             "Microsoft.Extensions.Configuration.FileExtensions": {
               "target": "Package",
-              "version": "[9.0.7, )"
+              "version": "[9.0.0, )"
             },
             "Microsoft.Extensions.Configuration.Json": {
               "target": "Package",
-              "version": "[9.0.7, )"
+              "version": "[9.0.0, )"
             },
             "NPOI": {
               "target": "Package",
@@ -131,6 +126,10 @@
             "System.Reactive": {
               "target": "Package",
               "version": "[6.0.0, )"
+            },
+            "System.Text.Json": {
+              "target": "Package",
+              "version": "[8.0.5, )"
             }
           },
           "imports": [
@@ -157,7 +156,7 @@
       }
     },
     "D:\\source\\repos\\LYBTZYZS\\src\\Client\\Desktop\\Infrastructure\\LYBT.Desktop.Infrastructure.csproj": {
-      "version": "1.0.0",
+      "version": "2.1.0",
       "restore": {
         "projectUniqueName": "D:\\source\\repos\\LYBTZYZS\\src\\Client\\Desktop\\Infrastructure\\LYBT.Desktop.Infrastructure.csproj",
         "projectName": "LYBT.Desktop.Infrastructure",
@@ -190,11 +189,6 @@
             }
           }
         },
-        "warningProperties": {
-          "warnAsError": [
-            "NU1605"
-          ]
-        },
         "restoreAuditProperties": {
           "enableAudit": "true",
           "auditLevel": "low",
@@ -206,6 +200,10 @@
         "net8.0-windows7.0": {
           "targetAlias": "net8.0-windows",
           "dependencies": {
+            "Microsoft.Extensions.Http": {
+              "target": "Package",
+              "version": "[8.0.0, )"
+            },
             "Microsoft.Extensions.Http.Polly": {
               "target": "Package",
               "version": "[8.0.0, )"
@@ -255,7 +253,7 @@
       }
     },
     "D:\\source\\repos\\LYBTZYZS\\src\\Client\\Desktop\\Modules\\Consultation\\LYBT.Desktop.Consultation.csproj": {
-      "version": "1.0.0",
+      "version": "2.1.0",
       "restore": {
         "projectUniqueName": "D:\\source\\repos\\LYBTZYZS\\src\\Client\\Desktop\\Modules\\Consultation\\LYBT.Desktop.Consultation.csproj",
         "projectName": "LYBT.Desktop.Consultation",
@@ -306,11 +304,6 @@
             }
           }
         },
-        "warningProperties": {
-          "warnAsError": [
-            "NU1605"
-          ]
-        },
         "restoreAuditProperties": {
           "enableAudit": "true",
           "auditLevel": "low",
@@ -322,6 +315,10 @@
         "net8.0-windows7.0": {
           "targetAlias": "net8.0-windows",
           "dependencies": {
+            "Prism.Core": {
+              "target": "Package",
+              "version": "[8.1.97, )"
+            },
             "Prism.DryIoc": {
               "target": "Package",
               "version": "[8.1.97, )"
@@ -355,7 +352,7 @@
       }
     },
     "D:\\source\\repos\\LYBTZYZS\\src\\Client\\Desktop\\Modules\\Formula\\LYBT.Desktop.Formula.csproj": {
-      "version": "1.0.0",
+      "version": "2.1.0",
       "restore": {
         "projectUniqueName": "D:\\source\\repos\\LYBTZYZS\\src\\Client\\Desktop\\Modules\\Formula\\LYBT.Desktop.Formula.csproj",
         "projectName": "LYBT.Desktop.Formula",
@@ -394,11 +391,6 @@
             }
           }
         },
-        "warningProperties": {
-          "warnAsError": [
-            "NU1605"
-          ]
-        },
         "restoreAuditProperties": {
           "enableAudit": "true",
           "auditLevel": "low",
@@ -413,6 +405,10 @@
             "Microsoft.Extensions.Logging.Abstractions": {
               "target": "Package",
               "version": "[9.0.0, )"
+            },
+            "Prism.Core": {
+              "target": "Package",
+              "version": "[8.1.97, )"
             },
             "Prism.DryIoc": {
               "target": "Package",
@@ -447,7 +443,7 @@
       }
     },
     "D:\\source\\repos\\LYBTZYZS\\src\\Client\\Desktop\\Modules\\Herbs\\LYBT.Desktop.Herbs.csproj": {
-      "version": "1.0.0",
+      "version": "2.1.0",
       "restore": {
         "projectUniqueName": "D:\\source\\repos\\LYBTZYZS\\src\\Client\\Desktop\\Modules\\Herbs\\LYBT.Desktop.Herbs.csproj",
         "projectName": "LYBT.Desktop.Herbs",
@@ -489,11 +485,6 @@
             }
           }
         },
-        "warningProperties": {
-          "warnAsError": [
-            "NU1605"
-          ]
-        },
         "restoreAuditProperties": {
           "enableAudit": "true",
           "auditLevel": "low",
@@ -505,7 +496,15 @@
         "net8.0-windows7.0": {
           "targetAlias": "net8.0-windows",
           "dependencies": {
+            "Prism.Core": {
+              "target": "Package",
+              "version": "[8.1.97, )"
+            },
             "Prism.DryIoc": {
+              "target": "Package",
+              "version": "[8.1.97, )"
+            },
+            "Prism.Wpf": {
               "target": "Package",
               "version": "[8.1.97, )"
             }
@@ -534,7 +533,7 @@
       }
     },
     "D:\\source\\repos\\LYBTZYZS\\src\\Client\\Desktop\\Modules\\MedicalCase\\LYBT.Desktop.MedicalCase.csproj": {
-      "version": "1.0.0",
+      "version": "2.1.0",
       "restore": {
         "projectUniqueName": "D:\\source\\repos\\LYBTZYZS\\src\\Client\\Desktop\\Modules\\MedicalCase\\LYBT.Desktop.MedicalCase.csproj",
         "projectName": "LYBT.Desktop.MedicalCase",
@@ -573,11 +572,6 @@
             }
           }
         },
-        "warningProperties": {
-          "warnAsError": [
-            "NU1605"
-          ]
-        },
         "restoreAuditProperties": {
           "enableAudit": "true",
           "auditLevel": "low",
@@ -589,6 +583,10 @@
         "net8.0-windows7.0": {
           "targetAlias": "net8.0-windows",
           "dependencies": {
+            "Prism.Core": {
+              "target": "Package",
+              "version": "[8.1.97, )"
+            },
             "Prism.DryIoc": {
               "target": "Package",
               "version": "[8.1.97, )"
@@ -622,7 +620,7 @@
       }
     },
     "D:\\source\\repos\\LYBTZYZS\\src\\Client\\Desktop\\Modules\\Patients\\LYBT.Desktop.Patients.csproj": {
-      "version": "1.0.0",
+      "version": "2.1.0",
       "restore": {
         "projectUniqueName": "D:\\source\\repos\\LYBTZYZS\\src\\Client\\Desktop\\Modules\\Patients\\LYBT.Desktop.Patients.csproj",
         "projectName": "LYBT.Desktop.Patients",
@@ -664,11 +662,6 @@
             }
           }
         },
-        "warningProperties": {
-          "warnAsError": [
-            "NU1605"
-          ]
-        },
         "restoreAuditProperties": {
           "enableAudit": "true",
           "auditLevel": "low",
@@ -680,7 +673,15 @@
         "net8.0-windows7.0": {
           "targetAlias": "net8.0-windows",
           "dependencies": {
+            "Prism.Core": {
+              "target": "Package",
+              "version": "[8.1.97, )"
+            },
             "Prism.DryIoc": {
+              "target": "Package",
+              "version": "[8.1.97, )"
+            },
+            "Prism.Wpf": {
               "target": "Package",
               "version": "[8.1.97, )"
             }
@@ -812,7 +813,7 @@
       }
     },
     "D:\\source\\repos\\LYBTZYZS\\src\\Client\\Desktop\\Workbenches\\Core\\LYBT.Desktop.Workbench.Core.csproj": {
-      "version": "1.0.0",
+      "version": "2.1.0",
       "restore": {
         "projectUniqueName": "D:\\source\\repos\\LYBTZYZS\\src\\Client\\Desktop\\Workbenches\\Core\\LYBT.Desktop.Workbench.Core.csproj",
         "projectName": "LYBT.Desktop.Workbench.Core",
@@ -845,11 +846,6 @@
             }
           }
         },
-        "warningProperties": {
-          "warnAsError": [
-            "NU1605"
-          ]
-        },
         "restoreAuditProperties": {
           "enableAudit": "true",
           "auditLevel": "low",
@@ -861,7 +857,15 @@
         "net8.0-windows7.0": {
           "targetAlias": "net8.0-windows",
           "dependencies": {
+            "Prism.Core": {
+              "target": "Package",
+              "version": "[8.1.97, )"
+            },
             "Prism.DryIoc": {
+              "target": "Package",
+              "version": "[8.1.97, )"
+            },
+            "Prism.Wpf": {
               "target": "Package",
               "version": "[8.1.97, )"
             }
@@ -890,7 +894,7 @@
       }
     },
     "D:\\source\\repos\\LYBTZYZS\\src\\Shared\\LYBT.Shared.Interfaces\\LYBT.Shared.Interfaces.csproj": {
-      "version": "1.0.0",
+      "version": "2.1.0",
       "restore": {
         "projectUniqueName": "D:\\source\\repos\\LYBTZYZS\\src\\Shared\\LYBT.Shared.Interfaces\\LYBT.Shared.Interfaces.csproj",
         "projectName": "LYBT.Shared.Interfaces",
@@ -923,11 +927,6 @@
             }
           }
         },
-        "warningProperties": {
-          "warnAsError": [
-            "NU1605"
-          ]
-        },
         "restoreAuditProperties": {
           "enableAudit": "true",
           "auditLevel": "low",
@@ -942,6 +941,10 @@
             "Refit": {
               "target": "Package",
               "version": "[8.0.0, )"
+            },
+            "System.ComponentModel.Annotations": {
+              "target": "Package",
+              "version": "[5.0.0, )"
             }
           },
           "imports": [
@@ -1077,11 +1080,6 @@
             }
           }
         },
-        "warningProperties": {
-          "warnAsError": [
-            "NU1605"
-          ]
-        },
         "restoreAuditProperties": {
           "enableAudit": "true",
           "auditLevel": "low",
@@ -1096,6 +1094,14 @@
             "Microsoft.AspNetCore.Identity": {
               "target": "Package",
               "version": "[2.3.1, )"
+            },
+            "System.ComponentModel.Annotations": {
+              "target": "Package",
+              "version": "[5.0.0, )"
+            },
+            "System.Text.Json": {
+              "target": "Package",
+              "version": "[8.0.5, )"
             }
           },
           "imports": [

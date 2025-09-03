@@ -1,5 +1,5 @@
 ﻿LYBT.Desktop.Core
-1.0.0.0
+2.1.0.0
 
 library
 C#
@@ -8,12 +8,12 @@ D:\source\repos\LYBTZYZS\src\Client\Desktop\Core\obj\Debug\net8.0-windows\
 LYBT.Desktop.Core
 none
 false
-TRACE;DEBUG;NET;NET8_0;NETCOREAPP;WINDOWS;WINDOWS7_0;NET5_0_OR_GREATER;NET6_0_OR_GREATER;NET7_0_OR_GREATER;NET8_0_OR_GREATER;NETCOREAPP3_0_OR_GREATER;NETCOREAPP3_1_OR_GREATER;WINDOWS7_0_OR_GREATER
+DEBUG;TRACE;DEBUG;NET;NET8_0;NETCOREAPP;WINDOWS;WINDOWS7_0;NET5_0_OR_GREATER;NET6_0_OR_GREATER;NET7_0_OR_GREATER;NET8_0_OR_GREATER;NETCOREAPP3_0_OR_GREATER;NETCOREAPP3_1_OR_GREATER;WINDOWS7_0_OR_GREATER
 
 202026083609
 
 222411557939
-2951688960612
+294809001099
 Controls\Authentication\LoginControl.xaml;Controls\Auth\LoginStatusControl.xaml;Controls\ErrorHandling\ErrorNotificationControl.xaml;Controls\FormulaTemplates\FormulaTemplateListItemControl.xaml;Controls\GlobalStatusBar.xaml;Controls\Herbs\HerbListItemControl.xaml;Controls\Herbs\OptimizedHerbListItemControl.xaml;Controls\Patients\PatientListItemControl.xaml;Controls\Prescriptions\PrescriptionListItemControl.xaml;Controls\SmartLoadingIndicator.xaml;Controls\Users\UserDisplayControl.xaml;Controls\Users\UserListItemControl.xaml;Controls\VirtualizedDataGrid.xaml;Controls\VirtualizedListView.xaml;Views\Base\BaseListView.xaml;Views\Dialogs\CriticalErrorDialog.xaml;Views\Dialogs\FormulaSelectionDialog.xaml;Views\Dialogs\HerbSelectionDialog.xaml;Views\Dialogs\InputDialog.xaml;Views\PrintPreviewDialog.xaml;
 
 True

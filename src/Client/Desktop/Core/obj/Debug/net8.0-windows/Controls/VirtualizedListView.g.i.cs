@@ -68,7 +68,7 @@ namespace LYBT.Desktop.Core.Controls {
                 return;
             }
             _contentLoaded = true;
-            System.Uri resourceLocater = new System.Uri("/LYBT.Desktop.Core;V1.0.0.0;component/controls/virtualizedlistview.xaml", System.UriKind.Relative);
+            System.Uri resourceLocater = new System.Uri("/LYBT.Desktop.Core;V2.1.0.0;component/controls/virtualizedlistview.xaml", System.UriKind.Relative);
             
             #line 1 "..\..\..\..\Controls\VirtualizedListView.xaml"
             System.Windows.Application.LoadComponent(this, resourceLocater);

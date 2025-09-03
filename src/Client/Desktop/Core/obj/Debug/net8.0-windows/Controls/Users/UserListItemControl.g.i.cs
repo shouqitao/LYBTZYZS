@@ -52,7 +52,7 @@ namespace LYBT.WPF.Client.Controls.Users {
                 return;
             }
             _contentLoaded = true;
-            System.Uri resourceLocater = new System.Uri("/LYBT.Desktop.Core;V1.0.0.0;component/controls/users/userlistitemcontrol.xaml", System.UriKind.Relative);
+            System.Uri resourceLocater = new System.Uri("/LYBT.Desktop.Core;V2.1.0.0;component/controls/users/userlistitemcontrol.xaml", System.UriKind.Relative);
             
             #line 1 "..\..\..\..\..\Controls\Users\UserListItemControl.xaml"
             System.Windows.Application.LoadComponent(this, resourceLocater);

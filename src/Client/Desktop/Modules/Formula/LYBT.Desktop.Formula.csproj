@@ -2,24 +2,67 @@
 
   <PropertyGroup>
     <TargetFramework>net8.0-windows</TargetFramework>
-    <UseWPF>true</UseWPF>
-    <LangVersion>latest</LangVersion>
+    <LangVersion>12.0</LangVersion>
     <Nullable>enable</Nullable>
-    <ImplicitUsings>disable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningsAsErrors />
+    
+    <!-- Assembly Information -->
+    <AssemblyTitle>LYBT.Desktop.Formula</AssemblyTitle>
+    <AssemblyDescription>凌隐宝堂中医诊所系统 - 验方管理模块 | 经典验方 | 个人验方</AssemblyDescription>
+    <AssemblyCompany>凌隐宝堂中医诊所</AssemblyCompany>
+    <AssemblyProduct>LYBT诊疗管理系统</AssemblyProduct>
+    <AssemblyCopyright>Copyright © 凌隐宝堂中医诊所 2025</AssemblyCopyright>
+    <AssemblyVersion>2.1.0.0</AssemblyVersion>
+    <FileVersion>2.1.0.0</FileVersion>
+    <InformationalVersion>2.1.0-formula-enterprise</InformationalVersion>
+    
+    <!-- Package Information -->
+    <PackageId>LYBT.Desktop.Formula</PackageId>
+    <PackageVersion>2.1.0</PackageVersion>
+    <Authors>LYBT开发团队</Authors>
+    <PackageDescription>LYBT验方管理模块 - 经典验方模板、个人验方、智能推荐 | UltraThink双层架构标准</PackageDescription>
+    <PackageTags>WPF;验方管理;经典验方;个人验方;中医;诊所;UltraThink</PackageTags>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <RepositoryUrl>https://github.com/shouqitao/LYBTZYZS</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    
+    <!-- Naming Configuration -->
     <RootNamespace>LYBT.Desktop.Formula</RootNamespace>
     <AssemblyName>LYBT.Desktop.Formula</AssemblyName>
   </PropertyGroup>
 
-  <ItemGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DocumentationFile>bin\Debug\net8.0-windows\LYBT.Desktop.Formula.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DefineConstants>TRACE</DefineConstants>
+    <DocumentationFile>bin\Release\net8.0-windows\LYBT.Desktop.Formula.xml</DocumentationFile>
+    <Optimize>true</Optimize>
+  </PropertyGroup>
+
+  <!-- Prism and WPF Framework -->
+  <ItemGroup Label="WPF and MVVM Framework">
+    <PackageReference Include="Prism.Core" Version="8.1.97" />
     <PackageReference Include="Prism.DryIoc" Version="8.1.97" />
     <PackageReference Include="Prism.Wpf" Version="8.1.97" />
+  </ItemGroup>
+
+  <!-- Logging -->
+  <ItemGroup Label="Logging">
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0" />
   </ItemGroup>
 
-  <ItemGroup>
+  <!-- Project References -->
+  <ItemGroup Label="Infrastructure Dependencies">
     <ProjectReference Include="..\..\Core\LYBT.Desktop.Core.csproj" />
-    <ProjectReference Include="..\..\Services\LYBT.Desktop.Services.csproj" />
     <ProjectReference Include="..\..\Infrastructure\LYBT.Desktop.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\Services\LYBT.Desktop.Services.csproj" />
   </ItemGroup>
 
 </Project>

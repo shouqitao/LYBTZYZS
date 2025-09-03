@@ -60,7 +60,8 @@ namespace LYBT.Desktop.Consultation.Views {
                 return;
             }
             _contentLoaded = true;
-            System.Uri resourceLocater = new System.Uri("/LYBT.Desktop.Consultation;component/views/consultationmanagementview.xaml", System.UriKind.Relative);
+            System.Uri resourceLocater = new System.Uri("/LYBT.Desktop.Consultation;V2.1.0.0;component/views/consultationmanagementview.xa" +
+                    "ml", System.UriKind.Relative);
             
             #line 1 "..\..\..\..\Views\ConsultationManagementView.xaml"
             System.Windows.Application.LoadComponent(this, resourceLocater);

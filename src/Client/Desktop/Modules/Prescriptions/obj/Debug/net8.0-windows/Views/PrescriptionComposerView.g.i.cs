@@ -60,7 +60,8 @@ namespace LYBT.Desktop.Prescriptions.Views {
                 return;
             }
             _contentLoaded = true;
-            System.Uri resourceLocater = new System.Uri("/LYBT.Desktop.Prescriptions;component/views/prescriptioncomposerview.xaml", System.UriKind.Relative);
+            System.Uri resourceLocater = new System.Uri("/LYBT.Desktop.Prescriptions;V2.1.0.0;component/views/prescriptioncomposerview.xam" +
+                    "l", System.UriKind.Relative);
             
             #line 1 "..\..\..\..\Views\PrescriptionComposerView.xaml"
             System.Windows.Application.LoadComponent(this, resourceLocater);

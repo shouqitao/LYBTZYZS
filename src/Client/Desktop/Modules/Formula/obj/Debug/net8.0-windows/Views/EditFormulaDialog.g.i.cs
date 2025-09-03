@@ -54,7 +54,7 @@ namespace LYBT.Desktop.Formula.Views {
                 return;
             }
             _contentLoaded = true;
-            System.Uri resourceLocater = new System.Uri("/LYBT.Desktop.Formula;component/views/editformuladialog.xaml", System.UriKind.Relative);
+            System.Uri resourceLocater = new System.Uri("/LYBT.Desktop.Formula;V2.1.0.0;component/views/editformuladialog.xaml", System.UriKind.Relative);
             
             #line 1 "..\..\..\..\Views\EditFormulaDialog.xaml"
             System.Windows.Application.LoadComponent(this, resourceLocater);

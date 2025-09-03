@@ -63,7 +63,7 @@ namespace LYBT.Desktop.Prescriptions.Views {
                 return;
             }
             _contentLoaded = true;
-            System.Uri resourceLocater = new System.Uri("/LYBT.Desktop.Prescriptions;component/views/herbselectiondialog.xaml", System.UriKind.Relative);
+            System.Uri resourceLocater = new System.Uri("/LYBT.Desktop.Prescriptions;V2.1.0.0;component/views/herbselectiondialog.xaml", System.UriKind.Relative);
             
             #line 1 "..\..\..\..\Views\HerbSelectionDialog.xaml"
             System.Windows.Application.LoadComponent(this, resourceLocater);

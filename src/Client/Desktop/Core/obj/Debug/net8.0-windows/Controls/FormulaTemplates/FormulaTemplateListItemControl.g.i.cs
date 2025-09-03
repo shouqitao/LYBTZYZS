@@ -52,7 +52,7 @@ namespace LYBT.WPF.Client.Controls.Formulas {
                 return;
             }
             _contentLoaded = true;
-            System.Uri resourceLocater = new System.Uri("/LYBT.Desktop.Core;V1.0.0.0;component/controls/formulatemplates/formulatemplateli" +
+            System.Uri resourceLocater = new System.Uri("/LYBT.Desktop.Core;V2.1.0.0;component/controls/formulatemplates/formulatemplateli" +
                     "stitemcontrol.xaml", System.UriKind.Relative);
             
             #line 1 "..\..\..\..\..\Controls\FormulaTemplates\FormulaTemplateListItemControl.xaml"
