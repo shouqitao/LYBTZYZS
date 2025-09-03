@@ -32,6 +32,7 @@ namespace LYBT.Desktop.Shell.Extensions
             RegisterHttpServices(containerRegistry);
             RegisterApiServices(containerRegistry);
             RegisterBusinessServices(containerRegistry);
+            RegisterErrorHandlingServices(containerRegistry);  // 添加统一错误处理服务
             RegisterDialogs(containerRegistry);
             RegisterPerformanceServices(containerRegistry);
             RegisterUltraThinkServices(containerRegistry);
@@ -53,6 +54,16 @@ namespace LYBT.Desktop.Shell.Extensions
             
             containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Services.Settings.IUserPreferencesService,
                 LYBT.Desktop.Core.Services.Settings.UserPreferencesService>();
+        }
+
+        /// <summary>
+        /// 注册统一错误处理服务 - UltraThink简化版
+        /// </summary>
+        private static void RegisterErrorHandlingServices(IContainerRegistry containerRegistry)
+        {
+            // 注册统一错误处理器
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Infrastructure.Services.IStandardErrorHandler,
+                LYBT.Desktop.Infrastructure.Services.StandardErrorHandler>();
         }
 
         /// <summary>
@@ -135,8 +146,8 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.Register<LYBT.Shared.Interfaces.Api.IMedicalCaseApi>(container => 
                 container.Resolve<LYBT.Desktop.Infrastructure.Api.IUnifiedApiClientManager>().MedicalCaseApi);
             
-            // 注册通用API服务
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Services.IApiService, LYBT.Desktop.Services.ApiService>();
+            // 注册通用API服务 - UltraThink统一架构：使用完整版Http.ApiService
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Http.IApiService, LYBT.Desktop.Core.Http.ApiService>();
         }
 
         /// <summary>
@@ -177,6 +188,16 @@ namespace LYBT.Desktop.Shell.Extensions
             // 主窗口服务门面 - 简化MainWindowViewModel的依赖注入
             containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.IMainWindowServicesFacade, 
                 LYBT.Desktop.Core.Services.MainWindowServicesFacade>();
+            
+            // P7-03: 处方打印服务 - UltraThink标准打印系统
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.IPrescriptionPrintService, 
+                LYBT.Desktop.Core.Services.PrescriptionPrintService>();
+                
+            // P7-04: 用户体验优化服务 - UltraThink用户体验增强
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.IUserExperienceService, 
+                LYBT.Desktop.Core.Services.UserExperienceService>();
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.IKeyboardShortcutService, 
+                LYBT.Desktop.Core.Services.KeyboardShortcutService>();
         }
 
         /// <summary>

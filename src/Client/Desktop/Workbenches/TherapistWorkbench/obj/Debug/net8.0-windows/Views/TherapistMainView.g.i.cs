@@ -60,8 +60,7 @@ namespace LYBT.Desktop.Workbench.Therapist.Views {
                 return;
             }
             _contentLoaded = true;
-            System.Uri resourceLocater = new System.Uri("/LYBT.Desktop.Workbench.Therapist;V1.0.0.0;component/views/therapistmainview.xaml" +
-                    "", System.UriKind.Relative);
+            System.Uri resourceLocater = new System.Uri("/LYBT.Desktop.Workbench.Therapist;component/views/therapistmainview.xaml", System.UriKind.Relative);
             
             #line 1 "..\..\..\..\Views\TherapistMainView.xaml"
             System.Windows.Application.LoadComponent(this, resourceLocater);

@@ -56,27 +56,23 @@ namespace LYBT.Module.Prescriptions.Services
 
         #region Business Operations
 
-        public async Task<ServiceResult<PrescriptionDto>> CreateAsync(PrescriptionCreateDto dto)
+        public Task<ServiceResult<PrescriptionDto>> CreateAsync(PrescriptionCreateDto dto)
         {
-            await Task.CompletedTask;
-            return ServiceResult<PrescriptionDto>.Failure("CreateAsync方法需要在BusinessService中实现");
+            return Task.FromResult(ServiceResult<PrescriptionDto>.Failure("CreateAsync方法需要在BusinessService中实现"));
         }
 
-        public async Task<ServiceResult<PrescriptionDto>> UpdateAsync(Guid id, PrescriptionEditDto dto)
+        public Task<ServiceResult<PrescriptionDto>> UpdateAsync(Guid id, PrescriptionEditDto dto)
         {
-            await Task.CompletedTask;
-            return ServiceResult<PrescriptionDto>.Failure("UpdateAsync方法需要在BusinessService中实现");
+            return Task.FromResult(ServiceResult<PrescriptionDto>.Failure("UpdateAsync方法需要在BusinessService中实现"));
         }
 
-        public async Task<ServiceResult<bool>> DeleteAsync(Guid id)
+        public Task<ServiceResult<bool>> DeleteAsync(Guid id)
         {
-            await Task.CompletedTask;
-            return ServiceResult<bool>.Failure("DeleteAsync方法需要在BusinessService中实现");
+            return Task.FromResult(ServiceResult<bool>.Failure("DeleteAsync方法需要在BusinessService中实现"));
         }
 
-        public async Task<ServiceResult<PrescriptionValidationResult>> ValidateAsync(PrescriptionCreateDto dto)
+        public Task<ServiceResult<PrescriptionValidationResult>> ValidateAsync(PrescriptionCreateDto dto)
         {
-            await Task.CompletedTask;
             var result = new PrescriptionValidationResult
             {
                 IsValid = !string.IsNullOrWhiteSpace(dto.Diagnosis) && dto.PatientId != Guid.Empty,
@@ -90,7 +86,7 @@ namespace LYBT.Module.Prescriptions.Services
                 result.Errors.Add("患者ID不能为空");
 
             result.IsValid = result.Errors.Count == 0;
-            return ServiceResult<PrescriptionValidationResult>.Success(result);
+            return Task.FromResult(ServiceResult<PrescriptionValidationResult>.Success(result));
         }
 
         public async Task<ServiceResult<PrescriptionDto>> CopyAsync(Guid id, string newName)

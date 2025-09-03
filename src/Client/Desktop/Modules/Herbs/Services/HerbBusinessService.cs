@@ -21,41 +21,41 @@ public class HerbBusinessService(ILogger<HerbBusinessService> logger) : IHerbBus
     /// <summary>
     /// 创建药材
     /// </summary>
-    public async Task<ServiceResult<HerbDto>> CreateAsync(HerbCreateDto createDto)
+    public Task<ServiceResult<HerbDto>> CreateAsync(HerbCreateDto createDto)
     {
-        return ServiceResult<HerbDto>.Failure("简单诊所版本暂不支持创建药材");
+        return Task.FromResult(ServiceResult<HerbDto>.Failure("简单诊所版本暂不支持创建药材"));
     }
 
     /// <summary>
     /// 更新药材
     /// </summary>
-    public async Task<ServiceResult<HerbDto>> UpdateAsync(Guid id, HerbUpdateDto updateDto)
+    public Task<ServiceResult<HerbDto>> UpdateAsync(Guid id, HerbUpdateDto updateDto)
     {
-        return ServiceResult<HerbDto>.Failure("简单诊所版本暂不支持更新药材信息");
+        return Task.FromResult(ServiceResult<HerbDto>.Failure("简单诊所版本暂不支持更新药材信息"));
     }
 
     /// <summary>
     /// 启用药材
     /// </summary>
-    public async Task<ServiceResult<bool>> EnableAsync(Guid herbId)
+    public Task<ServiceResult<bool>> EnableAsync(Guid herbId)
     {
-        return ServiceResult<bool>.Success(false);
+        return Task.FromResult(ServiceResult<bool>.Success(false));
     }
 
     /// <summary>
     /// 禁用药材
     /// </summary>
-    public async Task<ServiceResult<bool>> DisableAsync(Guid herbId)
+    public Task<ServiceResult<bool>> DisableAsync(Guid herbId)
     {
-        return ServiceResult<bool>.Success(false);
+        return Task.FromResult(ServiceResult<bool>.Success(false));
     }
 
     /// <summary>
     /// 删除药材
     /// </summary>
-    public async Task<ServiceResult<bool>> DeleteAsync(Guid herbId)
+    public Task<ServiceResult<bool>> DeleteAsync(Guid herbId)
     {
-        return ServiceResult<bool>.Success(false);
+        return Task.FromResult(ServiceResult<bool>.Success(false));
     }
 
     #endregion

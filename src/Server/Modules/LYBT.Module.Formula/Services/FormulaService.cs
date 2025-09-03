@@ -29,11 +29,10 @@ namespace LYBT.Module.Formula.Services
 
         #region Query Operations
 
-        public async Task<ServiceResult<FormulaDto>> GetByIdAsync(Guid id)
+        public Task<ServiceResult<FormulaDto>> GetByIdAsync(Guid id)
         {
             // 临时实现：查询功能暂时返回失败
-            await Task.CompletedTask;
-            return ServiceResult<FormulaDto>.Failure("GetByIdAsync方法需要在QueryService中实现");
+            return Task.FromResult(ServiceResult<FormulaDto>.Failure("GetByIdAsync方法需要在QueryService中实现"));
         }
 
         public async Task<ServiceResult<PagedResult<FormulaDto>>> GetPagedAsync(FormulaQueryDto query)
@@ -63,56 +62,48 @@ namespace LYBT.Module.Formula.Services
         public async Task<ServiceResult<List<FormulaRecommendationDto>>> GetRecommendationsAsync(string symptoms, string diagnosis, Guid doctorId)
             => await _queryService.GetRecommendationsAsync(symptoms, diagnosis, doctorId);
 
-        public async Task<bool> ExistsAsync(Guid id)
+        public Task<bool> ExistsAsync(Guid id)
         {
-            await Task.CompletedTask;
-            return false; // 临时实现
+            return Task.FromResult(false); // 临时实现
         }
 
-        public async Task<bool> IsNameDuplicatedAsync(string name, Guid? excludeId = null)
+        public Task<bool> IsNameDuplicatedAsync(string name, Guid? excludeId = null)
         {
-            await Task.CompletedTask;
-            return false; // 临时实现
+            return Task.FromResult(false); // 临时实现
         }
 
         #endregion
 
         #region Business Operations
 
-        public async Task<ServiceResult<FormulaDto>> CreateAsync(FormulaCreateDto dto)
+        public Task<ServiceResult<FormulaDto>> CreateAsync(FormulaCreateDto dto)
         {
-            await Task.CompletedTask;
-            return ServiceResult<FormulaDto>.Failure("CreateAsync方法需要在BusinessService中实现");
+            return Task.FromResult(ServiceResult<FormulaDto>.Failure("CreateAsync方法需要在BusinessService中实现"));
         }
 
-        public async Task<ServiceResult<FormulaDto>> UpdateAsync(Guid id, FormulaUpdateDto dto)
+        public Task<ServiceResult<FormulaDto>> UpdateAsync(Guid id, FormulaUpdateDto dto)
         {
-            await Task.CompletedTask;
-            return ServiceResult<FormulaDto>.Failure("UpdateAsync方法需要在BusinessService中实现");
+            return Task.FromResult(ServiceResult<FormulaDto>.Failure("UpdateAsync方法需要在BusinessService中实现"));
         }
 
-        public async Task<ServiceResult<bool>> DeleteAsync(Guid id)
+        public Task<ServiceResult<bool>> DeleteAsync(Guid id)
         {
-            await Task.CompletedTask;
-            return ServiceResult<bool>.Failure("DeleteAsync方法需要在BusinessService中实现");
+            return Task.FromResult(ServiceResult<bool>.Failure("DeleteAsync方法需要在BusinessService中实现"));
         }
 
-        public async Task<ServiceResult> EnableAsync(Guid id)
+        public Task<ServiceResult> EnableAsync(Guid id)
         {
-            await Task.CompletedTask;
-            return ServiceResult.Failure("EnableAsync方法需要在BusinessService中实现");
+            return Task.FromResult(ServiceResult.Failure("EnableAsync方法需要在BusinessService中实现"));
         }
 
-        public async Task<ServiceResult> DisableAsync(Guid id)
+        public Task<ServiceResult> DisableAsync(Guid id)
         {
-            await Task.CompletedTask;
-            return ServiceResult.Failure("DisableAsync方法需要在BusinessService中实现");
+            return Task.FromResult(ServiceResult.Failure("DisableAsync方法需要在BusinessService中实现"));
         }
 
-        public async Task<ServiceResult<bool>> ToggleStatusAsync(Guid id)
+        public Task<ServiceResult<bool>> ToggleStatusAsync(Guid id)
         {
-            await Task.CompletedTask;
-            return ServiceResult<bool>.Failure("ToggleStatusAsync方法需要在BusinessService中实现");
+            return Task.FromResult(ServiceResult<bool>.Failure("ToggleStatusAsync方法需要在BusinessService中实现"));
         }
 
         public async Task<ServiceResult<FormulaDto>> CopyAsync(Guid id, string newName)

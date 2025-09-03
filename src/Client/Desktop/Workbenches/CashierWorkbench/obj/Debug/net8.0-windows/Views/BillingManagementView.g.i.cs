@@ -53,8 +53,7 @@ namespace LYBT.Desktop.Workbench.Cashier.Views {
                 return;
             }
             _contentLoaded = true;
-            System.Uri resourceLocater = new System.Uri("/LYBT.Desktop.Workbench.Cashier;V1.0.0.0;component/views/billingmanagementview.xa" +
-                    "ml", System.UriKind.Relative);
+            System.Uri resourceLocater = new System.Uri("/LYBT.Desktop.Workbench.Cashier;component/views/billingmanagementview.xaml", System.UriKind.Relative);
             
             #line 1 "..\..\..\..\Views\BillingManagementView.xaml"
             System.Windows.Application.LoadComponent(this, resourceLocater);

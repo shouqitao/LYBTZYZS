@@ -75,8 +75,8 @@ public class ConsultationModule(
         => await _queryService.SearchAsync($"MedicalCase:{medicalCaseId}");
 
     // 补充IConsultationService接口的其他方法
-    public async Task<ServiceResult<ConsultationDto>> StartAsync(ConsultationStartDto startDto)
-        => ServiceResult<ConsultationDto>.Failure("简单诊所版本暂不支持开始看诊操作");
+    public Task<ServiceResult<ConsultationDto>> StartAsync(ConsultationStartDto startDto)
+        => Task.FromResult(ServiceResult<ConsultationDto>.Failure("简单诊所版本暂不支持开始看诊操作"));
 
     public async Task<ServiceResult<ConsultationDto>> UpdateAsync(Guid id, ConsultationDetailDto updateDto)
     {
@@ -91,15 +91,15 @@ public class ConsultationModule(
     public async Task<ServiceResult<List<ConsultationDto>>> GetByDoctorIdAsync(Guid doctorId)
         => await _queryService.SearchAsync($"Doctor:{doctorId}");
 
-    public async Task<ServiceResult<object>> GetStatisticsAsync(DateTime? startDate = null, DateTime? endDate = null)
-        => ServiceResult<object>.Success(new ConsultationStatisticsDto());
+    public Task<ServiceResult<object>> GetStatisticsAsync(DateTime? startDate = null, DateTime? endDate = null)
+        => Task.FromResult(ServiceResult<object>.Success(new ConsultationStatisticsDto()));
 
     public async Task<ServiceResult<List<ConsultationDto>>> GetPatientHistoryAsync(Guid patientId)
         => await GetByPatientIdAsync(patientId);
 
-    public async Task<ServiceResult<object>> GetFourDiagnosisByMedicalCaseIdAsync(Guid medicalCaseId)
-        => ServiceResult<object>.Success(new { InspectionData = "", AuscultationData = "", InquiryData = "", PalpationData = "" });
+    public Task<ServiceResult<object>> GetFourDiagnosisByMedicalCaseIdAsync(Guid medicalCaseId)
+        => Task.FromResult(ServiceResult<object>.Success(new { InspectionData = "", AuscultationData = "", InquiryData = "", PalpationData = "" }));
 
-    public async Task<ServiceResult<bool>> SaveFourDiagnosisAsync(Guid consultationId, object fourDiagnosisData)
-        => ServiceResult<bool>.Success(false);
+    public Task<ServiceResult<bool>> SaveFourDiagnosisAsync(Guid consultationId, object fourDiagnosisData)
+        => Task.FromResult(ServiceResult<bool>.Success(false));
 }

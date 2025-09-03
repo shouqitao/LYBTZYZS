@@ -1,5 +1,4 @@
-using LYBT.Infrastructure.Options;
-using LYBT.Infrastructure.Configuration.Options;
+﻿using LYBT.Infrastructure.Configuration.Options;
 using LYBT.Module.Auth.Interfaces;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Module.Auth.Repositories;
@@ -16,37 +15,21 @@ namespace LYBT.Module.Auth
     {
 
         /// <summary>
-        /// 注册登录验证相关服务 - UltraThink三层架构版
+        /// 注册登录验证相关服务 - UltraThink简化架构版
         /// </summary>
         public static IServiceCollection AddAuthModule(this IServiceCollection services)
         {
-            // 注册原有仓储
+            // 注册Repository层
             services.AddScoped<IAuthRepository, AuthRepository>();
-
-            // 注册UltraThink Auth仓储（简化版）
             services.AddScoped<IAuthSessionRepository, AuthSessionRepository>();
-            // UltraThink v2.0简化：移除ILoginAttemptRepository、ISecurityLogRepository
 
-            // 注册原有服务
-            services.AddScoped<SysAdminHandler>();
+            // 注册核心服务层 - UltraThink简化架构
+            services.AddScoped<AuthCore>();                    // 统一核心服务（合并Core+Query+Business）
+            services.AddScoped<IAuthService, AuthService>();   // 主服务：纯委托模式
+            services.AddScoped<SysAdminHandler>();             // 管理员特殊处理
 
-            // 注册UltraThink双层架构服务
-            services.AddScoped<AuthQueryService>();       // Query层：查询和Token验证
-            services.AddScoped<AuthBusinessService>();    // Business层：复杂业务逻辑
-            services.AddScoped<IAuthService, AuthService>(); // 主服务：纯委托模式
-
-            // 注册UltraThink Auth服务（简化版）
-            services.AddScoped<IAuthSessionService, AuthSessionService>();
-            // UltraThink v2.0简化：移除ILoginAttemptService、ISecurityLogService
-
-            // 注册JWT相关服务（从Infrastructure迁移而来）
+            // 注册JWT服务 - 保留核心JWT功能
             services.AddScoped<IJwtAuthenticationService, JwtAuthenticationService>();
-            services.AddScoped<LYBT.Module.Auth.Interfaces.IAuthorizationService, LYBT.Module.Auth.Services.AuthorizationService>();
-
-            // UltraThink三层架构：移除Helper模式，Helper功能分解到三层服务中
-            // services.AddScoped<AuthValidationHelper>();  // 功能迁移到AuthServiceCore
-            // services.AddScoped<AuthSessionHelper>();     // 功能迁移到AuthQueryService
-            // services.AddScoped<AuthLoggingHelper>();     // 功能迁移到AuthBusinessService
 
             // 注册配置选项
             services.AddOptions<AuthOptions>();

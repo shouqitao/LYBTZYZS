@@ -20,7 +20,7 @@ public class ConsultationQueryService(ILogger<ConsultationQueryService> logger) 
     /// <summary>
     /// 分页查询看诊记录
     /// </summary>
-    public async Task<ServiceResult<PagedResult<ConsultationDto>>> GetPagedAsync(ConsultationPagedQueryDto query)
+    public Task<ServiceResult<PagedResult<ConsultationDto>>> GetPagedAsync(ConsultationPagedQueryDto query)
     {
         var emptyResult = new PagedResult<ConsultationDto>
         {
@@ -28,32 +28,32 @@ public class ConsultationQueryService(ILogger<ConsultationQueryService> logger) 
             TotalCount = 0
         };
         
-        return ServiceResult<PagedResult<ConsultationDto>>.Success(emptyResult);
+        return Task.FromResult(ServiceResult<PagedResult<ConsultationDto>>.Success(emptyResult));
     }
 
     /// <summary>
     /// 根据ID获取看诊详情
     /// </summary>
-    public async Task<ServiceResult<ConsultationDto>> GetByIdAsync(Guid id)
+    public Task<ServiceResult<ConsultationDto>> GetByIdAsync(Guid id)
     {
-        return ServiceResult<ConsultationDto>.Failure("简单诊所版本暂不支持看诊查询");
+        return Task.FromResult(ServiceResult<ConsultationDto>.Failure("简单诊所版本暂不支持看诊查询"));
     }
 
     /// <summary>
     /// 搜索看诊记录
     /// </summary>
-    public async Task<ServiceResult<List<ConsultationDto>>> SearchAsync(string keyword)
+    public Task<ServiceResult<List<ConsultationDto>>> SearchAsync(string keyword)
     {
         var emptyList = new List<ConsultationDto>();
-        return ServiceResult<List<ConsultationDto>>.Success(emptyList);
+        return Task.FromResult(ServiceResult<List<ConsultationDto>>.Success(emptyList));
     }
 
     /// <summary>
     /// 获取看诊统计
     /// </summary>
-    public async Task<ServiceResult<ConsultationStatisticsDto>> GetStatisticsAsync()
+    public Task<ServiceResult<ConsultationStatisticsDto>> GetStatisticsAsync()
     {
         var stats = new ConsultationStatisticsDto();
-        return ServiceResult<ConsultationStatisticsDto>.Success(stats);
+        return Task.FromResult(ServiceResult<ConsultationStatisticsDto>.Success(stats));
     }
 }

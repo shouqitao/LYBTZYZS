@@ -16,17 +16,20 @@ namespace LYBT.Module.Auth.Interfaces {
 
         /// <summary>
         /// 验证JWT令牌
-        /// </summary>        /// <param name="token">JWT令牌</param>        /// <returns>验证结果</returns>
+        /// </summary>
+        /// <param name="token">JWT令牌</param>        /// <returns>验证结果</returns>
         ClaimsPrincipal? ValidateToken(string token);
 
         /// <summary>
         /// 刷新JWT令牌
-        /// </summary>        /// <param name="token">当前令牌</param>        /// <returns>新的令牌</returns>
+        /// </summary>
+        /// <param name="token">当前令牌</param>        /// <returns>新的令牌</returns>
         string RefreshToken(string token);
 
         /// <summary>
         /// 从令牌中提取用户信息
-        /// </summary>        /// <param name="token">JWT令牌</param>
+        /// </summary>
+        /// <param name="token">JWT令牌</param>
         /// <returns>用户信息</returns>
         TokenUserInfo? ExtractUserInfo(string token);
     }

@@ -31,14 +31,14 @@ public interface IUserModule : IDisposable
     Task<ServiceResult<UserDto>> GetProfileAsync();
 
     /// <summary>
-    /// 获取所有角色列表
+    /// 获取所有角色列表 - 更新返回类型与共享接口对齐
     /// </summary>
-    Task<ServiceResult<IEnumerable<object>>> GetRolesAsync();
+    Task<ServiceResult<List<object>>> GetRolesAsync();
 
     /// <summary>
-    /// 获取启用用户列表
+    /// 获取启用用户列表 - 更新返回类型与共享接口对齐
     /// </summary>
-    Task<ServiceResult<IEnumerable<UserDto>>> GetActiveUsersAsync();
+    Task<ServiceResult<List<UserDto>>> GetActiveUsersAsync();
 
     /// <summary>
     /// 获取用户基础统计

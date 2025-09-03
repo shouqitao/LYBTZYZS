@@ -1,9 +1,3 @@
-D:\source\repos\LYBTZYZS\src\Client\Desktop\Services\obj\Debug\net8.0-windows\LYBT.Desktop.Services.csproj.AssemblyReference.cache
-D:\source\repos\LYBTZYZS\src\Client\Desktop\Services\obj\Debug\net8.0-windows\LYBT.Desktop.Services.GeneratedMSBuildEditorConfig.editorconfig
-D:\source\repos\LYBTZYZS\src\Client\Desktop\Services\obj\Debug\net8.0-windows\LYBT.Desktop.Services.AssemblyInfoInputs.cache
-D:\source\repos\LYBTZYZS\src\Client\Desktop\Services\obj\Debug\net8.0-windows\LYBT.Desktop.Services.AssemblyInfo.cs
-D:\source\repos\LYBTZYZS\src\Client\Desktop\Services\obj\Debug\net8.0-windows\LYBT.Desktop.Services.csproj.CoreCompileInputs.cache
-D:\source\repos\LYBTZYZS\src\Client\Desktop\Services\obj\Debug\net8.0-windows\LYBT.Desktop.Services.sourcelink.json
 D:\source\repos\LYBTZYZS\src\Client\Desktop\Services\bin\Debug\net8.0-windows\LYBT.Desktop.Services.deps.json
 D:\source\repos\LYBTZYZS\src\Client\Desktop\Services\bin\Debug\net8.0-windows\LYBT.Desktop.Services.dll
 D:\source\repos\LYBTZYZS\src\Client\Desktop\Services\bin\Debug\net8.0-windows\LYBT.Desktop.Services.pdb
@@ -17,6 +11,12 @@ D:\source\repos\LYBTZYZS\src\Client\Desktop\Services\bin\Debug\net8.0-windows\LY
 D:\source\repos\LYBTZYZS\src\Client\Desktop\Services\bin\Debug\net8.0-windows\LYBT.Shared.Models.pdb
 D:\source\repos\LYBTZYZS\src\Client\Desktop\Services\bin\Debug\net8.0-windows\LYBT.Shared.Interfaces.pdb
 D:\source\repos\LYBTZYZS\src\Client\Desktop\Services\bin\Debug\net8.0-windows\LYBT.Shared.Utilities.pdb
+D:\source\repos\LYBTZYZS\src\Client\Desktop\Services\obj\Debug\net8.0-windows\LYBT.Desktop.Services.csproj.AssemblyReference.cache
+D:\source\repos\LYBTZYZS\src\Client\Desktop\Services\obj\Debug\net8.0-windows\LYBT.Desktop.Services.GeneratedMSBuildEditorConfig.editorconfig
+D:\source\repos\LYBTZYZS\src\Client\Desktop\Services\obj\Debug\net8.0-windows\LYBT.Desktop.Services.AssemblyInfoInputs.cache
+D:\source\repos\LYBTZYZS\src\Client\Desktop\Services\obj\Debug\net8.0-windows\LYBT.Desktop.Services.AssemblyInfo.cs
+D:\source\repos\LYBTZYZS\src\Client\Desktop\Services\obj\Debug\net8.0-windows\LYBT.Desktop.Services.csproj.CoreCompileInputs.cache
+D:\source\repos\LYBTZYZS\src\Client\Desktop\Services\obj\Debug\net8.0-windows\LYBT.Desktop.Services.sourcelink.json
 D:\source\repos\LYBTZYZS\src\Client\Desktop\Services\obj\Debug\net8.0-windows\LYBT.Des.755A4DF7.Up2Date
 D:\source\repos\LYBTZYZS\src\Client\Desktop\Services\obj\Debug\net8.0-windows\LYBT.Desktop.Services.dll
 D:\source\repos\LYBTZYZS\src\Client\Desktop\Services\obj\Debug\net8.0-windows\refint\LYBT.Desktop.Services.dll

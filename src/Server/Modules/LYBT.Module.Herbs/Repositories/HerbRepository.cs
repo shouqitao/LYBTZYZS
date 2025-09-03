@@ -1,6 +1,5 @@
 ﻿using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Repositories;
-using LYBT.Infrastructure.Repositories.Optimized;
 using LYBT.Entities.Herbs;
 using LYBT.Module.Herbs.Interfaces;
 using Microsoft.EntityFrameworkCore;

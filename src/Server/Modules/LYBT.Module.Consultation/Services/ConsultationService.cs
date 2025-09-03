@@ -26,10 +26,9 @@ namespace LYBT.Module.Consultation.Services
 
         #region Query Operations
 
-        public async Task<ServiceResult<ConsultationDetailDto>> GetByIdAsync(Guid id)
+        public Task<ServiceResult<ConsultationDetailDto>> GetByIdAsync(Guid id)
         {
-            await Task.CompletedTask;
-            return ServiceResult<ConsultationDetailDto>.Failure("GetByIdAsync方法需要在QueryService中实现");
+            return Task.FromResult(ServiceResult<ConsultationDetailDto>.Failure("GetByIdAsync方法需要在QueryService中实现"));
         }
 
         public async Task<ServiceResult<PagedResult<ConsultationDto>>> GetPagedAsync(PagedQueryBaseDto query)
@@ -57,22 +56,19 @@ namespace LYBT.Module.Consultation.Services
 
         #region Business Operations
 
-        public async Task<ServiceResult<ConsultationDto>> StartAsync(ConsultationStartDto dto)
+        public Task<ServiceResult<ConsultationDto>> StartAsync(ConsultationStartDto dto)
         {
-            await Task.CompletedTask;
-            return ServiceResult<ConsultationDto>.Failure("StartAsync方法需要在BusinessService中实现");
+            return Task.FromResult(ServiceResult<ConsultationDto>.Failure("StartAsync方法需要在BusinessService中实现"));
         }
 
-        public async Task<ServiceResult<ConsultationDto>> UpdateAsync(Guid id, ConsultationDetailDto dto)
+        public Task<ServiceResult<ConsultationDto>> UpdateAsync(Guid id, ConsultationDetailDto dto)
         {
-            await Task.CompletedTask;
-            return ServiceResult<ConsultationDto>.Failure("UpdateAsync方法需要在BusinessService中实现");
+            return Task.FromResult(ServiceResult<ConsultationDto>.Failure("UpdateAsync方法需要在BusinessService中实现"));
         }
 
-        public async Task<ServiceResult<bool>> DeleteAsync(Guid id)
+        public Task<ServiceResult<bool>> DeleteAsync(Guid id)
         {
-            await Task.CompletedTask;
-            return ServiceResult<bool>.Failure("DeleteAsync方法需要在BusinessService中实现");
+            return Task.FromResult(ServiceResult<bool>.Failure("DeleteAsync方法需要在BusinessService中实现"));
         }
 
         public async Task<ServiceResult<bool>> SaveFourDiagnosisAsync(Guid consultationId, object fourDiagnosisData)
@@ -88,11 +84,10 @@ namespace LYBT.Module.Consultation.Services
 
         #region Legacy Support
 
-        public async Task<ServiceResult<object>> GetStatisticsAsync(DateTime? startDate, DateTime? endDate)
+        public Task<ServiceResult<object>> GetStatisticsAsync(DateTime? startDate, DateTime? endDate)
         {
-            await Task.CompletedTask;
             var emptyStats = new { Message = "统计功能已废弃", TotalCount = 0 };
-            return ServiceResult<object>.Success(emptyStats);
+            return Task.FromResult(ServiceResult<object>.Success(emptyStats));
         }
 
         #endregion

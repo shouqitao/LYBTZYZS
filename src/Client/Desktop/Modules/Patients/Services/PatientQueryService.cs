@@ -42,18 +42,18 @@ public class PatientQueryService(ILogger<PatientQueryService> logger) : IPatient
     /// <summary>
     /// 搜索患者
     /// </summary>
-    public async Task<ServiceResult<List<PatientDto>>> SearchAsync(string keyword)
+    public Task<ServiceResult<List<PatientDto>>> SearchAsync(string keyword)
     {
         var emptyList = new List<PatientDto>();
-        return ServiceResult<List<PatientDto>>.Success(emptyList);
+        return Task.FromResult(ServiceResult<List<PatientDto>>.Success(emptyList));
     }
 
     /// <summary>
     /// 获取患者统计
     /// </summary>
-    public async Task<ServiceResult<PatientStatisticsDto>> GetStatisticsAsync()
+    public Task<ServiceResult<PatientStatisticsDto>> GetStatisticsAsync()
     {
         var stats = new PatientStatisticsDto();
-        return ServiceResult<PatientStatisticsDto>.Success(stats);
+        return Task.FromResult(ServiceResult<PatientStatisticsDto>.Success(stats));
     }
 }

@@ -19,40 +19,40 @@ public class ConsultationBusinessService(ILogger<ConsultationBusinessService> lo
     /// <summary>
     /// 创建看诊
     /// </summary>
-    public async Task<ServiceResult<ConsultationDto>> CreateAsync(ConsultationCreateDto createDto)
+    public Task<ServiceResult<ConsultationDto>> CreateAsync(ConsultationCreateDto createDto)
     {
-        return ServiceResult<ConsultationDto>.Failure("简单诊所版本暂不支持创建看诊");
+        return Task.FromResult(ServiceResult<ConsultationDto>.Failure("简单诊所版本暂不支持创建看诊"));
     }
 
     /// <summary>
     /// 更新看诊
     /// </summary>
-    public async Task<ServiceResult<ConsultationDto>> UpdateAsync(Guid id, ConsultationUpdateDto updateDto)
+    public Task<ServiceResult<ConsultationDto>> UpdateAsync(Guid id, ConsultationUpdateDto updateDto)
     {
-        return ServiceResult<ConsultationDto>.Failure("简单诊所版本暂不支持更新看诊");
+        return Task.FromResult(ServiceResult<ConsultationDto>.Failure("简单诊所版本暂不支持更新看诊"));
     }
 
     /// <summary>
     /// 删除看诊
     /// </summary>
-    public async Task<ServiceResult<bool>> DeleteAsync(Guid consultationId)
+    public Task<ServiceResult<bool>> DeleteAsync(Guid consultationId)
     {
-        return ServiceResult<bool>.Success(false);
+        return Task.FromResult(ServiceResult<bool>.Success(false));
     }
 
     /// <summary>
     /// 启用看诊
     /// </summary>
-    public async Task<ServiceResult<bool>> EnableAsync(Guid consultationId)
+    public Task<ServiceResult<bool>> EnableAsync(Guid consultationId)
     {
-        return ServiceResult<bool>.Success(false);
+        return Task.FromResult(ServiceResult<bool>.Success(false));
     }
 
     /// <summary>
     /// 禁用看诊
     /// </summary>
-    public async Task<ServiceResult<bool>> DisableAsync(Guid consultationId)
+    public Task<ServiceResult<bool>> DisableAsync(Guid consultationId)
     {
-        return ServiceResult<bool>.Success(false);
+        return Task.FromResult(ServiceResult<bool>.Success(false));
     }
 }

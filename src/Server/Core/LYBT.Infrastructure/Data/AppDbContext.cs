@@ -1,5 +1,5 @@
 using LYBT.Infrastructure.Configuration;
-using LYBT.Infrastructure.Logging;
+using LYBT.Infrastructure;
 using LYBT.Infrastructure.Security;
 using LYBT.Entities.Auth;
 using LYBT.Entities.Consultation;
@@ -41,6 +41,11 @@ namespace LYBT.Infrastructure.Data
         // public DbSet<SecurityLog> SecurityLogs { get; set; } // UltraThink简化：暂时移除
 
         // 安全审计 - UltraThink重构安全架构 (已移除过度设计的SecurityAuditLog)
+
+        // JWT令牌存储 - UltraThink安全优化 P8-01B
+        public DbSet<TokenStoreEntity> TokenStore { get; set; }
+        public DbSet<RefreshTokenStoreEntity> RefreshTokenStore { get; set; }
+        public DbSet<SuspiciousTokenActivityEntity> SuspiciousTokenActivity { get; set; }
 
         // 患者管理
         public DbSet<Patient> Patients { get; set; }
@@ -96,6 +101,7 @@ namespace LYBT.Infrastructure.Data
 
             // ConfigureConfigurationModels(modelBuilder); // UltraThink v2.0简化：配置实体已移除
             ConfigureSecurityAudit(modelBuilder);
+            ConfigureTokenStore(modelBuilder); // UltraThink安全优化 P8-01B
         }
 
         private static void ConfigureUsers(ModelBuilder modelBuilder)
@@ -384,6 +390,78 @@ namespace LYBT.Infrastructure.Data
         private static void ConfigureSecurityAudit(ModelBuilder modelBuilder)
         {
             // SecurityAuditLog实体已被移除，转为简化的日志记录方式
+        }
+
+        /// <summary>
+        /// 配置JWT令牌存储实体 - UltraThink安全优化 P8-01B
+        /// </summary>
+        private static void ConfigureTokenStore(ModelBuilder modelBuilder)
+        {
+            // 访问令牌存储配置
+            modelBuilder.Entity<TokenStoreEntity>(entity =>
+            {
+                entity.ToTable("TokenStore");
+                entity.HasKey(e => e.TokenId);
+                entity.Property(e => e.TokenId).HasMaxLength(32).IsRequired();
+                entity.Property(e => e.TokenHash).HasMaxLength(128).IsRequired();
+                entity.Property(e => e.TokenType).HasMaxLength(32).HasDefaultValue("access_token");
+                entity.Property(e => e.ClientIP).HasMaxLength(45).IsRequired();
+                entity.Property(e => e.SessionId).HasMaxLength(32);
+                entity.Property(e => e.DeviceId).HasMaxLength(64);
+                entity.Property(e => e.UserAgent).HasMaxLength(512);
+                entity.Property(e => e.RevokeReason).HasMaxLength(256);
+
+                // 索引优化查询性能
+                entity.HasIndex(e => e.UserId);
+                entity.HasIndex(e => e.IsRevoked);
+                entity.HasIndex(e => e.ExpiresAt);
+                entity.HasIndex(e => new { e.UserId, e.IsRevoked, e.ExpiresAt });
+                entity.HasIndex(e => e.CreatedAt);
+            });
+
+            // 刷新令牌存储配置
+            modelBuilder.Entity<RefreshTokenStoreEntity>(entity =>
+            {
+                entity.ToTable("RefreshTokenStore");
+                entity.HasKey(e => e.RefreshToken);
+                entity.Property(e => e.RefreshToken).HasMaxLength(128).IsRequired();
+                entity.Property(e => e.AccessTokenId).HasMaxLength(32).IsRequired();
+                entity.Property(e => e.Username).HasMaxLength(256).IsRequired();
+                entity.Property(e => e.Role).HasMaxLength(64).IsRequired();
+                entity.Property(e => e.ClientIP).HasMaxLength(45).IsRequired();
+                entity.Property(e => e.SessionId).HasMaxLength(32);
+                entity.Property(e => e.DeviceId).HasMaxLength(64);
+                entity.Property(e => e.RevokeReason).HasMaxLength(256);
+
+                // 索引优化查询性能
+                entity.HasIndex(e => e.UserId);
+                entity.HasIndex(e => new { e.IsUsed, e.IsRevoked, e.ExpiresAt });
+                entity.HasIndex(e => e.ExpiresAt);
+                entity.HasIndex(e => e.CreatedAt);
+            });
+
+            // 可疑活动记录配置
+            modelBuilder.Entity<SuspiciousTokenActivityEntity>(entity =>
+            {
+                entity.ToTable("SuspiciousTokenActivity");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.ActivityType).HasMaxLength(64).IsRequired();
+                entity.Property(e => e.TokenId).HasMaxLength(32);
+                entity.Property(e => e.ClientIP).HasMaxLength(45);
+                entity.Property(e => e.UserAgent).HasMaxLength(512);
+                entity.Property(e => e.Details).HasMaxLength(1024);
+                entity.Property(e => e.Severity).HasMaxLength(16).HasDefaultValue("Medium");
+                entity.Property(e => e.HandledNote).HasMaxLength(512);
+
+                // 索引优化查询和分析性能
+                entity.HasIndex(e => e.ActivityType);
+                entity.HasIndex(e => e.Severity);
+                entity.HasIndex(e => e.RiskScore);
+                entity.HasIndex(e => e.IsHandled);
+                entity.HasIndex(e => e.CreatedAt);
+                entity.HasIndex(e => new { e.UserId, e.CreatedAt });
+                entity.HasIndex(e => new { e.ClientIP, e.CreatedAt });
+            });
         }
     }
 }

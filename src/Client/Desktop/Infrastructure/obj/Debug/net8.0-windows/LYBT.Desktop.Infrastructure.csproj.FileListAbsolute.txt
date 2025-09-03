@@ -6,9 +6,9 @@ D:\source\repos\LYBTZYZS\src\Client\Desktop\Infrastructure\bin\Debug\net8.0-wind
 D:\source\repos\LYBTZYZS\src\Client\Desktop\Infrastructure\bin\Debug\net8.0-windows\LYBT.Shared.Models.dll
 D:\source\repos\LYBTZYZS\src\Client\Desktop\Infrastructure\bin\Debug\net8.0-windows\LYBT.Shared.Utilities.dll
 D:\source\repos\LYBTZYZS\src\Client\Desktop\Infrastructure\bin\Debug\net8.0-windows\LYBT.Desktop.Core.pdb
+D:\source\repos\LYBTZYZS\src\Client\Desktop\Infrastructure\bin\Debug\net8.0-windows\LYBT.Shared.Interfaces.pdb
 D:\source\repos\LYBTZYZS\src\Client\Desktop\Infrastructure\bin\Debug\net8.0-windows\LYBT.Shared.Models.pdb
 D:\source\repos\LYBTZYZS\src\Client\Desktop\Infrastructure\bin\Debug\net8.0-windows\LYBT.Shared.Utilities.pdb
-D:\source\repos\LYBTZYZS\src\Client\Desktop\Infrastructure\bin\Debug\net8.0-windows\LYBT.Shared.Interfaces.pdb
 D:\source\repos\LYBTZYZS\src\Client\Desktop\Infrastructure\obj\Debug\net8.0-windows\LYBT.Desktop.Infrastructure.csproj.AssemblyReference.cache
 D:\source\repos\LYBTZYZS\src\Client\Desktop\Infrastructure\obj\Debug\net8.0-windows\Themes\Styles.baml
 D:\source\repos\LYBTZYZS\src\Client\Desktop\Infrastructure\obj\Debug\net8.0-windows\LYBT.Desktop.Infrastructure_MarkupCompile.cache

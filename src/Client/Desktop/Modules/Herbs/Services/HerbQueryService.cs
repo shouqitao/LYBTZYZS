@@ -22,7 +22,7 @@ public class HerbQueryService(ILogger<HerbQueryService> logger) : IHerbQueryServ
     /// <summary>
     /// 分页查询药材
     /// </summary>
-    public async Task<ServiceResult<PagedResult<HerbDto>>> GetPagedAsync(HerbPagedQueryDto query)
+    public Task<ServiceResult<PagedResult<HerbDto>>> GetPagedAsync(HerbPagedQueryDto query)
     {
         var emptyResult = new PagedResult<HerbDto>
         {
@@ -30,33 +30,33 @@ public class HerbQueryService(ILogger<HerbQueryService> logger) : IHerbQueryServ
             TotalCount = 0
         };
         
-        return ServiceResult<PagedResult<HerbDto>>.Success(emptyResult);
+        return Task.FromResult(ServiceResult<PagedResult<HerbDto>>.Success(emptyResult));
     }
 
     /// <summary>
     /// 根据ID获取药材
     /// </summary>
-    public async Task<ServiceResult<HerbDto>> GetByIdAsync(Guid id)
+    public Task<ServiceResult<HerbDto>> GetByIdAsync(Guid id)
     {
-        return ServiceResult<HerbDto>.Failure("简单诊所版本暂不支持药材查询");
+        return Task.FromResult(ServiceResult<HerbDto>.Failure("简单诊所版本暂不支持药材查询"));
     }
 
     /// <summary>
     /// 搜索药材
     /// </summary>
-    public async Task<ServiceResult<List<HerbDto>>> SearchAsync(string keyword)
+    public Task<ServiceResult<List<HerbDto>>> SearchAsync(string keyword)
     {
         var emptyList = new List<HerbDto>();
-        return ServiceResult<List<HerbDto>>.Success(emptyList);
+        return Task.FromResult(ServiceResult<List<HerbDto>>.Success(emptyList));
     }
 
     /// <summary>
     /// 获取药材统计
     /// </summary>
-    public async Task<ServiceResult<HerbStatisticsDto>> GetStatisticsAsync()
+    public Task<ServiceResult<HerbStatisticsDto>> GetStatisticsAsync()
     {
         var stats = new HerbStatisticsDto();
-        return ServiceResult<HerbStatisticsDto>.Success(stats);
+        return Task.FromResult(ServiceResult<HerbStatisticsDto>.Success(stats));
     }
 
     #endregion

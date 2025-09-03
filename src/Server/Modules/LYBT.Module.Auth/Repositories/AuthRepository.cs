@@ -1,6 +1,5 @@
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Repositories;
-using LYBT.Infrastructure.Repositories.Optimized;
 using LYBT.Entities.Users;
 using LYBT.Module.Auth.Interfaces;
 using Microsoft.EntityFrameworkCore;

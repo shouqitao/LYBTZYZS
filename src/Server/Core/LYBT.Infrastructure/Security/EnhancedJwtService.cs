@@ -4,6 +4,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using LYBT.Infrastructure.Security.Services;
 
 namespace LYBT.Infrastructure.Security
 {
@@ -17,17 +18,18 @@ namespace LYBT.Infrastructure.Security
         private readonly TokenValidationParameters _tokenValidationParameters;
         private readonly EnhancedJwtOptions _options;
         private readonly IEncryptionService _encryptionService;
-
+        private readonly ITokenStoreService _tokenStoreService;
         private readonly ILogger<EnhancedJwtService> _logger;
 
         public EnhancedJwtService(
             EnhancedJwtOptions options,
             IEncryptionService encryptionService,
+            ITokenStoreService tokenStoreService,
             ILogger<EnhancedJwtService> logger)
         {
             _options = options;
             _encryptionService = encryptionService;
-
+            _tokenStoreService = tokenStoreService;
             _logger = logger;
             _tokenHandler = new JwtSecurityTokenHandler();
 
@@ -100,6 +102,20 @@ namespace LYBT.Infrastructure.Security
 
                 // 计算令牌哈希用于安全审计
                 var tokenHash = _encryptionService.Hash(tokenString);
+
+                // 存储令牌到数据库
+                var tokenStoreInfo = new TokenStoreInfo
+                {
+                    UserId = request.UserId,
+                    TokenHash = tokenHash,
+                    ClientIP = request.ClientIP,
+                    SessionId = request.SessionId,
+                    DeviceId = request.DeviceId,
+                    UserAgent = request.UserAgent,
+                    ExpiresAt = expires
+                };
+
+                await _tokenStoreService.StoreAccessTokenAsync(jti, tokenStoreInfo);
 
                 // 记录令牌生成审计日志
                 await LogTokenGenerationAsync(request, jti, tokenHash);
@@ -249,7 +265,19 @@ namespace LYBT.Infrastructure.Security
 
                 // 生成新的刷新令牌
                 newToken.RefreshToken = GenerateRefreshToken();
-                await StoreRefreshTokenAsync(newToken.RefreshToken, storedToken);
+                var newStoredToken = new StoredRefreshToken
+                {
+                    AccessTokenId = newToken.TokenId,
+                    UserId = storedToken.UserId,
+                    Username = storedToken.Username,
+                    Role = storedToken.Role,
+                    ClientIP = clientIP ?? storedToken.ClientIP,
+                    SessionId = storedToken.SessionId,
+                    DeviceId = storedToken.DeviceId,
+                    ExpiresAt = DateTime.UtcNow.AddDays(_options.RefreshTokenExpiryDays),
+                    IsLongTerm = storedToken.IsLongTerm
+                };
+                await StoreRefreshTokenAsync(newToken.RefreshToken, newStoredToken);
 
                 // 撤销旧的刷新令牌
                 await RevokeRefreshTokenAsync(refreshToken);
@@ -327,71 +355,59 @@ namespace LYBT.Infrastructure.Security
         /// <summary>
         /// 记录可疑活动
         /// </summary>
-        private Task LogSuspiciousActivityAsync(string activity, string? token = null, 
+        private async Task LogSuspiciousActivityAsync(string activity, string? token = null, 
             string? clientIP = null, string? additionalInfo = null)
         {
             try
             {
                 _logger.LogWarning("可疑令牌活动: {Activity}, IP: {ClientIP}, 详情: {AdditionalInfo}", 
                     activity, clientIP ?? "unknown", additionalInfo);
+
+                // 存储到数据库进行进一步分析
+                await _tokenStoreService.LogSuspiciousActivityAsync(
+                    activity, 
+                    token, 
+                    null, // userId 暂时为null，可以后续从token中解析
+                    clientIP,
+                    null, // userAgent 暂时为null
+                    additionalInfo);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "记录可疑令牌活动失败");
             }
-            return Task.CompletedTask;
         }
 
-        // 以下方法需要根据实际的存储实现
+        // 以下方法使用数据库实现
         private async Task<bool> IsTokenRevokedAsync(string tokenId)
         {
-            // TODO: 实现令牌撤销状态检查（Redis/数据库）
-            return await Task.FromResult(false);
+            return await _tokenStoreService.IsTokenRevokedAsync(tokenId);
         }
 
         private async Task<StoredRefreshToken?> GetStoredRefreshTokenAsync(string refreshToken)
         {
-            // TODO: 实现刷新令牌存储获取（Redis/数据库）
-            return await Task.FromResult<StoredRefreshToken?>(null);
+            return await _tokenStoreService.GetStoredRefreshTokenAsync(refreshToken);
         }
 
         private async Task StoreRefreshTokenAsync(string refreshToken, StoredRefreshToken tokenInfo)
         {
-            // TODO: 实现刷新令牌存储（Redis/数据库）
-            await Task.CompletedTask;
+            await _tokenStoreService.StoreRefreshTokenAsync(refreshToken, tokenInfo);
         }
 
         private async Task RevokeRefreshTokenAsync(string refreshToken)
         {
-            // TODO: 实现刷新令牌撤销（Redis/数据库）
-            await Task.CompletedTask;
+            await _tokenStoreService.RevokeRefreshTokenAsync(refreshToken);
         }
 
         private async Task RevokeTokenAsync(string tokenId, string reason)
         {
-            // TODO: 实现令牌撤销（Redis/数据库）
-            await Task.CompletedTask;
+            await _tokenStoreService.RevokeTokenAsync(tokenId, reason);
         }
 
         private async Task RevokeAllTokensByUserAsync(Guid userId, string reason)
         {
-            // TODO: 实现用户所有令牌撤销（Redis/数据库）
-            await Task.CompletedTask;
+            await _tokenStoreService.RevokeAllUserTokensAsync(userId, reason);
         }
     }
 
-    /// <summary>
-    /// 存储的刷新令牌信息
-    /// </summary>
-    public class StoredRefreshToken
-    {
-        public Guid UserId { get; set; }
-        public string Username { get; set; } = string.Empty;
-        public string Role { get; set; } = string.Empty;
-        public string ClientIP { get; set; } = string.Empty;
-        public string? SessionId { get; set; }
-        public string? DeviceId { get; set; }
-        public DateTime ExpiresAt { get; set; }
-        public bool IsLongTerm { get; set; }
-    }
 }

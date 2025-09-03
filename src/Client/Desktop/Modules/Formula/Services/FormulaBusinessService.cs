@@ -57,14 +57,14 @@ public class FormulaBusinessService(ILogger<FormulaBusinessService> logger) : IF
     }
 
     // IFormulaBusinessService缺失的方法
-    public async Task<ServiceResult<bool>> UpdateFormulaStatusAsync(Guid id, bool isEnabled)
+    public Task<ServiceResult<bool>> UpdateFormulaStatusAsync(Guid id, bool isEnabled)
     {
-        return ServiceResult<bool>.Failure("简单诊所版本暂不支持更新验方状态");
+        return Task.FromResult(ServiceResult<bool>.Failure("简单诊所版本暂不支持更新验方状态"));
     }
 
-    public async Task<ServiceResult<FormulaDto>> CloneFormulaAsync(Guid formulaId, string newName, Guid userId)
+    public Task<ServiceResult<FormulaDto>> CloneFormulaAsync(Guid formulaId, string newName, Guid userId)
     {
-        return ServiceResult<FormulaDto>.Failure("简单诊所版本暂不支持克隆验方");
+        return Task.FromResult(ServiceResult<FormulaDto>.Failure("简单诊所版本暂不支持克隆验方"));
     }
 
     public ServiceResult ValidateFormulaBusinessRules(FormulaDto formula)
@@ -72,19 +72,19 @@ public class FormulaBusinessService(ILogger<FormulaBusinessService> logger) : IF
         return ServiceResult.Success("验证通过");
     }
 
-    public async Task<ServiceResult<bool>> CheckFormulaOperationPermissionAsync(Guid formulaId, Guid userId, string operation)
+    public Task<ServiceResult<bool>> CheckFormulaOperationPermissionAsync(Guid formulaId, Guid userId, string operation)
     {
-        return ServiceResult<bool>.Success(true);
+        return Task.FromResult(ServiceResult<bool>.Success(true));
     }
 
-    public async Task<ServiceResult<FormulaDto>> ProcessFormulaCreationAsync(FormulaCreateDto createDto, Guid operatorId)
+    public Task<ServiceResult<FormulaDto>> ProcessFormulaCreationAsync(FormulaCreateDto createDto, Guid operatorId)
     {
-        return ServiceResult<FormulaDto>.Failure("简单诊所版本暂不支持创建验方");
+        return Task.FromResult(ServiceResult<FormulaDto>.Failure("简单诊所版本暂不支持创建验方"));
     }
 
-    public async Task<ServiceResult<FormulaDto>> ProcessFormulaUpdateAsync(Guid id, FormulaUpdateDto updateDto, Guid operatorId)
+    public Task<ServiceResult<FormulaDto>> ProcessFormulaUpdateAsync(Guid id, FormulaUpdateDto updateDto, Guid operatorId)
     {
-        return ServiceResult<FormulaDto>.Failure("简单诊所版本暂不支持更新验方");
+        return Task.FromResult(ServiceResult<FormulaDto>.Failure("简单诊所版本暂不支持更新验方"));
     }
 
     #endregion

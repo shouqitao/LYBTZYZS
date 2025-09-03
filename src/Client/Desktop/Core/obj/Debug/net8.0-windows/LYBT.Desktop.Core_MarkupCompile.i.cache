@@ -10,11 +10,11 @@ none
 false
 TRACE;DEBUG;NET;NET8_0;NETCOREAPP;WINDOWS;WINDOWS7_0;NET5_0_OR_GREATER;NET6_0_OR_GREATER;NET7_0_OR_GREATER;NET8_0_OR_GREATER;NETCOREAPP3_0_OR_GREATER;NETCOREAPP3_1_OR_GREATER;WINDOWS7_0_OR_GREATER
 
-18-1565641934
+202026083609
 
-2161575971059
+222411557939
 2951688960612
-Controls\Authentication\LoginControl.xaml;Controls\Auth\LoginStatusControl.xaml;Controls\ErrorHandling\ErrorNotificationControl.xaml;Controls\FormulaTemplates\FormulaTemplateListItemControl.xaml;Controls\Herbs\HerbListItemControl.xaml;Controls\Herbs\OptimizedHerbListItemControl.xaml;Controls\Patients\PatientListItemControl.xaml;Controls\Prescriptions\PrescriptionListItemControl.xaml;Controls\SmartLoadingIndicator.xaml;Controls\Users\UserDisplayControl.xaml;Controls\Users\UserListItemControl.xaml;Controls\VirtualizedDataGrid.xaml;Controls\VirtualizedListView.xaml;Views\Base\BaseListView.xaml;Views\Dialogs\CriticalErrorDialog.xaml;Views\Dialogs\FormulaSelectionDialog.xaml;Views\Dialogs\HerbSelectionDialog.xaml;Views\Dialogs\InputDialog.xaml;
+Controls\Authentication\LoginControl.xaml;Controls\Auth\LoginStatusControl.xaml;Controls\ErrorHandling\ErrorNotificationControl.xaml;Controls\FormulaTemplates\FormulaTemplateListItemControl.xaml;Controls\GlobalStatusBar.xaml;Controls\Herbs\HerbListItemControl.xaml;Controls\Herbs\OptimizedHerbListItemControl.xaml;Controls\Patients\PatientListItemControl.xaml;Controls\Prescriptions\PrescriptionListItemControl.xaml;Controls\SmartLoadingIndicator.xaml;Controls\Users\UserDisplayControl.xaml;Controls\Users\UserListItemControl.xaml;Controls\VirtualizedDataGrid.xaml;Controls\VirtualizedListView.xaml;Views\Base\BaseListView.xaml;Views\Dialogs\CriticalErrorDialog.xaml;Views\Dialogs\FormulaSelectionDialog.xaml;Views\Dialogs\HerbSelectionDialog.xaml;Views\Dialogs\InputDialog.xaml;Views\PrintPreviewDialog.xaml;
 
 True
 

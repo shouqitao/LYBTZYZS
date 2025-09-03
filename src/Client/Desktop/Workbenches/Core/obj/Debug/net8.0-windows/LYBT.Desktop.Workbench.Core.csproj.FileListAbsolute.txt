@@ -6,9 +6,9 @@ D:\source\repos\LYBTZYZS\src\Client\Desktop\Workbenches\Core\bin\Debug\net8.0-wi
 D:\source\repos\LYBTZYZS\src\Client\Desktop\Workbenches\Core\bin\Debug\net8.0-windows\LYBT.Shared.Models.dll
 D:\source\repos\LYBTZYZS\src\Client\Desktop\Workbenches\Core\bin\Debug\net8.0-windows\LYBT.Shared.Utilities.dll
 D:\source\repos\LYBTZYZS\src\Client\Desktop\Workbenches\Core\bin\Debug\net8.0-windows\LYBT.Desktop.Core.pdb
+D:\source\repos\LYBTZYZS\src\Client\Desktop\Workbenches\Core\bin\Debug\net8.0-windows\LYBT.Shared.Interfaces.pdb
 D:\source\repos\LYBTZYZS\src\Client\Desktop\Workbenches\Core\bin\Debug\net8.0-windows\LYBT.Shared.Models.pdb
 D:\source\repos\LYBTZYZS\src\Client\Desktop\Workbenches\Core\bin\Debug\net8.0-windows\LYBT.Shared.Utilities.pdb
-D:\source\repos\LYBTZYZS\src\Client\Desktop\Workbenches\Core\bin\Debug\net8.0-windows\LYBT.Shared.Interfaces.pdb
 D:\source\repos\LYBTZYZS\src\Client\Desktop\Workbenches\Core\obj\Debug\net8.0-windows\LYBT.Desktop.Workbench.Core.csproj.AssemblyReference.cache
 D:\source\repos\LYBTZYZS\src\Client\Desktop\Workbenches\Core\obj\Debug\net8.0-windows\LYBT.Desktop.Workbench.Core.GeneratedMSBuildEditorConfig.editorconfig
 D:\source\repos\LYBTZYZS\src\Client\Desktop\Workbenches\Core\obj\Debug\net8.0-windows\LYBT.Desktop.Workbench.Core.AssemblyInfoInputs.cache

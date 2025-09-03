@@ -22,590 +22,36 @@ namespace LYBT.Infrastructure.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("LYBT.Infrastructure.Configuration.DiagnosisCatalogModel", b =>
+            modelBuilder.Entity("LYBT.Entities.Auth.AuthSession", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("Code")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<DateTime>("ExpiryTime")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid?>("CreatedBy")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("IcdCode")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<bool>("IsCommon")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsEnabled")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("Level")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Name")
+                    b.Property<string>("IpAddress")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<Guid?>("ParentId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Remark")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<int>("SortOrder")
-                        .HasColumnType("int");
-
-                    b.Property<string>("TcmSyndrome")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("UpdatedBy")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Code");
-
-                    b.HasIndex("IsCommon");
-
-                    b.HasIndex("IsEnabled");
-
-                    b.HasIndex("Name");
-
-                    b.HasIndex("ParentId");
-
-                    b.ToTable("DiagnosisCatalogs", (string)null);
-                });
-
-            modelBuilder.Entity("LYBT.Infrastructure.Configuration.GlobalSettingsModel", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("BackupInterval")
-                        .HasColumnType("int");
-
-                    b.Property<string>("DefaultRecordSharing")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<bool>("EnableAuditLog")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("EnablePerformanceMonitoring")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime>("LastUpdated")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("LogRetentionDays")
-                        .HasColumnType("int");
-
-                    b.Property<int>("MaxFileUploadSizeMB")
-                        .HasColumnType("int");
-
-                    b.Property<int>("SessionTimeoutMinutes")
-                        .HasColumnType("int");
-
-                    b.Property<string>("SyncMode")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<string>("SystemLogo")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.Property<string>("SystemName")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("SystemVersion")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<Guid?>("UpdatedBy")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("UpdatedByName")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("GlobalSettings", (string)null);
-                });
-
-            modelBuilder.Entity("LYBT.Infrastructure.Configuration.SettingsModel", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreateTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("CreatedBy")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("Group")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<bool>("IsEnabled")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsSystem")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Key")
-                        .IsRequired()
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
-
-                    b.Property<string>("Remark")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<int>("SortOrder")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("UpdateTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("UpdatedBy")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Value")
-                        .IsRequired()
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
-                    b.Property<string>("ValueType")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Group");
-
-                    b.HasIndex("IsEnabled");
-
-                    b.HasIndex("Key")
-                        .IsUnique();
-
-                    b.ToTable("Settings", (string)null);
-                });
-
-            modelBuilder.Entity("LYBT.Infrastructure.Logging.AuditLogModel", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("ChangedFields")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ClientIP")
                         .HasMaxLength(45)
                         .HasColumnType("nvarchar(45)");
 
-                    b.Property<string>("ComplianceFlags")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("EventType")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("NewValues")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("OldValues")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("RequestId")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("ResourceId")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("ResourceType")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("Result")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("RiskLevel")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<string>("SessionId")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<DateTime>("Timestamp")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("UserName")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("EventType");
-
-                    b.HasIndex("ResourceType");
-
-                    b.HasIndex("Timestamp");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("AuditLogs", (string)null);
-                });
-
-            modelBuilder.Entity("LYBT.Infrastructure.Logging.ErrorLogModel", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("ClientIP")
-                        .HasMaxLength(45)
-                        .HasColumnType("nvarchar(45)");
-
-                    b.Property<string>("Environment")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("ErrorMessage")
-                        .HasMaxLength(2000)
-                        .HasColumnType("nvarchar(2000)");
-
-                    b.Property<string>("ExceptionType")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("HttpMethod")
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
-
-                    b.Property<string>("InnerException")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsResolved")
+                    b.Property<bool>("IsRevoked")
                         .HasColumnType("bit");
 
-                    b.Property<DateTime>("OccurredAt")
+                    b.Property<DateTime>("LoginTime")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("RequestPath")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("ResolutionNotes")
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
-                    b.Property<DateTime?>("ResolvedAt")
+                    b.Property<DateTime?>("LogoutTime")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Severity")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<string>("StackTrace")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("UserAgent")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<Guid?>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("IsResolved");
-
-                    b.HasIndex("OccurredAt");
-
-                    b.HasIndex("Severity");
-
-                    b.ToTable("ErrorLogs", (string)null);
-                });
-
-            modelBuilder.Entity("LYBT.Infrastructure.Logging.LogModel", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("ActionType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Content")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("IP")
-                        .HasMaxLength(45)
-                        .HasColumnType("nvarchar(45)");
-
-                    b.Property<DateTime>("LogTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("LogType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("NewValue")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid>("ObjectId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("ObjectType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("OldValue")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid>("OperatorId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("OperatorName")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("Remark")
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("LogTime");
-
-                    b.HasIndex("LogType");
-
-                    b.HasIndex("OperatorId");
-
-                    b.ToTable("InfrastructureLogs", (string)null);
-                });
-
-            modelBuilder.Entity("LYBT.Infrastructure.Logging.PerformanceLogModel", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("AdditionalData")
-                        .HasColumnType("text");
-
-                    b.Property<int?>("CacheHits")
+                    b.Property<int>("Status")
                         .HasColumnType("int");
 
-                    b.Property<int?>("CacheMisses")
-                        .HasColumnType("int");
-
-                    b.Property<string>("ClientIP")
-                        .HasMaxLength(45)
-                        .HasColumnType("nvarchar(45)");
-
-                    b.Property<double?>("CpuUsage")
-                        .HasColumnType("float");
-
-                    b.Property<int?>("DatabaseQueries")
-                        .HasColumnType("int");
-
-                    b.Property<long>("Duration")
-                        .HasColumnType("bigint");
-
-                    b.Property<DateTime>("EndTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("HttpStatusCode")
-                        .HasColumnType("int");
-
-                    b.Property<long?>("MemoryUsage")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("MethodName")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("ModuleName")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("OperationName")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("PerformanceLevel")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<string>("RequestPath")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<long?>("RequestSize")
-                        .HasColumnType("bigint");
-
-                    b.Property<long?>("ResponseSize")
-                        .HasColumnType("bigint");
-
-                    b.Property<DateTime>("StartTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Duration");
-
-                    b.HasIndex("PerformanceLevel");
-
-                    b.HasIndex("StartTime");
-
-                    b.ToTable("PerformanceLogs", (string)null);
-                });
-
-            modelBuilder.Entity("LYBT.Infrastructure.Logging.SystemLogModel", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Exception")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Level")
+                    b.Property<string>("TokenHash")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime>("LogTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Message")
-                        .HasMaxLength(2000)
-                        .HasColumnType("nvarchar(2000)");
-
-                    b.Property<string>("RequestId")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("ServerInfo")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("Source")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<Guid?>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Level");
-
-                    b.HasIndex("LogTime");
-
-                    b.HasIndex("Source");
-
-                    b.ToTable("SystemLogs", (string)null);
-                });
-
-            modelBuilder.Entity("LYBT.Infrastructure.Logging.UserActionLogModel", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("ActionTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("ActionType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("ClientIP")
-                        .HasMaxLength(45)
-                        .HasColumnType("nvarchar(45)");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<long>("Duration")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("ErrorMessage")
-                        .HasMaxLength(2000)
-                        .HasColumnType("nvarchar(2000)");
-
-                    b.Property<string>("Function")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("HttpMethod")
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
-
-                    b.Property<bool>("IsSuccess")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Module")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("Parameters")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("RequestPath")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
 
                     b.Property<string>("UserAgent")
                         .HasMaxLength(500)
@@ -613,128 +59,6 @@ namespace LYBT.Infrastructure.Migrations
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("UserName")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ActionTime");
-
-                    b.HasIndex("ActionType");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("UserActionLogs", (string)null);
-                });
-
-            modelBuilder.Entity("LYBT.Models.Auth.AuthSessionModel", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("AnomaliesDescription")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("ClientIp")
-                        .HasMaxLength(45)
-                        .HasColumnType("nvarchar(45)");
-
-                    b.Property<DateTime>("CreateTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("DeviceInfo")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<int?>("DurationSeconds")
-                        .HasColumnType("int");
-
-                    b.Property<string>("ExtendedData")
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
-                    b.Property<string>("GeoLocation")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<bool>("HasAnomalies")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsAutoLogout")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsTokenRevoked")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("JwtTokenHash")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.Property<DateTime?>("LastActivityTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("LastRefreshTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("LoginTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("LoginType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("LogoutTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("RefreshCount")
-                        .HasColumnType("int");
-
-                    b.Property<string>("RefreshTokenHash")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.Property<bool>("RememberMe")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("RevokeReason")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<DateTime?>("RevokeTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("RevokedBy")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("ServerInfo")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime?>("TokenExpiryTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("UpdateTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("UserAgent")
-                        .HasMaxLength(512)
-                        .HasColumnType("nvarchar(512)");
-
-                    b.Property<Guid?>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Username")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("nvarchar(32)");
 
                     b.HasKey("Id");
 
@@ -744,321 +68,14 @@ namespace LYBT.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.HasIndex("Username");
-
                     b.ToTable("AuthSessions", (string)null);
                 });
 
-            modelBuilder.Entity("LYBT.Models.Auth.LoginAttemptModel", b =>
+            modelBuilder.Entity("LYBT.Entities.Consultation.Consultation", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("AdditionalData")
-                        .HasMaxLength(2000)
-                        .HasColumnType("nvarchar(2000)");
-
-                    b.Property<DateTime>("AttemptTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("BlockReason")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("ClientIp")
-                        .HasMaxLength(45)
-                        .HasColumnType("nvarchar(45)");
-
-                    b.Property<DateTime>("CreateTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("DetailedError")
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
-                    b.Property<string>("DeviceFingerprint")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("FailureReason")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("GeoLocationDetails")
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
-
-                    b.Property<int?>("HttpStatusCode")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("IsBlocked")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsReviewed")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsSuccess")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsSuspicious")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Location")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("LoginType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ProcessingNode")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("RequestId")
-                        .HasMaxLength(64)
-                        .HasColumnType("nvarchar(64)");
-
-                    b.Property<bool>("RequiresReview")
-                        .HasColumnType("bit");
-
-                    b.Property<long>("ResponseTimeMs")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("ReviewNotes")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<DateTime?>("ReviewTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("ReviewedBy")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("RiskLevel")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<int>("SecurityScore")
-                        .HasColumnType("int");
-
-                    b.Property<string>("ServerInfo")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<Guid?>("SessionId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("ThreatIndicators")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("UserAgent")
-                        .HasMaxLength(512)
-                        .HasColumnType("nvarchar(512)");
-
-                    b.Property<string>("UserAgentParsed")
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
-
-                    b.Property<Guid?>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Username")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("nvarchar(32)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AttemptTime");
-
-                    b.HasIndex("ClientIp");
-
-                    b.HasIndex("IsSuccess");
-
-                    b.HasIndex("RiskLevel");
-
-                    b.HasIndex("Username");
-
-                    b.ToTable("LoginAttempts", (string)null);
-                });
-
-            modelBuilder.Entity("LYBT.Models.Auth.SecurityLogModel", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("AffectedResource")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<DateTime?>("ArchivedTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("AutoAnalysisResult")
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
-                    b.Property<string>("CategoryTags")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("ClientIp")
-                        .HasMaxLength(45)
-                        .HasColumnType("nvarchar(45)");
-
-                    b.Property<string>("ComplianceFlags")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<DateTime>("CreateTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("Details")
-                        .HasMaxLength(2000)
-                        .HasColumnType("nvarchar(2000)");
-
-                    b.Property<int>("EscalationLevel")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("EventTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("EventType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("HttpMethod")
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
-
-                    b.Property<int?>("HttpStatusCode")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("IsArchived")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsNotified")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsProcessed")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Level")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("NotificationMethod")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<DateTime?>("NotifiedTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("ProcessedBy")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("ProcessedTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("ProcessingNotes")
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
-                    b.Property<long>("ProcessingTimeMs")
-                        .HasColumnType("bigint");
-
-                    b.Property<int>("RelatedEventsCount")
-                        .HasColumnType("int");
-
-                    b.Property<string>("RemediationSuggestions")
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
-                    b.Property<string>("RequestData")
-                        .HasMaxLength(2000)
-                        .HasColumnType("nvarchar(2000)");
-
-                    b.Property<string>("RequestId")
-                        .HasMaxLength(64)
-                        .HasColumnType("nvarchar(64)");
-
-                    b.Property<string>("RequestPath")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<bool>("RequiresEscalation")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("RequiresNotification")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("ResponseData")
-                        .HasMaxLength(2000)
-                        .HasColumnType("nvarchar(2000)");
-
-                    b.Property<string>("Result")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("RetentionExpiry")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("RiskScore")
-                        .HasColumnType("int");
-
-                    b.Property<Guid?>("SessionId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("StackTrace")
-                        .HasMaxLength(4000)
-                        .HasColumnType("nvarchar(4000)");
-
-                    b.Property<string>("UserAgent")
-                        .HasMaxLength(512)
-                        .HasColumnType("nvarchar(512)");
-
-                    b.Property<Guid?>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Username")
-                        .HasMaxLength(32)
-                        .HasColumnType("nvarchar(32)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("EventTime");
-
-                    b.HasIndex("EventType");
-
-                    b.HasIndex("IsProcessed");
-
-                    b.HasIndex("Level");
-
-                    b.HasIndex("RequiresNotification");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("SecurityLogs", (string)null);
-                });
-
-            modelBuilder.Entity("LYBT.Models.Consultation.ConsultationModel", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("AllergyHistory")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("AuscultationOlfaction")
                         .HasMaxLength(500)
@@ -1067,29 +84,6 @@ namespace LYBT.Infrastructure.Migrations
                     b.Property<string>("ChiefComplaint")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
-
-                    b.Property<DateTime>("ConsultationTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("CreateTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Diagnosis")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<Guid?>("DiagnosisCatalogId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int?>("DiastolicPressure")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("Duration")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("HeartRate")
-                        .HasColumnType("int");
 
                     b.Property<string>("Inquiry")
                         .HasMaxLength(1000)
@@ -1104,74 +98,43 @@ namespace LYBT.Infrastructure.Migrations
                         .HasColumnType("nvarchar(500)");
 
                     b.Property<Guid>("MedicalCaseId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("MedicalCaseId");
 
                     b.Property<string>("Palpation")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("PastHistory")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
                     b.Property<Guid>("PatientId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("PhysicalExamination")
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
                     b.Property<string>("PresentIllness")
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
-
-                    b.Property<string>("PulseCondition")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("Remark")
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
 
-                    b.Property<int?>("RespiratoryRate")
-                        .HasColumnType("int");
-
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
-                    b.Property<int?>("SystolicPressure")
-                        .HasColumnType("int");
-
                     b.Property<string>("TCMDiagnosis")
+                        .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
-                    b.Property<decimal?>("Temperature")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("TongueInspection")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
                     b.Property<string>("TreatmentPrinciple")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<DateTime?>("UpdateTime")
-                        .HasColumnType("datetime2");
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("WesternDiagnosis")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("ConsultationTime");
-
-                    b.HasIndex("MedicalCaseId");
+                    b.HasIndex("MedicalCaseId")
+                        .IsUnique();
 
                     b.HasIndex("PatientId");
 
@@ -1180,16 +143,10 @@ namespace LYBT.Infrastructure.Migrations
                     b.ToTable("Consultations", (string)null);
                 });
 
-            modelBuilder.Entity("LYBT.Models.Formula.FormulaModel", b =>
+            modelBuilder.Entity("LYBT.Entities.Formula.Formula", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreateTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("CreatedById")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Effect")
@@ -1217,9 +174,6 @@ namespace LYBT.Infrastructure.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
-                    b.Property<DateTime?>("UpdateTime")
-                        .HasColumnType("datetime2");
-
                     b.Property<string>("Usage")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
@@ -1229,25 +183,18 @@ namespace LYBT.Infrastructure.Migrations
                     b.ToTable("Formulas", (string)null);
                 });
 
-            modelBuilder.Entity("LYBT.Models.Herbs.HerbModel", b =>
+            modelBuilder.Entity("LYBT.Entities.Herbs.Herb", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<decimal>("CostPrice")
+                    b.Property<decimal?>("CostPrice")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Effect")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
-
-                    b.Property<Guid?>("LastOperatorId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("LastOperatorName")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -1266,7 +213,8 @@ namespace LYBT.Infrastructure.Migrations
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Remark")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("Spec")
                         .HasMaxLength(50)
@@ -1293,25 +241,32 @@ namespace LYBT.Infrastructure.Migrations
                     b.ToTable("Herbs", (string)null);
                 });
 
-            modelBuilder.Entity("LYBT.Models.MedicalCase.MedicalCaseModel", b =>
+            modelBuilder.Entity("LYBT.Entities.MedicalCase.MedicalCase", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime?>("CompleteTime")
+                    b.Property<DateTime>("ConsultationDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid?>("ConsultationId")
+                    b.Property<Guid>("DoctorId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime>("CreateTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
+                    b.Property<string>("DoctorName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<Guid>("PatientId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("PatientName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<Guid?>("PrescriptionId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Remark")
@@ -1322,28 +277,22 @@ namespace LYBT.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<DateTime?>("UpdateTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("ConsultationId");
-
-                    b.HasIndex("CreateTime");
+                    b.HasIndex("DoctorId");
 
                     b.HasIndex("PatientId");
 
-                    b.HasIndex("Status");
+                    b.HasIndex("PrescriptionId")
+                        .IsUnique()
+                        .HasFilter("[PrescriptionId] IS NOT NULL");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("Status");
 
                     b.ToTable("MedicalCases", (string)null);
                 });
 
-            modelBuilder.Entity("LYBT.Models.Patients.PatientModel", b =>
+            modelBuilder.Entity("LYBT.Entities.Patients.Patient", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -1353,9 +302,6 @@ namespace LYBT.Infrastructure.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
-                    b.Property<int>("Age")
-                        .HasColumnType("int");
-
                     b.Property<string>("AllergyHistory")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
@@ -1363,9 +309,11 @@ namespace LYBT.Infrastructure.Migrations
                     b.Property<DateTime?>("BirthDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime>("CreateTime")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("CreatedAt");
+                    b.Property<int>("BloodType")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<Guid?>("CreatedBy")
                         .HasColumnType("uniqueidentifier");
@@ -1374,6 +322,15 @@ namespace LYBT.Infrastructure.Migrations
                         .HasMaxLength(128)
                         .HasColumnType("nvarchar(128)");
 
+                    b.Property<string>("EmergencyContactName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("EmergencyContactPhone")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("EmergencyContactRelation")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("Gender")
                         .HasColumnType("int");
 
@@ -1381,12 +338,15 @@ namespace LYBT.Infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<string>("IdType")
+                    b.Property<int>("IdType")
                         .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("LastVisitTime")
                         .HasColumnType("datetime2");
+
+                    b.Property<int>("MaritalStatus")
+                        .HasColumnType("int");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -1413,16 +373,57 @@ namespace LYBT.Infrastructure.Migrations
                     b.Property<int>("VisitCount")
                         .HasColumnType("int");
 
-                    b.Property<string>("WuBiCode")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
                     b.HasKey("Id");
 
                     b.ToTable("Patients", (string)null);
                 });
 
-            modelBuilder.Entity("LYBT.Models.Prescriptions.PrescriptionItemModel", b =>
+            modelBuilder.Entity("LYBT.Entities.Prescriptions.Prescription", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Advice")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<decimal>("Discount")
+                        .HasColumnType("decimal(3,2)");
+
+                    b.Property<int>("DosageCount")
+                        .HasColumnType("int");
+
+                    b.Property<string>("FormulaSource")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Indication")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<Guid>("MedicalCaseId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("PatientId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Remark")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Prescriptions", (string)null);
+                });
+
+            modelBuilder.Entity("LYBT.Entities.Prescriptions.PrescriptionItemModel", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -1437,9 +438,6 @@ namespace LYBT.Infrastructure.Migrations
                         .HasColumnType("nvarchar(100)");
 
                     b.Property<Guid>("PrescriptionId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("PrescriptionModelId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<decimal>("Quantity")
@@ -1463,68 +461,12 @@ namespace LYBT.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("PrescriptionModelId");
+                    b.HasIndex("PrescriptionId");
 
                     b.ToTable("PrescriptionItems", (string)null);
                 });
 
-            modelBuilder.Entity("LYBT.Models.Prescriptions.PrescriptionModel", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Advice")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("CreateTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Diagnosis")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("DosageCount")
-                        .HasColumnType("int");
-
-                    b.Property<string>("DuplicateWarning")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("FormulaSource")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("MissingDrugWarning")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid>("PatientId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Remark")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<decimal>("SingleDosePrice")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.Property<decimal>("TotalPrice")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("TotalWeight")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<DateTime?>("UpdateTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Prescriptions", (string)null);
-                });
-
-            modelBuilder.Entity("LYBT.Models.Users.AdminSecretModel", b =>
+            modelBuilder.Entity("LYBT.Entities.Users.AdminSecretModel", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -1556,15 +498,18 @@ namespace LYBT.Infrastructure.Migrations
                         });
                 });
 
-            modelBuilder.Entity("LYBT.Models.Users.UserModel", b =>
+            modelBuilder.Entity("LYBT.Entities.Users.User", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime>("CreateTime")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("CreatedTime");
+                    b.Property<DateTime>("CreatedTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<int>("FailedLoginCount")
                         .HasColumnType("int");
@@ -1593,8 +538,8 @@ namespace LYBT.Infrastructure.Migrations
                         .HasColumnType("nvarchar(20)");
 
                     b.Property<string>("PinYinCode")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("RealName")
                         .IsRequired()
@@ -1607,6 +552,9 @@ namespace LYBT.Infrastructure.Migrations
                     b.Property<string>("Remark")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("Role")
+                        .HasColumnType("int");
 
                     b.Property<string>("Specialty")
                         .HasMaxLength(200)
@@ -1624,10 +572,6 @@ namespace LYBT.Infrastructure.Migrations
                         .HasColumnType("nvarchar(50)")
                         .HasColumnName("UserName");
 
-                    b.Property<string>("WuBiCode")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
                     b.HasKey("Id");
 
                     b.HasIndex("Username")
@@ -1636,29 +580,243 @@ namespace LYBT.Infrastructure.Migrations
                     b.ToTable("Users", (string)null);
                 });
 
-            modelBuilder.Entity("LYBT.Infrastructure.Configuration.DiagnosisCatalogModel", b =>
+            modelBuilder.Entity("LYBT.Infrastructure.Security.Data.RefreshTokenStoreEntity", b =>
                 {
-                    b.HasOne("LYBT.Infrastructure.Configuration.DiagnosisCatalogModel", null)
-                        .WithMany()
-                        .HasForeignKey("ParentId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                    b.Property<string>("RefreshToken")
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<string>("AccessTokenId")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<string>("ClientIP")
+                        .IsRequired()
+                        .HasMaxLength(45)
+                        .HasColumnType("nvarchar(45)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DeviceId")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsLongTerm")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsRevoked")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsUsed")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("RevokeReason")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<DateTime?>("RevokedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("SessionId")
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<DateTime?>("UsedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.HasKey("RefreshToken");
+
+                    b.HasIndex("CreatedAt");
+
+                    b.HasIndex("ExpiresAt");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("IsUsed", "IsRevoked", "ExpiresAt");
+
+                    b.ToTable("RefreshTokenStore", (string)null);
                 });
 
-            modelBuilder.Entity("LYBT.Models.Consultation.ConsultationModel", b =>
+            modelBuilder.Entity("LYBT.Infrastructure.Security.Data.SuspiciousTokenActivityEntity", b =>
                 {
-                    b.HasOne("LYBT.Models.MedicalCase.MedicalCaseModel", "MedicalCase")
-                        .WithMany()
-                        .HasForeignKey("MedicalCaseId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ActivityType")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("ClientIP")
+                        .HasMaxLength(45)
+                        .HasColumnType("nvarchar(45)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Details")
+                        .HasMaxLength(1024)
+                        .HasColumnType("nvarchar(1024)");
+
+                    b.Property<DateTime?>("HandledAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("HandledNote")
+                        .HasMaxLength(512)
+                        .HasColumnType("nvarchar(512)");
+
+                    b.Property<bool>("IsHandled")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("RiskScore")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Severity")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(16)
+                        .HasColumnType("nvarchar(16)")
+                        .HasDefaultValue("Medium");
+
+                    b.Property<string>("TokenId")
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<string>("UserAgent")
+                        .HasMaxLength(512)
+                        .HasColumnType("nvarchar(512)");
+
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ActivityType");
+
+                    b.HasIndex("CreatedAt");
+
+                    b.HasIndex("IsHandled");
+
+                    b.HasIndex("RiskScore");
+
+                    b.HasIndex("Severity");
+
+                    b.HasIndex("ClientIP", "CreatedAt");
+
+                    b.HasIndex("UserId", "CreatedAt");
+
+                    b.ToTable("SuspiciousTokenActivity", (string)null);
+                });
+
+            modelBuilder.Entity("LYBT.Infrastructure.Security.Data.TokenStoreEntity", b =>
+                {
+                    b.Property<string>("TokenId")
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<string>("ClientIP")
+                        .IsRequired()
+                        .HasMaxLength(45)
+                        .HasColumnType("nvarchar(45)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DeviceId")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsRevoked")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastUsedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("RevokeReason")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<DateTime?>("RevokedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("SessionId")
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<string>("TokenHash")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<string>("TokenType")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)")
+                        .HasDefaultValue("access_token");
+
+                    b.Property<int>("UsageCount")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserAgent")
+                        .HasMaxLength(512)
+                        .HasColumnType("nvarchar(512)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("TokenId");
+
+                    b.HasIndex("CreatedAt");
+
+                    b.HasIndex("ExpiresAt");
+
+                    b.HasIndex("IsRevoked");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("UserId", "IsRevoked", "ExpiresAt");
+
+                    b.ToTable("TokenStore", (string)null);
+                });
+
+            modelBuilder.Entity("LYBT.Entities.Consultation.Consultation", b =>
+                {
+                    b.HasOne("LYBT.Entities.MedicalCase.MedicalCase", "MedicalCase")
+                        .WithOne("Consultation")
+                        .HasForeignKey("LYBT.Entities.Consultation.Consultation", "MedicalCaseId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("LYBT.Models.Patients.PatientModel", "Patient")
+                    b.HasOne("LYBT.Entities.Patients.Patient", "Patient")
                         .WithMany()
                         .HasForeignKey("PatientId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("LYBT.Models.Users.UserModel", "User")
+                    b.HasOne("LYBT.Entities.Users.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1671,23 +829,30 @@ namespace LYBT.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("LYBT.Models.MedicalCase.MedicalCaseModel", b =>
+            modelBuilder.Entity("LYBT.Entities.MedicalCase.MedicalCase", b =>
                 {
-                    b.HasOne("LYBT.Models.Consultation.ConsultationModel", "Consultation")
-                        .WithMany()
-                        .HasForeignKey("ConsultationId");
+                    b.HasOne("LYBT.Entities.Prescriptions.Prescription", "Prescription")
+                        .WithOne()
+                        .HasForeignKey("LYBT.Entities.MedicalCase.MedicalCase", "PrescriptionId");
 
+                    b.Navigation("Prescription");
+                });
+
+            modelBuilder.Entity("LYBT.Entities.Prescriptions.PrescriptionItemModel", b =>
+                {
+                    b.HasOne("LYBT.Entities.Prescriptions.Prescription", null)
+                        .WithMany("Items")
+                        .HasForeignKey("PrescriptionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("LYBT.Entities.MedicalCase.MedicalCase", b =>
+                {
                     b.Navigation("Consultation");
                 });
 
-            modelBuilder.Entity("LYBT.Models.Prescriptions.PrescriptionItemModel", b =>
-                {
-                    b.HasOne("LYBT.Models.Prescriptions.PrescriptionModel", null)
-                        .WithMany("Items")
-                        .HasForeignKey("PrescriptionModelId");
-                });
-
-            modelBuilder.Entity("LYBT.Models.Prescriptions.PrescriptionModel", b =>
+            modelBuilder.Entity("LYBT.Entities.Prescriptions.Prescription", b =>
                 {
                     b.Navigation("Items");
                 });

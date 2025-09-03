@@ -20,6 +20,9 @@ using Prism.Commands;
 // UltraThink四层架构重构：使用新的三层架构组件实现患者管理
 // UltraThink v2.0: 添加SessionAware相关依赖
 using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Desktop.Core.Helpers;
+using Microsoft.Win32;
+using System.Data;
 
 namespace LYBT.Desktop.Patients.ViewModels
 {
@@ -92,6 +95,11 @@ namespace LYBT.Desktop.Patients.ViewModels
         public DelegateCommand<PatientDto> DeleteCommand { get; private set; } = null!;
         public DelegateCommand<PatientDto> ToggleStatusCommand { get; private set; } = null!;
         public DelegateCommand<PatientDto> ViewDetailsCommand { get; private set; } = null!;
+        
+        // Phase 7 新增：导入导出功能
+        public DelegateCommand ExportPatientsCommand { get; private set; } = null!;
+        public DelegateCommand ImportPatientsCommand { get; private set; } = null!;
+        public DelegateCommand DownloadTemplateCommand { get; private set; } = null!;
 
         // UltraThink v2.0: 删除过度设计功能 - 20人以下小诊所不需要以下复杂功能:
         // - BatchEnableCommand/BatchDisableCommand: 批量操作过度设计
@@ -136,6 +144,11 @@ namespace LYBT.Desktop.Patients.ViewModels
             DeleteCommand = new DelegateCommand<PatientDto>(async patient => await DeletePatientAsync(patient), CanExecutePatientCommand);
             ToggleStatusCommand = new DelegateCommand<PatientDto>(async patient => await ToggleStatusAsync(patient), CanExecutePatientCommand);
             ViewDetailsCommand = new DelegateCommand<PatientDto>(async patient => await ViewDetailsAsync(patient), CanExecutePatientCommand);
+            
+            // Phase 7: 初始化导入导出命令
+            ExportPatientsCommand = new DelegateCommand(async () => await ExportPatientsAsync(), () => !IsLoading);
+            ImportPatientsCommand = new DelegateCommand(async () => await ImportPatientsAsync(), () => !IsLoading);
+            DownloadTemplateCommand = new DelegateCommand(async () => await DownloadTemplateAsync(), () => !IsLoading);
             
             // 初始化搜索和分页命令
             SearchCommand = new DelegateCommand(async () => await SearchManager.ExecuteSearchAsync());
@@ -263,11 +276,11 @@ namespace LYBT.Desktop.Patients.ViewModels
                     ServiceResult<bool> result;
                     if (isEnabled)
                     {
-                        result = await _patientService.DisableAsync(patient.Id);
+                        result = await _patientService.DisablePatientAsync(patient.Id);
                     }
                     else
                     {
-                        result = await _patientService.EnableAsync(patient.Id);
+                        result = await _patientService.EnablePatientAsync(patient.Id);
                     }
 
                     if (result.IsSuccess)
@@ -336,5 +349,279 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         // UltraThink v2.0: 删除所有选择管理功能 - 20人以下小诊所不需要复杂的多选功能
         // 包括: ClearSelection, SelectAll 等功能
+
+        #region Phase 7: 导入导出功能
+
+        /// <summary>
+        /// 导出患者数据到Excel
+        /// </summary>
+        private async Task ExportPatientsAsync()
+        {
+            try
+            {
+                var saveFileDialog = new SaveFileDialog
+                {
+                    Filter = "Excel 文件 (*.xlsx)|*.xlsx",
+                    DefaultExt = "xlsx",
+                    FileName = $"患者数据_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx"
+                };
+
+                if (saveFileDialog.ShowDialog() == true)
+                {
+                    IsLoading = true;
+
+                    // 获取所有患者数据
+                    var allPatientsResult = await _patientService.GetPagedAsync(new PatientPagedQueryDto
+                    {
+                        PageIndex = 1,
+                        PageSize = 10000,  // 获取大量数据用于导出
+                        Keyword = string.Empty
+                    });
+
+                    if (allPatientsResult.IsSuccess && allPatientsResult.Data != null)
+                    {
+                        var patients = allPatientsResult.Data.Items;
+                        
+                        // 定义导出列
+                        var columns = new Dictionary<string, string>
+                        {
+                            { "Name", "姓名" },
+                            { "Gender", "性别" },
+                            { "Age", "年龄" },
+                            { "PhoneNumber", "电话" },
+                            { "IdNumber", "证件号" },
+                            { "Address", "地址" },
+                            { "AllergyHistory", "过敏史" },
+                            { "Status", "状态" },
+                            { "CreateTime", "创建时间" }
+                        };
+
+                        // 转换数据用于导出
+                        var exportData = patients.Select(p => new
+                        {
+                            Name = p.Name,
+                            Gender = p.Gender == LYBT.Shared.Models.Enums.Gender.Male ? "男" : 
+                                    p.Gender == LYBT.Shared.Models.Enums.Gender.Female ? "女" : "未知",
+                            Age = p.Age,
+                            PhoneNumber = p.PhoneNumber ?? "",
+                            IdNumber = p.IdNumber ?? "",
+                            Address = p.Address ?? "",
+                            AllergyHistory = p.AllergyHistory ?? "",
+                            Status = p.Status == CommonStatus.Enabled ? "正常" : "禁用",
+                            CreateTime = p.CreateTime.ToString("yyyy-MM-dd HH:mm:ss")
+                        });
+
+                        // 导出到Excel
+                        ExcelHelper.ExportToExcel(exportData, columns, saveFileDialog.FileName, "患者数据");
+                        
+                        await _dialogService.ShowSuccessAsync($"成功导出 {patients.Count()} 条患者数据到:\n{saveFileDialog.FileName}", "导出成功");
+                    }
+                    else
+                    {
+                        await _dialogService.ShowErrorAsync(allPatientsResult.ErrorMessage ?? "获取患者数据失败", "导出失败");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogError(ex, "导出患者数据失败");
+                await _dialogService.ShowErrorAsync($"导出患者数据失败: {ex.Message}", "导出失败");
+            }
+            finally
+            {
+                IsLoading = false;
+            }
+        }
+
+        /// <summary>
+        /// 从Excel导入患者数据
+        /// </summary>
+        private async Task ImportPatientsAsync()
+        {
+            try
+            {
+                var openFileDialog = new OpenFileDialog
+                {
+                    Filter = "Excel 文件 (*.xlsx)|*.xlsx",
+                    DefaultExt = "xlsx",
+                    Title = "选择要导入的患者数据文件"
+                };
+
+                if (openFileDialog.ShowDialog() == true)
+                {
+                    IsLoading = true;
+
+                    // 读取Excel数据
+                    var dataTable = ExcelHelper.ImportFromExcel(openFileDialog.FileName, true);
+                    
+                    if (dataTable.Rows.Count == 0)
+                    {
+                        await _dialogService.ShowWarningAsync("Excel文件中没有找到数据", "导入提示");
+                        return;
+                    }
+
+                    int successCount = 0;
+                    int failCount = 0;
+                    var errors = new List<string>();
+
+                    // 处理每行数据
+                    for (int i = 0; i < dataTable.Rows.Count; i++)
+                    {
+                        try
+                        {
+                            var row = dataTable.Rows[i];
+                            
+                            // 验证必填字段
+                            var name = row["姓名"]?.ToString()?.Trim();
+                            if (string.IsNullOrEmpty(name))
+                            {
+                                errors.Add($"第{i + 2}行：姓名不能为空");
+                                failCount++;
+                                continue;
+                            }
+
+                            // 创建患者DTO
+                            var patientDto = new PatientCreateDto
+                            {
+                                Name = name,
+                                Gender = ParseGender(row["性别"]?.ToString()),
+                                Age = ParseAge(row["年龄"]?.ToString()),
+                                PhoneNumber = row["电话"]?.ToString()?.Trim(),
+                                IdNumber = row["证件号"]?.ToString()?.Trim(),
+                                Address = row["地址"]?.ToString()?.Trim(),
+                                AllergyHistory = row["过敏史"]?.ToString()?.Trim()
+                            };
+
+                            // 调用API创建患者
+                            var result = await _patientService.CreateAsync(patientDto);
+                            if (result.IsSuccess)
+                            {
+                                successCount++;
+                            }
+                            else
+                            {
+                                errors.Add($"第{i + 2}行 {name}：{result.ErrorMessage}");
+                                failCount++;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            errors.Add($"第{i + 2}行：处理数据时发生错误 - {ex.Message}");
+                            failCount++;
+                        }
+                    }
+
+                    // 显示导入结果
+                    var message = $"导入完成！\n成功：{successCount} 条\n失败：{failCount} 条";
+                    if (errors.Count > 0 && errors.Count <= 10)
+                    {
+                        message += $"\n\n错误详情:\n{string.Join("\n", errors)}";
+                    }
+                    else if (errors.Count > 10)
+                    {
+                        message += $"\n\n错误详情（前10条）:\n{string.Join("\n", errors.Take(10))}\n... 等其他{errors.Count - 10}条错误";
+                    }
+
+                    if (failCount == 0)
+                    {
+                        await _dialogService.ShowSuccessAsync(message, "导入成功");
+                    }
+                    else
+                    {
+                        await _dialogService.ShowWarningAsync(message, "导入完成");
+                    }
+
+                    // 刷新数据
+                    if (successCount > 0)
+                    {
+                        await RefreshDataAsync();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogError(ex, "导入患者数据失败");
+                await _dialogService.ShowErrorAsync($"导入患者数据失败: {ex.Message}", "导入失败");
+            }
+            finally
+            {
+                IsLoading = false;
+            }
+        }
+
+        /// <summary>
+        /// 下载患者数据导入模板
+        /// </summary>
+        private async Task DownloadTemplateAsync()
+        {
+            try
+            {
+                var saveFileDialog = new SaveFileDialog
+                {
+                    Filter = "Excel 文件 (*.xlsx)|*.xlsx",
+                    DefaultExt = "xlsx",
+                    FileName = "患者数据导入模板.xlsx"
+                };
+
+                if (saveFileDialog.ShowDialog() == true)
+                {
+                    // 定义模板列
+                    var columns = new[] { "姓名", "性别", "年龄", "电话", "证件号", "地址", "过敏史" };
+                    
+                    // 创建示例数据
+                    var sampleData = new List<string[]>
+                    {
+                        new[] { "张三", "男", "35", "13800138000", "110101198801010001", "北京市朝阳区", "青霉素过敏" },
+                        new[] { "李四", "女", "28", "13900139000", "110101199201020002", "北京市海淀区", "无" }
+                    };
+
+                    // 创建Excel模板
+                    ExcelHelper.CreateTemplate(columns, saveFileDialog.FileName, "患者数据", sampleData);
+                    
+                    await _dialogService.ShowSuccessAsync($"模板文件已保存到:\n{saveFileDialog.FileName}\n\n请按照模板格式填写患者数据，然后使用导入功能。", "模板下载成功");
+                }
+            }
+            catch (Exception ex)
+            {
+                LogError(ex, "下载模板失败");
+                await _dialogService.ShowErrorAsync($"下载模板失败: {ex.Message}", "下载失败");
+            }
+        }
+
+        /// <summary>
+        /// 解析性别字符串
+        /// </summary>
+        private LYBT.Shared.Models.Enums.Gender ParseGender(string? genderStr)
+        {
+            if (string.IsNullOrEmpty(genderStr)) return LYBT.Shared.Models.Enums.Gender.Unknown;
+            
+            genderStr = genderStr.Trim().ToLower();
+            return genderStr switch
+            {
+                "男" or "male" or "m" => LYBT.Shared.Models.Enums.Gender.Male,
+                "女" or "female" or "f" => LYBT.Shared.Models.Enums.Gender.Female,
+                _ => LYBT.Shared.Models.Enums.Gender.Unknown
+            };
+        }
+
+        /// <summary>
+        /// 解析年龄字符串
+        /// </summary>
+        private int ParseAge(string? ageStr)
+        {
+            if (string.IsNullOrEmpty(ageStr)) return 0;
+            
+            // 移除可能的"岁"字符
+            ageStr = ageStr.Trim().Replace("岁", "");
+            
+            if (int.TryParse(ageStr, out int age) && age >= 0 && age <= 150)
+            {
+                return age;
+            }
+            
+            return 0;
+        }
+
+        #endregion
     }
 }

@@ -1,7 +1,7 @@
 ﻿using LYBT.Infrastructure.Configuration;
 using LYBT.Infrastructure.Configuration.Options;
 using LYBT.Infrastructure.Data;
-using LYBT.Infrastructure.Logging;
+using LYBT.Infrastructure;
 using LYBT.Module.Users;
 using LYBT.Module.Auth;
 using LYBT.WebAPI.Services;
@@ -54,16 +54,13 @@ public static class UnifiedServiceRegistration {
     private static IServiceCollection RegisterInfrastructureServices(
         this IServiceCollection services,
         IConfiguration configuration) {
-        // =========== 统一配置管理系统 ===========
-        // UltraThink深度清理：移除未使用的统一配置抽象
-        services.AddScoped<LYBT.Infrastructure.Configuration.IConfigurationManager, LYBT.Infrastructure.Configuration.ConfigurationManager>();
-        services.AddScoped<ISecretManager, SecretManager>();
-        services.AddScoped<IEnvironmentManager, EnvironmentManager>();
-        services.AddScoped<IEnvironmentVariableReplacer, EnvironmentVariableReplacer>();
+        // =========== 简化配置管理系统 - UltraThink重构 ===========
+        // 使用简化配置服务，替代复杂的ConfigurationManager/EnvironmentManager/SecretManager
+        services.AddScoped<ISimplifiedConfigurationService, SimplifiedConfigurationService>();
 
         // =========== 统一数据库上下文 ===========
-        var configManager = services.BuildServiceProvider().GetRequiredService<LYBT.Infrastructure.Configuration.IConfigurationManager>();
-        var connectionString = configManager.GetConnectionString();
+        var configService = services.BuildServiceProvider().GetRequiredService<ISimplifiedConfigurationService>();
+        var connectionString = configService.GetConnectionString();
 
         if (!string.IsNullOrEmpty(connectionString)) {
             services.AddDbContext<AppDbContext>(options => {
@@ -72,7 +69,7 @@ public static class UnifiedServiceRegistration {
                     sqlOptions.EnableRetryOnFailure(3, TimeSpan.FromSeconds(30), null);
                 });
 
-                var dbOptions = configManager.GetSection<DatabaseOptions>("DatabaseOptions");
+                var dbOptions = configService.GetSection<DatabaseOptions>("DatabaseOptions");
                 options.EnableSensitiveDataLogging(dbOptions?.EnableSensitiveDataLogging ?? false);
                 options.EnableDetailedErrors(dbOptions?.EnableDetailedErrors ?? false);
                 options.EnableServiceProviderCaching();
@@ -83,37 +80,27 @@ public static class UnifiedServiceRegistration {
             });
         }
 
-        // =========== 缓存服务 ===========
+        // =========== 缓存服务 - UltraThink简化版 ===========
         services.AddMemoryCache(options => {
-            var cacheOptions = configManager.GetSection<CacheOptions>("CacheOptions");
+            var cacheOptions = configService.GetSection<CacheOptions>("CacheOptions");
             if (cacheOptions?.MemoryCache != null) {
                 options.SizeLimit = cacheOptions.MemoryCache.SizeLimit;
                 options.CompactionPercentage = cacheOptions.MemoryCache.CompactionPercentage;
                 options.ExpirationScanFrequency = TimeSpan.FromSeconds(cacheOptions.MemoryCache.ExpirationScanFrequency);
             }
         });
-        // ICacheService已移除，直接使用IMemoryCache
 
-        // =========== 配置选项绑定（支持环境变量覆盖）===========
-        // 注册SysAdminOptions，优先使用环境变量
+        // =========== 配置选项绑定 - UltraThink简化版 ===========
+        // 使用简化配置服务，自动处理环境变量覆盖
         services.Configure<SysAdminOptions>(options => {
-            // 从环境变量读取，如果不存在则从配置文件读取
-            var adminPassword = Environment.GetEnvironmentVariable("ADMIN_DEFAULT_PASSWORD")
-                ?? configuration["SysAdminOptions:DefaultPassword"];
-            if (!string.IsNullOrEmpty(adminPassword)) {
-                options.DefaultPassword = adminPassword;
-            }
+            var adminPassword = configService.GetAdminPassword();
+            options.DefaultPassword = adminPassword;
             configuration.GetSection("SysAdminOptions").Bind(options);
         });
 
-        // 注册UserOptions，优先使用环境变量
         services.Configure<LYBT.Module.Users.UserOptions>(options => {
-            // 从环境变量读取，如果不存在则从配置文件读取
-            var userPassword = Environment.GetEnvironmentVariable("USER_DEFAULT_PASSWORD")
-                ?? configuration["UserOptions:DefaultUserPassword"];
-            if (!string.IsNullOrEmpty(userPassword)) {
-                options.DefaultUserPassword = userPassword;
-            }
+            var userPassword = configService.GetUserDefaultPassword();
+            options.DefaultUserPassword = userPassword;
             configuration.GetSection("UserOptions").Bind(options);
         });
 
@@ -128,14 +115,14 @@ public static class UnifiedServiceRegistration {
         // =========== 统一服务 ===========
         // 注意：日志系统已简化为标准ILogger，无需单独注册
 
-        // =========== 性能优化服务 ===========
-        services.RegisterPerformanceServices(configManager);
+        // =========== 性能优化服务 - UltraThink简化版 ===========
+        services.RegisterPerformanceServices(configService);
 
-        // =========== 日志和监控服务 ===========
-        services.RegisterLoggingAndMonitoringServices(configManager);
+        // =========== 日志和监控服务 - UltraThink简化版 ===========
+        services.RegisterLoggingAndMonitoringServices(configService);
 
         // =========== 数据库初始化服务 ===========
-        services.AddScoped<LYBT.Infrastructure.Database.DatabaseInitializationService>();
+        services.AddScoped<LYBT.Infrastructure.Data.DatabaseInitializationService>();
 
         return services;
     }
@@ -146,7 +133,7 @@ public static class UnifiedServiceRegistration {
     /// </summary>
     private static IServiceCollection RegisterPerformanceServices(
         this IServiceCollection services,
-        LYBT.Infrastructure.Configuration.IConfigurationManager configManager) {
+        ISimplifiedConfigurationService configService) {
         // =========== 简化缓存管理 ===========
         // UltraThink简化：使用内置IMemoryCache替代复杂的UnifiedCacheManager
         services.AddMemoryCache(options => {
@@ -172,10 +159,9 @@ public static class UnifiedServiceRegistration {
     private static IServiceCollection RegisterAuthenticationServices(
         this IServiceCollection services,
         IConfiguration configuration) {
-        // =========== JWT认证配置（使用统一配置管理）===========
+        // =========== JWT认证配置 - UltraThink简化版 ===========
         var serviceProvider = services.BuildServiceProvider();
-        var configManager = serviceProvider.GetRequiredService<LYBT.Infrastructure.Configuration.IConfigurationManager>();
-        var secretManager = serviceProvider.GetRequiredService<ISecretManager>();
+        var configService = serviceProvider.GetRequiredService<ISimplifiedConfigurationService>();
 
         try {
             // 获取JWT配置
@@ -183,20 +169,8 @@ public static class UnifiedServiceRegistration {
             var jwtOptions = jwtSection.Get<JwtOptions>()
                 ?? new LYBT.Infrastructure.Configuration.Options.JwtOptions();
 
-            // 从秘钥管理器获取JWT密钥
-            if (string.IsNullOrEmpty(jwtOptions.Secret) || jwtOptions.Secret.Contains("${")) {
-                var jwtSecret = secretManager.GetSecret("JWT_SECRET");
-                if (!string.IsNullOrEmpty(jwtSecret)) {
-                    jwtOptions.Secret = jwtSecret;
-                } else {
-                    // 在开发环境中，如果没有找到JWT_SECRET，使用配置文件中的值
-                    if (configManager.IsDevelopment && !string.IsNullOrEmpty(jwtOptions.Secret)) {
-                        // 使用配置文件中的值
-                    } else {
-                        throw new InvalidOperationException("JWT密钥配置错误：无法获取有效的JWT密钥");
-                    }
-                }
-            }
+            // 使用简化配置服务获取JWT密钥
+            jwtOptions.Secret = configService.GetJwtSecret();
 
             // 注册处理过的JwtOptions到DI容器
             services.AddSingleton<Microsoft.Extensions.Options.IOptions<JwtOptions>>(
@@ -338,11 +312,11 @@ public static class UnifiedServiceRegistration {
     }
 
     /// <summary>
-    /// 注册日志和监控服务
+    /// 注册日志和监控服务 - UltraThink简化版
     /// </summary>
     private static IServiceCollection RegisterLoggingAndMonitoringServices(
         this IServiceCollection services,
-        LYBT.Infrastructure.Configuration.IConfigurationManager configManager) {
+        ISimplifiedConfigurationService configService) {
         // =========== 统一日志管理 ===========
         // 注意：已简化为标准ILogger，无需额外配置
 

@@ -1,7 +1,11 @@
 ﻿using LYBT.Infrastructure.Data;
 using LYBT.Entities.Prescriptions;
 using LYBT.Shared.Models.Enums;
+using LYBT.Infrastructure.Repositories;
+using LYBT.Module.Prescriptions.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace LYBT.Module.Prescriptions.Repositories
 {
@@ -9,24 +13,40 @@ namespace LYBT.Module.Prescriptions.Repositories
     /// <summary>
     /// 表示PrescriptionRepository。
     /// </summary>
-    public class PrescriptionRepository : IPrescriptionRepository
+    public class PrescriptionRepository : OptimizedBaseRepository<Prescription>, IPrescriptionRepository
     {
-        private readonly AppDbContext _context;
-
-        public PrescriptionRepository(AppDbContext context)
+        public PrescriptionRepository(
+            AppDbContext context,
+            ILogger<PrescriptionRepository> logger,
+            IMemoryCache cache)
+            : base(context, logger, cache)
         {
-            _context = context;
         }
 
         /// <summary>
         /// 执行GetByIdAsync操作。
         /// </summary>
         /// <param name="id">参数id</param>        /// <returns>返回值</returns>
-        public async Task<Prescription?> GetByIdAsync(Guid id)
+        public override async Task<Prescription?> GetByIdAsync(Guid id)
         {
-            return await _context.Prescriptions
+            var cacheKey = $"{CacheKeyPrefix}withItems:{id}";
+            
+            if (_cache.TryGetValue<Prescription>(cacheKey, out var cached))
+            {
+                _logger.LogDebug("从缓存获取处方详情 {Id}", id);
+                return cached;
+            }
+            
+            var prescription = await _dbSet
                 .Include(p => p.Items)
                 .FirstOrDefaultAsync(p => p.Id == id);
+                
+            if (prescription != null)
+            {
+                _cache.Set(cacheKey, prescription, DefaultCacheDuration);
+            }
+            
+            return prescription;
         }
 
         /// <summary>
@@ -35,39 +55,81 @@ namespace LYBT.Module.Prescriptions.Repositories
         /// <returns>返回值</returns>
         public async Task<List<Prescription>> GetListAsync()
         {
-            return await _context.Prescriptions
+            var cacheKey = $"{CacheKeyPrefix}allWithItems";
+            
+            if (_cache.TryGetValue<List<Prescription>>(cacheKey, out var cached) && cached != null)
+            {
+                _logger.LogDebug("从缓存获取处方列表");
+                return cached;
+            }
+            
+            var prescriptions = await _dbSet
                 .Include(p => p.Items)
                 .ToListAsync();
+                
+            _cache.Set(cacheKey, prescriptions, DefaultCacheDuration);
+            return prescriptions;
         }
 
         /// <summary>
         /// 执行AddAsync操作。
         /// </summary>        /// <param name="model">参数model</param>        /// <returns>返回值</returns>
-        public async Task<bool> AddAsync(Prescription model)
+        /// <summary>
+        /// 新增处方（业务接口）
+        /// </summary>
+        public new async Task<bool> AddAsync(Prescription model)
         {
-            _context.Prescriptions.Add(model);
-            return await _context.SaveChangesAsync() > 0;
+            var addedEntity = await base.AddAsync(model);
+            var result = await _context.SaveChangesAsync() > 0;
+            
+            if (result)
+            {
+                _logger.LogInformation("新增处方成功 {Id}", model.Id);
+            }
+            
+            return result;
         }
 
         /// <summary>
         /// 执行UpdateAsync操作。
         /// </summary>        /// <param name="model">参数model</param>        /// <returns>返回值</returns>
-        public async Task<bool> UpdateAsync(Prescription model)
+        /// <summary>
+        /// 更新处方（业务接口）
+        /// </summary>
+        public new async Task<bool> UpdateAsync(Prescription model)
         {
-            _context.Prescriptions.Update(model);
-            return await _context.SaveChangesAsync() > 0;
+            var updatedEntity = await base.UpdateAsync(model);
+            var result = await _context.SaveChangesAsync() > 0;
+            
+            if (result)
+            {
+                _logger.LogInformation("更新处方成功 {Id}", model.Id);
+            }
+            
+            return result;
         }
 
         /// <summary>
         /// 执行DeleteAsync操作。
         /// </summary>        /// <param name="id">参数id</param>        /// <returns>返回值</returns>
-        public async Task<bool> DeleteAsync(Guid id)
+        /// <summary>
+        /// 删除处方（业务接口）
+        /// </summary>
+        public new async Task<bool> DeleteAsync(Guid id)
         {
-            var m = await _context.Prescriptions.FindAsync(id);
-            if (m == null)
-                return false;
-            _context.Prescriptions.Remove(m);
-            return await _context.SaveChangesAsync() > 0;
+            var result = await base.DeleteAsync(id);
+            
+            if (result)
+            {
+                var saveResult = await _context.SaveChangesAsync() > 0;
+                if (saveResult)
+                {
+                    _logger.LogInformation("删除处方成功 {Id}", id);
+                }
+                return saveResult;
+            }
+            
+            return false;
         }
 
         /// <summary>
@@ -76,12 +138,20 @@ namespace LYBT.Module.Prescriptions.Repositories
         /// <returns>返回值</returns>
         public async Task<bool> CancelAsync(Guid id)
         {
-            var model = await _context.Prescriptions.FindAsync(id);
+            var model = await _dbSet.FindAsync(id);
             if (model == null)
                 return false;
+                
             model.Status = PrescriptionStatus.Draft;
-            _context.Prescriptions.Update(model);
-            return await _context.SaveChangesAsync() > 0;
+            await base.UpdateAsync(model);
+            var result = await _context.SaveChangesAsync() > 0;
+            
+            if (result)
+            {
+                _logger.LogInformation("取消处方成功 {Id}", id);
+            }
+            
+            return result;
         }
     }
 }

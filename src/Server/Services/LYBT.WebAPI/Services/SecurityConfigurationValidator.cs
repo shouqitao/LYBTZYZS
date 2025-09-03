@@ -1,5 +1,5 @@
 using LYBT.Infrastructure.Configuration.Options;
-using AuthOptions = LYBT.Infrastructure.Options.AuthOptions;
+using AuthOptions = LYBT.Infrastructure.Configuration.Options.AuthOptions;
 using SecurityOptions = LYBT.Infrastructure.Configuration.Options.SecurityOptions;
 using LYBT.Module.Users;
 using Microsoft.Extensions.Options;

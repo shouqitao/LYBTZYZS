@@ -19,40 +19,40 @@ public class PatientBusinessService(ILogger<PatientBusinessService> logger) : IP
     /// <summary>
     /// 创建患者
     /// </summary>
-    public async Task<ServiceResult<PatientDto>> CreateAsync(PatientCreateDto createDto)
+    public Task<ServiceResult<PatientDto>> CreateAsync(PatientCreateDto createDto)
     {
-        return ServiceResult<PatientDto>.Failure("简单诊所版本暂不支持创建患者");
+        return Task.FromResult(ServiceResult<PatientDto>.Failure("简单诊所版本暂不支持创建患者"));
     }
 
     /// <summary>
     /// 更新患者
     /// </summary>
-    public async Task<ServiceResult<PatientDto>> UpdateAsync(Guid id, PatientUpdateDto updateDto)
+    public Task<ServiceResult<PatientDto>> UpdateAsync(Guid id, PatientUpdateDto updateDto)
     {
-        return ServiceResult<PatientDto>.Failure("简单诊所版本暂不支持更新患者信息");
+        return Task.FromResult(ServiceResult<PatientDto>.Failure("简单诊所版本暂不支持更新患者信息"));
     }
 
     /// <summary>
     /// 启用患者
     /// </summary>
-    public async Task<ServiceResult<bool>> EnableAsync(Guid patientId)
+    public Task<ServiceResult<bool>> EnableAsync(Guid patientId)
     {
-        return ServiceResult<bool>.Success(false);
+        return Task.FromResult(ServiceResult<bool>.Success(false));
     }
 
     /// <summary>
     /// 禁用患者
     /// </summary>
-    public async Task<ServiceResult<bool>> DisableAsync(Guid patientId)
+    public Task<ServiceResult<bool>> DisableAsync(Guid patientId)
     {
-        return ServiceResult<bool>.Success(false);
+        return Task.FromResult(ServiceResult<bool>.Success(false));
     }
 
     /// <summary>
     /// 删除患者
     /// </summary>
-    public async Task<ServiceResult<bool>> DeleteAsync(Guid patientId)
+    public Task<ServiceResult<bool>> DeleteAsync(Guid patientId)
     {
-        return ServiceResult<bool>.Success(false);
+        return Task.FromResult(ServiceResult<bool>.Success(false));
     }
 }

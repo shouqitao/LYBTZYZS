@@ -220,7 +220,7 @@ namespace LYBT.Desktop.Users.ViewModels
                         IsCreateOperation = false // 设置为更新操作
                     };
 
-                    var response = await _userService.UpdateAsync(updateRequest.Id, updateRequest);
+                    var response = await _userService.UpdateAsync(updateRequest);
                     
                     if (!response.IsSuccess)
                     {

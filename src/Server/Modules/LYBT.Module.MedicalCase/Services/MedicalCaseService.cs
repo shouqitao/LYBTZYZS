@@ -98,11 +98,10 @@ namespace LYBT.Module.MedicalCase.Services
 
         #region Legacy Support
 
-        public async Task<ServiceResult<object>> GetStatisticsAsync(DateTime? startDate, DateTime? endDate)
+        public Task<ServiceResult<object>> GetStatisticsAsync(DateTime? startDate, DateTime? endDate)
         {
-            await Task.CompletedTask;
             var emptyStats = new { Message = "统计功能已废弃", TotalCount = 0 };
-            return ServiceResult<object>.Success(emptyStats);
+            return Task.FromResult(ServiceResult<object>.Success(emptyStats));
         }
 
         public async Task<ServiceResult<byte[]>> PrintMedicalRecordAsync(Guid caseId)

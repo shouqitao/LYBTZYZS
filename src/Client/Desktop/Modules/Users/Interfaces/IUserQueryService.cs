@@ -31,19 +31,39 @@ public interface IUserQueryService
     Task<ServiceResult<UserDto>> GetProfileAsync();
 
     /// <summary>
-    /// 获取所有角色列表
+    /// 获取所有角色列表 - 更新返回类型与共享接口对齐
     /// </summary>
-    Task<ServiceResult<IEnumerable<object>>> GetRolesAsync();
+    Task<ServiceResult<List<object>>> GetRolesAsync();
 
     /// <summary>
-    /// 获取启用用户列表
+    /// 获取启用用户列表 - 更新返回类型与共享接口对齐
     /// </summary>
-    Task<ServiceResult<IEnumerable<UserDto>>> GetActiveUsersAsync();
+    Task<ServiceResult<List<UserDto>>> GetActiveUsersAsync();
 
     /// <summary>
     /// 获取用户基础统计
     /// </summary>
     Task<ServiceResult<UserStatisticsDto>> GetBasicStatisticsAsync();
+
+    /// <summary>
+    /// 根据用户名获取用户 - 新增方法与共享接口对齐
+    /// </summary>
+    Task<ServiceResult<UserDto>> GetByUsernameAsync(string username);
+
+    /// <summary>
+    /// 搜索用户 - 新增方法与共享接口对齐
+    /// </summary>
+    Task<ServiceResult<List<UserDto>>> SearchAsync(string keyword);
+
+    /// <summary>
+    /// 验证用户名是否可用 - 新增方法与共享接口对齐
+    /// </summary>
+    Task<ServiceResult<bool>> ValidateUsernameAsync(string username);
+
+    /// <summary>
+    /// 获取用户操作日志 - 新增方法与共享接口对齐
+    /// </summary>
+    Task<ServiceResult<PagedResult<object>>> GetOperationLogsAsync(Guid userId, PagedQueryBaseDto query);
 
     #endregion
 }

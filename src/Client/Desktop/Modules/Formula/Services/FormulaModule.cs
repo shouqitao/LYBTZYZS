@@ -90,18 +90,16 @@ public class FormulaModule(
 
     #region 简化的不支持方法（UltraThink简化版）
 
-    public Task<ServiceResult<FormulaDto>> CopyAsync(Guid id, string newName)
+    public async Task<ServiceResult<FormulaDto>> CopyAsync(Guid id, string newName)
     {
-        return Task.FromResult(ServiceResult<FormulaDto>.Failure("简单诊所版本不支持复制验方功能"));
+        // 获取当前用户ID (简化实现，实际应从认证上下文获取)
+        var currentUserId = Guid.NewGuid(); // TODO: 从认证上下文获取实际用户ID
+        return await _businessService.CloneFormulaAsync(id, newName, currentUserId);
     }
 
-    public Task<ServiceResult<List<string>>> GetCategoriesAsync()
+    public async Task<ServiceResult<List<string>>> GetCategoriesAsync()
     {
-        var defaultCategories = new List<string>
-        {
-            "全部", "内科方", "外科方", "妇科方", "儿科方", "经典方", "验方", "其他"
-        };
-        return Task.FromResult(ServiceResult<List<string>>.Success(defaultCategories));
+        return await _queryService.GetCategoriesAsync();
     }
 
     public Task<ServiceResult<IEnumerable<FormulaDto>>> GetByCategoryAsync(string category)
@@ -110,15 +108,14 @@ public class FormulaModule(
         return Task.FromResult(ServiceResult<IEnumerable<FormulaDto>>.Success(new List<FormulaDto>()));
     }
 
-    public Task<ServiceResult<PagedResult<FormulaDto>>> SearchFormulasAsync(PagedQueryBaseDto request)
+    public async Task<ServiceResult<PagedResult<FormulaDto>>> SearchFormulasAsync(PagedQueryBaseDto request)
     {
-        var emptyResult = new PagedResult<FormulaDto>(new List<FormulaDto>(), 0, 1, 20);
-        return Task.FromResult(ServiceResult<PagedResult<FormulaDto>>.Success(emptyResult));
+        return await _queryService.SearchFormulasAsync(request);
     }
 
-    public Task<ServiceResult<bool>> CheckNameAvailabilityAsync(string name, Guid? excludeFormulaId = null)
+    public async Task<ServiceResult<bool>> CheckNameAvailabilityAsync(string name, Guid? excludeFormulaId = null)
     {
-        return Task.FromResult(ServiceResult<bool>.Success(true));
+        return await _businessService.CheckNameAvailabilityAsync(name, excludeFormulaId);
     }
 
     public Task<ServiceResult<int>> ImportFormulasAsync(List<FormulaImportDto> formulas)
@@ -147,9 +144,9 @@ public class FormulaModule(
         return Task.FromResult(ServiceResult<FormulaAnalysisResult>.Failure("简单诊所版本不支持验方分析功能"));
     }
 
-    public Task<ServiceResult<List<FormulaRecommendationDto>>> GetRecommendationsAsync(string syndrome)
+    public async Task<ServiceResult<List<FormulaRecommendationDto>>> GetRecommendationsAsync(string syndrome)
     {
-        return Task.FromResult(ServiceResult<List<FormulaRecommendationDto>>.Success(new List<FormulaRecommendationDto>()));
+        return await _queryService.GetRecommendationsBySyndromeAsync(syndrome);
     }
 
     public Task<ServiceResult<List<FormulaRecommendationDto>>> GetRecommendationsAsync(string symptoms, string diagnosis, Guid doctorId)

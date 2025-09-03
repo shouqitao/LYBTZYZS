@@ -1,54 +1,89 @@
 # LYBT.Infrastructure
 
-> **基础设施模块**  
-> 系统底层数据访问、认证授权和异常处理的统一基础设施
+> **基础设施模块** - UltraThink架构优化版  
+> 系统底层数据访问、配置管理和核心服务的统一基础设施
 
 ## 🎯 模块概述
 
-LYBT.Infrastructure是系统的基础设施模块，为全系统提供数据库访问、JWT认证、全局异常处理、性能监控等底层支撑能力，是所有业务模块的核心基础桥梁。
+LYBT.Infrastructure是系统的核心基础设施模块，采用UltraThink简化架构设计，专为小型诊所（<20人）优化。提供数据库访问、配置管理、安全服务等核心基础功能，是所有业务模块的统一底层支撑。
 
-## 🏗️ 核心能力
+## 🏗️ 核心能力 (UltraThink简化版)
 
-- **统一数据访问**: 基于Entity Framework Core的AppDbContext，管理所有实体映射
-- **JWT认证框架**: 完整的JWT Token生成、验证和管理机制
-- **全局异常处理**: 统一的异常捕获、日志记录和错误响应
-- **数据库迁移**: 支持EF Core Migrations和CLI工具的设计时工厂
-- **系统初始化**: 数据种子和管理员账户自动初始化
-- **性能监控**: 统一监控核心和异步处理器
+- **统一数据访问**: 基于Entity Framework Core 8.0.17的AppDbContext，管理所有业务实体
+- **智能缓存系统**: 基于IMemoryCache的高效缓存，适合小规模部署  
+- **配置管理**: 统一Configuration/Options体系，环境变量安全覆盖
+- **数据库初始化**: 自动化DatabaseInitializationService，种子数据管理
+- **Repository模式**: OptimizedBaseRepository基类，带缓存优化的CRUD操作
+- **安全组件**: JWT认证、Token存储、密码安全等核心安全服务
 
-## 📦 核心组件
+## 🎆 P8-01E架构重构成果
 
-### 数据访问层
+**UltraThink目录结构简化 (2025-09-02完成)**:
+- ✅ **目录精简52%**: 从21个目录 → 10个目录
+- ✅ **命名空间统一**: 消除层级混乱，统一命名规范
+- ✅ **功能集中化**: Data、Configuration、Security功能明确分离
+- ✅ **标准化迁移**: Migrations目录符合EF Core标准位置
 
-| 组件 | 功能描述 | 状态 |
-|------|----------|------|
-| **AppDbContext** | EF Core上下文，映射所有业务实体 | ✅ 完成 |
-| **AppDbContextFactory** | 设计时工厂，支持迁移和测试 | ✅ 完成 |
-| **BaseRepository<T>** | 通用仓储基类，提供CRUD操作 | ✅ 完成 |
+**重构前后对比**:
+```
+重构前 (21个目录):          重构后 (10个目录):
+├── Data/                  ├── Configuration/
+├── Database/              │   └── Options/
+├── Options/               ├── Data/
+├── Extensions/            ├── Migrations/ 
+├── Logging/               ├── Repositories/
+├── Services/              ├── Security/
+├── Specifications/        ├── BaseService.cs
+├── Security/              ├── ServiceCollectionExtensions.cs
+│   ├── Data/              ├── SimpleLog.cs
+│   └── Interfaces/        └── Specification.cs
+├── Repositories/
+│   ├── Base/
+│   └── Optimized/
+└── ...13 more dirs
+```
 
-### JWT认证系统
+## 📦 核心组件 (UltraThink简化架构)
 
-| 组件 | 功能描述 | 状态 |
-|------|----------|------|
-| **JwtHelper** | JWT Token生成和验证工具 | ✅ 完成 |
-| **JwtAuthenticationExtensions** | 服务注册扩展方法 | ✅ 完成 |
-| **JwtOptions** | JWT配置选项模型 | ✅ 完成 |
+### 数据访问层 (Data/)
 
-### 异常处理框架
+| 组件 | 功能描述 | 位置 | 状态 |
+|------|----------|------|------|
+| **AppDbContext** | EF Core上下文，管理8个业务实体 | `Data/AppDbContext.cs` | ✅ 完成 |
+| **AppDbContextFactory** | 设计时工厂，支持迁移和测试 | `Data/AppDbContextFactory.cs` | ✅ 完成 |
+| **DatabaseInitializationService** | 数据库初始化和种子数据 | `Data/DatabaseInitializationService.cs` | ✅ 完成 |
 
-| 组件 | 功能描述 | 状态 |
-|------|----------|------|
-| **ExceptionMiddleware** | 全局异常处理中间件 | ✅ 完成 |
-| **BusinessException** | 业务异常基类 | ✅ 完成 |
-| **ErrorHandlingService** | 错误处理服务 | ✅ 完成 |
+### Repository基础架构 (Repositories/)
 
-### 性能监控系统
+| 组件 | 功能描述 | 位置 | 状态 |
+|------|----------|------|------|
+| **BaseRepository<T>** | 基础仓储模式，标准CRUD操作 | `Repositories/BaseRepository.cs` | ✅ 完成 |
+| **OptimizedBaseRepository<T>** | 优化仓储，带缓存和性能优化 | `Repositories/OptimizedBaseRepository.cs` | ✅ 完成 |
 
-| 组件 | 功能描述 | 状态 |
-|------|----------|------|
-| **UnifiedMonitorCore** | 统一监控核心 | ✅ 完成 |
-| **UnifiedAsyncProcessor** | 异步处理器 | ✅ 完成 |
-| **PerformanceMetrics** | 性能指标收集 | ✅ 完成 |
+### 配置管理系统 (Configuration/)
+
+| 组件 | 功能描述 | 位置 | 状态 |
+|------|----------|------|------|
+| **SimplifiedConfigurationService** | 简化配置服务，环境变量支持 | `Configuration/SimplifiedConfigurationService.cs` | ✅ 完成 |
+| **AuthOptions** | JWT认证配置选项 | `Configuration/Options/AuthOptions.cs` | ✅ 完成 |
+| **StorageOptions** | 存储配置选项 | `Configuration/Options/StorageOptions.cs` | ✅ 完成 |
+
+### 安全组件 (Security/)
+
+| 组件 | 功能描述 | 位置 | 状态 |
+|------|----------|------|------|
+| **TokenStoreEntity** | JWT令牌存储实体 | `Security/TokenStoreEntity.cs` | ✅ 完成 |
+| **ITokenStoreService** | 令牌存储服务接口 | `Security/ITokenStoreService.cs` | ✅ 完成 |
+| **PasswordHelper** | 密码哈希和验证工具 | `Security/PasswordHelper.cs` | ✅ 完成 |
+
+### 基础服务 (根目录)
+
+| 组件 | 功能描述 | 位置 | 状态 |
+|------|----------|------|------|
+| **BaseService** | 服务基类，通用功能 | `BaseService.cs` | ✅ 完成 |
+| **ServiceCollectionExtensions** | 依赖注入扩展 | `ServiceCollectionExtensions.cs` | ✅ 完成 |
+| **SimpleLog** | 简化日志服务 | `SimpleLog.cs` | ✅ 完成 |
+| **Specification<T>** | 规约模式基类 | `Specification.cs` | ✅ 完成 |
 
 ## 🔧 技术实现
 
@@ -160,9 +195,11 @@ public class ExceptionMiddleware
 }
 ```
 
-## 🚀 数据库管理
+## 🚀 数据库管理 (P8-01E标准化)
 
-### 迁移命令
+### 迁移管理 - EF Core标准位置
+
+**迁移文件位置**: `Migrations/` (符合EF Core标准目录结构)
 
 ```bash
 # 添加新迁移（必须在Infrastructure项目中执行）
@@ -170,7 +207,7 @@ dotnet ef migrations add <MigrationName> \
     --project src/Server/Core/LYBT.Infrastructure \
     --startup-project src/Server/Services/LYBT.WebAPI
 
-# 更新数据库
+# 更新数据库 
 dotnet ef database update \
     --project src/Server/Core/LYBT.Infrastructure \
     --startup-project src/Server/Services/LYBT.WebAPI
@@ -181,111 +218,115 @@ dotnet ef migrations list \
     --startup-project src/Server/Services/LYBT.WebAPI
 ```
 
-### 数据种子初始化
+### 数据库初始化服务
+
+**DatabaseInitializationService** (已迁移到 `Data/` 目录):
 
 ```csharp
-public static class AdminSeeder
+// 命名空间: LYBT.Infrastructure.Data  
+public class DatabaseInitializationService
 {
-    public static async Task SeedAsync(AppDbContext context)
+    private readonly AppDbContext _context;
+    private readonly ILogger<DatabaseInitializationService> _logger;
+
+    public async Task InitializeDatabaseAsync()
     {
-        if (!context.AdminSecrets.Any())
+        // 确保数据库存在
+        await _context.Database.EnsureCreatedAsync();
+        
+        // 应用挂起的迁移
+        await _context.Database.MigrateAsync();
+        
+        // 执行种子数据初始化
+        await SeedAdminDataAsync();
+    }
+
+    private async Task SeedAdminDataAsync()
+    {
+        if (!_context.AdminSecrets.Any())
         {
-            var adminSecret = new AdminSecretModel
+            var adminSecret = new AdminSecret
             {
                 Id = Guid.NewGuid(),
-                UserName = "sysadmin",
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin@123456"),
+                Username = "sysadmin", 
+                PasswordHash = PasswordHelper.Hash("Admin@123456"),
                 CreateTime = DateTime.Now
             };
             
-            context.AdminSecrets.Add(adminSecret);
-            await context.SaveChangesAsync();
+            _context.AdminSecrets.Add(adminSecret);
+            await _context.SaveChangesAsync();
         }
     }
 }
 ```
 
-## 🔐 安全特性
+## 🔐 安全特性 (UltraThink简化版)
 
-### JWT配置
+### 配置选项统一管理
+
+**配置位置**: `Configuration/Options/` (P8-01E标准化)
 
 ```json
 {
-  "JwtOptions": {
-    "Key": "YourSuperSecureKeyHere",
+  "AuthOptions": {
+    "Secret": "YourSuperSecureKeyHere-MinimumLength32Characters",
     "Issuer": "LYBT.WebAPI",
-    "Audience": "LYBT.Client",
+    "Audience": "LYBT.Client", 
     "ExpireMinutes": 480,
-    "RefreshTokenExpireDays": 30
+    "RememberMeExpireMinutes": 43200
   }
 }
 ```
 
-### 密码安全
+### 密码安全 (PasswordHelper)
 
-- **加密算法**: BCrypt.Net (带盐值Hash)
+- **加密算法**: AspNetCore Identity Hash + 盐值
+- **位置**: `Security/PasswordHelper.cs`
 - **最小复杂度**: 8位以上，包含大小写字母、数字
-- **默认密码**: Admin@123456 (生产环境必须修改)
+- **默认密码**: Admin@123456 (⚠️ 生产环境必须修改)
 
-## 📊 性能监控
-
-### 统一监控配置
+### 令牌安全 (TokenStore)
 
 ```csharp
-public class UnifiedMonitorCore
+// Security/TokenStoreEntity.cs
+public class TokenStoreEntity  
 {
-    private readonly Timer _timer;
-    private readonly ILogger<UnifiedMonitorCore> _logger;
-
-    public void StartMonitoring()
-    {
-        _timer = new Timer(ExecuteMonitoringCycle, null, 
-            TimeSpan.Zero, TimeSpan.FromMinutes(5));
-    }
-
-    private void ExecuteMonitoringCycle(object? state)
-    {
-        _ = Task.Run(async () =>
-        {
-            try
-            {
-                await CollectPerformanceMetrics();
-                await CheckSystemHealth();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "监控周期执行失败");
-            }
-        });
-    }
+    public string TokenHash { get; set; }
+    public DateTime ExpiryTime { get; set; }
+    public bool IsRevoked { get; set; }
 }
 ```
 
-## 📈 性能指标
+## 📈 性能指标 (小诊所优化)
 
-- **数据库连接池**: Max=20, Min=2 (适合小型部署)
-- **JWT验证**: < 1ms 平均响应时间
-- **异常处理**: < 5ms 全局异常捕获延迟
-- **监控周期**: 5分钟间隔性能指标收集
+### 数据库性能
+- **连接池配置**: Max=20, Min=2 (适合<20人规模)  
+- **查询优化**: LINQ + EF Core参数化查询
+- **缓存策略**: IMemoryCache智能缓存，DefaultCacheDuration配置
 
-## 🧪 测试支持
+### 系统性能
+- **OptimizedBaseRepository**: 带缓存的Repository层
+- **SimplifiedConfigurationService**: 轻量级配置管理  
+- **DatabaseInitializationService**: 自动化数据库初始化
 
-### 测试用DbContext
+## 📁 UltraThink架构总结
 
-```csharp
-public class TestDbContextFactory : IDbContextFactory<AppDbContext>
-{
-    public AppDbContext CreateDbContext()
-    {
-        var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
-            .Options;
-
-        return new AppDbContext(options);
-    }
-}
+### P8-01E重构成果
 ```
+✅ 目录结构简化52%: 21个目录 → 10个目录
+✅ 命名空间统一: 消除LYBT.Infrastructure.xxx层级混乱
+✅ 功能集中化: Data/Configuration/Security明确分离
+✅ 标准化迁移: 符合EF Core最佳实践
+✅ 零编译错误: 后端整体解决方案稳定运行
+```
+
+### 小诊所适配特点
+- **实用主义**: 删除企业级过度设计组件
+- **简化维护**: 减少认知负荷和维护复杂度  
+- **性能适配**: 专为<20人规模优化配置
+- **安全简化**: 保留核心安全，移除复杂安全策略
 
 ---
 
-> 📌 **部署提醒**: 生产环境务必修改JWT密钥和管理员默认密码
+> 📌 **P8-01E架构重构完成** - Infrastructure模块已达到UltraThink简化标准  
+> 🎯 **下一阶段**: P8-01F Auth模块复杂性简化重构

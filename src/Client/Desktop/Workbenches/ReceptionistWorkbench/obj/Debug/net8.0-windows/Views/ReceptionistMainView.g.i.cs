@@ -60,8 +60,7 @@ namespace LYBT.Desktop.Workbench.Receptionist.Views {
                 return;
             }
             _contentLoaded = true;
-            System.Uri resourceLocater = new System.Uri("/LYBT.Desktop.Workbench.Receptionist;V1.0.0.0;component/views/receptionistmainvie" +
-                    "w.xaml", System.UriKind.Relative);
+            System.Uri resourceLocater = new System.Uri("/LYBT.Desktop.Workbench.Receptionist;component/views/receptionistmainview.xaml", System.UriKind.Relative);
             
             #line 1 "..\..\..\..\Views\ReceptionistMainView.xaml"
             System.Windows.Application.LoadComponent(this, resourceLocater);

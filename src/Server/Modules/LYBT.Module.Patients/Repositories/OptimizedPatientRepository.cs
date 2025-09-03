@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using LYBT.Infrastructure.Data;
-using LYBT.Infrastructure.Repositories.Optimized;
+using LYBT.Infrastructure.Repositories;
 using LYBT.Entities.Patients;
 using LYBT.Module.Patients.Interfaces;
 using LYBT.Shared.Models.Enums;

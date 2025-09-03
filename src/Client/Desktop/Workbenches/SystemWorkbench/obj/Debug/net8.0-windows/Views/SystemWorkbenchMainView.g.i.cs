@@ -60,8 +60,7 @@ namespace LYBT.Desktop.Workbench.Admin.Views {
                 return;
             }
             _contentLoaded = true;
-            System.Uri resourceLocater = new System.Uri("/LYBT.Desktop.Workbench.Admin;V1.0.0.0;component/views/systemworkbenchmainview.xa" +
-                    "ml", System.UriKind.Relative);
+            System.Uri resourceLocater = new System.Uri("/LYBT.Desktop.Workbench.Admin;component/views/systemworkbenchmainview.xaml", System.UriKind.Relative);
             
             #line 1 "..\..\..\..\Views\SystemWorkbenchMainView.xaml"
             System.Windows.Application.LoadComponent(this, resourceLocater);

@@ -6,17 +6,18 @@ using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Interfaces.Services;
 
 namespace LYBT.Desktop.Auth.Services;
 
 /// <summary>
 /// Auth模块 - UltraThink双层架构纯委托层
 /// 职责：统一服务入口，请求路由分发
-/// 简化版：仅支持后端实际的5个API端点
+/// 现已实现共享IAuthService接口，与后端完全对齐
 /// </summary>
 public class AuthModule(
     IAuthQueryService queryService,
-    IAuthBusinessService businessService) : IAuthModule, IDisposable
+    IAuthBusinessService businessService) : IAuthModule, IAuthService, IAuthenticationService
 {
     private readonly IAuthQueryService _queryService = queryService;
     private readonly IAuthBusinessService _businessService = businessService;
@@ -32,7 +33,18 @@ public class AuthModule(
     /// 用户登出 (对应 POST /auth/logout) - IAuthModule版本
     /// </summary>
     public async Task<ServiceResult> LogoutAsync(LogoutRequest logoutRequest)
-        => await LogoutAsync(); // 委托给无参数版本
+    {
+        return await LogoutAsync(); // 委托给无参数版本
+    }
+    
+    /// <summary>
+    /// 用户登出 (对应 POST /auth/logout) - IAuthService版本
+    /// </summary>
+    async Task<ServiceResult<bool>> IAuthService.LogoutAsync(LogoutRequest logoutRequest)
+    {
+        var result = await LogoutAsync(); // 委托给无参数版本
+        return result.IsSuccess ? ServiceResult<bool>.Success(true) : ServiceResult<bool>.Failure(result.ErrorMessage ?? "登出失败");
+    }
 
     /// <summary>
     /// 刷新Token (对应 POST /auth/refresh)
@@ -47,10 +59,38 @@ public class AuthModule(
         => Task.FromResult(ServiceResult<bool>.Success(false)); // 简单诊所版本简化实现
 
     /// <summary>
-    /// 修改系统管理员密码 (对应 POST /auth/changeSysAdminPassword)
+    /// 修改系统管理员密码 (对应 POST /auth/changeSysAdminPassword) - IAuthModule版本
     /// </summary>
     public Task<ServiceResult> ChangeSysAdminPasswordAsync(ChangeSysAdminPassword request)
         => Task.FromResult(ServiceResult.Failure("简单诊所版本暂不支持密码修改"));
+        
+    /// <summary>
+    /// 修改系统管理员密码 (对应 POST /auth/changeSysAdminPassword) - IAuthService版本
+    /// </summary>
+    Task<ServiceResult<bool>> IAuthService.ChangeSysAdminPasswordAsync(ChangeSysAdminPassword request)
+        => Task.FromResult(ServiceResult<bool>.Failure("简单诊所版本暂不支持密码修改"));
+
+    /// <summary>
+    /// 验证用户凭据 - IAuthService接口实现
+    /// </summary>
+    public async Task<ServiceResult<string>> VerifyCredentialsAsync(LoginRequest request)
+    {
+        var loginResult = await LoginAsync(request);
+        if (loginResult.IsSuccess && loginResult.Data != null)
+            return ServiceResult<string>.Success(loginResult.Data.Token);
+        return ServiceResult<string>.Failure(loginResult.ErrorMessage ?? "凭据验证失败");
+    }
+
+    /// <summary>
+    /// 获取用户会话信息 - IAuthService接口实现
+    /// </summary>
+    public async Task<ServiceResult<object>> GetSessionInfoAsync(string token)
+    {
+        var userResult = await GetCurrentUserAsync();
+        if (userResult.IsSuccess && userResult.Data != null)
+            return ServiceResult<object>.Success(userResult.Data);
+        return ServiceResult<object>.Failure("无法获取会话信息");
+    }
 
     #endregion
 

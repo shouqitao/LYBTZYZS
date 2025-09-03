@@ -1,73 +1,95 @@
-﻿using LYBT.Infrastructure.Data;
+﻿using LYBT.Entities.Users;
+using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Repositories;
-using LYBT.Entities.Users;
 using LYBT.Module.Users.Interfaces;
+using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
-using SharedUserPagedQueryDto = LYBT.Shared.Models.Contracts.Users.UserPagedQueryDto;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 
-namespace LYBT.Module.Users.Repositories
-{
+namespace LYBT.Module.Users.Repositories {
 
     /// <summary>
-    /// 用户仓储实现类 - 数据层统一化重构
-    /// 继承BaseRepository提供通用CRUD，实现用户特定业务逻辑
+    /// 用户仓储实现类 - UltraThink优化版
+    /// 继承OptimizedBaseRepository提供高性能缓存CRUD，实现用户特定业务逻辑
+    /// 优化特性：查询缓存、批量操作、性能监控、智能缓存失效
     /// 实现软删除策略：用户只能禁用/启用，不能物理删除
     /// </summary>
-    public class UserRepository : BaseRepository<User>, LYBT.Module.Users.Interfaces.IUserRepository
-    {
-        public UserRepository(AppDbContext dbContext) : base(dbContext)
-        {
-            // BaseRepository会处理基础的数据库操作
+    public class UserRepository : OptimizedBaseRepository<User>, IUserRepository {
+        public UserRepository(
+            AppDbContext dbContext,
+            ILogger<UserRepository> logger,
+            IMemoryCache cache)
+            : base(dbContext, logger, cache) {
+            // OptimizedBaseRepository会处理基础的数据库操作和缓存策略
         }
 
         // 注意：AddAsync, UpdateAsync等基础CRUD方法由BaseRepository提供
 
         /// <summary>
-        /// 禁用用户（软删除）
+        /// 禁用用户（软删除）- 缓存感知版
         /// </summary>
-        public async Task<bool> DisableAsync(Guid id)
-        {
-            var user = await _context.Users.FindAsync(id);
+        public async Task<bool> DisableAsync(Guid id) {
+            var user = await _dbSet.FindAsync(id);
             if (user == null)
                 return false;
 
             user.Status = CommonStatus.Disabled;
-            _context.Users.Update(user);
-            return await _context.SaveChangesAsync() > 0;
+            _dbSet.Update(user);
+            var result = await _context.SaveChangesAsync() > 0;
+
+            // 缓存失效
+            if (result) {
+                _cache.Remove($"{CacheKeyPrefix}{id}");
+                InvalidateCache();
+            }
+
+            return result;
         }
 
         /// <summary>
-        /// 启用用户
+        /// 启用用户 - 缓存感知版
         /// </summary>
-        public async Task<bool> EnableAsync(Guid id)
-        {
-            var user = await _context.Users.FindAsync(id);
+        public async Task<bool> EnableAsync(Guid id) {
+            var user = await _dbSet.FindAsync(id);
             if (user == null)
                 return false;
 
             user.Status = CommonStatus.Enabled;
-            _context.Users.Update(user);
-            return await _context.SaveChangesAsync() > 0;
+            _dbSet.Update(user);
+            var result = await _context.SaveChangesAsync() > 0;
+
+            // 缓存失效
+            if (result) {
+                _cache.Remove($"{CacheKeyPrefix}{id}");
+                InvalidateCache();
+            }
+
+            return result;
         }
 
         /// <summary>
-        /// 分页条件查找用户
+        /// 分页条件查找用户（缓存优化版）
         /// 权限控制：禁用的用户仅管理员可查询
         /// </summary>
-        public async Task<(IList<User> users, int total)> GetPagedAsync(SharedUserPagedQueryDto query, bool includeDisabled = false)
-        {
-            var dbSet = _context.Users.AsQueryable();
+        public async Task<(IList<User> users, int total)> GetPagedAsync(UserPagedQueryDto query, bool includeDisabled = false) {
+            var cacheKey = GenerateCacheKey("paged", query.GetHashCode(), includeDisabled);
+
+            if (_cache.TryGetValue<(IList<User>, int)>(cacheKey, out var cached)) {
+                _logger.LogDebug("从缓存获取用户分页数据: {CacheKey}", cacheKey);
+                return cached;
+            }
+
+            var dbSet = _dbSet.AsQueryable();
 
             // 权限控制：非管理员只能看到启用的用户
-            if (!includeDisabled)
-            {
+            if (!includeDisabled) {
                 dbSet = dbSet.Where(u => u.Status == CommonStatus.Enabled);
             }
 
             // 通用搜索关键词（模糊搜索：用户名、真实姓名、拼音码）
-            if (!string.IsNullOrWhiteSpace(query.Keyword))
-            {
+            if (!string.IsNullOrWhiteSpace(query.Keyword)) {
                 var keyword = query.Keyword.Trim();
                 dbSet = dbSet.Where(u =>
                     u.Username.Contains(keyword) ||
@@ -76,22 +98,17 @@ namespace LYBT.Module.Users.Repositories
                 );
             }
             // 特定字段搜索（精确搜索）
-            else
-            {
-                if (!string.IsNullOrWhiteSpace(query.Username))
-                {
+            else {
+                if (!string.IsNullOrWhiteSpace(query.Username)) {
                     dbSet = dbSet.Where(u => u.Username.Contains(query.Username));
                 }
-                if (!string.IsNullOrWhiteSpace(query.RealName))
-                {
+                if (!string.IsNullOrWhiteSpace(query.RealName)) {
                     dbSet = dbSet.Where(u => u.RealName.Contains(query.RealName));
                 }
-                if (!string.IsNullOrWhiteSpace(query.PhoneNumber))
-                {
+                if (!string.IsNullOrWhiteSpace(query.PhoneNumber)) {
                     dbSet = dbSet.Where(u => u.PhoneNumber != null && u.PhoneNumber.Contains(query.PhoneNumber));
                 }
-                if (!string.IsNullOrWhiteSpace(query.PinYinCode))
-                {
+                if (!string.IsNullOrWhiteSpace(query.PinYinCode)) {
                     var keyword = query.PinYinCode.ToUpperInvariant();
                     dbSet = dbSet.Where(u => u.PinYinCode != null && u.PinYinCode.Contains(keyword));
                 }
@@ -101,8 +118,7 @@ namespace LYBT.Module.Users.Repositories
             // 角色功能已合并到用户模块中
 
             // 状态筛选
-            if (query.Status.HasValue)
-            {
+            if (query.Status.HasValue) {
                 dbSet = dbSet.Where(u => u.Status == query.Status.Value);
             }
 
@@ -112,7 +128,7 @@ namespace LYBT.Module.Users.Repositories
             // UltraThink v2.0: 时间字段已删除（CreateTime, LastLoginTime）
             // 日期范围筛选功能已简化移除，相关查询条件将被忽略
 
-            // 分页查询 - UltraThink v2.0: 使用用户名排序替代已删除的CreateTime
+            // 分页查询 - UltraThink v2.0: 使用用户名排序曷代已删除的CreateTime
             int skip = (query.PageIndex - 1) * query.PageSize;
             var users = await dbSet
                 .OrderBy(u => u.Username) // 简化排序：按用户名
@@ -120,105 +136,155 @@ namespace LYBT.Module.Users.Repositories
                 .Take(query.PageSize)
                 .ToListAsync();
 
-            return (users, total);
+            var result = (users, total);
+
+            // 缓存结果
+            _cache.Set(cacheKey, result, DefaultCacheDuration);
+
+            return result;
         }
 
         /// <summary>
-        /// 根据用户名查找（包括禁用用户，用于登录验证）
+        /// 根据用户名查找（包括禁用用户，用于登录验证）- 缓存优化版
         /// </summary>
-        public async Task<User?> GetByUsernameAsync(string userName)
-        {
-            return await _context.Users
+        public async Task<User?> GetByUsernameAsync(string userName) {
+            var cacheKey = GenerateCacheKey("username", userName);
+
+            if (_cache.TryGetValue<User?>(cacheKey, out var cached)) {
+                return cached;
+            }
+
+            var user = await _dbSet
+                .AsNoTracking()
                 .FirstOrDefaultAsync(u => u.Username == userName);
+
+            _cache.Set(cacheKey, user, DefaultCacheDuration);
+            return user;
         }
 
         /// <summary>
-        /// 根据ID查找
+        /// 根据ID查找 - 缓存优化版
         /// 权限控制：禁用的用户仅管理员可查询
         /// </summary>
-        public async Task<User?> GetByIdAsync(Guid id, bool includeDisabled = false)
-        {
-            var query = _context.Users.AsQueryable();
+        public async Task<User?> GetByIdAsync(Guid id, bool includeDisabled = false) {
+            var cacheKey = GenerateCacheKey("byId", id, includeDisabled);
 
-            if (!includeDisabled)
-            {
+            if (_cache.TryGetValue<User?>(cacheKey, out var cached)) {
+                return cached;
+            }
+
+            var query = _dbSet.AsNoTracking();
+
+            if (!includeDisabled) {
                 query = query.Where(u => u.Status == CommonStatus.Enabled);
             }
 
-            return await query.FirstOrDefaultAsync(u => u.Id == id);
+            var user = await query.FirstOrDefaultAsync(u => u.Id == id);
+            _cache.Set(cacheKey, user, DefaultCacheDuration);
+            return user;
         }
 
         /// <summary>
-        /// 根据ID列表批量获取用户
+        /// 根据ID列表批量获取用户 - 缓存优化版
         /// 权限控制：禁用的用户仅管理员可查询
+        /// 使用OptimizedBaseRepository的批量缓存功能
         /// </summary>
-        public async Task<List<User>> GetUsersByIdsAsync(List<Guid> ids, bool includeDisabled = false)
-        {
-            if (!ids.Any())
-            {
+        public async Task<List<User>> GetUsersByIdsAsync(List<Guid> ids, bool includeDisabled = false) {
+            if (!ids.Any()) {
                 return new List<User>();
             }
 
-            // ✅ 安全修复：使用LINQ查询替代原生SQL，防止SQL注入
-            var query = _context.Users.Where(u => ids.Contains(u.Id));
-            
-            if (!includeDisabled)
-            {
-                query = query.Where(u => u.Status == CommonStatus.Enabled);
+            // 使用OptimizedBaseRepository的批量查询功能
+            var batchResult = await GetByIdsAsync(ids);
+            var users = batchResult.Values.ToList();
+
+            if (!includeDisabled) {
+                users = users.Where(u => u.Status == CommonStatus.Enabled).ToList();
             }
 
-            return await query.ToListAsync();
+            return users;
         }
 
         /// <summary>
-        /// 校验用户名是否存在（包括禁用用户）
+        /// 校验用户名是否存在（包括禁用用户）- 缓存优化版
         /// </summary>
-        public async Task<bool> ExistsByUsernameAsync(string userName)
-        {
-            return await _context.Users.AnyAsync(u => u.Username == userName);
+        public async Task<bool> ExistsByUsernameAsync(string userName) {
+            var cacheKey = GenerateCacheKey("exists", userName);
+
+            if (_cache.TryGetValue<bool>(cacheKey, out var cached)) {
+                return cached;
+            }
+
+            var exists = await _dbSet.AsNoTracking().AnyAsync(u => u.Username == userName);
+            _cache.Set(cacheKey, exists, DefaultCacheDuration);
+            return exists;
         }
 
         /// <summary>
-        /// 更新用户密码
+        /// 更新用户密码 - 缓存感知版
         /// </summary>
-        public async Task<bool> UpdatePasswordAsync(Guid id, string passwordHash)
-        {
-            var user = await _context.Users.FindAsync(id);
+        public async Task<bool> UpdatePasswordAsync(Guid id, string passwordHash) {
+            var user = await _dbSet.FindAsync(id);
             if (user == null)
                 return false;
 
             user.PasswordHash = passwordHash;
-            _context.Users.Update(user);
-            return await _context.SaveChangesAsync() > 0;
+            _dbSet.Update(user);
+            var result = await _context.SaveChangesAsync() > 0;
+
+            // 缓存失效
+            if (result) {
+                _cache.Remove($"{CacheKeyPrefix}{id}");
+                InvalidateCache();
+            }
+
+            return result;
         }
 
         /// <summary>
-        /// 批量更新启用状态
+        /// 批量更新启用状态 - 缓存感知版
         /// </summary>
-        public async Task<int> UpdateActiveStatusAsync(List<Guid> ids, bool isActive)
-        {
-            if (!ids.Any())
-            {
+        public async Task<int> UpdateActiveStatusAsync(List<Guid> ids, bool isActive) {
+            if (!ids.Any()) {
                 return 0;
             }
 
             // ✅ 安全修复：使用EF Core 7.0 ExecuteUpdate方法，防止SQL注入
             var status = isActive ? CommonStatus.Enabled : CommonStatus.Disabled;
-            return await _context.Users
+            var result = await _dbSet
                 .Where(u => ids.Contains(u.Id))
                 .ExecuteUpdateAsync(setters => setters
                     .SetProperty(u => u.Status, status));
+
+            // 批量缓存失效
+            if (result > 0) {
+                foreach (var id in ids) {
+                    _cache.Remove($"{CacheKeyPrefix}{id}");
+                }
+                InvalidateCache();
+            }
+
+            return result;
         }
 
         /// <summary>
-        /// 获取启用的用户列表
+        /// 获取启用的用户列表 - 缓存优化版
         /// </summary>
-        public async Task<List<User>> GetActiveUsersAsync()
-        {
-            return await _context.Users
+        public async Task<List<User>> GetActiveUsersAsync() {
+            var cacheKey = GenerateCacheKey("active_users");
+
+            if (_cache.TryGetValue<List<User>>(cacheKey, out var cached)) {
+                return cached!;
+            }
+
+            var users = await _dbSet
+                .AsNoTracking()
                 .Where(u => u.Status == CommonStatus.Enabled && u.Username != "sysadmin")
                 .OrderBy(u => u.RealName)
                 .ToListAsync();
+
+            _cache.Set(cacheKey, users, DefaultCacheDuration);
+            return users;
         }
 
 

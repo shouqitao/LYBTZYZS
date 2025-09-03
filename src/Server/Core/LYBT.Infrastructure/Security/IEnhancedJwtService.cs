@@ -44,6 +44,7 @@ namespace LYBT.Infrastructure.Security
         public string ClientIP { get; set; } = string.Empty;
         public string? SessionId { get; set; }
         public string? DeviceId { get; set; }
+        public string? UserAgent { get; set; }
         public bool RememberMe { get; set; } = false;
         public Dictionary<string, string>? CustomClaims { get; set; }
     }

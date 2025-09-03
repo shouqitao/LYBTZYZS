@@ -60,8 +60,8 @@ namespace LYBT.Desktop.Workbench.Consultation.Views {
                 return;
             }
             _contentLoaded = true;
-            System.Uri resourceLocater = new System.Uri("/LYBT.Desktop.Workbench.Consultation;V1.0.0.0;component/views/consultationworkben" +
-                    "chmainview.xaml", System.UriKind.Relative);
+            System.Uri resourceLocater = new System.Uri("/LYBT.Desktop.Workbench.Consultation;component/views/consultationworkbenchmainvie" +
+                    "w.xaml", System.UriKind.Relative);
             
             #line 1 "..\..\..\..\Views\ConsultationWorkbenchMainView.xaml"
             System.Windows.Application.LoadComponent(this, resourceLocater);

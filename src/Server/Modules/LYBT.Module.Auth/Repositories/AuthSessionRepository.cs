@@ -1,6 +1,5 @@
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Repositories;
-using LYBT.Infrastructure.Repositories.Optimized;
 using LYBT.Entities.Auth;
 using LYBT.Module.Auth.Interfaces;
 using LYBT.Shared.Models.Enums;

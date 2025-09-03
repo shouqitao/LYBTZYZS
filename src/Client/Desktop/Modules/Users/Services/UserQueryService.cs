@@ -22,7 +22,7 @@ public class UserQueryService(ILogger<UserQueryService> logger) : IUserQueryServ
     /// <summary>
     /// 分页查询用户
     /// </summary>
-    public async Task<ServiceResult<PagedResult<UserDto>>> GetPagedAsync(UserPagedQueryDto query)
+    public Task<ServiceResult<PagedResult<UserDto>>> GetPagedAsync(UserPagedQueryDto query)
     {
         var emptyResult = new PagedResult<UserDto>
         {
@@ -30,29 +30,29 @@ public class UserQueryService(ILogger<UserQueryService> logger) : IUserQueryServ
             TotalCount = 0
         };
         
-        return ServiceResult<PagedResult<UserDto>>.Success(emptyResult);
+        return Task.FromResult(ServiceResult<PagedResult<UserDto>>.Success(emptyResult));
     }
 
     /// <summary>
     /// 根据ID获取用户
     /// </summary>
-    public async Task<ServiceResult<UserDto>> GetByIdAsync(Guid id)
+    public Task<ServiceResult<UserDto>> GetByIdAsync(Guid id)
     {
-        return ServiceResult<UserDto>.Failure("简单诊所版本暂不支持用户查询");
+        return Task.FromResult(ServiceResult<UserDto>.Failure("简单诊所版本暂不支持用户查询"));
     }
 
     /// <summary>
     /// 获取当前用户个人信息
     /// </summary>
-    public async Task<ServiceResult<UserDto>> GetProfileAsync()
+    public Task<ServiceResult<UserDto>> GetProfileAsync()
     {
-        return ServiceResult<UserDto>.Failure("简单诊所版本暂不支持获取个人信息");
+        return Task.FromResult(ServiceResult<UserDto>.Failure("简单诊所版本暂不支持获取个人信息"));
     }
 
     /// <summary>
     /// 获取所有角色列表
     /// </summary>
-    public async Task<ServiceResult<IEnumerable<object>>> GetRolesAsync()
+    public Task<ServiceResult<List<object>>> GetRolesAsync()
     {
         var roles = new List<object>
         {
@@ -60,26 +60,65 @@ public class UserQueryService(ILogger<UserQueryService> logger) : IUserQueryServ
             new { Id = 2, Name = "Doctor" }
         };
         
-        return ServiceResult<IEnumerable<object>>.Success(roles);
+        return Task.FromResult(ServiceResult<List<object>>.Success(roles));
     }
 
     /// <summary>
     /// 获取启用用户列表
     /// </summary>
-    public async Task<ServiceResult<IEnumerable<UserDto>>> GetActiveUsersAsync()
+    public Task<ServiceResult<List<UserDto>>> GetActiveUsersAsync()
     {
         var emptyUsers = new List<UserDto>();
-        return ServiceResult<IEnumerable<UserDto>>.Success(emptyUsers);
+        return Task.FromResult(ServiceResult<List<UserDto>>.Success(emptyUsers));
     }
 
     /// <summary>
     /// 获取用户基础统计
     /// </summary>
-    public async Task<ServiceResult<UserStatisticsDto>> GetBasicStatisticsAsync()
+    public Task<ServiceResult<UserStatisticsDto>> GetBasicStatisticsAsync()
     {
         var stats = new UserStatisticsDto();
         
-        return ServiceResult<UserStatisticsDto>.Success(stats);
+        return Task.FromResult(ServiceResult<UserStatisticsDto>.Success(stats));
+    }
+
+    /// <summary>
+    /// 根据用户名获取用户
+    /// </summary>
+    public Task<ServiceResult<UserDto>> GetByUsernameAsync(string username)
+    {
+        return Task.FromResult(ServiceResult<UserDto>.Failure("简单诊所版本暂不支持按用户名查询"));
+    }
+
+    /// <summary>
+    /// 搜索用户
+    /// </summary>
+    public Task<ServiceResult<List<UserDto>>> SearchAsync(string keyword)
+    {
+        var emptyUsers = new List<UserDto>();
+        return Task.FromResult(ServiceResult<List<UserDto>>.Success(emptyUsers));
+    }
+
+    /// <summary>
+    /// 验证用户名是否可用
+    /// </summary>
+    public Task<ServiceResult<bool>> ValidateUsernameAsync(string username)
+    {
+        return Task.FromResult(ServiceResult<bool>.Success(true));
+    }
+
+    /// <summary>
+    /// 获取用户操作日志
+    /// </summary>
+    public Task<ServiceResult<PagedResult<object>>> GetOperationLogsAsync(Guid userId, PagedQueryBaseDto query)
+    {
+        var emptyResult = new PagedResult<object>
+        {
+            Items = new List<object>(),
+            TotalCount = 0
+        };
+        
+        return Task.FromResult(ServiceResult<PagedResult<object>>.Success(emptyResult));
     }
 
     #endregion

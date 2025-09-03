@@ -1,5 +1,5 @@
 using LYBT.Infrastructure.Configuration;
-using LYBT.Infrastructure.Logging;
+using LYBT.Infrastructure;
 using LYBT.WebAPI.Services;
 
 namespace LYBT.WebAPI.Extensions;
@@ -47,7 +47,7 @@ public static class UnifiedApplicationInitialization
     {
         try
         {
-            var dbInitService = scope.ServiceProvider.GetRequiredService<LYBT.Infrastructure.Database.DatabaseInitializationService>();
+            var dbInitService = scope.ServiceProvider.GetRequiredService<LYBT.Infrastructure.Data.DatabaseInitializationService>();
             await dbInitService.InitializeDatabaseAsync();
 
             // 显示数据库信息
@@ -74,42 +74,37 @@ public static class UnifiedApplicationInitialization
         // =========== 统一配置管理验证 ===========
         try
         {
-            // 验证所有配置
-            scope.ServiceProvider.ValidateAllConfigurations();
-            logger?.LogInformation("✅ 统一配置验证通过");
+            // UltraThink简化配置验证
+            var simplifiedConfigService = scope.ServiceProvider.GetRequiredService<ISimplifiedConfigurationService>();
+            
+            // 基本配置验证
+            logger?.LogInformation("✅ 配置服务初始化完成");
+            
+            // 显示环境信息
+            var environment = simplifiedConfigService.IsDevelopment ? "Development" : 
+                            simplifiedConfigService.IsProduction ? "Production" : "Unknown";
+            logger?.LogInformation("🌍 运行环境: {Environment}, 机器: {MachineName}", 
+                environment, Environment.MachineName);
 
-            // 验证环境配置
-            var environmentManager = scope.ServiceProvider.GetService<IEnvironmentManager>();
-            if (environmentManager != null)
+            // 验证关键配置
+            try 
             {
-                var envValidation = environmentManager.ValidateEnvironment();
-                if (envValidation == System.ComponentModel.DataAnnotations.ValidationResult.Success)
-                {
-                    logger?.LogInformation("✅ 环境配置验证通过");
-                }
-                else
-                {
-                    logger?.LogWarning("⚠️ 环境配置验证警告: {ValidationResult}", envValidation.ErrorMessage);
-                }
-
-                // 显示环境信息
-                var envInfo = environmentManager.GetEnvironmentInfo();
-                logger?.LogInformation("🌍 运行环境: {Environment}, 机器: {MachineName}, 版本: {Version}",
-                    envInfo.Name, envInfo.MachineName, envInfo.ApplicationVersion);
+                var _ = simplifiedConfigService.GetConnectionString();
+                logger?.LogInformation("✅ 数据库连接配置验证通过");
+            }
+            catch (Exception)
+            {
+                logger?.LogWarning("⚠️ 数据库连接配置可能存在问题");
             }
 
-            // 验证秘钥完整性
-            var secretManager = scope.ServiceProvider.GetService<ISecretManager>();
-            if (secretManager != null)
+            try 
             {
-                if (secretManager.ValidateSecrets())
-                {
-                    logger?.LogInformation("✅ 秘钥验证通过");
-                }
-                else
-                {
-                    logger?.LogWarning("⚠️ 秘钥验证失败，某些功能可能受限");
-                }
+                var _ = simplifiedConfigService.GetJwtSecret();
+                logger?.LogInformation("✅ JWT配置验证通过");
+            }
+            catch (Exception)
+            {
+                logger?.LogWarning("⚠️ JWT配置可能存在问题");
             }
         }
         catch (Exception ex)
@@ -124,20 +119,9 @@ public static class UnifiedApplicationInitialization
             logger?.LogWarning("⚠️ 开发环境中配置验证失败，但继续启动");
         }
 
-        // =========== 初始化统一配置服务 ===========
-        var configService = scope.ServiceProvider.GetService<IUnifiedConfigService>();
-        if (configService != null)
-        {
-            try
-            {
-                await configService.InitializeDefaultGlobalSettingsAsync();
-                logger?.LogInformation("✅ 统一配置服务初始化成功");
-            }
-            catch (Exception ex)
-            {
-                logger?.LogWarning(ex, "⚠️ 统一配置服务初始化失败，但不影响应用启动");
-            }
-        }
+        // =========== UltraThink v2.0简化版配置服务 ===========
+        // 移除复杂的IUnifiedConfigService，使用SimplifiedConfigurationService
+        // 基础配置验证已在上面完成，无需额外的复杂初始化
     }
 
     /// <summary>
@@ -231,7 +215,7 @@ public static class UnifiedApplicationInitialization
         
         try
         {
-            var dbInitService = scope.ServiceProvider.GetService<LYBT.Infrastructure.Database.DatabaseInitializationService>();
+            var dbInitService = scope.ServiceProvider.GetService<LYBT.Infrastructure.Data.DatabaseInitializationService>();
             if (dbInitService != null)
             {
                 var dbInfo = await dbInitService.GetDatabaseInfoAsync();

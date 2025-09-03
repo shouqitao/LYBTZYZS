@@ -30,10 +30,9 @@ namespace LYBT.Module.Herbs.Services
 
         #region Query Operations
 
-        public async Task<ServiceResult<HerbDto>> GetByIdAsync(Guid id)
+        public Task<ServiceResult<HerbDto>> GetByIdAsync(Guid id)
         {
-            await Task.CompletedTask;
-            return ServiceResult<HerbDto>.Failure("GetByIdAsync方法需要在QueryService中实现");
+            return Task.FromResult(ServiceResult<HerbDto>.Failure("GetByIdAsync方法需要在QueryService中实现"));
         }
 
         public async Task<ServiceResult<List<HerbDto>>> GetAllAsync()
@@ -76,15 +75,19 @@ namespace LYBT.Module.Herbs.Services
         #region Business Operations
 
         public async Task<ServiceResult<HerbDto>> CreateAsync(HerbCreateDto dto)
-        {
-            await Task.CompletedTask;
-            return ServiceResult<HerbDto>.Failure("CreateAsync方法需要在BusinessService中实现");
-        }
+            => await _businessService.CreateHerbWithAutoCodeAsync(dto);
 
-        public async Task<ServiceResult<HerbDto>> UpdateAsync(Guid id, HerbUpdateDto dto)
+        public Task<ServiceResult<HerbDto>> UpdateAsync(Guid id, HerbUpdateDto dto)
         {
-            await Task.CompletedTask;
-            return ServiceResult<HerbDto>.Failure("UpdateAsync方法需要在BusinessService中实现");
+            // 简化版本更新逻辑：只允许修改价格和状态
+            if (id == Guid.Empty)
+                return Task.FromResult(ServiceResult<HerbDto>.Failure("药材ID不能为空"));
+                
+            if (dto == null)
+                return Task.FromResult(ServiceResult<HerbDto>.Failure("更新信息不能为空"));
+                
+            // 目前简化版本不支持全量更新，建议使用状态更新方法
+            return Task.FromResult(ServiceResult<HerbDto>.Failure("简化版本暂不支持药材信息更新，建议使用SetStatusAsync更改状态"));
         }
 
         public async Task<ServiceResult<bool>> DeleteAsync(Guid id)
@@ -135,40 +138,34 @@ namespace LYBT.Module.Herbs.Services
 
         #region Legacy Support
 
-        public async Task<ServiceResult<Dictionary<int, int>>> GetStatisticsAsync()
+        public Task<ServiceResult<Dictionary<int, int>>> GetStatisticsAsync()
         {
-            await Task.CompletedTask;
-            return ServiceResult<Dictionary<int, int>>.Success([]);
+            return Task.FromResult(ServiceResult<Dictionary<int, int>>.Success([]));
         }
 
-        public async Task<ServiceResult<bool>> UpdatePriceAsync(Guid id, HerbPriceUpdateDto dto)
+        public Task<ServiceResult<bool>> UpdatePriceAsync(Guid id, HerbPriceUpdateDto dto)
         {
-            await Task.CompletedTask;
-            return ServiceResult<bool>.Success(false);
+            return Task.FromResult(ServiceResult<bool>.Success(false));
         }
 
-        public async Task<ServiceResult<bool>> UpdateStockAsync(Guid id, HerbStockUpdateDto dto)
+        public Task<ServiceResult<bool>> UpdateStockAsync(Guid id, HerbStockUpdateDto dto)
         {
-            await Task.CompletedTask;
-            return ServiceResult<bool>.Success(false);
+            return Task.FromResult(ServiceResult<bool>.Success(false));
         }
 
-        public async Task<ServiceResult<HerbStockStatisticsDto>> GetStockStatisticsAsync()
+        public Task<ServiceResult<HerbStockStatisticsDto>> GetStockStatisticsAsync()
         {
-            await Task.CompletedTask;
-            return ServiceResult<HerbStockStatisticsDto>.Success(new HerbStockStatisticsDto());
+            return Task.FromResult(ServiceResult<HerbStockStatisticsDto>.Success(new HerbStockStatisticsDto()));
         }
 
-        public async Task<ServiceResult<List<HerbDto>>> GetOutOfStockHerbsAsync()
+        public Task<ServiceResult<List<HerbDto>>> GetOutOfStockHerbsAsync()
         {
-            await Task.CompletedTask;
-            return ServiceResult<List<HerbDto>>.Success([]);
+            return Task.FromResult(ServiceResult<List<HerbDto>>.Success([]));
         }
 
-        public async Task<ServiceResult<List<HerbDto>>> GetExpiringHerbsAsync(int days = 30)
+        public Task<ServiceResult<List<HerbDto>>> GetExpiringHerbsAsync(int days = 30)
         {
-            await Task.CompletedTask;
-            return ServiceResult<List<HerbDto>>.Success([]);
+            return Task.FromResult(ServiceResult<List<HerbDto>>.Success([]));
         }
 
         #endregion
