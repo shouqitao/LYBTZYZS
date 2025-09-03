@@ -1,0 +1,16 @@
+using LYBT.Shared.Models.Contracts.Common;
+using System.Windows.Controls;
+
+namespace LYBT.Desktop.Workbench.Cashier.Views
+{
+    /// <summary>
+    /// BillingManagementView.xaml 的交互逻辑
+    /// </summary>
+    public partial class BillingManagementView : UserControl
+    {
+        public BillingManagementView()
+        {
+            InitializeComponent();
+        }
+    }
+}

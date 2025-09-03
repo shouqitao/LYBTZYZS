@@ -1,0 +1,377 @@
+# 凌隐宝堂GitLab CI/CD配置 - UltraThink重构CI/CD架构
+# 备选CI/CD方案，支持私有化部署
+
+variables:
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: "/certs"
+  DOTNET_VERSION: "8.0"
+  REGISTRY: "registry.lybt.com"
+  IMAGE_NAME: "$REGISTRY/lybt/webapi"
+  NUGET_PACKAGES: "${CI_PROJECT_DIR}/.nuget"
+  
+stages:
+  - build
+  - test
+  - security
+  - package
+  - deploy
+  - verify
+
+# ==================== 缓存配置 ====================
+cache:
+  key: "$CI_COMMIT_REF_SLUG"
+  paths:
+    - .nuget/
+    - node_modules/
+    - '**/bin/'
+    - '**/obj/'
+
+# ==================== 构建阶段 ====================
+build:backend:
+  stage: build
+  image: mcr.microsoft.com/dotnet/sdk:8.0
+  script:
+    - echo "🔨 构建后端项目..."
+    - dotnet restore LYBT.Backend.sln
+    - dotnet build LYBT.Backend.sln --configuration Release --no-restore
+    - dotnet publish src/Backend/Services/LYBT.WebAPI/LYBT.WebAPI.csproj 
+        --configuration Release 
+        --output ./publish 
+        --no-build
+  artifacts:
+    paths:
+      - publish/
+    expire_in: 1 day
+  only:
+    - main
+    - develop
+    - /^release\/.*$/
+    - merge_requests
+
+build:frontend:
+  stage: build
+  image: mcr.microsoft.com/dotnet/sdk:8.0-windowsservercore
+  tags:
+    - windows
+  script:
+    - echo "🔨 构建WPF客户端..."
+    - dotnet restore LYBT.Desktop.sln
+    - dotnet build LYBT.Desktop.sln --configuration Release --no-restore
+    - dotnet publish src/Frontend/Desktop/Shell/LYBT.WPF.Client.Shell.csproj 
+        --configuration Release 
+        --output ./publish-wpf 
+        --runtime win-x64 
+        --self-contained true
+  artifacts:
+    paths:
+      - publish-wpf/
+    expire_in: 1 day
+  only:
+    - main
+    - develop
+    - /^release\/.*$/
+
+# ==================== 测试阶段 ====================
+test:unit:
+  stage: test
+  image: mcr.microsoft.com/dotnet/sdk:8.0
+  needs: ["build:backend"]
+  script:
+    - echo "🧪 运行单元测试..."
+    - dotnet test tests/LYBT.Tests.Unit/LYBT.Tests.Unit.csproj 
+        --configuration Release 
+        --logger "junit;LogFilePath=test-results.xml" 
+        --collect:"XPlat Code Coverage"
+  coverage: '/Total.*?([0-9]+(?:\.[0-9]+)?%)/'
+  artifacts:
+    reports:
+      junit: '**/test-results.xml'
+      coverage_report:
+        coverage_format: cobertura
+        path: '**/coverage.cobertura.xml'
+    expire_in: 1 week
+
+test:integration:
+  stage: test
+  image: mcr.microsoft.com/dotnet/sdk:8.0
+  needs: ["build:backend"]
+  services:
+    - name: mcr.microsoft.com/mssql/server:2022-latest
+      alias: sqlserver
+  variables:
+    ACCEPT_EULA: "Y"
+    SA_PASSWORD: "YourStrong@Passw0rd"
+    CONNECTION_STRING: "Server=sqlserver;Database=LYBTDB_Test;User Id=sa;Password=YourStrong@Passw0rd;TrustServerCertificate=True"
+  script:
+    - echo "🧪 运行集成测试..."
+    - dotnet test tests/LYBT.Tests.Integration/LYBT.Tests.Integration.csproj 
+        --configuration Release 
+        --logger "junit;LogFilePath=integration-test-results.xml"
+  artifacts:
+    reports:
+      junit: '**/integration-test-results.xml'
+    expire_in: 1 week
+  only:
+    - main
+    - develop
+    - merge_requests
+
+test:performance:
+  stage: test
+  image: grafana/k6:latest
+  needs: ["build:backend"]
+  script:
+    - echo "⚡ 运行性能测试..."
+    - k6 run tests/performance/load-test.js --out json=performance-results.json
+  artifacts:
+    paths:
+      - performance-results.json
+    expire_in: 1 week
+  only:
+    - main
+    - develop
+
+# ==================== 安全扫描阶段 ====================
+security:sast:
+  stage: security
+  image: returntocorp/semgrep:latest
+  script:
+    - echo "🔍 执行SAST扫描..."
+    - semgrep --config=auto --json --output=sast-report.json .
+  artifacts:
+    reports:
+      sast: sast-report.json
+    expire_in: 1 week
+  allow_failure: true
+
+security:dependency:
+  stage: security
+  image: owasp/dependency-check:latest
+  script:
+    - echo "📦 扫描依赖漏洞..."
+    - /usr/share/dependency-check/bin/dependency-check.sh 
+        --scan . 
+        --format JSON 
+        --out dependency-report.json
+        --enableExperimental
+  artifacts:
+    reports:
+      dependency_scanning: dependency-report.json
+    expire_in: 1 week
+  allow_failure: true
+
+security:container:
+  stage: security
+  image: aquasec/trivy:latest
+  needs: ["package:docker"]
+  script:
+    - echo "🐳 扫描容器镜像..."
+    - trivy image --format json --output container-scan.json ${IMAGE_NAME}:${CI_COMMIT_SHA}
+  artifacts:
+    reports:
+      container_scanning: container-scan.json
+    expire_in: 1 week
+  allow_failure: true
+
+security:license:
+  stage: security
+  image: licensefinder/license_finder:latest
+  script:
+    - echo "📜 检查许可证合规性..."
+    - license_finder report --format json > license-report.json
+  artifacts:
+    paths:
+      - license-report.json
+    expire_in: 1 week
+  allow_failure: true
+
+# ==================== 打包阶段 ====================
+package:docker:
+  stage: package
+  image: docker:24-dind
+  needs: ["build:backend", "test:unit"]
+  services:
+    - docker:24-dind
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $REGISTRY
+  script:
+    - echo "🐳 构建Docker镜像..."
+    - docker build 
+        -t ${IMAGE_NAME}:${CI_COMMIT_SHA} 
+        -t ${IMAGE_NAME}:${CI_COMMIT_REF_SLUG} 
+        -f src/Backend/Services/LYBT.WebAPI/Dockerfile .
+    - docker push ${IMAGE_NAME}:${CI_COMMIT_SHA}
+    - docker push ${IMAGE_NAME}:${CI_COMMIT_REF_SLUG}
+    - |
+      if [ "$CI_COMMIT_BRANCH" == "main" ]; then
+        docker tag ${IMAGE_NAME}:${CI_COMMIT_SHA} ${IMAGE_NAME}:latest
+        docker push ${IMAGE_NAME}:latest
+      fi
+  only:
+    - main
+    - develop
+    - /^release\/.*$/
+
+package:helm:
+  stage: package
+  image: alpine/helm:latest
+  needs: ["package:docker"]
+  script:
+    - echo "📦 打包Helm Chart..."
+    - helm package deployment/helm/lybt-webapi
+    - helm push lybt-webapi-*.tgz oci://${REGISTRY}/helm
+  artifacts:
+    paths:
+      - '*.tgz'
+    expire_in: 1 week
+  only:
+    - main
+    - /^release\/.*$/
+
+# ==================== 部署阶段 ====================
+deploy:development:
+  stage: deploy
+  image: bitnami/kubectl:latest
+  needs: ["package:docker", "security:container"]
+  environment:
+    name: development
+    url: https://dev.lybt.com
+  before_script:
+    - echo $KUBE_CONFIG_DEV | base64 -d > ~/.kube/config
+  script:
+    - echo "🚀 部署到开发环境..."
+    - kubectl set image deployment/lybt-webapi 
+        webapi=${IMAGE_NAME}:${CI_COMMIT_SHA} 
+        -n lybt-dev
+    - kubectl rollout status deployment/lybt-webapi -n lybt-dev
+  only:
+    - develop
+
+deploy:staging:
+  stage: deploy
+  image: bitnami/kubectl:latest
+  needs: ["package:docker", "security:container"]
+  environment:
+    name: staging
+    url: https://staging.lybt.com
+  before_script:
+    - echo $KUBE_CONFIG_STAGING | base64 -d > ~/.kube/config
+  script:
+    - echo "🚀 部署到测试环境..."
+    - kubectl set image deployment/lybt-webapi 
+        webapi=${IMAGE_NAME}:${CI_COMMIT_SHA} 
+        -n lybt-staging
+    - kubectl rollout status deployment/lybt-webapi -n lybt-staging
+  when: manual
+  only:
+    - main
+    - /^release\/.*$/
+
+deploy:production:
+  stage: deploy
+  image: bitnami/kubectl:latest
+  needs: ["package:docker", "security:container", "deploy:staging"]
+  environment:
+    name: production
+    url: https://lybt.com
+  before_script:
+    - echo $KUBE_CONFIG_PROD | base64 -d > ~/.kube/config
+  script:
+    - echo "🚀 执行生产环境蓝绿部署..."
+    # 部署到绿色环境
+    - kubectl set image deployment/lybt-webapi-green 
+        webapi=${IMAGE_NAME}:${CI_COMMIT_SHA} 
+        -n lybt-prod
+    - kubectl rollout status deployment/lybt-webapi-green -n lybt-prod
+    # 切换流量
+    - kubectl patch service lybt-webapi -n lybt-prod 
+        -p '{"spec":{"selector":{"version":"green"}}}'
+    # 更新蓝色环境
+    - sleep 60
+    - kubectl set image deployment/lybt-webapi-blue 
+        webapi=${IMAGE_NAME}:${CI_COMMIT_SHA} 
+        -n lybt-prod
+  when: manual
+  only:
+    - main
+    - /^v[0-9]+\.[0-9]+\.[0-9]+$/
+
+# ==================== 验证阶段 ====================
+verify:smoke-test:
+  stage: verify
+  image: postman/newman:alpine
+  needs: ["deploy:development"]
+  script:
+    - echo "🧪 运行冒烟测试..."
+    - newman run tests/postman/smoke-tests.json 
+        --environment tests/postman/dev-env.json 
+        --reporters cli,json 
+        --reporter-json-export smoke-test-results.json
+  artifacts:
+    paths:
+      - smoke-test-results.json
+    expire_in: 1 week
+  only:
+    - develop
+
+verify:e2e-test:
+  stage: verify
+  image: cypress/included:latest
+  needs: ["deploy:staging"]
+  script:
+    - echo "🧪 运行E2E测试..."
+    - cypress run --config baseUrl=https://staging.lybt.com
+  artifacts:
+    when: always
+    paths:
+      - cypress/screenshots
+      - cypress/videos
+    expire_in: 1 week
+  only:
+    - main
+    - /^release\/.*$/
+
+verify:rollback:
+  stage: verify
+  image: bitnami/kubectl:latest
+  needs: ["deploy:production"]
+  environment:
+    name: production
+    url: https://lybt.com
+  before_script:
+    - echo $KUBE_CONFIG_PROD | base64 -d > ~/.kube/config
+  script:
+    - echo "🔄 执行回滚..."
+    - kubectl patch service lybt-webapi -n lybt-prod 
+        -p '{"spec":{"selector":{"version":"blue"}}}'
+    - kubectl rollout undo deployment/lybt-webapi-green -n lybt-prod
+  when: manual
+  only:
+    - main
+
+# ==================== 通知任务 ====================
+.notify:
+  image: curlimages/curl:latest
+  script:
+    - |
+      curl -X POST $WEBHOOK_URL \
+        -H 'Content-Type: application/json' \
+        -d "{
+          \"project\": \"$CI_PROJECT_NAME\",
+          \"pipeline\": \"$CI_PIPELINE_ID\",
+          \"status\": \"$CI_JOB_STATUS\",
+          \"branch\": \"$CI_COMMIT_BRANCH\",
+          \"commit\": \"$CI_COMMIT_SHA\",
+          \"author\": \"$GITLAB_USER_NAME\",
+          \"url\": \"$CI_PIPELINE_URL\"
+        }"
+
+notify:success:
+  extends: .notify
+  stage: .post
+  when: on_success
+
+notify:failure:
+  extends: .notify
+  stage: .post
+  when: on_failure

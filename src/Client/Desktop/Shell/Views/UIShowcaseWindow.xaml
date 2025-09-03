@@ -1,0 +1,543 @@
+<Window x:Class="LYBT.Desktop.Shell.Views.UIShowcaseWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="凌隐宝堂 - UI设计系统展示"
+        Width="1400" Height="900"
+        WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource BackgroundBrush}">
+    
+    <!-- 加载资源 -->
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../../Themes/Design/Colors.xaml"/>
+                <ResourceDictionary Source="../../Themes/Design/Typography.xaml"/>
+                <ResourceDictionary Source="../../Themes/Design/Spacing.xaml"/>
+                <ResourceDictionary Source="../../Themes/Design/Animations.xaml"/>
+                <ResourceDictionary Source="../../Themes/Controls/ModernButton.xaml"/>
+                <ResourceDictionary Source="../../Themes/Controls/ModernTextBox.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        
+        <!-- 标题栏 -->
+        <Border Grid.Row="0"
+                Background="{DynamicResource SurfaceBrush}"
+                BorderBrush="{DynamicResource BorderLightBrush}"
+                BorderThickness="0,0,0,1">
+            <Grid Height="80">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <!-- Logo和标题 -->
+                <StackPanel Grid.Column="0"
+                            Orientation="Horizontal"
+                            Margin="{StaticResource PageMarginSmall}">
+                    <Border Width="48" Height="48"
+                            Background="{DynamicResource PrimaryGradientBrush}"
+                            CornerRadius="24"
+                            Margin="0,0,16,0">
+                        <TextBlock Text="凌"
+                                   FontSize="24"
+                                   FontWeight="Bold"
+                                   Foreground="White"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"/>
+                    </Border>
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="凌隐宝堂中医诊所"
+                                   Style="{StaticResource H4TextStyle}"
+                                   Margin="0"/>
+                        <TextBlock Text="UI设计系统展示 v2.0"
+                                   Style="{StaticResource CaptionTextStyle}"/>
+                    </StackPanel>
+                </StackPanel>
+                
+                <!-- 主题切换按钮 -->
+                <StackPanel Grid.Column="2"
+                            Orientation="Horizontal"
+                            Margin="{StaticResource PageMarginSmall}"
+                            VerticalAlignment="Center">
+                    <Button Style="{StaticResource IconButton}"
+                            ToolTip="切换主题">
+                        <TextBlock Text="&#xE790;"
+                                   FontFamily="{StaticResource IconFontFamily}"
+                                   FontSize="20"/>
+                    </Button>
+                    <Button Style="{StaticResource IconButton}"
+                            ToolTip="设置">
+                        <TextBlock Text="&#xE713;"
+                                   FontFamily="{StaticResource IconFontFamily}"
+                                   FontSize="20"/>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+        
+        <!-- 主内容区 -->
+        <ScrollViewer Grid.Row="1"
+                      VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled">
+            <StackPanel Margin="{StaticResource PageMargin}">
+                
+                <!-- 颜色系统 -->
+                <TextBlock Text="颜色系统"
+                           Style="{StaticResource H2TextStyle}"
+                           Margin="0,0,0,24"/>
+                
+                <WrapPanel Margin="0,0,0,48">
+                    <!-- 主色 -->
+                    <Border Width="180" Height="100"
+                            Background="{DynamicResource PrimaryBrush}"
+                            CornerRadius="{StaticResource CardCornerRadius}"
+                            Margin="0,0,16,16">
+                        <StackPanel VerticalAlignment="Center"
+                                    HorizontalAlignment="Center">
+                            <TextBlock Text="主色"
+                                       Foreground="White"
+                                       FontWeight="Bold"
+                                       HorizontalAlignment="Center"/>
+                            <TextBlock Text="#0FA968"
+                                       Foreground="White"
+                                       FontSize="12"
+                                       HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                    
+                    <!-- 辅助色 -->
+                    <Border Width="180" Height="100"
+                            Background="{DynamicResource SecondaryBrush}"
+                            CornerRadius="{StaticResource CardCornerRadius}"
+                            Margin="0,0,16,16">
+                        <StackPanel VerticalAlignment="Center"
+                                    HorizontalAlignment="Center">
+                            <TextBlock Text="辅助色"
+                                       Foreground="White"
+                                       FontWeight="Bold"
+                                       HorizontalAlignment="Center"/>
+                            <TextBlock Text="#8B6F47"
+                                       Foreground="White"
+                                       FontSize="12"
+                                       HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                    
+                    <!-- 强调色 -->
+                    <Border Width="180" Height="100"
+                            Background="{DynamicResource AccentBrush}"
+                            CornerRadius="{StaticResource CardCornerRadius}"
+                            Margin="0,0,16,16">
+                        <StackPanel VerticalAlignment="Center"
+                                    HorizontalAlignment="Center">
+                            <TextBlock Text="强调色"
+                                       Foreground="White"
+                                       FontWeight="Bold"
+                                       HorizontalAlignment="Center"/>
+                            <TextBlock Text="#D2504A"
+                                       Foreground="White"
+                                       FontSize="12"
+                                       HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                    
+                    <!-- 成功色 -->
+                    <Border Width="180" Height="100"
+                            Background="{DynamicResource SuccessBrush}"
+                            CornerRadius="{StaticResource CardCornerRadius}"
+                            Margin="0,0,16,16">
+                        <StackPanel VerticalAlignment="Center"
+                                    HorizontalAlignment="Center">
+                            <TextBlock Text="成功"
+                                       Foreground="White"
+                                       FontWeight="Bold"
+                                       HorizontalAlignment="Center"/>
+                            <TextBlock Text="#52C41A"
+                                       Foreground="White"
+                                       FontSize="12"
+                                       HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                    
+                    <!-- 警告色 -->
+                    <Border Width="180" Height="100"
+                            Background="{DynamicResource WarningBrush}"
+                            CornerRadius="{StaticResource CardCornerRadius}"
+                            Margin="0,0,16,16">
+                        <StackPanel VerticalAlignment="Center"
+                                    HorizontalAlignment="Center">
+                            <TextBlock Text="警告"
+                                       Foreground="White"
+                                       FontWeight="Bold"
+                                       HorizontalAlignment="Center"/>
+                            <TextBlock Text="#FAAD14"
+                                       Foreground="White"
+                                       FontSize="12"
+                                       HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                    
+                    <!-- 错误色 -->
+                    <Border Width="180" Height="100"
+                            Background="{DynamicResource ErrorBrush}"
+                            CornerRadius="{StaticResource CardCornerRadius}"
+                            Margin="0,0,16,16">
+                        <StackPanel VerticalAlignment="Center"
+                                    HorizontalAlignment="Center">
+                            <TextBlock Text="错误"
+                                       Foreground="White"
+                                       FontWeight="Bold"
+                                       HorizontalAlignment="Center"/>
+                            <TextBlock Text="#F5222D"
+                                       Foreground="White"
+                                       FontSize="12"
+                                       HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                </WrapPanel>
+                
+                <!-- 字体系统 -->
+                <TextBlock Text="字体系统"
+                           Style="{StaticResource H2TextStyle}"
+                           Margin="0,0,0,24"/>
+                
+                <StackPanel Margin="0,0,0,48">
+                    <TextBlock Text="H1 标题 - 32px Bold"
+                               Style="{StaticResource H1TextStyle}"/>
+                    <TextBlock Text="H2 标题 - 28px SemiBold"
+                               Style="{StaticResource H2TextStyle}"/>
+                    <TextBlock Text="H3 标题 - 24px SemiBold"
+                               Style="{StaticResource H3TextStyle}"/>
+                    <TextBlock Text="H4 标题 - 20px Medium"
+                               Style="{StaticResource H4TextStyle}"/>
+                    <TextBlock Text="H5 标题 - 16px Medium"
+                               Style="{StaticResource H5TextStyle}"/>
+                    <TextBlock Text="H6 标题 - 14px Medium"
+                               Style="{StaticResource H6TextStyle}"/>
+                    <TextBlock Text="正文文字 - 14px Regular，这是一段较长的正文示例，用于展示行高和字间距的效果。中医药学是中华民族的瑰宝，凝聚着深邃的哲学智慧和中华民族几千年的健康养生理念及其实践经验。"
+                               Style="{StaticResource BodyTextStyle}"
+                               Width="600"
+                               HorizontalAlignment="Left"/>
+                    <TextBlock Text="辅助说明文字 - 12px Regular"
+                               Style="{StaticResource CaptionTextStyle}"/>
+                </StackPanel>
+                
+                <!-- 按钮系统 -->
+                <TextBlock Text="按钮系统"
+                           Style="{StaticResource H2TextStyle}"
+                           Margin="0,0,0,24"/>
+                
+                <WrapPanel Margin="0,0,0,48">
+                    <!-- 主要按钮 -->
+                    <StackPanel Margin="0,0,24,24">
+                        <TextBlock Text="主要按钮"
+                                   Style="{StaticResource CaptionTextStyle}"
+                                   Margin="0,0,0,8"/>
+                        <Button Content="开始看诊"
+                                Style="{StaticResource PrimaryButton}"
+                                Width="120"/>
+                    </StackPanel>
+                    
+                    <!-- 次要按钮 -->
+                    <StackPanel Margin="0,0,24,24">
+                        <TextBlock Text="次要按钮"
+                                   Style="{StaticResource CaptionTextStyle}"
+                                   Margin="0,0,0,8"/>
+                        <Button Content="查看详情"
+                                Style="{StaticResource SecondaryButton}"
+                                Width="120"/>
+                    </StackPanel>
+                    
+                    <!-- 文字按钮 -->
+                    <StackPanel Margin="0,0,24,24">
+                        <TextBlock Text="文字按钮"
+                                   Style="{StaticResource CaptionTextStyle}"
+                                   Margin="0,0,0,8"/>
+                        <Button Content="了解更多"
+                                Style="{StaticResource TextButton}"/>
+                    </StackPanel>
+                    
+                    <!-- 成功按钮 -->
+                    <StackPanel Margin="0,0,24,24">
+                        <TextBlock Text="成功按钮"
+                                   Style="{StaticResource CaptionTextStyle}"
+                                   Margin="0,0,0,8"/>
+                        <Button Content="保存处方"
+                                Style="{StaticResource SuccessButton}"
+                                Width="120"/>
+                    </StackPanel>
+                    
+                    <!-- 危险按钮 -->
+                    <StackPanel Margin="0,0,24,24">
+                        <TextBlock Text="危险按钮"
+                                   Style="{StaticResource CaptionTextStyle}"
+                                   Margin="0,0,0,8"/>
+                        <Button Content="删除记录"
+                                Style="{StaticResource DangerButton}"
+                                Width="120"/>
+                    </StackPanel>
+                    
+                    <!-- 图标按钮 -->
+                    <StackPanel Margin="0,0,24,24">
+                        <TextBlock Text="图标按钮"
+                                   Style="{StaticResource CaptionTextStyle}"
+                                   Margin="0,0,0,8"/>
+                        <StackPanel Orientation="Horizontal">
+                            <Button Style="{StaticResource IconButton}"
+                                    Margin="0,0,8,0">
+                                <TextBlock Text="&#xE710;"
+                                           FontFamily="{StaticResource IconFontFamily}"
+                                           FontSize="16"/>
+                            </Button>
+                            <Button Style="{StaticResource IconButton}"
+                                    Margin="0,0,8,0">
+                                <TextBlock Text="&#xE70F;"
+                                           FontFamily="{StaticResource IconFontFamily}"
+                                           FontSize="16"/>
+                            </Button>
+                            <Button Style="{StaticResource IconButton}">
+                                <TextBlock Text="&#xE74D;"
+                                           FontFamily="{StaticResource IconFontFamily}"
+                                           FontSize="16"/>
+                            </Button>
+                        </StackPanel>
+                    </StackPanel>
+                </WrapPanel>
+                
+                <!-- 输入控件 -->
+                <TextBlock Text="输入控件"
+                           Style="{StaticResource H2TextStyle}"
+                           Margin="0,0,0,24"/>
+                
+                <Grid Margin="0,0,0,48">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="350"/>
+                        <ColumnDefinition Width="50"/>
+                        <ColumnDefinition Width="350"/>
+                        <ColumnDefinition Width="50"/>
+                        <ColumnDefinition Width="350"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="24"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="24"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    
+                    <!-- 标准输入框 -->
+                    <StackPanel Grid.Column="0" Grid.Row="0">
+                        <TextBlock Text="标准输入框"
+                                   Style="{StaticResource CaptionTextStyle}"
+                                   Margin="0,0,0,8"/>
+                        <TextBox Style="{StaticResource ModernTextBox}"
+                                 Tag="请输入患者姓名"/>
+                    </StackPanel>
+                    
+                    <!-- 轮廓输入框 -->
+                    <StackPanel Grid.Column="2" Grid.Row="0">
+                        <TextBlock Text="轮廓输入框"
+                                   Style="{StaticResource CaptionTextStyle}"
+                                   Margin="0,0,0,8"/>
+                        <TextBox Style="{StaticResource OutlinedTextBox}"
+                                 Tag="请输入手机号码"/>
+                    </StackPanel>
+                    
+                    <!-- 填充输入框 -->
+                    <StackPanel Grid.Column="4" Grid.Row="0">
+                        <TextBlock Text="填充输入框"
+                                   Style="{StaticResource CaptionTextStyle}"
+                                   Margin="0,0,0,8"/>
+                        <TextBox Style="{StaticResource FilledTextBox}"
+                                 Tag="请输入身份证号"/>
+                    </StackPanel>
+                    
+                    <!-- 搜索框 -->
+                    <StackPanel Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="3">
+                        <TextBlock Text="搜索框"
+                                   Style="{StaticResource CaptionTextStyle}"
+                                   Margin="0,0,0,8"/>
+                        <TextBox Style="{StaticResource SearchTextBox}"
+                                 Tag="搜索患者、药材、处方..."/>
+                    </StackPanel>
+                    
+                    <!-- 多行文本框 -->
+                    <StackPanel Grid.Column="0" Grid.Row="4" Grid.ColumnSpan="5">
+                        <TextBlock Text="多行文本框"
+                                   Style="{StaticResource CaptionTextStyle}"
+                                   Margin="0,0,0,8"/>
+                        <TextBox Style="{StaticResource OutlinedTextBox}"
+                                 Tag="请输入病情描述"
+                                 Height="100"
+                                 TextWrapping="Wrap"
+                                 AcceptsReturn="True"
+                                 VerticalScrollBarVisibility="Auto"/>
+                    </StackPanel>
+                </Grid>
+                
+                <!-- 卡片展示 -->
+                <TextBlock Text="卡片样式"
+                           Style="{StaticResource H2TextStyle}"
+                           Margin="0,0,0,24"/>
+                
+                <WrapPanel Margin="0,0,0,48">
+                    <!-- 患者卡片 -->
+                    <Border Width="320" 
+                            Background="{DynamicResource SurfaceBrush}"
+                            CornerRadius="{StaticResource CardCornerRadius}"
+                            Margin="0,0,16,16">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="8" 
+                                              ShadowDepth="2" 
+                                              Direction="270" 
+                                              Color="{StaticResource ShadowLightColor}" 
+                                              Opacity="0.2"/>
+                        </Border.Effect>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            
+                            <!-- 头部 -->
+                            <Border Grid.Row="0"
+                                    Background="{DynamicResource PrimaryGradientBrush}"
+                                    CornerRadius="12,12,0,0"
+                                    Height="60">
+                                <TextBlock Text="患者信息"
+                                           Foreground="White"
+                                           FontSize="18"
+                                           FontWeight="SemiBold"
+                                           VerticalAlignment="Center"
+                                           Margin="20,0"/>
+                            </Border>
+                            
+                            <!-- 内容 -->
+                            <StackPanel Grid.Row="1"
+                                        Margin="{StaticResource CardPadding}">
+                                <Grid Margin="0,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0"
+                                               Text="姓名："
+                                               Foreground="{DynamicResource TextSecondaryBrush}"
+                                               Margin="0,0,8,0"/>
+                                    <TextBlock Grid.Column="1"
+                                               Text="张三"
+                                               FontWeight="Medium"/>
+                                </Grid>
+                                <Grid Margin="0,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0"
+                                               Text="年龄："
+                                               Foreground="{DynamicResource TextSecondaryBrush}"
+                                               Margin="0,0,8,0"/>
+                                    <TextBlock Grid.Column="1"
+                                               Text="45岁"/>
+                                </Grid>
+                                <Grid Margin="0,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0"
+                                               Text="电话："
+                                               Foreground="{DynamicResource TextSecondaryBrush}"
+                                               Margin="0,0,8,0"/>
+                                    <TextBlock Grid.Column="1"
+                                               Text="138****5678"/>
+                                </Grid>
+                            </StackPanel>
+                            
+                            <!-- 底部操作 -->
+                            <Border Grid.Row="2"
+                                    BorderBrush="{DynamicResource BorderLightBrush}"
+                                    BorderThickness="0,1,0,0">
+                                <StackPanel Orientation="Horizontal"
+                                            HorizontalAlignment="Right"
+                                            Margin="16,12">
+                                    <Button Content="查看病历"
+                                            Style="{StaticResource TextButton}"
+                                            Margin="0,0,8,0"/>
+                                    <Button Content="开始看诊"
+                                            Style="{StaticResource PrimaryButton}"
+                                            Width="100"/>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </Border>
+                    
+                    <!-- 处方卡片 -->
+                    <Border Width="320" 
+                            Background="{DynamicResource SurfaceBrush}"
+                            CornerRadius="{StaticResource CardCornerRadius}"
+                            Margin="0,0,16,16">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="8" 
+                                              ShadowDepth="2" 
+                                              Direction="270" 
+                                              Color="{StaticResource ShadowLightColor}" 
+                                              Opacity="0.2"/>
+                        </Border.Effect>
+                        <StackPanel Margin="{StaticResource CardPadding}">
+                            <TextBlock Text="经典验方"
+                                       Style="{StaticResource H5TextStyle}"
+                                       Margin="0,0,0,16"/>
+                            <TextBlock Text="麻黄汤"
+                                       Style="{StaticResource H4TextStyle}"
+                                       Foreground="{DynamicResource PrimaryBrush}"
+                                       Margin="0,0,0,8"/>
+                            <TextBlock Text="主治：外感风寒表实证"
+                                       Style="{StaticResource BodyTextStyle}"
+                                       Margin="0,0,0,8"/>
+                            <TextBlock Text="组成：麻黄、桂枝、杏仁、甘草"
+                                       Style="{StaticResource CaptionTextStyle}"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"/>
+                            <StackPanel Orientation="Horizontal"
+                                        Margin="0,16,0,0">
+                                <Button Content="查看详情"
+                                        Style="{StaticResource SecondaryButton}"
+                                        Width="100"
+                                        Height="32"
+                                        Margin="0,0,8,0"/>
+                                <Button Content="应用处方"
+                                        Style="{StaticResource PrimaryButton}"
+                                        Width="100"
+                                        Height="32"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+                </WrapPanel>
+                
+            </StackPanel>
+        </ScrollViewer>
+        
+        <!-- 浮动操作按钮 -->
+        <Button Style="{StaticResource FloatingActionButton}"
+                Grid.Row="1"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Bottom"
+                Margin="32">
+            <TextBlock Text="&#xE710;"
+                       FontFamily="{StaticResource IconFontFamily}"
+                       FontSize="24"/>
+        </Button>
+    </Grid>
+</Window>

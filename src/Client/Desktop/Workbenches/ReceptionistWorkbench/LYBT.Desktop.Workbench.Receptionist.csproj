@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net8.0-windows</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<UseWPF>true</UseWPF>
+		<AssemblyName>LYBT.Desktop.Workbench.Receptionist</AssemblyName>
+		<RootNamespace>LYBT.Desktop.Workbench.Receptionist</RootNamespace>
+		<AssemblyTitle>凌隐宝堂中医诊所管理系统 - 前台工作台</AssemblyTitle>
+		<AssemblyDescription>前台工作台，包含患者接待、预约管理等功能</AssemblyDescription>
+		<AssemblyProduct>凌隐宝堂中医诊所管理系统</AssemblyProduct>
+		<AssemblyCompany>凌隐宝堂</AssemblyCompany>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Prism.DryIoc" Version="8.1.97" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Core\LYBT.Desktop.Workbench.Core.csproj" />
+		<ProjectReference Include="..\..\Core\LYBT.Desktop.Core.csproj" />
+		<ProjectReference Include="..\..\Services\LYBT.Desktop.Services.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Resource Include="Resources\ReceptionistTheme.xaml" />
+	</ItemGroup>
+
+</Project>

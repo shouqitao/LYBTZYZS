@@ -1,0 +1,77 @@
+{
+  "ClinicSettings": {
+    "Basic": {
+      "Name": "凌隐宝堂中医诊所",
+      "Address": "苏州市姑苏区人民路1号",
+      "Phone": "0512-88888888",
+      "Email": "info@lybt-clinic.com",
+      "Logo": "assets/logo.png",
+      "Slogan": "传承中医智慧，呵护百姓健康"
+    },
+    "Prescription": {
+      "Prefix": "RX",
+      "DefaultDosage": 7,
+      "DefaultUsage": "每日1剂，水煎服，分早晚两次温服",
+      "PrintCopies": 2,
+      "ShowPrice": true,
+      "ShowDiagnosis": true,
+      "RequireSignature": true
+    },
+    "Pricing": {
+      "Currency": "CNY",
+      "CurrencySymbol": "￥",
+      "DefaultDiscountRules": {
+        "Doctor": {
+          "MinDiscount": 0.8,
+          "MaxDiscount": 1.0
+        },
+        "ChiefDoctor": {
+          "MinDiscount": 0.7,
+          "MaxDiscount": 1.0
+        },
+        "Admin": {
+          "MinDiscount": 0.0,
+          "MaxDiscount": 1.0
+        }
+      }
+    },
+    "System": {
+      "SystemName": "凌隐宝堂中医诊所诊疗系统",
+      "Version": "1.0.0",
+      "MultiClinicMode": false,
+      "DataIsolation": false,
+      "EnableAudit": true
+    },
+    "PrintTemplate": {
+      "PageSize": "A5",
+      "Orientation": "Portrait",
+      "MarginTop": 10,
+      "MarginBottom": 10,
+      "MarginLeft": 15,
+      "MarginRight": 15,
+      "FontFamily": "Microsoft YaHei",
+      "FontSize": 12,
+      "HeaderHeight": 80,
+      "FooterHeight": 60,
+      "ShowLogo": true,
+      "ShowQRCode": false
+    },
+    "BusinessRules": {
+      "AllowPrescriptionModification": true,
+      "PrescriptionModificationTimeLimit": 1440,
+      "AllowCrossDoctorQuery": true,
+      "RequirePatientConsent": false,
+      "AutoGeneratePrescriptionNumber": true,
+      "TrackPrintHistory": true
+    },
+    "Features": {
+      "EnableFormulaSharing": true,
+      "EnableHistoricalImport": true,
+      "EnablePriceCalculation": true,
+      "EnableStatistics": true,
+      "EnableBatchPrescription": false,
+      "EnableVoiceInput": false,
+      "EnableAIAssistant": false
+    }
+  }
+}

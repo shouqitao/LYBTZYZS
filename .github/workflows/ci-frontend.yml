@@ -1,0 +1,288 @@
+# 凌隐宝堂前端CI流水线 - UltraThink重构CI/CD架构
+name: Frontend CI Pipeline
+
+on:
+  push:
+    branches: [ main, develop, release/* ]
+    paths:
+      - 'src/Frontend/**'
+      - '.github/workflows/ci-frontend.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'src/Frontend/**'
+
+env:
+  DOTNET_VERSION: '8.0.x'
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  # ==================== WPF桌面客户端构建 ====================
+  wpf-build:
+    name: WPF客户端构建
+    runs-on: windows-latest
+    
+    steps:
+    - name: 📥 检出代码
+      uses: actions/checkout@v5
+
+    - name: 🔧 安装.NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: 📦 恢复NuGet缓存
+      uses: actions/cache@v3
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-wpf-${{ hashFiles('**/packages.lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-wpf-
+
+    - name: 📚 恢复依赖
+      run: dotnet restore LYBT.Desktop.sln
+
+    - name: 🔨 构建WPF应用
+      run: |
+        dotnet build LYBT.Desktop.sln --configuration Release --no-restore
+        
+    - name: 🧪 运行WPF单元测试
+      run: |
+        dotnet test tests/LYBT.Desktop.Tests/LYBT.Desktop.Tests.csproj `
+          --configuration Release `
+          --no-build `
+          --logger "trx;LogFileName=wpf-test-results.trx"
+      continue-on-error: true
+
+    - name: 📦 发布WPF应用
+      run: |
+        dotnet publish src/Frontend/Desktop/Shell/LYBT.WPF.Client.Shell.csproj `
+          --configuration Release `
+          --output ./publish/wpf `
+          --runtime win-x64 `
+          --self-contained true `
+          -p:PublishSingleFile=true `
+          -p:PublishReadyToRun=true `
+          -p:IncludeNativeLibrariesForSelfExtract=true
+
+    - name: 🔑 代码签名
+      run: |
+        # 使用证书签名（需要配置证书）
+        # signtool sign /f ${{ secrets.CERT_FILE }} /p ${{ secrets.CERT_PASSWORD }} /t http://timestamp.digicert.com ./publish/wpf/*.exe
+        echo "Code signing skipped in CI environment"
+      continue-on-error: true
+
+    - name: 📤 上传WPF构建产物
+      uses: actions/upload-artifact@v3
+      with:
+        name: wpf-client
+        path: ./publish/wpf/
+
+  # ==================== 代码质量检查 ====================
+  code-quality:
+    name: 前端代码质量
+    runs-on: windows-latest
+    
+    steps:
+    - name: 📥 检出代码
+      uses: actions/checkout@v5
+
+    - name: 🔧 安装.NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: 🔍 XAML语法检查
+      run: |
+        # 检查XAML文件语法
+        $xamlFiles = Get-ChildItem -Path src/Frontend -Include *.xaml -Recurse
+        $errors = 0
+        foreach ($file in $xamlFiles) {
+          try {
+            [xml]$xaml = Get-Content $file.FullName
+          } catch {
+            Write-Error "XAML syntax error in $($file.FullName): $_"
+            $errors++
+          }
+        }
+        if ($errors -gt 0) {
+          exit 1
+        }
+
+    - name: 🎨 代码风格检查
+      run: |
+        dotnet tool install -g dotnet-format
+        dotnet format LYBT.Desktop.sln --verify-no-changes --verbosity diagnostic
+
+    - name: 📊 代码分析
+      run: |
+        dotnet build LYBT.Desktop.sln --configuration Release /p:TreatWarningsAsErrors=true
+
+  # ==================== UI自动化测试 ====================
+  ui-test:
+    name: UI自动化测试
+    runs-on: windows-latest
+    needs: wpf-build
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
+    
+    steps:
+    - name: 📥 检出代码
+      uses: actions/checkout@v5
+
+    - name: 🔧 安装.NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: 📥 下载WPF客户端
+      uses: actions/download-artifact@v3
+      with:
+        name: wpf-client
+        path: ./wpf-client
+
+    - name: 🤖 运行UI自动化测试
+      run: |
+        # 安装WinAppDriver（如果需要）
+        # 运行UI自动化测试
+        echo "UI automation tests would run here"
+      continue-on-error: true
+
+    - name: 📊 上传测试报告
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: ui-test-results
+        path: ./test-results/
+
+  # ==================== 安装包制作 ====================
+  create-installer:
+    name: 制作安装包
+    runs-on: windows-latest
+    needs: [wpf-build, code-quality]
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/release/'))
+    
+    steps:
+    - name: 📥 检出代码
+      uses: actions/checkout@v5
+
+    - name: 📥 下载WPF客户端
+      uses: actions/download-artifact@v3
+      with:
+        name: wpf-client
+        path: ./wpf-client
+
+    - name: 🔧 安装Inno Setup
+      run: |
+        choco install innosetup -y
+        
+    - name: 📦 创建安装程序
+      run: |
+        # 创建Inno Setup脚本
+        @"
+        [Setup]
+        AppName=凌隐宝堂中医诊所管理系统
+        AppVersion=${{ github.run_number }}
+        DefaultDirName={pf}\LYBT
+        DefaultGroupName=凌隐宝堂
+        OutputDir=.
+        OutputBaseFilename=LYBT-Setup-${{ github.run_number }}
+        Compression=lzma2
+        SolidCompression=yes
+        SetupIconFile=assets\icon.ico
+        UninstallDisplayIcon={app}\LYBT.exe
+        
+        [Languages]
+        Name: "chinese"; MessagesFile: "compiler:Languages\ChineseSimplified.isl"
+        
+        [Files]
+        Source: "wpf-client\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs
+        
+        [Icons]
+        Name: "{group}\凌隐宝堂中医诊所管理系统"; Filename: "{app}\LYBT.WPF.Client.Shell.exe"
+        Name: "{group}\卸载"; Filename: "{uninstallexe}"
+        Name: "{commondesktop}\凌隐宝堂"; Filename: "{app}\LYBT.WPF.Client.Shell.exe"
+        
+        [Run]
+        Filename: "{app}\LYBT.WPF.Client.Shell.exe"; Description: "启动凌隐宝堂系统"; Flags: nowait postinstall skipifsilent
+        "@ | Out-File -FilePath setup.iss -Encoding UTF8
+        
+        # 编译安装程序
+        & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" setup.iss
+
+    - name: 📤 上传安装包
+      uses: actions/upload-artifact@v3
+      with:
+        name: installer
+        path: LYBT-Setup-*.exe
+
+  # ==================== 版本发布 ====================
+  release:
+    name: 创建版本发布
+    runs-on: ubuntu-latest
+    needs: [wpf-build, create-installer]
+    if: startsWith(github.ref, 'refs/tags/v')
+    
+    steps:
+    - name: 📥 检出代码
+      uses: actions/checkout@v5
+
+    - name: 📥 下载所有构建产物
+      uses: actions/download-artifact@v3
+
+    - name: 📝 生成更新日志
+      id: changelog
+      run: |
+        echo "# 更新日志" > CHANGELOG.md
+        echo "" >> CHANGELOG.md
+        git log --pretty=format:"- %s" $(git describe --tags --abbrev=0 HEAD^)..HEAD >> CHANGELOG.md
+        
+    - name: 🏷️ 创建GitHub Release
+      uses: softprops/action-gh-release@v1
+      with:
+        body_path: CHANGELOG.md
+        files: |
+          wpf-client/*
+          installer/*.exe
+        draft: false
+        prerelease: ${{ contains(github.ref, 'beta') || contains(github.ref, 'rc') }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ==================== 通知 ====================
+  notify:
+    name: 发送通知
+    runs-on: ubuntu-latest
+    needs: [wpf-build, code-quality]
+    if: always()
+    
+    steps:
+    - name: 📧 计算构建状态
+      id: status
+      run: |
+        if [[ "${{ needs.wpf-build.result }}" == "success" && "${{ needs.code-quality.result }}" == "success" ]]; then
+          echo "status=success" >> $GITHUB_OUTPUT
+          echo "emoji=✅" >> $GITHUB_OUTPUT
+        else
+          echo "status=failure" >> $GITHUB_OUTPUT
+          echo "emoji=❌" >> $GITHUB_OUTPUT
+        fi
+
+    - name: 💬 发送通知
+      run: |
+        curl -X POST ${{ secrets.NOTIFICATION_WEBHOOK }} \
+          -H 'Content-Type: application/json' \
+          -d '{
+            "text": "${{ steps.status.outputs.emoji }} Frontend CI Pipeline",
+            "attachments": [{
+              "color": "${{ steps.status.outputs.status == 'success' && 'good' || 'danger' }}",
+              "fields": [
+                {"title": "Status", "value": "${{ steps.status.outputs.status }}", "short": true},
+                {"title": "Branch", "value": "${{ github.ref_name }}", "short": true},
+                {"title": "Commit", "value": "${{ github.sha }}", "short": false},
+                {"title": "Author", "value": "${{ github.actor }}", "short": true},
+                {"title": "Job", "value": "${{ github.workflow }}", "short": true}
+              ]
+            }]
+          }'
+      if: always() && env.NOTIFICATION_WEBHOOK != ''

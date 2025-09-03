@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>    
+    <ImplicitUsings>enable</ImplicitUsings>
+    <BaseOutputPath>..\BIN</BaseOutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="obj\**" />
+    <EmbeddedResource Remove="obj\**" />
+    <None Remove="obj\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.17" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
+  </ItemGroup>
+
+  <!-- 构建时复制文档文件到统一文档目录 -->
+  <Target Name="CopyDocumentationFiles" AfterTargets="Build">
+    <ItemGroup>
+      <DocumentationFiles Include="*.md" />
+    </ItemGroup>
+    <Copy SourceFiles="@(DocumentationFiles)" DestinationFiles="@(DocumentationFiles->'$(MSBuildProjectDirectory)\..\Documentation\$(MSBuildProjectName)_%(Filename)%(Extension)')" SkipUnchangedFiles="true" ContinueOnError="true" />
+  </Target>
+
+</Project>

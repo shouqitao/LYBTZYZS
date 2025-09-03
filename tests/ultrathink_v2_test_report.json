@@ -1,0 +1,48 @@
+{
+  "timestamp": "2025-08-19T15:06:48.487582",
+  "base_url": "https://localhost:7007",
+  "test_results": [
+    {
+      "timestamp": "2025-08-19T15:06:48.111945",
+      "module": "System",
+      "test": "数据库连接",
+      "success": true,
+      "message": "数据库连接状态: True"
+    },
+    {
+      "timestamp": "2025-08-19T15:06:48.149311",
+      "module": "System",
+      "test": "数据库表检查",
+      "success": true,
+      "message": "发现 23 个数据库表"
+    },
+    {
+      "timestamp": "2025-08-19T15:06:48.220183",
+      "module": "Users",
+      "test": "用户列表查询",
+      "success": true,
+      "message": "系统中共有 6 个用户"
+    },
+    {
+      "timestamp": "2025-08-19T15:06:48.253723",
+      "module": "Patients",
+      "test": "患者列表查询",
+      "success": true,
+      "message": "系统中共有 2 个患者"
+    },
+    {
+      "timestamp": "2025-08-19T15:06:48.275605",
+      "module": "Herbs",
+      "test": "中药材列表查询",
+      "success": true,
+      "message": "系统中共有 28 种中药材"
+    },
+    {
+      "timestamp": "2025-08-19T15:06:48.438716",
+      "module": "API",
+      "test": "Swagger文档",
+      "success": true,
+      "message": "发现 88 个API端点"
+    }
+  ]
+}

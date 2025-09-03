@@ -1,0 +1,52 @@
+<prism:PrismApplication x:Class="LYBT.Desktop.Shell.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:prism="http://prismlibrary.com/"
+             xmlns:converters="clr-namespace:LYBT.Desktop.Core.Converters;assembly=LYBT.Desktop.Core"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <!-- 引入通用样式 -->
+                <ResourceDictionary Source="Styles/CommonStyles.xaml"/>
+                
+                <!-- UltraThink 统一资源字典 - 内联定义避免路径问题 -->
+                <ResourceDictionary>
+                    <!-- 基础转换器 -->
+                    <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+                    <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+                    
+                    <!-- Core转换器 -->
+                    <converters:FirstCharacterConverter x:Key="FirstCharacterConverter"/>
+                    <converters:GenderToTextConverter x:Key="GenderToTextConverter"/>
+                    <converters:BooleanToBackgroundConverter x:Key="BooleanToBackgroundConverter"/>
+                    <converters:IDNumberMaskConverter x:Key="IDNumberMaskConverter"/>
+                    <converters:ItemIndexConverter x:Key="ItemIndexConverter"/>
+                    <converters:StockStatusConverter x:Key="StockStatusConverter"/>
+                    <converters:InvertBooleanConverter x:Key="InvertBooleanConverter"/>
+                    <converters:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter"/>
+                    <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
+                    <converters:IndexToNumberConverter x:Key="IndexToNumberConverter"/>
+                    <converters:ZeroToVisibilityConverter x:Key="ZeroToVisibilityConverter"/>
+                    <converters:EmptyStringToVisibilityConverter x:Key="EmptyStringToVisibilityConverter"/>
+                </ResourceDictionary>
+            </ResourceDictionary.MergedDictionaries>
+            
+            <!-- 应用级全局样式覆盖 -->
+            <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+                <Setter Property="FontFamily" Value="Microsoft YaHei"/>
+            </Style>
+            
+            <Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+                <Setter Property="FontFamily" Value="Microsoft YaHei"/>
+                <Setter Property="VerticalContentAlignment" Value="Center"/>
+            </Style>
+            
+            <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                <Setter Property="FontFamily" Value="Microsoft YaHei"/>
+            </Style>
+        </ResourceDictionary>
+    </Application.Resources>
+</prism:PrismApplication>

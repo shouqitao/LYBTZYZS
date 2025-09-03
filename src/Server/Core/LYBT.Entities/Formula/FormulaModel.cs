@@ -1,0 +1,62 @@
+using LYBT.Shared.Models.Enums;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace LYBT.Entities.Formula
+{
+    /// <summary>
+    /// 验方实体 - UltraThink v2.0架构简化版
+    /// 合并了原BaseFormula和FormulaModel，包含完整的验方信息
+    /// 验方为模板，不含价格计算，只定义药材组成和剂量
+    /// </summary>
+    [Table("Formulas")]
+    public class Formula
+    {
+        /// <summary>验方唯一标识</summary>
+        [Key]
+        [DisplayName("验方ID")]
+        public Guid Id { get; set; }
+
+        /// <summary>验方名称</summary>
+        [Required]
+        [StringLength(100)]
+        [DisplayName("验方名称")]
+        public string Name { get; set; } = string.Empty;
+
+        /// <summary>功效</summary>
+        [StringLength(500)]
+        [DisplayName("功效")]
+        public string? Effect { get; set; }
+
+        /// <summary>用法</summary>
+        [StringLength(500)]
+        [DisplayName("用法")]
+        public string? Usage { get; set; }
+
+        /// <summary>备注</summary>
+        [StringLength(500)]
+        [DisplayName("备注")]
+        public string? Remark { get; set; }
+
+        /// <summary>性味归经</summary>
+        [StringLength(200)]
+        [DisplayName("性味归经")]
+        public string? Property { get; set; }
+
+        /// <summary>验方状态</summary>
+        [DisplayName("状态")]
+        public CommonStatus Status { get; set; } = CommonStatus.Enabled;
+
+        /// <summary>是否共享</summary>
+        [DisplayName("是否共享")]
+        public bool IsShared { get; set; } = false;
+
+        /// <summary>
+        /// 药材组成（方剂中包含的药材列表）
+        /// </summary>
+        [DisplayName("药材组成")]
+        public List<FormulaHerbItem> Herbs { get; set; } = new();
+    }
+
+}

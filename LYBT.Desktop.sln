@@ -1,0 +1,90 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{A1234567-1234-1234-1234-123456789020}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BusinessModules", "BusinessModules", "{B1234567-1234-1234-1234-123456789999}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Workbenches", "Workbenches", "{C1234567-1234-1234-1234-123456789010}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SharedResources", "SharedResources", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Shell", "src\Client\Desktop\Shell\LYBT.Desktop.Shell.csproj", "{A1234567-1234-1234-1234-123456789001}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Core", "src\Client\Desktop\Core\LYBT.Desktop.Core.csproj", "{A1234567-1234-1234-1234-123456789002}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Services", "src\Client\Desktop\Services\LYBT.Desktop.Services.csproj", "{A1234567-1234-1234-1234-123456789003}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Infrastructure", "src\Client\Desktop\Infrastructure\LYBT.Desktop.Infrastructure.csproj", "{A1234567-1234-1234-1234-123456789004}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Workbench.Core", "src\Client\Desktop\Workbenches\Core\LYBT.Desktop.Workbench.Core.csproj", "{C1234567-1234-1234-1234-123456789001}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Workbench.Admin", "src\Client\Desktop\Workbenches\SystemWorkbench\LYBT.Desktop.Workbench.Admin.csproj", "{C1234567-1234-1234-1234-123456789002}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Workbench.Consultation", "src\Client\Desktop\Workbenches\ConsultationWorkbench\LYBT.Desktop.Workbench.Consultation.csproj", "{C1234567-1234-1234-1234-123456789003}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.Shared.Models", "src\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj", "{91CD7DC5-E0DC-8F45-7AE9-4F1243389D2A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.Shared.Utilities", "src\Shared\LYBT.Shared.Utilities\LYBT.Shared.Utilities.csproj", "{92CD7DC5-E0DC-8F45-7AE9-4F1243389D2B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A1234567-1234-1234-1234-123456789001}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A1234567-1234-1234-1234-123456789001}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A1234567-1234-1234-1234-123456789001}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A1234567-1234-1234-1234-123456789001}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A1234567-1234-1234-1234-123456789002}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A1234567-1234-1234-1234-123456789002}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A1234567-1234-1234-1234-123456789002}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A1234567-1234-1234-1234-123456789002}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A1234567-1234-1234-1234-123456789003}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A1234567-1234-1234-1234-123456789003}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A1234567-1234-1234-1234-123456789003}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A1234567-1234-1234-1234-123456789003}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A1234567-1234-1234-1234-123456789004}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A1234567-1234-1234-1234-123456789004}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A1234567-1234-1234-1234-123456789004}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A1234567-1234-1234-1234-123456789004}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C1234567-1234-1234-1234-123456789001}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C1234567-1234-1234-1234-123456789001}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C1234567-1234-1234-1234-123456789001}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C1234567-1234-1234-1234-123456789001}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C1234567-1234-1234-1234-123456789002}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C1234567-1234-1234-1234-123456789002}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C1234567-1234-1234-1234-123456789002}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C1234567-1234-1234-1234-123456789002}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C1234567-1234-1234-1234-123456789003}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C1234567-1234-1234-1234-123456789003}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C1234567-1234-1234-1234-123456789003}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C1234567-1234-1234-1234-123456789003}.Release|Any CPU.Build.0 = Release|Any CPU
+		{91CD7DC5-E0DC-8F45-7AE9-4F1243389D2A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{91CD7DC5-E0DC-8F45-7AE9-4F1243389D2A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{91CD7DC5-E0DC-8F45-7AE9-4F1243389D2A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{91CD7DC5-E0DC-8F45-7AE9-4F1243389D2A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{92CD7DC5-E0DC-8F45-7AE9-4F1243389D2B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{92CD7DC5-E0DC-8F45-7AE9-4F1243389D2B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{92CD7DC5-E0DC-8F45-7AE9-4F1243389D2B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{92CD7DC5-E0DC-8F45-7AE9-4F1243389D2B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{A1234567-1234-1234-1234-123456789002} = {A1234567-1234-1234-1234-123456789020}
+		{A1234567-1234-1234-1234-123456789003} = {A1234567-1234-1234-1234-123456789020}
+		{A1234567-1234-1234-1234-123456789004} = {A1234567-1234-1234-1234-123456789020}
+		{C1234567-1234-1234-1234-123456789001} = {C1234567-1234-1234-1234-123456789010}
+		{C1234567-1234-1234-1234-123456789002} = {C1234567-1234-1234-1234-123456789010}
+		{C1234567-1234-1234-1234-123456789003} = {C1234567-1234-1234-1234-123456789010}
+		{91CD7DC5-E0DC-8F45-7AE9-4F1243389D2A} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{92CD7DC5-E0DC-8F45-7AE9-4F1243389D2B} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F1234567-1234-1234-1234-123456789000}
+	EndGlobalSection
+EndGlobal

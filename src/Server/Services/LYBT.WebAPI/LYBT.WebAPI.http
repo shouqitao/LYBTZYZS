@@ -1,0 +1,54 @@
+@LYBT.WebAPI_HostAddress = http://localhost:5297
+@ApiVersion = v1
+
+# 认证相关接口测试
+###
+# 用户登录
+POST {{LYBT.WebAPI_HostAddress}}/api/{{ApiVersion}}/auth/login
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "123456",
+  "clientIp": "127.0.0.1",
+  "userAgent": "HTTP Client"
+}
+
+###
+# 修改管理员密码
+POST {{LYBT.WebAPI_HostAddress}}/api/{{ApiVersion}}/auth/changeSysAdminPassword
+Content-Type: application/json
+
+{
+  "currentPassword": "123456",
+  "newPassword": "newpassword123"
+}
+
+###
+# 用户登出
+POST {{LYBT.WebAPI_HostAddress}}/api/{{ApiVersion}}/auth/logout
+Content-Type: application/json
+
+{
+  "userId": "user-guid-here"
+}
+
+# Swagger 文档访问
+###
+GET {{LYBT.WebAPI_HostAddress}}/swagger/index.html
+
+###
+GET {{LYBT.WebAPI_HostAddress}}/swagger/v1/swagger.json
+
+# 其他模块示例（需要认证Token）
+###
+# 获取用户列表（需要Bearer Token）
+GET {{LYBT.WebAPI_HostAddress}}/api/{{ApiVersion}}/users
+Authorization: Bearer {{access_token}}
+
+###
+# 获取患者列表（需要Bearer Token）
+GET {{LYBT.WebAPI_HostAddress}}/api/{{ApiVersion}}/patients
+Authorization: Bearer {{access_token}}
+
+###

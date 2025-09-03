@@ -1,0 +1,259 @@
+name: 发布版本
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: '版本号 (例如: 1.0.0)'
+        required: true
+        type: string
+
+env:
+  DOTNET_VERSION: '8.0.x'
+  DOTNET_NOLOGO: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  build-release:
+    name: 构建发布版本
+    runs-on: windows-latest
+    
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v5
+
+    - name: 确定版本号
+      id: version
+      run: |
+        if ("${{ github.event_name }}" -eq "push") {
+          $version = "${{ github.ref_name }}".TrimStart('v')
+        } else {
+          $version = "${{ github.event.inputs.version }}"
+        }
+        echo "version=$version" >> $env:GITHUB_OUTPUT
+        echo "使用版本号: $version"
+
+    - name: 设置 .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: 还原依赖包
+      run: dotnet restore LYBT.All.sln
+
+    - name: 运行测试
+      run: |
+        dotnet test LYBT.All.sln `
+          --configuration Release `
+          --no-restore `
+          --verbosity minimal
+
+    - name: 发布 Web API
+      run: |
+        dotnet publish src/Backend/Services/LYBT.WebAPI/LYBT.WebAPI.csproj `
+          --configuration Release `
+          --output ./publish/api `
+          --no-restore `
+          -p:PublishSingleFile=false `
+          -p:Version=${{ steps.version.outputs.version }}
+
+    - name: 发布 WPF 客户端 (x64)
+      run: |
+        dotnet publish src/Frontend/Desktop/Shell/LYBT.WPF.Client.Shell.csproj `
+          --configuration Release `
+          --output ./publish/desktop-x64 `
+          --no-restore `
+          --self-contained true `
+          --runtime win-x64 `
+          -p:PublishSingleFile=true `
+          -p:Version=${{ steps.version.outputs.version }}
+
+    - name: 发布 WPF 客户端 (x86)
+      run: |
+        dotnet publish src/Frontend/Desktop/Shell/LYBT.WPF.Client.Shell.csproj `
+          --configuration Release `
+          --output ./publish/desktop-x86 `
+          --no-restore `
+          --self-contained true `
+          --runtime win-x86 `
+          -p:PublishSingleFile=true `
+          -p:Version=${{ steps.version.outputs.version }}
+
+    - name: 创建部署脚本
+      run: |
+        @"
+        @echo off
+        echo 凌隐宝堂中医诊所诊疗系统 v${{ steps.version.outputs.version }} 部署工具
+        echo ========================================
+        echo.
+        echo 1. 部署 API 服务
+        echo 2. 安装桌面客户端
+        echo 3. 完整安装
+        echo.
+        set /p choice=请选择操作 (1-3): 
+        
+        if "%choice%"=="1" goto deploy_api
+        if "%choice%"=="2" goto install_desktop  
+        if "%choice%"=="3" goto full_install
+        goto end
+        
+        :deploy_api
+        echo 正在部署 API 服务...
+        xcopy /s /y api\* "%ProgramFiles%\LYBT\API\"
+        echo API 服务部署完成！
+        goto end
+        
+        :install_desktop
+        echo 正在安装桌面客户端...
+        xcopy /s /y desktop\* "%ProgramFiles%\LYBT\Client\"
+        echo 桌面客户端安装完成！
+        goto end
+        
+        :full_install
+        echo 正在执行完整安装...
+        xcopy /s /y api\* "%ProgramFiles%\LYBT\API\"
+        xcopy /s /y desktop\* "%ProgramFiles%\LYBT\Client\"
+        echo 完整安装完成！
+        
+        :end
+        pause
+        "@ | Out-File -FilePath ./publish/deploy.bat -Encoding ASCII
+
+    - name: 创建版本信息文件
+      run: |
+        @{
+          Version = "${{ steps.version.outputs.version }}"
+          BuildDate = (Get-Date).ToString("yyyy-MM-dd HH:mm:ss")
+          CommitHash = "${{ github.sha }}"
+          BuildNumber = "${{ github.run_number }}"
+        } | ConvertTo-Json | Out-File -FilePath ./publish/version.json
+
+    - name: 打包发布文件
+      run: |
+        # API 包
+        Compress-Archive -Path ./publish/api/* -DestinationPath ./LYBT-API-v${{ steps.version.outputs.version }}.zip
+        
+        # 桌面客户端包
+        Compress-Archive -Path ./publish/desktop-x64/* -DestinationPath ./LYBT-Desktop-x64-v${{ steps.version.outputs.version }}.zip
+        Compress-Archive -Path ./publish/desktop-x86/* -DestinationPath ./LYBT-Desktop-x86-v${{ steps.version.outputs.version }}.zip
+        
+        # 完整部署包
+        New-Item -ItemType Directory -Path ./full-package/api -Force
+        New-Item -ItemType Directory -Path ./full-package/desktop -Force
+        Copy-Item -Path ./publish/api/* -Destination ./full-package/api/ -Recurse
+        Copy-Item -Path ./publish/desktop-x64/* -Destination ./full-package/desktop/ -Recurse
+        Copy-Item -Path ./publish/deploy.bat -Destination ./full-package/
+        Copy-Item -Path ./publish/version.json -Destination ./full-package/
+        Compress-Archive -Path ./full-package/* -DestinationPath ./LYBT-Full-v${{ steps.version.outputs.version }}.zip
+
+    - name: 上传发布包
+      uses: actions/upload-artifact@v4
+      with:
+        name: release-packages
+        path: |
+          ./LYBT-API-v${{ steps.version.outputs.version }}.zip
+          ./LYBT-Desktop-x64-v${{ steps.version.outputs.version }}.zip
+          ./LYBT-Desktop-x86-v${{ steps.version.outputs.version }}.zip
+          ./LYBT-Full-v${{ steps.version.outputs.version }}.zip
+        retention-days: 90
+
+  create-release:
+    name: 创建 GitHub Release
+    runs-on: ubuntu-latest
+    needs: build-release
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+    
+    permissions:
+      contents: write
+    
+    steps:
+    - name: 下载发布包
+      uses: actions/download-artifact@v4
+      with:
+        name: release-packages
+
+    - name: 生成发布说明
+      id: release_notes
+      run: |
+        cat << EOF > RELEASE_NOTES.md
+        # 凌隐宝堂中医诊所诊疗系统 v${{ needs.build-release.outputs.version }}
+        
+        ## 发布日期
+        $(date +"%Y年%m月%d日")
+        
+        ## 下载说明
+        
+        - **LYBT-API-v${{ needs.build-release.outputs.version }}.zip**: Web API 服务端
+        - **LYBT-Desktop-x64-v${{ needs.build-release.outputs.version }}.zip**: 桌面客户端 (64位)
+        - **LYBT-Desktop-x86-v${{ needs.build-release.outputs.version }}.zip**: 桌面客户端 (32位)
+        - **LYBT-Full-v${{ needs.build-release.outputs.version }}.zip**: 完整安装包
+        
+        ## 系统要求
+        
+        ### 服务端
+        - Windows Server 2019 或更高版本
+        - .NET 8.0 Runtime
+        - SQL Server 2019 或更高版本
+        - 最低 4GB 内存
+        
+        ### 客户端
+        - Windows 10 版本 1903 或更高版本
+        - 最低 2GB 内存
+        - 1366x768 或更高分辨率
+        
+        ## 安装说明
+        
+        1. 下载对应的安装包
+        2. 解压到目标目录
+        3. 运行 deploy.bat 进行部署
+        4. 按照提示完成安装
+        
+        ## 更新内容
+        
+        请查看提交历史了解详细更新内容。
+        
+        ---
+        
+        **注意**: 这是一个自动生成的发布版本。如有问题，请联系技术支持。
+        EOF
+
+    - name: 创建 Release
+      uses: softprops/action-gh-release@v2
+      with:
+        name: v${{ needs.build-release.outputs.version }}
+        body_path: RELEASE_NOTES.md
+        draft: false
+        prerelease: false
+        files: |
+          LYBT-API-v${{ needs.build-release.outputs.version }}.zip
+          LYBT-Desktop-x64-v${{ needs.build-release.outputs.version }}.zip
+          LYBT-Desktop-x86-v${{ needs.build-release.outputs.version }}.zip
+          LYBT-Full-v${{ needs.build-release.outputs.version }}.zip
+
+  deploy-notification:
+    name: 部署通知
+    runs-on: ubuntu-latest
+    needs: [build-release, create-release]
+    if: always()
+    
+    steps:
+    - name: 发布状态总结
+      run: |
+        echo "# 发布状态总结" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## 版本信息" >> $GITHUB_STEP_SUMMARY
+        echo "- 版本号: v${{ needs.build-release.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+        echo "- 构建状态: ${{ needs.build-release.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "- Release 创建: ${{ needs.create-release.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## 构建信息" >> $GITHUB_STEP_SUMMARY
+        echo "- 提交: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+        echo "- 触发者: ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+        echo "- 构建时间: $(date +"%Y-%m-%d %H:%M:%S")" >> $GITHUB_STEP_SUMMARY
