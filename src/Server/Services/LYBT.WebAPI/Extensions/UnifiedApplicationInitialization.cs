@@ -26,7 +26,7 @@ public static class UnifiedApplicationInitialization
             await app.InitializeDatabaseAsync(scope);
             
             // 2. 配置服务初始化
-            await app.InitializeConfigurationServicesAsync(scope);
+            app.InitializeConfigurationServices(scope);
             
             // 3. 安全配置验证
             await app.ValidateSecurityConfigurationAsync(scope);
@@ -67,7 +67,7 @@ public static class UnifiedApplicationInitialization
     /// <summary>
     /// 配置服务初始化
     /// </summary>
-    private static async Task InitializeConfigurationServicesAsync(this WebApplication app, IServiceScope scope)
+    private static void InitializeConfigurationServices(this WebApplication app, IServiceScope scope)
     {
         var logger = scope.ServiceProvider.GetService<ILogger<Program>>();
 

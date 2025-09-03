@@ -247,14 +247,50 @@ public static class UnifiedServiceRegistration {
         services.AddProblemDetails();
         services.AddExceptionHandler<GlobalExceptionHandler>();
 
-        // Swagger文档
+        // Swagger文档配置（集成JWT认证支持）
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen(c => {
             c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo {
                 Title = "凌隐宝堂中医诊所诊疗系统 API",
                 Version = "v1",
-                Description = "凌隐宝堂中医诊所诊疗系统API文档"
+                Description = "凌隐宝堂中医诊所诊疗系统API文档",
+                Contact = new Microsoft.OpenApi.Models.OpenApiContact {
+                    Name = "技术支持",
+                    Email = "support@lybt.com"
+                },
+                License = new Microsoft.OpenApi.Models.OpenApiLicense {
+                    Name = "专有软件许可",
+                    Url = new Uri("https://lybt.com/license")
+                }
             });
+
+            // JWT Bearer认证配置
+            c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme {
+                Description = "JWT Authorization header using the Bearer scheme. Example: \"Bearer {token}\"",
+                Name = "Authorization",
+                In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+                Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
+                Scheme = "Bearer"
+            });
+
+            c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement {
+                {
+                    new Microsoft.OpenApi.Models.OpenApiSecurityScheme {
+                        Reference = new Microsoft.OpenApi.Models.OpenApiReference {
+                            Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                            Id = "Bearer"
+                        }
+                    },
+                    Array.Empty<string>()
+                }
+            });
+
+            // 包含XML注释
+            var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
+            var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+            if (File.Exists(xmlPath)) {
+                c.IncludeXmlComments(xmlPath);
+            }
 
             // 解决Schema ID冲突问题 - 生成真正唯一的Schema ID
             c.CustomSchemaIds(type => {
