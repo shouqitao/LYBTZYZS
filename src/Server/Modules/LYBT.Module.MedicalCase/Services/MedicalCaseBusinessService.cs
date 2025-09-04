@@ -7,6 +7,7 @@ using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Enums;
+using LYBT.Module.MedicalCase.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -16,7 +17,7 @@ namespace LYBT.Module.MedicalCase.Services
     /// 医疗案例业务逻辑服务 - UltraThink架构
     /// 职责：生命周期管理，业务规则，状态转换，批量操作
     /// </summary>
-    public class MedicalCaseBusinessService
+    public class MedicalCaseBusinessService : IMedicalCaseBusinessService
     {
         private readonly AppDbContext _context;
         private readonly IMapper _mapper;

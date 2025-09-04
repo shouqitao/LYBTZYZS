@@ -4,7 +4,7 @@ using LYBT.Module.Herbs.Interfaces;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
-using LYBT.WebAPI.Services;
+// using LYBT.WebAPI.Services; // Removed - enterprise services
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;

@@ -6,6 +6,7 @@ using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
+using LYBT.Module.Patients.Interfaces;
 
 namespace LYBT.Module.Patients.Services
 {
@@ -14,12 +15,12 @@ namespace LYBT.Module.Patients.Services
     /// </summary>
     public class PatientService : IPatientService
     {
-        private readonly PatientQueryService _queryService;
-        private readonly PatientBusinessService _businessService;
+        private readonly IPatientQueryService _queryService;
+        private readonly IPatientBusinessService _businessService;
 
         public PatientService(
-            PatientQueryService queryService,
-            PatientBusinessService businessService)
+            IPatientQueryService queryService,
+            IPatientBusinessService businessService)
         {
             _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
             _businessService = businessService ?? throw new ArgumentNullException(nameof(businessService));

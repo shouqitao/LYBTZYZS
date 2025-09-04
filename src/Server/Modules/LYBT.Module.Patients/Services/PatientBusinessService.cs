@@ -9,6 +9,7 @@ using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Enums;
+using LYBT.Module.Patients.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using LYBT.Shared.Utilities.Helpers;
@@ -19,7 +20,7 @@ namespace LYBT.Module.Patients.Services
     /// 患者业务服务 - UltraThink架构
     /// 职责：业务逻辑处理，批量操作，导入导出，状态管理
     /// </summary>
-    public class PatientBusinessService
+    public class PatientBusinessService : IPatientBusinessService
     {
         private readonly AppDbContext _context;
         private readonly IMapper _mapper;

@@ -8,6 +8,7 @@ using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Enums;
+using LYBT.Module.MedicalCase.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -17,7 +18,7 @@ namespace LYBT.Module.MedicalCase.Services
     /// 医疗案例查询服务 - UltraThink架构
     /// 职责：分页查询，搜索筛选，患者案例查询，活跃案例检查
     /// </summary>
-    public class MedicalCaseQueryService
+    public class MedicalCaseQueryService : IMedicalCaseQueryService
     {
         private readonly AppDbContext _context;
         private readonly IMapper _mapper;

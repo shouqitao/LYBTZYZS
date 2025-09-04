@@ -102,6 +102,7 @@ namespace LYBT.Desktop.Patients.ViewModels
         // Phase 7 新增：导入导出功能
         public DelegateCommand ExportPatientsCommand { get; private set; } = null!;
         public DelegateCommand ImportPatientsCommand { get; private set; } = null!;
+        public DelegateCommand ImportWizardCommand { get; private set; } = null!;
         public DelegateCommand DownloadTemplateCommand { get; private set; } = null!;
 
         // UltraThink v2.0: 删除过度设计功能 - 20人以下小诊所不需要以下复杂功能:
@@ -162,6 +163,7 @@ namespace LYBT.Desktop.Patients.ViewModels
             // Phase 7: 初始化导入导出命令
             ExportPatientsCommand = new DelegateCommand(async () => await ExportPatientsAsync(), () => !IsLoading);
             ImportPatientsCommand = new DelegateCommand(async () => await ImportPatientsAsync(), () => !IsLoading);
+            ImportWizardCommand = new DelegateCommand(async () => await OpenImportWizardAsync(), () => !IsLoading);
             DownloadTemplateCommand = new DelegateCommand(async () => await DownloadTemplateAsync(), () => !IsLoading);
             
             // 初始化搜索和分页命令
@@ -634,6 +636,24 @@ namespace LYBT.Desktop.Patients.ViewModels
             }
             
             return 0;
+        }
+
+        /// <summary>
+        /// 打开导入向导
+        /// </summary>
+        private async Task OpenImportWizardAsync()
+        {
+            try
+            {
+                // TODO: 这里需要实现打开PatientImportWizardView的逻辑
+                // 可以通过弹窗或者导航的方式打开向导界面
+                await _dialogService.ShowInformationAsync("导入向导功能即将开放", "功能提示");
+            }
+            catch (Exception ex)
+            {
+                LogError(ex, "打开导入向导失败");
+                await _dialogService.ShowErrorAsync($"打开导入向导失败: {ex.Message}", "错误");
+            }
         }
 
         #endregion

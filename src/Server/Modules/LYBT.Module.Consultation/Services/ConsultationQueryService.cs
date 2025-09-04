@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using LYBT.Infrastructure.Data;
+using LYBT.Module.Consultation.Interfaces;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Common;
@@ -17,7 +18,7 @@ namespace LYBT.Module.Consultation.Services
     /// 看诊查询服务 - UltraThink架构
     /// 职责：分页查询，搜索筛选，看诊查询，历史记录获取
     /// </summary>
-    public class ConsultationQueryService
+    public class ConsultationQueryService : IConsultationQueryService
     {
         private readonly AppDbContext _context;
         private readonly IMapper _mapper;

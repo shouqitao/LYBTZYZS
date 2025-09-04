@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using LYBT.Infrastructure.Data;
+using LYBT.Module.Prescriptions.Interfaces;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Common;
@@ -17,7 +18,7 @@ namespace LYBT.Module.Prescriptions.Services
     /// 处方查询服务 - UltraThink架构
     /// 职责：分页查询，搜索筛选，处方查询，历史记录获取
     /// </summary>
-    public class PrescriptionQueryService
+    public class PrescriptionQueryService : IPrescriptionQueryService
     {
         private readonly AppDbContext _context;
         private readonly IMapper _mapper;

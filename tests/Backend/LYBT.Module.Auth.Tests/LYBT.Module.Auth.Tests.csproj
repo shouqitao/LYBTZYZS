@@ -35,6 +35,7 @@
     <ProjectReference Include="..\..\..\src\Server\Modules\LYBT.Module.Auth\LYBT.Module.Auth.csproj" />
     <ProjectReference Include="..\..\..\src\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
     <ProjectReference Include="..\..\..\src\Shared\LYBT.Shared.Utilities\LYBT.Shared.Utilities.csproj" />
+    <ProjectReference Include="..\..\..\src\Shared\LYBT.Shared.Interfaces\LYBT.Shared.Interfaces.csproj" />
   </ItemGroup>
 
 </Project>

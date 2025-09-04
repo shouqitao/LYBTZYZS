@@ -4,7 +4,7 @@ using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure;
 using LYBT.Module.Users;
 using LYBT.Module.Auth;
-using LYBT.WebAPI.Services;
+// using LYBT.WebAPI.Services; // Removed - enterprise services
 using LYBT.WebAPI.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;

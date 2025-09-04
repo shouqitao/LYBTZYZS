@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using LYBT.Module.Prescriptions.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Interfaces.Services;
@@ -12,12 +13,12 @@ namespace LYBT.Module.Prescriptions.Services
     /// </summary>
     public class PrescriptionService : IPrescriptionService
     {
-        private readonly PrescriptionQueryService _queryService;
-        private readonly PrescriptionBusinessService _businessService;
+        private readonly IPrescriptionQueryService _queryService;
+        private readonly IPrescriptionBusinessService _businessService;
 
         public PrescriptionService(
-            PrescriptionQueryService queryService,
-            PrescriptionBusinessService businessService)
+            IPrescriptionQueryService queryService,
+            IPrescriptionBusinessService businessService)
         {
             _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
             _businessService = businessService ?? throw new ArgumentNullException(nameof(businessService));

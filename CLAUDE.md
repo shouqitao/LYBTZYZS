@@ -4,39 +4,69 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 🎯 核心开发理念与标准
 
+## CCPM 自动展开子任务（全局规则）
+
+当我对某个 Epic 执行 `/pm:issue-start <epic-id>` 时，按如下策略处理：
+1) **自动枚举该 Epic 的所有子任务（Issues）**，包括：
+   - 使用 gh-sub-issue 扩展（若可用）获取子任务；
+   - 若不可用，则从 Epic 描述中的任务清单解析子任务链接/编号。
+2) **对所有处于 open/ready 状态的子任务，自动并行执行**：
+   - 逐一运行 `/pm:issue-start <issue-id>`，为每个任务创建独立 Git worktree 分支并开始实现。
+   - 并行上限：默认同时不超过 3 个活跃任务（避免资源/上下文竞争）。当任一任务完成/关闭后，自动补位启动下一个等待中的子任务。
+3) **进度与同步**：
+   - 每个子任务达到一个可观里程碑后，执行 `/pm:issue-sync <issue-id>`；
+   - Epic 层每 30 分钟或发生里程碑时，执行 `/pm:issue-sync <epic-id>` 与 `/pm:epic-status <epic-name>`。
+4) **默认"不追问策略"**：
+   - 在 Epic 范围内允许做合理假设（记录在子任务备注"Assumptions"段落），无需每步征询；
+   - 若出现破坏性/不可逆操作（大规模删除接口/表结构），先在对应 Issue 追加 "Plan" 与 "Rollback" 小节，再执行。
+5) **完成标准（DoD, 默认）**：
+   - 任务描述的功能/测试均已实现并通过；
+   - 关键用例/异常路径测试具备；覆盖率≥60%（关键模块≥80%时才可关闭）；
+   - 变更已通过本地测试与 CI（如适用）；提交信息引用 Issue 编号；
+   - Issue 关闭前执行一次最终 `/pm:issue-sync <issue-id>`。
+6) **失败与重试**：
+   - 工具/脚本失败时先局部重试（≤2 次），仍失败则在 Issue 评论中输出诊断要点并继续其他任务，不阻塞整体推进。
+
 ### 开发哲学
 
 #### 核心信念
+
 - **渐进式改进胜过大爆炸式变更** - 小幅度修改，确保编译通过和测试成功
 - **从现有代码中学习** - 研究并规划后再实施
 - **实用主义胜过教条主义** - 适应项目实际情况
 - **清晰意图胜过聪明代码** - 选择直白明显的解决方案
 
 #### 简洁性原则
+
 - 每个函数/类单一职责
 - 避免过早抽象
 - 不使用技巧性代码 - 选择直白解决方案
 - 如果需要解释，就说明太复杂了
 
 #### 📚 文档驱动开发原则 (UltraThink核心原则)
+
 **项目重要原则**: 文档与代码严格同步，确保系统的可维护性和一致性
 
 1. **文档优先原则**:
+   
    - **文档有要求的代码得有** - 所有文档中描述的功能必须在代码中实现
    - **文档没要求的不增加代码** - 避免过度设计和功能蔓延
    - **需要增加功能的先有文档再有代码** - 任何新功能必须先完善文档设计
 
 2. **文档同步要求**:
+   
    - 代码变更必须同步更新相关文档
    - 文档更新必须在代码实现之前完成
    - 保持README、API文档、架构文档与实际代码100%一致
 
 3. **文档完整性**:
+   
    - 每个模块必须有完整的README文档
    - 每个API必须有完整的接口文档
    - 每个重要决策必须有设计文档记录
 
 4. **质量控制**:
+   
    - 代码Review必须检查文档同步性
    - 不允许实现未在文档中定义的功能
    - 文档不一致视为阻塞性问题，必须立即修复
@@ -44,6 +74,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### 开发流程
 
 #### 1. 规划与分阶段
+
 将复杂工作分解为3-5个阶段，记录在 `IMPLEMENTATION_PLAN.md`:
 
 ```markdown
@@ -53,10 +84,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 **测试**: [具体测试用例]
 **状态**: [未开始|进行中|已完成]
 ```
+
 - 进展时更新状态
 - 所有阶段完成后删除文件
 
 #### 2. 实施流程
+
 1. **理解** - 研究代码库中的现有模式
 2. **测试** - 先编写测试（红）
 3. **实施** - 最少代码通过测试（绿）
@@ -64,23 +97,28 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 5. **提交** - 清晰的提交信息链接到计划
 
 #### 3. 遇到困难时（最多3次尝试）
+
 **关键规则**: 每个问题最多尝试3次，然后停止。
 
 1. **记录失败内容**:
+   
    - 尝试了什么
    - 具体错误信息
    - 失败原因分析
 
 2. **研究替代方案**:
+   
    - 找到2-3个类似实现
    - 注意使用的不同方法
 
 3. **质疑基本假设**:
+   
    - 这是正确的抽象级别吗？
    - 能否拆分成更小的问题？
    - 是否有完全更简单的方法？
 
 4. **尝试不同角度**:
+   
    - 不同的库/框架特性？
    - 不同的架构模式？
    - 移除抽象而不是增加？
@@ -88,30 +126,36 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### 技术标准
 
 #### 架构原则
+
 - **组合优于继承** - 使用依赖注入
 - **接口优于单例** - 支持测试和灵活性
 - **显式优于隐式** - 清晰的数据流和依赖关系
 - **可能时优先测试驱动** - 永不禁用测试，而是修复它们
 
 #### 代码质量
+
 - **每次提交必须**:
+  
   - 编译成功
   - 通过所有现有测试
   - 包含新功能的测试
   - 遵循项目格式化/代码检查
 
 - **提交前**:
+  
   - 运行格式化器/检查器
   - 自我审查更改
   - 确保提交信息解释"为什么"
 
 #### 错误处理
+
 - 快速失败并给出描述性信息
 - 包含调试上下文
 - 在适当层级处理错误
 - 永不静默吞噬异常
 
 ### 决策框架
+
 当存在多个有效方法时，基于以下标准选择：
 
 1. **可测试性** - 我能轻松测试这个吗？
@@ -123,6 +167,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### 质量门禁
 
 #### 完成定义
+
 - [ ] 编写并通过测试
 - [ ] 代码遵循项目约定
 - [ ] 无格式化器/检查器警告
@@ -131,6 +176,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - [ ] 无TODO项（除非有问题编号）
 
 #### 测试指导原则
+
 - 测试行为而非实现
 - 尽可能每个测试一个断言
 - 清晰的测试名称描述场景
@@ -140,12 +186,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### 重要提醒
 
 **永远不要**:
+
 - 使用 `--no-verify` 绕过提交钩子
 - 禁用测试而不是修复它们
 - 提交无法编译的代码
 - 做假设 - 用现有代码验证
 
 **总是**:
+
 - 增量提交可工作的代码
 - 进行时更新计划文档
 - 从现有实现中学习
@@ -158,11 +206,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 这些是基于需求文档完善后的不可变架构要求，所有开发必须严格遵守：
 
 #### 1. 文档驱动开发约束 (最高优先级)
+
 - **代码跟文档走**: 文档完善后，代码实现必须严格按照需求文档执行
 - **禁止随意添加功能**: 所有新功能必须先在需求文档中定义，经用户明确同意后才能实现
 - **需求文档权威性**: 需求文档是功能定义的单一真相来源，与需求文档不符的代码视为错误
 
 #### 2. UltraThink双层架构标准 (强制)
+
 - **统一架构**: 所有8个业务模块必须遵循 `Service(委托) + QueryService + BusinessService` 架构
 - **接口统一**: 所有Module必须只实现IService接口，严禁IModule重复接口定义 (2025-01-31完成)
 - **依赖注入标准**: 所有ViewModel必须使用IService接口注入，禁止注入具体Module类型
@@ -174,21 +224,25 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **严禁重复接口**: 禁止创建IModule等重复接口，造成"接口重复定义横跨4层"问题
 
 #### 3. 数据安全标准 (零妥协)
+
 - **零SQL注入**: 必须使用LINQ查询 + EF Core参数化查询，严禁原生SQL
 - **统一数据访问**: 所有模块共享AppDbContext，禁止独立数据库连接
 - **完整审计**: Auth模块必须实现完整的安全审计日志系统
 
 #### 4. 认证授权标准 (不可变)
+
 - **JWT认证**: JWT Bearer Token + 8小时过期策略 + Remember Me 30天
 - **RBAC权限**: 仅支持 Doctor/Admin 两种角色，禁止扩展复杂权限体系
 - **会话管理**: 完整会话生命周期管理，包括强制下线功能
 
 #### 5. API设计标准 (统一)
+
 - **RESTful规范**: 严格遵循小写命名规范 (如: `/api/v1/users`)
 - **统一响应**: 所有API必须使用 `ApiResponse<T>` 响应格式
 - **异常处理**: 完整的异常处理和标准化错误返回
 
 #### 6. 功能实现约束 (严格)
+
 - **实用主义**: 专注2-5人小诊所需求，避免企业级过度设计
 - **简化优先**: 移除复杂统计、AI功能、归档等非核心功能
 - **医疗特化**: 支持中医四诊、药材配伍、验方管理等专业功能
@@ -196,6 +250,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### 架构冲突检测
 
 **如果发现以下情况，必须立即提醒用户并停止开发**：
+
 1. 尝试添加需求文档未定义的新功能
 2. 违反UltraThink双层架构标准
 3. 引入SQL注入风险的代码
@@ -250,18 +305,22 @@ Serena是一个MCP (Model Context Protocol) 服务器，提供增强的开发工
 ### 初始化方法
 
 #### 自动初始化（v1.0.52+）
+
 从v1.0.52版本开始，Claude Code会自动读取MCP服务器的指令，无需手动操作。
 
 #### 手动初始化（旧版本或自动失败时）
+
 如果使用旧版本或自动读取失败，可以通过以下方式手动初始化：
 
 1. **方法一：显式请求**
+   
    ```
    请求："read Serena's initial instructions"
    或中文："读取Serena的初始化指令"
    ```
 
 2. **方法二：运行命令**
+   
    ```
    /mcp__serena__initial_instructions
    ```
@@ -281,6 +340,7 @@ Serena是一个MCP (Model Context Protocol) 服务器，提供增强的开发工
 ### 重要时机
 
 **必须重新读取Serena指令的情况**：
+
 - 🔄 开始新对话时
 - 🗜️ 执行压缩操作后（compacting operation）
 - ❌ Serena工具使用异常时
@@ -288,6 +348,7 @@ Serena是一个MCP (Model Context Protocol) 服务器，提供增强的开发工
 ### 使用验证
 
 初始化成功后，可以通过以下方式验证：
+
 - 检查Serena工具是否可用
 - 尝试调用Serena的基础功能
 - 查看工具列表中是否包含Serena相关工具
@@ -347,25 +408,27 @@ temp/               # 临时文件（gitignored）
 ### 文件命名示例
 
 ❌ **错误示例**:
+
 - `WPF登录问题修复报告.md`
 - `系统使用说明.md`
 - `创建桌面快捷方式.bat`
 
 ✅ **正确示例**:
+
 - `docs/reports/wpf-login-fix-report-20250131.md`
 - `docs/guides/system-user-guide.md`
 - `tools/create-desktop-shortcut.bat`
 
 ### 快速参考
 
-| 文件类型 | 位置 | 命名格式 | 示例 |
-|---------|------|---------|------|
-| 用户指南 | `docs/guides/` | `feature-guide.md` | `system-user-guide.md` |
-| API文档 | `docs/api/` | `api-name.md` | `auth-api.md` |
-| 项目报告 | `docs/reports/` | `name-YYYYMMDD.md` | `fix-report-20250131.md` |
+| 文件类型       | 位置                 | 命名格式               | 示例                           |
+| ---------- | ------------------ | ------------------ | ---------------------------- |
+| 用户指南       | `docs/guides/`     | `feature-guide.md` | `system-user-guide.md`       |
+| API文档      | `docs/api/`        | `api-name.md`      | `auth-api.md`                |
+| 项目报告       | `docs/reports/`    | `name-YYYYMMDD.md` | `fix-report-20250131.md`     |
 | UltraThink | `docs/ultrathink/` | `analysis-name.md` | `ui-design-system-report.md` |
-| 开发脚本 | `scripts/` | `action.bat` | `build-all.bat` |
-| 用户工具 | `tools/` | `tool-name.bat` | `start-system.bat` |
+| 开发脚本       | `scripts/`         | `action.bat`       | `build-all.bat`              |
+| 用户工具       | `tools/`           | `tool-name.bat`    | `start-system.bat`           |
 
 > 📌 **重要**: 详细规范请查看 [文件组织标准](docs/development/FILE_ORGANIZATION.md)
 
@@ -473,12 +536,14 @@ python api_test_automation.py
 ### 测试完成状态（2025-08-08）
 
 **Repository层测试**（完成）：
+
 - 97个测试用例全部通过
 - UserRepository: 31个测试
 - PatientRepository: 38个测试 
 - HerbRepository: 28个测试
 
 **Service层测试**（进行中）：
+
 - UserService: 68个测试用例（完成）
 - PatientService: 88个测试用例（完成）
 - 总计156个Service层测试已完成
@@ -499,6 +564,7 @@ python api_test_automation.py
 项目采用混合架构设计，前后端使用不同的架构模式以适应各自的技术特点和业务需求：
 
 **前端WPF客户端**: UltraThink双层架构 (2025-09-02完成)
+
 ```
 主Module (纯委托层)
     ├── QueryService (查询专业层)
@@ -506,6 +572,7 @@ python api_test_automation.py
 ```
 
 **后端Web API**: 传统三层架构 (稳定运行)
+
 ```
 Controller (控制器层)
     ├── Service (业务服务层)  
@@ -517,64 +584,75 @@ Controller (控制器层)
 #### 前端UltraThink双层架构
 
 ##### 1. QueryService层 - 复杂查询专业化
+
 - **职责**: 搜索、筛选、统计、报表查询
 - **包含**: 分页查询、条件筛选、聚合统计、关联查询
 - **特点**: 专注查询性能优化，不涉及数据修改
-```csharp
-public class UserQueryService
-{
+  
+  ```csharp
+  public class UserQueryService
+  {
     public async Task<ServiceResult<PagedResult<UserDto>>> SearchUsersAsync(UserSearchDto criteria)
     public async Task<ServiceResult<UserStatisticsDto>> GetUserStatisticsAsync()
     public async Task<ServiceResult<List<UserDto>>> GetUsersByRoleAsync(UserRole role)
-}
-```
+  }
+  ```
 
 ##### 2. BusinessService层 - 业务逻辑和CRUD
+
 - **职责**: 业务流程编排、CRUD操作、验证规则、事务管理
 - **包含**: 多步骤业务流程、基础数据操作、状态转换、事件处理
 - **特点**: 包含完整业务场景处理和基础数据操作
-```csharp
-public class UserBusinessService
-{
+  
+  ```csharp
+  public class UserBusinessService
+  {
     public async Task<ServiceResult<User>> CreateUserAsync(UserCreateDto dto)
     public async Task<ServiceResult<User>> UpdateUserAsync(Guid id, UserUpdateDto dto)
     public async Task<ServiceResult<bool>> DeleteUserAsync(Guid id)
     public async Task<ServiceResult<bool>> ProcessUserRegistrationAsync(UserRegistrationDto dto)
     public async Task<ServiceResult<bool>> ChangePasswordAsync(Guid userId, ChangePasswordDto dto)
-}
-```
+  }
+  ```
 
 ##### 3. 主Module层 - 纯委托模式
+
 - **职责**: 统一服务入口，请求路由分发
+
 - **包含**: 接口实现，委托调用，统一异常处理
+
 - **特点**: 无业务逻辑，纯粹的请求分发器
-```csharp
-public class UserModule : IUserService
-{
+  
+  ```csharp
+  public class UserModule : IUserService
+  {
     public async Task<ServiceResult<User>> CreateUserAsync(UserCreateDto dto)
         => await _businessService.CreateUserAsync(dto);
-        
+  
     public async Task<ServiceResult<PagedResult<UserDto>>> SearchUsersAsync(UserSearchDto criteria)
         => await _queryService.SearchUsersAsync(criteria);
-        
+  
     public async Task<ServiceResult<bool>> ProcessUserRegistrationAsync(UserRegistrationDto dto)
         => await _businessService.ProcessUserRegistrationAsync(dto);
-}
-```
+  }
+  ```
 
 #### 后端传统三层架构
 
 ##### 1. Controller层 - API控制器
+
 - **职责**: HTTP请求处理，参数验证，响应格式化
 - **包含**: RESTful API端点、请求路由、异常处理
 - **特点**: 专注API契约和HTTP协议处理
 
 ##### 2. Service层 - 业务服务
+
 - **职责**: 核心业务逻辑、事务管理、数据验证
 - **包含**: 业务规则、流程控制、领域逻辑
 - **特点**: 业务逻辑的主要实现层
 
 ##### 3. Repository层 - 数据访问
+
 - **职责**: 数据持久化、查询优化、EF Core集成
 - **包含**: LINQ查询、数据映射、缓存策略
 - **特点**: 专注数据访问和持久化操作
@@ -582,18 +660,21 @@ public class UserModule : IUserService
 ### 混合架构优势
 
 #### 前端UltraThink双层架构优势
+
 1. **职责清晰**: QueryService专注查询，BusinessService专注业务
 2. **代码精简**: 相比传统架构减少93%+冗余代码
 3. **易于维护**: 纯委托模式，修改影响面小
 4. **快速开发**: 统一接口模式，开发效率提升
 
-#### 后端传统三层架构优势  
+#### 后端传统三层架构优势
+
 1. **稳定可靠**: 成熟的架构模式，风险可控
 2. **团队熟悉**: 开发团队对传统架构更熟悉
 3. **工具支持**: 完善的工具链和生态支持
 4. **易于测试**: 每层独立测试，覆盖率高
 
 #### 混合架构整体优势
+
 1. **技术适配**: 前后端使用最适合的架构模式
 2. **风险分散**: 前端创新，后端稳定
 3. **渐进升级**: 可逐步优化，不影响整体稳定性
@@ -602,6 +683,7 @@ public class UserModule : IUserService
 ### 重构前后对比
 
 #### 重构前 (Helper模式)
+
 ```csharp
 // 问题：职责混乱，Helper类过于庞大
 public class UserService
@@ -613,6 +695,7 @@ public class UserService
 ```
 
 #### 重构后 (UltraThink双层)
+
 ```csharp
 // 解决：职责清晰，代码精简
 public class UserService : IUserService                    // 50行纯委托
@@ -625,6 +708,7 @@ public class UserService : IUserService                    // 50行纯委托
 ### 实施成果统计
 
 **前端8个业务模块UltraThink双层架构重构全部完成** (2025-09-02):
+
 - ✅ Auth模块: 140个编译错误 → 0错误 (100%成功)
 - ✅ MedicalCase模块: 27个编译错误 → 0错误 (100%成功)
 - ✅ Users模块: 18个编译错误 → 0错误 (100%成功)
@@ -641,24 +725,28 @@ public class UserService : IUserService                    // 50行纯委托
 ### 最新重构完成 (2025-09-02)
 
 **🏆 前端UltraThink双层架构重构历史性完成**:
+
 - 前端8个业务模块全部完成双层架构标准化重构
 - 移除所有CoreService层冗余代码，实现93%+代码精简
 - 纯委托模式主Module层，统一服务入口
 - 整个WPF解决方案零编译警告零错误，生产就绪
 
 **✅ 后端传统三层架构稳定运行**:
+
 - 8个业务模块保持传统Repository+Service+Controller架构
 - WebAPI服务注册完全模块化 (AddXxxModule统一模式)  
 - 数据访问层EF Core LINQ安全，零SQL注入风险
 - JWT认证体系完善，RBAC权限控制精确
 
 **✅ 编译质量达标**:
+
 - 后端编译: 0个警告, 0个错误 (生产就绪)
 - 前端编译: 0个警告, 0个错误 (完全兼容)
 - UltraThink双层架构服务注册完整：Query + Business层全覆盖
 - 解决所有依赖注入和服务集成问题
 
 **✅ 代码质量提升**:
+
 - 识别并修复数据库中损坏的密码哈希格式
 - 使用PasswordHelper重新生成正确的AspNetCore Identity哈希
 - 更新AdminSecrets表中sysadmin用户密码哈希
@@ -721,49 +809,61 @@ src/
 ### 业务模块详细说明（实际存在的8个核心模块）
 
 #### 核心认证与用户模块
+
 1. **Auth** - 身份认证和授权
+   
    - JWT Bearer Token认证 (8小时有效期，Remember Me: 30天)
    - RBAC角色权限控制 (Admin/Doctor角色)
    - 登录会话管理和安全审计
 
 2. **Users** - 用户管理  
+   
    - 医生和管理员账户管理
    - 角色权限分配和状态控制
    - 密码安全策略 (Hash+盐值加密)
 
 3. **Patients** - 患者档案
+   
    - 完整患者基础信息管理
    - 就诊历史跟踪和联系方式
    - 整合了基础患者接待功能
 
 #### 核心诊疗流程模块 (v1.0)
+
 4. **MedicalCase** - 医疗案例
+   
    - **诊疗流程容器**: 看诊会话管理 (1:1关联Consultation)
    - **状态跟踪**: Registered → InProgress → Completed
    - **聚合功能**: 统一管理整个诊疗过程，包含原Records功能
 
 5. **Consultation** - 看诊诊断 ⚡(2025-08-30优化)
+   
    - **纯数据记录**: 中医四诊（望闻问切）数据存储，不涉及流程控制
    - **辨证论治**: 症状分析和中医治疗方案记录
    - **专业化定位**: 移除complete/cancel流程控制，专注诊断数据
 
 6. **Prescriptions** - 处方管理 ⚡(2025-08-30优化)
+   
    - **数据记录专用**: 药材组合、价格计算、处方信息存储
    - **协作API完整**: 患者处方历史、医案处方记录、高级搜索功能
    - **处方输出**: 标准格式打印、复制、验证功能
 
 #### 药材与验方模块
+
 7. **Herbs** - 中药材管理
+   
    - **药材信息**: 名称、单价、用法信息维护
    - **仅处方用药**: 不涉及库存管理，专注处方选择
    - **标准化管理**: 统一药材标准和规格
 
 8. **Formula** - 验方管理
+   
    - **经典验方库**: 传统验方模板收录
    - **个人验方**: 医生临床经验积累
    - **智能组合**: 可被Prescriptions引用和组合应用
 
 #### 核心业务关系 (2025-08-23最新)
+
 - **1:1关系**: MedicalCase ↔ Consultation (一个医案对应一次诊断，无复诊概念)
 - **诊疗流程**: 创建医案 → 进行诊断 → [可选]开具处方 → 完成医案  
 - **复诊处理**: 每次患者就诊都创建全新的MedicalCase，通过PatientId关联历史记录
@@ -777,6 +877,7 @@ src/
 **重大突破**: 🎆 **UltraThink系统"接口重复定义横跨4层"严重架构问题彻底解决！**
 
 **架构统一成果**:
+
 - 🎯 **问题识别**: 解决"接口重复定义横跨4层"的严重架构问题
 - 🗑️ **接口清理**: 删除8个重复IModule接口文件，统一为IService接口体系
 - 🔧 **架构重构**: 所有Module类从双接口实现改为单一IService接口实现
@@ -784,16 +885,19 @@ src/
 - ✅ **编译质量**: 从30+编译错误减少到前后端零编译错误完美状态
 
 **删除的重复接口清单 (8个)**:
+
 - ❌ `IAuthModule.cs`, `IUserModule.cs`, `IPatientModule.cs`, `IMedicalCaseModule.cs`
 - ❌ `IConsultationModule.cs`, `IPrescriptionsModule.cs`, `IHerbModule.cs`, `IFormulaModule.cs`
 
 **技术修复成果**:
+
 - ✅ **接口实现统一**: `public class UserModule : IUserService` (单一接口)
 - ✅ **依赖注入标准化**: `IUserService userService` (接口注入)
 - ✅ **方法签名统一**: 解决`DisablePatientAsync` → `DisableAsync`等方法名匹配问题
 - ✅ **架构清理**: 清除FormulaModule中引起CS0246错误的事件定义
 
 **代码变更统计**:
+
 - **555个文件变更** 📁
 - **305行新增**, **910行删除** 📉
 - **净精简605行冗余接口代码** 🔥
@@ -801,6 +905,7 @@ src/
 ### 🏆 前端UltraThink双层架构重构历史性完成 (2025-09-02)
 
 **重大里程碑**: 🎆 **前端WPF客户端UltraThink双层架构重构全面完成**
+
 - 🎯 **前端架构重构**: **8个业务模块全部完成UltraThink双层架构标准化**
 - 📉 **代码精简**: **删除近15,000行冗余代码** (93%+精简率，史无前例)  
 - 🧹 **CoreService清除**: **移除所有XxxCoreService类**，消除架构混乱
@@ -808,11 +913,13 @@ src/
 - 🎯 **编译质量**: **前端零警告零错误，48个项目生产就绪**
 
 **混合架构设计**: 🏗️ **前端UltraThink双层 + 后端传统三层**
+
 - 🖥️ **前端创新**: UltraThink双层架构，代码精简，开发高效
 - 🔧 **后端稳定**: 传统三层架构，成熟可靠，风险可控
 - 🔄 **架构协调**: 前后端各用最适合的架构模式
 
 **文件变更统计**:
+
 - **685个文件修改** 📁
 - **代码新增**: 999行 ➕
 - **代码删除**: 14,879行 ➖  
@@ -823,6 +930,7 @@ src/
 **重大突破**: 🎆 **前后端解决方案达到完美编译状态 - 零警告零错误！**
 
 **意外收获**: Phase 6原计划修复30个CS1998警告，但在Phase 5的async void修复过程中已自然解决所有编译警告
+
 - ✅ **前端编译**: `dotnet build LYBT.Desktop.sln` → **0个警告 0个错误**
 - ✅ **后端编译**: `dotnet build LYBT.Server.sln` → **0个警告 0个错误**  
 - ✅ **48个项目**: 全部达到零警告零错误企业级标准
@@ -830,6 +938,7 @@ src/
 - ✅ **CS1998警告**: 95个全部解决，代码现代化完成
 
 **Phase 6成果总结**:
+
 - **P6-01**: CS1998编译警告修复 - ✅ 通过Phase 5意外完成
 - **P6-02**: 可空性警告处理 - ✅ AsyncRelayCommand参数匹配已解决  
 - **P6-03**: 编译质量验证 - ✅ 前后端零警告零错误验证通过
@@ -839,6 +948,7 @@ src/
 **阶段目标**: 在零编译警告基础上，实现功能完善和用户体验全面提升
 
 **Phase 7计划**:
+
 - **P7-00**: 更新项目文档体系 - 🔄 进行中
 - **P7-01**: TODO功能特性实现 - 代码中约25个TODO注释功能
 - **P7-02**: 导入导出功能增强 - 患者、药材、验方Excel导入导出优化  
@@ -848,6 +958,7 @@ src/
 ### 🎆 UltraThink代码质量优化完成 (历史完成)
 
 **代码质量优化**: 🟢 **100%完成** - 全项目达到企业级零编译警告标准
+
 - 🎯 **编译状态**: **前后端零警告零错误** - 后端0警告0错误，前端0警告0错误
 - ✅ **优化项目**: **36个优化项目全部完成** - CA1822性能优化、IDE0290主构造函数现代化、SYSLIB1045生成正则表达式等
 - ✅ **现代化语法**: **C# 12特性全面应用** - 主构造函数、集合表达式、生成正则表达式
@@ -856,6 +967,7 @@ src/
 - ✅ **架构现代化**: **8个类主构造函数转换** - UserBusinessService等核心服务类现代化
 
 **完成的优化类型**:
+
 1. **CA1822**: 11个方法标记为static（性能提升）
 2. **CA1860**: 集合Count替代Any()（查询效率提升）
 3. **IDE0290**: 8个类C# 12主构造函数现代化
@@ -870,6 +982,7 @@ src/
 ### ✅ UltraThink三层架构重构成果
 
 **架构完成度**: 🟢 **100%完成** - 全项目UltraThink三层架构重构完成
+
 - ✅ **编译质量**: **零编译警告零错误** (前后端全部完成) 🎯
 - ✅ **架构统一**: UltraThink三层服务架构标准完全实施
   - **ServiceCore**: Auth、Users、Patients、MedicalCase、Consultation、Prescriptions、Herbs、Formula 全部完成
@@ -892,16 +1005,19 @@ src/
 - ✅ **Phase 6编译优化**: 前后端解决方案达到零警告零错误完美状态，48个项目企业级质量
 
 **模块完整性**: 🟢 **8核心模块全部就绪**
+
 - ✅ **前端**: WPF桌面客户端，Prism.DryIoc模块化架构
 - ✅ **后端**: ASP.NET Core Web API，统一AppDbContext
 - ✅ **共享**: Shared.Models统一DTO系统
 
 **业务功能**: 🟢 **诊疗核心流程完整**
+
 - ✅ **完整诊疗链**: 患者档案 → 医案创建 → 四诊记录 → 处方开具
 - ✅ **智能配伍**: 验方组合，配伍禁忌检查
 - ✅ **打印输出**: 标准处方格式，法规合规
 
 **质量保证**: 🟢 **UltraThink三层架构质量标准完成**
+
 - ✅ **编译质量**: 前后端零编译警告零错误，A+代码质量
 - ✅ **架构质量**: 统一三层服务架构，职责清晰分离
 - ✅ **生产就绪**: 工业级质量标准，符合.NET最佳实践
@@ -912,6 +1028,7 @@ src/
 ### 🚀 生产就绪状态
 
 **部署就绪**: 🟢 **Ready for Production**
+
 - ✅ **健康检查**: 8个端点覆盖数据库/缓存/系统资源
 - ✅ **监控体系**: 统一异常处理，完整日志记录
 - ✅ **配置管理**: 环境变量，连接字符串标准化
@@ -919,6 +1036,7 @@ src/
 - ✅ **API可用性**: WebAPI完全可用，超级管理员登录正常
 
 **性能指标**: 🟢 **小型诊所优化完成**
+
 - ✅ **并发支持**: <10用户并发，<20人员规模
 - ✅ **响应时间**: API响应<2秒，缓存命中优化
 - ✅ **数据库**: 连接池(Max=20, Min=2)，批量操作优化
@@ -929,6 +1047,7 @@ src/
 ### 项目规模定位
 
 **适用场景**: 20人以下用户的中小型诊所
+
 - 👨‍⚕️ **医生**: 2-5人
 - 👩‍💼 **接待员**: 1-2人  
 - 👨‍💻 **管理员**: 1人
@@ -945,12 +1064,14 @@ src/
 ### 实用化设计原则
 
 #### ✅ 保持简单有效
+
 - **单一AppDbContext**: 所有模块共享，管理简单
 - **内存缓存优先**: MemoryCache足够，避免Redis等复杂方案
 - **传统部署**: IIS + Windows Server，成熟稳定
 - **统一错误处理**: 现有BaseController体系已经很好
 
 #### ✅ 避免过度设计
+
 - ❌ **微服务架构** - 20人以下系统完全不需要
 - ❌ **事件溯源** - 增加复杂性，收益有限  
 - ❌ **CQRS** - 读写量都不大，过度设计
@@ -961,24 +1082,28 @@ src/
 #### 🖥️ 客户端架构简化 (UltraThink Phase 4 - 2025-08-20)
 
 **问题识别**：
+
 - ❌ **过度复杂的服务** - 认证服务481行代码，职责混合
 - ❌ **冗余接口实现** - 同时实现多个不必要的接口
 - ❌ **复杂的IoC注册** - 多层包装和工厂方法
 - ❌ **不必要的抽象层** - 通用API服务等过度抽象
 
 **简化原则**：
+
 1. **单一职责** - 每个服务只做一件事
 2. **依赖最少** - 减少不必要的依赖注入
 3. **代码精简** - 移除冗余功能和方法
 4. **接口统一** - 避免混合实现多个接口
 
 **实施效果**：
+
 - ✅ **认证服务精简** - 481行 → 135行 (72%减少)
 - ✅ **IoC异常修复** - 注册IAuthApi依赖
 - ✅ **服务注册简化** - 单行注册替代复杂工厂
 - ✅ **职责清晰** - 每个服务单一接口实现
 
 **开发指导**：
+
 ```csharp
 // ✅ 好的做法 - 简化服务
 public class SimplifiedAuthenticationService : IAuthenticationService
@@ -1000,6 +1125,7 @@ public class AuthenticationService : IAuthenticationService, ISharedAuthService
 #### 🎯 重构优先级与完成状态
 
 **Phase 1: 安全基础** ✅ **已完成** (2025-08-17)
+
 ```csharp
 // ✅ 修复SQL注入风险，使用LINQ替代原生SQL
 return await _context.Users
@@ -1008,11 +1134,13 @@ return await _context.Users
         .SetProperty(u => u.Status, status)
         .SetProperty(u => u.UpdateTime, DateTime.Now));
 ```
+
 - ✅ 所有Repository使用LINQ和参数化查询
 - ✅ EF Core 7.0 ExecuteUpdate批量操作优化
 - ✅ 类型安全JWT认证(UserRole枚举)
 
 **Phase 2: 基础架构优化** ✅ **已完成** (2025-08-17)  
+
 ```csharp
 // ✅ 智能缓存和全面健康检查
 public async Task<T> GetOrSetAsync<T>(string key, Func<Task<T>> factory, TimeSpan expiry)
@@ -1023,12 +1151,14 @@ public async Task<T> GetOrSetAsync<T>(string key, Func<Task<T>> factory, TimeSpa
     return value;
 }
 ```
+
 - ✅ 数据库连接池优化(Max=20, Min=2)
 - ✅ 智能内存缓存系统(统计和性能监控)
 - ✅ 全面健康检查体系(8个端点)
 - ✅ Kubernetes就绪探针支持
 
 **Phase 3: 异地组网** 🟡 **待定** (暂时搁置)
+
 ```csharp
 // 🔄 多租户支持：简单的ClinicId软隔离 (按需实现)
 public class BaseEntity
@@ -1038,6 +1168,7 @@ public class BaseEntity
     public DateTime CreateTime { get; set; }
 }
 ```
+
 - 🔄 根据用户实际需求决定是否实施
 - 🔄 目前专注单诊所部署，以交付为优先
 
@@ -1057,12 +1188,12 @@ public class BaseEntity
     ├── 数据库主节点
     ├── 文件服务器  
     └── 备份服务
-    
+
 分点诊所A (从节点)
     ├── 本地缓存
     ├── 离线支持
     └── 数据同步
-    
+
 分点诊所B (从节点)  
     ├── 本地缓存
     ├── 离线支持
@@ -1072,12 +1203,14 @@ public class BaseEntity
 ### 开发约束
 
 **✅ 必须遵循**:
+
 1. **Repository层安全化** - 消除SQL注入风险
 2. **多租户数据隔离** - ClinicId自动过滤
 3. **简单缓存策略** - 常用数据10分钟内存缓存
 4. **基础健康监控** - 数据库连接、磁盘空间检查
 
 **❌ 禁止引入**:
+
 1. **复杂的分布式技术** - 保持单体架构
 2. **过度的抽象层** - Domain层等复杂设计模式
 3. **高级缓存方案** - Redis、分布式缓存
@@ -1125,12 +1258,14 @@ BaseControllerCore (核心基础层)
 ### 控制器分类规则
 
 #### 1. 业务API控制器 (继承BaseApiController)
+
 - **用途**: 所有面向前端的业务功能API
 - **响应格式**: 统一的 `ApiResponse<T>` 格式
 - **异常处理**: 使用 `HandleException<T>()` 方法
 - **服务结果**: 自动处理 `ServiceResult<T>` 转换
 
 **标准模板**:
+
 ```csharp
 [ApiController]
 [ApiVersion("1")]
@@ -1161,12 +1296,14 @@ public class ExampleController : BaseApiController
 ```
 
 #### 2. 系统管理控制器 (继承BaseSystemController)
+
 - **用途**: 健康检查、监控、性能、安全等系统级功能
 - **响应格式**: 简化的系统响应格式
 - **异常处理**: 使用 `HandleSystemException()` 方法
 - **权限**: 通常需要Admin权限
 
 **标准模板**:
+
 ```csharp
 [ApiController]
 [Route("api/v1/[controller]")]
@@ -1195,6 +1332,7 @@ public class ExampleSystemController : BaseSystemController
 ### 响应格式标准
 
 #### 业务API响应 (ApiResponse<T>)
+
 ```json
 {
     "success": true,
@@ -1206,6 +1344,7 @@ public class ExampleSystemController : BaseSystemController
 ```
 
 #### 系统管理响应
+
 ```json
 {
     "success": true,
@@ -1219,6 +1358,7 @@ public class ExampleSystemController : BaseSystemController
 ### 强制性开发规则
 
 #### ✅ 必须遵循
+
 - **基类继承**: 业务API继承BaseApiController，系统管理继承BaseSystemController
 - **异常处理**: 所有public方法必须有try-catch异常处理
 - **参数验证**: 使用基类提供的验证方法 (`ValidateGuid`, `ValidateModel`)
@@ -1226,6 +1366,7 @@ public class ExampleSystemController : BaseSystemController
 - **响应统一**: 使用基类提供的响应方法 (`Success`, `HandleServiceResult`, `SystemOk`)
 
 #### ❌ 禁止行为
+
 - 直接继承 `ControllerBase`
 - 混合使用不同的响应格式
 - 忽略异常处理
@@ -1234,6 +1375,7 @@ public class ExampleSystemController : BaseSystemController
 ### 创建新控制器检查清单
 
 新建业务API控制器时：
+
 - [ ] 继承 `BaseApiController` 
 - [ ] 添加正确的路由和版本配置
 - [ ] 使用 `HandleServiceResult` 处理服务结果
@@ -1242,6 +1384,7 @@ public class ExampleSystemController : BaseSystemController
 - [ ] 记录关键操作日志
 
 新建系统管理控制器时：
+
 - [ ] 继承 `BaseSystemController`
 - [ ] 使用 `SystemOk/SystemError` 响应方法
 - [ ] 使用 `HandleSystemException` 处理异常
@@ -1388,6 +1531,7 @@ public async Task<Result> MethodName(Type param)
 ## 📚 文档体系
 
 ### 需求文档 (始终最新)
+
 - [需求文档总目录](docs/requirements/) - 系统当前需求的权威参考
 - [系统总览](docs/requirements/system-overview.md) - 系统定位、架构、模块总览
 - [功能需求规格](docs/requirements/functional-requirements.md) - 详细功能需求定义
@@ -1395,17 +1539,20 @@ public async Task<Result> MethodName(Type param)
 - [架构设计](docs/requirements/architecture-design.md) - 系统架构设计方案
 
 ### 过程文档 (历史记录)
+
 - [过程文档总目录](docs/process/) - 项目过程和决策历史
 - [重构过程记录](docs/process/refactoring/) - 各轮重构的详细过程
 - [设计决策记录](docs/process/decisions/) - 重要架构和功能决策
 - [分析报告](docs/process/analysis/) - 项目分析过程和发现问题
 
 ### 开发规范文档
+
 - [开发规范](docs/开发规范.md) - 完整的开发规范指南
 - [前后端契约规范](docs/前后端契约规范.md) - 前后端接口约定
 - [API响应标准](docs/API响应标准.md) - API 响应格式规范
 
 ### UltraThink架构文档
+
 - [UltraThink三层架构重构完成报告](docs/ultrathink/ultrathink-three-layer-refactoring-complete-20250830.md) - 重构总结与成果
 - [UltraThink API响应标准](docs/architecture/ultrathink-api-response-standards-20250817.md) - API设计标准
 - [UltraThink控制器设计模式](docs/architecture/ultrathink-controller-design-patterns-20250817.md) - 控制器架构
@@ -1415,7 +1562,9 @@ public async Task<Result> MethodName(Type param)
 ### AutoMapper 配置（重要）
 
 - 使用 AutoMapper 15.0.1
+
 - **必须提供 ILoggerFactory 参数**
+
 - 示例配置：
   
   ```csharp
@@ -1426,6 +1575,7 @@ public async Task<Result> MethodName(Type param)
   ```
 
 **测试中的AutoMapper配置**：
+
 ```csharp
 // 在单元测试中的正确配置方式
 var config = new MapperConfiguration(cfg => 
@@ -1485,3 +1635,4 @@ var mapper = config.CreateMapper();
 - 在文件头添加 BOM 头以确保正确识别编码
 - 注意跨平台兼容性和编码一致性
 - windows 10 中文版 开发环境
+- 用中文显示，用中文回复。

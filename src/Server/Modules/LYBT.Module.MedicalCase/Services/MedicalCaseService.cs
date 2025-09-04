@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.MedicalCase;
+using LYBT.Module.MedicalCase.Interfaces;
 
 namespace LYBT.Module.MedicalCase.Services
 {
@@ -12,12 +13,12 @@ namespace LYBT.Module.MedicalCase.Services
     /// </summary>
     public class MedicalCaseService : IMedicalCaseService
     {
-        private readonly MedicalCaseQueryService _queryService;
-        private readonly MedicalCaseBusinessService _businessService;
+        private readonly IMedicalCaseQueryService _queryService;
+        private readonly IMedicalCaseBusinessService _businessService;
 
         public MedicalCaseService(
-            MedicalCaseQueryService queryService,
-            MedicalCaseBusinessService businessService)
+            IMedicalCaseQueryService queryService,
+            IMedicalCaseBusinessService businessService)
         {
             _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
             _businessService = businessService ?? throw new ArgumentNullException(nameof(businessService));

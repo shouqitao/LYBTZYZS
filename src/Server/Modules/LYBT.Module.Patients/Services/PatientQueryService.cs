@@ -10,6 +10,7 @@ using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Enums;
+using LYBT.Module.Patients.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -19,7 +20,7 @@ namespace LYBT.Module.Patients.Services
     /// 患者查询服务 - UltraThink架构
     /// 职责：所有查询、搜索和统计相关逻辑
     /// </summary>
-    public class PatientQueryService
+    public class PatientQueryService : IPatientQueryService
     {
         private readonly AppDbContext _context;
         private readonly IMapper _mapper;

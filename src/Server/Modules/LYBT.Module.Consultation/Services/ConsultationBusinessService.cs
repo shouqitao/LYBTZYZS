@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using AutoMapper;
 using LYBT.Infrastructure.Data;
+using LYBT.Module.Consultation.Interfaces;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Enums;
@@ -15,7 +16,7 @@ namespace LYBT.Module.Consultation.Services
     /// 看诊业务服务 - UltraThink架构
     /// 职责：业务逻辑处理，工作流管理，状态变更，中医四诊处理
     /// </summary>
-    public class ConsultationBusinessService
+    public class ConsultationBusinessService : IConsultationBusinessService
     {
         private readonly AppDbContext _context;
         private readonly IMapper _mapper;

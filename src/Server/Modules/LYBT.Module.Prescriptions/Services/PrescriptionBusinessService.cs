@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using LYBT.Infrastructure.Data;
 using LYBT.Entities.Prescriptions;
+using LYBT.Module.Prescriptions.Interfaces;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Common;
@@ -17,7 +18,7 @@ namespace LYBT.Module.Prescriptions.Services
     /// 处方业务服务 - UltraThink架构
     /// 职责：业务逻辑处理，复制处方，验方模板应用，状态变更，业务规则验证
     /// </summary>
-    public class PrescriptionBusinessService
+    public class PrescriptionBusinessService : IPrescriptionBusinessService
     {
         private readonly AppDbContext _context;
         private readonly IMapper _mapper;

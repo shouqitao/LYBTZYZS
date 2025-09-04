@@ -173,6 +173,10 @@
                             Margin="0,0,10,0"
                             Style="{StaticResource SuccessButton}"
                             Command="{Binding AddCommand}"/>
+                    <Button Content="导入患者" 
+                            Margin="0,0,10,0"
+                            Style="{StaticResource InfoButton}"
+                            Command="{Binding ImportWizardCommand}"/>
                     <Button Content="刷新" 
                             Style="{StaticResource SecondaryButton}"
                             Command="{Binding RefreshCommand}"/>

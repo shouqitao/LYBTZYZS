@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using LYBT.Module.Consultation.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Enums;
@@ -13,12 +14,12 @@ namespace LYBT.Module.Consultation.Services
     /// </summary>
     public class ConsultationService : IConsultationService
     {
-        private readonly ConsultationQueryService _queryService;
-        private readonly ConsultationBusinessService _businessService;
+        private readonly IConsultationQueryService _queryService;
+        private readonly IConsultationBusinessService _businessService;
 
         public ConsultationService(
-            ConsultationQueryService queryService,
-            ConsultationBusinessService businessService)
+            IConsultationQueryService queryService,
+            IConsultationBusinessService businessService)
         {
             _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
             _businessService = businessService ?? throw new ArgumentNullException(nameof(businessService));

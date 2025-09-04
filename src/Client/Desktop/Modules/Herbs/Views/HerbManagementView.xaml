@@ -173,6 +173,11 @@
                             Style="{StaticResource InfoButton}"
                             Command="{Binding ExportTemplateCommand}"
                             ToolTip="下载药材导入Excel模板"/>
+                    <Button Content="📤 导出药材" 
+                            Margin="0,0,10,0"
+                            Style="{StaticResource WarningButton}"
+                            Command="{Binding ExportHerbsCommand}"
+                            ToolTip="导出药材数据到Excel文件"/>
                     <Button Content="+ 新增中药材" 
                             Margin="0,0,10,0"
                             Style="{StaticResource SuccessButton}"

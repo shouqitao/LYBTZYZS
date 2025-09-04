@@ -182,7 +182,7 @@
                 <!-- 操作按钮区域 -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal">
                     <Button Content="📥 导入模板" 
-                            Command="{Binding ImportTemplatesCommand}"
+                            Command="{Binding ImportFormulasCommand}"
                             Style="{StaticResource SecondaryButton}"
                             Margin="0,0,10,0"
                             ToolTip="从Excel/CSV文件导入验方模板"/>
@@ -191,6 +191,11 @@
                             Style="{StaticResource InfoButton}"
                             Margin="0,0,10,0"
                             ToolTip="下载验方模板导入格式"/>
+                    <Button Content="📤 导出验方" 
+                            Command="{Binding ExportFormulasCommand}"
+                            Style="{StaticResource WarningButton}"
+                            Margin="0,0,10,0"
+                            ToolTip="导出验方数据到Excel文件"/>
                     <Button Content="+ 新增验方" 
                             Command="{Binding AddFormulaCommand}"
                             Style="{StaticResource SuccessButton}"

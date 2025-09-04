@@ -16,8 +16,8 @@ public static class UnifiedMiddlewareConfiguration
         // 1. 开发环境专用中间件
         app.ConfigureDevelopmentMiddleware();
         
-        // 2. 安全和性能中间件
-        app.ConfigureSecurityMiddleware();
+        // 2. 安全和性能中间件 (简化版 - 仅基础功能)
+        // app.ConfigureSecurityMiddleware(); // Removed - enterprise security features
         
         // 3. API文档中间件
         app.ConfigureSwaggerMiddleware();
@@ -51,22 +51,14 @@ public static class UnifiedMiddlewareConfiguration
         return app;
     }
 
-    /// <summary>
-    /// 配置安全和性能中间件
-    /// </summary>
-    private static WebApplication ConfigureSecurityMiddleware(this WebApplication app)
-    {
-        // 安全头中间件
-        app.UseSecurityHeaders();
-
-        // 新的异常处理中间件
-        app.UseExceptionHandler();
-
-        // 性能监控中间件
-        app.UsePerformanceMonitoring();
-
-        return app;
-    }
+    // /// <summary>
+    // /// 配置安全和性能中间件 - REMOVED (enterprise features beyond constraint)
+    // /// </summary>
+    // private static WebApplication ConfigureSecurityMiddleware(this WebApplication app)
+    // {
+    //     // Features removed to comply with UltraThink constraints
+    //     return app;
+    // }
 
     /// <summary>
     /// 配置Swagger API文档中间件

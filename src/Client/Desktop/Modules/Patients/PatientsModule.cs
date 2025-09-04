@@ -33,6 +33,7 @@ namespace LYBT.Desktop.Patients
         containerRegistry.RegisterForNavigation<PatientManagementView, PatientManagementViewModel>();
         containerRegistry.RegisterForNavigation<PatientAddEditDialog, PatientAddEditDialogViewModel>();
         containerRegistry.RegisterForNavigation<PatientDetailView, PatientDetailViewModel>();
+        containerRegistry.RegisterForNavigation<PatientImportWizardView, PatientImportWizardViewModel>();
     }
 }
 }

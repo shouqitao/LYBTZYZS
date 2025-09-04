@@ -15,15 +15,15 @@ namespace LYBT.Module.Auth.Services
     /// </summary>
     public class AuthService : IAuthService
     {
-        private readonly AuthCore _authCore;
-        private readonly IJwtAuthenticationService _jwtService;
+        private readonly IAuthQueryService _queryService;
+        private readonly IAuthBusinessService _businessService;
 
         public AuthService(
-            AuthCore authCore,
-            IJwtAuthenticationService jwtService)
+            IAuthQueryService queryService,
+            IAuthBusinessService businessService)
         {
-            _authCore = authCore ?? throw new ArgumentNullException(nameof(authCore));
-            _jwtService = jwtService ?? throw new ArgumentNullException(nameof(jwtService));
+            _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
+            _businessService = businessService ?? throw new ArgumentNullException(nameof(businessService));
         }
 
         #region 核心认证操作
@@ -32,23 +32,13 @@ namespace LYBT.Module.Auth.Services
         /// 验证用户凭据
         /// </summary>
         public async Task<ServiceResult<string>> VerifyCredentialsAsync(LoginRequest request)
-        {
-            var userResult = await _authCore.GetUserForAuthenticationAsync(request.Username);
-            if (!userResult.IsSuccess)
-                return ServiceResult<string>.Failure(userResult.ErrorMessage ?? "获取用户信息失败");
-
-            var passwordResult = await _authCore.ValidatePasswordAsync(userResult.Data!, request.Password);
-            if (!passwordResult.IsSuccess || !passwordResult.Data)
-                return ServiceResult<string>.Failure("用户名或密码错误");
-
-            return ServiceResult<string>.Success("凭据验证成功");
-        }
+            => await _businessService.VerifyCredentialsAsync(request);
 
         /// <summary>
         /// 修改系统管理员密码
         /// </summary>
         public async Task<ServiceResult<bool>> ChangeSysAdminPasswordAsync(ChangeSysAdminPassword request)
-            => await _authCore.ChangeSysAdminPasswordAsync(request.NewPassword);
+            => await _businessService.ChangeSysAdminPasswordAsync(request.NewPassword);
 
         #endregion
 
@@ -58,13 +48,13 @@ namespace LYBT.Module.Auth.Services
         /// 用户登录
         /// </summary>
         public async Task<ServiceResult<LoginResponse>> LoginAsync(LoginRequest request)
-            => await _authCore.ProcessLoginAsync(request);
+            => await _businessService.ProcessLoginAsync(request);
 
         /// <summary>
         /// 用户登出
         /// </summary>
         public async Task<ServiceResult<bool>> LogoutAsync(LogoutRequest request)
-            => await _authCore.ProcessLogoutAsync(request);
+            => await _businessService.ProcessLogoutAsync(request);
 
         #endregion
 
@@ -74,13 +64,13 @@ namespace LYBT.Module.Auth.Services
         /// 验证Token有效性
         /// </summary>
         public async Task<ServiceResult<bool>> ValidateTokenAsync(string token)
-            => await _authCore.ValidateTokenAsync(token);
+            => await _queryService.ValidateTokenAsync(token);
 
         /// <summary>
         /// 获取会话信息
         /// </summary>
         public async Task<ServiceResult<object>> GetSessionInfoAsync(string token)
-            => await _authCore.GetSessionInfoAsync(token);
+            => await _queryService.GetSessionInfoAsync(token);
 
         /// <summary>
         /// 刷新Token - UltraThink简化版（移除复杂刷新机制）
