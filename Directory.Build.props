@@ -3,6 +3,9 @@
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <SolutionDir Condition="'$(SolutionDir)' == ''">$(MSBuildThisFileDirectory)</SolutionDir>
     
+    <!-- 启用中央包管理 (Central Package Management) -->
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    
     <!-- 解决Assembly属性重复问题 -->
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
