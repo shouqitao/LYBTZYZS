@@ -23,8 +23,8 @@ namespace LYBT.Module.Consultation
             services.AddScoped<IConsultationRepository, ConsultationRepository>();
 
             // UltraThink双层架构服务 - 查询和业务逻辑分离
-            services.AddScoped<ConsultationQueryService>();
-            services.AddScoped<ConsultationBusinessService>();
+            services.AddScoped<IConsultationQueryService, ConsultationQueryService>();
+            services.AddScoped<IConsultationBusinessService, ConsultationBusinessService>();
 
             // 主服务 - UltraThink纯委托模式，委托给专业服务层
             services.AddScoped<IConsultationService, ConsultationService>();

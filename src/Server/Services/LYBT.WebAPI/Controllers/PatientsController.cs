@@ -322,11 +322,10 @@ namespace LYBT.WebAPI.Controllers
                 }
 
                 // 数据验证
-                var invalidItems = ValidateImportData(patients);
+                var invalidItems = ValidateImportDataPrivate(patients);
                 if (invalidItems.Any())
                 {
-                    return ValidationFail<object>($"存在 {invalidItems.Count} 条无效数据", 
-                        ApiErrorCodes.VALIDATION_FAILED, invalidItems);
+                    return ValidationFail<object>($"存在 {invalidItems.Count} 条无效数据");
                 }
 
                 var result = await _service.ImportPatientsAsync(patients);
@@ -462,9 +461,9 @@ namespace LYBT.WebAPI.Controllers
         #region 私有验证方法
 
         /// <summary>
-        /// 验证导入数据
+        /// 验证导入数据（私有方法）
         /// </summary>
-        private List<object> ValidateImportData(List<PatientCreateDto> patients)
+        private List<object> ValidateImportDataPrivate(List<PatientCreateDto> patients)
         {
             var invalidItems = new List<object>();
             
@@ -483,7 +482,7 @@ namespace LYBT.WebAPI.Controllers
                     errors.Add("手机号码格式不正确");
 
                 // 身份证验证
-                if (!string.IsNullOrWhiteSpace(patient.IDNumber) && !IsValidIdCard(patient.IDNumber))
+                if (!string.IsNullOrWhiteSpace(patient.IdNumber) && !IsValidIdCard(patient.IdNumber))
                     errors.Add("身份证号码格式不正确");
 
                 // 性别验证
@@ -541,7 +540,7 @@ namespace LYBT.WebAPI.Controllers
                     result.IsValid = false;
                 }
 
-                if (!string.IsNullOrWhiteSpace(patient.IDNumber) && !IsValidIdCard(patient.IDNumber))
+                if (!string.IsNullOrWhiteSpace(patient.IdNumber) && !IsValidIdCard(patient.IdNumber))
                 {
                     result.Errors.Add("身份证号码格式不正确");
                     result.IsValid = false;

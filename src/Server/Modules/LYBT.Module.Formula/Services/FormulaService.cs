@@ -127,6 +127,12 @@ namespace LYBT.Module.Formula.Services
         public async Task<ServiceResult<bool>> UnshareFormulaAsync(Guid id, Guid operatorId, string operatorName)
             => await _businessService.UnshareFormulaAsync(id, operatorId, operatorName);
 
+        public async Task<ServiceResult<FormulaDto>> CloneFormulaAsync(Guid formulaId, string newName, Guid userId)
+        {
+            // 委托给BusinessService的复制功能
+            return await _businessService.CopyAsync(formulaId, newName);
+        }
+
         #endregion
 
         #region 批量操作 - 必需功能（用户明确需求）

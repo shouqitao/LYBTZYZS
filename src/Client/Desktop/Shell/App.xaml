@@ -9,6 +9,9 @@
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
+                <!-- UltraThink 统一设计系统 - UI/UX优化Phase 1 -->
+                <ResourceDictionary Source="../Resources/UnifiedDesignSystem.xaml"/>
+                
                 <!-- 引入通用样式 -->
                 <ResourceDictionary Source="Styles/CommonStyles.xaml"/>
                 

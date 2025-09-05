@@ -37,28 +37,26 @@ namespace LYBT.Module.MedicalCase.Services
         /// <summary>
         /// 根据ID获取医疗案例详情
         /// </summary>
-        public async Task<ServiceResult<MedicalCaseDetailDto>> GetByIdAsync(Guid id)
+        public async Task<ServiceResult<MedicalCaseDto>> GetByIdAsync(Guid caseId)
         {
             try
             {
-                if (id == Guid.Empty)
-                    return ServiceResult<MedicalCaseDetailDto>.Failure("医疗案例ID不能为空");
+                if (caseId == Guid.Empty)
+                    return ServiceResult<MedicalCaseDto>.Failure("医疗案例ID不能为空");
 
                 var medicalCase = await _context.MedicalCases
-                    .Include(mc => mc.Consultation)
-                    .Include(mc => mc.Prescription)
-                    .FirstOrDefaultAsync(mc => mc.Id == id);
+                    .FirstOrDefaultAsync(mc => mc.Id == caseId);
 
                 if (medicalCase == null)
-                    return ServiceResult<MedicalCaseDetailDto>.Failure("医疗案例不存在");
+                    return ServiceResult<MedicalCaseDto>.Failure("医疗案例不存在");
 
-                var dto = _mapper.Map<MedicalCaseDetailDto>(medicalCase);
-                return ServiceResult<MedicalCaseDetailDto>.Success(dto);
+                var dto = _mapper.Map<MedicalCaseDto>(medicalCase);
+                return ServiceResult<MedicalCaseDto>.Success(dto);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "获取医疗案例详情失败: {Id}", id);
-                return ServiceResult<MedicalCaseDetailDto>.Failure($"获取医疗案例详情失败: {ex.Message}");
+                _logger.LogError(ex, "获取医疗案例详情失败: {Id}", caseId);
+                return ServiceResult<MedicalCaseDto>.Failure($"获取医疗案例详情失败: {ex.Message}");
             }
         }
 
@@ -218,40 +216,76 @@ namespace LYBT.Module.MedicalCase.Services
         }
 
         /// <summary>
-        /// 获取医疗案例历史记录（简化版）
+        /// 获取历史医疗案例
         /// </summary>
-        public async Task<ServiceResult<List<object>>> GetHistoryAsync(Guid id)
+        public async Task<ServiceResult<List<MedicalCaseDto>>> GetHistoryAsync(Guid patientId)
         {
             try
             {
-                if (id == Guid.Empty)
-                    return ServiceResult<List<object>>.Failure("医疗案例ID不能为空");
+                if (patientId == Guid.Empty)
+                    return ServiceResult<List<MedicalCaseDto>>.Failure("患者ID不能为空");
 
-                // 简化历史记录实现 - 返回案例基本信息作为历史
-                var medicalCase = await _context.MedicalCases
-                    .Where(mc => mc.Id == id)
-                    .Select(mc => new
-                    {
-                        Id = mc.Id,
-                        Action = "案例创建",
-                        Timestamp = mc.ConsultationDate,
-                        Details = $"患者: {mc.PatientName}, 医生: {mc.DoctorName}",
-                        Status = mc.Status.ToString()
-                    })
-                    .FirstOrDefaultAsync();
+                // 获取患者的已完成案例作为历史记录
+                var historyCases = await _context.MedicalCases
+                    .Where(mc => mc.PatientId == patientId && 
+                               (mc.Status == MedicalCaseStatus.Completed || mc.Status == MedicalCaseStatus.Cancelled))
+                    .OrderByDescending(mc => mc.ConsultationDate)
+                    .ToListAsync();
 
-                var history = new List<object>();
-                if (medicalCase != null)
-                {
-                    history.Add(medicalCase);
-                }
-
-                return ServiceResult<List<object>>.Success(history);
+                var dtos = _mapper.Map<List<MedicalCaseDto>>(historyCases);
+                return ServiceResult<List<MedicalCaseDto>>.Success(dtos);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "获取医疗案例历史记录失败: {Id}", id);
-                return ServiceResult<List<object>>.Failure($"获取历史记录失败: {ex.Message}");
+                _logger.LogError(ex, "获取历史医疗案例失败: {PatientId}", patientId);
+                return ServiceResult<List<MedicalCaseDto>>.Failure($"获取历史医疗案例失败: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 获取医疗案例统计信息
+        /// </summary>
+        public async Task<ServiceResult<object>> GetStatisticsAsync()
+        {
+            try
+            {
+                // 统计各种状态的案例数量
+                var statistics = await _context.MedicalCases
+                    .GroupBy(mc => mc.Status)
+                    .Select(g => new
+                    {
+                        Status = g.Key.ToString(),
+                        Count = g.Count()
+                    })
+                    .ToListAsync();
+
+                // 按日期统计本月案例数量
+                var currentMonth = DateTime.Now.Date.AddDays(1 - DateTime.Now.Day);
+                var monthlyCount = await _context.MedicalCases
+                    .Where(mc => mc.ConsultationDate >= currentMonth)
+                    .CountAsync();
+
+                // 今日案例数量
+                var today = DateTime.Now.Date;
+                var todayCount = await _context.MedicalCases
+                    .Where(mc => mc.ConsultationDate.Date == today)
+                    .CountAsync();
+
+                var result = new
+                {
+                    StatusStatistics = statistics,
+                    MonthlyCount = monthlyCount,
+                    TodayCount = todayCount,
+                    TotalCount = await _context.MedicalCases.CountAsync(),
+                    GeneratedAt = DateTime.Now
+                };
+
+                return ServiceResult<object>.Success(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取医疗案例统计信息失败");
+                return ServiceResult<object>.Failure($"获取统计信息失败: {ex.Message}");
             }
         }
 

@@ -196,6 +196,21 @@ namespace LYBT.Infrastructure.Web
         /// </summary>
         public const string DATA_INTEGRITY_VIOLATION = "DATA_INTEGRITY_VIOLATION";
 
+        /// <summary>
+        /// 数据验证失败
+        /// </summary>
+        public const string VALIDATION_FAILED = "VALIDATION_FAILED";
+
+        /// <summary>
+        /// 数据导出失败
+        /// </summary>
+        public const string DATA_EXPORT_FAILED = "DATA_EXPORT_FAILED";
+
+        /// <summary>
+        /// 数据查询失败
+        /// </summary>
+        public const string DATA_QUERY_FAILED = "DATA_QUERY_FAILED";
+
         #endregion
 
         #region 文件操作相关错误

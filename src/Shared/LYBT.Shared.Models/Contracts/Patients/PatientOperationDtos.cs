@@ -236,6 +236,15 @@ namespace LYBT.Shared.Models.Contracts.Patients
     }
 
     /// <summary>
+    /// 患者搜索DTO - 别名支持
+    /// 为向后兼容而创建的别名，实际使用PatientPagedQueryDto
+    /// </summary>
+    public class PatientSearchDto : PatientPagedQueryDto
+    {
+        // 继承所有PatientPagedQueryDto功能，提供别名支持
+    }
+
+    /// <summary>
     /// 患者搜索结果DTO
     /// </summary>
     public class PatientSearchResultDto

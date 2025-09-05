@@ -55,5 +55,13 @@ namespace LYBT.Module.Auth.Interfaces {
         /// <param name="failedLoginCount">失败登录次数</param>
         /// <param name="lockoutEnd">锁定结束时间</param>
         Task UpdateUserSecurityAsync(Guid userId, int failedLoginCount, DateTime? lockoutEnd);
+
+        /// <summary>
+        /// 更新失败登录信息
+        /// </summary>
+        /// <param name="userId">用户ID</param>
+        /// <param name="failedLoginCount">失败登录次数</param>
+        /// <param name="lockoutEnd">锁定结束时间</param>
+        Task UpdateFailedLoginInfoAsync(Guid userId, int failedLoginCount, DateTime? lockoutEnd);
     }
 }

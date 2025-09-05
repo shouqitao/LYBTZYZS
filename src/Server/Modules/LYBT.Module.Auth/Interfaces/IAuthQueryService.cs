@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Auth;
+using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Entities.Users;
 
 namespace LYBT.Module.Auth.Interfaces

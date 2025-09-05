@@ -1,12 +1,11 @@
 using System;
 using System.Threading.Tasks;
 using AutoMapper;
-using LYBT.Infrastructure.Interfaces.Repositories;
 using LYBT.Module.Auth.Interfaces;
 using LYBT.Entities.Users;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Auth;
-using LYBT.Module.Auth.Services;
+using LYBT.Shared.Models.Contracts.Users;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Module.Auth.Services

@@ -544,7 +544,7 @@ namespace LYBT.WebAPI.Controllers
 
                 LogOperation("批量导入验方", importResult, null);
                 
-                return Success(importResult, $"导入完成: 成功{successCount}条, 失败{failureCount}条");
+                return Success<object>(importResult, $"导入完成: 成功{successCount}条, 失败{failureCount}条");
             }
             catch (Exception ex)
             {
@@ -638,7 +638,7 @@ namespace LYBT.WebAPI.Controllers
                     }
                 };
 
-                return Success(template, "获取导入模板成功");
+                return Success<object>(template, "获取导入模板成功");
             }
             catch (Exception ex)
             {
@@ -725,7 +725,7 @@ namespace LYBT.WebAPI.Controllers
                     ValidationDetails = validationResult.Where(r => !((bool)((dynamic)r).IsValid)).ToList()
                 };
 
-                return Success(summary, "数据验证完成");
+                return Success<object>(summary, "数据验证完成");
             }
             catch (Exception ex)
             {

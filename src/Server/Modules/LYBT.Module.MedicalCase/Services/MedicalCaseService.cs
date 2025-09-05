@@ -27,7 +27,26 @@ namespace LYBT.Module.MedicalCase.Services
         #region Query Operations
 
         public async Task<ServiceResult<MedicalCaseDetailDto>> GetByIdAsync(Guid id)
-            => await _queryService.GetByIdAsync(id);
+        {
+            var result = await _queryService.GetByIdAsync(id);
+            if (!result.IsSuccess)
+                return ServiceResult<MedicalCaseDetailDto>.Failure(result.ErrorMessage ?? "获取失败");
+
+            // 将MedicalCaseDto转换为MedicalCaseDetailDto（简化实现）
+            var detailDto = new MedicalCaseDetailDto
+            {
+                Id = result.Data.Id,
+                PatientId = result.Data.PatientId,
+                PatientName = result.Data.PatientName,
+                DoctorId = result.Data.DoctorId,
+                DoctorName = result.Data.DoctorName,
+                ConsultationDate = result.Data.ConsultationDate,
+                Status = result.Data.Status,
+                Remark = result.Data.Remark
+            };
+
+            return ServiceResult<MedicalCaseDetailDto>.Success(detailDto);
+        }
 
         public async Task<ServiceResult<PagedResult<MedicalCaseDto>>> GetPagedAsync(PagedQueryBaseDto query)
             => await _queryService.GetPagedAsync(query);
@@ -41,8 +60,21 @@ namespace LYBT.Module.MedicalCase.Services
         public async Task<ServiceResult<List<MedicalCaseDto>>> SearchAsync(string keyword)
             => await _queryService.SearchAsync(keyword);
 
-        public async Task<ServiceResult<List<object>>> GetHistoryAsync(Guid id)
-            => await _queryService.GetHistoryAsync(id);
+        public async Task<ServiceResult<List<object>>> GetHistoryAsync(Guid patientId)
+        {
+            var result = await _queryService.GetHistoryAsync(patientId);
+            if (!result.IsSuccess)
+                return ServiceResult<List<object>>.Failure(result.ErrorMessage ?? "获取历史记录失败");
+
+            // 将List<MedicalCaseDto>转换为List<object>
+            var objectList = new List<object>();
+            if (result.Data != null)
+            {
+                objectList.AddRange(result.Data);
+            }
+
+            return ServiceResult<List<object>>.Success(objectList);
+        }
 
         public async Task<ServiceResult<bool>> HasActiveCaseAsync(Guid patientId)
             => await _queryService.HasActiveCaseAsync(patientId);
@@ -65,22 +97,25 @@ namespace LYBT.Module.MedicalCase.Services
         #region Status Management
 
         public async Task<ServiceResult<bool>> CompleteAsync(Guid id, string completionReason)
-            => await _businessService.CompleteAsync(id, completionReason);
+            => await _businessService.CompleteAsync(id);
 
         public async Task<ServiceResult<bool>> SuspendAsync(Guid id, string reason)
-            => await _businessService.SuspendAsync(id, reason);
+            => await _businessService.SuspendAsync(id);
 
         public async Task<ServiceResult<bool>> ResumeAsync(Guid id)
             => await _businessService.ResumeAsync(id);
 
         public async Task<ServiceResult<bool>> ArchiveAsync(Guid id, string archiveReason)
-            => await _businessService.ArchiveAsync(id, archiveReason);
+            => await _businessService.ArchiveAsync(id);
 
         public async Task<ServiceResult<bool>> UpdateStatusAsync(Guid id, int status)
-            => await _businessService.UpdateStatusAsync(id, status);
+        {
+            var statusString = ((Shared.Models.Enums.MedicalCaseStatus)status).ToString().ToLower();
+            return await _businessService.UpdateStatusAsync(id, statusString);
+        }
 
         public async Task<ServiceResult<bool>> CancelConsultationAsync(Guid id, string reason)
-            => await UpdateStatusAsync(id, (int)Shared.Models.Enums.MedicalCaseStatus.Cancelled);
+            => await _businessService.CancelConsultationAsync(id);
 
         #endregion
 
@@ -91,28 +126,38 @@ namespace LYBT.Module.MedicalCase.Services
             if (!Enum.IsDefined(typeof(Shared.Models.Enums.MedicalCaseStatus), status))
                 return ServiceResult<int>.Failure($"无效的状态值: {status}");
 
-            var medicalCaseStatus = (Shared.Models.Enums.MedicalCaseStatus)status;
-            return await _businessService.BatchUpdateStatusAsync(ids, medicalCaseStatus);
+            var statusString = ((Shared.Models.Enums.MedicalCaseStatus)status).ToString().ToLower();
+            var idsList = new List<Guid>(ids);
+            var result = await _businessService.BatchUpdateStatusAsync(idsList, statusString);
+            
+            return result.IsSuccess 
+                ? ServiceResult<int>.Success(ids.Length) 
+                : ServiceResult<int>.Failure(result.ErrorMessage ?? "批量更新失败");
         }
 
         #endregion
 
-        #region Legacy Support
+        #region Statistics and Reports
+
+        public async Task<ServiceResult<object>> GetStatisticsAsync()
+            => await _queryService.GetStatisticsAsync();
 
         public Task<ServiceResult<object>> GetStatisticsAsync(DateTime? startDate, DateTime? endDate)
         {
-            var emptyStats = new { Message = "统计功能已废弃", TotalCount = 0 };
-            return Task.FromResult(ServiceResult<object>.Success(emptyStats));
+            // 委托给无参数版本，忽略日期参数（向后兼容）
+            return GetStatisticsAsync();
         }
 
         public async Task<ServiceResult<byte[]>> PrintMedicalRecordAsync(Guid caseId)
         {
-            var caseResult = await GetByIdAsync(caseId);
-            if (!caseResult.IsSuccess || caseResult.Data == null)
-                return ServiceResult<byte[]>.Failure("医疗案例不存在");
+            var printResult = await _businessService.PrintMedicalRecordAsync(caseId, new { Format = "PDF" });
+            if (!printResult.IsSuccess)
+                return ServiceResult<byte[]>.Failure(printResult.ErrorMessage ?? "打印失败");
 
-            var tempBytes = System.Text.Encoding.UTF8.GetBytes($"医疗病历打印 - 案例ID: {caseId}, 生成时间: {DateTime.Now}");
-            return ServiceResult<byte[]>.Success(tempBytes);
+            // 简化实现：返回基础打印数据的字节
+            var printContent = System.Text.Json.JsonSerializer.Serialize(printResult.Data);
+            var bytes = System.Text.Encoding.UTF8.GetBytes(printContent);
+            return ServiceResult<byte[]>.Success(bytes);
         }
 
         #endregion

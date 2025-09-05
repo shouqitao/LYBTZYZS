@@ -4,140 +4,26 @@
              xmlns:prism="http://prismlibrary.com/"
              prism:ViewModelLocator.AutoWireViewModel="True">
     <UserControl.Resources>
-        <!-- 统一管理模块样式 - UltraThink设计系统 -->
-        <Style x:Key="BaseButton" TargetType="Button">
-            <Setter Property="Height" Value="32"/>
-            <Setter Property="Padding" Value="16,8"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Cursor" Value="Hand"/>
-        </Style>
+        <!-- UltraThink UI/UX优化 Phase 1: 使用统一设计系统样式 -->
+        <!-- 所有样式现在从UnifiedDesignSystem.xaml继承，只保留页面特定配置 -->
         
-        <Style x:Key="PrimaryButton" TargetType="Button" BasedOn="{StaticResource BaseButton}">
-            <Setter Property="Background" Value="#007BFF"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="BorderBrush" Value="#007BFF"/>
-        </Style>
-        
-        <Style x:Key="SuccessButton" TargetType="Button" BasedOn="{StaticResource BaseButton}">
-            <Setter Property="Background" Value="#28A745"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="BorderBrush" Value="#28A745"/>
-        </Style>
-        
-        <Style x:Key="InfoButton" TargetType="Button" BasedOn="{StaticResource BaseButton}">
-            <Setter Property="Background" Value="#17A2B8"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="BorderBrush" Value="#17A2B8"/>
-        </Style>
-        
-        <Style x:Key="SecondaryButton" TargetType="Button" BasedOn="{StaticResource BaseButton}">
-            <Setter Property="Background" Value="#6C757D"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="BorderBrush" Value="#6C757D"/>
-        </Style>
-        
-        <Style x:Key="DangerButton" TargetType="Button" BasedOn="{StaticResource BaseButton}">
-            <Setter Property="Background" Value="#DC3545"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="BorderBrush" Value="#DC3545"/>
-        </Style>
-        
-        <Style x:Key="ToolBarBorder" TargetType="Border">
-            <Setter Property="Background" Value="#F8F9FA"/>
-            <Setter Property="BorderBrush" Value="#E9ECEF"/>
-            <Setter Property="BorderThickness" Value="0,0,0,1"/>
-            <Setter Property="Padding" Value="20,15"/>
-        </Style>
-        
-        <Style x:Key="StatusBarBorder" TargetType="Border">
-            <Setter Property="Background" Value="#F8F9FA"/>
-            <Setter Property="BorderBrush" Value="#E9ECEF"/>
-            <Setter Property="BorderThickness" Value="0,1,0,0"/>
-            <Setter Property="Padding" Value="20,10"/>
-        </Style>
-        
-        <Style x:Key="LabelText" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Foreground" Value="#495057"/>
-            <Setter Property="VerticalAlignment" Value="Center"/>
-            <Setter Property="Margin" Value="0,0,10,0"/>
-        </Style>
-        
-        <Style x:Key="SearchTextBox" TargetType="TextBox">
-            <Setter Property="Width" Value="250"/>
-            <Setter Property="Height" Value="32"/>
-            <Setter Property="Padding" Value="12,6"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="BorderBrush" Value="#DEE2E6"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Background" Value="White"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
-        </Style>
-        
-        <Style x:Key="ManagementDataGrid" TargetType="DataGrid">
-            <Setter Property="AutoGenerateColumns" Value="False"/>
-            <Setter Property="CanUserAddRows" Value="False"/>
-            <Setter Property="CanUserDeleteRows" Value="False"/>
-            <Setter Property="CanUserReorderColumns" Value="False"/>
-            <Setter Property="CanUserSortColumns" Value="True"/>
-            <Setter Property="IsReadOnly" Value="True"/>
-            <Setter Property="SelectionMode" Value="Single"/>
-            <Setter Property="AlternatingRowBackground" Value="#F8F9FA"/>
-            <Setter Property="GridLinesVisibility" Value="Horizontal"/>
-            <Setter Property="HorizontalGridLinesBrush" Value="#E9ECEF"/>
-            <Setter Property="BorderBrush" Value="#DEE2E6"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Background" Value="White"/>
-            <Setter Property="FontSize" Value="14"/>
+        <!-- 看诊管理专用DataGrid样式（支持行选择高亮和鼠标悬停效果） -->
+        <Style x:Key="ConsultationManagementDataGrid" TargetType="DataGrid" BasedOn="{StaticResource BaseDataGrid}">
+            <Setter Property="RowBackground" Value="{StaticResource SurfaceBrush}"/>
+            <Setter Property="AlternatingRowBackground" Value="{StaticResource BackgroundBrush}"/>
             <Setter Property="Margin" Value="20"/>
         </Style>
         
-        <Style x:Key="DataGridRowStyle" TargetType="DataGridRow">
-            <Setter Property="Height" Value="40"/>
+        <!-- 看诊管理专用行样式（增强的交互效果） -->
+        <Style x:Key="ConsultationDataGridRow" TargetType="DataGridRow" BasedOn="{StaticResource BaseDataGridRow}">
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#E3F2FD"/>
+                    <Setter Property="Background" Value="#E8F5E8"/>
                 </Trigger>
                 <Trigger Property="IsSelected" Value="True">
-                    <Setter Property="Background" Value="#BBDEFB"/>
+                    <Setter Property="Background" Value="#C8E6C9"/>
                 </Trigger>
             </Style.Triggers>
-        </Style>
-        
-        <Style x:Key="DataGridColumnHeaderStyle" TargetType="DataGridColumnHeader">
-            <Setter Property="Background" Value="#F8F9FA"/>
-            <Setter Property="Foreground" Value="#495057"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Padding" Value="12,8"/>
-            <Setter Property="BorderBrush" Value="#DEE2E6"/>
-            <Setter Property="BorderThickness" Value="0,0,1,1"/>
-            <Setter Property="HorizontalContentAlignment" Value="Left"/>
-        </Style>
-        
-        <Style x:Key="StatusText" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Foreground" Value="#6C757D"/>
-            <Setter Property="VerticalAlignment" Value="Center"/>
-        </Style>
-        
-        <Style x:Key="PaginationButton" TargetType="Button" BasedOn="{StaticResource BaseButton}">
-            <Setter Property="Background" Value="White"/>
-            <Setter Property="Foreground" Value="#495057"/>
-            <Setter Property="BorderBrush" Value="#DEE2E6"/>
-            <Setter Property="Padding" Value="12,6"/>
-            <Setter Property="Margin" Value="2,0"/>
-            <Setter Property="MinWidth" Value="50"/>
-        </Style>
-        
-        <Style x:Key="PageNumberBorder" TargetType="Border">
-            <Setter Property="Background" Value="#007BFF"/>
-            <Setter Property="BorderBrush" Value="#007BFF"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Padding" Value="12,6"/>
-            <Setter Property="Margin" Value="2,0"/>
         </Style>
     </UserControl.Resources>
     
@@ -149,7 +35,7 @@
         </Grid.RowDefinitions>
 
         <!-- 工具栏 -->
-        <Border Grid.Row="0" Style="{StaticResource ToolBarBorder}">
+        <Border Grid.Row="0" Style="{StaticResource ToolBarContainer}">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -195,9 +81,9 @@
         <DataGrid Grid.Row="1" 
                   ItemsSource="{Binding Items}"
                   SelectedItem="{Binding SelectedItem}"
-                  Style="{StaticResource ManagementDataGrid}"
-                  RowStyle="{StaticResource DataGridRowStyle}"
-                  ColumnHeaderStyle="{StaticResource DataGridColumnHeaderStyle}">
+                  Style="{StaticResource ConsultationManagementDataGrid}"
+                  RowStyle="{StaticResource ConsultationDataGridRow}"
+                  ColumnHeaderStyle="{StaticResource BaseDataGridColumnHeader}">
             <DataGrid.Columns>
                 <!-- 看诊日期 -->
                 <DataGridTextColumn Header="看诊日期" 
@@ -306,7 +192,7 @@
         </DataGrid>
 
         <!-- 状态栏和分页 -->
-        <Border Grid.Row="2" Style="{StaticResource StatusBarBorder}">
+        <Border Grid.Row="2" Style="{StaticResource StatusBarContainer}">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -315,7 +201,7 @@
 
                 <!-- 统计信息 -->
                 <StackPanel Grid.Column="0" Orientation="Horizontal">
-                    <TextBlock Style="{StaticResource StatusText}"
+                    <TextBlock Style="{StaticResource StatusLabel}"
                                Text="{Binding StatusText}"/>
                 </StackPanel>
 
@@ -324,15 +210,15 @@
                             Orientation="Horizontal" 
                             VerticalAlignment="Center">
                     <Button Content="首页" 
-                            Style="{StaticResource PaginationButton}"
+                            Style="{StaticResource PaginationControlButton}"
                             Command="{Binding FirstPageCommand}"/>
                     
                     <Button Content="上一页" 
-                            Style="{StaticResource PaginationButton}"
+                            Style="{StaticResource PaginationControlButton}"
                             Command="{Binding PreviousPageCommand}"/>
                     
-                    <Border Style="{StaticResource PageNumberBorder}">
-                        <TextBlock Foreground="White" FontWeight="Bold" FontSize="13">
+                    <Border Style="{StaticResource PaginationCurrentPage}">
+                        <TextBlock Style="{StaticResource PaginationPageNumber}">
                             <TextBlock.Text>
                                 <MultiBinding StringFormat="{}{0} / {1}">
                                     <Binding Path="CurrentPage"/>
@@ -343,11 +229,11 @@
                     </Border>
                     
                     <Button Content="下一页" 
-                            Style="{StaticResource PaginationButton}"
+                            Style="{StaticResource PaginationControlButton}"
                             Command="{Binding NextPageCommand}"/>
                     
                     <Button Content="末页" 
-                            Style="{StaticResource PaginationButton}"
+                            Style="{StaticResource PaginationControlButton}"
                             Command="{Binding LastPageCommand}"/>
                 </StackPanel>
             </Grid>

@@ -22,8 +22,8 @@ public static class PatientsModule
         services.AddScoped<IPatientRepository, OptimizedPatientRepository>();
         
         // UltraThink双层架构服务 - 查询和业务逻辑分离
-        services.AddScoped<PatientQueryService>();
-        services.AddScoped<PatientBusinessService>();
+        services.AddScoped<IPatientQueryService, PatientQueryService>();
+        services.AddScoped<IPatientBusinessService, PatientBusinessService>();
         
         // 主服务 - UltraThink纯委托模式，委托给专业服务层
         services.AddScoped<IPatientService, PatientService>();

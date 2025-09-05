@@ -23,8 +23,8 @@ namespace LYBT.Module.MedicalCase
             services.AddScoped<IMedicalCaseRepository, MedicalCaseRepository>();
 
             // UltraThink双层架构服务 - 查询和业务逻辑分离
-            services.AddScoped<MedicalCaseQueryService>();
-            services.AddScoped<MedicalCaseBusinessService>();
+            services.AddScoped<IMedicalCaseQueryService, MedicalCaseQueryService>();
+            services.AddScoped<IMedicalCaseBusinessService, MedicalCaseBusinessService>();
 
             // 主服务 - UltraThink纯委托模式，委托给专业服务层
             services.AddScoped<IMedicalCaseService, MedicalCaseService>();

@@ -161,15 +161,15 @@ namespace LYBT.Module.MedicalCase.Services
         /// <summary>
         /// 完成医疗案例
         /// </summary>
-        public async Task<ServiceResult<bool>> CompleteAsync(Guid id, string completionReason)
+        public async Task<ServiceResult<bool>> CompleteAsync(Guid caseId)
         {
             try
             {
-                if (id == Guid.Empty)
+                if (caseId == Guid.Empty)
                     return ServiceResult<bool>.Failure("医疗案例ID不能为空");
 
                 var medicalCase = await _context.MedicalCases
-                    .FirstOrDefaultAsync(mc => mc.Id == id);
+                    .FirstOrDefaultAsync(mc => mc.Id == caseId);
 
                 if (medicalCase == null)
                     return ServiceResult<bool>.Failure("医疗案例不存在");
@@ -180,24 +180,18 @@ namespace LYBT.Module.MedicalCase.Services
 
                 // 更新状态
                 medicalCase.Status = MedicalCaseStatus.Completed;
-                if (!string.IsNullOrWhiteSpace(completionReason))
-                {
-                    medicalCase.Remark = string.IsNullOrWhiteSpace(medicalCase.Remark) 
-                        ? $"完成原因: {completionReason}"
-                        : $"{medicalCase.Remark}\n完成原因: {completionReason}";
-                }
 
                 _context.MedicalCases.Update(medicalCase);
                 await _context.SaveChangesAsync();
 
-                _logger.LogInformation("完成医疗案例: {PatientName} ({Id}), 原因: {Reason}", 
-                    medicalCase.PatientName, medicalCase.Id, completionReason);
+                _logger.LogInformation("完成医疗案例: {PatientName} ({Id})", 
+                    medicalCase.PatientName, medicalCase.Id);
 
                 return ServiceResult<bool>.Success(true);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "完成医疗案例失败: {Id}", id);
+                _logger.LogError(ex, "完成医疗案例失败: {Id}", caseId);
                 return ServiceResult<bool>.Failure($"完成医疗案例失败: {ex.Message}");
             }
         }
@@ -205,15 +199,15 @@ namespace LYBT.Module.MedicalCase.Services
         /// <summary>
         /// 暂停医疗案例
         /// </summary>
-        public async Task<ServiceResult<bool>> SuspendAsync(Guid id, string reason)
+        public async Task<ServiceResult<bool>> SuspendAsync(Guid caseId)
         {
             try
             {
-                if (id == Guid.Empty)
+                if (caseId == Guid.Empty)
                     return ServiceResult<bool>.Failure("医疗案例ID不能为空");
 
                 var medicalCase = await _context.MedicalCases
-                    .FirstOrDefaultAsync(mc => mc.Id == id);
+                    .FirstOrDefaultAsync(mc => mc.Id == caseId);
 
                 if (medicalCase == null)
                     return ServiceResult<bool>.Failure("医疗案例不存在");
@@ -224,24 +218,18 @@ namespace LYBT.Module.MedicalCase.Services
 
                 // 更新状态（使用已注册状态表示暂停）
                 medicalCase.Status = MedicalCaseStatus.Registered;
-                if (!string.IsNullOrWhiteSpace(reason))
-                {
-                    medicalCase.Remark = string.IsNullOrWhiteSpace(medicalCase.Remark) 
-                        ? $"暂停原因: {reason}"
-                        : $"{medicalCase.Remark}\n暂停原因: {reason}";
-                }
 
                 _context.MedicalCases.Update(medicalCase);
                 await _context.SaveChangesAsync();
 
-                _logger.LogInformation("暂停医疗案例: {PatientName} ({Id}), 原因: {Reason}", 
-                    medicalCase.PatientName, medicalCase.Id, reason);
+                _logger.LogInformation("暂停医疗案例: {PatientName} ({Id})", 
+                    medicalCase.PatientName, medicalCase.Id);
 
                 return ServiceResult<bool>.Success(true);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "暂停医疗案例失败: {Id}", id);
+                _logger.LogError(ex, "暂停医疗案例失败: {Id}", caseId);
                 return ServiceResult<bool>.Failure($"暂停医疗案例失败: {ex.Message}");
             }
         }
@@ -249,15 +237,15 @@ namespace LYBT.Module.MedicalCase.Services
         /// <summary>
         /// 恢复医疗案例
         /// </summary>
-        public async Task<ServiceResult<bool>> ResumeAsync(Guid id)
+        public async Task<ServiceResult<bool>> ResumeAsync(Guid caseId)
         {
             try
             {
-                if (id == Guid.Empty)
+                if (caseId == Guid.Empty)
                     return ServiceResult<bool>.Failure("医疗案例ID不能为空");
 
                 var medicalCase = await _context.MedicalCases
-                    .FirstOrDefaultAsync(mc => mc.Id == id);
+                    .FirstOrDefaultAsync(mc => mc.Id == caseId);
 
                 if (medicalCase == null)
                     return ServiceResult<bool>.Failure("医疗案例不存在");
@@ -269,7 +257,7 @@ namespace LYBT.Module.MedicalCase.Services
                 // 检查患者是否已有其他活跃案例
                 var hasActiveCase = await _context.MedicalCases
                     .AnyAsync(mc => mc.PatientId == medicalCase.PatientId && 
-                                  mc.Id != id &&
+                                  mc.Id != caseId &&
                                   mc.Status == MedicalCaseStatus.InConsultation);
 
                 if (hasActiveCase)
@@ -286,7 +274,7 @@ namespace LYBT.Module.MedicalCase.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "恢复医疗案例失败: {Id}", id);
+                _logger.LogError(ex, "恢复医疗案例失败: {Id}", caseId);
                 return ServiceResult<bool>.Failure($"恢复医疗案例失败: {ex.Message}");
             }
         }
@@ -294,15 +282,15 @@ namespace LYBT.Module.MedicalCase.Services
         /// <summary>
         /// 归档医疗案例
         /// </summary>
-        public async Task<ServiceResult<bool>> ArchiveAsync(Guid id, string archiveReason)
+        public async Task<ServiceResult<bool>> ArchiveAsync(Guid caseId)
         {
             try
             {
-                if (id == Guid.Empty)
+                if (caseId == Guid.Empty)
                     return ServiceResult<bool>.Failure("医疗案例ID不能为空");
 
                 var medicalCase = await _context.MedicalCases
-                    .FirstOrDefaultAsync(mc => mc.Id == id);
+                    .FirstOrDefaultAsync(mc => mc.Id == caseId);
 
                 if (medicalCase == null)
                     return ServiceResult<bool>.Failure("医疗案例不存在");
@@ -312,24 +300,17 @@ namespace LYBT.Module.MedicalCase.Services
                     return ServiceResult<bool>.Failure("只有已完成的案例才能归档");
 
                 // 归档处理（在当前系统中，归档状态和完成状态相同）
-                if (!string.IsNullOrWhiteSpace(archiveReason))
-                {
-                    medicalCase.Remark = string.IsNullOrWhiteSpace(medicalCase.Remark) 
-                        ? $"归档原因: {archiveReason}"
-                        : $"{medicalCase.Remark}\n归档原因: {archiveReason}";
-                }
-
                 _context.MedicalCases.Update(medicalCase);
                 await _context.SaveChangesAsync();
 
-                _logger.LogInformation("归档医疗案例: {PatientName} ({Id}), 原因: {Reason}", 
-                    medicalCase.PatientName, medicalCase.Id, archiveReason);
+                _logger.LogInformation("归档医疗案例: {PatientName} ({Id})", 
+                    medicalCase.PatientName, medicalCase.Id);
 
                 return ServiceResult<bool>.Success(true);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "归档医疗案例失败: {Id}", id);
+                _logger.LogError(ex, "归档医疗案例失败: {Id}", caseId);
                 return ServiceResult<bool>.Failure($"归档医疗案例失败: {ex.Message}");
             }
         }
@@ -337,19 +318,38 @@ namespace LYBT.Module.MedicalCase.Services
         /// <summary>
         /// 更新医疗案例状态
         /// </summary>
-        public async Task<ServiceResult<bool>> UpdateStatusAsync(Guid id, int status)
+        public async Task<ServiceResult<bool>> UpdateStatusAsync(Guid caseId, string status)
         {
             try
             {
-                if (id == Guid.Empty)
+                if (caseId == Guid.Empty)
                     return ServiceResult<bool>.Failure("医疗案例ID不能为空");
 
-                if (!Enum.IsDefined(typeof(MedicalCaseStatus), status))
-                    return ServiceResult<bool>.Failure($"无效的状态值: {status}");
+                if (string.IsNullOrWhiteSpace(status))
+                    return ServiceResult<bool>.Failure("状态值不能为空");
 
-                var medicalCaseStatus = (MedicalCaseStatus)status;
+                // 根据状态字符串映射到枚举
+                MedicalCaseStatus medicalCaseStatus;
+                switch (status.ToLower())
+                {
+                    case "registered":
+                        medicalCaseStatus = MedicalCaseStatus.Registered;
+                        break;
+                    case "inconsultation":
+                        medicalCaseStatus = MedicalCaseStatus.InConsultation;
+                        break;
+                    case "completed":
+                        medicalCaseStatus = MedicalCaseStatus.Completed;
+                        break;
+                    case "cancelled":
+                        medicalCaseStatus = MedicalCaseStatus.Cancelled;
+                        break;
+                    default:
+                        return ServiceResult<bool>.Failure($"无效的状态值: {status}");
+                }
+
                 var medicalCase = await _context.MedicalCases
-                    .FirstOrDefaultAsync(mc => mc.Id == id);
+                    .FirstOrDefaultAsync(mc => mc.Id == caseId);
 
                 if (medicalCase == null)
                     return ServiceResult<bool>.Failure("医疗案例不存在");
@@ -367,7 +367,7 @@ namespace LYBT.Module.MedicalCase.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "更新医疗案例状态失败: {Id}", id);
+                _logger.LogError(ex, "更新医疗案例状态失败: {Id}", caseId);
                 return ServiceResult<bool>.Failure($"更新医疗案例状态失败: {ex.Message}");
             }
         }
@@ -375,27 +375,130 @@ namespace LYBT.Module.MedicalCase.Services
         /// <summary>
         /// 批量更新医疗案例状态
         /// </summary>
-        public async Task<ServiceResult<int>> BatchUpdateStatusAsync(Guid[] ids, MedicalCaseStatus status)
+        public async Task<ServiceResult<bool>> BatchUpdateStatusAsync(List<Guid> caseIds, string status)
         {
             try
             {
-                if (ids == null || ids.Length == 0)
-                    return ServiceResult<int>.Success(0);
+                if (caseIds == null || caseIds.Count == 0)
+                    return ServiceResult<bool>.Success(true);
+
+                if (string.IsNullOrWhiteSpace(status))
+                    return ServiceResult<bool>.Failure("状态值不能为空");
+
+                // 根据状态字符串映射到枚举
+                MedicalCaseStatus medicalCaseStatus;
+                switch (status.ToLower())
+                {
+                    case "registered":
+                        medicalCaseStatus = MedicalCaseStatus.Registered;
+                        break;
+                    case "inconsultation":
+                        medicalCaseStatus = MedicalCaseStatus.InConsultation;
+                        break;
+                    case "completed":
+                        medicalCaseStatus = MedicalCaseStatus.Completed;
+                        break;
+                    case "cancelled":
+                        medicalCaseStatus = MedicalCaseStatus.Cancelled;
+                        break;
+                    default:
+                        return ServiceResult<bool>.Failure($"无效的状态值: {status}");
+                }
 
                 var updatedCount = await _context.MedicalCases
-                    .Where(mc => ids.Contains(mc.Id))
+                    .Where(mc => caseIds.Contains(mc.Id))
                     .ExecuteUpdateAsync(setters => setters
-                        .SetProperty(mc => mc.Status, status));
+                        .SetProperty(mc => mc.Status, medicalCaseStatus));
 
                 _logger.LogInformation("批量更新医疗案例状态完成: 更新了 {Count} 条记录，状态: {Status}", 
-                    updatedCount, status);
+                    updatedCount, medicalCaseStatus);
 
-                return ServiceResult<int>.Success(updatedCount);
+                return ServiceResult<bool>.Success(true);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "批量更新医疗案例状态失败");
-                return ServiceResult<int>.Failure($"批量更新失败: {ex.Message}");
+                return ServiceResult<bool>.Failure($"批量更新失败: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 取消看诊
+        /// </summary>
+        public async Task<ServiceResult<bool>> CancelConsultationAsync(Guid caseId)
+        {
+            try
+            {
+                if (caseId == Guid.Empty)
+                    return ServiceResult<bool>.Failure("医疗案例ID不能为空");
+
+                var medicalCase = await _context.MedicalCases
+                    .FirstOrDefaultAsync(mc => mc.Id == caseId);
+
+                if (medicalCase == null)
+                    return ServiceResult<bool>.Failure("医疗案例不存在");
+
+                // 业务规则：只有注册状态和进行中状态的案例可以取消
+                if (medicalCase.Status != MedicalCaseStatus.Registered && 
+                    medicalCase.Status != MedicalCaseStatus.InConsultation)
+                    return ServiceResult<bool>.Failure("只有注册状态或进行中的案例才能取消");
+
+                // 设置为取消状态
+                medicalCase.Status = MedicalCaseStatus.Cancelled;
+
+                _context.MedicalCases.Update(medicalCase);
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation("取消看诊: {PatientName} ({Id})", 
+                    medicalCase.PatientName, medicalCase.Id);
+
+                return ServiceResult<bool>.Success(true);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "取消看诊失败: {Id}", caseId);
+                return ServiceResult<bool>.Failure($"取消看诊失败: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 打印病历记录
+        /// </summary>
+        public async Task<ServiceResult<object>> PrintMedicalRecordAsync(Guid caseId, object printOptions)
+        {
+            try
+            {
+                if (caseId == Guid.Empty)
+                    return ServiceResult<object>.Failure("医疗案例ID不能为空");
+
+                var medicalCase = await _context.MedicalCases
+                    .FirstOrDefaultAsync(mc => mc.Id == caseId);
+
+                if (medicalCase == null)
+                    return ServiceResult<object>.Failure("医疗案例不存在");
+
+                // 构建打印数据
+                var printData = new
+                {
+                    CaseId = medicalCase.Id,
+                    PatientName = medicalCase.PatientName,
+                    DoctorName = medicalCase.DoctorName,
+                    ConsultationDate = medicalCase.ConsultationDate,
+                    Status = medicalCase.Status.ToString(),
+                    Remark = medicalCase.Remark,
+                    PrintTime = DateTime.Now,
+                    PrintOptions = printOptions
+                };
+
+                _logger.LogInformation("打印病历记录: {PatientName} ({Id})", 
+                    medicalCase.PatientName, medicalCase.Id);
+
+                return ServiceResult<object>.Success(printData);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "打印病历记录失败: {Id}", caseId);
+                return ServiceResult<object>.Failure($"打印病历记录失败: {ex.Message}");
             }
         }
 
