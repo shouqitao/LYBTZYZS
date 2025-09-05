@@ -32,6 +32,11 @@ namespace LYBT.Module.Formula.Services
 
         #region 分页查询
 
+        /// <summary>
+        /// 分页查询验方
+        /// </summary>
+        /// <param name="query">查询条件，包含分页参数和筛选条件</param>
+        /// <returns>包含验方分页结果的服务结果，失败时返回错误消息</returns>
         public async Task<ServiceResult<PagedResult<FormulaDto>>> GetPagedAsync(FormulaQueryDto query)
         {
             try
@@ -67,6 +72,11 @@ namespace LYBT.Module.Formula.Services
             }
         }
 
+        /// <summary>
+        /// 搜索验方（分页）
+        /// </summary>
+        /// <param name="query">搜索查询条件，支持关键字搜索验方名称、功效、用法</param>
+        /// <returns>包含搜索结果分页数据的服务结果，失败时返回错误消息</returns>
         public async Task<ServiceResult<PagedResult<FormulaDto>>> SearchFormulasAsync(PagedQueryBaseDto query)
         {
             try
@@ -111,6 +121,10 @@ namespace LYBT.Module.Formula.Services
 
         #region 分类和模板查询
 
+        /// <summary>
+        /// 获取验方分类列表
+        /// </summary>
+        /// <returns>包含所有验方分类的服务结果，包括经典验方、临床验方、个人验方</returns>
         public Task<ServiceResult<List<string>>> GetCategoriesAsync()
         {
             try
@@ -126,6 +140,11 @@ namespace LYBT.Module.Formula.Services
             }
         }
 
+        /// <summary>
+        /// 获取验方列表
+        /// </summary>
+        /// <param name="keyword">可选的搜索关键字，用于筛选验方名称</param>
+        /// <returns>包含符合条件验方列表的服务结果，失败时返回错误消息</returns>
         public async Task<ServiceResult<List<FormulaDto>>> GetFormulasAsync(string? keyword = null)
         {
             try
@@ -151,6 +170,10 @@ namespace LYBT.Module.Formula.Services
             }
         }
 
+        /// <summary>
+        /// 获取所有启用状态的验方
+        /// </summary>
+        /// <returns>包含所有启用验方列表的服务结果，按名称排序</returns>
         public async Task<ServiceResult<List<FormulaDto>>> GetAllFormulasAsync()
         {
             try
@@ -173,7 +196,10 @@ namespace LYBT.Module.Formula.Services
 
         #region 智能推荐（简化版）
 
-        // 新增方法：GetTemplatesAsync
+        /// <summary>
+        /// 获取验方模板列表
+        /// </summary>
+        /// <returns>包含共享验方模板列表的服务结果，用于处方开具时的模板选择</returns>
         public async Task<ServiceResult<List<FormulaDto>>> GetTemplatesAsync()
         {
             try
@@ -196,7 +222,12 @@ namespace LYBT.Module.Formula.Services
             }
         }
 
-        // 新增方法：GetByTypeAsync
+        /// <summary>
+        /// 根据验方类型查询验方
+        /// </summary>
+        /// <param name="formulaType">验方类型关键字，不能为空</param>
+        /// <returns>包含指定类型验方列表的服务结果，失败时返回错误消息</returns>
+        /// <exception cref="ArgumentException">当验方类型为空时</exception>
         public async Task<ServiceResult<List<FormulaDto>>> GetByTypeAsync(string formulaType)
         {
             try
@@ -226,7 +257,12 @@ namespace LYBT.Module.Formula.Services
             }
         }
 
-        // 修复方法：GetRecommendationsForSyndromeAsync - 返回FormulaRecommendationDto
+        /// <summary>
+        /// 根据症候推荐验方
+        /// </summary>
+        /// <param name="syndrome">症候描述，不能为空</param>
+        /// <returns>包含推荐验方列表的服务结果，按匹配度排序，限制最多10个推荐</returns>
+        /// <exception cref="ArgumentException">当症候为空时</exception>
         public async Task<ServiceResult<List<FormulaRecommendationDto>>> GetRecommendationsForSyndromeAsync(string syndrome)
         {
             try
@@ -264,7 +300,14 @@ namespace LYBT.Module.Formula.Services
             }
         }
 
-        // 新增方法：GetRecommendationsAsync - 重载版本
+        /// <summary>
+        /// 根据症状和诊断推荐验方
+        /// </summary>
+        /// <param name="symptoms">患者症状描述</param>
+        /// <param name="diagnosis">诊断结果</param>
+        /// <param name="doctorId">医生ID</param>
+        /// <returns>包含智能推荐验方列表的服务结果，综合考虑症状和诊断匹配度</returns>
+        /// <exception cref="ArgumentException">当症状和诊断都为空时</exception>
         public async Task<ServiceResult<List<FormulaRecommendationDto>>> GetRecommendationsAsync(string symptoms, string diagnosis, Guid doctorId)
         {
             try
@@ -307,7 +350,12 @@ namespace LYBT.Module.Formula.Services
             }
         }
 
-        // 修复方法签名：支持两个参数的GetFormulasAsync
+        /// <summary>
+        /// 根据关键字和分类查询验方
+        /// </summary>
+        /// <param name="keyword">可选的搜索关键字，用于匹配验方名称或功效</param>
+        /// <param name="category">可选的验方分类筛选条件</param>
+        /// <returns>包含符合条件验方列表的服务结果，支持多条件组合筛选</returns>
         public async Task<ServiceResult<List<FormulaDto>>> GetFormulasAsync(string? keyword, string? category)
         {
             try
@@ -341,6 +389,12 @@ namespace LYBT.Module.Formula.Services
             }
         }
 
+        /// <summary>
+        /// 根据症候获取验方推荐（通用对象格式）
+        /// </summary>
+        /// <param name="syndrome">症候描述，不能为空</param>
+        /// <returns>包含验方推荐信息的服务结果，返回通用对象格式便于前端展示</returns>
+        /// <exception cref="ArgumentException">当症候为空时</exception>
         public async Task<ServiceResult<List<object>>> GetRecommendationsAsync(string syndrome)
         {
             try
@@ -436,8 +490,10 @@ namespace LYBT.Module.Formula.Services
         #region 搜索接口 - 简化版接口兼容性
 
         /// <summary>
-        /// 根据关键字搜索验方 - 委托给GetFormulasAsync
+        /// 根据关键字搜索验方
         /// </summary>
+        /// <param name="keyword">搜索关键字，用于匹配验方名称</param>
+        /// <returns>包含搜索结果的服务结果，委托给GetFormulasAsync方法实现</returns>
         public async Task<ServiceResult<List<FormulaDto>>> SearchAsync(string keyword)
         {
             return await GetFormulasAsync(keyword);
