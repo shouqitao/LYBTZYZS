@@ -44,19 +44,19 @@
 
   <!-- Prism and WPF Framework -->
   <ItemGroup Label="WPF and MVVM Framework">
-    <PackageReference Include="Prism.Core" Version="8.1.97" />
-    <PackageReference Include="Prism.DryIoc" Version="8.1.97" />
-    <PackageReference Include="Prism.Wpf" Version="8.1.97" />
+    <PackageReference Include="Prism.Core"  />
+    <PackageReference Include="Prism.DryIoc"  />
+    <PackageReference Include="Prism.Wpf"  />
   </ItemGroup>
 
   <!-- UI and Design -->
   <ItemGroup Label="UI Framework">
-    <PackageReference Include="MaterialDesignThemes" Version="4.6.1" />
+    <PackageReference Include="MaterialDesignThemes"  />
   </ItemGroup>
 
   <!-- Logging -->
   <ItemGroup Label="Logging">
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions"  />
   </ItemGroup>
 
   <!-- Project References -->

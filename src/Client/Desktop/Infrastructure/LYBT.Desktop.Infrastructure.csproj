@@ -44,17 +44,17 @@
 
   <!-- WPF and UI Dependencies -->
   <ItemGroup Label="WPF Framework">
-    <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.135" />
-    <PackageReference Include="NPOI" Version="2.7.4" />
+    <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" />
+    <PackageReference Include="NPOI" />
   </ItemGroup>
 
   <!-- HTTP Communication -->
   <ItemGroup Label="HTTP and API">
-    <PackageReference Include="Refit" Version="8.0.0" />
-    <PackageReference Include="Refit.Newtonsoft.Json" Version="8.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Http.Polly" Version="8.0.0" />
-    <PackageReference Include="Polly.Extensions.Http" Version="3.0.0" />
+    <PackageReference Include="Refit" />
+    <PackageReference Include="Refit.Newtonsoft.Json" />
+    <PackageReference Include="Microsoft.Extensions.Http" />
+    <PackageReference Include="Microsoft.Extensions.Http.Polly" />
+    <PackageReference Include="Polly.Extensions.Http" />
   </ItemGroup>
 
   <!-- Project References -->
