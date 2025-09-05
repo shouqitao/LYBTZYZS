@@ -98,7 +98,13 @@ namespace LYBT.Infrastructure.Repositories
 
             if (entity != null && _queryOptions.EnableCache)
             {
-                _cache.Set(cacheKey, entity, DefaultCacheDuration);
+                // 配置缓存选项，解决SizeLimit配置问题
+                var options = new MemoryCacheEntryOptions
+                {
+                    SlidingExpiration = DefaultCacheDuration
+                };
+                options.SetSize(1); // 设置缓存项大小
+                _cache.Set(cacheKey, entity, options);
             }
 
             return entity;
@@ -181,7 +187,7 @@ namespace LYBT.Infrastructure.Repositories
 
             if (_queryOptions.EnableCache)
             {
-                _cache.Set(cacheKey, result, DefaultCacheDuration);
+                SetCacheSafely(cacheKey, result, DefaultCacheDuration);
             }
 
             return result;
@@ -249,7 +255,7 @@ namespace LYBT.Infrastructure.Repositories
                     // 添加到缓存
                     if (_queryOptions.EnableCache)
                     {
-                        _cache.Set($"{CacheKeyPrefix}{id}", entity, DefaultCacheDuration);
+                        SetCacheSafely($"{CacheKeyPrefix}{id}", entity, DefaultCacheDuration);
                     }
                 }
             }
@@ -277,7 +283,7 @@ namespace LYBT.Infrastructure.Repositories
 
             if (_queryOptions.EnableCache)
             {
-                _cache.Set(cacheKey, entities, DefaultCacheDuration);
+                SetCacheSafely(cacheKey, entities, DefaultCacheDuration);
             }
 
             return entities;
@@ -325,7 +331,7 @@ namespace LYBT.Infrastructure.Repositories
 
             if (_queryOptions.EnableCache)
             {
-                _cache.Set(cacheKey, exists, DefaultCacheDuration);
+                SetCacheSafely(cacheKey, exists, DefaultCacheDuration);
             }
 
             return exists;
@@ -888,6 +894,21 @@ namespace LYBT.Infrastructure.Repositories
             // 这里应该实现更智能的缓存失效策略
             // 可以使用缓存标签或者模式匹配来批量清理
             _logger.LogDebug("清理缓存: {EntityType}", typeof(TEntity).Name);
+        }
+
+        /// <summary>
+        /// 安全设置缓存项，自动配置Size以避免SizeLimit错误
+        /// </summary>
+        protected void SetCacheSafely<T>(string key, T value, TimeSpan expiration)
+        {
+            if (!_queryOptions.EnableCache) return;
+            
+            var options = new MemoryCacheEntryOptions
+            {
+                SlidingExpiration = expiration
+            };
+            options.SetSize(1); // 设置缓存项大小，解决SizeLimit配置问题
+            _cache.Set(key, value, options);
         }
 
         /// <summary>

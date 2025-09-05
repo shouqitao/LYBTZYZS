@@ -43,7 +43,13 @@ namespace LYBT.Module.Auth.Repositories
                 .AsNoTracking()
                 .FirstOrDefaultAsync(u => u.Username == userName);
 
-            _cache.Set(cacheKey, user, DefaultCacheDuration);
+            // 配置缓存选项，解决SizeLimit配置问题
+            var options = new MemoryCacheEntryOptions
+            {
+                SlidingExpiration = DefaultCacheDuration
+            };
+            options.SetSize(1); // 设置缓存项大小
+            _cache.Set(cacheKey, user, options);
             return user;
         }
 
