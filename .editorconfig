@@ -66,3 +66,36 @@ indent_size = 2
 # Markdown 文件
 [*.md]
 trim_trailing_whitespace = false
+
+# 警告级别配置 - 编译警告清理优化
+[*.cs]
+# 抑制StyleCop格式警告 (保持代码功能，减少噪音)
+dotnet_diagnostic.SA1633.severity = none   # 文件头版权
+dotnet_diagnostic.SA1200.severity = none   # using 语句位置  
+dotnet_diagnostic.SA1101.severity = none   # 成员访问前缀
+dotnet_diagnostic.SA1309.severity = none   # 字段名称
+dotnet_diagnostic.SA1516.severity = none   # 元素间空行
+dotnet_diagnostic.SA1600.severity = none   # 元素文档
+dotnet_diagnostic.SA1602.severity = none   # 枚举项文档
+dotnet_diagnostic.SA1649.severity = none   # 文件名匹配类名
+dotnet_diagnostic.SA1413.severity = none   # 尾随逗号
+dotnet_diagnostic.SA1505.severity = none   # 开放大括号后空行
+dotnet_diagnostic.SA1513.severity = none   # 闭合大括号后空行
+dotnet_diagnostic.SA1515.severity = none   # 单行注释前空行
+dotnet_diagnostic.SA1508.severity = none   # 闭合大括号前空行
+dotnet_diagnostic.SA1402.severity = none   # 单类型文件
+dotnet_diagnostic.SA1201.severity = none   # 元素顺序
+dotnet_diagnostic.SA1028.severity = none   # 尾随空格
+dotnet_diagnostic.SA1009.severity = none   # 右括号前空格
+dotnet_diagnostic.SA1110.severity = none   # 查询子句
+dotnet_diagnostic.SA1111.severity = none   # 查询子句
+dotnet_diagnostic.SA1112.severity = none   # 查询子句
+
+# 编译器警告级别调整
+dotnet_diagnostic.CS1591.severity = none   # 缺少XML文档注释
+dotnet_diagnostic.IDE1006.severity = none  # 命名规则
+
+# IDE建议级别调整
+dotnet_diagnostic.IDE0090.severity = none  # new 表达式简化
+dotnet_diagnostic.IDE0028.severity = none  # 集合初始化器
+dotnet_diagnostic.IDE0037.severity = none  # 成员名称简化

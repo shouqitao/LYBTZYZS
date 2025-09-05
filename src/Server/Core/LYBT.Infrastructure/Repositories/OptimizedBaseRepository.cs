@@ -901,8 +901,11 @@ namespace LYBT.Infrastructure.Repositories
         /// </summary>
         protected void SetCacheSafely<T>(string key, T value, TimeSpan expiration)
         {
-            if (!_queryOptions.EnableCache) return;
-            
+            if (!_queryOptions.EnableCache)
+            {
+                return;
+            }
+
             var options = new MemoryCacheEntryOptions
             {
                 SlidingExpiration = expiration
