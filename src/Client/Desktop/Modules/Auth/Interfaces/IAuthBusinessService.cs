@@ -28,5 +28,10 @@ public interface IAuthBusinessService
     /// </summary>
     Task<ServiceResult<LoginResponse>> RefreshTokenAsync();
     
+    /// <summary>
+    /// 修改系统管理员密码
+    /// </summary>
+    Task<ServiceResult> ChangeSysAdminPasswordAsync(ChangeSysAdminPassword request);
+    
     #endregion
 }

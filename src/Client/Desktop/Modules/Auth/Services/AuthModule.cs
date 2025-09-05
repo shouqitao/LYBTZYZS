@@ -78,21 +78,26 @@ public class AuthModule(
 
     /// <summary>
     /// 修改系统管理员密码 - IAuthModule版本
-    /// 小型诊所版本简化：暂不支持动态密码修改功能
+    /// 委托BusinessService处理完整密码修改流程，包括验证和安全检查
     /// </summary>
     /// <param name="request">密码修改请求</param>
-    /// <returns>操作失败结果</returns>
-    public Task<ServiceResult> ChangeSysAdminPasswordAsync(ChangeSysAdminPassword request)
-        => Task.FromResult(ServiceResult.Failure("简单诊所版本暂不支持密码修改"));
+    /// <returns>密码修改操作结果</returns>
+    public async Task<ServiceResult> ChangeSysAdminPasswordAsync(ChangeSysAdminPassword request)
+        => await _businessService.ChangeSysAdminPasswordAsync(request);
         
     /// <summary>
     /// 修改系统管理员密码 - IAuthService版本
-    /// 接口适配：返回布尔类型的失败结果
+    /// 接口适配：将ServiceResult转换为ServiceResult&lt;bool&gt;
     /// </summary>
     /// <param name="request">密码修改请求</param>
-    /// <returns>带布尔值的操作失败结果</returns>
-    Task<ServiceResult<bool>> IAuthService.ChangeSysAdminPasswordAsync(ChangeSysAdminPassword request)
-        => Task.FromResult(ServiceResult<bool>.Failure("简单诊所版本暂不支持密码修改"));
+    /// <returns>带布尔值的密码修改操作结果</returns>
+    async Task<ServiceResult<bool>> IAuthService.ChangeSysAdminPasswordAsync(ChangeSysAdminPassword request)
+    {
+        var result = await _businessService.ChangeSysAdminPasswordAsync(request);
+        return result.IsSuccess 
+            ? ServiceResult<bool>.Success(true, result.Message ?? "密码修改成功")
+            : ServiceResult<bool>.Failure(result.ErrorMessage ?? "密码修改失败");
+    }
 
     /// <summary>
     /// 验证用户凭据

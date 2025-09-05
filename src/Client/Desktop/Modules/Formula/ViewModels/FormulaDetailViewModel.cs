@@ -294,12 +294,19 @@ namespace LYBT.Desktop.Formula.ViewModels
             try
             {
                 var newName = $"{Formula.Name}_副本";
-                // TODO: 简化后的接口暂不支持复制功能
-                var result = ServiceResult<FormulaDto>.Failure("简单诊所版本暂不支持验方复制功能");
                 
-                if (result.IsSuccess)
+                // 使用默认用户ID（暂时方案）
+                var defaultUserId = Guid.NewGuid(); 
+                
+                var result = await _formulaService.CloneFormulaAsync(Formula.Id, newName, defaultUserId);
+                
+                if (result.IsSuccess && result.Data != null)
                 {
-                    await _dialogService.ShowSuccessAsync("验方复制成功", "成功");
+                    await _dialogService.ShowSuccessAsync($"验方复制成功！新验方: {result.Data.Name}", "成功");
+                    
+                    // 刷新当前页面显示新的验方信息
+                    FormulaId = result.Data.Id;
+                    await LoadDataAsync();
                 }
                 else
                 {

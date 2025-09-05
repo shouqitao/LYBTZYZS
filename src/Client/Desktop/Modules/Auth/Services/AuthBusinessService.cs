@@ -119,5 +119,45 @@ public class AuthBusinessService(
         }
     }
 
+    /// <summary>
+    /// 修改系统管理员密码处理
+    /// 执行完整密码修改流程：旧密码验证、新密码强度检查、密码更新、审计记录
+    /// </summary>
+    /// <param name="request">密码修改请求，包含旧密码和新密码</param>
+    /// <returns>密码修改操作结果</returns>
+    /// <exception cref="ArgumentNullException">当密码修改请求为空时抛出</exception>
+    public async Task<ServiceResult> ChangeSysAdminPasswordAsync(ChangeSysAdminPassword request)
+    {
+        ArgumentNullException.ThrowIfNull(request, nameof(request));
+
+        try
+        {
+            _logger.LogInformation("开始处理系统管理员密码修改");
+            
+            // 将 ChangeSysAdminPassword 转换为 ChangePasswordRequest
+            var changePasswordRequest = new ChangePasswordRequest
+            {
+                OldPassword = request.OldPassword,
+                NewPassword = request.NewPassword
+            };
+            
+            var response = await _authApi.ChangePasswordAsync(changePasswordRequest);
+            
+            if (response.Success)
+            {
+                _logger.LogInformation("系统管理员密码修改成功");
+                return ServiceResult.Success("密码修改成功");
+            }
+            
+            _logger.LogWarning("系统管理员密码修改失败: {Message}", response.Message);
+            return ServiceResult.Failure(response.Message ?? "密码修改失败");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "系统管理员密码修改过程发生异常");
+            return ServiceResult.Failure($"密码修改过程发生错误: {ex.Message}");
+        }
+    }
+
     #endregion
 }

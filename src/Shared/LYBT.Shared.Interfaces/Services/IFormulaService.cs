@@ -77,6 +77,11 @@ namespace LYBT.Shared.Interfaces.Services
         /// </summary>
         Task<ServiceResult<FormulaDto>> CreateFromPrescriptionAsync(Guid prescriptionId, string name);
 
+        /// <summary>
+        /// 克隆验方
+        /// </summary>
+        Task<ServiceResult<FormulaDto>> CloneFormulaAsync(Guid formulaId, string newName, Guid userId);
+
         #endregion
 
         #region 批量操作 - 必需功能（用户明确需求）
