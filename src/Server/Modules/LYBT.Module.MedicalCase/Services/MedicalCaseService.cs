@@ -11,18 +11,12 @@ namespace LYBT.Module.MedicalCase.Services
     /// <summary>
     /// 医疗案例服务 - UltraThink双层架构纯委托模式
     /// </summary>
-    public class MedicalCaseService : IMedicalCaseService
+    public class MedicalCaseService(
+        IMedicalCaseQueryService queryService,
+        IMedicalCaseBusinessService businessService) : IMedicalCaseService
     {
-        private readonly IMedicalCaseQueryService _queryService;
-        private readonly IMedicalCaseBusinessService _businessService;
-
-        public MedicalCaseService(
-            IMedicalCaseQueryService queryService,
-            IMedicalCaseBusinessService businessService)
-        {
-            _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
-            _businessService = businessService ?? throw new ArgumentNullException(nameof(businessService));
-        }
+        private readonly IMedicalCaseQueryService _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
+        private readonly IMedicalCaseBusinessService _businessService = businessService ?? throw new ArgumentNullException(nameof(businessService));
 
         #region Query Operations
 
