@@ -48,6 +48,20 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         #endregion
 
+        #region Events
+
+        /// <summary>
+        /// 导入完成事件
+        /// </summary>
+        public event EventHandler? ImportCompleted;
+
+        /// <summary>
+        /// 导入取消事件
+        /// </summary>
+        public event EventHandler? ImportCancelled;
+
+        #endregion
+
         #region Properties
 
         /// <summary>
@@ -295,8 +309,8 @@ namespace LYBT.Desktop.Patients.ViewModels
                 _importWorker?.CancelAsync();
             }
             
-            // 关闭窗口或返回主界面
-            // TODO: 实现窗口关闭逻辑
+            // 触发取消事件，让父窗口处理关闭逻辑
+            ImportCancelled?.Invoke(this, EventArgs.Empty);
         }
 
         private async void ExecuteDownloadTemplate()
@@ -759,6 +773,9 @@ namespace LYBT.Desktop.Patients.ViewModels
                 {
                     await _dialogService.ShowWarningAsync(message, "导入完成");
                 }
+
+                // 触发导入完成事件
+                ImportCompleted?.Invoke(this, EventArgs.Empty);
             }
         }
 

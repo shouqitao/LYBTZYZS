@@ -1,0 +1,334 @@
+{
+  "generation_time": "2025-09-05T10:08:07.402622",
+  "data_sources": {
+    "api_scan_time": "2025-09-05T10:03:30.789210",
+    "model_analysis_time": "2025-09-05T10:05:29.438950"
+  },
+  "coverage_analysis": {
+    "modules": {
+      "Auth": {
+        "module_name": "Auth",
+        "priority": "critical",
+        "api_coverage": 1.0,
+        "model_coverage": 0.3333333333333333,
+        "coverage_score": 0.6666666666666666,
+        "available_apis": [
+          "login",
+          "logout",
+          "refresh",
+          "validate",
+          "changeSysAdminPassword"
+        ],
+        "missing_apis": [],
+        "available_models": [
+          "LoginDto"
+        ],
+        "missing_models": [
+          "TokenDto",
+          "AuthResponse"
+        ],
+        "missing_features": [
+          "TokenDto",
+          "AuthResponse"
+        ]
+      },
+      "Users": {
+        "module_name": "Users",
+        "priority": "high",
+        "api_coverage": 0.75,
+        "model_coverage": 0.3333333333333333,
+        "coverage_score": 0.5416666666666666,
+        "available_apis": [
+          "profile",
+          "roles",
+          "active"
+        ],
+        "missing_apis": [
+          "reset-password"
+        ],
+        "available_models": [
+          "UserDto"
+        ],
+        "missing_models": [
+          "UserCreateDto",
+          "UserUpdateDto"
+        ],
+        "missing_features": [
+          "reset-password",
+          "UserCreateDto",
+          "UserUpdateDto"
+        ]
+      },
+      "Patients": {
+        "module_name": "Patients",
+        "priority": "critical",
+        "api_coverage": 0.6666666666666666,
+        "model_coverage": 1.0,
+        "coverage_score": 0.8333333333333333,
+        "available_apis": [
+          "import",
+          "export",
+          "export-template",
+          "validate-import"
+        ],
+        "missing_apis": [
+          "by-idcard",
+          "by-phone"
+        ],
+        "available_models": [
+          "PatientDto",
+          "PatientCreateDto",
+          "PatientUpdateDto"
+        ],
+        "missing_models": [],
+        "missing_features": [
+          "by-idcard",
+          "by-phone"
+        ]
+      },
+      "MedicalCase": {
+        "module_name": "MedicalCase",
+        "priority": "critical",
+        "api_coverage": 1.0,
+        "model_coverage": 1.0,
+        "coverage_score": 1.0,
+        "available_apis": [
+          "complete",
+          "suspend",
+          "resume",
+          "archive",
+          "statistics"
+        ],
+        "missing_apis": [],
+        "available_models": [
+          "MedicalCaseDto",
+          "MedicalCaseCreateDto",
+          "MedicalCaseUpdateDto"
+        ],
+        "missing_models": [],
+        "missing_features": []
+      },
+      "Consultation": {
+        "module_name": "Consultation",
+        "priority": "critical",
+        "api_coverage": 0.8,
+        "model_coverage": 1.0,
+        "coverage_score": 0.9,
+        "available_apis": [
+          "start",
+          "four-diagnosis",
+          "patient",
+          "statistics"
+        ],
+        "missing_apis": [
+          "medical-case"
+        ],
+        "available_models": [
+          "ConsultationDto",
+          "FourDiagnosisDto"
+        ],
+        "missing_models": [],
+        "missing_features": [
+          "medical-case"
+        ]
+      },
+      "Prescriptions": {
+        "module_name": "Prescriptions",
+        "priority": "high",
+        "api_coverage": 0.75,
+        "model_coverage": 1.0,
+        "coverage_score": 0.875,
+        "available_apis": [
+          "copy",
+          "validate",
+          "patient"
+        ],
+        "missing_apis": [
+          "medical-case"
+        ],
+        "available_models": [
+          "PrescriptionDto",
+          "PrescriptionItemDto"
+        ],
+        "missing_models": [],
+        "missing_features": [
+          "medical-case"
+        ]
+      },
+      "Herbs": {
+        "module_name": "Herbs",
+        "priority": "medium",
+        "api_coverage": 0.3333333333333333,
+        "model_coverage": 1.0,
+        "coverage_score": 0.6666666666666666,
+        "available_apis": [
+          "categories",
+          "search"
+        ],
+        "missing_apis": [
+          "import",
+          "export",
+          "export-template",
+          "validate-import"
+        ],
+        "available_models": [
+          "HerbDto",
+          "HerbCreateDto",
+          "HerbUpdateDto"
+        ],
+        "missing_models": [],
+        "missing_features": [
+          "import",
+          "export",
+          "export-template",
+          "validate-import"
+        ]
+      },
+      "Formulas": {
+        "module_name": "Formulas",
+        "priority": "medium",
+        "api_coverage": 0.8571428571428571,
+        "model_coverage": 1.0,
+        "coverage_score": 0.9285714285714286,
+        "available_apis": [
+          "templates",
+          "recommendations",
+          "categories",
+          "import",
+          "export",
+          "template"
+        ],
+        "missing_apis": [
+          "by-type"
+        ],
+        "available_models": [
+          "FormulaDto",
+          "FormulaCreateDto",
+          "FormulaUpdateDto"
+        ],
+        "missing_models": [],
+        "missing_features": [
+          "by-type"
+        ]
+      }
+    },
+    "overall_stats": {
+      "total_modules": 8,
+      "fully_covered": 3,
+      "partially_covered": 5,
+      "missing_coverage": 0,
+      "critical_issues": [
+        {
+          "module": "Auth",
+          "score": 0.6666666666666666,
+          "issues": [
+            "TokenDto",
+            "AuthResponse"
+          ]
+        }
+      ]
+    }
+  },
+  "consistency_analysis": {
+    "consistent_modules": [
+      {
+        "module": "MedicalCase",
+        "score": 1.0,
+        "status": "good"
+      },
+      {
+        "module": "Consultation",
+        "score": 0.8,
+        "status": "good"
+      },
+      {
+        "module": "Formulas",
+        "score": 0.8571428571428571,
+        "status": "good"
+      }
+    ],
+    "inconsistent_modules": [
+      {
+        "module": "Auth",
+        "score": 0.33333333333333326,
+        "api_coverage": 1.0,
+        "model_coverage": 0.3333333333333333,
+        "issues": [
+          "TokenDto",
+          "AuthResponse"
+        ]
+      },
+      {
+        "module": "Users",
+        "score": 0.5833333333333333,
+        "api_coverage": 0.75,
+        "model_coverage": 0.3333333333333333,
+        "issues": [
+          "reset-password",
+          "UserCreateDto",
+          "UserUpdateDto"
+        ]
+      },
+      {
+        "module": "Patients",
+        "score": 0.6666666666666666,
+        "api_coverage": 0.6666666666666666,
+        "model_coverage": 1.0,
+        "issues": [
+          "by-idcard",
+          "by-phone"
+        ]
+      },
+      {
+        "module": "Prescriptions",
+        "score": 0.75,
+        "api_coverage": 0.75,
+        "model_coverage": 1.0,
+        "issues": [
+          "medical-case"
+        ]
+      },
+      {
+        "module": "Herbs",
+        "score": 0.33333333333333326,
+        "api_coverage": 0.3333333333333333,
+        "model_coverage": 1.0,
+        "issues": [
+          "import",
+          "export",
+          "export-template",
+          "validate-import"
+        ]
+      }
+    ],
+    "major_gaps": [
+      {
+        "module": "Auth",
+        "gap_type": "api_ahead",
+        "gap_size": 0.6666666666666667
+      },
+      {
+        "module": "Herbs",
+        "gap_type": "model_ahead",
+        "gap_size": 0.6666666666666667
+      }
+    ],
+    "recommendations": [
+      "存在重大前后端功能差距，需要优先修复",
+      "超过半数模块存在一致性问题，建议系统性重构"
+    ]
+  },
+  "executive_summary": {
+    "overall_health": "excellent",
+    "coverage_percentage": 80.14880952380952,
+    "critical_issues_count": 1,
+    "key_findings": [
+      "发现 5 个模块存在前后端不一致",
+      "检测到 2 个重大功能差距"
+    ],
+    "priority_actions": [
+      "立即修复关键模块的功能缺失",
+      "优化前后端API契约一致性"
+    ]
+  }
+}

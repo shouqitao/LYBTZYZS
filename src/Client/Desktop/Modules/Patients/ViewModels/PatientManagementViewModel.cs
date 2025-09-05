@@ -645,9 +645,41 @@ namespace LYBT.Desktop.Patients.ViewModels
         {
             try
             {
-                // TODO: 这里需要实现打开PatientImportWizardView的逻辑
-                // 可以通过弹窗或者导航的方式打开向导界面
-                await _dialogService.ShowInformationAsync("导入向导功能即将开放", "功能提示");
+                // 创建导入向导窗口
+                var wizardWindow = new System.Windows.Window
+                {
+                    Title = "患者Excel导入向导",
+                    Width = 900,
+                    Height = 700,
+                    WindowStartupLocation = System.Windows.WindowStartupLocation.CenterOwner,
+                    ResizeMode = System.Windows.ResizeMode.CanResize,
+                    Owner = System.Windows.Application.Current.MainWindow
+                };
+
+                // 创建向导视图并设置为窗口内容
+                var wizardView = new LYBT.Desktop.Patients.Views.PatientImportWizardView();
+                wizardWindow.Content = wizardView;
+
+                // 获取向导ViewModel并设置事件处理
+                var wizardViewModel = wizardView.DataContext as LYBT.Desktop.Patients.ViewModels.PatientImportWizardViewModel;
+                if (wizardViewModel != null)
+                {
+                    // 订阅导入完成事件，刷新患者列表
+                    wizardViewModel.ImportCompleted += async (sender, e) =>
+                    {
+                        await RefreshDataAsync();
+                        wizardWindow.Close();
+                    };
+
+                    // 订阅取消事件
+                    wizardViewModel.ImportCancelled += (sender, e) =>
+                    {
+                        wizardWindow.Close();
+                    };
+                }
+
+                // 显示模态窗口
+                wizardWindow.ShowDialog();
             }
             catch (Exception ex)
             {

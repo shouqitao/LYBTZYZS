@@ -65,13 +65,26 @@ namespace LYBT.Module.Auth.Services
 
                 var user = userResult.Data;
 
+                // 2.5. 检查账户是否被锁定
+                if (user.LockoutEnd.HasValue && user.LockoutEnd.Value > DateTime.UtcNow)
+                {
+                    var remainingLockoutTime = user.LockoutEnd.Value.Subtract(DateTime.UtcNow);
+                    _logger.LogWarning("用户账户被锁定: {Username}, 锁定到期时间: {LockoutEnd}", request.Username, user.LockoutEnd.Value);
+                    return ServiceResult<LoginResponse>.Failure($"账户已被锁定，请在 {Math.Ceiling(remainingLockoutTime.TotalMinutes)} 分钟后重试");
+                }
+
                 // 3. 验证密码
                 var passwordResult = await ValidatePasswordAsync(user, request.Password);
                 if (!passwordResult.IsSuccess || !passwordResult.Data)
                 {
-                    _logger.LogWarning("密码验证失败: {Username}", request.Username);
+                    // 3.1. 密码验证失败，增加失败次数
+                    await IncrementFailedLoginCountAsync(user);
+                    _logger.LogWarning("密码验证失败: {Username}, 当前失败次数: {FailedCount}", request.Username, user.FailedLoginCount + 1);
                     return ServiceResult<LoginResponse>.Failure("用户名或密码错误");
                 }
+
+                // 3.2. 密码验证成功，重置失败计数
+                await ResetFailedLoginCountAsync(user);
 
                 // 4. 生成JWT Token
                 var jwtToken = _jwtAuthenticationService.GenerateToken(
@@ -215,6 +228,41 @@ namespace LYBT.Module.Auth.Services
                 Status = user.Status,
                 PhoneNumber = user.PhoneNumber
             };
+        }
+
+        /// <summary>
+        /// 增加失败登录计数并检查是否需要锁定账户
+        /// </summary>
+        private async Task IncrementFailedLoginCountAsync(User user)
+        {
+            const int maxFailedAttempts = 5; // 最大失败尝试次数
+            const int lockoutMinutes = 30;   // 锁定时间（分钟）
+
+            user.FailedLoginCount++;
+
+            // 如果达到最大失败次数，锁定账户
+            if (user.FailedLoginCount >= maxFailedAttempts)
+            {
+                user.LockoutEnd = DateTime.UtcNow.AddMinutes(lockoutMinutes);
+                _logger.LogWarning("用户账户已锁定: {Username}, 失败次数: {FailedCount}, 锁定到期时间: {LockoutEnd}", 
+                    user.Username, user.FailedLoginCount, user.LockoutEnd);
+            }
+
+            await _authRepository.UpdateUserSecurityAsync(user.Id, user.FailedLoginCount, user.LockoutEnd);
+        }
+
+        /// <summary>
+        /// 重置失败登录计数
+        /// </summary>
+        private async Task ResetFailedLoginCountAsync(User user)
+        {
+            if (user.FailedLoginCount > 0 || user.LockoutEnd.HasValue)
+            {
+                user.FailedLoginCount = 0;
+                user.LockoutEnd = null;
+                await _authRepository.UpdateFailedLoginInfoAsync(user.Id, 0, null);
+                _logger.LogInformation("用户登录成功，重置失败计数: {Username}", user.Username);
+            }
         }
 
         #endregion

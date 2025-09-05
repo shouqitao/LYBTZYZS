@@ -1,0 +1,678 @@
+{
+  "scan_time": "2025-09-05T10:03:30.789210",
+  "total_controllers": 9,
+  "controllers": [
+    {
+      "controller": "AuthController",
+      "file_path": "D:\\source\\repos\\LYBTZYZS\\src\\Server\\Services\\LYBT.WebAPI\\Controllers\\AuthController.cs",
+      "base_route": "api/v{version:apiVersion}/[controller]",
+      "api_version": "1",
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "api/vv1/login",
+          "method_name": "Unknown",
+          "route_template": "login"
+        },
+        {
+          "method": "POST",
+          "path": "api/vv1/logout",
+          "method_name": "Unknown",
+          "route_template": "logout"
+        },
+        {
+          "method": "POST",
+          "path": "api/vv1/changeSysAdminPassword",
+          "method_name": "Unknown",
+          "route_template": "changeSysAdminPassword"
+        },
+        {
+          "method": "POST",
+          "path": "api/vv1/refresh",
+          "method_name": "Unknown",
+          "route_template": "refresh"
+        },
+        {
+          "method": "POST",
+          "path": "api/vv1/validate",
+          "method_name": "Unknown",
+          "route_template": "validate"
+        }
+      ],
+      "endpoint_count": 5
+    },
+    {
+      "controller": "ConsultationController",
+      "file_path": "D:\\source\\repos\\LYBTZYZS\\src\\Server\\Services\\LYBT.WebAPI\\Controllers\\ConsultationController.cs",
+      "base_route": "api/v{version:apiVersion}/[controller]",
+      "api_version": "1",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "api/vv1/{id}",
+          "method_name": "Unknown",
+          "route_template": "{id}"
+        },
+        {
+          "method": "GET",
+          "path": "api/vv1/",
+          "method_name": "Unknown",
+          "route_template": ""
+        },
+        {
+          "method": "GET",
+          "path": "api/vv1/patient/{patientId}",
+          "method_name": "Unknown",
+          "route_template": "patient/{patientId}"
+        },
+        {
+          "method": "GET",
+          "path": "api/vv1/medical-case/{medicalCaseId}",
+          "method_name": "Unknown",
+          "route_template": "medical-case/{medicalCaseId}"
+        },
+        {
+          "method": "GET",
+          "path": "api/vv1/doctor/{doctorId}",
+          "method_name": "Unknown",
+          "route_template": "doctor/{doctorId}"
+        },
+        {
+          "method": "GET",
+          "path": "api/vv1/search",
+          "method_name": "Unknown",
+          "route_template": "search"
+        },
+        {
+          "method": "GET",
+          "path": "api/vv1/statistics",
+          "method_name": "Unknown",
+          "route_template": "statistics"
+        },
+        {
+          "method": "GET",
+          "path": "api/vv1/patient/{patientId}/history",
+          "method_name": "Unknown",
+          "route_template": "patient/{patientId}/history"
+        },
+        {
+          "method": "GET",
+          "path": "api/vv1/medical-case/{medicalCaseId}/four-diagnosis",
+          "method_name": "Unknown",
+          "route_template": "medical-case/{medicalCaseId}/four-diagnosis"
+        },
+        {
+          "method": "POST",
+          "path": "api/vv1/start",
+          "method_name": "Unknown",
+          "route_template": "start"
+        },
+        {
+          "method": "POST",
+          "path": "api/vv1/{consultationId}/four-diagnosis",
+          "method_name": "Unknown",
+          "route_template": "{consultationId}/four-diagnosis"
+        },
+        {
+          "method": "PUT",
+          "path": "api/vv1/{id}",
+          "method_name": "Unknown",
+          "route_template": "{id}"
+        },
+        {
+          "method": "DELETE",
+          "path": "api/vv1/{id}",
+          "method_name": "Unknown",
+          "route_template": "{id}"
+        }
+      ],
+      "endpoint_count": 13
+    },
+    {
+      "controller": "FormulasController",
+      "file_path": "D:\\source\\repos\\LYBTZYZS\\src\\Server\\Services\\LYBT.WebAPI\\Controllers\\FormulasController.cs",
+      "base_route": "api/v{version:apiVersion}/[controller]",
+      "api_version": "1",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "api/vv1/",
+          "method_name": "Unknown",
+          "route_template": ""
+        },
+        {
+          "method": "GET",
+          "path": "api/vv1/{id}",
+          "method_name": "Unknown",
+          "route_template": "{id}"
+        },
+        {
+          "method": "GET",
+          "path": "api/vv1/templates",
+          "method_name": "Unknown",
+          "route_template": "templates"
+        },
+        {
+          "method": "GET",
+          "path": "api/vv1/by-type/{type}",
+          "method_name": "Unknown",
+          "route_template": "by-type/{type}"
+        },
+        {
+          "method": "GET",
+          "path": "api/vv1/recommendations/syndrome/{syndrome}",
+          "method_name": "Unknown",
+          "route_template": "recommendations/syndrome/{syndrome}"
+        },
+        {
+          "method": "GET",
+          "path": "api/vv1/recommendations",
+          "method_name": "Unknown",
+          "route_template": "recommendations"
+        },
+        {
+          "method": "GET",
+          "path": "api/vv1/search",
+          "method_name": "Unknown",
+          "route_template": "search"
+        },
+        {
+          "method": "GET",
+          "path": "api/vv1/categories",
+          "method_name": "Unknown",
+          "route_template": "categories"
+        },
+        {
+          "method": "GET",
+          "path": "api/vv1/export",
+          "method_name": "Unknown",
+          "route_template": "export"
+        },
+        {
+          "method": "GET",
+          "path": "api/vv1/template",
+          "method_name": "Unknown",
+          "route_template": "template"
+        },
+        {
+          "method": "POST",
+          "path": "api/vv1/",
+          "method_name": "Unknown",
+          "route_template": ""
+        },
+        {
+          "method": "POST",
+          "path": "api/vv1/from-prescription/{prescriptionId}",
+          "method_name": "Unknown",
+          "route_template": "from-prescription/{prescriptionId}"
+        },
+        {
+          "method": "POST",
+          "path": "api/vv1/{id}/analyze",
+          "method_name": "Unknown",
+          "route_template": "{id}/analyze"
+        },
+        {
+          "method": "POST",
+          "path": "api/vv1/{id}/copy",
+          "method_name": "Unknown",
+          "route_template": "{id}/copy"
+        },
+        {
+          "method": "POST",
+          "path": "api/vv1/{id}/toggle-status",
+          "method_name": "Unknown",
+          "route_template": "{id}/toggle-status"
+        },
+        {
+          "method": "POST",
+          "path": "api/vv1/{id}/share",
+          "method_name": "Unknown",
+          "route_template": "{id}/share"
+        },
+        {
+          "method": "POST",
+          "path": "api/vv1/{id}/unshare",
+          "method_name": "Unknown",
+          "route_template": "{id}/unshare"
+        },
+        {
+          "method": "POST",
+          "path": "api/vv1/import",
+          "method_name": "Unknown",
+          "route_template": "import"
+        },
+        {
+          "method": "POST",
+          "path": "api/vv1/validate",
+          "method_name": "Unknown",
+          "route_template": "validate"
+        },
+        {
+          "method": "PUT",
+          "path": "api/vv1/{id}",
+          "method_name": "Unknown",
+          "route_template": "{id}"
+        },
+        {
+          "method": "DELETE",
+          "path": "api/vv1/{id}",
+          "method_name": "Unknown",
+          "route_template": "{id}"
+        }
+      ],
+      "endpoint_count": 21
+    },
+    {
+      "controller": "HerbImportExportController",
+      "file_path": "D:\\source\\repos\\LYBTZYZS\\src\\Server\\Services\\LYBT.WebAPI\\Controllers\\HerbImportExportController.cs",
+      "base_route": "api/v{version:apiVersion}/herbs",
+      "api_version": "1",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "api/vv1/herbs/export",
+          "method_name": "Unknown",
+          "route_template": "export"
+        },
+        {
+          "method": "GET",
+          "path": "api/vv1/herbs/export-template",
+          "method_name": "Unknown",
+          "route_template": "export-template"
+        },
+        {
+          "method": "POST",
+          "path": "api/vv1/herbs/import",
+          "method_name": "Unknown",
+          "route_template": "import"
+        },
+        {
+          "method": "POST",
+          "path": "api/vv1/herbs/validate-import",
+          "method_name": "Unknown",
+          "route_template": "validate-import"
+        }
+      ],
+      "endpoint_count": 4
+    },
+    {
+      "controller": "HerbsController",
+      "file_path": "D:\\source\\repos\\LYBTZYZS\\src\\Server\\Services\\LYBT.WebAPI\\Controllers\\HerbsController.cs",
+      "base_route": "api/v{version:apiVersion}/[controller]",
+      "api_version": "1",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "api/vv1/",
+          "method_name": "Unknown",
+          "route_template": ""
+        },
+        {
+          "method": "GET",
+          "path": "api/vv1/{id}",
+          "method_name": "Unknown",
+          "route_template": "{id}"
+        },
+        {
+          "method": "GET",
+          "path": "api/vv1/categories",
+          "method_name": "Unknown",
+          "route_template": "categories"
+        },
+        {
+          "method": "GET",
+          "path": "api/vv1/search",
+          "method_name": "Unknown",
+          "route_template": "search"
+        },
+        {
+          "method": "POST",
+          "path": "api/vv1/",
+          "method_name": "Unknown",
+          "route_template": ""
+        },
+        {
+          "method": "PUT",
+          "path": "api/vv1/{id}",
+          "method_name": "Unknown",
+          "route_template": "{id}"
+        },
+        {
+          "method": "DELETE",
+          "path": "api/vv1/{id}",
+          "method_name": "Unknown",
+          "route_template": "{id}"
+        }
+      ],
+      "endpoint_count": 7
+    },
+    {
+      "controller": "MedicalCaseController",
+      "file_path": "D:\\source\\repos\\LYBTZYZS\\src\\Server\\Services\\LYBT.WebAPI\\Controllers\\MedicalCaseController.cs",
+      "base_route": "api/v{version:apiVersion}/[controller]",
+      "api_version": "1",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "api/vv1/{id}",
+          "method_name": "Unknown",
+          "route_template": "{id}"
+        },
+        {
+          "method": "GET",
+          "path": "api/vv1/",
+          "method_name": "Unknown",
+          "route_template": ""
+        },
+        {
+          "method": "GET",
+          "path": "api/vv1/patient/{patientId}",
+          "method_name": "Unknown",
+          "route_template": "patient/{patientId}"
+        },
+        {
+          "method": "GET",
+          "path": "api/vv1/patient/{patientId}/active",
+          "method_name": "Unknown",
+          "route_template": "patient/{patientId}/active"
+        },
+        {
+          "method": "GET",
+          "path": "api/vv1/search",
+          "method_name": "Unknown",
+          "route_template": "search"
+        },
+        {
+          "method": "GET",
+          "path": "api/vv1/statistics",
+          "method_name": "Unknown",
+          "route_template": "statistics"
+        },
+        {
+          "method": "GET",
+          "path": "api/vv1/{id}/history",
+          "method_name": "Unknown",
+          "route_template": "{id}/history"
+        },
+        {
+          "method": "POST",
+          "path": "api/vv1/",
+          "method_name": "Unknown",
+          "route_template": ""
+        },
+        {
+          "method": "POST",
+          "path": "api/vv1/{id}/complete",
+          "method_name": "Unknown",
+          "route_template": "{id}/complete"
+        },
+        {
+          "method": "POST",
+          "path": "api/vv1/{id}/suspend",
+          "method_name": "Unknown",
+          "route_template": "{id}/suspend"
+        },
+        {
+          "method": "POST",
+          "path": "api/vv1/{id}/resume",
+          "method_name": "Unknown",
+          "route_template": "{id}/resume"
+        },
+        {
+          "method": "POST",
+          "path": "api/vv1/{id}/archive",
+          "method_name": "Unknown",
+          "route_template": "{id}/archive"
+        },
+        {
+          "method": "PUT",
+          "path": "api/vv1/{id}",
+          "method_name": "Unknown",
+          "route_template": "{id}"
+        },
+        {
+          "method": "DELETE",
+          "path": "api/vv1/{id}",
+          "method_name": "Unknown",
+          "route_template": "{id}"
+        }
+      ],
+      "endpoint_count": 14
+    },
+    {
+      "controller": "PatientsController",
+      "file_path": "D:\\source\\repos\\LYBTZYZS\\src\\Server\\Services\\LYBT.WebAPI\\Controllers\\PatientsController.cs",
+      "base_route": "api/v{version:apiVersion}/[controller]",
+      "api_version": "1",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "api/vv1/",
+          "method_name": "Unknown",
+          "route_template": ""
+        },
+        {
+          "method": "GET",
+          "path": "api/vv1/{id}",
+          "method_name": "Unknown",
+          "route_template": "{id}"
+        },
+        {
+          "method": "GET",
+          "path": "api/vv1/by-idcard/{idCard}",
+          "method_name": "Unknown",
+          "route_template": "by-idcard/{idCard}"
+        },
+        {
+          "method": "GET",
+          "path": "api/vv1/by-phone/{phone}",
+          "method_name": "Unknown",
+          "route_template": "by-phone/{phone}"
+        },
+        {
+          "method": "GET",
+          "path": "api/vv1/search",
+          "method_name": "Unknown",
+          "route_template": "search"
+        },
+        {
+          "method": "GET",
+          "path": "api/vv1/export",
+          "method_name": "Unknown",
+          "route_template": "export"
+        },
+        {
+          "method": "GET",
+          "path": "api/vv1/export-template",
+          "method_name": "Unknown",
+          "route_template": "export-template"
+        },
+        {
+          "method": "POST",
+          "path": "api/vv1/",
+          "method_name": "Unknown",
+          "route_template": ""
+        },
+        {
+          "method": "POST",
+          "path": "api/vv1/{id}/enable",
+          "method_name": "Unknown",
+          "route_template": "{id}/enable"
+        },
+        {
+          "method": "POST",
+          "path": "api/vv1/{id}/disable",
+          "method_name": "Unknown",
+          "route_template": "{id}/disable"
+        },
+        {
+          "method": "POST",
+          "path": "api/vv1/import",
+          "method_name": "Unknown",
+          "route_template": "import"
+        },
+        {
+          "method": "POST",
+          "path": "api/vv1/validate-import",
+          "method_name": "Unknown",
+          "route_template": "validate-import"
+        },
+        {
+          "method": "PUT",
+          "path": "api/vv1/{id}",
+          "method_name": "Unknown",
+          "route_template": "{id}"
+        },
+        {
+          "method": "DELETE",
+          "path": "api/vv1/{id}",
+          "method_name": "Unknown",
+          "route_template": "{id}"
+        }
+      ],
+      "endpoint_count": 14
+    },
+    {
+      "controller": "PrescriptionsController",
+      "file_path": "D:\\source\\repos\\LYBTZYZS\\src\\Server\\Services\\LYBT.WebAPI\\Controllers\\PrescriptionsController.cs",
+      "base_route": "api/v{version:apiVersion}/[controller]",
+      "api_version": "1",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "api/vv1/",
+          "method_name": "Unknown",
+          "route_template": ""
+        },
+        {
+          "method": "GET",
+          "path": "api/vv1/{id}",
+          "method_name": "Unknown",
+          "route_template": "{id}"
+        },
+        {
+          "method": "GET",
+          "path": "api/vv1/patient/{patientId}",
+          "method_name": "Unknown",
+          "route_template": "patient/{patientId}"
+        },
+        {
+          "method": "GET",
+          "path": "api/vv1/medical-case/{caseId}",
+          "method_name": "Unknown",
+          "route_template": "medical-case/{caseId}"
+        },
+        {
+          "method": "POST",
+          "path": "api/vv1/",
+          "method_name": "Unknown",
+          "route_template": ""
+        },
+        {
+          "method": "POST",
+          "path": "api/vv1/search",
+          "method_name": "Unknown",
+          "route_template": "search"
+        },
+        {
+          "method": "POST",
+          "path": "api/vv1/{id}/copy",
+          "method_name": "Unknown",
+          "route_template": "{id}/copy"
+        },
+        {
+          "method": "POST",
+          "path": "api/vv1/validate",
+          "method_name": "Unknown",
+          "route_template": "validate"
+        },
+        {
+          "method": "PUT",
+          "path": "api/vv1/{id}",
+          "method_name": "Unknown",
+          "route_template": "{id}"
+        },
+        {
+          "method": "DELETE",
+          "path": "api/vv1/{id}",
+          "method_name": "Unknown",
+          "route_template": "{id}"
+        }
+      ],
+      "endpoint_count": 10
+    },
+    {
+      "controller": "UsersController",
+      "file_path": "D:\\source\\repos\\LYBTZYZS\\src\\Server\\Services\\LYBT.WebAPI\\Controllers\\UsersController.cs",
+      "base_route": "api/v{version:apiVersion}/[controller]",
+      "api_version": "1",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "api/vv1/profile",
+          "method_name": "Unknown",
+          "route_template": "profile"
+        },
+        {
+          "method": "GET",
+          "path": "api/vv1/roles",
+          "method_name": "Unknown",
+          "route_template": "roles"
+        },
+        {
+          "method": "GET",
+          "path": "api/vv1/active",
+          "method_name": "Unknown",
+          "route_template": "active"
+        },
+        {
+          "method": "GET",
+          "path": "api/vv1/",
+          "method_name": "Unknown",
+          "route_template": ""
+        },
+        {
+          "method": "GET",
+          "path": "api/vv1/{id}",
+          "method_name": "Unknown",
+          "route_template": "{id}"
+        },
+        {
+          "method": "POST",
+          "path": "api/vv1/reset-password/{id}",
+          "method_name": "Unknown",
+          "route_template": "reset-password/{id}"
+        },
+        {
+          "method": "POST",
+          "path": "api/vv1/",
+          "method_name": "Unknown",
+          "route_template": ""
+        },
+        {
+          "method": "PUT",
+          "path": "api/vv1/profile",
+          "method_name": "Unknown",
+          "route_template": "profile"
+        },
+        {
+          "method": "PUT",
+          "path": "api/vv1/{id}",
+          "method_name": "Unknown",
+          "route_template": "{id}"
+        }
+      ],
+      "endpoint_count": 9
+    }
+  ],
+  "endpoint_summary": {
+    "total_endpoints": 97,
+    "methods": {
+      "GET": 48,
+      "POST": 35,
+      "PUT": 8,
+      "DELETE": 6
+    }
+  }
+}

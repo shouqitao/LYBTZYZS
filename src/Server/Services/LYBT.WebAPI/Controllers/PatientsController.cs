@@ -306,6 +306,288 @@ namespace LYBT.WebAPI.Controllers
             }
         }
 
+        #region Excel导入导出功能 - 标准功能完善PRD必需功能
+
+        /// <summary>
+        /// 批量导入患者
+        /// </summary>
+        [HttpPost("import")]
+        public async Task<ActionResult<ApiResponse<object>>> ImportPatients([FromBody] List<PatientCreateDto> patients)
+        {
+            try
+            {
+                if (patients == null || patients.Count == 0)
+                {
+                    return ValidationFail<object>("导入数据不能为空");
+                }
+
+                // 数据验证
+                var invalidItems = ValidateImportData(patients);
+                if (invalidItems.Any())
+                {
+                    return ValidationFail<object>($"存在 {invalidItems.Count} 条无效数据", 
+                        ApiErrorCodes.VALIDATION_FAILED, invalidItems);
+                }
+
+                var result = await _service.ImportPatientsAsync(patients);
+                if (!result.IsSuccess)
+                {
+                    return BusinessFail<object>(result.ErrorMessage ?? "导入患者失败", ApiErrorCodes.DATA_SAVE_FAILED);
+                }
+
+                var importResult = new
+                {
+                    imported = patients.Count,
+                    total = patients.Count,
+                    message = $"成功导入 {patients.Count} 个患者"
+                };
+
+                LogOperation("批量导入患者成功", importResult, null);
+                return Success<object>(importResult, "导入成功");
+            }
+            catch (Exception ex)
+            {
+                return HandleException<object>(ex, "批量导入患者", patients);
+            }
+        }
+
+        /// <summary>
+        /// 导出患者数据
+        /// </summary>
+        [HttpGet("export")]
+        public async Task<ActionResult<ApiResponse<byte[]>>> ExportPatients([FromQuery] string? format = "excel")
+        {
+            try
+            {
+                var query = new PagedQueryBaseDto
+                {
+                    PageIndex = 1,
+                    PageSize = 10000, // 导出时获取所有数据
+                    Keyword = string.Empty
+                };
+
+                var result = await _service.ExportPatientsAsync(query);
+                if (!result.IsSuccess || result.Data == null)
+                {
+                    return BusinessFail<byte[]>(result.ErrorMessage ?? "导出患者数据失败", ApiErrorCodes.DATA_EXPORT_FAILED);
+                }
+
+                LogOperation("导出患者数据", new { Size = result.Data.Length, Format = format }, null);
+                return Success(result.Data, "导出成功");
+            }
+            catch (Exception ex)
+            {
+                return HandleException<byte[]>(ex, "导出患者数据", format);
+            }
+        }
+
+        /// <summary>
+        /// 导出患者导入模板
+        /// </summary>
+        [HttpGet("export-template")]
+        public ActionResult<ApiResponse<object>> ExportImportTemplate()
+        {
+            try
+            {
+                var template = new
+                {
+                    name = "患者姓名",
+                    gender = "男/女",
+                    birthDate = "1990-01-01",
+                    phoneNumber = "手机号码",
+                    idNumber = "身份证号码",
+                    address = "联系地址",
+                    emergencyContact = "紧急联系人",
+                    emergencyPhone = "紧急联系人电话",
+                    allergyHistory = "过敏史",
+                    medicalHistory = "病史",
+                    remark = "备注"
+                };
+
+                var templateData = new List<object> { template };
+                
+                LogOperation("导出患者导入模板", null, null);
+                return Success<object>(new { 
+                    message = "患者导入模板",
+                    template = templateData,
+                    instructions = new[]
+                    {
+                        "请按照模板格式填写患者信息",
+                        "姓名和手机号码为必填项",
+                        "性别请填写：男 或 女",
+                        "日期格式：YYYY-MM-DD",
+                        "身份证号码必须为18位"
+                    }
+                }, "模板导出成功");
+            }
+            catch (Exception ex)
+            {
+                return HandleException<object>(ex, "导出患者导入模板", null);
+            }
+        }
+
+        /// <summary>
+        /// 验证导入数据有效性
+        /// </summary>
+        [HttpPost("validate-import")]
+        public ActionResult<ApiResponse<object>> ValidateImportData([FromBody] List<PatientCreateDto> patients)
+        {
+            try
+            {
+                if (patients == null || patients.Count == 0)
+                {
+                    return ValidationFail<object>("验证数据不能为空");
+                }
+
+                var validationResults = ValidateImportDataDetailed(patients);
+                
+                var result = new
+                {
+                    totalCount = patients.Count,
+                    validCount = validationResults.Count(v => v.IsValid),
+                    invalidCount = validationResults.Count(v => !v.IsValid),
+                    results = validationResults
+                };
+
+                return Success<object>(result, "验证完成");
+            }
+            catch (Exception ex)
+            {
+                return HandleException<object>(ex, "验证导入数据", patients);
+            }
+        }
+
+        #endregion
+
+        #region 私有验证方法
+
+        /// <summary>
+        /// 验证导入数据
+        /// </summary>
+        private List<object> ValidateImportData(List<PatientCreateDto> patients)
+        {
+            var invalidItems = new List<object>();
+            
+            for (int i = 0; i < patients.Count; i++)
+            {
+                var patient = patients[i];
+                var errors = new List<string>();
+
+                // 必填字段验证
+                if (string.IsNullOrWhiteSpace(patient.Name))
+                    errors.Add("患者姓名不能为空");
+
+                if (string.IsNullOrWhiteSpace(patient.PhoneNumber))
+                    errors.Add("手机号码不能为空");
+                else if (!IsValidPhoneNumber(patient.PhoneNumber))
+                    errors.Add("手机号码格式不正确");
+
+                // 身份证验证
+                if (!string.IsNullOrWhiteSpace(patient.IDNumber) && !IsValidIdCard(patient.IDNumber))
+                    errors.Add("身份证号码格式不正确");
+
+                // 性别验证
+                if (patient.Gender != LYBT.Shared.Models.Enums.Gender.Male && 
+                    patient.Gender != LYBT.Shared.Models.Enums.Gender.Female)
+                    errors.Add("性别必须为男或女");
+
+                if (errors.Any())
+                {
+                    invalidItems.Add(new
+                    {
+                        index = i + 1,
+                        name = patient.Name ?? "未知",
+                        errors = errors
+                    });
+                }
+            }
+
+            return invalidItems;
+        }
+
+        /// <summary>
+        /// 详细验证导入数据
+        /// </summary>
+        private List<ImportValidationResult> ValidateImportDataDetailed(List<PatientCreateDto> patients)
+        {
+            var results = new List<ImportValidationResult>();
+
+            for (int i = 0; i < patients.Count; i++)
+            {
+                var patient = patients[i];
+                var result = new ImportValidationResult
+                {
+                    Index = i + 1,
+                    Name = patient.Name ?? "未知",
+                    IsValid = true,
+                    Errors = new List<string>()
+                };
+
+                // 执行验证
+                if (string.IsNullOrWhiteSpace(patient.Name))
+                {
+                    result.Errors.Add("患者姓名不能为空");
+                    result.IsValid = false;
+                }
+
+                if (string.IsNullOrWhiteSpace(patient.PhoneNumber))
+                {
+                    result.Errors.Add("手机号码不能为空");
+                    result.IsValid = false;
+                }
+                else if (!IsValidPhoneNumber(patient.PhoneNumber))
+                {
+                    result.Errors.Add("手机号码格式不正确");
+                    result.IsValid = false;
+                }
+
+                if (!string.IsNullOrWhiteSpace(patient.IDNumber) && !IsValidIdCard(patient.IDNumber))
+                {
+                    result.Errors.Add("身份证号码格式不正确");
+                    result.IsValid = false;
+                }
+
+                results.Add(result);
+            }
+
+            return results;
+        }
+
+        /// <summary>
+        /// 验证手机号码格式
+        /// </summary>
+        private bool IsValidPhoneNumber(string phoneNumber)
+        {
+            if (string.IsNullOrWhiteSpace(phoneNumber)) return false;
+            return phoneNumber.Length == 11 && phoneNumber.All(char.IsDigit) && phoneNumber.StartsWith("1");
+        }
+
+        /// <summary>
+        /// 验证身份证号码格式
+        /// </summary>
+        private bool IsValidIdCard(string idCard)
+        {
+            if (string.IsNullOrWhiteSpace(idCard)) return false;
+            return idCard.Length == 18 && idCard.Take(17).All(char.IsDigit);
+        }
+
+        #endregion
+
+        #region 内部类
+
+        /// <summary>
+        /// 导入验证结果
+        /// </summary>
+        private class ImportValidationResult
+        {
+            public int Index { get; set; }
+            public string Name { get; set; } = string.Empty;
+            public bool IsValid { get; set; }
+            public List<string> Errors { get; set; } = new();
+        }
+
+        #endregion
+
         // UltraThink精简：统计功能已废弃 - 小诊所不需要复杂统计分析
     }
 }
