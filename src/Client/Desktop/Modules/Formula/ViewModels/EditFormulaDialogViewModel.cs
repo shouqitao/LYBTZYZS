@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -6,9 +7,13 @@ using System.Threading.Tasks;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Interfaces.Services;
+using LYBT.Desktop.Core.ViewModels.Base;
+using LYBT.Desktop.Core.Interfaces;
+using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.Constants;
+using LYBT.Desktop.Core.Models.Common;
 using Prism.Commands;
-using Prism.Mvvm;
+using Prism.Events;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Formula.ViewModels
@@ -16,8 +21,9 @@ namespace LYBT.Desktop.Formula.ViewModels
     /// <summary>
     /// 编辑验方对话框视图模型
     /// </summary>
-    public class EditFormulaDialogViewModel : BindableBase
+    public class EditFormulaDialogViewModel : DialogViewModel, ICustomDialogAware
     {
+        private readonly ICustomDialogService _dialogService;
         private readonly IFormulaService _formulaService;
         private readonly IHerbService _herbService;
         private readonly ILogger<EditFormulaDialogViewModel> _logger;
@@ -85,10 +91,15 @@ namespace LYBT.Desktop.Formula.ViewModels
         #region Constructor
 
         public EditFormulaDialogViewModel(
+            IEventAggregator eventAggregator,
+            IErrorHandlingService errorHandlingService,
+            ICustomDialogService dialogService,
             IFormulaService formulaService,
             IHerbService herbService,
-            ILogger<EditFormulaDialogViewModel> logger)
+            ILogger<EditFormulaDialogViewModel> logger) 
+            : base(eventAggregator, errorHandlingService)
         {
+            _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
             _formulaService = formulaService ?? throw new ArgumentNullException(nameof(formulaService));
             _herbService = herbService ?? throw new ArgumentNullException(nameof(herbService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -229,18 +240,49 @@ namespace LYBT.Desktop.Formula.ViewModels
             // TODO: Close dialog without saving
         }
 
-        private void AddHerb()
+        private async void AddHerb()
         {
-            // TODO: 实现添加药材对话框
-            var newItem = new FormulaHerbItemDto
+            try
             {
-                HerbId = Guid.NewGuid(),
-                HerbName = "新药材",
-                Quantity = 10,
-                Unit = "克",
-                Preparation = "煎服"
-            };
-            HerbItems.Add(newItem);
+                // 使用现有的药材选择对话框
+                var parameters = new DialogParameters
+                {
+                    { "Title", "选择药材" },
+                    { "AllowQuantityEdit", true }
+                };
+
+                var result = await _dialogService.ShowDialogAsync("HerbSelectionDialog", parameters);
+                
+                if (result?.Result == true && result.Parameters.ContainsKey("SelectedHerb"))
+                {
+                    var selectedHerb = result.Parameters["SelectedHerb"];
+                    
+                    // 根据选择结果创建FormulaHerbItemDto
+                    if (selectedHerb != null)
+                    {
+                        // 如果返回的是HerbDto，需要转换为FormulaHerbItemDto
+                        var herbDto = selectedHerb as HerbDto;
+                        if (herbDto != null)
+                        {
+                            var newItem = new FormulaHerbItemDto
+                            {
+                                HerbId = herbDto.Id,
+                                HerbName = herbDto.Name,
+                                Quantity = result.Parameters.ContainsKey("Quantity") ? Convert.ToDecimal(result.Parameters["Quantity"]) : 10,
+                                Unit = result.Parameters.ContainsKey("Unit") ? result.Parameters["Unit"]?.ToString() ?? "g" : "g",
+                                Preparation = "煎服", // 默认处理方法
+                                Usage = "" // 默认特殊说明
+                            };
+                            HerbItems.Add(newItem);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "添加药材时发生错误");
+                StatusMessage = "添加药材失败：" + ex.Message;
+            }
         }
 
         private void RemoveHerb(FormulaHerbItemDto? item)
@@ -257,6 +299,39 @@ namespace LYBT.Desktop.Formula.ViewModels
             
             // TODO: 实现编辑药材对话框
             StatusMessage = string.Format(SystemConstants.FeaturePendingTemplate, $"编辑药材 '{item.HerbName}'");
+        }
+
+        #endregion
+
+        #region DialogViewModel Overrides
+
+        protected override async Task<bool> SaveAsync()
+        {
+            await SaveFormulaAsync();
+            return true;
+        }
+
+        #endregion
+
+        #region ICustomDialogAware Implementation
+
+        public string Title => "编辑验方";
+
+        public event Action<CustomDialogResult>? RequestClose;
+
+        public bool CanCloseDialog() => true;
+
+        public void OnDialogClosed()
+        {
+            // 对话框关闭时的清理工作
+        }
+
+        public void OnDialogOpened(Dictionary<string, object> parameters)
+        {
+            if (parameters.ContainsKey("FormulaId") && parameters["FormulaId"] is Guid formulaId)
+            {
+                Initialize(formulaId);
+            }
         }
 
         #endregion

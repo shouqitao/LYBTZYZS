@@ -60,5 +60,8 @@ public class PrescriptionsModule(
         => ServiceResult<PrescriptionValidationResult>.Success(new PrescriptionValidationResult { IsValid = true });
 
     public async Task<ServiceResult<PrescriptionDto>> CopyAsync(Guid id, string newName)
-        => ServiceResult<PrescriptionDto>.Failure("简单诊所版本暂不支持复制处方");
+    {
+        // TODO: 需要实现复制处方功能，调用相应的API
+        return ServiceResult<PrescriptionDto>.Failure("复制处方功能开发中，请联系系统管理员");
+    }
 }

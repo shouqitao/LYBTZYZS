@@ -108,8 +108,33 @@ public class PrescriptionsBusinessService(
     /// <returns>操作失败结果</returns>
     public async Task<ServiceResult<bool>> DeleteAsync(Guid prescriptionId)
     {
-        _logger.LogWarning("处方删除请求被拒绝: {PrescriptionId} - 确保诊疗历史完整性", prescriptionId);
-        return ServiceResult<bool>.Failure("简单诊所版本暂不支持删除处方，确保诊疗历史数据完整性");
+        try
+        {
+            _logger.LogInformation("开始处理处方删除: {PrescriptionId}", prescriptionId);
+            
+            var refitResponse = await _prescriptionApi.DeletePrescriptionAsync(prescriptionId);
+            
+            if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
+            {
+                var apiResponse = refitResponse.Content;
+                if (apiResponse.Success)
+                {
+                    _logger.LogInformation("处方删除成功: {PrescriptionId}", prescriptionId);
+                    return ServiceResult<bool>.Success(true);
+                }
+                
+                _logger.LogWarning("处方删除业务失败: {PrescriptionId}, 错误: {Message}", prescriptionId, apiResponse.Message);
+                return ServiceResult<bool>.Failure(apiResponse.Message ?? "删除处方失败");
+            }
+            
+            _logger.LogWarning("处方删除HTTP请求失败: {PrescriptionId}, 状态码: {StatusCode}", prescriptionId, refitResponse.StatusCode);
+            return ServiceResult<bool>.Failure("删除处方网络请求失败，请检查网络连接");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "处方删除过程发生异常: {PrescriptionId}", prescriptionId);
+            return ServiceResult<bool>.Failure($"删除处方过程发生错误: {ex.Message}");
+        }
     }
 
     /// <summary>
@@ -120,8 +145,33 @@ public class PrescriptionsBusinessService(
     /// <returns>状态转换结果</returns>
     public async Task<ServiceResult<bool>> EnableAsync(Guid prescriptionId)
     {
-        _logger.LogInformation("启用处方: {PrescriptionId}", prescriptionId);
-        return ServiceResult<bool>.Failure("简单诊所版本暂不支持处方状态管理");
+        try
+        {
+            _logger.LogInformation("开始处理处方启用: {PrescriptionId}", prescriptionId);
+            
+            var refitResponse = await _prescriptionApi.EnablePrescriptionAsync(prescriptionId);
+            
+            if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
+            {
+                var apiResponse = refitResponse.Content;
+                if (apiResponse.Success)
+                {
+                    _logger.LogInformation("处方启用成功: {PrescriptionId}", prescriptionId);
+                    return ServiceResult<bool>.Success(true);
+                }
+                
+                _logger.LogWarning("处方启用业务失败: {PrescriptionId}, 错误: {Message}", prescriptionId, apiResponse.Message);
+                return ServiceResult<bool>.Failure(apiResponse.Message ?? "启用处方失败");
+            }
+            
+            _logger.LogWarning("处方启用HTTP请求失败: {PrescriptionId}, 状态码: {StatusCode}", prescriptionId, refitResponse.StatusCode);
+            return ServiceResult<bool>.Failure("启用处方网络请求失败，请检查网络连接");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "处方启用过程发生异常: {PrescriptionId}", prescriptionId);
+            return ServiceResult<bool>.Failure($"启用处方过程发生错误: {ex.Message}");
+        }
     }
 
     /// <summary>
@@ -132,7 +182,32 @@ public class PrescriptionsBusinessService(
     /// <returns>状态转换结果</returns>
     public async Task<ServiceResult<bool>> DisableAsync(Guid prescriptionId)
     {
-        _logger.LogInformation("禁用处方: {PrescriptionId}", prescriptionId);
-        return ServiceResult<bool>.Failure("简单诊所版本暂不支持处方状态管理");
+        try
+        {
+            _logger.LogInformation("开始处理处方禁用: {PrescriptionId}", prescriptionId);
+            
+            var refitResponse = await _prescriptionApi.DisablePrescriptionAsync(prescriptionId);
+            
+            if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
+            {
+                var apiResponse = refitResponse.Content;
+                if (apiResponse.Success)
+                {
+                    _logger.LogInformation("处方禁用成功: {PrescriptionId}", prescriptionId);
+                    return ServiceResult<bool>.Success(true);
+                }
+                
+                _logger.LogWarning("处方禁用业务失败: {PrescriptionId}, 错误: {Message}", prescriptionId, apiResponse.Message);
+                return ServiceResult<bool>.Failure(apiResponse.Message ?? "禁用处方失败");
+            }
+            
+            _logger.LogWarning("处方禁用HTTP请求失败: {PrescriptionId}, 状态码: {StatusCode}", prescriptionId, refitResponse.StatusCode);
+            return ServiceResult<bool>.Failure("禁用处方网络请求失败，请检查网络连接");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "处方禁用过程发生异常: {PrescriptionId}", prescriptionId);
+            return ServiceResult<bool>.Failure($"禁用处方过程发生错误: {ex.Message}");
+        }
     }
 }

@@ -132,7 +132,7 @@ public class PatientModule(
     /// 根据身份证号查找患者 - 基础实现
     /// </summary>
     public Task<ServiceResult<PatientDto>> GetByIdCardAsync(string idCard)
-        => Task.FromResult(ServiceResult<PatientDto>.Failure("简单诊所版本暂不支持按身份证号查询"));
+        => _queryService.GetByIdCardAsync(idCard);
 
     /// <summary>
     /// 根据电话号码查找患者 - 基础实现
@@ -204,14 +204,20 @@ public class PatientModule(
     /// <summary>
     /// 批量导入患者 - 简单诊所版本暂不支持
     /// </summary>
-    public Task<ServiceResult<object>> ImportPatientsAsync(List<PatientCreateDto> patients)
-        => Task.FromResult(ServiceResult<object>.Failure("简单诊所版本暂不支持批量导入患者"));
+    public async Task<ServiceResult<object>> ImportPatientsAsync(List<PatientCreateDto> patients)
+    {
+        // TODO: 需要实现批量导入功能，调用相应的API
+        return ServiceResult<object>.Failure("批量导入患者功能开发中，请使用单个患者创建");
+    }
 
     /// <summary>
     /// 导出患者数据 - 简单诊所版本暂不支持
     /// </summary>
-    public Task<ServiceResult<byte[]>> ExportPatientsAsync(PagedQueryBaseDto query)
-        => Task.FromResult(ServiceResult<byte[]>.Failure("简单诊所版本暂不支持患者数据导出"));
+    public async Task<ServiceResult<byte[]>> ExportPatientsAsync(PagedQueryBaseDto query)
+    {
+        // TODO: 需要实现患者数据导出功能，调用相应的API
+        return ServiceResult<byte[]>.Failure("患者数据导出功能开发中，请联系系统管理员");
+    }
 
     /// <summary>
     /// 验证患者信息 - 基础验证实现
@@ -228,8 +234,11 @@ public class PatientModule(
     /// <summary>
     /// 获取导入模板 - 简单诊所版本暂不支持
     /// </summary>
-    public Task<ServiceResult<byte[]>> GetImportTemplateAsync()
-        => Task.FromResult(ServiceResult<byte[]>.Failure("简单诊所版本暂不支持导入模板"));
+    public async Task<ServiceResult<byte[]>> GetImportTemplateAsync()
+    {
+        // TODO: 需要实现导入模板功能，生成或调用相应的API
+        return ServiceResult<byte[]>.Failure("导入模板功能开发中，请联系系统管理员");
+    }
 
     #endregion
 }

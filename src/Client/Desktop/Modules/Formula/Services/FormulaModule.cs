@@ -112,7 +112,8 @@ public class FormulaModule(
 
     public async Task<ServiceResult<FormulaDto>> CreateFromPrescriptionAsync(Guid prescriptionId, string name)
     {
-        return await Task.FromResult(ServiceResult<FormulaDto>.Failure("简单诊所版本暂不支持从处方创建验方功能"));
+        // TODO: 需要实现从处方创建验方功能，调用相应的API
+        return ServiceResult<FormulaDto>.Failure("从处方创建验方功能开发中，请联系系统管理员");
     }
 
     #endregion
@@ -121,12 +122,14 @@ public class FormulaModule(
 
     public async Task<ServiceResult<object>> ImportFormulasAsync(List<FormulaCreateDto> formulas)
     {
-        return await Task.FromResult(ServiceResult<object>.Failure("简单诊所版本暂不支持验方批量导入功能"));
+        // TODO: 需要实现验方批量导入功能，调用相应的API
+        return ServiceResult<object>.Failure("验方批量导入功能开发中，请联系系统管理员");
     }
 
     public async Task<ServiceResult<byte[]>> ExportFormulasAsync(PagedQueryBaseDto query)
     {
-        return await Task.FromResult(ServiceResult<byte[]>.Failure("简单诊所版本暂不支持验方批量导出功能"));
+        // TODO: 需要实现验方批量导出功能，调用相应的API
+        return ServiceResult<byte[]>.Failure("验方批量导出功能开发中，请联系系统管理员");
     }
 
     public Task<ServiceResult<IEnumerable<FormulaDto>>> GetByCategoryAsync(string category)

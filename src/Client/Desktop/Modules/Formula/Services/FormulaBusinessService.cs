@@ -276,14 +276,16 @@ public class FormulaBusinessService(
         return Task.FromResult(ServiceResult<bool>.Success(true));
     }
 
-    public Task<ServiceResult<FormulaDto>> ProcessFormulaCreationAsync(FormulaCreateDto createDto, Guid operatorId)
+    public async Task<ServiceResult<FormulaDto>> ProcessFormulaCreationAsync(FormulaCreateDto createDto, Guid operatorId)
     {
-        return Task.FromResult(ServiceResult<FormulaDto>.Failure("简单诊所版本暂不支持创建验方"));
+        // TODO: 需要实现验方创建业务流程，调用相应的API
+        return ServiceResult<FormulaDto>.Failure("验方创建功能开发中，请联系系统管理员");
     }
 
-    public Task<ServiceResult<FormulaDto>> ProcessFormulaUpdateAsync(Guid id, FormulaUpdateDto updateDto, Guid operatorId)
+    public async Task<ServiceResult<FormulaDto>> ProcessFormulaUpdateAsync(Guid id, FormulaUpdateDto updateDto, Guid operatorId)
     {
-        return Task.FromResult(ServiceResult<FormulaDto>.Failure("简单诊所版本暂不支持更新验方"));
+        // TODO: 需要实现验方更新业务流程，调用相应的API
+        return ServiceResult<FormulaDto>.Failure("验方更新功能开发中，请联系系统管理员");
     }
 
     #endregion

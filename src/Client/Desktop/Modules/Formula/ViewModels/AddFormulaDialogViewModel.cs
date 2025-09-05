@@ -23,6 +23,7 @@ namespace LYBT.Desktop.Formula.ViewModels
     /// </summary>
     public class AddFormulaDialogViewModel : DialogViewModel, ICustomDialogAware
     {
+        private readonly ICustomDialogService _dialogService;
         private readonly IFormulaService _formulaService;
         private readonly IHerbService _herbService;
         private readonly ILogger<AddFormulaDialogViewModel> _logger;
@@ -111,12 +112,14 @@ namespace LYBT.Desktop.Formula.ViewModels
         /// 主构造函数（支持可选错误处理服务）
         /// </summary>
         public AddFormulaDialogViewModel(
+            ICustomDialogService dialogService,
             IFormulaService formulaService,
             IHerbService herbService,
             ILogger<AddFormulaDialogViewModel> logger,
             IEventAggregator eventAggregator,
             IErrorHandlingService? errorHandlingService = null) : base(eventAggregator, errorHandlingService)
         {
+            _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
             _formulaService = formulaService ?? throw new ArgumentNullException(nameof(formulaService));
             _herbService = herbService ?? throw new ArgumentNullException(nameof(herbService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -211,19 +214,49 @@ namespace LYBT.Desktop.Formula.ViewModels
         }
 
 
-        private void AddHerb()
+        private async void AddHerb()
         {
-            // TODO: 实现添加药材对话框
-            // 暂时添加一个示例药材
-            var newItem = new FormulaHerbItemDto
+            try
             {
-                HerbId = Guid.NewGuid(),
-                HerbName = "示例药材",
-                Quantity = 10,
-                Unit = "克",
-                Preparation = "煎服"
-            };
-            HerbItems.Add(newItem);
+                // 使用现有的药材选择对话框
+                var parameters = new DialogParameters
+                {
+                    { "Title", "选择药材" },
+                    { "AllowQuantityEdit", true }
+                };
+
+                var result = await _dialogService.ShowDialogAsync("HerbSelectionDialog", parameters);
+                
+                if (result?.Result == true && result.Parameters.ContainsKey("SelectedHerb"))
+                {
+                    var selectedHerb = result.Parameters["SelectedHerb"];
+                    
+                    // 根据选择结果创建FormulaHerbItemDto
+                    if (selectedHerb != null)
+                    {
+                        // 如果返回的是HerbDto，需要转换为FormulaHerbItemDto
+                        var herbDto = selectedHerb as HerbDto;
+                        if (herbDto != null)
+                        {
+                            var newItem = new FormulaHerbItemDto
+                            {
+                                HerbId = herbDto.Id,
+                                HerbName = herbDto.Name,
+                                Quantity = result.Parameters.ContainsKey("Quantity") ? Convert.ToDecimal(result.Parameters["Quantity"]) : 10,
+                                Unit = result.Parameters.ContainsKey("Unit") ? result.Parameters["Unit"]?.ToString() ?? "g" : "g",
+                                Preparation = "煎服", // 默认处理方法
+                                Usage = "" // 默认特殊说明
+                            };
+                            HerbItems.Add(newItem);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "添加药材时发生错误");
+                StatusMessage = "添加药材失败：" + ex.Message;
+            }
         }
 
         private void RemoveHerb(FormulaHerbItemDto? item)

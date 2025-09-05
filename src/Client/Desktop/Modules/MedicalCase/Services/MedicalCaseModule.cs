@@ -69,7 +69,7 @@ public class MedicalCaseModule(
     /// 更新医案
     /// </summary>
     public async Task<ServiceResult<MedicalCaseDto>> UpdateAsync(Guid id, MedicalCaseUpdateDto dto)
-        => ServiceResult<MedicalCaseDto>.Failure("简单诊所版本暂不支持医案更新");
+        => await _businessService.UpdateAsync(id, dto);
 
     /// <summary>
     /// 删除医案
@@ -87,7 +87,7 @@ public class MedicalCaseModule(
     /// 完成医案
     /// </summary>
     public async Task<ServiceResult<bool>> CompleteAsync(Guid id, string completionReason)
-        => await _businessService.CompleteAsync(id);
+        => await _businessService.CompleteAsync(id, completionReason);
 
     /// <summary>
     /// 取消医案
@@ -103,13 +103,13 @@ public class MedicalCaseModule(
     /// 暂停医疗案例 - 简单诊所版本暂不支持
     /// </summary>
     public async Task<ServiceResult<bool>> SuspendAsync(Guid id, string reason)
-        => ServiceResult<bool>.Failure("简单诊所版本暂不支持暂停医案");
+        => await _businessService.SuspendAsync(id, reason);
 
     /// <summary>
     /// 恢复医疗案例 - 简单诊所版本暂不支持
     /// </summary>
     public async Task<ServiceResult<bool>> ResumeAsync(Guid id)
-        => ServiceResult<bool>.Failure("简单诊所版本暂不支持恢复医案");
+        => await _businessService.ResumeAsync(id);
 
     /// <summary>
     /// 取消咨询/诊断 - 委托给CancelAsync
@@ -121,13 +121,13 @@ public class MedicalCaseModule(
     /// 更新医疗案例状态 - 简单诊所版本基础实现
     /// </summary>
     public async Task<ServiceResult<bool>> UpdateStatusAsync(Guid id, int status)
-        => ServiceResult<bool>.Failure("简单诊所版本暂不支持状态更新");
+        => await _businessService.UpdateStatusAsync(id, status);
 
     /// <summary>
     /// 归档医疗案例 - 简单诊所版本暂不支持
     /// </summary>
     public async Task<ServiceResult<bool>> ArchiveAsync(Guid id, string archiveReason)
-        => ServiceResult<bool>.Failure("简单诊所版本暂不支持归档医案");
+        => await _businessService.ArchiveAsync(id, archiveReason);
 
     /// <summary>
     /// 获取医疗案例统计信息 - 简单诊所版本基础实现
@@ -139,7 +139,7 @@ public class MedicalCaseModule(
     /// 搜索医疗案例 - 简单诊所版本基础实现
     /// </summary>
     public async Task<ServiceResult<List<MedicalCaseDto>>> SearchAsync(string keyword)
-        => ServiceResult<List<MedicalCaseDto>>.Success([]);
+        => await _queryService.SearchAsync(keyword);
 
     /// <summary>
     /// 获取医疗案例历史记录 - 简单诊所版本暂不支持

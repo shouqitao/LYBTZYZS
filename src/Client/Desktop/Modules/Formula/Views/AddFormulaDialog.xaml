@@ -107,8 +107,8 @@
                                 <DataGridTextColumn Header="药材名称" Binding="{Binding HerbName}" Width="150" />
                                 <DataGridTextColumn Header="用量" Binding="{Binding Quantity}" Width="80" />
                                 <DataGridTextColumn Header="单位" Binding="{Binding Unit}" Width="60" />
-                                <DataGridTextColumn Header="处理方法" Binding="{Binding ProcessingMethod}" Width="100" />
-                                <DataGridTextColumn Header="特殊说明" Binding="{Binding SpecialInstructions}" Width="*" />
+                                <DataGridTextColumn Header="处理方法" Binding="{Binding Preparation}" Width="100" />
+                                <DataGridTextColumn Header="特殊说明" Binding="{Binding Usage}" Width="*" />
                                 <DataGridTemplateColumn Header="操作" Width="60">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>

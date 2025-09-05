@@ -124,19 +124,21 @@ public class HerbBusinessService(
     /// <summary>
     /// 批量导入药材
     /// </summary>
-    public Task<ServiceResult<object>> ImportHerbsAsync(List<HerbCreateDto> herbs)
+    public async Task<ServiceResult<object>> ImportHerbsAsync(List<HerbCreateDto> herbs)
     {
         _logger.LogInformation("批量导入药材: {Count}个", herbs.Count);
-        return Task.FromResult(ServiceResult<object>.Failure("简单诊所版本暂不支持批量导入"));
+        // TODO: 需要实现药材批量导入功能，调用相应的API
+        return ServiceResult<object>.Failure("药材批量导入功能开发中，请联系系统管理员");
     }
     
     /// <summary>
     /// 导出药材数据
     /// </summary>
-    public Task<ServiceResult<byte[]>> ExportHerbsAsync(PagedQueryBaseDto query)
+    public async Task<ServiceResult<byte[]>> ExportHerbsAsync(PagedQueryBaseDto query)
     {
         _logger.LogInformation("导出药材数据");
-        return Task.FromResult(ServiceResult<byte[]>.Failure("简单诊所版本暂不支持数据导出"));
+        // TODO: 需要实现药材数据导出功能，调用相应的API
+        return ServiceResult<byte[]>.Failure("药材数据导出功能开发中，请联系系统管理员");
     }
 
     #endregion
