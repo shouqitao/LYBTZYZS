@@ -4,28 +4,18 @@ using System.Threading.Tasks;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Interfaces.Services;
-using Microsoft.Extensions.Logging;
 
 namespace LYBT.Module.Formula.Services
 {
     /// <summary>
     /// 验方服务 - UltraThink双层架构纯委托模式
     /// </summary>
-    public class FormulaService : IFormulaService
+    public class FormulaService(
+        FormulaQueryService queryService,
+        FormulaBusinessService businessService) : IFormulaService
     {
-        private readonly FormulaQueryService _queryService;
-        private readonly FormulaBusinessService _businessService;
-        private readonly ILogger<FormulaService> _logger;
-
-        public FormulaService(
-            FormulaQueryService queryService,
-            FormulaBusinessService businessService,
-            ILogger<FormulaService> logger)
-        {
-            _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
-            _businessService = businessService ?? throw new ArgumentNullException(nameof(businessService));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        }
+        private readonly FormulaQueryService _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
+        private readonly FormulaBusinessService _businessService = businessService ?? throw new ArgumentNullException(nameof(businessService));
 
         #region Query Operations
 
