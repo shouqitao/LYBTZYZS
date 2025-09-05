@@ -11,18 +11,12 @@ namespace LYBT.Module.Prescriptions.Services
     /// <summary>
     /// 处方服务 - UltraThink双层架构纯委托模式
     /// </summary>
-    public class PrescriptionService : IPrescriptionService
+    public class PrescriptionService(
+        IPrescriptionQueryService queryService,
+        IPrescriptionBusinessService businessService) : IPrescriptionService
     {
-        private readonly IPrescriptionQueryService _queryService;
-        private readonly IPrescriptionBusinessService _businessService;
-
-        public PrescriptionService(
-            IPrescriptionQueryService queryService,
-            IPrescriptionBusinessService businessService)
-        {
-            _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
-            _businessService = businessService ?? throw new ArgumentNullException(nameof(businessService));
-        }
+        private readonly IPrescriptionQueryService _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
+        private readonly IPrescriptionBusinessService _businessService = businessService ?? throw new ArgumentNullException(nameof(businessService));
 
         #region Query Operations
 

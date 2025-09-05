@@ -12,18 +12,12 @@ namespace LYBT.Module.Consultation.Services
     /// <summary>
     /// 看诊服务 - UltraThink双层架构纯委托模式
     /// </summary>
-    public class ConsultationService : IConsultationService
+    public class ConsultationService(
+        IConsultationQueryService queryService,
+        IConsultationBusinessService businessService) : IConsultationService
     {
-        private readonly IConsultationQueryService _queryService;
-        private readonly IConsultationBusinessService _businessService;
-
-        public ConsultationService(
-            IConsultationQueryService queryService,
-            IConsultationBusinessService businessService)
-        {
-            _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
-            _businessService = businessService ?? throw new ArgumentNullException(nameof(businessService));
-        }
+        private readonly IConsultationQueryService _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
+        private readonly IConsultationBusinessService _businessService = businessService ?? throw new ArgumentNullException(nameof(businessService));
 
         #region Query Operations
 

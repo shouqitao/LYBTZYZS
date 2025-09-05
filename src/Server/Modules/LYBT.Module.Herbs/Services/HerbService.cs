@@ -12,21 +12,14 @@ namespace LYBT.Module.Herbs.Services
     /// <summary>
     /// 药材服务 - UltraThink双层架构纯委托模式
     /// </summary>
-    public class HerbService : IHerbService
+    public class HerbService(
+        HerbQueryService queryService,
+        HerbBusinessService businessService,
+        ILogger<HerbService> logger) : IHerbService
     {
-        private readonly HerbQueryService _queryService;
-        private readonly HerbBusinessService _businessService;
-        private readonly ILogger<HerbService> _logger;
-
-        public HerbService(
-            HerbQueryService queryService,
-            HerbBusinessService businessService,
-            ILogger<HerbService> logger)
-        {
-            _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
-            _businessService = businessService ?? throw new ArgumentNullException(nameof(businessService));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        }
+        private readonly HerbQueryService _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
+        private readonly HerbBusinessService _businessService = businessService ?? throw new ArgumentNullException(nameof(businessService));
+        private readonly ILogger<HerbService> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
         #region Query Operations
 

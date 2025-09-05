@@ -8,14 +8,9 @@ namespace LYBT.Module.Prescriptions.Services
     /// <summary>
     /// 智能处方服务实现 - 核心配伍和验方组合功能
     /// </summary>
-    public class IntelligentPrescriptionService : IIntelligentPrescriptionService
+    public class IntelligentPrescriptionService(ILogger<IntelligentPrescriptionService> logger) : IIntelligentPrescriptionService
     {
-        private readonly ILogger<IntelligentPrescriptionService> _logger;
-
-        public IntelligentPrescriptionService(ILogger<IntelligentPrescriptionService> logger)
-        {
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        }
+        private readonly ILogger<IntelligentPrescriptionService> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
         /// <summary>
         /// 智能组合多个验方模板生成处方

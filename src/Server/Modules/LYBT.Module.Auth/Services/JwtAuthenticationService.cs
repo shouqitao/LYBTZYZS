@@ -13,16 +13,10 @@ namespace LYBT.Module.Auth.Services
     /// <summary>
     /// JWT认证服务实现
     /// </summary>
-    public class JwtAuthenticationService : IJwtAuthenticationService
+    public class JwtAuthenticationService(IOptions<JwtOptions> jwtOptions) : IJwtAuthenticationService
     {
-        private readonly JwtOptions _jwtOptions;
-        private readonly JwtSecurityTokenHandler _tokenHandler;
-
-        public JwtAuthenticationService(IOptions<JwtOptions> jwtOptions)
-        {
-            _jwtOptions = jwtOptions.Value;
-            _tokenHandler = new JwtSecurityTokenHandler();
-        }
+        private readonly JwtOptions _jwtOptions = jwtOptions?.Value ?? throw new ArgumentNullException(nameof(jwtOptions));
+        private readonly JwtSecurityTokenHandler _tokenHandler = new();
 
         /// <summary>
         /// 生成JWT令牌

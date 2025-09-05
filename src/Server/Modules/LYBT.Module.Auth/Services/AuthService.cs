@@ -13,18 +13,12 @@ namespace LYBT.Module.Auth.Services
     /// 职责：纯粹的服务委托，将请求分发到简化的AuthCore服务
     /// 简化架构：AuthCore(统一核心功能) + JwtService(JWT处理)
     /// </summary>
-    public class AuthService : IAuthService
+    public class AuthService(
+        IAuthQueryService queryService,
+        IAuthBusinessService businessService) : IAuthService
     {
-        private readonly IAuthQueryService _queryService;
-        private readonly IAuthBusinessService _businessService;
-
-        public AuthService(
-            IAuthQueryService queryService,
-            IAuthBusinessService businessService)
-        {
-            _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
-            _businessService = businessService ?? throw new ArgumentNullException(nameof(businessService));
-        }
+        private readonly IAuthQueryService _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
+        private readonly IAuthBusinessService _businessService = businessService ?? throw new ArgumentNullException(nameof(businessService));
 
         #region 核心认证操作
 
