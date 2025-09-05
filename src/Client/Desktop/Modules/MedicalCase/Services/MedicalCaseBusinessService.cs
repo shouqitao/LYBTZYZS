@@ -4,7 +4,9 @@ using Microsoft.Extensions.Logging;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.MedicalCase;
+using LYBT.Shared.Models.Enums;
 using LYBT.Desktop.MedicalCase.Interfaces;
+using LYBT.Shared.Interfaces.Api;
 
 namespace LYBT.Desktop.MedicalCase.Services;
 
@@ -16,9 +18,12 @@ namespace LYBT.Desktop.MedicalCase.Services;
 /// 支持医案创建、状态转换、完成取消等核心诊疗流程功能
 /// 适配中医诊所医疗案例管理需求，确保诊疗流程完整性和数据安全性
 /// </summary>
-public class MedicalCaseBusinessService(ILogger<MedicalCaseBusinessService> logger) : IMedicalCaseBusinessService
+public class MedicalCaseBusinessService(
+    ILogger<MedicalCaseBusinessService> logger,
+    IMedicalCaseApi medicalCaseApi) : IMedicalCaseBusinessService
 {
     private readonly ILogger<MedicalCaseBusinessService> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    private readonly IMedicalCaseApi _medicalCaseApi = medicalCaseApi ?? throw new ArgumentNullException(nameof(medicalCaseApi));
 
     #region 医疗案例业务逻辑专业化实现
 
@@ -33,9 +38,28 @@ public class MedicalCaseBusinessService(ILogger<MedicalCaseBusinessService> logg
     {
         ArgumentNullException.ThrowIfNull(dto, nameof(dto));
         
-        _logger.LogInformation("医疗案例创建请求: 患者ID: {PatientId}", dto.PatientId);
-        
-        return ServiceResult<MedicalCaseDto>.Failure("简单诊所版本暂不支持创建医疗案例");
+        try
+        {
+            _logger.LogInformation("开始处理医疗案例创建: 患者ID: {PatientId}", dto.PatientId);
+            
+            var refitResponse = await _medicalCaseApi.CreateAsync(dto);
+            
+            if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
+            {
+                var medicalCase = refitResponse.Content;
+                _logger.LogInformation("医疗案例创建成功: {MedicalCaseId}", medicalCase.Id);
+                return ServiceResult<MedicalCaseDto>.Success(medicalCase, "医案创建成功");
+            }
+            
+            _logger.LogWarning("医疗案例创建HTTP请求失败: 患者ID: {PatientId}, 状态码: {StatusCode}", 
+                dto.PatientId, refitResponse.StatusCode);
+            return ServiceResult<MedicalCaseDto>.Failure("创建医案网络请求失败，请检查网络连接");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "医疗案例创建过程发生异常: 患者ID: {PatientId}", dto.PatientId);
+            return ServiceResult<MedicalCaseDto>.Failure($"创建医案过程发生错误: {ex.Message}");
+        }
     }
 
     /// <summary>
@@ -50,9 +74,58 @@ public class MedicalCaseBusinessService(ILogger<MedicalCaseBusinessService> logg
     {
         ArgumentNullException.ThrowIfNull(dto, nameof(dto));
         
-        _logger.LogInformation("医疗案例更新请求: {MedicalCaseId}", id);
-        
-        return ServiceResult<MedicalCaseDto>.Failure("简单诊所版本暂不支持更新医疗案例");
+        try
+        {
+            _logger.LogInformation("开始处理医疗案例更新: {MedicalCaseId}", id);
+            
+            // 转换为EditDto
+            var editDto = new MedicalCaseEditDto
+            {
+                PatientId = dto.PatientId,
+                DoctorId = dto.DoctorId,
+                ChiefComplaint = dto.ChiefComplaint,
+                PresentIllness = dto.PresentIllness,
+                PastHistory = dto.PastHistory,
+                FamilyHistory = dto.FamilyHistory,
+                PersonalHistory = dto.PersonalHistory,
+                Status = dto.Status,
+                Remark = dto.Remark
+            };
+            
+            var refitResponse = await _medicalCaseApi.UpdateAsync(id, editDto);
+            
+            if (refitResponse.IsSuccessStatusCode && refitResponse.Content == true)
+            {
+                _logger.LogInformation("医疗案例更新成功: {MedicalCaseId}", id);
+                
+                // 重新获取更新后的数据
+                var getResponse = await _medicalCaseApi.GetByIdAsync(id);
+                if (getResponse.IsSuccessStatusCode && getResponse.Content != null)
+                {
+                    var medicalCaseDto = new MedicalCaseDto
+                    {
+                        Id = getResponse.Content.Id,
+                        PatientId = getResponse.Content.PatientId,
+                        DoctorId = getResponse.Content.DoctorId,
+                        Status = getResponse.Content.Status,
+                        CreateTime = getResponse.Content.CreateTime,
+                        ChiefComplaint = getResponse.Content.ChiefComplaint
+                    };
+                    return ServiceResult<MedicalCaseDto>.Success(medicalCaseDto, "医案更新成功");
+                }
+                
+                return ServiceResult<MedicalCaseDto>.Failure("医案更新成功但获取最新数据失败");
+            }
+            
+            _logger.LogWarning("医疗案例更新HTTP请求失败: {MedicalCaseId}, 状态码: {StatusCode}", 
+                id, refitResponse.StatusCode);
+            return ServiceResult<MedicalCaseDto>.Failure("更新医案网络请求失败，请检查网络连接");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "医疗案例更新过程发生异常: {MedicalCaseId}", id);
+            return ServiceResult<MedicalCaseDto>.Failure($"更新医案过程发生错误: {ex.Message}");
+        }
     }
 
     /// <summary>
@@ -75,8 +148,7 @@ public class MedicalCaseBusinessService(ILogger<MedicalCaseBusinessService> logg
     /// <returns>状态转换结果</returns>
     public async Task<ServiceResult<bool>> StartAsync(Guid id)
     {
-        _logger.LogInformation("开始医疗案例: {MedicalCaseId}", id);
-        return ServiceResult<bool>.Failure("简单诊所版本暂不支持医案状态管理");
+        return await UpdateStatusAsync(id, MedicalCaseStatus.InConsultation, "开始医案");
     }
 
     /// <summary>
@@ -87,8 +159,7 @@ public class MedicalCaseBusinessService(ILogger<MedicalCaseBusinessService> logg
     /// <returns>状态转换结果</returns>
     public async Task<ServiceResult<bool>> CompleteAsync(Guid id)
     {
-        _logger.LogInformation("完成医疗案例: {MedicalCaseId}", id);
-        return ServiceResult<bool>.Failure("简单诊所版本暂不支持医案状态管理");
+        return await UpdateStatusAsync(id, MedicalCaseStatus.Completed, "完成医案");
     }
 
     /// <summary>
@@ -99,8 +170,39 @@ public class MedicalCaseBusinessService(ILogger<MedicalCaseBusinessService> logg
     /// <returns>状态转换结果</returns>
     public async Task<ServiceResult<bool>> CancelAsync(Guid id)
     {
-        _logger.LogInformation("取消医疗案例: {MedicalCaseId}", id);
-        return ServiceResult<bool>.Failure("简单诊所版本暂不支持医案状态管理");
+        return await UpdateStatusAsync(id, MedicalCaseStatus.Cancelled, "取消医案");
+    }
+
+    /// <summary>
+    /// 更新医案状态的通用方法
+    /// </summary>
+    /// <param name="id">医案唯一标识</param>
+    /// <param name="status">新状态</param>
+    /// <param name="operationName">操作名称</param>
+    /// <returns>状态转换结果</returns>
+    private async Task<ServiceResult<bool>> UpdateStatusAsync(Guid id, MedicalCaseStatus status, string operationName)
+    {
+        try
+        {
+            _logger.LogInformation("开始处理{OperationName}: {MedicalCaseId}", operationName, id);
+            
+            var refitResponse = await _medicalCaseApi.UpdateStatusAsync(id, status);
+            
+            if (refitResponse.IsSuccessStatusCode && refitResponse.Content == true)
+            {
+                _logger.LogInformation("{OperationName}成功: {MedicalCaseId}", operationName, id);
+                return ServiceResult<bool>.Success(true, $"{operationName}成功");
+            }
+            
+            _logger.LogWarning("{OperationName}HTTP请求失败: {MedicalCaseId}, 状态码: {StatusCode}", 
+                operationName, id, refitResponse.StatusCode);
+            return ServiceResult<bool>.Failure($"{operationName}网络请求失败，请检查网络连接");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "{OperationName}过程发生异常: {MedicalCaseId}", operationName, id);
+            return ServiceResult<bool>.Failure($"{operationName}过程发生错误: {ex.Message}");
+        }
     }
 
     #endregion

@@ -6,6 +6,7 @@ using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Desktop.MedicalCase.Interfaces;
+using LYBT.Shared.Interfaces.Api;
 
 namespace LYBT.Desktop.MedicalCase.Services;
 
@@ -17,9 +18,12 @@ namespace LYBT.Desktop.MedicalCase.Services;
 /// 集成企业级日志记录，支持医案管理和档案查询需求
 /// 适配中医诊所医案查询场景，确保查询性能和数据安全性
 /// </summary>
-public class MedicalCaseQueryService(ILogger<MedicalCaseQueryService> logger) : IMedicalCaseQueryService
+public class MedicalCaseQueryService(
+    ILogger<MedicalCaseQueryService> logger,
+    IMedicalCaseApi medicalCaseApi) : IMedicalCaseQueryService
 {
     private readonly ILogger<MedicalCaseQueryService> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    private readonly IMedicalCaseApi _medicalCaseApi = medicalCaseApi ?? throw new ArgumentNullException(nameof(medicalCaseApi));
 
     #region 医疗案例查询专业化实现
 
@@ -34,12 +38,24 @@ public class MedicalCaseQueryService(ILogger<MedicalCaseQueryService> logger) : 
         try
         {
             _logger.LogDebug("查询医疗案例详细档案: {MedicalCaseId}", id);
-            return ServiceResult<MedicalCaseDetailDto>.Failure("简单诊所版本暂不支持医案详情查询");
+            
+            var refitResponse = await _medicalCaseApi.GetByIdAsync(id);
+            
+            if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
+            {
+                var detailDto = refitResponse.Content;
+                _logger.LogDebug("医疗案例详细档案查询成功: {MedicalCaseId}", id);
+                return ServiceResult<MedicalCaseDetailDto>.Success(detailDto, "查询成功");
+            }
+            
+            _logger.LogWarning("医疗案例详细档案查询HTTP请求失败: {MedicalCaseId}, 状态码: {StatusCode}", 
+                id, refitResponse.StatusCode);
+            return ServiceResult<MedicalCaseDetailDto>.Failure("查询医案详情网络请求失败，请检查网络连接");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "查询医案详情异常: {MedicalCaseId}", id);
-            return ServiceResult<MedicalCaseDetailDto>.Failure("查询医案详情失败");
+            return ServiceResult<MedicalCaseDetailDto>.Failure($"查询医案详情过程发生错误: {ex.Message}");
         }
     }
 
