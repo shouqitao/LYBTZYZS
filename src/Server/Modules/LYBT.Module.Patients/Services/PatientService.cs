@@ -15,18 +15,12 @@ namespace LYBT.Module.Patients.Services
     /// 患者服务 - UltraThink简化架构纯委托模式
     /// 职责：统一服务入口，纯粹的请求分发器
     /// </summary>
-    public class PatientService : IPatientService
+    public class PatientService(
+        IPatientQueryService queryService,
+        IPatientBusinessService businessService) : IPatientService
     {
-        private readonly IPatientQueryService _queryService;
-        private readonly IPatientBusinessService _businessService;
-
-        public PatientService(
-            IPatientQueryService queryService,
-            IPatientBusinessService businessService)
-        {
-            _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
-            _businessService = businessService ?? throw new ArgumentNullException(nameof(businessService));
-        }
+        private readonly IPatientQueryService _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
+        private readonly IPatientBusinessService _businessService = businessService ?? throw new ArgumentNullException(nameof(businessService));
 
         #region Core Operations - 委托给BusinessService
 
