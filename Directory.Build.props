@@ -17,7 +17,20 @@
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
     
+    <!-- 代码分析配置 -->
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <!-- 忽略常见的 StyleCop 警告，采用温和策略 -->
+    <NoWarn>SA1633;SA1200;SA1101;SA1309;SA1516;SA1600;SA1602;SA1649</NoWarn>
+    
     <!-- 使用默认输出路径 -->
     <!-- 每个项目将输出到自己的 bin\$(Configuration)\$(TargetFramework) 目录 -->
   </PropertyGroup>
+
+  <!-- 对所有 C# 项目自动引用 StyleCop.Analyzers -->
+  <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
+    <PackageReference Include="StyleCop.Analyzers">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
 </Project>

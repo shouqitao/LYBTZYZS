@@ -1,0 +1,35 @@
+{
+  "$schema": "https://raw.githubusercontent.com/DotNetAnalyzers/StyleCopAnalyzers/master/StyleCop.Analyzers/StyleCop.Analyzers/Settings/stylecop.schema.json",
+  "settings": {
+    "documentationRules": {
+      "companyName": "凌隐宝堂中医诊所",
+      "copyrightText": "Copyright (c) {companyName}. All rights reserved.",
+      "xmlHeader": true,
+      "fileNamingConvention": "stylecop"
+    },
+    "layoutRules": {
+      "newlineAtEndOfFile": "allow",
+      "allowConsecutiveUsings": true
+    },
+    "namingRules": {
+      "allowCommonHungarianPrefixes": true,
+      "allowedHungarianPrefixes": ["ui", "is", "has"],
+      "includeInferredTupleElementNames": false,
+      "tupleElementNameCasing": "camelCase"
+    },
+    "orderingRules": {
+      "usingDirectivesPlacement": "outsideNamespace",
+      "blankLinesBetweenUsingGroups": "allow",
+      "systemUsingDirectivesFirst": true
+    },
+    "readabilityRules": {
+      "allowBuiltInTypeAliases": true
+    },
+    "spacingRules": {
+      "allowLineBreakAfterColonInConstructorInitializer": true
+    },
+    "maintainabilityRules": {
+      "topLevelTypes": ["class", "interface", "struct", "delegate", "enum"]
+    }
+  }
+}
