@@ -104,10 +104,29 @@ public class PatientBusinessService(
     /// </summary>
     /// <param name="patientId">患者唯一标识</param>
     /// <returns>操作结果</returns>
-    public Task<ServiceResult<bool>> EnableAsync(Guid patientId)
+    public async Task<ServiceResult<bool>> EnableAsync(Guid patientId)
     {
-        _logger.LogDebug("患者启用请求: {PatientId}", patientId);
-        return Task.FromResult(ServiceResult<bool>.Failure("简单诊所版本暂不支持患者状态管理"));
+        try
+        {
+            _logger.LogInformation("开始处理患者启用: {PatientId}", patientId);
+            
+            // 使用ToggleStatusAsync切换状态实现启用功能
+            var refitResponse = await _patientApi.ToggleStatusAsync(patientId);
+            
+            if (refitResponse.IsSuccessStatusCode)
+            {
+                _logger.LogInformation("患者启用成功: {PatientId}", patientId);
+                return ServiceResult<bool>.Success(true);
+            }
+            
+            _logger.LogWarning("患者启用HTTP请求失败: {PatientId}, 状态码: {StatusCode}", patientId, refitResponse.StatusCode);
+            return ServiceResult<bool>.Failure("启用患者网络请求失败，请检查网络连接");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "患者启用过程发生异常: {PatientId}", patientId);
+            return ServiceResult<bool>.Failure($"启用患者过程发生错误: {ex.Message}");
+        }
     }
 
     /// <summary>
@@ -116,10 +135,29 @@ public class PatientBusinessService(
     /// </summary>
     /// <param name="patientId">患者唯一标识</param>
     /// <returns>操作结果</returns>
-    public Task<ServiceResult<bool>> DisableAsync(Guid patientId)
+    public async Task<ServiceResult<bool>> DisableAsync(Guid patientId)
     {
-        _logger.LogDebug("患者禁用请求: {PatientId}", patientId);
-        return Task.FromResult(ServiceResult<bool>.Failure("简单诊所版本暂不支持患者状态管理"));
+        try
+        {
+            _logger.LogInformation("开始处理患者禁用: {PatientId}", patientId);
+            
+            // 使用ToggleStatusAsync切换状态实现禁用功能
+            var refitResponse = await _patientApi.ToggleStatusAsync(patientId);
+            
+            if (refitResponse.IsSuccessStatusCode)
+            {
+                _logger.LogInformation("患者禁用成功: {PatientId}", patientId);
+                return ServiceResult<bool>.Success(true);
+            }
+            
+            _logger.LogWarning("患者禁用HTTP请求失败: {PatientId}, 状态码: {StatusCode}", patientId, refitResponse.StatusCode);
+            return ServiceResult<bool>.Failure("禁用患者网络请求失败，请检查网络连接");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "患者禁用过程发生异常: {PatientId}", patientId);
+            return ServiceResult<bool>.Failure($"禁用患者过程发生错误: {ex.Message}");
+        }
     }
 
     /// <summary>
@@ -128,10 +166,28 @@ public class PatientBusinessService(
     /// </summary>
     /// <param name="patientId">患者唯一标识</param>
     /// <returns>操作失败结果</returns>
-    public Task<ServiceResult<bool>> DeleteAsync(Guid patientId)
+    public async Task<ServiceResult<bool>> DeleteAsync(Guid patientId)
     {
-        _logger.LogWarning("患者删除请求被拒绝: {PatientId} - 确保历史数据完整性", patientId);
-        return Task.FromResult(ServiceResult<bool>.Failure("简单诊所版本暂不支持删除患者档案，确保历史就诊数据完整性"));
+        try
+        {
+            _logger.LogInformation("开始处理患者删除: {PatientId}", patientId);
+            
+            var refitResponse = await _patientApi.DeletePatientAsync(patientId);
+            
+            if (refitResponse.IsSuccessStatusCode)
+            {
+                _logger.LogInformation("患者删除成功: {PatientId}", patientId);
+                return ServiceResult<bool>.Success(true);
+            }
+            
+            _logger.LogWarning("患者删除HTTP请求失败: {PatientId}, 状态码: {StatusCode}", patientId, refitResponse.StatusCode);
+            return ServiceResult<bool>.Failure("删除患者网络请求失败，请检查网络连接");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "患者删除过程发生异常: {PatientId}", patientId);
+            return ServiceResult<bool>.Failure($"删除患者过程发生错误: {ex.Message}");
+        }
     }
 
     #endregion

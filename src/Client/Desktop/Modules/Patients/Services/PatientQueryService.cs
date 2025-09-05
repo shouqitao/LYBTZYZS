@@ -6,6 +6,7 @@ using LYBT.Desktop.Patients.Interfaces;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
+using LYBT.Shared.Interfaces.Api;
 
 namespace LYBT.Desktop.Patients.Services;
 
@@ -17,9 +18,12 @@ namespace LYBT.Desktop.Patients.Services;
 /// 集成企业级日志记录，支持患者管理和档案查询需求
 /// 适配中医诊所患者档案查询场景，确保查询性能和数据安全
 /// </summary>
-public class PatientQueryService(ILogger<PatientQueryService> logger) : IPatientQueryService
+public class PatientQueryService(
+    ILogger<PatientQueryService> logger,
+    IPatientApi patientApi) : IPatientQueryService
 {
     private readonly ILogger<PatientQueryService> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    private readonly IPatientApi _patientApi = patientApi ?? throw new ArgumentNullException(nameof(patientApi));
 
     #region 患者查询专业化实现
 
@@ -57,10 +61,27 @@ public class PatientQueryService(ILogger<PatientQueryService> logger) : IPatient
     /// </summary>
     /// <param name="id">患者唯一标识</param>
     /// <returns>患者详细档案DTO</returns>
-    public Task<ServiceResult<PatientDto>> GetByIdAsync(Guid id)
+    public async Task<ServiceResult<PatientDto>> GetByIdAsync(Guid id)
     {
-        _logger.LogDebug("查询患者详细档案: {PatientId}", id);
-        return Task.FromResult(ServiceResult<PatientDto>.Failure("简单诊所版本暂不支持患者详情查询"));
+        try
+        {
+            _logger.LogDebug("查询患者详细档案: {PatientId}", id);
+            
+            var refitResponse = await _patientApi.GetPatientByIdAsync(id);
+            
+            if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
+            {
+                var patientData = refitResponse.Content;
+                return ServiceResult<PatientDto>.Success(patientData);
+            }
+            
+            return ServiceResult<PatientDto>.Failure("查询患者网络请求失败");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "查询患者详细档案异常: {PatientId}", id);
+            return ServiceResult<PatientDto>.Failure("查询患者详情失败");
+        }
     }
 
     /// <summary>
@@ -110,19 +131,38 @@ public class PatientQueryService(ILogger<PatientQueryService> logger) : IPatient
     /// </summary>
     /// <param name="idCard">身份证号</param>
     /// <returns>患者信息或空结果</returns>
-    public Task<ServiceResult<PatientDto>> GetByIdCardAsync(string idCard)
+    public async Task<ServiceResult<PatientDto>> GetByIdCardAsync(string idCard)
     {
+        ArgumentNullException.ThrowIfNull(idCard, nameof(idCard));
+        
         try
         {
-            _logger.LogDebug("根据身份证号查询患者: {IdCard}", idCard?.Substring(0, 6) + "****");
+            _logger.LogDebug("根据身份证号查询患者: {IdCard}", idCard.Substring(0, 6) + "****");
             
-            // 简单诊所版本：基础实现，返回空结果
-            return Task.FromResult(ServiceResult<PatientDto>.Failure("简单诊所版本暂不支持身份证号查询"));
+            // 使用通用搜索API，通过身份证号搜索
+            var refitResponse = await _patientApi.GetPatientsAsync(
+                pageIndex: 1,
+                pageSize: 1,
+                searchTerm: idCard);
+            
+            if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
+            {
+                var pagedResult = refitResponse.Content;
+                if (pagedResult.Items?.Any() == true)
+                {
+                    // 返回第一个匹配的患者
+                    return ServiceResult<PatientDto>.Success(pagedResult.Items.First());
+                }
+                
+                return ServiceResult<PatientDto>.Failure("身份证号对应患者不存在");
+            }
+            
+            return ServiceResult<PatientDto>.Failure("查询患者网络请求失败");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "根据身份证号查询患者异常");
-            return Task.FromResult(ServiceResult<PatientDto>.Failure("查询患者失败"));
+            return ServiceResult<PatientDto>.Failure("根据身份证号查询患者失败");
         }
     }
 
