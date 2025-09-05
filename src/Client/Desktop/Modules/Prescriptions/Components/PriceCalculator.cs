@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using LYBT.Shared.Models.Contracts.Prescriptions;
@@ -36,11 +36,11 @@ namespace LYBT.Desktop.Prescriptions.Components
 
                 // 计算小计：Σ(药材单价 × 用量)
                 var subtotal = items.Sum(item => item.UnitPrice * item.Quantity);
-                
+
                 // 应用折扣
                 var discountedPrice = subtotal * Math.Max(0m, Math.Min(1m, discount));
 
-                _logger.LogDebug("计算单剂价格: 小计={Subtotal}, 折扣={Discount}, 单剂价格={Price}", 
+                _logger.LogDebug("计算单剂价格: 小计={Subtotal}, 折扣={Discount}, 单剂价格={Price}",
                     subtotal, discount, discountedPrice);
 
                 return Math.Round(discountedPrice, 2);
@@ -68,8 +68,8 @@ namespace LYBT.Desktop.Prescriptions.Components
                 }
 
                 var totalPrice = singleDosePrice * dosageCount;
-                
-                _logger.LogDebug("计算总价格: 单剂价格={SinglePrice}, 剂数={DosageCount}, 总价格={TotalPrice}", 
+
+                _logger.LogDebug("计算总价格: 单剂价格={SinglePrice}, 剂数={DosageCount}, 总价格={TotalPrice}",
                     singleDosePrice, dosageCount, totalPrice);
 
                 return Math.Round(totalPrice, 2);
@@ -136,7 +136,7 @@ namespace LYBT.Desktop.Prescriptions.Components
 
                 // 单剂重量
                 var singleDoseWeight = items.Sum(item => item.Quantity);
-                
+
                 // 总重量 = 单剂重量 × 剂数
                 var totalWeight = singleDoseWeight * dosageCount;
 

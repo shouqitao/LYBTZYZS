@@ -1,11 +1,11 @@
-using System;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
-using Prism.Commands;
-using Prism.Events;
 using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
+using Prism.Commands;
+using Prism.Events;
 
 namespace LYBT.Desktop.Core.ViewModels
 {
@@ -153,7 +153,7 @@ namespace LYBT.Desktop.Core.ViewModels
         /// 标准构造函数
         /// </summary>
         protected ModernManagementViewModel(
-            IEventAggregator eventAggregator, 
+            IEventAggregator eventAggregator,
             IErrorHandlingService? errorHandlingService = null)
             : base(eventAggregator, errorHandlingService)
         {
@@ -264,7 +264,10 @@ namespace LYBT.Desktop.Core.ViewModels
 
         private async Task ExecuteEditAsync()
         {
-            if (SelectedItem == null) return;
+            if (SelectedItem == null)
+            {
+                return;
+            }
 
             try
             {
@@ -279,7 +282,10 @@ namespace LYBT.Desktop.Core.ViewModels
 
         private async Task ExecuteDeleteAsync()
         {
-            if (SelectedItem == null) return;
+            if (SelectedItem == null)
+            {
+                return;
+            }
 
             try
             {
@@ -294,7 +300,10 @@ namespace LYBT.Desktop.Core.ViewModels
 
         private async Task ExecuteViewDetailsAsync()
         {
-            if (SelectedItem == null) return;
+            if (SelectedItem == null)
+            {
+                return;
+            }
 
             try
             {
@@ -354,7 +363,7 @@ namespace LYBT.Desktop.Core.ViewModels
         protected override void RaiseCanExecuteChanged()
         {
             base.RaiseCanExecuteChanged();
-            
+
             SearchCommand.RaiseCanExecuteChanged();
             AddCommand.RaiseCanExecuteChanged();
             EditCommand.RaiseCanExecuteChanged();
@@ -383,7 +392,7 @@ namespace LYBT.Desktop.Core.ViewModels
                 var pagedResult = serviceResult.Data;
                 Items = new ObservableCollection<T>(pagedResult.Items ?? Enumerable.Empty<T>());
                 TotalCount = pagedResult.TotalCount;
-                
+
                 // 确保选中项仍然有效
                 if (SelectedItem != null && !Items.Contains(SelectedItem))
                 {

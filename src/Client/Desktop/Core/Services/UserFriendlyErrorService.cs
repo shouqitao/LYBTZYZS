@@ -1,13 +1,13 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using Microsoft.Extensions.Logging;
-using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Desktop.Core.Models.Common;
 using LYBT.Desktop.Core.Exceptions;
+using LYBT.Desktop.Core.Models.Common;
 using LYBT.Desktop.Core.Services;
+using LYBT.Shared.Models.Contracts.Common;
+using Microsoft.Extensions.Logging;
 using SharedCommon = LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Desktop.Core.Services
@@ -63,68 +63,68 @@ namespace LYBT.Desktop.Core.Services
         private readonly ILogger<UserFriendlyErrorService> _logger;
         private readonly ISmartLoadingManager? _loadingManager;
         private readonly Dictionary<string, Func<Exception, ErrorContext, Task<bool>>> _recoveryStrategies = new();
-        
+
         // 常见错误模式匹配
         private readonly Dictionary<string, UserFriendlyError> _errorPatterns = new()
         {
             // 网络连接错误
-            { "connection", new UserFriendlyError 
-                { 
-                    Title = "网络连接异常", 
+            { "connection", new UserFriendlyError
+                {
+                    Title = "网络连接异常",
                     Message = "网络连接不稳定，请检查网络设置后重试",
                     Severity = SharedCommon.ErrorSeverity.Warning,
                     SuggestedActions = new[] { "检查网络连接", "重试操作", "联系技术支持" }
-                } 
+                }
             },
             
             // 超时错误
-            { "timeout", new UserFriendlyError 
-                { 
-                    Title = "操作超时", 
+            { "timeout", new UserFriendlyError
+                {
+                    Title = "操作超时",
                     Message = "操作耗时过长已超时，请稍后重试",
                     Severity = SharedCommon.ErrorSeverity.Warning,
                     SuggestedActions = new[] { "稍后重试", "检查网络", "减小数据量" }
-                } 
+                }
             },
 
             // 权限错误
-            { "unauthorized", new UserFriendlyError 
-                { 
-                    Title = "访问权限不足", 
+            { "unauthorized", new UserFriendlyError
+                {
+                    Title = "访问权限不足",
                     Message = "您没有执行此操作的权限，请联系管理员",
                     Severity = SharedCommon.ErrorSeverity.Error,
                     SuggestedActions = new[] { "联系管理员", "检查账户权限", "重新登录" }
-                } 
+                }
             },
 
             // 数据验证错误
-            { "validation", new UserFriendlyError 
-                { 
-                    Title = "数据验证失败", 
+            { "validation", new UserFriendlyError
+                {
+                    Title = "数据验证失败",
                     Message = "输入的数据不符合要求，请检查后重新填写",
                     Severity = SharedCommon.ErrorSeverity.Warning,
                     SuggestedActions = new[] { "检查输入格式", "补填必填项", "联系技术支持" }
-                } 
+                }
             },
 
             // 数据不存在
-            { "notfound", new UserFriendlyError 
-                { 
-                    Title = "数据不存在", 
+            { "notfound", new UserFriendlyError
+                {
+                    Title = "数据不存在",
                     Message = "请求的数据不存在或已被删除",
                     Severity = SharedCommon.ErrorSeverity.Info,
                     SuggestedActions = new[] { "刷新页面", "检查搜索条件", "联系管理员" }
-                } 
+                }
             },
 
             // 服务器错误
-            { "server", new UserFriendlyError 
-                { 
-                    Title = "服务器异常", 
+            { "server", new UserFriendlyError
+                {
+                    Title = "服务器异常",
                     Message = "服务器出现异常，技术人员正在处理，请稍后重试",
                     Severity = SharedCommon.ErrorSeverity.Error,
                     SuggestedActions = new[] { "稍后重试", "联系技术支持", "保存工作内容" }
-                } 
+                }
             }
         };
 
@@ -146,7 +146,7 @@ namespace LYBT.Desktop.Core.Services
             {
                 var errorType = ClassifyError(exception);
                 var friendlyError = GetErrorByType(errorType);
-                
+
                 // 增强错误消息
                 friendlyError.Context = context;
                 friendlyError.TechnicalDetails = exception.Message;
@@ -178,11 +178,11 @@ namespace LYBT.Desktop.Core.Services
         {
             if (result.IsSuccess)
             {
-                return new UserFriendlyError 
-                { 
-                    Title = "操作成功", 
+                return new UserFriendlyError
+                {
+                    Title = "操作成功",
                     Message = "操作已成功完成",
-                    Severity = SharedCommon.ErrorSeverity.Info 
+                    Severity = SharedCommon.ErrorSeverity.Info
                 };
             }
 
@@ -197,11 +197,11 @@ namespace LYBT.Desktop.Core.Services
         {
             if (result.IsSuccess)
             {
-                return new UserFriendlyError 
-                { 
-                    Title = "操作成功", 
+                return new UserFriendlyError
+                {
+                    Title = "操作成功",
                     Message = "操作已成功完成",
-                    Severity = SharedCommon.ErrorSeverity.Info 
+                    Severity = SharedCommon.ErrorSeverity.Info
                 };
             }
 
@@ -228,7 +228,7 @@ namespace LYBT.Desktop.Core.Services
                     Timestamp = baseError.Timestamp,
                     OperationName = baseError.OperationName,
                     AttemptCount = baseError.AttemptCount,
-                    
+
                     // 增强功能
                     ErrorContext = errorContext,
                     SmartFixActions = GenerateSmartFixActions(exception, errorContext),
@@ -254,18 +254,18 @@ namespace LYBT.Desktop.Core.Services
         public async Task<RecoveryResult> TryAutoRecoverAsync(Exception exception, ErrorContext context)
         {
             using var operation = _loadingManager?.StartLoading("auto_recovery", "正在尝试自动恢复...", layer: 2);
-            
+
             try
             {
                 var errorType = ClassifyError(exception);
-                
+
                 // 查找匹配的恢复策略
                 foreach (var (pattern, strategy) in _recoveryStrategies)
                 {
                     if (errorType.Contains(pattern) || exception.Message.ToLowerInvariant().Contains(pattern))
                     {
                         _logger.LogInformation("尝试使用恢复策略: {Pattern}", pattern);
-                        
+
                         var success = await strategy(exception, context);
                         if (success)
                         {
@@ -331,8 +331,8 @@ namespace LYBT.Desktop.Core.Services
                     HttpStatusCode.NotFound => "notfound",
                     HttpStatusCode.BadRequest => "validation",
                     HttpStatusCode.RequestTimeout or HttpStatusCode.GatewayTimeout => "timeout",
-                    HttpStatusCode.InternalServerError or 
-                    HttpStatusCode.BadGateway or 
+                    HttpStatusCode.InternalServerError or
+                    HttpStatusCode.BadGateway or
                     HttpStatusCode.ServiceUnavailable => "server",
                     _ => "server"
                 };
@@ -340,23 +340,33 @@ namespace LYBT.Desktop.Core.Services
 
             // 根据异常类型分类
             if (exceptionType.Contains("timeout") || message.Contains("timeout") || message.Contains("超时"))
+            {
                 return "timeout";
+            }
 
-            if (exceptionType.Contains("network") || exceptionType.Contains("connection") || 
+            if (exceptionType.Contains("network") || exceptionType.Contains("connection") ||
                 message.Contains("connection") || message.Contains("网络"))
+            {
                 return "connection";
+            }
 
             if (exceptionType.Contains("unauthorized") || exceptionType.Contains("forbidden") ||
                 message.Contains("unauthorized") || message.Contains("权限") || message.Contains("授权"))
+            {
                 return "unauthorized";
+            }
 
-            if (exceptionType.Contains("validation") || message.Contains("validation") || 
+            if (exceptionType.Contains("validation") || message.Contains("validation") ||
                 message.Contains("验证") || message.Contains("格式"))
+            {
                 return "validation";
+            }
 
-            if (exceptionType.Contains("notfound") || message.Contains("not found") || 
+            if (exceptionType.Contains("notfound") || message.Contains("not found") ||
                 message.Contains("不存在"))
+            {
                 return "notfound";
+            }
 
             // 默认为服务器错误
             return "server";
@@ -434,7 +444,7 @@ namespace LYBT.Desktop.Core.Services
         private string GetContextualMessage(Exception exception, ErrorContext context)
         {
             var baseMessage = GetErrorByType(ClassifyError(exception)).Message;
-            
+
             return context.ModuleName switch
             {
                 "Prescriptions" => $"处方管理操作失败：{baseMessage}。请检查处方信息是否完整。",
@@ -742,37 +752,37 @@ namespace LYBT.Desktop.Core.Services
         /// 重试操作
         /// </summary>
         Retry,
-        
+
         /// <summary>
         /// 重新登录
         /// </summary>
         Relogin,
-        
+
         /// <summary>
         /// 网络检查
         /// </summary>
         NetworkCheck,
-        
+
         /// <summary>
         /// 打开编辑器
         /// </summary>
         OpenEditor,
-        
+
         /// <summary>
         /// 刷新页面
         /// </summary>
         RefreshPage,
-        
+
         /// <summary>
         /// 带超时重试
         /// </summary>
         RetryWithTimeout,
-        
+
         /// <summary>
         /// 清除缓存
         /// </summary>
         ClearCache,
-        
+
         /// <summary>
         /// 联系支持
         /// </summary>
@@ -788,12 +798,12 @@ namespace LYBT.Desktop.Core.Services
         /// 仅影响当前操作
         /// </summary>
         Operation,
-        
+
         /// <summary>
         /// 影响当前模块
         /// </summary>
         Module,
-        
+
         /// <summary>
         /// 影响整个系统
         /// </summary>

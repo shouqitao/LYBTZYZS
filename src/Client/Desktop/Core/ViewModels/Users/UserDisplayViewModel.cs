@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Extensions;
@@ -44,8 +44,8 @@ namespace LYBT.Desktop.Core.ViewModels.Users
         public string DisplayName => string.IsNullOrEmpty(_userData.RealName) ? _userData.Username : _userData.RealName;
 
         /// <summary>完整显示名称（含用户名）</summary>
-        public string FullDisplayName => string.IsNullOrEmpty(_userData.RealName) 
-            ? _userData.Username 
+        public string FullDisplayName => string.IsNullOrEmpty(_userData.RealName)
+            ? _userData.Username
             : $"{_userData.RealName}（{_userData.Username}）";
 
         /// <summary>状态文本</summary>
@@ -70,9 +70,15 @@ namespace LYBT.Desktop.Core.ViewModels.Users
             {
                 var contact = new System.Collections.Generic.List<string>();
                 if (!string.IsNullOrEmpty(_userData.PhoneNumber))
+                {
                     contact.Add($"电话: {_userData.PhoneNumber}");
+                }
+
                 if (!string.IsNullOrEmpty(_userData.Email))
+                {
                     contact.Add($"邮箱: {_userData.Email}");
+                }
+
                 return contact.Count > 0 ? string.Join(" | ", contact) : "无联系方式";
             }
         }
@@ -118,7 +124,7 @@ namespace LYBT.Desktop.Core.ViewModels.Users
         public void UpdateUserData(UserDto newUserData)
         {
             UserData = newUserData;
-            
+
             // 刷新所有计算属性
             RaisePropertyChanged(nameof(DisplayName));
             RaisePropertyChanged(nameof(FullDisplayName));

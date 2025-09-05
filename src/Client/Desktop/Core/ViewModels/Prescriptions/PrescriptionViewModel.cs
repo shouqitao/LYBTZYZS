@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.ComponentModel;
 using System.Linq;
 using LYBT.Shared.Models.Contracts.Prescriptions;
@@ -28,7 +28,7 @@ namespace LYBT.Desktop.Core.ViewModels.Prescriptions
         private PrescriptionViewModel(PrescriptionDto prescriptionData)
         {
             _prescriptionData = prescriptionData ?? throw new ArgumentNullException(nameof(prescriptionData));
-            
+
             // 初始化三个专门的ViewModel
             _display = new PrescriptionDisplayViewModel(_prescriptionData);
             _state = new PrescriptionStateViewModel();

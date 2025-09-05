@@ -1,13 +1,13 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using LYBT.Desktop.Formula.Interfaces;
+using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
-using LYBT.Shared.Interfaces.Services;
 
 namespace LYBT.Desktop.Formula.Services;
 
@@ -20,7 +20,7 @@ namespace LYBT.Desktop.Formula.Services;
 /// 适配中医诊所验方管理需求，确保验方质量和临床应用便利性
 /// </summary>
 public class FormulaModule(
-    IFormulaQueryService queryService,  
+    IFormulaQueryService queryService,
     IFormulaBusinessService businessService,
     IMapper mapper) : IFormulaService, IDisposable
 {
@@ -85,12 +85,14 @@ public class FormulaModule(
     {
         var formulaResult = await _queryService.GetByIdAsync(id);
         if (!formulaResult.IsSuccess || formulaResult.Data == null)
+        {
             return ServiceResult<bool>.Failure(formulaResult.ErrorMessage ?? "验方不存在");
-        
-        var result = formulaResult.Data.IsEnabled 
+        }
+
+        var result = formulaResult.Data.IsEnabled
             ? await _businessService.DisableAsync(id)
             : await _businessService.EnableAsync(id);
-        
+
         return ServiceResult<bool>.Success(result.IsSuccess);
     }
 
@@ -188,12 +190,14 @@ public class FormulaModule(
     {
         var query = new FormulaQueryDto { Keyword = name };
         var result = await _queryService.GetPagedAsync(query);
-        
+
         if (!result.IsSuccess || result.Data?.Items == null || !result.Data.Items.Any())
+        {
             return ServiceResult<FormulaDto>.Failure("未找到指定名称的验方");
-            
+        }
+
         var formula = result.Data.Items.FirstOrDefault(f => f.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
-        return formula != null 
+        return formula != null
             ? ServiceResult<FormulaDto>.Success(formula)
             : ServiceResult<FormulaDto>.Failure("未找到指定名称的验方");
     }
@@ -205,10 +209,12 @@ public class FormulaModule(
     {
         var query = new FormulaQueryDto { Keyword = userId.ToString() }; // 简化实现，按用户ID搜索
         var result = await _queryService.GetPagedAsync(query);
-        
+
         if (!result.IsSuccess || result.Data?.Items == null)
+        {
             return ServiceResult<List<FormulaDto>>.Failure(result.ErrorMessage ?? "获取个人验方失败");
-            
+        }
+
         return ServiceResult<List<FormulaDto>>.Success(result.Data.Items.ToList());
     }
 
@@ -218,7 +224,7 @@ public class FormulaModule(
     public async Task<ServiceResult<List<FormulaDto>>> GetClassicFormulasAsync()
     {
         var result = await _queryService.GetTemplatesAsync();
-        return result.IsSuccess 
+        return result.IsSuccess
             ? ServiceResult<List<FormulaDto>>.Success(result.Data ?? [])
             : ServiceResult<List<FormulaDto>>.Failure(result.ErrorMessage ?? "获取经典验方失败");
     }
@@ -238,7 +244,10 @@ public class FormulaModule(
         foreach (var id in formulaIds)
         {
             var result = await _businessService.EnableAsync(id);
-            if (result.IsSuccess) successCount++;
+            if (result.IsSuccess)
+            {
+                successCount++;
+            }
         }
         return ServiceResult<int>.Success(successCount);
     }
@@ -252,7 +261,10 @@ public class FormulaModule(
         foreach (var id in formulaIds)
         {
             var result = await _businessService.DisableAsync(id);
-            if (result.IsSuccess) successCount++;
+            if (result.IsSuccess)
+            {
+                successCount++;
+            }
         }
         return ServiceResult<int>.Success(successCount);
     }
@@ -265,10 +277,12 @@ public class FormulaModule(
         // 简化实现：返回基础统计信息
         var query = new FormulaQueryDto();
         var result = await _queryService.GetPagedAsync(query);
-        
+
         if (!result.IsSuccess || result.Data == null)
+        {
             return ServiceResult<FormulaStatisticsDto>.Failure("获取统计信息失败");
-            
+        }
+
         var statistics = new FormulaStatisticsDto
         {
             TotalCount = result.Data.TotalCount,
@@ -276,7 +290,7 @@ public class FormulaModule(
             DisabledCount = result.Data.Items?.Count(f => !f.IsEnabled) ?? 0,
             // RecentlyCreatedCount = 0 // 移除不存在的属性
         };
-        
+
         return ServiceResult<FormulaStatisticsDto>.Success(statistics);
     }
 
@@ -293,7 +307,7 @@ public class FormulaModule(
             FailedCount = 0,
             // ErrorMessages = ["简单诊所版本暂不支持验方导入功能"] // 移除不存在的属性
         };
-        
+
         return ServiceResult<FormulaImportResultDto>.Success(result);
     }
 

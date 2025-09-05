@@ -1,11 +1,11 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using LYBT.Desktop.MedicalCase.Interfaces;
+using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.MedicalCase;
-using LYBT.Desktop.MedicalCase.Interfaces;
-using LYBT.Shared.Interfaces.Services;
 
 namespace LYBT.Desktop.MedicalCase.Services;
 
@@ -51,7 +51,10 @@ public class MedicalCaseModule(
     {
         var result = await _queryService.GetActiveByPatientIdAsync(patientId);
         if (result.IsSuccess && result.Data != null)
+        {
             return ServiceResult<MedicalCaseDto>.Success(result.Data);
+        }
+
         return ServiceResult<MedicalCaseDto>.Failure(result.ErrorMessage ?? "未找到活跃医案");
     }
 

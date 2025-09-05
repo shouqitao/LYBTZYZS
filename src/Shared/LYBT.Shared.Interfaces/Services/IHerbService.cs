@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using LYBT.Shared.Models.Contracts.Common;
@@ -12,22 +12,22 @@ namespace LYBT.Shared.Interfaces.Services
     public interface IHerbService
     {
         #region 查询操作 - QueryService专业负责
-        
+
         /// <summary>
         /// 分页查询药材
         /// </summary>
         Task<ServiceResult<PagedResult<HerbDto>>> GetPagedAsync(HerbPagedQueryDto query);
-        
+
         /// <summary>
         /// 根据ID获取药材详情
         /// </summary>
         Task<ServiceResult<HerbDto>> GetByIdAsync(Guid id);
-        
+
         /// <summary>
         /// 搜索药材（按名称）
         /// </summary>
         Task<ServiceResult<List<HerbDto>>> SearchAsync(string keyword);
-        
+
         /// <summary>
         /// 批量获取药材（用于处方）
         /// </summary>
@@ -41,22 +41,22 @@ namespace LYBT.Shared.Interfaces.Services
         /// 创建新药材
         /// </summary>
         Task<ServiceResult<HerbDto>> CreateAsync(HerbCreateDto dto);
-        
+
         /// <summary>
         /// 更新药材信息
         /// </summary>
         Task<ServiceResult<HerbDto>> UpdateAsync(Guid id, HerbUpdateDto dto);
-        
+
         /// <summary>
         /// 删除药材（软删除）
         /// </summary>
         Task<ServiceResult<bool>> DeleteAsync(Guid id);
-        
+
         /// <summary>
         /// 启用药材
         /// </summary>
         Task<ServiceResult> EnableAsync(Guid id);
-        
+
         /// <summary>
         /// 禁用药材
         /// </summary>
@@ -70,7 +70,7 @@ namespace LYBT.Shared.Interfaces.Services
         /// 批量导入药材
         /// </summary>
         Task<ServiceResult<object>> ImportHerbsAsync(List<HerbCreateDto> herbs);
-        
+
         /// <summary>
         /// 导出药材数据
         /// </summary>

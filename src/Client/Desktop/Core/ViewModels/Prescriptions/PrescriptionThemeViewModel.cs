@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Windows.Media;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
@@ -69,9 +69,21 @@ namespace LYBT.Desktop.Core.ViewModels.Prescriptions
         {
             get
             {
-                if (NeedsPayment) return new SolidColorBrush(Color.FromRgb(220, 53, 69)); // 待付款-红色
-                if (CanDispense) return new SolidColorBrush(Color.FromRgb(255, 193, 7)); // 可发药-黄色
-                if (IsCompleted) return new SolidColorBrush(Color.FromRgb(40, 167, 69)); // 已完成-绿色
+                if (NeedsPayment)
+                {
+                    return new SolidColorBrush(Color.FromRgb(220, 53, 69)); // 待付款-红色
+                }
+
+                if (CanDispense)
+                {
+                    return new SolidColorBrush(Color.FromRgb(255, 193, 7)); // 可发药-黄色
+                }
+
+                if (IsCompleted)
+                {
+                    return new SolidColorBrush(Color.FromRgb(40, 167, 69)); // 已完成-绿色
+                }
+
                 return new SolidColorBrush(Color.FromRgb(108, 117, 125)); // 草稿-灰色
             }
         }
@@ -179,7 +191,7 @@ namespace LYBT.Desktop.Core.ViewModels.Prescriptions
             var complexity = HerbCount switch
             {
                 >= 15 => "复杂方",
-                >= 10 => "中等方", 
+                >= 10 => "中等方",
                 >= 5 => "简单方",
                 >= 1 => "单味药",
                 _ => "空方"

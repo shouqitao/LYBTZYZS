@@ -1,6 +1,6 @@
+﻿using LYBT.Desktop.Core.Services;
 using Microsoft.Extensions.Logging;
 using Prism.Ioc;
-using LYBT.Desktop.Core.Services;
 
 namespace LYBT.Desktop.Shell.Extensions
 {
@@ -17,7 +17,7 @@ namespace LYBT.Desktop.Shell.Extensions
             RegisterLoggingServices(container);
             return container;
         }
-        
+
         private static void RegisterLoggingServices(IContainerRegistry container)
         {
             // UltraThink v2.0: 使用标准Microsoft.Extensions.Logging
@@ -26,7 +26,7 @@ namespace LYBT.Desktop.Shell.Extensions
                 builder.AddDebug();
                 builder.SetMinimumLevel(LogLevel.Debug);
             });
-                
+
             container.RegisterInstance<ILoggerFactory>(loggerFactory);
             container.Register(typeof(ILogger<>), typeof(Logger<>));
         }

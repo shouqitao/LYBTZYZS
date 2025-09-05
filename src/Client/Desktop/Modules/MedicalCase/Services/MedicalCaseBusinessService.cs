@@ -1,12 +1,12 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
+using LYBT.Desktop.MedicalCase.Interfaces;
+using LYBT.Shared.Interfaces.Api;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Enums;
-using LYBT.Desktop.MedicalCase.Interfaces;
-using LYBT.Shared.Interfaces.Api;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.MedicalCase.Services;
 
@@ -37,21 +37,21 @@ public class MedicalCaseBusinessService(
     public async Task<ServiceResult<MedicalCaseDto>> CreateAsync(MedicalCaseCreateDto dto)
     {
         ArgumentNullException.ThrowIfNull(dto, nameof(dto));
-        
+
         try
         {
             _logger.LogInformation("开始处理医疗案例创建: 患者ID: {PatientId}", dto.PatientId);
-            
+
             var refitResponse = await _medicalCaseApi.CreateAsync(dto);
-            
+
             if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
             {
                 var medicalCase = refitResponse.Content;
                 _logger.LogInformation("医疗案例创建成功: {MedicalCaseId}", medicalCase.Id);
                 return ServiceResult<MedicalCaseDto>.Success(medicalCase, "医案创建成功");
             }
-            
-            _logger.LogWarning("医疗案例创建HTTP请求失败: 患者ID: {PatientId}, 状态码: {StatusCode}", 
+
+            _logger.LogWarning("医疗案例创建HTTP请求失败: 患者ID: {PatientId}, 状态码: {StatusCode}",
                 dto.PatientId, refitResponse.StatusCode);
             return ServiceResult<MedicalCaseDto>.Failure("创建医案网络请求失败，请检查网络连接");
         }
@@ -73,11 +73,11 @@ public class MedicalCaseBusinessService(
     public async Task<ServiceResult<MedicalCaseDto>> UpdateAsync(Guid id, MedicalCaseDetailDto dto)
     {
         ArgumentNullException.ThrowIfNull(dto, nameof(dto));
-        
+
         try
         {
             _logger.LogInformation("开始处理医疗案例更新: {MedicalCaseId}", id);
-            
+
             // 转换为EditDto
             var editDto = new MedicalCaseEditDto
             {
@@ -89,13 +89,13 @@ public class MedicalCaseBusinessService(
                 PastHistory = dto.PastHistory,
                 Remark = dto.Remark
             };
-            
+
             var refitResponse = await _medicalCaseApi.UpdateAsync(id, editDto);
-            
+
             if (refitResponse.IsSuccessStatusCode && refitResponse.Content == true)
             {
                 _logger.LogInformation("医疗案例更新成功: {MedicalCaseId}", id);
-                
+
                 // 重新获取更新后的数据
                 var getResponse = await _medicalCaseApi.GetByIdAsync(id);
                 if (getResponse.IsSuccessStatusCode && getResponse.Content != null)
@@ -111,11 +111,11 @@ public class MedicalCaseBusinessService(
                     };
                     return ServiceResult<MedicalCaseDto>.Success(medicalCaseDto, "医案更新成功");
                 }
-                
+
                 return ServiceResult<MedicalCaseDto>.Failure("医案更新成功但获取最新数据失败");
             }
-            
-            _logger.LogWarning("医疗案例更新HTTP请求失败: {MedicalCaseId}, 状态码: {StatusCode}", 
+
+            _logger.LogWarning("医疗案例更新HTTP请求失败: {MedicalCaseId}, 状态码: {StatusCode}",
                 id, refitResponse.StatusCode);
             return ServiceResult<MedicalCaseDto>.Failure("更新医案网络请求失败，请检查网络连接");
         }
@@ -183,16 +183,16 @@ public class MedicalCaseBusinessService(
         try
         {
             _logger.LogInformation("开始处理{OperationName}: {MedicalCaseId}", operationName, id);
-            
+
             var refitResponse = await _medicalCaseApi.UpdateStatusAsync(id, status);
-            
+
             if (refitResponse.IsSuccessStatusCode && refitResponse.Content == true)
             {
                 _logger.LogInformation("{OperationName}成功: {MedicalCaseId}", operationName, id);
                 return ServiceResult<bool>.Success(true, $"{operationName}成功");
             }
-            
-            _logger.LogWarning("{OperationName}HTTP请求失败: {MedicalCaseId}, 状态码: {StatusCode}", 
+
+            _logger.LogWarning("{OperationName}HTTP请求失败: {MedicalCaseId}, 状态码: {StatusCode}",
                 operationName, id, refitResponse.StatusCode);
             return ServiceResult<bool>.Failure($"{operationName}网络请求失败，请检查网络连接");
         }

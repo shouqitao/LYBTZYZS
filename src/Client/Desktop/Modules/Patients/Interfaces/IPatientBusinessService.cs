@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
@@ -16,22 +16,22 @@ public interface IPatientBusinessService
     /// 创建患者
     /// </summary>
     Task<ServiceResult<PatientDto>> CreateAsync(PatientCreateDto createDto);
-    
+
     /// <summary>
     /// 更新患者
     /// </summary>
     Task<ServiceResult<PatientDto>> UpdateAsync(Guid id, PatientUpdateDto updateDto);
-    
+
     /// <summary>
     /// 启用患者
     /// </summary>
     Task<ServiceResult<bool>> EnableAsync(Guid patientId);
-    
+
     /// <summary>
     /// 禁用患者
     /// </summary>
     Task<ServiceResult<bool>> DisableAsync(Guid patientId);
-    
+
     /// <summary>
     /// 删除患者
     /// </summary>

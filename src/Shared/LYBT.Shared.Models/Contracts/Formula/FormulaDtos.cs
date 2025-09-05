@@ -1,9 +1,9 @@
-using LYBT.Shared.Models.Contracts.Common;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel;
 
 namespace LYBT.Shared.Models.Contracts.Formula
 {
@@ -15,32 +15,32 @@ namespace LYBT.Shared.Models.Contracts.Formula
     {
         [DisplayName("验方名称")]
         public string Name { get; set; } = string.Empty;
-        
+
         [DisplayName("功效")]
         public string? Effect { get; set; }
-        
+
         [DisplayName("用法")]
         public string? Usage { get; set; }
-        
+
         [DisplayName("性味归经")]
         public string? Property { get; set; }
-        
+
         [DisplayName("是否共享")]
         public bool IsShared { get; set; } = false;
-        
+
         [DisplayName("备注")]
         [StringLength(500, ErrorMessage = "备注长度不能超过500个字符")]
         public string? Remark { get; set; }
-        
+
         [DisplayName("药材组成")]
         public List<FormulaHerbItemDto> Herbs { get; set; } = new();
 
         /// <summary>药材组成别名（兼容性）</summary>
         [DisplayName("药材组成")]
-        public List<FormulaHerbItemDto> Items 
-        { 
-            get => Herbs; 
-            set => Herbs = value; 
+        public List<FormulaHerbItemDto> Items
+        {
+            get => Herbs;
+            set => Herbs = value;
         }
 
         /// <summary>验方描述</summary>
@@ -61,7 +61,11 @@ namespace LYBT.Shared.Models.Contracts.Formula
         {
             get
             {
-                if (Herbs == null || !Herbs.Any()) return 0m;
+                if (Herbs == null || !Herbs.Any())
+                {
+                    return 0m;
+                }
+
                 return Herbs.Sum(h => (h.Herb?.Price ?? 0m) * h.Quantity);
             }
         }
@@ -71,7 +75,11 @@ namespace LYBT.Shared.Models.Contracts.Formula
         {
             get
             {
-                if (Herbs == null || !Herbs.Any()) return "暂无药材";
+                if (Herbs == null || !Herbs.Any())
+                {
+                    return "暂无药材";
+                }
+
                 var herbNames = Herbs
                     .Where(h => h.Herb != null)
                     .Select(h => $"{h.Herb!.Name}({h.Quantity}g)")
@@ -83,7 +91,11 @@ namespace LYBT.Shared.Models.Contracts.Formula
         /// <summary>获取药材名称列表（带限制）</summary>
         public string GetHerbNamesList(int maxCount = 10)
         {
-            if (Herbs == null || !Herbs.Any()) return "暂无药材";
+            if (Herbs == null || !Herbs.Any())
+            {
+                return "暂无药材";
+            }
+
             var herbNames = Herbs
                 .Take(maxCount)
                 .Where(h => h.Herb != null)
@@ -98,10 +110,26 @@ namespace LYBT.Shared.Models.Contracts.Formula
             get
             {
                 // 根据验方名称智能判断分类
-                if (Name?.Contains("感冒") == true) return "内科方";
-                if (Name?.Contains("外伤") == true) return "外科方";
-                if (Name?.Contains("妇科") == true) return "妇科方";
-                if (Name?.Contains("儿童") == true) return "儿科方";
+                if (Name?.Contains("感冒") == true)
+                {
+                    return "内科方";
+                }
+
+                if (Name?.Contains("外伤") == true)
+                {
+                    return "外科方";
+                }
+
+                if (Name?.Contains("妇科") == true)
+                {
+                    return "妇科方";
+                }
+
+                if (Name?.Contains("儿童") == true)
+                {
+                    return "儿科方";
+                }
+
                 return "验方"; // 默认分类
             }
         }
@@ -144,22 +172,22 @@ namespace LYBT.Shared.Models.Contracts.Formula
     {
         [DisplayName("中药材ID")]
         public Guid HerbId { get; set; }
-        
+
         [DisplayName("中药材名称")]
         public string HerbName { get; set; } = string.Empty;
-        
+
         [DisplayName("用量")]
         public decimal Quantity { get; set; }
-        
+
         [DisplayName("单位")]
         public string Unit { get; set; } = string.Empty;
-        
+
         [DisplayName("炮制方法")]
         public string? Preparation { get; set; }
-        
+
         [DisplayName("用法")]
         public string? Usage { get; set; }
-        
+
         [DisplayName("价格")]
         public decimal Price { get; set; }
 
@@ -171,7 +199,7 @@ namespace LYBT.Shared.Models.Contracts.Formula
 
         [DisplayName("特殊说明")]
         public string? SpecialInstructions { get; set; }
-        
+
         [DisplayName("排序")]
         public int SortOrder { get; set; }
 
@@ -307,26 +335,26 @@ namespace LYBT.Shared.Models.Contracts.Formula
     {
         [DisplayName("验方名称")]
         public string? Name { get; set; }
-        
+
         [DisplayName("功效")]
         public string? Effect { get; set; }
-        
+
         [DisplayName("是否共享")]
         public bool? IsShared { get; set; }
-        
+
         [DisplayName("创建者ID")]
         public Guid? CreatedById { get; set; }
-        
+
         [DisplayName("排序字段")]
         public string OrderBy { get; set; } = "CreateTime";
-        
+
         [DisplayName("升序排序")]
         public bool IsAscending { get; set; } = false;
 
         // UltraThink兼容性别名 - 确保架构统一
         /// <summary>页码兼容性别名</summary>
         public int Page { get => PageIndex; set => PageIndex = value; }
-        
+
         /// <summary>页大小兼容性别名</summary>
         public int Size { get => PageSize; set => PageSize = value; }
     }
@@ -348,22 +376,22 @@ namespace LYBT.Shared.Models.Contracts.Formula
     {
         [DisplayName("共享验方数量")]
         public int SharedCount { get; set; }
-        
+
         [DisplayName("私有验方数量")]
         public int PrivateCount { get; set; }
-        
+
         [DisplayName("已使用验方数量")]
         public int UsedCount { get; set; }
-        
+
         [DisplayName("功效统计")]
         public Dictionary<string, int> EffectStats { get; set; } = new();
-        
+
         [DisplayName("创建者统计")]
         public Dictionary<string, int> CreatorStats { get; set; } = new();
-        
+
         [DisplayName("统计开始日期")]
         public DateTime StartDate { get; set; }
-        
+
         [DisplayName("统计结束日期")]
         public DateTime EndDate { get; set; }
     }
@@ -375,22 +403,22 @@ namespace LYBT.Shared.Models.Contracts.Formula
     {
         [DisplayName("验方名称")]
         public string FormulaName { get; set; } = string.Empty;
-        
+
         [DisplayName("功效")]
         public string Effect { get; set; } = string.Empty;
-        
+
         [DisplayName("匹配得分")]
         public double MatchScore { get; set; }
-        
+
         [DisplayName("使用次数")]
         public int UsageCount { get; set; }
-        
+
         [DisplayName("推荐理由")]
         public string MatchReason { get; set; } = string.Empty;
     }
 
     // UltraThink v2.0: 导入导出功能DTOs（应用户业务需求恢复）
-    
+
     /// <summary>
     /// 验方导入DTO - 支持从老系统批量导入验方数据
     /// </summary>

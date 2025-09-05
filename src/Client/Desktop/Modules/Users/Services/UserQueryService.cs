@@ -1,11 +1,11 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using LYBT.Desktop.Users.Interfaces;
+using LYBT.Shared.Interfaces.Api;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
-using LYBT.Shared.Interfaces.Api;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Users.Services;
 
@@ -26,14 +26,14 @@ public class UserQueryService(
     {
         try
         {
-            _logger.LogDebug("执行用户分页查询，页码: {PageIndex}, 页大小: {PageSize}", 
+            _logger.LogDebug("执行用户分页查询，页码: {PageIndex}, 页大小: {PageSize}",
                 query.PageIndex, query.PageSize);
 
             var refitResponse = await _userApi.GetUsersAsync(
                 page: query.PageIndex,
                 pageSize: query.PageSize,
                 keyword: query.Keyword);
-            
+
             if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
             {
                 var apiResponse = refitResponse.Content;
@@ -41,10 +41,10 @@ public class UserQueryService(
                 {
                     return ServiceResult<PagedResult<UserDto>>.Success(apiResponse.Data);
                 }
-                
+
                 return ServiceResult<PagedResult<UserDto>>.Failure(apiResponse.Message ?? "查询用户列表失败");
             }
-            
+
             return ServiceResult<PagedResult<UserDto>>.Failure("查询用户网络请求失败");
         }
         catch (Exception ex)
@@ -61,7 +61,7 @@ public class UserQueryService(
             _logger.LogDebug("查询用户详情: {UserId}", id);
 
             var refitResponse = await _userApi.GetUserByIdAsync(id);
-            
+
             if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
             {
                 var apiResponse = refitResponse.Content;
@@ -69,10 +69,10 @@ public class UserQueryService(
                 {
                     return ServiceResult<UserDto>.Success(apiResponse.Data);
                 }
-                
+
                 return ServiceResult<UserDto>.Failure(apiResponse.Message ?? "用户不存在");
             }
-            
+
             return ServiceResult<UserDto>.Failure("查询用户网络请求失败");
         }
         catch (Exception ex)
@@ -103,14 +103,14 @@ public class UserQueryService(
     public Task<ServiceResult<List<object>>> GetRolesAsync()
     {
         _logger.LogDebug("获取系统角色列表");
-        
+
         // 简单诊所版本固定角色
         var roles = new List<object>
         {
             new { Id = "Admin", Name = "管理员" },
             new { Id = "Doctor", Name = "医生" }
         };
-        
+
         return Task.FromResult(ServiceResult<List<object>>.Success(roles));
     }
 

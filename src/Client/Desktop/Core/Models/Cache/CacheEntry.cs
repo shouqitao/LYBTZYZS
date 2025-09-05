@@ -1,6 +1,6 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Desktop.Core.Models.Cache
 {
@@ -108,11 +108,14 @@ namespace LYBT.Desktop.Core.Models.Cache
         /// <returns>估算大小（字节）</returns>
         private static long EstimateSize(T? obj)
         {
-            if (obj == null) return 0;
+            if (obj == null)
+            {
+                return 0;
+            }
 
             // 基本类型的大小估算
             var type = typeof(T);
-            
+
             if (type == typeof(string))
             {
                 var str = obj as string;
@@ -136,10 +139,25 @@ namespace LYBT.Desktop.Core.Models.Cache
                        8; // 默认8字节
             }
 
-            if (type == typeof(DateTime)) return 8;
-            if (type == typeof(DateTimeOffset)) return 16;
-            if (type == typeof(TimeSpan)) return 8;
-            if (type == typeof(Guid)) return 16;
+            if (type == typeof(DateTime))
+            {
+                return 8;
+            }
+
+            if (type == typeof(DateTimeOffset))
+            {
+                return 16;
+            }
+
+            if (type == typeof(TimeSpan))
+            {
+                return 8;
+            }
+
+            if (type == typeof(Guid))
+            {
+                return 16;
+            }
 
             // 集合类型的粗略估算
             if (obj is System.Collections.ICollection collection)

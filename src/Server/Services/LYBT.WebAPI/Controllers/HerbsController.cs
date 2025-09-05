@@ -1,4 +1,4 @@
-using Asp.Versioning;
+﻿using Asp.Versioning;
 using LYBT.Infrastructure.Web;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
@@ -69,7 +69,10 @@ namespace LYBT.WebAPI.Controllers
             try
             {
                 var validation = ValidateGuid<HerbDto>(id, "药材ID");
-                if (validation != null) return validation;
+                if (validation != null)
+                {
+                    return validation;
+                }
 
                 var result = await _herbService.GetByIdAsync(id);
                 return HandleServiceResult(result, "查询成功");
@@ -89,7 +92,10 @@ namespace LYBT.WebAPI.Controllers
             try
             {
                 var validation = ValidateModel<HerbDto>();
-                if (validation != null) return validation;
+                if (validation != null)
+                {
+                    return validation;
+                }
 
                 var result = await _herbService.CreateAsync(dto);
                 if (result.IsSuccess && result.Data != null)
@@ -113,10 +119,16 @@ namespace LYBT.WebAPI.Controllers
             try
             {
                 var idValidation = ValidateGuid<HerbDto>(id, "药材ID");
-                if (idValidation != null) return idValidation;
+                if (idValidation != null)
+                {
+                    return idValidation;
+                }
 
                 var modelValidation = ValidateModel<HerbDto>();
-                if (modelValidation != null) return modelValidation;
+                if (modelValidation != null)
+                {
+                    return modelValidation;
+                }
 
                 if (dto.Id != id)
                 {
@@ -145,7 +157,10 @@ namespace LYBT.WebAPI.Controllers
             try
             {
                 var validation = ValidateGuid(id, "药材ID");
-                if (validation != null) return validation;
+                if (validation != null)
+                {
+                    return validation;
+                }
 
                 var result = await _herbService.DeleteAsync(id);
                 return HandleBoolServiceResult(result, "删除成功");
@@ -165,9 +180,9 @@ namespace LYBT.WebAPI.Controllers
             try
             {
                 // 获取所有启用的药材 (使用分页查询替代GetAvailableHerbsAsync)
-                var query = new HerbPagedQueryDto 
-                { 
-                    PageIndex = 1, 
+                var query = new HerbPagedQueryDto
+                {
+                    PageIndex = 1,
                     PageSize = 10000,
                     Status = LYBT.Shared.Models.Enums.CommonStatus.Enabled
                 };
@@ -191,7 +206,7 @@ namespace LYBT.WebAPI.Controllers
                 {
                     categories = new List<string>
                     {
-                        "清热类", "补益类", "解表类", "理气类", 
+                        "清热类", "补益类", "解表类", "理气类",
                         "活血类", "止血类", "化痰类", "消食类", "其他"
                     };
                 }

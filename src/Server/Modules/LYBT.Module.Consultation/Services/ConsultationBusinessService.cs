@@ -1,12 +1,12 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using AutoMapper;
 using LYBT.Infrastructure.Data;
 using LYBT.Module.Consultation.Interfaces;
-using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Common;
-using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Consultation;
+using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -42,25 +42,33 @@ namespace LYBT.Module.Consultation.Services
             try
             {
                 if (consultationId == Guid.Empty)
+                {
                     return ServiceResult<bool>.Failure("看诊ID不能为空");
+                }
 
                 var consultation = await _context.Consultations
                     .FirstOrDefaultAsync(c => c.Id == consultationId);
 
                 if (consultation == null)
+                {
                     return ServiceResult<bool>.Failure("看诊记录不存在");
+                }
 
                 // 验证是否可以保存四诊数据
                 if (consultation.Status == CommonStatus.Disabled)
+                {
                     return ServiceResult<bool>.Failure("已完成的看诊不能修改四诊数据");
+                }
 
                 if (consultation.Status == CommonStatus.Disabled)
+                {
                     return ServiceResult<bool>.Failure("已取消的看诊不能修改四诊数据");
+                }
 
                 // TODO: 根据fourDiagnosisData的实际结构解析和保存四诊数据
                 // 这里需要根据具体的四诊数据结构进行实现
                 // 目前暂时记录日志
-                _logger.LogInformation("保存四诊数据 - 看诊: {ChiefComplaint} ({Id})", 
+                _logger.LogInformation("保存四诊数据 - 看诊: {ChiefComplaint} ({Id})",
                     consultation.ChiefComplaint ?? "无主诉", consultation.Id);
 
                 // consultation.UpdatedTime = DateTime.Now; // 实体中无此字段
@@ -84,13 +92,17 @@ namespace LYBT.Module.Consultation.Services
             try
             {
                 if (consultationId == Guid.Empty)
+                {
                     return ServiceResult<bool>.Failure("看诊ID不能为空");
+                }
 
                 var consultation = await _context.Consultations
                     .FirstOrDefaultAsync(c => c.Id == consultationId);
 
                 if (consultation == null)
+                {
                     return ServiceResult<bool>.Failure("看诊记录不存在");
+                }
 
                 // 验证状态转换的合法性
                 var currentStatus = consultation.Status;

@@ -1,4 +1,4 @@
-namespace LYBT.Infrastructure
+﻿namespace LYBT.Infrastructure
 {
     /// <summary>
     /// 极简日志模型 - UltraThink重构：删除冗余，保留核心

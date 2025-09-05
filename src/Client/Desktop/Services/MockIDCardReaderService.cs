@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using LYBT.Desktop.Core.Interfaces;
 using Microsoft.Extensions.Logging;
@@ -34,15 +34,15 @@ namespace LYBT.Desktop.Services
             try
             {
                 _logger.LogInformation("尝试连接模拟身份证读卡器...");
-                
+
                 UpdateStatus(IDCardReaderStatus.Connecting);
-                
+
                 // 模拟连接延迟
                 await Task.Delay(1000);
-                
+
                 // 模拟连接成功
                 UpdateStatus(IDCardReaderStatus.Connected);
-                
+
                 _logger.LogInformation("模拟身份证读卡器连接成功");
                 return true;
             }
@@ -59,11 +59,11 @@ namespace LYBT.Desktop.Services
             try
             {
                 _logger.LogInformation("断开模拟身份证读卡器连接...");
-                
+
                 await Task.Delay(500);
-                
+
                 UpdateStatus(IDCardReaderStatus.Disconnected);
-                
+
                 _logger.LogInformation("模拟身份证读卡器已断开");
             }
             catch (Exception ex)
@@ -85,19 +85,19 @@ namespace LYBT.Desktop.Services
 
                 _logger.LogInformation("开始读取模拟身份证信息...");
                 UpdateStatus(IDCardReaderStatus.Reading);
-                
+
                 // 模拟读卡延迟
                 await Task.Delay(2000);
-                
+
                 // 生成模拟数据
                 var mockData = GenerateMockIDCardInfo();
-                
+
                 UpdateStatus(IDCardReaderStatus.Connected);
-                
+
                 _logger.LogInformation($"成功读取模拟身份证信息: {mockData.Name}");
-                
+
                 OnCardRead(true, null, mockData);
-                
+
                 return mockData;
             }
             catch (Exception ex)
@@ -112,7 +112,7 @@ namespace LYBT.Desktop.Services
         private IDCardInfo GenerateMockIDCardInfo()
         {
             var testData = GetRandomTestData();
-            
+
             return new IDCardInfo
             {
                 Name = testData.Name,
@@ -151,7 +151,7 @@ namespace LYBT.Desktop.Services
             {
                 var oldStatus = _currentStatus;
                 _currentStatus = newStatus;
-                
+
                 StatusChanged?.Invoke(this, new IDCardReaderStatusChangedEventArgs
                 {
                     OldStatus = oldStatus,

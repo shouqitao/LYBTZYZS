@@ -1,11 +1,11 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
-using Microsoft.Extensions.ObjectPool;
+using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.ObjectPool;
 
 namespace LYBT.Desktop.Core.ObjectPool
 {
@@ -18,27 +18,27 @@ namespace LYBT.Desktop.Core.ObjectPool
         /// 获取对象池
         /// </summary>
         ObjectPool<T> GetPool<T>() where T : class, new();
-        
+
         /// <summary>
         /// 获取自定义对象池
         /// </summary>
         ObjectPool<T> GetPool<T>(IPooledObjectPolicy<T> policy) where T : class;
-        
+
         /// <summary>
         /// 租用对象
         /// </summary>
         T Rent<T>() where T : class, new();
-        
+
         /// <summary>
         /// 归还对象
         /// </summary>
         void Return<T>(T obj) where T : class, new();
-        
+
         /// <summary>
         /// 获取池统计信息
         /// </summary>
         PoolStatistics GetStatistics<T>() where T : class;
-        
+
         /// <summary>
         /// 清理池
         /// </summary>
@@ -70,10 +70,10 @@ namespace LYBT.Desktop.Core.ObjectPool
             {
                 var policy = new DefaultPooledObjectPolicy<T>();
                 var pool = _poolProvider.Create(policy);
-                
+
                 _statistics[typeof(T)] = new PoolStatistics { TypeName = typeof(T).Name };
                 _logger?.LogDebug($"创建对象池: {typeof(T).Name}");
-                
+
                 return pool;
             });
         }
@@ -86,10 +86,10 @@ namespace LYBT.Desktop.Core.ObjectPool
             return (ObjectPool<T>)_pools.GetOrAdd(typeof(T), type =>
             {
                 var pool = _poolProvider.Create(policy);
-                
+
                 _statistics[typeof(T)] = new PoolStatistics { TypeName = typeof(T).Name };
                 _logger?.LogDebug($"创建自定义对象池: {typeof(T).Name}");
-                
+
                 return pool;
             });
         }
@@ -101,13 +101,13 @@ namespace LYBT.Desktop.Core.ObjectPool
         {
             var pool = GetPool<T>();
             var obj = pool.Get();
-            
+
             if (_statistics.TryGetValue(typeof(T), out var stats))
             {
                 Interlocked.Increment(ref stats.RentCount);
                 Interlocked.Increment(ref stats.ActiveCount);
             }
-            
+
             return obj;
         }
 
@@ -117,11 +117,13 @@ namespace LYBT.Desktop.Core.ObjectPool
         public void Return<T>(T obj) where T : class, new()
         {
             if (obj == null)
+            {
                 return;
-            
+            }
+
             var pool = GetPool<T>();
             pool.Return(obj);
-            
+
             if (_statistics.TryGetValue(typeof(T), out var stats))
             {
                 Interlocked.Increment(ref stats.ReturnCount);
@@ -257,12 +259,12 @@ namespace LYBT.Desktop.Core.ObjectPool
         public T[] Rent(int minimumLength)
         {
             var array = _pool.Rent(minimumLength);
-            
+
             lock (_lock)
             {
                 _rentedArrays[array] = minimumLength;
             }
-            
+
             return array;
         }
 
@@ -272,7 +274,9 @@ namespace LYBT.Desktop.Core.ObjectPool
         public void Return(T[] array, bool clearArray = false)
         {
             if (array == null)
+            {
                 return;
+            }
 
             lock (_lock)
             {
@@ -307,7 +311,7 @@ namespace LYBT.Desktop.Core.ObjectPool
         /// <summary>
         /// 使用池化对象（自动归还）
         /// </summary>
-        public static TResult Use<T, TResult>(this ObjectPool<T> pool, Func<T, TResult> action) 
+        public static TResult Use<T, TResult>(this ObjectPool<T> pool, Func<T, TResult> action)
             where T : class
         {
             var obj = pool.Get();
@@ -324,7 +328,7 @@ namespace LYBT.Desktop.Core.ObjectPool
         /// <summary>
         /// 使用池化对象（异步，自动归还）
         /// </summary>
-        public static async Task<TResult> UseAsync<T, TResult>(this ObjectPool<T> pool, Func<T, Task<TResult>> action) 
+        public static async Task<TResult> UseAsync<T, TResult>(this ObjectPool<T> pool, Func<T, Task<TResult>> action)
             where T : class
         {
             var obj = pool.Get();
@@ -404,7 +408,9 @@ namespace LYBT.Desktop.Core.ObjectPool
         public void Return(T item)
         {
             if (item == null)
+            {
                 return;
+            }
 
             // 重置对象
             _resetAction?.Invoke(item);
@@ -417,7 +423,7 @@ namespace LYBT.Desktop.Core.ObjectPool
             else
             {
                 Interlocked.Decrement(ref _currentSize);
-                
+
                 // 如果对象实现IDisposable，释放它
                 if (item is IDisposable disposable)
                 {

@@ -1,9 +1,9 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using LYBT.Shared.Interfaces.Services;
 using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Shared.Interfaces.Services;
+using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Desktop.Core.Services
 {
@@ -15,26 +15,26 @@ namespace LYBT.Desktop.Core.Services
         private readonly IAuthenticationService _authService;
         private readonly Timer _healthCheckTimer;
         private readonly SemaphoreSlim _checkSemaphore = new(1, 1);
-        
+
         private bool _isOnline;
         private string _statusMessage = "正在检测API连接...";
         private DateTime _lastCheckTime = DateTime.MinValue;
         private int _consecutiveFailures = 0;
-        
+
         public event EventHandler<ApiHealthStatusChangedEventArgs>? StatusChanged;
-        
+
         public bool IsOnline => _isOnline;
         public string StatusMessage => _statusMessage;
         public DateTime LastCheckTime => _lastCheckTime;
         public int ConsecutiveFailures => _consecutiveFailures;
-        
+
         private const int CheckIntervalSeconds = 5;
         private const int MaxConsecutiveFailures = 3;
-        
+
         public ApiHealthMonitor(IAuthenticationService authService)
         {
             _authService = authService ?? throw new ArgumentNullException(nameof(authService));
-            
+
             // 创建定时器但暂不启动
             _healthCheckTimer = new Timer(
                 async _ => await PerformHealthCheckAsync(),
@@ -42,7 +42,7 @@ namespace LYBT.Desktop.Core.Services
                 Timeout.Infinite,
                 Timeout.Infinite);
         }
-        
+
         /// <summary>
         /// 启动健康监控
         /// </summary>
@@ -50,13 +50,13 @@ namespace LYBT.Desktop.Core.Services
         {
             // 立即执行第一次检查
             await PerformHealthCheckAsync();
-            
+
             // 启动定时器
             _healthCheckTimer.Change(
                 TimeSpan.FromSeconds(CheckIntervalSeconds),
                 TimeSpan.FromSeconds(CheckIntervalSeconds));
         }
-        
+
         /// <summary>
         /// 停止健康监控
         /// </summary>
@@ -64,7 +64,7 @@ namespace LYBT.Desktop.Core.Services
         {
             _healthCheckTimer.Change(Timeout.Infinite, Timeout.Infinite);
         }
-        
+
         /// <summary>
         /// 手动触发健康检查
         /// </summary>
@@ -73,18 +73,20 @@ namespace LYBT.Desktop.Core.Services
             await PerformHealthCheckAsync();
             return _isOnline;
         }
-        
+
         private async Task PerformHealthCheckAsync()
         {
             // 防止并发健康检查
             if (!await _checkSemaphore.WaitAsync(0))
+            {
                 return;
-            
+            }
+
             try
             {
                 _lastCheckTime = DateTime.Now;
                 var isHealthy = await _authService.CheckConnectionAsync();
-                
+
                 if (isHealthy)
                 {
                     if (!_isOnline || _consecutiveFailures > 0)
@@ -96,11 +98,11 @@ namespace LYBT.Desktop.Core.Services
                 else
                 {
                     _consecutiveFailures++;
-                    
+
                     var message = _consecutiveFailures >= MaxConsecutiveFailures
                         ? "❌ API服务不可用（多次连接失败）"
                         : $"⚠️ API连接异常（失败{_consecutiveFailures}次）";
-                        
+
                     UpdateStatus(false, message);
                 }
             }
@@ -114,13 +116,13 @@ namespace LYBT.Desktop.Core.Services
                 _checkSemaphore.Release();
             }
         }
-        
+
         private void UpdateStatus(bool isOnline, string message)
         {
             var previousStatus = _isOnline;
             _isOnline = isOnline;
             _statusMessage = message;
-            
+
             // 仅在状态改变时触发事件
             if (previousStatus != isOnline)
             {
@@ -132,7 +134,7 @@ namespace LYBT.Desktop.Core.Services
                 });
             }
         }
-        
+
         public void Dispose()
         {
             StopMonitoring();
@@ -140,7 +142,7 @@ namespace LYBT.Desktop.Core.Services
             _checkSemaphore?.Dispose();
         }
     }
-    
+
     /// <summary>
     /// API健康状态变更事件参数
     /// </summary>

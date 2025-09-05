@@ -1,8 +1,8 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
+using LYBT.Desktop.Core.Interfaces.Services;
 using Prism.Commands;
 using Prism.Events;
-using LYBT.Desktop.Core.Interfaces.Services;
 
 namespace LYBT.Desktop.Core.ViewModels
 {
@@ -71,7 +71,7 @@ namespace LYBT.Desktop.Core.ViewModels
         /// 标准构造函数
         /// </summary>
         protected ModernDialogViewModel(
-            IEventAggregator eventAggregator, 
+            IEventAggregator eventAggregator,
             IErrorHandlingService? errorHandlingService = null)
             : base(eventAggregator, errorHandlingService)
         {
@@ -83,7 +83,7 @@ namespace LYBT.Desktop.Core.ViewModels
         /// <summary>
         /// 兼容性构造函数
         /// </summary>
-        protected ModernDialogViewModel(IEventAggregator eventAggregator) 
+        protected ModernDialogViewModel(IEventAggregator eventAggregator)
             : this(eventAggregator, null)
         {
         }
@@ -91,7 +91,7 @@ namespace LYBT.Desktop.Core.ViewModels
         /// <summary>
         /// 简化构造函数
         /// </summary>
-        protected ModernDialogViewModel() 
+        protected ModernDialogViewModel()
             : this(new EventAggregator(), null)
         {
         }

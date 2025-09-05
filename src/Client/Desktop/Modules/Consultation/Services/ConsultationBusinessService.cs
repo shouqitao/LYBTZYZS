@@ -1,12 +1,12 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using LYBT.Desktop.Consultation.Interfaces;
+using LYBT.Shared.Interfaces.Api;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Enums;
-using LYBT.Shared.Interfaces.Api;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Consultation.Services;
 
@@ -35,12 +35,12 @@ public class ConsultationBusinessService(
     public async Task<ServiceResult<ConsultationDto>> CreateAsync(ConsultationCreateDto createDto)
     {
         ArgumentNullException.ThrowIfNull(createDto, nameof(createDto));
-        
+
         try
         {
-            _logger.LogInformation("开始处理看诊诊断创建: 患者ID: {PatientId}, 医案ID: {MedicalCaseId}", 
+            _logger.LogInformation("开始处理看诊诊断创建: 患者ID: {PatientId}, 医案ID: {MedicalCaseId}",
                 createDto.PatientId, createDto.MedicalCaseId);
-            
+
             // 转换为StartConsultationDto
             var startDto = new ConsultationStartDto
             {
@@ -48,9 +48,9 @@ public class ConsultationBusinessService(
                 MedicalCaseId = createDto.MedicalCaseId,
                 DoctorId = createDto.DoctorId
             };
-            
+
             var refitResponse = await _consultationApi.StartConsultationAsync(startDto);
-            
+
             if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
             {
                 var consultation = refitResponse.Content;
@@ -66,8 +66,8 @@ public class ConsultationBusinessService(
                 _logger.LogInformation("看诊诊断创建成功: {ConsultationId}", consultation.Id);
                 return ServiceResult<ConsultationDto>.Success(consultationDto, "看诊诊断创建成功");
             }
-            
-            _logger.LogWarning("看诊诊断创建HTTP请求失败: 患者ID: {PatientId}, 状态码: {StatusCode}", 
+
+            _logger.LogWarning("看诊诊断创建HTTP请求失败: 患者ID: {PatientId}, 状态码: {StatusCode}",
                 createDto.PatientId, refitResponse.StatusCode);
             return ServiceResult<ConsultationDto>.Failure("创建看诊诊断网络请求失败，请检查网络连接");
         }
@@ -89,13 +89,13 @@ public class ConsultationBusinessService(
     public async Task<ServiceResult<ConsultationDto>> UpdateAsync(Guid id, ConsultationUpdateDto updateDto)
     {
         ArgumentNullException.ThrowIfNull(updateDto, nameof(updateDto));
-        
+
         try
         {
             _logger.LogInformation("开始处理看诊诊断更新: {ConsultationId}", id);
-            
+
             var refitResponse = await _consultationApi.UpdateConsultationAsync(id, updateDto);
-            
+
             if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
             {
                 var consultation = refitResponse.Content;
@@ -111,8 +111,8 @@ public class ConsultationBusinessService(
                 _logger.LogInformation("看诊诊断更新成功: {ConsultationId}", id);
                 return ServiceResult<ConsultationDto>.Success(consultationDto, "看诊诊断更新成功");
             }
-            
-            _logger.LogWarning("看诊诊断更新HTTP请求失败: {ConsultationId}, 状态码: {StatusCode}", 
+
+            _logger.LogWarning("看诊诊断更新HTTP请求失败: {ConsultationId}, 状态码: {StatusCode}",
                 id, refitResponse.StatusCode);
             return ServiceResult<ConsultationDto>.Failure("更新看诊诊断网络请求失败，请检查网络连接");
         }

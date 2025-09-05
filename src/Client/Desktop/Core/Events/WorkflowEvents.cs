@@ -1,7 +1,7 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System;
-using Prism.Events;
+﻿using System;
 using LYBT.Desktop.Core.Models.Consultation;
+using LYBT.Shared.Models.Contracts.Common;
+using Prism.Events;
 
 namespace LYBT.Desktop.Core.Events
 {

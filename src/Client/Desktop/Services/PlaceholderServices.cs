@@ -1,14 +1,14 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
-using LYBT.Shared.Interfaces.Services;
 using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.Models;
+using LYBT.Shared.Interfaces.Services;
 
 namespace LYBT.Desktop.Services
 {
     // 以下是占位服务实现，待后续完善
     // 注意：UserService, PatientService, ConsultationService, HerbService 已移至独立文件
-    
+
     /// <summary>
     /// 导航服务占位实现
     /// </summary>
@@ -18,17 +18,17 @@ namespace LYBT.Desktop.Services
         {
             return Task.CompletedTask;
         }
-        
+
         public Task NavigateToAsync(string viewName, object parameters)
         {
             return Task.CompletedTask;
         }
-        
+
         public Task GoBackAsync()
         {
             return Task.CompletedTask;
         }
-        
+
         public bool CanGoBack => false;
     }
 }

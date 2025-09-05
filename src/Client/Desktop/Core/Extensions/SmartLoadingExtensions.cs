@@ -1,8 +1,8 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
 using LYBT.Desktop.Core.Services;
+using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Desktop.Core.Extensions
 {
@@ -31,7 +31,7 @@ namespace LYBT.Desktop.Core.Extensions
             CancellationToken cancellationToken = default)
         {
             using var loadingOperation = loadingManager.StartLoading(operationId, message, layer, false, cancellationToken);
-            
+
             try
             {
                 var result = await operation(loadingOperation.CancellationToken);
@@ -69,7 +69,7 @@ namespace LYBT.Desktop.Core.Extensions
             CancellationToken cancellationToken = default)
         {
             using var loadingOperation = loadingManager.StartLoading(operationId, message, layer, false, cancellationToken);
-            
+
             try
             {
                 await operation(loadingOperation.CancellationToken);
@@ -106,7 +106,7 @@ namespace LYBT.Desktop.Core.Extensions
             CancellationToken cancellationToken = default)
         {
             using var loadingOperation = loadingManager.StartLoading(operationId, message, layer, true, cancellationToken);
-            
+
             var progress = new Progress<ProgressInfo>(info =>
             {
                 loadingOperation.UpdateProgress(info.Percentage, info.Message);
@@ -150,22 +150,26 @@ namespace LYBT.Desktop.Core.Extensions
             CancellationToken cancellationToken = default)
         {
             if (items.Length == 0)
+            {
                 return Array.Empty<TResult>();
+            }
 
             using var loadingOperation = loadingManager.StartLoading(operationId, message, layer, true, cancellationToken);
-            
+
             var results = new TResult[items.Length];
-            
+
             try
             {
                 for (int i = 0; i < items.Length; i++)
                 {
                     if (loadingOperation.CancellationToken.IsCancellationRequested)
+                    {
                         break;
+                    }
 
                     var item = items[i];
                     results[i] = await itemProcessor(item, loadingOperation.CancellationToken);
-                    
+
                     var progress = (int)((i + 1.0) / items.Length * 100);
                     loadingOperation.UpdateProgress(progress, $"{message} ({i + 1}/{items.Length})");
                 }
@@ -203,19 +207,21 @@ namespace LYBT.Desktop.Core.Extensions
             CancellationToken cancellationToken = default)
         {
             using var mainOperation = loadingManager.StartLoading(baseOperationId, baseMessage, layer, true, cancellationToken);
-            
+
             var results = new object[steps.Length];
-            
+
             try
             {
                 for (int i = 0; i < steps.Length; i++)
                 {
                     if (mainOperation.CancellationToken.IsCancellationRequested)
+                    {
                         break;
+                    }
 
                     var step = steps[i];
                     var stepOperationId = $"{baseOperationId}_step_{i}";
-                    
+
                     // 更新主操作进度
                     var overallProgress = (int)(i / (double)steps.Length * 100);
                     mainOperation.UpdateProgress(overallProgress, step.Description);

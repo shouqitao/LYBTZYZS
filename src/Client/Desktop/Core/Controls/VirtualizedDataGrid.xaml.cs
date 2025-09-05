@@ -1,5 +1,4 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -7,6 +6,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 
@@ -23,7 +23,7 @@ namespace LYBT.Desktop.Core.Controls
         public VirtualizedDataGrid()
         {
             InitializeComponent();
-            
+
             // 设置DataContext为内部ViewModel
             DataContext = new VirtualizedDataGridViewModel();
         }
@@ -33,7 +33,7 @@ namespace LYBT.Desktop.Core.Controls
         /// <summary>
         /// 数据源属性
         /// </summary>
-        public static readonly DependencyProperty ItemsSourceProperty = 
+        public static readonly DependencyProperty ItemsSourceProperty =
             DependencyProperty.Register(
                 nameof(ItemsSource),
                 typeof(System.Collections.IEnumerable),
@@ -49,7 +49,7 @@ namespace LYBT.Desktop.Core.Controls
         /// <summary>
         /// 数据加载委托属性
         /// </summary>
-        public static readonly DependencyProperty LoadDataAsyncProperty = 
+        public static readonly DependencyProperty LoadDataAsyncProperty =
             DependencyProperty.Register(
                 nameof(LoadDataAsync),
                 typeof(Func<int, int, string, Task<PagedDataResult>>),
@@ -65,7 +65,7 @@ namespace LYBT.Desktop.Core.Controls
         /// <summary>
         /// 选中项属性
         /// </summary>
-        public static readonly DependencyProperty SelectedItemProperty = 
+        public static readonly DependencyProperty SelectedItemProperty =
             DependencyProperty.Register(
                 nameof(SelectedItem),
                 typeof(object),
@@ -115,16 +115,20 @@ namespace LYBT.Desktop.Core.Controls
                 try
                 {
                     if (!(DataContext is VirtualizedDataGridViewModel viewModel) || viewModel.IsLoading)
+                    {
                         return;
+                    }
 
                     var scrollViewer = e.OriginalSource as ScrollViewer;
                     if (scrollViewer == null)
+                    {
                         return;
+                    }
 
                     // 计算滚动位置
                     var verticalOffset = scrollViewer.VerticalOffset;
                     var scrollableHeight = scrollViewer.ScrollableHeight;
-                    
+
                     // 接近底部的阈值（距底部20%时开始预加载）
                     var nearBottomThreshold = scrollableHeight * 0.8;
                     var isCurrentlyNearBottom = verticalOffset >= nearBottomThreshold;
@@ -133,7 +137,7 @@ namespace LYBT.Desktop.Core.Controls
                     if (isCurrentlyNearBottom && !_isNearBottom && verticalOffset > _lastVerticalOffset)
                     {
                         _isNearBottom = true;
-                        
+
                         // 触发懒加载
                         if (viewModel.CanLoadMore)
                         {
@@ -187,7 +191,7 @@ namespace LYBT.Desktop.Core.Controls
         public VirtualizedDataGridViewModel()
         {
             Items = new ObservableCollection<object>();
-            
+
             // 初始化命令
             SearchCommand = new DelegateCommand(ExecuteSearch);
             RefreshCommand = new DelegateCommand(ExecuteRefresh);
@@ -359,7 +363,9 @@ namespace LYBT.Desktop.Core.Controls
         public async Task LoadDataAsync(int pageIndex)
         {
             if (_loadDataAsync == null || IsLoading)
+            {
                 return;
+            }
 
             try
             {
@@ -367,7 +373,7 @@ namespace LYBT.Desktop.Core.Controls
                 CurrentPage = pageIndex;
 
                 var result = await _loadDataAsync(pageIndex, PageSize, SearchKeyword);
-                
+
                 // 更新数据
                 Items.Clear();
                 if (result.Items != null)
@@ -380,7 +386,7 @@ namespace LYBT.Desktop.Core.Controls
 
                 TotalItems = result.TotalCount;
                 UpdatePageNumbers();
-                
+
                 _logger?.LogDebug("加载数据完成: 页码 {Page}, 数量 {Count}", pageIndex, Items.Count);
             }
             catch (Exception ex)
@@ -400,7 +406,9 @@ namespace LYBT.Desktop.Core.Controls
         public async Task LoadNextPageAsync()
         {
             if (!CanLoadMore || IsLoading)
+            {
                 return;
+            }
 
             await LoadDataAsync(CurrentPage + 1);
         }
@@ -414,7 +422,7 @@ namespace LYBT.Desktop.Core.Controls
             // Fire-and-forget pattern with proper async handling
             _ = ExecuteSearchAsync();
         }
-        
+
         private async Task ExecuteSearchAsync()
         {
             try
@@ -433,7 +441,7 @@ namespace LYBT.Desktop.Core.Controls
             // Fire-and-forget pattern with proper async handling
             _ = ExecuteRefreshAsync();
         }
-        
+
         private async Task ExecuteRefreshAsync()
         {
             try
@@ -452,7 +460,7 @@ namespace LYBT.Desktop.Core.Controls
             // Fire-and-forget pattern with proper async handling
             _ = ExecuteFirstPageAsync();
         }
-        
+
         private async Task ExecuteFirstPageAsync()
         {
             try
@@ -471,7 +479,7 @@ namespace LYBT.Desktop.Core.Controls
             // Fire-and-forget pattern with proper async handling
             _ = ExecutePreviousPageAsync();
         }
-        
+
         private async Task ExecutePreviousPageAsync()
         {
             try
@@ -493,7 +501,7 @@ namespace LYBT.Desktop.Core.Controls
             // Fire-and-forget pattern with proper async handling
             _ = ExecuteNextPageAsync();
         }
-        
+
         private async Task ExecuteNextPageAsync()
         {
             try
@@ -515,7 +523,7 @@ namespace LYBT.Desktop.Core.Controls
             // Fire-and-forget pattern with proper async handling
             _ = ExecuteLastPageAsync();
         }
-        
+
         private async Task ExecuteLastPageAsync()
         {
             try
@@ -534,7 +542,7 @@ namespace LYBT.Desktop.Core.Controls
             // Fire-and-forget pattern with proper async handling
             _ = ExecuteGoToPageAsync(pageNumber);
         }
-        
+
         private async Task ExecuteGoToPageAsync(int pageNumber)
         {
             try
@@ -592,7 +600,9 @@ namespace LYBT.Desktop.Core.Controls
         protected bool SetProperty<T>(ref T storage, T value, [CallerMemberName] string propertyName = null!)
         {
             if (Equals(storage, value))
+            {
                 return false;
+            }
 
             storage = value;
             OnPropertyChanged(propertyName);

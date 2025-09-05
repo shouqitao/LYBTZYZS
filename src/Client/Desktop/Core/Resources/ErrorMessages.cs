@@ -1,6 +1,6 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Desktop.Core.Resources
 {
@@ -10,7 +10,7 @@ namespace LYBT.Desktop.Core.Resources
     public static class ErrorMessages
     {
         #region 网络错误消息
-        
+
         public static class Network
         {
             public const string ConnectionFailed = "网络连接失败，请检查网络设置";

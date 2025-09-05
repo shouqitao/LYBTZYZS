@@ -1,7 +1,7 @@
-using System.Windows.Media;
+﻿using System.Windows.Media;
+using LYBT.Desktop.Core.Extensions;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
-using LYBT.Desktop.Core.Extensions;
 using Prism.Mvvm;
 
 namespace LYBT.Desktop.Core.ViewModels.Herbs
@@ -200,7 +200,7 @@ namespace LYBT.Desktop.Core.ViewModels.Herbs
             RaisePropertyChanged(nameof(TextColor));
             RaisePropertyChanged(nameof(NameColor));
             RaisePropertyChanged(nameof(WarningColor));
-            
+
             RaisePropertyChanged(nameof(StatusIcon));
             RaisePropertyChanged(nameof(StockStatusIcon));
             RaisePropertyChanged(nameof(PriceIcon));
@@ -208,15 +208,15 @@ namespace LYBT.Desktop.Core.ViewModels.Herbs
             RaisePropertyChanged(nameof(StockStyle));
             RaisePropertyChanged(nameof(PriceStyle));
             RaisePropertyChanged(nameof(CategoryStyle));
-            
+
             RaisePropertyChanged(nameof(Opacity));
             RaisePropertyChanged(nameof(TextOpacity));
             RaisePropertyChanged(nameof(StockIndicatorOpacity));
-            
+
             RaisePropertyChanged(nameof(FontSize));
             RaisePropertyChanged(nameof(IconSize));
             RaisePropertyChanged(nameof(BorderThickness));
-            
+
             RaisePropertyChanged(nameof(NeedsBlink));
             RaisePropertyChanged(nameof(NeedsAlert));
         }

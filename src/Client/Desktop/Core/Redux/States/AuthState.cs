@@ -1,6 +1,6 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System;
+﻿using System;
 using System.Collections.Immutable;
+using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Desktop.Core.Redux.States
 {
@@ -65,7 +65,7 @@ namespace LYBT.Desktop.Core.Redux.States
     /// </summary>
     public class LoginRequestAction : ActionBase<LoginRequest>
     {
-        public LoginRequestAction(LoginRequest request) 
+        public LoginRequestAction(LoginRequest request)
             : base("AUTH/LOGIN_REQUEST", request) { }
     }
 
@@ -74,7 +74,7 @@ namespace LYBT.Desktop.Core.Redux.States
     /// </summary>
     public class LoginSuccessAction : ActionBase<LoginResponse>
     {
-        public LoginSuccessAction(LoginResponse response) 
+        public LoginSuccessAction(LoginResponse response)
             : base("AUTH/LOGIN_SUCCESS", response) { }
     }
 
@@ -83,7 +83,7 @@ namespace LYBT.Desktop.Core.Redux.States
     /// </summary>
     public class LoginFailureAction : ActionBase<string>
     {
-        public LoginFailureAction(string error) 
+        public LoginFailureAction(string error)
             : base("AUTH/LOGIN_FAILURE", error) { }
     }
 
@@ -108,7 +108,7 @@ namespace LYBT.Desktop.Core.Redux.States
     /// </summary>
     public class RefreshTokenSuccessAction : ActionBase<string>
     {
-        public RefreshTokenSuccessAction(string newToken) 
+        public RefreshTokenSuccessAction(string newToken)
             : base("AUTH/REFRESH_TOKEN_SUCCESS", newToken) { }
     }
 
@@ -117,7 +117,7 @@ namespace LYBT.Desktop.Core.Redux.States
     /// </summary>
     public class UpdatePermissionsAction : ActionBase<ImmutableList<string>>
     {
-        public UpdatePermissionsAction(ImmutableList<string> permissions) 
+        public UpdatePermissionsAction(ImmutableList<string> permissions)
             : base("AUTH/UPDATE_PERMISSIONS", permissions) { }
     }
 

@@ -1,9 +1,9 @@
+﻿using System.Threading.Tasks;
+using LYBT.Desktop.Core.Redux.States;
 using LYBT.Shared.Models.Contracts.Common;
-using System.Threading.Tasks;
+using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Core;
 using AuthContracts = LYBT.Shared.Models.Contracts.Auth;
-using LYBT.Desktop.Core.Redux.States;
-using LYBT.Shared.Models.Contracts.Users;
 
 // UltraThink重构: 恢复四层架构清晰分离，UserInfo为UI层，UserDto为传输层
 

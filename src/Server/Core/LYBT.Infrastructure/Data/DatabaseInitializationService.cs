@@ -1,5 +1,5 @@
+﻿using LYBT.Entities.Users;
 using LYBT.Infrastructure.Data;
-using LYBT.Entities.Users;
 using LYBT.Shared.Utilities.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -19,7 +19,7 @@ namespace LYBT.Infrastructure.Data
         private readonly IConfiguration _configuration;
 
         public DatabaseInitializationService(
-            AppDbContext dbContext, 
+            AppDbContext dbContext,
             ILogger<DatabaseInitializationService> logger,
             IConfiguration configuration)
         {

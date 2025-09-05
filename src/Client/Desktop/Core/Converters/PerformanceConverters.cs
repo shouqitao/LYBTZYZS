@@ -1,8 +1,8 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System;
+﻿using System;
 using System.Globalization;
 using System.Windows.Data;
 using System.Windows.Media;
+using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Desktop.Core.Converters
 {
@@ -97,11 +97,13 @@ namespace LYBT.Desktop.Core.Converters
                 if (colors.Length == 2)
                 {
                     var colorString = boolValue ? colors[0] : colors[1];
-                    
+
                     // 移除 # 前缀
                     if (colorString.StartsWith("#"))
+                    {
                         colorString = colorString.Substring(1);
-                    
+                    }
+
                     if (colorString.Length == 6 &&
                         byte.TryParse(colorString.Substring(0, 2), NumberStyles.HexNumber, null, out byte r) &&
                         byte.TryParse(colorString.Substring(2, 2), NumberStyles.HexNumber, null, out byte g) &&

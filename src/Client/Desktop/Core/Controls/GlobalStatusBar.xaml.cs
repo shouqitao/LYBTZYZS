@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.ComponentModel;
 using System.Globalization;
 using System.Runtime.CompilerServices;
@@ -22,7 +22,7 @@ namespace LYBT.Desktop.Core.Controls
         /// 用户体验服务属性
         /// </summary>
         public static readonly DependencyProperty UxServiceProperty =
-            DependencyProperty.Register(nameof(UxService), typeof(IUserExperienceService), 
+            DependencyProperty.Register(nameof(UxService), typeof(IUserExperienceService),
                 typeof(GlobalStatusBar), new PropertyMetadata(null, OnUxServiceChanged));
 
         #endregion
@@ -171,7 +171,7 @@ namespace LYBT.Desktop.Core.Controls
     public class SystemTimeProvider : INotifyPropertyChanged
     {
         public static readonly SystemTimeProvider Instance = new();
-        
+
         private readonly DispatcherTimer _timer;
         private DateTime _currentTime;
 

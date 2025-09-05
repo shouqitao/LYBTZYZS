@@ -1,10 +1,10 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Core.Redux
@@ -55,7 +55,7 @@ namespace LYBT.Desktop.Core.Redux
             var prevState = store.State;
 
             _logger?.LogDebug($"[Action] {action.Type} @ {action.Timestamp:HH:mm:ss.fff}");
-            
+
             if (_logPayload && action is IAction<object> payloadAction)
             {
                 var json = JsonSerializer.Serialize(payloadAction.Payload, new JsonSerializerOptions
@@ -110,7 +110,7 @@ namespace LYBT.Desktop.Core.Redux
             if (_asyncHandlers.TryGetValue(action.Type, out var handler))
             {
                 _logger?.LogDebug($"异步处理Action: {action.Type}");
-                
+
                 // 立即分发开始Action
                 next(ActionCreator.CreateAsyncStart(action.Type));
 
@@ -180,7 +180,7 @@ namespace LYBT.Desktop.Core.Redux
             lock (_events)
             {
                 _events.Add(devEvent);
-                
+
                 // 限制事件数量
                 if (_events.Count > _maxEvents)
                 {
@@ -206,7 +206,7 @@ namespace LYBT.Desktop.Core.Redux
             {
                 // 重置到初始状态，然后重放Action到指定位置
                 var eventsToReplay = _events.Take(eventIndex + 1).ToList();
-                
+
                 // 这里需要Store支持重置功能
                 // 简化实现：直接跳转到指定事件的状态
                 _store.TimeTravelTo(eventIndex);
@@ -270,8 +270,8 @@ namespace LYBT.Desktop.Core.Redux
 
         public void Process(IStateStore<TState> store, IAction action, Action<IAction> next)
         {
-            var interval = _debounceIntervals.TryGetValue(action.Type, out var customInterval) 
-                ? customInterval 
+            var interval = _debounceIntervals.TryGetValue(action.Type, out var customInterval)
+                ? customInterval
                 : _defaultInterval;
 
             lock (_lastActionTimes)
@@ -328,7 +328,7 @@ namespace LYBT.Desktop.Core.Redux
                 if (!result.IsValid)
                 {
                     _logger?.LogWarning($"Action验证失败: {action.Type}, 错误: {result.Error}");
-                    
+
                     // 分发验证错误Action
                     store.Dispatch(new ValidationErrorAction(action.Type, result.Error));
                     return;
@@ -367,7 +367,7 @@ namespace LYBT.Desktop.Core.Redux
         public string OriginalActionType { get; }
         public string Error { get; }
 
-        public ValidationErrorAction(string originalActionType, string? error) 
+        public ValidationErrorAction(string originalActionType, string? error)
             : base("VALIDATION_ERROR")
         {
             OriginalActionType = originalActionType;

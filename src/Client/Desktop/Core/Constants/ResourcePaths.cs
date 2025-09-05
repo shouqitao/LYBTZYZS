@@ -1,4 +1,4 @@
-using LYBT.Shared.Models.Contracts.Common;
+﻿using LYBT.Shared.Models.Contracts.Common;
 namespace LYBT.Desktop.Core.Constants
 {
     /// <summary>
@@ -10,7 +10,7 @@ namespace LYBT.Desktop.Core.Constants
         // Base paths
         private const string AssetsBase = "pack://application:,,,/LYBT.Desktop.Shell;component/Assets/";
         private const string ThemesBase = "pack://application:,,,/LYBT.Desktop.Shell;component/Themes/";
-        
+
         /// <summary>
         /// Icon paths
         /// </summary>
@@ -21,7 +21,7 @@ namespace LYBT.Desktop.Core.Constants
             public const string AppIconSmall = AssetsBase + "Icons/App/app-16.png";
             public const string AppIconMedium = AssetsBase + "Icons/App/app-32.png";
             public const string AppIconLarge = AssetsBase + "Icons/App/app-48.png";
-            
+
             // Action icons
             public const string Save = AssetsBase + "Icons/Actions/icon-save-24.png";
             public const string Delete = AssetsBase + "Icons/Actions/icon-delete-24.png";
@@ -30,14 +30,14 @@ namespace LYBT.Desktop.Core.Constants
             public const string Search = AssetsBase + "Icons/Actions/icon-search-24.png";
             public const string Print = AssetsBase + "Icons/Actions/icon-print-24.png";
             public const string Refresh = AssetsBase + "Icons/Actions/icon-refresh-24.png";
-            
+
             // Status icons
             public const string Success = AssetsBase + "Icons/Status/icon-success-16.png";
             public const string Warning = AssetsBase + "Icons/Status/icon-warning-16.png";
             public const string Error = AssetsBase + "Icons/Status/icon-error-16.png";
             public const string Info = AssetsBase + "Icons/Status/icon-info-16.png";
         }
-        
+
         /// <summary>
         /// Image paths
         /// </summary>
@@ -47,17 +47,17 @@ namespace LYBT.Desktop.Core.Constants
             public const string LogoMain = AssetsBase + "Images/Logos/logo-main.png";
             public const string LogoSmall = AssetsBase + "Images/Logos/logo-small.png";
             public const string LogoText = AssetsBase + "Images/Logos/logo-text.png";
-            
+
             // Backgrounds
             public const string LoginBackground = AssetsBase + "Images/Backgrounds/login-bg.jpg";
             public const string MainBackground = AssetsBase + "Images/Backgrounds/main-bg.jpg";
-            
+
             // Illustrations
             public const string EmptyState = AssetsBase + "Images/Illustrations/empty-state.png";
             public const string NoData = AssetsBase + "Images/Illustrations/no-data.png";
             public const string Welcome = AssetsBase + "Images/Illustrations/welcome.png";
         }
-        
+
         /// <summary>
         /// Theme resource dictionaries
         /// </summary>
@@ -68,12 +68,12 @@ namespace LYBT.Desktop.Core.Constants
             public const string Typography = ThemesBase + "Design/Typography.xaml";
             public const string Spacing = ThemesBase + "Design/Spacing.xaml";
             public const string Animations = ThemesBase + "Design/Animations.xaml";
-            
+
             // Control templates
             public const string ModernButton = ThemesBase + "Controls/ModernButton.xaml";
             public const string ModernTextBox = ThemesBase + "Controls/ModernTextBox.xaml";
         }
-        
+
         /// <summary>
         /// Get resource URI
         /// </summary>
@@ -83,7 +83,7 @@ namespace LYBT.Desktop.Core.Constants
         {
             return $"{AssetsBase}{relativePath}";
         }
-        
+
         /// <summary>
         /// Get theme URI
         /// </summary>

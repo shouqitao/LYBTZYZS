@@ -1,13 +1,13 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
-using LYBT.Infrastructure.Data;
 using LYBT.Entities.Herbs;
-using LYBT.Shared.Models.Contracts.Herbs;
-using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Infrastructure.Data;
 using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -63,14 +63,14 @@ namespace LYBT.Module.Herbs.Services
             try
             {
                 query ??= new HerbPagedQueryDto();
-                
+
                 var queryable = BuildBaseQuery();
 
                 // 关键词搜索
                 if (!string.IsNullOrWhiteSpace(query.Keyword))
                 {
                     var keyword = query.Keyword.Trim();
-                    queryable = queryable.Where(h => 
+                    queryable = queryable.Where(h =>
                         h.Name.Contains(keyword) ||
                         (h.PinYinCode != null && h.PinYinCode.Contains(keyword)) ||
                         (h.Origin != null && h.Origin.Contains(keyword)) ||
@@ -102,7 +102,7 @@ namespace LYBT.Module.Herbs.Services
                 // 分页
                 var pageIndex = Math.Max(query.PageIndex, 1);
                 var pageSize = Math.Clamp(query.PageSize, 10, 100);
-                
+
                 var herbs = await queryable
                     .Skip((pageIndex - 1) * pageSize)
                     .Take(pageSize)
@@ -128,7 +128,9 @@ namespace LYBT.Module.Herbs.Services
             try
             {
                 if (string.IsNullOrWhiteSpace(keyword))
+                {
                     return await GetAllAsync();
+                }
 
                 keyword = keyword.Trim();
 
@@ -180,7 +182,9 @@ namespace LYBT.Module.Herbs.Services
             try
             {
                 if (ids == null || ids.Count == 0)
+                {
                     return ServiceResult<List<HerbDto>>.Success(new List<HerbDto>());
+                }
 
                 var herbs = await _context.Herbs
                     .Where(h => ids.Contains(h.Id) && h.Status != CommonStatus.Disabled)
@@ -205,10 +209,14 @@ namespace LYBT.Module.Herbs.Services
             try
             {
                 if (minPrice < 0 || maxPrice < 0)
+                {
                     return ServiceResult<List<HerbDto>>.Failure("价格不能为负数");
+                }
 
                 if (minPrice > maxPrice)
+                {
                     return ServiceResult<List<HerbDto>>.Failure("最小价格不能大于最大价格");
+                }
 
                 var herbs = await BuildBaseQuery()
                     .Where(h => h.Price >= minPrice && h.Price <= maxPrice)
@@ -234,13 +242,17 @@ namespace LYBT.Module.Herbs.Services
             try
             {
                 if (string.IsNullOrWhiteSpace(name))
+                {
                     return ServiceResult<HerbDto>.Failure("药材名称不能为空");
+                }
 
                 var herb = await BuildBaseQuery()
                     .FirstOrDefaultAsync(h => h.Name == name.Trim());
 
                 if (herb == null)
+                {
                     return ServiceResult<HerbDto>.Failure($"未找到名称为 '{name}' 的药材");
+                }
 
                 var dto = _mapper.Map<HerbDto>(herb);
                 return ServiceResult<HerbDto>.Success(dto);

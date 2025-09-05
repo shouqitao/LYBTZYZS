@@ -1,6 +1,6 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System;
+﻿using System;
 using System.Net;
+using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Desktop.Core.Exceptions
 {
@@ -57,7 +57,7 @@ namespace LYBT.Desktop.Core.Exceptions
             StatusCode = statusCode;
         }
 
-        public ApiCallException(string operationName, HttpStatusCode statusCode, string message, Exception innerException) 
+        public ApiCallException(string operationName, HttpStatusCode statusCode, string message, Exception innerException)
             : base(message, innerException)
         {
             OperationName = operationName;

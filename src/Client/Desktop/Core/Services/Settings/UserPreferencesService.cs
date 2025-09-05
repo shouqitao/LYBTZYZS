@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -14,7 +14,7 @@ namespace LYBT.Desktop.Core.Services.Settings
     {
         private readonly ILogger<UserPreferencesService> _logger;
         private readonly string _preferencesDirectory;
-        
+
         private static readonly JsonSerializerOptions JsonOptions = new()
         {
             WriteIndented = true,
@@ -24,12 +24,12 @@ namespace LYBT.Desktop.Core.Services.Settings
         public UserPreferencesService(ILogger<UserPreferencesService> logger)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            
+
             // 使用用户本地应用数据目录
             _preferencesDirectory = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                 "LYBT", "UserPreferences");
-            
+
             EnsureDirectoryExists();
         }
 
@@ -38,7 +38,7 @@ namespace LYBT.Desktop.Core.Services.Settings
             try
             {
                 var filePath = GetPreferencesFilePath(userId);
-                
+
                 if (!File.Exists(filePath))
                 {
                     _logger.LogDebug("用户偏好设置文件不存在，返回默认设置: {UserId}", userId);
@@ -47,7 +47,7 @@ namespace LYBT.Desktop.Core.Services.Settings
 
                 var json = await File.ReadAllTextAsync(filePath);
                 var preferences = JsonSerializer.Deserialize<UserPreferences>(json, JsonOptions);
-                
+
                 _logger.LogDebug("成功加载用户偏好设置: {UserId}", userId);
                 return preferences ?? CreateDefaultPreferences();
             }
@@ -68,12 +68,12 @@ namespace LYBT.Desktop.Core.Services.Settings
                 }
 
                 preferences.LastModified = DateTime.Now;
-                
+
                 var filePath = GetPreferencesFilePath(userId);
                 var json = JsonSerializer.Serialize(preferences, JsonOptions);
-                
+
                 await File.WriteAllTextAsync(filePath, json);
-                
+
                 _logger.LogDebug("成功保存用户偏好设置: {UserId}", userId);
             }
             catch (Exception ex)
@@ -89,7 +89,7 @@ namespace LYBT.Desktop.Core.Services.Settings
             {
                 var defaultPreferences = CreateDefaultPreferences();
                 await SaveUserPreferencesAsync(userId, defaultPreferences);
-                
+
                 _logger.LogInformation("已重置用户偏好设置为默认值: {UserId}", userId);
             }
             catch (Exception ex)
@@ -105,13 +105,13 @@ namespace LYBT.Desktop.Core.Services.Settings
             {
                 // 应用窗口设置
                 await ApplyWindowSettingsAsync(preferences.Window);
-                
+
                 // 应用主题设置
                 await ApplyThemeSettingsAsync(preferences.Theme);
-                
+
                 // 应用工作流设置
                 await ApplyWorkflowSettingsAsync(preferences.Workflow);
-                
+
                 _logger.LogDebug("成功应用用户偏好设置");
             }
             catch (Exception ex)

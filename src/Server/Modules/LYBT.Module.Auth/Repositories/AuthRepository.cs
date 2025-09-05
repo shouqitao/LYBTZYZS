@@ -1,10 +1,10 @@
+﻿using LYBT.Entities.Users;
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Repositories;
-using LYBT.Entities.Users;
 using LYBT.Module.Auth.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.Module.Auth.Repositories
 {
@@ -32,17 +32,17 @@ namespace LYBT.Module.Auth.Repositories
         public async Task<User?> GetByUsernameAsync(string userName)
         {
             var cacheKey = $"{CacheKeyPrefix}username:{userName}";
-            
+
             if (_cache.TryGetValue<User?>(cacheKey, out var cached))
             {
                 _logger.LogDebug("从缓存获取用户信息 {Username}", userName);
                 return cached;
             }
-            
+
             var user = await _dbSet
                 .AsNoTracking()
                 .FirstOrDefaultAsync(u => u.Username == userName);
-                
+
             _cache.Set(cacheKey, user, DefaultCacheDuration);
             return user;
         }

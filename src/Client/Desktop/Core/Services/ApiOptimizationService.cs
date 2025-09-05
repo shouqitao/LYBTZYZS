@@ -1,11 +1,11 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Core.Services
@@ -34,7 +34,7 @@ namespace LYBT.Desktop.Core.Services
             _batchRequests = new ConcurrentDictionary<string, BatchRequest>();
 
             // 定期清理过期的请求
-            _cleanupTimer = new Timer(CleanupExpiredRequests, null, 
+            _cleanupTimer = new Timer(CleanupExpiredRequests, null,
                 TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
         }
 
@@ -74,7 +74,7 @@ namespace LYBT.Desktop.Core.Services
 
             // 启动延迟执行
             request.CancellationTokenSource = new CancellationTokenSource();
-            
+
             _ = Task.Delay(debounceDelay, request.CancellationTokenSource.Token)
                 .ContinueWith(async t =>
                 {
@@ -116,8 +116,8 @@ namespace LYBT.Desktop.Core.Services
         /// <param name="batchWindow">批处理窗口时间</param>
         /// <returns>对应输入的结果</returns>
         public async Task<TOutput> BatchAsync<TInput, TOutput>(
-            string batchKey, 
-            TInput input, 
+            string batchKey,
+            TInput input,
             Func<List<TInput>, Task<List<TOutput>>> batchApiCall,
             TimeSpan? batchWindow = null)
         {
@@ -141,7 +141,7 @@ namespace LYBT.Desktop.Core.Services
                     {
                         return (BatchRequest<TInput, TOutput>)existing;
                     }
-                    
+
                     // 否则创建新的批次
                     return new BatchRequest<TInput, TOutput>
                     {
@@ -180,7 +180,7 @@ namespace LYBT.Desktop.Core.Services
         {
             try
             {
-                _logger.LogDebug("执行批量API请求: {Key}, 数量: {Count}", 
+                _logger.LogDebug("执行批量API请求: {Key}, 数量: {Count}",
                     batchRequest.Key, batchRequest.Inputs.Count);
 
                 var results = await batchRequest.BatchApiCall(batchRequest.Inputs);
@@ -202,7 +202,7 @@ namespace LYBT.Desktop.Core.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "批量API请求失败: {Key}", batchRequest.Key);
-                
+
                 // 将异常传递给所有等待的任务
                 foreach (var tcs in batchRequest.TaskCompletionSources)
                 {
@@ -243,8 +243,8 @@ namespace LYBT.Desktop.Core.Services
                 catch (Exception ex) when (attempt < maxAttempts && retryCriteria(ex, attempt))
                 {
                     var delay = CalculateExponentialBackoff(retryDelay, attempt);
-                    
-                    _logger.LogWarning(ex, 
+
+                    _logger.LogWarning(ex,
                         "API请求失败，第 {Attempt}/{MaxAttempts} 次重试，{Delay}ms 后重试",
                         attempt, maxAttempts, delay.TotalMilliseconds);
 
@@ -282,10 +282,10 @@ namespace LYBT.Desktop.Core.Services
         {
             var exponentialDelay = TimeSpan.FromMilliseconds(
                 baseDelay.TotalMilliseconds * Math.Pow(2, attemptNumber - 1));
-            
+
             // 添加随机抖动避免惊群效应
             var jitter = Random.Shared.Next(0, (int)(exponentialDelay.TotalMilliseconds * 0.1));
-            
+
             return exponentialDelay.Add(TimeSpan.FromMilliseconds(jitter));
         }
 
@@ -338,7 +338,7 @@ namespace LYBT.Desktop.Core.Services
         public void Dispose()
         {
             _cleanupTimer?.Dispose();
-            
+
             // 取消所有未完成的防抖请求
             foreach (var request in _debounceRequests.Values)
             {

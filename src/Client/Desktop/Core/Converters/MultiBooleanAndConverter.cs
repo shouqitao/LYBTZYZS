@@ -1,8 +1,8 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System;
+﻿using System;
 using System.Globalization;
 using System.Linq;
 using System.Windows.Data;
+using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Desktop.Core.Converters
 {
@@ -16,7 +16,9 @@ namespace LYBT.Desktop.Core.Converters
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
             if (values == null || values.Length == 0)
+            {
                 return false;
+            }
 
             return values.All(value => value is bool boolValue && boolValue);
         }

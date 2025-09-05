@@ -1,10 +1,10 @@
-using Asp.Versioning;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Memory;
+﻿using Asp.Versioning;
 using LYBT.Infrastructure.Web;
 using LYBT.Shared.Interfaces.Services;
-using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Auth;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace LYBT.WebAPI.Controllers
 {
@@ -40,7 +40,10 @@ namespace LYBT.WebAPI.Controllers
             {
                 // 参数验证
                 var validation = ValidateModel<LoginResponse>();
-                if (validation != null) return validation;
+                if (validation != null)
+                {
+                    return validation;
+                }
 
                 if (request == null)
                 {
@@ -79,7 +82,10 @@ namespace LYBT.WebAPI.Controllers
             {
                 // 参数验证
                 var validation = ValidateModel();
-                if (validation != null) return validation;
+                if (validation != null)
+                {
+                    return validation;
+                }
 
                 if (request == null)
                 {
@@ -113,7 +119,10 @@ namespace LYBT.WebAPI.Controllers
             {
                 // 参数验证
                 var validation = ValidateModel();
-                if (validation != null) return validation;
+                if (validation != null)
+                {
+                    return validation;
+                }
 
                 if (request == null)
                 {

@@ -1,7 +1,7 @@
-using Refit;
-using System.Net.Http;
+﻿using System.Net.Http;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Refit;
 
 namespace LYBT.Desktop.Infrastructure;
 
@@ -21,14 +21,14 @@ public static class RefitConfiguration
     public static RefitSettings GetRefitSettings()
     {
         var jsonOptions = CreateJsonSerializerOptions();
-        
+
         return new RefitSettings
         {
             ContentSerializer = new SystemTextJsonContentSerializer(jsonOptions),
             HttpMessageHandlerFactory = () => new HttpClientHandler()
         };
     }
-    
+
     /// <summary>
     /// 获取标准的Refit配置设置（用于UnifiedApiClientManager）
     /// 提供与UnifiedApiClientManager一致的配置
@@ -37,13 +37,13 @@ public static class RefitConfiguration
     public static RefitSettings GetStandardRefitSettings()
     {
         var jsonOptions = CreateJsonSerializerOptions();
-        
+
         return new RefitSettings
         {
             ContentSerializer = new SystemTextJsonContentSerializer(jsonOptions)
         };
     }
-    
+
     /// <summary>
     /// 创建企业级JSON序列化选项
     /// 统一的序列化配置，确保前后端数据传输一致性
@@ -56,27 +56,27 @@ public static class RefitConfiguration
             // 命名策略：与后端API保持一致（camelCase）
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             PropertyNameCaseInsensitive = true,
-            
+
             // 生产环境优化：紧凑格式，减少网络传输量
             WriteIndented = false,
-            
+
             // 忽略空值，减少数据传输量
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-            
+
             // JSON解析容错性配置
             ReadCommentHandling = JsonCommentHandling.Skip,
             AllowTrailingCommas = true,
-            
+
             // 数字处理配置
             NumberHandling = JsonNumberHandling.AllowReadingFromString
         };
 
         // 添加标准转换器
         ConfigureJsonConverters(options);
-        
+
         return options;
     }
-    
+
     /// <summary>
     /// 配置JSON转换器
     /// 添加企业级自定义转换器和标准转换器
@@ -86,10 +86,10 @@ public static class RefitConfiguration
     {
         // 枚举转换器：使用字符串表示，便于调试和维护
         options.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
-        
+
         // DateTime转换器：ISO 8601格式，确保时间准确性
         options.Converters.Add(new DateTimeConverter());
-        
+
         // Guid转换器：标准格式，确保ID一致性
         options.Converters.Add(new GuidConverter());
     }

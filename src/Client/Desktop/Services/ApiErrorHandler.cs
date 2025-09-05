@@ -1,11 +1,11 @@
-using System;
+﻿using System;
 using System.Net;
 using System.Threading.Tasks;
-using Refit;
-using Microsoft.Extensions.Logging;
-using LYBT.Desktop.Core.Models;
 using LYBT.Desktop.Core.Exceptions;
+using LYBT.Desktop.Core.Models;
 using LYBT.Shared.Models.Contracts.Common;
+using Microsoft.Extensions.Logging;
+using Refit;
 
 namespace LYBT.Desktop.Services
 {
@@ -15,7 +15,7 @@ namespace LYBT.Desktop.Services
     public static class ApiErrorHandler
     {
         private static ILogger? _logger;
-        
+
         /// <summary>
         /// 设置日志记录器
         /// </summary>
@@ -28,7 +28,7 @@ namespace LYBT.Desktop.Services
         /// 处理Refit API响应，转换为前端ServiceResult格式（增强版）
         /// </summary>
         public static async Task<ServiceResult<T>> HandleApiResponseAsync<T>(
-            Func<Task<Refit.ApiResponse<T>>> apiCall, 
+            Func<Task<Refit.ApiResponse<T>>> apiCall,
             string? operationName = null,
             int maxRetries = 0)
         {
@@ -143,7 +143,7 @@ namespace LYBT.Desktop.Services
 
             // 所有重试都失败了
             return ServiceResult<T>.Failure(
-                $"操作失败，已重试{maxRetries}次: {lastException?.Message ?? "未知错误"}", 
+                $"操作失败，已重试{maxRetries}次: {lastException?.Message ?? "未知错误"}",
                 lastException);
         }
 
@@ -288,7 +288,9 @@ namespace LYBT.Desktop.Services
         private static bool ShouldRetry(HttpStatusCode? statusCode, int currentAttempt, int maxRetries)
         {
             if (currentAttempt >= maxRetries)
+            {
                 return false;
+            }
 
             return statusCode switch
             {
@@ -319,10 +321,13 @@ namespace LYBT.Desktop.Services
         /// </summary>
         private static void LogApiError(ApiErrorInfo errorInfo)
         {
-            if (_logger == null) return;
+            if (_logger == null)
+            {
+                return;
+            }
 
             var logLevel = GetLogLevel(errorInfo.StatusCode);
-            _logger.Log(logLevel, 
+            _logger.Log(logLevel,
                 "API错误 - 操作: {Operation}, 状态码: {StatusCode}, 尝试: {Attempt}, 错误: {Error}",
                 errorInfo.OperationName ?? "未知",
                 errorInfo.StatusCode,

@@ -1,4 +1,4 @@
-using Asp.Versioning;
+﻿using Asp.Versioning;
 using LYBT.Infrastructure.Web;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
@@ -38,7 +38,10 @@ public class MedicalCaseController : BaseApiController
         try
         {
             var validation = ValidateGuid<MedicalCaseDetailDto>(id, "医疗案例ID");
-            if (validation != null) return validation;
+            if (validation != null)
+            {
+                return validation;
+            }
 
             var result = await _medicalCaseService.GetByIdAsync(id);
             return HandleServiceResult(result, "查询成功");
@@ -90,7 +93,10 @@ public class MedicalCaseController : BaseApiController
         try
         {
             var validation = ValidateModel<MedicalCaseDto>();
-            if (validation != null) return validation;
+            if (validation != null)
+            {
+                return validation;
+            }
 
             var result = await _medicalCaseService.CreateAsync(dto);
             if (result.IsSuccess && result.Data != null)
@@ -114,10 +120,16 @@ public class MedicalCaseController : BaseApiController
         try
         {
             var idValidation = ValidateGuid<MedicalCaseDto>(id, "医疗案例ID");
-            if (idValidation != null) return idValidation;
+            if (idValidation != null)
+            {
+                return idValidation;
+            }
 
             var modelValidation = ValidateModel<MedicalCaseDto>();
-            if (modelValidation != null) return modelValidation;
+            if (modelValidation != null)
+            {
+                return modelValidation;
+            }
 
             var result = await _medicalCaseService.UpdateAsync(id, dto);
             if (result.IsSuccess && result.Data != null)
@@ -141,7 +153,10 @@ public class MedicalCaseController : BaseApiController
         try
         {
             var validation = ValidateGuid<List<MedicalCaseDto>>(patientId, "患者ID");
-            if (validation != null) return validation;
+            if (validation != null)
+            {
+                return validation;
+            }
 
             var result = await _medicalCaseService.GetByPatientIdAsync(patientId);
             return HandleServiceResult(result, "查询成功");
@@ -161,7 +176,10 @@ public class MedicalCaseController : BaseApiController
         try
         {
             var validation = ValidateGuid<MedicalCaseDto>(patientId, "患者ID");
-            if (validation != null) return validation;
+            if (validation != null)
+            {
+                return validation;
+            }
 
             var result = await _medicalCaseService.GetActiveByPatientIdAsync(patientId);
             return HandleServiceResult(result, "查询成功");
@@ -181,7 +199,10 @@ public class MedicalCaseController : BaseApiController
         try
         {
             var validation = ValidateGuid(id, "医疗案例ID");
-            if (validation != null) return validation;
+            if (validation != null)
+            {
+                return validation;
+            }
 
             var result = await _medicalCaseService.CompleteAsync(id, dto.CompletionReason ?? "医疗案例完成");
             return HandleBoolServiceResult(result, "医疗案例完成成功");
@@ -201,7 +222,10 @@ public class MedicalCaseController : BaseApiController
         try
         {
             var validation = ValidateGuid(id, "医疗案例ID");
-            if (validation != null) return validation;
+            if (validation != null)
+            {
+                return validation;
+            }
 
             var result = await _medicalCaseService.SuspendAsync(id, dto.Reason ?? "暂停医疗案例");
             return HandleBoolServiceResult(result, "医疗案例暂停成功");
@@ -221,7 +245,10 @@ public class MedicalCaseController : BaseApiController
         try
         {
             var validation = ValidateGuid(id, "医疗案例ID");
-            if (validation != null) return validation;
+            if (validation != null)
+            {
+                return validation;
+            }
 
             var result = await _medicalCaseService.ResumeAsync(id);
             return HandleBoolServiceResult(result, "医疗案例恢复成功");
@@ -241,7 +268,10 @@ public class MedicalCaseController : BaseApiController
         try
         {
             var validation = ValidateGuid(id, "医疗案例ID");
-            if (validation != null) return validation;
+            if (validation != null)
+            {
+                return validation;
+            }
 
             var result = await _medicalCaseService.UpdateStatusAsync(id, dto.Status);
             return HandleBoolServiceResult(result, "状态更新成功");
@@ -261,7 +291,10 @@ public class MedicalCaseController : BaseApiController
         try
         {
             var validation = ValidateGuid(id, "医疗案例ID");
-            if (validation != null) return validation;
+            if (validation != null)
+            {
+                return validation;
+            }
 
             var result = await _medicalCaseService.ArchiveAsync(id, dto.ArchiveReason ?? "归档医疗案例");
             return HandleBoolServiceResult(result, "医疗案例归档成功");
@@ -322,7 +355,10 @@ public class MedicalCaseController : BaseApiController
         try
         {
             var validation = ValidateGuid<List<object>>(id, "医疗案例ID");
-            if (validation != null) return validation;
+            if (validation != null)
+            {
+                return validation;
+            }
 
             var result = await _medicalCaseService.GetHistoryAsync(id);
             return HandleServiceResult(result, "查询成功");
@@ -342,7 +378,10 @@ public class MedicalCaseController : BaseApiController
         try
         {
             var validation = ValidateGuid(id, "医疗案例ID");
-            if (validation != null) return validation;
+            if (validation != null)
+            {
+                return validation;
+            }
 
             var result = await _medicalCaseService.DeleteAsync(id);
             return HandleBoolServiceResult(result, "删除成功");

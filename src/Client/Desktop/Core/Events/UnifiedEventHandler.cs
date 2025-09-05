@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 using Prism.Events;
@@ -46,7 +46,7 @@ namespace LYBT.Desktop.Core.Events
                 _logger.LogInformation($"发布患者选择事件: {data.PatientName} (ID: {data.PatientId})");
                 data.SourceModule = "Consultation";
                 data.Message ??= "患者已选择";
-                
+
                 _eventAggregator.GetEvent<PatientSelectedEventNew>().Publish(data);
             }
             catch (Exception ex)
@@ -88,9 +88,9 @@ namespace LYBT.Desktop.Core.Events
                 _logger.LogInformation($"发布诊疗开始事件: 患者ID {data.PatientId}, 诊疗ID {data.ConsultationId}");
                 data.SourceModule = "Consultation";
                 data.Message ??= "诊疗已开始";
-                
+
                 _eventAggregator.GetEvent<ConsultationStartedEventNew>().Publish(data);
-                
+
                 // 同时发布状态消息
                 PublishStatusMessage("诊疗已开始", StatusMessageType.Info);
             }
@@ -129,9 +129,9 @@ namespace LYBT.Desktop.Core.Events
                 _logger.LogInformation($"发布诊疗完成事件: 诊疗ID {data.ConsultationId}");
                 data.SourceModule = "Consultation";
                 data.Message ??= "诊疗已完成";
-                
+
                 _eventAggregator.GetEvent<ConsultationCompletedEventNew>().Publish(data);
-                
+
                 // 同时发布状态消息和数据刷新请求
                 PublishStatusMessage("诊疗已完成", StatusMessageType.Success);
                 PublishDataRefreshRequest(DataRefreshScope.Consultations);
@@ -175,9 +175,9 @@ namespace LYBT.Desktop.Core.Events
                 _logger.LogInformation($"发布处方保存事件: 处方ID {data.PrescriptionId}, 包含 {data.HerbCount} 味药材");
                 data.SourceModule = "Consultation";
                 data.Message ??= "处方已保存";
-                
+
                 _eventAggregator.GetEvent<PrescriptionSavedEvent>().Publish(data);
-                
+
                 // 同时发布状态消息
                 PublishStatusMessage($"处方已保存，共{data.HerbCount}味药材", StatusMessageType.Success);
                 PublishDataRefreshRequest(DataRefreshScope.Prescriptions);
@@ -219,7 +219,7 @@ namespace LYBT.Desktop.Core.Events
             try
             {
                 _logger.LogInformation($"发布数据刷新请求: {refreshScope}");
-                
+
                 var data = new DataRefreshRequestData
                 {
                     RefreshScope = refreshScope,
@@ -227,7 +227,7 @@ namespace LYBT.Desktop.Core.Events
                     SourceModule = "UnifiedEventHandler",
                     Message = $"请求刷新{refreshScope}数据"
                 };
-                
+
                 _eventAggregator.GetEvent<DataRefreshRequestEventNew>().Publish(data);
             }
             catch (Exception ex)
@@ -273,7 +273,7 @@ namespace LYBT.Desktop.Core.Events
                     SourceModule = "UnifiedEventHandler",
                     Message = $"导航到{viewName}"
                 };
-                
+
                 _logger.LogInformation($"发布导航请求: {viewName}");
                 _eventAggregator.GetEvent<NavigationRequestEventNew>().Publish(data);
             }
@@ -320,7 +320,7 @@ namespace LYBT.Desktop.Core.Events
                     DisplayDuration = type == StatusMessageType.Error ? 5000 : duration,
                     SourceModule = "UnifiedEventHandler"
                 };
-                
+
                 _eventAggregator.GetEvent<StatusMessageEventNew>().Publish(data);
             }
             catch (Exception ex)
@@ -368,10 +368,10 @@ namespace LYBT.Desktop.Core.Events
                     SourceModule = module,
                     Message = message
                 };
-                
+
                 _logger.LogError(exception, $"[{module}] {message}");
                 _eventAggregator.GetEvent<ErrorOccurredEventNew>().Publish(data);
-                
+
                 // 同时发布错误状态消息
                 PublishStatusMessage(message, StatusMessageType.Error);
             }
@@ -406,7 +406,10 @@ namespace LYBT.Desktop.Core.Events
 
         public void Dispose()
         {
-            if (_disposed) return;
+            if (_disposed)
+            {
+                return;
+            }
 
             try
             {
@@ -416,7 +419,7 @@ namespace LYBT.Desktop.Core.Events
                     token?.Dispose();
                 }
                 _subscriptions.Clear();
-                
+
                 _logger.LogInformation("UnifiedEventHandler已释放资源");
             }
             catch (Exception ex)

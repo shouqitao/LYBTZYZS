@@ -1,6 +1,6 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System;
+﻿using System;
 using System.Collections.Immutable;
+using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Desktop.Core.Redux.States
 {
@@ -158,7 +158,7 @@ namespace LYBT.Desktop.Core.Redux.States
             return action switch
             {
                 LoadPatientsAction _ => state with { IsLoading = true },
-                
+
                 LoadPatientsSuccessAction success => state with
                 {
                     IsLoading = false,

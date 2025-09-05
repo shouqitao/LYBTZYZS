@@ -1,5 +1,4 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,6 +7,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
+using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.Extensions.Logging;
 using Polly;
 using Polly.CircuitBreaker;
@@ -40,7 +40,7 @@ namespace LYBT.Desktop.Core.Http
         {
             _logger = logger;
             _primaryHandler = CreatePrimaryHandler();
-            
+
             // 配置默认客户端
             ConfigureDefaultClient();
         }
@@ -55,10 +55,10 @@ namespace LYBT.Desktop.Core.Http
                 var config = _configurations.GetOrDefault(key) ?? new HttpClientConfiguration();
                 var handler = CreateHandlerPipeline(config);
                 var client = new HttpClient(handler, false);
-                
+
                 // 应用配置
                 config.ClientConfiguration?.Invoke(client);
-                
+
                 _logger?.LogDebug($"创建HttpClient: {name}");
                 return client;
             });
@@ -71,7 +71,7 @@ namespace LYBT.Desktop.Core.Http
         {
             var config = _configurations.GetOrAdd(name, _ => new HttpClientConfiguration());
             config.ClientConfiguration = configure;
-            
+
             // 如果客户端已存在，重新配置
             if (_clients.TryGetValue(name, out var client))
             {
@@ -94,20 +94,20 @@ namespace LYBT.Desktop.Core.Http
         private HttpMessageHandler CreateHandlerPipeline(HttpClientConfiguration config)
         {
             HttpMessageHandler handler = _primaryHandler;
-            
+
             // 添加默认处理器
             handler = new AuthenticationHandler(_logger) { InnerHandler = handler };
             handler = new LoggingHandler(_logger) { InnerHandler = handler };
             handler = new RetryPolicyHandler(_logger) { InnerHandler = handler };
             handler = new RequestIdHandler { InnerHandler = handler };
-            
+
             // 添加自定义处理器
             foreach (var additionalHandler in config.AdditionalHandlers.AsEnumerable().Reverse())
             {
                 additionalHandler.InnerHandler = handler;
                 handler = additionalHandler;
             }
-            
+
             return handler;
         }
 
@@ -192,10 +192,10 @@ namespace LYBT.Desktop.Core.Http
             if (response.StatusCode == HttpStatusCode.Unauthorized)
             {
                 _logger?.LogWarning("收到401响应，需要刷新令牌");
-                
+
                 // 这里可以触发令牌刷新逻辑
                 await RefreshTokenAsync(cancellationToken);
-                
+
                 // 重试请求
                 if (!string.IsNullOrEmpty(_bearerToken))
                 {
@@ -239,27 +239,27 @@ namespace LYBT.Desktop.Core.Http
             HttpRequestMessage request,
             CancellationToken cancellationToken)
         {
-            var requestId = request.Headers.TryGetValues("X-Request-Id", out var values) 
-                ? values.FirstOrDefault() 
+            var requestId = request.Headers.TryGetValues("X-Request-Id", out var values)
+                ? values.FirstOrDefault()
                 : "unknown";
 
             _logger?.LogDebug($"[{requestId}] HTTP请求: {request.Method} {request.RequestUri}");
-            
+
             var sw = System.Diagnostics.Stopwatch.StartNew();
-            
+
             try
             {
                 var response = await base.SendAsync(request, cancellationToken);
                 sw.Stop();
-                
+
                 _logger?.LogDebug($"[{requestId}] HTTP响应: {(int)response.StatusCode} {response.StatusCode} ({sw.ElapsedMilliseconds}ms)");
-                
+
                 if (!response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
                     _logger?.LogWarning($"[{requestId}] 错误响应内容: {content}");
                 }
-                
+
                 return response;
             }
             catch (Exception ex)
@@ -304,8 +304,8 @@ namespace LYBT.Desktop.Core.Http
                     retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
                     onRetry: (outcome, timespan, retryCount, context) =>
                     {
-                        var requestId = context.TryGetValue("RequestId", out var id) 
-                            ? id 
+                        var requestId = context.TryGetValue("RequestId", out var id)
+                            ? id
                             : "unknown";
                         _logger?.LogWarning($"[{requestId}] 重试 {retryCount} 次，等待 {timespan}");
                     });
@@ -347,10 +347,10 @@ namespace LYBT.Desktop.Core.Http
             {
                 request.Headers.Add("X-Request-Id", Guid.NewGuid().ToString());
             }
-            
+
             // 添加时间戳
             request.Headers.Add("X-Timestamp", DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString());
-            
+
             return base.SendAsync(request, cancellationToken);
         }
     }

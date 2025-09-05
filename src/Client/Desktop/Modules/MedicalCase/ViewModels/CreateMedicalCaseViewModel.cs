@@ -1,20 +1,20 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
-using LYBT.Shared.Interfaces.Services;
-// UltraThink v2.0: 移除Info模型引用，直接使用DTO
-using LYBT.Shared.Models.Contracts.Patients;
-using LYBT.Shared.Models.Contracts.MedicalCase;
-using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Desktop.Core.ViewModels.Base;
+using AutoMapper;
+using LYBT.Desktop.Core.Constants;
 using LYBT.Desktop.Core.Interfaces;
 using LYBT.Desktop.Core.Interfaces.Services;
-using LYBT.Desktop.Core.Constants;
 using LYBT.Desktop.Core.Models.Common;
+using LYBT.Desktop.Core.ViewModels.Base;
+using LYBT.Shared.Interfaces.Services;
+using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.MedicalCase;
+// UltraThink v2.0: 移除Info模型引用，直接使用DTO
+using LYBT.Shared.Models.Contracts.Patients;
 using Prism.Commands;
 using Prism.Events;
-using AutoMapper;
 
 namespace LYBT.Desktop.MedicalCase.ViewModels
 {
@@ -154,7 +154,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             CreateNewPatientCommand = new DelegateCommand(async () => await CreateNewPatientAsync());
 
             InitializeDialog();
-            
+
             // Load initial patients
             Task.Run(async () => await LoadPatientsAsync());
         }
@@ -190,7 +190,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             CreateNewPatientCommand = new DelegateCommand(async () => await CreateNewPatientAsync());
 
             InitializeDialog();
-            
+
             // Load initial patients
             Task.Run(async () => await LoadPatientsAsync());
         }
@@ -246,7 +246,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         protected override void InitializeDialog()
         {
             base.InitializeDialog();
-            
+
             // 监听属性变化以更新Command状态
             SaveCommand.ObservesProperty(() => SelectedPatient);
         }
@@ -368,21 +368,21 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             try
             {
                 // 打开新建患者对话框
-                
+
                 var parameters = new Dictionary<string, object>
                 {
                     ["IsEditMode"] = false
                 };
 
                 var result = await _dialogService.ShowDialogAsync("PatientAddEditDialog", parameters);
-                
+
                 if (result.Result == true)
                 {
                     // 患者创建成功，刷新患者列表
-                    
+
                     // 刷新患者列表
                     await LoadPatientsAsync();
-                    
+
                     // 如果有返回的患者数据，自动选择该患者
                     if (result.Data is Dictionary<string, object> data && data.ContainsKey("Patient") && data["Patient"] is PatientDto newPatient)
                     {
@@ -390,10 +390,10 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                         {
                             SelectedPatient = newPatient;
                         });
-                        
+
                         // 已自动选择新创建的患者
                     }
-                    
+
                     await _dialogService.ShowSuccessAsync("患者创建成功", "成功");
                 }
             }
@@ -463,10 +463,10 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         /// </summary>
         protected void RaiseRequestClose(bool? dialogResult)
         {
-            var result = dialogResult == true 
+            var result = dialogResult == true
                 ? CustomDialogResult.Success(new Dictionary<string, object>())
                 : CustomDialogResult.Cancel();
-                
+
             RequestClose?.Invoke(result);
         }
 

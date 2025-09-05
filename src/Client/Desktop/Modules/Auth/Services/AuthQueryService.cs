@@ -1,12 +1,12 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using LYBT.Desktop.Auth.Interfaces;
 using LYBT.Desktop.Core.Interfaces.Services;
-using LYBT.Shared.Models.Common;
-using LYBT.Shared.Models.Contracts.Users;
-using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Interfaces.Api;
+using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Users;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Auth.Services;
 
@@ -34,7 +34,7 @@ public class AuthQueryService(
     /// 基于会话管理器实时查询当前用户认证状态
     /// </summary>
     /// <value>用户已认证且会话有效时返回true</value>
-    public bool IsLoggedIn 
+    public bool IsLoggedIn
     {
         get
         {
@@ -42,7 +42,7 @@ public class AuthQueryService(
             {
                 var currentUser = _sessionManager.CurrentUser;
                 var hasValidSession = !string.IsNullOrEmpty(currentUser?.Id.ToString());
-                
+
                 _logger.LogDebug("查询登录状态: {IsLoggedIn}", hasValidSession);
                 return hasValidSession;
             }
@@ -64,7 +64,7 @@ public class AuthQueryService(
         try
         {
             _logger.LogDebug("开始查询当前用户信息");
-            
+
             var currentUser = _sessionManager.CurrentUser;
             if (currentUser == null)
             {
@@ -86,9 +86,9 @@ public class AuthQueryService(
                 UpdateTime = currentUser.UpdateTime
             };
 
-            _logger.LogDebug("成功获取用户信息: {Username} ({Role})", 
+            _logger.LogDebug("成功获取用户信息: {Username} ({Role})",
                 userDto.Username, userDto.Role);
-            
+
             return ServiceResult<UserDto?>.Success(userDto);
         }
         catch (Exception ex)
@@ -108,11 +108,11 @@ public class AuthQueryService(
         try
         {
             _logger.LogDebug("开始检查API连接状态");
-            
+
             // 简化实现：基于会话管理器状态判断
             await Task.Delay(10); // 模拟异步检查
             var isConnected = true; // 简化版本默认连接正常
-            
+
             _logger.LogDebug("API连接状态检查完成: {IsConnected}", isConnected);
             return ServiceResult<bool>.Success(isConnected);
         }

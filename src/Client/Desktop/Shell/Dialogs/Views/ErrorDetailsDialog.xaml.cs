@@ -1,6 +1,6 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System.Windows;
+﻿using System.Windows;
 using LYBT.Desktop.Shell.Dialogs.ViewModels;
+using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Desktop.Shell.Dialogs.Views
 {
@@ -17,7 +17,7 @@ namespace LYBT.Desktop.Shell.Dialogs.Views
         public ErrorDetailsDialog(ErrorDetailsDialogViewModel viewModel) : this()
         {
             DataContext = viewModel;
-            
+
             // 订阅关闭事件
             if (viewModel != null)
             {

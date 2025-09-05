@@ -1,8 +1,8 @@
-using System;
+﻿using System;
 using System.Windows.Media;
+using LYBT.Desktop.Core.Extensions;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Enums;
-using LYBT.Desktop.Core.Extensions;
 using Prism.Mvvm;
 
 namespace LYBT.Desktop.Core.ViewModels.MedicalCase
@@ -50,7 +50,7 @@ namespace LYBT.Desktop.Core.ViewModels.MedicalCase
         };
 
         /// <summary>强调色（用于重要信息）</summary>
-        public Brush AccentBrush => _medicalCaseData.CaseStatus == MedicalCaseStatus.Registered 
+        public Brush AccentBrush => _medicalCaseData.CaseStatus == MedicalCaseStatus.Registered
             ? new SolidColorBrush(Color.FromRgb(220, 53, 69)) // UltraThink v2.0简化：按状态判断紧急程度
             : new SolidColorBrush(Color.FromRgb(76, 175, 80)); // 正常时绿色
 
@@ -78,7 +78,7 @@ namespace LYBT.Desktop.Core.ViewModels.MedicalCase
         };
 
         /// <summary>紧急程度颜色</summary>
-        public Brush UrgencyBrush => _medicalCaseData.CaseStatus == MedicalCaseStatus.Registered 
+        public Brush UrgencyBrush => _medicalCaseData.CaseStatus == MedicalCaseStatus.Registered
             ? new SolidColorBrush(Color.FromRgb(220, 53, 69)) // UltraThink v2.0简化：按状态判断紧急程度
             : new SolidColorBrush(Color.FromRgb(40, 167, 69)); // 正常-绿色
 
@@ -153,7 +153,7 @@ namespace LYBT.Desktop.Core.ViewModels.MedicalCase
         };
 
         /// <summary>创建时间颜色</summary>
-        public Brush CreateTimeBrush => _medicalCaseData.ConsultationDate.Date == DateTime.Today 
+        public Brush CreateTimeBrush => _medicalCaseData.ConsultationDate.Date == DateTime.Today
             ? new SolidColorBrush(Color.FromRgb(0, 123, 255)) // UltraThink v2.0简化：今日案例-蓝色
             : new SolidColorBrush(Color.FromRgb(108, 117, 125)); // 历史案例-灰色
 
@@ -175,12 +175,12 @@ namespace LYBT.Desktop.Core.ViewModels.MedicalCase
         #region 诊断相关配色
 
         /// <summary>主诉文本颜色</summary>
-        public Brush ChiefComplaintBrush => string.IsNullOrWhiteSpace(_medicalCaseData.Remark) 
+        public Brush ChiefComplaintBrush => string.IsNullOrWhiteSpace(_medicalCaseData.Remark)
             ? new SolidColorBrush(Color.FromRgb(158, 158, 158)) // UltraThink v2.0简化：无备注-浅灰色
             : new SolidColorBrush(Color.FromRgb(33, 37, 41)); // 有备注-深色
 
         /// <summary>诊断结果颜色</summary>
-        public Brush DiagnosisBrush => _medicalCaseData.CaseStatus == MedicalCaseStatus.Completed 
+        public Brush DiagnosisBrush => _medicalCaseData.CaseStatus == MedicalCaseStatus.Completed
             ? new SolidColorBrush(Color.FromRgb(40, 167, 69)) // UltraThink v2.0简化：已完成-绿色
             : new SolidColorBrush(Color.FromRgb(158, 158, 158)); // 未完成-浅灰色
 
@@ -326,7 +326,9 @@ namespace LYBT.Desktop.Core.ViewModels.MedicalCase
         public (Brush Background, Brush Foreground, Brush Border) GetHighContrastTheme()
         {
             if (!IsHighContrastMode)
+            {
                 return (BackgroundBrush, TextBrush, BorderBrush);
+            }
 
             return (
                 new SolidColorBrush(Colors.White),

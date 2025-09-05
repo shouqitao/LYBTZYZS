@@ -1,10 +1,10 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using AutoMapper;
+using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.ViewModels;
 using LYBT.Shared.Interfaces.Services;
-using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
@@ -37,7 +37,7 @@ namespace LYBT.Desktop.Users.ViewModels
 
         /// <summary>重置密码命令</summary>
         public DelegateCommand ResetPasswordCommand { get; }
-        
+
         /// <summary>切换状态命令</summary>
         public DelegateCommand ToggleStatusCommand { get; }
 
@@ -109,7 +109,7 @@ namespace LYBT.Desktop.Users.ViewModels
         {
             var parameters = new Dictionary<string, object> { ["IsEditMode"] = false };
             var result = await _dialogService.ShowDialogAsync("UserAddEditDialog", parameters);
-            
+
             if (result.Result == true)
             {
                 await _dialogService.ShowSuccessAsync("用户添加成功", "成功");
@@ -125,7 +125,7 @@ namespace LYBT.Desktop.Users.ViewModels
                 ["User"] = item
             };
             var result = await _dialogService.ShowDialogAsync("UserAddEditDialog", parameters);
-            
+
             if (result.Result == true)
             {
                 await _dialogService.ShowSuccessAsync($"用户 {item.Username} 更新成功", "成功");
@@ -142,7 +142,7 @@ namespace LYBT.Desktop.Users.ViewModels
         protected override async Task OnViewDetailsAsync(UserDto item)
         {
             var result = await _userService.GetByIdAsync(item.Id);
-            
+
             if (result.IsSuccess && result.Data != null)
             {
                 var userDetail = result.Data;
@@ -212,14 +212,14 @@ namespace LYBT.Desktop.Users.ViewModels
         {
             var isActive = user.Status == CommonStatus.Enabled;
             var action = isActive ? "禁用" : "激活";
-            
+
             var confirm = await _dialogService.ShowConfirmationAsync(
                 $"确定要{action}用户 {user.Username} 吗？",
                 $"{action}用户");
 
             if (confirm)
             {
-                var result = isActive 
+                var result = isActive
                     ? await _userService.DisableAsync(user.Id)
                     : await _userService.EnableAsync(user.Id);
 

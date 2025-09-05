@@ -1,8 +1,8 @@
-using Asp.Versioning;
+﻿using Asp.Versioning;
 using LYBT.Infrastructure.Web;
-using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -20,7 +20,7 @@ namespace LYBT.WebAPI.Controllers
     public class PatientsController : BaseApiController
     {
         private readonly IPatientService _service;
-        
+
         public PatientsController(IPatientService service, IMemoryCache cache, ILogger<PatientsController> logger)
             : base(logger, cache)
         {
@@ -76,7 +76,10 @@ namespace LYBT.WebAPI.Controllers
             try
             {
                 var validationResult = ValidateGuid<PatientDto>(id, "患者ID");
-                if (validationResult != null) return validationResult;
+                if (validationResult != null)
+                {
+                    return validationResult;
+                }
 
                 var result = await _service.GetByIdAsync(id);
                 if (!result.IsSuccess || result.Data == null)
@@ -101,7 +104,10 @@ namespace LYBT.WebAPI.Controllers
             try
             {
                 var validationResult = ValidateModel<PatientDto>();
-                if (validationResult != null) return validationResult;
+                if (validationResult != null)
+                {
+                    return validationResult;
+                }
 
                 var result = await _service.CreateAsync(dto);
                 if (!result.IsSuccess || result.Data == null)
@@ -127,10 +133,16 @@ namespace LYBT.WebAPI.Controllers
             try
             {
                 var idValidation = ValidateGuid<PatientDto>(id, "患者ID");
-                if (idValidation != null) return idValidation;
+                if (idValidation != null)
+                {
+                    return idValidation;
+                }
 
                 var modelValidation = ValidateModel<PatientDto>();
-                if (modelValidation != null) return modelValidation;
+                if (modelValidation != null)
+                {
+                    return modelValidation;
+                }
 
                 var result = await _service.UpdateAsync(id, dto);
                 if (!result.IsSuccess || result.Data == null)
@@ -156,7 +168,10 @@ namespace LYBT.WebAPI.Controllers
             try
             {
                 var validationResult = ValidateGuid(id, "患者ID");
-                if (validationResult != null) return validationResult;
+                if (validationResult != null)
+                {
+                    return validationResult;
+                }
 
                 var result = await _service.DeleteAsync(id);
                 if (!result.IsSuccess || !result.Data)
@@ -182,7 +197,10 @@ namespace LYBT.WebAPI.Controllers
             try
             {
                 var validationResult = ValidateGuid(id, "患者ID");
-                if (validationResult != null) return validationResult;
+                if (validationResult != null)
+                {
+                    return validationResult;
+                }
 
                 var result = await _service.EnableAsync(id);
                 if (!result.IsSuccess)
@@ -208,7 +226,10 @@ namespace LYBT.WebAPI.Controllers
             try
             {
                 var validationResult = ValidateGuid(id, "患者ID");
-                if (validationResult != null) return validationResult;
+                if (validationResult != null)
+                {
+                    return validationResult;
+                }
 
                 var result = await _service.DisableAsync(id);
                 if (!result.IsSuccess)
@@ -404,9 +425,10 @@ namespace LYBT.WebAPI.Controllers
                 };
 
                 var templateData = new List<object> { template };
-                
+
                 LogOperation("导出患者导入模板", null, null);
-                return Success<object>(new { 
+                return Success<object>(new
+                {
                     message = "患者导入模板",
                     template = templateData,
                     instructions = new[]
@@ -439,7 +461,7 @@ namespace LYBT.WebAPI.Controllers
                 }
 
                 var validationResults = ValidateImportDataDetailed(patients);
-                
+
                 var result = new
                 {
                     totalCount = patients.Count,
@@ -466,7 +488,7 @@ namespace LYBT.WebAPI.Controllers
         private List<object> ValidateImportDataPrivate(List<PatientCreateDto> patients)
         {
             var invalidItems = new List<object>();
-            
+
             for (int i = 0; i < patients.Count; i++)
             {
                 var patient = patients[i];
@@ -474,21 +496,31 @@ namespace LYBT.WebAPI.Controllers
 
                 // 必填字段验证
                 if (string.IsNullOrWhiteSpace(patient.Name))
+                {
                     errors.Add("患者姓名不能为空");
+                }
 
                 if (string.IsNullOrWhiteSpace(patient.PhoneNumber))
+                {
                     errors.Add("手机号码不能为空");
+                }
                 else if (!IsValidPhoneNumber(patient.PhoneNumber))
+                {
                     errors.Add("手机号码格式不正确");
+                }
 
                 // 身份证验证
                 if (!string.IsNullOrWhiteSpace(patient.IdNumber) && !IsValidIdCard(patient.IdNumber))
+                {
                     errors.Add("身份证号码格式不正确");
+                }
 
                 // 性别验证
-                if (patient.Gender != LYBT.Shared.Models.Enums.Gender.Male && 
+                if (patient.Gender != LYBT.Shared.Models.Enums.Gender.Male &&
                     patient.Gender != LYBT.Shared.Models.Enums.Gender.Female)
+                {
                     errors.Add("性别必须为男或女");
+                }
 
                 if (errors.Any())
                 {
@@ -557,7 +589,11 @@ namespace LYBT.WebAPI.Controllers
         /// </summary>
         private bool IsValidPhoneNumber(string phoneNumber)
         {
-            if (string.IsNullOrWhiteSpace(phoneNumber)) return false;
+            if (string.IsNullOrWhiteSpace(phoneNumber))
+            {
+                return false;
+            }
+
             return phoneNumber.Length == 11 && phoneNumber.All(char.IsDigit) && phoneNumber.StartsWith("1");
         }
 
@@ -566,7 +602,11 @@ namespace LYBT.WebAPI.Controllers
         /// </summary>
         private bool IsValidIdCard(string idCard)
         {
-            if (string.IsNullOrWhiteSpace(idCard)) return false;
+            if (string.IsNullOrWhiteSpace(idCard))
+            {
+                return false;
+            }
+
             return idCard.Length == 18 && idCard.Take(17).All(char.IsDigit);
         }
 

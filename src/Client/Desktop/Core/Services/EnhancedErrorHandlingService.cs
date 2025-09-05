@@ -1,16 +1,16 @@
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using LYBT.Shared.Interfaces.Services;
-using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.Configuration;
 using LYBT.Desktop.Core.Exceptions;
+using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.Models.Common;
+using LYBT.Shared.Interfaces.Services;
+using Microsoft.Extensions.Logging;
 using SharedCommon = LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Desktop.Core.Services
@@ -64,10 +64,10 @@ namespace LYBT.Desktop.Core.Services
         public async Task<SharedCommon.HandledError> HandleExceptionAsync(Exception exception, ErrorContext? context = null)
         {
             var handledError = await _baseService.HandleExceptionAsync(exception, context);
-            
+
             // 增强处理
             await EnhanceErrorHandlingAsync(handledError);
-            
+
             return handledError;
         }
 
@@ -81,7 +81,7 @@ namespace LYBT.Desktop.Core.Services
         {
             // 增强日志记录
             await LogEnhancedErrorAsync(handledError);
-            
+
             // 基础日志
             await _baseService.LogErrorAsync(handledError);
         }
@@ -110,7 +110,7 @@ namespace LYBT.Desktop.Core.Services
         {
             var baseActions = _baseService.GetSuggestedActions(exception);
             var enhancedActions = GetEnhancedSuggestedActions(exception);
-            
+
             return baseActions.Concat(enhancedActions).Distinct().ToArray();
         }
 
@@ -127,7 +127,7 @@ namespace LYBT.Desktop.Core.Services
         public void RegisterGlobalExceptionHandlers()
         {
             _baseService.RegisterGlobalExceptionHandlers();
-            
+
             // 添加增强的全局处理
             AppDomain.CurrentDomain.FirstChanceException += OnFirstChanceException;
         }
@@ -141,13 +141,13 @@ namespace LYBT.Desktop.Core.Services
         {
             // 1. 收集错误统计
             _statisticsCollector.RecordError(handledError);
-            
+
             // 2. 检查错误模式
             await CheckErrorPatternsAsync(handledError);
-            
+
             // 3. 尝试自动恢复
             await TryAutoRecoveryAsync(handledError);
-            
+
             // 4. 更新错误严重程度（基于历史数据）
             UpdateErrorSeverityBasedOnHistory(handledError);
         }
@@ -158,24 +158,26 @@ namespace LYBT.Desktop.Core.Services
         private async Task ShowEnhancedErrorNotificationAsync(SharedCommon.HandledError handledError, bool showDialog)
         {
             if (!showDialog)
+            {
                 return;
+            }
 
             var notificationConfig = GetNotificationConfiguration(handledError);
-            
+
             switch (handledError.Severity)
             {
                 case SharedCommon.ErrorSeverity.Info:
                     await _notificationService.ShowInfoAsync(handledError.UserMessage, notificationConfig);
                     break;
-                    
+
                 case SharedCommon.ErrorSeverity.Warning:
                     await _notificationService.ShowWarningAsync(handledError.UserMessage, notificationConfig);
                     break;
-                    
+
                 case SharedCommon.ErrorSeverity.Error:
                     await _notificationService.ShowErrorAsync(handledError.UserMessage, handledError.SuggestedActions.ToArray(), notificationConfig);
                     break;
-                    
+
                 case SharedCommon.ErrorSeverity.Critical:
                 case SharedCommon.ErrorSeverity.Fatal:
                     await _notificationService.ShowCriticalErrorAsync(handledError, notificationConfig);
@@ -198,10 +200,10 @@ namespace LYBT.Desktop.Core.Services
             });
 
             var logLevel = MapSeverityToLogLevel(handledError.Severity);
-            
-            _logger.Log(logLevel, handledError.Exception, 
+
+            _logger.Log(logLevel, handledError.Exception,
                 "Error occurred: {UserMessage}. Technical: {TechnicalDetails}",
-                handledError.UserMessage, 
+                handledError.UserMessage,
                 handledError.TechnicalDetails);
 
             // 记录性能影响
@@ -231,13 +233,13 @@ namespace LYBT.Desktop.Core.Services
                 catch (Exception ex)
                 {
                     lastException = ex;
-                    
+
                     if (!CanRetry(ex) || attempt >= retryPolicy.MaxRetries)
                     {
                         break;
                     }
 
-                    _logger.LogWarning("Operation failed on attempt {Attempt}, retrying: {Exception}", 
+                    _logger.LogWarning("Operation failed on attempt {Attempt}, retrying: {Exception}",
                         attempt + 1, ex.Message);
                 }
             }
@@ -274,13 +276,13 @@ namespace LYBT.Desktop.Core.Services
                 catch (Exception ex)
                 {
                     lastException = ex;
-                    
+
                     if (!CanRetry(ex) || attempt >= retryPolicy.MaxRetries)
                     {
                         break;
                     }
 
-                    _logger.LogWarning("Operation failed on attempt {Attempt}, retrying: {Exception}", 
+                    _logger.LogWarning("Operation failed on attempt {Attempt}, retrying: {Exception}",
                         attempt + 1, ex.Message);
                 }
             }
@@ -323,11 +325,14 @@ namespace LYBT.Desktop.Core.Services
         /// </summary>
         private async Task CheckErrorPatternsAsync(SharedCommon.HandledError handledError)
         {
-            if (handledError.Exception == null) return;
-            
+            if (handledError.Exception == null)
+            {
+                return;
+            }
+
             var patternKey = GetErrorPatternKey(handledError.Exception);
             var pattern = _errorPatterns.GetOrAdd(patternKey, _ => new ErrorPattern());
-            
+
             pattern.AddOccurrence(handledError);
 
             // 检查是否需要升级警报
@@ -343,7 +348,9 @@ namespace LYBT.Desktop.Core.Services
         private async Task TryAutoRecoveryAsync(SharedCommon.HandledError handledError)
         {
             if (!_configuration.GetValue("ErrorHandling:EnableAutoRecovery", true))
+            {
                 return;
+            }
 
             var recoveryStrategy = _recoveryManager.GetRecoveryStrategy(handledError);
             if (recoveryStrategy != null)
@@ -395,7 +402,7 @@ namespace LYBT.Desktop.Core.Services
         {
             var maxRetries = _configuration.GetValue("ErrorHandling:MaxRetries", 3);
             var baseDelay = _configuration.GetValue("ErrorHandling:BaseRetryDelay", 1000);
-            
+
             return new RetryPolicy
             {
                 MaxRetries = maxRetries,
@@ -419,7 +426,7 @@ namespace LYBT.Desktop.Core.Services
         {
             var stats = _statisticsCollector.GetStatistics();
             var errorType = handledError.Exception?.GetType();
-            
+
             if (errorType != null && stats.ErrorCounts.TryGetValue(errorType, out var count) && count > 10)
             {
                 // 如果某类错误发生频繁，可能需要降低严重程度
@@ -497,7 +504,7 @@ namespace LYBT.Desktop.Core.Services
         public void AddOccurrence(SharedCommon.HandledError handledError)
         {
             _occurrences.Add(handledError.OccurredAt);
-            
+
             // 清理过期的记录（只保留最近1小时的）
             var cutoff = DateTime.Now.AddHours(-1);
             _occurrences.RemoveAll(d => d < cutoff);
@@ -528,16 +535,22 @@ namespace LYBT.Desktop.Core.Services
 
         public void RecordError(SharedCommon.HandledError handledError)
         {
-            if (handledError.Exception == null) return;
-            
+            if (handledError.Exception == null)
+            {
+                return;
+            }
+
             var errorType = handledError.Exception.GetType();
             _errorCounts.AddOrUpdate(errorType, 1, (_, count) => count + 1);
         }
 
         public void RecordPerformanceImpact(SharedCommon.HandledError handledError)
         {
-            if (handledError.Exception == null) return;
-            
+            if (handledError.Exception == null)
+            {
+                return;
+            }
+
             var errorType = handledError.Exception.GetType();
             var impact = TimeSpan.FromMilliseconds(100); // 简化处理
             _performanceImpacts.AddOrUpdate(errorType, impact, (_, existing) => existing.Add(impact));
@@ -585,8 +598,11 @@ namespace LYBT.Desktop.Core.Services
 
         public IErrorRecoveryStrategy? GetRecoveryStrategy(SharedCommon.HandledError handledError)
         {
-            if (handledError.Exception == null) return null;
-            
+            if (handledError.Exception == null)
+            {
+                return null;
+            }
+
             var exceptionType = handledError.Exception.GetType();
             return _strategies.TryGetValue(exceptionType, out var strategy) ? strategy : null;
         }

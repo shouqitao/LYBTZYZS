@@ -1,9 +1,9 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows.Threading;
+using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Desktop.Core.Memory
 {
@@ -24,7 +24,9 @@ namespace LYBT.Desktop.Core.Memory
         public void Subscribe(EventHandler<TEventArgs> handler)
         {
             if (handler == null)
+            {
                 throw new ArgumentNullException(nameof(handler));
+            }
 
             lock (_lock)
             {
@@ -39,15 +41,17 @@ namespace LYBT.Desktop.Core.Memory
         public IDisposable SubscribeStrong(EventHandler<TEventArgs> handler)
         {
             if (handler == null)
+            {
                 throw new ArgumentNullException(nameof(handler));
+            }
 
             var subscription = new StrongSubscription(handler, () => Unsubscribe(handler));
-            
+
             lock (_lock)
             {
                 _strongReferences.Add(subscription, handler);
             }
-            
+
             Subscribe(handler);
             return subscription;
         }
@@ -58,7 +62,9 @@ namespace LYBT.Desktop.Core.Memory
         public void Unsubscribe(EventHandler<TEventArgs> handler)
         {
             if (handler == null)
+            {
                 throw new ArgumentNullException(nameof(handler));
+            }
 
             lock (_lock)
             {
@@ -72,7 +78,7 @@ namespace LYBT.Desktop.Core.Memory
         public void Raise(object sender, TEventArgs args)
         {
             List<EventHandler<TEventArgs>> handlers;
-            
+
             lock (_lock)
             {
                 CleanupIfNeeded();
@@ -152,8 +158,8 @@ namespace LYBT.Desktop.Core.Memory
 
             public WeakSubscription(EventHandler<TEventArgs> handler)
             {
-                _methodTarget = handler.Target != null 
-                    ? new WeakReference(handler.Target) 
+                _methodTarget = handler.Target != null
+                    ? new WeakReference(handler.Target)
                     : null!;
                 _methodInfo = handler.Method;
             }
@@ -168,18 +174,20 @@ namespace LYBT.Desktop.Core.Memory
                     {
                         // 静态方法
                         return (EventHandler<TEventArgs>)Delegate.CreateDelegate(
-                            typeof(EventHandler<TEventArgs>), 
-                            null, 
+                            typeof(EventHandler<TEventArgs>),
+                            null,
                             _methodInfo);
                     }
 
                     var target = _methodTarget.Target;
                     if (target == null)
+                    {
                         return null;
+                    }
 
                     return (EventHandler<TEventArgs>)Delegate.CreateDelegate(
-                        typeof(EventHandler<TEventArgs>), 
-                        target, 
+                        typeof(EventHandler<TEventArgs>),
+                        target,
                         _methodInfo);
                 }
             }
@@ -187,10 +195,14 @@ namespace LYBT.Desktop.Core.Memory
             public bool IsMatch(EventHandler<TEventArgs> handler)
             {
                 if (_methodInfo != handler.Method)
+                {
                     return false;
+                }
 
                 if (_methodTarget == null)
+                {
                     return handler.Target == null;
+                }
 
                 return _methodTarget.Target == handler.Target;
             }
@@ -237,7 +249,9 @@ namespace LYBT.Desktop.Core.Memory
         public void AddHandler(TDelegate handler)
         {
             if (handler == null)
+            {
                 throw new ArgumentNullException(nameof(handler));
+            }
 
             lock (_lock)
             {
@@ -252,7 +266,9 @@ namespace LYBT.Desktop.Core.Memory
         public void RemoveHandler(TDelegate handler)
         {
             if (handler == null)
+            {
                 throw new ArgumentNullException(nameof(handler));
+            }
 
             lock (_lock)
             {
@@ -296,8 +312,8 @@ namespace LYBT.Desktop.Core.Memory
 
             public WeakDelegate(Delegate handler)
             {
-                _weakTarget = handler.Target != null 
-                    ? new WeakReference(handler.Target) 
+                _weakTarget = handler.Target != null
+                    ? new WeakReference(handler.Target)
                     : null;
                 _method = handler.Method;
                 _delegateType = handler.GetType();
@@ -314,18 +330,22 @@ namespace LYBT.Desktop.Core.Memory
                 }
 
                 var target = _weakTarget.Target;
-                return target != null 
-                    ? Delegate.CreateDelegate(_delegateType, target, _method) 
+                return target != null
+                    ? Delegate.CreateDelegate(_delegateType, target, _method)
                     : null;
             }
 
             public bool IsMatch(Delegate other)
             {
                 if (_method != other.Method)
+                {
                     return false;
+                }
 
                 if (_weakTarget == null)
+                {
                     return other.Target == null;
+                }
 
                 return _weakTarget.Target == other.Target;
             }
@@ -347,7 +367,7 @@ namespace LYBT.Desktop.Core.Memory
         {
             var weakHandler = new WeakEventHandler<TEventArgs>(handler);
             subscribe(weakHandler.Handler);
-            
+
             return new DisposableAction(() => unsubscribe(weakHandler.Handler));
         }
 
@@ -380,8 +400,8 @@ namespace LYBT.Desktop.Core.Memory
 
             public WeakEventHandler(EventHandler<TEventArgs> handler)
             {
-                _weakTarget = handler.Target != null 
-                    ? new WeakReference(handler.Target) 
+                _weakTarget = handler.Target != null
+                    ? new WeakReference(handler.Target)
                     : null;
                 _method = handler.Method;
             }
@@ -396,7 +416,7 @@ namespace LYBT.Desktop.Core.Memory
                             typeof(EventHandler<TEventArgs>), null, _method)
                         : (EventHandler<TEventArgs>)Delegate.CreateDelegate(
                             typeof(EventHandler<TEventArgs>), target, _method);
-                    
+
                     handler(sender, e);
                 }
             }

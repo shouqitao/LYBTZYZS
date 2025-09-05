@@ -1,4 +1,4 @@
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 
 namespace LYBT.Infrastructure.Interfaces
 {
@@ -44,13 +44,13 @@ namespace LYBT.Infrastructure.Interfaces
         {
             // 注册仓储服务
             ConfigureRepositories(services);
-            
+
             // 注册业务服务
             ConfigureBusinessServices(services);
-            
+
             // 注册AutoMapper配置
             ConfigureMapping(services);
-            
+
             // 注册模块特定服务
             ConfigureModuleSpecificServices(services);
 
@@ -89,7 +89,7 @@ namespace LYBT.Infrastructure.Interfaces
         /// <summary>
         /// 添加模块服务
         /// </summary>
-        public static IServiceCollection AddModule<T>(this IServiceCollection services) 
+        public static IServiceCollection AddModule<T>(this IServiceCollection services)
             where T : IModule, new()
         {
             var module = new T();

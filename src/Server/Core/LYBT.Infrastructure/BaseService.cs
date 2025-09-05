@@ -1,12 +1,12 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using AutoMapper;
 using LYBT.Infrastructure.Data;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Enums;
-using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.Infrastructure
 {
@@ -52,7 +52,9 @@ namespace LYBT.Infrastructure
             {
                 var entity = await getEntityFunc();
                 if (entity == null)
+                {
                     return ServiceResult<TDto>.Failure($"{EntityName}不存在");
+                }
 
                 var dto = _mapper.Map<TDto>(entity);
                 return ServiceResult<TDto>.Success(dto);
@@ -89,14 +91,16 @@ namespace LYBT.Infrastructure
         /// <summary>
         /// 通用的更新方法
         /// </summary>
-        protected async Task<ServiceResult<TDto>> UpdateCoreAsync(Guid id, TUpdateDto updateDto, 
+        protected async Task<ServiceResult<TDto>> UpdateCoreAsync(Guid id, TUpdateDto updateDto,
             Func<Task<TEntity?>> getEntityFunc, Action<TEntity, TUpdateDto> updateEntityFunc)
         {
             try
             {
                 var entity = await getEntityFunc();
                 if (entity == null)
+                {
                     return ServiceResult<TDto>.Failure($"{EntityName}不存在");
+                }
 
                 updateEntityFunc(entity, updateDto);
                 await _context.SaveChangesAsync();
@@ -121,7 +125,9 @@ namespace LYBT.Infrastructure
             {
                 var entity = await getEntityFunc();
                 if (entity == null)
+                {
                     return ServiceResult<bool>.Failure($"{EntityName}不存在");
+                }
 
                 disableEntityFunc(entity);
                 await _context.SaveChangesAsync();
@@ -195,7 +201,9 @@ namespace LYBT.Infrastructure
             try
             {
                 if (string.IsNullOrWhiteSpace(keyword))
+                {
                     return ServiceResult<List<TDto>>.Success(new List<TDto>());
+                }
 
                 var entities = await searchFunc(keyword);
                 var dtos = _mapper.Map<List<TDto>>(entities);
@@ -215,14 +223,16 @@ namespace LYBT.Infrastructure
         /// <summary>
         /// 通用的启用/禁用操作
         /// </summary>
-        protected async Task<ServiceResult<bool>> ToggleStatusCoreAsync(Guid id, CommonStatus newStatus, 
+        protected async Task<ServiceResult<bool>> ToggleStatusCoreAsync(Guid id, CommonStatus newStatus,
             Func<Task<TEntity?>> getEntityFunc, Action<TEntity, CommonStatus> setStatusFunc)
         {
             try
             {
                 var entity = await getEntityFunc();
                 if (entity == null)
+                {
                     return ServiceResult<bool>.Failure($"{EntityName}不存在");
+                }
 
                 setStatusFunc(entity, newStatus);
                 await _context.SaveChangesAsync();
@@ -242,13 +252,15 @@ namespace LYBT.Infrastructure
         /// <summary>
         /// 通用的批量操作方法
         /// </summary>
-        protected async Task<ServiceResult<int>> BatchOperationCoreAsync<TId>(List<TId> ids, 
+        protected async Task<ServiceResult<int>> BatchOperationCoreAsync<TId>(List<TId> ids,
             Func<List<TId>, Task<int>> batchOperationFunc, string operationName)
         {
             try
             {
                 if (ids == null || ids.Count == 0)
+                {
                     return ServiceResult<int>.Failure("ID列表不能为空");
+                }
 
                 var affectedCount = await batchOperationFunc(ids);
                 _logger.LogInformation("批量{OperationName}{EntityName}成功: 影响{Count}条记录", operationName, EntityName, affectedCount);
@@ -264,13 +276,15 @@ namespace LYBT.Infrastructure
         /// <summary>
         /// 通用的批量状态更新（使用ExecuteUpdate避免内存加载）
         /// </summary>
-        protected async Task<ServiceResult<int>> BatchUpdateStatusCoreAsync(List<Guid> ids, CommonStatus status, 
+        protected async Task<ServiceResult<int>> BatchUpdateStatusCoreAsync(List<Guid> ids, CommonStatus status,
             Func<List<Guid>, CommonStatus, Task<int>> updateFunc)
         {
             try
             {
                 if (ids == null || ids.Count == 0)
+                {
                     return ServiceResult<int>.Failure("ID列表不能为空");
+                }
 
                 var affectedCount = await updateFunc(ids, status);
                 var operation = status == CommonStatus.Enabled ? "启用" : "禁用";
@@ -350,7 +364,7 @@ namespace LYBT.Infrastructure
         protected IQueryable<TEntity> CreateEnabledQuery()
         {
             var query = _context.Set<TEntity>().AsQueryable();
-            
+
             // 如果实体有Status属性，自动过滤已禁用的记录
             if (typeof(TEntity).GetProperty("Status") != null)
             {
@@ -359,10 +373,10 @@ namespace LYBT.Infrastructure
                 var constant = System.Linq.Expressions.Expression.Constant(CommonStatus.Enabled);
                 var equal = System.Linq.Expressions.Expression.Equal(property, constant);
                 var lambda = System.Linq.Expressions.Expression.Lambda<Func<TEntity, bool>>(equal, parameter);
-                
+
                 query = query.Where(lambda);
             }
-            
+
             return query;
         }
 
@@ -377,7 +391,7 @@ namespace LYBT.Infrastructure
         where TDto : class
         where TCreateDto : class
     {
-        protected BaseService(AppDbContext context, IMapper mapper, ILogger logger) 
+        protected BaseService(AppDbContext context, IMapper mapper, ILogger logger)
             : base(context, mapper, logger)
         {
         }
@@ -390,7 +404,7 @@ namespace LYBT.Infrastructure
         where TEntity : class
         where TDto : class
     {
-        protected BaseService(AppDbContext context, IMapper mapper, ILogger logger) 
+        protected BaseService(AppDbContext context, IMapper mapper, ILogger logger)
             : base(context, mapper, logger)
         {
         }

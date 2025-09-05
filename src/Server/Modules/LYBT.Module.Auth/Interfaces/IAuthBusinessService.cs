@@ -1,7 +1,7 @@
-using System.Threading.Tasks;
-using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Shared.Models.Contracts.Auth;
+﻿using System.Threading.Tasks;
 using LYBT.Entities.Users;
+using LYBT.Shared.Models.Contracts.Auth;
+using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Module.Auth.Interfaces
 {

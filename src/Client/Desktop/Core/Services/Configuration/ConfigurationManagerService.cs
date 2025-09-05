@@ -1,11 +1,11 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Memory;
 using Microsoft.Extensions.Logging;
@@ -23,47 +23,47 @@ namespace LYBT.Desktop.Core.Services.Configuration
         /// 获取配置值
         /// </summary>
         T? GetValue<T>(string key, T? defaultValue = default);
-        
+
         /// <summary>
         /// 获取配置节
         /// </summary>
         IConfigurationSection GetSection(string key);
-        
+
         /// <summary>
         /// 设置配置值（仅影响用户层）
         /// </summary>
         Task SetValueAsync<T>(string key, T value);
-        
+
         /// <summary>
         /// 重载配置
         /// </summary>
         Task ReloadAsync();
-        
+
         /// <summary>
         /// 注册配置变更监听
         /// </summary>
         IDisposable RegisterChangeCallback(Action<ConfigurationChangeEventArgs> callback);
-        
+
         /// <summary>
         /// 获取配置层级信息
         /// </summary>
         ConfigurationLayerInfo GetLayerInfo(string key);
-        
+
         /// <summary>
         /// 导出配置
         /// </summary>
         Task<string> ExportConfigurationAsync(ConfigurationExportOptions options);
-        
+
         /// <summary>
         /// 导入配置
         /// </summary>
         Task ImportConfigurationAsync(string configData, ConfigurationImportOptions options);
-        
+
         /// <summary>
         /// 验证配置
         /// </summary>
         ValidationResult ValidateConfiguration();
-        
+
         /// <summary>
         /// 获取配置统计
         /// </summary>
@@ -81,17 +81,17 @@ namespace LYBT.Desktop.Core.Services.Configuration
         private readonly Dictionary<ConfigurationLayer, IConfigurationRoot> _configurations = new();
         private readonly Dictionary<string, ConfigurationMetadata> _metadata = new();
         private readonly ConfigurationStatistics _statistics = new();
-        
+
         private IConfigurationRoot _mergedConfiguration = null!;
         private FileSystemWatcher? _fileWatcher;
         private Timer? _autoSaveTimer;
         private readonly string _configPath;
-        
+
         public ConfigurationManagerService(ILogger<ConfigurationManagerService> logger)
         {
             _logger = logger;
             _configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config");
-            
+
             InitializeConfigurations();
             SetupFileWatcher();
             SetupAutoSave();
@@ -105,16 +105,16 @@ namespace LYBT.Desktop.Core.Services.Configuration
             {
                 // 确保配置目录存在
                 Directory.CreateDirectory(_configPath);
-                
+
                 // 加载各层配置
                 LoadDefaultConfiguration();
                 LoadEnvironmentConfiguration();
                 LoadUserConfiguration();
                 LoadDynamicConfiguration();
-                
+
                 // 合并配置
                 MergeConfigurations();
-                
+
                 _logger.LogInformation("配置管理服务初始化完成，加载了 {LayerCount} 层配置", _configurations.Count);
             }
             catch (Exception ex)
@@ -130,7 +130,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
                 .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
                 .AddInMemoryCollection(GetDefaultSettings().Select(kvp => new KeyValuePair<string, string?>(kvp.Key, kvp.Value)));
-            
+
             _configurations[ConfigurationLayer.Default] = builder.Build();
             _logger.LogDebug("默认配置加载完成");
         }
@@ -139,12 +139,12 @@ namespace LYBT.Desktop.Core.Services.Configuration
         {
             var environment = Environment.GetEnvironmentVariable("LYBT_ENVIRONMENT") ?? "Development";
             var envConfigFile = Path.Combine(_configPath, $"appsettings.{environment}.json");
-            
+
             if (File.Exists(envConfigFile))
             {
                 var builder = new ConfigurationBuilder()
                     .AddJsonFile(envConfigFile, optional: true, reloadOnChange: true);
-                
+
                 _configurations[ConfigurationLayer.Environment] = builder.Build();
                 _logger.LogDebug("环境配置加载完成: {Environment}", environment);
             }
@@ -153,16 +153,16 @@ namespace LYBT.Desktop.Core.Services.Configuration
         private void LoadUserConfiguration()
         {
             var userConfigFile = Path.Combine(_configPath, "user.config.json");
-            
+
             if (!File.Exists(userConfigFile))
             {
                 // 创建默认用户配置
                 File.WriteAllText(userConfigFile, "{}");
             }
-            
+
             var builder = new ConfigurationBuilder()
                 .AddJsonFile(userConfigFile, optional: false, reloadOnChange: true);
-            
+
             _configurations[ConfigurationLayer.User] = builder.Build();
             _logger.LogDebug("用户配置加载完成");
         }
@@ -173,7 +173,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
             _configurations[ConfigurationLayer.Dynamic] = new ConfigurationBuilder()
                 .AddInMemoryCollection(dynamicConfig.Select(kvp => new KeyValuePair<string, string?>(kvp.Key, kvp.Value)))
                 .Build();
-            
+
             _logger.LogDebug("动态配置初始化完成");
         }
 
@@ -205,7 +205,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
             lock (_lock)
             {
                 var sources = new List<IConfigurationSource>();
-                
+
                 // 按优先级顺序添加配置源（越后面优先级越高）
                 foreach (var layer in Enum.GetValues<ConfigurationLayer>().OrderBy(l => (int)l))
                 {
@@ -223,18 +223,18 @@ namespace LYBT.Desktop.Core.Services.Configuration
                         }
                     }
                 }
-                
+
                 var builder = new ConfigurationBuilder();
                 foreach (var source in sources)
                 {
                     builder.Add(source);
                 }
-                
+
                 _mergedConfiguration = builder.Build();
-                
+
                 // 更新元数据
                 UpdateMetadata();
-                
+
                 _statistics.LastMergeTime = DateTime.Now;
                 _statistics.MergeCount++;
             }
@@ -246,7 +246,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
             {
                 data[section.Path] = section.Value;
             }
-            
+
             foreach (var child in section.GetChildren())
             {
                 AddToDictionary(data, child);
@@ -256,7 +256,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
         private void UpdateMetadata()
         {
             _metadata.Clear();
-            
+
             foreach (var section in _mergedConfiguration.GetChildren())
             {
                 UpdateSectionMetadata(section, ConfigurationLayer.Default);
@@ -272,7 +272,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
                 LastModified = DateTime.Now,
                 IsOverridden = false
             };
-            
+
             foreach (var child in section.GetChildren())
             {
                 UpdateSectionMetadata(child, layer);
@@ -286,17 +286,17 @@ namespace LYBT.Desktop.Core.Services.Configuration
         public T? GetValue<T>(string key, T? defaultValue = default)
         {
             _statistics.ReadCount++;
-            
+
             try
             {
                 var value = _mergedConfiguration.GetValue<T>(key);
-                
+
                 if (value == null)
                 {
                     _logger.LogDebug("配置键 {Key} 未找到，使用默认值", key);
                     return defaultValue;
                 }
-                
+
                 return value;
             }
             catch (Exception ex)
@@ -319,16 +319,16 @@ namespace LYBT.Desktop.Core.Services.Configuration
                 // 更新用户配置
                 var userConfigFile = Path.Combine(_configPath, "user.config.json");
                 var userConfig = new Dictionary<string, object?>();
-                
+
                 if (File.Exists(userConfigFile))
                 {
                     var json = await File.ReadAllTextAsync(userConfigFile);
                     userConfig = JsonSerializer.Deserialize<Dictionary<string, object?>>(json) ?? new();
                 }
-                
+
                 // 设置值（支持嵌套键）
                 SetNestedValue(userConfig, key, value);
-                
+
                 // 保存到文件
                 var options = new JsonSerializerOptions
                 {
@@ -336,11 +336,11 @@ namespace LYBT.Desktop.Core.Services.Configuration
                 };
                 var updatedJson = JsonSerializer.Serialize(userConfig, options);
                 await File.WriteAllTextAsync(userConfigFile, updatedJson);
-                
+
                 // 重新加载用户配置
                 LoadUserConfiguration();
                 MergeConfigurations();
-                
+
                 // 触发变更通知
                 NotifyChange(new ConfigurationChangeEventArgs
                 {
@@ -350,7 +350,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
                     Layer = ConfigurationLayer.User,
                     Timestamp = DateTime.Now
                 });
-                
+
                 _statistics.WriteCount++;
                 _logger.LogInformation("配置已更新: {Key} = {Value}", key, value);
             }
@@ -365,7 +365,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
         {
             var parts = key.Split(':');
             var current = dict;
-            
+
             for (int i = 0; i < parts.Length - 1; i++)
             {
                 if (!current.ContainsKey(parts[i]) || current[parts[i]] is not Dictionary<string, object?> nested)
@@ -379,7 +379,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
                 }
                 current = nested;
             }
-            
+
             current[parts[^1]] = value;
         }
 
@@ -388,19 +388,19 @@ namespace LYBT.Desktop.Core.Services.Configuration
             try
             {
                 _logger.LogInformation("开始重新加载配置");
-                
+
                 await Task.Run(() =>
                 {
                     InitializeConfigurations();
                 });
-                
+
                 NotifyChange(new ConfigurationChangeEventArgs
                 {
                     Key = "*",
                     Layer = ConfigurationLayer.All,
                     Timestamp = DateTime.Now
                 });
-                
+
                 _statistics.ReloadCount++;
                 _logger.LogInformation("配置重新加载完成");
             }
@@ -414,12 +414,12 @@ namespace LYBT.Desktop.Core.Services.Configuration
         public IDisposable RegisterChangeCallback(Action<ConfigurationChangeEventArgs> callback)
         {
             var registration = new ConfigurationChangeCallback(callback);
-            
+
             lock (_changeCallbacks)
             {
                 _changeCallbacks.Add(registration);
             }
-            
+
             return new CallbackDisposable(() =>
             {
                 lock (_changeCallbacks)
@@ -436,7 +436,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
                 Key = key,
                 Layers = new List<LayerValue>()
             };
-            
+
             foreach (var layer in Enum.GetValues<ConfigurationLayer>().OrderBy(l => (int)l))
             {
                 if (_configurations.ContainsKey(layer))
@@ -453,10 +453,10 @@ namespace LYBT.Desktop.Core.Services.Configuration
                     }
                 }
             }
-            
+
             info.EffectiveValue = GetValue<string>(key);
             info.EffectiveLayer = info.Layers.LastOrDefault()?.Layer ?? ConfigurationLayer.Default;
-            
+
             return info;
         }
 
@@ -465,44 +465,44 @@ namespace LYBT.Desktop.Core.Services.Configuration
             try
             {
                 var exportData = new Dictionary<string, object>();
-                
+
                 if (options.IncludeDefaults)
                 {
                     exportData["defaults"] = ExtractConfiguration(_configurations[ConfigurationLayer.Default]);
                 }
-                
+
                 if (options.IncludeEnvironment)
                 {
                     exportData["environment"] = ExtractConfiguration(_configurations[ConfigurationLayer.Environment]);
                 }
-                
+
                 if (options.IncludeUser)
                 {
                     exportData["user"] = ExtractConfiguration(_configurations[ConfigurationLayer.User]);
                 }
-                
+
                 if (options.IncludeDynamic)
                 {
                     exportData["dynamic"] = ExtractConfiguration(_configurations[ConfigurationLayer.Dynamic]);
                 }
-                
+
                 if (options.IncludeMetadata)
                 {
                     exportData["metadata"] = _metadata;
                 }
-                
+
                 var jsonOptions = new JsonSerializerOptions
                 {
                     WriteIndented = true
                 };
-                
+
                 var json = JsonSerializer.Serialize(exportData, jsonOptions);
-                
+
                 if (!string.IsNullOrEmpty(options.FilePath))
                 {
                     await File.WriteAllTextAsync(options.FilePath, json);
                 }
-                
+
                 _logger.LogInformation("配置导出完成");
                 return json;
             }
@@ -516,12 +516,12 @@ namespace LYBT.Desktop.Core.Services.Configuration
         private Dictionary<string, string?> ExtractConfiguration(IConfiguration config)
         {
             var result = new Dictionary<string, string?>();
-            
+
             foreach (var child in config.GetChildren())
             {
                 ExtractSection(result, child);
             }
-            
+
             return result;
         }
 
@@ -531,7 +531,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
             {
                 result[section.Path] = section.Value;
             }
-            
+
             foreach (var child in section.GetChildren())
             {
                 ExtractSection(result, child);
@@ -547,7 +547,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
                 {
                     throw new InvalidOperationException("无效的配置数据");
                 }
-                
+
                 if (options.BackupExisting)
                 {
                     var backupPath = Path.Combine(_configPath, $"backup_{DateTime.Now:yyyyMMddHHmmss}.json");
@@ -561,14 +561,14 @@ namespace LYBT.Desktop.Core.Services.Configuration
                         FilePath = backupPath
                     });
                 }
-                
+
                 if (options.ClearExisting)
                 {
                     // 清除现有配置
                     var userConfigFile = Path.Combine(_configPath, "user.config.json");
                     await File.WriteAllTextAsync(userConfigFile, "{}");
                 }
-                
+
                 // 导入配置
                 if (importData.ContainsKey("user") && options.ImportUser)
                 {
@@ -576,10 +576,10 @@ namespace LYBT.Desktop.Core.Services.Configuration
                     var userConfigFile = Path.Combine(_configPath, "user.config.json");
                     await File.WriteAllTextAsync(userConfigFile, userConfig);
                 }
-                
+
                 // 重新加载
                 await ReloadAsync();
-                
+
                 _logger.LogInformation("配置导入完成");
             }
             catch (Exception ex)
@@ -596,7 +596,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
                 IsValid = true,
                 Errors = new List<ValidationError>()
             };
-            
+
             // 验证必需的配置项
             var requiredKeys = new[]
             {
@@ -605,7 +605,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
                 "API:BaseUrl",
                 "Logging:LogLevel:Default"
             };
-            
+
             foreach (var key in requiredKeys)
             {
                 if (string.IsNullOrEmpty(GetValue<string>(key)))
@@ -619,7 +619,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
                     });
                 }
             }
-            
+
             // 验证数值范围
             var timeout = GetValue<int>("API:Timeout");
             if (timeout < 1 || timeout > 300)
@@ -631,7 +631,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
                     Severity = ValidationSeverity.Warning
                 });
             }
-            
+
             // 验证枚举值
             var theme = GetValue<string>("UI:Theme");
             if (!new[] { "Light", "Dark", "Auto" }.Contains(theme))
@@ -643,10 +643,10 @@ namespace LYBT.Desktop.Core.Services.Configuration
                     Severity = ValidationSeverity.Warning
                 });
             }
-            
-            _logger.LogInformation("配置验证完成，有效: {IsValid}, 错误数: {ErrorCount}", 
+
+            _logger.LogInformation("配置验证完成，有效: {IsValid}, 错误数: {ErrorCount}",
                 result.IsValid, result.Errors.Count);
-            
+
             return result;
         }
 
@@ -685,11 +685,11 @@ namespace LYBT.Desktop.Core.Services.Configuration
                     NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName,
                     EnableRaisingEvents = true
                 };
-                
+
                 _fileWatcher.Changed += OnConfigFileChanged;
                 _fileWatcher.Created += OnConfigFileChanged;
                 _fileWatcher.Deleted += OnConfigFileChanged;
-                
+
                 _logger.LogDebug("配置文件监控已启动");
             }
             catch (Exception ex)
@@ -705,9 +705,9 @@ namespace LYBT.Desktop.Core.Services.Configuration
             {
                 // 防抖处理
                 await Task.Delay(500);
-                
+
                 _logger.LogInformation("检测到配置文件变更: {FileName}", e.Name);
-                
+
                 await ReloadAsync();
             }
             catch (Exception ex)
@@ -751,12 +751,12 @@ namespace LYBT.Desktop.Core.Services.Configuration
         private void NotifyChange(ConfigurationChangeEventArgs args)
         {
             List<ConfigurationChangeCallback> callbacks;
-            
+
             lock (_changeCallbacks)
             {
                 callbacks = _changeCallbacks.ToList();
             }
-            
+
             foreach (var callback in callbacks)
             {
                 try
@@ -778,7 +778,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
         {
             _fileWatcher?.Dispose();
             _autoSaveTimer?.Dispose();
-            
+
             _logger.LogInformation("配置管理服务已关闭 - 读取: {Reads}, 写入: {Writes}, 重载: {Reloads}",
                 _statistics.ReadCount, _statistics.WriteCount, _statistics.ReloadCount);
         }
@@ -922,12 +922,12 @@ namespace LYBT.Desktop.Core.Services.Configuration
     internal class ConfigurationChangeCallback
     {
         private readonly Action<ConfigurationChangeEventArgs> _callback;
-        
+
         public ConfigurationChangeCallback(Action<ConfigurationChangeEventArgs> callback)
         {
             _callback = callback;
         }
-        
+
         public void Invoke(ConfigurationChangeEventArgs args)
         {
             _callback(args);
@@ -940,12 +940,12 @@ namespace LYBT.Desktop.Core.Services.Configuration
     internal class CallbackDisposable : IDisposable
     {
         private readonly Action _disposeAction;
-        
+
         public CallbackDisposable(Action disposeAction)
         {
             _disposeAction = disposeAction;
         }
-        
+
         public void Dispose()
         {
             _disposeAction();

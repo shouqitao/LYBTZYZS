@@ -1,4 +1,4 @@
-using LYBT.Entities.Formula;
+﻿using LYBT.Entities.Formula;
 using LYBT.Infrastructure.Interfaces;
 
 namespace LYBT.Module.Formula.Interfaces

@@ -1,9 +1,9 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using LYBT.Shared.Models.Contracts.Auth;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Core;
-using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Desktop.Core.Interfaces.Managers
 {

@@ -1,7 +1,7 @@
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using LYBT.Shared.Models.Common;
-using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Users;
 
 namespace LYBT.Desktop.Auth.Interfaces;
 
@@ -12,21 +12,21 @@ namespace LYBT.Desktop.Auth.Interfaces;
 public interface IAuthQueryService
 {
     #region 基础认证状态查询
-    
+
     /// <summary>
     /// 检查是否已登录
     /// </summary>
     bool IsLoggedIn { get; }
-    
+
     /// <summary>
     /// 获取当前用户信息
     /// </summary>
     Task<ServiceResult<UserDto?>> GetCurrentUserAsync();
-    
+
     /// <summary>
     /// 检查API连接状态
     /// </summary>
     Task<ServiceResult<bool>> CheckConnectionAsync();
-    
+
     #endregion
 }

@@ -1,9 +1,9 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Extensions.Logging;
 using LYBT.Desktop.Core.Models.Prescriptions;
+using LYBT.Shared.Models.Contracts.Common;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Prescriptions.ViewModels.Components
 {
@@ -45,9 +45,15 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components
             {
                 var messages = new List<string>();
                 if (Errors.Any())
+                {
                     messages.Add($"错误: {string.Join("; ", Errors)}");
+                }
+
                 if (Warnings.Any())
+                {
                     messages.Add($"警告: {string.Join("; ", Warnings)}");
+                }
+
                 return string.Join(" | ", messages);
             }
         }
@@ -72,10 +78,10 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components
             {
                 // 基础验证
                 ValidateBasicInfo(result, prescriptionNo, dosageCount, usage, discount);
-                
+
                 // 处方项验证
                 ValidatePrescriptionItems(result, items);
-                
+
                 // 业务规则验证
                 ValidateBusinessRules(result, items, dosageCount);
 
@@ -218,7 +224,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components
             try
             {
                 var cleanInput = dosageInput.Trim().Replace("剂", "").Replace("副", "");
-                
+
                 if (int.TryParse(cleanInput, out var parsedValue))
                 {
                     dosage = parsedValue;

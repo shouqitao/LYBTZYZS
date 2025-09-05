@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -6,12 +6,12 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Logging;
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.Infrastructure.Repositories
 {
@@ -26,7 +26,7 @@ namespace LYBT.Infrastructure.Repositories
     /// 5. 连接池管理
     /// 6. 查询拦截和优化
     /// </summary>
-    public abstract class OptimizedBaseRepository<TEntity> : IBaseRepository<TEntity> 
+    public abstract class OptimizedBaseRepository<TEntity> : IBaseRepository<TEntity>
         where TEntity : class
     {
         #region 字段和属性
@@ -35,14 +35,14 @@ namespace LYBT.Infrastructure.Repositories
         protected readonly DbSet<TEntity> _dbSet;
         protected readonly ILogger _logger;
         protected readonly IMemoryCache _cache;
-        
+
         // 查询优化配置
         protected readonly QueryOptimizationOptions _queryOptions;
-        
+
         // 批量操作配置
         protected readonly int _batchSize = 100;
         protected readonly int _maxConcurrency = 5;
-        
+
         // 缓存配置
         protected virtual TimeSpan DefaultCacheDuration => TimeSpan.FromMinutes(5);
         protected virtual string CacheKeyPrefix => $"{typeof(TEntity).Name}:";
@@ -62,7 +62,7 @@ namespace LYBT.Infrastructure.Repositories
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _cache = cache ?? throw new ArgumentNullException(nameof(cache));
             _queryOptions = queryOptions ?? QueryOptimizationOptions.Default;
-            
+
             // 配置EF Core查询优化
             ConfigureQueryOptimizations();
         }
@@ -85,22 +85,22 @@ namespace LYBT.Infrastructure.Repositories
         public virtual async Task<TEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
         {
             var cacheKey = $"{CacheKeyPrefix}{id}";
-            
+
             if (_queryOptions.EnableCache && _cache.TryGetValue<TEntity>(cacheKey, out var cached))
             {
                 _logger.LogDebug("从缓存获取实体 {EntityType}:{Id}", typeof(TEntity).Name, id);
                 return cached;
             }
-            
+
             var entity = await _dbSet
                 .AsNoTrackingWithIdentityResolution()
                 .FirstOrDefaultAsync(e => EF.Property<Guid>(e, "Id") == id, cancellationToken);
-            
+
             if (entity != null && _queryOptions.EnableCache)
             {
                 _cache.Set(cacheKey, entity, DefaultCacheDuration);
             }
-            
+
             return entity;
         }
 
@@ -111,12 +111,12 @@ namespace LYBT.Infrastructure.Repositories
             [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             var query = _dbSet.AsNoTracking();
-            
+
             if (_queryOptions.EnableSplitQuery)
             {
                 query = query.AsSplitQuery();
             }
-            
+
             await foreach (var entity in query.AsAsyncEnumerable().WithCancellation(cancellationToken))
             {
                 yield return entity;
@@ -148,42 +148,42 @@ namespace LYBT.Infrastructure.Repositories
             CancellationToken cancellationToken = default)
         {
             var cacheKey = GenerateCacheKey("paged", predicate, pageNumber, pageSize, orderBy, ascending);
-            
+
             if (_queryOptions.EnableCache && _cache.TryGetValue<PagedResult<TEntity>>(cacheKey, out var cached))
             {
                 return cached!;
             }
-            
+
             var query = BuildOptimizedQuery(predicate);
-            
+
             // 应用排序
             if (orderBy != null)
             {
-                query = ascending 
-                    ? query.OrderBy(orderBy) 
+                query = ascending
+                    ? query.OrderBy(orderBy)
                     : query.OrderByDescending(orderBy);
             }
-            
+
             // 并行执行计数和数据查询
             var countTask = query.CountAsync(cancellationToken);
             var itemsTask = query
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync(cancellationToken);
-            
+
             await Task.WhenAll(countTask, itemsTask);
-            
+
             var result = new PagedResult<TEntity>(
                 itemsTask.Result,
                 countTask.Result,
                 pageNumber,
                 pageSize);
-            
+
             if (_queryOptions.EnableCache)
             {
                 _cache.Set(cacheKey, result, DefaultCacheDuration);
             }
-            
+
             return result;
         }
 
@@ -197,12 +197,12 @@ namespace LYBT.Infrastructure.Repositories
             CancellationToken cancellationToken = default)
         {
             var query = BuildOptimizedQuery(predicate);
-            
+
             if (includes != null)
             {
                 query = includes(query);
             }
-            
+
             return await query
                 .Select(selector)
                 .ToListAsync(cancellationToken);
@@ -217,7 +217,7 @@ namespace LYBT.Infrastructure.Repositories
         {
             var idList = ids.ToList();
             var result = new Dictionary<Guid, TEntity>();
-            
+
             // 先从缓存获取
             var uncachedIds = new List<Guid>();
             foreach (var id in idList)
@@ -232,7 +232,7 @@ namespace LYBT.Infrastructure.Repositories
                     uncachedIds.Add(id);
                 }
             }
-            
+
             // 批量查询未缓存的数据
             if (uncachedIds.Any())
             {
@@ -240,12 +240,12 @@ namespace LYBT.Infrastructure.Repositories
                     .AsNoTracking()
                     .Where(e => uncachedIds.Contains(EF.Property<Guid>(e, "Id")))
                     .ToListAsync(cancellationToken);
-                
+
                 foreach (var entity in entities)
                 {
                     var id = (Guid)entity.GetType().GetProperty("Id")!.GetValue(entity)!;
                     result[id] = entity;
-                    
+
                     // 添加到缓存
                     if (_queryOptions.EnableCache)
                     {
@@ -253,7 +253,7 @@ namespace LYBT.Infrastructure.Repositories
                     }
                 }
             }
-            
+
             return result;
         }
 
@@ -267,19 +267,19 @@ namespace LYBT.Infrastructure.Repositories
         public virtual async Task<IEnumerable<TEntity>> GetAllAsync()
         {
             var cacheKey = $"{CacheKeyPrefix}all";
-            
+
             if (_queryOptions.EnableCache && _cache.TryGetValue<IEnumerable<TEntity>>(cacheKey, out var cached))
             {
                 return cached!;
             }
-            
+
             var entities = await BuildOptimizedQuery().ToListAsync();
-            
+
             if (_queryOptions.EnableCache)
             {
                 _cache.Set(cacheKey, entities, DefaultCacheDuration);
             }
-            
+
             return entities;
         }
 
@@ -313,21 +313,21 @@ namespace LYBT.Infrastructure.Repositories
         public virtual async Task<bool> ExistsAsync(Guid id)
         {
             var cacheKey = $"{CacheKeyPrefix}exists:{id}";
-            
+
             if (_queryOptions.EnableCache && _cache.TryGetValue<bool>(cacheKey, out var cached))
             {
                 return cached;
             }
-            
+
             var exists = await _dbSet
                 .AsNoTracking()
                 .AnyAsync(e => EF.Property<Guid>(e, "Id") == id);
-            
+
             if (_queryOptions.EnableCache)
             {
                 _cache.Set(cacheKey, exists, DefaultCacheDuration);
             }
-            
+
             return exists;
         }
 
@@ -361,11 +361,13 @@ namespace LYBT.Infrastructure.Repositories
         public virtual async Task<TEntity> AddAsync(TEntity entity)
         {
             if (entity == null)
+            {
                 throw new ArgumentNullException(nameof(entity));
-            
+            }
+
             var entry = await _dbSet.AddAsync(entity);
             InvalidateCache();
-            
+
             return entry.Entity;
         }
 
@@ -376,11 +378,13 @@ namespace LYBT.Infrastructure.Repositories
         {
             var entityList = entities.ToList();
             if (!entityList.Any())
+            {
                 return entityList;
-            
+            }
+
             await _dbSet.AddRangeAsync(entityList);
             InvalidateCache();
-            
+
             return entityList;
         }
 
@@ -390,19 +394,21 @@ namespace LYBT.Infrastructure.Repositories
         public virtual async Task<TEntity> UpdateAsync(TEntity entity)
         {
             if (entity == null)
+            {
                 throw new ArgumentNullException(nameof(entity));
-            
+            }
+
             var entry = _dbSet.Update(entity);
-            
+
             // 清理相关缓存
             var id = entity.GetType().GetProperty("Id")?.GetValue(entity);
             if (id != null)
             {
                 _cache.Remove($"{CacheKeyPrefix}{id}");
             }
-            
+
             InvalidateCache();
-            
+
             return await Task.FromResult(entry.Entity);
         }
 
@@ -412,19 +418,21 @@ namespace LYBT.Infrastructure.Repositories
         public virtual async Task<bool> DeleteAsync(TEntity entity)
         {
             if (entity == null)
+            {
                 return false;
-            
+            }
+
             _dbSet.Remove(entity);
-            
+
             // 清理相关缓存
             var id = entity.GetType().GetProperty("Id")?.GetValue(entity);
             if (id != null)
             {
                 _cache.Remove($"{CacheKeyPrefix}{id}");
             }
-            
+
             InvalidateCache();
-            
+
             return await Task.FromResult(true);
         }
 
@@ -435,12 +443,14 @@ namespace LYBT.Infrastructure.Repositories
         {
             var entity = await _dbSet.FindAsync(id);
             if (entity == null)
+            {
                 return false;
-            
+            }
+
             _dbSet.Remove(entity);
             _cache.Remove($"{CacheKeyPrefix}{id}");
             InvalidateCache();
-            
+
             return true;
         }
 
@@ -451,10 +461,12 @@ namespace LYBT.Infrastructure.Repositories
         {
             var entityList = entities.ToList();
             if (!entityList.Any())
+            {
                 return 0;
-            
+            }
+
             _dbSet.RemoveRange(entityList);
-            
+
             // 清理相关缓存
             foreach (var entity in entityList)
             {
@@ -464,9 +476,9 @@ namespace LYBT.Infrastructure.Repositories
                     _cache.Remove($"{CacheKeyPrefix}{id}");
                 }
             }
-            
+
             InvalidateCache();
-            
+
             return await Task.FromResult(entityList.Count);
         }
 
@@ -477,25 +489,29 @@ namespace LYBT.Infrastructure.Repositories
         {
             var idList = ids.ToList();
             if (!idList.Any())
+            {
                 return 0;
-            
+            }
+
             var entities = await _dbSet
                 .Where(e => idList.Contains(EF.Property<Guid>(e, "Id")))
                 .ToListAsync();
-            
+
             if (!entities.Any())
+            {
                 return 0;
-            
+            }
+
             _dbSet.RemoveRange(entities);
-            
+
             // 清理相关缓存
             foreach (var id in idList)
             {
                 _cache.Remove($"{CacheKeyPrefix}{id}");
             }
-            
+
             InvalidateCache();
-            
+
             return entities.Count;
         }
 
@@ -529,10 +545,13 @@ namespace LYBT.Infrastructure.Repositories
             CancellationToken cancellationToken = default)
         {
             var entityList = entities.ToList();
-            if (!entityList.Any()) return 0;
-            
+            if (!entityList.Any())
+            {
+                return 0;
+            }
+
             var totalAdded = 0;
-            
+
             // 分批处理避免内存溢出
             foreach (var batch in entityList.Chunk(_batchSize))
             {
@@ -540,15 +559,15 @@ namespace LYBT.Infrastructure.Repositories
                 try
                 {
                     await _dbSet.AddRangeAsync(batch, cancellationToken);
-                    
+
                     // 临时禁用自动检测更改以提高性能
                     _context.ChangeTracker.AutoDetectChangesEnabled = false;
                     var added = await _context.SaveChangesAsync(cancellationToken);
                     _context.ChangeTracker.AutoDetectChangesEnabled = true;
-                    
+
                     await transaction.CommitAsync(cancellationToken);
                     totalAdded += added;
-                    
+
                     // 清理缓存
                     InvalidateListCache();
                 }
@@ -559,7 +578,7 @@ namespace LYBT.Infrastructure.Repositories
                     throw;
                 }
             }
-            
+
             return totalAdded;
         }
 
@@ -571,10 +590,13 @@ namespace LYBT.Infrastructure.Repositories
             CancellationToken cancellationToken = default)
         {
             var entityList = entities.ToList();
-            if (!entityList.Any()) return 0;
-            
+            if (!entityList.Any())
+            {
+                return 0;
+            }
+
             var totalUpdated = 0;
-            
+
             foreach (var batch in entityList.Chunk(_batchSize))
             {
                 using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
@@ -582,14 +604,14 @@ namespace LYBT.Infrastructure.Repositories
                 {
                     // 使用批量更新
                     _dbSet.UpdateRange(batch);
-                    
+
                     _context.ChangeTracker.AutoDetectChangesEnabled = false;
                     var updated = await _context.SaveChangesAsync(cancellationToken);
                     _context.ChangeTracker.AutoDetectChangesEnabled = true;
-                    
+
                     await transaction.CommitAsync(cancellationToken);
                     totalUpdated += updated;
-                    
+
                     // 清理相关缓存
                     foreach (var entity in batch)
                     {
@@ -607,7 +629,7 @@ namespace LYBT.Infrastructure.Repositories
                     throw;
                 }
             }
-            
+
             InvalidateListCache();
             return totalUpdated;
         }
@@ -623,10 +645,10 @@ namespace LYBT.Infrastructure.Repositories
             var deleted = await _dbSet
                 .Where(predicate)
                 .ExecuteDeleteAsync(cancellationToken);
-            
+
             // 清理缓存
             InvalidateCache();
-            
+
             return deleted;
         }
 
@@ -642,25 +664,27 @@ namespace LYBT.Infrastructure.Repositories
         {
             // 获取匹配的实体
             var entities = await _dbSet.Where(predicate).ToListAsync(cancellationToken);
-            
+
             if (!entities.Any())
+            {
                 return 0;
-            
+            }
+
             // 编译属性选择器以便设置值
             var compiledSelector = propertySelector.Compile();
             var propertyInfo = GetPropertyInfoFromExpression(propertySelector);
-            
+
             // 更新实体
             foreach (var entity in entities)
             {
                 propertyInfo.SetValue(entity, newValue);
             }
-            
+
             var updated = await SaveChangesAsync();
-            
+
             // 清理缓存
             InvalidateCache();
-            
+
             return updated;
         }
 
@@ -669,7 +693,7 @@ namespace LYBT.Infrastructure.Repositories
         /// </summary>
         private PropertyInfo GetPropertyInfoFromExpression<TProperty>(Expression<Func<TEntity, TProperty>> propertySelector)
         {
-            if (propertySelector.Body is MemberExpression memberExpression && 
+            if (propertySelector.Body is MemberExpression memberExpression &&
                 memberExpression.Member is PropertyInfo propertyInfo)
             {
                 return propertyInfo;
@@ -715,20 +739,20 @@ namespace LYBT.Infrastructure.Repositories
                 // 暂时禁用查询跟踪以提高性能
                 var originalAutoDetectChanges = _context.ChangeTracker.AutoDetectChangesEnabled;
                 var originalQueryTrackingBehavior = _context.ChangeTracker.QueryTrackingBehavior;
-                
+
                 _context.ChangeTracker.AutoDetectChangesEnabled = false;
                 _context.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
-                
+
                 var result = await bulkOperation(_context);
-                
+
                 _context.ChangeTracker.AutoDetectChangesEnabled = originalAutoDetectChanges;
                 _context.ChangeTracker.QueryTrackingBehavior = originalQueryTrackingBehavior;
-                
+
                 await transaction.CommitAsync(cancellationToken);
-                
+
                 // 清理缓存
                 InvalidateCache();
-                
+
                 return result;
             }
             catch (Exception ex)
@@ -755,19 +779,19 @@ namespace LYBT.Infrastructure.Repositories
             {
                 var result = await query();
                 stopwatch.Stop();
-                
+
                 if (stopwatch.ElapsedMilliseconds > _queryOptions.SlowQueryThresholdMs)
                 {
-                    _logger.LogWarning("慢查询检测 - {Operation}: {ElapsedMs}ms", 
+                    _logger.LogWarning("慢查询检测 - {Operation}: {ElapsedMs}ms",
                         operationName, stopwatch.ElapsedMilliseconds);
                 }
-                
+
                 return result;
             }
             catch (Exception ex)
             {
                 stopwatch.Stop();
-                _logger.LogError(ex, "查询失败 - {Operation}: {ElapsedMs}ms", 
+                _logger.LogError(ex, "查询失败 - {Operation}: {ElapsedMs}ms",
                     operationName, stopwatch.ElapsedMilliseconds);
                 throw;
             }
@@ -784,29 +808,29 @@ namespace LYBT.Infrastructure.Repositories
             Expression<Func<TEntity, bool>>? predicate = null)
         {
             var query = _dbSet.AsQueryable();
-            
+
             // 应用查询优化选项
             if (_queryOptions.UseNoTracking)
             {
                 query = query.AsNoTrackingWithIdentityResolution();
             }
-            
+
             if (_queryOptions.EnableSplitQuery)
             {
                 query = query.AsSplitQuery();
             }
-            
+
             if (predicate != null)
             {
                 query = query.Where(predicate);
             }
-            
+
             // 应用全局过滤器
             query = ApplyGlobalFilters(query);
-            
+
             // 应用默认包含
             query = ApplyDefaultIncludes(query);
-            
+
             return query;
         }
 
@@ -835,7 +859,7 @@ namespace LYBT.Infrastructure.Repositories
         {
             // 配置连接重试策略
             _context.Database.SetCommandTimeout(TimeSpan.FromSeconds(30));
-            
+
             // 配置查询跟踪行为
             if (_queryOptions.UseNoTracking)
             {
@@ -890,9 +914,9 @@ namespace LYBT.Infrastructure.Repositories
         public bool EnableSplitQuery { get; set; } = true;
         public int SlowQueryThresholdMs { get; set; } = 1000;
         public int QueryTimeout { get; set; } = 30;
-        
+
         public static QueryOptimizationOptions Default => new();
-        
+
         public static QueryOptimizationOptions Performance => new()
         {
             EnableCache = true,
@@ -901,7 +925,7 @@ namespace LYBT.Infrastructure.Repositories
             SlowQueryThresholdMs = 500,
             QueryTimeout = 60
         };
-        
+
         public static QueryOptimizationOptions Tracking => new()
         {
             EnableCache = false,

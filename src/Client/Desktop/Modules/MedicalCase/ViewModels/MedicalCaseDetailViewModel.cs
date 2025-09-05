@@ -1,16 +1,16 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
+using AutoMapper;
+using LYBT.Desktop.Core.Constants;
+using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Desktop.Core.ViewModels.Base;
 using LYBT.Shared.Interfaces.Services;
 // UltraThink v2.0: 移除Info模型引用，直接使用DTO
 using LYBT.Shared.Models.Contracts.MedicalCase;
-using LYBT.Desktop.Core.ViewModels.Base;
-using AutoMapper;
 using LYBT.Shared.Models.Enums;
 using Prism.Commands;
-using Prism.Regions;
 using Prism.Events;
-using LYBT.Desktop.Core.Constants;
-using LYBT.Desktop.Core.Interfaces.Services;
+using Prism.Regions;
 
 namespace LYBT.Desktop.MedicalCase.ViewModels
 {
@@ -264,7 +264,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 {
                     // UltraThink v2.0: 直接使用DTO，移除Info层
                     MedicalCase = result.Data;
-                    
+
                     // 映射到UI属性 - UltraThink v2.0: 直接从DTO获取
                     PatientName = MedicalCase.PatientName;
                     CaseNumber = $"MC{MedicalCase.Id.ToString().Substring(0, 8).ToUpper()}";
@@ -277,14 +277,14 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                     TreatmentPlan = MedicalCase.TreatmentPlan ?? "";
                     ClinicalNotes = MedicalCase.Remark ?? "";
                     DoctorName = MedicalCase.DoctorName;
-                    
+
                     // 使用枚举状态（UltraThink：直接使用类型安全的枚举值）
                     Status = result.Data.CaseStatus; // UltraThink v2.0: 使用正确的状态字段
                     StatusText = GetStatusText(Status);
-                    
+
                     // UltraThink v2.0: 创建时间和完成时间从ConsultationDate计算
                     CreateTime = result.Data.ConsultationDate;
-                    CompleteTime = result.Data.CaseStatus == MedicalCaseStatus.Completed 
+                    CompleteTime = result.Data.CaseStatus == MedicalCaseStatus.Completed
                         ? result.Data.ConsultationDate.AddHours(1) // 默认1小时后完成
                         : null;
                 }
@@ -310,19 +310,22 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         private async Task StartConsultationAsync()
         {
-            if (MedicalCase == null) return;
+            if (MedicalCase == null)
+            {
+                return;
+            }
 
             try
             {
                 // UltraThink v2.0: 更新状态为看诊中 - 使用CompleteAsync方法
                 var result = await _medicalCaseService.CompleteAsync(MedicalCase.Id, "开始看诊");
-                
+
                 if (result.IsSuccess)
                 {
                     // 导航到看诊界面 - 使用Task.Run包装以修复CS1998警告
-                    await Task.Run(() => 
+                    await Task.Run(() =>
                     {
-                        _regionManager.RequestNavigate(RegionNames.ConsultationWorkbenchContentRegion, 
+                        _regionManager.RequestNavigate(RegionNames.ConsultationWorkbenchContentRegion,
                             $"ConsultationMainView?MedicalCaseId={MedicalCase.Id}&PatientId={MedicalCase.PatientId}&ConsultationMode=Start");
                     });
                 }
@@ -340,19 +343,25 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         private async Task CompleteCaseAsync()
         {
-            if (MedicalCase == null) return;
+            if (MedicalCase == null)
+            {
+                return;
+            }
 
             var confirm = await _dialogService.ShowConfirmationAsync(
                 "确定要完成该医疗案例吗？完成后将无法继续编辑。",
                 "确认完成");
 
-            if (!confirm) return;
+            if (!confirm)
+            {
+                return;
+            }
 
             try
             {
                 IsLoading = true;
                 var result = await _medicalCaseService.CompleteAsync(MedicalCase.Id, "案例完成");
-                
+
                 if (result.IsSuccess)
                 {
                     await _dialogService.ShowSuccessAsync("医疗案例已完成", "操作成功");
@@ -375,7 +384,10 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         private async Task SaveAsync()
         {
-            if (MedicalCase == null) return;
+            if (MedicalCase == null)
+            {
+                return;
+            }
 
             try
             {
@@ -399,7 +411,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 };
 
                 var result = await _medicalCaseService.UpdateAsync(MedicalCase.Id, editDto); // UltraThink v2.0: 使用正确的方法签名
-                
+
                 if (result.IsSuccess)
                 {
                     await _dialogService.ShowSuccessAsync("保存成功", "操作完成");

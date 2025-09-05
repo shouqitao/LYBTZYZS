@@ -1,14 +1,14 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using LYBT.Desktop.Core.Models.Prescriptions;
+using LYBT.Shared.Interfaces.Services;
+using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Services.Dialogs;
-using LYBT.Desktop.Core.Models.Prescriptions;
-using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Shared.Interfaces.Services;
 
 namespace LYBT.Desktop.Prescriptions.ViewModels.Components
 {
@@ -219,7 +219,10 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components
         /// </summary>
         private void AddHerbItems(dynamic herbItems)
         {
-            if (herbItems == null) return;
+            if (herbItems == null)
+            {
+                return;
+            }
 
             try
             {
@@ -253,7 +256,10 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components
         /// </summary>
         private void RemoveHerb(PrescriptionItemViewModel? item)
         {
-            if (item == null) return;
+            if (item == null)
+            {
+                return;
+            }
 
             try
             {
@@ -300,7 +306,10 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components
         /// </summary>
         private void ImportFormulaItems(dynamic formula)
         {
-            if (formula?.Items == null) return;
+            if (formula?.Items == null)
+            {
+                return;
+            }
 
             try
             {
@@ -367,7 +376,10 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components
         /// </summary>
         private void ImportHistoryItems(dynamic prescription)
         {
-            if (prescription?.Items == null) return;
+            if (prescription?.Items == null)
+            {
+                return;
+            }
 
             try
             {
@@ -494,7 +506,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components
                 {
                     _logger.LogDebug("打印预览对话框关闭");
                 });
-                
+
                 return Task.CompletedTask;
             }
             catch (Exception ex)

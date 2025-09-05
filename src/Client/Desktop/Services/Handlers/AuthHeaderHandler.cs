@@ -1,10 +1,10 @@
-using System;
+﻿using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
-using LYBT.Shared.Interfaces.Services;
 using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Shared.Interfaces.Services;
 
 namespace LYBT.Desktop.Services.Handlers
 {
@@ -37,9 +37,9 @@ namespace LYBT.Desktop.Services.Handlers
             }
 
             var response = await base.SendAsync(request, cancellationToken);
-            
+
             System.Diagnostics.Debug.WriteLine($"🔐 API响应: {response.StatusCode} - {request.RequestUri}");
-            
+
             return response;
         }
     }

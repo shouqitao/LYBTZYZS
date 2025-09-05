@@ -1,6 +1,6 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Desktop.Core.Models.Validation
 {

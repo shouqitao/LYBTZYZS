@@ -1,4 +1,4 @@
-using Asp.Versioning;
+﻿using Asp.Versioning;
 using LYBT.Infrastructure.Web;
 using LYBT.Module.Herbs.Interfaces;
 using LYBT.Shared.Interfaces.Services;
@@ -27,7 +27,7 @@ namespace LYBT.WebAPI.Controllers
         /// 构造方法，注入药材服务和缓存服务
         /// </summary>
         public HerbImportExportController(
-            IHerbService herbService, 
+            IHerbService herbService,
             IMemoryCache memoryCache,
             ILogger<HerbImportExportController> logger)
             : base(logger)
@@ -91,10 +91,11 @@ namespace LYBT.WebAPI.Controllers
                 // 注：IMemoryCache不支持按模式清除，缓存会自动过期
 
                 LogOperation("批量导入药材成功", new { Count = count, TotalSubmitted = dtos.Count }, null);
-                return Ok(new { 
-                    imported = count, 
+                return Ok(new
+                {
+                    imported = count,
                     total = dtos.Count,
-                    message = $"成功导入 {count} 个药材，共提交 {dtos.Count} 条数据" 
+                    message = $"成功导入 {count} 个药材，共提交 {dtos.Count} 条数据"
                 });
             }
             catch (ArgumentException ex)
@@ -138,10 +139,12 @@ namespace LYBT.WebAPI.Controllers
                 };
 
                 var result = await _herbService.ExportHerbsAsync(query);
-                
+
                 if (!result.IsSuccess)
+                {
                     return HandleException<byte[]>(new Exception(result.ErrorMessage), "导出药材数据");
-                
+                }
+
                 var data = result.Data ?? [];
                 LogOperation("导出药材数据", new { Size = data.Length, Format = format }, null);
 
@@ -180,9 +183,10 @@ namespace LYBT.WebAPI.Controllers
                 };
 
                 var templateData = new List<object> { template };
-                
+
                 LogOperation("导出药材导入模板", null, null);
-                return Task.FromResult<ActionResult<object>>(Ok(new { 
+                return Task.FromResult<ActionResult<object>>(Ok(new
+                {
                     message = "药材导入模板",
                     template = templateData
                 }));
@@ -207,7 +211,7 @@ namespace LYBT.WebAPI.Controllers
                 }
 
                 var validationResults = await ValidateImportDataAsync(dtos);
-                
+
                 return Ok(new
                 {
                     totalCount = dtos.Count,
@@ -230,7 +234,7 @@ namespace LYBT.WebAPI.Controllers
         private List<object> ValidateImportData(List<HerbImportDto> dtos)
         {
             var invalidItems = new List<object>();
-            
+
             for (int i = 0; i < dtos.Count; i++)
             {
                 var dto = dtos[i];
@@ -238,13 +242,19 @@ namespace LYBT.WebAPI.Controllers
 
                 // 基本字段验证
                 if (string.IsNullOrWhiteSpace(dto.Name))
+                {
                     errors.Add("药材名称不能为空");
+                }
 
                 if (dto.Price < 0)
+                {
                     errors.Add("价格不能为负数");
+                }
 
                 if (dto.Stock < 0)
+                {
                     errors.Add("库存不能为负数");
+                }
 
                 if (errors.Any())
                 {

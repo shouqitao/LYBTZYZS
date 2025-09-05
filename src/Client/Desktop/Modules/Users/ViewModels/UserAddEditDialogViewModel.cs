@@ -1,17 +1,17 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using AutoMapper;
+using LYBT.Desktop.Core.Constants;
+using LYBT.Desktop.Core.Interfaces;
+using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Desktop.Core.Models.Common;
+using LYBT.Desktop.Core.ViewModels.Base;
 using LYBT.Shared.Interfaces.Services;
+using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using Prism.Commands;
 using Prism.Events;
-using LYBT.Shared.Models.Contracts.Users;
-using AutoMapper;
-using LYBT.Desktop.Core.ViewModels.Base;
-using LYBT.Desktop.Core.Interfaces;
-using LYBT.Desktop.Core.Interfaces.Services;
-using LYBT.Desktop.Core.Constants;
-using LYBT.Desktop.Core.Models.Common;
 // UltraThink v2.0: Desktop层直接使用DTO，移除Info层转换
 
 namespace LYBT.Desktop.Users.ViewModels
@@ -186,7 +186,7 @@ namespace LYBT.Desktop.Users.ViewModels
                     };
 
                     var response = await _userService.UpdateAsync(updateRequest);
-                    
+
                     if (!response.IsSuccess)
                     {
                         ErrorMessage = response.ErrorMessage ?? "更新用户失败";
@@ -210,7 +210,7 @@ namespace LYBT.Desktop.Users.ViewModels
                     };
 
                     var response = await _userService.CreateAsync(createRequest);
-                    
+
                     if (!response.IsSuccess)
                     {
                         ErrorMessage = response.ErrorMessage ?? "创建用户失败";
@@ -239,7 +239,7 @@ namespace LYBT.Desktop.Users.ViewModels
         protected override void InitializeDialog()
         {
             base.InitializeDialog();
-            
+
             // 监听属性变化以更新Command状态
             SaveCommand.ObservesProperty(() => UserName);
             SaveCommand.ObservesProperty(() => RealName);
@@ -258,19 +258,19 @@ namespace LYBT.Desktop.Users.ViewModels
             DialogTitle = SystemConstants.EditUserDialogTitle;
             UserName = user.Username;
             RealName = user.RealName;
-            
+
             // 🎯 修复：正确设置邮箱数据
             Email = user.Email ?? string.Empty;
             PhoneNumber = user.PhoneNumber ?? string.Empty;
-            
+
             // 🎯 修复：正确设置启用状态
             IsActive = user.Status == CommonStatus.Enabled;
 
             // 🎯 修复：根据实际角色正确设置选中项
-            SelectedRole = Roles.FirstOrDefault(r => r.Value == user.Role) ?? 
-                          Roles.FirstOrDefault(r => r.Value == "Doctor") ?? 
+            SelectedRole = Roles.FirstOrDefault(r => r.Value == user.Role) ??
+                          Roles.FirstOrDefault(r => r.Value == "Doctor") ??
                           Roles.First();
-            
+
             System.Diagnostics.Debug.WriteLine($"✅ InitializeEditData完成: UserName={UserName}, RealName={RealName}, Email={Email}, IsActive={IsActive}, Role={SelectedRole?.DisplayName}");
         }
 
@@ -308,26 +308,26 @@ namespace LYBT.Desktop.Users.ViewModels
         public void OnDialogOpened(Dictionary<string, object> parameters)
         {
             System.Diagnostics.Debug.WriteLine($"🔧 OnDialogOpened 被调用，参数数量: {parameters?.Count ?? 0}");
-            
+
             // 🎯 修复：优先检查IsEditMode参数，确保模式设置正确
             if (parameters?.ContainsKey("IsEditMode") == true && parameters["IsEditMode"] is bool isEditMode)
             {
                 System.Diagnostics.Debug.WriteLine($"🔧 参数设置编辑模式: {isEditMode}");
                 _isEditMode = isEditMode;
-                
+
                 // 触发IsNewUser属性变更通知
                 RaisePropertyChanged(nameof(IsNewUser));
             }
-            
+
             // 🎯 修复：只在编辑模式且有用户数据时才初始化编辑数据
             if (_isEditMode && parameters?.ContainsKey("User") == true && parameters["User"] is UserDto user)
             {
                 System.Diagnostics.Debug.WriteLine($"🔧 编辑模式 - 初始化用户数据: {user.Username} - {user.RealName}");
-                
+
                 // 重新设置编辑数据
                 _originalUser = user;
                 InitializeEditData(user);
-                
+
                 // 强制触发所有属性变更通知
                 RaisePropertyChanged(nameof(UserName));
                 RaisePropertyChanged(nameof(RealName));
@@ -335,7 +335,7 @@ namespace LYBT.Desktop.Users.ViewModels
                 RaisePropertyChanged(nameof(PhoneNumber));
                 RaisePropertyChanged(nameof(IsActive));
                 RaisePropertyChanged(nameof(SelectedRole));
-                
+
                 System.Diagnostics.Debug.WriteLine($"✅ 编辑数据初始化完成: UserName={UserName}, RealName={RealName}, Email={Email}");
             }
             else if (!_isEditMode)
@@ -343,12 +343,12 @@ namespace LYBT.Desktop.Users.ViewModels
                 System.Diagnostics.Debug.WriteLine("🔧 新增模式 - 清空表单数据");
                 // 新增模式：确保表单为空白状态
                 UserName = string.Empty;
-                RealName = string.Empty; 
+                RealName = string.Empty;
                 Email = string.Empty;
                 PhoneNumber = string.Empty;
                 IsActive = true; // 新用户默认启用
                 SelectedRole = new RoleItem { Value = "Doctor", DisplayName = "医生" };
-                
+
                 // 触发UI更新
                 RaisePropertyChanged(nameof(UserName));
                 RaisePropertyChanged(nameof(RealName));
@@ -387,10 +387,10 @@ namespace LYBT.Desktop.Users.ViewModels
         /// </summary>
         protected void RaiseRequestClose(bool? dialogResult)
         {
-            var result = dialogResult == true 
+            var result = dialogResult == true
                 ? CustomDialogResult.Success(new Dictionary<string, object>())
                 : CustomDialogResult.Cancel();
-                
+
             RequestClose?.Invoke(result);
         }
 

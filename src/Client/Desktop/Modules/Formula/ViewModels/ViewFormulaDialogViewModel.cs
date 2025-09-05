@@ -1,12 +1,11 @@
-using System;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
-using Prism.Commands;
-using Prism.Mvvm;
-using Microsoft.Extensions.Logging;
-
 // UltraThink v2.0: 直接使用FormulaDto，移除Info模型引用
 using LYBT.Shared.Models.Contracts.Formula;
+using Microsoft.Extensions.Logging;
+using Prism.Commands;
+using Prism.Mvvm;
 using IFormulaService = LYBT.Shared.Interfaces.Services.IFormulaService;
 
 namespace LYBT.Desktop.Formula.ViewModels
@@ -104,7 +103,7 @@ namespace LYBT.Desktop.Formula.ViewModels
                 {
                     // UltraThink v2.0: 直接使用FormulaDto
                     Formula = result.Data;
-                    
+
                     // TODO: 需要根据实际的FormulaDto结构来处理药材项目
                     // 暂时创建空的药材项目列表
                     HerbItems = new ObservableCollection<FormulaHerbItemDto>();

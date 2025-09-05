@@ -1,6 +1,6 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System;
+﻿using System;
 using System.Threading.Tasks;
+using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Desktop.Core.Interfaces
 {
@@ -106,7 +106,10 @@ namespace LYBT.Desktop.Core.Interfaces
             var today = DateTime.Today;
             var age = today.Year - BirthDate.Year;
             if (BirthDate.Date > today.AddYears(-age))
+            {
                 age--;
+            }
+
             return age;
         }
 
@@ -116,11 +119,15 @@ namespace LYBT.Desktop.Core.Interfaces
         public bool IsValidIDNumber()
         {
             if (string.IsNullOrWhiteSpace(IDNumber))
+            {
                 return false;
+            }
 
             // 简单的18位身份证号验证
             if (IDNumber.Length != 18)
+            {
                 return false;
+            }
 
             // 可以添加更详细的验证逻辑
             return true;

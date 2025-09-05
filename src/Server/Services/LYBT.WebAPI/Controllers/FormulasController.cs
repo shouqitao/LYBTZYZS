@@ -1,8 +1,8 @@
-using Asp.Versioning;
+﻿using Asp.Versioning;
 using LYBT.Infrastructure.Web;
-using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -20,7 +20,7 @@ namespace LYBT.WebAPI.Controllers
     public class FormulasController : BaseApiController
     {
         private readonly IFormulaService _service;
-        
+
         public FormulasController(IFormulaService service, IMemoryCache cache, ILogger<FormulasController> logger)
             : base(logger, cache)
         {
@@ -72,7 +72,10 @@ namespace LYBT.WebAPI.Controllers
             try
             {
                 var validationResult = ValidateGuid<FormulaDto>(id, "验方ID");
-                if (validationResult != null) return validationResult;
+                if (validationResult != null)
+                {
+                    return validationResult;
+                }
 
                 var result = await _service.GetByIdAsync(id);
                 if (!result.IsSuccess || result.Data == null)
@@ -97,7 +100,10 @@ namespace LYBT.WebAPI.Controllers
             try
             {
                 var validationResult = ValidateModel<FormulaDto>();
-                if (validationResult != null) return validationResult;
+                if (validationResult != null)
+                {
+                    return validationResult;
+                }
 
                 var result = await _service.CreateAsync(dto);
                 if (!result.IsSuccess || result.Data == null)
@@ -123,10 +129,16 @@ namespace LYBT.WebAPI.Controllers
             try
             {
                 var idValidation = ValidateGuid<FormulaDto>(id, "验方ID");
-                if (idValidation != null) return idValidation;
+                if (idValidation != null)
+                {
+                    return idValidation;
+                }
 
                 var modelValidation = ValidateModel<FormulaDto>();
-                if (modelValidation != null) return modelValidation;
+                if (modelValidation != null)
+                {
+                    return modelValidation;
+                }
 
                 var result = await _service.UpdateAsync(id, dto);
                 if (!result.IsSuccess || result.Data == null)
@@ -152,7 +164,10 @@ namespace LYBT.WebAPI.Controllers
             try
             {
                 var validationResult = ValidateGuid(id, "验方ID");
-                if (validationResult != null) return validationResult;
+                if (validationResult != null)
+                {
+                    return validationResult;
+                }
 
                 var result = await _service.DeleteAsync(id);
                 if (!result.IsSuccess || !result.Data)
@@ -227,7 +242,10 @@ namespace LYBT.WebAPI.Controllers
             try
             {
                 var validationResult = ValidateGuid<FormulaDto>(prescriptionId, "处方ID");
-                if (validationResult != null) return validationResult;
+                if (validationResult != null)
+                {
+                    return validationResult;
+                }
 
                 if (string.IsNullOrWhiteSpace(dto.Name))
                 {
@@ -258,7 +276,10 @@ namespace LYBT.WebAPI.Controllers
             try
             {
                 var validationResult = ValidateGuid<FormulaAnalysisResult>(id, "验方ID");
-                if (validationResult != null) return validationResult;
+                if (validationResult != null)
+                {
+                    return validationResult;
+                }
 
                 // 接口简化后不再支持复杂分析功能
                 return BusinessFail<FormulaAnalysisResult>("简单诊所版本不支持验方分析功能", ApiErrorCodes.FEATURE_NOT_IMPLEMENTED);
@@ -353,12 +374,12 @@ namespace LYBT.WebAPI.Controllers
                     var result = ServiceResult<PagedResult<FormulaDto>>.Success(emptyResult);
                     return HandlePagedServiceResult(result, "搜索完成");
                 }
-                
+
                 // 手动分页
                 var totalCount = searchResult.Data.Count;
                 var skip = (page - 1) * pageSize;
                 var items = searchResult.Data.Skip(skip).Take(pageSize).ToList();
-                
+
                 var pagedData = new PagedResult<FormulaDto>
                 {
                     Items = items,
@@ -384,7 +405,10 @@ namespace LYBT.WebAPI.Controllers
             try
             {
                 var validationResult = ValidateGuid<FormulaDto>(id, "验方ID");
-                if (validationResult != null) return validationResult;
+                if (validationResult != null)
+                {
+                    return validationResult;
+                }
 
                 if (string.IsNullOrWhiteSpace(dto.NewName))
                 {
@@ -409,7 +433,10 @@ namespace LYBT.WebAPI.Controllers
             try
             {
                 var validationResult = ValidateGuid(id, "验方ID");
-                if (validationResult != null) return validationResult;
+                if (validationResult != null)
+                {
+                    return validationResult;
+                }
 
                 // 接口简化后不再支持切换状态功能，建议使用EnableAsync/DisableAsync
                 return BusinessFail("简单诊所版本不支持状态切换功能，请使用启用或禁用功能", ApiErrorCodes.FEATURE_NOT_IMPLEMENTED);
@@ -451,7 +478,10 @@ namespace LYBT.WebAPI.Controllers
             try
             {
                 var validationResult = ValidateGuid(id, "验方ID");
-                if (validationResult != null) return validationResult;
+                if (validationResult != null)
+                {
+                    return validationResult;
+                }
 
                 // 接口简化后不再支持分享功能
                 return BusinessFail("简单诊所版本不支持验方分享功能", ApiErrorCodes.FEATURE_NOT_IMPLEMENTED);
@@ -471,7 +501,10 @@ namespace LYBT.WebAPI.Controllers
             try
             {
                 var validationResult = ValidateGuid(id, "验方ID");
-                if (validationResult != null) return validationResult;
+                if (validationResult != null)
+                {
+                    return validationResult;
+                }
 
                 // 接口简化后不再支持分享功能
                 return BusinessFail("简单诊所版本不支持验方分享功能", ApiErrorCodes.FEATURE_NOT_IMPLEMENTED);
@@ -543,7 +576,7 @@ namespace LYBT.WebAPI.Controllers
                 };
 
                 LogOperation("批量导入验方", importResult, null);
-                
+
                 return Success<object>(importResult, $"导入完成: 成功{successCount}条, 失败{failureCount}条");
             }
             catch (Exception ex)
@@ -576,7 +609,7 @@ namespace LYBT.WebAPI.Controllers
 
                 var formulas = result.Data.Items;
                 LogOperation("导出验方数据", new { Count = formulas.Count, Category = category }, null);
-                
+
                 return Success(formulas, $"成功获取{formulas.Count}条验方数据");
             }
             catch (Exception ex)
@@ -607,21 +640,21 @@ namespace LYBT.WebAPI.Controllers
                     },
                     SampleData = new[]
                     {
-                        new 
-                        { 
-                            Name = "桂枝汤", 
+                        new
+                        {
+                            Name = "桂枝汤",
                             Category = "解表剂",
-                            Effect = "解肌发表，调和营卫", 
+                            Effect = "解肌发表，调和营卫",
                             Usage = "水煎服，日二服",
                             Indications = "外感风寒，营卫不和",
                             Contraindications = "热病及阴虚内热者忌用",
                             IsShared = "是"
                         },
-                        new 
-                        { 
-                            Name = "麻黄汤", 
+                        new
+                        {
+                            Name = "麻黄汤",
                             Category = "解表剂",
-                            Effect = "发汗解表，宣肺平喘", 
+                            Effect = "发汗解表，宣肺平喘",
                             Usage = "水煎服，温服",
                             Indications = "外感风寒表实证",
                             Contraindications = "表虚有汗者忌用",
@@ -666,12 +699,12 @@ namespace LYBT.WebAPI.Controllers
 
                 var validationResult = new List<object>();
                 var duplicateNames = new HashSet<string>();
-                
+
                 for (int i = 0; i < formulas.Count; i++)
                 {
                     var formula = formulas[i];
                     var rowErrors = new List<string>();
-                    
+
                     // 必填字段验证
                     if (string.IsNullOrWhiteSpace(formula.Name))
                     {
@@ -688,16 +721,16 @@ namespace LYBT.WebAPI.Controllers
                         {
                             duplicateNames.Add(formula.Name);
                         }
-                        
+
                         // 检查数据库中是否已存在
                         var existingResult = await _service.SearchAsync(formula.Name);
-                        if (existingResult.IsSuccess && existingResult.Data != null && 
+                        if (existingResult.IsSuccess && existingResult.Data != null &&
                             existingResult.Data.Any(f => f.Name.Equals(formula.Name, StringComparison.OrdinalIgnoreCase)))
                         {
                             rowErrors.Add($"验方名称 '{formula.Name}' 在数据库中已存在");
                         }
                     }
-                    
+
                     // 字段长度验证
                     if (!string.IsNullOrEmpty(formula.Name) && formula.Name.Length > 100)
                     {
@@ -707,7 +740,7 @@ namespace LYBT.WebAPI.Controllers
                     {
                         rowErrors.Add("功效描述长度不能超过500个字符");
                     }
-                    
+
                     validationResult.Add(new
                     {
                         Row = i + 1,

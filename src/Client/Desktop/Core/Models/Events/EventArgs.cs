@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Prism.Events;
 
 namespace LYBT.Desktop.Core.Models.Events
@@ -273,7 +273,7 @@ namespace LYBT.Desktop.Core.Models.Events
             EndTime = DateTime.Now;
         }
 
-        public ConsultationCompletedEventArgs(Guid consultationId, Guid patientId, string patientName, string summary) 
+        public ConsultationCompletedEventArgs(Guid consultationId, Guid patientId, string patientName, string summary)
             : this(consultationId, patientId, patientName)
         {
             Summary = summary;

@@ -1,11 +1,11 @@
-using LYBT.Shared.Interfaces.Api;
-using Microsoft.Extensions.Logging;
-using Refit;
-using System;
+﻿using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Threading.Tasks;
+using LYBT.Shared.Interfaces.Api;
+using Microsoft.Extensions.Logging;
+using Refit;
 
 namespace LYBT.Desktop.Infrastructure.Api;
 
@@ -18,7 +18,7 @@ namespace LYBT.Desktop.Infrastructure.Api;
 /// <param name="httpClient">HTTP客户端实例，用于发送REST请求</param>
 /// <param name="logger">日志记录器，用于记录API操作和异常</param>
 /// <exception cref="ArgumentNullException">当任何参数为 null 时抛出</exception>
-public class UnifiedApiClientManager(HttpClient httpClient, ILogger<UnifiedApiClientManager> logger) 
+public class UnifiedApiClientManager(HttpClient httpClient, ILogger<UnifiedApiClientManager> logger)
     : IUnifiedApiClientManager, IDisposable
 {
     private readonly HttpClient _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
@@ -34,26 +34,26 @@ public class UnifiedApiClientManager(HttpClient httpClient, ILogger<UnifiedApiCl
     private readonly Lazy<IPrescriptionApi> _prescriptionApi = new(() => RestService.For<IPrescriptionApi>(httpClient, CreateRefitSettings()));
     private readonly Lazy<IHerbApi> _herbApi = new(() => RestService.For<IHerbApi>(httpClient, CreateRefitSettings()));
     private readonly Lazy<IFormulaApi> _formulaApi = new(() => RestService.For<IFormulaApi>(httpClient, CreateRefitSettings()));
-    
+
     private bool _disposed;
-    
+
     // 实例构造函数体 - 初始化HTTP客户端配置
     static UnifiedApiClientManager()
     {
         // 静态初始化可以在这里添加全局配置
     }
-    
+
     /// <summary>
     /// 实例初始化 - 配置HTTP客户端和记录日志
     /// </summary>
     private void InitializeApiManager()
     {
         ConfigureHttpClient();
-        _logger.LogInformation("统一API客户端管理器初始化完成 - 基地址: {BaseAddress}", 
+        _logger.LogInformation("统一API客户端管理器初始化完成 - 基地址: {BaseAddress}",
             _httpClient.BaseAddress);
 
     }
-    
+
     /// <summary>
     /// 创建并初始化API客户端管理器
     /// </summary>
@@ -71,43 +71,43 @@ public class UnifiedApiClientManager(HttpClient httpClient, ILogger<UnifiedApiCl
     /// </summary>
     /// <value>用于处理用户登录、注销、令牌刷新等认证操作的API客户端</value>
     public IAuthApi AuthApi => _authApi.Value;
-    
+
     /// <summary>
     /// 获取用户管理API客户端
     /// </summary>
     /// <value>用于处理用户CRUD操作、角色管理等的API客户端</value>
     public IUserApi UserApi => _userApi.Value;
-    
+
     /// <summary>
     /// 获取患者档案API客户端
     /// </summary>
     /// <value>用于处理患者信息管理、病历查询等的API客户端</value>
     public IPatientApi PatientApi => _patientApi.Value;
-    
+
     /// <summary>
     /// 获取医疗案例API客户端
     /// </summary>
     /// <value>用于处理医疗案例管理、诊疗流程控制的API客户端</value>
     public IMedicalCaseApi MedicalCaseApi => _medicalCaseApi.Value;
-    
+
     /// <summary>
     /// 获取诊疗咨询API客户端
     /// </summary>
     /// <value>用于处理中医四诊、辨证论治等诊疗操作的API客户端</value>
     public IConsultationApi ConsultationApi => _consultationApi.Value;
-    
+
     /// <summary>
     /// 获取处方管理API客户端
     /// </summary>
     /// <value>用于处理处方开具、药材配伍、打印输出的API客户端</value>
     public IPrescriptionApi PrescriptionApi => _prescriptionApi.Value;
-    
+
     /// <summary>
     /// 获取中药材管理API客户端
     /// </summary>
     /// <value>用于处理中药材信息维护、用法管理的API客户端</value>
     public IHerbApi HerbApi => _herbApi.Value;
-    
+
     /// <summary>
     /// 获取验方管理API客户端
     /// </summary>
@@ -148,10 +148,12 @@ public class UnifiedApiClientManager(HttpClient httpClient, ILogger<UnifiedApiCl
         ArgumentException.ThrowIfNullOrWhiteSpace(baseUrl, nameof(baseUrl));
 
         if (!Uri.TryCreate(baseUrl, UriKind.Absolute, out var uri))
+        {
             throw new ArgumentException($"基地址格式无效: {baseUrl}", nameof(baseUrl));
+        }
 
         _httpClient.BaseAddress = uri;
-        _logger.LogInformation("API基地址已更新: {OldBaseUrl} → {NewBaseUrl}", 
+        _logger.LogInformation("API基地址已更新: {OldBaseUrl} → {NewBaseUrl}",
             _httpClient.BaseAddress, baseUrl);
     }
 
@@ -166,12 +168,12 @@ public class UnifiedApiClientManager(HttpClient httpClient, ILogger<UnifiedApiCl
         {
             using var response = await _httpClient.GetAsync("api/v1/health").ConfigureAwait(false);
             var isHealthy = response.IsSuccessStatusCode;
-            
-            _logger.LogInformation("API健康检查结果: {HealthStatus}, 状态码: {StatusCode}, 响应时间: {ResponseTime}ms", 
-                isHealthy ? "健康" : "异常", 
+
+            _logger.LogInformation("API健康检查结果: {HealthStatus}, 状态码: {StatusCode}, 响应时间: {ResponseTime}ms",
+                isHealthy ? "健康" : "异常",
                 response.StatusCode,
                 response.Headers.Date?.Subtract(DateTime.UtcNow).TotalMilliseconds ?? 0);
-            
+
             return isHealthy;
         }
         catch (Exception ex)
@@ -248,7 +250,7 @@ public class UnifiedApiClientManager(HttpClient httpClient, ILogger<UnifiedApiCl
             })
         };
     }
-    
+
     /// <summary>
     /// 配置HttpClient基础设置
     /// 设置超时、请求头、基地址等HTTP客户端配置
@@ -269,7 +271,7 @@ public class UnifiedApiClientManager(HttpClient httpClient, ILogger<UnifiedApiCl
         // 如果BaseAddress未设置，使用默认地址
         _httpClient.BaseAddress ??= new Uri("https://localhost:7001");
 
-        _logger.LogDebug("HttpClient配置完成 - 基地址: {BaseAddress}, 超时: {Timeout}s", 
+        _logger.LogDebug("HttpClient配置完成 - 基地址: {BaseAddress}, 超时: {Timeout}s",
             _httpClient.BaseAddress, _httpClient.Timeout.TotalSeconds);
     }
 
@@ -291,11 +293,11 @@ public class UnifiedApiClientManager(HttpClient httpClient, ILogger<UnifiedApiCl
                 {
                     // 清理认证令牌
                     _httpClient.DefaultRequestHeaders.Authorization = null;
-                    
+
                     // 释放HTTP客户端
                     _httpClient?.Dispose();
-                    
-                    _logger.LogInformation("统一API客户端管理器已释放资源 - 基地址: {BaseAddress}", 
+
+                    _logger.LogInformation("统一API客户端管理器已释放资源 - 基地址: {BaseAddress}",
                         _httpClient?.BaseAddress);
                 }
                 catch (Exception ex)

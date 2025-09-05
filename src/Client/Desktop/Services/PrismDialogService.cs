@@ -1,9 +1,9 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using System.Windows;
-using Microsoft.Win32;
-using LYBT.Shared.Interfaces.Services;
 using LYBT.Desktop.Core.Enums;
+using LYBT.Shared.Interfaces.Services;
+using Microsoft.Win32;
 using FolderBrowserDialog = System.Windows.Forms.FolderBrowserDialog;
 
 namespace LYBT.Desktop.Services
@@ -13,39 +13,32 @@ namespace LYBT.Desktop.Services
     /// </summary>
     public class PrismDialogService // : ICommonDialogService // 接口不存在：ICommonDialogService
     {
-        // private readonly ICustomDialogService _dialogService; // 接口不存在：ICustomDialogService
-
         public PrismDialogService() // 简化构造函数，移除不存在的接口参数
         {
-            // _dialogService = dialogService; // 接口不存在
         }
 
         #region 消息对话框（异步）
 
         public Task<bool> ShowConfirmationAsync(string message, string title = "确认")
         {
-            // return _dialogService.ShowConfirmationAsync(message, title); // 服务不存在
             var result = MessageBox.Show(message, title, MessageBoxButton.YesNo, MessageBoxImage.Question);
             return Task.FromResult(result == MessageBoxResult.Yes);
         }
 
         public Task ShowInformationAsync(string message, string title = "信息")
         {
-            // return _dialogService.ShowInformationAsync(message, title); // 服务不存在
             MessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Information);
             return Task.CompletedTask;
         }
 
         public Task ShowWarningAsync(string message, string title = "警告")
         {
-            // return _dialogService.ShowWarningAsync(message, title); // 服务不存在
             MessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Warning);
             return Task.CompletedTask;
         }
 
         public Task ShowErrorAsync(string message, string title = "错误")
         {
-            // return _dialogService.ShowErrorAsync(message, title); // 服务不存在
             MessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Error);
             return Task.CompletedTask;
         }

@@ -1,10 +1,10 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Core.Redux
@@ -65,9 +65,9 @@ namespace LYBT.Desktop.Core.Redux
         private TState _currentState;
         private int _dispatchDepth;
 
-        public TState State 
-        { 
-            get 
+        public TState State
+        {
+            get
             {
                 _stateLock.EnterReadLock();
                 try
@@ -158,10 +158,10 @@ namespace LYBT.Desktop.Core.Redux
 
             var subscription = new StateSubscription<TState>(this, listener);
             _subscriptions.Add(new WeakReference<IStateSubscription>(subscription));
-            
+
             // 立即触发当前状态
             listener(State);
-            
+
             return subscription;
         }
 
@@ -259,7 +259,7 @@ namespace LYBT.Desktop.Core.Redux
                     _currentState = newState;
                     RecordSnapshot(newState, action);
                     NotifySubscribers();
-                    
+
                     _logger?.LogDebug($"状态已更新: {action.Type}");
                 }
             }
@@ -339,7 +339,7 @@ namespace LYBT.Desktop.Core.Redux
         public void Dispose()
         {
             _stateLock?.Dispose();
-            
+
             // 清理订阅
             foreach (var weakRef in _subscriptions)
             {

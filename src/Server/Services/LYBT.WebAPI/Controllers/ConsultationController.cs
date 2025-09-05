@@ -1,4 +1,4 @@
-using Asp.Versioning;
+﻿using Asp.Versioning;
 using LYBT.Infrastructure.Web;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
@@ -38,7 +38,10 @@ public class ConsultationController : BaseApiController
         try
         {
             var validation = ValidateGuid<ConsultationDetailDto>(id, "看诊ID");
-            if (validation != null) return validation;
+            if (validation != null)
+            {
+                return validation;
+            }
 
             var result = await _consultationService.GetByIdAsync(id);
             return HandleServiceResult(result, "查询成功");
@@ -90,7 +93,10 @@ public class ConsultationController : BaseApiController
         try
         {
             var validation = ValidateModel<ConsultationDto>();
-            if (validation != null) return validation;
+            if (validation != null)
+            {
+                return validation;
+            }
 
             var (operatorId, operatorName, _) = GetOperator();
             var result = await _consultationService.StartAsync(dto);
@@ -116,10 +122,16 @@ public class ConsultationController : BaseApiController
         try
         {
             var idValidation = ValidateGuid<ConsultationDto>(id, "看诊ID");
-            if (idValidation != null) return idValidation;
+            if (idValidation != null)
+            {
+                return idValidation;
+            }
 
             var modelValidation = ValidateModel<ConsultationDto>();
-            if (modelValidation != null) return modelValidation;
+            if (modelValidation != null)
+            {
+                return modelValidation;
+            }
 
             var result = await _consultationService.UpdateAsync(id, dto);
             if (result.IsSuccess && result.Data != null)
@@ -145,7 +157,10 @@ public class ConsultationController : BaseApiController
         try
         {
             var validation = ValidateGuid<List<ConsultationDto>>(patientId, "患者ID");
-            if (validation != null) return validation;
+            if (validation != null)
+            {
+                return validation;
+            }
 
             var result = await _consultationService.GetByPatientIdAsync(patientId);
             return HandleServiceResult(result, "查询成功");
@@ -165,7 +180,10 @@ public class ConsultationController : BaseApiController
         try
         {
             var validation = ValidateGuid<List<ConsultationDto>>(medicalCaseId, "医疗案例ID");
-            if (validation != null) return validation;
+            if (validation != null)
+            {
+                return validation;
+            }
 
             var result = await _consultationService.GetByMedicalCaseIdAsync(medicalCaseId);
             return HandleServiceResult(result, "查询成功");
@@ -185,7 +203,10 @@ public class ConsultationController : BaseApiController
         try
         {
             var validation = ValidateGuid<List<ConsultationDto>>(doctorId, "医生ID");
-            if (validation != null) return validation;
+            if (validation != null)
+            {
+                return validation;
+            }
 
             var result = await _consultationService.GetByDoctorIdAsync(doctorId);
             return HandleServiceResult(result, "查询成功");
@@ -246,7 +267,10 @@ public class ConsultationController : BaseApiController
         try
         {
             var validation = ValidateGuid<List<ConsultationDto>>(patientId, "患者ID");
-            if (validation != null) return validation;
+            if (validation != null)
+            {
+                return validation;
+            }
 
             var result = await _consultationService.GetPatientHistoryAsync(patientId);
             return HandleServiceResult(result, "查询成功");
@@ -266,7 +290,10 @@ public class ConsultationController : BaseApiController
         try
         {
             var validation = ValidateGuid<object>(medicalCaseId, "医疗案例ID");
-            if (validation != null) return validation;
+            if (validation != null)
+            {
+                return validation;
+            }
 
             var result = await _consultationService.GetFourDiagnosisByMedicalCaseIdAsync(medicalCaseId);
             return HandleServiceResult(result, "查询成功");
@@ -286,7 +313,10 @@ public class ConsultationController : BaseApiController
         try
         {
             var validation = ValidateGuid(consultationId, "看诊ID");
-            if (validation != null) return validation;
+            if (validation != null)
+            {
+                return validation;
+            }
 
             var result = await _consultationService.SaveFourDiagnosisAsync(consultationId, fourDiagnosisData);
             return HandleBoolServiceResult(result, "四诊数据保存成功");
@@ -306,7 +336,10 @@ public class ConsultationController : BaseApiController
         try
         {
             var validation = ValidateGuid(id, "看诊ID");
-            if (validation != null) return validation;
+            if (validation != null)
+            {
+                return validation;
+            }
 
             var result = await _consultationService.DeleteAsync(id);
             return HandleBoolServiceResult(result, "删除成功");

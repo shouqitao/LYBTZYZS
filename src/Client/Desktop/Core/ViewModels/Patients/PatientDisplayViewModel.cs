@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
 using Prism.Mvvm;
@@ -55,7 +55,11 @@ namespace LYBT.Desktop.Core.ViewModels.Patients
         {
             get
             {
-                if (PatientData.Age <= 0) return "未知";
+                if (PatientData.Age <= 0)
+                {
+                    return "未知";
+                }
+
                 return $"{PatientData.Age}岁";
             }
         }
@@ -127,7 +131,9 @@ namespace LYBT.Desktop.Core.ViewModels.Patients
         public void UpdatePatientData(PatientDto newPatientData)
         {
             if (newPatientData == null)
+            {
                 throw new ArgumentNullException(nameof(newPatientData));
+            }
 
             PatientData = newPatientData;
 
@@ -145,7 +151,7 @@ namespace LYBT.Desktop.Core.ViewModels.Patients
             RaisePropertyChanged(nameof(EmergencyPhoneDisplay));
             RaisePropertyChanged(nameof(CreateTimeDisplay));
             RaisePropertyChanged(nameof(UpdateTimeDisplay));
-            
+
             RaisePropertyChanged(nameof(CanEdit));
             RaisePropertyChanged(nameof(CanDisable));
             RaisePropertyChanged(nameof(CanEnable));

@@ -1,9 +1,9 @@
-﻿using Prism.Ioc;
-using Prism.Modularity;
+﻿using LYBT.Desktop.Users.Services;
 using LYBT.Desktop.Users.ViewModels;
 using LYBT.Desktop.Users.Views;
-using LYBT.Desktop.Users.Services;
 using LYBT.Shared.Interfaces.Services;
+using Prism.Ioc;
+using Prism.Modularity;
 
 namespace LYBT.Desktop.Users
 {
@@ -24,7 +24,7 @@ namespace LYBT.Desktop.Users
             // UltraThink修复：模块自己注册服务接口实现
             containerRegistry.RegisterSingleton<UserModule>();
             containerRegistry.RegisterSingleton<IUserService>(container => container.Resolve<UserModule>());
-            
+
             // 注册视图和视图模型
             containerRegistry.RegisterForNavigation<UserManagementView, UserManagementViewModel>();
             containerRegistry.RegisterForNavigation<UserAddEditDialog, UserAddEditDialogViewModel>();

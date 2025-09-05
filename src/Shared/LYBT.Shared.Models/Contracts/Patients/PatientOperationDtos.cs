@@ -1,8 +1,8 @@
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Enums;
-using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
 
 namespace LYBT.Shared.Models.Contracts.Patients
 {
@@ -103,7 +103,10 @@ namespace LYBT.Shared.Models.Contracts.Patients
             get
             {
                 if (TotalVisits <= 1 || !FirstVisitDate.HasValue || !LastVisitDate.HasValue)
+                {
                     return 0;
+                }
+
                 return (LastVisitDate.Value - FirstVisitDate.Value).TotalDays / (TotalVisits - 1);
             }
         }

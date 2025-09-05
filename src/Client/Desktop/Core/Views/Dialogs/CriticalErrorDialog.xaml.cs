@@ -1,11 +1,11 @@
-using System;
+﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.Diagnostics;
-using LYBT.Shared.Models.Enums;
 using LYBT.Desktop.Core.Exceptions;
 using LYBT.Desktop.Core.ViewModels.Dialogs;
+using LYBT.Shared.Models.Enums;
 using SharedCommon = LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Desktop.Core.Views.Dialogs
@@ -33,7 +33,7 @@ namespace LYBT.Desktop.Core.Views.Dialogs
         public CriticalErrorDialog()
         {
             InitializeComponent();
-            
+
             // 设置窗口属性
             this.WindowStyle = WindowStyle.ToolWindow;
             this.ShowActivated = true;
@@ -61,7 +61,7 @@ namespace LYBT.Desktop.Core.Views.Dialogs
         protected override void OnSourceInitialized(EventArgs e)
         {
             base.OnSourceInitialized(e);
-            
+
             // 确保窗口显示在最前面
             this.Activate();
             this.Focus();

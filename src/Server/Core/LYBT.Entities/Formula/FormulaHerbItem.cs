@@ -1,6 +1,6 @@
-using LYBT.Entities.Common;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using LYBT.Entities.Common;
 
 namespace LYBT.Entities.Formula
 {

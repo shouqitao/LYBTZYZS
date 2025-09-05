@@ -1,7 +1,7 @@
-using System;
+﻿using System;
+using LYBT.Desktop.Core.Extensions;
 // UltraThink v2.0: 使用HerbDto替代HerbInfo模型
 using LYBT.Shared.Models.Contracts.Herbs;
-using LYBT.Desktop.Core.Extensions;
 using Prism.Mvvm;
 
 namespace LYBT.Desktop.Core.ViewModels.Herbs
@@ -26,7 +26,9 @@ namespace LYBT.Desktop.Core.ViewModels.Herbs
         public HerbViewModel(HerbDto herbData)
         {
             if (herbData == null)
+            {
                 throw new ArgumentNullException(nameof(herbData));
+            }
 
             _display = new HerbDisplayViewModel(herbData);
             _state = new HerbStateViewModel();
@@ -88,9 +90,13 @@ namespace LYBT.Desktop.Core.ViewModels.Herbs
             set
             {
                 if (value)
+                {
                     State.StartLoading();
+                }
                 else
+                {
                     State.StopLoading();
+                }
             }
         }
 
@@ -101,9 +107,13 @@ namespace LYBT.Desktop.Core.ViewModels.Herbs
             set
             {
                 if (value)
+                {
                     State.StartEditing();
+                }
                 else
+                {
                     State.StopEditing();
+                }
             }
         }
 
@@ -130,7 +140,9 @@ namespace LYBT.Desktop.Core.ViewModels.Herbs
         public void UpdateHerbData(HerbDto newHerbData)
         {
             if (newHerbData == null)
+            {
                 throw new ArgumentNullException(nameof(newHerbData));
+            }
 
             Display.UpdateHerbData(newHerbData);
             Theme.UpdateHerbData(newHerbData);
@@ -225,8 +237,16 @@ namespace LYBT.Desktop.Core.ViewModels.Herbs
         /// </summary>
         public int GetPriceLevel()
         {
-            if (Price <= 10) return 1; // 低价
-            if (Price <= 50) return 2; // 中价
+            if (Price <= 10)
+            {
+                return 1; // 低价
+            }
+
+            if (Price <= 50)
+            {
+                return 2; // 中价
+            }
+
             return 3; // 高价
         }
 
@@ -323,7 +343,7 @@ namespace LYBT.Desktop.Core.ViewModels.Herbs
         public bool IsSameHerbByNameAndSpec(HerbViewModel other)
         {
             // UltraThink v2.0简化：直接比较名称和规格，移除扩展方法依赖
-            return other != null && 
+            return other != null &&
                    string.Equals(HerbData.Name, other.HerbData.Name, StringComparison.OrdinalIgnoreCase) &&
                    string.Equals(HerbData.Spec, other.HerbData.Spec, StringComparison.OrdinalIgnoreCase);
         }

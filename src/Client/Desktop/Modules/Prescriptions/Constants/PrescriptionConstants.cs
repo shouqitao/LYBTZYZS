@@ -1,5 +1,5 @@
+﻿using System.Collections.ObjectModel;
 using LYBT.Shared.Models.Contracts.Common;
-using System.Collections.ObjectModel;
 
 namespace LYBT.Desktop.Prescriptions.Constants
 {

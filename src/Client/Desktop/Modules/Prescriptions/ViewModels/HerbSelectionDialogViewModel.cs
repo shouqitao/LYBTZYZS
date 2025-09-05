@@ -1,17 +1,17 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
-using LYBT.Shared.Models.Contracts.Prescriptions;
+using LYBT.Desktop.Core.ViewModels;
+using LYBT.Shared.Interfaces.Services;
 // UltraThink v2.0: 直接使用HerbDto，移除Info模型引用
 using LYBT.Shared.Models.Contracts.Herbs;
-using LYBT.Shared.Interfaces.Services;
+using LYBT.Shared.Models.Contracts.Prescriptions;
+using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Mvvm;
-using Microsoft.Extensions.Logging;
-using LYBT.Desktop.Core.ViewModels;
 
 namespace LYBT.Desktop.Prescriptions.ViewModels
 {
@@ -45,8 +45,8 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         public HerbDto? SelectedHerb
         {
             get => _selectedHerb;
-            set 
-            { 
+            set
+            {
                 SetProperty(ref _selectedHerb, value);
                 ConfirmCommand.RaiseCanExecuteChanged();
             }
@@ -93,9 +93,9 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         {
             _herbService = herbService ?? throw new ArgumentNullException(nameof(herbService));
             Title = "选择中药材";
-            
+
             SearchCommand = new DelegateCommand(async () => await ExecuteSearchAsync());
-            
+
             // 初始化加载中药材列表
             _ = LoadHerbsAsync();
         }
@@ -105,7 +105,10 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         /// </summary>
         public async Task InitializeWithParametersAsync(Dictionary<string, object>? parameters = null)
         {
-            if (parameters == null) return;
+            if (parameters == null)
+            {
+                return;
+            }
 
             try
             {
@@ -131,7 +134,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                 {
                     // 等待药材列表加载完成
                     await LoadHerbsAsync();
-                    
+
                     // 查找并选中指定的药材
                     var targetHerb = AvailableHerbs.FirstOrDefault(h => h.Id == herbId);
                     if (targetHerb != null)
@@ -189,12 +192,12 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             try
             {
                 IsLoading = true;
-                var result = await _herbService.GetPagedAsync(new HerbPagedQueryDto 
-                { 
+                var result = await _herbService.GetPagedAsync(new HerbPagedQueryDto
+                {
                     Name = SearchText,
-                    PageSize = 100 
+                    PageSize = 100
                 });
-                
+
                 if (result.IsSuccess && result.Data != null)
                 {
                     AvailableHerbs = new ObservableCollection<HerbDto>(result.Data.Items);
@@ -216,7 +219,9 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         protected override Task<bool> ExecuteConfirmAsync()
         {
             if (SelectedHerb == null)
+            {
                 return Task.FromResult(false);
+            }
 
             Result = new PrescriptionItemDto
             {

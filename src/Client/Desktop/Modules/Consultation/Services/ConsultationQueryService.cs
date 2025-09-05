@@ -1,11 +1,11 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using LYBT.Desktop.Consultation.Interfaces;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Consultation.Services;
 
@@ -31,7 +31,7 @@ public class ConsultationQueryService(ILogger<ConsultationQueryService> logger) 
     {
         try
         {
-            _logger.LogDebug("执行看诊诊断分页查询，页码: {PageNumber}, 页大小: {PageSize}", 
+            _logger.LogDebug("执行看诊诊断分页查询，页码: {PageNumber}, 页大小: {PageSize}",
                 query.PageIndex, query.PageSize);
 
             var emptyResult = new PagedResult<ConsultationDto>
@@ -39,7 +39,7 @@ public class ConsultationQueryService(ILogger<ConsultationQueryService> logger) 
                 Items = [],
                 TotalCount = 0
             };
-            
+
             return ServiceResult<PagedResult<ConsultationDto>>.Success(emptyResult);
         }
         catch (Exception ex)
@@ -101,7 +101,7 @@ public class ConsultationQueryService(ILogger<ConsultationQueryService> logger) 
         {
             _logger.LogDebug("生成看诊诊断统计数据");
             var stats = new ConsultationStatisticsDto();
-            
+
             return ServiceResult<ConsultationStatisticsDto>.Success(stats);
         }
         catch (Exception ex)

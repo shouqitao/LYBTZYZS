@@ -1,18 +1,18 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Windows;
-using Refit;
 using LYBT.Desktop.Core.Exceptions;
-using LYBT.Desktop.Core.Models.Common;
 using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Desktop.Core.Models.Common;
 using LYBT.Shared.Interfaces.Services;
-using SharedCommon = LYBT.Shared.Models.Contracts.Common;
-using ErrorSeverity = LYBT.Shared.Models.Contracts.Common.ErrorSeverity;
+using Refit;
 using ErrorCategory = LYBT.Shared.Models.Contracts.Common.ErrorCategory;
+using ErrorSeverity = LYBT.Shared.Models.Contracts.Common.ErrorSeverity;
+using SharedCommon = LYBT.Shared.Models.Contracts.Common;
 using TimeoutException = System.TimeoutException;
 
 namespace LYBT.Desktop.Services
@@ -23,7 +23,7 @@ namespace LYBT.Desktop.Services
     public class ErrorHandlingService : IErrorHandlingService
     {
         private readonly ICustomDialogService? _customDialogService;
-        
+
         // 错误消息映射表
         private readonly Dictionary<Type, Func<Exception, string>> _messageMapping;
         private readonly Dictionary<Type, ErrorCategory> _categoryMapping;
@@ -56,13 +56,15 @@ namespace LYBT.Desktop.Services
         public async Task<SharedCommon.HandledError> HandleExceptionAsync(Exception exception, ErrorContext? context = null)
         {
             if (exception == null)
+            {
                 throw new ArgumentNullException(nameof(exception));
+            }
 
             var handledError = CreateHandledError(exception, context ?? new ErrorContext());
-            
+
             // 触发错误事件
             OnErrorOccurred(handledError);
-            
+
             // 如果是严重错误，触发严重错误事件
             if (handledError.Severity >= ErrorSeverity.Critical)
             {
@@ -78,7 +80,9 @@ namespace LYBT.Desktop.Services
         public async Task ShowErrorAsync(SharedCommon.HandledError handledError, bool showDialog = true)
         {
             if (handledError == null)
+            {
                 return;
+            }
 
             if (showDialog && handledError.RequiresUserAcknowledgment)
             {
@@ -156,7 +160,9 @@ namespace LYBT.Desktop.Services
         public string GetUserFriendlyMessage(Exception exception, string? defaultMessage = null)
         {
             if (exception == null)
+            {
                 return defaultMessage ?? "发生未知错误";
+            }
 
             // 检查自定义异常类型
             return exception switch
@@ -188,7 +194,9 @@ namespace LYBT.Desktop.Services
         public ErrorCategory GetErrorCategory(Exception exception)
         {
             if (exception == null)
+            {
                 return ErrorCategory.Unknown;
+            }
 
             // 检查自定义异常类型
             var category = exception switch
@@ -213,7 +221,9 @@ namespace LYBT.Desktop.Services
         public ErrorSeverity GetErrorSeverity(Exception exception)
         {
             if (exception == null)
+            {
                 return ErrorSeverity.Error;
+            }
 
             return exception switch
             {
@@ -227,7 +237,7 @@ namespace LYBT.Desktop.Services
                 _ => _severityMapping.TryGetValue(exception.GetType(), out var severity) ? severity : ErrorSeverity.Error
             };
         }
-        
+
         private ErrorSeverity ConvertSeverity(LYBT.Shared.Models.Contracts.Common.ErrorSeverity severity)
         {
             return severity switch
@@ -244,7 +254,9 @@ namespace LYBT.Desktop.Services
         public string[] GetSuggestedActions(Exception exception)
         {
             if (exception == null)
+            {
                 return new[] { "联系技术支持" };
+            }
 
             // 检查映射表
             if (_actionMapping.TryGetValue(exception.GetType(), out var actions))
@@ -307,10 +319,10 @@ namespace LYBT.Desktop.Services
         {
             // 注册WPF全局异常处理器
             Application.Current.DispatcherUnhandledException += OnDispatcherUnhandledException;
-            
+
             // 注册Task未处理异常处理器
             TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
-            
+
             // 注册应用程序域异常处理器
             AppDomain.CurrentDomain.UnhandledException += OnDomainUnhandledException;
         }
@@ -362,7 +374,7 @@ namespace LYBT.Desktop.Services
                 {
                     // 构建详细错误信息
                     var message = handledError.UserMessage;
-                    
+
                     // 如果有建议操作，添加到消息中
                     if (handledError.SuggestedActions.Count > 0)
                     {
@@ -467,7 +479,7 @@ namespace LYBT.Desktop.Services
         private void OnDispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
         {
             e.Handled = true;
-            
+
             // Fire-and-forget pattern with proper exception isolation
             _ = Task.Run(async () =>
             {
@@ -479,7 +491,7 @@ namespace LYBT.Desktop.Services
                         ModuleName = "WPF",
                         ViewName = "Global"
                     };
-                    
+
                     var handledError = await HandleExceptionAsync(e.Exception, context);
                     await ShowErrorAsync(handledError);
                 }
@@ -487,14 +499,14 @@ namespace LYBT.Desktop.Services
                 {
                     // 最后一道防线：确保异常处理器本身不会崩溃
                     Debug.WriteLine($"异常处理器失败: {ex.Message}");
-                    
+
                     // UltraThink优化：首先尝试使用ICustomDialogService
                     try
                     {
                         if (_customDialogService != null)
                         {
                             await _customDialogService.ShowErrorAsync(
-                                $"系统发生严重错误：{e.Exception.Message}", 
+                                $"系统发生严重错误：{e.Exception.Message}",
                                 "系统错误");
                         }
                         else
@@ -515,7 +527,7 @@ namespace LYBT.Desktop.Services
         private void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
         {
             e.SetObserved();
-            
+
             // Fire-and-forget pattern with proper exception isolation
             _ = Task.Run(async () =>
             {
@@ -573,7 +585,7 @@ namespace LYBT.Desktop.Services
                 {
                     // 最后一道防线：确保异常处理器本身不会崩溃
                     Debug.WriteLine($"应用程序域异常处理器失败: {ex.Message}");
-                    
+
                     // UltraThink优化：首先尝试使用ICustomDialogService
                     try
                     {
@@ -582,7 +594,7 @@ namespace LYBT.Desktop.Services
                             if (_customDialogService != null)
                             {
                                 await _customDialogService.ShowErrorAsync(
-                                    $"系统发生致命错误：{originalEx.Message}", 
+                                    $"系统发生致命错误：{originalEx.Message}",
                                     "致命错误");
                             }
                             else

@@ -1,4 +1,4 @@
-namespace LYBT.Desktop.Core.Models.Common
+﻿namespace LYBT.Desktop.Core.Models.Common
 {
     /// <summary>
     /// 对话框按钮结果

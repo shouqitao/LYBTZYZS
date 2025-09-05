@@ -1,7 +1,7 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System;
+﻿using System;
 using System.Globalization;
 using System.Windows.Data;
+using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Desktop.Core.Converters
 {
@@ -16,11 +16,17 @@ namespace LYBT.Desktop.Core.Converters
             if (value is int stock)
             {
                 if (stock <= 0)
+                {
                     return "OutOfStock";
+                }
                 else if (stock < 10)
+                {
                     return "Low";
+                }
                 else
+                {
                     return "Normal";
+                }
             }
             return "Normal";
         }

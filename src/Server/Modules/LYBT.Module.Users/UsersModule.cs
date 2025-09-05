@@ -1,8 +1,8 @@
-﻿using LYBT.Shared.Interfaces.Services;
-using LYBT.Module.Users.Interfaces;
-using LYBT.Module.Users.Services.Interfaces;
+﻿using LYBT.Module.Users.Interfaces;
 using LYBT.Module.Users.Repositories;
 using LYBT.Module.Users.Services;
+using LYBT.Module.Users.Services.Interfaces;
+using LYBT.Shared.Interfaces.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace LYBT.Module.Users
@@ -22,14 +22,14 @@ namespace LYBT.Module.Users
         {
             // 仓储层
             services.AddScoped<IUserRepository, UserRepository>();
-            
+
             // UltraThink双层架构服务 - 查询和业务逻辑分离
             services.AddScoped<IUserQueryService, UserQueryService>();
             services.AddScoped<IUserBusinessService, UserBusinessService>();
-            
+
             // 主服务 - UltraThink纯委托模式，委托给专业服务层
             services.AddScoped<IUserService, UserService>();
-            
+
             return services;
         }
 

@@ -1,8 +1,8 @@
-using System;
+﻿using System;
 using System.Globalization;
+using LYBT.Desktop.Core.Extensions;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Enums;
-using LYBT.Desktop.Core.Extensions;
 using Prism.Mvvm;
 
 namespace LYBT.Desktop.Core.ViewModels.Formulas
@@ -64,7 +64,7 @@ namespace LYBT.Desktop.Core.ViewModels.Formulas
         public string HerbCompositionDisplay => "中药组合方"; // UltraThink v2.0简化：删除GetHerbNamesList扩展方法
 
         /// <summary>简短描述</summary>
-        public string ShortDescription => string.IsNullOrWhiteSpace(_formulaData.Remark) ? "暂无描述" : 
+        public string ShortDescription => string.IsNullOrWhiteSpace(_formulaData.Remark) ? "暂无描述" :
             (_formulaData.Remark.Length > 50 ? _formulaData.Remark.Substring(0, 50) + "..." : _formulaData.Remark);
 
         /// <summary>完整描述</summary>
@@ -84,7 +84,10 @@ namespace LYBT.Desktop.Core.ViewModels.Formulas
         {
             var price = PriceDisplay;
             if (_formulaData.TotalPrice > warningThreshold)
+            {
                 price += " (价格较高)";
+            }
+
             return price;
         }
 

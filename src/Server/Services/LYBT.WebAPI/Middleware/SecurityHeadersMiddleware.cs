@@ -1,4 +1,4 @@
-using LYBT.Infrastructure.Configuration.Options;
+﻿using LYBT.Infrastructure.Configuration.Options;
 using Microsoft.Extensions.Options;
 
 namespace LYBT.WebAPI.Middleware
@@ -13,7 +13,7 @@ namespace LYBT.WebAPI.Middleware
         private readonly ILogger<SecurityHeadersMiddleware> _logger;
 
         public SecurityHeadersMiddleware(
-            RequestDelegate next, 
+            RequestDelegate next,
             IOptions<SecurityOptions> securityOptions,
             ILogger<SecurityHeadersMiddleware> logger)
         {

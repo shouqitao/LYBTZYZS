@@ -1,19 +1,19 @@
-using System;
+﻿using System;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Media;
-using System.Linq;
-using Microsoft.Extensions.Logging;
 using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Patients;
+using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Core.Services
 {
@@ -27,7 +27,7 @@ namespace LYBT.Desktop.Core.Services
         private readonly ICustomDialogService _dialogService;
 
         public PrescriptionPrintService(
-            ILogger<PrescriptionPrintService> logger, 
+            ILogger<PrescriptionPrintService> logger,
             ICustomDialogService dialogService)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -42,7 +42,7 @@ namespace LYBT.Desktop.Core.Services
                 _logger.LogInformation("开始生成处方预览");
 
                 var content = await GeneratePrescriptionContentAsync(medicalRecord);
-                
+
                 return new PreviewResult
                 {
                     Content = content,
@@ -70,10 +70,10 @@ namespace LYBT.Desktop.Core.Services
                 _logger.LogInformation("开始打印处方");
 
                 var content = await GeneratePrescriptionContentAsync(medicalRecord);
-                
+
                 // 创建打印文档
                 var printDocument = CreatePrintDocument(content);
-                
+
                 // 显示打印对话框并打印
                 var printDialog = new PrintDialog();
                 if (printDialog.ShowDialog() == true)
@@ -82,7 +82,7 @@ namespace LYBT.Desktop.Core.Services
                     _logger.LogInformation("处方打印完成");
                     return true;
                 }
-                
+
                 return false;
             }
             catch (Exception ex)
@@ -101,14 +101,14 @@ namespace LYBT.Desktop.Core.Services
                 _logger.LogInformation("开始保存处方为PDF: {FileName}", fileName);
 
                 var content = await GeneratePrescriptionContentAsync(medicalRecord);
-                
+
                 // 简化实现：直接保存为文本文件
                 var textFileName = fileName.Replace(".pdf", ".txt");
                 await File.WriteAllTextAsync(textFileName, content, System.Text.Encoding.UTF8);
 
                 _logger.LogInformation("处方文档保存完成: {FileName}", textFileName);
                 await _dialogService.ShowSuccessAsync($"处方已保存为: {textFileName}", "保存成功");
-                
+
                 return true;
             }
             catch (Exception ex)
@@ -132,11 +132,11 @@ namespace LYBT.Desktop.Core.Services
                 case PrescriptionDto prescription:
                     sb.AppendLine(GeneratePrescriptionContent(prescription));
                     break;
-                    
+
                 case MedicalCaseDto medicalCase:
                     sb.AppendLine(GenerateMedicalCaseContent(medicalCase));
                     break;
-                    
+
                 default:
                     sb.AppendLine(GenerateGenericContent(medicalRecord));
                     break;
@@ -149,31 +149,31 @@ namespace LYBT.Desktop.Core.Services
         private string GeneratePrescriptionContent(PrescriptionDto prescription)
         {
             var sb = new StringBuilder();
-            
+
             // 诊所标题
             sb.AppendLine("═══════════════════════════════════");
             sb.AppendLine("             凌隐宝堂中医诊所");
             sb.AppendLine("               中 医 处 方 笺");
             sb.AppendLine("═══════════════════════════════════");
             sb.AppendLine();
-            
+
             // 处方基本信息
             sb.AppendLine($"处方编号: {prescription.PrescriptionNo ?? "未设置"}");
             sb.AppendLine($"开方日期: {prescription.CreateTime:yyyy年MM月dd日}");
             sb.AppendLine($"患者姓名: {prescription.PatientName ?? "未知"}");
             sb.AppendLine();
-            
+
             // 主诉和诊断
             if (!string.IsNullOrEmpty(prescription.Diagnosis))
             {
                 sb.AppendLine($"诊断: {prescription.Diagnosis}");
                 sb.AppendLine();
             }
-            
+
             // 药物组成
             sb.AppendLine("药物组成:");
             sb.AppendLine("───────────────────────────────");
-            
+
             if (prescription.Items?.Count > 0)
             {
                 int index = 1;
@@ -191,10 +191,10 @@ namespace LYBT.Desktop.Core.Services
             {
                 sb.AppendLine("  暂无药材");
             }
-            
+
             sb.AppendLine("───────────────────────────────");
             sb.AppendLine();
-            
+
             // 用法用量
             if (!string.IsNullOrEmpty(prescription.Usage))
             {
@@ -204,18 +204,18 @@ namespace LYBT.Desktop.Core.Services
             {
                 sb.AppendLine("用法用量: 水煎服，每日一剂，分早晚两次服用");
             }
-            
+
             // 医嘱
             if (!string.IsNullOrEmpty(prescription.Advice))
             {
                 sb.AppendLine($"医嘱: {prescription.Advice}");
             }
-            
+
             sb.AppendLine();
             sb.AppendLine("医师签名: ________________     日期: " + DateTime.Now.ToString("yyyy年MM月dd日"));
             sb.AppendLine();
             sb.AppendLine("注: 请遵医嘱服用，如有不适请及时就诊");
-            
+
             return sb.ToString();
         }
 
@@ -223,23 +223,23 @@ namespace LYBT.Desktop.Core.Services
         private string GenerateMedicalCaseContent(MedicalCaseDto medicalCase)
         {
             var sb = new StringBuilder();
-            
+
             sb.AppendLine("═══════════════════════════════════");
             sb.AppendLine("             凌隐宝堂中医诊所");
             sb.AppendLine("               病 历 记 录");
             sb.AppendLine("═══════════════════════════════════");
             sb.AppendLine();
-            
+
             sb.AppendLine($"病历编号: {medicalCase.Id.ToString()[..8]}...");
             sb.AppendLine($"就诊日期: {medicalCase.CreateTime:yyyy年MM月dd日}");
             sb.AppendLine($"患者姓名: {medicalCase.PatientName ?? "未知"}");
             sb.AppendLine();
-            
+
             sb.AppendLine($"病历状态: {GetCaseStatusText(medicalCase.CaseStatus)}");
             sb.AppendLine();
-            
+
             sb.AppendLine("医师签名: ________________     日期: " + DateTime.Now.ToString("yyyy年MM月dd日"));
-            
+
             return sb.ToString();
         }
 
@@ -247,19 +247,19 @@ namespace LYBT.Desktop.Core.Services
         private string GenerateGenericContent(object data)
         {
             var sb = new StringBuilder();
-            
+
             sb.AppendLine("═══════════════════════════════════");
             sb.AppendLine("             凌隐宝堂中医诊所");
             sb.AppendLine("               医 疗 文 档");
             sb.AppendLine("═══════════════════════════════════");
             sb.AppendLine();
-            
+
             sb.AppendLine($"打印时间: {DateTime.Now:yyyy年MM月dd日 HH:mm:ss}");
             sb.AppendLine($"文档类型: {data?.GetType().Name ?? "未知"}");
             sb.AppendLine();
-            
+
             sb.AppendLine("医师签名: ________________     日期: " + DateTime.Now.ToString("yyyy年MM月dd日"));
-            
+
             return sb.ToString();
         }
 
@@ -267,18 +267,18 @@ namespace LYBT.Desktop.Core.Services
         private FlowDocument CreatePrintDocument(string content)
         {
             var flowDocument = new FlowDocument();
-            
+
             // 设置文档样式
             flowDocument.FontFamily = new FontFamily("宋体");
             flowDocument.FontSize = 14;
             flowDocument.LineHeight = 18;
             flowDocument.PagePadding = new Thickness(50);
-            
+
             // 添加内容
             var paragraph = new Paragraph();
             paragraph.Inlines.Add(new Run(content));
             flowDocument.Blocks.Add(paragraph);
-            
+
             return flowDocument;
         }
 
@@ -289,7 +289,7 @@ namespace LYBT.Desktop.Core.Services
             {
                 MedicalCaseStatus.Registered => "已登记",
                 MedicalCaseStatus.InConsultation => "诊疗中",
-                MedicalCaseStatus.Completed => "已完成", 
+                MedicalCaseStatus.Completed => "已完成",
                 MedicalCaseStatus.Cancelled => "已取消",
                 _ => "未知状态"
             };

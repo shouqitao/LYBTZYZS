@@ -1,4 +1,4 @@
-namespace LYBT.Desktop.Core.Constants
+﻿namespace LYBT.Desktop.Core.Constants
 {
     /// <summary>
     /// 统一的Region名称常量

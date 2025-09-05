@@ -1,8 +1,8 @@
-using LYBT.Module.Prescriptions.Interfaces;
-using LYBT.Shared.Interfaces.Services;
+﻿using LYBT.Module.Prescriptions.Interfaces;
+using LYBT.Module.Prescriptions.Mapping;
 using LYBT.Module.Prescriptions.Repositories;
 using LYBT.Module.Prescriptions.Services;
-using LYBT.Module.Prescriptions.Mapping;
+using LYBT.Shared.Interfaces.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace LYBT.Module.Prescriptions

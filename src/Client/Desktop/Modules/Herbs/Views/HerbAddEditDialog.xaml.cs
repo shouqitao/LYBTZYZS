@@ -1,8 +1,8 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System.Windows;
-using LYBT.Desktop.Herbs.ViewModels;
+﻿using System.Windows;
 using LYBT.Desktop.Core.Interfaces;
 using LYBT.Desktop.Core.Models.Common;
+using LYBT.Desktop.Herbs.ViewModels;
+using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Desktop.Herbs.Views
 {

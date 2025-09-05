@@ -1,8 +1,8 @@
-using Microsoft.AspNetCore.Identity;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Identity;
 
 namespace LYBT.Shared.Utilities.Helpers
 {
@@ -221,11 +221,30 @@ namespace LYBT.Shared.Utilities.Helpers
             // 生成建议
             if (score < 60)
             {
-                if (!hasLower) result.Suggestions.Add("添加小写字母");
-                if (!hasUpper) result.Suggestions.Add("添加大写字母");
-                if (!hasDigit) result.Suggestions.Add("添加数字");
-                if (!hasSpecial) result.Suggestions.Add("添加特殊字符");
-                if (password.Length < 12) result.Suggestions.Add("增加密码长度到12位以上");
+                if (!hasLower)
+                {
+                    result.Suggestions.Add("添加小写字母");
+                }
+
+                if (!hasUpper)
+                {
+                    result.Suggestions.Add("添加大写字母");
+                }
+
+                if (!hasDigit)
+                {
+                    result.Suggestions.Add("添加数字");
+                }
+
+                if (!hasSpecial)
+                {
+                    result.Suggestions.Add("添加特殊字符");
+                }
+
+                if (password.Length < 12)
+                {
+                    result.Suggestions.Add("增加密码长度到12位以上");
+                }
             }
 
             result.IsValid = result.Errors.Count == 0;
@@ -243,19 +262,45 @@ namespace LYBT.Shared.Utilities.Helpers
             score += Math.Min(password.Length * 2, 25);
 
             // 字符类型得分 (每种类型15分，最多60分)
-            if (hasLower) score += 15;
-            if (hasUpper) score += 15;
-            if (hasDigit) score += 15;
-            if (hasSpecial) score += 15;
+            if (hasLower)
+            {
+                score += 15;
+            }
+
+            if (hasUpper)
+            {
+                score += 15;
+            }
+
+            if (hasDigit)
+            {
+                score += 15;
+            }
+
+            if (hasSpecial)
+            {
+                score += 15;
+            }
 
             // 唯一字符数量得分 (0-15分)
             var uniqueChars = password.Distinct().Count();
             score += Math.Min(uniqueChars * 2, 15);
 
             // 惩罚项
-            if (WeakPasswords.Contains(password)) score -= 30;
-            if (RepeatingCharRegex().IsMatch(password)) score -= 15;
-            if (SequentialRegex().IsMatch(password)) score -= 15;
+            if (WeakPasswords.Contains(password))
+            {
+                score -= 30;
+            }
+
+            if (RepeatingCharRegex().IsMatch(password))
+            {
+                score -= 15;
+            }
+
+            if (SequentialRegex().IsMatch(password))
+            {
+                score -= 15;
+            }
 
             return Math.Max(0, Math.Min(100, score));
         }
@@ -297,22 +342,54 @@ namespace LYBT.Shared.Utilities.Helpers
             const string specialChars = "!@#$%^&*()_+-=[]{}|;:,.<>?";
 
             var chars = string.Empty;
-            if (includeLowercase) chars += lowercase;
-            if (includeUppercase) chars += uppercase;
-            if (includeDigits) chars += digits;
-            if (includeSpecialChars) chars += specialChars;
+            if (includeLowercase)
+            {
+                chars += lowercase;
+            }
+
+            if (includeUppercase)
+            {
+                chars += uppercase;
+            }
+
+            if (includeDigits)
+            {
+                chars += digits;
+            }
+
+            if (includeSpecialChars)
+            {
+                chars += specialChars;
+            }
 
             if (string.IsNullOrEmpty(chars))
+            {
                 throw new ArgumentException("至少要包含一种字符类型");
+            }
 
             using var rng = RandomNumberGenerator.Create();
             var password = new StringBuilder();
-            
+
             // 确保每种要求的字符类型至少出现一次
-            if (includeLowercase) password.Append(GetRandomChar(lowercase, rng));
-            if (includeUppercase) password.Append(GetRandomChar(uppercase, rng));
-            if (includeDigits) password.Append(GetRandomChar(digits, rng));
-            if (includeSpecialChars) password.Append(GetRandomChar(specialChars, rng));
+            if (includeLowercase)
+            {
+                password.Append(GetRandomChar(lowercase, rng));
+            }
+
+            if (includeUppercase)
+            {
+                password.Append(GetRandomChar(uppercase, rng));
+            }
+
+            if (includeDigits)
+            {
+                password.Append(GetRandomChar(digits, rng));
+            }
+
+            if (includeSpecialChars)
+            {
+                password.Append(GetRandomChar(specialChars, rng));
+            }
 
             // 填充剩余长度
             for (int i = password.Length; i < length; i++)
@@ -381,7 +458,9 @@ namespace LYBT.Shared.Utilities.Helpers
         public static bool SecureEquals(string password1, string password2)
         {
             if (password1.Length != password2.Length)
+            {
                 return false;
+            }
 
             var result = 0;
             for (int i = 0; i < password1.Length; i++)

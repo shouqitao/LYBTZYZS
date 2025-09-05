@@ -1,4 +1,4 @@
-using LYBT.Infrastructure.Configuration.Options;
+﻿using LYBT.Infrastructure.Configuration.Options;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 
 namespace LYBT.WebAPI.Extensions;
@@ -14,7 +14,7 @@ public static class CorsExtension
     public static IServiceCollection AddSecureCorsPolicy(this IServiceCollection services, IConfiguration configuration, IWebHostEnvironment environment)
     {
         var securityOptions = configuration.GetSection(SecurityOptions.SectionName).Get<SecurityOptions>() ?? new SecurityOptions();
-        
+
         services.AddCors(options =>
         {
             // 开发环境策略
@@ -29,11 +29,11 @@ public static class CorsExtension
                     // 开发环境默认配置
                     builder.WithOrigins("http://localhost:3000", "http://localhost:5000", "https://localhost:5001", "https://localhost:7001");
                 }
-                
+
                 builder.WithMethods(securityOptions.Cors.AllowedMethods.ToArray())
                        .WithHeaders(securityOptions.Cors.AllowedHeaders.ToArray())
                        .SetPreflightMaxAge(TimeSpan.FromSeconds(securityOptions.Cors.PreflightMaxAge));
-                       
+
                 if (securityOptions.Cors.AllowCredentials)
                 {
                     builder.AllowCredentials();
@@ -52,7 +52,7 @@ public static class CorsExtension
                        .WithMethods(securityOptions.Cors.AllowedMethods.ToArray())
                        .WithHeaders(securityOptions.Cors.AllowedHeaders.ToArray())
                        .SetPreflightMaxAge(TimeSpan.FromSeconds(securityOptions.Cors.PreflightMaxAge));
-                       
+
                 if (securityOptions.Cors.AllowCredentials)
                 {
                     builder.AllowCredentials();
@@ -82,7 +82,7 @@ public static class CorsExtension
                            .WithMethods(securityOptions.Cors.AllowedMethods.ToArray())
                            .WithHeaders(securityOptions.Cors.AllowedHeaders.ToArray())
                            .SetPreflightMaxAge(TimeSpan.FromSeconds(securityOptions.Cors.PreflightMaxAge));
-                           
+
                     if (securityOptions.Cors.AllowCredentials)
                     {
                         builder.AllowCredentials();

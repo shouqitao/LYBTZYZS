@@ -1,4 +1,4 @@
-using LYBT.Entities.Prescriptions;
+﻿using LYBT.Entities.Prescriptions;
 using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Module.Prescriptions.Interfaces

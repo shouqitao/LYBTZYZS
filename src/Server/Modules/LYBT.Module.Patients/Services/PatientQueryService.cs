@@ -1,15 +1,15 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
-using LYBT.Infrastructure.Data;
 using LYBT.Entities.Patients;
-using LYBT.Shared.Models.Contracts.Patients;
-using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Shared.Models.Common;
-using LYBT.Shared.Models.Enums;
+using LYBT.Infrastructure.Data;
 using LYBT.Module.Patients.Interfaces;
+using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Patients;
+using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -90,13 +90,17 @@ namespace LYBT.Module.Patients.Services
             try
             {
                 if (patientId == Guid.Empty)
+                {
                     return ServiceResult<PatientDto>.Failure("患者ID不能为空");
+                }
 
                 var patient = await _context.Patients
                     .FirstOrDefaultAsync(p => p.Id == patientId);
 
                 if (patient == null)
+                {
                     return ServiceResult<PatientDto>.Failure("患者不存在");
+                }
 
                 var patientDto = _mapper.Map<PatientDto>(patient);
                 return ServiceResult<PatientDto>.Success(patientDto);
@@ -159,13 +163,17 @@ namespace LYBT.Module.Patients.Services
             try
             {
                 if (string.IsNullOrWhiteSpace(idNumber))
+                {
                     return ServiceResult<PatientDto>.Failure("身份证号不能为空");
+                }
 
                 var patient = await _context.Patients
                     .FirstOrDefaultAsync(p => p.IdNumber == idNumber);
 
                 if (patient == null)
+                {
                     return ServiceResult<PatientDto>.Failure("未找到患者");
+                }
 
                 var patientDto = _mapper.Map<PatientDto>(patient);
                 return ServiceResult<PatientDto>.Success(patientDto);
@@ -185,13 +193,17 @@ namespace LYBT.Module.Patients.Services
             try
             {
                 if (string.IsNullOrWhiteSpace(phoneNumber))
+                {
                     return ServiceResult<PatientDto>.Failure("手机号码不能为空");
+                }
 
                 var patient = await _context.Patients
                     .FirstOrDefaultAsync(p => p.PhoneNumber == phoneNumber);
 
                 if (patient == null)
+                {
                     return ServiceResult<PatientDto>.Failure("未找到患者");
+                }
 
                 var patientDto = _mapper.Map<PatientDto>(patient);
                 return ServiceResult<PatientDto>.Success(patientDto);
@@ -211,13 +223,17 @@ namespace LYBT.Module.Patients.Services
             try
             {
                 if (string.IsNullOrWhiteSpace(idCard))
+                {
                     return ServiceResult<PatientDto>.Failure("身份证号不能为空");
+                }
 
                 var patient = await _context.Patients
                     .FirstOrDefaultAsync(p => p.IdNumber == idCard);
 
                 if (patient == null)
+                {
                     return ServiceResult<PatientDto>.Failure("未找到患者");
+                }
 
                 var patientDto = _mapper.Map<PatientDto>(patient);
                 return ServiceResult<PatientDto>.Success(patientDto);
@@ -237,7 +253,9 @@ namespace LYBT.Module.Patients.Services
             try
             {
                 if (string.IsNullOrWhiteSpace(phone))
+                {
                     return ServiceResult<List<PatientDto>>.Failure("手机号码不能为空");
+                }
 
                 var patients = await _context.Patients
                     .Where(p => p.PhoneNumber.Contains(phone))
@@ -262,7 +280,9 @@ namespace LYBT.Module.Patients.Services
             try
             {
                 if (string.IsNullOrWhiteSpace(keyword))
+                {
                     return ServiceResult<List<PatientDto>>.Success(new List<PatientDto>());
+                }
 
                 var patients = await _context.Patients
                     .Where(p => p.Status == CommonStatus.Enabled && (
@@ -321,13 +341,13 @@ namespace LYBT.Module.Patients.Services
                 if (searchDto.MinAge.HasValue || searchDto.MaxAge.HasValue)
                 {
                     var today = DateTime.Today;
-                    
+
                     if (searchDto.MinAge.HasValue)
                     {
                         var maxBirthDate = today.AddYears(-searchDto.MinAge.Value);
                         patientsQuery = patientsQuery.Where(p => p.BirthDate <= maxBirthDate);
                     }
-                    
+
                     if (searchDto.MaxAge.HasValue)
                     {
                         var minBirthDate = today.AddYears(-searchDto.MaxAge.Value - 1);
@@ -400,7 +420,9 @@ namespace LYBT.Module.Patients.Services
                 }
 
                 if (!hasDuplicateCondition)
+                {
                     return ServiceResult<List<PatientDto>>.Success(new List<PatientDto>());
+                }
 
                 var duplicatePatients = await duplicatesQuery.ToListAsync();
                 var duplicateDtos = _mapper.Map<List<PatientDto>>(duplicatePatients);

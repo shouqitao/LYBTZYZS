@@ -1,17 +1,16 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using LYBT.Shared.Interfaces.Services;
 using LYBT.Desktop.Core.Interfaces.Services;
-using Prism.Commands;
-using Prism.Mvvm;
-
+using LYBT.Shared.Interfaces.Services;
+using LYBT.Shared.Models.Contracts.Common;
 // UltraThink v2.0重构: 直接使用FormulaDto，移除Info模型引用
 using LYBT.Shared.Models.Contracts.Formula;
+using Prism.Commands;
+using Prism.Mvvm;
 using IFormulaService = LYBT.Shared.Interfaces.Services.IFormulaService;
 namespace LYBT.Desktop.Prescriptions.ViewModels
 {
@@ -22,7 +21,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
     {
         private readonly IFormulaService _formulaService;
         private readonly ICustomDialogService _dialogService;
-        
+
         private bool _isLoading;
         private string _searchKeyword = string.Empty;
         private string _selectedCategory = "全部";
@@ -30,7 +29,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         private ObservableCollection<FormulaDto> _formulas;
         private ObservableCollection<string> _categories;
         private string _previewText = string.Empty;
-        
+
         #region 属性
 
         /// <summary>
@@ -128,9 +127,15 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             get
             {
                 if (!string.IsNullOrWhiteSpace(SearchKeyword))
+                {
                     return $"未找到包含 \"{SearchKeyword}\" 的验方";
+                }
+
                 if (SelectedCategory != "全部")
+                {
                     return $"分类 \"{SelectedCategory}\" 下暂无验方";
+                }
+
                 return "暂无验方数据";
             }
         }
@@ -163,7 +168,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         {
             _formulaService = formulaService;
             _dialogService = dialogService;
-            
+
             _formulas = new ObservableCollection<FormulaDto>();
             _categories = new ObservableCollection<string> { "全部" };
 
@@ -191,7 +196,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                 {
                     // UltraThink v2.0: 直接使用DTOs，无需转换
                     _allFormulas = result.Data.ToList();
-                    
+
                     // 提取分类
                     var categories = _allFormulas
                         .Where(f => !string.IsNullOrWhiteSpace(f.Category))
@@ -199,14 +204,14 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                         .Distinct()
                         .OrderBy(c => c)
                         .ToList();
-                    
+
                     Categories.Clear();
                     Categories.Add("全部");
                     foreach (var category in categories)
                     {
                         Categories.Add(category);
                     }
-                    
+
                     // 显示所有验方
                     Formulas = new ObservableCollection<FormulaDto>(_allFormulas);
                     RaisePropertyChanged(nameof(ShowEmptyState));
@@ -236,7 +241,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             try
             {
                 IsLoading = true;
-                
+
                 if (string.IsNullOrWhiteSpace(SearchKeyword))
                 {
                     // 如果搜索词为空，显示当前分类的所有验方
@@ -249,15 +254,17 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                     {
                         // 分类筛选
                         if (SelectedCategory != "全部" && f.Category != SelectedCategory)
+                        {
                             return false;
-                        
+                        }
+
                         // 关键词搜索（名称、效果、备注）
                         var keyword = SearchKeyword.ToLower();
                         return f.Name.ToLower().Contains(keyword) ||
                                (!string.IsNullOrWhiteSpace(f.Effect) && f.Effect.ToLower().Contains(keyword)) ||
                                (!string.IsNullOrWhiteSpace(f.Remark) && f.Remark.ToLower().Contains(keyword));
                     }).ToList();
-                    
+
                     Formulas = new ObservableCollection<FormulaDto>(filteredFormulas);
                     RaisePropertyChanged(nameof(ShowEmptyState));
                     RaisePropertyChanged(nameof(EmptyStateMessage));
@@ -282,7 +289,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                 var filtered = _allFormulas.Where(f => f.Category == SelectedCategory).ToList();
                 Formulas = new ObservableCollection<FormulaDto>(filtered);
             }
-            
+
             RaisePropertyChanged(nameof(ShowEmptyState));
             RaisePropertyChanged(nameof(EmptyStateMessage));
         }
@@ -297,19 +304,27 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
 
             // UltraThink v2.0: 直接使用DTO属性构建预览
             var preview = $"【{SelectedFormula.Name}】\n\n";
-            
+
             if (!string.IsNullOrWhiteSpace(SelectedFormula.Category))
+            {
                 preview += $"分类：{SelectedFormula.Category}\n";
-            
+            }
+
             if (!string.IsNullOrWhiteSpace(SelectedFormula.Source))
+            {
                 preview += $"来源：{SelectedFormula.Source}\n";
-            
+            }
+
             if (!string.IsNullOrWhiteSpace(SelectedFormula.Effect))
+            {
                 preview += $"功效：{SelectedFormula.Effect}\n";
-            
+            }
+
             if (!string.IsNullOrWhiteSpace(SelectedFormula.Remark))
+            {
                 preview += $"备注：{SelectedFormula.Remark}\n";
-            
+            }
+
             preview += $"\n创建时间：{SelectedFormula.CreateTime:yyyy-MM-dd HH:mm}";
 
             PreviewText = preview;
@@ -322,11 +337,14 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
 
         private void ExecuteViewDetails(FormulaDto formula)
         {
-            if (formula == null) return;
-            
+            if (formula == null)
+            {
+                return;
+            }
+
             // 选中并更新预览
             SelectedFormula = formula;
-            
+
             // 可以在这里添加更多详情展示逻辑
             _dialogService.ShowInformationAsync(
                 PreviewText,

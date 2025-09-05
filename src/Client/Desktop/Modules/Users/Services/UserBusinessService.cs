@@ -1,11 +1,11 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using LYBT.Desktop.Users.Interfaces;
+using LYBT.Shared.Interfaces.Api;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
-using LYBT.Shared.Interfaces.Api;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Users.Services;
 
@@ -29,9 +29,9 @@ public class UserBusinessService(
         try
         {
             _logger.LogInformation("开始处理用户创建: {Username}", createDto.Username);
-            
+
             var refitResponse = await _userApi.CreateUserAsync(createDto);
-            
+
             if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
             {
                 var apiResponse = refitResponse.Content;
@@ -40,13 +40,13 @@ public class UserBusinessService(
                     _logger.LogInformation("用户创建成功: {Username}", apiResponse.Data.Username);
                     return ServiceResult<UserDto>.Success(apiResponse.Data);
                 }
-                
-                _logger.LogWarning("用户创建业务失败: {Username}, 错误: {Message}", 
+
+                _logger.LogWarning("用户创建业务失败: {Username}, 错误: {Message}",
                     createDto.Username, apiResponse.Message);
                 return ServiceResult<UserDto>.Failure(apiResponse.Message ?? "创建用户失败，请检查输入信息");
             }
-            
-            _logger.LogWarning("用户创建HTTP请求失败: {Username}, 状态码: {StatusCode}", 
+
+            _logger.LogWarning("用户创建HTTP请求失败: {Username}, 状态码: {StatusCode}",
                 createDto.Username, refitResponse.StatusCode);
             return ServiceResult<UserDto>.Failure("创建用户网络请求失败，请检查网络连接");
         }
@@ -64,9 +64,9 @@ public class UserBusinessService(
         try
         {
             _logger.LogInformation("开始处理用户更新: {UserId}", updateDto.Id);
-            
+
             var refitResponse = await _userApi.UpdateUserAsync(updateDto.Id, updateDto);
-            
+
             if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
             {
                 var apiResponse = refitResponse.Content;
@@ -75,13 +75,13 @@ public class UserBusinessService(
                     _logger.LogInformation("用户更新成功: {UserId}", updateDto.Id);
                     return ServiceResult<UserDto>.Success(apiResponse.Data);
                 }
-                
-                _logger.LogWarning("用户更新业务失败: {UserId}, 错误: {Message}", 
+
+                _logger.LogWarning("用户更新业务失败: {UserId}, 错误: {Message}",
                     updateDto.Id, apiResponse.Message);
                 return ServiceResult<UserDto>.Failure(apiResponse.Message ?? "更新用户失败，请检查输入信息");
             }
-            
-            _logger.LogWarning("用户更新HTTP请求失败: {UserId}, 状态码: {StatusCode}", 
+
+            _logger.LogWarning("用户更新HTTP请求失败: {UserId}, 状态码: {StatusCode}",
                 updateDto.Id, refitResponse.StatusCode);
             return ServiceResult<UserDto>.Failure("更新用户网络请求失败，请检查网络连接");
         }

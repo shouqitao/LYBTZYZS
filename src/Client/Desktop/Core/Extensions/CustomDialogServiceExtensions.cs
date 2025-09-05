@@ -1,6 +1,6 @@
-using System.Threading.Tasks;
-using LYBT.Shared.Interfaces.Services;
+﻿using System.Threading.Tasks;
 using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Shared.Interfaces.Services;
 
 namespace LYBT.Desktop.Core.Extensions
 {
@@ -33,7 +33,7 @@ namespace LYBT.Desktop.Core.Extensions
         /// <returns>任务</returns>
         public static Task ShowMessageAsync(this ICustomDialogService dialogService, string message, string title = "消息", bool isError = false)
         {
-            return isError 
+            return isError
                 ? dialogService.ShowErrorAsync(message, title)
                 : dialogService.ShowInformationAsync(message, title);
         }
@@ -47,10 +47,10 @@ namespace LYBT.Desktop.Core.Extensions
         /// <param name="successTitle">成功时的标题</param>
         /// <param name="errorTitle">失败时的标题</param>
         /// <returns>任务</returns>
-        public static Task ShowResultAsync(this ICustomDialogService dialogService, bool isSuccess, string message, 
+        public static Task ShowResultAsync(this ICustomDialogService dialogService, bool isSuccess, string message,
             string successTitle = "成功", string errorTitle = "错误")
         {
-            return isSuccess 
+            return isSuccess
                 ? dialogService.ShowSuccessAsync(message, successTitle)
                 : dialogService.ShowErrorAsync(message, errorTitle);
         }
@@ -62,7 +62,7 @@ namespace LYBT.Desktop.Core.Extensions
         /// <param name="itemName">要删除的项目名称</param>
         /// <param name="itemType">项目类型</param>
         /// <returns>用户确认结果</returns>
-        public static Task<bool> ShowDeleteConfirmationAsync(this ICustomDialogService dialogService, 
+        public static Task<bool> ShowDeleteConfirmationAsync(this ICustomDialogService dialogService,
             string itemName, string itemType = "项目")
         {
             var message = $"确定要删除{itemType} \"{itemName}\" 吗？\n\n此操作无法撤销。";
@@ -78,10 +78,12 @@ namespace LYBT.Desktop.Core.Extensions
         public static async Task<bool?> ShowSaveConfirmationAsync(this ICustomDialogService dialogService, bool hasUnsavedChanges = true)
         {
             if (!hasUnsavedChanges)
+            {
                 return true;
+            }
 
             var message = "检测到未保存的更改。\n\n是否要保存这些更改？";
-            
+
             // 使用 MessageBox 的三个按钮选项
             // TODO: 未来可以创建自定义三按钮对话框
             var result = await dialogService.ShowConfirmationAsync(message, "保存确认");

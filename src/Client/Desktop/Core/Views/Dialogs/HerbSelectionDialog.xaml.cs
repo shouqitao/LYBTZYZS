@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using LYBT.Desktop.Core.ViewModels.Dialogs;
@@ -25,7 +25,7 @@ namespace LYBT.Desktop.Core.Views.Dialogs
         public void SetViewModel(HerbSelectionDialogViewModel viewModel)
         {
             DataContext = viewModel;
-            
+
             // 监听ViewModel的关闭请求
             viewModel.RequestClose += (result) =>
             {
@@ -40,7 +40,7 @@ namespace LYBT.Desktop.Core.Views.Dialogs
         /// </summary>
         private void ListView_HeaderClick(object sender, RoutedEventArgs e)
         {
-            if (e.OriginalSource is GridViewColumnHeader header && 
+            if (e.OriginalSource is GridViewColumnHeader header &&
                 header.Content != null &&
                 DataContext is HerbSelectionDialogViewModel viewModel)
             {

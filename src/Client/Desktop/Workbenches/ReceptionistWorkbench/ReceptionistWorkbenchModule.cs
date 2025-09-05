@@ -1,9 +1,9 @@
+﻿using LYBT.Desktop.Workbench.Receptionist.ViewModels;
+using LYBT.Desktop.Workbench.Receptionist.Views;
 using LYBT.Shared.Models.Contracts.Common;
 using Prism.Ioc;
 using Prism.Modularity;
 using Prism.Mvvm;
-using LYBT.Desktop.Workbench.Receptionist.Views;
-using LYBT.Desktop.Workbench.Receptionist.ViewModels;
 
 namespace LYBT.Desktop.Workbench.Receptionist
 {
@@ -15,7 +15,7 @@ namespace LYBT.Desktop.Workbench.Receptionist
         public void OnInitialized(IContainerProvider containerProvider)
         {
             // 模块初始化完成
-            
+
             // 注册自定义的ViewModel映射
             ViewModelLocationProvider.Register<ReceptionistMainView, ReceptionistMainViewModel>();
         }
@@ -24,12 +24,12 @@ namespace LYBT.Desktop.Workbench.Receptionist
         {
             // 注册前台工作台主视图
             containerRegistry.RegisterForNavigation<ReceptionistMainView>();
-            
+
             // 注册占位视图
             containerRegistry.RegisterForNavigation<PatientReceptionView>();
             containerRegistry.RegisterForNavigation<AppointmentManagementView>();
             containerRegistry.RegisterForNavigation<BasicRegistrationView>();
-            
+
             // 预留：未来可注册前台接待相关的其他视图和服务
         }
     }

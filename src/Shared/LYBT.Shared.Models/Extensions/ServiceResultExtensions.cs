@@ -1,4 +1,4 @@
-using LYBT.Shared.Models.Contracts.Common;
+﻿using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Exceptions;
 
 namespace LYBT.Shared.Models.Extensions;
@@ -14,7 +14,7 @@ public static class ServiceResultExtensions
     public static ServiceResult<T> FromException<T>(AppException exception)
     {
         return ServiceResult<T>.Failure(
-            exception.UserMessage ?? exception.Message, 
+            exception.UserMessage ?? exception.Message,
             exception
         );
     }
@@ -25,7 +25,7 @@ public static class ServiceResultExtensions
     public static ServiceResult FromException(AppException exception)
     {
         return ServiceResult.Failure(
-            exception.UserMessage ?? exception.Message, 
+            exception.UserMessage ?? exception.Message,
             exception
         );
     }
@@ -35,8 +35,11 @@ public static class ServiceResultExtensions
     /// </summary>
     public static AppException? ToException<T>(this ServiceResult<T> result)
     {
-        if (result.IsSuccess) return null;
-        
+        if (result.IsSuccess)
+        {
+            return null;
+        }
+
         return result.Exception switch
         {
             AppException appEx => appEx,
@@ -49,8 +52,11 @@ public static class ServiceResultExtensions
     /// </summary>
     public static AppException? ToException(this ServiceResult result)
     {
-        if (result.IsSuccess) return null;
-        
+        if (result.IsSuccess)
+        {
+            return null;
+        }
+
         return result.Exception switch
         {
             AppException appEx => appEx,
@@ -64,7 +70,9 @@ public static class ServiceResultExtensions
     public static T ThrowIfFailed<T>(this ServiceResult<T> result)
     {
         if (result.IsSuccess && result.Data != null)
+        {
             return result.Data;
+        }
 
         var exception = result.ToException();
         throw exception ?? new AppException(result.ErrorMessage ?? "操作失败");
@@ -75,7 +83,10 @@ public static class ServiceResultExtensions
     /// </summary>
     public static void ThrowIfFailed(this ServiceResult result)
     {
-        if (result.IsSuccess) return;
+        if (result.IsSuccess)
+        {
+            return;
+        }
 
         var exception = result.ToException();
         throw exception ?? new AppException(result.ErrorMessage ?? "操作失败");

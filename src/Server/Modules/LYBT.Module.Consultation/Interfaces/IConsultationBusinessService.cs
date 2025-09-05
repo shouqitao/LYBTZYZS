@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Enums;

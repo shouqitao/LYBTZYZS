@@ -1,4 +1,4 @@
-using System.Windows.Media;
+﻿using System.Windows.Media;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
 using Prism.Mvvm;
@@ -45,7 +45,7 @@ namespace LYBT.Desktop.Core.ViewModels.Patients
         };
 
         /// <summary>过敏警告颜色</summary>
-        public Brush AllergyColor => string.IsNullOrWhiteSpace(_patientData.AllergyHistory) ? 
+        public Brush AllergyColor => string.IsNullOrWhiteSpace(_patientData.AllergyHistory) ?
             Brushes.Transparent : Brushes.Orange;
 
         /// <summary>背景颜色</summary>
@@ -140,13 +140,13 @@ namespace LYBT.Desktop.Core.ViewModels.Patients
             RaisePropertyChanged(nameof(AllergyColor));
             RaisePropertyChanged(nameof(BackgroundColor));
             RaisePropertyChanged(nameof(BorderColor));
-            
+
             RaisePropertyChanged(nameof(StatusIcon));
             RaisePropertyChanged(nameof(GenderIcon));
             RaisePropertyChanged(nameof(AllergyIcon));
             RaisePropertyChanged(nameof(AgeGroupStyle));
             RaisePropertyChanged(nameof(StatusStyle));
-            
+
             RaisePropertyChanged(nameof(Opacity));
             RaisePropertyChanged(nameof(TextOpacity));
         }

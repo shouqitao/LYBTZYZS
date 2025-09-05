@@ -1,9 +1,9 @@
-using System;
+﻿using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using Prism.Commands;
-using Prism.Mvvm;
 using Prism.Events;
+using Prism.Mvvm;
 
 namespace LYBT.Desktop.Core.ViewModels.Base;
 /// <summary>
@@ -16,7 +16,7 @@ namespace LYBT.Desktop.Core.ViewModels.Base;
 public abstract class CoreViewModel(IEventAggregator eventAggregator) : BindableBase, IDisposable
 {
     protected readonly IEventAggregator EventAggregator = eventAggregator ?? throw new ArgumentNullException(nameof(eventAggregator));
-    
+
     private bool _isLoading;
     private string _statusMessage = string.Empty;
     private bool _hasError;
@@ -81,7 +81,7 @@ public abstract class CoreViewModel(IEventAggregator eventAggregator) : Bindable
     /// 用于清除当前的错误状态和消息
     /// </summary>
     public DelegateCommand ClearErrorCommand => _clearErrorCommand ??= new DelegateCommand(ExecuteClearError, CanExecuteClearError);
-    
+
     private DelegateCommand? _clearErrorCommand;
 
     /// <summary>
@@ -146,12 +146,12 @@ public abstract class CoreViewModel(IEventAggregator eventAggregator) : Bindable
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(operation, nameof(operation));
         ArgumentNullException.ThrowIfNull(ex, nameof(ex));
-        
+
         ErrorMessage = $"{operation}: {ex.Message}";
-        
+
         // 使用结构化日志记录
         System.Diagnostics.Debug.WriteLine(
-            "[{ViewModelName}] 操作: {Operation} 发生异常: {Exception}", 
+            "[{ViewModelName}] 操作: {Operation} 发生异常: {Exception}",
             GetType().Name, operation, ex);
     }
 
@@ -166,7 +166,7 @@ public abstract class CoreViewModel(IEventAggregator eventAggregator) : Bindable
     protected async Task ExecuteAsync(Func<Task> operation, string? operationName = null)
     {
         ArgumentNullException.ThrowIfNull(operation, nameof(operation));
-        
+
         try
         {
             IsLoading = true;

@@ -1,13 +1,13 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using LYBT.Infrastructure.Data;
 using LYBT.Module.Prescriptions.Interfaces;
-using LYBT.Shared.Models.Contracts.Prescriptions;
-using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -42,14 +42,18 @@ namespace LYBT.Module.Prescriptions.Services
             try
             {
                 if (id == Guid.Empty)
+                {
                     return ServiceResult<PrescriptionDto>.Failure("处方ID不能为空");
+                }
 
                 var prescription = await _context.Prescriptions
                     .Include(p => p.Items)
                     .FirstOrDefaultAsync(p => p.Id == id);
 
                 if (prescription == null)
+                {
                     return ServiceResult<PrescriptionDto>.Failure("处方不存在");
+                }
 
                 var dto = _mapper.Map<PrescriptionDto>(prescription);
                 return ServiceResult<PrescriptionDto>.Success(dto);
@@ -77,7 +81,7 @@ namespace LYBT.Module.Prescriptions.Services
                 if (!string.IsNullOrWhiteSpace(query.Keyword))
                 {
                     var keyword = query.Keyword.Trim();
-                    queryable = queryable.Where(p => 
+                    queryable = queryable.Where(p =>
                         (p.Indication != null && p.Indication.Contains(keyword)) ||
                         (p.Remark != null && p.Remark.Contains(keyword)) ||
                         (p.Advice != null && p.Advice.Contains(keyword)));
@@ -152,10 +156,12 @@ namespace LYBT.Module.Prescriptions.Services
             try
             {
                 if (patientId == Guid.Empty)
+                {
                     return ServiceResult<List<PrescriptionDto>>.Failure("患者ID不能为空");
+                }
 
                 var prescriptions = await _context.Prescriptions
-                    .Where(p => p.PatientId == patientId && 
+                    .Where(p => p.PatientId == patientId &&
                                (p.Remark == null || !p.Remark.Contains("处方已删除")))
                     .OrderByDescending(p => p.Id)
                     .Include(p => p.Items)
@@ -179,10 +185,12 @@ namespace LYBT.Module.Prescriptions.Services
             try
             {
                 if (medicalCaseId == Guid.Empty)
+                {
                     return ServiceResult<List<PrescriptionDto>>.Failure("医疗案例ID不能为空");
+                }
 
                 var prescriptions = await _context.Prescriptions
-                    .Where(p => p.MedicalCaseId == medicalCaseId && 
+                    .Where(p => p.MedicalCaseId == medicalCaseId &&
                                (p.Remark == null || !p.Remark.Contains("处方已删除")))
                     .OrderByDescending(p => p.Id)
                     .Include(p => p.Items)
@@ -207,7 +215,9 @@ namespace LYBT.Module.Prescriptions.Services
             try
             {
                 if (string.IsNullOrWhiteSpace(keyword))
+                {
                     return ServiceResult<List<PrescriptionDto>>.Success(new List<PrescriptionDto>());
+                }
 
                 var searchTerm = keyword.Trim();
                 var prescriptions = await _context.Prescriptions
@@ -261,11 +271,13 @@ namespace LYBT.Module.Prescriptions.Services
             try
             {
                 if (doctorId == Guid.Empty)
+                {
                     return ServiceResult<List<PrescriptionDto>>.Failure("医生ID不能为空");
+                }
 
                 // 注意：实体中没有CreatedTime字段，这里只按医生ID筛选
                 var prescriptions = await _context.Prescriptions
-                    .Where(p => p.UserId == doctorId && 
+                    .Where(p => p.UserId == doctorId &&
                                (p.Remark == null || !p.Remark.Contains("处方已删除")))
                     .OrderByDescending(p => p.Id)
                     .Include(p => p.Items)
@@ -293,10 +305,10 @@ namespace LYBT.Module.Prescriptions.Services
                     TotalCount = await _context.Prescriptions
                         .CountAsync(p => p.Remark == null || !p.Remark.Contains("处方已删除")),
                     DraftCount = await _context.Prescriptions
-                        .CountAsync(p => p.Status == PrescriptionStatus.Draft && 
+                        .CountAsync(p => p.Status == PrescriptionStatus.Draft &&
                                    (p.Remark == null || !p.Remark.Contains("处方已删除"))),
                     CompletedCount = await _context.Prescriptions
-                        .CountAsync(p => p.Status == PrescriptionStatus.Completed && 
+                        .CountAsync(p => p.Status == PrescriptionStatus.Completed &&
                                    (p.Remark == null || !p.Remark.Contains("处方已删除")))
                 };
 

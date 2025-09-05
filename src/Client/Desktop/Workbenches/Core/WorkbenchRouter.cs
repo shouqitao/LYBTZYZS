@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using LYBT.Shared.Models.Enums;
@@ -34,7 +34,7 @@ public class WorkbenchRouter : IWorkbenchRouter
     {
         // 管理员工作台 - 8个核心业务模块访问权限
         RegisterWorkbench("管理员", "SystemWorkbenchMainView", [
-            "Users", "Patients", "MedicalCase", "Consultation", 
+            "Users", "Patients", "MedicalCase", "Consultation",
             "Herbs", "Formula", "Prescriptions"
         ]);
 
@@ -58,7 +58,9 @@ public class WorkbenchRouter : IWorkbenchRouter
     public string GetWorkbenchForRole(string role)
     {
         if (string.IsNullOrWhiteSpace(role))
+        {
             return "ConsultationWorkbenchMainView"; // 默认视图
+        }
 
         // UltraThink Phase 4.1: 优先使用UserRole枚举映射
         if (Enum.TryParse<UserRole>(role, out var userRole))
@@ -81,7 +83,9 @@ public class WorkbenchRouter : IWorkbenchRouter
     public bool CanAccessModule(string role, string module)
     {
         if (string.IsNullOrWhiteSpace(role) || string.IsNullOrWhiteSpace(module))
+        {
             return false;
+        }
 
         // UltraThink Phase 4.1: 优先使用UserRole枚举映射
         if (Enum.TryParse<UserRole>(role, out var userRole))
@@ -103,11 +107,15 @@ public class WorkbenchRouter : IWorkbenchRouter
     public IEnumerable<NavigationItem> GetNavigationItems(string role)
     {
         if (string.IsNullOrWhiteSpace(role))
+        {
             return [];
+        }
 
         // 检查缓存 - 使用TryGetValue提升性能
         if (_navigationCache.TryGetValue(role, out var cachedItems))
+        {
             return cachedItems;
+        }
 
         // 生成导航项
         var navigationItems = GenerateNavigationItems(role);
@@ -327,7 +335,9 @@ public class WorkbenchRouter : IWorkbenchRouter
     public IEnumerable<string> GetAccessibleModules(string role)
     {
         if (string.IsNullOrWhiteSpace(role))
+        {
             return [];
+        }
 
         // UltraThink Phase 4.1: 优先使用UserRole枚举映射
         if (Enum.TryParse<UserRole>(role, out var userRole))
@@ -367,7 +377,9 @@ public class WorkbenchRouter : IWorkbenchRouter
     public void RegisterWorkbench(string role, string workbench, List<string> modules)
     {
         if (string.IsNullOrWhiteSpace(role) || string.IsNullOrWhiteSpace(workbench))
+        {
             return;
+        }
 
         _workbenchConfigs[role] = new WorkbenchConfig
         {
@@ -388,7 +400,7 @@ public class WorkbenchRouter : IWorkbenchRouter
     public Dictionary<string, string> GetAllWorkbenches()
     {
         return _workbenchConfigs.ToDictionary(
-            kvp => kvp.Key, 
+            kvp => kvp.Key,
             kvp => kvp.Value.WorkbenchView);
     }
 
@@ -483,13 +495,13 @@ public static class WorkbenchPermissionMapper
         {
             WorkbenchView = "SystemWorkbenchMainView",
             AccessibleModules = [
-                "Users", "Patients", "MedicalCase", "Consultation", 
+                "Users", "Patients", "MedicalCase", "Consultation",
                 "Herbs", "Formula", "Prescriptions"
             ],
             DisplayName = "系统管理员",
             WelcomeTemplate = "欢迎您，{0}！\n\n系统管理工作台正在加载..."
         },
-        
+
         // 医生 - 诊疗工作台
         [UserRole.Doctor] = new()
         {
@@ -500,7 +512,7 @@ public static class WorkbenchPermissionMapper
             DisplayName = "医生",
             WelcomeTemplate = "欢迎您，{0}医生！\n\n诊疗工作台正在准备..."
         },
-        
+
         // 前台接待 - 患者管理为主
         [UserRole.Receptionist] = new()
         {
@@ -511,7 +523,7 @@ public static class WorkbenchPermissionMapper
             DisplayName = "前台接待",
             WelcomeTemplate = "欢迎您，{0}！\n\n接待工作台正在启动..."
         },
-        
+
         // 药剂师 - 药房工作台
         [UserRole.Pharmacist] = new()
         {
@@ -531,8 +543,8 @@ public static class WorkbenchPermissionMapper
     /// <returns>工作台视图名称</returns>
     public static string GetWorkbenchForRole(UserRole role)
     {
-        return UserRoleWorkbenchMap.TryGetValue(role, out var permission) 
-            ? permission.WorkbenchView 
+        return UserRoleWorkbenchMap.TryGetValue(role, out var permission)
+            ? permission.WorkbenchView
             : "ConsultationWorkbenchMainView"; // 默认诊疗工作台
     }
 
@@ -545,7 +557,9 @@ public static class WorkbenchPermissionMapper
     public static bool CanAccessModule(UserRole role, string module)
     {
         if (!UserRoleWorkbenchMap.TryGetValue(role, out var permission))
+        {
             return false;
+        }
 
         return permission.AccessibleModules.Contains(module);
     }
@@ -557,8 +571,8 @@ public static class WorkbenchPermissionMapper
     /// <returns>可访问的模块列表</returns>
     public static IEnumerable<string> GetAccessibleModules(UserRole role)
     {
-        return UserRoleWorkbenchMap.TryGetValue(role, out var permission) 
-            ? permission.AccessibleModules 
+        return UserRoleWorkbenchMap.TryGetValue(role, out var permission)
+            ? permission.AccessibleModules
             : [];
     }
 
@@ -569,8 +583,8 @@ public static class WorkbenchPermissionMapper
     /// <returns>角色显示名称</returns>
     public static string GetRoleDisplayName(UserRole role)
     {
-        return UserRoleWorkbenchMap.TryGetValue(role, out var permission) 
-            ? permission.DisplayName 
+        return UserRoleWorkbenchMap.TryGetValue(role, out var permission)
+            ? permission.DisplayName
             : "用户";
     }
 
@@ -586,7 +600,7 @@ public static class WorkbenchPermissionMapper
         {
             return string.Format(permission.WelcomeTemplate, userName);
         }
-        
+
         return $"欢迎您，{userName}！\n\n工作台正在加载...";
     }
 
@@ -597,7 +611,7 @@ public static class WorkbenchPermissionMapper
     public static Dictionary<UserRole, string> GetAllWorkbenchMappings()
     {
         return UserRoleWorkbenchMap.ToDictionary(
-            kvp => kvp.Key, 
+            kvp => kvp.Key,
             kvp => kvp.Value.WorkbenchView
         );
     }

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -256,10 +256,14 @@ namespace LYBT.Infrastructure
             if (specification.IsPagingEnabled)
             {
                 if (specification.Skip.HasValue)
+                {
                     query = query.Skip(specification.Skip.Value);
-                
+                }
+
                 if (specification.Take.HasValue)
+                {
                     query = query.Take(specification.Take.Value);
+                }
             }
 
             // 应用Distinct
@@ -300,17 +304,17 @@ namespace LYBT.Infrastructure
             {
                 var parameter = Expression.Parameter(typeof(T));
                 var dateProperty = Expression.Invoke(_dateSelector, parameter);
-                
+
                 var startComparison = Expression.GreaterThanOrEqual(
                     dateProperty,
                     Expression.Constant(_startDate));
-                    
+
                 var endComparison = Expression.LessThanOrEqual(
                     dateProperty,
                     Expression.Constant(_endDate));
-                    
+
                 var body = Expression.AndAlso(startComparison, endComparison);
-                
+
                 return Expression.Lambda<Func<T, bool>>(body, parameter);
             }
         }

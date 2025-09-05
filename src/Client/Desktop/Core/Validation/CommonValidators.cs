@@ -1,8 +1,8 @@
-using LYBT.Shared.Models.Contracts.Common;
-using FluentValidation;
-using System;
+﻿using System;
 using System.Linq;
 using System.Text.RegularExpressions;
+using FluentValidation;
+using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Desktop.Core.Validation
 {
@@ -114,7 +114,7 @@ namespace LYBT.Desktop.Core.Validation
         {
             var minDate = new DateTime(1900, 1, 1);
             var maxDate = DateTime.Now.AddYears(1);
-            
+
             return ruleBuilder
                 .InclusiveBetween(minDate, maxDate)
                 .WithMessage($"日期必须在{minDate:yyyy-MM-dd}到{maxDate:yyyy-MM-dd}之间");
@@ -126,33 +126,41 @@ namespace LYBT.Desktop.Core.Validation
         private static bool BeValidIdCard(string? idCard)
         {
             if (string.IsNullOrWhiteSpace(idCard) || idCard.Length != 18)
+            {
                 return false;
+            }
 
             // 检查前17位是否都是数字
             if (!idCard.Substring(0, 17).All(char.IsDigit))
+            {
                 return false;
+            }
 
             // 验证日期部分
             var year = idCard.Substring(6, 4);
             var month = idCard.Substring(10, 2);
             var day = idCard.Substring(12, 2);
-            
+
             if (!DateTime.TryParse($"{year}-{month}-{day}", out var date))
+            {
                 return false;
-            
+            }
+
             if (date > DateTime.Now || date < new DateTime(1900, 1, 1))
+            {
                 return false;
+            }
 
             // 验证校验码
             var weights = new[] { 7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2 };
             var checkCodes = new[] { '1', '0', 'X', '9', '8', '7', '6', '5', '4', '3', '2' };
-            
+
             var sum = 0;
             for (var i = 0; i < 17; i++)
             {
                 sum += (idCard[i] - '0') * weights[i];
             }
-            
+
             var checkCode = checkCodes[sum % 11];
             return idCard[17] == checkCode || (idCard[17] == 'x' && checkCode == 'X');
         }

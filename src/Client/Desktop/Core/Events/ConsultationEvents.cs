@@ -1,7 +1,7 @@
+﻿using System;
 using LYBT.Shared.Models.Contracts.Common;
-using System;
-using Prism.Events;
 using LYBT.Shared.Models.Contracts.Patients;
+using Prism.Events;
 
 namespace LYBT.Desktop.Core.Events
 {
@@ -260,16 +260,16 @@ namespace LYBT.Desktop.Core.Events
     {
         /// <summary>患者选择</summary>
         PatientSelection,
-        
+
         /// <summary>中医四诊</summary>
         TCMFourDiagnosis,
-        
+
         /// <summary>辨证论治</summary>
         Differentiation,
-        
+
         /// <summary>处方开具</summary>
         Prescription,
-        
+
         /// <summary>完成确认</summary>
         Completion
     }

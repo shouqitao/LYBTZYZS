@@ -1,8 +1,8 @@
-using Asp.Versioning;
+﻿using Asp.Versioning;
 using LYBT.Infrastructure.Web;
-using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
 using Microsoft.AspNetCore.Authorization;
@@ -63,7 +63,7 @@ namespace LYBT.WebAPI.Controllers
                     {
                         return BusinessFailPaged<PrescriptionDto>(result.ErrorMessage ?? "查询失败", ApiErrorCodes.INTERNAL_ERROR);
                     }
-                    
+
                     var list = result.Data;
                     var totalCount = list.Count;
                     var pagedList = list.Take(pageSize).ToList();
@@ -107,14 +107,17 @@ namespace LYBT.WebAPI.Controllers
             try
             {
                 var validationResult = ValidateGuid<PrescriptionDto>(id, "处方ID");
-                if (validationResult != null) return validationResult;
+                if (validationResult != null)
+                {
+                    return validationResult;
+                }
 
                 var result = await _service.GetByIdAsync(id);
                 if (!result.IsSuccess || result.Data == null)
                 {
                     return NotFound<PrescriptionDto>(result.ErrorMessage ?? "处方不存在", ApiErrorCodes.PRESCRIPTION_NOT_FOUND);
                 }
-                
+
                 // 如果需要转换为PrescriptionDetailDto，这里应该进行映射
                 // 暂时假设PrescriptionDto可以用作PrescriptionDetailDto
                 var detail = result.Data;
@@ -135,7 +138,10 @@ namespace LYBT.WebAPI.Controllers
             try
             {
                 var validationResult = ValidateModel<PrescriptionDto>();
-                if (validationResult != null) return validationResult;
+                if (validationResult != null)
+                {
+                    return validationResult;
+                }
 
                 var (operatorId, operatorName, _) = GetOperator();
                 var result = await _service.CreateAsync(dto);
@@ -162,10 +168,16 @@ namespace LYBT.WebAPI.Controllers
             try
             {
                 var idValidation = ValidateGuid<PrescriptionDto>(id, "处方ID");
-                if (idValidation != null) return idValidation;
+                if (idValidation != null)
+                {
+                    return idValidation;
+                }
 
                 var modelValidation = ValidateModel<PrescriptionDto>();
-                if (modelValidation != null) return modelValidation;
+                if (modelValidation != null)
+                {
+                    return modelValidation;
+                }
 
                 // 确保DTO的ID与路由参数一致
                 dto.Id = id;
@@ -196,7 +208,10 @@ namespace LYBT.WebAPI.Controllers
             try
             {
                 var validationResult = ValidateGuid(id, "处方ID");
-                if (validationResult != null) return validationResult;
+                if (validationResult != null)
+                {
+                    return validationResult;
+                }
 
                 var (operatorId, operatorName, _) = GetOperator();
                 var result = await _service.DeleteAsync(id);
@@ -223,7 +238,10 @@ namespace LYBT.WebAPI.Controllers
             try
             {
                 var validation = ValidateGuid<List<PrescriptionDto>>(patientId, "患者ID");
-                if (validation != null) return validation;
+                if (validation != null)
+                {
+                    return validation;
+                }
 
                 var result = await _service.GetByPatientIdAsync(patientId);
                 return HandleServiceResult(result, "查询成功");
@@ -243,7 +261,10 @@ namespace LYBT.WebAPI.Controllers
             try
             {
                 var validation = ValidateGuid<List<PrescriptionDto>>(caseId, "医案ID");
-                if (validation != null) return validation;
+                if (validation != null)
+                {
+                    return validation;
+                }
 
                 var result = await _service.GetByMedicalCaseIdAsync(caseId);
                 return HandleServiceResult(result, "查询成功");
@@ -263,7 +284,10 @@ namespace LYBT.WebAPI.Controllers
             try
             {
                 var validation = ValidateModel<List<PrescriptionDto>>();
-                if (validation != null) return validation;
+                if (validation != null)
+                {
+                    return validation;
+                }
 
                 // 如果提供了基础搜索关键词，使用基础搜索
                 if (!string.IsNullOrEmpty(criteria.Keyword))
@@ -291,7 +315,10 @@ namespace LYBT.WebAPI.Controllers
             try
             {
                 var validation = ValidateGuid<PrescriptionDto>(id, "处方ID");
-                if (validation != null) return validation;
+                if (validation != null)
+                {
+                    return validation;
+                }
 
                 if (string.IsNullOrWhiteSpace(dto?.NewName))
                 {
@@ -300,12 +327,12 @@ namespace LYBT.WebAPI.Controllers
 
                 var (operatorId, operatorName, _) = GetOperator();
                 var result = await _service.CopyAsync(id, dto.NewName);
-                
+
                 if (result.IsSuccess && result.Data != null)
                 {
                     LogOperation("复制处方", result.Data, result.Data.Id);
                 }
-                
+
                 return HandleServiceResult(result, "处方复制成功");
             }
             catch (Exception ex)
@@ -323,7 +350,10 @@ namespace LYBT.WebAPI.Controllers
             try
             {
                 var validation = ValidateModel<PrescriptionValidationResult>();
-                if (validation != null) return validation;
+                if (validation != null)
+                {
+                    return validation;
+                }
 
                 var result = await _service.ValidateAsync(dto);
                 return HandleServiceResult(result, "验证完成");

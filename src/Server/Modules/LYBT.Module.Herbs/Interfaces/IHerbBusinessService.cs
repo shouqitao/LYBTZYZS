@@ -1,9 +1,9 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
-using LYBT.Shared.Models.Common;
 
 namespace LYBT.Module.Herbs.Interfaces
 {
@@ -18,22 +18,22 @@ namespace LYBT.Module.Herbs.Interfaces
         /// 批量导入药材数据
         /// </summary>
         Task<ServiceResult<int>> ImportHerbsAsync(List<HerbImportDto> herbs);
-        
+
         /// <summary>
         /// 批量更新状态
         /// </summary>
         Task<ServiceResult<bool>> BatchUpdateStatusAsync(BatchStatusUpdateDto dto);
-        
+
         /// <summary>
         /// 软删除药材
         /// </summary>
         Task<ServiceResult<bool>> SoftDeleteAsync(Guid id);
-        
+
         /// <summary>
         /// 创建药材（带自动拼音码生成）
         /// </summary>
         Task<ServiceResult<HerbDto>> CreateHerbWithAutoCodeAsync(HerbCreateDto dto);
-        
+
         /// <summary>
         /// 设置药材启用/禁用状态
         /// </summary>

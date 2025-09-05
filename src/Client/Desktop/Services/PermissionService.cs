@@ -1,12 +1,12 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using LYBT.Shared.Interfaces.Services;
-using LYBT.Desktop.Core.Interfaces.Services;
-using LYBT.Shared.Models.Enums;
-using LYBT.Shared.Models.Core;
 using LYBT.Desktop.Core.Configuration;
+using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Users;
+using LYBT.Shared.Models.Core;
+using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Desktop.Services
 {
@@ -20,7 +20,10 @@ namespace LYBT.Desktop.Services
         /// </summary>
         public bool HasPermission(UserDto user, string permission)
         {
-            if (user == null) return false;
+            if (user == null)
+            {
+                return false;
+            }
             // 只有sysadmin有所有权限
             return user.Username == "sysadmin";
         }
@@ -46,7 +49,10 @@ namespace LYBT.Desktop.Services
         /// </summary>
         public List<string> GetAccessibleModules(UserDto user)
         {
-            if (user == null) return new List<string>();
+            if (user == null)
+            {
+                return new List<string>();
+            }
 
             if (user.Username == "sysadmin")
             {
@@ -223,7 +229,7 @@ namespace LYBT.Desktop.Services
         {
             return new List<string>
             {
-                "Users", "Patients", "MedicalCase", "Consultation", 
+                "Users", "Patients", "MedicalCase", "Consultation",
                 "Herbs", "Formula", "Prescriptions"
             };
         }
@@ -232,7 +238,7 @@ namespace LYBT.Desktop.Services
         {
             return new List<string>
             {
-                "Users", "Patients", "MedicalCase", "Consultation", 
+                "Users", "Patients", "MedicalCase", "Consultation",
                 "Herbs", "Formula", "Prescriptions"
             };
         }

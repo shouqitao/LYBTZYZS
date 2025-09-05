@@ -1,12 +1,12 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System;
+﻿using System;
 using System.Threading.Tasks;
-using Prism.Commands;
-using Prism.Mvvm;
-using Prism.Events;
+using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.Models.Common;
 using LYBT.Desktop.Core.ViewModels.Base;
-using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Shared.Models.Contracts.Common;
+using Prism.Commands;
+using Prism.Events;
+using Prism.Mvvm;
 // using Prism.Dialogs; // Removed for Prism 8.1.97 compatibility
 
 namespace LYBT.Desktop.Core.ViewModels
@@ -123,7 +123,7 @@ namespace LYBT.Desktop.Core.ViewModels
         {
             try
             {
-                return (IEventAggregator?)Prism.Ioc.ContainerLocator.Container?.Resolve(typeof(IEventAggregator)) 
+                return (IEventAggregator?)Prism.Ioc.ContainerLocator.Container?.Resolve(typeof(IEventAggregator))
                     ?? new EventAggregator();
             }
             catch
@@ -131,7 +131,7 @@ namespace LYBT.Desktop.Core.ViewModels
                 return new EventAggregator();
             }
         }
-        
+
         /// <summary>
         /// 获取ErrorHandlingService实例
         /// </summary>

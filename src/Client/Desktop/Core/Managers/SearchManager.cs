@@ -1,7 +1,7 @@
-using Prism.Mvvm;
-using System;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Prism.Mvvm;
 
 namespace LYBT.Desktop.Core.Managers
 {
@@ -33,7 +33,7 @@ namespace LYBT.Desktop.Core.Managers
                 if (SetProperty(ref _searchKeyword, value))
                 {
                     RaisePropertyChanged(nameof(HasSearchCriteria));
-                    
+
                     // 自动触发防抖搜索
                     _ = TriggerDelayedSearchAsync();
                 }
@@ -89,10 +89,10 @@ namespace LYBT.Desktop.Core.Managers
             try
             {
                 IsSearching = true;
-                
+
                 var args = new SearchExecutedEventArgs(SearchKeyword);
                 SearchExecuted?.Invoke(this, args);
-                
+
                 await Task.CompletedTask;
             }
             finally
@@ -108,7 +108,7 @@ namespace LYBT.Desktop.Core.Managers
         {
             // 取消正在进行的搜索
             _searchCancellationTokenSource?.Cancel();
-            
+
             SearchKeyword = string.Empty;
             SearchCleared?.Invoke(this, EventArgs.Empty);
         }
@@ -120,7 +120,7 @@ namespace LYBT.Desktop.Core.Managers
         {
             // 取消之前的延迟搜索
             _searchCancellationTokenSource?.Cancel();
-            
+
             await ExecuteSearchAsync();
         }
 

@@ -1,9 +1,9 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using AutoMapper;
 using LYBT.Desktop.Prescriptions.Components;
-using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Interfaces.Services;
+using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 
@@ -56,7 +56,7 @@ namespace LYBT.Desktop.Prescriptions.Services
         {
             try
             {
-                _logger.LogInformation("创建处方草稿: 医疗案例={MedicalCaseId}, 患者={PatientId}, 医生={DoctorId}", 
+                _logger.LogInformation("创建处方草稿: 医疗案例={MedicalCaseId}, 患者={PatientId}, 医生={DoctorId}",
                     medicalCaseId, patientId, doctorId);
 
                 var prescription = new PrescriptionDto
@@ -104,12 +104,12 @@ namespace LYBT.Desktop.Prescriptions.Services
 
                 // 计算价格信息
                 var priceResult = _priceCalculator.CalculatePrescriptionPrice(prescription);
-                
+
                 _logger.LogDebug("处方草稿价格计算: {PriceResult}", priceResult);
 
                 // 这里可以调用后端服务保存
                 // var result = await _prescriptionService.SaveAsync(prescription);
-                
+
                 // 暂时模拟保存成功
                 await Task.Delay(100);
 
@@ -146,7 +146,7 @@ namespace LYBT.Desktop.Prescriptions.Services
                 // 设置正式状态
                 prescription.Status = CommonStatus.Enabled;
                 prescription.UpdateTime = DateTime.Now;
-                
+
                 // 生成处方编号
                 if (string.IsNullOrWhiteSpace(prescription.PrescriptionNo))
                 {
@@ -159,11 +159,11 @@ namespace LYBT.Desktop.Prescriptions.Services
 
                 // 这里可以调用后端服务保存
                 // var result = await _prescriptionService.SaveAsync(prescription);
-                
+
                 // 暂时模拟保存成功
                 await Task.Delay(200);
 
-                var message = validationResult.HasWarnings 
+                var message = validationResult.HasWarnings
                     ? $"处方保存成功，但有警告: {string.Join("; ", validationResult.Warnings)}"
                     : "处方保存成功";
 
@@ -285,7 +285,7 @@ namespace LYBT.Desktop.Prescriptions.Services
                 herbItem.Id = Guid.NewGuid();
                 prescription.Items.Add(herbItem);
 
-                _logger.LogInformation("已添加药材到处方: {HerbName}, 用量: {Quantity}{Unit}", 
+                _logger.LogInformation("已添加药材到处方: {HerbName}, 用量: {Quantity}{Unit}",
                     herbItem.HerbName, herbItem.Quantity, herbItem.Unit);
 
                 return (true, quantityValidation.Message); // 成功，但可能有警告信息
@@ -345,14 +345,14 @@ namespace LYBT.Desktop.Prescriptions.Services
                 // 生成格式: CF + 年月日 + 4位序号
                 var today = DateTime.Today;
                 var datePrefix = today.ToString("yyyyMMdd");
-                
+
                 // 这里可以从数据库获取当日的序号
                 // 暂时使用随机数模拟
                 var sequence = new Random().Next(1, 9999);
                 var prescriptionNo = $"CF{datePrefix}{sequence:D4}";
 
                 _logger.LogDebug("生成处方编号: {PrescriptionNo}", prescriptionNo);
-                
+
                 return await Task.FromResult(prescriptionNo);
             }
             catch (Exception ex)

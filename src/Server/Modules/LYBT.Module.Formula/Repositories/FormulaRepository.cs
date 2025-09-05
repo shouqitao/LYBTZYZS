@@ -1,11 +1,11 @@
-using Microsoft.EntityFrameworkCore;
+﻿using LYBT.Entities.Formula;
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Repositories;
 using LYBT.Module.Formula.Interfaces;
-using LYBT.Entities.Formula;
 using LYBT.Shared.Models.Enums;
-using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.Module.Formula.Repositories
 {
@@ -28,17 +28,17 @@ namespace LYBT.Module.Formula.Repositories
         public async Task<List<LYBT.Entities.Formula.Formula>> GetTemplatesAsync()
         {
             var cacheKey = $"{CacheKeyPrefix}templates";
-            
+
             if (_cache.TryGetValue<List<LYBT.Entities.Formula.Formula>>(cacheKey, out var cached) && cached != null)
             {
                 _logger.LogDebug("从缓存获取验方模板列表");
                 return cached;
             }
-            
+
             var templates = await _dbSet
                 .Where(f => f.Status == CommonStatus.Enabled)
                 .ToListAsync();
-                
+
             _cache.Set(cacheKey, templates, DefaultCacheDuration);
             return templates;
         }

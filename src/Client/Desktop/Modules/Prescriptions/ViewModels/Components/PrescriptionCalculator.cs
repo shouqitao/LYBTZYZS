@@ -1,9 +1,9 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Extensions.Logging;
 using LYBT.Desktop.Core.Models.Prescriptions;
+using LYBT.Shared.Models.Contracts.Common;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Prescriptions.ViewModels.Components
 {
@@ -49,16 +49,16 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components
             try
             {
                 var itemList = items?.ToList() ?? new List<PrescriptionItemViewModel>();
-                
+
                 // 计算单剂价格
                 var singleDosagePrice = CalculateSingleDosagePrice(itemList);
-                
+
                 // 计算总价
                 var totalPrice = singleDosagePrice * dosageCount;
-                
+
                 // 应用折扣
                 var discountedPrice = ApplyDiscount(totalPrice, discount);
-                
+
                 // 计算节省金额
                 var totalSaved = totalPrice - discountedPrice;
 
@@ -90,7 +90,9 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components
         public decimal CalculateSingleDosagePrice(IEnumerable<PrescriptionItemViewModel> items)
         {
             if (items == null)
+            {
                 return 0m;
+            }
 
             try
             {
@@ -110,7 +112,9 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components
         public decimal CalculateItemSubtotal(decimal quantity, decimal unitPrice)
         {
             if (quantity <= 0 || unitPrice <= 0)
+            {
                 return 0m;
+            }
 
             var subtotal = quantity * unitPrice;
             return Math.Round(subtotal, 2);
@@ -122,11 +126,13 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components
         public decimal ApplyDiscount(decimal originalPrice, decimal discount)
         {
             if (originalPrice <= 0)
+            {
                 return 0m;
+            }
 
             // 确保折扣在有效范围内
             discount = Math.Max(0.1m, Math.Min(1.0m, discount));
-            
+
             var discountedPrice = originalPrice * discount;
             return Math.Round(discountedPrice, 2);
         }
@@ -137,7 +143,9 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components
         public decimal CalculateDiscountAmount(decimal originalPrice, decimal discount)
         {
             if (originalPrice <= 0)
+            {
                 return 0m;
+            }
 
             var discountedPrice = ApplyDiscount(originalPrice, discount);
             return Math.Round(originalPrice - discountedPrice, 2);
@@ -149,7 +157,9 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components
         public string GenerateDiscountText(decimal discount)
         {
             if (discount >= 1.0m)
+            {
                 return "无折扣";
+            }
 
             // 转换为折扣显示（如 0.85 显示为 "8.5折"）
             var discountDisplay = discount * 10;
@@ -166,7 +176,9 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components
         public void UpdateItemSubtotals(IEnumerable<PrescriptionItemViewModel> items)
         {
             if (items == null)
+            {
                 return;
+            }
 
             try
             {
@@ -213,7 +225,9 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components
         public decimal CalculatePriceTrend(decimal currentPrice, decimal? previousPrice)
         {
             if (!previousPrice.HasValue || previousPrice.Value <= 0)
+            {
                 return 0m;
+            }
 
             var trend = (currentPrice - previousPrice.Value) / previousPrice.Value * 100;
             return Math.Round(trend, 2);
@@ -234,23 +248,38 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components
             {
                 case PriceValidationType.UnitPrice:
                     if (price <= 0)
+                    {
                         validation.AddWarning("单价不能为0或负数");
+                    }
                     else if (price > 1000)
+                    {
                         validation.AddWarning("单价过高，请检查");
+                    }
+
                     break;
 
                 case PriceValidationType.TotalPrice:
                     if (price <= 0)
+                    {
                         validation.AddWarning("总价不能为0或负数");
+                    }
                     else if (price > 10000)
+                    {
                         validation.AddWarning("总价过高，请确认");
+                    }
+
                     break;
 
                 case PriceValidationType.Quantity:
                     if (price <= 0)
+                    {
                         validation.AddError("数量必须大于0");
+                    }
                     else if (price > 1000)
+                    {
                         validation.AddWarning("数量过大，请检查");
+                    }
+
                     break;
             }
 

@@ -1,10 +1,10 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Refit;
-using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Formula;
+using Refit;
 
 namespace LYBT.Shared.Interfaces.Api
 {
@@ -91,7 +91,7 @@ namespace LYBT.Shared.Interfaces.Api
         /// </summary>
         [Post("/api/v1/formulas/import")]
         Task<Refit.ApiResponse<FormulaImportResultDto>> ImportFormulasAsync(
-            [Body] List<FormulaImportDto> formulas, 
+            [Body] List<FormulaImportDto> formulas,
             [Query] FormulaImportOptionsDto options);
 
         /// <summary>

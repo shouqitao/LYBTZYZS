@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using LYBT.Shared.Models.Contracts.Formula;
 using Prism.Mvvm;
 
@@ -30,11 +30,11 @@ namespace LYBT.Desktop.Core.ViewModels.Formulas
         private FormulaViewModel(FormulaDto formulaData)
         {
             _formulaData = formulaData ?? throw new ArgumentNullException(nameof(formulaData));
-            
+
             Display = new FormulaDisplayViewModel(_formulaData);
             State = new FormulaStateViewModel();
             Theme = new FormulaThemeViewModel(_formulaData);
-            
+
             // 监听状态变化
             State.PropertyChanged += (s, e) => RaisePropertyChanged(e.PropertyName);
         }
@@ -203,8 +203,8 @@ namespace LYBT.Desktop.Core.ViewModels.Formulas
         /// </summary>
         public bool IsValidForImport()
         {
-            return !string.IsNullOrWhiteSpace(Name) && 
-                   HerbCount > 0 && 
+            return !string.IsNullOrWhiteSpace(Name) &&
+                   HerbCount > 0 &&
                    !string.IsNullOrWhiteSpace(Effect);
         }
 
@@ -236,7 +236,7 @@ namespace LYBT.Desktop.Core.ViewModels.Formulas
             // 通知所有显示相关属性更新
             RaisePropertyChanged(nameof(DisplayName));
             RaisePropertyChanged(nameof(Name));
-            
+
             // 让子组件也更新 (受保护成员访问错误，暂时注释)
             // Display.RaisePropertyChanged(string.Empty); // 无法访问受保护成员：FormulaDisplayViewModel.RaisePropertyChanged
             // Theme.RaisePropertyChanged(string.Empty); // 无法访问受保护成员：FormulaThemeViewModel.RaisePropertyChanged
@@ -249,7 +249,10 @@ namespace LYBT.Desktop.Core.ViewModels.Formulas
         public override bool Equals(object? obj)
         {
             if (obj is FormulaViewModel other)
+            {
                 return Id.Equals(other.Id);
+            }
+
             return false;
         }
 

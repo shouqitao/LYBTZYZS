@@ -1,12 +1,12 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using LYBT.Desktop.Prescriptions.Interfaces;
 using LYBT.Shared.Interfaces.Api;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Prescriptions.Services;
 
@@ -35,7 +35,7 @@ public class PrescriptionsQueryService(
     {
         try
         {
-            _logger.LogDebug("执行处方分页查询，页码: {PageNumber}, 页大小: {PageSize}", 
+            _logger.LogDebug("执行处方分页查询，页码: {PageNumber}, 页大小: {PageSize}",
                 query.PageIndex, query.PageSize);
 
             var emptyResult = new PagedResult<PrescriptionDto>
@@ -43,7 +43,7 @@ public class PrescriptionsQueryService(
                 Items = [],
                 TotalCount = 0
             };
-            
+
             return ServiceResult<PagedResult<PrescriptionDto>>.Success(emptyResult);
         }
         catch (Exception ex)
@@ -64,9 +64,9 @@ public class PrescriptionsQueryService(
         try
         {
             _logger.LogDebug("查询处方详细档案: {PrescriptionId}", id);
-            
+
             var refitResponse = await _prescriptionApi.GetByIdAsync(id);
-            
+
             if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
             {
                 var detailDto = refitResponse.Content;
@@ -95,7 +95,7 @@ public class PrescriptionsQueryService(
                     UpdateTime = detailDto.UpdateTime,
                     Remark = detailDto.Remark
                 };
-                
+
                 _logger.LogInformation("处方详情查询成功: {PrescriptionId}", prescriptionDto.Id);
                 return ServiceResult<PrescriptionDto>.Success(prescriptionDto, "处方详情查询成功");
             }
@@ -145,7 +145,7 @@ public class PrescriptionsQueryService(
         {
             _logger.LogDebug("生成处方管理统计数据");
             var stats = new PrescriptionStatisticsDto();
-            
+
             return ServiceResult<PrescriptionStatisticsDto>.Success(stats);
         }
         catch (Exception ex)

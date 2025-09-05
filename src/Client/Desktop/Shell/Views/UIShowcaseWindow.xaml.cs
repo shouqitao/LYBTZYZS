@@ -1,7 +1,7 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System;
+﻿using System;
 using System.Windows;
 using System.Windows.Media.Animation;
+using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Desktop.Shell.Views
 {
@@ -13,7 +13,7 @@ namespace LYBT.Desktop.Shell.Views
         public UIShowcaseWindow()
         {
             InitializeComponent();
-            
+
             // 窗口加载动画
             Loaded += OnWindowLoaded;
         }
@@ -28,7 +28,7 @@ namespace LYBT.Desktop.Shell.Views
                 Duration = TimeSpan.FromMilliseconds(500),
                 EasingFunction = new PowerEase { EasingMode = EasingMode.EaseOut }
             };
-            
+
             BeginAnimation(OpacityProperty, fadeInAnimation);
         }
     }

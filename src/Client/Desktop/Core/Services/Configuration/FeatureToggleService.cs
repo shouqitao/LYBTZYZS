@@ -1,8 +1,8 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Core.Services.Configuration
@@ -17,47 +17,47 @@ namespace LYBT.Desktop.Core.Services.Configuration
         /// 检查特性是否启用
         /// </summary>
         bool IsEnabled(string featureName);
-        
+
         /// <summary>
         /// 检查特性是否对特定用户启用
         /// </summary>
         bool IsEnabledForUser(string featureName, string userId);
-        
+
         /// <summary>
         /// 获取特性变体（用于A/B测试）
         /// </summary>
         string GetVariant(string featureName, string userId);
-        
+
         /// <summary>
         /// 设置特性状态
         /// </summary>
         Task SetFeatureStateAsync(string featureName, FeatureState state);
-        
+
         /// <summary>
         /// 获取特性配置
         /// </summary>
         FeatureConfiguration? GetFeatureConfiguration(string featureName);
-        
+
         /// <summary>
         /// 获取所有特性
         /// </summary>
         List<FeatureInfo> GetAllFeatures();
-        
+
         /// <summary>
         /// 注册特性
         /// </summary>
         Task RegisterFeatureAsync(FeatureDefinition definition);
-        
+
         /// <summary>
         /// 评估特性（带上下文）
         /// </summary>
         FeatureEvaluationResult Evaluate(string featureName, EvaluationContext context);
-        
+
         /// <summary>
         /// 注册特性变更监听
         /// </summary>
         IDisposable OnFeatureChanged(string featureName, Action<FeatureChangeEventArgs> callback);
-        
+
         /// <summary>
         /// 获取特性使用统计
         /// </summary>
@@ -82,7 +82,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
         {
             _logger = logger;
             _configService = configService;
-            
+
             InitializeDefaultFeatures();
             LoadFeatureConfigurations();
         }
@@ -162,7 +162,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
             {
                 // 从配置加载特性状态覆盖
                 var featureSection = _configService.GetSection("Features");
-                
+
                 foreach (var child in featureSection.GetChildren())
                 {
                     var featureName = child.Key;
@@ -224,8 +224,8 @@ namespace LYBT.Desktop.Core.Services.Configuration
                     };
 
                     var result = EvaluateFeature(feature, context);
-                    
-                    _logger.LogDebug("特性 {Feature} 对用户 {User} 的状态: {Enabled}", 
+
+                    _logger.LogDebug("特性 {Feature} 对用户 {User} 的状态: {Enabled}",
                         featureName, userId, result);
 
                     return result;
@@ -256,7 +256,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
                 var hash = GetUserHash(userId, featureName);
                 var totalWeight = feature.Variants.Sum(v => v.Weight);
                 var target = hash % totalWeight;
-                
+
                 var current = 0;
                 foreach (var variant in feature.Variants)
                 {
@@ -285,14 +285,14 @@ namespace LYBT.Desktop.Core.Services.Configuration
 
                     var oldState = _features[featureName].CurrentState;
                     _features[featureName].CurrentState = state;
-                    
+
                     // 触发变更事件
                     NotifyFeatureChanged(featureName, oldState, state);
                 }
 
                 // 保存到配置
                 await _configService.SetValueAsync($"Features:{featureName}:State", state.ToString());
-                
+
                 _logger.LogInformation("特性 {Feature} 状态已更新为 {State}", featureName, state);
             }
             catch (Exception ex)
@@ -337,7 +337,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
                     State = f.CurrentState,
                     ReleaseStage = f.ReleaseStage,
                     IsEnabled = IsEnabled(f.Name),
-                    Usage = _usageData.ContainsKey(f.Name) ? 
+                    Usage = _usageData.ContainsKey(f.Name) ?
                         _usageData[f.Name].TotalChecks : 0
                 }).ToList();
             }
@@ -350,7 +350,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
                 lock (_lock)
                 {
                     _features[definition.Name] = definition;
-                    
+
                     if (!_usageData.ContainsKey(definition.Name))
                     {
                         _usageData[definition.Name] = new FeatureUsageData();
@@ -359,7 +359,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
 
                 // 保存到配置
                 await _configService.SetValueAsync($"Features:{definition.Name}:Registered", true);
-                
+
                 _logger.LogInformation("特性 {Feature} 已注册", definition.Name);
             }
             catch (Exception ex)
@@ -485,20 +485,20 @@ namespace LYBT.Desktop.Core.Services.Configuration
             {
                 case RuleType.User:
                     return rule.Values?.Contains(context.UserId) ?? false;
-                    
+
                 case RuleType.Role:
                     return rule.Values?.Contains(context.UserRole) ?? false;
-                    
+
                 case RuleType.Environment:
                     return rule.Values?.Contains(context.Environment) ?? false;
-                    
+
                 case RuleType.Percentage:
                     if (int.TryParse(rule.Values?.FirstOrDefault(), out var percentage))
                     {
                         return context.Random < percentage;
                     }
                     break;
-                    
+
                 case RuleType.Time:
                     if (DateTime.TryParse(rule.Values?.FirstOrDefault(), out var startTime) &&
                         DateTime.TryParse(rule.Values?.Skip(1).FirstOrDefault(), out var endTime))
@@ -533,17 +533,25 @@ namespace LYBT.Desktop.Core.Services.Configuration
         private string GetEvaluationReason(FeatureDefinition feature, EvaluationContext context, bool enabled)
         {
             if (feature.CurrentState == FeatureState.Disabled)
+            {
                 return "特性已全局禁用";
-            
+            }
+
             if (feature.CurrentState == FeatureState.Enabled)
+            {
                 return "特性已全局启用";
-            
+            }
+
             if (feature.CurrentState == FeatureState.EnabledForAdmins && context.UserRole == "Admin")
+            {
                 return "特性对管理员启用";
-            
+            }
+
             if (feature.RolloutPercentage.HasValue)
+            {
                 return $"灰度发布 {feature.RolloutPercentage}%";
-            
+            }
+
             return enabled ? "符合启用规则" : "不符合启用条件";
         }
 
@@ -571,7 +579,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
         private void NotifyFeatureChanged(string featureName, FeatureState oldState, FeatureState newState)
         {
             List<FeatureChangeCallback>? callbacks = null;
-            
+
             lock (_callbacks)
             {
                 if (_callbacks.TryGetValue(featureName, out var list))
@@ -782,12 +790,12 @@ namespace LYBT.Desktop.Core.Services.Configuration
     internal class FeatureChangeCallback
     {
         private readonly Action<FeatureChangeEventArgs> _callback;
-        
+
         public FeatureChangeCallback(Action<FeatureChangeEventArgs> callback)
         {
             _callback = callback;
         }
-        
+
         public void Invoke(FeatureChangeEventArgs args)
         {
             _callback(args);

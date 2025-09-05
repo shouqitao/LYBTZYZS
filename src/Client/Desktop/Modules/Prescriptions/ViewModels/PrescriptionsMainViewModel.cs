@@ -1,18 +1,18 @@
-using System;
+﻿using System;
 using System.Linq;
-using System.Windows.Input;
-using Prism.Commands;
-using Prism.Mvvm;
-using Prism.Regions;
-using Prism.Events;
-using LYBT.Desktop.Core.ViewModels;
-using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
+using System.Windows.Input;
+using LYBT.Desktop.Core.Constants;
 using LYBT.Desktop.Core.Events;
 using LYBT.Desktop.Core.Interfaces.Services;
-using LYBT.Desktop.Core.Constants;
-using LYBT.Desktop.Prescriptions.Views;
+using LYBT.Desktop.Core.ViewModels;
 using LYBT.Desktop.Prescriptions.ViewModels;
+using LYBT.Desktop.Prescriptions.Views;
+using Microsoft.Extensions.Logging;
+using Prism.Commands;
+using Prism.Events;
+using Prism.Mvvm;
+using Prism.Regions;
 
 namespace LYBT.Desktop.Prescriptions.ViewModels
 {
@@ -44,8 +44,8 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         public Guid CurrentMedicalCaseId
         {
             get => _currentMedicalCaseId;
-            set 
-            { 
+            set
+            {
                 if (SetProperty(ref _currentMedicalCaseId, value))
                 {
                     RaisePropertyChanged(nameof(HasMedicalCase));
@@ -106,7 +106,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
 
         public void OnNavigatedTo(NavigationContext navigationContext)
         {
-            _logger.LogInformation("导航到处方模块，参数: {Parameters}", 
+            _logger.LogInformation("导航到处方模块，参数: {Parameters}",
                 string.Join(", ", navigationContext.Parameters.Keys.Select(key => $"{key}={navigationContext.Parameters[key]}")));
 
             // 接收MedicalCaseId参数
@@ -167,7 +167,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
 
                 // 创建处方编辑视图
                 var prescriptionView = new PrescriptionView();
-                
+
                 // 设置数据上下文（如果ViewModel支持MedicalCaseId参数）
                 // Note: Legacy PrescriptionViewModel removed, consider using PrescriptionComposerViewModel
                 // if (prescriptionView.DataContext is PrescriptionViewModel prescriptionViewModel)
@@ -178,7 +178,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                 _logger.LogInformation("处方视图已创建，医疗案例ID: {MedicalCaseId}", CurrentMedicalCaseId);
 
                 CurrentWorkflowContent = prescriptionView;
-                
+
                 // 发布医疗案例选择事件
                 _eventAggregator.GetEvent<MedicalCaseSelectedEvent>()
                     .Publish(new MedicalCaseSelectedEventArgs(CurrentMedicalCaseId));
@@ -238,20 +238,20 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         private async Task ExecuteCreateNewPrescription()
         {
             _logger.LogInformation("创建新处方");
-            
+
             try
             {
                 // 显示患者选择对话框或直接创建
                 var result = await _dialogService.ShowConfirmationAsync(
-                    "创建新处方需要选择患者，是否继续？", 
+                    "创建新处方需要选择患者，是否继续？",
                     "创建新处方");
-                
+
                 if (result)
                 {
                     // TODO: 实现患者选择逻辑
                     // 这里可以导航到患者选择界面或显示患者选择对话框
                     await _dialogService.ShowInformationAsync(
-                        "患者选择功能正在开发中...", 
+                        "患者选择功能正在开发中...",
                         "提示");
                 }
             }
@@ -265,16 +265,16 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         private void ExecuteReturnToSource()
         {
             _logger.LogInformation("返回到源模块");
-            
+
             try
             {
                 // 发布返回事件
                 _eventAggregator.GetEvent<ModuleNavigationEvent>()
-                    .Publish(new ModuleNavigationEventArgs 
-                    { 
+                    .Publish(new ModuleNavigationEventArgs
+                    {
                         SourceModule = "Prescriptions",
                         TargetModule = "Consultation",
-                        Data = CurrentMedicalCaseId 
+                        Data = CurrentMedicalCaseId
                     });
 
                 // 导航回看诊模块

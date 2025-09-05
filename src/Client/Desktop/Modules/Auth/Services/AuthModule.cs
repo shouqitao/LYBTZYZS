@@ -1,12 +1,12 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using LYBT.Desktop.Auth.Interfaces;
 using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Auth;
-using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Shared.Interfaces.Services;
+using LYBT.Shared.Models.Contracts.Users;
 
 namespace LYBT.Desktop.Auth.Services;
 
@@ -43,7 +43,7 @@ public class AuthModule(
     /// <returns>登出操作结果</returns>
     public async Task<ServiceResult> LogoutAsync(LogoutRequest logoutRequest)
         => await LogoutAsync(); // 委托给无参数版本
-    
+
     /// <summary>
     /// 用户登出 - IAuthService版本
     /// 接口适配器模式：将ServiceResult转换为ServiceResult&lt;bool&gt;
@@ -53,8 +53,8 @@ public class AuthModule(
     async Task<ServiceResult<bool>> IAuthService.LogoutAsync(LogoutRequest logoutRequest)
     {
         var result = await LogoutAsync();
-        return result.IsSuccess 
-            ? ServiceResult<bool>.Success(true) 
+        return result.IsSuccess
+            ? ServiceResult<bool>.Success(true)
             : ServiceResult<bool>.Failure(result.ErrorMessage ?? "登出失败");
     }
 
@@ -84,7 +84,7 @@ public class AuthModule(
     /// <returns>密码修改操作结果</returns>
     public async Task<ServiceResult> ChangeSysAdminPasswordAsync(ChangeSysAdminPassword request)
         => await _businessService.ChangeSysAdminPasswordAsync(request);
-        
+
     /// <summary>
     /// 修改系统管理员密码 - IAuthService版本
     /// 接口适配：将ServiceResult转换为ServiceResult&lt;bool&gt;
@@ -94,7 +94,7 @@ public class AuthModule(
     async Task<ServiceResult<bool>> IAuthService.ChangeSysAdminPasswordAsync(ChangeSysAdminPassword request)
     {
         var result = await _businessService.ChangeSysAdminPasswordAsync(request);
-        return result.IsSuccess 
+        return result.IsSuccess
             ? ServiceResult<bool>.Success(true, result.Message ?? "密码修改成功")
             : ServiceResult<bool>.Failure(result.ErrorMessage ?? "密码修改失败");
     }
@@ -158,7 +158,7 @@ public class AuthModule(
     /// 小型诊所版本简化：暂不实现令牌存储
     /// </summary>
     /// <param name="token">JWT认证令牌</param>
-    public void SetToken(string token) 
+    public void SetToken(string token)
     {
         // 简化实现 - 不保存token
     }
@@ -167,7 +167,7 @@ public class AuthModule(
     /// 清除JWT认证令牌
     /// 小型诊所版本简化：无实际操作
     /// </summary>
-    public void ClearToken() 
+    public void ClearToken()
     {
         // 简化实现
     }
@@ -176,7 +176,7 @@ public class AuthModule(
     /// 清除所有认证状态
     /// 用于用户注销时清理会话信息
     /// </summary>
-    public void ClearAuthenticationState() 
+    public void ClearAuthenticationState()
     {
         // 简化实现
     }

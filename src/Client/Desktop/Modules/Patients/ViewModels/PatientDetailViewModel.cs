@@ -1,18 +1,18 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using AutoMapper;
-using Microsoft.Extensions.Logging;
-using Prism.Commands;
-using Prism.Mvvm;
-using Prism.Regions;
-using Prism.Events;
 using LYBT.Desktop.Core.Constants;
 using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.ViewModels.Base;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
+using Microsoft.Extensions.Logging;
+using Prism.Commands;
+using Prism.Events;
+using Prism.Mvvm;
+using Prism.Regions;
 
 namespace LYBT.Desktop.Patients.ViewModels
 {
@@ -64,10 +64,10 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         // 患者基本信息属性
         public string PatientName => Patient?.Name ?? "";
-        public string Gender => Patient?.Gender switch 
+        public string Gender => Patient?.Gender switch
         {
             Shared.Models.Enums.Gender.Male => "男",
-            Shared.Models.Enums.Gender.Female => "女", 
+            Shared.Models.Enums.Gender.Female => "女",
             _ => "未知"
         };
         public int Age => Patient?.Age ?? 0;
@@ -129,7 +129,7 @@ namespace LYBT.Desktop.Patients.ViewModels
             if (navigationContext.Parameters.ContainsKey("PatientId"))
             {
                 PatientId = navigationContext.Parameters.GetValue<Guid>("PatientId");
-                
+
                 if (navigationContext.Parameters.ContainsKey("ViewMode"))
                 {
                     var viewMode = navigationContext.Parameters.GetValue<string>("ViewMode");
@@ -164,14 +164,17 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         private async Task LoadDataAsync()
         {
-            if (PatientId == Guid.Empty) return;
+            if (PatientId == Guid.Empty)
+            {
+                return;
+            }
 
             try
             {
                 IsLoading = true;
 
                 var result = await _patientService.GetByIdAsync(PatientId);
-                
+
                 if (result.IsSuccess && result.Data != null)
                 {
                     Patient = result.Data;
@@ -194,23 +197,26 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         private async Task SaveAsync()
         {
-            if (Patient == null) return;
+            if (Patient == null)
+            {
+                return;
+            }
 
             try
             {
                 IsLoading = true;
 
                 var updateDto = _mapper.Map<PatientUpdateDto>(Patient);
-                
+
                 var result = await _patientService.UpdateAsync(Patient.Id, updateDto);
-                
+
                 if (result.IsSuccess && result.Data != null)
                 {
                     Patient = result.Data;
                     IsReadOnly = true;
                     RefreshProperties();
                     RaiseCanExecuteChanged();
-                    
+
                     await _dialogService.ShowSuccessAsync("患者信息保存成功", "成功");
                 }
                 else
@@ -255,7 +261,7 @@ namespace LYBT.Desktop.Patients.ViewModels
             try
             {
                 await _dialogService.ShowInformationAsync(
-                    "打印功能将在后续版本中提供\n\n当前支持的操作：\n• 查看患者详细信息\n• 编辑患者档案\n• 查看就诊历史", 
+                    "打印功能将在后续版本中提供\n\n当前支持的操作：\n• 查看患者详细信息\n• 编辑患者档案\n• 查看就诊历史",
                     "功能说明");
             }
             catch (Exception ex)
@@ -266,14 +272,17 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         private async Task ViewMedicalHistoryAsync()
         {
-            if (Patient == null) return;
-            
+            if (Patient == null)
+            {
+                return;
+            }
+
             try
             {
                 // 导航到医疗历史视图 - 使用Task.Run包装同步操作以修复CS1998警告
-                await Task.Run(() => 
+                await Task.Run(() =>
                 {
-                    _regionManager.RequestNavigate(RegionNames.SystemWorkbenchContentRegion, 
+                    _regionManager.RequestNavigate(RegionNames.SystemWorkbenchContentRegion,
                         $"MedicalCaseListView?PatientId={Patient.Id}");
                 });
             }
@@ -288,9 +297,9 @@ namespace LYBT.Desktop.Patients.ViewModels
         #region 命令状态
 
         private bool CanEdit() => Patient != null && IsReadOnly && !IsLoading;
-        
+
         private bool CanSave() => Patient != null && !IsReadOnly && !IsLoading;
-        
+
         private bool CanCancelEdit() => Patient != null && !IsReadOnly && !IsLoading;
 
         private new void RaiseCanExecuteChanged()
@@ -322,7 +331,10 @@ namespace LYBT.Desktop.Patients.ViewModels
         private string GetStatusText()
         {
             if (Patient?.IsActive == true)
+            {
                 return "正常";
+            }
+
             return "已禁用";
         }
 

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using LYBT.Shared.Models.Contracts.Users;
 using Prism.Mvvm;
 
@@ -24,7 +24,9 @@ namespace LYBT.Desktop.Core.ViewModels.Users
         public UserViewModel(UserDto userData)
         {
             if (userData == null)
+            {
                 throw new ArgumentNullException(nameof(userData));
+            }
 
             _display = new UserDisplayViewModel(userData);
             _state = new UserStateViewModel();
@@ -86,9 +88,13 @@ namespace LYBT.Desktop.Core.ViewModels.Users
             set
             {
                 if (value)
+                {
                     State.StartLoading();
+                }
                 else
+                {
                     State.StopLoading();
+                }
             }
         }
 
@@ -102,7 +108,9 @@ namespace LYBT.Desktop.Core.ViewModels.Users
         public void UpdateUserData(UserDto newUserData)
         {
             if (newUserData == null)
+            {
                 throw new ArgumentNullException(nameof(newUserData));
+            }
 
             Display.UpdateUserData(newUserData);
             Theme.UpdateUserData(newUserData);

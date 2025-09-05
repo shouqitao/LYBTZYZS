@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Threading.Tasks;
@@ -21,7 +21,7 @@ namespace LYBT.Desktop.Core.Redux
         public static IStateStore<AppState> ConfigureStore(IServiceProvider services)
         {
             var logger = services.GetService<ILogger<StateStore<AppState>>>();
-            
+
             // 创建中间件
             var middlewares = new List<IMiddleware<AppState>>
             {
@@ -72,7 +72,7 @@ namespace LYBT.Desktop.Core.Redux
                     {
                         // 模拟API调用
                         await Task.Delay(1000);
-                        
+
                         // 构造响应
                         var response = new LoginResponse
                         {
@@ -104,7 +104,7 @@ namespace LYBT.Desktop.Core.Redux
             middleware.RegisterHandler("PATIENTS/LOAD", async (store, action) =>
             {
                 await Task.Delay(500);
-                
+
                 var patients = ImmutableList.Create(
                     new PatientInfo
                     {
@@ -138,13 +138,13 @@ namespace LYBT.Desktop.Core.Redux
         private static DebounceMiddleware<AppState> ConfigureDebounceMiddleware()
         {
             var middleware = new DebounceMiddleware<AppState>(TimeSpan.FromMilliseconds(300));
-            
+
             // 搜索防抖
             middleware.ConfigureDebounce("PATIENTS/SEARCH", TimeSpan.FromMilliseconds(500));
-            
+
             // 诊断更新防抖
             middleware.ConfigureDebounce("CONSULTATION/UPDATE_DIAGNOSIS", TimeSpan.FromSeconds(1));
-            
+
             return middleware;
         }
 
@@ -158,10 +158,10 @@ namespace LYBT.Desktop.Core.Redux
 
             // 添加登录验证器
             middleware.AddValidator(new LoginValidator());
-            
+
             // 添加处方验证器
             middleware.AddValidator(new PrescriptionValidator());
-            
+
             return middleware;
         }
     }
@@ -206,15 +206,15 @@ namespace LYBT.Desktop.Core.Redux
         protected override void InitializeSelectors()
         {
             // 订阅认证状态变化
-            Select(state => state.Auth.IsLoading, 
+            Select(state => state.Auth.IsLoading,
                 isLoading => OnPropertyChanged(nameof(IsLoading)));
-            
+
             Select(state => state.Auth.IsAuthenticated,
                 isAuth => OnPropertyChanged(nameof(IsAuthenticated)));
-            
+
             Select(state => state.Auth.Error,
                 error => OnPropertyChanged(nameof(ErrorMessage)));
-            
+
             Select(state => state.Auth.CurrentUser != null ? state.Auth.CurrentUser.RealName : null,
                 name => OnPropertyChanged(nameof(CurrentUserName)));
         }
@@ -235,8 +235,8 @@ namespace LYBT.Desktop.Core.Redux
 
         private bool CanExecuteLogin()
         {
-            return !IsLoading && 
-                   !string.IsNullOrEmpty(Username) && 
+            return !IsLoading &&
+                   !string.IsNullOrEmpty(Username) &&
                    !string.IsNullOrEmpty(Password);
         }
     }
@@ -280,11 +280,11 @@ namespace LYBT.Desktop.Core.Redux
             // 订阅患者列表变化
             Select(state => state.Patients.PatientList,
                 patients => UpdateCollection(patients));
-            
+
             // 订阅加载状态
             Select(state => state.Patients.IsLoading,
                 _ => OnPropertyChanged(nameof(IsLoading)));
-            
+
             // 订阅选中患者
             Select(state => state.Patients.CurrentPatient,
                 _ => OnPropertyChanged(nameof(SelectedPatient)));
@@ -293,7 +293,7 @@ namespace LYBT.Desktop.Core.Redux
         protected override void OnStateChanged(AppState state)
         {
             base.OnStateChanged(state);
-            
+
             // 根据搜索条件过滤患者
             if (!string.IsNullOrEmpty(state.Patients.SearchQuery))
             {
@@ -318,18 +318,18 @@ namespace LYBT.Desktop.Core.Redux
                 {
                     return ValidationResult.Failure("用户名不能为空");
                 }
-                
+
                 if (string.IsNullOrEmpty(loginAction.Payload.Password))
                 {
                     return ValidationResult.Failure("密码不能为空");
                 }
-                
+
                 if (loginAction.Payload.Password.Length < 6)
                 {
                     return ValidationResult.Failure("密码长度不能少于6位");
                 }
             }
-            
+
             return ValidationResult.Success();
         }
     }
@@ -347,18 +347,18 @@ namespace LYBT.Desktop.Core.Redux
                 {
                     return ValidationResult.Failure("处方不能为空");
                 }
-                
+
                 if (prescriptionAction.Payload.Doses <= 0)
                 {
                     return ValidationResult.Failure("剂数必须大于0");
                 }
-                
+
                 if (prescriptionAction.Payload.TotalPrice < 0)
                 {
                     return ValidationResult.Failure("总价不能为负数");
                 }
             }
-            
+
             return ValidationResult.Success();
         }
     }

@@ -1,4 +1,4 @@
-namespace LYBT.Shared.Models.Exceptions;
+﻿namespace LYBT.Shared.Models.Exceptions;
 
 /// <summary>
 /// 应用程序基础异常类 - UltraThink统一异常体系

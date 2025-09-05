@@ -1,7 +1,7 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System;
+﻿using System;
 using System.Globalization;
 using System.Windows.Data;
+using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Desktop.Core.Converters
 {
@@ -20,7 +20,7 @@ namespace LYBT.Desktop.Core.Converters
 
             // 尝试转换为 decimal
             decimal price = 0;
-            
+
             if (value is decimal decimalValue)
             {
                 price = decimalValue;
@@ -52,7 +52,7 @@ namespace LYBT.Desktop.Core.Converters
             {
                 // 移除货币符号和空格
                 var cleanValue = stringValue.Replace("￥", "").Replace("¥", "").Trim();
-                
+
                 if (decimal.TryParse(cleanValue, out decimal result))
                 {
                     return result;

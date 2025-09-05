@@ -1,9 +1,9 @@
-
+﻿
 using System;
 using System.Windows;
-using LYBT.Desktop.Formula.ViewModels;
 using LYBT.Desktop.Core.Interfaces;
 using LYBT.Desktop.Core.Models.Common;
+using LYBT.Desktop.Formula.ViewModels;
 
 namespace LYBT.Desktop.Formula.Views
 {

@@ -1,13 +1,13 @@
-using System;
+﻿using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using Prism.Commands;
-using Prism.Mvvm;
-using Prism.Events;
 using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
+using Prism.Commands;
+using Prism.Events;
+using Prism.Mvvm;
 
 namespace LYBT.Desktop.Core.ViewModels
 {
@@ -23,7 +23,7 @@ namespace LYBT.Desktop.Core.ViewModels
     public abstract class ModernViewModelBase : BindableBase, IDisposable
     {
         #region 核心依赖服务
-        
+
         protected readonly IEventAggregator EventAggregator;
         protected readonly IErrorHandlingService? ErrorHandlingService;
 
@@ -108,7 +108,7 @@ namespace LYBT.Desktop.Core.ViewModels
         /// 标准构造函数（推荐）
         /// </summary>
         protected ModernViewModelBase(
-            IEventAggregator eventAggregator, 
+            IEventAggregator eventAggregator,
             IErrorHandlingService? errorHandlingService = null)
         {
             EventAggregator = eventAggregator ?? throw new ArgumentNullException(nameof(eventAggregator));
@@ -122,7 +122,7 @@ namespace LYBT.Desktop.Core.ViewModels
         /// <summary>
         /// 兼容性构造函数（向后兼容）
         /// </summary>
-        protected ModernViewModelBase(IEventAggregator eventAggregator) 
+        protected ModernViewModelBase(IEventAggregator eventAggregator)
             : this(eventAggregator, TryResolveErrorHandlingService())
         {
         }
@@ -130,7 +130,7 @@ namespace LYBT.Desktop.Core.ViewModels
         /// <summary>
         /// 简化构造函数（使用容器解析）
         /// </summary>
-        protected ModernViewModelBase() 
+        protected ModernViewModelBase()
             : this(GetEventAggregatorFromContainer(), TryResolveErrorHandlingService())
         {
         }
@@ -249,8 +249,8 @@ namespace LYBT.Desktop.Core.ViewModels
         /// 安全执行异步操作（带统一错误处理）
         /// </summary>
         protected async Task<T?> ExecuteAsync<T>(
-            Func<Task<T>> operation, 
-            string? operationName = null, 
+            Func<Task<T>> operation,
+            string? operationName = null,
             bool showErrorDialog = true)
         {
             try
@@ -274,8 +274,8 @@ namespace LYBT.Desktop.Core.ViewModels
         /// 安全执行异步操作（无返回值）
         /// </summary>
         protected async Task<bool> ExecuteAsync(
-            Func<Task> operation, 
-            string? operationName = null, 
+            Func<Task> operation,
+            string? operationName = null,
             bool showErrorDialog = true)
         {
             try
@@ -344,7 +344,7 @@ namespace LYBT.Desktop.Core.ViewModels
         {
             try
             {
-                return (IEventAggregator?)Prism.Ioc.ContainerLocator.Container?.Resolve(typeof(IEventAggregator)) 
+                return (IEventAggregator?)Prism.Ioc.ContainerLocator.Container?.Resolve(typeof(IEventAggregator))
                     ?? new EventAggregator();
             }
             catch

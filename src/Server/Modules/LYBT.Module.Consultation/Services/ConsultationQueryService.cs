@@ -1,13 +1,13 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using LYBT.Infrastructure.Data;
 using LYBT.Module.Consultation.Interfaces;
-using LYBT.Shared.Models.Contracts.Consultation;
-using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -50,7 +50,7 @@ namespace LYBT.Module.Consultation.Services
                 if (!string.IsNullOrWhiteSpace(query.Keyword))
                 {
                     var keyword = query.Keyword.Trim();
-                    queryable = queryable.Where(c => 
+                    queryable = queryable.Where(c =>
                         (c.ChiefComplaint != null && c.ChiefComplaint.Contains(keyword)) ||
                         (c.PresentIllness != null && c.PresentIllness.Contains(keyword)) ||
                         (c.TCMDiagnosis != null && c.TCMDiagnosis.Contains(keyword)));
@@ -93,7 +93,9 @@ namespace LYBT.Module.Consultation.Services
             try
             {
                 if (patientId == Guid.Empty)
+                {
                     return ServiceResult<List<ConsultationDto>>.Failure("患者ID不能为空");
+                }
 
                 var consultations = await _context.Consultations
                     .Where(c => c.PatientId == patientId && c.Status == CommonStatus.Enabled)
@@ -118,7 +120,9 @@ namespace LYBT.Module.Consultation.Services
             try
             {
                 if (medicalCaseId == Guid.Empty)
+                {
                     return ServiceResult<List<ConsultationDto>>.Failure("医疗案例ID不能为空");
+                }
 
                 var consultations = await _context.Consultations
                     .Where(c => c.MedicalCaseId == medicalCaseId && c.Status == CommonStatus.Enabled)
@@ -143,7 +147,9 @@ namespace LYBT.Module.Consultation.Services
             try
             {
                 if (doctorId == Guid.Empty)
+                {
                     return ServiceResult<List<ConsultationDto>>.Failure("医生ID不能为空");
+                }
 
                 var consultations = await _context.Consultations
                     .Where(c => c.UserId == doctorId && c.Status == CommonStatus.Enabled)
@@ -168,7 +174,9 @@ namespace LYBT.Module.Consultation.Services
             try
             {
                 if (string.IsNullOrWhiteSpace(keyword))
+                {
                     return ServiceResult<List<ConsultationDto>>.Success(new List<ConsultationDto>());
+                }
 
                 var searchTerm = keyword.Trim();
                 var consultations = await _context.Consultations
@@ -198,7 +206,9 @@ namespace LYBT.Module.Consultation.Services
             try
             {
                 if (patientId == Guid.Empty)
+                {
                     return ServiceResult<List<ConsultationDto>>.Failure("患者ID不能为空");
+                }
 
                 var consultations = await _context.Consultations
                     .Where(c => c.PatientId == patientId && c.Status == CommonStatus.Disabled)
@@ -223,13 +233,17 @@ namespace LYBT.Module.Consultation.Services
             try
             {
                 if (medicalCaseId == Guid.Empty)
+                {
                     return ServiceResult<object>.Failure("医疗案例ID不能为空");
+                }
 
                 var consultation = await _context.Consultations
                     .FirstOrDefaultAsync(c => c.MedicalCaseId == medicalCaseId && c.Status == CommonStatus.Enabled);
 
                 if (consultation == null)
+                {
                     return ServiceResult<object>.Failure("未找到相关看诊记录");
+                }
 
                 // 构建四诊数据对象
                 var fourDiagnosis = new

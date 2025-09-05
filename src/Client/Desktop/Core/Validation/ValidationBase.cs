@@ -1,8 +1,4 @@
-using LYBT.Shared.Models.Contracts.Common;
-using FluentValidation;
-using FluentValidation.Internal;
-using FluentValidation.Results;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -10,6 +6,10 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using FluentValidation;
+using FluentValidation.Internal;
+using FluentValidation.Results;
+using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Desktop.Core.Validation
 {
@@ -56,8 +56,8 @@ namespace LYBT.Desktop.Core.Validation
                 return _validationErrors.SelectMany(kvp => kvp.Value);
             }
 
-            return _validationErrors.TryGetValue(propertyName, out var errors) 
-                ? errors 
+            return _validationErrors.TryGetValue(propertyName, out var errors)
+                ? errors
                 : Enumerable.Empty<string>();
         }
 
@@ -106,13 +106,13 @@ namespace LYBT.Desktop.Core.Validation
         protected override bool SetProperty<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
         {
             var result = base.SetProperty(ref field, value, propertyName);
-            
+
             if (result && propertyName != null)
             {
                 // 异步验证属性
                 _ = ValidatePropertyAsync(propertyName, value);
             }
-            
+
             return result;
         }
 
@@ -128,28 +128,30 @@ namespace LYBT.Desktop.Core.Validation
                 ClearPropertyErrors(propertyName);
 
                 if (_validator == null)
+                {
                     return true;
+                }
 
                 // 使用FluentValidation验证
-                var context = new ValidationContext<object>(this, new PropertyChain(), 
+                var context = new ValidationContext<object>(this, new PropertyChain(),
                     new MemberNameValidatorSelector(new[] { propertyName }));
-                
+
                 var validationResult = await _validator.ValidateAsync(context);
-                
+
                 if (!validationResult.IsValid)
                 {
                     var errors = validationResult.Errors
                         .Where(e => e.PropertyName == propertyName)
                         .Select(e => e.ErrorMessage)
                         .ToList();
-                    
+
                     if (errors.Any())
                     {
                         AddPropertyErrors(propertyName, errors);
                         return false;
                     }
                 }
-                
+
                 return true;
             }
             finally
@@ -176,18 +178,18 @@ namespace LYBT.Desktop.Core.Validation
 
                 var context = new ValidationContext<ValidationBase>(this);
                 var validationResult = await _validator.ValidateAsync(context);
-                
+
                 if (!validationResult.IsValid)
                 {
                     var errorGroups = validationResult.Errors.GroupBy(e => e.PropertyName);
-                    
+
                     foreach (var group in errorGroups)
                     {
                         var errors = group.Select(e => e.ErrorMessage).ToList();
                         AddPropertyErrors(group.Key, errors);
                     }
                 }
-                
+
                 IsValidated = true;
                 return !HasErrors;
             }
@@ -211,8 +213,10 @@ namespace LYBT.Desktop.Core.Validation
         public async Task<ValidationResult> GetValidationResultAsync()
         {
             if (_validator == null)
+            {
                 return new ValidationResult();
-            
+            }
+
             var context = new ValidationContext<ValidationBase>(this);
             return await _validator.ValidateAsync(context);
         }
@@ -234,7 +238,7 @@ namespace LYBT.Desktop.Core.Validation
             {
                 _validationErrors[propertyName] = new List<string>();
             }
-            
+
             _validationErrors[propertyName].AddRange(errors);
             OnErrorsChanged(propertyName);
         }
@@ -257,7 +261,7 @@ namespace LYBT.Desktop.Core.Validation
         {
             var properties = _validationErrors.Keys.ToArray();
             _validationErrors.Clear();
-            
+
             foreach (var propertyName in properties)
             {
                 OnErrorsChanged(propertyName);
@@ -286,7 +290,7 @@ namespace LYBT.Desktop.Core.Validation
         /// </summary>
         public string GetFormattedErrors(string separator = "\n")
         {
-            var errors = _validationErrors.SelectMany(kvp => 
+            var errors = _validationErrors.SelectMany(kvp =>
                 kvp.Value.Select(e => $"{kvp.Key}: {e}"));
             return string.Join(separator, errors);
         }

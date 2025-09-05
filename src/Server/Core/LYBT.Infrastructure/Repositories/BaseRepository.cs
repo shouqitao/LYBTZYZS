@@ -1,8 +1,8 @@
+﻿using System.Linq.Expressions;
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.EntityFrameworkCore;
-using System.Linq.Expressions;
 
 namespace LYBT.Infrastructure.Repositories
 {
@@ -43,8 +43,8 @@ namespace LYBT.Infrastructure.Repositories
         }
 
         public virtual async Task<PagedResult<TEntity>> GetPagedAsync(
-            Expression<Func<TEntity, bool>>? predicate, 
-            int pageNumber, 
+            Expression<Func<TEntity, bool>>? predicate,
+            int pageNumber,
             int pageSize,
             Expression<Func<TEntity, object>>? orderBy = null,
             bool ascending = true)
@@ -133,7 +133,9 @@ namespace LYBT.Infrastructure.Repositories
         {
             var entity = await GetByIdAsync(id);
             if (entity == null)
+            {
                 return false;
+            }
 
             return await DeleteAsync(entity);
         }
@@ -212,8 +214,8 @@ namespace LYBT.Infrastructure.Repositories
         }
 
         public virtual async Task<PagedResult<TEntity>> GetPagedAsync(
-            Expression<Func<TEntity, bool>>? predicate, 
-            int pageNumber, 
+            Expression<Func<TEntity, bool>>? predicate,
+            int pageNumber,
             int pageSize,
             Expression<Func<TEntity, object>>? orderBy = null,
             bool ascending = true)

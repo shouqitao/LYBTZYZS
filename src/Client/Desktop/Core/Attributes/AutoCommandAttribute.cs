@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 
 namespace LYBT.Desktop.Core.Attributes
 {

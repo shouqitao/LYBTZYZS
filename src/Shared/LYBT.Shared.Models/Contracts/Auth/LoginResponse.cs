@@ -1,5 +1,5 @@
+﻿using System.ComponentModel;
 using LYBT.Shared.Models.Contracts.Users;
-using System.ComponentModel;
 
 namespace LYBT.Shared.Models.Contracts.Auth
 {

@@ -1,18 +1,18 @@
-using System;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using Prism.Mvvm;
-using Prism.Events;
-using Microsoft.Extensions.Logging;
-using LYBT.Shared.Interfaces.Services;
 using LYBT.Desktop.Core.Models.Prescriptions;
-using LYBT.Desktop.Prescriptions.ViewModels.Components;
 using LYBT.Desktop.Prescriptions.Constants;
-using IFormulaService = LYBT.Shared.Interfaces.Services.IFormulaService;
-using IPrescriptionService = LYBT.Shared.Interfaces.Services.IPrescriptionService;
-using IHerbService = LYBT.Shared.Interfaces.Services.IHerbService; // UltraThink: 使用共享服务接口
+using LYBT.Desktop.Prescriptions.ViewModels.Components;
+using LYBT.Shared.Interfaces.Services;
+using Microsoft.Extensions.Logging;
+using Prism.Events;
+using Prism.Mvvm;
 using Prism.Services.Dialogs;
+using IFormulaService = LYBT.Shared.Interfaces.Services.IFormulaService;
+using IHerbService = LYBT.Shared.Interfaces.Services.IHerbService; // UltraThink: 使用共享服务接口
+using IPrescriptionService = LYBT.Shared.Interfaces.Services.IPrescriptionService;
 // using Prism.Dialogs; // Removed for Prism 8.1.97 compatibility
 
 namespace LYBT.Desktop.Prescriptions.ViewModels
@@ -340,10 +340,10 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                 _logger.LogInformation("开始初始化处方数据，医疗案例ID: {MedicalCaseId}", medicalCaseId);
 
                 await _dataManager.InitializeAsync(medicalCaseId);
-                
+
                 // 初始计算
                 RecalculatePrice();
-                
+
                 // 刷新UI绑定
                 RefreshAllProperties();
 
@@ -452,7 +452,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             RaisePropertyChanged(nameof(IsLoading));
             RaisePropertyChanged(nameof(HasChanges));
             RaisePropertyChanged(nameof(SelectedItem));
-            
+
             // 价格相关
             RaisePropertyChanged(nameof(SingleDosagePrice));
             RaisePropertyChanged(nameof(TotalPrice));

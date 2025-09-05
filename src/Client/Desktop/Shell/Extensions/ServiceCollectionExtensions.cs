@@ -1,18 +1,18 @@
 ﻿using System;
 using System.Net.Http;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using AutoMapper;
-using Prism.Ioc;
-using Refit;
 using LYBT.Desktop.Core.Configuration;
 using LYBT.Desktop.Core.Mapping;
 using LYBT.Desktop.Infrastructure;
 using LYBT.Desktop.Services;
 using LYBT.Desktop.Services.Handlers;
-using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Interfaces.Api;
+using LYBT.Shared.Interfaces.Services;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Prism.Ioc;
+using Refit;
 
 namespace LYBT.Desktop.Shell.Extensions
 {
@@ -51,7 +51,7 @@ namespace LYBT.Desktop.Shell.Extensions
             // UltraThink Phase H: 高级功能优化服务
             containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Services.Performance.IStartupOptimizationService,
                 LYBT.Desktop.Core.Services.Performance.StartupOptimizationService>();
-            
+
             containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Services.Settings.IUserPreferencesService,
                 LYBT.Desktop.Core.Services.Settings.UserPreferencesService>();
         }
@@ -123,29 +123,29 @@ namespace LYBT.Desktop.Shell.Extensions
         {
             // 注册认证处理器
             containerRegistry.Register<AuthHeaderHandler>();
-            
+
             // 注册统一API客户端管理器 - 替代原有8个独立API客户端
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Infrastructure.Api.IUnifiedApiClientManager, 
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Infrastructure.Api.IUnifiedApiClientManager,
                 LYBT.Desktop.Infrastructure.Api.UnifiedApiClientManager>();
-            
+
             // 注册各个API接口的便捷访问器（委托给统一管理器）
-            containerRegistry.Register<LYBT.Shared.Interfaces.Api.IAuthApi>(container => 
+            containerRegistry.Register<LYBT.Shared.Interfaces.Api.IAuthApi>(container =>
                 container.Resolve<LYBT.Desktop.Infrastructure.Api.IUnifiedApiClientManager>().AuthApi);
-            containerRegistry.Register<LYBT.Shared.Interfaces.Api.IUserApi>(container => 
+            containerRegistry.Register<LYBT.Shared.Interfaces.Api.IUserApi>(container =>
                 container.Resolve<LYBT.Desktop.Infrastructure.Api.IUnifiedApiClientManager>().UserApi);
-            containerRegistry.Register<LYBT.Shared.Interfaces.Api.IPatientApi>(container => 
+            containerRegistry.Register<LYBT.Shared.Interfaces.Api.IPatientApi>(container =>
                 container.Resolve<LYBT.Desktop.Infrastructure.Api.IUnifiedApiClientManager>().PatientApi);
-            containerRegistry.Register<LYBT.Shared.Interfaces.Api.IHerbApi>(container => 
+            containerRegistry.Register<LYBT.Shared.Interfaces.Api.IHerbApi>(container =>
                 container.Resolve<LYBT.Desktop.Infrastructure.Api.IUnifiedApiClientManager>().HerbApi);
-            containerRegistry.Register<LYBT.Shared.Interfaces.Api.IFormulaApi>(container => 
+            containerRegistry.Register<LYBT.Shared.Interfaces.Api.IFormulaApi>(container =>
                 container.Resolve<LYBT.Desktop.Infrastructure.Api.IUnifiedApiClientManager>().FormulaApi);
-            containerRegistry.Register<LYBT.Shared.Interfaces.Api.IConsultationApi>(container => 
+            containerRegistry.Register<LYBT.Shared.Interfaces.Api.IConsultationApi>(container =>
                 container.Resolve<LYBT.Desktop.Infrastructure.Api.IUnifiedApiClientManager>().ConsultationApi);
-            containerRegistry.Register<LYBT.Shared.Interfaces.Api.IPrescriptionApi>(container => 
+            containerRegistry.Register<LYBT.Shared.Interfaces.Api.IPrescriptionApi>(container =>
                 container.Resolve<LYBT.Desktop.Infrastructure.Api.IUnifiedApiClientManager>().PrescriptionApi);
-            containerRegistry.Register<LYBT.Shared.Interfaces.Api.IMedicalCaseApi>(container => 
+            containerRegistry.Register<LYBT.Shared.Interfaces.Api.IMedicalCaseApi>(container =>
                 container.Resolve<LYBT.Desktop.Infrastructure.Api.IUnifiedApiClientManager>().MedicalCaseApi);
-            
+
             // 注册通用API服务 - UltraThink统一架构：使用完整版Http.ApiService
             containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Http.IApiService, LYBT.Desktop.Core.Http.ApiService>();
         }
@@ -166,37 +166,37 @@ namespace LYBT.Desktop.Shell.Extensions
         {
             // 权限服务
             containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.IPermissionService, PermissionService>();
-            
+
             // 会话管理服务 - UserSessionManager实现多个接口
             containerRegistry.RegisterSingleton<UserSessionManager>();
             containerRegistry.Register<LYBT.Desktop.Core.Interfaces.Services.IUserSessionManager>(container => container.Resolve<UserSessionManager>());
             containerRegistry.Register<LYBT.Desktop.Core.Interfaces.Services.ITokenManager>(container => container.Resolve<UserSessionManager>());
-            
+
             // 其他核心服务
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.ISessionManager, 
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.ISessionManager,
                 LYBT.Desktop.Core.Services.SessionManager>();
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.INotificationService, 
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.INotificationService,
                 LYBT.Desktop.Core.Services.NotificationService>();
             // UltraThink统一架构: AuthModule直接实现IAuthenticationService，消除双重服务
             containerRegistry.RegisterSingleton<LYBT.Desktop.Auth.Services.AuthModule>();
-            containerRegistry.Register<LYBT.Desktop.Core.Interfaces.Services.IAuthenticationService>(container => 
+            containerRegistry.Register<LYBT.Desktop.Core.Interfaces.Services.IAuthenticationService>(container =>
                 container.Resolve<LYBT.Desktop.Auth.Services.AuthModule>());
             containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.IErrorHandlingService>(container =>
                 new ErrorHandlingService(container.Resolve<LYBT.Desktop.Core.Interfaces.Services.ICustomDialogService>()));
             containerRegistry.RegisterSingleton<LYBT.Desktop.Workbench.Core.IWorkbenchRouter, LYBT.Desktop.Workbench.Core.WorkbenchRouter>();
-            
+
             // 主窗口服务门面 - 简化MainWindowViewModel的依赖注入
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.IMainWindowServicesFacade, 
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.IMainWindowServicesFacade,
                 LYBT.Desktop.Core.Services.MainWindowServicesFacade>();
-            
+
             // P7-03: 处方打印服务 - UltraThink标准打印系统
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.IPrescriptionPrintService, 
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.IPrescriptionPrintService,
                 LYBT.Desktop.Core.Services.PrescriptionPrintService>();
-                
+
             // P7-04: 用户体验优化服务 - UltraThink用户体验增强
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.IUserExperienceService, 
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.IUserExperienceService,
                 LYBT.Desktop.Core.Services.UserExperienceService>();
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.IKeyboardShortcutService, 
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.IKeyboardShortcutService,
                 LYBT.Desktop.Core.Services.KeyboardShortcutService>();
         }
 
@@ -207,7 +207,7 @@ namespace LYBT.Desktop.Shell.Extensions
         {
             // API测试服务
             containerRegistry.RegisterSingleton<ApiTestService>();
-            
+
             // UltraThink统一架构：所有业务模块服务由各自模块注册，实现模块自治
             // 8个业务模块(Auth/Users/Patients/Herbs/Formula/Consultation/Prescriptions/MedicalCase)
             // 均在各自的XxxModule.RegisterTypes中注册服务接口实现
@@ -219,13 +219,13 @@ namespace LYBT.Desktop.Shell.Extensions
         private static void RegisterDialogs(IContainerRegistry containerRegistry)
         {
             // 统一对话框服务 - WpfDialogService提供完整功能
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.ICustomDialogService, 
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.ICustomDialogService,
                 LYBT.Desktop.Core.Services.WpfDialogService>();
-                
+
             // 注册业务对话框（在服务启动后动态注册）
             containerRegistry.RegisterInstance<Action<LYBT.Desktop.Core.Interfaces.Services.ICustomDialogService>>(RegisterBusinessDialogs);
         }
-        
+
         /// <summary>
         /// 注册业务对话框Views
         /// </summary>
@@ -236,21 +236,21 @@ namespace LYBT.Desktop.Shell.Extensions
             {
                 // 患者管理对话框
                 wpfDialogService.RegisterDialog("PatientAddEditDialog", typeof(LYBT.Desktop.Patients.Views.PatientAddEditDialog));
-                
+
                 // 用户管理对话框
                 wpfDialogService.RegisterDialog("UserAddEditDialog", typeof(LYBT.Desktop.Users.Views.UserAddEditDialog));
-                
+
                 // 药材管理对话框
                 wpfDialogService.RegisterDialog("HerbAddEditDialog", typeof(LYBT.Desktop.Herbs.Views.HerbAddEditDialog));
-                
+
                 // 医案管理对话框
                 wpfDialogService.RegisterDialog("CreateMedicalCaseDialog", typeof(LYBT.Desktop.MedicalCase.Views.CreateMedicalCaseDialog));
-                
+
                 // 验方管理对话框
                 wpfDialogService.RegisterDialog("AddFormulaDialog", typeof(LYBT.Desktop.Formula.Views.AddFormulaDialog));
                 wpfDialogService.RegisterDialog("EditFormulaDialog", typeof(LYBT.Desktop.Formula.Views.EditFormulaDialog));
                 wpfDialogService.RegisterDialog("ViewFormulaDialog", typeof(LYBT.Desktop.Formula.Views.ViewFormulaDialog));
-                
+
                 // 处方管理对话框
                 wpfDialogService.RegisterDialog("PrescriptionEditorDialog", typeof(LYBT.Desktop.Prescriptions.Views.PrescriptionEditorDialog));
                 wpfDialogService.RegisterDialog("HerbSelectionDialog", typeof(LYBT.Desktop.Prescriptions.Views.HerbSelectionDialog));

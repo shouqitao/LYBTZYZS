@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using LYBT.Shared.Models.Common;
@@ -19,27 +19,27 @@ public interface IPatientQueryService
     /// 分页查询患者
     /// </summary>
     Task<ServiceResult<PagedResult<PatientDto>>> GetPagedAsync(PatientPagedQueryDto query);
-    
+
     /// <summary>
     /// 根据ID获取患者
     /// </summary>
     Task<ServiceResult<PatientDto>> GetByIdAsync(Guid id);
-    
+
     /// <summary>
     /// 根据身份证号查找患者
     /// </summary>
     Task<ServiceResult<PatientDto>> GetByIdCardAsync(string idCard);
-    
+
     /// <summary>
     /// 根据电话号码查找患者
     /// </summary>
     Task<ServiceResult<List<PatientDto>>> GetByPhoneAsync(string phone);
-    
+
     /// <summary>
     /// 搜索患者（按姓名或身份证）
     /// </summary>
     Task<ServiceResult<List<PatientDto>>> SearchAsync(string keyword);
-    
+
     /// <summary>
     /// 获取患者统计数据
     /// </summary>

@@ -1,13 +1,13 @@
-using System;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
+using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Desktop.Core.ViewModels;
+using LYBT.Shared.Interfaces.Services;
+using LYBT.Shared.Models.Contracts.Formula;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
-using LYBT.Desktop.Core.Interfaces.Services;
-using LYBT.Desktop.Core.ViewModels;
-using LYBT.Shared.Models.Contracts.Formula;
-using LYBT.Shared.Interfaces.Services;
 
 namespace LYBT.Desktop.Core.ViewModels.Dialogs
 {

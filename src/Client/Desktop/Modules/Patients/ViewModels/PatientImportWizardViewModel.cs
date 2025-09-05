@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -10,9 +10,9 @@ using System.Windows;
 using System.Windows.Input;
 using AutoMapper;
 using LYBT.Desktop.Core.Helpers;
+using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.Services;
 using LYBT.Desktop.Core.ViewModels.Base;
-using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Patients.Models;
 using LYBT.Desktop.Services;
 using LYBT.Shared.Interfaces.Services;
@@ -32,11 +32,11 @@ namespace LYBT.Desktop.Patients.ViewModels
     public class PatientImportWizardViewModel : BindableBase
     {
         #region Fields
-        
+
         private readonly IPatientService _patientService;
         private readonly ICustomDialogService _dialogService;
         private readonly ILogger<PatientImportWizardViewModel> _logger;
-        
+
         private ImportWizardStep _currentStep = ImportWizardStep.TemplateDownload;
         private string _selectedFilePath = string.Empty;
         private DataTable? _previewData;
@@ -308,7 +308,7 @@ namespace LYBT.Desktop.Patients.ViewModels
             {
                 _importWorker?.CancelAsync();
             }
-            
+
             // 触发取消事件，让父窗口处理关闭逻辑
             ImportCancelled?.Invoke(this, EventArgs.Empty);
         }
@@ -408,16 +408,16 @@ namespace LYBT.Desktop.Patients.ViewModels
             var activeStyle = Application.Current.FindResource("ActiveStep") as Style ?? new Style();
             var pendingStyle = Application.Current.FindResource("PendingStep") as Style ?? new Style();
 
-            Step1Style = CurrentStep >= ImportWizardStep.TemplateDownload ? 
+            Step1Style = CurrentStep >= ImportWizardStep.TemplateDownload ?
                 (CurrentStep == ImportWizardStep.TemplateDownload ? activeStyle : completedStyle) : pendingStyle;
-            
-            Step2Style = CurrentStep >= ImportWizardStep.FileSelection ? 
+
+            Step2Style = CurrentStep >= ImportWizardStep.FileSelection ?
                 (CurrentStep == ImportWizardStep.FileSelection ? activeStyle : completedStyle) : pendingStyle;
-            
-            Step3Style = CurrentStep >= ImportWizardStep.DataPreview ? 
+
+            Step3Style = CurrentStep >= ImportWizardStep.DataPreview ?
                 (CurrentStep == ImportWizardStep.DataPreview ? activeStyle : completedStyle) : pendingStyle;
-            
-            Step4Style = CurrentStep >= ImportWizardStep.ImportExecution ? 
+
+            Step4Style = CurrentStep >= ImportWizardStep.ImportExecution ?
                 (CurrentStep == ImportWizardStep.ImportExecution ? activeStyle : completedStyle) : pendingStyle;
 
             RaisePropertyChanged(nameof(Step1Style));
@@ -429,7 +429,7 @@ namespace LYBT.Desktop.Patients.ViewModels
         private void UpdateButtonStates()
         {
             CanGoPrevious = CurrentStep != ImportWizardStep.TemplateDownload && !IsImporting;
-            
+
             CanGoNext = CurrentStep switch
             {
                 ImportWizardStep.TemplateDownload => true,
@@ -593,7 +593,7 @@ namespace LYBT.Desktop.Patients.ViewModels
             {
                 // 创建模板数据表
                 var templateTable = new DataTable();
-                
+
                 // 添加列
                 templateTable.Columns.Add("姓名", typeof(string));
                 templateTable.Columns.Add("性别", typeof(string));
@@ -661,7 +661,9 @@ namespace LYBT.Desktop.Patients.ViewModels
         private async void ImportWorker_DoWork(object? sender, DoWorkEventArgs e)
         {
             if (e.Argument is not DataTable dataTable || _importWorker == null)
+            {
                 return;
+            }
 
             var worker = _importWorker;
             var successCount = 0;
@@ -764,7 +766,7 @@ namespace LYBT.Desktop.Patients.ViewModels
                 var failCount = (int)(result.GetType().GetProperty("FailCount")?.GetValue(result) ?? 0);
 
                 var message = $"导入完成！\n成功：{successCount} 条\n失败：{failCount} 条";
-                
+
                 if (failCount == 0)
                 {
                     await _dialogService.ShowSuccessAsync(message, "导入成功");

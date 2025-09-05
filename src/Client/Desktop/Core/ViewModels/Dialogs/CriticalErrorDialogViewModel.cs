@@ -1,14 +1,14 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using LYBT.Desktop.Core.Constants;
+using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Desktop.Core.ViewModels.Base;
+using LYBT.Shared.Models.Contracts.Common;
 using Prism.Commands;
 using Prism.Events;
-using LYBT.Desktop.Core.ViewModels.Base;
-using LYBT.Desktop.Core.Interfaces.Services;
-using LYBT.Desktop.Core.Constants;
-using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Desktop.Core.ViewModels.Dialogs
 {
@@ -191,7 +191,7 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
 
                 // 2秒后恢复按钮状态
                 await Task.Delay(2000);
-                
+
                 CopyButtonText = originalText;
                 IsCopyEnabled = true;
             }
@@ -248,7 +248,9 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
         private void PopulateErrorInfo()
         {
             if (_errorInfo == null)
+            {
                 return;
+            }
 
             try
             {
@@ -311,7 +313,9 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
         private string GenerateErrorReport()
         {
             if (_errorInfo == null)
+            {
                 return "无错误信息";
+            }
 
             var report = $@"=== 凌隐宝堂系统错误报告 ===
 

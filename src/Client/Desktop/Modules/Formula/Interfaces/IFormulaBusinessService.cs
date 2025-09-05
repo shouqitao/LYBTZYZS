@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using LYBT.Shared.Models.Common;
@@ -36,12 +36,12 @@ public interface IFormulaBusinessService
     /// 更新验方状态 (对应 PATCH /formulas/{id}/status)
     /// </summary>
     Task<ServiceResult<bool>> UpdateFormulaStatusAsync(Guid id, bool isEnabled);
-    
+
     /// <summary>
     /// 启用验方
     /// </summary>
     Task<ServiceResult> EnableAsync(Guid id);
-    
+
     /// <summary>
     /// 禁用验方
     /// </summary>

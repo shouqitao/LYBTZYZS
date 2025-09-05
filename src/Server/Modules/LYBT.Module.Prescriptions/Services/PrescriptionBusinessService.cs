@@ -1,13 +1,13 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
-using LYBT.Infrastructure.Data;
 using LYBT.Entities.Prescriptions;
+using LYBT.Infrastructure.Data;
 using LYBT.Module.Prescriptions.Interfaces;
-using LYBT.Shared.Models.Contracts.Prescriptions;
-using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -43,10 +43,14 @@ namespace LYBT.Module.Prescriptions.Services
             try
             {
                 if (sourceId == Guid.Empty)
+                {
                     return ServiceResult<PrescriptionDto>.Failure("源处方ID不能为空");
+                }
 
                 if (string.IsNullOrWhiteSpace(newName))
+                {
                     return ServiceResult<PrescriptionDto>.Failure("新处方名称不能为空");
+                }
 
                 // 获取源处方
                 var sourcePrescription = await _context.Prescriptions
@@ -54,7 +58,9 @@ namespace LYBT.Module.Prescriptions.Services
                     .FirstOrDefaultAsync(p => p.Id == sourceId);
 
                 if (sourcePrescription == null)
+                {
                     return ServiceResult<PrescriptionDto>.Failure("源处方不存在");
+                }
 
                 // 创建新处方
                 var newPrescription = new Prescription
@@ -120,10 +126,14 @@ namespace LYBT.Module.Prescriptions.Services
             try
             {
                 if (patientId == Guid.Empty)
+                {
                     return ServiceResult<PrescriptionDto>.Failure("患者ID不能为空");
+                }
 
                 if (doctorId == Guid.Empty)
+                {
                     return ServiceResult<PrescriptionDto>.Failure("医生ID不能为空");
+                }
 
                 // 获取该患者的最近一次处方
                 var lastPrescription = await _context.Prescriptions
@@ -132,7 +142,9 @@ namespace LYBT.Module.Prescriptions.Services
                     .FirstOrDefaultAsync();
 
                 if (lastPrescription == null)
+                {
                     return ServiceResult<PrescriptionDto>.Failure("患者没有历史处方记录");
+                }
 
                 var newName = $"{lastPrescription.Indication} - 复制于{DateTime.Now:MM-dd}";
                 return await CopyAsync(lastPrescription.Id, newName, operatorId, operatorName);
@@ -153,20 +165,28 @@ namespace LYBT.Module.Prescriptions.Services
             try
             {
                 if (templateId == Guid.Empty)
+                {
                     return ServiceResult<PrescriptionDto>.Failure("验方模板ID不能为空");
+                }
 
                 if (patientId == Guid.Empty)
+                {
                     return ServiceResult<PrescriptionDto>.Failure("患者ID不能为空");
+                }
 
                 if (doctorId == Guid.Empty)
+                {
                     return ServiceResult<PrescriptionDto>.Failure("医生ID不能为空");
+                }
 
                 // 获取验方模板 (假设存在FormulaTemplates表)
                 var template = await _context.Set<dynamic>() // TODO: 替换为实际的验方模板实体
                     .FirstOrDefaultAsync();
 
                 if (template == null)
+                {
                     return ServiceResult<PrescriptionDto>.Failure("验方模板不存在");
+                }
 
                 // 从模板创建处方 - 具体实现需要根据验方模板的结构调整
                 var prescription = new Prescription
@@ -209,24 +229,34 @@ namespace LYBT.Module.Prescriptions.Services
             try
             {
                 if (prescriptionId == Guid.Empty)
+                {
                     return ServiceResult<bool>.Failure("处方ID不能为空");
+                }
 
                 var prescription = await _context.Prescriptions
                     .FirstOrDefaultAsync(p => p.Id == prescriptionId);
 
                 if (prescription == null)
+                {
                     return ServiceResult<bool>.Failure("处方不存在");
+                }
 
                 // 验证是否可以编辑
                 if (prescription.Status != PrescriptionStatus.Draft)
+                {
                     return ServiceResult<bool>.Failure("只能编辑草稿状态的处方");
+                }
 
                 // 快速更新基本信息
                 if (!string.IsNullOrWhiteSpace(dto.Diagnosis))
+                {
                     prescription.Indication = dto.Diagnosis;
+                }
 
                 if (!string.IsNullOrWhiteSpace(dto.Advice))
+                {
                     prescription.Advice = dto.Advice;
+                }
 
                 _context.Prescriptions.Update(prescription);
                 await _context.SaveChangesAsync();
@@ -251,21 +281,27 @@ namespace LYBT.Module.Prescriptions.Services
             try
             {
                 if (id == Guid.Empty)
+                {
                     return ServiceResult<bool>.Failure("处方ID不能为空");
+                }
 
                 var prescription = await _context.Prescriptions
                     .FirstOrDefaultAsync(p => p.Id == id);
 
                 if (prescription == null)
+                {
                     return ServiceResult<bool>.Failure("处方不存在");
+                }
 
                 // 使用软删除来标记作废 - 由于PrescriptionStatus没有Cancelled状态
                 if (prescription.Remark != null && prescription.Remark.Contains("处方已作废"))
+                {
                     return ServiceResult<bool>.Failure("处方已经是作废状态");
+                }
 
                 // 软删除标记
-                prescription.Remark = string.IsNullOrEmpty(prescription.Remark) 
-                    ? "处方已作废" 
+                prescription.Remark = string.IsNullOrEmpty(prescription.Remark)
+                    ? "处方已作废"
                     : $"{prescription.Remark}\n处方已作废";
 
                 _context.Prescriptions.Update(prescription);
@@ -291,17 +327,23 @@ namespace LYBT.Module.Prescriptions.Services
             try
             {
                 if (id == Guid.Empty)
+                {
                     return ServiceResult<bool>.Failure("处方ID不能为空");
+                }
 
                 var prescription = await _context.Prescriptions
                     .FirstOrDefaultAsync(p => p.Id == id);
 
                 if (prescription == null)
+                {
                     return ServiceResult<bool>.Failure("处方不存在");
+                }
 
                 // 验证是否可以确认
                 if (prescription.Status != PrescriptionStatus.Draft)
+                {
                     return ServiceResult<bool>.Failure("只能确认草稿状态的处方");
+                }
 
                 prescription.Status = PrescriptionStatus.Completed;
 
@@ -328,14 +370,18 @@ namespace LYBT.Module.Prescriptions.Services
             try
             {
                 if (prescriptionId == Guid.Empty)
+                {
                     return ServiceResult<bool>.Failure("处方ID不能为空");
+                }
 
                 var prescription = await _context.Prescriptions
                     .Include(p => p.Items)
                     .FirstOrDefaultAsync(p => p.Id == prescriptionId);
 
                 if (prescription == null)
+                {
                     return ServiceResult<bool>.Failure("处方不存在");
+                }
 
                 // TODO: 实现配伍禁忌检查逻辑
                 // 目前返回安全通过

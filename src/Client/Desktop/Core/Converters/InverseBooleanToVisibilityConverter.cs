@@ -1,8 +1,8 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System;
+﻿using System;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
+using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Desktop.Core.Converters
 {
@@ -18,7 +18,7 @@ namespace LYBT.Desktop.Core.Converters
             {
                 return boolValue ? Visibility.Collapsed : Visibility.Visible;
             }
-            
+
             // 默认情况下返回 Visible
             return Visibility.Visible;
         }
@@ -29,7 +29,7 @@ namespace LYBT.Desktop.Core.Converters
             {
                 return visibility == Visibility.Collapsed;
             }
-            
+
             return false;
         }
     }

@@ -1,6 +1,6 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Desktop.Core.Models.Consultation
 {
@@ -85,7 +85,7 @@ namespace LYBT.Desktop.Core.Models.Consultation
         public string? Diagnosis { get; set; }
         public ConsultationStatus Status { get; set; } = ConsultationStatus.Draft;
     }
-    
+
     /// <summary>
     /// 诊疗状态
     /// </summary>

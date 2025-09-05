@@ -1,8 +1,8 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System;
+﻿using System;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
+using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Desktop.Core.Converters
 {
@@ -16,12 +16,12 @@ namespace LYBT.Desktop.Core.Converters
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             var str = value as string;
-            
+
             // 如果参数为"Inverse"，则反转逻辑
             bool inverse = parameter as string == "Inverse";
-            
+
             bool isEmpty = string.IsNullOrWhiteSpace(str);
-            
+
             if (inverse)
             {
                 return isEmpty ? Visibility.Collapsed : Visibility.Visible;

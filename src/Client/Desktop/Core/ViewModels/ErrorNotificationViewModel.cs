@@ -1,7 +1,7 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using LYBT.Shared.Models.Contracts.Common;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Mvvm;

@@ -1,8 +1,8 @@
-using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Shared.Models.Common;
-using LYBT.Shared.Models.Enums;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Shared.Models.Contracts.MedicalCase
 {
@@ -45,8 +45,16 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
         public int GetPriority()
         {
             var hoursElapsed = (DateTime.Now - ConsultationDate).TotalHours;
-            if (hoursElapsed > 48) return 3; // 高优先级
-            if (hoursElapsed > 24) return 2; // 中优先级
+            if (hoursElapsed > 48)
+            {
+                return 3; // 高优先级
+            }
+
+            if (hoursElapsed > 24)
+            {
+                return 2; // 中优先级
+            }
+
             return 1; // 低优先级
         }
 
@@ -293,7 +301,7 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
     public class PatientMedicalCaseStatDto
     {
         public Guid PatientId { get; set; }
-        
+
         [DisplayName("患者姓名")]
         public string PatientName { get; set; } = string.Empty;
 

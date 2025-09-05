@@ -1,22 +1,22 @@
-using System;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using AutoMapper;
+using LYBT.Desktop.Core.Events;
+using LYBT.Shared.Interfaces.Services;
+using LYBT.Shared.Models.Contracts.Formula;
+using LYBT.Shared.Models.Contracts.Herbs;
+using LYBT.Shared.Models.Contracts.Prescriptions;
+using LYBT.Shared.Models.Enums;
+using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Mvvm;
-using Prism.Services.Dialogs;
-using LYBT.Shared.Models.Contracts.Prescriptions;
-using LYBT.Shared.Models.Contracts.Herbs;
-using LYBT.Shared.Models.Contracts.Formula;
-using LYBT.Shared.Models.Enums;
-using LYBT.Desktop.Core.Events;
-using CoreEvents = LYBT.Desktop.Core.Models.Events;
-using LYBT.Shared.Interfaces.Services;
-using Microsoft.Extensions.Logging;
 using Prism.Regions;
+using Prism.Services.Dialogs;
+using CoreEvents = LYBT.Desktop.Core.Models.Events;
 
 namespace LYBT.Desktop.Prescriptions.ViewModels
 {
@@ -168,7 +168,11 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         {
             get
             {
-                if (!PrescriptionItems.Any()) return 0m;
+                if (!PrescriptionItems.Any())
+                {
+                    return 0m;
+                }
+
                 return PrescriptionItems.Sum(item => item.UnitPrice * item.Quantity);
             }
         }
@@ -298,7 +302,10 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         /// </summary>
         private void OnEditHerb(PrescriptionItemDto item)
         {
-            if (item == null) return;
+            if (item == null)
+            {
+                return;
+            }
 
             try
             {
@@ -326,7 +333,10 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         /// </summary>
         private void OnRemoveHerb(PrescriptionItemDto item)
         {
-            if (item == null) return;
+            if (item == null)
+            {
+                return;
+            }
 
             try
             {
@@ -352,7 +362,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                 if (PrescriptionItems.Any())
                 {
                     // 确认对话框
-                    _dialogService.ShowDialog("ConfirmDialog", 
+                    _dialogService.ShowDialog("ConfirmDialog",
                         new DialogParameters { { "Message", "确定要清空所有药材吗？" } },
                         r =>
                         {
@@ -421,7 +431,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                 await SavePrescriptionCore();
 
                 ShowMessage("处方保存成功");
-                
+
                 // 发布处方保存事件
                 _eventAggregator.GetEvent<CoreEvents.PrescriptionSavedEvent>()
                     .Publish(new CoreEvents.PrescriptionSavedEventArgs(_currentPrescription.Id, _currentPrescription.PatientId, _currentPrescription.PatientName ?? "", _currentPrescription.TotalPrice));
@@ -466,7 +476,10 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         /// </summary>
         private void AddSelectedHerbs(HerbDto[] herbs)
         {
-            if (herbs?.Any() != true) return;
+            if (herbs?.Any() != true)
+            {
+                return;
+            }
 
             foreach (var herb in herbs)
             {
@@ -500,7 +513,10 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         /// </summary>
         private void ApplyFormulaTemplate(FormulaDto formula)
         {
-            if (formula?.Items?.Any() != true) return;
+            if (formula?.Items?.Any() != true)
+            {
+                return;
+            }
 
             // 清空现有药材（可选择性清空）
             _dialogService.ShowDialog("ConfirmDialog",
@@ -580,7 +596,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         {
             // 这里调用后端服务保存处方
             // await _prescriptionService.SaveAsync(_currentPrescription);
-            
+
             // 暂时模拟保存成功
             await Task.Delay(500);
         }
@@ -610,7 +626,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         private void ShowMessage(string message)
         {
             _dialogService.ShowDialog("MessageDialog",
-                new DialogParameters { { "Message", message } }, 
+                new DialogParameters { { "Message", message } },
                 r => { /* 回调处理，这里不需要特殊处理 */ });
         }
 
@@ -626,9 +642,9 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             {
                 _currentMedicalCaseId = medicalCaseId;
                 _currentPrescription.MedicalCaseId = medicalCaseId;
-                
+
                 _logger.LogInformation("处方编辑器导航到医疗案例: {MedicalCaseId}", medicalCaseId);
-                
+
                 // 加载医疗案例相关信息
                 _ = LoadMedicalCaseInfoAsync(medicalCaseId);
             }
@@ -660,7 +676,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                 // 这里可以调用服务加载医疗案例信息
                 // var medicalCase = await _medicalCaseService.GetByIdAsync(medicalCaseId);
                 // 更新患者信息显示
-                
+
                 _logger.LogInformation("已加载医疗案例信息: {MedicalCaseId}", medicalCaseId);
             }
             catch (Exception ex)

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.ComponentModel;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Enums;
@@ -27,7 +27,7 @@ namespace LYBT.Desktop.Core.ViewModels.MedicalCase
         private MedicalCaseViewModel(MedicalCaseDto medicalCaseData)
         {
             _medicalCaseData = medicalCaseData ?? throw new ArgumentNullException(nameof(medicalCaseData));
-            
+
             // 初始化三个专门的ViewModel
             _display = new MedicalCaseDisplayViewModel(_medicalCaseData);
             _state = new MedicalCaseStateViewModel();
@@ -383,7 +383,11 @@ namespace LYBT.Desktop.Core.ViewModels.MedicalCase
         public bool ContainsKeyword(string keyword)
         {
             // UltraThink v2.0简化：基础字符串搜索，移除扩展方法依赖
-            if (string.IsNullOrWhiteSpace(keyword)) return true;
+            if (string.IsNullOrWhiteSpace(keyword))
+            {
+                return true;
+            }
+
             return _medicalCaseData.PatientName?.Contains(keyword, StringComparison.OrdinalIgnoreCase) == true ||
                    _medicalCaseData.DoctorName?.Contains(keyword, StringComparison.OrdinalIgnoreCase) == true ||
                    _medicalCaseData.Remark?.Contains(keyword, StringComparison.OrdinalIgnoreCase) == true;
@@ -554,11 +558,20 @@ namespace LYBT.Desktop.Core.ViewModels.MedicalCase
         {
             // UltraThink v2.0简化：基础验证逻辑，移除扩展方法依赖
             if (string.IsNullOrWhiteSpace(_medicalCaseData.PatientName))
+            {
                 return (false, "患者姓名不能为空");
+            }
+
             if (string.IsNullOrWhiteSpace(_medicalCaseData.DoctorName))
+            {
                 return (false, "医生姓名不能为空");
+            }
+
             if (_medicalCaseData.ConsultationDate > DateTime.Now.AddDays(1))
+            {
                 return (false, "看诊时间不能超过明日");
+            }
+
             return (true, null);
         }
 

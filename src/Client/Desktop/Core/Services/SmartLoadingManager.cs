@@ -1,5 +1,4 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -7,6 +6,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Core.Services
@@ -27,12 +27,12 @@ namespace LYBT.Desktop.Core.Services
         /// 全局加载状态
         /// </summary>
         bool IsGlobalLoading { get; }
-        
+
         /// <summary>
         /// 当前活跃的加载操作数量
         /// </summary>
         int ActiveLoadingCount { get; }
-        
+
         /// <summary>
         /// 开始加载操作
         /// </summary>
@@ -42,29 +42,29 @@ namespace LYBT.Desktop.Core.Services
         /// <param name="supportProgress">是否支持进度跟踪</param>
         /// <param name="cancellationToken">取消令牌</param>
         /// <returns>加载操作句柄</returns>
-        ILoadingOperation StartLoading(string operationId, string message = "加载中...", 
+        ILoadingOperation StartLoading(string operationId, string message = "加载中...",
             int layer = 1, bool supportProgress = false, CancellationToken cancellationToken = default);
-        
+
         /// <summary>
         /// 获取指定层级的加载状态
         /// </summary>
         bool IsLoadingAtLayer(int layer);
-        
+
         /// <summary>
         /// 获取当前加载消息
         /// </summary>
         string GetCurrentLoadingMessage(int layer = -1);
-        
+
         /// <summary>
         /// 取消指定操作
         /// </summary>
         void CancelOperation(string operationId);
-        
+
         /// <summary>
         /// 取消所有操作
         /// </summary>
         void CancelAllOperations();
-        
+
         /// <summary>
         /// 清理过期的加载状态
         /// </summary>
@@ -80,37 +80,37 @@ namespace LYBT.Desktop.Core.Services
         /// 操作ID
         /// </summary>
         string OperationId { get; }
-        
+
         /// <summary>
         /// 是否支持进度跟踪
         /// </summary>
         bool SupportsProgress { get; }
-        
+
         /// <summary>
         /// 当前进度（0-100）
         /// </summary>
         int Progress { get; }
-        
+
         /// <summary>
         /// 是否已取消
         /// </summary>
         bool IsCancelled { get; }
-        
+
         /// <summary>
         /// 取消令牌
         /// </summary>
         CancellationToken CancellationToken { get; }
-        
+
         /// <summary>
         /// 更新进度
         /// </summary>
         void UpdateProgress(int progress, string? message = null);
-        
+
         /// <summary>
         /// 更新消息
         /// </summary>
         void UpdateMessage(string message);
-        
+
         /// <summary>
         /// 完成操作
         /// </summary>
@@ -128,11 +128,11 @@ namespace LYBT.Desktop.Core.Services
         private readonly ConcurrentDictionary<string, LoadingOperationInfo> _activeOperations = new();
         private readonly Timer _cleanupTimer;
         private readonly object _stateLock = new object();
-        
+
         // 防抖控制
         private readonly Dictionary<int, DateTime> _lastStateChangeTime = new();
         private readonly TimeSpan _debounceDelay = TimeSpan.FromMilliseconds(100);
-        
+
         // 状态缓存
         private volatile bool _cachedGlobalLoading;
         private volatile int _cachedActiveCount;
@@ -146,11 +146,11 @@ namespace LYBT.Desktop.Core.Services
         public SmartLoadingManager(ILogger<SmartLoadingManager> logger)
         {
             _logger = logger;
-            
+
             // 定期清理过期状态（每30秒）
-            _cleanupTimer = new Timer(PerformCleanup, null, 
+            _cleanupTimer = new Timer(PerformCleanup, null,
                 TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
-            
+
             _logger.LogDebug("智能加载管理器已初始化");
         }
 
@@ -180,11 +180,13 @@ namespace LYBT.Desktop.Core.Services
 
         #region 公共方法
 
-        public ILoadingOperation StartLoading(string operationId, string message = "加载中...", 
+        public ILoadingOperation StartLoading(string operationId, string message = "加载中...",
             int layer = 1, bool supportProgress = false, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(operationId))
+            {
                 throw new ArgumentException("操作ID不能为空", nameof(operationId));
+            }
 
             lock (_stateLock)
             {
@@ -205,11 +207,11 @@ namespace LYBT.Desktop.Core.Services
                 };
 
                 _activeOperations[operationId] = operationInfo;
-                
+
                 // 记录状态变化时间（防抖用）
                 _lastStateChangeTime[layer] = DateTime.UtcNow;
-                
-                _logger.LogDebug("开始加载操作: {OperationId}, 层级: {Layer}, 消息: {Message}", 
+
+                _logger.LogDebug("开始加载操作: {OperationId}, 层级: {Layer}, 消息: {Message}",
                     operationId, layer, message);
 
                 // 延迟通知状态变化，实现防抖
@@ -232,7 +234,9 @@ namespace LYBT.Desktop.Core.Services
                 .ToList();
 
             if (!operations.Any())
+            {
                 return string.Empty;
+            }
 
             // 返回最新的加载消息
             var latest = operations.Last();
@@ -273,12 +277,12 @@ namespace LYBT.Desktop.Core.Services
             {
                 if (_activeOperations.TryRemove(operationId, out var operationInfo))
                 {
-                    _logger.LogDebug("完成加载操作: {OperationId}, 耗时: {Duration}ms", 
+                    _logger.LogDebug("完成加载操作: {OperationId}, 耗时: {Duration}ms",
                         operationId, (DateTime.UtcNow - operationInfo.StartTime).TotalMilliseconds);
-                    
+
                     // 记录状态变化时间
                     _lastStateChangeTime[operationInfo.Layer] = DateTime.UtcNow;
-                    
+
                     // 延迟通知状态变化
                     Task.Delay(_debounceDelay).ContinueWith(_ => NotifyStateChanged());
                 }
@@ -289,7 +293,9 @@ namespace LYBT.Desktop.Core.Services
         {
             var now = DateTime.UtcNow;
             if (now - _lastCacheUpdate < _cacheInvalidationTime)
+            {
                 return;
+            }
 
             lock (_stateLock)
             {
@@ -307,7 +313,7 @@ namespace LYBT.Desktop.Core.Services
         {
             // 检查是否应该发送通知（防抖）
             var now = DateTime.UtcNow;
-            var shouldNotify = _lastStateChangeTime.Values.Any(lastChange => 
+            var shouldNotify = _lastStateChangeTime.Values.Any(lastChange =>
                 now - lastChange >= _debounceDelay);
 
             if (shouldNotify)
@@ -398,7 +404,7 @@ namespace LYBT.Desktop.Core.Services
         private readonly SmartLoadingManager _manager;
         private readonly CancellationTokenSource _cancellationTokenSource;
         private readonly CancellationToken _externalCancellationToken;
-        
+
         private volatile bool _disposed;
         private volatile int _progress;
         private volatile string _message;
@@ -421,17 +427,19 @@ namespace LYBT.Desktop.Core.Services
             SupportsProgress = supportsProgress;
             _manager = manager;
             _externalCancellationToken = externalCancellationToken;
-            
+
             _cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(externalCancellationToken);
         }
 
         public void UpdateProgress(int progress, string? message = null)
         {
             if (!SupportsProgress || _disposed || _completed)
+            {
                 return;
+            }
 
             _progress = Math.Max(0, Math.Min(100, progress));
-            
+
             if (!string.IsNullOrEmpty(message))
             {
                 _message = message;
@@ -441,7 +449,9 @@ namespace LYBT.Desktop.Core.Services
         public void UpdateMessage(string message)
         {
             if (_disposed || _completed)
+            {
                 return;
+            }
 
             _message = message ?? string.Empty;
         }
@@ -449,7 +459,9 @@ namespace LYBT.Desktop.Core.Services
         public void Complete()
         {
             if (_disposed || _completed)
+            {
                 return;
+            }
 
             _completed = true;
             _manager.CompleteOperation(OperationId);
@@ -466,15 +478,17 @@ namespace LYBT.Desktop.Core.Services
         public void Dispose()
         {
             if (_disposed)
+            {
                 return;
+            }
 
             _disposed = true;
-            
+
             if (!_completed)
             {
                 Complete();
             }
-            
+
             _cancellationTokenSource.Dispose();
         }
     }

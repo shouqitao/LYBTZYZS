@@ -1,4 +1,4 @@
-using AutoMapper;
+﻿using AutoMapper;
 using LYBT.Entities.Auth;
 using LYBT.Entities.Users;
 using LYBT.Shared.Models.Contracts.Auth;
@@ -21,10 +21,10 @@ namespace LYBT.Module.Auth.Mapping
                 .ForMember(dest => dest.RealName, opt => opt.MapFrom(src => src.RealName))
                 .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber))
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status));
-                // CreateTime/LastLoginTime/Remark字段已删除（UltraThink v2.0简化）
-                // .ForMember(dest => dest.CreateTime, opt => opt.MapFrom(src => src.CreateTime))
-                // .ForMember(dest => dest.LastLoginTime, opt => opt.MapFrom(src => src.LastLoginTime))
-                // .ForMember(dest => dest.Remark, opt => opt.MapFrom(src => src.Remark));
+            // CreateTime/LastLoginTime/Remark字段已删除（UltraThink v2.0简化）
+            // .ForMember(dest => dest.CreateTime, opt => opt.MapFrom(src => src.CreateTime))
+            // .ForMember(dest => dest.LastLoginTime, opt => opt.MapFrom(src => src.LastLoginTime))
+            // .ForMember(dest => dest.Remark, opt => opt.MapFrom(src => src.Remark));
 
             // 密码修改相关映射
             CreateMap<ChangePasswordRequest, ChangePasswordRequest>()
@@ -40,7 +40,7 @@ namespace LYBT.Module.Auth.Mapping
             // === UltraThink Auth模块映射配置 ===
             // 仅配置后端Shared基础模型与Backend数据模型的映射
             // Frontend显示模型映射将在Frontend项目中单独配置
-            
+
             // 认证会话映射：BaseAuthSession ↔ AuthSession
             CreateMap<BaseAuthSession, AuthSession>()
                 .ReverseMap();

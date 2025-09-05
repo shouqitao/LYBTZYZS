@@ -1,5 +1,5 @@
+﻿using System;
 using LYBT.Shared.Models.Contracts.Common;
-using System;
 
 namespace LYBT.Desktop.Core.Redux
 {
@@ -12,12 +12,12 @@ namespace LYBT.Desktop.Core.Redux
         /// Action类型标识
         /// </summary>
         string Type { get; }
-        
+
         /// <summary>
         /// Action时间戳
         /// </summary>
         DateTimeOffset Timestamp { get; }
-        
+
         /// <summary>
         /// Action来源（用于调试）
         /// </summary>
@@ -73,12 +73,12 @@ namespace LYBT.Desktop.Core.Redux
         /// 是否正在执行
         /// </summary>
         bool IsExecuting { get; }
-        
+
         /// <summary>
         /// 执行进度（0-100）
         /// </summary>
         int Progress { get; }
-        
+
         /// <summary>
         /// 错误信息
         /// </summary>
@@ -170,7 +170,7 @@ namespace LYBT.Desktop.Core.Redux
         public int Progress => 100;
         public string? Error => null;
 
-        public AsyncSuccessAction(string type, TResult result) 
+        public AsyncSuccessAction(string type, TResult result)
             : base($"{type}_SUCCESS", result) { }
     }
 

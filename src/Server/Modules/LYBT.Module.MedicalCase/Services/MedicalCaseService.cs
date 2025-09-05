@@ -1,10 +1,10 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using LYBT.Module.MedicalCase.Interfaces;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.MedicalCase;
-using LYBT.Module.MedicalCase.Interfaces;
 
 namespace LYBT.Module.MedicalCase.Services
 {
@@ -24,7 +24,9 @@ namespace LYBT.Module.MedicalCase.Services
         {
             var result = await _queryService.GetByIdAsync(id);
             if (!result.IsSuccess)
+            {
                 return ServiceResult<MedicalCaseDetailDto>.Failure(result.ErrorMessage ?? "获取失败");
+            }
 
             // 将MedicalCaseDto转换为MedicalCaseDetailDto（简化实现）
             var detailDto = new MedicalCaseDetailDto
@@ -58,7 +60,9 @@ namespace LYBT.Module.MedicalCase.Services
         {
             var result = await _queryService.GetHistoryAsync(patientId);
             if (!result.IsSuccess)
+            {
                 return ServiceResult<List<object>>.Failure(result.ErrorMessage ?? "获取历史记录失败");
+            }
 
             // 将List<MedicalCaseDto>转换为List<object>
             var objectList = new List<object>();
@@ -118,14 +122,16 @@ namespace LYBT.Module.MedicalCase.Services
         public async Task<ServiceResult<int>> BatchUpdateStatusAsync(Guid[] ids, int status)
         {
             if (!Enum.IsDefined(typeof(Shared.Models.Enums.MedicalCaseStatus), status))
+            {
                 return ServiceResult<int>.Failure($"无效的状态值: {status}");
+            }
 
             var statusString = ((Shared.Models.Enums.MedicalCaseStatus)status).ToString().ToLower();
             var idsList = new List<Guid>(ids);
             var result = await _businessService.BatchUpdateStatusAsync(idsList, statusString);
-            
-            return result.IsSuccess 
-                ? ServiceResult<int>.Success(ids.Length) 
+
+            return result.IsSuccess
+                ? ServiceResult<int>.Success(ids.Length)
                 : ServiceResult<int>.Failure(result.ErrorMessage ?? "批量更新失败");
         }
 
@@ -146,7 +152,9 @@ namespace LYBT.Module.MedicalCase.Services
         {
             var printResult = await _businessService.PrintMedicalRecordAsync(caseId, new { Format = "PDF" });
             if (!printResult.IsSuccess)
+            {
                 return ServiceResult<byte[]>.Failure(printResult.ErrorMessage ?? "打印失败");
+            }
 
             // 简化实现：返回基础打印数据的字节
             var printContent = System.Text.Json.JsonSerializer.Serialize(printResult.Data);

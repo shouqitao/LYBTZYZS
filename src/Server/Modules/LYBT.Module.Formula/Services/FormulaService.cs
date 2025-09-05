@@ -1,9 +1,9 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using LYBT.Shared.Models.Contracts.Formula;
-using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Interfaces.Services;
+using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Formula;
 
 namespace LYBT.Module.Formula.Services
 {

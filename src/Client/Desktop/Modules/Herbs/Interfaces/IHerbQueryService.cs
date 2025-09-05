@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using LYBT.Shared.Models.Common;
@@ -14,36 +14,36 @@ namespace LYBT.Desktop.Herbs.Interfaces;
 public interface IHerbQueryService
 {
     #region 基础查询操作
-    
+
     /// <summary>
     /// 分页查询药材
     /// </summary>
     Task<ServiceResult<PagedResult<HerbDto>>> GetPagedAsync(HerbPagedQueryDto query);
-    
+
     /// <summary>
     /// 根据ID获取药材
     /// </summary>
     Task<ServiceResult<HerbDto>> GetByIdAsync(Guid id);
-    
+
     /// <summary>
     /// 搜索药材
     /// </summary>
     Task<ServiceResult<List<HerbDto>>> SearchAsync(string keyword);
-    
+
     /// <summary>
     /// 获取药材统计
     /// </summary>
     Task<ServiceResult<HerbStatisticsDto>> GetStatisticsAsync();
-    
+
     /// <summary>
     /// 批量获取药材（用于处方）
     /// </summary>
     Task<ServiceResult<List<HerbDto>>> GetByIdsAsync(List<Guid> ids);
-    
+
     /// <summary>
     /// 获取药材统计（详细版本）
     /// </summary>
     Task<ServiceResult<HerbStatisticsDto>> GetHerbStatisticsAsync();
-    
+
     #endregion
 }

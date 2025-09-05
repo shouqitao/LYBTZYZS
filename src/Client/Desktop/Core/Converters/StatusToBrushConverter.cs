@@ -1,8 +1,8 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System;
+﻿using System;
 using System.Globalization;
 using System.Windows.Data;
 using System.Windows.Media;
+using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Desktop.Core.Converters
 {
@@ -17,7 +17,7 @@ namespace LYBT.Desktop.Core.Converters
             // 处理布尔值
             if (value is bool boolValue)
             {
-                return boolValue 
+                return boolValue
                     ? new SolidColorBrush(Color.FromRgb(40, 167, 69))   // 启用绿色 #28a745
                     : new SolidColorBrush(Color.FromRgb(220, 53, 69));  // 禁用红色 #dc3545
             }

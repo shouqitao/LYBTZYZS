@@ -1,19 +1,19 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using AutoMapper;
-using Microsoft.Extensions.Logging;
-using Prism.Commands;
-using Prism.Mvvm;
-using Prism.Regions;
-using Prism.Events;
 using LYBT.Desktop.Core.Constants;
 using LYBT.Desktop.Core.Interfaces.Services;
-using LYBT.Desktop.Core.ViewModels.Base;
 using LYBT.Desktop.Core.ViewModels;
+using LYBT.Desktop.Core.ViewModels.Base;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
+using Microsoft.Extensions.Logging;
+using Prism.Commands;
+using Prism.Events;
+using Prism.Mvvm;
+using Prism.Regions;
 
 namespace LYBT.Desktop.Herbs.ViewModels
 {
@@ -120,7 +120,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
             if (navigationContext.Parameters.ContainsKey("HerbId"))
             {
                 HerbId = navigationContext.Parameters.GetValue<Guid>("HerbId");
-                
+
                 if (navigationContext.Parameters.ContainsKey("ViewMode"))
                 {
                     var viewMode = navigationContext.Parameters.GetValue<string>("ViewMode");
@@ -155,12 +155,15 @@ namespace LYBT.Desktop.Herbs.ViewModels
 
         private async Task LoadDataAsync()
         {
-            if (HerbId == Guid.Empty) return;
+            if (HerbId == Guid.Empty)
+            {
+                return;
+            }
 
             await ExecuteAsync(async () =>
             {
                 var result = await _herbService.GetByIdAsync(HerbId);
-                
+
                 if (result.IsSuccess && result.Data != null)
                 {
                     Herb = result.Data;
@@ -175,21 +178,24 @@ namespace LYBT.Desktop.Herbs.ViewModels
 
         private async Task SaveAsync()
         {
-            if (Herb == null) return;
+            if (Herb == null)
+            {
+                return;
+            }
 
             await ExecuteAsync(async () =>
             {
                 var updateDto = _mapper.Map<HerbUpdateDto>(Herb);
-                
+
                 var result = await _herbService.UpdateAsync(Herb.Id, updateDto);
-                
+
                 if (result.IsSuccess && result.Data != null)
                 {
                     Herb = result.Data;
                     IsReadOnly = true;
                     RefreshProperties();
                     RaiseCanExecuteChanged();
-                    
+
                     await _dialogService.ShowSuccessAsync("中药材信息保存成功", "成功");
                 }
                 else
@@ -231,8 +237,11 @@ namespace LYBT.Desktop.Herbs.ViewModels
 
         private async Task ViewUsageHistoryAsync()
         {
-            if (Herb == null) return;
-            
+            if (Herb == null)
+            {
+                return;
+            }
+
             await ExecuteAsync(async () =>
             {
                 await _dialogService.ShowInformationAsync("使用历史功能正在开发中", "提示");
@@ -244,9 +253,9 @@ namespace LYBT.Desktop.Herbs.ViewModels
         #region 命令状态
 
         private bool CanEdit() => Herb != null && IsReadOnly && !base.IsLoading;
-        
+
         private bool CanSave() => Herb != null && !IsReadOnly && !base.IsLoading;
-        
+
         private bool CanCancelEdit() => Herb != null && !IsReadOnly && !base.IsLoading;
 
         protected override void RaiseCanExecuteChanged()
@@ -284,7 +293,10 @@ namespace LYBT.Desktop.Herbs.ViewModels
         private string GetStatusText()
         {
             if (Herb?.Status == CommonStatus.Enabled)
+            {
                 return "正常";
+            }
+
             return "已禁用";
         }
 

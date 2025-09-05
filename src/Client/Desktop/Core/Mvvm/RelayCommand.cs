@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Windows.Input;
 
 namespace LYBT.Desktop.Core.Mvvm;
@@ -14,12 +14,12 @@ public class RelayCommand(Action execute, Func<bool>? canExecute = null) : IComm
 {
     private readonly Action _execute = execute ?? throw new ArgumentNullException(nameof(execute));
     private readonly Func<bool>? _canExecute = canExecute;
-    
+
     /// <summary>
     /// 当命令的可执行状态可能发生更改时发生
     /// </summary>
     public event EventHandler? CanExecuteChanged;
-        
+
     /// <summary>
     /// 确定命令是否可以在其当前状态下执行
     /// </summary>
@@ -29,7 +29,7 @@ public class RelayCommand(Action execute, Func<bool>? canExecute = null) : IComm
     {
         return _canExecute?.Invoke() ?? true;
     }
-    
+
     /// <summary>
     /// 执行命令逻辑
     /// </summary>
@@ -41,7 +41,7 @@ public class RelayCommand(Action execute, Func<bool>? canExecute = null) : IComm
             _execute();
         }
     }
-    
+
     /// <summary>
     /// 手动触发CanExecuteChanged事件
     /// 用于通知UI更新命令的可执行状态
@@ -65,12 +65,12 @@ public class RelayCommand<T>(Action<T?> execute, Predicate<T?>? canExecute = nul
 {
     private readonly Action<T?> _execute = execute ?? throw new ArgumentNullException(nameof(execute));
     private readonly Predicate<T?>? _canExecute = canExecute;
-    
+
     /// <summary>
     /// 当命令的可执行状态可能发生更改时发生
     /// </summary>
     public event EventHandler? CanExecuteChanged;
-        
+
     /// <summary>
     /// 确定命令是否可以在其当前状态下执行
     /// </summary>
@@ -90,7 +90,7 @@ public class RelayCommand<T>(Action<T?> execute, Predicate<T?>? canExecute = nul
             return false;
         }
     }
-    
+
     /// <summary>
     /// 执行命令逻辑
     /// </summary>
@@ -103,7 +103,7 @@ public class RelayCommand<T>(Action<T?> execute, Predicate<T?>? canExecute = nul
             _execute(typedParameter);
         }
     }
-    
+
     /// <summary>
     /// 手动触发CanExecuteChanged事件
     /// 用于通知UI更新命令的可执行状态

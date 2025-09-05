@@ -1,10 +1,10 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using LYBT.Module.Prescriptions.Interfaces;
+using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
-using LYBT.Shared.Interfaces.Services;
 
 namespace LYBT.Module.Prescriptions.Services
 {
@@ -75,10 +75,14 @@ namespace LYBT.Module.Prescriptions.Services
             };
 
             if (string.IsNullOrWhiteSpace(dto.Diagnosis))
+            {
                 result.Errors.Add("处方诊断不能为空");
+            }
 
             if (dto.PatientId == Guid.Empty)
+            {
                 result.Errors.Add("患者ID不能为空");
+            }
 
             result.IsValid = result.Errors.Count == 0;
             return Task.FromResult(ServiceResult<PrescriptionValidationResult>.Success(result));
@@ -86,8 +90,8 @@ namespace LYBT.Module.Prescriptions.Services
 
         public async Task<ServiceResult<PrescriptionDto>> CopyAsync(Guid id, string newName)
         {
-            var operatorId = Guid.Empty; 
-            var operatorName = "System"; 
+            var operatorId = Guid.Empty;
+            var operatorName = "System";
             return await _businessService.CopyAsync(id, newName, operatorId, operatorName);
         }
 
@@ -112,7 +116,9 @@ namespace LYBT.Module.Prescriptions.Services
         public async Task<bool> CancelAsync(string id, Guid operatorId, string operatorName)
         {
             if (!Guid.TryParse(id, out var guid))
+            {
                 return false;
+            }
 
             var result = await _businessService.CancelAsync(guid, operatorId, operatorName);
             return result.IsSuccess && result.Data;

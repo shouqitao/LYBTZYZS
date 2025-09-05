@@ -1,10 +1,10 @@
-using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Shared.Models.Contracts.Prescriptions;
-using LYBT.Shared.Models.Enums;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Prescriptions;
+using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Desktop.Core.Models.Prescriptions
 {
@@ -265,7 +265,9 @@ namespace LYBT.Desktop.Core.Models.Prescriptions
         protected bool SetProperty<T>(ref T storage, T value, [CallerMemberName] string propertyName = null!)
         {
             if (EqualityComparer<T>.Default.Equals(storage, value))
+            {
                 return false;
+            }
 
             storage = value;
             OnPropertyChanged(propertyName);
@@ -426,7 +428,9 @@ namespace LYBT.Desktop.Core.Models.Prescriptions
         protected bool SetProperty<T>(ref T storage, T value, [CallerMemberName] string propertyName = null!)
         {
             if (EqualityComparer<T>.Default.Equals(storage, value))
+            {
                 return false;
+            }
 
             storage = value;
             OnPropertyChanged(propertyName);

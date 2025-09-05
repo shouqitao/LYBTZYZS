@@ -1,11 +1,11 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using LYBT.Desktop.Patients.Interfaces;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Patients.Services;
 
@@ -33,7 +33,7 @@ public class PatientQueryService(ILogger<PatientQueryService> logger) : IPatient
     {
         try
         {
-            _logger.LogDebug("执行患者分页查询，页码: {PageNumber}, 页大小: {PageSize}", 
+            _logger.LogDebug("执行患者分页查询，页码: {PageNumber}, 页大小: {PageSize}",
                 query.CurrentPage, query.PageSize);
 
             var emptyResult = new PagedResult<PatientDto>
@@ -41,7 +41,7 @@ public class PatientQueryService(ILogger<PatientQueryService> logger) : IPatient
                 Items = [],
                 TotalCount = 0
             };
-            
+
             return Task.FromResult(ServiceResult<PagedResult<PatientDto>>.Success(emptyResult));
         }
         catch (Exception ex)
@@ -95,7 +95,7 @@ public class PatientQueryService(ILogger<PatientQueryService> logger) : IPatient
         {
             _logger.LogDebug("生成患者档案统计数据");
             var stats = new PatientStatisticsDto();
-            
+
             return Task.FromResult(ServiceResult<PatientStatisticsDto>.Success(stats));
         }
         catch (Exception ex)
@@ -115,7 +115,7 @@ public class PatientQueryService(ILogger<PatientQueryService> logger) : IPatient
         try
         {
             _logger.LogDebug("根据身份证号查询患者: {IdCard}", idCard?.Substring(0, 6) + "****");
-            
+
             // 简单诊所版本：基础实现，返回空结果
             return Task.FromResult(ServiceResult<PatientDto>.Failure("简单诊所版本暂不支持身份证号查询"));
         }
@@ -136,7 +136,7 @@ public class PatientQueryService(ILogger<PatientQueryService> logger) : IPatient
         try
         {
             _logger.LogDebug("根据电话号码查询患者: {Phone}", phone?.Substring(0, 3) + "****");
-            
+
             // 简单诊所版本：基础实现，返回空列表
             List<PatientDto> emptyList = [];
             return Task.FromResult(ServiceResult<List<PatientDto>>.Success(emptyList));

@@ -1,6 +1,6 @@
+﻿using LYBT.Infrastructure.Configuration.Options;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using LYBT.Infrastructure.Configuration.Options;
 
 namespace LYBT.Infrastructure.Configuration
 {

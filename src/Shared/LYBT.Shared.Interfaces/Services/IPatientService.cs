@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using LYBT.Shared.Models.Contracts.Common;
@@ -17,22 +17,22 @@ namespace LYBT.Shared.Interfaces.Services
         /// 分页查询患者
         /// </summary>
         Task<ServiceResult<PagedResult<PatientDto>>> GetPagedAsync(PatientPagedQueryDto query);
-        
+
         /// <summary>
         /// 根据ID获取患者详情
         /// </summary>
         Task<ServiceResult<PatientDto>> GetByIdAsync(Guid id);
-        
+
         /// <summary>
         /// 根据身份证号查找患者
         /// </summary>
         Task<ServiceResult<PatientDto>> GetByIdCardAsync(string idCard);
-        
+
         /// <summary>
         /// 根据电话号码查找患者
         /// </summary>
         Task<ServiceResult<List<PatientDto>>> GetByPhoneAsync(string phone);
-        
+
         /// <summary>
         /// 搜索患者（按姓名或身份证）
         /// </summary>
@@ -46,12 +46,12 @@ namespace LYBT.Shared.Interfaces.Services
         /// 创建新患者
         /// </summary>
         Task<ServiceResult<PatientDto>> CreateAsync(PatientCreateDto dto);
-        
+
         /// <summary>
         /// 更新患者信息
         /// </summary>
         Task<ServiceResult<PatientDto>> UpdateAsync(Guid id, PatientUpdateDto dto);
-        
+
         /// <summary>
         /// 删除患者（软删除）
         /// </summary>
@@ -61,7 +61,7 @@ namespace LYBT.Shared.Interfaces.Services
         /// 启用患者
         /// </summary>
         Task<ServiceResult> EnableAsync(Guid id);
-        
+
         /// <summary>
         /// 禁用患者
         /// </summary>
@@ -75,7 +75,7 @@ namespace LYBT.Shared.Interfaces.Services
         /// 批量导入患者
         /// </summary>
         Task<ServiceResult<object>> ImportPatientsAsync(List<PatientCreateDto> patients);
-        
+
         /// <summary>
         /// 导出患者数据
         /// </summary>

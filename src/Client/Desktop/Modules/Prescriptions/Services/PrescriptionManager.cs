@@ -1,16 +1,16 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
+using LYBT.Shared.Interfaces.Services;
 // UltraThink v2.0: 移除已删除的Info模型引用，直接使用DTO
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Contracts.Patients;
-using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
-using AutoMapper;
 
 namespace LYBT.Desktop.Prescriptions.Services
 {
@@ -20,27 +20,27 @@ namespace LYBT.Desktop.Prescriptions.Services
     public class PrescriptionManager
     {
         #region 处方验证常量
-        
+
         private const decimal MIN_HERB_QUANTITY = 0.1m;
         private const decimal MAX_HERB_QUANTITY = 1000m;
         private const decimal DEFAULT_HERB_QUANTITY = 10m;
         private const int MAX_PRESCRIPTION_ITEMS = 50;
-        
+
         #endregion
 
         #region 依赖服务
-        
+
         private readonly IPrescriptionService _prescriptionService;
         private readonly IMapper _mapper;
         private readonly ILogger<PrescriptionManager> _logger;
-        
+
         #endregion
 
         #region 处方数据
-        
+
         private ObservableCollection<PrescriptionItemDto> _prescriptionItems = new();
         private PrescriptionDto? _currentPrescription;
-        
+
         #endregion
 
         public PrescriptionManager(
@@ -146,7 +146,7 @@ namespace LYBT.Desktop.Prescriptions.Services
                     _logger.LogInformation($"从处方中移除药材 {item.HerbName}");
                     return true;
                 }
-                
+
                 return false;
             }
             catch (Exception ex)
@@ -177,7 +177,7 @@ namespace LYBT.Desktop.Prescriptions.Services
                     _logger.LogInformation($"更新药材 {item.HerbName} 数量至 {newQuantity} (Subtotal自动更新为 {item.Subtotal})");
                     return true;
                 }
-                
+
                 return false;
             }
             catch (Exception ex)
@@ -238,7 +238,7 @@ namespace LYBT.Desktop.Prescriptions.Services
 
                 // 调用服务保存处方
                 var result = await _prescriptionService.CreateAsync(createDto);
-                
+
                 if (result != null)
                 {
                     _logger.LogInformation($"成功保存处方，包含 {_prescriptionItems.Count} 味药材");
@@ -306,7 +306,7 @@ namespace LYBT.Desktop.Prescriptions.Services
                 // UltraThink v2.0: 简化验证逻辑，暂时跳过验证服务
                 // var validationResult = await _validationService.ValidatePrescriptionAsync(_prescriptionItems, patientDto, "");
                 var canPrescribe = _prescriptionItems.Any(); // 简单验证：有药材就可以开方
-                
+
                 if (!canPrescribe)
                 {
                     _logger.LogWarning("处方验证失败: 处方为空或无有效药材");

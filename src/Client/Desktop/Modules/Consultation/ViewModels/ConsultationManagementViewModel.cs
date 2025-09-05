@@ -1,13 +1,13 @@
-using System;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using Microsoft.Extensions.Logging;
-using Prism.Commands;
-using LYBT.Desktop.Core.ViewModels.Base;
 using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Desktop.Core.ViewModels.Base;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Consultation;
+using Microsoft.Extensions.Logging;
+using Prism.Commands;
 
 namespace LYBT.Desktop.Consultation.ViewModels
 {
@@ -112,7 +112,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
             try
             {
                 IsLoading = true;
-                
+
                 var query = new LYBT.Shared.Models.Contracts.Common.PagedQueryBaseDto
                 {
                     PageIndex = 1,

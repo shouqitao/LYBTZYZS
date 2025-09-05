@@ -1,27 +1,27 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using LYBT.Desktop.Auth;
+using LYBT.Desktop.Consultation;
+using LYBT.Desktop.Formula;
+using LYBT.Desktop.Herbs;
+using LYBT.Desktop.MedicalCase;
+using LYBT.Desktop.Patients;
+using LYBT.Desktop.Prescriptions;
+using LYBT.Desktop.Shell.Extensions;
+using LYBT.Desktop.Shell.ViewModels;
+using LYBT.Desktop.Shell.Views;
+using LYBT.Desktop.Users;
+using LYBT.Desktop.Workbench.Admin;
+using LYBT.Desktop.Workbench.Consultation;
+using LYBT.Desktop.Workbench.Core;
 using Microsoft.Extensions.Logging;
 using Prism.DryIoc;
 using Prism.Ioc;
 using Prism.Modularity;
 using Prism.Mvvm;
-using LYBT.Desktop.Shell.Views;
-using LYBT.Desktop.Shell.ViewModels;
-using LYBT.Desktop.Shell.Extensions;
-using LYBT.Desktop.Auth;
-using LYBT.Desktop.Consultation;
-using LYBT.Desktop.MedicalCase;
-using LYBT.Desktop.Users;
-using LYBT.Desktop.Patients;
-using LYBT.Desktop.Herbs;
-using LYBT.Desktop.Prescriptions;
-using LYBT.Desktop.Formula;
-using LYBT.Desktop.Workbench.Consultation;
-using LYBT.Desktop.Workbench.Core;
-using LYBT.Desktop.Workbench.Admin;
 
 namespace LYBT.Desktop.Shell;
 
@@ -54,14 +54,14 @@ public partial class App : PrismApplication
     protected override void RegisterTypes(IContainerRegistry containerRegistry)
     {
         ArgumentNullException.ThrowIfNull(containerRegistry, nameof(containerRegistry));
-        
+
         // 使用扩展方法统一注册所有服务
         containerRegistry.RegisterAllServices();
-        
+
         // 显式配置ViewModelLocator映射
         ConfigureViewModelLocator();
     }
-    
+
     /// <summary>
     /// 配置ViewModel定位器
     /// 显式注册View和ViewModel的映射关系，确保依赖注入正确工作
@@ -69,10 +69,10 @@ public partial class App : PrismApplication
     protected override void ConfigureViewModelLocator()
     {
         base.ConfigureViewModelLocator();
-        
+
         // 显式注册View和ViewModel的映射关系，解决AutoWireViewModel失败问题
         ViewModelLocationProvider.Register<HomeView, HomeViewModel>();
-        
+
         // TODO: 根据需要添加其他View-ViewModel映射
     }
 
@@ -83,10 +83,10 @@ public partial class App : PrismApplication
     protected override void OnInitialized()
     {
         base.OnInitialized();
-        
+
         // 1. 启动性能优化 - 应用预热（异步执行，不阻塞主线程）
         _ = Task.Run(InitializeApplicationWarmupAsync);
-        
+
         // 2. 初始化错误处理服务并注册全局异常处理器
         InitializeErrorHandlingService();
 
@@ -127,7 +127,7 @@ public partial class App : PrismApplication
         {
             // 如果错误处理服务初始化失败，使用基本的错误处理
             System.Diagnostics.Debug.WriteLine($"初始化错误处理服务失败: {ex.Message}");
-            MessageBox.Show($"系统初始化失败: {ex.Message}", "凌隐宝堂 - 系统错误", 
+            MessageBox.Show($"系统初始化失败: {ex.Message}", "凌隐宝堂 - 系统错误",
                 MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
@@ -184,7 +184,7 @@ public partial class App : PrismApplication
                 var initializationTime = DateTime.Now - startTime;
                 moduleInitTimes.Remove(moduleName);
 
-                logger.LogInformation("模块 {ModuleName} 加载完成，耗时 {Duration}ms", 
+                logger.LogInformation("模块 {ModuleName} 加载完成，耗时 {Duration}ms",
                     moduleName, initializationTime.TotalMilliseconds);
             }
 
@@ -207,7 +207,7 @@ public partial class App : PrismApplication
     protected override void ConfigureModuleCatalog(IModuleCatalog moduleCatalog)
     {
         ArgumentNullException.ThrowIfNull(moduleCatalog, nameof(moduleCatalog));
-        
+
         // 1. 核心必需模块（所有角色都需要）
         AddCoreModule(moduleCatalog, nameof(AuthenticationModule), typeof(AuthenticationModule));
         AddCoreModule(moduleCatalog, nameof(UsersModule), typeof(UsersModule));
@@ -216,26 +216,26 @@ public partial class App : PrismApplication
         AddCoreModule(moduleCatalog, nameof(PatientsModule), typeof(PatientsModule));
 
         // 3. 专业功能模块（按需加载，提升启动速度）
-        AddRoleBasedModule(moduleCatalog, nameof(ConsultationModule), typeof(ConsultationModule), 
+        AddRoleBasedModule(moduleCatalog, nameof(ConsultationModule), typeof(ConsultationModule),
             ["Doctor", "Admin"]);
-        
-        AddRoleBasedModule(moduleCatalog, nameof(MedicalCaseModule), typeof(MedicalCaseModule), 
+
+        AddRoleBasedModule(moduleCatalog, nameof(MedicalCaseModule), typeof(MedicalCaseModule),
             ["Doctor", "Admin"]);
-        
-        AddRoleBasedModule(moduleCatalog, nameof(HerbsModule), typeof(HerbsModule), 
+
+        AddRoleBasedModule(moduleCatalog, nameof(HerbsModule), typeof(HerbsModule),
             ["Doctor", "Pharmacist", "Admin"]);
-        
-        AddRoleBasedModule(moduleCatalog, nameof(PrescriptionsModule), typeof(PrescriptionsModule), 
+
+        AddRoleBasedModule(moduleCatalog, nameof(PrescriptionsModule), typeof(PrescriptionsModule),
             ["Doctor", "Pharmacist", "Admin"]);
-        
-        AddRoleBasedModule(moduleCatalog, nameof(FormulaModule), typeof(FormulaModule), 
+
+        AddRoleBasedModule(moduleCatalog, nameof(FormulaModule), typeof(FormulaModule),
             ["Doctor", "Admin"]);
 
         // 4. 工作台模块（基于角色智能加载）
-        AddRoleBasedModule(moduleCatalog, nameof(SystemWorkbenchModule), typeof(SystemWorkbenchModule), 
+        AddRoleBasedModule(moduleCatalog, nameof(SystemWorkbenchModule), typeof(SystemWorkbenchModule),
             ["Admin"]);
 
-        AddRoleBasedModule(moduleCatalog, nameof(ConsultationWorkbenchModule), typeof(ConsultationWorkbenchModule), 
+        AddRoleBasedModule(moduleCatalog, nameof(ConsultationWorkbenchModule), typeof(ConsultationWorkbenchModule),
             ["Doctor", "Admin"]);
 
         base.ConfigureModuleCatalog(moduleCatalog);
@@ -275,10 +275,10 @@ public partial class App : PrismApplication
             // 设为按需加载，登录后根据角色决定是否立即加载
             InitializationMode = InitializationMode.OnDemand
         };
-        
+
         // 记录模块角色信息（简化处理）
         // TODO: 如需角色限制，在模块初始化时检查
-        
+
         moduleCatalog.AddModule(moduleInfo);
     }
 
@@ -292,7 +292,7 @@ public partial class App : PrismApplication
     public async Task LoadRoleBasedModulesAsync(string userRole)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(userRole, nameof(userRole));
-        
+
         try
         {
             var moduleManager = Container.Resolve<IModuleManager>();
@@ -326,7 +326,7 @@ public partial class App : PrismApplication
                 }
             }
 
-            logger.LogInformation("角色驱动模块加载完成，共加载 {LoadedCount}/{TotalCount} 个模块", 
+            logger.LogInformation("角色驱动模块加载完成，共加载 {LoadedCount}/{TotalCount} 个模块",
                 loadedCount, modulesToLoad.Count);
         }
         catch (Exception ex)

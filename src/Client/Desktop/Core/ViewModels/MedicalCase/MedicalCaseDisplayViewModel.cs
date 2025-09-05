@@ -1,8 +1,8 @@
-using System;
+﻿using System;
 using System.Globalization;
+using LYBT.Desktop.Core.Extensions;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Enums;
-using LYBT.Desktop.Core.Extensions;
 using Prism.Mvvm;
 
 namespace LYBT.Desktop.Core.ViewModels.MedicalCase
@@ -23,11 +23,11 @@ namespace LYBT.Desktop.Core.ViewModels.MedicalCase
         #region 基础显示属性
 
         /// <summary>患者姓名显示</summary>
-        public string PatientNameDisplay => string.IsNullOrWhiteSpace(_medicalCaseData.PatientName) ? 
+        public string PatientNameDisplay => string.IsNullOrWhiteSpace(_medicalCaseData.PatientName) ?
             "未知患者" : _medicalCaseData.PatientName;
 
         /// <summary>医生姓名显示</summary>
-        public string DoctorNameDisplay => string.IsNullOrWhiteSpace(_medicalCaseData.DoctorName) ? 
+        public string DoctorNameDisplay => string.IsNullOrWhiteSpace(_medicalCaseData.DoctorName) ?
             "未知医生" : _medicalCaseData.DoctorName;
 
         /// <summary>患者年龄显示</summary>
@@ -37,11 +37,11 @@ namespace LYBT.Desktop.Core.ViewModels.MedicalCase
         public string PatientGenderDisplay => "通用"; // UltraThink v2.0简化：删除PatientGender字段
 
         /// <summary>主诉显示</summary>
-        public string ChiefComplaintDisplay => string.IsNullOrWhiteSpace(_medicalCaseData.Remark) ? 
+        public string ChiefComplaintDisplay => string.IsNullOrWhiteSpace(_medicalCaseData.Remark) ?
             "无主诉" : _medicalCaseData.Remark; // UltraThink v2.0简化：使用备注字段替代主诉
 
         /// <summary>诊断显示</summary>
-        public string DiagnosisDisplay => _medicalCaseData.CaseStatus == MedicalCaseStatus.Completed ? 
+        public string DiagnosisDisplay => _medicalCaseData.CaseStatus == MedicalCaseStatus.Completed ?
             "诊断完成" : "待诊断"; // UltraThink v2.0简化：基于状态判断诊断
 
         /// <summary>创建时间显示</summary>
@@ -114,7 +114,7 @@ namespace LYBT.Desktop.Core.ViewModels.MedicalCase
             get
             {
                 // UltraThink v2.0简化：删除IsCompleted和CreateTime
-                return _medicalCaseData.CaseStatus == MedicalCaseStatus.Completed ? 
+                return _medicalCaseData.CaseStatus == MedicalCaseStatus.Completed ?
                     CompleteTimeDisplay : "预计完成";
             }
         }
@@ -129,10 +129,10 @@ namespace LYBT.Desktop.Core.ViewModels.MedicalCase
             get
             {
                 var parts = new List<string> { PatientNameDisplay };
-                
+
                 // UltraThink v2.0简化：删除PatientGender和PatientAge字段
                 parts.Add("通用患者");
-                    
+
                 return string.Join(" ", parts);
             }
         }
@@ -216,15 +216,15 @@ namespace LYBT.Desktop.Core.ViewModels.MedicalCase
         public string GetStatusBadge()
         {
             var badges = new List<string>();
-            
+
             badges.Add(StatusDisplay);
-            
+
             // UltraThink v2.0简化：删除IsUrgent扩展方法
             // badges.Add("紧急");
-                
+
             // UltraThink v2.0简化：删除NeedsDoctorAttention扩展方法
             // badges.Add("需关注");
-                
+
             return string.Join(" ", badges);
         }
 
@@ -250,11 +250,15 @@ namespace LYBT.Desktop.Core.ViewModels.MedicalCase
         {
             // UltraThink v2.0简化：删除业务扩展方法，使用简单状态判断
             if (_medicalCaseData.CaseStatus == MedicalCaseStatus.Registered)
+            {
                 return "可以开始看诊";
-                
+            }
+
             if (_medicalCaseData.CaseStatus == MedicalCaseStatus.InConsultation)
+            {
                 return "可以完成案例";
-                
+            }
+
             return "正常状态";
         }
 
@@ -268,17 +272,23 @@ namespace LYBT.Desktop.Core.ViewModels.MedicalCase
         public string GetAvailableActions()
         {
             var actions = new List<string>();
-            
+
             // UltraThink v2.0简化：删除业务扩展方法，使用简单状态判断
             if (_medicalCaseData.CaseStatus == MedicalCaseStatus.Registered)
+            {
                 actions.Add("开始看诊");
-                
+            }
+
             if (_medicalCaseData.CaseStatus == MedicalCaseStatus.InConsultation)
+            {
                 actions.Add("完成案例");
-                
+            }
+
             if (_medicalCaseData.CaseStatus != MedicalCaseStatus.Completed)
+            {
                 actions.Add("编辑信息");
-                
+            }
+
             return actions.Any() ? string.Join("、", actions) : "无可用操作";
         }
 

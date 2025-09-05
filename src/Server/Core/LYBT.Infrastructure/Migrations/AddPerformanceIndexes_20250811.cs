@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -15,7 +15,7 @@ namespace LYBT.Infrastructure.Migrations
             // ===========================================
             // 用户表 (Users) 性能索引
             // ===========================================
-            
+
             // 1. 用户名查询索引 - GetUserByUsernameQuery
             // 单字段唯一索引，支持精确查询
             migrationBuilder.CreateIndex(
@@ -26,7 +26,7 @@ namespace LYBT.Infrastructure.Migrations
 
             // 2. 邮箱查询索引 - 支持邮箱登录和验证
             migrationBuilder.CreateIndex(
-                name: "IX_Users_Email_Unique", 
+                name: "IX_Users_Email_Unique",
                 table: "Users",
                 column: "Email",
                 unique: true);
@@ -35,7 +35,7 @@ namespace LYBT.Infrastructure.Migrations
             // 支持角色和活跃状态的组合查询
             migrationBuilder.CreateIndex(
                 name: "IX_Users_Role_IsActive_CreatedAt",
-                table: "Users", 
+                table: "Users",
                 columns: new[] { "Role", "IsActive", "CreatedAt" });
 
             // 4. 搜索优化索引 - SearchUsersQuery
@@ -77,7 +77,7 @@ namespace LYBT.Infrastructure.Migrations
             // 3. 身份证号码查询索引
             migrationBuilder.CreateIndex(
                 name: "IX_Patients_IdCardNumber",
-                table: "Patients", 
+                table: "Patients",
                 column: "IdCardNumber");
 
             // 4. 患者搜索复合索引
@@ -121,7 +121,7 @@ namespace LYBT.Infrastructure.Migrations
             // 2. 医生处方查询索引
             migrationBuilder.CreateIndex(
                 name: "IX_Prescriptions_DoctorId_CreatedAt",
-                table: "Prescriptions", 
+                table: "Prescriptions",
                 columns: new[] { "DoctorId", "CreatedAt" });
 
             // 3. 处方状态查询索引
@@ -171,7 +171,7 @@ namespace LYBT.Infrastructure.Migrations
             // 3. 看诊状态查询索引
             migrationBuilder.CreateIndex(
                 name: "IX_Consultations_Status_ConsultationDate",
-                table: "Consultations", 
+                table: "Consultations",
                 columns: new[] { "Status", "ConsultationDate" });
 
             // ===========================================
@@ -186,7 +186,7 @@ namespace LYBT.Infrastructure.Migrations
 
             // 2. 医生医疗案例查询索引
             migrationBuilder.CreateIndex(
-                name: "IX_MedicalCases_DoctorId_CreatedAt", 
+                name: "IX_MedicalCases_DoctorId_CreatedAt",
                 table: "MedicalCases",
                 columns: new[] { "DoctorId", "CreatedAt" });
 

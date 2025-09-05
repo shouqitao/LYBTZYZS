@@ -1,11 +1,11 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System;
+﻿using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using LYBT.Desktop.Core.Services;
+using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Desktop.Core.Controls
 {
@@ -26,35 +26,35 @@ namespace LYBT.Desktop.Core.Controls
         /// 关联的SmartLoadingManager
         /// </summary>
         public static readonly DependencyProperty LoadingManagerProperty =
-            DependencyProperty.Register(nameof(LoadingManager), typeof(ISmartLoadingManager), 
+            DependencyProperty.Register(nameof(LoadingManager), typeof(ISmartLoadingManager),
                 typeof(SmartLoadingIndicator), new PropertyMetadata(null, OnLoadingManagerChanged));
 
         /// <summary>
         /// 监听的加载层级
         /// </summary>
         public static readonly DependencyProperty LayerProperty =
-            DependencyProperty.Register(nameof(Layer), typeof(int), 
+            DependencyProperty.Register(nameof(Layer), typeof(int),
                 typeof(SmartLoadingIndicator), new PropertyMetadata(1, OnLayerChanged));
 
         /// <summary>
         /// 是否显示取消按钮
         /// </summary>
         public static readonly DependencyProperty ShowCancelButtonProperty =
-            DependencyProperty.Register(nameof(ShowCancelButton), typeof(bool), 
+            DependencyProperty.Register(nameof(ShowCancelButton), typeof(bool),
                 typeof(SmartLoadingIndicator), new PropertyMetadata(false));
 
         /// <summary>
         /// 自定义加载消息
         /// </summary>
         public static readonly DependencyProperty CustomMessageProperty =
-            DependencyProperty.Register(nameof(CustomMessage), typeof(string), 
+            DependencyProperty.Register(nameof(CustomMessage), typeof(string),
                 typeof(SmartLoadingIndicator), new PropertyMetadata(null, OnCustomMessageChanged));
 
         /// <summary>
         /// 取消命令 - UltraThink Command绑定优化
         /// </summary>
         public static readonly DependencyProperty CancelCommandProperty =
-            DependencyProperty.Register(nameof(CancelCommand), typeof(ICommand), 
+            DependencyProperty.Register(nameof(CancelCommand), typeof(ICommand),
                 typeof(SmartLoadingIndicator), new PropertyMetadata(null));
 
         #endregion
@@ -250,7 +250,9 @@ namespace LYBT.Desktop.Core.Controls
         private void UpdateLoadingMessage()
         {
             if (LoadingManager == null)
+            {
                 return;
+            }
 
             if (!string.IsNullOrEmpty(CustomMessage))
             {

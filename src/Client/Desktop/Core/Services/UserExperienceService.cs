@@ -1,12 +1,12 @@
-using System;
+﻿using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Threading;
-using Microsoft.Extensions.Logging;
 using LYBT.Desktop.Core.Interfaces.Services;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Core.Services
 {
@@ -27,7 +27,7 @@ namespace LYBT.Desktop.Core.Services
         private readonly ILogger<UserExperienceService> _logger;
         private readonly ICustomDialogService _dialogService;
         private readonly DispatcherTimer _feedbackTimer;
-        
+
         private bool _isGlobalLoading;
         private string _loadingMessage = "加载中...";
         private string _statusMessage = "";
@@ -44,7 +44,7 @@ namespace LYBT.Desktop.Core.Services
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
-            
+
             // 初始化反馈定时器
             _feedbackTimer = new DispatcherTimer
             {
@@ -67,7 +67,7 @@ namespace LYBT.Desktop.Core.Services
                 {
                     _isGlobalLoading = value;
                     OnPropertyChanged();
-                    
+
                     // 更新鼠标指针
                     Application.Current.Dispatcher.BeginInvoke(() =>
                     {
@@ -203,13 +203,13 @@ namespace LYBT.Desktop.Core.Services
 
         /// <summary>执行操作并提供用户反馈</summary>
         public async Task<T> ExecuteWithFeedbackAsync<T>(
-            Func<Task<T>> operation, 
+            Func<Task<T>> operation,
             string loadingMessage = "处理中...",
             string successMessage = "操作成功",
             string errorMessage = "操作失败")
         {
             StartGlobalLoading(loadingMessage);
-            
+
             try
             {
                 var result = await operation();
@@ -229,11 +229,11 @@ namespace LYBT.Desktop.Core.Services
         public async Task ExecuteWithFeedbackAsync(
             Func<Task> operation,
             string loadingMessage = "处理中...",
-            string successMessage = "操作成功", 
+            string successMessage = "操作成功",
             string errorMessage = "操作失败")
         {
             StartGlobalLoading(loadingMessage);
-            
+
             try
             {
                 await operation();
@@ -252,10 +252,10 @@ namespace LYBT.Desktop.Core.Services
         public async Task ShowFriendlyErrorAsync(Exception exception, string context = "")
         {
             var userFriendlyMessage = GetUserFriendlyErrorMessage(exception);
-            var fullMessage = string.IsNullOrEmpty(context) 
-                ? userFriendlyMessage 
+            var fullMessage = string.IsNullOrEmpty(context)
+                ? userFriendlyMessage
                 : $"{context}: {userFriendlyMessage}";
-                
+
             await _dialogService.ShowErrorAsync(fullMessage, "操作失败");
             ShowErrorFeedback(userFriendlyMessage);
         }
@@ -282,7 +282,7 @@ namespace LYBT.Desktop.Core.Services
             {
                 StatusMessage = message;
                 CurrentFeedbackType = feedbackType;
-                
+
                 // 重新启动定时器
                 _feedbackTimer.Stop();
                 _feedbackTimer.Start();
@@ -307,8 +307,8 @@ namespace LYBT.Desktop.Core.Services
                 System.Net.Http.HttpRequestException => "网络连接失败，请检查网络状态",
                 InvalidOperationException => "当前状态下无法执行此操作",
                 NotSupportedException => "当前不支持此功能",
-                _ => exception.Message.Contains("SQL") || exception.Message.Contains("Database") 
-                    ? "数据库操作失败，请稍后重试" 
+                _ => exception.Message.Contains("SQL") || exception.Message.Contains("Database")
+                    ? "数据库操作失败，请稍后重试"
                     : exception.Message
             };
         }
@@ -342,7 +342,7 @@ namespace LYBT.Desktop.Core.Services
     {
         None,
         Success,
-        Error, 
+        Error,
         Warning,
         Info
     }

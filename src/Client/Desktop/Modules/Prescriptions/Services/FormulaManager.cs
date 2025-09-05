@@ -1,14 +1,13 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
+using LYBT.Desktop.Core.Enums;
 // UltraThink v2.0: 移除已删除的Info模型和接口引用，直接使用DTO
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.Extensions.Logging;
-using AutoMapper;
-using LYBT.Desktop.Core.Enums;
-
 using IFormulaService = LYBT.Shared.Interfaces.Services.IFormulaService;
 
 namespace LYBT.Desktop.Prescriptions.Services
@@ -38,9 +37,9 @@ namespace LYBT.Desktop.Prescriptions.Services
         #region 缓存字段
 
         private readonly Dictionary<Guid, int> _formulaUsageCount = new();
-        #pragma warning disable CS0414 // 字段已分配但未使用，保留以便未来缓存功能实现
+#pragma warning disable CS0414 // 字段已分配但未使用，保留以便未来缓存功能实现
         private List<FormulaDto>? _cachedFormulas;
-        #pragma warning restore CS0414
+#pragma warning restore CS0414
 
         #endregion
 
@@ -119,7 +118,7 @@ namespace LYBT.Desktop.Prescriptions.Services
                 }
 
                 var formulaItems = ApplyFormulaTemplate(formula);
-                
+
                 switch (mergeMode)
                 {
                     case FormulaMergeMode.Replace:
@@ -184,15 +183,15 @@ namespace LYBT.Desktop.Prescriptions.Services
                 };
 
                 var result = await _formulaService.CreateAsync(createDto);
-                
+
                 if (result.IsSuccess && result.Data != null)
                 {
                     var formula = result.Data; // 直接使用DTO，不需要映射
                     _logger.LogInformation($"成功创建自定义验方: {name}");
-                    
+
                     // 清除缓存以便重新加载
                     _cachedFormulas = null;
-                    
+
                     return formula;
                 }
 
@@ -320,14 +319,14 @@ namespace LYBT.Desktop.Prescriptions.Services
             foreach (var newItem in newItems)
             {
                 var existingItem = mergedItems.FirstOrDefault(x => x.HerbId == newItem.HerbId);
-                
+
                 if (existingItem != null)
                 {
                     // 相同药材，累加数量（Subtotal会自动重新计算）
                     existingItem.Quantity += newItem.Quantity;
-                    
+
                     // 合并用法说明
-                    if (!string.IsNullOrWhiteSpace(newItem.Usage) && 
+                    if (!string.IsNullOrWhiteSpace(newItem.Usage) &&
                         existingItem.Usage != newItem.Usage)
                     {
                         existingItem.Usage = $"{existingItem.Usage}; {newItem.Usage}";
@@ -371,7 +370,7 @@ namespace LYBT.Desktop.Prescriptions.Services
             var description = formula.Description.ToLower();
             var name = formula.Name.ToLower();
 
-            return symptomKeywords.Any(keyword => 
+            return symptomKeywords.Any(keyword =>
                 description.Contains(keyword) || name.Contains(keyword));
         }
 

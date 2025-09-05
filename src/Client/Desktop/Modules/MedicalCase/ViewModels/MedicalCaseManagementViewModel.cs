@@ -1,16 +1,16 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
-using LYBT.Desktop.Core.ViewModels.Base;
+using LYBT.Desktop.Core.Coordinators;
 using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.Managers;
-using LYBT.Desktop.Core.Coordinators;
 using LYBT.Desktop.Core.Mvvm; // ✅ 添加AsyncRelayCommand支持
-using LYBT.Shared.Models.Contracts.MedicalCase;
-using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Shared.Models.Common;
+using LYBT.Desktop.Core.ViewModels.Base;
 using LYBT.Shared.Interfaces.Services;
+using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.MedicalCase;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 
@@ -119,7 +119,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             _medicalCaseService = medicalCaseService ?? throw new ArgumentNullException(nameof(medicalCaseService));
             _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            
+
             InitializeData();
         }
 
@@ -130,7 +130,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         protected override void InitializeCommands()
         {
             base.InitializeCommands();
-            
+
             // ✅ 修复: 使用AsyncRelayCommand替代async void模式
             SearchCommand = new AsyncRelayCommand(SearchAsync);
             // RefreshCommand由基类提供，已修复async void问题
@@ -141,7 +141,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             CreatePrescriptionCommand = new AsyncRelayCommand<MedicalCaseDto>(CreatePrescriptionAsync);
             PrintCommand = new AsyncRelayCommand<MedicalCaseDto>(PrintCaseAsync);
             DeleteCommand = new AsyncRelayCommand<MedicalCaseDto>(DeleteCaseAsync);
-            
+
             // 初始化分页命令
             FirstPageCommand = new DelegateCommand(async () => await PaginationCoordinator.GoToFirstPageAsync());
             PreviousPageCommand = new DelegateCommand(async () => await PaginationCoordinator.GoToPreviousPageAsync());
@@ -155,7 +155,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             EndDate = DateTime.Today;
             StartDate = DateTime.Today.AddMonths(-1);
             FilterStatus = "全部状态";
-            
+
             // 加载数据
             _ = Task.Run(async () => await RefreshDataAsync());
         }
@@ -164,7 +164,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         {
             try
             {
-                _logger.LogInformation("加载医疗案例数据，页码: {CurrentPage}, 页大小: {PageSize}, 搜索关键词: {SearchKeyword}", 
+                _logger.LogInformation("加载医疗案例数据，页码: {CurrentPage}, 页大小: {PageSize}, 搜索关键词: {SearchKeyword}",
                     request.CurrentPage, request.PageSize, request.SearchKeyword);
 
                 // UltraThink v1.0: 使用实际服务加载医疗案例数据
@@ -179,7 +179,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 {
                     _logger.LogError("加载医疗案例数据失败: {ErrorMessage}", result.ErrorMessage);
                     return ServiceResult<PagedResult<MedicalCaseDto>>.Failure(
-                        result.ErrorMessage ?? "加载数据失败", 
+                        result.ErrorMessage ?? "加载数据失败",
                         result.Exception);
                 }
             }
@@ -192,7 +192,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         private async Task SearchAsync()
         {
-            _logger.LogInformation("搜索医疗案例: 关键词={SearchKeyword}, 状态={FilterStatus}", 
+            _logger.LogInformation("搜索医疗案例: 关键词={SearchKeyword}, 状态={FilterStatus}",
                 SearchKeyword, FilterStatus);
             await RefreshDataAsync();
         }
@@ -205,7 +205,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
                 var parameters = new Dictionary<string, object>();
                 var result = await _dialogService.ShowDialogAsync("CreateMedicalCaseDialog", parameters);
-                
+
                 if (result.Result == true)
                 {
                     _logger.LogInformation("医疗案例创建成功，刷新数据列表");
@@ -222,12 +222,15 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         private async Task ViewDetailsAsync(MedicalCaseDto medicalCase)
         {
-            if (medicalCase == null) return;
-            
+            if (medicalCase == null)
+            {
+                return;
+            }
+
             try
             {
                 _logger.LogInformation("查看医疗案例详情: {CaseId}", medicalCase.Id);
-                
+
                 var result = await _medicalCaseService.GetByIdAsync(medicalCase.Id);
                 if (result.IsSuccess && result.Data != null)
                 {
@@ -238,13 +241,13 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                                    $"状态: {result.Data.Status}\n" +
                                    $"诊断结果: {result.Data.DiagnosisResult ?? "暂无"}\n" +
                                    $"备注: {result.Data.Remark ?? "暂无"}";
-                    
+
                     await _dialogService.ShowInformationAsync(detailInfo, $"医疗案例详情 - {result.Data.PatientName}");
                 }
                 else
                 {
                     await _dialogService.ShowErrorAsync(
-                        result.ErrorMessage ?? "获取医疗案例详情失败", 
+                        result.ErrorMessage ?? "获取医疗案例详情失败",
                         "错误");
                 }
             }
@@ -257,8 +260,11 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         private async Task EditCaseAsync(MedicalCaseDto medicalCase)
         {
-            if (medicalCase == null) return;
-            
+            if (medicalCase == null)
+            {
+                return;
+            }
+
             _logger.LogInformation("编辑医疗案例: {CaseId}", medicalCase.Id);
             // TODO: 实现编辑逻辑
             await Task.CompletedTask;
@@ -266,8 +272,11 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         private async Task ViewConsultationAsync(MedicalCaseDto medicalCase)
         {
-            if (medicalCase == null) return;
-            
+            if (medicalCase == null)
+            {
+                return;
+            }
+
             _logger.LogInformation("查看看诊记录: {CaseId}", medicalCase.Id);
             // TODO: 实现查看看诊记录逻辑
             await Task.CompletedTask;
@@ -275,7 +284,10 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         private async Task CreatePrescriptionAsync(MedicalCaseDto medicalCase)
         {
-            if (medicalCase == null) return;
+            if (medicalCase == null)
+            {
+                return;
+            }
 
             try
             {
@@ -297,9 +309,9 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 {
                     _logger.LogInformation("处方创建成功，医案: {CaseId}", medicalCase.Id);
                     await _dialogService.ShowSuccessAsync(
-                        $"为患者 {medicalCase.PatientName} 开具的处方已创建成功", 
+                        $"为患者 {medicalCase.PatientName} 开具的处方已创建成功",
                         "处方创建完成");
-                    
+
                     // 可选：刷新医案状态或记录
                     // await RefreshDataAsync();
                 }
@@ -313,8 +325,11 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         private async Task PrintCaseAsync(MedicalCaseDto medicalCase)
         {
-            if (medicalCase == null) return;
-            
+            if (medicalCase == null)
+            {
+                return;
+            }
+
             _logger.LogInformation("打印医疗案例: {CaseId}", medicalCase.Id);
             // TODO: 实现打印逻辑
             await Task.CompletedTask;
@@ -322,12 +337,15 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         private async Task DeleteCaseAsync(MedicalCaseDto medicalCase)
         {
-            if (medicalCase == null) return;
-            
+            if (medicalCase == null)
+            {
+                return;
+            }
+
             try
             {
                 _logger.LogInformation("删除医疗案例: {CaseId}", medicalCase.Id);
-                
+
                 var confirm = await _dialogService.ShowConfirmationAsync(
                     $"确定要删除医疗案例吗？\n" +
                     $"患者: {medicalCase.PatientName}\n" +

@@ -1,7 +1,7 @@
-using LYBT.Module.MedicalCase.Interfaces;
+﻿using LYBT.Module.MedicalCase.Interfaces;
+using LYBT.Module.MedicalCase.Mapping;
 using LYBT.Module.MedicalCase.Repositories;
 using LYBT.Module.MedicalCase.Services;
-using LYBT.Module.MedicalCase.Mapping;
 using LYBT.Shared.Interfaces.Services;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -30,7 +30,7 @@ namespace LYBT.Module.MedicalCase
             services.AddScoped<IMedicalCaseService, MedicalCaseService>();
 
             // AutoMapper配置
-            services.AddAutoMapper(cfg => 
+            services.AddAutoMapper(cfg =>
             {
                 cfg.AddProfile<MedicalCaseMappingProfile>();
             });

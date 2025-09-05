@@ -1,6 +1,6 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
+using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Desktop.Core.Controls.Herbs
 {
@@ -36,7 +36,7 @@ namespace LYBT.Desktop.Core.Controls.Herbs
             if (d is OptimizedHerbListItemControl control)
             {
                 control.DataContext = e.NewValue;
-                
+
                 // 性能优化：只在数据实际改变时更新UI
                 if (e.OldValue != e.NewValue)
                 {
@@ -50,12 +50,15 @@ namespace LYBT.Desktop.Core.Controls.Herbs
         /// </summary>
         private void UpdateDisplayState()
         {
-            if (Data == null) return;
+            if (Data == null)
+            {
+                return;
+            }
 
             // 这里可以添加基于数据状态的UI优化逻辑
             // 例如：根据库存状态调整显示优先级
             // 或者：预缓存常用的格式化字符串
-            
+
             // 触发重新绑定（如果需要）
             InvalidateVisual();
         }
@@ -76,13 +79,13 @@ namespace LYBT.Desktop.Core.Controls.Herbs
         {
             var count = 1; // 当前元素
             var childrenCount = System.Windows.Media.VisualTreeHelper.GetChildrenCount(parent);
-            
+
             for (int i = 0; i < childrenCount; i++)
             {
                 var child = System.Windows.Media.VisualTreeHelper.GetChild(parent, i);
                 count += CountVisualElements(child);
             }
-            
+
             return count;
         }
     }

@@ -1,10 +1,10 @@
-﻿using LYBT.Infrastructure.Data;
+﻿using LYBT.Entities.Herbs;
+using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Repositories;
-using LYBT.Entities.Herbs;
 using LYBT.Module.Herbs.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.Module.Herbs.Repositories
 {
@@ -30,7 +30,9 @@ namespace LYBT.Module.Herbs.Repositories
         public async Task<bool> AddRangeAsync(List<Herb> herbs)
         {
             if (herbs == null || herbs.Count == 0)
+            {
                 return false;
+            }
 
             await _dbSet.AddRangeAsync(herbs);
             var result = await _context.SaveChangesAsync();
@@ -43,13 +45,13 @@ namespace LYBT.Module.Herbs.Repositories
         public async Task<bool> ExistsByNameAsync(string name, Guid? excludeId = null)
         {
             var cacheKey = $"{CacheKeyPrefix}exists:name:{name}:{excludeId}";
-            
+
             if (_cache.TryGetValue<bool>(cacheKey, out var cached))
             {
                 _logger.LogDebug("从缓存获取药材名称存在性检查 {Name}", name);
                 return cached;
             }
-            
+
             var query = _dbSet.AsNoTracking()
                 .Where(h => h.Name == name);
 
@@ -69,19 +71,19 @@ namespace LYBT.Module.Herbs.Repositories
         public async Task<List<Herb>> SearchByPinyinAsync(string pinyin)
         {
             var cacheKey = $"{CacheKeyPrefix}pinyin:{pinyin.ToUpperInvariant()}";
-            
+
             if (_cache.TryGetValue<List<Herb>>(cacheKey, out var cached) && cached != null)
             {
                 _logger.LogDebug("从缓存获取拼音搜索结果 {Pinyin}", pinyin);
                 return cached;
             }
-            
+
             var herbs = await _dbSet
                 .AsNoTracking()
                 .Where(h => h.PinYinCode != null && h.PinYinCode.Contains(pinyin.ToUpperInvariant()))
                 .OrderBy(h => h.Name)
                 .ToListAsync();
-                
+
             _cache.Set(cacheKey, herbs, DefaultCacheDuration);
             return herbs;
         }

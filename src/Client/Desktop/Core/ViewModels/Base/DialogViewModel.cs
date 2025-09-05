@@ -1,8 +1,8 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
+using LYBT.Desktop.Core.Interfaces.Services;
 using Prism.Commands;
 using Prism.Events;
-using LYBT.Desktop.Core.Interfaces.Services;
 
 namespace LYBT.Desktop.Core.ViewModels.Base
 {
@@ -73,7 +73,7 @@ namespace LYBT.Desktop.Core.ViewModels.Base
                 ClearError();
 
                 var success = await SaveAsync();
-                
+
                 if (success)
                 {
                     OnDialogClosing();

@@ -1,11 +1,11 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
+using LYBT.Desktop.Core.Exceptions;
 using Prism.Commands;
 using Prism.Mvvm;
-using LYBT.Desktop.Core.Exceptions;
 using SharedCommon = LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Desktop.Shell.Dialogs.ViewModels
@@ -37,7 +37,7 @@ namespace LYBT.Desktop.Shell.Dialogs.ViewModels
         public bool CanRetry => HandledError?.CanRetry ?? false;
         public List<string> SuggestedActions => HandledError?.SuggestedActions ?? new List<string>();
         public bool HasSuggestedActions => SuggestedActions.Any();
-        
+
         // 上下文信息
         public string Module => HandledError?.Module ?? string.Empty;
         public List<KeyValuePair<string, string>> ContextData => GetContextData();
@@ -79,7 +79,7 @@ namespace LYBT.Desktop.Shell.Dialogs.ViewModels
         private List<KeyValuePair<string, string>> GetContextData()
         {
             var data = new List<KeyValuePair<string, string>>();
-            
+
             // 简化上下文数据显示
             if (HandledError != null)
             {
@@ -112,7 +112,7 @@ namespace LYBT.Desktop.Shell.Dialogs.ViewModels
             {
                 var errorInfo = BuildErrorSummary();
                 Clipboard.SetText(errorInfo);
-                
+
                 // 可以显示一个简短的成功提示
                 // 这里暂时使用调试输出
                 System.Diagnostics.Debug.WriteLine("错误信息已复制到剪贴板");

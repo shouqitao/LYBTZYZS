@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Prism.Mvvm;
 
 namespace LYBT.Desktop.Core.ViewModels.MedicalCase
@@ -360,13 +360,41 @@ namespace LYBT.Desktop.Core.ViewModels.MedicalCase
         /// </summary>
         public string GetCurrentStateDescription()
         {
-            if (HasError) return $"错误: {ErrorMessage}";
-            if (IsStartingConsultation) return "正在开始看诊...";
-            if (IsCompleting) return "正在完成案例...";
-            if (IsCancelling) return "正在取消案例...";
-            if (IsDeleting) return "正在删除...";
-            if (IsLoading) return "加载中...";
-            if (IsEditing) return "编辑中";
+            if (HasError)
+            {
+                return $"错误: {ErrorMessage}";
+            }
+
+            if (IsStartingConsultation)
+            {
+                return "正在开始看诊...";
+            }
+
+            if (IsCompleting)
+            {
+                return "正在完成案例...";
+            }
+
+            if (IsCancelling)
+            {
+                return "正在取消案例...";
+            }
+
+            if (IsDeleting)
+            {
+                return "正在删除...";
+            }
+
+            if (IsLoading)
+            {
+                return "加载中...";
+            }
+
+            if (IsEditing)
+            {
+                return "编辑中";
+            }
+
             return "就绪";
         }
 
@@ -376,18 +404,57 @@ namespace LYBT.Desktop.Core.ViewModels.MedicalCase
         public string GetDetailedStateInfo()
         {
             var states = new List<string>();
-            
-            if (IsSelected) states.Add("已选中");
-            if (IsExpanded) states.Add("已展开");
-            if (IsEditing) states.Add("编辑中");
-            if (IsLoading) states.Add("加载中");
-            if (IsHighlighted) states.Add("高亮");
-            if (IsStartingConsultation) states.Add("开始看诊中");
-            if (IsCompleting) states.Add("完成中");
-            if (IsCancelling) states.Add("取消中");
-            if (IsDeleting) states.Add("删除中");
-            if (HasError) states.Add($"错误: {ErrorMessage}");
-            
+
+            if (IsSelected)
+            {
+                states.Add("已选中");
+            }
+
+            if (IsExpanded)
+            {
+                states.Add("已展开");
+            }
+
+            if (IsEditing)
+            {
+                states.Add("编辑中");
+            }
+
+            if (IsLoading)
+            {
+                states.Add("加载中");
+            }
+
+            if (IsHighlighted)
+            {
+                states.Add("高亮");
+            }
+
+            if (IsStartingConsultation)
+            {
+                states.Add("开始看诊中");
+            }
+
+            if (IsCompleting)
+            {
+                states.Add("完成中");
+            }
+
+            if (IsCancelling)
+            {
+                states.Add("取消中");
+            }
+
+            if (IsDeleting)
+            {
+                states.Add("删除中");
+            }
+
+            if (HasError)
+            {
+                states.Add($"错误: {ErrorMessage}");
+            }
+
             return states.Any() ? string.Join(", ", states) : "正常";
         }
 
@@ -401,8 +468,15 @@ namespace LYBT.Desktop.Core.ViewModels.MedicalCase
         public void EnterBatchSelectionMode()
         {
             // 在批量选择模式下禁用某些操作
-            if (IsEditing) EndEditing();
-            if (IsExpanded) IsExpanded = false;
+            if (IsEditing)
+            {
+                EndEditing();
+            }
+
+            if (IsExpanded)
+            {
+                IsExpanded = false;
+            }
         }
 
         /// <summary>

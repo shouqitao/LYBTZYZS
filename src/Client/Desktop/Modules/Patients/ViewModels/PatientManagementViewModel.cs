@@ -1,10 +1,15 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using LYBT.Desktop.Core.Coordinators;
+using LYBT.Desktop.Core.Helpers;
+// UltraThink四层架构重构：使用新的三层架构组件实现患者管理
+// UltraThink v2.0: 添加SessionAware相关依赖
+using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.Managers;
 using LYBT.Desktop.Core.Services;
 using LYBT.Desktop.Core.ViewModels.Base;
@@ -15,13 +20,8 @@ using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
-using Prism.Commands;
-// UltraThink四层架构重构：使用新的三层架构组件实现患者管理
-// UltraThink v2.0: 添加SessionAware相关依赖
-using LYBT.Desktop.Core.Interfaces.Services;
-using LYBT.Desktop.Core.Helpers;
 using Microsoft.Win32;
-using System.Data;
+using Prism.Commands;
 
 namespace LYBT.Desktop.Patients.ViewModels
 {
@@ -43,7 +43,7 @@ namespace LYBT.Desktop.Patients.ViewModels
         private readonly IPatientService _patientService;
         private readonly ICustomDialogService _dialogService;
         private readonly IMapper _mapper;
-        
+
         // UltraThink v2.0: 直接使用DTO，移除复杂的ViewModel包装
         private PatientDto? _selectedPatient;
 
@@ -98,7 +98,7 @@ namespace LYBT.Desktop.Patients.ViewModels
         public DelegateCommand<PatientDto> DeleteCommand { get; private set; } = null!;
         public DelegateCommand<PatientDto> ToggleStatusCommand { get; private set; } = null!;
         public DelegateCommand<PatientDto> ViewDetailsCommand { get; private set; } = null!;
-        
+
         // Phase 7 新增：导入导出功能
         public DelegateCommand ExportPatientsCommand { get; private set; } = null!;
         public DelegateCommand ImportPatientsCommand { get; private set; } = null!;
@@ -142,7 +142,7 @@ namespace LYBT.Desktop.Patients.ViewModels
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
 
             InitializeCommands();
-            
+
             // UltraThink v2.0: 删除复杂初始化逻辑
             // - 删除选择状态变化监听: 多选功能已移除
             // - 删除RefreshDataAsync(): 直接使用基类的数据加载机制
@@ -159,20 +159,20 @@ namespace LYBT.Desktop.Patients.ViewModels
             DeleteCommand = new DelegateCommand<PatientDto>(async patient => await DeletePatientAsync(patient), CanExecutePatientCommand);
             ToggleStatusCommand = new DelegateCommand<PatientDto>(async patient => await ToggleStatusAsync(patient), CanExecutePatientCommand);
             ViewDetailsCommand = new DelegateCommand<PatientDto>(async patient => await ViewDetailsAsync(patient), CanExecutePatientCommand);
-            
+
             // Phase 7: 初始化导入导出命令
             ExportPatientsCommand = new DelegateCommand(async () => await ExportPatientsAsync(), () => !IsLoading);
             ImportPatientsCommand = new DelegateCommand(async () => await ImportPatientsAsync(), () => !IsLoading);
             ImportWizardCommand = new DelegateCommand(async () => await OpenImportWizardAsync(), () => !IsLoading);
             DownloadTemplateCommand = new DelegateCommand(async () => await DownloadTemplateAsync(), () => !IsLoading);
-            
+
             // 初始化搜索和分页命令
             SearchCommand = new DelegateCommand(async () => await SearchManager.ExecuteSearchAsync());
             FirstPageCommand = new DelegateCommand(async () => await PaginationCoordinator.GoToFirstPageAsync());
             PreviousPageCommand = new DelegateCommand(async () => await PaginationCoordinator.GoToPreviousPageAsync());
             NextPageCommand = new DelegateCommand(async () => await PaginationCoordinator.GoToNextPageAsync());
             LastPageCommand = new DelegateCommand(async () => await PaginationCoordinator.GoToLastPageAsync());
-            
+
             // UltraThink v2.0: 删除批量操作命令初始化 - 20人以下小诊所不需要复杂的批量操作
         }
 
@@ -217,9 +217,9 @@ namespace LYBT.Desktop.Patients.ViewModels
                 {
                     ["IsEditMode"] = false
                 };
-                
+
                 var result = await _dialogService.ShowDialogAsync("PatientAddEditDialog", parameters);
-                
+
                 if (result.Result == true)
                 {
                     await RefreshDataAsync();
@@ -236,8 +236,11 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         private async Task EditPatientAsync(PatientDto patient)
         {
-            if (patient == null) return;
-            
+            if (patient == null)
+            {
+                return;
+            }
+
             try
             {
                 var parameters = new Dictionary<string, object>
@@ -245,9 +248,9 @@ namespace LYBT.Desktop.Patients.ViewModels
                     ["IsEditMode"] = true,
                     ["Patient"] = patient
                 };
-                
+
                 var result = await _dialogService.ShowDialogAsync("PatientAddEditDialog", parameters);
-                
+
                 if (result.Result == true)
                 {
                     await RefreshDataAsync();
@@ -264,8 +267,11 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         private async Task DeletePatientAsync(PatientDto patient)
         {
-            if (patient == null) return;
-            
+            if (patient == null)
+            {
+                return;
+            }
+
             // 患者信息不支持真正删除，只能禁用
             await ToggleStatusAsync(patient);
         }
@@ -276,11 +282,14 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         private async Task ToggleStatusAsync(PatientDto patient)
         {
-            if (patient == null) return;
+            if (patient == null)
+            {
+                return;
+            }
 
             var isEnabled = patient.Status == CommonStatus.Enabled;
             var action = isEnabled ? "禁用" : "启用";
-            
+
             var confirm = await _dialogService.ShowConfirmationAsync(
                 $"确定要{action}患者 {patient.Name} 吗？",
                 $"{action}患者");
@@ -322,12 +331,15 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         private async Task ViewDetailsAsync(PatientDto patient)
         {
-            if (patient == null) return;
+            if (patient == null)
+            {
+                return;
+            }
 
             try
             {
                 var result = await _patientService.GetByIdAsync(patient.Id);
-                
+
                 if (result.IsSuccess && result.Data != null)
                 {
                     var patientDetail = result.Data;
@@ -346,7 +358,7 @@ namespace LYBT.Desktop.Patients.ViewModels
                 else
                 {
                     await _dialogService.ShowErrorAsync(
-                        result.ErrorMessage ?? "获取患者详情失败", 
+                        result.ErrorMessage ?? "获取患者详情失败",
                         "错误");
                 }
             }
@@ -397,7 +409,7 @@ namespace LYBT.Desktop.Patients.ViewModels
                     if (allPatientsResult.IsSuccess && allPatientsResult.Data != null)
                     {
                         var patients = allPatientsResult.Data.Items;
-                        
+
                         // 定义导出列
                         var columns = new Dictionary<string, string>
                         {
@@ -416,7 +428,7 @@ namespace LYBT.Desktop.Patients.ViewModels
                         var exportData = patients.Select(p => new
                         {
                             Name = p.Name,
-                            Gender = p.Gender == LYBT.Shared.Models.Enums.Gender.Male ? "男" : 
+                            Gender = p.Gender == LYBT.Shared.Models.Enums.Gender.Male ? "男" :
                                     p.Gender == LYBT.Shared.Models.Enums.Gender.Female ? "女" : "未知",
                             Age = p.Age,
                             PhoneNumber = p.PhoneNumber ?? "",
@@ -429,7 +441,7 @@ namespace LYBT.Desktop.Patients.ViewModels
 
                         // 导出到Excel
                         ExcelHelper.ExportToExcel(exportData, columns, saveFileDialog.FileName, "患者数据");
-                        
+
                         await _dialogService.ShowSuccessAsync($"成功导出 {patients.Count()} 条患者数据到:\n{saveFileDialog.FileName}", "导出成功");
                     }
                     else
@@ -469,7 +481,7 @@ namespace LYBT.Desktop.Patients.ViewModels
 
                     // 读取Excel数据
                     var dataTable = ExcelHelper.ImportFromExcel(openFileDialog.FileName, true);
-                    
+
                     if (dataTable.Rows.Count == 0)
                     {
                         await _dialogService.ShowWarningAsync("Excel文件中没有找到数据", "导入提示");
@@ -486,7 +498,7 @@ namespace LYBT.Desktop.Patients.ViewModels
                         try
                         {
                             var row = dataTable.Rows[i];
-                            
+
                             // 验证必填字段
                             var name = row["姓名"]?.ToString()?.Trim();
                             if (string.IsNullOrEmpty(name))
@@ -583,7 +595,7 @@ namespace LYBT.Desktop.Patients.ViewModels
                 {
                     // 定义模板列
                     var columns = new[] { "姓名", "性别", "年龄", "电话", "证件号", "地址", "过敏史" };
-                    
+
                     // 创建示例数据
                     var sampleData = new List<string[]>
                     {
@@ -593,7 +605,7 @@ namespace LYBT.Desktop.Patients.ViewModels
 
                     // 创建Excel模板
                     ExcelHelper.CreateTemplate(columns, saveFileDialog.FileName, "患者数据", sampleData);
-                    
+
                     await _dialogService.ShowSuccessAsync($"模板文件已保存到:\n{saveFileDialog.FileName}\n\n请按照模板格式填写患者数据，然后使用导入功能。", "模板下载成功");
                 }
             }
@@ -609,8 +621,11 @@ namespace LYBT.Desktop.Patients.ViewModels
         /// </summary>
         private LYBT.Shared.Models.Enums.Gender ParseGender(string? genderStr)
         {
-            if (string.IsNullOrEmpty(genderStr)) return LYBT.Shared.Models.Enums.Gender.Unknown;
-            
+            if (string.IsNullOrEmpty(genderStr))
+            {
+                return LYBT.Shared.Models.Enums.Gender.Unknown;
+            }
+
             genderStr = genderStr.Trim().ToLower();
             return genderStr switch
             {
@@ -625,16 +640,19 @@ namespace LYBT.Desktop.Patients.ViewModels
         /// </summary>
         private int ParseAge(string? ageStr)
         {
-            if (string.IsNullOrEmpty(ageStr)) return 0;
-            
+            if (string.IsNullOrEmpty(ageStr))
+            {
+                return 0;
+            }
+
             // 移除可能的"岁"字符
             ageStr = ageStr.Trim().Replace("岁", "");
-            
+
             if (int.TryParse(ageStr, out int age) && age >= 0 && age <= 150)
             {
                 return age;
             }
-            
+
             return 0;
         }
 

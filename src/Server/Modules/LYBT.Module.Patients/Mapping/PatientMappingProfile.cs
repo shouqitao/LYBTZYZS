@@ -13,46 +13,46 @@ namespace LYBT.Module.Patients.Mapping
     {
 
         public PatientMappingProfile()
-{
-    // ==================== UltraThink v2.0简化映射 ====================
+        {
+            // ==================== UltraThink v2.0简化映射 ====================
 
-    // 患者实体转PatientDto（API响应）
-    CreateMap<Patient, PatientDto>()
-        .ForMember(dest => dest.PinYinCode, opt => opt.MapFrom(src => src.PinYinCode))
-        .ForMember(dest => dest.IdNumber, opt => opt.MapFrom(src => src.IdNumber));
+            // 患者实体转PatientDto（API响应）
+            CreateMap<Patient, PatientDto>()
+                .ForMember(dest => dest.PinYinCode, opt => opt.MapFrom(src => src.PinYinCode))
+                .ForMember(dest => dest.IdNumber, opt => opt.MapFrom(src => src.IdNumber));
 
-    // PatientCreateDto转患者实体
-    CreateMap<PatientCreateDto, Patient>()
-        .ForMember(dest => dest.Id, opt => opt.Ignore())
-        .ForMember(dest => dest.LastVisitTime, opt => opt.Ignore())
-        .ForMember(dest => dest.VisitCount, opt => opt.Ignore())
-        .ForMember(dest => dest.DisableReason, opt => opt.Ignore());
+            // PatientCreateDto转患者实体
+            CreateMap<PatientCreateDto, Patient>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.LastVisitTime, opt => opt.Ignore())
+                .ForMember(dest => dest.VisitCount, opt => opt.Ignore())
+                .ForMember(dest => dest.DisableReason, opt => opt.Ignore());
 
-    // PatientUpdateDto转患者实体
-    CreateMap<PatientUpdateDto, Patient>()
-        .ForMember(dest => dest.LastVisitTime, opt => opt.Ignore())
-        .ForMember(dest => dest.VisitCount, opt => opt.Ignore())
-        .ForMember(dest => dest.DisableReason, opt => opt.Ignore());
+            // PatientUpdateDto转患者实体
+            CreateMap<PatientUpdateDto, Patient>()
+                .ForMember(dest => dest.LastVisitTime, opt => opt.Ignore())
+                .ForMember(dest => dest.VisitCount, opt => opt.Ignore())
+                .ForMember(dest => dest.DisableReason, opt => opt.Ignore());
 
-    // PatientDto转患者实体（用于新增/更新）
-    CreateMap<PatientDto, Patient>()
-        .ForMember(dest => dest.Id, opt => opt.Ignore())
-        .ForMember(dest => dest.LastVisitTime, opt => opt.Ignore())
-        .ForMember(dest => dest.VisitCount, opt => opt.Ignore())
-        .ForMember(dest => dest.DisableReason, opt => opt.Ignore())
-        .ForMember(dest => dest.PinYinCode, opt => opt.MapFrom(src => src.PinYinCode))
-        .ForMember(dest => dest.IdNumber, opt => opt.MapFrom(src => src.IdNumber));
+            // PatientDto转患者实体（用于新增/更新）
+            CreateMap<PatientDto, Patient>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.LastVisitTime, opt => opt.Ignore())
+                .ForMember(dest => dest.VisitCount, opt => opt.Ignore())
+                .ForMember(dest => dest.DisableReason, opt => opt.Ignore())
+                .ForMember(dest => dest.PinYinCode, opt => opt.MapFrom(src => src.PinYinCode))
+                .ForMember(dest => dest.IdNumber, opt => opt.MapFrom(src => src.IdNumber));
 
-    // 🔧 UltraThink修复：添加缺失的DTO间映射配置
-    // PatientCreateDto -> PatientDto（用于验证服务）
-    CreateMap<PatientCreateDto, PatientDto>()
-        .ForMember(dest => dest.Id, opt => opt.Ignore())
-        .ForMember(dest => dest.PinYinCode, opt => opt.Ignore()); // 拼音码由系统生成
+            // 🔧 UltraThink修复：添加缺失的DTO间映射配置
+            // PatientCreateDto -> PatientDto（用于验证服务）
+            CreateMap<PatientCreateDto, PatientDto>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.PinYinCode, opt => opt.Ignore()); // 拼音码由系统生成
 
-    // PatientUpdateDto -> PatientDto（用于验证服务）
-    CreateMap<PatientUpdateDto, PatientDto>()
-        .ForMember(dest => dest.PinYinCode, opt => opt.Ignore()); // 拼音码由系统生成
+            // PatientUpdateDto -> PatientDto（用于验证服务）
+            CreateMap<PatientUpdateDto, PatientDto>()
+                .ForMember(dest => dest.PinYinCode, opt => opt.Ignore()); // 拼音码由系统生成
 
-}
+        }
     }
 }

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
@@ -19,7 +19,7 @@ public static class HttpClientFactory
 {
     // 共享配置常量 - 企业级超时配置
     private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(60);
-    
+
     /// <summary>
     /// 创建基础 HttpClient（无认证）
     /// 配置企业级重试策略和超时处理，适合内网部署环境
@@ -33,15 +33,17 @@ public static class HttpClientFactory
     {
         var handler = CreateHttpClientHandler();
         var client = CreateWithRetryPolicy(handler);
-        
+
         if (!string.IsNullOrWhiteSpace(baseUrl))
         {
             if (!Uri.TryCreate(baseUrl, UriKind.Absolute, out var uri))
+            {
                 throw new ArgumentException($"基地址格式无效: {baseUrl}", nameof(baseUrl));
-            
+            }
+
             client.BaseAddress = uri;
         }
-        
+
         client.Timeout = timeout ?? DefaultTimeout;
         ConfigureStandardHeaders(client);
         return client;
@@ -63,17 +65,19 @@ public static class HttpClientFactory
 
         var innerHandler = CreateHttpClientHandler();
         authHandler.InnerHandler = innerHandler;
-        
+
         var client = CreateWithRetryPolicy(authHandler);
-        
+
         if (!string.IsNullOrWhiteSpace(baseUrl))
         {
             if (!Uri.TryCreate(baseUrl, UriKind.Absolute, out var uri))
+            {
                 throw new ArgumentException($"基地址格式无效: {baseUrl}", nameof(baseUrl));
-            
+            }
+
             client.BaseAddress = uri;
         }
-        
+
         client.Timeout = timeout ?? DefaultTimeout;
         ConfigureStandardHeaders(client);
         return client;
@@ -88,7 +92,7 @@ public static class HttpClientFactory
     private static void ConfigureStandardHeaders(HttpClient client)
     {
         ArgumentNullException.ThrowIfNull(client, nameof(client));
-        
+
         client.DefaultRequestHeaders.Clear();
         client.DefaultRequestHeaders.Add("User-Agent", "LYBT-Desktop-Client/2.1.0");
         client.DefaultRequestHeaders.Add("Accept", "application/json");
@@ -127,7 +131,7 @@ public static class HttpClientFactory
     public static HttpClient CreateWithRetryPolicy(HttpMessageHandler innerHandler)
     {
         ArgumentNullException.ThrowIfNull(innerHandler, nameof(innerHandler));
-        
+
         var retryPolicy = GetRetryPolicy();
         var timeoutPolicy = GetTimeoutPolicy();
         var combinedPolicy = Policy.WrapAsync(retryPolicy, timeoutPolicy);
@@ -204,7 +208,7 @@ public class PolicyHttpMessageHandler(IAsyncPolicy<HttpResponseMessage> policy) 
         CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(request, nameof(request));
-        
+
         return await _policy.ExecuteAsync(async (ct) =>
             await base.SendAsync(request, ct).ConfigureAwait(false), cancellationToken).ConfigureAwait(false);
     }

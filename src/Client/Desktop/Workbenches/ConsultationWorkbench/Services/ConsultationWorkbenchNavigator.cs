@@ -1,8 +1,8 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System;
-using Prism.Regions;
+﻿using System;
 using LYBT.Desktop.Core.Constants;
 using LYBT.Desktop.Workbench.Consultation.Navigation;
+using LYBT.Shared.Models.Contracts.Common;
+using Prism.Regions;
 
 namespace LYBT.Desktop.Workbench.Consultation.Services
 {

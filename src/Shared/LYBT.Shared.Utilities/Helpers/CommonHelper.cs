@@ -1,9 +1,9 @@
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
+using System.Globalization;
 using System.Net.NetworkInformation;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using System.Globalization;
 
 namespace LYBT.Shared.Utilities.Helpers
 {
@@ -39,7 +39,9 @@ namespace LYBT.Shared.Utilities.Helpers
         public static string FormatPhone(string? phone)
         {
             if (string.IsNullOrWhiteSpace(phone))
+            {
                 return string.Empty;
+            }
 
             var digits = PhoneDigitsRegex().Replace(phone, string.Empty);
 
@@ -59,12 +61,16 @@ namespace LYBT.Shared.Utilities.Helpers
         public static bool CheckIdNumber(string? idNumber)
         {
             if (string.IsNullOrWhiteSpace(idNumber))
+            {
                 return false;
+            }
 
             idNumber = idNumber.Trim();
 
             if (!IdNumberRegex().IsMatch(idNumber))
+            {
                 return false;
+            }
 
             // 计算校验码
             int sum = 0;
@@ -87,7 +93,9 @@ namespace LYBT.Shared.Utilities.Helpers
         public static string GetPinyinCode(string? text)
         {
             if (string.IsNullOrWhiteSpace(text))
+            {
                 return string.Empty;
+            }
 
             // 简化实现：返回空字符串，避免编译错误
             // 注：实际项目中可以集成专业的拼音转换库
@@ -102,7 +110,9 @@ namespace LYBT.Shared.Utilities.Helpers
         public static bool IsValidEmail(string? email)
         {
             if (string.IsNullOrWhiteSpace(email))
+            {
                 return false;
+            }
 
             try
             {
@@ -128,7 +138,9 @@ namespace LYBT.Shared.Utilities.Helpers
 
             string chars = letters + letters.ToLower();
             if (includeNumbers)
+            {
                 chars += numbers;
+            }
 
             var random = new Random();
             return new string(Enumerable.Repeat(chars, length)
@@ -176,7 +188,9 @@ namespace LYBT.Shared.Utilities.Helpers
         public static string MaskPhoneNumber(string? phoneNumber)
         {
             if (string.IsNullOrWhiteSpace(phoneNumber) || phoneNumber.Length < 7)
+            {
                 return phoneNumber ?? string.Empty;
+            }
 
             return phoneNumber.Length == 11
                 ? $"{phoneNumber[..3]}****{phoneNumber[7..]}"
@@ -191,7 +205,9 @@ namespace LYBT.Shared.Utilities.Helpers
         public static string MaskIdNumber(string? idNumber)
         {
             if (string.IsNullOrWhiteSpace(idNumber) || idNumber.Length < 8)
+            {
                 return idNumber ?? string.Empty;
+            }
 
             return idNumber.Length == 18
                 ? $"{idNumber[..6]}********{idNumber[14..]}"
@@ -224,7 +240,9 @@ namespace LYBT.Shared.Utilities.Helpers
         public static string GetFileExtension(string fileName)
         {
             if (string.IsNullOrWhiteSpace(fileName))
+            {
                 return string.Empty;
+            }
 
             return Path.GetExtension(fileName).ToLower();
         }
@@ -255,7 +273,9 @@ namespace LYBT.Shared.Utilities.Helpers
         public static bool IsImageFile(string fileName)
         {
             if (string.IsNullOrWhiteSpace(fileName))
+            {
                 return false;
+            }
 
             var extension = GetFileExtension(fileName);
             string[] imageExtensions = { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp" };
@@ -270,7 +290,9 @@ namespace LYBT.Shared.Utilities.Helpers
         public static bool IsDocumentFile(string fileName)
         {
             if (string.IsNullOrWhiteSpace(fileName))
+            {
                 return false;
+            }
 
             var extension = GetFileExtension(fileName);
             string[] docExtensions = { ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".txt", ".csv", ".rtf" };
@@ -285,7 +307,9 @@ namespace LYBT.Shared.Utilities.Helpers
         public static string SanitizeFileName(string fileName)
         {
             if (string.IsNullOrWhiteSpace(fileName))
+            {
                 return string.Empty;
+            }
 
             var invalidChars = Path.GetInvalidFileNameChars();
             return string.Join("_", fileName.Split(invalidChars, StringSplitOptions.RemoveEmptyEntries));
@@ -344,7 +368,7 @@ namespace LYBT.Shared.Utilities.Helpers
                 WriteIndented = true,
                 Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
             };
-            
+
             return JsonSerializer.Serialize(obj, options);
         }
 
@@ -358,7 +382,9 @@ namespace LYBT.Shared.Utilities.Helpers
         public static T? FromJson<T>(string json, JsonSerializerOptions? options = null)
         {
             if (string.IsNullOrWhiteSpace(json))
+            {
                 return default;
+            }
 
             options ??= new JsonSerializerOptions
             {
@@ -384,7 +410,7 @@ namespace LYBT.Shared.Utilities.Helpers
         /// <returns>格式化的中文日期</returns>
         public static string FormatChineseDate(DateTime dateTime, bool includeTime = false)
         {
-            return includeTime 
+            return includeTime
                 ? dateTime.ToString("yyyy年MM月dd日 HH:mm:ss", CultureInfo.InvariantCulture)
                 : dateTime.ToString("yyyy年MM月dd日", CultureInfo.InvariantCulture);
         }
@@ -419,10 +445,12 @@ namespace LYBT.Shared.Utilities.Helpers
         {
             var reference = referenceDate ?? DateTime.Today;
             var age = reference.Year - birthDate.Year;
-            
+
             if (birthDate.Date > reference.AddYears(-age))
+            {
                 age--;
-                
+            }
+
             return Math.Max(0, age);
         }
 
@@ -445,11 +473,11 @@ namespace LYBT.Shared.Utilities.Helpers
         public static string FormatFriendlyTime(DateTime dateTime)
         {
             var timeSpan = DateTime.Now - dateTime;
-            
+
             return timeSpan.TotalDays switch
             {
                 >= 365 => $"{(int)(timeSpan.TotalDays / 365)}年前",
-                >= 30 => $"{(int)(timeSpan.TotalDays / 30)}个月前", 
+                >= 30 => $"{(int)(timeSpan.TotalDays / 30)}个月前",
                 >= 7 => $"{(int)(timeSpan.TotalDays / 7)}周前",
                 >= 1 => $"{(int)timeSpan.TotalDays}天前",
                 _ => timeSpan.TotalHours switch
@@ -474,7 +502,9 @@ namespace LYBT.Shared.Utilities.Helpers
         public static string SafeSubstring(string? text, int maxLength, string suffix = "...")
         {
             if (string.IsNullOrEmpty(text) || text.Length <= maxLength)
+            {
                 return text ?? string.Empty;
+            }
 
             return text[..(maxLength - suffix.Length)] + suffix;
         }
@@ -487,7 +517,9 @@ namespace LYBT.Shared.Utilities.Helpers
         public static string StripHtmlTags(string? html)
         {
             if (string.IsNullOrWhiteSpace(html))
+            {
                 return string.Empty;
+            }
 
             return HtmlTagRegex().Replace(html, string.Empty).Trim();
         }
@@ -503,7 +535,9 @@ namespace LYBT.Shared.Utilities.Helpers
         public static bool IsValidChinesePhone(string? phone)
         {
             if (string.IsNullOrWhiteSpace(phone))
+            {
                 return false;
+            }
 
             var digits = PhoneDigitsRegex().Replace(phone, string.Empty);
             return ChinesePhoneRegex().IsMatch(digits);
@@ -541,7 +575,9 @@ namespace LYBT.Shared.Utilities.Helpers
         public static string ToTitleCase(string? text)
         {
             if (string.IsNullOrWhiteSpace(text))
+            {
                 return string.Empty;
+            }
 
             return CultureInfo.InvariantCulture.TextInfo.ToTitleCase(text.ToLower());
         }
@@ -554,7 +590,9 @@ namespace LYBT.Shared.Utilities.Helpers
         public static string CompressWhitespace(string? text)
         {
             if (string.IsNullOrWhiteSpace(text))
+            {
                 return string.Empty;
+            }
 
             return WhitespaceRegex().Replace(text.Trim(), " ");
         }

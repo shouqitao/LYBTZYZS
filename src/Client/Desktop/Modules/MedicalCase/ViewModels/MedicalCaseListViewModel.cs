@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -6,18 +6,18 @@ using System.Threading.Tasks;
 using AutoMapper;
 using LYBT.Desktop.Core.Constants;
 using LYBT.Desktop.Core.Coordinators;
-using LYBT.Desktop.Core.Managers;
-// UltraThink v2.0: 移除Info模型引用，直接使用DTO
-using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Desktop.Core.Managers;
 using LYBT.Desktop.Core.Services;
 using LYBT.Desktop.Core.ViewModels.Base;
 using LYBT.Desktop.Core.ViewModels.MedicalCase;
-using LYBT.Desktop.Services;
 using LYBT.Desktop.MedicalCase.Services;
+using LYBT.Desktop.Services;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
+// UltraThink v2.0: 移除Info模型引用，直接使用DTO
+using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
@@ -42,7 +42,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         private readonly ICustomDialogService _dialogService;
         private readonly IRegionManager _regionManager;
         private readonly IMapper _mapper;
-        
+
         // UltraThink v2.0: 直接使用DTO，移除复杂的ViewModel包装和筛选功能
         private MedicalCaseDto? _selectedMedicalCase;
 
@@ -113,7 +113,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
 
             InitializeCommands();
-            
+
             // UltraThink v2.0: 删除复杂初始化逻辑
             // - 删除InitializeStatusFilters(): 复杂筛选功能已移除
             // - 删除选择状态变化监听: 多选功能已移除
@@ -133,7 +133,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             StartConsultationCommand = new DelegateCommand<MedicalCaseDto>(async medicalCase => await StartConsultationAsync(medicalCase), CanExecuteMedicalCaseCommand);
             CompleteCommand = new DelegateCommand<MedicalCaseDto>(async medicalCase => await CompleteMedicalCaseAsync(medicalCase), CanExecuteMedicalCaseCommand);
             CancelCommand = new DelegateCommand<MedicalCaseDto>(async medicalCase => await CancelMedicalCaseAsync(medicalCase), CanExecuteMedicalCaseCommand);
-            
+
             // UltraThink v2.0: 删除批量操作和筛选命令初始化 - 20人以下小诊所不需要复杂的批量操作和筛选功能
         }
 
@@ -165,7 +165,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         // 直接使用基类的标准数据加载处理，无需自定义OnDataLoaded和OnDataLoadFailed
 
         #endregion
-        
+
         // UltraThink v2.0: 删除复杂的ViewModel管理 - 20人以下小诊所不需要复杂的选择状态管理
         // 直接使用基类提供的Data属性访问PagedResult<MedicalCaseDto>数据
 
@@ -176,9 +176,9 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             try
             {
                 var parameters = new Dictionary<string, object>();
-                
+
                 var result = await _dialogService.ShowDialogAsync("CreateMedicalCaseDialog", parameters);
-                
+
                 if (result.Result == true)
                 {
                     await RefreshDataAsync();
@@ -194,8 +194,11 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         private async Task EditMedicalCaseAsync(MedicalCaseDto medicalCase)
         {
-            if (medicalCase == null) return;
-            
+            if (medicalCase == null)
+            {
+                return;
+            }
+
             try
             {
                 var parameters = new Dictionary<string, object>
@@ -203,9 +206,9 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                     ["IsEditMode"] = true,
                     ["MedicalCase"] = medicalCase
                 };
-                
+
                 var result = await _dialogService.ShowDialogAsync("CreateMedicalCaseDialog", parameters);
-                
+
                 if (result.Result == true)
                 {
                     await RefreshDataAsync();
@@ -221,8 +224,11 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         private async Task DeleteMedicalCaseAsync(MedicalCaseDto medicalCase)
         {
-            if (medicalCase == null) return;
-            
+            if (medicalCase == null)
+            {
+                return;
+            }
+
             var confirm = await _dialogService.ShowConfirmationAsync(
                 $"确定要删除医疗案例吗？\n患者：{medicalCase.PatientName}\n医生：{medicalCase.DoctorName}\n此操作不可恢复。",
                 "确认删除");
@@ -259,14 +265,17 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         private async Task ViewDetailsAsync(MedicalCaseDto medicalCase)
         {
-            if (medicalCase == null) return;
+            if (medicalCase == null)
+            {
+                return;
+            }
 
             try
             {
                 // 导航到详情界面 - 使用Task.Run包装以修复CS1998警告
-                await Task.Run(() => 
+                await Task.Run(() =>
                 {
-                    _regionManager.RequestNavigate(RegionNames.SystemWorkbenchContentRegion, 
+                    _regionManager.RequestNavigate(RegionNames.SystemWorkbenchContentRegion,
                         $"MedicalCaseDetailView?MedicalCaseId={medicalCase.Id}&ViewMode=Detail");
                 });
             }
@@ -279,7 +288,10 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         private async Task StartConsultationAsync(MedicalCaseDto medicalCase)
         {
-            if (medicalCase == null) return;
+            if (medicalCase == null)
+            {
+                return;
+            }
 
             try
             {
@@ -289,9 +301,9 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 if (result.IsSuccess)
                 {
                     // 导航到看诊界面
-                    _regionManager.RequestNavigate(RegionNames.ConsultationWorkbenchContentRegion, 
+                    _regionManager.RequestNavigate(RegionNames.ConsultationWorkbenchContentRegion,
                         $"ConsultationMainView?MedicalCaseId={medicalCase.Id}&PatientId={medicalCase.PatientId}&ConsultationMode=Start");
-                    
+
                     await RefreshDataAsync();
                     await _dialogService.ShowInformationAsync("已成功开始看诊", "成功");
                 }
@@ -311,7 +323,10 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         private async Task CompleteMedicalCaseAsync(MedicalCaseDto medicalCase)
         {
-            if (medicalCase == null) return;
+            if (medicalCase == null)
+            {
+                return;
+            }
 
             var confirm = await _dialogService.ShowConfirmationAsync(
                 $"确定要完成医疗案例吗？\n患者：{medicalCase.PatientName}",
@@ -346,16 +361,21 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         private async Task CancelMedicalCaseAsync(MedicalCaseDto medicalCase)
         {
-            if (medicalCase == null) return;
+            if (medicalCase == null)
+            {
+                return;
+            }
 
             // 获取取消原因
             var reason = await _dialogService.ShowInputAsync(
-                "请输入取消医疗案例的原因：", 
-                "取消原因", 
+                "请输入取消医疗案例的原因：",
+                "取消原因",
                 "患者临时有事");
 
             if (string.IsNullOrEmpty(reason))
+            {
                 return; // 用户取消了输入
+            }
 
             var confirm = await _dialogService.ShowConfirmationAsync(
                 $"确定要取消医疗案例吗？\n患者：{medicalCase.PatientName}\n原因：{reason}",

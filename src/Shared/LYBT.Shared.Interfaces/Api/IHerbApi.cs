@@ -1,10 +1,10 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Refit;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
+using Refit;
 
 namespace LYBT.Shared.Interfaces.Api
 {
@@ -93,7 +93,7 @@ namespace LYBT.Shared.Interfaces.Api
         /// </summary>
         [Get("/api/v1/herbs/export")]
         Task<Refit.ApiResponse<List<HerbDetailDto>>> ExportHerbsAsync();
-        
+
         /// <summary>
         /// 获取药材导入模板
         /// </summary>

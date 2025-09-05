@@ -1,11 +1,11 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Refit;
-using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Enums;
+using Refit;
 
 namespace LYBT.Shared.Interfaces.Api
 {

@@ -1,6 +1,6 @@
-using Prism.Mvvm;
-using System;
+﻿using System;
 using System.Threading.Tasks;
+using Prism.Mvvm;
 
 namespace LYBT.Desktop.Core.Coordinators
 {
@@ -138,7 +138,9 @@ namespace LYBT.Desktop.Core.Coordinators
         public async Task GoToPageAsync(int page)
         {
             if (page < 1 || page > TotalPages || page == CurrentPage)
+            {
                 return;
+            }
 
             var oldPage = CurrentPage;
             CurrentPage = page;
@@ -165,7 +167,7 @@ namespace LYBT.Desktop.Core.Coordinators
         public void UpdatePagination(int totalCount)
         {
             TotalCount = totalCount;
-            
+
             // 如果当前页超出范围，调整到最后一页
             if (CurrentPage > TotalPages && TotalPages > 0)
             {

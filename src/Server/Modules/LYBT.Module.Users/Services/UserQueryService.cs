@@ -1,16 +1,16 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using LYBT.Infrastructure.Data;
-using LYBT.Shared.Models.Contracts.Users;
-using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Module.Users.Services.Interfaces;
 using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using LYBT.Module.Users.Services.Interfaces;
 
 namespace LYBT.Module.Users.Services
 {
@@ -35,13 +35,17 @@ namespace LYBT.Module.Users.Services
             try
             {
                 if (id == Guid.Empty)
+                {
                     return ServiceResult<UserDto>.Failure("用户ID不能为空");
+                }
 
                 var user = await _context.Users
                     .FirstOrDefaultAsync(u => u.Id == id);
 
                 if (user == null)
+                {
                     return ServiceResult<UserDto>.Failure("用户不存在");
+                }
 
                 var dto = _mapper.Map<UserDto>(user);
                 return ServiceResult<UserDto>.Success(dto);
@@ -69,7 +73,7 @@ namespace LYBT.Module.Users.Services
                 if (!string.IsNullOrWhiteSpace(query.Keyword))
                 {
                     var keyword = query.Keyword.Trim();
-                    queryable = queryable.Where(u => 
+                    queryable = queryable.Where(u =>
                         u.Username.Contains(keyword) ||
                         u.RealName.Contains(keyword) ||
                         (u.PhoneNumber != null && u.PhoneNumber.Contains(keyword)) ||
@@ -128,13 +132,17 @@ namespace LYBT.Module.Users.Services
             try
             {
                 if (string.IsNullOrWhiteSpace(username))
+                {
                     return ServiceResult<UserDto>.Failure("用户名不能为空");
+                }
 
                 var user = await _context.Users
                     .FirstOrDefaultAsync(u => u.Username == username);
 
                 if (user == null)
+                {
                     return ServiceResult<UserDto>.Failure("用户不存在");
+                }
 
                 var dto = _mapper.Map<UserDto>(user);
                 return ServiceResult<UserDto>.Success(dto);
@@ -176,7 +184,9 @@ namespace LYBT.Module.Users.Services
             try
             {
                 if (string.IsNullOrWhiteSpace(keyword))
+                {
                     return ServiceResult<List<UserDto>>.Success([]);
+                }
 
                 var searchTerm = keyword.Trim();
                 var users = await _context.Users
@@ -231,7 +241,9 @@ namespace LYBT.Module.Users.Services
             try
             {
                 if (userId == Guid.Empty)
+                {
                     return ServiceResult<PagedResult<object>>.Failure("用户ID不能为空");
+                }
 
                 // 简化日志实现 - 返回用户基本信息作为日志
                 var user = await _context.Users
@@ -277,7 +289,9 @@ namespace LYBT.Module.Users.Services
             try
             {
                 if (string.IsNullOrWhiteSpace(username))
+                {
                     return ServiceResult<bool>.Failure("用户名不能为空");
+                }
 
                 var exists = await _context.Users
                     .AnyAsync(u => u.Username == username);
@@ -321,7 +335,9 @@ namespace LYBT.Module.Users.Services
             try
             {
                 if (doctorId == Guid.Empty)
+                {
                     return ServiceResult<bool>.Failure("医生ID不能为空");
+                }
 
                 var doctorExists = await _context.Users
                     .AnyAsync(u => u.Id == doctorId && u.Role == UserRole.Doctor && u.Status == CommonStatus.Enabled);

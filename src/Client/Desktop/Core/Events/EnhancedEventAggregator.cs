@@ -1,5 +1,4 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -7,6 +6,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using LYBT.Desktop.Core.Memory;
+using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.Extensions.Logging;
 using Prism.Events;
 
@@ -81,8 +81,8 @@ namespace LYBT.Desktop.Core.Events
             int priority = 0)
         {
             var subscription = new ActionSubscription(
-                action, 
-                threadOption, 
+                action,
+                threadOption,
                 keepSubscriberReferenceAlive,
                 filter,
                 priority);
@@ -122,7 +122,7 @@ namespace LYBT.Desktop.Core.Events
         {
             var sw = _debugMode ? Stopwatch.StartNew() : null;
             var activeSubscriptions = GetActiveSubscriptions();
-            
+
             if (_debugMode)
             {
                 _logger?.LogDebug($"发布事件: {GetType().Name}, 订阅者数: {activeSubscriptions.Count}");
@@ -165,7 +165,7 @@ namespace LYBT.Desktop.Core.Events
                 case EnhancedThreadOption.PublisherThread:
                     subscription.InvokeAction(argument);
                     break;
-                    
+
                 case EnhancedThreadOption.UIThread:
                     if (SynchronizationContext.Current != null)
                     {
@@ -176,7 +176,7 @@ namespace LYBT.Desktop.Core.Events
                         subscription.InvokeAction(argument);
                     }
                     break;
-                    
+
                 case EnhancedThreadOption.BackgroundThread:
                     Task.Run(() => subscription.InvokeAction(argument));
                     break;
@@ -214,12 +214,12 @@ namespace LYBT.Desktop.Core.Events
             {
                 var token = new SubscriptionToken(t => Unsubscribe(t));
                 _subscriptions[token] = subscription;
-                
+
                 if (_debugMode)
                 {
                     _logger?.LogDebug($"添加订阅: {GetType().Name}, Token: {token}, 弱引用: {!subscription.KeepAlive}");
                 }
-                
+
                 return token;
             }
         }
@@ -446,9 +446,9 @@ namespace LYBT.Desktop.Core.Events
                     newEvent.SetLogger(_logger);
                 }
                 newEvent.EnableDebugMode(_debugMode);
-                
+
                 _statistics.RegisterEvent(typeof(TEventType).Name);
-                
+
                 return newEvent;
             });
         }
@@ -464,10 +464,10 @@ namespace LYBT.Desktop.Core.Events
                 var method = GetType().GetMethod(nameof(GetEvent), Type.EmptyTypes);
                 var genericMethod = method?.MakeGenericMethod(typeof(TEventType));
                 var result = genericMethod?.Invoke(this, null);
-                
+
                 return (TEventType)(result ?? throw new InvalidOperationException($"无法获取事件类型: {typeof(TEventType).Name}"));
             }
-            
+
             // 对于非增强事件，创建包装器
             throw new NotSupportedException("请使用EnhancedEventBase作为事件基类");
         }
@@ -532,7 +532,7 @@ namespace LYBT.Desktop.Core.Events
         public int TotalSubscriptions { get; set; }
         public Dictionary<string, int> EventPublishCount { get; } = new();
         public Dictionary<string, DateTime> LastPublishTime { get; } = new();
-        
+
         public void RegisterEvent(string eventName)
         {
             if (!EventPublishCount.ContainsKey(eventName))
@@ -540,7 +540,7 @@ namespace LYBT.Desktop.Core.Events
                 EventPublishCount[eventName] = 0;
             }
         }
-        
+
         public void RecordPublish(string eventName)
         {
             EventPublishCount[eventName] = EventPublishCount.GetValueOrDefault(eventName) + 1;
@@ -557,12 +557,12 @@ namespace LYBT.Desktop.Core.Events
         /// 发布者线程
         /// </summary>
         PublisherThread,
-        
+
         /// <summary>
         /// UI线程
         /// </summary>
         UIThread,
-        
+
         /// <summary>
         /// 后台线程
         /// </summary>

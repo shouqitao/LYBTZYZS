@@ -1,4 +1,4 @@
-using LYBT.Shared.Models.Contracts.Common;
+﻿using LYBT.Shared.Models.Contracts.Common;
 using Prism.Regions;
 
 namespace LYBT.Desktop.Workbench.Consultation.Navigation

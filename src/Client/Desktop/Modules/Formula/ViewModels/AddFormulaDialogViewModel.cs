@@ -1,20 +1,20 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using LYBT.Desktop.Core.Constants;
+using LYBT.Desktop.Core.Interfaces;
+using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Desktop.Core.Models.Common;
+using LYBT.Desktop.Core.ViewModels.Base;
+using LYBT.Shared.Interfaces.Services;
 // UltraThink v2.0: 直接使用DTOs，移除Info模型引用
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Contracts.Herbs;
-using LYBT.Shared.Interfaces.Services;
-using LYBT.Desktop.Core.ViewModels.Base;
-using LYBT.Desktop.Core.Interfaces;
-using LYBT.Desktop.Core.Interfaces.Services;
-using LYBT.Desktop.Core.Constants;
-using LYBT.Desktop.Core.Models.Common;
+using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
-using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Formula.ViewModels
 {
@@ -300,7 +300,7 @@ namespace LYBT.Desktop.Formula.ViewModels
                 var result = dialogResult == true
                     ? CustomDialogResult.Success(null)
                     : CustomDialogResult.Cancel();
-                
+
                 RequestClose?.Invoke(result);
             }
         }

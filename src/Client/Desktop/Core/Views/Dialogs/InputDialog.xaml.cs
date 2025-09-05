@@ -1,4 +1,4 @@
-using System.Windows;
+﻿using System.Windows;
 using LYBT.Desktop.Core.ViewModels.Dialogs;
 
 namespace LYBT.Desktop.Core.Views.Dialogs
@@ -23,14 +23,14 @@ namespace LYBT.Desktop.Core.Views.Dialogs
         public void SetViewModel(InputDialogViewModel viewModel)
         {
             DataContext = viewModel;
-            
+
             // 窗口加载完成后聚焦输入框并选中文本
             Loaded += (sender, e) =>
             {
                 InputTextBox.Focus();
                 InputTextBox.SelectAll();
             };
-            
+
             // 监听ViewModel的关闭请求
             viewModel.RequestClose += (result) =>
             {

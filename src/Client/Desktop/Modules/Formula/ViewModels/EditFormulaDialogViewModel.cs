@@ -1,15 +1,15 @@
-using System;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using LYBT.Desktop.Core.Constants;
+using LYBT.Shared.Interfaces.Services;
 // UltraThink v2.0: 直接使用DTOs，移除Info模型引用
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Contracts.Herbs;
-using LYBT.Shared.Interfaces.Services;
-using LYBT.Desktop.Core.Constants;
+using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Mvvm;
-using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Formula.ViewModels
 {
@@ -253,8 +253,11 @@ namespace LYBT.Desktop.Formula.ViewModels
 
         private void EditHerb(FormulaHerbItemDto? item)
         {
-            if (item == null) return;
-            
+            if (item == null)
+            {
+                return;
+            }
+
             // TODO: 实现编辑药材对话框
             StatusMessage = string.Format(SystemConstants.FeaturePendingTemplate, $"编辑药材 '{item.HerbName}'");
         }

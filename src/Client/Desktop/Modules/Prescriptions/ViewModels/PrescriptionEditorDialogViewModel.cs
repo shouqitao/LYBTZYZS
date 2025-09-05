@@ -1,18 +1,18 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
-using LYBT.Shared.Models.Contracts.Prescriptions;
-using LYBT.Shared.Models.Contracts.Patients;
 using AutoMapper;
+using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Shared.Interfaces.Services;
+using LYBT.Shared.Models.Contracts.Patients;
+using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
-using SharedEnums = LYBT.Shared.Models.Enums;
+using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Mvvm;
-using Microsoft.Extensions.Logging;
-using LYBT.Desktop.Core.Interfaces.Services;
+using SharedEnums = LYBT.Shared.Models.Enums;
 
 namespace LYBT.Desktop.Prescriptions.ViewModels
 {
@@ -218,10 +218,10 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
 
             // 监听处方项目变化
             PrescriptionItems.CollectionChanged += (s, e) => CalculateTotalAmount();
-            
+
             // Initialize since we can't use OnDialogOpened
             Initialize();
-            
+
             // 加载患者列表
             _ = Task.Run(async () => await LoadPatientsAsync());
         }
@@ -289,7 +289,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                 if (parameters.ContainsKey("ContextMode") && parameters["ContextMode"].ToString() == "MedicalCase")
                 {
                     IsContextMode = true;
-                    
+
                     // 获取医案ID
                     if (parameters.ContainsKey("MedicalCaseId") && parameters["MedicalCaseId"] is Guid medicalCaseId)
                     {
@@ -301,14 +301,14 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                     {
                         // 初始化新处方并设置患者信息
                         InitializeNewPrescription();
-                        
+
                         // 加载患者详细信息
                         await LoadPatientInfoAsync(patientId);
-                        
+
                         // 在上下文模式下，不需要加载患者列表
                         StatusMessage = $"正在为患者 {Prescription.PatientName} 开具处方（来自医案 {MedicalCaseId}）";
-                        
-                        _logger.LogInformation("上下文模式初始化完成，医案ID: {MedicalCaseId}，患者: {PatientName}", 
+
+                        _logger.LogInformation("上下文模式初始化完成，医案ID: {MedicalCaseId}，患者: {PatientName}",
                             MedicalCaseId, Prescription.PatientName);
                     }
                 }
@@ -323,7 +323,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             {
                 _logger.LogError(ex, "初始化处方编辑器上下文时发生错误");
                 StatusMessage = $"初始化失败: {ex.Message}";
-                
+
                 // 回退到常规模式
                 InitializeNewPrescription();
             }
@@ -344,7 +344,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                 CreateTime = DateTime.Now
             };
             TotalDoses = 1;
-            
+
             _logger.LogInformation("初始化新处方，医生ID: {DoctorId}", Prescription.UserId);
         }
 
@@ -365,16 +365,16 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                 {
                     // 直接使用DTO
                     Prescription = result.Data;
-                    
+
                     // 处方数据已加载
-                    
+
                     // 映射处方项目
                     if (result.Data.Items != null)
                     {
                         var items = result.Data.Items ?? new List<PrescriptionItemDto>();
                         PrescriptionItems = new ObservableCollection<PrescriptionItemDto>(items);
                     }
-                    
+
                     TotalDoses = Prescription.DosageCount;
                     CalculateTotalAmount();
                     StatusMessage = string.Empty;
@@ -466,7 +466,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                             UnitPrice = item.UnitPrice
                         }).ToList()
                     };
-                    
+
                     var result = await _prescriptionService.UpdateAsync(Prescription.Id, updateDto);
                     if (result.IsSuccess)
                     {
@@ -496,7 +496,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                             UnitPrice = item.UnitPrice
                         }).ToList()
                     };
-                    
+
                     // UltraThink v2.0: 在上下文模式下关联医案（如果支持）
                     if (IsContextMode && MedicalCaseId != Guid.Empty)
                     {
@@ -505,7 +505,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                         // 如果没有，可以在处方备注中记录医案关联
                         // createDto.MedicalCaseId = MedicalCaseId; // 待DTO支持
                     }
-                    
+
                     var result = await _prescriptionService.CreateAsync(createDto);
                     if (result.IsSuccess)
                     {
@@ -543,27 +543,27 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             try
             {
                 _logger.LogInformation("打开药材选择对话框");
-                
+
                 var parameters = new Dictionary<string, object>
                 {
                     ["Title"] = "选择药材"
                 };
 
                 var result = await _dialogService.ShowDialogAsync("HerbSelectionDialog", parameters);
-                
+
                 if (result.Result == true && result.Data is Dictionary<string, object> data)
                 {
                     if (data.ContainsKey("SelectedItem") && data["SelectedItem"] is PrescriptionItemDto selectedItem)
                     {
                         // 生成新的ID和计算金额
                         selectedItem.Id = Guid.NewGuid();
-                        
+
                         // 添加到处方项目列表
                         PrescriptionItems.Add(selectedItem);
                         CalculateTotalAmount();
-                        
+
                         StatusMessage = $"已添加药材: {selectedItem.HerbName}";
-                        _logger.LogInformation("添加药材成功: {HerbName}, 数量: {Quantity}", 
+                        _logger.LogInformation("添加药材成功: {HerbName}, 数量: {Quantity}",
                             selectedItem.HerbName, selectedItem.Quantity);
                     }
                 }
@@ -586,52 +586,55 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         }
 
         private async Task EditHerbAsync(PrescriptionItemDto? item)
-{
-    if (item == null) return;
-
-    try
-    {
-        _logger.LogInformation("编辑药材: {HerbName}", item.HerbName);
-        
-        var parameters = new Dictionary<string, object>
         {
-            ["Title"] = "编辑药材",
-            ["EditMode"] = true,
-            ["HerbId"] = item.HerbId,
-            ["Quantity"] = item.Quantity,
-            ["Unit"] = item.Unit
-        };
-
-        var result = await _dialogService.ShowDialogAsync("HerbSelectionDialog", parameters);
-        
-        if (result.Result == true && result.Data is Dictionary<string, object> data)
-        {
-            if (data.ContainsKey("SelectedItem") && data["SelectedItem"] is PrescriptionItemDto editedItem)
+            if (item == null)
             {
-                // 保持原有的ID
-                editedItem.Id = item.Id;
-                
-                // 找到并替换原项目
-                var index = PrescriptionItems.IndexOf(item);
-                if (index >= 0)
+                return;
+            }
+
+            try
+            {
+                _logger.LogInformation("编辑药材: {HerbName}", item.HerbName);
+
+                var parameters = new Dictionary<string, object>
                 {
-                    PrescriptionItems[index] = editedItem;
-                    CalculateTotalAmount();
-                    
-                    StatusMessage = $"已更新药材: {editedItem.HerbName}";
-                    _logger.LogInformation("编辑药材成功: {HerbName}, 数量: {Quantity}", 
-                        editedItem.HerbName, editedItem.Quantity);
+                    ["Title"] = "编辑药材",
+                    ["EditMode"] = true,
+                    ["HerbId"] = item.HerbId,
+                    ["Quantity"] = item.Quantity,
+                    ["Unit"] = item.Unit
+                };
+
+                var result = await _dialogService.ShowDialogAsync("HerbSelectionDialog", parameters);
+
+                if (result.Result == true && result.Data is Dictionary<string, object> data)
+                {
+                    if (data.ContainsKey("SelectedItem") && data["SelectedItem"] is PrescriptionItemDto editedItem)
+                    {
+                        // 保持原有的ID
+                        editedItem.Id = item.Id;
+
+                        // 找到并替换原项目
+                        var index = PrescriptionItems.IndexOf(item);
+                        if (index >= 0)
+                        {
+                            PrescriptionItems[index] = editedItem;
+                            CalculateTotalAmount();
+
+                            StatusMessage = $"已更新药材: {editedItem.HerbName}";
+                            _logger.LogInformation("编辑药材成功: {HerbName}, 数量: {Quantity}",
+                                editedItem.HerbName, editedItem.Quantity);
+                        }
+                    }
                 }
             }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "编辑药材时发生错误");
+                StatusMessage = $"编辑药材失败: {ex.Message}";
+                await _dialogService.ShowErrorAsync($"编辑药材失败: {ex.Message}", "错误");
+            }
         }
-    }
-    catch (Exception ex)
-    {
-        _logger.LogError(ex, "编辑药材时发生错误");
-        StatusMessage = $"编辑药材失败: {ex.Message}";
-        await _dialogService.ShowErrorAsync($"编辑药材失败: {ex.Message}", "错误");
-    }
-}
 
         private void LoadFormulaTemplate()
         {
@@ -690,7 +693,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                             AvailablePatients.Add(patientDto);
                         }
                     });
-                    
+
                     _logger.LogInformation("患者列表加载完成，共 {Count} 个患者", result.Data.Count);
                 }
                 else
@@ -740,7 +743,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                     });
 
                     StatusMessage = $"找到 {result.Data.Count} 个匹配的患者";
-                    _logger.LogInformation("患者搜索完成，关键词: {Keyword}，结果: {Count}", 
+                    _logger.LogInformation("患者搜索完成，关键词: {Keyword}，结果: {Count}",
                         PatientSearchKeyword, result.Data.Count);
                 }
                 else
@@ -764,21 +767,21 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             try
             {
                 _logger.LogInformation("打开新建患者对话框");
-                
+
                 var parameters = new Dictionary<string, object>
                 {
                     ["IsEditMode"] = false
                 };
 
                 var result = await _dialogService.ShowDialogAsync("PatientAddEditDialog", parameters);
-                
+
                 if (result.Result == true)
                 {
                     _logger.LogInformation("患者创建成功，刷新患者列表");
-                    
+
                     // 刷新患者列表
                     await LoadPatientsAsync();
-                    
+
                     // 如果有返回的患者数据，自动选择该患者
                     if (result.Data is Dictionary<string, object> data && data.ContainsKey("Patient") && data["Patient"] is PatientDto newPatient)
                     {
@@ -786,10 +789,10 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                         {
                             SelectedPatientFromList = newPatient;
                         });
-                        
+
                         _logger.LogInformation("已自动选择新创建的患者: {PatientName}", newPatient.Name);
                     }
-                    
+
                     await _dialogService.ShowSuccessAsync("患者创建成功", "成功");
                 }
             }
@@ -801,115 +804,115 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         }
 
         private async Task PreviewPrescriptionAsync()
-{
-    try
-    {
-        if (Prescription.PatientId == Guid.Empty || PrescriptionItems.Count == 0)
         {
-            await _dialogService.ShowWarningAsync("请先选择患者并添加药材后再进行预览", "预览提醒");
-            return;
+            try
+            {
+                if (Prescription.PatientId == Guid.Empty || PrescriptionItems.Count == 0)
+                {
+                    await _dialogService.ShowWarningAsync("请先选择患者并添加药材后再进行预览", "预览提醒");
+                    return;
+                }
+
+                StatusMessage = "正在生成处方预览...";
+
+                // 创建打印数据
+                var printData = CreatePrintData();
+
+                // 显示预览对话框
+                var parameters = new Dictionary<string, object>
+                {
+                    ["PrintData"] = printData,
+                    ["Title"] = "处方预览"
+                };
+
+                // 简单的文本预览实现
+                await _dialogService.ShowInformationAsync(printData, "处方预览");
+
+                StatusMessage = "预览完成";
+                _logger.LogInformation("处方预览成功，处方号: {PrescriptionNo}", Prescription.PrescriptionNo);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "生成处方预览时发生错误");
+                StatusMessage = $"预览失败: {ex.Message}";
+                await _dialogService.ShowErrorAsync($"预览失败: {ex.Message}", "错误");
+            }
         }
 
-        StatusMessage = "正在生成处方预览...";
-        
-        // 创建打印数据
-        var printData = CreatePrintData();
-        
-        // 显示预览对话框
-        var parameters = new Dictionary<string, object>
+        /// <summary>
+        /// 创建打印数据
+        /// </summary>
+        private string CreatePrintData()
         {
-            ["PrintData"] = printData,
-            ["Title"] = "处方预览"
-        };
+            var sb = new System.Text.StringBuilder();
 
-        // 简单的文本预览实现
-        await _dialogService.ShowInformationAsync(printData, "处方预览");
-        
-        StatusMessage = "预览完成";
-        _logger.LogInformation("处方预览成功，处方号: {PrescriptionNo}", Prescription.PrescriptionNo);
-    }
-    catch (Exception ex)
-    {
-        _logger.LogError(ex, "生成处方预览时发生错误");
-        StatusMessage = $"预览失败: {ex.Message}";
-        await _dialogService.ShowErrorAsync($"预览失败: {ex.Message}", "错误");
-    }
-}
+            // 处方头部信息
+            sb.AppendLine("=============================================");
+            sb.AppendLine("                中医处方                    ");
+            sb.AppendLine("=============================================");
+            sb.AppendLine();
 
-/// <summary>
-/// 创建打印数据
-/// </summary>
-private string CreatePrintData()
-{
-    var sb = new System.Text.StringBuilder();
-    
-    // 处方头部信息
-    sb.AppendLine("=============================================");
-    sb.AppendLine("                中医处方                    ");
-    sb.AppendLine("=============================================");
-    sb.AppendLine();
-    
-    // 基础信息
-    sb.AppendLine($"处方编号：{Prescription.PrescriptionNo}");
-    sb.AppendLine($"患者姓名：{Prescription.PatientName}");
-    sb.AppendLine($"开方日期：{Prescription.CreateTime:yyyy-MM-dd HH:mm}");
-    sb.AppendLine($"医生：{_userSessionManager.CurrentUser?.RealName ?? "未知"}");
-    sb.AppendLine();
-    
-    // 药材列表
-    sb.AppendLine("药材明细：");
-    sb.AppendLine("---------------------------------------------");
-    sb.AppendLine("药材名称\t\t规格\t\t数量\t\t单价\t\t金额");
-    sb.AppendLine("---------------------------------------------");
-    
-    decimal totalItemAmount = 0;
-    foreach (var item in PrescriptionItems)
-    {
-        var amount = item.Quantity * item.UnitPrice;
-        totalItemAmount += amount;
-        
-        sb.AppendLine($"{item.HerbName?.PadRight(12) ?? "未知".PadRight(12)}\t" +
-                     $"{(item.Usage ?? "").PadRight(8)}\t" +
-                     $"{item.Quantity}\t\t" +
-                     $"¥{item.UnitPrice:F2}\t\t" +
-                     $"¥{amount:F2}");
-    }
-    
-    sb.AppendLine("---------------------------------------------");
-    sb.AppendLine($"单次金额：¥{totalItemAmount:F2}");
-    sb.AppendLine($"药付数：{TotalDoses} 付");
-    sb.AppendLine($"总金额：¥{TotalAmount:F2}");
-    sb.AppendLine();
-    
-    // 用法用量（如果有）
-    if (!string.IsNullOrEmpty(Prescription.Usage))
-    {
-        sb.AppendLine("用法用量：");
-        sb.AppendLine(Prescription.Usage);
-        sb.AppendLine();
-    }
-    
-    // 医嘱（如果有）
-    if (!string.IsNullOrEmpty(Prescription.Advice))
-    {
-        sb.AppendLine("医嘱：");
-        sb.AppendLine(Prescription.Advice);
-        sb.AppendLine();
-    }
-    
-    // 备注（如果有）
-    if (!string.IsNullOrEmpty(Prescription.Remark))
-    {
-        sb.AppendLine("备注：");
-        sb.AppendLine(Prescription.Remark);
-        sb.AppendLine();
-    }
-    
-    sb.AppendLine("=============================================");
-    sb.AppendLine($"生成时间：{DateTime.Now:yyyy-MM-dd HH:mm:ss}");
-    
-    return sb.ToString();
-}
+            // 基础信息
+            sb.AppendLine($"处方编号：{Prescription.PrescriptionNo}");
+            sb.AppendLine($"患者姓名：{Prescription.PatientName}");
+            sb.AppendLine($"开方日期：{Prescription.CreateTime:yyyy-MM-dd HH:mm}");
+            sb.AppendLine($"医生：{_userSessionManager.CurrentUser?.RealName ?? "未知"}");
+            sb.AppendLine();
+
+            // 药材列表
+            sb.AppendLine("药材明细：");
+            sb.AppendLine("---------------------------------------------");
+            sb.AppendLine("药材名称\t\t规格\t\t数量\t\t单价\t\t金额");
+            sb.AppendLine("---------------------------------------------");
+
+            decimal totalItemAmount = 0;
+            foreach (var item in PrescriptionItems)
+            {
+                var amount = item.Quantity * item.UnitPrice;
+                totalItemAmount += amount;
+
+                sb.AppendLine($"{item.HerbName?.PadRight(12) ?? "未知".PadRight(12)}\t" +
+                             $"{(item.Usage ?? "").PadRight(8)}\t" +
+                             $"{item.Quantity}\t\t" +
+                             $"¥{item.UnitPrice:F2}\t\t" +
+                             $"¥{amount:F2}");
+            }
+
+            sb.AppendLine("---------------------------------------------");
+            sb.AppendLine($"单次金额：¥{totalItemAmount:F2}");
+            sb.AppendLine($"药付数：{TotalDoses} 付");
+            sb.AppendLine($"总金额：¥{TotalAmount:F2}");
+            sb.AppendLine();
+
+            // 用法用量（如果有）
+            if (!string.IsNullOrEmpty(Prescription.Usage))
+            {
+                sb.AppendLine("用法用量：");
+                sb.AppendLine(Prescription.Usage);
+                sb.AppendLine();
+            }
+
+            // 医嘱（如果有）
+            if (!string.IsNullOrEmpty(Prescription.Advice))
+            {
+                sb.AppendLine("医嘱：");
+                sb.AppendLine(Prescription.Advice);
+                sb.AppendLine();
+            }
+
+            // 备注（如果有）
+            if (!string.IsNullOrEmpty(Prescription.Remark))
+            {
+                sb.AppendLine("备注：");
+                sb.AppendLine(Prescription.Remark);
+                sb.AppendLine();
+            }
+
+            sb.AppendLine("=============================================");
+            sb.AppendLine($"生成时间：{DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+
+            return sb.ToString();
+        }
 
         #endregion
     }

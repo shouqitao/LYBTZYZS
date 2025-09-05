@@ -1,10 +1,10 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using AutoMapper;
-using LYBT.Module.Auth.Interfaces;
 using LYBT.Entities.Users;
-using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Module.Auth.Interfaces;
 using LYBT.Shared.Models.Contracts.Auth;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 using Microsoft.Extensions.Logging;
 
@@ -88,7 +88,7 @@ namespace LYBT.Module.Auth.Services
 
                 // 使用JWT服务验证Token
                 var claimsPrincipal = _jwtAuthenticationService.ValidateToken(token);
-                
+
                 await Task.CompletedTask; // 保持异步接口一致性
                 return ServiceResult<bool>.Success(claimsPrincipal != null);
             }

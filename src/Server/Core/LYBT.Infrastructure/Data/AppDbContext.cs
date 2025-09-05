@@ -1,5 +1,4 @@
-using LYBT.Infrastructure.Configuration;
-using LYBT.Infrastructure;
+﻿using System.Text.Json;
 using LYBT.Entities.Auth;
 using LYBT.Entities.Consultation;
 using LYBT.Entities.Formula;
@@ -7,12 +6,13 @@ using LYBT.Entities.Herbs;
 using LYBT.Entities.MedicalCase;
 using LYBT.Entities.Patients;
 using LYBT.Entities.Prescriptions;
-using LYBT.Shared.Models.Enums;
 using LYBT.Entities.Users;
+using LYBT.Infrastructure;
+using LYBT.Infrastructure.Configuration;
+using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using System.Text.Json;
 
 
 namespace LYBT.Infrastructure.Data
@@ -131,7 +131,8 @@ namespace LYBT.Infrastructure.Data
 
             // 添加默认的 sysadmin 种子数据
             // 密码: Admin@123456
-            entity.HasData(new AdminSecretModel {
+            entity.HasData(new AdminSecretModel
+            {
                 Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                 Username = "sysadmin",
                 PasswordHash = "AQAAAAIAAYagAAAAEBZtKH/jLrWSCIstrn4KyQtIopjqYQNrjJ8ZTIZxjKrpJ1l0obDU19hLQMSNwBjbeQ=="
@@ -236,10 +237,10 @@ namespace LYBT.Infrastructure.Data
             entity.HasIndex(c => c.MedicalCaseId);
             entity.HasIndex(c => c.PatientId);
             entity.HasIndex(c => c.UserId);
-            
+
             // 明确配置外键属性和导航属性关系
             entity.Property(c => c.MedicalCaseId).HasColumnName("MedicalCaseId").IsRequired();
-            
+
             // UltraThink Phase 7: 配置与MedicalCase的一对一关系
             entity.HasOne(c => c.MedicalCase)
                   .WithOne(m => m.Consultation)

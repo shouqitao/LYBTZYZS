@@ -1,6 +1,6 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Desktop.Core.Models.Prescriptions
 {
@@ -28,7 +28,7 @@ namespace LYBT.Desktop.Core.Models.Prescriptions
         public decimal UnitPrice { get; set; } = 0m;
         public string? ImportSource { get; set; }
         public string Remark { get; set; } = "";
-        
+
         // 计算属性
         public decimal Subtotal => Quantity * UnitPrice;
         public string DisplayText => $"{HerbName} {Quantity}{Unit}";

@@ -1,14 +1,14 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using LYBT.Infrastructure.Data;
-using LYBT.Shared.Models.Contracts.MedicalCase;
-using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Shared.Models.Common;
-using LYBT.Shared.Models.Enums;
 using LYBT.Module.MedicalCase.Interfaces;
+using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.MedicalCase;
+using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -42,13 +42,17 @@ namespace LYBT.Module.MedicalCase.Services
             try
             {
                 if (caseId == Guid.Empty)
+                {
                     return ServiceResult<MedicalCaseDto>.Failure("医疗案例ID不能为空");
+                }
 
                 var medicalCase = await _context.MedicalCases
                     .FirstOrDefaultAsync(mc => mc.Id == caseId);
 
                 if (medicalCase == null)
+                {
                     return ServiceResult<MedicalCaseDto>.Failure("医疗案例不存在");
+                }
 
                 var dto = _mapper.Map<MedicalCaseDto>(medicalCase);
                 return ServiceResult<MedicalCaseDto>.Success(dto);
@@ -76,7 +80,7 @@ namespace LYBT.Module.MedicalCase.Services
                 if (!string.IsNullOrWhiteSpace(query.Keyword))
                 {
                     var keyword = query.Keyword.Trim();
-                    queryable = queryable.Where(mc => 
+                    queryable = queryable.Where(mc =>
                         mc.PatientName.Contains(keyword) ||
                         mc.DoctorName.Contains(keyword) ||
                         (mc.Remark != null && mc.Remark.Contains(keyword)));
@@ -119,7 +123,9 @@ namespace LYBT.Module.MedicalCase.Services
             try
             {
                 if (patientId == Guid.Empty)
+                {
                     return ServiceResult<List<MedicalCaseDto>>.Failure("患者ID不能为空");
+                }
 
                 var medicalCases = await _context.MedicalCases
                     .Where(mc => mc.PatientId == patientId && mc.Status != MedicalCaseStatus.Cancelled)
@@ -144,14 +150,18 @@ namespace LYBT.Module.MedicalCase.Services
             try
             {
                 if (patientId == Guid.Empty)
+                {
                     return ServiceResult<MedicalCaseDto>.Failure("患者ID不能为空");
+                }
 
                 var activeCase = await _context.MedicalCases
                     .Where(mc => mc.PatientId == patientId && mc.Status == MedicalCaseStatus.InConsultation)
                     .FirstOrDefaultAsync();
 
                 if (activeCase == null)
+                {
                     return ServiceResult<MedicalCaseDto>.Failure("患者暂无活跃的医疗案例");
+                }
 
                 var dto = _mapper.Map<MedicalCaseDto>(activeCase);
                 return ServiceResult<MedicalCaseDto>.Success(dto);
@@ -171,7 +181,9 @@ namespace LYBT.Module.MedicalCase.Services
             try
             {
                 if (string.IsNullOrWhiteSpace(keyword))
+                {
                     return ServiceResult<List<MedicalCaseDto>>.Success(new List<MedicalCaseDto>());
+                }
 
                 var searchTerm = keyword.Trim();
                 var medicalCases = await _context.MedicalCases
@@ -201,7 +213,9 @@ namespace LYBT.Module.MedicalCase.Services
             try
             {
                 if (patientId == Guid.Empty)
+                {
                     return ServiceResult<bool>.Failure("患者ID不能为空");
+                }
 
                 var hasActiveCase = await _context.MedicalCases
                     .AnyAsync(mc => mc.PatientId == patientId && mc.Status == MedicalCaseStatus.InConsultation);
@@ -223,11 +237,13 @@ namespace LYBT.Module.MedicalCase.Services
             try
             {
                 if (patientId == Guid.Empty)
+                {
                     return ServiceResult<List<MedicalCaseDto>>.Failure("患者ID不能为空");
+                }
 
                 // 获取患者的已完成案例作为历史记录
                 var historyCases = await _context.MedicalCases
-                    .Where(mc => mc.PatientId == patientId && 
+                    .Where(mc => mc.PatientId == patientId &&
                                (mc.Status == MedicalCaseStatus.Completed || mc.Status == MedicalCaseStatus.Cancelled))
                     .OrderByDescending(mc => mc.ConsultationDate)
                     .ToListAsync();
@@ -297,7 +313,9 @@ namespace LYBT.Module.MedicalCase.Services
             try
             {
                 if (doctorId == Guid.Empty)
+                {
                     return ServiceResult<List<MedicalCaseDto>>.Failure("医生ID不能为空");
+                }
 
                 var medicalCases = await _context.MedicalCases
                     .Where(mc => mc.DoctorId == doctorId && mc.Status != MedicalCaseStatus.Cancelled)

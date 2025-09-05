@@ -1,21 +1,21 @@
-using System;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using AutoMapper;
-using Microsoft.Extensions.Logging;
-using Prism.Commands;
-using Prism.Mvvm;
-using Prism.Regions;
-using LYBT.Shared.Models.Contracts.Common;
-using Prism.Events;
 using LYBT.Desktop.Core.Constants;
 using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.ViewModels.Base;
 using LYBT.Shared.Interfaces.Services;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Enums;
+using Microsoft.Extensions.Logging;
+using Prism.Commands;
+using Prism.Events;
+using Prism.Mvvm;
+using Prism.Regions;
 
 namespace LYBT.Desktop.Formula.ViewModels
 {
@@ -136,7 +136,7 @@ namespace LYBT.Desktop.Formula.ViewModels
             if (navigationContext.Parameters.ContainsKey("FormulaId"))
             {
                 FormulaId = navigationContext.Parameters.GetValue<Guid>("FormulaId");
-                
+
                 if (navigationContext.Parameters.ContainsKey("ViewMode"))
                 {
                     var viewMode = navigationContext.Parameters.GetValue<string>("ViewMode");
@@ -171,14 +171,17 @@ namespace LYBT.Desktop.Formula.ViewModels
 
         private async Task LoadDataAsync()
         {
-            if (FormulaId == Guid.Empty) return;
+            if (FormulaId == Guid.Empty)
+            {
+                return;
+            }
 
             try
             {
                 IsLoading = true;
 
                 var result = await _formulaService.GetByIdAsync(FormulaId);
-                
+
                 if (result.IsSuccess && result.Data != null)
                 {
                     Formula = result.Data;
@@ -202,7 +205,10 @@ namespace LYBT.Desktop.Formula.ViewModels
 
         private async Task SaveAsync()
         {
-            if (Formula == null) return;
+            if (Formula == null)
+            {
+                return;
+            }
 
             try
             {
@@ -213,7 +219,7 @@ namespace LYBT.Desktop.Formula.ViewModels
 
                 var updateDto = _mapper.Map<FormulaUpdateDto>(Formula);
                 var result = await _formulaService.UpdateAsync(Formula.Id, updateDto);
-                
+
                 if (result.IsSuccess && result.Data != null)
                 {
                     Formula = result.Data;
@@ -221,7 +227,7 @@ namespace LYBT.Desktop.Formula.ViewModels
                     IsReadOnly = true;
                     RefreshProperties();
                     RaiseCanExecuteChanged();
-                    
+
                     await _dialogService.ShowSuccessAsync("验方信息保存成功", "成功");
                 }
                 else
@@ -278,7 +284,7 @@ namespace LYBT.Desktop.Formula.ViewModels
             try
             {
                 await _dialogService.ShowInformationAsync(
-                    "验方打印功能将在后续版本中提供\n\n当前支持的操作：\n• 查看验方详情\n• 编辑验方信息\n• 复制验方\n• 查看药材组成", 
+                    "验方打印功能将在后续版本中提供\n\n当前支持的操作：\n• 查看验方详情\n• 编辑验方信息\n• 复制验方\n• 查看药材组成",
                     "功能说明");
             }
             catch (Exception ex)
@@ -289,21 +295,24 @@ namespace LYBT.Desktop.Formula.ViewModels
 
         private async Task CopyFormulaAsync()
         {
-            if (Formula == null) return;
-            
+            if (Formula == null)
+            {
+                return;
+            }
+
             try
             {
                 var newName = $"{Formula.Name}_副本";
-                
+
                 // 使用默认用户ID（暂时方案）
-                var defaultUserId = Guid.NewGuid(); 
-                
+                var defaultUserId = Guid.NewGuid();
+
                 var result = await _formulaService.CloneFormulaAsync(Formula.Id, newName, defaultUserId);
-                
+
                 if (result.IsSuccess && result.Data != null)
                 {
                     await _dialogService.ShowSuccessAsync($"验方复制成功！新验方: {result.Data.Name}", "成功");
-                    
+
                     // 刷新当前页面显示新的验方信息
                     FormulaId = result.Data.Id;
                     await LoadDataAsync();
@@ -321,8 +330,11 @@ namespace LYBT.Desktop.Formula.ViewModels
 
         private async Task ViewUsageHistoryAsync()
         {
-            if (Formula == null) return;
-            
+            if (Formula == null)
+            {
+                return;
+            }
+
             try
             {
                 await _dialogService.ShowInformationAsync("使用历史功能正在开发中", "提示");
@@ -338,9 +350,9 @@ namespace LYBT.Desktop.Formula.ViewModels
         #region 命令状态
 
         private bool CanEdit() => Formula != null && IsReadOnly && !IsLoading;
-        
+
         private bool CanSave() => Formula != null && !IsReadOnly && !IsLoading;
-        
+
         private bool CanCancelEdit() => Formula != null && !IsReadOnly && !IsLoading;
 
         private new void RaiseCanExecuteChanged()
@@ -376,7 +388,10 @@ namespace LYBT.Desktop.Formula.ViewModels
         private string GetStatusText()
         {
             if (Formula?.Status == CommonStatus.Enabled)
+            {
                 return "正常";
+            }
+
             return "已禁用";
         }
 

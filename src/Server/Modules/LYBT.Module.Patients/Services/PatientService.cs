@@ -1,13 +1,13 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
+using LYBT.Module.Patients.Interfaces;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
-using LYBT.Module.Patients.Interfaces;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.Module.Patients.Services
 {
@@ -36,8 +36,8 @@ namespace LYBT.Module.Patients.Services
         public async Task<ServiceResult<bool>> DeleteAsync(Guid id)
         {
             var result = await _businessService.DeleteAsync(id);
-            return result.IsSuccess 
-                ? ServiceResult<bool>.Success(true) 
+            return result.IsSuccess
+                ? ServiceResult<bool>.Success(true)
                 : ServiceResult<bool>.Failure(result.ErrorMessage ?? "删除患者失败");
         }
 
@@ -150,8 +150,8 @@ namespace LYBT.Module.Patients.Services
         {
             var patientIds = new List<Guid> { id };
             var result = await _businessService.EnableAsync(patientIds);
-            return result.IsSuccess 
-                ? ServiceResult.Success() 
+            return result.IsSuccess
+                ? ServiceResult.Success()
                 : ServiceResult.Failure(result.ErrorMessage ?? "启用患者失败");
         }
 
@@ -159,8 +159,8 @@ namespace LYBT.Module.Patients.Services
         {
             var patientIds = new List<Guid> { id };
             var result = await _businessService.DisableAsync(patientIds);
-            return result.IsSuccess 
-                ? ServiceResult.Success() 
+            return result.IsSuccess
+                ? ServiceResult.Success()
                 : ServiceResult.Failure(result.ErrorMessage ?? "禁用患者失败");
         }
 
@@ -189,10 +189,10 @@ namespace LYBT.Module.Patients.Services
             if (result.IsSuccess)
             {
                 // 转换结果为通用对象
-                return ServiceResult<object>.Success(new 
-                { 
+                return ServiceResult<object>.Success(new
+                {
                     SuccessCount = result.Data?.Count ?? 0,
-                    ImportedPatients = result.Data 
+                    ImportedPatients = result.Data
                 });
             }
             return ServiceResult<object>.Failure(result.ErrorMessage ?? "导入患者失败");
@@ -212,7 +212,7 @@ namespace LYBT.Module.Patients.Services
                 // 将PatientDto列表转换为CSV字节数组
                 var patients = result.Data ?? new List<PatientDto>();
                 var csvContent = "姓名,性别,出生日期,手机号码,身份证号,地址\n";
-                
+
                 foreach (var patient in patients)
                 {
                     var gender = patient.Gender == LYBT.Shared.Models.Enums.Gender.Male ? "男" : "女";
@@ -232,7 +232,7 @@ namespace LYBT.Module.Patients.Services
             if (result.IsSuccess)
             {
                 var validationErrors = result.Data ?? new List<string>();
-                return ServiceResult<object>.Success(new 
+                return ServiceResult<object>.Success(new
                 {
                     IsValid = !validationErrors.Any(),
                     Errors = validationErrors

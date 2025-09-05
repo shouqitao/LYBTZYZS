@@ -1,8 +1,8 @@
-using LYBT.Shared.Interfaces.Services;
-using LYBT.Module.Herbs.Interfaces;
+﻿using LYBT.Module.Herbs.Interfaces;
+using LYBT.Module.Herbs.Mapping;
 using LYBT.Module.Herbs.Repositories;
 using LYBT.Module.Herbs.Services;
-using LYBT.Module.Herbs.Mapping;
+using LYBT.Shared.Interfaces.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace LYBT.Module.Herbs
@@ -21,11 +21,11 @@ namespace LYBT.Module.Herbs
         {
             // 仓储层
             services.AddScoped<IHerbRepository, HerbRepository>();
-            
+
             // UltraThink双层架构服务 - 查询和业务逻辑分离
             services.AddScoped<HerbQueryService>();
             services.AddScoped<HerbBusinessService>();
-            
+
             // 主服务 - UltraThink纯委托模式，委托给专业服务层
             services.AddScoped<IHerbService, HerbService>();
 

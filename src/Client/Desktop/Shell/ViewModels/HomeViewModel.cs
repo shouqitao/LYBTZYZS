@@ -1,20 +1,20 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Threading;
-using Microsoft.Extensions.Logging;
-using Prism.Commands;
-using Prism.Events;
-using Prism.Mvvm;
-using Prism.Regions;
+using LYBT.Desktop.Core.Constants;
 using LYBT.Desktop.Core.Events;
 using LYBT.Desktop.Core.Interfaces.Services;
-using LYBT.Desktop.Core.Constants;
 using LYBT.Desktop.Core.ViewModels.Base;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
+using Microsoft.Extensions.Logging;
+using Prism.Commands;
+using Prism.Events;
+using Prism.Mvvm;
+using Prism.Regions;
 
 namespace LYBT.Desktop.Shell.ViewModels
 {
@@ -172,7 +172,7 @@ namespace LYBT.Desktop.Shell.ViewModels
 
             // 初始化
             _ = InitializeAsync();
-            
+
             LogInfo("HomeViewModel 已初始化");
         }
 
@@ -192,18 +192,18 @@ namespace LYBT.Desktop.Shell.ViewModels
             try
             {
                 ShowLoading("正在加载主页...");
-                
+
                 // 先设置默认值，确保界面能显示
                 WelcomeMessage = "欢迎使用系统";
                 SubTitle = "加载中...";
-                
+
                 // 获取当前用户信息
                 var currentUser = CurrentUser ?? await _authService.GetCurrentUserAsync();
-                
+
                 if (currentUser != null)
                 {
                     WelcomeMessage = $"欢迎，{currentUser.RealName}";
-                    
+
                     // 判断用户角色
                     if (currentUser.Role?.Equals("Admin", StringComparison.OrdinalIgnoreCase) == true)
                     {
@@ -216,7 +216,7 @@ namespace LYBT.Desktop.Shell.ViewModels
                         IsDoctorRole = true;
                         IsAdminRole = false;
                         SubTitle = "医生工作台";
-                        
+
                         // 异步加载今日统计
                         _ = Task.Run(async () =>
                         {
@@ -250,7 +250,7 @@ namespace LYBT.Desktop.Shell.ViewModels
             {
                 LogError(ex, "初始化主页失败");
                 ShowError("初始化主页失败，请重试");
-                
+
                 // 错误恢复：设置基本界面状态
                 WelcomeMessage = "初始化失败，请重试";
                 IsAdminRole = true;
@@ -281,13 +281,13 @@ namespace LYBT.Desktop.Shell.ViewModels
                 {
                     TodayCompletedCount = result.Data.Items
                         .Count(c => c.CaseStatus == LYBT.Shared.Models.Enums.MedicalCaseStatus.Completed);
-                    
+
                     TodayInProgressCount = result.Data.Items
                         .Count(c => c.CaseStatus == LYBT.Shared.Models.Enums.MedicalCaseStatus.InConsultation);
-                    
+
                     // TODO: 计算今日收入
                     TodayTotalAmount = TodayCompletedCount * 150;
-                    
+
                     LogInfo($"今日统计加载完成 - 完成: {TodayCompletedCount}, 进行中: {TodayInProgressCount}");
                 }
             }
@@ -351,10 +351,10 @@ namespace LYBT.Desktop.Shell.ViewModels
                 if (confirm)
                 {
                     await _authService.LogoutAsync();
-                    
+
                     // 清除会话状态
                     SessionManager.ClearUserSession();
-                    
+
                     _eventAggregator.GetEvent<LogoutEvent>().Publish();
                     ShowSuccess("已成功退出登录");
                     LogInfo("用户已退出登录");
@@ -390,7 +390,7 @@ namespace LYBT.Desktop.Shell.ViewModels
         public void OnNavigatedTo(NavigationContext navigationContext)
         {
             _ = InitializeAsync();
-            
+
             // 如果是医生角色，定时刷新统计数据
             if (IsDoctorRole)
             {
@@ -401,7 +401,7 @@ namespace LYBT.Desktop.Shell.ViewModels
                 refreshTimer.Tick += async (s, e) => await LoadTodayStatisticsAsync();
                 refreshTimer.Start();
             }
-            
+
             LogInfo("HomeViewModel 导航进入");
         }
 
@@ -429,7 +429,7 @@ namespace LYBT.Desktop.Shell.ViewModels
                 _timer?.Stop();
                 LogInfo("HomeViewModel 定时器已停止");
             }
-            
+
             base.Dispose(disposing);
         }
 

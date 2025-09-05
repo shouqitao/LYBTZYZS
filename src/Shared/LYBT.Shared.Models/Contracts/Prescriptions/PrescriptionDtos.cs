@@ -1,7 +1,7 @@
-using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Shared.Models.Common;
+﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel;
+using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Shared.Models.Contracts.Prescriptions
@@ -15,46 +15,46 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
     {
         [DisplayName("医疗案例ID")]
         public Guid MedicalCaseId { get; set; }
-        
+
         [DisplayName("患者ID")]
         public Guid PatientId { get; set; }
-        
+
         [DisplayName("医生ID")]
         public Guid UserId { get; set; }
 
         [DisplayName("患者姓名")]
         public string? PatientName { get; set; }
 
-        [DisplayName("医生姓名")]  
+        [DisplayName("医生姓名")]
         public string? DoctorName { get; set; }
-        
+
         [DisplayName("诊断")]
         [StringLength(500, ErrorMessage = "诊断长度不能超过500个字符")]
         public string? Diagnosis { get; set; }
-        
+
         [DisplayName("用法")]
         [StringLength(200, ErrorMessage = "用法长度不能超过200个字符")]
         public string? Usage { get; set; }
-        
+
         [DisplayName("主治")]
         public string? Indication { get; set; }
-        
+
         [DisplayName("剂数")]
         public int DosageCount { get; set; } = 7;
-        
+
         [DisplayName("折扣")]
         public decimal Discount { get; set; } = 1.0m;
-        
+
         [DisplayName("医嘱")]
         public string? Advice { get; set; }
-        
+
         [DisplayName("验方来源")]
         public string? FormulaSource { get; set; }
-        
+
         [DisplayName("备注")]
         [StringLength(500, ErrorMessage = "备注长度不能超过500个字符")]
         public string? Remark { get; set; }
-        
+
         [DisplayName("处方项目")]
         public List<PrescriptionItemDto> Items { get; set; } = new();
 
@@ -64,7 +64,11 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
         {
             get
             {
-                if (Items == null || !Items.Any()) return 0m;
+                if (Items == null || !Items.Any())
+                {
+                    return 0m;
+                }
+
                 var subtotal = Items.Sum(item => item.UnitPrice * item.Quantity);
                 return subtotal * Discount;
             }
@@ -91,7 +95,11 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
         {
             get
             {
-                if (Items == null || !Items.Any()) return 0m;
+                if (Items == null || !Items.Any())
+                {
+                    return 0m;
+                }
+
                 return Items.Sum(item => item.Quantity) * DosageCount;
             }
         }
@@ -104,25 +112,25 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
     {
         [DisplayName("方剂来源")]
         public new string? FormulaSource { get; set; }
-        
+
         [DisplayName("重复用药警告")]
         public string? DuplicateWarning { get; set; }
-        
+
         [DisplayName("缺药警告")]
         public string? MissingDrugWarning { get; set; }
-        
+
         [DisplayName("处方编号")]
         public new string? PrescriptionNo { get; set; }
-        
+
         [DisplayName("用法")]
         public new string? Usage { get; set; }
-        
+
         [DisplayName("医嘱")]
         public string? MedicalAdvice { get; set; }
-        
+
         [DisplayName("折扣")]
         public new decimal Discount { get; set; } = 1.0m;
-        
+
         [DisplayName("备注")]
         [StringLength(500, ErrorMessage = "备注长度不能超过500个字符")]
         public new string? Remark { get; set; }
@@ -225,39 +233,39 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
     {
         [DisplayName("中药材ID")]
         public Guid HerbId { get; set; }
-        
+
         [DisplayName("中药材名称")]
         public string HerbName { get; set; } = string.Empty;
-        
+
         [DisplayName("用量")]
         public decimal Quantity { get; set; }
-        
+
         [DisplayName("单位")]
         public string Unit { get; set; } = string.Empty;
-        
+
         [DisplayName("单价")]
         public decimal UnitPrice { get; set; }
-        
+
         /// <summary>价格（兼容属性，映射到UnitPrice）</summary>
         [DisplayName("价格")]
-        public decimal Price 
-        { 
-            get => UnitPrice; 
-            set => UnitPrice = value; 
+        public decimal Price
+        {
+            get => UnitPrice;
+            set => UnitPrice = value;
         }
-        
+
         [DisplayName("总价")]
         public decimal TotalPrice { get; set; }
-        
+
         [DisplayName("总重量")]
         public decimal TotalWeight { get; set; }
-        
+
         [DisplayName("小计金额")]
         public decimal Subtotal { get; set; }
-        
+
         [DisplayName("用法说明")]
         public string? Usage { get; set; }
-        
+
         [DisplayName("备注")]
         [StringLength(500, ErrorMessage = "备注长度不能超过500个字符")]
         public string? Remark { get; set; }
@@ -327,19 +335,19 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
     {
         [DisplayName("草稿处方数量")]
         public int DraftCount { get; set; }
-        
+
         [DisplayName("待审核处方数量")]
         public int PendingCount { get; set; }
-        
+
         [DisplayName("已完成处方数量")]
         public int CompletedCount { get; set; }
-        
+
         [DisplayName("已取消处方数量")]
         public int CancelledCount { get; set; }
-        
+
         [DisplayName("总金额")]
         public decimal TotalAmount { get; set; }
-        
+
         [DisplayName("平均金额")]
         public decimal AverageAmount { get; set; }
     }
@@ -351,16 +359,16 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
     {
         [DisplayName("患者ID")]
         public Guid? PatientId { get; set; }
-        
+
         [DisplayName("医生ID")]
         public Guid? DoctorId { get; set; }
-        
+
         [DisplayName("处方状态")]
         public PrescriptionStatus? PrescriptionStatus { get; set; }
-        
+
         [DisplayName("排序字段")]
         public string OrderBy { get; set; } = "CreateTime";
-        
+
         [DisplayName("升序排序")]
         public bool IsAscending { get; set; } = false;
     }
@@ -372,31 +380,31 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
     {
         [DisplayName("关键词")]
         public string? Keyword { get; set; }
-        
+
         [DisplayName("患者姓名")]
         public string? PatientName { get; set; }
-        
+
         [DisplayName("医生姓名")]
         public string? DoctorName { get; set; }
-        
+
         [DisplayName("诊断")]
         public string? Diagnosis { get; set; }
-        
+
         [DisplayName("处方状态")]
         public PrescriptionStatus? Status { get; set; }
-        
+
         [DisplayName("开始日期")]
         public DateTime? StartDate { get; set; }
-        
+
         [DisplayName("结束日期")]
         public DateTime? EndDate { get; set; }
-        
+
         [DisplayName("最小剂数")]
         public int? MinDosageCount { get; set; }
-        
+
         [DisplayName("最大剂数")]
         public int? MaxDosageCount { get; set; }
-        
+
         [DisplayName("药材名称")]
         public string? HerbName { get; set; }
     }
@@ -410,13 +418,13 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
         [StringLength(200, ErrorMessage = "新处方名称不能超过200个字符")]
         [DisplayName("新处方名称")]
         public string NewName { get; set; } = string.Empty;
-        
+
         [DisplayName("复制处方项目")]
         public bool CopyItems { get; set; } = true;
-        
+
         [DisplayName("复制用法用量")]
         public bool CopyUsage { get; set; } = true;
-        
+
         [DisplayName("复制备注")]
         public bool CopyRemark { get; set; } = false;
     }

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using LYBT.Shared.Models.Common;
@@ -22,14 +22,14 @@ namespace LYBT.Shared.Models.Contracts.Common
         /// <param name="message">响应消息</param>
         /// <returns>统一的分页API响应</returns>
         public static ApiResponse<PagedResult<T>> CreatePagedSuccess<T>(
-            IList<T> items, 
-            int totalCount, 
-            int currentPage, 
-            int pageSize, 
+            IList<T> items,
+            int totalCount,
+            int currentPage,
+            int pageSize,
             string message = "查询成功")
         {
             var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
-            
+
             var pagedData = new PagedResult<T>
             {
                 Items = items.ToList(),
@@ -92,7 +92,7 @@ namespace LYBT.Shared.Models.Contracts.Common
         /// <param name="successMessage">成功消息</param>
         /// <returns>API响应</returns>
         public static ApiResponse<T> ToApiResponse<T>(
-            this ServiceResult<T> serviceResult, 
+            this ServiceResult<T> serviceResult,
             string successMessage = "操作成功")
         {
             if (serviceResult.IsSuccess)
@@ -102,7 +102,7 @@ namespace LYBT.Shared.Models.Contracts.Common
             else
             {
                 return ApiResponse<T>.CreateFail(
-                    serviceResult.ErrorMessage ?? "操作失败", 
+                    serviceResult.ErrorMessage ?? "操作失败",
                     serviceResult.Exception?.Message
                 );
             }

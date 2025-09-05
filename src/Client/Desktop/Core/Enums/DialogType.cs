@@ -1,4 +1,4 @@
-using LYBT.Shared.Models.Contracts.Common;
+﻿using LYBT.Shared.Models.Contracts.Common;
 namespace LYBT.Desktop.Core.Enums
 {
     /// <summary>

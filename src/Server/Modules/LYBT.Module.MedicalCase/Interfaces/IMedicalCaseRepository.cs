@@ -1,5 +1,5 @@
+﻿using LYBT.Infrastructure.Interfaces;
 using LYBT.Shared.Models.Enums;
-using LYBT.Infrastructure.Interfaces;
 
 namespace LYBT.Module.MedicalCase.Interfaces
 {

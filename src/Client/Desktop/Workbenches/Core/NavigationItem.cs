@@ -1,6 +1,6 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Desktop.Workbench.Core
 {

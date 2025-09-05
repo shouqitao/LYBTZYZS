@@ -1,9 +1,9 @@
-using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Shared.Models.Enums;
-using LYBT.Shared.Models.Common;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
+using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Shared.Models.Contracts.Users
 {

@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 
 namespace LYBT.Shared.Models.Exceptions;
 
@@ -67,7 +67,7 @@ public class ApiException : AppException
     /// <summary>
     /// 创建未授权异常
     /// </summary>
-    public static ApiException Unauthorized(string? message = null) 
+    public static ApiException Unauthorized(string? message = null)
         => new(HttpStatusCode.Unauthorized, null, null, message ?? "身份验证失败，请重新登录");
 
     /// <summary>

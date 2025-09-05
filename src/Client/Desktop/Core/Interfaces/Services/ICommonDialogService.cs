@@ -1,5 +1,5 @@
+﻿using System.Threading.Tasks;
 using LYBT.Shared.Models.Contracts.Common;
-using System.Threading.Tasks;
 
 namespace LYBT.Desktop.Core.Interfaces.Services
 {

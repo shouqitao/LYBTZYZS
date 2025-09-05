@@ -1,5 +1,4 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -7,6 +6,7 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading;
 using System.Threading.Tasks;
+using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Core.Services.Configuration
@@ -21,42 +21,42 @@ namespace LYBT.Desktop.Core.Services.Configuration
         /// 启动热更新监控
         /// </summary>
         Task StartAsync();
-        
+
         /// <summary>
         /// 停止热更新监控
         /// </summary>
         Task StopAsync();
-        
+
         /// <summary>
         /// 注册热更新处理器
         /// </summary>
         void RegisterHandler(string configKey, Action<HotReloadEventArgs> handler);
-        
+
         /// <summary>
         /// 注册异步热更新处理器
         /// </summary>
         void RegisterAsyncHandler(string configKey, Func<HotReloadEventArgs, Task> handler);
-        
+
         /// <summary>
         /// 手动触发配置重载
         /// </summary>
         Task TriggerReloadAsync(string? configKey = null);
-        
+
         /// <summary>
         /// 获取热更新状态
         /// </summary>
         HotReloadStatus GetStatus();
-        
+
         /// <summary>
         /// 订阅配置变更事件
         /// </summary>
         IDisposable Subscribe(IObserver<ConfigurationChange> observer);
-        
+
         /// <summary>
         /// 设置重载策略
         /// </summary>
         void SetReloadStrategy(ReloadStrategy strategy);
-        
+
         /// <summary>
         /// 获取重载历史
         /// </summary>
@@ -71,20 +71,20 @@ namespace LYBT.Desktop.Core.Services.Configuration
         private readonly ILogger<HotReloadService> _logger;
         private readonly IConfigurationManagerService _configService;
         private readonly IFeatureToggleService _featureToggleService;
-        
+
         private readonly Dictionary<string, List<ConfigurationHandler>> _handlers = new();
         private readonly List<ReloadHistoryEntry> _history = new();
         private readonly Subject<ConfigurationChange> _changeSubject = new();
-        
+
         private FileSystemWatcher? _configWatcher;
         private FileSystemWatcher? _featureWatcher;
         private Timer? _pollingTimer;
         private CancellationTokenSource? _cancellationTokenSource;
-        
+
         private ReloadStrategy _reloadStrategy = ReloadStrategy.Automatic;
         private HotReloadStatus _status = HotReloadStatus.Stopped;
         private readonly object _lock = new object();
-        
+
         // 配置缓存，用于检测变更
         private readonly Dictionary<string, object?> _configCache = new();
         private readonly Dictionary<string, bool> _featureCache = new();
@@ -110,33 +110,33 @@ namespace LYBT.Desktop.Core.Services.Configuration
                     _logger.LogWarning("热更新服务已在运行");
                     return;
                 }
-                
+
                 _status = HotReloadStatus.Starting;
             }
 
             try
             {
                 _cancellationTokenSource = new CancellationTokenSource();
-                
+
                 // 初始化缓存
                 await InitializeCacheAsync();
-                
+
                 // 设置文件监控
                 SetupFileWatchers();
-                
+
                 // 设置轮询监控（作为备用方案）
                 SetupPolling();
-                
+
                 // 注册配置变更回调
                 RegisterConfigurationCallbacks();
-                
+
                 lock (_lock)
                 {
                     _status = HotReloadStatus.Running;
                 }
-                
+
                 _logger.LogInformation("配置热更新服务已启动");
-                
+
                 // 记录历史
                 AddHistory(new ReloadHistoryEntry
                 {
@@ -161,31 +161,31 @@ namespace LYBT.Desktop.Core.Services.Configuration
                 {
                     return Task.CompletedTask;
                 }
-                
+
                 _status = HotReloadStatus.Stopping;
             }
 
             try
             {
                 _cancellationTokenSource?.Cancel();
-                
+
                 // 停止文件监控
                 _configWatcher?.Dispose();
                 _featureWatcher?.Dispose();
                 _configWatcher = null;
                 _featureWatcher = null;
-                
+
                 // 停止轮询
                 _pollingTimer?.Dispose();
                 _pollingTimer = null;
-                
+
                 lock (_lock)
                 {
                     _status = HotReloadStatus.Stopped;
                 }
-                
+
                 _logger.LogInformation("配置热更新服务已停止");
-                
+
                 // 记录历史
                 AddHistory(new ReloadHistoryEntry
                 {
@@ -193,7 +193,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
                     Type = ReloadType.ServiceStop,
                     Description = "热更新服务停止"
                 });
-                
+
                 return Task.CompletedTask;
             }
             catch (Exception ex)
@@ -215,14 +215,14 @@ namespace LYBT.Desktop.Core.Services.Configuration
                 {
                     _handlers[configKey] = new List<ConfigurationHandler>();
                 }
-                
+
                 _handlers[configKey].Add(new ConfigurationHandler
                 {
                     Key = configKey,
                     SyncHandler = handler,
                     IsAsync = false
                 });
-                
+
                 _logger.LogDebug("注册配置热更新处理器: {Key}", configKey);
             }
         }
@@ -235,14 +235,14 @@ namespace LYBT.Desktop.Core.Services.Configuration
                 {
                     _handlers[configKey] = new List<ConfigurationHandler>();
                 }
-                
+
                 _handlers[configKey].Add(new ConfigurationHandler
                 {
                     Key = configKey,
                     AsyncHandler = handler,
                     IsAsync = true
                 });
-                
+
                 _logger.LogDebug("注册异步配置热更新处理器: {Key}", configKey);
             }
         }
@@ -256,7 +256,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
             try
             {
                 _logger.LogInformation("手动触发配置重载: {Key}", configKey ?? "全部");
-                
+
                 if (string.IsNullOrEmpty(configKey))
                 {
                     // 重载所有配置
@@ -268,7 +268,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
                     // 重载特定配置
                     await CheckAndNotifyChangeAsync(configKey);
                 }
-                
+
                 // 记录历史
                 AddHistory(new ReloadHistoryEntry
                 {
@@ -331,22 +331,22 @@ namespace LYBT.Desktop.Core.Services.Configuration
                 "Performance:SlowOperationThreshold",
                 "Logging:LogLevel:Default"
             };
-            
+
             foreach (var key in commonKeys)
             {
                 _configCache[key] = _configService.GetValue<string>(key);
             }
-            
+
             // 缓存特性状态
             var features = _featureToggleService.GetAllFeatures();
             foreach (var feature in features)
             {
                 _featureCache[feature.Name] = feature.IsEnabled;
             }
-            
+
             _logger.LogDebug("初始化配置缓存完成，缓存了 {ConfigCount} 个配置项和 {FeatureCount} 个特性",
                 _configCache.Count, _featureCache.Count);
-                
+
             return Task.CompletedTask;
         }
 
@@ -355,7 +355,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
             try
             {
                 var configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config");
-                
+
                 if (Directory.Exists(configPath))
                 {
                     _configWatcher = new FileSystemWatcher(configPath)
@@ -364,11 +364,11 @@ namespace LYBT.Desktop.Core.Services.Configuration
                         NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName,
                         EnableRaisingEvents = true
                     };
-                    
+
                     _configWatcher.Changed += OnConfigFileChanged;
                     _configWatcher.Created += OnConfigFileChanged;
                     _configWatcher.Deleted += OnConfigFileChanged;
-                    
+
                     _logger.LogDebug("配置文件监控已设置: {Path}", configPath);
                 }
             }
@@ -392,7 +392,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
         {
             // 注册配置管理器的变更回调
             _configService.RegisterChangeCallback(OnConfigurationChanged);
-            
+
             // 注册关键特性的变更回调
             var criticalFeatures = new[] { "AdvancedCaching", "BatchOperations", "DetailedLogging" };
             foreach (var feature in criticalFeatures)
@@ -408,18 +408,18 @@ namespace LYBT.Desktop.Core.Services.Configuration
             {
                 // 防抖处理
                 await Task.Delay(500);
-                
+
                 if (_reloadStrategy == ReloadStrategy.Manual)
                 {
                     _logger.LogInformation("检测到配置文件变更，但当前策略为手动重载: {File}", e.Name);
                     return;
                 }
-                
+
                 _logger.LogInformation("检测到配置文件变更，开始热更新: {File}", e.Name);
-                
+
                 await _configService.ReloadAsync();
                 await CheckAndNotifyAllChangesAsync();
-                
+
                 // 记录历史
                 AddHistory(new ReloadHistoryEntry
                 {
@@ -441,7 +441,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
             {
                 return;
             }
-            
+
             try
             {
                 await CheckAndNotifyAllChangesAsync();
@@ -459,7 +459,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
             {
                 await CheckAndNotifyChangeAsync(kvp.Key);
             }
-            
+
             // 检查特性变更
             var features = _featureToggleService.GetAllFeatures();
             foreach (var feature in features)
@@ -477,7 +477,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
         {
             var newValue = _configService.GetValue<object>(key);
             var oldValue = _configCache.ContainsKey(key) ? _configCache[key] : null;
-            
+
             if (!Equals(oldValue, newValue))
             {
                 _configCache[key] = newValue;
@@ -495,7 +495,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
                 Timestamp = DateTime.Now,
                 Source = ReloadSource.Configuration
             };
-            
+
             // 发布到Observable
             _changeSubject.OnNext(new ConfigurationChange
             {
@@ -503,10 +503,10 @@ namespace LYBT.Desktop.Core.Services.Configuration
                 Value = newValue,
                 Timestamp = args.Timestamp
             });
-            
+
             // 调用注册的处理器
             await InvokeHandlersAsync(key, args);
-            
+
             _logger.LogInformation("配置已热更新: {Key}, 旧值: {OldValue}, 新值: {NewValue}",
                 key, oldValue, newValue);
         }
@@ -521,7 +521,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
                 Timestamp = DateTime.Now,
                 Source = ReloadSource.Feature
             };
-            
+
             // 发布到Observable
             _changeSubject.OnNext(new ConfigurationChange
             {
@@ -529,11 +529,11 @@ namespace LYBT.Desktop.Core.Services.Configuration
                 Value = isEnabled,
                 Timestamp = args.Timestamp
             });
-            
+
             // 调用处理器
             await InvokeHandlersAsync($"Feature:*", args);
             await InvokeHandlersAsync(args.ConfigKey, args);
-            
+
             _logger.LogInformation("特性已热更新: {Feature}, 状态: {OldState} -> {NewState}",
                 featureName, wasEnabled ? "启用" : "禁用", isEnabled ? "启用" : "禁用");
         }
@@ -541,7 +541,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
         private async Task InvokeHandlersAsync(string key, HotReloadEventArgs args)
         {
             List<ConfigurationHandler>? handlers = null;
-            
+
             lock (_handlers)
             {
                 // 查找精确匹配的处理器
@@ -549,7 +549,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
                 {
                     handlers = exactHandlers.ToList();
                 }
-                
+
                 // 查找通配符处理器
                 if (_handlers.TryGetValue("*", out var wildcardHandlers))
                 {
@@ -557,7 +557,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
                     handlers.AddRange(wildcardHandlers);
                 }
             }
-            
+
             if (handlers != null)
             {
                 foreach (var handler in handlers)
@@ -605,7 +605,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
             lock (_history)
             {
                 _history.Add(entry);
-                
+
                 // 只保留最近100条记录
                 while (_history.Count > 100)
                 {
@@ -621,13 +621,13 @@ namespace LYBT.Desktop.Core.Services.Configuration
         public void Dispose()
         {
             StopAsync().Wait(TimeSpan.FromSeconds(5));
-            
+
             _configWatcher?.Dispose();
             _featureWatcher?.Dispose();
             _pollingTimer?.Dispose();
             _cancellationTokenSource?.Dispose();
             _changeSubject?.Dispose();
-            
+
             _logger.LogInformation("热更新服务已释放，处理了 {Count} 次配置变更", _history.Count);
         }
 

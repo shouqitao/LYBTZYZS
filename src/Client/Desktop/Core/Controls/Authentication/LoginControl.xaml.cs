@@ -1,7 +1,7 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System;
+﻿using System;
 using System.Windows;
 using System.Windows.Controls;
+using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.WPF.Client.Controls.Authentication
 {

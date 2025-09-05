@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 
 namespace LYBT.Shared.Models.Exceptions;
 
@@ -101,7 +101,7 @@ public static class ExceptionFactory
     /// <summary>
     /// 创建应用程序异常
     /// </summary>
-    public static AppException App(string message, string? errorCode = null) 
+    public static AppException App(string message, string? errorCode = null)
         => new(message, errorCode);
 
     /// <summary>

@@ -1,5 +1,5 @@
+﻿using System.ComponentModel;
 using LYBT.Shared.Models.Extensions;
-using System.ComponentModel;
 
 namespace LYBT.Shared.Utilities.Helpers
 {
@@ -209,13 +209,13 @@ namespace LYBT.Shared.Utilities.Helpers
         public static bool TryFromInt<T>(int value, out T result) where T : struct, Enum
         {
             result = default;
-            
+
             if (Enum.IsDefined(typeof(T), value))
             {
                 result = (T)Enum.ToObject(typeof(T), value);
                 return true;
             }
-            
+
             return false;
         }
 

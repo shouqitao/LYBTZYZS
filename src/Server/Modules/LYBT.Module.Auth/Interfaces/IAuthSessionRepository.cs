@@ -1,5 +1,5 @@
+﻿using LYBT.Entities.Auth;
 using LYBT.Infrastructure.Interfaces;
-using LYBT.Entities.Auth;
 using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Module.Auth.Interfaces

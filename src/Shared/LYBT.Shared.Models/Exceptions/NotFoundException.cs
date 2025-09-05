@@ -1,4 +1,4 @@
-namespace LYBT.Shared.Models.Exceptions;
+﻿namespace LYBT.Shared.Models.Exceptions;
 
 /// <summary>
 /// 资源未找到异常 - UltraThink统一异常体系
@@ -30,7 +30,7 @@ public class NotFoundException : AppException
         ShowDetailToUser = true;
     }
 
-    public NotFoundException(string resourceType, string resourceId) 
+    public NotFoundException(string resourceType, string resourceId)
         : base($"{resourceType} (ID: {resourceId}) 不存在")
     {
         ResourceType = resourceType;

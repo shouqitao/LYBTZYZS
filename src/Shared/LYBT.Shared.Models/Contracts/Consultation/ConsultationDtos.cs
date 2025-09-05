@@ -1,7 +1,7 @@
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Enums;
-using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
 
 namespace LYBT.Shared.Models.Contracts.Consultation
 {
@@ -25,10 +25,10 @@ namespace LYBT.Shared.Models.Contracts.Consultation
 
         /// <summary>医生ID（兼容性别名）</summary>
         [DisplayName("医生ID")]
-        public Guid DoctorId 
-        { 
-            get => UserId; 
-            set => UserId = value; 
+        public Guid DoctorId
+        {
+            get => UserId;
+            set => UserId = value;
         }
 
         /// <summary>看诊时间</summary>
@@ -76,8 +76,8 @@ namespace LYBT.Shared.Models.Contracts.Consultation
 
         /// <summary>是否完成</summary>
         [DisplayName("是否完成")]
-        public bool IsCompleted 
-        { 
+        public bool IsCompleted
+        {
             get => Status == CommonStatus.Enabled;
         }
     }

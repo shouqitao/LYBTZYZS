@@ -1,6 +1,6 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 
 namespace LYBT.WPF.Client.Controls.Prescriptions

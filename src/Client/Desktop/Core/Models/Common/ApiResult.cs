@@ -1,5 +1,5 @@
+﻿using System;
 using LYBT.Shared.Models.Contracts.Common;
-using System;
 
 namespace LYBT.Desktop.Core.Models.Common
 {

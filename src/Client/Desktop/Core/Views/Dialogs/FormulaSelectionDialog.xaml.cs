@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using LYBT.Desktop.Core.ViewModels.Dialogs;
@@ -25,7 +25,7 @@ namespace LYBT.Desktop.Core.Views.Dialogs
         public void SetViewModel(FormulaSelectionDialogViewModel viewModel)
         {
             DataContext = viewModel;
-            
+
             // 监听ViewModel的关闭请求
             viewModel.RequestClose += (result) =>
             {

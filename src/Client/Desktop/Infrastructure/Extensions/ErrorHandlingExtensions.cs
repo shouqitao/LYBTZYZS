@@ -1,8 +1,8 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using LYBT.Desktop.Infrastructure.Services;
-using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Desktop.Infrastructure.Extensions;
 
@@ -68,7 +68,7 @@ public static class ErrorHandlingExtensions
         string operationName = "操作")
     {
         ArgumentNullException.ThrowIfNull(operation, nameof(operation));
-        
+
         try
         {
             var result = operation();
@@ -95,7 +95,7 @@ public static class ErrorHandlingExtensions
         string operationName = "操作")
     {
         ArgumentNullException.ThrowIfNull(operation, nameof(operation));
-        
+
         try
         {
             operation();
@@ -119,12 +119,12 @@ public static class ErrorHandlingExtensions
     public static string GetDisplayMessage<T>(this ServiceResult<T> result, string defaultSuccessMessage = "操作成功")
     {
         ArgumentNullException.ThrowIfNull(result, nameof(result));
-        
+
         if (result.IsSuccess)
         {
             return defaultSuccessMessage;
         }
-        
+
         return result.ErrorMessage ?? "操作失败，请稍后重试";
     }
 
@@ -139,12 +139,12 @@ public static class ErrorHandlingExtensions
     public static string GetDisplayMessage(this ServiceResult result, string defaultSuccessMessage = "操作成功")
     {
         ArgumentNullException.ThrowIfNull(result, nameof(result));
-        
+
         if (result.IsSuccess)
         {
             return defaultSuccessMessage;
         }
-        
+
         return result.ErrorMessage ?? "操作失败，请稍后重试";
     }
 
@@ -160,12 +160,12 @@ public static class ErrorHandlingExtensions
     public static ServiceResult<T> LogOnFailure<T>(this ServiceResult<T> result, string operationName = "操作")
     {
         ArgumentNullException.ThrowIfNull(result, nameof(result));
-        
+
         if (!result.IsSuccess && result.Exception != null)
         {
             StandardErrorHandler.Instance.HandleGeneralError(result.Exception, operationName, false);
         }
-        
+
         return result;
     }
 
@@ -180,12 +180,12 @@ public static class ErrorHandlingExtensions
     public static ServiceResult LogOnFailure(this ServiceResult result, string operationName = "操作")
     {
         ArgumentNullException.ThrowIfNull(result, nameof(result));
-        
+
         if (!result.IsSuccess && result.Exception != null)
         {
             StandardErrorHandler.Instance.HandleGeneralError(result.Exception, operationName, false);
         }
-        
+
         return result;
     }
 

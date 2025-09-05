@@ -1,12 +1,12 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using AutoMapper;
-using LYBT.Desktop.Core.ViewModels.Base;
+using LYBT.Desktop.Core.Constants;
 using LYBT.Desktop.Core.Interfaces;
 using LYBT.Desktop.Core.Interfaces.Services;
-using LYBT.Desktop.Core.Constants;
 using LYBT.Desktop.Core.Models.Common;
+using LYBT.Desktop.Core.ViewModels.Base;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
@@ -172,7 +172,7 @@ namespace LYBT.Desktop.Patients.ViewModels
         /// <param name="patient">要编辑的患者信息（null表示新增模式）</param>
         /// <exception cref="ArgumentNullException">当关键参数为空时抛出</exception>
         public PatientAddEditDialogViewModel(
-            IPatientService patientService, 
+            IPatientService patientService,
             IMapper mapper,
             IEventAggregator eventAggregator,
             IErrorHandlingService errorHandlingService,
@@ -207,7 +207,7 @@ namespace LYBT.Desktop.Patients.ViewModels
             // UltraThink调试：检查SaveAsync是否被调用
             System.Diagnostics.Debug.WriteLine($"🚀 SaveAsync被调用 - 模式: {(_isEditMode ? "编辑" : "新增")}");
             System.Diagnostics.Debug.WriteLine($"📋 患者姓名: '{PatientName}', 电话: '{PhoneNumber}', 性别: {Gender}");
-            
+
             try
             {
                 if (_isEditMode && _originalPatient != null)
@@ -229,7 +229,7 @@ namespace LYBT.Desktop.Patients.ViewModels
                     };
 
                     var serviceResult = await _patientService.UpdateAsync(_originalPatient.Id, updateDto);
-                    
+
                     if (!serviceResult.IsSuccess)
                     {
                         ErrorMessage = serviceResult.ErrorMessage ?? "编辑患者失败";
@@ -255,7 +255,7 @@ namespace LYBT.Desktop.Patients.ViewModels
                     };
 
                     var serviceResult = await _patientService.CreateAsync(createDto);
-                    
+
                     if (!serviceResult.IsSuccess)
                     {
                         ErrorMessage = serviceResult.ErrorMessage ?? "新增患者失败";
@@ -279,17 +279,17 @@ namespace LYBT.Desktop.Patients.ViewModels
             var canSave = !string.IsNullOrWhiteSpace(PatientName) &&
                          !string.IsNullOrWhiteSpace(PhoneNumber) &&
                          Gender != Gender.Unknown;
-            
+
             // UltraThink调试：检查CanSave验证结果
             System.Diagnostics.Debug.WriteLine($"🔍 CanSave检查: 姓名='{PatientName}', 电话='{PhoneNumber}', 性别={Gender}, 结果={canSave}");
-            
+
             return canSave;
         }
 
         protected override void InitializeDialog()
         {
             base.InitializeDialog();
-            
+
             // 监听属性变化以更新Command状态
             SaveCommand.ObservesProperty(() => PatientName);
             SaveCommand.ObservesProperty(() => PhoneNumber);
@@ -346,7 +346,11 @@ namespace LYBT.Desktop.Patients.ViewModels
             {
                 var today = DateTime.Today;
                 var age = today.Year - BirthDate.Value.Year;
-                if (BirthDate.Value.Date > today.AddYears(-age)) age--;
+                if (BirthDate.Value.Date > today.AddYears(-age))
+                {
+                    age--;
+                }
+
                 Age = age < 0 ? 0 : age;
             }
         }
@@ -414,10 +418,10 @@ namespace LYBT.Desktop.Patients.ViewModels
         /// </summary>
         protected void RaiseRequestClose(bool? dialogResult)
         {
-            var result = dialogResult == true 
+            var result = dialogResult == true
                 ? CustomDialogResult.Success(new Dictionary<string, object>())
                 : CustomDialogResult.Cancel();
-                
+
             RequestClose?.Invoke(result);
         }
 

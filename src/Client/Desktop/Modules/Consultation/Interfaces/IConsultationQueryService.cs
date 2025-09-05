@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using LYBT.Shared.Models.Common;
@@ -17,17 +17,17 @@ public interface IConsultationQueryService
     /// 分页查询看诊记录
     /// </summary>
     Task<ServiceResult<PagedResult<ConsultationDto>>> GetPagedAsync(ConsultationPagedQueryDto query);
-    
+
     /// <summary>
     /// 根据ID获取看诊详情
     /// </summary>
     Task<ServiceResult<ConsultationDto>> GetByIdAsync(Guid id);
-    
+
     /// <summary>
     /// 搜索看诊记录
     /// </summary>
     Task<ServiceResult<List<ConsultationDto>>> SearchAsync(string keyword);
-    
+
     /// <summary>
     /// 获取看诊统计
     /// </summary>

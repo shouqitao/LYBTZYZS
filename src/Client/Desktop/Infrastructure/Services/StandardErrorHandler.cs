@@ -1,8 +1,8 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Common;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Infrastructure.Services;
 
@@ -57,7 +57,7 @@ public class StandardErrorHandler(ILogger<StandardErrorHandler> logger) : IStand
     public ServiceResult<T> HandleServiceError<T>(Exception exception, string operationName = "操作")
     {
         ArgumentNullException.ThrowIfNull(exception, nameof(exception));
-        
+
         LogError(exception, operationName);
         var friendlyMessage = GetFriendlyErrorMessage(exception);
         return ServiceResult<T>.Failure(friendlyMessage, exception);
@@ -74,7 +74,7 @@ public class StandardErrorHandler(ILogger<StandardErrorHandler> logger) : IStand
     public ServiceResult HandleServiceError(Exception exception, string operationName = "操作")
     {
         ArgumentNullException.ThrowIfNull(exception, nameof(exception));
-        
+
         LogError(exception, operationName);
         var friendlyMessage = GetFriendlyErrorMessage(exception);
         return ServiceResult.Failure(friendlyMessage, exception);
@@ -90,11 +90,11 @@ public class StandardErrorHandler(ILogger<StandardErrorHandler> logger) : IStand
     /// <returns>包含API调用结果或错误信息的ServiceResult</returns>
     /// <exception cref="ArgumentNullException">当 <paramref name="apiCall"/> 为 null 时抛出</exception>
     public async Task<ServiceResult<T>> HandleApiErrorAsync<T>(
-        Func<Task<T>> apiCall, 
+        Func<Task<T>> apiCall,
         string operationName = "API调用")
     {
         ArgumentNullException.ThrowIfNull(apiCall, nameof(apiCall));
-        
+
         try
         {
             var result = await apiCall().ConfigureAwait(false);
@@ -115,11 +115,11 @@ public class StandardErrorHandler(ILogger<StandardErrorHandler> logger) : IStand
     /// <returns>表示API调用成功或失败的ServiceResult</returns>
     /// <exception cref="ArgumentNullException">当 <paramref name="apiCall"/> 为 null 时抛出</exception>
     public async Task<ServiceResult> HandleApiErrorAsync(
-        Func<Task> apiCall, 
+        Func<Task> apiCall,
         string operationName = "API调用")
     {
         ArgumentNullException.ThrowIfNull(apiCall, nameof(apiCall));
-        
+
         try
         {
             await apiCall().ConfigureAwait(false);
@@ -143,7 +143,7 @@ public class StandardErrorHandler(ILogger<StandardErrorHandler> logger) : IStand
     public ServiceResult<T> HandleBusinessError<T>(string errorMessage, Exception? exception = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(errorMessage, nameof(errorMessage));
-        
+
         _logger.LogWarning(exception, "业务逻辑错误: {ErrorMessage}", errorMessage);
         return ServiceResult<T>.Failure(errorMessage, exception);
     }
@@ -159,7 +159,7 @@ public class StandardErrorHandler(ILogger<StandardErrorHandler> logger) : IStand
     public ServiceResult<T> HandleValidationError<T>(string validationMessage)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(validationMessage, nameof(validationMessage));
-        
+
         _logger.LogWarning("数据验证失败: {ValidationMessage}", validationMessage);
         return ServiceResult<T>.Failure($"验证失败: {validationMessage}");
     }
@@ -175,9 +175,9 @@ public class StandardErrorHandler(ILogger<StandardErrorHandler> logger) : IStand
     public void HandleGeneralError(Exception exception, string operationName = "操作", bool showToUser = true)
     {
         ArgumentNullException.ThrowIfNull(exception, nameof(exception));
-        
+
         LogError(exception, operationName);
-        
+
         if (showToUser)
         {
             var friendlyMessage = GetFriendlyErrorMessage(exception);
@@ -195,10 +195,10 @@ public class StandardErrorHandler(ILogger<StandardErrorHandler> logger) : IStand
     /// <param name="operationName">操作名称</param>
     private void LogError(Exception exception, string operationName)
     {
-        _logger.LogError(exception, 
-            "{OperationName}操作失败: {ErrorMessage} | 异常类型: {ExceptionType} | 堆栈跟踪: {StackTrace}", 
-            operationName, 
-            exception.Message, 
+        _logger.LogError(exception,
+            "{OperationName}操作失败: {ErrorMessage} | 异常类型: {ExceptionType} | 堆栈跟踪: {StackTrace}",
+            operationName,
+            exception.Message,
             exception.GetType().Name,
             exception.StackTrace);
     }
@@ -216,30 +216,30 @@ public class StandardErrorHandler(ILogger<StandardErrorHandler> logger) : IStand
             // 参数验证错误
             ArgumentNullException => "参数不能为空，请检查输入信息",
             ArgumentException => "参数格式不正确，请检查输入内容",
-            
+
             // 操作状态错误
             InvalidOperationException => "当前操作无效，请检查操作条件后重试",
-            
+
             // 权限相关错误  
             UnauthorizedAccessException => "您没有权限执行此操作，请联系管理员",
-            
+
             // 网络和时间相关错误
             TimeoutException => "操作超时，请检查网络状态后重试",
             System.Net.Http.HttpRequestException => "网络连接失败，请检查网络设置和服务器状态",
             TaskCanceledException => "操作已取消或超时，请稍后重试",
-            
+
             // 系统环境错误
             PlatformNotSupportedException => "当前操作系统不支持此功能",
             NotSupportedException => "当前系统环境不支持此操作",
-            
+
             // 文件系统错误
             System.IO.FileNotFoundException => "找不到指定的文件，请检查文件路径",
             System.IO.DirectoryNotFoundException => "找不到指定的目录，请检查目录路径",
             System.IO.IOException => "文件操作失败，请检查文件权限和磁盘空间",
-            
+
             // 数据库相关错误
             System.Data.Common.DbException => "数据库操作失败，请稍后重试或联系管理员",
-            
+
             // 其他错误
             _ => $"操作失败: {exception.Message}。如果问题持续，请联系技术支持。"
         };
@@ -257,9 +257,9 @@ public class StandardErrorHandler(ILogger<StandardErrorHandler> logger) : IStand
         {
             // TODO: 生产环境中应集成到专业的通知系统或使用自定义对话框
             System.Windows.MessageBox.Show(
-                message, 
-                "系统提示 - 凌隐宝堂中医诊所", 
-                System.Windows.MessageBoxButton.OK, 
+                message,
+                "系统提示 - 凌隐宝堂中医诊所",
+                System.Windows.MessageBoxButton.OK,
                 System.Windows.MessageBoxImage.Warning);
         }
         catch (Exception ex)
@@ -267,7 +267,7 @@ public class StandardErrorHandler(ILogger<StandardErrorHandler> logger) : IStand
             // 如果连消息框都无法显示，记录到系统日志
             System.Diagnostics.Debug.WriteLine(
                 "ShowErrorToUser失败: {0}, 原始消息: {1}", ex.Message, message);
-            
+
             // 生产环境中应该有更完善的fallback机制
             // 例如写入日志文件、发送到错误跟踪服务等
         }
@@ -285,32 +285,32 @@ public interface IStandardErrorHandler
     /// 处理ServiceResult异常
     /// </summary>
     ServiceResult<T> HandleServiceError<T>(Exception exception, string operationName = "操作");
-    
+
     /// <summary>
     /// 处理ServiceResult异常 (无泛型版本)
     /// </summary>
     ServiceResult HandleServiceError(Exception exception, string operationName = "操作");
-    
+
     /// <summary>
     /// 处理API异常
     /// </summary>
     Task<ServiceResult<T>> HandleApiErrorAsync<T>(Func<Task<T>> apiCall, string operationName = "API调用");
-    
+
     /// <summary>
     /// 处理API异常 (无返回值版本)
     /// </summary>
     Task<ServiceResult> HandleApiErrorAsync(Func<Task> apiCall, string operationName = "API调用");
-    
+
     /// <summary>
     /// 处理业务异常
     /// </summary>
     ServiceResult<T> HandleBusinessError<T>(string errorMessage, Exception? exception = null);
-    
+
     /// <summary>
     /// 处理验证异常
     /// </summary>
     ServiceResult<T> HandleValidationError<T>(string validationMessage);
-    
+
     /// <summary>
     /// 处理通用异常
     /// </summary>

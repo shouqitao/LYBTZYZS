@@ -1,8 +1,8 @@
-using LYBT.Shared.Interfaces.Services;
-using LYBT.Module.Formula.Interfaces;
+﻿using LYBT.Module.Formula.Interfaces;
+using LYBT.Module.Formula.Mapping;
 using LYBT.Module.Formula.Repositories;
 using LYBT.Module.Formula.Services;
-using LYBT.Module.Formula.Mapping;
+using LYBT.Shared.Interfaces.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace LYBT.Module.Formula

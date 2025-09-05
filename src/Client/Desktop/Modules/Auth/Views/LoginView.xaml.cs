@@ -1,6 +1,6 @@
+﻿using System.Windows;
 using System.Windows.Controls;
 using LYBT.Desktop.Auth.ViewModels;
-using System.Windows;
 
 namespace LYBT.Desktop.Auth.Views
 {

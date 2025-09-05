@@ -1,13 +1,13 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using AutoMapper;
-using LYBT.Desktop.Core.ViewModels;
-using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Desktop.Core.ViewModels;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Prescriptions;
 using Prism.Commands;
 using Prism.Events;
 
@@ -86,7 +86,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         {
             var parameters = new Dictionary<string, object> { ["IsEditMode"] = false };
             var result = await _dialogService.ShowDialogAsync("PrescriptionEditorDialog", parameters);
-            
+
             if (result.Result == true)
             {
                 await _dialogService.ShowSuccessAsync("处方创建成功", "成功");
@@ -102,7 +102,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                 ["Prescription"] = item
             };
             var result = await _dialogService.ShowDialogAsync("PrescriptionEditorDialog", parameters);
-            
+
             if (result.Result == true)
             {
                 await _dialogService.ShowSuccessAsync($"处方 {item.Id} 更新成功", "成功");
@@ -134,7 +134,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         protected override async Task OnViewDetailsAsync(PrescriptionDto item)
         {
             var result = await _prescriptionService.GetByIdAsync(item.Id);
-            
+
             if (result.IsSuccess && result.Data != null)
             {
                 var detailInfo = $"处方ID: {result.Data.Id}\n创建时间: {result.Data.CreateTime}\n更新时间: {result.Data.UpdateTime}";
@@ -163,7 +163,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             if (SelectedItem != null)
             {
                 await Task.Delay(1000); // 模拟打印过程
-                
+
                 var printableInfo = $"处方打印预览\n处方ID: {SelectedItem.Id}\n创建时间: {SelectedItem.CreateTime}";
                 await _dialogService.ShowInformationAsync(printableInfo, "打印预览");
                 await _dialogService.ShowInformationAsync("处方打印成功", "成功");

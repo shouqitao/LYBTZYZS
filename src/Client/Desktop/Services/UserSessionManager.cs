@@ -1,12 +1,12 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using LYBT.Shared.Interfaces.Services;
+using LYBT.Desktop.Core.Configuration;
 using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Shared.Interfaces.Services;
+using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Core;
 using LYBT.Shared.Models.Enums;
-using LYBT.Desktop.Core.Configuration;
-using LYBT.Shared.Models.Contracts.Users;
 
 namespace LYBT.Desktop.Services
 {
@@ -59,7 +59,9 @@ namespace LYBT.Desktop.Services
         public void RefreshUserInfo(UserDto user)
         {
             if (_currentUser?.Id == user?.Id)
+            {
                 _currentUser = user;
+            }
         }
 
         public UserRole? GetCurrentUserRole()

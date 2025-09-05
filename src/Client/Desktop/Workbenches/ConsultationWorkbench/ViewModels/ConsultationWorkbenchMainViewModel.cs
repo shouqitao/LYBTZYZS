@@ -1,16 +1,16 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System;
+﻿using System;
 using System.Windows;
 using System.Windows.Input;
-using Prism.Commands;
-using Prism.Mvvm;
-using Prism.Regions;
-using Prism.Events;
+using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Desktop.Core.ViewModels.Base;
 using LYBT.Desktop.Workbench.Consultation.Navigation;
 using LYBT.Desktop.Workbench.Core;
 using LYBT.Shared.Interfaces.Services;
-using LYBT.Desktop.Core.ViewModels.Base;
-using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Shared.Models.Contracts.Common;
+using Prism.Commands;
+using Prism.Events;
+using Prism.Mvvm;
+using Prism.Regions;
 
 namespace LYBT.Desktop.Workbench.Consultation.ViewModels
 {
@@ -24,7 +24,7 @@ namespace LYBT.Desktop.Workbench.Consultation.ViewModels
         private readonly IWorkbenchRouter _workbenchRouter;
         private readonly IConsultationWorkbenchNavigator _navigator;
         private readonly IPatientService? _patientService;
-        
+
         #region Properties
 
         private int _newPatientsCount = 0;
@@ -41,10 +41,10 @@ namespace LYBT.Desktop.Workbench.Consultation.ViewModels
             set => SetProperty(ref _todayConsultationsCount, value);
         }
 
-        public Visibility PatientsNotificationVisibility => 
+        public Visibility PatientsNotificationVisibility =>
             NewPatientsCount > 0 ? Visibility.Visible : Visibility.Collapsed;
 
-        public Visibility ConsultationsNotificationVisibility => 
+        public Visibility ConsultationsNotificationVisibility =>
             TodayConsultationsCount > 0 ? Visibility.Visible : Visibility.Collapsed;
 
         #endregion
@@ -98,7 +98,7 @@ namespace LYBT.Desktop.Workbench.Consultation.ViewModels
             {
                 // 快速添加患者 - 打开患者新增对话框
                 _navigator.NavigateToPatients();
-                
+
                 // TODO: 可以考虑直接打开新增对话框
                 // var parameters = new NavigationParameters();
                 // parameters.Add("Action", "Add");
@@ -117,7 +117,7 @@ namespace LYBT.Desktop.Workbench.Consultation.ViewModels
             {
                 // 开始看诊 - 先导航到患者管理，让医生选择患者
                 _navigator.NavigateToPatients();
-                
+
                 // TODO: 可以考虑显示今日预约患者列表
             }
             catch (Exception ex)

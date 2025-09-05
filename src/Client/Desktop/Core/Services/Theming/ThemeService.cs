@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -148,7 +148,7 @@ namespace LYBT.Desktop.Core.Services.Theming
             try
             {
                 var resources = Application.Current.Resources;
-                
+
                 // 更新主要颜色资源
                 UpdateColorResource(resources, "PrimaryColor", primary);
                 UpdateColorResource(resources, "BackgroundColor", background);
@@ -193,7 +193,7 @@ namespace LYBT.Desktop.Core.Services.Theming
             {
                 var color = (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString(colorValue);
                 var brush = new System.Windows.Media.SolidColorBrush(color);
-                
+
                 if (resources.Contains(key))
                 {
                     resources[key] = brush;

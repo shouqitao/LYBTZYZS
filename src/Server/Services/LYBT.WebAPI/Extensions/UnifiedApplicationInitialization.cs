@@ -1,5 +1,5 @@
+﻿using LYBT.Infrastructure;
 using LYBT.Infrastructure.Configuration;
-using LYBT.Infrastructure;
 // using LYBT.WebAPI.Services; // Removed - enterprise services
 
 namespace LYBT.WebAPI.Extensions;
@@ -16,7 +16,7 @@ public static class UnifiedApplicationInitialization
     public static async Task InitializeAllApplicationServices(this WebApplication app)
     {
         using var scope = app.Services.CreateScope();
-        
+
         try
         {
             // 使用超时取消令牌防止初始化卡死
@@ -24,14 +24,14 @@ public static class UnifiedApplicationInitialization
 
             // 1. 数据库初始化（优先执行）
             await app.InitializeDatabaseAsync(scope);
-            
+
             // 2. 配置服务初始化
             app.InitializeConfigurationServices(scope);
-            
+
             // 3. 安全配置验证
             // 临时注释掉缺失的安全配置验证服务
             // await app.ValidateSecurityConfigurationAsync(scope);
-            
+
             // 4. 记录启动日志
             await app.LogApplicationStartupAsync(scope);
         }
@@ -53,7 +53,7 @@ public static class UnifiedApplicationInitialization
 
             // 显示数据库信息
             var dbInfo = await dbInitService.GetDatabaseInfoAsync();
-            
+
             var logger = scope.ServiceProvider.GetService<ILogger<Program>>();
             logger?.LogInformation("✅ 数据库初始化成功");
         }
@@ -77,18 +77,18 @@ public static class UnifiedApplicationInitialization
         {
             // UltraThink简化配置验证
             var simplifiedConfigService = scope.ServiceProvider.GetRequiredService<ISimplifiedConfigurationService>();
-            
+
             // 基本配置验证
             logger?.LogInformation("✅ 配置服务初始化完成");
-            
+
             // 显示环境信息
-            var environment = simplifiedConfigService.IsDevelopment ? "Development" : 
+            var environment = simplifiedConfigService.IsDevelopment ? "Development" :
                             simplifiedConfigService.IsProduction ? "Production" : "Unknown";
-            logger?.LogInformation("🌍 运行环境: {Environment}, 机器: {MachineName}", 
+            logger?.LogInformation("🌍 运行环境: {Environment}, 机器: {MachineName}",
                 environment, Environment.MachineName);
 
             // 验证关键配置
-            try 
+            try
             {
                 var _ = simplifiedConfigService.GetConnectionString();
                 logger?.LogInformation("✅ 数据库连接配置验证通过");
@@ -98,7 +98,7 @@ public static class UnifiedApplicationInitialization
                 logger?.LogWarning("⚠️ 数据库连接配置可能存在问题");
             }
 
-            try 
+            try
             {
                 var _ = simplifiedConfigService.GetJwtSecret();
                 logger?.LogInformation("✅ JWT配置验证通过");
@@ -111,7 +111,7 @@ public static class UnifiedApplicationInitialization
         catch (Exception ex)
         {
             logger?.LogError(ex, "❌ 配置验证失败: {ErrorMessage}", ex.Message);
-            
+
             // 在生产环境中抛出异常，开发环境中继续
             if (!app.Environment.IsDevelopment())
             {
@@ -188,7 +188,7 @@ public static class UnifiedApplicationInitialization
                 logger.LogWarning(ex, "⚠️ 日志记录过程中发生异常，但不影响应用启动");
             }
         }
-        
+
         await Task.CompletedTask;
     }
 
@@ -217,7 +217,7 @@ public static class UnifiedApplicationInitialization
     public static async Task DisplayDatabaseStatusAsync(this WebApplication app)
     {
         using var scope = app.Services.CreateScope();
-        
+
         try
         {
             var dbInitService = scope.ServiceProvider.GetService<LYBT.Infrastructure.Data.DatabaseInitializationService>();
@@ -241,13 +241,13 @@ public static class UnifiedApplicationInitialization
     public static async Task ConfigureGracefulShutdown(this WebApplication app)
     {
         var cancellationTokenSource = new CancellationTokenSource();
-        
+
         Console.CancelKeyPress += (sender, e) =>
         {
             e.Cancel = true; // 取消默认的强制终止
             cancellationTokenSource.Cancel(); // 触发取消令牌
         };
-        
+
         AppDomain.CurrentDomain.ProcessExit += (_, __) =>
         {
             cancellationTokenSource.Cancel();

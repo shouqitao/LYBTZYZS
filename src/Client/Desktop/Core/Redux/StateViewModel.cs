@@ -1,5 +1,4 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -7,13 +6,14 @@ using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using LYBT.Desktop.Core.Mvvm;
+using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Desktop.Core.Redux
 {
     /// <summary>
     /// Redux状态ViewModel基类 - 自动订阅Store变化
     /// </summary>
-    public abstract class StateViewModel<TState> : ObservableObject, IDisposable 
+    public abstract class StateViewModel<TState> : ObservableObject, IDisposable
         where TState : class, new()
     {
         private readonly IStateStore<TState> _store;
@@ -33,11 +33,11 @@ namespace LYBT.Desktop.Core.Redux
         protected StateViewModel(IStateStore<TState> store)
         {
             _store = store ?? throw new ArgumentNullException(nameof(store));
-            
+
             // 订阅整体状态变化
             var subscription = _store.Subscribe(OnStateChanged);
             _subscriptions.Add(subscription);
-            
+
             // 初始化选择器
             InitializeSelectors();
         }
@@ -67,7 +67,7 @@ namespace LYBT.Desktop.Core.Redux
             [CallerMemberName] string? propertyName = null)
         {
             var selectorFunc = selector.Compile();
-            
+
             var subscription = _store.Subscribe(selectorFunc, slice =>
             {
                 onChange(slice);
@@ -76,7 +76,7 @@ namespace LYBT.Desktop.Core.Redux
                     OnPropertyChanged(propertyName);
                 }
             });
-            
+
             _subscriptions.Add(subscription);
         }
 
@@ -101,7 +101,7 @@ namespace LYBT.Desktop.Core.Redux
         /// </summary>
         protected ICommand CreateDispatchCommand<TParam>(Func<TParam, IAction> actionFactory)
         {
-            return new RelayCommand<TParam>(param => 
+            return new RelayCommand<TParam>(param =>
             {
                 if (param != null)
                 {
@@ -154,7 +154,7 @@ namespace LYBT.Desktop.Core.Redux
             set => SetProperty(ref _localState, value);
         }
 
-        protected StateViewModel(IStateStore<TState> store, TLocalState? initialLocalState = null) 
+        protected StateViewModel(IStateStore<TState> store, TLocalState? initialLocalState = null)
             : base(store)
         {
             _localState = initialLocalState ?? new TLocalState();

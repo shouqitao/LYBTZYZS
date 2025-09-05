@@ -1,10 +1,10 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using LYBT.Shared.Interfaces.Services;
+using LYBT.Shared.Models.Contracts.Common;
+using Microsoft.Extensions.Logging;
 
 
 namespace LYBT.Desktop.Core.Services
@@ -48,9 +48,13 @@ namespace LYBT.Desktop.Core.Services
                 {
                     result.TaskResults.Add(taskResult);
                     if (taskResult.IsSuccess)
+                    {
                         result.SuccessCount++;
+                    }
                     else
+                    {
                         result.FailureCount++;
+                    }
                 }
 
                 result.EndTime = DateTime.UtcNow;

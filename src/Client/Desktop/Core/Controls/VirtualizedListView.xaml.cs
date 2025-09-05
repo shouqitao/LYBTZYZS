@@ -1,5 +1,4 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -10,6 +9,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Media;
 using System.Windows.Threading;
+using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Desktop.Core.Controls
 {
@@ -32,7 +32,7 @@ namespace LYBT.Desktop.Core.Controls
             _currentProcess = Process.GetCurrentProcess();
             _performanceTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
             _performanceTimer.Tick += UpdatePerformanceMetrics;
-            
+
             Loaded += OnLoaded;
             Unloaded += OnUnloaded;
         }
@@ -264,7 +264,9 @@ namespace LYBT.Desktop.Core.Controls
                 var enumerator = ItemsSource.GetEnumerator();
                 IsEmpty = !enumerator.MoveNext();
                 if (enumerator is IDisposable disposable)
+                {
                     disposable.Dispose();
+                }
             }
         }
 
@@ -273,7 +275,10 @@ namespace LYBT.Desktop.Core.Controls
         /// </summary>
         private void EnableVirtualizationStatistics()
         {
-            if (PART_VirtualizedListBox == null) return;
+            if (PART_VirtualizedListBox == null)
+            {
+                return;
+            }
 
             // 监听滚动事件来更新虚拟化指标
             var scrollViewer = GetScrollViewer(PART_VirtualizedListBox);
@@ -289,14 +294,18 @@ namespace LYBT.Desktop.Core.Controls
         private ScrollViewer? GetScrollViewer(DependencyObject element)
         {
             if (element is ScrollViewer scrollViewer)
+            {
                 return scrollViewer;
+            }
 
             for (int i = 0; i < VisualTreeHelper.GetChildrenCount(element); i++)
             {
                 var child = VisualTreeHelper.GetChild(element, i);
                 var result = GetScrollViewer(child);
                 if (result != null)
+                {
                     return result;
+                }
             }
 
             return null;
@@ -307,7 +316,10 @@ namespace LYBT.Desktop.Core.Controls
         /// </summary>
         private void UpdateVirtualizationMetrics()
         {
-            if (PART_VirtualizedListBox?.ItemsSource == null) return;
+            if (PART_VirtualizedListBox?.ItemsSource == null)
+            {
+                return;
+            }
 
             Dispatcher.BeginInvoke(() =>
             {
@@ -344,10 +356,16 @@ namespace LYBT.Desktop.Core.Controls
         /// </summary>
         private Panel? GetItemsPanel(ItemsControl? itemsControl)
         {
-            if (itemsControl == null) return null;
+            if (itemsControl == null)
+            {
+                return null;
+            }
 
             var itemsPresenter = GetVisualChild<ItemsPresenter>(itemsControl);
-            if (itemsPresenter == null) return null;
+            if (itemsPresenter == null)
+            {
+                return null;
+            }
 
             return GetVisualChild<Panel>(itemsPresenter);
         }
@@ -357,17 +375,24 @@ namespace LYBT.Desktop.Core.Controls
         /// </summary>
         private T? GetVisualChild<T>(DependencyObject? parent) where T : DependencyObject
         {
-            if (parent == null) return null;
+            if (parent == null)
+            {
+                return null;
+            }
 
             for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
             {
                 var child = VisualTreeHelper.GetChild(parent, i);
                 if (child is T result)
+                {
                     return result;
+                }
 
                 var childResult = GetVisualChild<T>(child);
                 if (childResult != null)
+                {
                     return childResult;
+                }
             }
 
             return null;

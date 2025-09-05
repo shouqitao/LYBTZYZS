@@ -1,6 +1,4 @@
-using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Shared.Models.Exceptions;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
@@ -8,6 +6,8 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Exceptions;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 
@@ -47,7 +47,7 @@ namespace LYBT.Desktop.Core.Http
             _cache = cache;
             _logger = logger;
             _deduplicator = new RequestDeduplicator();
-            
+
             _jsonOptions = new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true,
@@ -66,7 +66,7 @@ namespace LYBT.Desktop.Core.Http
             where TResponse : class
         {
             var url = BuildUrl(endpoint, parameters);
-            
+
             // 尝试从缓存获取
             if (_cache != null)
             {
@@ -78,20 +78,20 @@ namespace LYBT.Desktop.Core.Http
                     return cached;
                 }
             }
-            
+
             // 去重处理
             return await _deduplicator.ExecuteAsync(url, async () =>
             {
                 using var response = await _httpClient.GetAsync(url, cancellationToken);
                 var result = await HandleResponseAsync<TResponse>(response);
-                
+
                 // 缓存成功的响应
                 if (_cache != null && response.IsSuccessStatusCode && result != null)
                 {
                     var cacheKey = $"GET:{url}";
                     _cache.Set(cacheKey, result, TimeSpan.FromMinutes(5));
                 }
-                
+
                 return result;
             });
         }
@@ -106,7 +106,7 @@ namespace LYBT.Desktop.Core.Http
             where TResponse : class
         {
             var content = CreateJsonContent(request);
-            
+
             using var response = await _httpClient.PostAsync(endpoint, content, cancellationToken);
             return await HandleResponseAsync<TResponse>(response);
         }
@@ -121,7 +121,7 @@ namespace LYBT.Desktop.Core.Http
             where TResponse : class
         {
             var content = CreateJsonContent(request);
-            
+
             using var response = await _httpClient.PutAsync(endpoint, content, cancellationToken);
             return await HandleResponseAsync<TResponse>(response);
         }
@@ -136,7 +136,7 @@ namespace LYBT.Desktop.Core.Http
             where TResponse : class
         {
             var content = CreateJsonContent(request);
-            
+
             using var response = await _httpClient.PatchAsync(endpoint, content, cancellationToken);
             return await HandleResponseAsync<TResponse>(response);
         }
@@ -161,7 +161,7 @@ namespace LYBT.Desktop.Core.Http
         {
             var response = await _httpClient.GetAsync(endpoint, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
             response.EnsureSuccessStatusCode();
-            
+
             return await response.Content.ReadAsStreamAsync();
         }
 
@@ -177,11 +177,11 @@ namespace LYBT.Desktop.Core.Http
             where TResponse : class
         {
             using var content = new MultipartFormDataContent();
-            
+
             // 添加文件
             var fileContent = new StreamContent(file);
             content.Add(fileContent, "file", fileName);
-            
+
             // 添加元数据
             if (metadata != null)
             {
@@ -190,7 +190,7 @@ namespace LYBT.Desktop.Core.Http
                     content.Add(new StringContent(kvp.Value), kvp.Key);
                 }
             }
-            
+
             using var response = await _httpClient.PostAsync(endpoint, content, cancellationToken);
             return await HandleResponseAsync<TResponse>(response);
         }
@@ -201,18 +201,18 @@ namespace LYBT.Desktop.Core.Http
         private async Task<TResponse?> HandleResponseAsync<TResponse>(HttpResponseMessage response)
         {
             var content = await response.Content.ReadAsStringAsync();
-            
+
             if (!response.IsSuccessStatusCode)
             {
                 _logger?.LogError($"API错误: {response.StatusCode}, 内容: {content}");
                 throw new ApiException(response.StatusCode, content);
             }
-            
+
             if (string.IsNullOrWhiteSpace(content))
             {
                 return default;
             }
-            
+
             try
             {
                 return JsonSerializer.Deserialize<TResponse>(content, _jsonOptions);
@@ -242,10 +242,10 @@ namespace LYBT.Desktop.Core.Http
             {
                 return endpoint;
             }
-            
+
             var queryString = BuildQueryString(parameters);
-            return string.IsNullOrEmpty(queryString) 
-                ? endpoint 
+            return string.IsNullOrEmpty(queryString)
+                ? endpoint
                 : $"{endpoint}?{queryString}";
         }
 
@@ -256,7 +256,7 @@ namespace LYBT.Desktop.Core.Http
         {
             var properties = parameters.GetType().GetProperties();
             var queryParts = new List<string>();
-            
+
             foreach (var property in properties)
             {
                 var value = property.GetValue(parameters);
@@ -265,7 +265,7 @@ namespace LYBT.Desktop.Core.Http
                     queryParts.Add($"{property.Name}={Uri.EscapeDataString(value.ToString()!)}");
                 }
             }
-            
+
             return string.Join("&", queryParts);
         }
     }
@@ -284,7 +284,7 @@ namespace LYBT.Desktop.Core.Http
         {
             Task<object?> task;
             bool isNew = false;
-            
+
             lock (_lock)
             {
                 if (!_pendingRequests.TryGetValue(key, out task!))
@@ -294,7 +294,7 @@ namespace LYBT.Desktop.Core.Http
                     isNew = true;
                 }
             }
-            
+
             try
             {
                 var result = await task;

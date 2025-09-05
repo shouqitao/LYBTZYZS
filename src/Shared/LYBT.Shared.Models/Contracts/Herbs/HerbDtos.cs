@@ -1,8 +1,8 @@
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Enums;
-using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
 
 namespace LYBT.Shared.Models.Contracts.Herbs
 {
@@ -273,10 +273,10 @@ namespace LYBT.Shared.Models.Contracts.Herbs
         // UltraThink兼容性别名 - 确保架构统一
         /// <summary>页码兼容性别名</summary>
         public int Page { get => PageIndex; set => PageIndex = value; }
-        
+
         /// <summary>页大小兼容性别名</summary>
         public int Size { get => PageSize; set => PageSize = value; }
-        
+
         /// <summary>排序字段兼容性别名</summary>
         public string? SortBy { get => SortField; set => SortField = value; }
     }
@@ -288,13 +288,13 @@ namespace LYBT.Shared.Models.Contracts.Herbs
     {
         [DisplayName("可用药材数量")]
         public int AvailableCount { get; set; }
-        
+
         [DisplayName("缺货药材数量")]
         public int OutOfStockCount { get; set; }
-        
+
         [DisplayName("即将过期药材数量")]
         public int NearExpiryCount { get; set; }
-        
+
         [DisplayName("产地种类数量")]
         public int OriginCount { get; set; }
     }

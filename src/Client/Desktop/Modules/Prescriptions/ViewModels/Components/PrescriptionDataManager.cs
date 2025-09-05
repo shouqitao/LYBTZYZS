@@ -1,13 +1,13 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using LYBT.Shared.Interfaces.Services;
 using LYBT.Desktop.Core.Models.Consultation;
 using LYBT.Desktop.Core.Models.Prescriptions;
+using LYBT.Shared.Interfaces.Services;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Prescriptions.ViewModels.Components
 {
@@ -57,15 +57,15 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components
             {
                 IsLoading = true;
                 MedicalCaseId = medicalCaseId;
-                
+
                 _logger.LogInformation("开始初始化处方数据，医疗案例ID: {MedicalCaseId}", medicalCaseId);
-                
+
                 // 生成处方编号
                 GeneratePrescriptionNo();
-                
+
                 // 加载现有数据
                 await LoadExistingDataAsync();
-                
+
                 HasChanges = false;
                 _logger.LogInformation("处方数据初始化完成");
             }
@@ -89,14 +89,14 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components
             {
                 // UltraThink架构修复：使用正确的GetByMedicalCaseIdAsync方法
                 _logger.LogInformation("开始加载处方数据，医疗案例ID: {MedicalCaseId}", MedicalCaseId);
-                
+
                 var result = await _prescriptionService.GetByMedicalCaseIdAsync(MedicalCaseId);
-                
+
                 if (result.IsSuccess && result.Data != null && result.Data.Any())
                 {
                     var existingPrescription = result.Data.First(); // 取第一个处方
                     _logger.LogDebug("找到现有处方数据，开始加载");
-                    
+
                     // 加载基础信息
                     PrescriptionNo = existingPrescription.PrescriptionNo ?? GeneratePrescriptionNoInternal();
                     DosageCount = existingPrescription.DosageCount;
@@ -104,7 +104,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components
                     MedicalAdvice = existingPrescription.Advice ?? string.Empty;
                     Remark = existingPrescription.Remark ?? string.Empty;
                     Discount = existingPrescription.Discount;
-                    
+
                     // 加载处方项
                     PrescriptionItems.Clear();
                     if (existingPrescription.Items != null)
@@ -121,11 +121,11 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components
                                 // Subtotal会自动计算，无需手动赋值
                                 Remark = item.Remark ?? string.Empty
                             };
-                            
+
                             PrescriptionItems.Add(viewModel);
                         }
                     }
-                    
+
                     _logger.LogInformation("成功加载处方数据，共 {ItemCount} 个药材", PrescriptionItems.Count);
                 }
                 else
@@ -223,7 +223,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components
         public void AddPrescriptionItem(PrescriptionItemViewModel item)
         {
             ArgumentNullException.ThrowIfNull(item);
-            
+
             PrescriptionItems.Add(item);
             HasChanges = true;
             _logger.LogDebug("添加处方项: {HerbName}", item.HerbName);

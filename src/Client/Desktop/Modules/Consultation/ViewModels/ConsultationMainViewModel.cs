@@ -1,16 +1,16 @@
-using System;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Desktop.Core.ViewModels.Base;
+using LYBT.Shared.Interfaces.Services;
+using LYBT.Shared.Models.Contracts.Consultation;
+using LYBT.Shared.Models.Contracts.MedicalCase;
+using LYBT.Shared.Models.Contracts.Patients;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Regions;
-using LYBT.Desktop.Core.ViewModels.Base;
-using LYBT.Desktop.Core.Interfaces.Services;
-using LYBT.Shared.Interfaces.Services;
-using LYBT.Shared.Models.Contracts.Patients;
-using LYBT.Shared.Models.Contracts.Consultation;
-using LYBT.Shared.Models.Contracts.MedicalCase;
 
 namespace LYBT.Desktop.Consultation.ViewModels
 {
@@ -139,7 +139,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
                     PageSize = 100,
                     Keyword = ""
                 };
-                
+
                 var result = await _patientService.GetPagedAsync(query);
                 if (result.IsSuccess && result.Data != null)
                 {

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using LYBT.Desktop.Core.Interfaces.Services;
@@ -18,35 +18,35 @@ namespace LYBT.Desktop.Core.ViewModels.Base;
 /// <param name="eventAggregator">事件聚合器，用于模块间通信</param>
 /// <param name="errorHandlingService">错误处理服务，用于统一异常处理</param>
 public abstract class ServiceViewModel(
-    IEventAggregator eventAggregator, 
+    IEventAggregator eventAggregator,
     IErrorHandlingService errorHandlingService) : CoreViewModel(eventAggregator)
 {
     #region 受保护字段
-    
+
     /// <summary>
     /// 错误处理服务实例
     /// </summary>
-    protected readonly IErrorHandlingService ErrorHandlingService = errorHandlingService ?? 
+    protected readonly IErrorHandlingService ErrorHandlingService = errorHandlingService ??
         throw new ArgumentNullException(nameof(errorHandlingService));
-    
+
     #endregion
-    
+
     #region 公共命令
-    
+
     /// <summary>
     /// 刷新命令 - 执行同步刷新操作
     /// </summary>
     public DelegateCommand RefreshCommand { get; private set; }
-    
+
     /// <summary>
     /// 异步刷新命令 - 执行异步刷新操作
     /// </summary>
     public DelegateCommand RefreshAsyncCommand { get; private set; }
-    
+
     #endregion
-    
+
     #region 构造函数初始化
-    
+
     /// <summary>
     /// 初始化命令和基础设置
     /// </summary>
@@ -54,7 +54,7 @@ public abstract class ServiceViewModel(
     {
         // 静态初始化可以在这里添加
     }
-    
+
     /// <summary>
     /// 实例初始化
     /// </summary>
@@ -63,12 +63,12 @@ public abstract class ServiceViewModel(
         RefreshCommand = new DelegateCommand(ExecuteRefreshInternal, CanExecuteRefresh);
         RefreshAsyncCommand = new DelegateCommand(async () => await ExecuteRefreshAsyncInternal(), CanExecuteRefresh);
     }
-    
+
     #endregion
-    
-    
+
+
     #region 初始化方法
-    
+
     /// <summary>
     /// 异步初始化ViewModel
     /// </summary>
@@ -92,17 +92,17 @@ public abstract class ServiceViewModel(
             IsLoading = false;
         }
     }
-    
+
     /// <summary>
     /// 子类重写此方法实现具体的初始化逻辑
     /// </summary>
     /// <returns>表示异步初始化操作的任务</returns>
     protected virtual Task OnInitializeAsync() => Task.CompletedTask;
-    
+
     #endregion
-    
+
     #region API响应处理
-    
+
     /// <summary>
     /// 处理API服务响应
     /// </summary>
@@ -113,7 +113,7 @@ public abstract class ServiceViewModel(
     protected void HandleApiResponse<T>(ServiceResult<T> response, string? successMessage = null, bool showSuccessMessage = false)
     {
         ArgumentNullException.ThrowIfNull(response);
-        
+
         if (response.IsSuccess)
         {
             ClearError();
@@ -127,7 +127,7 @@ public abstract class ServiceViewModel(
             ErrorMessage = response.ErrorMessage ?? "操作失败";
         }
     }
-    
+
     /// <summary>
     /// 异步处理API服务响应
     /// </summary>
@@ -139,7 +139,7 @@ public abstract class ServiceViewModel(
     protected async Task HandleApiResponseAsync<T>(ServiceResult<T> response, string? successMessage = null, bool showSuccessDialog = false)
     {
         ArgumentNullException.ThrowIfNull(response);
-        
+
         if (response.IsSuccess)
         {
             ClearError();
@@ -161,11 +161,11 @@ public abstract class ServiceViewModel(
             await HandleErrorAsync("API响应处理", ex, showDialog: true);
         }
     }
-    
+
     #endregion
-    
+
     #region 异常处理
-    
+
     /// <summary>
     /// 使用错误处理服务处理异常
     /// </summary>
@@ -178,7 +178,7 @@ public abstract class ServiceViewModel(
             var context = CreateErrorContext(operation);
             var handledError = ErrorHandlingService.HandleException(ex, context);
             ErrorMessage = handledError.UserMessage;
-            
+
             if (handledError.Severity >= SharedCommon.ErrorSeverity.Error)
             {
                 _ = ErrorHandlingService.ShowErrorAsync(handledError, showDialog: false);
@@ -190,7 +190,7 @@ public abstract class ServiceViewModel(
             base.HandleError(operation, handlerEx);
         }
     }
-    
+
     /// <summary>
     /// 异步处理异常
     /// </summary>
@@ -205,7 +205,7 @@ public abstract class ServiceViewModel(
             var context = CreateErrorContext(operation);
             var handledError = await ErrorHandlingService.HandleExceptionAsync(ex, context);
             ErrorMessage = handledError.UserMessage;
-            
+
             if (showDialog && handledError.RequiresUserAcknowledgment)
             {
                 await ErrorHandlingService.ShowErrorAsync(handledError);
@@ -217,11 +217,11 @@ public abstract class ServiceViewModel(
             HandleError(operation, handlerEx);
         }
     }
-    
+
     #endregion
-    
+
     #region 安全执行方法
-    
+
     /// <summary>
     /// 安全执行异步操作并返回结果
     /// </summary>
@@ -233,7 +233,7 @@ public abstract class ServiceViewModel(
     protected async Task<T?> ExecuteAsync<T>(Func<Task<T>> operation, string? operationName = null, bool showErrorDialog = true)
     {
         ArgumentNullException.ThrowIfNull(operation);
-        
+
         try
         {
             IsLoading = true;
@@ -250,7 +250,7 @@ public abstract class ServiceViewModel(
             IsLoading = false;
         }
     }
-    
+
     /// <summary>
     /// 使用错误处理服务安全执行操作
     /// </summary>
@@ -261,7 +261,7 @@ public abstract class ServiceViewModel(
     protected async Task<bool> ExecuteSafelyAsync(Func<Task> operation, string? operationName = null, bool showErrorDialog = true)
     {
         ArgumentNullException.ThrowIfNull(operation);
-        
+
         try
         {
             var context = CreateErrorContext(operationName ?? "安全执行操作");
@@ -273,7 +273,7 @@ public abstract class ServiceViewModel(
             return false;
         }
     }
-    
+
     /// <summary>
     /// 安全执行无返回值的异步操作
     /// </summary>
@@ -284,7 +284,7 @@ public abstract class ServiceViewModel(
     protected async Task<bool> ExecuteVoidAsync(Func<Task> operation, string? operationName = null, bool showErrorDialog = true)
     {
         ArgumentNullException.ThrowIfNull(operation);
-        
+
         try
         {
             IsLoading = true;
@@ -302,11 +302,11 @@ public abstract class ServiceViewModel(
             IsLoading = false;
         }
     }
-    
+
     #endregion
-    
+
     #region 命令创建辅助方法
-    
+
     /// <summary>
     /// 创建异步命令
     /// </summary>
@@ -316,13 +316,13 @@ public abstract class ServiceViewModel(
     protected DelegateCommand CreateAsyncCommand(Func<Task> executeMethod, Func<bool>? canExecuteMethod = null)
     {
         ArgumentNullException.ThrowIfNull(executeMethod);
-        
+
         return new DelegateCommand(
             async () => await ExecuteVoidAsync(executeMethod, executeMethod.Method.Name),
             canExecuteMethod ?? (() => !IsLoading)
         );
     }
-    
+
     /// <summary>
     /// 创建带参数的异步命令
     /// </summary>
@@ -333,17 +333,17 @@ public abstract class ServiceViewModel(
     protected DelegateCommand<T> CreateAsyncCommand<T>(Func<T?, Task> executeMethod, Func<T?, bool>? canExecuteMethod = null)
     {
         ArgumentNullException.ThrowIfNull(executeMethod);
-        
+
         return new DelegateCommand<T>(
             async (parameter) => await ExecuteVoidAsync(() => executeMethod(parameter), executeMethod.Method.Name),
             canExecuteMethod ?? ((_) => !IsLoading)
         );
     }
-    
+
     #endregion
-    
+
     #region 错误上下文管理
-    
+
     /// <summary>
     /// 创建错误上下文
     /// </summary>
@@ -359,11 +359,11 @@ public abstract class ServiceViewModel(
             Timestamp = DateTime.Now,
             AdditionalData = CreateAdditionalErrorContext()
         };
-        
+
         OnCreateErrorContext(context);
         return context;
     }
-    
+
     /// <summary>
     /// 子类可重写此方法添加特定的错误上下文信息
     /// </summary>
@@ -372,7 +372,7 @@ public abstract class ServiceViewModel(
     {
         // 子类可以重写此方法添加特定信息
     }
-    
+
     /// <summary>
     /// 创建额外的错误上下文信息
     /// </summary>
@@ -386,11 +386,11 @@ public abstract class ServiceViewModel(
             ["ViewModelType"] = GetType().Name
         };
     }
-    
+
     #endregion
-    
+
     #region 命令状态管理
-    
+
     /// <summary>
     /// 重写命令状态更新
     /// </summary>
@@ -400,7 +400,7 @@ public abstract class ServiceViewModel(
         RefreshCommand?.RaiseCanExecuteChanged();
         RefreshAsyncCommand?.RaiseCanExecuteChanged();
     }
-    
+
     /// <summary>
     /// 加载状态变化时的处理
     /// </summary>
@@ -408,15 +408,15 @@ public abstract class ServiceViewModel(
     protected override void OnLoadingStateChanged(bool isLoading)
     {
         base.OnLoadingStateChanged(isLoading);
-        
+
         // 刷新命令状态
         RaiseCanExecuteChanged();
     }
-    
+
     #endregion
-    
+
     #region 刷新命令实现
-    
+
     /// <summary>
     /// 同步刷新操作的内部实现
     /// </summary>
@@ -424,7 +424,7 @@ public abstract class ServiceViewModel(
     {
         _ = ExecuteRefreshAsyncInternal();
     }
-    
+
     /// <summary>
     /// 异步刷新操作的内部实现
     /// </summary>
@@ -433,7 +433,7 @@ public abstract class ServiceViewModel(
     {
         await ExecuteRefreshAsync();
     }
-    
+
     /// <summary>
     /// 子类可重写的同步刷新方法
     /// </summary>
@@ -441,7 +441,7 @@ public abstract class ServiceViewModel(
     {
         _ = ExecuteRefreshAsync();
     }
-    
+
     /// <summary>
     /// 子类可重写的异步刷新方法
     /// </summary>
@@ -450,7 +450,7 @@ public abstract class ServiceViewModel(
     {
         await InitializeAsync();
     }
-    
+
     /// <summary>
     /// 判断是否可以执行刷新操作
     /// </summary>
@@ -459,10 +459,10 @@ public abstract class ServiceViewModel(
     {
         return !IsLoading;
     }
-    
+
     #endregion
-    
+
     #region 私有辅助方法
-    
+
     #endregion
 }

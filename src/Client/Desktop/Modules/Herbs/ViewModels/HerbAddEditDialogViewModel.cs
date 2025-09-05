@@ -1,11 +1,11 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using LYBT.Desktop.Core.ViewModels.Base;
+using LYBT.Desktop.Core.Constants;
 using LYBT.Desktop.Core.Interfaces;
 using LYBT.Desktop.Core.Interfaces.Services;
-using LYBT.Desktop.Core.Constants;
 using LYBT.Desktop.Core.Models.Common;
+using LYBT.Desktop.Core.ViewModels.Base;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
@@ -124,7 +124,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
         /// <param name="errorHandlingService">错误处理服务</param>
         /// <param name="herb">要编辑的药材信息（null表示新增模式）</param>
         public HerbAddEditDialogViewModel(
-            IHerbService herbApiService, 
+            IHerbService herbApiService,
             IEventAggregator eventAggregator,
             IErrorHandlingService errorHandlingService,
             HerbDto? herb = null)
@@ -173,7 +173,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
                     };
 
                     var response = await _herbApiService.UpdateAsync(_originalHerb.Id, updateDto);
-                    
+
                     if (!response.IsSuccess)
                     {
                         ErrorMessage = response.ErrorMessage ?? "编辑中药材失败";
@@ -198,7 +198,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
                     };
 
                     var response = await _herbApiService.CreateAsync(createDto);
-                    
+
                     if (!response.IsSuccess)
                     {
                         ErrorMessage = response.ErrorMessage ?? "新增中药材失败";
@@ -227,7 +227,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
         protected override void InitializeDialog()
         {
             base.InitializeDialog();
-            
+
             // 监听属性变化以更新Command状态  
             SaveCommand.ObservesProperty(() => HerbName);
             SaveCommand.ObservesProperty(() => Unit);
@@ -335,10 +335,10 @@ namespace LYBT.Desktop.Herbs.ViewModels
         /// </summary>
         protected void RaiseRequestClose(bool? dialogResult)
         {
-            var result = dialogResult == true 
+            var result = dialogResult == true
                 ? CustomDialogResult.Success(new Dictionary<string, object>())
                 : CustomDialogResult.Cancel();
-                
+
             RequestClose?.Invoke(result);
         }
 

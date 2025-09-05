@@ -1,7 +1,7 @@
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Enums;
-using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
 
 namespace LYBT.Shared.Models.Contracts.Common
 {

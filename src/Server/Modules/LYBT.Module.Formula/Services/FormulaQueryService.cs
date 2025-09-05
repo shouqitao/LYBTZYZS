@@ -1,10 +1,10 @@
-using AutoMapper;
-using LYBT.Infrastructure.Data;
+﻿using AutoMapper;
 using LYBT.Entities.Formula;
-using LYBT.Shared.Models.Contracts.Formula;
-using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Shared.Models.Enums;
+using LYBT.Infrastructure.Data;
 using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Formula;
+using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -42,12 +42,12 @@ namespace LYBT.Module.Formula.Services
             try
             {
                 var queryable = BuildBaseQuery();
-                
+
                 // 应用筛选
                 queryable = ApplyFilters(queryable, query);
-                
+
                 var totalCount = await queryable.CountAsync();
-                
+
                 // 应用分页和排序
                 var items = await queryable
                     .OrderBy(f => f.Name)
@@ -82,18 +82,18 @@ namespace LYBT.Module.Formula.Services
             try
             {
                 var queryable = BuildBaseQuery();
-                
+
                 // 关键字搜索
                 if (!string.IsNullOrWhiteSpace(query.Keyword))
                 {
-                    queryable = queryable.Where(f => 
+                    queryable = queryable.Where(f =>
                         f.Name.Contains(query.Keyword) ||
                         (f.Effect != null && f.Effect.Contains(query.Keyword)) ||
                         (f.Usage != null && f.Usage.Contains(query.Keyword)));
                 }
 
                 var totalCount = await queryable.CountAsync();
-                
+
                 var items = await queryable
                     .OrderBy(f => f.Name)
                     .Skip(query.Skip)
@@ -207,7 +207,7 @@ namespace LYBT.Module.Formula.Services
                 // 获取模板验方（IsShared = true的验方作为模板）
                 var templates = await _dbContext.Formulas
                     .Include(f => f.Herbs)
-                    
+
                     .Where(f => f.Status == CommonStatus.Enabled && f.IsShared)
                     .OrderBy(f => f.Name)
                     .ToListAsync();
@@ -240,9 +240,9 @@ namespace LYBT.Module.Formula.Services
                 // 根据验方类型查询（基于名称或功效匹配）
                 var formulas = await _dbContext.Formulas
                     .Include(f => f.Herbs)
-                    
+
                     .Where(f => f.Status == CommonStatus.Enabled &&
-                               (f.Name.Contains(formulaType) || 
+                               (f.Name.Contains(formulaType) ||
                                 (f.Effect != null && f.Effect.Contains(formulaType))))
                     .OrderBy(f => f.Name)
                     .ToListAsync();
@@ -275,7 +275,7 @@ namespace LYBT.Module.Formula.Services
                 // 根据症候推荐验方
                 var formulas = await _dbContext.Formulas
                     .Where(f => f.Status == CommonStatus.Enabled &&
-                               ((f.Effect != null && f.Effect.Contains(syndrome)) || 
+                               ((f.Effect != null && f.Effect.Contains(syndrome)) ||
                                 (f.Usage != null && f.Usage.Contains(syndrome))))
                     .OrderBy(f => f.Name)
                     .Take(10)
@@ -318,14 +318,21 @@ namespace LYBT.Module.Formula.Services
                 }
 
                 var searchTerms = new List<string>();
-                if (!string.IsNullOrWhiteSpace(symptoms)) searchTerms.Add(symptoms);
-                if (!string.IsNullOrWhiteSpace(diagnosis)) searchTerms.Add(diagnosis);
+                if (!string.IsNullOrWhiteSpace(symptoms))
+                {
+                    searchTerms.Add(symptoms);
+                }
+
+                if (!string.IsNullOrWhiteSpace(diagnosis))
+                {
+                    searchTerms.Add(diagnosis);
+                }
 
                 // 根据症状和诊断推荐验方
                 var formulas = await _dbContext.Formulas
                     .Where(f => f.Status == CommonStatus.Enabled &&
-                               searchTerms.Any(term => 
-                                   (f.Effect != null && f.Effect.Contains(term)) || 
+                               searchTerms.Any(term =>
+                                   (f.Effect != null && f.Effect.Contains(term)) ||
                                    (f.Usage != null && f.Usage.Contains(term))))
                     .OrderBy(f => f.Name)
                     .Take(10)
@@ -364,14 +371,14 @@ namespace LYBT.Module.Formula.Services
 
                 if (!string.IsNullOrWhiteSpace(keyword))
                 {
-                    queryable = queryable.Where(f => f.Name.Contains(keyword) || 
+                    queryable = queryable.Where(f => f.Name.Contains(keyword) ||
                                                     (f.Effect != null && f.Effect.Contains(keyword)));
                 }
 
                 if (!string.IsNullOrWhiteSpace(category))
                 {
                     // 根据分类过滤（基于名称或效果匹配分类）
-                    queryable = queryable.Where(f => f.Name.Contains(category) || 
+                    queryable = queryable.Where(f => f.Name.Contains(category) ||
                                                     (f.Effect != null && f.Effect.Contains(category)));
                 }
 
@@ -407,7 +414,7 @@ namespace LYBT.Module.Formula.Services
                 // 根据症候推荐验方
                 var formulas = await _dbContext.Formulas
                     .Where(f => f.Status == CommonStatus.Enabled &&
-                               ((f.Effect != null && f.Effect.Contains(syndrome)) || 
+                               ((f.Effect != null && f.Effect.Contains(syndrome)) ||
                                 (f.Usage != null && f.Usage.Contains(syndrome))))
                     .OrderBy(f => f.Name)
                     .Take(10)
@@ -462,10 +469,14 @@ namespace LYBT.Module.Formula.Services
             double confidence = 0.5; // 基础置信度
 
             if (formula.Effect?.Contains(syndrome) == true)
+            {
                 confidence += 0.3;
-            
+            }
+
             if (formula.Usage?.Contains(syndrome) == true)
+            {
                 confidence += 0.2;
+            }
 
             return Math.Min(confidence, 1.0);
         }
@@ -474,13 +485,17 @@ namespace LYBT.Module.Formula.Services
         {
             double score = 0.3; // 基础得分
 
-            if (!string.IsNullOrWhiteSpace(symptoms) && 
+            if (!string.IsNullOrWhiteSpace(symptoms) &&
                 (formula.Effect?.Contains(symptoms) == true || formula.Usage?.Contains(symptoms) == true))
+            {
                 score += 0.3;
+            }
 
-            if (!string.IsNullOrWhiteSpace(diagnosis) && 
+            if (!string.IsNullOrWhiteSpace(diagnosis) &&
                 (formula.Effect?.Contains(diagnosis) == true || formula.Usage?.Contains(diagnosis) == true))
+            {
                 score += 0.4;
+            }
 
             return Math.Min(score, 1.0);
         }

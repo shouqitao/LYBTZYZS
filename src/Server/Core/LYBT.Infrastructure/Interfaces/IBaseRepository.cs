@@ -1,5 +1,5 @@
+﻿using System.Linq.Expressions;
 using LYBT.Shared.Models.Contracts.Common;
-using System.Linq.Expressions;
 
 namespace LYBT.Infrastructure.Interfaces
 {
@@ -34,8 +34,8 @@ namespace LYBT.Infrastructure.Interfaces
         /// 根据条件获取分页数据
         /// </summary>
         Task<PagedResult<TEntity>> GetPagedAsync(
-            Expression<Func<TEntity, bool>>? predicate, 
-            int pageNumber, 
+            Expression<Func<TEntity, bool>>? predicate,
+            int pageNumber,
             int pageSize,
             Expression<Func<TEntity, object>>? orderBy = null,
             bool ascending = true);
@@ -136,8 +136,8 @@ namespace LYBT.Infrastructure.Interfaces
         /// 根据条件获取分页数据
         /// </summary>
         Task<PagedResult<TEntity>> GetPagedAsync(
-            Expression<Func<TEntity, bool>>? predicate, 
-            int pageNumber, 
+            Expression<Func<TEntity, bool>>? predicate,
+            int pageNumber,
             int pageSize,
             Expression<Func<TEntity, object>>? orderBy = null,
             bool ascending = true);

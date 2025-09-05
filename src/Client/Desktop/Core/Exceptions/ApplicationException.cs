@@ -1,6 +1,6 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System;
+﻿using System;
 using System.Runtime.Serialization;
+using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Desktop.Core.Exceptions
 {
@@ -14,67 +14,67 @@ namespace LYBT.Desktop.Core.Exceptions
         /// 错误类别
         /// </summary>
         public ErrorCategory Category { get; set; }
-        
+
         /// <summary>
         /// 错误严重程度
         /// </summary>
         public ErrorSeverity Severity { get; set; }
-        
+
         /// <summary>
         /// 错误代码
         /// </summary>
         public string ErrorCode { get; set; } = string.Empty;
-        
+
         /// <summary>
         /// 用户友好的错误消息
         /// </summary>
         public string UserFriendlyMessage { get; set; } = string.Empty;
-        
+
         /// <summary>
         /// 技术详情（用于日志）
         /// </summary>
         public string TechnicalDetails { get; set; } = string.Empty;
-        
+
         /// <summary>
         /// 关联ID（用于追踪）
         /// </summary>
         public string CorrelationId { get; set; } = string.Empty;
-        
+
         /// <summary>
         /// 发生时间
         /// </summary>
         public DateTime OccurredAt { get; set; }
-        
+
         /// <summary>
         /// 是否已处理
         /// </summary>
         public bool IsHandled { get; set; }
-        
+
         /// <summary>
         /// 重试次数
         /// </summary>
         public int RetryCount { get; set; }
-        
+
         /// <summary>
         /// 是否可重试
         /// </summary>
         public bool IsRetryable { get; set; }
-        
+
         public AppException()
             : this("应用程序发生错误")
         {
         }
-        
+
         public AppException(string message)
             : this(message, ErrorCategory.Unknown, ErrorSeverity.Error)
         {
         }
-        
+
         public AppException(string message, Exception innerException)
             : this(message, ErrorCategory.Unknown, ErrorSeverity.Error, innerException)
         {
         }
-        
+
         public AppException(string message, ErrorCategory category, ErrorSeverity severity)
             : base(message)
         {
@@ -87,7 +87,7 @@ namespace LYBT.Desktop.Core.Exceptions
             TechnicalDetails = message;
             IsRetryable = DetermineRetryability(category);
         }
-        
+
         public AppException(string message, ErrorCategory category, ErrorSeverity severity, Exception innerException)
             : base(message, innerException)
         {
@@ -100,7 +100,7 @@ namespace LYBT.Desktop.Core.Exceptions
             TechnicalDetails = $"{message} | InnerException: {innerException?.Message}";
             IsRetryable = DetermineRetryability(category);
         }
-        
+
         [Obsolete("This API supports obsolete formatter-based serialization.")]
         protected AppException(SerializationInfo info, StreamingContext context)
             : base(info, context)
@@ -116,7 +116,7 @@ namespace LYBT.Desktop.Core.Exceptions
             RetryCount = info.GetInt32(nameof(RetryCount));
             IsRetryable = info.GetBoolean(nameof(IsRetryable));
         }
-        
+
         [Obsolete("This API supports obsolete formatter-based serialization.")]
         public override void GetObjectData(SerializationInfo info, StreamingContext context)
         {
@@ -132,7 +132,7 @@ namespace LYBT.Desktop.Core.Exceptions
             info.AddValue(nameof(RetryCount), RetryCount);
             info.AddValue(nameof(IsRetryable), IsRetryable);
         }
-        
+
         /// <summary>
         /// 获取默认的用户友好消息
         /// </summary>
@@ -156,7 +156,7 @@ namespace LYBT.Desktop.Core.Exceptions
                 _ => "操作失败，请稍后重试"
             };
         }
-        
+
         /// <summary>
         /// 确定是否可重试
         /// </summary>
@@ -172,7 +172,7 @@ namespace LYBT.Desktop.Core.Exceptions
                 _ => false
             };
         }
-        
+
         /// <summary>
         /// 创建带错误代码的异常
         /// </summary>
@@ -183,7 +183,7 @@ namespace LYBT.Desktop.Core.Exceptions
                 ErrorCode = errorCode
             };
         }
-        
+
         /// <summary>
         /// 增加重试计数
         /// </summary>

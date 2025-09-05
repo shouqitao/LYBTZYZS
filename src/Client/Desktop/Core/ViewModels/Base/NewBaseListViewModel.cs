@@ -1,16 +1,16 @@
+﻿using System;
+using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using LYBT.Desktop.Core.Coordinators;
+// UltraThink v2.0: 添加SessionAware相关依赖
+using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.Managers;
-using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Desktop.Core.ViewModels.Base;
 using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Mvvm;
-// UltraThink v2.0: 添加SessionAware相关依赖
-using LYBT.Desktop.Core.Interfaces.Services;
-using LYBT.Desktop.Core.ViewModels.Base;
-using System;
-using System.Collections.ObjectModel;
-using System.Threading.Tasks;
 
 namespace LYBT.Desktop.Core.ViewModels.Base
 {
@@ -130,7 +130,7 @@ namespace LYBT.Desktop.Core.ViewModels.Base
 
             InitializeCommands();
             InitializeEventHandlers();
-            
+
             LogInfo("NewBaseListViewModel 已初始化，使用 UltraThink SessionManager 架构");
         }
 
@@ -229,23 +229,25 @@ namespace LYBT.Desktop.Core.ViewModels.Base
                 if (result.IsSuccess && result.Data != null)
                 {
                     // 🎯 UltraThink UI线程修复: 确保ObservableCollection更新在UI线程上执行
-                    System.Windows.Application.Current.Dispatcher.Invoke(() => {
+                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                    {
                         Items = new ObservableCollection<TItem>(result.Data.Items);
                         // 强制触发UI更新通知
                         RaisePropertyChanged(nameof(Items));
                     });
-                    
+
                     PaginationCoordinator.UpdatePagination(result.Data.TotalCount);
                     OnDataLoaded(result.Data);
                 }
                 else
                 {
                     // 🎯 UltraThink UI线程修复: 确保UI更新在UI线程上执行
-                    System.Windows.Application.Current.Dispatcher.Invoke(() => {
+                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                    {
                         Items.Clear();
                         ErrorMessage = result.ErrorMessage ?? "加载数据失败";
                     });
-                    
+
                     PaginationCoordinator.Reset();
                     OnDataLoadFailed(result.ErrorMessage ?? "加载数据失败");
                 }
@@ -255,13 +257,14 @@ namespace LYBT.Desktop.Core.ViewModels.Base
             catch (Exception ex)
             {
                 LogError(ex, "加载数据时发生错误");
-                
+
                 // 🎯 UltraThink UI线程修复: 确保UI更新在UI线程上执行
-                System.Windows.Application.Current.Dispatcher.Invoke(() => {
+                System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                {
                     ErrorMessage = $"加载数据时发生错误：{ex.Message}";
                     Items.Clear();
                 });
-                
+
                 // UltraThink SessionAware: 使用通知服务显示错误
                 ShowError($"加载数据失败：{ex.Message}");
                 OnDataLoadFailed(ex.Message);

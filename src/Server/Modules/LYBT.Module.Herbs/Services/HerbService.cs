@@ -1,10 +1,10 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using LYBT.Shared.Models.Contracts.Herbs;
-using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Shared.Models.Common;
 using LYBT.Shared.Interfaces.Services;
+using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Herbs;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Module.Herbs.Services
@@ -55,7 +55,9 @@ namespace LYBT.Module.Herbs.Services
         public async Task<ServiceResult<List<HerbDto>>> GetListAsync(HerbPagedQueryDto? query = null)
         {
             if (query == null)
+            {
                 return await GetAllAsync();
+            }
 
             var pagedResult = await _queryService.GetPagedAsync(query);
             return pagedResult.IsSuccess && pagedResult.Data != null
@@ -74,11 +76,15 @@ namespace LYBT.Module.Herbs.Services
         {
             // 简化版本更新逻辑：只允许修改价格和状态
             if (id == Guid.Empty)
+            {
                 return Task.FromResult(ServiceResult<HerbDto>.Failure("药材ID不能为空"));
-                
+            }
+
             if (dto == null)
+            {
                 return Task.FromResult(ServiceResult<HerbDto>.Failure("更新信息不能为空"));
-                
+            }
+
             // 目前简化版本不支持全量更新，建议使用状态更新方法
             return Task.FromResult(ServiceResult<HerbDto>.Failure("简化版本暂不支持药材信息更新，建议使用SetStatusAsync更改状态"));
         }
@@ -105,7 +111,7 @@ namespace LYBT.Module.Herbs.Services
             {
                 return ServiceResult<byte[]>.Failure(herbsResult.ErrorMessage ?? "获取药材列表失败");
             }
-            
+
             try
             {
                 // TODO: 实现Excel导出功能
@@ -115,7 +121,7 @@ namespace LYBT.Module.Herbs.Services
                 {
                     csvContent += $"{herb.Name},{herb.Origin},{herb.Spec},{herb.Unit},{herb.Price},{(herb.IsEnabled ? "启用" : "禁用")}\n";
                 }
-                
+
                 var bytes = System.Text.Encoding.UTF8.GetBytes(csvContent);
                 return ServiceResult<byte[]>.Success(bytes);
             }

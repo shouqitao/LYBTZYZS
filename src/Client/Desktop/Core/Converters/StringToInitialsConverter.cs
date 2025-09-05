@@ -1,8 +1,8 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System;
+﻿using System;
 using System.Globalization;
 using System.Linq;
 using System.Windows.Data;
+using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Desktop.Core.Converters
 {
@@ -38,7 +38,7 @@ namespace LYBT.Desktop.Core.Converters
             else
             {
                 // 多个单词，取每个单词的首字母，最多2个
-                var initials = string.Join("", parts.Take(2).Select(part => 
+                var initials = string.Join("", parts.Take(2).Select(part =>
                     part.Length > 0 ? char.ToUpper(part[0]) : ' '));
                 return initials.Trim();
             }

@@ -1,5 +1,5 @@
+﻿using System;
 using LYBT.Shared.Models.Contracts.Common;
-using System;
 
 namespace LYBT.Desktop.Core.Exceptions
 {
@@ -11,7 +11,7 @@ namespace LYBT.Desktop.Core.Exceptions
     {
         public int? HttpStatusCode { get; set; }
         public string Endpoint { get; set; } = string.Empty;
-        
+
         public NetworkException(string message, string? endpoint = null, int? statusCode = null)
             : base(message, ErrorCategory.Network, ErrorSeverity.Error)
         {
@@ -26,13 +26,13 @@ namespace LYBT.Desktop.Core.Exceptions
                 _ => "网络连接失败，请检查网络设置"
             };
         }
-        
+
         public NetworkException(string message, Exception innerException)
             : base(message, ErrorCategory.Network, ErrorSeverity.Error, innerException)
         {
         }
     }
-    
+
     /// <summary>
     /// 认证异常
     /// </summary>
@@ -41,7 +41,7 @@ namespace LYBT.Desktop.Core.Exceptions
     {
         public string Username { get; set; } = string.Empty;
         public string FailureReason { get; set; } = string.Empty;
-        
+
         public AuthenticationException(string message, string? username = null)
             : base(message, ErrorCategory.Authentication, ErrorSeverity.Warning)
         {
@@ -50,13 +50,13 @@ namespace LYBT.Desktop.Core.Exceptions
             ErrorCode = "AUTH_001";
             UserFriendlyMessage = "登录失败，请检查用户名和密码";
         }
-        
+
         public AuthenticationException(string message, Exception innerException)
             : base(message, ErrorCategory.Authentication, ErrorSeverity.Warning, innerException)
         {
         }
     }
-    
+
     /// <summary>
     /// 授权异常
     /// </summary>
@@ -65,7 +65,7 @@ namespace LYBT.Desktop.Core.Exceptions
     {
         public string RequiredPermission { get; set; } = string.Empty;
         public string CurrentRole { get; set; } = string.Empty;
-        
+
         public AuthorizationException(string message, string? requiredPermission = null)
             : base(message, ErrorCategory.Authorization, ErrorSeverity.Warning)
         {
@@ -74,7 +74,7 @@ namespace LYBT.Desktop.Core.Exceptions
             UserFriendlyMessage = "您没有权限执行此操作";
         }
     }
-    
+
     /// <summary>
     /// 验证异常
     /// </summary>
@@ -84,7 +84,7 @@ namespace LYBT.Desktop.Core.Exceptions
         public string FieldName { get; set; } = string.Empty;
         public object? InvalidValue { get; set; }
         public string ValidationRule { get; set; } = string.Empty;
-        
+
         public ValidationException(string message, string? fieldName = null)
             : base(message, ErrorCategory.Validation, ErrorSeverity.Info)
         {
@@ -96,7 +96,7 @@ namespace LYBT.Desktop.Core.Exceptions
             IsRetryable = false;
         }
     }
-    
+
     /// <summary>
     /// 业务逻辑异常
     /// </summary>
@@ -105,7 +105,7 @@ namespace LYBT.Desktop.Core.Exceptions
     {
         public string BusinessRule { get; set; } = string.Empty;
         public object Context { get; set; } = new object();
-        
+
         public BusinessException(string message, string? businessRule = null)
             : base(message, ErrorCategory.Business, ErrorSeverity.Warning)
         {
@@ -114,7 +114,7 @@ namespace LYBT.Desktop.Core.Exceptions
             IsRetryable = false;
         }
     }
-    
+
     /// <summary>
     /// 数据访问异常
     /// </summary>
@@ -124,7 +124,7 @@ namespace LYBT.Desktop.Core.Exceptions
         public string EntityType { get; set; } = string.Empty;
         public string Operation { get; set; } = string.Empty;
         public string ConnectionString { get; set; } = string.Empty;
-        
+
         public DataAccessException(string message, string? entityType = null, string? operation = null)
             : base(message, ErrorCategory.DataAccess, ErrorSeverity.Error)
         {
@@ -133,13 +133,13 @@ namespace LYBT.Desktop.Core.Exceptions
             ErrorCode = "DATA_001";
             UserFriendlyMessage = "数据操作失败，请稍后重试";
         }
-        
+
         public DataAccessException(string message, Exception innerException)
             : base(message, ErrorCategory.DataAccess, ErrorSeverity.Error, innerException)
         {
         }
     }
-    
+
     /// <summary>
     /// 配置异常
     /// </summary>
@@ -149,7 +149,7 @@ namespace LYBT.Desktop.Core.Exceptions
         public string ConfigurationKey { get; set; } = string.Empty;
         public string ExpectedValue { get; set; } = string.Empty;
         public string ActualValue { get; set; } = string.Empty;
-        
+
         public ConfigurationException(string message, string? configKey = null)
             : base(message, ErrorCategory.Configuration, ErrorSeverity.Critical)
         {
@@ -159,7 +159,7 @@ namespace LYBT.Desktop.Core.Exceptions
             IsRetryable = false;
         }
     }
-    
+
     /// <summary>
     /// 操作超时异常
     /// </summary>
@@ -168,7 +168,7 @@ namespace LYBT.Desktop.Core.Exceptions
     {
         public TimeSpan Timeout { get; set; }
         public string Operation { get; set; } = string.Empty;
-        
+
         public OperationTimeoutException(string message, TimeSpan timeout, string? operation = null)
             : base(message, ErrorCategory.Timeout, ErrorSeverity.Warning)
         {
@@ -178,7 +178,7 @@ namespace LYBT.Desktop.Core.Exceptions
             UserFriendlyMessage = $"操作超时（{timeout.TotalSeconds}秒），请重试";
         }
     }
-    
+
     /// <summary>
     /// 并发冲突异常
     /// </summary>
@@ -188,7 +188,7 @@ namespace LYBT.Desktop.Core.Exceptions
         public string EntityType { get; set; } = string.Empty;
         public object EntityId { get; set; } = new object();
         public string ConflictingUser { get; set; } = string.Empty;
-        
+
         public ConcurrencyException(string message, string? entityType = null, object? entityId = null)
             : base(message, ErrorCategory.Concurrency, ErrorSeverity.Warning)
         {
@@ -198,7 +198,7 @@ namespace LYBT.Desktop.Core.Exceptions
             UserFriendlyMessage = "数据已被其他用户修改，请刷新后重试";
         }
     }
-    
+
     /// <summary>
     /// 资源未找到异常
     /// </summary>
@@ -207,7 +207,7 @@ namespace LYBT.Desktop.Core.Exceptions
     {
         public string ResourceType { get; set; } = string.Empty;
         public object ResourceId { get; set; } = new object();
-        
+
         public ResourceNotFoundException(string message, string? resourceType = null, object? resourceId = null)
             : base(message, ErrorCategory.ResourceNotFound, ErrorSeverity.Warning)
         {

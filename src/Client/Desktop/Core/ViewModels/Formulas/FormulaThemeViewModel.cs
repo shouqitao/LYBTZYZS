@@ -1,8 +1,8 @@
-using System;
+﻿using System;
 using System.Windows.Media;
+using LYBT.Desktop.Core.Extensions;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Enums;
-using LYBT.Desktop.Core.Extensions;
 using Prism.Mvvm;
 
 namespace LYBT.Desktop.Core.ViewModels.Formulas
@@ -191,8 +191,10 @@ namespace LYBT.Desktop.Core.ViewModels.Formulas
         private string GetBackgroundColorHex()
         {
             if (_formulaData.Status == CommonStatus.Disabled)
+            {
                 return "#FFF0F0";
-            
+            }
+
             return _formulaData.HerbCount switch
             {
                 <= 3 => "#F0F8FF",

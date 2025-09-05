@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -30,7 +30,7 @@ namespace LYBT.Desktop.Core.Services.Performance
             try
             {
                 _logger.LogInformation("UltraThink Phase H: 开始应用程序预热");
-                
+
                 var warmupTasks = new[]
                 {
                     WarmupDatabaseConnectionAsync(),
@@ -39,7 +39,7 @@ namespace LYBT.Desktop.Core.Services.Performance
                 };
 
                 await Task.WhenAll(warmupTasks);
-                
+
                 _logger.LogInformation("应用程序预热完成，耗时 {ElapsedMs}ms", _startupStopwatch.ElapsedMilliseconds);
             }
             catch (Exception ex)

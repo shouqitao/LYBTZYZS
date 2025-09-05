@@ -1,19 +1,19 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Threading.Tasks;
 using AutoMapper;
+using LYBT.Desktop.Core.Helpers;
+using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.ViewModels;
 using LYBT.Shared.Interfaces.Services;
-using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
+using Microsoft.Win32;
 using Prism.Commands;
 using Prism.Events;
-using LYBT.Desktop.Core.Helpers;
-using Microsoft.Win32;
-using System.Data;
 
 namespace LYBT.Desktop.Herbs.ViewModels
 {
@@ -36,13 +36,13 @@ namespace LYBT.Desktop.Herbs.ViewModels
 
         /// <summary>切换状态命令</summary>
         public DelegateCommand ToggleStatusCommand { get; }
-        
+
         /// <summary>导入药材命令</summary>
         public DelegateCommand ImportHerbsCommand { get; }
-        
+
         /// <summary>导出药材数据命令</summary>
         public DelegateCommand ExportHerbsCommand { get; }
-        
+
         /// <summary>导出模板命令</summary>
         public DelegateCommand ExportTemplateCommand { get; }
 
@@ -102,7 +102,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
         {
             var parameters = new Dictionary<string, object> { ["IsEditMode"] = false };
             var result = await _dialogService.ShowDialogAsync("HerbAddEditDialog", parameters);
-            
+
             if (result.Result == true)
             {
                 await _dialogService.ShowSuccessAsync("药材信息添加成功", "成功");
@@ -118,7 +118,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
                 ["Herb"] = item
             };
             var result = await _dialogService.ShowDialogAsync("HerbAddEditDialog", parameters);
-            
+
             if (result.Result == true)
             {
                 await _dialogService.ShowSuccessAsync($"药材 {item.Name} 信息更新成功", "成功");
@@ -135,7 +135,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
         protected override async Task OnViewDetailsAsync(HerbDto item)
         {
             var result = await _herbService.GetByIdAsync(item.Id);
-            
+
             if (result.IsSuccess && result.Data != null)
             {
                 var herbDetail = result.Data;
@@ -204,7 +204,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
                     if (allHerbsResult.IsSuccess && allHerbsResult.Data != null)
                     {
                         var herbs = allHerbsResult.Data.Items;
-                        
+
                         // 定义导出列
                         var columns = new Dictionary<string, string>
                         {
@@ -235,7 +235,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
 
                         // 导出到Excel
                         ExcelHelper.ExportToExcel(exportData, columns, saveFileDialog.FileName, "药材数据");
-                        
+
                         await _dialogService.ShowSuccessAsync($"成功导出 {herbs.Count()} 条药材数据到:\n{saveFileDialog.FileName}", "导出成功");
                     }
                     else
@@ -272,7 +272,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
 
                     // 读取Excel数据
                     var dataTable = ExcelHelper.ImportFromExcel(openFileDialog.FileName, true);
-                    
+
                     if (dataTable.Rows.Count == 0)
                     {
                         await _dialogService.ShowWarningAsync("Excel文件中没有找到数据", "导入提示");
@@ -289,7 +289,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
                         try
                         {
                             var row = dataTable.Rows[i];
-                            
+
                             // 验证必填字段
                             var name = row["药材名称"]?.ToString()?.Trim();
                             if (string.IsNullOrEmpty(name))
@@ -383,7 +383,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
                 {
                     // 定义模板列
                     var columns = new[] { "药材名称", "产地", "规格", "单位", "单价(元/单位)", "功效说明", "用法说明" };
-                    
+
                     // 创建示例数据
                     var sampleData = new List<string[]>
                     {
@@ -393,7 +393,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
 
                     // 创建Excel模板
                     ExcelHelper.CreateTemplate(columns, saveFileDialog.FileName, "药材数据", sampleData);
-                    
+
                     await _dialogService.ShowSuccessAsync($"模板文件已保存到:\n{saveFileDialog.FileName}\n\n请按照模板格式填写药材数据，然后使用导入功能。", "模板下载成功");
                 }
             }
@@ -406,8 +406,11 @@ namespace LYBT.Desktop.Herbs.ViewModels
         /// <summary>解析价格字符串</summary>
         private decimal ParseDecimal(string? priceStr)
         {
-            if (string.IsNullOrEmpty(priceStr)) return 0;
-            
+            if (string.IsNullOrEmpty(priceStr))
+            {
+                return 0;
+            }
+
             // 移除可能的货币符号和单位
             priceStr = priceStr.Trim()
                 .Replace("元", "")
@@ -416,12 +419,12 @@ namespace LYBT.Desktop.Herbs.ViewModels
                 .Replace("/克", "")
                 .Replace("/g", "")
                 .Replace("克", "");
-            
+
             if (decimal.TryParse(priceStr, out decimal price) && price >= 0)
             {
                 return price;
             }
-            
+
             return 0;
         }
 
@@ -430,14 +433,14 @@ namespace LYBT.Desktop.Herbs.ViewModels
         {
             var isEnabled = herb.Status == CommonStatus.Enabled;
             var action = isEnabled ? "禁用" : "启用";
-            
+
             var confirm = await _dialogService.ShowConfirmationAsync(
                 $"确定要{action}药材 {herb.Name} 吗？",
                 $"{action}药材");
 
             if (confirm)
             {
-                ServiceResult result = isEnabled 
+                ServiceResult result = isEnabled
                     ? await _herbService.DisableAsync(herb.Id)
                     : await _herbService.EnableAsync(herb.Id);
 

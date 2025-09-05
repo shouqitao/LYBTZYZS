@@ -1,10 +1,10 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using AutoMapper;
-using LYBT.Module.Auth.Interfaces;
 using LYBT.Entities.Users;
-using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Module.Auth.Interfaces;
 using LYBT.Shared.Models.Contracts.Auth;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Utilities.Helpers;
 using Microsoft.Extensions.Logging;
@@ -202,11 +202,15 @@ namespace LYBT.Module.Auth.Services
         {
             var userResult = await _queryService.GetUserForAuthenticationAsync(request.Username);
             if (!userResult.IsSuccess)
+            {
                 return ServiceResult<string>.Failure(userResult.ErrorMessage ?? "获取用户信息失败");
+            }
 
             var passwordResult = await ValidatePasswordAsync(userResult.Data!, request.Password);
             if (!passwordResult.IsSuccess || !passwordResult.Data)
+            {
                 return ServiceResult<string>.Failure("用户名或密码错误");
+            }
 
             return ServiceResult<string>.Success("凭据验证成功");
         }
@@ -243,7 +247,7 @@ namespace LYBT.Module.Auth.Services
             if (user.FailedLoginCount >= maxFailedAttempts)
             {
                 user.LockoutEnd = DateTime.UtcNow.AddMinutes(lockoutMinutes);
-                _logger.LogWarning("用户账户已锁定: {Username}, 失败次数: {FailedCount}, 锁定到期时间: {LockoutEnd}", 
+                _logger.LogWarning("用户账户已锁定: {Username}, 失败次数: {FailedCount}, 锁定到期时间: {LockoutEnd}",
                     user.Username, user.FailedLoginCount, user.LockoutEnd);
             }
 

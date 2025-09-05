@@ -1,13 +1,13 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Windows;
-using Microsoft.Extensions.Logging;
-using Prism.Ioc;
 using LYBT.Desktop.Core.Interfaces;
 using LYBT.Desktop.Core.Interfaces.Services;
-using LYBT.Shared.Interfaces.Services;
 using LYBT.Desktop.Core.Models.Common;
+using LYBT.Shared.Interfaces.Services;
+using Microsoft.Extensions.Logging;
+using Prism.Ioc;
 // using LYBT.Desktop.Shell.Dialogs.Views; // 暂时注释以避免跨项目依赖
 
 namespace LYBT.Desktop.Core.Services
@@ -30,10 +30,10 @@ namespace LYBT.Desktop.Core.Services
         {
             _container = container;
             _logger = logger;
-            
+
             // 初始化基础对话框注册
             InitializeDefaultDialogs();
-            
+
             // UltraThink修复：调用业务对话框注册Action
             try
             {
@@ -114,7 +114,7 @@ namespace LYBT.Desktop.Core.Services
                 {
                     var viewModel = new ViewModels.Dialogs.InputDialogViewModel();
                     var dialog = new Views.Dialogs.InputDialog();
-                    
+
                     // 设置对话框参数
                     var parameters = new Dictionary<string, object>
                     {
@@ -122,29 +122,29 @@ namespace LYBT.Desktop.Core.Services
                         ["Title"] = title,
                         ["DefaultValue"] = defaultValue
                     };
-                    
+
                     dialog.SetViewModel(viewModel);
                     viewModel.OnDialogOpened(parameters);
-                    
+
                     // 设置父窗口
                     if (Application.Current.MainWindow != null)
                     {
                         dialog.Owner = Application.Current.MainWindow;
                     }
-                    
+
                     var result = dialog.ShowDialog();
-                    
+
                     // 返回输入值或null
                     return result == true ? viewModel.InputValue : null;
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "显示输入对话框时发生错误");
-                    
+
                     // 降级到简单的MessageBox实现
-                    var result = MessageBox.Show($"{message}\n\n当前值: {defaultValue}\n\n点击'是'保持当前值，'否'清空", 
+                    var result = MessageBox.Show($"{message}\n\n当前值: {defaultValue}\n\n点击'是'保持当前值，'否'清空",
                         title, MessageBoxButton.YesNoCancel, MessageBoxImage.Question);
-                    
+
                     return result switch
                     {
                         MessageBoxResult.Yes => defaultValue,
@@ -165,7 +165,7 @@ namespace LYBT.Desktop.Core.Services
                 try
                 {
                     var dialog = _container.Resolve<T>();
-                    
+
                     // 设置参数到 ViewModel
                     if (dialog.DataContext is ICustomDialogAware dialogAware && parameters != null)
                     {
@@ -214,19 +214,19 @@ namespace LYBT.Desktop.Core.Services
 
                     var dialogType = _dialogRegistry[dialogName];
                     var dialog = (Window)_container.Resolve(dialogType);
-                    
+
                     // 处方编辑对话框特殊处理
                     if (dialogName == "PrescriptionEditorDialog")
                     {
                         var viewModelTypeName = "LYBT.Desktop.Prescriptions.ViewModels.PrescriptionEditorDialogViewModel";
                         var assembly = dialog.GetType().Assembly;
                         var viewModelType = assembly.GetType(viewModelTypeName);
-                        
+
                         if (viewModelType != null)
                         {
                             var viewModel = _container.Resolve(viewModelType);
                             dialog.DataContext = viewModel;
-                            
+
                             // 调用InitializeWithContextAsync方法传递参数
                             if (parameters != null)
                             {
@@ -234,7 +234,7 @@ namespace LYBT.Desktop.Core.Services
                                 if (initMethod != null)
                                 {
                                     // 异步调用初始化方法
-                                    _ = Task.Run(async () => 
+                                    _ = Task.Run(async () =>
                                     {
                                         try
                                         {
@@ -263,12 +263,12 @@ namespace LYBT.Desktop.Core.Services
                         var viewModelTypeName = "LYBT.Desktop.Prescriptions.ViewModels.HerbSelectionDialogViewModel";
                         var assembly = dialog.GetType().Assembly;
                         var viewModelType = assembly.GetType(viewModelTypeName);
-                        
+
                         if (viewModelType != null)
                         {
                             var viewModel = _container.Resolve(viewModelType);
                             dialog.DataContext = viewModel;
-                            
+
                             // 调用InitializeWithParametersAsync方法传递参数
                             if (parameters != null)
                             {
@@ -276,7 +276,7 @@ namespace LYBT.Desktop.Core.Services
                                 if (initMethod != null)
                                 {
                                     // 异步调用初始化方法
-                                    _ = Task.Run(async () => 
+                                    _ = Task.Run(async () =>
                                     {
                                         try
                                         {
@@ -305,12 +305,12 @@ namespace LYBT.Desktop.Core.Services
                         var viewModelTypeName = "LYBT.Desktop.Patients.ViewModels.PatientAddEditDialogViewModel";
                         var assembly = dialog.GetType().Assembly;
                         var viewModelType = assembly.GetType(viewModelTypeName);
-                        
+
                         if (viewModelType != null)
                         {
                             var viewModel = _container.Resolve(viewModelType);
                             dialog.DataContext = viewModel;
-                            
+
                             if (parameters != null && viewModel is ICustomDialogAware dialogAware)
                             {
                                 dialogAware.OnDialogOpened(parameters);
@@ -327,12 +327,12 @@ namespace LYBT.Desktop.Core.Services
                         var viewModelTypeName = "LYBT.Desktop.Users.ViewModels.UserAddEditDialogViewModel";
                         var assembly = dialog.GetType().Assembly;
                         var viewModelType = assembly.GetType(viewModelTypeName);
-                        
+
                         if (viewModelType != null)
                         {
                             var viewModel = _container.Resolve(viewModelType);
                             dialog.DataContext = viewModel;
-                            
+
                             if (parameters != null && viewModel is ICustomDialogAware dialogAware)
                             {
                                 dialogAware.OnDialogOpened(parameters);
@@ -349,12 +349,12 @@ namespace LYBT.Desktop.Core.Services
                         var viewModelTypeName = "LYBT.Desktop.Herbs.ViewModels.HerbAddEditDialogViewModel";
                         var assembly = dialog.GetType().Assembly;
                         var viewModelType = assembly.GetType(viewModelTypeName);
-                        
+
                         if (viewModelType != null)
                         {
                             var viewModel = _container.Resolve(viewModelType);
                             dialog.DataContext = viewModel;
-                            
+
                             if (parameters != null && viewModel is ICustomDialogAware dialogAware)
                             {
                                 dialogAware.OnDialogOpened(parameters);
@@ -371,12 +371,12 @@ namespace LYBT.Desktop.Core.Services
                         var viewModelTypeName = "LYBT.Desktop.Formula.ViewModels.AddFormulaDialogViewModel";
                         var assembly = dialog.GetType().Assembly;
                         var viewModelType = assembly.GetType(viewModelTypeName);
-                        
+
                         if (viewModelType != null)
                         {
                             var viewModel = _container.Resolve(viewModelType);
                             dialog.DataContext = viewModel;
-                            
+
                             if (parameters != null && viewModel is ICustomDialogAware dialogAware)
                             {
                                 dialogAware.OnDialogOpened(parameters);
@@ -393,12 +393,12 @@ namespace LYBT.Desktop.Core.Services
                         var viewModelTypeName = "LYBT.Desktop.Formula.ViewModels.EditFormulaDialogViewModel";
                         var assembly = dialog.GetType().Assembly;
                         var viewModelType = assembly.GetType(viewModelTypeName);
-                        
+
                         if (viewModelType != null)
                         {
                             var viewModel = _container.Resolve(viewModelType);
                             dialog.DataContext = viewModel;
-                            
+
                             if (parameters != null && viewModel is ICustomDialogAware dialogAware)
                             {
                                 dialogAware.OnDialogOpened(parameters);
@@ -415,12 +415,12 @@ namespace LYBT.Desktop.Core.Services
                         var viewModelTypeName = "LYBT.Desktop.Formula.ViewModels.ViewFormulaDialogViewModel";
                         var assembly = dialog.GetType().Assembly;
                         var viewModelType = assembly.GetType(viewModelTypeName);
-                        
+
                         if (viewModelType != null)
                         {
                             var viewModel = _container.Resolve(viewModelType);
                             dialog.DataContext = viewModel;
-                            
+
                             if (parameters != null && viewModel is ICustomDialogAware dialogAware)
                             {
                                 dialogAware.OnDialogOpened(parameters);
@@ -437,12 +437,12 @@ namespace LYBT.Desktop.Core.Services
                         var viewModelTypeName = "LYBT.Desktop.MedicalCase.ViewModels.CreateMedicalCaseDialogViewModel";
                         var assembly = dialog.GetType().Assembly;
                         var viewModelType = assembly.GetType(viewModelTypeName);
-                        
+
                         if (viewModelType != null)
                         {
                             var viewModel = _container.Resolve(viewModelType);
                             dialog.DataContext = viewModel;
-                            
+
                             if (parameters != null && viewModel is ICustomDialogAware dialogAware)
                             {
                                 dialogAware.OnDialogOpened(parameters);
@@ -492,13 +492,19 @@ namespace LYBT.Desktop.Core.Services
         public void RegisterDialog(string dialogName, Type dialogType)
         {
             if (string.IsNullOrEmpty(dialogName))
+            {
                 throw new ArgumentException("对话框名称不能为空", nameof(dialogName));
+            }
 
             if (dialogType == null)
+            {
                 throw new ArgumentNullException(nameof(dialogType));
+            }
 
             if (!typeof(Window).IsAssignableFrom(dialogType))
+            {
                 throw new ArgumentException("对话框类型必须继承自 Window", nameof(dialogType));
+            }
 
             _dialogRegistry[dialogName] = dialogType;
             _logger.LogDebug("注册对话框: {DialogName} -> {DialogType}", dialogName, dialogType.Name);
@@ -580,14 +586,14 @@ namespace LYBT.Desktop.Core.Services
                 // RegisterDialog("ConfirmationDialog", typeof(ConfirmationDialog)); // Shell项目对话框暂时注释
                 // RegisterDialog("InformationDialog", typeof(InformationDialog)); // Shell项目对话框暂时注释
                 // RegisterDialog("ErrorDialog", typeof(ErrorDetailsDialog)); // Shell项目对话框暂时注释
-                
+
                 // 注册业务对话框
                 RegisterDialog("HerbSelectionDialog", typeof(Views.Dialogs.HerbSelectionDialog));
                 RegisterDialog("FormulaSelectionDialog", typeof(Views.Dialogs.FormulaSelectionDialog));
-                
+
                 // 业务对话框将由各模块在初始化时动态注册
                 // 避免Core层直接依赖业务模块类型
-                
+
                 _logger.LogDebug("默认对话框注册完成，共注册 {Count} 个对话框", _dialogRegistry.Count);
             }
             catch (Exception ex)

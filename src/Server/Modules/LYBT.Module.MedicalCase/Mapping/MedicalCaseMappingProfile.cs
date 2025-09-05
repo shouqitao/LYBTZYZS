@@ -1,4 +1,4 @@
-using AutoMapper;
+﻿using AutoMapper;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 
 namespace LYBT.Module.MedicalCase.Mapping
@@ -27,10 +27,10 @@ namespace LYBT.Module.MedicalCase.Mapping
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.Consultation, opt => opt.Ignore()) // 导航属性忽略
                 .ForMember(dest => dest.Prescription, opt => opt.Ignore()) // 导航属性忽略
-                // 🎯 UltraThink修复：明确忽略不属于MedicalCase实体的DTO字段
+                                                                           // 🎯 UltraThink修复：明确忽略不属于MedicalCase实体的DTO字段
                 .ForMember(dest => dest.PatientName, opt => opt.Ignore()) // 显示字段，不更新
                 .ForMember(dest => dest.DoctorName, opt => opt.Ignore())  // 显示字段，不更新
-                // 以下字段属于Consultation模块，不映射到MedicalCase
+                                                                          // 以下字段属于Consultation模块，不映射到MedicalCase
                 .ForSourceMember(src => src.RegistrationId, opt => opt.DoNotValidate())
                 .ForSourceMember(src => src.DiagnosisSummary, opt => opt.DoNotValidate())
                 .ForSourceMember(src => src.ChiefComplaint, opt => opt.DoNotValidate())

@@ -1,9 +1,9 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System;
+﻿using System;
 using System.Runtime.InteropServices;
 using System.Security;
 using System.Security.Cryptography;
 using System.Text;
+using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Desktop.Core.Security
 {
@@ -14,7 +14,7 @@ namespace LYBT.Desktop.Core.Security
     {
         private SecureString? _securePassword;
         private readonly object _lockObject = new();
-        
+
         /// <summary>
         /// 设置密码（使用SecureString）
         /// </summary>
@@ -26,7 +26,7 @@ namespace LYBT.Desktop.Core.Security
                 _securePassword = password?.Copy();
             }
         }
-        
+
         /// <summary>
         /// 设置密码（从普通字符串）
         /// </summary>
@@ -35,13 +35,13 @@ namespace LYBT.Desktop.Core.Security
             lock (_lockObject)
             {
                 _securePassword?.Dispose();
-                
+
                 if (string.IsNullOrEmpty(password))
                 {
                     _securePassword = null;
                     return;
                 }
-                
+
                 _securePassword = new SecureString();
                 foreach (char c in password)
                 {
@@ -50,7 +50,7 @@ namespace LYBT.Desktop.Core.Security
                 _securePassword.MakeReadOnly();
             }
         }
-        
+
         /// <summary>
         /// 获取密码的明文（仅在必要时使用）
         /// </summary>
@@ -59,8 +59,10 @@ namespace LYBT.Desktop.Core.Security
             lock (_lockObject)
             {
                 if (_securePassword == null)
+                {
                     return string.Empty;
-                
+                }
+
                 IntPtr ptr = IntPtr.Zero;
                 try
                 {
@@ -76,7 +78,7 @@ namespace LYBT.Desktop.Core.Security
                 }
             }
         }
-        
+
         /// <summary>
         /// 使用密码执行操作（密码不会以明文形式保留在内存中）
         /// </summary>
@@ -95,7 +97,7 @@ namespace LYBT.Desktop.Core.Security
                 password = null;
             }
         }
-        
+
         /// <summary>
         /// 清除密码
         /// </summary>
@@ -107,7 +109,7 @@ namespace LYBT.Desktop.Core.Security
                 _securePassword = null;
             }
         }
-        
+
         /// <summary>
         /// 检查是否有密码
         /// </summary>
@@ -118,7 +120,7 @@ namespace LYBT.Desktop.Core.Security
                 return _securePassword != null && _securePassword.Length > 0;
             }
         }
-        
+
         /// <summary>
         /// 获取密码的哈希值（用于比较）
         /// </summary>
@@ -127,15 +129,17 @@ namespace LYBT.Desktop.Core.Security
             return UsePassword(password =>
             {
                 if (string.IsNullOrEmpty(password))
+                {
                     return string.Empty;
-                
+                }
+
                 using var sha256 = SHA256.Create();
                 var bytes = Encoding.UTF8.GetBytes(password);
                 var hash = sha256.ComputeHash(bytes);
                 return Convert.ToBase64String(hash);
             });
         }
-        
+
         public void Dispose()
         {
             Clear();

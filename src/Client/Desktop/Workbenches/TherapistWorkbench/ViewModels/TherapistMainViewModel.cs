@@ -1,12 +1,12 @@
+﻿using System;
+using LYBT.Desktop.Core.Constants;
+using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Desktop.Core.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Common;
 using Prism.Commands;
+using Prism.Events;
 using Prism.Mvvm;
 using Prism.Regions;
-using Prism.Events;
-using LYBT.Desktop.Core.Constants;
-using LYBT.Desktop.Core.ViewModels.Base;
-using LYBT.Desktop.Core.Interfaces.Services;
-using System;
 
 namespace LYBT.Desktop.Workbench.Therapist.ViewModels
 {

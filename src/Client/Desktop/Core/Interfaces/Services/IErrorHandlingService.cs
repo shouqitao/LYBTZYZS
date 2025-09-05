@@ -1,6 +1,6 @@
-using LYBT.Desktop.Core.Models.Common;
-using System;
+﻿using System;
 using System.Threading.Tasks;
+using LYBT.Desktop.Core.Models.Common;
 using SharedCommon = LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Desktop.Core.Interfaces.Services

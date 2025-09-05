@@ -1,14 +1,14 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System;
+﻿using System;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.Extensions.Logging;
 using Polly;
+using Polly.CircuitBreaker;
 using Polly.Extensions.Http;
 using Polly.Timeout;
-using Polly.CircuitBreaker;
 
 namespace LYBT.Desktop.Core.Services
 {
@@ -22,16 +22,16 @@ namespace LYBT.Desktop.Core.Services
         protected readonly IAsyncPolicy<HttpResponseMessage> CircuitBreakerPolicy;
         protected readonly IAsyncPolicy<HttpResponseMessage> TimeoutPolicy;
         protected readonly IAsyncPolicy<HttpResponseMessage> CombinedPolicy;
-        
+
         private const int DefaultRetryCount = 3;
         private const int DefaultTimeoutSeconds = 30;
         private const int CircuitBreakerHandledEventsAllowedBeforeBreaking = 3;
         private const int CircuitBreakerDurationOfBreakSeconds = 30;
-        
+
         protected BaseApiService(ILogger? logger = null)
         {
             Logger = logger;
-            
+
             // 配置重试策略（指数退避）
             RetryPolicy = HttpPolicyExtensions
                 .HandleTransientHttpError()
@@ -46,7 +46,7 @@ namespace LYBT.Desktop.Core.Services
                             "API调用失败，正在重试 {RetryCount}/{MaxRetries}。状态码: {StatusCode}。等待 {TimeSpan} 秒",
                             retryCount, DefaultRetryCount, statusCode, timespan.TotalSeconds);
                     });
-            
+
             // 配置熔断策略
             CircuitBreakerPolicy = HttpPolicyExtensions
                 .HandleTransientHttpError()
@@ -61,7 +61,7 @@ namespace LYBT.Desktop.Core.Services
                     {
                         Logger?.LogInformation("熔断器重置，服务恢复");
                     });
-            
+
             // 配置超时策略
             TimeoutPolicy = Policy
                 .TimeoutAsync<HttpResponseMessage>(
@@ -72,11 +72,11 @@ namespace LYBT.Desktop.Core.Services
                         Logger?.LogWarning("API调用超时，已等待 {TimeSpan} 秒", timespan.TotalSeconds);
                         await Task.CompletedTask;
                     });
-            
+
             // 组合策略：超时 -> 重试 -> 熔断
             CombinedPolicy = Policy.WrapAsync(TimeoutPolicy, RetryPolicy, CircuitBreakerPolicy);
         }
-        
+
         /// <summary>
         /// 执行API调用，应用所有策略
         /// </summary>
@@ -96,7 +96,7 @@ namespace LYBT.Desktop.Core.Services
                         return (T)(object)result;
                     }
                 }
-                
+
                 // 对于非HTTP响应，直接执行
                 return await operation(cancellationToken);
             }
@@ -116,7 +116,7 @@ namespace LYBT.Desktop.Core.Services
                 throw;
             }
         }
-        
+
         /// <summary>
         /// 处理API响应
         /// </summary>
@@ -130,10 +130,10 @@ namespace LYBT.Desktop.Core.Services
                     var data = System.Text.Json.JsonSerializer.Deserialize<T>(content, GetJsonOptions());
                     return ServiceResult<T>.Success(data!);
                 }
-                
+
                 var errorContent = await response.Content.ReadAsStringAsync();
                 var errorMessage = ParseErrorMessage(errorContent, response.StatusCode);
-                
+
                 Logger?.LogWarning("API返回错误: {StatusCode} - {Error}", response.StatusCode, errorMessage);
                 return ServiceResult<T>.Failure(errorMessage);
             }
@@ -143,7 +143,7 @@ namespace LYBT.Desktop.Core.Services
                 return ServiceResult<T>.Failure("处理服务器响应失败", ex);
             }
         }
-        
+
         /// <summary>
         /// 解析错误消息
         /// </summary>
@@ -153,7 +153,7 @@ namespace LYBT.Desktop.Core.Services
             {
                 return GetDefaultErrorMessage(statusCode);
             }
-            
+
             try
             {
                 // 尝试解析JSON错误响应
@@ -171,12 +171,14 @@ namespace LYBT.Desktop.Core.Services
             {
                 // 如果不是JSON，返回原始内容或默认消息
                 if (content.Length < 200)
+                {
                     return content;
+                }
             }
-            
+
             return GetDefaultErrorMessage(statusCode);
         }
-        
+
         /// <summary>
         /// 获取默认错误消息
         /// </summary>
@@ -193,7 +195,7 @@ namespace LYBT.Desktop.Core.Services
                 _ => $"请求失败 ({(int)statusCode})"
             };
         }
-        
+
         /// <summary>
         /// 获取JSON序列化选项
         /// </summary>
@@ -206,7 +208,7 @@ namespace LYBT.Desktop.Core.Services
             };
         }
     }
-    
+
     /// <summary>
     /// 服务不可用异常
     /// </summary>
@@ -217,7 +219,7 @@ namespace LYBT.Desktop.Core.Services
         {
         }
     }
-    
+
     /// <summary>
     /// 服务超时异常
     /// </summary>

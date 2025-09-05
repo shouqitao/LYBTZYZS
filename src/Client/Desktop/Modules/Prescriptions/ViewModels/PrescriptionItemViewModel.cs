@@ -1,7 +1,7 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System;
-using Prism.Mvvm;
+﻿using System;
 using LYBT.Desktop.Core.Models.Prescriptions;
+using LYBT.Shared.Models.Contracts.Common;
+using Prism.Mvvm;
 
 namespace LYBT.Desktop.Prescriptions.ViewModels
 {
@@ -23,7 +23,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         {
             _item = item ?? new PrescriptionItem();
         }
-        
+
         public PrescriptionItemViewModel() : this(new PrescriptionItem())
         {
         }
@@ -35,21 +35,21 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         /// <summary>
         /// 药材ID
         /// </summary>
-        public Guid HerbId 
-        { 
-            get => _item.HerbId; 
+        public Guid HerbId
+        {
+            get => _item.HerbId;
             set { _item.HerbId = value; RaisePropertyChanged(); }
         }
-        
+
         /// <summary>
         /// 药材名称
         /// </summary>
-        public string HerbName 
-        { 
-            get => _item.HerbName; 
+        public string HerbName
+        {
+            get => _item.HerbName;
             set { _item.HerbName = value; RaisePropertyChanged(); }
         }
-        
+
         /// <summary>
         /// 剂量
         /// </summary>
@@ -65,59 +65,59 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                 RaisePropertyChanged(nameof(PriceText));
             }
         }
-        
+
         /// <summary>
         /// 单位
         /// </summary>
-        public string Unit 
-        { 
-            get => _item.Unit; 
+        public string Unit
+        {
+            get => _item.Unit;
             set { _item.Unit = value; RaisePropertyChanged(); }
         }
-        
+
         /// <summary>
         /// 单价
         /// </summary>
-        public decimal UnitPrice 
-        { 
-            get => _item.UnitPrice; 
-            set 
-            { 
-                _item.UnitPrice = value; 
-                RaisePropertyChanged(); 
+        public decimal UnitPrice
+        {
+            get => _item.UnitPrice;
+            set
+            {
+                _item.UnitPrice = value;
+                RaisePropertyChanged();
                 RaisePropertyChanged(nameof(Subtotal));
                 RaisePropertyChanged(nameof(PriceText));
             }
         }
-        
+
         /// <summary>
         /// 小计金额
         /// </summary>
         public decimal Subtotal => _item.Subtotal;
-        
+
         /// <summary>
         /// 来源（验方、手动添加等）
         /// </summary>
-        public string? Source 
-        { 
-            get => _item.ImportSource; 
+        public string? Source
+        {
+            get => _item.ImportSource;
             set { _item.ImportSource = value; RaisePropertyChanged(); }
         }
-        
+
         /// <summary>
         /// 备注信息
         /// </summary>
-        public string Remark 
-        { 
-            get => _item.Remark; 
+        public string Remark
+        {
+            get => _item.Remark;
             set { _item.Remark = value; RaisePropertyChanged(); }
         }
-        
+
         /// <summary>
         /// 显示文本（药材名 + 剂量）
         /// </summary>
         public string DisplayText => _item.DisplayText;
-        
+
         /// <summary>
         /// 价格显示文本
         /// </summary>
@@ -172,9 +172,9 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         /// </summary>
         public bool IsValid()
         {
-            return HerbId != Guid.Empty 
-                && !string.IsNullOrWhiteSpace(HerbName) 
-                && Quantity > 0 
+            return HerbId != Guid.Empty
+                && !string.IsNullOrWhiteSpace(HerbName)
+                && Quantity > 0
                 && UnitPrice >= 0;
         }
 

@@ -1,7 +1,7 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System;
-using Microsoft.Extensions.Configuration;
+﻿using System;
 using System.IO;
+using LYBT.Shared.Models.Contracts.Common;
+using Microsoft.Extensions.Configuration;
 
 namespace LYBT.Desktop.Core.Configuration
 {

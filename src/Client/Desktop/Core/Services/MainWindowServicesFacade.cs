@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Shared.Interfaces.Services;
 using Prism.Ioc;
@@ -12,7 +12,7 @@ namespace LYBT.Desktop.Core.Services
     public class MainWindowServicesFacade : IMainWindowServicesFacade
     {
         private readonly IContainerProvider _containerProvider;
-        
+
         // 缓存已解析的服务以提高性能
         private ICustomDialogService? _customDialogService;
         private IUserService? _userService;

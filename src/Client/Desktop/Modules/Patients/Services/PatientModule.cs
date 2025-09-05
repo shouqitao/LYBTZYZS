@@ -1,11 +1,11 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using LYBT.Desktop.Patients.Interfaces;
+using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
-using LYBT.Shared.Interfaces.Services;
 
 namespace LYBT.Desktop.Patients.Services;
 
@@ -112,8 +112,8 @@ public class PatientModule(
     public async Task<ServiceResult> EnableAsync(Guid id)
     {
         var result = await _businessService.EnableAsync(id);
-        return result.IsSuccess 
-            ? ServiceResult.Success() 
+        return result.IsSuccess
+            ? ServiceResult.Success()
             : ServiceResult.Failure(result.ErrorMessage ?? "启用患者失败");
     }
 
@@ -123,8 +123,8 @@ public class PatientModule(
     public async Task<ServiceResult> DisableAsync(Guid id)
     {
         var result = await _businessService.DisableAsync(id);
-        return result.IsSuccess 
-            ? ServiceResult.Success() 
+        return result.IsSuccess
+            ? ServiceResult.Success()
             : ServiceResult.Failure(result.ErrorMessage ?? "禁用患者失败");
     }
 
@@ -219,9 +219,15 @@ public class PatientModule(
     public Task<ServiceResult<object>> ValidatePatientAsync(PatientCreateDto dto)
     {
         if (string.IsNullOrWhiteSpace(dto.Name))
+        {
             return Task.FromResult(ServiceResult<object>.Failure("患者姓名不能为空"));
+        }
+
         if (string.IsNullOrWhiteSpace(dto.PhoneNumber))
+        {
             return Task.FromResult(ServiceResult<object>.Failure("联系电话不能为空"));
+        }
+
         return Task.FromResult(ServiceResult<object>.Success(new { IsValid = true }));
     }
 

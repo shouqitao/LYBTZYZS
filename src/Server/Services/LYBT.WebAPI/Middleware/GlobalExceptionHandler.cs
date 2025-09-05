@@ -1,6 +1,6 @@
+﻿using LYBT.Shared.Models.Exceptions;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
-using LYBT.Shared.Models.Exceptions;
 
 namespace LYBT.WebAPI.Middleware
 {
@@ -42,9 +42,15 @@ namespace LYBT.WebAPI.Middleware
                     problemDetails.Title = "API调用异常";
                     problemDetails.Detail = apiException.ShowDetailToUser ? apiException.UserMessage ?? apiException.Message : "API调用失败";
                     if (!string.IsNullOrEmpty(apiException.ErrorCode))
+                    {
                         problemDetails.Extensions["errorCode"] = apiException.ErrorCode;
+                    }
+
                     if (!string.IsNullOrEmpty(apiException.ResponseContent))
+                    {
                         problemDetails.Extensions["responseContent"] = apiException.ResponseContent;
+                    }
+
                     break;
 
                 case BusinessException businessException:
@@ -52,9 +58,15 @@ namespace LYBT.WebAPI.Middleware
                     problemDetails.Title = "业务错误";
                     problemDetails.Detail = businessException.UserMessage ?? businessException.Message;
                     if (!string.IsNullOrEmpty(businessException.ErrorCode))
+                    {
                         problemDetails.Extensions["errorCode"] = businessException.ErrorCode;
+                    }
+
                     if (!string.IsNullOrEmpty(businessException.BusinessRule))
+                    {
                         problemDetails.Extensions["businessRule"] = businessException.BusinessRule;
+                    }
+
                     break;
 
                 case ValidationException validationException:
@@ -62,11 +74,20 @@ namespace LYBT.WebAPI.Middleware
                     problemDetails.Title = "验证失败";
                     problemDetails.Detail = validationException.UserMessage ?? validationException.Message;
                     if (!string.IsNullOrEmpty(validationException.ErrorCode))
+                    {
                         problemDetails.Extensions["errorCode"] = validationException.ErrorCode;
+                    }
+
                     if (validationException.HasErrors)
+                    {
                         problemDetails.Extensions["errors"] = validationException.Errors;
+                    }
+
                     if (!string.IsNullOrEmpty(validationException.FieldName))
+                    {
                         problemDetails.Extensions["fieldName"] = validationException.FieldName;
+                    }
+
                     break;
 
                 case NotFoundException notFoundException:
@@ -74,11 +95,20 @@ namespace LYBT.WebAPI.Middleware
                     problemDetails.Title = "资源未找到";
                     problemDetails.Detail = notFoundException.UserMessage ?? notFoundException.Message;
                     if (!string.IsNullOrEmpty(notFoundException.ErrorCode))
+                    {
                         problemDetails.Extensions["errorCode"] = notFoundException.ErrorCode;
+                    }
+
                     if (!string.IsNullOrEmpty(notFoundException.ResourceType))
+                    {
                         problemDetails.Extensions["resourceType"] = notFoundException.ResourceType;
+                    }
+
                     if (!string.IsNullOrEmpty(notFoundException.ResourceId))
+                    {
                         problemDetails.Extensions["resourceId"] = notFoundException.ResourceId;
+                    }
+
                     break;
 
                 case AppException appException:
@@ -86,7 +116,10 @@ namespace LYBT.WebAPI.Middleware
                     problemDetails.Title = "应用程序异常";
                     problemDetails.Detail = appException.ShowDetailToUser ? (appException.UserMessage ?? appException.Message) : "应用程序处理异常";
                     if (!string.IsNullOrEmpty(appException.ErrorCode))
+                    {
                         problemDetails.Extensions["errorCode"] = appException.ErrorCode;
+                    }
+
                     break;
 
                 case UnauthorizedAccessException:

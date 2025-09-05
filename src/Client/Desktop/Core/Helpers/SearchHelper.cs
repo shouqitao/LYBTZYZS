@@ -1,8 +1,8 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Desktop.Core.Helpers
 {
@@ -25,7 +25,9 @@ namespace LYBT.Desktop.Core.Helpers
             params string[] searchProperties)
         {
             if (source == null || string.IsNullOrWhiteSpace(keyword))
+            {
                 return source ?? Enumerable.Empty<T>();
+            }
 
             keyword = keyword.ToLower();
             var type = typeof(T);
@@ -39,7 +41,9 @@ namespace LYBT.Desktop.Core.Helpers
                 {
                     var value = property?.GetValue(item)?.ToString();
                     if (!string.IsNullOrEmpty(value) && value.ToLower().Contains(keyword))
+                    {
                         return true;
+                    }
                 }
                 return false;
             });
@@ -57,7 +61,9 @@ namespace LYBT.Desktop.Core.Helpers
             params Func<T, bool>[] filters)
         {
             if (source == null || filters == null || filters.Length == 0)
+            {
                 return source ?? Enumerable.Empty<T>();
+            }
 
             var result = source;
             foreach (var filter in filters.Where(f => f != null))
@@ -77,17 +83,31 @@ namespace LYBT.Desktop.Core.Helpers
             where TValue : struct, IComparable<TValue>
         {
             var property = typeof(T).GetProperty(propertyName);
-            if (property == null) return _ => true;
+            if (property == null)
+            {
+                return _ => true;
+            }
 
             return item =>
             {
                 var value = property.GetValue(item);
-                if (value == null) return false;
+                if (value == null)
+                {
+                    return false;
+                }
 
                 if (value is TValue typedValue)
                 {
-                    if (min.HasValue && typedValue.CompareTo(min.Value) < 0) return false;
-                    if (max.HasValue && typedValue.CompareTo(max.Value) > 0) return false;
+                    if (min.HasValue && typedValue.CompareTo(min.Value) < 0)
+                    {
+                        return false;
+                    }
+
+                    if (max.HasValue && typedValue.CompareTo(max.Value) > 0)
+                    {
+                        return false;
+                    }
+
                     return true;
                 }
                 return false;
@@ -102,10 +122,16 @@ namespace LYBT.Desktop.Core.Helpers
             TEnum? value)
             where TEnum : struct, Enum
         {
-            if (!value.HasValue) return _ => true;
+            if (!value.HasValue)
+            {
+                return _ => true;
+            }
 
             var property = typeof(T).GetProperty(propertyName);
-            if (property == null) return _ => true;
+            if (property == null)
+            {
+                return _ => true;
+            }
 
             return item =>
             {
@@ -121,10 +147,16 @@ namespace LYBT.Desktop.Core.Helpers
             string propertyName,
             bool? value)
         {
-            if (!value.HasValue) return _ => true;
+            if (!value.HasValue)
+            {
+                return _ => true;
+            }
 
             var property = typeof(T).GetProperty(propertyName);
-            if (property == null) return _ => true;
+            if (property == null)
+            {
+                return _ => true;
+            }
 
             return item =>
             {
@@ -139,10 +171,15 @@ namespace LYBT.Desktop.Core.Helpers
         public static string HighlightKeyword(string text, string keyword, string highlightTag = "**")
         {
             if (string.IsNullOrWhiteSpace(text) || string.IsNullOrWhiteSpace(keyword))
+            {
                 return text;
+            }
 
             var index = text.IndexOf(keyword, StringComparison.OrdinalIgnoreCase);
-            if (index < 0) return text;
+            if (index < 0)
+            {
+                return text;
+            }
 
             var before = text.Substring(0, index);
             var match = text.Substring(index, keyword.Length);

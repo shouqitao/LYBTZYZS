@@ -1,4 +1,4 @@
-using LYBT.Module.Prescriptions.Interfaces;
+﻿using LYBT.Module.Prescriptions.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.Extensions.Logging;
@@ -29,7 +29,7 @@ namespace LYBT.Module.Prescriptions.Services
                 // 2. 合并药材清单
                 // 3. 去重处理
                 // 4. 生成新处方
-                
+
                 _logger.LogInformation("验方组合功能待实现 - 验方数量: {Count}", formulaIds.Count);
                 return Task.FromResult(ServiceResult<PrescriptionDto>.Failure("验方组合功能开发中"));
             }

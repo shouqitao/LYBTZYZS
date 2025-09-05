@@ -1,5 +1,4 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -7,6 +6,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Core.Services.Configuration
@@ -21,57 +21,57 @@ namespace LYBT.Desktop.Core.Services.Configuration
         /// 获取安全配置值
         /// </summary>
         Task<T?> GetSecureValueAsync<T>(string key, string? passphrase = null);
-        
+
         /// <summary>
         /// 设置安全配置值
         /// </summary>
         Task SetSecureValueAsync<T>(string key, T value, string? passphrase = null);
-        
+
         /// <summary>
         /// 删除安全配置
         /// </summary>
         Task RemoveSecureValueAsync(string key);
-        
+
         /// <summary>
         /// 检查配置是否存在
         /// </summary>
         bool HasSecureValue(string key);
-        
+
         /// <summary>
         /// 获取所有安全配置键（不包含值）
         /// </summary>
         List<string> GetSecureKeys();
-        
+
         /// <summary>
         /// 导出安全配置（加密）
         /// </summary>
         Task<string> ExportSecureConfigurationAsync(string passphrase);
-        
+
         /// <summary>
         /// 导入安全配置
         /// </summary>
         Task ImportSecureConfigurationAsync(string encryptedData, string passphrase);
-        
+
         /// <summary>
         /// 轮换加密密钥
         /// </summary>
         Task RotateEncryptionKeyAsync(string oldPassphrase, string newPassphrase);
-        
+
         /// <summary>
         /// 验证配置完整性
         /// </summary>
         Task<IntegrityCheckResult> VerifyIntegrityAsync();
-        
+
         /// <summary>
         /// 获取访问审计日志
         /// </summary>
         List<SecurityAuditEntry> GetAuditLog(DateTime? startTime = null, DateTime? endTime = null);
-        
+
         /// <summary>
         /// 设置访问控制策略
         /// </summary>
         void SetAccessPolicy(string key, AccessPolicy policy);
-        
+
         /// <summary>
         /// 清理过期的安全配置
         /// </summary>
@@ -89,11 +89,11 @@ namespace LYBT.Desktop.Core.Services.Configuration
         private readonly Dictionary<string, AccessPolicy> _accessPolicies = new();
         private readonly List<SecurityAuditEntry> _auditLog = new();
         private readonly object _lock = new object();
-        
+
         private byte[] _masterKey;
         private readonly string _keyDerivationSalt = "LYBT_SECURE_CONFIG_2025";
         private readonly int _keyIterations = 10000;
-        
+
         public SecureConfigurationService(ILogger<SecureConfigurationService> logger)
         {
             _logger = logger;
@@ -101,12 +101,12 @@ namespace LYBT.Desktop.Core.Services.Configuration
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                 "LYBT",
                 "SecureConfig");
-            
+
             Directory.CreateDirectory(_secureStorePath);
-            
+
             // 初始化主密钥
             _masterKey = DeriveKey(GetMachineKey(), _keyDerivationSalt);
-            
+
             LoadSecureConfigurations();
             InitializeDefaultPolicies();
         }
@@ -122,7 +122,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
                 {
                     var encryptedData = File.ReadAllBytes(configFile);
                     var decryptedJson = DecryptData(encryptedData, _masterKey);
-                    
+
                     var configs = JsonSerializer.Deserialize<Dictionary<string, SecureConfigEntry>>(decryptedJson);
                     if (configs != null)
                     {
@@ -134,7 +134,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
                             }
                         }
                     }
-                    
+
                     _logger.LogInformation("加载了 {Count} 个安全配置项", _secureConfigs.Count);
                 }
             }
@@ -154,7 +154,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
                 AllowedRoles = new[] { "Admin", "SystemAdmin" },
                 MaxAccessPerHour = 10
             };
-            
+
             _accessPolicies["API:SecretKey"] = new AccessPolicy
             {
                 RequireAuthentication = true,
@@ -163,7 +163,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
                 MaxAccessPerHour = 5,
                 RequirePassphrase = true
             };
-            
+
             _accessPolicies["Security:*"] = new AccessPolicy
             {
                 RequireAuthentication = true,
@@ -182,7 +182,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
             {
                 // 检查访问策略
                 CheckAccessPolicy(key, passphrase);
-                
+
                 lock (_lock)
                 {
                     if (!_secureConfigs.TryGetValue(key, out var entry))
@@ -190,7 +190,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
                         _logger.LogDebug("安全配置项未找到: {Key}", key);
                         return Task.FromResult<T?>(default);
                     }
-                    
+
                     // 检查过期
                     if (entry.ExpiresAt.HasValue && entry.ExpiresAt.Value < DateTime.Now)
                     {
@@ -198,24 +198,24 @@ namespace LYBT.Desktop.Core.Services.Configuration
                         _secureConfigs.Remove(key);
                         return Task.FromResult<T?>(default);
                     }
-                    
+
                     // 解密值
-                    var decryptKey = string.IsNullOrEmpty(passphrase) ? 
+                    var decryptKey = string.IsNullOrEmpty(passphrase) ?
                         _masterKey : DeriveKey(passphrase, key);
-                    
+
                     var decryptedData = DecryptData(
-                        Convert.FromBase64String(entry.EncryptedValue), 
+                        Convert.FromBase64String(entry.EncryptedValue),
                         decryptKey);
-                    
+
                     var value = JsonSerializer.Deserialize<T>(decryptedData);
-                    
+
                     // 记录审计日志
                     LogAccess(key, "Read", true);
-                    
+
                     // 更新访问时间
                     entry.LastAccessed = DateTime.Now;
                     entry.AccessCount++;
-                    
+
                     return Task.FromResult<T?>(value);
                 }
             }
@@ -233,19 +233,19 @@ namespace LYBT.Desktop.Core.Services.Configuration
             {
                 // 检查访问策略
                 CheckAccessPolicy(key, passphrase);
-                
+
                 // 序列化值
                 var json = JsonSerializer.Serialize(value);
-                
+
                 // 加密
-                var encryptKey = string.IsNullOrEmpty(passphrase) ? 
+                var encryptKey = string.IsNullOrEmpty(passphrase) ?
                     _masterKey : DeriveKey(passphrase, key);
                 var encryptedData = EncryptData(json, encryptKey);
-                
+
                 lock (_lock)
                 {
                     var isNew = !_secureConfigs.ContainsKey(key);
-                    
+
                     _secureConfigs[key] = new SecureConfigEntry
                     {
                         Key = key,
@@ -261,14 +261,14 @@ namespace LYBT.Desktop.Core.Services.Configuration
                             ["Size"] = encryptedData.Length.ToString()
                         }
                     };
-                    
+
                     // 保存到文件
                     SaveSecureConfigurations();
-                    
+
                     // 记录审计日志
                     LogAccess(key, isNew ? "Create" : "Update", true);
-                    
-                    _logger.LogInformation("安全配置已{Operation}: {Key}", 
+
+                    _logger.LogInformation("安全配置已{Operation}: {Key}",
                         isNew ? "创建" : "更新", key);
                 }
             }
@@ -286,7 +286,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
             try
             {
                 CheckAccessPolicy(key, null);
-                
+
                 lock (_lock)
                 {
                     if (_secureConfigs.Remove(key))
@@ -343,18 +343,18 @@ namespace LYBT.Desktop.Core.Services.Configuration
                             kvp => kvp.Key,
                             kvp => kvp.Value)
                     };
-                    
+
                     var json = JsonSerializer.Serialize(exportData, new JsonSerializerOptions
                     {
                         WriteIndented = true
                     });
-                    
+
                     // 使用提供的密码加密
                     var exportKey = DeriveKey(passphrase, "EXPORT");
                     var encryptedData = EncryptData(json, exportKey);
-                    
+
                     LogAccess("*", "Export", true);
-                    
+
                     return Task.FromResult(Convert.ToBase64String(encryptedData));
                 }
             }
@@ -373,18 +373,18 @@ namespace LYBT.Desktop.Core.Services.Configuration
                 // 解密导入数据
                 var exportKey = DeriveKey(passphrase, "EXPORT");
                 var decryptedJson = DecryptData(Convert.FromBase64String(encryptedData), exportKey);
-                
+
                 var importData = JsonSerializer.Deserialize<SecureConfigExport>(decryptedJson);
                 if (importData == null)
                 {
                     throw new InvalidOperationException("无效的导入数据");
                 }
-                
+
                 lock (_lock)
                 {
                     // 备份现有配置
                     var backup = new Dictionary<string, SecureConfigEntry>(_secureConfigs);
-                    
+
                     try
                     {
                         // 导入配置
@@ -392,15 +392,15 @@ namespace LYBT.Desktop.Core.Services.Configuration
                         {
                             _secureConfigs[kvp.Key] = kvp.Value;
                         }
-                        
+
                         // 导入策略
                         foreach (var kvp in importData.Policies)
                         {
                             _accessPolicies[kvp.Key] = kvp.Value;
                         }
-                        
+
                         SaveSecureConfigurations();
-                        
+
                         LogAccess("*", "Import", true);
                         _logger.LogInformation("导入了 {Count} 个安全配置项", importData.Configurations.Count);
                     }
@@ -434,44 +434,44 @@ namespace LYBT.Desktop.Core.Services.Configuration
             try
             {
                 _logger.LogInformation("开始轮换加密密钥");
-                
-                var oldKey = string.IsNullOrEmpty(oldPassphrase) ? 
+
+                var oldKey = string.IsNullOrEmpty(oldPassphrase) ?
                     _masterKey : DeriveKey(oldPassphrase, _keyDerivationSalt);
                 var newKey = DeriveKey(newPassphrase, _keyDerivationSalt);
-                
+
                 lock (_lock)
                 {
                     var reencryptedConfigs = new Dictionary<string, SecureConfigEntry>();
-                    
+
                     foreach (var kvp in _secureConfigs)
                     {
                         // 解密
                         var decryptedData = DecryptData(
-                            Convert.FromBase64String(kvp.Value.EncryptedValue), 
+                            Convert.FromBase64String(kvp.Value.EncryptedValue),
                             oldKey);
-                        
+
                         // 重新加密
                         var reencryptedData = EncryptData(decryptedData, newKey);
-                        
+
                         kvp.Value.EncryptedValue = Convert.ToBase64String(reencryptedData);
                         kvp.Value.Checksum = ComputeChecksum(reencryptedData);
                         kvp.Value.UpdatedAt = DateTime.Now;
-                        
+
                         reencryptedConfigs[kvp.Key] = kvp.Value;
                     }
-                    
+
                     // 更新配置
                     _secureConfigs.Clear();
                     foreach (var kvp in reencryptedConfigs)
                     {
                         _secureConfigs[kvp.Key] = kvp.Value;
                     }
-                    
+
                     // 更新主密钥
                     _masterKey = newKey;
-                    
+
                     SaveSecureConfigurations();
-                    
+
                     LogAccess("*", "KeyRotation", true);
                     _logger.LogInformation("密钥轮换完成，更新了 {Count} 个配置项", reencryptedConfigs.Count);
                 }
@@ -497,7 +497,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
                 TotalConfigs = _secureConfigs.Count,
                 Issues = new List<IntegrityIssue>()
             };
-            
+
             lock (_lock)
             {
                 foreach (var kvp in _secureConfigs)
@@ -506,7 +506,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
                     {
                         var encryptedData = Convert.FromBase64String(kvp.Value.EncryptedValue);
                         var currentChecksum = ComputeChecksum(encryptedData);
-                        
+
                         if (currentChecksum != kvp.Value.Checksum)
                         {
                             result.Issues.Add(new IntegrityIssue
@@ -516,7 +516,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
                                 Description = "校验和不匹配，数据可能已损坏"
                             });
                         }
-                        
+
                         // 尝试解密验证
                         try
                         {
@@ -542,14 +542,14 @@ namespace LYBT.Desktop.Core.Services.Configuration
                         });
                     }
                 }
-                
+
                 result.IsValid = result.Issues.Count == 0;
                 result.ValidConfigs = result.TotalConfigs - result.Issues.Count;
             }
-            
-            _logger.LogInformation("完整性检查完成: {Valid}/{Total} 配置有效", 
+
+            _logger.LogInformation("完整性检查完成: {Valid}/{Total} 配置有效",
                 result.ValidConfigs, result.TotalConfigs);
-            
+
             return Task.FromResult(result);
         }
 
@@ -558,17 +558,17 @@ namespace LYBT.Desktop.Core.Services.Configuration
             lock (_auditLog)
             {
                 var query = _auditLog.AsEnumerable();
-                
+
                 if (startTime.HasValue)
                 {
                     query = query.Where(e => e.Timestamp >= startTime.Value);
                 }
-                
+
                 if (endTime.HasValue)
                 {
                     query = query.Where(e => e.Timestamp <= endTime.Value);
                 }
-                
+
                 return query.OrderByDescending(e => e.Timestamp).ToList();
             }
         }
@@ -585,27 +585,27 @@ namespace LYBT.Desktop.Core.Services.Configuration
         public Task<int> CleanupExpiredConfigurationsAsync()
         {
             var removed = 0;
-            
+
             lock (_lock)
             {
                 var expiredKeys = _secureConfigs
                     .Where(kvp => kvp.Value.ExpiresAt.HasValue && kvp.Value.ExpiresAt.Value < DateTime.Now)
                     .Select(kvp => kvp.Key)
                     .ToList();
-                
+
                 foreach (var key in expiredKeys)
                 {
                     _secureConfigs.Remove(key);
                     removed++;
                     _logger.LogDebug("清理过期配置: {Key}", key);
                 }
-                
+
                 if (removed > 0)
                 {
                     SaveSecureConfigurations();
                 }
             }
-            
+
             _logger.LogInformation("清理了 {Count} 个过期的安全配置", removed);
             return Task.FromResult(removed);
         }
@@ -617,7 +617,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
         private void CheckAccessPolicy(string key, string? passphrase)
         {
             AccessPolicy? policy = null;
-            
+
             // 查找匹配的策略
             if (_accessPolicies.ContainsKey(key))
             {
@@ -629,13 +629,13 @@ namespace LYBT.Desktop.Core.Services.Configuration
                 var wildcardKey = _accessPolicies.Keys
                     .Where(k => k.EndsWith("*"))
                     .FirstOrDefault(k => key.StartsWith(k.TrimEnd('*')));
-                
+
                 if (wildcardKey != null)
                 {
                     policy = _accessPolicies[wildcardKey];
                 }
             }
-            
+
             if (policy != null)
             {
                 // 检查密码要求
@@ -643,14 +643,14 @@ namespace LYBT.Desktop.Core.Services.Configuration
                 {
                     throw new UnauthorizedAccessException("此配置需要提供访问密码");
                 }
-                
+
                 // 检查访问频率限制
                 if (policy.MaxAccessPerHour > 0)
                 {
-                    var recentAccess = _auditLog.Count(e => 
-                        e.ConfigKey == key && 
+                    var recentAccess = _auditLog.Count(e =>
+                        e.ConfigKey == key &&
                         e.Timestamp > DateTime.Now.AddHours(-1));
-                    
+
                     if (recentAccess >= policy.MaxAccessPerHour)
                     {
                         throw new InvalidOperationException("超过访问频率限制");
@@ -673,7 +673,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
                     User = Environment.UserName,
                     Machine = Environment.MachineName
                 });
-                
+
                 // 只保留最近1000条记录
                 while (_auditLog.Count > 1000)
                 {
@@ -688,10 +688,10 @@ namespace LYBT.Desktop.Core.Services.Configuration
             {
                 var json = JsonSerializer.Serialize(_secureConfigs);
                 var encryptedData = EncryptData(json, _masterKey);
-                
+
                 var configFile = Path.Combine(_secureStorePath, "secure.dat");
                 File.WriteAllBytes(configFile, encryptedData);
-                
+
                 // 设置文件属性为隐藏和系统
                 File.SetAttributes(configFile, FileAttributes.Hidden | FileAttributes.System);
             }
@@ -709,8 +709,8 @@ namespace LYBT.Desktop.Core.Services.Configuration
         private byte[] DeriveKey(string passphrase, string salt)
         {
             using (var pbkdf2 = new Rfc2898DeriveBytes(
-                passphrase, 
-                Encoding.UTF8.GetBytes(salt), 
+                passphrase,
+                Encoding.UTF8.GetBytes(salt),
                 _keyIterations,
                 HashAlgorithmName.SHA256))
             {
@@ -731,19 +731,19 @@ namespace LYBT.Desktop.Core.Services.Configuration
             {
                 aes.Key = key;
                 aes.GenerateIV();
-                
+
                 using (var encryptor = aes.CreateEncryptor())
                 using (var ms = new MemoryStream())
                 {
                     // 写入IV
                     ms.Write(aes.IV, 0, aes.IV.Length);
-                    
+
                     using (var cs = new CryptoStream(ms, encryptor, CryptoStreamMode.Write))
                     using (var sw = new StreamWriter(cs))
                     {
                         sw.Write(plainText);
                     }
-                    
+
                     return ms.ToArray();
                 }
             }
@@ -754,12 +754,12 @@ namespace LYBT.Desktop.Core.Services.Configuration
             using (var aes = Aes.Create())
             {
                 aes.Key = key;
-                
+
                 // 读取IV
                 var iv = new byte[16];
                 Array.Copy(cipherData, 0, iv, 0, iv.Length);
                 aes.IV = iv;
-                
+
                 using (var decryptor = aes.CreateDecryptor())
                 using (var ms = new MemoryStream(cipherData, 16, cipherData.Length - 16))
                 using (var cs = new CryptoStream(ms, decryptor, CryptoStreamMode.Read))
@@ -789,7 +789,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
             {
                 SaveSecureConfigurations();
             }
-            
+
             _logger.LogInformation("安全配置服务已关闭，审计日志包含 {Count} 条记录", _auditLog.Count);
         }
 

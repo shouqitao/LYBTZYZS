@@ -1,7 +1,7 @@
-using System.Windows;
-using LYBT.Desktop.Patients.ViewModels;
+﻿using System.Windows;
 using LYBT.Desktop.Core.Interfaces;
 using LYBT.Desktop.Core.Models.Common;
+using LYBT.Desktop.Patients.ViewModels;
 
 namespace LYBT.Desktop.Patients.Views
 {

@@ -1,12 +1,12 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
+using LYBT.Desktop.MedicalCase.Interfaces;
+using LYBT.Shared.Interfaces.Api;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.MedicalCase;
-using LYBT.Desktop.MedicalCase.Interfaces;
-using LYBT.Shared.Interfaces.Api;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.MedicalCase.Services;
 
@@ -38,17 +38,17 @@ public class MedicalCaseQueryService(
         try
         {
             _logger.LogDebug("查询医疗案例详细档案: {MedicalCaseId}", id);
-            
+
             var refitResponse = await _medicalCaseApi.GetByIdAsync(id);
-            
+
             if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
             {
                 var detailDto = refitResponse.Content;
                 _logger.LogDebug("医疗案例详细档案查询成功: {MedicalCaseId}", id);
                 return ServiceResult<MedicalCaseDetailDto>.Success(detailDto, "查询成功");
             }
-            
-            _logger.LogWarning("医疗案例详细档案查询HTTP请求失败: {MedicalCaseId}, 状态码: {StatusCode}", 
+
+            _logger.LogWarning("医疗案例详细档案查询HTTP请求失败: {MedicalCaseId}, 状态码: {StatusCode}",
                 id, refitResponse.StatusCode);
             return ServiceResult<MedicalCaseDetailDto>.Failure("查询医案详情网络请求失败，请检查网络连接");
         }
@@ -69,7 +69,7 @@ public class MedicalCaseQueryService(
     {
         try
         {
-            _logger.LogDebug("执行医案分页查询，页码: {CurrentPage}, 页大小: {PageSize}", 
+            _logger.LogDebug("执行医案分页查询，页码: {CurrentPage}, 页大小: {PageSize}",
                 query.CurrentPage, query.PageSize);
 
             var emptyResult = new PagedResult<MedicalCaseDto>
@@ -77,7 +77,7 @@ public class MedicalCaseQueryService(
                 Items = [],
                 TotalCount = 0
             };
-            
+
             return ServiceResult<PagedResult<MedicalCaseDto>>.Success(emptyResult);
         }
         catch (Exception ex)

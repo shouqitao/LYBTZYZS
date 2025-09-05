@@ -1,12 +1,12 @@
-using System;
+﻿using System;
+using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
-using Microsoft.Data.SqlClient;
-using System.IO;
 using System.Security;
 using System.Threading.Tasks;
 using LYBT.Desktop.Core.Exceptions;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using SharedCommon = LYBT.Shared.Models.Contracts.Common;
 
@@ -18,12 +18,12 @@ namespace LYBT.Desktop.Core.Services
     public class ErrorClassifier : IErrorClassifier
     {
         private readonly ILogger<ErrorClassifier>? _logger;
-        
+
         public ErrorClassifier(ILogger<ErrorClassifier>? logger = null)
         {
             _logger = logger;
         }
-        
+
         /// <summary>
         /// 分类异常
         /// </summary>
@@ -35,7 +35,7 @@ namespace LYBT.Desktop.Core.Services
                 _logger?.LogDebug("异常已分类: {Category} - {Severity}", appEx.Category, appEx.Severity);
                 return appEx;
             }
-            
+
             // 分析异常类型并分类
             var classified = exception switch
             {
@@ -45,10 +45,10 @@ namespace LYBT.Desktop.Core.Services
                 SocketException socketEx => ClassifySocketException(socketEx),
                 TaskCanceledException when IsTimeout(exception) => new Exceptions.OperationTimeoutException(
                     "操作超时", TimeSpan.FromSeconds(30), "HTTP请求"),
-                
+
                 // 数据访问相关
                 SqlException sqlEx => ClassifySqlException(sqlEx),
-                
+
                 // 文件系统相关（更具体的异常先匹配）
                 DirectoryNotFoundException => new AppException(
                     "目录不存在", SharedCommon.ErrorCategory.FileSystem, SharedCommon.ErrorSeverity.Warning, exception),
@@ -57,11 +57,11 @@ namespace LYBT.Desktop.Core.Services
                 IOException ioEx => ClassifyIOException(ioEx),
                 UnauthorizedAccessException => new AppException(
                     "文件访问被拒绝", SharedCommon.ErrorCategory.FileSystem, SharedCommon.ErrorSeverity.Warning, exception),
-                
+
                 // 安全相关
                 SecurityException secEx => new AuthorizationException(
                     "安全权限不足", secEx.PermissionType?.ToString()),
-                
+
                 // 参数验证
                 ArgumentNullException argNullEx => new ValidationException(
                     $"参数不能为空: {argNullEx.ParamName}", argNullEx.ParamName),
@@ -71,15 +71,15 @@ namespace LYBT.Desktop.Core.Services
                     "数据格式不正确"),
                 InvalidOperationException => new BusinessException(
                     "操作无效: " + exception.Message),
-                
+
                 // 并发相关
                 System.Data.DBConcurrencyException => new ConcurrencyException(
                     "数据并发冲突"),
-                
+
                 // 配置相关
                 System.Configuration.ConfigurationErrorsException => new ConfigurationException(
                     "配置错误: " + exception.Message),
-                
+
                 // 默认
                 _ => new AppException(
                     exception.Message ?? "未知错误",
@@ -87,16 +87,16 @@ namespace LYBT.Desktop.Core.Services
                     DetermineSeverity(exception),
                     exception)
             };
-            
+
             // 设置技术详情
             classified.TechnicalDetails = BuildTechnicalDetails(exception);
-            
-            _logger?.LogDebug("异常分类完成: {Type} -> {Category} - {Severity}", 
+
+            _logger?.LogDebug("异常分类完成: {Type} -> {Category} - {Severity}",
                 exception.GetType().Name, classified.Category, classified.Severity);
-            
+
             return classified;
         }
-        
+
         /// <summary>
         /// 分类HTTP异常
         /// </summary>
@@ -104,29 +104,29 @@ namespace LYBT.Desktop.Core.Services
         {
             var message = exception.Message;
             int? statusCode = null;
-            
+
             // 尝试从内部异常获取状态码
-            if (exception.InnerException is WebException webEx && 
+            if (exception.InnerException is WebException webEx &&
                 webEx.Response is HttpWebResponse response)
             {
                 statusCode = (int)response.StatusCode;
             }
-            
+
             return new NetworkException(message, null, statusCode)
             {
                 Severity = DetermineNetworkSeverity(statusCode)
             };
         }
-        
+
         /// <summary>
         /// 分类Web异常
         /// </summary>
         private NetworkException ClassifyWebException(WebException exception)
         {
-            var statusCode = exception.Response is HttpWebResponse response 
-                ? (int?)response.StatusCode 
+            var statusCode = exception.Response is HttpWebResponse response
+                ? (int?)response.StatusCode
                 : null;
-                
+
             return new NetworkException(
                 exception.Message,
                 exception.Response?.ResponseUri?.ToString(),
@@ -135,7 +135,7 @@ namespace LYBT.Desktop.Core.Services
                 Severity = DetermineNetworkSeverity(statusCode)
             };
         }
-        
+
         /// <summary>
         /// 分类Socket异常
         /// </summary>
@@ -149,13 +149,13 @@ namespace LYBT.Desktop.Core.Services
                 SocketError.NetworkUnreachable => "网络不可达",
                 _ => $"网络错误: {exception.SocketErrorCode}"
             };
-            
+
             return new NetworkException(message, null, (int)exception.SocketErrorCode)
             {
                 Severity = SharedCommon.ErrorSeverity.Error
             };
         }
-        
+
         /// <summary>
         /// 分类SQL异常
         /// </summary>
@@ -170,14 +170,14 @@ namespace LYBT.Desktop.Core.Services
                 18456 => "登录失败",
                 _ => exception.Message
             };
-            
+
             return new DataAccessException(message, null, null)
             {
                 ErrorCode = $"SQL_{exception.Number}",
                 Severity = exception.Number == -2 ? SharedCommon.ErrorSeverity.Warning : SharedCommon.ErrorSeverity.Error
             };
         }
-        
+
         /// <summary>
         /// 分类IO异常
         /// </summary>
@@ -194,7 +194,7 @@ namespace LYBT.Desktop.Core.Services
                     UserFriendlyMessage = "文件正在被使用，请稍后重试"
                 };
             }
-            
+
             if (exception.Message.Contains("磁盘空间不足"))
             {
                 return new AppException(
@@ -203,14 +203,14 @@ namespace LYBT.Desktop.Core.Services
                     SharedCommon.ErrorSeverity.Critical,
                     exception);
             }
-            
+
             return new AppException(
                 "文件操作失败",
                 SharedCommon.ErrorCategory.FileSystem,
                 SharedCommon.ErrorSeverity.Error,
                 exception);
         }
-        
+
         /// <summary>
         /// 判断是否为超时异常
         /// </summary>
@@ -219,15 +219,17 @@ namespace LYBT.Desktop.Core.Services
             return exception.Message.Contains("timeout", StringComparison.OrdinalIgnoreCase) ||
                    exception.Message.Contains("超时", StringComparison.OrdinalIgnoreCase);
         }
-        
+
         /// <summary>
         /// 确定网络错误严重程度
         /// </summary>
         private SharedCommon.ErrorSeverity DetermineNetworkSeverity(int? statusCode)
         {
             if (!statusCode.HasValue)
+            {
                 return SharedCommon.ErrorSeverity.Error;
-                
+            }
+
             return statusCode.Value switch
             {
                 >= 500 => SharedCommon.ErrorSeverity.Critical,  // 服务器错误
@@ -237,7 +239,7 @@ namespace LYBT.Desktop.Core.Services
                 _ => SharedCommon.ErrorSeverity.Error
             };
         }
-        
+
         /// <summary>
         /// 确定异常严重程度
         /// </summary>
@@ -253,7 +255,7 @@ namespace LYBT.Desktop.Core.Services
                 _ => SharedCommon.ErrorSeverity.Error
             };
         }
-        
+
         /// <summary>
         /// 构建技术详情
         /// </summary>
@@ -261,21 +263,21 @@ namespace LYBT.Desktop.Core.Services
         {
             var details = $"异常类型: {exception.GetType().FullName}\n";
             details += $"消息: {exception.Message}\n";
-            
+
             if (!string.IsNullOrEmpty(exception.StackTrace))
             {
                 details += $"堆栈跟踪:\n{exception.StackTrace}\n";
             }
-            
+
             if (exception.InnerException != null)
             {
                 details += $"\n内部异常:\n{BuildTechnicalDetails(exception.InnerException)}";
             }
-            
+
             return details;
         }
     }
-    
+
     /// <summary>
     /// 错误分类器接口
     /// </summary>

@@ -1,10 +1,10 @@
+﻿using LYBT.Desktop.Auth.Services;
+using LYBT.Desktop.Auth.ViewModels;
+using LYBT.Desktop.Auth.Views;
+using Microsoft.Extensions.Logging;
 using Prism.Ioc;
 using Prism.Modularity;
 using Prism.Regions;
-using Microsoft.Extensions.Logging;
-using LYBT.Desktop.Auth.Views;
-using LYBT.Desktop.Auth.ViewModels;
-using LYBT.Desktop.Auth.Services;
 
 namespace LYBT.Desktop.Auth
 {
@@ -25,7 +25,7 @@ namespace LYBT.Desktop.Auth
         {
             // UltraThink模块化架构：注册模块业务服务
             containerRegistry.RegisterSingleton<AuthModule>();
-            
+
             // 注册视图模型
             containerRegistry.Register<LoginViewModel>();
 

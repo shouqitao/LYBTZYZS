@@ -1,6 +1,6 @@
-using System;
-using Prism.Events;
+﻿using System;
 using LYBT.Shared.Models.Contracts.Common;
+using Prism.Events;
 
 namespace LYBT.Desktop.Core.Events
 {
@@ -23,16 +23,16 @@ namespace LYBT.Desktop.Core.Events
     {
         /// <summary>事件唯一标识</summary>
         public Guid EventId { get; set; } = Guid.NewGuid();
-        
+
         /// <summary>事件时间戳</summary>
         public DateTime Timestamp { get; set; } = DateTime.Now;
-        
+
         /// <summary>事件来源模块</summary>
         public string SourceModule { get; set; } = string.Empty;
-        
+
         /// <summary>相关消息</summary>
         public string? Message { get; set; }
-        
+
         /// <summary>事件上下文数据</summary>
         public object? Context { get; set; }
     }
@@ -143,25 +143,25 @@ namespace LYBT.Desktop.Core.Events
     {
         /// <summary>全量刷新所有数据</summary>
         All = 0,
-        
+
         /// <summary>刷新患者相关数据</summary>
         Patients = 1,
-        
+
         /// <summary>刷新诊疗相关数据</summary>
         Consultations = 2,
-        
+
         /// <summary>刷新处方相关数据</summary>
         Prescriptions = 3,
-        
+
         /// <summary>刷新中药材数据</summary>
         Herbs = 4,
-        
+
         /// <summary>刷新验方模板数据</summary>
         Formulas = 5,
-        
+
         /// <summary>刷新医疗案例数据</summary>
         MedicalCases = 6,
-        
+
         /// <summary>刷新用户数据</summary>
         Users = 7
     }
@@ -258,8 +258,8 @@ namespace LYBT.Desktop.Core.Events
         /// 创建标准的ConsultationStartedData
         /// </summary>
         public static ConsultationStartedData CreateConsultationStarted(
-            Guid consultationId, 
-            Guid patientId, 
+            Guid consultationId,
+            Guid patientId,
             string patientName)
         {
             return new ConsultationStartedData

@@ -1,11 +1,11 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System;
+﻿using System;
+using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.Redux.States;
+using LYBT.Shared.Interfaces.Services;
+using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Core;
 using LYBT.Shared.Models.Enums;
-using LYBT.Shared.Models.Contracts.Users;
-using LYBT.Shared.Interfaces.Services;
-using LYBT.Desktop.Core.Interfaces.Services;
 
 namespace LYBT.Desktop.Core.Interfaces.Services
 {

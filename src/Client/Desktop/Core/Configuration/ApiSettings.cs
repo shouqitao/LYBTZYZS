@@ -1,4 +1,4 @@
-using LYBT.Shared.Models.Contracts.Common;
+﻿using LYBT.Shared.Models.Contracts.Common;
 namespace LYBT.Desktop.Core.Configuration
 {
     /// <summary>
@@ -23,7 +23,9 @@ namespace LYBT.Desktop.Core.Configuration
         {
             var baseUri = new Uri(BaseUrl);
             if (string.IsNullOrEmpty(endpoint))
+            {
                 return baseUri.ToString();
+            }
 
             return new Uri(baseUri, endpoint).ToString();
         }

@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace LYBT.Infrastructure.Configuration.Options
 {
@@ -192,31 +192,31 @@ namespace LYBT.Infrastructure.Configuration.Options
         /// <summary>
         /// 一般请求限制
         /// </summary>
-        public RateLimitRule General { get; set; } = new() 
-        { 
-            RequestsPerMinute = 100, 
-            RequestsPerHour = 1000, 
-            RequestsPerDay = 10000 
+        public RateLimitRule General { get; set; } = new()
+        {
+            RequestsPerMinute = 100,
+            RequestsPerHour = 1000,
+            RequestsPerDay = 10000
         };
 
         /// <summary>
         /// 认证请求限制
         /// </summary>
-        public RateLimitRule Authentication { get; set; } = new() 
-        { 
-            RequestsPerMinute = 5, 
-            RequestsPerHour = 20, 
-            RequestsPerDay = 100 
+        public RateLimitRule Authentication { get; set; } = new()
+        {
+            RequestsPerMinute = 5,
+            RequestsPerHour = 20,
+            RequestsPerDay = 100
         };
 
         /// <summary>
         /// API密钥请求限制
         /// </summary>
-        public RateLimitRule ApiKey { get; set; } = new() 
-        { 
-            RequestsPerMinute = 300, 
-            RequestsPerHour = 5000, 
-            RequestsPerDay = 50000 
+        public RateLimitRule ApiKey { get; set; } = new()
+        {
+            RequestsPerMinute = 300,
+            RequestsPerHour = 5000,
+            RequestsPerDay = 50000
         };
     }
 

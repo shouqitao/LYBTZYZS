@@ -1,8 +1,8 @@
-using System;
-using Microsoft.Extensions.Logging;
-using LYBT.Shared.Models.Contracts.Patients;
+﻿using System;
 using LYBT.Shared.Models.Contracts.Consultation;
+using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Contracts.Prescriptions;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Core.Events
 {
@@ -35,7 +35,10 @@ namespace LYBT.Desktop.Core.Events
         {
             try
             {
-                if (patient == null) return;
+                if (patient == null)
+                {
+                    return;
+                }
 
                 var data = new PatientSelectedData
                 {
@@ -97,7 +100,10 @@ namespace LYBT.Desktop.Core.Events
         {
             try
             {
-                if (consultation == null) return;
+                if (consultation == null)
+                {
+                    return;
+                }
 
                 var data = new ConsultationStartedData
                 {
@@ -128,7 +134,10 @@ namespace LYBT.Desktop.Core.Events
         {
             try
             {
-                if (consultation == null) return;
+                if (consultation == null)
+                {
+                    return;
+                }
 
                 var data = new ConsultationCompletedDataNew
                 {
@@ -161,7 +170,10 @@ namespace LYBT.Desktop.Core.Events
         {
             try
             {
-                if (prescription == null) return;
+                if (prescription == null)
+                {
+                    return;
+                }
 
                 var data = new PrescriptionSavedData
                 {
@@ -200,7 +212,7 @@ namespace LYBT.Desktop.Core.Events
                 // 将旧枚举映射到新枚举
                 var newRefreshScope = MapDataRefreshType(oldRefreshType);
                 _unifiedEventHandler.PublishDataRefreshRequest(newRefreshScope);
-                
+
                 _logger.LogDebug($"已适配数据刷新请求: {oldRefreshType} -> {newRefreshScope}");
             }
             catch (Exception ex)

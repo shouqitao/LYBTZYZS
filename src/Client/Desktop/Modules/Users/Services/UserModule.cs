@@ -1,10 +1,10 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using LYBT.Desktop.Users.Interfaces;
+using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
-using LYBT.Shared.Interfaces.Services;
 
 namespace LYBT.Desktop.Users.Services;
 
@@ -23,16 +23,16 @@ public class UserModule(
 
     public async Task<ServiceResult<UserDto>> GetByIdAsync(Guid id)
         => await _queryService.GetByIdAsync(id);
-        
+
     public async Task<ServiceResult<PagedResult<UserDto>>> GetPagedAsync(UserPagedQueryDto query)
         => await _queryService.GetPagedAsync(query);
-        
+
     public async Task<ServiceResult<UserDto>> GetByUsernameAsync(string username)
         => await _queryService.GetByUsernameAsync(username);
 
     public async Task<ServiceResult<List<UserDto>>> GetActiveUsersAsync()
         => await _queryService.GetActiveUsersAsync();
-        
+
     public async Task<ServiceResult<List<UserDto>>> SearchAsync(string keyword)
         => await _queryService.SearchAsync(keyword);
 
@@ -42,10 +42,10 @@ public class UserModule(
 
     public async Task<ServiceResult<UserDto>> CreateAsync(UserMutationDto dto)
         => await _businessService.CreateAsync(dto);
-        
+
     public async Task<ServiceResult<UserDto>> UpdateAsync(UserMutationDto dto)
         => await _businessService.UpdateAsync(dto);
-        
+
     public async Task<ServiceResult<bool>> DeleteAsync(Guid id)
         => await _businessService.DeleteAsync(id);
 
@@ -55,13 +55,13 @@ public class UserModule(
 
     public async Task<ServiceResult<bool>> EnableAsync(Guid id)
         => await _businessService.EnableAsync(id);
-        
+
     public async Task<ServiceResult<bool>> DisableAsync(Guid id)
         => await _businessService.DisableAsync(id);
-        
+
     public async Task<ServiceResult<int>> BatchEnableAsync(List<Guid> ids)
         => await _businessService.BatchEnableAsync(ids);
-        
+
     public async Task<ServiceResult<int>> BatchDisableAsync(List<Guid> ids)
         => await _businessService.BatchDisableAsync(ids);
 
@@ -71,7 +71,7 @@ public class UserModule(
 
     public async Task<ServiceResult<bool>> ResetPasswordAsync(Guid id, string newPassword)
         => await _businessService.ResetPasswordAsync(id, newPassword);
-        
+
     public async Task<ServiceResult<bool>> ChangePasswordAsync(Guid id, string oldPassword, string newPassword)
         => await _businessService.ChangePasswordAsync(id, oldPassword, newPassword);
 
@@ -88,7 +88,7 @@ public class UserModule(
 
     public async Task<ServiceResult<List<object>>> GetRolesAsync()
         => await _queryService.GetRolesAsync();
-        
+
     public async Task<ServiceResult<bool>> ValidateUsernameAsync(string username)
         => await _queryService.ValidateUsernameAsync(username);
 

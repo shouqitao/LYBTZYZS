@@ -1,11 +1,11 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using LYBT.Desktop.Prescriptions.Interfaces;
 using LYBT.Shared.Interfaces.Api;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Prescriptions.Services;
 
@@ -34,14 +34,14 @@ public class PrescriptionsBusinessService(
     public async Task<ServiceResult<PrescriptionDto>> CreateAsync(PrescriptionCreateDto createDto)
     {
         ArgumentNullException.ThrowIfNull(createDto, nameof(createDto));
-        
-        _logger.LogInformation("处方创建请求: 患者ID: {PatientId}, 看诊ID: {ConsultationId}", 
+
+        _logger.LogInformation("处方创建请求: 患者ID: {PatientId}, 看诊ID: {ConsultationId}",
             createDto.PatientId, createDto.ConsultationId);
-        
+
         try
         {
             var refitResponse = await _prescriptionApi.CreatePrescriptionAsync(createDto);
-            
+
             if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
             {
                 var prescription = refitResponse.Content;
@@ -73,13 +73,13 @@ public class PrescriptionsBusinessService(
     public async Task<ServiceResult<PrescriptionDto>> UpdateAsync(Guid id, PrescriptionEditDto updateDto)
     {
         ArgumentNullException.ThrowIfNull(updateDto, nameof(updateDto));
-        
+
         _logger.LogInformation("处方更新请求: {PrescriptionId}", id);
-        
+
         try
         {
             var refitResponse = await _prescriptionApi.UpdatePrescriptionAsync(id, updateDto);
-            
+
             if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
             {
                 var prescription = refitResponse.Content;

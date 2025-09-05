@@ -1,4 +1,4 @@
-namespace LYBT.Shared.Models.Extensions
+﻿namespace LYBT.Shared.Models.Extensions
 {
 
     /// <summary>

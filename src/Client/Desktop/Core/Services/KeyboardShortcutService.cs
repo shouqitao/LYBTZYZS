@@ -1,9 +1,9 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Input;
-using Microsoft.Extensions.Logging;
 using LYBT.Desktop.Core.Interfaces.Services;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Core.Services
 {
@@ -34,7 +34,7 @@ namespace LYBT.Desktop.Core.Services
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _globalShortcuts = new Dictionary<KeyGesture, ShortcutAction>();
             _contextShortcuts = new Dictionary<string, Dictionary<KeyGesture, ShortcutAction>>();
-            
+
             RegisterDefaultShortcuts();
             RegisterGlobalKeyHandler();
         }
@@ -47,7 +47,9 @@ namespace LYBT.Desktop.Core.Services
         public bool RegisterGlobalShortcut(KeyGesture keyGesture, Action action, string description = "")
         {
             if (keyGesture == null || action == null)
+            {
                 return false;
+            }
 
             if (_globalShortcuts.ContainsKey(keyGesture))
             {
@@ -63,7 +65,9 @@ namespace LYBT.Desktop.Core.Services
         public bool RegisterContextShortcut(string context, KeyGesture keyGesture, Action action, string description = "")
         {
             if (string.IsNullOrEmpty(context) || keyGesture == null || action == null)
+            {
                 return false;
+            }
 
             if (!_contextShortcuts.ContainsKey(context))
             {
@@ -96,9 +100,11 @@ namespace LYBT.Desktop.Core.Services
         public bool UnregisterContextShortcut(string context, KeyGesture keyGesture)
         {
             if (string.IsNullOrEmpty(context) || keyGesture == null)
+            {
                 return false;
+            }
 
-            if (_contextShortcuts.TryGetValue(context, out var contextShortcuts) && 
+            if (_contextShortcuts.TryGetValue(context, out var contextShortcuts) &&
                 contextShortcuts.Remove(keyGesture))
             {
                 _logger.LogInformation("移除上下文快捷键: {Context}.{Gesture}", context, keyGesture.DisplayString);
@@ -160,7 +166,9 @@ namespace LYBT.Desktop.Core.Services
         public bool ExecuteShortcut(KeyGesture keyGesture)
         {
             if (keyGesture == null)
+            {
                 return false;
+            }
 
             try
             {
@@ -197,26 +205,26 @@ namespace LYBT.Desktop.Core.Services
         private void RegisterDefaultShortcuts()
         {
             // 系统通用快捷键
-            RegisterGlobalShortcut(new KeyGesture(Key.N, ModifierKeys.Control), () => {}, "新建");
-            RegisterGlobalShortcut(new KeyGesture(Key.O, ModifierKeys.Control), () => {}, "打开");
-            RegisterGlobalShortcut(new KeyGesture(Key.S, ModifierKeys.Control), () => {}, "保存");
-            RegisterGlobalShortcut(new KeyGesture(Key.P, ModifierKeys.Control), () => {}, "打印");
-            RegisterGlobalShortcut(new KeyGesture(Key.F, ModifierKeys.Control), () => {}, "查找");
-            RegisterGlobalShortcut(new KeyGesture(Key.R, ModifierKeys.Control), () => {}, "刷新");
-            RegisterGlobalShortcut(new KeyGesture(Key.Z, ModifierKeys.Control), () => {}, "撤销");
-            RegisterGlobalShortcut(new KeyGesture(Key.Y, ModifierKeys.Control), () => {}, "重做");
-            
+            RegisterGlobalShortcut(new KeyGesture(Key.N, ModifierKeys.Control), () => { }, "新建");
+            RegisterGlobalShortcut(new KeyGesture(Key.O, ModifierKeys.Control), () => { }, "打开");
+            RegisterGlobalShortcut(new KeyGesture(Key.S, ModifierKeys.Control), () => { }, "保存");
+            RegisterGlobalShortcut(new KeyGesture(Key.P, ModifierKeys.Control), () => { }, "打印");
+            RegisterGlobalShortcut(new KeyGesture(Key.F, ModifierKeys.Control), () => { }, "查找");
+            RegisterGlobalShortcut(new KeyGesture(Key.R, ModifierKeys.Control), () => { }, "刷新");
+            RegisterGlobalShortcut(new KeyGesture(Key.Z, ModifierKeys.Control), () => { }, "撤销");
+            RegisterGlobalShortcut(new KeyGesture(Key.Y, ModifierKeys.Control), () => { }, "重做");
+
             // 导航快捷键
-            RegisterGlobalShortcut(new KeyGesture(Key.Escape), () => {}, "取消/返回");
-            RegisterGlobalShortcut(new KeyGesture(Key.Enter), () => {}, "确认");
-            RegisterGlobalShortcut(new KeyGesture(Key.F1), () => {}, "帮助");
-            RegisterGlobalShortcut(new KeyGesture(Key.F5), () => {}, "刷新");
-            
+            RegisterGlobalShortcut(new KeyGesture(Key.Escape), () => { }, "取消/返回");
+            RegisterGlobalShortcut(new KeyGesture(Key.Enter), () => { }, "确认");
+            RegisterGlobalShortcut(new KeyGesture(Key.F1), () => { }, "帮助");
+            RegisterGlobalShortcut(new KeyGesture(Key.F5), () => { }, "刷新");
+
             // 医疗业务专用快捷键
-            RegisterGlobalShortcut(new KeyGesture(Key.F2), () => {}, "快速录入患者信息");
-            RegisterGlobalShortcut(new KeyGesture(Key.F3), () => {}, "快速开处方");
-            RegisterGlobalShortcut(new KeyGesture(Key.F4), () => {}, "快速查询药材");
-            RegisterGlobalShortcut(new KeyGesture(Key.F6), () => {}, "打印处方");
+            RegisterGlobalShortcut(new KeyGesture(Key.F2), () => { }, "快速录入患者信息");
+            RegisterGlobalShortcut(new KeyGesture(Key.F3), () => { }, "快速开处方");
+            RegisterGlobalShortcut(new KeyGesture(Key.F4), () => { }, "快速查询药材");
+            RegisterGlobalShortcut(new KeyGesture(Key.F6), () => { }, "打印处方");
         }
 
         /// <summary>注册全局按键处理器</summary>
@@ -227,7 +235,7 @@ namespace LYBT.Desktop.Core.Services
             {
                 Application.Current.MainWindow.PreviewKeyDown += OnGlobalKeyDown;
             }
-            
+
             // 如果MainWindow还未初始化，则在Loaded事件中注册
             if (Application.Current.MainWindow == null)
             {
@@ -249,7 +257,7 @@ namespace LYBT.Desktop.Core.Services
                 // 构建按键手势
                 var modifiers = Keyboard.Modifiers;
                 var key = e.Key;
-                
+
                 // 处理系统按键映射
                 if (key == Key.System)
                 {
@@ -257,7 +265,7 @@ namespace LYBT.Desktop.Core.Services
                 }
 
                 var keyGesture = new KeyGesture(key, modifiers);
-                
+
                 // 尝试执行快捷键
                 if (ExecuteShortcut(keyGesture))
                 {

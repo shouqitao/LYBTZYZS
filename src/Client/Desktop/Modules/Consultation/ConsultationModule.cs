@@ -1,12 +1,12 @@
-using Prism.Ioc;
-using Prism.Modularity;
-using Prism.Mvvm;
-using LYBT.Desktop.Consultation.Views;
+﻿using LYBT.Desktop.Consultation.Services;
 using LYBT.Desktop.Consultation.ViewModels;
-using LYBT.Desktop.Consultation.Services;
+using LYBT.Desktop.Consultation.Views;
 using LYBT.Shared.Interfaces.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Prism.Ioc;
+using Prism.Modularity;
+using Prism.Mvvm;
 
 namespace LYBT.Desktop.Consultation
 {
@@ -31,7 +31,7 @@ namespace LYBT.Desktop.Consultation
             // UltraThink双层架构服务注册
             containerRegistry.RegisterSingleton<LYBT.Desktop.Consultation.Interfaces.IConsultationQueryService, ConsultationQueryService>();
             containerRegistry.RegisterSingleton<LYBT.Desktop.Consultation.Interfaces.IConsultationBusinessService, ConsultationBusinessService>();
-            
+
             // UltraThink纯委托主服务注册
             containerRegistry.RegisterSingleton<Services.ConsultationModule>();
             containerRegistry.RegisterSingleton<IConsultationService>(container => container.Resolve<Services.ConsultationModule>());

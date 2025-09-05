@@ -1,13 +1,13 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.Models;
 using LYBT.Shared.Models.Common;
-using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Shared.Models.Contracts.Common;
 using Prism.Commands;
 using Prism.Events;
 
@@ -304,7 +304,9 @@ namespace LYBT.Desktop.Core.ViewModels.Base
         protected virtual async Task GoToPageAsync(int page)
         {
             if (page < 1 || page > TotalPages)
+            {
                 return;
+            }
 
             CurrentPage = page;
             await LoadDataAsync();

@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Desktop.Core.Models.Common

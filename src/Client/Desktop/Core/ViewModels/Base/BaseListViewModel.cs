@@ -1,14 +1,14 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
-using Prism.Commands;
-using Prism.Mvvm;
-using Prism.Events;
 using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Shared.Models.Contracts.Common;
+using Prism.Commands;
+using Prism.Events;
+using Prism.Mvvm;
 
 namespace LYBT.Desktop.Core.ViewModels.Base
 {
@@ -87,7 +87,7 @@ namespace LYBT.Desktop.Core.ViewModels.Base
         {
             try
             {
-                return (IEventAggregator?)Prism.Ioc.ContainerLocator.Container?.Resolve(typeof(IEventAggregator)) 
+                return (IEventAggregator?)Prism.Ioc.ContainerLocator.Container?.Resolve(typeof(IEventAggregator))
                     ?? new EventAggregator();
             }
             catch
@@ -95,7 +95,7 @@ namespace LYBT.Desktop.Core.ViewModels.Base
                 return new EventAggregator();
             }
         }
-        
+
         private static IErrorHandlingService GetErrorHandlingService()
         {
             try
@@ -361,7 +361,7 @@ namespace LYBT.Desktop.Core.ViewModels.Base
                 // 这里应该使用对话框服务，但BaseListViewModel不直接依赖ICustomDialogService
                 // 所以我们通过事件或其他方式来处理
                 StatusMessage = $"请确认批量禁用选中的 {SelectedItemsCount} 项";
-                
+
                 // 简化实现：直接执行操作，子类可以重写此方法来添加确认对话框
                 await PerformBatchDisableAsync(SelectedItems.ToList());
                 SelectedItems.Clear();

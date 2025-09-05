@@ -1,7 +1,7 @@
-using LYBT.Shared.Models.Enums;
-using LYBT.Shared.Models.Contracts.Common;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Shared.Models.Contracts.Herbs
 {
@@ -224,7 +224,11 @@ namespace LYBT.Shared.Models.Contracts.Herbs
         {
             get
             {
-                if (OldPrice == 0) return 0;
+                if (OldPrice == 0)
+                {
+                    return 0;
+                }
+
                 return Math.Round((NewPrice - OldPrice) / OldPrice * 100, 2);
             }
         }
@@ -333,8 +337,16 @@ namespace LYBT.Shared.Models.Contracts.Herbs
             get
             {
                 var percentage = Stock / StockWarningLevel * 100;
-                if (percentage < 10) return "Critical";
-                if (percentage < 50) return "Low";
+                if (percentage < 10)
+                {
+                    return "Critical";
+                }
+
+                if (percentage < 50)
+                {
+                    return "Low";
+                }
+
                 return "Warning";
             }
         }
@@ -418,7 +430,11 @@ namespace LYBT.Shared.Models.Contracts.Herbs
         {
             get
             {
-                if (!ExpiryDate.HasValue) return int.MaxValue;
+                if (!ExpiryDate.HasValue)
+                {
+                    return int.MaxValue;
+                }
+
                 return (int)(ExpiryDate.Value - DateTime.Now).TotalDays;
             }
         }
@@ -435,9 +451,21 @@ namespace LYBT.Shared.Models.Contracts.Herbs
         {
             get
             {
-                if (IsExpired) return "Expired";
-                if (DaysRemaining <= 7) return "Critical";
-                if (DaysRemaining <= 30) return "Warning";
+                if (IsExpired)
+                {
+                    return "Expired";
+                }
+
+                if (DaysRemaining <= 7)
+                {
+                    return "Critical";
+                }
+
+                if (DaysRemaining <= 30)
+                {
+                    return "Warning";
+                }
+
                 return "Normal";
             }
         }

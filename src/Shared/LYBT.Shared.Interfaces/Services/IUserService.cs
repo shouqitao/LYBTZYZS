@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading.Tasks;
@@ -32,7 +32,7 @@ namespace LYBT.Shared.Interfaces.Services
         /// <para>权限: 需要有效JWT令牌，用户只能查询自己或管理员查询所有</para>
         /// </remarks>
         Task<ServiceResult<UserDto>> GetByIdAsync(Guid id);
-        
+
         /// <summary>
         /// 分页查询用户列表
         /// </summary>
@@ -44,7 +44,7 @@ namespace LYBT.Shared.Interfaces.Services
         /// <para>权限: 仅管理员可执行，医生无权查看其他用户列表</para>
         /// </remarks>
         Task<ServiceResult<PagedResult<UserDto>>> GetPagedAsync(UserPagedQueryDto query);
-        
+
         /// <summary>
         /// 根据用户名查找用户
         /// </summary>
@@ -67,7 +67,7 @@ namespace LYBT.Shared.Interfaces.Services
         /// <para>筛选: 仅返回Status=Active的用户，按创建时间排序</para>
         /// </remarks>
         Task<ServiceResult<List<UserDto>>> GetActiveUsersAsync();
-        
+
         /// <summary>
         /// 关键字搜索用户
         /// </summary>
@@ -97,7 +97,7 @@ namespace LYBT.Shared.Interfaces.Services
         /// <para>审计: 记录用户创建操作日志</para>
         /// </remarks>
         Task<ServiceResult<UserDto>> CreateAsync(UserMutationDto dto);
-        
+
         /// <summary>
         /// 更新用户信息 - UltraThink消除ID参数重复
         /// </summary>
@@ -110,7 +110,7 @@ namespace LYBT.Shared.Interfaces.Services
         /// <para>限制: 不允许修改用户名、创建时间、ID等关键字段</para>
         /// </remarks>
         Task<ServiceResult<UserDto>> UpdateAsync(UserMutationDto dto);
-        
+
         /// <summary>
         /// 删除用户 (软删除)
         /// </summary>
@@ -139,7 +139,7 @@ namespace LYBT.Shared.Interfaces.Services
         /// <para>审计: 记录状态变更操作和操作人信息</para>
         /// </remarks>
         Task<ServiceResult<bool>> EnableAsync(Guid id);
-        
+
         /// <summary>
         /// 禁用用户账户
         /// </summary>
@@ -151,7 +151,7 @@ namespace LYBT.Shared.Interfaces.Services
         /// <para>场景: 员工离职、安全事件、临时限制访问</para>
         /// </remarks>
         Task<ServiceResult<bool>> DisableAsync(Guid id);
-        
+
         /// <summary>
         /// 批量启用用户
         /// </summary>
@@ -163,7 +163,7 @@ namespace LYBT.Shared.Interfaces.Services
         /// <para>返回: 实际成功启用的数量，可能少于请求数量</para>
         /// </remarks>
         Task<ServiceResult<int>> BatchEnableAsync(List<Guid> ids);
-        
+
         /// <summary>
         /// 批量禁用用户
         /// </summary>
@@ -193,7 +193,7 @@ namespace LYBT.Shared.Interfaces.Services
         /// <para>权限: 仅管理员可执行，记录详细审计日志</para>
         /// </remarks>
         Task<ServiceResult<bool>> ResetPasswordAsync(Guid id, string newPassword);
-        
+
         /// <summary>
         /// 用户修改自己的密码
         /// </summary>
@@ -240,7 +240,7 @@ namespace LYBT.Shared.Interfaces.Services
         /// <para>缓存: 角色信息缓存1小时，减少枚举查询</para>
         /// </remarks>
         Task<ServiceResult<List<object>>> GetRolesAsync();
-        
+
         /// <summary>
         /// 验证用户名可用性
         /// </summary>

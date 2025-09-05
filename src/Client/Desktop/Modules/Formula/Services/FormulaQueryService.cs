@@ -1,12 +1,12 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using LYBT.Desktop.Formula.Interfaces;
 using LYBT.Shared.Interfaces.Api;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Formula.Services;
 
@@ -45,16 +45,16 @@ public class FormulaQueryService(
         try
         {
             _logger.LogDebug("查询验方详细档案: {FormulaId}", id);
-            
+
             var refitResponse = await _formulaApi.GetFormulaByIdAsync(id);
-            
+
             if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
             {
                 var detailDto = refitResponse.Content;
                 // FormulaDetailDto 继承自 FormulaDto，可以直接使用
                 // 转换为基类类型以避免详情字段的问题
                 var formulaDto = detailDto as FormulaDto;
-                
+
                 _logger.LogInformation("验方详情查询成功: {FormulaName}", formulaDto.Name);
                 return ServiceResult<FormulaDto>.Success(formulaDto, "验方详情查询成功");
             }

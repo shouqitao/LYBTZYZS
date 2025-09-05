@@ -1,16 +1,16 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Data;
+using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Shared.Interfaces.Services;
+using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Enums;
 using Prism.Commands;
 using Prism.Events;
-using LYBT.Shared.Interfaces.Services;
-using LYBT.Desktop.Core.Interfaces.Services;
-using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Desktop.Core.ViewModels.Base
 {
@@ -23,7 +23,7 @@ namespace LYBT.Desktop.Core.ViewModels.Base
         where TService : class
     {
         protected readonly TService Service;
-        
+
         private ObservableCollection<TModel> _items = new();
         private ICollectionView _itemsView = null!;
         private TModel? _selectedItem;
@@ -161,10 +161,10 @@ namespace LYBT.Desktop.Core.ViewModels.Base
             : base(eventAggregator, errorHandlingService)
         {
             Service = service ?? throw new ArgumentNullException(nameof(service));
-            
+
             // 注意：UserSessionManager 和 PermissionService 需要在基类中支持或者在子类中单独处理
             // 这里暂时忽略，因为基类不支持这些参数
-            
+
             InitializeCommands();
             InitializeCollectionView();
         }
@@ -176,7 +176,7 @@ namespace LYBT.Desktop.Core.ViewModels.Base
             DeleteCommand = new DelegateCommand(ExecuteDelete, CanDelete);
             SearchCommand = new DelegateCommand(ExecuteSearch, CanSearch);
             ClearSearchCommand = new DelegateCommand(ExecuteClearSearch, CanClearSearch);
-            
+
             FirstPageCommand = new DelegateCommand(ExecuteFirstPage, CanGoToFirstPage);
             PreviousPageCommand = new DelegateCommand(ExecutePreviousPage, CanGoToPreviousPage);
             NextPageCommand = new DelegateCommand(ExecuteNextPage, CanGoToNextPage);
@@ -237,7 +237,9 @@ namespace LYBT.Desktop.Core.ViewModels.Base
         protected virtual bool FilterItems(object item)
         {
             if (string.IsNullOrWhiteSpace(SearchText) || item is not TModel model)
+            {
                 return true;
+            }
 
             return FilterItem(model, SearchText);
         }
@@ -287,23 +289,23 @@ namespace LYBT.Desktop.Core.ViewModels.Base
             await ExecuteAsync(async () =>
             {
                 IsRefreshing = true;
-                
+
                 var result = await LoadDataAsync(CurrentPage, PageSize, SearchText);
-                
+
                 Items.Clear();
                 foreach (var item in result.Items)
                 {
                     Items.Add(item);
                 }
-                
+
                 TotalCount = result.TotalCount;
                 TotalPages = (int)Math.Ceiling((double)TotalCount / PageSize);
-                
+
                 RaisePropertyChanged(nameof(PaginationInfo));
                 RefreshCommandStates();
-                
+
             }, "加载数据");
-            
+
             IsRefreshing = false;
         }
 
@@ -317,7 +319,7 @@ namespace LYBT.Desktop.Core.ViewModels.Base
             DeleteCommand.RaiseCanExecuteChanged();
             SearchCommand.RaiseCanExecuteChanged();
             ClearSearchCommand.RaiseCanExecuteChanged();
-            
+
             FirstPageCommand.RaiseCanExecuteChanged();
             PreviousPageCommand.RaiseCanExecuteChanged();
             NextPageCommand.RaiseCanExecuteChanged();

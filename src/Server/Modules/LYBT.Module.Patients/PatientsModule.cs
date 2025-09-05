@@ -1,7 +1,7 @@
-using LYBT.Shared.Interfaces.Services;
-using LYBT.Module.Patients.Interfaces;
+﻿using LYBT.Module.Patients.Interfaces;
 using LYBT.Module.Patients.Repositories;
 using LYBT.Module.Patients.Services;
+using LYBT.Shared.Interfaces.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace LYBT.Module.Patients;
@@ -20,14 +20,14 @@ public static class PatientsModule
     {
         // 仓储层 - 使用OptimizedBaseRepository优化版本
         services.AddScoped<IPatientRepository, OptimizedPatientRepository>();
-        
+
         // UltraThink双层架构服务 - 查询和业务逻辑分离
         services.AddScoped<IPatientQueryService, PatientQueryService>();
         services.AddScoped<IPatientBusinessService, PatientBusinessService>();
-        
+
         // 主服务 - UltraThink纯委托模式，委托给专业服务层
         services.AddScoped<IPatientService, PatientService>();
-        
+
         return services;
     }
 }

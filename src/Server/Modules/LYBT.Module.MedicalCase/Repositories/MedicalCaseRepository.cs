@@ -1,12 +1,12 @@
+﻿using System.Linq.Expressions;
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Repositories;
 using LYBT.Module.MedicalCase.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Caching.Memory;
-using System.Linq.Expressions;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.Module.MedicalCase.Repositories;
 
@@ -27,17 +27,17 @@ public class MedicalCaseRepository : OptimizedBaseRepository<LYBT.Entities.Medic
     public override async Task<LYBT.Entities.MedicalCase.MedicalCase?> GetByIdAsync(Guid id)
     {
         var cacheKey = $"{CacheKeyPrefix}withConsultation:{id}";
-        
+
         if (_cache.TryGetValue<LYBT.Entities.MedicalCase.MedicalCase?>(cacheKey, out var cached))
         {
             _logger.LogDebug("从缓存获取医案详情 {Id}", id);
             return cached;
         }
-        
+
         var medicalCase = await _dbSet
             .Include(m => m.Consultation)
             .FirstOrDefaultAsync(m => m.Id == id);
-            
+
         _cache.Set(cacheKey, medicalCase, DefaultCacheDuration);
         return medicalCase;
     }
@@ -45,17 +45,17 @@ public class MedicalCaseRepository : OptimizedBaseRepository<LYBT.Entities.Medic
     public override async Task<IEnumerable<LYBT.Entities.MedicalCase.MedicalCase>> GetAllAsync()
     {
         var cacheKey = $"{CacheKeyPrefix}allWithConsultation";
-        
+
         if (_cache.TryGetValue<IEnumerable<LYBT.Entities.MedicalCase.MedicalCase>>(cacheKey, out var cached) && cached != null)
         {
             _logger.LogDebug("从缓存获取所有医案列表");
             return cached;
         }
-        
+
         var medicalCases = await _dbSet
             .Include(m => m.Consultation)
             .ToListAsync();
-            
+
         _cache.Set(cacheKey, medicalCases, DefaultCacheDuration);
         return medicalCases;
     }
@@ -108,19 +108,19 @@ public class MedicalCaseRepository : OptimizedBaseRepository<LYBT.Entities.Medic
     public async Task<List<LYBT.Entities.MedicalCase.MedicalCase>> GetByPatientIdAsync(Guid patientId)
     {
         var cacheKey = $"{CacheKeyPrefix}patient:{patientId}";
-        
+
         if (_cache.TryGetValue<List<LYBT.Entities.MedicalCase.MedicalCase>>(cacheKey, out var cached) && cached != null)
         {
             _logger.LogDebug("从缓存获取患者医案记录 {PatientId}", patientId);
             return cached;
         }
-        
+
         var medicalCases = await _dbSet
             .Include(m => m.Consultation)
             .Where(m => m.PatientId == patientId)
             .OrderByDescending(m => m.ConsultationDate)
             .ToListAsync();
-            
+
         _cache.Set(cacheKey, medicalCases, DefaultCacheDuration);
         return medicalCases;
     }
@@ -128,19 +128,19 @@ public class MedicalCaseRepository : OptimizedBaseRepository<LYBT.Entities.Medic
     public async Task<List<LYBT.Entities.MedicalCase.MedicalCase>> GetByUserIdAsync(Guid userId)
     {
         var cacheKey = $"{CacheKeyPrefix}doctor:{userId}";
-        
+
         if (_cache.TryGetValue<List<LYBT.Entities.MedicalCase.MedicalCase>>(cacheKey, out var cached) && cached != null)
         {
             _logger.LogDebug("从缓存获取医生医案记录 {UserId}", userId);
             return cached;
         }
-        
+
         var medicalCases = await _dbSet
             .Include(m => m.Consultation)
             .Where(m => m.DoctorId == userId)
             .OrderByDescending(m => m.ConsultationDate)
             .ToListAsync();
-            
+
         _cache.Set(cacheKey, medicalCases, DefaultCacheDuration);
         return medicalCases;
     }
@@ -148,19 +148,19 @@ public class MedicalCaseRepository : OptimizedBaseRepository<LYBT.Entities.Medic
     public async Task<List<LYBT.Entities.MedicalCase.MedicalCase>> GetByStatusAsync(MedicalCaseStatus status)
     {
         var cacheKey = $"{CacheKeyPrefix}status:{status}";
-        
+
         if (_cache.TryGetValue<List<LYBT.Entities.MedicalCase.MedicalCase>>(cacheKey, out var cached) && cached != null)
         {
             _logger.LogDebug("从缓存获取状态医案记录 {Status}", status);
             return cached;
         }
-        
+
         var medicalCases = await _dbSet
             .Include(m => m.Consultation)
             .Where(m => m.Status == status)
             .OrderByDescending(m => m.ConsultationDate)
             .ToListAsync();
-            
+
         _cache.Set(cacheKey, medicalCases, DefaultCacheDuration);
         return medicalCases;
     }
@@ -168,19 +168,19 @@ public class MedicalCaseRepository : OptimizedBaseRepository<LYBT.Entities.Medic
     public async Task<List<LYBT.Entities.MedicalCase.MedicalCase>> GetByDateRangeAsync(DateTime startDate, DateTime endDate)
     {
         var cacheKey = $"{CacheKeyPrefix}daterange:{startDate:yyyyMMdd}-{endDate:yyyyMMdd}";
-        
+
         if (_cache.TryGetValue<List<LYBT.Entities.MedicalCase.MedicalCase>>(cacheKey, out var cached) && cached != null)
         {
             _logger.LogDebug("从缓存获取日期范围医案记录 {StartDate}-{EndDate}", startDate.Date, endDate.Date);
             return cached;
         }
-        
+
         var medicalCases = await _dbSet
             .Include(m => m.Consultation)
             .Where(m => m.ConsultationDate >= startDate && m.ConsultationDate <= endDate)
             .OrderByDescending(m => m.ConsultationDate)
             .ToListAsync();
-            
+
         _cache.Set(cacheKey, medicalCases, DefaultCacheDuration);
         return medicalCases;
     }
@@ -188,19 +188,19 @@ public class MedicalCaseRepository : OptimizedBaseRepository<LYBT.Entities.Medic
     public async Task<LYBT.Entities.MedicalCase.MedicalCase?> GetLatestByPatientIdAsync(Guid patientId)
     {
         var cacheKey = $"{CacheKeyPrefix}latest:patient:{patientId}";
-        
+
         if (_cache.TryGetValue<LYBT.Entities.MedicalCase.MedicalCase?>(cacheKey, out var cached))
         {
             _logger.LogDebug("从缓存获取患者最新医案 {PatientId}", patientId);
             return cached;
         }
-        
+
         var latestMedicalCase = await _dbSet
             .Include(m => m.Consultation)
             .Where(m => m.PatientId == patientId)
             .OrderByDescending(m => m.ConsultationDate)
             .FirstOrDefaultAsync();
-            
+
         // 短缓存时间，因为这个数据可能经常变化
         _cache.Set(cacheKey, latestMedicalCase, TimeSpan.FromMinutes(2));
         return latestMedicalCase;

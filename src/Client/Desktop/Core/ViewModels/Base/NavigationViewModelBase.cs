@@ -1,9 +1,9 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using Prism.Events;
-using LYBT.Shared.Interfaces.Services;
 using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Shared.Interfaces.Services;
+using LYBT.Shared.Models.Contracts.Common;
+using Prism.Events;
 
 namespace LYBT.Desktop.Core.ViewModels.Base
 {
@@ -31,8 +31,8 @@ namespace LYBT.Desktop.Core.ViewModels.Base
         }
 
         public NavigationViewModelBase(
-            IEventAggregator eventAggregator, 
-            IErrorHandlingService errorHandlingService) 
+            IEventAggregator eventAggregator,
+            IErrorHandlingService errorHandlingService)
             : base(eventAggregator, errorHandlingService)
         {
             IsNavigationTargetFlag = true;
@@ -171,7 +171,7 @@ namespace LYBT.Desktop.Core.ViewModels.Base
         protected virtual async Task<bool> ShowConfirmNavigationDialogAsync()
         {
             return await ShowConfirmDialogAsync(
-                "当前页面有未保存的更改或正在进行的操作，确定要离开吗？", 
+                "当前页面有未保存的更改或正在进行的操作，确定要离开吗？",
                 "确认导航");
         }
 

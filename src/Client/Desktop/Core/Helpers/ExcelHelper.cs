@@ -1,12 +1,12 @@
-using LYBT.Shared.Models.Contracts.Common;
-using NPOI.SS.UserModel;
-using NPOI.XSSF.UserModel;
-using NPOI.HSSF.Util;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
+using LYBT.Shared.Models.Contracts.Common;
+using NPOI.HSSF.Util;
+using NPOI.SS.UserModel;
+using NPOI.XSSF.UserModel;
 
 namespace LYBT.Desktop.Core.Helpers
 {
@@ -177,7 +177,10 @@ namespace LYBT.Desktop.Core.Helpers
                 for (int i = startRow; i <= sheet.LastRowNum; i++)
                 {
                     IRow row = sheet.GetRow(i);
-                    if (row == null) continue;
+                    if (row == null)
+                    {
+                        continue;
+                    }
 
                     DataRow dataRow = dataTable.NewRow();
                     bool hasValue = false;
@@ -287,7 +290,10 @@ namespace LYBT.Desktop.Core.Helpers
         /// </summary>
         private static object? GetCellValue(ICell cell)
         {
-            if (cell == null) return string.Empty;
+            if (cell == null)
+            {
+                return string.Empty;
+            }
 
             switch (cell.CellType)
             {

@@ -1,13 +1,13 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using LYBT.Infrastructure.Data;
-using LYBT.Shared.Models.Contracts.MedicalCase;
-using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Shared.Models.Common;
-using LYBT.Shared.Models.Enums;
 using LYBT.Module.MedicalCase.Interfaces;
+using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.MedicalCase;
+using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -43,15 +43,19 @@ namespace LYBT.Module.MedicalCase.Services
                 // 数据验证
                 var validationResult = ValidateCreateDto(dto);
                 if (!validationResult.IsSuccess)
+                {
                     return ServiceResult<MedicalCaseDto>.Failure(validationResult.ErrorMessage ?? "数据验证失败");
+                }
 
                 // 业务规则：检查患者是否有活跃案例
                 var hasActiveCase = await _context.MedicalCases
-                    .AnyAsync(mc => mc.PatientId == dto.PatientId && 
+                    .AnyAsync(mc => mc.PatientId == dto.PatientId &&
                                   mc.Status == MedicalCaseStatus.InConsultation);
 
                 if (hasActiveCase)
+                {
                     return ServiceResult<MedicalCaseDto>.Failure("患者已有活跃的医疗案例，请先完成或暂停当前案例");
+                }
 
                 // 创建新案例
                 var medicalCase = new Entities.MedicalCase.MedicalCase
@@ -69,7 +73,7 @@ namespace LYBT.Module.MedicalCase.Services
                 _context.MedicalCases.Add(medicalCase);
                 await _context.SaveChangesAsync();
 
-                _logger.LogInformation("创建医疗案例成功: {PatientName} - {DoctorName} ({Id})", 
+                _logger.LogInformation("创建医疗案例成功: {PatientName} - {DoctorName} ({Id})",
                     medicalCase.PatientName, medicalCase.DoctorName, medicalCase.Id);
 
                 var resultDto = _mapper.Map<MedicalCaseDto>(medicalCase);
@@ -90,18 +94,24 @@ namespace LYBT.Module.MedicalCase.Services
             try
             {
                 if (id == Guid.Empty)
+                {
                     return ServiceResult<MedicalCaseDto>.Failure("医疗案例ID不能为空");
+                }
 
                 // 数据验证
                 var validationResult = ValidateUpdateDto(dto);
                 if (!validationResult.IsSuccess)
+                {
                     return ServiceResult<MedicalCaseDto>.Failure(validationResult.ErrorMessage ?? "数据验证失败");
+                }
 
                 var medicalCase = await _context.MedicalCases
                     .FirstOrDefaultAsync(mc => mc.Id == id);
 
                 if (medicalCase == null)
+                {
                     return ServiceResult<MedicalCaseDto>.Failure("医疗案例不存在");
+                }
 
                 // 更新字段 - MedicalCaseUpdateDto不包含PatientName/DoctorName
                 // 只更新可以直接更新的字段
@@ -110,7 +120,7 @@ namespace LYBT.Module.MedicalCase.Services
                 _context.MedicalCases.Update(medicalCase);
                 await _context.SaveChangesAsync();
 
-                _logger.LogInformation("更新医疗案例成功: {PatientName} - {DoctorName} ({Id})", 
+                _logger.LogInformation("更新医疗案例成功: {PatientName} - {DoctorName} ({Id})",
                     medicalCase.PatientName, medicalCase.DoctorName, medicalCase.Id);
 
                 var resultDto = _mapper.Map<MedicalCaseDto>(medicalCase);
@@ -131,17 +141,23 @@ namespace LYBT.Module.MedicalCase.Services
             try
             {
                 if (id == Guid.Empty)
+                {
                     return ServiceResult<bool>.Failure("医疗案例ID不能为空");
+                }
 
                 var medicalCase = await _context.MedicalCases
                     .FirstOrDefaultAsync(mc => mc.Id == id);
 
                 if (medicalCase == null)
+                {
                     return ServiceResult<bool>.Failure("医疗案例不存在");
+                }
 
                 // 业务规则：检查是否可以删除
                 if (medicalCase.Status == MedicalCaseStatus.InConsultation)
+                {
                     return ServiceResult<bool>.Failure("进行中的医疗案例不能删除，请先完成或暂停");
+                }
 
                 // 软删除 - 设置状态为取消
                 medicalCase.Status = MedicalCaseStatus.Cancelled;
@@ -166,17 +182,23 @@ namespace LYBT.Module.MedicalCase.Services
             try
             {
                 if (caseId == Guid.Empty)
+                {
                     return ServiceResult<bool>.Failure("医疗案例ID不能为空");
+                }
 
                 var medicalCase = await _context.MedicalCases
                     .FirstOrDefaultAsync(mc => mc.Id == caseId);
 
                 if (medicalCase == null)
+                {
                     return ServiceResult<bool>.Failure("医疗案例不存在");
+                }
 
                 // 业务规则：只有进行中的案例可以完成
                 if (medicalCase.Status != MedicalCaseStatus.InConsultation)
+                {
                     return ServiceResult<bool>.Failure("只有进行中的案例才能完成");
+                }
 
                 // 更新状态
                 medicalCase.Status = MedicalCaseStatus.Completed;
@@ -184,7 +206,7 @@ namespace LYBT.Module.MedicalCase.Services
                 _context.MedicalCases.Update(medicalCase);
                 await _context.SaveChangesAsync();
 
-                _logger.LogInformation("完成医疗案例: {PatientName} ({Id})", 
+                _logger.LogInformation("完成医疗案例: {PatientName} ({Id})",
                     medicalCase.PatientName, medicalCase.Id);
 
                 return ServiceResult<bool>.Success(true);
@@ -204,17 +226,23 @@ namespace LYBT.Module.MedicalCase.Services
             try
             {
                 if (caseId == Guid.Empty)
+                {
                     return ServiceResult<bool>.Failure("医疗案例ID不能为空");
+                }
 
                 var medicalCase = await _context.MedicalCases
                     .FirstOrDefaultAsync(mc => mc.Id == caseId);
 
                 if (medicalCase == null)
+                {
                     return ServiceResult<bool>.Failure("医疗案例不存在");
+                }
 
                 // 业务规则：只有进行中的案例可以暂停
                 if (medicalCase.Status != MedicalCaseStatus.InConsultation)
+                {
                     return ServiceResult<bool>.Failure("只有进行中的案例才能暂停");
+                }
 
                 // 更新状态（使用已注册状态表示暂停）
                 medicalCase.Status = MedicalCaseStatus.Registered;
@@ -222,7 +250,7 @@ namespace LYBT.Module.MedicalCase.Services
                 _context.MedicalCases.Update(medicalCase);
                 await _context.SaveChangesAsync();
 
-                _logger.LogInformation("暂停医疗案例: {PatientName} ({Id})", 
+                _logger.LogInformation("暂停医疗案例: {PatientName} ({Id})",
                     medicalCase.PatientName, medicalCase.Id);
 
                 return ServiceResult<bool>.Success(true);
@@ -242,26 +270,34 @@ namespace LYBT.Module.MedicalCase.Services
             try
             {
                 if (caseId == Guid.Empty)
+                {
                     return ServiceResult<bool>.Failure("医疗案例ID不能为空");
+                }
 
                 var medicalCase = await _context.MedicalCases
                     .FirstOrDefaultAsync(mc => mc.Id == caseId);
 
                 if (medicalCase == null)
+                {
                     return ServiceResult<bool>.Failure("医疗案例不存在");
+                }
 
                 // 业务规则：只有已注册的案例可以恢复为进行中
                 if (medicalCase.Status != MedicalCaseStatus.Registered)
+                {
                     return ServiceResult<bool>.Failure("只有已注册或暂停的案例才能恢复");
+                }
 
                 // 检查患者是否已有其他活跃案例
                 var hasActiveCase = await _context.MedicalCases
-                    .AnyAsync(mc => mc.PatientId == medicalCase.PatientId && 
+                    .AnyAsync(mc => mc.PatientId == medicalCase.PatientId &&
                                   mc.Id != caseId &&
                                   mc.Status == MedicalCaseStatus.InConsultation);
 
                 if (hasActiveCase)
+                {
                     return ServiceResult<bool>.Failure("患者已有其他活跃案例，无法恢复当前案例");
+                }
 
                 // 恢复为进行中状态
                 medicalCase.Status = MedicalCaseStatus.InConsultation;
@@ -287,23 +323,29 @@ namespace LYBT.Module.MedicalCase.Services
             try
             {
                 if (caseId == Guid.Empty)
+                {
                     return ServiceResult<bool>.Failure("医疗案例ID不能为空");
+                }
 
                 var medicalCase = await _context.MedicalCases
                     .FirstOrDefaultAsync(mc => mc.Id == caseId);
 
                 if (medicalCase == null)
+                {
                     return ServiceResult<bool>.Failure("医疗案例不存在");
+                }
 
                 // 业务规则：只有已完成的案例可以归档
                 if (medicalCase.Status != MedicalCaseStatus.Completed)
+                {
                     return ServiceResult<bool>.Failure("只有已完成的案例才能归档");
+                }
 
                 // 归档处理（在当前系统中，归档状态和完成状态相同）
                 _context.MedicalCases.Update(medicalCase);
                 await _context.SaveChangesAsync();
 
-                _logger.LogInformation("归档医疗案例: {PatientName} ({Id})", 
+                _logger.LogInformation("归档医疗案例: {PatientName} ({Id})",
                     medicalCase.PatientName, medicalCase.Id);
 
                 return ServiceResult<bool>.Success(true);
@@ -323,10 +365,14 @@ namespace LYBT.Module.MedicalCase.Services
             try
             {
                 if (caseId == Guid.Empty)
+                {
                     return ServiceResult<bool>.Failure("医疗案例ID不能为空");
+                }
 
                 if (string.IsNullOrWhiteSpace(status))
+                {
                     return ServiceResult<bool>.Failure("状态值不能为空");
+                }
 
                 // 根据状态字符串映射到枚举
                 MedicalCaseStatus medicalCaseStatus;
@@ -352,15 +398,17 @@ namespace LYBT.Module.MedicalCase.Services
                     .FirstOrDefaultAsync(mc => mc.Id == caseId);
 
                 if (medicalCase == null)
+                {
                     return ServiceResult<bool>.Failure("医疗案例不存在");
+                }
 
                 var oldStatus = medicalCase.Status;
                 medicalCase.Status = medicalCaseStatus;
-                
+
                 _context.MedicalCases.Update(medicalCase);
                 await _context.SaveChangesAsync();
 
-                _logger.LogInformation("更新医疗案例状态: {PatientName} ({Id}) {OldStatus} -> {NewStatus}", 
+                _logger.LogInformation("更新医疗案例状态: {PatientName} ({Id}) {OldStatus} -> {NewStatus}",
                     medicalCase.PatientName, medicalCase.Id, oldStatus, medicalCaseStatus);
 
                 return ServiceResult<bool>.Success(true);
@@ -380,10 +428,14 @@ namespace LYBT.Module.MedicalCase.Services
             try
             {
                 if (caseIds == null || caseIds.Count == 0)
+                {
                     return ServiceResult<bool>.Success(true);
+                }
 
                 if (string.IsNullOrWhiteSpace(status))
+                {
                     return ServiceResult<bool>.Failure("状态值不能为空");
+                }
 
                 // 根据状态字符串映射到枚举
                 MedicalCaseStatus medicalCaseStatus;
@@ -410,7 +462,7 @@ namespace LYBT.Module.MedicalCase.Services
                     .ExecuteUpdateAsync(setters => setters
                         .SetProperty(mc => mc.Status, medicalCaseStatus));
 
-                _logger.LogInformation("批量更新医疗案例状态完成: 更新了 {Count} 条记录，状态: {Status}", 
+                _logger.LogInformation("批量更新医疗案例状态完成: 更新了 {Count} 条记录，状态: {Status}",
                     updatedCount, medicalCaseStatus);
 
                 return ServiceResult<bool>.Success(true);
@@ -430,18 +482,24 @@ namespace LYBT.Module.MedicalCase.Services
             try
             {
                 if (caseId == Guid.Empty)
+                {
                     return ServiceResult<bool>.Failure("医疗案例ID不能为空");
+                }
 
                 var medicalCase = await _context.MedicalCases
                     .FirstOrDefaultAsync(mc => mc.Id == caseId);
 
                 if (medicalCase == null)
+                {
                     return ServiceResult<bool>.Failure("医疗案例不存在");
+                }
 
                 // 业务规则：只有注册状态和进行中状态的案例可以取消
-                if (medicalCase.Status != MedicalCaseStatus.Registered && 
+                if (medicalCase.Status != MedicalCaseStatus.Registered &&
                     medicalCase.Status != MedicalCaseStatus.InConsultation)
+                {
                     return ServiceResult<bool>.Failure("只有注册状态或进行中的案例才能取消");
+                }
 
                 // 设置为取消状态
                 medicalCase.Status = MedicalCaseStatus.Cancelled;
@@ -449,7 +507,7 @@ namespace LYBT.Module.MedicalCase.Services
                 _context.MedicalCases.Update(medicalCase);
                 await _context.SaveChangesAsync();
 
-                _logger.LogInformation("取消看诊: {PatientName} ({Id})", 
+                _logger.LogInformation("取消看诊: {PatientName} ({Id})",
                     medicalCase.PatientName, medicalCase.Id);
 
                 return ServiceResult<bool>.Success(true);
@@ -469,13 +527,17 @@ namespace LYBT.Module.MedicalCase.Services
             try
             {
                 if (caseId == Guid.Empty)
+                {
                     return ServiceResult<object>.Failure("医疗案例ID不能为空");
+                }
 
                 var medicalCase = await _context.MedicalCases
                     .FirstOrDefaultAsync(mc => mc.Id == caseId);
 
                 if (medicalCase == null)
+                {
                     return ServiceResult<object>.Failure("医疗案例不存在");
+                }
 
                 // 构建打印数据
                 var printData = new
@@ -490,7 +552,7 @@ namespace LYBT.Module.MedicalCase.Services
                     PrintOptions = printOptions
                 };
 
-                _logger.LogInformation("打印病历记录: {PatientName} ({Id})", 
+                _logger.LogInformation("打印病历记录: {PatientName} ({Id})",
                     medicalCase.PatientName, medicalCase.Id);
 
                 return ServiceResult<object>.Success(printData);
@@ -510,16 +572,22 @@ namespace LYBT.Module.MedicalCase.Services
         private ServiceResult<bool> ValidateCreateDto(MedicalCaseCreateDto dto)
         {
             if (dto == null)
+            {
                 return ServiceResult<bool>.Failure("医疗案例信息不能为空");
+            }
 
             if (dto.PatientId == Guid.Empty)
+            {
                 return ServiceResult<bool>.Failure("患者ID不能为空");
+            }
 
             // PatientName字段不在CreateDto中，由服务从PatientId获取
             // 跳过PatientName验证
 
             if (dto.DoctorId == Guid.Empty)
+            {
                 return ServiceResult<bool>.Failure("医生ID不能为空");
+            }
 
             // DoctorName字段不在CreateDto中，由服务从DoctorId获取
             // 跳过DoctorName验证
@@ -533,7 +601,9 @@ namespace LYBT.Module.MedicalCase.Services
         private ServiceResult<bool> ValidateUpdateDto(MedicalCaseUpdateDto dto)
         {
             if (dto == null)
+            {
                 return ServiceResult<bool>.Failure("医疗案例信息不能为空");
+            }
 
             // PatientName字段不在CreateDto中，由服务从PatientId获取
             // 跳过PatientName验证

@@ -1,13 +1,13 @@
+﻿using System.Text;
 using LYBT.Infrastructure.Configuration;
-using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Configuration.Options;
-using JwtOptions = LYBT.Infrastructure.Configuration.Options.JwtOptions;
+using LYBT.Infrastructure.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
+using JwtOptions = LYBT.Infrastructure.Configuration.Options.JwtOptions;
 
 
 namespace LYBT.Infrastructure

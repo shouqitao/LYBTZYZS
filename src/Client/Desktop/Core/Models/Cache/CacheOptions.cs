@@ -1,6 +1,6 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Desktop.Core.Models.Cache
 {
@@ -150,28 +150,44 @@ namespace LYBT.Desktop.Core.Models.Cache
             var errors = new List<string>();
 
             if (DefaultExpiration <= TimeSpan.Zero)
+            {
                 errors.Add("默认过期时间必须大于零");
+            }
 
             if (MaxItemCount <= 0)
+            {
                 errors.Add("最大缓存项数量必须大于零");
+            }
 
             if (MaxMemorySize <= 0)
+            {
                 errors.Add("最大内存占用必须大于零");
+            }
 
             if (CleanupInterval <= TimeSpan.Zero)
+            {
                 errors.Add("清理间隔必须大于零");
+            }
 
             if (LruEvictionThreshold <= 0 || LruEvictionThreshold > 1)
+            {
                 errors.Add("LRU淘汰阈值必须在0-1之间");
+            }
 
             if (MemoryEvictionThreshold <= 0 || MemoryEvictionThreshold > 1)
+            {
                 errors.Add("内存淘汰阈值必须在0-1之间");
+            }
 
             if (EvictionPercentage <= 0 || EvictionPercentage > 1)
+            {
                 errors.Add("淘汰比例必须在0-1之间");
+            }
 
             if (string.IsNullOrWhiteSpace(DefaultPartition))
+            {
                 errors.Add("默认分区名称不能为空");
+            }
 
             return new ValidationResult
             {

@@ -1,10 +1,10 @@
-using AutoMapper;
-using LYBT.Infrastructure.Data;
+﻿using AutoMapper;
 using LYBT.Entities.Formula;
-using LYBT.Shared.Models.Contracts.Formula;
-using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Shared.Models.Enums;
+using LYBT.Infrastructure.Data;
 using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Formula;
+using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -101,7 +101,7 @@ namespace LYBT.Module.Formula.Services
         }
 
         #region 从处方创建验方
-        
+
         /// <summary>
         /// 从处方创建验方
         /// </summary>
@@ -117,7 +117,7 @@ namespace LYBT.Module.Formula.Services
                 // 检查处方是否存在
                 var prescription = await _dbContext.Prescriptions
                     .Include(p => p.Items)
-                    
+
                     .FirstOrDefaultAsync(p => p.Id == prescriptionId);
 
                 if (prescription == null)
@@ -156,15 +156,15 @@ namespace LYBT.Module.Formula.Services
                 // 复制处方药材到验方
                 foreach (var item in prescription.Items)
                 {
-                        newFormula.Herbs.Add(new LYBT.Entities.Formula.FormulaHerbItem
-                        {
-                            HerbId = item.HerbId,
-                            HerbName = item.HerbName,
-                            Quantity = item.Quantity,
-                            Unit = item.Unit,
-                            Usage = item.Usage,
-                            // SortOrder属性在FormulaHerbItem中不存在，已移除
-                        });
+                    newFormula.Herbs.Add(new LYBT.Entities.Formula.FormulaHerbItem
+                    {
+                        HerbId = item.HerbId,
+                        HerbName = item.HerbName,
+                        Quantity = item.Quantity,
+                        Unit = item.Unit,
+                        Usage = item.Usage,
+                        // SortOrder属性在FormulaHerbItem中不存在，已移除
+                    });
                 }
 
                 _dbContext.Formulas.Add(newFormula);
@@ -173,11 +173,11 @@ namespace LYBT.Module.Formula.Services
                 // 重新查询以获取完整的验方信息（包含导航属性）
                 var createdFormula = await _dbContext.Formulas
                     .Include(f => f.Herbs)
-                    
+
                     .FirstOrDefaultAsync(f => f.Id == newFormula.Id);
 
                 var dto = _mapper.Map<FormulaDto>(createdFormula);
-                
+
                 _logger.LogInformation("从处方创建验方成功: {FormulaName}, 处方ID: {PrescriptionId}", name, prescriptionId);
                 return ServiceResult<FormulaDto>.Success(dto);
             }
@@ -187,7 +187,7 @@ namespace LYBT.Module.Formula.Services
                 return ServiceResult<FormulaDto>.Failure($"创建失败: {ex.Message}");
             }
         }
-        
+
         #endregion
 
         #endregion
@@ -208,7 +208,7 @@ namespace LYBT.Module.Formula.Services
                 formula.IsShared = true;
                 await _dbContext.SaveChangesAsync();
 
-                _logger.LogInformation("分享验方成功: {FormulaName}, 操作者: {OperatorName} ({OperatorId})", 
+                _logger.LogInformation("分享验方成功: {FormulaName}, 操作者: {OperatorName} ({OperatorId})",
                     formula.Name, operatorName, operatorId);
                 return ServiceResult<bool>.Success(true);
             }
@@ -233,7 +233,7 @@ namespace LYBT.Module.Formula.Services
                 formula.IsShared = false;
                 await _dbContext.SaveChangesAsync();
 
-                _logger.LogInformation("取消分享验方成功: {FormulaName}, 操作者: {OperatorName} ({OperatorId})", 
+                _logger.LogInformation("取消分享验方成功: {FormulaName}, 操作者: {OperatorName} ({OperatorId})",
                     formula.Name, operatorName, operatorId);
                 return ServiceResult<bool>.Success(true);
             }
@@ -254,7 +254,7 @@ namespace LYBT.Module.Formula.Services
             {
                 var formula = await _dbContext.Formulas
                     .Include(f => f.Herbs)
-                    
+
                     .FirstOrDefaultAsync(f => f.Id == formulaId);
 
                 if (formula == null)
@@ -265,17 +265,17 @@ namespace LYBT.Module.Formula.Services
                 var analysis = new FormulaAnalysisResult
                 {
                     Summary = $"验方【{formula.Name}】共含{formula.Herbs.Count}味药材，复方配伍{DetermineComplexity(formula.Herbs.Count)}",
-                    Effects = new List<string> 
-                    { 
+                    Effects = new List<string>
+                    {
                         formula.Effect ?? "功效待完善",
                         $"药材数量: {formula.Herbs.Count}味",
                         $"安全等级: {AssessSafetyLevel(formula.Herbs)}"
                     },
-                    Contraindications = new List<string> 
-                    { 
-                        "请遵医嘱使用", 
-                        "孕妇慎用", 
-                        "如有过敏史请告知医生" 
+                    Contraindications = new List<string>
+                    {
+                        "请遵医嘱使用",
+                        "孕妇慎用",
+                        "如有过敏史请告知医生"
                     },
                     Warnings = new List<HerbCompatibilityWarning>()
                 };
@@ -287,7 +287,7 @@ namespace LYBT.Module.Formula.Services
                     analysis.Warnings.Add(new HerbCompatibilityWarning
                     {
                         HerbName1 = "甘草",
-                        HerbName2 = "甘遂", 
+                        HerbName2 = "甘遂",
                         WarningLevel = "严重",
                         Description = "甘草与甘遂相反，不宜同用"
                     });
@@ -320,7 +320,7 @@ namespace LYBT.Module.Formula.Services
         private string AssessSafetyLevel(ICollection<FormulaHerbItem> herbs)
         {
             // 简化的安全性评估
-            var hasHighRiskHerbs = herbs.Any(fh => 
+            var hasHighRiskHerbs = herbs.Any(fh =>
                 fh.HerbName?.Contains("附子") == true ||
                 fh.HerbName?.Contains("乌头") == true);
 
@@ -332,10 +332,14 @@ namespace LYBT.Module.Formula.Services
             var recommendations = new List<string>();
 
             if (formula.Herbs.Count > 15)
+            {
                 recommendations.Add("药味较多，建议简化");
+            }
 
             if (string.IsNullOrWhiteSpace(formula.Usage))
+            {
                 recommendations.Add("建议补充服用方法");
+            }
 
             recommendations.Add("建议记录使用效果");
 

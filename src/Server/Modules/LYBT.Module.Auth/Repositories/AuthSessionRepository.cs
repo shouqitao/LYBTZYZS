@@ -1,11 +1,11 @@
+﻿using LYBT.Entities.Auth;
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Repositories;
-using LYBT.Entities.Auth;
 using LYBT.Module.Auth.Interfaces;
 using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.Module.Auth.Repositories
 {
@@ -28,19 +28,19 @@ namespace LYBT.Module.Auth.Repositories
         public async Task<List<AuthSession>> GetActiveSessionsByUserIdAsync(Guid userId)
         {
             var cacheKey = $"{CacheKeyPrefix}active:user:{userId}";
-            
+
             if (_cache.TryGetValue<List<AuthSession>>(cacheKey, out var cached) && cached != null)
             {
                 _logger.LogDebug("从缓存获取用户活跃会话 {UserId}", userId);
                 return cached;
             }
-            
+
             var sessions = await _dbSet
                 .AsNoTracking()
                 .Where(s => s.UserId == userId && s.Status == CommonStatus.Enabled && !s.IsRevoked)
                 .OrderByDescending(s => s.LoginTime)
                 .ToListAsync();
-                
+
             // 短缓存时间，因为会话状态变化频繁
             _cache.Set(cacheKey, sessions, TimeSpan.FromMinutes(2));
             return sessions;
@@ -62,17 +62,17 @@ namespace LYBT.Module.Auth.Repositories
         public async Task<AuthSession?> GetByTokenHashAsync(string tokenHash)
         {
             var cacheKey = $"{CacheKeyPrefix}token:{tokenHash}";
-            
+
             if (_cache.TryGetValue<AuthSession?>(cacheKey, out var cached))
             {
                 _logger.LogDebug("从缓存获取令牌会话 {TokenHash}", tokenHash.Substring(0, 8) + "...");
                 return cached;
             }
-            
+
             var session = await _dbSet
                 .AsNoTracking()
                 .FirstOrDefaultAsync(s => s.TokenHash == tokenHash && !s.IsRevoked);
-                
+
             // 短缓存时间，因为令牌验证频繁且安全敏感
             _cache.Set(cacheKey, session, TimeSpan.FromMinutes(1));
             return session;
@@ -139,8 +139,8 @@ namespace LYBT.Module.Auth.Repositories
         public async Task CleanupExpiredSessionsAsync()
         {
             var expiredSessions = await _dbSet
-                .Where(s => s.Status == CommonStatus.Enabled && 
-                           !s.IsRevoked && 
+                .Where(s => s.Status == CommonStatus.Enabled &&
+                           !s.IsRevoked &&
                            s.ExpiryTime < DateTime.Now)
                 .ToListAsync();
 
@@ -212,7 +212,7 @@ namespace LYBT.Module.Auth.Repositories
             foreach (var session in sessions)
             {
                 session.Status = status;
-                
+
                 if (status == CommonStatus.Disabled)
                 {
                     session.IsRevoked = true;

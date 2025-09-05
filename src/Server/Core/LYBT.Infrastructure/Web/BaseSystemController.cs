@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 
@@ -158,7 +158,7 @@ public abstract class BaseSystemController : BaseControllerCore
         {
             // 这里可以实现具体的缓存清理逻辑
             // 例如使用 IMemoryCache 或 Redis 的模式匹配删除
-            
+
             LogOperation($"清除缓存", new { pattern }, null);
         }
         catch (Exception ex)

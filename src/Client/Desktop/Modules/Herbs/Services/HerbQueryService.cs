@@ -1,12 +1,12 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using LYBT.Desktop.Herbs.Interfaces;
 using LYBT.Shared.Interfaces.Api;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Herbs.Services;
 
@@ -37,7 +37,7 @@ public class HerbQueryService(
     {
         try
         {
-            _logger.LogDebug("执行中药材分页查询，页码: {PageNumber}, 页大小: {PageSize}", 
+            _logger.LogDebug("执行中药材分页查询，页码: {PageNumber}, 页大小: {PageSize}",
                 query.PageIndex, query.PageSize);
 
             var emptyResult = new PagedResult<HerbDto>
@@ -45,7 +45,7 @@ public class HerbQueryService(
                 Items = [],
                 TotalCount = 0
             };
-            
+
             return ServiceResult<PagedResult<HerbDto>>.Success(emptyResult);
         }
         catch (Exception ex)
@@ -66,9 +66,9 @@ public class HerbQueryService(
         try
         {
             _logger.LogDebug("查询中药材详细档案: {HerbId}", id);
-            
+
             var refitResponse = await _herbApi.GetHerbByIdAsync(id);
-            
+
             if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
             {
                 var detailDto = refitResponse.Content;
@@ -90,7 +90,7 @@ public class HerbQueryService(
                     UpdateTime = detailDto.UpdateTime,
                     Remark = detailDto.Remark
                 };
-                
+
                 _logger.LogInformation("药材详情查询成功: {HerbName}", herbDto.Name);
                 return ServiceResult<HerbDto>.Success(herbDto, "药材详情查询成功");
             }
@@ -137,7 +137,7 @@ public class HerbQueryService(
         var stats = new HerbStatisticsDto();
         return Task.FromResult(ServiceResult<HerbStatisticsDto>.Success(stats));
     }
-    
+
     /// <summary>
     /// 批量获取药材（用于处方）
     /// </summary>
@@ -155,7 +155,7 @@ public class HerbQueryService(
             return Task.FromResult(ServiceResult<List<HerbDto>>.Failure("批量获取药材失败"));
         }
     }
-    
+
     /// <summary>
     /// 获取药材统计（详细版本）
     /// </summary>
@@ -165,7 +165,7 @@ public class HerbQueryService(
         {
             _logger.LogDebug("生成详细药材统计数据");
             var stats = new HerbStatisticsDto();
-            
+
             return Task.FromResult(ServiceResult<HerbStatisticsDto>.Success(stats));
         }
         catch (Exception ex)

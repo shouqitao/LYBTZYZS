@@ -1,19 +1,19 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
+using LYBT.Desktop.Core.Constants;
 using LYBT.Desktop.Core.Models.Prescriptions;
+using LYBT.Desktop.Core.ViewModels;
+using LYBT.Shared.Interfaces.Services;
 // UltraThink v2.0: 直接使用FormulaDto，移除Info模型引用
 using LYBT.Shared.Models.Contracts.Formula;
-using AutoMapper;
-using LYBT.Shared.Interfaces.Services;
-using Prism.Commands;
-using Prism.Mvvm;
 // // using Prism.Dialogs; // Removed for Prism 8.1.97 compatibility // Temporarily disabled due to Prism 9 compatibility
 using Microsoft.Extensions.Logging;
-using LYBT.Desktop.Core.ViewModels;
-using LYBT.Desktop.Core.Constants;
+using Prism.Commands;
+using Prism.Mvvm;
 
 namespace LYBT.Desktop.Prescriptions.ViewModels
 {
@@ -45,8 +45,8 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         public FormulaDto? SelectedTemplate
         {
             get => _selectedTemplate;
-            set 
-            { 
+            set
+            {
                 SetProperty(ref _selectedTemplate, value);
                 ConfirmCommand.RaiseCanExecuteChanged();
             }
@@ -80,10 +80,10 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         {
             _formulaService = formulaService ?? throw new ArgumentNullException(nameof(formulaService));
             Title = "选择验方模板";
-            
+
             SearchCommand = new DelegateCommand(async () => await ExecuteSearchAsync());
             ViewDetailsCommand = new DelegateCommand<FormulaDto>(ExecuteViewDetails);
-            
+
             // 初始化加载验方模板列表
             _ = LoadTemplatesAsync();
         }
@@ -126,12 +126,12 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             try
             {
                 IsLoading = true;
-                var result = await _formulaService.GetPagedAsync(new FormulaQueryDto 
-                { 
+                var result = await _formulaService.GetPagedAsync(new FormulaQueryDto
+                {
                     Name = SearchText,
-                    PageSize = 100 
+                    PageSize = 100
                 });
-                
+
                 if (result.IsSuccess && result.Data != null)
                 {
                     AvailableTemplates = new ObservableCollection<FormulaDto>(result.Data.Items);
@@ -152,8 +152,11 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         /// </summary>
         private void ExecuteViewDetails(FormulaDto? formula)
         {
-            if (formula == null) return;
-            
+            if (formula == null)
+            {
+                return;
+            }
+
             StatusMessage = string.Format(SystemConstants.FeaturePendingTemplate, $"查看验方 '{formula.Name}' 详情");
         }
 
@@ -163,7 +166,9 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         protected override Task<bool> ExecuteConfirmAsync()
         {
             if (SelectedTemplate == null)
+            {
                 return Task.FromResult(false);
+            }
 
             Result = SelectedTemplate;
             return Task.FromResult(true);

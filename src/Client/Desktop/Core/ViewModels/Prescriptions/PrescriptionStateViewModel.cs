@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Prism.Mvvm;
 
 namespace LYBT.Desktop.Core.ViewModels.Prescriptions
@@ -360,13 +360,41 @@ namespace LYBT.Desktop.Core.ViewModels.Prescriptions
         /// </summary>
         public string GetCurrentStateDescription()
         {
-            if (HasError) return $"错误: {ErrorMessage}";
-            if (IsPrinting) return "正在打印...";
-            if (IsProcessingPayment) return "正在处理支付...";
-            if (IsDispensing) return "正在发药...";
-            if (IsVoiding) return "正在作废...";
-            if (IsLoading) return "加载中...";
-            if (IsEditing) return "编辑中";
+            if (HasError)
+            {
+                return $"错误: {ErrorMessage}";
+            }
+
+            if (IsPrinting)
+            {
+                return "正在打印...";
+            }
+
+            if (IsProcessingPayment)
+            {
+                return "正在处理支付...";
+            }
+
+            if (IsDispensing)
+            {
+                return "正在发药...";
+            }
+
+            if (IsVoiding)
+            {
+                return "正在作废...";
+            }
+
+            if (IsLoading)
+            {
+                return "加载中...";
+            }
+
+            if (IsEditing)
+            {
+                return "编辑中";
+            }
+
             return "就绪";
         }
 

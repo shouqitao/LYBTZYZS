@@ -1,10 +1,10 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using LYBT.Shared.Models.Enums;
 using LYBT.Entities.MedicalCase;
 using LYBT.Entities.Patients;
 using LYBT.Entities.Users;
+using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Entities.Consultation
 {

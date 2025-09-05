@@ -1,10 +1,10 @@
+﻿using System.Security.Claims;
 using LYBT.Infrastructure.Web;
 using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Caching.Memory;
-using System.Security.Claims;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.Infrastructure.Web
 {
@@ -15,7 +15,7 @@ namespace LYBT.Infrastructure.Web
     /// </summary>
     public abstract class BaseApiController : BaseControllerCore
     {
-        protected BaseApiController(ILogger logger, IMemoryCache? cache = null) 
+        protected BaseApiController(ILogger logger, IMemoryCache? cache = null)
             : base(logger, cache) { }
 
         #region 统一API响应包装方法
@@ -47,7 +47,7 @@ namespace LYBT.Infrastructure.Web
         {
             var items = pagedResult.Items is List<T> list ? list : pagedResult.Items.ToList();
             var pageResult = new PagedResult<T>(items, pagedResult.TotalCount, pagedResult.CurrentPage, pagedResult.PageSize);
-            
+
             var response = ApiResponse<PagedResult<T>>.CreateSuccess(pageResult, message);
             response.RequestId = GetRequestId();
             return Ok(response);
@@ -324,7 +324,7 @@ namespace LYBT.Infrastructure.Web
         protected ActionResult<ApiResponse> HandleException(Exception ex, string operation, object? context = null)
         {
             HandleExceptionCore(ex, operation, context);
-            
+
             // 根据异常类型返回不同的错误响应
             return ex switch
             {
@@ -341,7 +341,7 @@ namespace LYBT.Infrastructure.Web
         protected ActionResult<ApiResponse<T>> HandleException<T>(Exception ex, string operation, object? context = null)
         {
             HandleExceptionCore(ex, operation, context);
-            
+
             // 根据异常类型返回不同的错误响应
             return ex switch
             {
@@ -362,7 +362,7 @@ namespace LYBT.Infrastructure.Web
         protected ActionResult<ApiResponse<PagedResult<T>>> ValidationFailPaged<T>(string message = "参数验证失败", string? errorCode = "VALIDATION_ERROR")
         {
             var pagedResult = new PagedResult<T>(new List<T>(), 0, 1, 10);
-            
+
             var response = ApiResponse<PagedResult<T>>.CreateFail(message);
             if (!string.IsNullOrEmpty(errorCode))
             {
@@ -379,7 +379,7 @@ namespace LYBT.Infrastructure.Web
         protected ActionResult<ApiResponse<PagedResult<T>>> BusinessFailPaged<T>(string message, string? errorCode = null)
         {
             var pagedResult = new PagedResult<T>(new List<T>(), 0, 1, 10);
-            
+
             var response = ApiResponse<PagedResult<T>>.CreateFail(message);
             if (!string.IsNullOrEmpty(errorCode))
             {
@@ -409,7 +409,7 @@ namespace LYBT.Infrastructure.Web
         protected ActionResult<ApiResponse<PagedResult<T>>> HandleExceptionPaged<T>(Exception ex, string operation, object? context = null)
         {
             HandleExceptionCore(ex, operation, context);
-            
+
             var message = ex switch
             {
                 UnauthorizedAccessException => ex.Message,

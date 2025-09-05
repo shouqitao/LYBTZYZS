@@ -1,9 +1,9 @@
+﻿using LYBT.Desktop.Workbench.Therapist.ViewModels;
+using LYBT.Desktop.Workbench.Therapist.Views;
 using LYBT.Shared.Models.Contracts.Common;
 using Prism.Ioc;
 using Prism.Modularity;
 using Prism.Mvvm;
-using LYBT.Desktop.Workbench.Therapist.Views;
-using LYBT.Desktop.Workbench.Therapist.ViewModels;
 
 namespace LYBT.Desktop.Workbench.Therapist
 {
@@ -15,7 +15,7 @@ namespace LYBT.Desktop.Workbench.Therapist
         public void OnInitialized(IContainerProvider containerProvider)
         {
             // 模块初始化完成
-            
+
             // 注册自定义的ViewModel映射
             ViewModelLocationProvider.Register<TherapistMainView, TherapistMainViewModel>();
         }
@@ -24,12 +24,12 @@ namespace LYBT.Desktop.Workbench.Therapist
         {
             // 注册理疗师工作台主视图
             containerRegistry.RegisterForNavigation<TherapistMainView>();
-            
+
             // 注册占位视图 (暂时注释，待实现)
             // containerRegistry.RegisterForNavigation<TherapyPlanningView>();
             // containerRegistry.RegisterForNavigation<TreatmentRecordView>();
             // containerRegistry.RegisterForNavigation<RehabilitationManagementView>();
-            
+
             // 预留：未来可注册理疗师相关的其他视图和服务
         }
     }

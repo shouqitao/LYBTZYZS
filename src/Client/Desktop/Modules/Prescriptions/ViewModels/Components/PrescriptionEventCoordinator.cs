@@ -1,10 +1,10 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System;
+﻿using System;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Prism.Events;
 using LYBT.Desktop.Core.Events;
 using LYBT.Desktop.Core.Models.Consultation;
+using LYBT.Shared.Models.Contracts.Common;
+using Microsoft.Extensions.Logging;
+using Prism.Events;
 
 namespace LYBT.Desktop.Prescriptions.ViewModels.Components
 {
@@ -131,7 +131,9 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components
             try
             {
                 if (changeInfo.Source != "Prescription")
+                {
                     return;
+                }
 
                 _logger.LogDebug("处理处方数据变更事件: {DataType}", changeInfo.DataType);
 
@@ -239,7 +241,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components
 
                 // 发布药材添加完成事件
                 PublishHerbAddedComplete(herbInfo);
-                
+
                 // 触发重新计算
                 RecalculateAndNotify();
             }
@@ -260,10 +262,10 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components
 
                 // 发布验方导入完成事件
                 PublishFormulaImportedComplete(formulaInfo);
-                
+
                 // 触发重新计算
                 RecalculateAndNotify();
-                
+
                 // 标记数据已变更
                 if (_dataManager != null)
                 {
@@ -334,7 +336,9 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components
             try
             {
                 if (_dataManager == null || _calculator == null)
+                {
                     return;
+                }
 
                 var calculation = _calculator.CalculatePrescriptionPrice(
                     _dataManager.PrescriptionItems, _dataManager.DosageCount, _dataManager.Discount);
@@ -461,11 +465,13 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components
             try
             {
                 if (_dataManager == null || _calculator == null)
+                {
                     return;
+                }
 
                 // 更新小计
                 _calculator.UpdateItemSubtotals(_dataManager.PrescriptionItems);
-                
+
                 // 发布价格重算事件
                 PublishPriceRecalculated();
             }

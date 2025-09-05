@@ -1,13 +1,13 @@
-using System;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
-using Prism.Commands;
-using Prism.Events;
-using LYBT.Desktop.Core.ViewModels;
 using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Desktop.Core.ViewModels;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Herbs;
+using Prism.Commands;
+using Prism.Events;
 
 namespace LYBT.Desktop.Core.ViewModels.Dialogs
 {
@@ -95,7 +95,7 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
         public HerbSelectionDialogViewModel(
             IHerbService herbService,
             IEventAggregator eventAggregator,
-            IErrorHandlingService errorHandlingService) 
+            IErrorHandlingService errorHandlingService)
             : base(eventAggregator, errorHandlingService)
         {
             _herbService = herbService ?? throw new ArgumentNullException(nameof(herbService));
@@ -111,7 +111,7 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
         /// <summary>
         /// 简化构造函数（使用ContainerLocator）
         /// </summary>
-        public HerbSelectionDialogViewModel(IHerbService herbService) 
+        public HerbSelectionDialogViewModel(IHerbService herbService)
             : base()
         {
             _herbService = herbService ?? throw new ArgumentNullException(nameof(herbService));
@@ -201,7 +201,9 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
         private void ExecuteSort(string? columnName)
         {
             if (string.IsNullOrEmpty(columnName))
+            {
                 return;
+            }
 
             try
             {

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,14 +16,14 @@ public interface IAsyncCommand : ICommand
     /// 获取一个值，指示命令是否正在执行
     /// </summary>
     bool IsExecuting { get; }
-    
+
     /// <summary>
     /// 异步执行命令
     /// </summary>
     /// <param name="parameter">命令参数</param>
     /// <returns>表示异步操作的任务</returns>
     Task ExecuteAsync(object? parameter = null);
-    
+
     /// <summary>
     /// 取消正在执行的命令
     /// </summary>
@@ -44,28 +44,28 @@ public class AsyncRelayCommand(
     Action<Exception>? errorHandler = null) : ObservableObject, IAsyncCommand
 {
     #region 私有字段
-    
+
     private readonly Func<Task> _execute = execute ?? throw new ArgumentNullException(nameof(execute));
     private readonly Func<bool>? _canExecute = canExecute;
     private readonly Action<Exception>? _errorHandler = errorHandler;
-    
+
     private bool _isExecuting;
     private CancellationTokenSource? _cancellationTokenSource;
     private NotifyTaskCompletion? _execution;
-    
+
     #endregion
-    
+
     #region 事件
-    
+
     /// <summary>
     /// 当 CanExecute 状态发生变化时引发此事件
     /// </summary>
     public event EventHandler? CanExecuteChanged;
-    
+
     #endregion
-    
+
     #region 公共属性
-    
+
     /// <summary>
     /// 获取一个值，指示命令是否正在执行
     /// </summary>
@@ -80,7 +80,7 @@ public class AsyncRelayCommand(
             }
         }
     }
-    
+
     /// <summary>
     /// 获取当前执行任务的通知包装器
     /// </summary>
@@ -89,17 +89,17 @@ public class AsyncRelayCommand(
         get => _execution;
         private set => SetProperty(ref _execution, value);
     }
-    
+
     /// <summary>
     /// 获取取消令牌，用于取消正在执行的操作
     /// </summary>
-    public CancellationToken CancellationToken => 
+    public CancellationToken CancellationToken =>
         _cancellationTokenSource?.Token ?? CancellationToken.None;
-    
+
     #endregion
-    
+
     #region ICommand实现
-    
+
     /// <summary>
     /// 确定命令是否可以执行
     /// </summary>
@@ -109,7 +109,7 @@ public class AsyncRelayCommand(
     {
         return !IsExecuting && (_canExecute?.Invoke() ?? true);
     }
-    
+
     /// <summary>
     /// 同步执行命令（内部调用异步方法）
     /// </summary>
@@ -119,11 +119,11 @@ public class AsyncRelayCommand(
         // 使用 Fire-and-Forget 模式，避免 async void
         _ = ExecuteInternalAsync(parameter);
     }
-    
+
     #endregion
-    
+
     #region IAsyncCommand实现
-    
+
     /// <summary>
     /// 异步执行命令
     /// </summary>
@@ -135,7 +135,7 @@ public class AsyncRelayCommand(
     {
         await ExecuteInternalAsync(parameter);
     }
-    
+
     /// <summary>
     /// 取消正在执行的命令
     /// </summary>
@@ -143,11 +143,11 @@ public class AsyncRelayCommand(
     {
         _cancellationTokenSource?.Cancel();
     }
-    
+
     #endregion
-    
+
     #region 命令状态管理
-    
+
     /// <summary>
     /// 触发 CanExecuteChanged 事件
     /// </summary>
@@ -155,11 +155,11 @@ public class AsyncRelayCommand(
     {
         CanExecuteChanged?.Invoke(this, EventArgs.Empty);
     }
-    
+
     #endregion
-    
+
     #region 私有执行方法
-    
+
     /// <summary>
     /// 内部异步执行实现
     /// </summary>
@@ -168,22 +168,24 @@ public class AsyncRelayCommand(
     private async Task ExecuteInternalAsync(object? parameter)
     {
         if (!CanExecute(parameter))
+        {
             return;
-        
+        }
+
         // 取消之前的操作
         await CancelPreviousOperationAsync();
-        
+
         // 创建新的取消令牌源
         _cancellationTokenSource = new CancellationTokenSource();
-        
+
         try
         {
             IsExecuting = true;
-            
+
             // 包装任务以支持通知
             var task = ExecuteWithCancellationAsync();
             Execution = new NotifyTaskCompletion(task);
-            
+
             await task;
         }
         catch (OperationCanceledException)
@@ -200,7 +202,7 @@ public class AsyncRelayCommand(
             await CleanupExecutionAsync();
         }
     }
-    
+
     /// <summary>
     /// 执行用户提供的异步操作，支持取消
     /// </summary>
@@ -208,23 +210,23 @@ public class AsyncRelayCommand(
     private async Task ExecuteWithCancellationAsync()
     {
         var cancellationToken = _cancellationTokenSource?.Token ?? CancellationToken.None;
-        
+
         // 创建一个组合任务，支持取消
         var executeTask = _execute();
         var cancellationTask = Task.Delay(-1, cancellationToken);
-        
+
         var completedTask = await Task.WhenAny(executeTask, cancellationTask);
-        
+
         if (completedTask == cancellationTask)
         {
             // 取消任务完成，抛出取消异常
             cancellationToken.ThrowIfCancellationRequested();
         }
-        
+
         // 等待实际任务完成
         await executeTask;
     }
-    
+
     /// <summary>
     /// 取消之前的操作
     /// </summary>
@@ -234,15 +236,15 @@ public class AsyncRelayCommand(
         if (_cancellationTokenSource != null)
         {
             _cancellationTokenSource.Cancel();
-            
+
             // 等待短暂时间让取消操作完成
             await Task.Delay(10);
-            
+
             _cancellationTokenSource.Dispose();
             _cancellationTokenSource = null;
         }
     }
-    
+
     /// <summary>
     /// 处理执行错误
     /// </summary>
@@ -259,7 +261,7 @@ public class AsyncRelayCommand(
             System.Diagnostics.Debug.WriteLine($"错误处理器异常: {handlerException.Message}");
         }
     }
-    
+
     /// <summary>
     /// 清理执行状态
     /// </summary>
@@ -267,17 +269,17 @@ public class AsyncRelayCommand(
     private async Task CleanupExecutionAsync()
     {
         IsExecuting = false;
-        
+
         if (_cancellationTokenSource != null)
         {
             _cancellationTokenSource.Dispose();
             _cancellationTokenSource = null;
         }
-        
+
         // 短暂延迟以确保状态更新
         await Task.Delay(1);
     }
-    
+
     #endregion
 }
 
@@ -297,30 +299,30 @@ public class AsyncRelayCommand<T>(
     IProgress<int>? progress = null) : ObservableObject, IAsyncCommand
 {
     #region 私有字段
-    
+
     private readonly Func<T?, Task> _execute = execute ?? throw new ArgumentNullException(nameof(execute));
     private readonly Predicate<T?>? _canExecute = canExecute;
     private readonly Action<Exception>? _errorHandler = errorHandler;
     private readonly IProgress<int>? _progress = progress;
-    
+
     private bool _isExecuting;
     private int _progressValue;
     private CancellationTokenSource? _cancellationTokenSource;
     private NotifyTaskCompletion? _execution;
-    
+
     #endregion
-    
+
     #region 事件
-    
+
     /// <summary>
     /// 当 CanExecute 状态发生变化时引发此事件
     /// </summary>
     public event EventHandler? CanExecuteChanged;
-    
+
     #endregion
-    
+
     #region 公共属性
-    
+
     /// <summary>
     /// 获取一个值，指示命令是否正在执行
     /// </summary>
@@ -335,7 +337,7 @@ public class AsyncRelayCommand<T>(
             }
         }
     }
-    
+
     /// <summary>
     /// 获取或设置进度值 (0-100)
     /// </summary>
@@ -344,7 +346,7 @@ public class AsyncRelayCommand<T>(
         get => _progressValue;
         private set => SetProperty(ref _progressValue, value);
     }
-    
+
     /// <summary>
     /// 获取当前执行任务的通知包装器
     /// </summary>
@@ -353,17 +355,17 @@ public class AsyncRelayCommand<T>(
         get => _execution;
         private set => SetProperty(ref _execution, value);
     }
-    
+
     /// <summary>
     /// 获取取消令牌，用于取消正在执行的操作
     /// </summary>
-    public CancellationToken CancellationToken => 
+    public CancellationToken CancellationToken =>
         _cancellationTokenSource?.Token ?? CancellationToken.None;
-    
+
     #endregion
-    
+
     #region ICommand实现
-    
+
     /// <summary>
     /// 确定命令是否可以执行
     /// </summary>
@@ -373,7 +375,7 @@ public class AsyncRelayCommand<T>(
     {
         return !IsExecuting && (_canExecute?.Invoke((T?)parameter) ?? true);
     }
-    
+
     /// <summary>
     /// 同步执行命令（内部调用异步方法）
     /// </summary>
@@ -383,11 +385,11 @@ public class AsyncRelayCommand<T>(
         // 使用 Fire-and-Forget 模式，避免 async void
         _ = ExecuteInternalAsync((T?)parameter);
     }
-    
+
     #endregion
-    
+
     #region IAsyncCommand实现
-    
+
     /// <summary>
     /// 异步执行命令
     /// </summary>
@@ -397,7 +399,7 @@ public class AsyncRelayCommand<T>(
     {
         await ExecuteInternalAsync((T?)parameter);
     }
-    
+
     /// <summary>
     /// 取消正在执行的命令
     /// </summary>
@@ -405,11 +407,11 @@ public class AsyncRelayCommand<T>(
     {
         _cancellationTokenSource?.Cancel();
     }
-    
+
     #endregion
-    
+
     #region 类型安全的异步执行
-    
+
     /// <summary>
     /// 类型安全的异步执行命令
     /// </summary>
@@ -419,11 +421,11 @@ public class AsyncRelayCommand<T>(
     {
         await ExecuteInternalAsync(parameter);
     }
-    
+
     #endregion
-    
+
     #region 命令状态管理
-    
+
     /// <summary>
     /// 触发 CanExecuteChanged 事件
     /// </summary>
@@ -431,11 +433,11 @@ public class AsyncRelayCommand<T>(
     {
         CanExecuteChanged?.Invoke(this, EventArgs.Empty);
     }
-    
+
     #endregion
-    
+
     #region 私有执行方法
-    
+
     /// <summary>
     /// 内部异步执行实现
     /// </summary>
@@ -444,28 +446,30 @@ public class AsyncRelayCommand<T>(
     private async Task ExecuteInternalAsync(T? parameter)
     {
         if (!CanExecute(parameter))
+        {
             return;
-        
+        }
+
         // 取消之前的操作
         await CancelPreviousOperationAsync();
-        
+
         // 创建新的取消令牌源
         _cancellationTokenSource = new CancellationTokenSource();
-        
+
         try
         {
             IsExecuting = true;
             ProgressValue = 0;
-            
+
             // 设置进度报告
             var progressReporter = CreateProgressReporter();
-            
+
             // 包装任务以支持通知
             var task = ExecuteWithProgressAsync(parameter, progressReporter);
             Execution = new NotifyTaskCompletion(task);
-            
+
             await task;
-            
+
             ProgressValue = 100;
         }
         catch (OperationCanceledException)
@@ -484,7 +488,7 @@ public class AsyncRelayCommand<T>(
             await CleanupExecutionAsync();
         }
     }
-    
+
     /// <summary>
     /// 执行用户提供的异步操作，支持进度报告
     /// </summary>
@@ -494,23 +498,23 @@ public class AsyncRelayCommand<T>(
     private async Task ExecuteWithProgressAsync(T? parameter, IProgress<int>? progressReporter)
     {
         var cancellationToken = _cancellationTokenSource?.Token ?? CancellationToken.None;
-        
+
         // 创建一个组合任务，支持取消和进度报告
         var executeTask = _execute(parameter);
         var cancellationTask = Task.Delay(-1, cancellationToken);
-        
+
         var completedTask = await Task.WhenAny(executeTask, cancellationTask);
-        
+
         if (completedTask == cancellationTask)
         {
             // 取消任务完成，抛出取消异常
             cancellationToken.ThrowIfCancellationRequested();
         }
-        
+
         // 等待实际任务完成
         await executeTask;
     }
-    
+
     /// <summary>
     /// 创建进度报告器
     /// </summary>
@@ -518,8 +522,10 @@ public class AsyncRelayCommand<T>(
     private IProgress<int>? CreateProgressReporter()
     {
         if (_progress == null)
+        {
             return new Progress<int>(value => ProgressValue = Math.Clamp(value, 0, 100));
-        
+        }
+
         return new Progress<int>(value =>
         {
             var clampedValue = Math.Clamp(value, 0, 100);
@@ -527,7 +533,7 @@ public class AsyncRelayCommand<T>(
             _progress.Report(clampedValue);
         });
     }
-    
+
     /// <summary>
     /// 取消之前的操作
     /// </summary>
@@ -537,15 +543,15 @@ public class AsyncRelayCommand<T>(
         if (_cancellationTokenSource != null)
         {
             _cancellationTokenSource.Cancel();
-            
+
             // 等待短暂时间让取消操作完成
             await Task.Delay(10);
-            
+
             _cancellationTokenSource.Dispose();
             _cancellationTokenSource = null;
         }
     }
-    
+
     /// <summary>
     /// 处理执行错误
     /// </summary>
@@ -562,7 +568,7 @@ public class AsyncRelayCommand<T>(
             System.Diagnostics.Debug.WriteLine($"错误处理器异常: {handlerException.Message}");
         }
     }
-    
+
     /// <summary>
     /// 清理执行状态
     /// </summary>
@@ -570,17 +576,17 @@ public class AsyncRelayCommand<T>(
     private async Task CleanupExecutionAsync()
     {
         IsExecuting = false;
-        
+
         if (_cancellationTokenSource != null)
         {
             _cancellationTokenSource.Dispose();
             _cancellationTokenSource = null;
         }
-        
+
         // 短暂延迟以确保状态更新
         await Task.Delay(1);
     }
-    
+
     #endregion
 }
 
@@ -594,52 +600,52 @@ public class NotifyTaskCompletion(Task task) : INotifyPropertyChanged
     /// 属性更改事件
     /// </summary>
     public event PropertyChangedEventHandler? PropertyChanged;
-    
+
     /// <summary>
     /// 获取包装的任务
     /// </summary>
     public Task Task { get; } = task ?? throw new ArgumentNullException(nameof(task));
-    
+
     /// <summary>
     /// 获取任务的结果（如果是泛型任务）
     /// </summary>
     public TaskStatus Status => Task.Status;
-    
+
     /// <summary>
     /// 获取一个值，指示任务是否已完成
     /// </summary>
     public bool IsCompleted => Task.IsCompleted;
-    
+
     /// <summary>
     /// 获取一个值，指示任务是否成功完成
     /// </summary>
     public bool IsCompletedSuccessfully => Task.IsCompletedSuccessfully;
-    
+
     /// <summary>
     /// 获取一个值，指示任务是否被取消
     /// </summary>
     public bool IsCanceled => Task.IsCanceled;
-    
+
     /// <summary>
     /// 获取一个值，指示任务是否出现故障
     /// </summary>
     public bool IsFaulted => Task.IsFaulted;
-    
+
     /// <summary>
     /// 获取任务的异常信息
     /// </summary>
     public AggregateException? Exception => Task.Exception;
-    
+
     /// <summary>
     /// 获取内部异常
     /// </summary>
     public Exception? InnerException => Exception?.GetBaseException();
-    
+
     /// <summary>
     /// 获取错误消息
     /// </summary>
     public string? ErrorMessage => InnerException?.Message;
-    
+
     /// <summary>
     /// 触发属性更改事件
     /// </summary>

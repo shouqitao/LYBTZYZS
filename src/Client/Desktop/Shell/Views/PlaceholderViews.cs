@@ -1,9 +1,9 @@
-using System.Windows.Controls;
+﻿using System.Windows.Controls;
 
 namespace LYBT.Desktop.Shell.Views
 {
     // 以下是占位视图类，实际的XAML文件需要单独创建
-    
+
     /// <summary>
     /// 登录视图
     /// </summary>
@@ -15,7 +15,7 @@ namespace LYBT.Desktop.Shell.Views
         }
     }
     // HomeView 已在 HomeView.xaml.cs 中定义
-    
+
     /// <summary>
     /// 患者列表视图
     /// </summary>
@@ -26,7 +26,7 @@ namespace LYBT.Desktop.Shell.Views
             // InitializeComponent();
         }
     }
-    
+
     /// <summary>
     /// 患者详情视图
     /// </summary>
@@ -37,7 +37,7 @@ namespace LYBT.Desktop.Shell.Views
             // InitializeComponent();
         }
     }
-    
+
     /// <summary>
     /// 处方视图
     /// </summary>
@@ -48,7 +48,7 @@ namespace LYBT.Desktop.Shell.Views
             // InitializeComponent();
         }
     }
-    
+
     /// <summary>
     /// 诊疗视图
     /// </summary>

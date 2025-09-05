@@ -1,8 +1,8 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
+using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.Extensions.Configuration;
 
 namespace LYBT.Desktop.Core.Configuration
@@ -15,11 +15,11 @@ namespace LYBT.Desktop.Core.Configuration
     {
         private readonly IConfiguration _configuration;
         private readonly Dictionary<string, object> _runtimeValues = new();
-        
+
         public string ApiBaseUrl => GetValue("ApiBaseUrl", "https://localhost:7001");
         public int ConnectionTimeout => GetValue("ConnectionTimeout", 30);
         public bool IsDebugMode => GetValue("IsDebugMode", false);
-        
+
         public CacheConfiguration Cache { get; private set; } = null!;
         public LoggingConfiguration Logging { get; private set; } = null!;
         public PerformanceConfiguration Performance { get; private set; } = null!;
@@ -97,7 +97,7 @@ namespace LYBT.Desktop.Core.Configuration
                     {
                         return (T)(object)configValue;
                     }
-                    
+
                     // 尝试JSON反序列化
                     return JsonSerializer.Deserialize<T>(configValue) ?? defaultValue!;
                 }

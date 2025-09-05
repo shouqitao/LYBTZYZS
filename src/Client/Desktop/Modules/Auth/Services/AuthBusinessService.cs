@@ -1,11 +1,11 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using LYBT.Desktop.Auth.Interfaces;
+using LYBT.Shared.Interfaces.Api;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Shared.Interfaces.Api;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Auth.Services;
 
@@ -40,17 +40,17 @@ public class AuthBusinessService(
         try
         {
             _logger.LogInformation("开始处理用户登录: {Username}", loginRequest.Username);
-            
+
             var response = await _authApi.LoginAsync(loginRequest);
-            
+
             if (response.Success && response.Data != null)
             {
-                _logger.LogInformation("用户登录成功: {Username}, 角色: {Role}", 
+                _logger.LogInformation("用户登录成功: {Username}, 角色: {Role}",
                     loginRequest.Username, response.Data.User?.Role);
                 return ServiceResult<LoginResponse>.Success(response.Data);
             }
-            
-            _logger.LogWarning("用户登录失败: {Username}, 错误: {Message}", 
+
+            _logger.LogWarning("用户登录失败: {Username}, 错误: {Message}",
                 loginRequest.Username, response.Message);
             return ServiceResult<LoginResponse>.Failure("登录失败，请检查用户名和密码");
         }
@@ -71,15 +71,15 @@ public class AuthBusinessService(
         try
         {
             _logger.LogInformation("开始处理用户登出");
-            
+
             var response = await _authApi.LogoutAsync();
-            
+
             if (response.Success)
             {
                 _logger.LogInformation("用户登出成功，会话已清理");
                 return ServiceResult.Success("登出成功");
             }
-            
+
             _logger.LogWarning("用户登出失败: {Message}", response.Message);
             return ServiceResult.Failure(response.Message ?? "登出失败");
         }
@@ -100,15 +100,15 @@ public class AuthBusinessService(
         try
         {
             _logger.LogInformation("开始处理JWT令牌刷新");
-            
+
             var response = await _authApi.RefreshTokenAsync();
-            
+
             if (response.Success && response.Data != null)
             {
                 _logger.LogInformation("JWT令牌刷新成功，会话已延长");
                 return ServiceResult<LoginResponse>.Success(response.Data);
             }
-            
+
             _logger.LogWarning("JWT令牌刷新失败: {Message}", response.Message);
             return ServiceResult<LoginResponse>.Failure(response.Message ?? "令牌刷新失败");
         }
@@ -133,22 +133,22 @@ public class AuthBusinessService(
         try
         {
             _logger.LogInformation("开始处理系统管理员密码修改");
-            
+
             // 将 ChangeSysAdminPassword 转换为 ChangePasswordRequest
             var changePasswordRequest = new ChangePasswordRequest
             {
                 OldPassword = request.OldPassword,
                 NewPassword = request.NewPassword
             };
-            
+
             var response = await _authApi.ChangePasswordAsync(changePasswordRequest);
-            
+
             if (response.Success)
             {
                 _logger.LogInformation("系统管理员密码修改成功");
                 return ServiceResult.Success("密码修改成功");
             }
-            
+
             _logger.LogWarning("系统管理员密码修改失败: {Message}", response.Message);
             return ServiceResult.Failure(response.Message ?? "密码修改失败");
         }

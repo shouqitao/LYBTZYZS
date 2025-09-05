@@ -1,7 +1,7 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System;
+﻿using System;
 using System.Net;
 using System.Net.Http;
+using LYBT.Shared.Models.Contracts.Common;
 using Polly;
 using Polly.Extensions.Http;
 
@@ -29,7 +29,7 @@ namespace LYBT.Desktop.Core.Extensions
                         Console.WriteLine($"重试 {retryNumber}/{retryCount}，状态码: {statusCode}，等待 {timespan.TotalSeconds} 秒");
                     });
         }
-        
+
         /// <summary>
         /// 创建标准的熔断策略
         /// </summary>
@@ -55,7 +55,7 @@ namespace LYBT.Desktop.Core.Extensions
                         Console.WriteLine("熔断器半开状态");
                     });
         }
-        
+
         /// <summary>
         /// 创建标准的超时策略
         /// </summary>
@@ -70,7 +70,7 @@ namespace LYBT.Desktop.Core.Extensions
                         await System.Threading.Tasks.Task.CompletedTask;
                     });
         }
-        
+
         /// <summary>
         /// 创建组合策略（超时 -> 重试 -> 熔断）
         /// </summary>
@@ -83,11 +83,11 @@ namespace LYBT.Desktop.Core.Extensions
             var timeoutPolicy = CreateStandardTimeoutPolicy(timeoutSeconds);
             var retryPolicy = CreateStandardRetryPolicy(retryCount);
             var circuitBreakerPolicy = CreateStandardCircuitBreakerPolicy(circuitBreakerEvents, circuitBreakerDurationSeconds);
-            
+
             // 组合策略：超时 -> 重试 -> 熔断
             return Policy.WrapAsync(timeoutPolicy, retryPolicy, circuitBreakerPolicy);
         }
-        
+
         /// <summary>
         /// 判断是否为成功状态码（包括业务逻辑）
         /// </summary>
@@ -96,7 +96,7 @@ namespace LYBT.Desktop.Core.Extensions
             // 2xx 范围内的状态码被认为是成功的
             return (int)statusCode >= 200 && (int)statusCode < 300;
         }
-        
+
         /// <summary>
         /// 创建带日志的重试策略
         /// </summary>

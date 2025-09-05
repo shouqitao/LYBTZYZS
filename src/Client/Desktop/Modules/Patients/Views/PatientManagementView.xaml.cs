@@ -1,4 +1,4 @@
-using System.Windows.Controls;
+﻿using System.Windows.Controls;
 using LYBT.Desktop.Patients.ViewModels;
 
 namespace LYBT.Desktop.Patients.Views
@@ -21,7 +21,7 @@ namespace LYBT.Desktop.Patients.Views
             try
             {
                 System.Diagnostics.Debug.WriteLine("🏥 PatientManagementView Loaded - 开始自动加载患者数据");
-                
+
                 if (DataContext is PatientManagementViewModel viewModel)
                 {
                     await viewModel.RefreshDataAsync();

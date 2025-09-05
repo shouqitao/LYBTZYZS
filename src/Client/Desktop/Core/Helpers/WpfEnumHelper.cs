@@ -1,9 +1,9 @@
+﻿using System.Collections.ObjectModel;
+using System.ComponentModel;
+using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Extensions;
-using LYBT.Shared.Models.Common;
 using LYBT.Shared.Utilities.Helpers;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
 
 namespace LYBT.Client.Core.Helpers
 {

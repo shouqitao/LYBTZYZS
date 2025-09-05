@@ -1,4 +1,4 @@
-using LYBT.WebAPI.Middleware;
+﻿using LYBT.WebAPI.Middleware;
 
 namespace LYBT.WebAPI.Extensions;
 
@@ -15,19 +15,19 @@ public static class UnifiedMiddlewareConfiguration
     {
         // 1. 开发环境专用中间件
         app.ConfigureDevelopmentMiddleware();
-        
+
         // 2. 安全和性能中间件 (简化版 - 仅基础功能)
         // app.ConfigureSecurityMiddleware(); // Removed - enterprise security features
-        
+
         // 3. API文档中间件
         app.ConfigureSwaggerMiddleware();
-        
+
         // 4. 认证和授权中间件
         app.ConfigureAuthenticationMiddleware();
-        
+
         // 5. 路由中间件
         app.ConfigureRoutingMiddleware();
-        
+
         return app;
     }
 

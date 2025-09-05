@@ -1,7 +1,7 @@
-using LYBT.Entities.Common;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using LYBT.Entities.Common;
 
 namespace LYBT.Entities.Prescriptions
 {

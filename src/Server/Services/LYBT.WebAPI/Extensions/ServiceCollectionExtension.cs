@@ -1,12 +1,12 @@
-// UltraThink架构 - 模块化注册扩展
+﻿// UltraThink架构 - 模块化注册扩展
 using LYBT.Module.Auth;
-using LYBT.Module.Users;
-using LYBT.Module.Patients;
-using LYBT.Module.MedicalCase;
 using LYBT.Module.Consultation;
-using LYBT.Module.Prescriptions;
-using LYBT.Module.Herbs;
 using LYBT.Module.Formula;
+using LYBT.Module.Herbs;
+using LYBT.Module.MedicalCase;
+using LYBT.Module.Patients;
+using LYBT.Module.Prescriptions;
+using LYBT.Module.Users;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace LYBT.WebAPI.Extensions;
@@ -24,28 +24,28 @@ public static class ServiceCollectionExtension
     public static IServiceCollection AddAllModules(this IServiceCollection services)
     {
         // UltraThink模块化架构 - 统一使用AddXxxModule()扩展方法
-        
+
         // 认证模块
         services.AddAuthModule();
-        
+
         // 用户模块
         services.AddUsersModuleServices();
-        
+
         // 患者模块
         services.AddPatientsModuleServices();
-        
+
         // 医疗案例模块
         services.AddMedicalCaseModule();
-        
+
         // 看诊模块
         services.AddConsultationModule();
-        
+
         // 处方模块
         services.AddPrescriptionsModule();
-        
+
         // 药材模块
         services.AddHerbsModule();
-        
+
         // 验方模块
         services.AddFormulaModule();
 

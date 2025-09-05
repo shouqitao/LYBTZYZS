@@ -1,4 +1,4 @@
-namespace LYBT.Shared.Models.Contracts.Common
+﻿namespace LYBT.Shared.Models.Contracts.Common
 {
     /// <summary>
     /// 错误严重程度枚举

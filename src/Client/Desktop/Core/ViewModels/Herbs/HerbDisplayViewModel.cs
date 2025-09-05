@@ -1,6 +1,6 @@
+﻿using LYBT.Desktop.Core.Extensions;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
-using LYBT.Desktop.Core.Extensions;
 using Prism.Mvvm;
 
 namespace LYBT.Desktop.Core.ViewModels.Herbs
@@ -53,24 +53,24 @@ namespace LYBT.Desktop.Core.ViewModels.Herbs
         public string FullDisplayName => $"{_herbData.Name} {PriceDisplay}";
 
         /// <summary>产地规格显示</summary>
-        public string OriginSpecDisplay => 
-            string.IsNullOrEmpty(_herbData.Origin) && string.IsNullOrEmpty(_herbData.Spec) 
-                ? "未知产地" 
+        public string OriginSpecDisplay =>
+            string.IsNullOrEmpty(_herbData.Origin) && string.IsNullOrEmpty(_herbData.Spec)
+                ? "未知产地"
                 : $"{_herbData.Origin ?? "未知"} {_herbData.Spec ?? ""}".Trim();
 
         /// <summary>功效简要显示</summary>
-        public string EffectBrief => string.IsNullOrEmpty(_herbData.Effect) ? 
-            "功效未录入" : 
-            _herbData.Effect.Length > 20 ? 
-                _herbData.Effect.Substring(0, 20) + "..." : 
+        public string EffectBrief => string.IsNullOrEmpty(_herbData.Effect) ?
+            "功效未录入" :
+            _herbData.Effect.Length > 20 ?
+                _herbData.Effect.Substring(0, 20) + "..." :
                 _herbData.Effect;
 
         /// <summary>功效完整显示</summary>
-        public string EffectFull => string.IsNullOrEmpty(_herbData.Effect) ? 
+        public string EffectFull => string.IsNullOrEmpty(_herbData.Effect) ?
             "功效未录入" : _herbData.Effect;
 
         /// <summary>用法用量显示</summary>
-        public string UsageDisplay => string.IsNullOrEmpty(_herbData.Usage) ? 
+        public string UsageDisplay => string.IsNullOrEmpty(_herbData.Usage) ?
             "用量未录入" : _herbData.Usage;
 
         /// <summary>分类显示</summary>
@@ -86,7 +86,7 @@ namespace LYBT.Desktop.Core.ViewModels.Herbs
         public string PriceUnitDisplay => $"¥/{_herbData.Unit}";
 
         /// <summary>备注显示</summary>
-        public string RemarkDisplay => string.IsNullOrEmpty(_herbData.Remark) ? 
+        public string RemarkDisplay => string.IsNullOrEmpty(_herbData.Remark) ?
             "无备注" : _herbData.Remark;
 
         /// <summary>最后操作信息显示</summary>
@@ -105,7 +105,7 @@ namespace LYBT.Desktop.Core.ViewModels.Herbs
         public string BriefInfo => $"{_herbData.Name} | {PriceDisplay} | {StockStatusBrief}";
 
         /// <summary>详细信息显示（多行显示）</summary>
-        public string DetailedInfo => 
+        public string DetailedInfo =>
             $"名称: {_herbData.Name}\n" +
             $"规格: {OriginSpecDisplay}\n" +
             $"价格: {PriceDisplay}\n" +
@@ -147,8 +147,10 @@ namespace LYBT.Desktop.Core.ViewModels.Herbs
         public string TruncateText(string text, int maxLength)
         {
             if (string.IsNullOrEmpty(text) || text.Length <= maxLength)
+            {
                 return text ?? string.Empty;
-            
+            }
+
             return text.Substring(0, maxLength) + "...";
         }
 

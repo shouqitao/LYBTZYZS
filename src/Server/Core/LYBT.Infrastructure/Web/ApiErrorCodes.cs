@@ -1,4 +1,4 @@
-namespace LYBT.Infrastructure.Web
+﻿namespace LYBT.Infrastructure.Web
 {
 
     /// <summary>
@@ -297,17 +297,17 @@ namespace LYBT.Infrastructure.Web
         public const string INTERNAL_SERVER_ERROR = "服务器内部错误";
         public const string OPERATION_TIMEOUT = "操作超时";
         public const string RATE_LIMIT_EXCEEDED = "请求频率过高，请稍后再试";
-        
+
         public const string INVALID_CREDENTIALS = "用户名或密码错误";
         public const string ACCOUNT_LOCKED = "账户已被锁定";
         public const string ACCOUNT_DISABLED = "账户已禁用";
         public const string TOKEN_EXPIRED = "登录已过期，请重新登录";
         public const string INVALID_TOKEN = "无效的访问令牌";
-        
+
         public const string DATA_SAVE_FAILED = "数据保存失败";
         public const string DATA_UPDATE_FAILED = "数据更新失败";
         public const string DATA_DELETE_FAILED = "数据删除失败";
-        
+
         public const string USERNAME_EXISTS = "用户名已存在";
         public const string ID_NUMBER_EXISTS = "身份证号已存在";
         public const string PHONE_EXISTS = "手机号已存在";

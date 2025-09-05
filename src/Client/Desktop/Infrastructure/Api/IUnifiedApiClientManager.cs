@@ -1,6 +1,6 @@
-using LYBT.Shared.Interfaces.Api;
-using System;
+﻿using System;
 using System.Threading.Tasks;
+using LYBT.Shared.Interfaces.Api;
 
 namespace LYBT.Desktop.Infrastructure.Api;
 

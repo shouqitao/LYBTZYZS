@@ -1,9 +1,9 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System;
+﻿using System;
 using System.Threading.Tasks;
+using LYBT.Desktop.Core.ViewModels;
+using LYBT.Shared.Models.Contracts.Common;
 using Prism.Commands;
 using Prism.Mvvm;
-using LYBT.Desktop.Core.ViewModels;
 
 namespace LYBT.Desktop.Shell.Dialogs.ViewModels
 {

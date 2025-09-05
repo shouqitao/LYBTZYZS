@@ -1,11 +1,11 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using LYBT.Desktop.Prescriptions.Interfaces;
+using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
-using LYBT.Shared.Interfaces.Services;
 
 namespace LYBT.Desktop.Prescriptions.Services;
 

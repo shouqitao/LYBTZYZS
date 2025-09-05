@@ -1,8 +1,8 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Prism.Modularity;
 
@@ -91,7 +91,7 @@ namespace LYBT.Desktop.Core.Services.Performance
         public async Task PreloadModulesAsync(string userRole)
         {
             _logger.LogInformation("UltraThink模块预加载: 开始为角色 {Role} 预加载模块", userRole);
-            
+
             if (!_roleBasedPreloadModules.TryGetValue(userRole, out var modulesToPreload))
             {
                 _logger.LogWarning("未找到角色 {Role} 的预加载配置", userRole);
@@ -115,9 +115,9 @@ namespace LYBT.Desktop.Core.Services.Performance
             }
 
             await Task.WhenAll(preloadTasks);
-            
+
             stopwatch.Stop();
-            _logger.LogInformation("UltraThink模块预加载: 角色 {Role} 的 {Count} 个模块预加载完成，耗时 {Duration}ms", 
+            _logger.LogInformation("UltraThink模块预加载: 角色 {Role} 的 {Count} 个模块预加载完成，耗时 {Duration}ms",
                 userRole, modulesToPreload.Count, stopwatch.ElapsedMilliseconds);
         }
 
@@ -130,23 +130,23 @@ namespace LYBT.Desktop.Core.Services.Performance
 
                 // 使用ModuleManager的LoadModule方法
                 await Task.Run(() => _moduleManager.LoadModule(moduleName));
-                
+
                 moduleStopwatch.Stop();
                 TrackModuleInitialization(moduleName, moduleStopwatch.Elapsed);
-                
+
                 // 标记模块就绪
                 if (_moduleReadyTasks.TryGetValue(moduleName, out var tcs))
                 {
                     tcs.SetResult(true);
                 }
 
-                _logger.LogDebug("模块 {ModuleName} 预加载完成，耗时 {Duration}ms", 
+                _logger.LogDebug("模块 {ModuleName} 预加载完成，耗时 {Duration}ms",
                     moduleName, moduleStopwatch.ElapsedMilliseconds);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "预加载模块 {ModuleName} 失败", moduleName);
-                
+
                 if (_moduleReadyTasks.TryGetValue(moduleName, out var tcs))
                 {
                     tcs.SetException(ex);
@@ -162,7 +162,7 @@ namespace LYBT.Desktop.Core.Services.Performance
                 metrics.LastLoaded = DateTime.Now;
                 metrics.LoadCount++;
 
-                _logger.LogDebug("模块 {ModuleName} 初始化追踪: {Duration}ms (第{Count}次加载)", 
+                _logger.LogDebug("模块 {ModuleName} 初始化追踪: {Duration}ms (第{Count}次加载)",
                     moduleName, initializationTime.TotalMilliseconds, metrics.LoadCount);
             }
         }
@@ -209,7 +209,7 @@ namespace LYBT.Desktop.Core.Services.Performance
 
             foreach (var (moduleName, metrics) in loadingTimes.Take(3))
             {
-                _logger.LogWarning("模块 {ModuleName} 初始化时间较长: {Duration}ms，建议优化", 
+                _logger.LogWarning("模块 {ModuleName} 初始化时间较长: {Duration}ms，建议优化",
                     moduleName, metrics.InitializationTime.TotalMilliseconds);
             }
 
@@ -221,7 +221,7 @@ namespace LYBT.Desktop.Core.Services.Performance
 
             if (slowModules.Any())
             {
-                _logger.LogInformation("UltraThink建议: 以下模块可考虑延迟加载或优化: {SlowModules}", 
+                _logger.LogInformation("UltraThink建议: 以下模块可考虑延迟加载或优化: {SlowModules}",
                     string.Join(", ", slowModules));
             }
         }

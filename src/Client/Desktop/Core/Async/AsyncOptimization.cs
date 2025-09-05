@@ -1,5 +1,4 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -8,6 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
+using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Core.Async
@@ -54,7 +54,7 @@ namespace LYBT.Desktop.Core.Async
         {
             var results = new List<TResult>();
             var batches = source.Batch(batchSize);
-            
+
             foreach (var batch in batches)
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -63,7 +63,7 @@ namespace LYBT.Desktop.Core.Async
                 ).ConfigureAwait(false);
                 results.AddRange(batchResults);
             }
-            
+
             return results;
         }
 
@@ -77,17 +77,17 @@ namespace LYBT.Desktop.Core.Async
         {
             using var timeoutCts = new CancellationTokenSource(timeout);
             using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCts.Token);
-            
+
             var completedTask = await Task.WhenAny(
                 task,
                 Task.Delay(Timeout.Infinite, linkedCts.Token)
             ).ConfigureAwait(false);
-            
+
             if (completedTask == task)
             {
                 return await task.ConfigureAwait(false);
             }
-            
+
             throw new TimeoutException($"操作超时：{timeout}");
         }
 
@@ -106,7 +106,7 @@ namespace LYBT.Desktop.Core.Async
                     batch = new List<T>(batchSize);
                 }
             }
-            
+
             if (batch.Count > 0)
             {
                 yield return batch;
@@ -306,7 +306,7 @@ namespace LYBT.Desktop.Core.Async
         protected override bool TryExecuteTaskInline(Task task, bool taskWasPreviouslyQueued)
         {
             // 允许内联执行
-            return Thread.CurrentThread.Name?.StartsWith("OptimizedTaskScheduler") == true 
+            return Thread.CurrentThread.Name?.StartsWith("OptimizedTaskScheduler") == true
                 && TryExecuteTask(task);
         }
 
@@ -322,7 +322,7 @@ namespace LYBT.Desktop.Core.Async
         {
             _cancellationTokenSource.Cancel();
             _tasks.CompleteAdding();
-            
+
             foreach (var thread in _threads)
             {
                 thread.Join(TimeSpan.FromSeconds(5));
@@ -350,19 +350,19 @@ namespace LYBT.Desktop.Core.Async
         {
             var sw = Stopwatch.StartNew();
             var stats = _statistics.GetOrAdd(operationName, _ => new OperationStatistics { Name = operationName });
-            
+
             try
             {
                 var result = await operation().ConfigureAwait(false);
                 sw.Stop();
-                
+
                 stats.RecordSuccess(sw.ElapsedMilliseconds);
-                
+
                 if (sw.ElapsedMilliseconds > 1000)
                 {
                     _logger?.LogWarning($"慢操作检测: {operationName} 耗时 {sw.ElapsedMilliseconds}ms");
                 }
-                
+
                 return result;
             }
             catch (Exception ex)
@@ -391,7 +391,7 @@ namespace LYBT.Desktop.Core.Async
             private long _totalCalls;
             private long _successCount;
             private long _failureCount;
-            
+
             public long TotalCalls => _totalCalls;
             public long SuccessCount => _successCount;
             public long FailureCount => _failureCount;
@@ -452,13 +452,13 @@ namespace LYBT.Desktop.Core.Async
         public static BatchBlock<T> CreateBatchBlock<T>(int batchSize, TimeSpan? timeout = null)
         {
             var block = new BatchBlock<T>(batchSize);
-            
+
             if (timeout.HasValue)
             {
                 // 定时触发批处理
                 var timer = new Timer(_ => block.TriggerBatch(), null, timeout.Value, timeout.Value);
             }
-            
+
             return block;
         }
     }

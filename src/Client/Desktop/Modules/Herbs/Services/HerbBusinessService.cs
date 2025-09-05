@@ -1,12 +1,12 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using LYBT.Desktop.Herbs.Interfaces;
 using LYBT.Shared.Interfaces.Api;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Herbs.Services;
 
@@ -37,13 +37,13 @@ public class HerbBusinessService(
     public async Task<ServiceResult<HerbDto>> CreateAsync(HerbCreateDto createDto)
     {
         ArgumentNullException.ThrowIfNull(createDto, nameof(createDto));
-        
+
         _logger.LogInformation("中药材创建请求: 药材名称: {HerbName}", createDto.Name);
-        
+
         try
         {
             var refitResponse = await _herbApi.CreateHerbAsync(createDto);
-            
+
             if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
             {
                 var herb = refitResponse.Content;
@@ -70,13 +70,13 @@ public class HerbBusinessService(
     public async Task<ServiceResult<HerbDto>> UpdateAsync(Guid id, HerbUpdateDto updateDto)
     {
         ArgumentNullException.ThrowIfNull(updateDto, nameof(updateDto));
-        
+
         _logger.LogInformation("药材更新请求: {HerbId}", id);
-        
+
         try
         {
             var refitResponse = await _herbApi.UpdateHerbAsync(id, updateDto);
-            
+
             if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
             {
                 var herb = refitResponse.Content;
@@ -120,7 +120,7 @@ public class HerbBusinessService(
     {
         return Task.FromResult(ServiceResult<bool>.Success(false));
     }
-    
+
     /// <summary>
     /// 批量导入药材
     /// </summary>
@@ -129,7 +129,7 @@ public class HerbBusinessService(
         _logger.LogInformation("批量导入药材: {Count}个", herbs.Count);
         return Task.FromResult(ServiceResult<object>.Failure("简单诊所版本暂不支持批量导入"));
     }
-    
+
     /// <summary>
     /// 导出药材数据
     /// </summary>

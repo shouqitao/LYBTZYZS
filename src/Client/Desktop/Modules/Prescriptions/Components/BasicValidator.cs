@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -49,7 +49,7 @@ namespace LYBT.Desktop.Prescriptions.Components
                 // 验证患者和医生信息
                 ValidateBasicIds(prescription, result);
 
-                _logger.LogDebug("处方验证完成: {ErrorCount}个错误, {WarningCount}个警告", 
+                _logger.LogDebug("处方验证完成: {ErrorCount}个错误, {WarningCount}个警告",
                     result.Errors.Count, result.Warnings.Count);
 
             }
@@ -145,7 +145,10 @@ namespace LYBT.Desktop.Prescriptions.Components
         /// <param name="result">验证结果</param>
         private void ValidatePrescriptionItem(PrescriptionItemDto item, ValidationResult result)
         {
-            if (item == null) return;
+            if (item == null)
+            {
+                return;
+            }
 
             // 验证药材名称
             if (string.IsNullOrWhiteSpace(item.HerbName))
@@ -231,10 +234,25 @@ namespace LYBT.Desktop.Prescriptions.Components
         {
             try
             {
-                if (prescription == null) return false;
-                if (string.IsNullOrWhiteSpace(prescription.Diagnosis)) return false;
-                if (prescription.DosageCount <= 0) return false;
-                if (prescription.Items == null || !prescription.Items.Any()) return false;
+                if (prescription == null)
+                {
+                    return false;
+                }
+
+                if (string.IsNullOrWhiteSpace(prescription.Diagnosis))
+                {
+                    return false;
+                }
+
+                if (prescription.DosageCount <= 0)
+                {
+                    return false;
+                }
+
+                if (prescription.Items == null || !prescription.Items.Any())
+                {
+                    return false;
+                }
 
                 return true;
             }
@@ -349,12 +367,16 @@ namespace LYBT.Desktop.Prescriptions.Components
         public override string ToString()
         {
             var messages = new List<string>();
-            
+
             if (Errors.Any())
+            {
                 messages.Add($"{Errors.Count}个错误");
-            
+            }
+
             if (Warnings.Any())
+            {
                 messages.Add($"{Warnings.Count}个警告");
+            }
 
             return messages.Any() ? string.Join(", ", messages) : "验证通过";
         }

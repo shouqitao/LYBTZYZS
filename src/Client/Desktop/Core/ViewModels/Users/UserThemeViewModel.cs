@@ -1,4 +1,4 @@
-using System.Windows.Media;
+﻿using System.Windows.Media;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using Prism.Mvvm;
@@ -166,7 +166,7 @@ namespace LYBT.Desktop.Core.ViewModels.Users
         public void UpdateUserData(UserDto newUserData)
         {
             _userData = newUserData;
-            
+
             // 刷新所有主题相关属性
             RaisePropertyChanged(nameof(StatusColor));
             RaisePropertyChanged(nameof(StatusBrush));

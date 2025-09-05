@@ -1,6 +1,6 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 
 namespace LYBT.WPF.Client.Controls.Users

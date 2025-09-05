@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using LYBT.Shared.Models.Contracts.Patients;
 using Prism.Mvvm;
 
@@ -24,7 +24,9 @@ namespace LYBT.Desktop.Core.ViewModels.Patients
         public PatientViewModel(PatientDto patientData)
         {
             if (patientData == null)
+            {
                 throw new ArgumentNullException(nameof(patientData));
+            }
 
             _display = new PatientDisplayViewModel(patientData);
             _state = new PatientStateViewModel();
@@ -86,9 +88,13 @@ namespace LYBT.Desktop.Core.ViewModels.Patients
             set
             {
                 if (value)
+                {
                     State.StartLoading();
+                }
                 else
+                {
                     State.StopLoading();
+                }
             }
         }
 
@@ -102,11 +108,13 @@ namespace LYBT.Desktop.Core.ViewModels.Patients
                     var today = DateTime.Today;
                     var birthDate = PatientData.BirthDate.Value;
                     int age = today.Year - birthDate.Year;
-                    
+
                     // 如果今年的生日还没到，年龄减一
                     if (birthDate.Date > today.AddYears(-age))
+                    {
                         age--;
-                        
+                    }
+
                     return Math.Max(0, age);
                 }
                 return 0;
@@ -129,7 +137,9 @@ namespace LYBT.Desktop.Core.ViewModels.Patients
         public void UpdatePatientData(PatientDto newPatientData)
         {
             if (newPatientData == null)
+            {
                 throw new ArgumentNullException(nameof(newPatientData));
+            }
 
             Display.UpdatePatientData(newPatientData);
             Theme.UpdatePatientData(newPatientData);

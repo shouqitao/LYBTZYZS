@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Globalization;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
@@ -178,10 +178,10 @@ namespace LYBT.Desktop.Core.ViewModels.Prescriptions
         public string GetStatusBadge()
         {
             var badges = new List<string>();
-            
+
             // UltraThink v2.0简化：删除支付和折扣相关字段
             badges.Add("正常状态");
-            
+
             return badges.Any() ? string.Join(" ", badges) : StatusDisplay;
         }
 
@@ -191,7 +191,11 @@ namespace LYBT.Desktop.Core.ViewModels.Prescriptions
         public string GetPriorityDisplay()
         {
             // UltraThink v2.0简化：删除业务扩展方法，用Status替换
-            if (_prescriptionData.Status == CommonStatus.Enabled) return "已完成";
+            if (_prescriptionData.Status == CommonStatus.Enabled)
+            {
+                return "已完成";
+            }
+
             return "草稿";
         }
 

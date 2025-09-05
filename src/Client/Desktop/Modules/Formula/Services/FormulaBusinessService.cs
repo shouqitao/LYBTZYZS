@@ -1,11 +1,11 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using LYBT.Desktop.Formula.Interfaces;
 using LYBT.Shared.Interfaces.Api;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Formula.Services;
 
@@ -36,13 +36,13 @@ public class FormulaBusinessService(
     public async Task<ServiceResult<FormulaDto>> CreateFormulaAsync(FormulaCreateDto createDto)
     {
         ArgumentNullException.ThrowIfNull(createDto, nameof(createDto));
-        
+
         _logger.LogInformation("验方创建请求: 验方名称: {FormulaName}", createDto.Name);
-        
+
         try
         {
             var refitResponse = await _formulaApi.CreateFormulaAsync(createDto);
-            
+
             if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
             {
                 var formula = refitResponse.Content;
@@ -74,13 +74,13 @@ public class FormulaBusinessService(
     public async Task<ServiceResult<FormulaDto>> UpdateFormulaAsync(Guid id, FormulaUpdateDto updateDto)
     {
         ArgumentNullException.ThrowIfNull(updateDto, nameof(updateDto));
-        
+
         _logger.LogInformation("验方更新请求: {FormulaId}", id);
-        
+
         try
         {
             var refitResponse = await _formulaApi.UpdateFormulaAsync(id, updateDto);
-            
+
             if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
             {
                 var formula = refitResponse.Content;
@@ -110,11 +110,11 @@ public class FormulaBusinessService(
     public async Task<ServiceResult<bool>> DeleteFormulaAsync(Guid id)
     {
         _logger.LogInformation("验方删除请求: {FormulaId}", id);
-        
+
         try
         {
             var refitResponse = await _formulaApi.DeleteFormulaAsync(id);
-            
+
             if (refitResponse.IsSuccessStatusCode && refitResponse.Content)
             {
                 _logger.LogInformation("验方删除成功: {FormulaId}", id);
@@ -169,11 +169,11 @@ public class FormulaBusinessService(
     private async Task<ServiceResult> ToggleFormulaStatusAsync(Guid id, string operation)
     {
         _logger.LogInformation("验方状态切换请求: {FormulaId} - {Operation}", id, operation);
-        
+
         try
         {
             var refitResponse = await _formulaApi.ToggleFormulaStatusAsync(id);
-            
+
             if (refitResponse.IsSuccessStatusCode && refitResponse.Content)
             {
                 _logger.LogInformation("验方状态切换成功: {FormulaId} - {Operation}", id, operation);
@@ -212,11 +212,11 @@ public class FormulaBusinessService(
     public async Task<ServiceResult<bool>> UpdateFormulaStatusAsync(Guid id, bool isEnabled)
     {
         _logger.LogInformation("验方状态更新请求: {FormulaId} - 目标状态: {TargetStatus}", id, isEnabled ? "启用" : "禁用");
-        
+
         try
         {
             var result = await ToggleFormulaStatusAsync(id, isEnabled ? "启用" : "禁用");
-            return result.IsSuccess 
+            return result.IsSuccess
                 ? ServiceResult<bool>.Success(true, result.Message ?? "状态更新成功")
                 : ServiceResult<bool>.Failure(result.ErrorMessage ?? "状态更新失败");
         }
@@ -238,17 +238,17 @@ public class FormulaBusinessService(
     public async Task<ServiceResult<FormulaDto>> CloneFormulaAsync(Guid formulaId, string newName, Guid userId)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(newName, nameof(newName));
-        
+
         _logger.LogInformation("验方克隆请求: 源验方: {SourceId}, 新名称: {NewName}, 操作者: {UserId}", formulaId, newName, userId);
-        
+
         try
         {
             var refitResponse = await _formulaApi.CopyFormulaAsync(formulaId, newName);
-            
+
             if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
             {
                 var clonedFormula = refitResponse.Content;
-                _logger.LogInformation("验方克隆成功: 源验方: {SourceId} → 新验方: {NewId} ({NewName})", 
+                _logger.LogInformation("验方克隆成功: 源验方: {SourceId} → 新验方: {NewId} ({NewName})",
                     formulaId, clonedFormula.Id, clonedFormula.Name);
                 return ServiceResult<FormulaDto>.Success(clonedFormula, "验方克隆成功");
             }

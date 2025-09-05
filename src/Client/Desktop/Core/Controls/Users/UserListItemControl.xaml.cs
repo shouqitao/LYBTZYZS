@@ -1,7 +1,7 @@
+﻿using System.Windows;
+using System.Windows.Controls;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
-using System.Windows;
-using System.Windows.Controls;
 
 namespace LYBT.WPF.Client.Controls.Users
 {

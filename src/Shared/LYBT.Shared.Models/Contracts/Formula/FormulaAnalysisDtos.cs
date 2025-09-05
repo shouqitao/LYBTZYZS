@@ -1,5 +1,5 @@
+﻿using System.ComponentModel;
 using LYBT.Shared.Models.Contracts.Common;
-using System.ComponentModel;
 
 namespace LYBT.Shared.Models.Contracts.Formula
 {
@@ -10,10 +10,10 @@ namespace LYBT.Shared.Models.Contracts.Formula
     {
         [DisplayName("模板ID")]
         public Guid TemplateId { get; set; }
-        
+
         [DisplayName("患者ID")]
         public Guid PatientId { get; set; }
-        
+
         [DisplayName("调整说明")]
         public string? Adjustments { get; set; }
     }
@@ -36,10 +36,10 @@ namespace LYBT.Shared.Models.Contracts.Formula
     {
         [DisplayName("验方名称")]
         public string Name { get; set; } = string.Empty;
-        
+
         [DisplayName("推荐理由")]
         public string Reason { get; set; } = string.Empty;
-        
+
         [DisplayName("匹配得分")]
         public decimal MatchScore { get; set; }
     }
@@ -62,16 +62,16 @@ namespace LYBT.Shared.Models.Contracts.Formula
     {
         [DisplayName("验方ID")]
         public Guid FormulaId { get; set; }
-        
+
         [DisplayName("验方名称")]
         public string FormulaName { get; set; } = string.Empty;
-        
+
         [DisplayName("开具日期")]
         public DateTime PrescribedDate { get; set; }
-        
+
         [DisplayName("疗效")]
         public string? Effectiveness { get; set; }
-        
+
         [DisplayName("备注")]
         public string? Notes { get; set; }
     }

@@ -1,8 +1,8 @@
-using LYBT.Shared.Models.Contracts.Common;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Desktop.Core.Redux
 {
@@ -74,7 +74,7 @@ namespace LYBT.Desktop.Core.Redux
         /// <summary>
         /// 注册Action处理器
         /// </summary>
-        public PatternMatchingReducer<TState> On<TAction>(Func<TState, TAction, TState> handler) 
+        public PatternMatchingReducer<TState> On<TAction>(Func<TState, TAction, TState> handler)
             where TAction : IAction
         {
             var actionType = typeof(TAction).Name;
@@ -119,14 +119,14 @@ namespace LYBT.Desktop.Core.Redux
         /// <summary>
         /// 创建新状态并修改指定属性
         /// </summary>
-        public static T With<T, TValue>(this T state, 
-            System.Linq.Expressions.Expression<Func<T, TValue>> selector, 
+        public static T With<T, TValue>(this T state,
+            System.Linq.Expressions.Expression<Func<T, TValue>> selector,
             TValue value) where T : class, new()
         {
             // 简化实现：使用JSON序列化进行深拷贝
             var json = System.Text.Json.JsonSerializer.Serialize(state);
             var newState = System.Text.Json.JsonSerializer.Deserialize<T>(json)!;
-            
+
             // 使用反射设置属性值
             var memberExpression = selector.Body as System.Linq.Expressions.MemberExpression;
             if (memberExpression != null)
@@ -134,7 +134,7 @@ namespace LYBT.Desktop.Core.Redux
                 var property = memberExpression.Member as System.Reflection.PropertyInfo;
                 property?.SetValue(newState, value);
             }
-            
+
             return newState;
         }
 
@@ -203,8 +203,8 @@ namespace LYBT.Desktop.Core.Redux
                 throw new InvalidOperationException("至少需要添加一个Reducer");
             }
 
-            return _reducers.Count == 1 
-                ? _reducers[0] 
+            return _reducers.Count == 1
+                ? _reducers[0]
                 : new CombinedReducer<TState>(_reducers);
         }
     }

@@ -1,10 +1,10 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using LYBT.Module.Auth.Interfaces;
 using LYBT.Shared.Interfaces.Services;
+using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Core;
-using LYBT.Shared.Models.Contracts.Auth;
 
 namespace LYBT.Module.Auth.Services
 {

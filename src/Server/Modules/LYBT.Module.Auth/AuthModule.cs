@@ -1,8 +1,8 @@
 ﻿using LYBT.Infrastructure.Configuration.Options;
 using LYBT.Module.Auth.Interfaces;
-using LYBT.Shared.Interfaces.Services;
 using LYBT.Module.Auth.Repositories;
 using LYBT.Module.Auth.Services;
+using LYBT.Shared.Interfaces.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace LYBT.Module.Auth

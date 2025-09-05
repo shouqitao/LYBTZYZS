@@ -1,11 +1,11 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using LYBT.Desktop.Patients.Interfaces;
+using LYBT.Shared.Interfaces.Api;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
-using LYBT.Shared.Interfaces.Api;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Patients.Services;
 
@@ -36,22 +36,22 @@ public class PatientBusinessService(
     public async Task<ServiceResult<PatientDto>> CreateAsync(PatientCreateDto createDto)
     {
         ArgumentNullException.ThrowIfNull(createDto, nameof(createDto));
-        
+
         try
         {
-            _logger.LogInformation("开始处理患者档案创建: 姓名: {PatientName}, 联系电话: {Phone}", 
+            _logger.LogInformation("开始处理患者档案创建: 姓名: {PatientName}, 联系电话: {Phone}",
                 createDto.Name, createDto.PhoneNumber);
-            
+
             var refitResponse = await _patientApi.CreatePatientAsync(createDto);
-            
+
             if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
             {
                 var patient = refitResponse.Content;
                 _logger.LogInformation("患者档案创建成功: {PatientName}", patient.Name);
                 return ServiceResult<PatientDto>.Success(patient, "患者档案创建成功");
             }
-            
-            _logger.LogWarning("患者档案创建HTTP请求失败: {PatientName}, 状态码: {StatusCode}", 
+
+            _logger.LogWarning("患者档案创建HTTP请求失败: {PatientName}, 状态码: {StatusCode}",
                 createDto.Name, refitResponse.StatusCode);
             return ServiceResult<PatientDto>.Failure("创建患者档案网络请求失败，请检查网络连接");
         }
@@ -73,21 +73,21 @@ public class PatientBusinessService(
     public async Task<ServiceResult<PatientDto>> UpdateAsync(Guid id, PatientUpdateDto updateDto)
     {
         ArgumentNullException.ThrowIfNull(updateDto, nameof(updateDto));
-        
+
         try
         {
             _logger.LogInformation("开始处理患者档案更新: {PatientId}", id);
-            
+
             var refitResponse = await _patientApi.UpdatePatientAsync(id, updateDto);
-            
+
             if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
             {
                 var patient = refitResponse.Content;
                 _logger.LogInformation("患者档案更新成功: {PatientId}", id);
                 return ServiceResult<PatientDto>.Success(patient, "患者档案更新成功");
             }
-            
-            _logger.LogWarning("患者档案更新HTTP请求失败: {PatientId}, 状态码: {StatusCode}", 
+
+            _logger.LogWarning("患者档案更新HTTP请求失败: {PatientId}, 状态码: {StatusCode}",
                 id, refitResponse.StatusCode);
             return ServiceResult<PatientDto>.Failure("更新患者档案网络请求失败，请检查网络连接");
         }

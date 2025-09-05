@@ -1,4 +1,4 @@
-using AutoMapper;
+﻿using AutoMapper;
 // UltraThink v2.0: HerbInfo模型已被移除，不再引用
 // using LYBT.Desktop.Core.Models.Herbs;
 using LYBT.Shared.Models.Contracts.Herbs;
@@ -88,9 +88,9 @@ namespace LYBT.Desktop.Herbs.Mappings
         public static IMapper CreateMapper()
         {
             var config = new MapperConfiguration(cfg =>
-                cfg.AddProfile(new MappingProfile()), 
+                cfg.AddProfile(new MappingProfile()),
                 NullLoggerFactory.Instance);
-                
+
             return config.CreateMapper();
         }
     }

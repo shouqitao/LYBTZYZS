@@ -1,9 +1,9 @@
-using System;
+﻿using System;
 using System.ComponentModel;
 using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.ViewModels.Base;
-using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Contracts.Consultation;
+using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Contracts.Users;
 using Microsoft.Extensions.Logging;
 
@@ -18,20 +18,20 @@ namespace LYBT.Desktop.Core.Services;
 public class SessionManager(ILogger<SessionManager> logger) : Prism.Mvvm.BindableBase, ISessionManager
 {
     #region 私有字段
-    
+
     private readonly ILogger<SessionManager> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-    
+
     private PatientDto? _currentPatient;
     private ConsultationDto? _activeConsultation;
     private UserDto? _currentUser;
     private Guid? _currentMedicalCaseId;
     private ConsultationStatus _consultationStatus = ConsultationStatus.NotStarted;
     private string? _authToken;
-    
+
     #endregion
-    
+
     #region 公共属性
-    
+
     /// <summary>
     /// 获取或设置当前选中患者
     /// </summary>
@@ -48,7 +48,7 @@ public class SessionManager(ILogger<SessionManager> logger) : Prism.Mvvm.Bindabl
             }
         }
     }
-    
+
     /// <summary>
     /// 获取或设置当前活跃诊疗会话
     /// </summary>
@@ -65,7 +65,7 @@ public class SessionManager(ILogger<SessionManager> logger) : Prism.Mvvm.Bindabl
             }
         }
     }
-    
+
     /// <summary>
     /// 获取或设置当前登录用户
     /// </summary>
@@ -82,7 +82,7 @@ public class SessionManager(ILogger<SessionManager> logger) : Prism.Mvvm.Bindabl
             }
         }
     }
-    
+
     /// <summary>
     /// 获取或设置当前医疗案例ID
     /// </summary>
@@ -92,7 +92,7 @@ public class SessionManager(ILogger<SessionManager> logger) : Prism.Mvvm.Bindabl
         get => _currentMedicalCaseId;
         set => SetProperty(ref _currentMedicalCaseId, value);
     }
-    
+
     /// <summary>
     /// 获取或设置诊疗状态
     /// </summary>
@@ -109,47 +109,47 @@ public class SessionManager(ILogger<SessionManager> logger) : Prism.Mvvm.Bindabl
             }
         }
     }
-    
+
     /// <summary>
     /// 获取一个值，指示是否有活跃的诊疗会话
     /// </summary>
     /// <value>如果有活跃会话则为 true；否则为 false</value>
     public bool HasActiveSession => _currentPatient != null && _consultationStatus != ConsultationStatus.NotStarted;
-    
+
     /// <summary>
     /// 获取一个值，指示用户是否已登录
     /// </summary>
     /// <value>如果用户已登录且有有效令牌则为 true；否则为 false</value>
     public bool IsLoggedIn => _currentUser != null && !string.IsNullOrEmpty(_authToken);
-    
+
     #endregion
-    
+
     #region 事件
-    
+
     /// <summary>
     /// 当患者选择发生变化时引发此事件
     /// </summary>
     public event EventHandler<PatientChangedEventArgs>? PatientChanged;
-    
+
     /// <summary>
     /// 当诊疗状态发生变化时引发此事件
     /// </summary>
     public event EventHandler<ConsultationChangedEventArgs>? ConsultationChanged;
-    
+
     /// <summary>
     /// 当用户登录状态发生变化时引发此事件
     /// </summary>
     public event EventHandler<UserChangedEventArgs>? UserChanged;
-    
+
     /// <summary>
     /// 当需要显示全局状态消息时引发此事件
     /// </summary>
     public event EventHandler<StatusMessageEventArgs>? StatusMessage;
-    
+
     #endregion
-    
+
     #region 会话管理方法
-    
+
     /// <summary>
     /// 开始新的诊疗会话
     /// </summary>
@@ -160,7 +160,7 @@ public class SessionManager(ILogger<SessionManager> logger) : Prism.Mvvm.Bindabl
     public void StartConsultation(PatientDto patient, Guid? medicalCaseId = null)
     {
         ArgumentNullException.ThrowIfNull(patient, nameof(patient));
-        
+
         try
         {
             // 如果有活跃会话，先结束当前会话
@@ -169,17 +169,17 @@ public class SessionManager(ILogger<SessionManager> logger) : Prism.Mvvm.Bindabl
                 _logger.LogWarning("检测到活跃会话，先结束当前会话");
                 EndConsultation();
             }
-            
+
             // 设置新会话
             CurrentPatient = patient;
             CurrentMedicalCaseId = medicalCaseId ?? Guid.NewGuid();
             ConsultationStatus = ConsultationStatus.InProgress;
-            
+
             // 创建新的诊疗记录
             ActiveConsultation = CreateNewConsultation(patient);
-            
+
             PublishStatusMessage($"已开始诊疗会话：{patient.Name}", StatusMessageType.Success);
-            _logger.LogInformation("诊疗会话已开始 - 患者: {PatientName}, 案例ID: {CaseId}", 
+            _logger.LogInformation("诊疗会话已开始 - 患者: {PatientName}, 案例ID: {CaseId}",
                 patient.Name, CurrentMedicalCaseId);
         }
         catch (Exception ex)
@@ -189,7 +189,7 @@ public class SessionManager(ILogger<SessionManager> logger) : Prism.Mvvm.Bindabl
             throw new InvalidOperationException($"无法开始诊疗会话: {ex.Message}", ex);
         }
     }
-    
+
     /// <summary>
     /// 结束当前的诊疗会话
     /// </summary>
@@ -203,12 +203,12 @@ public class SessionManager(ILogger<SessionManager> logger) : Prism.Mvvm.Bindabl
                 PublishStatusMessage("没有活跃的诊疗会话", StatusMessageType.Warning);
                 return;
             }
-            
+
             var patientName = CurrentPatient?.Name ?? "未知患者";
-            
+
             // 清除诊疗状态 - 使用C# 12集合表达式
             ResetConsultationState();
-            
+
             PublishStatusMessage($"已结束诊疗会话：{patientName}", StatusMessageType.Info);
             _logger.LogInformation("诊疗会话已结束 - 患者: {PatientName}", patientName);
         }
@@ -219,7 +219,7 @@ public class SessionManager(ILogger<SessionManager> logger) : Prism.Mvvm.Bindabl
             throw new InvalidOperationException($"无法结束诊疗会话: {ex.Message}", ex);
         }
     }
-    
+
     /// <summary>
     /// 设置用户登录会话
     /// </summary>
@@ -232,14 +232,14 @@ public class SessionManager(ILogger<SessionManager> logger) : Prism.Mvvm.Bindabl
     {
         ArgumentNullException.ThrowIfNull(user, nameof(user));
         ArgumentException.ThrowIfNullOrWhiteSpace(token, nameof(token));
-        
+
         try
         {
             CurrentUser = user;
             _authToken = token;
-            
+
             PublishStatusMessage($"用户 {user.Username} 已登录", StatusMessageType.Success);
-            _logger.LogInformation("用户会话已设置 - 用户: {Username}, 角色: {Role}", 
+            _logger.LogInformation("用户会话已设置 - 用户: {Username}, 角色: {Role}",
                 user.Username, user.Role);
         }
         catch (Exception ex)
@@ -249,7 +249,7 @@ public class SessionManager(ILogger<SessionManager> logger) : Prism.Mvvm.Bindabl
             throw new InvalidOperationException($"无法设置用户会话: {ex.Message}", ex);
         }
     }
-    
+
     /// <summary>
     /// 清除用户登录会话
     /// </summary>
@@ -259,16 +259,16 @@ public class SessionManager(ILogger<SessionManager> logger) : Prism.Mvvm.Bindabl
         try
         {
             var userName = CurrentUser?.Username ?? "未知用户";
-            
+
             // 如果有活跃诊疗，先结束
             if (HasActiveSession)
             {
                 EndConsultation();
             }
-            
+
             CurrentUser = null;
             _authToken = null;
-            
+
             PublishStatusMessage($"用户 {userName} 已登出", StatusMessageType.Info);
             _logger.LogInformation("用户会话已清除 - 用户: {Username}", userName);
         }
@@ -279,7 +279,7 @@ public class SessionManager(ILogger<SessionManager> logger) : Prism.Mvvm.Bindabl
             throw new InvalidOperationException($"无法清除用户会话: {ex.Message}", ex);
         }
     }
-    
+
     /// <summary>
     /// 重置所有会话状态到初始状态
     /// </summary>
@@ -289,10 +289,10 @@ public class SessionManager(ILogger<SessionManager> logger) : Prism.Mvvm.Bindabl
         try
         {
             _logger.LogInformation("重置所有会话状态");
-            
+
             // 使用现代化的状态清理方式
             ResetAllStates();
-            
+
             PublishStatusMessage("会话状态已重置", StatusMessageType.Info);
         }
         catch (Exception ex)
@@ -302,11 +302,11 @@ public class SessionManager(ILogger<SessionManager> logger) : Prism.Mvvm.Bindabl
             throw new InvalidOperationException($"无法重置会话状态: {ex.Message}", ex);
         }
     }
-    
+
     #endregion
-    
+
     #region 私有辅助方法
-    
+
     /// <summary>
     /// 创建新的诊疗记录
     /// </summary>
@@ -326,7 +326,7 @@ public class SessionManager(ILogger<SessionManager> logger) : Prism.Mvvm.Bindabl
             UpdateTime = DateTime.Now
         };
     }
-    
+
     /// <summary>
     /// 重置诊疗相关状态
     /// </summary>
@@ -338,7 +338,7 @@ public class SessionManager(ILogger<SessionManager> logger) : Prism.Mvvm.Bindabl
         CurrentMedicalCaseId = null;
         ConsultationStatus = ConsultationStatus.NotStarted;
     }
-    
+
     /// <summary>
     /// 重置所有状态到初始值
     /// </summary>
@@ -354,17 +354,17 @@ public class SessionManager(ILogger<SessionManager> logger) : Prism.Mvvm.Bindabl
             () => ConsultationStatus = ConsultationStatus.NotStarted,
             () => _authToken = null
         };
-        
+
         foreach (var resetAction in resetActions)
         {
             resetAction();
         }
     }
-    
+
     #endregion
-    
+
     #region 私有事件处理方法
-    
+
     /// <summary>
     /// 触发患者变化事件
     /// </summary>
@@ -378,7 +378,7 @@ public class SessionManager(ILogger<SessionManager> logger) : Prism.Mvvm.Bindabl
                 NewPatient = newPatient,
                 OldPatient = null // 简化处理，可在需要时保存旧值
             };
-            
+
             PatientChanged?.Invoke(this, args);
         }
         catch (Exception ex)
@@ -386,7 +386,7 @@ public class SessionManager(ILogger<SessionManager> logger) : Prism.Mvvm.Bindabl
             _logger.LogError(ex, "触发患者变化事件时发生异常");
         }
     }
-    
+
     /// <summary>
     /// 触发诊疗变化事件
     /// </summary>
@@ -403,7 +403,7 @@ public class SessionManager(ILogger<SessionManager> logger) : Prism.Mvvm.Bindabl
                 OldConsultation = null, // 简化处理，可在需要时保存旧值
                 OldStatus = ConsultationStatus.NotStarted
             };
-            
+
             ConsultationChanged?.Invoke(this, args);
         }
         catch (Exception ex)
@@ -411,7 +411,7 @@ public class SessionManager(ILogger<SessionManager> logger) : Prism.Mvvm.Bindabl
             _logger.LogError(ex, "触发诊疗变化事件时发生异常");
         }
     }
-    
+
     /// <summary>
     /// 触发用户变化事件
     /// </summary>
@@ -427,7 +427,7 @@ public class SessionManager(ILogger<SessionManager> logger) : Prism.Mvvm.Bindabl
                 IsLogin = isLogin,
                 OldUser = null // 简化处理，可在需要时保存旧值
             };
-            
+
             UserChanged?.Invoke(this, args);
         }
         catch (Exception ex)
@@ -435,7 +435,7 @@ public class SessionManager(ILogger<SessionManager> logger) : Prism.Mvvm.Bindabl
             _logger.LogError(ex, "触发用户变化事件时发生异常");
         }
     }
-    
+
     /// <summary>
     /// 发布状态消息
     /// </summary>
@@ -450,7 +450,7 @@ public class SessionManager(ILogger<SessionManager> logger) : Prism.Mvvm.Bindabl
                 Message = message,
                 MessageType = type
             };
-            
+
             StatusMessage?.Invoke(this, args);
         }
         catch (Exception ex)
@@ -458,6 +458,6 @@ public class SessionManager(ILogger<SessionManager> logger) : Prism.Mvvm.Bindabl
             _logger.LogError(ex, "发布状态消息时发生异常 - 消息: {Message}", message);
         }
     }
-    
+
     #endregion
 }

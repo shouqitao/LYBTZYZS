@@ -1,4 +1,4 @@
-using LYBT.Shared.Models.Common;
+﻿using LYBT.Shared.Models.Common;
 namespace LYBT.Desktop.Core.Models.Common
 {
     /// <summary>
