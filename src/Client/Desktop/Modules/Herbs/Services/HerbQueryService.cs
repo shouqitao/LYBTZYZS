@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using LYBT.Desktop.Herbs.Interfaces;
+using LYBT.Shared.Interfaces.Api;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
@@ -17,9 +18,12 @@ namespace LYBT.Desktop.Herbs.Services;
 /// 集成企业级日志记录，支持药材管理和档案查询需求
 /// 适配中医诊所药材管理查询场景，确保查询性能和数据安全性
 /// </summary>
-public class HerbQueryService(ILogger<HerbQueryService> logger) : IHerbQueryService
+public class HerbQueryService(
+    ILogger<HerbQueryService> logger,
+    IHerbApi herbApi) : IHerbQueryService
 {
     private readonly ILogger<HerbQueryService> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    private readonly IHerbApi _herbApi = herbApi ?? throw new ArgumentNullException(nameof(herbApi));
 
     #region 基础查询操作 - 简化实现
 
@@ -62,12 +66,45 @@ public class HerbQueryService(ILogger<HerbQueryService> logger) : IHerbQueryServ
         try
         {
             _logger.LogDebug("查询中药材详细档案: {HerbId}", id);
-            return ServiceResult<HerbDto>.Failure("简单诊所版本暂不支持药材详情查询");
+            
+            var refitResponse = await _herbApi.GetHerbByIdAsync(id);
+            
+            if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
+            {
+                var detailDto = refitResponse.Content;
+                // 将 HerbDetailDto 转换为 HerbDto
+                // HerbDetailDto 继承自 HerbDto，所以可以直接转换
+                var herbDto = new HerbDto
+                {
+                    Id = detailDto.Id,
+                    Name = detailDto.Name,
+                    PinYinCode = detailDto.PinYinCode,
+                    Origin = detailDto.Origin,
+                    Spec = detailDto.Spec,
+                    Unit = detailDto.Unit,
+                    Price = detailDto.Price,
+                    Effect = detailDto.Effect,
+                    Usage = detailDto.Usage,
+                    Status = detailDto.Status,
+                    CreateTime = detailDto.CreateTime,
+                    UpdateTime = detailDto.UpdateTime,
+                    Remark = detailDto.Remark
+                };
+                
+                _logger.LogInformation("药材详情查询成功: {HerbName}", herbDto.Name);
+                return ServiceResult<HerbDto>.Success(herbDto, "药材详情查询成功");
+            }
+            else
+            {
+                var errorMessage = $"药材详情查询失败: {refitResponse.ReasonPhrase}";
+                _logger.LogError(errorMessage);
+                return ServiceResult<HerbDto>.Failure(errorMessage);
+            }
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "查询药材详情异常: {HerbId}", id);
-            return ServiceResult<HerbDto>.Failure("查询药材详情失败");
+            return ServiceResult<HerbDto>.Failure($"查询药材详情失败: {ex.Message}");
         }
     }
 

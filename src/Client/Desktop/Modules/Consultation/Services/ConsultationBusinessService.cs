@@ -5,6 +5,8 @@ using LYBT.Desktop.Consultation.Interfaces;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
+using LYBT.Shared.Models.Enums;
+using LYBT.Shared.Interfaces.Api;
 
 namespace LYBT.Desktop.Consultation.Services;
 
@@ -16,9 +18,12 @@ namespace LYBT.Desktop.Consultation.Services;
 /// 支持中医四诊（望闻问切）、辨证论治、诊断记录等核心诊疗功能
 /// 适配中医诊所看诊诊断需求，确保诊疗数据完整性和临床安全性
 /// </summary>
-public class ConsultationBusinessService(ILogger<ConsultationBusinessService> logger) : IConsultationBusinessService
+public class ConsultationBusinessService(
+    ILogger<ConsultationBusinessService> logger,
+    IConsultationApi consultationApi) : IConsultationBusinessService
 {
     private readonly ILogger<ConsultationBusinessService> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    private readonly IConsultationApi _consultationApi = consultationApi ?? throw new ArgumentNullException(nameof(consultationApi));
 
     /// <summary>
     /// 创建看诊诊断业务处理
@@ -31,10 +36,46 @@ public class ConsultationBusinessService(ILogger<ConsultationBusinessService> lo
     {
         ArgumentNullException.ThrowIfNull(createDto, nameof(createDto));
         
-        _logger.LogInformation("看诊诊断创建请求: 患者ID: {PatientId}, 医案ID: {MedicalCaseId}", 
-            createDto.PatientId, createDto.MedicalCaseId);
-        
-        return ServiceResult<ConsultationDto>.Failure("简单诊所版本暂不支持创建看诊诊断");
+        try
+        {
+            _logger.LogInformation("开始处理看诊诊断创建: 患者ID: {PatientId}, 医案ID: {MedicalCaseId}", 
+                createDto.PatientId, createDto.MedicalCaseId);
+            
+            // 转换为StartConsultationDto
+            var startDto = new ConsultationStartDto
+            {
+                PatientId = createDto.PatientId,
+                MedicalCaseId = createDto.MedicalCaseId,
+                DoctorId = createDto.DoctorId
+            };
+            
+            var refitResponse = await _consultationApi.StartConsultationAsync(startDto);
+            
+            if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
+            {
+                var consultation = refitResponse.Content;
+                var consultationDto = new ConsultationDto
+                {
+                    Id = consultation.Id,
+                    PatientId = consultation.PatientId,
+                    MedicalCaseId = consultation.MedicalCaseId,
+                    Status = consultation.Status == ConsultationStatus.Completed ? CommonStatus.Enabled : CommonStatus.Disabled,
+                    CreateTime = consultation.CreateTime,
+                    UserId = consultation.UserId
+                };
+                _logger.LogInformation("看诊诊断创建成功: {ConsultationId}", consultation.Id);
+                return ServiceResult<ConsultationDto>.Success(consultationDto, "看诊诊断创建成功");
+            }
+            
+            _logger.LogWarning("看诊诊断创建HTTP请求失败: 患者ID: {PatientId}, 状态码: {StatusCode}", 
+                createDto.PatientId, refitResponse.StatusCode);
+            return ServiceResult<ConsultationDto>.Failure("创建看诊诊断网络请求失败，请检查网络连接");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "看诊诊断创建过程发生异常: 患者ID: {PatientId}", createDto.PatientId);
+            return ServiceResult<ConsultationDto>.Failure($"创建看诊诊断过程发生错误: {ex.Message}");
+        }
     }
 
     /// <summary>
@@ -49,9 +90,37 @@ public class ConsultationBusinessService(ILogger<ConsultationBusinessService> lo
     {
         ArgumentNullException.ThrowIfNull(updateDto, nameof(updateDto));
         
-        _logger.LogInformation("看诊诊断更新请求: {ConsultationId}", id);
-        
-        return ServiceResult<ConsultationDto>.Failure("简单诊所版本暂不支持更新看诊诊断");
+        try
+        {
+            _logger.LogInformation("开始处理看诊诊断更新: {ConsultationId}", id);
+            
+            var refitResponse = await _consultationApi.UpdateConsultationAsync(id, updateDto);
+            
+            if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
+            {
+                var consultation = refitResponse.Content;
+                var consultationDto = new ConsultationDto
+                {
+                    Id = consultation.Id,
+                    PatientId = consultation.PatientId,
+                    MedicalCaseId = consultation.MedicalCaseId,
+                    Status = consultation.Status == ConsultationStatus.Completed ? CommonStatus.Enabled : CommonStatus.Disabled,
+                    CreateTime = consultation.CreateTime,
+                    UserId = consultation.UserId
+                };
+                _logger.LogInformation("看诊诊断更新成功: {ConsultationId}", id);
+                return ServiceResult<ConsultationDto>.Success(consultationDto, "看诊诊断更新成功");
+            }
+            
+            _logger.LogWarning("看诊诊断更新HTTP请求失败: {ConsultationId}, 状态码: {StatusCode}", 
+                id, refitResponse.StatusCode);
+            return ServiceResult<ConsultationDto>.Failure("更新看诊诊断网络请求失败，请检查网络连接");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "看诊诊断更新过程发生异常: {ConsultationId}", id);
+            return ServiceResult<ConsultationDto>.Failure($"更新看诊诊断过程发生错误: {ex.Message}");
+        }
     }
 
     /// <summary>

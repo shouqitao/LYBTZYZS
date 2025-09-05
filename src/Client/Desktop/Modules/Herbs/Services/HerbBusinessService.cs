@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using LYBT.Desktop.Herbs.Interfaces;
+using LYBT.Shared.Interfaces.Api;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
@@ -17,9 +18,12 @@ namespace LYBT.Desktop.Herbs.Services;
 /// 支持药材档案创建、信息更新、状态管理、Excel导入导出等核心功能
 /// 适配中医诊所药材管理需求，确保药材信息准确性和处方选择便利性
 /// </summary>
-public class HerbBusinessService(ILogger<HerbBusinessService> logger) : IHerbBusinessService
+public class HerbBusinessService(
+    ILogger<HerbBusinessService> logger,
+    IHerbApi herbApi) : IHerbBusinessService
 {
     private readonly ILogger<HerbBusinessService> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    private readonly IHerbApi _herbApi = herbApi ?? throw new ArgumentNullException(nameof(herbApi));
 
     #region 基础业务操作 - 简化实现
 
@@ -36,15 +40,61 @@ public class HerbBusinessService(ILogger<HerbBusinessService> logger) : IHerbBus
         
         _logger.LogInformation("中药材创建请求: 药材名称: {HerbName}", createDto.Name);
         
-        return ServiceResult<HerbDto>.Failure("简单诊所版本暂不支持创建药材");
+        try
+        {
+            var refitResponse = await _herbApi.CreateHerbAsync(createDto);
+            
+            if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
+            {
+                var herb = refitResponse.Content;
+                _logger.LogInformation("药材创建成功: {HerbName}", herb.Name);
+                return ServiceResult<HerbDto>.Success(herb, "药材创建成功");
+            }
+            else
+            {
+                var errorMessage = $"药材创建失败: {refitResponse.ReasonPhrase}";
+                _logger.LogError(errorMessage);
+                return ServiceResult<HerbDto>.Failure(errorMessage);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "药材创建异常: 药材名称: {HerbName}", createDto.Name);
+            return ServiceResult<HerbDto>.Failure($"药材创建失败: {ex.Message}");
+        }
     }
 
     /// <summary>
     /// 更新药材
     /// </summary>
-    public Task<ServiceResult<HerbDto>> UpdateAsync(Guid id, HerbUpdateDto updateDto)
+    public async Task<ServiceResult<HerbDto>> UpdateAsync(Guid id, HerbUpdateDto updateDto)
     {
-        return Task.FromResult(ServiceResult<HerbDto>.Failure("简单诊所版本暂不支持更新药材信息"));
+        ArgumentNullException.ThrowIfNull(updateDto, nameof(updateDto));
+        
+        _logger.LogInformation("药材更新请求: {HerbId}", id);
+        
+        try
+        {
+            var refitResponse = await _herbApi.UpdateHerbAsync(id, updateDto);
+            
+            if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
+            {
+                var herb = refitResponse.Content;
+                _logger.LogInformation("药材更新成功: {HerbName}", herb.Name);
+                return ServiceResult<HerbDto>.Success(herb, "药材更新成功");
+            }
+            else
+            {
+                var errorMessage = $"药材更新失败: {refitResponse.ReasonPhrase}";
+                _logger.LogError(errorMessage);
+                return ServiceResult<HerbDto>.Failure(errorMessage);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "药材更新异常: {HerbId}", id);
+            return ServiceResult<HerbDto>.Failure($"药材更新失败: {ex.Message}");
+        }
     }
 
     /// <summary>

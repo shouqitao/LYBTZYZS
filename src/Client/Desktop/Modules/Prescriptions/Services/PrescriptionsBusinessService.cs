@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using LYBT.Desktop.Prescriptions.Interfaces;
+using LYBT.Shared.Interfaces.Api;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
@@ -16,9 +17,12 @@ namespace LYBT.Desktop.Prescriptions.Services;
 /// 支持处方创建、药材组合、配伍检查、价格计算、验方引用等核心功能
 /// 适配中医诊所处方开具需求，确保配伍安全性和计算准确性
 /// </summary>
-public class PrescriptionsBusinessService(ILogger<PrescriptionsBusinessService> logger) : IPrescriptionsBusinessService
+public class PrescriptionsBusinessService(
+    ILogger<PrescriptionsBusinessService> logger,
+    IPrescriptionApi prescriptionApi) : IPrescriptionsBusinessService
 {
     private readonly ILogger<PrescriptionsBusinessService> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    private readonly IPrescriptionApi _prescriptionApi = prescriptionApi ?? throw new ArgumentNullException(nameof(prescriptionApi));
 
     /// <summary>
     /// 创建处方业务处理
@@ -34,7 +38,28 @@ public class PrescriptionsBusinessService(ILogger<PrescriptionsBusinessService> 
         _logger.LogInformation("处方创建请求: 患者ID: {PatientId}, 看诊ID: {ConsultationId}", 
             createDto.PatientId, createDto.ConsultationId);
         
-        return ServiceResult<PrescriptionDto>.Failure("简单诊所版本暂不支持创建处方");
+        try
+        {
+            var refitResponse = await _prescriptionApi.CreatePrescriptionAsync(createDto);
+            
+            if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
+            {
+                var prescription = refitResponse.Content;
+                _logger.LogInformation("处方创建成功: {PrescriptionId}", prescription.Id);
+                return ServiceResult<PrescriptionDto>.Success(prescription, "处方创建成功");
+            }
+            else
+            {
+                var errorMessage = $"处方创建失败: {refitResponse.ReasonPhrase}";
+                _logger.LogError(errorMessage);
+                return ServiceResult<PrescriptionDto>.Failure(errorMessage);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "处方创建异常: 患者ID: {PatientId}", createDto.PatientId);
+            return ServiceResult<PrescriptionDto>.Failure($"处方创建失败: {ex.Message}");
+        }
     }
 
     /// <summary>
@@ -51,7 +76,28 @@ public class PrescriptionsBusinessService(ILogger<PrescriptionsBusinessService> 
         
         _logger.LogInformation("处方更新请求: {PrescriptionId}", id);
         
-        return ServiceResult<PrescriptionDto>.Failure("简单诊所版本暂不支持更新处方");
+        try
+        {
+            var refitResponse = await _prescriptionApi.UpdatePrescriptionAsync(id, updateDto);
+            
+            if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
+            {
+                var prescription = refitResponse.Content;
+                _logger.LogInformation("处方更新成功: {PrescriptionId}", prescription.Id);
+                return ServiceResult<PrescriptionDto>.Success(prescription, "处方更新成功");
+            }
+            else
+            {
+                var errorMessage = $"处方更新失败: {refitResponse.ReasonPhrase}";
+                _logger.LogError(errorMessage);
+                return ServiceResult<PrescriptionDto>.Failure(errorMessage);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "处方更新异常: {PrescriptionId}", id);
+            return ServiceResult<PrescriptionDto>.Failure($"处方更新失败: {ex.Message}");
+        }
     }
 
     /// <summary>

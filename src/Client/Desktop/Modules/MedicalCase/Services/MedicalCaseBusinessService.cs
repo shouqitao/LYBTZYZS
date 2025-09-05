@@ -81,14 +81,12 @@ public class MedicalCaseBusinessService(
             // 转换为EditDto
             var editDto = new MedicalCaseEditDto
             {
+                Id = id,
                 PatientId = dto.PatientId,
                 DoctorId = dto.DoctorId,
                 ChiefComplaint = dto.ChiefComplaint,
                 PresentIllness = dto.PresentIllness,
                 PastHistory = dto.PastHistory,
-                FamilyHistory = dto.FamilyHistory,
-                PersonalHistory = dto.PersonalHistory,
-                Status = dto.Status,
                 Remark = dto.Remark
             };
             
@@ -109,7 +107,7 @@ public class MedicalCaseBusinessService(
                         DoctorId = getResponse.Content.DoctorId,
                         Status = getResponse.Content.Status,
                         CreateTime = getResponse.Content.CreateTime,
-                        ChiefComplaint = getResponse.Content.ChiefComplaint
+                        Remark = getResponse.Content.Remark
                     };
                     return ServiceResult<MedicalCaseDto>.Success(medicalCaseDto, "医案更新成功");
                 }

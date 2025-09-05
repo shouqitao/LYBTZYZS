@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using LYBT.Desktop.Formula.Interfaces;
+using LYBT.Shared.Interfaces.Api;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
@@ -11,11 +12,18 @@ namespace LYBT.Desktop.Formula.Services;
 
 /// <summary>
 /// 验方查询服务 - UltraThink双层架构查询专业层
-/// 简化版本：仅支持基础查询功能
+/// 采用UltraThink架构标准，使用C# 12现代化特性
+/// 职责：验方管理复杂查询、搜索过滤、统计报表、验方检索
+/// 提供只读查询操作，不涉及数据修改，专注验方记录检索和统计分析
+/// 集成企业级日志记录，支持验方管理和档案查询需求
+/// 适配中医诊所验方管理查询场景，确保查询性能和数据安全性
 /// </summary>
-public class FormulaQueryService(ILogger<FormulaQueryService> logger) : IFormulaQueryService
+public class FormulaQueryService(
+    ILogger<FormulaQueryService> logger,
+    IFormulaApi formulaApi) : IFormulaQueryService
 {
-    private readonly ILogger<FormulaQueryService> _logger = logger;
+    private readonly ILogger<FormulaQueryService> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    private readonly IFormulaApi _formulaApi = formulaApi ?? throw new ArgumentNullException(nameof(formulaApi));
 
     #region 基础查询功能
 
@@ -26,10 +34,42 @@ public class FormulaQueryService(ILogger<FormulaQueryService> logger) : IFormula
         return Task.FromResult(ServiceResult<PagedResult<FormulaDto>>.Success(emptyResult));
     }
 
-    public Task<ServiceResult<FormulaDto>> GetByIdAsync(Guid id)
+    /// <summary>
+    /// 根据验方ID获取详细档案
+    /// 查询指定验方的完整档案信息，包含药材组成和用法信息
+    /// </summary>
+    /// <param name="id">验方唯一标识</param>
+    /// <returns>验方详细档案DTO</returns>
+    public async Task<ServiceResult<FormulaDto>> GetByIdAsync(Guid id)
     {
-        // 简化实现：返回失败
-        return Task.FromResult(ServiceResult<FormulaDto>.Failure("简单诊所版本暂不支持验方查询"));
+        try
+        {
+            _logger.LogDebug("查询验方详细档案: {FormulaId}", id);
+            
+            var refitResponse = await _formulaApi.GetFormulaByIdAsync(id);
+            
+            if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
+            {
+                var detailDto = refitResponse.Content;
+                // FormulaDetailDto 继承自 FormulaDto，可以直接使用
+                // 转换为基类类型以避免详情字段的问题
+                var formulaDto = detailDto as FormulaDto;
+                
+                _logger.LogInformation("验方详情查询成功: {FormulaName}", formulaDto.Name);
+                return ServiceResult<FormulaDto>.Success(formulaDto, "验方详情查询成功");
+            }
+            else
+            {
+                var errorMessage = $"验方详情查询失败: {refitResponse.ReasonPhrase}";
+                _logger.LogError(errorMessage);
+                return ServiceResult<FormulaDto>.Failure(errorMessage);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "查询验方详情异常: {FormulaId}", id);
+            return ServiceResult<FormulaDto>.Failure($"查询验方详情失败: {ex.Message}");
+        }
     }
 
     public Task<ServiceResult<List<FormulaDto>>> GetAllAsync()

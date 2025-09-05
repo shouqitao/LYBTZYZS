@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using LYBT.Desktop.Prescriptions.Interfaces;
+using LYBT.Shared.Interfaces.Api;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
@@ -17,9 +18,12 @@ namespace LYBT.Desktop.Prescriptions.Services;
 /// 集成企业级日志记录，支持处方管理和档案查询需求
 /// 适配中医诊所处方管理查询场景，确保查询性能和数据安全性
 /// </summary>
-public class PrescriptionsQueryService(ILogger<PrescriptionsQueryService> logger) : IPrescriptionsQueryService
+public class PrescriptionsQueryService(
+    ILogger<PrescriptionsQueryService> logger,
+    IPrescriptionApi prescriptionApi) : IPrescriptionsQueryService
 {
     private readonly ILogger<PrescriptionsQueryService> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    private readonly IPrescriptionApi _prescriptionApi = prescriptionApi ?? throw new ArgumentNullException(nameof(prescriptionApi));
 
     /// <summary>
     /// 分页查询处方档案列表
@@ -60,12 +64,52 @@ public class PrescriptionsQueryService(ILogger<PrescriptionsQueryService> logger
         try
         {
             _logger.LogDebug("查询处方详细档案: {PrescriptionId}", id);
-            return ServiceResult<PrescriptionDto>.Failure("简单诊所版本暂不支持处方详情查询");
+            
+            var refitResponse = await _prescriptionApi.GetByIdAsync(id);
+            
+            if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
+            {
+                var detailDto = refitResponse.Content;
+                // PrescriptionDetailDto 继承自 PrescriptionDto，可以直接使用
+                // 但需要转换为基类类型以避免额外的详情字段
+                var prescriptionDto = new PrescriptionDto
+                {
+                    Id = detailDto.Id,
+                    MedicalCaseId = detailDto.MedicalCaseId,
+                    PatientId = detailDto.PatientId,
+                    UserId = detailDto.UserId,
+                    PatientName = detailDto.PatientName,
+                    DoctorName = detailDto.DoctorName,
+                    Diagnosis = detailDto.Diagnosis,
+                    Usage = detailDto.Usage,
+                    Indication = detailDto.Indication,
+                    DosageCount = detailDto.DosageCount,
+                    Discount = detailDto.Discount,
+                    Advice = detailDto.Advice,
+                    FormulaSource = detailDto.FormulaSource,
+                    Items = detailDto.Items,
+                    DosageForm = detailDto.DosageForm,
+                    PrescriptionNo = detailDto.PrescriptionNo,
+                    Status = detailDto.Status,
+                    CreateTime = detailDto.CreateTime,
+                    UpdateTime = detailDto.UpdateTime,
+                    Remark = detailDto.Remark
+                };
+                
+                _logger.LogInformation("处方详情查询成功: {PrescriptionId}", prescriptionDto.Id);
+                return ServiceResult<PrescriptionDto>.Success(prescriptionDto, "处方详情查询成功");
+            }
+            else
+            {
+                var errorMessage = $"处方详情查询失败: {refitResponse.ReasonPhrase}";
+                _logger.LogError(errorMessage);
+                return ServiceResult<PrescriptionDto>.Failure(errorMessage);
+            }
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "查询处方详情异常: {PrescriptionId}", id);
-            return ServiceResult<PrescriptionDto>.Failure("查询处方详情失败");
+            return ServiceResult<PrescriptionDto>.Failure($"查询处方详情失败: {ex.Message}");
         }
     }
 
