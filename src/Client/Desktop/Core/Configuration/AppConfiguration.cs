@@ -152,10 +152,10 @@ namespace LYBT.Desktop.Core.Configuration {
         private static Dictionary<string, string> CreateDevelopmentConfig() {
             return new Dictionary<string, string>
             {
-                {"ApiBaseUrl", "https://localhost:7001"},
-                {"IsDebugMode", "true"},
-                {"Logging:MinimumLevel", "Debug"},
-                {"Performance:EnableVirtualization", "false"}
+                {"ApiBaseUrl", "https://localhost:7001" },
+                {"IsDebugMode", "true" },
+                {"Logging:MinimumLevel", "Debug" },
+                {"Performance:EnableVirtualization", "false" }
             };
         }
 
@@ -172,12 +172,12 @@ namespace LYBT.Desktop.Core.Configuration {
         private static Dictionary<string, string> CreateProductionConfig() {
             return new Dictionary<string, string>
             {
-                {"ApiBaseUrl", "https://api.lybt.com"},
-                {"IsDebugMode", "false"},
-                {"Logging:MinimumLevel", "Warning"},
-                {"Logging:EnableFile", "true"},
-                {"Performance:EnableVirtualization", "true"},
-                {"Performance:MaxConcurrentRequests", "20"}
+                {"ApiBaseUrl", "https://api.lybt.com" },
+                {"IsDebugMode", "false" },
+                {"Logging:MinimumLevel", "Warning" },
+                {"Logging:EnableFile", "true" },
+                {"Performance:EnableVirtualization", "true" },
+                {"Performance:MaxConcurrentRequests", "20" }
             };
         }
     }

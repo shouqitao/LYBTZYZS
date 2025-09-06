@@ -1,4 +1,5 @@
 ﻿using LYBT.Desktop.Auth.Interfaces;
+using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Shared.Interfaces.Api;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Common;
@@ -16,9 +17,11 @@ namespace LYBT.Desktop.Auth.Services;
 /// </summary>
 public class AuthBusinessService(
     ILogger<AuthBusinessService> logger,
-    IAuthApi authApi) : IAuthBusinessService {
+    IAuthApi authApi,
+    ISessionManager sessionManager) : IAuthBusinessService {
     private readonly ILogger<AuthBusinessService> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private readonly IAuthApi _authApi = authApi ?? throw new ArgumentNullException(nameof(authApi));
+    private readonly ISessionManager _sessionManager = sessionManager ?? throw new ArgumentNullException(nameof(sessionManager));
 
     #region 核心认证业务逻辑 - 企业级实现
 
@@ -40,6 +43,18 @@ public class AuthBusinessService(
             if (response.Success && response.Data != null) {
                 _logger.LogInformation("用户登录成功: {Username}, 角色: {Role}",
                     loginRequest.Username, response.Data.User?.Role);
+                
+                // 重要：登录成功后更新SessionManager状态
+                if (response.Data.User != null) {
+                    try {
+                        _sessionManager.SetUserSession(response.Data.User, response.Data.Token);
+                        _logger.LogInformation("会话状态已更新: {Username}", response.Data.User.Username);
+                    } catch (Exception sessionEx) {
+                        _logger.LogError(sessionEx, "更新会话状态失败: {Username}", response.Data.User.Username);
+                        // 即使会话更新失败，登录也应该算成功，因为JWT令牌是有效的
+                    }
+                }
+                
                 return ServiceResult<LoginResponse>.Success(response.Data);
             }
 
@@ -65,6 +80,16 @@ public class AuthBusinessService(
 
             if (response.Success) {
                 _logger.LogInformation("用户登出成功，会话已清理");
+                
+                // 重要：登出成功后清除SessionManager状态
+                try {
+                    _sessionManager.ClearUserSession();
+                    _logger.LogInformation("本地会话状态已清除");
+                } catch (Exception sessionEx) {
+                    _logger.LogError(sessionEx, "清除本地会话状态失败");
+                    // 登出过程中会话清理失败不应该影响登出结果
+                }
+                
                 return ServiceResult.Success("登出成功");
             }
 

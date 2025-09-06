@@ -263,7 +263,7 @@ namespace LYBT.Infrastructure.Data {
                 _logger.LogInformation("验证数据库表结构...");
 
                 // 检查关键表是否存在
-                var coreTableNames = new[] { "Users", "AdminSecrets", "AuditLogs", "Patients" };
+                var coreTableNames = new[] { "Users", "AdminSecrets", "Patients" };
 
                 foreach (var tableName in coreTableNames) {
                     try {

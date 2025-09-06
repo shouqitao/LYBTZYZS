@@ -293,6 +293,10 @@ public class MainWindowViewModel(
                     UpdateKeyboardShortcutCommands();
 
                     System.Diagnostics.Debug.WriteLine("🚀 准备加载主界面内容...");
+                    
+                    // 加载工作台模块
+                    await EnsureWorkbenchModulesLoaded(user);
+                    
                     LoadMainContent();
                     return;
                 } else {
@@ -379,6 +383,32 @@ public class MainWindowViewModel(
                 System.Diagnostics.Debug.WriteLine($"✅ 成功导航到: {workbenchView}");
             }
         });
+    }
+
+    /// <summary>
+    /// 确保工作台模块已加载
+    /// </summary>
+    private async Task EnsureWorkbenchModulesLoaded(LYBT.Shared.Models.Contracts.Users.UserDto user) {
+        try {
+            var app = (App)Application.Current;
+            
+            // 管理员加载SystemWorkbenchModule
+            bool isAdmin = user.Username?.Equals("sysadmin", StringComparison.OrdinalIgnoreCase) == true ||
+                          user.Role?.Equals("Admin", StringComparison.OrdinalIgnoreCase) == true;
+            
+            if (isAdmin) {
+                System.Diagnostics.Debug.WriteLine("🔄 加载SystemWorkbenchModule模块...");
+                await app.LoadRoleBasedModulesAsync("Admin");
+            } else {
+                System.Diagnostics.Debug.WriteLine("🔄 加载ConsultationWorkbenchModule模块...");
+                await app.LoadRoleBasedModulesAsync("Doctor");
+            }
+            
+            System.Diagnostics.Debug.WriteLine("✅ 工作台模块加载完成");
+        } catch (Exception ex) {
+            System.Diagnostics.Debug.WriteLine($"❌ 工作台模块加载失败: {ex.Message}");
+            // 模块加载失败不应阻塞界面显示
+        }
     }
 
     /// <summary>

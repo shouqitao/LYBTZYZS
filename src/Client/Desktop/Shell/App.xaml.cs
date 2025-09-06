@@ -6,6 +6,7 @@ using LYBT.Desktop.Herbs;
 using LYBT.Desktop.MedicalCase;
 using LYBT.Desktop.Patients;
 using LYBT.Desktop.Prescriptions;
+using LYBT.Desktop.Services.Registration;
 using LYBT.Desktop.Shell.Extensions;
 using LYBT.Desktop.Shell.ViewModels;
 using LYBT.Desktop.Shell.Views;
@@ -79,18 +80,21 @@ public partial class App : PrismApplication {
 
     /// <summary>
     /// 应用程序初始化完成后的回调
-    /// 执行企业级启动流程：错误处理初始化、模块协调器配置、性能优化预热
+    /// 执行企业级启动流程：服务注册验证、错误处理初始化、模块协调器配置、性能优化预热
     /// </summary>
     protected override void OnInitialized() {
         base.OnInitialized();
 
-        // 1. 启动性能优化 - 应用预热（异步执行，不阻塞主线程）
+        // 1. 验证服务注册 - 确保自动发现系统正常工作
+        ValidateServiceRegistrations();
+
+        // 2. 启动性能优化 - 应用预热（异步执行，不阻塞主线程）
         _ = Task.Run(InitializeApplicationWarmupAsync);
 
-        // 2. 初始化错误处理服务并注册全局异常处理器
+        // 3. 初始化错误处理服务并注册全局异常处理器
         InitializeErrorHandlingService();
 
-        // 3. 简化模块加载协调器（移除复杂的性能监控）
+        // 4. 简化模块加载协调器（移除复杂的性能监控）
         InitializeSimplifiedModuleCoordinator();
     }
 
@@ -121,6 +125,40 @@ public partial class App : PrismApplication {
             System.Diagnostics.Debug.WriteLine($"初始化错误处理服务失败: {ex.Message}");
             MessageBox.Show($"系统初始化失败: {ex.Message}", "凌隐宝堂 - 系统错误",
                 MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    /// <summary>
+    /// 验证服务注册 - 确保所有自动发现的服务都能正常解析
+    /// </summary>
+    private void ValidateServiceRegistrations() {
+        try {
+            var logger = LoggerFactory.Create(builder => builder.AddDebug())
+                .CreateLogger("ServiceValidation");
+            
+            logger.LogInformation("开始验证服务注册...");
+            
+            // 解析服务注册验证器
+            var validator = Container.Resolve<IModuleServiceRegistrar>();
+            if (validator is ModuleRegistrationValidator moduleValidator) {
+                var validationResult = moduleValidator.ValidateRegistrations(Container);
+                
+                if (validationResult.IsAllSuccessful) {
+                    logger.LogInformation("服务注册验证通过：所有 {TotalCount} 个服务都可正常解析", 
+                        validationResult.TotalCount);
+                } else {
+                    logger.LogWarning("服务注册验证失败：{SuccessCount}/{TotalCount} 成功\n失败服务：{FailedServices}",
+                        validationResult.SuccessCount, validationResult.TotalCount,
+                        string.Join(", ", validationResult.FailedServices));
+                }
+                
+                // 输出诊断报告
+                var report = moduleValidator.CreateDiagnosticReport();
+                logger.LogDebug("服务注册诊断报告\n{Report}", report);
+            }
+        } catch (Exception ex) {
+            // 验证失败不应阻塞应用启动，但需记录错误
+            System.Diagnostics.Debug.WriteLine($"服务注册验证失败: {ex.Message}");
         }
     }
 

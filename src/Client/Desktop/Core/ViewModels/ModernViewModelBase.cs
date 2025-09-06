@@ -50,7 +50,11 @@ namespace LYBT.Desktop.Core.ViewModels {
         /// </summary>
         public string StatusMessage {
             get => _statusMessage;
-            protected set => SetProperty(ref _statusMessage, value);
+            protected set {
+                if (SetProperty(ref _statusMessage, value)) {
+                    RaisePropertyChanged(nameof(HasMessage));
+                }
+            }
         }
 
         /// <summary>
@@ -69,9 +73,15 @@ namespace LYBT.Desktop.Core.ViewModels {
             private set {
                 if (SetProperty(ref _errorMessage, value)) {
                     HasError = !string.IsNullOrEmpty(value);
+                    RaisePropertyChanged(nameof(HasMessage));
                 }
             }
         }
+
+        /// <summary>
+        /// 是否有消息（状态消息或错误消息）
+        /// </summary>
+        public bool HasMessage => !string.IsNullOrEmpty(StatusMessage) || !string.IsNullOrEmpty(ErrorMessage);
 
         #endregion 基础状态属性
 
