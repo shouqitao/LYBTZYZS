@@ -6,7 +6,6 @@ using LYBT.Desktop.Infrastructure;
 using LYBT.Desktop.Services;
 using LYBT.Desktop.Services.Handlers;
 using LYBT.Desktop.Services.Registration;
-using LYBT.Desktop.Configuration;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
