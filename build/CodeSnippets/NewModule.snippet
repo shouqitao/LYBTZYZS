@@ -1,0 +1,526 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CodeSnippets xmlns="http://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+  <CodeSnippet Format="1.0.0">
+    <Header>
+      <Title>UltraThink双层架构新模块</Title>
+      <Shortcut>ultramodule</Shortcut>
+      <Description>创建遵循UltraThink双层架构的完整新模块，包含纯委托主Module、QueryService、BusinessService及相关接口</Description>
+      <Author>LYBT开发团队</Author>
+      <SnippetTypes>
+        <SnippetType>Expansion</SnippetType>
+      </SnippetTypes>
+    </Header>
+    <Snippet>
+      <Declarations>
+        <Literal>
+          <ID>ModuleName</ID>
+          <ToolTip>模块名称（如：Orders, Products）</ToolTip>
+          <Default>Example</Default>
+        </Literal>
+        <Literal>
+          <ID>EntityName</ID>
+          <ToolTip>实体名称（如：Order, Product）</ToolTip>
+          <Default>Example</Default>
+        </Literal>
+        <Literal>
+          <ID>modulename</ID>
+          <ToolTip>小写模块名（自动生成）</ToolTip>
+          <Default>example</Default>
+        </Literal>
+      </Declarations>
+      <Code Language="CSharp" Kind="type decl">
+        <![CDATA[
+// =================== 1. 主服务接口定义 ===================
+using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.$ModuleName$;
+
+namespace LYBT.Shared.Interfaces.Services;
+
+/// <summary>
+/// $ModuleName$服务接口 - UltraThink双层架构统一入口
+/// </summary>
+public interface I$ModuleName$Service
+{
+    // 查询操作
+    Task<ServiceResult<$EntityName$Dto>> GetByIdAsync(Guid id);
+    Task<ServiceResult<PagedResult<$EntityName$Dto>>> GetPagedAsync($EntityName$PagedQueryDto query);
+    Task<ServiceResult<List<$EntityName$Dto>>> SearchAsync(string keyword);
+    
+    // CRUD操作
+    Task<ServiceResult<$EntityName$Dto>> CreateAsync($EntityName$MutationDto dto);
+    Task<ServiceResult<$EntityName$Dto>> UpdateAsync($EntityName$MutationDto dto);
+    Task<ServiceResult<bool>> DeleteAsync(Guid id);
+    
+    // 状态管理
+    Task<ServiceResult<bool>> EnableAsync(Guid id);
+    Task<ServiceResult<bool>> DisableAsync(Guid id);
+}
+
+// =================== 2. QueryService接口定义 ===================
+namespace LYBT.Desktop.$ModuleName$.Interfaces;
+
+/// <summary>
+/// $ModuleName$查询服务接口 - UltraThink双层架构查询专业层
+/// </summary>
+public interface I$ModuleName$QueryService
+{
+    Task<ServiceResult<$EntityName$Dto>> GetByIdAsync(Guid id);
+    Task<ServiceResult<PagedResult<$EntityName$Dto>>> GetPagedAsync($EntityName$PagedQueryDto query);
+    Task<ServiceResult<List<$EntityName$Dto>>> SearchAsync(string keyword);
+    Task<ServiceResult<bool>> ExistsAsync(Guid id);
+}
+
+// =================== 3. BusinessService接口定义 ===================
+namespace LYBT.Desktop.$ModuleName$.Interfaces;
+
+/// <summary>
+/// $ModuleName$业务服务接口 - UltraThink双层架构业务逻辑层
+/// </summary>
+public interface I$ModuleName$BusinessService
+{
+    Task<ServiceResult<$EntityName$Dto>> CreateAsync($EntityName$MutationDto dto);
+    Task<ServiceResult<$EntityName$Dto>> UpdateAsync($EntityName$MutationDto dto);
+    Task<ServiceResult<bool>> DeleteAsync(Guid id);
+    Task<ServiceResult<bool>> EnableAsync(Guid id);
+    Task<ServiceResult<bool>> DisableAsync(Guid id);
+}
+
+// =================== 4. 主Module类实现（纯委托模式） ===================
+using LYBT.Desktop.$ModuleName$.Interfaces;
+using LYBT.Shared.Interfaces.Services;
+using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.$ModuleName$;
+
+namespace LYBT.Desktop.$ModuleName$.Services;
+
+/// <summary>
+/// $ModuleName$模块 - UltraThink双层架构纯委托层
+/// 职责：统一服务入口，请求路由分发到QueryService和BusinessService
+/// </summary>
+public class $ModuleName$Module(
+    I$ModuleName$QueryService queryService,
+    I$ModuleName$BusinessService businessService) : I$ModuleName$Service
+{
+    private readonly I$ModuleName$QueryService _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
+    private readonly I$ModuleName$BusinessService _businessService = businessService ?? throw new ArgumentNullException(nameof(businessService));
+
+    #region 查询操作 - QueryService专业负责
+
+    /// <summary>
+    /// 根据ID获取$EntityName$详情
+    /// </summary>
+    public async Task<ServiceResult<$EntityName$Dto>> GetByIdAsync(Guid id)
+        => await _queryService.GetByIdAsync(id);
+
+    /// <summary>
+    /// 分页查询$EntityName$列表
+    /// </summary>
+    public async Task<ServiceResult<PagedResult<$EntityName$Dto>>> GetPagedAsync($EntityName$PagedQueryDto query)
+        => await _queryService.GetPagedAsync(query);
+
+    /// <summary>
+    /// 关键字搜索$EntityName$
+    /// </summary>
+    public async Task<ServiceResult<List<$EntityName$Dto>>> SearchAsync(string keyword)
+        => await _queryService.SearchAsync(keyword);
+
+    #endregion 查询操作 - QueryService专业负责
+
+    #region 业务操作 - BusinessService专业负责
+
+    /// <summary>
+    /// 创建新$EntityName$
+    /// </summary>
+    public async Task<ServiceResult<$EntityName$Dto>> CreateAsync($EntityName$MutationDto dto)
+        => await _businessService.CreateAsync(dto);
+
+    /// <summary>
+    /// 更新$EntityName$信息
+    /// </summary>
+    public async Task<ServiceResult<$EntityName$Dto>> UpdateAsync($EntityName$MutationDto dto)
+        => await _businessService.UpdateAsync(dto);
+
+    /// <summary>
+    /// 删除$EntityName$
+    /// </summary>
+    public async Task<ServiceResult<bool>> DeleteAsync(Guid id)
+        => await _businessService.DeleteAsync(id);
+
+    /// <summary>
+    /// 启用$EntityName$
+    /// </summary>
+    public async Task<ServiceResult<bool>> EnableAsync(Guid id)
+        => await _businessService.EnableAsync(id);
+
+    /// <summary>
+    /// 禁用$EntityName$
+    /// </summary>
+    public async Task<ServiceResult<bool>> DisableAsync(Guid id)
+        => await _businessService.DisableAsync(id);
+
+    #endregion 业务操作 - BusinessService专业负责
+}
+
+// =================== 5. QueryService实现 ===================
+using LYBT.Desktop.$ModuleName$.Interfaces;
+using LYBT.Shared.Interfaces.Api;
+using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.$ModuleName$;
+using Microsoft.Extensions.Logging;
+
+namespace LYBT.Desktop.$ModuleName$.Services;
+
+/// <summary>
+/// $ModuleName$查询服务 - UltraThink双层架构查询专业层
+/// 职责：$EntityName$信息查询、搜索过滤、数据检索
+/// </summary>
+public class $ModuleName$QueryService(
+    ILogger<$ModuleName$QueryService> logger,
+    I$ModuleName$Api $modulename$Api) : I$ModuleName$QueryService
+{
+    private readonly ILogger<$ModuleName$QueryService> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    private readonly I$ModuleName$Api _$modulename$Api = $modulename$Api ?? throw new ArgumentNullException(nameof($modulename$Api));
+
+    /// <summary>
+    /// 根据ID获取$EntityName$详情
+    /// </summary>
+    public async Task<ServiceResult<$EntityName$Dto>> GetByIdAsync(Guid id)
+    {
+        try
+        {
+            _logger.LogDebug("查询$EntityName$详情: {Id}", id);
+
+            var refitResponse = await _$modulename$Api.GetByIdAsync(id);
+
+            if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
+            {
+                var apiResponse = refitResponse.Content;
+                if (apiResponse.Success && apiResponse.Data != null)
+                {
+                    return ServiceResult<$EntityName$Dto>.Success(apiResponse.Data);
+                }
+
+                return ServiceResult<$EntityName$Dto>.Failure(apiResponse.Message ?? "获取$EntityName$详情失败");
+            }
+
+            return ServiceResult<$EntityName$Dto>.Failure("获取$EntityName$详情网络请求失败");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "查询$EntityName$详情异常: {Id}", id);
+            return ServiceResult<$EntityName$Dto>.Failure("获取$EntityName$详情失败");
+        }
+    }
+
+    /// <summary>
+    /// 分页查询$EntityName$列表
+    /// </summary>
+    public async Task<ServiceResult<PagedResult<$EntityName$Dto>>> GetPagedAsync($EntityName$PagedQueryDto query)
+    {
+        try
+        {
+            _logger.LogDebug("执行$EntityName$分页查询，页码: {PageIndex}, 页大小: {PageSize}",
+                query.PageIndex, query.PageSize);
+
+            var refitResponse = await _$modulename$Api.GetPagedAsync(
+                page: query.PageIndex,
+                pageSize: query.PageSize,
+                keyword: query.Keyword);
+
+            if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
+            {
+                var apiResponse = refitResponse.Content;
+                if (apiResponse.Success && apiResponse.Data != null)
+                {
+                    return ServiceResult<PagedResult<$EntityName$Dto>>.Success(apiResponse.Data);
+                }
+
+                return ServiceResult<PagedResult<$EntityName$Dto>>.Failure(apiResponse.Message ?? "查询$EntityName$列表失败");
+            }
+
+            return ServiceResult<PagedResult<$EntityName$Dto>>.Failure("查询$EntityName$网络请求失败");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "$EntityName$分页查询异常");
+            return ServiceResult<PagedResult<$EntityName$Dto>>.Failure("查询$EntityName$列表失败");
+        }
+    }
+
+    /// <summary>
+    /// 关键字搜索$EntityName$
+    /// </summary>
+    public async Task<ServiceResult<List<$EntityName$Dto>>> SearchAsync(string keyword)
+    {
+        try
+        {
+            _logger.LogDebug("搜索$EntityName$: {Keyword}", keyword);
+
+            var refitResponse = await _$modulename$Api.SearchAsync(keyword);
+
+            if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
+            {
+                var apiResponse = refitResponse.Content;
+                if (apiResponse.Success && apiResponse.Data != null)
+                {
+                    return ServiceResult<List<$EntityName$Dto>>.Success(apiResponse.Data);
+                }
+
+                return ServiceResult<List<$EntityName$Dto>>.Failure(apiResponse.Message ?? "搜索$EntityName$失败");
+            }
+
+            return ServiceResult<List<$EntityName$Dto>>.Failure("搜索$EntityName$网络请求失败");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "搜索$EntityName$异常: {Keyword}", keyword);
+            return ServiceResult<List<$EntityName$Dto>>.Failure("搜索$EntityName$失败");
+        }
+    }
+
+    /// <summary>
+    /// 检查$EntityName$是否存在
+    /// </summary>
+    public async Task<ServiceResult<bool>> ExistsAsync(Guid id)
+    {
+        var result = await GetByIdAsync(id);
+        return ServiceResult<bool>.Success(result.IsSuccess);
+    }
+}
+
+// =================== 6. BusinessService实现 ===================
+using LYBT.Desktop.$ModuleName$.Interfaces;
+using LYBT.Shared.Interfaces.Api;
+using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.$ModuleName$;
+using Microsoft.Extensions.Logging;
+
+namespace LYBT.Desktop.$ModuleName$.Services;
+
+/// <summary>
+/// $ModuleName$业务服务 - UltraThink双层架构业务逻辑层
+/// 职责：处理$EntityName$业务逻辑、CRUD操作、状态管理、数据验证
+/// </summary>
+public class $ModuleName$BusinessService(
+    ILogger<$ModuleName$BusinessService> logger,
+    I$ModuleName$Api $modulename$Api) : I$ModuleName$BusinessService
+{
+    private readonly ILogger<$ModuleName$BusinessService> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    private readonly I$ModuleName$Api _$modulename$Api = $modulename$Api ?? throw new ArgumentNullException(nameof($modulename$Api));
+
+    /// <summary>
+    /// 创建新$EntityName$
+    /// </summary>
+    public async Task<ServiceResult<$EntityName$Dto>> CreateAsync($EntityName$MutationDto createDto)
+    {
+        ArgumentNullException.ThrowIfNull(createDto, nameof(createDto));
+
+        try
+        {
+            _logger.LogInformation("开始处理$EntityName$创建");
+
+            var refitResponse = await _$modulename$Api.CreateAsync(createDto);
+
+            if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
+            {
+                var apiResponse = refitResponse.Content;
+                if (apiResponse.Success && apiResponse.Data != null)
+                {
+                    _logger.LogInformation("$EntityName$创建成功: {Id}", apiResponse.Data.Id);
+                    return ServiceResult<$EntityName$Dto>.Success(apiResponse.Data);
+                }
+
+                _logger.LogWarning("$EntityName$创建业务失败: {Message}", apiResponse.Message);
+                return ServiceResult<$EntityName$Dto>.Failure(apiResponse.Message ?? "创建$EntityName$失败，请检查输入信息");
+            }
+
+            _logger.LogWarning("$EntityName$创建HTTP请求失败，状态码: {StatusCode}", refitResponse.StatusCode);
+            return ServiceResult<$EntityName$Dto>.Failure("创建$EntityName$网络请求失败，请检查网络连接");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "$EntityName$创建过程发生异常");
+            return ServiceResult<$EntityName$Dto>.Failure($"创建$EntityName$过程发生错误: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// 更新$EntityName$信息
+    /// </summary>
+    public async Task<ServiceResult<$EntityName$Dto>> UpdateAsync($EntityName$MutationDto updateDto)
+    {
+        ArgumentNullException.ThrowIfNull(updateDto, nameof(updateDto));
+
+        try
+        {
+            _logger.LogInformation("开始处理$EntityName$更新: {Id}", updateDto.Id);
+
+            var refitResponse = await _$modulename$Api.UpdateAsync(updateDto.Id, updateDto);
+
+            if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
+            {
+                var apiResponse = refitResponse.Content;
+                if (apiResponse.Success && apiResponse.Data != null)
+                {
+                    _logger.LogInformation("$EntityName$更新成功: {Id}", apiResponse.Data.Id);
+                    return ServiceResult<$EntityName$Dto>.Success(apiResponse.Data);
+                }
+
+                _logger.LogWarning("$EntityName$更新业务失败: {Id}, 错误: {Message}",
+                    updateDto.Id, apiResponse.Message);
+                return ServiceResult<$EntityName$Dto>.Failure(apiResponse.Message ?? "更新$EntityName$失败，请检查输入信息");
+            }
+
+            _logger.LogWarning("$EntityName$更新HTTP请求失败: {Id}, 状态码: {StatusCode}",
+                updateDto.Id, refitResponse.StatusCode);
+            return ServiceResult<$EntityName$Dto>.Failure("更新$EntityName$网络请求失败，请检查网络连接");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "$EntityName$更新过程发生异常: {Id}", updateDto.Id);
+            return ServiceResult<$EntityName$Dto>.Failure($"更新$EntityName$过程发生错误: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// 删除$EntityName$
+    /// </summary>
+    public async Task<ServiceResult<bool>> DeleteAsync(Guid id)
+    {
+        try
+        {
+            _logger.LogInformation("开始处理$EntityName$删除: {Id}", id);
+
+            var refitResponse = await _$modulename$Api.DeleteAsync(id);
+
+            if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
+            {
+                var apiResponse = refitResponse.Content;
+                if (apiResponse.Success)
+                {
+                    _logger.LogInformation("$EntityName$删除成功: {Id}", id);
+                    return ServiceResult<bool>.Success(true);
+                }
+
+                _logger.LogWarning("$EntityName$删除业务失败: {Id}, 错误: {Message}", id, apiResponse.Message);
+                return ServiceResult<bool>.Failure(apiResponse.Message ?? "删除$EntityName$失败");
+            }
+
+            _logger.LogWarning("$EntityName$删除HTTP请求失败: {Id}, 状态码: {StatusCode}", id, refitResponse.StatusCode);
+            return ServiceResult<bool>.Failure("删除$EntityName$网络请求失败，请检查网络连接");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "$EntityName$删除过程发生异常: {Id}", id);
+            return ServiceResult<bool>.Failure($"删除$EntityName$过程发生错误: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// 启用$EntityName$
+    /// </summary>
+    public async Task<ServiceResult<bool>> EnableAsync(Guid id)
+    {
+        try
+        {
+            _logger.LogInformation("启用$EntityName$: {Id}", id);
+
+            var refitResponse = await _$modulename$Api.EnableAsync(id);
+
+            if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
+            {
+                var apiResponse = refitResponse.Content;
+                if (apiResponse.Success)
+                {
+                    _logger.LogInformation("$EntityName$启用成功: {Id}", id);
+                    return ServiceResult<bool>.Success(true);
+                }
+
+                return ServiceResult<bool>.Failure(apiResponse.Message ?? "$EntityName$启用失败");
+            }
+
+            return ServiceResult<bool>.Failure("$EntityName$启用网络请求失败");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "$EntityName$启用异常: {Id}", id);
+            return ServiceResult<bool>.Failure("$EntityName$启用失败");
+        }
+    }
+
+    /// <summary>
+    /// 禁用$EntityName$
+    /// </summary>
+    public async Task<ServiceResult<bool>> DisableAsync(Guid id)
+    {
+        try
+        {
+            _logger.LogInformation("禁用$EntityName$: {Id}", id);
+
+            var refitResponse = await _$modulename$Api.DisableAsync(id);
+
+            if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
+            {
+                var apiResponse = refitResponse.Content;
+                if (apiResponse.Success)
+                {
+                    _logger.LogInformation("$EntityName$禁用成功: {Id}", id);
+                    return ServiceResult<bool>.Success(true);
+                }
+
+                return ServiceResult<bool>.Failure(apiResponse.Message ?? "$EntityName$禁用失败");
+            }
+
+            return ServiceResult<bool>.Failure("$EntityName$禁用网络请求失败");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "$EntityName$禁用异常: {Id}", id);
+            return ServiceResult<bool>.Failure("$EntityName$禁用失败");
+        }
+    }
+}
+
+// =================== 7. Prism模块注册类 ===================
+using LYBT.Desktop.$ModuleName$.Interfaces;
+using LYBT.Desktop.$ModuleName$.Services;
+using LYBT.Desktop.$ModuleName$.ViewModels;
+using LYBT.Desktop.$ModuleName$.Views;
+using LYBT.Shared.Interfaces.Services;
+using Prism.Ioc;
+using Prism.Modularity;
+
+namespace LYBT.Desktop.$ModuleName$;
+
+/// <summary>
+/// $ModuleName$管理模块 - UltraThink双层架构模块注册
+/// 对应后端: LYBT.Module.$ModuleName$
+/// 遵循原始设计：前后端模块一一对应
+/// </summary>
+public class $ModuleName$Module : IModule
+{
+    public void OnInitialized(IContainerProvider containerProvider)
+    {
+        // 模块初始化完成后的操作
+    }
+
+    public void RegisterTypes(IContainerRegistry containerRegistry)
+    {
+        // UltraThink双层架构：注册Query和Business服务
+        containerRegistry.RegisterSingleton<I$ModuleName$QueryService, $ModuleName$QueryService>();
+        containerRegistry.RegisterSingleton<I$ModuleName$BusinessService, $ModuleName$BusinessService>();
+        
+        // UltraThink修复：模块自己注册服务接口实现
+        containerRegistry.RegisterSingleton<$ModuleName$Module>();
+        containerRegistry.RegisterSingleton<I$ModuleName$Service>(container => container.Resolve<$ModuleName$Module>());
+
+        // 注册视图和视图模型
+        containerRegistry.RegisterForNavigation<$ModuleName$ManagementView, $ModuleName$ManagementViewModel>();
+        containerRegistry.RegisterForNavigation<$ModuleName$AddEditDialog, $ModuleName$AddEditDialogViewModel>();
+    }
+}
+]]>
+      </Code>
+    </Snippet>
+  </CodeSnippet>
+</CodeSnippets>
