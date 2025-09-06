@@ -1,15 +1,11 @@
-﻿using System;
-using System.Threading.Tasks;
-using LYBT.Shared.Models.Contracts.Common;
+﻿namespace LYBT.Desktop.Core.Interfaces {
 
-namespace LYBT.Desktop.Core.Interfaces
-{
     /// <summary>
     /// 身份证读卡器服务接口
     /// 预留接口，用于后续集成身份证读卡器硬件
     /// </summary>
-    public interface IIDCardReaderService
-    {
+    public interface IIDCardReaderService {
+
         /// <summary>
         /// 检查读卡器是否已连接
         /// </summary>
@@ -44,8 +40,8 @@ namespace LYBT.Desktop.Core.Interfaces
     /// <summary>
     /// 身份证信息
     /// </summary>
-    public class IDCardInfo
-    {
+    public class IDCardInfo {
+
         /// <summary>
         /// 姓名
         /// </summary>
@@ -101,12 +97,10 @@ namespace LYBT.Desktop.Core.Interfaces
         /// </summary>
         public int Age => CalculateAge();
 
-        private int CalculateAge()
-        {
+        private int CalculateAge() {
             var today = DateTime.Today;
             var age = today.Year - BirthDate.Year;
-            if (BirthDate.Date > today.AddYears(-age))
-            {
+            if (BirthDate.Date > today.AddYears(-age)) {
                 age--;
             }
 
@@ -116,16 +110,13 @@ namespace LYBT.Desktop.Core.Interfaces
         /// <summary>
         /// 验证身份证号码格式
         /// </summary>
-        public bool IsValidIDNumber()
-        {
-            if (string.IsNullOrWhiteSpace(IDNumber))
-            {
+        public bool IsValidIDNumber() {
+            if (string.IsNullOrWhiteSpace(IDNumber)) {
                 return false;
             }
 
             // 简单的18位身份证号验证
-            if (IDNumber.Length != 18)
-            {
+            if (IDNumber.Length != 18) {
                 return false;
             }
 
@@ -137,8 +128,7 @@ namespace LYBT.Desktop.Core.Interfaces
     /// <summary>
     /// 读卡器状态变化事件参数
     /// </summary>
-    public class IDCardReaderStatusChangedEventArgs : EventArgs
-    {
+    public class IDCardReaderStatusChangedEventArgs : EventArgs {
         public IDCardReaderStatus OldStatus { get; set; }
         public IDCardReaderStatus NewStatus { get; set; }
         public string? Message { get; set; }
@@ -147,8 +137,8 @@ namespace LYBT.Desktop.Core.Interfaces
     /// <summary>
     /// 读卡器状态
     /// </summary>
-    public enum IDCardReaderStatus
-    {
+    public enum IDCardReaderStatus {
+
         /// <summary>
         /// 未连接
         /// </summary>
@@ -178,8 +168,7 @@ namespace LYBT.Desktop.Core.Interfaces
     /// <summary>
     /// 读卡事件参数
     /// </summary>
-    public class IDCardReadEventArgs : EventArgs
-    {
+    public class IDCardReadEventArgs : EventArgs {
         public IDCardInfo? CardInfo { get; set; }
         public bool Success { get; set; }
         public string? ErrorMessage { get; set; }

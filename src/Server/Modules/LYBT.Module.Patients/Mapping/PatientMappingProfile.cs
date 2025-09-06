@@ -2,18 +2,15 @@
 using LYBT.Entities.Patients;
 using LYBT.Shared.Models.Contracts.Patients;
 
-namespace LYBT.Module.Patients.Mapping
-{
+namespace LYBT.Module.Patients.Mapping {
 
     /// <summary>
     /// 患者实体与DTO之间的AutoMapper映射配置
     /// 更新以支持共享契约模型和基础模型继承
     /// </summary>
-    public class PatientMappingProfile : Profile
-    {
+    public class PatientMappingProfile : Profile {
 
-        public PatientMappingProfile()
-        {
+        public PatientMappingProfile() {
             // ==================== UltraThink v2.0简化映射 ====================
 
             // 患者实体转PatientDto（API响应）
@@ -52,7 +49,6 @@ namespace LYBT.Module.Patients.Mapping
             // PatientUpdateDto -> PatientDto（用于验证服务）
             CreateMap<PatientUpdateDto, PatientDto>()
                 .ForMember(dest => dest.PinYinCode, opt => opt.Ignore()); // 拼音码由系统生成
-
         }
     }
 }

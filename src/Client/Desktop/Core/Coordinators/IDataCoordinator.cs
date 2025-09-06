@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using LYBT.Shared.Models.Common;
-using LYBT.Shared.Models.Contracts.Common;
+﻿using LYBT.Shared.Models.Contracts.Common;
 
-namespace LYBT.Desktop.Core.Coordinators
-{
+namespace LYBT.Desktop.Core.Coordinators {
+
     /// <summary>
     /// 数据协调器接口 - UltraThink架构的数据操作协调
     /// 为各种业务模块提供统一的数据操作协调模式
@@ -16,8 +12,8 @@ namespace LYBT.Desktop.Core.Coordinators
     public interface IDataCoordinator<TDto, TCreateDto, TUpdateDto>
         where TDto : class
         where TCreateDto : class
-        where TUpdateDto : class
-    {
+        where TUpdateDto : class {
+
         #region Events
 
         /// <summary>
@@ -30,7 +26,7 @@ namespace LYBT.Desktop.Core.Coordinators
         /// </summary>
         event EventHandler<OperationProgressEventArgs>? OperationProgress;
 
-        #endregion
+        #endregion Events
 
         #region Query Operations
 
@@ -54,7 +50,7 @@ namespace LYBT.Desktop.Core.Coordinators
         /// </summary>
         Task<ServiceResult<List<TDto>>> GetActiveAsync();
 
-        #endregion
+        #endregion Query Operations
 
         #region CRUD Operations
 
@@ -73,7 +69,7 @@ namespace LYBT.Desktop.Core.Coordinators
         /// </summary>
         Task<ServiceResult<bool>> DeleteAsync(Guid id);
 
-        #endregion
+        #endregion CRUD Operations
 
         #region Status Operations
 
@@ -97,7 +93,7 @@ namespace LYBT.Desktop.Core.Coordinators
         /// </summary>
         Task<ServiceResult<int>> BatchDisableAsync(List<Guid> ids);
 
-        #endregion
+        #endregion Status Operations
 
         #region Validation
 
@@ -111,7 +107,7 @@ namespace LYBT.Desktop.Core.Coordinators
         /// </summary>
         Task<ServiceResult<bool>> ValidateUpdateAsync(Guid id, TUpdateDto updateDto);
 
-        #endregion
+        #endregion Validation
 
         #region Cache Management
 
@@ -125,26 +121,23 @@ namespace LYBT.Desktop.Core.Coordinators
         /// </summary>
         void ClearCache();
 
-        #endregion
+        #endregion Cache Management
     }
 
     /// <summary>
     /// 数据变化事件参数
     /// </summary>
-    public class DataChangedEventArgs<TDto> : EventArgs
-    {
+    public class DataChangedEventArgs<TDto> : EventArgs {
         public DataChangeType ChangeType { get; }
         public TDto? Item { get; }
         public List<TDto>? Items { get; }
 
-        public DataChangedEventArgs(DataChangeType changeType, TDto item)
-        {
+        public DataChangedEventArgs(DataChangeType changeType, TDto item) {
             ChangeType = changeType;
             Item = item;
         }
 
-        public DataChangedEventArgs(DataChangeType changeType, List<TDto> items)
-        {
+        public DataChangedEventArgs(DataChangeType changeType, List<TDto> items) {
             ChangeType = changeType;
             Items = items;
         }
@@ -153,8 +146,7 @@ namespace LYBT.Desktop.Core.Coordinators
     /// <summary>
     /// 数据变化类型
     /// </summary>
-    public enum DataChangeType
-    {
+    public enum DataChangeType {
         Created,
         Updated,
         Deleted,
@@ -166,15 +158,13 @@ namespace LYBT.Desktop.Core.Coordinators
     /// <summary>
     /// 操作进度事件参数
     /// </summary>
-    public class OperationProgressEventArgs : EventArgs
-    {
+    public class OperationProgressEventArgs : EventArgs {
         public string OperationName { get; }
         public int Current { get; }
         public int Total { get; }
         public string? Message { get; }
 
-        public OperationProgressEventArgs(string operationName, int current, int total, string? message = null)
-        {
+        public OperationProgressEventArgs(string operationName, int current, int total, string? message = null) {
             OperationName = operationName;
             Current = current;
             Total = total;

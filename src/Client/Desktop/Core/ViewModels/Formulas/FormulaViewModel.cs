@@ -1,15 +1,13 @@
-﻿using System;
-using LYBT.Shared.Models.Contracts.Formula;
+﻿using LYBT.Shared.Models.Contracts.Formula;
 using Prism.Mvvm;
 
-namespace LYBT.Desktop.Core.ViewModels.Formulas
-{
+namespace LYBT.Desktop.Core.ViewModels.Formulas {
+
     /// <summary>
     /// 验方视图模型协调器 - UltraThink架构Presentation Layer
     /// 组合Display、State、Theme等专门的ViewModel，实现完整的验方UI逻辑
     /// </summary>
-    public class FormulaViewModel : BindableBase
-    {
+    public class FormulaViewModel : BindableBase {
         private readonly FormulaDto _formulaData;
 
         #region 子ViewModel组件
@@ -23,12 +21,11 @@ namespace LYBT.Desktop.Core.ViewModels.Formulas
         /// <summary>主题样式组件</summary>
         public FormulaThemeViewModel Theme { get; }
 
-        #endregion
+        #endregion 子ViewModel组件
 
         #region 构造函数
 
-        private FormulaViewModel(FormulaDto formulaData)
-        {
+        private FormulaViewModel(FormulaDto formulaData) {
             _formulaData = formulaData ?? throw new ArgumentNullException(nameof(formulaData));
 
             Display = new FormulaDisplayViewModel(_formulaData);
@@ -39,19 +36,18 @@ namespace LYBT.Desktop.Core.ViewModels.Formulas
             State.PropertyChanged += (s, e) => RaisePropertyChanged(e.PropertyName);
         }
 
-        #endregion
+        #endregion 构造函数
 
         #region 工厂方法
 
         /// <summary>
         /// 创建验方视图模型
         /// </summary>
-        public static FormulaViewModel Create(FormulaDto formulaData)
-        {
+        public static FormulaViewModel Create(FormulaDto formulaData) {
             return new FormulaViewModel(formulaData);
         }
 
-        #endregion
+        #endregion 工厂方法
 
         #region 数据访问属性
 
@@ -64,7 +60,7 @@ namespace LYBT.Desktop.Core.ViewModels.Formulas
         /// <summary>访问原始验方数据</summary>
         public FormulaDto FormulaData => _formulaData;
 
-        #endregion
+        #endregion 数据访问属性
 
         #region 快捷访问属性
 
@@ -72,29 +68,25 @@ namespace LYBT.Desktop.Core.ViewModels.Formulas
         public string DisplayName => Display.DisplayName;
 
         /// <summary>是否选中</summary>
-        public bool IsSelected
-        {
+        public bool IsSelected {
             get => State.IsSelected;
             set => State.IsSelected = value;
         }
 
         /// <summary>是否展开</summary>
-        public bool IsExpanded
-        {
+        public bool IsExpanded {
             get => State.IsExpanded;
             set => State.IsExpanded = value;
         }
 
         /// <summary>是否正在编辑</summary>
-        public bool IsEditing
-        {
+        public bool IsEditing {
             get => State.IsEditing;
             set => State.IsEditing = value;
         }
 
         /// <summary>是否正在加载</summary>
-        public bool IsLoading
-        {
+        public bool IsLoading {
             get => State.IsLoading;
             set => State.IsLoading = value;
         }
@@ -129,23 +121,21 @@ namespace LYBT.Desktop.Core.ViewModels.Formulas
         /// <summary>备注</summary>
         public string Remark => _formulaData.Remark ?? string.Empty;
 
-        #endregion
+        #endregion 快捷访问属性
 
         #region 业务方法
 
         /// <summary>
         /// 开始编辑
         /// </summary>
-        public void StartEdit()
-        {
+        public void StartEdit() {
             State.StartEditing();
         }
 
         /// <summary>
         /// 取消编辑
         /// </summary>
-        public void CancelEdit()
-        {
+        public void CancelEdit() {
             State.EndEditing();
             State.ClearError();
         }
@@ -153,56 +143,49 @@ namespace LYBT.Desktop.Core.ViewModels.Formulas
         /// <summary>
         /// 切换选中状态
         /// </summary>
-        public void ToggleSelection()
-        {
+        public void ToggleSelection() {
             State.ToggleSelection();
         }
 
         /// <summary>
         /// 设置错误状态
         /// </summary>
-        public void SetError(string message)
-        {
+        public void SetError(string message) {
             State.SetError(message);
         }
 
         /// <summary>
         /// 清除错误状态
         /// </summary>
-        public void ClearError()
-        {
+        public void ClearError() {
             State.ClearError();
         }
 
         /// <summary>
         /// 重置所有状态
         /// </summary>
-        public void ResetState()
-        {
+        public void ResetState() {
             State.ResetState();
         }
 
         /// <summary>
         /// 获取限制数量的药材名称列表
         /// </summary>
-        public string GetHerbNamesList(int maxCount = 10)
-        {
+        public string GetHerbNamesList(int maxCount = 10) {
             return _formulaData.GetHerbNamesList(maxCount);
         }
 
         /// <summary>
         /// 检查是否可以导出
         /// </summary>
-        public bool CanExport()
-        {
+        public bool CanExport() {
             return !HasError && HerbCount > 0;
         }
 
         /// <summary>
         /// 检查是否适合导入（验证数据完整性）
         /// </summary>
-        public bool IsValidForImport()
-        {
+        public bool IsValidForImport() {
             return !string.IsNullOrWhiteSpace(Name) &&
                    HerbCount > 0 &&
                    !string.IsNullOrWhiteSpace(Effect);
@@ -211,28 +194,25 @@ namespace LYBT.Desktop.Core.ViewModels.Formulas
         /// <summary>
         /// 格式化价格显示
         /// </summary>
-        public string FormatPrice()
-        {
+        public string FormatPrice() {
             return TotalPrice.ToString("F2") + "元";
         }
 
         /// <summary>
         /// 格式化药材组成摘要
         /// </summary>
-        public string GetCompositionSummary()
-        {
+        public string GetCompositionSummary() {
             return $"{HerbCount}味药材，总价 {FormatPrice()}";
         }
 
-        #endregion
+        #endregion 业务方法
 
         #region 数据更新
 
         /// <summary>
         /// 通知数据已更新（用于刷新显示）
         /// </summary>
-        public void NotifyDataUpdated()
-        {
+        public void NotifyDataUpdated() {
             // 通知所有显示相关属性更新
             RaisePropertyChanged(nameof(DisplayName));
             RaisePropertyChanged(nameof(Name));
@@ -242,30 +222,26 @@ namespace LYBT.Desktop.Core.ViewModels.Formulas
             // Theme.RaisePropertyChanged(string.Empty); // 无法访问受保护成员：FormulaThemeViewModel.RaisePropertyChanged
         }
 
-        #endregion
+        #endregion 数据更新
 
         #region 比较和相等性
 
-        public override bool Equals(object? obj)
-        {
-            if (obj is FormulaViewModel other)
-            {
+        public override bool Equals(object? obj) {
+            if (obj is FormulaViewModel other) {
                 return Id.Equals(other.Id);
             }
 
             return false;
         }
 
-        public override int GetHashCode()
-        {
+        public override int GetHashCode() {
             return Id.GetHashCode();
         }
 
-        public override string ToString()
-        {
+        public override string ToString() {
             return $"FormulaViewModel: {DisplayName} (ID: {Id})";
         }
 
-        #endregion
+        #endregion 比较和相等性
     }
 }

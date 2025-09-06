@@ -11,15 +11,12 @@
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <WarningsAsErrors />
     
-    <!-- Assembly Information -->
-    <AssemblyTitle>LYBT.Desktop.Shell</AssemblyTitle>
-    <AssemblyDescription>凌隐宝堂中医诊所系统 - WPF应用程序外壳 | Prism模块化架构 | 统一入口点</AssemblyDescription>
-    <AssemblyCompany>凌隐宝堂中医诊所</AssemblyCompany>
-    <AssemblyProduct>LYBT诊疗管理系统</AssemblyProduct>
-    <AssemblyCopyright>Copyright © 凌隐宝堂中医诊所 2025</AssemblyCopyright>
+    <!-- 程序集版本信息 - 通过MSBuild属性设置 -->
     <AssemblyVersion>2.1.0.0</AssemblyVersion>
     <FileVersion>2.1.0.0</FileVersion>
-    <InformationalVersion>2.1.0-shell-enterprise</InformationalVersion>
+    <!-- 禁用此项目的版本属性自动生成，避免重复定义 -->
+    <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
+    <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
     
     <!-- Package Information -->
     <PackageId>LYBT.Desktop.Shell</PackageId>
@@ -47,13 +44,13 @@
     <Optimize>true</Optimize>
   </PropertyGroup>
 
-  <!-- Exclusion Groups -->
-  <ItemGroup Label="Resource Exclusions">
+  <!-- 注释掉Resource排除组，允许Resources目录下的XAML文件被包含 -->
+  <!-- <ItemGroup Label="Resource Exclusions">
     <Compile Remove="Resources\**" />
     <EmbeddedResource Remove="Resources\**" />
     <None Remove="Resources\**" />
     <Page Remove="Resources\**" />
-  </ItemGroup>
+  </ItemGroup> -->
 
   <!-- Prism and WPF Framework -->
   <ItemGroup Label="WPF and MVVM Framework">
@@ -121,6 +118,7 @@
     <Resource Include="..\Themes\Design\*.xaml" />
     <Resource Include="..\Themes\Controls\*.xaml" />
     <Resource Include="..\Resources\*.xaml" />
+    <!-- Resources目录中的XAML文件由.NET SDK自动包含为Page项 -->
   </ItemGroup>
 
   <!-- Documentation -->

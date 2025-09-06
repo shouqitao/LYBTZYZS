@@ -1,15 +1,14 @@
-﻿using System;
-using System.Runtime.Serialization;
+﻿using System.Runtime.Serialization;
 using LYBT.Shared.Models.Contracts.Common;
 
-namespace LYBT.Desktop.Core.Exceptions
-{
+namespace LYBT.Desktop.Core.Exceptions {
+
     /// <summary>
     /// 应用程序异常基类 - 所有自定义异常的基类
     /// </summary>
     [Serializable]
-    public class AppException : Exception
-    {
+    public class AppException : Exception {
+
         /// <summary>
         /// 错误类别
         /// </summary>
@@ -61,23 +60,19 @@ namespace LYBT.Desktop.Core.Exceptions
         public bool IsRetryable { get; set; }
 
         public AppException()
-            : this("应用程序发生错误")
-        {
+            : this("应用程序发生错误") {
         }
 
         public AppException(string message)
-            : this(message, ErrorCategory.Unknown, ErrorSeverity.Error)
-        {
+            : this(message, ErrorCategory.Unknown, ErrorSeverity.Error) {
         }
 
         public AppException(string message, Exception innerException)
-            : this(message, ErrorCategory.Unknown, ErrorSeverity.Error, innerException)
-        {
+            : this(message, ErrorCategory.Unknown, ErrorSeverity.Error, innerException) {
         }
 
         public AppException(string message, ErrorCategory category, ErrorSeverity severity)
-            : base(message)
-        {
+            : base(message) {
             Category = category;
             Severity = severity;
             OccurredAt = DateTime.Now;
@@ -89,8 +84,7 @@ namespace LYBT.Desktop.Core.Exceptions
         }
 
         public AppException(string message, ErrorCategory category, ErrorSeverity severity, Exception innerException)
-            : base(message, innerException)
-        {
+            : base(message, innerException) {
             Category = category;
             Severity = severity;
             OccurredAt = DateTime.Now;
@@ -103,8 +97,7 @@ namespace LYBT.Desktop.Core.Exceptions
 
         [Obsolete("This API supports obsolete formatter-based serialization.")]
         protected AppException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
+            : base(info, context) {
             Category = (ErrorCategory)(info.GetValue(nameof(Category), typeof(ErrorCategory)) ?? ErrorCategory.Unknown);
             Severity = (ErrorSeverity)(info.GetValue(nameof(Severity), typeof(ErrorSeverity)) ?? ErrorSeverity.Error);
             ErrorCode = info.GetString(nameof(ErrorCode)) ?? string.Empty;
@@ -118,8 +111,7 @@ namespace LYBT.Desktop.Core.Exceptions
         }
 
         [Obsolete("This API supports obsolete formatter-based serialization.")]
-        public override void GetObjectData(SerializationInfo info, StreamingContext context)
-        {
+        public override void GetObjectData(SerializationInfo info, StreamingContext context) {
             base.GetObjectData(info, context);
             info.AddValue(nameof(Category), Category);
             info.AddValue(nameof(Severity), Severity);
@@ -136,10 +128,8 @@ namespace LYBT.Desktop.Core.Exceptions
         /// <summary>
         /// 获取默认的用户友好消息
         /// </summary>
-        private static string GetDefaultUserMessage(ErrorCategory category)
-        {
-            return category switch
-            {
+        private static string GetDefaultUserMessage(ErrorCategory category) {
+            return category switch {
                 ErrorCategory.Network => "网络连接出现问题，请检查您的网络设置",
                 ErrorCategory.Authentication => "身份验证失败，请重新登录",
                 ErrorCategory.Authorization => "您没有权限执行此操作",
@@ -160,10 +150,8 @@ namespace LYBT.Desktop.Core.Exceptions
         /// <summary>
         /// 确定是否可重试
         /// </summary>
-        private static bool DetermineRetryability(ErrorCategory category)
-        {
-            return category switch
-            {
+        private static bool DetermineRetryability(ErrorCategory category) {
+            return category switch {
                 ErrorCategory.Network => true,
                 ErrorCategory.Timeout => true,
                 ErrorCategory.ServiceUnavailable => true,
@@ -176,10 +164,8 @@ namespace LYBT.Desktop.Core.Exceptions
         /// <summary>
         /// 创建带错误代码的异常
         /// </summary>
-        public static AppException WithErrorCode(string errorCode, string message, ErrorCategory category, ErrorSeverity severity)
-        {
-            return new AppException(message, category, severity)
-            {
+        public static AppException WithErrorCode(string errorCode, string message, ErrorCategory category, ErrorSeverity severity) {
+            return new AppException(message, category, severity) {
                 ErrorCode = errorCode
             };
         }
@@ -187,11 +173,9 @@ namespace LYBT.Desktop.Core.Exceptions
         /// <summary>
         /// 增加重试计数
         /// </summary>
-        public void IncrementRetryCount()
-        {
+        public void IncrementRetryCount() {
             RetryCount++;
-            if (RetryCount >= 3)
-            {
+            if (RetryCount >= 3) {
                 IsRetryable = false;
             }
         }

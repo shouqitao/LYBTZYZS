@@ -1,18 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using LYBT.Shared.Models.Common;
-using LYBT.Shared.Models.Contracts.Common;
+﻿using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 
-namespace LYBT.Module.Users.Services.Interfaces
-{
+namespace LYBT.Module.Users.Services.Interfaces {
+
     /// <summary>
     /// 用户业务服务接口 - UltraThink三层架构
     /// 职责：业务流程编排，完整事务管理和业务逻辑处理
     /// </summary>
-    public interface IUserBusinessService
-    {
+    public interface IUserBusinessService {
+
         /// <summary>
         /// 禁用用户
         /// </summary>

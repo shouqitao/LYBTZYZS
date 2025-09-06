@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using LYBT.Shared.Models.Common;
-using LYBT.Shared.Models.Contracts.Common;
+﻿using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 
 namespace LYBT.Desktop.MedicalCase.Interfaces;
@@ -11,8 +7,8 @@ namespace LYBT.Desktop.MedicalCase.Interfaces;
 /// 医案查询服务接口 - UltraThink双层架构简化版
 /// 职责：查询和搜索操作
 /// </summary>
-public interface IMedicalCaseQueryService
-{
+public interface IMedicalCaseQueryService {
+
     #region 基础查询操作 - 简化实现
 
     /// <summary>
@@ -35,5 +31,5 @@ public interface IMedicalCaseQueryService
     /// </summary>
     Task<ServiceResult<MedicalCaseDto?>> GetActiveByPatientIdAsync(Guid patientId);
 
-    #endregion
+    #endregion 基础查询操作 - 简化实现
 }

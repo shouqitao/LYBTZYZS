@@ -1,37 +1,26 @@
-﻿using System;
-using System.Diagnostics;
-using System.Linq;
-using System.Windows;
-using System.Windows.Controls;
-using LYBT.Desktop.Core.Exceptions;
+﻿using System.Windows;
 using LYBT.Desktop.Core.ViewModels.Dialogs;
-using LYBT.Shared.Models.Enums;
 using SharedCommon = LYBT.Shared.Models.Contracts.Common;
 
-namespace LYBT.Desktop.Core.Views.Dialogs
-{
+namespace LYBT.Desktop.Core.Views.Dialogs {
+
     /// <summary>
     /// UltraThink Command绑定优化：严重错误对话框
     /// 消除Click事件处理器，使用Command绑定模式
     /// </summary>
-    public partial class CriticalErrorDialog : Window
-    {
+    public partial class CriticalErrorDialog : Window {
         private CriticalErrorDialogViewModel? ViewModel => DataContext as CriticalErrorDialogViewModel;
 
-        public SharedCommon.HandledError? ErrorInfo
-        {
+        public SharedCommon.HandledError? ErrorInfo {
             get => ViewModel?.ErrorInfo;
-            set
-            {
-                if (ViewModel != null)
-                {
+            set {
+                if (ViewModel != null) {
                     ViewModel.ErrorInfo = value;
                 }
             }
         }
 
-        public CriticalErrorDialog()
-        {
+        public CriticalErrorDialog() {
             InitializeComponent();
 
             // 设置窗口属性
@@ -40,10 +29,8 @@ namespace LYBT.Desktop.Core.Views.Dialogs
             this.Topmost = true;
 
             // 订阅ViewModel的关闭请求
-            this.DataContextChanged += (s, e) =>
-            {
-                if (ViewModel != null)
-                {
+            this.DataContextChanged += (s, e) => {
+                if (ViewModel != null) {
                     ViewModel.RequestClose += OnRequestClose;
                 }
             };
@@ -52,14 +39,12 @@ namespace LYBT.Desktop.Core.Views.Dialogs
         /// <summary>
         /// 处理ViewModel的关闭请求
         /// </summary>
-        private void OnRequestClose(bool? dialogResult)
-        {
+        private void OnRequestClose(bool? dialogResult) {
             this.DialogResult = dialogResult;
             this.Close();
         }
 
-        protected override void OnSourceInitialized(EventArgs e)
-        {
+        protected override void OnSourceInitialized(EventArgs e) {
             base.OnSourceInitialized(e);
 
             // 确保窗口显示在最前面

@@ -1,19 +1,17 @@
-﻿using System;
-using System.ComponentModel;
-using System.Linq;
+﻿using System.ComponentModel;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
 using Prism.Mvvm;
 
-namespace LYBT.Desktop.Core.ViewModels.Prescriptions
-{
+namespace LYBT.Desktop.Core.ViewModels.Prescriptions {
+
     /// <summary>
     /// 处方协调视图模型 - UltraThink架构Business Layer
     /// 组合Display、State、Theme三个ViewModel，实现完整的处方视图逻辑
     /// 遵循单一职责原则和关注点分离
     /// </summary>
-    public class PrescriptionViewModel : BindableBase
-    {
+    public class PrescriptionViewModel : BindableBase {
+
         #region Fields
 
         private readonly PrescriptionDto _prescriptionData;
@@ -21,12 +19,11 @@ namespace LYBT.Desktop.Core.ViewModels.Prescriptions
         private readonly PrescriptionStateViewModel _state;
         private readonly PrescriptionThemeViewModel _theme;
 
-        #endregion
+        #endregion Fields
 
         #region Constructor
 
-        private PrescriptionViewModel(PrescriptionDto prescriptionData)
-        {
+        private PrescriptionViewModel(PrescriptionDto prescriptionData) {
             _prescriptionData = prescriptionData ?? throw new ArgumentNullException(nameof(prescriptionData));
 
             // 初始化三个专门的ViewModel
@@ -38,19 +35,18 @@ namespace LYBT.Desktop.Core.ViewModels.Prescriptions
             _state.PropertyChanged += OnStatePropertyChanged;
         }
 
-        #endregion
+        #endregion Constructor
 
         #region Factory Method
 
         /// <summary>
         /// 创建处方视图模型实例
         /// </summary>
-        public static PrescriptionViewModel Create(PrescriptionDto prescriptionData)
-        {
+        public static PrescriptionViewModel Create(PrescriptionDto prescriptionData) {
             return new PrescriptionViewModel(prescriptionData);
         }
 
-        #endregion
+        #endregion Factory Method
 
         #region Core Properties
 
@@ -66,7 +62,7 @@ namespace LYBT.Desktop.Core.ViewModels.Prescriptions
         /// <summary>主题样式视图模型</summary>
         public PrescriptionThemeViewModel Theme => _theme;
 
-        #endregion
+        #endregion Core Properties
 
         #region Convenience Properties
 
@@ -115,292 +111,257 @@ namespace LYBT.Desktop.Core.ViewModels.Prescriptions
         /// <summary>剂数</summary>
         public int DosageCount => _prescriptionData.DosageCount;
 
-        #endregion
+        #endregion Convenience Properties
 
         #region State Convenience Properties
 
         /// <summary>是否被选中</summary>
-        public bool IsSelected
-        {
+        public bool IsSelected {
             get => _state.IsSelected;
             set => _state.IsSelected = value;
         }
 
         /// <summary>是否展开</summary>
-        public bool IsExpanded
-        {
+        public bool IsExpanded {
             get => _state.IsExpanded;
             set => _state.IsExpanded = value;
         }
 
         /// <summary>是否正在编辑</summary>
-        public bool IsEditing
-        {
+        public bool IsEditing {
             get => _state.IsEditing;
             set => _state.IsEditing = value;
         }
 
         /// <summary>是否正在加载</summary>
-        public bool IsLoading
-        {
+        public bool IsLoading {
             get => _state.IsLoading;
             set => _state.IsLoading = value;
         }
 
         /// <summary>是否有错误</summary>
-        public bool HasError
-        {
+        public bool HasError {
             get => _state.HasError;
             set => _state.HasError = value;
         }
 
         /// <summary>错误消息</summary>
-        public string ErrorMessage
-        {
+        public string ErrorMessage {
             get => _state.ErrorMessage;
             set => _state.ErrorMessage = value;
         }
 
         /// <summary>是否高亮显示</summary>
-        public bool IsHighlighted
-        {
+        public bool IsHighlighted {
             get => _state.IsHighlighted;
             set => _state.IsHighlighted = value;
         }
 
-        #endregion
+        #endregion State Convenience Properties
 
         #region Prescription Specific State
 
         /// <summary>是否正在打印</summary>
-        public bool IsPrinting
-        {
+        public bool IsPrinting {
             get => _state.IsPrinting;
             set => _state.IsPrinting = value;
         }
 
         /// <summary>是否正在处理支付</summary>
-        public bool IsProcessingPayment
-        {
+        public bool IsProcessingPayment {
             get => _state.IsProcessingPayment;
             set => _state.IsProcessingPayment = value;
         }
 
         /// <summary>是否正在发药</summary>
-        public bool IsDispensing
-        {
+        public bool IsDispensing {
             get => _state.IsDispensing;
             set => _state.IsDispensing = value;
         }
 
         /// <summary>是否正在作废</summary>
-        public bool IsVoiding
-        {
+        public bool IsVoiding {
             get => _state.IsVoiding;
             set => _state.IsVoiding = value;
         }
 
-        #endregion
+        #endregion Prescription Specific State
 
         #region Business Logic Convenience Methods
 
         /// <summary>
         /// 开始编辑处方
         /// </summary>
-        public void StartEditing()
-        {
+        public void StartEditing() {
             _state.StartEditing();
         }
 
         /// <summary>
         /// 结束编辑处方
         /// </summary>
-        public void EndEditing()
-        {
+        public void EndEditing() {
             _state.EndEditing();
         }
 
         /// <summary>
         /// 开始打印处方
         /// </summary>
-        public void StartPrinting()
-        {
+        public void StartPrinting() {
             _state.StartPrinting();
         }
 
         /// <summary>
         /// 结束打印处方
         /// </summary>
-        public void EndPrinting()
-        {
+        public void EndPrinting() {
             _state.EndPrinting();
         }
 
         /// <summary>
         /// 开始支付处理
         /// </summary>
-        public void StartPaymentProcessing()
-        {
+        public void StartPaymentProcessing() {
             _state.StartPaymentProcessing();
         }
 
         /// <summary>
         /// 结束支付处理
         /// </summary>
-        public void EndPaymentProcessing()
-        {
+        public void EndPaymentProcessing() {
             _state.EndPaymentProcessing();
         }
 
         /// <summary>
         /// 开始发药
         /// </summary>
-        public void StartDispensing()
-        {
+        public void StartDispensing() {
             _state.StartDispensing();
         }
 
         /// <summary>
         /// 结束发药
         /// </summary>
-        public void EndDispensing()
-        {
+        public void EndDispensing() {
             _state.EndDispensing();
         }
 
         /// <summary>
         /// 开始作废
         /// </summary>
-        public void StartVoiding()
-        {
+        public void StartVoiding() {
             _state.StartVoiding();
         }
 
         /// <summary>
         /// 结束作废
         /// </summary>
-        public void EndVoiding()
-        {
+        public void EndVoiding() {
             _state.EndVoiding();
         }
 
         /// <summary>
         /// 设置错误状态
         /// </summary>
-        public void SetError(string message)
-        {
+        public void SetError(string message) {
             _state.SetError(message);
         }
 
         /// <summary>
         /// 清除错误状态
         /// </summary>
-        public void ClearError()
-        {
+        public void ClearError() {
             _state.ClearError();
         }
 
         /// <summary>
         /// 切换选中状态
         /// </summary>
-        public void ToggleSelection()
-        {
+        public void ToggleSelection() {
             _state.ToggleSelection();
         }
 
         /// <summary>
         /// 切换展开状态
         /// </summary>
-        public void ToggleExpansion()
-        {
+        public void ToggleExpansion() {
             _state.ToggleExpansion();
         }
 
         /// <summary>
         /// 设置为焦点状态
         /// </summary>
-        public void SetFocus()
-        {
+        public void SetFocus() {
             _state.SetFocus();
         }
 
         /// <summary>
         /// 取消焦点状态
         /// </summary>
-        public void ClearFocus()
-        {
+        public void ClearFocus() {
             _state.ClearFocus();
         }
 
         /// <summary>
         /// 重置所有状态
         /// </summary>
-        public void ResetState()
-        {
+        public void ResetState() {
             _state.ResetState();
         }
 
-        #endregion
+        #endregion Business Logic Convenience Methods
 
         #region Display Convenience Methods
 
         /// <summary>
         /// 获取处方摘要信息
         /// </summary>
-        public string GetSummaryInfo()
-        {
+        public string GetSummaryInfo() {
             return _display.GetSummaryInfo();
         }
 
         /// <summary>
         /// 获取详细信息
         /// </summary>
-        public string GetDetailedInfo()
-        {
+        public string GetDetailedInfo() {
             return _display.GetDetailedInfo();
         }
 
         /// <summary>
         /// 获取打印用格式化文本
         /// </summary>
-        public string GetPrintableInfo()
-        {
+        public string GetPrintableInfo() {
             return _display.GetPrintableInfo();
         }
 
         /// <summary>
         /// 获取状态徽章文本
         /// </summary>
-        public string GetStatusBadge()
-        {
+        public string GetStatusBadge() {
             return _display.GetStatusBadge();
         }
 
         /// <summary>
         /// 获取优先级显示
         /// </summary>
-        public string GetPriorityDisplay()
-        {
+        public string GetPriorityDisplay() {
             return _display.GetPriorityDisplay();
         }
 
-        #endregion
+        #endregion Display Convenience Methods
 
         #region Business Data Convenience Methods
 
         /// <summary>
         /// 检查处方是否包含指定药材 - UltraThink v2.0 简化实现
         /// </summary>
-        public bool ContainsHerb(string herbName)
-        {
+        public bool ContainsHerb(string herbName) {
             return _prescriptionData.Items?.Any(item => item.HerbName?.Contains(herbName, StringComparison.OrdinalIgnoreCase) == true) ?? false;
         }
 
         /// <summary>
         /// 获取指定药材的数量 - UltraThink v2.0 简化实现
         /// </summary>
-        public decimal GetHerbQuantity(string herbName)
-        {
+        public decimal GetHerbQuantity(string herbName) {
             return _prescriptionData.Items?.FirstOrDefault(item => item.HerbName?.Equals(herbName, StringComparison.OrdinalIgnoreCase) == true)?.Quantity ?? 0;
         }
 
@@ -422,10 +383,8 @@ namespace LYBT.Desktop.Core.ViewModels.Prescriptions
         /// <summary>
         /// 获取处方完成度百分比 - UltraThink v2.0 简化逻辑
         /// </summary>
-        public double GetCompletionPercentage()
-        {
-            return _prescriptionData.Status switch
-            {
+        public double GetCompletionPercentage() {
+            return _prescriptionData.Status switch {
                 CommonStatus.Enabled => 100.0, // 启用状态表示完成
                 CommonStatus.Disabled => 50.0, // 禁用状态表示进行中
                 _ => 0.0
@@ -435,54 +394,45 @@ namespace LYBT.Desktop.Core.ViewModels.Prescriptions
         /// <summary>
         /// 格式化总价格显示
         /// </summary>
-        public string FormatTotalPrice()
-        {
+        public string FormatTotalPrice() {
             return TotalPrice.ToString("F2") + "元";
         }
 
         /// <summary>
         /// 格式化折扣金额显示
         /// </summary>
-        public string FormatDiscountAmount()
-        {
+        public string FormatDiscountAmount() {
             return DiscountAmount > 0 ? "-" + DiscountAmount.ToString("F2") + "元" : "无折扣";
         }
 
         /// <summary>
         /// 格式化应付金额显示
         /// </summary>
-        public string FormatPayableAmount()
-        {
+        public string FormatPayableAmount() {
             return PayableAmount.ToString("F2") + "元";
         }
 
         /// <summary>
         /// 格式化单剂价格显示
         /// </summary>
-        public string FormatSingleDosePrice()
-        {
+        public string FormatSingleDosePrice() {
             return SingleDosePrice.ToString("F2") + "元/剂";
         }
 
         /// <summary>
         /// 格式化折扣率显示
         /// </summary>
-        public string FormatDiscountRate()
-        {
+        public string FormatDiscountRate() {
             return DiscountRate > 0 ? (DiscountRate * 100).ToString("F1") + "%" : "无折扣";
         }
 
         /// <summary>
         /// 获取价格摘要信息
         /// </summary>
-        public string GetPricingSummary()
-        {
-            if (DiscountAmount > 0)
-            {
+        public string GetPricingSummary() {
+            if (DiscountAmount > 0) {
                 return $"{HerbCount}味药材，{DosageCount}剂，原价{FormatTotalPrice()}，折扣{FormatDiscountAmount()}，实付{FormatPayableAmount()}";
-            }
-            else
-            {
+            } else {
                 return $"{HerbCount}味药材，{DosageCount}剂，总价{FormatTotalPrice()}";
             }
         }
@@ -495,87 +445,88 @@ namespace LYBT.Desktop.Core.ViewModels.Prescriptions
         /// <summary>
         /// 计算节省金额
         /// </summary>
-        public decimal CalculateSavings()
-        {
+        public decimal CalculateSavings() {
             return TotalPrice - PayableAmount;
         }
 
-        #endregion
+        #endregion Business Data Convenience Methods
 
         #region Event Handling
 
-        private void OnStatePropertyChanged(object? sender, PropertyChangedEventArgs e)
-        {
+        private void OnStatePropertyChanged(object? sender, PropertyChangedEventArgs e) {
             // 当State的属性改变时，通知相关的便利属性也已改变
-            switch (e.PropertyName)
-            {
+            switch (e.PropertyName) {
                 case nameof(PrescriptionStateViewModel.IsSelected):
                     RaisePropertyChanged(nameof(IsSelected));
                     break;
+
                 case nameof(PrescriptionStateViewModel.IsExpanded):
                     RaisePropertyChanged(nameof(IsExpanded));
                     break;
+
                 case nameof(PrescriptionStateViewModel.IsEditing):
                     RaisePropertyChanged(nameof(IsEditing));
                     break;
+
                 case nameof(PrescriptionStateViewModel.IsLoading):
                     RaisePropertyChanged(nameof(IsLoading));
                     break;
+
                 case nameof(PrescriptionStateViewModel.HasError):
                     RaisePropertyChanged(nameof(HasError));
                     break;
+
                 case nameof(PrescriptionStateViewModel.ErrorMessage):
                     RaisePropertyChanged(nameof(ErrorMessage));
                     break;
+
                 case nameof(PrescriptionStateViewModel.IsHighlighted):
                     RaisePropertyChanged(nameof(IsHighlighted));
                     break;
+
                 case nameof(PrescriptionStateViewModel.IsPrinting):
                     RaisePropertyChanged(nameof(IsPrinting));
                     break;
+
                 case nameof(PrescriptionStateViewModel.IsProcessingPayment):
                     RaisePropertyChanged(nameof(IsProcessingPayment));
                     break;
+
                 case nameof(PrescriptionStateViewModel.IsDispensing):
                     RaisePropertyChanged(nameof(IsDispensing));
                     break;
+
                 case nameof(PrescriptionStateViewModel.IsVoiding):
                     RaisePropertyChanged(nameof(IsVoiding));
                     break;
             }
         }
 
-        #endregion
+        #endregion Event Handling
 
         #region Object Overrides
 
-        public override string ToString()
-        {
+        public override string ToString() {
             return $"PrescriptionViewModel: {DisplayName} ({StatusDisplay})";
         }
 
-        public override bool Equals(object? obj)
-        {
+        public override bool Equals(object? obj) {
             return obj is PrescriptionViewModel other && Id == other.Id;
         }
 
-        public override int GetHashCode()
-        {
+        public override int GetHashCode() {
             return Id.GetHashCode();
         }
 
-        #endregion
+        #endregion Object Overrides
 
         #region IDisposable Support
 
         private bool _disposed = false;
 
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!_disposed)
-            {
-                if (disposing)
-                {
+        protected virtual void Dispose(bool disposing) {
+            if (!_disposed) {
+                if (disposing) {
                     // 取消事件订阅
                     _state.PropertyChanged -= OnStatePropertyChanged;
                 }
@@ -583,12 +534,11 @@ namespace LYBT.Desktop.Core.ViewModels.Prescriptions
             }
         }
 
-        public void Dispose()
-        {
+        public void Dispose() {
             Dispose(true);
             GC.SuppressFinalize(this);
         }
 
-        #endregion
+        #endregion IDisposable Support
     }
 }

@@ -1,15 +1,13 @@
-﻿using System;
-using System.ComponentModel;
-using System.Threading.Tasks;
+﻿using System.ComponentModel;
 
-namespace LYBT.Desktop.Core.Managers
-{
+namespace LYBT.Desktop.Core.Managers {
+
     /// <summary>
     /// 搜索管理器接口 - 负责搜索逻辑的统一管理
     /// UltraThink架构: 将搜索逻辑从ViewModel中分离出来，实现关注点分离
     /// </summary>
-    public interface ISearchManager : INotifyPropertyChanged
-    {
+    public interface ISearchManager : INotifyPropertyChanged {
+
         #region Properties
 
         /// <summary>
@@ -32,7 +30,7 @@ namespace LYBT.Desktop.Core.Managers
         /// </summary>
         int SearchDelay { get; set; }
 
-        #endregion
+        #endregion Properties
 
         #region Events
 
@@ -46,7 +44,7 @@ namespace LYBT.Desktop.Core.Managers
         /// </summary>
         event EventHandler? SearchCleared;
 
-        #endregion
+        #endregion Events
 
         #region Methods
 
@@ -70,19 +68,17 @@ namespace LYBT.Desktop.Core.Managers
         /// </summary>
         Task SetSearchKeywordAsync(string keyword);
 
-        #endregion
+        #endregion Methods
     }
 
     /// <summary>
     /// 搜索执行事件参数
     /// </summary>
-    public class SearchExecutedEventArgs : EventArgs
-    {
+    public class SearchExecutedEventArgs : EventArgs {
         public string SearchKeyword { get; }
         public DateTime ExecutedAt { get; }
 
-        public SearchExecutedEventArgs(string searchKeyword)
-        {
+        public SearchExecutedEventArgs(string searchKeyword) {
             SearchKeyword = searchKeyword;
             ExecutedAt = DateTime.Now;
         }

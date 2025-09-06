@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using LYBT.Desktop.Patients.Interfaces;
+﻿using LYBT.Desktop.Patients.Interfaces;
 using LYBT.Shared.Interfaces.Services;
-using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
 
@@ -19,8 +15,7 @@ namespace LYBT.Desktop.Patients.Services;
 /// </summary>
 public class PatientModule(
     IPatientQueryService queryService,
-    IPatientBusinessService businessService) : IPatientService
-{
+    IPatientBusinessService businessService) : IPatientService {
     private readonly IPatientQueryService _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
     private readonly IPatientBusinessService _businessService = businessService ?? throw new ArgumentNullException(nameof(businessService));
 
@@ -50,7 +45,7 @@ public class PatientModule(
     public async Task<ServiceResult<PatientStatisticsDto>> GetStatisticsAsync()
         => await _queryService.GetStatisticsAsync();
 
-    #endregion
+    #endregion 基础查询操作 - 对应简化接口
 
     #region 基础业务操作 - 对应简化接口
 
@@ -84,15 +79,14 @@ public class PatientModule(
     public async Task<ServiceResult<bool>> DeleteAsync(Guid patientId)
         => await _businessService.DeleteAsync(patientId);
 
-    #endregion
+    #endregion 基础业务操作 - 对应简化接口
 
     #region 共享接口IPatientService额外方法 - 委托给相应服务层
 
     /// <summary>
     /// 删除患者（带操作者信息） - 委托给BusinessService
     /// </summary>
-    public async Task<bool> DeleteAsync(Guid id, Guid operatorId, string operatorName)
-    {
+    public async Task<bool> DeleteAsync(Guid id, Guid operatorId, string operatorName) {
         var result = await _businessService.DeleteAsync(id);
         return result.IsSuccess && result.Data == true;
     }
@@ -100,8 +94,7 @@ public class PatientModule(
     /// <summary>
     /// 设置患者状态（启用/禁用） - 委托给BusinessService
     /// </summary>
-    public async Task<bool> SetStatusAsync(Guid id, bool isActive, Guid operatorId, string operatorName)
-    {
+    public async Task<bool> SetStatusAsync(Guid id, bool isActive, Guid operatorId, string operatorName) {
         var result = isActive ? await EnablePatientAsync(id) : await DisablePatientAsync(id);
         return result.IsSuccess && result.Data == true;
     }
@@ -109,8 +102,7 @@ public class PatientModule(
     /// <summary>
     /// 启用患者 - ServiceResult版本
     /// </summary>
-    public async Task<ServiceResult> EnableAsync(Guid id)
-    {
+    public async Task<ServiceResult> EnableAsync(Guid id) {
         var result = await _businessService.EnableAsync(id);
         return result.IsSuccess
             ? ServiceResult.Success()
@@ -120,8 +112,7 @@ public class PatientModule(
     /// <summary>
     /// 禁用患者 - ServiceResult版本
     /// </summary>
-    public async Task<ServiceResult> DisableAsync(Guid id)
-    {
+    public async Task<ServiceResult> DisableAsync(Guid id) {
         var result = await _businessService.DisableAsync(id);
         return result.IsSuccess
             ? ServiceResult.Success()
@@ -143,8 +134,7 @@ public class PatientModule(
     /// <summary>
     /// 获取所有患者列表 - 基础实现
     /// </summary>
-    public Task<List<PatientDto>> GetAllAsync()
-    {
+    public Task<List<PatientDto>> GetAllAsync() {
         // 简单诊所版本基础实现
         return Task.FromResult(new List<PatientDto>());
     }
@@ -152,8 +142,7 @@ public class PatientModule(
     /// <summary>
     /// 获取可用患者列表 - 基础实现
     /// </summary>
-    public Task<List<PatientDto>> GetActivePatientsAsync()
-    {
+    public Task<List<PatientDto>> GetActivePatientsAsync() {
         // 简单诊所版本基础实现
         return Task.FromResult(new List<PatientDto>());
     }
@@ -161,8 +150,7 @@ public class PatientModule(
     /// <summary>
     /// 根据手机号查找患者 - 基础实现
     /// </summary>
-    public Task<PatientDto?> GetByPhoneNumberAsync(string phoneNumber)
-    {
+    public Task<PatientDto?> GetByPhoneNumberAsync(string phoneNumber) {
         // 简单诊所版本基础实现
         return Task.FromResult<PatientDto?>(null);
     }
@@ -170,8 +158,7 @@ public class PatientModule(
     /// <summary>
     /// 根据身份证号查找患者 - 基础实现
     /// </summary>
-    public Task<PatientDto?> GetByIDNumberAsync(string idNumber)
-    {
+    public Task<PatientDto?> GetByIDNumberAsync(string idNumber) {
         // 简单诊所版本基础实现
         return Task.FromResult<PatientDto?>(null);
     }
@@ -179,11 +166,9 @@ public class PatientModule(
     /// <summary>
     /// 高级搜索患者 - 基础实现
     /// </summary>
-    public Task<PagedResult<PatientDto>> AdvancedSearchAsync(PatientAdvancedSearchDto query)
-    {
+    public Task<PagedResult<PatientDto>> AdvancedSearchAsync(PatientAdvancedSearchDto query) {
         // 简单诊所版本基础实现
-        var result = new PagedResult<PatientDto>
-        {
+        var result = new PagedResult<PatientDto> {
             TotalCount = 0,
             Items = [],
             CurrentPage = query.PageIndex,
@@ -195,8 +180,7 @@ public class PatientModule(
     /// <summary>
     /// 检查重复患者 - 简单诊所版本基础实现
     /// </summary>
-    public Task<List<PatientDto>> CheckDuplicatePatientsAsync(string idNumber, string phoneNumber)
-    {
+    public Task<List<PatientDto>> CheckDuplicatePatientsAsync(string idNumber, string phoneNumber) {
         // 简单诊所版本暂不支持重复检查
         return Task.FromResult(new List<PatientDto>());
     }
@@ -216,15 +200,12 @@ public class PatientModule(
     /// <summary>
     /// 验证患者信息 - 基础验证实现
     /// </summary>
-    public Task<ServiceResult<object>> ValidatePatientAsync(PatientCreateDto dto)
-    {
-        if (string.IsNullOrWhiteSpace(dto.Name))
-        {
+    public Task<ServiceResult<object>> ValidatePatientAsync(PatientCreateDto dto) {
+        if (string.IsNullOrWhiteSpace(dto.Name)) {
             return Task.FromResult(ServiceResult<object>.Failure("患者姓名不能为空"));
         }
 
-        if (string.IsNullOrWhiteSpace(dto.PhoneNumber))
-        {
+        if (string.IsNullOrWhiteSpace(dto.PhoneNumber)) {
             return Task.FromResult(ServiceResult<object>.Failure("联系电话不能为空"));
         }
 
@@ -237,5 +218,5 @@ public class PatientModule(
     public Task<ServiceResult<byte[]>> GetImportTemplateAsync()
         => Task.FromResult(ServiceResult<byte[]>.Failure("简单诊所版本暂不支持导入模板"));
 
-    #endregion
+    #endregion 共享接口IPatientService额外方法 - 委托给相应服务层
 }

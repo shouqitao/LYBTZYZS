@@ -1,27 +1,24 @@
 ﻿using LYBT.Desktop.Workbench.Cashier.ViewModels;
 using LYBT.Desktop.Workbench.Cashier.Views;
-using LYBT.Shared.Models.Contracts.Common;
 using Prism.Ioc;
 using Prism.Modularity;
 using Prism.Mvvm;
 
-namespace LYBT.Desktop.Workbench.Cashier
-{
+namespace LYBT.Desktop.Workbench.Cashier {
+
     /// <summary>
     /// 收银员工作台模块
     /// </summary>
-    public class CashierWorkbenchModule : IModule
-    {
-        public void OnInitialized(IContainerProvider containerProvider)
-        {
+    public class CashierWorkbenchModule : IModule {
+
+        public void OnInitialized(IContainerProvider containerProvider) {
             // 模块初始化完成
 
             // 注册自定义的ViewModel映射
             ViewModelLocationProvider.Register<CashierMainView, CashierMainViewModel>();
         }
 
-        public void RegisterTypes(IContainerRegistry containerRegistry)
-        {
+        public void RegisterTypes(IContainerRegistry containerRegistry) {
             // 注册收银员工作台主视图
             containerRegistry.RegisterForNavigation<CashierMainView>();
 

@@ -1,16 +1,14 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace LYBT.Infrastructure.Migrations
-{
+namespace LYBT.Infrastructure.Migrations {
+
     /// <inheritdoc />
-    public partial class ExtendConsultationModel : Migration
-    {
+    public partial class ExtendConsultationModel : Migration {
+
         /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
+        protected override void Up(MigrationBuilder migrationBuilder) {
             migrationBuilder.DropForeignKey(
                 name: "FK_TreatmentCatalogs_TreatmentCatalogs_ParentId",
                 table: "TreatmentCatalogs");
@@ -523,8 +521,7 @@ namespace LYBT.Infrastructure.Migrations
 
             migrationBuilder.CreateTable(
                 name: "Consultations",
-                columns: table => new
-                {
+                columns: table => new {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     MedicalCaseId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     PatientId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -557,15 +554,13 @@ namespace LYBT.Infrastructure.Migrations
                     UpdateTime = table.Column<DateTime>(type: "datetime2", nullable: true),
                     IsActive = table.Column<bool>(type: "bit", nullable: false)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_Consultations", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
                 name: "TreatmentPlans",
-                columns: table => new
-                {
+                columns: table => new {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ConsultationId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Prescription_DosageCount = table.Column<int>(type: "int", nullable: true),
@@ -578,15 +573,13 @@ namespace LYBT.Infrastructure.Migrations
                     UpdateTime = table.Column<DateTime>(type: "datetime2", nullable: true),
                     IsActive = table.Column<bool>(type: "bit", nullable: false)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_TreatmentPlans", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
                 name: "TreatmentTasks",
-                columns: table => new
-                {
+                columns: table => new {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     MedicalCaseId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     TherapistId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
@@ -607,15 +600,13 @@ namespace LYBT.Infrastructure.Migrations
                     Remark = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Count = table.Column<int>(type: "int", nullable: false)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_TreatmentTasks", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
                 name: "MedicalCases",
-                columns: table => new
-                {
+                columns: table => new {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     PatientId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     DoctorId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -633,8 +624,7 @@ namespace LYBT.Infrastructure.Migrations
                     CompleteTime = table.Column<DateTime>(type: "datetime2", nullable: true),
                     IsActive = table.Column<bool>(type: "bit", nullable: false)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_MedicalCases", x => x.Id);
                     table.ForeignKey(
                         name: "FK_MedicalCases_Consultations_ConsultationId",
@@ -655,8 +645,7 @@ namespace LYBT.Infrastructure.Migrations
 
             migrationBuilder.CreateTable(
                 name: "PhysiotherapyItemModel",
-                columns: table => new
-                {
+                columns: table => new {
                     TreatmentPlanModelId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
@@ -668,8 +657,7 @@ namespace LYBT.Infrastructure.Migrations
                     Status = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
                     Remark = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_PhysiotherapyItemModel", x => new { x.TreatmentPlanModelId, x.Id });
                     table.ForeignKey(
                         name: "FK_PhysiotherapyItemModel_TreatmentPlans_TreatmentPlanModelId",
@@ -681,8 +669,7 @@ namespace LYBT.Infrastructure.Migrations
 
             migrationBuilder.CreateTable(
                 name: "TreatmentPrescriptionHerbModel",
-                columns: table => new
-                {
+                columns: table => new {
                     TreatmentPrescriptionModelTreatmentPlanModelId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
@@ -694,8 +681,7 @@ namespace LYBT.Infrastructure.Migrations
                     SpecialUsage = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
                     SortOrder = table.Column<int>(type: "int", nullable: false)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_TreatmentPrescriptionHerbModel", x => new { x.TreatmentPrescriptionModelTreatmentPlanModelId, x.Id });
                     table.ForeignKey(
                         name: "FK_TreatmentPrescriptionHerbModel_TreatmentPlans_TreatmentPrescriptionModelTreatmentPlanModelId",
@@ -901,8 +887,7 @@ namespace LYBT.Infrastructure.Migrations
         }
 
         /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
+        protected override void Down(MigrationBuilder migrationBuilder) {
             migrationBuilder.DropForeignKey(
                 name: "FK_BillingItems_Billings_BillingId1",
                 table: "BillingItems");

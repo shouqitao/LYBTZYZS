@@ -1,41 +1,38 @@
-﻿using System;
-using LYBT.Shared.Models.Contracts.Patients;
+﻿using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
 using Prism.Mvvm;
 
-namespace LYBT.Desktop.Core.ViewModels.Patients
-{
+namespace LYBT.Desktop.Core.ViewModels.Patients {
+
     /// <summary>
     /// 患者显示逻辑视图模型 - UltraThink架构的显示层
     /// 负责所有与显示相关的业务逻辑和计算属性
     /// </summary>
-    public class PatientDisplayViewModel : BindableBase
-    {
+    public class PatientDisplayViewModel : BindableBase {
+
         #region Fields
 
         private PatientDto _patientData;
 
-        #endregion
+        #endregion Fields
 
         #region Constructor
 
-        public PatientDisplayViewModel(PatientDto patientData)
-        {
+        public PatientDisplayViewModel(PatientDto patientData) {
             _patientData = patientData ?? throw new ArgumentNullException(nameof(patientData));
         }
 
-        #endregion
+        #endregion Constructor
 
         #region Data Properties
 
         /// <summary>患者数据</summary>
-        public PatientDto PatientData
-        {
+        public PatientDto PatientData {
             get => _patientData;
             private set => SetProperty(ref _patientData, value);
         }
 
-        #endregion
+        #endregion Data Properties
 
         #region Display Properties
 
@@ -43,20 +40,16 @@ namespace LYBT.Desktop.Core.ViewModels.Patients
         public string DisplayName => string.IsNullOrWhiteSpace(PatientData.Name) ? "未知患者" : PatientData.Name;
 
         /// <summary>性别显示</summary>
-        public string GenderDisplay => PatientData.Gender switch
-        {
+        public string GenderDisplay => PatientData.Gender switch {
             Gender.Male => "男",
             Gender.Female => "女",
             _ => "未知"
         };
 
         /// <summary>年龄显示</summary>
-        public string AgeDisplay
-        {
-            get
-            {
-                if (PatientData.Age <= 0)
-                {
+        public string AgeDisplay {
+            get {
+                if (PatientData.Age <= 0) {
                     return "未知";
                 }
 
@@ -65,8 +58,7 @@ namespace LYBT.Desktop.Core.ViewModels.Patients
         }
 
         /// <summary>状态显示</summary>
-        public string StatusDisplay => PatientData.Status switch
-        {
+        public string StatusDisplay => PatientData.Status switch {
             CommonStatus.Enabled => "正常",
             CommonStatus.Disabled => "禁用",
             _ => "未知"
@@ -99,7 +91,7 @@ namespace LYBT.Desktop.Core.ViewModels.Patients
         /// <summary>更新时间显示</summary>
         public string UpdateTimeDisplay => "系统记录"; // UltraThink v2.0简化：Patient实体删除了UpdateTime字段
 
-        #endregion
+        #endregion Display Properties
 
         #region Business Logic Properties
 
@@ -121,17 +113,15 @@ namespace LYBT.Desktop.Core.ViewModels.Patients
         /// <summary>是否有紧急联系人</summary>
         public bool HasEmergencyContact => false; // !string.IsNullOrWhiteSpace(PatientData.EmergencyContact); // 属性不存在：PatientDto.EmergencyContact
 
-        #endregion
+        #endregion Business Logic Properties
 
         #region Update Methods
 
         /// <summary>
         /// 更新患者数据
         /// </summary>
-        public void UpdatePatientData(PatientDto newPatientData)
-        {
-            if (newPatientData == null)
-            {
+        public void UpdatePatientData(PatientDto newPatientData) {
+            if (newPatientData == null) {
                 throw new ArgumentNullException(nameof(newPatientData));
             }
 
@@ -160,6 +150,6 @@ namespace LYBT.Desktop.Core.ViewModels.Patients
             RaisePropertyChanged(nameof(HasEmergencyContact));
         }
 
-        #endregion
+        #endregion Update Methods
     }
 }

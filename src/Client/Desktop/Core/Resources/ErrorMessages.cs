@@ -1,18 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using LYBT.Shared.Models.Contracts.Common;
+﻿namespace LYBT.Desktop.Core.Resources {
 
-namespace LYBT.Desktop.Core.Resources
-{
     /// <summary>
     /// 错误消息资源
     /// </summary>
-    public static class ErrorMessages
-    {
+    public static class ErrorMessages {
+
         #region 网络错误消息
 
-        public static class Network
-        {
+        public static class Network {
             public const string ConnectionFailed = "网络连接失败，请检查网络设置";
             public const string Timeout = "网络请求超时，请稍后重试";
             public const string ServerUnavailable = "服务器暂时不可用，请稍后重试";
@@ -23,12 +18,11 @@ namespace LYBT.Desktop.Core.Resources
             public const string BadRequest = "请求参数错误，请检查输入";
         }
 
-        #endregion
+        #endregion 网络错误消息
 
         #region 认证错误消息
 
-        public static class Authentication
-        {
+        public static class Authentication {
             public const string LoginRequired = "请先登录后再执行此操作";
             public const string TokenExpired = "登录已过期，请重新登录";
             public const string InvalidCredentials = "用户名或密码错误";
@@ -38,12 +32,11 @@ namespace LYBT.Desktop.Core.Resources
             public const string ForbiddenAccess = "禁止访问此资源";
         }
 
-        #endregion
+        #endregion 认证错误消息
 
         #region 验证错误消息
 
-        public static class Validation
-        {
+        public static class Validation {
             public const string RequiredFieldEmpty = "必填字段不能为空";
             public const string InvalidFormat = "数据格式不正确";
             public const string InvalidRange = "数值超出允许范围";
@@ -55,12 +48,11 @@ namespace LYBT.Desktop.Core.Resources
             public const string InvalidNumber = "数字格式不正确";
         }
 
-        #endregion
+        #endregion 验证错误消息
 
         #region 业务错误消息
 
-        public static class Business
-        {
+        public static class Business {
             public const string DataNotFound = "未找到相关数据";
             public const string OperationNotAllowed = "当前状态不允许此操作";
             public const string BusinessRuleViolation = "违反业务规则";
@@ -70,12 +62,11 @@ namespace LYBT.Desktop.Core.Resources
             public const string ServiceNotAvailable = "服务暂不可用";
         }
 
-        #endregion
+        #endregion 业务错误消息
 
         #region 系统错误消息
 
-        public static class System
-        {
+        public static class System {
             public const string UnknownError = "发生未知错误";
             public const string InternalError = "系统内部错误";
             public const string OutOfMemory = "内存不足，请关闭其他程序后重试";
@@ -87,12 +78,11 @@ namespace LYBT.Desktop.Core.Resources
             public const string OperationTimeout = "操作超时";
         }
 
-        #endregion
+        #endregion 系统错误消息
 
         #region 用户操作错误消息
 
-        public static class UserOperation
-        {
+        public static class UserOperation {
             public const string InvalidInput = "输入无效，请检查后重试";
             public const string OperationFailed = "操作失败";
             public const string SaveFailed = "保存失败";
@@ -102,12 +92,11 @@ namespace LYBT.Desktop.Core.Resources
             public const string CreateFailed = "创建失败";
         }
 
-        #endregion
+        #endregion 用户操作错误消息
 
         #region 建议操作消息
 
-        public static class SuggestedActions
-        {
+        public static class SuggestedActions {
             public const string CheckNetwork = "检查网络连接";
             public const string RetryLater = "稍后重试";
             public const string ContactAdmin = "联系管理员";
@@ -122,12 +111,11 @@ namespace LYBT.Desktop.Core.Resources
             public const string CheckConfiguration = "检查配置设置";
         }
 
-        #endregion
+        #endregion 建议操作消息
 
         #region 错误消息获取方法
 
-        private static readonly Dictionary<string, string> _messageTemplates = new()
-        {
+        private static readonly Dictionary<string, string> _messageTemplates = new() {
             // 网络错误模板
             ["HTTP_400"] = Network.BadRequest,
             ["HTTP_401"] = Authentication.Unauthorized,
@@ -165,22 +153,17 @@ namespace LYBT.Desktop.Core.Resources
         /// <summary>
         /// 根据错误代码获取消息
         /// </summary>
-        public static string GetMessage(string errorCode, string? defaultMessage = null)
-        {
+        public static string GetMessage(string errorCode, string? defaultMessage = null) {
             return _messageTemplates.TryGetValue(errorCode, out var message) ? message : (defaultMessage ?? System.UnknownError);
         }
 
         /// <summary>
         /// 格式化错误消息
         /// </summary>
-        public static string FormatMessage(string template, params object[] args)
-        {
-            try
-            {
+        public static string FormatMessage(string template, params object[] args) {
+            try {
                 return string.Format(template, args);
-            }
-            catch
-            {
+            } catch {
                 return template;
             }
         }
@@ -188,11 +171,10 @@ namespace LYBT.Desktop.Core.Resources
         /// <summary>
         /// 获取HTTP状态码对应的错误消息
         /// </summary>
-        public static string GetHttpErrorMessage(int statusCode)
-        {
+        public static string GetHttpErrorMessage(int statusCode) {
             return GetMessage($"HTTP_{statusCode}", Network.ConnectionFailed);
         }
 
-        #endregion
+        #endregion 错误消息获取方法
     }
 }

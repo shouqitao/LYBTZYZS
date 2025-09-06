@@ -1,15 +1,12 @@
-﻿using System;
-using System.Threading.Tasks;
-using LYBT.Desktop.Core.Services;
-using LYBT.Shared.Models.Contracts.Common;
+﻿using LYBT.Desktop.Core.Services;
 
-namespace LYBT.Desktop.Core.Interfaces.Services
-{
+namespace LYBT.Desktop.Core.Interfaces.Services {
+
     /// <summary>
     /// API健康监控服务接口
     /// </summary>
-    public interface IApiHealthMonitor
-    {
+    public interface IApiHealthMonitor {
+
         /// <summary>
         /// API是否在线
         /// </summary>

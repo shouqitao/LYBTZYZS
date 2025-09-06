@@ -1,14 +1,14 @@
 ﻿using System.ComponentModel;
 using System.Text.Json.Serialization;
 
-namespace LYBT.Shared.Models.Enums
-{
+namespace LYBT.Shared.Models.Enums {
+
     /// <summary>
     /// 通用状态枚举
     /// </summary>
     [JsonConverter(typeof(JsonStringEnumConverter))]
-    public enum CommonStatus
-    {
+    public enum CommonStatus {
+
         /// <summary>禁用</summary>
         [Description("禁用")]
         Disabled = 0,
@@ -22,8 +22,8 @@ namespace LYBT.Shared.Models.Enums
     /// 是否删除枚举
     /// </summary>
     [JsonConverter(typeof(JsonStringEnumConverter))]
-    public enum DeleteStatus
-    {
+    public enum DeleteStatus {
+
         /// <summary>正常</summary>
         [Description("正常")]
         Normal = 0,
@@ -37,8 +37,8 @@ namespace LYBT.Shared.Models.Enums
     /// 操作结果枚举
     /// </summary>
     [JsonConverter(typeof(JsonStringEnumConverter))]
-    public enum OperationResult
-    {
+    public enum OperationResult {
+
         /// <summary>失败</summary>
         [Description("失败")]
         Failed = 0,
@@ -76,8 +76,8 @@ namespace LYBT.Shared.Models.Enums
     /// 数据状态枚举
     /// </summary>
     [JsonConverter(typeof(JsonStringEnumConverter))]
-    public enum DataStatus
-    {
+    public enum DataStatus {
+
         /// <summary>草稿</summary>
         [Description("草稿")]
         Draft = 0,
@@ -99,8 +99,8 @@ namespace LYBT.Shared.Models.Enums
     /// 审核状态枚举
     /// </summary>
     [JsonConverter(typeof(JsonStringEnumConverter))]
-    public enum AuditStatus
-    {
+    public enum AuditStatus {
+
         /// <summary>待审核</summary>
         [Description("待审核")]
         Pending = 0,
@@ -118,8 +118,8 @@ namespace LYBT.Shared.Models.Enums
     /// 支付状态枚举
     /// </summary>
     [JsonConverter(typeof(JsonStringEnumConverter))]
-    public enum PaymentStatus
-    {
+    public enum PaymentStatus {
+
         /// <summary>未支付</summary>
         [Description("未支付")]
         Unpaid = 0,
@@ -141,8 +141,8 @@ namespace LYBT.Shared.Models.Enums
     /// 支付方式枚举
     /// </summary>
     [JsonConverter(typeof(JsonStringEnumConverter))]
-    public enum PaymentMethod
-    {
+    public enum PaymentMethod {
+
         /// <summary>现金</summary>
         [Description("现金")]
         Cash = 0,
@@ -168,8 +168,8 @@ namespace LYBT.Shared.Models.Enums
     /// 工作日枚举
     /// </summary>
     [JsonConverter(typeof(JsonStringEnumConverter))]
-    public enum WorkDay
-    {
+    public enum WorkDay {
+
         /// <summary>周一</summary>
         [Description("周一")]
         Monday = 1,
@@ -203,8 +203,8 @@ namespace LYBT.Shared.Models.Enums
     /// 时间段枚举
     /// </summary>
     [JsonConverter(typeof(JsonStringEnumConverter))]
-    public enum TimeSlot
-    {
+    public enum TimeSlot {
+
         /// <summary>上午</summary>
         [Description("上午")]
         Morning = 0,

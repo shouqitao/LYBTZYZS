@@ -1,7 +1,5 @@
 ﻿using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using LYBT.Shared.Models.Contracts.Common;
 
 // 程序集信息
 [assembly: AssemblyCompany("凌隐宝堂中医诊所")]
@@ -14,5 +12,5 @@ using LYBT.Shared.Models.Contracts.Common;
 [assembly: ComVisible(false)]
 
 // 版本信息
-[assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyFileVersion("1.0.0.0")]
+[assembly: AssemblyVersion("2.1.0.0")]
+[assembly: AssemblyFileVersion("2.1.0.0")]

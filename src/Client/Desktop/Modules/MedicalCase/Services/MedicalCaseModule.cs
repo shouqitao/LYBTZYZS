@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using LYBT.Desktop.MedicalCase.Interfaces;
+﻿using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Shared.Interfaces.Services;
-using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 
@@ -19,8 +15,7 @@ namespace LYBT.Desktop.MedicalCase.Services;
 /// </summary>
 public class MedicalCaseModule(
     IMedicalCaseQueryService queryService,
-    IMedicalCaseBusinessService businessService) : IMedicalCaseService
-{
+    IMedicalCaseBusinessService businessService) : IMedicalCaseService {
     private readonly IMedicalCaseQueryService _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
     private readonly IMedicalCaseBusinessService _businessService = businessService ?? throw new ArgumentNullException(nameof(businessService));
 
@@ -47,18 +42,16 @@ public class MedicalCaseModule(
     /// <summary>
     /// 获取患者活跃医案
     /// </summary>
-    public async Task<ServiceResult<MedicalCaseDto>> GetActiveByPatientIdAsync(Guid patientId)
-    {
+    public async Task<ServiceResult<MedicalCaseDto>> GetActiveByPatientIdAsync(Guid patientId) {
         var result = await _queryService.GetActiveByPatientIdAsync(patientId);
-        if (result.IsSuccess && result.Data != null)
-        {
+        if (result.IsSuccess && result.Data != null) {
             return ServiceResult<MedicalCaseDto>.Success(result.Data);
         }
 
         return ServiceResult<MedicalCaseDto>.Failure(result.ErrorMessage ?? "未找到活跃医案");
     }
 
-    #endregion
+    #endregion 基础查询操作 - 对应简化接口
 
     #region 基础业务操作 - 对应简化接口
 
@@ -98,7 +91,7 @@ public class MedicalCaseModule(
     public async Task<ServiceResult<bool>> CancelAsync(Guid id)
         => await _businessService.CancelAsync(id);
 
-    #endregion
+    #endregion 基础业务操作 - 对应简化接口
 
     #region 共享接口IMedicalCaseService额外方法 - 委托给相应服务层
 
@@ -150,5 +143,5 @@ public class MedicalCaseModule(
     public async Task<ServiceResult<List<object>>> GetHistoryAsync(Guid id)
         => ServiceResult<List<object>>.Success([]);
 
-    #endregion
+    #endregion 共享接口IMedicalCaseService额外方法 - 委托给相应服务层
 }

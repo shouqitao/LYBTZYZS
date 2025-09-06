@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using LYBT.Desktop.Prescriptions.Interfaces;
+﻿using LYBT.Desktop.Prescriptions.Interfaces;
 using LYBT.Shared.Interfaces.Services;
-using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 
@@ -19,8 +15,7 @@ namespace LYBT.Desktop.Prescriptions.Services;
 /// </summary>
 public class PrescriptionsModule(
     IPrescriptionsQueryService queryService,
-    IPrescriptionsBusinessService businessService) : IPrescriptionService
-{
+    IPrescriptionsBusinessService businessService) : IPrescriptionService {
     private readonly IPrescriptionsQueryService _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
     private readonly IPrescriptionsBusinessService _businessService = businessService ?? throw new ArgumentNullException(nameof(businessService));
 

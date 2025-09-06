@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using LYBT.Desktop.MedicalCase.Interfaces;
+﻿using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Shared.Interfaces.Api;
-using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using Microsoft.Extensions.Logging;
@@ -20,8 +16,7 @@ namespace LYBT.Desktop.MedicalCase.Services;
 /// </summary>
 public class MedicalCaseQueryService(
     ILogger<MedicalCaseQueryService> logger,
-    IMedicalCaseApi medicalCaseApi) : IMedicalCaseQueryService
-{
+    IMedicalCaseApi medicalCaseApi) : IMedicalCaseQueryService {
     private readonly ILogger<MedicalCaseQueryService> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private readonly IMedicalCaseApi _medicalCaseApi = medicalCaseApi ?? throw new ArgumentNullException(nameof(medicalCaseApi));
 
@@ -33,16 +28,13 @@ public class MedicalCaseQueryService(
     /// </summary>
     /// <param name="id">医案唯一标识</param>
     /// <returns>医案详细档案DTO</returns>
-    public async Task<ServiceResult<MedicalCaseDetailDto>> GetByIdAsync(Guid id)
-    {
-        try
-        {
+    public async Task<ServiceResult<MedicalCaseDetailDto>> GetByIdAsync(Guid id) {
+        try {
             _logger.LogDebug("查询医疗案例详细档案: {MedicalCaseId}", id);
 
             var refitResponse = await _medicalCaseApi.GetByIdAsync(id);
 
-            if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
-            {
+            if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null) {
                 var detailDto = refitResponse.Content;
                 _logger.LogDebug("医疗案例详细档案查询成功: {MedicalCaseId}", id);
                 return ServiceResult<MedicalCaseDetailDto>.Success(detailDto, "查询成功");
@@ -51,9 +43,7 @@ public class MedicalCaseQueryService(
             _logger.LogWarning("医疗案例详细档案查询HTTP请求失败: {MedicalCaseId}, 状态码: {StatusCode}",
                 id, refitResponse.StatusCode);
             return ServiceResult<MedicalCaseDetailDto>.Failure("查询医案详情网络请求失败，请检查网络连接");
-        }
-        catch (Exception ex)
-        {
+        } catch (Exception ex) {
             _logger.LogError(ex, "查询医案详情异常: {MedicalCaseId}", id);
             return ServiceResult<MedicalCaseDetailDto>.Failure($"查询医案详情过程发生错误: {ex.Message}");
         }
@@ -65,23 +55,18 @@ public class MedicalCaseQueryService(
     /// </summary>
     /// <param name="query">分页查询参数</param>
     /// <returns>包含医案列表和总数的分页结果</returns>
-    public async Task<ServiceResult<PagedResult<MedicalCaseDto>>> GetPagedAsync(PagedQueryBaseDto query)
-    {
-        try
-        {
+    public async Task<ServiceResult<PagedResult<MedicalCaseDto>>> GetPagedAsync(PagedQueryBaseDto query) {
+        try {
             _logger.LogDebug("执行医案分页查询，页码: {CurrentPage}, 页大小: {PageSize}",
                 query.CurrentPage, query.PageSize);
 
-            var emptyResult = new PagedResult<MedicalCaseDto>
-            {
+            var emptyResult = new PagedResult<MedicalCaseDto> {
                 Items = [],
                 TotalCount = 0
             };
 
             return ServiceResult<PagedResult<MedicalCaseDto>>.Success(emptyResult);
-        }
-        catch (Exception ex)
-        {
+        } catch (Exception ex) {
             _logger.LogError(ex, "医案分页查询异常");
             return ServiceResult<PagedResult<MedicalCaseDto>>.Failure("查询医案列表失败");
         }
@@ -93,16 +78,12 @@ public class MedicalCaseQueryService(
     /// </summary>
     /// <param name="patientId">患者唯一标识</param>
     /// <returns>患者医案列表</returns>
-    public async Task<ServiceResult<List<MedicalCaseDto>>> GetByPatientIdAsync(Guid patientId)
-    {
-        try
-        {
+    public async Task<ServiceResult<List<MedicalCaseDto>>> GetByPatientIdAsync(Guid patientId) {
+        try {
             _logger.LogDebug("查询患者医案列表: {PatientId}", patientId);
             List<MedicalCaseDto> emptyList = [];
             return ServiceResult<List<MedicalCaseDto>>.Success(emptyList);
-        }
-        catch (Exception ex)
-        {
+        } catch (Exception ex) {
             _logger.LogError(ex, "查询患者医案异常: {PatientId}", patientId);
             return ServiceResult<List<MedicalCaseDto>>.Failure("查询患者医案失败");
         }
@@ -114,19 +95,15 @@ public class MedicalCaseQueryService(
     /// </summary>
     /// <param name="patientId">患者唯一标识</param>
     /// <returns>当前活跃医案DTO（如无则为null）</returns>
-    public async Task<ServiceResult<MedicalCaseDto?>> GetActiveByPatientIdAsync(Guid patientId)
-    {
-        try
-        {
+    public async Task<ServiceResult<MedicalCaseDto?>> GetActiveByPatientIdAsync(Guid patientId) {
+        try {
             _logger.LogDebug("查询患者活跃医案: {PatientId}", patientId);
             return ServiceResult<MedicalCaseDto?>.Success(null);
-        }
-        catch (Exception ex)
-        {
+        } catch (Exception ex) {
             _logger.LogError(ex, "查询活跃医案异常: {PatientId}", patientId);
             return ServiceResult<MedicalCaseDto?>.Failure("查询活跃医案失败");
         }
     }
 
-    #endregion
+    #endregion 医疗案例查询专业化实现
 }

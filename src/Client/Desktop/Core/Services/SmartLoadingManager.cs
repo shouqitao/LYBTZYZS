@@ -1,19 +1,13 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
+﻿using System.Collections.Concurrent;
 using System.ComponentModel;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
-using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.Extensions.Logging;
 
-namespace LYBT.Desktop.Core.Services
-{
+namespace LYBT.Desktop.Core.Services {
+
     /// <summary>
     /// 智能加载状态管理器 - UltraThink创新设计
-    /// 
+    ///
     /// 核心创新点：
     /// 1. 分层加载状态管理，避免嵌套冲突
     /// 2. 智能防抖，处理快速切换操作
@@ -21,8 +15,8 @@ namespace LYBT.Desktop.Core.Services
     /// 4. 自动状态清理和内存管理
     /// 5. 线程安全的状态同步
     /// </summary>
-    public interface ISmartLoadingManager : INotifyPropertyChanged
-    {
+    public interface ISmartLoadingManager : INotifyPropertyChanged {
+
         /// <summary>
         /// 全局加载状态
         /// </summary>
@@ -74,8 +68,8 @@ namespace LYBT.Desktop.Core.Services
     /// <summary>
     /// 加载操作句柄
     /// </summary>
-    public interface ILoadingOperation : IDisposable
-    {
+    public interface ILoadingOperation : IDisposable {
+
         /// <summary>
         /// 操作ID
         /// </summary>
@@ -120,8 +114,8 @@ namespace LYBT.Desktop.Core.Services
     /// <summary>
     /// 智能加载状态管理器实现
     /// </summary>
-    public class SmartLoadingManager : ISmartLoadingManager, IDisposable
-    {
+    public class SmartLoadingManager : ISmartLoadingManager, IDisposable {
+
         #region 私有字段
 
         private readonly ILogger<SmartLoadingManager> _logger;
@@ -131,20 +125,21 @@ namespace LYBT.Desktop.Core.Services
 
         // 防抖控制
         private readonly Dictionary<int, DateTime> _lastStateChangeTime = new();
+
         private readonly TimeSpan _debounceDelay = TimeSpan.FromMilliseconds(100);
 
         // 状态缓存
         private volatile bool _cachedGlobalLoading;
+
         private volatile int _cachedActiveCount;
         private DateTime _lastCacheUpdate = DateTime.MinValue;
         private readonly TimeSpan _cacheInvalidationTime = TimeSpan.FromMilliseconds(50);
 
-        #endregion
+        #endregion 私有字段
 
         #region 构造函数
 
-        public SmartLoadingManager(ILogger<SmartLoadingManager> logger)
-        {
+        public SmartLoadingManager(ILogger<SmartLoadingManager> logger) {
             _logger = logger;
 
             // 定期清理过期状态（每30秒）
@@ -154,52 +149,43 @@ namespace LYBT.Desktop.Core.Services
             _logger.LogDebug("智能加载管理器已初始化");
         }
 
-        #endregion
+        #endregion 构造函数
 
         #region 公共属性
 
-        public bool IsGlobalLoading
-        {
-            get
-            {
+        public bool IsGlobalLoading {
+            get {
                 UpdateCacheIfNeeded();
                 return _cachedGlobalLoading;
             }
         }
 
-        public int ActiveLoadingCount
-        {
-            get
-            {
+        public int ActiveLoadingCount {
+            get {
                 UpdateCacheIfNeeded();
                 return _cachedActiveCount;
             }
         }
 
-        #endregion
+        #endregion 公共属性
 
         #region 公共方法
 
         public ILoadingOperation StartLoading(string operationId, string message = "加载中...",
-            int layer = 1, bool supportProgress = false, CancellationToken cancellationToken = default)
-        {
-            if (string.IsNullOrEmpty(operationId))
-            {
+            int layer = 1, bool supportProgress = false, CancellationToken cancellationToken = default) {
+            if (string.IsNullOrEmpty(operationId)) {
                 throw new ArgumentException("操作ID不能为空", nameof(operationId));
             }
 
-            lock (_stateLock)
-            {
+            lock (_stateLock) {
                 // 如果操作已存在，返回现有操作
-                if (_activeOperations.TryGetValue(operationId, out var existing))
-                {
+                if (_activeOperations.TryGetValue(operationId, out var existing)) {
                     _logger.LogWarning("操作 {OperationId} 已在进行中，返回现有操作", operationId);
                     return existing.Operation;
                 }
 
                 var operation = new LoadingOperation(operationId, message, layer, supportProgress, this, cancellationToken);
-                var operationInfo = new LoadingOperationInfo
-                {
+                var operationInfo = new LoadingOperationInfo {
                     Operation = operation,
                     StartTime = DateTime.UtcNow,
                     Layer = layer,
@@ -221,20 +207,17 @@ namespace LYBT.Desktop.Core.Services
             }
         }
 
-        public bool IsLoadingAtLayer(int layer)
-        {
+        public bool IsLoadingAtLayer(int layer) {
             return _activeOperations.Values.Any(op => op.Layer == layer && !op.Operation.IsCancelled);
         }
 
-        public string GetCurrentLoadingMessage(int layer = -1)
-        {
+        public string GetCurrentLoadingMessage(int layer = -1) {
             var operations = _activeOperations.Values
                 .Where(op => !op.Operation.IsCancelled && (layer == -1 || op.Layer == layer))
                 .OrderBy(op => op.StartTime)
                 .ToList();
 
-            if (!operations.Any())
-            {
+            if (!operations.Any()) {
                 return string.Empty;
             }
 
@@ -243,40 +226,32 @@ namespace LYBT.Desktop.Core.Services
             return latest.Message;
         }
 
-        public void CancelOperation(string operationId)
-        {
-            if (_activeOperations.TryGetValue(operationId, out var operationInfo))
-            {
+        public void CancelOperation(string operationId) {
+            if (_activeOperations.TryGetValue(operationId, out var operationInfo)) {
                 operationInfo.Operation.Cancel();
                 _logger.LogDebug("取消加载操作: {OperationId}", operationId);
             }
         }
 
-        public void CancelAllOperations()
-        {
+        public void CancelAllOperations() {
             var operations = _activeOperations.Values.ToList();
-            foreach (var operationInfo in operations)
-            {
+            foreach (var operationInfo in operations) {
                 operationInfo.Operation.Cancel();
             }
             _logger.LogDebug("取消所有加载操作，共 {Count} 个", operations.Count);
         }
 
-        public void CleanupExpiredStates()
-        {
+        public void CleanupExpiredStates() {
             PerformCleanup(null);
         }
 
-        #endregion
+        #endregion 公共方法
 
         #region 内部方法
 
-        internal void CompleteOperation(string operationId)
-        {
-            lock (_stateLock)
-            {
-                if (_activeOperations.TryRemove(operationId, out var operationInfo))
-                {
+        internal void CompleteOperation(string operationId) {
+            lock (_stateLock) {
+                if (_activeOperations.TryRemove(operationId, out var operationInfo)) {
                     _logger.LogDebug("完成加载操作: {OperationId}, 耗时: {Duration}ms",
                         operationId, (DateTime.UtcNow - operationInfo.StartTime).TotalMilliseconds);
 
@@ -289,16 +264,13 @@ namespace LYBT.Desktop.Core.Services
             }
         }
 
-        private void UpdateCacheIfNeeded()
-        {
+        private void UpdateCacheIfNeeded() {
             var now = DateTime.UtcNow;
-            if (now - _lastCacheUpdate < _cacheInvalidationTime)
-            {
+            if (now - _lastCacheUpdate < _cacheInvalidationTime) {
                 return;
             }
 
-            lock (_stateLock)
-            {
+            lock (_stateLock) {
                 var activeOps = _activeOperations.Values
                     .Where(op => !op.Operation.IsCancelled)
                     .ToList();
@@ -309,98 +281,84 @@ namespace LYBT.Desktop.Core.Services
             }
         }
 
-        private void NotifyStateChanged()
-        {
+        private void NotifyStateChanged() {
             // 检查是否应该发送通知（防抖）
             var now = DateTime.UtcNow;
             var shouldNotify = _lastStateChangeTime.Values.Any(lastChange =>
                 now - lastChange >= _debounceDelay);
 
-            if (shouldNotify)
-            {
+            if (shouldNotify) {
                 InvalidateCache();
                 OnPropertyChanged(nameof(IsGlobalLoading));
                 OnPropertyChanged(nameof(ActiveLoadingCount));
             }
         }
 
-        private void InvalidateCache()
-        {
+        private void InvalidateCache() {
             _lastCacheUpdate = DateTime.MinValue;
         }
 
-        private void PerformCleanup(object? state)
-        {
-            try
-            {
+        private void PerformCleanup(object? state) {
+            try {
                 var expiredThreshold = DateTime.UtcNow.AddMinutes(-5); // 5分钟过期
                 var expiredOperations = _activeOperations.Values
                     .Where(op => op.StartTime < expiredThreshold || op.Operation.IsCancelled)
                     .ToList();
 
-                foreach (var expired in expiredOperations)
-                {
-                    if (_activeOperations.TryRemove(expired.Operation.OperationId, out _))
-                    {
+                foreach (var expired in expiredOperations) {
+                    if (_activeOperations.TryRemove(expired.Operation.OperationId, out _)) {
                         expired.Operation.Dispose();
                         _logger.LogDebug("清理过期操作: {OperationId}", expired.Operation.OperationId);
                     }
                 }
 
-                if (expiredOperations.Any())
-                {
+                if (expiredOperations.Any()) {
                     NotifyStateChanged();
                 }
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 _logger.LogError(ex, "清理过期加载状态时发生错误");
             }
         }
 
-        #endregion
+        #endregion 内部方法
 
         #region INotifyPropertyChanged
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
-        {
+        protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null) {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        #endregion
+        #endregion INotifyPropertyChanged
 
         #region IDisposable
 
-        public void Dispose()
-        {
+        public void Dispose() {
             _cleanupTimer?.Dispose();
             CancelAllOperations();
             _activeOperations.Clear();
             _logger.LogDebug("智能加载管理器已释放");
         }
 
-        #endregion
+        #endregion IDisposable
 
         #region 私有类型
 
-        private class LoadingOperationInfo
-        {
+        private class LoadingOperationInfo {
             public LoadingOperation Operation { get; set; } = null!;
             public DateTime StartTime { get; set; }
             public int Layer { get; set; }
             public string Message { get; set; } = string.Empty;
         }
 
-        #endregion
+        #endregion 私有类型
     }
 
     /// <summary>
     /// 加载操作实现
     /// </summary>
-    internal class LoadingOperation : ILoadingOperation
-    {
+    internal class LoadingOperation : ILoadingOperation {
         private readonly SmartLoadingManager _manager;
         private readonly CancellationTokenSource _cancellationTokenSource;
         private readonly CancellationToken _externalCancellationToken;
@@ -419,8 +377,7 @@ namespace LYBT.Desktop.Core.Services
         public CancellationToken CancellationToken => _cancellationTokenSource.Token;
 
         internal LoadingOperation(string operationId, string message, int layer, bool supportsProgress,
-            SmartLoadingManager manager, CancellationToken externalCancellationToken)
-        {
+            SmartLoadingManager manager, CancellationToken externalCancellationToken) {
             OperationId = operationId;
             _message = message;
             Layer = layer;
@@ -431,35 +388,28 @@ namespace LYBT.Desktop.Core.Services
             _cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(externalCancellationToken);
         }
 
-        public void UpdateProgress(int progress, string? message = null)
-        {
-            if (!SupportsProgress || _disposed || _completed)
-            {
+        public void UpdateProgress(int progress, string? message = null) {
+            if (!SupportsProgress || _disposed || _completed) {
                 return;
             }
 
             _progress = Math.Max(0, Math.Min(100, progress));
 
-            if (!string.IsNullOrEmpty(message))
-            {
+            if (!string.IsNullOrEmpty(message)) {
                 _message = message;
             }
         }
 
-        public void UpdateMessage(string message)
-        {
-            if (_disposed || _completed)
-            {
+        public void UpdateMessage(string message) {
+            if (_disposed || _completed) {
                 return;
             }
 
             _message = message ?? string.Empty;
         }
 
-        public void Complete()
-        {
-            if (_disposed || _completed)
-            {
+        public void Complete() {
+            if (_disposed || _completed) {
                 return;
             }
 
@@ -467,25 +417,20 @@ namespace LYBT.Desktop.Core.Services
             _manager.CompleteOperation(OperationId);
         }
 
-        internal void Cancel()
-        {
-            if (!_disposed)
-            {
+        internal void Cancel() {
+            if (!_disposed) {
                 _cancellationTokenSource.Cancel();
             }
         }
 
-        public void Dispose()
-        {
-            if (_disposed)
-            {
+        public void Dispose() {
+            if (_disposed) {
                 return;
             }
 
             _disposed = true;
 
-            if (!_completed)
-            {
+            if (!_completed) {
                 Complete();
             }
 

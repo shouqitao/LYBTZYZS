@@ -1,37 +1,32 @@
-﻿using System;
-using System.Windows.Media;
+﻿using System.Windows.Media;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
 using Prism.Mvvm;
 
-namespace LYBT.Desktop.Core.ViewModels.Prescriptions
-{
+namespace LYBT.Desktop.Core.ViewModels.Prescriptions {
+
     /// <summary>
     /// 处方主题样式视图模型 - UltraThink架构Presentation Layer
     /// 专门处理处方的主题、颜色、样式等视觉呈现逻辑
     /// </summary>
-    public class PrescriptionThemeViewModel : BindableBase
-    {
+    public class PrescriptionThemeViewModel : BindableBase {
         private readonly PrescriptionDto _prescriptionData;
 
-        public PrescriptionThemeViewModel(PrescriptionDto prescriptionData)
-        {
+        public PrescriptionThemeViewModel(PrescriptionDto prescriptionData) {
             _prescriptionData = prescriptionData ?? throw new ArgumentNullException(nameof(prescriptionData));
         }
 
         #region 主题配色
 
         /// <summary>主背景色</summary>
-        public Brush BackgroundBrush => _prescriptionData.Status switch
-        {
+        public Brush BackgroundBrush => _prescriptionData.Status switch {
             CommonStatus.Disabled => new SolidColorBrush(Color.FromRgb(255, 248, 230)), // 浅黄色 - 草稿状态
             CommonStatus.Enabled => new SolidColorBrush(Color.FromRgb(230, 255, 230)), // 浅绿色 - 启用状态
             _ => new SolidColorBrush(Color.FromRgb(248, 248, 248)) // 默认灰色
         };
 
         /// <summary>边框颜色</summary>
-        public Brush BorderBrush => _prescriptionData.Status switch
-        {
+        public Brush BorderBrush => _prescriptionData.Status switch {
             CommonStatus.Disabled => new SolidColorBrush(Color.FromRgb(255, 193, 7)), // 黄色 - 草稿状态
             CommonStatus.Enabled => new SolidColorBrush(Color.FromRgb(40, 167, 69)), // 绿色 - 启用状态
             _ => new SolidColorBrush(Color.FromRgb(206, 212, 218)) // 默认边框色
@@ -45,7 +40,7 @@ namespace LYBT.Desktop.Core.ViewModels.Prescriptions
             new SolidColorBrush(Color.FromRgb(255, 87, 34)) : // 橙色表示有折扣
             new SolidColorBrush(Color.FromRgb(76, 175, 80)); // 绿色表示正常价格
 
-        #endregion
+        #endregion 主题配色
 
         #region 状态指示颜色
 
@@ -65,22 +60,17 @@ namespace LYBT.Desktop.Core.ViewModels.Prescriptions
             new SolidColorBrush(Color.FromRgb(255, 193, 7)); // 未完成-黄色
 
         /// <summary>优先级颜色</summary>
-        public Brush PriorityBrush
-        {
-            get
-            {
-                if (NeedsPayment)
-                {
+        public Brush PriorityBrush {
+            get {
+                if (NeedsPayment) {
                     return new SolidColorBrush(Color.FromRgb(220, 53, 69)); // 待付款-红色
                 }
 
-                if (CanDispense)
-                {
+                if (CanDispense) {
                     return new SolidColorBrush(Color.FromRgb(255, 193, 7)); // 可发药-黄色
                 }
 
-                if (IsCompleted)
-                {
+                if (IsCompleted) {
                     return new SolidColorBrush(Color.FromRgb(40, 167, 69)); // 已完成-绿色
                 }
 
@@ -88,7 +78,7 @@ namespace LYBT.Desktop.Core.ViewModels.Prescriptions
             }
         }
 
-        #endregion
+        #endregion 状态指示颜色
 
         #region 进度条配色
 
@@ -96,13 +86,10 @@ namespace LYBT.Desktop.Core.ViewModels.Prescriptions
         public Brush ProgressBackgroundBrush => new SolidColorBrush(Color.FromRgb(233, 236, 239));
 
         /// <summary>进度条前景色</summary>
-        public Brush ProgressForegroundBrush
-        {
-            get
-            {
+        public Brush ProgressForegroundBrush {
+            get {
                 var percentage = GetCompletionPercentage();
-                return percentage switch
-                {
+                return percentage switch {
                     >= 100 => new SolidColorBrush(Color.FromRgb(40, 167, 69)), // 完成-绿色
                     >= 60 => new SolidColorBrush(Color.FromRgb(255, 193, 7)), // 进行中-黄色
                     >= 30 => new SolidColorBrush(Color.FromRgb(255, 87, 34)), // 开始-橙色
@@ -111,13 +98,12 @@ namespace LYBT.Desktop.Core.ViewModels.Prescriptions
             }
         }
 
-        #endregion
+        #endregion 进度条配色
 
         #region 动态样式属性
 
         /// <summary>边框厚度</summary>
-        public double BorderThickness => _prescriptionData.Status switch
-        {
+        public double BorderThickness => _prescriptionData.Status switch {
             CommonStatus.Disabled => 1.0,
             _ => 2.0
         };
@@ -131,7 +117,7 @@ namespace LYBT.Desktop.Core.ViewModels.Prescriptions
         /// <summary>透明度</summary>
         public double Opacity => 1.0; // 统一不透明
 
-        #endregion
+        #endregion 动态样式属性
 
         #region 金额相关配色
 
@@ -146,13 +132,12 @@ namespace LYBT.Desktop.Core.ViewModels.Prescriptions
         /// <summary>节省金额颜色</summary>
         public Brush SavingsBrush => new SolidColorBrush(Color.FromRgb(76, 175, 80)); // 绿色
 
-        #endregion
+        #endregion 金额相关配色
 
         #region 图标配色
 
         /// <summary>状态图标颜色</summary>
-        public Brush StatusIconBrush => _prescriptionData.Status switch
-        {
+        public Brush StatusIconBrush => _prescriptionData.Status switch {
             CommonStatus.Disabled => new SolidColorBrush(Color.FromRgb(108, 117, 125)), // 灰色
             CommonStatus.Enabled => new SolidColorBrush(Color.FromRgb(40, 167, 69)), // 绿色
             _ => new SolidColorBrush(Color.FromRgb(108, 117, 125)) // 默认灰色
@@ -168,15 +153,13 @@ namespace LYBT.Desktop.Core.ViewModels.Prescriptions
             new SolidColorBrush(Color.FromRgb(108, 117, 125)) : // 已发药-灰色
             new SolidColorBrush(Color.FromRgb(0, 123, 255)); // 未发药-蓝色
 
-        #endregion
+        #endregion 图标配色
 
         #region 中医特色主题
 
         /// <summary>获取中医药材等级配色</summary>
-        public Brush GetHerbGradeBrush(int herbCount)
-        {
-            return herbCount switch
-            {
+        public Brush GetHerbGradeBrush(int herbCount) {
+            return herbCount switch {
                 >= 15 => new SolidColorBrush(Color.FromRgb(156, 39, 176)), // 紫色-复方
                 >= 10 => new SolidColorBrush(Color.FromRgb(63, 81, 181)), // 靛蓝-中方
                 >= 5 => new SolidColorBrush(Color.FromRgb(3, 169, 244)), // 蓝色-小方
@@ -186,10 +169,8 @@ namespace LYBT.Desktop.Core.ViewModels.Prescriptions
         }
 
         /// <summary>获取处方复杂度颜色</summary>
-        public Brush GetComplexityBrush()
-        {
-            var complexity = HerbCount switch
-            {
+        public Brush GetComplexityBrush() {
+            var complexity = HerbCount switch {
                 >= 15 => "复杂方",
                 >= 10 => "中等方",
                 >= 5 => "简单方",
@@ -197,8 +178,7 @@ namespace LYBT.Desktop.Core.ViewModels.Prescriptions
                 _ => "空方"
             };
 
-            return complexity switch
-            {
+            return complexity switch {
                 "复杂方" => new SolidColorBrush(Color.FromRgb(233, 30, 99)), // 粉红色
                 "中等方" => new SolidColorBrush(Color.FromRgb(255, 152, 0)), // 橙色
                 "简单方" => new SolidColorBrush(Color.FromRgb(139, 195, 74)), // 浅绿色
@@ -207,25 +187,22 @@ namespace LYBT.Desktop.Core.ViewModels.Prescriptions
             };
         }
 
-        #endregion
+        #endregion 中医特色主题
 
         #region 主题切换方法
 
         /// <summary>
         /// 获取卡片主题样式
         /// </summary>
-        public (Brush Background, Brush Border, Brush Text, double BorderThickness) GetCardTheme()
-        {
+        public (Brush Background, Brush Border, Brush Text, double BorderThickness) GetCardTheme() {
             return (BackgroundBrush, BorderBrush, TextBrush, BorderThickness);
         }
 
         /// <summary>
-        /// 获取徽章主题样式  
+        /// 获取徽章主题样式
         /// </summary>
-        public (Brush Background, Brush Text) GetBadgeTheme()
-        {
-            var background = _prescriptionData.Status switch
-            {
+        public (Brush Background, Brush Text) GetBadgeTheme() {
+            var background = _prescriptionData.Status switch {
                 CommonStatus.Disabled => new SolidColorBrush(Color.FromRgb(255, 193, 7)),
                 CommonStatus.Enabled => new SolidColorBrush(Color.FromRgb(40, 167, 69)),
                 _ => new SolidColorBrush(Color.FromRgb(108, 117, 125))
@@ -238,10 +215,8 @@ namespace LYBT.Desktop.Core.ViewModels.Prescriptions
         /// <summary>
         /// 获取按钮主题样式
         /// </summary>
-        public (Brush Background, Brush Text, Brush Border) GetButtonTheme(string buttonType)
-        {
-            return buttonType switch
-            {
+        public (Brush Background, Brush Text, Brush Border) GetButtonTheme(string buttonType) {
+            return buttonType switch {
                 "Primary" => (
                     new SolidColorBrush(Color.FromRgb(0, 123, 255)),
                     new SolidColorBrush(Colors.White),
@@ -270,7 +245,7 @@ namespace LYBT.Desktop.Core.ViewModels.Prescriptions
             };
         }
 
-        #endregion
+        #endregion 主题切换方法
 
         #region 简化的业务属性 - UltraThink v2.0
 
@@ -299,16 +274,14 @@ namespace LYBT.Desktop.Core.ViewModels.Prescriptions
         private int HerbCount => _prescriptionData.Items?.Count ?? 0;
 
         /// <summary>完成百分比 - 简化逻辑</summary>
-        private int GetCompletionPercentage()
-        {
-            return _prescriptionData.Status switch
-            {
+        private int GetCompletionPercentage() {
+            return _prescriptionData.Status switch {
                 CommonStatus.Enabled => 100, // 启用状态表示完成
                 CommonStatus.Disabled => 50, // 禁用状态表示进行中
                 _ => 0
             };
         }
 
-        #endregion
+        #endregion 简化的业务属性 - UltraThink v2.0
     }
 }

@@ -1,30 +1,24 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Collections.ObjectModel;
 using System.Windows.Input;
 using AutoMapper;
 using LYBT.Desktop.Core.Constants;
 using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.ViewModels.Base;
 using LYBT.Shared.Interfaces.Services;
-using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Enums;
-using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
-using Prism.Mvvm;
 using Prism.Regions;
 
-namespace LYBT.Desktop.Formula.ViewModels
-{
+namespace LYBT.Desktop.Formula.ViewModels {
+
     /// <summary>
     /// 验方详情视图模型 - UltraThink v2.0架构
     /// 提供验方详细信息查看和编辑功能
     /// </summary>
-    public class FormulaDetailViewModel : ServiceViewModel, INavigationAware
-    {
+    public class FormulaDetailViewModel : ServiceViewModel, INavigationAware {
+
         #region 私有字段
 
         private readonly IFormulaService _formulaService;
@@ -37,36 +31,33 @@ namespace LYBT.Desktop.Formula.ViewModels
         private bool _isLoading;
         private bool _isReadOnly = true;
 
-        #endregion
+        #endregion 私有字段
 
         #region 属性
 
-        public Guid FormulaId
-        {
+        public Guid FormulaId {
             get => _formulaId;
             set => SetProperty(ref _formulaId, value);
         }
 
-        public FormulaDto? Formula
-        {
+        public FormulaDto? Formula {
             get => _formula;
             set => SetProperty(ref _formula, value);
         }
 
-        public new bool IsLoading
-        {
+        public new bool IsLoading {
             get => _isLoading;
             set => SetProperty(ref _isLoading, value);
         }
 
-        public bool IsReadOnly
-        {
+        public bool IsReadOnly {
             get => _isReadOnly;
             set => SetProperty(ref _isReadOnly, value);
         }
 
         // 验方基本信息属性
         public string FormulaName => Formula?.Name ?? "";
+
         public string Effect => Formula?.Effect ?? "";
         public string Usage => Formula?.Usage ?? "";
         public string Property => Formula?.Property ?? "";
@@ -85,7 +76,7 @@ namespace LYBT.Desktop.Formula.ViewModels
         // 药材组成
         public ObservableCollection<FormulaHerbItemDto> HerbItems { get; set; } = new();
 
-        #endregion
+        #endregion 属性
 
         #region 命令
 
@@ -98,7 +89,7 @@ namespace LYBT.Desktop.Formula.ViewModels
         public ICommand CopyFormulaCommand { get; } = null!;
         public ICommand ViewUsageHistoryCommand { get; } = null!;
 
-        #endregion
+        #endregion 命令
 
         #region 构造函数
 
@@ -109,8 +100,7 @@ namespace LYBT.Desktop.Formula.ViewModels
             IMapper mapper,
             IErrorHandlingService errorHandlingService,
             IEventAggregator eventAggregator)
-            : base(eventAggregator, errorHandlingService)
-        {
+            : base(eventAggregator, errorHandlingService) {
             _formulaService = formulaService ?? throw new ArgumentNullException(nameof(formulaService));
             _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
             _regionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
@@ -127,18 +117,15 @@ namespace LYBT.Desktop.Formula.ViewModels
             ViewUsageHistoryCommand = new DelegateCommand(async () => await ViewUsageHistoryAsync());
         }
 
-        #endregion
+        #endregion 构造函数
 
         #region INavigationAware 实现
 
-        public void OnNavigatedTo(NavigationContext navigationContext)
-        {
-            if (navigationContext.Parameters.ContainsKey("FormulaId"))
-            {
+        public void OnNavigatedTo(NavigationContext navigationContext) {
+            if (navigationContext.Parameters.ContainsKey("FormulaId")) {
                 FormulaId = navigationContext.Parameters.GetValue<Guid>("FormulaId");
 
-                if (navigationContext.Parameters.ContainsKey("ViewMode"))
-                {
+                if (navigationContext.Parameters.ContainsKey("ViewMode")) {
                     var viewMode = navigationContext.Parameters.GetValue<string>("ViewMode");
                     IsReadOnly = viewMode != "Edit";
                 }
@@ -147,71 +134,54 @@ namespace LYBT.Desktop.Formula.ViewModels
             }
         }
 
-        public bool IsNavigationTarget(NavigationContext navigationContext)
-        {
-            if (navigationContext.Parameters.ContainsKey("FormulaId"))
-            {
+        public bool IsNavigationTarget(NavigationContext navigationContext) {
+            if (navigationContext.Parameters.ContainsKey("FormulaId")) {
                 var targetFormulaId = navigationContext.Parameters.GetValue<Guid>("FormulaId");
                 return FormulaId == targetFormulaId;
             }
             return true;
         }
 
-        public void OnNavigatedFrom(NavigationContext navigationContext)
-        {
-            if (!IsReadOnly && HasUnsavedChanges())
-            {
+        public void OnNavigatedFrom(NavigationContext navigationContext) {
+            if (!IsReadOnly && HasUnsavedChanges()) {
                 // 可以在这里添加保存确认逻辑
             }
         }
 
-        #endregion
+        #endregion INavigationAware 实现
 
         #region 数据操作
 
-        private async Task LoadDataAsync()
-        {
-            if (FormulaId == Guid.Empty)
-            {
+        private async Task LoadDataAsync() {
+            if (FormulaId == Guid.Empty) {
                 return;
             }
 
-            try
-            {
+            try {
                 IsLoading = true;
 
                 var result = await _formulaService.GetByIdAsync(FormulaId);
 
-                if (result.IsSuccess && result.Data != null)
-                {
+                if (result.IsSuccess && result.Data != null) {
                     Formula = result.Data;
                     LoadHerbItems();
                     RefreshProperties();
-                }
-                else
-                {
+                } else {
                     await _dialogService.ShowErrorAsync($"加载验方详情失败: {result.ErrorMessage}", "错误");
                 }
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 await _dialogService.ShowErrorAsync($"加载验方详情失败: {ex.Message}", "错误");
-            }
-            finally
-            {
+            } finally {
                 IsLoading = false;
             }
         }
 
-        private async Task SaveAsync()
-        {
-            if (Formula == null)
-            {
+        private async Task SaveAsync() {
+            if (Formula == null) {
                 return;
             }
 
-            try
-            {
+            try {
                 IsLoading = true;
 
                 // 更新药材组成
@@ -220,8 +190,7 @@ namespace LYBT.Desktop.Formula.ViewModels
                 var updateDto = _mapper.Map<FormulaUpdateDto>(Formula);
                 var result = await _formulaService.UpdateAsync(Formula.Id, updateDto);
 
-                if (result.IsSuccess && result.Data != null)
-                {
+                if (result.IsSuccess && result.Data != null) {
                     Formula = result.Data;
                     LoadHerbItems();
                     IsReadOnly = true;
@@ -229,79 +198,60 @@ namespace LYBT.Desktop.Formula.ViewModels
                     RaiseCanExecuteChanged();
 
                     await _dialogService.ShowSuccessAsync("验方信息保存成功", "成功");
-                }
-                else
-                {
+                } else {
                     await _dialogService.ShowErrorAsync($"保存失败: {result.ErrorMessage}", "错误");
                 }
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 await _dialogService.ShowErrorAsync($"保存失败: {ex.Message}", "错误");
-            }
-            finally
-            {
+            } finally {
                 IsLoading = false;
             }
         }
 
-        private void LoadHerbItems()
-        {
+        private void LoadHerbItems() {
             HerbItems.Clear();
-            if (Formula?.Herbs != null)
-            {
-                foreach (var herb in Formula.Herbs)
-                {
+            if (Formula?.Herbs != null) {
+                foreach (var herb in Formula.Herbs) {
                     HerbItems.Add(herb);
                 }
             }
         }
 
-        #endregion
+        #endregion 数据操作
 
         #region 命令处理
 
-        private void NavigateBack()
-        {
+        private void NavigateBack() {
             _regionManager.RequestNavigate(RegionNames.SystemWorkbenchContentRegion, "FormulaManagementView");
         }
 
-        private void EnableEdit()
-        {
+        private void EnableEdit() {
             IsReadOnly = false;
             RaiseCanExecuteChanged();
         }
 
-        private void CancelEdit()
-        {
+        private void CancelEdit() {
             IsReadOnly = true;
             // 重新加载数据以取消更改
             Task.Run(async () => await LoadDataAsync());
         }
 
-        private async Task PrintFormulaAsync()
-        {
-            try
-            {
+        private async Task PrintFormulaAsync() {
+            try {
                 await _dialogService.ShowInformationAsync(
                     "验方打印功能将在后续版本中提供\n\n当前支持的操作：\n• 查看验方详情\n• 编辑验方信息\n• 复制验方\n• 查看药材组成",
                     "功能说明");
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 await _dialogService.ShowErrorAsync($"打印失败: {ex.Message}", "错误");
             }
         }
 
-        private async Task CopyFormulaAsync()
-        {
-            if (Formula == null)
-            {
+        private async Task CopyFormulaAsync() {
+            if (Formula == null) {
                 return;
             }
 
-            try
-            {
+            try {
                 var newName = $"{Formula.Name}_副本";
 
                 // 使用默认用户ID（暂时方案）
@@ -309,43 +259,33 @@ namespace LYBT.Desktop.Formula.ViewModels
 
                 var result = await _formulaService.CloneFormulaAsync(Formula.Id, newName, defaultUserId);
 
-                if (result.IsSuccess && result.Data != null)
-                {
+                if (result.IsSuccess && result.Data != null) {
                     await _dialogService.ShowSuccessAsync($"验方复制成功！新验方: {result.Data.Name}", "成功");
 
                     // 刷新当前页面显示新的验方信息
                     FormulaId = result.Data.Id;
                     await LoadDataAsync();
-                }
-                else
-                {
+                } else {
                     await _dialogService.ShowErrorAsync($"复制失败: {result.ErrorMessage}", "错误");
                 }
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 await _dialogService.ShowErrorAsync($"复制失败: {ex.Message}", "错误");
             }
         }
 
-        private async Task ViewUsageHistoryAsync()
-        {
-            if (Formula == null)
-            {
+        private async Task ViewUsageHistoryAsync() {
+            if (Formula == null) {
                 return;
             }
 
-            try
-            {
+            try {
                 await _dialogService.ShowInformationAsync("使用历史功能正在开发中", "提示");
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 await _dialogService.ShowErrorAsync($"操作失败: {ex.Message}", "错误");
             }
         }
 
-        #endregion
+        #endregion 命令处理
 
         #region 命令状态
 
@@ -355,19 +295,17 @@ namespace LYBT.Desktop.Formula.ViewModels
 
         private bool CanCancelEdit() => Formula != null && !IsReadOnly && !IsLoading;
 
-        private new void RaiseCanExecuteChanged()
-        {
+        private new void RaiseCanExecuteChanged() {
             ((DelegateCommand)EditCommand).RaiseCanExecuteChanged();
             ((DelegateCommand)SaveCommand).RaiseCanExecuteChanged();
             ((DelegateCommand)CancelEditCommand).RaiseCanExecuteChanged();
         }
 
-        #endregion
+        #endregion 命令状态
 
         #region 辅助方法
 
-        private void RefreshProperties()
-        {
+        private void RefreshProperties() {
             RaisePropertyChanged(nameof(FormulaName));
             RaisePropertyChanged(nameof(Effect));
             RaisePropertyChanged(nameof(Usage));
@@ -385,22 +323,19 @@ namespace LYBT.Desktop.Formula.ViewModels
             RaisePropertyChanged(nameof(Category));
         }
 
-        private string GetStatusText()
-        {
-            if (Formula?.Status == CommonStatus.Enabled)
-            {
+        private string GetStatusText() {
+            if (Formula?.Status == CommonStatus.Enabled) {
                 return "正常";
             }
 
             return "已禁用";
         }
 
-        private bool HasUnsavedChanges()
-        {
+        private bool HasUnsavedChanges() {
             // 简单实现：如果处于编辑模式就认为有未保存的更改
             return !IsReadOnly;
         }
 
-        #endregion
+        #endregion 辅助方法
     }
 }

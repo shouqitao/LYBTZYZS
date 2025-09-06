@@ -1,23 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Input;
 using LYBT.Desktop.Core.Interfaces.Services;
 using Microsoft.Extensions.Logging;
 
-namespace LYBT.Desktop.Core.Services
-{
+namespace LYBT.Desktop.Core.Services {
+
     /// <summary>
     /// 键盘快捷键服务 - P7-04 UltraThink用户体验优化
-    /// 
+    ///
     /// 功能特性：
     /// 1. 全局键盘快捷键注册与管理
     /// 2. 上下文相关快捷键支持
     /// 3. 快捷键冲突检测与解决
     /// 4. 用户自定义快捷键支持
     /// </summary>
-    public class KeyboardShortcutService : IKeyboardShortcutService
-    {
+    public class KeyboardShortcutService : IKeyboardShortcutService {
+
         #region 私有字段
 
         private readonly ILogger<KeyboardShortcutService> _logger;
@@ -25,12 +23,11 @@ namespace LYBT.Desktop.Core.Services
         private readonly Dictionary<string, Dictionary<KeyGesture, ShortcutAction>> _contextShortcuts;
         private string _currentContext = "Default";
 
-        #endregion
+        #endregion 私有字段
 
         #region 构造函数
 
-        public KeyboardShortcutService(ILogger<KeyboardShortcutService> logger)
-        {
+        public KeyboardShortcutService(ILogger<KeyboardShortcutService> logger) {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _globalShortcuts = new Dictionary<KeyGesture, ShortcutAction>();
             _contextShortcuts = new Dictionary<string, Dictionary<KeyGesture, ShortcutAction>>();
@@ -39,20 +36,17 @@ namespace LYBT.Desktop.Core.Services
             RegisterGlobalKeyHandler();
         }
 
-        #endregion
+        #endregion 构造函数
 
         #region IKeyboardShortcutService 实现
 
         /// <summary>注册全局快捷键</summary>
-        public bool RegisterGlobalShortcut(KeyGesture keyGesture, Action action, string description = "")
-        {
-            if (keyGesture == null || action == null)
-            {
+        public bool RegisterGlobalShortcut(KeyGesture keyGesture, Action action, string description = "") {
+            if (keyGesture == null || action == null) {
                 return false;
             }
 
-            if (_globalShortcuts.ContainsKey(keyGesture))
-            {
+            if (_globalShortcuts.ContainsKey(keyGesture)) {
                 _logger.LogWarning("全局快捷键 {Gesture} 已存在，将被覆盖", keyGesture.DisplayString);
             }
 
@@ -62,21 +56,17 @@ namespace LYBT.Desktop.Core.Services
         }
 
         /// <summary>注册上下文快捷键</summary>
-        public bool RegisterContextShortcut(string context, KeyGesture keyGesture, Action action, string description = "")
-        {
-            if (string.IsNullOrEmpty(context) || keyGesture == null || action == null)
-            {
+        public bool RegisterContextShortcut(string context, KeyGesture keyGesture, Action action, string description = "") {
+            if (string.IsNullOrEmpty(context) || keyGesture == null || action == null) {
                 return false;
             }
 
-            if (!_contextShortcuts.ContainsKey(context))
-            {
+            if (!_contextShortcuts.ContainsKey(context)) {
                 _contextShortcuts[context] = new Dictionary<KeyGesture, ShortcutAction>();
             }
 
             var contextShortcuts = _contextShortcuts[context];
-            if (contextShortcuts.ContainsKey(keyGesture))
-            {
+            if (contextShortcuts.ContainsKey(keyGesture)) {
                 _logger.LogWarning("上下文 {Context} 中的快捷键 {Gesture} 已存在，将被覆盖", context, keyGesture.DisplayString);
             }
 
@@ -86,10 +76,8 @@ namespace LYBT.Desktop.Core.Services
         }
 
         /// <summary>移除全局快捷键</summary>
-        public bool UnregisterGlobalShortcut(KeyGesture keyGesture)
-        {
-            if (keyGesture != null && _globalShortcuts.Remove(keyGesture))
-            {
+        public bool UnregisterGlobalShortcut(KeyGesture keyGesture) {
+            if (keyGesture != null && _globalShortcuts.Remove(keyGesture)) {
                 _logger.LogInformation("移除全局快捷键: {Gesture}", keyGesture.DisplayString);
                 return true;
             }
@@ -97,16 +85,13 @@ namespace LYBT.Desktop.Core.Services
         }
 
         /// <summary>移除上下文快捷键</summary>
-        public bool UnregisterContextShortcut(string context, KeyGesture keyGesture)
-        {
-            if (string.IsNullOrEmpty(context) || keyGesture == null)
-            {
+        public bool UnregisterContextShortcut(string context, KeyGesture keyGesture) {
+            if (string.IsNullOrEmpty(context) || keyGesture == null) {
                 return false;
             }
 
             if (_contextShortcuts.TryGetValue(context, out var contextShortcuts) &&
-                contextShortcuts.Remove(keyGesture))
-            {
+                contextShortcuts.Remove(keyGesture)) {
                 _logger.LogInformation("移除上下文快捷键: {Context}.{Gesture}", context, keyGesture.DisplayString);
                 return true;
             }
@@ -114,31 +99,25 @@ namespace LYBT.Desktop.Core.Services
         }
 
         /// <summary>设置当前上下文</summary>
-        public void SetCurrentContext(string context)
-        {
-            if (!string.IsNullOrEmpty(context) && _currentContext != context)
-            {
+        public void SetCurrentContext(string context) {
+            if (!string.IsNullOrEmpty(context) && _currentContext != context) {
                 _currentContext = context;
                 _logger.LogDebug("切换快捷键上下文: {Context}", context);
             }
         }
 
         /// <summary>获取当前上下文</summary>
-        public string GetCurrentContext()
-        {
+        public string GetCurrentContext() {
             return _currentContext;
         }
 
         /// <summary>获取所有注册的快捷键</summary>
-        public IEnumerable<ShortcutInfo> GetAllShortcuts()
-        {
+        public IEnumerable<ShortcutInfo> GetAllShortcuts() {
             var shortcuts = new List<ShortcutInfo>();
 
             // 添加全局快捷键
-            foreach (var kvp in _globalShortcuts)
-            {
-                shortcuts.Add(new ShortcutInfo
-                {
+            foreach (var kvp in _globalShortcuts) {
+                shortcuts.Add(new ShortcutInfo {
                     Context = "Global",
                     KeyGesture = kvp.Key,
                     Description = kvp.Value.Description
@@ -146,12 +125,9 @@ namespace LYBT.Desktop.Core.Services
             }
 
             // 添加上下文快捷键
-            foreach (var contextKvp in _contextShortcuts)
-            {
-                foreach (var shortcutKvp in contextKvp.Value)
-                {
-                    shortcuts.Add(new ShortcutInfo
-                    {
+            foreach (var contextKvp in _contextShortcuts) {
+                foreach (var shortcutKvp in contextKvp.Value) {
+                    shortcuts.Add(new ShortcutInfo {
                         Context = contextKvp.Key,
                         KeyGesture = shortcutKvp.Key,
                         Description = shortcutKvp.Value.Description
@@ -163,47 +139,39 @@ namespace LYBT.Desktop.Core.Services
         }
 
         /// <summary>执行快捷键</summary>
-        public bool ExecuteShortcut(KeyGesture keyGesture)
-        {
-            if (keyGesture == null)
-            {
+        public bool ExecuteShortcut(KeyGesture keyGesture) {
+            if (keyGesture == null) {
                 return false;
             }
 
-            try
-            {
+            try {
                 // 先检查当前上下文的快捷键
                 if (_contextShortcuts.TryGetValue(_currentContext, out var contextShortcuts) &&
-                    contextShortcuts.TryGetValue(keyGesture, out var contextAction))
-                {
+                    contextShortcuts.TryGetValue(keyGesture, out var contextAction)) {
                     contextAction.Action.Invoke();
                     _logger.LogDebug("执行上下文快捷键: {Context}.{Gesture}", _currentContext, keyGesture.DisplayString);
                     return true;
                 }
 
                 // 再检查全局快捷键
-                if (_globalShortcuts.TryGetValue(keyGesture, out var globalAction))
-                {
+                if (_globalShortcuts.TryGetValue(keyGesture, out var globalAction)) {
                     globalAction.Action.Invoke();
                     _logger.LogDebug("执行全局快捷键: {Gesture}", keyGesture.DisplayString);
                     return true;
                 }
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 _logger.LogError(ex, "执行快捷键时发生错误: {Gesture}", keyGesture.DisplayString);
             }
 
             return false;
         }
 
-        #endregion
+        #endregion IKeyboardShortcutService 实现
 
         #region 私有方法
 
         /// <summary>注册默认快捷键</summary>
-        private void RegisterDefaultShortcuts()
-        {
+        private void RegisterDefaultShortcuts() {
             // 系统通用快捷键
             RegisterGlobalShortcut(new KeyGesture(Key.N, ModifierKeys.Control), () => { }, "新建");
             RegisterGlobalShortcut(new KeyGesture(Key.O, ModifierKeys.Control), () => { }, "打开");
@@ -228,21 +196,16 @@ namespace LYBT.Desktop.Core.Services
         }
 
         /// <summary>注册全局按键处理器</summary>
-        private void RegisterGlobalKeyHandler()
-        {
+        private void RegisterGlobalKeyHandler() {
             // 监听应用程序级别的按键事件
-            if (Application.Current.MainWindow != null)
-            {
+            if (Application.Current.MainWindow != null) {
                 Application.Current.MainWindow.PreviewKeyDown += OnGlobalKeyDown;
             }
 
             // 如果MainWindow还未初始化，则在Loaded事件中注册
-            if (Application.Current.MainWindow == null)
-            {
-                Application.Current.Activated += (s, e) =>
-                {
-                    if (Application.Current.MainWindow != null)
-                    {
+            if (Application.Current.MainWindow == null) {
+                Application.Current.Activated += (s, e) => {
+                    if (Application.Current.MainWindow != null) {
                         Application.Current.MainWindow.PreviewKeyDown += OnGlobalKeyDown;
                     }
                 };
@@ -250,53 +213,44 @@ namespace LYBT.Desktop.Core.Services
         }
 
         /// <summary>全局按键处理事件</summary>
-        private void OnGlobalKeyDown(object sender, KeyEventArgs e)
-        {
-            try
-            {
+        private void OnGlobalKeyDown(object sender, KeyEventArgs e) {
+            try {
                 // 构建按键手势
                 var modifiers = Keyboard.Modifiers;
                 var key = e.Key;
 
                 // 处理系统按键映射
-                if (key == Key.System)
-                {
+                if (key == Key.System) {
                     key = e.SystemKey;
                 }
 
                 var keyGesture = new KeyGesture(key, modifiers);
 
                 // 尝试执行快捷键
-                if (ExecuteShortcut(keyGesture))
-                {
+                if (ExecuteShortcut(keyGesture)) {
                     e.Handled = true; // 阻止事件继续传播
                 }
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 _logger.LogError(ex, "处理全局按键事件时发生错误");
             }
         }
 
-        #endregion
+        #endregion 私有方法
     }
 
     /// <summary>快捷键动作包装</summary>
-    internal class ShortcutAction
-    {
+    internal class ShortcutAction {
         public Action Action { get; }
         public string Description { get; }
 
-        public ShortcutAction(Action action, string description = "")
-        {
+        public ShortcutAction(Action action, string description = "") {
             Action = action ?? throw new ArgumentNullException(nameof(action));
             Description = description ?? "";
         }
     }
 
     /// <summary>快捷键信息</summary>
-    public class ShortcutInfo
-    {
+    public class ShortcutInfo {
         public string Context { get; set; } = "";
         public KeyGesture KeyGesture { get; set; } = null!;
         public string Description { get; set; } = "";

@@ -1,14 +1,12 @@
 ﻿using System.Security.Claims;
 using LYBT.Shared.Models.Enums;
 
-namespace LYBT.Module.Auth.Interfaces
-{
+namespace LYBT.Module.Auth.Interfaces {
 
     /// <summary>
     /// JWT认证服务接口
     /// </summary>
-    public interface IJwtAuthenticationService
-    {
+    public interface IJwtAuthenticationService {
 
         /// <summary>
         /// 生成JWT令牌
@@ -39,8 +37,7 @@ namespace LYBT.Module.Auth.Interfaces
     /// <summary>
     /// 令牌用户信息
     /// </summary>
-    public class TokenUserInfo
-    {
+    public class TokenUserInfo {
         public string UserId { get; set; } = string.Empty;
         public string UserName { get; set; } = string.Empty;
         public UserRole Role { get; set; } = UserRole.Doctor;

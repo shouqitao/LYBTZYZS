@@ -3,14 +3,14 @@ using System.ComponentModel.DataAnnotations;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Enums;
 
-namespace LYBT.Shared.Models.Contracts.Patients
-{
+namespace LYBT.Shared.Models.Contracts.Patients {
+
     /// <summary>
     /// 患者信息DTO - UltraThink架构优化：统一PatientDto和PatientDetailDto
     /// 包含核心字段和详细字段，Age为计算属性，字段名统一使用BirthDate、IdNumber
     /// </summary>
-    public class PatientDto : StatusDto
-    {
+    public class PatientDto : StatusDto {
+
         /// <summary>患者姓名</summary>
         [Required(ErrorMessage = "患者姓名不能为空")]
         [StringLength(50, ErrorMessage = "患者姓名长度不能超过50个字符")]
@@ -27,19 +27,15 @@ namespace LYBT.Shared.Models.Contracts.Patients
 
         /// <summary>年龄（计算属性）</summary>
         [DisplayName("年龄")]
-        public int Age
-        {
-            get
-            {
-                if (BirthDate == null)
-                {
+        public int Age {
+            get {
+                if (BirthDate == null) {
                     return 0;
                 }
 
                 var today = DateTime.Today;
                 var age = today.Year - BirthDate.Value.Year;
-                if (BirthDate.Value.Date > today.AddYears(-age))
-                {
+                if (BirthDate.Value.Date > today.AddYears(-age)) {
                     age--;
                 }
 
@@ -108,16 +104,14 @@ namespace LYBT.Shared.Models.Contracts.Patients
         /// <summary>是否激活（计算属性）</summary>
         [DisplayName("是否激活")]
         public bool IsActive => Status == CommonStatus.Enabled;
-
     }
-
 
     /// <summary>
     /// 患者创建DTO - UltraThink架构优化：统一字段名BirthDate、IdNumber
     /// 用于创建新患者档案的请求模型
     /// </summary>
-    public class PatientCreateDto
-    {
+    public class PatientCreateDto {
+
         /// <summary>患者姓名</summary>
         [Required(ErrorMessage = "患者姓名不能为空")]
         [StringLength(50, ErrorMessage = "患者姓名长度不能超过50个字符")]
@@ -190,15 +184,14 @@ namespace LYBT.Shared.Models.Contracts.Patients
         /// <summary>状态</summary>
         [DisplayName("状态")]
         public CommonStatus Status { get; set; } = CommonStatus.Enabled;
-
     }
 
     /// <summary>
     /// 患者更新DTO - UltraThink架构优化：统一字段名BirthDate、IdNumber
     /// 用于更新患者档案的请求模型
     /// </summary>
-    public class PatientUpdateDto : BaseDto
-    {
+    public class PatientUpdateDto : BaseDto {
+
         /// <summary>患者姓名</summary>
         [Required(ErrorMessage = "患者姓名不能为空")]
         [StringLength(50, ErrorMessage = "患者姓名长度不能超过50个字符")]
@@ -271,15 +264,14 @@ namespace LYBT.Shared.Models.Contracts.Patients
         /// <summary>状态</summary>
         [DisplayName("状态")]
         public CommonStatus Status { get; set; } = CommonStatus.Enabled;
-
     }
 
     /// <summary>
     /// 快速创建患者DTO - 前后端共享API契约
     /// 用于快速创建患者档案（仅包含必要字段）
     /// </summary>
-    public class QuickPatientCreateDto
-    {
+    public class QuickPatientCreateDto {
+
         /// <summary>患者姓名</summary>
         [Required(ErrorMessage = "患者姓名不能为空")]
         [StringLength(50, ErrorMessage = "患者姓名长度不能超过50个字符")]
@@ -304,6 +296,5 @@ namespace LYBT.Shared.Models.Contracts.Patients
         [StringLength(500, ErrorMessage = "过敏史长度不能超过500个字符")]
         [DisplayName("过敏史")]
         public string? AllergyHistory { get; set; }
-
     }
 }

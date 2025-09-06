@@ -1,35 +1,30 @@
-﻿using System;
-using System.Threading.Tasks;
-using Prism.Mvvm;
+﻿using Prism.Mvvm;
 
-namespace LYBT.Desktop.Core.Coordinators
-{
+namespace LYBT.Desktop.Core.Coordinators {
+
     /// <summary>
     /// 分页协调器实现 - 管理分页状态和导航逻辑
     /// UltraThink架构: 将分页职责从ViewModel中分离，实现单一职责原则
     /// </summary>
-    public class PaginationCoordinator : BindableBase, IPaginationCoordinator
-    {
+    public class PaginationCoordinator : BindableBase, IPaginationCoordinator {
+
         #region Fields
 
         private int _currentPage = 1;
         private int _pageSize = 20;
         private int _totalCount = 0;
 
-        #endregion
+        #endregion Fields
 
         #region Properties
 
         /// <summary>
         /// 当前页码
         /// </summary>
-        public int CurrentPage
-        {
+        public int CurrentPage {
             get => _currentPage;
-            set
-            {
-                if (SetProperty(ref _currentPage, value))
-                {
+            set {
+                if (SetProperty(ref _currentPage, value)) {
                     RaisePropertyChanged(nameof(CanGoToPreviousPage));
                     RaisePropertyChanged(nameof(CanGoToNextPage));
                 }
@@ -39,13 +34,10 @@ namespace LYBT.Desktop.Core.Coordinators
         /// <summary>
         /// 每页大小
         /// </summary>
-        public int PageSize
-        {
+        public int PageSize {
             get => _pageSize;
-            set
-            {
-                if (SetProperty(ref _pageSize, value))
-                {
+            set {
+                if (SetProperty(ref _pageSize, value)) {
                     UpdateTotalPages();
                 }
             }
@@ -54,13 +46,10 @@ namespace LYBT.Desktop.Core.Coordinators
         /// <summary>
         /// 总记录数
         /// </summary>
-        public int TotalCount
-        {
+        public int TotalCount {
             get => _totalCount;
-            set
-            {
-                if (SetProperty(ref _totalCount, value))
-                {
+            set {
+                if (SetProperty(ref _totalCount, value)) {
                     UpdateTotalPages();
                 }
             }
@@ -81,7 +70,7 @@ namespace LYBT.Desktop.Core.Coordinators
         /// </summary>
         public bool CanGoToNextPage => CurrentPage < TotalPages;
 
-        #endregion
+        #endregion Properties
 
         #region Events
 
@@ -90,25 +79,22 @@ namespace LYBT.Desktop.Core.Coordinators
         /// </summary>
         public event EventHandler<PageChangedEventArgs>? PageChanged;
 
-        #endregion
+        #endregion Events
 
         #region Methods
 
         /// <summary>
         /// 跳转到第一页
         /// </summary>
-        public async Task GoToFirstPageAsync()
-        {
+        public async Task GoToFirstPageAsync() {
             await GoToPageAsync(1);
         }
 
         /// <summary>
         /// 跳转到上一页
         /// </summary>
-        public async Task GoToPreviousPageAsync()
-        {
-            if (CanGoToPreviousPage)
-            {
+        public async Task GoToPreviousPageAsync() {
+            if (CanGoToPreviousPage) {
                 await GoToPageAsync(CurrentPage - 1);
             }
         }
@@ -116,10 +102,8 @@ namespace LYBT.Desktop.Core.Coordinators
         /// <summary>
         /// 跳转到下一页
         /// </summary>
-        public async Task GoToNextPageAsync()
-        {
-            if (CanGoToNextPage)
-            {
+        public async Task GoToNextPageAsync() {
+            if (CanGoToNextPage) {
                 await GoToPageAsync(CurrentPage + 1);
             }
         }
@@ -127,18 +111,15 @@ namespace LYBT.Desktop.Core.Coordinators
         /// <summary>
         /// 跳转到最后一页
         /// </summary>
-        public async Task GoToLastPageAsync()
-        {
+        public async Task GoToLastPageAsync() {
             await GoToPageAsync(TotalPages);
         }
 
         /// <summary>
         /// 跳转到指定页
         /// </summary>
-        public async Task GoToPageAsync(int page)
-        {
-            if (page < 1 || page > TotalPages || page == CurrentPage)
-            {
+        public async Task GoToPageAsync(int page) {
+            if (page < 1 || page > TotalPages || page == CurrentPage) {
                 return;
             }
 
@@ -155,8 +136,7 @@ namespace LYBT.Desktop.Core.Coordinators
         /// <summary>
         /// 重置分页状态
         /// </summary>
-        public void Reset()
-        {
+        public void Reset() {
             CurrentPage = 1;
             TotalCount = 0;
         }
@@ -164,31 +144,28 @@ namespace LYBT.Desktop.Core.Coordinators
         /// <summary>
         /// 更新分页信息
         /// </summary>
-        public void UpdatePagination(int totalCount)
-        {
+        public void UpdatePagination(int totalCount) {
             TotalCount = totalCount;
 
             // 如果当前页超出范围，调整到最后一页
-            if (CurrentPage > TotalPages && TotalPages > 0)
-            {
+            if (CurrentPage > TotalPages && TotalPages > 0) {
                 CurrentPage = TotalPages;
             }
         }
 
-        #endregion
+        #endregion Methods
 
         #region Private Methods
 
         /// <summary>
         /// 更新总页数并触发相关属性变化
         /// </summary>
-        private void UpdateTotalPages()
-        {
+        private void UpdateTotalPages() {
             RaisePropertyChanged(nameof(TotalPages));
             RaisePropertyChanged(nameof(CanGoToPreviousPage));
             RaisePropertyChanged(nameof(CanGoToNextPage));
         }
 
-        #endregion
+        #endregion Private Methods
     }
 }

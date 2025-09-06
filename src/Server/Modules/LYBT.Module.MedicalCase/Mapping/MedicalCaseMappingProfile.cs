@@ -1,15 +1,14 @@
 ﻿using AutoMapper;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 
-namespace LYBT.Module.MedicalCase.Mapping
-{
+namespace LYBT.Module.MedicalCase.Mapping {
+
     /// <summary>
     /// 医疗案例映射配置
     /// </summary>
-    public class MedicalCaseMappingProfile : Profile
-    {
-        public MedicalCaseMappingProfile()
-        {
+    public class MedicalCaseMappingProfile : Profile {
+
+        public MedicalCaseMappingProfile() {
             // Model -> DTO - 基础映射，Status映射到CaseStatus
             CreateMap<LYBT.Entities.MedicalCase.MedicalCase, MedicalCaseDto>()
                 .ForMember(dest => dest.CaseStatus, opt => opt.MapFrom(src => src.Status));

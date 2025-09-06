@@ -1,16 +1,14 @@
-﻿using System;
-using System.Threading.Tasks;
-using LYBT.Shared.Models.Contracts.Common;
+﻿using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 
-namespace LYBT.Module.Prescriptions.Interfaces
-{
+namespace LYBT.Module.Prescriptions.Interfaces {
+
     /// <summary>
     /// 处方业务服务接口
     /// UltraThink架构 - Business层接口抽象
     /// </summary>
-    public interface IPrescriptionBusinessService
-    {
+    public interface IPrescriptionBusinessService {
+
         /// <summary>
         /// 复制处方
         /// </summary>

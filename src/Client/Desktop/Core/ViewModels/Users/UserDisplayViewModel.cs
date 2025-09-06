@@ -1,42 +1,39 @@
-﻿using System;
-using LYBT.Shared.Models.Contracts.Users;
+﻿using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Extensions;
 using Prism.Mvvm;
 
-namespace LYBT.Desktop.Core.ViewModels.Users
-{
+namespace LYBT.Desktop.Core.ViewModels.Users {
+
     /// <summary>
     /// 用户显示视图模型 - UltraThink架构的展示层
     /// 负责UI展示逻辑、格式化和业务规则判断
     /// </summary>
-    public class UserDisplayViewModel : BindableBase
-    {
+    public class UserDisplayViewModel : BindableBase {
+
         #region Fields
 
         private UserDto _userData;
 
-        #endregion
+        #endregion Fields
 
         #region Constructor
 
-        public UserDisplayViewModel(UserDto userData)
-        {
+        public UserDisplayViewModel(UserDto userData) {
             _userData = userData ?? throw new ArgumentNullException(nameof(userData));
         }
 
-        #endregion
+        #endregion Constructor
 
         #region Data Properties
 
         /// <summary>用户数据</summary>
-        public UserDto UserData
-        {
+        public UserDto UserData {
             get => _userData;
             set => SetProperty(ref _userData, value);
         }
 
-        #endregion
+        #endregion Data Properties
 
         #region Display Properties
 
@@ -64,18 +61,14 @@ namespace LYBT.Desktop.Core.ViewModels.Users
         public string LastLoginTimeText => "N/A"; // UltraThink v2.0简化：LastLoginTime字段已删除
 
         /// <summary>联系信息显示文本</summary>
-        public string ContactText
-        {
-            get
-            {
+        public string ContactText {
+            get {
                 var contact = new System.Collections.Generic.List<string>();
-                if (!string.IsNullOrEmpty(_userData.PhoneNumber))
-                {
+                if (!string.IsNullOrEmpty(_userData.PhoneNumber)) {
                     contact.Add($"电话: {_userData.PhoneNumber}");
                 }
 
-                if (!string.IsNullOrEmpty(_userData.Email))
-                {
+                if (!string.IsNullOrEmpty(_userData.Email)) {
                     contact.Add($"邮箱: {_userData.Email}");
                 }
 
@@ -83,7 +76,7 @@ namespace LYBT.Desktop.Core.ViewModels.Users
             }
         }
 
-        #endregion
+        #endregion Display Properties
 
         #region UI Business Rules
 
@@ -114,15 +107,14 @@ namespace LYBT.Desktop.Core.ViewModels.Users
         /// <summary>是否长时间未登录（超过30天）</summary>
         public bool IsLongTimeNoLogin => false; // UltraThink v2.0简化：LastLoginTime字段已删除，无法判断
 
-        #endregion
+        #endregion UI Business Rules
 
         #region Update Methods
 
         /// <summary>
         /// 更新用户数据并刷新所有相关属性
         /// </summary>
-        public void UpdateUserData(UserDto newUserData)
-        {
+        public void UpdateUserData(UserDto newUserData) {
             UserData = newUserData;
 
             // 刷新所有计算属性
@@ -145,6 +137,6 @@ namespace LYBT.Desktop.Core.ViewModels.Users
             RaisePropertyChanged(nameof(IsLongTimeNoLogin));
         }
 
-        #endregion
+        #endregion Update Methods
     }
 }

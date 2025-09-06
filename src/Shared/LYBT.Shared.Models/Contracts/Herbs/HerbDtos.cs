@@ -1,17 +1,15 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Shared.Models.Enums;
 
-namespace LYBT.Shared.Models.Contracts.Herbs
-{
+namespace LYBT.Shared.Models.Contracts.Herbs {
+
     /// <summary>
     /// 药材信息DTO - UltraThink v2.0简化版
     /// 与Herb实体对齐，删除库存管理和时间字段
     /// </summary>
-    public class HerbDto : StatusDto, IRemarkable
-    {
+    public class HerbDto : StatusDto, IRemarkable {
+
         /// <summary>药材名称</summary>
         [DisplayName("药材名称")]
         public string Name { get; set; } = string.Empty;
@@ -55,8 +53,8 @@ namespace LYBT.Shared.Models.Contracts.Herbs
     /// 中药材详情DTO - 继承完整基础DTO
     /// 用于中药材档案详情的展示和传输
     /// </summary>
-    public class HerbDetailDto : StatusDto, ICodeable, IRemarkable
-    {
+    public class HerbDetailDto : StatusDto, ICodeable, IRemarkable {
+
         /// <summary>药材名称</summary>
         [Required(ErrorMessage = "药材名称不能为空")]
         [StringLength(100, ErrorMessage = "药材名称长度不能超过100个字符")]
@@ -113,8 +111,8 @@ namespace LYBT.Shared.Models.Contracts.Herbs
     /// 中药材创建DTO - 继承创建基类
     /// 用于创建新中药材档案的请求模型
     /// </summary>
-    public class HerbCreateDto : CreateDtoBase, ICodeable
-    {
+    public class HerbCreateDto : CreateDtoBase, ICodeable {
+
         /// <summary>药材名称</summary>
         [Required(ErrorMessage = "药材名称不能为空")]
         [StringLength(100, ErrorMessage = "药材名称长度不能超过100个字符")]
@@ -183,8 +181,8 @@ namespace LYBT.Shared.Models.Contracts.Herbs
     /// 中药材更新DTO - 继承更新基类
     /// 用于更新中药材档案的请求模型
     /// </summary>
-    public class HerbUpdateDto : UpdateDtoBase, ICodeable
-    {
+    public class HerbUpdateDto : UpdateDtoBase, ICodeable {
+
         /// <summary>药材名称</summary>
         [Required(ErrorMessage = "药材名称不能为空")]
         [StringLength(100, ErrorMessage = "药材名称长度不能超过100个字符")]
@@ -238,8 +236,8 @@ namespace LYBT.Shared.Models.Contracts.Herbs
     /// 中药材分页查询DTO - 继承完整查询基类
     /// 用于中药材档案的分页查询和筛选
     /// </summary>
-    public class HerbPagedQueryDto : ExtendedQueryDto, ICodeable
-    {
+    public class HerbPagedQueryDto : ExtendedQueryDto, ICodeable {
+
         /// <summary>药材名称关键词</summary>
         [DisplayName("药材名称")]
         public string? Name { get; set; }
@@ -284,8 +282,8 @@ namespace LYBT.Shared.Models.Contracts.Herbs
     /// <summary>
     /// 中药材统计DTO - 继承统计DTO基础类
     /// </summary>
-    public class HerbStatisticsDto : StatisticsDto
-    {
+    public class HerbStatisticsDto : StatisticsDto {
+
         [DisplayName("可用药材数量")]
         public int AvailableCount { get; set; }
 

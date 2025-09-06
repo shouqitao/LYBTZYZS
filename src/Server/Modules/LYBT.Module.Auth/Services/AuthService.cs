@@ -1,13 +1,10 @@
-﻿using System;
-using System.Threading.Tasks;
-using LYBT.Module.Auth.Interfaces;
+﻿using LYBT.Module.Auth.Interfaces;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Shared.Models.Core;
 
-namespace LYBT.Module.Auth.Services
-{
+namespace LYBT.Module.Auth.Services {
+
     /// <summary>
     /// 认证服务 - UltraThink简化架构（纯委托模式）
     /// 职责：纯粹的服务委托，将请求分发到简化的AuthCore服务
@@ -15,8 +12,7 @@ namespace LYBT.Module.Auth.Services
     /// </summary>
     public class AuthService(
         IAuthQueryService queryService,
-        IAuthBusinessService businessService) : IAuthService
-    {
+        IAuthBusinessService businessService) : IAuthService {
         private readonly IAuthQueryService _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
         private readonly IAuthBusinessService _businessService = businessService ?? throw new ArgumentNullException(nameof(businessService));
 
@@ -34,7 +30,7 @@ namespace LYBT.Module.Auth.Services
         public async Task<ServiceResult<bool>> ChangeSysAdminPasswordAsync(ChangeSysAdminPassword request)
             => await _businessService.ChangeSysAdminPasswordAsync(request.NewPassword);
 
-        #endregion
+        #endregion 核心认证操作
 
         #region 认证流程操作
 
@@ -50,7 +46,7 @@ namespace LYBT.Module.Auth.Services
         public async Task<ServiceResult<bool>> LogoutAsync(LogoutRequest request)
             => await _businessService.ProcessLogoutAsync(request);
 
-        #endregion
+        #endregion 认证流程操作
 
         #region Token和会话操作
 
@@ -69,14 +65,13 @@ namespace LYBT.Module.Auth.Services
         /// <summary>
         /// 刷新Token - UltraThink简化版（移除复杂刷新机制）
         /// </summary>
-        public async Task<ServiceResult<LoginResponse>> RefreshTokenAsync(string refreshToken)
-        {
+        public async Task<ServiceResult<LoginResponse>> RefreshTokenAsync(string refreshToken) {
             // UltraThink简化版：移除复杂的刷新令牌机制
             // 小诊所场景下，直接要求重新登录更简单可靠
             await Task.CompletedTask;
             return ServiceResult<LoginResponse>.Failure("请重新登录以获取新的访问令牌");
         }
 
-        #endregion
+        #endregion Token和会话操作
     }
 }

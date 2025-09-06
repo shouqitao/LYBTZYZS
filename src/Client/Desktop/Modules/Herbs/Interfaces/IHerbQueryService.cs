@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using LYBT.Shared.Models.Common;
-using LYBT.Shared.Models.Contracts.Common;
+﻿using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
 
 namespace LYBT.Desktop.Herbs.Interfaces;
@@ -11,8 +7,8 @@ namespace LYBT.Desktop.Herbs.Interfaces;
 /// 药材查询服务接口 - UltraThink双层架构简化版
 /// 职责：查询和搜索操作
 /// </summary>
-public interface IHerbQueryService
-{
+public interface IHerbQueryService {
+
     #region 基础查询操作
 
     /// <summary>
@@ -45,5 +41,5 @@ public interface IHerbQueryService
     /// </summary>
     Task<ServiceResult<HerbStatisticsDto>> GetHerbStatisticsAsync();
 
-    #endregion
+    #endregion 基础查询操作
 }

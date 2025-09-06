@@ -1,17 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Windows.Input;
+﻿using System.Windows.Input;
 using LYBT.Desktop.Core.Interfaces;
 using LYBT.Desktop.Core.Models.Common;
 using LYBT.Desktop.Core.Mvvm;
 
-namespace LYBT.Desktop.Core.ViewModels.Dialogs
-{
+namespace LYBT.Desktop.Core.ViewModels.Dialogs {
+
     /// <summary>
     /// 输入对话框ViewModel
     /// </summary>
-    public class InputDialogViewModel : ObservableObject, ICustomDialogAware
-    {
+    public class InputDialogViewModel : ObservableObject, ICustomDialogAware {
         private string _title = "输入";
         private string _message = string.Empty;
         private string _inputValue = string.Empty;
@@ -19,8 +16,7 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
         /// <summary>
         /// 对话框标题
         /// </summary>
-        public string Title
-        {
+        public string Title {
             get => _title;
             set => SetProperty(ref _title, value);
         }
@@ -28,8 +24,7 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
         /// <summary>
         /// 提示消息
         /// </summary>
-        public string Message
-        {
+        public string Message {
             get => _message;
             set => SetProperty(ref _message, value);
         }
@@ -37,8 +32,7 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
         /// <summary>
         /// 输入值
         /// </summary>
-        public string InputValue
-        {
+        public string InputValue {
             get => _inputValue;
             set => SetProperty(ref _inputValue, value);
         }
@@ -61,8 +55,7 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
         /// <summary>
         /// 构造函数
         /// </summary>
-        public InputDialogViewModel()
-        {
+        public InputDialogViewModel() {
             OkCommand = new RelayCommand(OnOk, CanOk);
             CancelCommand = new RelayCommand(OnCancel);
         }
@@ -76,20 +69,16 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
         /// 对话框打开时调用
         /// </summary>
         /// <param name="parameters">传入的参数</param>
-        public void OnDialogOpened(Dictionary<string, object> parameters)
-        {
-            if (parameters.ContainsKey("Message"))
-            {
+        public void OnDialogOpened(Dictionary<string, object> parameters) {
+            if (parameters.ContainsKey("Message")) {
                 Message = parameters["Message"]?.ToString() ?? string.Empty;
             }
 
-            if (parameters.ContainsKey("Title"))
-            {
+            if (parameters.ContainsKey("Title")) {
                 Title = parameters["Title"]?.ToString() ?? "输入";
             }
 
-            if (parameters.ContainsKey("DefaultValue"))
-            {
+            if (parameters.ContainsKey("DefaultValue")) {
                 InputValue = parameters["DefaultValue"]?.ToString() ?? string.Empty;
             }
         }
@@ -97,8 +86,7 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
         /// <summary>
         /// 对话框关闭时调用
         /// </summary>
-        public void OnDialogClosed()
-        {
+        public void OnDialogClosed() {
             // 清理资源
         }
 
@@ -106,8 +94,7 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
         /// 确定按钮是否可用
         /// </summary>
         /// <returns>是否可用</returns>
-        private bool CanOk()
-        {
+        private bool CanOk() {
             // 可以在这里添加验证逻辑
             return true;
         }
@@ -115,8 +102,7 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
         /// <summary>
         /// 处理确定按钮点击
         /// </summary>
-        private void OnOk()
-        {
+        private void OnOk() {
             var result = CustomDialogResult.Success(InputValue);
             result.Parameters["InputValue"] = InputValue;
             RequestClose?.Invoke(result);
@@ -125,8 +111,7 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
         /// <summary>
         /// 处理取消按钮点击
         /// </summary>
-        private void OnCancel()
-        {
+        private void OnCancel() {
             RequestClose?.Invoke(CustomDialogResult.Cancel());
         }
     }

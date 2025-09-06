@@ -1,20 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using LYBT.Shared.Models.Contracts;
-using LYBT.Shared.Models.Contracts.Common;
+﻿using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using Refit;
 
-namespace LYBT.Shared.Interfaces.Api
-{
+namespace LYBT.Shared.Interfaces.Api {
+
     /// <summary>
     /// 患者API客户端接口 - UltraThink统一标准
     /// 移动到shared层以确保前后端契约一致性
     /// </summary>
-    public interface IPatientApi
-    {
+    public interface IPatientApi {
+
         /// <summary>
         /// 获取患者列表（支持分页和查询）
         /// </summary>

@@ -6,20 +6,18 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 
-namespace LYBT.Module.Herbs.Repositories
-{
+namespace LYBT.Module.Herbs.Repositories {
 
     /// <summary>
     /// 药材仓储实现类 - 数据层统一化重构
     /// 继承OptimizedBaseRepository获得缓存和性能优化，实现药材特定业务逻辑
     /// </summary>
-    public class HerbRepository : OptimizedBaseRepository<Herb>, IHerbRepository
-    {
+    public class HerbRepository : OptimizedBaseRepository<Herb>, IHerbRepository {
+
         public HerbRepository(
             AppDbContext context,
             ILogger<HerbRepository> logger,
-            IMemoryCache cache) : base(context, logger, cache)
-        {
+            IMemoryCache cache) : base(context, logger, cache) {
         }
 
         // 注意：GetByIdAsync, AddAsync, UpdateAsync, DeleteAsync等基础CRUD方法由OptimizedBaseRepository提供，带有缓存优化
@@ -27,10 +25,8 @@ namespace LYBT.Module.Herbs.Repositories
         /// <summary>
         /// 批量新增药材
         /// </summary>
-        public async Task<bool> AddRangeAsync(List<Herb> herbs)
-        {
-            if (herbs == null || herbs.Count == 0)
-            {
+        public async Task<bool> AddRangeAsync(List<Herb> herbs) {
+            if (herbs == null || herbs.Count == 0) {
                 return false;
             }
 
@@ -42,12 +38,10 @@ namespace LYBT.Module.Herbs.Repositories
         /// <summary>
         /// 检查药材名称是否存在 - 缓存优化版
         /// </summary>
-        public async Task<bool> ExistsByNameAsync(string name, Guid? excludeId = null)
-        {
+        public async Task<bool> ExistsByNameAsync(string name, Guid? excludeId = null) {
             var cacheKey = $"{CacheKeyPrefix}exists:name:{name}:{excludeId}";
 
-            if (_cache.TryGetValue<bool>(cacheKey, out var cached))
-            {
+            if (_cache.TryGetValue<bool>(cacheKey, out var cached)) {
                 _logger.LogDebug("从缓存获取药材名称存在性检查 {Name}", name);
                 return cached;
             }
@@ -55,8 +49,7 @@ namespace LYBT.Module.Herbs.Repositories
             var query = _dbSet.AsNoTracking()
                 .Where(h => h.Name == name);
 
-            if (excludeId.HasValue)
-            {
+            if (excludeId.HasValue) {
                 query = query.Where(h => h.Id != excludeId.Value);
             }
 
@@ -68,12 +61,10 @@ namespace LYBT.Module.Herbs.Repositories
         /// <summary>
         /// 根据拼音码搜索药材 - 缓存优化版
         /// </summary>
-        public async Task<List<Herb>> SearchByPinyinAsync(string pinyin)
-        {
+        public async Task<List<Herb>> SearchByPinyinAsync(string pinyin) {
             var cacheKey = $"{CacheKeyPrefix}pinyin:{pinyin.ToUpperInvariant()}";
 
-            if (_cache.TryGetValue<List<Herb>>(cacheKey, out var cached) && cached != null)
-            {
+            if (_cache.TryGetValue<List<Herb>>(cacheKey, out var cached) && cached != null) {
                 _logger.LogDebug("从缓存获取拼音搜索结果 {Pinyin}", pinyin);
                 return cached;
             }

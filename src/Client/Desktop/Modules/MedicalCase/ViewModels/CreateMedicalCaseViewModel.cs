@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Threading.Tasks;
+﻿using System.Collections.ObjectModel;
 using AutoMapper;
 using LYBT.Desktop.Core.Constants;
 using LYBT.Desktop.Core.Interfaces;
@@ -9,15 +6,15 @@ using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.Models.Common;
 using LYBT.Desktop.Core.ViewModels.Base;
 using LYBT.Shared.Interfaces.Services;
-using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.MedicalCase;
+
 // UltraThink v2.0: 移除Info模型引用，直接使用DTO
 using LYBT.Shared.Models.Contracts.Patients;
 using Prism.Commands;
 using Prism.Events;
 
-namespace LYBT.Desktop.MedicalCase.ViewModels
-{
+namespace LYBT.Desktop.MedicalCase.ViewModels {
+
     /// <summary>
     /// 创建医疗案例对话框视图模型 - UltraThink双层架构UI层
     /// 采用UltraThink架构标准，使用C# 12现代化特性
@@ -27,8 +24,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
     /// 支持患者搜索选择、新患者创建、医案信息录入等功能
     /// 适配中医诊所医案建档流程，确保数据录入准确性和操作便利性
     /// </summary>
-    public class CreateMedicalCaseViewModel : DialogViewModel, ICustomDialogAware
-    {
+    public class CreateMedicalCaseViewModel : DialogViewModel, ICustomDialogAware {
         private readonly IMedicalCaseService _medicalCaseService;
         private readonly IPatientService _patientService;
         private readonly IUserSessionManager _userSessionManager;
@@ -37,23 +33,20 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         #region Properties
 
-
         private ObservableCollection<PatientDto> _patients = new();
-        public ObservableCollection<PatientDto> Patients
-        {
+
+        public ObservableCollection<PatientDto> Patients {
             get => _patients;
             set => SetProperty(ref _patients, value);
         }
 
         private PatientDto? _selectedPatient;
-        public PatientDto? SelectedPatient
-        {
+
+        public PatientDto? SelectedPatient {
             get => _selectedPatient;
-            set
-            {
+            set {
                 SetProperty(ref _selectedPatient, value);
-                if (value != null)
-                {
+                if (value != null) {
                     PatientName = value.Name;
                     PatientPhone = value.PhoneNumber ?? "";
                     PatientGender = value.Gender.ToString();
@@ -64,58 +57,59 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         }
 
         private string _patientSearchKeyword = "";
-        public string PatientSearchKeyword
-        {
+
+        public string PatientSearchKeyword {
             get => _patientSearchKeyword;
             set => SetProperty(ref _patientSearchKeyword, value);
         }
 
         private string _patientName = "";
-        public string PatientName
-        {
+
+        public string PatientName {
             get => _patientName;
             set => SetProperty(ref _patientName, value);
         }
 
         private string _patientPhone = "";
-        public string PatientPhone
-        {
+
+        public string PatientPhone {
             get => _patientPhone;
             set => SetProperty(ref _patientPhone, value);
         }
 
         private string _patientGender = "";
-        public string PatientGender
-        {
+
+        public string PatientGender {
             get => _patientGender;
             set => SetProperty(ref _patientGender, value);
         }
 
         private int? _patientAge;
-        public int? PatientAge
-        {
+
+        public int? PatientAge {
             get => _patientAge;
             set => SetProperty(ref _patientAge, value);
         }
 
         private string _remark = "";
-        public string Remark
-        {
+
+        public string Remark {
             get => _remark;
             set => SetProperty(ref _remark, value);
         }
 
-        #endregion
+        #endregion Properties
 
         #region Commands
 
         // UltraThink修复: 使用new关键字隐藏基类成员，并初始化为null!
         public new DelegateCommand SaveCommand { get; } = null!;
+
         public new DelegateCommand CancelCommand { get; } = null!;
         public DelegateCommand SearchPatientCommand { get; } = null!;
         public DelegateCommand CreateNewPatientCommand { get; } = null!;
 
-        #endregion
+        #endregion Commands
 
         #region Constructor
 
@@ -139,8 +133,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             IEventAggregator eventAggregator,
             IErrorHandlingService errorHandlingService,
             IMapper mapper)
-            : base(eventAggregator, errorHandlingService)
-        {
+            : base(eventAggregator, errorHandlingService) {
             _medicalCaseService = medicalCaseService ?? throw new ArgumentNullException(nameof(medicalCaseService));
             _patientService = patientService ?? throw new ArgumentNullException(nameof(patientService));
             _userSessionManager = userSessionManager ?? throw new ArgumentNullException(nameof(userSessionManager));
@@ -176,8 +169,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             ICustomDialogService dialogService,
             IEventAggregator eventAggregator,
             IMapper mapper)
-            : base(eventAggregator, null!)
-        {
+            : base(eventAggregator, null!) {
             _medicalCaseService = medicalCaseService ?? throw new ArgumentNullException(nameof(medicalCaseService));
             _patientService = patientService ?? throw new ArgumentNullException(nameof(patientService));
             _userSessionManager = userSessionManager ?? throw new ArgumentNullException(nameof(userSessionManager));
@@ -195,23 +187,19 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             Task.Run(async () => await LoadPatientsAsync());
         }
 
-        #endregion
+        #endregion Constructor
 
         #region DialogViewModel Implementation
 
-        protected override async Task<bool> SaveAsync()
-        {
-            if (SelectedPatient == null)
-            {
+        protected override async Task<bool> SaveAsync() {
+            if (SelectedPatient == null) {
                 ErrorMessage = "请选择患者";
                 return false;
             }
 
-            try
-            {
+            try {
                 // UltraThink v2.0: 直接创建DTO，移除Info层
-                var createDto = new MedicalCaseCreateDto
-                {
+                var createDto = new MedicalCaseCreateDto {
                     PatientId = SelectedPatient.Id,
                     DoctorId = _userSessionManager.CurrentUser?.Id ?? Guid.Empty,
                     DiagnosisSummary = string.IsNullOrWhiteSpace(Remark) ? "初次就诊" : Remark.Trim(),
@@ -219,93 +207,70 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 };
 
                 var result = await _medicalCaseService.CreateAsync(createDto);
-                if (result.IsSuccess)
-                {
+                if (result.IsSuccess) {
                     // 保存成功，关闭对话框
                     RaiseRequestClose(true);
                     return true;
-                }
-                else
-                {
+                } else {
                     ErrorMessage = result.ErrorMessage ?? "创建医疗案例失败";
                     return false;
                 }
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 await HandleErrorAsync("创建医疗案例", ex);
                 return false;
             }
         }
 
-        protected override bool CanSave()
-        {
+        protected override bool CanSave() {
             return SelectedPatient != null && !IsLoading;
         }
 
-        protected override void InitializeDialog()
-        {
+        protected override void InitializeDialog() {
             base.InitializeDialog();
 
             // 监听属性变化以更新Command状态
             SaveCommand.ObservesProperty(() => SelectedPatient);
         }
 
-        #endregion
+        #endregion DialogViewModel Implementation
 
         #region Private Methods
 
-        private async Task LoadPatientsAsync()
-        {
-            try
-            {
+        private async Task LoadPatientsAsync() {
+            try {
                 IsLoading = true;
                 StatusMessage = "加载患者列表...";
 
                 // Get active patients using SearchAsync
                 var result = await _patientService.SearchAsync(""); // 获取所有活跃患者
-                if (result.IsSuccess && result.Data != null)
-                {
-                    await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
-                    {
+                if (result.IsSuccess && result.Data != null) {
+                    await System.Windows.Application.Current.Dispatcher.InvokeAsync(() => {
                         Patients.Clear();
                         // UltraThink v2.0: 直接使用DTO，SearchAsync已返回PatientDto列表
-                        foreach (var patientDto in result.Data)
-                        {
+                        foreach (var patientDto in result.Data) {
                             Patients.Add(patientDto);
                         }
                     });
-                }
-                else
-                {
+                } else {
                     await _dialogService.ShowErrorAsync($"加载患者列表失败: {result.ErrorMessage}", "错误");
                 }
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 await _dialogService.ShowErrorAsync($"加载患者列表时发生错误: {ex.Message}", "错误");
-            }
-            finally
-            {
+            } finally {
                 IsLoading = false;
                 StatusMessage = "";
             }
         }
 
-        private async Task LoadPatientByIdAsync(Guid patientId)
-        {
-            try
-            {
+        private async Task LoadPatientByIdAsync(Guid patientId) {
+            try {
                 var result = await _patientService.GetByIdAsync(patientId);
-                if (result.IsSuccess && result.Data != null)
-                {
-                    await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
-                    {
+                if (result.IsSuccess && result.Data != null) {
+                    await System.Windows.Application.Current.Dispatcher.InvokeAsync(() => {
                         // UltraThink v2.0: 直接使用DTO，从DetailDto转换为Dto
                         var patientDetail = result.Data;
                         // 创建基础PatientDto对象
-                        var patientDto = new PatientDto
-                        {
+                        var patientDto = new PatientDto {
                             Id = patientDetail.Id,
                             Name = patientDetail.Name,
                             PhoneNumber = patientDetail.PhoneNumber,
@@ -317,77 +282,58 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                         SelectedPatient = patientDto;
                     });
                 }
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 await _dialogService.ShowErrorAsync($"加载患者信息失败: {ex.Message}", "错误");
             }
         }
 
-        private async Task SearchPatientAsync()
-        {
-            if (string.IsNullOrWhiteSpace(PatientSearchKeyword))
-            {
+        private async Task SearchPatientAsync() {
+            if (string.IsNullOrWhiteSpace(PatientSearchKeyword)) {
                 await LoadPatientsAsync();
                 return;
             }
 
-            try
-            {
+            try {
                 IsLoading = true;
                 StatusMessage = "搜索患者...";
 
                 var result = await _patientService.SearchAsync(PatientSearchKeyword);
-                if (result.IsSuccess && result.Data != null)
-                {
+                if (result.IsSuccess && result.Data != null) {
                     Patients.Clear();
                     // UltraThink v2.0: SearchAsync已返回PatientDto列表，直接使用
-                    foreach (var patientDto in result.Data)
-                    {
+                    foreach (var patientDto in result.Data) {
                         Patients.Add(patientDto);
                     }
-                }
-                else
-                {
+                } else {
                     await _dialogService.ShowErrorAsync($"搜索患者失败: {result.ErrorMessage}", "错误");
                 }
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 await _dialogService.ShowErrorAsync($"搜索患者时发生错误: {ex.Message}", "错误");
-            }
-            finally
-            {
+            } finally {
                 IsLoading = false;
                 StatusMessage = "";
             }
         }
 
-        private async Task CreateNewPatientAsync()
-        {
-            try
-            {
+        private async Task CreateNewPatientAsync() {
+            try {
                 // 打开新建患者对话框
 
-                var parameters = new Dictionary<string, object>
-                {
+                var parameters = new Dictionary<string, object> {
                     ["IsEditMode"] = false
                 };
 
                 var result = await _dialogService.ShowDialogAsync("PatientAddEditDialog", parameters);
 
-                if (result.Result == true)
-                {
+                if (result.Result == true) {
                     // 患者创建成功，刷新患者列表
 
                     // 刷新患者列表
                     await LoadPatientsAsync();
 
                     // 如果有返回的患者数据，自动选择该患者
-                    if (result.Data is Dictionary<string, object> data && data.ContainsKey("Patient") && data["Patient"] is PatientDto newPatient)
-                    {
-                        await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
-                        {
+                    if (result.Data is Dictionary<string, object> data && data.ContainsKey("Patient") && data["Patient"] is PatientDto newPatient) {
+                        await System.Windows.Application.Current.Dispatcher.InvokeAsync(() => {
                             SelectedPatient = newPatient;
                         });
 
@@ -396,18 +342,15 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
                     await _dialogService.ShowSuccessAsync("患者创建成功", "成功");
                 }
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 await HandleErrorAsync("创建患者", ex);
                 await _dialogService.ShowErrorAsync($"创建患者失败: {ex.Message}", "错误");
             }
         }
 
-
         // UltraThink v2.0: CalculateAge方法已移除，直接使用PatientDto.Age计算属性
 
-        #endregion
+        #endregion Private Methods
 
         #region ICustomDialogAware Implementation
 
@@ -424,8 +367,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         /// <summary>
         /// 检查是否可以关闭对话框
         /// </summary>
-        public bool CanCloseDialog()
-        {
+        public bool CanCloseDialog() {
             return !IsSaving && !IsLoading;
         }
 
@@ -433,10 +375,8 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         /// 对话框打开时调用
         /// </summary>
         /// <param name="parameters">传入的参数</param>
-        public void OnDialogOpened(Dictionary<string, object> parameters)
-        {
-            if (parameters?.ContainsKey("PatientId") == true && parameters["PatientId"] is Guid patientId)
-            {
+        public void OnDialogOpened(Dictionary<string, object> parameters) {
+            if (parameters?.ContainsKey("PatientId") == true && parameters["PatientId"] is Guid patientId) {
                 Task.Run(async () => await LoadPatientByIdAsync(patientId));
             }
         }
@@ -444,16 +384,14 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         /// <summary>
         /// 对话框关闭时调用
         /// </summary>
-        public void OnDialogClosed()
-        {
+        public void OnDialogClosed() {
             // 清理资源或执行其他关闭操作
         }
 
         /// <summary>
         /// 重写取消操作以使用ICustomDialogAware接口
         /// </summary>
-        protected override void ExecuteCancel()
-        {
+        protected override void ExecuteCancel() {
             OnDialogClosing();
             RaiseRequestClose(false);
         }
@@ -461,8 +399,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         /// <summary>
         /// 触发关闭对话框请求
         /// </summary>
-        protected void RaiseRequestClose(bool? dialogResult)
-        {
+        protected void RaiseRequestClose(bool? dialogResult) {
             var result = dialogResult == true
                 ? CustomDialogResult.Success(new Dictionary<string, object>())
                 : CustomDialogResult.Cancel();
@@ -470,6 +407,6 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             RequestClose?.Invoke(result);
         }
 
-        #endregion
+        #endregion ICustomDialogAware Implementation
     }
 }

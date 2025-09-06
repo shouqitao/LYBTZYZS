@@ -1,16 +1,14 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace LYBT.Infrastructure.Migrations
-{
+namespace LYBT.Infrastructure.Migrations {
+
     /// <inheritdoc />
-    public partial class UnifyFieldNamesAndTypes_V2 : Migration
-    {
+    public partial class UnifyFieldNamesAndTypes_V2 : Migration {
+
         /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
+        protected override void Up(MigrationBuilder migrationBuilder) {
             migrationBuilder.DropColumn(
                 name: "CreatedAt",
                 table: "Formulas");
@@ -288,8 +286,7 @@ namespace LYBT.Infrastructure.Migrations
         }
 
         /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
+        protected override void Down(MigrationBuilder migrationBuilder) {
             migrationBuilder.DropColumn(
                 name: "CreateTime",
                 table: "Registrations");

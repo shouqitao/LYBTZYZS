@@ -1,28 +1,23 @@
-﻿using System;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Media.Animation;
-using LYBT.Shared.Models.Contracts.Common;
 
-namespace LYBT.Desktop.Shell.Views
-{
+namespace LYBT.Desktop.Shell.Views {
+
     /// <summary>
     /// UIShowcaseWindow.xaml 的交互逻辑
     /// </summary>
-    public partial class UIShowcaseWindow : Window
-    {
-        public UIShowcaseWindow()
-        {
+    public partial class UIShowcaseWindow : Window {
+
+        public UIShowcaseWindow() {
             InitializeComponent();
 
             // 窗口加载动画
             Loaded += OnWindowLoaded;
         }
 
-        private void OnWindowLoaded(object sender, RoutedEventArgs e)
-        {
+        private void OnWindowLoaded(object sender, RoutedEventArgs e) {
             // 淡入动画
-            var fadeInAnimation = new DoubleAnimation
-            {
+            var fadeInAnimation = new DoubleAnimation {
                 From = 0,
                 To = 1,
                 Duration = TimeSpan.FromMilliseconds(500),

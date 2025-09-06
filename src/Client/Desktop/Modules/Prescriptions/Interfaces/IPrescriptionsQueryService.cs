@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using LYBT.Shared.Models.Common;
-using LYBT.Shared.Models.Contracts.Common;
+﻿using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 
 namespace LYBT.Desktop.Prescriptions.Interfaces;
@@ -11,8 +7,8 @@ namespace LYBT.Desktop.Prescriptions.Interfaces;
 /// 处方查询服务接口 - UltraThink双层架构简化版
 /// 职责：查询和搜索操作
 /// </summary>
-public interface IPrescriptionsQueryService
-{
+public interface IPrescriptionsQueryService {
+
     /// <summary>
     /// 分页查询处方
     /// </summary>

@@ -1,10 +1,10 @@
-﻿namespace LYBT.Desktop.Core.Constants
-{
+﻿namespace LYBT.Desktop.Core.Constants {
+
     /// <summary>
     /// 统一的Region名称常量
     /// </summary>
-    public static class RegionNames
-    {
+    public static class RegionNames {
+
         /// <summary>
         /// 主窗口登录区域
         /// </summary>
@@ -50,10 +50,8 @@
         /// </summary>
         /// <param name="workbenchType">工作台类型</param>
         /// <returns>对应的Region名称</returns>
-        public static string GetWorkbenchContentRegion(string workbenchType)
-        {
-            return workbenchType switch
-            {
+        public static string GetWorkbenchContentRegion(string workbenchType) {
+            return workbenchType switch {
                 "SystemWorkbench" => SystemWorkbenchContentRegion,
                 "ConsultationWorkbench" => ConsultationWorkbenchContentRegion,
                 "CashierWorkbench" => CashierContentRegion,
@@ -69,10 +67,8 @@
         /// </summary>
         /// <param name="workbenchViewName">工作台视图名称</param>
         /// <returns>对应的内容区域名称</returns>
-        public static string GetContentRegionByWorkbenchView(string workbenchViewName)
-        {
-            return workbenchViewName switch
-            {
+        public static string GetContentRegionByWorkbenchView(string workbenchViewName) {
+            return workbenchViewName switch {
                 "SystemWorkbenchMainView" => SystemWorkbenchContentRegion,
                 "ConsultationWorkbenchMainView" => ConsultationWorkbenchContentRegion,
                 "CashierMainView" => CashierContentRegion,

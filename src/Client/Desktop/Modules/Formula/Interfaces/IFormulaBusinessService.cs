@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using LYBT.Shared.Models.Common;
-using LYBT.Shared.Models.Contracts.Common;
+﻿using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
-using LYBT.Shared.Models.Contracts.Herbs;
 
 namespace LYBT.Desktop.Formula.Interfaces;
 
@@ -13,8 +8,8 @@ namespace LYBT.Desktop.Formula.Interfaces;
 /// 职责：业务流程编排、完整事务管理、基础CRUD操作
 /// 简化版本：对应后端FormulasController实际API
 /// </summary>
-public interface IFormulaBusinessService
-{
+public interface IFormulaBusinessService {
+
     #region 核心业务操作 - 对应后端FormulasController
 
     /// <summary>
@@ -52,7 +47,7 @@ public interface IFormulaBusinessService
     /// </summary>
     Task<ServiceResult<FormulaDto>> CloneFormulaAsync(Guid formulaId, string newName, Guid userId);
 
-    #endregion
+    #endregion 核心业务操作 - 对应后端FormulasController
 
     #region 业务验证 - 基础验证逻辑
 
@@ -71,7 +66,7 @@ public interface IFormulaBusinessService
     /// </summary>
     Task<ServiceResult<bool>> CheckFormulaOperationPermissionAsync(Guid formulaId, Guid userId, string operation);
 
-    #endregion
+    #endregion 业务验证 - 基础验证逻辑
 
     #region 业务流程处理
 
@@ -85,5 +80,5 @@ public interface IFormulaBusinessService
     /// </summary>
     Task<ServiceResult<FormulaDto>> ProcessFormulaUpdateAsync(Guid id, FormulaUpdateDto updateDto, Guid userId);
 
-    #endregion
+    #endregion 业务流程处理
 }

@@ -1,19 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using LYBT.Shared.Models.Common;
+﻿using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
 
-namespace LYBT.Module.Herbs.Interfaces
-{
+namespace LYBT.Module.Herbs.Interfaces {
+
     /// <summary>
     /// 药材业务服务接口
     /// UltraThink架构 - Business层接口抽象
     /// 职责：导入导出、批量操作、业务规则处理
     /// </summary>
-    public interface IHerbBusinessService
-    {
+    public interface IHerbBusinessService {
+
         /// <summary>
         /// 批量导入药材数据
         /// </summary>

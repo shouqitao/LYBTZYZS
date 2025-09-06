@@ -1,16 +1,15 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Enums;
 
-namespace LYBT.Shared.Models.Contracts.Herbs
-{
+namespace LYBT.Shared.Models.Contracts.Herbs {
+
     /// <summary>
     /// 方剂药材成分DTO - 前后端共享API契约
     /// 用于在药方中表示单味药材的用量和计价信息
     /// </summary>
-    public class FormulaIngredientDto
-    {
+    public class FormulaIngredientDto {
+
         /// <summary>药材ID</summary>
         [Required(ErrorMessage = "药材ID不能为空")]
         [DisplayName("药材ID")]
@@ -48,8 +47,8 @@ namespace LYBT.Shared.Models.Contracts.Herbs
     /// 中药材导入DTO - 前后端共享API契约
     /// 用于批量导入中药材档案的请求模型
     /// </summary>
-    public class HerbImportDto
-    {
+    public class HerbImportDto {
+
         /// <summary>药材名称</summary>
         [Required(ErrorMessage = "药材名称不能为空")]
         [StringLength(100, ErrorMessage = "药材名称长度不能超过100个字符")]
@@ -105,8 +104,8 @@ namespace LYBT.Shared.Models.Contracts.Herbs
     /// 中药材状态更新DTO - 前后端共享API契约
     /// 用于更新中药材状态的请求模型
     /// </summary>
-    public class CommonStatusUpdateDto
-    {
+    public class CommonStatusUpdateDto {
+
         /// <summary>药材ID</summary>
         [Required(ErrorMessage = "药材ID不能为空")]
         [DisplayName("药材ID")]
@@ -134,8 +133,8 @@ namespace LYBT.Shared.Models.Contracts.Herbs
     /// <summary>
     /// 药材价格更新DTO
     /// </summary>
-    public class HerbPriceUpdateDto
-    {
+    public class HerbPriceUpdateDto {
+
         [Required]
         public Guid Id { get; set; }
 
@@ -166,8 +165,7 @@ namespace LYBT.Shared.Models.Contracts.Herbs
     /// <summary>
     /// 药材价格历史记录DTO
     /// </summary>
-    public class HerbPriceHistoryDto
-    {
+    public class HerbPriceHistoryDto {
         public Guid Id { get; set; }
         public Guid HerbId { get; set; }
         public string HerbName { get; set; } = string.Empty;
@@ -220,12 +218,9 @@ namespace LYBT.Shared.Models.Contracts.Herbs
         /// <summary>
         /// 价格变化百分比（零售价）
         /// </summary>
-        public decimal PriceChangePercentage
-        {
-            get
-            {
-                if (OldPrice == 0)
-                {
+        public decimal PriceChangePercentage {
+            get {
+                if (OldPrice == 0) {
                     return 0;
                 }
 
@@ -237,8 +232,8 @@ namespace LYBT.Shared.Models.Contracts.Herbs
     /// <summary>
     /// 特价设置DTO
     /// </summary>
-    public class HerbSpecialPriceDto
-    {
+    public class HerbSpecialPriceDto {
+
         [Required]
         public Guid Id { get; set; }
 
@@ -261,8 +256,8 @@ namespace LYBT.Shared.Models.Contracts.Herbs
     /// <summary>
     /// 库存更新请求
     /// </summary>
-    public class StockUpdateRequest
-    {
+    public class StockUpdateRequest {
+
         [Required]
         [Range(0.01, double.MaxValue, ErrorMessage = "数量必须大于0")]
         public decimal Quantity { get; set; }
@@ -276,8 +271,8 @@ namespace LYBT.Shared.Models.Contracts.Herbs
     /// <summary>
     /// 预警值设置请求
     /// </summary>
-    public class WarningLevelRequest
-    {
+    public class WarningLevelRequest {
+
         [Required]
         [Range(0, double.MaxValue, ErrorMessage = "预警值必须大于等于0")]
         public decimal WarningLevel { get; set; }
@@ -290,8 +285,8 @@ namespace LYBT.Shared.Models.Contracts.Herbs
     /// <summary>
     /// 特价设置请求
     /// </summary>
-    public class SpecialPriceRequest
-    {
+    public class SpecialPriceRequest {
+
         [Required]
         [Range(0.01, double.MaxValue, ErrorMessage = "特价必须大于0")]
         public decimal SpecialPrice { get; set; }
@@ -305,8 +300,7 @@ namespace LYBT.Shared.Models.Contracts.Herbs
         public string? Description { get; set; }
 
         // 验证结束时间必须大于开始时间
-        public bool IsValid()
-        {
+        public bool IsValid() {
             return EndTime > StartTime && StartTime >= DateTime.Now.Date;
         }
     }
@@ -314,8 +308,7 @@ namespace LYBT.Shared.Models.Contracts.Herbs
     /// <summary>
     /// 药材库存预警DTO
     /// </summary>
-    public class HerbStockWarningDto
-    {
+    public class HerbStockWarningDto {
         public Guid Id { get; set; }
         public string Name { get; set; } = string.Empty;
         public string? PinYinCode { get; set; }
@@ -332,18 +325,14 @@ namespace LYBT.Shared.Models.Contracts.Herbs
         /// <summary>
         /// 预警级别：Critical(严重缺货) < 10%, Low(缺货) < 50%, Warning(预警) < 100%
         /// </summary>
-        public string WarningLevel
-        {
-            get
-            {
+        public string WarningLevel {
+            get {
                 var percentage = Stock / StockWarningLevel * 100;
-                if (percentage < 10)
-                {
+                if (percentage < 10) {
                     return "Critical";
                 }
 
-                if (percentage < 50)
-                {
+                if (percentage < 50) {
                     return "Low";
                 }
 
@@ -355,8 +344,8 @@ namespace LYBT.Shared.Models.Contracts.Herbs
     /// <summary>
     /// 药材库存统计DTO - 继承HerbStatisticsDto保持UltraThink架构统一
     /// </summary>
-    public class HerbStockStatisticsDto : HerbStatisticsDto
-    {
+    public class HerbStockStatisticsDto : HerbStatisticsDto {
+
         /// <summary>
         /// 缺货药材数（库存为0） - 重写基类属性
         /// </summary>
@@ -396,8 +385,8 @@ namespace LYBT.Shared.Models.Contracts.Herbs
     /// <summary>
     /// 药材库存更新DTO
     /// </summary>
-    public class HerbStockUpdateDto
-    {
+    public class HerbStockUpdateDto {
+
         [Required]
         public Guid Id { get; set; }
 
@@ -414,8 +403,7 @@ namespace LYBT.Shared.Models.Contracts.Herbs
     /// <summary>
     /// 药材过期预警DTO
     /// </summary>
-    public class HerbExpiryWarningDto
-    {
+    public class HerbExpiryWarningDto {
         public Guid Id { get; set; }
         public string Name { get; set; } = string.Empty;
         public string? BatchNumber { get; set; }
@@ -426,12 +414,9 @@ namespace LYBT.Shared.Models.Contracts.Herbs
         /// <summary>
         /// 剩余天数
         /// </summary>
-        public int DaysRemaining
-        {
-            get
-            {
-                if (!ExpiryDate.HasValue)
-                {
+        public int DaysRemaining {
+            get {
+                if (!ExpiryDate.HasValue) {
                     return int.MaxValue;
                 }
 
@@ -447,22 +432,17 @@ namespace LYBT.Shared.Models.Contracts.Herbs
         /// <summary>
         /// 预警级别
         /// </summary>
-        public string WarningLevel
-        {
-            get
-            {
-                if (IsExpired)
-                {
+        public string WarningLevel {
+            get {
+                if (IsExpired) {
                     return "Expired";
                 }
 
-                if (DaysRemaining <= 7)
-                {
+                if (DaysRemaining <= 7) {
                     return "Critical";
                 }
 
-                if (DaysRemaining <= 30)
-                {
+                if (DaysRemaining <= 30) {
                     return "Warning";
                 }
 
@@ -474,8 +454,8 @@ namespace LYBT.Shared.Models.Contracts.Herbs
     /// <summary>
     /// 药材用量DTO (处方中的药材用量信息) - HerbDosageDto的别名
     /// </summary>
-    public class HerbDosageDto : FormulaIngredientDto
-    {
+    public class HerbDosageDto : FormulaIngredientDto {
+
         /// <summary>用法说明</summary>
         [DisplayName("用法说明")]
         public string? Usage { get; set; }
@@ -488,8 +468,7 @@ namespace LYBT.Shared.Models.Contracts.Herbs
     /// <summary>
     /// 药材价格更新结果DTO
     /// </summary>
-    public class HerbPriceUpdateResultDto
-    {
+    public class HerbPriceUpdateResultDto {
         public Guid HerbId { get; set; }
         public string HerbName { get; set; } = string.Empty;
         public decimal OldPrice { get; set; }
@@ -503,8 +482,8 @@ namespace LYBT.Shared.Models.Contracts.Herbs
     /// <summary>
     /// 配伍禁忌检查结果
     /// </summary>
-    public class CompatibilityCheckResult
-    {
+    public class CompatibilityCheckResult {
+
         /// <summary>是否安全（无配伍禁忌）</summary>
         public bool IsSafe { get; set; }
 
@@ -521,8 +500,7 @@ namespace LYBT.Shared.Models.Contracts.Herbs
     /// <summary>
     /// 配伍冲突信息
     /// </summary>
-    public class CompatibilityConflict
-    {
+    public class CompatibilityConflict {
         public Guid Herb1Id { get; set; }
         public string Herb1Name { get; set; } = string.Empty;
         public Guid Herb2Id { get; set; }
@@ -535,8 +513,7 @@ namespace LYBT.Shared.Models.Contracts.Herbs
     /// <summary>
     /// 处方验证结果
     /// </summary>
-    public class PrescriptionValidationResult
-    {
+    public class PrescriptionValidationResult {
         public bool IsValid { get; set; }
         public List<string> Errors { get; set; } = new List<string>();
         public List<string> Warnings { get; set; } = new List<string>();
@@ -547,8 +524,7 @@ namespace LYBT.Shared.Models.Contracts.Herbs
     /// <summary>
     /// 药材使用注意事项DTO
     /// </summary>
-    public class HerbUsagePrecautionDto
-    {
+    public class HerbUsagePrecautionDto {
         public Guid HerbId { get; set; }
         public string HerbName { get; set; } = string.Empty;
         public List<string> Precautions { get; set; } = new List<string>();
@@ -561,8 +537,7 @@ namespace LYBT.Shared.Models.Contracts.Herbs
     /// <summary>
     /// 配伍建议DTO
     /// </summary>
-    public class CompatibilitySuggestionDto
-    {
+    public class CompatibilitySuggestionDto {
         public Guid HerbId { get; set; }
         public string HerbName { get; set; } = string.Empty;
         public string SuggestionType { get; set; } = string.Empty; // Enhance, Reduce, Replace
@@ -574,8 +549,7 @@ namespace LYBT.Shared.Models.Contracts.Herbs
     /// <summary>
     /// 处方价格计算结果DTO
     /// </summary>
-    public class PrescriptionPriceCalculationDto
-    {
+    public class PrescriptionPriceCalculationDto {
         public List<HerbDosageDto> HerbItems { get; set; } = new List<HerbDosageDto>();
         public decimal SubTotal { get; set; }
         public decimal DiscountAmount { get; set; }
@@ -588,8 +562,7 @@ namespace LYBT.Shared.Models.Contracts.Herbs
     /// <summary>
     /// 药材导入结果DTO
     /// </summary>
-    public class HerbImportResultDto
-    {
+    public class HerbImportResultDto {
         public int TotalCount { get; set; }
         public int SuccessCount { get; set; }
         public int FailedCount { get; set; }
@@ -602,8 +575,7 @@ namespace LYBT.Shared.Models.Contracts.Herbs
     /// <summary>
     /// 药材导出设置DTO
     /// </summary>
-    public class HerbExportDto
-    {
+    public class HerbExportDto {
         public List<Guid> HerbIds { get; set; } = new List<Guid>();
         public string ExportFormat { get; set; } = "Excel"; // Excel, CSV, PDF
         public bool IncludePriceInfo { get; set; } = true;
@@ -614,8 +586,7 @@ namespace LYBT.Shared.Models.Contracts.Herbs
     /// <summary>
     /// 药材导入验证结果DTO
     /// </summary>
-    public class HerbImportValidationDto
-    {
+    public class HerbImportValidationDto {
         public bool IsValid { get; set; }
         public List<string> Errors { get; set; } = new List<string>();
         public List<string> Warnings { get; set; } = new List<string>();
@@ -626,8 +597,7 @@ namespace LYBT.Shared.Models.Contracts.Herbs
     /// <summary>
     /// 药材审核信息DTO
     /// </summary>
-    public class HerbApprovalDto
-    {
+    public class HerbApprovalDto {
         public bool IsApproved { get; set; }
         public string? ApprovalReason { get; set; }
         public string? RejectionReason { get; set; }
@@ -638,8 +608,7 @@ namespace LYBT.Shared.Models.Contracts.Herbs
     /// <summary>
     /// 药材推荐DTO
     /// </summary>
-    public class HerbRecommendationDto
-    {
+    public class HerbRecommendationDto {
         public Guid HerbId { get; set; }
         public string HerbName { get; set; } = string.Empty;
         public decimal RecommendedDosage { get; set; }
@@ -652,8 +621,7 @@ namespace LYBT.Shared.Models.Contracts.Herbs
     /// <summary>
     /// 药材使用模式分析DTO
     /// </summary>
-    public class HerbUsagePatternDto
-    {
+    public class HerbUsagePatternDto {
         public List<HerbUsageStatDto> UsageStats { get; set; } = new List<HerbUsageStatDto>();
         public int TotalPrescriptions { get; set; }
         public DateTime AnalysisPeriodStart { get; set; }
@@ -663,8 +631,7 @@ namespace LYBT.Shared.Models.Contracts.Herbs
     /// <summary>
     /// 药材使用统计DTO
     /// </summary>
-    public class HerbUsageStatDto
-    {
+    public class HerbUsageStatDto {
         public Guid HerbId { get; set; }
         public string HerbName { get; set; } = string.Empty;
         public int UsageCount { get; set; }
@@ -676,8 +643,7 @@ namespace LYBT.Shared.Models.Contracts.Herbs
     /// <summary>
     /// 药材采购建议DTO
     /// </summary>
-    public class HerbPurchaseSuggestionDto
-    {
+    public class HerbPurchaseSuggestionDto {
         public Guid HerbId { get; set; }
         public string HerbName { get; set; } = string.Empty;
         public decimal CurrentStock { get; set; }
@@ -692,8 +658,7 @@ namespace LYBT.Shared.Models.Contracts.Herbs
     /// <summary>
     /// 处方优化建议DTO
     /// </summary>
-    public class PrescriptionOptimizationDto
-    {
+    public class PrescriptionOptimizationDto {
         public List<HerbDosageDto> OptimizedFormula { get; set; } = new List<HerbDosageDto>();
         public List<string> Improvements { get; set; } = new List<string>();
         public decimal OriginalCost { get; set; }

@@ -8,29 +8,29 @@ using System.Windows;
 using LYBT.Desktop.Core.Exceptions;
 using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.Models.Common;
-using LYBT.Shared.Interfaces.Services;
 using Refit;
 using ErrorCategory = LYBT.Shared.Models.Contracts.Common.ErrorCategory;
 using ErrorSeverity = LYBT.Shared.Models.Contracts.Common.ErrorSeverity;
 using SharedCommon = LYBT.Shared.Models.Contracts.Common;
 using TimeoutException = System.TimeoutException;
 
-namespace LYBT.Desktop.Services
-{
+namespace LYBT.Desktop.Services {
+
     /// <summary>
     /// 统一错误处理服务实现
     /// </summary>
-    public class ErrorHandlingService : IErrorHandlingService
-    {
+    public class ErrorHandlingService : IErrorHandlingService {
         private readonly ICustomDialogService? _customDialogService;
 
         // 错误消息映射表
         private readonly Dictionary<Type, Func<Exception, string>> _messageMapping;
+
         private readonly Dictionary<Type, ErrorCategory> _categoryMapping;
         private readonly Dictionary<Type, ErrorSeverity> _severityMapping;
         private readonly Dictionary<Type, string[]> _actionMapping;
 
         public event EventHandler<SharedCommon.HandledError>? ErrorOccurred;
+
         public event EventHandler<SharedCommon.HandledError>? CriticalErrorOccurred;
 
         /// <summary>
@@ -38,8 +38,7 @@ namespace LYBT.Desktop.Services
         /// </summary>
         public ICustomDialogService? CustomDialogService => _customDialogService;
 
-        public ErrorHandlingService(ICustomDialogService? customDialogService = null)
-        {
+        public ErrorHandlingService(ICustomDialogService? customDialogService = null) {
             _customDialogService = customDialogService;
 
             _messageMapping = InitializeMessageMapping();
@@ -48,15 +47,12 @@ namespace LYBT.Desktop.Services
             _actionMapping = InitializeActionMapping();
         }
 
-        public SharedCommon.HandledError HandleException(Exception exception, ErrorContext? context = null)
-        {
+        public SharedCommon.HandledError HandleException(Exception exception, ErrorContext? context = null) {
             return HandleExceptionAsync(exception, context).GetAwaiter().GetResult();
         }
 
-        public async Task<SharedCommon.HandledError> HandleExceptionAsync(Exception exception, ErrorContext? context = null)
-        {
-            if (exception == null)
-            {
+        public async Task<SharedCommon.HandledError> HandleExceptionAsync(Exception exception, ErrorContext? context = null) {
+            if (exception == null) {
                 throw new ArgumentNullException(nameof(exception));
             }
 
@@ -66,8 +62,7 @@ namespace LYBT.Desktop.Services
             OnErrorOccurred(handledError);
 
             // 如果是严重错误，触发严重错误事件
-            if (handledError.Severity >= ErrorSeverity.Critical)
-            {
+            if (handledError.Severity >= ErrorSeverity.Critical) {
                 OnCriticalErrorOccurred(handledError);
             }
 
@@ -77,55 +72,43 @@ namespace LYBT.Desktop.Services
             return handledError;
         }
 
-        public async Task ShowErrorAsync(SharedCommon.HandledError handledError, bool showDialog = true)
-        {
-            if (handledError == null)
-            {
+        public async Task ShowErrorAsync(SharedCommon.HandledError handledError, bool showDialog = true) {
+            if (handledError == null) {
                 return;
             }
 
-            if (showDialog && handledError.RequiresUserAcknowledgment)
-            {
-                await Application.Current.Dispatcher.InvokeAsync(async () =>
-                {
-                    try
-                    {
+            if (showDialog && handledError.RequiresUserAcknowledgment) {
+                await Application.Current.Dispatcher.InvokeAsync(async () => {
+                    try {
                         // UltraThink优化：使用统一的ICustomDialogService，移除MessageBox依赖
-                        if (_customDialogService != null)
-                        {
-                            switch (handledError.Severity)
-                            {
+                        if (_customDialogService != null) {
+                            switch (handledError.Severity) {
                                 case ErrorSeverity.Info:
                                     await _customDialogService.ShowInformationAsync(handledError.UserMessage, "提示");
                                     break;
+
                                 case ErrorSeverity.Warning:
                                     await _customDialogService.ShowWarningAsync(handledError.UserMessage, "警告");
                                     break;
+
                                 case ErrorSeverity.Error:
                                 case ErrorSeverity.Critical:
                                 case ErrorSeverity.Fatal:
                                     await ShowDetailedErrorAsync(handledError);
                                     break;
                             }
-                        }
-                        else
-                        {
+                        } else {
                             // 降级处理：如果没有对话框服务，使用系统诊断输出
                             Debug.WriteLine($"错误 ({handledError.Severity}): {handledError.UserMessage}");
                             Console.WriteLine($"错误 ({handledError.Severity}): {handledError.UserMessage}");
                         }
-                    }
-                    catch (Exception ex)
-                    {
+                    } catch (Exception ex) {
                         // 确保错误显示不会失败 - 最后手段才使用MessageBox
                         Debug.WriteLine($"显示错误对话框失败: {ex.Message}");
-                        try
-                        {
+                        try {
                             // 仅在极端情况下使用MessageBox
                             MessageBox.Show(handledError.UserMessage, "错误", MessageBoxButton.OK, MessageBoxImage.Error);
-                        }
-                        catch
-                        {
+                        } catch {
                             // 连MessageBox都失败了，只能输出到调试信息
                             Debug.WriteLine($"致命错误: {handledError.UserMessage}");
                         }
@@ -134,14 +117,11 @@ namespace LYBT.Desktop.Services
             }
         }
 
-        public async Task LogErrorAsync(SharedCommon.HandledError handledError)
-        {
-            try
-            {
+        public async Task LogErrorAsync(SharedCommon.HandledError handledError) {
+            try {
                 // 构建日志消息
                 var logMessage = $"[{handledError.Severity}] {handledError.Category}: {handledError.UserMessage}";
-                if (!string.IsNullOrEmpty(handledError.TechnicalDetails))
-                {
+                if (!string.IsNullOrEmpty(handledError.TechnicalDetails)) {
                     logMessage += $"\nTechnical Details: {handledError.TechnicalDetails}";
                 }
 
@@ -150,23 +130,18 @@ namespace LYBT.Desktop.Services
 
                 // 这里可以扩展为写入文件、发送到远程日志服务等
                 await Task.CompletedTask;
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 Debug.WriteLine($"记录错误日志失败: {ex.Message}");
             }
         }
 
-        public string GetUserFriendlyMessage(Exception exception, string? defaultMessage = null)
-        {
-            if (exception == null)
-            {
+        public string GetUserFriendlyMessage(Exception exception, string? defaultMessage = null) {
+            if (exception == null) {
                 return defaultMessage ?? "发生未知错误";
             }
 
             // 检查自定义异常类型
-            return exception switch
-            {
+            return exception switch {
                 BusinessException businessEx => businessEx.UserFriendlyMessage,
                 ValidationException validationEx => validationEx.UserFriendlyMessage,
                 NetworkException networkEx => networkEx.UserFriendlyMessage,
@@ -175,10 +150,8 @@ namespace LYBT.Desktop.Services
             };
         }
 
-        public bool CanRetry(Exception exception)
-        {
-            return exception switch
-            {
+        public bool CanRetry(Exception exception) {
+            return exception switch {
                 NetworkException networkEx => true, // 网络异常通常可以重试
                 BusinessException => false,
                 ValidationException => false,
@@ -191,16 +164,13 @@ namespace LYBT.Desktop.Services
             };
         }
 
-        public ErrorCategory GetErrorCategory(Exception exception)
-        {
-            if (exception == null)
-            {
+        public ErrorCategory GetErrorCategory(Exception exception) {
+            if (exception == null) {
                 return ErrorCategory.Unknown;
             }
 
             // 检查自定义异常类型
-            var category = exception switch
-            {
+            var category = exception switch {
                 NetworkException => ErrorCategory.Network,
                 AuthenticationException => ErrorCategory.Authentication,
                 ValidationException => ErrorCategory.Validation,
@@ -218,15 +188,12 @@ namespace LYBT.Desktop.Services
             return category;
         }
 
-        public ErrorSeverity GetErrorSeverity(Exception exception)
-        {
-            if (exception == null)
-            {
+        public ErrorSeverity GetErrorSeverity(Exception exception) {
+            if (exception == null) {
                 return ErrorSeverity.Error;
             }
 
-            return exception switch
-            {
+            return exception switch {
                 BusinessException businessEx => ConvertSeverity(businessEx.Severity),
                 NetworkException networkEx => ConvertSeverity(networkEx.Severity),
                 AuthenticationException authEx => ConvertSeverity(authEx.Severity),
@@ -238,10 +205,8 @@ namespace LYBT.Desktop.Services
             };
         }
 
-        private ErrorSeverity ConvertSeverity(LYBT.Shared.Models.Contracts.Common.ErrorSeverity severity)
-        {
-            return severity switch
-            {
+        private ErrorSeverity ConvertSeverity(LYBT.Shared.Models.Contracts.Common.ErrorSeverity severity) {
+            return severity switch {
                 LYBT.Shared.Models.Contracts.Common.ErrorSeverity.Info => ErrorSeverity.Info,
                 LYBT.Shared.Models.Contracts.Common.ErrorSeverity.Warning => ErrorSeverity.Warning,
                 LYBT.Shared.Models.Contracts.Common.ErrorSeverity.Error => ErrorSeverity.Error,
@@ -251,22 +216,18 @@ namespace LYBT.Desktop.Services
             };
         }
 
-        public string[] GetSuggestedActions(Exception exception)
-        {
-            if (exception == null)
-            {
+        public string[] GetSuggestedActions(Exception exception) {
+            if (exception == null) {
                 return new[] { "联系技术支持" };
             }
 
             // 检查映射表
-            if (_actionMapping.TryGetValue(exception.GetType(), out var actions))
-            {
+            if (_actionMapping.TryGetValue(exception.GetType(), out var actions)) {
                 return actions;
             }
 
             // 基于异常类型返回建议
-            return exception switch
-            {
+            return exception switch {
                 NetworkException => new[] { "检查网络连接", "稍后重试", "联系网络管理员" },
                 AuthenticationException => new[] { "重新登录", "检查用户名和密码", "联系管理员" },
                 ValidationException => new[] { "检查输入数据", "修正错误信息" },
@@ -280,43 +241,32 @@ namespace LYBT.Desktop.Services
             };
         }
 
-        public async Task<bool> ExecuteSafelyAsync(Func<Task> operation, ErrorContext? context = null, bool showErrorDialog = true)
-        {
-            try
-            {
+        public async Task<bool> ExecuteSafelyAsync(Func<Task> operation, ErrorContext? context = null, bool showErrorDialog = true) {
+            try {
                 await operation();
                 return true;
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 var handledError = await HandleExceptionAsync(ex, context);
-                if (showErrorDialog)
-                {
+                if (showErrorDialog) {
                     await ShowErrorAsync(handledError);
                 }
                 return false;
             }
         }
 
-        public async Task<T?> ExecuteSafelyAsync<T>(Func<Task<T>> operation, ErrorContext? context = null, bool showErrorDialog = true)
-        {
-            try
-            {
+        public async Task<T?> ExecuteSafelyAsync<T>(Func<Task<T>> operation, ErrorContext? context = null, bool showErrorDialog = true) {
+            try {
                 return await operation();
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 var handledError = await HandleExceptionAsync(ex, context);
-                if (showErrorDialog)
-                {
+                if (showErrorDialog) {
                     await ShowErrorAsync(handledError);
                 }
                 return default;
             }
         }
 
-        public void RegisterGlobalExceptionHandlers()
-        {
+        public void RegisterGlobalExceptionHandlers() {
             // 注册WPF全局异常处理器
             Application.Current.DispatcherUnhandledException += OnDispatcherUnhandledException;
 
@@ -329,16 +279,14 @@ namespace LYBT.Desktop.Services
 
         #region 私有方法
 
-        private SharedCommon.HandledError CreateHandledError(Exception exception, ErrorContext context)
-        {
+        private SharedCommon.HandledError CreateHandledError(Exception exception, ErrorContext context) {
             var category = GetErrorCategory(exception);
             var severity = GetErrorSeverity(exception);
             var userMessage = GetUserFriendlyMessage(exception);
             var canRetry = CanRetry(exception);
             var suggestedActions = GetSuggestedActions(exception);
 
-            var handledError = new SharedCommon.HandledError
-            {
+            var handledError = new SharedCommon.HandledError {
                 Category = category,
                 Severity = severity,
                 UserMessage = userMessage,
@@ -348,46 +296,37 @@ namespace LYBT.Desktop.Services
                 RequiresUserAcknowledgment = severity >= ErrorSeverity.Warning
             };
 
-            foreach (var action in suggestedActions)
-            {
+            foreach (var action in suggestedActions) {
                 handledError.SuggestedActions.Add(action);
             }
 
             return handledError;
         }
 
-        private string? GetMappedMessage(Exception exception)
-        {
+        private string? GetMappedMessage(Exception exception) {
             var exceptionType = exception.GetType();
-            if (_messageMapping.TryGetValue(exceptionType, out var messageFunc))
-            {
+            if (_messageMapping.TryGetValue(exceptionType, out var messageFunc)) {
                 return messageFunc(exception);
             }
             return null;
         }
 
-        private async Task ShowDetailedErrorAsync(SharedCommon.HandledError handledError)
-        {
-            await Application.Current.Dispatcher.InvokeAsync(async () =>
-            {
-                try
-                {
+        private async Task ShowDetailedErrorAsync(SharedCommon.HandledError handledError) {
+            await Application.Current.Dispatcher.InvokeAsync(async () => {
+                try {
                     // 构建详细错误信息
                     var message = handledError.UserMessage;
 
                     // 如果有建议操作，添加到消息中
-                    if (handledError.SuggestedActions.Count > 0)
-                    {
+                    if (handledError.SuggestedActions.Count > 0) {
                         message += "\n\n建议操作：";
-                        for (int i = 0; i < handledError.SuggestedActions.Count; i++)
-                        {
+                        for (int i = 0; i < handledError.SuggestedActions.Count; i++) {
                             message += $"\n{i + 1}. {handledError.SuggestedActions[i]}";
                         }
                     }
 
                     // 如果可以重试，添加重试提示
-                    if (handledError.CanRetry)
-                    {
+                    if (handledError.CanRetry) {
                         message += "\n\n此操作支持重试。";
                     }
 
@@ -396,37 +335,27 @@ namespace LYBT.Desktop.Services
                     message += $"\n时间: {handledError.OccurredAt:yyyy-MM-dd HH:mm:ss}";
 
                     // UltraThink优化：使用统一的ICustomDialogService
-                    if (_customDialogService != null)
-                    {
+                    if (_customDialogService != null) {
                         await _customDialogService.ShowErrorAsync(message, $"错误 - {handledError.Category}");
-                    }
-                    else
-                    {
+                    } else {
                         // 降级处理：输出到调试信息
                         Debug.WriteLine($"详细错误信息: {message}");
                         Console.WriteLine($"详细错误信息: {message}");
                     }
-                }
-                catch (Exception ex)
-                {
+                } catch (Exception ex) {
                     Debug.WriteLine($"显示详细错误对话框失败: {ex.Message}");
-                    try
-                    {
+                    try {
                         // 极端情况下使用MessageBox
                         MessageBox.Show(handledError.UserMessage, "错误", MessageBoxButton.OK, MessageBoxImage.Error);
-                    }
-                    catch
-                    {
+                    } catch {
                         Debug.WriteLine($"致命错误: {handledError.UserMessage}");
                     }
                 }
             });
         }
 
-        private string[] GetApiExceptionActions(ApiException apiException)
-        {
-            return apiException.StatusCode switch
-            {
+        private string[] GetApiExceptionActions(ApiException apiException) {
+            return apiException.StatusCode switch {
                 HttpStatusCode.Unauthorized => new[] { "重新登录", "检查认证状态" },
                 HttpStatusCode.Forbidden => new[] { "联系管理员获取权限" },
                 HttpStatusCode.NotFound => new[] { "检查请求地址", "联系技术支持" },
@@ -438,10 +367,8 @@ namespace LYBT.Desktop.Services
             };
         }
 
-        private bool IsRetryableStatusCode(HttpStatusCode statusCode)
-        {
-            return statusCode switch
-            {
+        private bool IsRetryableStatusCode(HttpStatusCode statusCode) {
+            return statusCode switch {
                 HttpStatusCode.InternalServerError => true,
                 HttpStatusCode.BadGateway => true,
                 HttpStatusCode.ServiceUnavailable => true,
@@ -452,41 +379,29 @@ namespace LYBT.Desktop.Services
             };
         }
 
-        private void OnErrorOccurred(SharedCommon.HandledError handledError)
-        {
-            try
-            {
+        private void OnErrorOccurred(SharedCommon.HandledError handledError) {
+            try {
                 ErrorOccurred?.Invoke(this, handledError);
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 Debug.WriteLine($"错误事件处理失败: {ex.Message}");
             }
         }
 
-        private void OnCriticalErrorOccurred(SharedCommon.HandledError handledError)
-        {
-            try
-            {
+        private void OnCriticalErrorOccurred(SharedCommon.HandledError handledError) {
+            try {
                 CriticalErrorOccurred?.Invoke(this, handledError);
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 Debug.WriteLine($"严重错误事件处理失败: {ex.Message}");
             }
         }
 
-        private void OnDispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
-        {
+        private void OnDispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e) {
             e.Handled = true;
 
             // Fire-and-forget pattern with proper exception isolation
-            _ = Task.Run(async () =>
-            {
-                try
-                {
-                    var context = new ErrorContext
-                    {
+            _ = Task.Run(async () => {
+                try {
+                    var context = new ErrorContext {
                         OperationName = "UI线程异常",
                         ModuleName = "WPF",
                         ViewName = "Global"
@@ -494,29 +409,21 @@ namespace LYBT.Desktop.Services
 
                     var handledError = await HandleExceptionAsync(e.Exception, context);
                     await ShowErrorAsync(handledError);
-                }
-                catch (Exception ex)
-                {
+                } catch (Exception ex) {
                     // 最后一道防线：确保异常处理器本身不会崩溃
                     Debug.WriteLine($"异常处理器失败: {ex.Message}");
 
                     // UltraThink优化：首先尝试使用ICustomDialogService
-                    try
-                    {
-                        if (_customDialogService != null)
-                        {
+                    try {
+                        if (_customDialogService != null) {
                             await _customDialogService.ShowErrorAsync(
                                 $"系统发生严重错误：{e.Exception.Message}",
                                 "系统错误");
-                        }
-                        else
-                        {
+                        } else {
                             // 最后手段：使用MessageBox
                             MessageBox.Show($"系统发生严重错误：{e.Exception.Message}", "系统错误", MessageBoxButton.OK, MessageBoxImage.Error);
                         }
-                    }
-                    catch
-                    {
+                    } catch {
                         // 静默失败，避免无限递归
                         Debug.WriteLine($"致命全局异常: {e.Exception.Message}");
                     }
@@ -524,54 +431,39 @@ namespace LYBT.Desktop.Services
             });
         }
 
-        private void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
-        {
+        private void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e) {
             e.SetObserved();
 
             // Fire-and-forget pattern with proper exception isolation
-            _ = Task.Run(async () =>
-            {
-                try
-                {
-                    var context = new ErrorContext
-                    {
+            _ = Task.Run(async () => {
+                try {
+                    var context = new ErrorContext {
                         OperationName = "后台任务异常",
                         ModuleName = "Task",
                         ViewName = "Background"
                     };
 
-                    foreach (var exception in e.Exception.InnerExceptions)
-                    {
-                        try
-                        {
+                    foreach (var exception in e.Exception.InnerExceptions) {
+                        try {
                             var handledError = await HandleExceptionAsync(exception, context);
                             await ShowErrorAsync(handledError);
-                        }
-                        catch (Exception handlingEx)
-                        {
+                        } catch (Exception handlingEx) {
                             Debug.WriteLine($"处理后台任务异常失败: {handlingEx.Message}");
                         }
                     }
-                }
-                catch (Exception ex)
-                {
+                } catch (Exception ex) {
                     // 最后一道防线：确保异常处理器本身不会崩溃
                     Debug.WriteLine($"后台任务异常处理器失败: {ex.Message}");
                 }
             });
         }
 
-        private void OnDomainUnhandledException(object sender, UnhandledExceptionEventArgs e)
-        {
+        private void OnDomainUnhandledException(object sender, UnhandledExceptionEventArgs e) {
             // Fire-and-forget pattern with proper exception isolation
-            _ = Task.Run(async () =>
-            {
-                try
-                {
-                    if (e.ExceptionObject is Exception exception)
-                    {
-                        var context = new ErrorContext
-                        {
+            _ = Task.Run(async () => {
+                try {
+                    if (e.ExceptionObject is Exception exception) {
+                        var context = new ErrorContext {
                             OperationName = "应用程序域异常",
                             ModuleName = "AppDomain",
                             ViewName = "Global"
@@ -580,32 +472,23 @@ namespace LYBT.Desktop.Services
                         var handledError = await HandleExceptionAsync(exception, context);
                         await ShowErrorAsync(handledError);
                     }
-                }
-                catch (Exception ex)
-                {
+                } catch (Exception ex) {
                     // 最后一道防线：确保异常处理器本身不会崩溃
                     Debug.WriteLine($"应用程序域异常处理器失败: {ex.Message}");
 
                     // UltraThink优化：首先尝试使用ICustomDialogService
-                    try
-                    {
-                        if (e.ExceptionObject is Exception originalEx)
-                        {
-                            if (_customDialogService != null)
-                            {
+                    try {
+                        if (e.ExceptionObject is Exception originalEx) {
+                            if (_customDialogService != null) {
                                 await _customDialogService.ShowErrorAsync(
                                     $"系统发生致命错误：{originalEx.Message}",
                                     "致命错误");
-                            }
-                            else
-                            {
+                            } else {
                                 // 最后手段：使用MessageBox
                                 MessageBox.Show($"系统发生致命错误：{originalEx.Message}", "致命错误", MessageBoxButton.OK, MessageBoxImage.Error);
                             }
                         }
-                    }
-                    catch
-                    {
+                    } catch {
                         // 静默失败，避免无限递归
                         Debug.WriteLine($"致命域异常: {e.ExceptionObject}");
                     }
@@ -613,12 +496,11 @@ namespace LYBT.Desktop.Services
             });
         }
 
-        #endregion
+        #endregion 私有方法
 
         #region 初始化映射表
 
-        private Dictionary<Type, Func<Exception, string>> InitializeMessageMapping()
-        {
+        private Dictionary<Type, Func<Exception, string>> InitializeMessageMapping() {
             return new Dictionary<Type, Func<Exception, string>>
             {
                 { typeof(HttpRequestException), ex => "网络连接失败，请检查网络设置" },
@@ -637,8 +519,7 @@ namespace LYBT.Desktop.Services
             };
         }
 
-        private Dictionary<Type, ErrorCategory> InitializeCategoryMapping()
-        {
+        private Dictionary<Type, ErrorCategory> InitializeCategoryMapping() {
             return new Dictionary<Type, ErrorCategory>
             {
                 { typeof(HttpRequestException), ErrorCategory.Network },
@@ -656,8 +537,7 @@ namespace LYBT.Desktop.Services
             };
         }
 
-        private Dictionary<Type, ErrorSeverity> InitializeSeverityMapping()
-        {
+        private Dictionary<Type, ErrorSeverity> InitializeSeverityMapping() {
             return new Dictionary<Type, ErrorSeverity>
             {
                 { typeof(HttpRequestException), ErrorSeverity.Error },
@@ -675,8 +555,7 @@ namespace LYBT.Desktop.Services
             };
         }
 
-        private Dictionary<Type, string[]> InitializeActionMapping()
-        {
+        private Dictionary<Type, string[]> InitializeActionMapping() {
             return new Dictionary<Type, string[]>
             {
                 { typeof(HttpRequestException), new[] { "检查网络连接", "稍后重试", "联系网络管理员" } },
@@ -694,6 +573,6 @@ namespace LYBT.Desktop.Services
             };
         }
 
-        #endregion
+        #endregion 初始化映射表
     }
 }

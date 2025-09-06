@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Threading.Tasks;
+﻿using System.ComponentModel;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 
-namespace LYBT.Shared.Interfaces.Services
-{
+namespace LYBT.Shared.Interfaces.Services {
+
     /// <summary>
     /// 用户服务接口 - UltraThink双层架构标准
     /// </summary>
@@ -17,8 +14,8 @@ namespace LYBT.Shared.Interfaces.Services
     /// <para>技术特性: ServiceResult统一结果包装、异步优先设计、DTO模式规范</para>
     /// </remarks>
     [Description("用户管理服务 - 医生/管理员账户管理、权限控制、密码安全")]
-    public interface IUserService
-    {
+    public interface IUserService {
+
         #region 查询操作 - QueryService专业负责
 
         /// <summary>
@@ -80,8 +77,7 @@ namespace LYBT.Shared.Interfaces.Services
         /// </remarks>
         Task<ServiceResult<List<UserDto>>> SearchAsync(string keyword);
 
-
-        #endregion
+        #endregion 查询操作 - QueryService专业负责
 
         #region 业务操作 - BusinessService专业负责
 
@@ -124,7 +120,7 @@ namespace LYBT.Shared.Interfaces.Services
         /// </remarks>
         Task<ServiceResult<bool>> DeleteAsync(Guid id);
 
-        #endregion
+        #endregion 业务操作 - BusinessService专业负责
 
         #region 状态管理 - BusinessService批量操作
 
@@ -176,7 +172,7 @@ namespace LYBT.Shared.Interfaces.Services
         /// </remarks>
         Task<ServiceResult<int>> BatchDisableAsync(List<Guid> ids);
 
-        #endregion
+        #endregion 状态管理 - BusinessService批量操作
 
         #region 密码管理 - BusinessService安全操作
 
@@ -209,7 +205,7 @@ namespace LYBT.Shared.Interfaces.Services
         /// </remarks>
         Task<ServiceResult<bool>> ChangePasswordAsync(Guid id, string oldPassword, string newPassword);
 
-        #endregion
+        #endregion 密码管理 - BusinessService安全操作
 
         #region 个人信息管理 - BusinessService
 
@@ -226,7 +222,7 @@ namespace LYBT.Shared.Interfaces.Services
         /// </remarks>
         Task<ServiceResult<bool>> ChangeProfileAsync(ChangeProfileDto dto);
 
-        #endregion
+        #endregion 个人信息管理 - BusinessService
 
         #region 辅助功能 - QueryService支持
 
@@ -253,6 +249,6 @@ namespace LYBT.Shared.Interfaces.Services
         /// </remarks>
         Task<ServiceResult<bool>> ValidateUsernameAsync(string username);
 
-        #endregion
+        #endregion 辅助功能 - QueryService支持
     }
 }

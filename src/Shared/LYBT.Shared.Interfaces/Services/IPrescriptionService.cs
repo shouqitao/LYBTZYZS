@@ -1,16 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using LYBT.Shared.Models.Contracts.Common;
+﻿using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 
-namespace LYBT.Shared.Interfaces.Services
-{
+namespace LYBT.Shared.Interfaces.Services {
+
     /// <summary>
     /// 处方服务接口 - UltraThink统一标准
     /// </summary>
-    public interface IPrescriptionService
-    {
+    public interface IPrescriptionService {
+
         /// <summary>
         /// 根据ID获取处方详情
         /// </summary>
@@ -46,13 +43,13 @@ namespace LYBT.Shared.Interfaces.Services
         /// </summary>
         Task<ServiceResult<List<PrescriptionDto>>> GetByMedicalCaseIdAsync(Guid medicalCaseId);
 
-
         /// <summary>
         /// 验证处方数据
         /// </summary>
         Task<ServiceResult<PrescriptionValidationResult>> ValidateAsync(PrescriptionCreateDto dto);
 
         #region 已废弃功能 - UltraThink精简
+
         /*
         /// <summary>
         /// 导出处方为PDF (已废弃 - 功能迁移到MedicalCase模块)
@@ -72,13 +69,14 @@ namespace LYBT.Shared.Interfaces.Services
         /// 批准处方 (已废弃)
         /// </summary>
         Task<ServiceResult<bool>> ApproveAsync(Guid id, string approvalNote);
-        
+
         /// <summary>
         /// 拒绝处方 (已废弃)
         /// </summary>
         Task<ServiceResult<bool>> RejectAsync(Guid id, string reason);
         */
-        #endregion
+
+        #endregion 已废弃功能 - UltraThink精简
 
         /// <summary>
         /// 复制处方
@@ -94,8 +92,7 @@ namespace LYBT.Shared.Interfaces.Services
     /// <summary>
     /// 处方验证结果
     /// </summary>
-    public class PrescriptionValidationResult
-    {
+    public class PrescriptionValidationResult {
         public bool IsValid { get; set; }
         public List<string> Errors { get; set; } = new List<string>();
         public List<string> Warnings { get; set; } = new List<string>();

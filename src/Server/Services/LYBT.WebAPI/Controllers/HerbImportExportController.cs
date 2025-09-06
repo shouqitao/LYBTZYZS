@@ -1,16 +1,16 @@
 ﻿using Asp.Versioning;
 using LYBT.Infrastructure.Web;
-using LYBT.Module.Herbs.Interfaces;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
+
 // using LYBT.WebAPI.Services; // Removed - enterprise services
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 
-namespace LYBT.WebAPI.Controllers
-{
+namespace LYBT.WebAPI.Controllers {
+
     /// <summary>
     /// 药材导入导出 API 控制器 - UltraThink重构：专门负责导入导出功能
     /// </summary>
@@ -18,8 +18,7 @@ namespace LYBT.WebAPI.Controllers
     [ApiVersion("1")]
     [Route("api/v{version:apiVersion}/herbs")]
     [Authorize]
-    public class HerbImportExportController : BaseApiController
-    {
+    public class HerbImportExportController : BaseApiController {
         private readonly IHerbService _herbService;
         private readonly IMemoryCache _memoryCache;
 
@@ -30,8 +29,7 @@ namespace LYBT.WebAPI.Controllers
             IHerbService herbService,
             IMemoryCache memoryCache,
             ILogger<HerbImportExportController> logger)
-            : base(logger)
-        {
+            : base(logger) {
             _herbService = herbService;
             _memoryCache = memoryCache;
         }
@@ -40,14 +38,10 @@ namespace LYBT.WebAPI.Controllers
         /// 批量导入药材
         /// </summary>
         [HttpPost("import")]
-        public async Task<ActionResult<ApiResponse>> Import([FromBody] List<HerbImportDto> dtos)
-        {
-            try
-            {
-                if (dtos == null || dtos.Count == 0)
-                {
-                    return BadRequest(new ProblemDetails
-                    {
+        public async Task<ActionResult<ApiResponse>> Import([FromBody] List<HerbImportDto> dtos) {
+            try {
+                if (dtos == null || dtos.Count == 0) {
+                    return BadRequest(new ProblemDetails {
                         Title = "请求无效",
                         Detail = "导入数据不能为空",
                         Status = 400
@@ -56,10 +50,8 @@ namespace LYBT.WebAPI.Controllers
 
                 // 数据验证
                 var invalidItems = ValidateImportData(dtos);
-                if (invalidItems.Any())
-                {
-                    return BadRequest(new ProblemDetails
-                    {
+                if (invalidItems.Any()) {
+                    return BadRequest(new ProblemDetails {
                         Title = "数据验证失败",
                         Detail = $"存在 {invalidItems.Count} 条无效数据",
                         Status = 400,
@@ -68,8 +60,7 @@ namespace LYBT.WebAPI.Controllers
                 }
 
                 // 转换 HerbImportDto 到 HerbCreateDto (接口简化后的要求)
-                var createDtos = dtos.Select(dto => new HerbCreateDto
-                {
+                var createDtos = dtos.Select(dto => new HerbCreateDto {
                     Name = dto.Name,
                     PinYinCode = null, // HerbImportDto没有此字段
                     WuBiCode = null,   // HerbImportDto没有此字段
@@ -91,33 +82,24 @@ namespace LYBT.WebAPI.Controllers
                 // 注：IMemoryCache不支持按模式清除，缓存会自动过期
 
                 LogOperation("批量导入药材成功", new { Count = count, TotalSubmitted = dtos.Count }, null);
-                return Ok(new
-                {
+                return Ok(new {
                     imported = count,
                     total = dtos.Count,
                     message = $"成功导入 {count} 个药材，共提交 {dtos.Count} 条数据"
                 });
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(new ProblemDetails
-                {
+            } catch (ArgumentException ex) {
+                return BadRequest(new ProblemDetails {
                     Title = "参数错误",
                     Detail = ex.Message,
                     Status = 400
                 });
-            }
-            catch (InvalidOperationException ex)
-            {
-                return Conflict(new ProblemDetails
-                {
+            } catch (InvalidOperationException ex) {
+                return Conflict(new ProblemDetails {
                     Title = "操作冲突",
                     Detail = ex.Message,
                     Status = 409
                 });
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 return HandleException(ex, "批量导入药材");
             }
         }
@@ -126,13 +108,10 @@ namespace LYBT.WebAPI.Controllers
         /// 导出药材数据
         /// </summary>
         [HttpGet("export")]
-        public async Task<ActionResult<ApiResponse<byte[]>>> Export([FromQuery] string? format = "json")
-        {
-            try
-            {
+        public async Task<ActionResult<ApiResponse<byte[]>>> Export([FromQuery] string? format = "json") {
+            try {
                 // 创建查询参数 (接口简化后的要求)
-                var query = new PagedQueryBaseDto
-                {
+                var query = new PagedQueryBaseDto {
                     PageIndex = 1,
                     PageSize = 10000, // 导出时获取所有数据
                     Keyword = string.Empty
@@ -140,8 +119,7 @@ namespace LYBT.WebAPI.Controllers
 
                 var result = await _herbService.ExportHerbsAsync(query);
 
-                if (!result.IsSuccess)
-                {
+                if (!result.IsSuccess) {
                     return HandleException<byte[]>(new Exception(result.ErrorMessage), "导出药材数据");
                 }
 
@@ -149,9 +127,7 @@ namespace LYBT.WebAPI.Controllers
                 LogOperation("导出药材数据", new { Size = data.Length, Format = format }, null);
 
                 return Success(data, "导出成功");
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 return HandleException<byte[]>(ex, "导出药材数据");
             }
         }
@@ -160,12 +136,9 @@ namespace LYBT.WebAPI.Controllers
         /// 导出药材模板
         /// </summary>
         [HttpGet("export-template")]
-        public Task<ActionResult<object>> ExportTemplate()
-        {
-            try
-            {
-                var template = new
-                {
+        public Task<ActionResult<object>> ExportTemplate() {
+            try {
+                var template = new {
                     name = "药材名称",
                     chineseName = "中文名称",
                     englishName = "英文名称",
@@ -185,14 +158,11 @@ namespace LYBT.WebAPI.Controllers
                 var templateData = new List<object> { template };
 
                 LogOperation("导出药材导入模板", null, null);
-                return Task.FromResult<ActionResult<object>>(Ok(new
-                {
+                return Task.FromResult<ActionResult<object>>(Ok(new {
                     message = "药材导入模板",
                     template = templateData
                 }));
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 return Task.FromResult<ActionResult<object>>(HandleException(ex, "导出药材导入模板"));
             }
         }
@@ -201,27 +171,21 @@ namespace LYBT.WebAPI.Controllers
         /// 验证导入数据有效性
         /// </summary>
         [HttpPost("validate-import")]
-        public async Task<ActionResult<ApiResponse>> ValidateImport([FromBody] List<HerbImportDto> dtos)
-        {
-            try
-            {
-                if (dtos == null || dtos.Count == 0)
-                {
+        public async Task<ActionResult<ApiResponse>> ValidateImport([FromBody] List<HerbImportDto> dtos) {
+            try {
+                if (dtos == null || dtos.Count == 0) {
                     return BadRequest("验证数据不能为空");
                 }
 
                 var validationResults = await ValidateImportDataAsync(dtos);
 
-                return Ok(new
-                {
+                return Ok(new {
                     totalCount = dtos.Count,
                     validCount = validationResults.Count(v => v.IsValid),
                     invalidCount = validationResults.Count(v => !v.IsValid),
                     results = validationResults
                 });
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 return HandleException(ex, "验证导入数据");
             }
         }
@@ -231,35 +195,28 @@ namespace LYBT.WebAPI.Controllers
         /// <summary>
         /// 验证导入数据
         /// </summary>
-        private List<object> ValidateImportData(List<HerbImportDto> dtos)
-        {
+        private List<object> ValidateImportData(List<HerbImportDto> dtos) {
             var invalidItems = new List<object>();
 
-            for (int i = 0; i < dtos.Count; i++)
-            {
+            for (int i = 0; i < dtos.Count; i++) {
                 var dto = dtos[i];
                 var errors = new List<string>();
 
                 // 基本字段验证
-                if (string.IsNullOrWhiteSpace(dto.Name))
-                {
+                if (string.IsNullOrWhiteSpace(dto.Name)) {
                     errors.Add("药材名称不能为空");
                 }
 
-                if (dto.Price < 0)
-                {
+                if (dto.Price < 0) {
                     errors.Add("价格不能为负数");
                 }
 
-                if (dto.Stock < 0)
-                {
+                if (dto.Stock < 0) {
                     errors.Add("库存不能为负数");
                 }
 
-                if (errors.Any())
-                {
-                    invalidItems.Add(new
-                    {
+                if (errors.Any()) {
+                    invalidItems.Add(new {
                         index = i + 1,
                         item = dto,
                         errors = errors
@@ -273,15 +230,12 @@ namespace LYBT.WebAPI.Controllers
         /// <summary>
         /// 异步验证导入数据（包含数据库检查）
         /// </summary>
-        private Task<List<ImportValidationResult>> ValidateImportDataAsync(List<HerbImportDto> dtos)
-        {
+        private Task<List<ImportValidationResult>> ValidateImportDataAsync(List<HerbImportDto> dtos) {
             var results = new List<ImportValidationResult>();
 
-            for (int i = 0; i < dtos.Count; i++)
-            {
+            for (int i = 0; i < dtos.Count; i++) {
                 var dto = dtos[i];
-                var result = new ImportValidationResult
-                {
+                var result = new ImportValidationResult {
                     Index = i + 1,
                     Name = dto.Name ?? "未知",
                     IsValid = true,
@@ -289,20 +243,17 @@ namespace LYBT.WebAPI.Controllers
                 };
 
                 // 基本验证
-                if (string.IsNullOrWhiteSpace(dto.Name))
-                {
+                if (string.IsNullOrWhiteSpace(dto.Name)) {
                     result.Errors.Add("药材名称不能为空");
                     result.IsValid = false;
                 }
 
-                if (dto.Price < 0)
-                {
+                if (dto.Price < 0) {
                     result.Errors.Add("价格不能为负数");
                     result.IsValid = false;
                 }
 
-                if (dto.Stock < 0)
-                {
+                if (dto.Stock < 0) {
                     result.Errors.Add("库存不能为负数");
                     result.IsValid = false;
                 }
@@ -315,21 +266,20 @@ namespace LYBT.WebAPI.Controllers
             return Task.FromResult(results);
         }
 
-        #endregion
+        #endregion 私有方法
 
         #region 内部类
 
         /// <summary>
         /// 导入验证结果
         /// </summary>
-        private class ImportValidationResult
-        {
+        private class ImportValidationResult {
             public int Index { get; set; }
             public string Name { get; set; } = string.Empty;
             public bool IsValid { get; set; }
             public List<string> Errors { get; set; } = new();
         }
 
-        #endregion
+        #endregion 内部类
     }
 }

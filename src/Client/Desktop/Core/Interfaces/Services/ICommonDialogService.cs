@@ -1,14 +1,11 @@
-﻿using System.Threading.Tasks;
-using LYBT.Shared.Models.Contracts.Common;
+﻿namespace LYBT.Desktop.Core.Interfaces.Services {
 
-namespace LYBT.Desktop.Core.Interfaces.Services
-{
     /// <summary>
     /// 通用对话框服务接口
     /// 提供统一的对话框调用方式，支持消息框、输入框和文件选择对话框
     /// </summary>
-    public interface ICommonDialogService
-    {
+    public interface ICommonDialogService {
+
         #region 消息对话框
 
         /// <summary>
@@ -40,7 +37,7 @@ namespace LYBT.Desktop.Core.Interfaces.Services
         /// <param name="title">标题</param>
         Task ShowErrorAsync(string message, string title = "错误");
 
-        #endregion
+        #endregion 消息对话框
 
         #region 输入对话框
 
@@ -53,7 +50,7 @@ namespace LYBT.Desktop.Core.Interfaces.Services
         /// <returns>用户输入的内容，取消返回 null</returns>
         Task<string?> ShowInputAsync(string message, string title = "输入", string defaultValue = "");
 
-        #endregion
+        #endregion 输入对话框
 
         #region 文件对话框
 
@@ -81,7 +78,7 @@ namespace LYBT.Desktop.Core.Interfaces.Services
         /// <returns>选择的文件夹路径，取消返回 null</returns>
         Task<string?> ShowFolderBrowserDialogAsync(string title = "选择文件夹");
 
-        #endregion
+        #endregion 文件对话框
 
         #region 同步方法（为了兼容旧代码）
 
@@ -105,6 +102,6 @@ namespace LYBT.Desktop.Core.Interfaces.Services
         /// </summary>
         void ShowError(string message, string title = "错误");
 
-        #endregion
+        #endregion 同步方法（为了兼容旧代码）
     }
 }

@@ -1,14 +1,13 @@
 ﻿using System.Windows.Controls;
 
-namespace LYBT.Desktop.Prescriptions.Views
-{
+namespace LYBT.Desktop.Prescriptions.Views {
+
     /// <summary>
     /// PrescriptionEditorDialog.xaml 的交互逻辑
     /// </summary>
-    public partial class PrescriptionEditorDialog : UserControl
-    {
-        public PrescriptionEditorDialog()
-        {
+    public partial class PrescriptionEditorDialog : UserControl {
+
+        public PrescriptionEditorDialog() {
             InitializeComponent();
         }
     }

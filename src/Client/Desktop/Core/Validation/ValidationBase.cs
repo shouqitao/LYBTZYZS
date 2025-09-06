@@ -1,23 +1,16 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections;
 using System.ComponentModel;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
 using FluentValidation;
 using FluentValidation.Internal;
 using FluentValidation.Results;
-using LYBT.Shared.Models.Contracts.Common;
 
-namespace LYBT.Desktop.Core.Validation
-{
+namespace LYBT.Desktop.Core.Validation {
+
     /// <summary>
     /// 带FluentValidation支持的可观察对象基类
     /// </summary>
-    public abstract class ValidationBase : Mvvm.ObservableObject, INotifyDataErrorInfo
-    {
+    public abstract class ValidationBase : Mvvm.ObservableObject, INotifyDataErrorInfo {
         private readonly Dictionary<string, List<string>> _validationErrors = new();
         private readonly SemaphoreSlim _validationSemaphore = new(1, 1);
         private IValidator? _validator;
@@ -30,8 +23,7 @@ namespace LYBT.Desktop.Core.Validation
         /// <summary>
         /// 构造函数
         /// </summary>
-        protected ValidationBase()
-        {
+        protected ValidationBase() {
             InitializeValidator();
         }
 
@@ -48,10 +40,8 @@ namespace LYBT.Desktop.Core.Validation
         /// <summary>
         /// 获取属性的错误信息
         /// </summary>
-        public IEnumerable GetErrors(string? propertyName)
-        {
-            if (string.IsNullOrEmpty(propertyName))
-            {
+        public IEnumerable GetErrors(string? propertyName) {
+            if (string.IsNullOrEmpty(propertyName)) {
                 // 返回所有错误
                 return _validationErrors.SelectMany(kvp => kvp.Value);
             }
@@ -64,8 +54,7 @@ namespace LYBT.Desktop.Core.Validation
         /// <summary>
         /// 获取属性的错误列表
         /// </summary>
-        public IReadOnlyList<string> GetPropertyErrors(string propertyName)
-        {
+        public IReadOnlyList<string> GetPropertyErrors(string propertyName) {
             return _validationErrors.TryGetValue(propertyName, out var errors)
                 ? errors.AsReadOnly()
                 : Array.Empty<string>();
@@ -74,16 +63,14 @@ namespace LYBT.Desktop.Core.Validation
         /// <summary>
         /// 获取所有错误消息
         /// </summary>
-        public IReadOnlyDictionary<string, List<string>> GetAllErrors()
-        {
+        public IReadOnlyDictionary<string, List<string>> GetAllErrors() {
             return new Dictionary<string, List<string>>(_validationErrors);
         }
 
         /// <summary>
         /// 初始化验证器
         /// </summary>
-        protected virtual void InitializeValidator()
-        {
+        protected virtual void InitializeValidator() {
             _validator = CreateValidator();
         }
 
@@ -95,20 +82,17 @@ namespace LYBT.Desktop.Core.Validation
         /// <summary>
         /// 设置自定义验证器
         /// </summary>
-        protected void SetValidator(IValidator validator)
-        {
+        protected void SetValidator(IValidator validator) {
             _validator = validator ?? throw new ArgumentNullException(nameof(validator));
         }
 
         /// <summary>
         /// 设置属性值（带自动验证）
         /// </summary>
-        protected override bool SetProperty<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
-        {
+        protected override bool SetProperty<T>(ref T field, T value, [CallerMemberName] string? propertyName = null) {
             var result = base.SetProperty(ref field, value, propertyName);
 
-            if (result && propertyName != null)
-            {
+            if (result && propertyName != null) {
                 // 异步验证属性
                 _ = ValidatePropertyAsync(propertyName, value);
             }
@@ -119,16 +103,13 @@ namespace LYBT.Desktop.Core.Validation
         /// <summary>
         /// 验证单个属性
         /// </summary>
-        protected virtual async Task<bool> ValidatePropertyAsync(string propertyName, object? value)
-        {
+        protected virtual async Task<bool> ValidatePropertyAsync(string propertyName, object? value) {
             await _validationSemaphore.WaitAsync();
-            try
-            {
+            try {
                 // 清除旧错误
                 ClearPropertyErrors(propertyName);
 
-                if (_validator == null)
-                {
+                if (_validator == null) {
                     return true;
                 }
 
@@ -138,24 +119,20 @@ namespace LYBT.Desktop.Core.Validation
 
                 var validationResult = await _validator.ValidateAsync(context);
 
-                if (!validationResult.IsValid)
-                {
+                if (!validationResult.IsValid) {
                     var errors = validationResult.Errors
                         .Where(e => e.PropertyName == propertyName)
                         .Select(e => e.ErrorMessage)
                         .ToList();
 
-                    if (errors.Any())
-                    {
+                    if (errors.Any()) {
                         AddPropertyErrors(propertyName, errors);
                         return false;
                     }
                 }
 
                 return true;
-            }
-            finally
-            {
+            } finally {
                 _validationSemaphore.Release();
             }
         }
@@ -163,15 +140,12 @@ namespace LYBT.Desktop.Core.Validation
         /// <summary>
         /// 验证所有属性
         /// </summary>
-        public virtual async Task<bool> ValidateAsync()
-        {
+        public virtual async Task<bool> ValidateAsync() {
             await _validationSemaphore.WaitAsync();
-            try
-            {
+            try {
                 ClearAllErrors();
 
-                if (_validator == null)
-                {
+                if (_validator == null) {
                     IsValidated = true;
                     return true;
                 }
@@ -179,12 +153,10 @@ namespace LYBT.Desktop.Core.Validation
                 var context = new ValidationContext<ValidationBase>(this);
                 var validationResult = await _validator.ValidateAsync(context);
 
-                if (!validationResult.IsValid)
-                {
+                if (!validationResult.IsValid) {
                     var errorGroups = validationResult.Errors.GroupBy(e => e.PropertyName);
 
-                    foreach (var group in errorGroups)
-                    {
+                    foreach (var group in errorGroups) {
                         var errors = group.Select(e => e.ErrorMessage).ToList();
                         AddPropertyErrors(group.Key, errors);
                     }
@@ -192,9 +164,7 @@ namespace LYBT.Desktop.Core.Validation
 
                 IsValidated = true;
                 return !HasErrors;
-            }
-            finally
-            {
+            } finally {
                 _validationSemaphore.Release();
             }
         }
@@ -202,18 +172,15 @@ namespace LYBT.Desktop.Core.Validation
         /// <summary>
         /// 同步验证
         /// </summary>
-        public virtual bool Validate()
-        {
+        public virtual bool Validate() {
             return ValidateAsync().GetAwaiter().GetResult();
         }
 
         /// <summary>
         /// 获取验证结果
         /// </summary>
-        public async Task<ValidationResult> GetValidationResultAsync()
-        {
-            if (_validator == null)
-            {
+        public async Task<ValidationResult> GetValidationResultAsync() {
+            if (_validator == null) {
                 return new ValidationResult();
             }
 
@@ -224,18 +191,15 @@ namespace LYBT.Desktop.Core.Validation
         /// <summary>
         /// 添加自定义错误
         /// </summary>
-        protected void AddError(string propertyName, string errorMessage)
-        {
+        protected void AddError(string propertyName, string errorMessage) {
             AddPropertyErrors(propertyName, new[] { errorMessage });
         }
 
         /// <summary>
         /// 添加属性错误
         /// </summary>
-        private void AddPropertyErrors(string propertyName, IEnumerable<string> errors)
-        {
-            if (!_validationErrors.ContainsKey(propertyName))
-            {
+        private void AddPropertyErrors(string propertyName, IEnumerable<string> errors) {
+            if (!_validationErrors.ContainsKey(propertyName)) {
                 _validationErrors[propertyName] = new List<string>();
             }
 
@@ -246,10 +210,8 @@ namespace LYBT.Desktop.Core.Validation
         /// <summary>
         /// 清除属性错误
         /// </summary>
-        protected void ClearPropertyErrors(string propertyName)
-        {
-            if (_validationErrors.Remove(propertyName))
-            {
+        protected void ClearPropertyErrors(string propertyName) {
+            if (_validationErrors.Remove(propertyName)) {
                 OnErrorsChanged(propertyName);
             }
         }
@@ -257,13 +219,11 @@ namespace LYBT.Desktop.Core.Validation
         /// <summary>
         /// 清除所有错误
         /// </summary>
-        protected void ClearAllErrors()
-        {
+        protected void ClearAllErrors() {
             var properties = _validationErrors.Keys.ToArray();
             _validationErrors.Clear();
 
-            foreach (var propertyName in properties)
-            {
+            foreach (var propertyName in properties) {
                 OnErrorsChanged(propertyName);
             }
         }
@@ -271,8 +231,7 @@ namespace LYBT.Desktop.Core.Validation
         /// <summary>
         /// 触发错误变更事件
         /// </summary>
-        protected virtual void OnErrorsChanged(string propertyName)
-        {
+        protected virtual void OnErrorsChanged(string propertyName) {
             ErrorsChanged?.Invoke(this, new DataErrorsChangedEventArgs(propertyName));
             OnPropertyChanged(nameof(HasErrors));
         }
@@ -280,16 +239,14 @@ namespace LYBT.Desktop.Core.Validation
         /// <summary>
         /// 获取第一个错误消息
         /// </summary>
-        public string? GetFirstError()
-        {
+        public string? GetFirstError() {
             return _validationErrors.Values.SelectMany(v => v).FirstOrDefault();
         }
 
         /// <summary>
         /// 获取格式化的错误消息
         /// </summary>
-        public string GetFormattedErrors(string separator = "\n")
-        {
+        public string GetFormattedErrors(string separator = "\n") {
             var errors = _validationErrors.SelectMany(kvp =>
                 kvp.Value.Select(e => $"{kvp.Key}: {e}"));
             return string.Join(separator, errors);
@@ -299,18 +256,15 @@ namespace LYBT.Desktop.Core.Validation
     /// <summary>
     /// 泛型验证基类
     /// </summary>
-    public abstract class ValidationBase<T> : ValidationBase where T : ValidationBase<T>
-    {
+    public abstract class ValidationBase<T> : ValidationBase where T : ValidationBase<T> {
         private IValidator<T>? _typedValidator;
 
         /// <summary>
         /// 初始化验证器
         /// </summary>
-        protected override void InitializeValidator()
-        {
+        protected override void InitializeValidator() {
             _typedValidator = CreateTypedValidator();
-            if (_typedValidator != null)
-            {
+            if (_typedValidator != null) {
                 SetValidator(_typedValidator);
             }
         }
@@ -323,8 +277,7 @@ namespace LYBT.Desktop.Core.Validation
         /// <summary>
         /// 创建验证器
         /// </summary>
-        protected override IValidator? CreateValidator()
-        {
+        protected override IValidator? CreateValidator() {
             return _typedValidator;
         }
     }
@@ -332,17 +285,14 @@ namespace LYBT.Desktop.Core.Validation
     /// <summary>
     /// 成员名称验证器选择器
     /// </summary>
-    internal class MemberNameValidatorSelector : IValidatorSelector
-    {
+    internal class MemberNameValidatorSelector : IValidatorSelector {
         private readonly HashSet<string> _memberNames;
 
-        public MemberNameValidatorSelector(IEnumerable<string> memberNames)
-        {
+        public MemberNameValidatorSelector(IEnumerable<string> memberNames) {
             _memberNames = new HashSet<string>(memberNames);
         }
 
-        public bool CanExecute(IValidationRule rule, string propertyPath, IValidationContext context)
-        {
+        public bool CanExecute(IValidationRule rule, string propertyPath, IValidationContext context) {
             return _memberNames.Contains(propertyPath);
         }
     }

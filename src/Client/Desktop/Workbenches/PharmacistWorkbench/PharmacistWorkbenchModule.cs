@@ -2,28 +2,25 @@
 using LYBT.Desktop.Herbs.Views;
 using LYBT.Desktop.Workbench.Pharmacist.ViewModels;
 using LYBT.Desktop.Workbench.Pharmacist.Views;
-using LYBT.Shared.Models.Contracts.Common;
 using Prism.Ioc;
 using Prism.Modularity;
 using Prism.Mvvm;
 
-namespace LYBT.Desktop.Workbench.Pharmacist
-{
+namespace LYBT.Desktop.Workbench.Pharmacist {
+
     /// <summary>
     /// 药剂师工作台模块
     /// </summary>
-    public class PharmacistWorkbenchModule : IModule
-    {
-        public void OnInitialized(IContainerProvider containerProvider)
-        {
+    public class PharmacistWorkbenchModule : IModule {
+
+        public void OnInitialized(IContainerProvider containerProvider) {
             // 模块初始化完成
 
             // 注册自定义的ViewModel映射
             ViewModelLocationProvider.Register<PharmacistMainView, PharmacistMainViewModel>();
         }
 
-        public void RegisterTypes(IContainerRegistry containerRegistry)
-        {
+        public void RegisterTypes(IContainerRegistry containerRegistry) {
             // 注册药剂师工作台主视图
             containerRegistry.RegisterForNavigation<PharmacistMainView>();
 

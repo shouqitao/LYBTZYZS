@@ -2,14 +2,13 @@
 
 #nullable disable
 
-namespace LYBT.Infrastructure.Migrations
-{
+namespace LYBT.Infrastructure.Migrations {
+
     /// <inheritdoc />
-    public partial class RemoveDepartmentFields : Migration
-    {
+    public partial class RemoveDepartmentFields : Migration {
+
         /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
+        protected override void Up(MigrationBuilder migrationBuilder) {
             migrationBuilder.DropColumn(
                 name: "Department",
                 table: "MedicalCases");
@@ -77,8 +76,7 @@ namespace LYBT.Infrastructure.Migrations
         }
 
         /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
+        protected override void Down(MigrationBuilder migrationBuilder) {
             migrationBuilder.DropColumn(
                 name: "RegistrationFee",
                 table: "Doctors");

@@ -1,12 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace LYBT.Infrastructure.Configuration.Options
-{
+namespace LYBT.Infrastructure.Configuration.Options {
+
     /// <summary>
     /// 安全配置选项
     /// </summary>
-    public class SecurityOptions
-    {
+    public class SecurityOptions {
         public const string SectionName = "Security";
 
         /// <summary>
@@ -43,8 +42,8 @@ namespace LYBT.Infrastructure.Configuration.Options
     /// <summary>
     /// HTTPS配置
     /// </summary>
-    public class HttpsOptions
-    {
+    public class HttpsOptions {
+
         /// <summary>
         /// 是否要求HTTPS
         /// </summary>
@@ -70,8 +69,8 @@ namespace LYBT.Infrastructure.Configuration.Options
     /// <summary>
     /// CORS配置
     /// </summary>
-    public class CorsOptions
-    {
+    public class CorsOptions {
+
         /// <summary>
         /// 允许的源
         /// </summary>
@@ -102,8 +101,8 @@ namespace LYBT.Infrastructure.Configuration.Options
     /// <summary>
     /// 安全头配置
     /// </summary>
-    public class SecurityHeadersOptions
-    {
+    public class SecurityHeadersOptions {
+
         /// <summary>
         /// 内容安全策略
         /// </summary>
@@ -133,8 +132,8 @@ namespace LYBT.Infrastructure.Configuration.Options
     /// <summary>
     /// 密码策略配置
     /// </summary>
-    public class PasswordPolicyOptions
-    {
+    public class PasswordPolicyOptions {
+
         /// <summary>
         /// 最小长度
         /// </summary>
@@ -182,8 +181,8 @@ namespace LYBT.Infrastructure.Configuration.Options
     /// <summary>
     /// 限流配置
     /// </summary>
-    public class RateLimitOptions
-    {
+    public class RateLimitOptions {
+
         /// <summary>
         /// 是否启用
         /// </summary>
@@ -192,8 +191,7 @@ namespace LYBT.Infrastructure.Configuration.Options
         /// <summary>
         /// 一般请求限制
         /// </summary>
-        public RateLimitRule General { get; set; } = new()
-        {
+        public RateLimitRule General { get; set; } = new() {
             RequestsPerMinute = 100,
             RequestsPerHour = 1000,
             RequestsPerDay = 10000
@@ -202,8 +200,7 @@ namespace LYBT.Infrastructure.Configuration.Options
         /// <summary>
         /// 认证请求限制
         /// </summary>
-        public RateLimitRule Authentication { get; set; } = new()
-        {
+        public RateLimitRule Authentication { get; set; } = new() {
             RequestsPerMinute = 5,
             RequestsPerHour = 20,
             RequestsPerDay = 100
@@ -212,8 +209,7 @@ namespace LYBT.Infrastructure.Configuration.Options
         /// <summary>
         /// API密钥请求限制
         /// </summary>
-        public RateLimitRule ApiKey { get; set; } = new()
-        {
+        public RateLimitRule ApiKey { get; set; } = new() {
             RequestsPerMinute = 300,
             RequestsPerHour = 5000,
             RequestsPerDay = 50000
@@ -223,8 +219,8 @@ namespace LYBT.Infrastructure.Configuration.Options
     /// <summary>
     /// 限流规则
     /// </summary>
-    public class RateLimitRule
-    {
+    public class RateLimitRule {
+
         /// <summary>
         /// 每分钟请求数
         /// </summary>
@@ -247,8 +243,8 @@ namespace LYBT.Infrastructure.Configuration.Options
     /// <summary>
     /// 环境配置
     /// </summary>
-    public class EnvironmentOptions
-    {
+    public class EnvironmentOptions {
+
         /// <summary>
         /// 是否隐藏服务器信息
         /// </summary>

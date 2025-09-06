@@ -1,16 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using LYBT.Shared.Models.Contracts.Common;
+﻿using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
 
-namespace LYBT.Shared.Interfaces.Services
-{
+namespace LYBT.Shared.Interfaces.Services {
+
     /// <summary>
     /// 验方服务接口 - UltraThink双层架构精简标准（小诊所适用）
     /// </summary>
-    public interface IFormulaService
-    {
+    public interface IFormulaService {
+
         #region 查询操作 - QueryService专业负责
 
         /// <summary>
@@ -43,7 +40,7 @@ namespace LYBT.Shared.Interfaces.Services
         /// </summary>
         Task<ServiceResult<List<string>>> GetCategoriesAsync();
 
-        #endregion
+        #endregion 查询操作 - QueryService专业负责
 
         #region 业务操作 - BusinessService专业负责
 
@@ -82,7 +79,7 @@ namespace LYBT.Shared.Interfaces.Services
         /// </summary>
         Task<ServiceResult<FormulaDto>> CloneFormulaAsync(Guid formulaId, string newName, Guid userId);
 
-        #endregion
+        #endregion 业务操作 - BusinessService专业负责
 
         #region 批量操作 - 必需功能（用户明确需求）
 
@@ -96,6 +93,6 @@ namespace LYBT.Shared.Interfaces.Services
         /// </summary>
         Task<ServiceResult<byte[]>> ExportFormulasAsync(PagedQueryBaseDto query);
 
-        #endregion
+        #endregion 批量操作 - 必需功能（用户明确需求）
     }
 }

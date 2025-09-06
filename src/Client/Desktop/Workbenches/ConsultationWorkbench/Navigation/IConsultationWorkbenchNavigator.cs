@@ -1,14 +1,11 @@
-﻿using LYBT.Shared.Models.Contracts.Common;
-using Prism.Regions;
+﻿namespace LYBT.Desktop.Workbench.Consultation.Navigation {
 
-namespace LYBT.Desktop.Workbench.Consultation.Navigation
-{
     /// <summary>
     /// 看诊工作台导航接口
     /// 为医生提供专业的看诊相关功能导航
     /// </summary>
-    public interface IConsultationWorkbenchNavigator
-    {
+    public interface IConsultationWorkbenchNavigator {
+
         /// <summary>
         /// 导航到患者管理（查看和快速注册）
         /// </summary>

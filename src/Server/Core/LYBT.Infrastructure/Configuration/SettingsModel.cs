@@ -1,14 +1,12 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace LYBT.Infrastructure.Configuration
-{
+namespace LYBT.Infrastructure.Configuration {
 
     /// <summary>
     /// 系统设置实体模型
     /// </summary>
-    public class SettingsModel
-    {
+    public class SettingsModel {
 
         /// <summary>
         /// 主键ID

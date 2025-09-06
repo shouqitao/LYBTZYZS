@@ -2,14 +2,13 @@
 
 #nullable disable
 
-namespace LYBT.Infrastructure.Migrations
-{
+namespace LYBT.Infrastructure.Migrations {
+
     /// <inheritdoc />
-    public partial class UnifyFieldNamesAndTypes : Migration
-    {
+    public partial class UnifyFieldNamesAndTypes : Migration {
+
         /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
+        protected override void Up(MigrationBuilder migrationBuilder) {
             migrationBuilder.RenameColumn(
                 name: "PinyinCode",
                 table: "Users",
@@ -57,8 +56,7 @@ namespace LYBT.Infrastructure.Migrations
         }
 
         /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
+        protected override void Down(MigrationBuilder migrationBuilder) {
             migrationBuilder.RenameColumn(
                 name: "PinYinCode",
                 table: "Users",

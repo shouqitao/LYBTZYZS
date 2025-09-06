@@ -1,7 +1,4 @@
-﻿using System;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Diagnostics;
 using System.Windows;
 using LYBT.Desktop.Core.Constants;
 using LYBT.Desktop.Core.Interfaces.Services;
@@ -10,14 +7,13 @@ using LYBT.Shared.Models.Contracts.Common;
 using Prism.Commands;
 using Prism.Events;
 
-namespace LYBT.Desktop.Core.ViewModels.Dialogs
-{
+namespace LYBT.Desktop.Core.ViewModels.Dialogs {
+
     /// <summary>
     /// 严重错误对话框视图模型
     /// UltraThink Command绑定优化：消除Click事件处理器，使用Command绑定
     /// </summary>
-    public class CriticalErrorDialogViewModel : DialogViewModel
-    {
+    public class CriticalErrorDialogViewModel : DialogViewModel {
         private HandledError? _errorInfo;
         private bool _isCopyEnabled = true;
         private string _copyButtonText = "复制错误信息";
@@ -27,13 +23,10 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
         /// <summary>
         /// 错误信息
         /// </summary>
-        public HandledError? ErrorInfo
-        {
+        public HandledError? ErrorInfo {
             get => _errorInfo;
-            set
-            {
-                if (SetProperty(ref _errorInfo, value))
-                {
+            set {
+                if (SetProperty(ref _errorInfo, value)) {
                     PopulateErrorInfo();
                 }
             }
@@ -42,8 +35,7 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
         /// <summary>
         /// 复制按钮是否可用
         /// </summary>
-        public bool IsCopyEnabled
-        {
+        public bool IsCopyEnabled {
             get => _isCopyEnabled;
             set => SetProperty(ref _isCopyEnabled, value);
         }
@@ -51,8 +43,7 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
         /// <summary>
         /// 复制按钮文本
         /// </summary>
-        public string CopyButtonText
-        {
+        public string CopyButtonText {
             get => _copyButtonText;
             set => SetProperty(ref _copyButtonText, value);
         }
@@ -97,7 +88,7 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
         /// </summary>
         public string WindowTitle { get; set; } = SystemConstants.ErrorTitle;
 
-        #endregion
+        #endregion Properties
 
         #region Commands
 
@@ -116,7 +107,7 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
         /// </summary>
         public DelegateCommand CloseCommand { get; } = null!;
 
-        #endregion
+        #endregion Commands
 
         #region Events
 
@@ -125,7 +116,7 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
         /// </summary>
         public event Action<bool?> RequestClose = delegate { };
 
-        #endregion
+        #endregion Events
 
         #region Constructor
 
@@ -135,8 +126,7 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
         public CriticalErrorDialogViewModel(
             IEventAggregator eventAggregator,
             IErrorHandlingService errorHandlingService)
-            : base(eventAggregator, errorHandlingService)
-        {
+            : base(eventAggregator, errorHandlingService) {
             DialogTitle = SystemConstants.ErrorTitle;
 
             // 初始化命令
@@ -148,39 +138,34 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
             CopyCommand.ObservesProperty(() => IsCopyEnabled);
         }
 
-        #endregion
+        #endregion Constructor
 
         #region DialogViewModel Implementation
 
-        protected override Task<bool> SaveAsync()
-        {
+        protected override Task<bool> SaveAsync() {
             // 对于错误对话框，没有保存操作
             return Task.FromResult(true);
         }
 
-        protected override bool CanSave()
-        {
+        protected override bool CanSave() {
             return false; // 错误对话框不需要保存按钮
         }
 
-        protected override void InitializeDialog()
-        {
+        protected override void InitializeDialog() {
             base.InitializeDialog();
             // 隐藏保存按钮，错误对话框不需要
             SaveCommand.RaiseCanExecuteChanged();
         }
 
-        #endregion
+        #endregion DialogViewModel Implementation
 
         #region Command Implementations
 
         /// <summary>
         /// 执行复制命令
         /// </summary>
-        private async Task ExecuteCopyAsync()
-        {
-            try
-            {
+        private async Task ExecuteCopyAsync() {
+            try {
                 var errorReport = GenerateErrorReport();
                 Clipboard.SetText(errorReport);
 
@@ -194,9 +179,7 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
 
                 CopyButtonText = originalText;
                 IsCopyEnabled = true;
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 await HandleErrorAsync("复制错误信息", ex);
             }
         }
@@ -204,10 +187,8 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
         /// <summary>
         /// 执行报告命令
         /// </summary>
-        private async Task ExecuteReportAsync()
-        {
-            try
-            {
+        private async Task ExecuteReportAsync() {
+            try {
                 // 生成错误报告并尝试打开邮件客户端
                 var errorReport = GenerateErrorReport();
                 var subject = Uri.EscapeDataString($"错误报告 - {_errorInfo?.Exception?.GetType().Name}");
@@ -216,14 +197,11 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
                 var mailto = $"mailto:support@lybt.com?subject={subject}&body={body}";
 
                 // 添加await以修复CS1998警告
-                await Task.Run(() => Process.Start(new ProcessStartInfo
-                {
+                await Task.Run(() => Process.Start(new ProcessStartInfo {
                     FileName = mailto,
                     UseShellExecute = true
                 }));
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 // 如果无法打开邮件客户端，复制错误信息到剪贴板
                 ErrorMessage = $"无法打开邮件客户端：{ex.Message}\n\n错误信息已复制到剪贴板，请手动发送给技术支持。";
                 await ExecuteCopyAsync();
@@ -233,37 +211,30 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
         /// <summary>
         /// 执行关闭命令
         /// </summary>
-        private void ExecuteClose()
-        {
+        private void ExecuteClose() {
             RequestClose(true);
         }
 
-        #endregion
+        #endregion Command Implementations
 
         #region Private Methods
 
         /// <summary>
         /// 填充错误信息
         /// </summary>
-        private void PopulateErrorInfo()
-        {
-            if (_errorInfo == null)
-            {
+        private void PopulateErrorInfo() {
+            if (_errorInfo == null) {
                 return;
             }
 
-            try
-            {
+            try {
                 // 用户消息
                 UserMessage = _errorInfo.UserMessage ?? "发生了未知错误";
 
                 // 建议操作
-                if (_errorInfo.SuggestedActions?.Count > 0)
-                {
+                if (_errorInfo.SuggestedActions?.Count > 0) {
                     SuggestedActions = _errorInfo.SuggestedActions.ToArray();
-                }
-                else
-                {
+                } else {
                     SuggestedActions = new[] { "请联系技术支持" };
                 }
 
@@ -280,8 +251,7 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
                 StackTrace = _errorInfo.Exception?.StackTrace ?? "无堆栈信息";
 
                 // 根据错误严重程度调整窗口标题
-                WindowTitle = _errorInfo.Severity switch
-                {
+                WindowTitle = _errorInfo.Severity switch {
                     ErrorSeverity.Fatal => "致命错误",
                     ErrorSeverity.Critical => "严重错误",
                     _ => "错误"
@@ -296,9 +266,7 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
                 RaisePropertyChanged(nameof(TechnicalDetails));
                 RaisePropertyChanged(nameof(StackTrace));
                 RaisePropertyChanged(nameof(WindowTitle));
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 // 防止显示错误信息时再次出错
                 UserMessage = "显示错误信息时发生异常：" + ex.Message;
                 TechnicalDetails = ex.ToString();
@@ -310,10 +278,8 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
         /// <summary>
         /// 生成错误报告
         /// </summary>
-        private string GenerateErrorReport()
-        {
-            if (_errorInfo == null)
-            {
+        private string GenerateErrorReport() {
+            if (_errorInfo == null) {
                 return "无错误信息";
             }
 
@@ -351,6 +317,6 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
             return report;
         }
 
-        #endregion
+        #endregion Private Methods
     }
 }

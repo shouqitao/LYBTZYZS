@@ -3,16 +3,16 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using LYBT.Shared.Models.Enums;
 
-namespace LYBT.Entities.Patients
-{
+namespace LYBT.Entities.Patients {
+
     /// <summary>
     /// 患者实体 - UltraThink v2.0架构简化版
     /// 合并了原BasePatient和PatientModel，包含完整患者档案信息
     /// 删除五笔码字段，保留拼音码用于快速搜索
     /// </summary>
     [Table("Patients")]
-    public class Patient
-    {
+    public class Patient {
+
         /// <summary>患者唯一标识</summary>
         [Key]
         [DisplayName("患者ID")]
@@ -117,16 +117,12 @@ namespace LYBT.Entities.Patients
         /// <summary>年龄（计算属性）</summary>
         [NotMapped]
         [DisplayName("年龄")]
-        public int? Age
-        {
-            get
-            {
-                if (BirthDate.HasValue)
-                {
+        public int? Age {
+            get {
+                if (BirthDate.HasValue) {
                     var today = DateTime.Today;
                     var age = today.Year - BirthDate.Value.Year;
-                    if (BirthDate.Value.Date > today.AddYears(-age))
-                    {
+                    if (BirthDate.Value.Date > today.AddYears(-age)) {
                         age--;
                     }
 
@@ -136,5 +132,4 @@ namespace LYBT.Entities.Patients
             }
         }
     }
-
 }

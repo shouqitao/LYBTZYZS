@@ -1,13 +1,12 @@
 ﻿using System.Collections.ObjectModel;
-using LYBT.Shared.Models.Contracts.Common;
 
-namespace LYBT.Desktop.Prescriptions.Constants
-{
+namespace LYBT.Desktop.Prescriptions.Constants {
+
     /// <summary>
     /// 处方相关常量定义
     /// </summary>
-    public static class PrescriptionConstants
-    {
+    public static class PrescriptionConstants {
+
         #region 用法用量常量
 
         /// <summary>
@@ -32,7 +31,7 @@ namespace LYBT.Desktop.Prescriptions.Constants
                 "每日1剂，水煎服，分2次温服，饭前服"
             });
 
-        #endregion
+        #endregion 用法用量常量
 
         #region 输入提示常量
 
@@ -51,7 +50,7 @@ namespace LYBT.Desktop.Prescriptions.Constants
         /// </summary>
         public const string RemarkHint = "（可选）补充说明...";
 
-        #endregion
+        #endregion 输入提示常量
 
         #region 默认值常量
 
@@ -75,7 +74,7 @@ namespace LYBT.Desktop.Prescriptions.Constants
         /// </summary>
         public const string PrescriptionNumberPrefix = "RX";
 
-        #endregion
+        #endregion 默认值常量
 
         #region 验证常量
 
@@ -104,7 +103,7 @@ namespace LYBT.Desktop.Prescriptions.Constants
         /// </summary>
         public const int MaxPrescriptionItems = 30;
 
-        #endregion
+        #endregion 验证常量
 
         #region 格式化常量
 
@@ -123,6 +122,6 @@ namespace LYBT.Desktop.Prescriptions.Constants
         /// </summary>
         public const string DosageFormat = "F1";
 
-        #endregion
+        #endregion 格式化常量
     }
 }

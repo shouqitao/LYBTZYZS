@@ -11,16 +11,17 @@
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
-    <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
-    <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
+    <GenerateAssemblyVersionAttribute>true</GenerateAssemblyVersionAttribute>
+    <GenerateAssemblyFileVersionAttribute>true</GenerateAssemblyFileVersionAttribute>
     <GenerateAssemblyInformationalVersionAttribute>false</GenerateAssemblyInformationalVersionAttribute>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
     
     <!-- 代码分析配置 -->
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-    <!-- 忽略常见的 StyleCop 警告，采用温和策略 -->
-    <NoWarn>SA1633;SA1200;SA1101;SA1309;SA1516;SA1600;SA1602;SA1649</NoWarn>
+    <!-- 恢复默认警告等级 -->
+    <WarningLevel>4</WarningLevel>
+    <NoWarn>$(NoWarn);SA1633;SA1200;SA1101;SA1309;SA1516;SA1600;SA1602;SA1649;SA1500;SA1202;SA1629;SA1413;SA1611;SA1402;SA1615;SA1124;SA1505;SA1204;SA1401;SA1201;SA1210;SA1208;SA1503;SA1623;SA1003;SA1203;SA1127;SA1134;SA1128;SA1214;SA1618;SA1012;CS8618;CS8625;CS8622;CS1570;CS1587;NU1903;CS0162;CS0414;CS0168;CS0219;CS0169;CS1591;IDE0005;IDE0051;IDE0052;IDE0058;IDE0059;IDE1006;MSB3061</NoWarn>
     
     <!-- 使用默认输出路径 -->
     <!-- 每个项目将输出到自己的 bin\$(Configuration)\$(TargetFramework) 目录 -->

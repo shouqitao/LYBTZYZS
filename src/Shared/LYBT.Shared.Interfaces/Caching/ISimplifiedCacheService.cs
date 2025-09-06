@@ -1,9 +1,7 @@
-﻿using System;
-using System.ComponentModel;
-using System.Threading.Tasks;
+﻿using System.ComponentModel;
 
-namespace LYBT.Shared.Interfaces.Caching
-{
+namespace LYBT.Shared.Interfaces.Caching {
+
     /// <summary>
     /// 简化缓存服务接口 - UltraThink精简架构标准
     /// </summary>
@@ -14,8 +12,8 @@ namespace LYBT.Shared.Interfaces.Caching
     /// <para>使用场景: 用户信息、药材数据、验方模板等频繁访问数据的缓存</para>
     /// </remarks>
     [Description("简化缓存服务 - 智能内存缓存，8个核心方法")]
-    public interface ISimplifiedCacheService
-    {
+    public interface ISimplifiedCacheService {
+
         #region 同步操作 - 高频快速访问
 
         /// <summary>
@@ -67,7 +65,7 @@ namespace LYBT.Shared.Interfaces.Caching
         /// </remarks>
         void Clear();
 
-        #endregion
+        #endregion 同步操作 - 高频快速访问
 
         #region 异步操作 - 复杂数据处理
 
@@ -134,6 +132,6 @@ namespace LYBT.Shared.Interfaces.Caching
         /// </remarks>
         Task<T> GetOrSetAsync<T>(string key, Func<Task<T>> factory, TimeSpan? expiration = null);
 
-        #endregion
+        #endregion 异步操作 - 复杂数据处理
     }
 }

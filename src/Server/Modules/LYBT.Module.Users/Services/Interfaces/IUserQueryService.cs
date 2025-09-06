@@ -1,18 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using LYBT.Shared.Models.Common;
-using LYBT.Shared.Models.Contracts.Common;
+﻿using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 
-namespace LYBT.Module.Users.Services.Interfaces
-{
+namespace LYBT.Module.Users.Services.Interfaces {
+
     /// <summary>
     /// 用户查询服务接口 - UltraThink三层架构
     /// 职责：复杂查询逻辑，搜索统计专业化处理
     /// </summary>
-    public interface IUserQueryService
-    {
+    public interface IUserQueryService {
+
         /// <summary>
         /// 根据ID获取用户
         /// </summary>

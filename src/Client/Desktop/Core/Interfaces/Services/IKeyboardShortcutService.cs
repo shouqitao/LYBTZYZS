@@ -1,15 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Windows.Input;
+﻿using System.Windows.Input;
 using LYBT.Desktop.Core.Services;
 
-namespace LYBT.Desktop.Core.Interfaces.Services
-{
+namespace LYBT.Desktop.Core.Interfaces.Services {
+
     /// <summary>
     /// 键盘快捷键服务接口 - P7-04 UltraThink用户体验优化
     /// </summary>
-    public interface IKeyboardShortcutService
-    {
+    public interface IKeyboardShortcutService {
+
         /// <summary>注册全局快捷键</summary>
         bool RegisterGlobalShortcut(KeyGesture keyGesture, Action action, string description = "");
 

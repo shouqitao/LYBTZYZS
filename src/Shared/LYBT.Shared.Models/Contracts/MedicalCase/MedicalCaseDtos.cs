@@ -1,17 +1,16 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Enums;
 
-namespace LYBT.Shared.Models.Contracts.MedicalCase
-{
+namespace LYBT.Shared.Models.Contracts.MedicalCase {
+
     /// <summary>
     /// 医疗案例DTO - UltraThink v2.0简化版
     /// 与MedicalCase实体对齐，保留ConsultationDate
     /// </summary>
-    public class MedicalCaseDto : StatusDto, IRemarkable
-    {
+    public class MedicalCaseDto : StatusDto, IRemarkable {
+
         [DisplayName("患者ID")]
         public Guid PatientId { get; set; }
 
@@ -42,16 +41,13 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
         public string? Remark { get; set; }
 
         /// <summary>获取优先级 - 基于看诊时间</summary>
-        public int GetPriority()
-        {
+        public int GetPriority() {
             var hoursElapsed = (DateTime.Now - ConsultationDate).TotalHours;
-            if (hoursElapsed > 48)
-            {
+            if (hoursElapsed > 48) {
                 return 3; // 高优先级
             }
 
-            if (hoursElapsed > 24)
-            {
+            if (hoursElapsed > 24) {
                 return 2; // 中优先级
             }
 
@@ -81,15 +77,13 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
 
         /// <summary>是否已完成</summary>
         public bool IsCompleted() => CaseStatus == MedicalCaseStatus.Completed;
-
-
     }
 
     /// <summary>
     /// 医疗案例详情DTO - 继承基础DTO，添加详细信息
     /// </summary>
-    public class MedicalCaseDetailDto : MedicalCaseDto
-    {
+    public class MedicalCaseDetailDto : MedicalCaseDto {
+
         [DisplayName("挂号ID")]
         public Guid? RegistrationId { get; set; }
 
@@ -124,8 +118,8 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
     /// <summary>
     /// 医疗案例输入基础DTO - 提供通用输入字段验证规则
     /// </summary>
-    public abstract class MedicalCaseInputBaseDto : IRemarkable
-    {
+    public abstract class MedicalCaseInputBaseDto : IRemarkable {
+
         [Required(ErrorMessage = "患者ID不能为空")]
         [DisplayName("患者ID")]
         public Guid PatientId { get; set; }
@@ -145,8 +139,8 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
     /// <summary>
     /// 创建医疗案例DTO - 继承医疗案例输入基础DTO
     /// </summary>
-    public class MedicalCaseCreateDto : MedicalCaseInputBaseDto
-    {
+    public class MedicalCaseCreateDto : MedicalCaseInputBaseDto {
+
         [StringLength(200, ErrorMessage = "诊断摘要长度不能超过200个字符")]
         [DisplayName("诊断摘要")]
         public string? DiagnosisSummary { get; set; }
@@ -155,8 +149,8 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
     /// <summary>
     /// 编辑医疗案例DTO - 继承医疗案例输入基础DTO并添加ID字段
     /// </summary>
-    public class MedicalCaseEditDto : MedicalCaseInputBaseDto, IIdentifiable<Guid>
-    {
+    public class MedicalCaseEditDto : MedicalCaseInputBaseDto, IIdentifiable<Guid> {
+
         [Required(ErrorMessage = "医疗案例ID不能为空")]
         [DisplayName("医疗案例ID")]
         public Guid Id { get; set; }
@@ -187,15 +181,12 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
 
         [DisplayName("状态")]
         public string? Status { get; set; }
-
-
     }
 
     /// <summary>
     /// 更新医疗案例DTO - 继承编辑DTO，用于更复杂的更新操作
     /// </summary>
-    public class MedicalCaseUpdateDto : MedicalCaseEditDto
-    {
+    public class MedicalCaseUpdateDto : MedicalCaseEditDto {
 
         [StringLength(1000, ErrorMessage = "体格检查长度不能超过1000个字符")]
         [DisplayName("体格检查")]
@@ -217,8 +208,8 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
     /// <summary>
     /// 医疗案例查询DTO - 继承完整分页查询DTO，提供分页、时间范围、关键词搜索功能
     /// </summary>
-    public class MedicalCaseQueryDto : ExtendedQueryDto
-    {
+    public class MedicalCaseQueryDto : ExtendedQueryDto {
+
         [DisplayName("患者ID")]
         public Guid? PatientId { get; set; }
 
@@ -238,8 +229,8 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
     /// <summary>
     /// 医疗案例统计DTO - 继承统计DTO基础类
     /// </summary>
-    public class MedicalCaseStatisticsDto : StatisticsDto
-    {
+    public class MedicalCaseStatisticsDto : StatisticsDto {
+
         [DisplayName("进行中案例数量")]
         public int InProgressCount { get; set; }
 
@@ -262,8 +253,7 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
     /// <summary>
     /// 医案验证结果DTO
     /// </summary>
-    public class MedicalCaseValidationResult
-    {
+    public class MedicalCaseValidationResult {
         public bool IsValid { get; set; } = true;
         public List<string> Errors { get; set; } = new();
     }
@@ -271,8 +261,8 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
     /// <summary>
     /// 医案统计摘要DTO
     /// </summary>
-    public class MedicalCaseStatisticsSummaryDto
-    {
+    public class MedicalCaseStatisticsSummaryDto {
+
         [DisplayName("总医案数")]
         public int TotalMedicalCases { get; set; }
 
@@ -298,8 +288,7 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
     /// <summary>
     /// 患者医案统计DTO
     /// </summary>
-    public class PatientMedicalCaseStatDto
-    {
+    public class PatientMedicalCaseStatDto {
         public Guid PatientId { get; set; }
 
         [DisplayName("患者姓名")]
@@ -327,8 +316,7 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
     /// <summary>
     /// 医生医案统计DTO
     /// </summary>
-    public class DoctorMedicalCaseStatisticsDto
-    {
+    public class DoctorMedicalCaseStatisticsDto {
         public Guid DoctorId { get; set; }
 
         [DisplayName("医生姓名")]
@@ -353,8 +341,8 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
     /// <summary>
     /// 医案批量操作结果DTO
     /// </summary>
-    public class MedicalCaseBatchOperationResultDto
-    {
+    public class MedicalCaseBatchOperationResultDto {
+
         [DisplayName("总数量")]
         public int TotalCount { get; set; }
 
@@ -380,8 +368,7 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
     /// <summary>
     /// 诊疗流程状态DTO
     /// </summary>
-    public class ConsultationWorkflowStatusDto
-    {
+    public class ConsultationWorkflowStatusDto {
         public Guid MedicalCaseId { get; set; }
 
         [DisplayName("当前状态")]
@@ -411,8 +398,8 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
     /// <summary>
     /// 医案高级搜索DTO
     /// </summary>
-    public class MedicalCaseAdvancedSearchDto : PagedQueryBaseDto
-    {
+    public class MedicalCaseAdvancedSearchDto : PagedQueryBaseDto {
+
         [DisplayName("患者ID")]
         public Guid? PatientId { get; set; }
 
@@ -435,8 +422,8 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
     /// <summary>
     /// 诊断频次统计DTO
     /// </summary>
-    public class DiagnosisFrequencyDto
-    {
+    public class DiagnosisFrequencyDto {
+
         [DisplayName("诊断名称")]
         public string DiagnosisName { get; set; } = string.Empty;
 
@@ -450,8 +437,8 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
     /// <summary>
     /// 医案时长分布DTO
     /// </summary>
-    public class MedicalCaseDurationDistributionDto
-    {
+    public class MedicalCaseDurationDistributionDto {
+
         [DisplayName("平均时长(分钟)")]
         public double AverageMinutes { get; set; }
 
@@ -468,8 +455,8 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
     /// <summary>
     /// 月度医案趋势DTO
     /// </summary>
-    public class MonthlyMedicalCaseTrendDto
-    {
+    public class MonthlyMedicalCaseTrendDto {
+
         [DisplayName("月份")]
         public string Month { get; set; } = string.Empty;
 
@@ -486,8 +473,8 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
     /// <summary>
     /// 医案高峰时段DTO
     /// </summary>
-    public class MedicalCasePeakHourDto
-    {
+    public class MedicalCasePeakHourDto {
+
         [DisplayName("小时")]
         public int Hour { get; set; }
 
@@ -501,8 +488,7 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
     /// <summary>
     /// 频繁就诊患者DTO
     /// </summary>
-    public class FrequentPatientDto
-    {
+    public class FrequentPatientDto {
         public Guid PatientId { get; set; }
 
         [DisplayName("患者姓名")]
@@ -521,8 +507,8 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
     /// <summary>
     /// 医案模式分析DTO
     /// </summary>
-    public class MedicalCasePatternDto
-    {
+    public class MedicalCasePatternDto {
+
         [DisplayName("模式名称")]
         public string PatternName { get; set; } = string.Empty;
 
@@ -536,8 +522,8 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
     /// <summary>
     /// 患者医案趋势DTO
     /// </summary>
-    public class PatientMedicalCaseTrendDto
-    {
+    public class PatientMedicalCaseTrendDto {
+
         [DisplayName("月份")]
         public string Month { get; set; } = string.Empty;
 
@@ -551,8 +537,7 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
     /// <summary>
     /// 医案患者信息DTO
     /// </summary>
-    public class MedicalCasePatientInfoDto
-    {
+    public class MedicalCasePatientInfoDto {
         public Guid MedicalCaseId { get; set; }
         public Guid PatientId { get; set; }
 
@@ -569,8 +554,7 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
     /// <summary>
     /// 医案看诊信息DTO
     /// </summary>
-    public class MedicalCaseConsultationInfoDto
-    {
+    public class MedicalCaseConsultationInfoDto {
         public Guid MedicalCaseId { get; set; }
         public Guid? ConsultationId { get; set; }
 
@@ -584,8 +568,8 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
     /// <summary>
     /// 医案完整信息DTO
     /// </summary>
-    public class MedicalCaseCompleteInfoDto : MedicalCaseDetailDto
-    {
+    public class MedicalCaseCompleteInfoDto : MedicalCaseDetailDto {
+
         [DisplayName("患者完整信息")]
         public string PatientFullInfo { get; set; } = string.Empty;
 
@@ -599,8 +583,8 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
     /// <summary>
     /// 医案缓存统计DTO
     /// </summary>
-    public class MedicalCaseCacheStatisticsDto
-    {
+    public class MedicalCaseCacheStatisticsDto {
+
         [DisplayName("缓存项总数")]
         public int TotalCacheItems { get; set; }
 
@@ -626,8 +610,8 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
     /// <summary>
     /// 医案查询性能统计DTO
     /// </summary>
-    public class MedicalCaseQueryPerformanceStatDto
-    {
+    public class MedicalCaseQueryPerformanceStatDto {
+
         [DisplayName("总查询次数")]
         public long TotalQueries { get; set; }
 

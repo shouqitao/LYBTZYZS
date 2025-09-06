@@ -1,44 +1,37 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
 using System.Security;
-using System.Threading.Tasks;
 using LYBT.Desktop.Core.Exceptions;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using SharedCommon = LYBT.Shared.Models.Contracts.Common;
 
-namespace LYBT.Desktop.Core.Services
-{
+namespace LYBT.Desktop.Core.Services {
+
     /// <summary>
     /// 错误分类器 - 识别和分类异常
     /// </summary>
-    public class ErrorClassifier : IErrorClassifier
-    {
+    public class ErrorClassifier : IErrorClassifier {
         private readonly ILogger<ErrorClassifier>? _logger;
 
-        public ErrorClassifier(ILogger<ErrorClassifier>? logger = null)
-        {
+        public ErrorClassifier(ILogger<ErrorClassifier>? logger = null) {
             _logger = logger;
         }
 
         /// <summary>
         /// 分类异常
         /// </summary>
-        public AppException ClassifyException(Exception exception)
-        {
+        public AppException ClassifyException(Exception exception) {
             // 如果已经是AppException，直接返回
-            if (exception is AppException appEx)
-            {
+            if (exception is AppException appEx) {
                 _logger?.LogDebug("异常已分类: {Category} - {Severity}", appEx.Category, appEx.Severity);
                 return appEx;
             }
 
             // 分析异常类型并分类
-            var classified = exception switch
-            {
+            var classified = exception switch {
                 // 网络相关
                 HttpRequestException httpEx => ClassifyHttpException(httpEx),
                 WebException webEx => ClassifyWebException(webEx),
@@ -100,20 +93,17 @@ namespace LYBT.Desktop.Core.Services
         /// <summary>
         /// 分类HTTP异常
         /// </summary>
-        private NetworkException ClassifyHttpException(HttpRequestException exception)
-        {
+        private NetworkException ClassifyHttpException(HttpRequestException exception) {
             var message = exception.Message;
             int? statusCode = null;
 
             // 尝试从内部异常获取状态码
             if (exception.InnerException is WebException webEx &&
-                webEx.Response is HttpWebResponse response)
-            {
+                webEx.Response is HttpWebResponse response) {
                 statusCode = (int)response.StatusCode;
             }
 
-            return new NetworkException(message, null, statusCode)
-            {
+            return new NetworkException(message, null, statusCode) {
                 Severity = DetermineNetworkSeverity(statusCode)
             };
         }
@@ -121,8 +111,7 @@ namespace LYBT.Desktop.Core.Services
         /// <summary>
         /// 分类Web异常
         /// </summary>
-        private NetworkException ClassifyWebException(WebException exception)
-        {
+        private NetworkException ClassifyWebException(WebException exception) {
             var statusCode = exception.Response is HttpWebResponse response
                 ? (int?)response.StatusCode
                 : null;
@@ -130,8 +119,7 @@ namespace LYBT.Desktop.Core.Services
             return new NetworkException(
                 exception.Message,
                 exception.Response?.ResponseUri?.ToString(),
-                statusCode)
-            {
+                statusCode) {
                 Severity = DetermineNetworkSeverity(statusCode)
             };
         }
@@ -139,10 +127,8 @@ namespace LYBT.Desktop.Core.Services
         /// <summary>
         /// 分类Socket异常
         /// </summary>
-        private NetworkException ClassifySocketException(SocketException exception)
-        {
-            var message = exception.SocketErrorCode switch
-            {
+        private NetworkException ClassifySocketException(SocketException exception) {
+            var message = exception.SocketErrorCode switch {
                 SocketError.HostNotFound => "无法找到服务器",
                 SocketError.ConnectionRefused => "连接被拒绝",
                 SocketError.TimedOut => "连接超时",
@@ -150,8 +136,7 @@ namespace LYBT.Desktop.Core.Services
                 _ => $"网络错误: {exception.SocketErrorCode}"
             };
 
-            return new NetworkException(message, null, (int)exception.SocketErrorCode)
-            {
+            return new NetworkException(message, null, (int)exception.SocketErrorCode) {
                 Severity = SharedCommon.ErrorSeverity.Error
             };
         }
@@ -159,10 +144,8 @@ namespace LYBT.Desktop.Core.Services
         /// <summary>
         /// 分类SQL异常
         /// </summary>
-        private DataAccessException ClassifySqlException(SqlException exception)
-        {
-            var message = exception.Number switch
-            {
+        private DataAccessException ClassifySqlException(SqlException exception) {
+            var message = exception.Number switch {
                 2627 => "数据重复，违反唯一约束",
                 547 => "外键约束冲突",
                 2601 => "违反唯一索引",
@@ -171,8 +154,7 @@ namespace LYBT.Desktop.Core.Services
                 _ => exception.Message
             };
 
-            return new DataAccessException(message, null, null)
-            {
+            return new DataAccessException(message, null, null) {
                 ErrorCode = $"SQL_{exception.Number}",
                 Severity = exception.Number == -2 ? SharedCommon.ErrorSeverity.Warning : SharedCommon.ErrorSeverity.Error
             };
@@ -181,22 +163,18 @@ namespace LYBT.Desktop.Core.Services
         /// <summary>
         /// 分类IO异常
         /// </summary>
-        private AppException ClassifyIOException(IOException exception)
-        {
-            if (exception.Message.Contains("正在被另一个进程使用"))
-            {
+        private AppException ClassifyIOException(IOException exception) {
+            if (exception.Message.Contains("正在被另一个进程使用")) {
                 return new AppException(
                     "文件被占用",
                     SharedCommon.ErrorCategory.FileSystem,
                     SharedCommon.ErrorSeverity.Warning,
-                    exception)
-                {
+                    exception) {
                     UserFriendlyMessage = "文件正在被使用，请稍后重试"
                 };
             }
 
-            if (exception.Message.Contains("磁盘空间不足"))
-            {
+            if (exception.Message.Contains("磁盘空间不足")) {
                 return new AppException(
                     "磁盘空间不足",
                     SharedCommon.ErrorCategory.FileSystem,
@@ -214,8 +192,7 @@ namespace LYBT.Desktop.Core.Services
         /// <summary>
         /// 判断是否为超时异常
         /// </summary>
-        private bool IsTimeout(Exception exception)
-        {
+        private bool IsTimeout(Exception exception) {
             return exception.Message.Contains("timeout", StringComparison.OrdinalIgnoreCase) ||
                    exception.Message.Contains("超时", StringComparison.OrdinalIgnoreCase);
         }
@@ -223,15 +200,12 @@ namespace LYBT.Desktop.Core.Services
         /// <summary>
         /// 确定网络错误严重程度
         /// </summary>
-        private SharedCommon.ErrorSeverity DetermineNetworkSeverity(int? statusCode)
-        {
-            if (!statusCode.HasValue)
-            {
+        private SharedCommon.ErrorSeverity DetermineNetworkSeverity(int? statusCode) {
+            if (!statusCode.HasValue) {
                 return SharedCommon.ErrorSeverity.Error;
             }
 
-            return statusCode.Value switch
-            {
+            return statusCode.Value switch {
                 >= 500 => SharedCommon.ErrorSeverity.Critical,  // 服务器错误
                 429 => SharedCommon.ErrorSeverity.Warning,      // 请求过多
                 401 or 403 => SharedCommon.ErrorSeverity.Warning, // 认证/授权
@@ -243,11 +217,9 @@ namespace LYBT.Desktop.Core.Services
         /// <summary>
         /// 确定异常严重程度
         /// </summary>
-        private SharedCommon.ErrorSeverity DetermineSeverity(Exception exception)
-        {
+        private SharedCommon.ErrorSeverity DetermineSeverity(Exception exception) {
             // 基于异常类型确定严重程度
-            return exception switch
-            {
+            return exception switch {
                 OutOfMemoryException => SharedCommon.ErrorSeverity.Fatal,
                 StackOverflowException => SharedCommon.ErrorSeverity.Fatal,
                 AccessViolationException => SharedCommon.ErrorSeverity.Fatal,
@@ -259,18 +231,15 @@ namespace LYBT.Desktop.Core.Services
         /// <summary>
         /// 构建技术详情
         /// </summary>
-        private string BuildTechnicalDetails(Exception exception)
-        {
+        private string BuildTechnicalDetails(Exception exception) {
             var details = $"异常类型: {exception.GetType().FullName}\n";
             details += $"消息: {exception.Message}\n";
 
-            if (!string.IsNullOrEmpty(exception.StackTrace))
-            {
+            if (!string.IsNullOrEmpty(exception.StackTrace)) {
                 details += $"堆栈跟踪:\n{exception.StackTrace}\n";
             }
 
-            if (exception.InnerException != null)
-            {
+            if (exception.InnerException != null) {
                 details += $"\n内部异常:\n{BuildTechnicalDetails(exception.InnerException)}";
             }
 
@@ -281,8 +250,8 @@ namespace LYBT.Desktop.Core.Services
     /// <summary>
     /// 错误分类器接口
     /// </summary>
-    public interface IErrorClassifier
-    {
+    public interface IErrorClassifier {
+
         AppException ClassifyException(Exception exception);
     }
 }

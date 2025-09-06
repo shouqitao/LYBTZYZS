@@ -1,9 +1,6 @@
-﻿using System;
-using System.Threading.Tasks;
-using LYBT.Desktop.Auth.Interfaces;
+﻿using LYBT.Desktop.Auth.Interfaces;
 using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Shared.Interfaces.Api;
-using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 using Microsoft.Extensions.Logging;
@@ -21,8 +18,7 @@ namespace LYBT.Desktop.Auth.Services;
 public class AuthQueryService(
     ILogger<AuthQueryService> logger,
     ISessionManager sessionManager,
-    IAuthApi authApi) : IAuthQueryService
-{
+    IAuthApi authApi) : IAuthQueryService {
     private readonly ILogger<AuthQueryService> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private readonly ISessionManager _sessionManager = sessionManager ?? throw new ArgumentNullException(nameof(sessionManager));
     private readonly IAuthApi _authApi = authApi ?? throw new ArgumentNullException(nameof(authApi));
@@ -34,20 +30,15 @@ public class AuthQueryService(
     /// 基于会话管理器实时查询当前用户认证状态
     /// </summary>
     /// <value>用户已认证且会话有效时返回true</value>
-    public bool IsLoggedIn
-    {
-        get
-        {
-            try
-            {
+    public bool IsLoggedIn {
+        get {
+            try {
                 var currentUser = _sessionManager.CurrentUser;
                 var hasValidSession = !string.IsNullOrEmpty(currentUser?.Id.ToString());
 
                 _logger.LogDebug("查询登录状态: {IsLoggedIn}", hasValidSession);
                 return hasValidSession;
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 _logger.LogError(ex, "查询登录状态时发生异常");
                 return false;
             }
@@ -59,22 +50,18 @@ public class AuthQueryService(
     /// 从会话管理器获取用户上下文，包含角色和权限信息
     /// </summary>
     /// <returns>当前用户DTO对象，未登录时返回null</returns>
-    public async Task<ServiceResult<UserDto?>> GetCurrentUserAsync()
-    {
-        try
-        {
+    public async Task<ServiceResult<UserDto?>> GetCurrentUserAsync() {
+        try {
             _logger.LogDebug("开始查询当前用户信息");
 
             var currentUser = _sessionManager.CurrentUser;
-            if (currentUser == null)
-            {
+            if (currentUser == null) {
                 _logger.LogDebug("当前无登录用户");
                 return ServiceResult<UserDto?>.Success(null);
             }
 
             // 构建用户DTO
-            var userDto = new UserDto
-            {
+            var userDto = new UserDto {
                 Id = currentUser.Id,
                 Username = currentUser.Username,
                 RealName = currentUser.RealName ?? currentUser.Username,
@@ -90,9 +77,7 @@ public class AuthQueryService(
                 userDto.Username, userDto.Role);
 
             return ServiceResult<UserDto?>.Success(userDto);
-        }
-        catch (Exception ex)
-        {
+        } catch (Exception ex) {
             _logger.LogError(ex, "获取当前用户信息时发生异常");
             return ServiceResult<UserDto?>.Failure("获取用户信息失败");
         }
@@ -103,10 +88,8 @@ public class AuthQueryService(
     /// 验证认证服务的可用性和网络连通性
     /// </summary>
     /// <returns>连接正常时返回true，异常时返回false</returns>
-    public async Task<ServiceResult<bool>> CheckConnectionAsync()
-    {
-        try
-        {
+    public async Task<ServiceResult<bool>> CheckConnectionAsync() {
+        try {
             _logger.LogDebug("开始检查API连接状态");
 
             // 简化实现：基于会话管理器状态判断
@@ -115,13 +98,11 @@ public class AuthQueryService(
 
             _logger.LogDebug("API连接状态检查完成: {IsConnected}", isConnected);
             return ServiceResult<bool>.Success(isConnected);
-        }
-        catch (Exception ex)
-        {
+        } catch (Exception ex) {
             _logger.LogWarning(ex, "API连接状态检查失败");
             return ServiceResult<bool>.Success(false);
         }
     }
 
-    #endregion
+    #endregion 认证状态查询专业化实现
 }

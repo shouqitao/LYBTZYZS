@@ -1,18 +1,17 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Enums;
 
-namespace LYBT.Shared.Models.Contracts.Common
-{
+namespace LYBT.Shared.Models.Contracts.Common {
+
     #region 核心接口定义
 
     /// <summary>
     /// 标识接口 - 提供唯一标识符
     /// </summary>
     /// <typeparam name="T">标识符类型</typeparam>
-    public interface IIdentifiable<T>
-    {
+    public interface IIdentifiable<T> {
+
         /// <summary>唯一标识符</summary>
         T Id { get; set; }
     }
@@ -20,8 +19,8 @@ namespace LYBT.Shared.Models.Contracts.Common
     /// <summary>
     /// 审计接口 - 提供创建和更新时间追踪
     /// </summary>
-    public interface IAuditable
-    {
+    public interface IAuditable {
+
         /// <summary>创建时间</summary>
         DateTime CreateTime { get; set; }
 
@@ -32,8 +31,8 @@ namespace LYBT.Shared.Models.Contracts.Common
     /// <summary>
     /// 状态管理接口 - 提供通用状态字段
     /// </summary>
-    public interface IStatusManageable
-    {
+    public interface IStatusManageable {
+
         /// <summary>状态</summary>
         CommonStatus Status { get; set; }
     }
@@ -41,8 +40,8 @@ namespace LYBT.Shared.Models.Contracts.Common
     /// <summary>
     /// 备注接口 - 提供备注字段
     /// </summary>
-    public interface IRemarkable
-    {
+    public interface IRemarkable {
+
         /// <summary>备注</summary>
         string? Remark { get; set; }
     }
@@ -50,8 +49,8 @@ namespace LYBT.Shared.Models.Contracts.Common
     /// <summary>
     /// 编码接口 - 提供拼音码和五笔码
     /// </summary>
-    public interface ICodeable
-    {
+    public interface ICodeable {
+
         /// <summary>拼音码</summary>
         string? PinYinCode { get; set; }
 
@@ -59,7 +58,7 @@ namespace LYBT.Shared.Models.Contracts.Common
         string? WuBiCode { get; set; }
     }
 
-    #endregion
+    #endregion 核心接口定义
 
     #region 简化DTO基础类体系 - UltraThink架构优化
 
@@ -67,8 +66,8 @@ namespace LYBT.Shared.Models.Contracts.Common
     /// 基础DTO抽象类 - 提供Guid类型的ID字段
     /// UltraThink简化：最小化基础类，只包含ID
     /// </summary>
-    public abstract class BaseDto : IIdentifiable<Guid>
-    {
+    public abstract class BaseDto : IIdentifiable<Guid> {
+
         /// <summary>唯一标识符</summary>
         [DisplayName("ID")]
         public Guid Id { get; set; }
@@ -78,8 +77,8 @@ namespace LYBT.Shared.Models.Contracts.Common
     /// 时间戳DTO抽象类 - 包含ID和审计时间字段
     /// UltraThink简化：统一审计时间管理
     /// </summary>
-    public abstract class TimestampDto : BaseDto, IAuditable
-    {
+    public abstract class TimestampDto : BaseDto, IAuditable {
+
         /// <summary>创建时间</summary>
         [DisplayName("创建时间")]
         public DateTime CreateTime { get; set; } = DateTime.Now;
@@ -93,8 +92,8 @@ namespace LYBT.Shared.Models.Contracts.Common
     /// 状态管理DTO抽象类 - 包含ID、时间戳和状态字段
     /// UltraThink简化：合并状态和时间戳管理
     /// </summary>
-    public abstract class StatusDto : TimestampDto, IStatusManageable
-    {
+    public abstract class StatusDto : TimestampDto, IStatusManageable {
+
         /// <summary>状态</summary>
         [DisplayName("状态")]
         public CommonStatus Status { get; set; } = CommonStatus.Enabled;
@@ -104,7 +103,7 @@ namespace LYBT.Shared.Models.Contracts.Common
         public bool IsEnabled => Status == CommonStatus.Enabled;
     }
 
-    #endregion
+    #endregion 简化DTO基础类体系 - UltraThink架构优化
 
     #region CRUD操作DTO基类 - UltraThink简化
 
@@ -112,8 +111,8 @@ namespace LYBT.Shared.Models.Contracts.Common
     /// 创建操作DTO基类 - 不包含ID（由系统生成）
     /// UltraThink简化：继承状态管理，添加备注支持
     /// </summary>
-    public abstract class CreateDtoBase : IStatusManageable, IRemarkable
-    {
+    public abstract class CreateDtoBase : IStatusManageable, IRemarkable {
+
         /// <summary>状态</summary>
         [DisplayName("状态")]
         public CommonStatus Status { get; set; } = CommonStatus.Enabled;
@@ -128,15 +127,15 @@ namespace LYBT.Shared.Models.Contracts.Common
     /// 更新操作DTO基类 - 包含ID用于标识要更新的实体
     /// UltraThink简化：使用StatusDto，添加备注支持
     /// </summary>
-    public abstract class UpdateDtoBase : StatusDto, IRemarkable
-    {
+    public abstract class UpdateDtoBase : StatusDto, IRemarkable {
+
         /// <summary>备注</summary>
         [StringLength(500, ErrorMessage = "备注长度不能超过500个字符")]
         [DisplayName("备注")]
         public string? Remark { get; set; }
     }
 
-    #endregion
+    #endregion CRUD操作DTO基类 - UltraThink简化
 
     #region 查询DTO基类 - UltraThink简化
 
@@ -144,8 +143,8 @@ namespace LYBT.Shared.Models.Contracts.Common
     /// 扩展查询DTO基类 - 在分页基础上添加常用查询字段
     /// UltraThink简化：合并常用查询功能，避免多层继承
     /// </summary>
-    public abstract class ExtendedQueryDto : PagedQueryBaseDto
-    {
+    public abstract class ExtendedQueryDto : PagedQueryBaseDto {
+
         /// <summary>状态筛选</summary>
         [DisplayName("状态")]
         public CommonStatus? Status { get; set; }
@@ -171,7 +170,7 @@ namespace LYBT.Shared.Models.Contracts.Common
         public string? WuBiCode { get; set; }
     }
 
-    #endregion
+    #endregion 查询DTO基类 - UltraThink简化
 
     #region 统计DTO基类 - UltraThink简化
 
@@ -179,8 +178,8 @@ namespace LYBT.Shared.Models.Contracts.Common
     /// 统计DTO基类 - 提供通用统计字段和状态统计
     /// UltraThink简化：合并基础统计和状态统计功能
     /// </summary>
-    public abstract class StatisticsDto
-    {
+    public abstract class StatisticsDto {
+
         /// <summary>总数</summary>
         [DisplayName("总数")]
         public int TotalCount { get; set; }
@@ -202,5 +201,5 @@ namespace LYBT.Shared.Models.Contracts.Common
         public int DeletedCount { get; set; }
     }
 
-    #endregion
+    #endregion 统计DTO基类 - UltraThink简化
 }

@@ -1,32 +1,29 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
-namespace LYBT.Shared.Models.Contracts.Common
-{
+namespace LYBT.Shared.Models.Contracts.Common {
+
     /// <summary>
     /// 统一分页结果模型 - UltraThink架构统一
     /// </summary>
     /// <typeparam name="T">数据类型</typeparam>
-    public class PagedResult<T>
-    {
+    public class PagedResult<T> {
+
         /// <summary>
         /// UltraThink统一构造函数
         /// </summary>
-        public PagedResult()
-        {
+        public PagedResult() {
         }
 
         /// <summary>
         /// UltraThink统一构造函数 - 4参数版本
         /// </summary>
-        public PagedResult(List<T> items, int totalCount, int currentPage, int pageSize)
-        {
+        public PagedResult(List<T> items, int totalCount, int currentPage, int pageSize) {
             Items = items ?? new List<T>();
             TotalCount = totalCount;
             CurrentPage = currentPage;
             PageSize = pageSize;
         }
+
         /// <summary>数据列表</summary>
         [JsonPropertyName("items")]
         public List<T> Items { get; set; } = new List<T>();

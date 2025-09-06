@@ -1,7 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using LYBT.Shared.Models.Common;
-using LYBT.Shared.Models.Contracts.Common;
+﻿using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
 
 namespace LYBT.Desktop.Patients.Interfaces;
@@ -10,8 +7,8 @@ namespace LYBT.Desktop.Patients.Interfaces;
 /// 患者业务服务接口 - UltraThink双层架构简化版
 /// 职责：基础业务操作
 /// </summary>
-public interface IPatientBusinessService
-{
+public interface IPatientBusinessService {
+
     /// <summary>
     /// 创建患者
     /// </summary>

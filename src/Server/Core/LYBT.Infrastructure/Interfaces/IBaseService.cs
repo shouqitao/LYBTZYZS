@@ -1,7 +1,7 @@
 ﻿using LYBT.Shared.Models.Contracts.Common;
 
-namespace LYBT.Infrastructure.Interfaces
-{
+namespace LYBT.Infrastructure.Interfaces {
+
     /// <summary>
     /// 基础服务接口 - Solution级架构标准化
     /// 定义所有模块服务的通用规范，确保架构一致性
@@ -16,8 +16,8 @@ namespace LYBT.Infrastructure.Interfaces
         where TDto : class
         where TCreateDto : class
         where TUpdateDto : class
-        where TQueryDto : class
-    {
+        where TQueryDto : class {
+
         /// <summary>
         /// 获取分页数据
         /// </summary>
@@ -64,8 +64,8 @@ namespace LYBT.Infrastructure.Interfaces
     /// </summary>
     public interface IBaseReadOnlyService<TDto, TQueryDto>
         where TDto : class
-        where TQueryDto : class
-    {
+        where TQueryDto : class {
+
         /// <summary>
         /// 获取分页数据
         /// </summary>

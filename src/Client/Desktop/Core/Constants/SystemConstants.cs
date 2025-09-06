@@ -1,13 +1,11 @@
-﻿using System;
+﻿namespace LYBT.Desktop.Core.Constants {
 
-namespace LYBT.Desktop.Core.Constants
-{
     /// <summary>
     /// 系统常量定义
     /// UltraThink架构：统一管理系统中的硬编码字符串，提升可维护性
     /// </summary>
-    public static class SystemConstants
-    {
+    public static class SystemConstants {
+
         #region 用户角色常量
 
         /// <summary>
@@ -35,7 +33,7 @@ namespace LYBT.Desktop.Core.Constants
         /// </summary>
         public const string ReceptionistRole = "Receptionist";
 
-        #endregion
+        #endregion 用户角色常量
 
         #region 系统标题常量
 
@@ -54,7 +52,7 @@ namespace LYBT.Desktop.Core.Constants
         /// </summary>
         public const string MainWindowDefaultTitle = SystemTitle;
 
-        #endregion
+        #endregion 系统标题常量
 
         #region 默认单位常量
 
@@ -68,7 +66,7 @@ namespace LYBT.Desktop.Core.Constants
         /// </summary>
         public const string DefaultIdType = "身份证";
 
-        #endregion
+        #endregion 默认单位常量
 
         #region 对话框常量
 
@@ -97,7 +95,7 @@ namespace LYBT.Desktop.Core.Constants
         /// </summary>
         public const string InfoTitle = "信息";
 
-        #endregion
+        #endregion 对话框常量
 
         #region 操作消息常量
 
@@ -126,7 +124,7 @@ namespace LYBT.Desktop.Core.Constants
         /// </summary>
         public const string LogoutConfirmMessage = "确定要退出登录吗？";
 
-        #endregion
+        #endregion 操作消息常量
 
         #region 状态消息常量
 
@@ -145,15 +143,14 @@ namespace LYBT.Desktop.Core.Constants
         /// </summary>
         public const string CheckingApiConnectionMessage = "正在检测API连接...";
 
-        #endregion
+        #endregion 状态消息常量
 
         #region 角色显示名称常量
 
         /// <summary>
         /// 角色显示名称映射
         /// </summary>
-        public static class RoleDisplayNames
-        {
+        public static class RoleDisplayNames {
             public const string Doctor = "医生";
             public const string Admin = "管理员";
             public const string Pharmacist = "药师";
@@ -163,15 +160,14 @@ namespace LYBT.Desktop.Core.Constants
             public const string SuperAdmin = "超级管理员";
         }
 
-        #endregion
+        #endregion 角色显示名称常量
 
         #region 模块名称常量
 
         /// <summary>
         /// 模块名称
         /// </summary>
-        public static class ModuleNames
-        {
+        public static class ModuleNames {
             public const string Auth = "认证模块";
             public const string Users = "用户管理";
             public const string Patients = "患者管理";
@@ -182,7 +178,7 @@ namespace LYBT.Desktop.Core.Constants
             public const string Formula = "验方管理";
         }
 
-        #endregion
+        #endregion 模块名称常量
 
         #region 对话框标题常量
 
@@ -221,7 +217,7 @@ namespace LYBT.Desktop.Core.Constants
         /// </summary>
         public const string CreateMedicalCaseDialogTitle = "创建医疗案例";
 
-        #endregion
+        #endregion 对话框标题常量
 
         #region 开发状态常量
 
@@ -245,14 +241,14 @@ namespace LYBT.Desktop.Core.Constants
         /// </summary>
         public const string FeatureNotImplementedMessage = "功能尚未实现";
 
-        #endregion
+        #endregion 开发状态常量
     }
 
     /// <summary>
     /// 错误消息常量
     /// </summary>
-    public static class ErrorMessages
-    {
+    public static class ErrorMessages {
+
         #region 通用错误消息
 
         public const string UnknownError = "未知错误";
@@ -262,7 +258,7 @@ namespace LYBT.Desktop.Core.Constants
         public const string UpdateFailed = "更新失败";
         public const string LoadFailed = "加载失败";
 
-        #endregion
+        #endregion 通用错误消息
 
         #region 验证错误消息
 
@@ -272,7 +268,7 @@ namespace LYBT.Desktop.Core.Constants
         public const string InvalidIdNumber = "证件号码格式无效";
         public const string PriceMustBePositive = "价格必须大于0";
 
-        #endregion
+        #endregion 验证错误消息
 
         #region 业务错误消息
 
@@ -281,6 +277,6 @@ namespace LYBT.Desktop.Core.Constants
         public const string UserNotFound = "找不到指定的用户";
         public const string DuplicateData = "数据已存在，不能重复添加";
 
-        #endregion
+        #endregion 业务错误消息
     }
 }

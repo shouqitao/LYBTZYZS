@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using LYBT.Shared.Models.Contracts.Common;
+﻿namespace LYBT.Desktop.Core.Models.Cache {
 
-namespace LYBT.Desktop.Core.Models.Cache
-{
     /// <summary>
     /// 缓存项
     /// </summary>
     /// <typeparam name="T">缓存值类型</typeparam>
-    public class CacheEntry<T> : CacheEntryBase
-    {
+    public class CacheEntry<T> : CacheEntryBase {
+
         /// <summary>
         /// 缓存值
         /// </summary>
@@ -19,32 +15,26 @@ namespace LYBT.Desktop.Core.Models.Cache
         /// 获取缓存值
         /// </summary>
         /// <returns>缓存值</returns>
-        public override object? GetValue()
-        {
+        public override object? GetValue() {
             return Value;
         }
 
         /// <summary>
         /// 是否已过期
         /// </summary>
-        public override bool IsExpired
-        {
-            get
-            {
+        public override bool IsExpired {
+            get {
                 var now = DateTimeOffset.Now;
 
                 // 检查绝对过期时间
-                if (AbsoluteExpiration.HasValue && now >= AbsoluteExpiration.Value)
-                {
+                if (AbsoluteExpiration.HasValue && now >= AbsoluteExpiration.Value) {
                     return true;
                 }
 
                 // 检查滑动过期时间
-                if (SlidingExpiration.HasValue)
-                {
+                if (SlidingExpiration.HasValue) {
                     var slidingExpiry = LastAccessedAt.Add(SlidingExpiration.Value);
-                    if (DateTime.Now >= slidingExpiry)
-                    {
+                    if (DateTime.Now >= slidingExpiry) {
                         return true;
                     }
                 }
@@ -56,18 +46,14 @@ namespace LYBT.Desktop.Core.Models.Cache
         /// <summary>
         /// 剩余生存时间
         /// </summary>
-        public override TimeSpan? TimeToLive
-        {
-            get
-            {
-                if (AbsoluteExpiration.HasValue)
-                {
+        public override TimeSpan? TimeToLive {
+            get {
+                if (AbsoluteExpiration.HasValue) {
                     var ttl = AbsoluteExpiration.Value - DateTimeOffset.Now;
                     return ttl > TimeSpan.Zero ? ttl : TimeSpan.Zero;
                 }
 
-                if (SlidingExpiration.HasValue)
-                {
+                if (SlidingExpiration.HasValue) {
                     var ttl = LastAccessedAt.Add(SlidingExpiration.Value) - DateTime.Now;
                     return ttl > TimeSpan.Zero ? ttl : TimeSpan.Zero;
                 }
@@ -83,10 +69,8 @@ namespace LYBT.Desktop.Core.Models.Cache
         /// <param name="value">缓存值</param>
         /// <param name="policy">缓存策略</param>
         /// <returns>缓存项实例</returns>
-        public static CacheEntry<T> Create(string key, T value, CachePolicy policy)
-        {
-            return new CacheEntry<T>
-            {
+        public static CacheEntry<T> Create(string key, T value, CachePolicy policy) {
+            return new CacheEntry<T> {
                 Key = key,
                 Value = value,
                 CreatedAt = DateTime.Now,
@@ -106,24 +90,20 @@ namespace LYBT.Desktop.Core.Models.Cache
         /// </summary>
         /// <param name="obj">对象</param>
         /// <returns>估算大小（字节）</returns>
-        private static long EstimateSize(T? obj)
-        {
-            if (obj == null)
-            {
+        private static long EstimateSize(T? obj) {
+            if (obj == null) {
                 return 0;
             }
 
             // 基本类型的大小估算
             var type = typeof(T);
 
-            if (type == typeof(string))
-            {
+            if (type == typeof(string)) {
                 var str = obj as string;
                 return str?.Length * 2 ?? 0; // Unicode字符占用2字节
             }
 
-            if (type.IsPrimitive)
-            {
+            if (type.IsPrimitive) {
                 return type == typeof(bool) ? 1 :
                        type == typeof(byte) ? 1 :
                        type == typeof(sbyte) ? 1 :
@@ -139,29 +119,24 @@ namespace LYBT.Desktop.Core.Models.Cache
                        8; // 默认8字节
             }
 
-            if (type == typeof(DateTime))
-            {
+            if (type == typeof(DateTime)) {
                 return 8;
             }
 
-            if (type == typeof(DateTimeOffset))
-            {
+            if (type == typeof(DateTimeOffset)) {
                 return 16;
             }
 
-            if (type == typeof(TimeSpan))
-            {
+            if (type == typeof(TimeSpan)) {
                 return 8;
             }
 
-            if (type == typeof(Guid))
-            {
+            if (type == typeof(Guid)) {
                 return 16;
             }
 
             // 集合类型的粗略估算
-            if (obj is System.Collections.ICollection collection)
-            {
+            if (obj is System.Collections.ICollection collection) {
                 return collection.Count * 64; // 每个元素假设64字节
             }
 
@@ -173,8 +148,8 @@ namespace LYBT.Desktop.Core.Models.Cache
     /// <summary>
     /// 非泛型缓存项基类
     /// </summary>
-    public abstract class CacheEntryBase
-    {
+    public abstract class CacheEntryBase {
+
         /// <summary>
         /// 缓存键
         /// </summary>
@@ -244,8 +219,7 @@ namespace LYBT.Desktop.Core.Models.Cache
         /// <summary>
         /// 更新访问统计
         /// </summary>
-        public virtual void UpdateAccessStats()
-        {
+        public virtual void UpdateAccessStats() {
             LastAccessedAt = DateTime.Now;
             AccessCount++;
         }
@@ -254,8 +228,7 @@ namespace LYBT.Desktop.Core.Models.Cache
     /// <summary>
     /// 缓存优先级
     /// </summary>
-    public enum CachePriority
-    {
+    public enum CachePriority {
         Low,
         Normal,
         High,
@@ -265,8 +238,8 @@ namespace LYBT.Desktop.Core.Models.Cache
     /// <summary>
     /// 缓存策略
     /// </summary>
-    public class CachePolicy
-    {
+    public class CachePolicy {
+
         /// <summary>
         /// 绝对过期时间
         /// </summary>
@@ -297,10 +270,8 @@ namespace LYBT.Desktop.Core.Models.Cache
         /// </summary>
         /// <param name="expiration">过期时间</param>
         /// <returns>缓存策略</returns>
-        public static CachePolicy Default(TimeSpan expiration)
-        {
-            return new CachePolicy
-            {
+        public static CachePolicy Default(TimeSpan expiration) {
+            return new CachePolicy {
                 SlidingExpiration = expiration
             };
         }
@@ -310,10 +281,8 @@ namespace LYBT.Desktop.Core.Models.Cache
         /// </summary>
         /// <param name="expiration">绝对过期时间</param>
         /// <returns>缓存策略</returns>
-        public static CachePolicy Absolute(DateTimeOffset expiration)
-        {
-            return new CachePolicy
-            {
+        public static CachePolicy Absolute(DateTimeOffset expiration) {
+            return new CachePolicy {
                 AbsoluteExpiration = expiration
             };
         }
@@ -323,10 +292,8 @@ namespace LYBT.Desktop.Core.Models.Cache
         /// </summary>
         /// <param name="expiration">滑动过期时间</param>
         /// <returns>缓存策略</returns>
-        public static CachePolicy Sliding(TimeSpan expiration)
-        {
-            return new CachePolicy
-            {
+        public static CachePolicy Sliding(TimeSpan expiration) {
+            return new CachePolicy {
                 SlidingExpiration = expiration
             };
         }
@@ -335,8 +302,8 @@ namespace LYBT.Desktop.Core.Models.Cache
     /// <summary>
     /// 缓存统计信息
     /// </summary>
-    public class CacheStatistics
-    {
+    public class CacheStatistics {
+
         /// <summary>
         /// 命中次数
         /// </summary>

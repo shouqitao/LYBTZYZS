@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-using LYBT.Shared.Models.Common;
-using LYBT.Shared.Models.Contracts.Auth;
+﻿using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Desktop.Auth.Interfaces;
@@ -9,8 +7,8 @@ namespace LYBT.Desktop.Auth.Interfaces;
 /// 认证业务服务接口 - UltraThink双层架构简化版
 /// 职责：基础认证操作
 /// </summary>
-public interface IAuthBusinessService
-{
+public interface IAuthBusinessService {
+
     #region 基础认证流程
 
     /// <summary>
@@ -33,5 +31,5 @@ public interface IAuthBusinessService
     /// </summary>
     Task<ServiceResult> ChangeSysAdminPasswordAsync(ChangeSysAdminPassword request);
 
-    #endregion
+    #endregion 基础认证流程
 }

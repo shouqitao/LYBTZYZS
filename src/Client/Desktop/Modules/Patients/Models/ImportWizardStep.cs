@@ -1,10 +1,10 @@
-﻿namespace LYBT.Desktop.Patients.Models
-{
+﻿namespace LYBT.Desktop.Patients.Models {
+
     /// <summary>
     /// 导入向导步骤枚举
     /// </summary>
-    public enum ImportWizardStep
-    {
+    public enum ImportWizardStep {
+
         /// <summary>
         /// 步骤1：模板下载
         /// </summary>
@@ -29,8 +29,8 @@
     /// <summary>
     /// 导入进度信息
     /// </summary>
-    public class ImportProgressInfo
-    {
+    public class ImportProgressInfo {
+
         /// <summary>
         /// 进度百分比 (0-100)
         /// </summary>
@@ -60,8 +60,8 @@
     /// <summary>
     /// 导入验证结果
     /// </summary>
-    public class ImportValidationResult
-    {
+    public class ImportValidationResult {
+
         /// <summary>
         /// 验证是否通过
         /// </summary>

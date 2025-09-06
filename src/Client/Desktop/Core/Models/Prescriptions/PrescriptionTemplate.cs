@@ -1,19 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
 
-namespace LYBT.Desktop.Core.Models.Prescriptions
-{
+namespace LYBT.Desktop.Core.Models.Prescriptions {
+
     /// <summary>
     /// 处方模板
     /// 用于保存常用处方配置，提高开方效率
     /// </summary>
-    public class PrescriptionTemplate : INotifyPropertyChanged
-    {
+    public class PrescriptionTemplate : INotifyPropertyChanged {
         private Guid _id = Guid.NewGuid();
         private string _name = string.Empty;
         private string _category = string.Empty;
@@ -35,8 +31,7 @@ namespace LYBT.Desktop.Core.Models.Prescriptions
         /// <summary>
         /// 模板ID
         /// </summary>
-        public Guid Id
-        {
+        public Guid Id {
             get => _id;
             set => SetProperty(ref _id, value);
         }
@@ -44,8 +39,7 @@ namespace LYBT.Desktop.Core.Models.Prescriptions
         /// <summary>
         /// 模板名称
         /// </summary>
-        public string Name
-        {
+        public string Name {
             get => _name;
             set => SetProperty(ref _name, value);
         }
@@ -53,8 +47,7 @@ namespace LYBT.Desktop.Core.Models.Prescriptions
         /// <summary>
         /// 模板分类（如：感冒类、脾胃类、妇科类等）
         /// </summary>
-        public string Category
-        {
+        public string Category {
             get => _category;
             set => SetProperty(ref _category, value);
         }
@@ -62,8 +55,7 @@ namespace LYBT.Desktop.Core.Models.Prescriptions
         /// <summary>
         /// 适用诊断
         /// </summary>
-        public string Diagnosis
-        {
+        public string Diagnosis {
             get => _diagnosis;
             set => SetProperty(ref _diagnosis, value);
         }
@@ -71,8 +63,7 @@ namespace LYBT.Desktop.Core.Models.Prescriptions
         /// <summary>
         /// 适用证型
         /// </summary>
-        public string Syndrome
-        {
+        public string Syndrome {
             get => _syndrome;
             set => SetProperty(ref _syndrome, value);
         }
@@ -80,8 +71,7 @@ namespace LYBT.Desktop.Core.Models.Prescriptions
         /// <summary>
         /// 治则治法
         /// </summary>
-        public string TreatmentPrinciple
-        {
+        public string TreatmentPrinciple {
             get => _treatmentPrinciple;
             set => SetProperty(ref _treatmentPrinciple, value);
         }
@@ -89,8 +79,7 @@ namespace LYBT.Desktop.Core.Models.Prescriptions
         /// <summary>
         /// 用法用量
         /// </summary>
-        public string Usage
-        {
+        public string Usage {
             get => _usage;
             set => SetProperty(ref _usage, value);
         }
@@ -98,8 +87,7 @@ namespace LYBT.Desktop.Core.Models.Prescriptions
         /// <summary>
         /// 默认剂数
         /// </summary>
-        public int DosageCount
-        {
+        public int DosageCount {
             get => _dosageCount;
             set => SetProperty(ref _dosageCount, value);
         }
@@ -107,8 +95,7 @@ namespace LYBT.Desktop.Core.Models.Prescriptions
         /// <summary>
         /// 备注说明
         /// </summary>
-        public string Remark
-        {
+        public string Remark {
             get => _remark;
             set => SetProperty(ref _remark, value);
         }
@@ -116,8 +103,7 @@ namespace LYBT.Desktop.Core.Models.Prescriptions
         /// <summary>
         /// 模板药材项目
         /// </summary>
-        public List<PrescriptionTemplateItem> Items
-        {
+        public List<PrescriptionTemplateItem> Items {
             get => _items;
             set => SetProperty(ref _items, value);
         }
@@ -125,8 +111,7 @@ namespace LYBT.Desktop.Core.Models.Prescriptions
         /// <summary>
         /// 是否公开（全院共享）
         /// </summary>
-        public bool IsPublic
-        {
+        public bool IsPublic {
             get => _isPublic;
             set => SetProperty(ref _isPublic, value);
         }
@@ -134,8 +119,7 @@ namespace LYBT.Desktop.Core.Models.Prescriptions
         /// <summary>
         /// 是否启用
         /// </summary>
-        public bool IsActive
-        {
+        public bool IsActive {
             get => _isActive;
             set => SetProperty(ref _isActive, value);
         }
@@ -143,8 +127,7 @@ namespace LYBT.Desktop.Core.Models.Prescriptions
         /// <summary>
         /// 创建人ID
         /// </summary>
-        public Guid CreatorId
-        {
+        public Guid CreatorId {
             get => _creatorId;
             set => SetProperty(ref _creatorId, value);
         }
@@ -152,8 +135,7 @@ namespace LYBT.Desktop.Core.Models.Prescriptions
         /// <summary>
         /// 创建人姓名
         /// </summary>
-        public string CreatorName
-        {
+        public string CreatorName {
             get => _creatorName;
             set => SetProperty(ref _creatorName, value);
         }
@@ -161,8 +143,7 @@ namespace LYBT.Desktop.Core.Models.Prescriptions
         /// <summary>
         /// 创建时间
         /// </summary>
-        public DateTime CreateTime
-        {
+        public DateTime CreateTime {
             get => _createTime;
             set => SetProperty(ref _createTime, value);
         }
@@ -170,8 +151,7 @@ namespace LYBT.Desktop.Core.Models.Prescriptions
         /// <summary>
         /// 更新时间
         /// </summary>
-        public DateTime? UpdateTime
-        {
+        public DateTime? UpdateTime {
             get => _updateTime;
             set => SetProperty(ref _updateTime, value);
         }
@@ -179,8 +159,7 @@ namespace LYBT.Desktop.Core.Models.Prescriptions
         /// <summary>
         /// 使用次数
         /// </summary>
-        public int UsageCount
-        {
+        public int UsageCount {
             get => _usageCount;
             set => SetProperty(ref _usageCount, value);
         }
@@ -208,13 +187,10 @@ namespace LYBT.Desktop.Core.Models.Prescriptions
         /// <summary>
         /// 计算总价
         /// </summary>
-        private decimal CalculateTotalPrice()
-        {
+        private decimal CalculateTotalPrice() {
             decimal total = 0;
-            if (Items != null)
-            {
-                foreach (var item in Items)
-                {
+            if (Items != null) {
+                foreach (var item in Items) {
                     total += item.Quantity * item.EstimatedPrice;
                 }
             }
@@ -224,10 +200,8 @@ namespace LYBT.Desktop.Core.Models.Prescriptions
         /// <summary>
         /// 应用模板到处方
         /// </summary>
-        public PrescriptionDto ApplyToNewPrescription(Guid patientId)
-        {
-            var prescription = new PrescriptionDto
-            {
+        public PrescriptionDto ApplyToNewPrescription(Guid patientId) {
+            var prescription = new PrescriptionDto {
                 Id = Guid.NewGuid(),
                 PatientId = patientId,
                 Indication = Diagnosis,
@@ -239,10 +213,8 @@ namespace LYBT.Desktop.Core.Models.Prescriptions
             };
 
             // 复制药材项目
-            foreach (var templateItem in Items)
-            {
-                prescription.Items.Add(new PrescriptionItemDto
-                {
+            foreach (var templateItem in Items) {
+                prescription.Items.Add(new PrescriptionItemDto {
                     HerbId = templateItem.HerbId,
                     HerbName = templateItem.HerbName,
                     Quantity = templateItem.Quantity,
@@ -262,10 +234,8 @@ namespace LYBT.Desktop.Core.Models.Prescriptions
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        protected bool SetProperty<T>(ref T storage, T value, [CallerMemberName] string propertyName = null!)
-        {
-            if (EqualityComparer<T>.Default.Equals(storage, value))
-            {
+        protected bool SetProperty<T>(ref T storage, T value, [CallerMemberName] string propertyName = null!) {
+            if (EqualityComparer<T>.Default.Equals(storage, value)) {
                 return false;
             }
 
@@ -274,19 +244,17 @@ namespace LYBT.Desktop.Core.Models.Prescriptions
             return true;
         }
 
-        protected void OnPropertyChanged([CallerMemberName] string propertyName = null!)
-        {
+        protected void OnPropertyChanged([CallerMemberName] string propertyName = null!) {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        #endregion
+        #endregion INotifyPropertyChanged
     }
 
     /// <summary>
     /// 处方模板项目
     /// </summary>
-    public class PrescriptionTemplateItem : INotifyPropertyChanged
-    {
+    public class PrescriptionTemplateItem : INotifyPropertyChanged {
         private Guid _id = Guid.NewGuid();
         private Guid _templateId = Guid.Empty;
         private Guid _herbId = Guid.Empty;
@@ -301,8 +269,7 @@ namespace LYBT.Desktop.Core.Models.Prescriptions
         /// <summary>
         /// 项目ID
         /// </summary>
-        public Guid Id
-        {
+        public Guid Id {
             get => _id;
             set => SetProperty(ref _id, value);
         }
@@ -310,8 +277,7 @@ namespace LYBT.Desktop.Core.Models.Prescriptions
         /// <summary>
         /// 模板ID
         /// </summary>
-        public Guid TemplateId
-        {
+        public Guid TemplateId {
             get => _templateId;
             set => SetProperty(ref _templateId, value);
         }
@@ -319,8 +285,7 @@ namespace LYBT.Desktop.Core.Models.Prescriptions
         /// <summary>
         /// 药材ID
         /// </summary>
-        public Guid HerbId
-        {
+        public Guid HerbId {
             get => _herbId;
             set => SetProperty(ref _herbId, value);
         }
@@ -328,8 +293,7 @@ namespace LYBT.Desktop.Core.Models.Prescriptions
         /// <summary>
         /// 药材名称
         /// </summary>
-        public string HerbName
-        {
+        public string HerbName {
             get => _herbName;
             set => SetProperty(ref _herbName, value);
         }
@@ -337,13 +301,10 @@ namespace LYBT.Desktop.Core.Models.Prescriptions
         /// <summary>
         /// 数量
         /// </summary>
-        public decimal Quantity
-        {
+        public decimal Quantity {
             get => _quantity;
-            set
-            {
-                if (SetProperty(ref _quantity, value))
-                {
+            set {
+                if (SetProperty(ref _quantity, value)) {
                     OnPropertyChanged(nameof(Subtotal));
                 }
             }
@@ -352,8 +313,7 @@ namespace LYBT.Desktop.Core.Models.Prescriptions
         /// <summary>
         /// 单位
         /// </summary>
-        public string Unit
-        {
+        public string Unit {
             get => _unit;
             set => SetProperty(ref _unit, value);
         }
@@ -361,13 +321,10 @@ namespace LYBT.Desktop.Core.Models.Prescriptions
         /// <summary>
         /// 预估单价
         /// </summary>
-        public decimal EstimatedPrice
-        {
+        public decimal EstimatedPrice {
             get => _estimatedPrice;
-            set
-            {
-                if (SetProperty(ref _estimatedPrice, value))
-                {
+            set {
+                if (SetProperty(ref _estimatedPrice, value)) {
                     OnPropertyChanged(nameof(Subtotal));
                 }
             }
@@ -376,8 +333,7 @@ namespace LYBT.Desktop.Core.Models.Prescriptions
         /// <summary>
         /// 炮制方法（如：炒、炙、煅等）
         /// </summary>
-        public string ProcessMethod
-        {
+        public string ProcessMethod {
             get => _processMethod;
             set => SetProperty(ref _processMethod, value);
         }
@@ -385,8 +341,7 @@ namespace LYBT.Desktop.Core.Models.Prescriptions
         /// <summary>
         /// 备注
         /// </summary>
-        public string Remark
-        {
+        public string Remark {
             get => _remark;
             set => SetProperty(ref _remark, value);
         }
@@ -394,8 +349,7 @@ namespace LYBT.Desktop.Core.Models.Prescriptions
         /// <summary>
         /// 排序顺序
         /// </summary>
-        public int SortOrder
-        {
+        public int SortOrder {
             get => _sortOrder;
             set => SetProperty(ref _sortOrder, value);
         }
@@ -408,13 +362,10 @@ namespace LYBT.Desktop.Core.Models.Prescriptions
         /// <summary>
         /// 显示文本
         /// </summary>
-        public string DisplayText
-        {
-            get
-            {
+        public string DisplayText {
+            get {
                 var text = $"{HerbName} {Quantity}{Unit}";
-                if (!string.IsNullOrEmpty(ProcessMethod))
-                {
+                if (!string.IsNullOrEmpty(ProcessMethod)) {
                     text = $"{HerbName}({ProcessMethod}) {Quantity}{Unit}";
                 }
                 return text;
@@ -425,10 +376,8 @@ namespace LYBT.Desktop.Core.Models.Prescriptions
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        protected bool SetProperty<T>(ref T storage, T value, [CallerMemberName] string propertyName = null!)
-        {
-            if (EqualityComparer<T>.Default.Equals(storage, value))
-            {
+        protected bool SetProperty<T>(ref T storage, T value, [CallerMemberName] string propertyName = null!) {
+            if (EqualityComparer<T>.Default.Equals(storage, value)) {
                 return false;
             }
 
@@ -437,19 +386,18 @@ namespace LYBT.Desktop.Core.Models.Prescriptions
             return true;
         }
 
-        protected void OnPropertyChanged([CallerMemberName] string propertyName = null!)
-        {
+        protected void OnPropertyChanged([CallerMemberName] string propertyName = null!) {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        #endregion
+        #endregion INotifyPropertyChanged
     }
 
     /// <summary>
     /// 模板分类
     /// </summary>
-    public static class TemplateCategories
-    {
+    public static class TemplateCategories {
+
         public static readonly string[] DefaultCategories = new[]
         {
             "感冒类",

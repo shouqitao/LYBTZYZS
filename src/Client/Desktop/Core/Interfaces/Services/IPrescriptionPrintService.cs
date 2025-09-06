@@ -1,14 +1,10 @@
-﻿using System.Threading.Tasks;
-using LYBT.Shared.Models.Common;
-using LYBT.Shared.Models.Contracts.Common;
+﻿namespace LYBT.Desktop.Core.Interfaces.Services {
 
-namespace LYBT.Desktop.Core.Interfaces.Services
-{
     /// <summary>
     /// 处方打印服务接口
     /// </summary>
-    public interface IPrescriptionPrintService
-    {
+    public interface IPrescriptionPrintService {
+
         /// <summary>
         /// 预览处方
         /// </summary>
@@ -28,8 +24,7 @@ namespace LYBT.Desktop.Core.Interfaces.Services
     /// <summary>
     /// 预览结果
     /// </summary>
-    public class PreviewResult
-    {
+    public class PreviewResult {
         public string Content { get; set; } = string.Empty;
         public bool Success { get; set; }
         public string Message { get; set; } = string.Empty;

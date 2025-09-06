@@ -1,21 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Threading.Tasks;
-using LYBT.Shared.Models;
+﻿using System.Linq.Expressions;
 using LYBT.Shared.Models.Contracts.Common;
 
-namespace LYBT.Infrastructure.Repositories
-{
+namespace LYBT.Infrastructure.Repositories {
+
     /// <summary>
     /// 通用Repository接口 - UltraThink重构架构
     /// 基于DDD和CQRS模式的Repository接口定义
     /// </summary>
     /// <typeparam name="TEntity">实体类型</typeparam>
     /// <typeparam name="TKey">主键类型</typeparam>
-    public interface IRepository<TEntity, TKey> where TEntity : class
-    {
+    public interface IRepository<TEntity, TKey> where TEntity : class {
+
         #region Query Operations (CQRS - Query Side)
 
         /// <summary>
@@ -72,7 +67,7 @@ namespace LYBT.Infrastructure.Repositories
         /// </summary>
         IQueryable<TEntity> QueryAsNoTracking();
 
-        #endregion
+        #endregion Query Operations (CQRS - Query Side)
 
         #region Command Operations (CQRS - Command Side)
 
@@ -116,7 +111,7 @@ namespace LYBT.Infrastructure.Repositories
         /// </summary>
         Task<int> DeleteWhereAsync(Expression<Func<TEntity, bool>> predicate);
 
-        #endregion
+        #endregion Command Operations (CQRS - Command Side)
 
         #region Unit of Work Support
 
@@ -140,21 +135,19 @@ namespace LYBT.Infrastructure.Repositories
         /// </summary>
         Task RollbackTransactionAsync();
 
-        #endregion
+        #endregion Unit of Work Support
     }
 
     /// <summary>
     /// 简化的Repository接口 - Guid主键
     /// </summary>
-    public interface IRepository<TEntity> : IRepository<TEntity, Guid> where TEntity : class
-    {
+    public interface IRepository<TEntity> : IRepository<TEntity, Guid> where TEntity : class {
     }
 
     /// <summary>
     /// 分页查询接口
     /// </summary>
-    public interface IPagedQuery<TDto> where TDto : class
-    {
+    public interface IPagedQuery<TDto> where TDto : class {
         int PageIndex { get; set; }
         int PageSize { get; set; }
         string SearchTerm { get; set; }
@@ -165,8 +158,7 @@ namespace LYBT.Infrastructure.Repositories
     /// <summary>
     /// Repository规约接口 - DDD规约模式
     /// </summary>
-    public interface ISpecification<T>
-    {
+    public interface ISpecification<T> {
         Expression<Func<T, bool>> Criteria { get; }
         List<Expression<Func<T, object>>> Includes { get; }
         Expression<Func<T, object>> OrderBy { get; }

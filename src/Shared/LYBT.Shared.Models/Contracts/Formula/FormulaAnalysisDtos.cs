@@ -1,13 +1,13 @@
 ﻿using System.ComponentModel;
 using LYBT.Shared.Models.Contracts.Common;
 
-namespace LYBT.Shared.Models.Contracts.Formula
-{
+namespace LYBT.Shared.Models.Contracts.Formula {
+
     /// <summary>
     /// 从模板创建验方DTO
     /// </summary>
-    public class FormulaFromTemplateDto
-    {
+    public class FormulaFromTemplateDto {
+
         [DisplayName("模板ID")]
         public Guid TemplateId { get; set; }
 
@@ -21,8 +21,7 @@ namespace LYBT.Shared.Models.Contracts.Formula
     /// <summary>
     /// 药材兼容性警告
     /// </summary>
-    public class HerbCompatibilityWarning
-    {
+    public class HerbCompatibilityWarning {
         public string HerbName1 { get; set; } = string.Empty;
         public string HerbName2 { get; set; } = string.Empty;
         public string WarningLevel { get; set; } = string.Empty;
@@ -32,8 +31,8 @@ namespace LYBT.Shared.Models.Contracts.Formula
     /// <summary>
     /// 验方推荐 - 继承基础DTO
     /// </summary>
-    public class FormulaRecommendation : BaseDto
-    {
+    public class FormulaRecommendation : BaseDto {
+
         [DisplayName("验方名称")]
         public string Name { get; set; } = string.Empty;
 
@@ -47,8 +46,7 @@ namespace LYBT.Shared.Models.Contracts.Formula
     /// <summary>
     /// 验方分析结果
     /// </summary>
-    public class FormulaAnalysisResult
-    {
+    public class FormulaAnalysisResult {
         public string Summary { get; set; } = string.Empty;
         public List<string> Effects { get; set; } = new();
         public List<string> Contraindications { get; set; } = new();
@@ -58,8 +56,8 @@ namespace LYBT.Shared.Models.Contracts.Formula
     /// <summary>
     /// 验方历史记录DTO - 继承基础DTO
     /// </summary>
-    public class FormulaHistoryDto : BaseDto
-    {
+    public class FormulaHistoryDto : BaseDto {
+
         [DisplayName("验方ID")]
         public Guid FormulaId { get; set; }
 
@@ -79,8 +77,7 @@ namespace LYBT.Shared.Models.Contracts.Formula
     /// <summary>
     /// 验方类型枚举DTO
     /// </summary>
-    public class FormulaTypeDto
-    {
+    public class FormulaTypeDto {
         public string Type { get; set; } = string.Empty;
         public string DisplayName { get; set; } = string.Empty;
         public string? Description { get; set; }
@@ -90,8 +87,8 @@ namespace LYBT.Shared.Models.Contracts.Formula
     /// <summary>
     /// 验方搜索DTO
     /// </summary>
-    public class FormulaSearchDto : PagedQueryBaseDto
-    {
+    public class FormulaSearchDto : PagedQueryBaseDto {
+
         [DisplayName("验方名称")]
         public string? Name { get; set; }
 
@@ -111,12 +108,10 @@ namespace LYBT.Shared.Models.Contracts.Formula
         public Guid? CreatedBy { get; set; }
     }
 
-
     /// <summary>
     /// 验方复制结果DTO
     /// </summary>
-    public class FormulaCopyResultDto
-    {
+    public class FormulaCopyResultDto {
         public Guid NewFormulaId { get; set; }
         public string NewFormulaName { get; set; } = string.Empty;
         public bool IsSuccess { get; set; }
@@ -128,8 +123,7 @@ namespace LYBT.Shared.Models.Contracts.Formula
     /// <summary>
     /// 验方使用统计DTO
     /// </summary>
-    public class FormulaUsageStatDto
-    {
+    public class FormulaUsageStatDto {
         public Guid FormulaId { get; set; }
         public string FormulaName { get; set; } = string.Empty;
         public int UsageCount { get; set; }
@@ -142,8 +136,7 @@ namespace LYBT.Shared.Models.Contracts.Formula
     /// <summary>
     /// 验方效果评估DTO
     /// </summary>
-    public class FormulaEffectivenessDto
-    {
+    public class FormulaEffectivenessDto {
         public Guid FormulaId { get; set; }
         public string FormulaName { get; set; } = string.Empty;
         public decimal OverallRating { get; set; } // 1-5分

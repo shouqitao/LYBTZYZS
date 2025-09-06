@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using AutoMapper;
+﻿using AutoMapper;
 using LYBT.Desktop.Core.Constants;
 using LYBT.Desktop.Core.Interfaces;
 using LYBT.Desktop.Core.Interfaces.Services;
@@ -11,12 +8,12 @@ using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Utilities.Helpers;
-using Prism.Commands;
 using Prism.Events;
+
 // UltraThink v2.0: Desktop层直接使用DTO，移除Info层转换
 
-namespace LYBT.Desktop.Patients.ViewModels
-{
+namespace LYBT.Desktop.Patients.ViewModels {
+
     /// <summary>
     /// 患者新增/编辑对话框视图模型 - UltraThink双层架构UI层
     /// 采用UltraThink架构标准，使用C# 12现代化特性
@@ -26,8 +23,7 @@ namespace LYBT.Desktop.Patients.ViewModels
     /// 支持患者新增/编辑、拼音码生成、数据验证等功能
     /// 适配中医诊所患者档案管理流程，确保数据录入准确性和操作便利性
     /// </summary>
-    public class PatientAddEditDialogViewModel : DialogViewModel, ICustomDialogAware
-    {
+    public class PatientAddEditDialogViewModel : DialogViewModel, ICustomDialogAware {
         private readonly IPatientService _patientService;
         private readonly IMapper _mapper;
         private readonly PatientDto? _originalPatient;
@@ -36,16 +32,13 @@ namespace LYBT.Desktop.Patients.ViewModels
         #region Properties
 
         private string _patientName = string.Empty;
-        public string PatientName
-        {
+
+        public string PatientName {
             get => _patientName;
-            set
-            {
-                if (SetProperty(ref _patientName, value))
-                {
+            set {
+                if (SetProperty(ref _patientName, value)) {
                     // 自动生成拼音码（仅新增时）
-                    if (!_isEditMode)
-                    {
+                    if (!_isEditMode) {
                         GeneratePinYinCode();
                     }
                     SaveCommand.RaiseCanExecuteChanged();
@@ -54,40 +47,36 @@ namespace LYBT.Desktop.Patients.ViewModels
         }
 
         private string _pinYinCode = string.Empty;
-        public string PinYinCode
-        {
+
+        public string PinYinCode {
             get => _pinYinCode;
             set => SetProperty(ref _pinYinCode, value);
         }
 
         private Gender _gender = Gender.Male; // 修复：设置默认性别，避免CanSave失败
-        public Gender Gender
-        {
+
+        public Gender Gender {
             get => _gender;
-            set
-            {
-                if (SetProperty(ref _gender, value))
-                {
+            set {
+                if (SetProperty(ref _gender, value)) {
                     SaveCommand.RaiseCanExecuteChanged();
                 }
             }
         }
 
         private int _age = 0;
-        public int Age
-        {
+
+        public int Age {
             get => _age;
             set => SetProperty(ref _age, value);
         }
 
         private DateTime? _birthDate;
-        public DateTime? BirthDate
-        {
+
+        public DateTime? BirthDate {
             get => _birthDate;
-            set
-            {
-                if (SetProperty(ref _birthDate, value))
-                {
+            set {
+                if (SetProperty(ref _birthDate, value)) {
                     // 自动计算年龄
                     CalculateAge();
                 }
@@ -95,61 +84,59 @@ namespace LYBT.Desktop.Patients.ViewModels
         }
 
         private string _phoneNumber = string.Empty;
-        public string PhoneNumber
-        {
+
+        public string PhoneNumber {
             get => _phoneNumber;
-            set
-            {
-                if (SetProperty(ref _phoneNumber, value))
-                {
+            set {
+                if (SetProperty(ref _phoneNumber, value)) {
                     SaveCommand.RaiseCanExecuteChanged();
                 }
             }
         }
 
         private string _address = string.Empty;
-        public string Address
-        {
+
+        public string Address {
             get => _address;
             set => SetProperty(ref _address, value);
         }
 
         private string _idType = SystemConstants.DefaultIdType;
-        public string IdType
-        {
+
+        public string IdType {
             get => _idType;
             set => SetProperty(ref _idType, value);
         }
 
         private string _idNumber = string.Empty;
-        public string IdNumber
-        {
+
+        public string IdNumber {
             get => _idNumber;
             set => SetProperty(ref _idNumber, value);
         }
 
         private string _emergencyContact = string.Empty;
-        public string EmergencyContact
-        {
+
+        public string EmergencyContact {
             get => _emergencyContact;
             set => SetProperty(ref _emergencyContact, value);
         }
 
         private string _emergencyPhone = string.Empty;
-        public string EmergencyPhone
-        {
+
+        public string EmergencyPhone {
             get => _emergencyPhone;
             set => SetProperty(ref _emergencyPhone, value);
         }
 
         private string _allergyHistory = string.Empty;
-        public string AllergyHistory
-        {
+
+        public string AllergyHistory {
             get => _allergyHistory;
             set => SetProperty(ref _allergyHistory, value);
         }
 
-        #endregion
+        #endregion Properties
 
         #region Constructor
 
@@ -177,44 +164,35 @@ namespace LYBT.Desktop.Patients.ViewModels
             IEventAggregator eventAggregator,
             IErrorHandlingService errorHandlingService,
             PatientDto? patient = null)
-            : base(eventAggregator, errorHandlingService)
-        {
+            : base(eventAggregator, errorHandlingService) {
             _patientService = patientService ?? throw new ArgumentNullException(nameof(patientService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _originalPatient = patient;
             _isEditMode = patient != null;
 
             // 如果是编辑模式，初始化数据
-            if (_isEditMode && patient != null)
-            {
+            if (_isEditMode && patient != null) {
                 InitializeEditData(patient);
-            }
-            else
-            {
+            } else {
                 DialogTitle = SystemConstants.AddPatientDialogTitle;
             }
 
             InitializeDialog();
         }
 
-
-        #endregion
+        #endregion Constructor
 
         #region DialogViewModel Implementation
 
-        protected override async Task<bool> SaveAsync()
-        {
+        protected override async Task<bool> SaveAsync() {
             // UltraThink调试：检查SaveAsync是否被调用
             System.Diagnostics.Debug.WriteLine($"🚀 SaveAsync被调用 - 模式: {(_isEditMode ? "编辑" : "新增")}");
             System.Diagnostics.Debug.WriteLine($"📋 患者姓名: '{PatientName}', 电话: '{PhoneNumber}', 性别: {Gender}");
 
-            try
-            {
-                if (_isEditMode && _originalPatient != null)
-                {
+            try {
+                if (_isEditMode && _originalPatient != null) {
                     // 编辑模式
-                    var updateDto = new PatientUpdateDto
-                    {
+                    var updateDto = new PatientUpdateDto {
                         Id = _originalPatient.Id,
                         Name = PatientName.Trim(),
                         Gender = Gender,
@@ -230,17 +208,13 @@ namespace LYBT.Desktop.Patients.ViewModels
 
                     var serviceResult = await _patientService.UpdateAsync(_originalPatient.Id, updateDto);
 
-                    if (!serviceResult.IsSuccess)
-                    {
+                    if (!serviceResult.IsSuccess) {
                         ErrorMessage = serviceResult.ErrorMessage ?? "编辑患者失败";
                         return false;
                     }
-                }
-                else
-                {
+                } else {
                     // 新增模式
-                    var createDto = new PatientCreateDto
-                    {
+                    var createDto = new PatientCreateDto {
                         Name = PatientName.Trim(),
                         Gender = Gender,
                         Age = Age,
@@ -256,8 +230,7 @@ namespace LYBT.Desktop.Patients.ViewModels
 
                     var serviceResult = await _patientService.CreateAsync(createDto);
 
-                    if (!serviceResult.IsSuccess)
-                    {
+                    if (!serviceResult.IsSuccess) {
                         ErrorMessage = serviceResult.ErrorMessage ?? "新增患者失败";
                         return false;
                     }
@@ -266,16 +239,13 @@ namespace LYBT.Desktop.Patients.ViewModels
                 // 保存成功，关闭对话框
                 RaiseRequestClose(true);
                 return true;
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 await HandleErrorAsync("保存患者", ex);
                 return false;
             }
         }
 
-        protected override bool CanSave()
-        {
+        protected override bool CanSave() {
             var canSave = !string.IsNullOrWhiteSpace(PatientName) &&
                          !string.IsNullOrWhiteSpace(PhoneNumber) &&
                          Gender != Gender.Unknown;
@@ -286,8 +256,7 @@ namespace LYBT.Desktop.Patients.ViewModels
             return canSave;
         }
 
-        protected override void InitializeDialog()
-        {
+        protected override void InitializeDialog() {
             base.InitializeDialog();
 
             // 监听属性变化以更新Command状态
@@ -296,15 +265,14 @@ namespace LYBT.Desktop.Patients.ViewModels
             SaveCommand.ObservesProperty(() => Gender);
         }
 
-        #endregion
+        #endregion DialogViewModel Implementation
 
         #region Private Methods
 
         /// <summary>
         /// 初始化编辑数据
         /// </summary>
-        private void InitializeEditData(PatientDto patient)
-        {
+        private void InitializeEditData(PatientDto patient) {
             DialogTitle = SystemConstants.EditPatientDialogTitle;
             PatientName = patient.Name;
             PinYinCode = patient.PinYinCode ?? string.Empty;
@@ -323,16 +291,12 @@ namespace LYBT.Desktop.Patients.ViewModels
         /// <summary>
         /// 自动生成拼音码
         /// </summary>
-        private void GeneratePinYinCode()
-        {
+        private void GeneratePinYinCode() {
             // UltraThink v2.0: 拼音码生成属于纯工具类功能，可以在前端直接调用
             // 这是无状态的字符串转换工具，不涉及业务逻辑，职责划分合理
-            if (!string.IsNullOrWhiteSpace(PatientName))
-            {
+            if (!string.IsNullOrWhiteSpace(PatientName)) {
                 PinYinCode = CommonHelper.GetPinyinCode(PatientName);
-            }
-            else
-            {
+            } else {
                 PinYinCode = string.Empty;
             }
         }
@@ -340,14 +304,11 @@ namespace LYBT.Desktop.Patients.ViewModels
         /// <summary>
         /// 根据出生日期计算年龄
         /// </summary>
-        private void CalculateAge()
-        {
-            if (BirthDate.HasValue)
-            {
+        private void CalculateAge() {
+            if (BirthDate.HasValue) {
                 var today = DateTime.Today;
                 var age = today.Year - BirthDate.Value.Year;
-                if (BirthDate.Value.Date > today.AddYears(-age))
-                {
+                if (BirthDate.Value.Date > today.AddYears(-age)) {
                     age--;
                 }
 
@@ -355,7 +316,7 @@ namespace LYBT.Desktop.Patients.ViewModels
             }
         }
 
-        #endregion
+        #endregion Private Methods
 
         #region ICustomDialogAware Implementation
 
@@ -372,8 +333,7 @@ namespace LYBT.Desktop.Patients.ViewModels
         /// <summary>
         /// 检查是否可以关闭对话框
         /// </summary>
-        public bool CanCloseDialog()
-        {
+        public bool CanCloseDialog() {
             return !IsSaving && !IsLoading;
         }
 
@@ -381,15 +341,12 @@ namespace LYBT.Desktop.Patients.ViewModels
         /// 对话框打开时调用
         /// </summary>
         /// <param name="parameters">传入的参数</param>
-        public void OnDialogOpened(Dictionary<string, object> parameters)
-        {
-            if (parameters?.ContainsKey("IsEditMode") == true && parameters["IsEditMode"] is bool isEditMode)
-            {
+        public void OnDialogOpened(Dictionary<string, object> parameters) {
+            if (parameters?.ContainsKey("IsEditMode") == true && parameters["IsEditMode"] is bool isEditMode) {
                 _isEditMode = isEditMode;
             }
 
-            if (parameters?.ContainsKey("Patient") == true && parameters["Patient"] is PatientDto patient)
-            {
+            if (parameters?.ContainsKey("Patient") == true && parameters["Patient"] is PatientDto patient) {
                 InitializeEditData(patient);
             }
 
@@ -399,16 +356,14 @@ namespace LYBT.Desktop.Patients.ViewModels
         /// <summary>
         /// 对话框关闭时调用
         /// </summary>
-        public void OnDialogClosed()
-        {
+        public void OnDialogClosed() {
             // 清理资源或执行其他关闭操作
         }
 
         /// <summary>
         /// 重写取消操作以使用ICustomDialogAware接口
         /// </summary>
-        protected override void ExecuteCancel()
-        {
+        protected override void ExecuteCancel() {
             OnDialogClosing();
             RaiseRequestClose(false);
         }
@@ -416,8 +371,7 @@ namespace LYBT.Desktop.Patients.ViewModels
         /// <summary>
         /// 触发关闭对话框请求
         /// </summary>
-        protected void RaiseRequestClose(bool? dialogResult)
-        {
+        protected void RaiseRequestClose(bool? dialogResult) {
             var result = dialogResult == true
                 ? CustomDialogResult.Success(new Dictionary<string, object>())
                 : CustomDialogResult.Cancel();
@@ -425,6 +379,6 @@ namespace LYBT.Desktop.Patients.ViewModels
             RequestClose?.Invoke(result);
         }
 
-        #endregion
+        #endregion ICustomDialogAware Implementation
     }
 }

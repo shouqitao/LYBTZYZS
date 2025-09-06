@@ -1,21 +1,17 @@
-﻿using System;
-using System.Globalization;
-using LYBT.Shared.Models.Contracts.Prescriptions;
+﻿using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
 using Prism.Mvvm;
 
-namespace LYBT.Desktop.Core.ViewModels.Prescriptions
-{
+namespace LYBT.Desktop.Core.ViewModels.Prescriptions {
+
     /// <summary>
     /// 处方显示逻辑视图模型 - UltraThink架构Presentation Layer
     /// 专门处理处方的显示格式化和呈现逻辑
     /// </summary>
-    public class PrescriptionDisplayViewModel : BindableBase
-    {
+    public class PrescriptionDisplayViewModel : BindableBase {
         private readonly PrescriptionDto _prescriptionData;
 
-        public PrescriptionDisplayViewModel(PrescriptionDto prescriptionData)
-        {
+        public PrescriptionDisplayViewModel(PrescriptionDto prescriptionData) {
             _prescriptionData = prescriptionData ?? throw new ArgumentNullException(nameof(prescriptionData));
         }
 
@@ -39,13 +35,12 @@ namespace LYBT.Desktop.Core.ViewModels.Prescriptions
         /// <summary>更新时间显示</summary>
         public string UpdateTimeDisplay => "最新状态"; // UltraThink v2.0简化：删除UpdateTime字段
 
-        #endregion
+        #endregion 基础显示属性
 
         #region 状态显示属性
 
         /// <summary>状态名称显示</summary>
-        public string StatusDisplay => _prescriptionData.Status switch
-        {
+        public string StatusDisplay => _prescriptionData.Status switch {
             CommonStatus.Enabled => "已完成", // UltraThink v2.0简化：使用通用状态替代处方状态
             CommonStatus.Disabled => "草稿",
             _ => "未知状态"
@@ -60,7 +55,7 @@ namespace LYBT.Desktop.Core.ViewModels.Prescriptions
         /// <summary>完成状态显示</summary>
         public string CompletionStatusDisplay => _prescriptionData.Status == CommonStatus.Enabled ? "已完成" : "进行中"; // UltraThink v2.0简化：使用通用状态替代处方状态
 
-        #endregion
+        #endregion 状态显示属性
 
         #region 金额显示属性
 
@@ -76,7 +71,7 @@ namespace LYBT.Desktop.Core.ViewModels.Prescriptions
         /// <summary>节省金额显示</summary>
         public string SavingsDisplay => ""; // UltraThink v2.0简化：删除HasDiscount相关字段
 
-        #endregion
+        #endregion 金额显示属性
 
         #region 药材信息显示
 
@@ -92,7 +87,7 @@ namespace LYBT.Desktop.Core.ViewModels.Prescriptions
         /// <summary>医嘱显示</summary>
         public string AdviceDisplay => "无特殊医嘱"; // UltraThink v2.0简化：删除Advice字段
 
-        #endregion
+        #endregion 药材信息显示
 
         #region 进度和状态图标
 
@@ -100,8 +95,7 @@ namespace LYBT.Desktop.Core.ViewModels.Prescriptions
         public string CompletionPercentageDisplay => "100%"; // UltraThink v2.0简化：删除GetCompletionPercentage扩展方法
 
         /// <summary>状态图标</summary>
-        public string StatusIcon => _prescriptionData.Status switch
-        {
+        public string StatusIcon => _prescriptionData.Status switch {
             CommonStatus.Disabled => "📝", // UltraThink v2.0简化：使用通用状态替代处方状态
             CommonStatus.Enabled => "✅",
             _ => "❓"
@@ -113,23 +107,21 @@ namespace LYBT.Desktop.Core.ViewModels.Prescriptions
         /// <summary>发药状态图标</summary>
         public string DispenseStatusIcon => "⏳"; // UltraThink v2.0简化：删除IsDispensed字段
 
-        #endregion
+        #endregion 进度和状态图标
 
         #region 格式化方法
 
         /// <summary>
         /// 获取处方摘要信息
         /// </summary>
-        public string GetSummaryInfo()
-        {
+        public string GetSummaryInfo() {
             return $"{PrescriptionNumberDisplay} - {PatientNameDisplay} - {HerbCountDisplay} - {TotalAmountDisplay}";
         }
 
         /// <summary>
         /// 获取详细信息文本
         /// </summary>
-        public string GetDetailedInfo()
-        {
+        public string GetDetailedInfo() {
             return $"处方编号：{PrescriptionNumberDisplay}\n" +
                    $"患者：{PatientNameDisplay} ({PatientInfoDisplay})\n" +
                    $"医生：{DoctorNameDisplay}\n" +
@@ -151,8 +143,7 @@ namespace LYBT.Desktop.Core.ViewModels.Prescriptions
         /// <summary>
         /// 获取打印用格式化文本
         /// </summary>
-        public string GetPrintableInfo()
-        {
+        public string GetPrintableInfo() {
             return $"处方笺\n" +
                    $"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n" +
                    $"处方编号：{PrescriptionNumberDisplay}\n" +
@@ -175,8 +166,7 @@ namespace LYBT.Desktop.Core.ViewModels.Prescriptions
         /// <summary>
         /// 获取处方状态徽章文本
         /// </summary>
-        public string GetStatusBadge()
-        {
+        public string GetStatusBadge() {
             var badges = new List<string>();
 
             // UltraThink v2.0简化：删除支付和折扣相关字段
@@ -188,17 +178,15 @@ namespace LYBT.Desktop.Core.ViewModels.Prescriptions
         /// <summary>
         /// 获取优先级显示
         /// </summary>
-        public string GetPriorityDisplay()
-        {
+        public string GetPriorityDisplay() {
             // UltraThink v2.0简化：删除业务扩展方法，用Status替换
-            if (_prescriptionData.Status == CommonStatus.Enabled)
-            {
+            if (_prescriptionData.Status == CommonStatus.Enabled) {
                 return "已完成";
             }
 
             return "草稿";
         }
 
-        #endregion
+        #endregion 格式化方法
     }
 }

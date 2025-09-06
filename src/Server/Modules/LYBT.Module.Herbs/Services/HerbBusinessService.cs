@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using AutoMapper;
+﻿using AutoMapper;
 using LYBT.Entities.Herbs;
 using LYBT.Infrastructure.Data;
 using LYBT.Shared.Models.Common;
@@ -12,14 +8,13 @@ using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace LYBT.Module.Herbs.Services
-{
+namespace LYBT.Module.Herbs.Services {
+
     /// <summary>
     /// 药材业务逻辑服务 - UltraThink架构
     /// 职责：导入导出、批量操作、业务规则处理
     /// </summary>
-    public class HerbBusinessService
-    {
+    public class HerbBusinessService {
         private readonly AppDbContext _context;
         private readonly IMapper _mapper;
         private readonly ILogger<HerbBusinessService> _logger;
@@ -27,8 +22,7 @@ namespace LYBT.Module.Herbs.Services
         public HerbBusinessService(
             AppDbContext context,
             IMapper mapper,
-            ILogger<HerbBusinessService> logger)
-        {
+            ILogger<HerbBusinessService> logger) {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -37,12 +31,9 @@ namespace LYBT.Module.Herbs.Services
         /// <summary>
         /// 批量导入药材数据
         /// </summary>
-        public async Task<ServiceResult<int>> ImportHerbsAsync(List<HerbImportDto> herbs)
-        {
-            try
-            {
-                if (herbs == null || herbs.Count == 0)
-                {
+        public async Task<ServiceResult<int>> ImportHerbsAsync(List<HerbImportDto> herbs) {
+            try {
+                if (herbs == null || herbs.Count == 0) {
                     return ServiceResult<int>.Success(0);
                 }
 
@@ -51,14 +42,11 @@ namespace LYBT.Module.Herbs.Services
 
                 using var transaction = await _context.Database.BeginTransactionAsync();
 
-                foreach (var importDto in herbs)
-                {
-                    try
-                    {
+                foreach (var importDto in herbs) {
+                    try {
                         // 验证导入数据
                         var validationResult = ValidateImportDto(importDto);
-                        if (!validationResult.IsSuccess)
-                        {
+                        if (!validationResult.IsSuccess) {
                             errors.Add($"行 {importCount + 1}: {validationResult.ErrorMessage}");
                             continue;
                         }
@@ -67,15 +55,13 @@ namespace LYBT.Module.Herbs.Services
                         var existingHerb = await _context.Herbs
                             .FirstOrDefaultAsync(h => h.Name == importDto.Name && h.Status != CommonStatus.Disabled);
 
-                        if (existingHerb != null)
-                        {
+                        if (existingHerb != null) {
                             errors.Add($"行 {importCount + 1}: 药材名称 '{importDto.Name}' 已存在");
                             continue;
                         }
 
                         // 创建药材实体
-                        var herb = new Herb
-                        {
+                        var herb = new Herb {
                             Id = Guid.NewGuid(),
                             Name = importDto.Name,
                             PinYinCode = GenerateSimplePinyinCode(importDto.Name),
@@ -91,35 +77,27 @@ namespace LYBT.Module.Herbs.Services
 
                         _context.Herbs.Add(herb);
                         importCount++;
-                    }
-                    catch (Exception ex)
-                    {
+                    } catch (Exception ex) {
                         errors.Add($"行 {importCount + 1}: 处理失败 - {ex.Message}");
                         _logger.LogError(ex, "导入药材失败: {HerbName}", importDto.Name);
                     }
                 }
 
-                if (importCount > 0)
-                {
+                if (importCount > 0) {
                     await _context.SaveChangesAsync();
                     await transaction.CommitAsync();
                     _logger.LogInformation("批量导入药材成功: {ImportCount}条", importCount);
-                }
-                else
-                {
+                } else {
                     await transaction.RollbackAsync();
                 }
 
-                if (errors.Count > 0)
-                {
+                if (errors.Count > 0) {
                     var errorMessage = $"导入完成，成功 {importCount} 条，失败 {errors.Count} 条。错误详情：{string.Join("; ", errors)}";
                     return ServiceResult<int>.Failure(errorMessage);
                 }
 
                 return ServiceResult<int>.Success(importCount);
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 _logger.LogError(ex, "批量导入药材异常");
                 return ServiceResult<int>.Failure($"批量导入药材异常: {ex.Message}");
             }
@@ -128,12 +106,9 @@ namespace LYBT.Module.Herbs.Services
         /// <summary>
         /// 批量更新状态
         /// </summary>
-        public async Task<ServiceResult<bool>> BatchUpdateStatusAsync(BatchStatusUpdateDto dto)
-        {
-            try
-            {
-                if (dto?.Ids == null || dto.Ids.Count == 0)
-                {
+        public async Task<ServiceResult<bool>> BatchUpdateStatusAsync(BatchStatusUpdateDto dto) {
+            try {
+                if (dto?.Ids == null || dto.Ids.Count == 0) {
                     return ServiceResult<bool>.Success(true); // 空操作视为成功
                 }
 
@@ -149,9 +124,7 @@ namespace LYBT.Module.Herbs.Services
                     affectedRows, dto.Status ? "启用" : "禁用");
 
                 return ServiceResult<bool>.Success(true);
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 _logger.LogError(ex, "批量更新药材状态失败");
                 return ServiceResult<bool>.Failure($"批量更新药材状态失败: {ex.Message}");
             }
@@ -160,18 +133,14 @@ namespace LYBT.Module.Herbs.Services
         /// <summary>
         /// 软删除药材
         /// </summary>
-        public async Task<ServiceResult<bool>> SoftDeleteAsync(Guid id)
-        {
-            try
-            {
-                if (id == Guid.Empty)
-                {
+        public async Task<ServiceResult<bool>> SoftDeleteAsync(Guid id) {
+            try {
+                if (id == Guid.Empty) {
                     return ServiceResult<bool>.Failure("药材ID不能为空");
                 }
 
                 var herb = await _context.Herbs.FindAsync(id);
-                if (herb == null)
-                {
+                if (herb == null) {
                     return ServiceResult<bool>.Failure("药材不存在");
                 }
 
@@ -179,8 +148,7 @@ namespace LYBT.Module.Herbs.Services
                 var isReferencedInPrescriptions = await _context.PrescriptionItems
                     .AnyAsync(pi => pi.HerbId == id);
 
-                if (isReferencedInPrescriptions)
-                {
+                if (isReferencedInPrescriptions) {
                     return ServiceResult<bool>.Failure("该药材已被处方引用，不能删除。建议设置为禁用状态。");
                 }
 
@@ -191,9 +159,7 @@ namespace LYBT.Module.Herbs.Services
 
                 _logger.LogInformation("软删除药材成功: {HerbName} ({HerbId})", herb.Name, herb.Id);
                 return ServiceResult<bool>.Success(true);
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 _logger.LogError(ex, "软删除药材失败: {HerbId}", id);
                 return ServiceResult<bool>.Failure($"软删除药材失败: {ex.Message}");
             }
@@ -202,14 +168,11 @@ namespace LYBT.Module.Herbs.Services
         /// <summary>
         /// 创建药材（带自动拼音码生成）
         /// </summary>
-        public async Task<ServiceResult<HerbDto>> CreateHerbWithAutoCodeAsync(HerbCreateDto dto)
-        {
-            try
-            {
+        public async Task<ServiceResult<HerbDto>> CreateHerbWithAutoCodeAsync(HerbCreateDto dto) {
+            try {
                 // 数据验证
                 var validationResult = ValidateCreateDto(dto);
-                if (!validationResult.IsSuccess)
-                {
+                if (!validationResult.IsSuccess) {
                     return ServiceResult<HerbDto>.Failure(validationResult.ErrorMessage ?? "数据验证失败");
                 }
 
@@ -217,8 +180,7 @@ namespace LYBT.Module.Herbs.Services
                 var existingHerb = await _context.Herbs
                     .FirstOrDefaultAsync(h => h.Name == dto.Name && h.Status != CommonStatus.Disabled);
 
-                if (existingHerb != null)
-                {
+                if (existingHerb != null) {
                     return ServiceResult<HerbDto>.Failure($"药材名称 '{dto.Name}' 已存在");
                 }
 
@@ -228,8 +190,7 @@ namespace LYBT.Module.Herbs.Services
                     : dto.PinYinCode;
 
                 // 创建新药材
-                var herb = new Herb
-                {
+                var herb = new Herb {
                     Id = Guid.NewGuid(),
                     Name = dto.Name,
                     PinYinCode = pinyinCode,
@@ -251,9 +212,7 @@ namespace LYBT.Module.Herbs.Services
 
                 var resultDto = _mapper.Map<HerbDto>(herb);
                 return ServiceResult<HerbDto>.Success(resultDto);
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 _logger.LogError(ex, "创建药材失败: {HerbName}", dto.Name);
                 return ServiceResult<HerbDto>.Failure($"创建药材失败: {ex.Message}");
             }
@@ -262,25 +221,20 @@ namespace LYBT.Module.Herbs.Services
         /// <summary>
         /// 设置药材启用/禁用状态
         /// </summary>
-        public async Task<ServiceResult<bool>> SetStatusAsync(Guid id, bool isActive)
-        {
-            try
-            {
-                if (id == Guid.Empty)
-                {
+        public async Task<ServiceResult<bool>> SetStatusAsync(Guid id, bool isActive) {
+            try {
+                if (id == Guid.Empty) {
                     return ServiceResult<bool>.Failure("药材ID不能为空");
                 }
 
                 var herb = await _context.Herbs.FindAsync(id);
-                if (herb == null)
-                {
+                if (herb == null) {
                     return ServiceResult<bool>.Failure("药材不存在");
                 }
 
                 var newStatus = isActive ? CommonStatus.Enabled : CommonStatus.Disabled;
 
-                if (herb.Status == newStatus)
-                {
+                if (herb.Status == newStatus) {
                     var currentStatusText = isActive ? "启用" : "禁用";
                     return ServiceResult<bool>.Success(true);
                 }
@@ -293,9 +247,7 @@ namespace LYBT.Module.Herbs.Services
                 _logger.LogInformation("{Status}药材成功: {HerbName} ({HerbId})", statusText, herb.Name, herb.Id);
 
                 return ServiceResult<bool>.Success(true);
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 _logger.LogError(ex, "设置药材状态失败: {HerbId}, {IsActive}", id, isActive);
                 return ServiceResult<bool>.Failure($"设置药材状态失败: {ex.Message}");
             }
@@ -306,30 +258,24 @@ namespace LYBT.Module.Herbs.Services
         /// <summary>
         /// 验证导入DTO
         /// </summary>
-        private ServiceResult<bool> ValidateImportDto(HerbImportDto dto)
-        {
-            if (dto == null)
-            {
+        private ServiceResult<bool> ValidateImportDto(HerbImportDto dto) {
+            if (dto == null) {
                 return ServiceResult<bool>.Failure("药材信息不能为空");
             }
 
-            if (string.IsNullOrWhiteSpace(dto.Name))
-            {
+            if (string.IsNullOrWhiteSpace(dto.Name)) {
                 return ServiceResult<bool>.Failure("药材名称不能为空");
             }
 
-            if (dto.Name.Length > 50)
-            {
+            if (dto.Name.Length > 50) {
                 return ServiceResult<bool>.Failure("药材名称不能超过50个字符");
             }
 
-            if (dto.Price <= 0)
-            {
+            if (dto.Price <= 0) {
                 return ServiceResult<bool>.Failure("药材价格必须大于0");
             }
 
-            if (dto.Price > 9999.99m)
-            {
+            if (dto.Price > 9999.99m) {
                 return ServiceResult<bool>.Failure("药材价格不能超过9999.99");
             }
 
@@ -339,30 +285,24 @@ namespace LYBT.Module.Herbs.Services
         /// <summary>
         /// 验证创建DTO
         /// </summary>
-        private ServiceResult<bool> ValidateCreateDto(HerbCreateDto dto)
-        {
-            if (dto == null)
-            {
+        private ServiceResult<bool> ValidateCreateDto(HerbCreateDto dto) {
+            if (dto == null) {
                 return ServiceResult<bool>.Failure("药材信息不能为空");
             }
 
-            if (string.IsNullOrWhiteSpace(dto.Name))
-            {
+            if (string.IsNullOrWhiteSpace(dto.Name)) {
                 return ServiceResult<bool>.Failure("药材名称不能为空");
             }
 
-            if (dto.Name.Length > 50)
-            {
+            if (dto.Name.Length > 50) {
                 return ServiceResult<bool>.Failure("药材名称不能超过50个字符");
             }
 
-            if (dto.Price <= 0)
-            {
+            if (dto.Price <= 0) {
                 return ServiceResult<bool>.Failure("药材价格必须大于0");
             }
 
-            if (dto.Price > 9999.99m)
-            {
+            if (dto.Price > 9999.99m) {
                 return ServiceResult<bool>.Failure("药材价格不能超过9999.99");
             }
 
@@ -372,15 +312,12 @@ namespace LYBT.Module.Herbs.Services
         /// <summary>
         /// 解析状态字符串
         /// </summary>
-        private CommonStatus ParseStatus(string statusStr)
-        {
-            if (string.IsNullOrWhiteSpace(statusStr))
-            {
+        private CommonStatus ParseStatus(string statusStr) {
+            if (string.IsNullOrWhiteSpace(statusStr)) {
                 return CommonStatus.Enabled;
             }
 
-            return statusStr.ToLower() switch
-            {
+            return statusStr.ToLower() switch {
                 "enabled" => CommonStatus.Enabled,
                 "disabled" => CommonStatus.Disabled,
                 "启用" => CommonStatus.Enabled,
@@ -392,24 +329,19 @@ namespace LYBT.Module.Herbs.Services
         /// <summary>
         /// 生成简单拼音码 - 基础实现
         /// </summary>
-        private string GenerateSimplePinyinCode(string name)
-        {
-            if (string.IsNullOrWhiteSpace(name))
-            {
+        private string GenerateSimplePinyinCode(string name) {
+            if (string.IsNullOrWhiteSpace(name)) {
                 return "";
             }
 
             // 简单拼音码生成：取每个字的首字母
             // 实际项目中可能需要更复杂的拼音转换库
             var result = "";
-            foreach (char c in name)
-            {
-                if (char.IsLetter(c))
-                {
+            foreach (char c in name) {
+                if (char.IsLetter(c)) {
                     result += char.ToUpper(c);
-                }
-                else if (c >= 0x4e00 && c <= 0x9fff) // 中文字符范围
-                {
+                } else if (c >= 0x4e00 && c <= 0x9fff) // 中文字符范围
+                  {
                     // 简化处理：中文字符用首字母代替
                     // 实际应该用拼音库转换，这里使用常见中文药材的首字母
                     result += GetChineseCharacterInitial(c);
@@ -422,14 +354,12 @@ namespace LYBT.Module.Herbs.Services
         /// <summary>
         /// 获取中文字符首字母 - 简化版
         /// </summary>
-        private char GetChineseCharacterInitial(char c)
-        {
+        private char GetChineseCharacterInitial(char c) {
             // 简化实现：根据unicode编码范围映射到字母
             // 实际项目中应该使用专业的拼音转换库
             var code = (int)c;
 
-            return code switch
-            {
+            return code switch {
                 >= 0x4e00 and < 0x4f00 => 'A',
                 >= 0x4f00 and < 0x5000 => 'B',
                 >= 0x5000 and < 0x5100 => 'C',
@@ -455,6 +385,6 @@ namespace LYBT.Module.Herbs.Services
             };
         }
 
-        #endregion
+        #endregion 私有方法
     }
 }

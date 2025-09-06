@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using LYBT.Desktop.Herbs.Interfaces;
+﻿using LYBT.Desktop.Herbs.Interfaces;
 using LYBT.Shared.Interfaces.Services;
-using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
 
@@ -19,8 +15,7 @@ namespace LYBT.Desktop.Herbs.Services;
 /// </summary>
 public class HerbModule(
     IHerbQueryService queryService,
-    IHerbBusinessService businessService) : IHerbService, IDisposable
-{
+    IHerbBusinessService businessService) : IHerbService, IDisposable {
     private readonly IHerbQueryService _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
     private readonly IHerbBusinessService _businessService = businessService ?? throw new ArgumentNullException(nameof(businessService));
 
@@ -50,7 +45,7 @@ public class HerbModule(
     public async Task<ServiceResult<HerbStatisticsDto>> GetHerbStatisticsAsync()
         => await _queryService.GetStatisticsAsync();
 
-    #endregion
+    #endregion 基础查询操作 - 对应简化接口
 
     #region 基础业务操作 - 对应简化接口
 
@@ -69,8 +64,7 @@ public class HerbModule(
     /// <summary>
     /// 启用药材 (IHerbService版本)
     /// </summary>
-    async Task<ServiceResult> IHerbService.EnableAsync(Guid herbId)
-    {
+    async Task<ServiceResult> IHerbService.EnableAsync(Guid herbId) {
         var result = await _businessService.EnableAsync(herbId);
         return result.IsSuccess ? ServiceResult.Success() : ServiceResult.Failure(result.ErrorMessage ?? "启用失败");
     }
@@ -78,8 +72,7 @@ public class HerbModule(
     /// <summary>
     /// 禁用药材 (IHerbService版本)
     /// </summary>
-    async Task<ServiceResult> IHerbService.DisableAsync(Guid herbId)
-    {
+    async Task<ServiceResult> IHerbService.DisableAsync(Guid herbId) {
         var result = await _businessService.DisableAsync(herbId);
         return result.IsSuccess ? ServiceResult.Success() : ServiceResult.Failure(result.ErrorMessage ?? "禁用失败");
     }
@@ -87,8 +80,7 @@ public class HerbModule(
     /// <summary>
     /// 启用药材 (IHerbModule版本)
     /// </summary>
-    public async Task<ServiceResult<bool>> EnableAsync(Guid herbId)
-    {
+    public async Task<ServiceResult<bool>> EnableAsync(Guid herbId) {
         var result = await _businessService.EnableAsync(herbId);
         return result.IsSuccess ? ServiceResult<bool>.Success(true) : ServiceResult<bool>.Failure(result.ErrorMessage ?? "启用失败");
     }
@@ -96,8 +88,7 @@ public class HerbModule(
     /// <summary>
     /// 禁用药材 (IHerbModule版本)
     /// </summary>
-    public async Task<ServiceResult<bool>> DisableAsync(Guid herbId)
-    {
+    public async Task<ServiceResult<bool>> DisableAsync(Guid herbId) {
         var result = await _businessService.DisableAsync(herbId);
         return result.IsSuccess ? ServiceResult<bool>.Success(true) : ServiceResult<bool>.Failure(result.ErrorMessage ?? "禁用失败");
     }
@@ -108,7 +99,7 @@ public class HerbModule(
     public async Task<ServiceResult<bool>> DeleteAsync(Guid herbId)
         => await _businessService.DeleteAsync(herbId);
 
-    #endregion
+    #endregion 基础业务操作 - 对应简化接口
 
     #region 批量操作 - 必需功能（用户明确需求）
 
@@ -136,18 +127,17 @@ public class HerbModule(
     public async Task<ServiceResult<HerbStatisticsDto>> GetStatisticsAsync()
         => await _queryService.GetHerbStatisticsAsync();
 
-    #endregion
+    #endregion 批量操作 - 必需功能（用户明确需求）
 
     #region IDisposable Support
 
     /// <summary>
     /// 释放资源
     /// </summary>
-    public void Dispose()
-    {
+    public void Dispose() {
         // 简单诊所版本：无资源需要释放
         GC.SuppressFinalize(this);
     }
 
-    #endregion
+    #endregion IDisposable Support
 }

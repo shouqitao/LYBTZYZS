@@ -1,18 +1,15 @@
-﻿using System;
-using System.Threading.Tasks;
-using LYBT.Shared.Models.Contracts.Auth;
+﻿using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
-using LYBT.Shared.Models.Core;
 
-namespace LYBT.Desktop.Core.Interfaces.Managers
-{
+namespace LYBT.Desktop.Core.Interfaces.Managers {
+
     /// <summary>
     /// 用户会话管理器接口 - UltraThink架构简化
     /// 专门负责用户会话状态、凭据管理和用户偏好
     /// </summary>
-    public interface IUserSessionManager
-    {
+    public interface IUserSessionManager {
+
         #region 会话状态
 
         /// <summary>
@@ -35,7 +32,7 @@ namespace LYBT.Desktop.Core.Interfaces.Managers
         /// </summary>
         DateTime? LastActivityTime { get; }
 
-        #endregion
+        #endregion 会话状态
 
         #region 会话管理
 
@@ -64,7 +61,7 @@ namespace LYBT.Desktop.Core.Interfaces.Managers
         /// </summary>
         int GetSessionRemainingMinutes();
 
-        #endregion
+        #endregion 会话管理
 
         #region 凭据管理
 
@@ -88,7 +85,7 @@ namespace LYBT.Desktop.Core.Interfaces.Managers
         /// </summary>
         bool HasSavedCredentials();
 
-        #endregion
+        #endregion 凭据管理
 
         #region 用户偏好设置
 
@@ -112,7 +109,7 @@ namespace LYBT.Desktop.Core.Interfaces.Managers
         /// </summary>
         ServiceResult ClearUserPreferences();
 
-        #endregion
+        #endregion 用户偏好设置
 
         #region 事件通知
 
@@ -126,7 +123,7 @@ namespace LYBT.Desktop.Core.Interfaces.Managers
         /// </summary>
         event EventHandler<UserInfoUpdatedEventArgs>? UserInfoUpdated;
 
-        #endregion
+        #endregion 事件通知
     }
 
     #region 数据模型
@@ -134,8 +131,7 @@ namespace LYBT.Desktop.Core.Interfaces.Managers
     /// <summary>
     /// 保存的凭据信息
     /// </summary>
-    public class SavedCredentials
-    {
+    public class SavedCredentials {
         public string Username { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
         public bool RememberMe { get; set; }
@@ -145,8 +141,7 @@ namespace LYBT.Desktop.Core.Interfaces.Managers
     /// <summary>
     /// 用户会话状态变更事件参数
     /// </summary>
-    public class UserSessionStateChangedEventArgs : EventArgs
-    {
+    public class UserSessionStateChangedEventArgs : EventArgs {
         public bool IsStarted { get; set; }
         public UserDto? User { get; set; }
         public string? Message { get; set; }
@@ -155,12 +150,11 @@ namespace LYBT.Desktop.Core.Interfaces.Managers
     /// <summary>
     /// 用户信息更新事件参数
     /// </summary>
-    public class UserInfoUpdatedEventArgs : EventArgs
-    {
+    public class UserInfoUpdatedEventArgs : EventArgs {
         public UserDto? OldUser { get; set; }
         public UserDto? NewUser { get; set; }
         public string UpdateReason { get; set; } = string.Empty;
     }
 
-    #endregion
+    #endregion 数据模型
 }

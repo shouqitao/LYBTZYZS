@@ -1,19 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using LYBT.Shared.Models.Common;
-using LYBT.Shared.Models.Contracts.Common;
+﻿using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Enums;
 using Refit;
 
-namespace LYBT.Shared.Interfaces.Api
-{
+namespace LYBT.Shared.Interfaces.Api {
+
     /// <summary>
     /// 医疗案例API客户端接口 - UltraThink统一标准
     /// </summary>
-    public interface IMedicalCaseApi
-    {
+    public interface IMedicalCaseApi {
+
         /// <summary>
         /// 分页查询医疗案例
         /// </summary>

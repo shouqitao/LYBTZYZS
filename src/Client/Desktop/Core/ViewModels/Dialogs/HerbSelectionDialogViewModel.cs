@@ -1,21 +1,16 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Collections.ObjectModel;
 using LYBT.Desktop.Core.Interfaces.Services;
-using LYBT.Desktop.Core.ViewModels;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Herbs;
 using Prism.Commands;
 using Prism.Events;
 
-namespace LYBT.Desktop.Core.ViewModels.Dialogs
-{
+namespace LYBT.Desktop.Core.ViewModels.Dialogs {
+
     /// <summary>
     /// 中药材选择对话框ViewModel - UltraThink统一架构
     /// </summary>
-    public class HerbSelectionDialogViewModel : DialogViewModelBase
-    {
+    public class HerbSelectionDialogViewModel : DialogViewModelBase {
         private readonly IHerbService _herbService;
         private string _searchKeyword = string.Empty;
         private HerbDto? _selectedHerb;
@@ -25,13 +20,10 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
         /// <summary>
         /// 搜索关键词
         /// </summary>
-        public string SearchKeyword
-        {
+        public string SearchKeyword {
             get => _searchKeyword;
-            set
-            {
-                if (SetProperty(ref _searchKeyword, value))
-                {
+            set {
+                if (SetProperty(ref _searchKeyword, value)) {
                     SearchCommand?.Execute();
                 }
             }
@@ -40,15 +32,11 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
         /// <summary>
         /// 选中的中药材
         /// </summary>
-        public HerbDto? SelectedHerb
-        {
+        public HerbDto? SelectedHerb {
             get => _selectedHerb;
-            set
-            {
-                if (SetProperty(ref _selectedHerb, value))
-                {
-                    if (_selectedHerb != null)
-                    {
+            set {
+                if (SetProperty(ref _selectedHerb, value)) {
+                    if (_selectedHerb != null) {
                         Unit = _selectedHerb.Unit ?? "g";
                     }
                     ConfirmCommand?.RaiseCanExecuteChanged();
@@ -59,8 +47,7 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
         /// <summary>
         /// 用量
         /// </summary>
-        public decimal Quantity
-        {
+        public decimal Quantity {
             get => _quantity;
             set => SetProperty(ref _quantity, value);
         }
@@ -68,8 +55,7 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
         /// <summary>
         /// 单位
         /// </summary>
-        public string Unit
-        {
+        public string Unit {
             get => _unit;
             set => SetProperty(ref _unit, value);
         }
@@ -96,8 +82,7 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
             IHerbService herbService,
             IEventAggregator eventAggregator,
             IErrorHandlingService errorHandlingService)
-            : base(eventAggregator, errorHandlingService)
-        {
+            : base(eventAggregator, errorHandlingService) {
             _herbService = herbService ?? throw new ArgumentNullException(nameof(herbService));
             Title = "选择中药材";
 
@@ -112,8 +97,7 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
         /// 简化构造函数（使用ContainerLocator）
         /// </summary>
         public HerbSelectionDialogViewModel(IHerbService herbService)
-            : base()
-        {
+            : base() {
             _herbService = herbService ?? throw new ArgumentNullException(nameof(herbService));
             Title = "选择中药材";
 
@@ -127,32 +111,23 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
         /// <summary>
         /// 加载中药材列表
         /// </summary>
-        private async Task LoadHerbsAsync()
-        {
-            try
-            {
+        private async Task LoadHerbsAsync() {
+            try {
                 IsLoading = true;
 
                 var query = new HerbPagedQueryDto { PageIndex = 1, PageSize = 1000 };
                 var result = await _herbService.GetPagedAsync(query);
-                if (result.IsSuccess && result.Data?.Items != null)
-                {
-                    await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
-                    {
+                if (result.IsSuccess && result.Data?.Items != null) {
+                    await System.Windows.Application.Current.Dispatcher.InvokeAsync(() => {
                         Herbs.Clear();
-                        foreach (var herbDto in result.Data.Items)
-                        {
+                        foreach (var herbDto in result.Data.Items) {
                             Herbs.Add(herbDto);
                         }
                     });
                 }
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 await HandleErrorAsync("加载中药材列表", ex);
-            }
-            finally
-            {
+            } finally {
                 IsLoading = false;
             }
         }
@@ -160,36 +135,27 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
         /// <summary>
         /// 执行搜索
         /// </summary>
-        private async Task ExecuteSearchAsync()
-        {
-            try
-            {
+        private async Task ExecuteSearchAsync() {
+            try {
                 IsLoading = true;
 
                 var query = new HerbPagedQueryDto { PageIndex = 1, PageSize = 1000 };
                 var result = await _herbService.GetPagedAsync(query);
-                if (result.IsSuccess && result.Data?.Items != null)
-                {
+                if (result.IsSuccess && result.Data?.Items != null) {
                     var filteredHerbs = string.IsNullOrWhiteSpace(SearchKeyword)
                         ? result.Data.Items
                         : result.Data.Items.Where(h => h.Name.Contains(SearchKeyword, StringComparison.OrdinalIgnoreCase));
 
-                    await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
-                    {
+                    await System.Windows.Application.Current.Dispatcher.InvokeAsync(() => {
                         Herbs.Clear();
-                        foreach (var herbDto in filteredHerbs)
-                        {
+                        foreach (var herbDto in filteredHerbs) {
                             Herbs.Add(herbDto);
                         }
                     });
                 }
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 await HandleErrorAsync("搜索中药材", ex);
-            }
-            finally
-            {
+            } finally {
                 IsLoading = false;
             }
         }
@@ -198,17 +164,13 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
         /// 执行排序 - UltraThink Command绑定优化
         /// </summary>
         /// <param name="columnName">列名</param>
-        private void ExecuteSort(string? columnName)
-        {
-            if (string.IsNullOrEmpty(columnName))
-            {
+        private void ExecuteSort(string? columnName) {
+            if (string.IsNullOrEmpty(columnName)) {
                 return;
             }
 
-            try
-            {
-                var sortedHerbs = columnName.ToLower() switch
-                {
+            try {
+                var sortedHerbs = columnName.ToLower() switch {
                     "名称" => Herbs.OrderBy(h => h.Name),
                     "规格" => Herbs.OrderBy(h => h.Spec),
                     "单位" => Herbs.OrderBy(h => h.Unit),
@@ -217,17 +179,13 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
                 };
 
                 // 更新集合
-                System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                {
+                System.Windows.Application.Current.Dispatcher.Invoke(() => {
                     Herbs.Clear();
-                    foreach (var herb in sortedHerbs)
-                    {
+                    foreach (var herb in sortedHerbs) {
                         Herbs.Add(herb);
                     }
                 });
-            }
-            catch (Exception)
-            {
+            } catch (Exception) {
                 // 排序失败时记录错误但不中断用户操作
                 StatusMessage = "排序失败，请重试";
             }
@@ -236,24 +194,21 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
         /// <summary>
         /// 执行确认逻辑
         /// </summary>
-        protected override Task<bool> ExecuteConfirmAsync()
-        {
+        protected override Task<bool> ExecuteConfirmAsync() {
             return Task.FromResult(SelectedHerb != null && Quantity > 0);
         }
 
         /// <summary>
         /// 检查是否可以确认
         /// </summary>
-        protected override bool CanConfirm()
-        {
+        protected override bool CanConfirm() {
             return !IsLoading && SelectedHerb != null && Quantity > 0;
         }
 
         /// <summary>
         /// 获取选择结果
         /// </summary>
-        public (HerbDto? Herb, decimal Quantity, string Unit) GetResult()
-        {
+        public (HerbDto? Herb, decimal Quantity, string Unit) GetResult() {
             return (SelectedHerb, Quantity, Unit);
         }
     }

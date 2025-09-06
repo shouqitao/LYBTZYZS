@@ -8,8 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 
-namespace LYBT.Module.Users.Repositories
-{
+namespace LYBT.Module.Users.Repositories {
 
     /// <summary>
     /// 用户仓储实现类 - UltraThink优化版
@@ -17,14 +16,13 @@ namespace LYBT.Module.Users.Repositories
     /// 优化特性：查询缓存、批量操作、性能监控、智能缓存失效
     /// 实现软删除策略：用户只能禁用/启用，不能物理删除
     /// </summary>
-    public class UserRepository : OptimizedBaseRepository<User>, IUserRepository
-    {
+    public class UserRepository : OptimizedBaseRepository<User>, IUserRepository {
+
         public UserRepository(
             AppDbContext dbContext,
             ILogger<UserRepository> logger,
             IMemoryCache cache)
-            : base(dbContext, logger, cache)
-        {
+            : base(dbContext, logger, cache) {
             // OptimizedBaseRepository会处理基础的数据库操作和缓存策略
         }
 
@@ -33,11 +31,9 @@ namespace LYBT.Module.Users.Repositories
         /// <summary>
         /// 禁用用户（软删除）- 缓存感知版
         /// </summary>
-        public async Task<bool> DisableAsync(Guid id)
-        {
+        public async Task<bool> DisableAsync(Guid id) {
             var user = await _dbSet.FindAsync(id);
-            if (user == null)
-            {
+            if (user == null) {
                 return false;
             }
 
@@ -46,8 +42,7 @@ namespace LYBT.Module.Users.Repositories
             var result = await _context.SaveChangesAsync() > 0;
 
             // 缓存失效
-            if (result)
-            {
+            if (result) {
                 _cache.Remove($"{CacheKeyPrefix}{id}");
                 InvalidateCache();
             }
@@ -58,11 +53,9 @@ namespace LYBT.Module.Users.Repositories
         /// <summary>
         /// 启用用户 - 缓存感知版
         /// </summary>
-        public async Task<bool> EnableAsync(Guid id)
-        {
+        public async Task<bool> EnableAsync(Guid id) {
             var user = await _dbSet.FindAsync(id);
-            if (user == null)
-            {
+            if (user == null) {
                 return false;
             }
 
@@ -71,8 +64,7 @@ namespace LYBT.Module.Users.Repositories
             var result = await _context.SaveChangesAsync() > 0;
 
             // 缓存失效
-            if (result)
-            {
+            if (result) {
                 _cache.Remove($"{CacheKeyPrefix}{id}");
                 InvalidateCache();
             }
@@ -84,12 +76,10 @@ namespace LYBT.Module.Users.Repositories
         /// 分页条件查找用户（缓存优化版）
         /// 权限控制：禁用的用户仅管理员可查询
         /// </summary>
-        public async Task<(IList<User> users, int total)> GetPagedAsync(UserPagedQueryDto query, bool includeDisabled = false)
-        {
+        public async Task<(IList<User> users, int total)> GetPagedAsync(UserPagedQueryDto query, bool includeDisabled = false) {
             var cacheKey = GenerateCacheKey("paged", query.GetHashCode(), includeDisabled);
 
-            if (_cache.TryGetValue<(IList<User>, int)>(cacheKey, out var cached))
-            {
+            if (_cache.TryGetValue<(IList<User>, int)>(cacheKey, out var cached)) {
                 _logger.LogDebug("从缓存获取用户分页数据: {CacheKey}", cacheKey);
                 return cached;
             }
@@ -97,14 +87,12 @@ namespace LYBT.Module.Users.Repositories
             var dbSet = _dbSet.AsQueryable();
 
             // 权限控制：非管理员只能看到启用的用户
-            if (!includeDisabled)
-            {
+            if (!includeDisabled) {
                 dbSet = dbSet.Where(u => u.Status == CommonStatus.Enabled);
             }
 
             // 通用搜索关键词（模糊搜索：用户名、真实姓名、拼音码）
-            if (!string.IsNullOrWhiteSpace(query.Keyword))
-            {
+            if (!string.IsNullOrWhiteSpace(query.Keyword)) {
                 var keyword = query.Keyword.Trim();
                 dbSet = dbSet.Where(u =>
                     u.Username.Contains(keyword) ||
@@ -113,22 +101,17 @@ namespace LYBT.Module.Users.Repositories
                 );
             }
             // 特定字段搜索（精确搜索）
-            else
-            {
-                if (!string.IsNullOrWhiteSpace(query.Username))
-                {
+            else {
+                if (!string.IsNullOrWhiteSpace(query.Username)) {
                     dbSet = dbSet.Where(u => u.Username.Contains(query.Username));
                 }
-                if (!string.IsNullOrWhiteSpace(query.RealName))
-                {
+                if (!string.IsNullOrWhiteSpace(query.RealName)) {
                     dbSet = dbSet.Where(u => u.RealName.Contains(query.RealName));
                 }
-                if (!string.IsNullOrWhiteSpace(query.PhoneNumber))
-                {
+                if (!string.IsNullOrWhiteSpace(query.PhoneNumber)) {
                     dbSet = dbSet.Where(u => u.PhoneNumber != null && u.PhoneNumber.Contains(query.PhoneNumber));
                 }
-                if (!string.IsNullOrWhiteSpace(query.PinYinCode))
-                {
+                if (!string.IsNullOrWhiteSpace(query.PinYinCode)) {
                     var keyword = query.PinYinCode.ToUpperInvariant();
                     dbSet = dbSet.Where(u => u.PinYinCode != null && u.PinYinCode.Contains(keyword));
                 }
@@ -138,8 +121,7 @@ namespace LYBT.Module.Users.Repositories
             // 角色功能已合并到用户模块中
 
             // 状态筛选
-            if (query.Status.HasValue)
-            {
+            if (query.Status.HasValue) {
                 dbSet = dbSet.Where(u => u.Status == query.Status.Value);
             }
 
@@ -168,12 +150,10 @@ namespace LYBT.Module.Users.Repositories
         /// <summary>
         /// 根据用户名查找（包括禁用用户，用于登录验证）- 缓存优化版
         /// </summary>
-        public async Task<User?> GetByUsernameAsync(string userName)
-        {
+        public async Task<User?> GetByUsernameAsync(string userName) {
             var cacheKey = GenerateCacheKey("username", userName);
 
-            if (_cache.TryGetValue<User?>(cacheKey, out var cached))
-            {
+            if (_cache.TryGetValue<User?>(cacheKey, out var cached)) {
                 return cached;
             }
 
@@ -189,19 +169,16 @@ namespace LYBT.Module.Users.Repositories
         /// 根据ID查找 - 缓存优化版
         /// 权限控制：禁用的用户仅管理员可查询
         /// </summary>
-        public async Task<User?> GetByIdAsync(Guid id, bool includeDisabled = false)
-        {
+        public async Task<User?> GetByIdAsync(Guid id, bool includeDisabled = false) {
             var cacheKey = GenerateCacheKey("byId", id, includeDisabled);
 
-            if (_cache.TryGetValue<User?>(cacheKey, out var cached))
-            {
+            if (_cache.TryGetValue<User?>(cacheKey, out var cached)) {
                 return cached;
             }
 
             var query = _dbSet.AsNoTracking();
 
-            if (!includeDisabled)
-            {
+            if (!includeDisabled) {
                 query = query.Where(u => u.Status == CommonStatus.Enabled);
             }
 
@@ -215,10 +192,8 @@ namespace LYBT.Module.Users.Repositories
         /// 权限控制：禁用的用户仅管理员可查询
         /// 使用OptimizedBaseRepository的批量缓存功能
         /// </summary>
-        public async Task<List<User>> GetUsersByIdsAsync(List<Guid> ids, bool includeDisabled = false)
-        {
-            if (!ids.Any())
-            {
+        public async Task<List<User>> GetUsersByIdsAsync(List<Guid> ids, bool includeDisabled = false) {
+            if (!ids.Any()) {
                 return new List<User>();
             }
 
@@ -226,8 +201,7 @@ namespace LYBT.Module.Users.Repositories
             var batchResult = await GetByIdsAsync(ids);
             var users = batchResult.Values.ToList();
 
-            if (!includeDisabled)
-            {
+            if (!includeDisabled) {
                 users = users.Where(u => u.Status == CommonStatus.Enabled).ToList();
             }
 
@@ -237,12 +211,10 @@ namespace LYBT.Module.Users.Repositories
         /// <summary>
         /// 校验用户名是否存在（包括禁用用户）- 缓存优化版
         /// </summary>
-        public async Task<bool> ExistsByUsernameAsync(string userName)
-        {
+        public async Task<bool> ExistsByUsernameAsync(string userName) {
             var cacheKey = GenerateCacheKey("exists", userName);
 
-            if (_cache.TryGetValue<bool>(cacheKey, out var cached))
-            {
+            if (_cache.TryGetValue<bool>(cacheKey, out var cached)) {
                 return cached;
             }
 
@@ -254,11 +226,9 @@ namespace LYBT.Module.Users.Repositories
         /// <summary>
         /// 更新用户密码 - 缓存感知版
         /// </summary>
-        public async Task<bool> UpdatePasswordAsync(Guid id, string passwordHash)
-        {
+        public async Task<bool> UpdatePasswordAsync(Guid id, string passwordHash) {
             var user = await _dbSet.FindAsync(id);
-            if (user == null)
-            {
+            if (user == null) {
                 return false;
             }
 
@@ -267,8 +237,7 @@ namespace LYBT.Module.Users.Repositories
             var result = await _context.SaveChangesAsync() > 0;
 
             // 缓存失效
-            if (result)
-            {
+            if (result) {
                 _cache.Remove($"{CacheKeyPrefix}{id}");
                 InvalidateCache();
             }
@@ -279,10 +248,8 @@ namespace LYBT.Module.Users.Repositories
         /// <summary>
         /// 批量更新启用状态 - 缓存感知版
         /// </summary>
-        public async Task<int> UpdateActiveStatusAsync(List<Guid> ids, bool isActive)
-        {
-            if (!ids.Any())
-            {
+        public async Task<int> UpdateActiveStatusAsync(List<Guid> ids, bool isActive) {
+            if (!ids.Any()) {
                 return 0;
             }
 
@@ -294,10 +261,8 @@ namespace LYBT.Module.Users.Repositories
                     .SetProperty(u => u.Status, status));
 
             // 批量缓存失效
-            if (result > 0)
-            {
-                foreach (var id in ids)
-                {
+            if (result > 0) {
+                foreach (var id in ids) {
                     _cache.Remove($"{CacheKeyPrefix}{id}");
                 }
                 InvalidateCache();
@@ -309,12 +274,10 @@ namespace LYBT.Module.Users.Repositories
         /// <summary>
         /// 获取启用的用户列表 - 缓存优化版
         /// </summary>
-        public async Task<List<User>> GetActiveUsersAsync()
-        {
+        public async Task<List<User>> GetActiveUsersAsync() {
             var cacheKey = GenerateCacheKey("active_users");
 
-            if (_cache.TryGetValue<List<User>>(cacheKey, out var cached))
-            {
+            if (_cache.TryGetValue<List<User>>(cacheKey, out var cached)) {
                 return cached!;
             }
 
@@ -327,7 +290,6 @@ namespace LYBT.Module.Users.Repositories
             _cache.Set(cacheKey, users, DefaultCacheDuration);
             return users;
         }
-
 
         // 注意：GetAllAsync方法由BaseRepository提供
     }

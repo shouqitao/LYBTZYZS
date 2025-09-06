@@ -1,20 +1,18 @@
-﻿using System;
+﻿namespace LYBT.Desktop.Core.Attributes {
 
-namespace LYBT.Desktop.Core.Attributes
-{
     /// <summary>
     /// UltraThink Phase 3.1: 自动Command生成特性
-    /// 
+    ///
     /// 用法:
     /// [AutoCommand]
     /// void SaveData() { /* 业务逻辑 */ }
-    /// 
+    ///
     /// 自动生成:
     /// public DelegateCommand SaveDataCommand { get; }
     /// </summary>
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
-    public sealed class AutoCommandAttribute : Attribute
-    {
+    public sealed class AutoCommandAttribute : Attribute {
+
         /// <summary>
         /// Command名称（可选，默认使用方法名+Command）
         /// </summary>
@@ -40,12 +38,10 @@ namespace LYBT.Desktop.Core.Attributes
         /// </summary>
         public ErrorHandlingStrategy ErrorHandling { get; set; } = ErrorHandlingStrategy.ShowDialog;
 
-        public AutoCommandAttribute()
-        {
+        public AutoCommandAttribute() {
         }
 
-        public AutoCommandAttribute(string commandName)
-        {
+        public AutoCommandAttribute(string commandName) {
             CommandName = commandName;
         }
     }
@@ -53,14 +49,17 @@ namespace LYBT.Desktop.Core.Attributes
     /// <summary>
     /// 错误处理策略
     /// </summary>
-    public enum ErrorHandlingStrategy
-    {
+    public enum ErrorHandlingStrategy {
+
         /// <summary>静默处理，仅记录日志</summary>
         Silent,
+
         /// <summary>设置错误状态，显示在界面</summary>
         SetError,
+
         /// <summary>显示错误对话框</summary>
         ShowDialog,
+
         /// <summary>抛出异常，由上层处理</summary>
         Throw
     }

@@ -1,17 +1,16 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Enums;
 
-namespace LYBT.Shared.Models.Contracts.Consultation
-{
+namespace LYBT.Shared.Models.Contracts.Consultation {
+
     /// <summary>
     /// 开始看诊DTO - 前后端共享API契约
     /// 用于开始看诊的请求模型
     /// </summary>
-    public class ConsultationStartDto
-    {
+    public class ConsultationStartDto {
+
         /// <summary>医疗案例ID</summary>
         [Required(ErrorMessage = "医疗案例ID不能为空")]
         [DisplayName("医疗案例ID")]
@@ -54,8 +53,8 @@ namespace LYBT.Shared.Models.Contracts.Consultation
     /// 完成看诊DTO - 前后端共享API契约
     /// 用于完成看诊的请求模型
     /// </summary>
-    public class ConsultationCompleteDto
-    {
+    public class ConsultationCompleteDto {
+
         /// <summary>看诊ID</summary>
         [Required(ErrorMessage = "看诊ID不能为空")]
         [DisplayName("看诊ID")]
@@ -115,8 +114,8 @@ namespace LYBT.Shared.Models.Contracts.Consultation
     /// 看诊分页查询DTO - 继承完整查询基类
     /// 用于看诊记录的分页查询和筛选
     /// </summary>
-    public class ConsultationPagedQueryDto : ExtendedQueryDto
-    {
+    public class ConsultationPagedQueryDto : ExtendedQueryDto {
+
         /// <summary>患者姓名关键词</summary>
         [DisplayName("患者姓名")]
         public string? PatientName { get; set; }
@@ -158,8 +157,8 @@ namespace LYBT.Shared.Models.Contracts.Consultation
     /// 看诊状态更新DTO - 前后端共享API契约
     /// 用于更新看诊状态的请求模型
     /// </summary>
-    public class UpdateStatusDto
-    {
+    public class UpdateStatusDto {
+
         /// <summary>看诊ID</summary>
         [Required(ErrorMessage = "看诊ID不能为空")]
         [DisplayName("看诊ID")]
@@ -188,8 +187,8 @@ namespace LYBT.Shared.Models.Contracts.Consultation
     /// <summary>
     /// 看诊统计DTO
     /// </summary>
-    public class ConsultationStatisticsDto
-    {
+    public class ConsultationStatisticsDto {
+
         /// <summary>总看诊次数</summary>
         public int TotalConsultations { get; set; }
 
@@ -221,8 +220,8 @@ namespace LYBT.Shared.Models.Contracts.Consultation
     /// <summary>
     /// 看诊日程DTO
     /// </summary>
-    public class ConsultationScheduleDto
-    {
+    public class ConsultationScheduleDto {
+
         /// <summary>日期</summary>
         public DateTime Date { get; set; }
 
@@ -248,8 +247,8 @@ namespace LYBT.Shared.Models.Contracts.Consultation
     /// <summary>
     /// 时段DTO
     /// </summary>
-    public class TimeSlotDto
-    {
+    public class TimeSlotDto {
+
         /// <summary>开始时间</summary>
         public DateTime StartTime { get; set; }
 
@@ -269,8 +268,8 @@ namespace LYBT.Shared.Models.Contracts.Consultation
     /// <summary>
     /// 看诊历史查询DTO
     /// </summary>
-    public class ConsultationHistoryQueryDto
-    {
+    public class ConsultationHistoryQueryDto {
+
         /// <summary>患者ID</summary>
         [Required(ErrorMessage = "患者ID不能为空")]
         public Guid PatientId { get; set; }

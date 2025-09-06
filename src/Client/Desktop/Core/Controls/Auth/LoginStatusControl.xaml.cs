@@ -1,16 +1,15 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
 using LYBT.Shared.Models.Contracts.Auth;
-using LYBT.Shared.Models.Contracts.Common;
 
-namespace LYBT.WPF.Client.Controls.Auth
-{
+namespace LYBT.WPF.Client.Controls.Auth {
+
     /// <summary>
     /// LoginStatusControl.xaml 的交互逻辑
     /// 登录状态控件
     /// </summary>
-    public partial class LoginStatusControl : UserControl
-    {
+    public partial class LoginStatusControl : UserControl {
+
         public static readonly DependencyProperty UserProperty =
             DependencyProperty.Register(
                 nameof(User),
@@ -18,14 +17,12 @@ namespace LYBT.WPF.Client.Controls.Auth
                 typeof(LoginStatusControl),
                 new PropertyMetadata(null));
 
-        public LoginResponse User
-        {
+        public LoginResponse User {
             get => (LoginResponse)GetValue(UserProperty);
             set => SetValue(UserProperty, value);
         }
 
-        public LoginStatusControl()
-        {
+        public LoginStatusControl() {
             InitializeComponent();
         }
     }

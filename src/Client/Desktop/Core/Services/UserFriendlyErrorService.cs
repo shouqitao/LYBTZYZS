@@ -1,20 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net;
-using System.Threading.Tasks;
+﻿using System.Net;
 using System.Windows.Input;
 using LYBT.Desktop.Core.Exceptions;
 using LYBT.Desktop.Core.Models.Common;
-using LYBT.Desktop.Core.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.Extensions.Logging;
+
 using SharedCommon = LYBT.Shared.Models.Contracts.Common;
 
-namespace LYBT.Desktop.Core.Services
-{
+namespace LYBT.Desktop.Core.Services {
+
     /// <summary>
     /// 增强的用户友好错误处理服务 - UltraThink Stage 5.2.2 创新设计
-    /// 
+    ///
     /// 核心增强功能：
     /// 1. 上下文感知的错误分析和处理
     /// 2. 可执行的一键修复建议
@@ -22,8 +19,8 @@ namespace LYBT.Desktop.Core.Services
     /// 4. 与SmartLoadingManager深度集成
     /// 5. 处方管理业务特定错误处理
     /// </summary>
-    public interface IUserFriendlyErrorService
-    {
+    public interface IUserFriendlyErrorService {
+
         /// <summary>
         /// 获取用户友好的错误消息
         /// </summary>
@@ -58,8 +55,7 @@ namespace LYBT.Desktop.Core.Services
     /// <summary>
     /// 增强的用户友好错误处理服务实现
     /// </summary>
-    public class UserFriendlyErrorService : IUserFriendlyErrorService
-    {
+    public class UserFriendlyErrorService : IUserFriendlyErrorService {
         private readonly ILogger<UserFriendlyErrorService> _logger;
         private readonly ISmartLoadingManager? _loadingManager;
         private readonly Dictionary<string, Func<Exception, ErrorContext, Task<bool>>> _recoveryStrategies = new();
@@ -76,7 +72,7 @@ namespace LYBT.Desktop.Core.Services
                     SuggestedActions = new[] { "检查网络连接", "重试操作", "联系技术支持" }
                 }
             },
-            
+
             // 超时错误
             { "timeout", new UserFriendlyError
                 {
@@ -130,8 +126,7 @@ namespace LYBT.Desktop.Core.Services
 
         public UserFriendlyErrorService(
             ILogger<UserFriendlyErrorService> logger,
-            ISmartLoadingManager? loadingManager = null)
-        {
+            ISmartLoadingManager? loadingManager = null) {
             _logger = logger;
             _loadingManager = loadingManager;
             RegisterDefaultRecoveryStrategies();
@@ -140,10 +135,8 @@ namespace LYBT.Desktop.Core.Services
         /// <summary>
         /// 获取用户友好的错误消息
         /// </summary>
-        public UserFriendlyError GetFriendlyError(Exception exception, string? context = null)
-        {
-            try
-            {
+        public UserFriendlyError GetFriendlyError(Exception exception, string? context = null) {
+            try {
                 var errorType = ClassifyError(exception);
                 var friendlyError = GetErrorByType(errorType);
 
@@ -153,8 +146,7 @@ namespace LYBT.Desktop.Core.Services
                 friendlyError.Timestamp = DateTime.Now;
 
                 // 特殊处理API调用异常
-                if (exception is ApiCallException apiEx)
-                {
+                if (exception is ApiCallException apiEx) {
                     friendlyError.OperationName = apiEx.OperationName;
                     friendlyError.AttemptCount = apiEx.AttemptNumber;
                 }
@@ -163,9 +155,7 @@ namespace LYBT.Desktop.Core.Services
                     errorType, context, exception.Message);
 
                 return friendlyError;
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 _logger.LogError(ex, "生成用户友好错误时发生异常");
                 return GetDefaultError();
             }
@@ -174,12 +164,9 @@ namespace LYBT.Desktop.Core.Services
         /// <summary>
         /// 获取用户友好的错误消息（从ServiceResult）
         /// </summary>
-        public UserFriendlyError GetFriendlyError<T>(ServiceResult<T> result, string? context = null)
-        {
-            if (result.IsSuccess)
-            {
-                return new UserFriendlyError
-                {
+        public UserFriendlyError GetFriendlyError<T>(ServiceResult<T> result, string? context = null) {
+            if (result.IsSuccess) {
+                return new UserFriendlyError {
                     Title = "操作成功",
                     Message = "操作已成功完成",
                     Severity = SharedCommon.ErrorSeverity.Info
@@ -193,12 +180,9 @@ namespace LYBT.Desktop.Core.Services
         /// <summary>
         /// 获取用户友好的错误消息（从ServiceResult）
         /// </summary>
-        public UserFriendlyError GetFriendlyError(ServiceResult result, string? context = null)
-        {
-            if (result.IsSuccess)
-            {
-                return new UserFriendlyError
-                {
+        public UserFriendlyError GetFriendlyError(ServiceResult result, string? context = null) {
+            if (result.IsSuccess) {
+                return new UserFriendlyError {
                     Title = "操作成功",
                     Message = "操作已成功完成",
                     Severity = SharedCommon.ErrorSeverity.Info
@@ -212,13 +196,10 @@ namespace LYBT.Desktop.Core.Services
         /// <summary>
         /// 获取增强的上下文相关错误消息
         /// </summary>
-        public EnhancedUserFriendlyError GetContextualError(Exception exception, ErrorContext errorContext)
-        {
-            try
-            {
+        public EnhancedUserFriendlyError GetContextualError(Exception exception, ErrorContext errorContext) {
+            try {
                 var baseError = GetFriendlyError(exception, errorContext.OperationName);
-                var enhancedError = new EnhancedUserFriendlyError
-                {
+                var enhancedError = new EnhancedUserFriendlyError {
                     Title = baseError.Title,
                     Message = GetContextualMessage(exception, errorContext),
                     Severity = baseError.Severity,
@@ -240,9 +221,7 @@ namespace LYBT.Desktop.Core.Services
                     errorContext.OperationName, errorContext.ModuleName, enhancedError.CanAutoRecover);
 
                 return enhancedError;
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 _logger.LogError(ex, "生成增强错误信息时发生异常");
                 return CreateFallbackEnhancedError();
             }
@@ -251,26 +230,20 @@ namespace LYBT.Desktop.Core.Services
         /// <summary>
         /// 尝试自动恢复错误
         /// </summary>
-        public async Task<RecoveryResult> TryAutoRecoverAsync(Exception exception, ErrorContext context)
-        {
+        public async Task<RecoveryResult> TryAutoRecoverAsync(Exception exception, ErrorContext context) {
             using var operation = _loadingManager?.StartLoading("auto_recovery", "正在尝试自动恢复...", layer: 2);
 
-            try
-            {
+            try {
                 var errorType = ClassifyError(exception);
 
                 // 查找匹配的恢复策略
-                foreach (var (pattern, strategy) in _recoveryStrategies)
-                {
-                    if (errorType.Contains(pattern) || exception.Message.ToLowerInvariant().Contains(pattern))
-                    {
+                foreach (var (pattern, strategy) in _recoveryStrategies) {
+                    if (errorType.Contains(pattern) || exception.Message.ToLowerInvariant().Contains(pattern)) {
                         _logger.LogInformation("尝试使用恢复策略: {Pattern}", pattern);
 
                         var success = await strategy(exception, context);
-                        if (success)
-                        {
-                            return new RecoveryResult
-                            {
+                        if (success) {
+                            return new RecoveryResult {
                                 IsSuccessful = true,
                                 Message = "错误已自动恢复，操作已恢复正常",
                                 RecoveryStrategy = pattern,
@@ -280,25 +253,19 @@ namespace LYBT.Desktop.Core.Services
                     }
                 }
 
-                return new RecoveryResult
-                {
+                return new RecoveryResult {
                     IsSuccessful = false,
                     Message = "无法自动恢复此错误，请手动处理",
                     RecoveryTime = DateTime.Now
                 };
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 _logger.LogError(ex, "自动恢复过程中发生异常");
-                return new RecoveryResult
-                {
+                return new RecoveryResult {
                     IsSuccessful = false,
                     Message = $"自动恢复失败: {ex.Message}",
                     RecoveryTime = DateTime.Now
                 };
-            }
-            finally
-            {
+            } finally {
                 operation?.Complete();
             }
         }
@@ -306,8 +273,7 @@ namespace LYBT.Desktop.Core.Services
         /// <summary>
         /// 注册自定义错误恢复策略
         /// </summary>
-        public void RegisterRecoveryStrategy(string errorPattern, Func<Exception, ErrorContext, Task<bool>> recoveryAction)
-        {
+        public void RegisterRecoveryStrategy(string errorPattern, Func<Exception, ErrorContext, Task<bool>> recoveryAction) {
             _recoveryStrategies[errorPattern] = recoveryAction;
             _logger.LogDebug("注册错误恢复策略: {Pattern}", errorPattern);
         }
@@ -317,16 +283,13 @@ namespace LYBT.Desktop.Core.Services
         /// <summary>
         /// 错误分类
         /// </summary>
-        private string ClassifyError(Exception exception)
-        {
+        private string ClassifyError(Exception exception) {
             var message = exception.Message?.ToLowerInvariant() ?? "";
             var exceptionType = exception.GetType().Name.ToLowerInvariant();
 
             // 根据HTTP状态码分类
-            if (exception is ApiCallException apiEx && apiEx.StatusCode.HasValue)
-            {
-                return apiEx.StatusCode.Value switch
-                {
+            if (exception is ApiCallException apiEx && apiEx.StatusCode.HasValue) {
+                return apiEx.StatusCode.Value switch {
                     HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden => "unauthorized",
                     HttpStatusCode.NotFound => "notfound",
                     HttpStatusCode.BadRequest => "validation",
@@ -339,32 +302,27 @@ namespace LYBT.Desktop.Core.Services
             }
 
             // 根据异常类型分类
-            if (exceptionType.Contains("timeout") || message.Contains("timeout") || message.Contains("超时"))
-            {
+            if (exceptionType.Contains("timeout") || message.Contains("timeout") || message.Contains("超时")) {
                 return "timeout";
             }
 
             if (exceptionType.Contains("network") || exceptionType.Contains("connection") ||
-                message.Contains("connection") || message.Contains("网络"))
-            {
+                message.Contains("connection") || message.Contains("网络")) {
                 return "connection";
             }
 
             if (exceptionType.Contains("unauthorized") || exceptionType.Contains("forbidden") ||
-                message.Contains("unauthorized") || message.Contains("权限") || message.Contains("授权"))
-            {
+                message.Contains("unauthorized") || message.Contains("权限") || message.Contains("授权")) {
                 return "unauthorized";
             }
 
             if (exceptionType.Contains("validation") || message.Contains("validation") ||
-                message.Contains("验证") || message.Contains("格式"))
-            {
+                message.Contains("验证") || message.Contains("格式")) {
                 return "validation";
             }
 
             if (exceptionType.Contains("notfound") || message.Contains("not found") ||
-                message.Contains("不存在"))
-            {
+                message.Contains("不存在")) {
                 return "notfound";
             }
 
@@ -375,12 +333,9 @@ namespace LYBT.Desktop.Core.Services
         /// <summary>
         /// 根据错误类型获取友好错误
         /// </summary>
-        private UserFriendlyError GetErrorByType(string errorType)
-        {
-            if (_errorPatterns.TryGetValue(errorType, out var pattern))
-            {
-                return new UserFriendlyError
-                {
+        private UserFriendlyError GetErrorByType(string errorType) {
+            if (_errorPatterns.TryGetValue(errorType, out var pattern)) {
+                return new UserFriendlyError {
                     Title = pattern.Title,
                     Message = pattern.Message,
                     Severity = pattern.Severity,
@@ -394,10 +349,8 @@ namespace LYBT.Desktop.Core.Services
         /// <summary>
         /// 获取默认错误
         /// </summary>
-        private static UserFriendlyError GetDefaultError()
-        {
-            return new UserFriendlyError
-            {
+        private static UserFriendlyError GetDefaultError() {
+            return new UserFriendlyError {
                 Title = "操作异常",
                 Message = "操作过程中出现异常，请稍后重试或联系技术支持",
                 Severity = SharedCommon.ErrorSeverity.Warning,
@@ -408,20 +361,16 @@ namespace LYBT.Desktop.Core.Services
         /// <summary>
         /// 注册默认错误恢复策略
         /// </summary>
-        private void RegisterDefaultRecoveryStrategies()
-        {
+        private void RegisterDefaultRecoveryStrategies() {
             // 网络连接错误恢复
-            RegisterRecoveryStrategy("connection", async (ex, ctx) =>
-            {
+            RegisterRecoveryStrategy("connection", async (ex, ctx) => {
                 await Task.Delay(1000); // 等待网络恢复
                 return true; // 假设恢复成功
             });
 
             // 超时错误恢复 - 重试机制
-            RegisterRecoveryStrategy("timeout", async (ex, ctx) =>
-            {
-                if (ctx.RetryCount < 3)
-                {
+            RegisterRecoveryStrategy("timeout", async (ex, ctx) => {
+                if (ctx.RetryCount < 3) {
                     ctx.RetryCount++;
                     await Task.Delay(ctx.RetryCount * 1000); // 指数退避
                     return true;
@@ -430,8 +379,7 @@ namespace LYBT.Desktop.Core.Services
             });
 
             // 权限错误恢复 - 尝试重新登录
-            RegisterRecoveryStrategy("unauthorized", async (ex, ctx) =>
-            {
+            RegisterRecoveryStrategy("unauthorized", async (ex, ctx) => {
                 // 这里可以集成重新登录逻辑
                 await Task.Delay(500);
                 return false; // 需要用户手动处理
@@ -441,12 +389,10 @@ namespace LYBT.Desktop.Core.Services
         /// <summary>
         /// 生成上下文相关的错误消息
         /// </summary>
-        private string GetContextualMessage(Exception exception, ErrorContext context)
-        {
+        private string GetContextualMessage(Exception exception, ErrorContext context) {
             var baseMessage = GetErrorByType(ClassifyError(exception)).Message;
 
-            return context.ModuleName switch
-            {
+            return context.ModuleName switch {
                 "Prescriptions" => $"处方管理操作失败：{baseMessage}。请检查处方信息是否完整。",
                 "Patients" => $"患者管理操作失败：{baseMessage}。请确认患者信息是否正确。",
                 "Herbs" => $"中药材管理操作失败：{baseMessage}。请检查药材信息和价格设置。",
@@ -458,23 +404,19 @@ namespace LYBT.Desktop.Core.Services
         /// <summary>
         /// 生成智能修复操作
         /// </summary>
-        private List<SmartFixAction> GenerateSmartFixActions(Exception exception, ErrorContext context)
-        {
+        private List<SmartFixAction> GenerateSmartFixActions(Exception exception, ErrorContext context) {
             var actions = new List<SmartFixAction>();
             var errorType = ClassifyError(exception);
 
-            switch (errorType)
-            {
+            switch (errorType) {
                 case "connection":
-                    actions.Add(new SmartFixAction
-                    {
+                    actions.Add(new SmartFixAction {
                         Title = "检查网络连接",
                         Description = "点击检查网络连接状态",
                         ActionType = FixActionType.NetworkCheck,
                         IsAutomated = true
                     });
-                    actions.Add(new SmartFixAction
-                    {
+                    actions.Add(new SmartFixAction {
                         Title = "重试操作",
                         Description = "等待网络恢复后重试",
                         ActionType = FixActionType.Retry,
@@ -483,8 +425,7 @@ namespace LYBT.Desktop.Core.Services
                     break;
 
                 case "timeout":
-                    actions.Add(new SmartFixAction
-                    {
+                    actions.Add(new SmartFixAction {
                         Title = "带更长超时重试",
                         Description = "使用更长的超时时间重新尝试",
                         ActionType = FixActionType.RetryWithTimeout,
@@ -493,10 +434,8 @@ namespace LYBT.Desktop.Core.Services
                     break;
 
                 case "validation":
-                    if (context.ModuleName == "Prescriptions")
-                    {
-                        actions.Add(new SmartFixAction
-                        {
+                    if (context.ModuleName == "Prescriptions") {
+                        actions.Add(new SmartFixAction {
                             Title = "检查处方信息",
                             Description = "打开处方编辑界面检查必填项",
                             ActionType = FixActionType.OpenEditor,
@@ -506,8 +445,7 @@ namespace LYBT.Desktop.Core.Services
                     break;
 
                 case "unauthorized":
-                    actions.Add(new SmartFixAction
-                    {
+                    actions.Add(new SmartFixAction {
                         Title = "重新登录",
                         Description = "清除登录状态并重新登录",
                         ActionType = FixActionType.Relogin,
@@ -522,11 +460,9 @@ namespace LYBT.Desktop.Core.Services
         /// <summary>
         /// 判断是否可以自动恢复
         /// </summary>
-        private bool CanAutoRecover(Exception exception, ErrorContext context)
-        {
+        private bool CanAutoRecover(Exception exception, ErrorContext context) {
             var errorType = ClassifyError(exception);
-            return errorType switch
-            {
+            return errorType switch {
                 "connection" => true,
                 "timeout" => context.RetryCount < 3,
                 "server" => context.RetryCount < 2,
@@ -537,11 +473,9 @@ namespace LYBT.Desktop.Core.Services
         /// <summary>
         /// 估算恢复时间
         /// </summary>
-        private TimeSpan EstimateRecoveryTime(Exception exception, ErrorContext context)
-        {
+        private TimeSpan EstimateRecoveryTime(Exception exception, ErrorContext context) {
             var errorType = ClassifyError(exception);
-            return errorType switch
-            {
+            return errorType switch {
                 "connection" => TimeSpan.FromSeconds(5),
                 "timeout" => TimeSpan.FromSeconds(context.RetryCount * 2),
                 "server" => TimeSpan.FromSeconds(10),
@@ -552,10 +486,8 @@ namespace LYBT.Desktop.Core.Services
         /// <summary>
         /// 创建备用增强错误对象
         /// </summary>
-        private static EnhancedUserFriendlyError CreateFallbackEnhancedError()
-        {
-            return new EnhancedUserFriendlyError
-            {
+        private static EnhancedUserFriendlyError CreateFallbackEnhancedError() {
+            return new EnhancedUserFriendlyError {
                 Title = "系统异常",
                 Message = "系统出现异常，请稍后重试或联系技术支持",
                 Severity = SharedCommon.ErrorSeverity.Error,
@@ -575,14 +507,14 @@ namespace LYBT.Desktop.Core.Services
             };
         }
 
-        #endregion
+        #endregion 私有方法
     }
 
     /// <summary>
     /// 用户友好错误信息
     /// </summary>
-    public class UserFriendlyError
-    {
+    public class UserFriendlyError {
+
         /// <summary>
         /// 错误标题
         /// </summary>
@@ -629,12 +561,11 @@ namespace LYBT.Desktop.Core.Services
         public int? AttemptCount { get; set; }
     }
 
-
     /// <summary>
     /// 增强的用户友好错误信息
     /// </summary>
-    public class EnhancedUserFriendlyError : UserFriendlyError
-    {
+    public class EnhancedUserFriendlyError : UserFriendlyError {
+
         /// <summary>
         /// 错误上下文
         /// </summary>
@@ -669,8 +600,8 @@ namespace LYBT.Desktop.Core.Services
     /// <summary>
     /// 智能修复操作
     /// </summary>
-    public class SmartFixAction
-    {
+    public class SmartFixAction {
+
         /// <summary>
         /// 操作标题
         /// </summary>
@@ -710,8 +641,8 @@ namespace LYBT.Desktop.Core.Services
     /// <summary>
     /// 恢复结果
     /// </summary>
-    public class RecoveryResult
-    {
+    public class RecoveryResult {
+
         /// <summary>
         /// 是否恢复成功
         /// </summary>
@@ -746,8 +677,8 @@ namespace LYBT.Desktop.Core.Services
     /// <summary>
     /// 修复操作类型
     /// </summary>
-    public enum FixActionType
-    {
+    public enum FixActionType {
+
         /// <summary>
         /// 重试操作
         /// </summary>
@@ -792,8 +723,8 @@ namespace LYBT.Desktop.Core.Services
     /// <summary>
     /// 错误影响范围
     /// </summary>
-    public enum ErrorImpactScope
-    {
+    public enum ErrorImpactScope {
+
         /// <summary>
         /// 仅影响当前操作
         /// </summary>
@@ -809,5 +740,4 @@ namespace LYBT.Desktop.Core.Services
         /// </summary>
         System
     }
-
 }

@@ -1,11 +1,10 @@
-﻿using LYBT.Shared.Models.Contracts.Common;
-namespace LYBT.Desktop.Core.Configuration
-{
+﻿namespace LYBT.Desktop.Core.Configuration {
+
     /// <summary>
     /// API设置配置模型
     /// </summary>
-    public class ApiSettings
-    {
+    public class ApiSettings {
+
         /// <summary>
         /// API基础地址
         /// </summary>
@@ -19,11 +18,9 @@ namespace LYBT.Desktop.Core.Configuration
         /// <summary>
         /// 获取完整的API地址
         /// </summary>
-        public string GetApiUrl(string endpoint = "")
-        {
+        public string GetApiUrl(string endpoint = "") {
             var baseUri = new Uri(BaseUrl);
-            if (string.IsNullOrEmpty(endpoint))
-            {
+            if (string.IsNullOrEmpty(endpoint)) {
                 return baseUri.ToString();
             }
 

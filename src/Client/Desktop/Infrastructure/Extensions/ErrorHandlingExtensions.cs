@@ -1,7 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using LYBT.Desktop.Infrastructure.Services;
-using LYBT.Shared.Models.Common;
+﻿using LYBT.Desktop.Infrastructure.Services;
 using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Desktop.Infrastructure.Extensions;
@@ -13,8 +10,8 @@ namespace LYBT.Desktop.Infrastructure.Extensions;
 /// 支持同步和异步操作，提供参数验证和错误日志记录功能
 /// 适配小型诊所业务需求，确保操作失败时的用户友好提示
 /// </summary>
-public static class ErrorHandlingExtensions
-{
+public static class ErrorHandlingExtensions {
+
     /// <summary>
     /// 安全执行异步操作，自动处理异常
     /// 适用于需要返回结果的异步操作，集成企业级错误处理
@@ -28,8 +25,7 @@ public static class ErrorHandlingExtensions
     public static async Task<ServiceResult<T>> ExecuteWithErrorHandlingAsync<T>(
         this object source,
         Func<Task<T>> operation,
-        string operationName = "操作")
-    {
+        string operationName = "操作") {
         ArgumentNullException.ThrowIfNull(operation, nameof(operation));
         return await StandardErrorHandler.Instance.HandleApiErrorAsync(operation, operationName).ConfigureAwait(false);
     }
@@ -46,8 +42,7 @@ public static class ErrorHandlingExtensions
     public static async Task<ServiceResult> ExecuteWithErrorHandlingAsync(
         this object source,
         Func<Task> operation,
-        string operationName = "操作")
-    {
+        string operationName = "操作") {
         ArgumentNullException.ThrowIfNull(operation, nameof(operation));
         return await StandardErrorHandler.Instance.HandleApiErrorAsync(operation, operationName).ConfigureAwait(false);
     }
@@ -65,17 +60,13 @@ public static class ErrorHandlingExtensions
     public static ServiceResult<T> ExecuteWithErrorHandling<T>(
         this object source,
         Func<T> operation,
-        string operationName = "操作")
-    {
+        string operationName = "操作") {
         ArgumentNullException.ThrowIfNull(operation, nameof(operation));
 
-        try
-        {
+        try {
             var result = operation();
             return ServiceResult<T>.Success(result);
-        }
-        catch (Exception ex)
-        {
+        } catch (Exception ex) {
             return StandardErrorHandler.Instance.HandleServiceError<T>(ex, operationName);
         }
     }
@@ -92,17 +83,13 @@ public static class ErrorHandlingExtensions
     public static ServiceResult ExecuteWithErrorHandling(
         this object source,
         Action operation,
-        string operationName = "操作")
-    {
+        string operationName = "操作") {
         ArgumentNullException.ThrowIfNull(operation, nameof(operation));
 
-        try
-        {
+        try {
             operation();
             return ServiceResult.Success();
-        }
-        catch (Exception ex)
-        {
+        } catch (Exception ex) {
             return StandardErrorHandler.Instance.HandleServiceError(ex, operationName);
         }
     }
@@ -116,12 +103,10 @@ public static class ErrorHandlingExtensions
     /// <param name="defaultSuccessMessage">成功时的默认消息</param>
     /// <returns>用户友好的显示消息</returns>
     /// <exception cref="ArgumentNullException">当结果对象为 null 时抛出</exception>
-    public static string GetDisplayMessage<T>(this ServiceResult<T> result, string defaultSuccessMessage = "操作成功")
-    {
+    public static string GetDisplayMessage<T>(this ServiceResult<T> result, string defaultSuccessMessage = "操作成功") {
         ArgumentNullException.ThrowIfNull(result, nameof(result));
 
-        if (result.IsSuccess)
-        {
+        if (result.IsSuccess) {
             return defaultSuccessMessage;
         }
 
@@ -136,12 +121,10 @@ public static class ErrorHandlingExtensions
     /// <param name="defaultSuccessMessage">成功时的默认消息</param>
     /// <returns>用户友好的显示消息</returns>
     /// <exception cref="ArgumentNullException">当结果对象为 null 时抛出</exception>
-    public static string GetDisplayMessage(this ServiceResult result, string defaultSuccessMessage = "操作成功")
-    {
+    public static string GetDisplayMessage(this ServiceResult result, string defaultSuccessMessage = "操作成功") {
         ArgumentNullException.ThrowIfNull(result, nameof(result));
 
-        if (result.IsSuccess)
-        {
+        if (result.IsSuccess) {
             return defaultSuccessMessage;
         }
 
@@ -157,12 +140,10 @@ public static class ErrorHandlingExtensions
     /// <param name="operationName">操作名称，用于日志记录</param>
     /// <returns>原始服务结果（支持链式调用）</returns>
     /// <exception cref="ArgumentNullException">当结果对象为 null 时抛出</exception>
-    public static ServiceResult<T> LogOnFailure<T>(this ServiceResult<T> result, string operationName = "操作")
-    {
+    public static ServiceResult<T> LogOnFailure<T>(this ServiceResult<T> result, string operationName = "操作") {
         ArgumentNullException.ThrowIfNull(result, nameof(result));
 
-        if (!result.IsSuccess && result.Exception != null)
-        {
+        if (!result.IsSuccess && result.Exception != null) {
             StandardErrorHandler.Instance.HandleGeneralError(result.Exception, operationName, false);
         }
 
@@ -177,12 +158,10 @@ public static class ErrorHandlingExtensions
     /// <param name="operationName">操作名称，用于日志记录</param>
     /// <returns>原始服务结果（支持链式调用）</returns>
     /// <exception cref="ArgumentNullException">当结果对象为 null 时抛出</exception>
-    public static ServiceResult LogOnFailure(this ServiceResult result, string operationName = "操作")
-    {
+    public static ServiceResult LogOnFailure(this ServiceResult result, string operationName = "操作") {
         ArgumentNullException.ThrowIfNull(result, nameof(result));
 
-        if (!result.IsSuccess && result.Exception != null)
-        {
+        if (!result.IsSuccess && result.Exception != null) {
             StandardErrorHandler.Instance.HandleGeneralError(result.Exception, operationName, false);
         }
 
@@ -196,8 +175,7 @@ public static class ErrorHandlingExtensions
     /// <typeparam name="T">服务结果的数据类型</typeparam>
     /// <param name="result">要检查的服务结果</param>
     /// <returns>如果操作成功则返回 true，否则返回 false</returns>
-    public static bool IsSuccessful<T>(this ServiceResult<T>? result)
-    {
+    public static bool IsSuccessful<T>(this ServiceResult<T>? result) {
         return result?.IsSuccess == true;
     }
 
@@ -207,8 +185,7 @@ public static class ErrorHandlingExtensions
     /// </summary>
     /// <param name="result">要检查的服务结果</param>
     /// <returns>如果操作成功则返回 true，否则返回 false</returns>
-    public static bool IsSuccessful(this ServiceResult? result)
-    {
+    public static bool IsSuccessful(this ServiceResult? result) {
         return result?.IsSuccess == true;
     }
 
@@ -221,8 +198,7 @@ public static class ErrorHandlingExtensions
     /// <param name="defaultValue">失败时返回的默认值</param>
     /// <returns>操作成功时的数据或默认值</returns>
     /// <exception cref="ArgumentNullException">当结果对象为 null 时抛出</exception>
-    public static T? GetDataOrDefault<T>(this ServiceResult<T> result, T? defaultValue = default)
-    {
+    public static T? GetDataOrDefault<T>(this ServiceResult<T> result, T? defaultValue = default) {
         ArgumentNullException.ThrowIfNull(result, nameof(result));
         return result.IsSuccess ? result.Data : defaultValue;
     }
@@ -240,22 +216,18 @@ public static class ErrorHandlingExtensions
     public static ServiceResult<T> ValidateParameter<T>(
         this object source,
         object? parameter,
-        string parameterName)
-    {
+        string parameterName) {
         ArgumentException.ThrowIfNullOrWhiteSpace(parameterName, nameof(parameterName));
 
-        if (parameter == null)
-        {
+        if (parameter == null) {
             return StandardErrorHandler.Instance.HandleValidationError<T>($"{parameterName}不能为空");
         }
 
-        if (parameter is string str && string.IsNullOrWhiteSpace(str))
-        {
+        if (parameter is string str && string.IsNullOrWhiteSpace(str)) {
             return StandardErrorHandler.Instance.HandleValidationError<T>($"{parameterName}不能为空白");
         }
 
-        if (parameter is Guid guid && guid == Guid.Empty)
-        {
+        if (parameter is Guid guid && guid == Guid.Empty) {
             return StandardErrorHandler.Instance.HandleValidationError<T>($"{parameterName}不能为空ID");
         }
 
@@ -273,23 +245,19 @@ public static class ErrorHandlingExtensions
     /// <exception cref="ArgumentNullException">当验证字典为 null 时抛出</exception>
     public static ServiceResult<T> ValidateParameters<T>(
         this object source,
-        Dictionary<string, object?> validations)
-    {
+        Dictionary<string, object?> validations) {
         ArgumentNullException.ThrowIfNull(validations, nameof(validations));
 
         var errors = new List<string>();
 
-        foreach (var (parameterName, parameter) in validations)
-        {
+        foreach (var (parameterName, parameter) in validations) {
             var validation = source.ValidateParameter<T>(parameter, parameterName);
-            if (!validation.IsSuccess)
-            {
+            if (!validation.IsSuccess) {
                 errors.Add(validation.ErrorMessage ?? $"{parameterName}验证失败");
             }
         }
 
-        if (errors.Count > 0)
-        {
+        if (errors.Count > 0) {
             var combinedError = string.Join("; ", errors);
             return StandardErrorHandler.Instance.HandleValidationError<T>(combinedError);
         }

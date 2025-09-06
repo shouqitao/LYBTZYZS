@@ -1,14 +1,11 @@
-﻿using System;
-using LYBT.Shared.Models.Contracts.Common;
+﻿namespace LYBT.Desktop.Core.Models.Common {
 
-namespace LYBT.Desktop.Core.Models.Common
-{
     /// <summary>
     /// API调用结果包装类
     /// </summary>
     /// <typeparam name="T">返回数据类型</typeparam>
-    public class ApiResult<T>
-    {
+    public class ApiResult<T> {
+
         /// <summary>
         /// 是否成功
         /// </summary>
@@ -32,10 +29,8 @@ namespace LYBT.Desktop.Core.Models.Common
         /// <summary>
         /// 创建成功结果
         /// </summary>
-        public static ApiResult<T> Success(T data)
-        {
-            return new ApiResult<T>
-            {
+        public static ApiResult<T> Success(T data) {
+            return new ApiResult<T> {
                 IsSuccess = true,
                 Data = data
             };
@@ -44,10 +39,8 @@ namespace LYBT.Desktop.Core.Models.Common
         /// <summary>
         /// 创建失败结果
         /// </summary>
-        public static ApiResult<T> Failure(string errorMessage, string? errorCode = null)
-        {
-            return new ApiResult<T>
-            {
+        public static ApiResult<T> Failure(string errorMessage, string? errorCode = null) {
+            return new ApiResult<T> {
                 IsSuccess = false,
                 ErrorMessage = errorMessage,
                 ErrorCode = errorCode

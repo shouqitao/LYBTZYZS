@@ -1,12 +1,11 @@
-﻿namespace LYBT.Infrastructure.Web
-{
+﻿namespace LYBT.Infrastructure.Web {
 
     /// <summary>
     /// API错误代码常量 - 前后端契约标准化
     /// 统一定义所有API可能返回的错误代码，便于前端统一处理
     /// </summary>
-    public static class ApiErrorCodes
-    {
+    public static class ApiErrorCodes {
+
         #region 通用错误代码
 
         /// <summary>
@@ -49,7 +48,7 @@
         /// </summary>
         public const string RATE_LIMIT_EXCEEDED = "RATE_LIMIT_EXCEEDED";
 
-        #endregion
+        #endregion 通用错误代码
 
         #region 认证授权相关错误
 
@@ -93,7 +92,7 @@
         /// </summary>
         public const string PASSWORD_CHANGE_FAILED = "PASSWORD_CHANGE_FAILED";
 
-        #endregion
+        #endregion 认证授权相关错误
 
         #region 业务相关错误
 
@@ -162,7 +161,7 @@
         /// </summary>
         public const string MEDICAL_CASE_NOT_FOUND = "MEDICAL_CASE_NOT_FOUND";
 
-        #endregion
+        #endregion 业务相关错误
 
         #region 数据操作相关错误
 
@@ -211,7 +210,7 @@
         /// </summary>
         public const string DATA_QUERY_FAILED = "DATA_QUERY_FAILED";
 
-        #endregion
+        #endregion 数据操作相关错误
 
         #region 文件操作相关错误
 
@@ -240,7 +239,7 @@
         /// </summary>
         public const string FILE_PARSE_FAILED = "FILE_PARSE_FAILED";
 
-        #endregion
+        #endregion 文件操作相关错误
 
         #region 缓存相关错误
 
@@ -254,7 +253,7 @@
         /// </summary>
         public const string CACHE_DATA_EXPIRED = "CACHE_DATA_EXPIRED";
 
-        #endregion
+        #endregion 缓存相关错误
 
         #region 第三方服务相关错误
 
@@ -268,7 +267,7 @@
         /// </summary>
         public const string EXTERNAL_API_CALL_FAILED = "EXTERNAL_API_CALL_FAILED";
 
-        #endregion
+        #endregion 第三方服务相关错误
 
         #region 系统相关错误
 
@@ -282,14 +281,13 @@
         /// </summary>
         public const string FEATURE_NOT_IMPLEMENTED = "FEATURE_NOT_IMPLEMENTED";
 
-        #endregion
+        #endregion 系统相关错误
     }
 
     /// <summary>
     /// 错误消息常量
     /// </summary>
-    public static class ApiErrorMessages
-    {
+    public static class ApiErrorMessages {
         public const string VALIDATION_FAILED = "参数验证失败";
         public const string UNAUTHORIZED_ACCESS = "未授权访问";
         public const string FORBIDDEN_ACCESS = "禁止访问";

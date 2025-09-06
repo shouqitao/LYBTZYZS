@@ -1,78 +1,75 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using System.Threading.Tasks;
+﻿using System.Collections.ObjectModel;
 using System.Windows.Input;
 using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.ViewModels.Base;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Consultation;
-using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Patients;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Regions;
 
-namespace LYBT.Desktop.Consultation.ViewModels
-{
+namespace LYBT.Desktop.Consultation.ViewModels {
+
     /// <summary>
     /// 看诊主界面视图模型 - 简化版纯数据记录
     /// 只负责简单的四诊数据录入，不包含流程监管和智能处理
     /// </summary>
-    public class ConsultationMainViewModel : SessionAwareViewModel, INavigationAware
-    {
+    public class ConsultationMainViewModel : SessionAwareViewModel, INavigationAware {
+
         #region 服务依赖
 
         private readonly IConsultationService _consultationService;
         private readonly IMedicalCaseService _medicalCaseService;
         private readonly IPatientService _patientService;
 
-        #endregion
+        #endregion 服务依赖
 
         #region 基本属性
 
         private string _title = "看诊记录";
-        public string Title
-        {
+
+        public string Title {
             get => _title;
             set => SetProperty(ref _title, value);
         }
 
         private ObservableCollection<PatientDto> _patients = new();
-        public ObservableCollection<PatientDto> Patients
-        {
+
+        public ObservableCollection<PatientDto> Patients {
             get => _patients;
             set => SetProperty(ref _patients, value);
         }
 
         private PatientDto? _selectedPatient;
-        public PatientDto? SelectedPatient
-        {
+
+        public PatientDto? SelectedPatient {
             get => _selectedPatient;
             set => SetProperty(ref _selectedPatient, value);
         }
 
         private ConsultationDto _consultation = new();
-        public ConsultationDto Consultation
-        {
+
+        public ConsultationDto Consultation {
             get => _consultation;
             set => SetProperty(ref _consultation, value);
         }
 
         private Guid? _medicalCaseId;
-        public Guid? MedicalCaseId
-        {
+
+        public Guid? MedicalCaseId {
             get => _medicalCaseId;
             set => SetProperty(ref _medicalCaseId, value);
         }
 
         private bool _isLoading;
-        public bool IsLoading
-        {
+
+        public bool IsLoading {
             get => _isLoading;
             set => SetProperty(ref _isLoading, value);
         }
 
-        #endregion
+        #endregion 基本属性
 
         #region 命令
 
@@ -80,7 +77,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
         public ICommand SaveConsultationCommand { get; }
         public ICommand ClearDataCommand { get; }
 
-        #endregion
+        #endregion 命令
 
         #region 构造函数
 
@@ -91,8 +88,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
             ISessionManager sessionManager,
             INotificationService notificationService,
             ILogger<ConsultationMainViewModel> logger)
-            : base(sessionManager, notificationService, logger)
-        {
+            : base(sessionManager, notificationService, logger) {
             _consultationService = consultationService ?? throw new ArgumentNullException(nameof(consultationService));
             _medicalCaseService = medicalCaseService ?? throw new ArgumentNullException(nameof(medicalCaseService));
             _patientService = patientService ?? throw new ArgumentNullException(nameof(patientService));
@@ -105,71 +101,55 @@ namespace LYBT.Desktop.Consultation.ViewModels
             _ = Task.Run(async () => await InitializeAsync());
         }
 
-        #endregion
+        #endregion 构造函数
 
         #region 初始化
 
-        private async Task InitializeAsync()
-        {
-            try
-            {
+        private async Task InitializeAsync() {
+            try {
                 await LoadPatientsAsync();
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 LogError(ex, "初始化失败");
                 // 可以考虑显示用户友好的错误消息
                 ShowError("系统初始化失败，请稍后重试");
             }
         }
 
-        #endregion
+        #endregion 初始化
 
         #region 数据加载
 
-        private async Task LoadPatientsAsync()
-        {
-            try
-            {
+        private async Task LoadPatientsAsync() {
+            try {
                 IsLoading = true;
                 // 使用分页查询获取患者列表
-                var query = new LYBT.Shared.Models.Contracts.Patients.PatientPagedQueryDto
-                {
+                var query = new LYBT.Shared.Models.Contracts.Patients.PatientPagedQueryDto {
                     PageIndex = 1,
                     PageSize = 100,
                     Keyword = ""
                 };
 
                 var result = await _patientService.GetPagedAsync(query);
-                if (result.IsSuccess && result.Data != null)
-                {
+                if (result.IsSuccess && result.Data != null) {
                     Patients.Clear();
-                    foreach (var patient in result.Data.Items)
-                    {
+                    foreach (var patient in result.Data.Items) {
                         Patients.Add(patient);
                     }
                 }
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 Logger.LogError(ex, "加载患者列表失败");
-            }
-            finally
-            {
+            } finally {
                 IsLoading = false;
             }
         }
 
-        #endregion
+        #endregion 数据加载
 
         #region 数据保存
 
-        private async Task SaveConsultationAsync()
-        {
-            try
-            {
-                if (SelectedPatient == null)
-                {
+        private async Task SaveConsultationAsync() {
+            try {
+                if (SelectedPatient == null) {
                     ShowWarning("请先选择患者");
                     return;
                 }
@@ -183,8 +163,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
                 Consultation.ConsultationTime = DateTime.Now;
                 Consultation.DoctorName = CurrentUser?.RealName ?? "";
 
-                var createDto = new ConsultationStartDto
-                {
+                var createDto = new ConsultationStartDto {
                     PatientId = SelectedPatient.Id,
                     DoctorId = CurrentUser?.Id ?? Guid.Empty,
                     MedicalCaseId = MedicalCaseId ?? Guid.NewGuid(),
@@ -194,59 +173,47 @@ namespace LYBT.Desktop.Consultation.ViewModels
                 };
 
                 var result = await _consultationService.StartAsync(createDto);
-                if (result.IsSuccess && result.Data != null)
-                {
+                if (result.IsSuccess && result.Data != null) {
                     Consultation = result.Data;
                     ShowSuccess("看诊记录保存成功");
-                }
-                else
-                {
+                } else {
                     ShowError($"保存失败: {result.Message}");
                 }
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 LogError(ex, "保存看诊记录失败");
                 ShowError("保存失败，请重试");
-            }
-            finally
-            {
+            } finally {
                 IsLoading = false;
             }
         }
 
-        #endregion
+        #endregion 数据保存
 
         #region 数据清理
 
-        private void ClearData()
-        {
+        private void ClearData() {
             Consultation = new ConsultationDto();
             SelectedPatient = null;
             MedicalCaseId = null;
         }
 
-        #endregion
+        #endregion 数据清理
 
         #region 导航接口实现
 
-        public void OnNavigatedTo(NavigationContext navigationContext)
-        {
-            if (navigationContext.Parameters["MedicalCaseId"] is Guid caseId)
-            {
+        public void OnNavigatedTo(NavigationContext navigationContext) {
+            if (navigationContext.Parameters["MedicalCaseId"] is Guid caseId) {
                 MedicalCaseId = caseId;
             }
         }
 
-        public bool IsNavigationTarget(NavigationContext navigationContext)
-        {
+        public bool IsNavigationTarget(NavigationContext navigationContext) {
             return true;
         }
 
-        public void OnNavigatedFrom(NavigationContext navigationContext)
-        {
+        public void OnNavigatedFrom(NavigationContext navigationContext) {
         }
 
-        #endregion
+        #endregion 导航接口实现
     }
 }

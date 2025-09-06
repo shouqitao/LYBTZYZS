@@ -1,18 +1,16 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Enums;
 
-namespace LYBT.Shared.Models.Contracts.Prescriptions
-{
+namespace LYBT.Shared.Models.Contracts.Prescriptions {
 
     /// <summary>
     /// 处方信息DTO - UltraThink v2.0简化版
     /// 与Prescription实体对齐，价格改为计算属性
     /// </summary>
-    public class PrescriptionDto : StatusDto, IRemarkable
-    {
+    public class PrescriptionDto : StatusDto, IRemarkable {
+
         [DisplayName("医疗案例ID")]
         public Guid MedicalCaseId { get; set; }
 
@@ -60,12 +58,9 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
 
         /// <summary>单帖价格（计算属性）</summary>
         [DisplayName("单帖价格")]
-        public decimal SingleDosePrice
-        {
-            get
-            {
-                if (Items == null || !Items.Any())
-                {
+        public decimal SingleDosePrice {
+            get {
+                if (Items == null || !Items.Any()) {
                     return 0m;
                 }
 
@@ -91,12 +86,9 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
 
         /// <summary>总重量（计算属性）</summary>
         [DisplayName("总重量")]
-        public decimal TotalWeight
-        {
-            get
-            {
-                if (Items == null || !Items.Any())
-                {
+        public decimal TotalWeight {
+            get {
+                if (Items == null || !Items.Any()) {
                     return 0m;
                 }
 
@@ -108,8 +100,8 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
     /// <summary>
     /// 处方详情DTO
     /// </summary>
-    public class PrescriptionDetailDto : PrescriptionDto, IRemarkable
-    {
+    public class PrescriptionDetailDto : PrescriptionDto, IRemarkable {
+
         [DisplayName("方剂来源")]
         public new string? FormulaSource { get; set; }
 
@@ -139,8 +131,8 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
     /// <summary>
     /// 处方输入基础DTO - 提供处方基本信息的验证规则
     /// </summary>
-    public abstract class PrescriptionInputBaseDto : IRemarkable
-    {
+    public abstract class PrescriptionInputBaseDto : IRemarkable {
+
         [Required(ErrorMessage = "诊断不能为空")]
         [StringLength(500, ErrorMessage = "诊断长度不能超过500个字符")]
         [DisplayName("诊断")]
@@ -166,8 +158,8 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
     /// <summary>
     /// 创建处方DTO - 继承处方输入基础DTO
     /// </summary>
-    public class PrescriptionCreateDto : PrescriptionInputBaseDto
-    {
+    public class PrescriptionCreateDto : PrescriptionInputBaseDto {
+
         [Required(ErrorMessage = "患者ID不能为空")]
         [DisplayName("患者ID")]
         public Guid PatientId { get; set; }
@@ -203,8 +195,8 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
     /// <summary>
     /// 编辑处方DTO - 继承处方输入基础DTO并添加ID字段
     /// </summary>
-    public class PrescriptionEditDto : PrescriptionInputBaseDto, IIdentifiable<Guid>
-    {
+    public class PrescriptionEditDto : PrescriptionInputBaseDto, IIdentifiable<Guid> {
+
         [Required(ErrorMessage = "处方ID不能为空")]
         [DisplayName("处方ID")]
         public Guid Id { get; set; }
@@ -229,8 +221,8 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
     /// <summary>
     /// 处方项目DTO - 继承基础DTO提供ID字段
     /// </summary>
-    public class PrescriptionItemDto : BaseDto, IRemarkable
-    {
+    public class PrescriptionItemDto : BaseDto, IRemarkable {
+
         [DisplayName("中药材ID")]
         public Guid HerbId { get; set; }
 
@@ -248,8 +240,7 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
 
         /// <summary>价格（兼容属性，映射到UnitPrice）</summary>
         [DisplayName("价格")]
-        public decimal Price
-        {
+        public decimal Price {
             get => UnitPrice;
             set => UnitPrice = value;
         }
@@ -274,8 +265,8 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
     /// <summary>
     /// 创建处方项目DTO
     /// </summary>
-    public class PrescriptionItemCreateDto
-    {
+    public class PrescriptionItemCreateDto {
+
         [Required]
         public Guid HerbId { get; set; }
 
@@ -312,8 +303,8 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
     /// <summary>
     /// 快速处方DTO（用于快速保存） - 继承处方输入基础DTO的简化版本
     /// </summary>
-    public class QuickPrescriptionDto
-    {
+    public class QuickPrescriptionDto {
+
         [Required(ErrorMessage = "诊断不能为空")]
         [StringLength(500, ErrorMessage = "诊断长度不能超过500个字符")]
         [DisplayName("诊断")]
@@ -331,8 +322,8 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
     /// <summary>
     /// 处方统计DTO - 继承统计DTO基础类
     /// </summary>
-    public class PrescriptionStatisticsDto : StatisticsDto
-    {
+    public class PrescriptionStatisticsDto : StatisticsDto {
+
         [DisplayName("草稿处方数量")]
         public int DraftCount { get; set; }
 
@@ -355,8 +346,8 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
     /// <summary>
     /// 处方查询DTO - 继承完整分页查询DTO，提供分页、时间范围、关键词搜索功能
     /// </summary>
-    public class PrescriptionQueryDto : ExtendedQueryDto
-    {
+    public class PrescriptionQueryDto : ExtendedQueryDto {
+
         [DisplayName("患者ID")]
         public Guid? PatientId { get; set; }
 
@@ -376,8 +367,8 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
     /// <summary>
     /// 处方高级搜索DTO - 支持多条件搜索
     /// </summary>
-    public class PrescriptionSearchDto
-    {
+    public class PrescriptionSearchDto {
+
         [DisplayName("关键词")]
         public string? Keyword { get; set; }
 
@@ -412,8 +403,8 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
     /// <summary>
     /// 处方复制DTO - 用于复制现有处方
     /// </summary>
-    public class PrescriptionCopyDto
-    {
+    public class PrescriptionCopyDto {
+
         [Required(ErrorMessage = "新处方名称不能为空")]
         [StringLength(200, ErrorMessage = "新处方名称不能超过200个字符")]
         [DisplayName("新处方名称")]

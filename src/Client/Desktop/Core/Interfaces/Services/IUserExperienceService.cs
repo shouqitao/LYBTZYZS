@@ -1,15 +1,13 @@
-﻿using System;
-using System.ComponentModel;
-using System.Threading.Tasks;
+﻿using System.ComponentModel;
 using LYBT.Desktop.Core.Services;
 
-namespace LYBT.Desktop.Core.Interfaces.Services
-{
+namespace LYBT.Desktop.Core.Interfaces.Services {
+
     /// <summary>
     /// 用户体验增强服务接口 - P7-04 UltraThink用户体验优化
     /// </summary>
-    public interface IUserExperienceService : INotifyPropertyChanged, IDisposable
-    {
+    public interface IUserExperienceService : INotifyPropertyChanged, IDisposable {
+
         #region 属性
 
         /// <summary>全局加载状态</summary>
@@ -27,7 +25,7 @@ namespace LYBT.Desktop.Core.Interfaces.Services
         /// <summary>操作进度 (0-100)</summary>
         int OperationProgress { get; }
 
-        #endregion
+        #endregion 属性
 
         #region 加载状态管理
 
@@ -40,7 +38,7 @@ namespace LYBT.Desktop.Core.Interfaces.Services
         /// <summary>更新操作进度</summary>
         void UpdateProgress(int progress, string message = null);
 
-        #endregion
+        #endregion 加载状态管理
 
         #region 用户反馈
 
@@ -59,7 +57,7 @@ namespace LYBT.Desktop.Core.Interfaces.Services
         /// <summary>清除状态消息</summary>
         void ClearStatusMessage();
 
-        #endregion
+        #endregion 用户反馈
 
         #region 操作执行与反馈
 
@@ -80,6 +78,6 @@ namespace LYBT.Desktop.Core.Interfaces.Services
         /// <summary>显示友好的错误信息</summary>
         Task ShowFriendlyErrorAsync(Exception exception, string context = "");
 
-        #endregion
+        #endregion 操作执行与反馈
     }
 }

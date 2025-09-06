@@ -1,14 +1,12 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace LYBT.Shared.Models.Contracts.Configuration
-{
+namespace LYBT.Shared.Models.Contracts.Configuration {
 
     /// <summary>
     /// 系统设置传输对象
     /// </summary>
-    public class SettingsDto
-    {
+    public class SettingsDto {
 
         /// <summary>
         /// 主键ID

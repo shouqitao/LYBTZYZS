@@ -1,19 +1,16 @@
-﻿using System.Threading.Tasks;
-using LYBT.Desktop.Core.Redux.States;
-using LYBT.Shared.Models.Contracts.Common;
+﻿using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
-using LYBT.Shared.Models.Core;
 using AuthContracts = LYBT.Shared.Models.Contracts.Auth;
 
 // UltraThink重构: 恢复四层架构清晰分离，UserInfo为UI层，UserDto为传输层
 
-namespace LYBT.Desktop.Core.Interfaces.Services
-{
+namespace LYBT.Desktop.Core.Interfaces.Services {
+
     /// <summary>
     /// 认证服务接口
     /// </summary>
-    public interface IAuthenticationService
-    {
+    public interface IAuthenticationService {
+
         /// <summary>
         /// 用户登录
         /// </summary>

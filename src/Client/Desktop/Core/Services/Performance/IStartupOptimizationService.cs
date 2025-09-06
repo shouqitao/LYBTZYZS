@@ -1,13 +1,11 @@
-﻿using System.Threading.Tasks;
+﻿namespace LYBT.Desktop.Core.Services.Performance {
 
-namespace LYBT.Desktop.Core.Services.Performance
-{
     /// <summary>
     /// UltraThink Phase H: 启动性能优化服务接口
     /// 提供应用启动速度优化和资源预加载管理
     /// </summary>
-    public interface IStartupOptimizationService
-    {
+    public interface IStartupOptimizationService {
+
         /// <summary>
         /// 预热应用程序关键组件
         /// </summary>
@@ -33,8 +31,7 @@ namespace LYBT.Desktop.Core.Services.Performance
     /// <summary>
     /// 启动性能指标
     /// </summary>
-    public class StartupPerformanceMetrics
-    {
+    public class StartupPerformanceMetrics {
         public TimeSpan ApplicationStartupTime { get; set; }
         public TimeSpan ModuleLoadingTime { get; set; }
         public int LoadedModulesCount { get; set; }

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using LYBT.Shared.Models.Common;
-using LYBT.Shared.Models.Contracts.Common;
+﻿using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 
 namespace LYBT.Desktop.Prescriptions.Interfaces;
@@ -10,8 +7,8 @@ namespace LYBT.Desktop.Prescriptions.Interfaces;
 /// 处方业务服务接口 - UltraThink双层架构简化版
 /// 职责：基础业务操作
 /// </summary>
-public interface IPrescriptionsBusinessService
-{
+public interface IPrescriptionsBusinessService {
+
     /// <summary>
     /// 创建处方
     /// </summary>

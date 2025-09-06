@@ -3,16 +3,16 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using LYBT.Shared.Models.Enums;
 
-namespace LYBT.Entities.Formula
-{
+namespace LYBT.Entities.Formula {
+
     /// <summary>
     /// 验方实体 - UltraThink v2.0架构简化版
     /// 合并了原BaseFormula和FormulaModel，包含完整的验方信息
     /// 验方为模板，不含价格计算，只定义药材组成和剂量
     /// </summary>
     [Table("Formulas")]
-    public class Formula
-    {
+    public class Formula {
+
         /// <summary>验方唯一标识</summary>
         [Key]
         [DisplayName("验方ID")]
@@ -58,5 +58,4 @@ namespace LYBT.Entities.Formula
         [DisplayName("药材组成")]
         public List<FormulaHerbItem> Herbs { get; set; } = new();
     }
-
 }

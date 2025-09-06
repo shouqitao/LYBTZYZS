@@ -1,16 +1,14 @@
 ﻿using AutoMapper;
-using LYBT.Entities.Consultation;
 using LYBT.Shared.Models.Contracts.Consultation;
 
-namespace LYBT.Module.Consultation.Mapping
-{
+namespace LYBT.Module.Consultation.Mapping {
+
     /// <summary>
     /// 看诊模块 AutoMapper 映射配置
     /// </summary>
-    public class ConsultationMappingProfile : Profile
-    {
-        public ConsultationMappingProfile()
-        {
+    public class ConsultationMappingProfile : Profile {
+
+        public ConsultationMappingProfile() {
             // 🎯 UltraThink修复：启用AutoMapper配置，解决字段更新不完整问题
 
             // ConsultationDetailDto -> Consultation - 核心更新映射
@@ -19,7 +17,7 @@ namespace LYBT.Module.Consultation.Mapping
                 .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.DoctorId)) // DoctorId -> UserId
                 .ForMember(dest => dest.TCMDiagnosis, opt => opt.MapFrom(src => src.Diagnosis)) // Diagnosis -> TCMDiagnosis
                 .ForMember(dest => dest.Patient, opt => opt.Ignore()) // 导航属性忽略
-                .ForMember(dest => dest.User, opt => opt.Ignore()) // 导航属性忽略  
+                .ForMember(dest => dest.User, opt => opt.Ignore()) // 导航属性忽略
                 .ForMember(dest => dest.MedicalCase, opt => opt.Ignore()) // 导航属性忽略
                                                                           // 忽略DTO中的显示字段
                 .ForSourceMember(src => src.PatientName, opt => opt.DoNotValidate())
@@ -42,7 +40,7 @@ namespace LYBT.Module.Consultation.Mapping
 
             // Consultation -> ConsultationDetailDto - 详细信息映射
             CreateMap<LYBT.Entities.Consultation.Consultation, ConsultationDetailDto>()
-                .ForMember(dest => dest.DoctorId, opt => opt.MapFrom(src => src.UserId)) // UserId -> DoctorId  
+                .ForMember(dest => dest.DoctorId, opt => opt.MapFrom(src => src.UserId)) // UserId -> DoctorId
                 .ForMember(dest => dest.Diagnosis, opt => opt.MapFrom(src => src.TCMDiagnosis)) // TCMDiagnosis -> Diagnosis
                 .ForMember(dest => dest.PatientName, opt => opt.Ignore()) // 需要从关联数据获取
                 .ForMember(dest => dest.DoctorName, opt => opt.Ignore()) // 需要从关联数据获取

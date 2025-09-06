@@ -1,26 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using LYBT.Shared.Interfaces.Services;
+﻿using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
 
-namespace LYBT.Module.Formula.Services
-{
+namespace LYBT.Module.Formula.Services {
+
     /// <summary>
     /// 验方服务 - UltraThink双层架构纯委托模式
     /// </summary>
     public class FormulaService(
         FormulaQueryService queryService,
-        FormulaBusinessService businessService) : IFormulaService
-    {
+        FormulaBusinessService businessService) : IFormulaService {
         private readonly FormulaQueryService _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
         private readonly FormulaBusinessService _businessService = businessService ?? throw new ArgumentNullException(nameof(businessService));
 
         #region Query Operations
 
-        public Task<ServiceResult<FormulaDto>> GetByIdAsync(Guid id)
-        {
+        public Task<ServiceResult<FormulaDto>> GetByIdAsync(Guid id) {
             // 临时实现：查询功能暂时返回失败
             return Task.FromResult(ServiceResult<FormulaDto>.Failure("GetByIdAsync方法需要在QueryService中实现"));
         }
@@ -46,8 +41,7 @@ namespace LYBT.Module.Formula.Services
         public async Task<ServiceResult<List<FormulaDto>>> GetByTypeAsync(string formulaType)
             => await _queryService.GetByTypeAsync(formulaType);
 
-        public async Task<ServiceResult<List<FormulaDto>>> SearchAsync(string keyword)
-        {
+        public async Task<ServiceResult<List<FormulaDto>>> SearchAsync(string keyword) {
             // 委托给查询服务的搜索方法
             return await _queryService.SearchAsync(keyword);
         }
@@ -58,47 +52,39 @@ namespace LYBT.Module.Formula.Services
         public async Task<ServiceResult<List<FormulaRecommendationDto>>> GetRecommendationsAsync(string symptoms, string diagnosis, Guid doctorId)
             => await _queryService.GetRecommendationsAsync(symptoms, diagnosis, doctorId);
 
-        public Task<bool> ExistsAsync(Guid id)
-        {
+        public Task<bool> ExistsAsync(Guid id) {
             return Task.FromResult(false); // 临时实现
         }
 
-        public Task<bool> IsNameDuplicatedAsync(string name, Guid? excludeId = null)
-        {
+        public Task<bool> IsNameDuplicatedAsync(string name, Guid? excludeId = null) {
             return Task.FromResult(false); // 临时实现
         }
 
-        #endregion
+        #endregion Query Operations
 
         #region Business Operations
 
-        public Task<ServiceResult<FormulaDto>> CreateAsync(FormulaCreateDto dto)
-        {
+        public Task<ServiceResult<FormulaDto>> CreateAsync(FormulaCreateDto dto) {
             return Task.FromResult(ServiceResult<FormulaDto>.Failure("CreateAsync方法需要在BusinessService中实现"));
         }
 
-        public Task<ServiceResult<FormulaDto>> UpdateAsync(Guid id, FormulaUpdateDto dto)
-        {
+        public Task<ServiceResult<FormulaDto>> UpdateAsync(Guid id, FormulaUpdateDto dto) {
             return Task.FromResult(ServiceResult<FormulaDto>.Failure("UpdateAsync方法需要在BusinessService中实现"));
         }
 
-        public Task<ServiceResult<bool>> DeleteAsync(Guid id)
-        {
+        public Task<ServiceResult<bool>> DeleteAsync(Guid id) {
             return Task.FromResult(ServiceResult<bool>.Failure("DeleteAsync方法需要在BusinessService中实现"));
         }
 
-        public Task<ServiceResult> EnableAsync(Guid id)
-        {
+        public Task<ServiceResult> EnableAsync(Guid id) {
             return Task.FromResult(ServiceResult.Failure("EnableAsync方法需要在BusinessService中实现"));
         }
 
-        public Task<ServiceResult> DisableAsync(Guid id)
-        {
+        public Task<ServiceResult> DisableAsync(Guid id) {
             return Task.FromResult(ServiceResult.Failure("DisableAsync方法需要在BusinessService中实现"));
         }
 
-        public Task<ServiceResult<bool>> ToggleStatusAsync(Guid id)
-        {
+        public Task<ServiceResult<bool>> ToggleStatusAsync(Guid id) {
             return Task.FromResult(ServiceResult<bool>.Failure("ToggleStatusAsync方法需要在BusinessService中实现"));
         }
 
@@ -117,26 +103,23 @@ namespace LYBT.Module.Formula.Services
         public async Task<ServiceResult<bool>> UnshareFormulaAsync(Guid id, Guid operatorId, string operatorName)
             => await _businessService.UnshareFormulaAsync(id, operatorId, operatorName);
 
-        public async Task<ServiceResult<FormulaDto>> CloneFormulaAsync(Guid formulaId, string newName, Guid userId)
-        {
+        public async Task<ServiceResult<FormulaDto>> CloneFormulaAsync(Guid formulaId, string newName, Guid userId) {
             // 委托给BusinessService的复制功能
             return await _businessService.CopyAsync(formulaId, newName);
         }
 
-        #endregion
+        #endregion Business Operations
 
         #region 批量操作 - 必需功能（用户明确需求）
 
-        public Task<ServiceResult<object>> ImportFormulasAsync(List<FormulaCreateDto> formulas)
-        {
+        public Task<ServiceResult<object>> ImportFormulasAsync(List<FormulaCreateDto> formulas) {
             return Task.FromResult(ServiceResult<object>.Failure("简单诊所版本暂不支持验方批量导入功能"));
         }
 
-        public Task<ServiceResult<byte[]>> ExportFormulasAsync(PagedQueryBaseDto query)
-        {
+        public Task<ServiceResult<byte[]>> ExportFormulasAsync(PagedQueryBaseDto query) {
             return Task.FromResult(ServiceResult<byte[]>.Failure("简单诊所版本暂不支持验方批量导出功能"));
         }
 
-        #endregion
+        #endregion 批量操作 - 必需功能（用户明确需求）
     }
 }

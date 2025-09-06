@@ -1,5 +1,4 @@
-﻿
-using LYBT.Desktop.Formula.Interfaces;
+﻿using LYBT.Desktop.Formula.Interfaces;
 using LYBT.Desktop.Formula.Services;
 using LYBT.Desktop.Formula.ViewModels;
 using LYBT.Desktop.Formula.Views;
@@ -7,8 +6,8 @@ using LYBT.Shared.Interfaces.Services;
 using Prism.Ioc;
 using Prism.Modularity;
 
-namespace LYBT.Desktop.Formula
-{
+namespace LYBT.Desktop.Formula {
+
     /// <summary>
     /// 验方管理模块 - UltraThink双层架构Prism模块
     /// 采用UltraThink架构标准，使用C# 12现代化特性
@@ -17,15 +16,13 @@ namespace LYBT.Desktop.Formula
     /// 集成双层架构服务（QueryService + BusinessService + Module委托）
     /// 适配中医诊所验方管理流程，确保验方质量和临床应用便利性
     /// </summary>
-    public class FormulaModule : IModule
-    {
-        public void OnInitialized(IContainerProvider containerProvider)
-        {
+    public class FormulaModule : IModule {
+
+        public void OnInitialized(IContainerProvider containerProvider) {
             // 模块初始化逻辑
         }
 
-        public void RegisterTypes(IContainerRegistry containerRegistry)
-        {
+        public void RegisterTypes(IContainerRegistry containerRegistry) {
             // UltraThink双层架构服务注册
             containerRegistry.RegisterSingleton<IFormulaQueryService, FormulaQueryService>();
             containerRegistry.RegisterSingleton<IFormulaBusinessService, FormulaBusinessService>();

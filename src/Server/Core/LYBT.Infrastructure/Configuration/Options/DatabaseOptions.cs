@@ -1,12 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace LYBT.Infrastructure.Configuration.Options
-{
+namespace LYBT.Infrastructure.Configuration.Options {
+
     /// <summary>
     /// 数据库配置选项
     /// </summary>
-    public class DatabaseOptions
-    {
+    public class DatabaseOptions {
         public const string SectionName = "DatabaseOptions";
 
         /// <summary>
@@ -49,8 +48,8 @@ namespace LYBT.Infrastructure.Configuration.Options
     /// <summary>
     /// 连接池配置
     /// </summary>
-    public class ConnectionPoolOptions
-    {
+    public class ConnectionPoolOptions {
+
         /// <summary>
         /// 最大池大小
         /// </summary>
@@ -79,8 +78,8 @@ namespace LYBT.Infrastructure.Configuration.Options
     /// <summary>
     /// 数据库监控配置
     /// </summary>
-    public class DatabaseMonitoringOptions
-    {
+    public class DatabaseMonitoringOptions {
+
         /// <summary>
         /// 是否启用性能监控
         /// </summary>
@@ -106,8 +105,8 @@ namespace LYBT.Infrastructure.Configuration.Options
     /// <summary>
     /// 数据库备份配置
     /// </summary>
-    public class DatabaseBackupOptions
-    {
+    public class DatabaseBackupOptions {
+
         /// <summary>
         /// 是否启用自动备份
         /// </summary>

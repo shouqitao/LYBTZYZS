@@ -1,10 +1,10 @@
-﻿namespace LYBT.Infrastructure.Configuration.Options
-{
+﻿namespace LYBT.Infrastructure.Configuration.Options {
+
     /// <summary>
     /// 密码配置选项
     /// </summary>
-    public class PasswordOptions
-    {
+    public class PasswordOptions {
+
         /// <summary>
         /// 配置节名称
         /// </summary>

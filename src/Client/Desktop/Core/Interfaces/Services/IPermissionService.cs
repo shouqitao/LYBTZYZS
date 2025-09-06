@@ -1,13 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using LYBT.Desktop.Core.Redux.States;
-using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Shared.Models.Contracts.Users;
-using LYBT.Shared.Models.Core;
+﻿using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 
-namespace LYBT.Desktop.Core.Interfaces.Services
-{
+namespace LYBT.Desktop.Core.Interfaces.Services {
     /// <summary>
     /// 权限服务接口
     /// </summary>
@@ -16,8 +10,8 @@ namespace LYBT.Desktop.Core.Interfaces.Services
     /// 支持新的UserRole枚举同时保持向后兼容
     /// </summary>
 
-    public interface IPermissionService
-    {
+    public interface IPermissionService {
+
         /// <summary>
         /// 检查用户是否有指定权限
         /// </summary>

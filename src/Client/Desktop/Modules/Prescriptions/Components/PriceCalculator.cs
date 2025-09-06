@@ -1,21 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using LYBT.Shared.Models.Contracts.Prescriptions;
+﻿using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.Extensions.Logging;
 
-namespace LYBT.Desktop.Prescriptions.Components
-{
+namespace LYBT.Desktop.Prescriptions.Components {
+
     /// <summary>
     /// 处方价格计算组件 - UltraThink简化版本
     /// 专注于价格计算逻辑，不涉及复杂的业务规则
     /// </summary>
-    public class PriceCalculator
-    {
+    public class PriceCalculator {
         private readonly ILogger<PriceCalculator> _logger;
 
-        public PriceCalculator(ILogger<PriceCalculator> logger)
-        {
+        public PriceCalculator(ILogger<PriceCalculator> logger) {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -25,12 +20,9 @@ namespace LYBT.Desktop.Prescriptions.Components
         /// <param name="items">处方项目列表</param>
         /// <param name="discount">折扣率（默认1.0无折扣）</param>
         /// <returns>单剂价格</returns>
-        public decimal CalculateSingleDosePrice(IEnumerable<PrescriptionItemDto> items, decimal discount = 1.0m)
-        {
-            try
-            {
-                if (items == null || !items.Any())
-                {
+        public decimal CalculateSingleDosePrice(IEnumerable<PrescriptionItemDto> items, decimal discount = 1.0m) {
+            try {
+                if (items == null || !items.Any()) {
                     return 0m;
                 }
 
@@ -44,9 +36,7 @@ namespace LYBT.Desktop.Prescriptions.Components
                     subtotal, discount, discountedPrice);
 
                 return Math.Round(discountedPrice, 2);
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 _logger.LogError(ex, "计算单剂价格时发生错误");
                 return 0m;
             }
@@ -58,12 +48,9 @@ namespace LYBT.Desktop.Prescriptions.Components
         /// <param name="singleDosePrice">单剂价格</param>
         /// <param name="dosageCount">剂数</param>
         /// <returns>总价格</returns>
-        public decimal CalculateTotalPrice(decimal singleDosePrice, int dosageCount)
-        {
-            try
-            {
-                if (dosageCount <= 0)
-                {
+        public decimal CalculateTotalPrice(decimal singleDosePrice, int dosageCount) {
+            try {
+                if (dosageCount <= 0) {
                     return 0m;
                 }
 
@@ -73,9 +60,7 @@ namespace LYBT.Desktop.Prescriptions.Components
                     singleDosePrice, dosageCount, totalPrice);
 
                 return Math.Round(totalPrice, 2);
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 _logger.LogError(ex, "计算总价格时发生错误");
                 return 0m;
             }
@@ -86,12 +71,9 @@ namespace LYBT.Desktop.Prescriptions.Components
         /// </summary>
         /// <param name="prescription">处方信息</param>
         /// <returns>价格计算结果</returns>
-        public PriceCalculationResult CalculatePrescriptionPrice(PrescriptionDto prescription)
-        {
-            try
-            {
-                if (prescription == null)
-                {
+        public PriceCalculationResult CalculatePrescriptionPrice(PrescriptionDto prescription) {
+            try {
+                if (prescription == null) {
                     return new PriceCalculationResult();
                 }
 
@@ -99,8 +81,7 @@ namespace LYBT.Desktop.Prescriptions.Components
                 var totalPrice = CalculateTotalPrice(singleDosePrice, prescription.DosageCount);
                 var totalWeight = CalculateTotalWeight(prescription.Items, prescription.DosageCount);
 
-                var result = new PriceCalculationResult
-                {
+                var result = new PriceCalculationResult {
                     SingleDosePrice = singleDosePrice,
                     TotalPrice = totalPrice,
                     TotalWeight = totalWeight,
@@ -111,9 +92,7 @@ namespace LYBT.Desktop.Prescriptions.Components
 
                 _logger.LogInformation("处方价格计算完成: {Result}", result);
                 return result;
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 _logger.LogError(ex, "计算处方价格时发生错误");
                 return new PriceCalculationResult();
             }
@@ -125,12 +104,9 @@ namespace LYBT.Desktop.Prescriptions.Components
         /// <param name="items">处方项目列表</param>
         /// <param name="dosageCount">剂数</param>
         /// <returns>总重量</returns>
-        public decimal CalculateTotalWeight(IEnumerable<PrescriptionItemDto> items, int dosageCount)
-        {
-            try
-            {
-                if (items == null || !items.Any() || dosageCount <= 0)
-                {
+        public decimal CalculateTotalWeight(IEnumerable<PrescriptionItemDto> items, int dosageCount) {
+            try {
+                if (items == null || !items.Any() || dosageCount <= 0) {
                     return 0m;
                 }
 
@@ -141,9 +117,7 @@ namespace LYBT.Desktop.Prescriptions.Components
                 var totalWeight = singleDoseWeight * dosageCount;
 
                 return Math.Round(totalWeight, 1);
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 _logger.LogError(ex, "计算总重量时发生错误");
                 return 0m;
             }
@@ -155,8 +129,7 @@ namespace LYBT.Desktop.Prescriptions.Components
         /// <param name="price">价格</param>
         /// <param name="maxPrice">最大合理价格（默认10000）</param>
         /// <returns>价格是否合理</returns>
-        public bool ValidatePrice(decimal price, decimal maxPrice = 10000m)
-        {
+        public bool ValidatePrice(decimal price, decimal maxPrice = 10000m) {
             return price >= 0m && price <= maxPrice;
         }
 
@@ -166,14 +139,10 @@ namespace LYBT.Desktop.Prescriptions.Components
         /// <param name="price">价格</param>
         /// <param name="format">格式（默认C货币格式）</param>
         /// <returns>格式化后的价格字符串</returns>
-        public string FormatPrice(decimal price, string format = "C")
-        {
-            try
-            {
+        public string FormatPrice(decimal price, string format = "C") {
+            try {
                 return price.ToString(format);
-            }
-            catch
-            {
+            } catch {
                 return price.ToString("F2");
             }
         }
@@ -182,8 +151,8 @@ namespace LYBT.Desktop.Prescriptions.Components
     /// <summary>
     /// 价格计算结果
     /// </summary>
-    public class PriceCalculationResult
-    {
+    public class PriceCalculationResult {
+
         /// <summary>计算是否成功</summary>
         public bool IsSuccess { get; set; } = true;
 
@@ -208,8 +177,7 @@ namespace LYBT.Desktop.Prescriptions.Components
         /// <summary>折扣率</summary>
         public decimal Discount { get; set; } = 1.0m;
 
-        public override string ToString()
-        {
+        public override string ToString() {
             return $"单剂:{SingleDosePrice:C}, 总价:{TotalPrice:C}, 重量:{TotalWeight}g, {ItemCount}味药, {DosageCount}剂";
         }
     }

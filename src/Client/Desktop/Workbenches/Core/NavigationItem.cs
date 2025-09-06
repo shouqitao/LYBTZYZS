@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using LYBT.Shared.Models.Contracts.Common;
+﻿namespace LYBT.Desktop.Workbench.Core {
 
-namespace LYBT.Desktop.Workbench.Core
-{
     /// <summary>
     /// 导航项模型
     /// </summary>
-    public class NavigationItem
-    {
+    public class NavigationItem {
+
         /// <summary>
         /// 导航项ID
         /// </summary>
@@ -84,8 +80,7 @@ namespace LYBT.Desktop.Workbench.Core
         /// </summary>
         public string BadgeType { get; set; } = string.Empty;
 
-        public NavigationItem()
-        {
+        public NavigationItem() {
             Children = new List<NavigationItem>();
             RequiredPermissions = new List<string>();
             Parameters = new Dictionary<string, object>();
@@ -94,10 +89,8 @@ namespace LYBT.Desktop.Workbench.Core
         /// <summary>
         /// 创建分隔符
         /// </summary>
-        public static NavigationItem CreateSeparator()
-        {
-            return new NavigationItem
-            {
+        public static NavigationItem CreateSeparator() {
+            return new NavigationItem {
                 IsSeparator = true,
                 Id = Guid.NewGuid().ToString()
             };

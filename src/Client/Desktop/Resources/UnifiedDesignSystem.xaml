@@ -1,78 +1,95 @@
-<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    
+
     <!-- ========================================= -->
     <!-- LYBTZYZS 中医诊所系统 - 统一设计系统 -->
     <!-- UltraThink UI/UX优化 Phase 1 -->
     <!-- ========================================= -->
-    
+
     <!-- ===================== 颜色系统 ===================== -->
-    
+
     <!-- 主色调 - 中医绿 -->
-    <Color x:Key="PrimaryColor">#2E8B57</Color>           <!-- 海绿色 -->
-    <Color x:Key="PrimaryHoverColor">#228B22</Color>      <!-- 森林绿 -->
-    <Color x:Key="PrimaryPressedColor">#1F5F3F</Color>    <!-- 深绿 -->
-    
+    <Color x:Key="PrimaryColor">#2E8B57</Color>
+    <!-- 海绿色 -->
+    <Color x:Key="PrimaryHoverColor">#228B22</Color>
+    <!-- 森林绿 -->
+    <Color x:Key="PrimaryPressedColor">#1F5F3F</Color>
+    <!-- 深绿 -->
+
     <!-- 次要色调 -->
-    <Color x:Key="SecondaryColor">#6495ED</Color>         <!-- 矢车菊蓝 -->
-    <Color x:Key="SecondaryHoverColor">#4169E1</Color>    <!-- 皇家蓝 -->
-    
+    <Color x:Key="SecondaryColor">#6495ED</Color>
+    <!-- 矢车菊蓝 -->
+    <Color x:Key="SecondaryHoverColor">#4169E1</Color>
+    <!-- 皇家蓝 -->
+
     <!-- 中性色调 -->
-    <Color x:Key="NeutralColor">#95A5A6</Color>           <!-- 银色 -->
-    <Color x:Key="NeutralHoverColor">#7F8C8D</Color>      <!-- 暗银色 -->
-    
+    <Color x:Key="NeutralColor">#95A5A6</Color>
+    <!-- 银色 -->
+    <Color x:Key="NeutralHoverColor">#7F8C8D</Color>
+    <!-- 暗银色 -->
+
     <!-- 语义色调 -->
-    <Color x:Key="SuccessColor">#27AE60</Color>           <!-- 成功绿 -->
-    <Color x:Key="WarningColor">#F39C12</Color>           <!-- 警告橙 -->
-    <Color x:Key="DangerColor">#E74C3C</Color>            <!-- 危险红 -->
-    <Color x:Key="InfoColor">#3498DB</Color>              <!-- 信息蓝 -->
-    
+    <Color x:Key="SuccessColor">#27AE60</Color>
+    <!-- 成功绿 -->
+    <Color x:Key="WarningColor">#F39C12</Color>
+    <!-- 警告橙 -->
+    <Color x:Key="DangerColor">#E74C3C</Color>
+    <!-- 危险红 -->
+    <Color x:Key="InfoColor">#3498DB</Color>
+    <!-- 信息蓝 -->
+
     <!-- 背景色调 -->
-    <Color x:Key="BackgroundColor">#F8F9FA</Color>        <!-- 浅灰背景 -->
-    <Color x:Key="SurfaceColor">#FFFFFF</Color>           <!-- 白色表面 -->
-    <Color x:Key="BorderColor">#E9ECEF</Color>            <!-- 边框色 -->
-    
+    <Color x:Key="BackgroundColor">#F8F9FA</Color>
+    <!-- 浅灰背景 -->
+    <Color x:Key="SurfaceColor">#FFFFFF</Color>
+    <!-- 白色表面 -->
+    <Color x:Key="BorderColor">#E9ECEF</Color>
+    <!-- 边框色 -->
+
     <!-- 文本色调 -->
-    <Color x:Key="TextPrimaryColor">#212529</Color>       <!-- 主要文本 -->
-    <Color x:Key="TextSecondaryColor">#6C757D</Color>     <!-- 次要文本 -->
-    <Color x:Key="TextMutedColor">#ADB5BD</Color>         <!-- 淡化文本 -->
-    
+    <Color x:Key="TextPrimaryColor">#212529</Color>
+    <!-- 主要文本 -->
+    <Color x:Key="TextSecondaryColor">#6C757D</Color>
+    <!-- 次要文本 -->
+    <Color x:Key="TextMutedColor">#ADB5BD</Color>
+    <!-- 淡化文本 -->
+
     <!-- ===================== 画刷资源 ===================== -->
-    
-    <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource PrimaryColor}"/>
-    <SolidColorBrush x:Key="PrimaryHoverBrush" Color="{StaticResource PrimaryHoverColor}"/>
-    <SolidColorBrush x:Key="PrimaryPressedBrush" Color="{StaticResource PrimaryPressedColor}"/>
-    
-    <SolidColorBrush x:Key="SecondaryBrush" Color="{StaticResource SecondaryColor}"/>
-    <SolidColorBrush x:Key="SecondaryHoverBrush" Color="{StaticResource SecondaryHoverColor}"/>
-    
-    <SolidColorBrush x:Key="NeutralBrush" Color="{StaticResource NeutralColor}"/>
-    <SolidColorBrush x:Key="NeutralHoverBrush" Color="{StaticResource NeutralHoverColor}"/>
-    
-    <SolidColorBrush x:Key="SuccessBrush" Color="{StaticResource SuccessColor}"/>
-    <SolidColorBrush x:Key="WarningBrush" Color="{StaticResource WarningColor}"/>
-    <SolidColorBrush x:Key="DangerBrush" Color="{StaticResource DangerColor}"/>
-    <SolidColorBrush x:Key="InfoBrush" Color="{StaticResource InfoColor}"/>
-    
-    <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource BackgroundColor}"/>
-    <SolidColorBrush x:Key="SurfaceBrush" Color="{StaticResource SurfaceColor}"/>
-    <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}"/>
-    
-    <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimaryColor}"/>
-    <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondaryColor}"/>
-    <SolidColorBrush x:Key="TextMutedBrush" Color="{StaticResource TextMutedColor}"/>
-    
+
+    <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource PrimaryColor}" />
+    <SolidColorBrush x:Key="PrimaryHoverBrush" Color="{StaticResource PrimaryHoverColor}" />
+    <SolidColorBrush x:Key="PrimaryPressedBrush" Color="{StaticResource PrimaryPressedColor}" />
+
+    <SolidColorBrush x:Key="SecondaryBrush" Color="{StaticResource SecondaryColor}" />
+    <SolidColorBrush x:Key="SecondaryHoverBrush" Color="{StaticResource SecondaryHoverColor}" />
+
+    <SolidColorBrush x:Key="NeutralBrush" Color="{StaticResource NeutralColor}" />
+    <SolidColorBrush x:Key="NeutralHoverBrush" Color="{StaticResource NeutralHoverColor}" />
+
+    <SolidColorBrush x:Key="SuccessBrush" Color="{StaticResource SuccessColor}" />
+    <SolidColorBrush x:Key="WarningBrush" Color="{StaticResource WarningColor}" />
+    <SolidColorBrush x:Key="DangerBrush" Color="{StaticResource DangerColor}" />
+    <SolidColorBrush x:Key="InfoBrush" Color="{StaticResource InfoColor}" />
+
+    <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource BackgroundColor}" />
+    <SolidColorBrush x:Key="SurfaceBrush" Color="{StaticResource SurfaceColor}" />
+    <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}" />
+
+    <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimaryColor}" />
+    <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondaryColor}" />
+    <SolidColorBrush x:Key="TextMutedBrush" Color="{StaticResource TextMutedColor}" />
+
     <!-- ===================== 字体系统 ===================== -->
-    
+
     <!-- 字体大小 -->
     <System:Double x:Key="FontSizeSmall" xmlns:System="clr-namespace:System;assembly=mscorlib">12</System:Double>
     <System:Double x:Key="FontSizeNormal" xmlns:System="clr-namespace:System;assembly=mscorlib">14</System:Double>
     <System:Double x:Key="FontSizeLarge" xmlns:System="clr-namespace:System;assembly=mscorlib">16</System:Double>
     <System:Double x:Key="FontSizeTitle" xmlns:System="clr-namespace:System;assembly=mscorlib">18</System:Double>
     <System:Double x:Key="FontSizeHeader" xmlns:System="clr-namespace:System;assembly=mscorlib">20</System:Double>
-    
+
     <!-- ===================== 间距系统 ===================== -->
-    
+
     <!-- 标准间距 -->
     <Thickness x:Key="SpacingXSmall">4</Thickness>
     <Thickness x:Key="SpacingSmall">8</Thickness>
@@ -80,53 +97,53 @@
     <Thickness x:Key="SpacingMedium">16</Thickness>
     <Thickness x:Key="SpacingLarge">20</Thickness>
     <Thickness x:Key="SpacingXLarge">24</Thickness>
-    
+
     <!-- 控件内边距 -->
     <Thickness x:Key="ButtonPadding">16,8</Thickness>
     <Thickness x:Key="TextBoxPadding">12,6</Thickness>
     <Thickness x:Key="ToolBarPadding">20,15</Thickness>
     <Thickness x:Key="ContentPadding">24,20</Thickness>
-    
+
     <!-- ===================== 尺寸系统 ===================== -->
-    
+
     <!-- 控件高度 -->
     <System:Double x:Key="ControlHeightSmall" xmlns:System="clr-namespace:System;assembly=mscorlib">28</System:Double>
     <System:Double x:Key="ControlHeightNormal" xmlns:System="clr-namespace:System;assembly=mscorlib">32</System:Double>
     <System:Double x:Key="ControlHeightLarge" xmlns:System="clr-namespace:System;assembly=mscorlib">40</System:Double>
-    
+
     <!-- 输入框宽度 -->
     <System:Double x:Key="TextBoxWidthSmall" xmlns:System="clr-namespace:System;assembly=mscorlib">150</System:Double>
     <System:Double x:Key="TextBoxWidthNormal" xmlns:System="clr-namespace:System;assembly=mscorlib">250</System:Double>
     <System:Double x:Key="TextBoxWidthLarge" xmlns:System="clr-namespace:System;assembly=mscorlib">350</System:Double>
-    
+
     <!-- 响应式DataGrid列宽度 - Phase 2: 响应式布局优化 -->
     <!-- 基础信息列宽度 -->
     <System:Double x:Key="DataGridColumnWidthSmall" xmlns:System="clr-namespace:System;assembly=mscorlib">60</System:Double>
     <System:Double x:Key="DataGridColumnWidthNormal" xmlns:System="clr-namespace:System;assembly=mscorlib">100</System:Double>
     <System:Double x:Key="DataGridColumnWidthLarge" xmlns:System="clr-namespace:System;assembly=mscorlib">150</System:Double>
     <System:Double x:Key="DataGridColumnWidthXLarge" xmlns:System="clr-namespace:System;assembly=mscorlib">200</System:Double>
-    
+
     <!-- 特殊列宽度 -->
     <System:Double x:Key="DataGridActionColumnWidth" xmlns:System="clr-namespace:System;assembly=mscorlib">240</System:Double>
     <System:Double x:Key="DataGridStatusColumnWidth" xmlns:System="clr-namespace:System;assembly=mscorlib">80</System:Double>
     <System:Double x:Key="DataGridDateColumnWidth" xmlns:System="clr-namespace:System;assembly=mscorlib">100</System:Double>
     <System:Double x:Key="DataGridPhoneColumnWidth" xmlns:System="clr-namespace:System;assembly=mscorlib">120</System:Double>
-    
+
     <!-- 圆角半径 -->
     <CornerRadius x:Key="CornerRadiusSmall">3</CornerRadius>
     <CornerRadius x:Key="CornerRadiusNormal">4</CornerRadius>
     <CornerRadius x:Key="CornerRadiusLarge">6</CornerRadius>
-    
+
     <!-- ===================== 统一按钮样式 ===================== -->
-    
+
     <!-- 按钮基础样式 -->
     <Style x:Key="BaseButtonStyle" TargetType="Button">
-        <Setter Property="Height" Value="{StaticResource ControlHeightNormal}"/>
-        <Setter Property="Padding" Value="{StaticResource ButtonPadding}"/>
-        <Setter Property="FontSize" Value="{StaticResource FontSizeNormal}"/>
-        <Setter Property="FontWeight" Value="SemiBold"/>
-        <Setter Property="BorderThickness" Value="1"/>
-        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Height" Value="{StaticResource ControlHeightNormal}" />
+        <Setter Property="Padding" Value="{StaticResource ButtonPadding}" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeNormal}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Cursor" Value="Hand" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
@@ -136,108 +153,108 @@
                             CornerRadius="{StaticResource CornerRadiusNormal}">
                         <ContentPresenter HorizontalAlignment="Center"
                                         VerticalAlignment="Center"
-                                        Margin="{TemplateBinding Padding}"/>
+                                        Margin="{TemplateBinding Padding}" />
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="Opacity" Value="0.9"/>
+                            <Setter Property="Opacity" Value="0.9" />
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter Property="Opacity" Value="0.8"/>
+                            <Setter Property="Opacity" Value="0.8" />
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
-                            <Setter Property="Opacity" Value="0.5"/>
-                            <Setter Property="Cursor" Value="Arrow"/>
+                            <Setter Property="Opacity" Value="0.5" />
+                            <Setter Property="Cursor" Value="Arrow" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
     </Style>
-    
+
     <!-- 主要按钮 -->
     <Style x:Key="PrimaryButton" TargetType="Button" BasedOn="{StaticResource BaseButtonStyle}">
-        <Setter Property="Background" Value="{StaticResource PrimaryBrush}"/>
-        <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
-        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="Background" Value="{StaticResource PrimaryBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}" />
+        <Setter Property="Foreground" Value="White" />
         <Style.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Background" Value="{StaticResource PrimaryHoverBrush}"/>
-                <Setter Property="BorderBrush" Value="{StaticResource PrimaryHoverBrush}"/>
+                <Setter Property="Background" Value="{StaticResource PrimaryHoverBrush}" />
+                <Setter Property="BorderBrush" Value="{StaticResource PrimaryHoverBrush}" />
             </Trigger>
             <Trigger Property="IsPressed" Value="True">
-                <Setter Property="Background" Value="{StaticResource PrimaryPressedBrush}"/>
-                <Setter Property="BorderBrush" Value="{StaticResource PrimaryPressedBrush}"/>
+                <Setter Property="Background" Value="{StaticResource PrimaryPressedBrush}" />
+                <Setter Property="BorderBrush" Value="{StaticResource PrimaryPressedBrush}" />
             </Trigger>
         </Style.Triggers>
     </Style>
-    
+
     <!-- 次要按钮 -->
     <Style x:Key="SecondaryButton" TargetType="Button" BasedOn="{StaticResource BaseButtonStyle}">
-        <Setter Property="Background" Value="{StaticResource SecondaryBrush}"/>
-        <Setter Property="BorderBrush" Value="{StaticResource SecondaryBrush}"/>
-        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="Background" Value="{StaticResource SecondaryBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource SecondaryBrush}" />
+        <Setter Property="Foreground" Value="White" />
         <Style.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Background" Value="{StaticResource SecondaryHoverBrush}"/>
-                <Setter Property="BorderBrush" Value="{StaticResource SecondaryHoverBrush}"/>
+                <Setter Property="Background" Value="{StaticResource SecondaryHoverBrush}" />
+                <Setter Property="BorderBrush" Value="{StaticResource SecondaryHoverBrush}" />
             </Trigger>
         </Style.Triggers>
     </Style>
-    
+
     <!-- 中性按钮 -->
     <Style x:Key="NeutralButton" TargetType="Button" BasedOn="{StaticResource BaseButtonStyle}">
-        <Setter Property="Background" Value="{StaticResource NeutralBrush}"/>
-        <Setter Property="BorderBrush" Value="{StaticResource NeutralBrush}"/>
-        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="Background" Value="{StaticResource NeutralBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource NeutralBrush}" />
+        <Setter Property="Foreground" Value="White" />
         <Style.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Background" Value="{StaticResource NeutralHoverBrush}"/>
-                <Setter Property="BorderBrush" Value="{StaticResource NeutralHoverBrush}"/>
+                <Setter Property="Background" Value="{StaticResource NeutralHoverBrush}" />
+                <Setter Property="BorderBrush" Value="{StaticResource NeutralHoverBrush}" />
             </Trigger>
         </Style.Triggers>
     </Style>
-    
+
     <!-- 成功按钮 -->
     <Style x:Key="SuccessButton" TargetType="Button" BasedOn="{StaticResource BaseButtonStyle}">
-        <Setter Property="Background" Value="{StaticResource SuccessBrush}"/>
-        <Setter Property="BorderBrush" Value="{StaticResource SuccessBrush}"/>
-        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="Background" Value="{StaticResource SuccessBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource SuccessBrush}" />
+        <Setter Property="Foreground" Value="White" />
     </Style>
-    
+
     <!-- 危险按钮 -->
     <Style x:Key="DangerButton" TargetType="Button" BasedOn="{StaticResource BaseButtonStyle}">
-        <Setter Property="Background" Value="{StaticResource DangerBrush}"/>
-        <Setter Property="BorderBrush" Value="{StaticResource DangerBrush}"/>
-        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="Background" Value="{StaticResource DangerBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource DangerBrush}" />
+        <Setter Property="Foreground" Value="White" />
     </Style>
-    
+
     <!-- 轮廓按钮 -->
     <Style x:Key="OutlineButton" TargetType="Button" BasedOn="{StaticResource BaseButtonStyle}">
-        <Setter Property="Background" Value="Transparent"/>
-        <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
-        <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}"/>
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}" />
         <Style.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Background" Value="{StaticResource PrimaryBrush}"/>
-                <Setter Property="Foreground" Value="White"/>
+                <Setter Property="Background" Value="{StaticResource PrimaryBrush}" />
+                <Setter Property="Foreground" Value="White" />
             </Trigger>
         </Style.Triggers>
     </Style>
-    
+
     <!-- ===================== 统一文本框样式 ===================== -->
-    
+
     <!-- 基础文本框 -->
     <Style x:Key="BaseTextBox" TargetType="TextBox">
-        <Setter Property="Width" Value="{StaticResource TextBoxWidthNormal}"/>
-        <Setter Property="Height" Value="{StaticResource ControlHeightNormal}"/>
-        <Setter Property="Padding" Value="{StaticResource TextBoxPadding}"/>
-        <Setter Property="FontSize" Value="{StaticResource FontSizeNormal}"/>
-        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
-        <Setter Property="BorderThickness" Value="1"/>
-        <Setter Property="Background" Value="{StaticResource SurfaceBrush}"/>
-        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
-        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="Width" Value="{StaticResource TextBoxWidthNormal}" />
+        <Setter Property="Height" Value="{StaticResource ControlHeightNormal}" />
+        <Setter Property="Padding" Value="{StaticResource TextBoxPadding}" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeNormal}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="TextBox">
@@ -245,173 +262,172 @@
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
                             CornerRadius="{StaticResource CornerRadiusNormal}">
-                        <ScrollViewer x:Name="PART_ContentHost" 
+                        <ScrollViewer x:Name="PART_ContentHost"
                                     Margin="{TemplateBinding Padding}"
-                                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsFocused" Value="True">
-                            <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+                            <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
     </Style>
-    
+
     <!-- 搜索文本框 -->
     <Style x:Key="SearchTextBox" TargetType="TextBox" BasedOn="{StaticResource BaseTextBox}">
         <!-- 继承基础样式，无需重复定义 -->
     </Style>
-    
+
     <!-- ===================== 统一文本样式 ===================== -->
-    
+
     <!-- 标签文本 -->
     <Style x:Key="LabelText" TargetType="TextBlock">
-        <Setter Property="FontSize" Value="{StaticResource FontSizeNormal}"/>
-        <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
-        <Setter Property="VerticalAlignment" Value="Center"/>
-        <Setter Property="Margin" Value="0,0,10,0"/>
+        <Setter Property="FontSize" Value="{StaticResource FontSizeNormal}" />
+        <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="Margin" Value="0,0,10,0" />
     </Style>
-    
+
     <!-- 标题文本 -->
     <Style x:Key="TitleText" TargetType="TextBlock">
-        <Setter Property="FontSize" Value="{StaticResource FontSizeTitle}"/>
-        <Setter Property="FontWeight" Value="SemiBold"/>
-        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
-        <Setter Property="Margin" Value="0,0,0,12"/>
+        <Setter Property="FontSize" Value="{StaticResource FontSizeTitle}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+        <Setter Property="Margin" Value="0,0,0,12" />
     </Style>
-    
+
     <!-- 页面标题 -->
     <Style x:Key="HeaderText" TargetType="TextBlock">
-        <Setter Property="FontSize" Value="{StaticResource FontSizeHeader}"/>
-        <Setter Property="FontWeight" Value="Bold"/>
-        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
-        <Setter Property="Margin" Value="0,0,0,16"/>
+        <Setter Property="FontSize" Value="{StaticResource FontSizeHeader}" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+        <Setter Property="Margin" Value="0,0,0,16" />
     </Style>
-    
+
     <!-- ===================== 统一容器样式 ===================== -->
-    
+
     <!-- 工具栏边框 -->
     <Style x:Key="ToolBarBorder" TargetType="Border">
-        <Setter Property="Background" Value="{StaticResource BackgroundBrush}"/>
-        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
-        <Setter Property="BorderThickness" Value="0,0,0,1"/>
-        <Setter Property="Padding" Value="{StaticResource ToolBarPadding}"/>
+        <Setter Property="Background" Value="{StaticResource BackgroundBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
+        <Setter Property="BorderThickness" Value="0,0,0,1" />
+        <Setter Property="Padding" Value="{StaticResource ToolBarPadding}" />
     </Style>
-    
+
     <!-- 内容容器 -->
     <Style x:Key="ContentContainer" TargetType="Border">
-        <Setter Property="Background" Value="{StaticResource SurfaceBrush}"/>
-        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
-        <Setter Property="BorderThickness" Value="1"/>
-        <Setter Property="Padding" Value="{StaticResource ContentPadding}"/>
-        <Setter Property="CornerRadius" Value="{StaticResource CornerRadiusNormal}"/>
-        <Setter Property="Margin" Value="{StaticResource SpacingNormal}"/>
+        <Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="{StaticResource ContentPadding}" />
+        <Setter Property="CornerRadius" Value="{StaticResource CornerRadiusNormal}" />
+        <Setter Property="Margin" Value="{StaticResource SpacingNormal}" />
     </Style>
-    
+
     <!-- 卡片容器 -->
     <Style x:Key="CardContainer" TargetType="Border">
-        <Setter Property="Background" Value="{StaticResource SurfaceBrush}"/>
-        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
-        <Setter Property="BorderThickness" Value="1"/>
-        <Setter Property="CornerRadius" Value="{StaticResource CornerRadiusNormal}"/>
-        <Setter Property="Margin" Value="{StaticResource SpacingSmall}"/>
+        <Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="{StaticResource CornerRadiusNormal}" />
+        <Setter Property="Margin" Value="{StaticResource SpacingSmall}" />
         <Setter Property="Effect">
             <Setter.Value>
-                <DropShadowEffect BlurRadius="8" 
-                                Color="Black" 
-                                Opacity="0.1" 
-                                ShadowDepth="2"/>
+                <DropShadowEffect BlurRadius="8"
+                                Color="Black"
+                                Opacity="0.1"
+                                ShadowDepth="2" />
             </Setter.Value>
         </Setter>
     </Style>
-    
+
     <!-- ===================== 响应式DataGrid样式 ===================== -->
     <!-- Phase 2: 响应式布局优化 -->
-    
+
     <!-- 基础DataGrid样式 -->
     <Style x:Key="BaseDataGrid" TargetType="DataGrid">
-        <Setter Property="AutoGenerateColumns" Value="False"/>
-        <Setter Property="CanUserAddRows" Value="False"/>
-        <Setter Property="CanUserDeleteRows" Value="False"/>
-        <Setter Property="CanUserReorderColumns" Value="False"/>
-        <Setter Property="CanUserSortColumns" Value="True"/>
-        <Setter Property="SelectionMode" Value="Single"/>
-        <Setter Property="GridLinesVisibility" Value="Horizontal"/>
-        <Setter Property="HorizontalGridLinesBrush" Value="{StaticResource BorderBrush}"/>
-        <Setter Property="HeadersVisibility" Value="Column"/>
-        <Setter Property="Background" Value="{StaticResource SurfaceBrush}"/>
-        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
-        <Setter Property="BorderThickness" Value="1"/>
-        <Setter Property="RowBackground" Value="{StaticResource SurfaceBrush}"/>
-        <Setter Property="AlternatingRowBackground" Value="{StaticResource BackgroundBrush}"/>
-        <Setter Property="FontSize" Value="{StaticResource FontSizeNormal}"/>
+        <Setter Property="AutoGenerateColumns" Value="False" />
+        <Setter Property="CanUserAddRows" Value="False" />
+        <Setter Property="CanUserDeleteRows" Value="False" />
+        <Setter Property="CanUserReorderColumns" Value="False" />
+        <Setter Property="CanUserSortColumns" Value="True" />
+        <Setter Property="SelectionMode" Value="Single" />
+        <Setter Property="GridLinesVisibility" Value="Horizontal" />
+        <Setter Property="HorizontalGridLinesBrush" Value="{StaticResource BorderBrush}" />
+        <Setter Property="HeadersVisibility" Value="Column" />
+        <Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="RowBackground" Value="{StaticResource SurfaceBrush}" />
+        <Setter Property="AlternatingRowBackground" Value="{StaticResource BackgroundBrush}" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeNormal}" />
     </Style>
-    
+
     <!-- 基础DataGrid行样式 -->
     <Style x:Key="BaseDataGridRow" TargetType="DataGridRow">
-        <Setter Property="Height" Value="{StaticResource ControlHeightLarge}"/>
+        <Setter Property="Height" Value="{StaticResource ControlHeightLarge}" />
         <Style.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Background" Value="#F0F8F0"/>
+                <Setter Property="Background" Value="#F0F8F0" />
             </Trigger>
             <Trigger Property="IsSelected" Value="True">
-                <Setter Property="Background" Value="{StaticResource PrimaryBrush}"/>
-                <Setter Property="Foreground" Value="White"/>
+                <Setter Property="Background" Value="{StaticResource PrimaryBrush}" />
+                <Setter Property="Foreground" Value="White" />
             </Trigger>
         </Style.Triggers>
     </Style>
-    
+
     <!-- 基础DataGrid列标题样式 -->
     <Style x:Key="BaseDataGridColumnHeader" TargetType="DataGridColumnHeader">
-        <Setter Property="Background" Value="{StaticResource BackgroundBrush}"/>
-        <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
-        <Setter Property="FontWeight" Value="SemiBold"/>
-        <Setter Property="FontSize" Value="{StaticResource FontSizeNormal}"/>
-        <Setter Property="Height" Value="{StaticResource ControlHeightLarge}"/>
-        <Setter Property="Padding" Value="{StaticResource ContentPadding}"/>
-        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
-        <Setter Property="BorderThickness" Value="0,0,1,1"/>
-        <Setter Property="HorizontalContentAlignment" Value="Left"/>
-    </Style>
-    
-    <!-- ===================== 响应式分页样式 ===================== -->
-    
-    <!-- 分页控制按钮 -->
-    <Style x:Key="PaginationControlButton" TargetType="Button" BasedOn="{StaticResource BaseButtonStyle}">
-        <Setter Property="Background" Value="{StaticResource SurfaceBrush}"/>
-        <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}"/>
-        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
-        <Setter Property="Padding" Value="12,6"/>
-        <Setter Property="Margin" Value="{StaticResource SpacingSmall}"/>
-        <Setter Property="MinWidth" Value="50"/>
-    </Style>
-    
-    <!-- 当前页数显示边框 -->
-    <Style x:Key="PaginationCurrentPage" TargetType="Border">
-        <Setter Property="Background" Value="{StaticResource PrimaryBrush}"/>
-        <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
-        <Setter Property="BorderThickness" Value="1"/>
-        <Setter Property="Padding" Value="12,6"/>
-        <Setter Property="Margin" Value="{StaticResource SpacingSmall}"/>
-        <Setter Property="CornerRadius" Value="{StaticResource CornerRadiusNormal}"/>
-    </Style>
-    
-    <!-- 页码文本样式 -->
-    <Style x:Key="PaginationPageNumber" TargetType="TextBlock">
-        <Setter Property="Foreground" Value="White"/>
-        <Setter Property="FontWeight" Value="Bold"/>
-        <Setter Property="FontSize" Value="{StaticResource FontSizeSmall}"/>
-        <Setter Property="VerticalAlignment" Value="Center"/>
-        <Setter Property="HorizontalAlignment" Value="Center"/>
-    </Style>
-    
-    <!-- 状态标签样式 -->
-    <Style x:Key="StatusLabel" TargetType="TextBlock">
-        <Setter Property="FontSize" Value="{StaticResource FontSizeSmall}"/>
-        <Setter Property="Foreground" Value="{StaticResource MutedTextBrush}"/>
-        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="Background" Value="{StaticResource BackgroundBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeNormal}" />
+        <Setter Property="Height" Value="{StaticResource ControlHeightLarge}" />
+        <Setter Property="Padding" Value="{StaticResource ContentPadding}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
+        <Setter Property="BorderThickness" Value="0,0,1,1" />
+        <Setter Property="HorizontalContentAlignment" Value="Left" />
     </Style>
 
+    <!-- ===================== 响应式分页样式 ===================== -->
+
+    <!-- 分页控制按钮 -->
+    <Style x:Key="PaginationControlButton" TargetType="Button" BasedOn="{StaticResource BaseButtonStyle}">
+        <Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
+        <Setter Property="Padding" Value="12,6" />
+        <Setter Property="Margin" Value="{StaticResource SpacingSmall}" />
+        <Setter Property="MinWidth" Value="50" />
+    </Style>
+
+    <!-- 当前页数显示边框 -->
+    <Style x:Key="PaginationCurrentPage" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource PrimaryBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="12,6" />
+        <Setter Property="Margin" Value="{StaticResource SpacingSmall}" />
+        <Setter Property="CornerRadius" Value="{StaticResource CornerRadiusNormal}" />
+    </Style>
+
+    <!-- 页码文本样式 -->
+    <Style x:Key="PaginationPageNumber" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeSmall}" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+    </Style>
+
+    <!-- 状态标签样式 -->
+    <Style x:Key="StatusLabel" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="{StaticResource FontSizeSmall}" />
+        <Setter Property="Foreground" Value="{StaticResource MutedTextBrush}" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
 </ResourceDictionary>

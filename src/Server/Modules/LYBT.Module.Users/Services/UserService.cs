@@ -1,19 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using LYBT.Module.Users.Services.Interfaces;
+﻿using LYBT.Module.Users.Services.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 
-namespace LYBT.Module.Users.Services
-{
+namespace LYBT.Module.Users.Services {
+
     /// <summary>
     /// 用户服务 - UltraThink三层架构纯委托模式
     /// </summary>
     public class UserService(
         IUserQueryService queryService,
-        IUserBusinessService businessService) : LYBT.Shared.Interfaces.Services.IUserService
-    {
+        IUserBusinessService businessService) : LYBT.Shared.Interfaces.Services.IUserService {
         private readonly IUserQueryService _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
         private readonly IUserBusinessService _businessService = businessService ?? throw new ArgumentNullException(nameof(businessService));
 
@@ -43,7 +39,7 @@ namespace LYBT.Module.Users.Services
         public async Task<ServiceResult<bool>> ValidateUsernameAsync(string username)
             => await _queryService.ValidateUsernameAsync(username);
 
-        #endregion
+        #endregion 查询操作
 
         #region Core Operations
 
@@ -56,7 +52,7 @@ namespace LYBT.Module.Users.Services
         public async Task<ServiceResult<bool>> DeleteAsync(Guid id)
             => await _businessService.DeleteUserAsync(id);
 
-        #endregion
+        #endregion Core Operations
 
         #region Status Management
 
@@ -72,7 +68,7 @@ namespace LYBT.Module.Users.Services
         public async Task<ServiceResult<int>> BatchEnableAsync(List<Guid> ids)
             => await _businessService.BatchEnableAsync(ids);
 
-        #endregion
+        #endregion Status Management
 
         #region Password Management
 
@@ -85,22 +81,20 @@ namespace LYBT.Module.Users.Services
         public async Task<ServiceResult<bool>> ChangeProfileAsync(ChangeProfileDto dto)
             => await _businessService.ChangeProfileAsync(dto.UserId, dto.RealName, dto.PhoneNumber ?? string.Empty);
 
-        #endregion
+        #endregion Password Management
 
         #region Doctor Compatibility
 
-        public async Task<List<UserDto>> GetDoctorsAsync()
-        {
+        public async Task<List<UserDto>> GetDoctorsAsync() {
             var result = await _queryService.GetDoctorsAsync();
             return result.IsSuccess ? (result.Data ?? []) : [];
         }
 
-        public async Task<bool> IsDoctorAvailableAsync(Guid doctorId)
-        {
+        public async Task<bool> IsDoctorAvailableAsync(Guid doctorId) {
             var result = await _queryService.IsDoctorAvailableAsync(doctorId);
             return result.IsSuccess && result.Data;
         }
 
-        #endregion
+        #endregion Doctor Compatibility
     }
 }

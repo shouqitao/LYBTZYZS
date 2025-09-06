@@ -1,16 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using LYBT.Shared.Models.Contracts.Common;
+﻿using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 
-namespace LYBT.Shared.Interfaces.Services
-{
+namespace LYBT.Shared.Interfaces.Services {
+
     /// <summary>
     /// 医疗案例服务接口 - UltraThink统一标准
     /// </summary>
-    public interface IMedicalCaseService
-    {
+    public interface IMedicalCaseService {
+
         /// <summary>
         /// 根据ID获取医疗案例详情
         /// </summary>

@@ -1,24 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Windows.Input;
+﻿using System.Collections.ObjectModel;
 using LYBT.Desktop.Core.Interfaces.Services;
-using LYBT.Shared.Interfaces.Services;
-using LYBT.Shared.Models.Contracts.Common;
+
 // UltraThink v2.0重构: 直接使用FormulaDto，移除Info模型引用
 using LYBT.Shared.Models.Contracts.Formula;
 using Prism.Commands;
 using Prism.Mvvm;
 using IFormulaService = LYBT.Shared.Interfaces.Services.IFormulaService;
-namespace LYBT.Desktop.Prescriptions.ViewModels
-{
+
+namespace LYBT.Desktop.Prescriptions.ViewModels {
+
     /// <summary>
     /// 验方选择对话框视图模型
     /// </summary>
-    public class SelectFormulaDialogViewModel : BindableBase
-    {
+    public class SelectFormulaDialogViewModel : BindableBase {
         private readonly IFormulaService _formulaService;
         private readonly ICustomDialogService _dialogService;
 
@@ -35,8 +29,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         /// <summary>
         /// 是否正在加载
         /// </summary>
-        public bool IsLoading
-        {
+        public bool IsLoading {
             get => _isLoading;
             set => SetProperty(ref _isLoading, value);
         }
@@ -44,13 +37,10 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         /// <summary>
         /// 搜索关键词
         /// </summary>
-        public string SearchKeyword
-        {
+        public string SearchKeyword {
             get => _searchKeyword;
-            set
-            {
-                if (SetProperty(ref _searchKeyword, value))
-                {
+            set {
+                if (SetProperty(ref _searchKeyword, value)) {
                     SearchCommand.Execute();
                 }
             }
@@ -59,13 +49,10 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         /// <summary>
         /// 选中的分类
         /// </summary>
-        public string SelectedCategory
-        {
+        public string SelectedCategory {
             get => _selectedCategory;
-            set
-            {
-                if (SetProperty(ref _selectedCategory, value))
-                {
+            set {
+                if (SetProperty(ref _selectedCategory, value)) {
                     FilterByCategory();
                 }
             }
@@ -74,13 +61,10 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         /// <summary>
         /// 选中的验方 - UltraThink v2.0: 直接使用FormulaDto
         /// </summary>
-        public FormulaDto? SelectedFormula
-        {
+        public FormulaDto? SelectedFormula {
             get => _selectedFormula;
-            set
-            {
-                if (SetProperty(ref _selectedFormula, value))
-                {
+            set {
+                if (SetProperty(ref _selectedFormula, value)) {
                     UpdatePreview();
                     ConfirmCommand.RaiseCanExecuteChanged();
                 }
@@ -90,8 +74,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         /// <summary>
         /// 验方列表 - UltraThink v2.0: 直接使用FormulaDto
         /// </summary>
-        public ObservableCollection<FormulaDto> Formulas
-        {
+        public ObservableCollection<FormulaDto> Formulas {
             get => _formulas;
             set => SetProperty(ref _formulas, value);
         }
@@ -99,8 +82,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         /// <summary>
         /// 分类列表
         /// </summary>
-        public ObservableCollection<string> Categories
-        {
+        public ObservableCollection<string> Categories {
             get => _categories;
             set => SetProperty(ref _categories, value);
         }
@@ -108,8 +90,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         /// <summary>
         /// 预览文本
         /// </summary>
-        public string PreviewText
-        {
+        public string PreviewText {
             get => _previewText;
             set => SetProperty(ref _previewText, value);
         }
@@ -122,17 +103,13 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         /// <summary>
         /// 空状态消息
         /// </summary>
-        public string EmptyStateMessage
-        {
-            get
-            {
-                if (!string.IsNullOrWhiteSpace(SearchKeyword))
-                {
+        public string EmptyStateMessage {
+            get {
+                if (!string.IsNullOrWhiteSpace(SearchKeyword)) {
                     return $"未找到包含 \"{SearchKeyword}\" 的验方";
                 }
 
-                if (SelectedCategory != "全部")
-                {
+                if (SelectedCategory != "全部") {
                     return $"分类 \"{SelectedCategory}\" 下暂无验方";
                 }
 
@@ -140,7 +117,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             }
         }
 
-        #endregion
+        #endregion 属性
 
         #region 命令
 
@@ -151,21 +128,20 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         public DelegateCommand<FormulaDto> SelectFormulaCommand { get; } = null!;
         public DelegateCommand<FormulaDto> ViewDetailsCommand { get; } = null!;
 
-        #endregion
+        #endregion 命令
 
         #region 回调
 
         public Action<FormulaDto>? OnFormulaSelected { get; set; }
         public Action? OnCancelled { get; set; }
 
-        #endregion
+        #endregion 回调
 
         private List<FormulaDto> _allFormulas = new();
 
         public SelectFormulaDialogViewModel(
             IFormulaService formulaService,
-            ICustomDialogService dialogService)
-        {
+            ICustomDialogService dialogService) {
             _formulaService = formulaService;
             _dialogService = dialogService;
 
@@ -184,16 +160,13 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             Task.Run(async () => await LoadFormulasAsync());
         }
 
-        private async Task LoadFormulasAsync()
-        {
-            try
-            {
+        private async Task LoadFormulasAsync() {
+            try {
                 IsLoading = true;
 
                 // UltraThink v2.0: 直接使用FormulaService搜索DTOs (使用空字符串获取所有)
                 var result = await _formulaService.SearchAsync("");
-                if (result.IsSuccess && result.Data != null)
-                {
+                if (result.IsSuccess && result.Data != null) {
                     // UltraThink v2.0: 直接使用DTOs，无需转换
                     _allFormulas = result.Data.ToList();
 
@@ -207,8 +180,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
 
                     Categories.Clear();
                     Categories.Add("全部");
-                    foreach (var category in categories)
-                    {
+                    foreach (var category in categories) {
                         Categories.Add(category);
                     }
 
@@ -216,45 +188,32 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                     Formulas = new ObservableCollection<FormulaDto>(_allFormulas);
                     RaisePropertyChanged(nameof(ShowEmptyState));
                     RaisePropertyChanged(nameof(EmptyStateMessage));
-                }
-                else
-                {
+                } else {
                     await _dialogService.ShowErrorAsync(
                         result.ErrorMessage ?? "加载验方列表失败",
                         "加载失败");
                 }
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 await _dialogService.ShowErrorAsync(
                     $"加载验方列表时发生错误：{ex.Message}",
                     "系统错误");
-            }
-            finally
-            {
+            } finally {
                 IsLoading = false;
             }
         }
 
-        private Task ExecuteSearchAsync()
-        {
-            try
-            {
+        private Task ExecuteSearchAsync() {
+            try {
                 IsLoading = true;
 
-                if (string.IsNullOrWhiteSpace(SearchKeyword))
-                {
+                if (string.IsNullOrWhiteSpace(SearchKeyword)) {
                     // 如果搜索词为空，显示当前分类的所有验方
                     FilterByCategory();
-                }
-                else
-                {
+                } else {
                     // 在当前分类中搜索
-                    var filteredFormulas = _allFormulas.Where(f =>
-                    {
+                    var filteredFormulas = _allFormulas.Where(f => {
                         // 分类筛选
-                        if (SelectedCategory != "全部" && f.Category != SelectedCategory)
-                        {
+                        if (SelectedCategory != "全部" && f.Category != SelectedCategory) {
                             return false;
                         }
 
@@ -269,23 +228,17 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                     RaisePropertyChanged(nameof(ShowEmptyState));
                     RaisePropertyChanged(nameof(EmptyStateMessage));
                 }
-            }
-            finally
-            {
+            } finally {
                 IsLoading = false;
             }
 
             return Task.CompletedTask;
         }
 
-        private void FilterByCategory()
-        {
-            if (SelectedCategory == "全部")
-            {
+        private void FilterByCategory() {
+            if (SelectedCategory == "全部") {
                 Formulas = new ObservableCollection<FormulaDto>(_allFormulas);
-            }
-            else
-            {
+            } else {
                 var filtered = _allFormulas.Where(f => f.Category == SelectedCategory).ToList();
                 Formulas = new ObservableCollection<FormulaDto>(filtered);
             }
@@ -294,10 +247,8 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             RaisePropertyChanged(nameof(EmptyStateMessage));
         }
 
-        private void UpdatePreview()
-        {
-            if (SelectedFormula == null)
-            {
+        private void UpdatePreview() {
+            if (SelectedFormula == null) {
                 PreviewText = "请选择一个验方查看详情";
                 return;
             }
@@ -305,23 +256,19 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             // UltraThink v2.0: 直接使用DTO属性构建预览
             var preview = $"【{SelectedFormula.Name}】\n\n";
 
-            if (!string.IsNullOrWhiteSpace(SelectedFormula.Category))
-            {
+            if (!string.IsNullOrWhiteSpace(SelectedFormula.Category)) {
                 preview += $"分类：{SelectedFormula.Category}\n";
             }
 
-            if (!string.IsNullOrWhiteSpace(SelectedFormula.Source))
-            {
+            if (!string.IsNullOrWhiteSpace(SelectedFormula.Source)) {
                 preview += $"来源：{SelectedFormula.Source}\n";
             }
 
-            if (!string.IsNullOrWhiteSpace(SelectedFormula.Effect))
-            {
+            if (!string.IsNullOrWhiteSpace(SelectedFormula.Effect)) {
                 preview += $"功效：{SelectedFormula.Effect}\n";
             }
 
-            if (!string.IsNullOrWhiteSpace(SelectedFormula.Remark))
-            {
+            if (!string.IsNullOrWhiteSpace(SelectedFormula.Remark)) {
                 preview += $"备注：{SelectedFormula.Remark}\n";
             }
 
@@ -330,15 +277,12 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             PreviewText = preview;
         }
 
-        private void ExecuteSelectFormula(FormulaDto formula)
-        {
+        private void ExecuteSelectFormula(FormulaDto formula) {
             SelectedFormula = formula;
         }
 
-        private void ExecuteViewDetails(FormulaDto formula)
-        {
-            if (formula == null)
-            {
+        private void ExecuteViewDetails(FormulaDto formula) {
+            if (formula == null) {
                 return;
             }
 
@@ -351,21 +295,17 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                 $"验方详情 - {formula.Name}");
         }
 
-        private bool CanExecuteConfirm()
-        {
+        private bool CanExecuteConfirm() {
             return SelectedFormula != null;
         }
 
-        private void ExecuteConfirm()
-        {
-            if (SelectedFormula != null)
-            {
+        private void ExecuteConfirm() {
+            if (SelectedFormula != null) {
                 OnFormulaSelected?.Invoke(SelectedFormula);
             }
         }
 
-        private void ExecuteCancel()
-        {
+        private void ExecuteCancel() {
             OnCancelled?.Invoke();
         }
     }
@@ -373,8 +313,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
     /// <summary>
     /// 验方分类选项
     /// </summary>
-    public class FormulaCategoryOption
-    {
+    public class FormulaCategoryOption {
         public string Name { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public int Count { get; set; } = 0;

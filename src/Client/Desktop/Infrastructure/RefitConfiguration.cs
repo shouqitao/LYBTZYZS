@@ -11,19 +11,17 @@ namespace LYBT.Desktop.Infrastructure;
 /// 提供统一的JSON序列化配置和企业级HTTP客户端配置
 /// 支持类型安全的REST API访问，适配小型诊所部署环境
 /// </summary>
-public static class RefitConfiguration
-{
+public static class RefitConfiguration {
+
     /// <summary>
     /// 获取企业级Refit配置设置
     /// 配置JSON序列化、错误处理和性能优化策略
     /// </summary>
     /// <returns>配置完成的RefitSettings实例</returns>
-    public static RefitSettings GetRefitSettings()
-    {
+    public static RefitSettings GetRefitSettings() {
         var jsonOptions = CreateJsonSerializerOptions();
 
-        return new RefitSettings
-        {
+        return new RefitSettings {
             ContentSerializer = new SystemTextJsonContentSerializer(jsonOptions),
             HttpMessageHandlerFactory = () => new HttpClientHandler()
         };
@@ -34,12 +32,10 @@ public static class RefitConfiguration
     /// 提供与UnifiedApiClientManager一致的配置
     /// </summary>
     /// <returns>配置完成的RefitSettings实例</returns>
-    public static RefitSettings GetStandardRefitSettings()
-    {
+    public static RefitSettings GetStandardRefitSettings() {
         var jsonOptions = CreateJsonSerializerOptions();
 
-        return new RefitSettings
-        {
+        return new RefitSettings {
             ContentSerializer = new SystemTextJsonContentSerializer(jsonOptions)
         };
     }
@@ -49,10 +45,8 @@ public static class RefitConfiguration
     /// 统一的序列化配置，确保前后端数据传输一致性
     /// </summary>
     /// <returns>配置好的JsonSerializerOptions实例</returns>
-    private static JsonSerializerOptions CreateJsonSerializerOptions()
-    {
-        var options = new JsonSerializerOptions
-        {
+    private static JsonSerializerOptions CreateJsonSerializerOptions() {
+        var options = new JsonSerializerOptions {
             // 命名策略：与后端API保持一致（camelCase）
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             PropertyNameCaseInsensitive = true,
@@ -82,8 +76,7 @@ public static class RefitConfiguration
     /// 添加企业级自定义转换器和标准转换器
     /// </summary>
     /// <param name="options">JSON序列化选项</param>
-    private static void ConfigureJsonConverters(JsonSerializerOptions options)
-    {
+    private static void ConfigureJsonConverters(JsonSerializerOptions options) {
         // 枚举转换器：使用字符串表示，便于调试和维护
         options.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
 
@@ -99,13 +92,12 @@ public static class RefitConfiguration
 /// 自定义DateTime转换器
 /// 确保DateTime序列化的一致性和准确性
 /// </summary>
-public class DateTimeConverter : JsonConverter<DateTime>
-{
+public class DateTimeConverter : JsonConverter<DateTime> {
+
     /// <summary>
     /// 反序列化DateTime
     /// </summary>
-    public override DateTime Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-    {
+    public override DateTime Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
         var stringValue = reader.GetString();
         return DateTime.TryParse(stringValue, out var dateTime) ? dateTime : DateTime.MinValue;
     }
@@ -113,8 +105,7 @@ public class DateTimeConverter : JsonConverter<DateTime>
     /// <summary>
     /// 序列化DateTime为ISO 8601格式
     /// </summary>
-    public override void Write(Utf8JsonWriter writer, DateTime value, JsonSerializerOptions options)
-    {
+    public override void Write(Utf8JsonWriter writer, DateTime value, JsonSerializerOptions options) {
         writer.WriteStringValue(value.ToString("O")); // ISO 8601格式
     }
 }
@@ -123,13 +114,12 @@ public class DateTimeConverter : JsonConverter<DateTime>
 /// 自定义Guid转换器
 /// 确保Guid序列化的一致性，使用标准格式
 /// </summary>
-public class GuidConverter : JsonConverter<Guid>
-{
+public class GuidConverter : JsonConverter<Guid> {
+
     /// <summary>
     /// 反序列化Guid
     /// </summary>
-    public override Guid Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-    {
+    public override Guid Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
         var stringValue = reader.GetString();
         return Guid.TryParse(stringValue, out var guid) ? guid : Guid.Empty;
     }
@@ -137,8 +127,7 @@ public class GuidConverter : JsonConverter<Guid>
     /// <summary>
     /// 序列化Guid为标准字符串格式
     /// </summary>
-    public override void Write(Utf8JsonWriter writer, Guid value, JsonSerializerOptions options)
-    {
+    public override void Write(Utf8JsonWriter writer, Guid value, JsonSerializerOptions options) {
         writer.WriteStringValue(value.ToString("D")); // 标准格式: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
     }
 }

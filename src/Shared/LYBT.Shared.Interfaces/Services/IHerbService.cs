@@ -1,16 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using LYBT.Shared.Models.Contracts.Common;
+﻿using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
 
-namespace LYBT.Shared.Interfaces.Services
-{
+namespace LYBT.Shared.Interfaces.Services {
+
     /// <summary>
     /// 中药材服务接口 - UltraThink双层架构精简标准（小诊所适用）
     /// </summary>
-    public interface IHerbService
-    {
+    public interface IHerbService {
+
         #region 查询操作 - QueryService专业负责
 
         /// <summary>
@@ -33,7 +30,7 @@ namespace LYBT.Shared.Interfaces.Services
         /// </summary>
         Task<ServiceResult<List<HerbDto>>> GetByIdsAsync(List<Guid> ids);
 
-        #endregion
+        #endregion 查询操作 - QueryService专业负责
 
         #region 业务操作 - BusinessService专业负责
 
@@ -62,7 +59,7 @@ namespace LYBT.Shared.Interfaces.Services
         /// </summary>
         Task<ServiceResult> DisableAsync(Guid id);
 
-        #endregion
+        #endregion 业务操作 - BusinessService专业负责
 
         #region 批量操作 - 必需功能（用户明确需求）
 
@@ -76,6 +73,6 @@ namespace LYBT.Shared.Interfaces.Services
         /// </summary>
         Task<ServiceResult<byte[]>> ExportHerbsAsync(PagedQueryBaseDto query);
 
-        #endregion
+        #endregion 批量操作 - 必需功能（用户明确需求）
     }
 }

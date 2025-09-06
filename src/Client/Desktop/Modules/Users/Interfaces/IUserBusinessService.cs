@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using LYBT.Shared.Models.Contracts.Common;
+﻿using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 
 namespace LYBT.Desktop.Users.Interfaces;
@@ -10,8 +7,8 @@ namespace LYBT.Desktop.Users.Interfaces;
 /// 用户业务服务接口 - UltraThink双层架构简化版
 /// 职责：基础业务操作（统一标准CRUD命名）
 /// </summary>
-public interface IUserBusinessService
-{
+public interface IUserBusinessService {
+
     #region 标准CRUD操作
 
     /// <summary>
@@ -29,7 +26,7 @@ public interface IUserBusinessService
     /// </summary>
     Task<ServiceResult<bool>> DeleteAsync(Guid userId);
 
-    #endregion
+    #endregion 标准CRUD操作
 
     #region 状态管理操作
 
@@ -53,7 +50,7 @@ public interface IUserBusinessService
     /// </summary>
     Task<ServiceResult<int>> BatchDisableAsync(List<Guid> ids);
 
-    #endregion
+    #endregion 状态管理操作
 
     #region 密码管理操作
 
@@ -72,5 +69,5 @@ public interface IUserBusinessService
     /// </summary>
     Task<ServiceResult<bool>> ChangeProfileAsync(ChangeProfileDto profileDto);
 
-    #endregion
+    #endregion 密码管理操作
 }

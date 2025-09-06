@@ -3,36 +3,32 @@ using System.Threading.Tasks;
 using LYBT.Desktop.Core.Interfaces;
 using Microsoft.Extensions.Logging;
 
-namespace LYBT.Desktop.Services
-{
+namespace LYBT.Desktop.Services {
+
     /// <summary>
     /// 模拟身份证读卡器服务
     /// 用于开发和测试，实际部署时替换为真实的读卡器服务
     /// </summary>
-    public class MockIDCardReaderService : IIDCardReaderService
-    {
+    public class MockIDCardReaderService : IIDCardReaderService {
         private readonly ILogger<MockIDCardReaderService> _logger;
         private IDCardReaderStatus _currentStatus = IDCardReaderStatus.Disconnected;
         private readonly Random _random = new Random();
 
         public event EventHandler<IDCardReaderStatusChangedEventArgs>? StatusChanged;
+
         public event EventHandler<IDCardReadEventArgs>? CardRead;
 
-        public MockIDCardReaderService(ILogger<MockIDCardReaderService> logger)
-        {
+        public MockIDCardReaderService(ILogger<MockIDCardReaderService> logger) {
             _logger = logger;
         }
 
-        public async Task<bool> IsConnectedAsync()
-        {
+        public async Task<bool> IsConnectedAsync() {
             await Task.Delay(100); // 模拟异步操作
             return _currentStatus == IDCardReaderStatus.Connected;
         }
 
-        public async Task<bool> ConnectAsync()
-        {
-            try
-            {
+        public async Task<bool> ConnectAsync() {
+            try {
                 _logger.LogInformation("尝试连接模拟身份证读卡器...");
 
                 UpdateStatus(IDCardReaderStatus.Connecting);
@@ -45,19 +41,15 @@ namespace LYBT.Desktop.Services
 
                 _logger.LogInformation("模拟身份证读卡器连接成功");
                 return true;
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 _logger.LogError(ex, "连接模拟身份证读卡器失败");
                 UpdateStatus(IDCardReaderStatus.Error);
                 return false;
             }
         }
 
-        public async Task DisconnectAsync()
-        {
-            try
-            {
+        public async Task DisconnectAsync() {
+            try {
                 _logger.LogInformation("断开模拟身份证读卡器连接...");
 
                 await Task.Delay(500);
@@ -65,19 +57,14 @@ namespace LYBT.Desktop.Services
                 UpdateStatus(IDCardReaderStatus.Disconnected);
 
                 _logger.LogInformation("模拟身份证读卡器已断开");
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 _logger.LogError(ex, "断开模拟身份证读卡器失败");
             }
         }
 
-        public async Task<IDCardInfo?> ReadCardAsync()
-        {
-            try
-            {
-                if (_currentStatus != IDCardReaderStatus.Connected)
-                {
+        public async Task<IDCardInfo?> ReadCardAsync() {
+            try {
+                if (_currentStatus != IDCardReaderStatus.Connected) {
                     _logger.LogWarning("读卡器未连接，无法读取身份证");
                     OnCardRead(false, "读卡器未连接");
                     return null;
@@ -99,9 +86,7 @@ namespace LYBT.Desktop.Services
                 OnCardRead(true, null, mockData);
 
                 return mockData;
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 _logger.LogError(ex, "读取模拟身份证信息失败");
                 UpdateStatus(IDCardReaderStatus.Error);
                 OnCardRead(false, ex.Message);
@@ -109,12 +94,10 @@ namespace LYBT.Desktop.Services
             }
         }
 
-        private IDCardInfo GenerateMockIDCardInfo()
-        {
+        private IDCardInfo GenerateMockIDCardInfo() {
             var testData = GetRandomTestData();
 
-            return new IDCardInfo
-            {
+            return new IDCardInfo {
                 Name = testData.Name,
                 Gender = testData.Gender,
                 Nation = "汉",
@@ -128,8 +111,7 @@ namespace LYBT.Desktop.Services
             };
         }
 
-        private (string Name, string Gender, DateTime BirthDate, string IDNumber, string Address) GetRandomTestData()
-        {
+        private (string Name, string Gender, DateTime BirthDate, string IDNumber, string Address) GetRandomTestData() {
             var testDataList = new[]
             {
                 ("张三", "男", new DateTime(1985, 3, 15), "110101198503150012", "北京市东城区某街道123号"),
@@ -145,15 +127,12 @@ namespace LYBT.Desktop.Services
             return testDataList[_random.Next(testDataList.Length)];
         }
 
-        private void UpdateStatus(IDCardReaderStatus newStatus)
-        {
-            if (_currentStatus != newStatus)
-            {
+        private void UpdateStatus(IDCardReaderStatus newStatus) {
+            if (_currentStatus != newStatus) {
                 var oldStatus = _currentStatus;
                 _currentStatus = newStatus;
 
-                StatusChanged?.Invoke(this, new IDCardReaderStatusChangedEventArgs
-                {
+                StatusChanged?.Invoke(this, new IDCardReaderStatusChangedEventArgs {
                     OldStatus = oldStatus,
                     NewStatus = newStatus,
                     Message = GetStatusMessage(newStatus)
@@ -161,10 +140,8 @@ namespace LYBT.Desktop.Services
             }
         }
 
-        private string GetStatusMessage(IDCardReaderStatus status)
-        {
-            return status switch
-            {
+        private string GetStatusMessage(IDCardReaderStatus status) {
+            return status switch {
                 IDCardReaderStatus.Disconnected => "读卡器未连接",
                 IDCardReaderStatus.Connecting => "正在连接读卡器...",
                 IDCardReaderStatus.Connected => "读卡器已就绪",
@@ -174,10 +151,8 @@ namespace LYBT.Desktop.Services
             };
         }
 
-        private void OnCardRead(bool success, string? errorMessage = null, IDCardInfo? cardInfo = null)
-        {
-            CardRead?.Invoke(this, new IDCardReadEventArgs
-            {
+        private void OnCardRead(bool success, string? errorMessage = null, IDCardInfo? cardInfo = null) {
+            CardRead?.Invoke(this, new IDCardReadEventArgs {
                 Success = success,
                 ErrorMessage = errorMessage,
                 CardInfo = cardInfo

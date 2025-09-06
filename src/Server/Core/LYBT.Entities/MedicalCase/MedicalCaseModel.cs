@@ -1,20 +1,19 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using LYBT.Entities.Consultation;
 using LYBT.Entities.Prescriptions;
 using LYBT.Shared.Models.Enums;
 
-namespace LYBT.Entities.MedicalCase
-{
+namespace LYBT.Entities.MedicalCase {
+
     /// <summary>
     /// 医疗案例实体 - UltraThink v2.0架构简化版
     /// 合并了原BaseMedicalCase和MedicalCaseModel
     /// 作为聘合根，管理完整诊疗流程，不包含诊断字段（属于Consultation）
     /// </summary>
     [Table("MedicalCases")]
-    public class MedicalCase
-    {
+    public class MedicalCase {
+
         /// <summary>医疗案例ID</summary>
         [Key]
         [DisplayName("医疗案例ID")]
@@ -68,5 +67,4 @@ namespace LYBT.Entities.MedicalCase
         [DisplayName("处方信息")]
         public virtual Prescription? Prescription { get; set; }
     }
-
 }

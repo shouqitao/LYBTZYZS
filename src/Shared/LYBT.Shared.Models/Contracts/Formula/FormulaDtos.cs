@@ -1,18 +1,17 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
 
-namespace LYBT.Shared.Models.Contracts.Formula
-{
+namespace LYBT.Shared.Models.Contracts.Formula {
+
     /// <summary>
     /// 验方信息DTO - UltraThink v2.0简化版
     /// 与Formula实体对齐，删除时间和创建者字段
     /// </summary>
-    public class FormulaDto : StatusDto, IRemarkable
-    {
+    public class FormulaDto : StatusDto, IRemarkable {
+
         [DisplayName("验方名称")]
         public string Name { get; set; } = string.Empty;
 
@@ -37,8 +36,7 @@ namespace LYBT.Shared.Models.Contracts.Formula
 
         /// <summary>药材组成别名（兼容性）</summary>
         [DisplayName("药材组成")]
-        public List<FormulaHerbItemDto> Items
-        {
+        public List<FormulaHerbItemDto> Items {
             get => Herbs;
             set => Herbs = value;
         }
@@ -57,12 +55,9 @@ namespace LYBT.Shared.Models.Contracts.Formula
 
         /// <summary>总价格（计算属性）</summary>
         [DisplayName("总价格")]
-        public decimal TotalPrice
-        {
-            get
-            {
-                if (Herbs == null || !Herbs.Any())
-                {
+        public decimal TotalPrice {
+            get {
+                if (Herbs == null || !Herbs.Any()) {
                     return 0m;
                 }
 
@@ -71,12 +66,9 @@ namespace LYBT.Shared.Models.Contracts.Formula
         }
 
         /// <summary>药材名称列表</summary>
-        public string HerbNames
-        {
-            get
-            {
-                if (Herbs == null || !Herbs.Any())
-                {
+        public string HerbNames {
+            get {
+                if (Herbs == null || !Herbs.Any()) {
                     return "暂无药材";
                 }
 
@@ -89,10 +81,8 @@ namespace LYBT.Shared.Models.Contracts.Formula
         }
 
         /// <summary>获取药材名称列表（带限制）</summary>
-        public string GetHerbNamesList(int maxCount = 10)
-        {
-            if (Herbs == null || !Herbs.Any())
-            {
+        public string GetHerbNamesList(int maxCount = 10) {
+            if (Herbs == null || !Herbs.Any()) {
                 return "暂无药材";
             }
 
@@ -105,28 +95,22 @@ namespace LYBT.Shared.Models.Contracts.Formula
         }
 
         /// <summary>分类</summary>
-        public string Category
-        {
-            get
-            {
+        public string Category {
+            get {
                 // 根据验方名称智能判断分类
-                if (Name?.Contains("感冒") == true)
-                {
+                if (Name?.Contains("感冒") == true) {
                     return "内科方";
                 }
 
-                if (Name?.Contains("外伤") == true)
-                {
+                if (Name?.Contains("外伤") == true) {
                     return "外科方";
                 }
 
-                if (Name?.Contains("妇科") == true)
-                {
+                if (Name?.Contains("妇科") == true) {
                     return "妇科方";
                 }
 
-                if (Name?.Contains("儿童") == true)
-                {
+                if (Name?.Contains("儿童") == true) {
                     return "儿科方";
                 }
 
@@ -156,8 +140,7 @@ namespace LYBT.Shared.Models.Contracts.Formula
     /// <summary>
     /// 验方详情DTO
     /// </summary>
-    public class FormulaDetailDto : FormulaDto
-    {
+    public class FormulaDetailDto : FormulaDto {
         public new List<FormulaHerbItemDto> Herbs { get; set; } = new();
         public new string? Instructions { get; set; }
         public new string? Indications { get; set; }
@@ -168,8 +151,8 @@ namespace LYBT.Shared.Models.Contracts.Formula
     /// <summary>
     /// 验方中药材组成项DTO - 继承基础DTO提供ID
     /// </summary>
-    public class FormulaHerbItemDto : BaseDto
-    {
+    public class FormulaHerbItemDto : BaseDto {
+
         [DisplayName("中药材ID")]
         public Guid HerbId { get; set; }
 
@@ -212,8 +195,8 @@ namespace LYBT.Shared.Models.Contracts.Formula
     /// <summary>
     /// 验方输入基础DTO - 提供验方基本信息的验证规则
     /// </summary>
-    public abstract class FormulaInputBaseDto : IRemarkable
-    {
+    public abstract class FormulaInputBaseDto : IRemarkable {
+
         [Required(ErrorMessage = "验方名称不能为空")]
         [StringLength(100, ErrorMessage = "验方名称不能超过100个字符")]
         [DisplayName("验方名称")]
@@ -254,8 +237,8 @@ namespace LYBT.Shared.Models.Contracts.Formula
     /// <summary>
     /// 创建验方DTO - 继承验方输入基础DTO
     /// </summary>
-    public class FormulaCreateDto : FormulaInputBaseDto
-    {
+    public class FormulaCreateDto : FormulaInputBaseDto {
+
         [Required(ErrorMessage = "必须包含至少一味中药材")]
         [DisplayName("中药材组成")]
         public List<FormulaHerbItemCreateDto> Herbs { get; set; } = new();
@@ -264,8 +247,8 @@ namespace LYBT.Shared.Models.Contracts.Formula
     /// <summary>
     /// 创建验方药材组成项DTO
     /// </summary>
-    public class FormulaHerbItemCreateDto
-    {
+    public class FormulaHerbItemCreateDto {
+
         [Required]
         public Guid HerbId { get; set; }
 
@@ -285,8 +268,8 @@ namespace LYBT.Shared.Models.Contracts.Formula
     /// <summary>
     /// 更新验方DTO - 继承验方输入基础DTO并添加ID字段
     /// </summary>
-    public class FormulaUpdateDto : FormulaInputBaseDto, IIdentifiable<Guid>
-    {
+    public class FormulaUpdateDto : FormulaInputBaseDto, IIdentifiable<Guid> {
+
         [Required(ErrorMessage = "验方ID不能为空")]
         [DisplayName("验方ID")]
         public Guid Id { get; set; }
@@ -299,8 +282,7 @@ namespace LYBT.Shared.Models.Contracts.Formula
     /// <summary>
     /// 更新验方药材组成项DTO
     /// </summary>
-    public class FormulaHerbItemUpdateDto
-    {
+    public class FormulaHerbItemUpdateDto {
         public Guid? Id { get; set; }
 
         [Required]
@@ -323,16 +305,15 @@ namespace LYBT.Shared.Models.Contracts.Formula
     /// 验方分页查询DTO - 别名支持
     /// 为向后兼容而创建的别名，实际使用FormulaQueryDto
     /// </summary>
-    public class FormulaPagedQueryDto : FormulaQueryDto
-    {
+    public class FormulaPagedQueryDto : FormulaQueryDto {
         // 继承所有FormulaQueryDto功能，提供别名支持
     }
 
     /// <summary>
     /// 验方查询DTO - 继承完整分页查询DTO，提供分页、时间范围、关键词搜索功能
     /// </summary>
-    public class FormulaQueryDto : ExtendedQueryDto
-    {
+    public class FormulaQueryDto : ExtendedQueryDto {
+
         [DisplayName("验方名称")]
         public string? Name { get; set; }
 
@@ -362,8 +343,8 @@ namespace LYBT.Shared.Models.Contracts.Formula
     /// <summary>
     /// 从处方创建验方DTO - 继承验方输入基础DTO
     /// </summary>
-    public class CreateFormulaFromPrescriptionDto : FormulaInputBaseDto
-    {
+    public class CreateFormulaFromPrescriptionDto : FormulaInputBaseDto {
+
         [Required(ErrorMessage = "处方ID不能为空")]
         [DisplayName("处方ID")]
         public Guid PrescriptionId { get; set; }
@@ -372,8 +353,8 @@ namespace LYBT.Shared.Models.Contracts.Formula
     /// <summary>
     /// 验方统计DTO - 继承统计DTO基础类
     /// </summary>
-    public class FormulaStatisticsDto : StatisticsDto
-    {
+    public class FormulaStatisticsDto : StatisticsDto {
+
         [DisplayName("共享验方数量")]
         public int SharedCount { get; set; }
 
@@ -399,8 +380,8 @@ namespace LYBT.Shared.Models.Contracts.Formula
     /// <summary>
     /// 验方推荐DTO - 继承基础DTO提供ID支持
     /// </summary>
-    public class FormulaRecommendationDto : BaseDto
-    {
+    public class FormulaRecommendationDto : BaseDto {
+
         [DisplayName("验方名称")]
         public string FormulaName { get; set; } = string.Empty;
 
@@ -422,8 +403,8 @@ namespace LYBT.Shared.Models.Contracts.Formula
     /// <summary>
     /// 验方导入DTO - 支持从老系统批量导入验方数据
     /// </summary>
-    public class FormulaImportDto
-    {
+    public class FormulaImportDto {
+
         [Required(ErrorMessage = "验方名称不能为空")]
         [StringLength(100, ErrorMessage = "验方名称不能超过100个字符")]
         [DisplayName("验方名称")]
@@ -484,8 +465,8 @@ namespace LYBT.Shared.Models.Contracts.Formula
     /// <summary>
     /// 验方中药材导入DTO
     /// </summary>
-    public class FormulaHerbImportDto
-    {
+    public class FormulaHerbImportDto {
+
         [Required(ErrorMessage = "中药材名称不能为空")]
         [StringLength(100, ErrorMessage = "中药材名称不能超过100个字符")]
         [DisplayName("中药材名称")]
@@ -519,8 +500,8 @@ namespace LYBT.Shared.Models.Contracts.Formula
     /// <summary>
     /// 验方导出DTO - 支持验方数据导出
     /// </summary>
-    public class FormulaExportDto
-    {
+    public class FormulaExportDto {
+
         [DisplayName("验方ID")]
         public Guid Id { get; set; }
 
@@ -576,8 +557,8 @@ namespace LYBT.Shared.Models.Contracts.Formula
     /// <summary>
     /// 验方中药材导出DTO
     /// </summary>
-    public class FormulaHerbExportDto
-    {
+    public class FormulaHerbExportDto {
+
         [DisplayName("中药材ID")]
         public Guid HerbId { get; set; }
 
@@ -609,8 +590,8 @@ namespace LYBT.Shared.Models.Contracts.Formula
     /// <summary>
     /// 批量导入结果DTO
     /// </summary>
-    public class FormulaImportResultDto
-    {
+    public class FormulaImportResultDto {
+
         [DisplayName("导入批次号")]
         public string ImportBatch { get; set; } = string.Empty;
 
@@ -648,8 +629,8 @@ namespace LYBT.Shared.Models.Contracts.Formula
     /// <summary>
     /// 导入错误信息DTO
     /// </summary>
-    public class FormulaImportErrorDto
-    {
+    public class FormulaImportErrorDto {
+
         [DisplayName("行号")]
         public int RowIndex { get; set; }
 
@@ -669,8 +650,8 @@ namespace LYBT.Shared.Models.Contracts.Formula
     /// <summary>
     /// 验方导入选项DTO
     /// </summary>
-    public class FormulaImportOptionsDto
-    {
+    public class FormulaImportOptionsDto {
+
         [DisplayName("跳过重复验方")]
         public bool SkipDuplicates { get; set; } = true;
 

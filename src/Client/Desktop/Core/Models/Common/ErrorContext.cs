@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿namespace LYBT.Desktop.Core.Models.Common {
 
-namespace LYBT.Desktop.Core.Models.Common
-{
     /// <summary>
     /// 错误上下文信息
     /// </summary>
-    public class ErrorContext
-    {
+    public class ErrorContext {
+
         /// <summary>
         /// 错误发生的操作名称
         /// </summary>
@@ -56,18 +53,15 @@ namespace LYBT.Desktop.Core.Models.Common
         /// <summary>
         /// 添加上下文数据
         /// </summary>
-        public void AddData(string key, object value)
-        {
+        public void AddData(string key, object value) {
             AdditionalData[key] = value;
         }
 
         /// <summary>
         /// 获取上下文数据
         /// </summary>
-        public T? GetData<T>(string key)
-        {
-            if (AdditionalData.TryGetValue(key, out var value) && value is T result)
-            {
+        public T? GetData<T>(string key) {
+            if (AdditionalData.TryGetValue(key, out var value) && value is T result) {
                 return result;
             }
             return default;

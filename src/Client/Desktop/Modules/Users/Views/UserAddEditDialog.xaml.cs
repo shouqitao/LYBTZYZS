@@ -1,33 +1,27 @@
 ﻿using System.Windows;
 using LYBT.Desktop.Core.Interfaces;
 using LYBT.Desktop.Core.Models.Common;
-using LYBT.Desktop.Users.ViewModels;
 
-namespace LYBT.Desktop.Users.Views
-{
+namespace LYBT.Desktop.Users.Views {
+
     /// <summary>
     /// UserAddEditDialog.xaml 的交互逻辑
     /// </summary>
-    public partial class UserAddEditDialog : Window
-    {
-        public UserAddEditDialog()
-        {
+    public partial class UserAddEditDialog : Window {
+
+        public UserAddEditDialog() {
             InitializeComponent();
             Loaded += UserAddEditDialog_Loaded;
         }
 
-        private void UserAddEditDialog_Loaded(object sender, RoutedEventArgs e)
-        {
-            if (DataContext is ICustomDialogAware dialogAware)
-            {
+        private void UserAddEditDialog_Loaded(object sender, RoutedEventArgs e) {
+            if (DataContext is ICustomDialogAware dialogAware) {
                 dialogAware.RequestClose += OnRequestClose;
             }
         }
 
-        private void OnRequestClose(CustomDialogResult result)
-        {
-            if (DataContext is ICustomDialogAware dialogAware)
-            {
+        private void OnRequestClose(CustomDialogResult result) {
+            if (DataContext is ICustomDialogAware dialogAware) {
                 dialogAware.RequestClose -= OnRequestClose;
             }
 
@@ -35,10 +29,8 @@ namespace LYBT.Desktop.Users.Views
             Close();
         }
 
-        protected override void OnClosed(System.EventArgs e)
-        {
-            if (DataContext is ICustomDialogAware dialogAware)
-            {
+        protected override void OnClosed(System.EventArgs e) {
+            if (DataContext is ICustomDialogAware dialogAware) {
                 dialogAware.RequestClose -= OnRequestClose;
             }
             base.OnClosed(e);

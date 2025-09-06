@@ -1,16 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using LYBT.Shared.Models.Common;
+﻿namespace LYBT.Shared.Models.Contracts.Common {
 
-namespace LYBT.Shared.Models.Contracts.Common
-{
     /// <summary>
     /// ApiResponse 扩展方法 - 统一响应格式创建
     /// UltraThink v2.0 架构标准：统一所有响应格式为 ApiResponse
     /// </summary>
-    public static class ApiResponseExtensions
-    {
+    public static class ApiResponseExtensions {
+
         /// <summary>
         /// 创建成功的分页响应
         /// </summary>
@@ -26,12 +21,10 @@ namespace LYBT.Shared.Models.Contracts.Common
             int totalCount,
             int currentPage,
             int pageSize,
-            string message = "查询成功")
-        {
+            string message = "查询成功") {
             var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
 
-            var pagedData = new PagedResult<T>
-            {
+            var pagedData = new PagedResult<T> {
                 Items = items.ToList(),
                 TotalCount = totalCount,
                 CurrentPage = currentPage,
@@ -51,8 +44,7 @@ namespace LYBT.Shared.Models.Contracts.Common
         /// <returns>统一的分页API响应</returns>
         public static ApiResponse<PagedResult<T>> CreatePagedSuccess<T>(
             PagedResult<T> pagedResult,
-            string message = "查询成功")
-        {
+            string message = "查询成功") {
             return CreatePagedSuccess(
                 pagedResult.Items,
                 pagedResult.TotalCount,
@@ -73,8 +65,7 @@ namespace LYBT.Shared.Models.Contracts.Common
         public static ApiResponse<PagedResult<T>> CreateEmptyPagedSuccess<T>(
             int currentPage = 1,
             int pageSize = 10,
-            string message = "查询成功，暂无数据")
-        {
+            string message = "查询成功，暂无数据") {
             return CreatePagedSuccess<T>(
                 new List<T>(),
                 0,
@@ -93,14 +84,10 @@ namespace LYBT.Shared.Models.Contracts.Common
         /// <returns>API响应</returns>
         public static ApiResponse<T> ToApiResponse<T>(
             this ServiceResult<T> serviceResult,
-            string successMessage = "操作成功")
-        {
-            if (serviceResult.IsSuccess)
-            {
+            string successMessage = "操作成功") {
+            if (serviceResult.IsSuccess) {
                 return ApiResponse<T>.CreateSuccess(serviceResult.Data, successMessage);
-            }
-            else
-            {
+            } else {
                 return ApiResponse<T>.CreateFail(
                     serviceResult.ErrorMessage ?? "操作失败",
                     serviceResult.Exception?.Message
@@ -116,14 +103,10 @@ namespace LYBT.Shared.Models.Contracts.Common
         /// <returns>API响应</returns>
         public static ApiResponse ToApiResponse(
             this ServiceResult serviceResult,
-            string successMessage = "操作成功")
-        {
-            if (serviceResult.IsSuccess)
-            {
+            string successMessage = "操作成功") {
+            if (serviceResult.IsSuccess) {
                 return ApiResponse.CreateSuccess(null, successMessage);
-            }
-            else
-            {
+            } else {
                 return ApiResponse.CreateFail(
                     serviceResult.ErrorMessage ?? "操作失败",
                     serviceResult.Exception?.Message

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using LYBT.Desktop.Users.Interfaces;
+﻿using LYBT.Desktop.Users.Interfaces;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
@@ -14,8 +11,7 @@ namespace LYBT.Desktop.Users.Services;
 /// </summary>
 public class UserModule(
     IUserQueryService queryService,
-    IUserBusinessService businessService) : IUserService
-{
+    IUserBusinessService businessService) : IUserService {
     private readonly IUserQueryService _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
     private readonly IUserBusinessService _businessService = businessService ?? throw new ArgumentNullException(nameof(businessService));
 
@@ -36,7 +32,7 @@ public class UserModule(
     public async Task<ServiceResult<List<UserDto>>> SearchAsync(string keyword)
         => await _queryService.SearchAsync(keyword);
 
-    #endregion
+    #endregion 查询操作 - QueryService专业负责
 
     #region 业务操作 - BusinessService专业负责
 
@@ -49,7 +45,7 @@ public class UserModule(
     public async Task<ServiceResult<bool>> DeleteAsync(Guid id)
         => await _businessService.DeleteAsync(id);
 
-    #endregion
+    #endregion 业务操作 - BusinessService专业负责
 
     #region 状态管理 - BusinessService批量操作
 
@@ -65,7 +61,7 @@ public class UserModule(
     public async Task<ServiceResult<int>> BatchDisableAsync(List<Guid> ids)
         => await _businessService.BatchDisableAsync(ids);
 
-    #endregion
+    #endregion 状态管理 - BusinessService批量操作
 
     #region 密码管理 - BusinessService安全操作
 
@@ -75,14 +71,14 @@ public class UserModule(
     public async Task<ServiceResult<bool>> ChangePasswordAsync(Guid id, string oldPassword, string newPassword)
         => await _businessService.ChangePasswordAsync(id, oldPassword, newPassword);
 
-    #endregion
+    #endregion 密码管理 - BusinessService安全操作
 
     #region 个人信息管理 - BusinessService
 
     public async Task<ServiceResult<bool>> ChangeProfileAsync(ChangeProfileDto dto)
         => await _businessService.ChangeProfileAsync(dto);
 
-    #endregion
+    #endregion 个人信息管理 - BusinessService
 
     #region 辅助功能 - QueryService支持
 
@@ -92,5 +88,5 @@ public class UserModule(
     public async Task<ServiceResult<bool>> ValidateUsernameAsync(string username)
         => await _queryService.ValidateUsernameAsync(username);
 
-    #endregion
+    #endregion 辅助功能 - QueryService支持
 }

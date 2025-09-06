@@ -1,18 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using LYBT.Shared.Models.Contracts.Common;
+﻿using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
 
-namespace LYBT.Module.Herbs.Interfaces
-{
+namespace LYBT.Module.Herbs.Interfaces {
+
     /// <summary>
     /// 药材查询服务接口
     /// UltraThink架构 - Query层接口抽象
     /// 职责：复杂查询、搜索、筛选、分页等只读操作
     /// </summary>
-    public interface IHerbQueryService
-    {
+    public interface IHerbQueryService {
+
         /// <summary>
         /// 获取所有启用状态的药材列表
         /// </summary>

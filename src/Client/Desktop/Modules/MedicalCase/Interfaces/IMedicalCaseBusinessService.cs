@@ -1,7 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using LYBT.Shared.Models.Common;
-using LYBT.Shared.Models.Contracts.Common;
+﻿using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 
 namespace LYBT.Desktop.MedicalCase.Interfaces;
@@ -10,8 +7,8 @@ namespace LYBT.Desktop.MedicalCase.Interfaces;
 /// 医案业务服务接口 - UltraThink双层架构简化版
 /// 职责：基础业务操作
 /// </summary>
-public interface IMedicalCaseBusinessService
-{
+public interface IMedicalCaseBusinessService {
+
     #region 基础医案业务操作
 
     /// <summary>
@@ -44,5 +41,5 @@ public interface IMedicalCaseBusinessService
     /// </summary>
     Task<ServiceResult<bool>> CancelAsync(Guid id);
 
-    #endregion
+    #endregion 基础医案业务操作
 }

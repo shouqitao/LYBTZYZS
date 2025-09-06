@@ -6,19 +6,18 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 
-namespace LYBT.Module.Auth.Repositories
-{
+namespace LYBT.Module.Auth.Repositories {
+
     /// <summary>
     /// 登录验证仓储实现 - 数据层统一化重构
     /// 继承OptimizedBaseRepository获得缓存和性能优化，扩展认证特有业务方法
     /// </summary>
-    public class AuthRepository : OptimizedBaseRepository<User>, IAuthRepository
-    {
+    public class AuthRepository : OptimizedBaseRepository<User>, IAuthRepository {
+
         public AuthRepository(
             AppDbContext context,
             ILogger<AuthRepository> logger,
-            IMemoryCache cache) : base(context, logger, cache)
-        {
+            IMemoryCache cache) : base(context, logger, cache) {
         }
 
         // 注意：基础CRUD方法由OptimizedBaseRepository提供，带有缓存优化
@@ -29,12 +28,10 @@ namespace LYBT.Module.Auth.Repositories
         /// </summary>
         /// <param name="userName">用户名</param>
         /// <returns>用户实体或 null</returns>
-        public async Task<User?> GetByUsernameAsync(string userName)
-        {
+        public async Task<User?> GetByUsernameAsync(string userName) {
             var cacheKey = $"{CacheKeyPrefix}username:{userName}";
 
-            if (_cache.TryGetValue<User?>(cacheKey, out var cached))
-            {
+            if (_cache.TryGetValue<User?>(cacheKey, out var cached)) {
                 _logger.LogDebug("从缓存获取用户信息 {Username}", userName);
                 return cached;
             }
@@ -44,8 +41,7 @@ namespace LYBT.Module.Auth.Repositories
                 .FirstOrDefaultAsync(u => u.Username == userName);
 
             // 配置缓存选项，解决SizeLimit配置问题
-            var options = new MemoryCacheEntryOptions
-            {
+            var options = new MemoryCacheEntryOptions {
                 SlidingExpiration = DefaultCacheDuration
             };
             options.SetSize(1); // 设置缓存项大小
@@ -58,8 +54,7 @@ namespace LYBT.Module.Auth.Repositories
         /// </summary>
         /// <param name="id">用户ID</param>
         /// <param name="loginTime">登录时间</param>
-        public async Task UpdateLastLoginTimeAsync(Guid id, DateTime loginTime)
-        {
+        public async Task UpdateLastLoginTimeAsync(Guid id, DateTime loginTime) {
             // UltraThink v2.0简化：User实体不再包含LastLoginTime字段
             // 登录时间信息通过AuthSession表记录，此方法仅保留接口兼容性
             await Task.CompletedTask;
@@ -70,8 +65,7 @@ namespace LYBT.Module.Auth.Repositories
         /// </summary>
         /// <param name="userName">管理员用户名</param>
         /// <returns>密码哈希或 null</returns>
-        public async Task<string?> GetAdminPasswordHashAsync(string userName)
-        {
+        public async Task<string?> GetAdminPasswordHashAsync(string userName) {
             var secret = await _context.AdminSecrets.FirstOrDefaultAsync(s => s.Username == userName);
             return secret?.PasswordHash;
         }
@@ -81,11 +75,9 @@ namespace LYBT.Module.Auth.Repositories
         /// </summary>
         /// <param name="userName">管理员用户名</param>
         /// <param name="passwordHash">新的密码哈希</param>
-        public async Task UpdateAdminPasswordHashAsync(string userName, string passwordHash)
-        {
+        public async Task UpdateAdminPasswordHashAsync(string userName, string passwordHash) {
             var secret = await _context.AdminSecrets.FirstOrDefaultAsync(s => s.Username == userName);
-            if (secret != null)
-            {
+            if (secret != null) {
                 secret.PasswordHash = passwordHash;
                 _context.AdminSecrets.Update(secret);
                 await _context.SaveChangesAsync();
@@ -96,8 +88,7 @@ namespace LYBT.Module.Auth.Repositories
         /// 更新用户登录保护信息 - UltraThink v2.0简化：通过AuthSession记录
         /// </summary>
         /// <param name="user">用户实体</param>
-        public async Task UpdateUserLoginProtectionAsync(User user)
-        {
+        public async Task UpdateUserLoginProtectionAsync(User user) {
             // UltraThink v2.0简化：User实体不再包含FailedLoginCount和LockoutEnd字段
             // 登录保护信息通过AuthSession记录，此方法仅保留接口兼容性
             await Task.CompletedTask;
@@ -109,8 +100,7 @@ namespace LYBT.Module.Auth.Repositories
         /// <param name="userId">用户ID</param>
         /// <param name="failedLoginCount">失败登录次数</param>
         /// <param name="lockoutEnd">锁定结束时间</param>
-        public async Task UpdateUserSecurityAsync(Guid userId, int failedLoginCount, DateTime? lockoutEnd)
-        {
+        public async Task UpdateUserSecurityAsync(Guid userId, int failedLoginCount, DateTime? lockoutEnd) {
             await _dbSet.Where(u => u.Id == userId)
                 .ExecuteUpdateAsync(setters => setters
                     .SetProperty(u => u.FailedLoginCount, failedLoginCount)
@@ -123,8 +113,7 @@ namespace LYBT.Module.Auth.Repositories
         /// <param name="userId">用户ID</param>
         /// <param name="failedLoginCount">失败登录次数</param>
         /// <param name="lockoutEnd">锁定结束时间</param>
-        public async Task UpdateFailedLoginInfoAsync(Guid userId, int failedLoginCount, DateTime? lockoutEnd)
-        {
+        public async Task UpdateFailedLoginInfoAsync(Guid userId, int failedLoginCount, DateTime? lockoutEnd) {
             await _dbSet.Where(u => u.Id == userId)
                 .ExecuteUpdateAsync(setters => setters
                     .SetProperty(u => u.FailedLoginCount, failedLoginCount)

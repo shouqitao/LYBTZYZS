@@ -1,11 +1,10 @@
-﻿using LYBT.Shared.Models.Contracts.Common;
-namespace LYBT.Desktop.Core.Interfaces.Services
-{
+﻿namespace LYBT.Desktop.Core.Interfaces.Services {
+
     /// <summary>
     /// Token管理器接口
     /// </summary>
-    public interface ITokenManager
-    {
+    public interface ITokenManager {
+
         /// <summary>
         /// 获取当前Token
         /// </summary>

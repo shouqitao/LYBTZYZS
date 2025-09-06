@@ -1,14 +1,12 @@
 ﻿using System.ComponentModel;
 
-namespace LYBT.Entities.Users
-{
+namespace LYBT.Entities.Users {
 
     /// <summary>
     /// Stores administrator password hashes separately
     /// to prevent tampering of the Users table.
     /// </summary>
-    public class AdminSecretModel
-    {
+    public class AdminSecretModel {
 
         /// <summary>主键</summary>
         [DisplayName("Primary key")]

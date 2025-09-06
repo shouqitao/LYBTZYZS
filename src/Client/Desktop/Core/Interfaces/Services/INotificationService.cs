@@ -1,13 +1,10 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿namespace LYBT.Desktop.Core.Interfaces.Services {
 
-namespace LYBT.Desktop.Core.Interfaces.Services
-{
     /// <summary>
     /// 通知服务接口 - UltraThink简化的消息通知管理
     /// </summary>
-    public interface INotificationService
-    {
+    public interface INotificationService {
+
         #region 消息显示方法
 
         /// <summary>
@@ -49,7 +46,7 @@ namespace LYBT.Desktop.Core.Interfaces.Services
         void ShowMessage(string message, NotificationType type, string? title = null,
             bool autoClose = true, int duration = 3000);
 
-        #endregion
+        #endregion 消息显示方法
 
         #region 对话框方法
 
@@ -81,7 +78,7 @@ namespace LYBT.Desktop.Core.Interfaces.Services
         /// <returns>用户输入结果，null表示取消</returns>
         Task<string?> ShowInputAsync(string message, string title = "输入", string defaultValue = "");
 
-        #endregion
+        #endregion 对话框方法
 
         #region 加载状态
 
@@ -108,7 +105,7 @@ namespace LYBT.Desktop.Core.Interfaces.Services
         /// </summary>
         void HideProgress();
 
-        #endregion
+        #endregion 加载状态
 
         #region 事件
 
@@ -122,7 +119,7 @@ namespace LYBT.Desktop.Core.Interfaces.Services
         /// </summary>
         event EventHandler<LoadingStateChangedEventArgs>? LoadingStateChanged;
 
-        #endregion
+        #endregion 事件
     }
 
     #region 枚举和事件参数
@@ -130,14 +127,17 @@ namespace LYBT.Desktop.Core.Interfaces.Services
     /// <summary>
     /// 通知类型
     /// </summary>
-    public enum NotificationType
-    {
+    public enum NotificationType {
+
         /// <summary>信息</summary>
         Info,
+
         /// <summary>成功</summary>
         Success,
+
         /// <summary>警告</summary>
         Warning,
+
         /// <summary>错误</summary>
         Error
     }
@@ -145,8 +145,7 @@ namespace LYBT.Desktop.Core.Interfaces.Services
     /// <summary>
     /// 通知事件参数
     /// </summary>
-    public class NotificationEventArgs : EventArgs
-    {
+    public class NotificationEventArgs : EventArgs {
         public string Message { get; set; } = string.Empty;
         public string? Title { get; set; }
         public NotificationType Type { get; set; }
@@ -158,13 +157,12 @@ namespace LYBT.Desktop.Core.Interfaces.Services
     /// <summary>
     /// 加载状态变化事件参数
     /// </summary>
-    public class LoadingStateChangedEventArgs : EventArgs
-    {
+    public class LoadingStateChangedEventArgs : EventArgs {
         public bool IsLoading { get; set; }
         public string Message { get; set; } = string.Empty;
         public int? Progress { get; set; }
         public DateTime Timestamp { get; set; } = DateTime.Now;
     }
 
-    #endregion
+    #endregion 枚举和事件参数
 }

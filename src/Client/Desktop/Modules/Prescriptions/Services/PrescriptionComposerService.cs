@@ -1,20 +1,18 @@
-﻿using System;
-using System.Threading.Tasks;
-using AutoMapper;
+﻿using AutoMapper;
 using LYBT.Desktop.Prescriptions.Components;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 
-namespace LYBT.Desktop.Prescriptions.Services
-{
+namespace LYBT.Desktop.Prescriptions.Services {
+
     /// <summary>
     /// 处方编辑器服务 - UltraThink简化版本
     /// 专注于处方编辑相关的业务逻辑，不包含复杂的协调功能
     /// </summary>
-    public class PrescriptionComposerService : IPrescriptionComposerService
-    {
+    public class PrescriptionComposerService : IPrescriptionComposerService {
+
         #region 私有字段
 
         private readonly IMapper _mapper;
@@ -23,7 +21,7 @@ namespace LYBT.Desktop.Prescriptions.Services
         private readonly BasicValidator _basicValidator;
         private readonly ILogger<PrescriptionComposerService> _logger;
 
-        #endregion
+        #endregion 私有字段
 
         #region 构造函数
 
@@ -32,8 +30,7 @@ namespace LYBT.Desktop.Prescriptions.Services
             IPrescriptionService prescriptionService,
             PriceCalculator priceCalculator,
             BasicValidator basicValidator,
-            ILogger<PrescriptionComposerService> logger)
-        {
+            ILogger<PrescriptionComposerService> logger) {
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _prescriptionService = prescriptionService ?? throw new ArgumentNullException(nameof(prescriptionService));
             _priceCalculator = priceCalculator ?? throw new ArgumentNullException(nameof(priceCalculator));
@@ -41,7 +38,7 @@ namespace LYBT.Desktop.Prescriptions.Services
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        #endregion
+        #endregion 构造函数
 
         #region 处方编辑核心功能
 
@@ -52,15 +49,12 @@ namespace LYBT.Desktop.Prescriptions.Services
         /// <param name="patientId">患者ID</param>
         /// <param name="doctorId">医生ID</param>
         /// <returns>处方信息</returns>
-        public async Task<PrescriptionDto> CreateDraftAsync(Guid medicalCaseId, Guid patientId, Guid doctorId)
-        {
-            try
-            {
+        public async Task<PrescriptionDto> CreateDraftAsync(Guid medicalCaseId, Guid patientId, Guid doctorId) {
+            try {
                 _logger.LogInformation("创建处方草稿: 医疗案例={MedicalCaseId}, 患者={PatientId}, 医生={DoctorId}",
                     medicalCaseId, patientId, doctorId);
 
-                var prescription = new PrescriptionDto
-                {
+                var prescription = new PrescriptionDto {
                     Id = Guid.NewGuid(),
                     MedicalCaseId = medicalCaseId,
                     PatientId = patientId,
@@ -73,9 +67,7 @@ namespace LYBT.Desktop.Prescriptions.Services
                 };
 
                 return await Task.FromResult(prescription);
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 _logger.LogError(ex, "创建处方草稿时发生错误");
                 throw;
             }
@@ -86,15 +78,12 @@ namespace LYBT.Desktop.Prescriptions.Services
         /// </summary>
         /// <param name="prescription">处方信息</param>
         /// <returns>保存结果</returns>
-        public async Task<(bool Success, string Message)> SaveDraftAsync(PrescriptionDto prescription)
-        {
-            try
-            {
+        public async Task<(bool Success, string Message)> SaveDraftAsync(PrescriptionDto prescription) {
+            try {
                 _logger.LogInformation("保存处方草稿: {PrescriptionId}", prescription.Id);
 
                 // 基础验证
-                if (string.IsNullOrWhiteSpace(prescription.Diagnosis))
-                {
+                if (string.IsNullOrWhiteSpace(prescription.Diagnosis)) {
                     return (false, "诊断不能为空");
                 }
 
@@ -115,9 +104,7 @@ namespace LYBT.Desktop.Prescriptions.Services
 
                 _logger.LogInformation("处方草稿保存成功: {PrescriptionId}", prescription.Id);
                 return (true, "草稿保存成功");
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 _logger.LogError(ex, "保存处方草稿时发生错误: {PrescriptionId}", prescription?.Id);
                 return (false, "保存草稿失败");
             }
@@ -128,16 +115,13 @@ namespace LYBT.Desktop.Prescriptions.Services
         /// </summary>
         /// <param name="prescription">处方信息</param>
         /// <returns>保存结果</returns>
-        public async Task<(bool Success, string Message)> SavePrescriptionAsync(PrescriptionDto prescription)
-        {
-            try
-            {
+        public async Task<(bool Success, string Message)> SavePrescriptionAsync(PrescriptionDto prescription) {
+            try {
                 _logger.LogInformation("保存正式处方: {PrescriptionId}", prescription.Id);
 
                 // 完整验证
                 var validationResult = _basicValidator.ValidatePrescription(prescription);
-                if (!validationResult.IsValid)
-                {
+                if (!validationResult.IsValid) {
                     var errorMessage = string.Join("; ", validationResult.Errors);
                     _logger.LogWarning("处方验证失败: {Errors}", errorMessage);
                     return (false, errorMessage);
@@ -148,8 +132,7 @@ namespace LYBT.Desktop.Prescriptions.Services
                 prescription.UpdateTime = DateTime.Now;
 
                 // 生成处方编号
-                if (string.IsNullOrWhiteSpace(prescription.PrescriptionNo))
-                {
+                if (string.IsNullOrWhiteSpace(prescription.PrescriptionNo)) {
                     prescription.PrescriptionNo = await GeneratePrescriptionNoAsync();
                 }
 
@@ -169,9 +152,7 @@ namespace LYBT.Desktop.Prescriptions.Services
 
                 _logger.LogInformation("正式处方保存成功: {PrescriptionId}", prescription.Id);
                 return (true, message);
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 _logger.LogError(ex, "保存正式处方时发生错误: {PrescriptionId}", prescription?.Id);
                 return (false, "保存处方失败");
             }
@@ -182,21 +163,16 @@ namespace LYBT.Desktop.Prescriptions.Services
         /// </summary>
         /// <param name="prescription">处方信息</param>
         /// <returns>验证结果</returns>
-        public ValidationResult ValidatePrescription(PrescriptionDto prescription)
-        {
-            try
-            {
+        public ValidationResult ValidatePrescription(PrescriptionDto prescription) {
+            try {
                 _logger.LogDebug("验证处方: {PrescriptionId}", prescription?.Id);
-                if (prescription == null)
-                {
+                if (prescription == null) {
                     var errorResult = new ValidationResult();
                     errorResult.AddError("处方信息不能为空");
                     return errorResult;
                 }
                 return _basicValidator.ValidatePrescription(prescription);
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 _logger.LogError(ex, "验证处方时发生错误");
                 var result = new ValidationResult();
                 result.AddError("验证过程中发生错误");
@@ -209,25 +185,20 @@ namespace LYBT.Desktop.Prescriptions.Services
         /// </summary>
         /// <param name="prescription">处方信息</param>
         /// <returns>价格计算结果</returns>
-        public PriceCalculationResult CalculatePrice(PrescriptionDto prescription)
-        {
-            try
-            {
+        public PriceCalculationResult CalculatePrice(PrescriptionDto prescription) {
+            try {
                 _logger.LogDebug("计算处方价格: {PrescriptionId}", prescription?.Id);
-                if (prescription == null)
-                {
+                if (prescription == null) {
                     return new PriceCalculationResult { IsSuccess = false, ErrorMessage = "处方信息不能为空" };
                 }
                 return _priceCalculator.CalculatePrescriptionPrice(prescription);
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 _logger.LogError(ex, "计算处方价格时发生错误");
                 return new PriceCalculationResult();
             }
         }
 
-        #endregion
+        #endregion 处方编辑核心功能
 
         #region 药材管理辅助功能
 
@@ -237,14 +208,10 @@ namespace LYBT.Desktop.Prescriptions.Services
         /// <param name="herbName">药材名称</param>
         /// <param name="quantity">用量</param>
         /// <returns>验证结果</returns>
-        public (bool IsValid, string Message) ValidateHerbQuantity(string herbName, decimal quantity)
-        {
-            try
-            {
+        public (bool IsValid, string Message) ValidateHerbQuantity(string herbName, decimal quantity) {
+            try {
                 return _basicValidator.ValidateHerbQuantity(herbName, quantity);
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 _logger.LogError(ex, "验证药材用量时发生错误: {HerbName}", herbName);
                 return (false, "验证过程中发生错误");
             }
@@ -256,28 +223,22 @@ namespace LYBT.Desktop.Prescriptions.Services
         /// <param name="prescription">处方信息</param>
         /// <param name="herbItem">药材项目</param>
         /// <returns>添加结果</returns>
-        public (bool Success, string Message) AddHerbToPrescription(PrescriptionDto prescription, PrescriptionItemDto herbItem)
-        {
-            try
-            {
-                if (prescription == null || herbItem == null)
-                {
+        public (bool Success, string Message) AddHerbToPrescription(PrescriptionDto prescription, PrescriptionItemDto herbItem) {
+            try {
+                if (prescription == null || herbItem == null) {
                     return (false, "参数不能为空");
                 }
 
                 // 检查是否已存在
-                foreach (var existingItem in prescription.Items)
-                {
-                    if (existingItem.HerbId == herbItem.HerbId)
-                    {
+                foreach (var existingItem in prescription.Items) {
+                    if (existingItem.HerbId == herbItem.HerbId) {
                         return (false, $"药材 {herbItem.HerbName} 已存在于处方中");
                     }
                 }
 
                 // 验证药材项目
                 var quantityValidation = ValidateHerbQuantity(herbItem.HerbName, herbItem.Quantity);
-                if (!quantityValidation.IsValid)
-                {
+                if (!quantityValidation.IsValid) {
                     return (false, quantityValidation.Message);
                 }
 
@@ -289,9 +250,7 @@ namespace LYBT.Desktop.Prescriptions.Services
                     herbItem.HerbName, herbItem.Quantity, herbItem.Unit);
 
                 return (true, quantityValidation.Message); // 成功，但可能有警告信息
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 _logger.LogError(ex, "添加药材到处方时发生错误: {HerbName}", herbItem?.HerbName);
                 return (false, "添加药材失败");
             }
@@ -303,34 +262,26 @@ namespace LYBT.Desktop.Prescriptions.Services
         /// <param name="prescription">处方信息</param>
         /// <param name="herbItem">药材项目</param>
         /// <returns>移除结果</returns>
-        public (bool Success, string Message) RemoveHerbFromPrescription(PrescriptionDto prescription, PrescriptionItemDto herbItem)
-        {
-            try
-            {
-                if (prescription == null || herbItem == null)
-                {
+        public (bool Success, string Message) RemoveHerbFromPrescription(PrescriptionDto prescription, PrescriptionItemDto herbItem) {
+            try {
+                if (prescription == null || herbItem == null) {
                     return (false, "参数不能为空");
                 }
 
                 var removed = prescription.Items.Remove(herbItem);
-                if (removed)
-                {
+                if (removed) {
                     _logger.LogInformation("已从处方中移除药材: {HerbName}", herbItem.HerbName);
                     return (true, "药材移除成功");
-                }
-                else
-                {
+                } else {
                     return (false, "未找到要移除的药材");
                 }
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 _logger.LogError(ex, "从处方中移除药材时发生错误: {HerbName}", herbItem?.HerbName);
                 return (false, "移除药材失败");
             }
         }
 
-        #endregion
+        #endregion 药材管理辅助功能
 
         #region 辅助方法
 
@@ -338,10 +289,8 @@ namespace LYBT.Desktop.Prescriptions.Services
         /// 生成处方编号
         /// </summary>
         /// <returns>处方编号</returns>
-        private async Task<string> GeneratePrescriptionNoAsync()
-        {
-            try
-            {
+        private async Task<string> GeneratePrescriptionNoAsync() {
+            try {
                 // 生成格式: CF + 年月日 + 4位序号
                 var today = DateTime.Today;
                 var datePrefix = today.ToString("yyyyMMdd");
@@ -354,29 +303,34 @@ namespace LYBT.Desktop.Prescriptions.Services
                 _logger.LogDebug("生成处方编号: {PrescriptionNo}", prescriptionNo);
 
                 return await Task.FromResult(prescriptionNo);
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 _logger.LogError(ex, "生成处方编号时发生错误");
                 return $"CF{DateTime.Now:yyyyMMddHHmmss}";
             }
         }
 
-        #endregion
+        #endregion 辅助方法
     }
 
     /// <summary>
     /// 处方编辑器服务接口
     /// </summary>
-    public interface IPrescriptionComposerService
-    {
+    public interface IPrescriptionComposerService {
+
         Task<PrescriptionDto> CreateDraftAsync(Guid medicalCaseId, Guid patientId, Guid doctorId);
+
         Task<(bool Success, string Message)> SaveDraftAsync(PrescriptionDto prescription);
+
         Task<(bool Success, string Message)> SavePrescriptionAsync(PrescriptionDto prescription);
+
         ValidationResult ValidatePrescription(PrescriptionDto prescription);
+
         PriceCalculationResult CalculatePrice(PrescriptionDto prescription);
+
         (bool IsValid, string Message) ValidateHerbQuantity(string herbName, decimal quantity);
+
         (bool Success, string Message) AddHerbToPrescription(PrescriptionDto prescription, PrescriptionItemDto herbItem);
+
         (bool Success, string Message) RemoveHerbFromPrescription(PrescriptionDto prescription, PrescriptionItemDto herbItem);
     }
 }

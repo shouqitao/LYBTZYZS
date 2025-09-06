@@ -1,18 +1,15 @@
-﻿using System;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
-using LYBT.Shared.Models.Contracts.Common;
 
-namespace LYBT.WPF.Client.Controls.Authentication
-{
+namespace LYBT.WPF.Client.Controls.Authentication {
+
     /// <summary>
     /// LoginControl.xaml 的交互逻辑
     /// 登录控件
     /// </summary>
-    public partial class LoginControl : UserControl
-    {
-        public LoginControl()
-        {
+    public partial class LoginControl : UserControl {
+
+        public LoginControl() {
             InitializeComponent();
 
             // 处理密码框的数据绑定
@@ -34,8 +31,7 @@ namespace LYBT.WPF.Client.Controls.Authentication
         /// <summary>
         /// 获取或设置密码
         /// </summary>
-        public string Password
-        {
+        public string Password {
             get => (string)GetValue(PasswordProperty);
             set => SetValue(PasswordProperty, value);
         }
@@ -43,10 +39,8 @@ namespace LYBT.WPF.Client.Controls.Authentication
         /// <summary>
         /// 处理密码变更
         /// </summary>
-        private void OnPasswordChanged(object sender, RoutedEventArgs e)
-        {
-            if (!_isUpdating)
-            {
+        private void OnPasswordChanged(object sender, RoutedEventArgs e) {
+            if (!_isUpdating) {
                 _isUpdating = true;
                 Password = PasswordBox.Password;
                 _isUpdating = false;
@@ -58,12 +52,10 @@ namespace LYBT.WPF.Client.Controls.Authentication
         /// <summary>
         /// 当密码属性变更时更新密码框
         /// </summary>
-        protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
-        {
+        protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e) {
             base.OnPropertyChanged(e);
 
-            if (e.Property == PasswordProperty && !_isUpdating)
-            {
+            if (e.Property == PasswordProperty && !_isUpdating) {
                 _isUpdating = true;
                 PasswordBox.Password = Password;
                 _isUpdating = false;
@@ -83,8 +75,7 @@ namespace LYBT.WPF.Client.Controls.Authentication
         /// <summary>
         /// 获取或设置错误消息
         /// </summary>
-        public string ErrorMessage
-        {
+        public string ErrorMessage {
             get => (string)GetValue(ErrorMessageProperty);
             set => SetValue(ErrorMessageProperty, value);
         }
@@ -102,8 +93,7 @@ namespace LYBT.WPF.Client.Controls.Authentication
         /// <summary>
         /// 获取或设置是否有错误
         /// </summary>
-        public bool HasError
-        {
+        public bool HasError {
             get => (bool)GetValue(HasErrorProperty);
             set => SetValue(HasErrorProperty, value);
         }
@@ -111,8 +101,7 @@ namespace LYBT.WPF.Client.Controls.Authentication
         /// <summary>
         /// 显示错误消息
         /// </summary>
-        public void ShowError(string message)
-        {
+        public void ShowError(string message) {
             ErrorMessage = message;
             HasError = true;
         }
@@ -120,8 +109,7 @@ namespace LYBT.WPF.Client.Controls.Authentication
         /// <summary>
         /// 清除错误消息
         /// </summary>
-        public void ClearError()
-        {
+        public void ClearError() {
             ErrorMessage = string.Empty;
             HasError = false;
         }

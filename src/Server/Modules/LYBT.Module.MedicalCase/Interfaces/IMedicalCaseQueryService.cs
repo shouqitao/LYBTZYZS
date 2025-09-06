@@ -1,18 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using LYBT.Shared.Models.Contracts.Common;
+﻿using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 
-namespace LYBT.Module.MedicalCase.Interfaces
-{
+namespace LYBT.Module.MedicalCase.Interfaces {
+
     /// <summary>
     /// 医疗案例查询服务接口
     /// UltraThink架构 - Query层接口抽象
     /// 职责：医疗案例查询、搜索、统计功能专业化处理
     /// </summary>
-    public interface IMedicalCaseQueryService
-    {
+    public interface IMedicalCaseQueryService {
+
         /// <summary>
         /// 根据ID获取医疗案例详情
         /// </summary>

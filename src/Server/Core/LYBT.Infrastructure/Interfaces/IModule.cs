@@ -1,13 +1,13 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 
-namespace LYBT.Infrastructure.Interfaces
-{
+namespace LYBT.Infrastructure.Interfaces {
+
     /// <summary>
     /// 模块接口 - Solution级架构标准化
     /// 定义所有模块的统一注册规范，确保依赖注入架构一致性
     /// </summary>
-    public interface IModule
-    {
+    public interface IModule {
+
         /// <summary>
         /// 模块名称
         /// </summary>
@@ -34,14 +34,12 @@ namespace LYBT.Infrastructure.Interfaces
     /// <summary>
     /// 模块基础抽象类 - 提供通用模块实现
     /// </summary>
-    public abstract class BaseModule : IModule
-    {
+    public abstract class BaseModule : IModule {
         public abstract string Name { get; }
         public virtual string Version => "1.0.0";
         public abstract string Description { get; }
 
-        public virtual IServiceCollection ConfigureServices(IServiceCollection services)
-        {
+        public virtual IServiceCollection ConfigureServices(IServiceCollection services) {
             // 注册仓储服务
             ConfigureRepositories(services);
 
@@ -75,8 +73,7 @@ namespace LYBT.Infrastructure.Interfaces
         /// <summary>
         /// 配置模块特定服务 - 子类可选择重写
         /// </summary>
-        protected virtual void ConfigureModuleSpecificServices(IServiceCollection services)
-        {
+        protected virtual void ConfigureModuleSpecificServices(IServiceCollection services) {
             // 默认为空，子类可以重写添加特定服务
         }
     }
@@ -84,14 +81,13 @@ namespace LYBT.Infrastructure.Interfaces
     /// <summary>
     /// 模块扩展方法
     /// </summary>
-    public static class ModuleExtensions
-    {
+    public static class ModuleExtensions {
+
         /// <summary>
         /// 添加模块服务
         /// </summary>
         public static IServiceCollection AddModule<T>(this IServiceCollection services)
-            where T : IModule, new()
-        {
+            where T : IModule, new() {
             var module = new T();
             return module.ConfigureServices(services);
         }
@@ -99,8 +95,7 @@ namespace LYBT.Infrastructure.Interfaces
         /// <summary>
         /// 添加模块服务（使用实例）
         /// </summary>
-        public static IServiceCollection AddModule(this IServiceCollection services, IModule module)
-        {
+        public static IServiceCollection AddModule(this IServiceCollection services, IModule module) {
             return module.ConfigureServices(services);
         }
     }

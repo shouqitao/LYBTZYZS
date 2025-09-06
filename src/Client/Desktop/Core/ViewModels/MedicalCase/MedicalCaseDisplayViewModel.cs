@@ -1,22 +1,17 @@
-﻿using System;
-using System.Globalization;
-using LYBT.Desktop.Core.Extensions;
-using LYBT.Shared.Models.Contracts.MedicalCase;
+﻿using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Enums;
 using Prism.Mvvm;
 
-namespace LYBT.Desktop.Core.ViewModels.MedicalCase
-{
+namespace LYBT.Desktop.Core.ViewModels.MedicalCase {
+
     /// <summary>
     /// 医疗案例显示逻辑视图模型 - UltraThink架构Presentation Layer
     /// 专门处理医疗案例的显示格式化和呈现逻辑
     /// </summary>
-    public class MedicalCaseDisplayViewModel : BindableBase
-    {
+    public class MedicalCaseDisplayViewModel : BindableBase {
         private readonly MedicalCaseDto _medicalCaseData;
 
-        public MedicalCaseDisplayViewModel(MedicalCaseDto medicalCaseData)
-        {
+        public MedicalCaseDisplayViewModel(MedicalCaseDto medicalCaseData) {
             _medicalCaseData = medicalCaseData ?? throw new ArgumentNullException(nameof(medicalCaseData));
         }
 
@@ -50,13 +45,12 @@ namespace LYBT.Desktop.Core.ViewModels.MedicalCase
         /// <summary>完成时间显示</summary>
         public string CompleteTimeDisplay => "系统记录"; // UltraThink v2.0简化：删除CompleteTime字段
 
-        #endregion
+        #endregion 基础显示属性
 
         #region 状态显示属性
 
         /// <summary>状态名称显示</summary>
-        public string StatusDisplay => _medicalCaseData.CaseStatus switch
-        {
+        public string StatusDisplay => _medicalCaseData.CaseStatus switch {
             MedicalCaseStatus.Registered => "已挂号",
             MedicalCaseStatus.InConsultation => "看诊中",
             MedicalCaseStatus.Completed => "已完成",
@@ -65,8 +59,7 @@ namespace LYBT.Desktop.Core.ViewModels.MedicalCase
         };
 
         /// <summary>状态图标</summary>
-        public string StatusIcon => _medicalCaseData.CaseStatus switch
-        {
+        public string StatusIcon => _medicalCaseData.CaseStatus switch {
             MedicalCaseStatus.Registered => "📋",
             MedicalCaseStatus.InConsultation => "🩺",
             MedicalCaseStatus.Completed => "✅",
@@ -75,8 +68,7 @@ namespace LYBT.Desktop.Core.ViewModels.MedicalCase
         };
 
         /// <summary>状态颜色代码</summary>
-        public string StatusColorCode => _medicalCaseData.CaseStatus switch
-        {
+        public string StatusColorCode => _medicalCaseData.CaseStatus switch {
             MedicalCaseStatus.Registered => "#FFA500",     // 橙色
             MedicalCaseStatus.InConsultation => "#007ACC", // 蓝色
             MedicalCaseStatus.Completed => "#4CAF50",      // 绿色
@@ -84,50 +76,42 @@ namespace LYBT.Desktop.Core.ViewModels.MedicalCase
             _ => "#9E9E9E"                                 // 灰色
         };
 
-        #endregion
+        #endregion 状态显示属性
 
         #region 时间相关显示
 
         /// <summary>持续时间显示</summary>
-        public string DurationDisplay
-        {
-            get
-            {
+        public string DurationDisplay {
+            get {
                 // UltraThink v2.0简化：删除GetDurationInMinutes扩展方法
                 return "正常时长";
             }
         }
 
         /// <summary>相对时间显示</summary>
-        public string RelativeTimeDisplay
-        {
-            get
-            {
+        public string RelativeTimeDisplay {
+            get {
                 // UltraThink v2.0简化：删除CreateTime字段
                 return "最近";
             }
         }
 
         /// <summary>预计完成时间显示</summary>
-        public string EstimatedCompleteTimeDisplay
-        {
-            get
-            {
+        public string EstimatedCompleteTimeDisplay {
+            get {
                 // UltraThink v2.0简化：删除IsCompleted和CreateTime
                 return _medicalCaseData.CaseStatus == MedicalCaseStatus.Completed ?
                     CompleteTimeDisplay : "预计完成";
             }
         }
 
-        #endregion
+        #endregion 时间相关显示
 
         #region 患者信息组合显示
 
         /// <summary>患者完整信息显示</summary>
-        public string PatientFullInfoDisplay
-        {
-            get
-            {
+        public string PatientFullInfoDisplay {
+            get {
                 var parts = new List<string> { PatientNameDisplay };
 
                 // UltraThink v2.0简化：删除PatientGender和PatientAge字段
@@ -140,7 +124,7 @@ namespace LYBT.Desktop.Core.ViewModels.MedicalCase
         /// <summary>患者简要信息显示</summary>
         public string PatientBriefInfoDisplay => $"{PatientNameDisplay} ({PatientGenderDisplay} {PatientAgeDisplay}岁)";
 
-        #endregion
+        #endregion 患者信息组合显示
 
         #region 优先级和紧急程度显示
 
@@ -156,23 +140,21 @@ namespace LYBT.Desktop.Core.ViewModels.MedicalCase
         /// <summary>紧急程度图标</summary>
         public string UrgencyIcon => "ℹ️"; // UltraThink v2.0简化：删除IsUrgent扩展方法
 
-        #endregion
+        #endregion 优先级和紧急程度显示
 
         #region 格式化方法
 
         /// <summary>
         /// 获取案例摘要信息
         /// </summary>
-        public string GetSummaryInfo()
-        {
+        public string GetSummaryInfo() {
             return $"{PatientBriefInfoDisplay} | {StatusDisplay} | {DurationDisplay}";
         }
 
         /// <summary>
         /// 获取详细信息文本
         /// </summary>
-        public string GetDetailedInfo()
-        {
+        public string GetDetailedInfo() {
             return $"医疗案例详情\n" +
                    $"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n" +
                    $"案例ID：{_medicalCaseData.Id}\n" +
@@ -192,8 +174,7 @@ namespace LYBT.Desktop.Core.ViewModels.MedicalCase
         /// <summary>
         /// 获取打印用格式化文本
         /// </summary>
-        public string GetPrintableInfo()
-        {
+        public string GetPrintableInfo() {
             return $"医疗案例记录\n" +
                    $"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n" +
                    $"案例编号：{_medicalCaseData.Id}\n" +
@@ -213,8 +194,7 @@ namespace LYBT.Desktop.Core.ViewModels.MedicalCase
         /// <summary>
         /// 获取案例状态徽章文本
         /// </summary>
-        public string GetStatusBadge()
-        {
+        public string GetStatusBadge() {
             var badges = new List<string>();
 
             badges.Add(StatusDisplay);
@@ -231,10 +211,8 @@ namespace LYBT.Desktop.Core.ViewModels.MedicalCase
         /// <summary>
         /// 获取进度显示
         /// </summary>
-        public string GetProgressDisplay()
-        {
-            return _medicalCaseData.CaseStatus switch
-            {
+        public string GetProgressDisplay() {
+            return _medicalCaseData.CaseStatus switch {
                 MedicalCaseStatus.Registered => "等待看诊",
                 MedicalCaseStatus.InConsultation => "正在看诊",
                 MedicalCaseStatus.Completed => "看诊完成",
@@ -246,52 +224,45 @@ namespace LYBT.Desktop.Core.ViewModels.MedicalCase
         /// <summary>
         /// 获取操作建议
         /// </summary>
-        public string GetActionSuggestion()
-        {
+        public string GetActionSuggestion() {
             // UltraThink v2.0简化：删除业务扩展方法，使用简单状态判断
-            if (_medicalCaseData.CaseStatus == MedicalCaseStatus.Registered)
-            {
+            if (_medicalCaseData.CaseStatus == MedicalCaseStatus.Registered) {
                 return "可以开始看诊";
             }
 
-            if (_medicalCaseData.CaseStatus == MedicalCaseStatus.InConsultation)
-            {
+            if (_medicalCaseData.CaseStatus == MedicalCaseStatus.InConsultation) {
                 return "可以完成案例";
             }
 
             return "正常状态";
         }
 
-        #endregion
+        #endregion 格式化方法
 
         #region 业务状态查询
 
         /// <summary>
         /// 获取可执行操作列表
         /// </summary>
-        public string GetAvailableActions()
-        {
+        public string GetAvailableActions() {
             var actions = new List<string>();
 
             // UltraThink v2.0简化：删除业务扩展方法，使用简单状态判断
-            if (_medicalCaseData.CaseStatus == MedicalCaseStatus.Registered)
-            {
+            if (_medicalCaseData.CaseStatus == MedicalCaseStatus.Registered) {
                 actions.Add("开始看诊");
             }
 
-            if (_medicalCaseData.CaseStatus == MedicalCaseStatus.InConsultation)
-            {
+            if (_medicalCaseData.CaseStatus == MedicalCaseStatus.InConsultation) {
                 actions.Add("完成案例");
             }
 
-            if (_medicalCaseData.CaseStatus != MedicalCaseStatus.Completed)
-            {
+            if (_medicalCaseData.CaseStatus != MedicalCaseStatus.Completed) {
                 actions.Add("编辑信息");
             }
 
             return actions.Any() ? string.Join("、", actions) : "无可用操作";
         }
 
-        #endregion
+        #endregion 业务状态查询
     }
 }

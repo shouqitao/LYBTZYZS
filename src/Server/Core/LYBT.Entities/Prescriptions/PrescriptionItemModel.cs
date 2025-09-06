@@ -3,14 +3,12 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using LYBT.Entities.Common;
 
-namespace LYBT.Entities.Prescriptions
-{
+namespace LYBT.Entities.Prescriptions {
 
     /// <summary>
     /// 处方药材项 - 处方中的药材明细，包含药材名称、剂量和单价，用于收费计算
     /// </summary>
-    public class PrescriptionItemModel : IHerbItem
-    {
+    public class PrescriptionItemModel : IHerbItem {
 
         /// <summary>
         /// 处方项唯一标识（主键）

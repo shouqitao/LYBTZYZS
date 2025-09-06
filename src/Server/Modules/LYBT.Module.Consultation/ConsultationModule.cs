@@ -5,20 +5,19 @@ using LYBT.Module.Consultation.Services;
 using LYBT.Shared.Interfaces.Services;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace LYBT.Module.Consultation
-{
+namespace LYBT.Module.Consultation {
+
     /// <summary>
     /// 看诊模块注册 - UltraThink标准化重构
     /// 负责注册看诊相关的所有服务、仓储和映射配置
     /// 采用UltraThink双层架构：QueryService + BusinessService 专业分离
     /// </summary>
-    public static class ConsultationModule
-    {
+    public static class ConsultationModule {
+
         /// <summary>
         /// 注册看诊模块服务 - UltraThink双层架构标准
         /// </summary>
-        public static IServiceCollection AddConsultationModule(this IServiceCollection services)
-        {
+        public static IServiceCollection AddConsultationModule(this IServiceCollection services) {
             // 仓储层
             services.AddScoped<IConsultationRepository, ConsultationRepository>();
 
@@ -30,8 +29,7 @@ namespace LYBT.Module.Consultation
             services.AddScoped<IConsultationService, ConsultationService>();
 
             // AutoMapper配置
-            services.AddAutoMapper(cfg =>
-            {
+            services.AddAutoMapper(cfg => {
                 cfg.AddProfile<ConsultationMappingProfile>();
             });
 

@@ -1,15 +1,13 @@
 ﻿using System.ComponentModel;
 using LYBT.Shared.Models.Contracts.Users;
 
-namespace LYBT.Shared.Models.Contracts.Auth
-{
+namespace LYBT.Shared.Models.Contracts.Auth {
 
     /// <summary>
     /// 登录成功返回响应 - 前后端共享API契约
     /// UltraThink v2.0: 使用UserDto替代BaseUser
     /// </summary>
-    public class LoginResponse
-    {
+    public class LoginResponse {
 
         /// <summary>JWT令牌</summary>
         [DisplayName("JWT Token")]

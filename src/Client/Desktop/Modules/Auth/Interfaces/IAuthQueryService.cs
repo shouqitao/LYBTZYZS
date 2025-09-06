@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-using LYBT.Shared.Models.Common;
-using LYBT.Shared.Models.Contracts.Common;
+﻿using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 
 namespace LYBT.Desktop.Auth.Interfaces;
@@ -9,8 +7,8 @@ namespace LYBT.Desktop.Auth.Interfaces;
 /// 认证查询服务接口 - UltraThink双层架构简化版
 /// 职责：基础状态查询、简单连接检查
 /// </summary>
-public interface IAuthQueryService
-{
+public interface IAuthQueryService {
+
     #region 基础认证状态查询
 
     /// <summary>
@@ -28,5 +26,5 @@ public interface IAuthQueryService
     /// </summary>
     Task<ServiceResult<bool>> CheckConnectionAsync();
 
-    #endregion
+    #endregion 基础认证状态查询
 }

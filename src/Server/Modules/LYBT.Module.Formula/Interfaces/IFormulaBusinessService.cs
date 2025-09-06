@@ -1,18 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using LYBT.Shared.Models.Contracts.Common;
+﻿using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
 
-namespace LYBT.Module.Formula.Interfaces
-{
+namespace LYBT.Module.Formula.Interfaces {
+
     /// <summary>
     /// 验方业务服务接口
     /// UltraThink架构 - Business层接口抽象
     /// 职责：验方业务逻辑、CRUD操作、状态管理
     /// </summary>
-    public interface IFormulaBusinessService
-    {
+    public interface IFormulaBusinessService {
+
         /// <summary>
         /// 创建验方
         /// </summary>

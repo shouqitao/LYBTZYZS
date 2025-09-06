@@ -1,17 +1,16 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Enums;
 
-namespace LYBT.Shared.Models.Contracts.Patients
-{
+namespace LYBT.Shared.Models.Contracts.Patients {
+
     /// <summary>
     /// 患者分页查询DTO - 继承完整查询基类 + 编码接口
     /// 用于患者档案的分页查询和筛选
     /// </summary>
-    public class PatientPagedQueryDto : ExtendedQueryDto, ICodeable
-    {
+    public class PatientPagedQueryDto : ExtendedQueryDto, ICodeable {
+
         /// <summary>姓名关键词</summary>
         [DisplayName("姓名关键词")]
         public string? Name { get; set; }
@@ -57,8 +56,8 @@ namespace LYBT.Shared.Models.Contracts.Patients
     /// 分配医生DTO - 前后端共享API契约
     /// 用于为患者分配主治医生的请求模型
     /// </summary>
-    public class AssignDoctorDto
-    {
+    public class AssignDoctorDto {
+
         /// <summary>患者ID</summary>
         [Required(ErrorMessage = "患者ID不能为空")]
         [DisplayName("患者ID")]
@@ -86,8 +85,7 @@ namespace LYBT.Shared.Models.Contracts.Patients
     /// <summary>
     /// 患者就诊历史DTO
     /// </summary>
-    public class PatientVisitHistoryDto
-    {
+    public class PatientVisitHistoryDto {
         public Guid PatientId { get; set; }
         public string PatientName { get; set; } = string.Empty;
         public int TotalVisits { get; set; }
@@ -98,12 +96,9 @@ namespace LYBT.Shared.Models.Contracts.Patients
         /// <summary>
         /// 平均就诊间隔（天）
         /// </summary>
-        public double AverageVisitInterval
-        {
-            get
-            {
-                if (TotalVisits <= 1 || !FirstVisitDate.HasValue || !LastVisitDate.HasValue)
-                {
+        public double AverageVisitInterval {
+            get {
+                if (TotalVisits <= 1 || !FirstVisitDate.HasValue || !LastVisitDate.HasValue) {
                     return 0;
                 }
 
@@ -115,8 +110,7 @@ namespace LYBT.Shared.Models.Contracts.Patients
     /// <summary>
     /// 就诊记录DTO
     /// </summary>
-    public class VisitRecordDto
-    {
+    public class VisitRecordDto {
         public Guid Id { get; set; }
         public DateTime VisitDate { get; set; }
         public string DoctorName { get; set; } = string.Empty;
@@ -129,8 +123,8 @@ namespace LYBT.Shared.Models.Contracts.Patients
     /// <summary>
     /// 患者档案管理DTO
     /// </summary>
-    public class PatientProfileManagementDto
-    {
+    public class PatientProfileManagementDto {
+
         /// <summary>患者ID</summary>
         public Guid PatientId { get; set; }
 
@@ -156,8 +150,8 @@ namespace LYBT.Shared.Models.Contracts.Patients
     /// <summary>
     /// 患者统计DTO
     /// </summary>
-    public class PatientStatisticsDto
-    {
+    public class PatientStatisticsDto {
+
         /// <summary>患者总数</summary>
         public int TotalPatients { get; set; }
 
@@ -219,8 +213,7 @@ namespace LYBT.Shared.Models.Contracts.Patients
     /// <summary>
     /// 患者年龄分布DTO
     /// </summary>
-    public class PatientAgeDistributionDto
-    {
+    public class PatientAgeDistributionDto {
         public string AgeGroup { get; set; } = string.Empty;
         public int Count { get; set; }
         public double Percentage { get; set; }
@@ -229,8 +222,7 @@ namespace LYBT.Shared.Models.Contracts.Patients
     /// <summary>
     /// 患者就诊趋势DTO
     /// </summary>
-    public class PatientVisitTrendDto
-    {
+    public class PatientVisitTrendDto {
         public DateTime Date { get; set; }
         public int TotalVisits { get; set; }
         public int NewPatients { get; set; }
@@ -242,16 +234,14 @@ namespace LYBT.Shared.Models.Contracts.Patients
     /// 患者搜索DTO - 别名支持
     /// 为向后兼容而创建的别名，实际使用PatientPagedQueryDto
     /// </summary>
-    public class PatientSearchDto : PatientPagedQueryDto
-    {
+    public class PatientSearchDto : PatientPagedQueryDto {
         // 继承所有PatientPagedQueryDto功能，提供别名支持
     }
 
     /// <summary>
     /// 患者搜索结果DTO
     /// </summary>
-    public class PatientSearchResultDto
-    {
+    public class PatientSearchResultDto {
         public Guid Id { get; set; }
         public string Name { get; set; } = string.Empty;
         public string? PhoneNumber { get; set; }

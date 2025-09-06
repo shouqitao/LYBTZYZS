@@ -3,16 +3,16 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using LYBT.Shared.Models.Enums;
 
-namespace LYBT.Entities.Herbs
-{
+namespace LYBT.Entities.Herbs {
+
     /// <summary>
     /// 中药材实体 - UltraThink v2.0架构简化版
     /// 合并了原BaseHerb和HerbModel，不包含库存管理功能
     /// 只保留药材基础信息和价格信息，用于处方开具
     /// </summary>
     [Table("Herbs")]
-    public class Herb
-    {
+    public class Herb {
+
         /// <summary>药材唯一标识</summary>
         [Key]
         [DisplayName("药材ID")]
@@ -73,7 +73,5 @@ namespace LYBT.Entities.Herbs
         /// <summary>药材状态</summary>
         [DisplayName("状态")]
         public CommonStatus Status { get; set; } = CommonStatus.Enabled;
-
     }
-
 }

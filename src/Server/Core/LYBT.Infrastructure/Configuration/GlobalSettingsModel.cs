@@ -1,14 +1,12 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace LYBT.Infrastructure.Configuration
-{
+namespace LYBT.Infrastructure.Configuration {
 
     /// <summary>
     /// 全局设置实体模型（整合原 Module.Settings）
     /// </summary>
-    public class GlobalSettingsModel
-    {
+    public class GlobalSettingsModel {
 
         /// <summary>
         /// ID

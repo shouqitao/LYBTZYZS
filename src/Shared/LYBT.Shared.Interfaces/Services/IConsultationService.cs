@@ -1,16 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using LYBT.Shared.Models.Contracts.Common;
+﻿using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
 
-namespace LYBT.Shared.Interfaces.Services
-{
+namespace LYBT.Shared.Interfaces.Services {
+
     /// <summary>
     /// 看诊服务接口 - UltraThink统一标准
     /// </summary>
-    public interface IConsultationService
-    {
+    public interface IConsultationService {
+
         /// <summary>
         /// 根据ID获取看诊详情
         /// </summary>
@@ -50,8 +47,6 @@ namespace LYBT.Shared.Interfaces.Services
         /// 根据医生ID获取看诊记录
         /// </summary>
         Task<ServiceResult<List<ConsultationDto>>> GetByDoctorIdAsync(Guid doctorId);
-
-
 
         /// <summary>
         /// 获取看诊统计信息

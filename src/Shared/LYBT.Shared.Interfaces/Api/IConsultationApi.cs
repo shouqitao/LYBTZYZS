@@ -1,17 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using LYBT.Shared.Models.Contracts.Common;
+﻿using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
 using Refit;
 
-namespace LYBT.Shared.Interfaces.Api
-{
+namespace LYBT.Shared.Interfaces.Api {
+
     /// <summary>
     /// 看诊API客户端接口 - UltraThink统一标准
     /// </summary>
-    public interface IConsultationApi
-    {
+    public interface IConsultationApi {
+
         /// <summary>
         /// 分页查询看诊记录
         /// </summary>

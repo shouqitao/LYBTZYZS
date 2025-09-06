@@ -1,12 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace LYBT.Infrastructure.Configuration.Options
-{
+namespace LYBT.Infrastructure.Configuration.Options {
+
     /// <summary>
     /// 缓存配置选项
     /// </summary>
-    public class CacheOptions
-    {
+    public class CacheOptions {
         public const string SectionName = "CacheOptions";
 
         /// <summary>
@@ -46,8 +45,8 @@ namespace LYBT.Infrastructure.Configuration.Options
     /// <summary>
     /// 内存缓存配置
     /// </summary>
-    public class MemoryCacheOptions
-    {
+    public class MemoryCacheOptions {
+
         /// <summary>
         /// 大小限制
         /// </summary>
@@ -70,8 +69,8 @@ namespace LYBT.Infrastructure.Configuration.Options
     /// <summary>
     /// Redis缓存配置
     /// </summary>
-    public class RedisCacheOptions
-    {
+    public class RedisCacheOptions {
+
         /// <summary>
         /// 连接字符串
         /// </summary>
@@ -110,8 +109,8 @@ namespace LYBT.Infrastructure.Configuration.Options
     /// <summary>
     /// 缓存统计配置
     /// </summary>
-    public class CacheStatisticsOptions
-    {
+    public class CacheStatisticsOptions {
+
         /// <summary>
         /// 是否启用统计
         /// </summary>
@@ -137,8 +136,8 @@ namespace LYBT.Infrastructure.Configuration.Options
     /// <summary>
     /// 缓存性能优化配置
     /// </summary>
-    public class CachePerformanceOptions
-    {
+    public class CachePerformanceOptions {
+
         /// <summary>
         /// 是否启用压缩
         /// </summary>

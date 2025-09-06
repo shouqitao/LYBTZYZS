@@ -1,16 +1,14 @@
-﻿using System;
-using System.Threading.Tasks;
-using LYBT.Shared.Models.Contracts.Common;
+﻿using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Enums;
 
-namespace LYBT.Module.Consultation.Interfaces
-{
+namespace LYBT.Module.Consultation.Interfaces {
+
     /// <summary>
     /// 看诊业务服务接口
     /// UltraThink架构 - Business层接口抽象
     /// </summary>
-    public interface IConsultationBusinessService
-    {
+    public interface IConsultationBusinessService {
+
         /// <summary>
         /// 保存中医四诊信息
         /// </summary>

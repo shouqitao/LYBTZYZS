@@ -3,16 +3,16 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using LYBT.Shared.Models.Enums;
 
-namespace LYBT.Entities.Prescriptions
-{
+namespace LYBT.Entities.Prescriptions {
+
     /// <summary>
     /// 处方实体 - UltraThink v2.0架构简化版
     /// 合并了原BasePrescription和PrescriptionModel
     /// 价格计算在DTO层处理，实体只存储基础数据和折扣信息
     /// </summary>
     [Table("Prescriptions")]
-    public class Prescription
-    {
+    public class Prescription {
+
         /// <summary>处方唯一标识</summary>
         [Key]
         [DisplayName("处方ID")]
@@ -73,5 +73,4 @@ namespace LYBT.Entities.Prescriptions
         [DisplayName("处方项目")]
         public List<PrescriptionItemModel> Items { get; set; } = new();
     }
-
 }

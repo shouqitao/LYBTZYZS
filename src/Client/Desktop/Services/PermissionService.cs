@@ -1,27 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using LYBT.Desktop.Core.Configuration;
 using LYBT.Desktop.Core.Interfaces.Services;
-using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Users;
-using LYBT.Shared.Models.Core;
 using LYBT.Shared.Models.Enums;
 
-namespace LYBT.Desktop.Services
-{
+namespace LYBT.Desktop.Services {
+
     /// <summary>
     /// 权限服务实现
     /// </summary>
-    public class PermissionService : IPermissionService
-    {
+    public class PermissionService : IPermissionService {
+
         /// <summary>
         /// 检查用户是否有指定权限
         /// </summary>
-        public bool HasPermission(UserDto user, string permission)
-        {
-            if (user == null)
-            {
+        public bool HasPermission(UserDto user, string permission) {
+            if (user == null) {
                 return false;
             }
             // 只有sysadmin有所有权限
@@ -31,31 +26,26 @@ namespace LYBT.Desktop.Services
         /// <summary>
         /// 检查用户是否有管理员权限
         /// </summary>
-        public bool HasAdminPermission(UserDto user)
-        {
+        public bool HasAdminPermission(UserDto user) {
             return user?.Username == "sysadmin";
         }
 
         /// <summary>
         /// 检查用户是否有超级管理员权限
         /// </summary>
-        public bool HasSuperAdminPermission(UserDto user)
-        {
+        public bool HasSuperAdminPermission(UserDto user) {
             return user?.Username == "sysadmin";
         }
 
         /// <summary>
         /// 获取用户可访问的模块列表
         /// </summary>
-        public List<string> GetAccessibleModules(UserDto user)
-        {
-            if (user == null)
-            {
+        public List<string> GetAccessibleModules(UserDto user) {
+            if (user == null) {
                 return new List<string>();
             }
 
-            if (user.Username == "sysadmin")
-            {
+            if (user.Username == "sysadmin") {
                 // 管理员有所有模块
                 return new List<string> {
                     "患者管理", "药材管理", "处方管理", "看诊管理",
@@ -72,18 +62,15 @@ namespace LYBT.Desktop.Services
         /// <summary>
         /// 获取用户角色的显示名称
         /// </summary>
-        public string GetRoleDisplayName(string role)
-        {
+        public string GetRoleDisplayName(string role) {
             return "用户";
         }
 
         /// <summary>
         /// 检查角色是否有指定权限
         /// </summary>
-        public bool HasPermission(UserRole role, string permission)
-        {
-            return role switch
-            {
+        public bool HasPermission(UserRole role, string permission) {
+            return role switch {
                 UserRole.Admin => true, // 管理员有所有权限
                 UserRole.Doctor => HasDoctorLevelPermission(permission),
                 UserRole.Receptionist => HasReceptionistLevelPermission(permission),
@@ -97,8 +84,7 @@ namespace LYBT.Desktop.Services
         /// <summary>
         /// 检查角色是否可访问指定模块
         /// </summary>
-        public bool CanAccessModule(UserRole role, string moduleName)
-        {
+        public bool CanAccessModule(UserRole role, string moduleName) {
             var accessibleModules = GetAccessibleModules(role);
             return accessibleModules.Contains(moduleName);
         }
@@ -106,10 +92,8 @@ namespace LYBT.Desktop.Services
         /// <summary>
         /// 获取角色可访问的模块列表
         /// </summary>
-        public IEnumerable<string> GetAccessibleModules(UserRole role)
-        {
-            return role switch
-            {
+        public IEnumerable<string> GetAccessibleModules(UserRole role) {
+            return role switch {
                 UserRole.Admin => GetAdminModules(),
                 UserRole.Doctor => GetDoctorModules(),
                 UserRole.Receptionist => GetReceptionistModules(),
@@ -123,10 +107,8 @@ namespace LYBT.Desktop.Services
         /// <summary>
         /// 获取角色的显示名称
         /// </summary>
-        public string GetRoleDisplayName(UserRole role)
-        {
-            return role switch
-            {
+        public string GetRoleDisplayName(UserRole role) {
+            return role switch {
                 UserRole.Admin => "系统管理员",
                 UserRole.Doctor => "医生",
                 UserRole.Receptionist => "前台",
@@ -140,18 +122,15 @@ namespace LYBT.Desktop.Services
         /// <summary>
         /// 检查角色是否有管理权限
         /// </summary>
-        public bool HasManagementAccess(UserRole role)
-        {
+        public bool HasManagementAccess(UserRole role) {
             return role == UserRole.Admin;
         }
 
         /// <summary>
         /// 检查角色是否有医疗权限
         /// </summary>
-        public bool HasMedicalAccess(UserRole role)
-        {
-            return role switch
-            {
+        public bool HasMedicalAccess(UserRole role) {
+            return role switch {
                 UserRole.Admin => true,
                 UserRole.Doctor => true,
                 UserRole.Therapist => true,
@@ -161,8 +140,7 @@ namespace LYBT.Desktop.Services
 
         #region 私有方法 - 权限检查
 
-        private bool HasAdminLevelPermission(string permission)
-        {
+        private bool HasAdminLevelPermission(string permission) {
             var adminPermissions = new[]
             {
                 "UserManagement", "SystemSettings", "DataBackup", "AuditLog",
@@ -171,8 +149,7 @@ namespace LYBT.Desktop.Services
             return adminPermissions.Contains(permission);
         }
 
-        private bool HasDoctorLevelPermission(string permission)
-        {
+        private bool HasDoctorLevelPermission(string permission) {
             var doctorPermissions = new[]
             {
                 "PatientConsultation", "PrescriptionWrite", "MedicalRecord", "TreatmentPlan",
@@ -181,8 +158,7 @@ namespace LYBT.Desktop.Services
             return doctorPermissions.Contains(permission);
         }
 
-        private bool HasReceptionistLevelPermission(string permission)
-        {
+        private bool HasReceptionistLevelPermission(string permission) {
             var receptionistPermissions = new[]
             {
                 "AppointmentManagement", "QueueManagement",
@@ -191,8 +167,7 @@ namespace LYBT.Desktop.Services
             return receptionistPermissions.Contains(permission);
         }
 
-        private bool HasCashierLevelPermission(string permission)
-        {
+        private bool HasCashierLevelPermission(string permission) {
             var cashierPermissions = new[]
             {
                 "PaymentProcess", "InvoiceManagement", "RefundProcess",
@@ -201,8 +176,7 @@ namespace LYBT.Desktop.Services
             return cashierPermissions.Contains(permission);
         }
 
-        private bool HasPharmacistLevelPermission(string permission)
-        {
+        private bool HasPharmacistLevelPermission(string permission) {
             var pharmacistPermissions = new[]
             {
                 "PrescriptionDispense", "InventoryManagement", "DrugCatalog",
@@ -211,8 +185,7 @@ namespace LYBT.Desktop.Services
             return pharmacistPermissions.Contains(permission);
         }
 
-        private bool HasTherapistLevelPermission(string permission)
-        {
+        private bool HasTherapistLevelPermission(string permission) {
             var therapistPermissions = new[]
             {
                 "TherapyTreatment", "PatientCare", "TreatmentPlan",
@@ -221,12 +194,11 @@ namespace LYBT.Desktop.Services
             return therapistPermissions.Contains(permission);
         }
 
-        #endregion
+        #endregion 私有方法 - 权限检查
 
         #region 私有方法 - 模块访问
 
-        private List<string> GetSuperAdminModules()
-        {
+        private List<string> GetSuperAdminModules() {
             return new List<string>
             {
                 "Users", "Patients", "MedicalCase", "Consultation",
@@ -234,8 +206,7 @@ namespace LYBT.Desktop.Services
             };
         }
 
-        private List<string> GetAdminModules()
-        {
+        private List<string> GetAdminModules() {
             return new List<string>
             {
                 "Users", "Patients", "MedicalCase", "Consultation",
@@ -243,40 +214,35 @@ namespace LYBT.Desktop.Services
             };
         }
 
-        private List<string> GetDoctorModules()
-        {
+        private List<string> GetDoctorModules() {
             return new List<string>
             {
                 "Patients", "Consultation", "Prescriptions", "Formula", "MedicalCase"
             };
         }
 
-        private List<string> GetReceptionistModules()
-        {
+        private List<string> GetReceptionistModules() {
             return new List<string>
             {
                 "Patients", "MedicalCase"
             };
         }
 
-        private List<string> GetCashierModules()
-        {
+        private List<string> GetCashierModules() {
             return new List<string>
             {
                 "Patients", "MedicalCase"
             };
         }
 
-        private List<string> GetPharmacistModules()
-        {
+        private List<string> GetPharmacistModules() {
             return new List<string>
             {
                 "Herbs", "Prescriptions", "Formula", "Patients"
             };
         }
 
-        private List<string> GetTherapistModules()
-        {
+        private List<string> GetTherapistModules() {
             return new List<string>
             {
                 "TherapistModule", "PatientCare", "TreatmentModule",
@@ -284,6 +250,6 @@ namespace LYBT.Desktop.Services
             };
         }
 
-        #endregion
+        #endregion 私有方法 - 模块访问
     }
 }

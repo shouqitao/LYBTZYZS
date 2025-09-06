@@ -1,15 +1,13 @@
-﻿using System;
-using System.Threading.Tasks;
-using LYBT.Shared.Models.Contracts.Auth;
+﻿using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Common;
 
-namespace LYBT.Shared.Interfaces.Services
-{
+namespace LYBT.Shared.Interfaces.Services {
+
     /// <summary>
     /// 身份认证服务接口 - UltraThink统一标准
     /// </summary>
-    public interface IAuthService
-    {
+    public interface IAuthService {
+
         /// <summary>
         /// 用户登录验证
         /// </summary>

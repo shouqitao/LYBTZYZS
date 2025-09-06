@@ -1,12 +1,10 @@
 ﻿using System.ComponentModel;
-using System.Threading.Tasks;
 using LYBT.Shared.Models.Contracts.Auth;
-using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 using Refit;
 
-namespace LYBT.Shared.Interfaces.Api
-{
+namespace LYBT.Shared.Interfaces.Api {
+
     /// <summary>
     /// 身份认证API客户端接口 - UltraThink统一API客户端标准
     /// </summary>
@@ -17,8 +15,8 @@ namespace LYBT.Shared.Interfaces.Api
     /// <para>架构定位: 前端WPF客户端与后端Web API的统一接口契约</para>
     /// </remarks>
     [Description("身份认证API客户端 - JWT认证、会话管理、安全操作")]
-    public interface IAuthApi
-    {
+    public interface IAuthApi {
+
         /// <summary>
         /// 用户登录认证
         /// </summary>

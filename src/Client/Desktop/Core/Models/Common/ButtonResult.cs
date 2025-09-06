@@ -1,11 +1,11 @@
-﻿namespace LYBT.Desktop.Core.Models.Common
-{
+﻿namespace LYBT.Desktop.Core.Models.Common {
+
     /// <summary>
     /// 对话框按钮结果
     /// 替代 Prism ButtonResult，兼容 Prism 8.1.97
     /// </summary>
-    public enum ButtonResult
-    {
+    public enum ButtonResult {
+
         /// <summary>
         /// 无结果
         /// </summary>

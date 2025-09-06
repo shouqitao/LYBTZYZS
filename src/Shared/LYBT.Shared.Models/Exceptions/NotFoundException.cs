@@ -3,8 +3,8 @@
 /// <summary>
 /// 资源未找到异常 - UltraThink统一异常体系
 /// </summary>
-public class NotFoundException : AppException
-{
+public class NotFoundException : AppException {
+
     /// <summary>
     /// 资源类型
     /// </summary>
@@ -15,32 +15,27 @@ public class NotFoundException : AppException
     /// </summary>
     public string? ResourceId { get; set; }
 
-    public NotFoundException() : base("请求的资源不存在")
-    {
+    public NotFoundException() : base("请求的资源不存在") {
         ShowDetailToUser = true; // 资源不存在需要告诉用户
     }
 
-    public NotFoundException(string message) : base(message)
-    {
+    public NotFoundException(string message) : base(message) {
         ShowDetailToUser = true;
     }
 
-    public NotFoundException(string message, Exception innerException) : base(message, innerException)
-    {
+    public NotFoundException(string message, Exception innerException) : base(message, innerException) {
         ShowDetailToUser = true;
     }
 
     public NotFoundException(string resourceType, string resourceId)
-        : base($"{resourceType} (ID: {resourceId}) 不存在")
-    {
+        : base($"{resourceType} (ID: {resourceId}) 不存在") {
         ResourceType = resourceType;
         ResourceId = resourceId;
         ShowDetailToUser = true;
     }
 
     public NotFoundException(string resourceType, Guid resourceId)
-        : this(resourceType, resourceId.ToString())
-    {
+        : this(resourceType, resourceId.ToString()) {
     }
 
     /// <summary>

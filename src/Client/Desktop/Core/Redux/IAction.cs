@@ -1,13 +1,10 @@
-﻿using System;
-using LYBT.Shared.Models.Contracts.Common;
+﻿namespace LYBT.Desktop.Core.Redux {
 
-namespace LYBT.Desktop.Core.Redux
-{
     /// <summary>
     /// Redux Action接口 - 所有Action的基础接口
     /// </summary>
-    public interface IAction
-    {
+    public interface IAction {
+
         /// <summary>
         /// Action类型标识
         /// </summary>
@@ -27,8 +24,8 @@ namespace LYBT.Desktop.Core.Redux
     /// <summary>
     /// 带负载的Action
     /// </summary>
-    public interface IAction<TPayload> : IAction
-    {
+    public interface IAction<TPayload> : IAction {
+
         /// <summary>
         /// Action负载数据
         /// </summary>
@@ -38,14 +35,12 @@ namespace LYBT.Desktop.Core.Redux
     /// <summary>
     /// 基础Action实现
     /// </summary>
-    public abstract class ActionBase : IAction
-    {
+    public abstract class ActionBase : IAction {
         public string Type { get; }
         public DateTimeOffset Timestamp { get; }
         public string? Source { get; set; }
 
-        protected ActionBase(string type)
-        {
+        protected ActionBase(string type) {
             Type = type ?? throw new ArgumentNullException(nameof(type));
             Timestamp = DateTimeOffset.UtcNow;
         }
@@ -54,12 +49,10 @@ namespace LYBT.Desktop.Core.Redux
     /// <summary>
     /// 带负载的Action基类
     /// </summary>
-    public abstract class ActionBase<TPayload> : ActionBase, IAction<TPayload>
-    {
+    public abstract class ActionBase<TPayload> : ActionBase, IAction<TPayload> {
         public TPayload Payload { get; }
 
-        protected ActionBase(string type, TPayload payload) : base(type)
-        {
+        protected ActionBase(string type, TPayload payload) : base(type) {
             Payload = payload;
         }
     }
@@ -67,8 +60,8 @@ namespace LYBT.Desktop.Core.Redux
     /// <summary>
     /// 异步Action接口
     /// </summary>
-    public interface IAsyncAction : IAction
-    {
+    public interface IAsyncAction : IAction {
+
         /// <summary>
         /// 是否正在执行
         /// </summary>
@@ -88,45 +81,40 @@ namespace LYBT.Desktop.Core.Redux
     /// <summary>
     /// Action创建器
     /// </summary>
-    public static class ActionCreator
-    {
+    public static class ActionCreator {
+
         /// <summary>
         /// 创建简单Action
         /// </summary>
-        public static SimpleAction Create(string type)
-        {
+        public static SimpleAction Create(string type) {
             return new SimpleAction(type);
         }
 
         /// <summary>
         /// 创建带负载的Action
         /// </summary>
-        public static PayloadAction<T> Create<T>(string type, T payload)
-        {
+        public static PayloadAction<T> Create<T>(string type, T payload) {
             return new PayloadAction<T>(type, payload);
         }
 
         /// <summary>
         /// 创建异步开始Action
         /// </summary>
-        public static AsyncStartAction CreateAsyncStart(string type)
-        {
+        public static AsyncStartAction CreateAsyncStart(string type) {
             return new AsyncStartAction(type);
         }
 
         /// <summary>
         /// 创建异步成功Action
         /// </summary>
-        public static AsyncSuccessAction<T> CreateAsyncSuccess<T>(string type, T result)
-        {
+        public static AsyncSuccessAction<T> CreateAsyncSuccess<T>(string type, T result) {
             return new AsyncSuccessAction<T>(type, result);
         }
 
         /// <summary>
         /// 创建异步失败Action
         /// </summary>
-        public static AsyncErrorAction CreateAsyncError(string type, string error)
-        {
+        public static AsyncErrorAction CreateAsyncError(string type, string error) {
             return new AsyncErrorAction(type, error);
         }
     }
@@ -136,36 +124,37 @@ namespace LYBT.Desktop.Core.Redux
     /// <summary>
     /// 简单Action（无负载）
     /// </summary>
-    public class SimpleAction : ActionBase
-    {
-        public SimpleAction(string type) : base(type) { }
+    public class SimpleAction : ActionBase {
+
+        public SimpleAction(string type) : base(type) {
+        }
     }
 
     /// <summary>
     /// 带负载的Action
     /// </summary>
-    public class PayloadAction<TPayload> : ActionBase<TPayload>
-    {
-        public PayloadAction(string type, TPayload payload) : base(type, payload) { }
+    public class PayloadAction<TPayload> : ActionBase<TPayload> {
+
+        public PayloadAction(string type, TPayload payload) : base(type, payload) {
+        }
     }
 
     /// <summary>
     /// 异步开始Action
     /// </summary>
-    public class AsyncStartAction : ActionBase, IAsyncAction
-    {
+    public class AsyncStartAction : ActionBase, IAsyncAction {
         public bool IsExecuting => true;
         public int Progress => 0;
         public string? Error => null;
 
-        public AsyncStartAction(string type) : base($"{type}_START") { }
+        public AsyncStartAction(string type) : base($"{type}_START") {
+        }
     }
 
     /// <summary>
     /// 异步成功Action
     /// </summary>
-    public class AsyncSuccessAction<TResult> : ActionBase<TResult>, IAsyncAction
-    {
+    public class AsyncSuccessAction<TResult> : ActionBase<TResult>, IAsyncAction {
         public bool IsExecuting => false;
         public int Progress => 100;
         public string? Error => null;
@@ -177,17 +166,15 @@ namespace LYBT.Desktop.Core.Redux
     /// <summary>
     /// 异步错误Action
     /// </summary>
-    public class AsyncErrorAction : ActionBase, IAsyncAction
-    {
+    public class AsyncErrorAction : ActionBase, IAsyncAction {
         public bool IsExecuting => false;
         public int Progress => 0;
         public string? Error { get; }
 
-        public AsyncErrorAction(string type, string error) : base($"{type}_ERROR")
-        {
+        public AsyncErrorAction(string type, string error) : base($"{type}_ERROR") {
             Error = error;
         }
     }
 
-    #endregion
+    #endregion 具体Action实现
 }

@@ -1,26 +1,18 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Concurrent;
 using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
 using LYBT.Desktop.Core.Configuration;
-using LYBT.Desktop.Core.Exceptions;
 using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.Models.Common;
-using LYBT.Shared.Interfaces.Services;
 using Microsoft.Extensions.Logging;
 using SharedCommon = LYBT.Shared.Models.Contracts.Common;
 
-namespace LYBT.Desktop.Core.Services
-{
+namespace LYBT.Desktop.Core.Services {
+
     /// <summary>
     /// UltraThink Phase 5.3: 增强的错误处理服务
     /// 提供智能错误恢复、用户通知优化和性能监控
     /// </summary>
-    public class EnhancedErrorHandlingService : IErrorHandlingService
-    {
+    public class EnhancedErrorHandlingService : IErrorHandlingService {
         private readonly IErrorHandlingService _baseService;
         private readonly ILogger<EnhancedErrorHandlingService> _logger;
         private readonly IAppConfiguration _configuration;
@@ -30,6 +22,7 @@ namespace LYBT.Desktop.Core.Services
         private readonly ConcurrentDictionary<string, ErrorPattern> _errorPatterns = new();
 
         public event EventHandler<SharedCommon.HandledError>? ErrorOccurred;
+
         public event EventHandler<SharedCommon.HandledError>? CriticalErrorOccurred;
 
         /// <summary>
@@ -41,8 +34,7 @@ namespace LYBT.Desktop.Core.Services
             IErrorHandlingService baseService,
             ILogger<EnhancedErrorHandlingService> logger,
             IAppConfiguration configuration,
-            IUserNotificationService notificationService)
-        {
+            IUserNotificationService notificationService) {
             _baseService = baseService ?? throw new ArgumentNullException(nameof(baseService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
@@ -56,13 +48,11 @@ namespace LYBT.Desktop.Core.Services
             _baseService.CriticalErrorOccurred += OnBaseCriticalErrorOccurred;
         }
 
-        public SharedCommon.HandledError HandleException(Exception exception, ErrorContext? context = null)
-        {
+        public SharedCommon.HandledError HandleException(Exception exception, ErrorContext? context = null) {
             return HandleExceptionAsync(exception, context).GetAwaiter().GetResult();
         }
 
-        public async Task<SharedCommon.HandledError> HandleExceptionAsync(Exception exception, ErrorContext? context = null)
-        {
+        public async Task<SharedCommon.HandledError> HandleExceptionAsync(Exception exception, ErrorContext? context = null) {
             var handledError = await _baseService.HandleExceptionAsync(exception, context);
 
             // 增强处理
@@ -71,14 +61,12 @@ namespace LYBT.Desktop.Core.Services
             return handledError;
         }
 
-        public async Task ShowErrorAsync(SharedCommon.HandledError handledError, bool showDialog = true)
-        {
+        public async Task ShowErrorAsync(SharedCommon.HandledError handledError, bool showDialog = true) {
             // 使用增强的用户通知
             await ShowEnhancedErrorNotificationAsync(handledError, showDialog);
         }
 
-        public async Task LogErrorAsync(SharedCommon.HandledError handledError)
-        {
+        public async Task LogErrorAsync(SharedCommon.HandledError handledError) {
             // 增强日志记录
             await LogEnhancedErrorAsync(handledError);
 
@@ -86,46 +74,38 @@ namespace LYBT.Desktop.Core.Services
             await _baseService.LogErrorAsync(handledError);
         }
 
-        public string GetUserFriendlyMessage(Exception exception, string? defaultMessage = null)
-        {
+        public string GetUserFriendlyMessage(Exception exception, string? defaultMessage = null) {
             return _baseService.GetUserFriendlyMessage(exception, defaultMessage);
         }
 
-        public bool CanRetry(Exception exception)
-        {
+        public bool CanRetry(Exception exception) {
             return _baseService.CanRetry(exception);
         }
 
-        public SharedCommon.ErrorCategory GetErrorCategory(Exception exception)
-        {
+        public SharedCommon.ErrorCategory GetErrorCategory(Exception exception) {
             return _baseService.GetErrorCategory(exception);
         }
 
-        public SharedCommon.ErrorSeverity GetErrorSeverity(Exception exception)
-        {
+        public SharedCommon.ErrorSeverity GetErrorSeverity(Exception exception) {
             return _baseService.GetErrorSeverity(exception);
         }
 
-        public string[] GetSuggestedActions(Exception exception)
-        {
+        public string[] GetSuggestedActions(Exception exception) {
             var baseActions = _baseService.GetSuggestedActions(exception);
             var enhancedActions = GetEnhancedSuggestedActions(exception);
 
             return baseActions.Concat(enhancedActions).Distinct().ToArray();
         }
 
-        public async Task<bool> ExecuteSafelyAsync(Func<Task> operation, ErrorContext? context = null, bool showErrorDialog = true)
-        {
+        public async Task<bool> ExecuteSafelyAsync(Func<Task> operation, ErrorContext? context = null, bool showErrorDialog = true) {
             return await ExecuteSafelyWithRetryAsync(operation, context, showErrorDialog);
         }
 
-        public async Task<T?> ExecuteSafelyAsync<T>(Func<Task<T>> operation, ErrorContext? context = null, bool showErrorDialog = true)
-        {
+        public async Task<T?> ExecuteSafelyAsync<T>(Func<Task<T>> operation, ErrorContext? context = null, bool showErrorDialog = true) {
             return await ExecuteSafelyWithRetryAsync(operation, context, showErrorDialog);
         }
 
-        public void RegisterGlobalExceptionHandlers()
-        {
+        public void RegisterGlobalExceptionHandlers() {
             _baseService.RegisterGlobalExceptionHandlers();
 
             // 添加增强的全局处理
@@ -137,8 +117,7 @@ namespace LYBT.Desktop.Core.Services
         /// <summary>
         /// 增强错误处理
         /// </summary>
-        private async Task EnhanceErrorHandlingAsync(SharedCommon.HandledError handledError)
-        {
+        private async Task EnhanceErrorHandlingAsync(SharedCommon.HandledError handledError) {
             // 1. 收集错误统计
             _statisticsCollector.RecordError(handledError);
 
@@ -155,17 +134,14 @@ namespace LYBT.Desktop.Core.Services
         /// <summary>
         /// 增强的用户通知
         /// </summary>
-        private async Task ShowEnhancedErrorNotificationAsync(SharedCommon.HandledError handledError, bool showDialog)
-        {
-            if (!showDialog)
-            {
+        private async Task ShowEnhancedErrorNotificationAsync(SharedCommon.HandledError handledError, bool showDialog) {
+            if (!showDialog) {
                 return;
             }
 
             var notificationConfig = GetNotificationConfiguration(handledError);
 
-            switch (handledError.Severity)
-            {
+            switch (handledError.Severity) {
                 case SharedCommon.ErrorSeverity.Info:
                     await _notificationService.ShowInfoAsync(handledError.UserMessage, notificationConfig);
                     break;
@@ -188,10 +164,8 @@ namespace LYBT.Desktop.Core.Services
         /// <summary>
         /// 增强的日志记录
         /// </summary>
-        private async Task LogEnhancedErrorAsync(SharedCommon.HandledError handledError)
-        {
-            using var scope = _logger.BeginScope(new Dictionary<string, object>
-            {
+        private async Task LogEnhancedErrorAsync(SharedCommon.HandledError handledError) {
+            using var scope = _logger.BeginScope(new Dictionary<string, object> {
                 ["ErrorId"] = handledError.Id,
                 ["Category"] = handledError.Category.ToString(),
                 ["Severity"] = handledError.Severity.ToString(),
@@ -213,29 +187,22 @@ namespace LYBT.Desktop.Core.Services
         /// <summary>
         /// 智能重试执行
         /// </summary>
-        private async Task<bool> ExecuteSafelyWithRetryAsync(Func<Task> operation, ErrorContext? context, bool showErrorDialog)
-        {
+        private async Task<bool> ExecuteSafelyWithRetryAsync(Func<Task> operation, ErrorContext? context, bool showErrorDialog) {
             var retryPolicy = GetRetryPolicy(context);
             Exception? lastException = null;
 
-            for (int attempt = 0; attempt <= retryPolicy.MaxRetries; attempt++)
-            {
-                try
-                {
-                    if (attempt > 0)
-                    {
+            for (int attempt = 0; attempt <= retryPolicy.MaxRetries; attempt++) {
+                try {
+                    if (attempt > 0) {
                         await Task.Delay(retryPolicy.GetDelayForAttempt(attempt));
                     }
 
                     await operation();
                     return true;
-                }
-                catch (Exception ex)
-                {
+                } catch (Exception ex) {
                     lastException = ex;
 
-                    if (!CanRetry(ex) || attempt >= retryPolicy.MaxRetries)
-                    {
+                    if (!CanRetry(ex) || attempt >= retryPolicy.MaxRetries) {
                         break;
                     }
 
@@ -246,8 +213,7 @@ namespace LYBT.Desktop.Core.Services
 
             // 处理最终失败
             var handledError = await HandleExceptionAsync(lastException!, context);
-            if (showErrorDialog)
-            {
+            if (showErrorDialog) {
                 await ShowErrorAsync(handledError);
             }
 
@@ -257,28 +223,21 @@ namespace LYBT.Desktop.Core.Services
         /// <summary>
         /// 带返回值的智能重试执行
         /// </summary>
-        private async Task<T?> ExecuteSafelyWithRetryAsync<T>(Func<Task<T>> operation, ErrorContext? context, bool showErrorDialog)
-        {
+        private async Task<T?> ExecuteSafelyWithRetryAsync<T>(Func<Task<T>> operation, ErrorContext? context, bool showErrorDialog) {
             var retryPolicy = GetRetryPolicy(context);
             Exception? lastException = null;
 
-            for (int attempt = 0; attempt <= retryPolicy.MaxRetries; attempt++)
-            {
-                try
-                {
-                    if (attempt > 0)
-                    {
+            for (int attempt = 0; attempt <= retryPolicy.MaxRetries; attempt++) {
+                try {
+                    if (attempt > 0) {
                         await Task.Delay(retryPolicy.GetDelayForAttempt(attempt));
                     }
 
                     return await operation();
-                }
-                catch (Exception ex)
-                {
+                } catch (Exception ex) {
                     lastException = ex;
 
-                    if (!CanRetry(ex) || attempt >= retryPolicy.MaxRetries)
-                    {
+                    if (!CanRetry(ex) || attempt >= retryPolicy.MaxRetries) {
                         break;
                     }
 
@@ -289,8 +248,7 @@ namespace LYBT.Desktop.Core.Services
 
             // 处理最终失败
             var handledError = await HandleExceptionAsync(lastException!, context);
-            if (showErrorDialog)
-            {
+            if (showErrorDialog) {
                 await ShowErrorAsync(handledError);
             }
 
@@ -300,20 +258,17 @@ namespace LYBT.Desktop.Core.Services
         /// <summary>
         /// 获取增强的建议操作
         /// </summary>
-        private string[] GetEnhancedSuggestedActions(Exception exception)
-        {
+        private string[] GetEnhancedSuggestedActions(Exception exception) {
             var actions = new List<string>();
 
             // 基于错误历史的智能建议
             var errorPattern = GetErrorPattern(exception);
-            if (errorPattern.HasSuccessfulRecovery)
-            {
+            if (errorPattern.HasSuccessfulRecovery) {
                 actions.AddRange(errorPattern.SuccessfulRecoveryActions);
             }
 
             // 基于配置的建议
-            if (_configuration.GetValue("ErrorHandling:EnableAutoRecovery", true))
-            {
+            if (_configuration.GetValue("ErrorHandling:EnableAutoRecovery", true)) {
                 actions.Add("系统将尝试自动恢复");
             }
 
@@ -323,10 +278,8 @@ namespace LYBT.Desktop.Core.Services
         /// <summary>
         /// 检查错误模式
         /// </summary>
-        private async Task CheckErrorPatternsAsync(SharedCommon.HandledError handledError)
-        {
-            if (handledError.Exception == null)
-            {
+        private async Task CheckErrorPatternsAsync(SharedCommon.HandledError handledError) {
+            if (handledError.Exception == null) {
                 return;
             }
 
@@ -336,8 +289,7 @@ namespace LYBT.Desktop.Core.Services
             pattern.AddOccurrence(handledError);
 
             // 检查是否需要升级警报
-            if (pattern.ShouldEscalate())
-            {
+            if (pattern.ShouldEscalate()) {
                 await EscalateErrorAsync(handledError, pattern);
             }
         }
@@ -345,35 +297,28 @@ namespace LYBT.Desktop.Core.Services
         /// <summary>
         /// 尝试自动恢复
         /// </summary>
-        private async Task TryAutoRecoveryAsync(SharedCommon.HandledError handledError)
-        {
-            if (!_configuration.GetValue("ErrorHandling:EnableAutoRecovery", true))
-            {
+        private async Task TryAutoRecoveryAsync(SharedCommon.HandledError handledError) {
+            if (!_configuration.GetValue("ErrorHandling:EnableAutoRecovery", true)) {
                 return;
             }
 
             var recoveryStrategy = _recoveryManager.GetRecoveryStrategy(handledError);
-            if (recoveryStrategy != null)
-            {
+            if (recoveryStrategy != null) {
                 var success = await recoveryStrategy.TryRecoverAsync(handledError);
-                if (success)
-                {
+                if (success) {
                     _logger.LogInformation("Auto-recovery successful for error {ErrorId}", handledError.Id);
                     handledError.SuggestedActions.Add("系统已自动恢复");
                 }
             }
         }
 
-        #endregion
+        #endregion 增强功能
 
         #region 辅助方法
 
-        private NotificationConfiguration GetNotificationConfiguration(SharedCommon.HandledError handledError)
-        {
-            return new NotificationConfiguration
-            {
-                Duration = handledError.Severity switch
-                {
+        private NotificationConfiguration GetNotificationConfiguration(SharedCommon.HandledError handledError) {
+            return new NotificationConfiguration {
+                Duration = handledError.Severity switch {
                     SharedCommon.ErrorSeverity.Info => TimeSpan.FromSeconds(3),
                     SharedCommon.ErrorSeverity.Warning => TimeSpan.FromSeconds(5),
                     SharedCommon.ErrorSeverity.Error => TimeSpan.FromSeconds(8),
@@ -385,10 +330,8 @@ namespace LYBT.Desktop.Core.Services
             };
         }
 
-        private LogLevel MapSeverityToLogLevel(SharedCommon.ErrorSeverity severity)
-        {
-            return severity switch
-            {
+        private LogLevel MapSeverityToLogLevel(SharedCommon.ErrorSeverity severity) {
+            return severity switch {
                 SharedCommon.ErrorSeverity.Info => LogLevel.Information,
                 SharedCommon.ErrorSeverity.Warning => LogLevel.Warning,
                 SharedCommon.ErrorSeverity.Error => LogLevel.Error,
@@ -398,56 +341,46 @@ namespace LYBT.Desktop.Core.Services
             };
         }
 
-        private RetryPolicy GetRetryPolicy(ErrorContext? context)
-        {
+        private RetryPolicy GetRetryPolicy(ErrorContext? context) {
             var maxRetries = _configuration.GetValue("ErrorHandling:MaxRetries", 3);
             var baseDelay = _configuration.GetValue("ErrorHandling:BaseRetryDelay", 1000);
 
-            return new RetryPolicy
-            {
+            return new RetryPolicy {
                 MaxRetries = maxRetries,
                 BaseDelay = TimeSpan.FromMilliseconds(baseDelay),
                 BackoffMultiplier = 2.0
             };
         }
 
-        private string GetErrorPatternKey(Exception exception)
-        {
+        private string GetErrorPatternKey(Exception exception) {
             return $"{exception.GetType().Name}:{exception.Message.GetHashCode()}";
         }
 
-        private ErrorPattern GetErrorPattern(Exception exception)
-        {
+        private ErrorPattern GetErrorPattern(Exception exception) {
             var key = GetErrorPatternKey(exception);
             return _errorPatterns.GetOrAdd(key, _ => new ErrorPattern());
         }
 
-        private void UpdateErrorSeverityBasedOnHistory(SharedCommon.HandledError handledError)
-        {
+        private void UpdateErrorSeverityBasedOnHistory(SharedCommon.HandledError handledError) {
             var stats = _statisticsCollector.GetStatistics();
             var errorType = handledError.Exception?.GetType();
 
-            if (errorType != null && stats.ErrorCounts.TryGetValue(errorType, out var count) && count > 10)
-            {
+            if (errorType != null && stats.ErrorCounts.TryGetValue(errorType, out var count) && count > 10) {
                 // 如果某类错误发生频繁，可能需要降低严重程度
-                if (handledError.Severity == SharedCommon.ErrorSeverity.Error && count > 50)
-                {
+                if (handledError.Severity == SharedCommon.ErrorSeverity.Error && count > 50) {
                     handledError.Severity = SharedCommon.ErrorSeverity.Warning;
                 }
             }
         }
 
-        private async Task RecordPerformanceImpactAsync(SharedCommon.HandledError handledError)
-        {
+        private async Task RecordPerformanceImpactAsync(SharedCommon.HandledError handledError) {
             // 记录错误对性能的影响
-            await Task.Run(() =>
-            {
+            await Task.Run(() => {
                 _statisticsCollector.RecordPerformanceImpact(handledError);
             });
         }
 
-        private async Task EscalateErrorAsync(SharedCommon.HandledError handledError, ErrorPattern pattern)
-        {
+        private async Task EscalateErrorAsync(SharedCommon.HandledError handledError, ErrorPattern pattern) {
             _logger.LogWarning("Error pattern escalation triggered for {ErrorType}, count: {Count}",
                 handledError.Exception?.GetType()?.Name ?? "Unknown", pattern.OccurrenceCount);
 
@@ -455,36 +388,31 @@ namespace LYBT.Desktop.Core.Services
             await Task.CompletedTask;
         }
 
-        private void OnBaseErrorOccurred(object? sender, SharedCommon.HandledError e)
-        {
+        private void OnBaseErrorOccurred(object? sender, SharedCommon.HandledError e) {
             ErrorOccurred?.Invoke(this, e);
         }
 
-        private void OnBaseCriticalErrorOccurred(object? sender, SharedCommon.HandledError e)
-        {
+        private void OnBaseCriticalErrorOccurred(object? sender, SharedCommon.HandledError e) {
             CriticalErrorOccurred?.Invoke(this, e);
         }
 
-        private void OnFirstChanceException(object? sender, System.Runtime.ExceptionServices.FirstChanceExceptionEventArgs e)
-        {
+        private void OnFirstChanceException(object? sender, System.Runtime.ExceptionServices.FirstChanceExceptionEventArgs e) {
             // 记录首次异常，用于性能分析
             _logger.LogTrace("First chance exception: {Exception}", e.Exception.GetType().Name);
         }
 
-        #endregion
+        #endregion 辅助方法
     }
 
     /// <summary>
     /// 重试策略
     /// </summary>
-    public class RetryPolicy
-    {
+    public class RetryPolicy {
         public int MaxRetries { get; set; } = 3;
         public TimeSpan BaseDelay { get; set; } = TimeSpan.FromSeconds(1);
         public double BackoffMultiplier { get; set; } = 2.0;
 
-        public TimeSpan GetDelayForAttempt(int attempt)
-        {
+        public TimeSpan GetDelayForAttempt(int attempt) {
             return TimeSpan.FromMilliseconds(BaseDelay.TotalMilliseconds * Math.Pow(BackoffMultiplier, attempt - 1));
         }
     }
@@ -492,8 +420,7 @@ namespace LYBT.Desktop.Core.Services
     /// <summary>
     /// 错误模式
     /// </summary>
-    public class ErrorPattern
-    {
+    public class ErrorPattern {
         private readonly List<DateTime> _occurrences = new();
         private readonly List<string> _successfulRecoveryActions = new();
 
@@ -501,8 +428,7 @@ namespace LYBT.Desktop.Core.Services
         public bool HasSuccessfulRecovery => _successfulRecoveryActions.Count > 0;
         public IReadOnlyList<string> SuccessfulRecoveryActions => _successfulRecoveryActions.AsReadOnly();
 
-        public void AddOccurrence(SharedCommon.HandledError handledError)
-        {
+        public void AddOccurrence(SharedCommon.HandledError handledError) {
             _occurrences.Add(handledError.OccurredAt);
 
             // 清理过期的记录（只保留最近1小时的）
@@ -510,16 +436,13 @@ namespace LYBT.Desktop.Core.Services
             _occurrences.RemoveAll(d => d < cutoff);
         }
 
-        public bool ShouldEscalate()
-        {
+        public bool ShouldEscalate() {
             // 如果1小时内发生超过10次，需要升级
             return OccurrenceCount > 10;
         }
 
-        public void RecordSuccessfulRecovery(string action)
-        {
-            if (!_successfulRecoveryActions.Contains(action))
-            {
+        public void RecordSuccessfulRecovery(string action) {
+            if (!_successfulRecoveryActions.Contains(action)) {
                 _successfulRecoveryActions.Add(action);
             }
         }
@@ -528,15 +451,12 @@ namespace LYBT.Desktop.Core.Services
     /// <summary>
     /// 错误统计收集器
     /// </summary>
-    public class ErrorStatisticsCollector
-    {
+    public class ErrorStatisticsCollector {
         private readonly ConcurrentDictionary<Type, int> _errorCounts = new();
         private readonly ConcurrentDictionary<Type, TimeSpan> _performanceImpacts = new();
 
-        public void RecordError(SharedCommon.HandledError handledError)
-        {
-            if (handledError.Exception == null)
-            {
+        public void RecordError(SharedCommon.HandledError handledError) {
+            if (handledError.Exception == null) {
                 return;
             }
 
@@ -544,10 +464,8 @@ namespace LYBT.Desktop.Core.Services
             _errorCounts.AddOrUpdate(errorType, 1, (_, count) => count + 1);
         }
 
-        public void RecordPerformanceImpact(SharedCommon.HandledError handledError)
-        {
-            if (handledError.Exception == null)
-            {
+        public void RecordPerformanceImpact(SharedCommon.HandledError handledError) {
+            if (handledError.Exception == null) {
                 return;
             }
 
@@ -556,10 +474,8 @@ namespace LYBT.Desktop.Core.Services
             _performanceImpacts.AddOrUpdate(errorType, impact, (_, existing) => existing.Add(impact));
         }
 
-        public ErrorStatistics GetStatistics()
-        {
-            return new ErrorStatistics
-            {
+        public ErrorStatistics GetStatistics() {
+            return new ErrorStatistics {
                 ErrorCounts = new Dictionary<Type, int>(_errorCounts),
                 PerformanceImpacts = new Dictionary<Type, TimeSpan>(_performanceImpacts)
             };
@@ -569,8 +485,7 @@ namespace LYBT.Desktop.Core.Services
     /// <summary>
     /// 错误统计信息
     /// </summary>
-    public class ErrorStatistics
-    {
+    public class ErrorStatistics {
         public Dictionary<Type, int> ErrorCounts { get; set; } = new();
         public Dictionary<Type, TimeSpan> PerformanceImpacts { get; set; } = new();
     }
@@ -578,28 +493,23 @@ namespace LYBT.Desktop.Core.Services
     /// <summary>
     /// 错误恢复管理器
     /// </summary>
-    public class ErrorRecoveryManager
-    {
+    public class ErrorRecoveryManager {
         private readonly ILogger _logger;
         private readonly Dictionary<Type, IErrorRecoveryStrategy> _strategies = new();
 
-        public ErrorRecoveryManager(ILogger logger)
-        {
+        public ErrorRecoveryManager(ILogger logger) {
             _logger = logger;
             InitializeStrategies();
         }
 
-        private void InitializeStrategies()
-        {
+        private void InitializeStrategies() {
             // 添加常见错误的恢复策略
             _strategies[typeof(HttpRequestException)] = new NetworkErrorRecoveryStrategy(_logger);
             _strategies[typeof(UnauthorizedAccessException)] = new AuthenticationErrorRecoveryStrategy(_logger);
         }
 
-        public IErrorRecoveryStrategy? GetRecoveryStrategy(SharedCommon.HandledError handledError)
-        {
-            if (handledError.Exception == null)
-            {
+        public IErrorRecoveryStrategy? GetRecoveryStrategy(SharedCommon.HandledError handledError) {
+            if (handledError.Exception == null) {
                 return null;
             }
 
@@ -611,35 +521,29 @@ namespace LYBT.Desktop.Core.Services
     /// <summary>
     /// 错误恢复策略接口
     /// </summary>
-    public interface IErrorRecoveryStrategy
-    {
+    public interface IErrorRecoveryStrategy {
+
         Task<bool> TryRecoverAsync(SharedCommon.HandledError handledError);
     }
 
     /// <summary>
     /// 网络错误恢复策略
     /// </summary>
-    public class NetworkErrorRecoveryStrategy : IErrorRecoveryStrategy
-    {
+    public class NetworkErrorRecoveryStrategy : IErrorRecoveryStrategy {
         private readonly ILogger _logger;
 
-        public NetworkErrorRecoveryStrategy(ILogger logger)
-        {
+        public NetworkErrorRecoveryStrategy(ILogger logger) {
             _logger = logger;
         }
 
-        public async Task<bool> TryRecoverAsync(SharedCommon.HandledError handledError)
-        {
+        public async Task<bool> TryRecoverAsync(SharedCommon.HandledError handledError) {
             // 简单的网络连接检查
-            try
-            {
+            try {
                 using var client = new HttpClient();
                 client.Timeout = TimeSpan.FromSeconds(5);
                 var response = await client.GetAsync("https://www.baidu.com");
                 return response.IsSuccessStatusCode;
-            }
-            catch
-            {
+            } catch {
                 return false;
             }
         }
@@ -648,17 +552,14 @@ namespace LYBT.Desktop.Core.Services
     /// <summary>
     /// 认证错误恢复策略
     /// </summary>
-    public class AuthenticationErrorRecoveryStrategy : IErrorRecoveryStrategy
-    {
+    public class AuthenticationErrorRecoveryStrategy : IErrorRecoveryStrategy {
         private readonly ILogger _logger;
 
-        public AuthenticationErrorRecoveryStrategy(ILogger logger)
-        {
+        public AuthenticationErrorRecoveryStrategy(ILogger logger) {
             _logger = logger;
         }
 
-        public Task<bool> TryRecoverAsync(SharedCommon.HandledError handledError)
-        {
+        public Task<bool> TryRecoverAsync(SharedCommon.HandledError handledError) {
             // 认证错误通常需要用户重新登录，自动恢复的可能性较小
             return Task.FromResult(false);
         }
@@ -667,8 +568,7 @@ namespace LYBT.Desktop.Core.Services
     /// <summary>
     /// 通知配置
     /// </summary>
-    public class NotificationConfiguration
-    {
+    public class NotificationConfiguration {
         public TimeSpan Duration { get; set; } = TimeSpan.FromSeconds(5);
         public bool ShowInToastArea { get; set; } = true;
         public bool ShowInDialog { get; set; } = false;

@@ -1,17 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Windows;
+﻿using System.Windows;
 using LYBT.Desktop.Core.Models.Common;
 
-namespace LYBT.Desktop.Core.Interfaces.Services
-{
+namespace LYBT.Desktop.Core.Interfaces.Services {
+
     /// <summary>
     /// 自定义对话框服务接口
     /// 替代 Prism IDialogService，兼容 Prism 8.1.97
     /// </summary>
-    public interface ICustomDialogService
-    {
+    public interface ICustomDialogService {
+
         /// <summary>
         /// 显示信息对话框
         /// </summary>

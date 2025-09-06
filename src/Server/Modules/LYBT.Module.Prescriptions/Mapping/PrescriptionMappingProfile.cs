@@ -1,19 +1,15 @@
 ﻿using AutoMapper;
 using LYBT.Entities.Prescriptions;
 using LYBT.Shared.Models.Contracts.Prescriptions;
-using LYBT.Shared.Models.Enums;
 
-namespace LYBT.Module.Prescriptions.Mapping
-{
+namespace LYBT.Module.Prescriptions.Mapping {
 
     /// <summary>
     /// 表示PrescriptionMappingProfile。
     /// </summary>
-    public class PrescriptionMappingProfile : Profile
-    {
+    public class PrescriptionMappingProfile : Profile {
 
-        public PrescriptionMappingProfile()
-        {
+        public PrescriptionMappingProfile() {
             // Prescription -> PrescriptionDto - UltraThink v2.0简化版
             CreateMap<Prescription, PrescriptionDto>()
                 .ForMember(dest => dest.SingleDosePrice, opt => opt.Ignore()) // 计算属性，由DTO自动计算

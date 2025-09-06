@@ -1,27 +1,22 @@
-﻿using System;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 
-namespace LYBT.Desktop.Core.Controls
-{
+namespace LYBT.Desktop.Core.Controls {
+
     /// <summary>
     /// 支持虚拟化和懒加载的数据网格控件
     /// </summary>
-    public partial class VirtualizedDataGrid : UserControl
-    {
+    public partial class VirtualizedDataGrid : UserControl {
         private bool _isNearBottom;
         private double _lastVerticalOffset;
 
-        public VirtualizedDataGrid()
-        {
+        public VirtualizedDataGrid() {
             InitializeComponent();
 
             // 设置DataContext为内部ViewModel
@@ -40,8 +35,7 @@ namespace LYBT.Desktop.Core.Controls
                 typeof(VirtualizedDataGrid),
                 new PropertyMetadata(null, OnItemsSourceChanged));
 
-        public System.Collections.IEnumerable ItemsSource
-        {
+        public System.Collections.IEnumerable ItemsSource {
             get => (System.Collections.IEnumerable)GetValue(ItemsSourceProperty);
             set => SetValue(ItemsSourceProperty, value);
         }
@@ -56,8 +50,7 @@ namespace LYBT.Desktop.Core.Controls
                 typeof(VirtualizedDataGrid),
                 new PropertyMetadata(null, OnLoadDataAsyncChanged));
 
-        public Func<int, int, string, Task<PagedDataResult>> LoadDataAsync
-        {
+        public Func<int, int, string, Task<PagedDataResult>> LoadDataAsync {
             get => (Func<int, int, string, Task<PagedDataResult>>)GetValue(LoadDataAsyncProperty);
             set => SetValue(LoadDataAsyncProperty, value);
         }
@@ -72,23 +65,20 @@ namespace LYBT.Desktop.Core.Controls
                 typeof(VirtualizedDataGrid),
                 new PropertyMetadata(null));
 
-        public object SelectedItem
-        {
+        public object SelectedItem {
             get => GetValue(SelectedItemProperty);
             set => SetValue(SelectedItemProperty, value);
         }
 
-        #endregion
+        #endregion 依赖属性
 
         #region 事件处理
 
         /// <summary>
         /// 数据源改变处理
         /// </summary>
-        private static void OnItemsSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            if (d is VirtualizedDataGrid control && control.DataContext is VirtualizedDataGridViewModel viewModel)
-            {
+        private static void OnItemsSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
+            if (d is VirtualizedDataGrid control && control.DataContext is VirtualizedDataGridViewModel viewModel) {
                 viewModel.SetItemsSource(e.NewValue as System.Collections.IEnumerable);
             }
         }
@@ -96,10 +86,8 @@ namespace LYBT.Desktop.Core.Controls
         /// <summary>
         /// 数据加载委托改变处理
         /// </summary>
-        private static void OnLoadDataAsyncChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            if (d is VirtualizedDataGrid control && control.DataContext is VirtualizedDataGridViewModel viewModel)
-            {
+        private static void OnLoadDataAsyncChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
+            if (d is VirtualizedDataGrid control && control.DataContext is VirtualizedDataGridViewModel viewModel) {
                 viewModel.SetLoadDataAsync(e.NewValue as Func<int, int, string, Task<PagedDataResult>>);
             }
         }
@@ -107,21 +95,16 @@ namespace LYBT.Desktop.Core.Controls
         /// <summary>
         /// DataGrid滚动事件处理（实现懒加载）
         /// </summary>
-        private void DataGrid_ScrollChanged(object sender, ScrollChangedEventArgs e)
-        {
+        private void DataGrid_ScrollChanged(object sender, ScrollChangedEventArgs e) {
             // Fire-and-forget pattern with exception handling
-            _ = Task.Run(async () =>
-            {
-                try
-                {
-                    if (!(DataContext is VirtualizedDataGridViewModel viewModel) || viewModel.IsLoading)
-                    {
+            _ = Task.Run(async () => {
+                try {
+                    if (!(DataContext is VirtualizedDataGridViewModel viewModel) || viewModel.IsLoading) {
                         return;
                     }
 
                     var scrollViewer = e.OriginalSource as ScrollViewer;
-                    if (scrollViewer == null)
-                    {
+                    if (scrollViewer == null) {
                         return;
                     }
 
@@ -134,18 +117,14 @@ namespace LYBT.Desktop.Core.Controls
                     var isCurrentlyNearBottom = verticalOffset >= nearBottomThreshold;
 
                     // 检测向下滚动且接近底部
-                    if (isCurrentlyNearBottom && !_isNearBottom && verticalOffset > _lastVerticalOffset)
-                    {
+                    if (isCurrentlyNearBottom && !_isNearBottom && verticalOffset > _lastVerticalOffset) {
                         _isNearBottom = true;
 
                         // 触发懒加载
-                        if (viewModel.CanLoadMore)
-                        {
+                        if (viewModel.CanLoadMore) {
                             await viewModel.LoadNextPageAsync();
                         }
-                    }
-                    else if (!isCurrentlyNearBottom)
-                    {
+                    } else if (!isCurrentlyNearBottom) {
                         _isNearBottom = false;
                     }
 
@@ -158,23 +137,20 @@ namespace LYBT.Desktop.Core.Controls
                         // 可以在这里添加快速滚动优化逻辑
                         // 例如降低渲染频率、简化数据模板等
                     }
-                }
-                catch (Exception ex)
-                {
+                } catch (Exception ex) {
                     // 记录滚动处理错误，避免影响用户体验
                     System.Diagnostics.Debug.WriteLine($"滚动处理失败: {ex.Message}");
                 }
             });
         }
 
-        #endregion
+        #endregion 事件处理
     }
 
     /// <summary>
     /// 虚拟化数据网格的ViewModel
     /// </summary>
-    public class VirtualizedDataGridViewModel : INotifyPropertyChanged
-    {
+    public class VirtualizedDataGridViewModel : INotifyPropertyChanged {
 #pragma warning disable CS0649 // Field is never assigned to, and will always have its default value null
         private ILogger<VirtualizedDataGridViewModel>? _logger;
 #pragma warning restore CS0649
@@ -188,8 +164,7 @@ namespace LYBT.Desktop.Core.Controls
         private object? _selectedItem;
         private Func<int, int, string, Task<PagedDataResult>>? _loadDataAsync;
 
-        public VirtualizedDataGridViewModel()
-        {
+        public VirtualizedDataGridViewModel() {
             Items = new ObservableCollection<object>();
 
             // 初始化命令
@@ -207,8 +182,7 @@ namespace LYBT.Desktop.Core.Controls
         /// <summary>
         /// 数据项集合
         /// </summary>
-        public ObservableCollection<object> Items
-        {
+        public ObservableCollection<object> Items {
             get => _items;
             set => SetProperty(ref _items, value);
         }
@@ -216,8 +190,7 @@ namespace LYBT.Desktop.Core.Controls
         /// <summary>
         /// 是否正在加载
         /// </summary>
-        public bool IsLoading
-        {
+        public bool IsLoading {
             get => _isLoading;
             set => SetProperty(ref _isLoading, value);
         }
@@ -225,8 +198,7 @@ namespace LYBT.Desktop.Core.Controls
         /// <summary>
         /// 搜索关键词
         /// </summary>
-        public string SearchKeyword
-        {
+        public string SearchKeyword {
             get => _searchKeyword;
             set => SetProperty(ref _searchKeyword, value);
         }
@@ -234,8 +206,7 @@ namespace LYBT.Desktop.Core.Controls
         /// <summary>
         /// 当前页
         /// </summary>
-        public int CurrentPage
-        {
+        public int CurrentPage {
             get => _currentPage;
             set => SetProperty(ref _currentPage, value);
         }
@@ -243,13 +214,10 @@ namespace LYBT.Desktop.Core.Controls
         /// <summary>
         /// 页大小
         /// </summary>
-        public int PageSize
-        {
+        public int PageSize {
             get => _pageSize;
-            set
-            {
-                if (SetProperty(ref _pageSize, value))
-                {
+            set {
+                if (SetProperty(ref _pageSize, value)) {
                     _ = LoadDataAsync(1); // 重新加载第一页
                 }
             }
@@ -258,13 +226,10 @@ namespace LYBT.Desktop.Core.Controls
         /// <summary>
         /// 总项目数
         /// </summary>
-        public int TotalItems
-        {
+        public int TotalItems {
             get => _totalItems;
-            set
-            {
-                if (SetProperty(ref _totalItems, value))
-                {
+            set {
+                if (SetProperty(ref _totalItems, value)) {
                     TotalPages = (int)Math.Ceiling((double)value / PageSize);
                     OnPropertyChanged(nameof(TotalItemsText));
                 }
@@ -274,8 +239,7 @@ namespace LYBT.Desktop.Core.Controls
         /// <summary>
         /// 总页数
         /// </summary>
-        public int TotalPages
-        {
+        public int TotalPages {
             get => _totalPages;
             set => SetProperty(ref _totalPages, value);
         }
@@ -283,8 +247,7 @@ namespace LYBT.Desktop.Core.Controls
         /// <summary>
         /// 选中项
         /// </summary>
-        public object? SelectedItem
-        {
+        public object? SelectedItem {
             get => _selectedItem;
             set => SetProperty(ref _selectedItem, value);
         }
@@ -314,7 +277,7 @@ namespace LYBT.Desktop.Core.Controls
         /// </summary>
         public ObservableCollection<PageNumberInfo> PageNumbers { get; } = new();
 
-        #endregion
+        #endregion 属性
 
         #region 命令
 
@@ -326,20 +289,17 @@ namespace LYBT.Desktop.Core.Controls
         public ICommand LastPageCommand { get; }
         public ICommand GoToPageCommand { get; }
 
-        #endregion
+        #endregion 命令
 
         #region 公共方法
 
         /// <summary>
         /// 设置数据源
         /// </summary>
-        public void SetItemsSource(System.Collections.IEnumerable? itemsSource)
-        {
+        public void SetItemsSource(System.Collections.IEnumerable? itemsSource) {
             Items.Clear();
-            if (itemsSource != null)
-            {
-                foreach (var item in itemsSource)
-                {
+            if (itemsSource != null) {
+                foreach (var item in itemsSource) {
                     Items.Add(item);
                 }
             }
@@ -348,11 +308,9 @@ namespace LYBT.Desktop.Core.Controls
         /// <summary>
         /// 设置数据加载委托
         /// </summary>
-        public void SetLoadDataAsync(Func<int, int, string, Task<PagedDataResult>>? loadDataAsync)
-        {
+        public void SetLoadDataAsync(Func<int, int, string, Task<PagedDataResult>>? loadDataAsync) {
             _loadDataAsync = loadDataAsync;
-            if (loadDataAsync != null)
-            {
+            if (loadDataAsync != null) {
                 _ = LoadDataAsync(1); // 自动加载第一页
             }
         }
@@ -360,15 +318,12 @@ namespace LYBT.Desktop.Core.Controls
         /// <summary>
         /// 加载数据
         /// </summary>
-        public async Task LoadDataAsync(int pageIndex)
-        {
-            if (_loadDataAsync == null || IsLoading)
-            {
+        public async Task LoadDataAsync(int pageIndex) {
+            if (_loadDataAsync == null || IsLoading) {
                 return;
             }
 
-            try
-            {
+            try {
                 IsLoading = true;
                 CurrentPage = pageIndex;
 
@@ -376,10 +331,8 @@ namespace LYBT.Desktop.Core.Controls
 
                 // 更新数据
                 Items.Clear();
-                if (result.Items != null)
-                {
-                    foreach (var item in result.Items)
-                    {
+                if (result.Items != null) {
+                    foreach (var item in result.Items) {
                         Items.Add(item);
                     }
                 }
@@ -388,14 +341,10 @@ namespace LYBT.Desktop.Core.Controls
                 UpdatePageNumbers();
 
                 _logger?.LogDebug("加载数据完成: 页码 {Page}, 数量 {Count}", pageIndex, Items.Count);
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 _logger?.LogError(ex, "加载数据失败: 页码 {Page}", pageIndex);
                 // 这里可以显示错误消息
-            }
-            finally
-            {
+            } finally {
                 IsLoading = false;
             }
         }
@@ -403,171 +352,130 @@ namespace LYBT.Desktop.Core.Controls
         /// <summary>
         /// 加载下一页（用于懒加载）
         /// </summary>
-        public async Task LoadNextPageAsync()
-        {
-            if (!CanLoadMore || IsLoading)
-            {
+        public async Task LoadNextPageAsync() {
+            if (!CanLoadMore || IsLoading) {
                 return;
             }
 
             await LoadDataAsync(CurrentPage + 1);
         }
 
-        #endregion
+        #endregion 公共方法
 
         #region 命令实现
 
-        private void ExecuteSearch()
-        {
+        private void ExecuteSearch() {
             // Fire-and-forget pattern with proper async handling
             _ = ExecuteSearchAsync();
         }
 
-        private async Task ExecuteSearchAsync()
-        {
-            try
-            {
+        private async Task ExecuteSearchAsync() {
+            try {
                 await LoadDataAsync(1);
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 _logger?.LogError(ex, "搜索操作失败");
                 // 可以在这里添加用户通知逻辑
             }
         }
 
-        private void ExecuteRefresh()
-        {
+        private void ExecuteRefresh() {
             // Fire-and-forget pattern with proper async handling
             _ = ExecuteRefreshAsync();
         }
 
-        private async Task ExecuteRefreshAsync()
-        {
-            try
-            {
+        private async Task ExecuteRefreshAsync() {
+            try {
                 await LoadDataAsync(CurrentPage);
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 _logger?.LogError(ex, "刷新操作失败");
                 // 可以在这里添加用户通知逻辑
             }
         }
 
-        private void ExecuteFirstPage()
-        {
+        private void ExecuteFirstPage() {
             // Fire-and-forget pattern with proper async handling
             _ = ExecuteFirstPageAsync();
         }
 
-        private async Task ExecuteFirstPageAsync()
-        {
-            try
-            {
+        private async Task ExecuteFirstPageAsync() {
+            try {
                 await LoadDataAsync(1);
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 _logger?.LogError(ex, "首页导航失败");
                 // 可以在这里添加用户通知逻辑
             }
         }
 
-        private void ExecutePreviousPage()
-        {
+        private void ExecutePreviousPage() {
             // Fire-and-forget pattern with proper async handling
             _ = ExecutePreviousPageAsync();
         }
 
-        private async Task ExecutePreviousPageAsync()
-        {
-            try
-            {
-                if (CanGoToPreviousPage)
-                {
+        private async Task ExecutePreviousPageAsync() {
+            try {
+                if (CanGoToPreviousPage) {
                     await LoadDataAsync(CurrentPage - 1);
                 }
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 _logger?.LogError(ex, "上一页导航失败");
                 // 可以在这里添加用户通知逻辑
             }
         }
 
-        private void ExecuteNextPage()
-        {
+        private void ExecuteNextPage() {
             // Fire-and-forget pattern with proper async handling
             _ = ExecuteNextPageAsync();
         }
 
-        private async Task ExecuteNextPageAsync()
-        {
-            try
-            {
-                if (CanGoToNextPage)
-                {
+        private async Task ExecuteNextPageAsync() {
+            try {
+                if (CanGoToNextPage) {
                     await LoadDataAsync(CurrentPage + 1);
                 }
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 _logger?.LogError(ex, "下一页导航失败");
                 // 可以在这里添加用户通知逻辑
             }
         }
 
-        private void ExecuteLastPage()
-        {
+        private void ExecuteLastPage() {
             // Fire-and-forget pattern with proper async handling
             _ = ExecuteLastPageAsync();
         }
 
-        private async Task ExecuteLastPageAsync()
-        {
-            try
-            {
+        private async Task ExecuteLastPageAsync() {
+            try {
                 await LoadDataAsync(TotalPages);
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 _logger?.LogError(ex, "末页导航失败");
                 // 可以在这里添加用户通知逻辑
             }
         }
 
-        private void ExecuteGoToPage(int pageNumber)
-        {
+        private void ExecuteGoToPage(int pageNumber) {
             // Fire-and-forget pattern with proper async handling
             _ = ExecuteGoToPageAsync(pageNumber);
         }
 
-        private async Task ExecuteGoToPageAsync(int pageNumber)
-        {
-            try
-            {
-                if (pageNumber >= 1 && pageNumber <= TotalPages)
-                {
+        private async Task ExecuteGoToPageAsync(int pageNumber) {
+            try {
+                if (pageNumber >= 1 && pageNumber <= TotalPages) {
                     await LoadDataAsync(pageNumber);
                 }
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 _logger?.LogError(ex, "页面导航失败，目标页码: {PageNumber}", pageNumber);
                 // 可以在这里添加用户通知逻辑
             }
         }
 
-        #endregion
+        #endregion 命令实现
 
         #region 私有方法
 
         /// <summary>
         /// 更新页码显示
         /// </summary>
-        private void UpdatePageNumbers()
-        {
+        private void UpdatePageNumbers() {
             PageNumbers.Clear();
 
             // 计算显示的页码范围
@@ -576,31 +484,26 @@ namespace LYBT.Desktop.Core.Controls
             var end = Math.Min(TotalPages, start + maxVisiblePages - 1);
 
             // 调整起始页
-            if (end - start < maxVisiblePages - 1)
-            {
+            if (end - start < maxVisiblePages - 1) {
                 start = Math.Max(1, end - maxVisiblePages + 1);
             }
 
-            for (int i = start; i <= end; i++)
-            {
-                PageNumbers.Add(new PageNumberInfo
-                {
+            for (int i = start; i <= end; i++) {
+                PageNumbers.Add(new PageNumberInfo {
                     Number = i,
                     IsCurrent = i == CurrentPage
                 });
             }
         }
 
-        #endregion
+        #endregion 私有方法
 
         #region INotifyPropertyChanged
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        protected bool SetProperty<T>(ref T storage, T value, [CallerMemberName] string propertyName = null!)
-        {
-            if (Equals(storage, value))
-            {
+        protected bool SetProperty<T>(ref T storage, T value, [CallerMemberName] string propertyName = null!) {
+            if (Equals(storage, value)) {
                 return false;
             }
 
@@ -609,12 +512,11 @@ namespace LYBT.Desktop.Core.Controls
             return true;
         }
 
-        protected void OnPropertyChanged([CallerMemberName] string propertyName = null!)
-        {
+        protected void OnPropertyChanged([CallerMemberName] string propertyName = null!) {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        #endregion
+        #endregion INotifyPropertyChanged
     }
 
     #region 辅助类
@@ -622,8 +524,7 @@ namespace LYBT.Desktop.Core.Controls
     /// <summary>
     /// 分页数据结果
     /// </summary>
-    public class PagedDataResult
-    {
+    public class PagedDataResult {
         public System.Collections.IEnumerable Items { get; set; } = null!;
         public int TotalCount { get; set; } = 0;
         public int CurrentPage { get; set; } = 1;
@@ -633,11 +534,10 @@ namespace LYBT.Desktop.Core.Controls
     /// <summary>
     /// 页码信息
     /// </summary>
-    public class PageNumberInfo
-    {
+    public class PageNumberInfo {
         public int Number { get; set; } = 1;
         public bool IsCurrent { get; set; } = false;
     }
 
-    #endregion
+    #endregion 辅助类
 }

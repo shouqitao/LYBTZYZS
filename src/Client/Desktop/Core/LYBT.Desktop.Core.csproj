@@ -9,6 +9,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <WarningsAsErrors />
+    <NoWarn>$(NoWarn);CS8618;CS8625;CS8622;CS1570;CS1587;NU1903</NoWarn>
     
     <!-- Assembly Information -->
     <AssemblyTitle>LYBT.Desktop.Core</AssemblyTitle>

@@ -2,14 +2,14 @@
 using LYBT.Infrastructure.Interfaces;
 using LYBT.Shared.Models.Enums;
 
-namespace LYBT.Module.Auth.Interfaces
-{
+namespace LYBT.Module.Auth.Interfaces {
+
     /// <summary>
     /// 认证会话仓储接口 - 管理用户登录会话的完整生命周期
     /// 继承BaseRepository提供通用CRUD，扩展会话管理特定业务方法
     /// </summary>
-    public interface IAuthSessionRepository : IBaseRepository<AuthSession>
-    {
+    public interface IAuthSessionRepository : IBaseRepository<AuthSession> {
+
         /// <summary>
         /// 根据用户ID获取活跃会话
         /// </summary>

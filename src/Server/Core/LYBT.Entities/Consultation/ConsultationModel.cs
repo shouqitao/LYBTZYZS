@@ -1,21 +1,20 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using LYBT.Entities.MedicalCase;
 using LYBT.Entities.Patients;
 using LYBT.Entities.Users;
 using LYBT.Shared.Models.Enums;
 
-namespace LYBT.Entities.Consultation
-{
+namespace LYBT.Entities.Consultation {
+
     /// <summary>
     /// 看诊实体 - UltraThink v2.0架构简化版
     /// 合并了原BaseConsultation和ConsultationModel
     /// 专注于中医诊疗，包含中医四诊和辨证论治
     /// </summary>
     [Table("Consultations")]
-    public class Consultation
-    {
+    public class Consultation {
+
         /// <summary>看诊ID</summary>
         [Key]
         [DisplayName("看诊ID")]
@@ -45,7 +44,6 @@ namespace LYBT.Entities.Consultation
         [StringLength(1000)]
         [DisplayName("现病史")]
         public string? PresentIllness { get; set; }
-
 
         // 中医四诊
         /// <summary>望诊</summary>
@@ -110,5 +108,4 @@ namespace LYBT.Entities.Consultation
         /// </summary>
         public virtual MedicalCase.MedicalCase? MedicalCase { get; set; }
     }
-
 }

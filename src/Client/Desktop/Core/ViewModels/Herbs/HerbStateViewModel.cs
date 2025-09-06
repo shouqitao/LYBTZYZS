@@ -1,14 +1,13 @@
-﻿using System;
-using Prism.Mvvm;
+﻿using Prism.Mvvm;
 
-namespace LYBT.Desktop.Core.ViewModels.Herbs
-{
+namespace LYBT.Desktop.Core.ViewModels.Herbs {
+
     /// <summary>
     /// 药材UI状态视图模型 - UltraThink架构的状态层
     /// 负责纯UI状态管理，不涉及业务逻辑
     /// </summary>
-    public class HerbStateViewModel : BindableBase
-    {
+    public class HerbStateViewModel : BindableBase {
+
         #region Fields
 
         private bool _isSelected;
@@ -21,98 +20,88 @@ namespace LYBT.Desktop.Core.ViewModels.Herbs
         private bool _isHovered;
         private bool _showDetails;
 
-        #endregion
+        #endregion Fields
 
         #region Selection State
 
         /// <summary>是否选中</summary>
-        public bool IsSelected
-        {
+        public bool IsSelected {
             get => _isSelected;
             set => SetProperty(ref _isSelected, value);
         }
 
-        #endregion
+        #endregion Selection State
 
         #region Edit State
 
         /// <summary>是否编辑中</summary>
-        public bool IsEditing
-        {
+        public bool IsEditing {
             get => _isEditing;
             private set => SetProperty(ref _isEditing, value);
         }
 
-        #endregion
+        #endregion Edit State
 
         #region Loading State
 
         /// <summary>是否加载中</summary>
-        public bool IsLoading
-        {
+        public bool IsLoading {
             get => _isLoading;
             private set => SetProperty(ref _isLoading, value);
         }
 
-        #endregion
+        #endregion Loading State
 
         #region Error State
 
         /// <summary>是否有错误</summary>
-        public bool HasError
-        {
+        public bool HasError {
             get => _hasError;
             private set => SetProperty(ref _hasError, value);
         }
 
         /// <summary>错误信息</summary>
-        public string? ErrorMessage
-        {
+        public string? ErrorMessage {
             get => _errorMessage;
             private set => SetProperty(ref _errorMessage, value);
         }
 
-        #endregion
+        #endregion Error State
 
         #region UI State
 
         /// <summary>是否展开</summary>
-        public bool IsExpanded
-        {
+        public bool IsExpanded {
             get => _isExpanded;
             set => SetProperty(ref _isExpanded, value);
         }
 
         /// <summary>是否高亮</summary>
-        public bool IsHighlighted
-        {
+        public bool IsHighlighted {
             get => _isHighlighted;
             set => SetProperty(ref _isHighlighted, value);
         }
 
         /// <summary>是否鼠标悬停</summary>
-        public bool IsHovered
-        {
+        public bool IsHovered {
             get => _isHovered;
             set => SetProperty(ref _isHovered, value);
         }
 
         /// <summary>是否显示详情</summary>
-        public bool ShowDetails
-        {
+        public bool ShowDetails {
             get => _showDetails;
             set => SetProperty(ref _showDetails, value);
         }
 
-        #endregion
+        #endregion UI State
 
         #region State Control Methods
 
         /// <summary>
         /// 开始编辑
         /// </summary>
-        public void StartEditing()
-        {
+        public void StartEditing() {
             IsEditing = true;
             ClearError();
         }
@@ -120,16 +109,14 @@ namespace LYBT.Desktop.Core.ViewModels.Herbs
         /// <summary>
         /// 停止编辑
         /// </summary>
-        public void StopEditing()
-        {
+        public void StopEditing() {
             IsEditing = false;
         }
 
         /// <summary>
         /// 开始加载
         /// </summary>
-        public void StartLoading()
-        {
+        public void StartLoading() {
             IsLoading = true;
             ClearError();
         }
@@ -137,24 +124,21 @@ namespace LYBT.Desktop.Core.ViewModels.Herbs
         /// <summary>
         /// 停止加载
         /// </summary>
-        public void StopLoading()
-        {
+        public void StopLoading() {
             IsLoading = false;
         }
 
         /// <summary>
         /// 切换选中状态
         /// </summary>
-        public void ToggleSelection()
-        {
+        public void ToggleSelection() {
             IsSelected = !IsSelected;
         }
 
         /// <summary>
         /// 设置错误
         /// </summary>
-        public void SetError(string errorMessage)
-        {
+        public void SetError(string errorMessage) {
             ErrorMessage = errorMessage;
             HasError = !string.IsNullOrWhiteSpace(errorMessage);
         }
@@ -162,8 +146,7 @@ namespace LYBT.Desktop.Core.ViewModels.Herbs
         /// <summary>
         /// 清除错误
         /// </summary>
-        public void ClearError()
-        {
+        public void ClearError() {
             ErrorMessage = null;
             HasError = false;
         }
@@ -171,40 +154,35 @@ namespace LYBT.Desktop.Core.ViewModels.Herbs
         /// <summary>
         /// 切换展开状态
         /// </summary>
-        public void ToggleExpanded()
-        {
+        public void ToggleExpanded() {
             IsExpanded = !IsExpanded;
         }
 
         /// <summary>
         /// 切换详情显示
         /// </summary>
-        public void ToggleDetails()
-        {
+        public void ToggleDetails() {
             ShowDetails = !ShowDetails;
         }
 
         /// <summary>
         /// 设置高亮状态
         /// </summary>
-        public void SetHighlight(bool highlight)
-        {
+        public void SetHighlight(bool highlight) {
             IsHighlighted = highlight;
         }
 
         /// <summary>
         /// 设置悬停状态
         /// </summary>
-        public void SetHover(bool hover)
-        {
+        public void SetHover(bool hover) {
             IsHovered = hover;
         }
 
         /// <summary>
         /// 重置所有状态
         /// </summary>
-        public void Reset()
-        {
+        public void Reset() {
             IsSelected = false;
             IsEditing = false;
             IsLoading = false;
@@ -218,16 +196,14 @@ namespace LYBT.Desktop.Core.ViewModels.Herbs
         /// <summary>
         /// 重置选择状态
         /// </summary>
-        public void ResetSelection()
-        {
+        public void ResetSelection() {
             IsSelected = false;
         }
 
         /// <summary>
         /// 重置UI状态（保留选择状态）
         /// </summary>
-        public void ResetUIState()
-        {
+        public void ResetUIState() {
             IsEditing = false;
             IsLoading = false;
             IsExpanded = false;
@@ -237,7 +213,7 @@ namespace LYBT.Desktop.Core.ViewModels.Herbs
             ClearError();
         }
 
-        #endregion
+        #endregion State Control Methods
 
         #region Validation State
 
@@ -256,33 +232,29 @@ namespace LYBT.Desktop.Core.ViewModels.Herbs
         /// </summary>
         public bool IsBusy => IsLoading || IsEditing;
 
-        #endregion
+        #endregion Validation State
 
         #region Event Handling
 
         /// <summary>
         /// 鼠标进入事件
         /// </summary>
-        public void OnMouseEnter()
-        {
+        public void OnMouseEnter() {
             SetHover(true);
         }
 
         /// <summary>
         /// 鼠标离开事件
         /// </summary>
-        public void OnMouseLeave()
-        {
+        public void OnMouseLeave() {
             SetHover(false);
         }
 
         /// <summary>
         /// 点击事件
         /// </summary>
-        public void OnClick()
-        {
-            if (CanExecuteOperation)
-            {
+        public void OnClick() {
+            if (CanExecuteOperation) {
                 ToggleSelection();
             }
         }
@@ -290,14 +262,12 @@ namespace LYBT.Desktop.Core.ViewModels.Herbs
         /// <summary>
         /// 双击事件
         /// </summary>
-        public void OnDoubleClick()
-        {
-            if (CanExecuteOperation)
-            {
+        public void OnDoubleClick() {
+            if (CanExecuteOperation) {
                 ToggleDetails();
             }
         }
 
-        #endregion
+        #endregion Event Handling
     }
 }

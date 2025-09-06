@@ -1,25 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using AutoMapper;
+﻿using AutoMapper;
 using LYBT.Entities.Herbs;
 using LYBT.Infrastructure.Data;
-using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace LYBT.Module.Herbs.Services
-{
+namespace LYBT.Module.Herbs.Services {
+
     /// <summary>
     /// 药材查询服务 - UltraThink架构
     /// 职责：复杂查询、搜索、筛选、分页等只读操作
     /// </summary>
-    public class HerbQueryService
-    {
+    public class HerbQueryService {
         private readonly AppDbContext _context;
         private readonly IMapper _mapper;
         private readonly ILogger<HerbQueryService> _logger;
@@ -27,8 +21,7 @@ namespace LYBT.Module.Herbs.Services
         public HerbQueryService(
             AppDbContext context,
             IMapper mapper,
-            ILogger<HerbQueryService> logger)
-        {
+            ILogger<HerbQueryService> logger) {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -37,19 +30,15 @@ namespace LYBT.Module.Herbs.Services
         /// <summary>
         /// 获取所有启用状态的药材列表
         /// </summary>
-        public async Task<ServiceResult<List<HerbDto>>> GetAllAsync()
-        {
-            try
-            {
+        public async Task<ServiceResult<List<HerbDto>>> GetAllAsync() {
+            try {
                 var herbs = await BuildBaseQuery()
                     .OrderBy(h => h.Name)
                     .ToListAsync();
 
                 var dtos = _mapper.Map<List<HerbDto>>(herbs);
                 return ServiceResult<List<HerbDto>>.Success(dtos);
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 _logger.LogError(ex, "获取药材列表失败");
                 return ServiceResult<List<HerbDto>>.Failure($"获取药材列表失败: {ex.Message}");
             }
@@ -58,17 +47,14 @@ namespace LYBT.Module.Herbs.Services
         /// <summary>
         /// 分页查询药材
         /// </summary>
-        public async Task<ServiceResult<PagedResult<HerbDto>>> GetPagedAsync(HerbPagedQueryDto query)
-        {
-            try
-            {
+        public async Task<ServiceResult<PagedResult<HerbDto>>> GetPagedAsync(HerbPagedQueryDto query) {
+            try {
                 query ??= new HerbPagedQueryDto();
 
                 var queryable = BuildBaseQuery();
 
                 // 关键词搜索
-                if (!string.IsNullOrWhiteSpace(query.Keyword))
-                {
+                if (!string.IsNullOrWhiteSpace(query.Keyword)) {
                     var keyword = query.Keyword.Trim();
                     queryable = queryable.Where(h =>
                         h.Name.Contains(keyword) ||
@@ -78,18 +64,15 @@ namespace LYBT.Module.Herbs.Services
                 }
 
                 // 价格范围筛选
-                if (query.MinPrice.HasValue)
-                {
+                if (query.MinPrice.HasValue) {
                     queryable = queryable.Where(h => h.Price >= query.MinPrice.Value);
                 }
-                if (query.MaxPrice.HasValue)
-                {
+                if (query.MaxPrice.HasValue) {
                     queryable = queryable.Where(h => h.Price <= query.MaxPrice.Value);
                 }
 
                 // 状态筛选
-                if (query.Status.HasValue)
-                {
+                if (query.Status.HasValue) {
                     queryable = queryable.Where(h => h.Status == query.Status.Value);
                 }
 
@@ -112,9 +95,7 @@ namespace LYBT.Module.Herbs.Services
                 var pagedResult = new PagedResult<HerbDto>(dtos, totalCount, pageIndex, pageSize);
 
                 return ServiceResult<PagedResult<HerbDto>>.Success(pagedResult);
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 _logger.LogError(ex, "分页查询药材失败");
                 return ServiceResult<PagedResult<HerbDto>>.Failure($"分页查询药材失败: {ex.Message}");
             }
@@ -123,12 +104,9 @@ namespace LYBT.Module.Herbs.Services
         /// <summary>
         /// 搜索药材（根据名称、拼音码）
         /// </summary>
-        public async Task<ServiceResult<List<HerbDto>>> SearchAsync(string keyword)
-        {
-            try
-            {
-                if (string.IsNullOrWhiteSpace(keyword))
-                {
+        public async Task<ServiceResult<List<HerbDto>>> SearchAsync(string keyword) {
+            try {
+                if (string.IsNullOrWhiteSpace(keyword)) {
                     return await GetAllAsync();
                 }
 
@@ -144,9 +122,7 @@ namespace LYBT.Module.Herbs.Services
 
                 var dtos = _mapper.Map<List<HerbDto>>(herbs);
                 return ServiceResult<List<HerbDto>>.Success(dtos);
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 _logger.LogError(ex, "搜索药材失败: {Keyword}", keyword);
                 return ServiceResult<List<HerbDto>>.Failure($"搜索药材失败: {ex.Message}");
             }
@@ -155,10 +131,8 @@ namespace LYBT.Module.Herbs.Services
         /// <summary>
         /// 获取可用药材列表（状态为启用）
         /// </summary>
-        public async Task<ServiceResult<List<HerbDto>>> GetAvailableHerbsAsync()
-        {
-            try
-            {
+        public async Task<ServiceResult<List<HerbDto>>> GetAvailableHerbsAsync() {
+            try {
                 var herbs = await _context.Herbs
                     .Where(h => h.Status == CommonStatus.Enabled)
                     .OrderBy(h => h.Name)
@@ -166,9 +140,7 @@ namespace LYBT.Module.Herbs.Services
 
                 var dtos = _mapper.Map<List<HerbDto>>(herbs);
                 return ServiceResult<List<HerbDto>>.Success(dtos);
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 _logger.LogError(ex, "获取可用药材列表失败");
                 return ServiceResult<List<HerbDto>>.Failure($"获取可用药材列表失败: {ex.Message}");
             }
@@ -177,12 +149,9 @@ namespace LYBT.Module.Herbs.Services
         /// <summary>
         /// 根据ID列表批量获取药材
         /// </summary>
-        public async Task<ServiceResult<List<HerbDto>>> GetByIdsAsync(List<Guid> ids)
-        {
-            try
-            {
-                if (ids == null || ids.Count == 0)
-                {
+        public async Task<ServiceResult<List<HerbDto>>> GetByIdsAsync(List<Guid> ids) {
+            try {
+                if (ids == null || ids.Count == 0) {
                     return ServiceResult<List<HerbDto>>.Success(new List<HerbDto>());
                 }
 
@@ -193,9 +162,7 @@ namespace LYBT.Module.Herbs.Services
 
                 var dtos = _mapper.Map<List<HerbDto>>(herbs);
                 return ServiceResult<List<HerbDto>>.Success(dtos);
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 _logger.LogError(ex, "批量获取药材失败");
                 return ServiceResult<List<HerbDto>>.Failure($"批量获取药材失败: {ex.Message}");
             }
@@ -204,17 +171,13 @@ namespace LYBT.Module.Herbs.Services
         /// <summary>
         /// 按价格区间查询药材
         /// </summary>
-        public async Task<ServiceResult<List<HerbDto>>> GetByPriceRangeAsync(decimal minPrice, decimal maxPrice)
-        {
-            try
-            {
-                if (minPrice < 0 || maxPrice < 0)
-                {
+        public async Task<ServiceResult<List<HerbDto>>> GetByPriceRangeAsync(decimal minPrice, decimal maxPrice) {
+            try {
+                if (minPrice < 0 || maxPrice < 0) {
                     return ServiceResult<List<HerbDto>>.Failure("价格不能为负数");
                 }
 
-                if (minPrice > maxPrice)
-                {
+                if (minPrice > maxPrice) {
                     return ServiceResult<List<HerbDto>>.Failure("最小价格不能大于最大价格");
                 }
 
@@ -226,9 +189,7 @@ namespace LYBT.Module.Herbs.Services
 
                 var dtos = _mapper.Map<List<HerbDto>>(herbs);
                 return ServiceResult<List<HerbDto>>.Success(dtos);
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 _logger.LogError(ex, "按价格区间查询药材失败: {MinPrice}-{MaxPrice}", minPrice, maxPrice);
                 return ServiceResult<List<HerbDto>>.Failure($"按价格区间查询药材失败: {ex.Message}");
             }
@@ -237,28 +198,22 @@ namespace LYBT.Module.Herbs.Services
         /// <summary>
         /// 根据名称精确查找药材
         /// </summary>
-        public async Task<ServiceResult<HerbDto>> GetByNameAsync(string name)
-        {
-            try
-            {
-                if (string.IsNullOrWhiteSpace(name))
-                {
+        public async Task<ServiceResult<HerbDto>> GetByNameAsync(string name) {
+            try {
+                if (string.IsNullOrWhiteSpace(name)) {
                     return ServiceResult<HerbDto>.Failure("药材名称不能为空");
                 }
 
                 var herb = await BuildBaseQuery()
                     .FirstOrDefaultAsync(h => h.Name == name.Trim());
 
-                if (herb == null)
-                {
+                if (herb == null) {
                     return ServiceResult<HerbDto>.Failure($"未找到名称为 '{name}' 的药材");
                 }
 
                 var dto = _mapper.Map<HerbDto>(herb);
                 return ServiceResult<HerbDto>.Success(dto);
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 _logger.LogError(ex, "根据名称查找药材失败: {Name}", name);
                 return ServiceResult<HerbDto>.Failure($"根据名称查找药材失败: {ex.Message}");
             }
@@ -268,10 +223,8 @@ namespace LYBT.Module.Herbs.Services
         /// 获取热门药材（按使用频率排序）
         /// 注：当前简化实现，按名称排序。实际项目中可根据处方使用频率统计
         /// </summary>
-        public async Task<ServiceResult<List<HerbDto>>> GetPopularHerbsAsync(int count = 20)
-        {
-            try
-            {
+        public async Task<ServiceResult<List<HerbDto>>> GetPopularHerbsAsync(int count = 20) {
+            try {
                 count = Math.Clamp(count, 1, 50);
 
                 var herbs = await BuildBaseQuery()
@@ -281,9 +234,7 @@ namespace LYBT.Module.Herbs.Services
 
                 var dtos = _mapper.Map<List<HerbDto>>(herbs);
                 return ServiceResult<List<HerbDto>>.Success(dtos);
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 _logger.LogError(ex, "获取热门药材失败");
                 return ServiceResult<List<HerbDto>>.Failure($"获取热门药材失败: {ex.Message}");
             }
@@ -294,12 +245,10 @@ namespace LYBT.Module.Herbs.Services
         /// <summary>
         /// 构建基础查询 - 只查询启用状态的药材
         /// </summary>
-        private IQueryable<Herb> BuildBaseQuery()
-        {
+        private IQueryable<Herb> BuildBaseQuery() {
             return _context.Herbs.Where(h => h.Status == CommonStatus.Enabled);
         }
 
-
-        #endregion
+        #endregion 私有方法
     }
 }

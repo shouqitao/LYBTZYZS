@@ -1,14 +1,12 @@
-﻿using System.Threading.Tasks;
-using LYBT.Desktop.Workbench.Core;
-using Prism.Regions;
+﻿using LYBT.Desktop.Workbench.Core;
 
-namespace LYBT.Desktop.Workbench.Admin.Services
-{
+namespace LYBT.Desktop.Workbench.Admin.Services {
+
     /// <summary>
     /// 系统管理工作台导航器接口
     /// </summary>
-    public interface ISystemWorkbenchNavigator : IWorkbenchNavigator
-    {
+    public interface ISystemWorkbenchNavigator : IWorkbenchNavigator {
+
         /// <summary>
         /// 导航到用户管理
         /// </summary>

@@ -3,8 +3,8 @@
 /// UltraThink重构：采用统一服务注入管理，简化代码结构，提高可维护性
 /// UltraThink v2.0 Security: 加载.env文件和环境变量替换支持
 /// </summary>
-using LYBT.Infrastructure.Configuration;
 using LYBT.WebAPI.Extensions;
+
 // using LYBT.WebAPI.Services; // Removed - enterprise services beyond constraint scope
 
 // =========== UltraThink安全配置增强 - 提前加载环境变量 ===========

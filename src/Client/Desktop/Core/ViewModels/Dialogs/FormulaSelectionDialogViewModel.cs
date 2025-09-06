@@ -1,22 +1,17 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using System.Threading.Tasks;
+﻿using System.Collections.ObjectModel;
 using LYBT.Desktop.Core.Interfaces.Services;
-using LYBT.Desktop.Core.ViewModels;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Formula;
-using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
 
-namespace LYBT.Desktop.Core.ViewModels.Dialogs
-{
+namespace LYBT.Desktop.Core.ViewModels.Dialogs {
+
     /// <summary>
     /// 验方选择对话框ViewModel - UltraThink优化版本
     /// 继承DialogViewModelBase，使用标准化错误处理
     /// </summary>
-    public class FormulaSelectionDialogViewModel : DialogViewModelBase
-    {
+    public class FormulaSelectionDialogViewModel : DialogViewModelBase {
         private readonly IFormulaService _formulaService;
         private string _searchKeyword = string.Empty;
         private FormulaDto? _selectedFormula;
@@ -26,13 +21,10 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
         /// <summary>
         /// 搜索关键词
         /// </summary>
-        public string SearchKeyword
-        {
+        public string SearchKeyword {
             get => _searchKeyword;
-            set
-            {
-                if (SetProperty(ref _searchKeyword, value))
-                {
+            set {
+                if (SetProperty(ref _searchKeyword, value)) {
                     SearchCommand?.Execute();
                 }
             }
@@ -41,13 +33,10 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
         /// <summary>
         /// 选中的验方
         /// </summary>
-        public FormulaDto? SelectedFormula
-        {
+        public FormulaDto? SelectedFormula {
             get => _selectedFormula;
-            set
-            {
-                if (SetProperty(ref _selectedFormula, value))
-                {
+            set {
+                if (SetProperty(ref _selectedFormula, value)) {
                     ConfirmCommand?.RaiseCanExecuteChanged();
                 }
             }
@@ -58,7 +47,7 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
         /// </summary>
         public ObservableCollection<FormulaDto> Formulas { get; } = new();
 
-        #endregion
+        #endregion Properties
 
         #region Commands
 
@@ -67,7 +56,7 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
         /// </summary>
         public DelegateCommand SearchCommand { get; } = null!;
 
-        #endregion
+        #endregion Commands
 
         #region Constructor
 
@@ -78,8 +67,7 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
             IFormulaService formulaService,
             IEventAggregator eventAggregator,
             IErrorHandlingService errorHandlingService)
-            : base(eventAggregator, errorHandlingService)
-        {
+            : base(eventAggregator, errorHandlingService) {
             _formulaService = formulaService ?? throw new ArgumentNullException(nameof(formulaService));
             Title = "选择验方";
 
@@ -93,8 +81,7 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
         /// 简化构造函数（使用ContainerLocator）
         /// </summary>
         public FormulaSelectionDialogViewModel(IFormulaService formulaService)
-            : base()
-        {
+            : base() {
             _formulaService = formulaService ?? throw new ArgumentNullException(nameof(formulaService));
             Title = "选择验方";
 
@@ -104,67 +91,54 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
             _ = LoadFormulasAsync();
         }
 
-        #endregion
+        #endregion Constructor
 
         #region Protected Methods
 
         /// <summary>
         /// 执行确认逻辑
         /// </summary>
-        protected override Task<bool> ExecuteConfirmAsync()
-        {
+        protected override Task<bool> ExecuteConfirmAsync() {
             return Task.FromResult(SelectedFormula != null);
         }
 
         /// <summary>
         /// 检查是否可以确认
         /// </summary>
-        protected override bool CanConfirm()
-        {
+        protected override bool CanConfirm() {
             return !IsLoading && SelectedFormula != null;
         }
 
-        #endregion
+        #endregion Protected Methods
 
         #region Private Methods
 
         /// <summary>
         /// 加载验方列表
         /// </summary>
-        private async Task LoadFormulasAsync()
-        {
-            try
-            {
+        private async Task LoadFormulasAsync() {
+            try {
                 IsLoading = true;
                 ClearError();
 
                 var result = await _formulaService.SearchAsync(SearchKeyword ?? string.Empty);
-                if (result.IsSuccess && result.Data != null)
-                {
-                    await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
-                    {
+                if (result.IsSuccess && result.Data != null) {
+                    await System.Windows.Application.Current.Dispatcher.InvokeAsync(() => {
                         Formulas.Clear();
-                        foreach (var formula in result.Data)
-                        {
+                        foreach (var formula in result.Data) {
                             Formulas.Add(formula);
                         }
                     });
 
                     StatusMessage = $"已加载 {Formulas.Count} 个验方";
-                }
-                else
-                {
+                } else {
                     StatusMessage = result.ErrorMessage ?? "加载验方列表失败";
                     Formulas.Clear();
                 }
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 await HandleErrorAsync("加载验方列表", ex);
                 Formulas.Clear();
-            }
-            finally
-            {
+            } finally {
                 IsLoading = false;
             }
         }
@@ -172,23 +146,21 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
         /// <summary>
         /// 执行搜索
         /// </summary>
-        private async Task ExecuteSearchAsync()
-        {
+        private async Task ExecuteSearchAsync() {
             await LoadFormulasAsync();
         }
 
-        #endregion
+        #endregion Private Methods
 
         #region Public Methods
 
         /// <summary>
         /// 获取选择结果
         /// </summary>
-        public FormulaDto? GetSelectedFormula()
-        {
+        public FormulaDto? GetSelectedFormula() {
             return SelectedFormula;
         }
 
-        #endregion
+        #endregion Public Methods
     }
 }

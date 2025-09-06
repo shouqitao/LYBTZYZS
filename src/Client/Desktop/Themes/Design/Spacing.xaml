@@ -1,11 +1,11 @@
-<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:sys="clr-namespace:System;assembly=mscorlib">
-    
+
     <!-- ====================================== -->
     <!-- 凌隐宝堂 间距和尺寸系统 -->
     <!-- ====================================== -->
-    
+
     <!-- 基础间距单位 (4px 倍数) -->
     <sys:Double x:Key="SpaceXXS">2</sys:Double>
     <sys:Double x:Key="SpaceXS">4</sys:Double>
@@ -16,7 +16,7 @@
     <sys:Double x:Key="Space2XL">32</sys:Double>
     <sys:Double x:Key="Space3XL">48</sys:Double>
     <sys:Double x:Key="Space4XL">64</sys:Double>
-    
+
     <!-- Thickness 间距 -->
     <Thickness x:Key="PaddingXXS">2</Thickness>
     <Thickness x:Key="PaddingXS">4</Thickness>
@@ -25,42 +25,42 @@
     <Thickness x:Key="PaddingLG">16</Thickness>
     <Thickness x:Key="PaddingXL">24</Thickness>
     <Thickness x:Key="Padding2XL">32</Thickness>
-    
+
     <!-- 卡片内边距 -->
     <Thickness x:Key="CardPadding">16</Thickness>
     <Thickness x:Key="CardPaddingLarge">24</Thickness>
     <Thickness x:Key="CardPaddingSmall">12</Thickness>
-    
+
     <!-- 容器内边距 -->
     <Thickness x:Key="ContainerPadding">24</Thickness>
     <Thickness x:Key="ContainerPaddingLarge">32</Thickness>
     <Thickness x:Key="ContainerPaddingSmall">16</Thickness>
-    
+
     <!-- 页面边距 -->
     <Thickness x:Key="PageMargin">32</Thickness>
     <Thickness x:Key="PageMarginLarge">48</Thickness>
     <Thickness x:Key="PageMarginSmall">24</Thickness>
-    
+
     <!-- 控件内边距 -->
     <Thickness x:Key="ButtonPadding">12,8</Thickness>
     <Thickness x:Key="ButtonPaddingLarge">16,12</Thickness>
     <Thickness x:Key="ButtonPaddingSmall">8,4</Thickness>
-    
+
     <Thickness x:Key="InputPadding">12,8</Thickness>
     <Thickness x:Key="InputPaddingLarge">16,12</Thickness>
     <Thickness x:Key="InputPaddingSmall">8,6</Thickness>
-    
+
     <!-- ====================================== -->
     <!-- 圆角半径 -->
     <!-- ====================================== -->
-    
+
     <sys:Double x:Key="RadiusXS">2</sys:Double>
     <sys:Double x:Key="RadiusSM">4</sys:Double>
     <sys:Double x:Key="RadiusMD">8</sys:Double>
     <sys:Double x:Key="RadiusLG">12</sys:Double>
     <sys:Double x:Key="RadiusXL">16</sys:Double>
     <sys:Double x:Key="RadiusFull">999</sys:Double>
-    
+
     <!-- CornerRadius -->
     <CornerRadius x:Key="CornerRadiusXS">2</CornerRadius>
     <CornerRadius x:Key="CornerRadiusSM">4</CornerRadius>
@@ -68,38 +68,38 @@
     <CornerRadius x:Key="CornerRadiusLG">12</CornerRadius>
     <CornerRadius x:Key="CornerRadiusXL">16</CornerRadius>
     <CornerRadius x:Key="CornerRadiusFull">999</CornerRadius>
-    
+
     <!-- 控件圆角 -->
     <CornerRadius x:Key="ButtonCornerRadius">8</CornerRadius>
     <CornerRadius x:Key="CardCornerRadius">12</CornerRadius>
     <CornerRadius x:Key="InputCornerRadius">8</CornerRadius>
     <CornerRadius x:Key="DialogCornerRadius">16</CornerRadius>
-    
+
     <!-- ====================================== -->
     <!-- 控件尺寸 -->
     <!-- ====================================== -->
-    
+
     <!-- 高度 -->
     <sys:Double x:Key="ControlHeightXS">24</sys:Double>
     <sys:Double x:Key="ControlHeightSM">32</sys:Double>
     <sys:Double x:Key="ControlHeightMD">40</sys:Double>
     <sys:Double x:Key="ControlHeightLG">48</sys:Double>
     <sys:Double x:Key="ControlHeightXL">56</sys:Double>
-    
+
     <!-- 按钮高度 -->
     <sys:Double x:Key="ButtonHeight">40</sys:Double>
     <sys:Double x:Key="ButtonHeightLarge">48</sys:Double>
     <sys:Double x:Key="ButtonHeightSmall">32</sys:Double>
-    
+
     <!-- 输入框高度 -->
     <sys:Double x:Key="InputHeight">40</sys:Double>
     <sys:Double x:Key="InputHeightLarge">48</sys:Double>
     <sys:Double x:Key="InputHeightSmall">32</sys:Double>
-    
+
     <!-- 最小宽度 -->
     <sys:Double x:Key="ButtonMinWidth">80</sys:Double>
     <sys:Double x:Key="InputMinWidth">200</sys:Double>
-    
+
     <!-- 图标尺寸 -->
     <sys:Double x:Key="IconSizeXS">12</sys:Double>
     <sys:Double x:Key="IconSizeSM">16</sys:Double>
@@ -107,73 +107,73 @@
     <sys:Double x:Key="IconSizeLG">24</sys:Double>
     <sys:Double x:Key="IconSizeXL">32</sys:Double>
     <sys:Double x:Key="IconSize2XL">48</sys:Double>
-    
+
     <!-- 头像尺寸 -->
     <sys:Double x:Key="AvatarSizeXS">24</sys:Double>
     <sys:Double x:Key="AvatarSizeSM">32</sys:Double>
     <sys:Double x:Key="AvatarSizeMD">40</sys:Double>
     <sys:Double x:Key="AvatarSizeLG">48</sys:Double>
     <sys:Double x:Key="AvatarSizeXL">64</sys:Double>
-    
+
     <!-- ====================================== -->
     <!-- 边框粗细 -->
     <!-- ====================================== -->
-    
+
     <sys:Double x:Key="BorderThickness">1</sys:Double>
     <sys:Double x:Key="BorderThicknessMedium">1.5</sys:Double>
     <sys:Double x:Key="BorderThicknessThick">2</sys:Double>
-    
+
     <Thickness x:Key="DefaultBorderThickness">1</Thickness>
     <Thickness x:Key="MediumBorderThickness">1.5</Thickness>
     <Thickness x:Key="ThickBorderThickness">2</Thickness>
-    
+
     <!-- ====================================== -->
     <!-- 阴影层级 -->
     <!-- ====================================== -->
-    
+
     <!-- 0dp - 无阴影 -->
     <sys:Double x:Key="Elevation0">0</sys:Double>
-    
+
     <!-- 1dp - 轻微阴影 -->
     <sys:Double x:Key="Elevation1">1</sys:Double>
-    
+
     <!-- 2dp - 卡片默认 -->
     <sys:Double x:Key="Elevation2">2</sys:Double>
-    
+
     <!-- 4dp - 悬浮按钮 -->
     <sys:Double x:Key="Elevation4">4</sys:Double>
-    
+
     <!-- 8dp - 弹出菜单 -->
     <sys:Double x:Key="Elevation8">8</sys:Double>
-    
+
     <!-- 12dp - 对话框 -->
     <sys:Double x:Key="Elevation12">12</sys:Double>
-    
+
     <!-- 16dp - 导航栏 -->
     <sys:Double x:Key="Elevation16">16</sys:Double>
-    
+
     <!-- 24dp - 模态框 -->
     <sys:Double x:Key="Elevation24">24</sys:Double>
-    
+
     <!-- ====================================== -->
     <!-- 动画时长 -->
     <!-- ====================================== -->
-    
+
     <sys:Double x:Key="DurationInstant">0</sys:Double>
     <sys:Double x:Key="DurationFast">150</sys:Double>
     <sys:Double x:Key="DurationNormal">300</sys:Double>
     <sys:Double x:Key="DurationSlow">500</sys:Double>
     <sys:Double x:Key="DurationVerySlow">1000</sys:Double>
-    
+
     <!-- Duration 对象 -->
     <Duration x:Key="FastDuration">0:0:0.15</Duration>
     <Duration x:Key="NormalDuration">0:0:0.3</Duration>
     <Duration x:Key="SlowDuration">0:0:0.5</Duration>
-    
+
     <!-- ====================================== -->
     <!-- 网格列宽（12列系统） -->
     <!-- ====================================== -->
-    
+
     <GridLength x:Key="Col1">1*</GridLength>
     <GridLength x:Key="Col2">2*</GridLength>
     <GridLength x:Key="Col3">3*</GridLength>
@@ -186,11 +186,10 @@
     <GridLength x:Key="Col10">10*</GridLength>
     <GridLength x:Key="Col11">11*</GridLength>
     <GridLength x:Key="Col12">12*</GridLength>
-    
+
     <!-- 固定列宽 -->
     <GridLength x:Key="ColAuto">Auto</GridLength>
     <GridLength x:Key="Col200">200</GridLength>
     <GridLength x:Key="Col250">250</GridLength>
     <GridLength x:Key="Col300">300</GridLength>
-    
 </ResourceDictionary>

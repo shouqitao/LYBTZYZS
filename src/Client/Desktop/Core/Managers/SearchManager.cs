@@ -1,16 +1,13 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-using Prism.Mvvm;
+﻿using Prism.Mvvm;
 
-namespace LYBT.Desktop.Core.Managers
-{
+namespace LYBT.Desktop.Core.Managers {
+
     /// <summary>
     /// 搜索管理器实现 - 管理搜索状态和防抖逻辑
     /// UltraThink架构: 将搜索职责从ViewModel中分离，提供智能搜索功能
     /// </summary>
-    public class SearchManager : BindableBase, ISearchManager
-    {
+    public class SearchManager : BindableBase, ISearchManager {
+
         #region Fields
 
         private string _searchKeyword = string.Empty;
@@ -18,20 +15,17 @@ namespace LYBT.Desktop.Core.Managers
         private int _searchDelay = 500; // 默认500ms防抖
         private CancellationTokenSource? _searchCancellationTokenSource;
 
-        #endregion
+        #endregion Fields
 
         #region Properties
 
         /// <summary>
         /// 搜索关键字
         /// </summary>
-        public string SearchKeyword
-        {
+        public string SearchKeyword {
             get => _searchKeyword;
-            set
-            {
-                if (SetProperty(ref _searchKeyword, value))
-                {
+            set {
+                if (SetProperty(ref _searchKeyword, value)) {
                     RaisePropertyChanged(nameof(HasSearchCriteria));
 
                     // 自动触发防抖搜索
@@ -48,8 +42,7 @@ namespace LYBT.Desktop.Core.Managers
         /// <summary>
         /// 是否正在搜索
         /// </summary>
-        public bool IsSearching
-        {
+        public bool IsSearching {
             get => _isSearching;
             private set => SetProperty(ref _isSearching, value);
         }
@@ -57,13 +50,12 @@ namespace LYBT.Desktop.Core.Managers
         /// <summary>
         /// 搜索延迟时间(毫秒) - 防抖功能
         /// </summary>
-        public int SearchDelay
-        {
+        public int SearchDelay {
             get => _searchDelay;
             set => SetProperty(ref _searchDelay, Math.Max(0, value));
         }
 
-        #endregion
+        #endregion Properties
 
         #region Events
 
@@ -77,26 +69,22 @@ namespace LYBT.Desktop.Core.Managers
         /// </summary>
         public event EventHandler? SearchCleared;
 
-        #endregion
+        #endregion Events
 
         #region Methods
 
         /// <summary>
         /// 执行搜索
         /// </summary>
-        public async Task ExecuteSearchAsync()
-        {
-            try
-            {
+        public async Task ExecuteSearchAsync() {
+            try {
                 IsSearching = true;
 
                 var args = new SearchExecutedEventArgs(SearchKeyword);
                 SearchExecuted?.Invoke(this, args);
 
                 await Task.CompletedTask;
-            }
-            finally
-            {
+            } finally {
                 IsSearching = false;
             }
         }
@@ -104,8 +92,7 @@ namespace LYBT.Desktop.Core.Managers
         /// <summary>
         /// 清除搜索条件
         /// </summary>
-        public void ClearSearch()
-        {
+        public void ClearSearch() {
             // 取消正在进行的搜索
             _searchCancellationTokenSource?.Cancel();
 
@@ -116,8 +103,7 @@ namespace LYBT.Desktop.Core.Managers
         /// <summary>
         /// 立即搜索(不使用防抖)
         /// </summary>
-        public async Task SearchImmediatelyAsync()
-        {
+        public async Task SearchImmediatelyAsync() {
             // 取消之前的延迟搜索
             _searchCancellationTokenSource?.Cancel();
 
@@ -127,32 +113,28 @@ namespace LYBT.Desktop.Core.Managers
         /// <summary>
         /// 设置搜索关键字并触发搜索
         /// </summary>
-        public async Task SetSearchKeywordAsync(string keyword)
-        {
+        public async Task SetSearchKeywordAsync(string keyword) {
             SearchKeyword = keyword;
             await SearchImmediatelyAsync();
         }
 
-        #endregion
+        #endregion Methods
 
         #region Private Methods
 
         /// <summary>
         /// 触发延迟搜索 - 实现防抖功能
         /// </summary>
-        private async Task TriggerDelayedSearchAsync()
-        {
+        private async Task TriggerDelayedSearchAsync() {
             // 取消之前的搜索
             _searchCancellationTokenSource?.Cancel();
             _searchCancellationTokenSource = new CancellationTokenSource();
 
             var cancellationToken = _searchCancellationTokenSource.Token;
 
-            try
-            {
+            try {
                 // 如果搜索延迟为0，立即执行搜索
-                if (SearchDelay <= 0)
-                {
+                if (SearchDelay <= 0) {
                     await ExecuteSearchAsync();
                     return;
                 }
@@ -161,29 +143,23 @@ namespace LYBT.Desktop.Core.Managers
                 await Task.Delay(SearchDelay, cancellationToken);
 
                 // 如果没有被取消，执行搜索
-                if (!cancellationToken.IsCancellationRequested)
-                {
+                if (!cancellationToken.IsCancellationRequested) {
                     await ExecuteSearchAsync();
                 }
-            }
-            catch (OperationCanceledException)
-            {
+            } catch (OperationCanceledException) {
                 // 搜索被取消，忽略异常
             }
         }
 
-        #endregion
+        #endregion Private Methods
 
         #region IDisposable Support
 
         private bool _disposed = false;
 
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!_disposed)
-            {
-                if (disposing)
-                {
+        protected virtual void Dispose(bool disposing) {
+            if (!_disposed) {
+                if (disposing) {
                     _searchCancellationTokenSource?.Cancel();
                     _searchCancellationTokenSource?.Dispose();
                 }
@@ -191,12 +167,11 @@ namespace LYBT.Desktop.Core.Managers
             }
         }
 
-        public void Dispose()
-        {
+        public void Dispose() {
             Dispose(true);
             GC.SuppressFinalize(this);
         }
 
-        #endregion
+        #endregion IDisposable Support
     }
 }

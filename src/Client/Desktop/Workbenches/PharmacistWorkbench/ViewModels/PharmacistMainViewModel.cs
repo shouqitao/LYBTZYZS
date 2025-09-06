@@ -1,26 +1,23 @@
-﻿using System;
-using LYBT.Desktop.Core.Constants;
+﻿using LYBT.Desktop.Core.Constants;
 using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.ViewModels.Base;
-using LYBT.Shared.Models.Contracts.Common;
 using Prism.Commands;
 using Prism.Events;
-using Prism.Mvvm;
 using Prism.Regions;
 
-namespace LYBT.Desktop.Workbench.Pharmacist.ViewModels
-{
+namespace LYBT.Desktop.Workbench.Pharmacist.ViewModels {
+
     /// <summary>
     /// 药剂师工作台主视图模型
     /// </summary>
-    public class PharmacistMainViewModel : ServiceViewModel
-    {
+    public class PharmacistMainViewModel : ServiceViewModel {
         private readonly IRegionManager _regionManager;
 
         public DelegateCommand NavigateToDrugPreparationCommand { get; }
         public DelegateCommand NavigateToInventoryManagementCommand { get; }
         public DelegateCommand NavigateToMedicationGuidanceCommand { get; }
         public DelegateCommand NavigateToQualityControlCommand { get; }
+
         // UltraThink Phase 3.3: 集成增强版中药材管理
         public DelegateCommand NavigateToHerbManagementCommand { get; }
 
@@ -28,8 +25,7 @@ namespace LYBT.Desktop.Workbench.Pharmacist.ViewModels
             IRegionManager regionManager,
             IEventAggregator eventAggregator,
             IErrorHandlingService errorHandlingService)
-            : base(eventAggregator, errorHandlingService)
-        {
+            : base(eventAggregator, errorHandlingService) {
             _regionManager = regionManager;
 
             // 初始化导航命令
@@ -44,14 +40,10 @@ namespace LYBT.Desktop.Workbench.Pharmacist.ViewModels
             NavigateTo("HerbManagementView");
         }
 
-        private void NavigateTo(string viewName)
-        {
-            try
-            {
+        private void NavigateTo(string viewName) {
+            try {
                 _regionManager.RequestNavigate(RegionNames.PharmacistContentRegion, viewName);
-            }
-            catch (Exception)
-            {
+            } catch (Exception) {
                 // 如果视图不存在，显示占位界面
                 // 暂时静默处理，后续可添加日志
             }

@@ -1,13 +1,11 @@
 ﻿using LYBT.Shared.Models.Contracts.Prescriptions;
 
-namespace LYBT.Module.Prescriptions.Interfaces
-{
+namespace LYBT.Module.Prescriptions.Interfaces {
 
     /// <summary>
     /// 处方API接口定义
     /// </summary>
-    public interface IPrescriptionApi
-    {
+    public interface IPrescriptionApi {
 
         Task<List<PrescriptionDto>> GetAllPrescriptionsAsync();
 

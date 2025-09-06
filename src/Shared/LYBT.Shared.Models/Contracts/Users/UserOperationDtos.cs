@@ -1,17 +1,16 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Enums;
 
-namespace LYBT.Shared.Models.Contracts.Users
-{
+namespace LYBT.Shared.Models.Contracts.Users {
+
     /// <summary>
     /// 用户分页查询DTO - 继承完整查询基类 + 编码接口
     /// 用于用户管理的分页查询和筛选
     /// </summary>
-    public class UserPagedQueryDto : ExtendedQueryDto, ICodeable
-    {
+    public class UserPagedQueryDto : ExtendedQueryDto, ICodeable {
+
         /// <summary>用户名关键词</summary>
         [DisplayName("用户名")]
         public string? Username { get; set; }
@@ -61,8 +60,8 @@ namespace LYBT.Shared.Models.Contracts.Users
     /// 用户查询DTO - 前后端共享API契约
     /// 用于用户信息的基础查询和筛选
     /// </summary>
-    public class UserQueryDto
-    {
+    public class UserQueryDto {
+
         /// <summary>用户名关键词</summary>
         [DisplayName("用户名")]
         public string? Username { get; set; }
@@ -99,8 +98,8 @@ namespace LYBT.Shared.Models.Contracts.Users
     /// <summary>
     /// 用户修改密码 DTO
     /// </summary>
-    public class ChangePasswordDto
-    {
+    public class ChangePasswordDto {
+
         /// <summary>
         /// 用户ID
         /// </summary>
@@ -129,8 +128,8 @@ namespace LYBT.Shared.Models.Contracts.Users
     /// 用户修改个人资料DTO - 前后端共享API契约
     /// 用于用户修改个人基本信息的请求模型
     /// </summary>
-    public class ChangeProfileDto
-    {
+    public class ChangeProfileDto {
+
         /// <summary>用户ID</summary>
         [Required(ErrorMessage = "用户ID不能为空")]
         [DisplayName("用户ID")]
@@ -169,8 +168,8 @@ namespace LYBT.Shared.Models.Contracts.Users
     /// 用户重置密码DTO - 前后端共享API契约
     /// 用于管理员重置用户密码的请求模型
     /// </summary>
-    public class ResetPasswordDto
-    {
+    public class ResetPasswordDto {
+
         /// <summary>用户ID</summary>
         [Required(ErrorMessage = "用户ID不能为空")]
         [DisplayName("用户ID")]

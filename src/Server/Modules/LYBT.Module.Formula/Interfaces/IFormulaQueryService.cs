@@ -1,18 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using LYBT.Shared.Models.Contracts.Common;
+﻿using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
 
-namespace LYBT.Module.Formula.Interfaces
-{
+namespace LYBT.Module.Formula.Interfaces {
+
     /// <summary>
     /// 验方查询服务接口
     /// UltraThink架构 - Query层接口抽象
     /// 职责：验方查询、搜索、筛选等只读操作
     /// </summary>
-    public interface IFormulaQueryService
-    {
+    public interface IFormulaQueryService {
+
         /// <summary>
         /// 分页查询验方
         /// </summary>

@@ -1,13 +1,10 @@
-﻿using System.Threading.Tasks;
-using LYBT.Shared.Models.Contracts.Common;
+﻿namespace LYBT.Desktop.Core.Interfaces.Services {
 
-namespace LYBT.Desktop.Core.Interfaces.Services
-{
     /// <summary>
     /// 导航服务接口
     /// </summary>
-    public interface INavigationService
-    {
+    public interface INavigationService {
+
         /// <summary>
         /// 导航到指定视图
         /// </summary>

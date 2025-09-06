@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using LYBT.Shared.Models.Common;
-using LYBT.Shared.Models.Contracts.Common;
+﻿using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
 
 namespace LYBT.Desktop.Formula.Interfaces;
@@ -11,8 +7,8 @@ namespace LYBT.Desktop.Formula.Interfaces;
 /// 验方查询服务接口 - UltraThink简化版本对应后端实际API
 /// 移除过度开发功能，仅保留后端支持的基本查询功能
 /// </summary>
-public interface IFormulaQueryService
-{
+public interface IFormulaQueryService {
+
     #region 基础查询功能 - 对应后端FormulasController实际API
 
     /// <summary>
@@ -60,7 +56,7 @@ public interface IFormulaQueryService
     /// </summary>
     Task<ServiceResult<List<FormulaRecommendationDto>>> GetRecommendationsAsync(string symptoms, string diagnosis, Guid doctorId);
 
-    #endregion
+    #endregion 基础查询功能 - 对应后端FormulasController实际API
 
     #region 基础统计 - 简化版本基于现有数据计算
 
@@ -69,5 +65,5 @@ public interface IFormulaQueryService
     /// </summary>
     Task<ServiceResult<FormulaStatisticsDto>> GetBasicStatisticsAsync();
 
-    #endregion
+    #endregion 基础统计 - 简化版本基于现有数据计算
 }

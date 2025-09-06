@@ -2,25 +2,22 @@
 using System.Net;
 using System.Threading.Tasks;
 using LYBT.Desktop.Core.Exceptions;
-using LYBT.Desktop.Core.Models;
 using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.Extensions.Logging;
 using Refit;
 
-namespace LYBT.Desktop.Services
-{
+namespace LYBT.Desktop.Services {
+
     /// <summary>
     /// API错误处理辅助类 - 增强版错误处理和重试机制
     /// </summary>
-    public static class ApiErrorHandler
-    {
+    public static class ApiErrorHandler {
         private static ILogger? _logger;
 
         /// <summary>
         /// 设置日志记录器
         /// </summary>
-        public static void SetLogger(ILogger logger)
-        {
+        public static void SetLogger(ILogger logger) {
             _logger = logger;
         }
 
@@ -30,31 +27,23 @@ namespace LYBT.Desktop.Services
         public static async Task<ServiceResult<T>> HandleApiResponseAsync<T>(
             Func<Task<Refit.ApiResponse<T>>> apiCall,
             string? operationName = null,
-            int maxRetries = 0)
-        {
+            int maxRetries = 0) {
             var attempt = 0;
             Exception? lastException = null;
 
-            while (attempt <= maxRetries)
-            {
-                try
-                {
+            while (attempt <= maxRetries) {
+                try {
                     var response = await apiCall();
 
-                    if (response.IsSuccessStatusCode)
-                    {
-                        if (attempt > 0)
-                        {
+                    if (response.IsSuccessStatusCode) {
+                        if (attempt > 0) {
                             _logger?.LogInformation("API调用在第{Attempt}次重试后成功: {Operation}", attempt, operationName ?? "未知操作");
                         }
                         return ServiceResult<T>.Success(response.Content!);
-                    }
-                    else
-                    {
+                    } else {
                         // 尝试从响应内容获取错误信息
                         var errorMessage = await ExtractErrorMessageAsync(response);
-                        var errorInfo = new ApiErrorInfo
-                        {
+                        var errorInfo = new ApiErrorInfo {
                             StatusCode = response.StatusCode,
                             ErrorMessage = errorMessage,
                             OperationName = operationName,
@@ -64,8 +53,7 @@ namespace LYBT.Desktop.Services
                         LogApiError(errorInfo);
 
                         // 检查是否应该重试
-                        if (ShouldRetry(response.StatusCode, attempt, maxRetries))
-                        {
+                        if (ShouldRetry(response.StatusCode, attempt, maxRetries)) {
                             attempt++;
                             await Task.Delay(GetRetryDelay(attempt));
                             continue;
@@ -73,12 +61,9 @@ namespace LYBT.Desktop.Services
 
                         return ServiceResult<T>.Failure(errorMessage, CreateEnhancedException(errorInfo));
                     }
-                }
-                catch (Refit.ApiException ex)
-                {
+                } catch (Refit.ApiException ex) {
                     lastException = ex;
-                    var errorInfo = new ApiErrorInfo
-                    {
+                    var errorInfo = new ApiErrorInfo {
                         StatusCode = ex.StatusCode,
                         ErrorMessage = await GetApiExceptionMessageAsync(ex),
                         OperationName = operationName,
@@ -89,20 +74,16 @@ namespace LYBT.Desktop.Services
                     LogApiError(errorInfo);
 
                     // 检查是否应该重试
-                    if (ShouldRetry(ex.StatusCode, attempt, maxRetries))
-                    {
+                    if (ShouldRetry(ex.StatusCode, attempt, maxRetries)) {
                         attempt++;
                         await Task.Delay(GetRetryDelay(attempt));
                         continue;
                     }
 
                     return await HandleApiExceptionAsync<T>(ex, operationName);
-                }
-                catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException)
-                {
+                } catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException) {
                     lastException = ex;
-                    var errorInfo = new ApiErrorInfo
-                    {
+                    var errorInfo = new ApiErrorInfo {
                         StatusCode = HttpStatusCode.RequestTimeout,
                         ErrorMessage = "请求超时",
                         OperationName = operationName,
@@ -113,20 +94,16 @@ namespace LYBT.Desktop.Services
                     LogApiError(errorInfo);
 
                     // 超时错误可以重试
-                    if (attempt < maxRetries)
-                    {
+                    if (attempt < maxRetries) {
                         attempt++;
                         await Task.Delay(GetRetryDelay(attempt));
                         continue;
                     }
 
                     return ServiceResult<T>.Failure("请求超时，请稍后重试", ex);
-                }
-                catch (Exception ex)
-                {
+                } catch (Exception ex) {
                     lastException = ex;
-                    var errorInfo = new ApiErrorInfo
-                    {
+                    var errorInfo = new ApiErrorInfo {
                         StatusCode = HttpStatusCode.InternalServerError,
                         ErrorMessage = $"请求失败: {ex.Message}",
                         OperationName = operationName,
@@ -150,44 +127,31 @@ namespace LYBT.Desktop.Services
         /// <summary>
         /// 处理Refit API异常（增强版）
         /// </summary>
-        private static async Task<ServiceResult<T>> HandleApiExceptionAsync<T>(Refit.ApiException ex, string? operationName = null)
-        {
+        private static async Task<ServiceResult<T>> HandleApiExceptionAsync<T>(Refit.ApiException ex, string? operationName = null) {
             var errorMessage = "请求失败";
             var statusCode = (int?)ex.StatusCode ?? 500;
 
-            if (ex.HasContent)
-            {
-                try
-                {
+            if (ex.HasContent) {
+                try {
                     // 尝试解析为ProblemDetails
                     var problemDetails = await ex.GetContentAsAsync<LYBT.Desktop.Core.Models.ProblemDetails>();
-                    if (problemDetails != null)
-                    {
+                    if (problemDetails != null) {
                         errorMessage = problemDetails.Detail ?? problemDetails.Title ?? ex.Message;
                     }
-                }
-                catch
-                {
+                } catch {
                     // 如果不是ProblemDetails格式，尝试获取原始内容
-                    try
-                    {
+                    try {
                         var content = await ex.GetContentAsAsync<string>();
-                        if (!string.IsNullOrWhiteSpace(content))
-                        {
+                        if (!string.IsNullOrWhiteSpace(content)) {
                             errorMessage = content;
                         }
-                    }
-                    catch
-                    {
+                    } catch {
                         errorMessage = ex.Message;
                     }
                 }
-            }
-            else
-            {
+            } else {
                 // 根据HTTP状态码提供更友好的错误消息
-                errorMessage = ex.StatusCode switch
-                {
+                errorMessage = ex.StatusCode switch {
                     System.Net.HttpStatusCode.Unauthorized => "未授权，请重新登录",
                     System.Net.HttpStatusCode.Forbidden => "无权限访问此资源",
                     System.Net.HttpStatusCode.NotFound => "请求的资源不存在",
@@ -205,36 +169,27 @@ namespace LYBT.Desktop.Services
         /// <summary>
         /// 从响应中提取错误消息
         /// </summary>
-        private static Task<string> ExtractErrorMessageAsync<T>(Refit.ApiResponse<T> response)
-        {
-            if (response.Error != null)
-            {
-                try
-                {
+        private static Task<string> ExtractErrorMessageAsync<T>(Refit.ApiResponse<T> response) {
+            if (response.Error != null) {
+                try {
                     // 尝试解析错误内容为ProblemDetails
                     var content = response.Error.Content;
-                    if (!string.IsNullOrWhiteSpace(content))
-                    {
-                        var problemDetails = System.Text.Json.JsonSerializer.Deserialize<LYBT.Desktop.Core.Models.ProblemDetails>(content, new System.Text.Json.JsonSerializerOptions
-                        {
+                    if (!string.IsNullOrWhiteSpace(content)) {
+                        var problemDetails = System.Text.Json.JsonSerializer.Deserialize<LYBT.Desktop.Core.Models.ProblemDetails>(content, new System.Text.Json.JsonSerializerOptions {
                             PropertyNameCaseInsensitive = true
                         });
 
-                        if (problemDetails != null)
-                        {
+                        if (problemDetails != null) {
                             return Task.FromResult(problemDetails.Detail ?? problemDetails.Title ?? "请求失败");
                         }
                     }
-                }
-                catch
-                {
+                } catch {
                     // 如果解析失败，返回原始错误消息
                 }
             }
 
             // 根据状态码返回默认消息
-            var errorMessage = response.StatusCode switch
-            {
+            var errorMessage = response.StatusCode switch {
                 System.Net.HttpStatusCode.Unauthorized => "未授权，请重新登录",
                 System.Net.HttpStatusCode.Forbidden => "无权限访问此资源",
                 System.Net.HttpStatusCode.NotFound => "请求的资源不存在",
@@ -251,15 +206,11 @@ namespace LYBT.Desktop.Services
         /// <summary>
         /// 简化的错误处理方法，用于不需要返回数据的操作
         /// </summary>
-        public static async Task<ServiceResult> HandleApiCallAsync(Func<Task<Refit.ApiResponse<object>>> apiCall)
-        {
+        public static async Task<ServiceResult> HandleApiCallAsync(Func<Task<Refit.ApiResponse<object>>> apiCall) {
             var result = await HandleApiResponseAsync(apiCall);
-            if (result.IsSuccess)
-            {
+            if (result.IsSuccess) {
                 return ServiceResult.Success();
-            }
-            else
-            {
+            } else {
                 return ServiceResult.Failure(result.ErrorMessage ?? "操作失败", result.Exception);
             }
         }
@@ -267,15 +218,11 @@ namespace LYBT.Desktop.Services
         /// <summary>
         /// 简化的错误处理方法，用于不需要返回数据的操作（泛型版本）
         /// </summary>
-        public static async Task<ServiceResult> HandleApiCallAsync<T>(Func<Task<Refit.ApiResponse<T>>> apiCall, string? operationName = null, int maxRetries = 0)
-        {
+        public static async Task<ServiceResult> HandleApiCallAsync<T>(Func<Task<Refit.ApiResponse<T>>> apiCall, string? operationName = null, int maxRetries = 0) {
             var result = await HandleApiResponseAsync(apiCall, operationName, maxRetries);
-            if (result.IsSuccess)
-            {
+            if (result.IsSuccess) {
                 return ServiceResult.Success();
-            }
-            else
-            {
+            } else {
                 return ServiceResult.Failure(result.ErrorMessage ?? "操作失败", result.Exception);
             }
         }
@@ -285,15 +232,12 @@ namespace LYBT.Desktop.Services
         /// <summary>
         /// 判断是否应该重试
         /// </summary>
-        private static bool ShouldRetry(HttpStatusCode? statusCode, int currentAttempt, int maxRetries)
-        {
-            if (currentAttempt >= maxRetries)
-            {
+        private static bool ShouldRetry(HttpStatusCode? statusCode, int currentAttempt, int maxRetries) {
+            if (currentAttempt >= maxRetries) {
                 return false;
             }
 
-            return statusCode switch
-            {
+            return statusCode switch {
                 HttpStatusCode.InternalServerError => true,      // 500
                 HttpStatusCode.BadGateway => true,               // 502
                 HttpStatusCode.ServiceUnavailable => true,       // 503
@@ -307,8 +251,7 @@ namespace LYBT.Desktop.Services
         /// <summary>
         /// 获取重试延迟时间（指数退避）
         /// </summary>
-        private static TimeSpan GetRetryDelay(int attemptNumber)
-        {
+        private static TimeSpan GetRetryDelay(int attemptNumber) {
             var baseDelay = TimeSpan.FromMilliseconds(1000); // 1秒基础延迟
             var exponentialDelay = TimeSpan.FromMilliseconds(Math.Pow(2, attemptNumber) * 1000);
             var maxDelay = TimeSpan.FromSeconds(30); // 最大30秒
@@ -319,10 +262,8 @@ namespace LYBT.Desktop.Services
         /// <summary>
         /// 记录API错误
         /// </summary>
-        private static void LogApiError(ApiErrorInfo errorInfo)
-        {
-            if (_logger == null)
-            {
+        private static void LogApiError(ApiErrorInfo errorInfo) {
+            if (_logger == null) {
                 return;
             }
 
@@ -334,8 +275,7 @@ namespace LYBT.Desktop.Services
                 errorInfo.AttemptNumber,
                 errorInfo.ErrorMessage);
 
-            if (errorInfo.Exception != null)
-            {
+            if (errorInfo.Exception != null) {
                 _logger.LogDebug(errorInfo.Exception, "API异常详情");
             }
         }
@@ -343,10 +283,8 @@ namespace LYBT.Desktop.Services
         /// <summary>
         /// 根据状态码获取日志级别
         /// </summary>
-        private static LogLevel GetLogLevel(HttpStatusCode? statusCode)
-        {
-            return statusCode switch
-            {
+        private static LogLevel GetLogLevel(HttpStatusCode? statusCode) {
+            return statusCode switch {
                 HttpStatusCode.BadRequest => LogLevel.Warning,           // 400
                 HttpStatusCode.Unauthorized => LogLevel.Warning,         // 401
                 HttpStatusCode.Forbidden => LogLevel.Warning,            // 403
@@ -362,40 +300,28 @@ namespace LYBT.Desktop.Services
         /// <summary>
         /// 从API异常获取错误消息
         /// </summary>
-        private static async Task<string> GetApiExceptionMessageAsync(ApiException ex)
-        {
+        private static async Task<string> GetApiExceptionMessageAsync(ApiException ex) {
             var errorMessage = "请求失败";
 
-            if (ex.HasContent)
-            {
-                try
-                {
+            if (ex.HasContent) {
+                try {
                     // 尝试解析为ProblemDetails
                     var problemDetails = await ex.GetContentAsAsync<LYBT.Desktop.Core.Models.ProblemDetails>();
-                    if (problemDetails != null)
-                    {
+                    if (problemDetails != null) {
                         errorMessage = problemDetails.Detail ?? problemDetails.Title ?? ex.Message;
                     }
-                }
-                catch
-                {
+                } catch {
                     // 如果不是ProblemDetails格式，尝试获取原始内容
-                    try
-                    {
+                    try {
                         var content = await ex.GetContentAsAsync<string>();
-                        if (!string.IsNullOrWhiteSpace(content))
-                        {
+                        if (!string.IsNullOrWhiteSpace(content)) {
                             errorMessage = content;
                         }
-                    }
-                    catch
-                    {
+                    } catch {
                         errorMessage = ex.Message;
                     }
                 }
-            }
-            else
-            {
+            } else {
                 errorMessage = GetFriendlyErrorMessage(ex.StatusCode);
             }
 
@@ -405,10 +331,8 @@ namespace LYBT.Desktop.Services
         /// <summary>
         /// 获取友好的错误消息
         /// </summary>
-        private static string GetFriendlyErrorMessage(HttpStatusCode? statusCode)
-        {
-            return statusCode switch
-            {
+        private static string GetFriendlyErrorMessage(HttpStatusCode? statusCode) {
+            return statusCode switch {
                 HttpStatusCode.Unauthorized => "未授权，请重新登录",
                 HttpStatusCode.Forbidden => "无权限访问此资源",
                 HttpStatusCode.NotFound => "请求的资源不存在",
@@ -424,25 +348,22 @@ namespace LYBT.Desktop.Services
         /// <summary>
         /// 创建增强的异常信息
         /// </summary>
-        private static Exception CreateEnhancedException(ApiErrorInfo errorInfo)
-        {
+        private static Exception CreateEnhancedException(ApiErrorInfo errorInfo) {
             var message = $"API调用失败 - {errorInfo.ErrorMessage} (状态码: {errorInfo.StatusCode}, 操作: {errorInfo.OperationName ?? "未知"})";
-            return new ApiCallException(message, errorInfo.Exception!)
-            {
+            return new ApiCallException(message, errorInfo.Exception!) {
                 StatusCode = errorInfo.StatusCode,
                 OperationName = errorInfo.OperationName ?? string.Empty,
                 AttemptNumber = errorInfo.AttemptNumber
             };
         }
 
-        #endregion
+        #endregion 私有辅助方法
     }
 
     /// <summary>
     /// API错误信息
     /// </summary>
-    public class ApiErrorInfo
-    {
+    public class ApiErrorInfo {
         public HttpStatusCode? StatusCode { get; set; }
         public string ErrorMessage { get; set; } = string.Empty;
         public string? OperationName { get; set; }

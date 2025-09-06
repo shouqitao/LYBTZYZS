@@ -7,22 +7,19 @@ using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
-namespace LYBT.Module.Auth.Services
-{
+namespace LYBT.Module.Auth.Services {
 
     /// <summary>
     /// JWT认证服务实现
     /// </summary>
-    public class JwtAuthenticationService(IOptions<JwtOptions> jwtOptions) : IJwtAuthenticationService
-    {
+    public class JwtAuthenticationService(IOptions<JwtOptions> jwtOptions) : IJwtAuthenticationService {
         private readonly JwtOptions _jwtOptions = jwtOptions?.Value ?? throw new ArgumentNullException(nameof(jwtOptions));
         private readonly JwtSecurityTokenHandler _tokenHandler = new();
 
         /// <summary>
         /// 生成JWT令牌
         /// </summary>
-        public string GenerateToken(string userId, string userName, UserRole role, bool rememberMe = false)
-        {
+        public string GenerateToken(string userId, string userName, UserRole role, bool rememberMe = false) {
             var claims = new List<Claim> {
                 new(JwtRegisteredClaimNames.Sub, userId),
                 new(JwtRegisteredClaimNames.UniqueName, userName),
@@ -54,12 +51,9 @@ namespace LYBT.Module.Auth.Services
         /// <summary>
         /// 验证JWT令牌
         /// </summary>
-        public ClaimsPrincipal? ValidateToken(string token)
-        {
-            try
-            {
-                var validationParameters = new TokenValidationParameters
-                {
+        public ClaimsPrincipal? ValidateToken(string token) {
+            try {
+                var validationParameters = new TokenValidationParameters {
                     ValidateIssuer = true,
                     ValidateAudience = true,
                     ValidateLifetime = true,
@@ -72,9 +66,7 @@ namespace LYBT.Module.Auth.Services
 
                 var principal = _tokenHandler.ValidateToken(token, validationParameters, out _);
                 return principal;
-            }
-            catch
-            {
+            } catch {
                 return null;
             }
         }
@@ -82,19 +74,16 @@ namespace LYBT.Module.Auth.Services
         /// <summary>
         /// 刷新JWT令牌
         /// </summary>
-        public string RefreshToken(string token)
-        {
+        public string RefreshToken(string token) {
             var principal = ValidateToken(token);
-            if (principal == null)
-            {
+            if (principal == null) {
                 throw new SecurityTokenException("Invalid token");
             }
 
             var userId = principal.FindFirst(JwtRegisteredClaimNames.Sub)?.Value ?? string.Empty;
             var userName = principal.FindFirst(JwtRegisteredClaimNames.UniqueName)?.Value ?? string.Empty;
             var roleString = principal.FindFirst(ClaimTypes.Role)?.Value ?? "Doctor";
-            if (Enum.TryParse<UserRole>(roleString, out var role))
-            {
+            if (Enum.TryParse<UserRole>(roleString, out var role)) {
                 return GenerateToken(userId, userName, role);
             }
 
@@ -104,31 +93,25 @@ namespace LYBT.Module.Auth.Services
         /// <summary>
         /// 从令牌中提取用户信息
         /// </summary>
-        public TokenUserInfo? ExtractUserInfo(string token)
-        {
-            try
-            {
+        public TokenUserInfo? ExtractUserInfo(string token) {
+            try {
                 var jsonToken = _tokenHandler.ReadJwtToken(token);
 
                 var userId = jsonToken.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Sub)?.Value ?? string.Empty;
                 var userName = jsonToken.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.UniqueName)?.Value ?? string.Empty;
                 var roleString = jsonToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value ?? "Doctor";
 
-                if (!Enum.TryParse<UserRole>(roleString, out var role))
-                {
+                if (!Enum.TryParse<UserRole>(roleString, out var role)) {
                     role = UserRole.Doctor;
                 }
 
-                return new TokenUserInfo
-                {
+                return new TokenUserInfo {
                     UserId = userId,
                     UserName = userName,
                     Role = role,
                     ExpiresAt = jsonToken.ValidTo
                 };
-            }
-            catch
-            {
+            } catch {
                 return null;
             }
         }

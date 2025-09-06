@@ -1,20 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using LYBT.Module.Prescriptions.Interfaces;
+﻿using LYBT.Module.Prescriptions.Interfaces;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 
-namespace LYBT.Module.Prescriptions.Services
-{
+namespace LYBT.Module.Prescriptions.Services {
+
     /// <summary>
     /// 处方服务 - UltraThink双层架构纯委托模式
     /// </summary>
     public class PrescriptionService(
         IPrescriptionQueryService queryService,
-        IPrescriptionBusinessService businessService) : IPrescriptionService
-    {
+        IPrescriptionBusinessService businessService) : IPrescriptionService {
         private readonly IPrescriptionQueryService _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
         private readonly IPrescriptionBusinessService _businessService = businessService ?? throw new ArgumentNullException(nameof(businessService));
 
@@ -35,52 +31,43 @@ namespace LYBT.Module.Prescriptions.Services
         public async Task<ServiceResult<List<PrescriptionDto>>> SearchAsync(string keyword)
             => await _queryService.SearchAsync(keyword);
 
-        public async Task<List<PrescriptionDto>> GetAllAsync()
-        {
+        public async Task<List<PrescriptionDto>> GetAllAsync() {
             var result = await _queryService.GetAllAsync();
             return result.IsSuccess ? (result.Data ?? []) : [];
         }
 
-        public async Task<List<PrescriptionDto>> GetDoctorTodayPrescriptionsAsync(Guid doctorId)
-        {
+        public async Task<List<PrescriptionDto>> GetDoctorTodayPrescriptionsAsync(Guid doctorId) {
             var result = await _queryService.GetDoctorTodayPrescriptionsAsync(doctorId);
             return result.IsSuccess ? (result.Data ?? []) : [];
         }
 
-        #endregion
+        #endregion Query Operations
 
         #region Business Operations
 
-        public Task<ServiceResult<PrescriptionDto>> CreateAsync(PrescriptionCreateDto dto)
-        {
+        public Task<ServiceResult<PrescriptionDto>> CreateAsync(PrescriptionCreateDto dto) {
             return Task.FromResult(ServiceResult<PrescriptionDto>.Failure("CreateAsync方法需要在BusinessService中实现"));
         }
 
-        public Task<ServiceResult<PrescriptionDto>> UpdateAsync(Guid id, PrescriptionEditDto dto)
-        {
+        public Task<ServiceResult<PrescriptionDto>> UpdateAsync(Guid id, PrescriptionEditDto dto) {
             return Task.FromResult(ServiceResult<PrescriptionDto>.Failure("UpdateAsync方法需要在BusinessService中实现"));
         }
 
-        public Task<ServiceResult<bool>> DeleteAsync(Guid id)
-        {
+        public Task<ServiceResult<bool>> DeleteAsync(Guid id) {
             return Task.FromResult(ServiceResult<bool>.Failure("DeleteAsync方法需要在BusinessService中实现"));
         }
 
-        public Task<ServiceResult<PrescriptionValidationResult>> ValidateAsync(PrescriptionCreateDto dto)
-        {
-            var result = new PrescriptionValidationResult
-            {
+        public Task<ServiceResult<PrescriptionValidationResult>> ValidateAsync(PrescriptionCreateDto dto) {
+            var result = new PrescriptionValidationResult {
                 IsValid = !string.IsNullOrWhiteSpace(dto.Diagnosis) && dto.PatientId != Guid.Empty,
                 Errors = []
             };
 
-            if (string.IsNullOrWhiteSpace(dto.Diagnosis))
-            {
+            if (string.IsNullOrWhiteSpace(dto.Diagnosis)) {
                 result.Errors.Add("处方诊断不能为空");
             }
 
-            if (dto.PatientId == Guid.Empty)
-            {
+            if (dto.PatientId == Guid.Empty) {
                 result.Errors.Add("患者ID不能为空");
             }
 
@@ -88,35 +75,29 @@ namespace LYBT.Module.Prescriptions.Services
             return Task.FromResult(ServiceResult<PrescriptionValidationResult>.Success(result));
         }
 
-        public async Task<ServiceResult<PrescriptionDto>> CopyAsync(Guid id, string newName)
-        {
+        public async Task<ServiceResult<PrescriptionDto>> CopyAsync(Guid id, string newName) {
             var operatorId = Guid.Empty;
             var operatorName = "System";
             return await _businessService.CopyAsync(id, newName, operatorId, operatorName);
         }
 
-        public async Task<PrescriptionDto?> CopyLastPrescriptionAsync(Guid patientId, Guid doctorId, Guid operatorId, string operatorName)
-        {
+        public async Task<PrescriptionDto?> CopyLastPrescriptionAsync(Guid patientId, Guid doctorId, Guid operatorId, string operatorName) {
             var result = await _businessService.CopyLastPrescriptionAsync(patientId, doctorId, operatorId, operatorName);
             return result.IsSuccess ? result.Data : null;
         }
 
-        public async Task<PrescriptionDto?> CreateFromTemplateAsync(Guid templateId, Guid patientId, Guid doctorId, Guid operatorId, string operatorName)
-        {
+        public async Task<PrescriptionDto?> CreateFromTemplateAsync(Guid templateId, Guid patientId, Guid doctorId, Guid operatorId, string operatorName) {
             var result = await _businessService.CreateFromTemplateAsync(templateId, patientId, doctorId, operatorId, operatorName);
             return result.IsSuccess ? result.Data : null;
         }
 
-        public async Task<bool> QuickSaveAsync(Guid prescriptionId, QuickPrescriptionDto dto, Guid operatorId, string operatorName)
-        {
+        public async Task<bool> QuickSaveAsync(Guid prescriptionId, QuickPrescriptionDto dto, Guid operatorId, string operatorName) {
             var result = await _businessService.QuickSaveAsync(prescriptionId, dto, operatorId, operatorName);
             return result.IsSuccess && result.Data;
         }
 
-        public async Task<bool> CancelAsync(string id, Guid operatorId, string operatorName)
-        {
-            if (!Guid.TryParse(id, out var guid))
-            {
+        public async Task<bool> CancelAsync(string id, Guid operatorId, string operatorName) {
+            if (!Guid.TryParse(id, out var guid)) {
                 return false;
             }
 
@@ -124,6 +105,6 @@ namespace LYBT.Module.Prescriptions.Services
             return result.IsSuccess && result.Data;
         }
 
-        #endregion
+        #endregion Business Operations
     }
 }

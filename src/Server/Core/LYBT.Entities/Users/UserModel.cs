@@ -3,16 +3,16 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using LYBT.Shared.Models.Enums;
 
-namespace LYBT.Entities.Users
-{
+namespace LYBT.Entities.Users {
+
     /// <summary>
     /// 用户实体 - UltraThink v2.0架构简化版
     /// 合并了原BaseUser和UserModel，包含医生功能
     /// 删除五笔码字段，保留拼音码用于快速搜索
     /// </summary>
     [Table("Users")]
-    public class User
-    {
+    public class User {
+
         /// <summary>用户唯一标识</summary>
         [Key]
         [DisplayName("用户ID")]
@@ -111,5 +111,4 @@ namespace LYBT.Entities.Users
         [StringLength(500)]
         public string? Remark { get; set; }
     }
-
 }

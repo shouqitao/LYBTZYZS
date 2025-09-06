@@ -1,62 +1,62 @@
-<UserControl x:Class="LYBT.Desktop.Core.Controls.SmartLoadingIndicator"
+﻿<UserControl x:Class="LYBT.Desktop.Core.Controls.SmartLoadingIndicator"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:local="clr-namespace:LYBT.Desktop.Core.Controls"
              mc:Ignorable="d">
-    
+
     <UserControl.Resources>
         <!-- 现代化旋转动画 -->
         <Storyboard x:Key="SpinAnimation" RepeatBehavior="Forever">
             <DoubleAnimation Storyboard.TargetName="SpinnerRotateTransform"
                            Storyboard.TargetProperty="Angle"
-                           From="0" To="360" Duration="0:0:2"/>
+                           From="0" To="360" Duration="0:0:2" />
         </Storyboard>
 
         <!-- 进度条样式 -->
         <Style x:Key="ModernProgressBarStyle" TargetType="ProgressBar">
-            <Setter Property="Foreground" Value="#4A90E2"/>
-            <Setter Property="Background" Value="#E8E8E8"/>
-            <Setter Property="Height" Value="4"/>
-            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Foreground" Value="#4A90E2" />
+            <Setter Property="Background" Value="#E8E8E8" />
+            <Setter Property="Height" Value="4" />
+            <Setter Property="BorderThickness" Value="0" />
         </Style>
     </UserControl.Resources>
 
     <UserControl.Triggers>
         <DataTrigger Binding="{Binding IsLoadingVisible, RelativeSource={RelativeSource Self}}" Value="True">
             <DataTrigger.EnterActions>
-                <BeginStoryboard Storyboard="{StaticResource SpinAnimation}"/>
+                <BeginStoryboard Storyboard="{StaticResource SpinAnimation}" />
             </DataTrigger.EnterActions>
         </DataTrigger>
     </UserControl.Triggers>
 
-    <Border Background="White" 
-            BorderBrush="#E0E0E0" 
+    <Border Background="White"
+            BorderBrush="#E0E0E0"
             BorderThickness="1"
             CornerRadius="4"
             Padding="12"
             Visibility="{Binding IsLoadingVisible, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={x:Static local:BooleanToVisibilityConverter.Instance}}">
-        
+
         <Grid>
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
             <!-- 加载动画和消息 -->
             <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,8">
                 <!-- 简化的旋转加载器 -->
                 <Grid Width="20" Height="20" Margin="0,0,8,0">
-                    <Ellipse Width="16" Height="16" 
-                             Stroke="#4A90E2" 
+                    <Ellipse Width="16" Height="16"
+                             Stroke="#4A90E2"
                              StrokeThickness="2"
                              StrokeDashArray="10 5"
                              RenderTransformOrigin="0.5,0.5">
                         <Ellipse.RenderTransform>
-                            <RotateTransform x:Name="SpinnerRotateTransform" Angle="0"/>
+                            <RotateTransform x:Name="SpinnerRotateTransform" Angle="0" />
                         </Ellipse.RenderTransform>
                     </Ellipse>
                 </Grid>
@@ -64,7 +64,7 @@
                 <TextBlock Text="{Binding LoadingMessage, RelativeSource={RelativeSource AncestorType=UserControl}}"
                            VerticalAlignment="Center"
                            FontSize="12"
-                           Foreground="#666666"/>
+                           Foreground="#666666" />
             </StackPanel>
 
             <!-- 进度条（仅在支持进度时显示） -->
@@ -72,7 +72,7 @@
                          Style="{StaticResource ModernProgressBarStyle}"
                          Value="{Binding ProgressValue, RelativeSource={RelativeSource AncestorType=UserControl}}"
                          Visibility="{Binding ShowProgress, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={x:Static local:BooleanToVisibilityConverter.Instance}}"
-                         Margin="0,4,0,8"/>
+                         Margin="0,4,0,8" />
 
             <!-- 进度文本 -->
             <TextBlock Grid.Row="2"
@@ -81,7 +81,7 @@
                        Foreground="#888888"
                        HorizontalAlignment="Right"
                        Visibility="{Binding ShowProgress, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={x:Static local:BooleanToVisibilityConverter.Instance}}"
-                       Margin="0,0,0,8"/>
+                       Margin="0,0,0,8" />
 
             <!-- 取消按钮（可选） - UltraThink Command绑定优化 -->
             <Button Grid.Row="3"
@@ -94,7 +94,7 @@
                     Visibility="{Binding ShowCancelButton, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={x:Static local:BooleanToVisibilityConverter.Instance}}"
                     Background="#F5F5F5"
                     BorderBrush="#D0D0D0"
-                    BorderThickness="1"/>
+                    BorderThickness="1" />
         </Grid>
     </Border>
 </UserControl>

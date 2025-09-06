@@ -1,16 +1,13 @@
-﻿using System.Threading.Tasks;
-using LYBT.Shared.Models.Contracts.Common;
-using Prism.Navigation;
-using Prism.Regions;
+﻿using Prism.Regions;
 
-namespace LYBT.Desktop.Workbench.Core
-{
+namespace LYBT.Desktop.Workbench.Core {
+
     /// <summary>
     /// 工作台导航器接口
     /// 每个工作台实现自己的导航逻辑
     /// </summary>
-    public interface IWorkbenchNavigator
-    {
+    public interface IWorkbenchNavigator {
+
         /// <summary>
         /// 导航到指定视图
         /// </summary>

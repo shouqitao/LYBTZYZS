@@ -3,21 +3,20 @@ using LYBT.Entities.Formula;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Enums;
 
-namespace LYBT.Module.Formula.Mapping
-{
+namespace LYBT.Module.Formula.Mapping {
+
     /// <summary>
     /// 简化的验方管理AutoMapper映射配置
     /// </summary>
-    public class FormulaMappingProfile : Profile
-    {
-        public FormulaMappingProfile()
-        {
+    public class FormulaMappingProfile : Profile {
+
+        public FormulaMappingProfile() {
             // Formula -> FormulaDto - UltraThink v2.0简化版
             CreateMap<LYBT.Entities.Formula.Formula, FormulaDto>()
                 .ForMember(dest => dest.HerbCount, opt => opt.Ignore()) // 计算属性，由DTO自动计算
                 .ForMember(dest => dest.TotalPrice, opt => opt.Ignore()); // 计算属性，由DTO自动计算
 
-            // Formula -> FormulaDetailDto  
+            // Formula -> FormulaDetailDto
             CreateMap<LYBT.Entities.Formula.Formula, FormulaDetailDto>()
                 .ForMember(dest => dest.HerbCount, opt => opt.Ignore()) // 计算属性，由DTO自动计算
                 .ForMember(dest => dest.TotalPrice, opt => opt.Ignore()) // 计算属性，由DTO自动计算

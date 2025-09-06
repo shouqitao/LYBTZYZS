@@ -1,14 +1,14 @@
 ﻿using System.ComponentModel;
 using System.Text.Json.Serialization;
 
-namespace LYBT.Shared.Models.Enums
-{
+namespace LYBT.Shared.Models.Enums {
+
     /// <summary>
     /// 认证会话状态枚举
     /// </summary>
     [JsonConverter(typeof(JsonStringEnumConverter))]
-    public enum AuthSessionStatus
-    {
+    public enum AuthSessionStatus {
+
         /// <summary>活跃中</summary>
         [Description("活跃中")]
         Active = 0,
@@ -34,8 +34,8 @@ namespace LYBT.Shared.Models.Enums
     /// 安全级别枚举
     /// </summary>
     [JsonConverter(typeof(JsonStringEnumConverter))]
-    public enum SecurityLevel
-    {
+    public enum SecurityLevel {
+
         /// <summary>低级</summary>
         [Description("低级")]
         Low = 0,
@@ -61,8 +61,8 @@ namespace LYBT.Shared.Models.Enums
     /// 认证事件类型枚举
     /// </summary>
     [JsonConverter(typeof(JsonStringEnumConverter))]
-    public enum AuthEventType
-    {
+    public enum AuthEventType {
+
         /// <summary>登录成功</summary>
         [Description("登录成功")]
         LoginSuccess = 0,
@@ -136,8 +136,8 @@ namespace LYBT.Shared.Models.Enums
     /// 登录类型枚举
     /// </summary>
     [JsonConverter(typeof(JsonStringEnumConverter))]
-    public enum LoginType
-    {
+    public enum LoginType {
+
         /// <summary>密码登录</summary>
         [Description("密码登录")]
         Password = 0,
@@ -171,8 +171,8 @@ namespace LYBT.Shared.Models.Enums
     /// 用户角色枚举
     /// </summary>
     [JsonConverter(typeof(JsonStringEnumConverter))]
-    public enum UserRole
-    {
+    public enum UserRole {
+
         /// <summary>管理员</summary>
         [Description("管理员")]
         Admin = 0,

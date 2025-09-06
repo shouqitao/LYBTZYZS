@@ -1,13 +1,11 @@
-﻿using System.Threading.Tasks;
+﻿namespace LYBT.Desktop.Core.Services.Settings {
 
-namespace LYBT.Desktop.Core.Services.Settings
-{
     /// <summary>
     /// UltraThink Phase H: 用户偏好设置服务接口
     /// 提供个性化用户体验设置的持久化管理
     /// </summary>
-    public interface IUserPreferencesService
-    {
+    public interface IUserPreferencesService {
+
         /// <summary>
         /// 获取用户偏好设置
         /// </summary>
@@ -37,8 +35,8 @@ namespace LYBT.Desktop.Core.Services.Settings
     /// <summary>
     /// 用户偏好设置数据模型
     /// </summary>
-    public class UserPreferences
-    {
+    public class UserPreferences {
+
         /// <summary>
         /// 窗口设置
         /// </summary>
@@ -68,8 +66,7 @@ namespace LYBT.Desktop.Core.Services.Settings
     /// <summary>
     /// 窗口相关设置
     /// </summary>
-    public class WindowSettings
-    {
+    public class WindowSettings {
         public double Width { get; set; } = 1200;
         public double Height { get; set; } = 800;
         public double Left { get; set; } = 100;
@@ -81,8 +78,7 @@ namespace LYBT.Desktop.Core.Services.Settings
     /// <summary>
     /// 主题相关设置
     /// </summary>
-    public class ThemeSettings
-    {
+    public class ThemeSettings {
         public string ThemeName { get; set; } = "Default";
         public int FontSize { get; set; } = 14;
         public string FontFamily { get; set; } = "Microsoft YaHei";
@@ -92,8 +88,7 @@ namespace LYBT.Desktop.Core.Services.Settings
     /// <summary>
     /// 工作流相关设置
     /// </summary>
-    public class WorkflowSettings
-    {
+    public class WorkflowSettings {
         public string DefaultWorkbench { get; set; } = "Auto";
         public bool AutoSaveEnabled { get; set; } = true;
         public int AutoSaveInterval { get; set; } = 300; // 秒
@@ -103,8 +98,7 @@ namespace LYBT.Desktop.Core.Services.Settings
     /// <summary>
     /// 键盘快捷键设置
     /// </summary>
-    public class KeyboardSettings
-    {
+    public class KeyboardSettings {
         public bool EnableKeyboardShortcuts { get; set; } = true;
         public Dictionary<string, string> CustomShortcuts { get; set; } = new();
     }

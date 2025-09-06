@@ -1,16 +1,14 @@
 ﻿using System.ComponentModel;
 using System.Text.Json.Serialization;
 
-namespace LYBT.Shared.Models.Enums
-{
+namespace LYBT.Shared.Models.Enums {
 
     /// <summary>
     /// 性别枚举 - 前后端共享
     /// </summary>
     [Description("性别")]
     [JsonConverter(typeof(JsonStringEnumConverter))]
-    public enum Gender
-    {
+    public enum Gender {
 
         /// <summary>未知</summary>
         [Description("未知")]
