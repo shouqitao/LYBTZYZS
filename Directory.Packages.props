@@ -25,8 +25,8 @@
     <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="9.0.0" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.0" />
     
-    <!-- 对象映射 -->
-    <PackageVersion Include="AutoMapper" Version="15.0.1" />
+    <!-- 对象映射 - 使用MIT开源版本 -->
+    <PackageVersion Include="AutoMapper" Version="14.0.0" />
   </ItemGroup>
 
   <ItemGroup Label="Web API Packages">

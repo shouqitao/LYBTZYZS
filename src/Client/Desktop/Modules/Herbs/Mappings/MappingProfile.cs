@@ -81,12 +81,11 @@ namespace LYBT.Desktop.Herbs.Mappings {
         }
 
         /// <summary>
-        /// 创建AutoMapper实例 - 包含ILoggerFactory参数
+        /// 创建AutoMapper实例 - 使用开源版本14.0.0
         /// </summary>
         public static IMapper CreateMapper() {
             var config = new MapperConfiguration(cfg =>
-                cfg.AddProfile(new MappingProfile()),
-                NullLoggerFactory.Instance);
+                cfg.AddProfile(new MappingProfile()));
 
             return config.CreateMapper();
         }

@@ -1,0 +1,29 @@
+=== Desktop 解决方案 ===
+项目
+--
+src\Client\Desktop\Core\LYBT.Desktop.Core.csproj
+src\Client\Desktop\Infrastructure\LYBT.Desktop.Infrastructure.csproj
+src\Client\Desktop\Services\LYBT.Desktop.Services.csproj
+src\Client\Desktop\Shell\LYBT.Desktop.Shell.csproj
+src\Client\Desktop\Workbenches\ConsultationWorkbench\LYBT.Desktop.Workbench.Consultation.csproj
+src\Client\Desktop\Workbenches\Core\LYBT.Desktop.Workbench.Core.csproj
+src\Client\Desktop\Workbenches\SystemWorkbench\LYBT.Desktop.Workbench.Admin.csproj
+src\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj
+src\Shared\LYBT.Shared.Utilities\LYBT.Shared.Utilities.csproj
+
+=== Server 解决方案 ===
+项目
+--
+src\Server\Core\LYBT.Entities\LYBT.Entities.csproj
+src\Server\Core\LYBT.Infrastructure\LYBT.Infrastructure.csproj
+src\Server\Modules\LYBT.Module.Auth\LYBT.Module.Auth.csproj
+src\Server\Modules\LYBT.Module.Consultation\LYBT.Module.Consultation.csproj
+src\Server\Modules\LYBT.Module.Formula\LYBT.Module.Formula.csproj
+src\Server\Modules\LYBT.Module.Herbs\LYBT.Module.Herbs.csproj
+src\Server\Modules\LYBT.Module.MedicalCase\LYBT.Module.MedicalCase.csproj
+src\Server\Modules\LYBT.Module.Patients\LYBT.Module.Patients.csproj
+src\Server\Modules\LYBT.Module.Prescriptions\LYBT.Module.Prescriptions.csproj
+src\Server\Modules\LYBT.Module.Users\LYBT.Module.Users.csproj
+src\Server\Services\LYBT.WebAPI\LYBT.WebAPI.csproj
+src\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj
+src\Shared\LYBT.Shared.Utilities\LYBT.Shared.Utilities.csproj
