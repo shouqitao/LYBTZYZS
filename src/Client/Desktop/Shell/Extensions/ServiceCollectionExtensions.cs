@@ -151,30 +151,68 @@ namespace LYBT.Desktop.Shell.Extensions
         }
 
         /// <summary>
-        /// 手动注册模块服务（回退方案）
+        /// DT-003优化: 分层模块服务注册 - 按依赖层级防止循环依赖
+        /// 基于依赖分析结果的5层注册策略，确保服务解析顺序正确
         /// </summary>
         private static void RegisterModuleServicesManually(IContainerRegistry containerRegistry)
         {
-            // 保留关键模块的手动注册作为回退方案
-
-            // Auth服务注册 - DT-001/DT-002修复: 适配器模式 + 标准IoC注册
-            // UltraThink双层架构依赖注册
+            // Layer 1: 基础层 - 无外部依赖的基础模块（优先注册）
+            RegisterLayer1BasicModules(containerRegistry);
+            
+            // Layer 2: 认证层 - 依赖基础层
+            RegisterLayer2AuthModules(containerRegistry);
+            
+            // Layer 3: 业务数据层 - 依赖认证层
+            RegisterLayer3BusinessDataModules(containerRegistry);
+            
+            // Layer 4: 流程协调层 - 依赖业务数据层
+            RegisterLayer4ProcessModules(containerRegistry);
+            
+            // Layer 5: 聚合服务层 - 依赖流程协调层
+            RegisterLayer5AggregationModules(containerRegistry);
+        }
+        
+        /// <summary>
+        /// Layer 1: 基础模块注册 - Herbs, Formula (无外部依赖)
+        /// </summary>
+        private static void RegisterLayer1BasicModules(IContainerRegistry containerRegistry)
+        {
+            // Herbs模块 - 基础药材数据，无外部依赖
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Herbs.Interfaces.IHerbQueryService,
+                LYBT.Desktop.Herbs.Services.HerbQueryService>();
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Herbs.Interfaces.IHerbBusinessService,
+                LYBT.Desktop.Herbs.Services.HerbBusinessService>();
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Herbs.Services.HerbModule>();
+            containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Services.IHerbService,
+                LYBT.Desktop.Herbs.Services.HerbModule>();
+                
+            // Formula模块 - 验方模板数据，无外部依赖
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Formula.Interfaces.IFormulaQueryService,
+                LYBT.Desktop.Formula.Services.FormulaQueryService>();
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Formula.Interfaces.IFormulaBusinessService,
+                LYBT.Desktop.Formula.Services.FormulaBusinessService>();
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Formula.Services.FormulaModule>();
+            containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Services.IFormulaService,
+                LYBT.Desktop.Formula.Services.FormulaModule>();
+        }
+        
+        /// <summary>
+        /// Layer 2: 认证模块注册 - 依赖基础层
+        /// </summary>
+        private static void RegisterLayer2AuthModules(IContainerRegistry containerRegistry)
+        {
+            // Auth模块 - DT-001/DT-002修复: 适配器模式 + 标准IoC注册
             containerRegistry.RegisterSingleton<LYBT.Desktop.Auth.Interfaces.IAuthQueryService,
                 LYBT.Desktop.Auth.Services.AuthQueryService>();
             containerRegistry.RegisterSingleton<LYBT.Desktop.Auth.Interfaces.IAuthBusinessService,
                 LYBT.Desktop.Auth.Services.AuthBusinessService>();
-            
-            // 主Module注册 - 专注IAuthService业务API
             containerRegistry.RegisterSingleton<LYBT.Desktop.Auth.Services.AuthModule>();
             containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Services.IAuthService, 
                 LYBT.Desktop.Auth.Services.AuthModule>();
-            
-            // 适配器注册 - 专注IAuthenticationService UI认证
             containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.IAuthenticationService,
                 LYBT.Desktop.Auth.Services.AuthServiceAdapter>();
-
-            // User服务注册 - DT-002修复: 标准IoC注册，避免工厂委托
-            // UltraThink双层架构依赖注册
+                
+            // Users模块 - 依赖认证模块
             containerRegistry.RegisterSingleton<LYBT.Desktop.Users.Interfaces.IUserQueryService,
                 LYBT.Desktop.Users.Services.UserQueryService>();
             containerRegistry.RegisterSingleton<LYBT.Desktop.Users.Interfaces.IUserBusinessService,
@@ -182,9 +220,14 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterSingleton<LYBT.Desktop.Users.Services.UserModule>();
             containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Services.IUserService, 
                 LYBT.Desktop.Users.Services.UserModule>();
-
-            // Patient服务注册 - DT-002修复: 标准IoC注册，避免工厂委托
-            // UltraThink双层架构依赖注册
+        }
+        
+        /// <summary>
+        /// Layer 3: 业务数据模块注册 - 依赖认证层
+        /// </summary>
+        private static void RegisterLayer3BusinessDataModules(IContainerRegistry containerRegistry)
+        {
+            // Patients模块 - 患者档案管理
             containerRegistry.RegisterSingleton<LYBT.Desktop.Patients.Interfaces.IPatientQueryService,
                 LYBT.Desktop.Patients.Services.PatientQueryService>();
             containerRegistry.RegisterSingleton<LYBT.Desktop.Patients.Interfaces.IPatientBusinessService,
@@ -192,6 +235,45 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterSingleton<LYBT.Desktop.Patients.Services.PatientModule>();
             containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Services.IPatientService,
                 LYBT.Desktop.Patients.Services.PatientModule>();
+        }
+        
+        /// <summary>
+        /// Layer 4: 流程协调模块注册 - 依赖业务数据层
+        /// </summary>
+        private static void RegisterLayer4ProcessModules(IContainerRegistry containerRegistry)
+        {
+            // MedicalCase模块 - 医案流程管理
+            containerRegistry.RegisterSingleton<LYBT.Desktop.MedicalCase.Interfaces.IMedicalCaseQueryService,
+                LYBT.Desktop.MedicalCase.Services.MedicalCaseQueryService>();
+            containerRegistry.RegisterSingleton<LYBT.Desktop.MedicalCase.Interfaces.IMedicalCaseBusinessService,
+                LYBT.Desktop.MedicalCase.Services.MedicalCaseBusinessService>();
+            containerRegistry.RegisterSingleton<LYBT.Desktop.MedicalCase.Services.MedicalCaseModule>();
+            containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Services.IMedicalCaseService,
+                LYBT.Desktop.MedicalCase.Services.MedicalCaseModule>();
+                
+            // Consultation模块 - 诊断流程
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Consultation.Interfaces.IConsultationQueryService,
+                LYBT.Desktop.Consultation.Services.ConsultationQueryService>();
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Consultation.Interfaces.IConsultationBusinessService,
+                LYBT.Desktop.Consultation.Services.ConsultationBusinessService>();
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Consultation.Services.ConsultationModule>();
+            containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Services.IConsultationService,
+                LYBT.Desktop.Consultation.Services.ConsultationModule>();
+        }
+        
+        /// <summary>
+        /// Layer 5: 聚合服务模块注册 - 依赖流程协调层
+        /// </summary>
+        private static void RegisterLayer5AggregationModules(IContainerRegistry containerRegistry)
+        {
+            // Prescriptions模块 - 处方聚合服务（依赖Herbs, Formula, Consultation）
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Prescriptions.Interfaces.IPrescriptionsQueryService,
+                LYBT.Desktop.Prescriptions.Services.PrescriptionsQueryService>();
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Prescriptions.Interfaces.IPrescriptionsBusinessService,
+                LYBT.Desktop.Prescriptions.Services.PrescriptionsBusinessService>();
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Prescriptions.Services.PrescriptionsModule>();
+            containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Services.IPrescriptionService,
+                LYBT.Desktop.Prescriptions.Services.PrescriptionsModule>();
         }
 
         /// <summary>
@@ -301,9 +383,6 @@ namespace LYBT.Desktop.Shell.Extensions
             }
         }
 
-        /// <summary>
-        /// 注册性能优化服务
-        /// </summary>
         /// <summary>
         /// 注册性能优化服务
         /// </summary>
