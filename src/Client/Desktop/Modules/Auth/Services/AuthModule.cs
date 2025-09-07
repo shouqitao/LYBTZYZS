@@ -11,13 +11,17 @@ namespace LYBT.Desktop.Auth.Services;
 /// Auth模块主服务 - UltraThink双层架构纯委托层
 /// 采用UltraThink架构标准，使用C# 12现代化特性
 /// 职责：统一服务入口，请求路由分发到QueryService和BusinessService
-/// 实现IAuthService、IAuthenticationService双重接口兼容
+/// 
+/// DT-001修复: 移除IAuthenticationService接口实现，专注IAuthService业务API
+/// 架构优化: 单一职责原则，避免接口职责混乱
+/// 适配方案: UI层通过AuthServiceAdapter使用IAuthenticationService
+/// 
 /// 专注JWT认证、用户会话管理和权限控制，适配小型诊所认证需求
 /// 集成企业级错误处理，支持自动登录和静默重认证功能
 /// </summary>
 public class AuthModule(
     IAuthQueryService queryService,
-    IAuthBusinessService businessService) : IAuthService, IAuthenticationService
+    IAuthBusinessService businessService) : IAuthService
 {
     private readonly IAuthQueryService _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
     private readonly IAuthBusinessService _businessService = businessService ?? throw new ArgumentNullException(nameof(businessService));
@@ -34,25 +38,16 @@ public class AuthModule(
         => await _businessService.LoginAsync(loginRequest);
 
     /// <summary>
-    /// 用户登出 - IAuthModule版本
-    /// UltraThink架构：委托给标准登出方法统一处理
-    /// </summary>
-    /// <param name="logoutRequest">登出请求信息</param>
-    /// <returns>登出操作结果</returns>
-    public async Task<ServiceResult> LogoutAsync(LogoutRequest logoutRequest)
-        => await LogoutAsync(); // 委托给无参数版本
-
-    /// <summary>
-    /// 用户登出 - IAuthService版本
-    /// 接口适配器模式：将ServiceResult转换为ServiceResult&lt;bool&gt;
+    /// 用户登出 - IAuthService接口实现
+    /// 委托BusinessService处理完整登出流程
     /// </summary>
     /// <param name="logoutRequest">登出请求信息</param>
     /// <returns>带布尔值的登出操作结果</returns>
-    async Task<ServiceResult<bool>> IAuthService.LogoutAsync(LogoutRequest logoutRequest)
+    public async Task<ServiceResult<bool>> LogoutAsync(LogoutRequest logoutRequest)
     {
-        var result = await LogoutAsync();
+        var result = await _businessService.LogoutAsync();
         return result.IsSuccess
-            ? ServiceResult<bool>.Success(true)
+            ? ServiceResult<bool>.Success(true, result.Message ?? "登出成功")
             : ServiceResult<bool>.Failure(result.ErrorMessage ?? "登出失败");
     }
 
@@ -75,21 +70,12 @@ public class AuthModule(
         => Task.FromResult(ServiceResult<bool>.Success(false)); // 简单诊所版本简化实现
 
     /// <summary>
-    /// 修改系统管理员密码 - IAuthModule版本
+    /// 修改系统管理员密码 - IAuthService接口实现
     /// 委托BusinessService处理完整密码修改流程，包括验证和安全检查
     /// </summary>
     /// <param name="request">密码修改请求</param>
-    /// <returns>密码修改操作结果</returns>
-    public async Task<ServiceResult> ChangeSysAdminPasswordAsync(ChangeSysAdminPassword request)
-        => await _businessService.ChangeSysAdminPasswordAsync(request);
-
-    /// <summary>
-    /// 修改系统管理员密码 - IAuthService版本
-    /// 接口适配：将ServiceResult转换为ServiceResult&lt;bool&gt;
-    /// </summary>
-    /// <param name="request">密码修改请求</param>
     /// <returns>带布尔值的密码修改操作结果</returns>
-    async Task<ServiceResult<bool>> IAuthService.ChangeSysAdminPasswordAsync(ChangeSysAdminPassword request)
+    public async Task<ServiceResult<bool>> ChangeSysAdminPasswordAsync(ChangeSysAdminPassword request)
     {
         var result = await _businessService.ChangeSysAdminPasswordAsync(request);
         return result.IsSuccess
@@ -119,136 +105,11 @@ public class AuthModule(
     /// <returns>用户会话信息对象</returns>
     public async Task<ServiceResult<object>> GetSessionInfoAsync(string token)
     {
-        var userResult = await GetCurrentUserAsync();
+        var userResult = await _queryService.GetCurrentUser();
         return userResult.IsSuccess && userResult.Data != null
             ? ServiceResult<object>.Success(userResult.Data)
             : ServiceResult<object>.Failure("无法获取会话信息");
     }
 
     #endregion 基础认证操作 - 对应后端AuthController实际API
-
-    #region 基础状态管理 - 小型诊所简化版本
-
-    /// <summary>
-    /// 获取用户登录状态
-    /// 委托QueryService查询当前认证状态
-    /// </summary>
-    /// <value>如果用户已登录则返回 true</value>
-    public bool IsLoggedIn => _queryService.IsLoggedIn;
-
-    /// <summary>
-    /// 获取当前登录用户信息
-    /// 委托QueryService查询用户详细信息和权限
-    /// </summary>
-    /// <returns>当前用户DTO对象，未登录时返回null</returns>
-    public async Task<ServiceResult<UserDto?>> GetCurrentUserAsync()
-        => await _queryService.GetCurrentUser();
-
-    /// <summary>
-    /// 获取当前JWT认证令牌
-    /// 小型诊所版本简化：暂不实现令牌持久化存储
-    /// </summary>
-    /// <returns>始终返回null</returns>
-    public string? GetToken() => null; // 简化实现
-
-    /// <summary>
-    /// 设置JWT认证令牌
-    /// 小型诊所版本简化：暂不实现令牌存储
-    /// </summary>
-    /// <param name="token">JWT认证令牌</param>
-    public void SetToken(string token)
-    {
-        // 简化实现 - 不保存token
-    }
-
-    /// <summary>
-    /// 清除JWT认证令牌
-    /// 小型诊所版本简化：无实际操作
-    /// </summary>
-    public void ClearToken()
-    {
-        // 简化实现
-    }
-
-    /// <summary>
-    /// 清除所有认证状态
-    /// 用于用户注销时清理会话信息
-    /// </summary>
-    public void ClearAuthenticationState()
-    {
-        // 简化实现
-    }
-
-    #endregion 基础状态管理 - 小型诊所简化版本
-
-    #region IAuthenticationService接口兼容方法
-
-    /// <summary>
-    /// 清除认证信息
-    /// IAuthenticationService接口别名方法
-    /// </summary>
-    public void ClearAuthInfo() => ClearAuthenticationState();
-
-    /// <summary>
-    /// 检查API连接状态
-    /// 委托QueryService验证后端服务可用性
-    /// </summary>
-    /// <returns>连接正常时返回true</returns>
-    public async Task<bool> CheckConnectionAsync()
-        => (await _queryService.CheckConnectionAsync()).IsSuccess;
-
-    /// <summary>
-    /// 用户登出 - 无参数版本
-    /// IAuthenticationService接口实现，委托BusinessService处理
-    /// </summary>
-    /// <returns>登出操作结果</returns>
-    public async Task<ServiceResult> LogoutAsync()
-        => await _businessService.LogoutAsync();
-
-    /// <summary>
-    /// 获取当前用户信息 - IAuthenticationService版本
-    /// 接口适配：将ServiceResult&lt;UserDto?&gt;转换为UserDto?
-    /// </summary>
-    /// <returns>当前用户对象或null</returns>
-    async Task<UserDto?> IAuthenticationService.GetCurrentUserAsync()
-    {
-        var result = await _queryService.GetCurrentUser();
-        return result.IsSuccess ? result.Data : null;
-    }
-
-    #endregion IAuthenticationService接口兼容方法
-
-    #region 小型诊所简化功能（暂不支持）
-
-    /// <summary>
-    /// 自动登录功能
-    /// 小型诊所版本简化：暂不支持自动登录
-    /// </summary>
-    /// <returns>功能不支持错误</returns>
-    public Task<ServiceResult<LoginResponse>> AutoLoginAsync()
-        => Task.FromResult(ServiceResult<LoginResponse>.Failure("简单诊所版本不支持自动登录功能"));
-
-    /// <summary>
-    /// 静默重新认证
-    /// 小型诊所版本简化：暂不支持后台自动认证
-    /// </summary>
-    /// <returns>功能不支持错误</returns>
-    public Task<ServiceResult<bool>> SilentReauthenticationAsync()
-        => Task.FromResult(ServiceResult<bool>.Failure("简单诊所版本不支持静默重新认证功能"));
-
-    #endregion 小型诊所简化功能（暂不支持）
-
-    #region 资源清理与生命周期管理
-
-    /// <summary>
-    /// 释放Auth模块占用的资源
-    /// 实现IDisposable接口，确保资源正确清理
-    /// </summary>
-    public void Dispose()
-    {
-        // 清理资源，当前无需特殊清理操作
-        GC.SuppressFinalize(this);
-    }
-
-    #endregion 资源清理与生命周期管理
 }
