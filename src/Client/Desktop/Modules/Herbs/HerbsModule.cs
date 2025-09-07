@@ -5,7 +5,8 @@ using LYBT.Shared.Interfaces.Services;
 using Prism.Ioc;
 using Prism.Modularity;
 
-namespace LYBT.Desktop.Herbs {
+namespace LYBT.Desktop.Herbs
+{
 
     /// <summary>
     /// 中药材管理模块 - UltraThink双层架构Prism模块
@@ -15,13 +16,16 @@ namespace LYBT.Desktop.Herbs {
     /// 集成双层架构服务（QueryService + BusinessService + Module委托）
     /// 适配中医诊所药材管理流程，确保药材信息准确和处方选择便利性
     /// </summary>
-    public class HerbsModule : IModule {
+    public class HerbsModule : IModule
+    {
 
-        public void OnInitialized(IContainerProvider containerProvider) {
+        public void OnInitialized(IContainerProvider containerProvider)
+        {
             // 模块初始化完成后的操作
         }
 
-        public void RegisterTypes(IContainerRegistry containerRegistry) {
+        public void RegisterTypes(IContainerRegistry containerRegistry)
+        {
             // UltraThink双层架构服务注册
             containerRegistry.RegisterSingleton<LYBT.Desktop.Herbs.Interfaces.IHerbQueryService, HerbQueryService>();
             containerRegistry.RegisterSingleton<LYBT.Desktop.Herbs.Interfaces.IHerbBusinessService, HerbBusinessService>();

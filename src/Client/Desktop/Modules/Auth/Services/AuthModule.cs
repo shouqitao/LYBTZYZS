@@ -17,7 +17,8 @@ namespace LYBT.Desktop.Auth.Services;
 /// </summary>
 public class AuthModule(
     IAuthQueryService queryService,
-    IAuthBusinessService businessService) : IAuthService, IAuthenticationService {
+    IAuthBusinessService businessService) : IAuthService, IAuthenticationService
+{
     private readonly IAuthQueryService _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
     private readonly IAuthBusinessService _businessService = businessService ?? throw new ArgumentNullException(nameof(businessService));
 
@@ -47,7 +48,8 @@ public class AuthModule(
     /// </summary>
     /// <param name="logoutRequest">登出请求信息</param>
     /// <returns>带布尔值的登出操作结果</returns>
-    async Task<ServiceResult<bool>> IAuthService.LogoutAsync(LogoutRequest logoutRequest) {
+    async Task<ServiceResult<bool>> IAuthService.LogoutAsync(LogoutRequest logoutRequest)
+    {
         var result = await LogoutAsync();
         return result.IsSuccess
             ? ServiceResult<bool>.Success(true)
@@ -87,7 +89,8 @@ public class AuthModule(
     /// </summary>
     /// <param name="request">密码修改请求</param>
     /// <returns>带布尔值的密码修改操作结果</returns>
-    async Task<ServiceResult<bool>> IAuthService.ChangeSysAdminPasswordAsync(ChangeSysAdminPassword request) {
+    async Task<ServiceResult<bool>> IAuthService.ChangeSysAdminPasswordAsync(ChangeSysAdminPassword request)
+    {
         var result = await _businessService.ChangeSysAdminPasswordAsync(request);
         return result.IsSuccess
             ? ServiceResult<bool>.Success(true, result.Message ?? "密码修改成功")
@@ -100,7 +103,8 @@ public class AuthModule(
     /// </summary>
     /// <param name="request">登录凭据</param>
     /// <returns>验证成功时返回JWT令牌</returns>
-    public async Task<ServiceResult<string>> VerifyCredentialsAsync(LoginRequest request) {
+    public async Task<ServiceResult<string>> VerifyCredentialsAsync(LoginRequest request)
+    {
         var loginResult = await LoginAsync(request);
         return loginResult.IsSuccess && loginResult.Data != null
             ? ServiceResult<string>.Success(loginResult.Data.Token)
@@ -113,7 +117,8 @@ public class AuthModule(
     /// </summary>
     /// <param name="token">JWT认证令牌</param>
     /// <returns>用户会话信息对象</returns>
-    public async Task<ServiceResult<object>> GetSessionInfoAsync(string token) {
+    public async Task<ServiceResult<object>> GetSessionInfoAsync(string token)
+    {
         var userResult = await GetCurrentUserAsync();
         return userResult.IsSuccess && userResult.Data != null
             ? ServiceResult<object>.Success(userResult.Data)
@@ -137,7 +142,7 @@ public class AuthModule(
     /// </summary>
     /// <returns>当前用户DTO对象，未登录时返回null</returns>
     public async Task<ServiceResult<UserDto?>> GetCurrentUserAsync()
-        => await _queryService.GetCurrentUserAsync();
+        => await _queryService.GetCurrentUser();
 
     /// <summary>
     /// 获取当前JWT认证令牌
@@ -151,7 +156,8 @@ public class AuthModule(
     /// 小型诊所版本简化：暂不实现令牌存储
     /// </summary>
     /// <param name="token">JWT认证令牌</param>
-    public void SetToken(string token) {
+    public void SetToken(string token)
+    {
         // 简化实现 - 不保存token
     }
 
@@ -159,7 +165,8 @@ public class AuthModule(
     /// 清除JWT认证令牌
     /// 小型诊所版本简化：无实际操作
     /// </summary>
-    public void ClearToken() {
+    public void ClearToken()
+    {
         // 简化实现
     }
 
@@ -167,7 +174,8 @@ public class AuthModule(
     /// 清除所有认证状态
     /// 用于用户注销时清理会话信息
     /// </summary>
-    public void ClearAuthenticationState() {
+    public void ClearAuthenticationState()
+    {
         // 简化实现
     }
 
@@ -202,8 +210,9 @@ public class AuthModule(
     /// 接口适配：将ServiceResult&lt;UserDto?&gt;转换为UserDto?
     /// </summary>
     /// <returns>当前用户对象或null</returns>
-    async Task<UserDto?> IAuthenticationService.GetCurrentUserAsync() {
-        var result = await _queryService.GetCurrentUserAsync();
+    async Task<UserDto?> IAuthenticationService.GetCurrentUserAsync()
+    {
+        var result = await _queryService.GetCurrentUser();
         return result.IsSuccess ? result.Data : null;
     }
 
@@ -235,7 +244,8 @@ public class AuthModule(
     /// 释放Auth模块占用的资源
     /// 实现IDisposable接口，确保资源正确清理
     /// </summary>
-    public void Dispose() {
+    public void Dispose()
+    {
         // 清理资源，当前无需特殊清理操作
         GC.SuppressFinalize(this);
     }

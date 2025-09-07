@@ -3,17 +3,21 @@ using Prism.Commands;
 using Prism.Mvvm;
 using SharedCommon = LYBT.Shared.Models.Contracts.Common;
 
-namespace LYBT.Desktop.Shell.Dialogs.ViewModels {
+namespace LYBT.Desktop.Shell.Dialogs.ViewModels
+{
 
     /// <summary>
     /// 错误详情对话框视图模型
     /// </summary>
-    public class ErrorDetailsDialogViewModel : BindableBase {
+    public class ErrorDetailsDialogViewModel : BindableBase
+    {
         private SharedCommon.HandledError _handledError;
 
-        public SharedCommon.HandledError HandledError {
+        public SharedCommon.HandledError HandledError
+        {
             get => _handledError;
-            set {
+            set
+            {
                 SetProperty(ref _handledError, value);
                 UpdateProperties();
             }
@@ -47,7 +51,8 @@ namespace LYBT.Desktop.Shell.Dialogs.ViewModels {
 
         public event EventHandler? RetryRequested;
 
-        public ErrorDetailsDialogViewModel(SharedCommon.HandledError handledError) {
+        public ErrorDetailsDialogViewModel(SharedCommon.HandledError handledError)
+        {
             _handledError = handledError ?? throw new ArgumentNullException(nameof(handledError));
 
             CloseCommand = new DelegateCommand(ExecuteClose);
@@ -55,7 +60,8 @@ namespace LYBT.Desktop.Shell.Dialogs.ViewModels {
             CopyErrorCommand = new DelegateCommand(ExecuteCopyError);
         }
 
-        private void UpdateProperties() {
+        private void UpdateProperties()
+        {
             RaisePropertyChanged(nameof(Id));
             RaisePropertyChanged(nameof(UserMessage));
             RaisePropertyChanged(nameof(Category));
@@ -70,11 +76,13 @@ namespace LYBT.Desktop.Shell.Dialogs.ViewModels {
             RetryCommand.RaiseCanExecuteChanged();
         }
 
-        private List<KeyValuePair<string, string>> GetContextData() {
+        private List<KeyValuePair<string, string>> GetContextData()
+        {
             var data = new List<KeyValuePair<string, string>>();
 
             // 简化上下文数据显示
-            if (HandledError != null) {
+            if (HandledError != null)
+            {
                 data.Add(new KeyValuePair<string, string>("错误ID", Id));
                 data.Add(new KeyValuePair<string, string>("模块", Module));
                 data.Add(new KeyValuePair<string, string>("发生时间", Timestamp.ToString("yyyy-MM-dd HH:mm:ss")));
@@ -83,32 +91,40 @@ namespace LYBT.Desktop.Shell.Dialogs.ViewModels {
             return data;
         }
 
-        private void ExecuteClose() {
+        private void ExecuteClose()
+        {
             CloseRequested?.Invoke(this, EventArgs.Empty);
         }
 
-        private void ExecuteRetry() {
+        private void ExecuteRetry()
+        {
             RetryRequested?.Invoke(this, EventArgs.Empty);
         }
 
-        private bool CanExecuteRetry() {
+        private bool CanExecuteRetry()
+        {
             return CanRetry;
         }
 
-        private void ExecuteCopyError() {
-            try {
+        private void ExecuteCopyError()
+        {
+            try
+            {
                 var errorInfo = BuildErrorSummary();
                 Clipboard.SetText(errorInfo);
 
                 // 可以显示一个简短的成功提示
                 // 这里暂时使用调试输出
                 System.Diagnostics.Debug.WriteLine("错误信息已复制到剪贴板");
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 System.Diagnostics.Debug.WriteLine($"复制错误信息失败: {ex.Message}");
             }
         }
 
-        private string BuildErrorSummary() {
+        private string BuildErrorSummary()
+        {
             var summary = $@"错误详情报告
 =====================================
 

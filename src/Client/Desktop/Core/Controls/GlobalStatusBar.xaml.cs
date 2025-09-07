@@ -8,12 +8,14 @@ using System.Windows.Threading;
 using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.Services;
 
-namespace LYBT.Desktop.Core.Controls {
+namespace LYBT.Desktop.Core.Controls
+{
 
     /// <summary>
     /// 全局状态栏控件 - P7-04 UltraThink用户体验优化
     /// </summary>
-    public partial class GlobalStatusBar : UserControl, INotifyPropertyChanged {
+    public partial class GlobalStatusBar : UserControl, INotifyPropertyChanged
+    {
 
         #region 依赖属性
 
@@ -34,7 +36,8 @@ namespace LYBT.Desktop.Core.Controls {
 
         #region 构造函数
 
-        public GlobalStatusBar() {
+        public GlobalStatusBar()
+        {
             InitializeComponent();
             DataContext = this;
         }
@@ -44,7 +47,8 @@ namespace LYBT.Desktop.Core.Controls {
         #region 公共属性
 
         /// <summary>用户体验服务</summary>
-        public IUserExperienceService? UxService {
+        public IUserExperienceService? UxService
+        {
             get => (IUserExperienceService?)GetValue(UxServiceProperty);
             set => SetValue(UxServiceProperty, value);
         }
@@ -53,10 +57,10 @@ namespace LYBT.Desktop.Core.Controls {
         public bool IsGlobalLoading => UxService?.IsGlobalLoading ?? false;
 
         /// <summary>加载消息</summary>
-        public string LoadingMessage => UxService?.LoadingMessage ?? "";
+        public string LoadingMessage => UxService?.LoadingMessage ?? string.Empty;
 
         /// <summary>状态消息</summary>
-        public string StatusMessage => UxService?.StatusMessage ?? "";
+        public string StatusMessage => UxService?.StatusMessage ?? string.Empty;
 
         /// <summary>当前反馈类型</summary>
         public FeedbackType CurrentFeedbackType => UxService?.CurrentFeedbackType ?? FeedbackType.None;
@@ -69,13 +73,17 @@ namespace LYBT.Desktop.Core.Controls {
         #region 私有方法
 
         /// <summary>用户体验服务变更事件处理</summary>
-        private static void OnUxServiceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
-            if (d is GlobalStatusBar statusBar) {
-                if (e.OldValue is IUserExperienceService oldService) {
+        private static void OnUxServiceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is GlobalStatusBar statusBar)
+            {
+                if (e.OldValue is IUserExperienceService oldService)
+                {
                     oldService.PropertyChanged -= statusBar.UxService_PropertyChanged;
                 }
 
-                if (e.NewValue is IUserExperienceService newService) {
+                if (e.NewValue is IUserExperienceService newService)
+                {
                     statusBar._uxService = newService;
                     newService.PropertyChanged += statusBar.UxService_PropertyChanged;
                     statusBar.RefreshAllProperties();
@@ -84,9 +92,12 @@ namespace LYBT.Desktop.Core.Controls {
         }
 
         /// <summary>用户体验服务属性变更事件处理</summary>
-        private void UxService_PropertyChanged(object? sender, PropertyChangedEventArgs e) {
-            Dispatcher.BeginInvoke(() => {
-                switch (e.PropertyName) {
+        private void UxService_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            Dispatcher.BeginInvoke(() =>
+            {
+                switch (e.PropertyName)
+                {
                     case nameof(IUserExperienceService.IsGlobalLoading):
                         OnPropertyChanged(nameof(IsGlobalLoading));
                         break;
@@ -111,7 +122,8 @@ namespace LYBT.Desktop.Core.Controls {
         }
 
         /// <summary>刷新所有属性</summary>
-        private void RefreshAllProperties() {
+        private void RefreshAllProperties()
+        {
             OnPropertyChanged(nameof(IsGlobalLoading));
             OnPropertyChanged(nameof(LoadingMessage));
             OnPropertyChanged(nameof(StatusMessage));
@@ -125,7 +137,8 @@ namespace LYBT.Desktop.Core.Controls {
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null) {
+        protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+        {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
@@ -135,20 +148,24 @@ namespace LYBT.Desktop.Core.Controls {
     /// <summary>
     /// 反馈类型到可见性转换器
     /// </summary>
-    public class FeedbackTypeToVisibilityConverter : IMultiValueConverter {
+    public class FeedbackTypeToVisibilityConverter : IMultiValueConverter
+    {
         public static readonly FeedbackTypeToVisibilityConverter Instance = new();
 
-        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture) {
+        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+        {
             if (values.Length >= 2 &&
                 values[0] is FeedbackType current &&
                 values[1] is string target &&
-                Enum.TryParse<FeedbackType>(target, out var targetFeedbackType)) {
+                Enum.TryParse<FeedbackType>(target, out var targetFeedbackType))
+            {
                 return current == targetFeedbackType ? Visibility.Visible : Visibility.Collapsed;
             }
             return Visibility.Collapsed;
         }
 
-        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture) {
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+        {
             throw new NotImplementedException();
         }
     }
@@ -156,32 +173,39 @@ namespace LYBT.Desktop.Core.Controls {
     /// <summary>
     /// 系统时间提供器
     /// </summary>
-    public class SystemTimeProvider : INotifyPropertyChanged {
+    public class SystemTimeProvider : INotifyPropertyChanged
+    {
         public static readonly SystemTimeProvider Instance = new();
 
         private readonly DispatcherTimer _timer;
         private DateTime _currentTime;
 
-        private SystemTimeProvider() {
+        private SystemTimeProvider()
+        {
             _currentTime = DateTime.Now;
-            _timer = new DispatcherTimer {
+            _timer = new DispatcherTimer
+            {
                 Interval = TimeSpan.FromSeconds(1)
             };
             _timer.Tick += OnTimerTick;
             _timer.Start();
         }
 
-        public DateTime CurrentTime {
+        public DateTime CurrentTime
+        {
             get => _currentTime;
-            private set {
-                if (_currentTime != value) {
+            private set
+            {
+                if (_currentTime != value)
+                {
                     _currentTime = value;
                     PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CurrentTime)));
                 }
             }
         }
 
-        private void OnTimerTick(object sender, EventArgs e) {
+        private void OnTimerTick(object sender, EventArgs e)
+        {
             CurrentTime = DateTime.Now;
         }
 

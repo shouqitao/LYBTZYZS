@@ -3,13 +3,15 @@ using System.ComponentModel.DataAnnotations;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Enums;
 
-namespace LYBT.Shared.Models.Contracts.Consultation {
+namespace LYBT.Shared.Models.Contracts.Consultation
+{
 
     /// <summary>
     /// 看诊信息DTO - UltraThink v2.0简化版
     /// 与Consultation实体对齐，专注中医四诊
     /// </summary>
-    public class ConsultationDto : StatusDto, IRemarkable {
+    public class ConsultationDto : StatusDto, IRemarkable
+    {
 
         /// <summary>医疗案例ID</summary>
         [DisplayName("医疗案例ID")]
@@ -25,7 +27,8 @@ namespace LYBT.Shared.Models.Contracts.Consultation {
 
         /// <summary>医生ID（兼容性别名）</summary>
         [DisplayName("医生ID")]
-        public Guid DoctorId {
+        public Guid DoctorId
+        {
             get => UserId;
             set => UserId = value;
         }
@@ -75,7 +78,8 @@ namespace LYBT.Shared.Models.Contracts.Consultation {
 
         /// <summary>是否完成</summary>
         [DisplayName("是否完成")]
-        public bool IsCompleted {
+        public bool IsCompleted
+        {
             get => Status == CommonStatus.Enabled;
         }
     }
@@ -84,7 +88,8 @@ namespace LYBT.Shared.Models.Contracts.Consultation {
     /// 看诊详情DTO - 继承审计基础DTO + 备注接口
     /// 用于看诊详情的展示和传输
     /// </summary>
-    public class ConsultationDetailDto : TimestampDto, IRemarkable {
+    public class ConsultationDetailDto : TimestampDto, IRemarkable
+    {
 
         /// <summary>医疗案例ID</summary>
         [Required(ErrorMessage = "医疗案例ID不能为空")]
@@ -183,7 +188,8 @@ namespace LYBT.Shared.Models.Contracts.Consultation {
     /// 看诊创建DTO - 前后端共享API契约
     /// 用于创建新看诊记录的请求模型
     /// </summary>
-    public class ConsultationCreateDto {
+    public class ConsultationCreateDto
+    {
 
         /// <summary>医疗案例ID</summary>
         [Required(ErrorMessage = "医疗案例ID不能为空")]
@@ -236,7 +242,8 @@ namespace LYBT.Shared.Models.Contracts.Consultation {
     /// 看诊更新DTO - 继承基础DTO + 备注接口
     /// 用于更新看诊记录的请求模型
     /// </summary>
-    public class ConsultationUpdateDto : BaseDto, IRemarkable {
+    public class ConsultationUpdateDto : BaseDto, IRemarkable
+    {
 
         /// <summary>主诉</summary>
         [StringLength(500, ErrorMessage = "主诉长度不能超过500个字符")]
@@ -453,7 +460,8 @@ namespace LYBT.Shared.Models.Contracts.Consultation {
     /// <summary>
     /// 看诊验证结果DTO
     /// </summary>
-    public class ConsultationValidationResult {
+    public class ConsultationValidationResult
+    {
         public bool IsValid { get; set; } = true;
         public List<string> Errors { get; set; } = new();
     }

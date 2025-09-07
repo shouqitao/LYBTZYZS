@@ -1,10 +1,12 @@
-﻿namespace LYBT.Desktop.Workbench.Core {
+﻿namespace LYBT.Desktop.Workbench.Core
+{
 
     /// <summary>
     /// 工作台路由接口
     /// 管理角色到工作台的映射和导航
     /// </summary>
-    public interface IWorkbenchRouter {
+    public interface IWorkbenchRouter
+    {
 
         /// <summary>
         /// 根据用户角色获取对应的工作台视图名称

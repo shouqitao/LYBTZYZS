@@ -6,7 +6,8 @@ using Prism.Ioc;
 using Prism.Modularity;
 using Prism.Mvvm;
 
-namespace LYBT.Desktop.Consultation {
+namespace LYBT.Desktop.Consultation
+{
 
     /// <summary>
     /// 看诊诊断模块 - UltraThink双层架构Prism模块
@@ -16,14 +17,17 @@ namespace LYBT.Desktop.Consultation {
     /// 集成双层架构服务（QueryService + BusinessService + Module委托）
     /// 适配中医诊所诊断流程，确保诊疗数据安全和功能完整性
     /// </summary>
-    public class ConsultationModule : IModule {
+    public class ConsultationModule : IModule
+    {
 
-        public void OnInitialized(IContainerProvider containerProvider) {
+        public void OnInitialized(IContainerProvider containerProvider)
+        {
             // 模块初始化完成后，配置ViewModelLocator
             ViewModelLocationProvider.Register<ConsultationMainView, ConsultationMainViewModel>();
         }
 
-        public void RegisterTypes(IContainerRegistry containerRegistry) {
+        public void RegisterTypes(IContainerRegistry containerRegistry)
+        {
             // UltraThink双层架构服务注册
             containerRegistry.RegisterSingleton<LYBT.Desktop.Consultation.Interfaces.IConsultationQueryService, ConsultationQueryService>();
             containerRegistry.RegisterSingleton<LYBT.Desktop.Consultation.Interfaces.IConsultationBusinessService, ConsultationBusinessService>();

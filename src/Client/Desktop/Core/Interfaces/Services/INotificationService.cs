@@ -1,9 +1,11 @@
-﻿namespace LYBT.Desktop.Core.Interfaces.Services {
+﻿namespace LYBT.Desktop.Core.Interfaces.Services
+{
 
     /// <summary>
     /// 通知服务接口 - UltraThink简化的消息通知管理
     /// </summary>
-    public interface INotificationService {
+    public interface INotificationService
+    {
 
         #region 消息显示方法
 
@@ -127,7 +129,8 @@
     /// <summary>
     /// 通知类型
     /// </summary>
-    public enum NotificationType {
+    public enum NotificationType
+    {
 
         /// <summary>信息</summary>
         Info,
@@ -145,7 +148,8 @@
     /// <summary>
     /// 通知事件参数
     /// </summary>
-    public class NotificationEventArgs : EventArgs {
+    public class NotificationEventArgs : EventArgs
+    {
         public string Message { get; set; } = string.Empty;
         public string? Title { get; set; }
         public NotificationType Type { get; set; }
@@ -157,7 +161,8 @@
     /// <summary>
     /// 加载状态变化事件参数
     /// </summary>
-    public class LoadingStateChangedEventArgs : EventArgs {
+    public class LoadingStateChangedEventArgs : EventArgs
+    {
         public bool IsLoading { get; set; }
         public string Message { get; set; } = string.Empty;
         public int? Progress { get; set; }

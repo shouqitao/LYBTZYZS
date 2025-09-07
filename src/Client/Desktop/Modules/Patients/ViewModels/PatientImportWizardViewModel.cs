@@ -14,13 +14,15 @@ using Microsoft.Win32;
 using Prism.Commands;
 using Prism.Mvvm;
 
-namespace LYBT.Desktop.Patients.ViewModels {
+namespace LYBT.Desktop.Patients.ViewModels
+{
 
     /// <summary>
     /// 患者Excel导入向导视图模型
     /// 实现4步向导UI：模板下载→文件选择→数据预览→导入执行
     /// </summary>
-    public class PatientImportWizardViewModel : BindableBase {
+    public class PatientImportWizardViewModel : BindableBase
+    {
 
         #region Fields
 
@@ -58,9 +60,11 @@ namespace LYBT.Desktop.Patients.ViewModels {
         /// <summary>
         /// 当前步骤
         /// </summary>
-        public ImportWizardStep CurrentStep {
+        public ImportWizardStep CurrentStep
+        {
             get => _currentStep;
-            set {
+            set
+            {
                 SetProperty(ref _currentStep, value);
                 UpdateStepStyles();
                 UpdateButtonStates();
@@ -71,7 +75,8 @@ namespace LYBT.Desktop.Patients.ViewModels {
         /// <summary>
         /// 选中的文件路径
         /// </summary>
-        public string SelectedFilePath {
+        public string SelectedFilePath
+        {
             get => _selectedFilePath;
             set => SetProperty(ref _selectedFilePath, value);
         }
@@ -79,7 +84,8 @@ namespace LYBT.Desktop.Patients.ViewModels {
         /// <summary>
         /// 预览数据
         /// </summary>
-        public DataTable? PreviewData {
+        public DataTable? PreviewData
+        {
             get => _previewData;
             set => SetProperty(ref _previewData, value);
         }
@@ -87,7 +93,8 @@ namespace LYBT.Desktop.Patients.ViewModels {
         /// <summary>
         /// 验证结果
         /// </summary>
-        public ImportValidationResult? ValidationResult {
+        public ImportValidationResult? ValidationResult
+        {
             get => _validationResult;
             set => SetProperty(ref _validationResult, value);
         }
@@ -95,7 +102,8 @@ namespace LYBT.Desktop.Patients.ViewModels {
         /// <summary>
         /// 导入进度信息
         /// </summary>
-        public ImportProgressInfo ProgressInfo {
+        public ImportProgressInfo ProgressInfo
+        {
             get => _progressInfo;
             set => SetProperty(ref _progressInfo, value);
         }
@@ -103,7 +111,8 @@ namespace LYBT.Desktop.Patients.ViewModels {
         /// <summary>
         /// 是否正在导入
         /// </summary>
-        public bool IsImporting {
+        public bool IsImporting
+        {
             get => _isImporting;
             set => SetProperty(ref _isImporting, value);
         }
@@ -111,7 +120,8 @@ namespace LYBT.Desktop.Patients.ViewModels {
         /// <summary>
         /// 是否正在加载
         /// </summary>
-        public bool IsLoading {
+        public bool IsLoading
+        {
             get => _isLoading;
             set => SetProperty(ref _isLoading, value);
         }
@@ -207,7 +217,8 @@ namespace LYBT.Desktop.Patients.ViewModels {
         public PatientImportWizardViewModel(
             IPatientService patientService,
             ICustomDialogService dialogService,
-            ILogger<PatientImportWizardViewModel> logger) {
+            ILogger<PatientImportWizardViewModel> logger)
+        {
             _patientService = patientService;
             _dialogService = dialogService;
             _logger = logger;
@@ -234,14 +245,17 @@ namespace LYBT.Desktop.Patients.ViewModels {
 
         #region Command Implementations
 
-        private void ExecuteNext() {
-            switch (CurrentStep) {
+        private void ExecuteNext()
+        {
+            switch (CurrentStep)
+            {
                 case ImportWizardStep.TemplateDownload:
                     CurrentStep = ImportWizardStep.FileSelection;
                     break;
 
                 case ImportWizardStep.FileSelection:
-                    if (ValidateFileSelection()) {
+                    if (ValidateFileSelection())
+                    {
                         CurrentStep = ImportWizardStep.DataPreview;
                         _ = Task.Run(LoadDataPreviewAsync);
                     }
@@ -258,12 +272,15 @@ namespace LYBT.Desktop.Patients.ViewModels {
             }
         }
 
-        private bool CanExecuteNext() {
+        private bool CanExecuteNext()
+        {
             return !IsImporting && CanGoNext;
         }
 
-        private void ExecutePrevious() {
-            switch (CurrentStep) {
+        private void ExecutePrevious()
+        {
+            switch (CurrentStep)
+            {
                 case ImportWizardStep.FileSelection:
                     CurrentStep = ImportWizardStep.TemplateDownload;
                     break;
@@ -278,12 +295,15 @@ namespace LYBT.Desktop.Patients.ViewModels {
             }
         }
 
-        private bool CanExecutePrevious() {
+        private bool CanExecutePrevious()
+        {
             return !IsImporting && CanGoPrevious;
         }
 
-        private void ExecuteCancel() {
-            if (IsImporting) {
+        private void ExecuteCancel()
+        {
+            if (IsImporting)
+            {
                 _importWorker?.CancelAsync();
             }
 
@@ -291,58 +311,75 @@ namespace LYBT.Desktop.Patients.ViewModels {
             ImportCancelled?.Invoke(this, EventArgs.Empty);
         }
 
-        private async void ExecuteDownloadTemplate() {
-            try {
-                var saveFileDialog = new SaveFileDialog {
+        private async void ExecuteDownloadTemplate()
+        {
+            try
+            {
+                var saveFileDialog = new SaveFileDialog
+                {
                     Filter = "Excel 文件 (*.xlsx)|*.xlsx",
                     DefaultExt = "xlsx",
                     FileName = "患者导入模板.xlsx",
                     Title = "保存患者导入模板"
                 };
 
-                if (saveFileDialog.ShowDialog() == true) {
+                if (saveFileDialog.ShowDialog() == true)
+                {
                     await DownloadTemplateAsync(saveFileDialog.FileName);
                 }
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, "下载模板失败");
                 await _dialogService.ShowErrorAsync($"下载模板失败: {ex.Message}", "错误");
             }
         }
 
-        private void ExecuteSelectFile() {
-            try {
-                var openFileDialog = new OpenFileDialog {
+        private void ExecuteSelectFile()
+        {
+            try
+            {
+                var openFileDialog = new OpenFileDialog
+                {
                     Filter = "Excel 文件 (*.xlsx)|*.xlsx",
                     DefaultExt = "xlsx",
                     Title = "选择要导入的患者数据文件"
                 };
 
-                if (openFileDialog.ShowDialog() == true) {
+                if (openFileDialog.ShowDialog() == true)
+                {
                     SelectedFilePath = openFileDialog.FileName;
                     UpdateButtonStates();
                 }
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, "选择文件失败");
             }
         }
 
-        private void ExecuteStartImport() {
-            if (ValidationResult != null && ValidationResult.IsValid && _importWorker != null) {
+        private void ExecuteStartImport()
+        {
+            if (ValidationResult != null && ValidationResult.IsValid && _importWorker != null)
+            {
                 IsImporting = true;
                 _importWorker.RunWorkerAsync(PreviewData);
                 UpdateButtonStates();
             }
         }
 
-        private bool CanExecuteStartImport() {
+        private bool CanExecuteStartImport()
+        {
             return ValidationResult?.IsValid == true && !IsImporting;
         }
 
-        private void ExecuteCancelImport() {
+        private void ExecuteCancelImport()
+        {
             _importWorker?.CancelAsync();
         }
 
-        private bool CanExecuteCancelImport() {
+        private bool CanExecuteCancelImport()
+        {
             return IsImporting;
         }
 
@@ -350,8 +387,10 @@ namespace LYBT.Desktop.Patients.ViewModels {
 
         #region Private Methods
 
-        private void InitializeImportWorker() {
-            _importWorker = new BackgroundWorker {
+        private void InitializeImportWorker()
+        {
+            _importWorker = new BackgroundWorker
+            {
                 WorkerReportsProgress = true,
                 WorkerSupportsCancellation = true
             };
@@ -361,7 +400,8 @@ namespace LYBT.Desktop.Patients.ViewModels {
             _importWorker.RunWorkerCompleted += ImportWorker_RunWorkerCompleted;
         }
 
-        private void UpdateStepStyles() {
+        private void UpdateStepStyles()
+        {
             var completedStyle = Application.Current.FindResource("CompletedStep") as Style ?? new Style();
             var activeStyle = Application.Current.FindResource("ActiveStep") as Style ?? new Style();
             var pendingStyle = Application.Current.FindResource("PendingStep") as Style ?? new Style();
@@ -384,10 +424,12 @@ namespace LYBT.Desktop.Patients.ViewModels {
             RaisePropertyChanged(nameof(Step4Style));
         }
 
-        private void UpdateButtonStates() {
+        private void UpdateButtonStates()
+        {
             CanGoPrevious = CurrentStep != ImportWizardStep.TemplateDownload && !IsImporting;
 
-            CanGoNext = CurrentStep switch {
+            CanGoNext = CurrentStep switch
+            {
                 ImportWizardStep.TemplateDownload => true,
                 ImportWizardStep.FileSelection => !string.IsNullOrEmpty(SelectedFilePath),
                 ImportWizardStep.DataPreview => ValidationResult?.IsValid == true,
@@ -395,17 +437,19 @@ namespace LYBT.Desktop.Patients.ViewModels {
                 _ => false
             } && !IsImporting;
 
-            NextButtonText = CurrentStep switch {
+            NextButtonText = CurrentStep switch
+            {
                 ImportWizardStep.ImportExecution => "完成",
                 _ => "下一步"
             };
 
-            StepDescription = CurrentStep switch {
+            StepDescription = CurrentStep switch
+            {
                 ImportWizardStep.TemplateDownload => "第1步：下载患者数据导入模板",
                 ImportWizardStep.FileSelection => "第2步：选择要导入的Excel文件",
                 ImportWizardStep.DataPreview => "第3步：预览和验证数据",
                 ImportWizardStep.ImportExecution => "第4步：执行导入操作",
-                _ => ""
+                _ => string.Empty
             };
 
             RaisePropertyChanged(nameof(CanGoNext));
@@ -420,10 +464,12 @@ namespace LYBT.Desktop.Patients.ViewModels {
             (CancelImportCommand as DelegateCommand)?.RaiseCanExecuteChanged();
         }
 
-        private void UpdateStepContent() {
+        private void UpdateStepContent()
+        {
             // TODO: 根据当前步骤更新内容视图
             // 这里可以根据CurrentStep返回不同的UserControl或View
-            CurrentStepContent = CurrentStep switch {
+            CurrentStepContent = CurrentStep switch
+            {
                 ImportWizardStep.TemplateDownload => CreateTemplateDownloadContent(),
                 ImportWizardStep.FileSelection => CreateFileSelectionContent(),
                 ImportWizardStep.DataPreview => CreateDataPreviewContent(),
@@ -434,8 +480,10 @@ namespace LYBT.Desktop.Patients.ViewModels {
             RaisePropertyChanged(nameof(CurrentStepContent));
         }
 
-        private bool ValidateFileSelection() {
-            if (string.IsNullOrEmpty(SelectedFilePath) || !File.Exists(SelectedFilePath)) {
+        private bool ValidateFileSelection()
+        {
+            if (string.IsNullOrEmpty(SelectedFilePath) || !File.Exists(SelectedFilePath))
+            {
                 _ = _dialogService.ShowWarningAsync("请选择有效的Excel文件", "文件选择");
                 return false;
             }
@@ -443,8 +491,10 @@ namespace LYBT.Desktop.Patients.ViewModels {
             return true;
         }
 
-        private async Task LoadDataPreviewAsync() {
-            try {
+        private async Task LoadDataPreviewAsync()
+        {
+            try
+            {
                 IsLoading = true;
 
                 // 读取Excel数据
@@ -455,27 +505,37 @@ namespace LYBT.Desktop.Patients.ViewModels {
                 ValidationResult = ValidateImportData(dataTable);
 
                 Application.Current.Dispatcher.Invoke(UpdateButtonStates);
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, "加载数据预览失败");
                 await _dialogService.ShowErrorAsync($"加载数据失败: {ex.Message}", "数据预览");
-            } finally {
+            }
+            finally
+            {
                 IsLoading = false;
             }
         }
 
-        private ImportValidationResult ValidateImportData(DataTable dataTable) {
+        private ImportValidationResult ValidateImportData(DataTable dataTable)
+        {
             var result = new ImportValidationResult();
             var errors = new List<string>();
             var warnings = new List<string>();
 
-            if (dataTable.Rows.Count == 0) {
+            if (dataTable.Rows.Count == 0)
+            {
                 errors.Add("Excel文件中没有找到数据行");
                 result.IsValid = false;
-            } else {
+            }
+            else
+            {
                 // 检查必需列
                 var requiredColumns = new[] { "姓名", "性别", "年龄" };
-                foreach (var column in requiredColumns) {
-                    if (!dataTable.Columns.Contains(column)) {
+                foreach (var column in requiredColumns)
+                {
+                    if (!dataTable.Columns.Contains(column))
+                    {
                         errors.Add($"缺少必需列: {column}");
                     }
                 }
@@ -484,26 +544,32 @@ namespace LYBT.Desktop.Patients.ViewModels {
                 int validRows = 0;
                 int invalidRows = 0;
 
-                for (int i = 0; i < dataTable.Rows.Count; i++) {
+                for (int i = 0; i < dataTable.Rows.Count; i++)
+                {
                     var row = dataTable.Rows[i];
                     var rowErrors = new List<string>();
 
                     // 验证姓名
                     var name = row["姓名"]?.ToString()?.Trim();
-                    if (string.IsNullOrEmpty(name)) {
+                    if (string.IsNullOrEmpty(name))
+                    {
                         rowErrors.Add("姓名不能为空");
                     }
 
                     // 验证性别
                     var gender = row["性别"]?.ToString()?.Trim();
-                    if (!string.IsNullOrEmpty(gender) && gender != "男" && gender != "女") {
+                    if (!string.IsNullOrEmpty(gender) && gender != "男" && gender != "女")
+                    {
                         rowErrors.Add("性别只能是'男'或'女'");
                     }
 
-                    if (rowErrors.Count > 0) {
+                    if (rowErrors.Count > 0)
+                    {
                         invalidRows++;
                         errors.Add($"第{i + 2}行: {string.Join(", ", rowErrors)}");
-                    } else {
+                    }
+                    else
+                    {
                         validRows++;
                     }
                 }
@@ -519,8 +585,10 @@ namespace LYBT.Desktop.Patients.ViewModels {
             return result;
         }
 
-        private async Task DownloadTemplateAsync(string filePath) {
-            try {
+        private async Task DownloadTemplateAsync(string filePath)
+        {
+            try
+            {
                 // 创建模板数据表
                 var templateTable = new DataTable();
 
@@ -548,7 +616,9 @@ namespace LYBT.Desktop.Patients.ViewModels {
                 ExcelHelper.ExportToExcel(templateTable.AsEnumerable().ToList(), new Dictionary<string, string>(), filePath, "患者数据");
 
                 await _dialogService.ShowSuccessAsync("模板下载成功！", "下载完成");
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, "下载模板失败");
                 throw;
             }
@@ -558,22 +628,26 @@ namespace LYBT.Desktop.Patients.ViewModels {
 
         #region Step Content Creation
 
-        private object CreateTemplateDownloadContent() {
+        private object CreateTemplateDownloadContent()
+        {
             // TODO: 返回步骤1的具体UI内容
             return new { StepTitle = "下载导入模板", StepDescription = "请先下载Excel模板文件" };
         }
 
-        private object CreateFileSelectionContent() {
+        private object CreateFileSelectionContent()
+        {
             // TODO: 返回步骤2的具体UI内容
             return new { StepTitle = "选择文件", StepDescription = "选择要导入的Excel文件", FilePath = SelectedFilePath };
         }
 
-        private object CreateDataPreviewContent() {
+        private object CreateDataPreviewContent()
+        {
             // TODO: 返回步骤3的具体UI内容
             return new { StepTitle = "数据预览", PreviewData, ValidationResult };
         }
 
-        private object CreateImportExecutionContent() {
+        private object CreateImportExecutionContent()
+        {
             // TODO: 返回步骤4的具体UI内容
             return new { StepTitle = "导入执行", ProgressInfo, IsImporting };
         }
@@ -582,8 +656,10 @@ namespace LYBT.Desktop.Patients.ViewModels {
 
         #region BackgroundWorker Events
 
-        private async void ImportWorker_DoWork(object? sender, DoWorkEventArgs e) {
-            if (e.Argument is not DataTable dataTable || _importWorker == null) {
+        private async void ImportWorker_DoWork(object? sender, DoWorkEventArgs e)
+        {
+            if (e.Argument is not DataTable dataTable || _importWorker == null)
+            {
                 return;
             }
 
@@ -592,19 +668,24 @@ namespace LYBT.Desktop.Patients.ViewModels {
             var failCount = 0;
             var totalCount = dataTable.Rows.Count;
 
-            try {
-                for (int i = 0; i < dataTable.Rows.Count; i++) {
-                    if (worker.CancellationPending) {
+            try
+            {
+                for (int i = 0; i < dataTable.Rows.Count; i++)
+                {
+                    if (worker.CancellationPending)
+                    {
                         e.Cancel = true;
                         return;
                     }
 
                     var row = dataTable.Rows[i];
 
-                    try {
+                    try
+                    {
                         // 创建患者DTO
-                        var patientDto = new PatientCreateDto {
-                            Name = row["姓名"]?.ToString()?.Trim() ?? "",
+                        var patientDto = new PatientCreateDto
+                        {
+                            Name = row["姓名"]?.ToString()?.Trim() ?? string.Empty,
                             Gender = ParseGender(row["性别"]?.ToString()),
                             Age = ParseAge(row["年龄"]?.ToString()) ?? 0,
                             PhoneNumber = row["电话"]?.ToString()?.Trim(),
@@ -615,19 +696,25 @@ namespace LYBT.Desktop.Patients.ViewModels {
 
                         // 调用API创建患者
                         var result = await _patientService.CreateAsync(patientDto);
-                        if (result.IsSuccess) {
+                        if (result.IsSuccess)
+                        {
                             successCount++;
-                        } else {
+                        }
+                        else
+                        {
                             failCount++;
                             _logger.LogWarning($"导入第{i + 2}行失败: {result.ErrorMessage}");
                         }
-                    } catch (Exception ex) {
+                    }
+                    catch (Exception ex)
+                    {
                         failCount++;
                         _logger.LogError(ex, $"处理第{i + 2}行数据时发生错误");
                     }
 
                     // 报告进度
-                    var progress = new ImportProgressInfo {
+                    var progress = new ImportProgressInfo
+                    {
                         PercentComplete = (int)((double)(i + 1) / totalCount * 100),
                         ProcessedCount = i + 1,
                         TotalCount = totalCount,
@@ -642,35 +729,48 @@ namespace LYBT.Desktop.Patients.ViewModels {
                 }
 
                 e.Result = new { SuccessCount = successCount, FailCount = failCount };
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, "导入过程中发生错误");
                 e.Result = new { SuccessCount = successCount, FailCount = failCount, Error = ex.Message };
             }
         }
 
-        private void ImportWorker_ProgressChanged(object? sender, ProgressChangedEventArgs e) {
-            if (e.UserState is ImportProgressInfo progress) {
+        private void ImportWorker_ProgressChanged(object? sender, ProgressChangedEventArgs e)
+        {
+            if (e.UserState is ImportProgressInfo progress)
+            {
                 ProgressInfo = progress;
             }
         }
 
-        private async void ImportWorker_RunWorkerCompleted(object? sender, RunWorkerCompletedEventArgs e) {
+        private async void ImportWorker_RunWorkerCompleted(object? sender, RunWorkerCompletedEventArgs e)
+        {
             IsImporting = false;
             UpdateButtonStates();
 
-            if (e.Cancelled) {
+            if (e.Cancelled)
+            {
                 await _dialogService.ShowInformationAsync("导入操作已取消", "导入取消");
-            } else if (e.Error != null) {
+            }
+            else if (e.Error != null)
+            {
                 await _dialogService.ShowErrorAsync($"导入过程中发生错误: {e.Error.Message}", "导入错误");
-            } else if (e.Result is { } result) {
+            }
+            else if (e.Result is { } result)
+            {
                 var successCount = (int)(result.GetType().GetProperty("SuccessCount")?.GetValue(result) ?? 0);
                 var failCount = (int)(result.GetType().GetProperty("FailCount")?.GetValue(result) ?? 0);
 
                 var message = $"导入完成！\n成功：{successCount} 条\n失败：{failCount} 条";
 
-                if (failCount == 0) {
+                if (failCount == 0)
+                {
                     await _dialogService.ShowSuccessAsync(message, "导入成功");
-                } else {
+                }
+                else
+                {
                     await _dialogService.ShowWarningAsync(message, "导入完成");
                 }
 
@@ -683,16 +783,20 @@ namespace LYBT.Desktop.Patients.ViewModels {
 
         #region Helper Methods
 
-        private Gender ParseGender(string? genderText) {
-            return genderText?.Trim() switch {
+        private Gender ParseGender(string? genderText)
+        {
+            return genderText?.Trim() switch
+            {
                 "男" => Gender.Male,
                 "女" => Gender.Female,
                 _ => Gender.Unknown
             };
         }
 
-        private int? ParseAge(string? ageText) {
-            if (int.TryParse(ageText, out var age) && age > 0 && age <= 150) {
+        private int? ParseAge(string? ageText)
+        {
+            if (int.TryParse(ageText, out var age) && age > 0 && age <= 150)
+            {
                 return age;
             }
             return null;

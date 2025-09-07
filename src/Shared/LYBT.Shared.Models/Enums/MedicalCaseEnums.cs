@@ -1,13 +1,15 @@
 ﻿using System.ComponentModel;
 using System.Text.Json.Serialization;
 
-namespace LYBT.Shared.Models.Enums {
+namespace LYBT.Shared.Models.Enums
+{
 
     /// <summary>
     /// 医疗案例状态枚举
     /// </summary>
     [JsonConverter(typeof(JsonStringEnumConverter))]
-    public enum MedicalCaseStatus {
+    public enum MedicalCaseStatus
+    {
 
         /// <summary>挂号完成</summary>
         [Description("挂号完成")]

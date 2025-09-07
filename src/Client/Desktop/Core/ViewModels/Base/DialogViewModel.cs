@@ -2,20 +2,23 @@
 using Prism.Commands;
 using Prism.Events;
 
-namespace LYBT.Desktop.Core.ViewModels.Base {
+namespace LYBT.Desktop.Core.ViewModels.Base
+{
 
     /// <summary>
     /// 对话框ViewModel基类
     /// 提供标准化的保存、取消操作和对话框结果处理
     /// </summary>
-    public abstract class DialogViewModel : ServiceViewModel {
+    public abstract class DialogViewModel : ServiceViewModel
+    {
         private string _dialogTitle = string.Empty;
         private bool _isSaving;
 
         /// <summary>
         /// 对话框标题
         /// </summary>
-        public string DialogTitle {
+        public string DialogTitle
+        {
             get => _dialogTitle;
             set => SetProperty(ref _dialogTitle, value);
         }
@@ -23,9 +26,11 @@ namespace LYBT.Desktop.Core.ViewModels.Base {
         /// <summary>
         /// 是否正在保存
         /// </summary>
-        public bool IsSaving {
+        public bool IsSaving
+        {
             get => _isSaving;
-            protected set {
+            protected set
+            {
                 SetProperty(ref _isSaving, value);
                 SaveCommand.RaiseCanExecuteChanged();
                 CancelCommand.RaiseCanExecuteChanged();
@@ -48,7 +53,8 @@ namespace LYBT.Desktop.Core.ViewModels.Base {
         public Action<bool>? DialogResultCallback { get; set; }
 
         public DialogViewModel(IEventAggregator eventAggregator, IErrorHandlingService errorHandlingService)
-            : base(eventAggregator, errorHandlingService) {
+            : base(eventAggregator, errorHandlingService)
+        {
             // 零警告命令初始化
             SaveCommand = new DelegateCommand(async () => await ExecuteSaveAsync(), CanExecuteSave);
             CancelCommand = new DelegateCommand(ExecuteCancel, CanExecuteCancel);
@@ -57,20 +63,27 @@ namespace LYBT.Desktop.Core.ViewModels.Base {
         /// <summary>
         /// 执行保存命令
         /// </summary>
-        private async Task ExecuteSaveAsync() {
-            try {
+        private async Task ExecuteSaveAsync()
+        {
+            try
+            {
                 IsSaving = true;
                 ClearError();
 
                 var success = await SaveAsync();
 
-                if (success) {
+                if (success)
+                {
                     OnDialogClosing();
                     DialogResultCallback?.Invoke(true);
                 }
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 await HandleErrorAsync("保存", ex);
-            } finally {
+            }
+            finally
+            {
                 IsSaving = false;
             }
         }
@@ -78,7 +91,8 @@ namespace LYBT.Desktop.Core.ViewModels.Base {
         /// <summary>
         /// 执行取消操作
         /// </summary>
-        protected virtual void ExecuteCancel() {
+        protected virtual void ExecuteCancel()
+        {
             OnDialogClosing();
             DialogResultCallback?.Invoke(false);
         }
@@ -97,37 +111,45 @@ namespace LYBT.Desktop.Core.ViewModels.Base {
         /// <summary>
         /// 初始化对话框数据 - 子类可重写
         /// </summary>
-        protected virtual void InitializeDialog() { }
+        protected virtual void InitializeDialog()
+        {
+        }
 
         /// <summary>
         /// 对话框关闭前的清理操作 - 子类可重写
         /// </summary>
-        protected virtual void OnDialogClosing() { }
+        protected virtual void OnDialogClosing()
+        {
+        }
 
         /// <summary>
         /// 判断是否可以执行保存
         /// </summary>
-        protected virtual bool CanExecuteSave() {
+        protected virtual bool CanExecuteSave()
+        {
             return !IsSaving && !IsLoading && CanSave();
         }
 
         /// <summary>
         /// 判断是否可以执行取消
         /// </summary>
-        protected virtual bool CanExecuteCancel() {
+        protected virtual bool CanExecuteCancel()
+        {
             return !IsSaving;
         }
 
         /// <summary>
         /// 重写Command状态更新
         /// </summary>
-        protected override void RaiseCanExecuteChanged() {
+        protected override void RaiseCanExecuteChanged()
+        {
             base.RaiseCanExecuteChanged();
             SaveCommand.RaiseCanExecuteChanged();
             CancelCommand.RaiseCanExecuteChanged();
         }
 
-        protected override void OnLoadingStateChanged(bool isLoading) {
+        protected override void OnLoadingStateChanged(bool isLoading)
+        {
             base.OnLoadingStateChanged(isLoading);
         }
     }

@@ -7,7 +7,8 @@ namespace LYBT.Desktop.Herbs.Interfaces;
 /// 药材业务服务接口 - UltraThink双层架构简化版
 /// 职责：基础业务操作
 /// </summary>
-public interface IHerbBusinessService {
+public interface IHerbBusinessService
+{
 
     #region 基础业务操作
 

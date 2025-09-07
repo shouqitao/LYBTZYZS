@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 
-namespace LYBT.Desktop.Prescriptions.ViewModels.Components {
+namespace LYBT.Desktop.Prescriptions.ViewModels.Components
+{
 
     /// <summary>
     /// 处方计算器 - UltraThink专门化组件
@@ -8,16 +9,19 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components {
     /// 代码干净：清晰的计算逻辑和精度处理
     /// 性能出色：优化的计算算法和缓存机制
     /// </summary>
-    public class PrescriptionCalculator {
+    public class PrescriptionCalculator
+    {
         private readonly ILogger<PrescriptionCalculator> _logger;
 
-        public PrescriptionCalculator(ILogger<PrescriptionCalculator> logger) {
+        public PrescriptionCalculator(ILogger<PrescriptionCalculator> logger)
+        {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         #region 计算结果类
 
-        public class CalculationResult {
+        public class CalculationResult
+        {
             public decimal SingleDosagePrice { get; set; }
             public decimal TotalPrice { get; set; }
             public decimal DiscountedPrice { get; set; }
@@ -36,8 +40,10 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components {
         public CalculationResult CalculatePrescriptionPrice(
             IEnumerable<PrescriptionItemViewModel> items,
             int dosageCount,
-            decimal discount = 1.0m) {
-            try {
+            decimal discount = 1.0m)
+        {
+            try
+            {
                 var itemList = items?.ToList() ?? new List<PrescriptionItemViewModel>();
 
                 // 计算单剂价格
@@ -52,7 +58,8 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components {
                 // 计算节省金额
                 var totalSaved = totalPrice - discountedPrice;
 
-                var result = new CalculationResult {
+                var result = new CalculationResult
+                {
                     SingleDosagePrice = Math.Round(singleDosagePrice, 2),
                     TotalPrice = Math.Round(totalPrice, 2),
                     DiscountedPrice = Math.Round(discountedPrice, 2),
@@ -61,11 +68,14 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components {
                     DiscountText = GenerateDiscountText(discount)
                 };
 
-                _logger.LogDebug("处方价格计算完成：单剂 {SinglePrice}元，总价 {TotalPrice}元，优惠后 {DiscountedPrice}元",
+                _logger.LogDebug(
+                    "处方价格计算完成：单剂 {SinglePrice}元，总价 {TotalPrice}元，优惠后 {DiscountedPrice}元",
                     result.SingleDosagePrice, result.TotalPrice, result.DiscountedPrice);
 
                 return result;
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, "计算处方价格失败");
                 return new CalculationResult();
             }
@@ -74,15 +84,20 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components {
         /// <summary>
         /// 计算单剂价格
         /// </summary>
-        public decimal CalculateSingleDosagePrice(IEnumerable<PrescriptionItemViewModel> items) {
-            if (items == null) {
+        public decimal CalculateSingleDosagePrice(IEnumerable<PrescriptionItemViewModel> items)
+        {
+            if (items == null)
+            {
                 return 0m;
             }
 
-            try {
+            try
+            {
                 var total = items.Sum(item => CalculateItemSubtotal(item.Quantity, item.UnitPrice));
                 return Math.Round(total, 2);
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, "计算单剂价格失败");
                 return 0m;
             }
@@ -91,8 +106,10 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components {
         /// <summary>
         /// 计算单个药材小计
         /// </summary>
-        public decimal CalculateItemSubtotal(decimal quantity, decimal unitPrice) {
-            if (quantity <= 0 || unitPrice <= 0) {
+        public decimal CalculateItemSubtotal(decimal quantity, decimal unitPrice)
+        {
+            if (quantity <= 0 || unitPrice <= 0)
+            {
                 return 0m;
             }
 
@@ -103,8 +120,10 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components {
         /// <summary>
         /// 应用折扣
         /// </summary>
-        public decimal ApplyDiscount(decimal originalPrice, decimal discount) {
-            if (originalPrice <= 0) {
+        public decimal ApplyDiscount(decimal originalPrice, decimal discount)
+        {
+            if (originalPrice <= 0)
+            {
                 return 0m;
             }
 
@@ -118,8 +137,10 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components {
         /// <summary>
         /// 计算折扣金额
         /// </summary>
-        public decimal CalculateDiscountAmount(decimal originalPrice, decimal discount) {
-            if (originalPrice <= 0) {
+        public decimal CalculateDiscountAmount(decimal originalPrice, decimal discount)
+        {
+            if (originalPrice <= 0)
+            {
                 return 0m;
             }
 
@@ -130,8 +151,10 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components {
         /// <summary>
         /// 生成折扣文本
         /// </summary>
-        public string GenerateDiscountText(decimal discount) {
-            if (discount >= 1.0m) {
+        public string GenerateDiscountText(decimal discount)
+        {
+            if (discount >= 1.0m)
+            {
                 return "无折扣";
             }
 
@@ -147,16 +170,21 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components {
         /// <summary>
         /// 批量更新处方项小计
         /// </summary>
-        public void UpdateItemSubtotals(IEnumerable<PrescriptionItemViewModel> items) {
-            if (items == null) {
+        public void UpdateItemSubtotals(IEnumerable<PrescriptionItemViewModel> items)
+        {
+            if (items == null)
+            {
                 return;
             }
 
-            try {
+            try
+            {
                 // Subtotal是计算属性，会自动根据Quantity和UnitPrice计算
                 // 无需手动更新，属性变更会自动触发UI更新
                 _logger.LogDebug("批量更新处方项小计完成，共{Count}项", items.Count());
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, "批量更新处方项小计失败");
             }
         }
@@ -164,12 +192,15 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components {
         /// <summary>
         /// 计算成本分析
         /// </summary>
-        public CostAnalysis AnalyzeCosts(IEnumerable<PrescriptionItemViewModel> items, int dosageCount, decimal discount) {
-            try {
+        public CostAnalysis AnalyzeCosts(IEnumerable<PrescriptionItemViewModel> items, int dosageCount, decimal discount)
+        {
+            try
+            {
                 var itemList = items?.ToList() ?? new List<PrescriptionItemViewModel>();
                 var result = CalculatePrescriptionPrice(itemList, dosageCount, discount);
 
-                return new CostAnalysis {
+                return new CostAnalysis
+                {
                     AverageItemPrice = itemList.Count > 0 ? result.SingleDosagePrice / itemList.Count : 0m,
                     MostExpensiveItem = itemList.OrderByDescending(i => i.Subtotal).FirstOrDefault(),
                     LeastExpensiveItem = itemList.OrderBy(i => i.Subtotal).FirstOrDefault(),
@@ -177,7 +208,9 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components {
                     TotalSavings = result.TotalSaved,
                     DiscountPercentage = (1 - discount) * 100
                 };
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, "分析成本失败");
                 return new CostAnalysis();
             }
@@ -186,8 +219,10 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components {
         /// <summary>
         /// 计算价格趋势（用于多次保存的处方）
         /// </summary>
-        public decimal CalculatePriceTrend(decimal currentPrice, decimal? previousPrice) {
-            if (!previousPrice.HasValue || previousPrice.Value <= 0) {
+        public decimal CalculatePriceTrend(decimal currentPrice, decimal? previousPrice)
+        {
+            if (!previousPrice.HasValue || previousPrice.Value <= 0)
+            {
                 return 0m;
             }
 
@@ -202,32 +237,43 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components {
         /// <summary>
         /// 检查价格是否异常
         /// </summary>
-        public PriceValidation ValidatePrice(decimal price, PriceValidationType type) {
+        public PriceValidation ValidatePrice(decimal price, PriceValidationType type)
+        {
             var validation = new PriceValidation();
 
-            switch (type) {
+            switch (type)
+            {
                 case PriceValidationType.UnitPrice:
-                    if (price <= 0) {
+                    if (price <= 0)
+                    {
                         validation.AddWarning("单价不能为0或负数");
-                    } else if (price > 1000) {
+                    }
+                    else if (price > 1000)
+                    {
                         validation.AddWarning("单价过高，请检查");
                     }
 
                     break;
 
                 case PriceValidationType.TotalPrice:
-                    if (price <= 0) {
+                    if (price <= 0)
+                    {
                         validation.AddWarning("总价不能为0或负数");
-                    } else if (price > 10000) {
+                    }
+                    else if (price > 10000)
+                    {
                         validation.AddWarning("总价过高，请确认");
                     }
 
                     break;
 
                 case PriceValidationType.Quantity:
-                    if (price <= 0) {
+                    if (price <= 0)
+                    {
                         validation.AddError("数量必须大于0");
-                    } else if (price > 1000) {
+                    }
+                    else if (price > 1000)
+                    {
                         validation.AddWarning("数量过大，请检查");
                     }
 
@@ -240,7 +286,8 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components {
         /// <summary>
         /// 四舍五入到指定精度
         /// </summary>
-        public decimal RoundToDecimalPlaces(decimal value, int decimalPlaces = 2) {
+        public decimal RoundToDecimalPlaces(decimal value, int decimalPlaces = 2)
+        {
             return Math.Round(value, decimalPlaces, MidpointRounding.AwayFromZero);
         }
 
@@ -248,7 +295,8 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components {
 
         #region 支持类
 
-        public class CostAnalysis {
+        public class CostAnalysis
+        {
             public decimal AverageItemPrice { get; set; }
             public PrescriptionItemViewModel? MostExpensiveItem { get; set; }
             public PrescriptionItemViewModel? LeastExpensiveItem { get; set; }
@@ -257,7 +305,8 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components {
             public decimal DiscountPercentage { get; set; }
         }
 
-        public class PriceValidation {
+        public class PriceValidation
+        {
             public List<string> Errors { get; set; } = new();
             public List<string> Warnings { get; set; } = new();
             public bool IsValid => !Errors.Any();
@@ -267,7 +316,8 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components {
             public void AddWarning(string warning) => Warnings.Add(warning);
         }
 
-        public enum PriceValidationType {
+        public enum PriceValidationType
+        {
             UnitPrice,
             TotalPrice,
             Quantity

@@ -2,16 +2,19 @@
 using LYBT.Shared.Models.Enums;
 using Prism.Mvvm;
 
-namespace LYBT.Desktop.Core.ViewModels.Formulas {
+namespace LYBT.Desktop.Core.ViewModels.Formulas
+{
 
     /// <summary>
     /// 验方显示逻辑视图模型 - UltraThink架构Presentation Layer
     /// 专门处理验方的显示格式化和呈现逻辑
     /// </summary>
-    public class FormulaDisplayViewModel : BindableBase {
+    public class FormulaDisplayViewModel : BindableBase
+    {
         private readonly FormulaDto _formulaData;
 
-        public FormulaDisplayViewModel(FormulaDto formulaData) {
+        public FormulaDisplayViewModel(FormulaDto formulaData)
+        {
             _formulaData = formulaData ?? throw new ArgumentNullException(nameof(formulaData));
         }
 
@@ -24,7 +27,8 @@ namespace LYBT.Desktop.Core.ViewModels.Formulas {
         public string CategoryDisplay => string.IsNullOrWhiteSpace(_formulaData.Category) ? "未分类" : _formulaData.Category;
 
         /// <summary>状态显示</summary>
-        public string StatusDisplay => _formulaData.Status switch {
+        public string StatusDisplay => _formulaData.Status switch
+        {
             CommonStatus.Enabled => "启用",
             CommonStatus.Disabled => "禁用",
             _ => "未知"
@@ -74,9 +78,11 @@ namespace LYBT.Desktop.Core.ViewModels.Formulas {
         /// <summary>
         /// 获取价格显示（带颜色提示）
         /// </summary>
-        public string GetPriceDisplayWithWarning(decimal warningThreshold = 100) {
+        public string GetPriceDisplayWithWarning(decimal warningThreshold = 100)
+        {
             var price = PriceDisplay;
-            if (_formulaData.TotalPrice > warningThreshold) {
+            if (_formulaData.TotalPrice > warningThreshold)
+            {
                 price += " (价格较高)";
             }
 
@@ -86,8 +92,10 @@ namespace LYBT.Desktop.Core.ViewModels.Formulas {
         /// <summary>
         /// 获取状态显示图标
         /// </summary>
-        public string GetStatusIcon() {
-            return _formulaData.Status switch {
+        public string GetStatusIcon()
+        {
+            return _formulaData.Status switch
+            {
                 CommonStatus.Enabled => "✓",
                 CommonStatus.Disabled => "✗",
                 _ => "?"
@@ -97,8 +105,10 @@ namespace LYBT.Desktop.Core.ViewModels.Formulas {
         /// <summary>
         /// 获取复杂度等级显示
         /// </summary>
-        public string GetComplexityDisplay() {
-            return _formulaData.HerbCount switch {
+        public string GetComplexityDisplay()
+        {
+            return _formulaData.HerbCount switch
+            {
                 <= 3 => "简单方",
                 <= 7 => "常用方",
                 <= 12 => "复杂方",
@@ -109,14 +119,16 @@ namespace LYBT.Desktop.Core.ViewModels.Formulas {
         /// <summary>
         /// 获取验方简要信息
         /// </summary>
-        public string GetSummaryInfo() {
+        public string GetSummaryInfo()
+        {
             return $"{DisplayName} - {CategoryDisplay} - {HerbCountDisplay} - {PriceDisplay}";
         }
 
         /// <summary>
         /// 获取详细信息文本
         /// </summary>
-        public string GetDetailedInfo() {
+        public string GetDetailedInfo()
+        {
             return $"验方名称：{DisplayName}\n" +
                    $"分类：{CategoryDisplay}\n" +
                    $"药材组成：{HerbCompositionDisplay}\n" +

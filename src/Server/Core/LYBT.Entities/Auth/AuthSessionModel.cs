@@ -3,14 +3,16 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using LYBT.Shared.Models.Enums;
 
-namespace LYBT.Entities.Auth {
+namespace LYBT.Entities.Auth
+{
 
     /// <summary>
     /// 认证会话实体 - UltraThink v2.0架构简化版
     /// 用于基本用户登录会话管理，适合20人以下诊所使用
     /// </summary>
     [Table("AuthSessions")]
-    public class AuthSession {
+    public class AuthSession
+    {
 
         /// <summary>会话ID</summary>
         [Key]

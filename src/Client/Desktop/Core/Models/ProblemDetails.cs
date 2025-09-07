@@ -1,9 +1,11 @@
-﻿namespace LYBT.Desktop.Core.Models {
+﻿namespace LYBT.Desktop.Core.Models
+{
 
     /// <summary>
     /// 问题详情模型，用于解析 API 错误响应
     /// </summary>
-    public class ProblemDetails {
+    public class ProblemDetails
+    {
 
         /// <summary>
         /// 错误类型

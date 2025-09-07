@@ -1,9 +1,11 @@
-﻿namespace LYBT.Desktop.Core.Models.Consultation {
+﻿namespace LYBT.Desktop.Core.Models.Consultation
+{
 
     /// <summary>
     /// 工作流步骤枚举
     /// </summary>
-    public enum WorkflowStep {
+    public enum WorkflowStep
+    {
         PatientSelection,
         FourDiagnosis,
         Differentiation,
@@ -13,7 +15,8 @@
     /// <summary>
     /// 工作流步骤数据
     /// </summary>
-    public class WorkflowStepData {
+    public class WorkflowStepData
+    {
         public WorkflowStep Step { get; set; } = WorkflowStep.PatientSelection;
         public object? Data { get; set; }
         public DateTime Timestamp { get; set; } = DateTime.Now;
@@ -22,7 +25,8 @@
     /// <summary>
     /// 四诊数据
     /// </summary>
-    public class FourDiagnosisData {
+    public class FourDiagnosisData
+    {
         public string Inspection { get; set; } = string.Empty;
         public string Auscultation { get; set; } = string.Empty;
         public string Inquiry { get; set; } = string.Empty;
@@ -33,7 +37,8 @@
     /// <summary>
     /// 辨证数据
     /// </summary>
-    public class DifferentiationData {
+    public class DifferentiationData
+    {
         public string Syndrome { get; set; } = string.Empty;
         public string TreatmentPrinciple { get; set; } = string.Empty;
         public string Analysis { get; set; } = string.Empty;
@@ -42,7 +47,8 @@
     /// <summary>
     /// 处方数据
     /// </summary>
-    public class PrescriptionData {
+    public class PrescriptionData
+    {
         public List<PrescriptionItem> Items { get; set; } = new();
         public int Dosage { get; set; } = 0;
         public string Usage { get; set; } = string.Empty;
@@ -53,7 +59,8 @@
     /// <summary>
     /// 处方项
     /// </summary>
-    public class PrescriptionItem {
+    public class PrescriptionItem
+    {
         public Guid HerbId { get; set; } = Guid.Empty;
         public string HerbName { get; set; } = string.Empty;
         public decimal Quantity { get; set; } = 0m;
@@ -65,7 +72,8 @@
     /// <summary>
     /// 诊疗数据
     /// </summary>
-    public class ConsultationData {
+    public class ConsultationData
+    {
         public Guid MedicalCaseId { get; set; } = Guid.Empty;
         public Guid PatientId { get; set; } = Guid.Empty;
         public FourDiagnosisData? FourDiagnosis { get; set; }
@@ -78,9 +86,10 @@
     /// <summary>
     /// 诊疗状态
     /// </summary>
-    public enum ConsultationStatus {
+    public enum ConsultationStatus
+    {
         Draft,      // 草稿
         InProgress, // 进行中
-        Completed   // 已完成
+        Completed // 已完成
     }
 }

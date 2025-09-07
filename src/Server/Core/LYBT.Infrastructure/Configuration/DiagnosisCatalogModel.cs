@@ -1,12 +1,14 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace LYBT.Infrastructure.Configuration {
+namespace LYBT.Infrastructure.Configuration
+{
 
     /// <summary>
     /// 诊断目录实体模型
     /// </summary>
-    public class DiagnosisCatalogModel {
+    public class DiagnosisCatalogModel
+    {
 
         /// <summary>
         /// 主键ID
@@ -25,7 +27,8 @@ namespace LYBT.Infrastructure.Configuration {
         /// <summary>
         /// 诊断名称
         /// </summary>
-        [Required, StringLength(100)]
+        [Required]
+        [StringLength(100)]
         [DisplayName("诊断名称")]
         public string Name { get; set; } = string.Empty;
 

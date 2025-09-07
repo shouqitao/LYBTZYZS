@@ -9,15 +9,18 @@ namespace LYBT.Desktop.Workbench.Core;
 /// 支持UserRole枚举映射和字符串角色向后兼容
 /// 集成权限验证、缓存优化，适配小型诊所多角色工作需求
 /// </summary>
-public class WorkbenchRouter : IWorkbenchRouter {
+public class WorkbenchRouter : IWorkbenchRouter
+{
     private readonly Dictionary<string, WorkbenchConfig> _workbenchConfigs = [];
     private readonly Dictionary<string, List<NavigationItem>> _navigationCache = [];
 
     /// <summary>
+    /// Initializes a new instance of the <see cref="WorkbenchRouter"/> class.
     /// 初始化工作台路由器
     /// 配置默认工作台和角色权限映射
     /// </summary>
-    public WorkbenchRouter() {
+    public WorkbenchRouter()
+    {
         InitializeDefaultWorkbenches();
     }
 
@@ -25,7 +28,8 @@ public class WorkbenchRouter : IWorkbenchRouter {
     /// 初始化默认工作台配置
     /// 使用C# 12集合表达式提升代码简洁性
     /// </summary>
-    private void InitializeDefaultWorkbenches() {
+    private void InitializeDefaultWorkbenches()
+    {
         // 管理员工作台 - 8个核心业务模块访问权限
         RegisterWorkbench("管理员", "SystemWorkbenchMainView", [
             "Users", "Patients", "MedicalCase", "Consultation",
@@ -49,13 +53,16 @@ public class WorkbenchRouter : IWorkbenchRouter {
     /// </summary>
     /// <param name="role">用户角色字符串</param>
     /// <returns>工作台视图名称，默认为诊疗工作台</returns>
-    public string GetWorkbenchForRole(string role) {
-        if (string.IsNullOrWhiteSpace(role)) {
+    public string GetWorkbenchForRole(string role)
+    {
+        if (string.IsNullOrWhiteSpace(role))
+        {
             return "ConsultationWorkbenchMainView"; // 默认视图
         }
 
         // UltraThink Phase 4.1: 优先使用UserRole枚举映射
-        if (Enum.TryParse<UserRole>(role, out var userRole)) {
+        if (Enum.TryParse<UserRole>(role, out var userRole))
+        {
             return WorkbenchPermissionMapper.GetWorkbenchForRole(userRole);
         }
 
@@ -71,13 +78,16 @@ public class WorkbenchRouter : IWorkbenchRouter {
     /// <param name="role">用户角色字符串</param>
     /// <param name="module">业务模块名称</param>
     /// <returns>是否具有访问权限</returns>
-    public bool CanAccessModule(string role, string module) {
-        if (string.IsNullOrWhiteSpace(role) || string.IsNullOrWhiteSpace(module)) {
+    public bool CanAccessModule(string role, string module)
+    {
+        if (string.IsNullOrWhiteSpace(role) || string.IsNullOrWhiteSpace(module))
+        {
             return false;
         }
 
         // UltraThink Phase 4.1: 优先使用UserRole枚举映射
-        if (Enum.TryParse<UserRole>(role, out var userRole)) {
+        if (Enum.TryParse<UserRole>(role, out var userRole))
+        {
             return WorkbenchPermissionMapper.CanAccessModule(userRole, module);
         }
 
@@ -92,13 +102,16 @@ public class WorkbenchRouter : IWorkbenchRouter {
     /// </summary>
     /// <param name="role">用户角色字符串</param>
     /// <returns>导航项集合，包含图标、徽章、排序信息</returns>
-    public IEnumerable<NavigationItem> GetNavigationItems(string role) {
-        if (string.IsNullOrWhiteSpace(role)) {
+    public IEnumerable<NavigationItem> GetNavigationItems(string role)
+    {
+        if (string.IsNullOrWhiteSpace(role))
+        {
             return [];
         }
 
         // 检查缓存 - 使用TryGetValue提升性能
-        if (_navigationCache.TryGetValue(role, out var cachedItems)) {
+        if (_navigationCache.TryGetValue(role, out var cachedItems))
+        {
             return cachedItems;
         }
 
@@ -115,8 +128,10 @@ public class WorkbenchRouter : IWorkbenchRouter {
     /// </summary>
     /// <param name="role">用户角色字符串</param>
     /// <returns>导航项列表</returns>
-    private List<NavigationItem> GenerateNavigationItems(string role) {
-        return role switch {
+    private List<NavigationItem> GenerateNavigationItems(string role)
+    {
+        return role switch
+        {
             "管理员" => [.. GetAdminNavigationItems()],
             "用户" or "医生" => [.. GetDoctorNavigationItems()],
             "前台" => [.. GetReceptionNavigationItems()],
@@ -129,7 +144,8 @@ public class WorkbenchRouter : IWorkbenchRouter {
     /// 8个核心业务模块完整权限：用户、患者、医案、诊断、药材、验方、处方
     /// </summary>
     /// <returns>管理员导航项集合</returns>
-    private IEnumerable<NavigationItem> GetAdminNavigationItems() {
+    private IEnumerable<NavigationItem> GetAdminNavigationItems()
+    {
         return
         [
             // 用户和患者管理
@@ -210,7 +226,8 @@ public class WorkbenchRouter : IWorkbenchRouter {
     /// 核心诊疗功能：看诊、患者档案、处方管理、病历查询
     /// </summary>
     /// <returns>医生导航项集合</returns>
-    private IEnumerable<NavigationItem> GetDoctorNavigationItems() {
+    private IEnumerable<NavigationItem> GetDoctorNavigationItems()
+    {
         return
         [
             // 核心诊疗功能
@@ -278,7 +295,8 @@ public class WorkbenchRouter : IWorkbenchRouter {
     /// 基础接待功能：患者建档、就诊记录查看
     /// </summary>
     /// <returns>前台接待导航项集合</returns>
-    private IEnumerable<NavigationItem> GetReceptionNavigationItems() {
+    private IEnumerable<NavigationItem> GetReceptionNavigationItems()
+    {
         return
         [
             // 患者接待核心功能
@@ -312,13 +330,16 @@ public class WorkbenchRouter : IWorkbenchRouter {
     /// </summary>
     /// <param name="role">用户角色字符串</param>
     /// <returns>可访问模块名称集合</returns>
-    public IEnumerable<string> GetAccessibleModules(string role) {
-        if (string.IsNullOrWhiteSpace(role)) {
+    public IEnumerable<string> GetAccessibleModules(string role)
+    {
+        if (string.IsNullOrWhiteSpace(role))
+        {
             return [];
         }
 
         // UltraThink Phase 4.1: 优先使用UserRole枚举映射
-        if (Enum.TryParse<UserRole>(role, out var userRole)) {
+        if (Enum.TryParse<UserRole>(role, out var userRole))
+        {
             return WorkbenchPermissionMapper.GetAccessibleModules(userRole);
         }
 
@@ -333,8 +354,10 @@ public class WorkbenchRouter : IWorkbenchRouter {
     /// </summary>
     /// <param name="workbench">工作台名称</param>
     /// <returns>默认视图名称</returns>
-    public string GetDefaultView(string workbench) {
-        return workbench switch {
+    public string GetDefaultView(string workbench)
+    {
+        return workbench switch
+        {
             "SystemWorkbenchMainView" => "UserManagementView", // 管理员默认进入用户管理
             "ConsultationWorkbenchMainView" => "ConsultationMainView", // 医生默认进入看诊界面
             "ReceptionWorkbenchMainView" => "PatientManagementView", // 前台默认进入患者管理
@@ -349,12 +372,15 @@ public class WorkbenchRouter : IWorkbenchRouter {
     /// <param name="role">用户角色名称</param>
     /// <param name="workbench">工作台视图名称</param>
     /// <param name="modules">可访问模块列表</param>
-    public void RegisterWorkbench(string role, string workbench, List<string> modules) {
-        if (string.IsNullOrWhiteSpace(role) || string.IsNullOrWhiteSpace(workbench)) {
+    public void RegisterWorkbench(string role, string workbench, List<string> modules)
+    {
+        if (string.IsNullOrWhiteSpace(role) || string.IsNullOrWhiteSpace(workbench))
+        {
             return;
         }
 
-        _workbenchConfigs[role] = new WorkbenchConfig {
+        _workbenchConfigs[role] = new WorkbenchConfig
+        {
             Role = role,
             WorkbenchView = workbench,
             AccessibleModules = modules ?? []
@@ -369,7 +395,8 @@ public class WorkbenchRouter : IWorkbenchRouter {
     /// 工作台枚举：返回角色到工作台视图的完整映射关系
     /// </summary>
     /// <returns>角色名称到工作台视图的映射字典</returns>
-    public Dictionary<string, string> GetAllWorkbenches() {
+    public Dictionary<string, string> GetAllWorkbenches()
+    {
         return _workbenchConfigs.ToDictionary(
             kvp => kvp.Key,
             kvp => kvp.Value.WorkbenchView);
@@ -381,7 +408,8 @@ public class WorkbenchRouter : IWorkbenchRouter {
     /// </summary>
     /// <param name="workbench">工作台视图名称</param>
     /// <returns>是否已注册</returns>
-    public bool IsWorkbenchRegistered(string workbench) {
+    public bool IsWorkbenchRegistered(string workbench)
+    {
         ArgumentException.ThrowIfNullOrWhiteSpace(workbench, nameof(workbench));
         return _workbenchConfigs.Values.Any(c => c.WorkbenchView == workbench);
     }
@@ -393,9 +421,11 @@ public class WorkbenchRouter : IWorkbenchRouter {
     /// <param name="role">用户角色字符串</param>
     /// <param name="userName">用户姓名</param>
     /// <returns>个性化欢迎消息</returns>
-    public string GetWelcomeMessage(string role, string userName) {
+    public string GetWelcomeMessage(string role, string userName)
+    {
         // UltraThink Phase 4.1: 优先使用UserRole枚举映射
-        if (Enum.TryParse<UserRole>(role, out var userRole)) {
+        if (Enum.TryParse<UserRole>(role, out var userRole))
+        {
             return WorkbenchPermissionMapper.GetWelcomeMessage(userRole, userName);
         }
 
@@ -410,9 +440,11 @@ public class WorkbenchRouter : IWorkbenchRouter {
     /// </summary>
     /// <param name="role">用户角色字符串</param>
     /// <returns>角色的中文显示名称</returns>
-    public string GetRoleDisplayName(string role) {
+    public string GetRoleDisplayName(string role)
+    {
         // UltraThink Phase 4.1: 优先使用UserRole枚举映射
-        if (Enum.TryParse<UserRole>(role, out var userRole)) {
+        if (Enum.TryParse<UserRole>(role, out var userRole))
+        {
             return WorkbenchPermissionMapper.GetRoleDisplayName(userRole);
         }
 
@@ -425,7 +457,8 @@ public class WorkbenchRouter : IWorkbenchRouter {
     /// 工作台配置内部类
     /// UltraThink架构：封装角色-工作台-模块的映射配置信息
     /// </summary>
-    private sealed class WorkbenchConfig {
+    private sealed class WorkbenchConfig
+    {
 
         /// <summary>
         /// 用户角色名称
@@ -448,15 +481,18 @@ public class WorkbenchRouter : IWorkbenchRouter {
 /// UltraThink Phase 4.1: UserRole到工作台权限映射器
 /// 支持UserRole枚举到工作台的正确映射
 /// </summary>
-public static class WorkbenchPermissionMapper {
+public static class WorkbenchPermissionMapper
+{
 
     /// <summary>
     /// UserRole到工作台的映射关系
     /// C# 12集合表达式：简化配置定义，提升可读性
     /// </summary>
-    private static readonly Dictionary<UserRole, WorkbenchPermission> UserRoleWorkbenchMap = new() {
+    private static readonly Dictionary<UserRole, WorkbenchPermission> UserRoleWorkbenchMap = new()
+    {
         // 管理员 - 系统管理工作台，拥有8个核心业务模块的完整权限
-        [UserRole.Admin] = new() {
+        [UserRole.Admin] = new()
+        {
             WorkbenchView = "SystemWorkbenchMainView",
             AccessibleModules = [
                 "Users", "Patients", "MedicalCase", "Consultation",
@@ -467,7 +503,8 @@ public static class WorkbenchPermissionMapper {
         },
 
         // 医生 - 诊疗工作台
-        [UserRole.Doctor] = new() {
+        [UserRole.Doctor] = new()
+        {
             WorkbenchView = "ConsultationWorkbenchMainView",
             AccessibleModules = [
                 "Patients", "Consultation", "Prescriptions", "Formula", "MedicalCase"
@@ -477,7 +514,8 @@ public static class WorkbenchPermissionMapper {
         },
 
         // 前台接待 - 患者管理为主
-        [UserRole.Receptionist] = new() {
+        [UserRole.Receptionist] = new()
+        {
             WorkbenchView = "ReceptionWorkbenchMainView",
             AccessibleModules = [
                 "Patients", "MedicalCase"
@@ -487,7 +525,8 @@ public static class WorkbenchPermissionMapper {
         },
 
         // 药剂师 - 药房工作台
-        [UserRole.Pharmacist] = new() {
+        [UserRole.Pharmacist] = new()
+        {
             WorkbenchView = "PharmacistWorkbenchMainView",
             AccessibleModules = [
                 "Herbs", "Prescriptions", "Formula", "Patients"
@@ -502,7 +541,8 @@ public static class WorkbenchPermissionMapper {
     /// </summary>
     /// <param name="role">用户角色</param>
     /// <returns>工作台视图名称</returns>
-    public static string GetWorkbenchForRole(UserRole role) {
+    public static string GetWorkbenchForRole(UserRole role)
+    {
         return UserRoleWorkbenchMap.TryGetValue(role, out var permission)
             ? permission.WorkbenchView
             : "ConsultationWorkbenchMainView"; // 默认诊疗工作台
@@ -514,8 +554,10 @@ public static class WorkbenchPermissionMapper {
     /// <param name="role">用户角色</param>
     /// <param name="module">模块名称</param>
     /// <returns>是否有访问权限</returns>
-    public static bool CanAccessModule(UserRole role, string module) {
-        if (!UserRoleWorkbenchMap.TryGetValue(role, out var permission)) {
+    public static bool CanAccessModule(UserRole role, string module)
+    {
+        if (!UserRoleWorkbenchMap.TryGetValue(role, out var permission))
+        {
             return false;
         }
 
@@ -527,7 +569,8 @@ public static class WorkbenchPermissionMapper {
     /// </summary>
     /// <param name="role">用户角色</param>
     /// <returns>可访问的模块列表</returns>
-    public static IEnumerable<string> GetAccessibleModules(UserRole role) {
+    public static IEnumerable<string> GetAccessibleModules(UserRole role)
+    {
         return UserRoleWorkbenchMap.TryGetValue(role, out var permission)
             ? permission.AccessibleModules
             : [];
@@ -538,7 +581,8 @@ public static class WorkbenchPermissionMapper {
     /// </summary>
     /// <param name="role">用户角色</param>
     /// <returns>角色显示名称</returns>
-    public static string GetRoleDisplayName(UserRole role) {
+    public static string GetRoleDisplayName(UserRole role)
+    {
         return UserRoleWorkbenchMap.TryGetValue(role, out var permission)
             ? permission.DisplayName
             : "用户";
@@ -550,8 +594,10 @@ public static class WorkbenchPermissionMapper {
     /// <param name="role">用户角色</param>
     /// <param name="userName">用户姓名</param>
     /// <returns>欢迎消息</returns>
-    public static string GetWelcomeMessage(UserRole role, string userName) {
-        if (UserRoleWorkbenchMap.TryGetValue(role, out var permission)) {
+    public static string GetWelcomeMessage(UserRole role, string userName)
+    {
+        if (UserRoleWorkbenchMap.TryGetValue(role, out var permission))
+        {
             return string.Format(permission.WelcomeTemplate, userName);
         }
 
@@ -562,7 +608,8 @@ public static class WorkbenchPermissionMapper {
     /// 获取所有支持的角色工作台映射
     /// </summary>
     /// <returns>角色到工作台的映射字典</returns>
-    public static Dictionary<UserRole, string> GetAllWorkbenchMappings() {
+    public static Dictionary<UserRole, string> GetAllWorkbenchMappings()
+    {
         return UserRoleWorkbenchMap.ToDictionary(
             kvp => kvp.Key,
             kvp => kvp.Value.WorkbenchView
@@ -574,7 +621,8 @@ public static class WorkbenchPermissionMapper {
     /// </summary>
     /// <param name="role">用户角色</param>
     /// <returns>是否有管理权限</returns>
-    public static bool HasManagementAccess(UserRole role) {
+    public static bool HasManagementAccess(UserRole role)
+    {
         return role == UserRole.Admin;
     }
 
@@ -583,7 +631,8 @@ public static class WorkbenchPermissionMapper {
     /// </summary>
     /// <param name="role">用户角色</param>
     /// <returns>是否有医疗权限</returns>
-    public static bool HasMedicalAccess(UserRole role) {
+    public static bool HasMedicalAccess(UserRole role)
+    {
         return role == UserRole.Doctor || role == UserRole.Admin;
     }
 
@@ -592,8 +641,10 @@ public static class WorkbenchPermissionMapper {
     /// </summary>
     /// <param name="role">UserRole枚举</param>
     /// <returns>字符串角色名称</returns>
-    public static string ConvertToLegacyRoleString(UserRole role) {
-        return role switch {
+    public static string ConvertToLegacyRoleString(UserRole role)
+    {
+        return role switch
+        {
             UserRole.Admin => "管理员",
             UserRole.Doctor => "医生",
             UserRole.Receptionist => "前台",
@@ -609,8 +660,10 @@ public static class WorkbenchPermissionMapper {
     /// </summary>
     /// <param name="roleString">字符串角色名称</param>
     /// <returns>UserRole枚举</returns>
-    public static UserRole ConvertFromLegacyRoleString(string roleString) {
-        return roleString switch {
+    public static UserRole ConvertFromLegacyRoleString(string roleString)
+    {
+        return roleString switch
+        {
             "管理员" => UserRole.Admin,
             "医生" or "用户" => UserRole.Doctor, // "用户"映射为医生角色
             "前台" => UserRole.Receptionist,
@@ -626,7 +679,8 @@ public static class WorkbenchPermissionMapper {
 /// 工作台权限配置类
 /// UltraThink企业级权限管理：封装角色权限和工作台配置信息
 /// </summary>
-public sealed class WorkbenchPermission {
+public sealed class WorkbenchPermission
+{
 
     /// <summary>
     /// 工作台视图名称

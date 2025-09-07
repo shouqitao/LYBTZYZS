@@ -2,13 +2,16 @@
 
 #nullable disable
 
-namespace LYBT.Infrastructure.Migrations {
+namespace LYBT.Infrastructure.Migrations
+{
 
     /// <inheritdoc />
-    public partial class UnifyFieldNamesAndTypes_V2 : Migration {
+    public partial class UnifyFieldNamesAndTypes_V2 : Migration
+    {
 
         /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder) {
+        protected override void Up(MigrationBuilder migrationBuilder)
+        {
             migrationBuilder.DropColumn(
                 name: "CreatedAt",
                 table: "Formulas");
@@ -244,7 +247,7 @@ namespace LYBT.Infrastructure.Migrations {
                 table: "Doctors",
                 type: "nvarchar(max)",
                 nullable: false,
-                defaultValue: "");
+                defaultValue: string.Empty);
 
             migrationBuilder.AlterColumn<string>(
                 name: "Remark",
@@ -286,7 +289,8 @@ namespace LYBT.Infrastructure.Migrations {
         }
 
         /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder) {
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
             migrationBuilder.DropColumn(
                 name: "CreateTime",
                 table: "Registrations");
@@ -333,7 +337,7 @@ namespace LYBT.Infrastructure.Migrations {
                 table: "Registrations",
                 type: "nvarchar(max)",
                 nullable: false,
-                defaultValue: "",
+                defaultValue: string.Empty,
                 oldClrType: typeof(string),
                 oldType: "nvarchar(max)",
                 oldNullable: true);
@@ -479,7 +483,7 @@ namespace LYBT.Infrastructure.Migrations {
                 type: "nvarchar(32)",
                 maxLength: 32,
                 nullable: false,
-                defaultValue: "",
+                defaultValue: string.Empty,
                 oldClrType: typeof(string),
                 oldType: "nvarchar(max)",
                 oldNullable: true);
@@ -490,7 +494,7 @@ namespace LYBT.Infrastructure.Migrations {
                 type: "nvarchar(100)",
                 maxLength: 100,
                 nullable: false,
-                defaultValue: "",
+                defaultValue: string.Empty,
                 oldClrType: typeof(string),
                 oldType: "nvarchar(100)",
                 oldMaxLength: 100,
@@ -512,7 +516,7 @@ namespace LYBT.Infrastructure.Migrations {
                 type: "nvarchar(32)",
                 maxLength: 32,
                 nullable: false,
-                defaultValue: "",
+                defaultValue: string.Empty,
                 oldClrType: typeof(string),
                 oldType: "nvarchar(max)",
                 oldNullable: true);

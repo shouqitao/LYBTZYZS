@@ -3,7 +3,8 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using LYBT.Shared.Models.Enums;
 
-namespace LYBT.Entities.Formula {
+namespace LYBT.Entities.Formula
+{
 
     /// <summary>
     /// 验方实体 - UltraThink v2.0架构简化版
@@ -11,7 +12,8 @@ namespace LYBT.Entities.Formula {
     /// 验方为模板，不含价格计算，只定义药材组成和剂量
     /// </summary>
     [Table("Formulas")]
-    public class Formula {
+    public class Formula
+    {
 
         /// <summary>验方唯一标识</summary>
         [Key]

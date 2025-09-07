@@ -4,7 +4,8 @@ using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Services.Dialogs;
 
-namespace LYBT.Desktop.Prescriptions.ViewModels.Components {
+namespace LYBT.Desktop.Prescriptions.ViewModels.Components
+{
 
     /// <summary>
     /// 处方命令处理器 - UltraThink专门化组件
@@ -12,7 +13,8 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components {
     /// 代码干净：清晰的命令模式实现和错误处理
     /// 性能出色：优化的异步命令执行和资源管理
     /// </summary>
-    public class PrescriptionCommandHandler {
+    public class PrescriptionCommandHandler
+    {
         private readonly IHerbService _herbService;
         private readonly LYBT.Shared.Interfaces.Services.IFormulaService _formulaService;
         private readonly IPrescriptionService _prescriptionService;
@@ -30,7 +32,8 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components {
             LYBT.Shared.Interfaces.Services.IFormulaService formulaService,
             IPrescriptionService prescriptionService,
             IDialogService dialogService,
-            ILogger<PrescriptionCommandHandler> logger) {
+            ILogger<PrescriptionCommandHandler> logger)
+        {
             _herbService = herbService ?? throw new ArgumentNullException(nameof(herbService));
             _formulaService = formulaService ?? throw new ArgumentNullException(nameof(formulaService));
             _prescriptionService = prescriptionService ?? throw new ArgumentNullException(nameof(prescriptionService));
@@ -65,7 +68,8 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components {
         public void SetDependencies(
             PrescriptionDataManager dataManager,
             PrescriptionValidator validator,
-            PrescriptionCalculator calculator) {
+            PrescriptionCalculator calculator)
+        {
             _dataManager = dataManager ?? throw new ArgumentNullException(nameof(dataManager));
             _validator = validator ?? throw new ArgumentNullException(nameof(validator));
             _calculator = calculator ?? throw new ArgumentNullException(nameof(calculator));
@@ -78,7 +82,8 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components {
 
         #region 命令初始化
 
-        private void InitializeCommands() {
+        private void InitializeCommands()
+        {
             SaveCommand = new DelegateCommand(
                 async () => await ExecuteCommandSafelyAsync(SaveAsync),
                 () => CanExecuteSave());
@@ -125,20 +130,27 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components {
         /// <summary>
         /// 保存处方
         /// </summary>
-        private async Task SaveAsync() {
-            try {
+        private async Task SaveAsync()
+        {
+            try
+            {
                 _logger.LogInformation("开始保存处方");
 
                 var success = await _dataManager.SaveAsync();
-                if (success) {
+                if (success)
+                {
                     _logger.LogInformation("处方保存成功");
                     // 可以触发保存成功事件
                     OnPrescriptionSaved?.Invoke();
-                } else {
+                }
+                else
+                {
                     _logger.LogWarning("处方保存失败");
                     ShowErrorMessage("保存失败", "处方保存失败，请重试");
                 }
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, "保存处方时发生错误");
                 ShowErrorMessage("保存错误", "保存过程中发生错误，请联系管理员");
             }
@@ -147,15 +159,20 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components {
         /// <summary>
         /// 清空处方
         /// </summary>
-        private void Clear() {
-            try {
+        private void Clear()
+        {
+            try
+            {
                 var result = ShowConfirmDialog("确认清空", "确定要清空当前处方吗？此操作不可撤销。");
-                if (result) {
+                if (result)
+                {
                     _dataManager.Clear();
                     _logger.LogInformation("处方已清空");
                     OnPrescriptionCleared?.Invoke();
                 }
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, "清空处方时发生错误");
             }
         }
@@ -163,8 +180,10 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components {
         /// <summary>
         /// 添加药材
         /// </summary>
-        private Task AddHerbAsync() {
-            try {
+        private Task AddHerbAsync()
+        {
+            try
+            {
                 _logger.LogDebug("开始选择药材");
 
                 var parameters = new DialogParameters
@@ -173,13 +192,17 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components {
                     { "AllowMultipleSelection", true }
                 };
 
-                _dialogService.ShowDialog("HerbSelectionDialog", parameters, result => {
-                    if (result.Result == ButtonResult.OK && result.Parameters.ContainsKey("SelectedHerbs")) {
+                _dialogService.ShowDialog("HerbSelectionDialog", parameters, result =>
+                {
+                    if (result.Result == ButtonResult.OK && result.Parameters.ContainsKey("SelectedHerbs"))
+                    {
                         var selectedHerbs = result.Parameters.GetValue<dynamic>("SelectedHerbs");
                         Task.Run(() => AddHerbItems(selectedHerbs));
                     }
                 });
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, "添加药材时发生错误");
                 ShowErrorMessage("添加失败", "添加药材失败，请重试");
             }
@@ -190,14 +213,19 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components {
         /// <summary>
         /// 添加药材项
         /// </summary>
-        private void AddHerbItems(dynamic herbItems) {
-            if (herbItems == null) {
+        private void AddHerbItems(dynamic herbItems)
+        {
+            if (herbItems == null)
+            {
                 return;
             }
 
-            try {
-                foreach (var herbItem in herbItems) {
-                    var prescriptionItem = new PrescriptionItemViewModel {
+            try
+            {
+                foreach (var herbItem in herbItems)
+                {
+                    var prescriptionItem = new PrescriptionItemViewModel
+                    {
                         HerbId = herbItem.Id,
                         HerbName = herbItem.Name,
                         Quantity = 10m, // 默认数量
@@ -211,7 +239,9 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components {
 
                 RecalculatePrice();
                 _logger.LogInformation("成功添加 {Count} 个药材", ((IEnumerable<dynamic>)herbItems).Count());
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, "添加药材项时发生错误");
                 ShowErrorMessage("添加失败", "添加药材项失败");
             }
@@ -220,16 +250,21 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components {
         /// <summary>
         /// 移除药材
         /// </summary>
-        private void RemoveHerb(PrescriptionItemViewModel? item) {
-            if (item == null) {
+        private void RemoveHerb(PrescriptionItemViewModel? item)
+        {
+            if (item == null)
+            {
                 return;
             }
 
-            try {
+            try
+            {
                 _dataManager.RemovePrescriptionItem(item);
                 RecalculatePrice();
                 _logger.LogDebug("移除药材: {HerbName}", item.HerbName);
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, "移除药材时发生错误");
             }
         }
@@ -237,18 +272,24 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components {
         /// <summary>
         /// 导入验方
         /// </summary>
-        private Task ImportFormulaAsync() {
-            try {
+        private Task ImportFormulaAsync()
+        {
+            try
+            {
                 _logger.LogDebug("开始选择验方");
 
                 var parameters = new DialogParameters { { "Title", "选择验方" } };
-                _dialogService.ShowDialog("SelectFormulaDialog", parameters, result => {
-                    if (result.Result == ButtonResult.OK && result.Parameters.ContainsKey("SelectedFormula")) {
+                _dialogService.ShowDialog("SelectFormulaDialog", parameters, result =>
+                {
+                    if (result.Result == ButtonResult.OK && result.Parameters.ContainsKey("SelectedFormula"))
+                    {
                         var selectedFormula = result.Parameters.GetValue<dynamic>("SelectedFormula");
                         ImportFormulaItems(selectedFormula);
                     }
                 });
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, "导入验方时发生错误");
                 ShowErrorMessage("导入失败", "导入验方失败，请重试");
             }
@@ -259,14 +300,19 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components {
         /// <summary>
         /// 导入验方项
         /// </summary>
-        private void ImportFormulaItems(dynamic formula) {
-            if (formula?.Items == null) {
+        private void ImportFormulaItems(dynamic formula)
+        {
+            if (formula?.Items == null)
+            {
                 return;
             }
 
-            try {
-                foreach (var item in formula.Items) {
-                    var prescriptionItem = new PrescriptionItemViewModel {
+            try
+            {
+                foreach (var item in formula.Items)
+                {
+                    var prescriptionItem = new PrescriptionItemViewModel
+                    {
                         HerbId = item.HerbId,
                         HerbName = item.HerbName,
                         Quantity = item.Quantity,
@@ -280,7 +326,9 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components {
 
                 RecalculatePrice();
                 _logger.LogInformation("成功导入验方: {FormulaName}", (string)formula.Name);
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, "导入验方项时发生错误");
                 ShowErrorMessage("导入失败", "导入验方项失败");
             }
@@ -289,8 +337,10 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components {
         /// <summary>
         /// 导入历史处方
         /// </summary>
-        private Task ImportHistoryAsync() {
-            try {
+        private Task ImportHistoryAsync()
+        {
+            try
+            {
                 _logger.LogDebug("开始选择历史处方");
 
                 var parameters = new DialogParameters
@@ -299,13 +349,17 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components {
                     { "MedicalCaseId", _dataManager.MedicalCaseId }
                 };
 
-                _dialogService.ShowDialog("SelectHistoryDialog", parameters, result => {
-                    if (result.Result == ButtonResult.OK && result.Parameters.ContainsKey("SelectedPrescription")) {
+                _dialogService.ShowDialog("SelectHistoryDialog", parameters, result =>
+                {
+                    if (result.Result == ButtonResult.OK && result.Parameters.ContainsKey("SelectedPrescription"))
+                    {
                         var selectedPrescription = result.Parameters.GetValue<dynamic>("SelectedPrescription");
                         ImportHistoryItems(selectedPrescription);
                     }
                 });
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, "导入历史处方时发生错误");
                 ShowErrorMessage("导入失败", "导入历史处方失败");
             }
@@ -316,12 +370,15 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components {
         /// <summary>
         /// 导入历史处方项
         /// </summary>
-        private void ImportHistoryItems(dynamic prescription) {
-            if (prescription?.Items == null) {
+        private void ImportHistoryItems(dynamic prescription)
+        {
+            if (prescription?.Items == null)
+            {
                 return;
             }
 
-            try {
+            try
+            {
                 // 先清空当前处方
                 _dataManager.Clear();
 
@@ -332,8 +389,10 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components {
                 _dataManager.Remark = prescription.Remark ?? string.Empty;
                 _dataManager.Discount = prescription.Discount;
 
-                foreach (var item in prescription.Items) {
-                    var prescriptionItem = new PrescriptionItemViewModel {
+                foreach (var item in prescription.Items)
+                {
+                    var prescriptionItem = new PrescriptionItemViewModel
+                    {
                         HerbId = item.HerbId,
                         HerbName = item.HerbName,
                         Quantity = item.Quantity,
@@ -347,7 +406,9 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components {
 
                 RecalculatePrice();
                 _logger.LogInformation("成功导入历史处方");
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, "导入历史处方项时发生错误");
                 ShowErrorMessage("导入失败", "导入历史处方项失败");
             }
@@ -356,20 +417,25 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components {
         /// <summary>
         /// 设置折扣
         /// </summary>
-        private void SetDiscount(string? discountStr) {
-            try {
+        private void SetDiscount(string? discountStr)
+        {
+            try
+            {
                 var validation = _validator.ValidateDiscount(discountStr ?? "1.0", out var discount);
                 _dataManager.Discount = discount;
                 _dataManager.MarkAsChanged();
 
                 RecalculatePrice();
 
-                if (!validation.IsValid || validation.Warnings.Any()) {
+                if (!validation.IsValid || validation.Warnings.Any())
+                {
                     ShowWarningMessage("折扣设置", validation.GetSummary());
                 }
 
                 _logger.LogDebug("设置折扣: {Discount}", discount);
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, "设置折扣时发生错误");
             }
         }
@@ -377,20 +443,25 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components {
         /// <summary>
         /// 设置剂数
         /// </summary>
-        private void SetDosage(string? dosageStr) {
-            try {
+        private void SetDosage(string? dosageStr)
+        {
+            try
+            {
                 var validation = _validator.ValidateDosage(dosageStr ?? "7", out var dosage);
                 _dataManager.DosageCount = dosage;
                 _dataManager.MarkAsChanged();
 
                 RecalculatePrice();
 
-                if (!validation.IsValid || validation.Warnings.Any()) {
+                if (!validation.IsValid || validation.Warnings.Any())
+                {
                     ShowWarningMessage("剂数设置", validation.GetSummary());
                 }
 
                 _logger.LogDebug("设置剂数: {Dosage}", dosage);
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, "设置剂数时发生错误");
             }
         }
@@ -398,11 +469,15 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components {
         /// <summary>
         /// 生成处方编号
         /// </summary>
-        private void GeneratePrescriptionNo() {
-            try {
+        private void GeneratePrescriptionNo()
+        {
+            try
+            {
                 _dataManager.GeneratePrescriptionNo();
                 _logger.LogDebug("生成新的处方编号: {PrescriptionNo}", _dataManager.PrescriptionNo);
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, "生成处方编号时发生错误");
             }
         }
@@ -410,8 +485,10 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components {
         /// <summary>
         /// 打印预览
         /// </summary>
-        private Task PrintPreviewAsync() {
-            try {
+        private Task PrintPreviewAsync()
+        {
+            try
+            {
                 _logger.LogInformation("开始打印预览");
 
                 var parameters = new DialogParameters
@@ -419,12 +496,15 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components {
                     { "PrescriptionData", CreatePrintData() }
                 };
 
-                _dialogService.ShowDialog("PrintPreviewDialog", parameters, result => {
+                _dialogService.ShowDialog("PrintPreviewDialog", parameters, result =>
+                {
                     _logger.LogDebug("打印预览对话框关闭");
                 });
 
                 return Task.CompletedTask;
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, "打印预览时发生错误");
                 ShowErrorMessage("打印预览失败", "无法打开打印预览");
                 return Task.CompletedTask;
@@ -434,8 +514,10 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components {
         /// <summary>
         /// 验证处方
         /// </summary>
-        private void ValidatePrescription() {
-            try {
+        private void ValidatePrescription()
+        {
+            try
+            {
                 var validation = _validator.ValidatePrescription(
                     _dataManager.PrescriptionItems,
                     _dataManager.PrescriptionNo,
@@ -443,14 +525,21 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components {
                     _dataManager.Usage,
                     _dataManager.Discount);
 
-                if (!validation.IsValid) {
+                if (!validation.IsValid)
+                {
                     ShowErrorMessage("验证失败", validation.GetSummary());
-                } else if (validation.Warnings.Any()) {
+                }
+                else if (validation.Warnings.Any())
+                {
                     ShowWarningMessage("验证警告", validation.GetSummary());
-                } else {
+                }
+                else
+                {
                     ShowInfoMessage("验证成功", "处方验证通过");
                 }
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, "验证处方时发生错误");
             }
         }
@@ -458,14 +547,18 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components {
         /// <summary>
         /// 重新计算价格
         /// </summary>
-        private void RecalculatePrice() {
-            try {
+        private void RecalculatePrice()
+        {
+            try
+            {
                 // 更新每项的小计
                 _calculator.UpdateItemSubtotals(_dataManager.PrescriptionItems);
 
                 // 触发价格重算事件
                 OnPriceRecalculated?.Invoke();
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, "重新计算价格时发生错误");
             }
         }
@@ -474,11 +567,13 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components {
 
         #region 命令条件检查
 
-        private bool CanExecuteSave() {
+        private bool CanExecuteSave()
+        {
             return !_dataManager.IsLoading && _dataManager.PrescriptionItems.Count > 0;
         }
 
-        private bool CanExecuteClear() {
+        private bool CanExecuteClear()
+        {
             return !_dataManager.IsLoading;
         }
 
@@ -489,10 +584,14 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components {
         /// <summary>
         /// 安全执行异步命令
         /// </summary>
-        private async Task ExecuteCommandSafelyAsync(Func<Task> command) {
-            try {
+        private async Task ExecuteCommandSafelyAsync(Func<Task> command)
+        {
+            try
+            {
                 await command();
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, "执行异步命令时发生错误");
                 ShowErrorMessage("操作失败", "操作执行失败，请重试");
             }
@@ -501,10 +600,14 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components {
         /// <summary>
         /// 安全执行同步命令
         /// </summary>
-        private void ExecuteCommandSafely(Action command) {
-            try {
+        private void ExecuteCommandSafely(Action command)
+        {
+            try
+            {
                 command();
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, "执行同步命令时发生错误");
                 ShowErrorMessage("操作失败", "操作执行失败，请重试");
             }
@@ -513,11 +616,13 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components {
         /// <summary>
         /// 创建打印数据
         /// </summary>
-        private object CreatePrintData() {
+        private object CreatePrintData()
+        {
             var calculation = _calculator.CalculatePrescriptionPrice(
                 _dataManager.PrescriptionItems, _dataManager.DosageCount, _dataManager.Discount);
 
-            return new {
+            return new
+            {
                 PrescriptionNo = _dataManager.PrescriptionNo,
                 DosageCount = _dataManager.DosageCount,
                 Usage = _dataManager.Usage,
@@ -531,7 +636,8 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components {
         /// <summary>
         /// 显示错误消息
         /// </summary>
-        private void ShowErrorMessage(string title, string message) {
+        private void ShowErrorMessage(string title, string message)
+        {
             var parameters = new DialogParameters
             {
                 { "Title", title },
@@ -543,7 +649,8 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components {
         /// <summary>
         /// 显示警告消息
         /// </summary>
-        private void ShowWarningMessage(string title, string message) {
+        private void ShowWarningMessage(string title, string message)
+        {
             var parameters = new DialogParameters
             {
                 { "Title", title },
@@ -555,7 +662,8 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components {
         /// <summary>
         /// 显示信息消息
         /// </summary>
-        private void ShowInfoMessage(string title, string message) {
+        private void ShowInfoMessage(string title, string message)
+        {
             var parameters = new DialogParameters
             {
                 { "Title", title },
@@ -567,7 +675,8 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components {
         /// <summary>
         /// 显示确认对话框
         /// </summary>
-        private bool ShowConfirmDialog(string title, string message) {
+        private bool ShowConfirmDialog(string title, string message)
+        {
             var result = false;
             var parameters = new DialogParameters
             {
@@ -575,7 +684,8 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components {
                 { "Message", message }
             };
 
-            _dialogService.ShowDialog("ConfirmDialog", parameters, dialogResult => {
+            _dialogService.ShowDialog("ConfirmDialog", parameters, dialogResult =>
+            {
                 result = dialogResult.Result == ButtonResult.OK;
             });
 

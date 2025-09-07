@@ -2,13 +2,16 @@
 
 #nullable disable
 
-namespace LYBT.Infrastructure.Migrations {
+namespace LYBT.Infrastructure.Migrations
+{
 
     /// <inheritdoc />
-    public partial class Auth_UltraThink_Refactor : Migration {
+    public partial class Auth_UltraThink_Refactor : Migration
+    {
 
         /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder) {
+        protected override void Up(MigrationBuilder migrationBuilder)
+        {
             migrationBuilder.AddColumn<string>(
                 name: "Remark",
                 table: "Consultations",
@@ -18,7 +21,8 @@ namespace LYBT.Infrastructure.Migrations {
 
             migrationBuilder.CreateTable(
                 name: "AuthSessions",
-                columns: table => new {
+                columns: table => new
+                {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     JwtTokenHash = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     TokenExpiryTime = table.Column<DateTime>(type: "datetime2", nullable: true),
@@ -50,13 +54,15 @@ namespace LYBT.Infrastructure.Migrations {
                     CreateTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdateTime = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
-                constraints: table => {
+                constraints: table =>
+                {
                     table.PrimaryKey("PK_AuthSessions", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
                 name: "LoginAttempts",
-                columns: table => new {
+                columns: table => new
+                {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ServerInfo = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
                     ResponseTimeMs = table.Column<long>(type: "bigint", nullable: false),
@@ -91,13 +97,15 @@ namespace LYBT.Infrastructure.Migrations {
                     IsSuspicious = table.Column<bool>(type: "bit", nullable: false),
                     CreateTime = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
-                constraints: table => {
+                constraints: table =>
+                {
                     table.PrimaryKey("PK_LoginAttempts", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
                 name: "SecurityLogs",
-                columns: table => new {
+                columns: table => new
+                {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     StackTrace = table.Column<string>(type: "nvarchar(4000)", maxLength: 4000, nullable: true),
                     RequestData = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: true),
@@ -140,7 +148,8 @@ namespace LYBT.Infrastructure.Migrations {
                     IsProcessed = table.Column<bool>(type: "bit", nullable: false),
                     CreateTime = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
-                constraints: table => {
+                constraints: table =>
+                {
                     table.PrimaryKey("PK_SecurityLogs", x => x.Id);
                 });
 
@@ -245,7 +254,8 @@ namespace LYBT.Infrastructure.Migrations {
         }
 
         /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder) {
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
             migrationBuilder.DropForeignKey(
                 name: "FK_Consultations_MedicalCases_MedicalCaseId",
                 table: "Consultations");

@@ -1,14 +1,16 @@
 ﻿using System.Linq.Expressions;
 using LYBT.Shared.Models.Contracts.Common;
 
-namespace LYBT.Infrastructure.Interfaces {
+namespace LYBT.Infrastructure.Interfaces
+{
 
     /// <summary>
     /// 基础仓储接口 - Solution级架构标准化
     /// 定义所有模块仓储的通用规范，确保数据访问层架构一致性
     /// </summary>
     /// <typeparam name="TEntity">实体类型</typeparam>
-    public interface IBaseRepository<TEntity> where TEntity : class {
+    public interface IBaseRepository<TEntity> where TEntity : class
+    {
 
         /// <summary>
         /// 根据ID获取实体
@@ -110,7 +112,8 @@ namespace LYBT.Infrastructure.Interfaces {
     /// 只读仓储接口 - 用于只需要查询功能的场景
     /// </summary>
     /// <typeparam name="TEntity">实体类型</typeparam>
-    public interface IReadOnlyRepository<TEntity> where TEntity : class {
+    public interface IReadOnlyRepository<TEntity> where TEntity : class
+    {
 
         /// <summary>
         /// 根据ID获取实体

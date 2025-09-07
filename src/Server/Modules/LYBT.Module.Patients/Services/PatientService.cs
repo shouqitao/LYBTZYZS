@@ -3,7 +3,8 @@ using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
 
-namespace LYBT.Module.Patients.Services {
+namespace LYBT.Module.Patients.Services
+{
 
     /// <summary>
     /// 患者服务 - UltraThink简化架构纯委托模式
@@ -11,34 +12,38 @@ namespace LYBT.Module.Patients.Services {
     /// </summary>
     public class PatientService(
         IPatientQueryService queryService,
-        IPatientBusinessService businessService) : IPatientService {
+        IPatientBusinessService businessService) : IPatientService
+    {
         private readonly IPatientQueryService _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
         private readonly IPatientBusinessService _businessService = businessService ?? throw new ArgumentNullException(nameof(businessService));
 
         #region Core Operations - 委托给BusinessService
 
-        public async Task<ServiceResult<PatientDto>> GetByIdAsync(Guid id)
-            => await _queryService.GetByIdAsync(id);
+        public Task<ServiceResult<PatientDto>> GetByIdAsync(Guid id)
+            => _queryService.GetByIdAsync(id);
 
-        public async Task<ServiceResult<PatientDto>> CreateAsync(PatientCreateDto dto)
-            => await _businessService.CreateAsync(dto);
+        public Task<ServiceResult<PatientDto>> CreateAsync(PatientCreateDto dto)
+            => _businessService.CreateAsync(dto);
 
-        public async Task<ServiceResult<PatientDto>> UpdateAsync(Guid id, PatientUpdateDto dto)
-            => await _businessService.UpdateAsync(id, dto);
+        public Task<ServiceResult<PatientDto>> UpdateAsync(Guid id, PatientUpdateDto dto)
+            => _businessService.UpdateAsync(id, dto);
 
-        public async Task<ServiceResult<bool>> DeleteAsync(Guid id) {
+        public async Task<ServiceResult<bool>> DeleteAsync(Guid id)
+        {
             var result = await _businessService.DeleteAsync(id);
             return result.IsSuccess
                 ? ServiceResult<bool>.Success(true)
                 : ServiceResult<bool>.Failure(result.ErrorMessage ?? "删除患者失败");
         }
 
-        public async Task<bool> DeleteAsync(Guid id, Guid operatorId, string operatorName) {
+        public async Task<bool> DeleteAsync(Guid id, Guid operatorId, string operatorName)
+        {
             var result = await _businessService.DeleteAsync(id);
             return result.IsSuccess;
         }
 
-        public async Task<bool> SetStatusAsync(Guid id, bool isActive, Guid operatorId, string operatorName) {
+        public async Task<bool> SetStatusAsync(Guid id, bool isActive, Guid operatorId, string operatorName)
+        {
             var patientIds = new List<Guid> { id };
             var status = isActive ? "enabled" : "disabled";
             var result = await _businessService.SetStatusAsync(patientIds, status);
@@ -49,14 +54,17 @@ namespace LYBT.Module.Patients.Services {
 
         #region Query Operations
 
-        public async Task<List<PatientDto>> GetAllAsync() {
+        public async Task<List<PatientDto>> GetAllAsync()
+        {
             var result = await _queryService.GetAllAsync();
             return result.IsSuccess ? (result.Data ?? new List<PatientDto>()) : new List<PatientDto>();
         }
 
-        public async Task<ServiceResult<PagedResult<PatientDto>>> GetPagedAsync(PatientPagedQueryDto query) {
+        public async Task<ServiceResult<PagedResult<PatientDto>>> GetPagedAsync(PatientPagedQueryDto query)
+        {
             // 转换为基础分页查询DTO
-            var baseQuery = new PagedQueryBaseDto {
+            var baseQuery = new PagedQueryBaseDto
+            {
                 PageIndex = query.PageIndex,
                 PageSize = query.PageSize,
                 Keyword = query.Keyword
@@ -64,27 +72,32 @@ namespace LYBT.Module.Patients.Services {
             return await _queryService.GetPagedAsync(baseQuery);
         }
 
-        public async Task<List<PatientDto>> GetActivePatientsAsync() {
+        public async Task<List<PatientDto>> GetActivePatientsAsync()
+        {
             var result = await _queryService.GetActivePatientsAsync();
             return result.IsSuccess ? (result.Data ?? new List<PatientDto>()) : new List<PatientDto>();
         }
 
-        public async Task<PatientDto?> GetByPhoneNumberAsync(string phoneNumber) {
+        public async Task<PatientDto?> GetByPhoneNumberAsync(string phoneNumber)
+        {
             var result = await _queryService.GetByPhoneNumberAsync(phoneNumber);
             return result.IsSuccess ? result.Data : null;
         }
 
-        public async Task<PatientDto?> GetByIDNumberAsync(string idNumber) {
+        public async Task<PatientDto?> GetByIDNumberAsync(string idNumber)
+        {
             var result = await _queryService.GetByIDNumberAsync(idNumber);
             return result.IsSuccess ? result.Data : null;
         }
 
-        public async Task<ServiceResult<List<PatientDto>>> SearchAsync(string keyword)
-            => await _queryService.SearchAsync(keyword);
+        public Task<ServiceResult<List<PatientDto>>> SearchAsync(string keyword)
+            => _queryService.SearchAsync(keyword);
 
-        public async Task<PagedResult<PatientDto>> AdvancedSearchAsync(PatientAdvancedSearchDto query) {
+        public async Task<PagedResult<PatientDto>> AdvancedSearchAsync(PatientAdvancedSearchDto query)
+        {
             // 转换为PatientSearchDto
-            var searchDto = new PatientSearchDto {
+            var searchDto = new PatientSearchDto
+            {
                 PageIndex = query.PageIndex,
                 PageSize = query.PageSize,
                 Keyword = query.Keyword,
@@ -96,12 +109,14 @@ namespace LYBT.Module.Patients.Services {
             };
 
             var result = await _queryService.AdvancedSearchAsync(searchDto);
-            return result.IsSuccess ? (result.Data ?? new PagedResult<PatientDto> {
+            return result.IsSuccess ? (result.Data ?? new PagedResult<PatientDto>
+            {
                 TotalCount = 0,
                 Items = new List<PatientDto>(),
                 CurrentPage = query.PageIndex,
                 PageSize = query.PageSize
-            }) : new PagedResult<PatientDto> {
+            }) : new PagedResult<PatientDto>
+            {
                 TotalCount = 0,
                 Items = new List<PatientDto>(),
                 CurrentPage = query.PageIndex,
@@ -109,8 +124,10 @@ namespace LYBT.Module.Patients.Services {
             };
         }
 
-        public async Task<List<PatientDto>> CheckDuplicatePatientsAsync(string idNumber, string phoneNumber) {
-            var createDto = new PatientCreateDto {
+        public async Task<List<PatientDto>> CheckDuplicatePatientsAsync(string idNumber, string phoneNumber)
+        {
+            var createDto = new PatientCreateDto
+            {
                 IdNumber = idNumber,
                 PhoneNumber = phoneNumber,
                 Name = "临时检查", // 必填字段
@@ -124,7 +141,8 @@ namespace LYBT.Module.Patients.Services {
 
         #region Business Operations
 
-        public async Task<ServiceResult> EnableAsync(Guid id) {
+        public async Task<ServiceResult> EnableAsync(Guid id)
+        {
             var patientIds = new List<Guid> { id };
             var result = await _businessService.EnableAsync(patientIds);
             return result.IsSuccess
@@ -132,7 +150,8 @@ namespace LYBT.Module.Patients.Services {
                 : ServiceResult.Failure(result.ErrorMessage ?? "启用患者失败");
         }
 
-        public async Task<ServiceResult> DisableAsync(Guid id) {
+        public async Task<ServiceResult> DisableAsync(Guid id)
+        {
             var patientIds = new List<Guid> { id };
             var result = await _businessService.DisableAsync(patientIds);
             return result.IsSuccess
@@ -140,11 +159,14 @@ namespace LYBT.Module.Patients.Services {
                 : ServiceResult.Failure(result.ErrorMessage ?? "禁用患者失败");
         }
 
-        public async Task<ServiceResult<object>> ImportPatientsAsync(List<PatientCreateDto> patients) {
+        public async Task<ServiceResult<object>> ImportPatientsAsync(List<PatientCreateDto> patients)
+        {
             // 转换为PatientImportDto列表
             var importDtos = new List<PatientImportDto>();
-            foreach (var patient in patients) {
-                var importDto = new PatientImportDto {
+            foreach (var patient in patients)
+            {
+                var importDto = new PatientImportDto
+                {
                     Name = patient.Name,
                     GenderText = patient.Gender == LYBT.Shared.Models.Enums.Gender.Male ? "男" : "女",
                     BirthDateText = patient.BirthDate?.ToString("yyyy-MM-dd") ?? string.Empty,
@@ -159,9 +181,11 @@ namespace LYBT.Module.Patients.Services {
             }
 
             var result = await _businessService.ImportPatientsAsync(importDtos);
-            if (result.IsSuccess) {
+            if (result.IsSuccess)
+            {
                 // 转换结果为通用对象
-                return ServiceResult<object>.Success(new {
+                return ServiceResult<object>.Success(new
+                {
                     SuccessCount = result.Data?.Count ?? 0,
                     ImportedPatients = result.Data
                 });
@@ -169,19 +193,23 @@ namespace LYBT.Module.Patients.Services {
             return ServiceResult<object>.Failure(result.ErrorMessage ?? "导入患者失败");
         }
 
-        public async Task<ServiceResult<byte[]>> ExportPatientsAsync(PagedQueryBaseDto query) {
+        public async Task<ServiceResult<byte[]>> ExportPatientsAsync(PagedQueryBaseDto query)
+        {
             // 转换为PatientExportDto
-            var exportDto = new PatientExportDto {
+            var exportDto = new PatientExportDto
+            {
                 Name = query.Keyword ?? string.Empty
             };
 
             var result = await _businessService.ExportPatientsAsync(exportDto);
-            if (result.IsSuccess) {
+            if (result.IsSuccess)
+            {
                 // 将PatientDto列表转换为CSV字节数组
                 var patients = result.Data ?? new List<PatientDto>();
                 var csvContent = "姓名,性别,出生日期,手机号码,身份证号,地址\n";
 
-                foreach (var patient in patients) {
+                foreach (var patient in patients)
+                {
                     var gender = patient.Gender == LYBT.Shared.Models.Enums.Gender.Male ? "男" : "女";
                     csvContent += $"{patient.Name},{gender},{patient.BirthDate:yyyy-MM-dd}," +
                                  $"{patient.PhoneNumber},{patient.IdNumber},{patient.Address}\n";
@@ -193,11 +221,14 @@ namespace LYBT.Module.Patients.Services {
             return ServiceResult<byte[]>.Failure(result.ErrorMessage ?? "导出患者失败");
         }
 
-        public async Task<ServiceResult<object>> ValidatePatientAsync(PatientCreateDto dto) {
+        public async Task<ServiceResult<object>> ValidatePatientAsync(PatientCreateDto dto)
+        {
             var result = await _businessService.ValidatePatientAsync(dto);
-            if (result.IsSuccess) {
+            if (result.IsSuccess)
+            {
                 var validationErrors = result.Data ?? new List<string>();
-                return ServiceResult<object>.Success(new {
+                return ServiceResult<object>.Success(new
+                {
                     IsValid = !validationErrors.Any(),
                     Errors = validationErrors
                 });
@@ -205,9 +236,11 @@ namespace LYBT.Module.Patients.Services {
             return ServiceResult<object>.Failure(result.ErrorMessage ?? "验证患者信息失败");
         }
 
-        public async Task<ServiceResult<byte[]>> GetImportTemplateAsync() {
-            var result = await _businessService.GetImportTemplateAsync();
-            if (result.IsSuccess) {
+        public async Task<ServiceResult<byte[]>> GetImportTemplateAsync()
+        {
+            var result = await _businessService.GetImportTemplate();
+            if (result.IsSuccess)
+            {
                 // 转换模板对象为CSV字节数组
                 var template = "姓名,性别,出生日期,手机号码,身份证号,地址,紧急联系人,紧急联系人电话,过敏史\n" +
                               "张三,男,1990-01-01,13800138001,110101199001011234,北京市朝阳区,李四,13800138002,无\n" +
@@ -222,11 +255,11 @@ namespace LYBT.Module.Patients.Services {
 
         #region Shared Interface
 
-        public async Task<ServiceResult<PatientDto>> GetByIdCardAsync(string idCard)
-            => await _queryService.GetByIdCardAsync(idCard);
+        public Task<ServiceResult<PatientDto>> GetByIdCardAsync(string idCard)
+            => _queryService.GetByIdCardAsync(idCard);
 
-        public async Task<ServiceResult<List<PatientDto>>> GetByPhoneAsync(string phone)
-            => await _queryService.GetByPhoneAsync(phone);
+        public Task<ServiceResult<List<PatientDto>>> GetByPhoneAsync(string phone)
+            => _queryService.GetByPhoneAsync(phone);
 
         #endregion Shared Interface
     }

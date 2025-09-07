@@ -1,9 +1,11 @@
-﻿namespace LYBT.Shared.Models.Contracts.Common {
+﻿namespace LYBT.Shared.Models.Contracts.Common
+{
 
     /// <summary>
     /// 错误严重程度枚举
     /// </summary>
-    public enum ErrorSeverity {
+    public enum ErrorSeverity
+    {
 
         /// <summary>
         /// 信息级别 - 仅为通知，不影响正常使用

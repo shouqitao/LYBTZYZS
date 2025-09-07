@@ -4,22 +4,26 @@
 // using LYBT.Desktop.Core.Models.Herbs;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace LYBT.Desktop.Herbs.Mappings {
+namespace LYBT.Desktop.Herbs.Mappings
+{
 
     /// <summary>
     /// Herbs模块 AutoMapper 映射配置
     /// UltraThink v2.0架构: 移除Info模型映射，直接使用DTO
     /// </summary>
-    public class MappingProfile : Profile {
+    public class MappingProfile : Profile
+    {
 
-        public MappingProfile() {
+        public MappingProfile()
+        {
             ConfigureHerbMappings();
         }
 
         /// <summary>
         /// 配置中药材相关映射
         /// </summary>
-        private void ConfigureHerbMappings() {
+        private void ConfigureHerbMappings()
+        {
             // UltraThink v2.0: HerbInfo模型已移除，以下映射不再需要
             // DTO → Info 映射：API响应到前端模型（已废弃）
             // CreateMap<HerbDto, HerbInfo>()
@@ -83,7 +87,8 @@ namespace LYBT.Desktop.Herbs.Mappings {
         /// <summary>
         /// 创建AutoMapper实例 - 使用开源版本14.0.0
         /// </summary>
-        public static IMapper CreateMapper() {
+        public static IMapper CreateMapper()
+        {
             var config = new MapperConfiguration(cfg =>
                 cfg.AddProfile(new MappingProfile()));
 

@@ -1,9 +1,11 @@
-﻿namespace LYBT.Desktop.Core.Enums {
+﻿namespace LYBT.Desktop.Core.Enums
+{
 
     /// <summary>
     /// 验方合并模式
     /// </summary>
-    public enum FormulaMergeMode {
+    public enum FormulaMergeMode
+    {
 
         /// <summary>替换：清空当前处方，使用验方内容</summary>
         Replace = 0,

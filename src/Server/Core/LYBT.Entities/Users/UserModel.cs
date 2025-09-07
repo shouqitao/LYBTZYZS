@@ -3,7 +3,8 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using LYBT.Shared.Models.Enums;
 
-namespace LYBT.Entities.Users {
+namespace LYBT.Entities.Users
+{
 
     /// <summary>
     /// 用户实体 - UltraThink v2.0架构简化版
@@ -11,7 +12,8 @@ namespace LYBT.Entities.Users {
     /// 删除五笔码字段，保留拼音码用于快速搜索
     /// </summary>
     [Table("Users")]
-    public class User {
+    public class User
+    {
 
         /// <summary>用户唯一标识</summary>
         [Key]

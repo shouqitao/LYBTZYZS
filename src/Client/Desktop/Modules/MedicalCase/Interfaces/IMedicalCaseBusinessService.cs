@@ -7,7 +7,8 @@ namespace LYBT.Desktop.MedicalCase.Interfaces;
 /// 医案业务服务接口 - UltraThink双层架构简化版
 /// 职责：基础业务操作
 /// </summary>
-public interface IMedicalCaseBusinessService {
+public interface IMedicalCaseBusinessService
+{
 
     #region 基础医案业务操作
 
@@ -24,7 +25,7 @@ public interface IMedicalCaseBusinessService {
     /// <summary>
     /// 删除医案
     /// </summary>
-    Task<ServiceResult<bool>> DeleteAsync(Guid id);
+    Task<ServiceResult<bool>> Delete(Guid id);
 
     /// <summary>
     /// 开始医案

@@ -1,14 +1,16 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 
-namespace LYBT.Infrastructure.Configuration {
+namespace LYBT.Infrastructure.Configuration
+{
 
     /// <summary>
     /// 简化配置服务 - UltraThink配置管理重构
     /// 替代过度复杂的ConfigurationManager/EnvironmentManager/SecretManager
     /// 使用.NET内置机制，专注小诊所实际需求
     /// </summary>
-    public interface ISimplifiedConfigurationService {
+    public interface ISimplifiedConfigurationService
+    {
 
         /// <summary>
         /// 获取数据库连接字符串
@@ -49,11 +51,13 @@ namespace LYBT.Infrastructure.Configuration {
     /// <summary>
     /// 简化配置服务实现
     /// </summary>
-    public class SimplifiedConfigurationService : ISimplifiedConfigurationService {
+    public class SimplifiedConfigurationService : ISimplifiedConfigurationService
+    {
         private readonly IConfiguration _configuration;
         private readonly IHostEnvironment _environment;
 
-        public SimplifiedConfigurationService(IConfiguration configuration, IHostEnvironment environment) {
+        public SimplifiedConfigurationService(IConfiguration configuration, IHostEnvironment environment)
+        {
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             _environment = environment ?? throw new ArgumentNullException(nameof(environment));
         }
@@ -62,10 +66,12 @@ namespace LYBT.Infrastructure.Configuration {
         /// 获取数据库连接字符串
         /// 支持环境变量覆盖：CONNECTION_STRING
         /// </summary>
-        public string GetConnectionString(string name = "DefaultConnection") {
+        public string GetConnectionString(string name = "DefaultConnection")
+        {
             // 优先使用环境变量
             var envConnectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING");
-            if (!string.IsNullOrEmpty(envConnectionString)) {
+            if (!string.IsNullOrEmpty(envConnectionString))
+            {
                 return envConnectionString;
             }
 
@@ -76,7 +82,8 @@ namespace LYBT.Infrastructure.Configuration {
         /// <summary>
         /// 获取配置节
         /// </summary>
-        public T GetSection<T>(string sectionName) where T : class, new() {
+        public T GetSection<T>(string sectionName) where T : class, new()
+        {
             var section = _configuration.GetSection(sectionName);
             var config = new T();
             section.Bind(config);
@@ -97,21 +104,25 @@ namespace LYBT.Infrastructure.Configuration {
         /// 获取JWT秘钥
         /// 优先级: JWT_SECRET环境变量 -> 配置文件
         /// </summary>
-        public string GetJwtSecret() {
+        public string GetJwtSecret()
+        {
             // 优先使用环境变量
             var envSecret = Environment.GetEnvironmentVariable("JWT_SECRET");
-            if (!string.IsNullOrEmpty(envSecret)) {
+            if (!string.IsNullOrEmpty(envSecret))
+            {
                 return envSecret;
             }
 
             // 使用配置文件
             var configSecret = _configuration["JwtOptions:Secret"];
-            if (!string.IsNullOrEmpty(configSecret) && !configSecret.Contains("${")) {
+            if (!string.IsNullOrEmpty(configSecret) && !configSecret.Contains("${"))
+            {
                 return configSecret;
             }
 
             // 开发环境允许使用默认值
-            if (IsDevelopment) {
+            if (IsDevelopment)
+            {
                 return "UltraThink-LYBT-Development-Secret-Key-2025-09-02-Very-Long-Secret-For-JWT-Signing";
             }
 
@@ -122,16 +133,19 @@ namespace LYBT.Infrastructure.Configuration {
         /// 获取管理员密码
         /// 优先级: ADMIN_DEFAULT_PASSWORD环境变量 -> 配置文件
         /// </summary>
-        public string GetAdminPassword() {
+        public string GetAdminPassword()
+        {
             // 优先使用环境变量
             var envPassword = Environment.GetEnvironmentVariable("ADMIN_DEFAULT_PASSWORD");
-            if (!string.IsNullOrEmpty(envPassword)) {
+            if (!string.IsNullOrEmpty(envPassword))
+            {
                 return envPassword;
             }
 
             // 使用配置文件
             var configPassword = _configuration["SysAdminOptions:DefaultPassword"];
-            if (!string.IsNullOrEmpty(configPassword)) {
+            if (!string.IsNullOrEmpty(configPassword))
+            {
                 return configPassword;
             }
 
@@ -142,16 +156,19 @@ namespace LYBT.Infrastructure.Configuration {
         /// 获取用户默认密码
         /// 优先级: USER_DEFAULT_PASSWORD环境变量 -> 配置文件
         /// </summary>
-        public string GetUserDefaultPassword() {
+        public string GetUserDefaultPassword()
+        {
             // 优先使用环境变量
             var envPassword = Environment.GetEnvironmentVariable("USER_DEFAULT_PASSWORD");
-            if (!string.IsNullOrEmpty(envPassword)) {
+            if (!string.IsNullOrEmpty(envPassword))
+            {
                 return envPassword;
             }
 
             // 使用配置文件
             var configPassword = _configuration["UserOptions:DefaultUserPassword"];
-            if (!string.IsNullOrEmpty(configPassword)) {
+            if (!string.IsNullOrEmpty(configPassword))
+            {
                 return configPassword;
             }
 

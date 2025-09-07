@@ -13,7 +13,8 @@ namespace LYBT.Desktop.Consultation.Services;
 /// 集成企业级日志记录，支持诊断管理和档案查询需求
 /// 适配中医诊所看诊诊断查询场景，确保查询性能和数据安全性
 /// </summary>
-public class ConsultationQueryService(ILogger<ConsultationQueryService> logger) : IConsultationQueryService {
+public class ConsultationQueryService(ILogger<ConsultationQueryService> logger) : IConsultationQueryService
+{
     private readonly ILogger<ConsultationQueryService> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
     /// <summary>
@@ -22,20 +23,26 @@ public class ConsultationQueryService(ILogger<ConsultationQueryService> logger) 
     /// </summary>
     /// <param name="query">分页查询参数</param>
     /// <returns>包含诊断记录列表和总数的分页结果</returns>
-    public async Task<ServiceResult<PagedResult<ConsultationDto>>> GetPagedAsync(ConsultationPagedQueryDto query) {
-        try {
-            _logger.LogDebug("执行看诊诊断分页查询，页码: {PageNumber}, 页大小: {PageSize}",
+    public Task<ServiceResult<PagedResult<ConsultationDto>>> GetPaged(ConsultationPagedQueryDto query)
+    {
+        try
+        {
+            _logger.LogDebug(
+                "执行看诊诊断分页查询，页码: {PageNumber}, 页大小: {PageSize}",
                 query.PageIndex, query.PageSize);
 
-            var emptyResult = new PagedResult<ConsultationDto> {
+            var emptyResult = new PagedResult<ConsultationDto>
+            {
                 Items = [],
                 TotalCount = 0
             };
 
-            return ServiceResult<PagedResult<ConsultationDto>>.Success(emptyResult);
-        } catch (Exception ex) {
+            return Task.FromResult(ServiceResult<PagedResult<ConsultationDto>>.Success(emptyResult));
+        }
+        catch (Exception ex)
+        {
             _logger.LogError(ex, "看诊诊断分页查询异常");
-            return ServiceResult<PagedResult<ConsultationDto>>.Failure("查询看诊诊断列表失败");
+            return Task.FromResult(ServiceResult<PagedResult<ConsultationDto>>.Failure("查询看诊诊断列表失败"));
         }
     }
 
@@ -45,11 +52,15 @@ public class ConsultationQueryService(ILogger<ConsultationQueryService> logger) 
     /// </summary>
     /// <param name="id">诊断唯一标识</param>
     /// <returns>诊断详细档案DTO</returns>
-    public async Task<ServiceResult<ConsultationDto>> GetByIdAsync(Guid id) {
-        try {
+    public async Task<ServiceResult<ConsultationDto>> GetByIdAsync(Guid id)
+    {
+        try
+        {
             _logger.LogDebug("查询看诊诊断详细档案: {ConsultationId}", id);
             return ServiceResult<ConsultationDto>.Failure("简单诊所版本暂不支持诊断详情查询");
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
             _logger.LogError(ex, "查询诊断详情异常: {ConsultationId}", id);
             return ServiceResult<ConsultationDto>.Failure("查询诊断详情失败");
         }
@@ -61,12 +72,16 @@ public class ConsultationQueryService(ILogger<ConsultationQueryService> logger) 
     /// </summary>
     /// <param name="keyword">搜索关键字</param>
     /// <returns>匹配诊断记录列表</returns>
-    public async Task<ServiceResult<List<ConsultationDto>>> SearchAsync(string keyword) {
-        try {
+    public async Task<ServiceResult<List<ConsultationDto>>> SearchAsync(string keyword)
+    {
+        try
+        {
             _logger.LogDebug("看诊诊断关键字搜索: {Keyword}", keyword);
             List<ConsultationDto> emptyList = [];
             return ServiceResult<List<ConsultationDto>>.Success(emptyList);
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
             _logger.LogError(ex, "诊断搜索异常");
             return ServiceResult<List<ConsultationDto>>.Failure("诊断搜索失败");
         }
@@ -77,13 +92,17 @@ public class ConsultationQueryService(ILogger<ConsultationQueryService> logger) 
     /// 生成诊断管理相关的基础统计信息和报表数据
     /// </summary>
     /// <returns>诊断统计信息DTO</returns>
-    public async Task<ServiceResult<ConsultationStatisticsDto>> GetStatisticsAsync() {
-        try {
+    public async Task<ServiceResult<ConsultationStatisticsDto>> GetStatisticsAsync()
+    {
+        try
+        {
             _logger.LogDebug("生成看诊诊断统计数据");
             var stats = new ConsultationStatisticsDto();
 
             return ServiceResult<ConsultationStatisticsDto>.Success(stats);
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
             _logger.LogError(ex, "诊断统计数据生成异常");
             return ServiceResult<ConsultationStatisticsDto>.Failure("生成统计数据失败");
         }

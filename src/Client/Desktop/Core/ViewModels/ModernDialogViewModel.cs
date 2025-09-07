@@ -2,7 +2,8 @@
 using Prism.Commands;
 using Prism.Events;
 
-namespace LYBT.Desktop.Core.ViewModels {
+namespace LYBT.Desktop.Core.ViewModels
+{
 
     /// <summary>
     /// UltraThink Phase 3.1: 现代化对话框ViewModel基类
@@ -13,7 +14,8 @@ namespace LYBT.Desktop.Core.ViewModels {
     /// 3. 关闭事件处理
     /// 4. 零DelegateCommand警告
     /// </summary>
-    public abstract class ModernDialogViewModel : ModernViewModelBase {
+    public abstract class ModernDialogViewModel : ModernViewModelBase
+    {
 
         #region 对话框专属属性
 
@@ -23,7 +25,8 @@ namespace LYBT.Desktop.Core.ViewModels {
         /// <summary>
         /// 对话框标题
         /// </summary>
-        public string Title {
+        public string Title
+        {
             get => _title;
             set => SetProperty(ref _title, value);
         }
@@ -31,7 +34,8 @@ namespace LYBT.Desktop.Core.ViewModels {
         /// <summary>
         /// 对话框结果（true=确认, false=取消, null=未设置）
         /// </summary>
-        public bool? DialogResult {
+        public bool? DialogResult
+        {
             get => _dialogResult;
             protected set => SetProperty(ref _dialogResult, value);
         }
@@ -64,29 +68,35 @@ namespace LYBT.Desktop.Core.ViewModels {
         #region 构造函数
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="ModernDialogViewModel"/> class.
         /// 标准构造函数
         /// </summary>
         protected ModernDialogViewModel(
             IEventAggregator eventAggregator,
             IErrorHandlingService? errorHandlingService = null)
-            : base(eventAggregator, errorHandlingService) {
+            : base(eventAggregator, errorHandlingService)
+        {
             // 零警告Command初始化
             ConfirmCommand = new DelegateCommand(async () => await OnConfirmAsync(), CanConfirm);
             CancelCommand = new DelegateCommand(OnCancel);
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="ModernDialogViewModel"/> class.
         /// 兼容性构造函数
         /// </summary>
         protected ModernDialogViewModel(IEventAggregator eventAggregator)
-            : this(eventAggregator, null) {
+            : this(eventAggregator, null)
+        {
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="ModernDialogViewModel"/> class.
         /// 简化构造函数
         /// </summary>
         protected ModernDialogViewModel()
-            : this(new EventAggregator(), null) {
+            : this(new EventAggregator(), null)
+        {
         }
 
         #endregion 构造函数
@@ -107,7 +117,8 @@ namespace LYBT.Desktop.Core.ViewModels {
         /// <summary>
         /// 取消逻辑 - 子类可重写
         /// </summary>
-        protected virtual void ExecuteCancel() {
+        protected virtual void ExecuteCancel()
+        {
             // 默认实现：直接关闭
         }
 
@@ -118,14 +129,19 @@ namespace LYBT.Desktop.Core.ViewModels {
         /// <summary>
         /// 确认命令执行
         /// </summary>
-        private async Task OnConfirmAsync() {
-            try {
+        private async Task OnConfirmAsync()
+        {
+            try
+            {
                 var result = await ExecuteConfirmAsync();
-                if (result) {
+                if (result)
+                {
                     DialogResult = true;
                     RequestClose?.Invoke(true);
                 }
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 await HandleErrorAsync("确认操作", ex);
             }
         }
@@ -133,12 +149,16 @@ namespace LYBT.Desktop.Core.ViewModels {
         /// <summary>
         /// 取消命令执行
         /// </summary>
-        private void OnCancel() {
-            try {
+        private void OnCancel()
+        {
+            try
+            {
                 ExecuteCancel();
                 DialogResult = false;
                 RequestClose?.Invoke(false);
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 // 取消操作异常处理
                 _ = HandleErrorAsync("取消操作", ex, false);
                 DialogResult = false;
@@ -153,7 +173,8 @@ namespace LYBT.Desktop.Core.ViewModels {
         /// <summary>
         /// 重写Command状态更新
         /// </summary>
-        protected override void RaiseCanExecuteChanged() {
+        protected override void RaiseCanExecuteChanged()
+        {
             base.RaiseCanExecuteChanged();
             ConfirmCommand.RaiseCanExecuteChanged();
             // CancelCommand通常总是可用，不需要更新
@@ -162,7 +183,8 @@ namespace LYBT.Desktop.Core.ViewModels {
         /// <summary>
         /// 重写加载状态变化处理
         /// </summary>
-        protected override void OnLoadingStateChanged(bool isLoading) {
+        protected override void OnLoadingStateChanged(bool isLoading)
+        {
             base.OnLoadingStateChanged(isLoading);
             // 加载时通常禁用确认，但允许取消
         }
@@ -174,7 +196,8 @@ namespace LYBT.Desktop.Core.ViewModels {
         /// <summary>
         /// 设置对话框标题（链式调用）
         /// </summary>
-        protected ModernDialogViewModel WithTitle(string title) {
+        protected ModernDialogViewModel WithTitle(string title)
+        {
             Title = title;
             return this;
         }
@@ -182,7 +205,8 @@ namespace LYBT.Desktop.Core.ViewModels {
         /// <summary>
         /// 成功关闭对话框
         /// </summary>
-        protected void CloseWithSuccess() {
+        protected void CloseWithSuccess()
+        {
             DialogResult = true;
             RequestClose?.Invoke(true);
         }
@@ -190,7 +214,8 @@ namespace LYBT.Desktop.Core.ViewModels {
         /// <summary>
         /// 取消关闭对话框
         /// </summary>
-        protected void CloseWithCancel() {
+        protected void CloseWithCancel()
+        {
             DialogResult = false;
             RequestClose?.Invoke(false);
         }

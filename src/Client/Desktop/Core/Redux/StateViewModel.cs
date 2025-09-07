@@ -5,13 +5,15 @@ using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using LYBT.Desktop.Core.Mvvm;
 
-namespace LYBT.Desktop.Core.Redux {
+namespace LYBT.Desktop.Core.Redux
+{
 
     /// <summary>
     /// Redux状态ViewModel基类 - 自动订阅Store变化
     /// </summary>
     public abstract class StateViewModel<TState> : ObservableObject, IDisposable
-        where TState : class, new() {
+        where TState : class, new()
+    {
         private readonly IStateStore<TState> _store;
         private readonly List<IDisposable> _subscriptions = new();
         private bool _disposed;
@@ -26,7 +28,8 @@ namespace LYBT.Desktop.Core.Redux {
         /// </summary>
         protected IStateStore<TState> Store => _store;
 
-        protected StateViewModel(IStateStore<TState> store) {
+        protected StateViewModel(IStateStore<TState> store)
+        {
             _store = store ?? throw new ArgumentNullException(nameof(store));
 
             // 订阅整体状态变化
@@ -40,13 +43,15 @@ namespace LYBT.Desktop.Core.Redux {
         /// <summary>
         /// 初始化选择器（子类重写）
         /// </summary>
-        protected virtual void InitializeSelectors() {
+        protected virtual void InitializeSelectors()
+        {
         }
 
         /// <summary>
         /// 状态变化处理
         /// </summary>
-        protected virtual void OnStateChanged(TState state) {
+        protected virtual void OnStateChanged(TState state)
+        {
             // 触发所有属性更新
             OnPropertyChanged(string.Empty);
         }
@@ -57,12 +62,15 @@ namespace LYBT.Desktop.Core.Redux {
         protected void Select<TSlice>(
             Expression<Func<TState, TSlice>> selector,
             Action<TSlice> onChange,
-            [CallerMemberName] string? propertyName = null) {
+            [CallerMemberName] string? propertyName = null)
+        {
             var selectorFunc = selector.Compile();
 
-            var subscription = _store.Subscribe(selectorFunc, slice => {
+            var subscription = _store.Subscribe(selectorFunc, slice =>
+            {
                 onChange(slice);
-                if (!string.IsNullOrEmpty(propertyName)) {
+                if (!string.IsNullOrEmpty(propertyName))
+                {
                     OnPropertyChanged(propertyName);
                 }
             });
@@ -73,23 +81,28 @@ namespace LYBT.Desktop.Core.Redux {
         /// <summary>
         /// 分发Action
         /// </summary>
-        protected void Dispatch(IAction action) {
+        protected void Dispatch(IAction action)
+        {
             _store.Dispatch(action);
         }
 
         /// <summary>
         /// 创建分发命令
         /// </summary>
-        protected ICommand CreateDispatchCommand(Func<IAction> actionFactory) {
+        protected ICommand CreateDispatchCommand(Func<IAction> actionFactory)
+        {
             return new RelayCommand(() => Dispatch(actionFactory()));
         }
 
         /// <summary>
         /// 创建带参数的分发命令
         /// </summary>
-        protected ICommand CreateDispatchCommand<TParam>(Func<TParam, IAction> actionFactory) {
-            return new RelayCommand<TParam>(param => {
-                if (param != null) {
+        protected ICommand CreateDispatchCommand<TParam>(Func<TParam, IAction> actionFactory)
+        {
+            return new RelayCommand<TParam>(param =>
+            {
+                if (param != null)
+                {
                     Dispatch(actionFactory(param));
                 }
             });
@@ -98,16 +111,21 @@ namespace LYBT.Desktop.Core.Redux {
         /// <summary>
         /// 创建异步分发命令
         /// </summary>
-        protected ICommand CreateAsyncDispatchCommand(Func<Task<IAction>> actionFactory) {
-            return new AsyncRelayCommand(async () => {
+        protected ICommand CreateAsyncDispatchCommand(Func<Task<IAction>> actionFactory)
+        {
+            return new AsyncRelayCommand(async () =>
+            {
                 var action = await actionFactory();
                 Dispatch(action);
             });
         }
 
-        public virtual void Dispose() {
-            if (!_disposed) {
-                foreach (var subscription in _subscriptions) {
+        public virtual void Dispose()
+        {
+            if (!_disposed)
+            {
+                foreach (var subscription in _subscriptions)
+                {
                     subscription?.Dispose();
                 }
                 _subscriptions.Clear();
@@ -121,19 +139,22 @@ namespace LYBT.Desktop.Core.Redux {
     /// </summary>
     public abstract class StateViewModel<TState, TLocalState> : StateViewModel<TState>
         where TState : class, new()
-        where TLocalState : class, new() {
+        where TLocalState : class, new()
+    {
         private TLocalState _localState;
 
         /// <summary>
         /// 局部状态（不在Store中）
         /// </summary>
-        protected TLocalState LocalState {
+        protected TLocalState LocalState
+        {
             get => _localState;
             set => SetProperty(ref _localState, value);
         }
 
         protected StateViewModel(IStateStore<TState> store, TLocalState? initialLocalState = null)
-            : base(store) {
+            : base(store)
+        {
             _localState = initialLocalState ?? new TLocalState();
         }
 
@@ -143,10 +164,12 @@ namespace LYBT.Desktop.Core.Redux {
         protected void UpdateLocal<TValue>(
             Expression<Func<TLocalState, TValue>> selector,
             TValue value,
-            [CallerMemberName] string? propertyName = null) {
+            [CallerMemberName] string? propertyName = null)
+        {
             // 使用反射更新属性
             var memberExpression = selector.Body as MemberExpression;
-            if (memberExpression != null) {
+            if (memberExpression != null)
+            {
                 var property = memberExpression.Member as System.Reflection.PropertyInfo;
                 property?.SetValue(_localState, value);
                 OnPropertyChanged(propertyName);
@@ -157,39 +180,47 @@ namespace LYBT.Desktop.Core.Redux {
     /// <summary>
     /// 状态选择器
     /// </summary>
-    public class StateSelector<TState, TSlice> : INotifyPropertyChanged {
+    public class StateSelector<TState, TSlice> : INotifyPropertyChanged
+    {
         private readonly IStateStore<TState> _store;
         private readonly Func<TState, TSlice> _selector;
         private TSlice? _value;
         private IDisposable? _subscription;
 
-        public TSlice? Value {
+        public TSlice? Value
+        {
             get => _value;
-            private set {
-                if (!EqualityComparer<TSlice>.Default.Equals(_value, value)) {
+            private set
+            {
+                if (!EqualityComparer<TSlice>.Default.Equals(_value, value))
+                {
                     _value = value;
                     OnPropertyChanged();
                 }
             }
         }
 
-        public StateSelector(IStateStore<TState> store, Func<TState, TSlice> selector) {
+        public StateSelector(IStateStore<TState> store, Func<TState, TSlice> selector)
+        {
             _store = store;
             _selector = selector;
             Subscribe();
         }
 
-        private void Subscribe() {
+        private void Subscribe()
+        {
             _subscription = _store.Subscribe(_selector, slice => Value = slice);
         }
 
-        public void Dispose() {
+        public void Dispose()
+        {
             _subscription?.Dispose();
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null) {
+        protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+        {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
@@ -198,10 +229,12 @@ namespace LYBT.Desktop.Core.Redux {
     /// 自动映射ViewModel - 自动映射状态到属性
     /// </summary>
     public abstract class AutoMappedViewModel<TState> : StateViewModel<TState>
-        where TState : class, new() {
+        where TState : class, new()
+    {
         private readonly Dictionary<string, Func<TState, object?>> _propertySelectors = new();
 
-        protected AutoMappedViewModel(IStateStore<TState> store) : base(store) {
+        protected AutoMappedViewModel(IStateStore<TState> store) : base(store)
+        {
             InitializePropertyMappings();
         }
 
@@ -215,8 +248,10 @@ namespace LYBT.Desktop.Core.Redux {
         /// </summary>
         protected void MapProperty<TValue>(
             Expression<Func<TState, TValue>> stateSelector,
-            [CallerMemberName] string? propertyName = null) {
-            if (string.IsNullOrEmpty(propertyName)) {
+            [CallerMemberName] string? propertyName = null)
+        {
+            if (string.IsNullOrEmpty(propertyName))
+            {
                 return;
             }
 
@@ -230,8 +265,10 @@ namespace LYBT.Desktop.Core.Redux {
         /// <summary>
         /// 获取映射的属性值
         /// </summary>
-        protected T? GetMappedValue<T>([CallerMemberName] string? propertyName = null) {
-            if (string.IsNullOrEmpty(propertyName) || !_propertySelectors.TryGetValue(propertyName, out var selector)) {
+        protected T? GetMappedValue<T>([CallerMemberName] string? propertyName = null)
+        {
+            if (string.IsNullOrEmpty(propertyName) || !_propertySelectors.TryGetValue(propertyName, out var selector))
+            {
                 return default;
             }
 
@@ -244,7 +281,8 @@ namespace LYBT.Desktop.Core.Redux {
     /// 集合StateViewModel - 处理列表数据
     /// </summary>
     public abstract class CollectionStateViewModel<TState, TItem> : StateViewModel<TState>
-        where TState : class, new() {
+        where TState : class, new()
+    {
         private readonly ObservableCollection<TItem> _items = new();
 
         /// <summary>
@@ -252,15 +290,18 @@ namespace LYBT.Desktop.Core.Redux {
         /// </summary>
         public ObservableCollection<TItem> Items => _items;
 
-        protected CollectionStateViewModel(IStateStore<TState> store) : base(store) {
+        protected CollectionStateViewModel(IStateStore<TState> store) : base(store)
+        {
         }
 
         /// <summary>
         /// 更新集合
         /// </summary>
-        protected void UpdateCollection(IEnumerable<TItem> newItems) {
+        protected void UpdateCollection(IEnumerable<TItem> newItems)
+        {
             _items.Clear();
-            foreach (var item in newItems) {
+            foreach (var item in newItems)
+            {
                 _items.Add(item);
             }
         }
@@ -268,10 +309,13 @@ namespace LYBT.Desktop.Core.Redux {
         /// <summary>
         /// 批量更新集合（优化性能）
         /// </summary>
-        protected void BatchUpdateCollection(IEnumerable<TItem> newItems) {
-            using (BeginBatchUpdate()) {
+        protected void BatchUpdateCollection(IEnumerable<TItem> newItems)
+        {
+            using (BeginBatchUpdate())
+            {
                 _items.Clear();
-                foreach (var item in newItems) {
+                foreach (var item in newItems)
+                {
                     _items.Add(item);
                 }
             }

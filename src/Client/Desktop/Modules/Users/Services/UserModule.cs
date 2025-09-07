@@ -11,7 +11,8 @@ namespace LYBT.Desktop.Users.Services;
 /// </summary>
 public class UserModule(
     IUserQueryService queryService,
-    IUserBusinessService businessService) : IUserService {
+    IUserBusinessService businessService) : IUserService
+{
     private readonly IUserQueryService _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
     private readonly IUserBusinessService _businessService = businessService ?? throw new ArgumentNullException(nameof(businessService));
 

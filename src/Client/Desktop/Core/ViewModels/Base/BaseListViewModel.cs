@@ -4,13 +4,15 @@ using LYBT.Desktop.Core.Interfaces.Services;
 using Prism.Commands;
 using Prism.Events;
 
-namespace LYBT.Desktop.Core.ViewModels.Base {
+namespace LYBT.Desktop.Core.ViewModels.Base
+{
 
     /// <summary>
     /// 列表页面基础视图模型
     /// </summary>
     /// <typeparam name="T">列表项数据类型</typeparam>
-    public abstract class BaseListViewModel<T> : ServiceViewModel where T : class {
+    public abstract class BaseListViewModel<T> : ServiceViewModel where T : class
+    {
 
         #region 私有字段
 
@@ -33,7 +35,8 @@ namespace LYBT.Desktop.Core.ViewModels.Base {
         #region 构造函数
 
         protected BaseListViewModel(IEventAggregator eventAggregator, IErrorHandlingService errorHandlingService)
-            : base(eventAggregator, errorHandlingService) {
+            : base(eventAggregator, errorHandlingService)
+        {
             // 初始化集合
             Items = new ObservableCollection<T>();
             SelectedItems = new ObservableCollection<T>();
@@ -42,17 +45,21 @@ namespace LYBT.Desktop.Core.ViewModels.Base {
             InitializeCommands();
 
             // 订阅搜索文本变化
-            PropertyChanged += (s, e) => {
-                if (e.PropertyName == nameof(SearchText)) {
+            PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(SearchText))
+                {
                     _ = SearchAsync();
                 }
             };
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="BaseListViewModel{T}"/> class.
         /// 简化构造函数（使用ContainerLocator）
         /// </summary>
-        protected BaseListViewModel() : base(GetEventAggregator(), GetErrorHandlingService()) {
+        protected BaseListViewModel() : base(GetEventAggregator(), GetErrorHandlingService())
+        {
             // 初始化集合
             Items = new ObservableCollection<T>();
             SelectedItems = new ObservableCollection<T>();
@@ -61,8 +68,10 @@ namespace LYBT.Desktop.Core.ViewModels.Base {
             InitializeCommands();
 
             // 订阅搜索文本变化
-            PropertyChanged += (s, e) => {
-                if (e.PropertyName == nameof(SearchText)) {
+            PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(SearchText))
+                {
                     _ = SearchAsync();
                 }
             };
@@ -71,20 +80,28 @@ namespace LYBT.Desktop.Core.ViewModels.Base {
         /// <summary>
         /// 获取EventAggregator实例
         /// </summary>
-        private static IEventAggregator GetEventAggregator() {
-            try {
+        private static IEventAggregator GetEventAggregator()
+        {
+            try
+            {
                 return (IEventAggregator?)Prism.Ioc.ContainerLocator.Container?.Resolve(typeof(IEventAggregator))
                     ?? new EventAggregator();
-            } catch {
+            }
+            catch
+            {
                 return new EventAggregator();
             }
         }
 
-        private static IErrorHandlingService GetErrorHandlingService() {
-            try {
+        private static IErrorHandlingService GetErrorHandlingService()
+        {
+            try
+            {
                 return (IErrorHandlingService?)Prism.Ioc.ContainerLocator.Container?.Resolve(typeof(IErrorHandlingService))
                     ?? throw new InvalidOperationException("ErrorHandlingService未注册");
-            } catch {
+            }
+            catch
+            {
                 throw new InvalidOperationException("无法解析ErrorHandlingService");
             }
         }
@@ -96,7 +113,8 @@ namespace LYBT.Desktop.Core.ViewModels.Base {
         /// <summary>
         /// 页面标题
         /// </summary>
-        public string PageTitle {
+        public string PageTitle
+        {
             get => _pageTitle;
             set => SetProperty(ref _pageTitle, value);
         }
@@ -104,7 +122,8 @@ namespace LYBT.Desktop.Core.ViewModels.Base {
         /// <summary>
         /// 搜索文本
         /// </summary>
-        public string SearchText {
+        public string SearchText
+        {
             get => _searchText;
             set => SetProperty(ref _searchText, value);
         }
@@ -112,7 +131,8 @@ namespace LYBT.Desktop.Core.ViewModels.Base {
         /// <summary>
         /// 是否正在加载
         /// </summary>
-        public new bool IsLoading {
+        public new bool IsLoading
+        {
             get => _isLoading;
             set => SetProperty(ref _isLoading, value);
         }
@@ -120,7 +140,8 @@ namespace LYBT.Desktop.Core.ViewModels.Base {
         /// <summary>
         /// 是否为空
         /// </summary>
-        public bool IsEmpty {
+        public bool IsEmpty
+        {
             get => _isEmpty;
             set => SetProperty(ref _isEmpty, value);
         }
@@ -128,7 +149,8 @@ namespace LYBT.Desktop.Core.ViewModels.Base {
         /// <summary>
         /// 是否显示分页
         /// </summary>
-        public bool ShowPagination {
+        public bool ShowPagination
+        {
             get => _showPagination;
             set => SetProperty(ref _showPagination, value);
         }
@@ -136,10 +158,13 @@ namespace LYBT.Desktop.Core.ViewModels.Base {
         /// <summary>
         /// 当前页
         /// </summary>
-        public int CurrentPage {
+        public int CurrentPage
+        {
             get => _currentPage;
-            set {
-                if (SetProperty(ref _currentPage, value)) {
+            set
+            {
+                if (SetProperty(ref _currentPage, value))
+                {
                     _ = LoadDataAsync();
                 }
             }
@@ -148,10 +173,13 @@ namespace LYBT.Desktop.Core.ViewModels.Base {
         /// <summary>
         /// 每页大小
         /// </summary>
-        public int PageSize {
+        public int PageSize
+        {
             get => _pageSize;
-            set {
-                if (SetProperty(ref _pageSize, value)) {
+            set
+            {
+                if (SetProperty(ref _pageSize, value))
+                {
                     CurrentPage = 1;
                 }
             }
@@ -160,10 +188,13 @@ namespace LYBT.Desktop.Core.ViewModels.Base {
         /// <summary>
         /// 总记录数
         /// </summary>
-        public int TotalCount {
+        public int TotalCount
+        {
             get => _totalCount;
-            set {
-                if (SetProperty(ref _totalCount, value)) {
+            set
+            {
+                if (SetProperty(ref _totalCount, value))
+                {
                     TotalPages = (int)Math.Ceiling((double)value / PageSize);
                 }
             }
@@ -172,7 +203,8 @@ namespace LYBT.Desktop.Core.ViewModels.Base {
         /// <summary>
         /// 总页数
         /// </summary>
-        public int TotalPages {
+        public int TotalPages
+        {
             get => _totalPages;
             private set => SetProperty(ref _totalPages, value);
         }
@@ -180,7 +212,8 @@ namespace LYBT.Desktop.Core.ViewModels.Base {
         /// <summary>
         /// 是否有选中项
         /// </summary>
-        public bool HasSelectedItems {
+        public bool HasSelectedItems
+        {
             get => _hasSelectedItems;
             set => SetProperty(ref _hasSelectedItems, value);
         }
@@ -188,7 +221,8 @@ namespace LYBT.Desktop.Core.ViewModels.Base {
         /// <summary>
         /// 选中项数量
         /// </summary>
-        public int SelectedItemsCount {
+        public int SelectedItemsCount
+        {
             get => _selectedItemsCount;
             set => SetProperty(ref _selectedItemsCount, value);
         }
@@ -196,7 +230,8 @@ namespace LYBT.Desktop.Core.ViewModels.Base {
         /// <summary>
         /// 筛选内容
         /// </summary>
-        public object? FilterContent {
+        public object? FilterContent
+        {
             get => _filterContent;
             set => SetProperty(ref _filterContent, value);
         }
@@ -204,7 +239,8 @@ namespace LYBT.Desktop.Core.ViewModels.Base {
         /// <summary>
         /// 列表内容
         /// </summary>
-        public object? ListContent {
+        public object? ListContent
+        {
             get => _listContent;
             set => SetProperty(ref _listContent, value);
         }
@@ -238,7 +274,8 @@ namespace LYBT.Desktop.Core.ViewModels.Base {
         /// <summary>
         /// 初始化命令
         /// </summary>
-        private void InitializeCommands() {
+        private void InitializeCommands()
+        {
             AddCommand = new DelegateCommand(async () => await ExecuteAddAsync());
             RefreshCommand = new DelegateCommand(async () => await LoadDataAsync());
             BatchDisableCommand = new DelegateCommand(async () => await ExecuteBatchDisableAsync(), CanExecuteBatchDisable)
@@ -256,7 +293,8 @@ namespace LYBT.Desktop.Core.ViewModels.Base {
                 .ObservesProperty(() => TotalPages);
 
             // 监听选中项变化
-            SelectedItems.CollectionChanged += (s, e) => {
+            SelectedItems.CollectionChanged += (s, e) =>
+            {
                 HasSelectedItems = SelectedItems.Any();
                 SelectedItemsCount = SelectedItems.Count;
             };
@@ -265,20 +303,27 @@ namespace LYBT.Desktop.Core.ViewModels.Base {
         /// <summary>
         /// 加载数据
         /// </summary>
-        public virtual async Task LoadDataAsync() {
-            try {
+        public virtual async Task LoadDataAsync()
+        {
+            try
+            {
                 IsLoading = true;
                 Items.Clear();
 
                 var data = await GetDataAsync();
-                foreach (var item in data) {
+                foreach (var item in data)
+                {
                     Items.Add(item);
                 }
 
                 IsEmpty = !Items.Any();
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 await HandleErrorAsync(ex);
-            } finally {
+            }
+            finally
+            {
                 IsLoading = false;
             }
         }
@@ -286,7 +331,8 @@ namespace LYBT.Desktop.Core.ViewModels.Base {
         /// <summary>
         /// 搜索
         /// </summary>
-        protected virtual async Task SearchAsync() {
+        protected virtual async Task SearchAsync()
+        {
             CurrentPage = 1;
             await LoadDataAsync();
         }
@@ -304,9 +350,12 @@ namespace LYBT.Desktop.Core.ViewModels.Base {
         /// <summary>
         /// 执行批量禁用
         /// </summary>
-        protected virtual async Task ExecuteBatchDisableAsync() {
+        protected virtual async Task ExecuteBatchDisableAsync()
+        {
             // 使用错误处理服务进行确认对话框
-            var confirmed = await ExecuteSafelyAsync(async () => {
+            var confirmed = await ExecuteSafelyAsync(
+                async () =>
+            {
                 // 这里应该使用对话框服务，但BaseListViewModel不直接依赖ICustomDialogService
                 // 所以我们通过事件或其他方式来处理
                 StatusMessage = $"请确认批量禁用选中的 {SelectedItemsCount} 项";
@@ -322,22 +371,25 @@ namespace LYBT.Desktop.Core.ViewModels.Base {
         /// <summary>
         /// 执行批量禁用操作（由子类实现）
         /// </summary>
-        protected virtual Task PerformBatchDisableAsync(IList<T> items) {
+        protected virtual Task PerformBatchDisableAsync(IList<T> items)
+        {
             return Task.CompletedTask;
         }
 
         /// <summary>
         /// 是否可以执行批量禁用
         /// </summary>
-        protected virtual bool CanExecuteBatchDisable() {
+        protected virtual bool CanExecuteBatchDisable()
+        {
             return HasSelectedItems;
         }
 
         /// <summary>
         /// 处理错误
         /// </summary>
-        protected virtual async Task HandleErrorAsync(Exception ex) {
-            await base.HandleErrorAsync("操作", ex);
+        protected virtual async Task HandleErrorAsync(Exception ex)
+        {
+            await this.HandleErrorAsync("操作", ex);
         }
 
         #endregion 方法

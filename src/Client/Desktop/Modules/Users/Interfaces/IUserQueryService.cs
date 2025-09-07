@@ -7,7 +7,8 @@ namespace LYBT.Desktop.Users.Interfaces;
 /// 用户查询服务接口 - UltraThink双层架构简化版
 /// 职责：查询和搜索操作（仅保留核心查询功能）
 /// </summary>
-public interface IUserQueryService {
+public interface IUserQueryService
+{
 
     #region 核心查询操作
 

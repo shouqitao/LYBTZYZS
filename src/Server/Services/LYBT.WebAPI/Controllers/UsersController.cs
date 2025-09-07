@@ -18,11 +18,13 @@ namespace LYBT.WebAPI.Controllers;
 [ApiVersion("1")]
 [Route("api/v{version:apiVersion}/[controller]")]
 [Authorize] // 全部接口必须登录
-public class UsersController : BaseApiController {
+public class UsersController : BaseApiController
+{
     private readonly IUserService _userService;
 
     public UsersController(IUserService userService, IMemoryCache cache, ILogger<UsersController> logger)
-        : base(logger, cache) {
+        : base(logger, cache)
+    {
         _userService = userService;
     }
 
@@ -32,10 +34,13 @@ public class UsersController : BaseApiController {
     /// 切换用户状态（启用/禁用） - 统一API响应格式
     /// </summary>
     [HttpPatch("{id}/toggle-status")]
-    public async Task<ActionResult<ApiResponse>> ToggleStatus(Guid id) {
-        try {
+    public async Task<ActionResult<ApiResponse>> ToggleStatus(Guid id)
+    {
+        try
+        {
             var validation = ValidateGuid(id, "用户ID");
-            if (validation != null) {
+            if (validation != null)
+            {
                 return validation;
             }
 
@@ -43,28 +48,35 @@ public class UsersController : BaseApiController {
 
             // 先获取用户当前状态
             var userResult = await _userService.GetByIdAsync(id);
-            if (!userResult.IsSuccess || userResult.Data == null) {
-                return NotFound("用户不存在", ApiErrorCodes.USER_NOT_FOUND);
+            if (!userResult.IsSuccess || userResult.Data == null)
+            {
+                return NotFound("用户不存在", ApiErrorCodes.USERNOTFOUND);
             }
 
             // 根据当前状态切换
             ServiceResult<bool> result;
             string message;
-            if (userResult.Data.Status == CommonStatus.Enabled) {
+            if (userResult.Data.Status == CommonStatus.Enabled)
+            {
                 result = await _userService.DisableAsync(id);
                 message = "用户已禁用";
-            } else {
+            }
+            else
+            {
                 result = await _userService.EnableAsync(id);
                 message = "用户已启用";
             }
 
-            if (!result.IsSuccess || !result.Data) {
-                return BusinessFail("状态切换失败", ApiErrorCodes.DATA_UPDATE_FAILED);
+            if (!result.IsSuccess || !result.Data)
+            {
+                return BusinessFail("状态切换失败", ApiErrorCodes.DATAUPDATEFAILED);
             }
 
             LogOperation(message, null, id);
             return Success(message);
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
             return HandleException(ex, "切换用户状态", id);
         }
     }
@@ -76,25 +88,33 @@ public class UsersController : BaseApiController {
     /// 管理员重置密码，恢复为默认值 - 统一API响应格式
     /// </summary>
     [HttpPost("reset-password/{id}")]
-    public async Task<ActionResult<ApiResponse>> ResetPassword(Guid id) {
-        try {
+    public async Task<ActionResult<ApiResponse>> ResetPassword(Guid id)
+    {
+        try
+        {
             var validation = ValidateGuid(id, "用户ID");
-            if (validation != null) {
+            if (validation != null)
+            {
                 return validation;
             }
 
             var (operatorId, operatorName, _) = GetOperator();
             var result = await _userService.ResetPasswordAsync(id, "ChangeMe123");
 
-            if (!result.IsSuccess || !result.Data) {
-                return BusinessFail("密码重置失败", ApiErrorCodes.PASSWORD_CHANGE_FAILED);
+            if (!result.IsSuccess || !result.Data)
+            {
+                return BusinessFail("密码重置失败", ApiErrorCodes.PASSWORDCHANGEFAILED);
             }
 
             LogOperation("重置用户密码", null, id);
             return Success("密码重置成功");
-        } catch (InvalidOperationException ex) when (ex.Message.Contains("用户不存在")) {
-            return NotFound(ex.Message, ApiErrorCodes.USER_NOT_FOUND);
-        } catch (Exception ex) {
+        }
+        catch (InvalidOperationException ex) when (ex.Message.Contains("用户不存在"))
+        {
+            return NotFound(ex.Message, ApiErrorCodes.USERNOTFOUND);
+        }
+        catch (Exception ex)
+        {
             return HandleException(ex, "重置密码", id);
         }
     }
@@ -103,26 +123,33 @@ public class UsersController : BaseApiController {
     /// 用户修改密码 - 统一API响应格式
     /// </summary>
     [HttpPatch("password")]
-    public async Task<ActionResult<ApiResponse>> ChangePassword([FromBody] ChangePasswordDto dto) {
-        try {
+    public async Task<ActionResult<ApiResponse>> ChangePassword([FromBody] ChangePasswordDto dto)
+    {
+        try
+        {
             var validation = ValidateModel();
-            if (validation != null) {
+            if (validation != null)
+            {
                 return validation;
             }
 
             var (operatorId, operatorName, _) = GetOperator();
-            if (operatorId == Guid.Empty) {
-                return Unauthorized("未登录或用户信息无效", ApiErrorCodes.AUTHENTICATION_FAILED);
+            if (operatorId == Guid.Empty)
+            {
+                return Unauthorized("未登录或用户信息无效", ApiErrorCodes.AUTHENTICATIONFAILED);
             }
 
             var result = await _userService.ChangePasswordAsync(operatorId, dto.OldPassword, dto.NewPassword);
-            if (!result.IsSuccess || !result.Data) {
-                return BusinessFail("密码修改失败，请检查当前密码", ApiErrorCodes.PASSWORD_CHANGE_FAILED);
+            if (!result.IsSuccess || !result.Data)
+            {
+                return BusinessFail("密码修改失败，请检查当前密码", ApiErrorCodes.PASSWORDCHANGEFAILED);
             }
 
             LogOperation("修改密码", null, operatorId);
             return Success("密码修改成功");
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
             return HandleException(ex, "修改密码", dto);
         }
     }
@@ -132,18 +159,23 @@ public class UsersController : BaseApiController {
     /// UltraThink修复：支持sysadmin特殊用户处理
     /// </summary>
     [HttpGet("profile")]
-    public async Task<ActionResult<ApiResponse<UserDto>>> GetProfile() {
-        try {
+    public async Task<ActionResult<ApiResponse<UserDto>>> GetProfile()
+    {
+        try
+        {
             var (operatorId, operatorName, _) = GetOperator();
-            if (operatorId == Guid.Empty) {
-                return Unauthorized<UserDto>("未登录或用户信息无效", ApiErrorCodes.AUTHENTICATION_FAILED);
+            if (operatorId == Guid.Empty)
+            {
+                return Unauthorized<UserDto>("未登录或用户信息无效", ApiErrorCodes.AUTHENTICATIONFAILED);
             }
 
             // UltraThink修复：检查是否为sysadmin用户（使用固定ID）
             var sysadminId = new Guid("00000000-0000-0000-0000-000000000001");
-            if (operatorId == sysadminId) {
+            if (operatorId == sysadminId)
+            {
                 // 对于sysadmin用户，创建虚拟UserDto
-                var sysadminDto = new UserDto {
+                var sysadminDto = new UserDto
+                {
                     Id = sysadminId,
                     Username = "sysadmin",
                     RealName = "系统管理员",
@@ -158,13 +190,16 @@ public class UsersController : BaseApiController {
 
             // 普通用户正常流程
             var result = await _userService.GetByIdAsync(operatorId);
-            if (!result.IsSuccess || result.Data == null) {
-                return NotFound<UserDto>("用户不存在", ApiErrorCodes.USER_NOT_FOUND);
+            if (!result.IsSuccess || result.Data == null)
+            {
+                return NotFound<UserDto>("用户不存在", ApiErrorCodes.USERNOTFOUND);
             }
 
             LogOperation("获取个人信息", null, operatorId);
             return Success(result.Data, "获取个人信息成功");
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
             return HandleException<UserDto>(ex, "获取个人信息", null);
         }
     }
@@ -173,27 +208,34 @@ public class UsersController : BaseApiController {
     /// 用户修改个人信息 - 统一API响应格式
     /// </summary>
     [HttpPut("profile")]
-    public async Task<ActionResult<ApiResponse>> ChangeProfile([FromBody] ChangeProfileDto dto) {
-        try {
+    public async Task<ActionResult<ApiResponse>> ChangeProfile([FromBody] ChangeProfileDto dto)
+    {
+        try
+        {
             var validation = ValidateModel();
-            if (validation != null) {
+            if (validation != null)
+            {
                 return validation;
             }
 
             var (operatorId, operatorName, _) = GetOperator();
-            if (operatorId == Guid.Empty) {
-                return Unauthorized("未登录或用户信息无效", ApiErrorCodes.AUTHENTICATION_FAILED);
+            if (operatorId == Guid.Empty)
+            {
+                return Unauthorized("未登录或用户信息无效", ApiErrorCodes.AUTHENTICATIONFAILED);
             }
 
             dto.UserId = operatorId; // 设置当前操作用户ID
             var result = await _userService.ChangeProfileAsync(dto);
-            if (!result.IsSuccess || !result.Data) {
-                return BusinessFail("个人信息修改失败", ApiErrorCodes.DATA_UPDATE_FAILED);
+            if (!result.IsSuccess || !result.Data)
+            {
+                return BusinessFail("个人信息修改失败", ApiErrorCodes.DATAUPDATEFAILED);
             }
 
             LogOperation("修改个人信息", dto, operatorId);
             return Success("个人信息修改成功");
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
             return HandleException(ex, "修改个人信息", dto);
         }
     }
@@ -202,8 +244,10 @@ public class UsersController : BaseApiController {
     /// 获取所有角色 - 统一API响应格式
     /// </summary>
     [HttpGet("roles")]
-    public ActionResult<ApiResponse<IEnumerable<object>>> GetRoles() {
-        try {
+    public ActionResult<ApiResponse<IEnumerable<object>>> GetRoles()
+    {
+        try
+        {
             // 临时返回固定角色列表，实际应该从配置中获取
             var roles = new[] {
                 new { Value = "Admin", Label = "管理员" },
@@ -211,7 +255,9 @@ public class UsersController : BaseApiController {
                 new { Value = "Receptionist", Label = "接待员" }
             };
             return Success<IEnumerable<object>>(roles, "获取角色列表成功");
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
             return HandleException<IEnumerable<object>>(ex, "获取角色列表", null);
         }
     }
@@ -222,14 +268,19 @@ public class UsersController : BaseApiController {
     /// 获取启用的用户列表 - 统一API响应格式
     /// </summary>
     [HttpGet("active")]
-    public async Task<ActionResult<ApiResponse<IEnumerable<UserDto>>>> GetActiveUsers() {
-        try {
+    public async Task<ActionResult<ApiResponse<IEnumerable<UserDto>>>> GetActiveUsers()
+    {
+        try
+        {
             var usersResult = await _userService.GetActiveUsersAsync();
-            if (!usersResult.IsSuccess || usersResult.Data == null) {
+            if (!usersResult.IsSuccess || usersResult.Data == null)
+            {
                 return HandleException<IEnumerable<UserDto>>(new Exception(usersResult.ErrorMessage ?? "获取用户列表失败"), "获取启用用户列表", null);
             }
             return Success<IEnumerable<UserDto>>(usersResult.Data, "获取启用用户列表成功");
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
             return HandleException<IEnumerable<UserDto>>(ex, "获取启用用户列表", null);
         }
     }
@@ -249,14 +300,18 @@ public class UsersController : BaseApiController {
         [FromQuery] string? email = null,
         [FromQuery] string? phoneNumber = null,
         [FromQuery] string? role = null,
-        [FromQuery] bool? isActive = null) {
-        try {
-            if (page <= 0 || pageSize <= 0 || pageSize > 100) {
+        [FromQuery] bool? isActive = null)
+    {
+        try
+        {
+            if (page <= 0 || pageSize <= 0 || pageSize > 100)
+            {
                 return ValidationFailPaged<UserDto>("页码和页大小参数无效（页码>0，页大小1-100）");
             }
 
             var (_, _, operatorRole) = GetOperator();
-            var query = new LYBT.Shared.Models.Contracts.Users.UserPagedQueryDto {
+            var query = new LYBT.Shared.Models.Contracts.Users.UserPagedQueryDto
+            {
                 PageIndex = page,
                 PageSize = pageSize,
                 Keyword = keyword,
@@ -270,7 +325,9 @@ public class UsersController : BaseApiController {
 
             var result = await _userService.GetPagedAsync(query);
             return HandlePagedServiceResult(result, "查询成功");
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
             return HandleExceptionPaged<UserDto>(ex, "获取用户列表", new { page, pageSize, keyword });
         }
     }
@@ -279,17 +336,22 @@ public class UsersController : BaseApiController {
     /// 根据ID获取用户 (RESTful GET /Users/{id}) - 统一API响应格式
     /// </summary>
     [HttpGet("{id}")]
-    public async Task<ActionResult<ApiResponse<UserDto>>> GetUser(Guid id) {
-        try {
+    public async Task<ActionResult<ApiResponse<UserDto>>> GetUser(Guid id)
+    {
+        try
+        {
             var validation = ValidateGuid<UserDto>(id, "用户ID");
-            if (validation != null) {
+            if (validation != null)
+            {
                 return validation;
             }
 
             var (_, _, operatorRole) = GetOperator();
             var result = await _userService.GetByIdAsync(id);
             return HandleServiceResult(result, "查询成功");
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
             return HandleException<UserDto>(ex, "获取用户信息", id);
         }
     }
@@ -298,23 +360,31 @@ public class UsersController : BaseApiController {
     /// 创建新用户 (现代化版本，直接使用UserMutationDto) - 统一API响应格式
     /// </summary>
     [HttpPost]
-    public async Task<ActionResult<ApiResponse<UserDto>>> CreateUser([FromBody] UserMutationDto dto) {
-        try {
+    public async Task<ActionResult<ApiResponse<UserDto>>> CreateUser([FromBody] UserMutationDto dto)
+    {
+        try
+        {
             var validation = ValidateModel<UserDto>();
-            if (validation != null) {
+            if (validation != null)
+            {
                 return validation;
             }
 
             dto.IsCreateOperation = true; // 标记为创建操作
             var result = await _userService.CreateAsync(dto);
 
-            if (result.IsSuccess && result.Data != null) {
+            if (result.IsSuccess && result.Data != null)
+            {
                 LogOperation("创建用户", result.Data, result.Data.Id);
             }
             return HandleServiceResult(result, "用户创建成功");
-        } catch (InvalidOperationException ex) when (ex.Message.Contains("已存在")) {
-            return BusinessFail<UserDto>(ex.Message, ApiErrorCodes.USERNAME_EXISTS);
-        } catch (Exception ex) {
+        }
+        catch (InvalidOperationException ex) when (ex.Message.Contains("已存在"))
+        {
+            return BusinessFail<UserDto>(ex.Message, ApiErrorCodes.USERNAMEEXISTS);
+        }
+        catch (Exception ex)
+        {
             return HandleException<UserDto>(ex, "创建用户", dto);
         }
     }
@@ -323,20 +393,25 @@ public class UsersController : BaseApiController {
     /// 更新用户信息 (现代化版本，直接使用UserMutationDto) - 统一API响应格式
     /// </summary>
     [HttpPut("{id}")]
-    public async Task<ActionResult<ApiResponse<UserDto>>> UpdateUser(Guid id, [FromBody] UserMutationDto dto) {
-        try {
+    public async Task<ActionResult<ApiResponse<UserDto>>> UpdateUser(Guid id, [FromBody] UserMutationDto dto)
+    {
+        try
+        {
             var idValidation = ValidateGuid<UserDto>(id, "用户ID");
-            if (idValidation != null) {
+            if (idValidation != null)
+            {
                 return idValidation;
             }
 
             var modelValidation = ValidateModel<UserDto>();
-            if (modelValidation != null) {
+            if (modelValidation != null)
+            {
                 return modelValidation;
             }
 
             // 检查ID一致性
-            if (dto.Id != id) {
+            if (dto.Id != id)
+            {
                 return ValidationFail<UserDto>("URL中的ID与请求体中的ID不匹配");
             }
 
@@ -344,7 +419,9 @@ public class UsersController : BaseApiController {
             var result = await _userService.UpdateAsync(dto);
 
             return HandleServiceResult(result, "用户信息更新成功");
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
             return HandleException<UserDto>(ex, "更新用户信息", new { id, dto });
         }
     }

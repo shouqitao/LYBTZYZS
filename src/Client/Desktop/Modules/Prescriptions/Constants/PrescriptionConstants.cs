@@ -1,11 +1,13 @@
 ﻿using System.Collections.ObjectModel;
 
-namespace LYBT.Desktop.Prescriptions.Constants {
+namespace LYBT.Desktop.Prescriptions.Constants
+{
 
     /// <summary>
     /// 处方相关常量定义
     /// </summary>
-    public static class PrescriptionConstants {
+    public static class PrescriptionConstants
+    {
 
         #region 用法用量常量
 

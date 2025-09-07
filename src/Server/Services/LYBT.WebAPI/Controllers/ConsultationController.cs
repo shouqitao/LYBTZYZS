@@ -17,13 +17,15 @@ namespace LYBT.WebAPI.Controllers;
 [ApiVersion("1")]
 [Route("api/v{version:apiVersion}/[controller]")]
 [Authorize]
-public class ConsultationController : BaseApiController {
+public class ConsultationController : BaseApiController
+{
     private readonly IConsultationService _consultationService;
 
     public ConsultationController(
         IConsultationService consultationService,
         ILogger<ConsultationController> logger,
-        IMemoryCache cache) : base(logger, cache) {
+        IMemoryCache cache) : base(logger, cache)
+    {
         _consultationService = consultationService;
     }
 
@@ -31,16 +33,21 @@ public class ConsultationController : BaseApiController {
     /// 根据ID获取看诊详情 - 统一API响应格式
     /// </summary>
     [HttpGet("{id}")]
-    public async Task<ActionResult<ApiResponse<ConsultationDetailDto>>> GetById(Guid id) {
-        try {
+    public async Task<ActionResult<ApiResponse<ConsultationDetailDto>>> GetById(Guid id)
+    {
+        try
+        {
             var validation = ValidateGuid<ConsultationDetailDto>(id, "看诊ID");
-            if (validation != null) {
+            if (validation != null)
+            {
                 return validation;
             }
 
             var result = await _consultationService.GetByIdAsync(id);
             return HandleServiceResult(result, "查询成功");
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
             return HandleException<ConsultationDetailDto>(ex, "获取看诊详情", id);
         }
     }
@@ -52,13 +59,17 @@ public class ConsultationController : BaseApiController {
     public async Task<ActionResult<ApiResponse<PagedResult<ConsultationDto>>>> GetPaged(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
-        [FromQuery] string? keyword = null) {
-        try {
-            if (page <= 0 || pageSize <= 0 || pageSize > 100) {
+        [FromQuery] string? keyword = null)
+    {
+        try
+        {
+            if (page <= 0 || pageSize <= 0 || pageSize > 100)
+            {
                 return ValidationFailPaged<ConsultationDto>("页码和页大小参数无效（页码>0，页大小1-100）");
             }
 
-            var query = new PagedQueryBaseDto {
+            var query = new PagedQueryBaseDto
+            {
                 PageIndex = page,
                 PageSize = pageSize,
                 Keyword = keyword
@@ -66,7 +77,9 @@ public class ConsultationController : BaseApiController {
 
             var result = await _consultationService.GetPagedAsync(query);
             return HandlePagedServiceResult(result, "查询成功");
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
             return HandleExceptionPaged<ConsultationDto>(ex, "获取看诊列表", new { page, pageSize, keyword });
         }
     }
@@ -75,21 +88,27 @@ public class ConsultationController : BaseApiController {
     /// 开始看诊 - 统一API响应格式
     /// </summary>
     [HttpPost("start")]
-    public async Task<ActionResult<ApiResponse<ConsultationDto>>> StartConsultation([FromBody] ConsultationStartDto dto) {
-        try {
+    public async Task<ActionResult<ApiResponse<ConsultationDto>>> StartConsultation([FromBody] ConsultationStartDto dto)
+    {
+        try
+        {
             var validation = ValidateModel<ConsultationDto>();
-            if (validation != null) {
+            if (validation != null)
+            {
                 return validation;
             }
 
             var (operatorId, operatorName, _) = GetOperator();
             var result = await _consultationService.StartAsync(dto);
 
-            if (result.IsSuccess && result.Data != null) {
+            if (result.IsSuccess && result.Data != null)
+            {
                 LogOperation("开始看诊", result.Data, result.Data.Id);
             }
             return HandleServiceResult(result, "看诊开始成功");
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
             return HandleException<ConsultationDto>(ex, "开始看诊", dto);
         }
     }
@@ -98,24 +117,31 @@ public class ConsultationController : BaseApiController {
     /// 更新看诊记录 - 统一API响应格式
     /// </summary>
     [HttpPut("{id}")]
-    public async Task<ActionResult<ApiResponse<ConsultationDto>>> Update(Guid id, [FromBody] ConsultationDetailDto dto) {
-        try {
+    public async Task<ActionResult<ApiResponse<ConsultationDto>>> Update(Guid id, [FromBody] ConsultationDetailDto dto)
+    {
+        try
+        {
             var idValidation = ValidateGuid<ConsultationDto>(id, "看诊ID");
-            if (idValidation != null) {
+            if (idValidation != null)
+            {
                 return idValidation;
             }
 
             var modelValidation = ValidateModel<ConsultationDto>();
-            if (modelValidation != null) {
+            if (modelValidation != null)
+            {
                 return modelValidation;
             }
 
             var result = await _consultationService.UpdateAsync(id, dto);
-            if (result.IsSuccess && result.Data != null) {
+            if (result.IsSuccess && result.Data != null)
+            {
                 LogOperation("更新看诊记录", result.Data, id);
             }
             return HandleServiceResult(result, "看诊记录更新成功");
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
             return HandleException<ConsultationDto>(ex, "更新看诊记录", new { id, dto });
         }
     }
@@ -124,16 +150,21 @@ public class ConsultationController : BaseApiController {
     /// 根据患者ID获取看诊历史 - 统一API响应格式
     /// </summary>
     [HttpGet("patient/{patientId}")]
-    public async Task<ActionResult<ApiResponse<List<ConsultationDto>>>> GetByPatientId(Guid patientId) {
-        try {
+    public async Task<ActionResult<ApiResponse<List<ConsultationDto>>>> GetByPatientId(Guid patientId)
+    {
+        try
+        {
             var validation = ValidateGuid<List<ConsultationDto>>(patientId, "患者ID");
-            if (validation != null) {
+            if (validation != null)
+            {
                 return validation;
             }
 
             var result = await _consultationService.GetByPatientIdAsync(patientId);
             return HandleServiceResult(result, "查询成功");
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
             return HandleException<List<ConsultationDto>>(ex, "获取患者看诊历史", patientId);
         }
     }
@@ -142,16 +173,21 @@ public class ConsultationController : BaseApiController {
     /// 根据医疗案例ID获取看诊记录 - 统一API响应格式
     /// </summary>
     [HttpGet("medical-case/{medicalCaseId}")]
-    public async Task<ActionResult<ApiResponse<List<ConsultationDto>>>> GetByMedicalCaseId(Guid medicalCaseId) {
-        try {
+    public async Task<ActionResult<ApiResponse<List<ConsultationDto>>>> GetByMedicalCaseId(Guid medicalCaseId)
+    {
+        try
+        {
             var validation = ValidateGuid<List<ConsultationDto>>(medicalCaseId, "医疗案例ID");
-            if (validation != null) {
+            if (validation != null)
+            {
                 return validation;
             }
 
             var result = await _consultationService.GetByMedicalCaseIdAsync(medicalCaseId);
             return HandleServiceResult(result, "查询成功");
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
             return HandleException<List<ConsultationDto>>(ex, "获取医疗案例看诊记录", medicalCaseId);
         }
     }
@@ -160,16 +196,21 @@ public class ConsultationController : BaseApiController {
     /// 根据医生ID获取看诊记录 - 统一API响应格式
     /// </summary>
     [HttpGet("doctor/{doctorId}")]
-    public async Task<ActionResult<ApiResponse<List<ConsultationDto>>>> GetByDoctorId(Guid doctorId) {
-        try {
+    public async Task<ActionResult<ApiResponse<List<ConsultationDto>>>> GetByDoctorId(Guid doctorId)
+    {
+        try
+        {
             var validation = ValidateGuid<List<ConsultationDto>>(doctorId, "医生ID");
-            if (validation != null) {
+            if (validation != null)
+            {
                 return validation;
             }
 
             var result = await _consultationService.GetByDoctorIdAsync(doctorId);
             return HandleServiceResult(result, "查询成功");
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
             return HandleException<List<ConsultationDto>>(ex, "获取医生看诊记录", doctorId);
         }
     }
@@ -178,15 +219,20 @@ public class ConsultationController : BaseApiController {
     /// 搜索看诊记录 - 统一API响应格式
     /// </summary>
     [HttpGet("search")]
-    public async Task<ActionResult<ApiResponse<List<ConsultationDto>>>> Search([FromQuery] string keyword) {
-        try {
-            if (string.IsNullOrWhiteSpace(keyword)) {
+    public async Task<ActionResult<ApiResponse<List<ConsultationDto>>>> Search([FromQuery] string keyword)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(keyword))
+            {
                 return ValidationFail<List<ConsultationDto>>("搜索关键词不能为空");
             }
 
             var result = await _consultationService.SearchAsync(keyword);
             return HandleServiceResult(result, $"搜索完成，找到{result.Data?.Count ?? 0}条记录");
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
             return HandleException<List<ConsultationDto>>(ex, "搜索看诊记录", keyword);
         }
     }
@@ -197,11 +243,15 @@ public class ConsultationController : BaseApiController {
     [HttpGet("statistics")]
     public async Task<ActionResult<ApiResponse<object>>> GetStatistics(
         [FromQuery] DateTime? startDate = null,
-        [FromQuery] DateTime? endDate = null) {
-        try {
+        [FromQuery] DateTime? endDate = null)
+    {
+        try
+        {
             var result = await _consultationService.GetStatisticsAsync(startDate, endDate);
             return HandleServiceResult(result, "获取统计信息成功");
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
             return HandleException<object>(ex, "获取看诊统计信息", new { startDate, endDate });
         }
     }
@@ -210,16 +260,21 @@ public class ConsultationController : BaseApiController {
     /// 获取患者历史就诊记录 - 统一API响应格式
     /// </summary>
     [HttpGet("patient/{patientId}/history")]
-    public async Task<ActionResult<ApiResponse<List<ConsultationDto>>>> GetPatientHistory(Guid patientId) {
-        try {
+    public async Task<ActionResult<ApiResponse<List<ConsultationDto>>>> GetPatientHistory(Guid patientId)
+    {
+        try
+        {
             var validation = ValidateGuid<List<ConsultationDto>>(patientId, "患者ID");
-            if (validation != null) {
+            if (validation != null)
+            {
                 return validation;
             }
 
             var result = await _consultationService.GetPatientHistoryAsync(patientId);
             return HandleServiceResult(result, "查询成功");
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
             return HandleException<List<ConsultationDto>>(ex, "获取患者历史就诊记录", patientId);
         }
     }
@@ -228,16 +283,21 @@ public class ConsultationController : BaseApiController {
     /// 根据医疗案例ID获取四诊数据 - 统一API响应格式
     /// </summary>
     [HttpGet("medical-case/{medicalCaseId}/four-diagnosis")]
-    public async Task<ActionResult<ApiResponse<object>>> GetFourDiagnosis(Guid medicalCaseId) {
-        try {
+    public async Task<ActionResult<ApiResponse<object>>> GetFourDiagnosis(Guid medicalCaseId)
+    {
+        try
+        {
             var validation = ValidateGuid<object>(medicalCaseId, "医疗案例ID");
-            if (validation != null) {
+            if (validation != null)
+            {
                 return validation;
             }
 
             var result = await _consultationService.GetFourDiagnosisByMedicalCaseIdAsync(medicalCaseId);
             return HandleServiceResult(result, "查询成功");
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
             return HandleException<object>(ex, "获取四诊数据", medicalCaseId);
         }
     }
@@ -246,16 +306,21 @@ public class ConsultationController : BaseApiController {
     /// 保存四诊数据 - 统一API响应格式
     /// </summary>
     [HttpPost("{consultationId}/four-diagnosis")]
-    public async Task<ActionResult<ApiResponse>> SaveFourDiagnosis(Guid consultationId, [FromBody] object fourDiagnosisData) {
-        try {
+    public async Task<ActionResult<ApiResponse>> SaveFourDiagnosis(Guid consultationId, [FromBody] object fourDiagnosisData)
+    {
+        try
+        {
             var validation = ValidateGuid(consultationId, "看诊ID");
-            if (validation != null) {
+            if (validation != null)
+            {
                 return validation;
             }
 
             var result = await _consultationService.SaveFourDiagnosisAsync(consultationId, fourDiagnosisData);
             return HandleBoolServiceResult(result, "四诊数据保存成功");
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
             return HandleException(ex, "保存四诊数据", new { consultationId, fourDiagnosisData });
         }
     }
@@ -264,22 +329,28 @@ public class ConsultationController : BaseApiController {
     /// 删除看诊记录（软删除） - 统一API响应格式
     /// </summary>
     [HttpDelete("{id}")]
-    public async Task<ActionResult<ApiResponse>> Delete(Guid id) {
-        try {
+    public async Task<ActionResult<ApiResponse>> Delete(Guid id)
+    {
+        try
+        {
             var validation = ValidateGuid(id, "看诊ID");
-            if (validation != null) {
+            if (validation != null)
+            {
                 return validation;
             }
 
             var result = await _consultationService.DeleteAsync(id);
             return HandleBoolServiceResult(result, "删除成功");
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
             return HandleException(ex, "删除看诊记录", id);
         }
     }
 }
 
 // 辅助DTO类
-public class CancelConsultationDto {
+public class CancelConsultationDto
+{
     public string? Reason { get; set; }
 }

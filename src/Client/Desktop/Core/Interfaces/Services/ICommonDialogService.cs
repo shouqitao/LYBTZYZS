@@ -1,10 +1,12 @@
-﻿namespace LYBT.Desktop.Core.Interfaces.Services {
+﻿namespace LYBT.Desktop.Core.Interfaces.Services
+{
 
     /// <summary>
     /// 通用对话框服务接口
     /// 提供统一的对话框调用方式，支持消息框、输入框和文件选择对话框
     /// </summary>
-    public interface ICommonDialogService {
+    public interface ICommonDialogService
+    {
 
         #region 消息对话框
 

@@ -8,7 +8,8 @@ namespace LYBT.Desktop.Core.Mvvm;
 /// 采用UltraThink架构标准，使用C# 12现代化特性
 /// 支持批量更新、变更跟踪、UI线程安全等企业级功能
 /// </summary>
-public abstract class ObservableObject : INotifyPropertyChanged, INotifyPropertyChanging {
+public abstract class ObservableObject : INotifyPropertyChanged, INotifyPropertyChanging
+{
 
     /// <summary>
     /// 属性更改事件
@@ -45,7 +46,8 @@ public abstract class ObservableObject : INotifyPropertyChanged, INotifyProperty
     /// </summary>
     private readonly HashSet<string> _batchChangedProperties = [];
 
-    protected ObservableObject() {
+    protected ObservableObject()
+    {
         _synchronizationContext = SynchronizationContext.Current;
     }
 
@@ -61,9 +63,11 @@ public abstract class ObservableObject : INotifyPropertyChanged, INotifyProperty
     protected virtual bool SetProperty<T>(
         ref T field,
         T value,
-        [CallerMemberName] string? propertyName = null) {
+        [CallerMemberName] string? propertyName = null)
+    {
         // 使用现代化的相等性比较
-        if (EqualityComparer<T>.Default.Equals(field, value)) {
+        if (EqualityComparer<T>.Default.Equals(field, value))
+        {
             return false;
         }
 
@@ -74,7 +78,8 @@ public abstract class ObservableObject : INotifyPropertyChanged, INotifyProperty
         field = value;
 
         // 记录更改（现代化的空值检查）
-        if (!string.IsNullOrEmpty(propertyName)) {
+        if (!string.IsNullOrEmpty(propertyName))
+        {
             _changedProperties.Add(propertyName);
             _propertyValues[propertyName] = value;
         }
@@ -95,9 +100,11 @@ public abstract class ObservableObject : INotifyPropertyChanged, INotifyProperty
     /// <returns>如果值发生更改则返回 true；否则返回 false</returns>
     protected virtual bool SetPropertyValue<T>(
         T value,
-        [CallerMemberName] string? propertyName = null) {
+        [CallerMemberName] string? propertyName = null)
+    {
         // 现代化空值检查
-        if (string.IsNullOrEmpty(propertyName)) {
+        if (string.IsNullOrEmpty(propertyName))
+        {
             return false;
         }
 
@@ -105,7 +112,8 @@ public abstract class ObservableObject : INotifyPropertyChanged, INotifyProperty
         _propertyValues.TryGetValue(propertyName, out var oldValue);
 
         // 现代化相等性比较
-        if (EqualityComparer<T>.Default.Equals((T?)oldValue, value)) {
+        if (EqualityComparer<T>.Default.Equals((T?)oldValue, value))
+        {
             return false;
         }
 
@@ -132,10 +140,12 @@ public abstract class ObservableObject : INotifyPropertyChanged, INotifyProperty
     /// <returns>属性值或默认值</returns>
     protected virtual T GetPropertyValue<T>(
         T defaultValue = default!,
-        [CallerMemberName] string? propertyName = null) {
+        [CallerMemberName] string? propertyName = null)
+    {
         // 现代化的空值检查和字典查找
         if (!string.IsNullOrEmpty(propertyName) &&
-            _propertyValues.TryGetValue(propertyName, out var value)) {
+            _propertyValues.TryGetValue(propertyName, out var value))
+        {
             return (T?)value ?? defaultValue;
         }
 
@@ -147,24 +157,33 @@ public abstract class ObservableObject : INotifyPropertyChanged, INotifyProperty
     /// 支持UI线程安全和批量更新模式
     /// </summary>
     /// <param name="propertyName">属性名称（自动获取）</param>
-    protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null) {
-        if (_isBatchUpdating > 0) {
+    protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+    {
+        if (_isBatchUpdating > 0)
+        {
             // 批量更新模式，暂存更改
-            if (!string.IsNullOrEmpty(propertyName)) {
+            if (!string.IsNullOrEmpty(propertyName))
+            {
                 _batchChangedProperties.Add(propertyName);
             }
             return;
         }
 
         var handler = PropertyChanged;
-        if (handler != null && !string.IsNullOrEmpty(propertyName)) {
+        if (handler != null && !string.IsNullOrEmpty(propertyName))
+        {
             // 确保在UI线程触发
             if (_synchronizationContext != null &&
-                _synchronizationContext != SynchronizationContext.Current) {
-                _synchronizationContext.Post(_ => {
+                _synchronizationContext != SynchronizationContext.Current)
+            {
+                _synchronizationContext.Post(
+                    _ =>
+                {
                     handler(this, new PropertyChangedEventArgs(propertyName));
                 }, null);
-            } else {
+            }
+            else
+            {
                 handler(this, new PropertyChangedEventArgs(propertyName));
             }
         }
@@ -175,7 +194,8 @@ public abstract class ObservableObject : INotifyPropertyChanged, INotifyProperty
     /// 在属性值实际更改之前通知订阅者
     /// </summary>
     /// <param name="propertyName">属性名称（自动获取）</param>
-    protected virtual void OnPropertyChanging([CallerMemberName] string? propertyName = null) {
+    protected virtual void OnPropertyChanging([CallerMemberName] string? propertyName = null)
+    {
         PropertyChanging?.Invoke(this, new PropertyChangingEventArgs(propertyName));
     }
 
@@ -184,7 +204,8 @@ public abstract class ObservableObject : INotifyPropertyChanged, INotifyProperty
     /// 在大量属性更改时提升性能
     /// </summary>
     /// <returns>批量更新作用域，使用using语句自动结束</returns>
-    public IDisposable BeginBatchUpdate() {
+    public IDisposable BeginBatchUpdate()
+    {
         Interlocked.Increment(ref _isBatchUpdating);
         return new BatchUpdateScope(this);
     }
@@ -193,10 +214,13 @@ public abstract class ObservableObject : INotifyPropertyChanged, INotifyProperty
     /// 结束批量更新
     /// 触发所有累积的属性更改通知
     /// </summary>
-    private void EndBatchUpdate() {
-        if (Interlocked.Decrement(ref _isBatchUpdating) == 0) {
+    private void EndBatchUpdate()
+    {
+        if (Interlocked.Decrement(ref _isBatchUpdating) == 0)
+        {
             // 触发所有累积的更改
-            foreach (var propertyName in _batchChangedProperties) {
+            foreach (var propertyName in _batchChangedProperties)
+            {
                 OnPropertyChanged(propertyName);
             }
             _batchChangedProperties.Clear();
@@ -207,7 +231,8 @@ public abstract class ObservableObject : INotifyPropertyChanged, INotifyProperty
     /// 刷新所有属性
     /// 触发所有绑定的UI更新
     /// </summary>
-    protected void RefreshAllProperties() {
+    protected void RefreshAllProperties()
+    {
         OnPropertyChanged(string.Empty);
     }
 
@@ -216,7 +241,8 @@ public abstract class ObservableObject : INotifyPropertyChanged, INotifyProperty
     /// </summary>
     /// <param name="propertyName">属性名称</param>
     /// <returns>如果属性已更改则返回 true；否则返回 false</returns>
-    public bool HasPropertyChanged(string propertyName) {
+    public bool HasPropertyChanged(string propertyName)
+    {
         ArgumentException.ThrowIfNullOrWhiteSpace(propertyName, nameof(propertyName));
         return _changedProperties.Contains(propertyName);
     }
@@ -225,7 +251,8 @@ public abstract class ObservableObject : INotifyPropertyChanged, INotifyProperty
     /// 获取所有已更改的属性
     /// </summary>
     /// <returns>已更改属性名称的集合</returns>
-    public IEnumerable<string> GetChangedProperties() {
+    public IEnumerable<string> GetChangedProperties()
+    {
         return _changedProperties;
     }
 
@@ -233,7 +260,8 @@ public abstract class ObservableObject : INotifyPropertyChanged, INotifyProperty
     /// 重置更改跟踪
     /// 清除所有更改记录，将对象标记为未修改状态
     /// </summary>
-    public void ResetChangeTracking() {
+    public void ResetChangeTracking()
+    {
         _changedProperties.Clear();
     }
 
@@ -248,10 +276,12 @@ public abstract class ObservableObject : INotifyPropertyChanged, INotifyProperty
     /// 使用RAII模式自动管理批量更新生命周期
     /// </summary>
     /// <param name="owner">拥有者对象</param>
-    private sealed class BatchUpdateScope(ObservableObject owner) : IDisposable {
+    private sealed class BatchUpdateScope(ObservableObject owner) : IDisposable
+    {
         private readonly ObservableObject _owner = owner ?? throw new ArgumentNullException(nameof(owner));
 
-        public void Dispose() {
+        public void Dispose()
+        {
             _owner.EndBatchUpdate();
         }
     }
@@ -261,7 +291,8 @@ public abstract class ObservableObject : INotifyPropertyChanged, INotifyProperty
 /// 带验证的可观察对象
 /// 提供数据验证和错误通知功能，符合WPF数据绑定验证标准
 /// </summary>
-public abstract class ValidatableObservableObject : ObservableObject, INotifyDataErrorInfo {
+public abstract class ValidatableObservableObject : ObservableObject, INotifyDataErrorInfo
+{
     private readonly Dictionary<string, List<string>> _errors = [];
 
     /// <summary>
@@ -280,11 +311,14 @@ public abstract class ValidatableObservableObject : ObservableObject, INotifyDat
     /// </summary>
     /// <param name="propertyName">属性名称，null表示获取所有错误</param>
     /// <returns>错误信息的集合</returns>
-    public System.Collections.IEnumerable GetErrors(string? propertyName) {
-        if (string.IsNullOrEmpty(propertyName)) {
+    public System.Collections.IEnumerable GetErrors(string? propertyName)
+    {
+        if (string.IsNullOrEmpty(propertyName))
+        {
             // 返回所有错误 - 使用C# 12集合表达式优化
             var allErrors = new List<string>();
-            foreach (var errors in _errors.Values) {
+            foreach (var errors in _errors.Values)
+            {
                 allErrors.AddRange(errors);
             }
             return allErrors;
@@ -301,15 +335,18 @@ public abstract class ValidatableObservableObject : ObservableObject, INotifyDat
     /// <param name="propertyName">属性名称</param>
     /// <param name="error">错误信息</param>
     /// <exception cref="ArgumentException">当属性名称或错误信息为空时抛出</exception>
-    protected void AddError(string propertyName, string error) {
+    protected void AddError(string propertyName, string error)
+    {
         ArgumentException.ThrowIfNullOrWhiteSpace(propertyName, nameof(propertyName));
         ArgumentException.ThrowIfNullOrWhiteSpace(error, nameof(error));
 
-        if (!_errors.ContainsKey(propertyName)) {
+        if (!_errors.ContainsKey(propertyName))
+        {
             _errors[propertyName] = [];
         }
 
-        if (!_errors[propertyName].Contains(error)) {
+        if (!_errors[propertyName].Contains(error))
+        {
             _errors[propertyName].Add(error);
             OnErrorsChanged(propertyName);
         }
@@ -320,10 +357,12 @@ public abstract class ValidatableObservableObject : ObservableObject, INotifyDat
     /// </summary>
     /// <param name="propertyName">属性名称</param>
     /// <exception cref="ArgumentException">当属性名称为空时抛出</exception>
-    protected void ClearErrors(string propertyName) {
+    protected void ClearErrors(string propertyName)
+    {
         ArgumentException.ThrowIfNullOrWhiteSpace(propertyName, nameof(propertyName));
 
-        if (_errors.Remove(propertyName)) {
+        if (_errors.Remove(propertyName))
+        {
             OnErrorsChanged(propertyName);
         }
     }
@@ -331,11 +370,13 @@ public abstract class ValidatableObservableObject : ObservableObject, INotifyDat
     /// <summary>
     /// 清除所有属性的验证错误
     /// </summary>
-    protected void ClearAllErrors() {
+    protected void ClearAllErrors()
+    {
         var properties = _errors.Keys.ToArray();
         _errors.Clear();
 
-        foreach (var propertyName in properties) {
+        foreach (var propertyName in properties)
+        {
             OnErrorsChanged(propertyName);
         }
     }
@@ -344,7 +385,8 @@ public abstract class ValidatableObservableObject : ObservableObject, INotifyDat
     /// 触发错误变更事件
     /// </summary>
     /// <param name="propertyName">发生错误变更的属性名称</param>
-    protected virtual void OnErrorsChanged(string propertyName) {
+    protected virtual void OnErrorsChanged(string propertyName)
+    {
         ErrorsChanged?.Invoke(this, new DataErrorsChangedEventArgs(propertyName));
         OnPropertyChanged(nameof(HasErrors));
     }
@@ -362,11 +404,13 @@ public abstract class ValidatableObservableObject : ObservableObject, INotifyDat
     /// 验证所有已缓存的属性
     /// </summary>
     /// <returns>如果所有属性都验证通过则返回 true；否则返回 false</returns>
-    public virtual bool Validate() {
+    public virtual bool Validate()
+    {
         ClearAllErrors();
 
         // 验证所有缓存的属性
-        foreach (var (propertyName, value) in _propertyValues) {
+        foreach (var (propertyName, value) in _propertyValues)
+        {
             ValidateProperty(propertyName, value);
         }
 
@@ -382,9 +426,11 @@ public abstract class ValidatableObservableObject : ObservableObject, INotifyDat
     /// <param name="value">新值</param>
     /// <param name="propertyName">属性名称（自动获取）</param>
     /// <returns>如果值发生更改则返回 true；否则返回 false</returns>
-    protected override bool SetProperty<T>(ref T field, T value, [CallerMemberName] string? propertyName = null) {
+    protected override bool SetProperty<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
+    {
         // 先清除旧错误并验证新值
-        if (!string.IsNullOrEmpty(propertyName)) {
+        if (!string.IsNullOrEmpty(propertyName))
+        {
             ClearErrors(propertyName);
             ValidateProperty(propertyName, value);
         }

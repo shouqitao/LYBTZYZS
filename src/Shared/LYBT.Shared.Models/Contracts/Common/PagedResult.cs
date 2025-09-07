@@ -1,23 +1,29 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace LYBT.Shared.Models.Contracts.Common {
+namespace LYBT.Shared.Models.Contracts.Common
+{
 
     /// <summary>
     /// 统一分页结果模型 - UltraThink架构统一
     /// </summary>
     /// <typeparam name="T">数据类型</typeparam>
-    public class PagedResult<T> {
+    public class PagedResult<T>
+    {
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="PagedResult{T}"/> class.
         /// UltraThink统一构造函数
         /// </summary>
-        public PagedResult() {
+        public PagedResult()
+        {
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="PagedResult{T}"/> class.
         /// UltraThink统一构造函数 - 4参数版本
         /// </summary>
-        public PagedResult(List<T> items, int totalCount, int currentPage, int pageSize) {
+        public PagedResult(List<T> items, int totalCount, int currentPage, int pageSize)
+        {
             Items = items ?? new List<T>();
             TotalCount = totalCount;
             CurrentPage = currentPage;
@@ -57,6 +63,7 @@ namespace LYBT.Shared.Models.Contracts.Common {
         public string? ErrorMessage { get; set; }
 
         // UltraThink兼容性别名 - 确保架构统一
+
         /// <summary>数据兼容性别名</summary>
         [JsonIgnore]
         public List<T> Data { get => Items; set => Items = value; }

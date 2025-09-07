@@ -1,11 +1,13 @@
 ﻿using LYBT.Entities.Prescriptions;
 
-namespace LYBT.Module.Prescriptions.Interfaces {
+namespace LYBT.Module.Prescriptions.Interfaces
+{
 
     /// <summary>
     /// 表示IPrescriptionRepository。
     /// </summary>
-    public interface IPrescriptionRepository {
+    public interface IPrescriptionRepository
+    {
 
         Task<Prescription?> GetByIdAsync(Guid id);
 

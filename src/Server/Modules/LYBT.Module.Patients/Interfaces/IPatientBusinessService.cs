@@ -1,14 +1,16 @@
 ﻿using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
 
-namespace LYBT.Module.Patients.Interfaces {
+namespace LYBT.Module.Patients.Interfaces
+{
 
     /// <summary>
     /// 患者业务服务接口
     /// UltraThink架构 - Business层接口抽象
     /// 职责：患者业务逻辑、CRUD操作、状态管理
     /// </summary>
-    public interface IPatientBusinessService {
+    public interface IPatientBusinessService
+    {
 
         /// <summary>
         /// 创建患者
@@ -63,6 +65,6 @@ namespace LYBT.Module.Patients.Interfaces {
         /// <summary>
         /// 获取导入模板
         /// </summary>
-        Task<ServiceResult<object>> GetImportTemplateAsync();
+        Task<ServiceResult<object>> GetImportTemplate();
     }
 }

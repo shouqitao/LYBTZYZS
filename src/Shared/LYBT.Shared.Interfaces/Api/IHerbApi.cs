@@ -2,14 +2,16 @@
 using LYBT.Shared.Models.Contracts.Herbs;
 using Refit;
 
-namespace LYBT.Shared.Interfaces.Api {
+namespace LYBT.Shared.Interfaces.Api
+{
 
     /// <summary>
     /// 药材API客户端接口 - UltraThink v2.0简化版
     /// 专注处方用药管理，删除库存管理功能
     /// 移动到shared层以确保前后端契约一致性
     /// </summary>
-    public interface IHerbApi {
+    public interface IHerbApi
+    {
 
         /// <summary>
         /// 获取药材列表（支持分页和查询）

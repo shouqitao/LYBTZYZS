@@ -1,10 +1,12 @@
-﻿namespace LYBT.Desktop.Core.Models.Common {
+﻿namespace LYBT.Desktop.Core.Models.Common
+{
 
     /// <summary>
     /// 自定义对话框结果
     /// 替代 Prism IDialogResult，兼容 Prism 8.1.97
     /// </summary>
-    public class CustomDialogResult {
+    public class CustomDialogResult
+    {
 
         /// <summary>
         /// 对话框返回结果
@@ -27,8 +29,10 @@
         /// </summary>
         /// <param name="data">返回数据</param>
         /// <returns>成功结果</returns>
-        public static CustomDialogResult Success(object? data = null) {
-            return new CustomDialogResult {
+        public static CustomDialogResult Success(object? data = null)
+        {
+            return new CustomDialogResult
+            {
                 Result = true,
                 Data = data
             };
@@ -38,8 +42,10 @@
         /// 创建取消结果
         /// </summary>
         /// <returns>取消结果</returns>
-        public static CustomDialogResult Cancel() {
-            return new CustomDialogResult {
+        public static CustomDialogResult Cancel()
+        {
+            return new CustomDialogResult
+            {
                 Result = false
             };
         }
@@ -51,8 +57,10 @@
         /// <param name="parameters">参数</param>
         /// <param name="data">数据</param>
         /// <returns>对话框结果</returns>
-        public static CustomDialogResult Create(bool? result, Dictionary<string, object>? parameters = null, object? data = null) {
-            return new CustomDialogResult {
+        public static CustomDialogResult Create(bool? result, Dictionary<string, object>? parameters = null, object? data = null)
+        {
+            return new CustomDialogResult
+            {
                 Result = result,
                 Parameters = parameters ?? new Dictionary<string, object>(),
                 Data = data

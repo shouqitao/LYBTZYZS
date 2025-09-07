@@ -1,12 +1,14 @@
 ﻿using Prism.Mvvm;
 
-namespace LYBT.Desktop.Core.ViewModels.Prescriptions {
+namespace LYBT.Desktop.Core.ViewModels.Prescriptions
+{
 
     /// <summary>
     /// 处方状态管理视图模型 - UltraThink架构Presentation Layer
     /// 专门处理处方相关的UI状态管理，完全分离业务逻辑
     /// </summary>
-    public class PrescriptionStateViewModel : BindableBase {
+    public class PrescriptionStateViewModel : BindableBase
+    {
 
         #region UI状态字段
 
@@ -27,71 +29,84 @@ namespace LYBT.Desktop.Core.ViewModels.Prescriptions {
         #region UI状态属性
 
         /// <summary>是否被选中</summary>
-        public bool IsSelected {
+        public bool IsSelected
+        {
             get => _isSelected;
             set => SetProperty(ref _isSelected, value);
         }
 
         /// <summary>是否展开</summary>
-        public bool IsExpanded {
+        public bool IsExpanded
+        {
             get => _isExpanded;
             set => SetProperty(ref _isExpanded, value);
         }
 
         /// <summary>是否正在编辑</summary>
-        public bool IsEditing {
+        public bool IsEditing
+        {
             get => _isEditing;
             set => SetProperty(ref _isEditing, value);
         }
 
         /// <summary>是否正在加载</summary>
-        public bool IsLoading {
+        public bool IsLoading
+        {
             get => _isLoading;
             set => SetProperty(ref _isLoading, value);
         }
 
         /// <summary>是否有错误</summary>
-        public bool HasError {
+        public bool HasError
+        {
             get => _hasError;
             set => SetProperty(ref _hasError, value);
         }
 
         /// <summary>错误消息</summary>
-        public string ErrorMessage {
+        public string ErrorMessage
+        {
             get => _errorMessage;
-            set {
-                if (SetProperty(ref _errorMessage, value)) {
+            set
+            {
+                if (SetProperty(ref _errorMessage, value))
+                {
                     HasError = !string.IsNullOrEmpty(value);
                 }
             }
         }
 
         /// <summary>是否高亮显示</summary>
-        public bool IsHighlighted {
+        public bool IsHighlighted
+        {
             get => _isHighlighted;
             set => SetProperty(ref _isHighlighted, value);
         }
 
         /// <summary>是否正在打印</summary>
-        public bool IsPrinting {
+        public bool IsPrinting
+        {
             get => _isPrinting;
             set => SetProperty(ref _isPrinting, value);
         }
 
         /// <summary>是否正在处理支付</summary>
-        public bool IsProcessingPayment {
+        public bool IsProcessingPayment
+        {
             get => _isProcessingPayment;
             set => SetProperty(ref _isProcessingPayment, value);
         }
 
         /// <summary>是否正在发药</summary>
-        public bool IsDispensing {
+        public bool IsDispensing
+        {
             get => _isDispensing;
             set => SetProperty(ref _isDispensing, value);
         }
 
         /// <summary>是否正在作废</summary>
-        public bool IsVoiding {
+        public bool IsVoiding
+        {
             get => _isVoiding;
             set => SetProperty(ref _isVoiding, value);
         }
@@ -103,7 +118,8 @@ namespace LYBT.Desktop.Core.ViewModels.Prescriptions {
         /// <summary>
         /// 重置所有状态
         /// </summary>
-        public void ResetState() {
+        public void ResetState()
+        {
             IsSelected = false;
             IsExpanded = false;
             IsEditing = false;
@@ -120,7 +136,8 @@ namespace LYBT.Desktop.Core.ViewModels.Prescriptions {
         /// <summary>
         /// 开始编辑
         /// </summary>
-        public void StartEditing() {
+        public void StartEditing()
+        {
             IsEditing = true;
             ClearError();
         }
@@ -128,14 +145,16 @@ namespace LYBT.Desktop.Core.ViewModels.Prescriptions {
         /// <summary>
         /// 结束编辑
         /// </summary>
-        public void EndEditing() {
+        public void EndEditing()
+        {
             IsEditing = false;
         }
 
         /// <summary>
         /// 开始加载
         /// </summary>
-        public void StartLoading() {
+        public void StartLoading()
+        {
             IsLoading = true;
             ClearError();
         }
@@ -143,14 +162,16 @@ namespace LYBT.Desktop.Core.ViewModels.Prescriptions {
         /// <summary>
         /// 结束加载
         /// </summary>
-        public void EndLoading() {
+        public void EndLoading()
+        {
             IsLoading = false;
         }
 
         /// <summary>
         /// 开始打印
         /// </summary>
-        public void StartPrinting() {
+        public void StartPrinting()
+        {
             IsPrinting = true;
             ClearError();
         }
@@ -158,14 +179,16 @@ namespace LYBT.Desktop.Core.ViewModels.Prescriptions {
         /// <summary>
         /// 结束打印
         /// </summary>
-        public void EndPrinting() {
+        public void EndPrinting()
+        {
             IsPrinting = false;
         }
 
         /// <summary>
         /// 开始支付处理
         /// </summary>
-        public void StartPaymentProcessing() {
+        public void StartPaymentProcessing()
+        {
             IsProcessingPayment = true;
             ClearError();
         }
@@ -173,14 +196,16 @@ namespace LYBT.Desktop.Core.ViewModels.Prescriptions {
         /// <summary>
         /// 结束支付处理
         /// </summary>
-        public void EndPaymentProcessing() {
+        public void EndPaymentProcessing()
+        {
             IsProcessingPayment = false;
         }
 
         /// <summary>
         /// 开始发药
         /// </summary>
-        public void StartDispensing() {
+        public void StartDispensing()
+        {
             IsDispensing = true;
             ClearError();
         }
@@ -188,14 +213,16 @@ namespace LYBT.Desktop.Core.ViewModels.Prescriptions {
         /// <summary>
         /// 结束发药
         /// </summary>
-        public void EndDispensing() {
+        public void EndDispensing()
+        {
             IsDispensing = false;
         }
 
         /// <summary>
         /// 开始作废
         /// </summary>
-        public void StartVoiding() {
+        public void StartVoiding()
+        {
             IsVoiding = true;
             ClearError();
         }
@@ -203,14 +230,16 @@ namespace LYBT.Desktop.Core.ViewModels.Prescriptions {
         /// <summary>
         /// 结束作废
         /// </summary>
-        public void EndVoiding() {
+        public void EndVoiding()
+        {
             IsVoiding = false;
         }
 
         /// <summary>
         /// 设置错误
         /// </summary>
-        public void SetError(string message) {
+        public void SetError(string message)
+        {
             ErrorMessage = message;
             HasError = true;
             EndAllProcesses();
@@ -219,7 +248,8 @@ namespace LYBT.Desktop.Core.ViewModels.Prescriptions {
         /// <summary>
         /// 清除错误
         /// </summary>
-        public void ClearError() {
+        public void ClearError()
+        {
             ErrorMessage = string.Empty;
             HasError = false;
         }
@@ -227,28 +257,32 @@ namespace LYBT.Desktop.Core.ViewModels.Prescriptions {
         /// <summary>
         /// 切换选中状态
         /// </summary>
-        public void ToggleSelection() {
+        public void ToggleSelection()
+        {
             IsSelected = !IsSelected;
         }
 
         /// <summary>
         /// 切换展开状态
         /// </summary>
-        public void ToggleExpansion() {
+        public void ToggleExpansion()
+        {
             IsExpanded = !IsExpanded;
         }
 
         /// <summary>
         /// 切换高亮状态
         /// </summary>
-        public void ToggleHighlight() {
+        public void ToggleHighlight()
+        {
             IsHighlighted = !IsHighlighted;
         }
 
         /// <summary>
         /// 设置为焦点状态
         /// </summary>
-        public void SetFocus() {
+        public void SetFocus()
+        {
             IsSelected = true;
             IsHighlighted = true;
         }
@@ -256,7 +290,8 @@ namespace LYBT.Desktop.Core.ViewModels.Prescriptions {
         /// <summary>
         /// 取消焦点状态
         /// </summary>
-        public void ClearFocus() {
+        public void ClearFocus()
+        {
             IsSelected = false;
             IsHighlighted = false;
         }
@@ -264,7 +299,8 @@ namespace LYBT.Desktop.Core.ViewModels.Prescriptions {
         /// <summary>
         /// 结束所有进行中的处理
         /// </summary>
-        public void EndAllProcesses() {
+        public void EndAllProcesses()
+        {
             IsLoading = false;
             IsPrinting = false;
             IsProcessingPayment = false;
@@ -323,32 +359,40 @@ namespace LYBT.Desktop.Core.ViewModels.Prescriptions {
         /// <summary>
         /// 获取当前状态描述
         /// </summary>
-        public string GetCurrentStateDescription() {
-            if (HasError) {
+        public string GetCurrentStateDescription()
+        {
+            if (HasError)
+            {
                 return $"错误: {ErrorMessage}";
             }
 
-            if (IsPrinting) {
+            if (IsPrinting)
+            {
                 return "正在打印...";
             }
 
-            if (IsProcessingPayment) {
+            if (IsProcessingPayment)
+            {
                 return "正在处理支付...";
             }
 
-            if (IsDispensing) {
+            if (IsDispensing)
+            {
                 return "正在发药...";
             }
 
-            if (IsVoiding) {
+            if (IsVoiding)
+            {
                 return "正在作废...";
             }
 
-            if (IsLoading) {
+            if (IsLoading)
+            {
                 return "加载中...";
             }
 
-            if (IsEditing) {
+            if (IsEditing)
+            {
                 return "编辑中";
             }
 

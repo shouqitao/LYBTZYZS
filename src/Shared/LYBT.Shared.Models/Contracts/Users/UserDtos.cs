@@ -4,13 +4,15 @@ using System.Text.Json.Serialization;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Enums;
 
-namespace LYBT.Shared.Models.Contracts.Users {
+namespace LYBT.Shared.Models.Contracts.Users
+{
 
     /// <summary>
     /// 用户信息DTO - UltraThink v2.0简化版
     /// 与User实体对齐，删除时间字段和不存在字段
     /// </summary>
-    public class UserDto : StatusDto {
+    public class UserDto : StatusDto
+    {
 
         /// <summary>用户名</summary>
         [DisplayName("用户名")]
@@ -51,7 +53,8 @@ namespace LYBT.Shared.Models.Contracts.Users {
     /// 用户详情DTO - 继承基础DTO
     /// 用于用户资料查看与编辑（不包含密码）
     /// </summary>
-    public class UserDetailDto : BaseDto {
+    public class UserDetailDto : BaseDto
+    {
 
         /// <summary>真实姓名</summary>
         [Required(ErrorMessage = "真实姓名不能为空")]
@@ -79,7 +82,8 @@ namespace LYBT.Shared.Models.Contracts.Users {
     /// 用户变更DTO - UltraThink架构优化：统一创建和更新操作
     /// 消除95%的代码重复，密码字段可选（创建时必须，更新时可选）
     /// </summary>
-    public class UserMutationDto : BaseDto {
+    public class UserMutationDto : BaseDto
+    {
 
         /// <summary>用户名</summary>
         [Required(ErrorMessage = "用户名不能为空")]
@@ -134,7 +138,8 @@ namespace LYBT.Shared.Models.Contracts.Users {
     /// 用户统计DTO
     /// 用于用户统计信息的展示
     /// </summary>
-    public class UserStatisticsDto {
+    public class UserStatisticsDto
+    {
 
         /// <summary>用户总数</summary>
         [DisplayName("用户总数")]

@@ -2,12 +2,14 @@
 using System.ComponentModel.DataAnnotations;
 using LYBT.Shared.Models.Contracts.Common;
 
-namespace LYBT.Shared.Models.Contracts.Configuration {
+namespace LYBT.Shared.Models.Contracts.Configuration
+{
 
     /// <summary>
     /// 诊断目录DTO
     /// </summary>
-    public class DiagnosisCatalogDto : BaseDto {
+    public class DiagnosisCatalogDto : BaseDto
+    {
 
         /// <summary>诊断代码</summary>
         [Required(ErrorMessage = "诊断代码不能为空")]
@@ -61,7 +63,8 @@ namespace LYBT.Shared.Models.Contracts.Configuration {
     /// <summary>
     /// 治疗目录DTO
     /// </summary>
-    public class TreatmentCatalogDto : BaseDto {
+    public class TreatmentCatalogDto : BaseDto
+    {
 
         /// <summary>治疗代码</summary>
         [Required(ErrorMessage = "治疗代码不能为空")]
@@ -124,7 +127,8 @@ namespace LYBT.Shared.Models.Contracts.Configuration {
     /// <summary>
     /// 日志DTO
     /// </summary>
-    public class LogDto : BaseDto {
+    public class LogDto : BaseDto
+    {
 
         /// <summary>日志级别</summary>
         [DisplayName("日志级别")]

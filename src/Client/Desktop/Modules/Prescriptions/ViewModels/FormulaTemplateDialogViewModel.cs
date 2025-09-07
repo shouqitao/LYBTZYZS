@@ -9,7 +9,8 @@ using LYBT.Shared.Models.Contracts.Formula;
 // // using Prism.Dialogs; // Removed for Prism 8.1.97 compatibility // Temporarily disabled due to Prism 9 compatibility
 using Prism.Commands;
 
-namespace LYBT.Desktop.Prescriptions.ViewModels {
+namespace LYBT.Desktop.Prescriptions.ViewModels
+{
 
     /// <summary>
     /// 验方模板选择对话框视图模型
@@ -17,16 +18,18 @@ namespace LYBT.Desktop.Prescriptions.ViewModels {
     /// <summary>
     /// 验方模板选择对话框ViewModel - UltraThink架构统一
     /// </summary>
-    public class FormulaTemplateDialogViewModel : DialogViewModelBase {
+    public class FormulaTemplateDialogViewModel : DialogViewModelBase
+    {
         private readonly IFormulaService _formulaService;
         private ObservableCollection<FormulaDto> _availableTemplates = new();
         private FormulaDto? _selectedTemplate;
-        private string _searchText = "";
+        private string _searchText = string.Empty;
 
         /// <summary>
         /// 可选择的验方模板列表
         /// </summary>
-        public ObservableCollection<FormulaDto> AvailableTemplates {
+        public ObservableCollection<FormulaDto> AvailableTemplates
+        {
             get => _availableTemplates;
             set => SetProperty(ref _availableTemplates, value);
         }
@@ -34,9 +37,11 @@ namespace LYBT.Desktop.Prescriptions.ViewModels {
         /// <summary>
         /// 选中的验方模板
         /// </summary>
-        public FormulaDto? SelectedTemplate {
+        public FormulaDto? SelectedTemplate
+        {
             get => _selectedTemplate;
-            set {
+            set
+            {
                 SetProperty(ref _selectedTemplate, value);
                 ConfirmCommand.RaiseCanExecuteChanged();
             }
@@ -45,7 +50,8 @@ namespace LYBT.Desktop.Prescriptions.ViewModels {
         /// <summary>
         /// 搜索文本
         /// </summary>
-        public string SearchText {
+        public string SearchText
+        {
             get => _searchText;
             set => SetProperty(ref _searchText, value);
         }
@@ -65,7 +71,8 @@ namespace LYBT.Desktop.Prescriptions.ViewModels {
         /// </summary>
         public FormulaDto? Result { get; private set; }
 
-        public FormulaTemplateDialogViewModel(IFormulaService formulaService) : base() {
+        public FormulaTemplateDialogViewModel(IFormulaService formulaService) : base()
+        {
             _formulaService = formulaService ?? throw new ArgumentNullException(nameof(formulaService));
             Title = "选择验方模板";
 
@@ -79,16 +86,23 @@ namespace LYBT.Desktop.Prescriptions.ViewModels {
         /// <summary>
         /// 加载验方模板列表
         /// </summary>
-        private async Task LoadTemplatesAsync() {
-            try {
+        private async Task LoadTemplatesAsync()
+        {
+            try
+            {
                 IsLoading = true;
                 var result = await _formulaService.GetPagedAsync(new FormulaQueryDto { PageSize = 100 });
-                if (result.IsSuccess && result.Data != null) {
+                if (result.IsSuccess && result.Data != null)
+                {
                     AvailableTemplates = new ObservableCollection<FormulaDto>(result.Data.Items);
                 }
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 await HandleErrorAsync("加载验方模板列表", ex);
-            } finally {
+            }
+            finally
+            {
                 IsLoading = false;
             }
         }
@@ -96,25 +110,34 @@ namespace LYBT.Desktop.Prescriptions.ViewModels {
         /// <summary>
         /// 执行搜索
         /// </summary>
-        private async Task ExecuteSearchAsync() {
-            if (string.IsNullOrWhiteSpace(SearchText)) {
+        private async Task ExecuteSearchAsync()
+        {
+            if (string.IsNullOrWhiteSpace(SearchText))
+            {
                 await LoadTemplatesAsync();
                 return;
             }
 
-            try {
+            try
+            {
                 IsLoading = true;
-                var result = await _formulaService.GetPagedAsync(new FormulaQueryDto {
+                var result = await _formulaService.GetPagedAsync(new FormulaQueryDto
+                {
                     Name = SearchText,
                     PageSize = 100
                 });
 
-                if (result.IsSuccess && result.Data != null) {
+                if (result.IsSuccess && result.Data != null)
+                {
                     AvailableTemplates = new ObservableCollection<FormulaDto>(result.Data.Items);
                 }
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 await HandleErrorAsync("搜索验方模板", ex);
-            } finally {
+            }
+            finally
+            {
                 IsLoading = false;
             }
         }
@@ -122,8 +145,10 @@ namespace LYBT.Desktop.Prescriptions.ViewModels {
         /// <summary>
         /// 查看验方详情
         /// </summary>
-        private void ExecuteViewDetails(FormulaDto? formula) {
-            if (formula == null) {
+        private void ExecuteViewDetails(FormulaDto? formula)
+        {
+            if (formula == null)
+            {
                 return;
             }
 
@@ -133,8 +158,10 @@ namespace LYBT.Desktop.Prescriptions.ViewModels {
         /// <summary>
         /// 执行确认逻辑
         /// </summary>
-        protected override Task<bool> ExecuteConfirmAsync() {
-            if (SelectedTemplate == null) {
+        protected override Task<bool> ExecuteConfirmAsync()
+        {
+            if (SelectedTemplate == null)
+            {
                 return Task.FromResult(false);
             }
 
@@ -145,7 +172,8 @@ namespace LYBT.Desktop.Prescriptions.ViewModels {
         /// <summary>
         /// 检查是否可以确认
         /// </summary>
-        protected override bool CanConfirm() {
+        protected override bool CanConfirm()
+        {
             return !IsLoading && SelectedTemplate != null;
         }
     }

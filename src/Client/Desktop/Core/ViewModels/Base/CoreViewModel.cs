@@ -11,7 +11,8 @@ namespace LYBT.Desktop.Core.ViewModels.Base;
 /// </summary>
 /// <param name="eventAggregator">事件聚合器，用于模块间通信</param>
 /// <exception cref="ArgumentNullException">当 <paramref name="eventAggregator"/> 为 null 时抛出</exception>
-public abstract class CoreViewModel(IEventAggregator eventAggregator) : BindableBase, IDisposable {
+public abstract class CoreViewModel(IEventAggregator eventAggregator) : BindableBase, IDisposable
+{
     protected readonly IEventAggregator EventAggregator = eventAggregator ?? throw new ArgumentNullException(nameof(eventAggregator));
 
     private bool _isLoading;
@@ -24,10 +25,13 @@ public abstract class CoreViewModel(IEventAggregator eventAggregator) : Bindable
     /// 获取或设置一个值，指示是否正在执行异步操作
     /// </summary>
     /// <value>如果正在加载则为 true；否则为 false</value>
-    public bool IsLoading {
+    public bool IsLoading
+    {
         get => _isLoading;
-        set {
-            if (SetProperty(ref _isLoading, value)) {
+        set
+        {
+            if (SetProperty(ref _isLoading, value))
+            {
                 OnLoadingStateChanged(value);
                 RaiseCanExecuteChanged();
             }
@@ -39,7 +43,8 @@ public abstract class CoreViewModel(IEventAggregator eventAggregator) : Bindable
     /// 用于显示给用户的信息反馈
     /// </summary>
     /// <value>状态消息字符串</value>
-    public string StatusMessage {
+    public string StatusMessage
+    {
         get => _statusMessage;
         set => SetProperty(ref _statusMessage, value);
     }
@@ -48,7 +53,8 @@ public abstract class CoreViewModel(IEventAggregator eventAggregator) : Bindable
     /// 获取或设置一个值，指示是否存在错误
     /// </summary>
     /// <value>如果有错误则为 true；否则为 false</value>
-    public bool HasError {
+    public bool HasError
+    {
         get => _hasError;
         set => SetProperty(ref _hasError, value);
     }
@@ -58,9 +64,11 @@ public abstract class CoreViewModel(IEventAggregator eventAggregator) : Bindable
     /// 设置时会自动更新HasError属性
     /// </summary>
     /// <value>错误消息字符串</value>
-    public string ErrorMessage {
+    public string ErrorMessage
+    {
         get => _errorMessage;
-        set {
+        set
+        {
             SetProperty(ref _errorMessage, value);
             HasError = !string.IsNullOrEmpty(value);
         }
@@ -79,7 +87,8 @@ public abstract class CoreViewModel(IEventAggregator eventAggregator) : Bindable
     /// 子类可以重写此方法以添加自定义逻辑
     /// </summary>
     /// <param name="isLoading">新的加载状态</param>
-    protected virtual void OnLoadingStateChanged(bool isLoading) {
+    protected virtual void OnLoadingStateChanged(bool isLoading)
+    {
         // 子类可以重写此方法添加自定义处理
     }
 
@@ -87,7 +96,8 @@ public abstract class CoreViewModel(IEventAggregator eventAggregator) : Bindable
     /// 通知所有命令更新其CanExecute状态
     /// 子类应在重写此方法时调用基类方法
     /// </summary>
-    protected virtual void RaiseCanExecuteChanged() {
+    protected virtual void RaiseCanExecuteChanged()
+    {
         ClearErrorCommand?.RaiseCanExecuteChanged();
     }
 
@@ -95,7 +105,8 @@ public abstract class CoreViewModel(IEventAggregator eventAggregator) : Bindable
     /// 清除当前的错误状态和消息
     /// 将HasError设为false并清空错误消息
     /// </summary>
-    protected void ClearError() {
+    protected void ClearError()
+    {
         ErrorMessage = string.Empty;
         HasError = false;
     }
@@ -106,7 +117,8 @@ public abstract class CoreViewModel(IEventAggregator eventAggregator) : Bindable
     /// </summary>
     /// <param name="message">要显示的状态消息</param>
     /// <exception cref="ArgumentNullException">当 <paramref name="message"/> 为 null 时抛出</exception>
-    protected void SetStatus(string message) {
+    protected void SetStatus(string message)
+    {
         ArgumentNullException.ThrowIfNull(message, nameof(message));
         StatusMessage = message;
     }
@@ -115,7 +127,8 @@ public abstract class CoreViewModel(IEventAggregator eventAggregator) : Bindable
     /// 清除当前的状态消息
     /// 将StatusMessage重置为空字符串
     /// </summary>
-    protected void ClearStatus() {
+    protected void ClearStatus()
+    {
         StatusMessage = string.Empty;
     }
 
@@ -127,7 +140,8 @@ public abstract class CoreViewModel(IEventAggregator eventAggregator) : Bindable
     /// <param name="ex">异常对象</param>
     /// <exception cref="ArgumentException">当操作名称为空时抛出</exception>
     /// <exception cref="ArgumentNullException">当异常对象为 null 时抛出</exception>
-    protected virtual void HandleError(string operation, Exception ex) {
+    protected virtual void HandleError(string operation, Exception ex)
+    {
         ArgumentException.ThrowIfNullOrWhiteSpace(operation, nameof(operation));
         ArgumentNullException.ThrowIfNull(ex, nameof(ex));
 
@@ -147,16 +161,22 @@ public abstract class CoreViewModel(IEventAggregator eventAggregator) : Bindable
     /// <param name="operationName">操作名称，用于错误报告</param>
     /// <returns>表示异步操作的任务</returns>
     /// <exception cref="ArgumentNullException">当 <paramref name="operation"/> 为 null 时抛出</exception>
-    protected async Task ExecuteAsync(Func<Task> operation, string? operationName = null) {
+    protected async Task ExecuteAsync(Func<Task> operation, string? operationName = null)
+    {
         ArgumentNullException.ThrowIfNull(operation, nameof(operation));
 
-        try {
+        try
+        {
             IsLoading = true;
             ClearError();
             await operation().ConfigureAwait(false);
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
             HandleError(operationName ?? "异步操作", ex);
-        } finally {
+        }
+        finally
+        {
             IsLoading = false;
         }
     }
@@ -167,7 +187,8 @@ public abstract class CoreViewModel(IEventAggregator eventAggregator) : Bindable
     /// 执行清除错误命令
     /// 清除当前的错误和状态消息
     /// </summary>
-    protected virtual void ExecuteClearError() {
+    protected virtual void ExecuteClearError()
+    {
         ClearError();
         ClearStatus();
     }
@@ -176,7 +197,8 @@ public abstract class CoreViewModel(IEventAggregator eventAggregator) : Bindable
     /// 判断是否可以执行清除错误命令
     /// </summary>
     /// <returns>如果存在错误则返回 true；否则返回 false</returns>
-    protected virtual bool CanExecuteClearError() {
+    protected virtual bool CanExecuteClearError()
+    {
         return HasError;
     }
 
@@ -188,9 +210,12 @@ public abstract class CoreViewModel(IEventAggregator eventAggregator) : Bindable
     /// 释放由该类使用的资源
     /// </summary>
     /// <param name="disposing">如果为 true，则释放托管和非托管资源；如果为 false，则仅释放非托管资源</param>
-    protected virtual void Dispose(bool disposing) {
-        if (!_disposed) {
-            if (disposing) {
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!_disposed)
+        {
+            if (disposing)
+            {
                 OnDisposing();
             }
             _disposed = true;
@@ -201,14 +226,16 @@ public abstract class CoreViewModel(IEventAggregator eventAggregator) : Bindable
     /// 在对象被释放时调用
     /// 子类可以重写此方法以清理自定义资源
     /// </summary>
-    protected virtual void OnDisposing() {
+    protected virtual void OnDisposing()
+    {
         // 子类可以重写此方法进行自定义清理
     }
 
     /// <summary>
     /// 释放由该对象使用的所有资源
     /// </summary>
-    public void Dispose() {
+    public void Dispose()
+    {
         Dispose(true);
         GC.SuppressFinalize(this);
     }

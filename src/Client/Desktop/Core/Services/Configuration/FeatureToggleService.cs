@@ -1,12 +1,14 @@
 ﻿using Microsoft.Extensions.Logging;
 
-namespace LYBT.Desktop.Core.Services.Configuration {
+namespace LYBT.Desktop.Core.Services.Configuration
+{
 
     /// <summary>
     /// 特性开关服务接口 - UltraThink Stage 5.3.2
     /// 提供功能开关、A/B测试、灰度发布等能力
     /// </summary>
-    public interface IFeatureToggleService {
+    public interface IFeatureToggleService
+    {
 
         /// <summary>
         /// 检查特性是否启用
@@ -62,7 +64,8 @@ namespace LYBT.Desktop.Core.Services.Configuration {
     /// <summary>
     /// 特性开关服务实现
     /// </summary>
-    public class FeatureToggleService : IFeatureToggleService {
+    public class FeatureToggleService : IFeatureToggleService
+    {
         private readonly ILogger<FeatureToggleService> _logger;
         private readonly IConfigurationManagerService _configService;
         private readonly Dictionary<string, FeatureDefinition> _features = new();
@@ -72,7 +75,8 @@ namespace LYBT.Desktop.Core.Services.Configuration {
 
         public FeatureToggleService(
             ILogger<FeatureToggleService> logger,
-            IConfigurationManagerService configService) {
+            IConfigurationManagerService configService)
+        {
             _logger = logger;
             _configService = configService;
 
@@ -82,7 +86,8 @@ namespace LYBT.Desktop.Core.Services.Configuration {
 
         #region 初始化
 
-        private void InitializeDefaultFeatures() {
+        private void InitializeDefaultFeatures()
+        {
             // 注册默认特性
             var defaultFeatures = new[]
             {
@@ -139,7 +144,8 @@ namespace LYBT.Desktop.Core.Services.Configuration {
                 }
             };
 
-            foreach (var feature in defaultFeatures) {
+            foreach (var feature in defaultFeatures)
+            {
                 _features[feature.Name] = feature;
                 _usageData[feature.Name] = new FeatureUsageData();
             }
@@ -147,28 +153,36 @@ namespace LYBT.Desktop.Core.Services.Configuration {
             _logger.LogInformation("初始化了 {Count} 个默认特性开关", defaultFeatures.Length);
         }
 
-        private void LoadFeatureConfigurations() {
-            try {
+        private void LoadFeatureConfigurations()
+        {
+            try
+            {
                 // 从配置加载特性状态覆盖
                 var featureSection = _configService.GetSection("Features");
 
-                foreach (var child in featureSection.GetChildren()) {
+                foreach (var child in featureSection.GetChildren())
+                {
                     var featureName = child.Key;
-                    if (_features.ContainsKey(featureName)) {
+                    if (_features.ContainsKey(featureName))
+                    {
                         var state = child["State"];
-                        if (Enum.TryParse<FeatureState>(state, out var featureState)) {
+                        if (Enum.TryParse<FeatureState>(state, out var featureState))
+                        {
                             _features[featureName].CurrentState = featureState;
                         }
 
                         var rollout = child["RolloutPercentage"];
-                        if (int.TryParse(rollout, out var percentage)) {
+                        if (int.TryParse(rollout, out var percentage))
+                        {
                             _features[featureName].RolloutPercentage = percentage;
                         }
                     }
                 }
 
                 _logger.LogDebug("特性配置加载完成");
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, "加载特性配置失败");
             }
         }
@@ -177,14 +191,19 @@ namespace LYBT.Desktop.Core.Services.Configuration {
 
         #region 核心功能
 
-        public bool IsEnabled(string featureName) {
+        public bool IsEnabled(string featureName)
+        {
             return IsEnabledForUser(featureName, "default");
         }
 
-        public bool IsEnabledForUser(string featureName, string userId) {
-            try {
-                lock (_lock) {
-                    if (!_features.TryGetValue(featureName, out var feature)) {
+        public bool IsEnabledForUser(string featureName, string userId)
+        {
+            try
+            {
+                lock (_lock)
+                {
+                    if (!_features.TryGetValue(featureName, out var feature))
+                    {
                         _logger.LogWarning("未知特性: {FeatureName}", featureName);
                         return false;
                     }
@@ -193,7 +212,8 @@ namespace LYBT.Desktop.Core.Services.Configuration {
                     RecordUsage(featureName);
 
                     // 评估特性状态
-                    var context = new EvaluationContext {
+                    var context = new EvaluationContext
+                    {
                         UserId = userId,
                         UserRole = GetUserRole(userId),
                         Environment = GetCurrentEnvironment(),
@@ -202,24 +222,31 @@ namespace LYBT.Desktop.Core.Services.Configuration {
 
                     var result = EvaluateFeature(feature, context);
 
-                    _logger.LogDebug("特性 {Feature} 对用户 {User} 的状态: {Enabled}",
+                    _logger.LogDebug(
+                        "特性 {Feature} 对用户 {User} 的状态: {Enabled}",
                         featureName, userId, result);
 
                     return result;
                 }
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, "评估特性 {Feature} 失败", featureName);
                 return false;
             }
         }
 
-        public string GetVariant(string featureName, string userId) {
-            lock (_lock) {
-                if (!_features.TryGetValue(featureName, out var feature)) {
+        public string GetVariant(string featureName, string userId)
+        {
+            lock (_lock)
+            {
+                if (!_features.TryGetValue(featureName, out var feature))
+                {
                     return "control";
                 }
 
-                if (feature.Variants == null || feature.Variants.Count == 0) {
+                if (feature.Variants == null || feature.Variants.Count == 0)
+                {
                     return IsEnabledForUser(featureName, userId) ? "enabled" : "disabled";
                 }
 
@@ -229,9 +256,11 @@ namespace LYBT.Desktop.Core.Services.Configuration {
                 var target = hash % totalWeight;
 
                 var current = 0;
-                foreach (var variant in feature.Variants) {
+                foreach (var variant in feature.Variants)
+                {
                     current += variant.Weight;
-                    if (target < current) {
+                    if (target < current)
+                    {
                         RecordVariantUsage(featureName, variant.Name);
                         return variant.Name;
                     }
@@ -241,10 +270,14 @@ namespace LYBT.Desktop.Core.Services.Configuration {
             }
         }
 
-        public async Task SetFeatureStateAsync(string featureName, FeatureState state) {
-            try {
-                lock (_lock) {
-                    if (!_features.ContainsKey(featureName)) {
+        public async Task SetFeatureStateAsync(string featureName, FeatureState state)
+        {
+            try
+            {
+                lock (_lock)
+                {
+                    if (!_features.ContainsKey(featureName))
+                    {
                         throw new ArgumentException($"特性 {featureName} 不存在");
                     }
 
@@ -259,19 +292,25 @@ namespace LYBT.Desktop.Core.Services.Configuration {
                 await _configService.SetValueAsync($"Features:{featureName}:State", state.ToString());
 
                 _logger.LogInformation("特性 {Feature} 状态已更新为 {State}", featureName, state);
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, "设置特性状态失败: {Feature}", featureName);
                 throw;
             }
         }
 
-        public FeatureConfiguration? GetFeatureConfiguration(string featureName) {
-            lock (_lock) {
-                if (!_features.TryGetValue(featureName, out var feature)) {
+        public FeatureConfiguration? GetFeatureConfiguration(string featureName)
+        {
+            lock (_lock)
+            {
+                if (!_features.TryGetValue(featureName, out var feature))
+                {
                     return null;
                 }
 
-                return new FeatureConfiguration {
+                return new FeatureConfiguration
+                {
                     Name = feature.Name,
                     DisplayName = feature.DisplayName,
                     Description = feature.Description,
@@ -284,9 +323,12 @@ namespace LYBT.Desktop.Core.Services.Configuration {
             }
         }
 
-        public List<FeatureInfo> GetAllFeatures() {
-            lock (_lock) {
-                return _features.Values.Select(f => new FeatureInfo {
+        public List<FeatureInfo> GetAllFeatures()
+        {
+            lock (_lock)
+            {
+                return _features.Values.Select(f => new FeatureInfo
+                {
                     Name = f.Name,
                     DisplayName = f.DisplayName,
                     Category = f.Category,
@@ -299,12 +341,16 @@ namespace LYBT.Desktop.Core.Services.Configuration {
             }
         }
 
-        public async Task RegisterFeatureAsync(FeatureDefinition definition) {
-            try {
-                lock (_lock) {
+        public async Task RegisterFeatureAsync(FeatureDefinition definition)
+        {
+            try
+            {
+                lock (_lock)
+                {
                     _features[definition.Name] = definition;
 
-                    if (!_usageData.ContainsKey(definition.Name)) {
+                    if (!_usageData.ContainsKey(definition.Name))
+                    {
                         _usageData[definition.Name] = new FeatureUsageData();
                     }
                 }
@@ -313,16 +359,22 @@ namespace LYBT.Desktop.Core.Services.Configuration {
                 await _configService.SetValueAsync($"Features:{definition.Name}:Registered", true);
 
                 _logger.LogInformation("特性 {Feature} 已注册", definition.Name);
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, "注册特性失败: {Feature}", definition.Name);
                 throw;
             }
         }
 
-        public FeatureEvaluationResult Evaluate(string featureName, EvaluationContext context) {
-            lock (_lock) {
-                if (!_features.TryGetValue(featureName, out var feature)) {
-                    return new FeatureEvaluationResult {
+        public FeatureEvaluationResult Evaluate(string featureName, EvaluationContext context)
+        {
+            lock (_lock)
+            {
+                if (!_features.TryGetValue(featureName, out var feature))
+                {
+                    return new FeatureEvaluationResult
+                    {
                         FeatureName = featureName,
                         IsEnabled = false,
                         Reason = "特性不存在"
@@ -332,7 +384,8 @@ namespace LYBT.Desktop.Core.Services.Configuration {
                 var enabled = EvaluateFeature(feature, context);
                 var variant = GetVariant(featureName, context.UserId);
 
-                return new FeatureEvaluationResult {
+                return new FeatureEvaluationResult
+                {
                     FeatureName = featureName,
                     IsEnabled = enabled,
                     Variant = variant,
@@ -342,30 +395,39 @@ namespace LYBT.Desktop.Core.Services.Configuration {
             }
         }
 
-        public IDisposable OnFeatureChanged(string featureName, Action<FeatureChangeEventArgs> callback) {
-            lock (_callbacks) {
-                if (!_callbacks.ContainsKey(featureName)) {
+        public IDisposable OnFeatureChanged(string featureName, Action<FeatureChangeEventArgs> callback)
+        {
+            lock (_callbacks)
+            {
+                if (!_callbacks.ContainsKey(featureName))
+                {
                     _callbacks[featureName] = new List<FeatureChangeCallback>();
                 }
 
                 var registration = new FeatureChangeCallback(callback);
                 _callbacks[featureName].Add(registration);
 
-                return new CallbackDisposable(() => {
-                    lock (_callbacks) {
+                return new CallbackDisposable(() =>
+                {
+                    lock (_callbacks)
+                    {
                         _callbacks[featureName].Remove(registration);
                     }
                 });
             }
         }
 
-        public FeatureUsageStatistics GetUsageStatistics(string featureName) {
-            lock (_lock) {
-                if (!_usageData.TryGetValue(featureName, out var data)) {
+        public FeatureUsageStatistics GetUsageStatistics(string featureName)
+        {
+            lock (_lock)
+            {
+                if (!_usageData.TryGetValue(featureName, out var data))
+                {
                     return new FeatureUsageStatistics { FeatureName = featureName };
                 }
 
-                return new FeatureUsageStatistics {
+                return new FeatureUsageStatistics
+                {
                     FeatureName = featureName,
                     TotalChecks = data.TotalChecks,
                     EnabledCount = data.EnabledCount,
@@ -381,9 +443,11 @@ namespace LYBT.Desktop.Core.Services.Configuration {
 
         #region 私有方法
 
-        private bool EvaluateFeature(FeatureDefinition feature, EvaluationContext context) {
+        private bool EvaluateFeature(FeatureDefinition feature, EvaluationContext context)
+        {
             // 检查全局状态
-            switch (feature.CurrentState) {
+            switch (feature.CurrentState)
+            {
                 case FeatureState.Disabled:
                     return false;
 
@@ -395,24 +459,30 @@ namespace LYBT.Desktop.Core.Services.Configuration {
             }
 
             // 检查规则
-            if (feature.Rules != null) {
-                foreach (var rule in feature.Rules.OrderBy(r => r.Priority)) {
-                    if (EvaluateRule(rule, context)) {
+            if (feature.Rules != null)
+            {
+                foreach (var rule in feature.Rules.OrderBy(r => r.Priority))
+                {
+                    if (EvaluateRule(rule, context))
+                    {
                         return rule.Enable;
                     }
                 }
             }
 
             // 检查灰度发布
-            if (feature.RolloutPercentage.HasValue) {
+            if (feature.RolloutPercentage.HasValue)
+            {
                 return context.Random < feature.RolloutPercentage.Value;
             }
 
             return feature.DefaultState == FeatureState.Enabled;
         }
 
-        private bool EvaluateRule(FeatureRule rule, EvaluationContext context) {
-            switch (rule.Type) {
+        private bool EvaluateRule(FeatureRule rule, EvaluationContext context)
+        {
+            switch (rule.Type)
+            {
                 case RuleType.User:
                     return rule.Values?.Contains(context.UserId) ?? false;
 
@@ -423,14 +493,16 @@ namespace LYBT.Desktop.Core.Services.Configuration {
                     return rule.Values?.Contains(context.Environment) ?? false;
 
                 case RuleType.Percentage:
-                    if (int.TryParse(rule.Values?.FirstOrDefault(), out var percentage)) {
+                    if (int.TryParse(rule.Values?.FirstOrDefault(), out var percentage))
+                    {
                         return context.Random < percentage;
                     }
                     break;
 
                 case RuleType.Time:
                     if (DateTime.TryParse(rule.Values?.FirstOrDefault(), out var startTime) &&
-                        DateTime.TryParse(rule.Values?.Skip(1).FirstOrDefault(), out var endTime)) {
+                        DateTime.TryParse(rule.Values?.Skip(1).FirstOrDefault(), out var endTime))
+                    {
                         var now = DateTime.Now;
                         return now >= startTime && now <= endTime;
                     }
@@ -440,78 +512,100 @@ namespace LYBT.Desktop.Core.Services.Configuration {
             return false;
         }
 
-        private int GetUserHash(string userId, string featureName) {
+        private int GetUserHash(string userId, string featureName)
+        {
             var combined = $"{userId}:{featureName}";
             return Math.Abs(combined.GetHashCode()) % 100;
         }
 
-        private string GetUserRole(string userId) {
+        private string GetUserRole(string userId)
+        {
             // 从用户服务获取角色
             // 这里简化处理
             return userId == "admin" ? "Admin" : "User";
         }
 
-        private string GetCurrentEnvironment() {
+        private string GetCurrentEnvironment()
+        {
             return Environment.GetEnvironmentVariable("LYBT_ENVIRONMENT") ?? "Development";
         }
 
-        private string GetEvaluationReason(FeatureDefinition feature, EvaluationContext context, bool enabled) {
-            if (feature.CurrentState == FeatureState.Disabled) {
+        private string GetEvaluationReason(FeatureDefinition feature, EvaluationContext context, bool enabled)
+        {
+            if (feature.CurrentState == FeatureState.Disabled)
+            {
                 return "特性已全局禁用";
             }
 
-            if (feature.CurrentState == FeatureState.Enabled) {
+            if (feature.CurrentState == FeatureState.Enabled)
+            {
                 return "特性已全局启用";
             }
 
-            if (feature.CurrentState == FeatureState.EnabledForAdmins && context.UserRole == "Admin") {
+            if (feature.CurrentState == FeatureState.EnabledForAdmins && context.UserRole == "Admin")
+            {
                 return "特性对管理员启用";
             }
 
-            if (feature.RolloutPercentage.HasValue) {
+            if (feature.RolloutPercentage.HasValue)
+            {
                 return $"灰度发布 {feature.RolloutPercentage}%";
             }
 
             return enabled ? "符合启用规则" : "不符合启用条件";
         }
 
-        private void RecordUsage(string featureName) {
-            if (_usageData.TryGetValue(featureName, out var data)) {
+        private void RecordUsage(string featureName)
+        {
+            if (_usageData.TryGetValue(featureName, out var data))
+            {
                 data.TotalChecks++;
                 data.LastCheckedTime = DateTime.Now;
             }
         }
 
-        private void RecordVariantUsage(string featureName, string variant) {
-            if (_usageData.TryGetValue(featureName, out var data)) {
-                if (!data.VariantUsage.ContainsKey(variant)) {
+        private void RecordVariantUsage(string featureName, string variant)
+        {
+            if (_usageData.TryGetValue(featureName, out var data))
+            {
+                if (!data.VariantUsage.ContainsKey(variant))
+                {
                     data.VariantUsage[variant] = 0;
                 }
                 data.VariantUsage[variant]++;
             }
         }
 
-        private void NotifyFeatureChanged(string featureName, FeatureState oldState, FeatureState newState) {
+        private void NotifyFeatureChanged(string featureName, FeatureState oldState, FeatureState newState)
+        {
             List<FeatureChangeCallback>? callbacks = null;
 
-            lock (_callbacks) {
-                if (_callbacks.TryGetValue(featureName, out var list)) {
+            lock (_callbacks)
+            {
+                if (_callbacks.TryGetValue(featureName, out var list))
+                {
                     callbacks = list.ToList();
                 }
             }
 
-            if (callbacks != null) {
-                var args = new FeatureChangeEventArgs {
+            if (callbacks != null)
+            {
+                var args = new FeatureChangeEventArgs
+                {
                     FeatureName = featureName,
                     OldState = oldState,
                     NewState = newState,
                     Timestamp = DateTime.Now
                 };
 
-                foreach (var callback in callbacks) {
-                    try {
+                foreach (var callback in callbacks)
+                {
+                    try
+                    {
                         callback.Invoke(args);
-                    } catch (Exception ex) {
+                    }
+                    catch (Exception ex)
+                    {
                         _logger.LogError(ex, "特性变更回调执行失败");
                     }
                 }
@@ -526,7 +620,8 @@ namespace LYBT.Desktop.Core.Services.Configuration {
     /// <summary>
     /// 特性定义
     /// </summary>
-    public class FeatureDefinition {
+    public class FeatureDefinition
+    {
         public string Name { get; set; } = string.Empty;
         public string DisplayName { get; set; } = string.Empty;
         public string? Description { get; set; }
@@ -544,7 +639,8 @@ namespace LYBT.Desktop.Core.Services.Configuration {
     /// <summary>
     /// 特性状态
     /// </summary>
-    public enum FeatureState {
+    public enum FeatureState
+    {
         Disabled,
         Enabled,
         EnabledForAdmins,
@@ -554,7 +650,8 @@ namespace LYBT.Desktop.Core.Services.Configuration {
     /// <summary>
     /// 发布阶段
     /// </summary>
-    public enum ReleaseStage {
+    public enum ReleaseStage
+    {
         Alpha,
         Beta,
         RC,
@@ -564,7 +661,8 @@ namespace LYBT.Desktop.Core.Services.Configuration {
     /// <summary>
     /// 特性变体（A/B测试）
     /// </summary>
-    public class FeatureVariant {
+    public class FeatureVariant
+    {
         public string Name { get; set; } = string.Empty;
         public int Weight { get; set; } = 50;
         public Dictionary<string, object>? Configuration { get; set; }
@@ -573,7 +671,8 @@ namespace LYBT.Desktop.Core.Services.Configuration {
     /// <summary>
     /// 特性规则
     /// </summary>
-    public class FeatureRule {
+    public class FeatureRule
+    {
         public string Name { get; set; } = string.Empty;
         public RuleType Type { get; set; }
         public List<string>? Values { get; set; }
@@ -584,7 +683,8 @@ namespace LYBT.Desktop.Core.Services.Configuration {
     /// <summary>
     /// 规则类型
     /// </summary>
-    public enum RuleType {
+    public enum RuleType
+    {
         User,
         Role,
         Environment,
@@ -596,7 +696,8 @@ namespace LYBT.Desktop.Core.Services.Configuration {
     /// <summary>
     /// 评估上下文
     /// </summary>
-    public class EvaluationContext {
+    public class EvaluationContext
+    {
         public string UserId { get; set; } = string.Empty;
         public string UserRole { get; set; } = "User";
         public string Environment { get; set; } = "Development";
@@ -607,7 +708,8 @@ namespace LYBT.Desktop.Core.Services.Configuration {
     /// <summary>
     /// 评估结果
     /// </summary>
-    public class FeatureEvaluationResult {
+    public class FeatureEvaluationResult
+    {
         public string FeatureName { get; set; } = string.Empty;
         public bool IsEnabled { get; set; }
         public string? Variant { get; set; }
@@ -618,7 +720,8 @@ namespace LYBT.Desktop.Core.Services.Configuration {
     /// <summary>
     /// 特性配置
     /// </summary>
-    public class FeatureConfiguration {
+    public class FeatureConfiguration
+    {
         public string Name { get; set; } = string.Empty;
         public string DisplayName { get; set; } = string.Empty;
         public string? Description { get; set; }
@@ -632,7 +735,8 @@ namespace LYBT.Desktop.Core.Services.Configuration {
     /// <summary>
     /// 特性信息
     /// </summary>
-    public class FeatureInfo {
+    public class FeatureInfo
+    {
         public string Name { get; set; } = string.Empty;
         public string DisplayName { get; set; } = string.Empty;
         public string Category { get; set; } = string.Empty;
@@ -645,7 +749,8 @@ namespace LYBT.Desktop.Core.Services.Configuration {
     /// <summary>
     /// 特性使用统计
     /// </summary>
-    public class FeatureUsageStatistics {
+    public class FeatureUsageStatistics
+    {
         public string FeatureName { get; set; } = string.Empty;
         public long TotalChecks { get; set; }
         public long EnabledCount { get; set; }
@@ -658,7 +763,8 @@ namespace LYBT.Desktop.Core.Services.Configuration {
     /// <summary>
     /// 特性使用数据
     /// </summary>
-    internal class FeatureUsageData {
+    internal class FeatureUsageData
+    {
         public long TotalChecks { get; set; }
         public long EnabledCount { get; set; }
         public long DisabledCount { get; set; }
@@ -670,7 +776,8 @@ namespace LYBT.Desktop.Core.Services.Configuration {
     /// <summary>
     /// 特性变更事件参数
     /// </summary>
-    public class FeatureChangeEventArgs {
+    public class FeatureChangeEventArgs
+    {
         public string FeatureName { get; set; } = string.Empty;
         public FeatureState OldState { get; set; }
         public FeatureState NewState { get; set; }
@@ -680,14 +787,17 @@ namespace LYBT.Desktop.Core.Services.Configuration {
     /// <summary>
     /// 特性变更回调
     /// </summary>
-    internal class FeatureChangeCallback {
+    internal class FeatureChangeCallback
+    {
         private readonly Action<FeatureChangeEventArgs> _callback;
 
-        public FeatureChangeCallback(Action<FeatureChangeEventArgs> callback) {
+        public FeatureChangeCallback(Action<FeatureChangeEventArgs> callback)
+        {
             _callback = callback;
         }
 
-        public void Invoke(FeatureChangeEventArgs args) {
+        public void Invoke(FeatureChangeEventArgs args)
+        {
             _callback(args);
         }
     }

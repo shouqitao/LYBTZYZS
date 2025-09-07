@@ -3,14 +3,17 @@ using LYBT.Entities.Formula;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Enums;
 
-namespace LYBT.Module.Formula.Mapping {
+namespace LYBT.Module.Formula.Mapping
+{
 
     /// <summary>
     /// 简化的验方管理AutoMapper映射配置
     /// </summary>
-    public class FormulaMappingProfile : Profile {
+    public class FormulaMappingProfile : Profile
+    {
 
-        public FormulaMappingProfile() {
+        public FormulaMappingProfile()
+        {
             // Formula -> FormulaDto - UltraThink v2.0简化版
             CreateMap<LYBT.Entities.Formula.Formula, FormulaDto>()
                 .ForMember(dest => dest.HerbCount, opt => opt.Ignore()) // 计算属性，由DTO自动计算
@@ -48,7 +51,7 @@ namespace LYBT.Module.Formula.Mapping {
 
             // FormulaHerbItem -> FormulaHerbItemDto
             CreateMap<FormulaHerbItem, FormulaHerbItemDto>()
-                .ForMember(dest => dest.HerbName, opt => opt.MapFrom(src => "")); // 需要从Herb关联获取
+                .ForMember(dest => dest.HerbName, opt => opt.MapFrom(static src => string.Empty)); // 需要从Herb关联获取
 
             // FormulaHerbItemCreateDto -> FormulaHerbItem
             CreateMap<FormulaHerbItemCreateDto, FormulaHerbItem>()

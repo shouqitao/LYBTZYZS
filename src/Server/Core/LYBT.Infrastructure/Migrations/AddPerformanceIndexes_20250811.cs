@@ -2,15 +2,18 @@
 
 #nullable disable
 
-namespace LYBT.Infrastructure.Migrations {
+namespace LYBT.Infrastructure.Migrations
+{
 
     /// <summary>
     /// 添加性能优化索引 - UltraThink重构数据库优化
     /// 基于CQRS查询模式的索引优化策略
     /// </summary>
-    public partial class AddPerformanceIndexes_20250811 : Migration {
+    public partial class AddPerformanceIndexes_20250811 : Migration
+    {
 
-        protected override void Up(MigrationBuilder migrationBuilder) {
+        protected override void Up(MigrationBuilder migrationBuilder)
+        {
             // ===========================================
             // 用户表 (Users) 性能索引
             // ===========================================
@@ -196,7 +199,8 @@ namespace LYBT.Infrastructure.Migrations {
                 columns: new[] { "Status", "CreatedAt" });
         }
 
-        protected override void Down(MigrationBuilder migrationBuilder) {
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
             // ===========================================
             // 删除用户表索引
             // ===========================================

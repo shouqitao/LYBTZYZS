@@ -2,21 +2,23 @@
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Contracts.Users;
 
-namespace LYBT.Desktop.Core.Mapping {
+namespace LYBT.Desktop.Core.Mapping
+{
 
     /// <summary>
     /// AutoMapper 映射配置文件 - UltraThink v2.0 简化版
     /// 只包含Client层必要的DTO工具映射，无Info层转换
     /// </summary>
-    public class MappingProfile : Profile {
+    public class MappingProfile : Profile
+    {
 
-        public MappingProfile() {
+        public MappingProfile()
+        {
             // UltraThink v2.0: Client层极简映射配置
             // 移除所有DTO→Info映射，Client直接使用DTO
 
             // 仅保留必要的DTO之间的工具映射
             // 例如：DetailDto → UpdateDto 用于编辑功能
-
             CreateMap<UserDto, UserMutationDto>()
                 .ForMember(dest => dest.Username, opt => opt.MapFrom(src => src.Username))
                 .ForMember(dest => dest.RealName, opt => opt.MapFrom(src => src.RealName))

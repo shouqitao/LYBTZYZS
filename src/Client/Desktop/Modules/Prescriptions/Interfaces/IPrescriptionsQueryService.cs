@@ -7,7 +7,8 @@ namespace LYBT.Desktop.Prescriptions.Interfaces;
 /// 处方查询服务接口 - UltraThink双层架构简化版
 /// 职责：查询和搜索操作
 /// </summary>
-public interface IPrescriptionsQueryService {
+public interface IPrescriptionsQueryService
+{
 
     /// <summary>
     /// 分页查询处方
@@ -22,7 +23,7 @@ public interface IPrescriptionsQueryService {
     /// <summary>
     /// 搜索处方
     /// </summary>
-    Task<ServiceResult<List<PrescriptionDto>>> SearchAsync(string keyword);
+    Task<ServiceResult<List<PrescriptionDto>>> Search(string keyword);
 
     /// <summary>
     /// 获取处方统计

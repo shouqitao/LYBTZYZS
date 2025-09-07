@@ -2,12 +2,14 @@
 using Prism.Commands;
 using Prism.Mvvm;
 
-namespace LYBT.Desktop.Core.ViewModels {
+namespace LYBT.Desktop.Core.ViewModels
+{
 
     /// <summary>
     /// 错误通知视图模型
     /// </summary>
-    public class ErrorNotificationViewModel : BindableBase {
+    public class ErrorNotificationViewModel : BindableBase
+    {
         private HandledError? _handledError;
         private bool _isVisible;
         private string _userMessage = string.Empty;
@@ -15,29 +17,35 @@ namespace LYBT.Desktop.Core.ViewModels {
         private bool _canRetry;
         private List<string> _suggestedActions = new List<string>();
 
-        public bool IsVisible {
+        public bool IsVisible
+        {
             get => _isVisible;
             set => SetProperty(ref _isVisible, value);
         }
 
-        public string UserMessage {
+        public string UserMessage
+        {
             get => _userMessage;
             set => SetProperty(ref _userMessage, value);
         }
 
-        public ErrorSeverity Severity {
+        public ErrorSeverity Severity
+        {
             get => _severity;
             set => SetProperty(ref _severity, value);
         }
 
-        public bool CanRetry {
+        public bool CanRetry
+        {
             get => _canRetry;
             set => SetProperty(ref _canRetry, value);
         }
 
-        public List<string> SuggestedActions {
+        public List<string> SuggestedActions
+        {
             get => _suggestedActions;
-            set {
+            set
+            {
                 SetProperty(ref _suggestedActions, value);
                 RaisePropertyChanged(nameof(HasSuggestedActions));
             }
@@ -45,9 +53,11 @@ namespace LYBT.Desktop.Core.ViewModels {
 
         public bool HasSuggestedActions => SuggestedActions?.Any() == true;
 
-        public HandledError? HandledError {
+        public HandledError? HandledError
+        {
             get => _handledError;
-            set {
+            set
+            {
                 SetProperty(ref _handledError, value);
                 UpdateFromHandledError();
             }
@@ -66,7 +76,8 @@ namespace LYBT.Desktop.Core.ViewModels {
 
         public event EventHandler<HandledError>? ShowDetailsRequested;
 
-        public ErrorNotificationViewModel() {
+        public ErrorNotificationViewModel()
+        {
             CloseCommand = new DelegateCommand(ExecuteClose);
             RetryCommand = new DelegateCommand(ExecuteRetry, CanExecuteRetry);
             ShowDetailsCommand = new DelegateCommand(ExecuteShowDetails, CanExecuteShowDetails);
@@ -75,7 +86,8 @@ namespace LYBT.Desktop.Core.ViewModels {
         /// <summary>
         /// 显示错误
         /// </summary>
-        public void ShowError(HandledError handledError) {
+        public void ShowError(HandledError handledError)
+        {
             HandledError = handledError;
             IsVisible = true;
         }
@@ -83,18 +95,23 @@ namespace LYBT.Desktop.Core.ViewModels {
         /// <summary>
         /// 隐藏错误通知
         /// </summary>
-        public void Hide() {
+        public void Hide()
+        {
             IsVisible = false;
             HandledError = null;
         }
 
-        private void UpdateFromHandledError() {
-            if (_handledError != null) {
+        private void UpdateFromHandledError()
+        {
+            if (_handledError != null)
+            {
                 UserMessage = _handledError.UserMessage;
                 Severity = _handledError.Severity;
                 CanRetry = _handledError.CanRetry;
                 SuggestedActions = _handledError.SuggestedActions?.Take(3).ToList() ?? new List<string>();
-            } else {
+            }
+            else
+            {
                 UserMessage = string.Empty;
                 Severity = ErrorSeverity.Error;
                 CanRetry = false;
@@ -106,26 +123,32 @@ namespace LYBT.Desktop.Core.ViewModels {
             ShowDetailsCommand.RaiseCanExecuteChanged();
         }
 
-        private void ExecuteClose() {
+        private void ExecuteClose()
+        {
             Hide();
             CloseRequested?.Invoke(this, EventArgs.Empty);
         }
 
-        private void ExecuteRetry() {
+        private void ExecuteRetry()
+        {
             RetryRequested?.Invoke(this, EventArgs.Empty);
         }
 
-        private bool CanExecuteRetry() {
+        private bool CanExecuteRetry()
+        {
             return CanRetry && HandledError != null;
         }
 
-        private void ExecuteShowDetails() {
-            if (HandledError != null) {
+        private void ExecuteShowDetails()
+        {
+            if (HandledError != null)
+            {
                 ShowDetailsRequested?.Invoke(this, HandledError);
             }
         }
 
-        private bool CanExecuteShowDetails() {
+        private bool CanExecuteShowDetails()
+        {
             return HandledError != null && !string.IsNullOrEmpty(HandledError.TechnicalDetails);
         }
     }

@@ -5,7 +5,8 @@ namespace LYBT.Shared.Models.Contracts.Auth;
 /// <summary>
 /// 修改密码请求 - 前后端共享API契约
 /// </summary>
-public class ChangePasswordRequest {
+public class ChangePasswordRequest
+{
 
     /// <summary>
     /// 旧密码

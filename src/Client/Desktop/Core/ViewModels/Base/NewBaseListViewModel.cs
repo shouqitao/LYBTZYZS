@@ -8,7 +8,8 @@ using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 
-namespace LYBT.Desktop.Core.ViewModels.Base {
+namespace LYBT.Desktop.Core.ViewModels.Base
+{
 
     /// <summary>
     /// 基础列表ViewModel - 专注于列表数据管理
@@ -18,7 +19,8 @@ namespace LYBT.Desktop.Core.ViewModels.Base {
     /// <typeparam name="TItem">列表项类型</typeparam>
     [Obsolete("使用 ModernManagementViewModel<T> 替代。此类将在架构统一完成后删除。")]
     public abstract class NewBaseListViewModel<TItem> : SessionAwareViewModel
-        where TItem : class {
+        where TItem : class
+    {
 
         #region Fields
 
@@ -37,7 +39,8 @@ namespace LYBT.Desktop.Core.ViewModels.Base {
         /// <summary>
         /// 数据集合
         /// </summary>
-        public ObservableCollection<TItem> Items {
+        public ObservableCollection<TItem> Items
+        {
             get => _items;
             set => SetProperty(ref _items, value);
         }
@@ -45,7 +48,8 @@ namespace LYBT.Desktop.Core.ViewModels.Base {
         /// <summary>
         /// 选中项
         /// </summary>
-        public TItem? SelectedItem {
+        public TItem? SelectedItem
+        {
             get => _selectedItem;
             set => SetProperty(ref _selectedItem, value);
         }
@@ -53,7 +57,8 @@ namespace LYBT.Desktop.Core.ViewModels.Base {
         /// <summary>
         /// 是否正在加载
         /// </summary>
-        public bool IsLoading {
+        public bool IsLoading
+        {
             get => _isLoading;
             protected set => SetProperty(ref _isLoading, value);
         }
@@ -61,7 +66,8 @@ namespace LYBT.Desktop.Core.ViewModels.Base {
         /// <summary>
         /// 错误消息
         /// </summary>
-        public string ErrorMessage {
+        public string ErrorMessage
+        {
             get => _errorMessage;
             protected set => SetProperty(ref _errorMessage, value);
         }
@@ -115,7 +121,8 @@ namespace LYBT.Desktop.Core.ViewModels.Base {
             ILogger logger,
             IPaginationCoordinator? paginationCoordinator = null,
             ISearchManager? searchManager = null)
-            : base(sessionManager, notificationService, logger) {
+            : base(sessionManager, notificationService, logger)
+        {
             PaginationCoordinator = paginationCoordinator ?? new PaginationCoordinator();
             SearchManager = searchManager ?? new SearchManager();
 
@@ -132,7 +139,8 @@ namespace LYBT.Desktop.Core.ViewModels.Base {
         /// <summary>
         /// 初始化命令
         /// </summary>
-        protected virtual void InitializeCommands() {
+        protected virtual void InitializeCommands()
+        {
             RefreshCommand = new DelegateCommand(ExecuteRefresh);
             ClearErrorCommand = new DelegateCommand(() => ErrorMessage = string.Empty);
             SelectItemCommand = new DelegateCommand<TItem>(OnItemSelected);
@@ -141,7 +149,8 @@ namespace LYBT.Desktop.Core.ViewModels.Base {
         /// <summary>
         /// 执行刷新命令 - ✅ 修复async void问题，使用fire-and-forget模式
         /// </summary>
-        private void ExecuteRefresh() {
+        private void ExecuteRefresh()
+        {
             System.Diagnostics.Debug.WriteLine("🔄 RefreshCommand 被点击 - ExecuteRefresh执行");
             // 使用安全的fire-and-forget模式，异常由ExecuteRefreshAsync处理
             _ = ExecuteRefreshAsync();
@@ -150,11 +159,15 @@ namespace LYBT.Desktop.Core.ViewModels.Base {
         /// <summary>
         /// 异步执行刷新命令
         /// </summary>
-        private async Task ExecuteRefreshAsync() {
-            try {
+        private async Task ExecuteRefreshAsync()
+        {
+            try
+            {
                 await RefreshDataAsync();
                 System.Diagnostics.Debug.WriteLine("✅ RefreshCommand 执行完成");
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 LogError(ex, "刷新数据失败");
                 ShowError($"刷新数据失败: {ex.Message}");
                 System.Diagnostics.Debug.WriteLine($"❌ RefreshCommand 执行失败: {ex.Message}");
@@ -164,7 +177,8 @@ namespace LYBT.Desktop.Core.ViewModels.Base {
         /// <summary>
         /// 初始化事件处理器
         /// </summary>
-        protected virtual void InitializeEventHandlers() {
+        protected virtual void InitializeEventHandlers()
+        {
             // 监听分页变化
             PaginationCoordinator.PageChanged += OnPageChanged;
 
@@ -185,7 +199,8 @@ namespace LYBT.Desktop.Core.ViewModels.Base {
         /// <summary>
         /// 刷新数据
         /// </summary>
-        public virtual async Task RefreshDataAsync() {
+        public virtual async Task RefreshDataAsync()
+        {
             System.Diagnostics.Debug.WriteLine("🔄 RefreshDataAsync 被调用");
             await LoadItemsAsync();
         }
@@ -193,12 +208,15 @@ namespace LYBT.Desktop.Core.ViewModels.Base {
         /// <summary>
         /// 加载列表项
         /// </summary>
-        protected virtual async Task LoadItemsAsync() {
-            try {
+        protected virtual async Task LoadItemsAsync()
+        {
+            try
+            {
                 IsLoading = true;
                 ErrorMessage = string.Empty;
 
-                var request = new PagedQueryBaseDto {
+                var request = new PagedQueryBaseDto
+                {
                     CurrentPage = PaginationCoordinator.CurrentPage,
                     PageSize = PaginationCoordinator.PageSize,
                     SearchKeyword = SearchManager.SearchKeyword
@@ -206,9 +224,11 @@ namespace LYBT.Desktop.Core.ViewModels.Base {
 
                 var result = await LoadDataAsync(request);
 
-                if (result.IsSuccess && result.Data != null) {
+                if (result.IsSuccess && result.Data != null)
+                {
                     // 🎯 UltraThink UI线程修复: 确保ObservableCollection更新在UI线程上执行
-                    System.Windows.Application.Current.Dispatcher.Invoke(() => {
+                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                    {
                         Items = new ObservableCollection<TItem>(result.Data.Items);
                         // 强制触发UI更新通知
                         RaisePropertyChanged(nameof(Items));
@@ -216,9 +236,12 @@ namespace LYBT.Desktop.Core.ViewModels.Base {
 
                     PaginationCoordinator.UpdatePagination(result.Data.TotalCount);
                     OnDataLoaded(result.Data);
-                } else {
+                }
+                else
+                {
                     // 🎯 UltraThink UI线程修复: 确保UI更新在UI线程上执行
-                    System.Windows.Application.Current.Dispatcher.Invoke(() => {
+                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                    {
                         Items.Clear();
                         ErrorMessage = result.ErrorMessage ?? "加载数据失败";
                     });
@@ -228,11 +251,14 @@ namespace LYBT.Desktop.Core.ViewModels.Base {
                 }
 
                 RaisePropertyChanged(nameof(HasData));
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 LogError(ex, "加载数据时发生错误");
 
                 // 🎯 UltraThink UI线程修复: 确保UI更新在UI线程上执行
-                System.Windows.Application.Current.Dispatcher.Invoke(() => {
+                System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                {
                     ErrorMessage = $"加载数据时发生错误：{ex.Message}";
                     Items.Clear();
                 });
@@ -240,7 +266,9 @@ namespace LYBT.Desktop.Core.ViewModels.Base {
                 // UltraThink SessionAware: 使用通知服务显示错误
                 ShowError($"加载数据失败：{ex.Message}");
                 OnDataLoadFailed(ex.Message);
-            } finally {
+            }
+            finally
+            {
                 IsLoading = false;
             }
         }
@@ -252,11 +280,15 @@ namespace LYBT.Desktop.Core.ViewModels.Base {
         /// <summary>
         /// 分页变化处理
         /// </summary>
-        protected virtual async void OnPageChanged(object? sender, PageChangedEventArgs e) {
+        protected virtual async void OnPageChanged(object? sender, PageChangedEventArgs e)
+        {
             // 使用适当的async void事件处理器模式
-            try {
+            try
+            {
                 await LoadItemsAsync();
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 LogError(ex, "分页变化处理失败");
             }
         }
@@ -264,13 +296,17 @@ namespace LYBT.Desktop.Core.ViewModels.Base {
         /// <summary>
         /// 搜索执行处理
         /// </summary>
-        protected virtual async void OnSearchExecuted(object? sender, SearchExecutedEventArgs e) {
+        protected virtual async void OnSearchExecuted(object? sender, SearchExecutedEventArgs e)
+        {
             // 使用适当的async void事件处理器模式
-            try {
+            try
+            {
                 // 搜索时重置到第一页
                 PaginationCoordinator.CurrentPage = 1;
                 await LoadItemsAsync();
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 LogError(ex, "搜索执行失败");
             }
         }
@@ -278,12 +314,16 @@ namespace LYBT.Desktop.Core.ViewModels.Base {
         /// <summary>
         /// 搜索清除处理
         /// </summary>
-        protected virtual async void OnSearchCleared(object? sender, EventArgs e) {
+        protected virtual async void OnSearchCleared(object? sender, EventArgs e)
+        {
             // 使用适当的async void事件处理器模式
-            try {
+            try
+            {
                 PaginationCoordinator.CurrentPage = 1;
                 await LoadItemsAsync();
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 LogError(ex, "搜索清除失败");
             }
         }
@@ -291,7 +331,8 @@ namespace LYBT.Desktop.Core.ViewModels.Base {
         /// <summary>
         /// 项目选择处理
         /// </summary>
-        protected virtual void OnItemSelected(TItem item) {
+        protected virtual void OnItemSelected(TItem item)
+        {
             SelectedItem = item;
         }
 
@@ -302,14 +343,16 @@ namespace LYBT.Desktop.Core.ViewModels.Base {
         /// <summary>
         /// 数据加载成功后的处理 - 子类可重写
         /// </summary>
-        protected virtual void OnDataLoaded(PagedResult<TItem> data) {
+        protected virtual void OnDataLoaded(PagedResult<TItem> data)
+        {
             // 子类可重写以执行特定逻辑
         }
 
         /// <summary>
         /// 数据加载失败后的处理 - 子类可重写
         /// </summary>
-        protected virtual void OnDataLoadFailed(string errorMessage) {
+        protected virtual void OnDataLoadFailed(string errorMessage)
+        {
             // 子类可重写以执行特定逻辑
         }
 
@@ -320,12 +363,14 @@ namespace LYBT.Desktop.Core.ViewModels.Base {
         /// <summary>
         /// 清理资源
         /// </summary>
-        protected virtual void Cleanup() {
+        protected virtual void Cleanup()
+        {
             PaginationCoordinator.PageChanged -= OnPageChanged;
             SearchManager.SearchExecuted -= OnSearchExecuted;
             SearchManager.SearchCleared -= OnSearchCleared;
 
-            if (SearchManager is IDisposable disposableSearchManager) {
+            if (SearchManager is IDisposable disposableSearchManager)
+            {
                 disposableSearchManager.Dispose();
             }
         }

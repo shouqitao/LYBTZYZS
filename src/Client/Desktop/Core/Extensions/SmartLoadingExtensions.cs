@@ -1,11 +1,13 @@
 ﻿using LYBT.Desktop.Core.Services;
 
-namespace LYBT.Desktop.Core.Extensions {
+namespace LYBT.Desktop.Core.Extensions
+{
 
     /// <summary>
     /// SmartLoadingManager扩展方法 - 简化实际使用
     /// </summary>
-    public static class SmartLoadingExtensions {
+    public static class SmartLoadingExtensions
+    {
 
         /// <summary>
         /// 执行带加载状态的异步操作
@@ -24,17 +26,23 @@ namespace LYBT.Desktop.Core.Extensions {
             Func<CancellationToken, Task<T>> operation,
             string message = "处理中...",
             int layer = 1,
-            CancellationToken cancellationToken = default) {
+            CancellationToken cancellationToken = default)
+        {
             using var loadingOperation = loadingManager.StartLoading(operationId, message, layer, false, cancellationToken);
 
-            try {
+            try
+            {
                 var result = await operation(loadingOperation.CancellationToken);
                 loadingOperation.Complete();
                 return result;
-            } catch (OperationCanceledException) {
+            }
+            catch (OperationCanceledException)
+            {
                 // 操作被取消，正常流程
                 throw;
-            } catch (Exception) {
+            }
+            catch (Exception)
+            {
                 // 异常时自动完成加载状态
                 loadingOperation.Complete();
                 throw;
@@ -56,15 +64,21 @@ namespace LYBT.Desktop.Core.Extensions {
             Func<CancellationToken, Task> operation,
             string message = "处理中...",
             int layer = 1,
-            CancellationToken cancellationToken = default) {
+            CancellationToken cancellationToken = default)
+        {
             using var loadingOperation = loadingManager.StartLoading(operationId, message, layer, false, cancellationToken);
 
-            try {
+            try
+            {
                 await operation(loadingOperation.CancellationToken);
                 loadingOperation.Complete();
-            } catch (OperationCanceledException) {
+            }
+            catch (OperationCanceledException)
+            {
                 throw;
-            } catch (Exception) {
+            }
+            catch (Exception)
+            {
                 loadingOperation.Complete();
                 throw;
             }
@@ -87,20 +101,27 @@ namespace LYBT.Desktop.Core.Extensions {
             Func<IProgress<ProgressInfo>, CancellationToken, Task<T>> operation,
             string message = "处理中...",
             int layer = 1,
-            CancellationToken cancellationToken = default) {
+            CancellationToken cancellationToken = default)
+        {
             using var loadingOperation = loadingManager.StartLoading(operationId, message, layer, true, cancellationToken);
 
-            var progress = new Progress<ProgressInfo>(info => {
+            var progress = new Progress<ProgressInfo>(info =>
+            {
                 loadingOperation.UpdateProgress(info.Percentage, info.Message);
             });
 
-            try {
+            try
+            {
                 var result = await operation(progress, loadingOperation.CancellationToken);
                 loadingOperation.Complete();
                 return result;
-            } catch (OperationCanceledException) {
+            }
+            catch (OperationCanceledException)
+            {
                 throw;
-            } catch (Exception) {
+            }
+            catch (Exception)
+            {
                 loadingOperation.Complete();
                 throw;
             }
@@ -124,8 +145,10 @@ namespace LYBT.Desktop.Core.Extensions {
             Func<TItem, CancellationToken, Task<TResult>> itemProcessor,
             string message = "批量处理中...",
             int layer = 1,
-            CancellationToken cancellationToken = default) {
-            if (items.Length == 0) {
+            CancellationToken cancellationToken = default)
+        {
+            if (items.Length == 0)
+            {
                 return Array.Empty<TResult>();
             }
 
@@ -133,9 +156,12 @@ namespace LYBT.Desktop.Core.Extensions {
 
             var results = new TResult[items.Length];
 
-            try {
-                for (int i = 0; i < items.Length; i++) {
-                    if (loadingOperation.CancellationToken.IsCancellationRequested) {
+            try
+            {
+                for (int i = 0; i < items.Length; i++)
+                {
+                    if (loadingOperation.CancellationToken.IsCancellationRequested)
+                    {
                         break;
                     }
 
@@ -148,9 +174,13 @@ namespace LYBT.Desktop.Core.Extensions {
 
                 loadingOperation.Complete();
                 return results;
-            } catch (OperationCanceledException) {
+            }
+            catch (OperationCanceledException)
+            {
                 throw;
-            } catch (Exception) {
+            }
+            catch (Exception)
+            {
                 loadingOperation.Complete();
                 throw;
             }
@@ -172,14 +202,18 @@ namespace LYBT.Desktop.Core.Extensions {
             MultiStepOperation[] steps,
             string baseMessage = "执行多步骤操作...",
             int layer = 1,
-            CancellationToken cancellationToken = default) {
+            CancellationToken cancellationToken = default)
+        {
             using var mainOperation = loadingManager.StartLoading(baseOperationId, baseMessage, layer, true, cancellationToken);
 
             var results = new object[steps.Length];
 
-            try {
-                for (int i = 0; i < steps.Length; i++) {
-                    if (mainOperation.CancellationToken.IsCancellationRequested) {
+            try
+            {
+                for (int i = 0; i < steps.Length; i++)
+                {
+                    if (mainOperation.CancellationToken.IsCancellationRequested)
+                    {
                         break;
                     }
 
@@ -203,9 +237,13 @@ namespace LYBT.Desktop.Core.Extensions {
                 mainOperation.UpdateProgress(100, "所有步骤完成");
                 mainOperation.Complete();
                 return results;
-            } catch (OperationCanceledException) {
+            }
+            catch (OperationCanceledException)
+            {
                 throw;
-            } catch (Exception) {
+            }
+            catch (Exception)
+            {
                 mainOperation.Complete();
                 throw;
             }
@@ -215,11 +253,13 @@ namespace LYBT.Desktop.Core.Extensions {
     /// <summary>
     /// 进度信息
     /// </summary>
-    public class ProgressInfo {
+    public class ProgressInfo
+    {
         public int Percentage { get; set; }
         public string? Message { get; set; }
 
-        public ProgressInfo(int percentage, string? message = null) {
+        public ProgressInfo(int percentage, string? message = null)
+        {
             Percentage = percentage;
             Message = message;
         }
@@ -228,11 +268,13 @@ namespace LYBT.Desktop.Core.Extensions {
     /// <summary>
     /// 多步骤操作定义
     /// </summary>
-    public class MultiStepOperation {
+    public class MultiStepOperation
+    {
         public string Description { get; set; } = string.Empty;
         public Func<CancellationToken, Task<object>> Operation { get; set; } = null!;
 
-        public MultiStepOperation(string description, Func<CancellationToken, Task<object>> operation) {
+        public MultiStepOperation(string description, Func<CancellationToken, Task<object>> operation)
+        {
             Description = description;
             Operation = operation;
         }

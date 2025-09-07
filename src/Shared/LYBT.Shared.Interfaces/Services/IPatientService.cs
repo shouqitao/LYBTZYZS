@@ -1,12 +1,14 @@
 ﻿using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
 
-namespace LYBT.Shared.Interfaces.Services {
+namespace LYBT.Shared.Interfaces.Services
+{
 
     /// <summary>
     /// 患者服务接口 - UltraThink双层架构精简标准（小诊所适用）
     /// </summary>
-    public interface IPatientService {
+    public interface IPatientService
+    {
 
         #region 查询操作 - QueryService专业负责
 

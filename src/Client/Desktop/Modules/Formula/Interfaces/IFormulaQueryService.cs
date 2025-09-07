@@ -7,7 +7,8 @@ namespace LYBT.Desktop.Formula.Interfaces;
 /// 验方查询服务接口 - UltraThink简化版本对应后端实际API
 /// 移除过度开发功能，仅保留后端支持的基本查询功能
 /// </summary>
-public interface IFormulaQueryService {
+public interface IFormulaQueryService
+{
 
     #region 基础查询功能 - 对应后端FormulasController实际API
 

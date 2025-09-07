@@ -1,9 +1,11 @@
-﻿namespace LYBT.Shared.Models.Contracts.Common {
+﻿namespace LYBT.Shared.Models.Contracts.Common
+{
 
     /// <summary>
     /// 错误类别枚举
     /// </summary>
-    public enum ErrorCategory {
+    public enum ErrorCategory
+    {
 
         /// <summary>
         /// 未知错误

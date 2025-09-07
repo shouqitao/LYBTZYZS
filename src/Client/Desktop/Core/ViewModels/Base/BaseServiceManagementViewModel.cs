@@ -4,7 +4,8 @@ using LYBT.Shared.Models.Contracts.Common;
 using Prism.Commands;
 using Prism.Events;
 
-namespace LYBT.Desktop.Core.ViewModels.Base {
+namespace LYBT.Desktop.Core.ViewModels.Base
+{
 
     /// <summary>
     /// 系统管理模块基础视图模型（使用服务层）
@@ -14,7 +15,8 @@ namespace LYBT.Desktop.Core.ViewModels.Base {
     /// <typeparam name="TService">服务接口类型</typeparam>
     public abstract class BaseServiceManagementViewModel<TModel, TService> : NavigationViewModelBase
         where TModel : class, new()
-        where TService : class {
+        where TService : class
+    {
         protected readonly TService Service;
 
         #region Properties
@@ -24,7 +26,8 @@ namespace LYBT.Desktop.Core.ViewModels.Base {
         /// <summary>
         /// 数据集合
         /// </summary>
-        public ObservableCollection<TModel> Items {
+        public ObservableCollection<TModel> Items
+        {
             get => _items;
             set => SetProperty(ref _items, value);
         }
@@ -34,7 +37,8 @@ namespace LYBT.Desktop.Core.ViewModels.Base {
         /// <summary>
         /// 选中项
         /// </summary>
-        public TModel? SelectedItem {
+        public TModel? SelectedItem
+        {
             get => _selectedItem;
             set => SetProperty(ref _selectedItem, value);
         }
@@ -44,7 +48,8 @@ namespace LYBT.Desktop.Core.ViewModels.Base {
         /// <summary>
         /// 搜索关键字
         /// </summary>
-        public string SearchKeyword {
+        public string SearchKeyword
+        {
             get => _searchKeyword;
             set => SetProperty(ref _searchKeyword, value);
         }
@@ -54,7 +59,8 @@ namespace LYBT.Desktop.Core.ViewModels.Base {
         /// <summary>
         /// 是否正在加载
         /// </summary>
-        public new bool IsLoading {
+        public new bool IsLoading
+        {
             get => _isLoading;
             set => SetProperty(ref _isLoading, value);
         }
@@ -64,7 +70,8 @@ namespace LYBT.Desktop.Core.ViewModels.Base {
         /// <summary>
         /// 当前页码
         /// </summary>
-        public int CurrentPage {
+        public int CurrentPage
+        {
             get => _currentPage;
             set => SetProperty(ref _currentPage, value);
         }
@@ -74,7 +81,8 @@ namespace LYBT.Desktop.Core.ViewModels.Base {
         /// <summary>
         /// 每页大小
         /// </summary>
-        public int PageSize {
+        public int PageSize
+        {
             get => _pageSize;
             set => SetProperty(ref _pageSize, value);
         }
@@ -84,7 +92,8 @@ namespace LYBT.Desktop.Core.ViewModels.Base {
         /// <summary>
         /// 总记录数
         /// </summary>
-        public int TotalCount {
+        public int TotalCount
+        {
             get => _totalCount;
             set => SetProperty(ref _totalCount, value);
         }
@@ -94,7 +103,8 @@ namespace LYBT.Desktop.Core.ViewModels.Base {
         /// <summary>
         /// 总页数
         /// </summary>
-        public int TotalPages {
+        public int TotalPages
+        {
             get => _totalPages;
             set => SetProperty(ref _totalPages, value);
         }
@@ -158,13 +168,15 @@ namespace LYBT.Desktop.Core.ViewModels.Base {
         #region Constructor
 
         protected BaseServiceManagementViewModel(TService service, IEventAggregator eventAggregator, IErrorHandlingService errorHandlingService)
-            : base(eventAggregator, errorHandlingService) {
+            : base(eventAggregator, errorHandlingService)
+        {
             Service = service ?? throw new ArgumentNullException(nameof(service));
 
             InitializeCommands();
         }
 
-        private void InitializeCommands() {
+        private void InitializeCommands()
+        {
             // 初始化命令
             SearchCommand = new DelegateCommand(async () => await SearchAsync());
             RefreshCommand = new DelegateCommand(async () => await RefreshAsync());
@@ -198,7 +210,8 @@ namespace LYBT.Desktop.Core.ViewModels.Base {
 
         #region Navigation
 
-        public override void OnNavigatedTo(Dictionary<string, object>? parameters = null) {
+        public override void OnNavigatedTo(Dictionary<string, object>? parameters = null)
+        {
             base.OnNavigatedTo(parameters);
             _ = LoadDataAsync();
         }
@@ -210,11 +223,14 @@ namespace LYBT.Desktop.Core.ViewModels.Base {
         /// <summary>
         /// 加载数据
         /// </summary>
-        protected virtual async Task LoadDataAsync() {
-            try {
+        protected virtual async Task LoadDataAsync()
+        {
+            try
+            {
                 IsLoading = true;
 
-                var request = new PagedQueryBaseDto {
+                var request = new PagedQueryBaseDto
+                {
                     CurrentPage = CurrentPage,
                     PageSize = PageSize,
                     SearchKeyword = SearchKeyword
@@ -222,19 +238,26 @@ namespace LYBT.Desktop.Core.ViewModels.Base {
 
                 var result = await LoadDataFromServiceAsync(request);
 
-                if (result.IsSuccess && result.Data != null) {
+                if (result.IsSuccess && result.Data != null)
+                {
                     Items = new ObservableCollection<TModel>(result.Data.Items);
                     TotalCount = result.Data.TotalCount;
                     TotalPages = (int)Math.Ceiling((double)TotalCount / PageSize);
-                } else {
+                }
+                else
+                {
                     Items.Clear();
                     TotalCount = 0;
                     TotalPages = 0;
                     ShowError(result.ErrorMessage ?? "加载数据失败");
                 }
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 ShowError($"加载数据时发生错误：{ex.Message}");
-            } finally {
+            }
+            finally
+            {
                 IsLoading = false;
             }
         }
@@ -247,7 +270,8 @@ namespace LYBT.Desktop.Core.ViewModels.Base {
         /// <summary>
         /// 搜索
         /// </summary>
-        protected virtual async Task SearchAsync() {
+        protected virtual async Task SearchAsync()
+        {
             CurrentPage = 1;
             await LoadDataAsync();
         }
@@ -255,7 +279,8 @@ namespace LYBT.Desktop.Core.ViewModels.Base {
         /// <summary>
         /// 刷新
         /// </summary>
-        protected virtual async Task RefreshAsync() {
+        protected virtual async Task RefreshAsync()
+        {
             await LoadDataAsync();
         }
 
@@ -277,8 +302,10 @@ namespace LYBT.Desktop.Core.ViewModels.Base {
         /// <summary>
         /// 跳转到指定页
         /// </summary>
-        protected virtual async Task GoToPageAsync(int page) {
-            if (page < 1 || page > TotalPages) {
+        protected virtual async Task GoToPageAsync(int page)
+        {
+            if (page < 1 || page > TotalPages)
+            {
                 return;
             }
 
@@ -289,12 +316,17 @@ namespace LYBT.Desktop.Core.ViewModels.Base {
         /// <summary>
         /// 显示成功消息
         /// </summary>
-        protected virtual async Task ShowSuccessAsync(string message) {
+        protected virtual async Task ShowSuccessAsync(string message)
+        {
             StatusMessage = message;
-            if (ErrorHandlingService?.CustomDialogService != null) {
-                try {
+            if (ErrorHandlingService?.CustomDialogService != null)
+            {
+                try
+                {
                     await ErrorHandlingService.CustomDialogService.ShowInformationAsync(ModuleName, message);
-                } catch {
+                }
+                catch
+                {
                     // 静默处理，已经设置StatusMessage
                 }
             }
@@ -303,32 +335,40 @@ namespace LYBT.Desktop.Core.ViewModels.Base {
         /// <summary>
         /// 显示成功消息（同步版本，兼容性）
         /// </summary>
-        protected virtual void ShowSuccess(string message) {
+        protected virtual void ShowSuccess(string message)
+        {
             _ = ShowSuccessAsync(message);
         }
 
         /// <summary>
         /// 显示错误消息
         /// </summary>
-        protected virtual async Task ShowErrorAsync(string message) {
-            await base.HandleErrorAsync(ModuleName, new InvalidOperationException(message));
+        protected virtual async Task ShowErrorAsync(string message)
+        {
+            await this.HandleErrorAsync(ModuleName, new InvalidOperationException(message));
         }
 
         /// <summary>
         /// 显示错误消息
         /// </summary>
-        protected virtual void ShowError(string message) {
+        protected virtual void ShowError(string message)
+        {
             _ = ShowErrorAsync(message);
         }
 
         /// <summary>
         /// 显示确认对话框
         /// </summary>
-        protected virtual async Task<bool> ShowConfirmAsync(string message) {
-            if (ErrorHandlingService?.CustomDialogService != null) {
-                try {
+        protected virtual async Task<bool> ShowConfirmAsync(string message)
+        {
+            if (ErrorHandlingService?.CustomDialogService != null)
+            {
+                try
+                {
                     return await ErrorHandlingService.CustomDialogService.ShowConfirmationAsync(message, ModuleName);
-                } catch {
+                }
+                catch
+                {
                     // 对话框服务失败时默认返回false（取消操作）
                     return false;
                 }
@@ -340,10 +380,14 @@ namespace LYBT.Desktop.Core.ViewModels.Base {
         /// <summary>
         /// 显示确认对话框（同步版本，兼容性）
         /// </summary>
-        protected virtual bool ShowConfirm(string message) {
-            try {
+        protected virtual bool ShowConfirm(string message)
+        {
+            try
+            {
                 return ShowConfirmAsync(message).GetAwaiter().GetResult();
-            } catch {
+            }
+            catch
+            {
                 // 同步调用失败时默认返回false（保守操作）
                 return false;
             }

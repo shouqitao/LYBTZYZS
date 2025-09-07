@@ -2,15 +2,18 @@
 using LYBT.Entities.Herbs;
 using LYBT.Shared.Models.Contracts.Herbs;
 
-namespace LYBT.Module.Herbs.Mapping {
+namespace LYBT.Module.Herbs.Mapping
+{
 
     /// <summary>
     /// 药材实体与DTO的AutoMapper映射配置
     /// 使用共享契约模型和基础模型继承
     /// </summary>
-    public class HerbMappingProfile : Profile {
+    public class HerbMappingProfile : Profile
+    {
 
-        public HerbMappingProfile() {
+        public HerbMappingProfile()
+        {
             // ==================== 共享契约映射 ====================
 
             // 药材实体转HerbDetailDto（API响应）

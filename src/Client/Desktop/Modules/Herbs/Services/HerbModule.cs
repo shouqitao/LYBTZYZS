@@ -15,7 +15,8 @@ namespace LYBT.Desktop.Herbs.Services;
 /// </summary>
 public class HerbModule(
     IHerbQueryService queryService,
-    IHerbBusinessService businessService) : IHerbService, IDisposable {
+    IHerbBusinessService businessService) : IHerbService, IDisposable
+{
     private readonly IHerbQueryService _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
     private readonly IHerbBusinessService _businessService = businessService ?? throw new ArgumentNullException(nameof(businessService));
 
@@ -37,7 +38,7 @@ public class HerbModule(
     /// 搜索药材
     /// </summary>
     public async Task<ServiceResult<List<HerbDto>>> SearchAsync(string keyword)
-        => await _queryService.SearchAsync(keyword);
+        => await _queryService.Search(keyword);
 
     /// <summary>
     /// 获取药材统计（详细版本）
@@ -64,7 +65,8 @@ public class HerbModule(
     /// <summary>
     /// 启用药材 (IHerbService版本)
     /// </summary>
-    async Task<ServiceResult> IHerbService.EnableAsync(Guid herbId) {
+    async Task<ServiceResult> IHerbService.EnableAsync(Guid herbId)
+    {
         var result = await _businessService.EnableAsync(herbId);
         return result.IsSuccess ? ServiceResult.Success() : ServiceResult.Failure(result.ErrorMessage ?? "启用失败");
     }
@@ -72,7 +74,8 @@ public class HerbModule(
     /// <summary>
     /// 禁用药材 (IHerbService版本)
     /// </summary>
-    async Task<ServiceResult> IHerbService.DisableAsync(Guid herbId) {
+    async Task<ServiceResult> IHerbService.DisableAsync(Guid herbId)
+    {
         var result = await _businessService.DisableAsync(herbId);
         return result.IsSuccess ? ServiceResult.Success() : ServiceResult.Failure(result.ErrorMessage ?? "禁用失败");
     }
@@ -80,7 +83,8 @@ public class HerbModule(
     /// <summary>
     /// 启用药材 (IHerbModule版本)
     /// </summary>
-    public async Task<ServiceResult<bool>> EnableAsync(Guid herbId) {
+    public async Task<ServiceResult<bool>> EnableAsync(Guid herbId)
+    {
         var result = await _businessService.EnableAsync(herbId);
         return result.IsSuccess ? ServiceResult<bool>.Success(true) : ServiceResult<bool>.Failure(result.ErrorMessage ?? "启用失败");
     }
@@ -88,7 +92,8 @@ public class HerbModule(
     /// <summary>
     /// 禁用药材 (IHerbModule版本)
     /// </summary>
-    public async Task<ServiceResult<bool>> DisableAsync(Guid herbId) {
+    public async Task<ServiceResult<bool>> DisableAsync(Guid herbId)
+    {
         var result = await _businessService.DisableAsync(herbId);
         return result.IsSuccess ? ServiceResult<bool>.Success(true) : ServiceResult<bool>.Failure(result.ErrorMessage ?? "禁用失败");
     }
@@ -134,7 +139,8 @@ public class HerbModule(
     /// <summary>
     /// 释放资源
     /// </summary>
-    public void Dispose() {
+    public void Dispose()
+    {
         // 简单诊所版本：无资源需要释放
         GC.SuppressFinalize(this);
     }

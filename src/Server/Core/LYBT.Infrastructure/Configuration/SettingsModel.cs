@@ -1,12 +1,14 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace LYBT.Infrastructure.Configuration {
+namespace LYBT.Infrastructure.Configuration
+{
 
     /// <summary>
     /// 系统设置实体模型
     /// </summary>
-    public class SettingsModel {
+    public class SettingsModel
+    {
 
         /// <summary>
         /// 主键ID
@@ -18,14 +20,16 @@ namespace LYBT.Infrastructure.Configuration {
         /// <summary>
         /// 设置键（唯一标识）
         /// </summary>
-        [Required, StringLength(128)]
+        [Required]
+        [StringLength(128)]
         [DisplayName("设置键（唯一标识）")]
         public string Key { get; set; } = string.Empty;
 
         /// <summary>
         /// 设置值
         /// </summary>
-        [Required, StringLength(1000)]
+        [Required]
+        [StringLength(1000)]
         [DisplayName("设置值")]
         public string Value { get; set; } = string.Empty;
 

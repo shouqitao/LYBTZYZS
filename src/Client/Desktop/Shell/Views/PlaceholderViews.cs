@@ -1,14 +1,17 @@
 ﻿using System.Windows.Controls;
 
-namespace LYBT.Desktop.Shell.Views {
+namespace LYBT.Desktop.Shell.Views
+{
     // 以下是占位视图类，实际的XAML文件需要单独创建
 
     /// <summary>
     /// 登录视图
     /// </summary>
-    public partial class LoginView : UserControl {
+    public partial class LoginView : UserControl
+    {
 
-        public LoginView() {
+        public LoginView()
+        {
             // InitializeComponent(); // XAML编译后会生成此方法
         }
     }
@@ -18,9 +21,11 @@ namespace LYBT.Desktop.Shell.Views {
     /// <summary>
     /// 患者列表视图
     /// </summary>
-    public partial class PatientListView : UserControl {
+    public partial class PatientListView : UserControl
+    {
 
-        public PatientListView() {
+        public PatientListView()
+        {
             // InitializeComponent();
         }
     }
@@ -28,9 +33,11 @@ namespace LYBT.Desktop.Shell.Views {
     /// <summary>
     /// 患者详情视图
     /// </summary>
-    public partial class PatientDetailView : UserControl {
+    public partial class PatientDetailView : UserControl
+    {
 
-        public PatientDetailView() {
+        public PatientDetailView()
+        {
             // InitializeComponent();
         }
     }
@@ -38,9 +45,11 @@ namespace LYBT.Desktop.Shell.Views {
     /// <summary>
     /// 处方视图
     /// </summary>
-    public partial class PrescriptionView : UserControl {
+    public partial class PrescriptionView : UserControl
+    {
 
-        public PrescriptionView() {
+        public PrescriptionView()
+        {
             // InitializeComponent();
         }
     }
@@ -48,9 +57,11 @@ namespace LYBT.Desktop.Shell.Views {
     /// <summary>
     /// 诊疗视图
     /// </summary>
-    public partial class ConsultationView : UserControl {
+    public partial class ConsultationView : UserControl
+    {
 
-        public ConsultationView() {
+        public ConsultationView()
+        {
             // InitializeComponent();
         }
     }

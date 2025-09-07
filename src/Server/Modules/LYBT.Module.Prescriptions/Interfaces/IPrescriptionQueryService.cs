@@ -1,13 +1,15 @@
 ﻿using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 
-namespace LYBT.Module.Prescriptions.Interfaces {
+namespace LYBT.Module.Prescriptions.Interfaces
+{
 
     /// <summary>
     /// 处方查询服务接口
     /// UltraThink架构 - Query层接口抽象
     /// </summary>
-    public interface IPrescriptionQueryService {
+    public interface IPrescriptionQueryService
+    {
 
         /// <summary>
         /// 根据ID获取处方详情

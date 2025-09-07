@@ -2,13 +2,15 @@
 using LYBT.Shared.Interfaces.Services;
 using Prism.Ioc;
 
-namespace LYBT.Desktop.Core.Services {
+namespace LYBT.Desktop.Core.Services
+{
 
     /// <summary>
     /// 主窗口服务门面实现，用于简化MainWindowViewModel的依赖注入
     /// UltraThink统一架构：移除双重认证服务，AuthModule统一实现
     /// </summary>
-    public class MainWindowServicesFacade : IMainWindowServicesFacade {
+    public class MainWindowServicesFacade : IMainWindowServicesFacade
+    {
         private readonly IContainerProvider _containerProvider;
 
         // 缓存已解析的服务以提高性能
@@ -18,7 +20,8 @@ namespace LYBT.Desktop.Core.Services {
         private IPatientService? _patientService;
         private IAuthenticationService? _authenticationService;
 
-        public MainWindowServicesFacade(IContainerProvider containerProvider) {
+        public MainWindowServicesFacade(IContainerProvider containerProvider)
+        {
             _containerProvider = containerProvider ?? throw new ArgumentNullException(nameof(containerProvider));
         }
 

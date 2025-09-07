@@ -3,7 +3,8 @@ using System.Windows;
 using Microsoft.Win32;
 using FolderBrowserDialog = System.Windows.Forms.FolderBrowserDialog;
 
-namespace LYBT.Desktop.Services {
+namespace LYBT.Desktop.Services
+{
 
     /// <summary>
     /// 基于 ICustomDialogService 的通用对话框服务实现 - 简化版本，接口不存在
@@ -16,22 +17,26 @@ namespace LYBT.Desktop.Services {
 
         #region 消息对话框（异步）
 
-        public Task<bool> ShowConfirmationAsync(string message, string title = "确认") {
+        public Task<bool> ShowConfirmationAsync(string message, string title = "确认")
+        {
             var result = MessageBox.Show(message, title, MessageBoxButton.YesNo, MessageBoxImage.Question);
             return Task.FromResult(result == MessageBoxResult.Yes);
         }
 
-        public Task ShowInformationAsync(string message, string title = "信息") {
+        public Task ShowInformationAsync(string message, string title = "信息")
+        {
             MessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Information);
             return Task.CompletedTask;
         }
 
-        public Task ShowWarningAsync(string message, string title = "警告") {
+        public Task ShowWarningAsync(string message, string title = "警告")
+        {
             MessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Warning);
             return Task.CompletedTask;
         }
 
-        public Task ShowErrorAsync(string message, string title = "错误") {
+        public Task ShowErrorAsync(string message, string title = "错误")
+        {
             MessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Error);
             return Task.CompletedTask;
         }
@@ -40,11 +45,15 @@ namespace LYBT.Desktop.Services {
 
         #region 输入对话框
 
-        public Task<string?> ShowInputAsync(string message, string title = "输入", string defaultValue = "") {
+        public Task<string?> ShowInputAsync(string message, string title = "输入", string defaultValue = "")
+        {
             // 暂时使用原有实现，后续可以创建专门的输入对话框
-            return Task.Run(() => {
-                return Application.Current.Dispatcher.Invoke(() => {
-                    var inputDialog = new System.Windows.Window {
+            return Task.Run(() =>
+            {
+                return Application.Current.Dispatcher.Invoke(() =>
+                {
+                    var inputDialog = new System.Windows.Window
+                    {
                         /* Title = title, */
                         Width = 400,
                         Height = 200,
@@ -52,27 +61,32 @@ namespace LYBT.Desktop.Services {
                         Owner = Application.Current.MainWindow
                     };
 
-                    var stackPanel = new System.Windows.Controls.StackPanel {
+                    var stackPanel = new System.Windows.Controls.StackPanel
+                    {
                         Margin = new Thickness(20)
                     };
 
-                    var textBlock = new System.Windows.Controls.TextBlock {
+                    var textBlock = new System.Windows.Controls.TextBlock
+                    {
                         Text = message,
                         Margin = new Thickness(0, 0, 0, 10),
                         TextWrapping = TextWrapping.Wrap
                     };
 
-                    var textBox = new System.Windows.Controls.TextBox {
+                    var textBox = new System.Windows.Controls.TextBox
+                    {
                         Text = defaultValue,
                         Margin = new Thickness(0, 0, 0, 20)
                     };
 
-                    var buttonPanel = new System.Windows.Controls.StackPanel {
+                    var buttonPanel = new System.Windows.Controls.StackPanel
+                    {
                         Orientation = System.Windows.Controls.Orientation.Horizontal,
                         HorizontalAlignment = System.Windows.HorizontalAlignment.Right
                     };
 
-                    var okButton = new System.Windows.Controls.Button {
+                    var okButton = new System.Windows.Controls.Button
+                    {
                         Content = "确定",
                         Width = 80,
                         Height = 30,
@@ -80,7 +94,8 @@ namespace LYBT.Desktop.Services {
                         IsDefault = true
                     };
 
-                    var cancelButton = new System.Windows.Controls.Button {
+                    var cancelButton = new System.Windows.Controls.Button
+                    {
                         Content = "取消",
                         Width = 80,
                         Height = 30,
@@ -89,12 +104,14 @@ namespace LYBT.Desktop.Services {
 
                     string? result = null;
 
-                    okButton.Click += (s, e) => {
+                    okButton.Click += (s, e) =>
+                    {
                         result = textBox.Text;
                         inputDialog.DialogResult = true;
                     };
 
-                    cancelButton.Click += (s, e) => {
+                    cancelButton.Click += (s, e) =>
+                    {
                         inputDialog.DialogResult = false;
                     };
 
@@ -118,15 +135,20 @@ namespace LYBT.Desktop.Services {
 
         #region 文件对话框
 
-        public Task<string?> ShowOpenFileDialogAsync(string filter = "All Files (*.*)|*.*", string title = "打开文件") {
-            return Task.Run(() => {
-                return Application.Current.Dispatcher.Invoke(() => {
-                    var dialog = new OpenFileDialog {
+        public Task<string?> ShowOpenFileDialogAsync(string filter = "All Files (*.*)|*.*", string title = "打开文件")
+        {
+            return Task.Run(() =>
+            {
+                return Application.Current.Dispatcher.Invoke(() =>
+                {
+                    var dialog = new OpenFileDialog
+                    {
                         Filter = filter,
                         Title = title
                     };
 
-                    if (dialog.ShowDialog() == true) {
+                    if (dialog.ShowDialog() == true)
+                    {
                         return dialog.FileName;
                     }
 
@@ -135,16 +157,21 @@ namespace LYBT.Desktop.Services {
             });
         }
 
-        public Task<string?> ShowSaveFileDialogAsync(string filter = "All Files (*.*)|*.*", string title = "保存文件", string defaultFileName = "") {
-            return Task.Run(() => {
-                return Application.Current.Dispatcher.Invoke(() => {
-                    var dialog = new SaveFileDialog {
+        public Task<string?> ShowSaveFileDialogAsync(string filter = "All Files (*.*)|*.*", string title = "保存文件", string defaultFileName = "")
+        {
+            return Task.Run(() =>
+            {
+                return Application.Current.Dispatcher.Invoke(() =>
+                {
+                    var dialog = new SaveFileDialog
+                    {
                         Filter = filter,
                         /* Title = title, */
                         FileName = defaultFileName
                     };
 
-                    if (dialog.ShowDialog() == true) {
+                    if (dialog.ShowDialog() == true)
+                    {
                         return dialog.FileName;
                     }
 
@@ -153,13 +180,18 @@ namespace LYBT.Desktop.Services {
             });
         }
 
-        public Task<string?> ShowFolderBrowserDialogAsync(string title = "选择文件夹") {
-            return Task.Run(() => {
-                return Application.Current.Dispatcher.Invoke(() => {
-                    using (var dialog = new FolderBrowserDialog()) {
+        public Task<string?> ShowFolderBrowserDialogAsync(string title = "选择文件夹")
+        {
+            return Task.Run(() =>
+            {
+                return Application.Current.Dispatcher.Invoke(() =>
+                {
+                    using (var dialog = new FolderBrowserDialog())
+                    {
                         dialog.Description = title;
 
-                        if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK) {
+                        if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                        {
                             return dialog.SelectedPath;
                         }
                     }
@@ -173,19 +205,23 @@ namespace LYBT.Desktop.Services {
 
         #region 同步方法（为了兼容旧代码）
 
-        public bool ShowConfirmation(string message, string title = "确认") {
+        public bool ShowConfirmation(string message, string title = "确认")
+        {
             return ShowConfirmationAsync(message, title).GetAwaiter().GetResult();
         }
 
-        public void ShowInformation(string message, string title = "信息") {
+        public void ShowInformation(string message, string title = "信息")
+        {
             ShowInformationAsync(message, title).GetAwaiter().GetResult();
         }
 
-        public void ShowWarning(string message, string title = "警告") {
+        public void ShowWarning(string message, string title = "警告")
+        {
             ShowWarningAsync(message, title).GetAwaiter().GetResult();
         }
 
-        public void ShowError(string message, string title = "错误") {
+        public void ShowError(string message, string title = "错误")
+        {
             ShowErrorAsync(message, title).GetAwaiter().GetResult();
         }
 

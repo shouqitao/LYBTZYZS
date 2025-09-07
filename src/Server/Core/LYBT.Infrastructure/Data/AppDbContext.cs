@@ -8,14 +8,17 @@ using LYBT.Entities.Prescriptions;
 using LYBT.Entities.Users;
 using Microsoft.EntityFrameworkCore;
 
-namespace LYBT.Infrastructure.Data {
+namespace LYBT.Infrastructure.Data
+{
 
     /// <summary>
     /// 统一应用数据库上下文 - 整个项目使用单一数据库LYBTDB
     /// </summary>
-    public class AppDbContext : DbContext {
+    public class AppDbContext : DbContext
+    {
 
-        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) {
+        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
+        {
         }
 
         // 用户管理
@@ -63,7 +66,8 @@ namespace LYBT.Infrastructure.Data {
         /// <summary>
         /// 治疗目录
         /// </summary>
-        protected override void OnModelCreating(ModelBuilder modelBuilder) {
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
             base.OnModelCreating(modelBuilder);
 
             // 配置各个实体的映射关系
@@ -88,7 +92,8 @@ namespace LYBT.Infrastructure.Data {
             // ConfigureTokenStore(modelBuilder); // UltraThink安全优化 P8-01B (已移除过度设计的令牌存储)
         }
 
-        private static void ConfigureUsers(ModelBuilder modelBuilder) {
+        private static void ConfigureUsers(ModelBuilder modelBuilder)
+        {
             var entity = modelBuilder.Entity<User>();
             entity.ToTable("Users");
             entity.HasKey(u => u.Id);
@@ -106,7 +111,8 @@ namespace LYBT.Infrastructure.Data {
             entity.Property(u => u.Role).HasConversion<int>();
         }
 
-        private static void ConfigureAdminSecrets(ModelBuilder modelBuilder) {
+        private static void ConfigureAdminSecrets(ModelBuilder modelBuilder)
+        {
             var entity = modelBuilder.Entity<AdminSecretModel>();
             entity.ToTable("AdminSecrets");
             entity.HasKey(a => a.Id);
@@ -116,7 +122,8 @@ namespace LYBT.Infrastructure.Data {
 
             // 添加默认的 sysadmin 种子数据
             // 密码: Admin@123456
-            entity.HasData(new AdminSecretModel {
+            entity.HasData(new AdminSecretModel
+            {
                 Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                 Username = "sysadmin",
                 PasswordHash = "AQAAAAIAAYagAAAAEBZtKH/jLrWSCIstrn4KyQtIopjqYQNrjJ8ZTIZxjKrpJ1l0obDU19hLQMSNwBjbeQ=="
@@ -126,9 +133,11 @@ namespace LYBT.Infrastructure.Data {
         /// <summary>
         /// 配置认证相关实体
         /// </summary>
-        private static void ConfigureAuth(ModelBuilder modelBuilder) {
+        private static void ConfigureAuth(ModelBuilder modelBuilder)
+        {
             // 认证会话配置
-            modelBuilder.Entity<AuthSession>(entity => {
+            modelBuilder.Entity<AuthSession>(entity =>
+            {
                 entity.ToTable("AuthSessions");
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.TokenHash).HasMaxLength(256);
@@ -141,7 +150,8 @@ namespace LYBT.Infrastructure.Data {
             });
         }
 
-        private static void ConfigurePatients(ModelBuilder modelBuilder) {
+        private static void ConfigurePatients(ModelBuilder modelBuilder)
+        {
             var entity = modelBuilder.Entity<Patient>();
             entity.ToTable("Patients");
             entity.HasKey(p => p.Id);
@@ -160,21 +170,8 @@ namespace LYBT.Infrastructure.Data {
             entity.Property(p => p.Status).HasConversion<int>();
         }
 
-        // 医生功能已整合到Users
-        /*
-
-        */
-
-        // 挂号模块已删除
-        /*        private static void ConfigureRegistrations(ModelBuilder modelBuilder) {
-            var entity = modelBuilder.Entity<RegistrationModel>();
-            entity.ToTable("Registrations");
-            entity.HasKey(r => r.Id);
-        }*/
-
-        // 排队模块已删除
-
-        private static void ConfigureMedicalCases(ModelBuilder modelBuilder) {
+        private static void ConfigureMedicalCases(ModelBuilder modelBuilder)
+        {
             var entity = modelBuilder.Entity<MedicalCase>();
             entity.ToTable("MedicalCases");
             entity.HasKey(m => m.Id);
@@ -190,7 +187,8 @@ namespace LYBT.Infrastructure.Data {
             entity.HasOne(m => m.Prescription).WithOne().HasForeignKey<MedicalCase>(m => m.PrescriptionId).IsRequired(false);
         }
 
-        private static void ConfigureConsultations(ModelBuilder modelBuilder) {
+        private static void ConfigureConsultations(ModelBuilder modelBuilder)
+        {
             var entity = modelBuilder.Entity<Consultation>();
             entity.ToTable("Consultations");
             entity.HasKey(c => c.Id);
@@ -222,7 +220,8 @@ namespace LYBT.Infrastructure.Data {
                   .OnDelete(DeleteBehavior.Restrict); // 防止级联删除
         }
 
-        private static void ConfigurePrescriptions(ModelBuilder modelBuilder) {
+        private static void ConfigurePrescriptions(ModelBuilder modelBuilder)
+        {
             var prescriptionEntity = modelBuilder.Entity<Prescription>();
             prescriptionEntity.ToTable("Prescriptions");
             prescriptionEntity.HasKey(p => p.Id);
@@ -232,7 +231,8 @@ namespace LYBT.Infrastructure.Data {
             itemEntity.HasKey(i => i.Id);
         }
 
-        private static void ConfigureHerbs(ModelBuilder modelBuilder) {
+        private static void ConfigureHerbs(ModelBuilder modelBuilder)
+        {
             var entity = modelBuilder.Entity<Herb>();
             entity.ToTable("Herbs");
             entity.HasKey(h => h.Id);
@@ -250,7 +250,8 @@ namespace LYBT.Infrastructure.Data {
             entity.HasIndex(h => h.PinYinCode);
         }
 
-        private static void ConfigureFormulas(ModelBuilder modelBuilder) {
+        private static void ConfigureFormulas(ModelBuilder modelBuilder)
+        {
             var entity = modelBuilder.Entity<Formula>();
             entity.ToTable("Formulas");
             entity.HasKey(f => f.Id);
@@ -348,7 +349,8 @@ namespace LYBT.Infrastructure.Data {
         /// 配置安全审计实体 - UltraThink重构安全审计架构
         /// 注意：SecurityAuditLog已在深度清理中移除，简化为日志记录
         /// </summary>
-        private static void ConfigureSecurityAudit(ModelBuilder modelBuilder) {
+        private static void ConfigureSecurityAudit(ModelBuilder modelBuilder)
+        {
             // SecurityAuditLog实体已被移除，转为简化的日志记录方式
         }
 

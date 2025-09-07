@@ -2,15 +2,18 @@
 using System.Windows.Controls;
 using LYBT.Shared.Models.Contracts.Users;
 
-namespace LYBT.WPF.Client.Controls.Users {
+namespace LYBT.WPF.Client.Controls.Users
+{
 
     /// <summary>
     /// UserDisplayControl.xaml 的交互逻辑
     /// 用于展示 UserDto 的用户控件
     /// </summary>
-    public partial class UserDisplayControl : UserControl {
+    public partial class UserDisplayControl : UserControl
+    {
 
-        public UserDisplayControl() {
+        public UserDisplayControl()
+        {
             InitializeComponent();
         }
 
@@ -27,7 +30,8 @@ namespace LYBT.WPF.Client.Controls.Users {
         /// <summary>
         /// 获取或设置用户数据
         /// </summary>
-        public UserDto UserData {
+        public UserDto UserData
+        {
             get => (UserDto)GetValue(UserDataProperty);
             set => SetValue(UserDataProperty, value);
         }
@@ -35,8 +39,10 @@ namespace LYBT.WPF.Client.Controls.Users {
         /// <summary>
         /// 用户数据变更时的处理
         /// </summary>
-        private static void OnUserDataChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
-            if (d is UserDisplayControl control) {
+        private static void OnUserDataChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is UserDisplayControl control)
+            {
                 control.DataContext = e.NewValue;
             }
         }
@@ -54,7 +60,8 @@ namespace LYBT.WPF.Client.Controls.Users {
         /// <summary>
         /// 获取或设置显示模式
         /// </summary>
-        public UserDisplayMode DisplayMode {
+        public UserDisplayMode DisplayMode
+        {
             get => (UserDisplayMode)GetValue(DisplayModeProperty);
             set => SetValue(DisplayModeProperty, value);
         }
@@ -63,7 +70,8 @@ namespace LYBT.WPF.Client.Controls.Users {
     /// <summary>
     /// 用户显示模式枚举
     /// </summary>
-    public enum UserDisplayMode {
+    public enum UserDisplayMode
+    {
 
         /// <summary>卡片模式（默认）</summary>
         Card,

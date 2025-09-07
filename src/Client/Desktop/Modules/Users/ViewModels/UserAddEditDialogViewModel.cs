@@ -10,8 +10,8 @@ using LYBT.Shared.Models.Enums;
 using Prism.Events;
 
 // UltraThink v2.0: Desktop层直接使用DTO，移除Info层转换
-
-namespace LYBT.Desktop.Users.ViewModels {
+namespace LYBT.Desktop.Users.ViewModels
+{
 
     /// <summary>
     /// 用户新增/编辑对话框视图模型 - UltraThink双层架构UI层
@@ -22,7 +22,8 @@ namespace LYBT.Desktop.Users.ViewModels {
     /// 支持用户新增/编辑、角色选择、状态切换等功能
     /// 适配中医诊所用户管理流程，确保数据录入准确性和操作便利性
     /// </summary>
-    public class UserAddEditDialogViewModel : DialogViewModel, ICustomDialogAware {
+    public class UserAddEditDialogViewModel : DialogViewModel, ICustomDialogAware
+    {
         private readonly IUserService _userService;
         private readonly IMapper _mapper;
         private UserDto? _originalUser; // 🎯 修复：移除readonly，允许在OnDialogOpened中重新赋值
@@ -39,37 +40,43 @@ namespace LYBT.Desktop.Users.ViewModels {
         public List<RoleItem> Roles { get; } = null!;
 
         /// <summary>角色选择是否启用（新建用户时禁用，固定为普通用户）</summary>
-        public bool IsRoleSelectionEnabled {
+        public bool IsRoleSelectionEnabled
+        {
             get => _isRoleSelectionEnabled;
             set => SetProperty(ref _isRoleSelectionEnabled, value);
         }
 
         /// <summary>用户名</summary>
-        public string UserName {
+        public string UserName
+        {
             get => _userName;
             set => SetProperty(ref _userName, value);
         }
 
         /// <summary>真实姓名</summary>
-        public string RealName {
+        public string RealName
+        {
             get => _realName;
             set => SetProperty(ref _realName, value);
         }
 
         /// <summary>邮箱</summary>
-        public string Email {
+        public string Email
+        {
             get => _email;
             set => SetProperty(ref _email, value);
         }
 
         /// <summary>电话号码</summary>
-        public string PhoneNumber {
+        public string PhoneNumber
+        {
             get => _phoneNumber;
             set => SetProperty(ref _phoneNumber, value);
         }
 
         /// <summary>是否启用</summary>
-        public bool IsActive {
+        public bool IsActive
+        {
             get => _isActive;
             set => SetProperty(ref _isActive, value);
         }
@@ -78,10 +85,13 @@ namespace LYBT.Desktop.Users.ViewModels {
         public bool IsNewUser => !_isEditMode;
 
         /// <summary>选中的角色</summary>
-        public RoleItem? SelectedRole {
+        public RoleItem? SelectedRole
+        {
             get => _selectedRole;
-            set {
-                if (SetProperty(ref _selectedRole, value)) {
+            set
+            {
+                if (SetProperty(ref _selectedRole, value))
+                {
                     SaveCommand.RaiseCanExecuteChanged();
                 }
             }
@@ -90,6 +100,7 @@ namespace LYBT.Desktop.Users.ViewModels {
         #region Constructor
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="UserAddEditDialogViewModel"/> class.
         /// 构造函数 - UltraThink双层架构依赖注入
         /// 初始化用户管理模块、映射器、对话框配置和事件订阅
         /// </summary>
@@ -105,7 +116,8 @@ namespace LYBT.Desktop.Users.ViewModels {
             IEventAggregator eventAggregator,
             IErrorHandlingService? errorHandlingService = null,
             UserDto? user = null)
-            : base(eventAggregator, errorHandlingService) {
+            : base(eventAggregator, errorHandlingService)
+        {
             _userService = userService ?? throw new ArgumentNullException(nameof(userService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _originalUser = user;
@@ -128,10 +140,13 @@ namespace LYBT.Desktop.Users.ViewModels {
 
             // 🎯 修复：构造函数不直接初始化编辑数据，等待OnDialogOpened调用
             // 这样可以避免数据被覆盖的问题
-            if (_isEditMode && user != null) {
+            if (_isEditMode && user != null)
+            {
                 DialogTitle = SystemConstants.EditUserDialogTitle;
                 System.Diagnostics.Debug.WriteLine($"🔧 构造函数: 编辑模式，用户: {user.Username}");
-            } else {
+            }
+            else
+            {
                 DialogTitle = SystemConstants.AddUserDialogTitle;
                 // 新增模式默认为医生角色
                 SelectedRole = new RoleItem { Value = "Doctor", DisplayName = "医生" };
@@ -145,14 +160,17 @@ namespace LYBT.Desktop.Users.ViewModels {
 
         #region DialogViewModel Implementation
 
-        protected override async Task<bool> SaveAsync() {
-            try {
+        protected override async Task<bool> SaveAsync()
+        {
+            try
+            {
                 // UltraThink v2.0: 移除前端验证逻辑，交由后端统一处理
                 // 前端只保留最基础的UI状态检查，具体业务验证由后端Service处理
-
-                if (_isEditMode && _originalUser != null) {
+                if (_isEditMode && _originalUser != null)
+                {
                     // 编辑模式
-                    var updateRequest = new UserMutationDto {
+                    var updateRequest = new UserMutationDto
+                    {
                         Id = _originalUser.Id,
                         Username = UserName.Trim(),
                         RealName = RealName.Trim(),
@@ -165,13 +183,17 @@ namespace LYBT.Desktop.Users.ViewModels {
 
                     var response = await _userService.UpdateAsync(updateRequest);
 
-                    if (!response.IsSuccess) {
+                    if (!response.IsSuccess)
+                    {
                         ErrorMessage = response.ErrorMessage ?? "更新用户失败";
                         return false;
                     }
-                } else {
+                }
+                else
+                {
                     // 新增模式
-                    var createRequest = new UserMutationDto {
+                    var createRequest = new UserMutationDto
+                    {
                         Username = UserName.Trim(),
                         RealName = RealName.Trim(),
                         Email = string.IsNullOrWhiteSpace(Email) ? null : Email.Trim(), // 🎯 修复：包含邮箱字段
@@ -185,7 +207,8 @@ namespace LYBT.Desktop.Users.ViewModels {
 
                     var response = await _userService.CreateAsync(createRequest);
 
-                    if (!response.IsSuccess) {
+                    if (!response.IsSuccess)
+                    {
                         ErrorMessage = response.ErrorMessage ?? "创建用户失败";
                         return false;
                     }
@@ -194,19 +217,23 @@ namespace LYBT.Desktop.Users.ViewModels {
                 // 保存成功，关闭对话框
                 RaiseRequestClose(true);
                 return true;
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 await HandleErrorAsync("保存用户", ex);
                 return false;
             }
         }
 
-        protected override bool CanSave() {
+        protected override bool CanSave()
+        {
             return !string.IsNullOrWhiteSpace(UserName) &&
                    !string.IsNullOrWhiteSpace(RealName) &&
                    SelectedRole != null;
         }
 
-        protected override void InitializeDialog() {
+        protected override void InitializeDialog()
+        {
             base.InitializeDialog();
 
             // 监听属性变化以更新Command状态
@@ -222,7 +249,8 @@ namespace LYBT.Desktop.Users.ViewModels {
         /// <summary>
         /// 初始化编辑数据
         /// </summary>
-        private void InitializeEditData(UserDto user) {
+        private void InitializeEditData(UserDto user)
+        {
             DialogTitle = SystemConstants.EditUserDialogTitle;
             UserName = user.Username;
             RealName = user.RealName;
@@ -246,7 +274,6 @@ namespace LYBT.Desktop.Users.ViewModels {
         // 所有业务验证统一由后端Service和ValidationHelper处理
         // 前端专注UI交互，后端专注业务逻辑
         // 验证错误由后端ServiceResult返回，前端只负责显示错误信息
-
         #endregion Private Methods
 
         #region ICustomDialogAware Implementation
@@ -259,12 +286,13 @@ namespace LYBT.Desktop.Users.ViewModels {
         /// <summary>
         /// 请求关闭对话框事件
         /// </summary>
-        public event Action<CustomDialogResult> RequestClose = delegate { };
+        public event Action<CustomDialogResult> RequestClose = obj => { };
 
         /// <summary>
         /// 检查是否可以关闭对话框
         /// </summary>
-        public bool CanCloseDialog() {
+        public bool CanCloseDialog()
+        {
             return !IsSaving && !IsLoading;
         }
 
@@ -272,11 +300,13 @@ namespace LYBT.Desktop.Users.ViewModels {
         /// 对话框打开时调用
         /// </summary>
         /// <param name="parameters">传入的参数</param>
-        public void OnDialogOpened(Dictionary<string, object> parameters) {
+        public void OnDialogOpened(Dictionary<string, object> parameters)
+        {
             System.Diagnostics.Debug.WriteLine($"🔧 OnDialogOpened 被调用，参数数量: {parameters?.Count ?? 0}");
 
             // 🎯 修复：优先检查IsEditMode参数，确保模式设置正确
-            if (parameters?.ContainsKey("IsEditMode") == true && parameters["IsEditMode"] is bool isEditMode) {
+            if (parameters?.ContainsKey("IsEditMode") == true && parameters["IsEditMode"] is bool isEditMode)
+            {
                 System.Diagnostics.Debug.WriteLine($"🔧 参数设置编辑模式: {isEditMode}");
                 _isEditMode = isEditMode;
 
@@ -285,7 +315,8 @@ namespace LYBT.Desktop.Users.ViewModels {
             }
 
             // 🎯 修复：只在编辑模式且有用户数据时才初始化编辑数据
-            if (_isEditMode && parameters?.ContainsKey("User") == true && parameters["User"] is UserDto user) {
+            if (_isEditMode && parameters?.ContainsKey("User") == true && parameters["User"] is UserDto user)
+            {
                 System.Diagnostics.Debug.WriteLine($"🔧 编辑模式 - 初始化用户数据: {user.Username} - {user.RealName}");
 
                 // 重新设置编辑数据
@@ -301,7 +332,9 @@ namespace LYBT.Desktop.Users.ViewModels {
                 RaisePropertyChanged(nameof(SelectedRole));
 
                 System.Diagnostics.Debug.WriteLine($"✅ 编辑数据初始化完成: UserName={UserName}, RealName={RealName}, Email={Email}");
-            } else if (!_isEditMode) {
+            }
+            else if (!_isEditMode)
+            {
                 System.Diagnostics.Debug.WriteLine("🔧 新增模式 - 清空表单数据");
                 // 新增模式：确保表单为空白状态
                 UserName = string.Empty;
@@ -330,14 +363,16 @@ namespace LYBT.Desktop.Users.ViewModels {
         /// <summary>
         /// 对话框关闭时调用
         /// </summary>
-        public void OnDialogClosed() {
+        public void OnDialogClosed()
+        {
             // 清理资源或执行其他关闭操作
         }
 
         /// <summary>
         /// 重写取消操作以使用ICustomDialogAware接口
         /// </summary>
-        protected override void ExecuteCancel() {
+        protected override void ExecuteCancel()
+        {
             OnDialogClosing();
             RaiseRequestClose(false);
         }
@@ -345,7 +380,8 @@ namespace LYBT.Desktop.Users.ViewModels {
         /// <summary>
         /// 触发关闭对话框请求
         /// </summary>
-        protected void RaiseRequestClose(bool? dialogResult) {
+        protected void RaiseRequestClose(bool? dialogResult)
+        {
             var result = dialogResult == true
                 ? CustomDialogResult.Success(new Dictionary<string, object>())
                 : CustomDialogResult.Cancel();
@@ -359,7 +395,8 @@ namespace LYBT.Desktop.Users.ViewModels {
     /// <summary>
     /// 角色项
     /// </summary>
-    public class RoleItem {
+    public class RoleItem
+    {
         public string Value { get; set; } = string.Empty;
         public string DisplayName { get; set; } = string.Empty;
     }

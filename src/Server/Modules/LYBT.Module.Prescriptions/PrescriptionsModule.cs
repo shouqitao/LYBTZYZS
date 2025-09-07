@@ -5,19 +5,22 @@ using LYBT.Module.Prescriptions.Services;
 using LYBT.Shared.Interfaces.Services;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace LYBT.Module.Prescriptions {
+namespace LYBT.Module.Prescriptions
+{
 
     /// <summary>
     /// 处方模块注册 - UltraThink标准化重构
     /// 负责注册处方相关的所有服务、仓储和映射配置
     /// 采用UltraThink双层架构：QueryService + BusinessService 专业分离
     /// </summary>
-    public static class PrescriptionsModule {
+    public static class PrescriptionsModule
+    {
 
         /// <summary>
         /// 注册处方模块服务 - UltraThink双层架构标准
         /// </summary>
-        public static IServiceCollection AddPrescriptionsModule(this IServiceCollection services) {
+        public static IServiceCollection AddPrescriptionsModule(this IServiceCollection services)
+        {
             // 仓储层
             services.AddScoped<IPrescriptionRepository, PrescriptionRepository>();
 
@@ -30,7 +33,8 @@ namespace LYBT.Module.Prescriptions {
             services.AddScoped<IIntelligentPrescriptionService, IntelligentPrescriptionService>();
 
             // AutoMapper配置
-            services.AddAutoMapper(cfg => {
+            services.AddAutoMapper(cfg =>
+            {
                 cfg.AddProfile<PrescriptionMappingProfile>();
             });
 

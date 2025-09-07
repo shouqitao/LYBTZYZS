@@ -1,10 +1,12 @@
-﻿namespace LYBT.Desktop.Core.Constants {
+﻿namespace LYBT.Desktop.Core.Constants
+{
 
     /// <summary>
     /// 系统常量定义
     /// UltraThink架构：统一管理系统中的硬编码字符串，提升可维护性
     /// </summary>
-    public static class SystemConstants {
+    public static class SystemConstants
+    {
 
         #region 用户角色常量
 
@@ -150,7 +152,8 @@
         /// <summary>
         /// 角色显示名称映射
         /// </summary>
-        public static class RoleDisplayNames {
+        public static class RoleDisplayNames
+        {
             public const string Doctor = "医生";
             public const string Admin = "管理员";
             public const string Pharmacist = "药师";
@@ -167,7 +170,8 @@
         /// <summary>
         /// 模块名称
         /// </summary>
-        public static class ModuleNames {
+        public static class ModuleNames
+        {
             public const string Auth = "认证模块";
             public const string Users = "用户管理";
             public const string Patients = "患者管理";
@@ -247,7 +251,8 @@
     /// <summary>
     /// 错误消息常量
     /// </summary>
-    public static class ErrorMessages {
+    public static class ErrorMessages
+    {
 
         #region 通用错误消息
 

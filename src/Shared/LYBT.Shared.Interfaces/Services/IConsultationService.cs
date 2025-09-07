@@ -1,12 +1,14 @@
 ﻿using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
 
-namespace LYBT.Shared.Interfaces.Services {
+namespace LYBT.Shared.Interfaces.Services
+{
 
     /// <summary>
     /// 看诊服务接口 - UltraThink统一标准
     /// </summary>
-    public interface IConsultationService {
+    public interface IConsultationService
+    {
 
         /// <summary>
         /// 根据ID获取看诊详情

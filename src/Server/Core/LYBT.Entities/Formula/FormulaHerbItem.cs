@@ -2,12 +2,14 @@
 using System.ComponentModel.DataAnnotations;
 using LYBT.Entities.Common;
 
-namespace LYBT.Entities.Formula {
+namespace LYBT.Entities.Formula
+{
 
     /// <summary>
     /// 验方明细 - 验方中的药材组成，包含药材名称和剂量倍数
     /// </summary>
-    public class FormulaHerbItem : IHerbItem {
+    public class FormulaHerbItem : IHerbItem
+    {
 
         /// <summary>
         /// 药材ID（关联药材库）
@@ -18,7 +20,8 @@ namespace LYBT.Entities.Formula {
         /// <summary>
         /// 药材名称
         /// </summary>
-        [Required, StringLength(100)]
+        [Required]
+        [StringLength(100)]
         [DisplayName("药材名称")]
         public string HerbName { get; set; } = string.Empty;
 

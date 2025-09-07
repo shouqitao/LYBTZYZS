@@ -1,9 +1,11 @@
-﻿namespace LYBT.Infrastructure.Storage {
+﻿namespace LYBT.Infrastructure.Storage
+{
 
     /// <summary>
     /// 文件存储服务接口
     /// </summary>
-    public interface IFileStorageService {
+    public interface IFileStorageService
+    {
 
         /// <summary>
         /// 上传文件
@@ -78,7 +80,8 @@
     /// <summary>
     /// 文件元数据
     /// </summary>
-    public class FileMetadata {
+    public class FileMetadata
+    {
 
         /// <summary>
         /// 文件路径

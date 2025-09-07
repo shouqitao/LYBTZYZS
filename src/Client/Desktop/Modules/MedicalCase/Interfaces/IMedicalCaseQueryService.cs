@@ -7,7 +7,8 @@ namespace LYBT.Desktop.MedicalCase.Interfaces;
 /// 医案查询服务接口 - UltraThink双层架构简化版
 /// 职责：查询和搜索操作
 /// </summary>
-public interface IMedicalCaseQueryService {
+public interface IMedicalCaseQueryService
+{
 
     #region 基础查询操作 - 简化实现
 
@@ -19,7 +20,7 @@ public interface IMedicalCaseQueryService {
     /// <summary>
     /// 分页查询医案
     /// </summary>
-    Task<ServiceResult<PagedResult<MedicalCaseDto>>> GetPagedAsync(PagedQueryBaseDto query);
+    Task<ServiceResult<PagedResult<MedicalCaseDto>>> GetPaged(PagedQueryBaseDto query);
 
     /// <summary>
     /// 根据患者ID获取医案列表

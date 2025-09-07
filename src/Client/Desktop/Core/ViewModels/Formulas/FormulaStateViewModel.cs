@@ -1,12 +1,14 @@
 ﻿using Prism.Mvvm;
 
-namespace LYBT.Desktop.Core.ViewModels.Formulas {
+namespace LYBT.Desktop.Core.ViewModels.Formulas
+{
 
     /// <summary>
     /// 验方状态管理视图模型 - UltraThink架构Presentation Layer
     /// 专门处理验方相关的UI状态管理，完全分离业务逻辑
     /// </summary>
-    public class FormulaStateViewModel : BindableBase {
+    public class FormulaStateViewModel : BindableBase
+    {
 
         #region UI状态字段
 
@@ -24,53 +26,63 @@ namespace LYBT.Desktop.Core.ViewModels.Formulas {
         #region UI状态属性
 
         /// <summary>是否被选中</summary>
-        public bool IsSelected {
+        public bool IsSelected
+        {
             get => _isSelected;
             set => SetProperty(ref _isSelected, value);
         }
 
         /// <summary>是否展开</summary>
-        public bool IsExpanded {
+        public bool IsExpanded
+        {
             get => _isExpanded;
             set => SetProperty(ref _isExpanded, value);
         }
 
         /// <summary>是否正在编辑</summary>
-        public bool IsEditing {
+        public bool IsEditing
+        {
             get => _isEditing;
             set => SetProperty(ref _isEditing, value);
         }
 
         /// <summary>是否正在加载</summary>
-        public bool IsLoading {
+        public bool IsLoading
+        {
             get => _isLoading;
             set => SetProperty(ref _isLoading, value);
         }
 
         /// <summary>是否有错误</summary>
-        public bool HasError {
+        public bool HasError
+        {
             get => _hasError;
             set => SetProperty(ref _hasError, value);
         }
 
         /// <summary>错误消息</summary>
-        public string ErrorMessage {
+        public string ErrorMessage
+        {
             get => _errorMessage;
-            set {
-                if (SetProperty(ref _errorMessage, value)) {
+            set
+            {
+                if (SetProperty(ref _errorMessage, value))
+                {
                     HasError = !string.IsNullOrEmpty(value);
                 }
             }
         }
 
         /// <summary>是否高亮显示</summary>
-        public bool IsHighlighted {
+        public bool IsHighlighted
+        {
             get => _isHighlighted;
             set => SetProperty(ref _isHighlighted, value);
         }
 
         /// <summary>是否为收藏</summary>
-        public bool IsFavorite {
+        public bool IsFavorite
+        {
             get => _isFavorite;
             set => SetProperty(ref _isFavorite, value);
         }
@@ -82,7 +94,8 @@ namespace LYBT.Desktop.Core.ViewModels.Formulas {
         /// <summary>
         /// 重置所有状态
         /// </summary>
-        public void ResetState() {
+        public void ResetState()
+        {
             IsSelected = false;
             IsExpanded = false;
             IsEditing = false;
@@ -95,7 +108,8 @@ namespace LYBT.Desktop.Core.ViewModels.Formulas {
         /// <summary>
         /// 开始编辑
         /// </summary>
-        public void StartEditing() {
+        public void StartEditing()
+        {
             IsEditing = true;
             ClearError();
         }
@@ -103,14 +117,16 @@ namespace LYBT.Desktop.Core.ViewModels.Formulas {
         /// <summary>
         /// 结束编辑
         /// </summary>
-        public void EndEditing() {
+        public void EndEditing()
+        {
             IsEditing = false;
         }
 
         /// <summary>
         /// 开始加载
         /// </summary>
-        public void StartLoading() {
+        public void StartLoading()
+        {
             IsLoading = true;
             ClearError();
         }
@@ -118,14 +134,16 @@ namespace LYBT.Desktop.Core.ViewModels.Formulas {
         /// <summary>
         /// 结束加载
         /// </summary>
-        public void EndLoading() {
+        public void EndLoading()
+        {
             IsLoading = false;
         }
 
         /// <summary>
         /// 设置错误
         /// </summary>
-        public void SetError(string message) {
+        public void SetError(string message)
+        {
             ErrorMessage = message;
             HasError = true;
             IsLoading = false;
@@ -134,7 +152,8 @@ namespace LYBT.Desktop.Core.ViewModels.Formulas {
         /// <summary>
         /// 清除错误
         /// </summary>
-        public void ClearError() {
+        public void ClearError()
+        {
             ErrorMessage = string.Empty;
             HasError = false;
         }
@@ -142,35 +161,40 @@ namespace LYBT.Desktop.Core.ViewModels.Formulas {
         /// <summary>
         /// 切换选中状态
         /// </summary>
-        public void ToggleSelection() {
+        public void ToggleSelection()
+        {
             IsSelected = !IsSelected;
         }
 
         /// <summary>
         /// 切换展开状态
         /// </summary>
-        public void ToggleExpansion() {
+        public void ToggleExpansion()
+        {
             IsExpanded = !IsExpanded;
         }
 
         /// <summary>
         /// 切换高亮状态
         /// </summary>
-        public void ToggleHighlight() {
+        public void ToggleHighlight()
+        {
             IsHighlighted = !IsHighlighted;
         }
 
         /// <summary>
         /// 切换收藏状态
         /// </summary>
-        public void ToggleFavorite() {
+        public void ToggleFavorite()
+        {
             IsFavorite = !IsFavorite;
         }
 
         /// <summary>
         /// 设置为焦点状态
         /// </summary>
-        public void SetFocus() {
+        public void SetFocus()
+        {
             IsSelected = true;
             IsHighlighted = true;
         }
@@ -178,7 +202,8 @@ namespace LYBT.Desktop.Core.ViewModels.Formulas {
         /// <summary>
         /// 取消焦点状态
         /// </summary>
-        public void ClearFocus() {
+        public void ClearFocus()
+        {
             IsSelected = false;
             IsHighlighted = false;
         }

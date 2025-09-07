@@ -2,26 +2,33 @@
 using LYBT.Desktop.Core.Interfaces;
 using LYBT.Desktop.Core.Models.Common;
 
-namespace LYBT.Desktop.Formula.Views {
+namespace LYBT.Desktop.Formula.Views
+{
 
     /// <summary>
     /// AddFormulaDialog.xaml 的交互逻辑
     /// </summary>
-    public partial class AddFormulaDialog : Window {
+    public partial class AddFormulaDialog : Window
+    {
 
-        public AddFormulaDialog() {
+        public AddFormulaDialog()
+        {
             InitializeComponent();
             Loaded += AddFormulaDialog_Loaded;
         }
 
-        private void AddFormulaDialog_Loaded(object sender, RoutedEventArgs e) {
-            if (DataContext is ICustomDialogAware dialogAware) {
+        private void AddFormulaDialog_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is ICustomDialogAware dialogAware)
+            {
                 dialogAware.RequestClose += OnRequestClose;
             }
         }
 
-        private void OnRequestClose(CustomDialogResult result) {
-            if (DataContext is ICustomDialogAware dialogAware) {
+        private void OnRequestClose(CustomDialogResult result)
+        {
+            if (DataContext is ICustomDialogAware dialogAware)
+            {
                 dialogAware.RequestClose -= OnRequestClose;
             }
 
@@ -29,8 +36,10 @@ namespace LYBT.Desktop.Formula.Views {
             Close();
         }
 
-        protected override void OnClosed(System.EventArgs e) {
-            if (DataContext is ICustomDialogAware dialogAware) {
+        protected override void OnClosed(System.EventArgs e)
+        {
+            if (DataContext is ICustomDialogAware dialogAware)
+            {
                 dialogAware.RequestClose -= OnRequestClose;
             }
             base.OnClosed(e);

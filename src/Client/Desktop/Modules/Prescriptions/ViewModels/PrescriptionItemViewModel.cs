@@ -1,13 +1,15 @@
 ﻿using LYBT.Desktop.Core.Models.Prescriptions;
 using Prism.Mvvm;
 
-namespace LYBT.Desktop.Prescriptions.ViewModels {
+namespace LYBT.Desktop.Prescriptions.ViewModels
+{
 
     /// <summary>
     /// 处方项视图模型
     /// 封装单个处方药材项的显示和编辑逻辑
     /// </summary>
-    public class PrescriptionItemViewModel : BindableBase {
+    public class PrescriptionItemViewModel : BindableBase
+    {
 
         #region 私有字段
 
@@ -17,11 +19,13 @@ namespace LYBT.Desktop.Prescriptions.ViewModels {
 
         #region 构造函数
 
-        public PrescriptionItemViewModel(PrescriptionItem item) {
+        public PrescriptionItemViewModel(PrescriptionItem item)
+        {
             _item = item ?? new PrescriptionItem();
         }
 
-        public PrescriptionItemViewModel() : this(new PrescriptionItem()) {
+        public PrescriptionItemViewModel() : this(new PrescriptionItem())
+        {
         }
 
         #endregion 构造函数
@@ -31,25 +35,37 @@ namespace LYBT.Desktop.Prescriptions.ViewModels {
         /// <summary>
         /// 药材ID
         /// </summary>
-        public Guid HerbId {
+        public Guid HerbId
+        {
             get => _item.HerbId;
-            set { _item.HerbId = value; RaisePropertyChanged(); }
+            set
+            {
+                _item.HerbId = value;
+                RaisePropertyChanged();
+            }
         }
 
         /// <summary>
         /// 药材名称
         /// </summary>
-        public string HerbName {
+        public string HerbName
+        {
             get => _item.HerbName;
-            set { _item.HerbName = value; RaisePropertyChanged(); }
+            set
+            {
+                _item.HerbName = value;
+                RaisePropertyChanged();
+            }
         }
 
         /// <summary>
         /// 剂量
         /// </summary>
-        public decimal Quantity {
+        public decimal Quantity
+        {
             get => _item.Quantity;
-            set {
+            set
+            {
                 _item.Quantity = value;
                 RaisePropertyChanged();
                 RaisePropertyChanged(nameof(Subtotal));
@@ -61,17 +77,24 @@ namespace LYBT.Desktop.Prescriptions.ViewModels {
         /// <summary>
         /// 单位
         /// </summary>
-        public string Unit {
+        public string Unit
+        {
             get => _item.Unit;
-            set { _item.Unit = value; RaisePropertyChanged(); }
+            set
+            {
+                _item.Unit = value;
+                RaisePropertyChanged();
+            }
         }
 
         /// <summary>
         /// 单价
         /// </summary>
-        public decimal UnitPrice {
+        public decimal UnitPrice
+        {
             get => _item.UnitPrice;
-            set {
+            set
+            {
                 _item.UnitPrice = value;
                 RaisePropertyChanged();
                 RaisePropertyChanged(nameof(Subtotal));
@@ -87,17 +110,27 @@ namespace LYBT.Desktop.Prescriptions.ViewModels {
         /// <summary>
         /// 来源（验方、手动添加等）
         /// </summary>
-        public string? Source {
+        public string? Source
+        {
             get => _item.ImportSource;
-            set { _item.ImportSource = value; RaisePropertyChanged(); }
+            set
+            {
+                _item.ImportSource = value;
+                RaisePropertyChanged();
+            }
         }
 
         /// <summary>
         /// 备注信息
         /// </summary>
-        public string Remark {
+        public string Remark
+        {
             get => _item.Remark;
-            set { _item.Remark = value; RaisePropertyChanged(); }
+            set
+            {
+                _item.Remark = value;
+                RaisePropertyChanged();
+            }
         }
 
         /// <summary>
@@ -122,7 +155,8 @@ namespace LYBT.Desktop.Prescriptions.ViewModels {
         /// <summary>
         /// 更新药材信息
         /// </summary>
-        public void UpdateHerbInfo(string herbName, decimal unitPrice, string unit) {
+        public void UpdateHerbInfo(string herbName, decimal unitPrice, string unit)
+        {
             HerbName = herbName;
             UnitPrice = unitPrice;
             Unit = unit;
@@ -131,8 +165,10 @@ namespace LYBT.Desktop.Prescriptions.ViewModels {
         /// <summary>
         /// 设置剂量
         /// </summary>
-        public void SetQuantity(decimal quantity) {
-            if (quantity > 0) {
+        public void SetQuantity(decimal quantity)
+        {
+            if (quantity > 0)
+            {
                 Quantity = quantity;
             }
         }
@@ -140,20 +176,22 @@ namespace LYBT.Desktop.Prescriptions.ViewModels {
         /// <summary>
         /// 重置到初始状态
         /// </summary>
-        public void Reset() {
+        public void Reset()
+        {
             HerbId = Guid.Empty;
-            HerbName = "";
+            HerbName = string.Empty;
             Quantity = 0;
             Unit = "g";
             UnitPrice = 0;
-            Source = "";
-            Remark = "";
+            Source = string.Empty;
+            Remark = string.Empty;
         }
 
         /// <summary>
         /// 验证数据有效性
         /// </summary>
-        public bool IsValid() {
+        public bool IsValid()
+        {
             return HerbId != Guid.Empty
                 && !string.IsNullOrWhiteSpace(HerbName)
                 && Quantity > 0
@@ -163,8 +201,10 @@ namespace LYBT.Desktop.Prescriptions.ViewModels {
         /// <summary>
         /// 复制当前项目
         /// </summary>
-        public PrescriptionItemViewModel Clone() {
-            return new PrescriptionItemViewModel(new PrescriptionItem {
+        public PrescriptionItemViewModel Clone()
+        {
+            return new PrescriptionItemViewModel(new PrescriptionItem
+            {
                 HerbId = HerbId,
                 HerbName = HerbName,
                 Quantity = Quantity,
@@ -179,18 +219,22 @@ namespace LYBT.Desktop.Prescriptions.ViewModels {
 
         #region 重写方法
 
-        public override string ToString() {
+        public override string ToString()
+        {
             return $"{HerbName} {Quantity}{Unit} @ {UnitPrice:F2}元/{Unit}";
         }
 
-        public override bool Equals(object? obj) {
-            if (obj is PrescriptionItemViewModel other) {
+        public override bool Equals(object? obj)
+        {
+            if (obj is PrescriptionItemViewModel other)
+            {
                 return HerbId == other.HerbId;
             }
             return false;
         }
 
-        public override int GetHashCode() {
+        public override int GetHashCode()
+        {
             return HerbId.GetHashCode();
         }
 

@@ -10,7 +10,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace LYBT.Module.Users.Services {
+namespace LYBT.Module.Users.Services
+{
 
     /// <summary>
     /// 用户业务服务 - UltraThink架构
@@ -20,7 +21,8 @@ namespace LYBT.Module.Users.Services {
         AppDbContext context,
         IMapper mapper,
         ILogger<UserBusinessService> logger,
-        IOptions<UserOptions> options) : IUserBusinessService {
+        IOptions<UserOptions> options) : IUserBusinessService
+    {
         private readonly AppDbContext _context = context ?? throw new ArgumentNullException(nameof(context));
         private readonly IMapper _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         private readonly ILogger<UserBusinessService> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -51,20 +53,25 @@ namespace LYBT.Module.Users.Services {
         /// <summary>
         /// 禁用用户
         /// </summary>
-        public async Task<ServiceResult<bool>> DisableAsync(Guid id) {
-            try {
-                if (id == Guid.Empty) {
+        public async Task<ServiceResult<bool>> DisableAsync(Guid id)
+        {
+            try
+            {
+                if (id == Guid.Empty)
+                {
                     return ServiceResult<bool>.Failure("用户ID不能为空");
                 }
 
                 var user = await _context.Users
                     .FirstOrDefaultAsync(u => u.Id == id);
 
-                if (user == null) {
+                if (user == null)
+                {
                     return ServiceResult<bool>.Failure("用户不存在");
                 }
 
-                if (user.Status == CommonStatus.Disabled) {
+                if (user.Status == CommonStatus.Disabled)
+                {
                     return ServiceResult<bool>.Failure("用户已经是禁用状态");
                 }
 
@@ -74,7 +81,9 @@ namespace LYBT.Module.Users.Services {
 
                 _logger.LogInformation("禁用用户成功: {Username} ({Id})", user.Username, user.Id);
                 return ServiceResult<bool>.Success(true);
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, "禁用用户失败: {Id}", id);
                 return ServiceResult<bool>.Failure($"禁用用户失败: {ex.Message}");
             }
@@ -83,20 +92,25 @@ namespace LYBT.Module.Users.Services {
         /// <summary>
         /// 启用用户
         /// </summary>
-        public async Task<ServiceResult<bool>> EnableAsync(Guid id) {
-            try {
-                if (id == Guid.Empty) {
+        public async Task<ServiceResult<bool>> EnableAsync(Guid id)
+        {
+            try
+            {
+                if (id == Guid.Empty)
+                {
                     return ServiceResult<bool>.Failure("用户ID不能为空");
                 }
 
                 var user = await _context.Users
                     .FirstOrDefaultAsync(u => u.Id == id);
 
-                if (user == null) {
+                if (user == null)
+                {
                     return ServiceResult<bool>.Failure("用户不存在");
                 }
 
-                if (user.Status == CommonStatus.Enabled) {
+                if (user.Status == CommonStatus.Enabled)
+                {
                     return ServiceResult<bool>.Failure("用户已经是启用状态");
                 }
 
@@ -106,7 +120,9 @@ namespace LYBT.Module.Users.Services {
 
                 _logger.LogInformation("启用用户成功: {Username} ({Id})", user.Username, user.Id);
                 return ServiceResult<bool>.Success(true);
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, "启用用户失败: {Id}", id);
                 return ServiceResult<bool>.Failure($"启用用户失败: {ex.Message}");
             }
@@ -115,14 +131,18 @@ namespace LYBT.Module.Users.Services {
         /// <summary>
         /// 批量禁用用户
         /// </summary>
-        public async Task<ServiceResult<int>> BatchDisableAsync(List<Guid> ids) {
-            try {
-                if (ids == null || ids.Count == 0) {
+        public async Task<ServiceResult<int>> BatchDisableAsync(List<Guid> ids)
+        {
+            try
+            {
+                if (ids == null || ids.Count == 0)
+                {
                     return ServiceResult<int>.Failure("用户ID列表不能为空");
                 }
 
                 var validIds = ids.Where(id => id != Guid.Empty).ToList();
-                if (validIds.Count == 0) {
+                if (validIds.Count == 0)
+                {
                     return ServiceResult<int>.Failure("没有有效的用户ID");
                 }
 
@@ -133,7 +153,9 @@ namespace LYBT.Module.Users.Services {
 
                 _logger.LogInformation("批量禁用用户成功，影响行数: {Count}", affectedRows);
                 return ServiceResult<int>.Success(affectedRows);
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, "批量禁用用户失败");
                 return ServiceResult<int>.Failure($"批量禁用用户失败: {ex.Message}");
             }
@@ -142,14 +164,18 @@ namespace LYBT.Module.Users.Services {
         /// <summary>
         /// 批量启用用户
         /// </summary>
-        public async Task<ServiceResult<int>> BatchEnableAsync(List<Guid> ids) {
-            try {
-                if (ids == null || ids.Count == 0) {
+        public async Task<ServiceResult<int>> BatchEnableAsync(List<Guid> ids)
+        {
+            try
+            {
+                if (ids == null || ids.Count == 0)
+                {
                     return ServiceResult<int>.Failure("用户ID列表不能为空");
                 }
 
                 var validIds = ids.Where(id => id != Guid.Empty).ToList();
-                if (validIds.Count == 0) {
+                if (validIds.Count == 0)
+                {
                     return ServiceResult<int>.Failure("没有有效的用户ID");
                 }
 
@@ -160,7 +186,9 @@ namespace LYBT.Module.Users.Services {
 
                 _logger.LogInformation("批量启用用户成功，影响行数: {Count}", affectedRows);
                 return ServiceResult<int>.Success(affectedRows);
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, "批量启用用户失败");
                 return ServiceResult<int>.Failure($"批量启用用户失败: {ex.Message}");
             }
@@ -169,24 +197,30 @@ namespace LYBT.Module.Users.Services {
         /// <summary>
         /// 管理员重置密码
         /// </summary>
-        public async Task<ServiceResult<bool>> ResetPasswordAsync(Guid id, string newPassword) {
-            try {
-                if (id == Guid.Empty) {
+        public async Task<ServiceResult<bool>> ResetPasswordAsync(Guid id, string newPassword)
+        {
+            try
+            {
+                if (id == Guid.Empty)
+                {
                     return ServiceResult<bool>.Failure("用户ID不能为空");
                 }
 
-                if (string.IsNullOrWhiteSpace(newPassword)) {
+                if (string.IsNullOrWhiteSpace(newPassword))
+                {
                     return ServiceResult<bool>.Failure("新密码不能为空");
                 }
 
-                if (newPassword.Length < 6) {
+                if (newPassword.Length < 6)
+                {
                     return ServiceResult<bool>.Failure("密码长度不能少于6位");
                 }
 
                 var user = await _context.Users
                     .FirstOrDefaultAsync(u => u.Id == id);
 
-                if (user == null) {
+                if (user == null)
+                {
                     return ServiceResult<bool>.Failure("用户不存在");
                 }
 
@@ -197,7 +231,9 @@ namespace LYBT.Module.Users.Services {
 
                 _logger.LogInformation("重置用户密码成功: {Username} ({Id})", user.Username, user.Id);
                 return ServiceResult<bool>.Success(true);
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, "重置用户密码失败: {Id}", id);
                 return ServiceResult<bool>.Failure($"重置密码失败: {ex.Message}");
             }
@@ -206,33 +242,41 @@ namespace LYBT.Module.Users.Services {
         /// <summary>
         /// 用户修改密码
         /// </summary>
-        public async Task<ServiceResult<bool>> ChangePasswordAsync(Guid id, string oldPassword, string newPassword) {
-            try {
-                if (id == Guid.Empty) {
+        public async Task<ServiceResult<bool>> ChangePasswordAsync(Guid id, string oldPassword, string newPassword)
+        {
+            try
+            {
+                if (id == Guid.Empty)
+                {
                     return ServiceResult<bool>.Failure("用户ID不能为空");
                 }
 
-                if (string.IsNullOrWhiteSpace(oldPassword)) {
+                if (string.IsNullOrWhiteSpace(oldPassword))
+                {
                     return ServiceResult<bool>.Failure("原密码不能为空");
                 }
 
-                if (string.IsNullOrWhiteSpace(newPassword)) {
+                if (string.IsNullOrWhiteSpace(newPassword))
+                {
                     return ServiceResult<bool>.Failure("新密码不能为空");
                 }
 
-                if (newPassword.Length < 6) {
+                if (newPassword.Length < 6)
+                {
                     return ServiceResult<bool>.Failure("密码长度不能少于6位");
                 }
 
                 var user = await _context.Users
                     .FirstOrDefaultAsync(u => u.Id == id);
 
-                if (user == null) {
+                if (user == null)
+                {
                     return ServiceResult<bool>.Failure("用户不存在");
                 }
 
                 // 验证原密码
-                if (!PasswordHelper.Verify(oldPassword, user.PasswordHash)) {
+                if (!PasswordHelper.Verify(oldPassword, user.PasswordHash))
+                {
                     return ServiceResult<bool>.Failure("原密码错误");
                 }
 
@@ -243,7 +287,9 @@ namespace LYBT.Module.Users.Services {
 
                 _logger.LogInformation("用户修改密码成功: {Username} ({Id})", user.Username, user.Id);
                 return ServiceResult<bool>.Success(true);
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, "用户修改密码失败: {Id}", id);
                 return ServiceResult<bool>.Failure($"修改密码失败: {ex.Message}");
             }
@@ -252,20 +298,25 @@ namespace LYBT.Module.Users.Services {
         /// <summary>
         /// 用户修改个人信息
         /// </summary>
-        public async Task<ServiceResult<bool>> ChangeProfileAsync(Guid userId, string realName, string phoneNumber) {
-            try {
-                if (userId == Guid.Empty) {
+        public async Task<ServiceResult<bool>> ChangeProfileAsync(Guid userId, string realName, string phoneNumber)
+        {
+            try
+            {
+                if (userId == Guid.Empty)
+                {
                     return ServiceResult<bool>.Failure("用户ID不能为空");
                 }
 
-                if (string.IsNullOrWhiteSpace(realName)) {
+                if (string.IsNullOrWhiteSpace(realName))
+                {
                     return ServiceResult<bool>.Failure("真实姓名不能为空");
                 }
 
                 var user = await _context.Users
                     .FirstOrDefaultAsync(u => u.Id == userId);
 
-                if (user == null) {
+                if (user == null)
+                {
                     return ServiceResult<bool>.Failure("用户不存在");
                 }
 
@@ -279,7 +330,9 @@ namespace LYBT.Module.Users.Services {
 
                 _logger.LogInformation("用户修改个人信息成功: {Username} ({Id})", user.Username, user.Id);
                 return ServiceResult<bool>.Success(true);
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, "修改个人信息失败: {UserId}", userId);
                 return ServiceResult<bool>.Failure($"修改个人信息失败: {ex.Message}");
             }
@@ -288,25 +341,31 @@ namespace LYBT.Module.Users.Services {
         /// <summary>
         /// 创建用户业务逻辑（使用统一变更DTO）
         /// </summary>
-        public async Task<ServiceResult<UserDto>> CreateUserAsync(UserMutationDto dto) {
-            try {
+        public async Task<ServiceResult<UserDto>> CreateUserAsync(UserMutationDto dto)
+        {
+            try
+            {
                 // 业务规则验证
                 var validationResult = await ValidateUserMutationAsync(dto, true); // true for create operation
-                if (!validationResult.IsSuccess) {
+                if (!validationResult.IsSuccess)
+                {
                     return ServiceResult<UserDto>.Failure(validationResult.ErrorMessage ?? "用户数据验证失败");
                 }
 
                 // 检查用户名是否重复
                 var existingUser = await _context.Users
                     .FirstOrDefaultAsync(u => u.Username == dto.Username);
-                if (existingUser != null) {
+                if (existingUser != null)
+                {
                     return ServiceResult<UserDto>.Failure("用户名已存在");
                 }
 
                 // 使用事务确保数据一致性
                 using var transaction = await _context.Database.BeginTransactionAsync();
-                try {
-                    var user = new Entities.Users.User {
+                try
+                {
+                    var user = new Entities.Users.User
+                    {
                         Id = Guid.NewGuid(),
                         Username = dto.Username,
                         PasswordHash = PasswordHelper.Hash(dto.Password ?? _options.DefaultUserPassword),
@@ -327,11 +386,15 @@ namespace LYBT.Module.Users.Services {
 
                     var resultDto = _mapper.Map<UserDto>(user);
                     return ServiceResult<UserDto>.Success(resultDto);
-                } catch (Exception) {
+                }
+                catch (Exception)
+                {
                     await transaction.RollbackAsync();
                     throw;
                 }
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, "创建用户失败: Username {Username}", dto.Username);
                 return ServiceResult<UserDto>.Failure($"创建用户失败: {ex.Message}");
             }
@@ -340,28 +403,34 @@ namespace LYBT.Module.Users.Services {
         /// <summary>
         /// 更新用户业务逻辑
         /// </summary>
-        public async Task<ServiceResult<UserDto>> UpdateUserAsync(Guid id, UserMutationDto dto) {
-            try {
-                if (id == Guid.Empty) {
+        public async Task<ServiceResult<UserDto>> UpdateUserAsync(Guid id, UserMutationDto dto)
+        {
+            try
+            {
+                if (id == Guid.Empty)
+                {
                     return ServiceResult<UserDto>.Failure("用户ID不能为空");
                 }
 
                 // 业务规则验证
                 var validationResult = await ValidateUserMutationAsync(dto, false, id); // false for update operation
-                if (!validationResult.IsSuccess) {
+                if (!validationResult.IsSuccess)
+                {
                     return ServiceResult<UserDto>.Failure(validationResult.ErrorMessage ?? "用户数据验证失败");
                 }
 
                 var user = await _context.Users
                     .FirstOrDefaultAsync(u => u.Id == id);
 
-                if (user == null) {
+                if (user == null)
+                {
                     return ServiceResult<UserDto>.Failure("用户不存在");
                 }
 
                 // 使用事务确保数据一致性
                 using var transaction = await _context.Database.BeginTransactionAsync();
-                try {
+                try
+                {
                     // 更新字段
                     user.RealName = dto.RealName;
                     user.Role = Enum.TryParse<UserRole>(dto.Role, out var updateRole) ? updateRole : user.Role;
@@ -378,11 +447,15 @@ namespace LYBT.Module.Users.Services {
 
                     var resultDto = _mapper.Map<UserDto>(user);
                     return ServiceResult<UserDto>.Success(resultDto);
-                } catch (Exception) {
+                }
+                catch (Exception)
+                {
                     await transaction.RollbackAsync();
                     throw;
                 }
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, "更新用户失败: {Id}", id);
                 return ServiceResult<UserDto>.Failure($"更新用户失败: {ex.Message}");
             }
@@ -391,24 +464,30 @@ namespace LYBT.Module.Users.Services {
         /// <summary>
         /// 删除用户业务逻辑
         /// </summary>
-        public async Task<ServiceResult<bool>> DeleteUserAsync(Guid id) {
-            try {
-                if (id == Guid.Empty) {
+        public async Task<ServiceResult<bool>> DeleteUserAsync(Guid id)
+        {
+            try
+            {
+                if (id == Guid.Empty)
+                {
                     return ServiceResult<bool>.Failure("用户ID不能为空");
                 }
 
                 var user = await _context.Users
                     .FirstOrDefaultAsync(u => u.Id == id);
 
-                if (user == null) {
+                if (user == null)
+                {
                     return ServiceResult<bool>.Failure("用户不存在");
                 }
 
                 // 业务规则：检查是否可以删除
-                if (user.Role == UserRole.Admin) {
+                if (user.Role == UserRole.Admin)
+                {
                     var adminCount = await _context.Users
                         .CountAsync(u => u.Role == UserRole.Admin && u.Status == CommonStatus.Enabled);
-                    if (adminCount <= 1) {
+                    if (adminCount <= 1)
+                    {
                         return ServiceResult<bool>.Failure("至少需要保留一个管理员用户");
                     }
                 }
@@ -420,7 +499,9 @@ namespace LYBT.Module.Users.Services {
 
                 _logger.LogInformation("删除用户成功: {Username} ({Id})", user.Username, user.Id);
                 return ServiceResult<bool>.Success(true);
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, "删除用户失败: {Id}", id);
                 return ServiceResult<bool>.Failure($"删除用户失败: {ex.Message}");
             }
@@ -431,42 +512,53 @@ namespace LYBT.Module.Users.Services {
         /// <summary>
         /// 统一用户变更DTO验证 - UltraThink现代化DTO设计
         /// </summary>
-        private static async Task<ServiceResult<bool>> ValidateUserMutationAsync(UserMutationDto dto, bool isCreateOperation, Guid? _ = null) {
-            if (dto == null) {
+        private static async Task<ServiceResult<bool>> ValidateUserMutationAsync(UserMutationDto dto, bool isCreateOperation, Guid? _ = null)
+        {
+            if (dto == null)
+            {
                 return ServiceResult<bool>.Failure("用户信息不能为空");
             }
 
             // 创建操作的额外验证
-            if (isCreateOperation) {
-                if (string.IsNullOrWhiteSpace(dto.Username)) {
+            if (isCreateOperation)
+            {
+                if (string.IsNullOrWhiteSpace(dto.Username))
+                {
                     return ServiceResult<bool>.Failure("用户名不能为空");
                 }
 
-                if (dto.Username.Length < 3 || dto.Username.Length > 50) {
+                if (dto.Username.Length < 3 || dto.Username.Length > 50)
+                {
                     return ServiceResult<bool>.Failure("用户名长度必须在3-50字符之间");
                 }
 
                 // 检查用户名格式（只能包含字母、数字、下划线）- 使用生成的正则表达式
-                if (!UsernameValidationRegex().IsMatch(dto.Username)) {
+                if (!UsernameValidationRegex().IsMatch(dto.Username))
+                {
                     return ServiceResult<bool>.Failure("用户名只能包含字母、数字和下划线");
                 }
             }
 
             // 通用验证（创建和更新都需要）
-            if (string.IsNullOrWhiteSpace(dto.RealName)) {
+            if (string.IsNullOrWhiteSpace(dto.RealName))
+            {
                 return ServiceResult<bool>.Failure("真实姓名不能为空");
             }
 
             // 邮箱格式验证（如果提供）- 使用生成的正则表达式
-            if (!string.IsNullOrWhiteSpace(dto.Email)) {
-                if (!EmailValidationRegex().IsMatch(dto.Email)) {
+            if (!string.IsNullOrWhiteSpace(dto.Email))
+            {
+                if (!EmailValidationRegex().IsMatch(dto.Email))
+                {
                     return ServiceResult<bool>.Failure("邮箱格式不正确");
                 }
             }
 
             // 手机号格式验证（如果提供）- 使用生成的正则表达式
-            if (!string.IsNullOrWhiteSpace(dto.PhoneNumber)) {
-                if (!PhoneValidationRegex().IsMatch(dto.PhoneNumber)) {
+            if (!string.IsNullOrWhiteSpace(dto.PhoneNumber))
+            {
+                if (!PhoneValidationRegex().IsMatch(dto.PhoneNumber))
+                {
                     return ServiceResult<bool>.Failure("手机号格式不正确");
                 }
             }

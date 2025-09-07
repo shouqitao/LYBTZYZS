@@ -1,13 +1,16 @@
 ﻿using System.Windows.Controls;
 
-namespace LYBT.Desktop.Formula.Views {
+namespace LYBT.Desktop.Formula.Views
+{
 
     /// <summary>
     /// FormulaDetailView.xaml 的交互逻辑
     /// </summary>
-    public partial class FormulaDetailView : UserControl {
+    public partial class FormulaDetailView : UserControl
+    {
 
-        public FormulaDetailView() {
+        public FormulaDetailView()
+        {
             InitializeComponent();
         }
     }

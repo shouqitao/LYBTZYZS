@@ -1,12 +1,14 @@
 ﻿using LYBT.Shared.Interfaces.Services;
 
-namespace LYBT.Desktop.Core.Interfaces.Services {
+namespace LYBT.Desktop.Core.Interfaces.Services
+{
 
     /// <summary>
     /// 主窗口服务门面，用于简化MainWindowViewModel的依赖注入
     /// UltraThink统一架构：移除双重认证服务引用，只保留AuthModule
     /// </summary>
-    public interface IMainWindowServicesFacade {
+    public interface IMainWindowServicesFacade
+    {
 
         /// <summary>
         /// 对话框服务

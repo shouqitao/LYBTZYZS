@@ -4,7 +4,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 using LYBT.Entities.Prescriptions;
 using LYBT.Shared.Models.Enums;
 
-namespace LYBT.Entities.MedicalCase {
+namespace LYBT.Entities.MedicalCase
+{
 
     /// <summary>
     /// 医疗案例实体 - UltraThink v2.0架构简化版
@@ -12,7 +13,8 @@ namespace LYBT.Entities.MedicalCase {
     /// 作为聘合根，管理完整诊疗流程，不包含诊断字段（属于Consultation）
     /// </summary>
     [Table("MedicalCases")]
-    public class MedicalCase {
+    public class MedicalCase
+    {
 
         /// <summary>医疗案例ID</summary>
         [Key]
@@ -59,6 +61,7 @@ namespace LYBT.Entities.MedicalCase {
         public string? Remark { get; set; }
 
         // 导航属性 - UltraThink Phase 7修复：1:1关系
+
         /// <summary>看诊记录（导航属性）- 一个医疗案例对应一次看诊 (1:1关系)</summary>
         [DisplayName("看诊记录")]
         public virtual LYBT.Entities.Consultation.Consultation? Consultation { get; set; }

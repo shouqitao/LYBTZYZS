@@ -3,13 +3,15 @@ using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 using Refit;
 
-namespace LYBT.Shared.Interfaces.Api {
+namespace LYBT.Shared.Interfaces.Api
+{
 
     /// <summary>
     /// 用户API客户端接口 - UltraThink统一标准
     /// 移动到shared层以确保前后端契约一致性
     /// </summary>
-    public interface IUserApi {
+    public interface IUserApi
+    {
 
         /// <summary>
         /// 获取用户列表（支持分页和查询）

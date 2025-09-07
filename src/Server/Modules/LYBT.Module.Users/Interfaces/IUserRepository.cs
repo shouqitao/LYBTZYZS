@@ -2,13 +2,15 @@
 using LYBT.Infrastructure.Interfaces;
 using SharedUserPagedQueryDto = LYBT.Shared.Models.Contracts.Users.UserPagedQueryDto;
 
-namespace LYBT.Module.Users.Interfaces {
+namespace LYBT.Module.Users.Interfaces
+{
 
     /// <summary>
     /// 用户仓储接口 - 数据层统一化重构
     /// 继承BaseRepository提供通用CRUD，扩展用户特定业务方法
     /// </summary>
-    public interface IUserRepository : IBaseRepository<User> {
+    public interface IUserRepository : IBaseRepository<User>
+    {
         // 注意：基础CRUD方法由IBaseRepository提供
         // 这里只定义用户特有的业务方法
 

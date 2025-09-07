@@ -1,13 +1,16 @@
 ﻿using System.Windows;
 
-namespace LYBT.Desktop.Shell.Dialogs.Views {
+namespace LYBT.Desktop.Shell.Dialogs.Views
+{
 
     /// <summary>
     /// ConfirmationDialog.xaml 的交互逻辑
     /// </summary>
-    public partial class ConfirmationDialog : Window {
+    public partial class ConfirmationDialog : Window
+    {
 
-        public ConfirmationDialog() {
+        public ConfirmationDialog()
+        {
             InitializeComponent();
         }
     }

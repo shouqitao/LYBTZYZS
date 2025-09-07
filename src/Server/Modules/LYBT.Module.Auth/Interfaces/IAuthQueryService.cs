@@ -2,13 +2,15 @@
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 
-namespace LYBT.Module.Auth.Interfaces {
+namespace LYBT.Module.Auth.Interfaces
+{
 
     /// <summary>
     /// 认证查询服务接口
     /// UltraThink架构 - Query层接口抽象
     /// </summary>
-    public interface IAuthQueryService {
+    public interface IAuthQueryService
+    {
 
         /// <summary>
         /// 根据用户名获取用户信息（用于认证）

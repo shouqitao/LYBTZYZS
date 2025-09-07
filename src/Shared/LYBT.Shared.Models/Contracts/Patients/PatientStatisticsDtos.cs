@@ -3,14 +3,16 @@ using System.ComponentModel.DataAnnotations;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Enums;
 
-namespace LYBT.Shared.Models.Contracts.Patients {
+namespace LYBT.Shared.Models.Contracts.Patients
+{
 
     #region 统计分析DTO
 
     /// <summary>
     /// 年龄分布统计DTO
     /// </summary>
-    public class AgeDistributionDto : StatisticsDto {
+    public class AgeDistributionDto : StatisticsDto
+    {
 
         /// <summary>年龄段</summary>
         [DisplayName("年龄段")]
@@ -47,7 +49,8 @@ namespace LYBT.Shared.Models.Contracts.Patients {
     /// <summary>
     /// 性别分布统计DTO
     /// </summary>
-    public class GenderDistributionDto : StatisticsDto {
+    public class GenderDistributionDto : StatisticsDto
+    {
 
         /// <summary>性别</summary>
         [DisplayName("性别")]
@@ -97,7 +100,8 @@ namespace LYBT.Shared.Models.Contracts.Patients {
     /// <summary>
     /// 患者趋势统计DTO
     /// </summary>
-    public class PatientTrendDto : StatisticsDto {
+    public class PatientTrendDto : StatisticsDto
+    {
 
         /// <summary>日期</summary>
         [DisplayName("日期")]
@@ -151,7 +155,8 @@ namespace LYBT.Shared.Models.Contracts.Patients {
     /// <summary>
     /// 患者导入DTO
     /// </summary>
-    public class PatientImportDto {
+    public class PatientImportDto
+    {
 
         /// <summary>姓名</summary>
         [Required(ErrorMessage = "姓名不能为空")]
@@ -213,7 +218,8 @@ namespace LYBT.Shared.Models.Contracts.Patients {
     /// <summary>
     /// 患者导入结果DTO
     /// </summary>
-    public class PatientImportResultDto {
+    public class PatientImportResultDto
+    {
 
         /// <summary>总记录数</summary>
         [DisplayName("总记录数")]
@@ -258,7 +264,8 @@ namespace LYBT.Shared.Models.Contracts.Patients {
         /// <summary>
         /// 导入错误详情
         /// </summary>
-        public class ImportErrorDetail {
+        public class ImportErrorDetail
+        {
 
             /// <summary>行号</summary>
             public int RowNumber { get; set; }
@@ -274,7 +281,8 @@ namespace LYBT.Shared.Models.Contracts.Patients {
     /// <summary>
     /// 患者导出DTO
     /// </summary>
-    public class PatientExportDto {
+    public class PatientExportDto
+    {
 
         /// <summary>患者编号</summary>
         [DisplayName("患者编号")]
@@ -344,7 +352,8 @@ namespace LYBT.Shared.Models.Contracts.Patients {
     /// <summary>
     /// 患者导出查询DTO
     /// </summary>
-    public class PatientExportQueryDto : ExtendedQueryDto {
+    public class PatientExportQueryDto : ExtendedQueryDto
+    {
 
         /// <summary>导出字段列表</summary>
         [DisplayName("导出字段")]
@@ -382,7 +391,8 @@ namespace LYBT.Shared.Models.Contracts.Patients {
     /// <summary>
     /// 患者高级搜索DTO
     /// </summary>
-    public class PatientAdvancedSearchDto : ExtendedQueryDto {
+    public class PatientAdvancedSearchDto : ExtendedQueryDto
+    {
 
         /// <summary>患者姓名</summary>
         [StringLength(50)]
@@ -463,7 +473,8 @@ namespace LYBT.Shared.Models.Contracts.Patients {
     /// <summary>
     /// 患者标签DTO
     /// </summary>
-    public class PatientTagDto : BaseDto {
+    public class PatientTagDto : BaseDto
+    {
 
         /// <summary>标签名称</summary>
         [Required(ErrorMessage = "标签名称不能为空")]

@@ -3,27 +3,32 @@ using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 
-namespace LYBT.Module.MedicalCase.Services {
+namespace LYBT.Module.MedicalCase.Services
+{
 
     /// <summary>
     /// 医疗案例服务 - UltraThink双层架构纯委托模式
     /// </summary>
     public class MedicalCaseService(
         IMedicalCaseQueryService queryService,
-        IMedicalCaseBusinessService businessService) : IMedicalCaseService {
+        IMedicalCaseBusinessService businessService) : IMedicalCaseService
+    {
         private readonly IMedicalCaseQueryService _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
         private readonly IMedicalCaseBusinessService _businessService = businessService ?? throw new ArgumentNullException(nameof(businessService));
 
         #region Query Operations
 
-        public async Task<ServiceResult<MedicalCaseDetailDto>> GetByIdAsync(Guid id) {
+        public async Task<ServiceResult<MedicalCaseDetailDto>> GetByIdAsync(Guid id)
+        {
             var result = await _queryService.GetByIdAsync(id);
-            if (!result.IsSuccess) {
+            if (!result.IsSuccess)
+            {
                 return ServiceResult<MedicalCaseDetailDto>.Failure(result.ErrorMessage ?? "获取失败");
             }
 
             // 将MedicalCaseDto转换为MedicalCaseDetailDto（简化实现）
-            var detailDto = new MedicalCaseDetailDto {
+            var detailDto = new MedicalCaseDetailDto
+            {
                 Id = result.Data.Id,
                 PatientId = result.Data.PatientId,
                 PatientName = result.Data.PatientName,
@@ -49,15 +54,18 @@ namespace LYBT.Module.MedicalCase.Services {
         public async Task<ServiceResult<List<MedicalCaseDto>>> SearchAsync(string keyword)
             => await _queryService.SearchAsync(keyword);
 
-        public async Task<ServiceResult<List<object>>> GetHistoryAsync(Guid patientId) {
+        public async Task<ServiceResult<List<object>>> GetHistory(Guid patientId)
+        {
             var result = await _queryService.GetHistoryAsync(patientId);
-            if (!result.IsSuccess) {
+            if (!result.IsSuccess)
+            {
                 return ServiceResult<List<object>>.Failure(result.ErrorMessage ?? "获取历史记录失败");
             }
 
             // 将List<MedicalCaseDto>转换为List<object>
             var objectList = new List<object>();
-            if (result.Data != null) {
+            if (result.Data != null)
+            {
                 objectList.AddRange(result.Data);
             }
 
@@ -87,16 +95,17 @@ namespace LYBT.Module.MedicalCase.Services {
         public async Task<ServiceResult<bool>> CompleteAsync(Guid id, string completionReason)
             => await _businessService.CompleteAsync(id);
 
-        public async Task<ServiceResult<bool>> SuspendAsync(Guid id, string reason)
+        public async Task<ServiceResult<bool>> Suspend(Guid id, string reason)
             => await _businessService.SuspendAsync(id);
 
-        public async Task<ServiceResult<bool>> ResumeAsync(Guid id)
+        public async Task<ServiceResult<bool>> Resume(Guid id)
             => await _businessService.ResumeAsync(id);
 
-        public async Task<ServiceResult<bool>> ArchiveAsync(Guid id, string archiveReason)
+        public async Task<ServiceResult<bool>> Archive(Guid id, string archiveReason)
             => await _businessService.ArchiveAsync(id);
 
-        public async Task<ServiceResult<bool>> UpdateStatusAsync(Guid id, int status) {
+        public async Task<ServiceResult<bool>> UpdateStatus(Guid id, int status)
+        {
             var statusString = ((Shared.Models.Enums.MedicalCaseStatus)status).ToString().ToLower();
             return await _businessService.UpdateStatusAsync(id, statusString);
         }
@@ -108,8 +117,10 @@ namespace LYBT.Module.MedicalCase.Services {
 
         #region Batch Operations
 
-        public async Task<ServiceResult<int>> BatchUpdateStatusAsync(Guid[] ids, int status) {
-            if (!Enum.IsDefined(typeof(Shared.Models.Enums.MedicalCaseStatus), status)) {
+        public async Task<ServiceResult<int>> BatchUpdateStatusAsync(Guid[] ids, int status)
+        {
+            if (!Enum.IsDefined(typeof(Shared.Models.Enums.MedicalCaseStatus), status))
+            {
                 return ServiceResult<int>.Failure($"无效的状态值: {status}");
             }
 
@@ -129,14 +140,17 @@ namespace LYBT.Module.MedicalCase.Services {
         public async Task<ServiceResult<object>> GetStatisticsAsync()
             => await _queryService.GetStatisticsAsync();
 
-        public Task<ServiceResult<object>> GetStatisticsAsync(DateTime? startDate, DateTime? endDate) {
+        public Task<ServiceResult<object>> GetStatistics(DateTime? startDate, DateTime? endDate)
+        {
             // 委托给无参数版本，忽略日期参数（向后兼容）
             return GetStatisticsAsync();
         }
 
-        public async Task<ServiceResult<byte[]>> PrintMedicalRecordAsync(Guid caseId) {
+        public async Task<ServiceResult<byte[]>> PrintMedicalRecordAsync(Guid caseId)
+        {
             var printResult = await _businessService.PrintMedicalRecordAsync(caseId, new { Format = "PDF" });
-            if (!printResult.IsSuccess) {
+            if (!printResult.IsSuccess)
+            {
                 return ServiceResult<byte[]>.Failure(printResult.ErrorMessage ?? "打印失败");
             }
 

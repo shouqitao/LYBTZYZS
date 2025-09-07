@@ -5,7 +5,8 @@ using LYBT.Shared.Interfaces.Services;
 using Prism.Ioc;
 using Prism.Modularity;
 
-namespace LYBT.Desktop.Prescriptions {
+namespace LYBT.Desktop.Prescriptions
+{
 
     /// <summary>
     /// 处方管理模块 - UltraThink双层架构Prism模块
@@ -15,13 +16,16 @@ namespace LYBT.Desktop.Prescriptions {
     /// 集成双层架构服务（QueryService + BusinessService + Module委托）
     /// 适配中医诊所处方管理流程，确保配伍安全和计算准确性
     /// </summary>
-    public class PrescriptionsModule : IModule {
+    public class PrescriptionsModule : IModule
+    {
 
-        public void OnInitialized(IContainerProvider containerProvider) {
+        public void OnInitialized(IContainerProvider containerProvider)
+        {
             // 模块初始化完成后的操作
         }
 
-        public void RegisterTypes(IContainerRegistry containerRegistry) {
+        public void RegisterTypes(IContainerRegistry containerRegistry)
+        {
             // UltraThink双层架构服务注册
             containerRegistry.RegisterSingleton<LYBT.Desktop.Prescriptions.Interfaces.IPrescriptionsQueryService, PrescriptionsQueryService>();
             containerRegistry.RegisterSingleton<LYBT.Desktop.Prescriptions.Interfaces.IPrescriptionsBusinessService, PrescriptionsBusinessService>();

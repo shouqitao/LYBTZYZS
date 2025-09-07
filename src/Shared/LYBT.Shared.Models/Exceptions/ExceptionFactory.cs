@@ -6,7 +6,8 @@ namespace LYBT.Shared.Models.Exceptions;
 /// 异常工厂 - UltraThink统一异常体系
 /// 提供便捷的异常创建方法
 /// </summary>
-public static class ExceptionFactory {
+public static class ExceptionFactory
+{
 
     #region Business Exceptions
 
@@ -117,7 +118,8 @@ public static class ExceptionFactory {
     /// <summary>
     /// 用户相关异常
     /// </summary>
-    public static class User {
+    public static class User
+    {
 
         public static NotFoundException NotFound(Guid userId) => NotFoundException.User(userId);
 
@@ -131,7 +133,8 @@ public static class ExceptionFactory {
     /// <summary>
     /// 患者相关异常
     /// </summary>
-    public static class Patient {
+    public static class Patient
+    {
 
         public static NotFoundException NotFound(Guid patientId) => NotFoundException.Patient(patientId);
 
@@ -141,7 +144,8 @@ public static class ExceptionFactory {
     /// <summary>
     /// 药材相关异常
     /// </summary>
-    public static class Herb {
+    public static class Herb
+    {
 
         public static NotFoundException NotFound(Guid herbId) => NotFoundException.Herb(herbId);
 
@@ -151,7 +155,8 @@ public static class ExceptionFactory {
     /// <summary>
     /// 处方相关异常
     /// </summary>
-    public static class Prescription {
+    public static class Prescription
+    {
 
         public static NotFoundException NotFound(Guid prescriptionId) => NotFoundException.Prescription(prescriptionId);
 

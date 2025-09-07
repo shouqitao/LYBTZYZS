@@ -1,11 +1,13 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace LYBT.Shared.Models.Common {
+namespace LYBT.Shared.Models.Common
+{
 
     /// <summary>
     /// 批量操作ID集合DTO（通用版本）
     /// </summary>
-    public class BatchIdsDto {
+    public class BatchIdsDto
+    {
 
         /// <summary>
         /// ID集合
