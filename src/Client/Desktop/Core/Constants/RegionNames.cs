@@ -29,10 +29,6 @@
 
 
 
-        /// <summary>
-        /// 前台工作台内容区域
-        /// </summary>
-        public const string ReceptionistContentRegion = "ReceptionistContentRegion";
 
 
         /// <summary>
@@ -46,7 +42,6 @@
             {
                 "SystemWorkbench" => SystemWorkbenchContentRegion,
                 "ConsultationWorkbench" => ConsultationWorkbenchContentRegion,
-                "ReceptionistWorkbench" => ReceptionistContentRegion,
                 _ => ContentRegion // 默认返回主内容区域
             };
         }
@@ -62,7 +57,6 @@
             {
                 "SystemWorkbenchMainView" => SystemWorkbenchContentRegion,
                 "ConsultationWorkbenchMainView" => ConsultationWorkbenchContentRegion,
-                "ReceptionistMainView" => ReceptionistContentRegion,
                 _ => ContentRegion
             };
         }
