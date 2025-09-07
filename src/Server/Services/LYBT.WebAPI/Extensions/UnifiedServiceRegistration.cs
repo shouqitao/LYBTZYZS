@@ -116,6 +116,23 @@ public static class UnifiedServiceRegistration
             configuration.GetSection("UserOptions").Bind(options);
         });
 
+        // =========== 配置验证服务 - DT-012优化 ===========
+        // 为小型诊所部署启用启动时配置验证，防止配置错误导致的问题
+        services.AddOptions<JwtOptions>()
+            .Bind(configuration.GetSection(JwtOptions.SectionName))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+        services.AddOptions<AuthOptions>()
+            .Bind(configuration.GetSection(AuthOptions.SectionName))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+        services.AddOptions<CacheOptions>()
+            .Bind(configuration.GetSection(CacheOptions.SectionName))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
         // =========== 安全配置服务 ===========
         // 临时注释掉缺失的服务以完成核心功能测试
         // services.AddScoped<IPasswordValidationService, PasswordValidationService>();

@@ -1,4 +1,6 @@
-﻿namespace LYBT.Infrastructure.Configuration.Options
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace LYBT.Infrastructure.Configuration.Options
 {
 
     /// <summary>
@@ -6,10 +8,12 @@
     /// </summary>
     public class AuthOptions
     {
+        public const string SectionName = "AuthOptions";
 
         /// <summary>
         /// 最大登录失败次数，超过后锁定账户
         /// </summary>
+        [Range(1, 100, ErrorMessage = "最大登录失败次数必须在1-100之间")]
         public int MaxFailedLoginAttempts { get; set; } = 5;
 
         /// <summary>
@@ -20,6 +24,8 @@
         /// <summary>
         /// 系统管理员默认密码
         /// </summary>
+        [Required(ErrorMessage = "系统管理员默认密码不能为空")]
+        [MinLength(6, ErrorMessage = "系统管理员默认密码长度至少6个字符")]
         public string DefaultSysAdminPassword { get; set; } = "Admin123!";
 
         /// <summary>
@@ -52,6 +58,7 @@
         /// <summary>
         /// 最小长度
         /// </summary>
+        [Range(4, 128, ErrorMessage = "密码最小长度必须在4-128之间")]
         public int MinLength { get; set; } = 8;
 
         /// <summary>
@@ -77,11 +84,13 @@
         /// <summary>
         /// 密码历史记录数量（防止重复使用）
         /// </summary>
+        [Range(0, 50, ErrorMessage = "密码历史记录数量必须在0-50之间")]
         public int PasswordHistoryCount { get; set; } = 5;
 
         /// <summary>
         /// 密码过期天数（0表示永不过期）
         /// </summary>
+        [Range(0, 3650, ErrorMessage = "密码过期天数必须在0-3650之间")]
         public int PasswordExpireDays { get; set; } = 90;
     }
 
@@ -94,6 +103,7 @@
         /// <summary>
         /// 会话超时时间（分钟）
         /// </summary>
+        [Range(1, 1440, ErrorMessage = "会话超时时间必须在1-1440分钟之间")]
         public int TimeoutMinutes { get; set; } = 30;
 
         /// <summary>
@@ -109,6 +119,7 @@
         /// <summary>
         /// 最大并发会话数
         /// </summary>
+        [Range(1, 10, ErrorMessage = "最大并发会话数必须在1-10之间")]
         public int MaxConcurrentSessions { get; set; } = 1;
     }
 }

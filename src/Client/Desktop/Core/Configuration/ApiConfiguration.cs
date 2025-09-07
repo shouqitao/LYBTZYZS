@@ -66,35 +66,32 @@ namespace LYBT.Desktop.Core.Configuration
         /// </summary>
         private static void LoadSettings()
         {
-            const int defaultTimeout = 60;
-
             try
             {
                 var configuration = new ConfigurationBuilder()
                     .AddJsonFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "appsettings.json"), optional: false, reloadOnChange: true)
                     .Build();
 
-                var apiSection = configuration.GetSection("ApiSettings");
-                var configuredUrl = apiSection["BaseUrl"];
+                var apiSection = configuration.GetSection(ApiSettings.SectionName);
+                var settings = apiSection.Get<ApiSettings>() ?? new ApiSettings();
 
-                // 从配置文件读取URL，如果为空则抛出异常
-                if (string.IsNullOrWhiteSpace(configuredUrl))
+                // DT-012配置验证：验证配置项的有效性
+                var validationResults = new List<System.ComponentModel.DataAnnotations.ValidationResult>();
+                var validationContext = new System.ComponentModel.DataAnnotations.ValidationContext(settings);
+                
+                if (!System.ComponentModel.DataAnnotations.Validator.TryValidateObject(settings, validationContext, validationResults, true))
                 {
-                    throw new InvalidOperationException("API BaseUrl 未在 appsettings.json 中配置");
+                    var errors = validationResults.Select(r => r.ErrorMessage).ToList();
+                    throw new InvalidOperationException($"API配置验证失败: {string.Join("; ", errors)}");
                 }
 
-                string baseUrl = configuredUrl.Trim();
                 // 确保URL以斜杠结尾
-                if (!baseUrl.EndsWith("/"))
+                if (!settings.BaseUrl.EndsWith("/"))
                 {
-                    baseUrl += "/";
+                    settings.BaseUrl += "/";
                 }
 
-                _settings = new ApiSettings
-                {
-                    BaseUrl = baseUrl,
-                    TimeoutSeconds = int.TryParse(apiSection["TimeoutSeconds"], out var timeout) ? timeout : defaultTimeout
-                };
+                _settings = settings;
             }
             catch (Exception ex)
             {

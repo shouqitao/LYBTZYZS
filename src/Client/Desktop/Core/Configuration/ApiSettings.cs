@@ -1,4 +1,6 @@
-﻿namespace LYBT.Desktop.Core.Configuration
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace LYBT.Desktop.Core.Configuration
 {
 
     /// <summary>
@@ -6,15 +8,19 @@
     /// </summary>
     public class ApiSettings
     {
+        public const string SectionName = "ApiSettings";
 
         /// <summary>
         /// API基础地址
         /// </summary>
+        [Required(ErrorMessage = "API基础地址不能为空")]
+        [Url(ErrorMessage = "API基础地址格式不正确")]
         public string BaseUrl { get; set; } = string.Empty;
 
         /// <summary>
         /// 请求超时时间（秒）
         /// </summary>
+        [Range(5, 300, ErrorMessage = "请求超时时间必须在5-300秒之间")]
         public int TimeoutSeconds { get; set; } = 60;
 
         /// <summary>
