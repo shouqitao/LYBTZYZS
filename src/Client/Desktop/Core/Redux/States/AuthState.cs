@@ -49,7 +49,7 @@ namespace LYBT.Desktop.Core.Redux.States
     public record UserInfo
     {
         public Guid Id { get; init; }
-        public string UserName { get; init; } = string.Empty;
+        public string Username { get; init; } = string.Empty;
         public string RealName { get; init; } = string.Empty;
         public string Role { get; init; } = string.Empty;
         public string? Avatar { get; init; }

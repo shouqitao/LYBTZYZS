@@ -152,7 +152,7 @@ namespace LYBT.Shared.Models.Contracts.Configuration
 
         /// <summary>用户名</summary>
         [DisplayName("用户名")]
-        public string? UserName { get; set; }
+        public string? Username { get; set; }
 
         /// <summary>操作类型</summary>
         [DisplayName("操作类型")]

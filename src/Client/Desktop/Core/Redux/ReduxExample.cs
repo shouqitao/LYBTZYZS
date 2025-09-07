@@ -78,7 +78,7 @@ namespace LYBT.Desktop.Core.Redux
                             User = new UserInfo
                             {
                                 Id = Guid.NewGuid(),
-                                UserName = loginAction.Payload.Username,
+                                Username = loginAction.Payload.Username,
                                 RealName = "张医生",
                                 Role = "Doctor",
                                 LastLoginTime = DateTimeOffset.Now

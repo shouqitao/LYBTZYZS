@@ -35,7 +35,7 @@
         /// <summary>
         /// 系统管理员用户名
         /// </summary>
-        public const string SystemAdminUserName = "sysadmin";
+        public const string SystemAdminUsername = "sysadmin";
 
         /// <summary>
         /// 默认密码最小长度
@@ -267,7 +267,7 @@
         /// <summary>
         /// 用户名正则表达式（字母、数字、下划线，3-20位）
         /// </summary>
-        public const string UserName = @"^[a-zA-Z0-9_]{3,20}$";
+        public const string Username = @"^[a-zA-Z0-9_]{3,20}$";
 
         /// <summary>
         /// 中文姓名正则表达式
