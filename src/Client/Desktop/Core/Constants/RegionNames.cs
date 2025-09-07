@@ -32,10 +32,6 @@
         /// </summary>
         public const string CashierContentRegion = "CashierContentRegion";
 
-        /// <summary>
-        /// 药师工作台内容区域
-        /// </summary>
-        public const string PharmacistContentRegion = "PharmacistContentRegion";
 
         /// <summary>
         /// 前台工作台内容区域
@@ -55,7 +51,6 @@
                 "SystemWorkbench" => SystemWorkbenchContentRegion,
                 "ConsultationWorkbench" => ConsultationWorkbenchContentRegion,
                 "CashierWorkbench" => CashierContentRegion,
-                "PharmacistWorkbench" => PharmacistContentRegion,
                 "ReceptionistWorkbench" => ReceptionistContentRegion,
                 _ => ContentRegion // 默认返回主内容区域
             };
@@ -73,7 +68,6 @@
                 "SystemWorkbenchMainView" => SystemWorkbenchContentRegion,
                 "ConsultationWorkbenchMainView" => ConsultationWorkbenchContentRegion,
                 "CashierMainView" => CashierContentRegion,
-                "PharmacistMainView" => PharmacistContentRegion,
                 "ReceptionistMainView" => ReceptionistContentRegion,
                 _ => ContentRegion
             };

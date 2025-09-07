@@ -524,16 +524,7 @@ public static class WorkbenchPermissionMapper
             WelcomeTemplate = "欢迎您，{0}！\n\n接待工作台正在启动..."
         },
 
-        // 药剂师 - 药房工作台
-        [UserRole.Pharmacist] = new()
-        {
-            WorkbenchView = "PharmacistWorkbenchMainView",
-            AccessibleModules = [
-                "Herbs", "Prescriptions", "Formula", "Patients"
-            ],
-            DisplayName = "药剂师",
-            WelcomeTemplate = "欢迎您，{0}！\n\n药房工作台正在启动..."
-        }
+        // 药剂师角色已移除 - 功能由医生角色承担
     };
 
     /// <summary>
@@ -649,7 +640,7 @@ public static class WorkbenchPermissionMapper
             UserRole.Doctor => "医生",
             UserRole.Receptionist => "前台",
             UserRole.Cashier => "收银员",
-            UserRole.Pharmacist => "药剂师",
+            UserRole.Pharmacist => "医生", // 药剂师角色已合并到医生
             UserRole.Therapist => "理疗师",
             _ => "用户"
         };
@@ -668,7 +659,7 @@ public static class WorkbenchPermissionMapper
             "医生" or "用户" => UserRole.Doctor, // "用户"映射为医生角色
             "前台" => UserRole.Receptionist,
             "收银员" => UserRole.Cashier,
-            "药剂师" => UserRole.Pharmacist,
+            "药剂师" => UserRole.Doctor, // 药剂师功能由医生角色承担
             "理疗师" => UserRole.Therapist,
             _ => UserRole.Doctor // 默认为医生角色
         };
