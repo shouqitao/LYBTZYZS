@@ -7,22 +7,27 @@
 ## 🎯 执行策略
 
 ### 阶段1: 准备阶段
+
 1. **创建工作分支**: `git checkout -b chore/prune-unused-workbenches`
 2. **备份当前状态**: 确保所有更改已提交
 3. **运行基准测试**: 确保当前构建成功
 
 ### 阶段2: 确认死代码删除
+
 删除100%确信的死代码（4个未使用的Workbench模块）
 
 ### 阶段3: 可疑代码标记
+
 为可疑代码添加 `[Obsolete]` 标记并观察
 
 ### 阶段4: 验证与清理
+
 运行构建测试，清理剩余引用
 
 ## 📋 详细执行步骤
 
 ### Phase 1: 解决方案清理
+
 **目标**: 从解决方案中移除死项目引用
 
 ```bash
@@ -39,6 +44,7 @@ dotnet sln LYBT.All.sln remove src/Client/Desktop/Workbenches/ReceptionistWorkbe
 **提交点**: `chore: remove unused workbench projects from solution`
 
 ### Phase 2: 删除TherapistWorkbench
+
 **目标**: 完全移除理疗师工作台模块
 
 ```bash
@@ -50,12 +56,14 @@ grep -r "TherapistWorkbench" --include="*.cs" --include="*.xaml" --include="*.cs
 ```
 
 **预期结果**: 
+
 - 删除约6个文件
 - 减少约300行代码
 
 **提交点**: `chore: remove unused TherapistWorkbench module`
 
-### Phase 3: 删除PharmacistWorkbench  
+### Phase 3: 删除PharmacistWorkbench
+
 **目标**: 完全移除药师工作台模块
 
 ```bash
@@ -67,12 +75,14 @@ grep -r "PharmacistWorkbench" --include="*.cs" --include="*.xaml" --include="*.c
 ```
 
 **预期结果**:
+
 - 删除约6个文件  
 - 减少约300行代码
 
 **提交点**: `chore: remove unused PharmacistWorkbench module`
 
 ### Phase 4: 删除CashierWorkbench
+
 **目标**: 完全移除收费员工作台模块
 
 ```bash
@@ -84,12 +94,14 @@ grep -r "CashierWorkbench" --include="*.cs" --include="*.xaml" --include="*.cspr
 ```
 
 **预期结果**:
+
 - 删除约8个文件
 - 减少约400行代码
 
 **提交点**: `chore: remove unused CashierWorkbench module`
 
 ### Phase 5: 删除ReceptionistWorkbench
+
 **目标**: 完全移除前台接待工作台模块
 
 ```bash
@@ -101,12 +113,14 @@ grep -r "ReceptionistWorkbench" --include="*.cs" --include="*.xaml" --include="*
 ```
 
 **预期结果**:
+
 - 删除约10个文件
 - 减少约500行代码
 
 **提交点**: `chore: remove unused ReceptionistWorkbench module`
 
 ### Phase 6: 文档清理
+
 **目标**: 清理相关的文档文件
 
 ```bash
@@ -121,9 +135,11 @@ grep -r "TherapistWorkbench\|PharmacistWorkbench\|CashierWorkbench\|Receptionist
 **提交点**: `docs: clean up references to removed workbench modules`
 
 ### Phase 7: 可疑代码标记
+
 **目标**: 为可疑代码添加观察标记
 
 创建 `.ai/keeplist.txt` 文件：
+
 ```
 # 代码清理白名单 - 2025-09-07
 # 以下项目添加了Obsolete标记，观察期14天
@@ -141,6 +157,7 @@ src/Server/Core/LYBT.Infrastructure/BaseService.cs
 ```
 
 为可疑类添加Obsolete标记：
+
 ```csharp
 [Obsolete("Under review for removal - analysis period ends 2025-09-21", false)]
 public class SuspiciousClass
@@ -152,6 +169,7 @@ public class SuspiciousClass
 **提交点**: `refactor: mark suspicious unused code for observation`
 
 ### Phase 8: 构建验证
+
 **目标**: 确保所有更改不影响构建
 
 ```bash
@@ -172,6 +190,7 @@ dotnet format
 ## ⏰ 执行时间估算
 
 ### 各阶段用时预估
+
 - **Phase 1** (解决方案清理): 5分钟
 - **Phase 2-5** (删除模块): 每个5分钟，共20分钟  
 - **Phase 6** (文档清理): 10分钟
@@ -181,17 +200,20 @@ dotnet format
 **总计**: 约60分钟
 
 ### 并行化可能
+
 Phase 2-5可以合并为单个操作，减少到约30分钟总时长。
 
 ## 🔍 验证检查点
 
 ### 每个Phase后的检查
+
 1. **构建状态**: 确保 `dotnet build` 成功
 2. **引用清理**: 确保没有遗漏的引用导致编译错误
 3. **文件完整性**: 确认删除了预期的文件
 4. **Git状态**: 检查暂存的更改是否符合预期
 
 ### 最终验证清单
+
 - [ ] 构建成功无错误
 - [ ] 测试全部通过（如果存在）
 - [ ] 解决方案中没有死项目引用
@@ -201,6 +223,7 @@ Phase 2-5可以合并为单个操作，减少到约30分钟总时长。
 ## 🚨 回滚计划
 
 ### 快速回滚
+
 如果发现问题，可以快速回滚到清理前状态：
 
 ```bash
@@ -216,7 +239,9 @@ git revert <commit-hash>
 ```
 
 ### 逐步回滚
+
 如果只是部分有问题：
+
 1. 确认问题范围
 2. 回滚对应的提交
 3. 重新运行构建验证
@@ -224,16 +249,19 @@ git revert <commit-hash>
 ## 📊 预期收益
 
 ### 立即收益
+
 - **代码行数**: 减少约1,500行死代码
 - **文件数**: 减少约30个无用文件
 - **编译时间**: 减少约30秒（4个项目）
 - **解决方案加载**: 提升约20%
 
 ### 长期收益
+
 - **维护负担**: 减少维护无用代码的时间
 - **团队认知**: 清晰的代码库结构
 - **新人培训**: 减少混乱和误解
 - **代码质量**: 提升整体代码质量指标
 
 ---
+
 **总结**: 详细的执行计划确保了安全、高效的死代码清理过程。重点关注可回滚性和验证完整性。

@@ -42,10 +42,6 @@
         /// </summary>
         public const string ReceptionistContentRegion = "ReceptionistContentRegion";
 
-        /// <summary>
-        /// 治疗师工作台内容区域
-        /// </summary>
-        public const string TherapistContentRegion = "TherapistContentRegion";
 
         /// <summary>
         /// 获取工作台内容区域名称
@@ -61,7 +57,6 @@
                 "CashierWorkbench" => CashierContentRegion,
                 "PharmacistWorkbench" => PharmacistContentRegion,
                 "ReceptionistWorkbench" => ReceptionistContentRegion,
-                "TherapistWorkbench" => TherapistContentRegion,
                 _ => ContentRegion // 默认返回主内容区域
             };
         }
@@ -80,7 +75,6 @@
                 "CashierMainView" => CashierContentRegion,
                 "PharmacistMainView" => PharmacistContentRegion,
                 "ReceptionistMainView" => ReceptionistContentRegion,
-                "TherapistMainView" => TherapistContentRegion,
                 _ => ContentRegion
             };
         }
