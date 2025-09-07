@@ -28,6 +28,12 @@
 		<PackageReference Include="Swashbuckle.AspNetCore" />
 		<PackageReference Include="Asp.Versioning.Mvc" />
 		<PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" />
+		<!-- Serilog structured logging packages -->
+		<PackageReference Include="Serilog.AspNetCore" />
+		<PackageReference Include="Serilog.Sinks.File" />
+		<PackageReference Include="Serilog.Sinks.Console" />
+		<PackageReference Include="Serilog.Enrichers.Environment" />
+		<PackageReference Include="Serilog.Enrichers.Thread" />
 	</ItemGroup>
 
 	<ItemGroup>
