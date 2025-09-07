@@ -16,6 +16,7 @@ namespace LYBT.Infrastructure
     /// <typeparam name="TDto">DTO类型</typeparam>
     /// <typeparam name="TCreateDto">创建DTO类型</typeparam>
     /// <typeparam name="TUpdateDto">更新DTO类型</typeparam>
+    [Obsolete("Under review for removal - analysis period ends 2025-09-21", false)]
     public abstract class BaseService<TEntity, TDto, TCreateDto, TUpdateDto>
         where TEntity : class
         where TDto : class

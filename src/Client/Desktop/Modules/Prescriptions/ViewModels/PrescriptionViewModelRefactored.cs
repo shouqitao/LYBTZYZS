@@ -25,6 +25,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
     /// - PrescriptionCommandHandler: 命令处理
     /// - PrescriptionEventCoordinator: 事件协调
     /// </summary>
+    [Obsolete("Under review for removal - analysis period ends 2025-09-21", false)]
     public class PrescriptionViewModelRefactored : BindableBase, IDisposable
     {
 

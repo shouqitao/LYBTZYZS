@@ -9,6 +9,7 @@ namespace LYBT.Infrastructure
     ///
     /// 实现复杂查询的组合和复用
     /// </summary>
+    [Obsolete("Under review for removal - analysis period ends 2025-09-21", false)]
     public abstract class Specification<T>
     {
 

@@ -10,6 +10,7 @@ namespace LYBT.Shared.Utilities.Helpers
     /// 通用工具类 - 前后端共享版本（性能优化）
     /// 包含纯逻辑功能，不依赖特定UI框架或Web框架
     /// </summary>
+    [Obsolete("Under review for removal - analysis period ends 2025-09-21", false)]
     public static partial class CommonHelper
     {
 

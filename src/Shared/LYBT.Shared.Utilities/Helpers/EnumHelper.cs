@@ -9,6 +9,7 @@ namespace LYBT.Shared.Utilities.Helpers
     /// 提供枚举的通用操作方法，不依赖特定UI框架
     /// </summary>
     [Description("枚举工具类")]
+    [Obsolete("Under review for removal - analysis period ends 2025-09-21", false)]
     public static class EnumHelper
     {
 
