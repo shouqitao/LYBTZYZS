@@ -8,12 +8,14 @@ using LYBT.Desktop.Core.Views.Dialogs;
 using Microsoft.Extensions.Logging;
 using SharedCommon = LYBT.Shared.Models.Contracts.Common;
 
-namespace LYBT.Desktop.Core.Services {
+namespace LYBT.Desktop.Core.Services
+{
 
     /// <summary>
     /// 用户通知服务 - 显示各种通知消息
     /// </summary>
-    public class UserNotificationService : IUserNotificationService, IDisposable {
+    public class UserNotificationService : IUserNotificationService, IDisposable
+    {
         private readonly ILogger<UserNotificationService> _loggingService;
         private readonly ILogger<UserNotificationService>? _logger;
         private readonly ConcurrentQueue<NotificationMessage> _messageQueue = new();
@@ -33,12 +35,14 @@ namespace LYBT.Desktop.Core.Services {
 
         public UserNotificationService(
             ILogger<UserNotificationService> loggingService,
-            ILogger<UserNotificationService>? logger = null) {
+            ILogger<UserNotificationService>? logger = null)
+        {
             _loggingService = loggingService ?? throw new ArgumentNullException(nameof(loggingService));
             _logger = logger;
 
             // 初始化显示计时器
-            _displayTimer = new DispatcherTimer {
+            _displayTimer = new DispatcherTimer
+            {
                 Interval = TimeSpan.FromMilliseconds(500)
             };
             _displayTimer.Tick += ProcessNotificationQueue;
@@ -47,7 +51,8 @@ namespace LYBT.Desktop.Core.Services {
         /// <summary>
         /// 初始化通知服务
         /// </summary>
-        public void Initialize(Window mainWindow) {
+        public void Initialize(Window mainWindow)
+        {
             _mainWindow = mainWindow;
             CreateNotificationContainer();
             _displayTimer.Start();
@@ -57,8 +62,10 @@ namespace LYBT.Desktop.Core.Services {
 
         #region 公共方法
 
-        public async Task ShowSuccessAsync(string message, int? durationSeconds = null) {
-            await ShowNotificationAsync(new NotificationMessage {
+        public async Task ShowSuccessAsync(string message, int? durationSeconds = null)
+        {
+            await ShowNotificationAsync(new NotificationMessage
+            {
                 Type = NotificationType.Success,
                 Title = "成功",
                 Message = message,
@@ -68,8 +75,10 @@ namespace LYBT.Desktop.Core.Services {
             });
         }
 
-        public async Task ShowWarningAsync(string message, int? durationSeconds = null) {
-            await ShowNotificationAsync(new NotificationMessage {
+        public async Task ShowWarningAsync(string message, int? durationSeconds = null)
+        {
+            await ShowNotificationAsync(new NotificationMessage
+            {
                 Type = NotificationType.Warning,
                 Title = "警告",
                 Message = message,
@@ -79,8 +88,10 @@ namespace LYBT.Desktop.Core.Services {
             });
         }
 
-        public async Task ShowErrorAsync(string message, SharedCommon.ErrorSeverity severity, int? durationSeconds = null) {
-            await ShowNotificationAsync(new NotificationMessage {
+        public async Task ShowErrorAsync(string message, SharedCommon.ErrorSeverity severity, int? durationSeconds = null)
+        {
+            await ShowNotificationAsync(new NotificationMessage
+            {
                 Type = NotificationType.Error,
                 Title = severity >= SharedCommon.ErrorSeverity.Critical ? "严重错误" : "错误",
                 Message = message,
@@ -90,8 +101,10 @@ namespace LYBT.Desktop.Core.Services {
             });
         }
 
-        public async Task ShowInfoAsync(string message, int? durationSeconds = null) {
-            await ShowNotificationAsync(new NotificationMessage {
+        public async Task ShowInfoAsync(string message, int? durationSeconds = null)
+        {
+            await ShowNotificationAsync(new NotificationMessage
+            {
                 Type = NotificationType.Info,
                 Title = "提示",
                 Message = message,
@@ -101,8 +114,10 @@ namespace LYBT.Desktop.Core.Services {
             });
         }
 
-        public async Task<bool> ShowConfirmationAsync(string message, string title = "确认") {
-            return await Application.Current.Dispatcher.InvokeAsync(() => {
+        public async Task<bool> ShowConfirmationAsync(string message, string title = "确认")
+        {
+            return await Application.Current.Dispatcher.InvokeAsync(() =>
+            {
                 var result = MessageBox.Show(
                     _mainWindow ?? Application.Current.MainWindow,
                     message,
@@ -114,10 +129,13 @@ namespace LYBT.Desktop.Core.Services {
             });
         }
 
-        public async Task<string?> ShowInputAsync(string prompt, string title = "输入", string defaultValue = "") {
+        public async Task<string?> ShowInputAsync(string prompt, string title = "输入", string defaultValue = "")
+        {
             // 创建简单的输入对话框
-            return await Application.Current.Dispatcher.InvokeAsync(() => {
-                var inputDialog = new InputDialog {
+            return await Application.Current.Dispatcher.InvokeAsync(() =>
+            {
+                var inputDialog = new InputDialog
+                {
                     Owner = _mainWindow ?? Application.Current.MainWindow,
                     Title = title,
                     Prompt = prompt,
@@ -132,8 +150,10 @@ namespace LYBT.Desktop.Core.Services {
         /// <summary>
         /// 增强的信息通知（支持配置）
         /// </summary>
-        public async Task ShowInfoAsync(string message, NotificationConfiguration configuration) {
-            await ShowNotificationAsync(new NotificationMessage {
+        public async Task ShowInfoAsync(string message, NotificationConfiguration configuration)
+        {
+            await ShowNotificationAsync(new NotificationMessage
+            {
                 Type = NotificationType.Info,
                 Title = "提示",
                 Message = message,
@@ -146,8 +166,10 @@ namespace LYBT.Desktop.Core.Services {
         /// <summary>
         /// 增强的警告通知（支持配置）
         /// </summary>
-        public async Task ShowWarningAsync(string message, NotificationConfiguration configuration) {
-            await ShowNotificationAsync(new NotificationMessage {
+        public async Task ShowWarningAsync(string message, NotificationConfiguration configuration)
+        {
+            await ShowNotificationAsync(new NotificationMessage
+            {
                 Type = NotificationType.Warning,
                 Title = "警告",
                 Message = message,
@@ -160,13 +182,16 @@ namespace LYBT.Desktop.Core.Services {
         /// <summary>
         /// 增强的错误通知（支持建议操作和配置）
         /// </summary>
-        public async Task ShowErrorAsync(string message, string[] suggestedActions, NotificationConfiguration configuration) {
+        public async Task ShowErrorAsync(string message, string[] suggestedActions, NotificationConfiguration configuration)
+        {
             var fullMessage = message;
-            if (suggestedActions.Length > 0) {
+            if (suggestedActions.Length > 0)
+            {
                 fullMessage += "\n\n建议操作：\n• " + string.Join("\n• ", suggestedActions);
             }
 
-            await ShowNotificationAsync(new NotificationMessage {
+            await ShowNotificationAsync(new NotificationMessage
+            {
                 Type = NotificationType.Error,
                 Title = "错误",
                 Message = fullMessage,
@@ -179,24 +204,32 @@ namespace LYBT.Desktop.Core.Services {
         /// <summary>
         /// 严重错误通知（支持完整错误信息和配置）
         /// </summary>
-        public async Task ShowCriticalErrorAsync(SharedCommon.HandledError handledError, NotificationConfiguration configuration) {
-            if (configuration.ShowInDialog) {
+        public async Task ShowCriticalErrorAsync(SharedCommon.HandledError handledError, NotificationConfiguration configuration)
+        {
+            if (configuration.ShowInDialog)
+            {
                 // 显示详细的错误对话框
-                await Application.Current.Dispatcher.InvokeAsync(() => {
-                    var errorDialog = new CriticalErrorDialog {
+                await Application.Current.Dispatcher.InvokeAsync(() =>
+                {
+                    var errorDialog = new CriticalErrorDialog
+                    {
                         Owner = _mainWindow ?? Application.Current.MainWindow,
                         ErrorInfo = handledError
                     };
                     errorDialog.ShowDialog();
                 });
-            } else {
+            }
+            else
+            {
                 // 显示通知
                 var message = handledError.UserMessage;
-                if (handledError.SuggestedActions.Count > 0) {
+                if (handledError.SuggestedActions.Count > 0)
+                {
                     message += "\n\n建议操作：\n• " + string.Join("\n• ", handledError.SuggestedActions);
                 }
 
-                await ShowNotificationAsync(new NotificationMessage {
+                await ShowNotificationAsync(new NotificationMessage
+                {
                     Type = NotificationType.Error,
                     Title = "严重错误",
                     Message = message,
@@ -207,12 +240,14 @@ namespace LYBT.Desktop.Core.Services {
             }
         }
 
-        public void ShowProgress(string message, int percentage) {
+        public void ShowProgress(string message, int percentage)
+        {
             // TODO: 实现进度显示
             _logger?.LogDebug("显示进度: {Message} - {Percentage}%", message, percentage);
         }
 
-        public void HideProgress() {
+        public void HideProgress()
+        {
             // TODO: 隐藏进度显示
             _logger?.LogDebug("隐藏进度");
         }
@@ -221,35 +256,43 @@ namespace LYBT.Desktop.Core.Services {
 
         #region 私有方法
 
-        private async Task ShowNotificationAsync(NotificationMessage notification) {
+        private async Task ShowNotificationAsync(NotificationMessage notification)
+        {
             // 添加到队列
             _messageQueue.Enqueue(notification);
 
             // 记录日志
-            _loggingService.LogInformation("添加通知到队列: {Type} - {Message}",
+            _loggingService.LogInformation(
+                "添加通知到队列: {Type} - {Message}",
                 notification.Type, notification.Message);
 
             await Task.CompletedTask;
         }
 
-        private void ProcessNotificationQueue(object? sender, EventArgs e) {
-            if (_notificationContainer == null || !_messageQueue.TryDequeue(out var notification)) {
+        private void ProcessNotificationQueue(object? sender, EventArgs e)
+        {
+            if (_notificationContainer == null || !_messageQueue.TryDequeue(out var notification))
+            {
                 return;
             }
 
             // 检查当前显示的通知数量
-            if (_notificationContainer.Children.Count >= MaxSimultaneousNotifications) {
+            if (_notificationContainer.Children.Count >= MaxSimultaneousNotifications)
+            {
                 return;
             }
 
             // 在UI线程上创建和显示通知
-            Application.Current.Dispatcher.BeginInvoke(new Action(() => {
+            Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+            {
                 DisplayNotification(notification);
             }));
         }
 
-        private void DisplayNotification(NotificationMessage notification) {
-            try {
+        private void DisplayNotification(NotificationMessage notification)
+        {
+            try
+            {
                 // 创建通知UI
                 var notificationPanel = CreateNotificationPanel(notification);
 
@@ -260,21 +303,27 @@ namespace LYBT.Desktop.Core.Services {
                 ApplyEnterAnimation(notificationPanel);
 
                 // 设置自动关闭
-                var timer = new DispatcherTimer {
+                var timer = new DispatcherTimer
+                {
                     Interval = notification.Duration
                 };
-                timer.Tick += (s, e) => {
+                timer.Tick += (s, e) =>
+                {
                     timer.Stop();
                     RemoveNotification(notificationPanel);
                 };
                 timer.Start();
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger?.LogError(ex, "显示通知失败");
             }
         }
 
-        private Border CreateNotificationPanel(NotificationMessage notification) {
-            var panel = new Border {
+        private Border CreateNotificationPanel(NotificationMessage notification)
+        {
+            var panel = new Border
+            {
                 Background = GetBackgroundBrush(notification.Type),
                 BorderBrush = GetBorderBrush(notification.Type),
                 BorderThickness = new Thickness(1),
@@ -292,7 +341,8 @@ namespace LYBT.Desktop.Core.Services {
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
 
             // 图标
-            var icon = new TextBlock {
+            var icon = new TextBlock
+            {
                 Text = notification.Icon,
                 FontSize = 24,
                 VerticalAlignment = VerticalAlignment.Center,
@@ -302,12 +352,15 @@ namespace LYBT.Desktop.Core.Services {
             grid.Children.Add(icon);
 
             // 内容
-            var contentPanel = new StackPanel {
+            var contentPanel = new StackPanel
+            {
                 VerticalAlignment = VerticalAlignment.Center
             };
 
-            if (!string.IsNullOrEmpty(notification.Title)) {
-                contentPanel.Children.Add(new TextBlock {
+            if (!string.IsNullOrEmpty(notification.Title))
+            {
+                contentPanel.Children.Add(new TextBlock
+                {
                     Text = notification.Title,
                     FontWeight = FontWeights.Bold,
                     FontSize = 14,
@@ -315,7 +368,8 @@ namespace LYBT.Desktop.Core.Services {
                 });
             }
 
-            contentPanel.Children.Add(new TextBlock {
+            contentPanel.Children.Add(new TextBlock
+            {
                 Text = notification.Message,
                 TextWrapping = TextWrapping.Wrap,
                 FontSize = 12,
@@ -327,7 +381,8 @@ namespace LYBT.Desktop.Core.Services {
             grid.Children.Add(contentPanel);
 
             // 关闭按钮
-            var closeButton = new Button {
+            var closeButton = new Button
+            {
                 Content = "✕",
                 Background = Brushes.Transparent,
                 BorderThickness = new Thickness(0),
@@ -345,15 +400,18 @@ namespace LYBT.Desktop.Core.Services {
             return panel;
         }
 
-        private void ApplyEnterAnimation(FrameworkElement element) {
-            var slideIn = new ThicknessAnimation {
+        private void ApplyEnterAnimation(FrameworkElement element)
+        {
+            var slideIn = new ThicknessAnimation
+            {
                 From = new Thickness(400, 0, -400, 0),
                 To = new Thickness(0),
                 Duration = TimeSpan.FromMilliseconds(300),
                 EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
             };
 
-            var fadeIn = new DoubleAnimation {
+            var fadeIn = new DoubleAnimation
+            {
                 From = 0,
                 To = 1,
                 Duration = TimeSpan.FromMilliseconds(300)
@@ -363,29 +421,36 @@ namespace LYBT.Desktop.Core.Services {
             element.BeginAnimation(UIElement.OpacityProperty, fadeIn);
         }
 
-        private void RemoveNotification(FrameworkElement element) {
-            var fadeOut = new DoubleAnimation {
+        private void RemoveNotification(FrameworkElement element)
+        {
+            var fadeOut = new DoubleAnimation
+            {
                 From = 1,
                 To = 0,
                 Duration = TimeSpan.FromMilliseconds(200)
             };
 
-            fadeOut.Completed += (s, e) => {
+            fadeOut.Completed += (s, e) =>
+            {
                 _notificationContainer?.Children.Remove(element);
             };
 
             element.BeginAnimation(UIElement.OpacityProperty, fadeOut);
         }
 
-        private void CreateNotificationContainer() {
-            if (_mainWindow == null) {
+        private void CreateNotificationContainer()
+        {
+            if (_mainWindow == null)
+            {
                 return;
             }
 
             // 查找或创建通知容器
-            if (_mainWindow.Content is Grid mainGrid) {
+            if (_mainWindow.Content is Grid mainGrid)
+            {
                 // 创建通知层
-                _notificationContainer = new StackPanel {
+                _notificationContainer = new StackPanel
+                {
                     HorizontalAlignment = HorizontalAlignment.Right,
                     VerticalAlignment = VerticalAlignment.Top,
                     Margin = new Thickness(0, 50, 10, 0),
@@ -400,8 +465,10 @@ namespace LYBT.Desktop.Core.Services {
             }
         }
 
-        private Brush GetBackgroundBrush(NotificationType type) {
-            return type switch {
+        private Brush GetBackgroundBrush(NotificationType type)
+        {
+            return type switch
+            {
                 NotificationType.Success => new SolidColorBrush(Color.FromRgb(76, 175, 80)),
                 NotificationType.Warning => new SolidColorBrush(Color.FromRgb(255, 152, 0)),
                 NotificationType.Error => new SolidColorBrush(Color.FromRgb(244, 67, 54)),
@@ -410,8 +477,10 @@ namespace LYBT.Desktop.Core.Services {
             };
         }
 
-        private Brush GetBorderBrush(NotificationType type) {
-            return type switch {
+        private Brush GetBorderBrush(NotificationType type)
+        {
+            return type switch
+            {
                 NotificationType.Success => new SolidColorBrush(Color.FromRgb(56, 142, 60)),
                 NotificationType.Warning => new SolidColorBrush(Color.FromRgb(245, 124, 0)),
                 NotificationType.Error => new SolidColorBrush(Color.FromRgb(211, 47, 47)),
@@ -424,7 +493,8 @@ namespace LYBT.Desktop.Core.Services {
 
         #region 内部类
 
-        private class NotificationMessage {
+        private class NotificationMessage
+        {
             public NotificationType Type { get; set; }
             public string Title { get; set; } = string.Empty;
             public string Message { get; set; } = string.Empty;
@@ -433,7 +503,8 @@ namespace LYBT.Desktop.Core.Services {
             public string Icon { get; set; } = string.Empty;
         }
 
-        private enum NotificationType {
+        private enum NotificationType
+        {
             Info,
             Success,
             Warning,
@@ -443,13 +514,15 @@ namespace LYBT.Desktop.Core.Services {
         /// <summary>
         /// 简单的输入对话框
         /// </summary>
-        private class InputDialog : Window {
+        private class InputDialog : Window
+        {
             public string Prompt { get; set; } = string.Empty;
             public string InputText { get; set; } = string.Empty;
 
             private TextBox _inputTextBox;
 
-            public InputDialog() {
+            public InputDialog()
+            {
                 Width = 400;
                 Height = 150;
                 WindowStartupLocation = WindowStartupLocation.CenterOwner;
@@ -461,38 +534,44 @@ namespace LYBT.Desktop.Core.Services {
                 grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
                 grid.Margin = new Thickness(10);
 
-                var promptLabel = new TextBlock {
+                var promptLabel = new TextBlock
+                {
                     Text = Prompt,
                     Margin = new Thickness(0, 0, 0, 10)
                 };
                 Grid.SetRow(promptLabel, 0);
                 grid.Children.Add(promptLabel);
 
-                _inputTextBox = new TextBox {
+                _inputTextBox = new TextBox
+                {
                     Text = InputText,
                     Margin = new Thickness(0, 0, 0, 10)
                 };
                 Grid.SetRow(_inputTextBox, 1);
                 grid.Children.Add(_inputTextBox);
 
-                var buttonPanel = new StackPanel {
+                var buttonPanel = new StackPanel
+                {
                     Orientation = Orientation.Horizontal,
                     HorizontalAlignment = HorizontalAlignment.Right
                 };
 
-                var okButton = new Button {
+                var okButton = new Button
+                {
                     Content = "确定",
                     Width = 75,
                     Margin = new Thickness(0, 0, 5, 0),
                     IsDefault = true
                 };
-                okButton.Click += (s, e) => {
+                okButton.Click += (s, e) =>
+                {
                     InputText = _inputTextBox.Text;
                     DialogResult = true;
                 };
                 buttonPanel.Children.Add(okButton);
 
-                var cancelButton = new Button {
+                var cancelButton = new Button
+                {
                     Content = "取消",
                     Width = 75,
                     IsCancel = true
@@ -515,17 +594,23 @@ namespace LYBT.Desktop.Core.Services {
 
         private bool _disposed = false;
 
-        protected virtual void Dispose(bool disposing) {
-            if (!_disposed) {
-                if (disposing) {
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
                     // 停止并释放DispatcherTimer
                     _displayTimer?.Stop();
-                    if (_displayTimer != null) {
+                    if (_displayTimer != null)
+                    {
                         _displayTimer.Tick -= ProcessNotificationQueue;
                     }
 
                     // 清理通知队列
-                    while (_messageQueue.TryDequeue(out _)) { }
+                    while (_messageQueue.TryDequeue(out _))
+                    {
+                    }
 
                     _logger?.LogInformation("用户通知服务已释放资源");
                 }
@@ -533,7 +618,8 @@ namespace LYBT.Desktop.Core.Services {
             }
         }
 
-        public void Dispose() {
+        public void Dispose()
+        {
             Dispose(true);
             GC.SuppressFinalize(this);
         }
@@ -545,7 +631,8 @@ namespace LYBT.Desktop.Core.Services {
     /// 用户通知服务接口
     /// UltraThink Phase 5.3: 扩展支持增强错误处理
     /// </summary>
-    public interface IUserNotificationService {
+    public interface IUserNotificationService
+    {
 
         void Initialize(Window mainWindow);
 

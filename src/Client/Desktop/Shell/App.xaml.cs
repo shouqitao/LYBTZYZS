@@ -31,14 +31,16 @@ namespace LYBT.Desktop.Shell;
 /// 优化启动性能，提供角色基础的模块按需加载策略
 /// 适配小型诊所部署环境，确保系统快速启动和稳定运行
 /// </summary>
-public partial class App : PrismApplication {
+public partial class App : PrismApplication
+{
 
     /// <summary>
     /// 创建应用程序主窗体
     /// 从DI容器中解析MainWindow实例
     /// </summary>
     /// <returns>应用程序主窗体实例</returns>
-    protected override Window CreateShell() {
+    protected override Window CreateShell()
+    {
         return Container.Resolve<MainWindow>();
     }
 
@@ -48,7 +50,8 @@ public partial class App : PrismApplication {
     /// </summary>
     /// <param name="containerRegistry">DI容器注册器</param>
     /// <exception cref="ArgumentNullException">当容器注册器为 null 时抛出</exception>
-    protected override void RegisterTypes(IContainerRegistry containerRegistry) {
+    protected override void RegisterTypes(IContainerRegistry containerRegistry)
+    {
         ArgumentNullException.ThrowIfNull(containerRegistry, nameof(containerRegistry));
 
         // 使用扩展方法统一注册所有服务
@@ -62,11 +65,13 @@ public partial class App : PrismApplication {
     /// 配置ViewModel定位器
     /// 显式注册View和ViewModel的映射关系，确保依赖注入正确工作
     /// </summary>
-    protected override void ConfigureViewModelLocator() {
+    protected override void ConfigureViewModelLocator()
+    {
         base.ConfigureViewModelLocator();
 
         // 显式注册View和ViewModel的映射关系，解决AutoWireViewModel失败问题
-        ViewModelLocationProvider.Register<MainWindow>(() => {
+        ViewModelLocationProvider.Register<MainWindow>(() =>
+        {
             var regionManager = Container.Resolve<IRegionManager>();
             var eventAggregator = Container.Resolve<IEventAggregator>();
             var servicesFacade = Container.Resolve<LYBT.Desktop.Core.Interfaces.Services.IMainWindowServicesFacade>();
@@ -82,7 +87,8 @@ public partial class App : PrismApplication {
     /// 应用程序初始化完成后的回调
     /// 执行企业级启动流程：服务注册验证、错误处理初始化、模块协调器配置、性能优化预热
     /// </summary>
-    protected override void OnInitialized() {
+    protected override void OnInitialized()
+    {
         base.OnInitialized();
 
         // 1. 验证服务注册 - 确保自动发现系统正常工作
@@ -102,11 +108,15 @@ public partial class App : PrismApplication {
     /// 初始化应用程序预热
     /// 异步预热关键服务，提升用户操作响应速度
     /// </summary>
-    private async Task InitializeApplicationWarmupAsync() {
-        try {
+    private async Task InitializeApplicationWarmupAsync()
+    {
+        try
+        {
             var startupService = Container.Resolve<LYBT.Desktop.Core.Services.Performance.IStartupOptimizationService>();
             await startupService.WarmupApplicationAsync().ConfigureAwait(false);
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
             System.Diagnostics.Debug.WriteLine($"应用预热失败: {ex.Message}");
             // 预热失败不影响主流程，仅记录日志
         }
@@ -116,11 +126,15 @@ public partial class App : PrismApplication {
     /// 初始化错误处理服务
     /// 注册全局异常处理器，确保系统异常得到妥善处理
     /// </summary>
-    private void InitializeErrorHandlingService() {
-        try {
+    private void InitializeErrorHandlingService()
+    {
+        try
+        {
             var errorHandlingService = Container.Resolve<LYBT.Desktop.Core.Interfaces.Services.IErrorHandlingService>();
             errorHandlingService.RegisterGlobalExceptionHandlers();
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
             // 如果错误处理服务初始化失败，使用基本的错误处理
             System.Diagnostics.Debug.WriteLine($"初始化错误处理服务失败: {ex.Message}");
             MessageBox.Show($"系统初始化失败: {ex.Message}", "凌隐宝堂 - 系统错误",
@@ -131,32 +145,42 @@ public partial class App : PrismApplication {
     /// <summary>
     /// 验证服务注册 - 确保所有自动发现的服务都能正常解析
     /// </summary>
-    private void ValidateServiceRegistrations() {
-        try {
+    private void ValidateServiceRegistrations()
+    {
+        try
+        {
             var logger = LoggerFactory.Create(builder => builder.AddDebug())
                 .CreateLogger("ServiceValidation");
-            
+
             logger.LogInformation("开始验证服务注册...");
-            
+
             // 解析服务注册验证器
             var validator = Container.Resolve<IModuleServiceRegistrar>();
-            if (validator is ModuleRegistrationValidator moduleValidator) {
+            if (validator is ModuleRegistrationValidator moduleValidator)
+            {
                 var validationResult = moduleValidator.ValidateRegistrations(Container);
-                
-                if (validationResult.IsAllSuccessful) {
-                    logger.LogInformation("服务注册验证通过：所有 {TotalCount} 个服务都可正常解析", 
+
+                if (validationResult.IsAllSuccessful)
+                {
+                    logger.LogInformation(
+                        "服务注册验证通过：所有 {TotalCount} 个服务都可正常解析",
                         validationResult.TotalCount);
-                } else {
-                    logger.LogWarning("服务注册验证失败：{SuccessCount}/{TotalCount} 成功\n失败服务：{FailedServices}",
+                }
+                else
+                {
+                    logger.LogWarning(
+                        "服务注册验证失败：{SuccessCount}/{TotalCount} 成功\n失败服务：{FailedServices}",
                         validationResult.SuccessCount, validationResult.TotalCount,
                         string.Join(", ", validationResult.FailedServices));
                 }
-                
+
                 // 输出诊断报告
                 var report = moduleValidator.CreateDiagnosticReport();
                 logger.LogDebug("服务注册诊断报告\n{Report}", report);
             }
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
             // 验证失败不应阻塞应用启动，但需记录错误
             System.Diagnostics.Debug.WriteLine($"服务注册验证失败: {ex.Message}");
         }
@@ -167,11 +191,15 @@ public partial class App : PrismApplication {
     /// 移除复杂的性能监控，专注核心功能和稳定性
     /// 提供轻量级的模块加载管理，适配小型诊所部署需求
     /// </summary>
-    private void InitializeSimplifiedModuleCoordinator() {
-        try {
+    private void InitializeSimplifiedModuleCoordinator()
+    {
+        try
+        {
             var logger = Container.Resolve<ILogger<App>>();
             logger.LogInformation("UltraThink简化模块协调器初始化完成");
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
             System.Diagnostics.Debug.WriteLine($"简化模块协调器初始化异常: {ex}");
             // 模块协调器初始化失败不应阻塞应用启动
         }
@@ -184,14 +212,16 @@ public partial class App : PrismApplication {
     /// <param name="moduleManager">模块管理器</param>
     /// <param name="logger">日志记录器</param>
     /// <exception cref="ArgumentNullException">当参数为 null 时抛出</exception>
-    private void SubscribeToModuleEvents(IModuleManager moduleManager, ILogger<App> logger) {
+    private void SubscribeToModuleEvents(IModuleManager moduleManager, ILogger<App> logger)
+    {
         ArgumentNullException.ThrowIfNull(moduleManager, nameof(moduleManager));
         ArgumentNullException.ThrowIfNull(logger, nameof(logger));
 
         var moduleInitTimes = new Dictionary<string, DateTime>();
 
         // 模块开始加载事件
-        moduleManager.ModuleDownloadProgressChanged += (sender, e) => {
+        moduleManager.ModuleDownloadProgressChanged += (sender, e) =>
+        {
             if (e.ProgressPercentage == 0) // 开始加载
             {
                 moduleInitTimes[e.ModuleInfo.ModuleName] = DateTime.Now;
@@ -200,17 +230,21 @@ public partial class App : PrismApplication {
         };
 
         // 模块加载完成事件
-        moduleManager.LoadModuleCompleted += (sender, e) => {
+        moduleManager.LoadModuleCompleted += (sender, e) =>
+        {
             var moduleName = e.ModuleInfo.ModuleName;
-            if (moduleInitTimes.TryGetValue(moduleName, out var startTime)) {
+            if (moduleInitTimes.TryGetValue(moduleName, out var startTime))
+            {
                 var initializationTime = DateTime.Now - startTime;
                 moduleInitTimes.Remove(moduleName);
 
-                logger.LogInformation("模块 {ModuleName} 加载完成，耗时 {Duration}ms",
+                logger.LogInformation(
+                    "模块 {ModuleName} 加载完成，耗时 {Duration}ms",
                     moduleName, initializationTime.TotalMilliseconds);
             }
 
-            if (!e.IsErrorHandled && e.Error != null) {
+            if (!e.IsErrorHandled && e.Error != null)
+            {
                 logger.LogError(e.Error, "模块 {ModuleName} 加载失败", e.ModuleInfo.ModuleName);
             }
         };
@@ -225,7 +259,8 @@ public partial class App : PrismApplication {
     /// </summary>
     /// <param name="moduleCatalog">模块目录</param>
     /// <exception cref="ArgumentNullException">当模块目录为 null 时抛出</exception>
-    protected override void ConfigureModuleCatalog(IModuleCatalog moduleCatalog) {
+    protected override void ConfigureModuleCatalog(IModuleCatalog moduleCatalog)
+    {
         ArgumentNullException.ThrowIfNull(moduleCatalog, nameof(moduleCatalog));
 
         // 1. 核心必需模块（所有角色都需要）
@@ -268,8 +303,10 @@ public partial class App : PrismApplication {
     /// <param name="moduleCatalog">模块目录</param>
     /// <param name="moduleName">模块名称</param>
     /// <param name="moduleType">模块类型</param>
-    private static void AddCoreModule(IModuleCatalog moduleCatalog, string moduleName, Type moduleType) {
-        moduleCatalog.AddModule(new ModuleInfo {
+    private static void AddCoreModule(IModuleCatalog moduleCatalog, string moduleName, Type moduleType)
+    {
+        moduleCatalog.AddModule(new ModuleInfo
+        {
             ModuleName = moduleName,
             ModuleType = moduleType.AssemblyQualifiedName,
             InitializationMode = InitializationMode.WhenAvailable
@@ -284,8 +321,10 @@ public partial class App : PrismApplication {
     /// <param name="moduleName">模块名称</param>
     /// <param name="moduleType">模块类型</param>
     /// <param name="requiredRoles">所需角色数组</param>
-    private static void AddRoleBasedModule(IModuleCatalog moduleCatalog, string moduleName, Type moduleType, string[] requiredRoles) {
-        var moduleInfo = new ModuleInfo {
+    private static void AddRoleBasedModule(IModuleCatalog moduleCatalog, string moduleName, Type moduleType, string[] requiredRoles)
+    {
+        var moduleInfo = new ModuleInfo
+        {
             ModuleName = moduleName,
             ModuleType = moduleType.AssemblyQualifiedName,
             // 设为按需加载，登录后根据角色决定是否立即加载
@@ -294,7 +333,6 @@ public partial class App : PrismApplication {
 
         // 记录模块角色信息（简化处理）
         // TODO: 如需角色限制，在模块初始化时检查
-
         moduleCatalog.AddModule(moduleInfo);
     }
 
@@ -305,10 +343,12 @@ public partial class App : PrismApplication {
     /// <param name="userRole">用户角色</param>
     /// <returns>模块加载任务</returns>
     /// <exception cref="ArgumentException">当用户角色为空时抛出</exception>
-    public async Task LoadRoleBasedModulesAsync(string userRole) {
+    public async Task LoadRoleBasedModulesAsync(string userRole)
+    {
         ArgumentException.ThrowIfNullOrWhiteSpace(userRole, nameof(userRole));
 
-        try {
+        try
+        {
             var moduleManager = Container.Resolve<IModuleManager>();
             var moduleCatalog = Container.Resolve<IModuleCatalog>();
             var logger = Container.Resolve<ILogger<App>>();
@@ -318,26 +358,34 @@ public partial class App : PrismApplication {
             var modulesToLoad = new List<string>();
 
             // 遍历所有按需加载的模块，简化处理
-            foreach (var module in moduleCatalog.Modules.Where(m => m.InitializationMode == InitializationMode.OnDemand)) {
+            foreach (var module in moduleCatalog.Modules.Where(m => m.InitializationMode == InitializationMode.OnDemand))
+            {
                 // 简化版本：所有OnDemand模块都加载（可根据需要后续优化）
                 modulesToLoad.Add(module.ModuleName);
             }
 
             // 批量加载匹配的模块
             var loadedCount = 0;
-            foreach (var moduleName in modulesToLoad) {
-                try {
+            foreach (var moduleName in modulesToLoad)
+            {
+                try
+                {
                     await Task.Run(() => moduleManager.LoadModule(moduleName)).ConfigureAwait(false);
                     logger.LogDebug("模块 {ModuleName} 加载完成", moduleName);
                     loadedCount++;
-                } catch (Exception ex) {
+                }
+                catch (Exception ex)
+                {
                     logger.LogError(ex, "加载模块 {ModuleName} 失败", moduleName);
                 }
             }
 
-            logger.LogInformation("角色驱动模块加载完成，共加载 {LoadedCount}/{TotalCount} 个模块",
+            logger.LogInformation(
+                "角色驱动模块加载完成，共加载 {LoadedCount}/{TotalCount} 个模块",
                 loadedCount, modulesToLoad.Count);
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
             System.Diagnostics.Debug.WriteLine($"角色驱动模块加载异常: {ex.Message}");
             throw;
         }

@@ -1,12 +1,14 @@
 ﻿using LYBT.Desktop.Core.Models.Common;
 
-namespace LYBT.Desktop.Core.Interfaces {
+namespace LYBT.Desktop.Core.Interfaces
+{
 
     /// <summary>
     /// 自定义对话框感知接口
     /// 替代 Prism IDialogAware，兼容 Prism 8.1.97
     /// </summary>
-    public interface ICustomDialogAware {
+    public interface ICustomDialogAware
+    {
 
         /// <summary>
         /// 对话框标题

@@ -2,13 +2,16 @@
 
 #nullable disable
 
-namespace LYBT.Infrastructure.Migrations {
+namespace LYBT.Infrastructure.Migrations
+{
 
     /// <inheritdoc />
-    public partial class AddSysAdminSeedData : Migration {
+    public partial class AddSysAdminSeedData : Migration
+    {
 
         /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder) {
+        protected override void Up(MigrationBuilder migrationBuilder)
+        {
             migrationBuilder.InsertData(
                 table: "AdminSecrets",
                 columns: new[] { "Id", "PasswordHash", "UserName" },
@@ -16,7 +19,8 @@ namespace LYBT.Infrastructure.Migrations {
         }
 
         /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder) {
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
             migrationBuilder.DeleteData(
                 table: "AdminSecrets",
                 keyColumn: "Id",

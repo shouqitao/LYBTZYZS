@@ -1,12 +1,14 @@
 ﻿using Prism.Mvvm;
 
-namespace LYBT.Desktop.Core.ViewModels.MedicalCase {
+namespace LYBT.Desktop.Core.ViewModels.MedicalCase
+{
 
     /// <summary>
     /// 医疗案例状态管理视图模型 - UltraThink架构Presentation Layer
     /// 专门处理医疗案例相关的UI状态管理，完全分离业务逻辑
     /// </summary>
-    public class MedicalCaseStateViewModel : BindableBase {
+    public class MedicalCaseStateViewModel : BindableBase
+    {
 
         #region UI状态字段
 
@@ -27,71 +29,84 @@ namespace LYBT.Desktop.Core.ViewModels.MedicalCase {
         #region UI状态属性
 
         /// <summary>是否被选中</summary>
-        public bool IsSelected {
+        public bool IsSelected
+        {
             get => _isSelected;
             set => SetProperty(ref _isSelected, value);
         }
 
         /// <summary>是否展开</summary>
-        public bool IsExpanded {
+        public bool IsExpanded
+        {
             get => _isExpanded;
             set => SetProperty(ref _isExpanded, value);
         }
 
         /// <summary>是否正在编辑</summary>
-        public bool IsEditing {
+        public bool IsEditing
+        {
             get => _isEditing;
             set => SetProperty(ref _isEditing, value);
         }
 
         /// <summary>是否正在加载</summary>
-        public bool IsLoading {
+        public bool IsLoading
+        {
             get => _isLoading;
             set => SetProperty(ref _isLoading, value);
         }
 
         /// <summary>是否有错误</summary>
-        public bool HasError {
+        public bool HasError
+        {
             get => _hasError;
             set => SetProperty(ref _hasError, value);
         }
 
         /// <summary>错误消息</summary>
-        public string ErrorMessage {
+        public string ErrorMessage
+        {
             get => _errorMessage;
-            set {
-                if (SetProperty(ref _errorMessage, value)) {
+            set
+            {
+                if (SetProperty(ref _errorMessage, value))
+                {
                     HasError = !string.IsNullOrEmpty(value);
                 }
             }
         }
 
         /// <summary>是否高亮显示</summary>
-        public bool IsHighlighted {
+        public bool IsHighlighted
+        {
             get => _isHighlighted;
             set => SetProperty(ref _isHighlighted, value);
         }
 
         /// <summary>是否正在开始看诊</summary>
-        public bool IsStartingConsultation {
+        public bool IsStartingConsultation
+        {
             get => _isStartingConsultation;
             set => SetProperty(ref _isStartingConsultation, value);
         }
 
         /// <summary>是否正在完成案例</summary>
-        public bool IsCompleting {
+        public bool IsCompleting
+        {
             get => _isCompleting;
             set => SetProperty(ref _isCompleting, value);
         }
 
         /// <summary>是否正在取消案例</summary>
-        public bool IsCancelling {
+        public bool IsCancelling
+        {
             get => _isCancelling;
             set => SetProperty(ref _isCancelling, value);
         }
 
         /// <summary>是否正在删除</summary>
-        public bool IsDeleting {
+        public bool IsDeleting
+        {
             get => _isDeleting;
             set => SetProperty(ref _isDeleting, value);
         }
@@ -103,7 +118,8 @@ namespace LYBT.Desktop.Core.ViewModels.MedicalCase {
         /// <summary>
         /// 重置所有状态
         /// </summary>
-        public void ResetState() {
+        public void ResetState()
+        {
             IsSelected = false;
             IsExpanded = false;
             IsEditing = false;
@@ -120,7 +136,8 @@ namespace LYBT.Desktop.Core.ViewModels.MedicalCase {
         /// <summary>
         /// 开始编辑
         /// </summary>
-        public void StartEditing() {
+        public void StartEditing()
+        {
             IsEditing = true;
             ClearError();
         }
@@ -128,14 +145,16 @@ namespace LYBT.Desktop.Core.ViewModels.MedicalCase {
         /// <summary>
         /// 结束编辑
         /// </summary>
-        public void EndEditing() {
+        public void EndEditing()
+        {
             IsEditing = false;
         }
 
         /// <summary>
         /// 开始加载
         /// </summary>
-        public void StartLoading() {
+        public void StartLoading()
+        {
             IsLoading = true;
             ClearError();
         }
@@ -143,14 +162,16 @@ namespace LYBT.Desktop.Core.ViewModels.MedicalCase {
         /// <summary>
         /// 结束加载
         /// </summary>
-        public void EndLoading() {
+        public void EndLoading()
+        {
             IsLoading = false;
         }
 
         /// <summary>
         /// 开始看诊
         /// </summary>
-        public void StartStartingConsultation() {
+        public void StartStartingConsultation()
+        {
             IsStartingConsultation = true;
             ClearError();
         }
@@ -158,14 +179,16 @@ namespace LYBT.Desktop.Core.ViewModels.MedicalCase {
         /// <summary>
         /// 结束开始看诊
         /// </summary>
-        public void EndStartingConsultation() {
+        public void EndStartingConsultation()
+        {
             IsStartingConsultation = false;
         }
 
         /// <summary>
         /// 开始完成案例
         /// </summary>
-        public void StartCompleting() {
+        public void StartCompleting()
+        {
             IsCompleting = true;
             ClearError();
         }
@@ -173,14 +196,16 @@ namespace LYBT.Desktop.Core.ViewModels.MedicalCase {
         /// <summary>
         /// 结束完成案例
         /// </summary>
-        public void EndCompleting() {
+        public void EndCompleting()
+        {
             IsCompleting = false;
         }
 
         /// <summary>
         /// 开始取消案例
         /// </summary>
-        public void StartCancelling() {
+        public void StartCancelling()
+        {
             IsCancelling = true;
             ClearError();
         }
@@ -188,14 +213,16 @@ namespace LYBT.Desktop.Core.ViewModels.MedicalCase {
         /// <summary>
         /// 结束取消案例
         /// </summary>
-        public void EndCancelling() {
+        public void EndCancelling()
+        {
             IsCancelling = false;
         }
 
         /// <summary>
         /// 开始删除
         /// </summary>
-        public void StartDeleting() {
+        public void StartDeleting()
+        {
             IsDeleting = true;
             ClearError();
         }
@@ -203,14 +230,16 @@ namespace LYBT.Desktop.Core.ViewModels.MedicalCase {
         /// <summary>
         /// 结束删除
         /// </summary>
-        public void EndDeleting() {
+        public void EndDeleting()
+        {
             IsDeleting = false;
         }
 
         /// <summary>
         /// 设置错误
         /// </summary>
-        public void SetError(string message) {
+        public void SetError(string message)
+        {
             ErrorMessage = message;
             HasError = true;
             EndAllProcesses();
@@ -219,7 +248,8 @@ namespace LYBT.Desktop.Core.ViewModels.MedicalCase {
         /// <summary>
         /// 清除错误
         /// </summary>
-        public void ClearError() {
+        public void ClearError()
+        {
             ErrorMessage = string.Empty;
             HasError = false;
         }
@@ -227,28 +257,32 @@ namespace LYBT.Desktop.Core.ViewModels.MedicalCase {
         /// <summary>
         /// 切换选中状态
         /// </summary>
-        public void ToggleSelection() {
+        public void ToggleSelection()
+        {
             IsSelected = !IsSelected;
         }
 
         /// <summary>
         /// 切换展开状态
         /// </summary>
-        public void ToggleExpansion() {
+        public void ToggleExpansion()
+        {
             IsExpanded = !IsExpanded;
         }
 
         /// <summary>
         /// 切换高亮状态
         /// </summary>
-        public void ToggleHighlight() {
+        public void ToggleHighlight()
+        {
             IsHighlighted = !IsHighlighted;
         }
 
         /// <summary>
         /// 设置为焦点状态
         /// </summary>
-        public void SetFocus() {
+        public void SetFocus()
+        {
             IsSelected = true;
             IsHighlighted = true;
         }
@@ -256,7 +290,8 @@ namespace LYBT.Desktop.Core.ViewModels.MedicalCase {
         /// <summary>
         /// 取消焦点状态
         /// </summary>
-        public void ClearFocus() {
+        public void ClearFocus()
+        {
             IsSelected = false;
             IsHighlighted = false;
         }
@@ -264,7 +299,8 @@ namespace LYBT.Desktop.Core.ViewModels.MedicalCase {
         /// <summary>
         /// 结束所有进行中的处理
         /// </summary>
-        public void EndAllProcesses() {
+        public void EndAllProcesses()
+        {
             IsLoading = false;
             IsStartingConsultation = false;
             IsCompleting = false;
@@ -323,32 +359,40 @@ namespace LYBT.Desktop.Core.ViewModels.MedicalCase {
         /// <summary>
         /// 获取当前状态描述
         /// </summary>
-        public string GetCurrentStateDescription() {
-            if (HasError) {
+        public string GetCurrentStateDescription()
+        {
+            if (HasError)
+            {
                 return $"错误: {ErrorMessage}";
             }
 
-            if (IsStartingConsultation) {
+            if (IsStartingConsultation)
+            {
                 return "正在开始看诊...";
             }
 
-            if (IsCompleting) {
+            if (IsCompleting)
+            {
                 return "正在完成案例...";
             }
 
-            if (IsCancelling) {
+            if (IsCancelling)
+            {
                 return "正在取消案例...";
             }
 
-            if (IsDeleting) {
+            if (IsDeleting)
+            {
                 return "正在删除...";
             }
 
-            if (IsLoading) {
+            if (IsLoading)
+            {
                 return "加载中...";
             }
 
-            if (IsEditing) {
+            if (IsEditing)
+            {
                 return "编辑中";
             }
 
@@ -358,46 +402,57 @@ namespace LYBT.Desktop.Core.ViewModels.MedicalCase {
         /// <summary>
         /// 获取详细状态信息
         /// </summary>
-        public string GetDetailedStateInfo() {
+        public string GetDetailedStateInfo()
+        {
             var states = new List<string>();
 
-            if (IsSelected) {
+            if (IsSelected)
+            {
                 states.Add("已选中");
             }
 
-            if (IsExpanded) {
+            if (IsExpanded)
+            {
                 states.Add("已展开");
             }
 
-            if (IsEditing) {
+            if (IsEditing)
+            {
                 states.Add("编辑中");
             }
 
-            if (IsLoading) {
+            if (IsLoading)
+            {
                 states.Add("加载中");
             }
 
-            if (IsHighlighted) {
+            if (IsHighlighted)
+            {
                 states.Add("高亮");
             }
 
-            if (IsStartingConsultation) {
+            if (IsStartingConsultation)
+            {
                 states.Add("开始看诊中");
             }
 
-            if (IsCompleting) {
+            if (IsCompleting)
+            {
                 states.Add("完成中");
             }
 
-            if (IsCancelling) {
+            if (IsCancelling)
+            {
                 states.Add("取消中");
             }
 
-            if (IsDeleting) {
+            if (IsDeleting)
+            {
                 states.Add("删除中");
             }
 
-            if (HasError) {
+            if (HasError)
+            {
                 states.Add($"错误: {ErrorMessage}");
             }
 
@@ -411,13 +466,16 @@ namespace LYBT.Desktop.Core.ViewModels.MedicalCase {
         /// <summary>
         /// 批量选择模式
         /// </summary>
-        public void EnterBatchSelectionMode() {
+        public void EnterBatchSelectionMode()
+        {
             // 在批量选择模式下禁用某些操作
-            if (IsEditing) {
+            if (IsEditing)
+            {
                 EndEditing();
             }
 
-            if (IsExpanded) {
+            if (IsExpanded)
+            {
                 IsExpanded = false;
             }
         }
@@ -425,14 +483,16 @@ namespace LYBT.Desktop.Core.ViewModels.MedicalCase {
         /// <summary>
         /// 退出批量选择模式
         /// </summary>
-        public void ExitBatchSelectionMode() {
+        public void ExitBatchSelectionMode()
+        {
             IsSelected = false;
         }
 
         /// <summary>
         /// 检查是否适合批量操作
         /// </summary>
-        public bool IsSuitableForBatchOperation() {
+        public bool IsSuitableForBatchOperation()
+        {
             return !HasError && !IsProcessing && !IsLoading;
         }
 

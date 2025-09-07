@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -30,7 +30,7 @@ public static class ServiceDiscovery
         }
 
         assemblies ??= [Assembly.GetExecutingAssembly()];
-        
+
         Logger.LogInformation("开始扫描程序集，发现模块服务...");
 
         foreach (var assembly in assemblies)
@@ -72,7 +72,9 @@ public static class ServiceDiscovery
     public static bool IsMatchingNamingConvention(Type serviceType, Type implementationType)
     {
         if (!serviceType.IsInterface || !serviceType.Name.StartsWith("I") || !serviceType.Name.EndsWith("Service"))
+        {
             return false;
+        }
 
         // I{Module}Service → {Module}Module
         var expectedModuleName = serviceType.Name[1..^7]; // 移除 "I" 前缀和 "Service" 后缀
@@ -91,35 +93,44 @@ public static class ServiceDiscovery
     {
         // 检查类型基本有效性
         if (!serviceType.IsInterface)
+        {
             return (false, $"服务类型 {serviceType.Name} 必须是接口");
+        }
 
         if (implementationType.IsAbstract)
+        {
             return (false, $"实现类型 {implementationType.Name} 不能是抽象类");
+        }
 
         // 检查接口实现关系
         if (!serviceType.IsAssignableFrom(implementationType))
+        {
             return (false, $"实现类型 {implementationType.Name} 必须实现接口 {serviceType.Name}");
+        }
 
         // 检查命名约定
         if (!IsMatchingNamingConvention(serviceType, implementationType))
+        {
             return (false, $"类型 {serviceType.Name} → {implementationType.Name} 不符合命名约定 I{{Module}}Service → {{Module}}Module");
+        }
 
         // 检查构造函数
         var constructors = implementationType.GetConstructors(BindingFlags.Public | BindingFlags.Instance);
         if (constructors.Length == 0)
+        {
             return (false, $"实现类型 {implementationType.Name} 必须有公共构造函数");
+        }
 
         // 增强验证：检查UltraThink双层架构模式
         var architectureValidation = ValidateUltraThinkArchitecturePattern(serviceType, implementationType);
         if (!architectureValidation.IsValid)
+        {
             return architectureValidation;
+        }
 
         // 增强验证：检查依赖注入模式
         var dependencyValidation = ValidateDependencyInjectionPattern(implementationType);
-        if (!dependencyValidation.IsValid)
-            return dependencyValidation;
-
-        return (true, null);
+        return !dependencyValidation.IsValid ? dependencyValidation : ((bool IsValid, string? ErrorMessage))(true, null);
     }
 
     /// <summary>
@@ -132,16 +143,16 @@ public static class ServiceDiscovery
     {
         // 获取模块名称
         var moduleName = ExtractModuleName(serviceType);
-        
+
         // 检查是否存在QueryService和BusinessService
         var expectedQueryServiceType = $"{implementationType.Namespace}.{moduleName}QueryService";
         var expectedBusinessServiceType = $"{implementationType.Namespace}.{moduleName}BusinessService";
-        
+
         // 检查程序集中是否存在相应的服务类
         var assembly = implementationType.Assembly;
-        var queryServiceType = assembly.GetTypes().FirstOrDefault(t => 
+        var queryServiceType = assembly.GetTypes().FirstOrDefault(t =>
             t.Name == $"{moduleName}QueryService" && t.IsClass && !t.IsAbstract);
-        var businessServiceType = assembly.GetTypes().FirstOrDefault(t => 
+        var businessServiceType = assembly.GetTypes().FirstOrDefault(t =>
             t.Name == $"{moduleName}BusinessService" && t.IsClass && !t.IsAbstract);
 
         if (queryServiceType == null)
@@ -156,10 +167,7 @@ public static class ServiceDiscovery
 
         // 检查Module类是否遵循纯委托模式
         var delegationValidation = ValidateDelegationPattern(implementationType, queryServiceType, businessServiceType);
-        if (!delegationValidation.IsValid)
-            return delegationValidation;
-
-        return (true, null);
+        return !delegationValidation.IsValid ? delegationValidation : ((bool IsValid, string? ErrorMessage))(true, null);
     }
 
     /// <summary>
@@ -171,13 +179,13 @@ public static class ServiceDiscovery
     {
         var constructors = implementationType.GetConstructors(BindingFlags.Public | BindingFlags.Instance);
         var primaryConstructor = constructors.OrderByDescending(c => c.GetParameters().Length).First();
-        
+
         // 检查构造函数参数是否都是接口或已知类型
         var parameters = primaryConstructor.GetParameters();
         foreach (var param in parameters)
         {
             var paramType = param.ParameterType;
-            
+
             // 验证参数类型是否符合依赖注入最佳实践
             if (!paramType.IsInterface && !IsKnownServiceType(paramType))
             {
@@ -202,17 +210,17 @@ public static class ServiceDiscovery
     /// <param name="businessServiceType">业务服务类型</param>
     /// <returns>验证结果</returns>
     public static (bool IsValid, string? ErrorMessage) ValidateDelegationPattern(
-        Type moduleType, 
-        Type? queryServiceType, 
+        Type moduleType,
+        Type? queryServiceType,
         Type? businessServiceType)
     {
         var fields = moduleType.GetFields(BindingFlags.NonPublic | BindingFlags.Instance);
-        
+
         // 检查是否有预期的字段
-        var hasQueryServiceField = queryServiceType != null && 
+        var hasQueryServiceField = queryServiceType != null &&
             fields.Any(f => f.FieldType == queryServiceType || f.FieldType.Name.Contains("QueryService"));
-        
-        var hasBusinessServiceField = businessServiceType != null && 
+
+        var hasBusinessServiceField = businessServiceType != null &&
             fields.Any(f => f.FieldType == businessServiceType || f.FieldType.Name.Contains("BusinessService"));
 
         // 检查方法实现是否为纯委托
@@ -239,13 +247,14 @@ public static class ServiceDiscovery
     {
         // 这里可以通过IL代码分析来检查，但为了简化，我们使用启发式方法
         // 实际项目中可以使用Mono.Cecil或其他IL分析库
-        
+
         // 检查方法体长度（纯委托方法通常很简单）
         var methodBody = method.GetMethodBody();
-        if (methodBody?.GetILAsByteArray()?.Length > 50) // 简化的启发式判断
+        if (!(methodBody?.GetILAsByteArray()?.Length > 50)) // 简化的启发式判断
         {
-            Logger.LogDebug("方法 {MethodName} 的IL长度可能超过纯委托预期", method.Name);
+            return true; // 暂时返回true，避免阻断注册
         }
+        Logger.LogDebug("方法 {MethodName} 的IL长度可能超过纯委托预期", method.Name);
 
         return true; // 暂时返回true，避免阻断注册
     }
@@ -265,9 +274,9 @@ public static class ServiceDiscovery
             typeof(System.Net.Http.HttpClient)
         };
 
-        return knownServiceTypes.Any(known => 
-            known.IsAssignableFrom(type) || 
-            (known.IsGenericTypeDefinition && type.IsGenericType && 
+        return knownServiceTypes.Any(known =>
+            known.IsAssignableFrom(type) ||
+            (known.IsGenericTypeDefinition && type.IsGenericType &&
              type.GetGenericTypeDefinition() == known));
     }
 
@@ -280,16 +289,15 @@ public static class ServiceDiscovery
     public static bool IsValidParameterName(string? parameterName, Type parameterType)
     {
         if (string.IsNullOrEmpty(parameterName))
+        {
             return false;
+        }
 
         // 检查参数名是否以下划线开头（私有字段约定）
         var expectedFieldName = $"_{parameterName}";
-        
-        // 检查是否遵循camelCase约定
-        if (!char.IsLower(parameterName[0]))
-            return false;
 
-        return true;
+        // 检查是否遵循camelCase约定
+        return char.IsLower(parameterName[0]);
     }
 
     /// <summary>
@@ -311,12 +319,13 @@ public static class ServiceDiscovery
             var interfaces = types.Where(t => t.IsInterface && t.Name.StartsWith("I") && t.Name.EndsWith("Service")).ToArray();
             var implementations = types.Where(t => !t.IsInterface && !t.IsAbstract && t.Name.EndsWith("Module")).ToArray();
 
-            Logger.LogDebug("在程序集 {AssemblyName} 中找到 {InterfaceCount} 个服务接口和 {ImplementationCount} 个模块实现", 
+            Logger.LogDebug(
+                "在程序集 {AssemblyName} 中找到 {InterfaceCount} 个服务接口和 {ImplementationCount} 个模块实现",
                 assembly.GetName().Name, interfaces.Length, implementations.Length);
 
             foreach (var serviceInterface in interfaces)
             {
-                var matchingImplementation = implementations.FirstOrDefault(impl => 
+                var matchingImplementation = implementations.FirstOrDefault(impl =>
                     IsMatchingNamingConvention(serviceInterface, impl) && serviceInterface.IsAssignableFrom(impl));
 
                 if (matchingImplementation != null)
@@ -328,7 +337,8 @@ public static class ServiceDiscovery
                     }
                     else
                     {
-                        Logger.LogWarning("跳过无效的服务注册 {ServiceType} → {ImplementationType}: {Error}",
+                        Logger.LogWarning(
+                            "跳过无效的服务注册 {ServiceType} → {ImplementationType}: {Error}",
                             serviceInterface.Name, matchingImplementation.Name, validation.ErrorMessage);
                     }
                 }
@@ -356,17 +366,18 @@ public static class ServiceDiscovery
     {
         var moduleName = ExtractModuleName(serviceType);
         var registrationInfo = new ServiceRegistrationInfo(
-            serviceType, 
-            implementationType, 
+            serviceType,
+            implementationType,
             moduleName,
             ServiceLifetime.Singleton); // 保持现有的单例模式
 
         var key = $"{serviceType.FullName}->{implementationType.FullName}";
-        
+
         if (!DiscoveredServices.ContainsKey(key))
         {
             DiscoveredServices[key] = registrationInfo;
-            Logger.LogInformation("发现服务: {ServiceType} → {ImplementationType} (模块: {ModuleName})",
+            Logger.LogInformation(
+                "发现服务: {ServiceType} → {ImplementationType} (模块: {ModuleName})",
                 serviceType.Name, implementationType.Name, moduleName);
         }
     }

@@ -1,12 +1,14 @@
 ﻿using LYBT.Desktop.Core.Models.Common;
 using SharedCommon = LYBT.Shared.Models.Contracts.Common;
 
-namespace LYBT.Desktop.Core.Interfaces.Services {
+namespace LYBT.Desktop.Core.Interfaces.Services
+{
 
     /// <summary>
     /// 统一错误处理服务接口
     /// </summary>
-    public interface IErrorHandlingService {
+    public interface IErrorHandlingService
+    {
 
         /// <summary>
         /// 处理异常并返回用户友好的错误信息

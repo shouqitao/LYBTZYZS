@@ -1,14 +1,16 @@
 ﻿using LYBT.Shared.Models.Contracts.Users;
 using Prism.Mvvm;
 
-namespace LYBT.Desktop.Core.ViewModels.Users {
+namespace LYBT.Desktop.Core.ViewModels.Users
+{
 
     /// <summary>
     /// 用户视图模型 - UltraThink架构的协调层
     /// 协调数据、显示、状态和主题四个关注点
     /// 实现了完全的关注点分离
     /// </summary>
-    public class UserViewModel : BindableBase {
+    public class UserViewModel : BindableBase
+    {
 
         #region Fields
 
@@ -20,8 +22,10 @@ namespace LYBT.Desktop.Core.ViewModels.Users {
 
         #region Constructor
 
-        public UserViewModel(UserDto userData) {
-            if (userData == null) {
+        public UserViewModel(UserDto userData)
+        {
+            if (userData == null)
+            {
                 throw new ArgumentNullException(nameof(userData));
             }
 
@@ -35,19 +39,22 @@ namespace LYBT.Desktop.Core.ViewModels.Users {
         #region Component ViewModels
 
         /// <summary>显示逻辑视图模型</summary>
-        public UserDisplayViewModel Display {
+        public UserDisplayViewModel Display
+        {
             get => _display;
             private set => SetProperty(ref _display, value);
         }
 
         /// <summary>UI状态视图模型</summary>
-        public UserStateViewModel State {
+        public UserStateViewModel State
+        {
             get => _state;
             private set => SetProperty(ref _state, value);
         }
 
         /// <summary>主题样式视图模型</summary>
-        public UserThemeViewModel Theme {
+        public UserThemeViewModel Theme
+        {
             get => _theme;
             private set => SetProperty(ref _theme, value);
         }
@@ -69,18 +76,24 @@ namespace LYBT.Desktop.Core.ViewModels.Users {
         public string DisplayName => Display.DisplayName;
 
         /// <summary>是否选中</summary>
-        public bool IsSelected {
+        public bool IsSelected
+        {
             get => State.IsSelected;
             set => State.IsSelected = value;
         }
 
         /// <summary>是否正在加载</summary>
-        public bool IsLoading {
+        public bool IsLoading
+        {
             get => State.IsLoading;
-            set {
-                if (value) {
+            set
+            {
+                if (value)
+                {
                     State.StartLoading();
-                } else {
+                }
+                else
+                {
                     State.StopLoading();
                 }
             }
@@ -93,8 +106,10 @@ namespace LYBT.Desktop.Core.ViewModels.Users {
         /// <summary>
         /// 更新用户数据
         /// </summary>
-        public void UpdateUserData(UserDto newUserData) {
-            if (newUserData == null) {
+        public void UpdateUserData(UserDto newUserData)
+        {
+            if (newUserData == null)
+            {
                 throw new ArgumentNullException(nameof(newUserData));
             }
 
@@ -111,42 +126,48 @@ namespace LYBT.Desktop.Core.ViewModels.Users {
         /// <summary>
         /// 开始编辑模式
         /// </summary>
-        public void StartEditing() {
+        public void StartEditing()
+        {
             State.StartEditing();
         }
 
         /// <summary>
         /// 结束编辑模式
         /// </summary>
-        public void StopEditing() {
+        public void StopEditing()
+        {
             State.StopEditing();
         }
 
         /// <summary>
         /// 切换选中状态
         /// </summary>
-        public void ToggleSelection() {
+        public void ToggleSelection()
+        {
             State.ToggleSelection();
         }
 
         /// <summary>
         /// 设置错误状态
         /// </summary>
-        public void SetError(string errorMessage) {
+        public void SetError(string errorMessage)
+        {
             State.SetError(errorMessage);
         }
 
         /// <summary>
         /// 清除错误状态
         /// </summary>
-        public void ClearError() {
+        public void ClearError()
+        {
             State.ClearError();
         }
 
         /// <summary>
         /// 重置UI状态
         /// </summary>
-        public void ResetState() {
+        public void ResetState()
+        {
             State.Reset();
         }
 
@@ -157,14 +178,16 @@ namespace LYBT.Desktop.Core.ViewModels.Users {
         /// <summary>
         /// 创建用户视图模型
         /// </summary>
-        public static UserViewModel Create(UserDto userData) {
+        public static UserViewModel Create(UserDto userData)
+        {
             return new UserViewModel(userData);
         }
 
         /// <summary>
         /// 从现有用户视图模型更新数据
         /// </summary>
-        public static UserViewModel UpdateFrom(UserViewModel existingViewModel, UserDto newUserData) {
+        public static UserViewModel UpdateFrom(UserViewModel existingViewModel, UserDto newUserData)
+        {
             existingViewModel.UpdateUserData(newUserData);
             return existingViewModel;
         }
@@ -176,22 +199,26 @@ namespace LYBT.Desktop.Core.ViewModels.Users {
         /// <summary>
         /// 判断是否为同一用户
         /// </summary>
-        public bool IsSameUser(UserViewModel other) {
+        public bool IsSameUser(UserViewModel other)
+        {
             return other != null && Id == other.Id;
         }
 
         /// <summary>
         /// 判断是否为同一用户（通过用户数据）
         /// </summary>
-        public bool IsSameUser(UserDto userData) {
+        public bool IsSameUser(UserDto userData)
+        {
             return userData != null && Id == userData.Id;
         }
 
-        public override bool Equals(object? obj) {
+        public override bool Equals(object? obj)
+        {
             return obj is UserViewModel other && IsSameUser(other);
         }
 
-        public override int GetHashCode() {
+        public override int GetHashCode()
+        {
             return Id.GetHashCode();
         }
 

@@ -1,19 +1,22 @@
 ﻿using Prism.Mvvm;
 
-namespace LYBT.Desktop.Core.Models {
+namespace LYBT.Desktop.Core.Models
+{
 
     /// <summary>
     /// 可选择项包装类，用于支持列表中的选择功能
     /// </summary>
     /// <typeparam name="T">包装的数据类型</typeparam>
-    public class SelectableItem<T> : BindableBase {
+    public class SelectableItem<T> : BindableBase
+    {
         private bool _isSelected = false;
         private T _data = default!;
 
         /// <summary>
         /// 是否选中
         /// </summary>
-        public bool IsSelected {
+        public bool IsSelected
+        {
             get => _isSelected;
             set => SetProperty(ref _isSelected, value);
         }
@@ -21,17 +24,20 @@ namespace LYBT.Desktop.Core.Models {
         /// <summary>
         /// 包装的数据
         /// </summary>
-        public T Data {
+        public T Data
+        {
             get => _data;
             set => SetProperty(ref _data, value);
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="SelectableItem{T}"/> class.
         /// 构造函数
         /// </summary>
         /// <param name="data">要包装的数据</param>
         /// <param name="isSelected">初始选中状态</param>
-        public SelectableItem(T data, bool isSelected = false) {
+        public SelectableItem(T data, bool isSelected = false)
+        {
             Data = data;
             IsSelected = isSelected;
         }

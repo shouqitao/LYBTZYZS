@@ -16,7 +16,8 @@ namespace LYBT.Desktop.Prescriptions.Services;
 /// </summary>
 public class PrescriptionsBusinessService(
     ILogger<PrescriptionsBusinessService> logger,
-    IPrescriptionApi prescriptionApi) : IPrescriptionsBusinessService {
+    IPrescriptionApi prescriptionApi) : IPrescriptionsBusinessService
+{
     private readonly ILogger<PrescriptionsBusinessService> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private readonly IPrescriptionApi _prescriptionApi = prescriptionApi ?? throw new ArgumentNullException(nameof(prescriptionApi));
 
@@ -27,25 +28,33 @@ public class PrescriptionsBusinessService(
     /// <param name="createDto">处方创建请求信息</param>
     /// <returns>包含新建处方信息的业务结果</returns>
     /// <exception cref="ArgumentNullException">当创建请求为空时抛出</exception>
-    public async Task<ServiceResult<PrescriptionDto>> CreateAsync(PrescriptionCreateDto createDto) {
+    public async Task<ServiceResult<PrescriptionDto>> CreateAsync(PrescriptionCreateDto createDto)
+    {
         ArgumentNullException.ThrowIfNull(createDto, nameof(createDto));
 
-        _logger.LogInformation("处方创建请求: 患者ID: {PatientId}, 看诊ID: {ConsultationId}",
+        _logger.LogInformation(
+            "处方创建请求: 患者ID: {PatientId}, 看诊ID: {ConsultationId}",
             createDto.PatientId, createDto.ConsultationId);
 
-        try {
+        try
+        {
             var refitResponse = await _prescriptionApi.CreatePrescriptionAsync(createDto);
 
-            if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null) {
+            if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
+            {
                 var prescription = refitResponse.Content;
                 _logger.LogInformation("处方创建成功: {PrescriptionId}", prescription.Id);
                 return ServiceResult<PrescriptionDto>.Success(prescription, "处方创建成功");
-            } else {
+            }
+            else
+            {
                 var errorMessage = $"处方创建失败: {refitResponse.ReasonPhrase}";
                 _logger.LogError(errorMessage);
                 return ServiceResult<PrescriptionDto>.Failure(errorMessage);
             }
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
             _logger.LogError(ex, "处方创建异常: 患者ID: {PatientId}", createDto.PatientId);
             return ServiceResult<PrescriptionDto>.Failure($"处方创建失败: {ex.Message}");
         }
@@ -59,24 +68,31 @@ public class PrescriptionsBusinessService(
     /// <param name="updateDto">处方更新请求信息</param>
     /// <returns>包含更新后处方信息的业务结果</returns>
     /// <exception cref="ArgumentNullException">当更新请求为空时抛出</exception>
-    public async Task<ServiceResult<PrescriptionDto>> UpdateAsync(Guid id, PrescriptionEditDto updateDto) {
+    public async Task<ServiceResult<PrescriptionDto>> UpdateAsync(Guid id, PrescriptionEditDto updateDto)
+    {
         ArgumentNullException.ThrowIfNull(updateDto, nameof(updateDto));
 
         _logger.LogInformation("处方更新请求: {PrescriptionId}", id);
 
-        try {
+        try
+        {
             var refitResponse = await _prescriptionApi.UpdatePrescriptionAsync(id, updateDto);
 
-            if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null) {
+            if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
+            {
                 var prescription = refitResponse.Content;
                 _logger.LogInformation("处方更新成功: {PrescriptionId}", prescription.Id);
                 return ServiceResult<PrescriptionDto>.Success(prescription, "处方更新成功");
-            } else {
+            }
+            else
+            {
                 var errorMessage = $"处方更新失败: {refitResponse.ReasonPhrase}";
                 _logger.LogError(errorMessage);
                 return ServiceResult<PrescriptionDto>.Failure(errorMessage);
             }
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
             _logger.LogError(ex, "处方更新异常: {PrescriptionId}", id);
             return ServiceResult<PrescriptionDto>.Failure($"处方更新失败: {ex.Message}");
         }
@@ -88,9 +104,10 @@ public class PrescriptionsBusinessService(
     /// </summary>
     /// <param name="prescriptionId">处方唯一标识</param>
     /// <returns>操作失败结果</returns>
-    public async Task<ServiceResult<bool>> DeleteAsync(Guid prescriptionId) {
+    public Task<ServiceResult<bool>> Delete(Guid prescriptionId)
+    {
         _logger.LogWarning("处方删除请求被拒绝: {PrescriptionId} - 确保诊疗历史完整性", prescriptionId);
-        return ServiceResult<bool>.Failure("简单诊所版本暂不支持删除处方，确保诊疗历史数据完整性");
+        return Task.FromResult(ServiceResult<bool>.Failure("简单诊所版本暂不支持删除处方，确保诊疗历史数据完整性"));
     }
 
     /// <summary>
@@ -99,9 +116,10 @@ public class PrescriptionsBusinessService(
     /// </summary>
     /// <param name="prescriptionId">处方唯一标识</param>
     /// <returns>状态转换结果</returns>
-    public async Task<ServiceResult<bool>> EnableAsync(Guid prescriptionId) {
+    public Task<ServiceResult<bool>> Enable(Guid prescriptionId)
+    {
         _logger.LogInformation("启用处方: {PrescriptionId}", prescriptionId);
-        return ServiceResult<bool>.Failure("简单诊所版本暂不支持处方状态管理");
+        return Task.FromResult(ServiceResult<bool>.Failure("简单诊所版本暂不支持处方状态管理"));
     }
 
     /// <summary>
@@ -110,8 +128,9 @@ public class PrescriptionsBusinessService(
     /// </summary>
     /// <param name="prescriptionId">处方唯一标识</param>
     /// <returns>状态转换结果</returns>
-    public async Task<ServiceResult<bool>> DisableAsync(Guid prescriptionId) {
+    public Task<ServiceResult<bool>> Disable(Guid prescriptionId)
+    {
         _logger.LogInformation("禁用处方: {PrescriptionId}", prescriptionId);
-        return ServiceResult<bool>.Failure("简单诊所版本暂不支持处方状态管理");
+        return Task.FromResult(ServiceResult<bool>.Failure("简单诊所版本暂不支持处方状态管理"));
     }
 }

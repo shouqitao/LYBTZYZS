@@ -10,38 +10,47 @@ using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 
-namespace LYBT.Desktop.Core.Services {
+namespace LYBT.Desktop.Core.Services
+{
 
     /// <summary>
     /// 处方打印服务实现（UltraThink标准版）
     /// 支持预览、打印、导出PDF等功能
     /// </summary>
-    public class PrescriptionPrintService : IPrescriptionPrintService {
+    public class PrescriptionPrintService : IPrescriptionPrintService
+    {
         private readonly ILogger<PrescriptionPrintService> _logger;
         private readonly ICustomDialogService _dialogService;
 
         public PrescriptionPrintService(
             ILogger<PrescriptionPrintService> logger,
-            ICustomDialogService dialogService) {
+            ICustomDialogService dialogService)
+        {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
         }
 
         /// <summary>预览处方</summary>
-        public async Task<PreviewResult> PreviewPrescriptionAsync(object medicalRecord) {
-            try {
+        public async Task<PreviewResult> PreviewPrescriptionAsync(object medicalRecord)
+        {
+            try
+            {
                 _logger.LogInformation("开始生成处方预览");
 
                 var content = await GeneratePrescriptionContentAsync(medicalRecord);
 
-                return new PreviewResult {
+                return new PreviewResult
+                {
                     Content = content,
                     Success = true,
                     Message = "预览生成成功"
                 };
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, "生成处方预览失败");
-                return new PreviewResult {
+                return new PreviewResult
+                {
                     Content = string.Empty,
                     Success = false,
                     Message = $"预览生成失败: {ex.Message}"
@@ -50,8 +59,10 @@ namespace LYBT.Desktop.Core.Services {
         }
 
         /// <summary>打印处方</summary>
-        public async Task<bool> PrintPrescriptionAsync(object medicalRecord) {
-            try {
+        public async Task<bool> PrintPrescriptionAsync(object medicalRecord)
+        {
+            try
+            {
                 _logger.LogInformation("开始打印处方");
 
                 var content = await GeneratePrescriptionContentAsync(medicalRecord);
@@ -61,14 +72,17 @@ namespace LYBT.Desktop.Core.Services {
 
                 // 显示打印对话框并打印
                 var printDialog = new PrintDialog();
-                if (printDialog.ShowDialog() == true) {
+                if (printDialog.ShowDialog() == true)
+                {
                     printDialog.PrintDocument(((IDocumentPaginatorSource)printDocument).DocumentPaginator, "中医处方");
                     _logger.LogInformation("处方打印完成");
                     return true;
                 }
 
                 return false;
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, "打印处方失败");
                 await _dialogService.ShowErrorAsync($"打印失败: {ex.Message}", "打印错误");
                 return false;
@@ -76,8 +90,10 @@ namespace LYBT.Desktop.Core.Services {
         }
 
         /// <summary>保存为PDF</summary>
-        public async Task<bool> SaveAsPdfAsync(object medicalRecord, string fileName) {
-            try {
+        public async Task<bool> SaveAsPdfAsync(object medicalRecord, string fileName)
+        {
+            try
+            {
                 _logger.LogInformation("开始保存处方为PDF: {FileName}", fileName);
 
                 var content = await GeneratePrescriptionContentAsync(medicalRecord);
@@ -90,7 +106,9 @@ namespace LYBT.Desktop.Core.Services {
                 await _dialogService.ShowSuccessAsync($"处方已保存为: {textFileName}", "保存成功");
 
                 return true;
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, "保存处方PDF失败");
                 await _dialogService.ShowErrorAsync($"保存PDF失败: {ex.Message}", "保存错误");
                 return false;
@@ -98,13 +116,15 @@ namespace LYBT.Desktop.Core.Services {
         }
 
         /// <summary>生成处方内容</summary>
-        private async Task<string> GeneratePrescriptionContentAsync(object medicalRecord) {
+        private async Task<string> GeneratePrescriptionContentAsync(object medicalRecord)
+        {
             await Task.Delay(10); // 避免异步警告
 
             var sb = new StringBuilder();
 
             // 根据传入对象类型处理不同的数据结构
-            switch (medicalRecord) {
+            switch (medicalRecord)
+            {
                 case PrescriptionDto prescription:
                     sb.AppendLine(GeneratePrescriptionContent(prescription));
                     break;
@@ -122,7 +142,8 @@ namespace LYBT.Desktop.Core.Services {
         }
 
         /// <summary>生成处方内容</summary>
-        private string GeneratePrescriptionContent(PrescriptionDto prescription) {
+        private string GeneratePrescriptionContent(PrescriptionDto prescription)
+        {
             var sb = new StringBuilder();
 
             // 诊所标题
@@ -139,7 +160,8 @@ namespace LYBT.Desktop.Core.Services {
             sb.AppendLine();
 
             // 主诉和诊断
-            if (!string.IsNullOrEmpty(prescription.Diagnosis)) {
+            if (!string.IsNullOrEmpty(prescription.Diagnosis))
+            {
                 sb.AppendLine($"诊断: {prescription.Diagnosis}");
                 sb.AppendLine();
             }
@@ -148,16 +170,21 @@ namespace LYBT.Desktop.Core.Services {
             sb.AppendLine("药物组成:");
             sb.AppendLine("───────────────────────────────");
 
-            if (prescription.Items?.Count > 0) {
+            if (prescription.Items?.Count > 0)
+            {
                 int index = 1;
-                foreach (var item in prescription.Items) {
+                foreach (var item in prescription.Items)
+                {
                     sb.AppendLine($"{index:D2}. {item.HerbName ?? "未知药材"} {item.Quantity}g");
-                    if (!string.IsNullOrEmpty(item.Usage)) {
+                    if (!string.IsNullOrEmpty(item.Usage))
+                    {
                         sb.AppendLine($"    用法: {item.Usage}");
                     }
                     index++;
                 }
-            } else {
+            }
+            else
+            {
                 sb.AppendLine("  暂无药材");
             }
 
@@ -165,14 +192,18 @@ namespace LYBT.Desktop.Core.Services {
             sb.AppendLine();
 
             // 用法用量
-            if (!string.IsNullOrEmpty(prescription.Usage)) {
+            if (!string.IsNullOrEmpty(prescription.Usage))
+            {
                 sb.AppendLine($"用法用量: {prescription.Usage}");
-            } else {
+            }
+            else
+            {
                 sb.AppendLine("用法用量: 水煎服，每日一剂，分早晚两次服用");
             }
 
             // 医嘱
-            if (!string.IsNullOrEmpty(prescription.Advice)) {
+            if (!string.IsNullOrEmpty(prescription.Advice))
+            {
                 sb.AppendLine($"医嘱: {prescription.Advice}");
             }
 
@@ -185,7 +216,8 @@ namespace LYBT.Desktop.Core.Services {
         }
 
         /// <summary>生成医疗案例内容</summary>
-        private string GenerateMedicalCaseContent(MedicalCaseDto medicalCase) {
+        private string GenerateMedicalCaseContent(MedicalCaseDto medicalCase)
+        {
             var sb = new StringBuilder();
 
             sb.AppendLine("═══════════════════════════════════");
@@ -208,7 +240,8 @@ namespace LYBT.Desktop.Core.Services {
         }
 
         /// <summary>生成通用内容</summary>
-        private string GenerateGenericContent(object data) {
+        private string GenerateGenericContent(object data)
+        {
             var sb = new StringBuilder();
 
             sb.AppendLine("═══════════════════════════════════");
@@ -227,7 +260,8 @@ namespace LYBT.Desktop.Core.Services {
         }
 
         /// <summary>创建打印文档</summary>
-        private FlowDocument CreatePrintDocument(string content) {
+        private FlowDocument CreatePrintDocument(string content)
+        {
             var flowDocument = new FlowDocument();
 
             // 设置文档样式
@@ -245,8 +279,10 @@ namespace LYBT.Desktop.Core.Services {
         }
 
         /// <summary>获取医疗案例状态文本</summary>
-        private string GetCaseStatusText(MedicalCaseStatus status) {
-            return status switch {
+        private string GetCaseStatusText(MedicalCaseStatus status)
+        {
+            return status switch
+            {
                 MedicalCaseStatus.Registered => "已登记",
                 MedicalCaseStatus.InConsultation => "诊疗中",
                 MedicalCaseStatus.Completed => "已完成",

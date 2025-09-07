@@ -8,20 +8,24 @@ using Prism.Ioc;
 using Prism.Modularity;
 using Prism.Mvvm;
 
-namespace LYBT.Desktop.Workbench.Consultation {
+namespace LYBT.Desktop.Workbench.Consultation
+{
 
     /// <summary>
     /// 看诊工作台模块
     /// 为医生提供专业的看诊管理界面
     /// </summary>
-    public class ConsultationWorkbenchModule : IModule {
+    public class ConsultationWorkbenchModule : IModule
+    {
 
-        public void OnInitialized(IContainerProvider containerProvider) {
+        public void OnInitialized(IContainerProvider containerProvider)
+        {
             // 注册ViewModel映射
             ViewModelLocationProvider.Register<ConsultationWorkbenchMainView, ConsultationWorkbenchMainViewModel>();
         }
 
-        public void RegisterTypes(IContainerRegistry containerRegistry) {
+        public void RegisterTypes(IContainerRegistry containerRegistry)
+        {
             // 注册工作台导航器
             containerRegistry.RegisterSingleton<IConsultationWorkbenchNavigator, ConsultationWorkbenchNavigator>();
 

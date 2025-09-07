@@ -4,12 +4,14 @@ using LYBT.Desktop.Core.Memory;
 using Microsoft.Extensions.Logging;
 using Prism.Events;
 
-namespace LYBT.Desktop.Core.Events {
+namespace LYBT.Desktop.Core.Events
+{
 
     /// <summary>
     /// 增强事件聚合器 - 支持弱引用、消息过滤、优先级、调试追踪
     /// </summary>
-    public interface IEnhancedEventAggregator : IEventAggregator {
+    public interface IEnhancedEventAggregator : IEventAggregator
+    {
 
         /// <summary>
         /// 获取增强事件
@@ -40,7 +42,8 @@ namespace LYBT.Desktop.Core.Events {
     /// <summary>
     /// 增强事件基类
     /// </summary>
-    public abstract class EnhancedEventBase : EventBase {
+    public abstract class EnhancedEventBase : EventBase
+    {
         private readonly WeakEventManager<EventArgs> _weakEventManager = new();
         private readonly ConcurrentDictionary<SubscriptionToken, IEventSubscription> _subscriptions = new();
         private readonly object _lock = new();
@@ -50,14 +53,16 @@ namespace LYBT.Desktop.Core.Events {
         /// <summary>
         /// 设置日志器
         /// </summary>
-        public void SetLogger(ILogger logger) {
+        public void SetLogger(ILogger logger)
+        {
             _logger = logger;
         }
 
         /// <summary>
         /// 启用调试模式
         /// </summary>
-        public void EnableDebugMode(bool enable) {
+        public void EnableDebugMode(bool enable)
+        {
             _debugMode = enable;
         }
 
@@ -69,7 +74,8 @@ namespace LYBT.Desktop.Core.Events {
             EnhancedThreadOption threadOption = EnhancedThreadOption.PublisherThread,
             bool keepSubscriberReferenceAlive = false,
             Predicate<object>? filter = null,
-            int priority = 0) {
+            int priority = 0)
+        {
             var subscription = new ActionSubscription(
                 action,
                 threadOption,
@@ -83,10 +89,14 @@ namespace LYBT.Desktop.Core.Events {
         /// <summary>
         /// 取消订阅
         /// </summary>
-        public override void Unsubscribe(SubscriptionToken token) {
-            lock (_lock) {
-                if (_subscriptions.TryRemove(token, out var subscription)) {
-                    if (_debugMode) {
+        public override void Unsubscribe(SubscriptionToken token)
+        {
+            lock (_lock)
+            {
+                if (_subscriptions.TryRemove(token, out var subscription))
+                {
+                    if (_debugMode)
+                    {
                         _logger?.LogDebug($"取消订阅: {GetType().Name}, Token: {token}");
                     }
                 }
@@ -96,18 +106,21 @@ namespace LYBT.Desktop.Core.Events {
         /// <summary>
         /// 发布事件
         /// </summary>
-        public virtual void Publish() {
+        public virtual void Publish()
+        {
             PublishInternal(null);
         }
 
         /// <summary>
         /// 内部发布逻辑
         /// </summary>
-        protected void PublishInternal(object? argument) {
+        protected void PublishInternal(object? argument)
+        {
             var sw = _debugMode ? Stopwatch.StartNew() : null;
             var activeSubscriptions = GetActiveSubscriptions();
 
-            if (_debugMode) {
+            if (_debugMode)
+            {
                 _logger?.LogDebug($"发布事件: {GetType().Name}, 订阅者数: {activeSubscriptions.Count}");
             }
 
@@ -116,17 +129,23 @@ namespace LYBT.Desktop.Core.Events {
                 .OrderByDescending(s => s.Priority)
                 .ToList();
 
-            Parallel.ForEach(sortedSubscriptions, subscription => {
-                try {
-                    if (subscription.Filter == null || subscription.Filter(argument ?? new object())) {
+            Parallel.ForEach(sortedSubscriptions, subscription =>
+            {
+                try
+                {
+                    if (subscription.Filter == null || subscription.Filter(argument ?? new object()))
+                    {
                         InvokeSubscription(subscription, argument);
                     }
-                } catch (Exception ex) {
+                }
+                catch (Exception ex)
+                {
                     _logger?.LogError(ex, $"事件处理异常: {GetType().Name}");
                 }
             });
 
-            if (_debugMode && sw != null) {
+            if (_debugMode && sw != null)
+            {
                 sw.Stop();
                 _logger?.LogDebug($"事件发布完成: {GetType().Name}, 耗时: {sw.ElapsedMilliseconds}ms");
             }
@@ -135,16 +154,21 @@ namespace LYBT.Desktop.Core.Events {
         /// <summary>
         /// 调用订阅
         /// </summary>
-        protected virtual void InvokeSubscription(IEventSubscription subscription, object? argument) {
-            switch (subscription.ThreadOption) {
+        protected virtual void InvokeSubscription(IEventSubscription subscription, object? argument)
+        {
+            switch (subscription.ThreadOption)
+            {
                 case EnhancedThreadOption.PublisherThread:
                     subscription.InvokeAction(argument);
                     break;
 
                 case EnhancedThreadOption.UIThread:
-                    if (SynchronizationContext.Current != null) {
+                    if (SynchronizationContext.Current != null)
+                    {
                         SynchronizationContext.Current.Post(_ => subscription.InvokeAction(argument), null);
-                    } else {
+                    }
+                    else
+                    {
                         subscription.InvokeAction(argument);
                     }
                     break;
@@ -158,15 +182,18 @@ namespace LYBT.Desktop.Core.Events {
         /// <summary>
         /// 获取活跃订阅
         /// </summary>
-        protected List<IEventSubscription> GetActiveSubscriptions() {
-            lock (_lock) {
+        protected List<IEventSubscription> GetActiveSubscriptions()
+        {
+            lock (_lock)
+            {
                 // 清理死订阅
                 var deadTokens = _subscriptions
                     .Where(kvp => !kvp.Value.IsAlive)
                     .Select(kvp => kvp.Key)
                     .ToList();
 
-                foreach (var token in deadTokens) {
+                foreach (var token in deadTokens)
+                {
                     _subscriptions.TryRemove(token, out _);
                 }
 
@@ -177,12 +204,15 @@ namespace LYBT.Desktop.Core.Events {
         /// <summary>
         /// 添加订阅
         /// </summary>
-        protected SubscriptionToken AddSubscription(IEventSubscription subscription) {
-            lock (_lock) {
+        protected SubscriptionToken AddSubscription(IEventSubscription subscription)
+        {
+            lock (_lock)
+            {
                 var token = new SubscriptionToken(t => Unsubscribe(t));
                 _subscriptions[token] = subscription;
 
-                if (_debugMode) {
+                if (_debugMode)
+                {
                     _logger?.LogDebug($"添加订阅: {GetType().Name}, Token: {token}, 弱引用: {!subscription.KeepAlive}");
                 }
 
@@ -193,25 +223,30 @@ namespace LYBT.Desktop.Core.Events {
         /// <summary>
         /// 获取订阅数
         /// </summary>
-        public int GetSubscriptionCount() {
+        public int GetSubscriptionCount()
+        {
             return GetActiveSubscriptions().Count;
         }
 
         /// <summary>
         /// 清理死订阅
         /// </summary>
-        public void Cleanup() {
-            lock (_lock) {
+        public void Cleanup()
+        {
+            lock (_lock)
+            {
                 var deadTokens = _subscriptions
                     .Where(kvp => !kvp.Value.IsAlive)
                     .Select(kvp => kvp.Key)
                     .ToList();
 
-                foreach (var token in deadTokens) {
+                foreach (var token in deadTokens)
+                {
                     _subscriptions.TryRemove(token, out _);
                 }
 
-                if (deadTokens.Any() && _debugMode) {
+                if (deadTokens.Any() && _debugMode)
+                {
                     _logger?.LogDebug($"清理死订阅: {GetType().Name}, 清理数: {deadTokens.Count}");
                 }
             }
@@ -221,7 +256,8 @@ namespace LYBT.Desktop.Core.Events {
     /// <summary>
     /// 泛型增强事件
     /// </summary>
-    public class EnhancedEvent<TPayload> : EnhancedEventBase {
+    public class EnhancedEvent<TPayload> : EnhancedEventBase
+    {
 
         /// <summary>
         /// 订阅（泛型版本）
@@ -231,7 +267,8 @@ namespace LYBT.Desktop.Core.Events {
             EnhancedThreadOption threadOption = EnhancedThreadOption.PublisherThread,
             bool keepSubscriberReferenceAlive = false,
             Predicate<TPayload>? filter = null,
-            int priority = 0) {
+            int priority = 0)
+        {
             var subscription = new ActionSubscription<TPayload>(
                 action,
                 threadOption,
@@ -245,7 +282,8 @@ namespace LYBT.Desktop.Core.Events {
         /// <summary>
         /// 发布（泛型版本）
         /// </summary>
-        public void Publish(TPayload payload) {
+        public void Publish(TPayload payload)
+        {
             PublishInternal(payload);
         }
     }
@@ -253,7 +291,8 @@ namespace LYBT.Desktop.Core.Events {
     /// <summary>
     /// 事件订阅接口
     /// </summary>
-    public interface IEventSubscription {
+    public interface IEventSubscription
+    {
         bool IsAlive { get; }
         bool KeepAlive { get; }
         EnhancedThreadOption ThreadOption { get; }
@@ -266,7 +305,8 @@ namespace LYBT.Desktop.Core.Events {
     /// <summary>
     /// Action订阅实现
     /// </summary>
-    public class ActionSubscription : IEventSubscription {
+    public class ActionSubscription : IEventSubscription
+    {
         private readonly WeakReference? _weakAction;
         private readonly Action? _strongAction;
 
@@ -275,11 +315,15 @@ namespace LYBT.Desktop.Core.Events {
             EnhancedThreadOption threadOption,
             bool keepAlive,
             Predicate<object>? filter,
-            int priority) {
-            if (keepAlive) {
+            int priority)
+        {
+            if (keepAlive)
+            {
                 _strongAction = action;
                 _weakAction = null;
-            } else {
+            }
+            else
+            {
                 _strongAction = null;
                 _weakAction = new WeakReference(action.Target);
             }
@@ -296,10 +340,14 @@ namespace LYBT.Desktop.Core.Events {
         public Predicate<object>? Filter { get; }
         public int Priority { get; }
 
-        public void InvokeAction(object? argument) {
-            if (_strongAction != null) {
+        public void InvokeAction(object? argument)
+        {
+            if (_strongAction != null)
+            {
                 _strongAction();
-            } else if (_weakAction?.Target is Action action) {
+            }
+            else if (_weakAction?.Target is Action action)
+            {
                 action();
             }
         }
@@ -308,7 +356,8 @@ namespace LYBT.Desktop.Core.Events {
     /// <summary>
     /// 泛型Action订阅实现
     /// </summary>
-    public class ActionSubscription<TPayload> : IEventSubscription {
+    public class ActionSubscription<TPayload> : IEventSubscription
+    {
         private readonly WeakReference? _weakAction;
         private readonly Action<TPayload>? _strongAction;
         private readonly Predicate<TPayload>? _typedFilter;
@@ -318,11 +367,15 @@ namespace LYBT.Desktop.Core.Events {
             EnhancedThreadOption threadOption,
             bool keepAlive,
             Predicate<TPayload>? filter,
-            int priority) {
-            if (keepAlive) {
+            int priority)
+        {
+            if (keepAlive)
+            {
                 _strongAction = action;
                 _weakAction = null;
-            } else {
+            }
+            else
+            {
                 _strongAction = null;
                 _weakAction = new WeakReference(action.Target);
             }
@@ -340,11 +393,16 @@ namespace LYBT.Desktop.Core.Events {
         public Predicate<object>? Filter { get; }
         public int Priority { get; }
 
-        public void InvokeAction(object? argument) {
-            if (argument is TPayload payload) {
-                if (_strongAction != null) {
+        public void InvokeAction(object? argument)
+        {
+            if (argument is TPayload payload)
+            {
+                if (_strongAction != null)
+                {
                     _strongAction(payload);
-                } else if (_weakAction?.Target != null) {
+                }
+                else if (_weakAction?.Target != null)
+                {
                     var target = _weakAction.Target;
                     // 需要重新创建委托
                     // 这里简化处理，实际应该缓存MethodInfo
@@ -357,7 +415,8 @@ namespace LYBT.Desktop.Core.Events {
     /// <summary>
     /// 增强事件聚合器实现
     /// </summary>
-    public class EnhancedEventAggregator : IEnhancedEventAggregator {
+    public class EnhancedEventAggregator : IEnhancedEventAggregator
+    {
         private readonly ConcurrentDictionary<Type, EnhancedEventBase> _events = new();
         private readonly ILogger<EnhancedEventAggregator>? _logger;
         private readonly Timer _cleanupTimer;
@@ -365,7 +424,8 @@ namespace LYBT.Desktop.Core.Events {
         private bool _debugMode;
         private readonly EventStatistics _statistics = new();
 
-        public EnhancedEventAggregator(ILogger<EnhancedEventAggregator>? logger = null) {
+        public EnhancedEventAggregator(ILogger<EnhancedEventAggregator>? logger = null)
+        {
             _logger = logger;
             // 定期清理（每5分钟）
             _cleanupTimer = new Timer(_ => Cleanup(), null, TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(5));
@@ -374,10 +434,13 @@ namespace LYBT.Desktop.Core.Events {
         /// <summary>
         /// 获取事件（增强版）
         /// </summary>
-        public TEventType GetEvent<TEventType>() where TEventType : EnhancedEventBase, new() {
-            return (TEventType)_events.GetOrAdd(typeof(TEventType), _ => {
+        public TEventType GetEvent<TEventType>() where TEventType : EnhancedEventBase, new()
+        {
+            return (TEventType)_events.GetOrAdd(typeof(TEventType), _ =>
+            {
                 var newEvent = new TEventType();
-                if (_logger != null) {
+                if (_logger != null)
+                {
                     newEvent.SetLogger(_logger);
                 }
                 newEvent.EnableDebugMode(_debugMode);
@@ -391,8 +454,10 @@ namespace LYBT.Desktop.Core.Events {
         /// <summary>
         /// 获取事件（兼容Prism）
         /// </summary>
-        TEventType IEventAggregator.GetEvent<TEventType>() {
-            if (typeof(EnhancedEventBase).IsAssignableFrom(typeof(TEventType))) {
+        TEventType IEventAggregator.GetEvent<TEventType>()
+        {
+            if (typeof(EnhancedEventBase).IsAssignableFrom(typeof(TEventType)))
+            {
                 // 使用反射调用泛型方法
                 var method = GetType().GetMethod(nameof(GetEvent), Type.EmptyTypes);
                 var genericMethod = method?.MakeGenericMethod(typeof(TEventType));
@@ -408,16 +473,19 @@ namespace LYBT.Desktop.Core.Events {
         /// <summary>
         /// 设置全局过滤器
         /// </summary>
-        public void SetGlobalFilter(Func<object, bool> filter) {
+        public void SetGlobalFilter(Func<object, bool> filter)
+        {
             _globalFilter = filter;
         }
 
         /// <summary>
         /// 启用调试模式
         /// </summary>
-        public void EnableDebugMode(bool enable) {
+        public void EnableDebugMode(bool enable)
+        {
             _debugMode = enable;
-            foreach (var evt in _events.Values) {
+            foreach (var evt in _events.Values)
+            {
                 evt.EnableDebugMode(enable);
             }
         }
@@ -425,16 +493,19 @@ namespace LYBT.Desktop.Core.Events {
         /// <summary>
         /// 清理死订阅
         /// </summary>
-        public void Cleanup() {
+        public void Cleanup()
+        {
             var cleanedCount = 0;
-            foreach (var evt in _events.Values) {
+            foreach (var evt in _events.Values)
+            {
                 var beforeCount = evt.GetSubscriptionCount();
                 evt.Cleanup();
                 var afterCount = evt.GetSubscriptionCount();
-                cleanedCount += (beforeCount - afterCount);
+                cleanedCount += beforeCount - afterCount;
             }
 
-            if (cleanedCount > 0 && _debugMode) {
+            if (cleanedCount > 0 && _debugMode)
+            {
                 _logger?.LogDebug($"事件聚合器清理完成，移除 {cleanedCount} 个死订阅");
             }
         }
@@ -442,7 +513,8 @@ namespace LYBT.Desktop.Core.Events {
         /// <summary>
         /// 获取统计信息
         /// </summary>
-        public EventStatistics GetStatistics() {
+        public EventStatistics GetStatistics()
+        {
             _statistics.TotalEvents = _events.Count;
             _statistics.TotalSubscriptions = _events.Values.Sum(e => e.GetSubscriptionCount());
             return _statistics;
@@ -452,19 +524,23 @@ namespace LYBT.Desktop.Core.Events {
     /// <summary>
     /// 事件统计
     /// </summary>
-    public class EventStatistics {
+    public class EventStatistics
+    {
         public int TotalEvents { get; set; }
         public int TotalSubscriptions { get; set; }
         public Dictionary<string, int> EventPublishCount { get; } = new();
         public Dictionary<string, DateTime> LastPublishTime { get; } = new();
 
-        public void RegisterEvent(string eventName) {
-            if (!EventPublishCount.ContainsKey(eventName)) {
+        public void RegisterEvent(string eventName)
+        {
+            if (!EventPublishCount.ContainsKey(eventName))
+            {
                 EventPublishCount[eventName] = 0;
             }
         }
 
-        public void RecordPublish(string eventName) {
+        public void RecordPublish(string eventName)
+        {
             EventPublishCount[eventName] = EventPublishCount.GetValueOrDefault(eventName) + 1;
             LastPublishTime[eventName] = DateTime.UtcNow;
         }
@@ -473,7 +549,8 @@ namespace LYBT.Desktop.Core.Events {
     /// <summary>
     /// 增强事件线程选项
     /// </summary>
-    public enum EnhancedThreadOption {
+    public enum EnhancedThreadOption
+    {
 
         /// <summary>
         /// 发布者线程

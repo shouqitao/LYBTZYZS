@@ -5,27 +5,34 @@ using System.Threading;
 using System.Threading.Tasks;
 using LYBT.Desktop.Core.Interfaces.Services;
 
-namespace LYBT.Desktop.Services.Handlers {
+namespace LYBT.Desktop.Services.Handlers
+{
 
     /// <summary>
     /// HTTP请求认证头处理器
     /// </summary>
-    public class AuthHeaderHandler : DelegatingHandler {
+    public class AuthHeaderHandler : DelegatingHandler
+    {
         private readonly ITokenManager _tokenManager;
 
-        public AuthHeaderHandler(ITokenManager tokenManager) {
+        public AuthHeaderHandler(ITokenManager tokenManager)
+        {
             _tokenManager = tokenManager;
         }
 
-        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) {
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
             var token = _tokenManager.GetToken();
 
             System.Diagnostics.Debug.WriteLine($"🔐 AuthHeaderHandler: URL={request.RequestUri}, Token={(!string.IsNullOrEmpty(token) ? "存在" : "空")}");
 
-            if (!string.IsNullOrEmpty(token)) {
+            if (!string.IsNullOrEmpty(token))
+            {
                 request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
                 System.Diagnostics.Debug.WriteLine($"🔐 已添加认证头: Bearer {token.Substring(0, Math.Min(20, token.Length))}...");
-            } else {
+            }
+            else
+            {
                 System.Diagnostics.Debug.WriteLine($"⚠️ 没有Token，发送未认证请求");
             }
 

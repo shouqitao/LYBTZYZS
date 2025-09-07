@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 
-namespace LYBT.Shared.Interfaces.Caching {
+namespace LYBT.Shared.Interfaces.Caching
+{
 
     /// <summary>
     /// 简化缓存服务接口 - UltraThink精简架构标准
@@ -12,7 +13,8 @@ namespace LYBT.Shared.Interfaces.Caching {
     /// <para>使用场景: 用户信息、药材数据、验方模板等频繁访问数据的缓存</para>
     /// </remarks>
     [Description("简化缓存服务 - 智能内存缓存，8个核心方法")]
-    public interface ISimplifiedCacheService {
+    public interface ISimplifiedCacheService
+    {
 
         #region 同步操作 - 高频快速访问
 

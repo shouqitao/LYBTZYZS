@@ -4,7 +4,8 @@ using LYBT.Shared.Models.Contracts.Common;
 using Prism.Commands;
 using Prism.Events;
 
-namespace LYBT.Desktop.Core.ViewModels {
+namespace LYBT.Desktop.Core.ViewModels
+{
 
     /// <summary>
     /// UltraThink Phase 3.1: 现代化管理界面ViewModel基类
@@ -16,7 +17,8 @@ namespace LYBT.Desktop.Core.ViewModels {
     /// 4. 零DelegateCommand警告
     /// </summary>
     public abstract class ModernManagementViewModel<T> : ModernViewModelBase
-        where T : class {
+        where T : class
+    {
 
         #region 数据集合属性
 
@@ -30,7 +32,8 @@ namespace LYBT.Desktop.Core.ViewModels {
         /// <summary>
         /// 数据项集合
         /// </summary>
-        public ObservableCollection<T> Items {
+        public ObservableCollection<T> Items
+        {
             get => _items;
             set => SetProperty(ref _items, value);
         }
@@ -38,10 +41,13 @@ namespace LYBT.Desktop.Core.ViewModels {
         /// <summary>
         /// 选中项
         /// </summary>
-        public T? SelectedItem {
+        public T? SelectedItem
+        {
             get => _selectedItem;
-            set {
-                if (SetProperty(ref _selectedItem, value)) {
+            set
+            {
+                if (SetProperty(ref _selectedItem, value))
+                {
                     OnSelectedItemChanged(value);
                     RaiseCanExecuteChanged();
                 }
@@ -51,7 +57,8 @@ namespace LYBT.Desktop.Core.ViewModels {
         /// <summary>
         /// 搜索关键词
         /// </summary>
-        public string SearchKeyword {
+        public string SearchKeyword
+        {
             get => _searchKeyword;
             set => SetProperty(ref _searchKeyword, value);
         }
@@ -59,7 +66,8 @@ namespace LYBT.Desktop.Core.ViewModels {
         /// <summary>
         /// 总记录数
         /// </summary>
-        public int TotalCount {
+        public int TotalCount
+        {
             get => _totalCount;
             set => SetProperty(ref _totalCount, value);
         }
@@ -67,7 +75,8 @@ namespace LYBT.Desktop.Core.ViewModels {
         /// <summary>
         /// 当前页码
         /// </summary>
-        public int CurrentPage {
+        public int CurrentPage
+        {
             get => _currentPage;
             set => SetProperty(ref _currentPage, value);
         }
@@ -75,7 +84,8 @@ namespace LYBT.Desktop.Core.ViewModels {
         /// <summary>
         /// 每页大小
         /// </summary>
-        public int PageSize {
+        public int PageSize
+        {
             get => _pageSize;
             set => SetProperty(ref _pageSize, value);
         }
@@ -139,12 +149,14 @@ namespace LYBT.Desktop.Core.ViewModels {
         #region 构造函数
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="ModernManagementViewModel{T}"/> class.
         /// 标准构造函数
         /// </summary>
         protected ModernManagementViewModel(
             IEventAggregator eventAggregator,
             IErrorHandlingService? errorHandlingService = null)
-            : base(eventAggregator, errorHandlingService) {
+            : base(eventAggregator, errorHandlingService)
+        {
             // 零警告Command初始化
             SearchCommand = new DelegateCommand(async () => await ExecuteSearchAsync(), CanExecuteSearch);
             AddCommand = new DelegateCommand(async () => await ExecuteAddAsync(), CanExecuteAdd);
@@ -157,17 +169,21 @@ namespace LYBT.Desktop.Core.ViewModels {
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="ModernManagementViewModel{T}"/> class.
         /// 兼容性构造函数
         /// </summary>
         protected ModernManagementViewModel(IEventAggregator eventAggregator)
-            : this(eventAggregator, null) {
+            : this(eventAggregator, null)
+        {
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="ModernManagementViewModel{T}"/> class.
         /// 简化构造函数
         /// </summary>
         protected ModernManagementViewModel()
-            : this(new EventAggregator(), null) {
+            : this(new EventAggregator(), null)
+        {
         }
 
         #endregion 构造函数
@@ -207,7 +223,8 @@ namespace LYBT.Desktop.Core.ViewModels {
         /// <summary>
         /// 选中项变化 - 子类可重写
         /// </summary>
-        protected virtual void OnSelectedItemChanged(T? item) {
+        protected virtual void OnSelectedItemChanged(T? item)
+        {
             // 默认实现：无操作
         }
 
@@ -235,75 +252,103 @@ namespace LYBT.Desktop.Core.ViewModels {
 
         #region Command执行方法
 
-        private async Task ExecuteSearchAsync() {
+        private async Task ExecuteSearchAsync()
+        {
             CurrentPage = 1; // 搜索时重置到第一页
             await LoadDataWithHandlingAsync("搜索");
         }
 
-        private async Task ExecuteAddAsync() {
-            try {
+        private async Task ExecuteAddAsync()
+        {
+            try
+            {
                 await OnAddAsync();
                 await LoadDataWithHandlingAsync("刷新数据");
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 await HandleErrorAsync("添加", ex);
             }
         }
 
-        private async Task ExecuteEditAsync() {
-            if (SelectedItem == null) {
+        private async Task ExecuteEditAsync()
+        {
+            if (SelectedItem == null)
+            {
                 return;
             }
 
-            try {
+            try
+            {
                 await OnEditAsync(SelectedItem);
                 await LoadDataWithHandlingAsync("刷新数据");
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 await HandleErrorAsync("编辑", ex);
             }
         }
 
-        private async Task ExecuteDeleteAsync() {
-            if (SelectedItem == null) {
+        private async Task ExecuteDeleteAsync()
+        {
+            if (SelectedItem == null)
+            {
                 return;
             }
 
-            try {
+            try
+            {
                 await OnDeleteAsync(SelectedItem);
                 await LoadDataWithHandlingAsync("刷新数据");
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 await HandleErrorAsync("删除", ex);
             }
         }
 
-        private async Task ExecuteViewDetailsAsync() {
-            if (SelectedItem == null) {
+        private async Task ExecuteViewDetailsAsync()
+        {
+            if (SelectedItem == null)
+            {
                 return;
             }
 
-            try {
+            try
+            {
                 await OnViewDetailsAsync(SelectedItem);
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 await HandleErrorAsync("查看详情", ex);
             }
         }
 
-        private async Task ExecuteExportAsync() {
-            try {
+        private async Task ExecuteExportAsync()
+        {
+            try
+            {
                 await OnExportAsync();
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 await HandleErrorAsync("导出", ex);
             }
         }
 
-        private async Task ExecutePreviousPageAsync() {
-            if (CurrentPage > 1) {
+        private async Task ExecutePreviousPageAsync()
+        {
+            if (CurrentPage > 1)
+            {
                 CurrentPage--;
                 await LoadDataWithHandlingAsync("加载上一页");
             }
         }
 
-        private async Task ExecuteNextPageAsync() {
-            if (CurrentPage < TotalPages) {
+        private async Task ExecuteNextPageAsync()
+        {
+            if (CurrentPage < TotalPages)
+            {
                 CurrentPage++;
                 await LoadDataWithHandlingAsync("加载下一页");
             }
@@ -316,14 +361,16 @@ namespace LYBT.Desktop.Core.ViewModels {
         /// <summary>
         /// 重写刷新逻辑
         /// </summary>
-        protected override async Task OnRefreshAsync() {
+        protected override async Task OnRefreshAsync()
+        {
             await LoadDataWithHandlingAsync("刷新数据");
         }
 
         /// <summary>
         /// 重写Command状态更新
         /// </summary>
-        protected override void RaiseCanExecuteChanged() {
+        protected override void RaiseCanExecuteChanged()
+        {
             base.RaiseCanExecuteChanged();
 
             SearchCommand.RaiseCanExecuteChanged();
@@ -343,18 +390,21 @@ namespace LYBT.Desktop.Core.ViewModels {
         /// <summary>
         /// 带错误处理的数据加载
         /// </summary>
-        private async Task LoadDataWithHandlingAsync(string operationName) {
+        private async Task LoadDataWithHandlingAsync(string operationName)
+        {
             var serviceResult = await ExecuteAsync(
                 async () => await LoadDataAsync(CurrentPage, PageSize, SearchKeyword),
                 operationName);
 
-            if (serviceResult?.IsSuccess == true && serviceResult.Data != null) {
+            if (serviceResult?.IsSuccess == true && serviceResult.Data != null)
+            {
                 var pagedResult = serviceResult.Data;
                 Items = new ObservableCollection<T>(pagedResult.Items ?? Enumerable.Empty<T>());
                 TotalCount = pagedResult.TotalCount;
 
                 // 确保选中项仍然有效
-                if (SelectedItem != null && !Items.Contains(SelectedItem)) {
+                if (SelectedItem != null && !Items.Contains(SelectedItem))
+                {
                     SelectedItem = null;
                 }
 

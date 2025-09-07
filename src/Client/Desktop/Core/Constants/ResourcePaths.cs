@@ -1,10 +1,12 @@
-﻿namespace LYBT.Desktop.Core.Constants {
+﻿namespace LYBT.Desktop.Core.Constants
+{
 
     /// <summary>
     /// 资源文件路径常量
     /// Provides centralized resource path constants for the application
     /// </summary>
-    public static class ResourcePaths {
+    public static class ResourcePaths
+    {
 
         // Base paths
         private const string AssetsBase = "pack://application:,,,/LYBT.Desktop.Shell;component/Assets/";
@@ -14,7 +16,8 @@
         /// <summary>
         /// Icon paths
         /// </summary>
-        public static class Icons {
+        public static class Icons
+        {
 
             // Application icons
             public const string AppIcon = AssetsBase + "Icons/App/app.ico";
@@ -44,7 +47,8 @@
         /// <summary>
         /// Image paths
         /// </summary>
-        public static class Images {
+        public static class Images
+        {
 
             // Logos
             public const string LogoMain = AssetsBase + "Images/Logos/logo-main.png";
@@ -67,7 +71,8 @@
         /// <summary>
         /// Theme resource dictionaries
         /// </summary>
-        public static class Themes {
+        public static class Themes
+        {
 
             // Design system
             public const string Colors = ThemesBase + "Design/Colors.xaml";
@@ -87,7 +92,8 @@
         /// </summary>
         /// <param name="relativePath">Relative path from Assets folder</param>
         /// <returns>Pack URI for the resource</returns>
-        public static string GetResourceUri(string relativePath) {
+        public static string GetResourceUri(string relativePath)
+        {
             return $"{AssetsBase}{relativePath}";
         }
 
@@ -96,7 +102,8 @@
         /// </summary>
         /// <param name="relativePath">Relative path from Themes folder</param>
         /// <returns>Pack URI for the theme resource</returns>
-        public static string GetThemeUri(string relativePath) {
+        public static string GetThemeUri(string relativePath)
+        {
             return $"{ThemesBase}{relativePath}";
         }
     }

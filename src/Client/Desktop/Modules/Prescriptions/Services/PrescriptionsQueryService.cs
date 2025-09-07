@@ -16,7 +16,8 @@ namespace LYBT.Desktop.Prescriptions.Services;
 /// </summary>
 public class PrescriptionsQueryService(
     ILogger<PrescriptionsQueryService> logger,
-    IPrescriptionApi prescriptionApi) : IPrescriptionsQueryService {
+    IPrescriptionApi prescriptionApi) : IPrescriptionsQueryService
+{
     private readonly ILogger<PrescriptionsQueryService> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private readonly IPrescriptionApi _prescriptionApi = prescriptionApi ?? throw new ArgumentNullException(nameof(prescriptionApi));
 
@@ -26,18 +27,24 @@ public class PrescriptionsQueryService(
     /// </summary>
     /// <param name="query">分页查询参数</param>
     /// <returns>包含处方列表和总数的分页结果</returns>
-    public async Task<ServiceResult<PagedResult<PrescriptionDto>>> GetPagedAsync(PrescriptionQueryDto query) {
-        try {
-            _logger.LogDebug("执行处方分页查询，页码: {PageNumber}, 页大小: {PageSize}",
+    public async Task<ServiceResult<PagedResult<PrescriptionDto>>> GetPagedAsync(PrescriptionQueryDto query)
+    {
+        try
+        {
+            _logger.LogDebug(
+                "执行处方分页查询，页码: {PageNumber}, 页大小: {PageSize}",
                 query.PageIndex, query.PageSize);
 
-            var emptyResult = new PagedResult<PrescriptionDto> {
+            var emptyResult = new PagedResult<PrescriptionDto>
+            {
                 Items = [],
                 TotalCount = 0
             };
 
             return ServiceResult<PagedResult<PrescriptionDto>>.Success(emptyResult);
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
             _logger.LogError(ex, "处方分页查询异常");
             return ServiceResult<PagedResult<PrescriptionDto>>.Failure("查询处方列表失败");
         }
@@ -49,17 +56,21 @@ public class PrescriptionsQueryService(
     /// </summary>
     /// <param name="id">处方唯一标识</param>
     /// <returns>处方详细档案DTO</returns>
-    public async Task<ServiceResult<PrescriptionDto>> GetByIdAsync(Guid id) {
-        try {
+    public async Task<ServiceResult<PrescriptionDto>> GetByIdAsync(Guid id)
+    {
+        try
+        {
             _logger.LogDebug("查询处方详细档案: {PrescriptionId}", id);
 
             var refitResponse = await _prescriptionApi.GetByIdAsync(id);
 
-            if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null) {
+            if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
+            {
                 var detailDto = refitResponse.Content;
                 // PrescriptionDetailDto 继承自 PrescriptionDto，可以直接使用
                 // 但需要转换为基类类型以避免额外的详情字段
-                var prescriptionDto = new PrescriptionDto {
+                var prescriptionDto = new PrescriptionDto
+                {
                     Id = detailDto.Id,
                     MedicalCaseId = detailDto.MedicalCaseId,
                     PatientId = detailDto.PatientId,
@@ -84,12 +95,16 @@ public class PrescriptionsQueryService(
 
                 _logger.LogInformation("处方详情查询成功: {PrescriptionId}", prescriptionDto.Id);
                 return ServiceResult<PrescriptionDto>.Success(prescriptionDto, "处方详情查询成功");
-            } else {
+            }
+            else
+            {
                 var errorMessage = $"处方详情查询失败: {refitResponse.ReasonPhrase}";
                 _logger.LogError(errorMessage);
                 return ServiceResult<PrescriptionDto>.Failure(errorMessage);
             }
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
             _logger.LogError(ex, "查询处方详情异常: {PrescriptionId}", id);
             return ServiceResult<PrescriptionDto>.Failure($"查询处方详情失败: {ex.Message}");
         }
@@ -101,14 +116,18 @@ public class PrescriptionsQueryService(
     /// </summary>
     /// <param name="keyword">搜索关键字</param>
     /// <returns>匹配处方记录列表</returns>
-    public async Task<ServiceResult<List<PrescriptionDto>>> SearchAsync(string keyword) {
-        try {
+    public Task<ServiceResult<List<PrescriptionDto>>> Search(string keyword)
+    {
+        try
+        {
             _logger.LogDebug("处方关键字搜索: {Keyword}", keyword);
             List<PrescriptionDto> emptyList = [];
-            return ServiceResult<List<PrescriptionDto>>.Success(emptyList);
-        } catch (Exception ex) {
+            return Task.FromResult(ServiceResult<List<PrescriptionDto>>.Success(emptyList));
+        }
+        catch (Exception ex)
+        {
             _logger.LogError(ex, "处方搜索异常");
-            return ServiceResult<List<PrescriptionDto>>.Failure("处方搜索失败");
+            return Task.FromResult(ServiceResult<List<PrescriptionDto>>.Failure("处方搜索失败"));
         }
     }
 
@@ -117,13 +136,17 @@ public class PrescriptionsQueryService(
     /// 生成处方管理相关的基础统计信息和报表数据
     /// </summary>
     /// <returns>处方统计信息DTO</returns>
-    public async Task<ServiceResult<PrescriptionStatisticsDto>> GetStatisticsAsync() {
-        try {
+    public async Task<ServiceResult<PrescriptionStatisticsDto>> GetStatisticsAsync()
+    {
+        try
+        {
             _logger.LogDebug("生成处方管理统计数据");
             var stats = new PrescriptionStatisticsDto();
 
             return ServiceResult<PrescriptionStatisticsDto>.Success(stats);
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
             _logger.LogError(ex, "处方统计数据生成异常");
             return ServiceResult<PrescriptionStatisticsDto>.Failure("生成统计数据失败");
         }

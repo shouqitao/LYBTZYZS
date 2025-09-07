@@ -12,21 +12,24 @@ namespace LYBT.Module.Consultation.Repositories;
 /// 看诊仓储实现 - 数据层统一化重构
 /// 继承OptimizedBaseRepository获得缓存和性能优化，实现看诊特有业务方法
 /// </summary>
-public class ConsultationRepository : OptimizedBaseRepository<LYBT.Entities.Consultation.Consultation>, IConsultationRepository {
+public class ConsultationRepository : OptimizedBaseRepository<LYBT.Entities.Consultation.Consultation>, IConsultationRepository
+{
 
     public ConsultationRepository(
         AppDbContext context,
         ILogger<ConsultationRepository> logger,
-        IMemoryCache cache) : base(context, logger, cache) {
+        IMemoryCache cache) : base(context, logger, cache)
+    {
     }
 
     // 注意：基础CRUD方法由OptimizedBaseRepository提供
     // GetByIdAsync, GetAllAsync, GetPagedAsync, AddAsync, UpdateAsync, DeleteAsync等都由基类实现，带有缓存优化
-
-    public async Task<List<LYBT.Entities.Consultation.Consultation>> GetByPatientIdAsync(Guid patientId) {
+    public async Task<List<LYBT.Entities.Consultation.Consultation>> GetByPatientIdAsync(Guid patientId)
+    {
         var cacheKey = $"{CacheKeyPrefix}patient:{patientId}";
 
-        if (_cache.TryGetValue<List<LYBT.Entities.Consultation.Consultation>>(cacheKey, out var cached) && cached != null) {
+        if (_cache.TryGetValue<List<LYBT.Entities.Consultation.Consultation>>(cacheKey, out var cached) && cached != null)
+        {
             _logger.LogDebug("从缓存获取患者看诊记录 {PatientId}", patientId);
             return cached;
         }
@@ -40,10 +43,12 @@ public class ConsultationRepository : OptimizedBaseRepository<LYBT.Entities.Cons
         return consultations;
     }
 
-    public async Task<List<LYBT.Entities.Consultation.Consultation>> GetByDoctorIdAsync(Guid doctorId) {
+    public async Task<List<LYBT.Entities.Consultation.Consultation>> GetByDoctorIdAsync(Guid doctorId)
+    {
         var cacheKey = $"{CacheKeyPrefix}doctor:{doctorId}";
 
-        if (_cache.TryGetValue<List<LYBT.Entities.Consultation.Consultation>>(cacheKey, out var cached) && cached != null) {
+        if (_cache.TryGetValue<List<LYBT.Entities.Consultation.Consultation>>(cacheKey, out var cached) && cached != null)
+        {
             _logger.LogDebug("从缓存获取医生看诊记录 {DoctorId}", doctorId);
             return cached;
         }
@@ -57,10 +62,12 @@ public class ConsultationRepository : OptimizedBaseRepository<LYBT.Entities.Cons
         return consultations;
     }
 
-    public async Task<List<LYBT.Entities.Consultation.Consultation>> GetByStatusAsync(ConsultationStatus status) {
+    public async Task<List<LYBT.Entities.Consultation.Consultation>> GetByStatusAsync(ConsultationStatus status)
+    {
         var cacheKey = $"{CacheKeyPrefix}status:{status}";
 
-        if (_cache.TryGetValue<List<LYBT.Entities.Consultation.Consultation>>(cacheKey, out var cached) && cached != null) {
+        if (_cache.TryGetValue<List<LYBT.Entities.Consultation.Consultation>>(cacheKey, out var cached) && cached != null)
+        {
             _logger.LogDebug("从缓存获取状态看诊记录 {Status}", status);
             return cached;
         }
@@ -88,10 +95,12 @@ public class ConsultationRepository : OptimizedBaseRepository<LYBT.Entities.Cons
     }
 #endif
 
-    public async Task<List<LYBT.Entities.Consultation.Consultation>> GetByDateRangeAsync(DateTime startDate, DateTime endDate) {
+    public async Task<List<LYBT.Entities.Consultation.Consultation>> GetByDateRangeAsync(DateTime startDate, DateTime endDate)
+    {
         var cacheKey = $"{CacheKeyPrefix}daterange:{startDate:yyyyMMdd}-{endDate:yyyyMMdd}";
 
-        if (_cache.TryGetValue<List<LYBT.Entities.Consultation.Consultation>>(cacheKey, out var cached) && cached != null) {
+        if (_cache.TryGetValue<List<LYBT.Entities.Consultation.Consultation>>(cacheKey, out var cached) && cached != null)
+        {
             _logger.LogDebug("从缓存获取日期范围看诊记录 {StartDate}-{EndDate}", startDate.Date, endDate.Date);
             return cached;
         }
@@ -106,10 +115,12 @@ public class ConsultationRepository : OptimizedBaseRepository<LYBT.Entities.Cons
         return consultations;
     }
 
-    public async Task<LYBT.Entities.Consultation.Consultation?> GetByMedicalCaseIdAsync(Guid medicalCaseId) {
+    public async Task<LYBT.Entities.Consultation.Consultation?> GetByMedicalCaseIdAsync(Guid medicalCaseId)
+    {
         var cacheKey = $"{CacheKeyPrefix}medicalcase:{medicalCaseId}";
 
-        if (_cache.TryGetValue<LYBT.Entities.Consultation.Consultation?>(cacheKey, out var cached)) {
+        if (_cache.TryGetValue<LYBT.Entities.Consultation.Consultation?>(cacheKey, out var cached))
+        {
             _logger.LogDebug("从缓存获取医案看诊记录 {MedicalCaseId}", medicalCaseId);
             return cached;
         }

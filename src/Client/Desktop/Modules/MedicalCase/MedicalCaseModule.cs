@@ -4,18 +4,22 @@ using LYBT.Shared.Interfaces.Services;
 using Prism.Ioc;
 using Prism.Modularity;
 
-namespace LYBT.Desktop.MedicalCase {
+namespace LYBT.Desktop.MedicalCase
+{
 
     /// <summary>
     /// 医疗案例模块
     /// </summary>
-    public class MedicalCaseModule : IModule {
+    public class MedicalCaseModule : IModule
+    {
 
-        public void OnInitialized(IContainerProvider containerProvider) {
+        public void OnInitialized(IContainerProvider containerProvider)
+        {
             // 模块初始化完成
         }
 
-        public void RegisterTypes(IContainerRegistry containerRegistry) {
+        public void RegisterTypes(IContainerRegistry containerRegistry)
+        {
             // UltraThink模块自治：注册业务服务接口实现
             containerRegistry.RegisterSingleton<Services.MedicalCaseModule>();
             containerRegistry.RegisterSingleton<IMedicalCaseService>(container => container.Resolve<Services.MedicalCaseModule>());
@@ -29,7 +33,8 @@ namespace LYBT.Desktop.MedicalCase {
             RegisterDialogs(containerRegistry);
         }
 
-        private void RegisterDialogs(IContainerRegistry containerRegistry) {
+        private void RegisterDialogs(IContainerRegistry containerRegistry)
+        {
             // 医疗案例创建对话框
             // containerRegistry.RegisterDialog<CreateMedicalCaseDialog, CreateMedicalCaseViewModel>(); // Temporarily disabled - IDialogAware not implemented due to Prism 9 compatibility issues
         }

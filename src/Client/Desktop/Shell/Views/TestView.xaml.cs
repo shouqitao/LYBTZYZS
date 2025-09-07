@@ -1,13 +1,16 @@
 ﻿using System.Windows.Controls;
 
-namespace LYBT.Desktop.Shell.Views {
+namespace LYBT.Desktop.Shell.Views
+{
 
     /// <summary>
     /// TestView.xaml 的交互逻辑
     /// </summary>
-    public partial class TestView : UserControl {
+    public partial class TestView : UserControl
+    {
 
-        public TestView() {
+        public TestView()
+        {
             InitializeComponent();
         }
     }

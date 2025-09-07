@@ -1,9 +1,11 @@
-﻿namespace LYBT.Shared.Models.Contracts.Common {
+﻿namespace LYBT.Shared.Models.Contracts.Common
+{
 
     /// <summary>
     /// 处理后的错误信息
     /// </summary>
-    public class HandledError {
+    public class HandledError
+    {
 
         /// <summary>
         /// 错误ID
@@ -78,8 +80,10 @@
         /// <summary>
         /// 创建网络错误
         /// </summary>
-        public static HandledError NetworkError(string message, Exception? exception = null) {
-            return new HandledError {
+        public static HandledError NetworkError(string message, Exception? exception = null)
+        {
+            return new HandledError
+            {
                 Category = ErrorCategory.Network,
                 Severity = ErrorSeverity.Error,
                 UserMessage = message,
@@ -92,8 +96,10 @@
         /// <summary>
         /// 创建业务逻辑错误
         /// </summary>
-        public static HandledError BusinessError(string message, Exception? exception = null) {
-            return new HandledError {
+        public static HandledError BusinessError(string message, Exception? exception = null)
+        {
+            return new HandledError
+            {
                 Category = ErrorCategory.Business,
                 Severity = ErrorSeverity.Warning,
                 UserMessage = message,
@@ -106,8 +112,10 @@
         /// <summary>
         /// 创建验证错误
         /// </summary>
-        public static HandledError ValidationError(string message, Exception? exception = null) {
-            return new HandledError {
+        public static HandledError ValidationError(string message, Exception? exception = null)
+        {
+            return new HandledError
+            {
                 Category = ErrorCategory.Validation,
                 Severity = ErrorSeverity.Info,
                 UserMessage = message,
@@ -120,8 +128,10 @@
         /// <summary>
         /// 创建致命错误
         /// </summary>
-        public static HandledError FatalError(string message, Exception? exception = null) {
-            return new HandledError {
+        public static HandledError FatalError(string message, Exception? exception = null)
+        {
+            return new HandledError
+            {
                 Category = ErrorCategory.Unknown,
                 Severity = ErrorSeverity.Fatal,
                 UserMessage = message,

@@ -9,7 +9,8 @@ namespace LYBT.Desktop.Infrastructure.Api;
 /// 提供类型安全的REST API访问，适配小型诊所部署环境
 /// 支持JWT认证、连接池管理、重试策略等企业级功能
 /// </summary>
-public interface IUnifiedApiClientManager : IDisposable {
+public interface IUnifiedApiClientManager : IDisposable
+{
 
     #region 8个核心业务模块API客户端
 
@@ -119,7 +120,8 @@ public interface IUnifiedApiClientManager : IDisposable {
 /// API连接状态信息
 /// 包含连接健康状态、配置信息和性能指标
 /// </summary>
-public class ApiConnectionStatus {
+public class ApiConnectionStatus
+{
 
     /// <summary>
     /// 获取或设置连接是否健康

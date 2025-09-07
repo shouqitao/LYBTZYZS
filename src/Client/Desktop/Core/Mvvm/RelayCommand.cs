@@ -10,7 +10,8 @@ namespace LYBT.Desktop.Core.Mvvm;
 /// <param name="execute">命令执行委托，不能为空</param>
 /// <param name="canExecute">可执行状态判断委托，可选</param>
 /// <exception cref="ArgumentNullException">当 <paramref name="execute"/> 为 null 时抛出</exception>
-public class RelayCommand(Action execute, Func<bool>? canExecute = null) : ICommand {
+public class RelayCommand(Action execute, Func<bool>? canExecute = null) : ICommand
+{
     private readonly Action _execute = execute ?? throw new ArgumentNullException(nameof(execute));
     private readonly Func<bool>? _canExecute = canExecute;
 
@@ -24,7 +25,8 @@ public class RelayCommand(Action execute, Func<bool>? canExecute = null) : IComm
     /// </summary>
     /// <param name="parameter">命令使用的数据（此实现中忽略）</param>
     /// <returns>如果可以执行此命令，则为 true；否则为 false</returns>
-    public bool CanExecute(object? parameter) {
+    public bool CanExecute(object? parameter)
+    {
         return _canExecute?.Invoke() ?? true;
     }
 
@@ -32,8 +34,10 @@ public class RelayCommand(Action execute, Func<bool>? canExecute = null) : IComm
     /// 执行命令逻辑
     /// </summary>
     /// <param name="parameter">命令使用的数据（此实现中忽略）</param>
-    public void Execute(object? parameter) {
-        if (CanExecute(parameter)) {
+    public void Execute(object? parameter)
+    {
+        if (CanExecute(parameter))
+        {
             _execute();
         }
     }
@@ -42,7 +46,8 @@ public class RelayCommand(Action execute, Func<bool>? canExecute = null) : IComm
     /// 手动触发CanExecuteChanged事件
     /// 用于通知UI更新命令的可执行状态
     /// </summary>
-    public void RaiseCanExecuteChanged() {
+    public void RaiseCanExecuteChanged()
+    {
         CanExecuteChanged?.Invoke(this, EventArgs.Empty);
     }
 }
@@ -56,7 +61,8 @@ public class RelayCommand(Action execute, Func<bool>? canExecute = null) : IComm
 /// <param name="execute">命令执行委托，接收类型化参数</param>
 /// <param name="canExecute">可执行状态判断委托，接收类型化参数</param>
 /// <exception cref="ArgumentNullException">当 <paramref name="execute"/> 为 null 时抛出</exception>
-public class RelayCommand<T>(Action<T?> execute, Predicate<T?>? canExecute = null) : ICommand {
+public class RelayCommand<T>(Action<T?> execute, Predicate<T?>? canExecute = null) : ICommand
+{
     private readonly Action<T?> _execute = execute ?? throw new ArgumentNullException(nameof(execute));
     private readonly Predicate<T?>? _canExecute = canExecute;
 
@@ -70,12 +76,16 @@ public class RelayCommand<T>(Action<T?> execute, Predicate<T?>? canExecute = nul
     /// </summary>
     /// <param name="parameter">命令使用的数据，将转换为类型 T</param>
     /// <returns>如果可以执行此命令，则为 true；否则为 false</returns>
-    public bool CanExecute(object? parameter) {
+    public bool CanExecute(object? parameter)
+    {
         // 安全的类型转换和执行判断
-        try {
+        try
+        {
             var typedParameter = (T?)parameter;
             return _canExecute?.Invoke(typedParameter) ?? true;
-        } catch (InvalidCastException) {
+        }
+        catch (InvalidCastException)
+        {
             // 类型转换失败时，返回false表示无法执行
             return false;
         }
@@ -85,8 +95,10 @@ public class RelayCommand<T>(Action<T?> execute, Predicate<T?>? canExecute = nul
     /// 执行命令逻辑
     /// </summary>
     /// <param name="parameter">命令使用的数据，将转换为类型 T</param>
-    public void Execute(object? parameter) {
-        if (CanExecute(parameter)) {
+    public void Execute(object? parameter)
+    {
+        if (CanExecute(parameter))
+        {
             var typedParameter = (T?)parameter;
             _execute(typedParameter);
         }
@@ -96,7 +108,8 @@ public class RelayCommand<T>(Action<T?> execute, Predicate<T?>? canExecute = nul
     /// 手动触发CanExecuteChanged事件
     /// 用于通知UI更新命令的可执行状态
     /// </summary>
-    public void RaiseCanExecuteChanged() {
+    public void RaiseCanExecuteChanged()
+    {
         CanExecuteChanged?.Invoke(this, EventArgs.Empty);
     }
 }

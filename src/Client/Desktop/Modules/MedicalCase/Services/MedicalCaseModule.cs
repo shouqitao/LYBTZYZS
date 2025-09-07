@@ -15,7 +15,8 @@ namespace LYBT.Desktop.MedicalCase.Services;
 /// </summary>
 public class MedicalCaseModule(
     IMedicalCaseQueryService queryService,
-    IMedicalCaseBusinessService businessService) : IMedicalCaseService {
+    IMedicalCaseBusinessService businessService) : IMedicalCaseService
+{
     private readonly IMedicalCaseQueryService _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
     private readonly IMedicalCaseBusinessService _businessService = businessService ?? throw new ArgumentNullException(nameof(businessService));
 
@@ -31,7 +32,7 @@ public class MedicalCaseModule(
     /// 分页查询医案
     /// </summary>
     public async Task<ServiceResult<PagedResult<MedicalCaseDto>>> GetPagedAsync(PagedQueryBaseDto query)
-        => await _queryService.GetPagedAsync(query);
+        => await _queryService.GetPaged(query);
 
     /// <summary>
     /// 根据患者ID获取医案列表
@@ -42,9 +43,11 @@ public class MedicalCaseModule(
     /// <summary>
     /// 获取患者活跃医案
     /// </summary>
-    public async Task<ServiceResult<MedicalCaseDto>> GetActiveByPatientIdAsync(Guid patientId) {
+    public async Task<ServiceResult<MedicalCaseDto>> GetActiveByPatientIdAsync(Guid patientId)
+    {
         var result = await _queryService.GetActiveByPatientIdAsync(patientId);
-        if (result.IsSuccess && result.Data != null) {
+        if (result.IsSuccess && result.Data != null)
+        {
             return ServiceResult<MedicalCaseDto>.Success(result.Data);
         }
 
@@ -71,7 +74,7 @@ public class MedicalCaseModule(
     /// 删除医案
     /// </summary>
     public async Task<ServiceResult<bool>> DeleteAsync(Guid id)
-        => await _businessService.DeleteAsync(id);
+        => await _businessService.Delete(id);
 
     /// <summary>
     /// 开始医案
@@ -98,14 +101,14 @@ public class MedicalCaseModule(
     /// <summary>
     /// 暂停医疗案例 - 简单诊所版本暂不支持
     /// </summary>
-    public async Task<ServiceResult<bool>> SuspendAsync(Guid id, string reason)
-        => ServiceResult<bool>.Failure("简单诊所版本暂不支持暂停医案");
+    public Task<ServiceResult<bool>> Suspend(Guid id, string reason)
+        => Task.FromResult(ServiceResult<bool>.Failure("简单诊所版本暂不支持暂停医案"));
 
     /// <summary>
     /// 恢复医疗案例 - 简单诊所版本暂不支持
     /// </summary>
-    public async Task<ServiceResult<bool>> ResumeAsync(Guid id)
-        => ServiceResult<bool>.Failure("简单诊所版本暂不支持恢复医案");
+    public Task<ServiceResult<bool>> Resume(Guid id)
+        => Task.FromResult(ServiceResult<bool>.Failure("简单诊所版本暂不支持恢复医案"));
 
     /// <summary>
     /// 取消咨询/诊断 - 委托给CancelAsync
@@ -116,20 +119,20 @@ public class MedicalCaseModule(
     /// <summary>
     /// 更新医疗案例状态 - 简单诊所版本基础实现
     /// </summary>
-    public async Task<ServiceResult<bool>> UpdateStatusAsync(Guid id, int status)
-        => ServiceResult<bool>.Failure("简单诊所版本暂不支持状态更新");
+    public Task<ServiceResult<bool>> UpdateStatus(Guid id, int status)
+        => Task.FromResult(ServiceResult<bool>.Failure("简单诊所版本暂不支持状态更新"));
 
     /// <summary>
     /// 归档医疗案例 - 简单诊所版本暂不支持
     /// </summary>
-    public async Task<ServiceResult<bool>> ArchiveAsync(Guid id, string archiveReason)
-        => ServiceResult<bool>.Failure("简单诊所版本暂不支持归档医案");
+    public Task<ServiceResult<bool>> Archive(Guid id, string archiveReason)
+        => Task.FromResult(ServiceResult<bool>.Failure("简单诊所版本暂不支持归档医案"));
 
     /// <summary>
     /// 获取医疗案例统计信息 - 简单诊所版本基础实现
     /// </summary>
-    public async Task<ServiceResult<object>> GetStatisticsAsync(DateTime? startDate, DateTime? endDate)
-        => ServiceResult<object>.Success(new { TotalCases = 0, ActiveCases = 0, CompletedCases = 0 });
+    public Task<ServiceResult<object>> GetStatistics(DateTime? startDate, DateTime? endDate)
+        => Task.FromResult(ServiceResult<object>.Success(new { TotalCases = 0, ActiveCases = 0, CompletedCases = 0 }));
 
     /// <summary>
     /// 搜索医疗案例 - 简单诊所版本基础实现
@@ -140,8 +143,8 @@ public class MedicalCaseModule(
     /// <summary>
     /// 获取医疗案例历史记录 - 简单诊所版本暂不支持
     /// </summary>
-    public async Task<ServiceResult<List<object>>> GetHistoryAsync(Guid id)
-        => ServiceResult<List<object>>.Success([]);
+    public Task<ServiceResult<List<object>>> GetHistory(Guid id)
+        => Task.FromResult(ServiceResult<List<object>>.Success([]));
 
     #endregion 共享接口IMedicalCaseService额外方法 - 委托给相应服务层
 }

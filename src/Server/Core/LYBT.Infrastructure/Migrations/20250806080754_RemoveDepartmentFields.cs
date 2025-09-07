@@ -2,13 +2,16 @@
 
 #nullable disable
 
-namespace LYBT.Infrastructure.Migrations {
+namespace LYBT.Infrastructure.Migrations
+{
 
     /// <inheritdoc />
-    public partial class RemoveDepartmentFields : Migration {
+    public partial class RemoveDepartmentFields : Migration
+    {
 
         /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder) {
+        protected override void Up(MigrationBuilder migrationBuilder)
+        {
             migrationBuilder.DropColumn(
                 name: "Department",
                 table: "MedicalCases");
@@ -49,7 +52,7 @@ namespace LYBT.Infrastructure.Migrations {
                 type: "nvarchar(100)",
                 maxLength: 100,
                 nullable: false,
-                defaultValue: "",
+                defaultValue: string.Empty,
                 oldClrType: typeof(string),
                 oldType: "nvarchar(100)",
                 oldMaxLength: 100,
@@ -61,7 +64,7 @@ namespace LYBT.Infrastructure.Migrations {
                 type: "nvarchar(32)",
                 maxLength: 32,
                 nullable: false,
-                defaultValue: "",
+                defaultValue: string.Empty,
                 oldClrType: typeof(string),
                 oldType: "nvarchar(32)",
                 oldMaxLength: 32,
@@ -76,7 +79,8 @@ namespace LYBT.Infrastructure.Migrations {
         }
 
         /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder) {
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
             migrationBuilder.DropColumn(
                 name: "RegistrationFee",
                 table: "Doctors");
@@ -97,7 +101,7 @@ namespace LYBT.Infrastructure.Migrations {
                 type: "nvarchar(50)",
                 maxLength: 50,
                 nullable: false,
-                defaultValue: "");
+                defaultValue: string.Empty);
 
             migrationBuilder.AlterColumn<string>(
                 name: "Specialty",

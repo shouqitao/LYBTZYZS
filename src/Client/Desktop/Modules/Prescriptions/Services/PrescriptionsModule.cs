@@ -15,7 +15,8 @@ namespace LYBT.Desktop.Prescriptions.Services;
 /// </summary>
 public class PrescriptionsModule(
     IPrescriptionsQueryService queryService,
-    IPrescriptionsBusinessService businessService) : IPrescriptionService {
+    IPrescriptionsBusinessService businessService) : IPrescriptionService
+{
     private readonly IPrescriptionsQueryService _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
     private readonly IPrescriptionsBusinessService _businessService = businessService ?? throw new ArgumentNullException(nameof(businessService));
 
@@ -27,7 +28,7 @@ public class PrescriptionsModule(
         => await _businessService.UpdateAsync(id, updateDto);
 
     public async Task<ServiceResult<bool>> DeleteAsync(Guid id)
-        => await _businessService.DeleteAsync(id);
+        => await _businessService.Delete(id);
 
     public async Task<ServiceResult<PrescriptionDto>> GetByIdAsync(Guid id)
         => await _queryService.GetByIdAsync(id);
@@ -36,20 +37,20 @@ public class PrescriptionsModule(
         => await _queryService.GetPagedAsync(query);
 
     public async Task<ServiceResult<List<PrescriptionDto>>> SearchAsync(string keyword)
-        => await _queryService.SearchAsync(keyword);
+        => await _queryService.Search(keyword);
 
     public async Task<ServiceResult<bool>> EnableAsync(Guid id)
-        => await _businessService.EnableAsync(id);
+        => await _businessService.Enable(id);
 
     public async Task<ServiceResult<bool>> DisableAsync(Guid id)
-        => await _businessService.DisableAsync(id);
+        => await _businessService.Disable(id);
 
     // 补充IPrescriptionService接口的其他方法
     public async Task<ServiceResult<List<PrescriptionDto>>> GetByPatientIdAsync(Guid patientId)
-        => await _queryService.SearchAsync($"Patient:{patientId}");
+        => await _queryService.Search($"Patient:{patientId}");
 
     public async Task<ServiceResult<List<PrescriptionDto>>> GetByMedicalCaseIdAsync(Guid medicalCaseId)
-        => await _queryService.SearchAsync($"MedicalCase:{medicalCaseId}");
+        => await _queryService.Search($"MedicalCase:{medicalCaseId}");
 
     public async Task<ServiceResult<PrescriptionValidationResult>> ValidateAsync(PrescriptionCreateDto createDto)
         => ServiceResult<PrescriptionValidationResult>.Success(new PrescriptionValidationResult { IsValid = true });

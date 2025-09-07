@@ -2,12 +2,14 @@
 using LYBT.Shared.Models.Contracts.Formula;
 using Refit;
 
-namespace LYBT.Shared.Interfaces.Api {
+namespace LYBT.Shared.Interfaces.Api
+{
 
     /// <summary>
     /// 验方API客户端接口 - UltraThink统一标准
     /// </summary>
-    public interface IFormulaApi {
+    public interface IFormulaApi
+    {
 
         /// <summary>
         /// 分页查询验方模板

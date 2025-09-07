@@ -1,11 +1,13 @@
 ﻿using Prism.Events;
 
-namespace LYBT.Desktop.Core.Models.Events {
+namespace LYBT.Desktop.Core.Models.Events
+{
 
     /// <summary>
     /// 数据刷新类型
     /// </summary>
-    public enum DataRefreshType {
+    public enum DataRefreshType
+    {
 
         /// <summary>
         /// 患者数据
@@ -41,7 +43,8 @@ namespace LYBT.Desktop.Core.Models.Events {
     /// <summary>
     /// 状态消息类型
     /// </summary>
-    public enum StatusMessageType {
+    public enum StatusMessageType
+    {
 
         /// <summary>
         /// 信息
@@ -67,7 +70,8 @@ namespace LYBT.Desktop.Core.Models.Events {
     /// <summary>
     /// 验方合并模式
     /// </summary>
-    public enum FormulaMergeMode {
+    public enum FormulaMergeMode
+    {
 
         /// <summary>
         /// 替换现有处方
@@ -88,7 +92,8 @@ namespace LYBT.Desktop.Core.Models.Events {
     /// <summary>
     /// 错误严重程度
     /// </summary>
-    public enum ErrorSeverity {
+    public enum ErrorSeverity
+    {
 
         /// <summary>严重错误</summary>
         Critical = 4,
@@ -106,7 +111,8 @@ namespace LYBT.Desktop.Core.Models.Events {
     /// <summary>
     /// 错误事件参数
     /// </summary>
-    public class ErrorEventArgs : EventArgs {
+    public class ErrorEventArgs : EventArgs
+    {
         public string Message { get; set; } = string.Empty;
         public Exception? Exception { get; set; }
         public string? Context { get; set; }
@@ -114,23 +120,28 @@ namespace LYBT.Desktop.Core.Models.Events {
         public ErrorSeverity Severity { get; set; } = ErrorSeverity.Error;
         public DateTime Timestamp { get; set; } = DateTime.Now;
 
-        public ErrorEventArgs(string message) {
+        public ErrorEventArgs(string message)
+        {
             Message = message;
         }
 
-        public ErrorEventArgs(string message, Exception exception) : this(message) {
+        public ErrorEventArgs(string message, Exception exception) : this(message)
+        {
             Exception = exception;
         }
 
-        public ErrorEventArgs(string message, Exception exception, string context) : this(message, exception) {
+        public ErrorEventArgs(string message, Exception exception, string context) : this(message, exception)
+        {
             Context = context;
         }
 
-        public ErrorEventArgs(string message, ErrorSeverity severity) : this(message) {
+        public ErrorEventArgs(string message, ErrorSeverity severity) : this(message)
+        {
             Severity = severity;
         }
 
-        public ErrorEventArgs(string message, string module, ErrorSeverity severity) : this(message, severity) {
+        public ErrorEventArgs(string message, string module, ErrorSeverity severity) : this(message, severity)
+        {
             Module = module;
         }
     }
@@ -138,27 +149,32 @@ namespace LYBT.Desktop.Core.Models.Events {
     /// <summary>
     /// 导航事件参数
     /// </summary>
-    public class NavigationEventArgs : EventArgs {
+    public class NavigationEventArgs : EventArgs
+    {
         public string Target { get; set; } = string.Empty;
         public string ViewName { get; set; } = string.Empty;
         public bool IsModal { get; set; }
         public object? Parameters { get; set; }
         public DateTime Timestamp { get; set; } = DateTime.Now;
 
-        public NavigationEventArgs(string target) {
+        public NavigationEventArgs(string target)
+        {
             Target = target;
             ViewName = target;
         }
 
-        public NavigationEventArgs(string target, object parameters) : this(target) {
+        public NavigationEventArgs(string target, object parameters) : this(target)
+        {
             Parameters = parameters;
         }
 
-        public NavigationEventArgs(string target, bool isModal) : this(target) {
+        public NavigationEventArgs(string target, bool isModal) : this(target)
+        {
             IsModal = isModal;
         }
 
-        public NavigationEventArgs(string target, object parameters, bool isModal) : this(target, parameters) {
+        public NavigationEventArgs(string target, object parameters, bool isModal) : this(target, parameters)
+        {
             IsModal = isModal;
         }
     }
@@ -166,19 +182,22 @@ namespace LYBT.Desktop.Core.Models.Events {
     /// <summary>
     /// 状态消息事件参数
     /// </summary>
-    public class StatusMessageEventArgs : EventArgs {
+    public class StatusMessageEventArgs : EventArgs
+    {
         public string Message { get; set; } = string.Empty;
         public StatusMessageType Type { get; set; } = StatusMessageType.Info;
         public DateTime Timestamp { get; set; } = DateTime.Now;
         public int? Duration { get; set; }
         public int? DisplayDuration { get; set; }
 
-        public StatusMessageEventArgs(string message, StatusMessageType type = StatusMessageType.Info) {
+        public StatusMessageEventArgs(string message, StatusMessageType type = StatusMessageType.Info)
+        {
             Message = message;
             Type = type;
         }
 
-        public StatusMessageEventArgs(string message, StatusMessageType type, int duration) : this(message, type) {
+        public StatusMessageEventArgs(string message, StatusMessageType type, int duration) : this(message, type)
+        {
             Duration = duration;
             DisplayDuration = duration;
         }
@@ -187,18 +206,21 @@ namespace LYBT.Desktop.Core.Models.Events {
     /// <summary>
     /// 患者选择事件
     /// </summary>
-    public class PatientSelectedEvent : PubSubEvent<PatientSelectedEventArgs> {
+    public class PatientSelectedEvent : PubSubEvent<PatientSelectedEventArgs>
+    {
     }
 
     /// <summary>
     /// 患者选择事件参数
     /// </summary>
-    public class PatientSelectedEventArgs {
+    public class PatientSelectedEventArgs
+    {
         public Guid PatientId { get; set; }
         public string PatientName { get; set; } = string.Empty;
         public DateTime Timestamp { get; set; } = DateTime.Now;
 
-        public PatientSelectedEventArgs(Guid patientId, string patientName) {
+        public PatientSelectedEventArgs(Guid patientId, string patientName)
+        {
             PatientId = patientId;
             PatientName = patientName;
         }
@@ -207,20 +229,23 @@ namespace LYBT.Desktop.Core.Models.Events {
     /// <summary>
     /// 看诊开始事件
     /// </summary>
-    public class ConsultationStartedEvent : PubSubEvent<ConsultationStartedEventArgs> {
+    public class ConsultationStartedEvent : PubSubEvent<ConsultationStartedEventArgs>
+    {
     }
 
     /// <summary>
     /// 看诊开始事件参数
     /// </summary>
-    public class ConsultationStartedEventArgs {
+    public class ConsultationStartedEventArgs
+    {
         public Guid ConsultationId { get; set; }
         public Guid PatientId { get; set; }
         public string PatientName { get; set; } = string.Empty;
         public DateTime StartTime { get; set; }
         public DateTime Timestamp { get; set; } = DateTime.Now;
 
-        public ConsultationStartedEventArgs(Guid consultationId, Guid patientId, string patientName) {
+        public ConsultationStartedEventArgs(Guid consultationId, Guid patientId, string patientName)
+        {
             ConsultationId = consultationId;
             PatientId = patientId;
             PatientName = patientName;
@@ -231,13 +256,15 @@ namespace LYBT.Desktop.Core.Models.Events {
     /// <summary>
     /// 看诊完成事件
     /// </summary>
-    public class ConsultationCompletedEvent : PubSubEvent<ConsultationCompletedEventArgs> {
+    public class ConsultationCompletedEvent : PubSubEvent<ConsultationCompletedEventArgs>
+    {
     }
 
     /// <summary>
     /// 看诊完成事件参数
     /// </summary>
-    public class ConsultationCompletedEventArgs {
+    public class ConsultationCompletedEventArgs
+    {
         public Guid ConsultationId { get; set; }
         public Guid PatientId { get; set; }
         public string PatientName { get; set; } = string.Empty;
@@ -245,7 +272,8 @@ namespace LYBT.Desktop.Core.Models.Events {
         public string? Summary { get; set; }
         public DateTime Timestamp { get; set; } = DateTime.Now;
 
-        public ConsultationCompletedEventArgs(Guid consultationId, Guid patientId, string patientName) {
+        public ConsultationCompletedEventArgs(Guid consultationId, Guid patientId, string patientName)
+        {
             ConsultationId = consultationId;
             PatientId = patientId;
             PatientName = patientName;
@@ -253,7 +281,8 @@ namespace LYBT.Desktop.Core.Models.Events {
         }
 
         public ConsultationCompletedEventArgs(Guid consultationId, Guid patientId, string patientName, string summary)
-            : this(consultationId, patientId, patientName) {
+            : this(consultationId, patientId, patientName)
+        {
             Summary = summary;
         }
     }
@@ -261,40 +290,47 @@ namespace LYBT.Desktop.Core.Models.Events {
     /// <summary>
     /// 错误发生事件
     /// </summary>
-    public class ErrorOccurredEvent : PubSubEvent<ErrorEventArgs> {
+    public class ErrorOccurredEvent : PubSubEvent<ErrorEventArgs>
+    {
     }
 
     /// <summary>
     /// 导航请求事件
     /// </summary>
-    public class NavigationRequestEvent : PubSubEvent<NavigationEventArgs> {
+    public class NavigationRequestEvent : PubSubEvent<NavigationEventArgs>
+    {
     }
 
     /// <summary>
     /// 状态消息事件
     /// </summary>
-    public class StatusMessageEvent : PubSubEvent<StatusMessageEventArgs> {
+    public class StatusMessageEvent : PubSubEvent<StatusMessageEventArgs>
+    {
     }
 
     /// <summary>
     /// 数据刷新请求事件
     /// </summary>
-    public class DataRefreshRequestEvent : PubSubEvent<DataRefreshRequestEventArgs> {
+    public class DataRefreshRequestEvent : PubSubEvent<DataRefreshRequestEventArgs>
+    {
     }
 
     /// <summary>
     /// 数据刷新请求事件参数
     /// </summary>
-    public class DataRefreshRequestEventArgs {
+    public class DataRefreshRequestEventArgs
+    {
         public DataRefreshType RefreshType { get; set; }
         public string? FilterCriteria { get; set; }
         public DateTime Timestamp { get; set; } = DateTime.Now;
 
-        public DataRefreshRequestEventArgs(DataRefreshType refreshType) {
+        public DataRefreshRequestEventArgs(DataRefreshType refreshType)
+        {
             RefreshType = refreshType;
         }
 
-        public DataRefreshRequestEventArgs(DataRefreshType refreshType, string filterCriteria) : this(refreshType) {
+        public DataRefreshRequestEventArgs(DataRefreshType refreshType, string filterCriteria) : this(refreshType)
+        {
             FilterCriteria = filterCriteria;
         }
     }
@@ -302,20 +338,23 @@ namespace LYBT.Desktop.Core.Models.Events {
     /// <summary>
     /// 处方保存事件
     /// </summary>
-    public class PrescriptionSavedEvent : PubSubEvent<PrescriptionSavedEventArgs> {
+    public class PrescriptionSavedEvent : PubSubEvent<PrescriptionSavedEventArgs>
+    {
     }
 
     /// <summary>
     /// 处方保存事件参数
     /// </summary>
-    public class PrescriptionSavedEventArgs {
+    public class PrescriptionSavedEventArgs
+    {
         public Guid PrescriptionId { get; set; }
         public Guid PatientId { get; set; }
         public string PatientName { get; set; } = string.Empty;
         public decimal TotalAmount { get; set; }
         public DateTime Timestamp { get; set; } = DateTime.Now;
 
-        public PrescriptionSavedEventArgs(Guid prescriptionId, Guid patientId, string patientName, decimal totalAmount) {
+        public PrescriptionSavedEventArgs(Guid prescriptionId, Guid patientId, string patientName, decimal totalAmount)
+        {
             PrescriptionId = prescriptionId;
             PatientId = patientId;
             PatientName = patientName;

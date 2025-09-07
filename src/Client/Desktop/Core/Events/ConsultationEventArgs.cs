@@ -1,9 +1,11 @@
-﻿namespace LYBT.Desktop.Core.Events {
+﻿namespace LYBT.Desktop.Core.Events
+{
 
     /// <summary>
     /// 诊疗事件参数基类
     /// </summary>
-    public abstract class ConsultationEventArgsBase : EventArgs {
+    public abstract class ConsultationEventArgsBase : EventArgs
+    {
         public Guid Id { get; set; }
         public DateTime Timestamp { get; set; } = DateTime.Now;
         public string? Message { get; set; }
@@ -12,14 +14,17 @@
     /// <summary>
     /// 处方保存事件参数
     /// </summary>
-    public class PrescriptionSavedEventArgs : ConsultationEventArgsBase {
+    public class PrescriptionSavedEventArgs : ConsultationEventArgsBase
+    {
         public Guid PrescriptionId { get; set; }
         public bool IsSuccess { get; set; }
 
-        public PrescriptionSavedEventArgs() {
+        public PrescriptionSavedEventArgs()
+        {
         }
 
-        public PrescriptionSavedEventArgs(Guid prescriptionId, Guid patientId, string patientName, decimal totalAmount) {
+        public PrescriptionSavedEventArgs(Guid prescriptionId, Guid patientId, string patientName, decimal totalAmount)
+        {
             PrescriptionId = prescriptionId;
             Id = patientId;
             Message = $"处方已保存: {patientName}, 总金额: {totalAmount:C}";
@@ -30,14 +35,17 @@
     /// <summary>
     /// 患者选择事件参数
     /// </summary>
-    public class PatientSelectedEventArgs : ConsultationEventArgsBase {
+    public class PatientSelectedEventArgs : ConsultationEventArgsBase
+    {
         public Guid PatientId { get; set; } = Guid.Empty;
         public string PatientName { get; set; } = string.Empty;
 
-        public PatientSelectedEventArgs() {
+        public PatientSelectedEventArgs()
+        {
         }
 
-        public PatientSelectedEventArgs(Guid patientId, string patientName) {
+        public PatientSelectedEventArgs(Guid patientId, string patientName)
+        {
             PatientId = patientId;
             PatientName = patientName;
             Id = patientId;
@@ -48,14 +56,17 @@
     /// <summary>
     /// 诊疗开始事件参数
     /// </summary>
-    public class ConsultationStartedEventArgs : ConsultationEventArgsBase {
+    public class ConsultationStartedEventArgs : ConsultationEventArgsBase
+    {
         public Guid ConsultationId { get; set; } = Guid.Empty;
         public Guid PatientId { get; set; } = Guid.Empty;
 
-        public ConsultationStartedEventArgs() {
+        public ConsultationStartedEventArgs()
+        {
         }
 
-        public ConsultationStartedEventArgs(Guid consultationId, Guid patientId, string? patientName) {
+        public ConsultationStartedEventArgs(Guid consultationId, Guid patientId, string? patientName)
+        {
             ConsultationId = consultationId;
             PatientId = patientId;
             Id = consultationId;
@@ -66,14 +77,17 @@
     /// <summary>
     /// 诊疗完成事件参数
     /// </summary>
-    public class ConsultationCompletedEventArgs : ConsultationEventArgsBase {
+    public class ConsultationCompletedEventArgs : ConsultationEventArgsBase
+    {
         public Guid ConsultationId { get; set; } = Guid.Empty;
         public bool IsSuccess { get; set; } = false;
 
-        public ConsultationCompletedEventArgs() {
+        public ConsultationCompletedEventArgs()
+        {
         }
 
-        public ConsultationCompletedEventArgs(Guid consultationId, Guid patientId, string? patientName) {
+        public ConsultationCompletedEventArgs(Guid consultationId, Guid patientId, string? patientName)
+        {
             ConsultationId = consultationId;
             Id = consultationId;
             IsSuccess = true;
@@ -84,14 +98,17 @@
     /// <summary>
     /// 数据刷新请求事件参数
     /// </summary>
-    public class DataRefreshRequestEventArgs : EventArgs {
+    public class DataRefreshRequestEventArgs : EventArgs
+    {
         public DataRefreshType RefreshType { get; set; }
         public string TargetModule { get; set; } = string.Empty;
 
-        public DataRefreshRequestEventArgs() {
+        public DataRefreshRequestEventArgs()
+        {
         }
 
-        public DataRefreshRequestEventArgs(DataRefreshType refreshType) {
+        public DataRefreshRequestEventArgs(DataRefreshType refreshType)
+        {
             RefreshType = refreshType;
         }
     }
@@ -99,14 +116,17 @@
     /// <summary>
     /// 状态消息事件参数
     /// </summary>
-    public class StatusMessageEventArgs : EventArgs {
+    public class StatusMessageEventArgs : EventArgs
+    {
         public string Message { get; set; } = string.Empty;
         public StatusMessageType MessageType { get; set; }
 
-        public StatusMessageEventArgs() {
+        public StatusMessageEventArgs()
+        {
         }
 
-        public StatusMessageEventArgs(string message, StatusMessageType messageType, int duration = 3000) {
+        public StatusMessageEventArgs(string message, StatusMessageType messageType, int duration = 3000)
+        {
             Message = message;
             MessageType = messageType;
         }
@@ -115,20 +135,24 @@
     /// <summary>
     /// 诊疗错误事件参数（避免与System.ComponentModel.ErrorEventArgs冲突）
     /// </summary>
-    public class ConsultationErrorEventArgs : EventArgs {
+    public class ConsultationErrorEventArgs : EventArgs
+    {
         public string ErrorMessage { get; set; } = string.Empty;
         public Exception? Exception { get; set; }
         public string Module { get; set; } = string.Empty;
 
-        public ConsultationErrorEventArgs() {
+        public ConsultationErrorEventArgs()
+        {
         }
 
-        public ConsultationErrorEventArgs(string message, Exception? exception) {
+        public ConsultationErrorEventArgs(string message, Exception? exception)
+        {
             ErrorMessage = message;
             Exception = exception;
         }
 
-        public ConsultationErrorEventArgs(string message, string module) {
+        public ConsultationErrorEventArgs(string message, string module)
+        {
             ErrorMessage = message;
             Module = module;
         }
@@ -137,15 +161,18 @@
     /// <summary>
     /// TCM数据更新事件参数
     /// </summary>
-    public class TCMDataUpdatedEventArgs : ConsultationEventArgsBase {
+    public class TCMDataUpdatedEventArgs : ConsultationEventArgsBase
+    {
         public Guid ConsultationId { get; set; } = Guid.Empty;
         public string UpdatedSection { get; set; } = string.Empty;
         public Dictionary<string, object> UpdatedData { get; set; } = new();
 
-        public TCMDataUpdatedEventArgs() {
+        public TCMDataUpdatedEventArgs()
+        {
         }
 
-        public TCMDataUpdatedEventArgs(Guid consultationId, string section, Dictionary<string, object> data) {
+        public TCMDataUpdatedEventArgs(Guid consultationId, string section, Dictionary<string, object> data)
+        {
             ConsultationId = consultationId;
             UpdatedSection = section;
             UpdatedData = data;
@@ -157,18 +184,22 @@
     /// <summary>
     /// 诊疗导航请求事件参数（避免与Core的NavigationEventArgs冲突）
     /// </summary>
-    public class ConsultationNavigationEventArgs : EventArgs {
+    public class ConsultationNavigationEventArgs : EventArgs
+    {
         public string Target { get; set; } = string.Empty;
         public Dictionary<string, object> Parameters { get; set; } = new();
 
-        public ConsultationNavigationEventArgs() {
+        public ConsultationNavigationEventArgs()
+        {
         }
 
-        public ConsultationNavigationEventArgs(string target) {
+        public ConsultationNavigationEventArgs(string target)
+        {
             Target = target;
         }
 
-        public ConsultationNavigationEventArgs(string target, Dictionary<string, object> parameters) {
+        public ConsultationNavigationEventArgs(string target, Dictionary<string, object> parameters)
+        {
             Target = target;
             Parameters = parameters;
         }
@@ -176,12 +207,14 @@
 }
 
 // 需要引用的枚举类型（需要先确保Enums目录存在）
-namespace LYBT.Desktop.Core.Events {
+namespace LYBT.Desktop.Core.Events
+{
 
     /// <summary>
     /// 数据刷新类型
     /// </summary>
-    public enum DataRefreshType {
+    public enum DataRefreshType
+    {
 
         /// <summary>全量刷新</summary>
         Full = 0,
@@ -205,7 +238,8 @@ namespace LYBT.Desktop.Core.Events {
     /// <summary>
     /// 状态消息类型
     /// </summary>
-    public enum StatusMessageType {
+    public enum StatusMessageType
+    {
 
         /// <summary>信息</summary>
         Info = 0,

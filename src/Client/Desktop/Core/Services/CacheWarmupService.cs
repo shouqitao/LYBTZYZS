@@ -1,14 +1,17 @@
 ﻿using Microsoft.Extensions.Logging;
 
-namespace LYBT.Desktop.Core.Services {
+namespace LYBT.Desktop.Core.Services
+{
 
     /// <summary>
     /// 缓存预热服务 - 在应用启动时预热关键缓存数据（简化版）
     /// </summary>
-    public class CacheWarmupService : ICacheWarmupService {
+    public class CacheWarmupService : ICacheWarmupService
+    {
         private readonly ILogger<CacheWarmupService> _logger;
 
-        public CacheWarmupService(ILogger<CacheWarmupService> logger) {
+        public CacheWarmupService(ILogger<CacheWarmupService> logger)
+        {
             _logger = logger;
         }
 
@@ -17,14 +20,17 @@ namespace LYBT.Desktop.Core.Services {
         /// </summary>
         /// <param name="cancellationToken">取消令牌</param>
         /// <returns>预热结果</returns>
-        public async Task<CacheWarmupResult> WarmupAsync(CancellationToken cancellationToken = default) {
-            var result = new CacheWarmupResult {
+        public async Task<CacheWarmupResult> WarmupAsync(CancellationToken cancellationToken = default)
+        {
+            var result = new CacheWarmupResult
+            {
                 StartTime = DateTime.UtcNow
             };
 
             _logger.LogInformation("开始缓存预热...");
 
-            try {
+            try
+            {
                 var tasks = new List<Task<WarmupTaskResult>>
                 {
                     WarmupBasicDataAsync(cancellationToken)
@@ -32,11 +38,15 @@ namespace LYBT.Desktop.Core.Services {
 
                 var taskResults = await Task.WhenAll(tasks);
 
-                foreach (var taskResult in taskResults) {
+                foreach (var taskResult in taskResults)
+                {
                     result.TaskResults.Add(taskResult);
-                    if (taskResult.IsSuccess) {
+                    if (taskResult.IsSuccess)
+                    {
                         result.SuccessCount++;
-                    } else {
+                    }
+                    else
+                    {
                         result.FailureCount++;
                     }
                 }
@@ -50,7 +60,9 @@ namespace LYBT.Desktop.Core.Services {
                     result.SuccessCount, result.FailureCount, result.TotalDuration.TotalMilliseconds);
 
                 return result;
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, "缓存预热过程中发生错误");
                 result.EndTime = DateTime.UtcNow;
                 result.TotalDuration = result.EndTime - result.StartTime;
@@ -63,13 +75,16 @@ namespace LYBT.Desktop.Core.Services {
         /// <summary>
         /// 预热基础数据 - 架构重构后的简化版本
         /// </summary>
-        private async Task<WarmupTaskResult> WarmupBasicDataAsync(CancellationToken cancellationToken) {
-            var taskResult = new WarmupTaskResult {
+        private async Task<WarmupTaskResult> WarmupBasicDataAsync(CancellationToken cancellationToken)
+        {
+            var taskResult = new WarmupTaskResult
+            {
                 TaskName = "基础数据预热",
                 StartTime = DateTime.UtcNow
             };
 
-            try {
+            try
+            {
                 _logger.LogDebug("开始预热基础数据...");
 
                 // 预热基础缓存配置和静态数据
@@ -81,11 +96,15 @@ namespace LYBT.Desktop.Core.Services {
                 taskResult.ItemCount = 1;
 
                 _logger.LogDebug("基础数据预热完成: 耗时 {Duration}ms", taskResult.Duration.TotalMilliseconds);
-            } catch (OperationCanceledException) {
+            }
+            catch (OperationCanceledException)
+            {
                 taskResult.IsSuccess = false;
                 taskResult.ErrorMessage = "预热被取消";
                 _logger.LogWarning("基础数据预热被取消");
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 taskResult.EndTime = DateTime.UtcNow;
                 taskResult.Duration = taskResult.EndTime - taskResult.StartTime;
                 taskResult.IsSuccess = false;
@@ -100,7 +119,8 @@ namespace LYBT.Desktop.Core.Services {
     /// <summary>
     /// 缓存预热服务接口
     /// </summary>
-    public interface ICacheWarmupService {
+    public interface ICacheWarmupService
+    {
 
         /// <summary>
         /// 执行缓存预热
@@ -111,7 +131,8 @@ namespace LYBT.Desktop.Core.Services {
     /// <summary>
     /// 缓存预热结果
     /// </summary>
-    public class CacheWarmupResult {
+    public class CacheWarmupResult
+    {
         public bool IsSuccess { get; set; }
         public string? ErrorMessage { get; set; }
         public DateTime StartTime { get; set; }
@@ -125,7 +146,8 @@ namespace LYBT.Desktop.Core.Services {
     /// <summary>
     /// 预热任务结果
     /// </summary>
-    public class WarmupTaskResult {
+    public class WarmupTaskResult
+    {
         public string TaskName { get; set; } = string.Empty;
         public bool IsSuccess { get; set; }
         public string? ErrorMessage { get; set; }

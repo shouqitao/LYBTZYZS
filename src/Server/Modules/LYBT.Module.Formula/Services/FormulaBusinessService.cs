@@ -7,13 +7,15 @@ using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace LYBT.Module.Formula.Services {
+namespace LYBT.Module.Formula.Services
+{
 
     /// <summary>
     /// 验方业务服务 - 专注业务规则和复杂操作 (UltraThink重构: <250行)
     /// 职责：复制、分析、分享等业务逻辑
     /// </summary>
-    public class FormulaBusinessService {
+    public class FormulaBusinessService
+    {
         private readonly AppDbContext _dbContext;
         private readonly IMapper _mapper;
         private readonly ILogger<FormulaBusinessService> _logger;
@@ -21,7 +23,8 @@ namespace LYBT.Module.Formula.Services {
         public FormulaBusinessService(
             AppDbContext dbContext,
             IMapper mapper,
-            ILogger<FormulaBusinessService> logger) {
+            ILogger<FormulaBusinessService> logger)
+        {
             _dbContext = dbContext;
             _mapper = mapper;
             _logger = logger;
@@ -29,9 +32,12 @@ namespace LYBT.Module.Formula.Services {
 
         #region 验方复制
 
-        public async Task<ServiceResult<FormulaDto>> CopyAsync(Guid id, string newName) {
-            try {
-                if (string.IsNullOrWhiteSpace(newName)) {
+        public async Task<ServiceResult<FormulaDto>> CopyAsync(Guid id, string newName)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(newName))
+                {
                     return ServiceResult<FormulaDto>.Failure("新验方名称不能为空");
                 }
 
@@ -39,7 +45,8 @@ namespace LYBT.Module.Formula.Services {
                     .Include(f => f.Herbs)
                     .FirstOrDefaultAsync(f => f.Id == id);
 
-                if (originalFormula == null) {
+                if (originalFormula == null)
+                {
                     return ServiceResult<FormulaDto>.Failure("原验方不存在");
                 }
 
@@ -47,12 +54,14 @@ namespace LYBT.Module.Formula.Services {
                 var nameExists = await _dbContext.Formulas
                     .AnyAsync(f => f.Name == newName);
 
-                if (nameExists) {
+                if (nameExists)
+                {
                     return ServiceResult<FormulaDto>.Failure($"验方名称'{newName}'已存在");
                 }
 
                 // 创建副本
-                var copyFormula = new LYBT.Entities.Formula.Formula {
+                var copyFormula = new LYBT.Entities.Formula.Formula
+                {
                     Id = Guid.NewGuid(),
                     Name = newName,
                     Effect = originalFormula.Effect,
@@ -64,8 +73,10 @@ namespace LYBT.Module.Formula.Services {
                 };
 
                 // 复制药材组成
-                foreach (var originalHerb in originalFormula.Herbs) {
-                    copyFormula.Herbs.Add(new LYBT.Entities.Formula.FormulaHerbItem {
+                foreach (var originalHerb in originalFormula.Herbs)
+                {
+                    copyFormula.Herbs.Add(new LYBT.Entities.Formula.FormulaHerbItem
+                    {
                         HerbId = originalHerb.HerbId,
                         HerbName = originalHerb.HerbName,
                         Quantity = originalHerb.Quantity,
@@ -81,7 +92,9 @@ namespace LYBT.Module.Formula.Services {
                 _logger.LogInformation("复制验方成功: {OriginalName} -> {NewName}", originalFormula.Name, newName);
                 var dto = _mapper.Map<FormulaDto>(copyFormula);
                 return ServiceResult<FormulaDto>.Success(dto);
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, "复制验方失败, ID: {FormulaId}, 新名称: {NewName}", id, newName);
                 return ServiceResult<FormulaDto>.Failure($"复制验方失败: {ex.Message}");
             }
@@ -92,9 +105,12 @@ namespace LYBT.Module.Formula.Services {
         /// <summary>
         /// 从处方创建验方
         /// </summary>
-        public async Task<ServiceResult<FormulaDto>> CreateFromPrescriptionAsync(Guid prescriptionId, string name) {
-            try {
-                if (string.IsNullOrWhiteSpace(name)) {
+        public async Task<ServiceResult<FormulaDto>> CreateFromPrescriptionAsync(Guid prescriptionId, string name)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(name))
+                {
                     return ServiceResult<FormulaDto>.Failure("验方名称不能为空");
                 }
 
@@ -104,28 +120,32 @@ namespace LYBT.Module.Formula.Services {
 
                     .FirstOrDefaultAsync(p => p.Id == prescriptionId);
 
-                if (prescription == null) {
+                if (prescription == null)
+                {
                     return ServiceResult<FormulaDto>.Failure("处方不存在");
                 }
 
-                if (prescription.Items == null || !prescription.Items.Any()) {
+                if (prescription.Items == null || !prescription.Items.Any())
+                {
                     return ServiceResult<FormulaDto>.Failure("处方中没有药材信息");
                 }
 
                 // 检查验方名称是否重复
                 var existingFormula = await _dbContext.Formulas
                     .FirstOrDefaultAsync(f => f.Name == name);
-                if (existingFormula != null) {
+                if (existingFormula != null)
+                {
                     return ServiceResult<FormulaDto>.Failure("验方名称已存在");
                 }
 
                 // 创建新验方
-                var newFormula = new LYBT.Entities.Formula.Formula {
+                var newFormula = new LYBT.Entities.Formula.Formula
+                {
                     Id = Guid.NewGuid(),
                     Name = name,
                     Effect = prescription.Indication ?? "根据处方创建",
                     Usage = prescription.Advice ?? "遵医嘱服用",
-                    Property = "",
+                    Property = string.Empty,
                     IsShared = false,
                     Status = CommonStatus.Enabled,
                     Remark = $"基于处方【{prescription.Id.ToString()}】创建",
@@ -134,8 +154,10 @@ namespace LYBT.Module.Formula.Services {
                 };
 
                 // 复制处方药材到验方
-                foreach (var item in prescription.Items) {
-                    newFormula.Herbs.Add(new LYBT.Entities.Formula.FormulaHerbItem {
+                foreach (var item in prescription.Items)
+                {
+                    newFormula.Herbs.Add(new LYBT.Entities.Formula.FormulaHerbItem
+                    {
                         HerbId = item.HerbId,
                         HerbName = item.HerbName,
                         Quantity = item.Quantity,
@@ -158,7 +180,9 @@ namespace LYBT.Module.Formula.Services {
 
                 _logger.LogInformation("从处方创建验方成功: {FormulaName}, 处方ID: {PrescriptionId}", name, prescriptionId);
                 return ServiceResult<FormulaDto>.Success(dto);
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, "从处方创建验方失败, 处方ID: {PrescriptionId}, 验方名称: {Name}", prescriptionId, name);
                 return ServiceResult<FormulaDto>.Failure($"创建失败: {ex.Message}");
             }
@@ -170,10 +194,13 @@ namespace LYBT.Module.Formula.Services {
 
         #region 验方分享
 
-        public async Task<ServiceResult<bool>> ShareFormulaAsync(Guid id, Guid operatorId, string operatorName) {
-            try {
+        public async Task<ServiceResult<bool>> ShareFormulaAsync(Guid id, Guid operatorId, string operatorName)
+        {
+            try
+            {
                 var formula = await _dbContext.Formulas.FindAsync(id);
-                if (formula == null) {
+                if (formula == null)
+                {
                     return ServiceResult<bool>.Failure("验方不存在");
                 }
 
@@ -181,19 +208,25 @@ namespace LYBT.Module.Formula.Services {
                 formula.IsShared = true;
                 await _dbContext.SaveChangesAsync();
 
-                _logger.LogInformation("分享验方成功: {FormulaName}, 操作者: {OperatorName} ({OperatorId})",
+                _logger.LogInformation(
+                    "分享验方成功: {FormulaName}, 操作者: {OperatorName} ({OperatorId})",
                     formula.Name, operatorName, operatorId);
                 return ServiceResult<bool>.Success(true);
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, "分享验方失败, ID: {FormulaId}, 操作者: {OperatorName}", id, operatorName);
                 return ServiceResult<bool>.Failure($"分享失败: {ex.Message}");
             }
         }
 
-        public async Task<ServiceResult<bool>> UnshareFormulaAsync(Guid id, Guid operatorId, string operatorName) {
-            try {
+        public async Task<ServiceResult<bool>> UnshareFormulaAsync(Guid id, Guid operatorId, string operatorName)
+        {
+            try
+            {
                 var formula = await _dbContext.Formulas.FindAsync(id);
-                if (formula == null) {
+                if (formula == null)
+                {
                     return ServiceResult<bool>.Failure("验方不存在");
                 }
 
@@ -201,10 +234,13 @@ namespace LYBT.Module.Formula.Services {
                 formula.IsShared = false;
                 await _dbContext.SaveChangesAsync();
 
-                _logger.LogInformation("取消分享验方成功: {FormulaName}, 操作者: {OperatorName} ({OperatorId})",
+                _logger.LogInformation(
+                    "取消分享验方成功: {FormulaName}, 操作者: {OperatorName} ({OperatorId})",
                     formula.Name, operatorName, operatorId);
                 return ServiceResult<bool>.Success(true);
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, "取消分享验方失败, ID: {FormulaId}, 操作者: {OperatorName}", id, operatorName);
                 return ServiceResult<bool>.Failure($"取消分享失败: {ex.Message}");
             }
@@ -214,18 +250,22 @@ namespace LYBT.Module.Formula.Services {
 
         #region 验方分析（简化版）
 
-        public async Task<ServiceResult<FormulaAnalysisResult>> AnalyzeFormulaAsync(Guid formulaId) {
-            try {
+        public async Task<ServiceResult<FormulaAnalysisResult>> AnalyzeFormulaAsync(Guid formulaId)
+        {
+            try
+            {
                 var formula = await _dbContext.Formulas
                     .Include(f => f.Herbs)
 
                     .FirstOrDefaultAsync(f => f.Id == formulaId);
 
-                if (formula == null) {
+                if (formula == null)
+                {
                     return ServiceResult<FormulaAnalysisResult>.Failure("验方不存在");
                 }
 
-                var analysis = new FormulaAnalysisResult {
+                var analysis = new FormulaAnalysisResult
+                {
                     Summary = $"验方【{formula.Name}】共含{formula.Herbs.Count}味药材，复方配伍{DetermineComplexity(formula.Herbs.Count)}",
                     Effects = new List<string>
                     {
@@ -244,8 +284,10 @@ namespace LYBT.Module.Formula.Services {
 
                 // 检查基本配伍禁忌（简化版）
                 var herbNames = formula.Herbs.Select(h => h.HerbName).ToList();
-                if (herbNames.Contains("甘草") && herbNames.Contains("甘遂")) {
-                    analysis.Warnings.Add(new HerbCompatibilityWarning {
+                if (herbNames.Contains("甘草") && herbNames.Contains("甘遂"))
+                {
+                    analysis.Warnings.Add(new HerbCompatibilityWarning
+                    {
                         HerbName1 = "甘草",
                         HerbName2 = "甘遂",
                         WarningLevel = "严重",
@@ -254,7 +296,9 @@ namespace LYBT.Module.Formula.Services {
                 }
 
                 return ServiceResult<FormulaAnalysisResult>.Success(analysis);
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, "分析验方失败, ID: {FormulaId}", formulaId);
                 return ServiceResult<FormulaAnalysisResult>.Failure($"分析失败: {ex.Message}");
             }
@@ -264,8 +308,10 @@ namespace LYBT.Module.Formula.Services {
 
         #region 私有分析方法
 
-        private string DetermineComplexity(int herbCount) {
-            return herbCount switch {
+        private string DetermineComplexity(int herbCount)
+        {
+            return herbCount switch
+            {
                 <= 5 => "简单",
                 <= 10 => "中等",
                 <= 15 => "复杂",
@@ -273,7 +319,8 @@ namespace LYBT.Module.Formula.Services {
             };
         }
 
-        private string AssessSafetyLevel(ICollection<FormulaHerbItem> herbs) {
+        private string AssessSafetyLevel(ICollection<FormulaHerbItem> herbs)
+        {
             // 简化的安全性评估
             var hasHighRiskHerbs = herbs.Any(fh =>
                 fh.HerbName?.Contains("附子") == true ||
@@ -282,14 +329,17 @@ namespace LYBT.Module.Formula.Services {
             return hasHighRiskHerbs ? "需要注意" : "相对安全";
         }
 
-        private List<string> GenerateRecommendations(LYBT.Entities.Formula.Formula formula) {
+        private List<string> GenerateRecommendations(LYBT.Entities.Formula.Formula formula)
+        {
             var recommendations = new List<string>();
 
-            if (formula.Herbs.Count > 15) {
+            if (formula.Herbs.Count > 15)
+            {
                 recommendations.Add("药味较多，建议简化");
             }
 
-            if (string.IsNullOrWhiteSpace(formula.Usage)) {
+            if (string.IsNullOrWhiteSpace(formula.Usage))
+            {
                 recommendations.Add("建议补充服用方法");
             }
 

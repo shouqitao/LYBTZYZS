@@ -16,7 +16,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Win32;
 using Prism.Commands;
 
-namespace LYBT.Desktop.Patients.ViewModels {
+namespace LYBT.Desktop.Patients.ViewModels
+{
     /// <summary>
     /// 患者管理视图模型 - UltraThink双层架构UI层
     /// 采用UltraThink架构标准，使用C# 12现代化特性
@@ -45,10 +46,13 @@ namespace LYBT.Desktop.Patients.ViewModels {
         #region Properties
 
         /// <summary>选中的患者 - UltraThink v2.0: 直接使用DTO</summary>
-        public PatientDto? SelectedPatient {
+        public PatientDto? SelectedPatient
+        {
             get => _selectedPatient;
-            set {
-                if (SetProperty(ref _selectedPatient, value)) {
+            set
+            {
+                if (SetProperty(ref _selectedPatient, value))
+                {
                     // 更新命令状态
                     EditCommand.RaiseCanExecuteChanged();
                     DeleteCommand.RaiseCanExecuteChanged();
@@ -59,7 +63,8 @@ namespace LYBT.Desktop.Patients.ViewModels {
         }
 
         // 暴露基类的搜索和分页属性供XAML绑定
-        public string SearchKeyword {
+        public string SearchKeyword
+        {
             get => SearchManager.SearchKeyword;
             set => SearchManager.SearchKeyword = value;
         }
@@ -77,7 +82,6 @@ namespace LYBT.Desktop.Patients.ViewModels {
 
         // UltraThink v2.0: 删除批量选择功能 - 20人以下小诊所不需要复杂的多选和批量操作
         // 基础搜索功能已经通过NewBaseListViewModel的SearchManager提供
-
         #endregion Properties
 
         #region Commands
@@ -98,12 +102,12 @@ namespace LYBT.Desktop.Patients.ViewModels {
         // UltraThink v2.0: 删除过度设计功能 - 20人以下小诊所不需要以下复杂功能:
         // - BatchEnableCommand/BatchDisableCommand: 批量操作过度设计
         // - ClearSelectionCommand/SelectAllCommand: 多选功能过度设计
-
         #endregion Commands
 
         #region Constructor
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="PatientManagementViewModel"/> class.
         /// 构造函数 - UltraThink双层架构依赖注入
         /// 初始化患者管理模块、对话服务、映射器、命令和事件订阅
         /// </summary>
@@ -125,7 +129,8 @@ namespace LYBT.Desktop.Patients.ViewModels {
             ILogger<PatientManagementViewModel> logger,
             IPaginationCoordinator? paginationCoordinator = null,
             ISearchManager? searchManager = null)
-            : base(sessionManager, notificationService, logger, paginationCoordinator, searchManager) {
+            : base(sessionManager, notificationService, logger, paginationCoordinator, searchManager)
+        {
             _patientService = patientService ?? throw new ArgumentNullException(nameof(patientService));
             _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
@@ -141,7 +146,8 @@ namespace LYBT.Desktop.Patients.ViewModels {
 
         #region Command Initialization
 
-        protected override void InitializeCommands() {
+        protected override void InitializeCommands()
+        {
             AddCommand = new DelegateCommand(async () => await AddPatientAsync());
             EditCommand = new DelegateCommand<PatientDto>(async patient => await EditPatientAsync(patient), CanExecutePatientCommand);
             DeleteCommand = new DelegateCommand<PatientDto>(async patient => await DeletePatientAsync(patient), CanExecutePatientCommand);
@@ -164,7 +170,8 @@ namespace LYBT.Desktop.Patients.ViewModels {
             // UltraThink v2.0: 删除批量操作命令初始化 - 20人以下小诊所不需要复杂的批量操作
         }
 
-        private bool CanExecutePatientCommand(PatientDto patient) {
+        private bool CanExecutePatientCommand(PatientDto patient)
+        {
             return patient != null && !IsLoading;
         }
 
@@ -172,9 +179,11 @@ namespace LYBT.Desktop.Patients.ViewModels {
 
         #region Data Loading Override
 
-        protected override async Task<ServiceResult<PagedResult<PatientDto>>> LoadDataAsync(PagedQueryBaseDto request) {
+        protected override async Task<ServiceResult<PagedResult<PatientDto>>> LoadDataAsync(PagedQueryBaseDto request)
+        {
             // UltraThink v2.0: 转换为PatientPagedQueryDto进行患者查询
-            var patientQuery = new PatientPagedQueryDto {
+            var patientQuery = new PatientPagedQueryDto
+            {
                 Keyword = request.Keyword,
                 PageIndex = request.PageIndex,
                 PageSize = request.PageSize,
@@ -186,7 +195,6 @@ namespace LYBT.Desktop.Patients.ViewModels {
 
         // UltraThink v2.0: 删除复杂的ViewModel转换和选择状态管理
         // 直接使用基类的标准数据加载处理，无需自定义OnDataLoaded和OnDataLoadFailed
-
         #endregion Data Loading Override
 
         // UltraThink v2.0: 删除复杂的ViewModel管理 - 20人以下小诊所不需要复杂的选择状态管理
@@ -194,51 +202,66 @@ namespace LYBT.Desktop.Patients.ViewModels {
 
         #region CRUD Operations
 
-        private async Task AddPatientAsync() {
-            try {
-                var parameters = new Dictionary<string, object> {
+        private async Task AddPatientAsync()
+        {
+            try
+            {
+                var parameters = new Dictionary<string, object>
+                {
                     ["IsEditMode"] = false
                 };
 
                 var result = await _dialogService.ShowDialogAsync("PatientAddEditDialog", parameters);
 
-                if (result.Result == true) {
+                if (result.Result == true)
+                {
                     await RefreshDataAsync();
                     await _dialogService.ShowSuccessAsync("患者信息添加成功", "成功");
                 }
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 LogError(ex, "添加患者失败");
                 ShowError($"添加患者失败: {ex.Message}");
                 await _dialogService.ShowErrorAsync($"添加患者失败: {ex.Message}", "错误");
             }
         }
 
-        private async Task EditPatientAsync(PatientDto patient) {
-            if (patient == null) {
+        private async Task EditPatientAsync(PatientDto patient)
+        {
+            if (patient == null)
+            {
                 return;
             }
 
-            try {
-                var parameters = new Dictionary<string, object> {
+            try
+            {
+                var parameters = new Dictionary<string, object>
+                {
                     ["IsEditMode"] = true,
                     ["Patient"] = patient
                 };
 
                 var result = await _dialogService.ShowDialogAsync("PatientAddEditDialog", parameters);
 
-                if (result.Result == true) {
+                if (result.Result == true)
+                {
                     await RefreshDataAsync();
                     await _dialogService.ShowSuccessAsync($"患者 {patient.Name} 信息更新成功", "成功");
                 }
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 LogError(ex, "编辑患者失败: {PatientId}", patient.Id);
                 ShowError($"编辑患者失败: {ex.Message}");
                 await _dialogService.ShowErrorAsync($"编辑患者失败: {ex.Message}", "错误");
             }
         }
 
-        private async Task DeletePatientAsync(PatientDto patient) {
-            if (patient == null) {
+        private async Task DeletePatientAsync(PatientDto patient)
+        {
+            if (patient == null)
+            {
                 return;
             }
 
@@ -250,8 +273,10 @@ namespace LYBT.Desktop.Patients.ViewModels {
 
         #region Business Operations
 
-        private async Task ToggleStatusAsync(PatientDto patient) {
-            if (patient == null) {
+        private async Task ToggleStatusAsync(PatientDto patient)
+        {
+            if (patient == null)
+            {
                 return;
             }
 
@@ -262,24 +287,34 @@ namespace LYBT.Desktop.Patients.ViewModels {
                 $"确定要{action}患者 {patient.Name} 吗？",
                 $"{action}患者");
 
-            if (confirm) {
-                try {
+            if (confirm)
+            {
+                try
+                {
                     ServiceResult result;
-                    if (isEnabled) {
+                    if (isEnabled)
+                    {
                         result = await _patientService.DisableAsync(patient.Id);
-                    } else {
+                    }
+                    else
+                    {
                         result = await _patientService.EnableAsync(patient.Id);
                     }
 
-                    if (result.IsSuccess) {
+                    if (result.IsSuccess)
+                    {
                         await RefreshDataAsync();
                         await _dialogService.ShowInformationAsync($"患者{action}成功", "成功");
-                    } else {
+                    }
+                    else
+                    {
                         await _dialogService.ShowErrorAsync(
                             result.ErrorMessage ?? $"患者{action}失败",
                             "错误");
                     }
-                } catch (Exception ex) {
+                }
+                catch (Exception ex)
+                {
                     LogError(ex, "切换患者状态失败: {PatientId}", patient.Id);
                     ShowError($"患者{action}失败: {ex.Message}");
                     await _dialogService.ShowErrorAsync($"患者{action}失败: {ex.Message}", "错误");
@@ -287,15 +322,19 @@ namespace LYBT.Desktop.Patients.ViewModels {
             }
         }
 
-        private async Task ViewDetailsAsync(PatientDto patient) {
-            if (patient == null) {
+        private async Task ViewDetailsAsync(PatientDto patient)
+        {
+            if (patient == null)
+            {
                 return;
             }
 
-            try {
+            try
+            {
                 var result = await _patientService.GetByIdAsync(patient.Id);
 
-                if (result.IsSuccess && result.Data != null) {
+                if (result.IsSuccess && result.Data != null)
+                {
                     var patientDetail = result.Data;
                     var detailInfo = $"患者详情：\n\n" +
                                    $"姓名: {patientDetail.Name}\n" +
@@ -308,12 +347,16 @@ namespace LYBT.Desktop.Patients.ViewModels {
                                    $"过敏史: {patientDetail.AllergyHistory ?? "无"}";
 
                     await _dialogService.ShowInformationAsync(detailInfo, $"患者详情 - {patientDetail.Name}");
-                } else {
+                }
+                else
+                {
                     await _dialogService.ShowErrorAsync(
                         result.ErrorMessage ?? "获取患者详情失败",
                         "错误");
                 }
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 LogError(ex, "查看患者详情失败: {PatientId}", patient.Id);
                 ShowError($"查看患者详情失败: {ex.Message}");
                 await _dialogService.ShowErrorAsync($"查看患者详情失败: {ex.Message}", "错误");
@@ -327,31 +370,36 @@ namespace LYBT.Desktop.Patients.ViewModels {
 
         // UltraThink v2.0: 删除所有选择管理功能 - 20人以下小诊所不需要复杂的多选功能
         // 包括: ClearSelection, SelectAll 等功能
-
         #region Phase 7: 导入导出功能
 
         /// <summary>
         /// 导出患者数据到Excel
         /// </summary>
-        private async Task ExportPatientsAsync() {
-            try {
-                var saveFileDialog = new SaveFileDialog {
+        private async Task ExportPatientsAsync()
+        {
+            try
+            {
+                var saveFileDialog = new SaveFileDialog
+                {
                     Filter = "Excel 文件 (*.xlsx)|*.xlsx",
                     DefaultExt = "xlsx",
                     FileName = $"患者数据_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx"
                 };
 
-                if (saveFileDialog.ShowDialog() == true) {
+                if (saveFileDialog.ShowDialog() == true)
+                {
                     IsLoading = true;
 
                     // 获取所有患者数据
-                    var allPatientsResult = await _patientService.GetPagedAsync(new PatientPagedQueryDto {
+                    var allPatientsResult = await _patientService.GetPagedAsync(new PatientPagedQueryDto
+                    {
                         PageIndex = 1,
                         PageSize = 10000,  // 获取大量数据用于导出
                         Keyword = string.Empty
                     });
 
-                    if (allPatientsResult.IsSuccess && allPatientsResult.Data != null) {
+                    if (allPatientsResult.IsSuccess && allPatientsResult.Data != null)
+                    {
                         var patients = allPatientsResult.Data.Items;
 
                         // 定义导出列
@@ -369,15 +417,16 @@ namespace LYBT.Desktop.Patients.ViewModels {
                         };
 
                         // 转换数据用于导出
-                        var exportData = patients.Select(p => new {
+                        var exportData = patients.Select(p => new
+                        {
                             Name = p.Name,
                             Gender = p.Gender == LYBT.Shared.Models.Enums.Gender.Male ? "男" :
                                     p.Gender == LYBT.Shared.Models.Enums.Gender.Female ? "女" : "未知",
                             Age = p.Age,
-                            PhoneNumber = p.PhoneNumber ?? "",
-                            IdNumber = p.IdNumber ?? "",
-                            Address = p.Address ?? "",
-                            AllergyHistory = p.AllergyHistory ?? "",
+                            PhoneNumber = p.PhoneNumber ?? string.Empty,
+                            IdNumber = p.IdNumber ?? string.Empty,
+                            Address = p.Address ?? string.Empty,
+                            AllergyHistory = p.AllergyHistory ?? string.Empty,
                             Status = p.Status == CommonStatus.Enabled ? "正常" : "禁用",
                             CreateTime = p.CreateTime.ToString("yyyy-MM-dd HH:mm:ss")
                         });
@@ -386,14 +435,20 @@ namespace LYBT.Desktop.Patients.ViewModels {
                         ExcelHelper.ExportToExcel(exportData, columns, saveFileDialog.FileName, "患者数据");
 
                         await _dialogService.ShowSuccessAsync($"成功导出 {patients.Count()} 条患者数据到:\n{saveFileDialog.FileName}", "导出成功");
-                    } else {
+                    }
+                    else
+                    {
                         await _dialogService.ShowErrorAsync(allPatientsResult.ErrorMessage ?? "获取患者数据失败", "导出失败");
                     }
                 }
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 LogError(ex, "导出患者数据失败");
                 await _dialogService.ShowErrorAsync($"导出患者数据失败: {ex.Message}", "导出失败");
-            } finally {
+            }
+            finally
+            {
                 IsLoading = false;
             }
         }
@@ -401,21 +456,26 @@ namespace LYBT.Desktop.Patients.ViewModels {
         /// <summary>
         /// 从Excel导入患者数据
         /// </summary>
-        private async Task ImportPatientsAsync() {
-            try {
-                var openFileDialog = new OpenFileDialog {
+        private async Task ImportPatientsAsync()
+        {
+            try
+            {
+                var openFileDialog = new OpenFileDialog
+                {
                     Filter = "Excel 文件 (*.xlsx)|*.xlsx",
                     DefaultExt = "xlsx",
                     Title = "选择要导入的患者数据文件"
                 };
 
-                if (openFileDialog.ShowDialog() == true) {
+                if (openFileDialog.ShowDialog() == true)
+                {
                     IsLoading = true;
 
                     // 读取Excel数据
                     var dataTable = ExcelHelper.ImportFromExcel(openFileDialog.FileName, true);
 
-                    if (dataTable.Rows.Count == 0) {
+                    if (dataTable.Rows.Count == 0)
+                    {
                         await _dialogService.ShowWarningAsync("Excel文件中没有找到数据", "导入提示");
                         return;
                     }
@@ -425,20 +485,24 @@ namespace LYBT.Desktop.Patients.ViewModels {
                     var errors = new List<string>();
 
                     // 处理每行数据
-                    for (int i = 0; i < dataTable.Rows.Count; i++) {
-                        try {
+                    for (int i = 0; i < dataTable.Rows.Count; i++)
+                    {
+                        try
+                        {
                             var row = dataTable.Rows[i];
 
                             // 验证必填字段
                             var name = row["姓名"]?.ToString()?.Trim();
-                            if (string.IsNullOrEmpty(name)) {
+                            if (string.IsNullOrEmpty(name))
+                            {
                                 errors.Add($"第{i + 2}行：姓名不能为空");
                                 failCount++;
                                 continue;
                             }
 
                             // 创建患者DTO
-                            var patientDto = new PatientCreateDto {
+                            var patientDto = new PatientCreateDto
+                            {
                                 Name = name,
                                 Gender = ParseGender(row["性别"]?.ToString()),
                                 Age = ParseAge(row["年龄"]?.ToString()),
@@ -450,13 +514,18 @@ namespace LYBT.Desktop.Patients.ViewModels {
 
                             // 调用API创建患者
                             var result = await _patientService.CreateAsync(patientDto);
-                            if (result.IsSuccess) {
+                            if (result.IsSuccess)
+                            {
                                 successCount++;
-                            } else {
+                            }
+                            else
+                            {
                                 errors.Add($"第{i + 2}行 {name}：{result.ErrorMessage}");
                                 failCount++;
                             }
-                        } catch (Exception ex) {
+                        }
+                        catch (Exception ex)
+                        {
                             errors.Add($"第{i + 2}行：处理数据时发生错误 - {ex.Message}");
                             failCount++;
                         }
@@ -464,27 +533,38 @@ namespace LYBT.Desktop.Patients.ViewModels {
 
                     // 显示导入结果
                     var message = $"导入完成！\n成功：{successCount} 条\n失败：{failCount} 条";
-                    if (errors.Count > 0 && errors.Count <= 10) {
+                    if (errors.Count > 0 && errors.Count <= 10)
+                    {
                         message += $"\n\n错误详情:\n{string.Join("\n", errors)}";
-                    } else if (errors.Count > 10) {
+                    }
+                    else if (errors.Count > 10)
+                    {
                         message += $"\n\n错误详情（前10条）:\n{string.Join("\n", errors.Take(10))}\n... 等其他{errors.Count - 10}条错误";
                     }
 
-                    if (failCount == 0) {
+                    if (failCount == 0)
+                    {
                         await _dialogService.ShowSuccessAsync(message, "导入成功");
-                    } else {
+                    }
+                    else
+                    {
                         await _dialogService.ShowWarningAsync(message, "导入完成");
                     }
 
                     // 刷新数据
-                    if (successCount > 0) {
+                    if (successCount > 0)
+                    {
                         await RefreshDataAsync();
                     }
                 }
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 LogError(ex, "导入患者数据失败");
                 await _dialogService.ShowErrorAsync($"导入患者数据失败: {ex.Message}", "导入失败");
-            } finally {
+            }
+            finally
+            {
                 IsLoading = false;
             }
         }
@@ -492,15 +572,19 @@ namespace LYBT.Desktop.Patients.ViewModels {
         /// <summary>
         /// 下载患者数据导入模板
         /// </summary>
-        private async Task DownloadTemplateAsync() {
-            try {
-                var saveFileDialog = new SaveFileDialog {
+        private async Task DownloadTemplateAsync()
+        {
+            try
+            {
+                var saveFileDialog = new SaveFileDialog
+                {
                     Filter = "Excel 文件 (*.xlsx)|*.xlsx",
                     DefaultExt = "xlsx",
                     FileName = "患者数据导入模板.xlsx"
                 };
 
-                if (saveFileDialog.ShowDialog() == true) {
+                if (saveFileDialog.ShowDialog() == true)
+                {
                     // 定义模板列
                     var columns = new[] { "姓名", "性别", "年龄", "电话", "证件号", "地址", "过敏史" };
 
@@ -516,7 +600,9 @@ namespace LYBT.Desktop.Patients.ViewModels {
 
                     await _dialogService.ShowSuccessAsync($"模板文件已保存到:\n{saveFileDialog.FileName}\n\n请按照模板格式填写患者数据，然后使用导入功能。", "模板下载成功");
                 }
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 LogError(ex, "下载模板失败");
                 await _dialogService.ShowErrorAsync($"下载模板失败: {ex.Message}", "下载失败");
             }
@@ -525,13 +611,16 @@ namespace LYBT.Desktop.Patients.ViewModels {
         /// <summary>
         /// 解析性别字符串
         /// </summary>
-        private LYBT.Shared.Models.Enums.Gender ParseGender(string? genderStr) {
-            if (string.IsNullOrEmpty(genderStr)) {
+        private LYBT.Shared.Models.Enums.Gender ParseGender(string? genderStr)
+        {
+            if (string.IsNullOrEmpty(genderStr))
+            {
                 return LYBT.Shared.Models.Enums.Gender.Unknown;
             }
 
             genderStr = genderStr.Trim().ToLower();
-            return genderStr switch {
+            return genderStr switch
+            {
                 "男" or "male" or "m" => LYBT.Shared.Models.Enums.Gender.Male,
                 "女" or "female" or "f" => LYBT.Shared.Models.Enums.Gender.Female,
                 _ => LYBT.Shared.Models.Enums.Gender.Unknown
@@ -541,15 +630,18 @@ namespace LYBT.Desktop.Patients.ViewModels {
         /// <summary>
         /// 解析年龄字符串
         /// </summary>
-        private int ParseAge(string? ageStr) {
-            if (string.IsNullOrEmpty(ageStr)) {
+        private int ParseAge(string? ageStr)
+        {
+            if (string.IsNullOrEmpty(ageStr))
+            {
                 return 0;
             }
 
             // 移除可能的"岁"字符
-            ageStr = ageStr.Trim().Replace("岁", "");
+            ageStr = ageStr.Trim().Replace("岁", string.Empty);
 
-            if (int.TryParse(ageStr, out int age) && age >= 0 && age <= 150) {
+            if (int.TryParse(ageStr, out int age) && age >= 0 && age <= 150)
+            {
                 return age;
             }
 
@@ -559,10 +651,13 @@ namespace LYBT.Desktop.Patients.ViewModels {
         /// <summary>
         /// 打开导入向导
         /// </summary>
-        private async Task OpenImportWizardAsync() {
-            try {
+        private async Task OpenImportWizardAsync()
+        {
+            try
+            {
                 // 创建导入向导窗口
-                var wizardWindow = new System.Windows.Window {
+                var wizardWindow = new System.Windows.Window
+                {
                     Title = "患者Excel导入向导",
                     Width = 900,
                     Height = 700,
@@ -577,22 +672,27 @@ namespace LYBT.Desktop.Patients.ViewModels {
 
                 // 获取向导ViewModel并设置事件处理
                 var wizardViewModel = wizardView.DataContext as LYBT.Desktop.Patients.ViewModels.PatientImportWizardViewModel;
-                if (wizardViewModel != null) {
+                if (wizardViewModel != null)
+                {
                     // 订阅导入完成事件，刷新患者列表
-                    wizardViewModel.ImportCompleted += async (sender, e) => {
+                    wizardViewModel.ImportCompleted += async (sender, e) =>
+                    {
                         await RefreshDataAsync();
                         wizardWindow.Close();
                     };
 
                     // 订阅取消事件
-                    wizardViewModel.ImportCancelled += (sender, e) => {
+                    wizardViewModel.ImportCancelled += (sender, e) =>
+                    {
                         wizardWindow.Close();
                     };
                 }
 
                 // 显示模态窗口
                 wizardWindow.ShowDialog();
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 LogError(ex, "打开导入向导失败");
                 await _dialogService.ShowErrorAsync($"打开导入向导失败: {ex.Message}", "错误");
             }

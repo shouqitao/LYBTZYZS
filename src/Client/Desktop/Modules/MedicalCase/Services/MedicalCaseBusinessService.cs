@@ -17,7 +17,8 @@ namespace LYBT.Desktop.MedicalCase.Services;
 /// </summary>
 public class MedicalCaseBusinessService(
     ILogger<MedicalCaseBusinessService> logger,
-    IMedicalCaseApi medicalCaseApi) : IMedicalCaseBusinessService {
+    IMedicalCaseApi medicalCaseApi) : IMedicalCaseBusinessService
+{
     private readonly ILogger<MedicalCaseBusinessService> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private readonly IMedicalCaseApi _medicalCaseApi = medicalCaseApi ?? throw new ArgumentNullException(nameof(medicalCaseApi));
 
@@ -30,24 +31,30 @@ public class MedicalCaseBusinessService(
     /// <param name="dto">医案创建请求信息</param>
     /// <returns>包含新建医案信息的业务结果</returns>
     /// <exception cref="ArgumentNullException">当创建请求为空时抛出</exception>
-    public async Task<ServiceResult<MedicalCaseDto>> CreateAsync(MedicalCaseCreateDto dto) {
+    public async Task<ServiceResult<MedicalCaseDto>> CreateAsync(MedicalCaseCreateDto dto)
+    {
         ArgumentNullException.ThrowIfNull(dto, nameof(dto));
 
-        try {
+        try
+        {
             _logger.LogInformation("开始处理医疗案例创建: 患者ID: {PatientId}", dto.PatientId);
 
             var refitResponse = await _medicalCaseApi.CreateAsync(dto);
 
-            if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null) {
+            if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
+            {
                 var medicalCase = refitResponse.Content;
                 _logger.LogInformation("医疗案例创建成功: {MedicalCaseId}", medicalCase.Id);
                 return ServiceResult<MedicalCaseDto>.Success(medicalCase, "医案创建成功");
             }
 
-            _logger.LogWarning("医疗案例创建HTTP请求失败: 患者ID: {PatientId}, 状态码: {StatusCode}",
+            _logger.LogWarning(
+                "医疗案例创建HTTP请求失败: 患者ID: {PatientId}, 状态码: {StatusCode}",
                 dto.PatientId, refitResponse.StatusCode);
             return ServiceResult<MedicalCaseDto>.Failure("创建医案网络请求失败，请检查网络连接");
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
             _logger.LogError(ex, "医疗案例创建过程发生异常: 患者ID: {PatientId}", dto.PatientId);
             return ServiceResult<MedicalCaseDto>.Failure($"创建医案过程发生错误: {ex.Message}");
         }
@@ -61,14 +68,17 @@ public class MedicalCaseBusinessService(
     /// <param name="dto">医案更新请求信息</param>
     /// <returns>包含更新后医案信息的业务结果</returns>
     /// <exception cref="ArgumentNullException">当更新请求为空时抛出</exception>
-    public async Task<ServiceResult<MedicalCaseDto>> UpdateAsync(Guid id, MedicalCaseDetailDto dto) {
+    public async Task<ServiceResult<MedicalCaseDto>> UpdateAsync(Guid id, MedicalCaseDetailDto dto)
+    {
         ArgumentNullException.ThrowIfNull(dto, nameof(dto));
 
-        try {
+        try
+        {
             _logger.LogInformation("开始处理医疗案例更新: {MedicalCaseId}", id);
 
             // 转换为EditDto
-            var editDto = new MedicalCaseEditDto {
+            var editDto = new MedicalCaseEditDto
+            {
                 Id = id,
                 PatientId = dto.PatientId,
                 DoctorId = dto.DoctorId,
@@ -80,13 +90,16 @@ public class MedicalCaseBusinessService(
 
             var refitResponse = await _medicalCaseApi.UpdateAsync(id, editDto);
 
-            if (refitResponse.IsSuccessStatusCode && refitResponse.Content == true) {
+            if (refitResponse.IsSuccessStatusCode && refitResponse.Content == true)
+            {
                 _logger.LogInformation("医疗案例更新成功: {MedicalCaseId}", id);
 
                 // 重新获取更新后的数据
                 var getResponse = await _medicalCaseApi.GetByIdAsync(id);
-                if (getResponse.IsSuccessStatusCode && getResponse.Content != null) {
-                    var medicalCaseDto = new MedicalCaseDto {
+                if (getResponse.IsSuccessStatusCode && getResponse.Content != null)
+                {
+                    var medicalCaseDto = new MedicalCaseDto
+                    {
                         Id = getResponse.Content.Id,
                         PatientId = getResponse.Content.PatientId,
                         DoctorId = getResponse.Content.DoctorId,
@@ -100,10 +113,13 @@ public class MedicalCaseBusinessService(
                 return ServiceResult<MedicalCaseDto>.Failure("医案更新成功但获取最新数据失败");
             }
 
-            _logger.LogWarning("医疗案例更新HTTP请求失败: {MedicalCaseId}, 状态码: {StatusCode}",
+            _logger.LogWarning(
+                "医疗案例更新HTTP请求失败: {MedicalCaseId}, 状态码: {StatusCode}",
                 id, refitResponse.StatusCode);
             return ServiceResult<MedicalCaseDto>.Failure("更新医案网络请求失败，请检查网络连接");
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
             _logger.LogError(ex, "医疗案例更新过程发生异常: {MedicalCaseId}", id);
             return ServiceResult<MedicalCaseDto>.Failure($"更新医案过程发生错误: {ex.Message}");
         }
@@ -115,9 +131,10 @@ public class MedicalCaseBusinessService(
     /// </summary>
     /// <param name="id">医案唯一标识</param>
     /// <returns>操作失败结果</returns>
-    public async Task<ServiceResult<bool>> DeleteAsync(Guid id) {
+    public Task<ServiceResult<bool>> Delete(Guid id)
+    {
         _logger.LogWarning("医疗案例删除请求被拒绝: {MedicalCaseId} - 确保诊疗历史完整性", id);
-        return ServiceResult<bool>.Failure("简单诊所版本暂不支持删除医疗案例，确保诊疗历史数据完整性");
+        return Task.FromResult(ServiceResult<bool>.Failure("简单诊所版本暂不支持删除医疗案例，确保诊疗历史数据完整性"));
     }
 
     /// <summary>
@@ -126,7 +143,8 @@ public class MedicalCaseBusinessService(
     /// </summary>
     /// <param name="id">医案唯一标识</param>
     /// <returns>状态转换结果</returns>
-    public async Task<ServiceResult<bool>> StartAsync(Guid id) {
+    public async Task<ServiceResult<bool>> StartAsync(Guid id)
+    {
         return await UpdateStatusAsync(id, MedicalCaseStatus.InConsultation, "开始医案");
     }
 
@@ -136,7 +154,8 @@ public class MedicalCaseBusinessService(
     /// </summary>
     /// <param name="id">医案唯一标识</param>
     /// <returns>状态转换结果</returns>
-    public async Task<ServiceResult<bool>> CompleteAsync(Guid id) {
+    public async Task<ServiceResult<bool>> CompleteAsync(Guid id)
+    {
         return await UpdateStatusAsync(id, MedicalCaseStatus.Completed, "完成医案");
     }
 
@@ -146,7 +165,8 @@ public class MedicalCaseBusinessService(
     /// </summary>
     /// <param name="id">医案唯一标识</param>
     /// <returns>状态转换结果</returns>
-    public async Task<ServiceResult<bool>> CancelAsync(Guid id) {
+    public async Task<ServiceResult<bool>> CancelAsync(Guid id)
+    {
         return await UpdateStatusAsync(id, MedicalCaseStatus.Cancelled, "取消医案");
     }
 
@@ -157,21 +177,27 @@ public class MedicalCaseBusinessService(
     /// <param name="status">新状态</param>
     /// <param name="operationName">操作名称</param>
     /// <returns>状态转换结果</returns>
-    private async Task<ServiceResult<bool>> UpdateStatusAsync(Guid id, MedicalCaseStatus status, string operationName) {
-        try {
+    private async Task<ServiceResult<bool>> UpdateStatusAsync(Guid id, MedicalCaseStatus status, string operationName)
+    {
+        try
+        {
             _logger.LogInformation("开始处理{OperationName}: {MedicalCaseId}", operationName, id);
 
             var refitResponse = await _medicalCaseApi.UpdateStatusAsync(id, status);
 
-            if (refitResponse.IsSuccessStatusCode && refitResponse.Content == true) {
+            if (refitResponse.IsSuccessStatusCode && refitResponse.Content == true)
+            {
                 _logger.LogInformation("{OperationName}成功: {MedicalCaseId}", operationName, id);
                 return ServiceResult<bool>.Success(true, $"{operationName}成功");
             }
 
-            _logger.LogWarning("{OperationName}HTTP请求失败: {MedicalCaseId}, 状态码: {StatusCode}",
+            _logger.LogWarning(
+                "{OperationName}HTTP请求失败: {MedicalCaseId}, 状态码: {StatusCode}",
                 operationName, id, refitResponse.StatusCode);
             return ServiceResult<bool>.Failure($"{operationName}网络请求失败，请检查网络连接");
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
             _logger.LogError(ex, "{OperationName}过程发生异常: {MedicalCaseId}", operationName, id);
             return ServiceResult<bool>.Failure($"{operationName}过程发生错误: {ex.Message}");
         }

@@ -1,11 +1,13 @@
 ﻿using LYBT.Shared.Models.Contracts.Common;
 
-namespace LYBT.Desktop.Core.Models.Common {
+namespace LYBT.Desktop.Core.Models.Common
+{
 
     /// <summary>
     /// 扩展分页请求 - UltraThink重构：基于PagedQueryBaseDto的扩展版本
     /// </summary>
-    public class ExtendedPaginationRequest : PagedQueryBaseDto {
+    public class ExtendedPaginationRequest : PagedQueryBaseDto
+    {
 
         /// <summary>
         /// 扩展数据字典，用于传递额外的查询参数

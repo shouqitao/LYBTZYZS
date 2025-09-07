@@ -11,7 +11,8 @@ namespace LYBT.Desktop.Infrastructure.Services;
 /// </summary>
 /// <param name="logger">日志记录器，用于记录错误信息和异常堆栈</param>
 /// <exception cref="ArgumentNullException">当 <paramref name="logger"/> 为 null 时抛出</exception>
-public class StandardErrorHandler(ILogger<StandardErrorHandler> logger) : IStandardErrorHandler {
+public class StandardErrorHandler(ILogger<StandardErrorHandler> logger) : IStandardErrorHandler
+{
     private readonly ILogger<StandardErrorHandler> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private static readonly object _lockObject = new();
     private static StandardErrorHandler? _instance;
@@ -25,10 +26,14 @@ public class StandardErrorHandler(ILogger<StandardErrorHandler> logger) : IStand
     /// <remarks>
     /// 在生产环境中建议使用依赖注入而不是单例模式
     /// </remarks>
-    public static StandardErrorHandler Instance {
-        get {
-            if (_instance == null) {
-                lock (_lockObject) {
+    public static StandardErrorHandler Instance
+    {
+        get
+        {
+            if (_instance == null)
+            {
+                lock (_lockObject)
+                {
                     _instance ??= new StandardErrorHandler(
                         Microsoft.Extensions.Logging.Abstractions.NullLogger<StandardErrorHandler>.Instance);
                 }
@@ -46,7 +51,8 @@ public class StandardErrorHandler(ILogger<StandardErrorHandler> logger) : IStand
     /// <param name="operationName">发生异常的操作名称</param>
     /// <returns>包含错误信息的ServiceResult</returns>
     /// <exception cref="ArgumentNullException">当 <paramref name="exception"/> 为 null 时抛出</exception>
-    public ServiceResult<T> HandleServiceError<T>(Exception exception, string operationName = "操作") {
+    public ServiceResult<T> HandleServiceError<T>(Exception exception, string operationName = "操作")
+    {
         ArgumentNullException.ThrowIfNull(exception, nameof(exception));
 
         LogError(exception, operationName);
@@ -62,7 +68,8 @@ public class StandardErrorHandler(ILogger<StandardErrorHandler> logger) : IStand
     /// <param name="operationName">发生异常的操作名称</param>
     /// <returns>包含错误信息的ServiceResult</returns>
     /// <exception cref="ArgumentNullException">当 <paramref name="exception"/> 为 null 时抛出</exception>
-    public ServiceResult HandleServiceError(Exception exception, string operationName = "操作") {
+    public ServiceResult HandleServiceError(Exception exception, string operationName = "操作")
+    {
         ArgumentNullException.ThrowIfNull(exception, nameof(exception));
 
         LogError(exception, operationName);
@@ -81,13 +88,17 @@ public class StandardErrorHandler(ILogger<StandardErrorHandler> logger) : IStand
     /// <exception cref="ArgumentNullException">当 <paramref name="apiCall"/> 为 null 时抛出</exception>
     public async Task<ServiceResult<T>> HandleApiErrorAsync<T>(
         Func<Task<T>> apiCall,
-        string operationName = "API调用") {
+        string operationName = "API调用")
+    {
         ArgumentNullException.ThrowIfNull(apiCall, nameof(apiCall));
 
-        try {
+        try
+        {
             var result = await apiCall().ConfigureAwait(false);
             return ServiceResult<T>.Success(result);
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
             return HandleServiceError<T>(ex, operationName);
         }
     }
@@ -102,13 +113,17 @@ public class StandardErrorHandler(ILogger<StandardErrorHandler> logger) : IStand
     /// <exception cref="ArgumentNullException">当 <paramref name="apiCall"/> 为 null 时抛出</exception>
     public async Task<ServiceResult> HandleApiErrorAsync(
         Func<Task> apiCall,
-        string operationName = "API调用") {
+        string operationName = "API调用")
+    {
         ArgumentNullException.ThrowIfNull(apiCall, nameof(apiCall));
 
-        try {
+        try
+        {
             await apiCall().ConfigureAwait(false);
             return ServiceResult.Success();
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
             return HandleServiceError(ex, operationName);
         }
     }
@@ -122,7 +137,8 @@ public class StandardErrorHandler(ILogger<StandardErrorHandler> logger) : IStand
     /// <param name="exception">可选的引起业务错误的异常对象</param>
     /// <returns>包含业务错误信息的ServiceResult</returns>
     /// <exception cref="ArgumentException">当错误消息为空时抛出</exception>
-    public ServiceResult<T> HandleBusinessError<T>(string errorMessage, Exception? exception = null) {
+    public ServiceResult<T> HandleBusinessError<T>(string errorMessage, Exception? exception = null)
+    {
         ArgumentException.ThrowIfNullOrWhiteSpace(errorMessage, nameof(errorMessage));
 
         _logger.LogWarning(exception, "业务逻辑错误: {ErrorMessage}", errorMessage);
@@ -137,7 +153,8 @@ public class StandardErrorHandler(ILogger<StandardErrorHandler> logger) : IStand
     /// <param name="validationMessage">验证失败的具体描述信息</param>
     /// <returns>包含验证错误信息的ServiceResult</returns>
     /// <exception cref="ArgumentException">当验证消息为空时抛出</exception>
-    public ServiceResult<T> HandleValidationError<T>(string validationMessage) {
+    public ServiceResult<T> HandleValidationError<T>(string validationMessage)
+    {
         ArgumentException.ThrowIfNullOrWhiteSpace(validationMessage, nameof(validationMessage));
 
         _logger.LogWarning("数据验证失败: {ValidationMessage}", validationMessage);
@@ -152,12 +169,14 @@ public class StandardErrorHandler(ILogger<StandardErrorHandler> logger) : IStand
     /// <param name="operationName">发生异常的操作名称</param>
     /// <param name="showToUser">是否向用户显示错误消息</param>
     /// <exception cref="ArgumentNullException">当 <paramref name="exception"/> 为 null 时抛出</exception>
-    public void HandleGeneralError(Exception exception, string operationName = "操作", bool showToUser = true) {
+    public void HandleGeneralError(Exception exception, string operationName = "操作", bool showToUser = true)
+    {
         ArgumentNullException.ThrowIfNull(exception, nameof(exception));
 
         LogError(exception, operationName);
 
-        if (showToUser) {
+        if (showToUser)
+        {
             var friendlyMessage = GetFriendlyErrorMessage(exception);
             ShowErrorToUser(friendlyMessage);
         }
@@ -171,8 +190,10 @@ public class StandardErrorHandler(ILogger<StandardErrorHandler> logger) : IStand
     /// </summary>
     /// <param name="exception">异常对象</param>
     /// <param name="operationName">操作名称</param>
-    private void LogError(Exception exception, string operationName) {
-        _logger.LogError(exception,
+    private void LogError(Exception exception, string operationName)
+    {
+        _logger.LogError(
+            exception,
             "{OperationName}操作失败: {ErrorMessage} | 异常类型: {ExceptionType} | 堆栈跟踪: {StackTrace}",
             operationName,
             exception.Message,
@@ -186,8 +207,10 @@ public class StandardErrorHandler(ILogger<StandardErrorHandler> logger) : IStand
     /// </summary>
     /// <param name="exception">异常对象</param>
     /// <returns>用户友好的中文错误消息</returns>
-    private static string GetFriendlyErrorMessage(Exception exception) {
-        return exception switch {
+    private static string GetFriendlyErrorMessage(Exception exception)
+    {
+        return exception switch
+        {
             // 参数验证错误
             ArgumentNullException => "参数不能为空，请检查输入信息",
             ArgumentException => "参数格式不正确，请检查输入内容",
@@ -226,15 +249,19 @@ public class StandardErrorHandler(ILogger<StandardErrorHandler> logger) : IStand
     /// 生产环境中可集成更专业的通知系统或Toast组件
     /// </summary>
     /// <param name="message">要显示给用户的错误消息</param>
-    private static void ShowErrorToUser(string message) {
-        try {
+    private static void ShowErrorToUser(string message)
+    {
+        try
+        {
             // TODO: 生产环境中应集成到专业的通知系统或使用自定义对话框
             System.Windows.MessageBox.Show(
                 message,
                 "系统提示 - 凌隐宝堂中医诊所",
                 System.Windows.MessageBoxButton.OK,
                 System.Windows.MessageBoxImage.Warning);
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
             // 如果连消息框都无法显示，记录到系统日志
             System.Diagnostics.Debug.WriteLine(
                 "ShowErrorToUser失败: {0}, 原始消息: {1}", ex.Message, message);
@@ -250,7 +277,8 @@ public class StandardErrorHandler(ILogger<StandardErrorHandler> logger) : IStand
 /// <summary>
 /// 标准错误处理器接口
 /// </summary>
-public interface IStandardErrorHandler {
+public interface IStandardErrorHandler
+{
 
     /// <summary>
     /// 处理ServiceResult异常

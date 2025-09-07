@@ -5,7 +5,8 @@ using LYBT.Entities.Patients;
 using LYBT.Entities.Users;
 using LYBT.Shared.Models.Enums;
 
-namespace LYBT.Entities.Consultation {
+namespace LYBT.Entities.Consultation
+{
 
     /// <summary>
     /// 看诊实体 - UltraThink v2.0架构简化版
@@ -13,7 +14,8 @@ namespace LYBT.Entities.Consultation {
     /// 专注于中医诊疗，包含中医四诊和辨证论治
     /// </summary>
     [Table("Consultations")]
-    public class Consultation {
+    public class Consultation
+    {
 
         /// <summary>看诊ID</summary>
         [Key]
@@ -46,6 +48,7 @@ namespace LYBT.Entities.Consultation {
         public string? PresentIllness { get; set; }
 
         // 中医四诊
+
         /// <summary>望诊</summary>
         [StringLength(500)]
         [DisplayName("望诊")]
@@ -67,6 +70,7 @@ namespace LYBT.Entities.Consultation {
         public string? Palpation { get; set; }
 
         // 中医诊断结果
+
         /// <summary>中医辨证</summary>
         [Required]
         [StringLength(500)]
@@ -93,6 +97,7 @@ namespace LYBT.Entities.Consultation {
         public string? Remark { get; set; }
 
         // 导航属性
+
         /// <summary>
         /// 患者信息
         /// </summary>

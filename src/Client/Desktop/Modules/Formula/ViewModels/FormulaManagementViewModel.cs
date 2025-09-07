@@ -11,14 +11,16 @@ using Microsoft.Win32;
 using Prism.Commands;
 using Prism.Events;
 
-namespace LYBT.Desktop.Formula.ViewModels {
+namespace LYBT.Desktop.Formula.ViewModels
+{
 
     /// <summary>
     /// 验方管理视图模型（UltraThink 现代架构版）
     /// 基于ModernManagementViewModel，统一的管理界面模式
     /// 零编译警告，现代化MVVM架构
     /// </summary>
-    public class FormulaManagementViewModel : ModernManagementViewModel<FormulaDto> {
+    public class FormulaManagementViewModel : ModernManagementViewModel<FormulaDto>
+    {
 
         #region Fields
 
@@ -58,7 +60,8 @@ namespace LYBT.Desktop.Formula.ViewModels {
             IMapper mapper,
             IEventAggregator eventAggregator,
             IErrorHandlingService? errorHandlingService = null)
-            : base(eventAggregator, errorHandlingService) {
+            : base(eventAggregator, errorHandlingService)
+        {
             _formulaService = formulaService ?? throw new ArgumentNullException(nameof(formulaService));
             _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
@@ -72,13 +75,14 @@ namespace LYBT.Desktop.Formula.ViewModels {
             ClearFiltersCommand = new DelegateCommand(async () => await ExecuteClearFiltersAsync());
         }
 
-        /// <summary>兼容性构造函数</summary>
+        /// <summary>Initializes a new instance of the <see cref="FormulaManagementViewModel"/> class.兼容性构造函数</summary>
         public FormulaManagementViewModel(
             IFormulaService formulaService,
             ICustomDialogService dialogService,
             IMapper mapper,
             IEventAggregator eventAggregator)
-            : this(formulaService, dialogService, mapper, eventAggregator, null) {
+            : this(formulaService, dialogService, mapper, eventAggregator, null)
+        {
         }
 
         #endregion Constructor
@@ -86,8 +90,10 @@ namespace LYBT.Desktop.Formula.ViewModels {
         #region 重写基类方法
 
         /// <summary>加载数据</summary>
-        protected override async Task<ServiceResult<PagedResult<FormulaDto>>> LoadDataAsync(int page, int pageSize, string? keyword = null) {
-            var formulaQuery = new FormulaQueryDto {
+        protected override async Task<ServiceResult<PagedResult<FormulaDto>>> LoadDataAsync(int page, int pageSize, string? keyword = null)
+        {
+            var formulaQuery = new FormulaQueryDto
+            {
                 PageIndex = page,
                 PageSize = pageSize,
                 Keyword = keyword ?? string.Empty
@@ -96,35 +102,42 @@ namespace LYBT.Desktop.Formula.ViewModels {
         }
 
         /// <summary>添加项</summary>
-        protected override async Task OnAddAsync() {
+        protected override async Task OnAddAsync()
+        {
             var parameters = new Dictionary<string, object>();
             var result = await _dialogService.ShowDialogAsync("AddFormulaDialog", parameters);
 
-            if (result.Result == true) {
+            if (result.Result == true)
+            {
                 await _dialogService.ShowSuccessAsync("验方添加成功", "成功");
             }
         }
 
         /// <summary>编辑项</summary>
-        protected override async Task OnEditAsync(FormulaDto item) {
+        protected override async Task OnEditAsync(FormulaDto item)
+        {
             var parameters = new Dictionary<string, object> { ["Formula"] = item };
             var result = await _dialogService.ShowDialogAsync("EditFormulaDialog", parameters);
 
-            if (result.Result == true) {
+            if (result.Result == true)
+            {
                 await _dialogService.ShowSuccessAsync($"验方 {item.Name} 更新成功", "成功");
             }
         }
 
         /// <summary>删除项（实际是禁用）</summary>
-        protected override async Task OnDeleteAsync(FormulaDto item) {
+        protected override async Task OnDeleteAsync(FormulaDto item)
+        {
             await ToggleFormulaStatusAsync(item);
         }
 
         /// <summary>查看详情</summary>
-        protected override async Task OnViewDetailsAsync(FormulaDto item) {
+        protected override async Task OnViewDetailsAsync(FormulaDto item)
+        {
             var result = await _formulaService.GetByIdAsync(item.Id);
 
-            if (result.IsSuccess && result.Data != null) {
+            if (result.IsSuccess && result.Data != null)
+            {
                 var formulaDetail = result.Data;
                 var detailInfo = $"验方详情：\n\n" +
                                $"名称: {formulaDetail.Name}\n" +
@@ -133,18 +146,22 @@ namespace LYBT.Desktop.Formula.ViewModels {
                                $"备注: {formulaDetail.Remark ?? "无"}";
 
                 await _dialogService.ShowInformationAsync(detailInfo, $"验方详情 - {formulaDetail.Name}");
-            } else {
+            }
+            else
+            {
                 await _dialogService.ShowErrorAsync(result.ErrorMessage ?? "获取验方详情失败", "错误");
             }
         }
 
         /// <summary>导出数据（重写基类方法，调用Excel导出）</summary>
-        protected override async Task OnExportAsync() {
+        protected override async Task OnExportAsync()
+        {
             await ExecuteExportAsync();
         }
 
         /// <summary>更新Command状态</summary>
-        protected override void RaiseCanExecuteChanged() {
+        protected override void RaiseCanExecuteChanged()
+        {
             base.RaiseCanExecuteChanged();
             ToggleStatusCommand.RaiseCanExecuteChanged();
             CopyCommand.RaiseCanExecuteChanged();
@@ -158,15 +175,19 @@ namespace LYBT.Desktop.Formula.ViewModels {
         #region Command执行方法
 
         /// <summary>切换状态命令执行</summary>
-        private async Task ExecuteToggleStatusAsync() {
-            if (SelectedItem != null) {
+        private async Task ExecuteToggleStatusAsync()
+        {
+            if (SelectedItem != null)
+            {
                 await ToggleFormulaStatusAsync(SelectedItem);
             }
         }
 
         /// <summary>复制命令执行</summary>
-        private async Task ExecuteCopyAsync() {
-            if (SelectedItem != null) {
+        private async Task ExecuteCopyAsync()
+        {
+            if (SelectedItem != null)
+            {
                 await _dialogService.ShowInformationAsync(
                     $"验方复制功能：\n\n将复制验方 '{SelectedItem.Name}'\n\n验方复制功能将在后续版本中提供",
                     "复制功能说明");
@@ -174,25 +195,31 @@ namespace LYBT.Desktop.Formula.ViewModels {
         }
 
         /// <summary>导出验方数据</summary>
-        private async Task ExecuteExportAsync() {
-            try {
-                var saveFileDialog = new SaveFileDialog {
+        private async Task ExecuteExportAsync()
+        {
+            try
+            {
+                var saveFileDialog = new SaveFileDialog
+                {
                     Filter = "Excel 文件 (*.xlsx)|*.xlsx",
                     DefaultExt = "xlsx",
                     FileName = $"验方数据_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx"
                 };
 
-                if (saveFileDialog.ShowDialog() == true) {
+                if (saveFileDialog.ShowDialog() == true)
+                {
                     IsLoading = true;
 
                     // 获取所有验方数据
-                    var allFormulasResult = await _formulaService.GetPagedAsync(new FormulaQueryDto {
+                    var allFormulasResult = await _formulaService.GetPagedAsync(new FormulaQueryDto
+                    {
                         PageIndex = 1,
                         PageSize = 10000,  // 获取大量数据用于导出
                         Keyword = string.Empty
                     });
 
-                    if (allFormulasResult.IsSuccess && allFormulasResult.Data != null) {
+                    if (allFormulasResult.IsSuccess && allFormulasResult.Data != null)
+                    {
                         var formulas = allFormulasResult.Data.Items;
 
                         // 定义导出列
@@ -211,13 +238,14 @@ namespace LYBT.Desktop.Formula.ViewModels {
                         };
 
                         // 转换数据用于导出
-                        var exportData = formulas.Select(f => new {
+                        var exportData = formulas.Select(f => new
+                        {
                             Name = f.Name,
                             Category = f.Category ?? "未分类",
-                            Effect = f.Effect ?? "",
-                            Usage = f.Usage ?? "",
-                            Indications = f.Indications ?? "",
-                            Contraindications = f.Contraindications ?? "",
+                            Effect = f.Effect ?? string.Empty,
+                            Usage = f.Usage ?? string.Empty,
+                            Indications = f.Indications ?? string.Empty,
+                            Contraindications = f.Contraindications ?? string.Empty,
                             HerbNames = f.GetHerbNamesList(20),
                             IsShared = f.IsShared ? "是" : "否",
                             Status = f.Status == CommonStatus.Enabled ? "正常" : "禁用",
@@ -228,33 +256,44 @@ namespace LYBT.Desktop.Formula.ViewModels {
                         ExcelHelper.ExportToExcel(exportData, columns, saveFileDialog.FileName, "验方数据");
 
                         await _dialogService.ShowSuccessAsync($"成功导出 {formulas.Count()} 条验方数据到:\n{saveFileDialog.FileName}", "导出成功");
-                    } else {
+                    }
+                    else
+                    {
                         await _dialogService.ShowErrorAsync(allFormulasResult.ErrorMessage ?? "获取验方数据失败", "导出失败");
                     }
                 }
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 await _dialogService.ShowErrorAsync($"导出验方数据失败: {ex.Message}", "导出失败");
-            } finally {
+            }
+            finally
+            {
                 IsLoading = false;
             }
         }
 
         /// <summary>导入命令执行</summary>
-        private async Task ExecuteImportAsync() {
-            try {
-                var openFileDialog = new OpenFileDialog {
+        private async Task ExecuteImportAsync()
+        {
+            try
+            {
+                var openFileDialog = new OpenFileDialog
+                {
                     Filter = "Excel 文件 (*.xlsx)|*.xlsx",
                     DefaultExt = "xlsx",
                     Title = "选择要导入的验方数据文件"
                 };
 
-                if (openFileDialog.ShowDialog() == true) {
+                if (openFileDialog.ShowDialog() == true)
+                {
                     IsLoading = true;
 
                     // 读取Excel数据
                     var dataTable = ExcelHelper.ImportFromExcel(openFileDialog.FileName, true);
 
-                    if (dataTable.Rows.Count == 0) {
+                    if (dataTable.Rows.Count == 0)
+                    {
                         await _dialogService.ShowWarningAsync("Excel文件中没有找到数据", "导入提示");
                         return;
                     }
@@ -264,38 +303,47 @@ namespace LYBT.Desktop.Formula.ViewModels {
                     var errors = new List<string>();
 
                     // 处理每行数据
-                    for (int i = 0; i < dataTable.Rows.Count; i++) {
-                        try {
+                    for (int i = 0; i < dataTable.Rows.Count; i++)
+                    {
+                        try
+                        {
                             var row = dataTable.Rows[i];
 
                             // 验证必填字段
                             var name = row["验方名称"]?.ToString()?.Trim();
-                            if (string.IsNullOrEmpty(name)) {
+                            if (string.IsNullOrEmpty(name))
+                            {
                                 errors.Add($"第{i + 2}行：验方名称不能为空");
                                 failCount++;
                                 continue;
                             }
 
                             // 创建验方DTO（简化版，不包含药材组成）
-                            var formulaDto = new FormulaCreateDto {
+                            var formulaDto = new FormulaCreateDto
+                            {
                                 Name = name,
-                                Effect = row["功效"]?.ToString()?.Trim() ?? "",
-                                Usage = row["用法"]?.ToString()?.Trim() ?? "",
-                                Indications = row["主治症状"]?.ToString()?.Trim() ?? "",
-                                Contraindications = row["禁忌症"]?.ToString()?.Trim() ?? "",
+                                Effect = row["功效"]?.ToString()?.Trim() ?? string.Empty,
+                                Usage = row["用法"]?.ToString()?.Trim() ?? string.Empty,
+                                Indications = row["主治症状"]?.ToString()?.Trim() ?? string.Empty,
+                                Contraindications = row["禁忌症"]?.ToString()?.Trim() ?? string.Empty,
                                 IsShared = ParseBoolean(row["是否共享"]?.ToString()),
                                 Herbs = new List<FormulaHerbItemCreateDto>() // 空药材列表，需要后续手动添加
                             };
 
                             // 调用API创建验方
                             var result = await _formulaService.CreateAsync(formulaDto);
-                            if (result.IsSuccess) {
+                            if (result.IsSuccess)
+                            {
                                 successCount++;
-                            } else {
+                            }
+                            else
+                            {
                                 errors.Add($"第{i + 2}行 {name}：{result.ErrorMessage}");
                                 failCount++;
                             }
-                        } catch (Exception ex) {
+                        }
+                        catch (Exception ex)
+                        {
                             errors.Add($"第{i + 2}行：处理数据时发生错误 - {ex.Message}");
                             failCount++;
                         }
@@ -303,42 +351,57 @@ namespace LYBT.Desktop.Formula.ViewModels {
 
                     // 显示导入结果
                     var message = $"导入完成！\n成功：{successCount} 条\n失败：{failCount} 条";
-                    if (errors.Count > 0 && errors.Count <= 10) {
+                    if (errors.Count > 0 && errors.Count <= 10)
+                    {
                         message += $"\n\n错误详情:\n{string.Join("\n", errors)}";
-                    } else if (errors.Count > 10) {
+                    }
+                    else if (errors.Count > 10)
+                    {
                         message += $"\n\n错误详情（前10条）:\n{string.Join("\n", errors.Take(10))}\n... 等其他{errors.Count - 10}条错误";
                     }
 
                     message += "\n\n注意：导入的验方暂无药材组成，请手动添加药材。";
 
-                    if (failCount == 0) {
+                    if (failCount == 0)
+                    {
                         await _dialogService.ShowSuccessAsync(message, "导入成功");
-                    } else {
+                    }
+                    else
+                    {
                         await _dialogService.ShowWarningAsync(message, "导入完成");
                     }
 
                     // 刷新数据
-                    if (successCount > 0) {
+                    if (successCount > 0)
+                    {
                         await OnRefreshAsync();
                     }
                 }
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 await _dialogService.ShowErrorAsync($"导入验方数据失败: {ex.Message}", "导入失败");
-            } finally {
+            }
+            finally
+            {
                 IsLoading = false;
             }
         }
 
         /// <summary>导出模板命令执行</summary>
-        private async Task ExecuteExportTemplateAsync() {
-            try {
-                var saveFileDialog = new SaveFileDialog {
+        private async Task ExecuteExportTemplateAsync()
+        {
+            try
+            {
+                var saveFileDialog = new SaveFileDialog
+                {
                     Filter = "Excel 文件 (*.xlsx)|*.xlsx",
                     DefaultExt = "xlsx",
                     FileName = "验方数据导入模板.xlsx"
                 };
 
-                if (saveFileDialog.ShowDialog() == true) {
+                if (saveFileDialog.ShowDialog() == true)
+                {
                     // 定义模板列
                     var columns = new[] { "验方名称", "功效", "用法", "主治症状", "禁忌症", "是否共享" };
 
@@ -354,14 +417,18 @@ namespace LYBT.Desktop.Formula.ViewModels {
 
                     await _dialogService.ShowSuccessAsync($"模板文件已保存到:\n{saveFileDialog.FileName}\n\n请按照模板格式填写验方数据，然后使用导入功能。\n\n注意：导入后需手动添加具体药材组成。", "模板下载成功");
                 }
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 await _dialogService.ShowErrorAsync($"下载模板失败: {ex.Message}", "下载失败");
             }
         }
 
         /// <summary>解析布尔值字符串</summary>
-        private bool ParseBoolean(string? boolStr) {
-            if (string.IsNullOrEmpty(boolStr)) {
+        private bool ParseBoolean(string? boolStr)
+        {
+            if (string.IsNullOrEmpty(boolStr))
+            {
                 return false;
             }
 
@@ -370,13 +437,15 @@ namespace LYBT.Desktop.Formula.ViewModels {
         }
 
         /// <summary>清空筛选命令执行</summary>
-        private async Task ExecuteClearFiltersAsync() {
+        private async Task ExecuteClearFiltersAsync()
+        {
             SearchKeyword = string.Empty;
             await ExecuteAsync(async () => await OnRefreshAsync(), "清空筛选条件");
         }
 
         /// <summary>切换验方状态</summary>
-        private async Task ToggleFormulaStatusAsync(FormulaDto formula) {
+        private async Task ToggleFormulaStatusAsync(FormulaDto formula)
+        {
             var isEnabled = formula.Status == CommonStatus.Enabled;
             var action = isEnabled ? "禁用" : "启用";
 
@@ -384,14 +453,18 @@ namespace LYBT.Desktop.Formula.ViewModels {
                 $"确定要{action}验方 {formula.Name} 吗？",
                 $"{action}验方");
 
-            if (confirm) {
+            if (confirm)
+            {
                 ServiceResult result = isEnabled
                     ? await _formulaService.DisableAsync(formula.Id)
                     : await _formulaService.EnableAsync(formula.Id);
 
-                if (result.IsSuccess) {
+                if (result.IsSuccess)
+                {
                     await _dialogService.ShowInformationAsync($"验方{action}成功", "成功");
-                } else {
+                }
+                else
+                {
                     await _dialogService.ShowErrorAsync(
                         result.ErrorMessage ?? $"验方{action}失败",
                         "错误");

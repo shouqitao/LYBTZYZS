@@ -11,17 +11,20 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Prism.Ioc;
 
-namespace LYBT.Desktop.Shell.Extensions {
+namespace LYBT.Desktop.Shell.Extensions
+{
 
     /// <summary>
     /// 服务注册扩展方法
     /// </summary>
-    public static class ServiceCollectionExtensions {
+    public static class ServiceCollectionExtensions
+    {
 
         /// <summary>
         /// 注册所有服务
         /// </summary>
-        public static void RegisterAllServices(this IContainerRegistry containerRegistry) {
+        public static void RegisterAllServices(this IContainerRegistry containerRegistry)
+        {
             RegisterLogging(containerRegistry);
             RegisterAutoMapper(containerRegistry);
             RegisterCacheServices(containerRegistry);
@@ -39,7 +42,8 @@ namespace LYBT.Desktop.Shell.Extensions {
         /// <summary>
         /// 注册UltraThink高级服务
         /// </summary>
-        private static void RegisterUltraThinkServices(IContainerRegistry containerRegistry) {
+        private static void RegisterUltraThinkServices(IContainerRegistry containerRegistry)
+        {
             // Phase I: 简化主题服务
             containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Services.Theming.IThemeService,
                 LYBT.Desktop.Core.Services.Theming.ThemeService>();
@@ -55,7 +59,8 @@ namespace LYBT.Desktop.Shell.Extensions {
         /// <summary>
         /// 注册统一错误处理服务 - UltraThink简化版
         /// </summary>
-        private static void RegisterErrorHandlingServices(IContainerRegistry containerRegistry) {
+        private static void RegisterErrorHandlingServices(IContainerRegistry containerRegistry)
+        {
             // 注册统一错误处理器
             containerRegistry.RegisterSingleton<LYBT.Desktop.Infrastructure.Services.IStandardErrorHandler,
                 LYBT.Desktop.Infrastructure.Services.StandardErrorHandler>();
@@ -64,9 +69,11 @@ namespace LYBT.Desktop.Shell.Extensions {
         /// <summary>
         /// 注册日志服务
         /// </summary>
-        private static void RegisterLogging(IContainerRegistry containerRegistry) {
+        private static void RegisterLogging(IContainerRegistry containerRegistry)
+        {
             // 注册简单的控制台日志提供程序
-            containerRegistry.RegisterSingleton<ILoggerFactory>(() => {
+            containerRegistry.RegisterSingleton<ILoggerFactory>(() =>
+            {
                 return LoggerFactory.Create(builder => builder.AddDebug().SetMinimumLevel(LogLevel.Information));
             });
 
@@ -77,8 +84,10 @@ namespace LYBT.Desktop.Shell.Extensions {
         /// <summary>
         /// 注册AutoMapper
         /// </summary>
-        private static void RegisterAutoMapper(IContainerRegistry containerRegistry) {
-            var mapperConfig = new MapperConfiguration(cfg => {
+        private static void RegisterAutoMapper(IContainerRegistry containerRegistry)
+        {
+            var mapperConfig = new MapperConfiguration(cfg =>
+            {
                 cfg.AddProfile(new MappingProfile());
             });
 
@@ -89,7 +98,8 @@ namespace LYBT.Desktop.Shell.Extensions {
         /// <summary>
         /// 注册缓存服务
         /// </summary>
-        private static void RegisterCacheServices(IContainerRegistry containerRegistry) {
+        private static void RegisterCacheServices(IContainerRegistry containerRegistry)
+        {
             // 注册内存缓存服务
             containerRegistry.RegisterSingleton<IMemoryCache, MemoryCache>();
         }
@@ -97,9 +107,11 @@ namespace LYBT.Desktop.Shell.Extensions {
         /// <summary>
         /// 注册HTTP相关服务
         /// </summary>
-        private static void RegisterHttpServices(IContainerRegistry containerRegistry) {
+        private static void RegisterHttpServices(IContainerRegistry containerRegistry)
+        {
             // 注册基础HttpClient
-            containerRegistry.RegisterSingleton<HttpClient>(() => {
+            containerRegistry.RegisterSingleton<HttpClient>(() =>
+            {
                 return HttpClientFactory.CreateBasicClient(ApiConfiguration.BaseUrl);
             });
         }
@@ -107,7 +119,8 @@ namespace LYBT.Desktop.Shell.Extensions {
         /// <summary>
         /// 注册API服务 - UltraThink统一API客户端管理器
         /// </summary>
-        private static void RegisterApiServices(IContainerRegistry containerRegistry) {
+        private static void RegisterApiServices(IContainerRegistry containerRegistry)
+        {
             // 注册认证处理器
             containerRegistry.Register<AuthHeaderHandler>();
 
@@ -137,17 +150,17 @@ namespace LYBT.Desktop.Shell.Extensions {
             containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Http.IApiService, LYBT.Desktop.Core.Http.ApiService>();
         }
 
-
         /// <summary>
         /// 手动注册模块服务（回退方案）
         /// </summary>
-        private static void RegisterModuleServicesManually(IContainerRegistry containerRegistry) {
+        private static void RegisterModuleServicesManually(IContainerRegistry containerRegistry)
+        {
             // 保留关键模块的手动注册作为回退方案
-            
+
             // Auth服务注册 - UltraThink双层架构依赖注册
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Auth.Interfaces.IAuthQueryService, 
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Auth.Interfaces.IAuthQueryService,
                 LYBT.Desktop.Auth.Services.AuthQueryService>();
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Auth.Interfaces.IAuthBusinessService, 
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Auth.Interfaces.IAuthBusinessService,
                 LYBT.Desktop.Auth.Services.AuthBusinessService>();
             containerRegistry.RegisterSingleton<LYBT.Desktop.Auth.Services.AuthModule>();
             containerRegistry.Register<LYBT.Desktop.Core.Interfaces.Services.IAuthenticationService>(container =>
@@ -156,18 +169,18 @@ namespace LYBT.Desktop.Shell.Extensions {
                 container.Resolve<LYBT.Desktop.Auth.Services.AuthModule>());
 
             // User服务注册 - UltraThink双层架构依赖注册
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Users.Interfaces.IUserQueryService, 
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Users.Interfaces.IUserQueryService,
                 LYBT.Desktop.Users.Services.UserQueryService>();
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Users.Interfaces.IUserBusinessService, 
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Users.Interfaces.IUserBusinessService,
                 LYBT.Desktop.Users.Services.UserBusinessService>();
             containerRegistry.RegisterSingleton<LYBT.Desktop.Users.Services.UserModule>();
             containerRegistry.Register<LYBT.Shared.Interfaces.Services.IUserService>(container =>
                 container.Resolve<LYBT.Desktop.Users.Services.UserModule>());
 
             // Patient服务注册 - UltraThink双层架构依赖注册
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Patients.Interfaces.IPatientQueryService, 
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Patients.Interfaces.IPatientQueryService,
                 LYBT.Desktop.Patients.Services.PatientQueryService>();
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Patients.Interfaces.IPatientBusinessService, 
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Patients.Interfaces.IPatientBusinessService,
                 LYBT.Desktop.Patients.Services.PatientBusinessService>();
             containerRegistry.RegisterSingleton<LYBT.Desktop.Patients.Services.PatientModule>();
             containerRegistry.Register<LYBT.Shared.Interfaces.Services.IPatientService>(container =>
@@ -177,7 +190,8 @@ namespace LYBT.Desktop.Shell.Extensions {
         /// <summary>
         /// 注册业务服务
         /// </summary>
-        private static void RegisterBusinessServices(IContainerRegistry containerRegistry) {
+        private static void RegisterBusinessServices(IContainerRegistry containerRegistry)
+        {
             RegisterCoreServices(containerRegistry);
             RegisterDomainServices(containerRegistry);
         }
@@ -185,7 +199,8 @@ namespace LYBT.Desktop.Shell.Extensions {
         /// <summary>
         /// 注册核心基础服务（非业务模块服务）
         /// </summary>
-        private static void RegisterCoreServices(IContainerRegistry containerRegistry) {
+        private static void RegisterCoreServices(IContainerRegistry containerRegistry)
+        {
             // 权限服务
             containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.IPermissionService, PermissionService>();
 
@@ -199,10 +214,9 @@ namespace LYBT.Desktop.Shell.Extensions {
                 LYBT.Desktop.Core.Services.SessionManager>();
             containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.INotificationService,
                 LYBT.Desktop.Core.Services.NotificationService>();
-                
+
             // 注意：双层架构服务（QueryService/BusinessService）现在由自动发现系统处理
             // 只保留不符合命名约定的特殊服务的手动注册
-            
             containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.IErrorHandlingService>(container =>
                 new LYBT.Desktop.Services.ErrorHandlingService(container.Resolve<LYBT.Desktop.Core.Interfaces.Services.ICustomDialogService>()));
             containerRegistry.RegisterSingleton<LYBT.Desktop.Workbench.Core.IWorkbenchRouter, LYBT.Desktop.Workbench.Core.WorkbenchRouter>();
@@ -225,7 +239,8 @@ namespace LYBT.Desktop.Shell.Extensions {
         /// <summary>
         /// 注册领域业务服务
         /// </summary>
-        private static void RegisterDomainServices(IContainerRegistry containerRegistry) {
+        private static void RegisterDomainServices(IContainerRegistry containerRegistry)
+        {
             // API测试服务
             containerRegistry.RegisterSingleton<ApiTestService>();
 
@@ -237,7 +252,8 @@ namespace LYBT.Desktop.Shell.Extensions {
         /// <summary>
         /// 注册对话框服务
         /// </summary>
-        private static void RegisterDialogs(IContainerRegistry containerRegistry) {
+        private static void RegisterDialogs(IContainerRegistry containerRegistry)
+        {
             // 统一对话框服务 - WpfDialogService提供完整功能
             containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.ICustomDialogService,
                 LYBT.Desktop.Core.Services.WpfDialogService>();
@@ -249,9 +265,11 @@ namespace LYBT.Desktop.Shell.Extensions {
         /// <summary>
         /// 注册业务对话框Views
         /// </summary>
-        private static void RegisterBusinessDialogs(LYBT.Desktop.Core.Interfaces.Services.ICustomDialogService dialogService) {
+        private static void RegisterBusinessDialogs(LYBT.Desktop.Core.Interfaces.Services.ICustomDialogService dialogService)
+        {
             // 使用WpfDialogService的RegisterDialog方法注册业务对话框
-            if (dialogService is LYBT.Desktop.Core.Services.WpfDialogService wpfDialogService) {
+            if (dialogService is LYBT.Desktop.Core.Services.WpfDialogService wpfDialogService)
+            {
                 // 患者管理对话框
                 wpfDialogService.RegisterDialog("PatientAddEditDialog", typeof(LYBT.Desktop.Patients.Views.PatientAddEditDialog));
 
@@ -282,7 +300,8 @@ namespace LYBT.Desktop.Shell.Extensions {
         /// <summary>
         /// 注册性能优化服务
         /// </summary>
-        private static void RegisterPerformanceServices(IContainerRegistry containerRegistry) {
+        private static void RegisterPerformanceServices(IContainerRegistry containerRegistry)
+        {
             // UltraThink深度清理: 只保留实际使用的模块加载协调器
             containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Services.Performance.IModuleLoadingCoordinator,
                 LYBT.Desktop.Core.Services.Performance.ModuleLoadingCoordinator>();
@@ -292,7 +311,6 @@ namespace LYBT.Desktop.Shell.Extensions {
 
         // UltraThink统一API客户端管理器已替代原有的独立API服务注册方式
         // 所有API客户端现由UnifiedApiClientManager统一管理，提供更好的一致性和可维护性
-
         #endregion 辅助方法
     }
 }

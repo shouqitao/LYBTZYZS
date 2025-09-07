@@ -7,7 +7,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 
-namespace LYBT.Module.Patients.Repositories {
+namespace LYBT.Module.Patients.Repositories
+{
 
     /// <summary>
     /// 优化的患者Repository - UltraThink数据访问层优化
@@ -19,7 +20,8 @@ namespace LYBT.Module.Patients.Repositories {
     /// 4. 连接复用
     /// 5. 批量操作优化
     /// </summary>
-    public class OptimizedPatientRepository : OptimizedBaseRepository<Patient>, IPatientRepository {
+    public class OptimizedPatientRepository : OptimizedBaseRepository<Patient>, IPatientRepository
+    {
 
         // 预编译查询
         private static readonly Func<AppDbContext, string, Task<Patient?>> _compiledGetByPhone =
@@ -31,14 +33,14 @@ namespace LYBT.Module.Patients.Repositories {
                 ctx.Set<Patient>().Where(p => p.Name.Contains(name)));
 
         // 简化实现，移除预编译查询以避免类型匹配问题
-
         private readonly ILogger<OptimizedPatientRepository> _typedLogger;
 
         public OptimizedPatientRepository(
             AppDbContext context,
             ILogger<OptimizedPatientRepository> logger,
             IMemoryCache cache)
-            : base(context, logger, cache, QueryOptimizationOptions.Performance) {
+            : base(context, logger, cache, QueryOptimizationOptions.Performance)
+        {
             _typedLogger = logger;
         }
 
@@ -49,15 +51,19 @@ namespace LYBT.Module.Patients.Repositories {
         /// </summary>
         public async Task<IEnumerable<Patient>> SmartSearchAsync(
             PatientSearchCriteria criteria,
-            CancellationToken cancellationToken = default) {
-            return await MonitoredQueryAsync(async () => {
+            CancellationToken cancellationToken = default)
+        {
+            return await MonitoredQueryAsync(
+                async () =>
+            {
                 var query = BuildSearchQuery(criteria);
 
                 // 应用智能排序
                 query = ApplySmartOrdering(query, criteria);
 
                 // 限制结果集大小
-                if (criteria.MaxResults > 0) {
+                if (criteria.MaxResults > 0)
+                {
                     query = query.Take(criteria.MaxResults);
                 }
 
@@ -70,15 +76,18 @@ namespace LYBT.Module.Patients.Repositories {
         /// </summary>
         public async Task<Patient?> GetByPhoneAsync(
             string phone,
-            CancellationToken cancellationToken = default) {
+            CancellationToken cancellationToken = default)
+        {
             var cacheKey = $"{CacheKeyPrefix}phone:{phone}";
-            if (_cache.TryGetValue<Patient>(cacheKey, out var cached)) {
+            if (_cache.TryGetValue<Patient>(cacheKey, out var cached))
+            {
                 return cached;
             }
 
             var patient = await _compiledGetByPhone(_context, phone);
 
-            if (patient != null) {
+            if (patient != null)
+            {
                 _cache.Set(cacheKey, patient, TimeSpan.FromMinutes(30));
             }
 
@@ -92,9 +101,11 @@ namespace LYBT.Module.Patients.Repositories {
         /// <summary>
         /// 根据主键ID查询病人（支持权限控制）
         /// </summary>
-        public async Task<Patient?> GetByIdAsync(Guid id, bool includeDisabled = false) {
+        public async Task<Patient?> GetByIdAsync(Guid id, bool includeDisabled = false)
+        {
             var query = _dbSet.AsNoTracking().Where(p => p.Id == id);
-            if (!includeDisabled) {
+            if (!includeDisabled)
+            {
                 query = query.Where(p => p.Status == CommonStatus.Enabled);
             }
             return await query.FirstOrDefaultAsync();
@@ -103,38 +114,42 @@ namespace LYBT.Module.Patients.Repositories {
         /// <summary>
         /// 启用患者档案
         /// </summary>
-        public async Task<bool> EnableAsync(Guid id) {
+        public async Task<bool> EnableAsync(Guid id)
+        {
             var patient = await _dbSet.FindAsync(id);
-            if (patient == null) {
+            if (patient == null)
+            {
                 return false;
             }
 
             patient.Status = CommonStatus.Enabled;
             // UltraThink v2.0: 删除UpdateTime字段
-
             return await _context.SaveChangesAsync() > 0;
         }
 
         /// <summary>
         /// 禁用患者档案（软删除）
         /// </summary>
-        public async Task<bool> DisableAsync(Guid id) {
+        public async Task<bool> DisableAsync(Guid id)
+        {
             var patient = await _dbSet.FindAsync(id);
-            if (patient == null) {
+            if (patient == null)
+            {
                 return false;
             }
 
             patient.Status = CommonStatus.Disabled;
             // UltraThink v2.0: 删除UpdateTime字段
-
             return await _context.SaveChangesAsync() > 0;
         }
 
         /// <summary>
         /// 批量禁用患者档案（EF Core 7.0优化版）
         /// </summary>
-        public async Task<int> BatchDisableAsync(List<Guid> ids) {
-            if (!ids.Any()) {
+        public async Task<int> BatchDisableAsync(List<Guid> ids)
+        {
+            if (!ids.Any())
+            {
                 return 0;
             }
 
@@ -149,8 +164,10 @@ namespace LYBT.Module.Patients.Repositories {
         /// <summary>
         /// 批量启用患者档案（EF Core 7.0优化版）
         /// </summary>
-        public async Task<int> BatchEnableAsync(List<Guid> ids) {
-            if (!ids.Any()) {
+        public async Task<int> BatchEnableAsync(List<Guid> ids)
+        {
+            if (!ids.Any())
+            {
                 return 0;
             }
 
@@ -165,7 +182,8 @@ namespace LYBT.Module.Patients.Repositories {
         /// <summary>
         /// 通过身份证号查找病人（包括禁用的患者档案）
         /// </summary>
-        public async Task<Patient?> GetByIdNumberAsync(string idNumber) {
+        public async Task<Patient?> GetByIdNumberAsync(string idNumber)
+        {
             return await _dbSet.AsNoTracking()
                 .FirstOrDefaultAsync(p => p.IdNumber == idNumber);
         }
@@ -173,7 +191,8 @@ namespace LYBT.Module.Patients.Repositories {
         /// <summary>
         /// 通过手机号查找病人（包括禁用的患者档案）
         /// </summary>
-        public async Task<Patient?> GetByPhoneNumberAsync(string phoneNumber) {
+        public async Task<Patient?> GetByPhoneNumberAsync(string phoneNumber)
+        {
             return await _dbSet.AsNoTracking()
                 .FirstOrDefaultAsync(p => p.PhoneNumber == phoneNumber);
         }
@@ -181,9 +200,11 @@ namespace LYBT.Module.Patients.Repositories {
         /// <summary>
         /// 检查身份证号是否存在（排除指定ID，包括禁用患者档案）
         /// </summary>
-        public async Task<bool> IsIdNumberExistsAsync(string idNumber, Guid? excludeId = null) {
+        public async Task<bool> IsIdNumberExistsAsync(string idNumber, Guid? excludeId = null)
+        {
             var query = _dbSet.AsNoTracking().Where(p => p.IdNumber == idNumber);
-            if (excludeId.HasValue) {
+            if (excludeId.HasValue)
+            {
                 query = query.Where(p => p.Id != excludeId.Value);
             }
             return await query.AnyAsync();
@@ -192,9 +213,11 @@ namespace LYBT.Module.Patients.Repositories {
         /// <summary>
         /// 检查手机号是否存在（排除指定ID，包括禁用患者档案）
         /// </summary>
-        public async Task<bool> IsPhoneNumberExistsAsync(string phoneNumber, Guid? excludeId = null) {
+        public async Task<bool> IsPhoneNumberExistsAsync(string phoneNumber, Guid? excludeId = null)
+        {
             var query = _dbSet.AsNoTracking().Where(p => p.PhoneNumber == phoneNumber);
-            if (excludeId.HasValue) {
+            if (excludeId.HasValue)
+            {
                 query = query.Where(p => p.Id != excludeId.Value);
             }
             return await query.AnyAsync();
@@ -203,8 +226,10 @@ namespace LYBT.Module.Patients.Repositories {
         /// <summary>
         /// 根据关键词搜索患者档案
         /// </summary>
-        public async Task<List<Patient>> SearchAsync(string keyword, bool includeDisabled = false) {
-            if (string.IsNullOrEmpty(keyword)) {
+        public async Task<List<Patient>> SearchAsync(string keyword, bool includeDisabled = false)
+        {
+            if (string.IsNullOrEmpty(keyword))
+            {
                 return new List<Patient>();
             }
 
@@ -213,7 +238,8 @@ namespace LYBT.Module.Patients.Repositories {
                            (p.PhoneNumber != null && p.PhoneNumber.Contains(keyword)) ||
                            (p.IdNumber != null && p.IdNumber.Contains(keyword)));
 
-            if (!includeDisabled) {
+            if (!includeDisabled)
+            {
                 query = query.Where(p => p.Status == CommonStatus.Enabled);
             }
 
@@ -223,11 +249,13 @@ namespace LYBT.Module.Patients.Repositories {
         /// <summary>
         /// 精确匹配搜索（手机号、身份证号）
         /// </summary>
-        public async Task<List<Patient>> ExactSearchAsync(string keyword, bool includeDisabled = false) {
+        public async Task<List<Patient>> ExactSearchAsync(string keyword, bool includeDisabled = false)
+        {
             var query = _dbSet.AsNoTracking()
                 .Where(p => p.PhoneNumber == keyword || p.IdNumber == keyword);
 
-            if (!includeDisabled) {
+            if (!includeDisabled)
+            {
                 query = query.Where(p => p.Status == CommonStatus.Enabled);
             }
 
@@ -237,7 +265,8 @@ namespace LYBT.Module.Patients.Repositories {
         /// <summary>
         /// 获取启用的患者档案列表
         /// </summary>
-        public async Task<List<Patient>> GetActivePatientsAsync() {
+        public async Task<List<Patient>> GetActivePatientsAsync()
+        {
             // UltraThink v2.0: 使用LastVisitTime替代已删除的UpdateTime
             return await _dbSet.AsNoTracking()
                 .Where(p => p.Status == CommonStatus.Enabled)
@@ -248,7 +277,8 @@ namespace LYBT.Module.Patients.Repositories {
         /// <summary>
         /// 根据身份证号获取患者档案列表（用于重复检查）
         /// </summary>
-        public async Task<List<Patient>> GetPatientsByIdNumberAsync(string idNumber) {
+        public async Task<List<Patient>> GetPatientsByIdNumberAsync(string idNumber)
+        {
             return await _dbSet.AsNoTracking()
                 .Where(p => p.IdNumber == idNumber)
                 .ToListAsync();
@@ -257,7 +287,8 @@ namespace LYBT.Module.Patients.Repositories {
         /// <summary>
         /// 根据姓名和手机号获取患者档案列表（用于重复检查）
         /// </summary>
-        public async Task<List<Patient>> GetPatientsByNameAndPhoneAsync(string name, string phoneNumber) {
+        public async Task<List<Patient>> GetPatientsByNameAndPhoneAsync(string name, string phoneNumber)
+        {
             return await _dbSet.AsNoTracking()
                 .Where(p => p.Name == name && p.PhoneNumber == phoneNumber)
                 .ToListAsync();
@@ -266,7 +297,8 @@ namespace LYBT.Module.Patients.Repositories {
         /// <summary>
         /// 根据相似姓名获取患者档案列表（用于重复检查）
         /// </summary>
-        public async Task<List<Patient>> GetPatientsBySimilarNameAsync(string name) {
+        public async Task<List<Patient>> GetPatientsBySimilarNameAsync(string name)
+        {
             return await _dbSet.AsNoTracking()
                 .Where(p => p.Name.Contains(name))
                 .ToListAsync();
@@ -275,7 +307,8 @@ namespace LYBT.Module.Patients.Repositories {
         /// <summary>
         /// 根据姓名获取患者档案列表（用于查询或创建场景）
         /// </summary>
-        public async Task<List<Patient>> GetByNameAsync(string name) {
+        public async Task<List<Patient>> GetByNameAsync(string name)
+        {
             return await _dbSet.AsNoTracking()
                 .Where(p => p.Name == name && p.Status == CommonStatus.Enabled)
                 .ToListAsync();
@@ -286,11 +319,13 @@ namespace LYBT.Module.Patients.Repositories {
         /// </summary>
         public async Task<IEnumerable<Patient>> SearchByNameAsync(
             string name,
-            CancellationToken cancellationToken = default) {
+            CancellationToken cancellationToken = default)
+        {
             var results = new List<Patient>();
 
             await foreach (var patient in _compiledSearchByName(_context, name)
-                .WithCancellation(cancellationToken)) {
+                .WithCancellation(cancellationToken))
+            {
                 results.Add(patient);
             }
 
@@ -303,12 +338,14 @@ namespace LYBT.Module.Patients.Repositories {
         public async Task<IEnumerable<Patient>> GetRecentPatientsAsync(
             int days = 7,
             int limit = 20,
-            CancellationToken cancellationToken = default) {
+            CancellationToken cancellationToken = default)
+        {
             var startDate = DateTime.Now.AddDays(-days);
             var endDate = DateTime.Now;
 
             var cacheKey = $"{CacheKeyPrefix}recent:{days}:{limit}";
-            if (_cache.TryGetValue<List<Patient>>(cacheKey, out var cached)) {
+            if (_cache.TryGetValue<List<Patient>>(cacheKey, out var cached))
+            {
                 return cached!;
             }
 
@@ -328,30 +365,38 @@ namespace LYBT.Module.Patients.Repositories {
         /// </summary>
         public async Task<Dictionary<string, Patient>> GetByPhonesAsync(
             IEnumerable<string> phones,
-            CancellationToken cancellationToken = default) {
+            CancellationToken cancellationToken = default)
+        {
             var phoneList = phones.ToList();
             var result = new Dictionary<string, Patient>();
 
             // 先从缓存获取
             var uncachedPhones = new List<string>();
-            foreach (var phone in phoneList) {
+            foreach (var phone in phoneList)
+            {
                 var cacheKey = $"{CacheKeyPrefix}phone:{phone}";
-                if (_cache.TryGetValue<Patient>(cacheKey, out var cached)) {
+                if (_cache.TryGetValue<Patient>(cacheKey, out var cached))
+                {
                     result[phone] = cached!;
-                } else {
+                }
+                else
+                {
                     uncachedPhones.Add(phone);
                 }
             }
 
             // 批量查询未缓存的数据
-            if (uncachedPhones.Any()) {
+            if (uncachedPhones.Any())
+            {
                 var patients = await _dbSet
                     .AsNoTracking()
                     .Where(p => p.PhoneNumber != null && uncachedPhones.Contains(p.PhoneNumber))
                     .ToListAsync(cancellationToken);
 
-                foreach (var patient in patients) {
-                    if (patient.PhoneNumber != null) {
+                foreach (var patient in patients)
+                {
+                    if (patient.PhoneNumber != null)
+                    {
                         result[patient.PhoneNumber] = patient;
                         _cache.Set($"{CacheKeyPrefix}phone:{patient.PhoneNumber}", patient, TimeSpan.FromMinutes(30));
                     }
@@ -371,9 +416,11 @@ namespace LYBT.Module.Patients.Repositories {
         public async Task<PatientStatistics> GetStatisticsAsync(
             DateTime? startDate = null,
             DateTime? endDate = null,
-            CancellationToken cancellationToken = default) {
+            CancellationToken cancellationToken = default)
+        {
             var cacheKey = $"{CacheKeyPrefix}stats:{startDate:yyyyMMdd}:{endDate:yyyyMMdd}";
-            if (_cache.TryGetValue<PatientStatistics>(cacheKey, out var cached)) {
+            if (_cache.TryGetValue<PatientStatistics>(cacheKey, out var cached))
+            {
                 return cached!;
             }
 
@@ -381,7 +428,8 @@ namespace LYBT.Module.Patients.Repositories {
             var query = _dbSet.AsNoTracking();
 
             // UltraThink v2.0: 使用LastVisitTime替代已删除的CreateTime进行日期过滤
-            if (startDate.HasValue && endDate.HasValue) {
+            if (startDate.HasValue && endDate.HasValue)
+            {
                 query = query.Where(p => p.LastVisitTime >= startDate && p.LastVisitTime <= endDate);
             }
 
@@ -406,7 +454,8 @@ namespace LYBT.Module.Patients.Repositories {
 
             await Task.WhenAll(totalTask, newThisMonthTask, activeTask, ageDistributionTask, genderDistributionTask);
 
-            var statistics = new PatientStatistics {
+            var statistics = new PatientStatistics
+            {
                 TotalPatients = await totalTask,
                 NewPatientsThisMonth = await newThisMonthTask,
                 ActivePatients = await activeTask,
@@ -428,15 +477,20 @@ namespace LYBT.Module.Patients.Repositories {
         /// </summary>
         public async Task<BatchImportResult> BatchImportAsync(
             IEnumerable<Patient> patients,
-            CancellationToken cancellationToken = default) {
+            CancellationToken cancellationToken = default)
+        {
             var patientList = patients.ToList();
             var results = new List<ImportResult>();
 
-            await BulkOperationAsync(async context => {
+            await BulkOperationAsync(
+                async context =>
+            {
                 var successCount = 0;
 
-                foreach (var batch in patientList.Chunk(50)) {
-                    try {
+                foreach (var batch in patientList.Chunk(50))
+                {
+                    try
+                    {
                         // 检查重复
                         var phones = batch.Select(p => p.PhoneNumber).ToList();
                         var existingPhones = await context.Set<Patient>()
@@ -446,13 +500,16 @@ namespace LYBT.Module.Patients.Repositories {
 
                         var newPatients = batch.Where(p => !existingPhones.Contains(p.PhoneNumber)).ToList();
 
-                        if (newPatients.Any()) {
+                        if (newPatients.Any())
+                        {
                             await context.Set<Patient>().AddRangeAsync(newPatients, cancellationToken);
                             await context.SaveChangesAsync(cancellationToken);
                             successCount += newPatients.Count;
 
-                            foreach (var patient in newPatients) {
-                                results.Add(new ImportResult {
+                            foreach (var patient in newPatients)
+                            {
+                                results.Add(new ImportResult
+                                {
                                     Patient = patient,
                                     Success = true
                                 });
@@ -460,17 +517,23 @@ namespace LYBT.Module.Patients.Repositories {
                         }
 
                         // 记录重复的
-                        foreach (var duplicate in batch.Where(p => existingPhones.Contains(p.PhoneNumber))) {
-                            results.Add(new ImportResult {
+                        foreach (var duplicate in batch.Where(p => existingPhones.Contains(p.PhoneNumber)))
+                        {
+                            results.Add(new ImportResult
+                            {
                                 Patient = duplicate,
                                 Success = false,
                                 ErrorMessage = "电话号码已存在"
                             });
                         }
-                    } catch (Exception ex) {
+                    }
+                    catch (Exception ex)
+                    {
                         _typedLogger.LogError(ex, "批量导入批次失败");
-                        foreach (var patient in batch) {
-                            results.Add(new ImportResult {
+                        foreach (var patient in batch)
+                        {
+                            results.Add(new ImportResult
+                            {
                                 Patient = patient,
                                 Success = false,
                                 ErrorMessage = ex.Message
@@ -482,7 +545,8 @@ namespace LYBT.Module.Patients.Repositories {
                 return successCount;
             }, cancellationToken);
 
-            return new BatchImportResult {
+            return new BatchImportResult
+            {
                 TotalCount = patientList.Count,
                 SuccessCount = results.Count(r => r.Success),
                 FailedCount = results.Count(r => !r.Success),
@@ -495,8 +559,10 @@ namespace LYBT.Module.Patients.Repositories {
         /// </summary>
         public async Task<int> UpdateLastVisitDateAsync(
             Dictionary<Guid, DateTime> updates,
-            CancellationToken cancellationToken = default) {
-            if (!updates.Any()) {
+            CancellationToken cancellationToken = default)
+        {
+            if (!updates.Any())
+            {
                 return 0;
             }
 
@@ -507,10 +573,13 @@ namespace LYBT.Module.Patients.Repositories {
                 UPDATE Patients
                 SET LastVisitDate = @visitDate, UpdatedAt = @now
                 WHERE Id = @id";
-            foreach (var batch in updates.Chunk(100)) {
+            foreach (var batch in updates.Chunk(100))
+            {
                 using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
-                try {
-                    foreach (var update in batch) {
+                try
+                {
+                    foreach (var update in batch)
+                    {
                         updated += await _context.Database.ExecuteSqlRawAsync(
                             sql,
                             new Microsoft.Data.SqlClient.SqlParameter("@id", update.Key), new Microsoft.Data.SqlClient.SqlParameter("@visitDate", update.Value), new Microsoft.Data.SqlClient.SqlParameter("@now", DateTime.Now));
@@ -519,10 +588,13 @@ namespace LYBT.Module.Patients.Repositories {
                     await transaction.CommitAsync(cancellationToken);
 
                     // 清理缓存
-                    foreach (var id in batch.Select(b => b.Key)) {
+                    foreach (var id in batch.Select(b => b.Key))
+                    {
                         _cache.Remove($"{CacheKeyPrefix}{id}");
                     }
-                } catch {
+                }
+                catch
+                {
                     await transaction.RollbackAsync(cancellationToken);
                     throw;
                 }
@@ -538,42 +610,51 @@ namespace LYBT.Module.Patients.Repositories {
         /// <summary>
         /// 构建搜索查询
         /// </summary>
-        private IQueryable<Patient> BuildSearchQuery(PatientSearchCriteria criteria) {
+        private IQueryable<Patient> BuildSearchQuery(PatientSearchCriteria criteria)
+        {
             var query = _dbSet.AsNoTracking();
 
             // 应用过滤条件
-            if (!string.IsNullOrWhiteSpace(criteria.Name)) {
+            if (!string.IsNullOrWhiteSpace(criteria.Name))
+            {
                 query = query.Where(p => p.Name.Contains(criteria.Name));
             }
 
-            if (!string.IsNullOrWhiteSpace(criteria.Phone)) {
+            if (!string.IsNullOrWhiteSpace(criteria.Phone))
+            {
                 query = query.Where(p => p.PhoneNumber == criteria.Phone);
             }
 
-            if (!string.IsNullOrWhiteSpace(criteria.IdNumber)) {
+            if (!string.IsNullOrWhiteSpace(criteria.IdNumber))
+            {
                 query = query.Where(p => p.IdNumber == criteria.IdNumber);
             }
 
-            if (criteria.Gender.HasValue) {
+            if (criteria.Gender.HasValue)
+            {
                 query = query.Where(p => p.Gender.Equals(criteria.Gender.Value));
             }
 
-            if (criteria.MinAge.HasValue) {
+            if (criteria.MinAge.HasValue)
+            {
                 var maxBirthDate = DateTime.Now.AddYears(-criteria.MinAge.Value);
                 query = query.Where(p => p.BirthDate <= maxBirthDate);
             }
 
-            if (criteria.MaxAge.HasValue) {
+            if (criteria.MaxAge.HasValue)
+            {
                 var minBirthDate = DateTime.Now.AddYears(-criteria.MaxAge.Value - 1);
                 query = query.Where(p => p.BirthDate >= minBirthDate);
             }
 
             // UltraThink v2.0: 使用LastVisitTime替代已删除的CreateTime
-            if (criteria.StartDate.HasValue) {
+            if (criteria.StartDate.HasValue)
+            {
                 query = query.Where(p => p.LastVisitTime >= criteria.StartDate.Value);
             }
 
-            if (criteria.EndDate.HasValue) {
+            if (criteria.EndDate.HasValue)
+            {
                 query = query.Where(p => p.LastVisitTime <= criteria.EndDate.Value);
             }
 
@@ -585,15 +666,21 @@ namespace LYBT.Module.Patients.Repositories {
         /// </summary>
         private IQueryable<Patient> ApplySmartOrdering(
             IQueryable<Patient> query,
-            PatientSearchCriteria criteria) {
+            PatientSearchCriteria criteria)
+        {
             // 根据搜索条件智能决定排序策略
-            if (!string.IsNullOrWhiteSpace(criteria.Name)) {
+            if (!string.IsNullOrWhiteSpace(criteria.Name))
+            {
                 // 如果按姓名搜索，按姓名相关度排序
                 query = query.OrderBy(p => p.Name.IndexOf(criteria.Name));
-            } else if (criteria.StartDate.HasValue || criteria.EndDate.HasValue) {
+            }
+            else if (criteria.StartDate.HasValue || criteria.EndDate.HasValue)
+            {
                 // UltraThink v2.0: 按LastVisitTime排序替代已删除的CreateTime
                 query = query.OrderByDescending(p => p.LastVisitTime ?? DateTime.MinValue);
-            } else {
+            }
+            else
+            {
                 // 默认按最后就诊时间排序
                 query = query.OrderByDescending(p => p.LastVisitTime ?? DateTime.MinValue);
             }
@@ -604,7 +691,8 @@ namespace LYBT.Module.Patients.Repositories {
         /// <summary>
         /// 重写默认包含
         /// </summary>
-        protected override IQueryable<Patient> ApplyDefaultIncludes(IQueryable<Patient> query) {
+        protected override IQueryable<Patient> ApplyDefaultIncludes(IQueryable<Patient> query)
+        {
             // 默认不包含关联数据，需要时显式Include
             return query;
         }
@@ -612,7 +700,8 @@ namespace LYBT.Module.Patients.Repositories {
         /// <summary>
         /// 重写全局过滤器
         /// </summary>
-        protected override IQueryable<Patient> ApplyGlobalFilters(IQueryable<Patient> query) {
+        protected override IQueryable<Patient> ApplyGlobalFilters(IQueryable<Patient> query)
+        {
             // 只显示启用和禁用的患者，不显示软删除的（这里我们使用Status来过滤）
             return query.Where(p => p.Status == CommonStatus.Enabled || p.Status == CommonStatus.Disabled);
         }
@@ -625,7 +714,8 @@ namespace LYBT.Module.Patients.Repositories {
     /// <summary>
     /// 患者搜索条件
     /// </summary>
-    public class PatientSearchCriteria {
+    public class PatientSearchCriteria
+    {
         public string? Name { get; set; }
         public string? Phone { get; set; }
         public string? IdNumber { get; set; }
@@ -640,7 +730,8 @@ namespace LYBT.Module.Patients.Repositories {
     /// <summary>
     /// 患者统计信息
     /// </summary>
-    public class PatientStatistics {
+    public class PatientStatistics
+    {
         public int TotalPatients { get; set; }
         public int NewPatientsThisMonth { get; set; }
         public int ActivePatients { get; set; }
@@ -651,7 +742,8 @@ namespace LYBT.Module.Patients.Repositories {
     /// <summary>
     /// 批量导入结果
     /// </summary>
-    public class BatchImportResult {
+    public class BatchImportResult
+    {
         public int TotalCount { get; set; }
         public int SuccessCount { get; set; }
         public int FailedCount { get; set; }
@@ -661,7 +753,8 @@ namespace LYBT.Module.Patients.Repositories {
     /// <summary>
     /// 导入结果
     /// </summary>
-    public class ImportResult {
+    public class ImportResult
+    {
         public Patient Patient { get; set; } = null!;
         public bool Success { get; set; }
         public string? ErrorMessage { get; set; }

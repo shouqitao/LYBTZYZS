@@ -17,7 +17,8 @@ namespace LYBT.Desktop.Consultation.Services;
 /// </summary>
 public class ConsultationBusinessService(
     ILogger<ConsultationBusinessService> logger,
-    IConsultationApi consultationApi) : IConsultationBusinessService {
+    IConsultationApi consultationApi) : IConsultationBusinessService
+{
     private readonly ILogger<ConsultationBusinessService> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private readonly IConsultationApi _consultationApi = consultationApi ?? throw new ArgumentNullException(nameof(consultationApi));
 
@@ -28,15 +29,19 @@ public class ConsultationBusinessService(
     /// <param name="createDto">看诊创建请求信息</param>
     /// <returns>包含新建看诊信息的业务结果</returns>
     /// <exception cref="ArgumentNullException">当创建请求为空时抛出</exception>
-    public async Task<ServiceResult<ConsultationDto>> CreateAsync(ConsultationCreateDto createDto) {
+    public async Task<ServiceResult<ConsultationDto>> CreateAsync(ConsultationCreateDto createDto)
+    {
         ArgumentNullException.ThrowIfNull(createDto, nameof(createDto));
 
-        try {
-            _logger.LogInformation("开始处理看诊诊断创建: 患者ID: {PatientId}, 医案ID: {MedicalCaseId}",
+        try
+        {
+            _logger.LogInformation(
+                "开始处理看诊诊断创建: 患者ID: {PatientId}, 医案ID: {MedicalCaseId}",
                 createDto.PatientId, createDto.MedicalCaseId);
 
             // 转换为StartConsultationDto
-            var startDto = new ConsultationStartDto {
+            var startDto = new ConsultationStartDto
+            {
                 PatientId = createDto.PatientId,
                 MedicalCaseId = createDto.MedicalCaseId,
                 DoctorId = createDto.DoctorId
@@ -44,9 +49,11 @@ public class ConsultationBusinessService(
 
             var refitResponse = await _consultationApi.StartConsultationAsync(startDto);
 
-            if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null) {
+            if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
+            {
                 var consultation = refitResponse.Content;
-                var consultationDto = new ConsultationDto {
+                var consultationDto = new ConsultationDto
+                {
                     Id = consultation.Id,
                     PatientId = consultation.PatientId,
                     MedicalCaseId = consultation.MedicalCaseId,
@@ -58,10 +65,13 @@ public class ConsultationBusinessService(
                 return ServiceResult<ConsultationDto>.Success(consultationDto, "看诊诊断创建成功");
             }
 
-            _logger.LogWarning("看诊诊断创建HTTP请求失败: 患者ID: {PatientId}, 状态码: {StatusCode}",
+            _logger.LogWarning(
+                "看诊诊断创建HTTP请求失败: 患者ID: {PatientId}, 状态码: {StatusCode}",
                 createDto.PatientId, refitResponse.StatusCode);
             return ServiceResult<ConsultationDto>.Failure("创建看诊诊断网络请求失败，请检查网络连接");
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
             _logger.LogError(ex, "看诊诊断创建过程发生异常: 患者ID: {PatientId}", createDto.PatientId);
             return ServiceResult<ConsultationDto>.Failure($"创建看诊诊断过程发生错误: {ex.Message}");
         }
@@ -75,17 +85,21 @@ public class ConsultationBusinessService(
     /// <param name="updateDto">看诊更新请求信息</param>
     /// <returns>包含更新后看诊信息的业务结果</returns>
     /// <exception cref="ArgumentNullException">当更新请求为空时抛出</exception>
-    public async Task<ServiceResult<ConsultationDto>> UpdateAsync(Guid id, ConsultationUpdateDto updateDto) {
+    public async Task<ServiceResult<ConsultationDto>> UpdateAsync(Guid id, ConsultationUpdateDto updateDto)
+    {
         ArgumentNullException.ThrowIfNull(updateDto, nameof(updateDto));
 
-        try {
+        try
+        {
             _logger.LogInformation("开始处理看诊诊断更新: {ConsultationId}", id);
 
             var refitResponse = await _consultationApi.UpdateConsultationAsync(id, updateDto);
 
-            if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null) {
+            if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
+            {
                 var consultation = refitResponse.Content;
-                var consultationDto = new ConsultationDto {
+                var consultationDto = new ConsultationDto
+                {
                     Id = consultation.Id,
                     PatientId = consultation.PatientId,
                     MedicalCaseId = consultation.MedicalCaseId,
@@ -97,10 +111,13 @@ public class ConsultationBusinessService(
                 return ServiceResult<ConsultationDto>.Success(consultationDto, "看诊诊断更新成功");
             }
 
-            _logger.LogWarning("看诊诊断更新HTTP请求失败: {ConsultationId}, 状态码: {StatusCode}",
+            _logger.LogWarning(
+                "看诊诊断更新HTTP请求失败: {ConsultationId}, 状态码: {StatusCode}",
                 id, refitResponse.StatusCode);
             return ServiceResult<ConsultationDto>.Failure("更新看诊诊断网络请求失败，请检查网络连接");
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
             _logger.LogError(ex, "看诊诊断更新过程发生异常: {ConsultationId}", id);
             return ServiceResult<ConsultationDto>.Failure($"更新看诊诊断过程发生错误: {ex.Message}");
         }
@@ -112,7 +129,8 @@ public class ConsultationBusinessService(
     /// </summary>
     /// <param name="consultationId">看诊唯一标识</param>
     /// <returns>操作失败结果</returns>
-    public async Task<ServiceResult<bool>> DeleteAsync(Guid consultationId) {
+    public async Task<ServiceResult<bool>> DeleteAsync(Guid consultationId)
+    {
         _logger.LogWarning("看诊诊断删除请求被拒绝: {ConsultationId} - 确保诊疗历史完整性", consultationId);
         return ServiceResult<bool>.Failure("简单诊所版本暂不支持删除看诊诊断，确保诊疗历史数据完整性");
     }
@@ -123,7 +141,8 @@ public class ConsultationBusinessService(
     /// </summary>
     /// <param name="consultationId">看诊唯一标识</param>
     /// <returns>状态转换结果</returns>
-    public async Task<ServiceResult<bool>> EnableAsync(Guid consultationId) {
+    public async Task<ServiceResult<bool>> EnableAsync(Guid consultationId)
+    {
         _logger.LogInformation("启用看诊诊断: {ConsultationId}", consultationId);
         return ServiceResult<bool>.Failure("简单诊所版本暂不支持看诊状态管理");
     }
@@ -134,8 +153,9 @@ public class ConsultationBusinessService(
     /// </summary>
     /// <param name="consultationId">看诊唯一标识</param>
     /// <returns>状态转换结果</returns>
-    public async Task<ServiceResult<bool>> DisableAsync(Guid consultationId) {
+    public Task<ServiceResult<bool>> Disable(Guid consultationId)
+    {
         _logger.LogInformation("禁用看诊诊断: {ConsultationId}", consultationId);
-        return ServiceResult<bool>.Failure("简单诊所版本暂不支持看诊状态管理");
+        return Task.FromResult(ServiceResult<bool>.Failure("简单诊所版本暂不支持看诊状态管理"));
     }
 }

@@ -7,13 +7,15 @@ using LYBT.Shared.Models.Contracts.Consultation;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 
-namespace LYBT.Desktop.Consultation.ViewModels {
+namespace LYBT.Desktop.Consultation.ViewModels
+{
 
     /// <summary>
     /// 看诊记录管理视图模型 - 简化版
     /// 只负责显示和基本管理看诊记录，不包含复杂的流程控制
     /// </summary>
-    public class ConsultationManagementViewModel : SessionAwareViewModel {
+    public class ConsultationManagementViewModel : SessionAwareViewModel
+    {
 
         #region 服务依赖
 
@@ -25,28 +27,32 @@ namespace LYBT.Desktop.Consultation.ViewModels {
 
         private ObservableCollection<ConsultationDto> _consultations = new();
 
-        public ObservableCollection<ConsultationDto> Consultations {
+        public ObservableCollection<ConsultationDto> Consultations
+        {
             get => _consultations;
             set => SetProperty(ref _consultations, value);
         }
 
         private ConsultationDto? _selectedConsultation;
 
-        public ConsultationDto? SelectedConsultation {
+        public ConsultationDto? SelectedConsultation
+        {
             get => _selectedConsultation;
             set => SetProperty(ref _selectedConsultation, value);
         }
 
         private bool _isLoading;
 
-        public bool IsLoading {
+        public bool IsLoading
+        {
             get => _isLoading;
             set => SetProperty(ref _isLoading, value);
         }
 
         private string _searchKeyword = string.Empty;
 
-        public string SearchKeyword {
+        public string SearchKeyword
+        {
             get => _searchKeyword;
             set => SetProperty(ref _searchKeyword, value);
         }
@@ -69,7 +75,8 @@ namespace LYBT.Desktop.Consultation.ViewModels {
             ISessionManager sessionManager,
             INotificationService notificationService,
             ILogger<ConsultationManagementViewModel> logger)
-            : base(sessionManager, notificationService, logger) {
+            : base(sessionManager, notificationService, logger)
+        {
             _consultationService = consultationService ?? throw new ArgumentNullException(nameof(consultationService));
 
             LoadDataCommand = new DelegateCommand(async () => await LoadDataAsync());
@@ -86,10 +93,14 @@ namespace LYBT.Desktop.Consultation.ViewModels {
 
         #region 初始化
 
-        private async Task InitializeAsync() {
-            try {
+        private async Task InitializeAsync()
+        {
+            try
+            {
                 await LoadDataAsync();
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 LogError(ex, "初始化看诊管理失败");
                 // 提供用户友好的错误提示
                 ShowError("看诊管理模块初始化失败，请尝试刷新页面");
@@ -100,44 +111,59 @@ namespace LYBT.Desktop.Consultation.ViewModels {
 
         #region 数据操作
 
-        private async Task LoadDataAsync() {
-            try {
+        private async Task LoadDataAsync()
+        {
+            try
+            {
                 IsLoading = true;
 
-                var query = new LYBT.Shared.Models.Contracts.Common.PagedQueryBaseDto {
+                var query = new LYBT.Shared.Models.Contracts.Common.PagedQueryBaseDto
+                {
                     PageIndex = 1,
                     PageSize = 100,
                     Keyword = SearchKeyword
                 };
 
                 var result = await _consultationService.GetPagedAsync(query);
-                if (result.IsSuccess && result.Data != null) {
+                if (result.IsSuccess && result.Data != null)
+                {
                     Consultations.Clear();
-                    foreach (var consultation in result.Data.Items) {
+                    foreach (var consultation in result.Data.Items)
+                    {
                         Consultations.Add(consultation);
                     }
-                } else {
+                }
+                else
+                {
                     ShowError($"加载数据失败: {result.Message}");
                 }
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 LogError(ex, "加载看诊记录失败");
                 ShowError("加载数据失败，请重试");
-            } finally {
+            }
+            finally
+            {
                 IsLoading = false;
             }
         }
 
-        private async Task SearchAsync() {
+        private async Task SearchAsync()
+        {
             await LoadDataAsync();
         }
 
-        private async Task RefreshAsync() {
+        private async Task RefreshAsync()
+        {
             SearchKeyword = string.Empty;
             await LoadDataAsync();
         }
 
-        private void ViewDetails() {
-            if (SelectedConsultation != null) {
+        private void ViewDetails()
+        {
+            if (SelectedConsultation != null)
+            {
                 // 简单的详情显示，不涉及复杂导航
                 ShowInfo($"看诊记录详情:\n患者ID: {SelectedConsultation.PatientId}\n看诊时间: {SelectedConsultation.ConsultationTime:yyyy-MM-dd HH:mm}\n诊断: {SelectedConsultation.Diagnosis ?? "暂无"}");
             }

@@ -1,12 +1,14 @@
 ﻿using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
 
-namespace LYBT.Shared.Interfaces.Services {
+namespace LYBT.Shared.Interfaces.Services
+{
 
     /// <summary>
     /// 中药材服务接口 - UltraThink双层架构精简标准（小诊所适用）
     /// </summary>
-    public interface IHerbService {
+    public interface IHerbService
+    {
 
         #region 查询操作 - QueryService专业负责
 

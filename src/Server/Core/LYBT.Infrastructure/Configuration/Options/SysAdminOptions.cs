@@ -1,11 +1,13 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace LYBT.Infrastructure.Configuration.Options {
+namespace LYBT.Infrastructure.Configuration.Options
+{
 
     /// <summary>
     /// 系统管理员配置选项
     /// </summary>
-    public class SysAdminOptions {
+    public class SysAdminOptions
+    {
         public const string SectionName = "SysAdminOptions";
 
         /// <summary>

@@ -3,13 +3,14 @@ using LYBT.Shared.Models.Contracts.Users;
 using AuthContracts = LYBT.Shared.Models.Contracts.Auth;
 
 // UltraThink重构: 恢复四层架构清晰分离，UserInfo为UI层，UserDto为传输层
-
-namespace LYBT.Desktop.Core.Interfaces.Services {
+namespace LYBT.Desktop.Core.Interfaces.Services
+{
 
     /// <summary>
     /// 认证服务接口
     /// </summary>
-    public interface IAuthenticationService {
+    public interface IAuthenticationService
+    {
 
         /// <summary>
         /// 用户登录
@@ -21,7 +22,7 @@ namespace LYBT.Desktop.Core.Interfaces.Services {
         /// <summary>
         /// 用户登出
         /// </summary>
-        /// <returns></returns>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         Task<ServiceResult> LogoutAsync();
 
         /// <summary>
@@ -33,7 +34,7 @@ namespace LYBT.Desktop.Core.Interfaces.Services {
         /// <summary>
         /// 获取当前用户信息
         /// </summary>
-        /// <returns></returns>
+        /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous operation.</placeholder></returns>
         Task<UserDto?> GetCurrentUserAsync();
 
         /// <summary>

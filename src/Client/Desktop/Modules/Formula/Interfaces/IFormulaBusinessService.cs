@@ -8,7 +8,8 @@ namespace LYBT.Desktop.Formula.Interfaces;
 /// 职责：业务流程编排、完整事务管理、基础CRUD操作
 /// 简化版本：对应后端FormulasController实际API
 /// </summary>
-public interface IFormulaBusinessService {
+public interface IFormulaBusinessService
+{
 
     #region 核心业务操作 - 对应后端FormulasController
 

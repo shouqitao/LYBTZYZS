@@ -7,7 +7,8 @@ namespace LYBT.Desktop.Users.Interfaces;
 /// 用户业务服务接口 - UltraThink双层架构简化版
 /// 职责：基础业务操作（统一标准CRUD命名）
 /// </summary>
-public interface IUserBusinessService {
+public interface IUserBusinessService
+{
 
     #region 标准CRUD操作
 

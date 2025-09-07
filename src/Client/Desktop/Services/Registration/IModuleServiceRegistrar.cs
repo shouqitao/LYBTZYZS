@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Prism.Ioc;
 
@@ -43,7 +43,7 @@ public interface IModuleServiceRegistrar
 /// </summary>
 public record ServiceRegistrationInfo(
     Type ServiceType,
-    Type ImplementationType, 
+    Type ImplementationType,
     string ModuleName,
     ServiceLifetime Lifetime);
 

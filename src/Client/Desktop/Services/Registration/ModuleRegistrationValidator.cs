@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Logging;
@@ -14,7 +14,7 @@ public class ModuleRegistrationValidator : IModuleServiceRegistrar
 {
     private readonly ILogger<ModuleRegistrationValidator> _logger;
     private readonly List<string> _expectedModules = [
-        "Auth", "User", "Patient", "Herb", "Formula", 
+        "Auth", "User", "Patient", "Herb", "Formula",
         "Consultation", "Prescription", "MedicalCase"
     ];
 
@@ -30,12 +30,12 @@ public class ModuleRegistrationValidator : IModuleServiceRegistrar
     {
         var moduleType = typeof(TModule);
         var moduleName = ExtractModuleName(moduleType.Name);
-        
+
         _logger.LogInformation("注册模块服务: {ModuleName}", moduleName);
 
         // 获取该模块的所有服务
         var moduleServices = ServiceDiscovery.GetModuleServices(moduleName);
-        
+
         foreach (var service in moduleServices)
         {
             RegisterService(registry, service);
@@ -48,10 +48,10 @@ public class ModuleRegistrationValidator : IModuleServiceRegistrar
     public void RegisterAllDiscoveredServices(IContainerRegistry registry)
     {
         _logger.LogInformation("开始注册所有发现的模块服务");
-        
+
         // 确保服务发现已完成
         ServiceDiscovery.ScanForModuleServices();
-        
+
         var discoveredServices = ServiceDiscovery.GetDiscoveredServices();
         var serviceCount = 0;
 
@@ -64,14 +64,14 @@ public class ModuleRegistrationValidator : IModuleServiceRegistrar
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "注册服务失败: {ServiceType} → {ImplementationType}", 
+                _logger.LogError(ex, "注册服务失败: {ServiceType} → {ImplementationType}",
                     service.ServiceType.Name, service.ImplementationType.Name);
                 throw;
             }
         }
 
         _logger.LogInformation("自动注册完成，共注册 {Count} 个服务", serviceCount);
-        
+
         // 验证所有预期模块都已注册
         ValidateExpectedModulesRegistered(discoveredServices);
     }
@@ -101,7 +101,7 @@ public class ModuleRegistrationValidator : IModuleServiceRegistrar
     public ValidationResult ValidateRegistrations(IContainerProvider containerProvider)
     {
         _logger.LogInformation("开始验证服务注册...");
-        
+
         var result = new ValidationResult();
         var discoveredServices = ServiceDiscovery.GetDiscoveredServices();
 
@@ -130,14 +130,15 @@ public class ModuleRegistrationValidator : IModuleServiceRegistrar
         }
 
         result.TotalCount = discoveredServices.Count();
-        
+
         if (result.IsAllSuccessful)
         {
             _logger.LogInformation("服务注册验证成功，所有 {Count} 个服务都可正常解析", result.SuccessCount);
         }
         else
         {
-            _logger.LogWarning("服务注册验证发现问题: {SuccessCount}/{TotalCount} 成功，{FailCount} 个失败", 
+            _logger.LogWarning(
+                "服务注册验证发现问题: {SuccessCount}/{TotalCount} 成功，{FailCount} 个失败",
                 result.SuccessCount, result.TotalCount, result.FailedServices.Count);
         }
 
@@ -174,7 +175,8 @@ public class ModuleRegistrationValidator : IModuleServiceRegistrar
 
     private void RegisterService(IContainerRegistry registry, ServiceRegistrationInfo service)
     {
-        _logger.LogDebug("注册服务: {ServiceType} → {ImplementationType} ({Lifetime})", 
+        _logger.LogDebug(
+            "注册服务: {ServiceType} → {ImplementationType} ({Lifetime})",
             service.ServiceType.Name, service.ImplementationType.Name, service.Lifetime);
 
         switch (service.Lifetime)
@@ -185,15 +187,15 @@ public class ModuleRegistrationValidator : IModuleServiceRegistrar
                 // 再注册接口到实现的映射
                 registry.Register(service.ServiceType, container => container.Resolve(service.ImplementationType));
                 break;
-            
+
             case ServiceLifetime.Transient:
                 registry.Register(service.ServiceType, service.ImplementationType);
                 break;
-            
+
             case ServiceLifetime.Scoped:
                 registry.RegisterScoped(service.ServiceType, service.ImplementationType);
                 break;
-            
+
             default:
                 throw new ArgumentOutOfRangeException(nameof(service.Lifetime), service.Lifetime, "不支持的服务生命周期");
         }
@@ -233,7 +235,7 @@ public class ValidationResult
     public int TotalCount { get; set; }
     public int SuccessCount { get; set; }
     public List<string> FailedServices { get; set; } = [];
-    
+
     public bool IsAllSuccessful => FailedServices.Count == 0 && TotalCount > 0;
     public int FailedCount => FailedServices.Count;
 }

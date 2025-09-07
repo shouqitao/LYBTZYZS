@@ -5,18 +5,21 @@ using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 
-namespace LYBT.Desktop.Services {
+namespace LYBT.Desktop.Services
+{
 
     /// <summary>
     /// 用户会话管理器 - UltraThink精简版
     /// </summary>
-    public class UserSessionManager : IUserSessionManager, ITokenManager {
+    public class UserSessionManager : IUserSessionManager, ITokenManager
+    {
         private readonly IPermissionService _permissionService;
         private UserDto? _currentUser;
         private string? _sessionToken;
         private DateTime? _loginTime;
 
-        public UserSessionManager(IPermissionService permissionService) {
+        public UserSessionManager(IPermissionService permissionService)
+        {
             _permissionService = permissionService;
         }
 
@@ -25,13 +28,15 @@ namespace LYBT.Desktop.Services {
         public DateTime? LoginTime => _loginTime;
         public string? SessionToken => _sessionToken;
 
-        public void SetUserSession(UserDto user, string token) {
+        public void SetUserSession(UserDto user, string token)
+        {
             _currentUser = user ?? throw new ArgumentNullException(nameof(user));
             _sessionToken = token ?? throw new ArgumentNullException(nameof(token));
             _loginTime = DateTime.Now;
         }
 
-        public void ClearUserSession() {
+        public void ClearUserSession()
+        {
             _currentUser = null;
             _sessionToken = null;
             _loginTime = null;
@@ -49,8 +54,10 @@ namespace LYBT.Desktop.Services {
         public string GetCurrentUserRoleDisplay()
             => _currentUser == null ? "未登录" : (IsAdmin() ? "管理员" : "医生");
 
-        public void RefreshUserInfo(UserDto user) {
-            if (_currentUser?.Id == user?.Id) {
+        public void RefreshUserInfo(UserDto user)
+        {
+            if (_currentUser?.Id == user?.Id)
+            {
                 _currentUser = user;
             }
         }
@@ -61,22 +68,26 @@ namespace LYBT.Desktop.Services {
         public bool HasUserRole(UserRole role)
             => GetCurrentUserRole() == role;
 
-        public bool CanAccessModule(string moduleName) {
+        public bool CanAccessModule(string moduleName)
+        {
             var role = GetCurrentUserRole();
             return role.HasValue && _permissionService.CanAccessModule(role.Value, moduleName);
         }
 
-        public IEnumerable<string> GetAccessibleModules() {
+        public IEnumerable<string> GetAccessibleModules()
+        {
             var role = GetCurrentUserRole();
             return role.HasValue ? _permissionService.GetAccessibleModules(role.Value) : Enumerable.Empty<string>();
         }
 
-        public bool HasManagementAccess() {
+        public bool HasManagementAccess()
+        {
             var role = GetCurrentUserRole();
             return role.HasValue && _permissionService.HasManagementAccess(role.Value);
         }
 
-        public bool HasMedicalAccess() {
+        public bool HasMedicalAccess()
+        {
             var role = GetCurrentUserRole();
             return role.HasValue && _permissionService.HasMedicalAccess(role.Value);
         }

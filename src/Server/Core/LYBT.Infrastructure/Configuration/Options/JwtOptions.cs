@@ -1,11 +1,13 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace LYBT.Infrastructure.Configuration.Options {
+namespace LYBT.Infrastructure.Configuration.Options
+{
 
     /// <summary>
     /// JWT配置选项
     /// </summary>
-    public class JwtOptions {
+    public class JwtOptions
+    {
         public const string SectionName = "JwtOptions";
 
         /// <summary>

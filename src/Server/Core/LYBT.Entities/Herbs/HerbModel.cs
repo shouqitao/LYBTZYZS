@@ -3,7 +3,8 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using LYBT.Shared.Models.Enums;
 
-namespace LYBT.Entities.Herbs {
+namespace LYBT.Entities.Herbs
+{
 
     /// <summary>
     /// 中药材实体 - UltraThink v2.0架构简化版
@@ -11,7 +12,8 @@ namespace LYBT.Entities.Herbs {
     /// 只保留药材基础信息和价格信息，用于处方开具
     /// </summary>
     [Table("Herbs")]
-    public class Herb {
+    public class Herb
+    {
 
         /// <summary>药材唯一标识</summary>
         [Key]

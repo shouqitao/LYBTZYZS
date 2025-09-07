@@ -7,12 +7,13 @@ namespace LYBT.Desktop.Consultation.Interfaces;
 /// 看诊查询服务接口 - UltraThink双层架构简化版
 /// 职责：查询和搜索操作
 /// </summary>
-public interface IConsultationQueryService {
+public interface IConsultationQueryService
+{
 
     /// <summary>
     /// 分页查询看诊记录
     /// </summary>
-    Task<ServiceResult<PagedResult<ConsultationDto>>> GetPagedAsync(ConsultationPagedQueryDto query);
+    Task<ServiceResult<PagedResult<ConsultationDto>>> GetPaged(ConsultationPagedQueryDto query);
 
     /// <summary>
     /// 根据ID获取看诊详情

@@ -16,7 +16,8 @@ namespace LYBT.Desktop.Herbs.Services;
 /// </summary>
 public class HerbBusinessService(
     ILogger<HerbBusinessService> logger,
-    IHerbApi herbApi) : IHerbBusinessService {
+    IHerbApi herbApi) : IHerbBusinessService
+{
     private readonly ILogger<HerbBusinessService> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private readonly IHerbApi _herbApi = herbApi ?? throw new ArgumentNullException(nameof(herbApi));
 
@@ -29,24 +30,31 @@ public class HerbBusinessService(
     /// <param name="createDto">药材创建请求信息</param>
     /// <returns>包含新建药材信息的业务结果</returns>
     /// <exception cref="ArgumentNullException">当创建请求为空时抛出</exception>
-    public async Task<ServiceResult<HerbDto>> CreateAsync(HerbCreateDto createDto) {
+    public async Task<ServiceResult<HerbDto>> CreateAsync(HerbCreateDto createDto)
+    {
         ArgumentNullException.ThrowIfNull(createDto, nameof(createDto));
 
         _logger.LogInformation("中药材创建请求: 药材名称: {HerbName}", createDto.Name);
 
-        try {
+        try
+        {
             var refitResponse = await _herbApi.CreateHerbAsync(createDto);
 
-            if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null) {
+            if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
+            {
                 var herb = refitResponse.Content;
                 _logger.LogInformation("药材创建成功: {HerbName}", herb.Name);
                 return ServiceResult<HerbDto>.Success(herb, "药材创建成功");
-            } else {
+            }
+            else
+            {
                 var errorMessage = $"药材创建失败: {refitResponse.ReasonPhrase}";
                 _logger.LogError(errorMessage);
                 return ServiceResult<HerbDto>.Failure(errorMessage);
             }
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
             _logger.LogError(ex, "药材创建异常: 药材名称: {HerbName}", createDto.Name);
             return ServiceResult<HerbDto>.Failure($"药材创建失败: {ex.Message}");
         }
@@ -55,24 +63,31 @@ public class HerbBusinessService(
     /// <summary>
     /// 更新药材
     /// </summary>
-    public async Task<ServiceResult<HerbDto>> UpdateAsync(Guid id, HerbUpdateDto updateDto) {
+    public async Task<ServiceResult<HerbDto>> UpdateAsync(Guid id, HerbUpdateDto updateDto)
+    {
         ArgumentNullException.ThrowIfNull(updateDto, nameof(updateDto));
 
         _logger.LogInformation("药材更新请求: {HerbId}", id);
 
-        try {
+        try
+        {
             var refitResponse = await _herbApi.UpdateHerbAsync(id, updateDto);
 
-            if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null) {
+            if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
+            {
                 var herb = refitResponse.Content;
                 _logger.LogInformation("药材更新成功: {HerbName}", herb.Name);
                 return ServiceResult<HerbDto>.Success(herb, "药材更新成功");
-            } else {
+            }
+            else
+            {
                 var errorMessage = $"药材更新失败: {refitResponse.ReasonPhrase}";
                 _logger.LogError(errorMessage);
                 return ServiceResult<HerbDto>.Failure(errorMessage);
             }
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
             _logger.LogError(ex, "药材更新异常: {HerbId}", id);
             return ServiceResult<HerbDto>.Failure($"药材更新失败: {ex.Message}");
         }
@@ -81,28 +96,32 @@ public class HerbBusinessService(
     /// <summary>
     /// 启用药材
     /// </summary>
-    public Task<ServiceResult<bool>> EnableAsync(Guid herbId) {
+    public Task<ServiceResult<bool>> EnableAsync(Guid herbId)
+    {
         return Task.FromResult(ServiceResult<bool>.Success(false));
     }
 
     /// <summary>
     /// 禁用药材
     /// </summary>
-    public Task<ServiceResult<bool>> DisableAsync(Guid herbId) {
+    public Task<ServiceResult<bool>> DisableAsync(Guid herbId)
+    {
         return Task.FromResult(ServiceResult<bool>.Success(false));
     }
 
     /// <summary>
     /// 删除药材
     /// </summary>
-    public Task<ServiceResult<bool>> DeleteAsync(Guid herbId) {
+    public Task<ServiceResult<bool>> DeleteAsync(Guid herbId)
+    {
         return Task.FromResult(ServiceResult<bool>.Success(false));
     }
 
     /// <summary>
     /// 批量导入药材
     /// </summary>
-    public Task<ServiceResult<object>> ImportHerbsAsync(List<HerbCreateDto> herbs) {
+    public Task<ServiceResult<object>> ImportHerbsAsync(List<HerbCreateDto> herbs)
+    {
         _logger.LogInformation("批量导入药材: {Count}个", herbs.Count);
         return Task.FromResult(ServiceResult<object>.Failure("简单诊所版本暂不支持批量导入"));
     }
@@ -110,7 +129,8 @@ public class HerbBusinessService(
     /// <summary>
     /// 导出药材数据
     /// </summary>
-    public Task<ServiceResult<byte[]>> ExportHerbsAsync(PagedQueryBaseDto query) {
+    public Task<ServiceResult<byte[]>> ExportHerbsAsync(PagedQueryBaseDto query)
+    {
         _logger.LogInformation("导出药材数据");
         return Task.FromResult(ServiceResult<byte[]>.Failure("简单诊所版本暂不支持数据导出"));
     }

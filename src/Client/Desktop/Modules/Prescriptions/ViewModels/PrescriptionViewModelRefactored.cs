@@ -9,8 +9,8 @@ using IFormulaService = LYBT.Shared.Interfaces.Services.IFormulaService;
 using IPrescriptionService = LYBT.Shared.Interfaces.Services.IPrescriptionService;
 
 // using Prism.Dialogs; // Removed for Prism 8.1.97 compatibility
-
-namespace LYBT.Desktop.Prescriptions.ViewModels {
+namespace LYBT.Desktop.Prescriptions.ViewModels
+{
 
     /// <summary>
     /// 重构后的处方ViewModel - UltraThink架构实现
@@ -25,7 +25,8 @@ namespace LYBT.Desktop.Prescriptions.ViewModels {
     /// - PrescriptionCommandHandler: 命令处理
     /// - PrescriptionEventCoordinator: 事件协调
     /// </summary>
-    public class PrescriptionViewModelRefactored : BindableBase, IDisposable {
+    public class PrescriptionViewModelRefactored : BindableBase, IDisposable
+    {
 
         #region UltraThink专门化组件
 
@@ -74,9 +75,11 @@ namespace LYBT.Desktop.Prescriptions.ViewModels {
         /// <summary>
         /// 处方编号
         /// </summary>
-        public string PrescriptionNo {
+        public string PrescriptionNo
+        {
             get => _dataManager.PrescriptionNo;
-            set {
+            set
+            {
                 _dataManager.PrescriptionNo = value;
                 _dataManager.MarkAsChanged();
                 RaisePropertyChanged();
@@ -91,9 +94,11 @@ namespace LYBT.Desktop.Prescriptions.ViewModels {
         /// <summary>
         /// 选中的处方项
         /// </summary>
-        public PrescriptionItemViewModel? SelectedItem {
+        public PrescriptionItemViewModel? SelectedItem
+        {
             get => _dataManager.SelectedItem;
-            set {
+            set
+            {
                 _dataManager.SelectedItem = value;
                 RaisePropertyChanged();
             }
@@ -102,9 +107,11 @@ namespace LYBT.Desktop.Prescriptions.ViewModels {
         /// <summary>
         /// 剂数
         /// </summary>
-        public int DosageCount {
+        public int DosageCount
+        {
             get => _dataManager.DosageCount;
-            set {
+            set
+            {
                 _dataManager.DosageCount = value;
                 _dataManager.MarkAsChanged();
                 RecalculatePrice();
@@ -115,9 +122,11 @@ namespace LYBT.Desktop.Prescriptions.ViewModels {
         /// <summary>
         /// 用法
         /// </summary>
-        public string Usage {
+        public string Usage
+        {
             get => _dataManager.Usage;
-            set {
+            set
+            {
                 _dataManager.Usage = value;
                 _dataManager.MarkAsChanged();
                 RaisePropertyChanged();
@@ -127,9 +136,11 @@ namespace LYBT.Desktop.Prescriptions.ViewModels {
         /// <summary>
         /// 医嘱
         /// </summary>
-        public string MedicalAdvice {
+        public string MedicalAdvice
+        {
             get => _dataManager.MedicalAdvice;
-            set {
+            set
+            {
                 _dataManager.MedicalAdvice = value;
                 _dataManager.MarkAsChanged();
                 RaisePropertyChanged();
@@ -139,9 +150,11 @@ namespace LYBT.Desktop.Prescriptions.ViewModels {
         /// <summary>
         /// 备注
         /// </summary>
-        public string Remark {
+        public string Remark
+        {
             get => _dataManager.Remark;
-            set {
+            set
+            {
                 _dataManager.Remark = value;
                 _dataManager.MarkAsChanged();
                 RaisePropertyChanged();
@@ -151,9 +164,11 @@ namespace LYBT.Desktop.Prescriptions.ViewModels {
         /// <summary>
         /// 折扣
         /// </summary>
-        public decimal Discount {
+        public decimal Discount
+        {
             get => _dataManager.Discount;
-            set {
+            set
+            {
                 _dataManager.Discount = value;
                 _dataManager.MarkAsChanged();
                 RecalculatePrice();
@@ -223,10 +238,12 @@ namespace LYBT.Desktop.Prescriptions.ViewModels {
             ILogger<PrescriptionValidator> validatorLogger,
             ILogger<PrescriptionCalculator> calculatorLogger,
             ILogger<PrescriptionCommandHandler> commandHandlerLogger,
-            ILogger<PrescriptionEventCoordinator> eventCoordinatorLogger) {
+            ILogger<PrescriptionEventCoordinator> eventCoordinatorLogger)
+        {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
-            try {
+            try
+            {
                 _logger.LogDebug("开始初始化重构后的PrescriptionViewModel");
 
                 // 创建专门化组件
@@ -243,7 +260,9 @@ namespace LYBT.Desktop.Prescriptions.ViewModels {
                 SubscribeToComponentEvents();
 
                 _logger.LogInformation("PrescriptionViewModel重构完成，组件化架构已建立");
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, "初始化PrescriptionViewModel失败");
                 throw;
             }
@@ -256,8 +275,10 @@ namespace LYBT.Desktop.Prescriptions.ViewModels {
         /// <summary>
         /// 建立组件间的依赖关系
         /// </summary>
-        private void EstablishComponentDependencies() {
-            try {
+        private void EstablishComponentDependencies()
+        {
+            try
+            {
                 // CommandHandler需要DataManager、Validator和Calculator
                 _commandHandler.SetDependencies(_dataManager, _validator, _calculator);
 
@@ -265,7 +286,9 @@ namespace LYBT.Desktop.Prescriptions.ViewModels {
                 _eventCoordinator.SetDependencies(_dataManager, _calculator);
 
                 _logger.LogDebug("组件依赖关系建立完成");
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, "建立组件依赖关系失败");
                 throw;
             }
@@ -274,21 +297,26 @@ namespace LYBT.Desktop.Prescriptions.ViewModels {
         /// <summary>
         /// 订阅组件事件
         /// </summary>
-        private void SubscribeToComponentEvents() {
-            try {
+        private void SubscribeToComponentEvents()
+        {
+            try
+            {
                 // 订阅命令处理器事件
                 _commandHandler.OnPrescriptionSaved += OnPrescriptionSaved;
                 _commandHandler.OnPrescriptionCleared += OnPrescriptionCleared;
                 _commandHandler.OnPriceRecalculated += OnPriceRecalculated;
 
                 // 订阅数据变更事件
-                _dataManager.PrescriptionItems.CollectionChanged += (s, e) => {
+                _dataManager.PrescriptionItems.CollectionChanged += (s, e) =>
+                {
                     RecalculatePrice();
                     RaisePropertyChanged(nameof(PrescriptionItems));
                 };
 
                 _logger.LogDebug("组件事件订阅完成");
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, "订阅组件事件失败");
                 throw;
             }
@@ -301,8 +329,10 @@ namespace LYBT.Desktop.Prescriptions.ViewModels {
         /// <summary>
         /// 初始化处方数据
         /// </summary>
-        public async Task InitializeAsync(Guid medicalCaseId) {
-            try {
+        public async Task InitializeAsync(Guid medicalCaseId)
+        {
+            try
+            {
                 _logger.LogInformation("开始初始化处方数据，医疗案例ID: {MedicalCaseId}", medicalCaseId);
 
                 await _dataManager.InitializeAsync(medicalCaseId);
@@ -314,7 +344,9 @@ namespace LYBT.Desktop.Prescriptions.ViewModels {
                 RefreshAllProperties();
 
                 _logger.LogInformation("处方数据初始化完成");
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, "初始化处方数据失败");
                 throw;
             }
@@ -323,15 +355,19 @@ namespace LYBT.Desktop.Prescriptions.ViewModels {
         /// <summary>
         /// 验证处方数据
         /// </summary>
-        public PrescriptionValidator.ValidationResult ValidatePrescription() {
-            try {
+        public PrescriptionValidator.ValidationResult ValidatePrescription()
+        {
+            try
+            {
                 return _validator.ValidatePrescription(
                     PrescriptionItems,
                     PrescriptionNo,
                     DosageCount,
                     Usage,
                     Discount);
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, "验证处方失败");
                 return new PrescriptionValidator.ValidationResult { IsValid = false };
             }
@@ -340,8 +376,10 @@ namespace LYBT.Desktop.Prescriptions.ViewModels {
         /// <summary>
         /// 重新计算价格
         /// </summary>
-        public void RecalculatePrice() {
-            try {
+        public void RecalculatePrice()
+        {
+            try
+            {
                 _currentCalculation = _calculator.CalculatePrescriptionPrice(
                     PrescriptionItems, DosageCount, Discount);
 
@@ -352,7 +390,9 @@ namespace LYBT.Desktop.Prescriptions.ViewModels {
                 RaisePropertyChanged(nameof(DiscountText));
 
                 _logger.LogDebug("价格重新计算完成");
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, "重新计算价格失败");
             }
         }
@@ -364,7 +404,8 @@ namespace LYBT.Desktop.Prescriptions.ViewModels {
         /// <summary>
         /// 处方保存完成事件
         /// </summary>
-        private void OnPrescriptionSaved() {
+        private void OnPrescriptionSaved()
+        {
             RefreshAllProperties();
             _eventCoordinator.PublishPrescriptionSaved();
         }
@@ -372,7 +413,8 @@ namespace LYBT.Desktop.Prescriptions.ViewModels {
         /// <summary>
         /// 处方清空完成事件
         /// </summary>
-        private void OnPrescriptionCleared() {
+        private void OnPrescriptionCleared()
+        {
             RecalculatePrice();
             RefreshAllProperties();
             _eventCoordinator.PublishPrescriptionCleared();
@@ -381,7 +423,8 @@ namespace LYBT.Desktop.Prescriptions.ViewModels {
         /// <summary>
         /// 价格重新计算完成事件
         /// </summary>
-        private void OnPriceRecalculated() {
+        private void OnPriceRecalculated()
+        {
             RecalculatePrice();
             _eventCoordinator.PublishPriceRecalculated();
         }
@@ -393,7 +436,8 @@ namespace LYBT.Desktop.Prescriptions.ViewModels {
         /// <summary>
         /// 刷新所有属性通知
         /// </summary>
-        private void RefreshAllProperties() {
+        private void RefreshAllProperties()
+        {
             RaisePropertyChanged(nameof(MedicalCaseId));
             RaisePropertyChanged(nameof(PrescriptionNo));
             RaisePropertyChanged(nameof(DosageCount));
@@ -418,15 +462,20 @@ namespace LYBT.Desktop.Prescriptions.ViewModels {
 
         private bool _disposed = false;
 
-        public void Dispose() {
+        public void Dispose()
+        {
             Dispose(true);
             GC.SuppressFinalize(this);
         }
 
-        protected virtual void Dispose(bool disposing) {
-            if (!_disposed) {
-                if (disposing) {
-                    try {
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    try
+                    {
                         // 取消事件订阅
                         _commandHandler.OnPrescriptionSaved -= OnPrescriptionSaved;
                         _commandHandler.OnPrescriptionCleared -= OnPrescriptionCleared;
@@ -436,7 +485,9 @@ namespace LYBT.Desktop.Prescriptions.ViewModels {
                         _eventCoordinator.Unsubscribe();
 
                         _logger.LogDebug("PrescriptionViewModel资源清理完成");
-                    } catch (Exception ex) {
+                    }
+                    catch (Exception ex)
+                    {
                         _logger.LogError(ex, "清理PrescriptionViewModel资源失败");
                     }
                 }

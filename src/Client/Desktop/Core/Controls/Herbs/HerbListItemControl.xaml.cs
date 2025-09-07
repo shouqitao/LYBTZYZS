@@ -2,13 +2,15 @@
 using System.Windows.Controls;
 using LYBT.Shared.Models.Contracts.Herbs;
 
-namespace LYBT.WPF.Client.Controls.Herbs {
+namespace LYBT.WPF.Client.Controls.Herbs
+{
 
     /// <summary>
     /// HerbListItemControl.xaml 的交互逻辑
     /// 草药列表项控件
     /// </summary>
-    public partial class HerbListItemControl : UserControl {
+    public partial class HerbListItemControl : UserControl
+    {
 
         public static readonly DependencyProperty DataProperty =
             DependencyProperty.Register(
@@ -17,12 +19,14 @@ namespace LYBT.WPF.Client.Controls.Herbs {
                 typeof(HerbListItemControl),
                 new PropertyMetadata(null));
 
-        public HerbDto Data {
+        public HerbDto Data
+        {
             get => (HerbDto)GetValue(DataProperty);
             set => SetValue(DataProperty, value);
         }
 
-        public HerbListItemControl() {
+        public HerbListItemControl()
+        {
             InitializeComponent();
         }
     }

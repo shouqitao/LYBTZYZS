@@ -9,19 +9,21 @@ using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 
-namespace LYBT.Desktop.Prescriptions.Services {
+namespace LYBT.Desktop.Prescriptions.Services
+{
 
     /// <summary>
     /// 处方管理器 - 负责处方的创建、编辑、验证和保存
     /// </summary>
-    public class PrescriptionManager {
+    public class PrescriptionManager
+    {
 
         #region 处方验证常量
 
-        private const decimal MIN_HERB_QUANTITY = 0.1m;
-        private const decimal MAX_HERB_QUANTITY = 1000m;
-        private const decimal DEFAULT_HERB_QUANTITY = 10m;
-        private const int MAX_PRESCRIPTION_ITEMS = 50;
+        private const decimal MINHERBQUANTITY = 0.1m;
+        private const decimal MAXHERBQUANTITY = 1000m;
+        private const decimal DEFAULTHERBQUANTITY = 10m;
+        private const int MAXPRESCRIPTIONITEMS = 50;
 
         #endregion 处方验证常量
 
@@ -43,7 +45,8 @@ namespace LYBT.Desktop.Prescriptions.Services {
         public PrescriptionManager(
             IPrescriptionService prescriptionService,
             IMapper mapper,
-            ILogger<PrescriptionManager> logger) {
+            ILogger<PrescriptionManager> logger)
+        {
             _prescriptionService = prescriptionService;
             _mapper = mapper;
             _logger = logger;
@@ -59,7 +62,8 @@ namespace LYBT.Desktop.Prescriptions.Services {
         /// <summary>
         /// 当前处方
         /// </summary>
-        public PrescriptionDto? CurrentPrescription {
+        public PrescriptionDto? CurrentPrescription
+        {
             get => _currentPrescription;
             set => _currentPrescription = value;
         }
@@ -76,17 +80,21 @@ namespace LYBT.Desktop.Prescriptions.Services {
         /// <summary>
         /// 添加药材到处方
         /// </summary>
-        public bool AddHerbToPrescription(HerbDto herb, decimal quantity = DEFAULT_HERB_QUANTITY) {
-            try {
+        public bool AddHerbToPrescription(HerbDto herb, decimal quantity = DEFAULTHERBQUANTITY)
+        {
+            try
+            {
                 // 验证处方项目数量
-                if (_prescriptionItems.Count >= MAX_PRESCRIPTION_ITEMS) {
-                    _logger.LogWarning($"处方项目数量已达上限 {MAX_PRESCRIPTION_ITEMS}");
+                if (_prescriptionItems.Count >= MAXPRESCRIPTIONITEMS)
+                {
+                    _logger.LogWarning($"处方项目数量已达上限 {MAXPRESCRIPTIONITEMS}");
                     return false;
                 }
 
                 // 检查是否已存在
                 var existingItem = _prescriptionItems.FirstOrDefault(x => x.HerbId == herb.Id);
-                if (existingItem != null) {
+                if (existingItem != null)
+                {
                     // 更新数量（Subtotal会自动重新计算）
                     existingItem.Quantity += quantity;
                     _logger.LogInformation($"更新药材 {herb.Name} 数量至 {existingItem.Quantity}");
@@ -94,7 +102,8 @@ namespace LYBT.Desktop.Prescriptions.Services {
                 }
 
                 // 创建新的处方项目
-                var prescriptionItem = new PrescriptionItemDto {
+                var prescriptionItem = new PrescriptionItemDto
+                {
                     Id = Guid.NewGuid(),
                     HerbId = herb.Id,
                     HerbName = herb.Name,
@@ -106,14 +115,17 @@ namespace LYBT.Desktop.Prescriptions.Services {
                 };
 
                 // 验证处方项目
-                if (!ValidatePrescriptionItem(prescriptionItem)) {
+                if (!ValidatePrescriptionItem(prescriptionItem))
+                {
                     return false;
                 }
 
                 _prescriptionItems.Add(prescriptionItem);
                 _logger.LogInformation($"添加药材 {herb.Name} 到处方，数量: {quantity}");
                 return true;
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, $"添加药材 {herb.Name} 到处方时发生异常");
                 return false;
             }
@@ -122,17 +134,22 @@ namespace LYBT.Desktop.Prescriptions.Services {
         /// <summary>
         /// 从处方中移除药材
         /// </summary>
-        public bool RemoveHerbFromPrescription(Guid herbId) {
-            try {
+        public bool RemoveHerbFromPrescription(Guid herbId)
+        {
+            try
+            {
                 var item = _prescriptionItems.FirstOrDefault(x => x.HerbId == herbId);
-                if (item != null) {
+                if (item != null)
+                {
                     _prescriptionItems.Remove(item);
                     _logger.LogInformation($"从处方中移除药材 {item.HerbName}");
                     return true;
                 }
 
                 return false;
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, $"移除药材时发生异常，HerbId: {herbId}");
                 return false;
             }
@@ -141,13 +158,17 @@ namespace LYBT.Desktop.Prescriptions.Services {
         /// <summary>
         /// 更新处方项目数量
         /// </summary>
-        public bool UpdateHerbQuantity(Guid herbId, decimal newQuantity) {
-            try {
+        public bool UpdateHerbQuantity(Guid herbId, decimal newQuantity)
+        {
+            try
+            {
                 var item = _prescriptionItems.FirstOrDefault(x => x.HerbId == herbId);
-                if (item != null) {
+                if (item != null)
+                {
                     // 验证数量
-                    if (newQuantity < MIN_HERB_QUANTITY || newQuantity > MAX_HERB_QUANTITY) {
-                        _logger.LogWarning($"药材数量 {newQuantity} 超出有效范围 [{MIN_HERB_QUANTITY}, {MAX_HERB_QUANTITY}]");
+                    if (newQuantity < MINHERBQUANTITY || newQuantity > MAXHERBQUANTITY)
+                    {
+                        _logger.LogWarning($"药材数量 {newQuantity} 超出有效范围 [{MINHERBQUANTITY}, {MAXHERBQUANTITY}]");
                         return false;
                     }
 
@@ -157,7 +178,9 @@ namespace LYBT.Desktop.Prescriptions.Services {
                 }
 
                 return false;
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, $"更新药材数量时发生异常，HerbId: {herbId}");
                 return false;
             }
@@ -166,7 +189,8 @@ namespace LYBT.Desktop.Prescriptions.Services {
         /// <summary>
         /// 清空处方
         /// </summary>
-        public void ClearPrescription() {
+        public void ClearPrescription()
+        {
             _prescriptionItems.Clear();
             _currentPrescription = null;
             _logger.LogInformation("已清空处方");
@@ -179,22 +203,27 @@ namespace LYBT.Desktop.Prescriptions.Services {
         /// <summary>
         /// 保存处方
         /// </summary>
-        public async Task<bool> SavePrescriptionAsync(Guid consultationId, string diagnosis, string dosageForm, int quantity, string usage) {
-            try {
-                if (!_prescriptionItems.Any()) {
+        public async Task<bool> SavePrescriptionAsync(Guid consultationId, string diagnosis, string dosageForm, int quantity, string usage)
+        {
+            try
+            {
+                if (!_prescriptionItems.Any())
+                {
                     _logger.LogWarning("处方为空，无法保存");
                     return false;
                 }
 
                 // 创建处方DTO
-                var createDto = new PrescriptionCreateDto {
+                var createDto = new PrescriptionCreateDto
+                {
                     ConsultationId = consultationId,
                     Diagnosis = diagnosis,
                     DosageForm = dosageForm,
                     Quantity = quantity,
                     Usage = usage,
                     TotalAmount = CalculateTotalPrice(),
-                    Items = _prescriptionItems.Select(item => new PrescriptionItemCreateDto {
+                    Items = _prescriptionItems.Select(item => new PrescriptionItemCreateDto
+                    {
                         HerbId = item.HerbId,
                         HerbName = item.HerbName,
                         Quantity = item.Quantity,
@@ -209,14 +238,17 @@ namespace LYBT.Desktop.Prescriptions.Services {
                 // 调用服务保存处方
                 var result = await _prescriptionService.CreateAsync(createDto);
 
-                if (result != null) {
+                if (result != null)
+                {
                     _logger.LogInformation($"成功保存处方，包含 {_prescriptionItems.Count} 味药材");
                     return true;
                 }
 
                 _logger.LogWarning("保存处方失败");
                 return false;
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, "保存处方时发生异常");
                 return false;
             }
@@ -229,15 +261,18 @@ namespace LYBT.Desktop.Prescriptions.Services {
         /// <summary>
         /// 验证处方项目
         /// </summary>
-        private bool ValidatePrescriptionItem(PrescriptionItemDto item) {
+        private bool ValidatePrescriptionItem(PrescriptionItemDto item)
+        {
             // 验证数量
-            if (item.Quantity < MIN_HERB_QUANTITY || item.Quantity > MAX_HERB_QUANTITY) {
+            if (item.Quantity < MINHERBQUANTITY || item.Quantity > MAXHERBQUANTITY)
+            {
                 _logger.LogWarning($"药材 {item.HerbName} 数量 {item.Quantity} 超出有效范围");
                 return false;
             }
 
             // 验证价格
-            if (item.UnitPrice <= 0) {
+            if (item.UnitPrice <= 0)
+            {
                 _logger.LogWarning($"药材 {item.HerbName} 单价无效: {item.UnitPrice}");
                 return false;
             }
@@ -249,16 +284,20 @@ namespace LYBT.Desktop.Prescriptions.Services {
         /// <summary>
         /// 验证整个处方
         /// </summary>
-        public Task<bool> ValidatePrescriptionAsync() {
-            try {
-                if (!_prescriptionItems.Any()) {
+        public Task<bool> ValidatePrescriptionAsync()
+        {
+            try
+            {
+                if (!_prescriptionItems.Any())
+                {
                     _logger.LogWarning("处方为空");
                     return Task.FromResult(false);
                 }
 
                 // UltraThink v2.0: 简化验证逻辑，使用PatientDto
                 // 注意：实际应用中应该从SessionManager获取当前患者信息
-                var patientDto = new PatientDto {
+                var patientDto = new PatientDto
+                {
                     BirthDate = DateTime.Today.AddYears(-30), // 30岁对应的出生日期
                     Gender = Gender.Unknown
                 };
@@ -267,13 +306,16 @@ namespace LYBT.Desktop.Prescriptions.Services {
                 // var validationResult = await _validationService.ValidatePrescriptionAsync(_prescriptionItems, patientDto, "");
                 var canPrescribe = _prescriptionItems.Any(); // 简单验证：有药材就可以开方
 
-                if (!canPrescribe) {
+                if (!canPrescribe)
+                {
                     _logger.LogWarning("处方验证失败: 处方为空或无有效药材");
                     return Task.FromResult(false);
                 }
 
                 return Task.FromResult(true);
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, "验证处方时发生异常");
                 return Task.FromResult(false);
             }
@@ -286,17 +328,21 @@ namespace LYBT.Desktop.Prescriptions.Services {
         /// <summary>
         /// 计算处方总价
         /// </summary>
-        private decimal CalculateTotalPrice() {
+        private decimal CalculateTotalPrice()
+        {
             return _prescriptionItems.Sum(x => x.Subtotal);
         }
 
         /// <summary>
         /// 导入处方项目列表
         /// </summary>
-        public void ImportPrescriptionItems(IEnumerable<PrescriptionItemDto> items) {
+        public void ImportPrescriptionItems(IEnumerable<PrescriptionItemDto> items)
+        {
             _prescriptionItems.Clear();
-            foreach (var item in items) {
-                if (ValidatePrescriptionItem(item)) {
+            foreach (var item in items)
+            {
+                if (ValidatePrescriptionItem(item))
+                {
                     _prescriptionItems.Add(item);
                 }
             }

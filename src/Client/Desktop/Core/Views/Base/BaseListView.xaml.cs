@@ -1,13 +1,15 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
 
-namespace LYBT.Desktop.Core.Views.Base {
+namespace LYBT.Desktop.Core.Views.Base
+{
 
     /// <summary>
     /// BaseListView.xaml 的交互逻辑
     /// 通用列表页面基类
     /// </summary>
-    public partial class BaseListView : UserControl {
+    public partial class BaseListView : UserControl
+    {
 
         public static readonly DependencyProperty FilterContentProperty =
             DependencyProperty.Register(
@@ -23,47 +25,59 @@ namespace LYBT.Desktop.Core.Views.Base {
                 typeof(BaseListView),
                 new PropertyMetadata(null, OnListContentChanged));
 
-        public object FilterContent {
+        public object FilterContent
+        {
             get => GetValue(FilterContentProperty);
             set => SetValue(FilterContentProperty, value);
         }
 
-        public object ListContent {
+        public object ListContent
+        {
             get => GetValue(ListContentProperty);
             set => SetValue(ListContentProperty, value);
         }
 
-        public BaseListView() {
+        public BaseListView()
+        {
             InitializeComponent();
         }
 
-        private static void OnFilterContentChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
-            if (d is BaseListView view) {
+        private static void OnFilterContentChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is BaseListView view)
+            {
                 var filterContent = view.GetTemplateChild("PART_FilterContent") as ContentControl;
-                if (filterContent != null) {
+                if (filterContent != null)
+                {
                     filterContent.Content = e.NewValue;
                 }
             }
         }
 
-        private static void OnListContentChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
-            if (d is BaseListView view) {
+        private static void OnListContentChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is BaseListView view)
+            {
                 var listContent = view.GetTemplateChild("PART_ListContent") as ContentControl;
-                if (listContent != null) {
+                if (listContent != null)
+                {
                     listContent.Content = e.NewValue;
                 }
             }
         }
 
-        public override void OnApplyTemplate() {
+        public override void OnApplyTemplate()
+        {
             base.OnApplyTemplate();
 
             // 设置初始内容
-            if (GetTemplateChild("PART_FilterContent") is ContentControl filterContent) {
+            if (GetTemplateChild("PART_FilterContent") is ContentControl filterContent)
+            {
                 filterContent.Content = FilterContent;
             }
 
-            if (GetTemplateChild("PART_ListContent") is ContentControl listContent) {
+            if (GetTemplateChild("PART_ListContent") is ContentControl listContent)
+            {
                 listContent.Content = ListContent;
             }
         }

@@ -4,8 +4,8 @@ using Prism.Commands;
 using Prism.Events;
 
 // using Prism.Dialogs; // Removed for Prism 8.1.97 compatibility
-
-namespace LYBT.Desktop.Core.ViewModels {
+namespace LYBT.Desktop.Core.ViewModels
+{
 
     /// <summary>
     /// 对话框视图模型基类
@@ -14,14 +14,16 @@ namespace LYBT.Desktop.Core.ViewModels {
     /// <summary>
     /// 对话框ViewModel基类 - UltraThink架构统一
     /// </summary>
-    public abstract class DialogViewModelBase : ServiceViewModel {
+    public abstract class DialogViewModelBase : ServiceViewModel
+    {
         private string _title = "对话框";
         private bool? _dialogResult;
 
         /// <summary>
         /// 对话框标题
         /// </summary>
-        public string Title {
+        public string Title
+        {
             get => _title;
             set => SetProperty(ref _title, value);
         }
@@ -29,7 +31,8 @@ namespace LYBT.Desktop.Core.ViewModels {
         /// <summary>
         /// 对话框结果
         /// </summary>
-        public bool? DialogResult {
+        public bool? DialogResult
+        {
             get => _dialogResult;
             protected set => SetProperty(ref _dialogResult, value);
         }
@@ -50,18 +53,22 @@ namespace LYBT.Desktop.Core.ViewModels {
         public event Action<bool?>? RequestClose;
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="DialogViewModelBase"/> class.
         /// 构造函数
         /// </summary>
         protected DialogViewModelBase(IEventAggregator eventAggregator, IErrorHandlingService errorHandlingService)
-            : base(eventAggregator, errorHandlingService) {
+            : base(eventAggregator, errorHandlingService)
+        {
             ConfirmCommand = new DelegateCommand(async () => await OnConfirmAsync(), CanConfirm);
             CancelCommand = new DelegateCommand(OnCancel);
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="DialogViewModelBase"/> class.
         /// 简化构造函数（使用ContainerLocator）
         /// </summary>
-        protected DialogViewModelBase() : base(GetEventAggregator(), GetErrorHandlingService()) {
+        protected DialogViewModelBase() : base(GetEventAggregator(), GetErrorHandlingService())
+        {
             ConfirmCommand = new DelegateCommand(async () => await OnConfirmAsync(), CanConfirm);
             CancelCommand = new DelegateCommand(OnCancel);
         }
@@ -69,15 +76,20 @@ namespace LYBT.Desktop.Core.ViewModels {
         /// <summary>
         /// 确认操作
         /// </summary>
-        protected virtual async Task<bool> OnConfirmAsync() {
-            try {
+        protected virtual async Task<bool> OnConfirmAsync()
+        {
+            try
+            {
                 var result = await ExecuteConfirmAsync();
-                if (result) {
+                if (result)
+                {
                     DialogResult = true;
                     RequestClose?.Invoke(true);
                 }
                 return result;
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 await HandleErrorAsync("确认操作", ex);
                 return false;
             }
@@ -91,7 +103,8 @@ namespace LYBT.Desktop.Core.ViewModels {
         /// <summary>
         /// 取消操作
         /// </summary>
-        protected virtual void OnCancel() {
+        protected virtual void OnCancel()
+        {
             DialogResult = false;
             RequestClose?.Invoke(false);
         }
@@ -104,11 +117,15 @@ namespace LYBT.Desktop.Core.ViewModels {
         /// <summary>
         /// 获取EventAggregator实例
         /// </summary>
-        private static IEventAggregator GetEventAggregator() {
-            try {
+        private static IEventAggregator GetEventAggregator()
+        {
+            try
+            {
                 return (IEventAggregator?)Prism.Ioc.ContainerLocator.Container?.Resolve(typeof(IEventAggregator))
                     ?? new EventAggregator();
-            } catch {
+            }
+            catch
+            {
                 return new EventAggregator();
             }
         }
@@ -116,11 +133,15 @@ namespace LYBT.Desktop.Core.ViewModels {
         /// <summary>
         /// 获取ErrorHandlingService实例
         /// </summary>
-        private static IErrorHandlingService GetErrorHandlingService() {
-            try {
+        private static IErrorHandlingService GetErrorHandlingService()
+        {
+            try
+            {
                 return (IErrorHandlingService?)Prism.Ioc.ContainerLocator.Container?.Resolve(typeof(IErrorHandlingService))
                     ?? throw new InvalidOperationException("ErrorHandlingService未注册");
-            } catch {
+            }
+            catch
+            {
                 throw new InvalidOperationException("无法解析ErrorHandlingService");
             }
         }
@@ -131,13 +152,15 @@ namespace LYBT.Desktop.Core.ViewModels {
         /// <summary>
         /// 重写Command状态更新
         /// </summary>
-        protected override void RaiseCanExecuteChanged() {
+        protected override void RaiseCanExecuteChanged()
+        {
             base.RaiseCanExecuteChanged();
             ConfirmCommand?.RaiseCanExecuteChanged();
             CancelCommand?.RaiseCanExecuteChanged();
         }
 
-        protected override void OnLoadingStateChanged(bool isLoading) {
+        protected override void OnLoadingStateChanged(bool isLoading)
+        {
             base.OnLoadingStateChanged(isLoading);
         }
     }

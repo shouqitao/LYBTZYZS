@@ -1,9 +1,11 @@
-﻿namespace LYBT.Shared.Models.Contracts.Common {
+﻿namespace LYBT.Shared.Models.Contracts.Common
+{
 
     /// <summary>
     /// 服务层统一响应结果 - UltraThink标准
     /// </summary>
-    public class ServiceResult<T> {
+    public class ServiceResult<T>
+    {
 
         /// <summary>
         /// 是否成功
@@ -33,8 +35,10 @@
         /// <summary>
         /// 创建成功的结果
         /// </summary>
-        public static ServiceResult<T> Success(T data) {
-            return new ServiceResult<T> {
+        public static ServiceResult<T> Success(T data)
+        {
+            return new ServiceResult<T>
+            {
                 IsSuccess = true,
                 Data = data
             };
@@ -43,8 +47,10 @@
         /// <summary>
         /// 创建带消息的成功结果
         /// </summary>
-        public static ServiceResult<T> Success(T data, string message) {
-            return new ServiceResult<T> {
+        public static ServiceResult<T> Success(T data, string message)
+        {
+            return new ServiceResult<T>
+            {
                 IsSuccess = true,
                 Data = data,
                 ErrorMessage = message // 用于存储成功消息
@@ -54,8 +60,10 @@
         /// <summary>
         /// 创建失败的结果
         /// </summary>
-        public static ServiceResult<T> Failure(string errorMessage, Exception? exception = null) {
-            return new ServiceResult<T> {
+        public static ServiceResult<T> Failure(string errorMessage, Exception? exception = null)
+        {
+            return new ServiceResult<T>
+            {
                 IsSuccess = false,
                 ErrorMessage = errorMessage,
                 Exception = exception
@@ -66,7 +74,8 @@
     /// <summary>
     /// 无数据的服务响应结果 - UltraThink标准
     /// </summary>
-    public class ServiceResult {
+    public class ServiceResult
+    {
 
         /// <summary>
         /// 是否成功
@@ -91,8 +100,10 @@
         /// <summary>
         /// 创建成功的结果
         /// </summary>
-        public static ServiceResult Success() {
-            return new ServiceResult {
+        public static ServiceResult Success()
+        {
+            return new ServiceResult
+            {
                 IsSuccess = true
             };
         }
@@ -100,8 +111,10 @@
         /// <summary>
         /// 创建带消息的成功结果
         /// </summary>
-        public static ServiceResult Success(string message) {
-            return new ServiceResult {
+        public static ServiceResult Success(string message)
+        {
+            return new ServiceResult
+            {
                 IsSuccess = true,
                 ErrorMessage = message // 用于存储成功消息
             };
@@ -110,8 +123,10 @@
         /// <summary>
         /// 创建失败的结果
         /// </summary>
-        public static ServiceResult Failure(string errorMessage, Exception? exception = null) {
-            return new ServiceResult {
+        public static ServiceResult Failure(string errorMessage, Exception? exception = null)
+        {
+            return new ServiceResult
+            {
                 IsSuccess = false,
                 ErrorMessage = errorMessage,
                 Exception = exception

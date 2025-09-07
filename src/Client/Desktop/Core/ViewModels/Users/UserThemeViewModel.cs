@@ -3,13 +3,15 @@ using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using Prism.Mvvm;
 
-namespace LYBT.Desktop.Core.ViewModels.Users {
+namespace LYBT.Desktop.Core.ViewModels.Users
+{
 
     /// <summary>
     /// 用户主题视图模型 - UltraThink架构的主题层
     /// 负责UI主题、颜色和样式相关逻辑
     /// </summary>
-    public class UserThemeViewModel : BindableBase {
+    public class UserThemeViewModel : BindableBase
+    {
 
         #region Fields
 
@@ -19,7 +21,8 @@ namespace LYBT.Desktop.Core.ViewModels.Users {
 
         #region Constructor
 
-        public UserThemeViewModel(UserDto userData) {
+        public UserThemeViewModel(UserDto userData)
+        {
             _userData = userData ?? throw new System.ArgumentNullException(nameof(userData));
         }
 
@@ -28,44 +31,48 @@ namespace LYBT.Desktop.Core.ViewModels.Users {
         #region Theme Colors
 
         /// <summary>状态颜色</summary>
-        public string StatusColor => _userData.Status switch {
+        public string StatusColor => _userData.Status switch
+        {
             CommonStatus.Enabled => "#4CAF50",    // 绿色 - 启用
             CommonStatus.Disabled => "#F44336",   // 红色 - 禁用
-            _ => "#9E9E9E"                         // 灰色 - 未知
+            _ => "#9E9E9E" // 灰色 - 未知
         };
 
         /// <summary>状态颜色画刷</summary>
         public SolidColorBrush StatusBrush => new SolidColorBrush((Color)ColorConverter.ConvertFromString(StatusColor));
 
         /// <summary>角色颜色</summary>
-        public string RoleColor => _userData.Role?.ToLower() switch {
+        public string RoleColor => _userData.Role?.ToLower() switch
+        {
             "admin" => "#FF9800",          // 橙色 - 管理员
             "doctor" => "#2196F3",         // 蓝色 - 医生
             "pharmacist" => "#4CAF50",     // 绿色 - 药师
             "receptionist" => "#FF5722",   // 红色 - 前台
             "cashier" => "#795548",        // 棕色 - 收银员
             "therapist" => "#9C27B0",      // 紫色 - 理疗师
-            _ => "#9E9E9E"                 // 灰色 - 未知
+            _ => "#9E9E9E" // 灰色 - 未知
         };
 
         /// <summary>角色颜色画刷</summary>
         public SolidColorBrush RoleBrush => new SolidColorBrush((Color)ColorConverter.ConvertFromString(RoleColor));
 
         /// <summary>背景颜色（基于状态）</summary>
-        public string BackgroundColor => _userData.Status switch {
+        public string BackgroundColor => _userData.Status switch
+        {
             CommonStatus.Enabled => "#FFFFFF",    // 白色 - 正常
             CommonStatus.Disabled => "#F5F5F5",   // 浅灰色 - 禁用
-            _ => "#FAFAFA"                         // 极浅灰色 - 其他
+            _ => "#FAFAFA" // 极浅灰色 - 其他
         };
 
         /// <summary>背景颜色画刷</summary>
         public SolidColorBrush BackgroundBrush => new SolidColorBrush((Color)ColorConverter.ConvertFromString(BackgroundColor));
 
         /// <summary>边框颜色</summary>
-        public string BorderColor => _userData.Status switch {
+        public string BorderColor => _userData.Status switch
+        {
             CommonStatus.Enabled => "#E0E0E0",    // 浅灰色边框
             CommonStatus.Disabled => "#BDBDBD",   // 中灰色边框
-            _ => "#EEEEEE"                         // 极浅灰色边框
+            _ => "#EEEEEE" // 极浅灰色边框
         };
 
         /// <summary>边框颜色画刷</summary>
@@ -76,20 +83,22 @@ namespace LYBT.Desktop.Core.ViewModels.Users {
         #region Text Colors
 
         /// <summary>主文本颜色</summary>
-        public string PrimaryTextColor => _userData.Status switch {
+        public string PrimaryTextColor => _userData.Status switch
+        {
             CommonStatus.Enabled => "#212121",    // 深灰色 - 正常
             CommonStatus.Disabled => "#9E9E9E",   // 中灰色 - 禁用
-            _ => "#757575"                         // 灰色 - 其他
+            _ => "#757575" // 灰色 - 其他
         };
 
         /// <summary>主文本颜色画刷</summary>
         public SolidColorBrush PrimaryTextBrush => new SolidColorBrush((Color)ColorConverter.ConvertFromString(PrimaryTextColor));
 
         /// <summary>次要文本颜色</summary>
-        public string SecondaryTextColor => _userData.Status switch {
+        public string SecondaryTextColor => _userData.Status switch
+        {
             CommonStatus.Enabled => "#757575",    // 中灰色
             CommonStatus.Disabled => "#BDBDBD",   // 浅灰色
-            _ => "#9E9E9E"                         // 灰色
+            _ => "#9E9E9E" // 灰色
         };
 
         /// <summary>次要文本颜色画刷</summary>
@@ -100,10 +109,11 @@ namespace LYBT.Desktop.Core.ViewModels.Users {
         #region Icon Colors
 
         /// <summary>图标颜色</summary>
-        public string IconColor => _userData.Status switch {
+        public string IconColor => _userData.Status switch
+        {
             CommonStatus.Enabled => "#616161",    // 中深灰色
             CommonStatus.Disabled => "#BDBDBD",   // 浅灰色
-            _ => "#9E9E9E"                         // 灰色
+            _ => "#9E9E9E" // 灰色
         };
 
         /// <summary>图标颜色画刷</summary>
@@ -120,17 +130,19 @@ namespace LYBT.Desktop.Core.ViewModels.Users {
         #region Opacity Values
 
         /// <summary>内容透明度</summary>
-        public double ContentOpacity => _userData.Status switch {
+        public double ContentOpacity => _userData.Status switch
+        {
             CommonStatus.Enabled => 1.0,          // 完全不透明
             CommonStatus.Disabled => 0.6,         // 半透明
-            _ => 0.8                               // 稍微透明
+            _ => 0.8 // 稍微透明
         };
 
         /// <summary>图标透明度</summary>
-        public double IconOpacity => _userData.Status switch {
+        public double IconOpacity => _userData.Status switch
+        {
             CommonStatus.Enabled => 0.87,         // Material Design 标准
             CommonStatus.Disabled => 0.38,        // Material Design 禁用状态
-            _ => 0.6                               // 中等透明度
+            _ => 0.6 // 中等透明度
         };
 
         #endregion Opacity Values
@@ -153,7 +165,8 @@ namespace LYBT.Desktop.Core.ViewModels.Users {
         /// <summary>
         /// 更新用户数据并刷新主题相关属性
         /// </summary>
-        public void UpdateUserData(UserDto newUserData) {
+        public void UpdateUserData(UserDto newUserData)
+        {
             _userData = newUserData;
 
             // 刷新所有主题相关属性

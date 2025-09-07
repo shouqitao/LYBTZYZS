@@ -1,13 +1,15 @@
 ﻿using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
 
-namespace LYBT.Module.Consultation.Interfaces {
+namespace LYBT.Module.Consultation.Interfaces
+{
 
     /// <summary>
     /// 看诊查询服务接口
     /// UltraThink架构 - Query层接口抽象
     /// </summary>
-    public interface IConsultationQueryService {
+    public interface IConsultationQueryService
+    {
 
         /// <summary>
         /// 分页查询看诊记录

@@ -1,12 +1,14 @@
 ﻿using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 
-namespace LYBT.Desktop.Core.Interfaces.Services {
+namespace LYBT.Desktop.Core.Interfaces.Services
+{
 
     /// <summary>
     /// 用户会话管理器接口
     /// </summary>
-    public interface IUserSessionManager {
+    public interface IUserSessionManager
+    {
 
         /// <summary>
         /// 当前登录用户

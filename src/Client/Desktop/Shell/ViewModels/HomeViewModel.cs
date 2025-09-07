@@ -9,12 +9,14 @@ using Prism.Commands;
 using Prism.Events;
 using Prism.Regions;
 
-namespace LYBT.Desktop.Shell.ViewModels {
+namespace LYBT.Desktop.Shell.ViewModels
+{
 
     /// <summary>
     /// 主页视图模型 - 基于角色显示不同内容，集成统一会话管理
     /// </summary>
-    public class HomeViewModel : SessionAwareViewModel, INavigationAware {
+    public class HomeViewModel : SessionAwareViewModel, INavigationAware
+    {
 
         #region 依赖服务
 
@@ -31,63 +33,72 @@ namespace LYBT.Desktop.Shell.ViewModels {
 
         private string _subTitle = "工作台";
 
-        public string SubTitle {
+        public string SubTitle
+        {
             get => _subTitle;
             set => SetProperty(ref _subTitle, value);
         }
 
-        private string _welcomeMessage = "";
+        private string _welcomeMessage = string.Empty;
 
-        public string WelcomeMessage {
+        public string WelcomeMessage
+        {
             get => _welcomeMessage;
             set => SetProperty(ref _welcomeMessage, value);
         }
 
         private bool _isDoctorRole;
 
-        public bool IsDoctorRole {
+        public bool IsDoctorRole
+        {
             get => _isDoctorRole;
             set => SetProperty(ref _isDoctorRole, value);
         }
 
         private bool _isAdminRole;
 
-        public bool IsAdminRole {
+        public bool IsAdminRole
+        {
             get => _isAdminRole;
             set => SetProperty(ref _isAdminRole, value);
         }
 
         private int _todayCompletedCount;
 
-        public int TodayCompletedCount {
+        public int TodayCompletedCount
+        {
             get => _todayCompletedCount;
             set => SetProperty(ref _todayCompletedCount, value);
         }
 
         private int _todayInProgressCount;
 
-        public int TodayInProgressCount {
+        public int TodayInProgressCount
+        {
             get => _todayInProgressCount;
             set => SetProperty(ref _todayInProgressCount, value);
         }
 
         private decimal _todayTotalAmount;
 
-        public decimal TodayTotalAmount {
+        public decimal TodayTotalAmount
+        {
             get => _todayTotalAmount;
             set => SetProperty(ref _todayTotalAmount, value);
         }
 
         private string _statusMessage = "就绪";
 
-        public string StatusMessage {
+        public string StatusMessage
+        {
             get => _statusMessage;
             set => SetProperty(ref _statusMessage, value);
         }
 
         private string _currentDateTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
 
-        public string CurrentDateTime {
+        public string CurrentDateTime
+        {
             get => _currentDateTime;
             set => SetProperty(ref _currentDateTime, value);
         }
@@ -116,7 +127,6 @@ namespace LYBT.Desktop.Shell.ViewModels {
         public DelegateCommand NavigateToHerbManagementCommand { get; }
         public DelegateCommand NavigateToFormulaManagementCommand { get; }
         // 非核心功能命令已清理
-
         #endregion 命令
 
         #region 构造函数
@@ -130,7 +140,8 @@ namespace LYBT.Desktop.Shell.ViewModels {
             ISessionManager sessionManager,
             INotificationService notificationService,
             ILogger<HomeViewModel> logger)
-            : base(sessionManager, notificationService, logger) {
+            : base(sessionManager, notificationService, logger)
+        {
             _regionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
             _authService = authService ?? throw new ArgumentNullException(nameof(authService));
             _userSessionManager = userSessionManager ?? throw new ArgumentNullException(nameof(userSessionManager));
@@ -157,7 +168,8 @@ namespace LYBT.Desktop.Shell.ViewModels {
             // 非核心功能命令初始化已清理
 
             // 初始化定时器
-            _timer = new DispatcherTimer {
+            _timer = new DispatcherTimer
+            {
                 Interval = TimeSpan.FromSeconds(1)
             };
             _timer.Tick += (s, e) => UpdateDateTime();
@@ -171,7 +183,8 @@ namespace LYBT.Desktop.Shell.ViewModels {
 
         #endregion 构造函数
 
-        protected override void OnUserChanged(UserChangedEventArgs args) {
+        protected override void OnUserChanged(UserChangedEventArgs args)
+        {
             base.OnUserChanged(args);
             _ = Task.Run(async () => await InitializeAsync());
             LogInfo($"用户状态变化，重新初始化HomeViewModel: {args.NewUser?.UserName ?? "null"}");
@@ -179,8 +192,10 @@ namespace LYBT.Desktop.Shell.ViewModels {
 
         #region 初始化
 
-        private async Task InitializeAsync() {
-            try {
+        private async Task InitializeAsync()
+        {
+            try
+            {
                 ShowLoading("正在加载主页...");
 
                 // 先设置默认值，确保界面能显示
@@ -190,24 +205,32 @@ namespace LYBT.Desktop.Shell.ViewModels {
                 // 获取当前用户信息
                 var currentUser = CurrentUser ?? await _authService.GetCurrentUserAsync();
 
-                if (currentUser != null) {
+                if (currentUser != null)
+                {
                     WelcomeMessage = $"欢迎，{currentUser.RealName}";
 
                     // 判断用户角色
-                    if (currentUser.Role?.Equals("Admin", StringComparison.OrdinalIgnoreCase) == true) {
+                    if (currentUser.Role?.Equals("Admin", StringComparison.OrdinalIgnoreCase) == true)
+                    {
                         IsAdminRole = true;
                         IsDoctorRole = false;
                         SubTitle = "系统管理工作台";
-                    } else {
+                    }
+                    else
+                    {
                         IsDoctorRole = true;
                         IsAdminRole = false;
                         SubTitle = "医生工作台";
 
                         // 异步加载今日统计
-                        _ = Task.Run(async () => {
-                            try {
+                        _ = Task.Run(async () =>
+                        {
+                            try
+                            {
                                 await LoadTodayStatisticsAsync();
-                            } catch (Exception ex) {
+                            }
+                            catch (Exception ex)
+                            {
                                 LogError(ex, "加载今日统计失败");
                                 // 设置默认值
                                 TodayCompletedCount = 0;
@@ -216,7 +239,9 @@ namespace LYBT.Desktop.Shell.ViewModels {
                             }
                         });
                     }
-                } else {
+                }
+                else
+                {
                     WelcomeMessage = "用户信息获取失败";
                     IsAdminRole = true;
                     IsDoctorRole = false;
@@ -225,7 +250,9 @@ namespace LYBT.Desktop.Shell.ViewModels {
 
                 UpdateDateTime();
                 ShowSuccess("主页加载完成");
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 LogError(ex, "初始化主页失败");
                 ShowError("初始化主页失败，请重试");
 
@@ -235,22 +262,28 @@ namespace LYBT.Desktop.Shell.ViewModels {
                 IsDoctorRole = false;
                 SubTitle = "系统管理工作台（错误恢复）";
                 UpdateDateTime();
-            } finally {
+            }
+            finally
+            {
                 HideLoading();
             }
         }
 
-        private async Task LoadTodayStatisticsAsync() {
-            try {
+        private async Task LoadTodayStatisticsAsync()
+        {
+            try
+            {
                 // 获取今日医疗案例统计
-                var query = new LYBT.Shared.Models.Contracts.Common.PagedQueryBaseDto {
+                var query = new LYBT.Shared.Models.Contracts.Common.PagedQueryBaseDto
+                {
                     PageIndex = 1,
                     PageSize = 100,
                     IsDescending = true
                 };
                 var result = await _medicalCaseService.GetPagedAsync(query);
 
-                if (result != null && result.IsSuccess && result.Data?.Items != null) {
+                if (result != null && result.IsSuccess && result.Data?.Items != null)
+                {
                     TodayCompletedCount = result.Data.Items
                         .Count(c => c.CaseStatus == LYBT.Shared.Models.Enums.MedicalCaseStatus.Completed);
 
@@ -262,13 +295,16 @@ namespace LYBT.Desktop.Shell.ViewModels {
 
                     LogInfo($"今日统计加载完成 - 完成: {TodayCompletedCount}, 进行中: {TodayInProgressCount}");
                 }
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 LogError(ex, "加载今日统计失败");
                 throw; // 重新抛出，让调用方处理
             }
         }
 
-        private void UpdateDateTime() {
+        private void UpdateDateTime()
+        {
             CurrentDateTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
         }
 
@@ -276,38 +312,49 @@ namespace LYBT.Desktop.Shell.ViewModels {
 
         #region 导航方法
 
-        private void NavigateTo(string viewName) {
-            try {
+        private void NavigateTo(string viewName)
+        {
+            try
+            {
                 _regionManager.RequestNavigate(RegionNames.ContentRegion, viewName);
                 StatusMessage = $"已导航到 {GetViewDisplayName(viewName)}";
                 ShowInfo($"已导航到 {GetViewDisplayName(viewName)}");
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 LogError(ex, "导航失败: {ViewName}", viewName);
                 ShowError($"导航到 {GetViewDisplayName(viewName)} 失败");
             }
         }
 
-        private void StartConsultation() {
+        private void StartConsultation()
+        {
             NavigateTo("PatientReceptionView");
             StatusMessage = "开始看诊流程";
         }
 
-        private void EnterSystemManagementWithUserModule() {
+        private void EnterSystemManagementWithUserModule()
+        {
             _regionManager.RequestNavigate(RegionNames.ContentRegion, "SystemWorkbenchMainView?DefaultModule=UserManagement");
         }
 
-        private void EnterSystemManagementWithHerbModule() {
+        private void EnterSystemManagementWithHerbModule()
+        {
             _regionManager.RequestNavigate(RegionNames.ContentRegion, "SystemWorkbenchMainView?DefaultModule=HerbManagement");
         }
 
-        private void EnterSystemManagementWithFormulaModule() {
+        private void EnterSystemManagementWithFormulaModule()
+        {
             _regionManager.RequestNavigate(RegionNames.ContentRegion, "SystemWorkbenchMainView?DefaultModule=FormulaManagement");
         }
 
-        private async Task LogoutAsync() {
-            try {
+        private async Task LogoutAsync()
+        {
+            try
+            {
                 var confirm = await NotificationService.ShowConfirmAsync("确定要退出登录吗？", "退出确认");
-                if (confirm) {
+                if (confirm)
+                {
                     await _authService.LogoutAsync();
 
                     // 清除会话状态
@@ -317,14 +364,18 @@ namespace LYBT.Desktop.Shell.ViewModels {
                     ShowSuccess("已成功退出登录");
                     LogInfo("用户已退出登录");
                 }
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 LogError(ex, "退出登录失败");
                 ShowError("退出登录失败，请重试");
             }
         }
 
-        private string GetViewDisplayName(string viewName) {
-            return viewName switch {
+        private string GetViewDisplayName(string viewName)
+        {
+            return viewName switch
+            {
                 "PatientReceptionView" => "患者接待",
                 "MedicalCaseListView" => "医疗案例",
                 "PrescriptionManagementView" => "处方管理",
@@ -341,12 +392,15 @@ namespace LYBT.Desktop.Shell.ViewModels {
 
         #region INavigationAware
 
-        public void OnNavigatedTo(NavigationContext navigationContext) {
+        public void OnNavigatedTo(NavigationContext navigationContext)
+        {
             _ = InitializeAsync();
 
             // 如果是医生角色，定时刷新统计数据
-            if (IsDoctorRole) {
-                var refreshTimer = new DispatcherTimer {
+            if (IsDoctorRole)
+            {
+                var refreshTimer = new DispatcherTimer
+                {
                     Interval = TimeSpan.FromMinutes(5)
                 };
                 refreshTimer.Tick += async (s, e) => await LoadTodayStatisticsAsync();
@@ -356,11 +410,13 @@ namespace LYBT.Desktop.Shell.ViewModels {
             LogInfo("HomeViewModel 导航进入");
         }
 
-        public bool IsNavigationTarget(NavigationContext navigationContext) {
+        public bool IsNavigationTarget(NavigationContext navigationContext)
+        {
             return true;
         }
 
-        public void OnNavigatedFrom(NavigationContext navigationContext) {
+        public void OnNavigatedFrom(NavigationContext navigationContext)
+        {
             // 停止定时器
             _timer?.Stop();
             LogInfo("HomeViewModel 导航离开");
@@ -370,8 +426,10 @@ namespace LYBT.Desktop.Shell.ViewModels {
 
         #region IDisposable 补充实现
 
-        protected override void Dispose(bool disposing) {
-            if (disposing) {
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
                 // 停止定时器
                 _timer?.Stop();
                 LogInfo("HomeViewModel 定时器已停止");

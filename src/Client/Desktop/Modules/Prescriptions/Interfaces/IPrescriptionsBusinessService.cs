@@ -7,7 +7,8 @@ namespace LYBT.Desktop.Prescriptions.Interfaces;
 /// 处方业务服务接口 - UltraThink双层架构简化版
 /// 职责：基础业务操作
 /// </summary>
-public interface IPrescriptionsBusinessService {
+public interface IPrescriptionsBusinessService
+{
 
     /// <summary>
     /// 创建处方
@@ -22,15 +23,15 @@ public interface IPrescriptionsBusinessService {
     /// <summary>
     /// 删除处方
     /// </summary>
-    Task<ServiceResult<bool>> DeleteAsync(Guid prescriptionId);
+    Task<ServiceResult<bool>> Delete(Guid prescriptionId);
 
     /// <summary>
     /// 启用处方
     /// </summary>
-    Task<ServiceResult<bool>> EnableAsync(Guid prescriptionId);
+    Task<ServiceResult<bool>> Enable(Guid prescriptionId);
 
     /// <summary>
     /// 禁用处方
     /// </summary>
-    Task<ServiceResult<bool>> DisableAsync(Guid prescriptionId);
+    Task<ServiceResult<bool>> Disable(Guid prescriptionId);
 }

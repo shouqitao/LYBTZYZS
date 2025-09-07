@@ -5,7 +5,8 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using LYBT.Desktop.Core.Services;
 
-namespace LYBT.Desktop.Core.Controls {
+namespace LYBT.Desktop.Core.Controls
+{
 
     /// <summary>
     /// 智能加载指示器控件
@@ -16,7 +17,8 @@ namespace LYBT.Desktop.Core.Controls {
     /// 3. 现代化UI设计
     /// 4. 进度跟踪和取消支持
     /// </summary>
-    public partial class SmartLoadingIndicator : UserControl, INotifyPropertyChanged {
+    public partial class SmartLoadingIndicator : UserControl, INotifyPropertyChanged
+    {
 
         #region 依赖属性
 
@@ -63,13 +65,14 @@ namespace LYBT.Desktop.Core.Controls {
         private string _loadingMessage = "加载中...";
         private int _progressValue;
         private bool _showProgress;
-        private string _progressText = "";
+        private string _progressText = string.Empty;
 
         #endregion 私有字段
 
         #region 构造函数
 
-        public SmartLoadingIndicator() {
+        public SmartLoadingIndicator()
+        {
             InitializeComponent();
             DataContext = this;
         }
@@ -78,22 +81,26 @@ namespace LYBT.Desktop.Core.Controls {
 
         #region 公共属性
 
-        public ISmartLoadingManager? LoadingManager {
+        public ISmartLoadingManager? LoadingManager
+        {
             get => (ISmartLoadingManager)GetValue(LoadingManagerProperty);
             set => SetValue(LoadingManagerProperty, value);
         }
 
-        public int Layer {
+        public int Layer
+        {
             get => (int)GetValue(LayerProperty);
             set => SetValue(LayerProperty, value);
         }
 
-        public bool ShowCancelButton {
+        public bool ShowCancelButton
+        {
             get => (bool)GetValue(ShowCancelButtonProperty);
             set => SetValue(ShowCancelButtonProperty, value);
         }
 
-        public string? CustomMessage {
+        public string? CustomMessage
+        {
             get => (string?)GetValue(CustomMessageProperty);
             set => SetValue(CustomMessageProperty, value);
         }
@@ -101,36 +108,46 @@ namespace LYBT.Desktop.Core.Controls {
         /// <summary>
         /// 取消命令 - UltraThink Command绑定优化
         /// </summary>
-        public ICommand? CancelCommand {
+        public ICommand? CancelCommand
+        {
             get => (ICommand?)GetValue(CancelCommandProperty);
             set => SetValue(CancelCommandProperty, value);
         }
 
         // 绑定属性
-        public bool IsLoadingVisible {
+        public bool IsLoadingVisible
+        {
             get => _isVisible;
-            private set {
-                if (_isVisible != value) {
+            private set
+            {
+                if (_isVisible != value)
+                {
                     _isVisible = value;
                     OnPropertyChanged();
                 }
             }
         }
 
-        public string LoadingMessage {
+        public string LoadingMessage
+        {
             get => _loadingMessage;
-            private set {
-                if (_loadingMessage != value) {
+            private set
+            {
+                if (_loadingMessage != value)
+                {
                     _loadingMessage = value;
                     OnPropertyChanged();
                 }
             }
         }
 
-        public int ProgressValue {
+        public int ProgressValue
+        {
             get => _progressValue;
-            private set {
-                if (_progressValue != value) {
+            private set
+            {
+                if (_progressValue != value)
+                {
                     _progressValue = value;
                     OnPropertyChanged();
                     ProgressText = $"{value}%";
@@ -138,20 +155,26 @@ namespace LYBT.Desktop.Core.Controls {
             }
         }
 
-        public bool ShowProgress {
+        public bool ShowProgress
+        {
             get => _showProgress;
-            private set {
-                if (_showProgress != value) {
+            private set
+            {
+                if (_showProgress != value)
+                {
                     _showProgress = value;
                     OnPropertyChanged();
                 }
             }
         }
 
-        public string ProgressText {
+        public string ProgressText
+        {
             get => _progressText;
-            private set {
-                if (_progressText != value) {
+            private set
+            {
+                if (_progressText != value)
+                {
                     _progressText = value;
                     OnPropertyChanged();
                 }
@@ -162,40 +185,52 @@ namespace LYBT.Desktop.Core.Controls {
 
         #region 私有方法
 
-        private static void OnLoadingManagerChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
-            if (d is SmartLoadingIndicator indicator) {
-                if (e.OldValue is ISmartLoadingManager oldManager) {
+        private static void OnLoadingManagerChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is SmartLoadingIndicator indicator)
+            {
+                if (e.OldValue is ISmartLoadingManager oldManager)
+                {
                     oldManager.PropertyChanged -= indicator.LoadingManager_PropertyChanged;
                 }
 
-                if (e.NewValue is ISmartLoadingManager newManager) {
+                if (e.NewValue is ISmartLoadingManager newManager)
+                {
                     newManager.PropertyChanged += indicator.LoadingManager_PropertyChanged;
                     indicator.UpdateLoadingState();
                 }
             }
         }
 
-        private static void OnLayerChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
-            if (d is SmartLoadingIndicator indicator) {
+        private static void OnLayerChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is SmartLoadingIndicator indicator)
+            {
                 indicator.UpdateLoadingState();
             }
         }
 
-        private static void OnCustomMessageChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
-            if (d is SmartLoadingIndicator indicator) {
+        private static void OnCustomMessageChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is SmartLoadingIndicator indicator)
+            {
                 indicator.UpdateLoadingMessage();
             }
         }
 
-        private void LoadingManager_PropertyChanged(object? sender, PropertyChangedEventArgs e) {
+        private void LoadingManager_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
             if (e.PropertyName == nameof(ISmartLoadingManager.IsGlobalLoading) ||
-                e.PropertyName == nameof(ISmartLoadingManager.ActiveLoadingCount)) {
+                e.PropertyName == nameof(ISmartLoadingManager.ActiveLoadingCount))
+            {
                 Dispatcher.BeginInvoke(new Action(UpdateLoadingState));
             }
         }
 
-        private void UpdateLoadingState() {
-            if (LoadingManager == null) {
+        private void UpdateLoadingState()
+        {
+            if (LoadingManager == null)
+            {
                 IsLoadingVisible = false;
                 return;
             }
@@ -203,7 +238,8 @@ namespace LYBT.Desktop.Core.Controls {
             var isLayerLoading = LoadingManager.IsLoadingAtLayer(Layer);
             IsLoadingVisible = isLayerLoading;
 
-            if (isLayerLoading) {
+            if (isLayerLoading)
+            {
                 UpdateLoadingMessage();
                 // 这里可以扩展，获取当前操作的进度信息
                 // ShowProgress = currentOperation?.SupportsProgress ?? false;
@@ -211,14 +247,19 @@ namespace LYBT.Desktop.Core.Controls {
             }
         }
 
-        private void UpdateLoadingMessage() {
-            if (LoadingManager == null) {
+        private void UpdateLoadingMessage()
+        {
+            if (LoadingManager == null)
+            {
                 return;
             }
 
-            if (!string.IsNullOrEmpty(CustomMessage)) {
+            if (!string.IsNullOrEmpty(CustomMessage))
+            {
                 LoadingMessage = CustomMessage;
-            } else {
+            }
+            else
+            {
                 var message = LoadingManager.GetCurrentLoadingMessage(Layer);
                 LoadingMessage = string.IsNullOrEmpty(message) ? "加载中..." : message;
             }
@@ -232,11 +273,15 @@ namespace LYBT.Desktop.Core.Controls {
         /// 取消按钮点击事件 - UltraThink Command绑定优化
         /// 优先使用Command绑定，如果没有则执行默认逻辑
         /// </summary>
-        private void CancelButton_Click(object sender, RoutedEventArgs e) {
+        private void CancelButton_Click(object sender, RoutedEventArgs e)
+        {
             // 优先使用Command绑定
-            if (CancelCommand?.CanExecute(null) == true) {
+            if (CancelCommand?.CanExecute(null) == true)
+            {
                 CancelCommand.Execute(null);
-            } else {
+            }
+            else
+            {
                 // 如果没有Command绑定，执行默认逻辑（保持向后兼容）
                 LoadingManager?.CancelAllOperations();
             }
@@ -248,7 +293,8 @@ namespace LYBT.Desktop.Core.Controls {
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null) {
+        protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+        {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
@@ -256,22 +302,27 @@ namespace LYBT.Desktop.Core.Controls {
     }
 }
 
-namespace LYBT.Desktop.Core.Controls {
+namespace LYBT.Desktop.Core.Controls
+{
 
     /// <summary>
     /// 布尔值到可见性转换器
     /// </summary>
-    public class BooleanToVisibilityConverter : System.Windows.Data.IValueConverter {
+    public class BooleanToVisibilityConverter : System.Windows.Data.IValueConverter
+    {
         public static readonly BooleanToVisibilityConverter Instance = new();
 
-        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture) {
-            if (value is bool boolValue) {
+        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            if (value is bool boolValue)
+            {
                 return boolValue ? Visibility.Visible : Visibility.Collapsed;
             }
             return Visibility.Collapsed;
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture) {
+        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
             return value is Visibility.Visible;
         }
     }
@@ -279,17 +330,21 @@ namespace LYBT.Desktop.Core.Controls {
     /// <summary>
     /// 进度值到缩放比例转换器
     /// </summary>
-    public class ProgressToScaleConverter : System.Windows.Data.IValueConverter {
+    public class ProgressToScaleConverter : System.Windows.Data.IValueConverter
+    {
         public static readonly ProgressToScaleConverter Instance = new();
 
-        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture) {
-            if (value is double doubleValue) {
+        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            if (value is double doubleValue)
+            {
                 return Math.Max(0, Math.Min(1, doubleValue / 100.0));
             }
             return 0.0;
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture) {
+        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
             throw new NotImplementedException();
         }
     }

@@ -7,7 +7,8 @@ namespace LYBT.Desktop.Herbs.Interfaces;
 /// 药材查询服务接口 - UltraThink双层架构简化版
 /// 职责：查询和搜索操作
 /// </summary>
-public interface IHerbQueryService {
+public interface IHerbQueryService
+{
 
     #region 基础查询操作
 
@@ -24,7 +25,7 @@ public interface IHerbQueryService {
     /// <summary>
     /// 搜索药材
     /// </summary>
-    Task<ServiceResult<List<HerbDto>>> SearchAsync(string keyword);
+    Task<ServiceResult<List<HerbDto>>> Search(string keyword);
 
     /// <summary>
     /// 获取药材统计

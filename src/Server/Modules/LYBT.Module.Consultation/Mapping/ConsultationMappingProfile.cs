@@ -1,14 +1,17 @@
 ﻿using AutoMapper;
 using LYBT.Shared.Models.Contracts.Consultation;
 
-namespace LYBT.Module.Consultation.Mapping {
+namespace LYBT.Module.Consultation.Mapping
+{
 
     /// <summary>
     /// 看诊模块 AutoMapper 映射配置
     /// </summary>
-    public class ConsultationMappingProfile : Profile {
+    public class ConsultationMappingProfile : Profile
+    {
 
-        public ConsultationMappingProfile() {
+        public ConsultationMappingProfile()
+        {
             // 🎯 UltraThink修复：启用AutoMapper配置，解决字段更新不完整问题
 
             // ConsultationDetailDto -> Consultation - 核心更新映射

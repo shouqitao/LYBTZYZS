@@ -1,14 +1,16 @@
 ﻿using LYBT.Shared.Models.Contracts.Patients;
 using Prism.Mvvm;
 
-namespace LYBT.Desktop.Core.ViewModels.Patients {
+namespace LYBT.Desktop.Core.ViewModels.Patients
+{
 
     /// <summary>
     /// 患者视图模型 - UltraThink架构的协调层
     /// 协调数据、显示、状态和主题四个关注点
     /// 实现了完全的关注点分离
     /// </summary>
-    public class PatientViewModel : BindableBase {
+    public class PatientViewModel : BindableBase
+    {
 
         #region Fields
 
@@ -20,8 +22,10 @@ namespace LYBT.Desktop.Core.ViewModels.Patients {
 
         #region Constructor
 
-        public PatientViewModel(PatientDto patientData) {
-            if (patientData == null) {
+        public PatientViewModel(PatientDto patientData)
+        {
+            if (patientData == null)
+            {
                 throw new ArgumentNullException(nameof(patientData));
             }
 
@@ -35,19 +39,22 @@ namespace LYBT.Desktop.Core.ViewModels.Patients {
         #region Component ViewModels
 
         /// <summary>显示逻辑视图模型</summary>
-        public PatientDisplayViewModel Display {
+        public PatientDisplayViewModel Display
+        {
             get => _display;
             private set => SetProperty(ref _display, value);
         }
 
         /// <summary>UI状态视图模型</summary>
-        public PatientStateViewModel State {
+        public PatientStateViewModel State
+        {
             get => _state;
             private set => SetProperty(ref _state, value);
         }
 
         /// <summary>主题样式视图模型</summary>
-        public PatientThemeViewModel Theme {
+        public PatientThemeViewModel Theme
+        {
             get => _theme;
             private set => SetProperty(ref _theme, value);
         }
@@ -69,33 +76,43 @@ namespace LYBT.Desktop.Core.ViewModels.Patients {
         public string DisplayName => Display.DisplayName;
 
         /// <summary>是否选中</summary>
-        public bool IsSelected {
+        public bool IsSelected
+        {
             get => State.IsSelected;
             set => State.IsSelected = value;
         }
 
         /// <summary>是否正在加载</summary>
-        public bool IsLoading {
+        public bool IsLoading
+        {
             get => State.IsLoading;
-            set {
-                if (value) {
+            set
+            {
+                if (value)
+                {
                     State.StartLoading();
-                } else {
+                }
+                else
+                {
                     State.StopLoading();
                 }
             }
         }
 
         /// <summary>年龄（计算属性）</summary>
-        public int Age {
-            get {
-                if (PatientData.BirthDate.HasValue) {
+        public int Age
+        {
+            get
+            {
+                if (PatientData.BirthDate.HasValue)
+                {
                     var today = DateTime.Today;
                     var birthDate = PatientData.BirthDate.Value;
                     int age = today.Year - birthDate.Year;
 
                     // 如果今年的生日还没到，年龄减一
-                    if (birthDate.Date > today.AddYears(-age)) {
+                    if (birthDate.Date > today.AddYears(-age))
+                    {
                         age--;
                     }
 
@@ -118,8 +135,10 @@ namespace LYBT.Desktop.Core.ViewModels.Patients {
         /// <summary>
         /// 更新患者数据
         /// </summary>
-        public void UpdatePatientData(PatientDto newPatientData) {
-            if (newPatientData == null) {
+        public void UpdatePatientData(PatientDto newPatientData)
+        {
+            if (newPatientData == null)
+            {
                 throw new ArgumentNullException(nameof(newPatientData));
             }
 
@@ -136,42 +155,48 @@ namespace LYBT.Desktop.Core.ViewModels.Patients {
         /// <summary>
         /// 开始编辑模式
         /// </summary>
-        public void StartEditing() {
+        public void StartEditing()
+        {
             State.StartEditing();
         }
 
         /// <summary>
         /// 结束编辑模式
         /// </summary>
-        public void StopEditing() {
+        public void StopEditing()
+        {
             State.StopEditing();
         }
 
         /// <summary>
         /// 切换选中状态
         /// </summary>
-        public void ToggleSelection() {
+        public void ToggleSelection()
+        {
             State.ToggleSelection();
         }
 
         /// <summary>
         /// 设置错误状态
         /// </summary>
-        public void SetError(string errorMessage) {
+        public void SetError(string errorMessage)
+        {
             State.SetError(errorMessage);
         }
 
         /// <summary>
         /// 清除错误状态
         /// </summary>
-        public void ClearError() {
+        public void ClearError()
+        {
             State.ClearError();
         }
 
         /// <summary>
         /// 重置UI状态
         /// </summary>
-        public void ResetState() {
+        public void ResetState()
+        {
             State.Reset();
         }
 
@@ -182,14 +207,16 @@ namespace LYBT.Desktop.Core.ViewModels.Patients {
         /// <summary>
         /// 创建患者视图模型
         /// </summary>
-        public static PatientViewModel Create(PatientDto patientData) {
+        public static PatientViewModel Create(PatientDto patientData)
+        {
             return new PatientViewModel(patientData);
         }
 
         /// <summary>
         /// 从现有患者视图模型更新数据
         /// </summary>
-        public static PatientViewModel UpdateFrom(PatientViewModel existingViewModel, PatientDto newPatientData) {
+        public static PatientViewModel UpdateFrom(PatientViewModel existingViewModel, PatientDto newPatientData)
+        {
             existingViewModel.UpdatePatientData(newPatientData);
             return existingViewModel;
         }
@@ -201,22 +228,26 @@ namespace LYBT.Desktop.Core.ViewModels.Patients {
         /// <summary>
         /// 判断是否为同一患者
         /// </summary>
-        public bool IsSamePatient(PatientViewModel other) {
+        public bool IsSamePatient(PatientViewModel other)
+        {
             return other != null && Id == other.Id;
         }
 
         /// <summary>
         /// 判断是否为同一患者（通过患者数据）
         /// </summary>
-        public bool IsSamePatient(PatientDto patientData) {
+        public bool IsSamePatient(PatientDto patientData)
+        {
             return patientData != null && Id == patientData.Id;
         }
 
-        public override bool Equals(object? obj) {
+        public override bool Equals(object? obj)
+        {
             return obj is PatientViewModel other && IsSamePatient(other);
         }
 
-        public override int GetHashCode() {
+        public override int GetHashCode()
+        {
             return Id.GetHashCode();
         }
 

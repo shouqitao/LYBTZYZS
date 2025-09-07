@@ -1,14 +1,16 @@
 ﻿using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
 
-namespace LYBT.Module.Patients.Interfaces {
+namespace LYBT.Module.Patients.Interfaces
+{
 
     /// <summary>
     /// 患者查询服务接口
     /// UltraThink架构 - Query层接口抽象
     /// 职责：患者查询、搜索、统计功能专业化处理
     /// </summary>
-    public interface IPatientQueryService {
+    public interface IPatientQueryService
+    {
 
         /// <summary>
         /// 分页查询患者列表

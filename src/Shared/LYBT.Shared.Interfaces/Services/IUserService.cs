@@ -2,7 +2,8 @@
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 
-namespace LYBT.Shared.Interfaces.Services {
+namespace LYBT.Shared.Interfaces.Services
+{
 
     /// <summary>
     /// 用户服务接口 - UltraThink双层架构标准
@@ -14,7 +15,8 @@ namespace LYBT.Shared.Interfaces.Services {
     /// <para>技术特性: ServiceResult统一结果包装、异步优先设计、DTO模式规范</para>
     /// </remarks>
     [Description("用户管理服务 - 医生/管理员账户管理、权限控制、密码安全")]
-    public interface IUserService {
+    public interface IUserService
+    {
 
         #region 查询操作 - QueryService专业负责
 

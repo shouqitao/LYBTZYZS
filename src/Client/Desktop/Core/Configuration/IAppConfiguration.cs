@@ -1,10 +1,12 @@
-﻿namespace LYBT.Desktop.Core.Configuration {
+﻿namespace LYBT.Desktop.Core.Configuration
+{
 
     /// <summary>
     /// UltraThink Phase 5.2: 应用配置接口
     /// 统一配置管理和访问
     /// </summary>
-    public interface IAppConfiguration {
+    public interface IAppConfiguration
+    {
 
         /// <summary>
         /// API基础URL
@@ -55,7 +57,8 @@
     /// <summary>
     /// 缓存配置
     /// </summary>
-    public class CacheConfiguration {
+    public class CacheConfiguration
+    {
         public int DefaultExpirationMinutes { get; set; } = 30;
         public int MaxSize { get; set; } = 1000;
         public double CompactionPercentage { get; set; } = 0.25;
@@ -65,7 +68,8 @@
     /// <summary>
     /// 日志配置
     /// </summary>
-    public class LoggingConfiguration {
+    public class LoggingConfiguration
+    {
         public string MinimumLevel { get; set; } = "Information";
         public bool EnableConsole { get; set; } = true;
         public bool EnableDebug { get; set; } = true;
@@ -76,7 +80,8 @@
     /// <summary>
     /// 性能配置
     /// </summary>
-    public class PerformanceConfiguration {
+    public class PerformanceConfiguration
+    {
         public int MaxConcurrentRequests { get; set; } = 10;
         public int UIUpdateThrottleMs { get; set; } = 16; // ~60fps
         public bool EnableVirtualization { get; set; } = true;

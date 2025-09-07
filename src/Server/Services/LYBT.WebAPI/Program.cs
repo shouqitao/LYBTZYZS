@@ -8,8 +8,6 @@ using LYBT.WebAPI.Extensions;
 // using LYBT.WebAPI.Services; // Removed - enterprise services beyond constraint scope
 
 // =========== UltraThink安全配置增强 - 提前加载环境变量 ===========
-// EnvironmentVariableLoader.LoadEnvironmentVariables(); // Removed - enterprise feature
-
 var builder = WebApplication.CreateBuilder(args);
 
 // =========== 额外的环境变量支持 ===========

@@ -7,7 +7,8 @@ namespace LYBT.Desktop.Patients.Interfaces;
 /// 患者业务服务接口 - UltraThink双层架构简化版
 /// 职责：基础业务操作
 /// </summary>
-public interface IPatientBusinessService {
+public interface IPatientBusinessService
+{
 
     /// <summary>
     /// 创建患者

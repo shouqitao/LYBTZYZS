@@ -15,7 +15,8 @@ namespace LYBT.Desktop.Consultation.Services;
 /// </summary>
 public class ConsultationModule(
     IConsultationQueryService queryService,
-    IConsultationBusinessService businessService) : IConsultationService {
+    IConsultationBusinessService businessService) : IConsultationService
+{
     private readonly IConsultationQueryService _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
     private readonly IConsultationBusinessService _businessService = businessService ?? throw new ArgumentNullException(nameof(businessService));
 
@@ -29,10 +30,13 @@ public class ConsultationModule(
     public async Task<ServiceResult<bool>> DeleteAsync(Guid id)
         => await _businessService.DeleteAsync(id);
 
-    public async Task<ServiceResult<ConsultationDetailDto>> GetByIdAsync(Guid id) {
+    public async Task<ServiceResult<ConsultationDetailDto>> GetByIdAsync(Guid id)
+    {
         var result = await _queryService.GetByIdAsync(id);
-        if (result.IsSuccess && result.Data != null) {
-            var detail = new ConsultationDetailDto {
+        if (result.IsSuccess && result.Data != null)
+        {
+            var detail = new ConsultationDetailDto
+            {
                 Id = result.Data.Id,
                 // 映射其他基础属性
             };
@@ -41,15 +45,17 @@ public class ConsultationModule(
         return ServiceResult<ConsultationDetailDto>.Failure(result.ErrorMessage ?? "获取看诊详情失败");
     }
 
-    public async Task<ServiceResult<PagedResult<ConsultationDto>>> GetPagedAsync(PagedQueryBaseDto query) {
-        var consultationQuery = new ConsultationPagedQueryDto {
+    public async Task<ServiceResult<PagedResult<ConsultationDto>>> GetPagedAsync(PagedQueryBaseDto query)
+    {
+        var consultationQuery = new ConsultationPagedQueryDto
+        {
             Keyword = query.Keyword,
             PageIndex = query.PageIndex,
             PageSize = query.PageSize,
             SortField = query.SortField,
             IsDescending = query.IsDescending
         };
-        return await _queryService.GetPagedAsync(consultationQuery);
+        return await _queryService.GetPaged(consultationQuery);
     }
 
     public async Task<ServiceResult<List<ConsultationDto>>> SearchAsync(string keyword)
@@ -59,7 +65,7 @@ public class ConsultationModule(
         => await _businessService.EnableAsync(id);
 
     public async Task<ServiceResult<bool>> DisableAsync(Guid id)
-        => await _businessService.DisableAsync(id);
+        => await _businessService.Disable(id);
 
     // 补充IConsultationService可能需要的其他方法（简化实现）
     public async Task<ServiceResult<List<ConsultationDto>>> GetByPatientIdAsync(Guid patientId)
@@ -72,8 +78,10 @@ public class ConsultationModule(
     public Task<ServiceResult<ConsultationDto>> StartAsync(ConsultationStartDto startDto)
         => Task.FromResult(ServiceResult<ConsultationDto>.Failure("简单诊所版本暂不支持开始看诊操作"));
 
-    public async Task<ServiceResult<ConsultationDto>> UpdateAsync(Guid id, ConsultationDetailDto updateDto) {
-        var simpleUpdate = new ConsultationUpdateDto {
+    public async Task<ServiceResult<ConsultationDto>> UpdateAsync(Guid id, ConsultationDetailDto updateDto)
+    {
+        var simpleUpdate = new ConsultationUpdateDto
+        {
             Id = updateDto.Id
             // 映射其他基础属性
         };
@@ -90,7 +98,7 @@ public class ConsultationModule(
         => await GetByPatientIdAsync(patientId);
 
     public Task<ServiceResult<object>> GetFourDiagnosisByMedicalCaseIdAsync(Guid medicalCaseId)
-        => Task.FromResult(ServiceResult<object>.Success(new { InspectionData = "", AuscultationData = "", InquiryData = "", PalpationData = "" }));
+        => Task.FromResult(ServiceResult<object>.Success(new { InspectionData = string.Empty, AuscultationData = string.Empty, InquiryData = string.Empty, PalpationData = string.Empty }));
 
     public Task<ServiceResult<bool>> SaveFourDiagnosisAsync(Guid consultationId, object fourDiagnosisData)
         => Task.FromResult(ServiceResult<bool>.Success(false));

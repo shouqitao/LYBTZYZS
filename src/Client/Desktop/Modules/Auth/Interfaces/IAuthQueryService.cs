@@ -7,7 +7,8 @@ namespace LYBT.Desktop.Auth.Interfaces;
 /// 认证查询服务接口 - UltraThink双层架构简化版
 /// 职责：基础状态查询、简单连接检查
 /// </summary>
-public interface IAuthQueryService {
+public interface IAuthQueryService
+{
 
     #region 基础认证状态查询
 
@@ -19,7 +20,7 @@ public interface IAuthQueryService {
     /// <summary>
     /// 获取当前用户信息
     /// </summary>
-    Task<ServiceResult<UserDto?>> GetCurrentUserAsync();
+    Task<ServiceResult<UserDto?>> GetCurrentUser();
 
     /// <summary>
     /// 检查API连接状态

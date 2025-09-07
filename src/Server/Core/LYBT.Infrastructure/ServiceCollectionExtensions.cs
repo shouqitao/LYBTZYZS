@@ -8,12 +8,14 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using JwtOptions = LYBT.Infrastructure.Configuration.Options.JwtOptions;
 
-namespace LYBT.Infrastructure {
+namespace LYBT.Infrastructure
+{
 
     /// <summary>
     /// 服务集合扩展方法
     /// </summary>
-    public static class ServiceCollectionExtensions {
+    public static class ServiceCollectionExtensions
+    {
 
         /// <summary>
         /// 添加JWT认证服务
@@ -21,22 +23,27 @@ namespace LYBT.Infrastructure {
         /// <param name="services">服务集合</param>
         /// <param name="configuration">配置</param>
         /// <returns>服务集合</returns>
-        public static IServiceCollection AddJwtAuthentication(this IServiceCollection services, IConfiguration configuration) {
+        public static IServiceCollection AddJwtAuthentication(this IServiceCollection services, IConfiguration configuration)
+        {
             var jwtSection = configuration.GetSection("JwtOptions");
             services.Configure<JwtOptions>(jwtSection);
 
             var jwtOptions = jwtSection.Get<JwtOptions>();
-            if (jwtOptions == null) {
+            if (jwtOptions == null)
+            {
                 throw new InvalidOperationException("JWT configuration is missing");
             }
 
-            services.AddAuthentication(options => {
+            services.AddAuthentication(options =>
+            {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
             })
-            .AddJwtBearer(options => {
-                options.TokenValidationParameters = new TokenValidationParameters {
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
                     ValidateIssuer = true,
                     ValidateAudience = true,
                     ValidateLifetime = true,
@@ -47,17 +54,21 @@ namespace LYBT.Infrastructure {
                     ClockSkew = TimeSpan.FromSeconds(jwtOptions.ClockSkewSeconds)
                 };
 
-                options.Events = new JwtBearerEvents {
-                    OnMessageReceived = context => {
+                options.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
                         // 支持从查询参数中获取令牌（用于SignalR等场景）
                         var accessToken = context.Request.Query["access_token"];
                         var path = context.HttpContext.Request.Path;
-                        if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hub")) {
+                        if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hub"))
+                        {
                             context.Token = accessToken;
                         }
                         return Task.CompletedTask;
                     },
-                    OnAuthenticationFailed = context => {
+                    OnAuthenticationFailed = context =>
+                    {
                         // 记录认证失败日志
                         // TODO: 添加日志记录
                         return Task.CompletedTask;
@@ -66,7 +77,6 @@ namespace LYBT.Infrastructure {
             });
 
             // JWT服务已移至AuthModule中注册
-
             return services;
         }
 
@@ -76,7 +86,8 @@ namespace LYBT.Infrastructure {
         /// <param name="services">服务集合</param>
         /// <param name="configuration">配置</param>
         /// <returns>服务集合</returns>
-        public static IServiceCollection AddAuthConfiguration(this IServiceCollection services, IConfiguration configuration) {
+        public static IServiceCollection AddAuthConfiguration(this IServiceCollection services, IConfiguration configuration)
+        {
             services.Configure<AuthOptions>(configuration.GetSection("AuthOptions"));
             return services;
         }
@@ -88,19 +99,26 @@ namespace LYBT.Infrastructure {
         /// <param name="policyName">策略名称</param>
         /// <param name="allowedOrigins">允许的来源</param>
         /// <returns>服务集合</returns>
-        public static IServiceCollection AddCorsPolicies(this IServiceCollection services, string policyName = "DefaultPolicy", params string[] allowedOrigins) {
-            services.AddCors(options => {
-                options.AddPolicy(policyName, builder => {
-                    if (allowedOrigins?.Length > 0) {
+        public static IServiceCollection AddCorsPolicies(this IServiceCollection services, string policyName = "DefaultPolicy", params string[] allowedOrigins)
+        {
+            services.AddCors(options =>
+            {
+                options.AddPolicy(policyName, builder =>
+                {
+                    if (allowedOrigins?.Length > 0)
+                    {
                         builder.WithOrigins(allowedOrigins);
-                    } else {
+                    }
+                    else
+                    {
                         builder.AllowAnyOrigin();
                     }
 
                     builder.AllowAnyMethod()
                            .AllowAnyHeader();
 
-                    if (allowedOrigins?.Length > 0) {
+                    if (allowedOrigins?.Length > 0)
+                    {
                         builder.AllowCredentials();
                     }
                 });
@@ -115,16 +133,20 @@ namespace LYBT.Infrastructure {
         /// <param name="services">服务集合</param>
         /// <param name="configuration">配置</param>
         /// <returns>服务集合</returns>
-        public static IServiceCollection AddInfrastructureDbContext(this IServiceCollection services, IConfiguration configuration) {
+        public static IServiceCollection AddInfrastructureDbContext(this IServiceCollection services, IConfiguration configuration)
+        {
             var connectionString = configuration.GetConnectionString("InfrastructureConnection")
                                  ?? configuration.GetConnectionString("DefaultConnection");
 
-            if (string.IsNullOrEmpty(connectionString)) {
+            if (string.IsNullOrEmpty(connectionString))
+            {
                 throw new InvalidOperationException("Infrastructure database connection string is not configured");
             }
 
-            services.AddDbContext<AppDbContext>(options => {
-                options.UseSqlServer(connectionString, sqlOptions => {
+            services.AddDbContext<AppDbContext>(options =>
+            {
+                options.UseSqlServer(connectionString, sqlOptions =>
+                {
                     sqlOptions.MigrationsAssembly("LYBT.Infrastructure");
                     sqlOptions.EnableRetryOnFailure(
                         maxRetryCount: 3,
@@ -144,7 +166,8 @@ namespace LYBT.Infrastructure {
         /// <param name="services">服务集合</param>
         /// <param name="configuration">配置</param>
         /// <returns>服务集合</returns>
-        public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration) {
+        public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
+        {
             // UltraThink深度清理：只保留实际需要的服务
             // 添加数据库上下文
             services.AddInfrastructureDbContext(configuration);
@@ -159,7 +182,6 @@ namespace LYBT.Infrastructure {
             services.AddCorsPolicies();
 
             // 注意：API版本控制在Program.cs中单独配置
-
             return services;
         }
     }

@@ -9,13 +9,15 @@ using Prism.Commands;
 using Prism.Events;
 using Prism.Regions;
 
-namespace LYBT.Desktop.Herbs.ViewModels {
+namespace LYBT.Desktop.Herbs.ViewModels
+{
 
     /// <summary>
     /// 中药材详情视图模型 - UltraThink ModernViewModel架构
     /// 提供中药材详细信息查看和编辑功能
     /// </summary>
-    public class HerbDetailViewModel : ModernViewModelBase, INavigationAware {
+    public class HerbDetailViewModel : ModernViewModelBase, INavigationAware
+    {
 
         #region 私有字段
 
@@ -32,32 +34,35 @@ namespace LYBT.Desktop.Herbs.ViewModels {
 
         #region 属性
 
-        public Guid HerbId {
+        public Guid HerbId
+        {
             get => _herbId;
             set => SetProperty(ref _herbId, value);
         }
 
-        public HerbDto? Herb {
+        public HerbDto? Herb
+        {
             get => _herb;
             set => SetProperty(ref _herb, value);
         }
 
-        public bool IsReadOnly {
+        public bool IsReadOnly
+        {
             get => _isReadOnly;
             set => SetProperty(ref _isReadOnly, value);
         }
 
         // 中药材基本信息属性
-        public string HerbName => Herb?.Name ?? "";
+        public string HerbName => Herb?.Name ?? string.Empty;
 
-        public string PinYinCode => Herb?.PinYinCode ?? "";
-        public string Origin => Herb?.Origin ?? "";
-        public string Spec => Herb?.Spec ?? "";
-        public string Unit => Herb?.Unit ?? "";
+        public string PinYinCode => Herb?.PinYinCode ?? string.Empty;
+        public string Origin => Herb?.Origin ?? string.Empty;
+        public string Spec => Herb?.Spec ?? string.Empty;
+        public string Unit => Herb?.Unit ?? string.Empty;
         public decimal Price => Herb?.Price ?? 0;
-        public string Effect => Herb?.Effect ?? "";
-        public string Usage => Herb?.Usage ?? "";
-        public string Remark => Herb?.Remark ?? "";
+        public string Effect => Herb?.Effect ?? string.Empty;
+        public string Usage => Herb?.Usage ?? string.Empty;
+        public string Remark => Herb?.Remark ?? string.Empty;
         public DateTime? CreateTime => Herb?.CreateTime;
         public DateTime? UpdateTime => Herb?.UpdateTime;
         public string StatusText => GetStatusText();
@@ -85,7 +90,8 @@ namespace LYBT.Desktop.Herbs.ViewModels {
             IMapper mapper,
             IErrorHandlingService errorHandlingService,
             IEventAggregator eventAggregator)
-            : base(eventAggregator, errorHandlingService) {
+            : base(eventAggregator, errorHandlingService)
+        {
             _herbService = herbService ?? throw new ArgumentNullException(nameof(herbService));
             _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
             _regionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
@@ -105,11 +111,14 @@ namespace LYBT.Desktop.Herbs.ViewModels {
 
         #region INavigationAware 实现
 
-        public void OnNavigatedTo(NavigationContext navigationContext) {
-            if (navigationContext.Parameters.ContainsKey("HerbId")) {
+        public void OnNavigatedTo(NavigationContext navigationContext)
+        {
+            if (navigationContext.Parameters.ContainsKey("HerbId"))
+            {
                 HerbId = navigationContext.Parameters.GetValue<Guid>("HerbId");
 
-                if (navigationContext.Parameters.ContainsKey("ViewMode")) {
+                if (navigationContext.Parameters.ContainsKey("ViewMode"))
+                {
                     var viewMode = navigationContext.Parameters.GetValue<string>("ViewMode");
                     IsReadOnly = viewMode != "Edit";
                 }
@@ -118,16 +127,20 @@ namespace LYBT.Desktop.Herbs.ViewModels {
             }
         }
 
-        public bool IsNavigationTarget(NavigationContext navigationContext) {
-            if (navigationContext.Parameters.ContainsKey("HerbId")) {
+        public bool IsNavigationTarget(NavigationContext navigationContext)
+        {
+            if (navigationContext.Parameters.ContainsKey("HerbId"))
+            {
                 var targetHerbId = navigationContext.Parameters.GetValue<Guid>("HerbId");
                 return HerbId == targetHerbId;
             }
             return true;
         }
 
-        public void OnNavigatedFrom(NavigationContext navigationContext) {
-            if (!IsReadOnly && HasUnsavedChanges()) {
+        public void OnNavigatedFrom(NavigationContext navigationContext)
+        {
+            if (!IsReadOnly && HasUnsavedChanges())
+            {
                 // 可以在这里添加保存确认逻辑
             }
         }
@@ -136,41 +149,55 @@ namespace LYBT.Desktop.Herbs.ViewModels {
 
         #region 数据操作
 
-        private async Task LoadDataAsync() {
-            if (HerbId == Guid.Empty) {
+        private async Task LoadDataAsync()
+        {
+            if (HerbId == Guid.Empty)
+            {
                 return;
             }
 
-            await ExecuteAsync(async () => {
+            await ExecuteAsync(
+                async () =>
+            {
                 var result = await _herbService.GetByIdAsync(HerbId);
 
-                if (result.IsSuccess && result.Data != null) {
+                if (result.IsSuccess && result.Data != null)
+                {
                     Herb = result.Data;
                     RefreshProperties();
-                } else {
+                }
+                else
+                {
                     await _dialogService.ShowErrorAsync($"加载中药材详情失败: {result.ErrorMessage}", "错误");
                 }
             }, "加载中药材详情");
         }
 
-        private async Task SaveAsync() {
-            if (Herb == null) {
+        private async Task SaveAsync()
+        {
+            if (Herb == null)
+            {
                 return;
             }
 
-            await ExecuteAsync(async () => {
+            await ExecuteAsync(
+                async () =>
+            {
                 var updateDto = _mapper.Map<HerbUpdateDto>(Herb);
 
                 var result = await _herbService.UpdateAsync(Herb.Id, updateDto);
 
-                if (result.IsSuccess && result.Data != null) {
+                if (result.IsSuccess && result.Data != null)
+                {
                     Herb = result.Data;
                     IsReadOnly = true;
                     RefreshProperties();
                     RaiseCanExecuteChanged();
 
                     await _dialogService.ShowSuccessAsync("中药材信息保存成功", "成功");
-                } else {
+                }
+                else
+                {
                     await _dialogService.ShowErrorAsync($"保存失败: {result.ErrorMessage}", "错误");
                 }
             }, "保存中药材信息");
@@ -180,33 +207,43 @@ namespace LYBT.Desktop.Herbs.ViewModels {
 
         #region 命令处理
 
-        private void NavigateBack() {
+        private void NavigateBack()
+        {
             _regionManager.RequestNavigate(RegionNames.SystemWorkbenchContentRegion, "HerbManagementView");
         }
 
-        private void EnableEdit() {
+        private void EnableEdit()
+        {
             IsReadOnly = false;
             RaiseCanExecuteChanged();
         }
 
-        private void CancelEdit() {
+        private void CancelEdit()
+        {
             IsReadOnly = true;
             // 重新加载数据以取消更改
             Task.Run(async () => await LoadDataAsync());
         }
 
-        private async Task PrintHerbAsync() {
-            await ExecuteAsync(async () => {
+        private async Task PrintHerbAsync()
+        {
+            await ExecuteAsync(
+                async () =>
+            {
                 await _dialogService.ShowInformationAsync("打印功能正在开发中", "提示");
             }, "打印中药材信息");
         }
 
-        private async Task ViewUsageHistoryAsync() {
-            if (Herb == null) {
+        private async Task ViewUsageHistoryAsync()
+        {
+            if (Herb == null)
+            {
                 return;
             }
 
-            await ExecuteAsync(async () => {
+            await ExecuteAsync(
+                async () =>
+            {
                 await _dialogService.ShowInformationAsync("使用历史功能正在开发中", "提示");
             }, "查看使用历史");
         }
@@ -215,13 +252,14 @@ namespace LYBT.Desktop.Herbs.ViewModels {
 
         #region 命令状态
 
-        private bool CanEdit() => Herb != null && IsReadOnly && !base.IsLoading;
+        private bool CanEdit() => Herb != null && IsReadOnly && !this.IsLoading;
 
-        private bool CanSave() => Herb != null && !IsReadOnly && !base.IsLoading;
+        private bool CanSave() => Herb != null && !IsReadOnly && !this.IsLoading;
 
-        private bool CanCancelEdit() => Herb != null && !IsReadOnly && !base.IsLoading;
+        private bool CanCancelEdit() => Herb != null && !IsReadOnly && !this.IsLoading;
 
-        protected override void RaiseCanExecuteChanged() {
+        protected override void RaiseCanExecuteChanged()
+        {
             base.RaiseCanExecuteChanged();
             EditCommand?.RaiseCanExecuteChanged();
             SaveCommand?.RaiseCanExecuteChanged();
@@ -236,7 +274,8 @@ namespace LYBT.Desktop.Herbs.ViewModels {
 
         #region 辅助方法
 
-        private void RefreshProperties() {
+        private void RefreshProperties()
+        {
             RaisePropertyChanged(nameof(HerbName));
             RaisePropertyChanged(nameof(PinYinCode));
             RaisePropertyChanged(nameof(Origin));
@@ -251,15 +290,18 @@ namespace LYBT.Desktop.Herbs.ViewModels {
             RaisePropertyChanged(nameof(StatusText));
         }
 
-        private string GetStatusText() {
-            if (Herb?.Status == CommonStatus.Enabled) {
+        private string GetStatusText()
+        {
+            if (Herb?.Status == CommonStatus.Enabled)
+            {
                 return "正常";
             }
 
             return "已禁用";
         }
 
-        private bool HasUnsavedChanges() {
+        private bool HasUnsavedChanges()
+        {
             // 简单实现：如果处于编辑模式就认为有未保存的更改
             return !IsReadOnly;
         }

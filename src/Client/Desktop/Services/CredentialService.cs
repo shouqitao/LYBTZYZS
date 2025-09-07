@@ -4,21 +4,25 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 
-namespace LYBT.Desktop.Services {
+namespace LYBT.Desktop.Services
+{
 
     /// <summary>
     /// 凭据管理服务 - 安全地保存和加载用户凭据
     /// </summary>
-    public class CredentialService : ICredentialService {
+    public class CredentialService : ICredentialService
+    {
         private readonly string _credentialFilePath;
         private readonly byte[] _entropy;
 
-        public CredentialService() {
+        public CredentialService()
+        {
             // 获取应用程序数据目录
             var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
             var appDirectory = Path.Combine(appDataPath, "LYBT.WPF.Client");
 
-            if (!Directory.Exists(appDirectory)) {
+            if (!Directory.Exists(appDirectory))
+            {
                 Directory.CreateDirectory(appDirectory);
             }
 
@@ -31,15 +35,19 @@ namespace LYBT.Desktop.Services {
         /// <summary>
         /// 保存用户凭据
         /// </summary>
-        public void SaveCredentials(string username, string password, bool rememberMe) {
-            try {
-                if (!rememberMe) {
+        public void SaveCredentials(string username, string password, bool rememberMe)
+        {
+            try
+            {
+                if (!rememberMe)
+                {
                     // 如果不记住密码，删除已保存的凭据
                     DeleteCredentials();
                     return;
                 }
 
-                var credentials = new SavedCredentials {
+                var credentials = new SavedCredentials
+                {
                     Username = username,
                     Password = password,
                     RememberMe = rememberMe,
@@ -53,7 +61,9 @@ namespace LYBT.Desktop.Services {
                 var encryptedData = ProtectedData.Protect(data, _entropy, DataProtectionScope.CurrentUser);
 
                 File.WriteAllBytes(_credentialFilePath, encryptedData);
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 // 记录错误但不抛出异常，避免影响登录流程
                 System.Diagnostics.Debug.WriteLine($"保存凭据失败: {ex.Message}");
             }
@@ -62,9 +72,12 @@ namespace LYBT.Desktop.Services {
         /// <summary>
         /// 加载保存的凭据
         /// </summary>
-        public SavedCredentials? LoadCredentials() {
-            try {
-                if (!File.Exists(_credentialFilePath)) {
+        public SavedCredentials? LoadCredentials()
+        {
+            try
+            {
+                if (!File.Exists(_credentialFilePath))
+                {
                     return null;
                 }
 
@@ -77,13 +90,16 @@ namespace LYBT.Desktop.Services {
                 var credentials = JsonSerializer.Deserialize<SavedCredentials>(json);
 
                 // 检查凭据是否过期（30天）
-                if (credentials != null && (DateTime.Now - credentials.SavedAt).TotalDays > 30) {
+                if (credentials != null && (DateTime.Now - credentials.SavedAt).TotalDays > 30)
+                {
                     DeleteCredentials();
                     return null;
                 }
 
                 return credentials;
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 // 如果解密失败，删除损坏的文件
                 System.Diagnostics.Debug.WriteLine($"加载凭据失败: {ex.Message}");
                 DeleteCredentials();
@@ -94,12 +110,17 @@ namespace LYBT.Desktop.Services {
         /// <summary>
         /// 删除保存的凭据
         /// </summary>
-        public void DeleteCredentials() {
-            try {
-                if (File.Exists(_credentialFilePath)) {
+        public void DeleteCredentials()
+        {
+            try
+            {
+                if (File.Exists(_credentialFilePath))
+                {
                     File.Delete(_credentialFilePath);
                 }
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 System.Diagnostics.Debug.WriteLine($"删除凭据失败: {ex.Message}");
             }
         }
@@ -108,7 +129,8 @@ namespace LYBT.Desktop.Services {
     /// <summary>
     /// 凭据服务接口
     /// </summary>
-    public interface ICredentialService {
+    public interface ICredentialService
+    {
 
         void SaveCredentials(string username, string password, bool rememberMe);
 
@@ -120,7 +142,8 @@ namespace LYBT.Desktop.Services {
     /// <summary>
     /// 保存的凭据信息
     /// </summary>
-    public class SavedCredentials {
+    public class SavedCredentials
+    {
         public string Username { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
         public bool RememberMe { get; set; }

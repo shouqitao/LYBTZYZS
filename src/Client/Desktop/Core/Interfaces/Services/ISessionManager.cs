@@ -3,12 +3,14 @@ using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Contracts.Users;
 
 namespace LYBT.Desktop.Core.Interfaces.Services;
+
 /// <summary>
 /// 会话管理服务接口 - 替代Redux的轻量级状态管理解决方案
 /// 采用UltraThink架构标准，提供统一的用户登录、患者选择和诊疗会话管理
 /// 支持事件驱动的状态通知机制，保证UI与业务状态同步
 /// </summary>
-public interface ISessionManager {
+public interface ISessionManager
+{
     #region 当前会话状态
 
     /// <summary>
@@ -127,7 +129,8 @@ public interface ISessionManager {
 /// 患者变化事件参数
 /// 包含旧患者信息、新患者信息和变化时间
 /// </summary>
-public class PatientChangedEventArgs : EventArgs {
+public class PatientChangedEventArgs : EventArgs
+{
     /// <summary>
     /// 获取或设置原患者信息
     /// </summary>
@@ -148,7 +151,8 @@ public class PatientChangedEventArgs : EventArgs {
 /// 诊疗变化事件参数
 /// 包含诊疗信息和状态的变化详情
 /// </summary>
-public class ConsultationChangedEventArgs : EventArgs {
+public class ConsultationChangedEventArgs : EventArgs
+{
     /// <summary>
     /// 获取或设置原诊疗信息
     /// </summary>
@@ -179,7 +183,8 @@ public class ConsultationChangedEventArgs : EventArgs {
 /// 用户变化事件参数
 /// 包含用户登录状态变化的详细信息
 /// </summary>
-public class UserChangedEventArgs : EventArgs {
+public class UserChangedEventArgs : EventArgs
+{
     /// <summary>
     /// 获取或设置原用户信息
     /// </summary>
@@ -205,7 +210,8 @@ public class UserChangedEventArgs : EventArgs {
 /// 状态消息事件参数
 /// 用于传递全局状态消息和类型信息
 /// </summary>
-public class StatusMessageEventArgs : EventArgs {
+public class StatusMessageEventArgs : EventArgs
+{
     /// <summary>
     /// 获取或设置状态消息内容
     /// </summary>
@@ -226,7 +232,8 @@ public class StatusMessageEventArgs : EventArgs {
 /// 诊疗状态枚举
 /// 定义诊疗会话的各个阶段和状态
 /// </summary>
-public enum ConsultationStatus {
+public enum ConsultationStatus
+{
     /// <summary>未开始 - 诊疗会话尚未开始</summary>
     NotStarted = 0,
 
@@ -253,7 +260,8 @@ public enum ConsultationStatus {
 /// 状态消息类型枚举
 /// 用于区分不同类型的状态消息
 /// </summary>
-public enum StatusMessageType {
+public enum StatusMessageType
+{
     /// <summary>信息 - 一般信息提示</summary>
     Info = 0,
 

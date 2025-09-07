@@ -5,17 +5,20 @@ using LYBT.Module.Auth.Services;
 using LYBT.Shared.Interfaces.Services;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace LYBT.Module.Auth {
+namespace LYBT.Module.Auth
+{
 
     /// <summary>
     /// 登录验证模块注册入口
     /// </summary>
-    public static class AuthModule {
+    public static class AuthModule
+    {
 
         /// <summary>
         /// 注册登录验证相关服务 - UltraThink简化架构版
         /// </summary>
-        public static IServiceCollection AddAuthModule(this IServiceCollection services) {
+        public static IServiceCollection AddAuthModule(this IServiceCollection services)
+        {
             // 注册Repository层
             services.AddScoped<IAuthRepository, AuthRepository>();
             services.AddScoped<IAuthSessionRepository, AuthSessionRepository>();

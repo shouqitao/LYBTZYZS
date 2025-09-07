@@ -7,7 +7,8 @@ namespace LYBT.Desktop.Consultation.Interfaces;
 /// 看诊业务服务接口 - UltraThink双层架构简化版
 /// 职责：基础业务操作
 /// </summary>
-public interface IConsultationBusinessService {
+public interface IConsultationBusinessService
+{
 
     /// <summary>
     /// 创建看诊
@@ -32,5 +33,5 @@ public interface IConsultationBusinessService {
     /// <summary>
     /// 禁用看诊
     /// </summary>
-    Task<ServiceResult<bool>> DisableAsync(Guid consultationId);
+    Task<ServiceResult<bool>> Disable(Guid consultationId);
 }

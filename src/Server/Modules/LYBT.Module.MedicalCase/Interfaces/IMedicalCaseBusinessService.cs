@@ -1,14 +1,16 @@
 ﻿using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 
-namespace LYBT.Module.MedicalCase.Interfaces {
+namespace LYBT.Module.MedicalCase.Interfaces
+{
 
     /// <summary>
     /// 医疗案例业务服务接口
     /// UltraThink架构 - Business层接口抽象
     /// 职责：医疗案例业务逻辑、状态管理、生命周期管理
     /// </summary>
-    public interface IMedicalCaseBusinessService {
+    public interface IMedicalCaseBusinessService
+    {
 
         /// <summary>
         /// 创建医疗案例

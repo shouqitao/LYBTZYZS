@@ -1,9 +1,11 @@
-﻿namespace LYBT.Desktop.Core.Helpers {
+﻿namespace LYBT.Desktop.Core.Helpers
+{
 
     /// <summary>
     /// 搜索帮助类，提供通用的搜索和筛选功能
     /// </summary>
-    public static class SearchHelper {
+    public static class SearchHelper
+    {
 
         /// <summary>
         /// 对集合进行关键字搜索
@@ -16,8 +18,10 @@
         public static IEnumerable<T> Search<T>(
             IEnumerable<T> source,
             string keyword,
-            params string[] searchProperties) {
-            if (source == null || string.IsNullOrWhiteSpace(keyword)) {
+            params string[] searchProperties)
+        {
+            if (source == null || string.IsNullOrWhiteSpace(keyword))
+            {
                 return source ?? Enumerable.Empty<T>();
             }
 
@@ -27,10 +31,13 @@
                                              .Where(p => p != null)
                                              .ToList();
 
-            return source.Where(item => {
-                foreach (var property in properties) {
+            return source.Where(item =>
+            {
+                foreach (var property in properties)
+                {
                     var value = property?.GetValue(item)?.ToString();
-                    if (!string.IsNullOrEmpty(value) && value.ToLower().Contains(keyword)) {
+                    if (!string.IsNullOrEmpty(value) && value.ToLower().Contains(keyword))
+                    {
                         return true;
                     }
                 }
@@ -47,13 +54,16 @@
         /// <returns>筛选结果</returns>
         public static IEnumerable<T> Filter<T>(
             IEnumerable<T> source,
-            params Func<T, bool>[] filters) {
-            if (source == null || filters == null || filters.Length == 0) {
+            params Func<T, bool>[] filters)
+        {
+            if (source == null || filters == null || filters.Length == 0)
+            {
                 return source ?? Enumerable.Empty<T>();
             }
 
             var result = source;
-            foreach (var filter in filters.Where(f => f != null)) {
+            foreach (var filter in filters.Where(f => f != null))
+            {
                 result = result.Where(filter);
             }
             return result;
@@ -66,24 +76,31 @@
             string propertyName,
             TValue? min,
             TValue? max)
-            where TValue : struct, IComparable<TValue> {
+            where TValue : struct, IComparable<TValue>
+        {
             var property = typeof(T).GetProperty(propertyName);
-            if (property == null) {
+            if (property == null)
+            {
                 return _ => true;
             }
 
-            return item => {
+            return item =>
+            {
                 var value = property.GetValue(item);
-                if (value == null) {
+                if (value == null)
+                {
                     return false;
                 }
 
-                if (value is TValue typedValue) {
-                    if (min.HasValue && typedValue.CompareTo(min.Value) < 0) {
+                if (value is TValue typedValue)
+                {
+                    if (min.HasValue && typedValue.CompareTo(min.Value) < 0)
+                    {
                         return false;
                     }
 
-                    if (max.HasValue && typedValue.CompareTo(max.Value) > 0) {
+                    if (max.HasValue && typedValue.CompareTo(max.Value) > 0)
+                    {
                         return false;
                     }
 
@@ -99,17 +116,21 @@
         public static Func<T, bool> BuildEnumFilter<T, TEnum>(
             string propertyName,
             TEnum? value)
-            where TEnum : struct, Enum {
-            if (!value.HasValue) {
+            where TEnum : struct, Enum
+        {
+            if (!value.HasValue)
+            {
                 return _ => true;
             }
 
             var property = typeof(T).GetProperty(propertyName);
-            if (property == null) {
+            if (property == null)
+            {
                 return _ => true;
             }
 
-            return item => {
+            return item =>
+            {
                 var propValue = property.GetValue(item);
                 return propValue != null && propValue.Equals(value.Value);
             };
@@ -120,17 +141,21 @@
         /// </summary>
         public static Func<T, bool> BuildBooleanFilter<T>(
             string propertyName,
-            bool? value) {
-            if (!value.HasValue) {
+            bool? value)
+        {
+            if (!value.HasValue)
+            {
                 return _ => true;
             }
 
             var property = typeof(T).GetProperty(propertyName);
-            if (property == null) {
+            if (property == null)
+            {
                 return _ => true;
             }
 
-            return item => {
+            return item =>
+            {
                 var propValue = property.GetValue(item);
                 return propValue is bool boolValue && boolValue == value.Value;
             };
@@ -139,13 +164,16 @@
         /// <summary>
         /// 高亮显示搜索关键字
         /// </summary>
-        public static string HighlightKeyword(string text, string keyword, string highlightTag = "**") {
-            if (string.IsNullOrWhiteSpace(text) || string.IsNullOrWhiteSpace(keyword)) {
+        public static string HighlightKeyword(string text, string keyword, string highlightTag = "**")
+        {
+            if (string.IsNullOrWhiteSpace(text) || string.IsNullOrWhiteSpace(keyword))
+            {
                 return text;
             }
 
             var index = text.IndexOf(keyword, StringComparison.OrdinalIgnoreCase);
-            if (index < 0) {
+            if (index < 0)
+            {
                 return text;
             }
 

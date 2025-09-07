@@ -1,10 +1,12 @@
 ﻿using System.Collections.Immutable;
 
-namespace LYBT.Desktop.Core.Redux.States {
+namespace LYBT.Desktop.Core.Redux.States
+{
     /// <summary>
     /// 应用根状态
     /// </summary>
-    public record AppState {
+    public record AppState
+    {
         public AuthState Auth { get; init; } = AuthState.Initial;
         public PatientState Patients { get; init; } = PatientState.Initial;
         public ConsultationState Consultation { get; init; } = ConsultationState.Initial;
@@ -19,7 +21,8 @@ namespace LYBT.Desktop.Core.Redux.States {
     /// <summary>
     /// 患者状态
     /// </summary>
-    public record PatientState {
+    public record PatientState
+    {
         public ImmutableList<PatientInfo> PatientList { get; init; } = ImmutableList<PatientInfo>.Empty;
         public PatientInfo? CurrentPatient { get; init; }
         public bool IsLoading { get; init; }
@@ -34,7 +37,8 @@ namespace LYBT.Desktop.Core.Redux.States {
     /// <summary>
     /// 看诊状态
     /// </summary>
-    public record ConsultationState {
+    public record ConsultationState
+    {
         public Guid? CurrentConsultationId { get; init; }
         public ConsultationStatus Status { get; init; }
         public DiagnosisData? Diagnosis { get; init; }
@@ -48,7 +52,8 @@ namespace LYBT.Desktop.Core.Redux.States {
     /// <summary>
     /// UI状态
     /// </summary>
-    public record UIState {
+    public record UIState
+    {
         public bool IsGlobalLoading { get; init; }
         public string? GlobalMessage { get; init; }
         public NotificationType? NotificationType { get; init; }
@@ -61,7 +66,8 @@ namespace LYBT.Desktop.Core.Redux.States {
 
     #region DTOs
 
-    public record PatientInfo {
+    public record PatientInfo
+    {
         public Guid Id { get; init; }
         public string Name { get; init; } = string.Empty;
         public string Gender { get; init; } = string.Empty;
@@ -71,7 +77,8 @@ namespace LYBT.Desktop.Core.Redux.States {
         public DateTimeOffset LastVisit { get; init; }
     }
 
-    public record DiagnosisData {
+    public record DiagnosisData
+    {
         public string ChiefComplaint { get; init; } = string.Empty;
         public string PresentIllness { get; init; } = string.Empty;
         public string TongueCoating { get; init; } = string.Empty;
@@ -80,7 +87,8 @@ namespace LYBT.Desktop.Core.Redux.States {
         public string TreatmentPrinciple { get; init; } = string.Empty;
     }
 
-    public record PrescriptionData {
+    public record PrescriptionData
+    {
         public Guid Id { get; init; }
         public ImmutableList<HerbItem> Herbs { get; init; } = ImmutableList<HerbItem>.Empty;
         public int Doses { get; init; }
@@ -88,7 +96,8 @@ namespace LYBT.Desktop.Core.Redux.States {
         public decimal TotalPrice { get; init; }
     }
 
-    public record HerbItem {
+    public record HerbItem
+    {
         public Guid HerbId { get; init; }
         public string Name { get; init; } = string.Empty;
         public decimal Dosage { get; init; }
@@ -96,7 +105,8 @@ namespace LYBT.Desktop.Core.Redux.States {
         public decimal Price { get; init; }
     }
 
-    public enum ConsultationStatus {
+    public enum ConsultationStatus
+    {
         NotStarted,
         InProgress,
         Diagnosing,
@@ -104,7 +114,8 @@ namespace LYBT.Desktop.Core.Redux.States {
         Completed
     }
 
-    public enum NotificationType {
+    public enum NotificationType
+    {
         Info,
         Success,
         Warning,
@@ -116,14 +127,17 @@ namespace LYBT.Desktop.Core.Redux.States {
     /// <summary>
     /// 应用根Reducer
     /// </summary>
-    public class AppReducer : IReducer<AppState> {
+    public class AppReducer : IReducer<AppState>
+    {
         private readonly AuthReducer _authReducer = new();
         private readonly PatientReducer _patientReducer = new();
         private readonly ConsultationReducer _consultationReducer = new();
         private readonly UIReducer _uiReducer = new();
 
-        public AppState Reduce(AppState state, IAction action) {
-            return new AppState {
+        public AppState Reduce(AppState state, IAction action)
+        {
+            return new AppState
+            {
                 Auth = _authReducer.Reduce(state.Auth, action),
                 Patients = _patientReducer.Reduce(state.Patients, action),
                 Consultation = _consultationReducer.Reduce(state.Consultation, action),
@@ -135,23 +149,29 @@ namespace LYBT.Desktop.Core.Redux.States {
     /// <summary>
     /// 患者Reducer
     /// </summary>
-    public class PatientReducer : IReducer<PatientState> {
+    public class PatientReducer : IReducer<PatientState>
+    {
 
-        public PatientState Reduce(PatientState state, IAction action) {
-            return action switch {
+        public PatientState Reduce(PatientState state, IAction action)
+        {
+            return action switch
+            {
                 LoadPatientsAction _ => state with { IsLoading = true },
 
-                LoadPatientsSuccessAction success => state with {
+                LoadPatientsSuccessAction success => state with
+                {
                     IsLoading = false,
                     PatientList = success.Payload.ToImmutableList(),
                     TotalCount = success.Payload.Count
                 },
 
-                SelectPatientAction select => state with {
+                SelectPatientAction select => state with
+                {
                     CurrentPatient = state.PatientList.FirstOrDefault(p => p.Id == select.Payload)
                 },
 
-                SearchPatientsAction search => state with {
+                SearchPatientsAction search => state with
+                {
                     SearchQuery = search.Payload,
                     PageIndex = 0
                 },
@@ -164,26 +184,33 @@ namespace LYBT.Desktop.Core.Redux.States {
     /// <summary>
     /// 看诊Reducer
     /// </summary>
-    public class ConsultationReducer : IReducer<ConsultationState> {
+    public class ConsultationReducer : IReducer<ConsultationState>
+    {
 
-        public ConsultationState Reduce(ConsultationState state, IAction action) {
-            return action switch {
-                StartConsultationAction start => state with {
+        public ConsultationState Reduce(ConsultationState state, IAction action)
+        {
+            return action switch
+            {
+                StartConsultationAction start => state with
+                {
                     CurrentConsultationId = start.Payload,
                     Status = ConsultationStatus.InProgress
                 },
 
-                UpdateDiagnosisAction update => state with {
+                UpdateDiagnosisAction update => state with
+                {
                     Diagnosis = update.Payload,
                     Status = ConsultationStatus.Diagnosing
                 },
 
-                SavePrescriptionAction save => state with {
+                SavePrescriptionAction save => state with
+                {
                     Prescription = save.Payload,
                     Status = ConsultationStatus.Prescribing
                 },
 
-                CompleteConsultationAction _ => state with {
+                CompleteConsultationAction _ => state with
+                {
                     Status = ConsultationStatus.Completed
                 },
 
@@ -195,32 +222,40 @@ namespace LYBT.Desktop.Core.Redux.States {
     /// <summary>
     /// UI Reducer
     /// </summary>
-    public class UIReducer : IReducer<UIState> {
+    public class UIReducer : IReducer<UIState>
+    {
 
-        public UIState Reduce(UIState state, IAction action) {
-            return action switch {
+        public UIState Reduce(UIState state, IAction action)
+        {
+            return action switch
+            {
                 ShowLoadingAction _ => state with { IsGlobalLoading = true },
                 HideLoadingAction _ => state with { IsGlobalLoading = false },
 
-                ShowNotificationAction notify => state with {
+                ShowNotificationAction notify => state with
+                {
                     GlobalMessage = notify.Payload.Message,
                     NotificationType = notify.Payload.Type
                 },
 
-                ClearNotificationAction _ => state with {
+                ClearNotificationAction _ => state with
+                {
                     GlobalMessage = null,
                     NotificationType = null
                 },
 
-                NavigateAction navigate => state with {
+                NavigateAction navigate => state with
+                {
                     CurrentRoute = navigate.Payload
                 },
 
-                OpenDialogAction open => state with {
+                OpenDialogAction open => state with
+                {
                     DialogStates = state.DialogStates.SetItem(open.Payload, true)
                 },
 
-                CloseDialogAction close => state with {
+                CloseDialogAction close => state with
+                {
                     DialogStates = state.DialogStates.SetItem(close.Payload, false)
                 },
 
@@ -231,55 +266,77 @@ namespace LYBT.Desktop.Core.Redux.States {
 
     #region Patient Actions
 
-    public class LoadPatientsAction : ActionBase {
+    public class LoadPatientsAction : ActionBase
+    {
 
-        public LoadPatientsAction() : base("PATIENTS/LOAD") {
+        public LoadPatientsAction() : base("PATIENTS/LOAD")
+        {
         }
     }
 
-    public class LoadPatientsSuccessAction : ActionBase<ImmutableList<PatientInfo>> {
+    public class LoadPatientsSuccessAction : ActionBase<ImmutableList<PatientInfo>>
+    {
 
         public LoadPatientsSuccessAction(ImmutableList<PatientInfo> patients)
-            : base("PATIENTS/LOAD_SUCCESS", patients) { }
+            : base("PATIENTS/LOAD_SUCCESS", patients)
+        {
+        }
     }
 
-    public class SelectPatientAction : ActionBase<Guid> {
+    public class SelectPatientAction : ActionBase<Guid>
+    {
 
         public SelectPatientAction(Guid patientId)
-            : base("PATIENTS/SELECT", patientId) { }
+            : base("PATIENTS/SELECT", patientId)
+        {
+        }
     }
 
-    public class SearchPatientsAction : ActionBase<string> {
+    public class SearchPatientsAction : ActionBase<string>
+    {
 
         public SearchPatientsAction(string query)
-            : base("PATIENTS/SEARCH", query) { }
+            : base("PATIENTS/SEARCH", query)
+        {
+        }
     }
 
     #endregion Patient Actions
 
     #region Consultation Actions
 
-    public class StartConsultationAction : ActionBase<Guid> {
+    public class StartConsultationAction : ActionBase<Guid>
+    {
 
         public StartConsultationAction(Guid consultationId)
-            : base("CONSULTATION/START", consultationId) { }
+            : base("CONSULTATION/START", consultationId)
+        {
+        }
     }
 
-    public class UpdateDiagnosisAction : ActionBase<DiagnosisData> {
+    public class UpdateDiagnosisAction : ActionBase<DiagnosisData>
+    {
 
         public UpdateDiagnosisAction(DiagnosisData diagnosis)
-            : base("CONSULTATION/UPDATE_DIAGNOSIS", diagnosis) { }
+            : base("CONSULTATION/UPDATE_DIAGNOSIS", diagnosis)
+        {
+        }
     }
 
-    public class SavePrescriptionAction : ActionBase<PrescriptionData> {
+    public class SavePrescriptionAction : ActionBase<PrescriptionData>
+    {
 
         public SavePrescriptionAction(PrescriptionData prescription)
-            : base("CONSULTATION/SAVE_PRESCRIPTION", prescription) { }
+            : base("CONSULTATION/SAVE_PRESCRIPTION", prescription)
+        {
+        }
     }
 
-    public class CompleteConsultationAction : ActionBase {
+    public class CompleteConsultationAction : ActionBase
+    {
 
-        public CompleteConsultationAction() : base("CONSULTATION/COMPLETE") {
+        public CompleteConsultationAction() : base("CONSULTATION/COMPLETE")
+        {
         }
     }
 
@@ -287,46 +344,64 @@ namespace LYBT.Desktop.Core.Redux.States {
 
     #region UI Actions
 
-    public class ShowLoadingAction : ActionBase {
+    public class ShowLoadingAction : ActionBase
+    {
 
-        public ShowLoadingAction() : base("UI/SHOW_LOADING") {
+        public ShowLoadingAction() : base("UI/SHOW_LOADING")
+        {
         }
     }
 
-    public class HideLoadingAction : ActionBase {
+    public class HideLoadingAction : ActionBase
+    {
 
-        public HideLoadingAction() : base("UI/HIDE_LOADING") {
+        public HideLoadingAction() : base("UI/HIDE_LOADING")
+        {
         }
     }
 
-    public class ShowNotificationAction : ActionBase<(string Message, NotificationType Type)> {
+    public class ShowNotificationAction : ActionBase<(string Message, NotificationType Type)>
+    {
 
         public ShowNotificationAction(string message, NotificationType type)
-            : base("UI/SHOW_NOTIFICATION", (message, type)) { }
-    }
-
-    public class ClearNotificationAction : ActionBase {
-
-        public ClearNotificationAction() : base("UI/CLEAR_NOTIFICATION") {
+            : base("UI/SHOW_NOTIFICATION", (message, type))
+        {
         }
     }
 
-    public class NavigateAction : ActionBase<string> {
+    public class ClearNotificationAction : ActionBase
+    {
+
+        public ClearNotificationAction() : base("UI/CLEAR_NOTIFICATION")
+        {
+        }
+    }
+
+    public class NavigateAction : ActionBase<string>
+    {
 
         public NavigateAction(string route)
-            : base("UI/NAVIGATE", route) { }
+            : base("UI/NAVIGATE", route)
+        {
+        }
     }
 
-    public class OpenDialogAction : ActionBase<string> {
+    public class OpenDialogAction : ActionBase<string>
+    {
 
         public OpenDialogAction(string dialogName)
-            : base("UI/OPEN_DIALOG", dialogName) { }
+            : base("UI/OPEN_DIALOG", dialogName)
+        {
+        }
     }
 
-    public class CloseDialogAction : ActionBase<string> {
+    public class CloseDialogAction : ActionBase<string>
+    {
 
         public CloseDialogAction(string dialogName)
-            : base("UI/CLOSE_DIALOG", dialogName) { }
+            : base("UI/CLOSE_DIALOG", dialogName)
+        {
+        }
     }
 
     #endregion UI Actions

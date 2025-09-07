@@ -9,13 +9,15 @@ namespace LYBT.Module.Patients;
 /// <summary>
 /// 患者模块依赖注入注册入口（供主程序统一集成）
 /// </summary>
-public static class PatientsModule {
+public static class PatientsModule
+{
 
     /// <summary>
     /// 注册本模块所有服务到 DI 容器（使用统一数据库上下文）
     /// UltraThink双层架构：Query(查询专业化) + Business(业务逻辑和CRUD)
     /// </summary>
-    public static IServiceCollection AddPatientsModuleServices(this IServiceCollection services) {
+    public static IServiceCollection AddPatientsModuleServices(this IServiceCollection services)
+    {
         // 仓储层 - 使用OptimizedBaseRepository优化版本
         services.AddScoped<IPatientRepository, OptimizedPatientRepository>();
 

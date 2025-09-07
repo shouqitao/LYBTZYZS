@@ -6,7 +6,8 @@ using System.Windows.Threading;
 using LYBT.Desktop.Core.Interfaces.Services;
 using Microsoft.Extensions.Logging;
 
-namespace LYBT.Desktop.Core.Services {
+namespace LYBT.Desktop.Core.Services
+{
 
     /// <summary>
     /// 用户体验增强服务 - P7-04 UltraThink用户体验优化
@@ -18,7 +19,8 @@ namespace LYBT.Desktop.Core.Services {
     /// 4. 错误友好显示
     /// 5. 界面响应性优化
     /// </summary>
-    public class UserExperienceService : IUserExperienceService, INotifyPropertyChanged {
+    public class UserExperienceService : IUserExperienceService, INotifyPropertyChanged
+    {
 
         #region 私有字段
 
@@ -28,7 +30,7 @@ namespace LYBT.Desktop.Core.Services {
 
         private bool _isGlobalLoading;
         private string _loadingMessage = "加载中...";
-        private string _statusMessage = "";
+        private string _statusMessage = string.Empty;
         private FeedbackType _currentFeedbackType = FeedbackType.None;
         private int _operationProgress;
 
@@ -38,12 +40,14 @@ namespace LYBT.Desktop.Core.Services {
 
         public UserExperienceService(
             ILogger<UserExperienceService> logger,
-            ICustomDialogService dialogService) {
+            ICustomDialogService dialogService)
+        {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
 
             // 初始化反馈定时器
-            _feedbackTimer = new DispatcherTimer {
+            _feedbackTimer = new DispatcherTimer
+            {
                 Interval = TimeSpan.FromSeconds(3) // 3秒后自动清除状态消息
             };
             _feedbackTimer.Tick += OnFeedbackTimerTick;
@@ -54,15 +58,19 @@ namespace LYBT.Desktop.Core.Services {
         #region 公共属性
 
         /// <summary>全局加载状态</summary>
-        public bool IsGlobalLoading {
+        public bool IsGlobalLoading
+        {
             get => _isGlobalLoading;
-            private set {
-                if (_isGlobalLoading != value) {
+            private set
+            {
+                if (_isGlobalLoading != value)
+                {
                     _isGlobalLoading = value;
                     OnPropertyChanged();
 
                     // 更新鼠标指针
-                    Application.Current.Dispatcher.BeginInvoke(() => {
+                    Application.Current.Dispatcher.BeginInvoke(() =>
+                    {
                         Mouse.OverrideCursor = value ? Cursors.Wait : null;
                     });
                 }
@@ -70,10 +78,13 @@ namespace LYBT.Desktop.Core.Services {
         }
 
         /// <summary>加载消息</summary>
-        public string LoadingMessage {
+        public string LoadingMessage
+        {
             get => _loadingMessage;
-            private set {
-                if (_loadingMessage != value) {
+            private set
+            {
+                if (_loadingMessage != value)
+                {
                     _loadingMessage = value;
                     OnPropertyChanged();
                 }
@@ -81,10 +92,13 @@ namespace LYBT.Desktop.Core.Services {
         }
 
         /// <summary>状态消息</summary>
-        public string StatusMessage {
+        public string StatusMessage
+        {
             get => _statusMessage;
-            private set {
-                if (_statusMessage != value) {
+            private set
+            {
+                if (_statusMessage != value)
+                {
                     _statusMessage = value;
                     OnPropertyChanged();
                 }
@@ -92,10 +106,13 @@ namespace LYBT.Desktop.Core.Services {
         }
 
         /// <summary>当前反馈类型</summary>
-        public FeedbackType CurrentFeedbackType {
+        public FeedbackType CurrentFeedbackType
+        {
             get => _currentFeedbackType;
-            private set {
-                if (_currentFeedbackType != value) {
+            private set
+            {
+                if (_currentFeedbackType != value)
+                {
                     _currentFeedbackType = value;
                     OnPropertyChanged();
                 }
@@ -103,10 +120,13 @@ namespace LYBT.Desktop.Core.Services {
         }
 
         /// <summary>操作进度 (0-100)</summary>
-        public int OperationProgress {
+        public int OperationProgress
+        {
             get => _operationProgress;
-            private set {
-                if (_operationProgress != value) {
+            private set
+            {
+                if (_operationProgress != value)
+                {
                     _operationProgress = value;
                     OnPropertyChanged();
                 }
@@ -118,8 +138,10 @@ namespace LYBT.Desktop.Core.Services {
         #region IUserExperienceService 实现
 
         /// <summary>开始全局加载</summary>
-        public void StartGlobalLoading(string message = "加载中...") {
-            Application.Current.Dispatcher.BeginInvoke(() => {
+        public void StartGlobalLoading(string message = "加载中...")
+        {
+            Application.Current.Dispatcher.BeginInvoke(() =>
+            {
                 LoadingMessage = message;
                 IsGlobalLoading = true;
                 OperationProgress = 0;
@@ -128,8 +150,10 @@ namespace LYBT.Desktop.Core.Services {
         }
 
         /// <summary>停止全局加载</summary>
-        public void StopGlobalLoading() {
-            Application.Current.Dispatcher.BeginInvoke(() => {
+        public void StopGlobalLoading()
+        {
+            Application.Current.Dispatcher.BeginInvoke(() =>
+            {
                 IsGlobalLoading = false;
                 OperationProgress = 100;
                 _logger.LogDebug("停止全局加载");
@@ -137,35 +161,42 @@ namespace LYBT.Desktop.Core.Services {
         }
 
         /// <summary>更新操作进度</summary>
-        public void UpdateProgress(int progress, string message = null) {
-            Application.Current.Dispatcher.BeginInvoke(() => {
+        public void UpdateProgress(int progress, string message = null)
+        {
+            Application.Current.Dispatcher.BeginInvoke(() =>
+            {
                 OperationProgress = Math.Max(0, Math.Min(100, progress));
-                if (!string.IsNullOrEmpty(message)) {
+                if (!string.IsNullOrEmpty(message))
+                {
                     LoadingMessage = message;
                 }
             });
         }
 
         /// <summary>显示成功反馈</summary>
-        public void ShowSuccessFeedback(string message) {
+        public void ShowSuccessFeedback(string message)
+        {
             ShowStatusMessage(message, FeedbackType.Success);
             _logger.LogInformation("用户操作成功: {Message}", message);
         }
 
         /// <summary>显示错误反馈</summary>
-        public void ShowErrorFeedback(string message) {
+        public void ShowErrorFeedback(string message)
+        {
             ShowStatusMessage(message, FeedbackType.Error);
             _logger.LogWarning("用户操作错误: {Message}", message);
         }
 
         /// <summary>显示警告反馈</summary>
-        public void ShowWarningFeedback(string message) {
+        public void ShowWarningFeedback(string message)
+        {
             ShowStatusMessage(message, FeedbackType.Warning);
             _logger.LogWarning("用户操作警告: {Message}", message);
         }
 
         /// <summary>显示信息反馈</summary>
-        public void ShowInfoFeedback(string message) {
+        public void ShowInfoFeedback(string message)
+        {
             ShowStatusMessage(message, FeedbackType.Info);
             _logger.LogDebug("用户操作信息: {Message}", message);
         }
@@ -175,15 +206,19 @@ namespace LYBT.Desktop.Core.Services {
             Func<Task<T>> operation,
             string loadingMessage = "处理中...",
             string successMessage = "操作成功",
-            string errorMessage = "操作失败") {
+            string errorMessage = "操作失败")
+        {
             StartGlobalLoading(loadingMessage);
 
-            try {
+            try
+            {
                 var result = await operation();
                 StopGlobalLoading();
                 ShowSuccessFeedback(successMessage);
                 return result;
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 StopGlobalLoading();
                 ShowErrorFeedback($"{errorMessage}: {ex.Message}");
                 throw;
@@ -195,14 +230,18 @@ namespace LYBT.Desktop.Core.Services {
             Func<Task> operation,
             string loadingMessage = "处理中...",
             string successMessage = "操作成功",
-            string errorMessage = "操作失败") {
+            string errorMessage = "操作失败")
+        {
             StartGlobalLoading(loadingMessage);
 
-            try {
+            try
+            {
                 await operation();
                 StopGlobalLoading();
                 ShowSuccessFeedback(successMessage);
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 StopGlobalLoading();
                 ShowErrorFeedback($"{errorMessage}: {ex.Message}");
                 throw;
@@ -210,7 +249,8 @@ namespace LYBT.Desktop.Core.Services {
         }
 
         /// <summary>显示友好的错误信息</summary>
-        public async Task ShowFriendlyErrorAsync(Exception exception, string context = "") {
+        public async Task ShowFriendlyErrorAsync(Exception exception, string context = "")
+        {
             var userFriendlyMessage = GetUserFriendlyErrorMessage(exception);
             var fullMessage = string.IsNullOrEmpty(context)
                 ? userFriendlyMessage
@@ -221,9 +261,11 @@ namespace LYBT.Desktop.Core.Services {
         }
 
         /// <summary>清除状态消息</summary>
-        public void ClearStatusMessage() {
-            Application.Current.Dispatcher.BeginInvoke(() => {
-                StatusMessage = "";
+        public void ClearStatusMessage()
+        {
+            Application.Current.Dispatcher.BeginInvoke(() =>
+            {
+                StatusMessage = string.Empty;
                 CurrentFeedbackType = FeedbackType.None;
                 _feedbackTimer.Stop();
             });
@@ -234,8 +276,10 @@ namespace LYBT.Desktop.Core.Services {
         #region 私有方法
 
         /// <summary>显示状态消息</summary>
-        private void ShowStatusMessage(string message, FeedbackType feedbackType) {
-            Application.Current.Dispatcher.BeginInvoke(() => {
+        private void ShowStatusMessage(string message, FeedbackType feedbackType)
+        {
+            Application.Current.Dispatcher.BeginInvoke(() =>
+            {
                 StatusMessage = message;
                 CurrentFeedbackType = feedbackType;
 
@@ -246,13 +290,16 @@ namespace LYBT.Desktop.Core.Services {
         }
 
         /// <summary>反馈定时器触发事件</summary>
-        private void OnFeedbackTimerTick(object sender, EventArgs e) {
+        private void OnFeedbackTimerTick(object sender, EventArgs e)
+        {
             ClearStatusMessage();
         }
 
         /// <summary>获取用户友好的错误消息</summary>
-        private string GetUserFriendlyErrorMessage(Exception exception) {
-            return exception switch {
+        private string GetUserFriendlyErrorMessage(Exception exception)
+        {
+            return exception switch
+            {
                 ArgumentNullException => "输入参数不能为空",
                 ArgumentException => "输入参数格式不正确",
                 UnauthorizedAccessException => "您没有执行此操作的权限",
@@ -272,7 +319,8 @@ namespace LYBT.Desktop.Core.Services {
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null) {
+        protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+        {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
@@ -280,7 +328,8 @@ namespace LYBT.Desktop.Core.Services {
 
         #region IDisposable 实现
 
-        public void Dispose() {
+        public void Dispose()
+        {
             _feedbackTimer?.Stop();
             Mouse.OverrideCursor = null;
         }
@@ -289,7 +338,8 @@ namespace LYBT.Desktop.Core.Services {
     }
 
     /// <summary>反馈类型枚举</summary>
-    public enum FeedbackType {
+    public enum FeedbackType
+    {
         None,
         Success,
         Error,

@@ -3,12 +3,14 @@ using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
 using Refit;
 
-namespace LYBT.Shared.Interfaces.Api {
+namespace LYBT.Shared.Interfaces.Api
+{
 
     /// <summary>
     /// 处方API客户端接口 - UltraThink统一标准
     /// </summary>
-    public interface IPrescriptionApi {
+    public interface IPrescriptionApi
+    {
 
         /// <summary>
         /// 获取处方列表（支持分页和查询）

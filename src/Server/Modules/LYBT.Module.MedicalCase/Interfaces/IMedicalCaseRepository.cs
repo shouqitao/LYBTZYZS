@@ -1,13 +1,15 @@
 ﻿using LYBT.Infrastructure.Interfaces;
 using LYBT.Shared.Models.Enums;
 
-namespace LYBT.Module.MedicalCase.Interfaces {
+namespace LYBT.Module.MedicalCase.Interfaces
+{
 
     /// <summary>
     /// 医疗案例仓储接口 - 数据层统一化重构
     /// 继承BaseRepository提供通用CRUD，扩展医疗案例特定业务方法
     /// </summary>
-    public interface IMedicalCaseRepository : IBaseRepository<LYBT.Entities.MedicalCase.MedicalCase> {
+    public interface IMedicalCaseRepository : IBaseRepository<LYBT.Entities.MedicalCase.MedicalCase>
+    {
         // 注意：基础CRUD方法由IBaseRepository提供
         // 这里只定义医疗案例特有的业务方法
 

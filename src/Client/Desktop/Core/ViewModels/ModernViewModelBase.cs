@@ -4,7 +4,8 @@ using Prism.Commands;
 using Prism.Events;
 using Prism.Mvvm;
 
-namespace LYBT.Desktop.Core.ViewModels {
+namespace LYBT.Desktop.Core.ViewModels
+{
 
     /// <summary>
     /// UltraThink Phase 3.1: 现代化ViewModel基类
@@ -15,7 +16,8 @@ namespace LYBT.Desktop.Core.ViewModels {
     /// 3. 统一事件聚合器集成
     /// 4. 零DelegateCommand CS8618警告
     /// </summary>
-    public abstract class ModernViewModelBase : BindableBase, IDisposable {
+    public abstract class ModernViewModelBase : BindableBase, IDisposable
+    {
 
         #region 核心依赖服务
 
@@ -35,10 +37,13 @@ namespace LYBT.Desktop.Core.ViewModels {
         /// <summary>
         /// 是否正在加载
         /// </summary>
-        public bool IsLoading {
+        public bool IsLoading
+        {
             get => _isLoading;
-            protected set {
-                if (SetProperty(ref _isLoading, value)) {
+            protected set
+            {
+                if (SetProperty(ref _isLoading, value))
+                {
                     OnLoadingStateChanged(value);
                     RaiseCanExecuteChanged();
                 }
@@ -48,10 +53,13 @@ namespace LYBT.Desktop.Core.ViewModels {
         /// <summary>
         /// 状态消息
         /// </summary>
-        public string StatusMessage {
+        public string StatusMessage
+        {
             get => _statusMessage;
-            protected set {
-                if (SetProperty(ref _statusMessage, value)) {
+            protected set
+            {
+                if (SetProperty(ref _statusMessage, value))
+                {
                     RaisePropertyChanged(nameof(HasMessage));
                 }
             }
@@ -60,7 +68,8 @@ namespace LYBT.Desktop.Core.ViewModels {
         /// <summary>
         /// 是否有错误
         /// </summary>
-        public bool HasError {
+        public bool HasError
+        {
             get => _hasError;
             private set => SetProperty(ref _hasError, value);
         }
@@ -68,10 +77,13 @@ namespace LYBT.Desktop.Core.ViewModels {
         /// <summary>
         /// 错误消息
         /// </summary>
-        public string ErrorMessage {
+        public string ErrorMessage
+        {
             get => _errorMessage;
-            private set {
-                if (SetProperty(ref _errorMessage, value)) {
+            private set
+            {
+                if (SetProperty(ref _errorMessage, value))
+                {
                     HasError = !string.IsNullOrEmpty(value);
                     RaisePropertyChanged(nameof(HasMessage));
                 }
@@ -102,11 +114,13 @@ namespace LYBT.Desktop.Core.ViewModels {
         #region 构造函数
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="ModernViewModelBase"/> class.
         /// 标准构造函数（推荐）
         /// </summary>
         protected ModernViewModelBase(
             IEventAggregator eventAggregator,
-            IErrorHandlingService? errorHandlingService = null) {
+            IErrorHandlingService? errorHandlingService = null)
+        {
             EventAggregator = eventAggregator ?? throw new ArgumentNullException(nameof(eventAggregator));
             ErrorHandlingService = errorHandlingService;
 
@@ -116,17 +130,21 @@ namespace LYBT.Desktop.Core.ViewModels {
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="ModernViewModelBase"/> class.
         /// 兼容性构造函数（向后兼容）
         /// </summary>
         protected ModernViewModelBase(IEventAggregator eventAggregator)
-            : this(eventAggregator, TryResolveErrorHandlingService()) {
+            : this(eventAggregator, TryResolveErrorHandlingService())
+        {
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="ModernViewModelBase"/> class.
         /// 简化构造函数（使用容器解析）
         /// </summary>
         protected ModernViewModelBase()
-            : this(GetEventAggregatorFromContainer(), TryResolveErrorHandlingService()) {
+            : this(GetEventAggregatorFromContainer(), TryResolveErrorHandlingService())
+        {
         }
 
         #endregion 构造函数
@@ -146,14 +164,16 @@ namespace LYBT.Desktop.Core.ViewModels {
         /// <summary>
         /// 加载状态改变回调 - 子类可重写
         /// </summary>
-        protected virtual void OnLoadingStateChanged(bool isLoading) {
+        protected virtual void OnLoadingStateChanged(bool isLoading)
+        {
             // 默认实现：无操作，子类可重写
         }
 
         /// <summary>
         /// 所有Command的CanExecute状态更新 - 子类可重写
         /// </summary>
-        protected virtual void RaiseCanExecuteChanged() {
+        protected virtual void RaiseCanExecuteChanged()
+        {
             ClearErrorCommand.RaiseCanExecuteChanged();
             RefreshCommand.RaiseCanExecuteChanged();
         }
@@ -165,55 +185,68 @@ namespace LYBT.Desktop.Core.ViewModels {
         /// <summary>
         /// 设置错误消息
         /// </summary>
-        protected void SetError(string message) {
+        protected void SetError(string message)
+        {
             ErrorMessage = message;
         }
 
         /// <summary>
         /// 清除错误状态
         /// </summary>
-        protected void ClearError() {
+        protected void ClearError()
+        {
             ErrorMessage = string.Empty;
         }
 
         /// <summary>
         /// 设置状态消息
         /// </summary>
-        protected void SetStatus(string message) {
+        protected void SetStatus(string message)
+        {
             StatusMessage = message;
         }
 
         /// <summary>
         /// 清除状态消息
         /// </summary>
-        protected void ClearStatus() {
+        protected void ClearStatus()
+        {
             StatusMessage = string.Empty;
         }
 
         /// <summary>
         /// 处理异常 - 统一错误处理
         /// </summary>
-        protected virtual async Task HandleErrorAsync(string operation, Exception ex, bool showDialog = true) {
-            if (ErrorHandlingService != null) {
-                try {
-                    var context = new ErrorContext {
+        protected virtual async Task HandleErrorAsync(string operation, Exception ex, bool showDialog = true)
+        {
+            if (ErrorHandlingService != null)
+            {
+                try
+                {
+                    var context = new ErrorContext
+                    {
                         OperationName = operation,
                         ModuleName = GetType().Namespace?.Split('.').LastOrDefault() ?? "Unknown",
-                        ViewName = GetType().Name.Replace("ViewModel", "")
+                        ViewName = GetType().Name.Replace("ViewModel", string.Empty)
                     };
 
                     var handledError = await ErrorHandlingService.HandleExceptionAsync(ex, context);
                     ErrorMessage = handledError.UserMessage;
 
-                    if (showDialog && handledError.RequiresUserAcknowledgment) {
+                    if (showDialog && handledError.RequiresUserAcknowledgment)
+                    {
                         await ErrorHandlingService.ShowErrorAsync(handledError);
                     }
-                } catch (Exception handlingEx) {
+                }
+                catch (Exception handlingEx)
+                {
                     // 错误处理服务本身异常时的fallback
                     ErrorMessage = $"{operation}失败: {ex.Message}";
                     System.Diagnostics.Debug.WriteLine($"[{GetType().Name}] 错误处理服务异常: {handlingEx}");
                 }
-            } else {
+            }
+            else
+            {
                 // Fallback: 基础错误处理
                 ErrorMessage = $"{operation}失败: {ex.Message}";
                 System.Diagnostics.Debug.WriteLine($"[{GetType().Name}] {operation} 异常: {ex}");
@@ -230,15 +263,21 @@ namespace LYBT.Desktop.Core.ViewModels {
         protected async Task<T?> ExecuteAsync<T>(
             Func<Task<T>> operation,
             string? operationName = null,
-            bool showErrorDialog = true) {
-            try {
+            bool showErrorDialog = true)
+        {
+            try
+            {
                 IsLoading = true;
                 ClearError();
                 return await operation();
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 await HandleErrorAsync(operationName ?? "操作", ex, showErrorDialog);
                 return default;
-            } finally {
+            }
+            finally
+            {
                 IsLoading = false;
             }
         }
@@ -249,16 +288,22 @@ namespace LYBT.Desktop.Core.ViewModels {
         protected async Task<bool> ExecuteAsync(
             Func<Task> operation,
             string? operationName = null,
-            bool showErrorDialog = true) {
-            try {
+            bool showErrorDialog = true)
+        {
+            try
+            {
                 IsLoading = true;
                 ClearError();
                 await operation();
                 return true;
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 await HandleErrorAsync(operationName ?? "操作", ex, showErrorDialog);
                 return false;
-            } finally {
+            }
+            finally
+            {
                 IsLoading = false;
             }
         }
@@ -270,7 +315,8 @@ namespace LYBT.Desktop.Core.ViewModels {
         /// <summary>
         /// 清除错误命令实现
         /// </summary>
-        private void ExecuteClearError() {
+        private void ExecuteClearError()
+        {
             ClearError();
             ClearStatus();
         }
@@ -278,21 +324,24 @@ namespace LYBT.Desktop.Core.ViewModels {
         /// <summary>
         /// 清除错误命令CanExecute
         /// </summary>
-        private bool CanExecuteClearError() {
+        private bool CanExecuteClearError()
+        {
             return HasError;
         }
 
         /// <summary>
         /// 刷新命令实现
         /// </summary>
-        private async Task ExecuteRefreshAsync() {
+        private async Task ExecuteRefreshAsync()
+        {
             await ExecuteAsync(OnRefreshAsync, "刷新数据");
         }
 
         /// <summary>
         /// 刷新命令CanExecute
         /// </summary>
-        private bool CanExecuteRefresh() {
+        private bool CanExecuteRefresh()
+        {
             return !IsLoading;
         }
 
@@ -303,11 +352,15 @@ namespace LYBT.Desktop.Core.ViewModels {
         /// <summary>
         /// 从容器解析EventAggregator
         /// </summary>
-        private static IEventAggregator GetEventAggregatorFromContainer() {
-            try {
+        private static IEventAggregator GetEventAggregatorFromContainer()
+        {
+            try
+            {
                 return (IEventAggregator?)Prism.Ioc.ContainerLocator.Container?.Resolve(typeof(IEventAggregator))
                     ?? new EventAggregator();
-            } catch {
+            }
+            catch
+            {
                 return new EventAggregator();
             }
         }
@@ -315,10 +368,14 @@ namespace LYBT.Desktop.Core.ViewModels {
         /// <summary>
         /// 尝试从容器解析ErrorHandlingService
         /// </summary>
-        private static IErrorHandlingService? TryResolveErrorHandlingService() {
-            try {
+        private static IErrorHandlingService? TryResolveErrorHandlingService()
+        {
+            try
+            {
                 return (IErrorHandlingService?)Prism.Ioc.ContainerLocator.Container?.Resolve(typeof(IErrorHandlingService));
-            } catch {
+            }
+            catch
+            {
                 return null;
             }
         }
@@ -327,20 +384,25 @@ namespace LYBT.Desktop.Core.ViewModels {
 
         #region IDisposable实现
 
-        protected virtual void OnDisposing() {
+        protected virtual void OnDisposing()
+        {
             // 子类可重写进行清理
         }
 
-        protected virtual void Dispose(bool disposing) {
-            if (!_disposed) {
-                if (disposing) {
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
                     OnDisposing();
                 }
                 _disposed = true;
             }
         }
 
-        public void Dispose() {
+        public void Dispose()
+        {
             Dispose(true);
             GC.SuppressFinalize(this);
         }

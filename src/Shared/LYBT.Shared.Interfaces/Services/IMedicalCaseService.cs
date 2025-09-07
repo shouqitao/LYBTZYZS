@@ -1,12 +1,14 @@
 ﻿using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 
-namespace LYBT.Shared.Interfaces.Services {
+namespace LYBT.Shared.Interfaces.Services
+{
 
     /// <summary>
     /// 医疗案例服务接口 - UltraThink统一标准
     /// </summary>
-    public interface IMedicalCaseService {
+    public interface IMedicalCaseService
+    {
 
         /// <summary>
         /// 根据ID获取医疗案例详情
@@ -51,12 +53,12 @@ namespace LYBT.Shared.Interfaces.Services {
         /// <summary>
         /// 暂停医疗案例
         /// </summary>
-        Task<ServiceResult<bool>> SuspendAsync(Guid id, string reason);
+        Task<ServiceResult<bool>> Suspend(Guid id, string reason);
 
         /// <summary>
         /// 恢复医疗案例
         /// </summary>
-        Task<ServiceResult<bool>> ResumeAsync(Guid id);
+        Task<ServiceResult<bool>> Resume(Guid id);
 
         /// <summary>
         /// 取消咨询/诊断
@@ -66,17 +68,17 @@ namespace LYBT.Shared.Interfaces.Services {
         /// <summary>
         /// 更新医疗案例状态
         /// </summary>
-        Task<ServiceResult<bool>> UpdateStatusAsync(Guid id, int status);
+        Task<ServiceResult<bool>> UpdateStatus(Guid id, int status);
 
         /// <summary>
         /// 归档医疗案例
         /// </summary>
-        Task<ServiceResult<bool>> ArchiveAsync(Guid id, string archiveReason);
+        Task<ServiceResult<bool>> Archive(Guid id, string archiveReason);
 
         /// <summary>
         /// 获取医疗案例统计信息
         /// </summary>
-        Task<ServiceResult<object>> GetStatisticsAsync(DateTime? startDate, DateTime? endDate);
+        Task<ServiceResult<object>> GetStatistics(DateTime? startDate, DateTime? endDate);
 
         /// <summary>
         /// 搜索医疗案例
@@ -86,6 +88,6 @@ namespace LYBT.Shared.Interfaces.Services {
         /// <summary>
         /// 获取医疗案例历史记录
         /// </summary>
-        Task<ServiceResult<List<object>>> GetHistoryAsync(Guid id);
+        Task<ServiceResult<List<object>>> GetHistory(Guid id);
     }
 }

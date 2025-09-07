@@ -5,17 +5,20 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 
-namespace LYBT.Desktop.Services {
+namespace LYBT.Desktop.Services
+{
 
     /// <summary>
     /// 安全凭据服务 - 使用加密存储凭据
     /// </summary>
-    public class SecureCredentialService : ICredentialService {
+    public class SecureCredentialService : ICredentialService
+    {
         private readonly ILogger<SecureCredentialService>? _logger;
         private readonly string _credentialFilePath;
         private readonly byte[] _entropy;
 
-        public SecureCredentialService(ILogger<SecureCredentialService>? logger = null) {
+        public SecureCredentialService(ILogger<SecureCredentialService>? logger = null)
+        {
             _logger = logger;
 
             // 获取用户数据目录
@@ -29,9 +32,12 @@ namespace LYBT.Desktop.Services {
             _entropy = GenerateOrLoadEntropy(appDirectory);
         }
 
-        public SavedCredentials? LoadCredentials() {
-            try {
-                if (!File.Exists(_credentialFilePath)) {
+        public SavedCredentials? LoadCredentials()
+        {
+            try
+            {
+                if (!File.Exists(_credentialFilePath))
+                {
                     _logger?.LogDebug("凭据文件不存在");
                     return null;
                 }
@@ -44,15 +50,20 @@ namespace LYBT.Desktop.Services {
                 _logger?.LogDebug("成功加载保存的凭据");
 
                 return credentials;
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger?.LogError(ex, "加载凭据失败");
                 return null;
             }
         }
 
-        public void SaveCredentials(string username, string password, bool rememberMe) {
-            try {
-                var credentials = new SavedCredentials {
+        public void SaveCredentials(string username, string password, bool rememberMe)
+        {
+            try
+            {
+                var credentials = new SavedCredentials
+                {
                     Username = username,
                     Password = rememberMe ? password : string.Empty,
                     RememberMe = rememberMe,
@@ -65,18 +76,24 @@ namespace LYBT.Desktop.Services {
 
                 File.WriteAllBytes(_credentialFilePath, encryptedData);
                 _logger?.LogDebug("成功保存凭据");
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger?.LogError(ex, "保存凭据失败");
             }
         }
 
-        public void ClearCredentials() {
-            try {
-                if (File.Exists(_credentialFilePath)) {
+        public void ClearCredentials()
+        {
+            try
+            {
+                if (File.Exists(_credentialFilePath))
+                {
                     // 安全删除：先覆盖再删除
                     var size = new FileInfo(_credentialFilePath).Length;
                     var random = new byte[size];
-                    using (var rng = RandomNumberGenerator.Create()) {
+                    using (var rng = RandomNumberGenerator.Create())
+                    {
                         rng.GetBytes(random);
                     }
                     File.WriteAllBytes(_credentialFilePath, random);
@@ -84,21 +101,26 @@ namespace LYBT.Desktop.Services {
 
                     _logger?.LogDebug("成功清除凭据");
                 }
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger?.LogError(ex, "清除凭据失败");
             }
         }
 
-        private byte[] GenerateOrLoadEntropy(string directory) {
+        private byte[] GenerateOrLoadEntropy(string directory)
+        {
             var entropyFile = Path.Combine(directory, ".entropy");
 
-            if (File.Exists(entropyFile)) {
+            if (File.Exists(entropyFile))
+            {
                 return File.ReadAllBytes(entropyFile);
             }
 
             // 生成新的熵值
             var entropy = new byte[32];
-            using (var rng = RandomNumberGenerator.Create()) {
+            using (var rng = RandomNumberGenerator.Create())
+            {
                 rng.GetBytes(entropy);
             }
 
@@ -110,13 +132,18 @@ namespace LYBT.Desktop.Services {
             return entropy;
         }
 
-        public void DeleteCredentials() {
-            try {
-                if (File.Exists(_credentialFilePath)) {
+        public void DeleteCredentials()
+        {
+            try
+            {
+                if (File.Exists(_credentialFilePath))
+                {
                     File.Delete(_credentialFilePath);
                     _logger?.LogDebug("凭据已删除");
                 }
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 _logger?.LogError(ex, "删除凭据失败");
             }
         }

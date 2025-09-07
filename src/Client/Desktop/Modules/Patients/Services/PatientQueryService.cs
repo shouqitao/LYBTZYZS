@@ -13,7 +13,8 @@ namespace LYBT.Desktop.Patients.Services;
 /// 集成企业级日志记录，支持患者管理和档案查询需求
 /// 适配中医诊所患者档案查询场景，确保查询性能和数据安全
 /// </summary>
-public class PatientQueryService(ILogger<PatientQueryService> logger) : IPatientQueryService {
+public class PatientQueryService(ILogger<PatientQueryService> logger) : IPatientQueryService
+{
     private readonly ILogger<PatientQueryService> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
     #region 患者查询专业化实现
@@ -24,18 +25,24 @@ public class PatientQueryService(ILogger<PatientQueryService> logger) : IPatient
     /// </summary>
     /// <param name="query">分页查询参数</param>
     /// <returns>包含患者列表和总数的分页结果</returns>
-    public Task<ServiceResult<PagedResult<PatientDto>>> GetPagedAsync(PatientPagedQueryDto query) {
-        try {
-            _logger.LogDebug("执行患者分页查询，页码: {PageNumber}, 页大小: {PageSize}",
+    public Task<ServiceResult<PagedResult<PatientDto>>> GetPagedAsync(PatientPagedQueryDto query)
+    {
+        try
+        {
+            _logger.LogDebug(
+                "执行患者分页查询，页码: {PageNumber}, 页大小: {PageSize}",
                 query.CurrentPage, query.PageSize);
 
-            var emptyResult = new PagedResult<PatientDto> {
+            var emptyResult = new PagedResult<PatientDto>
+            {
                 Items = [],
                 TotalCount = 0
             };
 
             return Task.FromResult(ServiceResult<PagedResult<PatientDto>>.Success(emptyResult));
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
             _logger.LogError(ex, "患者分页查询异常");
             return Task.FromResult(ServiceResult<PagedResult<PatientDto>>.Failure("查询患者列表失败"));
         }
@@ -47,7 +54,8 @@ public class PatientQueryService(ILogger<PatientQueryService> logger) : IPatient
     /// </summary>
     /// <param name="id">患者唯一标识</param>
     /// <returns>患者详细档案DTO</returns>
-    public Task<ServiceResult<PatientDto>> GetByIdAsync(Guid id) {
+    public Task<ServiceResult<PatientDto>> GetByIdAsync(Guid id)
+    {
         _logger.LogDebug("查询患者详细档案: {PatientId}", id);
         return Task.FromResult(ServiceResult<PatientDto>.Failure("简单诊所版本暂不支持患者详情查询"));
     }
@@ -58,12 +66,16 @@ public class PatientQueryService(ILogger<PatientQueryService> logger) : IPatient
     /// </summary>
     /// <param name="keyword">搜索关键字</param>
     /// <returns>匹配患者列表</returns>
-    public Task<ServiceResult<List<PatientDto>>> SearchAsync(string keyword) {
-        try {
+    public Task<ServiceResult<List<PatientDto>>> SearchAsync(string keyword)
+    {
+        try
+        {
             _logger.LogDebug("患者关键字搜索: {Keyword}", keyword);
             List<PatientDto> emptyList = [];
             return Task.FromResult(ServiceResult<List<PatientDto>>.Success(emptyList));
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
             _logger.LogError(ex, "患者搜索异常");
             return Task.FromResult(ServiceResult<List<PatientDto>>.Failure("患者搜索失败"));
         }
@@ -74,13 +86,17 @@ public class PatientQueryService(ILogger<PatientQueryService> logger) : IPatient
     /// 生成患者管理相关的基础统计信息和报表数据
     /// </summary>
     /// <returns>患者统计信息DTO</returns>
-    public Task<ServiceResult<PatientStatisticsDto>> GetStatisticsAsync() {
-        try {
+    public Task<ServiceResult<PatientStatisticsDto>> GetStatisticsAsync()
+    {
+        try
+        {
             _logger.LogDebug("生成患者档案统计数据");
             var stats = new PatientStatisticsDto();
 
             return Task.FromResult(ServiceResult<PatientStatisticsDto>.Success(stats));
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
             _logger.LogError(ex, "患者统计数据生成异常");
             return Task.FromResult(ServiceResult<PatientStatisticsDto>.Failure("生成统计数据失败"));
         }
@@ -91,13 +107,17 @@ public class PatientQueryService(ILogger<PatientQueryService> logger) : IPatient
     /// </summary>
     /// <param name="idCard">身份证号</param>
     /// <returns>患者信息或空结果</returns>
-    public Task<ServiceResult<PatientDto>> GetByIdCardAsync(string idCard) {
-        try {
+    public Task<ServiceResult<PatientDto>> GetByIdCardAsync(string idCard)
+    {
+        try
+        {
             _logger.LogDebug("根据身份证号查询患者: {IdCard}", idCard?.Substring(0, 6) + "****");
 
             // 简单诊所版本：基础实现，返回空结果
             return Task.FromResult(ServiceResult<PatientDto>.Failure("简单诊所版本暂不支持身份证号查询"));
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
             _logger.LogError(ex, "根据身份证号查询患者异常");
             return Task.FromResult(ServiceResult<PatientDto>.Failure("查询患者失败"));
         }
@@ -108,14 +128,18 @@ public class PatientQueryService(ILogger<PatientQueryService> logger) : IPatient
     /// </summary>
     /// <param name="phone">电话号码</param>
     /// <returns>匹配的患者列表</returns>
-    public Task<ServiceResult<List<PatientDto>>> GetByPhoneAsync(string phone) {
-        try {
+    public Task<ServiceResult<List<PatientDto>>> GetByPhoneAsync(string phone)
+    {
+        try
+        {
             _logger.LogDebug("根据电话号码查询患者: {Phone}", phone?.Substring(0, 3) + "****");
 
             // 简单诊所版本：基础实现，返回空列表
             List<PatientDto> emptyList = [];
             return Task.FromResult(ServiceResult<List<PatientDto>>.Success(emptyList));
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
             _logger.LogError(ex, "根据电话号码查询患者异常");
             return Task.FromResult(ServiceResult<List<PatientDto>>.Failure("查询患者失败"));
         }

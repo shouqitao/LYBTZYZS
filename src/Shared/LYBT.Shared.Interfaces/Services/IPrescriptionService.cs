@@ -1,12 +1,14 @@
 ﻿using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 
-namespace LYBT.Shared.Interfaces.Services {
+namespace LYBT.Shared.Interfaces.Services
+{
 
     /// <summary>
     /// 处方服务接口 - UltraThink统一标准
     /// </summary>
-    public interface IPrescriptionService {
+    public interface IPrescriptionService
+    {
 
         /// <summary>
         /// 根据ID获取处方详情
@@ -92,7 +94,8 @@ namespace LYBT.Shared.Interfaces.Services {
     /// <summary>
     /// 处方验证结果
     /// </summary>
-    public class PrescriptionValidationResult {
+    public class PrescriptionValidationResult
+    {
         public bool IsValid { get; set; }
         public List<string> Errors { get; set; } = new List<string>();
         public List<string> Warnings { get; set; } = new List<string>();

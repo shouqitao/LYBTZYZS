@@ -2,13 +2,15 @@
 using LYBT.Shared.Models.Enums;
 using Prism.Mvvm;
 
-namespace LYBT.Desktop.Core.ViewModels.Herbs {
+namespace LYBT.Desktop.Core.ViewModels.Herbs
+{
 
     /// <summary>
     /// 药材显示视图模型 - UltraThink架构的显示层
     /// 负责所有与显示相关的逻辑和格式化
     /// </summary>
-    public class HerbDisplayViewModel : BindableBase {
+    public class HerbDisplayViewModel : BindableBase
+    {
 
         #region Fields
 
@@ -18,7 +20,8 @@ namespace LYBT.Desktop.Core.ViewModels.Herbs {
 
         #region Constructor
 
-        public HerbDisplayViewModel(HerbDto herbData) {
+        public HerbDisplayViewModel(HerbDto herbData)
+        {
             _herbData = herbData ?? throw new System.ArgumentNullException(nameof(herbData));
         }
 
@@ -34,7 +37,8 @@ namespace LYBT.Desktop.Core.ViewModels.Herbs {
         #region Display Properties
 
         /// <summary>状态显示文本</summary>
-        public string StatusText => _herbData.Status switch {
+        public string StatusText => _herbData.Status switch
+        {
             CommonStatus.Enabled => "正常",
             CommonStatus.Disabled => "禁用",
             _ => "未知"
@@ -53,7 +57,7 @@ namespace LYBT.Desktop.Core.ViewModels.Herbs {
         public string OriginSpecDisplay =>
             string.IsNullOrEmpty(_herbData.Origin) && string.IsNullOrEmpty(_herbData.Spec)
                 ? "未知产地"
-                : $"{_herbData.Origin ?? "未知"} {_herbData.Spec ?? ""}".Trim();
+                : $"{_herbData.Origin ?? "未知"} {_herbData.Spec ?? string.Empty}".Trim();
 
         /// <summary>功效简要显示</summary>
         public string EffectBrief => string.IsNullOrEmpty(_herbData.Effect) ?
@@ -117,29 +121,34 @@ namespace LYBT.Desktop.Core.ViewModels.Herbs {
         /// <summary>
         /// 格式化库存数量
         /// </summary>
-        public string FormatStock(decimal stock) {
+        public string FormatStock(decimal stock)
+        {
             return stock <= 0 ? "0" : stock.ToString("F1");
         }
 
         /// <summary>
         /// 格式化价格
         /// </summary>
-        public string FormatPrice(decimal price) {
+        public string FormatPrice(decimal price)
+        {
             return $"¥{price:F2}";
         }
 
         /// <summary>
         /// 格式化日期时间
         /// </summary>
-        public string FormatDateTime(System.DateTime dateTime) {
+        public string FormatDateTime(System.DateTime dateTime)
+        {
             return dateTime.ToString("yyyy-MM-dd HH:mm");
         }
 
         /// <summary>
         /// 截断文本并添加省略号
         /// </summary>
-        public string TruncateText(string text, int maxLength) {
-            if (string.IsNullOrEmpty(text) || text.Length <= maxLength) {
+        public string TruncateText(string text, int maxLength)
+        {
+            if (string.IsNullOrEmpty(text) || text.Length <= maxLength)
+            {
                 return text ?? string.Empty;
             }
 
@@ -153,7 +162,8 @@ namespace LYBT.Desktop.Core.ViewModels.Herbs {
         /// <summary>
         /// 更新药材数据
         /// </summary>
-        public void UpdateHerbData(HerbDto newHerbData) {
+        public void UpdateHerbData(HerbDto newHerbData)
+        {
             _herbData = newHerbData ?? throw new System.ArgumentNullException(nameof(newHerbData));
 
             // 通知所有显示属性变化

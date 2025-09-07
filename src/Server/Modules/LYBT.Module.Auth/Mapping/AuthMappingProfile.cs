@@ -5,14 +5,17 @@ using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Core;
 
-namespace LYBT.Module.Auth.Mapping {
+namespace LYBT.Module.Auth.Mapping
+{
 
     /// <summary>
     /// 认证模块AutoMapper配置 - 模块标准化重构
     /// </summary>
-    public class AuthMappingProfile : Profile {
+    public class AuthMappingProfile : Profile
+    {
 
-        public AuthMappingProfile() {
+        public AuthMappingProfile()
+        {
             // 用户到UserDto的映射 - UltraThink v2.0简化版（替换BaseUser）
             CreateMap<User, UserDto>()
                 .ForMember(dest => dest.Username, opt => opt.MapFrom(src => src.Username))

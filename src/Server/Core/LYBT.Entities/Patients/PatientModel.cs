@@ -3,7 +3,8 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using LYBT.Shared.Models.Enums;
 
-namespace LYBT.Entities.Patients {
+namespace LYBT.Entities.Patients
+{
 
     /// <summary>
     /// 患者实体 - UltraThink v2.0架构简化版
@@ -11,7 +12,8 @@ namespace LYBT.Entities.Patients {
     /// 删除五笔码字段，保留拼音码用于快速搜索
     /// </summary>
     [Table("Patients")]
-    public class Patient {
+    public class Patient
+    {
 
         /// <summary>患者唯一标识</summary>
         [Key]
@@ -20,12 +22,12 @@ namespace LYBT.Entities.Patients {
 
         /// <summary>患者姓名</summary>
         [Required]
-        [StringLength(100)]  // 匹配数据库的 nvarchar(100)
+        [StringLength(100)] // 匹配数据库的 nvarchar(100)
         [DisplayName("姓名")]
         public string Name { get; set; } = string.Empty;
 
         /// <summary>拼音码（用于快速搜索）</summary>
-        [StringLength(20)]  // 匹配数据库的 nvarchar(20)
+        [StringLength(20)] // 匹配数据库的 nvarchar(20)
         [DisplayName("拼音码")]
         public string? PinYinCode { get; set; }
 
@@ -56,7 +58,7 @@ namespace LYBT.Entities.Patients {
         public string? PhoneNumber { get; set; }
 
         /// <summary>地址</summary>
-        [StringLength(256)]  // 匹配数据库的 nvarchar(256)
+        [StringLength(256)] // 匹配数据库的 nvarchar(256)
         [DisplayName("地址")]
         public string? Address { get; set; }
 
@@ -86,7 +88,7 @@ namespace LYBT.Entities.Patients {
         public CommonStatus Status { get; set; } = CommonStatus.Enabled;
 
         /// <summary>禁用原因</summary>
-        [StringLength(128)]  // 匹配数据库的 nvarchar(128)
+        [StringLength(128)] // 匹配数据库的 nvarchar(128)
         [DisplayName("禁用原因")]
         public string? DisableReason { get; set; }
 
@@ -117,12 +119,16 @@ namespace LYBT.Entities.Patients {
         /// <summary>年龄（计算属性）</summary>
         [NotMapped]
         [DisplayName("年龄")]
-        public int? Age {
-            get {
-                if (BirthDate.HasValue) {
+        public int? Age
+        {
+            get
+            {
+                if (BirthDate.HasValue)
+                {
                     var today = DateTime.Today;
                     var age = today.Year - BirthDate.Value.Year;
-                    if (BirthDate.Value.Date > today.AddYears(-age)) {
+                    if (BirthDate.Value.Date > today.AddYears(-age))
+                    {
                         age--;
                     }
 

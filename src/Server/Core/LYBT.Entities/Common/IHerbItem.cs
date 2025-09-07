@@ -1,11 +1,13 @@
 ﻿using System.ComponentModel;
 
-namespace LYBT.Entities.Common {
+namespace LYBT.Entities.Common
+{
 
     /// <summary>
     /// 药材项基础接口 - 定义药材在不同场景下的通用属性
     /// </summary>
-    public interface IHerbItem {
+    public interface IHerbItem
+    {
 
         /// <summary>
         /// 药材ID（关联药材库）

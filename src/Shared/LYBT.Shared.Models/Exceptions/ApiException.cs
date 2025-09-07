@@ -5,7 +5,8 @@ namespace LYBT.Shared.Models.Exceptions;
 /// <summary>
 /// API调用异常 - UltraThink统一异常体系
 /// </summary>
-public class ApiException : AppException {
+public class ApiException : AppException
+{
 
     /// <summary>
     /// HTTP状态码
@@ -27,23 +28,28 @@ public class ApiException : AppException {
     /// </summary>
     public string? HttpMethod { get; set; }
 
-    public ApiException() : base("API调用失败") {
+    public ApiException() : base("API调用失败")
+    {
     }
 
-    public ApiException(string message) : base(message) {
+    public ApiException(string message) : base(message)
+    {
     }
 
-    public ApiException(string message, Exception innerException) : base(message, innerException) {
+    public ApiException(string message, Exception innerException) : base(message, innerException)
+    {
     }
 
     public ApiException(HttpStatusCode statusCode, string? responseContent = null, Exception? innerException = null)
-        : base($"API调用失败: {statusCode}", innerException!) {
+        : base($"API调用失败: {statusCode}", innerException!)
+    {
         StatusCode = statusCode;
         ResponseContent = responseContent;
     }
 
     public ApiException(HttpStatusCode statusCode, string? requestUrl, string? httpMethod, string? responseContent = null, Exception? innerException = null)
-        : base($"API调用失败: {httpMethod} {requestUrl} 返回 {statusCode}", innerException!) {
+        : base($"API调用失败: {httpMethod} {requestUrl} 返回 {statusCode}", innerException!)
+    {
         StatusCode = statusCode;
         RequestUrl = requestUrl;
         HttpMethod = httpMethod;

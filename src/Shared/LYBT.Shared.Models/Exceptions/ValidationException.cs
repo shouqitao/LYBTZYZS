@@ -3,7 +3,8 @@
 /// <summary>
 /// 数据验证异常 - UltraThink统一异常体系
 /// </summary>
-public class ValidationException : AppException {
+public class ValidationException : AppException
+{
 
     /// <summary>
     /// 验证错误集合 (字段名 -> 错误消息数组)
@@ -15,38 +16,46 @@ public class ValidationException : AppException {
     /// </summary>
     public string? FieldName { get; set; }
 
-    public ValidationException() : base("数据验证失败") {
+    public ValidationException() : base("数据验证失败")
+    {
         Errors = new Dictionary<string, string[]>();
         ShowDetailToUser = true; // 验证异常需要显示给用户
     }
 
-    public ValidationException(string message) : base(message) {
+    public ValidationException(string message) : base(message)
+    {
         Errors = new Dictionary<string, string[]>();
         ShowDetailToUser = true;
     }
 
-    public ValidationException(string message, Dictionary<string, string[]> errors) : base(message) {
+    public ValidationException(string message, Dictionary<string, string[]> errors) : base(message)
+    {
         Errors = errors ?? new Dictionary<string, string[]>();
         ShowDetailToUser = true;
     }
 
-    public ValidationException(string fieldName, string errorMessage) : base($"字段 {fieldName} 验证失败: {errorMessage}") {
+    public ValidationException(string fieldName, string errorMessage) : base($"字段 {fieldName} 验证失败: {errorMessage}")
+    {
         FieldName = fieldName;
-        Errors = new Dictionary<string, string[]> {
+        Errors = new Dictionary<string, string[]>
+        {
             [fieldName] = new[] { errorMessage }
         };
         ShowDetailToUser = true;
     }
 
-    public ValidationException(string fieldName, string[] errorMessages) : base($"字段 {fieldName} 验证失败") {
+    public ValidationException(string fieldName, string[] errorMessages) : base($"字段 {fieldName} 验证失败")
+    {
         FieldName = fieldName;
-        Errors = new Dictionary<string, string[]> {
+        Errors = new Dictionary<string, string[]>
+        {
             [fieldName] = errorMessages
         };
         ShowDetailToUser = true;
     }
 
-    public ValidationException(string message, Exception innerException) : base(message, innerException) {
+    public ValidationException(string message, Exception innerException) : base(message, innerException)
+    {
         Errors = new Dictionary<string, string[]>();
         ShowDetailToUser = true;
     }
@@ -54,12 +63,16 @@ public class ValidationException : AppException {
     /// <summary>
     /// 添加验证错误
     /// </summary>
-    public void AddError(string fieldName, string errorMessage) {
-        if (Errors.ContainsKey(fieldName)) {
+    public void AddError(string fieldName, string errorMessage)
+    {
+        if (Errors.ContainsKey(fieldName))
+        {
             var existingErrors = Errors[fieldName].ToList();
             existingErrors.Add(errorMessage);
             Errors[fieldName] = existingErrors.ToArray();
-        } else {
+        }
+        else
+        {
             Errors[fieldName] = new[] { errorMessage };
         }
     }

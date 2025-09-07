@@ -19,7 +19,8 @@ namespace LYBT.Desktop.Auth.ViewModels;
 /// 支持用户名密码登录、记住我功能、API连接检测
 /// 适配小型诊所登录流程，确保安全性和易用性
 /// </summary>
-public class LoginViewModel : ModernViewModelBase {
+public class LoginViewModel : ModernViewModelBase
+{
 
     #region 私有字段和依赖注入
 
@@ -43,20 +44,26 @@ public class LoginViewModel : ModernViewModelBase {
     public DelegateCommand<PasswordBox> PasswordChangedCommand { get; }
 
     /// <summary>登录请求模型</summary>
-    public LoginRequest LoginRequest {
+    public LoginRequest LoginRequest
+    {
         get => _loginRequest;
-        set {
-            if (SetProperty(ref _loginRequest, value)) {
+        set
+        {
+            if (SetProperty(ref _loginRequest, value))
+            {
                 RaiseCanExecuteChanged();
             }
         }
     }
 
     /// <summary>用户名</summary>
-    public string Username {
+    public string Username
+    {
         get => LoginRequest.Username;
-        set {
-            if (LoginRequest.Username != value) {
+        set
+        {
+            if (LoginRequest.Username != value)
+            {
                 LoginRequest.Username = value;
                 RaisePropertyChanged(nameof(Username));
                 RaiseCanExecuteChanged();
@@ -65,10 +72,13 @@ public class LoginViewModel : ModernViewModelBase {
     }
 
     /// <summary>密码</summary>
-    public string Password {
+    public string Password
+    {
         get => LoginRequest.Password;
-        set {
-            if (LoginRequest.Password != value) {
+        set
+        {
+            if (LoginRequest.Password != value)
+            {
                 LoginRequest.Password = value;
                 RaisePropertyChanged(nameof(Password));
                 RaiseCanExecuteChanged();
@@ -77,10 +87,13 @@ public class LoginViewModel : ModernViewModelBase {
     }
 
     /// <summary>记住我</summary>
-    public bool RememberMe {
+    public bool RememberMe
+    {
         get => LoginRequest.RememberMe;
-        set {
-            if (LoginRequest.RememberMe != value) {
+        set
+        {
+            if (LoginRequest.RememberMe != value)
+            {
                 LoginRequest.RememberMe = value;
                 RaisePropertyChanged(nameof(RememberMe));
             }
@@ -94,7 +107,8 @@ public class LoginViewModel : ModernViewModelBase {
     public bool IsApiOnline { get; set; } = true;
 
     /// <summary>API状态信息</summary>
-    public string ApiStatus {
+    public string ApiStatus
+    {
         get => _apiStatus;
         set => SetProperty(ref _apiStatus, value);
     }
@@ -104,6 +118,7 @@ public class LoginViewModel : ModernViewModelBase {
     #region 构造函数和初始化
 
     /// <summary>
+    /// Initializes a new instance of the <see cref="LoginViewModel"/> class.
     /// 构造函数 - UltraThink双层架构依赖注入
     /// 初始化认证模块、映射器、命令和事件订阅
     /// </summary>
@@ -117,7 +132,8 @@ public class LoginViewModel : ModernViewModelBase {
         IAuthService authModule,
         IMapper mapper,
         IErrorHandlingService? errorHandlingService = null)
-        : base(eventAggregator, errorHandlingService) {
+        : base(eventAggregator, errorHandlingService)
+    {
         _authModule = authModule ?? throw new ArgumentNullException(nameof(authModule));
         _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
 
@@ -140,24 +156,33 @@ public class LoginViewModel : ModernViewModelBase {
     /// 异步初始化API连接监控
     /// 后台检查认证服务可用性，更新UI状态
     /// </summary>
-    private async Task InitializeApiMonitoringAsync() {
-        try {
+    private async Task InitializeApiMonitoringAsync()
+    {
+        try
+        {
             // Simple connectivity check by trying to validate a dummy token
             var connectionResult = false;
-            try {
+            try
+            {
                 await _authModule.ValidateTokenAsync("dummy");
                 connectionResult = true; // If no exception, API is reachable
-            } catch {
+            }
+            catch
+            {
                 connectionResult = false; // API is not reachable
             }
 
-            Application.Current.Dispatcher.Invoke(() => {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
                 IsApiOnline = connectionResult;
                 ApiStatus = connectionResult ? "API连接正常" : "API连接异常";
                 LoginCommand.RaiseCanExecuteChanged();
             });
-        } catch (Exception ex) {
-            Application.Current.Dispatcher.Invoke(() => {
+        }
+        catch (Exception ex)
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
                 IsApiOnline = false;
                 ApiStatus = $"API连接检查失败: {ex.Message}";
                 LoginCommand.RaiseCanExecuteChanged();
@@ -172,7 +197,8 @@ public class LoginViewModel : ModernViewModelBase {
     /// <summary>
     /// 重写Command状态更新
     /// </summary>
-    protected override void RaiseCanExecuteChanged() {
+    protected override void RaiseCanExecuteChanged()
+    {
         base.RaiseCanExecuteChanged();
         LoginCommand.RaiseCanExecuteChanged();
     }
@@ -181,22 +207,30 @@ public class LoginViewModel : ModernViewModelBase {
 
     #region 命令处理
 
-    private bool CanExecuteLogin() {
+    private bool CanExecuteLogin()
+    {
         return !IsLoading && IsApiOnline &&
                !string.IsNullOrWhiteSpace(LoginRequest.Username) &&
                !string.IsNullOrWhiteSpace(LoginRequest.Password);
     }
 
-    private async Task ExecuteLoginAsync() {
-        var success = await ExecuteAsync(async () => {
+    private async Task ExecuteLoginAsync()
+    {
+        var success = await ExecuteAsync(
+            async () =>
+        {
             // UltraThink四层架构：使用模块化服务执行登录
             var result = await _authModule.LoginAsync(LoginRequest);
 
-            if (result.IsSuccess && result.Data != null) {
+            if (result.IsSuccess && result.Data != null)
+            {
                 // 设置状态消息
-                if (result.Data.User?.Username?.Equals("sysadmin", StringComparison.OrdinalIgnoreCase) == true) {
+                if (result.Data.User?.Username?.Equals("sysadmin", StringComparison.OrdinalIgnoreCase) == true)
+                {
                     SetStatus("超级管理员登录成功，正在跳转...");
-                } else {
+                }
+                else
+                {
                     SetStatus("用户登录成功，正在跳转...");
                 }
 
@@ -205,14 +239,18 @@ public class LoginViewModel : ModernViewModelBase {
 
                 // 通过事件总线通知登录成功
                 EventAggregator.GetEvent<LoginSuccessEvent>().Publish();
-            } else {
+            }
+            else
+            {
                 SetError(result.ErrorMessage ?? "登录失败，请检查用户名和密码");
             }
         }, "登录");
     }
 
-    private void OnPasswordChanged(PasswordBox? passwordBox) {
-        if (passwordBox != null) {
+    private void OnPasswordChanged(PasswordBox? passwordBox)
+    {
+        if (passwordBox != null)
+        {
             Password = passwordBox.Password;
         }
     }
@@ -224,12 +262,14 @@ public class LoginViewModel : ModernViewModelBase {
     /// <summary>
     /// 登出事件处理
     /// </summary>
-    private void OnLogout() {
+    private void OnLogout()
+    {
         ClearError();
         ClearStatus();
 
         // 清除登录状态
-        LoginRequest = new LoginRequest {
+        LoginRequest = new LoginRequest
+        {
             UserAgent = "LYBT.WPF.Client",
             LoginType = "Password"
         };
@@ -241,28 +281,43 @@ public class LoginViewModel : ModernViewModelBase {
     /// <summary>
     /// 认证状态变更事件处理
     /// </summary>
-    private void OnAuthStatusChanged(object? sender, (bool IsLoggedIn, string? Username, string? Message) e) {
-        try {
+    private void OnAuthStatusChanged(object? sender, (bool IsLoggedIn, string? Username, string? Message) e)
+    {
+        try
+        {
             // 在UI线程上更新状态
-            if (Application.Current?.Dispatcher != null) {
-                if (Application.Current.Dispatcher.CheckAccess()) {
+            if (Application.Current?.Dispatcher != null)
+            {
+                if (Application.Current.Dispatcher.CheckAccess())
+                {
                     UpdateAuthStatus(e);
-                } else {
+                }
+                else
+                {
                     Application.Current.Dispatcher.BeginInvoke(new Action(() => UpdateAuthStatus(e)));
                 }
-            } else {
+            }
+            else
+            {
                 UpdateAuthStatus(e);
             }
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
             _ = HandleErrorAsync("认证状态更新", ex, false);
         }
     }
 
-    private void UpdateAuthStatus((bool IsLoggedIn, string? Username, string? Message) e) {
-        if (!string.IsNullOrEmpty(e.Message)) {
-            if (e.IsLoggedIn) {
+    private void UpdateAuthStatus((bool IsLoggedIn, string? Username, string? Message) e)
+    {
+        if (!string.IsNullOrEmpty(e.Message))
+        {
+            if (e.IsLoggedIn)
+            {
                 SetStatus(e.Message);
-            } else {
+            }
+            else
+            {
                 SetError(e.Message);
             }
         }
@@ -271,24 +326,35 @@ public class LoginViewModel : ModernViewModelBase {
     /// <summary>
     /// API连接状态变更事件处理
     /// </summary>
-    private void OnApiConnectionChanged(object? sender, (bool IsConnected, string Message) e) {
-        try {
+    private void OnApiConnectionChanged(object? sender, (bool IsConnected, string Message) e)
+    {
+        try
+        {
             // 在UI线程上更新API状态
-            if (Application.Current?.Dispatcher != null) {
-                if (Application.Current.Dispatcher.CheckAccess()) {
+            if (Application.Current?.Dispatcher != null)
+            {
+                if (Application.Current.Dispatcher.CheckAccess())
+                {
                     UpdateApiConnectionStatus(e);
-                } else {
+                }
+                else
+                {
                     Application.Current.Dispatcher.BeginInvoke(new Action(() => UpdateApiConnectionStatus(e)));
                 }
-            } else {
+            }
+            else
+            {
                 UpdateApiConnectionStatus(e);
             }
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
             _ = HandleErrorAsync("API状态更新", ex, false);
         }
     }
 
-    private void UpdateApiConnectionStatus((bool IsConnected, string Message) e) {
+    private void UpdateApiConnectionStatus((bool IsConnected, string Message) e)
+    {
         IsApiOnline = e.IsConnected;
         ApiStatus = e.Message;
         RaisePropertyChanged(nameof(IsApiOnline));
@@ -302,7 +368,8 @@ public class LoginViewModel : ModernViewModelBase {
     /// <summary>
     /// 加载保存的凭据
     /// </summary>
-    private void LoadSavedCredentials() {
+    private void LoadSavedCredentials()
+    {
         // 简化版本：不支持保存凭据功能
         HasSavedPassword = false;
     }
@@ -314,9 +381,11 @@ public class LoginViewModel : ModernViewModelBase {
     /// <summary>
     /// 清理资源
     /// </summary>
-    protected override void OnDisposing() {
+    protected override void OnDisposing()
+    {
         // 取消事件订阅
-        if (_authModule != null) {
+        if (_authModule != null)
+        {
             // 简化版本：无事件订阅需要清理
         }
 

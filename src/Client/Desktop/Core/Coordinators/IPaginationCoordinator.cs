@@ -1,12 +1,14 @@
 ﻿using System.ComponentModel;
 
-namespace LYBT.Desktop.Core.Coordinators {
+namespace LYBT.Desktop.Core.Coordinators
+{
 
     /// <summary>
     /// 分页协调器接口 - 负责分页逻辑的统一管理
     /// UltraThink架构: 将分页逻辑从ViewModel中分离出来
     /// </summary>
-    public interface IPaginationCoordinator : INotifyPropertyChanged {
+    public interface IPaginationCoordinator : INotifyPropertyChanged
+    {
 
         #region Properties
 
@@ -94,12 +96,14 @@ namespace LYBT.Desktop.Core.Coordinators {
     /// <summary>
     /// 页码变化事件参数
     /// </summary>
-    public class PageChangedEventArgs : EventArgs {
+    public class PageChangedEventArgs : EventArgs
+    {
         public int OldPage { get; }
         public int NewPage { get; }
         public int PageSize { get; }
 
-        public PageChangedEventArgs(int oldPage, int newPage, int pageSize) {
+        public PageChangedEventArgs(int oldPage, int newPage, int pageSize)
+        {
             OldPage = oldPage;
             NewPage = newPage;
             PageSize = pageSize;

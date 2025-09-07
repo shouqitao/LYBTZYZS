@@ -1,12 +1,14 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace LYBT.Infrastructure.Configuration.Dtos {
+namespace LYBT.Infrastructure.Configuration.Dtos
+{
 
     /// <summary>
     /// 系统设置创建传输对象
     /// </summary>
-    public class SettingsCreateDto {
+    public class SettingsCreateDto
+    {
 
         /// <summary>
         /// 设置键（唯一标识）

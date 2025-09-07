@@ -2,13 +2,15 @@
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 
-namespace LYBT.Desktop.Core.Interfaces.Managers {
+namespace LYBT.Desktop.Core.Interfaces.Managers
+{
 
     /// <summary>
     /// 用户会话管理器接口 - UltraThink架构简化
     /// 专门负责用户会话状态、凭据管理和用户偏好
     /// </summary>
-    public interface IUserSessionManager {
+    public interface IUserSessionManager
+    {
 
         #region 会话状态
 
@@ -131,7 +133,8 @@ namespace LYBT.Desktop.Core.Interfaces.Managers {
     /// <summary>
     /// 保存的凭据信息
     /// </summary>
-    public class SavedCredentials {
+    public class SavedCredentials
+    {
         public string Username { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
         public bool RememberMe { get; set; }
@@ -141,7 +144,8 @@ namespace LYBT.Desktop.Core.Interfaces.Managers {
     /// <summary>
     /// 用户会话状态变更事件参数
     /// </summary>
-    public class UserSessionStateChangedEventArgs : EventArgs {
+    public class UserSessionStateChangedEventArgs : EventArgs
+    {
         public bool IsStarted { get; set; }
         public UserDto? User { get; set; }
         public string? Message { get; set; }
@@ -150,7 +154,8 @@ namespace LYBT.Desktop.Core.Interfaces.Managers {
     /// <summary>
     /// 用户信息更新事件参数
     /// </summary>
-    public class UserInfoUpdatedEventArgs : EventArgs {
+    public class UserInfoUpdatedEventArgs : EventArgs
+    {
         public UserDto? OldUser { get; set; }
         public UserDto? NewUser { get; set; }
         public string UpdateReason { get; set; } = string.Empty;

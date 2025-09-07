@@ -2,13 +2,15 @@
 using System.ComponentModel.DataAnnotations;
 using LYBT.Shared.Models.Enums;
 
-namespace LYBT.Shared.Models.Core {
+namespace LYBT.Shared.Models.Core
+{
 
     /// <summary>
     /// 认证会话基础模型 - 前后端共享核心字段
     /// 用于管理用户登录会话的生命周期和状态
     /// </summary>
-    public class BaseAuthSession {
+    public class BaseAuthSession
+    {
 
         /// <summary>会话唯一标识</summary>
         [DisplayName("会话ID")]

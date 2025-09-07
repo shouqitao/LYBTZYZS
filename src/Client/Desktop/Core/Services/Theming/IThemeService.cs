@@ -1,9 +1,11 @@
-﻿namespace LYBT.Desktop.Core.Services.Theming {
+﻿namespace LYBT.Desktop.Core.Services.Theming
+{
 
     /// <summary>
     /// 简化的主题服务接口 - 专注核心功能交付
     /// </summary>
-    public interface IThemeService {
+    public interface IThemeService
+    {
 
         /// <summary>
         /// 当前主题名称

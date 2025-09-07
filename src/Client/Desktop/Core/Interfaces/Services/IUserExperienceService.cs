@@ -1,12 +1,14 @@
 ﻿using System.ComponentModel;
 using LYBT.Desktop.Core.Services;
 
-namespace LYBT.Desktop.Core.Interfaces.Services {
+namespace LYBT.Desktop.Core.Interfaces.Services
+{
 
     /// <summary>
     /// 用户体验增强服务接口 - P7-04 UltraThink用户体验优化
     /// </summary>
-    public interface IUserExperienceService : INotifyPropertyChanged, IDisposable {
+    public interface IUserExperienceService : INotifyPropertyChanged, IDisposable
+    {
 
         #region 属性
 

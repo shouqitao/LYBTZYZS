@@ -7,7 +7,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 
-namespace LYBT.WebAPI.Controllers {
+namespace LYBT.WebAPI.Controllers
+{
 
     /// <summary>
     /// 验方管理 API - 统一API响应格式
@@ -16,11 +17,13 @@ namespace LYBT.WebAPI.Controllers {
     [ApiVersion("1")]
     [Route("api/v{version:apiVersion}/[controller]")]
     [Authorize]
-    public class FormulasController : BaseApiController {
+    public class FormulasController : BaseApiController
+    {
         private readonly IFormulaService _service;
 
         public FormulasController(IFormulaService service, IMemoryCache cache, ILogger<FormulasController> logger)
-            : base(logger, cache) {
+            : base(logger, cache)
+        {
             _service = service;
         }
 
@@ -33,13 +36,17 @@ namespace LYBT.WebAPI.Controllers {
             [FromQuery] int pageSize = 20,
             [FromQuery] string? keyword = null,
             [FromQuery] string? category = null,
-            [FromQuery] string? formulaType = null) {
-            try {
-                if (page <= 0 || pageSize <= 0 || pageSize > 100) {
+            [FromQuery] string? formulaType = null)
+        {
+            try
+            {
+                if (page <= 0 || pageSize <= 0 || pageSize > 100)
+                {
                     return ValidationFailPaged<FormulaDto>("页码和页大小参数无效（页码>0，页大小1-100）");
                 }
 
-                var query = new FormulaQueryDto {
+                var query = new FormulaQueryDto
+                {
                     CurrentPage = page,
                     PageSize = pageSize,
                     Keyword = keyword,
@@ -49,7 +56,9 @@ namespace LYBT.WebAPI.Controllers {
 
                 var result = await _service.GetPagedAsync(query);
                 return HandlePagedServiceResult(result, "查询成功");
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 return HandleExceptionPaged<FormulaDto>(ex, "获取验方列表", new { page, pageSize, keyword });
             }
         }
@@ -58,20 +67,26 @@ namespace LYBT.WebAPI.Controllers {
         /// 获取验方详情
         /// </summary>
         [HttpGet("{id}")]
-        public async Task<ActionResult<ApiResponse<FormulaDto>>> GetById(Guid id) {
-            try {
+        public async Task<ActionResult<ApiResponse<FormulaDto>>> GetById(Guid id)
+        {
+            try
+            {
                 var validationResult = ValidateGuid<FormulaDto>(id, "验方ID");
-                if (validationResult != null) {
+                if (validationResult != null)
+                {
                     return validationResult;
                 }
 
                 var result = await _service.GetByIdAsync(id);
-                if (!result.IsSuccess || result.Data == null) {
-                    return NotFound<FormulaDto>(result.ErrorMessage ?? "验方不存在", ApiErrorCodes.FORMULA_NOT_FOUND);
+                if (!result.IsSuccess || result.Data == null)
+                {
+                    return NotFound<FormulaDto>(result.ErrorMessage ?? "验方不存在", ApiErrorCodes.FORMULANOTFOUND);
                 }
 
                 return Success(result.Data, "查询成功");
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 return HandleException<FormulaDto>(ex, "获取验方详情", id);
             }
         }
@@ -80,21 +95,27 @@ namespace LYBT.WebAPI.Controllers {
         /// 新增验方
         /// </summary>
         [HttpPost]
-        public async Task<ActionResult<ApiResponse<FormulaDto>>> Add([FromBody] FormulaCreateDto dto) {
-            try {
+        public async Task<ActionResult<ApiResponse<FormulaDto>>> Add([FromBody] FormulaCreateDto dto)
+        {
+            try
+            {
                 var validationResult = ValidateModel<FormulaDto>();
-                if (validationResult != null) {
+                if (validationResult != null)
+                {
                     return validationResult;
                 }
 
                 var result = await _service.CreateAsync(dto);
-                if (!result.IsSuccess || result.Data == null) {
-                    return BusinessFail<FormulaDto>(result.ErrorMessage ?? "新增验方失败", ApiErrorCodes.DATA_SAVE_FAILED);
+                if (!result.IsSuccess || result.Data == null)
+                {
+                    return BusinessFail<FormulaDto>(result.ErrorMessage ?? "新增验方失败", ApiErrorCodes.DATASAVEFAILED);
                 }
 
                 LogOperation("新增验方成功", result.Data, result.Data.Id);
                 return Success(result.Data, "验方创建成功");
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 return HandleException<FormulaDto>(ex, "新增验方", dto);
             }
         }
@@ -103,26 +124,33 @@ namespace LYBT.WebAPI.Controllers {
         /// 更新验方
         /// </summary>
         [HttpPut("{id}")]
-        public async Task<ActionResult<ApiResponse<FormulaDto>>> Update(Guid id, [FromBody] FormulaUpdateDto dto) {
-            try {
+        public async Task<ActionResult<ApiResponse<FormulaDto>>> Update(Guid id, [FromBody] FormulaUpdateDto dto)
+        {
+            try
+            {
                 var idValidation = ValidateGuid<FormulaDto>(id, "验方ID");
-                if (idValidation != null) {
+                if (idValidation != null)
+                {
                     return idValidation;
                 }
 
                 var modelValidation = ValidateModel<FormulaDto>();
-                if (modelValidation != null) {
+                if (modelValidation != null)
+                {
                     return modelValidation;
                 }
 
                 var result = await _service.UpdateAsync(id, dto);
-                if (!result.IsSuccess || result.Data == null) {
-                    return BusinessFail<FormulaDto>(result.ErrorMessage ?? "更新验方失败", ApiErrorCodes.DATA_UPDATE_FAILED);
+                if (!result.IsSuccess || result.Data == null)
+                {
+                    return BusinessFail<FormulaDto>(result.ErrorMessage ?? "更新验方失败", ApiErrorCodes.DATAUPDATEFAILED);
                 }
 
                 LogOperation("更新验方成功", result.Data, id);
                 return Success(result.Data, "验方更新成功");
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 return HandleException<FormulaDto>(ex, "更新验方", new { id, dto });
             }
         }
@@ -131,21 +159,27 @@ namespace LYBT.WebAPI.Controllers {
         /// 删除验方
         /// </summary>
         [HttpDelete("{id}")]
-        public async Task<ActionResult<ApiResponse>> Delete(Guid id) {
-            try {
+        public async Task<ActionResult<ApiResponse>> Delete(Guid id)
+        {
+            try
+            {
                 var validationResult = ValidateGuid(id, "验方ID");
-                if (validationResult != null) {
+                if (validationResult != null)
+                {
                     return validationResult;
                 }
 
                 var result = await _service.DeleteAsync(id);
-                if (!result.IsSuccess || !result.Data) {
-                    return NotFound("验方不存在", ApiErrorCodes.FORMULA_NOT_FOUND);
+                if (!result.IsSuccess || !result.Data)
+                {
+                    return NotFound("验方不存在", ApiErrorCodes.FORMULANOTFOUND);
                 }
 
                 LogOperation("删除验方成功", null, id);
                 return Success("删除成功");
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 return HandleException(ex, "删除验方", id);
             }
         }
@@ -154,15 +188,20 @@ namespace LYBT.WebAPI.Controllers {
         /// 获取验方模板
         /// </summary>
         [HttpGet("templates")]
-        public async Task<ActionResult<ApiResponse<List<FormulaDto>>>> GetTemplates() {
-            try {
+        public async Task<ActionResult<ApiResponse<List<FormulaDto>>>> GetTemplates()
+        {
+            try
+            {
                 var result = await _service.GetTemplatesAsync();
-                if (!result.IsSuccess || result.Data == null) {
-                    return BusinessFail<List<FormulaDto>>(result.ErrorMessage ?? "获取验方模板失败", ApiErrorCodes.INTERNAL_ERROR);
+                if (!result.IsSuccess || result.Data == null)
+                {
+                    return BusinessFail<List<FormulaDto>>(result.ErrorMessage ?? "获取验方模板失败", ApiErrorCodes.INTERNALERROR);
                 }
 
                 return Success(result.Data, "查询成功");
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 return HandleException<List<FormulaDto>>(ex, "获取验方模板", null);
             }
         }
@@ -171,19 +210,25 @@ namespace LYBT.WebAPI.Controllers {
         /// 根据类型获取验方
         /// </summary>
         [HttpGet("by-type/{type}")]
-        public async Task<ActionResult<ApiResponse<List<FormulaDto>>>> GetByType(string type) {
-            try {
-                if (string.IsNullOrWhiteSpace(type)) {
+        public async Task<ActionResult<ApiResponse<List<FormulaDto>>>> GetByType(string type)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(type))
+                {
                     return ValidationFail<List<FormulaDto>>("验方类型不能为空");
                 }
 
                 var result = await _service.GetByTypeAsync(type);
-                if (!result.IsSuccess || result.Data == null) {
+                if (!result.IsSuccess || result.Data == null)
+                {
                     return Success(new List<FormulaDto>(), "未找到匹配验方");
                 }
 
                 return Success(result.Data, "查询成功");
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 return HandleException<List<FormulaDto>>(ex, "根据类型查询验方", type);
             }
         }
@@ -192,25 +237,32 @@ namespace LYBT.WebAPI.Controllers {
         /// 从处方创建验方
         /// </summary>
         [HttpPost("from-prescription/{prescriptionId}")]
-        public async Task<ActionResult<ApiResponse<FormulaDto>>> CreateFromPrescription(Guid prescriptionId, [FromBody] CreateFromPrescriptionDto dto) {
-            try {
+        public async Task<ActionResult<ApiResponse<FormulaDto>>> CreateFromPrescription(Guid prescriptionId, [FromBody] CreateFromPrescriptionDto dto)
+        {
+            try
+            {
                 var validationResult = ValidateGuid<FormulaDto>(prescriptionId, "处方ID");
-                if (validationResult != null) {
+                if (validationResult != null)
+                {
                     return validationResult;
                 }
 
-                if (string.IsNullOrWhiteSpace(dto.Name)) {
+                if (string.IsNullOrWhiteSpace(dto.Name))
+                {
                     return ValidationFail<FormulaDto>("验方名称不能为空");
                 }
 
                 var result = await _service.CreateFromPrescriptionAsync(prescriptionId, dto.Name);
-                if (!result.IsSuccess || result.Data == null) {
-                    return BusinessFail<FormulaDto>(result.ErrorMessage ?? "从处方创建验方失败", ApiErrorCodes.DATA_SAVE_FAILED);
+                if (!result.IsSuccess || result.Data == null)
+                {
+                    return BusinessFail<FormulaDto>(result.ErrorMessage ?? "从处方创建验方失败", ApiErrorCodes.DATASAVEFAILED);
                 }
 
                 LogOperation("从处方创建验方成功", result.Data, prescriptionId);
                 return Success(result.Data, "验方创建成功");
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 return HandleException<FormulaDto>(ex, "从处方创建验方", new { prescriptionId, dto });
             }
         }
@@ -219,16 +271,21 @@ namespace LYBT.WebAPI.Controllers {
         /// 分析验方
         /// </summary>
         [HttpPost("{id}/analyze")]
-        public async Task<ActionResult<ApiResponse<FormulaAnalysisResult>>> AnalyzeFormula(Guid id) {
-            try {
+        public async Task<ActionResult<ApiResponse<FormulaAnalysisResult>>> AnalyzeFormula(Guid id)
+        {
+            try
+            {
                 var validationResult = ValidateGuid<FormulaAnalysisResult>(id, "验方ID");
-                if (validationResult != null) {
+                if (validationResult != null)
+                {
                     return validationResult;
                 }
 
                 // 接口简化后不再支持复杂分析功能
-                return BusinessFail<FormulaAnalysisResult>("简单诊所版本不支持验方分析功能", ApiErrorCodes.FEATURE_NOT_IMPLEMENTED);
-            } catch (Exception ex) {
+                return BusinessFail<FormulaAnalysisResult>("简单诊所版本不支持验方分析功能", ApiErrorCodes.FEATURENOTIMPLEMENTED);
+            }
+            catch (Exception ex)
+            {
                 return HandleException<FormulaAnalysisResult>(ex, "分析验方", id);
             }
         }
@@ -237,15 +294,20 @@ namespace LYBT.WebAPI.Controllers {
         /// 获取验方推荐（按症候）
         /// </summary>
         [HttpGet("recommendations/syndrome/{syndrome}")]
-        public async Task<ActionResult<ApiResponse<List<FormulaRecommendationDto>>>> GetRecommendationsBySyndrome(string syndrome) {
-            try {
-                if (string.IsNullOrWhiteSpace(syndrome)) {
+        public async Task<ActionResult<ApiResponse<List<FormulaRecommendationDto>>>> GetRecommendationsBySyndrome(string syndrome)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(syndrome))
+                {
                     return ValidationFail<List<FormulaRecommendationDto>>("症候不能为空");
                 }
 
                 // 接口简化后不再支持推荐功能
                 return Success(new List<FormulaRecommendationDto>(), "简单诊所版本不支持验方推荐功能");
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 return HandleException<List<FormulaRecommendationDto>>(ex, "获取验方推荐", syndrome);
             }
         }
@@ -257,15 +319,20 @@ namespace LYBT.WebAPI.Controllers {
         public async Task<ActionResult<ApiResponse<List<FormulaRecommendationDto>>>> GetRecommendations(
             [FromQuery] string symptoms,
             [FromQuery] string diagnosis,
-            [FromQuery] Guid doctorId) {
-            try {
-                if (string.IsNullOrWhiteSpace(symptoms) || string.IsNullOrWhiteSpace(diagnosis)) {
+            [FromQuery] Guid doctorId)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(symptoms) || string.IsNullOrWhiteSpace(diagnosis))
+                {
                     return ValidationFail<List<FormulaRecommendationDto>>("症状和诊断不能为空");
                 }
 
                 // 接口简化后不再支持复杂推荐功能
                 return Success(new List<FormulaRecommendationDto>(), "简单诊所版本不支持复杂验方推荐功能");
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 return HandleException<List<FormulaRecommendationDto>>(ex, "获取验方推荐", new { symptoms, diagnosis, doctorId });
             }
         }
@@ -277,22 +344,28 @@ namespace LYBT.WebAPI.Controllers {
         public async Task<ActionResult<ApiResponse<PagedResult<FormulaDto>>>> Search(
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20,
-            [FromQuery] string? keyword = null) {
-            try {
-                if (page <= 0 || pageSize <= 0 || pageSize > 100) {
+            [FromQuery] string? keyword = null)
+        {
+            try
+            {
+                if (page <= 0 || pageSize <= 0 || pageSize > 100)
+                {
                     return ValidationFailPaged<FormulaDto>("页码和页大小参数无效（页码>0，页大小1-100）");
                 }
 
-                var query = new PagedQueryBaseDto {
+                var query = new PagedQueryBaseDto
+                {
                     CurrentPage = page,
                     PageSize = pageSize,
                     Keyword = keyword
                 };
 
                 // 使用SearchAsync替代SearchFormulasAsync (接口简化后的调整)
-                var searchResult = await _service.SearchAsync(keyword ?? "");
-                if (!searchResult.IsSuccess || searchResult.Data == null) {
-                    var emptyResult = new PagedResult<FormulaDto> {
+                var searchResult = await _service.SearchAsync(keyword ?? string.Empty);
+                if (!searchResult.IsSuccess || searchResult.Data == null)
+                {
+                    var emptyResult = new PagedResult<FormulaDto>
+                    {
                         Items = [],
                         TotalCount = 0,
                         CurrentPage = page,
@@ -307,7 +380,8 @@ namespace LYBT.WebAPI.Controllers {
                 var skip = (page - 1) * pageSize;
                 var items = searchResult.Data.Skip(skip).Take(pageSize).ToList();
 
-                var pagedData = new PagedResult<FormulaDto> {
+                var pagedData = new PagedResult<FormulaDto>
+                {
                     Items = items,
                     TotalCount = totalCount,
                     CurrentPage = page,
@@ -315,7 +389,9 @@ namespace LYBT.WebAPI.Controllers {
                 };
                 var pagedResult = ServiceResult<PagedResult<FormulaDto>>.Success(pagedData);
                 return HandlePagedServiceResult(pagedResult, "搜索成功");
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 return HandleExceptionPaged<FormulaDto>(ex, "搜索验方", new { page, pageSize, keyword });
             }
         }
@@ -324,20 +400,26 @@ namespace LYBT.WebAPI.Controllers {
         /// 复制验方
         /// </summary>
         [HttpPost("{id}/copy")]
-        public async Task<ActionResult<ApiResponse<FormulaDto>>> Copy(Guid id, [FromBody] CopyFormulaDto dto) {
-            try {
+        public async Task<ActionResult<ApiResponse<FormulaDto>>> Copy(Guid id, [FromBody] CopyFormulaDto dto)
+        {
+            try
+            {
                 var validationResult = ValidateGuid<FormulaDto>(id, "验方ID");
-                if (validationResult != null) {
+                if (validationResult != null)
+                {
                     return validationResult;
                 }
 
-                if (string.IsNullOrWhiteSpace(dto.NewName)) {
+                if (string.IsNullOrWhiteSpace(dto.NewName))
+                {
                     return ValidationFail<FormulaDto>("新验方名称不能为空");
                 }
 
                 // 接口简化后不再支持复制功能
-                return BusinessFail<FormulaDto>("简单诊所版本不支持验方复制功能", ApiErrorCodes.FEATURE_NOT_IMPLEMENTED);
-            } catch (Exception ex) {
+                return BusinessFail<FormulaDto>("简单诊所版本不支持验方复制功能", ApiErrorCodes.FEATURENOTIMPLEMENTED);
+            }
+            catch (Exception ex)
+            {
                 return HandleException<FormulaDto>(ex, "复制验方", new { id, dto });
             }
         }
@@ -346,16 +428,21 @@ namespace LYBT.WebAPI.Controllers {
         /// 切换验方状态
         /// </summary>
         [HttpPost("{id}/toggle-status")]
-        public async Task<ActionResult<ApiResponse>> ToggleStatus(Guid id) {
-            try {
+        public async Task<ActionResult<ApiResponse>> ToggleStatus(Guid id)
+        {
+            try
+            {
                 var validationResult = ValidateGuid(id, "验方ID");
-                if (validationResult != null) {
+                if (validationResult != null)
+                {
                     return validationResult;
                 }
 
                 // 接口简化后不再支持切换状态功能，建议使用EnableAsync/DisableAsync
-                return BusinessFail("简单诊所版本不支持状态切换功能，请使用启用或禁用功能", ApiErrorCodes.FEATURE_NOT_IMPLEMENTED);
-            } catch (Exception ex) {
+                return BusinessFail("简单诊所版本不支持状态切换功能，请使用启用或禁用功能", ApiErrorCodes.FEATURENOTIMPLEMENTED);
+            }
+            catch (Exception ex)
+            {
                 return HandleException(ex, "切换验方状态", id);
             }
         }
@@ -364,15 +451,20 @@ namespace LYBT.WebAPI.Controllers {
         /// 获取验方分类
         /// </summary>
         [HttpGet("categories")]
-        public async Task<ActionResult<ApiResponse<List<string>>>> GetCategories() {
-            try {
+        public async Task<ActionResult<ApiResponse<List<string>>>> GetCategories()
+        {
+            try
+            {
                 var result = await _service.GetCategoriesAsync();
-                if (!result.IsSuccess || result.Data == null) {
-                    return BusinessFail<List<string>>(result.ErrorMessage ?? "获取分类失败", ApiErrorCodes.INTERNAL_ERROR);
+                if (!result.IsSuccess || result.Data == null)
+                {
+                    return BusinessFail<List<string>>(result.ErrorMessage ?? "获取分类失败", ApiErrorCodes.INTERNALERROR);
                 }
 
                 return Success(result.Data, "查询成功");
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 return HandleException<List<string>>(ex, "获取验方分类", null);
             }
         }
@@ -381,16 +473,21 @@ namespace LYBT.WebAPI.Controllers {
         /// 分享验方
         /// </summary>
         [HttpPost("{id}/share")]
-        public async Task<ActionResult<ApiResponse>> ShareFormula(Guid id) {
-            try {
+        public async Task<ActionResult<ApiResponse>> ShareFormula(Guid id)
+        {
+            try
+            {
                 var validationResult = ValidateGuid(id, "验方ID");
-                if (validationResult != null) {
+                if (validationResult != null)
+                {
                     return validationResult;
                 }
 
                 // 接口简化后不再支持分享功能
-                return BusinessFail("简单诊所版本不支持验方分享功能", ApiErrorCodes.FEATURE_NOT_IMPLEMENTED);
-            } catch (Exception ex) {
+                return BusinessFail("简单诊所版本不支持验方分享功能", ApiErrorCodes.FEATURENOTIMPLEMENTED);
+            }
+            catch (Exception ex)
+            {
                 return HandleException(ex, "分享验方", id);
             }
         }
@@ -399,16 +496,21 @@ namespace LYBT.WebAPI.Controllers {
         /// 取消分享验方
         /// </summary>
         [HttpPost("{id}/unshare")]
-        public async Task<ActionResult<ApiResponse>> UnshareFormula(Guid id) {
-            try {
+        public async Task<ActionResult<ApiResponse>> UnshareFormula(Guid id)
+        {
+            try
+            {
                 var validationResult = ValidateGuid(id, "验方ID");
-                if (validationResult != null) {
+                if (validationResult != null)
+                {
                     return validationResult;
                 }
 
                 // 接口简化后不再支持分享功能
-                return BusinessFail("简单诊所版本不支持验方分享功能", ApiErrorCodes.FEATURE_NOT_IMPLEMENTED);
-            } catch (Exception ex) {
+                return BusinessFail("简单诊所版本不支持验方分享功能", ApiErrorCodes.FEATURENOTIMPLEMENTED);
+            }
+            catch (Exception ex)
+            {
                 return HandleException(ex, "取消分享验方", id);
             }
         }
@@ -417,13 +519,17 @@ namespace LYBT.WebAPI.Controllers {
         /// 导入验方数据 - 批量创建验方
         /// </summary>
         [HttpPost("import")]
-        public async Task<ActionResult<ApiResponse<object>>> ImportFormulas([FromBody] List<FormulaCreateDto> formulas) {
-            try {
-                if (formulas == null || !formulas.Any()) {
+        public async Task<ActionResult<ApiResponse<object>>> ImportFormulas([FromBody] List<FormulaCreateDto> formulas)
+        {
+            try
+            {
+                if (formulas == null || !formulas.Any())
+                {
                     return ValidationFail<object>("导入数据不能为空");
                 }
 
-                if (formulas.Count > 1000) {
+                if (formulas.Count > 1000)
+                {
                     return ValidationFail<object>("单次导入不能超过1000条记录");
                 }
 
@@ -431,29 +537,38 @@ namespace LYBT.WebAPI.Controllers {
                 int failureCount = 0;
                 var errors = new List<string>();
 
-                foreach (var formulaDto in formulas) {
-                    try {
+                foreach (var formulaDto in formulas)
+                {
+                    try
+                    {
                         // 数据验证
-                        if (string.IsNullOrWhiteSpace(formulaDto.Name)) {
+                        if (string.IsNullOrWhiteSpace(formulaDto.Name))
+                        {
                             errors.Add($"验方名称不能为空");
                             failureCount++;
                             continue;
                         }
 
                         var result = await _service.CreateAsync(formulaDto);
-                        if (result.IsSuccess) {
+                        if (result.IsSuccess)
+                        {
                             successCount++;
-                        } else {
+                        }
+                        else
+                        {
                             errors.Add($"验方 {formulaDto.Name}: {result.ErrorMessage}");
                             failureCount++;
                         }
-                    } catch (Exception ex) {
+                    }
+                    catch (Exception ex)
+                    {
                         errors.Add($"验方 {formulaDto.Name}: {ex.Message}");
                         failureCount++;
                     }
                 }
 
-                var importResult = new {
+                var importResult = new
+                {
                     SuccessCount = successCount,
                     FailureCount = failureCount,
                     Errors = errors.Take(10).ToList(), // 最多返回10个错误
@@ -463,7 +578,9 @@ namespace LYBT.WebAPI.Controllers {
                 LogOperation("批量导入验方", importResult, null);
 
                 return Success<object>(importResult, $"导入完成: 成功{successCount}条, 失败{failureCount}条");
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 return HandleException<object>(ex, "导入验方数据", formulas?.Count);
             }
         }
@@ -472,9 +589,12 @@ namespace LYBT.WebAPI.Controllers {
         /// 导出验方数据 - 获取所有验方用于Excel导出
         /// </summary>
         [HttpGet("export")]
-        public async Task<ActionResult<ApiResponse<List<FormulaDto>>>> ExportFormulas([FromQuery] string? category = null) {
-            try {
-                var query = new FormulaQueryDto {
+        public async Task<ActionResult<ApiResponse<List<FormulaDto>>>> ExportFormulas([FromQuery] string? category = null)
+        {
+            try
+            {
+                var query = new FormulaQueryDto
+                {
                     PageIndex = 1,
                     PageSize = 10000, // 导出时获取大量数据
                     Keyword = string.Empty,
@@ -482,15 +602,18 @@ namespace LYBT.WebAPI.Controllers {
                 };
 
                 var result = await _service.GetPagedAsync(query);
-                if (!result.IsSuccess || result.Data == null) {
-                    return BusinessFail<List<FormulaDto>>(result.ErrorMessage ?? "获取验方数据失败", ApiErrorCodes.DATA_QUERY_FAILED);
+                if (!result.IsSuccess || result.Data == null)
+                {
+                    return BusinessFail<List<FormulaDto>>(result.ErrorMessage ?? "获取验方数据失败", ApiErrorCodes.DATAQUERYFAILED);
                 }
 
                 var formulas = result.Data.Items;
                 LogOperation("导出验方数据", new { Count = formulas.Count, Category = category }, null);
 
                 return Success(formulas, $"成功获取{formulas.Count}条验方数据");
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 return HandleException<List<FormulaDto>>(ex, "导出验方数据", category);
             }
         }
@@ -499,9 +622,12 @@ namespace LYBT.WebAPI.Controllers {
         /// 获取验方导入模板 - 返回Excel导入的标准格式
         /// </summary>
         [HttpGet("template")]
-        public async Task<ActionResult<ApiResponse<object>>> GetImportTemplate() {
-            try {
-                var template = new {
+        public async Task<ActionResult<ApiResponse<object>>> GetImportTemplate()
+        {
+            try
+            {
+                var template = new
+                {
                     Columns = new[]
                     {
                         new { Field = "Name", Header = "验方名称", Required = true, Example = "桂枝汤" },
@@ -546,7 +672,9 @@ namespace LYBT.WebAPI.Controllers {
                 };
 
                 return Success<object>(template, "获取导入模板成功");
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 return HandleException<object>(ex, "获取验方导入模板", null);
             }
         }
@@ -555,51 +683,66 @@ namespace LYBT.WebAPI.Controllers {
         /// 验证导入数据格式 - 在正式导入前进行数据验证
         /// </summary>
         [HttpPost("validate")]
-        public async Task<ActionResult<ApiResponse<object>>> ValidateImportData([FromBody] List<FormulaCreateDto> formulas) {
-            try {
-                if (formulas == null || !formulas.Any()) {
+        public async Task<ActionResult<ApiResponse<object>>> ValidateImportData([FromBody] List<FormulaCreateDto> formulas)
+        {
+            try
+            {
+                if (formulas == null || !formulas.Any())
+                {
                     return ValidationFail<object>("验证数据不能为空");
                 }
 
-                if (formulas.Count > 1000) {
+                if (formulas.Count > 1000)
+                {
                     return ValidationFail<object>("单次导入不能超过1000条记录");
                 }
 
                 var validationResult = new List<object>();
                 var duplicateNames = new HashSet<string>();
 
-                for (int i = 0; i < formulas.Count; i++) {
+                for (int i = 0; i < formulas.Count; i++)
+                {
                     var formula = formulas[i];
                     var rowErrors = new List<string>();
 
                     // 必填字段验证
-                    if (string.IsNullOrWhiteSpace(formula.Name)) {
+                    if (string.IsNullOrWhiteSpace(formula.Name))
+                    {
                         rowErrors.Add("验方名称不能为空");
-                    } else {
+                    }
+                    else
+                    {
                         // 检查重名
-                        if (duplicateNames.Contains(formula.Name)) {
+                        if (duplicateNames.Contains(formula.Name))
+                        {
                             rowErrors.Add($"验方名称 '{formula.Name}' 重复");
-                        } else {
+                        }
+                        else
+                        {
                             duplicateNames.Add(formula.Name);
                         }
 
                         // 检查数据库中是否已存在
                         var existingResult = await _service.SearchAsync(formula.Name);
                         if (existingResult.IsSuccess && existingResult.Data != null &&
-                            existingResult.Data.Any(f => f.Name.Equals(formula.Name, StringComparison.OrdinalIgnoreCase))) {
+                            existingResult.Data.Any(f => f.Name.Equals(formula.Name, StringComparison.OrdinalIgnoreCase)))
+                        {
                             rowErrors.Add($"验方名称 '{formula.Name}' 在数据库中已存在");
                         }
                     }
 
                     // 字段长度验证
-                    if (!string.IsNullOrEmpty(formula.Name) && formula.Name.Length > 100) {
+                    if (!string.IsNullOrEmpty(formula.Name) && formula.Name.Length > 100)
+                    {
                         rowErrors.Add("验方名称长度不能超过100个字符");
                     }
-                    if (!string.IsNullOrEmpty(formula.Effect) && formula.Effect.Length > 500) {
+                    if (!string.IsNullOrEmpty(formula.Effect) && formula.Effect.Length > 500)
+                    {
                         rowErrors.Add("功效描述长度不能超过500个字符");
                     }
 
-                    validationResult.Add(new {
+                    validationResult.Add(new
+                    {
                         Row = i + 1,
                         Name = formula.Name,
                         IsValid = !rowErrors.Any(),
@@ -607,7 +750,8 @@ namespace LYBT.WebAPI.Controllers {
                     });
                 }
 
-                var summary = new {
+                var summary = new
+                {
                     TotalRows = formulas.Count,
                     ValidRows = validationResult.Count(r => (bool)((dynamic)r).IsValid),
                     InvalidRows = validationResult.Count(r => !((bool)((dynamic)r).IsValid)),
@@ -615,7 +759,9 @@ namespace LYBT.WebAPI.Controllers {
                 };
 
                 return Success<object>(summary, "数据验证完成");
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 return HandleException<object>(ex, "验证导入数据", formulas?.Count);
             }
         }
@@ -624,14 +770,16 @@ namespace LYBT.WebAPI.Controllers {
     /// <summary>
     /// 从处方创建验方DTO
     /// </summary>
-    public class CreateFromPrescriptionDto {
+    public class CreateFromPrescriptionDto
+    {
         public string Name { get; set; } = string.Empty;
     }
 
     /// <summary>
     /// 复制验方DTO
     /// </summary>
-    public class CopyFormulaDto {
+    public class CopyFormulaDto
+    {
         public string NewName { get; set; } = string.Empty;
     }
 }
