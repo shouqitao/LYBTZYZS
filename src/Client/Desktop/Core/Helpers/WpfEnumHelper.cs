@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Extensions;
@@ -105,28 +105,6 @@ namespace LYBT.Client.Core.Helpers
         public static EnumItem<T>? SetSelectedValue<T>(ObservableCollection<EnumItem<T>> source, T value) where T : Enum
         {
             return FindEnumItem(source, value);
-        }
-
-        /// <summary>
-        /// 继承共享EnumHelper的功能
-        /// </summary>
-        public static class Shared
-        {
-
-            public static string GetDescription<T>(T enumValue) where T : Enum
-                => EnumHelper.GetDescription(enumValue);
-
-            public static Dictionary<T, string> GetEnumDescriptions<T>() where T : Enum
-                => EnumHelper.GetEnumDescriptions<T>();
-
-            public static T GetEnumByDescription<T>(string description) where T : Enum
-                => EnumHelper.GetEnumByDescription<T>(description);
-
-            public static List<KeyValuePair<T, string>> GetKeyValuePairs<T>() where T : Enum
-                => EnumHelper.GetKeyValuePairs<T>();
-
-            public static List<KeyValuePair<int, string>> GetIntKeyValuePairs<T>() where T : Enum
-                => EnumHelper.GetIntKeyValuePairs<T>();
         }
     }
 }
