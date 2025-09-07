@@ -72,13 +72,14 @@ public interface IWorkbenchRouter
 ```
 
 #### 角色映射标准
-基于项目README.md的映射关系：
+基于实际代码的映射关系（已清理未使用工作台）：
 - **Administrator** → SystemWorkbench (系统管理工作台)
 - **Doctor** → ConsultationWorkbench (诊疗工作台)
-- **Reception** → ReceptionWorkbench (接待工作台)
-- **Cashier** → CashierWorkbench (收银工作台)
-- **Pharmacist** → PharmacistWorkbench (药师工作台)
-- **Therapist** → TherapistWorkbench (治疗师工作台)
+- **Reception/Cashier** → 由前台角色统一承担
+- **Pharmacist** → 药师功能由医生角色承担  
+- **Therapist** → 已移除（未实际使用）
+
+注意：项目仅保留2个有效工作台，简化架构并集中功能。
 
 ### NavigationItem - 导航项模型
 
@@ -209,21 +210,19 @@ var navigation = new NavigationItem
 
 1. **ConsultationWorkbench** - 诊疗工作台 (医生角色)
    - 患者管理、看诊管理、医疗案例、处方开具、验方管理
+   - 集成药师功能：中药材管理、处方配伍检查
    
 2. **SystemWorkbench** - 系统管理工作台 (管理员角色)
    - 用户管理、系统配置、数据统计、系统监控
+   - 集成前台功能：患者接待、基础登记、费用结算
 
-3. **CashierWorkbench** - 收银工作台 (收银员角色)
-   - 费用结算、收费管理、财务统计
+**已移除的工作台** (2025-09-07代码清理完成):
+- CashierWorkbench → 功能合并到SystemWorkbench和前台角色
+- PharmacistWorkbench → 功能合并到ConsultationWorkbench医生角色  
+- ReceptionistWorkbench → 功能合并到SystemWorkbench管理功能
+- TherapistWorkbench → 未实际使用，已完全移除
 
-4. **PharmacistWorkbench** - 药师工作台 (药师角色)
-   - 药材管理、处方审核、库存监控
-
-5. **ReceptionistWorkbench** - 接待工作台 (接待员角色)
-   - 患者接待、预约管理、基础登记
-
-6. **TherapistWorkbench** - 治疗师工作台 (治疗师角色)
-   - 治疗计划、康复管理
+注意：架构简化后，仅保留2个实际使用的工作台，提升维护效率并减少复杂度。
 
 ### 区域管理
 每个工作台使用标准区域结构：

@@ -94,11 +94,11 @@ AuthService (纯委托层)
 | 工作台 | 目标用户 | 完成状态 | 核心功能 |
 |--------|----------|----------|----------|
 | ConsultationWorkbench | 医生 | ✅ 100% | 8模块集成诊疗环境 |
-| ReceptionistWorkbench | 前台 | ✅ 100% | 患者接待、预约管理 |
+| ReceptionistWorkbench | 前台 | ❌ 已移除 | 功能合并到SystemWorkbench |
 | SystemWorkbench | 管理员 | ✅ 100% | 系统管理、用户权限 |
-| PharmacistWorkbench | 药师 | 🔄 60% | 中药材管理集成 |
-| TherapistWorkbench | 理疗师 | 🔄 25% | 基础框架完成 |
-| CashierWorkbench | 收银员 | 🔄 25% | 基础框架完成 |
+| PharmacistWorkbench | 药师 | ❌ 已移除 | 功能合并到ConsultationWorkbench |
+| TherapistWorkbench | 理疗师 | ❌ 已移除 | 未实际使用，已完全删除 |
+| CashierWorkbench | 收银员 | ❌ 已移除 | 功能合并到SystemWorkbench和前台角色 |
 
 ---
 
@@ -136,7 +136,7 @@ AuthService (纯委托层)
 ### 3. 技术债务分析
 
 #### 待完善项目
-1. **工作台模块**：3个工作台需要继续开发 (CashierWorkbench, TherapistWorkbench)
+1. **工作台模块**：架构已简化，4个未使用工作台已完全删除 ✅
 2. **测试覆盖**：单元测试覆盖率需要提升
 3. **文档补充**：部分模块需要更详细的开发文档
 
@@ -242,7 +242,7 @@ Formula (验方管理)
 4. **开具处方**：选择中药材，应用验方模板
 5. **完成诊疗**：保存诊疗记录，状态更新
 
-#### 前台工作流 (ReceptionistWorkbench - 100%完成)
+#### 前台工作流 (已移除 - 功能合并到SystemWorkbench)
 1. **患者接待**：签到登记，身份确认
 2. **预约管理**：安排就诊时间，医生排班
 3. **基础登记**：新患者建档，信息录入
@@ -340,7 +340,7 @@ Formula (验方管理)
 ### 1. 短期优化 (1-3个月)
 
 #### 高优先级
-- **完成剩余工作台**：CashierWorkbench和TherapistWorkbench开发
+- **架构简化完成**：4个未使用工作台已完全移除，专注核心功能 ✅
 - **测试体系建设**：提升单元测试覆盖率至60%以上
 - **用户体验优化**：工作台界面和交互流程完善
 

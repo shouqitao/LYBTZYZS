@@ -209,10 +209,9 @@ LYBTZYZS/ (根目录)
 │   │   │   └── Users/               # 👤 用户设置 (UltraThink双层)
 │   │   ├── 📁 Services/             # 前端服务层 (1个)
 │   │   ├── 📁 Shell/                # ⭐ 主程序外壳 (1个)
-│   │   └── 📁 Workbenches/          # 工作台 (11个)
+│   │   └── 📁 Workbenches/          # 工作台 (3个)
 │   │       ├── Core/                # 工作台核心
-│   │       ├── ConsultationWorkbench/ # 诊疗工作台
-│   │       └── CashierWorkbench/    # 收费工作台
+│   │       └── ConsultationWorkbench/ # 诊疗工作台 (唯一实际使用)
 │   └── 📁 Shared/                   # 共享库 (4个项目)
 │       ├── LYBT.Shared.Models       # ⭐ 数据传输对象 (DTO)
 │       ├── LYBT.Shared.Interfaces   # 服务接口定义
