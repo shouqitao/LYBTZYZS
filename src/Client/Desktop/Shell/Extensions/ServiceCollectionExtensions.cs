@@ -157,34 +157,41 @@ namespace LYBT.Desktop.Shell.Extensions
         {
             // 保留关键模块的手动注册作为回退方案
 
-            // Auth服务注册 - UltraThink双层架构依赖注册
+            // Auth服务注册 - DT-001/DT-002修复: 适配器模式 + 标准IoC注册
+            // UltraThink双层架构依赖注册
             containerRegistry.RegisterSingleton<LYBT.Desktop.Auth.Interfaces.IAuthQueryService,
                 LYBT.Desktop.Auth.Services.AuthQueryService>();
             containerRegistry.RegisterSingleton<LYBT.Desktop.Auth.Interfaces.IAuthBusinessService,
                 LYBT.Desktop.Auth.Services.AuthBusinessService>();
+            
+            // 主Module注册 - 专注IAuthService业务API
             containerRegistry.RegisterSingleton<LYBT.Desktop.Auth.Services.AuthModule>();
-            containerRegistry.Register<LYBT.Desktop.Core.Interfaces.Services.IAuthenticationService>(container =>
-                container.Resolve<LYBT.Desktop.Auth.Services.AuthModule>());
-            containerRegistry.Register<LYBT.Shared.Interfaces.Services.IAuthService>(container =>
-                container.Resolve<LYBT.Desktop.Auth.Services.AuthModule>());
+            containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Services.IAuthService, 
+                LYBT.Desktop.Auth.Services.AuthModule>();
+            
+            // 适配器注册 - 专注IAuthenticationService UI认证
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.IAuthenticationService,
+                LYBT.Desktop.Auth.Services.AuthServiceAdapter>();
 
-            // User服务注册 - UltraThink双层架构依赖注册
+            // User服务注册 - DT-002修复: 标准IoC注册，避免工厂委托
+            // UltraThink双层架构依赖注册
             containerRegistry.RegisterSingleton<LYBT.Desktop.Users.Interfaces.IUserQueryService,
                 LYBT.Desktop.Users.Services.UserQueryService>();
             containerRegistry.RegisterSingleton<LYBT.Desktop.Users.Interfaces.IUserBusinessService,
                 LYBT.Desktop.Users.Services.UserBusinessService>();
             containerRegistry.RegisterSingleton<LYBT.Desktop.Users.Services.UserModule>();
-            containerRegistry.Register<LYBT.Shared.Interfaces.Services.IUserService>(container =>
-                container.Resolve<LYBT.Desktop.Users.Services.UserModule>());
+            containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Services.IUserService, 
+                LYBT.Desktop.Users.Services.UserModule>();
 
-            // Patient服务注册 - UltraThink双层架构依赖注册
+            // Patient服务注册 - DT-002修复: 标准IoC注册，避免工厂委托
+            // UltraThink双层架构依赖注册
             containerRegistry.RegisterSingleton<LYBT.Desktop.Patients.Interfaces.IPatientQueryService,
                 LYBT.Desktop.Patients.Services.PatientQueryService>();
             containerRegistry.RegisterSingleton<LYBT.Desktop.Patients.Interfaces.IPatientBusinessService,
                 LYBT.Desktop.Patients.Services.PatientBusinessService>();
             containerRegistry.RegisterSingleton<LYBT.Desktop.Patients.Services.PatientModule>();
-            containerRegistry.Register<LYBT.Shared.Interfaces.Services.IPatientService>(container =>
-                container.Resolve<LYBT.Desktop.Patients.Services.PatientModule>());
+            containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Services.IPatientService,
+                LYBT.Desktop.Patients.Services.PatientModule>();
         }
 
         /// <summary>
@@ -204,10 +211,10 @@ namespace LYBT.Desktop.Shell.Extensions
             // 权限服务
             containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.IPermissionService, PermissionService>();
 
-            // 会话管理服务 - UserSessionManager实现多个接口
+            // 会话管理服务 - DT-002修复: UserSessionManager实现多个接口，使用标准注册
             containerRegistry.RegisterSingleton<UserSessionManager>();
-            containerRegistry.Register<LYBT.Desktop.Core.Interfaces.Services.IUserSessionManager>(container => container.Resolve<UserSessionManager>());
-            containerRegistry.Register<LYBT.Desktop.Core.Interfaces.Services.ITokenManager>(container => container.Resolve<UserSessionManager>());
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.IUserSessionManager, UserSessionManager>();
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.ITokenManager, UserSessionManager>();
 
             // 其他核心服务
             containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.ISessionManager,
@@ -216,9 +223,9 @@ namespace LYBT.Desktop.Shell.Extensions
                 LYBT.Desktop.Core.Services.NotificationService>();
 
             // 注意：双层架构服务（QueryService/BusinessService）现在由自动发现系统处理
-            // 只保留不符合命名约定的特殊服务的手动注册
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.IErrorHandlingService>(container =>
-                new LYBT.Desktop.Services.ErrorHandlingService(container.Resolve<LYBT.Desktop.Core.Interfaces.Services.ICustomDialogService>()));
+            // DT-002修复: 避免工厂委托，使用标准注册
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.IErrorHandlingService,
+                LYBT.Desktop.Services.ErrorHandlingService>();
             containerRegistry.RegisterSingleton<LYBT.Desktop.Workbench.Core.IWorkbenchRouter, LYBT.Desktop.Workbench.Core.WorkbenchRouter>();
 
             // 主窗口服务门面 - 简化MainWindowViewModel的依赖注入
