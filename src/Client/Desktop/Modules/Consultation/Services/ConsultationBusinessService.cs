@@ -158,4 +158,37 @@ public class ConsultationBusinessService(
         _logger.LogInformation("禁用看诊诊断: {ConsultationId}", consultationId);
         return Task.FromResult(ServiceResult<bool>.Failure("简单诊所版本暂不支持看诊状态管理"));
     }
+
+    #region DT-011: 取消令牌支持重载方法
+
+    /// <summary>
+    /// 创建看诊诊断业务处理 - 支持取消令牌
+    /// DT-011: 长时间操作取消支持，提升用户体验
+    /// </summary>
+    /// <param name="createDto">看诊诊断创建请求信息</param>
+    /// <param name="cancellationToken">取消令牌</param>
+    /// <returns>包含新建看诊诊断信息的业务结果</returns>
+    public async Task<ServiceResult<ConsultationDto>> CreateAsync(ConsultationCreateDto createDto, CancellationToken cancellationToken = default)
+    {
+        // 委托到原始方法，暂未实现完整的CancellationToken支持
+        // TODO: 完整实现取消令牌支持
+        return await CreateAsync(createDto);
+    }
+
+    /// <summary>
+    /// 更新看诊诊断业务处理 - 支持取消令牌
+    /// DT-011: 长时间操作取消支持，提升用户体验
+    /// </summary>
+    /// <param name="id">看诊诊断唯一标识</param>
+    /// <param name="updateDto">看诊诊断更新请求信息</param>
+    /// <param name="cancellationToken">取消令牌</param>
+    /// <returns>包含更新后看诊诊断信息的业务结果</returns>
+    public async Task<ServiceResult<ConsultationDto>> UpdateAsync(Guid id, ConsultationUpdateDto updateDto, CancellationToken cancellationToken = default)
+    {
+        // 委托到原始方法，暂未实现完整的CancellationToken支持
+        // TODO: 完整实现取消令牌支持
+        return await UpdateAsync(id, updateDto);
+    }
+
+    #endregion DT-011: 取消令牌支持重载方法
 }

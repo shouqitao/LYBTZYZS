@@ -11,14 +11,14 @@ public interface IConsultationBusinessService
 {
 
     /// <summary>
-    /// 创建看诊
+    /// 创建看诊 - DT-011取消令牌支持
     /// </summary>
-    Task<ServiceResult<ConsultationDto>> CreateAsync(ConsultationCreateDto createDto);
+    Task<ServiceResult<ConsultationDto>> CreateAsync(ConsultationCreateDto createDto, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// 更新看诊
+    /// 更新看诊 - DT-011取消令牌支持
     /// </summary>
-    Task<ServiceResult<ConsultationDto>> UpdateAsync(Guid id, ConsultationUpdateDto updateDto);
+    Task<ServiceResult<ConsultationDto>> UpdateAsync(Guid id, ConsultationUpdateDto updateDto, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// 删除看诊

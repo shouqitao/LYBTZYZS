@@ -11,14 +11,14 @@ public interface IPrescriptionsBusinessService
 {
 
     /// <summary>
-    /// 创建处方
+    /// 创建处方 - DT-011取消令牌支持
     /// </summary>
-    Task<ServiceResult<PrescriptionDto>> CreateAsync(PrescriptionCreateDto createDto);
+    Task<ServiceResult<PrescriptionDto>> CreateAsync(PrescriptionCreateDto createDto, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// 更新处方
+    /// 更新处方 - DT-011取消令牌支持
     /// </summary>
-    Task<ServiceResult<PrescriptionDto>> UpdateAsync(Guid id, PrescriptionEditDto updateDto);
+    Task<ServiceResult<PrescriptionDto>> UpdateAsync(Guid id, PrescriptionEditDto updateDto, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// 删除处方

@@ -623,4 +623,49 @@ public class MainWindowViewModel(
     }
 
     #endregion 私有转换方法
+
+    #region IDisposable实现 - DT-013内存泄漏修复
+
+    /// <summary>
+    /// 重写OnDisposing方法，清理资源防止内存泄漏
+    /// DT-013: 修复ViewModel事件订阅泄漏 - 自动清理DispatcherTimer和EventAggregator订阅
+    /// </summary>
+    protected override void OnDisposing()
+    {
+        try
+        {
+            // 清理DispatcherTimer
+            if (_clockTimer != null)
+            {
+                _clockTimer.Stop();
+                _clockTimer.Tick -= OnClockTick;
+                _clockTimer = null!;
+                System.Diagnostics.Debug.WriteLine("🧹 [MainWindowViewModel] DispatcherTimer已清理");
+            }
+
+            // 取消EventAggregator订阅
+            try
+            {
+                EventAggregator.GetEvent<LoginSuccessEvent>().Unsubscribe(OnLoginSuccess);
+                System.Diagnostics.Debug.WriteLine("🧹 [MainWindowViewModel] LoginSuccessEvent订阅已取消");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"⚠️ [MainWindowViewModel] 取消EventAggregator订阅失败: {ex.Message}");
+            }
+
+            System.Diagnostics.Debug.WriteLine("✅ [MainWindowViewModel] 资源清理完成 - 内存泄漏风险已消除");
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ [MainWindowViewModel] 资源清理异常: {ex.Message}");
+        }
+        finally
+        {
+            // 调用基类清理
+            base.OnDisposing();
+        }
+    }
+
+    #endregion IDisposable实现 - DT-013内存泄漏修复
 }

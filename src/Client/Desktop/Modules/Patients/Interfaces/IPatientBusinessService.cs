@@ -11,14 +11,14 @@ public interface IPatientBusinessService
 {
 
     /// <summary>
-    /// 创建患者
+    /// 创建患者 - DT-011取消令牌支持
     /// </summary>
-    Task<ServiceResult<PatientDto>> CreateAsync(PatientCreateDto createDto);
+    Task<ServiceResult<PatientDto>> CreateAsync(PatientCreateDto createDto, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// 更新患者
+    /// 更新患者 - DT-011取消令牌支持
     /// </summary>
-    Task<ServiceResult<PatientDto>> UpdateAsync(Guid id, PatientUpdateDto updateDto);
+    Task<ServiceResult<PatientDto>> UpdateAsync(Guid id, PatientUpdateDto updateDto, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// 启用患者

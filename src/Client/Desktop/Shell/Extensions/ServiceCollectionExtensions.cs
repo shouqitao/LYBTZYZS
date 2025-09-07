@@ -57,13 +57,17 @@ namespace LYBT.Desktop.Shell.Extensions
         }
 
         /// <summary>
-        /// 注册统一错误处理服务 - UltraThink简化版
+        /// 注册统一错误处理服务 - UltraThink简化版 + DT-006优化
         /// </summary>
         private static void RegisterErrorHandlingServices(IContainerRegistry containerRegistry)
         {
             // 注册统一错误处理器
             containerRegistry.RegisterSingleton<LYBT.Desktop.Infrastructure.Services.IStandardErrorHandler,
                 LYBT.Desktop.Infrastructure.Services.StandardErrorHandler>();
+                
+            // DT-006: 统一异常处理服务注册
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Services.Exceptions.IExceptionHandler,
+                LYBT.Desktop.Core.Services.Exceptions.StandardExceptionHandler>();
         }
 
         /// <summary>

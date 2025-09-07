@@ -42,7 +42,7 @@ namespace LYBT.Desktop.Core.Services
                 HttpRequestException httpEx => ClassifyHttpException(httpEx),
                 WebException webEx => ClassifyWebException(webEx),
                 SocketException socketEx => ClassifySocketException(socketEx),
-                TaskCanceledException when IsTimeout(exception) => new Exceptions.OperationTimeoutException(
+                TaskCanceledException when IsTimeout(exception) => new LYBT.Desktop.Core.Exceptions.OperationTimeoutException(
                     "操作超时", TimeSpan.FromSeconds(30), "HTTP请求"),
 
                 // 数据访问相关

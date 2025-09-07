@@ -133,4 +133,37 @@ public class PrescriptionsBusinessService(
         _logger.LogInformation("禁用处方: {PrescriptionId}", prescriptionId);
         return Task.FromResult(ServiceResult<bool>.Failure("简单诊所版本暂不支持处方状态管理"));
     }
+
+    #region DT-011: 取消令牌支持重载方法
+
+    /// <summary>
+    /// 创建处方业务处理 - 支持取消令牌
+    /// DT-011: 长时间操作取消支持，提升用户体验
+    /// </summary>
+    /// <param name="createDto">处方创建请求信息</param>
+    /// <param name="cancellationToken">取消令牌</param>
+    /// <returns>包含新建处方信息的业务结果</returns>
+    public async Task<ServiceResult<PrescriptionDto>> CreateAsync(PrescriptionCreateDto createDto, CancellationToken cancellationToken = default)
+    {
+        // 委托到原始方法，暂未实现完整的CancellationToken支持
+        // TODO: 完整实现取消令牌支持
+        return await CreateAsync(createDto);
+    }
+
+    /// <summary>
+    /// 更新处方业务处理 - 支持取消令牌
+    /// DT-011: 长时间操作取消支持，提升用户体验
+    /// </summary>
+    /// <param name="id">处方唯一标识</param>
+    /// <param name="updateDto">处方更新请求信息</param>
+    /// <param name="cancellationToken">取消令牌</param>
+    /// <returns>包含更新后处方信息的业务结果</returns>
+    public async Task<ServiceResult<PrescriptionDto>> UpdateAsync(Guid id, PrescriptionEditDto updateDto, CancellationToken cancellationToken = default)
+    {
+        // 委托到原始方法，暂未实现完整的CancellationToken支持
+        // TODO: 完整实现取消令牌支持
+        return await UpdateAsync(id, updateDto);
+    }
+
+    #endregion DT-011: 取消令牌支持重载方法
 }

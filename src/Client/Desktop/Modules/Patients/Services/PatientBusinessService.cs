@@ -1,4 +1,5 @@
-﻿using LYBT.Desktop.Patients.Interfaces;
+﻿using LYBT.Desktop.Core.Services.Exceptions;
+using LYBT.Desktop.Patients.Interfaces;
 using LYBT.Shared.Interfaces.Api;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
@@ -16,10 +17,12 @@ namespace LYBT.Desktop.Patients.Services;
 /// </summary>
 public class PatientBusinessService(
     ILogger<PatientBusinessService> logger,
-    IPatientApi patientApi) : IPatientBusinessService
+    IPatientApi patientApi,
+    IExceptionHandler exceptionHandler) : IPatientBusinessService
 {
     private readonly ILogger<PatientBusinessService> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private readonly IPatientApi _patientApi = patientApi ?? throw new ArgumentNullException(nameof(patientApi));
+    private readonly IExceptionHandler _exceptionHandler = exceptionHandler ?? throw new ArgumentNullException(nameof(exceptionHandler));
 
     #region 患者业务逻辑专业化实现
 
@@ -30,17 +33,21 @@ public class PatientBusinessService(
     /// <param name="createDto">患者创建请求信息</param>
     /// <returns>包含新建患者信息的业务结果</returns>
     /// <exception cref="ArgumentNullException">当创建请求为空时抛出</exception>
-    public async Task<ServiceResult<PatientDto>> CreateAsync(PatientCreateDto createDto)
-    {
-        ArgumentNullException.ThrowIfNull(createDto, nameof(createDto));
+    public async Task<ServiceResult<PatientDto>> CreateAsync(PatientCreateDto createDto, CancellationToken cancellationToken = default)
+{
+    ArgumentNullException.ThrowIfNull(createDto, nameof(createDto));
 
-        try
+    return await _exceptionHandler.HandleException<PatientDto>(
+        async (ct) =>
         {
             _logger.LogInformation(
                 "开始处理患者档案创建: 姓名: {PatientName}, 联系电话: {Phone}",
                 createDto.Name, createDto.PhoneNumber);
 
-            var refitResponse = await _patientApi.CreatePatientAsync(createDto);
+            var refitResponse = await _patientApi.CreatePatientAsync(createDto).ConfigureAwait(false);
+            
+            // 检查是否取消
+            ct.ThrowIfCancellationRequested();
 
             if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
             {
@@ -54,12 +61,8 @@ public class PatientBusinessService(
                 createDto.Name, refitResponse.StatusCode);
             return ServiceResult<PatientDto>.Failure("创建患者档案网络请求失败，请检查网络连接");
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "患者档案创建过程发生异常: {PatientName}", createDto.Name);
-            return ServiceResult<PatientDto>.Failure($"创建患者档案过程发生错误: {ex.Message}");
-        }
-    }
+        , nameof(CreateAsync), $"创建患者档案: {createDto.Name}", cancellationToken);
+}
 
     /// <summary>
     /// 患者更新业务处理
@@ -69,34 +72,34 @@ public class PatientBusinessService(
     /// <param name="updateDto">患者更新请求信息</param>
     /// <returns>包含更新后患者信息的业务结果</returns>
     /// <exception cref="ArgumentNullException">当更新请求为空时抛出</exception>
-    public async Task<ServiceResult<PatientDto>> UpdateAsync(Guid id, PatientUpdateDto updateDto)
-    {
-        ArgumentNullException.ThrowIfNull(updateDto, nameof(updateDto));
+    public async Task<ServiceResult<PatientDto>> UpdateAsync(Guid id, PatientUpdateDto updateDto, CancellationToken cancellationToken = default)
+{
+    ArgumentNullException.ThrowIfNull(updateDto, nameof(updateDto));
 
-        try
+    return await _exceptionHandler.HandleException<PatientDto>(
+        async (ct) =>
         {
-            _logger.LogInformation("开始处理患者档案更新: {PatientId}", id);
+            _logger.LogInformation("开始处理患者档案更新: 患者ID: {PatientId}", id);
 
-            var refitResponse = await _patientApi.UpdatePatientAsync(id, updateDto);
+            var refitResponse = await _patientApi.UpdatePatientAsync(id, updateDto).ConfigureAwait(false);
+            
+            // 检查是否取消
+            ct.ThrowIfCancellationRequested();
 
             if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
             {
                 var patient = refitResponse.Content;
-                _logger.LogInformation("患者档案更新成功: {PatientId}", id);
+                _logger.LogInformation("患者档案更新成功: {PatientName}", patient.Name);
                 return ServiceResult<PatientDto>.Success(patient, "患者档案更新成功");
             }
 
             _logger.LogWarning(
-                "患者档案更新HTTP请求失败: {PatientId}, 状态码: {StatusCode}",
+                "患者档案更新HTTP请求失败: 患者ID: {PatientId}, 状态码: {StatusCode}",
                 id, refitResponse.StatusCode);
             return ServiceResult<PatientDto>.Failure("更新患者档案网络请求失败，请检查网络连接");
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "患者档案更新过程发生异常: {PatientId}", id);
-            return ServiceResult<PatientDto>.Failure($"更新患者档案过程发生错误: {ex.Message}");
-        }
-    }
+        , nameof(UpdateAsync), $"更新患者档案: {id}", cancellationToken);
+}
 
     /// <summary>
     /// 启用患者档案

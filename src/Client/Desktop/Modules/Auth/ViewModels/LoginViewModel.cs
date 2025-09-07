@@ -379,14 +379,19 @@ public class LoginViewModel : ModernViewModelBase
     #region 清理资源
 
     /// <summary>
-    /// 清理资源
+    /// 清理资源 - DT-013内存泄漏修复
     /// </summary>
     protected override void OnDisposing()
     {
-        // 取消事件订阅
-        if (_authModule != null)
+        try
         {
-            // 简化版本：无事件订阅需要清理
+            // DT-013: 取消EventAggregator订阅，防止内存泄漏
+            EventAggregator.GetEvent<LogoutEvent>().Unsubscribe(OnLogout);
+            System.Diagnostics.Debug.WriteLine("🧹 [LoginViewModel] LogoutEvent订阅已取消");
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"⚠️ [LoginViewModel] 取消EventAggregator订阅失败: {ex.Message}");
         }
 
         base.OnDisposing();

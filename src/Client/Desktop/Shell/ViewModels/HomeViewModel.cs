@@ -26,6 +26,7 @@ namespace LYBT.Desktop.Shell.ViewModels
         private readonly IMedicalCaseService _medicalCaseService;
         private readonly IEventAggregator _eventAggregator;
         private readonly DispatcherTimer _timer;
+        private DispatcherTimer? _refreshTimer; // DT-013: 追踪第二个定时器防止内存泄漏
 
         #endregion 依赖服务
 
@@ -399,12 +400,13 @@ namespace LYBT.Desktop.Shell.ViewModels
             // 如果是医生角色，定时刷新统计数据
             if (IsDoctorRole)
             {
-                var refreshTimer = new DispatcherTimer
+                // DT-013: 使用实例变量追踪定时器，防止内存泄漏
+                _refreshTimer = new DispatcherTimer
                 {
                     Interval = TimeSpan.FromMinutes(5)
                 };
-                refreshTimer.Tick += async (s, e) => await LoadTodayStatisticsAsync();
-                refreshTimer.Start();
+                _refreshTimer.Tick += async (s, e) => await LoadTodayStatisticsAsync();
+                _refreshTimer.Start();
             }
 
             LogInfo("HomeViewModel 导航进入");
@@ -419,6 +421,8 @@ namespace LYBT.Desktop.Shell.ViewModels
         {
             // 停止定时器
             _timer?.Stop();
+            // DT-013: 同时停止刷新定时器，防止内存泄漏
+            _refreshTimer?.Stop();
             LogInfo("HomeViewModel 导航离开");
         }
 
@@ -430,8 +434,11 @@ namespace LYBT.Desktop.Shell.ViewModels
         {
             if (disposing)
             {
-                // 停止定时器
+                // DT-013: 停止所有定时器，防止内存泄漏
                 _timer?.Stop();
+                _refreshTimer?.Stop();
+                
+                System.Diagnostics.Debug.WriteLine("🧹 [HomeViewModel] 所有定时器已停止 - 内存泄漏风险已消除");
                 LogInfo("HomeViewModel 定时器已停止");
             }
 
