@@ -334,9 +334,6 @@ namespace LYBT.Desktop.Shell.Extensions
         /// </summary>
         private static void RegisterDomainServices(IContainerRegistry containerRegistry)
         {
-            // API测试服务
-            containerRegistry.RegisterSingleton<ApiTestService>();
-
             // 注意：8个业务模块(Auth/Users/Patients/Herbs/Formula/Consultation/Prescriptions/MedicalCase)
             // 现在通过自动发现系统统一注册，无需在各自的XxxModule.RegisterTypes中重复注册
             // 这消除了双重注册风险，简化了模块开发
