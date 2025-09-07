@@ -639,7 +639,7 @@ public static class WorkbenchPermissionMapper
             UserRole.Admin => "管理员",
             UserRole.Doctor => "医生",
             UserRole.Receptionist => "前台",
-            UserRole.Cashier => "收银员",
+            UserRole.Cashier => "前台", // 收银角色已合并到前台
             UserRole.Pharmacist => "医生", // 药剂师角色已合并到医生
             UserRole.Therapist => "理疗师",
             _ => "用户"
@@ -658,7 +658,7 @@ public static class WorkbenchPermissionMapper
             "管理员" => UserRole.Admin,
             "医生" or "用户" => UserRole.Doctor, // "用户"映射为医生角色
             "前台" => UserRole.Receptionist,
-            "收银员" => UserRole.Cashier,
+            "收银员" => UserRole.Receptionist, // 收银功能由前台承担
             "药剂师" => UserRole.Doctor, // 药剂师功能由医生角色承担
             "理疗师" => UserRole.Therapist,
             _ => UserRole.Doctor // 默认为医生角色
