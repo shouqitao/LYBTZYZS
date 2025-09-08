@@ -308,7 +308,7 @@ jobs:
 
     - name: 🚫 创建Issue（如果发现严重问题）
       if: env.security_status == 'critical'
-      uses: actions/github-script@v6
+      uses: actions/github-script@v8
       with:
         script: |
           github.rest.issues.create({
