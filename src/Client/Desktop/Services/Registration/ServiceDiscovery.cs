@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -389,6 +389,7 @@ public static class ServiceDiscovery
         {
             return serviceType.Name[1..^7];
         }
+
         return serviceType.Name;
     }
 
@@ -399,5 +400,4 @@ public static class ServiceDiscovery
             ScanForModuleServices();
         }
     }
-
 }

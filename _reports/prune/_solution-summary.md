@@ -8,12 +8,14 @@
 ## 🎯 分析总览
 
 ### 项目统计
+
 - **总项目数**: 29个项目
 - **总代码文件**: ~600个C#源文件
 - **项目依赖层次**: 11层拓扑结构
 - **架构状态**: UltraThink重构完成，代码质量极高
 
 ### 关键发现
+
 - **立即可删除**: 极少（约50行代码）
 - **观察期后可删除**: 约825行代码（2025-09-21后）
 - **主要清理空间**: TODO注释和未完成功能
@@ -22,34 +24,38 @@
 ## 📊 分层分析结果
 
 ### Layer 1-2: 共享基础层
-| 项目 | ConfirmedUnused | Suspect | Keep | 主要发现 |
-|------|-----------------|---------|------|----------|
-| **LYBT.Shared.Models** | 0 | 3个DTO类 | 49个文件 | 高质量API契约，无删除空间 |
-| **LYBT.Shared.Utilities** | 1个类+5个方法 | 1个方法 | 3个类 | 可删除WpfEnumHelper.Shared类 |
-| **LYBT.Shared.Interfaces** | 0 | 0 | 100% | 前后端通信契约，完全必需 |
+
+| 项目                         | ConfirmedUnused | Suspect | Keep  | 主要发现                     |
+| -------------------------- | --------------- | ------- | ----- | ------------------------ |
+| **LYBT.Shared.Models**     | 0               | 3个DTO类  | 49个文件 | 高质量API契约，无删除空间           |
+| **LYBT.Shared.Utilities**  | 1个类+5个方法        | 1个方法    | 3个类   | 可删除WpfEnumHelper.Shared类 |
+| **LYBT.Shared.Interfaces** | 0               | 0       | 100%  | 前后端通信契约，完全必需             |
 
 **小计**: 约45行可立即删除，3个可疑项需观察
 
-### Layer 3-4: 服务器核心层  
-| 项目 | ConfirmedUnused | Suspect | Keep | 主要发现 |
-|------|-----------------|---------|------|----------|
-| **LYBT.Entities** | 0 | 0 | 100% | 数据库Schema核心，完全必需 |
-| **LYBT.Infrastructure** | 2个[Obsolete]类 | 0 | 95% | 观察期后可删除778行代码 |
+### Layer 3-4: 服务器核心层
+
+| 项目                      | ConfirmedUnused | Suspect | Keep | 主要发现             |
+| ----------------------- | --------------- | ------- | ---- | ---------------- |
+| **LYBT.Entities**       | 0               | 0       | 100% | 数据库Schema核心，完全必需 |
+| **LYBT.Infrastructure** | 2个[Obsolete]类   | 0       | 95%  | 观察期后可删除778行代码    |
 
 **小计**: 观察期后可删除778行基础设施过时代码
 
 ### Layer 5-7: 服务器业务层
-| 项目组 | ConfirmedUnused | Suspect | Keep | 主要发现 |
-|--------|-----------------|---------|------|----------|
-| **8个业务模块** | 0 | 11个TODO项 | 82个文件 | UltraThink架构完善，仅TODO注释 |
-| **WebAPI服务** | 0 | 0 | 100% | 生产就绪，无删除空间 |
+
+| 项目组          | ConfirmedUnused | Suspect  | Keep  | 主要发现                   |
+| ------------ | --------------- | -------- | ----- | ---------------------- |
+| **8个业务模块**   | 0               | 11个TODO项 | 82个文件 | UltraThink架构完善，仅TODO注释 |
+| **WebAPI服务** | 0               | 0        | 100%  | 生产就绪，无删除空间             |
 
 **小计**: 无死代码，主要是功能完善点
 
 ### Layer 8-11: 客户端层
-| 项目组 | ConfirmedUnused | Suspect | Keep | 主要发现 |
-|--------|-----------------|---------|------|----------|
-| **17个Desktop项目** | 0 | 48个TODO项 | 403个文件 | 架构重构完成，高代码质量 |
+
+| 项目组              | ConfirmedUnused | Suspect  | Keep   | 主要发现         |
+| ---------------- | --------------- | -------- | ------ | ------------ |
+| **17个Desktop项目** | 0               | 48个TODO项 | 403个文件 | 架构重构完成，高代码质量 |
 
 **小计**: 无死代码，48个功能增强TODO
 
@@ -58,6 +64,7 @@
 ### 第一批：安全删除项（可立即执行）
 
 #### 1. LYBT.Shared.Utilities 清理
+
 ```bash
 # 目标：删除WpfEnumHelper.Shared静态类和5个未使用方法
 cd src/Shared/LYBT.Shared.Utilities/Helpers/
@@ -76,6 +83,7 @@ cd src/Shared/LYBT.Shared.Utilities/Helpers/
 **执行时间**: 15分钟
 
 ### 总计立即收益
+
 - **删除行数**: 约45行
 - **影响项目**: 1个项目
 - **风险级别**: 极低
@@ -86,7 +94,8 @@ cd src/Shared/LYBT.Shared.Utilities/Helpers/
 ### 第二批：[Obsolete]类清理
 
 #### 1. LYBT.Infrastructure 过时架构清理
-```bash  
+
+```bash
 # 观察期结束后执行
 # 删除目标：UltraThink重构后的过时基础设施类
 
@@ -94,7 +103,8 @@ rm src/Server/Core/LYBT.Infrastructure/BaseService.cs      # ~400行
 rm src/Server/Core/LYBT.Infrastructure/Specification.cs    # ~378行
 ```
 
-#### 2. LYBT.Shared.Utilities 可疑类清理  
+#### 2. LYBT.Shared.Utilities 可疑类清理
+
 ```bash
 # 如观察期确认无使用，可删除：
 # - CommonHelper 中的部分方法
@@ -102,7 +112,8 @@ rm src/Server/Core/LYBT.Infrastructure/Specification.cs    # ~378行
 ```
 
 #### 3. LYBT.Shared.Models 配置类清理
-```bash  
+
+```bash
 # 如确认不需要，可删除：
 # - DiagnosisCatalogDto (~15行)
 # - TreatmentCatalogDto (~12行)
@@ -115,6 +126,7 @@ rm src/Server/Core/LYBT.Infrastructure/Specification.cs    # ~378行
 ## 📋 TODO注释处理建议
 
 ### 统计总览
+
 - **服务器端TODO**: 11个（主要为功能增强）
 - **客户端TODO**: 48个（主要为UX改进）
 - **总计**: 59个TODO需要处理决策
@@ -122,6 +134,7 @@ rm src/Server/Core/LYBT.Infrastructure/Specification.cs    # ~378行
 ### 处理策略
 
 #### 1. 转为正式需求（推荐）
+
 ```markdown
 # 建议转换为Issue跟踪系统
 - 四诊数据解析功能完善
@@ -131,6 +144,7 @@ rm src/Server/Core/LYBT.Infrastructure/Specification.cs    # ~378行
 ```
 
 #### 2. 删除过时TODO（技术债务）
+
 ```csharp
 // 如果功能已实现或不再需要，可删除：
 // TODO: 重构此方法以符合新架构 (已完成)
@@ -138,6 +152,7 @@ rm src/Server/Core/LYBT.Infrastructure/Specification.cs    # ~378行
 ```
 
 #### 3. 文档化功能限制
+
 ```csharp
 // 替换：TODO: 实现配伍禁忌检查
 // 为：NOTE: 配伍禁忌检查功能待v2.0实现
@@ -148,17 +163,20 @@ rm src/Server/Core/LYBT.Infrastructure/Specification.cs    # ~378行
 ### 代码质量评估：优秀
 
 1. **架构重构成功**: UltraThink重构清理了大量死代码
+   
    - 前端已删除15,000行冗余代码
    - 后端统一三层架构，职责清晰
    - 零编译警告零错误状态
 
 2. **几乎无真正死代码**: 
+   
    - 共享库：高使用率API契约
    - 基础设施：生产就绪组件
    - 业务模块：精简高效实现  
    - 客户端：模块化WPF架构
 
 3. **主要清理空间在观察期项目**:
+   
    - 2个[Obsolete]类等待删除确认
    - 3个可疑DTO类需业务确认
    - TODO注释需求管理改进
@@ -173,38 +191,43 @@ rm src/Server/Core/LYBT.Infrastructure/Specification.cs    # ~378行
 ## 🎯 执行建议
 
 ### 立即执行（推荐）
+
 - ✅ **执行第一批安全删除**: 45行无用代码清理
 - ✅ **TODO注释整理**: 转为正式需求管理
 
-### 观察期后执行（2025-09-21后）  
+### 观察期后执行（2025-09-21后）
+
 - 🔄 **执行第二批删除**: 825行过时代码清理
 - 🔄 **最终架构清理**: 完成UltraThink重构扫尾
 
 ### 不建议执行
+
 - ❌ **删除任何共享接口**: 破坏前后端通信
 - ❌ **删除基础设施组件**: 导致系统崩溃
 - ❌ **大规模代码重构**: 当前质量已很高
 
 ## 📊 最终统计
 
-| 删除时机 | 代码行数 | 文件数 | 风险级别 | 预计收益 |
-|----------|----------|--------|----------|----------|
-| **立即可删除** | ~45行 | 2个文件 | 极低 | 代码清洁 |
-| **观察期后** | ~825行 | 5个文件 | 低 | 架构简化 |
-| **TODO转换** | ~200行注释 | 59个位置 | 无 | 需求规范 |
-| **总计** | ~1070行 | 7个文件 | 极低 | 质量提升 |
+| 删除时机       | 代码行数    | 文件数   | 风险级别 | 预计收益 |
+| ---------- | ------- | ----- | ---- | ---- |
+| **立即可删除**  | ~45行    | 2个文件  | 极低   | 代码清洁 |
+| **观察期后**   | ~825行   | 5个文件  | 低    | 架构简化 |
+| **TODO转换** | ~200行注释 | 59个位置 | 无    | 需求规范 |
+| **总计**     | ~1070行  | 7个文件  | 极低   | 质量提升 |
 
 ## 🏆 结论
 
 **LYBT解决方案代码质量极高，已是行业标准的精简实现**。
 
 **主要成就**:
+
 - ✅ UltraThink架构重构成功，代码精简高效
 - ✅ 前后端零编译错误，生产就绪状态  
 - ✅ 29个项目中仅发现极少死代码
 - ✅ 主要清理空间在架构重构遗留项目
 
 **建议策略**: 
+
 1. **重点转向功能完善** 而非代码删除
 2. **加强需求管理** 处理59个TODO项目
 3. **维护现有高质量架构** 避免过度重构
