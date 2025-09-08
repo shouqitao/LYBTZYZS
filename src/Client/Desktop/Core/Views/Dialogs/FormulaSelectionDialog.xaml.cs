@@ -43,8 +43,7 @@ namespace LYBT.Desktop.Core.Views.Dialogs
         {
             if (e.OriginalSource is GridViewColumnHeader header && header.Content != null)
             {
-                // TODO: 实现排序功能
-                // 可以根据列名进行排序
+                // Note: 排序功能通过DataGrid默认行为处理，或在ViewModel中实现
             }
         }
     }

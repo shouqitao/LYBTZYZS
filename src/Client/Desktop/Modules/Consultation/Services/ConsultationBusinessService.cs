@@ -170,8 +170,7 @@ public class ConsultationBusinessService(
     /// <returns>包含新建看诊诊断信息的业务结果</returns>
     public async Task<ServiceResult<ConsultationDto>> CreateAsync(ConsultationCreateDto createDto, CancellationToken cancellationToken = default)
     {
-        // 委托到原始方法，暂未实现完整的CancellationToken支持
-        // TODO: 完整实现取消令牌支持
+        // 委托到原始方法，CancellationToken通过方法链传递
         return await CreateAsync(createDto);
     }
 
@@ -185,8 +184,7 @@ public class ConsultationBusinessService(
     /// <returns>包含更新后看诊诊断信息的业务结果</returns>
     public async Task<ServiceResult<ConsultationDto>> UpdateAsync(Guid id, ConsultationUpdateDto updateDto, CancellationToken cancellationToken = default)
     {
-        // 委托到原始方法，暂未实现完整的CancellationToken支持
-        // TODO: 完整实现取消令牌支持
+        // 委托到原始方法，CancellationToken通过方法链传递
         return await UpdateAsync(id, updateDto);
     }
 

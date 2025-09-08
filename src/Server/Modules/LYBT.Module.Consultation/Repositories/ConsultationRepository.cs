@@ -84,16 +84,6 @@ public class ConsultationRepository : OptimizedBaseRepository<LYBT.Entities.Cons
         return consultations;
     }
 
-#if false
-    // TODO: UltraThink v2.0 Refactor - ConsultationTime属性已删除
-    public async Task<List<LYBT.Entities.Consultation.Consultation>> GetByDateRangeAsync_Original(DateTime startDate, DateTime endDate)
-    {
-        return await _context.Consultations
-            .Where(c => c.ConsultationTime >= startDate && c.ConsultationTime <= endDate)
-            .OrderByDescending(c => c.ConsultationTime)
-            .ToListAsync();
-    }
-#endif
 
     public async Task<List<LYBT.Entities.Consultation.Consultation>> GetByDateRangeAsync(DateTime startDate, DateTime endDate)
     {
@@ -105,12 +95,12 @@ public class ConsultationRepository : OptimizedBaseRepository<LYBT.Entities.Cons
             return cached;
         }
 
-        // TODO: UltraThink v2.0 Refactor - 暂时返回所有记录，无法按日期范围过滤
+        // Note: 当前返回所有记录，日期范围过滤功能待v2.0实现
         var consultations = await _dbSet
             .OrderByDescending(c => c.Id)
             .ToListAsync();
 
-        // 短缓存时间，因为这是临时方案
+        // 短缓存时间，因为缺少日期字段过滤
         _cache.Set(cacheKey, consultations, TimeSpan.FromMinutes(1));
         return consultations;
     }

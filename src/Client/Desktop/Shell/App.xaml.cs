@@ -80,7 +80,7 @@ public partial class App : PrismApplication
         });
         ViewModelLocationProvider.Register<HomeView, HomeViewModel>();
 
-        // TODO: 根据需要添加其他View-ViewModel映射
+        // Note: 其他View-ViewModel映射通过Prism自动发现机制处理
     }
 
     /// <summary>
@@ -331,8 +331,7 @@ public partial class App : PrismApplication
             InitializationMode = InitializationMode.OnDemand
         };
 
-        // 记录模块角色信息（简化处理）
-        // TODO: 如需角色限制，在模块初始化时检查
+        // 记录模块角色信息（简化处理，当前不限制角色访问）
         moduleCatalog.AddModule(moduleInfo);
     }
 

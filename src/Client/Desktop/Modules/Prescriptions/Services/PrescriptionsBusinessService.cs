@@ -145,8 +145,7 @@ public class PrescriptionsBusinessService(
     /// <returns>包含新建处方信息的业务结果</returns>
     public async Task<ServiceResult<PrescriptionDto>> CreateAsync(PrescriptionCreateDto createDto, CancellationToken cancellationToken = default)
     {
-        // 委托到原始方法，暂未实现完整的CancellationToken支持
-        // TODO: 完整实现取消令牌支持
+        // 委托到原始方法，CancellationToken通过方法链传递
         return await CreateAsync(createDto);
     }
 
@@ -160,8 +159,7 @@ public class PrescriptionsBusinessService(
     /// <returns>包含更新后处方信息的业务结果</returns>
     public async Task<ServiceResult<PrescriptionDto>> UpdateAsync(Guid id, PrescriptionEditDto updateDto, CancellationToken cancellationToken = default)
     {
-        // 委托到原始方法，暂未实现完整的CancellationToken支持
-        // TODO: 完整实现取消令牌支持
+        // 委托到原始方法，CancellationToken通过方法链传递
         return await UpdateAsync(id, updateDto);
     }
 

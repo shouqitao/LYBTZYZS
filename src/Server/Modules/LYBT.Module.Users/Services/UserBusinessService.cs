@@ -1,4 +1,4 @@
-﻿using System.Text.RegularExpressions;
+using System.Text.RegularExpressions;
 using AutoMapper;
 using LYBT.Infrastructure.Data;
 using LYBT.Module.Users.Services.Interfaces;

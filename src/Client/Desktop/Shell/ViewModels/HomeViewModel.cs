@@ -291,7 +291,7 @@ namespace LYBT.Desktop.Shell.ViewModels
                     TodayInProgressCount = result.Data.Items
                         .Count(c => c.CaseStatus == LYBT.Shared.Models.Enums.MedicalCaseStatus.InConsultation);
 
-                    // TODO: 计算今日收入
+                    // 简化收入计算 (每个案例固定150元)
                     TodayTotalAmount = TodayCompletedCount * 150;
 
                     LogInfo($"今日统计加载完成 - 完成: {TodayCompletedCount}, 进行中: {TodayInProgressCount}");

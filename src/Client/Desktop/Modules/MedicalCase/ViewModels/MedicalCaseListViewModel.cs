@@ -18,8 +18,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 {
     /// <summary>
     /// 医疗案例列表视图模型（UltraThink Phase 3.1 现代化架构版）
-    /// TODO: 待完整重构为ModernManagementViewModel模式
-    /// 当前保持兼容性，避免破坏性更改
+    /// Note: 当前使用兼容性架构，v2.0将升级为ModernManagementViewModel模式
     /// </summary>
 #pragma warning disable CS0618 // NewBaseListViewModel已过时，计划未来架构升级
 

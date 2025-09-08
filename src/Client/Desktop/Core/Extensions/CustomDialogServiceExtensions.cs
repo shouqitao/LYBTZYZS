@@ -85,8 +85,7 @@ namespace LYBT.Desktop.Core.Extensions
 
             var message = "检测到未保存的更改。\n\n是否要保存这些更改？";
 
-            // 使用 MessageBox 的三个按钮选项
-            // TODO: 未来可以创建自定义三按钮对话框
+            // 使用标准二按钮确认对话框 (简化UX设计)
             var result = await dialogService.ShowConfirmationAsync(message, "保存确认");
             return result; // 简化实现：true=保存，false=不保存
         }
