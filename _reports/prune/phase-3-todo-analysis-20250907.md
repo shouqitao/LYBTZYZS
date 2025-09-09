@@ -7,21 +7,23 @@
 ## 🎯 TODO统计总览
 
 ### 数量分布统计
+
 - **总计TODO**: 59个TODO注释
 - **服务器端**: 12个 (20.3%)
 - **客户端**: 47个 (79.7%)
 - **平均每个模块**: 4.9个TODO
 
 ### 文件分布热点
-| 模块分类 | TODO数量 | 占比 | 热点文件 |
-|----------|----------|------|----------|
-| **Prescriptions** | 12个 | 20.3% | PrescriptionEditorDialogViewModel, PrescriptionBusinessService |
-| **ConsultationWorkbench** | 8个 | 13.6% | ConsultationWorkbenchMainViewModel, ConsultationWorkbenchNavigator |
-| **Core服务** | 8个 | 13.6% | GlobalExceptionHandler, NotificationService |
-| **MedicalCase** | 7个 | 11.9% | MedicalCaseManagementViewModel, MedicalCaseBusinessService |
-| **Consultation** | 5个 | 8.5% | ConsultationBusinessService, ConsultationRepository |
-| **患者模块** | 6个 | 10.2% | PatientImportWizardViewModel |
-| **其他模块** | 13个 | 22.0% | Formula, Herbs, Shell, Infrastructure |
+
+| 模块分类                      | TODO数量 | 占比    | 热点文件                                                               |
+| ------------------------- | ------ | ----- | ------------------------------------------------------------------ |
+| **Prescriptions**         | 12个    | 20.3% | PrescriptionEditorDialogViewModel, PrescriptionBusinessService     |
+| **ConsultationWorkbench** | 8个     | 13.6% | ConsultationWorkbenchMainViewModel, ConsultationWorkbenchNavigator |
+| **Core服务**                | 8个     | 13.6% | GlobalExceptionHandler, NotificationService                        |
+| **MedicalCase**           | 7个     | 11.9% | MedicalCaseManagementViewModel, MedicalCaseBusinessService         |
+| **Consultation**          | 5个     | 8.5%  | ConsultationBusinessService, ConsultationRepository                |
+| **患者模块**                  | 6个     | 10.2% | PatientImportWizardViewModel                                       |
+| **其他模块**                  | 13个    | 22.0% | Formula, Herbs, Shell, Infrastructure                              |
 
 ## 📊 TODO分类分析
 
@@ -32,6 +34,7 @@
 **立即删除清单**:
 
 1. **UltraThink重构遗留** (3个):
+   
    ```csharp
    // ConsultationRepository.cs:88 
    // TODO: UltraThink v2.0 Refactor - ConsultationTime属性已删除
@@ -44,6 +47,7 @@
    ```
 
 2. **Prism对话框已实现** (6个):
+   
    ```csharp
    // PrescriptionEditorDialogViewModel.cs:485,524,547,653 (4个)
    // TODO: Close dialog with success / Implement dialog cancel logic
@@ -56,6 +60,7 @@
    ```
 
 3. **取消令牌重复TODO** (4个):
+   
    ```csharp
    // PrescriptionsBusinessService.cs:149,164 (2个)
    // ConsultationBusinessService.cs:174,189 (2个)
@@ -63,6 +68,7 @@
    ```
 
 4. **已实现功能的过时TODO** (4个):
+   
    ```csharp
    // App.xaml.cs:83,335 (2个)
    // TODO: 根据需要添加其他View-ViewModel映射 / 如需角色限制，在模块初始化时检查
@@ -81,6 +87,7 @@
 **高优先级功能需求** (12个):
 
 1. **核心业务功能** (8个):
+   
    ```markdown
    - 配伍禁忌检查系统 (PrescriptionBusinessService.cs:387)
    - 验方组合推荐算法 (IntelligentPrescriptionService.cs:28)
@@ -93,6 +100,7 @@
    ```
 
 2. **用户体验优化** (4个):
+   
    ```markdown
    - 患者选择界面优化 (PrescriptionsMainViewModel.cs:247)
    - 编辑查看医案功能完善 (MedicalCaseManagementViewModel.cs:273,285)
@@ -101,6 +109,7 @@
    ```
 
 **中优先级用户体验** (12个):
+
 ```markdown
 - 进度显示系统 (UserNotificationService.cs:245,251)
 - 自定义输入对话框 (NotificationService.cs:184)
@@ -112,6 +121,7 @@
 ```
 
 **低优先级技术优化** (8个):
+
 ```markdown
 - 日志记录完善 (ConsultationWorkbenchMainViewModel.cs:109, ServiceCollectionExtensions.cs:73)
 - 认证失败处理 (GlobalExceptionHandler.cs:348)
@@ -143,33 +153,37 @@
 ## 🎯 处理建议
 
 ### 立即执行 (Phase 3.1)
+
 - ✅ **删除17个过时TODO**: 清理技术债务，提升代码质量
 - ✅ **创建GitHub Issues**: 为32个功能需求建立正式跟踪
 - ✅ **更新注释格式**: 10个TODO转为NOTE说明
 
 ### 收益评估
+
 - **代码清洁**: 删除~85行过时TODO注释
 - **需求规范**: 32个功能需求转为正式项目管理
 - **开发效率**: 为后续功能开发提供清晰路线图
 - **质量提升**: 技术债务清理，提升代码可维护性
 
 ### 实施优先级
+
 1. **高优先级** (立即处理): 过时TODO删除，核心功能需求创建
 2. **中优先级** (本月完成): UX优化需求整理，技术优化规划
 3. **低优先级** (季度规划): v2.0功能文档化，长期路线图制定
 
 ## 📊 统计摘要
 
-| 分类 | 数量 | 占比 | 处理方式 | 预计工时 |
-|------|------|------|----------|----------|
-| **删除过时** | 17个 | 28.8% | 直接删除 | 2小时 |
-| **转为需求** | 32个 | 54.2% | GitHub Issues | 4小时 |
-| **文档化** | 10个 | 16.9% | 注释更新 | 1小时 |
-| **总计** | **59个** | **100%** | **完整整理** | **7小时** |
+| 分类       | 数量      | 占比       | 处理方式          | 预计工时    |
+| -------- | ------- | -------- | ------------- | ------- |
+| **删除过时** | 17个     | 28.8%    | 直接删除          | 2小时     |
+| **转为需求** | 32个     | 54.2%    | GitHub Issues | 4小时     |
+| **文档化**  | 10个     | 16.9%    | 注释更新          | 1小时     |
+| **总计**   | **59个** | **100%** | **完整整理**      | **7小时** |
 
 ## 🎆 预期成果
 
 **Phase 3完成后**:
+
 - ✅ **代码质量**: 清理85行TODO技术债务
 - ✅ **需求管理**: 32个功能需求进入正式跟踪体系
 - ✅ **开发规范**: 建立TODO→需求转化流程标准

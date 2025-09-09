@@ -18,6 +18,7 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
@@ -40,25 +41,175 @@
                             Command="{Binding RefreshCommand}" />
                 </StackPanel>
 
-                <!-- 搜索区域 - 左侧填充剩余空间 -->
+                <!-- Epic 04-P0-03: 增强型搜索区域 -->
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock Text="搜索：" Style="{StaticResource LabelText}" />
-                    <TextBox Style="{StaticResource SearchTextBox}"
-                             Text="{Binding SearchKeyword, UpdateSourceTrigger=PropertyChanged}">
-                        <TextBox.InputBindings>
-                            <KeyBinding Key="Enter" Command="{Binding SearchCommand}" />
-                        </TextBox.InputBindings>
-                    </TextBox>
-                    <Button Content="搜索"
-                            Margin="10,0,0,0"
-                            Style="{StaticResource PrimaryButton}"
-                            Command="{Binding SearchCommand}" />
+                    <TextBlock Text="快速搜索：" Style="{StaticResource LabelText}" />
+                    
+                    <!-- 智能搜索框 -->
+                    <Grid>
+                        <TextBox x:Name="SmartSearchBox"
+                                 Style="{StaticResource SearchTextBox}"
+                                 Text="{Binding SearchKeyword, UpdateSourceTrigger=PropertyChanged}"
+                                 Width="200">
+                            <TextBox.InputBindings>
+                                <KeyBinding Key="Enter" Command="{Binding SearchCommand}" />
+                            </TextBox.InputBindings>
+                        </TextBox>
+                        
+                        <!-- 搜索建议下拉 -->
+                        <Popup x:Name="SearchSuggestionPopup"
+                               PlacementTarget="{Binding ElementName=SmartSearchBox}"
+                               Placement="Bottom"
+                               IsOpen="{Binding ShowSearchSuggestions}"
+                               Width="200">
+                            <Border Background="White" BorderBrush="#CCCCCC" BorderThickness="1">
+                                <ListBox ItemsSource="{Binding SearchSuggestions}"
+                                         SelectedItem="{Binding SelectedSearchSuggestion}"
+                                         MaxHeight="150">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="👤" Margin="0,0,5,0" />
+                                                <TextBlock Text="{Binding}" />
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </Border>
+                        </Popup>
+                    </Grid>
+                    
+                    <!-- 搜索按钮组 -->
+                    <StackPanel Orientation="Horizontal" Margin="5,0,0,0">
+                        <Button Content="🔍 搜索"
+                                Style="{StaticResource PrimaryButton}"
+                                Command="{Binding SearchCommand}"
+                                ToolTip="执行搜索" />
+                        
+                        <Button Content="📋 历史"
+                                Style="{StaticResource SecondaryButton}"
+                                Margin="5,0,0,0"
+                                Command="{Binding ShowSearchHistoryCommand}"
+                                ToolTip="显示搜索历史" />
+                                
+                        <Button Content="🔧 高级"
+                                Style="{StaticResource InfoButton}"
+                                Margin="5,0,0,0"
+                                Command="{Binding ToggleAdvancedSearchCommand}"
+                                ToolTip="显示/隐藏高级搜索" />
+                                
+                        <Button Content="🔄 清空"
+                                Style="{StaticResource WarningButton}"
+                                Margin="5,0,0,0"
+                                Command="{Binding ClearSearchCommand}"
+                                ToolTip="清空搜索条件" />
+                    </StackPanel>
                 </StackPanel>
             </DockPanel>
         </Border>
 
+        <!-- Epic 04-P0-03: 高级搜索面板 -->
+        <Border Grid.Row="1"
+                Style="{StaticResource ToolBarContainer}"
+                Margin="10,5,10,0"
+                Visibility="{Binding ShowAdvancedSearch, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <Expander Header="📊 高级搜索选项" IsExpanded="{Binding AdvancedSearchExpanded}">
+                <Grid Margin="10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <!-- 第一行：姓名和手机号 -->
+                    <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,10,10">
+                        <TextBlock Text="姓名：" Style="{StaticResource LabelText}" />
+                        <TextBox Text="{Binding AdvancedSearch.Name, UpdateSourceTrigger=PropertyChanged}"
+                                 Style="{StaticResource SearchTextBox}" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="0" Grid.Column="1" Margin="0,0,10,10">
+                        <TextBlock Text="手机号：" Style="{StaticResource LabelText}" />
+                        <TextBox Text="{Binding AdvancedSearch.PhoneNumber, UpdateSourceTrigger=PropertyChanged}"
+                                 Style="{StaticResource SearchTextBox}" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="0" Grid.Column="2" Margin="0,0,10,10">
+                        <TextBlock Text="性别：" Style="{StaticResource LabelText}" />
+                        <ComboBox SelectedValue="{Binding AdvancedSearch.Gender}"
+                                  DisplayMemberPath="Text"
+                                  SelectedValuePath="Value">
+                            <ComboBox.Items>
+                                <ComboBoxItem Content="全部" Tag="All" IsSelected="True" />
+                                <ComboBoxItem Content="男" Tag="Male" />
+                                <ComboBoxItem Content="女" Tag="Female" />
+                            </ComboBox.Items>
+                        </ComboBox>
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="0" Grid.Column="3" Margin="0,0,0,10">
+                        <TextBlock Text="证件号：" Style="{StaticResource LabelText}" />
+                        <TextBox Text="{Binding AdvancedSearch.IDNumber, UpdateSourceTrigger=PropertyChanged}"
+                                 Style="{StaticResource SearchTextBox}" />
+                    </StackPanel>
+
+                    <!-- 第二行：年龄范围和地址 -->
+                    <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,10,10">
+                        <TextBlock Text="最小年龄：" Style="{StaticResource LabelText}" />
+                        <TextBox Text="{Binding AdvancedSearch.MinAge, UpdateSourceTrigger=PropertyChanged}"
+                                 Style="{StaticResource SearchTextBox}" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="1" Grid.Column="1" Margin="0,0,10,10">
+                        <TextBlock Text="最大年龄：" Style="{StaticResource LabelText}" />
+                        <TextBox Text="{Binding AdvancedSearch.MaxAge, UpdateSourceTrigger=PropertyChanged}"
+                                 Style="{StaticResource SearchTextBox}" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="1" Grid.Column="2" Margin="0,0,10,10">
+                        <TextBlock Text="地址：" Style="{StaticResource LabelText}" />
+                        <TextBox Text="{Binding AdvancedSearch.Address, UpdateSourceTrigger=PropertyChanged}"
+                                 Style="{StaticResource SearchTextBox}" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="1" Grid.Column="3" Margin="0,0,0,10">
+                        <TextBlock Text="职业：" Style="{StaticResource LabelText}" />
+                        <TextBox Text="{Binding AdvancedSearch.Profession, UpdateSourceTrigger=PropertyChanged}"
+                                 Style="{StaticResource SearchTextBox}" />
+                    </StackPanel>
+
+                    <!-- 第三行：操作按钮 -->
+                    <StackPanel Grid.Row="2" Grid.ColumnSpan="4" 
+                                Orientation="Horizontal" 
+                                HorizontalAlignment="Center"
+                                Margin="0,10,0,0">
+                        <Button Content="🔍 执行高级搜索"
+                                Style="{StaticResource SuccessButton}"
+                                Command="{Binding ExecuteAdvancedSearchCommand}"
+                                Margin="0,0,10,0" />
+                        
+                        <Button Content="🧹 清空条件"
+                                Style="{StaticResource WarningButton}"
+                                Command="{Binding ClearAdvancedSearchCommand}"
+                                Margin="0,0,10,0" />
+                                
+                        <Button Content="📝 保存为模板"
+                                Style="{StaticResource InfoButton}"
+                                Command="{Binding SaveSearchTemplateCommand}"
+                                ToolTip="保存当前搜索条件为模板" />
+                    </StackPanel>
+                </Grid>
+            </Expander>
+        </Border>
+
         <!-- 数据表格 -->
-        <DataGrid Grid.Row="1"
+        <DataGrid Grid.Row="2"
                   ItemsSource="{Binding Items}"
                   SelectedItem="{Binding SelectedPatient}"
                   Style="{StaticResource PatientManagementDataGrid}"
@@ -128,6 +279,13 @@
                                         Margin="2"
                                         Command="{Binding DataContext.ViewDetailsCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                         CommandParameter="{Binding}" />
+                                <Button Content="历史"
+                                        Style="{StaticResource SecondaryButton}"
+                                        Padding="8,4"
+                                        FontSize="12"
+                                        Margin="2"
+                                        Command="{Binding DataContext.ViewHistoryCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                        CommandParameter="{Binding}" />
                                 <Button Content="编辑"
                                         Style="{StaticResource SuccessButton}"
                                         Padding="8,4"
@@ -157,17 +315,40 @@
         </DataGrid>
 
         <!-- 状态栏和分页 -->
-        <Border Grid.Row="2" Style="{StaticResource StatusBarContainer}">
+        <Border Grid.Row="3" Style="{StaticResource StatusBarContainer}">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
-                <!-- 统计信息 -->
+                <!-- Epic 04-P0-04: 增强统计信息和加载状态 -->
                 <StackPanel Grid.Column="0" Orientation="Horizontal">
+                    <!-- 加载指示器 -->
+                    <StackPanel Orientation="Horizontal" 
+                                Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                Margin="0,0,15,0">
+                        <ProgressBar IsIndeterminate="True" 
+                                     Width="100" 
+                                     Height="16" 
+                                     VerticalAlignment="Center" />
+                        <TextBlock Text="加载中..." 
+                                   Style="{StaticResource StatusLabel}"
+                                   Margin="10,0,0,0"
+                                   VerticalAlignment="Center" />
+                    </StackPanel>
+                    
+                    <!-- 状态文本 -->
                     <TextBlock Style="{StaticResource StatusLabel}"
-                               Text="{Binding StatusText}" />
+                               Text="{Binding StatusText}" 
+                               VerticalAlignment="Center" />
+                               
+                    <!-- 最后更新时间 -->
+                    <TextBlock Style="{StaticResource StatusLabel}"
+                               Text="{Binding LastUpdateTime, StringFormat='最后更新: {0:HH:mm:ss}'}"
+                               Margin="20,0,0,0"
+                               VerticalAlignment="Center"
+                               Foreground="Gray" />
                 </StackPanel>
 
                 <!-- 分页控件 -->

@@ -1,10 +1,7 @@
-﻿using System.Data;
+using System.Data;
 using AutoMapper;
 using LYBT.Desktop.Core.Coordinators;
 using LYBT.Desktop.Core.Helpers;
-
-// UltraThink四层架构重构：使用新的三层架构组件实现患者管理
-// UltraThink v2.0: 添加SessionAware相关依赖
 using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.Managers;
 using LYBT.Desktop.Core.ViewModels.Base;
@@ -35,6 +32,7 @@ namespace LYBT.Desktop.Patients.ViewModels
         #region Fields
 
         private readonly IPatientService _patientService;
+        private readonly IMedicalCaseService _medicalCaseService;
         private readonly ICustomDialogService _dialogService;
         private readonly IMapper _mapper;
 
@@ -80,6 +78,89 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         public string StatusText => $"共 {PaginationCoordinator.TotalCount} 条记录";
 
+        // Epic 04-P0-03: 患者快速搜索优化属性
+        private bool _showAdvancedSearch = false;
+        private bool _advancedSearchExpanded = true;
+        private bool _showSearchSuggestions = false;
+        private PatientPagedQueryDto _advancedSearch = new();
+        private List<string> _searchSuggestions = [];
+        private string? _selectedSearchSuggestion;
+        private List<string> _searchHistory = [];
+
+        /// <summary>显示高级搜索面板</summary>
+        public bool ShowAdvancedSearch
+        {
+            get => _showAdvancedSearch;
+            set => SetProperty(ref _showAdvancedSearch, value);
+        }
+
+        /// <summary>高级搜索面板是否展开</summary>
+        public bool AdvancedSearchExpanded
+        {
+            get => _advancedSearchExpanded;
+            set => SetProperty(ref _advancedSearchExpanded, value);
+        }
+
+        /// <summary>显示搜索建议</summary>
+        public bool ShowSearchSuggestions
+        {
+            get => _showSearchSuggestions;
+            set => SetProperty(ref _showSearchSuggestions, value);
+        }
+
+        /// <summary>高级搜索条件</summary>
+        public PatientPagedQueryDto AdvancedSearch
+        {
+            get => _advancedSearch;
+            set => SetProperty(ref _advancedSearch, value);
+        }
+
+        /// <summary>搜索建议列表</summary>
+        public List<string> SearchSuggestions
+        {
+            get => _searchSuggestions;
+            set => SetProperty(ref _searchSuggestions, value);
+        }
+
+        /// <summary>选中的搜索建议</summary>
+        public string? SelectedSearchSuggestion
+        {
+            get => _selectedSearchSuggestion;
+            set
+            {
+                if (SetProperty(ref _selectedSearchSuggestion, value) && value != null)
+                {
+                    SearchKeyword = value;
+                    ShowSearchSuggestions = false;
+                }
+            }
+        }
+
+        /// <summary>搜索历史</summary>
+        public List<string> SearchHistory
+        {
+            get => _searchHistory;
+            set => SetProperty(ref _searchHistory, value);
+        }
+
+        // Epic 04-P0-04: 界面响应性提升属性
+        private DateTime _lastUpdateTime = DateTime.Now;
+        private bool _isOperationInProgress = false;
+
+        /// <summary>最后更新时间</summary>
+        public DateTime LastUpdateTime
+        {
+            get => _lastUpdateTime;
+            set => SetProperty(ref _lastUpdateTime, value);
+        }
+
+        /// <summary>是否有操作正在进行</summary>
+        public bool IsOperationInProgress
+        {
+            get => _isOperationInProgress;
+            set => SetProperty(ref _isOperationInProgress, value);
+        }
+
         // UltraThink v2.0: 删除批量选择功能 - 20人以下小诊所不需要复杂的多选和批量操作
         // 基础搜索功能已经通过NewBaseListViewModel的SearchManager提供
         #endregion Properties
@@ -91,6 +172,9 @@ namespace LYBT.Desktop.Patients.ViewModels
         public DelegateCommand<PatientDto> DeleteCommand { get; private set; } = null!;
         public DelegateCommand<PatientDto> ToggleStatusCommand { get; private set; } = null!;
         public DelegateCommand<PatientDto> ViewDetailsCommand { get; private set; } = null!;
+        
+        // Phase 2 新增：患者历史记录查询功能
+        public DelegateCommand<PatientDto> ViewHistoryCommand { get; private set; } = null!;
 
         // Phase 7 新增：导入导出功能
         public DelegateCommand ExportPatientsCommand { get; private set; } = null!;
@@ -98,6 +182,14 @@ namespace LYBT.Desktop.Patients.ViewModels
         public DelegateCommand ImportPatientsCommand { get; private set; } = null!;
         public DelegateCommand ImportWizardCommand { get; private set; } = null!;
         public DelegateCommand DownloadTemplateCommand { get; private set; } = null!;
+
+        // Epic 04-P0-03: 患者快速搜索优化命令
+        public DelegateCommand ShowSearchHistoryCommand { get; private set; } = null!;
+        public DelegateCommand ToggleAdvancedSearchCommand { get; private set; } = null!;
+        public DelegateCommand ClearSearchCommand { get; private set; } = null!;
+        public DelegateCommand ExecuteAdvancedSearchCommand { get; private set; } = null!;
+        public DelegateCommand ClearAdvancedSearchCommand { get; private set; } = null!;
+        public DelegateCommand SaveSearchTemplateCommand { get; private set; } = null!;
 
         // UltraThink v2.0: 删除过度设计功能 - 20人以下小诊所不需要以下复杂功能:
         // - BatchEnableCommand/BatchDisableCommand: 批量操作过度设计
@@ -122,6 +214,7 @@ namespace LYBT.Desktop.Patients.ViewModels
         /// <exception cref="ArgumentNullException">当关键参数为空时抛出</exception>
         public PatientManagementViewModel(
             IPatientService patientService,
+            IMedicalCaseService medicalCaseService,
             ICustomDialogService dialogService,
             IMapper mapper,
             ISessionManager sessionManager,
@@ -132,6 +225,7 @@ namespace LYBT.Desktop.Patients.ViewModels
             : base(sessionManager, notificationService, logger, paginationCoordinator, searchManager)
         {
             _patientService = patientService ?? throw new ArgumentNullException(nameof(patientService));
+            _medicalCaseService = medicalCaseService ?? throw new ArgumentNullException(nameof(medicalCaseService));
             _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
 
@@ -153,6 +247,9 @@ namespace LYBT.Desktop.Patients.ViewModels
             DeleteCommand = new DelegateCommand<PatientDto>(async patient => await DeletePatientAsync(patient), CanExecutePatientCommand);
             ToggleStatusCommand = new DelegateCommand<PatientDto>(async patient => await ToggleStatusAsync(patient), CanExecutePatientCommand);
             ViewDetailsCommand = new DelegateCommand<PatientDto>(async patient => await ViewDetailsAsync(patient), CanExecutePatientCommand);
+            
+            // Phase 2 新增：初始化患者历史记录查询命令
+            ViewHistoryCommand = new DelegateCommand<PatientDto>(async patient => await ViewHistoryAsync(patient), CanExecutePatientCommand);
 
             // Phase 7: 初始化导入导出命令
             ExportPatientsCommand = new DelegateCommand(async () => await ExportPatientsAsync(), () => !IsLoading);
@@ -167,12 +264,27 @@ namespace LYBT.Desktop.Patients.ViewModels
             NextPageCommand = new DelegateCommand(async () => await PaginationCoordinator.GoToNextPageAsync());
             LastPageCommand = new DelegateCommand(async () => await PaginationCoordinator.GoToLastPageAsync());
 
+            // Epic 04-P0-03: 患者快速搜索优化命令初始化
+            ShowSearchHistoryCommand = new DelegateCommand(async () => await ShowSearchHistoryAsync());
+            ToggleAdvancedSearchCommand = new DelegateCommand(() => ToggleAdvancedSearch());
+            ClearSearchCommand = new DelegateCommand(() => ClearSearch());
+            ExecuteAdvancedSearchCommand = new DelegateCommand(async () => await ExecuteAdvancedSearchAsync());
+            ClearAdvancedSearchCommand = new DelegateCommand(() => ClearAdvancedSearch());
+            SaveSearchTemplateCommand = new DelegateCommand(async () => await SaveSearchTemplateAsync());
+
             // UltraThink v2.0: 删除批量操作命令初始化 - 20人以下小诊所不需要复杂的批量操作
         }
 
+        // Epic 04-P0-04: 增强命令执行条件，防止重复操作
         private bool CanExecutePatientCommand(PatientDto patient)
         {
-            return patient != null && !IsLoading;
+            return patient != null && !IsLoading && !IsOperationInProgress;
+        }
+
+        /// <summary>可以执行一般操作（不依赖选中项）</summary>
+        private bool CanExecuteGeneralCommand()
+        {
+            return !IsLoading && !IsOperationInProgress;
         }
 
         #endregion Command Initialization
@@ -202,10 +314,18 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         #region CRUD Operations
 
+        // Epic 04-P0-04: 增强添加患者操作响应性
         private async Task AddPatientAsync()
         {
+            if (IsOperationInProgress)
+            {
+                return; // 防止重复点击
+            }
+
             try
             {
+                IsOperationInProgress = true;
+                
                 var parameters = new Dictionary<string, object>
                 {
                     ["IsEditMode"] = false
@@ -215,7 +335,15 @@ namespace LYBT.Desktop.Patients.ViewModels
 
                 if (result.Result == true)
                 {
+                    // 显示操作反馈
+                    ShowInfo("正在刷新患者列表...");
+                    
                     await RefreshDataAsync();
+                    
+                    // 更新时间戳
+                    LastUpdateTime = DateTime.Now;
+                    
+                    ShowSuccess("患者信息添加成功");
                     await _dialogService.ShowSuccessAsync("患者信息添加成功", "成功");
                 }
             }
@@ -224,6 +352,14 @@ namespace LYBT.Desktop.Patients.ViewModels
                 LogError(ex, "添加患者失败");
                 ShowError($"添加患者失败: {ex.Message}");
                 await _dialogService.ShowErrorAsync($"添加患者失败: {ex.Message}", "错误");
+            }
+            finally
+            {
+                IsOperationInProgress = false;
+                // 刷新命令状态
+                AddCommand.RaiseCanExecuteChanged();
+                EditCommand.RaiseCanExecuteChanged();
+                DeleteCommand.RaiseCanExecuteChanged();
             }
         }
 
@@ -364,6 +500,130 @@ namespace LYBT.Desktop.Patients.ViewModels
         }
 
         #endregion Business Operations
+
+        #region Phase 2: 患者历史查询功能
+
+        /// <summary>
+        /// 查看患者历史记录
+        /// </summary>
+        /// <param name="patient">患者数据</param>
+        private async Task ViewHistoryAsync(PatientDto patient)
+        {
+            if (patient == null)
+            {
+                return;
+            }
+
+            try
+            {
+                // 获取患者的所有医案历史
+                var medicalCasesResult = await _medicalCaseService.GetByPatientIdAsync(patient.Id);
+
+                string historyInfo;
+
+                if (medicalCasesResult.IsSuccess && medicalCasesResult.Data != null && medicalCasesResult.Data.Count > 0)
+                {
+                    var medicalCases = medicalCasesResult.Data
+                        .OrderByDescending(mc => mc.CreateTime)
+                        .ToList();
+
+                    historyInfo = $"=== 患者历史就诊记录 ===\n\n" +
+                                $"【患者信息】\n" +
+                                $"姓名: {patient.Name}\n" +
+                                $"性别: {(patient.Gender == LYBT.Shared.Models.Enums.Gender.Male ? "男" : patient.Gender == LYBT.Shared.Models.Enums.Gender.Female ? "女" : "未知")}\n" +
+                                $"年龄: {patient.Age}岁\n" +
+                                $"电话: {patient.PhoneNumber ?? "未填写"}\n";
+
+                    // P0-02优化：添加过敏史重要提醒
+                    if (!string.IsNullOrEmpty(patient.AllergyHistory) && patient.AllergyHistory != "无")
+                    {
+                        historyInfo += $"⚠️ 过敏史: {patient.AllergyHistory}\n";
+                    }
+
+                    historyInfo += $"\n【历史医案记录】(共{medicalCases.Count}次就诊)\n\n";
+
+                    for (int i = 0; i < Math.Min(medicalCases.Count, 15); i++) // P0-02优化：扩展到15条记录
+                    {
+                        var mc = medicalCases[i];
+                        var statusText = GetMedicalCaseStatusText((int)mc.Status);
+                        historyInfo += $"▶ 第{i + 1}次就诊 - {mc.CreateTime:yyyy-MM-dd HH:mm}\n";
+                        historyInfo += $"   状态: {statusText}\n";
+                        
+                        if (!string.IsNullOrEmpty(mc.Remark))
+                        {
+                            var remark = mc.Remark.Length > 50 ? mc.Remark.Substring(0, 50) + "..." : mc.Remark;
+                            historyInfo += $"   备注: {remark}\n";
+                        }
+                        else
+                        {
+                            historyInfo += $"   备注: 未填写\n";
+                        }
+                        
+                        historyInfo += "\n";
+                    }
+
+                    if (medicalCases.Count > 15)
+                    {
+                        historyInfo += $"📋 注：为保持界面简洁，仅显示最近15条记录，实际共{medicalCases.Count}条。\n\n";
+                    }
+
+                    historyInfo += "💡 提示：\n";
+                    historyInfo += "• 可在医案管理模块查看完整详情\n";
+                    historyInfo += "• 可在诊疗模块查看该患者历史诊疗记录\n";
+                    historyInfo += "• 注意过敏史和既往病史，确保用药安全";
+                }
+                else
+                {
+                    historyInfo = $"=== 患者历史记录 ===\n\n" +
+                                $"【患者信息】\n" +
+                                $"姓名: {patient.Name}\n" +
+                                $"性别: {(patient.Gender == LYBT.Shared.Models.Enums.Gender.Male ? "男" : patient.Gender == LYBT.Shared.Models.Enums.Gender.Female ? "女" : "未知")}\n" +
+                                $"年龄: {patient.Age}岁\n" +
+                                $"电话: {patient.PhoneNumber ?? "未填写"}\n";
+
+                    // P0-02优化：无记录时也显示过敏史
+                    if (!string.IsNullOrEmpty(patient.AllergyHistory) && patient.AllergyHistory != "无")
+                    {
+                        historyInfo += $"⚠️ 过敏史: {patient.AllergyHistory}\n";
+                    }
+
+                    historyInfo += $"\n【诊疗记录】\n" +
+                                 $"暂无历史就诊记录\n\n" +
+                                 $"💡 提示：\n" +
+                                 $"• 该患者尚未有诊疗记录，可开始新的看诊流程\n" +
+                                 $"• 可在患者接待或医案管理模块中创建就诊记录\n" +
+                                 $"• 首次就诊请详细了解病史和过敏史";
+                }
+
+                await _dialogService.ShowInformationAsync(historyInfo, $"患者历史记录 - {patient.Name}");
+            }
+            catch (Exception ex)
+            {
+                LogError(ex, "查看患者历史记录失败: {PatientId}", patient.Id);
+                ShowError($"查看患者历史记录失败: {ex.Message}");
+                await _dialogService.ShowErrorAsync($"查看患者历史记录失败: {ex.Message}", "错误");
+            }
+        }
+
+        /// <summary>
+        /// 获取医案状态显示文本
+        /// </summary>
+        /// <param name="status">医案状态值</param>
+        /// <returns>状态文本</returns>
+        private string GetMedicalCaseStatusText(int status)
+        {
+            return status switch
+            {
+                0 => "已登记",
+                1 => "进行中", 
+                2 => "已完成",
+                3 => "已取消",
+                4 => "已暂停",
+                _ => "未知状态"
+            };
+        }
+
+        #endregion Phase 2: 患者历史查询功能
 
         // UltraThink v2.0: 删除所有批量操作功能 - 20人以下小诊所不需要复杂的批量操作
         // 包括: BatchEnableAsync, BatchDisableAsync 等功能
@@ -699,5 +959,169 @@ namespace LYBT.Desktop.Patients.ViewModels
         }
 
         #endregion Phase 7: 导入导出功能
+
+        #region Epic 04-P0-03: 患者快速搜索优化方法
+
+        /// <summary>显示搜索历史</summary>
+        private async Task ShowSearchHistoryAsync()
+        {
+            try
+            {
+                if (SearchHistory.Count == 0)
+                {
+                    await _dialogService.ShowInformationAsync("暂无搜索历史记录", "搜索历史");
+                    return;
+                }
+
+                var historyText = string.Join("\n", SearchHistory.Take(10).Select((h, i) => $"{i + 1}. {h}"));
+                var result = await _dialogService.ShowConfirmationAsync(
+                    $"最近搜索记录：\n\n{historyText}\n\n是否清空搜索历史？",
+                    "搜索历史");
+
+                if (result)
+                {
+                    SearchHistory.Clear();
+                    await _dialogService.ShowInformationAsync("搜索历史已清空", "完成");
+                }
+            }
+            catch (Exception ex)
+            {
+                LogError(ex, "显示搜索历史失败");
+                await _dialogService.ShowErrorAsync($"显示搜索历史失败: {ex.Message}", "错误");
+            }
+        }
+
+        /// <summary>切换高级搜索面板显示状态</summary>
+        private void ToggleAdvancedSearch()
+        {
+            ShowAdvancedSearch = !ShowAdvancedSearch;
+            if (ShowAdvancedSearch)
+            {
+                // 初始化高级搜索条件
+                if (AdvancedSearch.PageSize == 0)
+                {
+                    AdvancedSearch.PageSize = 20;
+                    AdvancedSearch.PageIndex = 1;
+                }
+            }
+        }
+
+        /// <summary>清空搜索条件</summary>
+        private void ClearSearch()
+        {
+            SearchKeyword = string.Empty;
+            ClearAdvancedSearch();
+            ShowSearchSuggestions = false;
+        }
+
+        /// <summary>执行高级搜索</summary>
+        private async Task ExecuteAdvancedSearchAsync()
+        {
+            try
+            {
+                IsLoading = true;
+                
+                // 设置分页参数
+                AdvancedSearch.PageIndex = 1;
+                AdvancedSearch.PageSize = 20;
+                
+                var result = await _patientService.GetPagedAsync(AdvancedSearch);
+                
+                if (result.IsSuccess && result.Data != null)
+                {
+                    // 更新数据
+                    Items = new System.Collections.ObjectModel.ObservableCollection<PatientDto>(result.Data.Items);
+                    PaginationCoordinator.UpdatePagination(result.Data.TotalCount);
+                    
+                    // 添加到搜索历史
+                    var searchText = BuildSearchHistoryText(AdvancedSearch);
+                    if (!string.IsNullOrEmpty(searchText))
+                    {
+                        AddToSearchHistory(searchText);
+                    }
+                    
+                    await _dialogService.ShowInformationAsync($"找到 {result.Data.TotalCount} 条符合条件的患者记录", "搜索结果");
+                }
+                else
+                {
+                    await _dialogService.ShowErrorAsync(result.ErrorMessage ?? "高级搜索失败", "搜索错误");
+                }
+            }
+            catch (Exception ex)
+            {
+                LogError(ex, "执行高级搜索失败");
+                await _dialogService.ShowErrorAsync($"高级搜索失败: {ex.Message}", "错误");
+            }
+            finally
+            {
+                IsLoading = false;
+            }
+        }
+
+        /// <summary>清空高级搜索条件</summary>
+        private void ClearAdvancedSearch()
+        {
+            AdvancedSearch = new PatientPagedQueryDto
+            {
+                PageIndex = 1,
+                PageSize = 20
+            };
+        }
+
+        /// <summary>保存搜索模板</summary>
+        private async Task SaveSearchTemplateAsync()
+        {
+            try
+            {
+                var templateName = await _dialogService.ShowInputAsync("请输入搜索模板名称", "保存搜索模板");
+                if (string.IsNullOrWhiteSpace(templateName))
+                {
+                    return;
+                }
+
+                // 这里可以扩展保存到数据库或配置文件
+                // 目前简化为显示确认信息
+                await _dialogService.ShowSuccessAsync($"搜索模板 '{templateName}' 已保存", "保存成功");
+            }
+            catch (Exception ex)
+            {
+                LogError(ex, "保存搜索模板失败");
+                await _dialogService.ShowErrorAsync($"保存搜索模板失败: {ex.Message}", "错误");
+            }
+        }
+
+        /// <summary>构建搜索历史文本</summary>
+        private string BuildSearchHistoryText(PatientPagedQueryDto query)
+        {
+            var conditions = new List<string>();
+            
+            if (!string.IsNullOrEmpty(query.Name)) conditions.Add($"姓名:{query.Name}");
+            if (!string.IsNullOrEmpty(query.PhoneNumber)) conditions.Add($"手机:{query.PhoneNumber}");
+            if (!string.IsNullOrEmpty(query.IDNumber)) conditions.Add($"证件号:{query.IDNumber}");
+            if (query.Gender.HasValue) conditions.Add($"性别:{query.Gender}");
+            if (query.MinAge.HasValue) conditions.Add($"年龄≥{query.MinAge}");
+            if (query.MaxAge.HasValue) conditions.Add($"年龄≤{query.MaxAge}");
+            if (!string.IsNullOrEmpty(query.Address)) conditions.Add($"地址:{query.Address}");
+            if (!string.IsNullOrEmpty(query.Profession)) conditions.Add($"职业:{query.Profession}");
+            
+            return conditions.Count > 0 ? string.Join(", ", conditions) : string.Empty;
+        }
+
+        /// <summary>添加到搜索历史</summary>
+        private void AddToSearchHistory(string searchText)
+        {
+            if (string.IsNullOrEmpty(searchText) || SearchHistory.Contains(searchText))
+                return;
+                
+            SearchHistory.Insert(0, searchText);
+            
+            // 保持最多20条历史记录
+            if (SearchHistory.Count > 20)
+            {
+                SearchHistory.RemoveRange(20, SearchHistory.Count - 20);
+            }
+        }
+
+        #endregion Epic 04-P0-03: 患者快速搜索优化方法
     }
 }

@@ -34,4 +34,9 @@ public interface IConsultationBusinessService
     /// 禁用看诊
     /// </summary>
     Task<ServiceResult<bool>> Disable(Guid consultationId);
+
+    /// <summary>
+    /// 开始看诊
+    /// </summary>
+    Task<ServiceResult<ConsultationDto>> StartAsync(ConsultationStartDto startDto);
 }

@@ -531,7 +531,9 @@ namespace LYBT.Desktop.Patients.ViewModels
             else
             {
                 // 检查必需列
-                var requiredColumns = new[] { "姓名", "性别", "年龄" };
+                var requiredColumns = new[] { "姓名", "性别" };
+                var optionalColumns = new[] { "年龄", "电话", "证件号", "地址", "过敏史" };
+                
                 foreach (var column in requiredColumns)
                 {
                     if (!dataTable.Columns.Contains(column))
@@ -540,14 +542,45 @@ namespace LYBT.Desktop.Patients.ViewModels
                     }
                 }
 
+                // 检查列格式并给出提示
+                var allExpectedColumns = requiredColumns.Concat(optionalColumns).ToArray();
+                foreach (DataColumn column in dataTable.Columns)
+                {
+                    if (!allExpectedColumns.Contains(column.ColumnName))
+                    {
+                        warnings.Add($"未识别的列: {column.ColumnName}，此列数据将被忽略");
+                    }
+                }
+
                 // 验证数据行
                 int validRows = 0;
                 int invalidRows = 0;
+                var duplicateNames = new HashSet<string>();
+                var phoneNumbers = new HashSet<string>();
+                var idNumbers = new HashSet<string>();
 
                 for (int i = 0; i < dataTable.Rows.Count; i++)
                 {
                     var row = dataTable.Rows[i];
                     var rowErrors = new List<string>();
+                    var rowWarnings = new List<string>();
+
+                    // 检查是否为空行
+                    bool isEmptyRow = true;
+                    foreach (DataColumn col in dataTable.Columns)
+                    {
+                        if (!string.IsNullOrWhiteSpace(row[col]?.ToString()))
+                        {
+                            isEmptyRow = false;
+                            break;
+                        }
+                    }
+
+                    if (isEmptyRow)
+                    {
+                        rowWarnings.Add("空行，将被跳过");
+                        continue;
+                    }
 
                     // 验证姓名
                     var name = row["姓名"]?.ToString()?.Trim();
@@ -555,28 +588,123 @@ namespace LYBT.Desktop.Patients.ViewModels
                     {
                         rowErrors.Add("姓名不能为空");
                     }
+                    else if (name.Length > 50)
+                    {
+                        rowErrors.Add("姓名长度不能超过50个字符");
+                    }
+                    else if (duplicateNames.Contains(name))
+                    {
+                        rowWarnings.Add($"姓名'{name}'重复，请确认是否为同一人");
+                    }
+                    else
+                    {
+                        duplicateNames.Add(name);
+                    }
 
                     // 验证性别
                     var gender = row["性别"]?.ToString()?.Trim();
-                    if (!string.IsNullOrEmpty(gender) && gender != "男" && gender != "女")
+                    if (string.IsNullOrEmpty(gender))
                     {
-                        rowErrors.Add("性别只能是'男'或'女'");
+                        rowErrors.Add("性别不能为空");
+                    }
+                    else if (gender != "男" && gender != "女" && gender != "未知")
+                    {
+                        rowErrors.Add("性别只能是'男'、'女'或'未知'");
                     }
 
+                    // 验证年龄（可选）
+                    var ageText = row["年龄"]?.ToString()?.Trim();
+                    if (!string.IsNullOrEmpty(ageText))
+                    {
+                        if (!int.TryParse(ageText, out var age) || age < 0 || age > 150)
+                        {
+                            rowErrors.Add("年龄必须是0-150之间的整数");
+                        }
+                    }
+
+                    // 验证电话（可选）
+                    var phone = row["电话"]?.ToString()?.Trim();
+                    if (!string.IsNullOrEmpty(phone))
+                    {
+                        if (phone.Length < 7 || phone.Length > 15)
+                        {
+                            rowErrors.Add("电话号码长度应在7-15位之间");
+                        }
+                        else if (!System.Text.RegularExpressions.Regex.IsMatch(phone, @"^[0-9\-\+\(\)\s]+$"))
+                        {
+                            rowErrors.Add("电话号码格式不正确，只能包含数字、横线、加号、括号和空格");
+                        }
+                        else if (phoneNumbers.Contains(phone))
+                        {
+                            rowWarnings.Add($"电话号码'{phone}'重复");
+                        }
+                        else
+                        {
+                            phoneNumbers.Add(phone);
+                        }
+                    }
+
+                    // 验证证件号（可选）
+                    var idNumber = row["证件号"]?.ToString()?.Trim();
+                    if (!string.IsNullOrEmpty(idNumber))
+                    {
+                        if (idNumber.Length != 18 && idNumber.Length != 15)
+                        {
+                            rowWarnings.Add("证件号长度不是标准的15位或18位，请确认");
+                        }
+                        else if (idNumbers.Contains(idNumber))
+                        {
+                            rowErrors.Add($"证件号'{idNumber}'重复，不能导入重复证件号");
+                        }
+                        else
+                        {
+                            idNumbers.Add(idNumber);
+                        }
+                    }
+
+                    // 验证地址（可选）
+                    var address = row["地址"]?.ToString()?.Trim();
+                    if (!string.IsNullOrEmpty(address) && address.Length > 200)
+                    {
+                        rowErrors.Add("地址长度不能超过200个字符");
+                    }
+
+                    // 验证过敏史（可选）
+                    var allergy = row["过敏史"]?.ToString()?.Trim();
+                    if (!string.IsNullOrEmpty(allergy) && allergy.Length > 500)
+                    {
+                        rowErrors.Add("过敏史长度不能超过500个字符");
+                    }
+
+                    // 统计结果
                     if (rowErrors.Count > 0)
                     {
                         invalidRows++;
-                        errors.Add($"第{i + 2}行: {string.Join(", ", rowErrors)}");
+                        errors.Add($"第{i + 2}行: {string.Join("; ", rowErrors)}");
                     }
                     else
                     {
                         validRows++;
+                        if (rowWarnings.Count > 0)
+                        {
+                            warnings.Add($"第{i + 2}行: {string.Join("; ", rowWarnings)}");
+                        }
                     }
                 }
 
                 result.ValidRowCount = validRows;
                 result.InvalidRowCount = invalidRows;
-                result.IsValid = errors.Count == 0;
+                result.IsValid = errors.Count == 0 && validRows > 0;
+
+                // 添加汇总信息
+                if (validRows > 0 && invalidRows == 0)
+                {
+                    warnings.Add($"验证通过，共{validRows}行有效数据可以导入");
+                }
+                else if (validRows > 0 && invalidRows > 0)
+                {
+                    warnings.Add($"部分验证通过，{validRows}行有效数据可以导入，{invalidRows}行数据有错误将被跳过");
+                }
             }
 
             result.Errors = errors;
@@ -589,37 +717,38 @@ namespace LYBT.Desktop.Patients.ViewModels
         {
             try
             {
-                // 创建模板数据表
-                var templateTable = new DataTable();
+                // 定义模板列及其说明
+                var columns = new[] { "姓名", "性别", "年龄", "电话", "证件号", "地址", "过敏史" };
 
-                // 添加列
-                templateTable.Columns.Add("姓名", typeof(string));
-                templateTable.Columns.Add("性别", typeof(string));
-                templateTable.Columns.Add("年龄", typeof(int));
-                templateTable.Columns.Add("电话", typeof(string));
-                templateTable.Columns.Add("证件号", typeof(string));
-                templateTable.Columns.Add("地址", typeof(string));
-                templateTable.Columns.Add("过敏史", typeof(string));
+                // 创建示例数据 - 提供多个示例以便用户理解
+                var sampleData = new List<string[]>
+                {
+                    new[] { "张三", "男", "35", "13800138000", "110101198801011234", "北京市朝阳区建国路1号", "青霉素过敏" },
+                    new[] { "李四", "女", "28", "13900139000", "110101199201020002", "北京市海淀区中关村大街2号", "无" },
+                    new[] { "王五", "男", "42", "18600186000", "", "上海市浦东新区陆家嘴3号", "海鲜过敏" },
+                    new[] { "赵六", "女", "", "15300153000", "310101198103150004", "广州市天河区珠江新城4号", "花粉过敏" },
+                    new[] { "钱七", "未知", "65", "", "", "深圳市南山区科技园5号", "无" }
+                };
 
-                // 添加示例数据
-                var sampleRow = templateTable.NewRow();
-                sampleRow["姓名"] = "张三";
-                sampleRow["性别"] = "男";
-                sampleRow["年龄"] = 35;
-                sampleRow["电话"] = "13800138000";
-                sampleRow["证件号"] = "110101198801011234";
-                sampleRow["地址"] = "北京市朝阳区";
-                sampleRow["过敏史"] = "无";
-                templateTable.Rows.Add(sampleRow);
+                // 创建Excel模板
+                ExcelHelper.CreateTemplate(columns, filePath, "患者数据导入模板", sampleData);
 
-                // 导出到Excel
-                ExcelHelper.ExportToExcel(templateTable.AsEnumerable().ToList(), new Dictionary<string, string>(), filePath, "患者数据");
+                var successMessage = $"患者导入模板已成功保存到:\n{filePath}\n\n" +
+                    "模板说明：\n" +
+                    "• 必填字段：姓名、性别\n" +
+                    "• 选填字段：年龄、电话、证件号、地址、过敏史\n" +
+                    "• 性别填写：男、女、未知\n" +
+                    "• 年龄范围：0-150之间的整数\n" +
+                    "• 电话格式：支持数字、横线、加号、括号\n" +
+                    "• 证件号：建议15位或18位\n\n" +
+                    "请按照模板格式填写患者数据，然后使用导入功能。";
 
-                await _dialogService.ShowSuccessAsync("模板下载成功！", "下载完成");
+                await _dialogService.ShowSuccessAsync(successMessage, "模板下载成功");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "下载模板失败");
+                _logger.LogError(ex, "下载模板失败: {FilePath}", filePath);
+                await _dialogService.ShowErrorAsync($"下载模板失败: {ex.Message}\n\n请检查文件路径是否正确，或选择其他保存位置。", "下载失败");
                 throw;
             }
         }
@@ -666,7 +795,9 @@ namespace LYBT.Desktop.Patients.ViewModels
             var worker = _importWorker;
             var successCount = 0;
             var failCount = 0;
+            var skipCount = 0;
             var totalCount = dataTable.Rows.Count;
+            var errors = new List<string>();
 
             try
             {
@@ -679,14 +810,55 @@ namespace LYBT.Desktop.Patients.ViewModels
                     }
 
                     var row = dataTable.Rows[i];
+                    var currentName = row["姓名"]?.ToString()?.Trim() ?? $"第{i + 2}行";
 
                     try
                     {
+                        // 检查是否为空行
+                        bool isEmptyRow = true;
+                        foreach (DataColumn col in dataTable.Columns)
+                        {
+                            if (!string.IsNullOrWhiteSpace(row[col]?.ToString()))
+                            {
+                                isEmptyRow = false;
+                                break;
+                            }
+                        }
+
+                        if (isEmptyRow)
+                        {
+                            skipCount++;
+                            _logger.LogInformation($"跳过空行: 第{i + 2}行");
+                            continue;
+                        }
+
+                        // 验证必需字段
+                        var name = row["姓名"]?.ToString()?.Trim();
+                        var gender = row["性别"]?.ToString()?.Trim();
+
+                        if (string.IsNullOrEmpty(name))
+                        {
+                            failCount++;
+                            var error = $"第{i + 2}行：姓名不能为空";
+                            errors.Add(error);
+                            _logger.LogWarning(error);
+                            continue;
+                        }
+
+                        if (string.IsNullOrEmpty(gender) || (gender != "男" && gender != "女" && gender != "未知"))
+                        {
+                            failCount++;
+                            var error = $"第{i + 2}行 ({name})：性别格式错误，应为'男'、'女'或'未知'";
+                            errors.Add(error);
+                            _logger.LogWarning(error);
+                            continue;
+                        }
+
                         // 创建患者DTO
                         var patientDto = new PatientCreateDto
                         {
-                            Name = row["姓名"]?.ToString()?.Trim() ?? string.Empty,
-                            Gender = ParseGender(row["性别"]?.ToString()),
+                            Name = name,
+                            Gender = ParseGender(gender),
                             Age = ParseAge(row["年龄"]?.ToString()) ?? 0,
                             PhoneNumber = row["电话"]?.ToString()?.Trim(),
                             IdNumber = row["证件号"]?.ToString()?.Trim(),
@@ -699,17 +871,22 @@ namespace LYBT.Desktop.Patients.ViewModels
                         if (result.IsSuccess)
                         {
                             successCount++;
+                            _logger.LogInformation($"成功导入患者: {name} (第{i + 2}行)");
                         }
                         else
                         {
                             failCount++;
-                            _logger.LogWarning($"导入第{i + 2}行失败: {result.ErrorMessage}");
+                            var error = $"第{i + 2}行 ({name})：{result.ErrorMessage ?? "导入失败，原因未知"}";
+                            errors.Add(error);
+                            _logger.LogWarning(error);
                         }
                     }
                     catch (Exception ex)
                     {
                         failCount++;
-                        _logger.LogError(ex, $"处理第{i + 2}行数据时发生错误");
+                        var error = $"第{i + 2}行 ({currentName})：处理数据时发生异常 - {ex.Message}";
+                        errors.Add(error);
+                        _logger.LogError(ex, $"处理第{i + 2}行数据时发生错误: {currentName}");
                     }
 
                     // 报告进度
@@ -718,22 +895,37 @@ namespace LYBT.Desktop.Patients.ViewModels
                         PercentComplete = (int)((double)(i + 1) / totalCount * 100),
                         ProcessedCount = i + 1,
                         TotalCount = totalCount,
-                        CurrentItem = row["姓名"]?.ToString() ?? $"第{i + 2}行",
+                        CurrentItem = currentName,
                         Message = $"正在导入患者数据... ({i + 1}/{totalCount})"
                     };
 
                     worker.ReportProgress(progress.PercentComplete, progress);
 
-                    // 模拟处理延时（可选）
-                    await Task.Delay(100);
+                    // 适当的处理延时，避免过快处理导致界面无法响应
+                    await Task.Delay(50);
                 }
 
-                e.Result = new { SuccessCount = successCount, FailCount = failCount };
+                e.Result = new 
+                { 
+                    SuccessCount = successCount, 
+                    FailCount = failCount,
+                    SkipCount = skipCount,
+                    Errors = errors,
+                    TotalProcessed = successCount + failCount + skipCount
+                };
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "导入过程中发生错误");
-                e.Result = new { SuccessCount = successCount, FailCount = failCount, Error = ex.Message };
+                _logger.LogError(ex, "导入过程中发生严重错误");
+                e.Result = new 
+                { 
+                    SuccessCount = successCount, 
+                    FailCount = failCount,
+                    SkipCount = skipCount,
+                    Error = ex.Message,
+                    Errors = errors,
+                    TotalProcessed = successCount + failCount + skipCount
+                };
             }
         }
 
@@ -752,30 +944,83 @@ namespace LYBT.Desktop.Patients.ViewModels
 
             if (e.Cancelled)
             {
-                await _dialogService.ShowInformationAsync("导入操作已取消", "导入取消");
+                await _dialogService.ShowInformationAsync("导入操作已取消\n已处理的数据未被保存。", "导入取消");
             }
             else if (e.Error != null)
             {
-                await _dialogService.ShowErrorAsync($"导入过程中发生错误: {e.Error.Message}", "导入错误");
+                await _dialogService.ShowErrorAsync($"导入过程中发生严重错误:\n{e.Error.Message}\n\n请检查Excel文件格式是否正确，或联系技术支持。", "导入错误");
             }
             else if (e.Result is { } result)
             {
                 var successCount = (int)(result.GetType().GetProperty("SuccessCount")?.GetValue(result) ?? 0);
                 var failCount = (int)(result.GetType().GetProperty("FailCount")?.GetValue(result) ?? 0);
+                var skipCount = (int)(result.GetType().GetProperty("SkipCount")?.GetValue(result) ?? 0);
+                var totalProcessed = (int)(result.GetType().GetProperty("TotalProcessed")?.GetValue(result) ?? 0);
+                var errors = result.GetType().GetProperty("Errors")?.GetValue(result) as List<string> ?? new List<string>();
+                var generalError = result.GetType().GetProperty("Error")?.GetValue(result) as string;
 
-                var message = $"导入完成！\n成功：{successCount} 条\n失败：{failCount} 条";
+                // 构建详细的结果消息
+                var messageBuilder = new System.Text.StringBuilder();
+                messageBuilder.AppendLine("患者数据导入完成！");
+                messageBuilder.AppendLine();
+                messageBuilder.AppendLine($"总计处理：{totalProcessed} 条");
+                messageBuilder.AppendLine($"成功导入：{successCount} 条");
+                if (failCount > 0)
+                    messageBuilder.AppendLine($"导入失败：{failCount} 条");
+                if (skipCount > 0)
+                    messageBuilder.AppendLine($"跳过空行：{skipCount} 条");
 
-                if (failCount == 0)
+                // 如果有具体错误，显示前几个错误详情
+                if (errors.Count > 0)
                 {
+                    messageBuilder.AppendLine();
+                    messageBuilder.AppendLine("失败详情：");
+                    var errorCount = Math.Min(5, errors.Count); // 最多显示5个错误
+                    for (int i = 0; i < errorCount; i++)
+                    {
+                        messageBuilder.AppendLine($"• {errors[i]}");
+                    }
+                    if (errors.Count > 5)
+                    {
+                        messageBuilder.AppendLine($"• ...还有{errors.Count - 5}个错误，请查看日志获取详细信息");
+                    }
+                }
+
+                if (!string.IsNullOrEmpty(generalError))
+                {
+                    messageBuilder.AppendLine();
+                    messageBuilder.AppendLine($"其他错误：{generalError}");
+                }
+
+                var message = messageBuilder.ToString();
+
+                // 根据结果选择对话框类型
+                if (successCount > 0 && failCount == 0)
+                {
+                    // 完全成功
                     await _dialogService.ShowSuccessAsync(message, "导入成功");
+                }
+                else if (successCount > 0 && failCount > 0)
+                {
+                    // 部分成功
+                    await _dialogService.ShowWarningAsync(message, "导入部分成功");
+                }
+                else if (successCount == 0 && failCount > 0)
+                {
+                    // 完全失败
+                    await _dialogService.ShowErrorAsync(message, "导入失败");
                 }
                 else
                 {
-                    await _dialogService.ShowWarningAsync(message, "导入完成");
+                    // 异常情况
+                    await _dialogService.ShowInformationAsync(message, "导入结果");
                 }
 
-                // 触发导入完成事件
-                ImportCompleted?.Invoke(this, EventArgs.Empty);
+                // 只有在有成功导入的情况下才触发刷新事件
+                if (successCount > 0)
+                {
+                    ImportCompleted?.Invoke(this, EventArgs.Empty);
+                }
             }
         }
 
@@ -789,6 +1034,7 @@ namespace LYBT.Desktop.Patients.ViewModels
             {
                 "男" => Gender.Male,
                 "女" => Gender.Female,
+                "未知" => Gender.Unknown,
                 _ => Gender.Unknown
             };
         }

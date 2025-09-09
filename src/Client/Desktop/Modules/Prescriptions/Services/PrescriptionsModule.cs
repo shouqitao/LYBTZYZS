@@ -56,5 +56,58 @@ public class PrescriptionsModule(
         => ServiceResult<PrescriptionValidationResult>.Success(new PrescriptionValidationResult { IsValid = true });
 
     public async Task<ServiceResult<PrescriptionDto>> CopyAsync(Guid id, string newName)
-        => ServiceResult<PrescriptionDto>.Failure("简单诊所版本暂不支持复制处方");
+    {
+        try
+        {
+            // 首先获取原处方详情
+            var originalResult = await _queryService.GetByIdAsync(id);
+            if (!originalResult.IsSuccess || originalResult.Data == null)
+            {
+                return ServiceResult<PrescriptionDto>.Failure("无法获取原处方信息，复制失败");
+            }
+
+            var original = originalResult.Data;
+            
+            // 创建复制的处方DTO
+            var createDto = new PrescriptionCreateDto
+            {
+                PatientId = original.PatientId,
+                DoctorId = original.UserId, // 使用UserId作为DoctorId
+                ConsultationId = null, // 新处方不关联特定会诊
+                Diagnosis = original.Diagnosis ?? string.Empty,
+                DosageCount = original.DosageCount,
+                Advice = original.Advice,
+                DosageForm = original.DosageForm,
+                Usage = original.Usage,
+                TotalAmount = original.TotalAmount,
+                FormulaSource = original.FormulaSource,
+                Remark = $"复制自原处方 - {newName}",
+                Items = original.Items.Select(item => new PrescriptionItemCreateDto
+                {
+                    HerbId = item.HerbId,
+                    HerbName = item.HerbName,
+                    Quantity = item.Quantity,
+                    Unit = item.Unit,
+                    UnitPrice = item.UnitPrice,
+                    Subtotal = item.Subtotal,
+                    Usage = item.Usage,
+                    Remark = item.Remark
+                }).ToList()
+            };
+
+            // 调用创建方法来复制处方
+            var copyResult = await _businessService.CreateAsync(createDto);
+            
+            if (copyResult.IsSuccess)
+            {
+                return ServiceResult<PrescriptionDto>.Success(copyResult.Data!, $"处方复制成功：{newName}");
+            }
+            
+            return ServiceResult<PrescriptionDto>.Failure($"处方复制失败：{copyResult.ErrorMessage}");
+        }
+        catch (Exception ex)
+        {
+            return ServiceResult<PrescriptionDto>.Failure($"处方复制过程发生错误：{ex.Message}");
+        }
+    }
 }

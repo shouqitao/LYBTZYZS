@@ -143,8 +143,30 @@ public class ConsultationBusinessService(
     /// <returns>状态转换结果</returns>
     public async Task<ServiceResult<bool>> EnableAsync(Guid consultationId)
     {
-        _logger.LogInformation("启用看诊诊断: {ConsultationId}", consultationId);
-        return ServiceResult<bool>.Failure("简单诊所版本暂不支持看诊状态管理");
+        try
+        {
+            _logger.LogInformation("启用看诊诊断: {ConsultationId}", consultationId);
+
+            // 使用UpdateStatusAsync来启用
+            var statusDto = new UpdateStatusDto { Status = ConsultationStatus.InProgress };
+            var refitResponse = await _consultationApi.UpdateStatusAsync(consultationId, statusDto);
+
+            if (refitResponse.IsSuccessStatusCode)
+            {
+                _logger.LogInformation("看诊诊断启用成功: {ConsultationId}", consultationId);
+                return ServiceResult<bool>.Success(true, "看诊诊断启用成功");
+            }
+
+            _logger.LogWarning(
+                "看诊诊断启用HTTP请求失败: {ConsultationId}, 状态码: {StatusCode}",
+                consultationId, refitResponse.StatusCode);
+            return ServiceResult<bool>.Failure("启用看诊诊断网络请求失败，请检查网络连接");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "看诊诊断启用过程发生异常: {ConsultationId}", consultationId);
+            return ServiceResult<bool>.Failure($"启用看诊诊断过程发生错误: {ex.Message}");
+        }
     }
 
     /// <summary>
@@ -153,10 +175,78 @@ public class ConsultationBusinessService(
     /// </summary>
     /// <param name="consultationId">看诊唯一标识</param>
     /// <returns>状态转换结果</returns>
-    public Task<ServiceResult<bool>> Disable(Guid consultationId)
+    public async Task<ServiceResult<bool>> Disable(Guid consultationId)
     {
-        _logger.LogInformation("禁用看诊诊断: {ConsultationId}", consultationId);
-        return Task.FromResult(ServiceResult<bool>.Failure("简单诊所版本暂不支持看诊状态管理"));
+        try
+        {
+            _logger.LogInformation("禁用看诊诊断: {ConsultationId}", consultationId);
+
+            var refitResponse = await _consultationApi.DeleteAsync(consultationId);
+
+            if (refitResponse.IsSuccessStatusCode)
+            {
+                _logger.LogInformation("看诊诊断禁用成功: {ConsultationId}", consultationId);
+                return ServiceResult<bool>.Success(true, "看诊诊断禁用成功");
+            }
+
+            _logger.LogWarning(
+                "看诊诊断禁用HTTP请求失败: {ConsultationId}, 状态码: {StatusCode}",
+                consultationId, refitResponse.StatusCode);
+            return ServiceResult<bool>.Failure("禁用看诊诊断网络请求失败，请检查网络连接");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "看诊诊断禁用过程发生异常: {ConsultationId}", consultationId);
+            return ServiceResult<bool>.Failure($"禁用看诊诊断过程发生错误: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// 开始看诊诊断业务处理
+    /// 执行开始看诊流程：数据验证、看诊开始、状态初始化
+    /// </summary>
+    /// <param name="startDto">开始看诊请求信息</param>
+    /// <returns>包含开始看诊后的看诊信息的业务结果</returns>
+    /// <exception cref="ArgumentNullException">当开始请求为空时抛出</exception>
+    public async Task<ServiceResult<ConsultationDto>> StartAsync(ConsultationStartDto startDto)
+    {
+        ArgumentNullException.ThrowIfNull(startDto, nameof(startDto));
+
+        try
+        {
+            _logger.LogInformation(
+                "开始处理看诊开始: 患者ID: {PatientId}, 医案ID: {MedicalCaseId}",
+                startDto.PatientId, startDto.MedicalCaseId);
+
+            var refitResponse = await _consultationApi.StartConsultationAsync(startDto);
+
+            if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
+            {
+                var consultation = refitResponse.Content;
+                var consultationDto = new ConsultationDto
+                {
+                    Id = consultation.Id,
+                    PatientId = consultation.PatientId,
+                    MedicalCaseId = consultation.MedicalCaseId,
+                    Status = consultation.Status == ConsultationStatus.Completed ? CommonStatus.Enabled : CommonStatus.Disabled,
+                    CreateTime = consultation.CreateTime,
+                    UpdateTime = consultation.UpdateTime
+                };
+
+                _logger.LogInformation("看诊开始成功: {ConsultationId}", consultationDto.Id);
+                return ServiceResult<ConsultationDto>.Success(consultationDto, "看诊开始成功");
+            }
+
+            _logger.LogWarning(
+                "看诊开始HTTP请求失败: 患者ID: {PatientId}, 状态码: {StatusCode}",
+                startDto.PatientId, refitResponse.StatusCode);
+            return ServiceResult<ConsultationDto>.Failure("开始看诊网络请求失败，请检查网络连接");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "看诊开始过程发生异常: 患者ID: {PatientId}", startDto.PatientId);
+            return ServiceResult<ConsultationDto>.Failure($"开始看诊过程发生错误: {ex.Message}");
+        }
     }
 
     #region DT-011: 取消令牌支持重载方法

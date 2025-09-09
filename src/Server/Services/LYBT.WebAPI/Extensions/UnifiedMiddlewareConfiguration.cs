@@ -47,6 +47,9 @@ public static class UnifiedMiddlewareConfiguration
             app.UseHsts();
         }
 
+        // Epic 05-P0-02 修复：启用全局异常处理器
+        app.UseExceptionHandler();
+
         return app;
     }
 

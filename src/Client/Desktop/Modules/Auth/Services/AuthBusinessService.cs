@@ -1,4 +1,4 @@
-﻿using LYBT.Desktop.Auth.Interfaces;
+using LYBT.Desktop.Auth.Interfaces;
 using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Shared.Interfaces.Api;
 using LYBT.Shared.Models.Contracts.Auth;

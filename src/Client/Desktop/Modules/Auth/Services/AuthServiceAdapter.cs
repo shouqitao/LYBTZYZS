@@ -1,4 +1,4 @@
-﻿using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
@@ -43,9 +43,9 @@ public class AuthServiceAdapter(IAuthService authService) : IAuthenticationServi
         // 创建空的登出请求对象
         var logoutRequest = new AuthContracts.LogoutRequest();
         var result = await _authService.LogoutAsync(logoutRequest);
-        
+
         // 将ServiceResult<bool>转换为ServiceResult
-        return result.IsSuccess 
+        return result.IsSuccess
             ? ServiceResult.Success("登出成功")
             : ServiceResult.Failure(result.ErrorMessage ?? "登出失败");
     }

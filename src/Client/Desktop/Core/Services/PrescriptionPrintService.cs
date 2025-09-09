@@ -7,6 +7,7 @@ using System.Windows.Media;
 using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Prescriptions;
+using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 
@@ -131,6 +132,10 @@ namespace LYBT.Desktop.Core.Services
 
                 case MedicalCaseDto medicalCase:
                     sb.AppendLine(GenerateMedicalCaseContent(medicalCase));
+                    break;
+
+                case PatientDto patient:
+                    sb.AppendLine(GeneratePatientRecordContent(patient));
                     break;
 
                 default:
@@ -276,6 +281,122 @@ namespace LYBT.Desktop.Core.Services
             flowDocument.Blocks.Add(paragraph);
 
             return flowDocument;
+        }
+
+        /// <summary>
+        /// P0-03新增：生成患者病历内容
+        /// Epic 03-P0-03: 实用化患者病历打印功能，专为小诊所设计
+        /// 提供完整的患者档案信息，便于医生查看和管理
+        /// </summary>
+        private string GeneratePatientRecordContent(PatientDto patient)
+        {
+            var sb = new StringBuilder();
+
+            // 病历档案标题
+            sb.AppendLine("═══════════════════════════════════");
+            sb.AppendLine("             凌隐宝堂中医诊所");
+            sb.AppendLine("               患 者 病 历 档 案");
+            sb.AppendLine("═══════════════════════════════════");
+            sb.AppendLine();
+
+            // 患者基本信息
+            sb.AppendLine("【基本信息】");
+            sb.AppendLine($"患者姓名: {patient.Name ?? "未知"}");
+            sb.AppendLine($"性    别: {GetGenderText(patient.Gender)}");
+            sb.AppendLine($"年    龄: {patient.Age}岁");
+            sb.AppendLine($"身份证号: {patient.IdNumber ?? "未填写"}");
+            sb.AppendLine($"联系电话: {patient.PhoneNumber ?? "未填写"}");
+            sb.AppendLine($"家庭地址: {patient.Address ?? "未填写"}");
+            sb.AppendLine($"建档时间: {patient.CreateTime:yyyy年MM月dd日}");
+            sb.AppendLine();
+
+            // 健康状况
+            sb.AppendLine("【健康状况】");
+            sb.AppendLine($"证件类型: {patient.IdType ?? "未知"}");
+            sb.AppendLine($"婚姻状况: {patient.MaritalStatus ?? "未知"}");
+            sb.AppendLine($"职    业: {patient.Profession ?? "未知"}");
+            
+            if (!string.IsNullOrEmpty(patient.AllergyHistory) && patient.AllergyHistory != "无")
+            {
+                sb.AppendLine($"⚠️ 过敏史: {patient.AllergyHistory}");
+            }
+            else
+            {
+                sb.AppendLine("过 敏 史: 无");
+            }
+
+            if (!string.IsNullOrEmpty(patient.MedicalHistory) && patient.MedicalHistory != "无")
+            {
+                sb.AppendLine($"既往病史: {patient.MedicalHistory}");
+            }
+            else
+            {
+                sb.AppendLine("既往病史: 无");
+            }
+
+            if (!string.IsNullOrEmpty(patient.FamilyHistory) && patient.FamilyHistory != "无")
+            {
+                sb.AppendLine($"家族病史: {patient.FamilyHistory}");
+            }
+            else
+            {
+                sb.AppendLine("家族病史: 无");
+            }
+            sb.AppendLine();
+
+            // 紧急联系人
+            sb.AppendLine("【紧急联系人】");
+            sb.AppendLine($"联系人姓名: {patient.EmergencyContact ?? "未填写"}");
+            sb.AppendLine($"联系人电话: {patient.EmergencyPhone ?? "未填写"}");
+            sb.AppendLine();
+
+            // 其他信息
+            if (!string.IsNullOrEmpty(patient.PinYinCode))
+            {
+                sb.AppendLine("【辅助信息】");
+                sb.AppendLine($"拼音码: {patient.PinYinCode}");
+                sb.AppendLine();
+            }
+
+            // 患者状态
+            sb.AppendLine("【档案状态】");
+            sb.AppendLine($"当前状态: {GetPatientStatusText(patient.Status)}");
+            sb.AppendLine($"最后更新: {patient.UpdateTime:yyyy年MM月dd日 HH:mm}");
+            sb.AppendLine();
+
+            // 打印信息
+            sb.AppendLine("───────────────────────────────");
+            sb.AppendLine($"打印时间: {DateTime.Now:yyyy年MM月dd日 HH:mm:ss}");
+            sb.AppendLine("注意事项:");
+            sb.AppendLine("1. 本档案包含敏感医疗信息，请妥善保管");
+            sb.AppendLine("2. 患者隐私受法律保护，严禁泄露");
+            sb.AppendLine("3. 档案信息如有变更，请及时更新");
+            sb.AppendLine("───────────────────────────────");
+
+            return sb.ToString();
+        }
+
+        /// <summary>获取性别显示文本</summary>
+        private string GetGenderText(Gender gender)
+        {
+            return gender switch
+            {
+                Gender.Male => "男",
+                Gender.Female => "女",
+                _ => "未知"
+            };
+        }
+
+
+        /// <summary>获取患者状态显示文本</summary>
+        private string GetPatientStatusText(CommonStatus status)
+        {
+            return status switch
+            {
+                CommonStatus.Enabled => "正常",
+                CommonStatus.Disabled => "停用",
+                _ => "未知状态"
+            };
         }
 
         /// <summary>获取医疗案例状态文本</summary>

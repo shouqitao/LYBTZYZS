@@ -1,4 +1,4 @@
-﻿using LYBT.Desktop.Auth.Interfaces;
+using LYBT.Desktop.Auth.Interfaces;
 using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Auth;
@@ -11,11 +11,9 @@ namespace LYBT.Desktop.Auth.Services;
 /// Auth模块主服务 - UltraThink双层架构纯委托层
 /// 采用UltraThink架构标准，使用C# 12现代化特性
 /// 职责：统一服务入口，请求路由分发到QueryService和BusinessService
-/// 
 /// DT-001修复: 移除IAuthenticationService接口实现，专注IAuthService业务API
 /// 架构优化: 单一职责原则，避免接口职责混乱
 /// 适配方案: UI层通过AuthServiceAdapter使用IAuthenticationService
-/// 
 /// 专注JWT认证、用户会话管理和权限控制，适配小型诊所认证需求
 /// 集成企业级错误处理，支持自动登录和静默重认证功能
 /// </summary>

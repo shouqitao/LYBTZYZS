@@ -25,6 +25,13 @@
                     </StackPanel>
                 </Button>
                 <Separator />
+                <Button Command="{Binding ExportPrescriptionsCommand}" ToolTip="导出处方数据">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="📊" FontWeight="Bold" Margin="0,0,5,0" />
+                        <TextBlock Text="导出数据" />
+                    </StackPanel>
+                </Button>
+                <Separator />
                 <Button Command="{Binding RefreshCommand}" ToolTip="刷新">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="⟳" FontWeight="Bold" Margin="0,0,5,0" />
@@ -101,11 +108,17 @@
                                         CommandParameter="{Binding}"
                                         Style="{StaticResource MaterialDesignFlatButton}"
                                         Content="编辑" Margin="2" />
+                                <!-- P0-02新增：患者处方历史查询 -->
+                                <Button Command="{Binding DataContext.ViewPatientHistoryCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                        CommandParameter="{Binding}"
+                                        Style="{StaticResource MaterialDesignFlatButton}"
+                                        Content="患者历史" Margin="2"
+                                        ToolTip="查看该患者的历史处方记录" />
                                 <Button Command="{Binding DataContext.CopyPrescriptionCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                         CommandParameter="{Binding}"
                                         Style="{StaticResource MaterialDesignFlatButton}"
                                         Content="复制" Margin="2" />
-                                <Button Command="{Binding DataContext.PrintPrescriptionCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                <Button Command="{Binding DataContext.PrintCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                         CommandParameter="{Binding}"
                                         Style="{StaticResource MaterialDesignFlatButton}"
                                         Content="打印" Margin="2" />

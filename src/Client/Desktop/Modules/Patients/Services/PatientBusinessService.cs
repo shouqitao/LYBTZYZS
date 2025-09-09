@@ -103,38 +103,92 @@ public class PatientBusinessService(
 
     /// <summary>
     /// 启用患者档案
-    /// 小型诊所版本简化实现：暂不支持状态管理
+    /// 执行患者状态转换：转为可用状态
     /// </summary>
     /// <param name="patientId">患者唯一标识</param>
-    /// <returns>操作结果</returns>
-    public Task<ServiceResult<bool>> EnableAsync(Guid patientId)
+    /// <returns>状态转换结果</returns>
+    public async Task<ServiceResult<bool>> EnableAsync(Guid patientId)
     {
-        _logger.LogDebug("患者启用请求: {PatientId}", patientId);
-        return Task.FromResult(ServiceResult<bool>.Failure("简单诊所版本暂不支持患者状态管理"));
+        return await _exceptionHandler.HandleException<bool>(
+            async (ct) =>
+            {
+                _logger.LogInformation("启用患者档案: {PatientId}", patientId);
+
+                var refitResponse = await _patientApi.ToggleStatusAsync(patientId).ConfigureAwait(false);
+                ct.ThrowIfCancellationRequested();
+
+                if (refitResponse.IsSuccessStatusCode)
+                {
+                    _logger.LogInformation("患者档案启用成功: {PatientId}", patientId);
+                    return ServiceResult<bool>.Success(true, "患者档案启用成功");
+                }
+
+                _logger.LogWarning(
+                    "患者档案启用HTTP请求失败: {PatientId}, 状态码: {StatusCode}",
+                    patientId, refitResponse.StatusCode);
+                return ServiceResult<bool>.Failure("启用患者档案网络请求失败，请检查网络连接");
+            }
+            , nameof(EnableAsync), $"启用患者档案: {patientId}", CancellationToken.None);
     }
 
     /// <summary>
     /// 禁用患者档案
-    /// 小型诊所版本简化实现：暂不支持状态管理
+    /// 执行患者状态转换：转为禁用状态
     /// </summary>
     /// <param name="patientId">患者唯一标识</param>
-    /// <returns>操作结果</returns>
-    public Task<ServiceResult<bool>> DisableAsync(Guid patientId)
+    /// <returns>状态转换结果</returns>
+    public async Task<ServiceResult<bool>> DisableAsync(Guid patientId)
     {
-        _logger.LogDebug("患者禁用请求: {PatientId}", patientId);
-        return Task.FromResult(ServiceResult<bool>.Failure("简单诊所版本暂不支持患者状态管理"));
+        return await _exceptionHandler.HandleException<bool>(
+            async (ct) =>
+            {
+                _logger.LogInformation("禁用患者档案: {PatientId}", patientId);
+
+                var refitResponse = await _patientApi.ToggleStatusAsync(patientId).ConfigureAwait(false);
+                ct.ThrowIfCancellationRequested();
+
+                if (refitResponse.IsSuccessStatusCode)
+                {
+                    _logger.LogInformation("患者档案禁用成功: {PatientId}", patientId);
+                    return ServiceResult<bool>.Success(true, "患者档案禁用成功");
+                }
+
+                _logger.LogWarning(
+                    "患者档案禁用HTTP请求失败: {PatientId}, 状态码: {StatusCode}",
+                    patientId, refitResponse.StatusCode);
+                return ServiceResult<bool>.Failure("禁用患者档案网络请求失败，请检查网络连接");
+            }
+            , nameof(DisableAsync), $"禁用患者档案: {patientId}", CancellationToken.None);
     }
 
     /// <summary>
     /// 删除患者档案业务处理
-    /// 小型诊所版本简化实现：暂不支持患者删除以确保历史就诊数据完整性
+    /// 执行完整删除流程：ID验证、关联检查、软删除操作、审计记录
     /// </summary>
     /// <param name="patientId">患者唯一标识</param>
-    /// <returns>操作失败结果</returns>
-    public Task<ServiceResult<bool>> DeleteAsync(Guid patientId)
+    /// <returns>删除操作结果</returns>
+    public async Task<ServiceResult<bool>> DeleteAsync(Guid patientId)
     {
-        _logger.LogWarning("患者删除请求被拒绝: {PatientId} - 确保历史数据完整性", patientId);
-        return Task.FromResult(ServiceResult<bool>.Failure("简单诊所版本暂不支持删除患者档案，确保历史就诊数据完整性"));
+        return await _exceptionHandler.HandleException<bool>(
+            async (ct) =>
+            {
+                _logger.LogInformation("删除患者档案: {PatientId}", patientId);
+
+                var refitResponse = await _patientApi.DeletePatientAsync(patientId).ConfigureAwait(false);
+                ct.ThrowIfCancellationRequested();
+
+                if (refitResponse.IsSuccessStatusCode)
+                {
+                    _logger.LogInformation("患者档案删除成功: {PatientId}", patientId);
+                    return ServiceResult<bool>.Success(true, "患者档案删除成功");
+                }
+
+                _logger.LogWarning(
+                    "患者档案删除HTTP请求失败: {PatientId}, 状态码: {StatusCode}",
+                    patientId, refitResponse.StatusCode);
+                return ServiceResult<bool>.Failure("删除患者档案网络请求失败，请检查网络连接");
+            }
+            , nameof(DeleteAsync), $"删除患者档案: {patientId}", CancellationToken.None);
     }
 
     #endregion 患者业务逻辑专业化实现

@@ -68,7 +68,7 @@ public static class UnifiedServiceRegistration
 
         if (!string.IsNullOrEmpty(connectionString))
         {
-            services.AddDbContext<AppDbContext>(options =>
+            services.AddDbContext<AppDbContext>((serviceProvider, options) =>
             {
                 options.UseSqlServer(connectionString, sqlOptions =>
                 {
@@ -84,6 +84,13 @@ public static class UnifiedServiceRegistration
                 if (dbOptions?.CommandTimeout > 0)
                 {
                     options.UseSqlServer(opt => opt.CommandTimeout(dbOptions.CommandTimeout));
+                }
+
+                // Epic 05-P0-03: 添加敏感数据拦截器
+                var sensitiveDataInterceptor = serviceProvider.GetService<LYBT.Infrastructure.Security.SensitiveDataInterceptor>();
+                if (sensitiveDataInterceptor != null)
+                {
+                    options.AddInterceptors(sensitiveDataInterceptor);
                 }
             });
         }
@@ -133,10 +140,21 @@ public static class UnifiedServiceRegistration
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
-        // =========== 安全配置服务 ===========
+        // =========== 安全配置服务 - Epic 05-P0-03: 数据安全保障 ===========
         // 临时注释掉缺失的服务以完成核心功能测试
         // services.AddScoped<IPasswordValidationService, PasswordValidationService>();
         // services.AddScoped<ISecurityConfigurationValidator, SecurityConfigurationValidator>();
+        
+        // Epic 05-P0-03: 注册数据安全服务
+        services.AddScoped<LYBT.Infrastructure.Security.IDataEncryptionService, LYBT.Infrastructure.Security.DataEncryptionService>();
+        services.AddScoped<LYBT.Infrastructure.Security.ISecurityAuditService, LYBT.Infrastructure.Security.SecurityAuditService>();
+        
+        // Epic 05-P0-03: 注册HTTP上下文访问器（审计服务需要）
+        services.AddHttpContextAccessor();
+        
+        // Epic 05-P0-03: 注册敏感数据拦截器
+        services.AddScoped<LYBT.Infrastructure.Security.SensitiveDataInterceptor>();
+        services.AddScoped<LYBT.Infrastructure.Security.SensitiveDataQueryInterceptor>();
 
         // =========== 监控和健康检查服务 ===========
         // 临时注释掉缺失的服务以完成核心功能测试

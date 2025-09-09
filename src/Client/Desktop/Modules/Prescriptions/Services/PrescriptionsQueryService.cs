@@ -2,6 +2,7 @@
 using LYBT.Shared.Interfaces.Api;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
+using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Prescriptions.Services;
@@ -35,13 +36,23 @@ public class PrescriptionsQueryService(
                 "执行处方分页查询，页码: {PageNumber}, 页大小: {PageSize}",
                 query.PageIndex, query.PageSize);
 
-            var emptyResult = new PagedResult<PrescriptionDto>
-            {
-                Items = [],
-                TotalCount = 0
-            };
+            var refitResponse = await _prescriptionApi.GetListAsync(
+                query.PageIndex,
+                query.PageSize,
+                query.Keyword);
 
-            return ServiceResult<PagedResult<PrescriptionDto>>.Success(emptyResult);
+            if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
+            {
+                var result = refitResponse.Content;
+                _logger.LogDebug("处方分页查询成功，总数: {TotalCount}, 当前页数据数: {ItemCount}",
+                    result.TotalCount, result.Items.Count);
+                return ServiceResult<PagedResult<PrescriptionDto>>.Success(result, "查询成功");
+            }
+
+            _logger.LogWarning(
+                "处方分页查询HTTP请求失败, 状态码: {StatusCode}",
+                refitResponse.StatusCode);
+            return ServiceResult<PagedResult<PrescriptionDto>>.Failure("查询处方列表网络请求失败，请检查网络连接");
         }
         catch (Exception ex)
         {
@@ -116,18 +127,37 @@ public class PrescriptionsQueryService(
     /// </summary>
     /// <param name="keyword">搜索关键字</param>
     /// <returns>匹配处方记录列表</returns>
-    public Task<ServiceResult<List<PrescriptionDto>>> Search(string keyword)
+    public async Task<ServiceResult<List<PrescriptionDto>>> Search(string keyword)
     {
         try
         {
             _logger.LogDebug("处方关键字搜索: {Keyword}", keyword);
-            List<PrescriptionDto> emptyList = [];
-            return Task.FromResult(ServiceResult<List<PrescriptionDto>>.Success(emptyList));
+
+            if (string.IsNullOrWhiteSpace(keyword))
+            {
+                return ServiceResult<List<PrescriptionDto>>.Success([]);
+            }
+
+            // 使用分页查询API进行搜索
+            var refitResponse = await _prescriptionApi.GetListAsync(
+                page: 1,
+                pageSize: 100, // 搜索结果限制为100条
+                keyword: keyword);
+
+            if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
+            {
+                var searchResults = refitResponse.Content.Items.ToList();
+                _logger.LogDebug("处方关键字搜索成功: {Keyword}, 结果数: {Count}", keyword, searchResults.Count);
+                return ServiceResult<List<PrescriptionDto>>.Success(searchResults, "搜索成功");
+            }
+
+            _logger.LogWarning("处方搜索HTTP请求失败: {Keyword}, 状态码: {StatusCode}", keyword, refitResponse.StatusCode);
+            return ServiceResult<List<PrescriptionDto>>.Success([], "搜索网络请求失败，返回空结果");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "处方搜索异常");
-            return Task.FromResult(ServiceResult<List<PrescriptionDto>>.Failure("处方搜索失败"));
+            _logger.LogError(ex, "处方搜索异常: {Keyword}", keyword);
+            return ServiceResult<List<PrescriptionDto>>.Failure($"处方搜索失败: {ex.Message}");
         }
     }
 
@@ -141,14 +171,37 @@ public class PrescriptionsQueryService(
         try
         {
             _logger.LogDebug("生成处方管理统计数据");
-            var stats = new PrescriptionStatisticsDto();
 
-            return ServiceResult<PrescriptionStatisticsDto>.Success(stats);
+            // 使用分页查询获取数据来生成统计
+            var allDataResponse = await _prescriptionApi.GetListAsync(1, 10000); // 获取大量数据用于统计
+            
+            var stats = new PrescriptionStatisticsDto();
+            
+            if (allDataResponse.IsSuccessStatusCode && allDataResponse.Content != null)
+            {
+                var prescriptions = allDataResponse.Content.Items;
+                
+                // 基于实际枚举值进行统计计算
+                stats.TotalCount = allDataResponse.Content.TotalCount;
+                stats.DraftCount = prescriptions.Count(p => p.Status == CommonStatus.Disabled); // 草稿状态
+                stats.CompletedCount = prescriptions.Count(p => p.Status == CommonStatus.Enabled); // 完成状态
+                stats.TotalAmount = prescriptions.Sum(p => p.TotalAmount);
+                stats.AverageAmount = stats.TotalCount > 0 ? stats.TotalAmount / stats.TotalCount : 0;
+                
+                _logger.LogDebug("处方统计数据生成成功: 总数 {Total}, 草稿 {Draft}, 完成 {Completed}", 
+                    stats.TotalCount, stats.DraftCount, stats.CompletedCount);
+            }
+            else
+            {
+                _logger.LogWarning("获取处方数据用于统计失败，使用默认空统计");
+            }
+
+            return ServiceResult<PrescriptionStatisticsDto>.Success(stats, "统计数据生成成功");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "处方统计数据生成异常");
-            return ServiceResult<PrescriptionStatisticsDto>.Failure("生成统计数据失败");
+            return ServiceResult<PrescriptionStatisticsDto>.Failure($"生成统计数据失败: {ex.Message}");
         }
     }
 }

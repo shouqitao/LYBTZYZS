@@ -75,8 +75,8 @@ public class ConsultationModule(
         => await _queryService.SearchAsync($"MedicalCase:{medicalCaseId}");
 
     // 补充IConsultationService接口的其他方法
-    public Task<ServiceResult<ConsultationDto>> StartAsync(ConsultationStartDto startDto)
-        => Task.FromResult(ServiceResult<ConsultationDto>.Failure("简单诊所版本暂不支持开始看诊操作"));
+    public async Task<ServiceResult<ConsultationDto>> StartAsync(ConsultationStartDto startDto)
+        => await _businessService.StartAsync(startDto);
 
     public async Task<ServiceResult<ConsultationDto>> UpdateAsync(Guid id, ConsultationDetailDto updateDto)
     {

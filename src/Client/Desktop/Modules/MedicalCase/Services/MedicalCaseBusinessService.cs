@@ -203,5 +203,142 @@ public class MedicalCaseBusinessService(
         }
     }
 
+    /// <summary>
+    /// 暂停医疗案例业务处理
+    /// 执行医案暂停流程：暂停案例处理，记录暂停原因
+    /// </summary>
+    /// <param name="id">医案唯一标识</param>
+    /// <param name="reason">暂停原因</param>
+    /// <returns>暂停操作结果</returns>
+    public async Task<ServiceResult<bool>> SuspendAsync(Guid id, string reason)
+    {
+        try
+        {
+            _logger.LogInformation("开始处理医疗案例暂停: {MedicalCaseId}, 原因: {Reason}", id, reason);
+
+            var dto = new SuspendMedicalCaseDto { Reason = reason };
+            var refitResponse = await _medicalCaseApi.SuspendAsync(id, dto);
+
+            if (refitResponse.IsSuccessStatusCode && refitResponse.Content == true)
+            {
+                _logger.LogInformation("医疗案例暂停成功: {MedicalCaseId}", id);
+                return ServiceResult<bool>.Success(true, "医案暂停成功");
+            }
+
+            _logger.LogWarning(
+                "医疗案例暂停HTTP请求失败: {MedicalCaseId}, 状态码: {StatusCode}",
+                id, refitResponse.StatusCode);
+            return ServiceResult<bool>.Failure("暂停医案网络请求失败，请检查网络连接");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "医疗案例暂停过程发生异常: {MedicalCaseId}", id);
+            return ServiceResult<bool>.Failure($"暂停医案过程发生错误: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// 恢复医疗案例业务处理
+    /// 执行医案恢复流程：恢复暂停的案例处理
+    /// </summary>
+    /// <param name="id">医案唯一标识</param>
+    /// <returns>恢复操作结果</returns>
+    public async Task<ServiceResult<bool>> ResumeAsync(Guid id)
+    {
+        try
+        {
+            _logger.LogInformation("开始处理医疗案例恢复: {MedicalCaseId}", id);
+
+            var refitResponse = await _medicalCaseApi.ResumeAsync(id);
+
+            if (refitResponse.IsSuccessStatusCode && refitResponse.Content == true)
+            {
+                _logger.LogInformation("医疗案例恢复成功: {MedicalCaseId}", id);
+                return ServiceResult<bool>.Success(true, "医案恢复成功");
+            }
+
+            _logger.LogWarning(
+                "医疗案例恢复HTTP请求失败: {MedicalCaseId}, 状态码: {StatusCode}",
+                id, refitResponse.StatusCode);
+            return ServiceResult<bool>.Failure("恢复医案网络请求失败，请检查网络连接");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "医疗案例恢复过程发生异常: {MedicalCaseId}", id);
+            return ServiceResult<bool>.Failure($"恢复医案过程发生错误: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// 归档医疗案例业务处理
+    /// 执行医案归档流程：将完成的案例移至归档状态
+    /// </summary>
+    /// <param name="id">医案唯一标识</param>
+    /// <param name="archiveReason">归档原因</param>
+    /// <returns>归档操作结果</returns>
+    public async Task<ServiceResult<bool>> ArchiveAsync(Guid id, string archiveReason)
+    {
+        try
+        {
+            _logger.LogInformation("开始处理医疗案例归档: {MedicalCaseId}, 原因: {Reason}", id, archiveReason);
+
+            var dto = new ArchiveMedicalCaseDto { ArchiveReason = archiveReason };
+            var refitResponse = await _medicalCaseApi.ArchiveAsync(id, dto);
+
+            if (refitResponse.IsSuccessStatusCode && refitResponse.Content == true)
+            {
+                _logger.LogInformation("医疗案例归档成功: {MedicalCaseId}", id);
+                return ServiceResult<bool>.Success(true, "医案归档成功");
+            }
+
+            _logger.LogWarning(
+                "医疗案例归档HTTP请求失败: {MedicalCaseId}, 状态码: {StatusCode}",
+                id, refitResponse.StatusCode);
+            return ServiceResult<bool>.Failure("归档医案网络请求失败，请检查网络连接");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "医疗案例归档过程发生异常: {MedicalCaseId}", id);
+            return ServiceResult<bool>.Failure($"归档医案过程发生错误: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// 搜索医疗案例业务处理
+    /// 执行医案搜索功能：根据关键词查询匹配的医案
+    /// </summary>
+    /// <param name="keyword">搜索关键词</param>
+    /// <returns>匹配的医案列表</returns>
+    public async Task<ServiceResult<List<MedicalCaseDto>>> SearchAsync(string keyword)
+    {
+        if (string.IsNullOrWhiteSpace(keyword))
+        {
+            return ServiceResult<List<MedicalCaseDto>>.Failure("搜索关键词不能为空");
+        }
+
+        try
+        {
+            _logger.LogInformation("开始搜索医疗案例: 关键词: {Keyword}", keyword);
+
+            var refitResponse = await _medicalCaseApi.SearchAsync(keyword);
+
+            if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
+            {
+                _logger.LogInformation("医疗案例搜索成功: 找到 {Count} 条记录", refitResponse.Content.Count);
+                return ServiceResult<List<MedicalCaseDto>>.Success(refitResponse.Content, $"搜索成功，找到 {refitResponse.Content.Count} 条记录");
+            }
+
+            _logger.LogWarning(
+                "医疗案例搜索HTTP请求失败: 关键词: {Keyword}, 状态码: {StatusCode}",
+                keyword, refitResponse.StatusCode);
+            return ServiceResult<List<MedicalCaseDto>>.Failure("搜索医案网络请求失败，请检查网络连接");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "医疗案例搜索过程发生异常: 关键词: {Keyword}", keyword);
+            return ServiceResult<List<MedicalCaseDto>>.Failure($"搜索医案过程发生错误: {ex.Message}");
+        }
+    }
+
     #endregion 医疗案例业务逻辑专业化实现
 }

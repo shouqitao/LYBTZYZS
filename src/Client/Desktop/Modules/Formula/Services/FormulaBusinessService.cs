@@ -274,14 +274,58 @@ public class FormulaBusinessService(
         return Task.FromResult(ServiceResult<bool>.Success(true));
     }
 
-    public Task<ServiceResult<FormulaDto>> ProcessFormulaCreationAsync(FormulaCreateDto createDto, Guid operatorId)
+    public async Task<ServiceResult<FormulaDto>> ProcessFormulaCreationAsync(FormulaCreateDto createDto, Guid operatorId)
     {
-        return Task.FromResult(ServiceResult<FormulaDto>.Failure("简单诊所版本暂不支持创建验方"));
+        ArgumentNullException.ThrowIfNull(createDto, nameof(createDto));
+
+        _logger.LogInformation("处理验方创建业务流程: 验方名称: {FormulaName}, 操作者: {OperatorId}", createDto.Name, operatorId);
+
+        try
+        {
+            // 调用核心创建方法
+            var result = await CreateFormulaAsync(createDto);
+            
+            if (result.IsSuccess && result.Data != null)
+            {
+                _logger.LogInformation("验方创建业务流程完成: {FormulaId}", result.Data.Id);
+                return ServiceResult<FormulaDto>.Success(result.Data, "验方创建流程完成");
+            }
+
+            _logger.LogWarning("验方创建业务流程失败: {ErrorMessage}", result.ErrorMessage);
+            return ServiceResult<FormulaDto>.Failure(result.ErrorMessage ?? "验方创建流程失败");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "验方创建业务流程异常: 验方名称: {FormulaName}, 操作者: {OperatorId}", createDto.Name, operatorId);
+            return ServiceResult<FormulaDto>.Failure($"验方创建业务流程失败: {ex.Message}");
+        }
     }
 
-    public Task<ServiceResult<FormulaDto>> ProcessFormulaUpdateAsync(Guid id, FormulaUpdateDto updateDto, Guid operatorId)
+    public async Task<ServiceResult<FormulaDto>> ProcessFormulaUpdateAsync(Guid id, FormulaUpdateDto updateDto, Guid operatorId)
     {
-        return Task.FromResult(ServiceResult<FormulaDto>.Failure("简单诊所版本暂不支持更新验方"));
+        ArgumentNullException.ThrowIfNull(updateDto, nameof(updateDto));
+
+        _logger.LogInformation("处理验方更新业务流程: {FormulaId}, 操作者: {OperatorId}", id, operatorId);
+
+        try
+        {
+            // 调用核心更新方法
+            var result = await UpdateFormulaAsync(id, updateDto);
+            
+            if (result.IsSuccess && result.Data != null)
+            {
+                _logger.LogInformation("验方更新业务流程完成: {FormulaId}", result.Data.Id);
+                return ServiceResult<FormulaDto>.Success(result.Data, "验方更新流程完成");
+            }
+
+            _logger.LogWarning("验方更新业务流程失败: {ErrorMessage}", result.ErrorMessage);
+            return ServiceResult<FormulaDto>.Failure(result.ErrorMessage ?? "验方更新流程失败");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "验方更新业务流程异常: {FormulaId}, 操作者: {OperatorId}", id, operatorId);
+            return ServiceResult<FormulaDto>.Failure($"验方更新业务流程失败: {ex.Message}");
+        }
     }
 
     #endregion 简化的不支持方法

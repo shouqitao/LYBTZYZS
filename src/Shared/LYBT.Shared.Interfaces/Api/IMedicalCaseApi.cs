@@ -61,5 +61,77 @@ namespace LYBT.Shared.Interfaces.Api
         /// </summary>
         [Delete("/api/v1/medicalcase/{id}")]
         Task<Refit.ApiResponse<bool>> DeleteAsync(Guid id);
+
+        /// <summary>
+        /// 获取患者活跃医疗案例
+        /// </summary>
+        [Get("/api/v1/medicalcase/patient/{patientId}/active")]
+        Task<Refit.ApiResponse<MedicalCaseDto>> GetActiveByPatientIdAsync(Guid patientId);
+
+        /// <summary>
+        /// 完成医疗案例
+        /// </summary>
+        [Post("/api/v1/medicalcase/{id}/complete")]
+        Task<Refit.ApiResponse<bool>> CompleteAsync(Guid id, [Body] CompleteMedicalCaseDto dto);
+
+        /// <summary>
+        /// 暂停医疗案例
+        /// </summary>
+        [Post("/api/v1/medicalcase/{id}/suspend")]
+        Task<Refit.ApiResponse<bool>> SuspendAsync(Guid id, [Body] SuspendMedicalCaseDto dto);
+
+        /// <summary>
+        /// 恢复医疗案例
+        /// </summary>
+        [Post("/api/v1/medicalcase/{id}/resume")]
+        Task<Refit.ApiResponse<bool>> ResumeAsync(Guid id);
+
+        /// <summary>
+        /// 归档医疗案例
+        /// </summary>
+        [Post("/api/v1/medicalcase/{id}/archive")]
+        Task<Refit.ApiResponse<bool>> ArchiveAsync(Guid id, [Body] ArchiveMedicalCaseDto dto);
+
+        /// <summary>
+        /// 搜索医疗案例
+        /// </summary>
+        [Get("/api/v1/medicalcase/search")]
+        Task<Refit.ApiResponse<List<MedicalCaseDto>>> SearchAsync([Query] string keyword);
+
+        /// <summary>
+        /// 获取医疗案例统计信息
+        /// </summary>
+        [Get("/api/v1/medicalcase/statistics")]
+        Task<Refit.ApiResponse<object>> GetStatisticsAsync([Query] DateTime? startDate = null, [Query] DateTime? endDate = null);
+
+        /// <summary>
+        /// 获取医疗案例历史记录
+        /// </summary>
+        [Get("/api/v1/medicalcase/{id}/history")]
+        Task<Refit.ApiResponse<List<object>>> GetHistoryAsync(Guid id);
+    }
+
+    /// <summary>
+    /// 完成医疗案例DTO
+    /// </summary>
+    public class CompleteMedicalCaseDto
+    {
+        public string? CompletionReason { get; set; }
+    }
+
+    /// <summary>
+    /// 暂停医疗案例DTO
+    /// </summary>
+    public class SuspendMedicalCaseDto
+    {
+        public string? Reason { get; set; }
+    }
+
+    /// <summary>
+    /// 归档医疗案例DTO
+    /// </summary>
+    public class ArchiveMedicalCaseDto
+    {
+        public string? ArchiveReason { get; set; }
     }
 }

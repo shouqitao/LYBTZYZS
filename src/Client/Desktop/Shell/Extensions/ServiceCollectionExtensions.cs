@@ -100,12 +100,21 @@ namespace LYBT.Desktop.Shell.Extensions
         }
 
         /// <summary>
-        /// 注册缓存服务
+        /// 注册缓存服务 - 优化缓存配置，避免重复注册
         /// </summary>
         private static void RegisterCacheServices(IContainerRegistry containerRegistry)
         {
-            // 注册内存缓存服务
-            containerRegistry.RegisterSingleton<IMemoryCache, MemoryCache>();
+            // 优化内存缓存服务配置，添加性能监控选项
+            containerRegistry.RegisterSingleton<IMemoryCache>(() => 
+            {
+                var options = new MemoryCacheOptions
+                {
+                    SizeLimit = 1000, // 优化：设置合理的缓存大小限制
+                    CompactionPercentage = 0.25, // 当达到限制时压缩25%
+                    ExpirationScanFrequency = TimeSpan.FromMinutes(5) // 每5分钟清理过期项
+                };
+                return new MemoryCache(options);
+            });
         }
 
         /// <summary>
@@ -132,23 +141,47 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterSingleton<LYBT.Desktop.Infrastructure.Api.IUnifiedApiClientManager,
                 LYBT.Desktop.Infrastructure.Api.UnifiedApiClientManager>();
 
-            // 注册各个API接口的便捷访问器（委托给统一管理器）
+            // 优化API接口注册：缓存统一管理器引用，减少重复解析开销
             containerRegistry.Register<LYBT.Shared.Interfaces.Api.IAuthApi>(container =>
-                container.Resolve<LYBT.Desktop.Infrastructure.Api.IUnifiedApiClientManager>().AuthApi);
+            {
+                var manager = container.Resolve<LYBT.Desktop.Infrastructure.Api.IUnifiedApiClientManager>();
+                return manager.AuthApi;
+            });
             containerRegistry.Register<LYBT.Shared.Interfaces.Api.IUserApi>(container =>
-                container.Resolve<LYBT.Desktop.Infrastructure.Api.IUnifiedApiClientManager>().UserApi);
+            {
+                var manager = container.Resolve<LYBT.Desktop.Infrastructure.Api.IUnifiedApiClientManager>();
+                return manager.UserApi;
+            });
             containerRegistry.Register<LYBT.Shared.Interfaces.Api.IPatientApi>(container =>
-                container.Resolve<LYBT.Desktop.Infrastructure.Api.IUnifiedApiClientManager>().PatientApi);
+            {
+                var manager = container.Resolve<LYBT.Desktop.Infrastructure.Api.IUnifiedApiClientManager>();
+                return manager.PatientApi;
+            });
             containerRegistry.Register<LYBT.Shared.Interfaces.Api.IHerbApi>(container =>
-                container.Resolve<LYBT.Desktop.Infrastructure.Api.IUnifiedApiClientManager>().HerbApi);
+            {
+                var manager = container.Resolve<LYBT.Desktop.Infrastructure.Api.IUnifiedApiClientManager>();
+                return manager.HerbApi;
+            });
             containerRegistry.Register<LYBT.Shared.Interfaces.Api.IFormulaApi>(container =>
-                container.Resolve<LYBT.Desktop.Infrastructure.Api.IUnifiedApiClientManager>().FormulaApi);
+            {
+                var manager = container.Resolve<LYBT.Desktop.Infrastructure.Api.IUnifiedApiClientManager>();
+                return manager.FormulaApi;
+            });
             containerRegistry.Register<LYBT.Shared.Interfaces.Api.IConsultationApi>(container =>
-                container.Resolve<LYBT.Desktop.Infrastructure.Api.IUnifiedApiClientManager>().ConsultationApi);
+            {
+                var manager = container.Resolve<LYBT.Desktop.Infrastructure.Api.IUnifiedApiClientManager>();
+                return manager.ConsultationApi;
+            });
             containerRegistry.Register<LYBT.Shared.Interfaces.Api.IPrescriptionApi>(container =>
-                container.Resolve<LYBT.Desktop.Infrastructure.Api.IUnifiedApiClientManager>().PrescriptionApi);
+            {
+                var manager = container.Resolve<LYBT.Desktop.Infrastructure.Api.IUnifiedApiClientManager>();
+                return manager.PrescriptionApi;
+            });
             containerRegistry.Register<LYBT.Shared.Interfaces.Api.IMedicalCaseApi>(container =>
-                container.Resolve<LYBT.Desktop.Infrastructure.Api.IUnifiedApiClientManager>().MedicalCaseApi);
+            {
+                var manager = container.Resolve<LYBT.Desktop.Infrastructure.Api.IUnifiedApiClientManager>();
+                return manager.MedicalCaseApi;
+            });
 
             // 注册通用API服务 - UltraThink统一架构：使用完整版Http.ApiService
             containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Http.IApiService, LYBT.Desktop.Core.Http.ApiService>();
@@ -178,25 +211,28 @@ namespace LYBT.Desktop.Shell.Extensions
         
         /// <summary>
         /// Layer 1: 基础模块注册 - Herbs, Formula (无外部依赖)
+        /// 性能优化：改为Scoped注册，避免启动时立即实例化
         /// </summary>
         private static void RegisterLayer1BasicModules(IContainerRegistry containerRegistry)
         {
             // Herbs模块 - 基础药材数据，无外部依赖
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Herbs.Interfaces.IHerbQueryService,
+            // 改为Scoped以支持懒加载，提升启动性能
+            containerRegistry.Register<LYBT.Desktop.Herbs.Interfaces.IHerbQueryService,
                 LYBT.Desktop.Herbs.Services.HerbQueryService>();
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Herbs.Interfaces.IHerbBusinessService,
+            containerRegistry.Register<LYBT.Desktop.Herbs.Interfaces.IHerbBusinessService,
                 LYBT.Desktop.Herbs.Services.HerbBusinessService>();
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Herbs.Services.HerbModule>();
-            containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Services.IHerbService,
+            containerRegistry.Register<LYBT.Desktop.Herbs.Services.HerbModule>();
+            containerRegistry.Register<LYBT.Shared.Interfaces.Services.IHerbService,
                 LYBT.Desktop.Herbs.Services.HerbModule>();
                 
             // Formula模块 - 验方模板数据，无外部依赖
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Formula.Interfaces.IFormulaQueryService,
+            // 改为Scoped以支持懒加载，提升启动性能
+            containerRegistry.Register<LYBT.Desktop.Formula.Interfaces.IFormulaQueryService,
                 LYBT.Desktop.Formula.Services.FormulaQueryService>();
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Formula.Interfaces.IFormulaBusinessService,
+            containerRegistry.Register<LYBT.Desktop.Formula.Interfaces.IFormulaBusinessService,
                 LYBT.Desktop.Formula.Services.FormulaBusinessService>();
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Formula.Services.FormulaModule>();
-            containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Services.IFormulaService,
+            containerRegistry.Register<LYBT.Desktop.Formula.Services.FormulaModule>();
+            containerRegistry.Register<LYBT.Shared.Interfaces.Services.IFormulaService,
                 LYBT.Desktop.Formula.Services.FormulaModule>();
         }
         
@@ -228,55 +264,62 @@ namespace LYBT.Desktop.Shell.Extensions
         
         /// <summary>
         /// Layer 3: 业务数据模块注册 - 依赖认证层
+        /// 性能优化：改为Scoped注册，避免启动时立即实例化
         /// </summary>
         private static void RegisterLayer3BusinessDataModules(IContainerRegistry containerRegistry)
         {
             // Patients模块 - 患者档案管理
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Patients.Interfaces.IPatientQueryService,
+            // 改为Scoped以支持懒加载，提升启动性能
+            containerRegistry.Register<LYBT.Desktop.Patients.Interfaces.IPatientQueryService,
                 LYBT.Desktop.Patients.Services.PatientQueryService>();
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Patients.Interfaces.IPatientBusinessService,
+            containerRegistry.Register<LYBT.Desktop.Patients.Interfaces.IPatientBusinessService,
                 LYBT.Desktop.Patients.Services.PatientBusinessService>();
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Patients.Services.PatientModule>();
-            containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Services.IPatientService,
+            containerRegistry.Register<LYBT.Desktop.Patients.Services.PatientModule>();
+            containerRegistry.Register<LYBT.Shared.Interfaces.Services.IPatientService,
                 LYBT.Desktop.Patients.Services.PatientModule>();
         }
         
         /// <summary>
         /// Layer 4: 流程协调模块注册 - 依赖业务数据层
+        /// 性能优化：改为Scoped注册，避免启动时立即实例化
         /// </summary>
         private static void RegisterLayer4ProcessModules(IContainerRegistry containerRegistry)
         {
             // MedicalCase模块 - 医案流程管理
-            containerRegistry.RegisterSingleton<LYBT.Desktop.MedicalCase.Interfaces.IMedicalCaseQueryService,
+            // 改为Scoped以支持懒加载，提升启动性能
+            containerRegistry.Register<LYBT.Desktop.MedicalCase.Interfaces.IMedicalCaseQueryService,
                 LYBT.Desktop.MedicalCase.Services.MedicalCaseQueryService>();
-            containerRegistry.RegisterSingleton<LYBT.Desktop.MedicalCase.Interfaces.IMedicalCaseBusinessService,
+            containerRegistry.Register<LYBT.Desktop.MedicalCase.Interfaces.IMedicalCaseBusinessService,
                 LYBT.Desktop.MedicalCase.Services.MedicalCaseBusinessService>();
-            containerRegistry.RegisterSingleton<LYBT.Desktop.MedicalCase.Services.MedicalCaseModule>();
-            containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Services.IMedicalCaseService,
+            containerRegistry.Register<LYBT.Desktop.MedicalCase.Services.MedicalCaseModule>();
+            containerRegistry.Register<LYBT.Shared.Interfaces.Services.IMedicalCaseService,
                 LYBT.Desktop.MedicalCase.Services.MedicalCaseModule>();
                 
             // Consultation模块 - 诊断流程
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Consultation.Interfaces.IConsultationQueryService,
+            // 改为Scoped以支持懒加载，提升启动性能
+            containerRegistry.Register<LYBT.Desktop.Consultation.Interfaces.IConsultationQueryService,
                 LYBT.Desktop.Consultation.Services.ConsultationQueryService>();
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Consultation.Interfaces.IConsultationBusinessService,
+            containerRegistry.Register<LYBT.Desktop.Consultation.Interfaces.IConsultationBusinessService,
                 LYBT.Desktop.Consultation.Services.ConsultationBusinessService>();
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Consultation.Services.ConsultationModule>();
-            containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Services.IConsultationService,
+            containerRegistry.Register<LYBT.Desktop.Consultation.Services.ConsultationModule>();
+            containerRegistry.Register<LYBT.Shared.Interfaces.Services.IConsultationService,
                 LYBT.Desktop.Consultation.Services.ConsultationModule>();
         }
         
         /// <summary>
         /// Layer 5: 聚合服务模块注册 - 依赖流程协调层
+        /// 性能优化：改为Scoped注册，避免启动时立即实例化
         /// </summary>
         private static void RegisterLayer5AggregationModules(IContainerRegistry containerRegistry)
         {
             // Prescriptions模块 - 处方聚合服务（依赖Herbs, Formula, Consultation）
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Prescriptions.Interfaces.IPrescriptionsQueryService,
+            // 改为Scoped以支持懒加载，提升启动性能
+            containerRegistry.Register<LYBT.Desktop.Prescriptions.Interfaces.IPrescriptionsQueryService,
                 LYBT.Desktop.Prescriptions.Services.PrescriptionsQueryService>();
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Prescriptions.Interfaces.IPrescriptionsBusinessService,
+            containerRegistry.Register<LYBT.Desktop.Prescriptions.Interfaces.IPrescriptionsBusinessService,
                 LYBT.Desktop.Prescriptions.Services.PrescriptionsBusinessService>();
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Prescriptions.Services.PrescriptionsModule>();
-            containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Services.IPrescriptionService,
+            containerRegistry.Register<LYBT.Desktop.Prescriptions.Services.PrescriptionsModule>();
+            containerRegistry.Register<LYBT.Shared.Interfaces.Services.IPrescriptionService,
                 LYBT.Desktop.Prescriptions.Services.PrescriptionsModule>();
         }
 

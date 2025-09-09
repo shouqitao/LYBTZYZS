@@ -2,6 +2,7 @@
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.MedicalCase;
+using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Desktop.MedicalCase.Services;
 
@@ -68,7 +69,21 @@ public class MedicalCaseModule(
     /// 更新医案
     /// </summary>
     public async Task<ServiceResult<MedicalCaseDto>> UpdateAsync(Guid id, MedicalCaseUpdateDto dto)
-        => ServiceResult<MedicalCaseDto>.Failure("简单诊所版本暂不支持医案更新");
+    {
+        // 将MedicalCaseUpdateDto转换为MedicalCaseDetailDto
+        var detailDto = new MedicalCaseDetailDto
+        {
+            Id = id,
+            PatientId = dto.PatientId,
+            DoctorId = dto.DoctorId,
+            ChiefComplaint = dto.ChiefComplaint,
+            PresentIllness = dto.PresentIllness,
+            PastHistory = dto.PastHistory,
+            Remark = dto.Remark
+        };
+        
+        return await _businessService.UpdateAsync(id, detailDto);
+    }
 
     /// <summary>
     /// 删除医案
@@ -99,16 +114,16 @@ public class MedicalCaseModule(
     #region 共享接口IMedicalCaseService额外方法 - 委托给相应服务层
 
     /// <summary>
-    /// 暂停医疗案例 - 简单诊所版本暂不支持
+    /// 暂停医疗案例
     /// </summary>
-    public Task<ServiceResult<bool>> Suspend(Guid id, string reason)
-        => Task.FromResult(ServiceResult<bool>.Failure("简单诊所版本暂不支持暂停医案"));
+    public async Task<ServiceResult<bool>> Suspend(Guid id, string reason)
+        => await _businessService.SuspendAsync(id, reason);
 
     /// <summary>
-    /// 恢复医疗案例 - 简单诊所版本暂不支持
+    /// 恢复医疗案例
     /// </summary>
-    public Task<ServiceResult<bool>> Resume(Guid id)
-        => Task.FromResult(ServiceResult<bool>.Failure("简单诊所版本暂不支持恢复医案"));
+    public async Task<ServiceResult<bool>> Resume(Guid id)
+        => await _businessService.ResumeAsync(id);
 
     /// <summary>
     /// 取消咨询/诊断 - 委托给CancelAsync
@@ -117,16 +132,26 @@ public class MedicalCaseModule(
         => await CancelAsync(id);
 
     /// <summary>
-    /// 更新医疗案例状态 - 简单诊所版本基础实现
+    /// 更新医疗案例状态 - 委托给BusinessService
     /// </summary>
-    public Task<ServiceResult<bool>> UpdateStatus(Guid id, int status)
-        => Task.FromResult(ServiceResult<bool>.Failure("简单诊所版本暂不支持状态更新"));
+    public async Task<ServiceResult<bool>> UpdateStatus(Guid id, int status)
+    {
+        // 根据状态值调用对应的业务方法
+        var medicalCaseStatus = (MedicalCaseStatus)status;
+        return medicalCaseStatus switch
+        {
+            MedicalCaseStatus.InConsultation => await _businessService.StartAsync(id),
+            MedicalCaseStatus.Completed => await _businessService.CompleteAsync(id),
+            MedicalCaseStatus.Cancelled => await _businessService.CancelAsync(id),
+            _ => ServiceResult<bool>.Failure($"不支持的状态更新: {medicalCaseStatus}")
+        };
+    }
 
     /// <summary>
-    /// 归档医疗案例 - 简单诊所版本暂不支持
+    /// 归档医疗案例
     /// </summary>
-    public Task<ServiceResult<bool>> Archive(Guid id, string archiveReason)
-        => Task.FromResult(ServiceResult<bool>.Failure("简单诊所版本暂不支持归档医案"));
+    public async Task<ServiceResult<bool>> Archive(Guid id, string archiveReason)
+        => await _businessService.ArchiveAsync(id, archiveReason ?? "归档医疗案例");
 
     /// <summary>
     /// 获取医疗案例统计信息 - 简单诊所版本基础实现
@@ -135,10 +160,10 @@ public class MedicalCaseModule(
         => Task.FromResult(ServiceResult<object>.Success(new { TotalCases = 0, ActiveCases = 0, CompletedCases = 0 }));
 
     /// <summary>
-    /// 搜索医疗案例 - 简单诊所版本基础实现
+    /// 搜索医疗案例
     /// </summary>
     public async Task<ServiceResult<List<MedicalCaseDto>>> SearchAsync(string keyword)
-        => ServiceResult<List<MedicalCaseDto>>.Success([]);
+        => await _businessService.SearchAsync(keyword);
 
     /// <summary>
     /// 获取医疗案例历史记录 - 简单诊所版本暂不支持

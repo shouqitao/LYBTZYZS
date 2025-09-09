@@ -69,15 +69,8 @@ public partial class App : PrismApplication
     {
         base.ConfigureViewModelLocator();
 
-        // 显式注册View和ViewModel的映射关系，解决AutoWireViewModel失败问题
-        ViewModelLocationProvider.Register<MainWindow>(() =>
-        {
-            var regionManager = Container.Resolve<IRegionManager>();
-            var eventAggregator = Container.Resolve<IEventAggregator>();
-            var servicesFacade = Container.Resolve<LYBT.Desktop.Core.Interfaces.Services.IMainWindowServicesFacade>();
-            var errorHandlingService = Container.Resolve<LYBT.Desktop.Core.Interfaces.Services.IErrorHandlingService>();
-            return MainWindowViewModel.Create(regionManager, eventAggregator, servicesFacade, errorHandlingService);
-        });
+        // 优化启动性能：简化手动映射，使用容器解析代替手动创建
+        ViewModelLocationProvider.Register<MainWindow>(() => Container.Resolve<MainWindowViewModel>());
         ViewModelLocationProvider.Register<HomeView, HomeViewModel>();
 
         // Note: 其他View-ViewModel映射通过Prism自动发现机制处理
@@ -85,23 +78,28 @@ public partial class App : PrismApplication
 
     /// <summary>
     /// 应用程序初始化完成后的回调
-    /// 执行企业级启动流程：服务注册验证、错误处理初始化、模块协调器配置、性能优化预热
+    /// 执行企业级启动流程：错误处理初始化、模块协调器配置、性能优化预热、后台服务验证
+    /// 优化启动性能：关键服务同步初始化，验证和预热异步执行避免UI阻塞
     /// </summary>
     protected override void OnInitialized()
     {
         base.OnInitialized();
 
-        // 1. 验证服务注册 - 确保自动发现系统正常工作
-        ValidateServiceRegistrations();
-
-        // 2. 启动性能优化 - 应用预热（异步执行，不阻塞主线程）
-        _ = Task.Run(InitializeApplicationWarmupAsync);
-
-        // 3. 初始化错误处理服务并注册全局异常处理器
+        // 1. 初始化错误处理服务并注册全局异常处理器（同步，确保错误处理就绪）
         InitializeErrorHandlingService();
 
-        // 4. 简化模块加载协调器（移除复杂的性能监控）
+        // 2. 简化模块加载协调器（同步，轻量级初始化）
         InitializeSimplifiedModuleCoordinator();
+
+        // 3. 后台异步任务 - 不阻塞UI主线程
+        _ = Task.Run(async () =>
+        {
+            // 3.1 服务注册验证（移到后台线程避免UI阻塞）
+            await ValidateServiceRegistrationsAsync().ConfigureAwait(false);
+            
+            // 3.2 应用预热优化（继续后台执行）
+            await InitializeApplicationWarmupAsync().ConfigureAwait(false);
+        });
     }
 
     /// <summary>
@@ -143,22 +141,28 @@ public partial class App : PrismApplication
     }
 
     /// <summary>
-    /// 验证服务注册 - 确保所有自动发现的服务都能正常解析
+    /// 异步验证服务注册 - 确保所有自动发现的服务都能正常解析
+    /// 优化启动性能：在后台线程执行，避免阻塞UI主线程
     /// </summary>
-    private void ValidateServiceRegistrations()
+    private async Task ValidateServiceRegistrationsAsync()
     {
         try
         {
+            // 使用Task.Delay确保在后台线程执行
+            await Task.Delay(1).ConfigureAwait(false);
+
             var logger = LoggerFactory.Create(builder => builder.AddDebug())
                 .CreateLogger("ServiceValidation");
 
-            logger.LogInformation("开始验证服务注册...");
+            logger.LogInformation("开始异步验证服务注册...");
 
             // 解析服务注册验证器
             var validator = Container.Resolve<IModuleServiceRegistrar>();
             if (validator is ModuleRegistrationValidator moduleValidator)
             {
-                var validationResult = moduleValidator.ValidateRegistrations(Container);
+                // 在后台线程执行服务验证
+                var validationResult = await Task.Run(() => 
+                    moduleValidator.ValidateRegistrations(Container)).ConfigureAwait(false);
 
                 if (validationResult.IsAllSuccessful)
                 {
@@ -174,15 +178,16 @@ public partial class App : PrismApplication
                         string.Join(", ", validationResult.FailedServices));
                 }
 
-                // 输出诊断报告
-                var report = moduleValidator.CreateDiagnosticReport();
+                // 在后台线程生成诊断报告
+                var report = await Task.Run(() => 
+                    moduleValidator.CreateDiagnosticReport()).ConfigureAwait(false);
                 logger.LogDebug("服务注册诊断报告\n{Report}", report);
             }
         }
         catch (Exception ex)
         {
             // 验证失败不应阻塞应用启动，但需记录错误
-            System.Diagnostics.Debug.WriteLine($"服务注册验证失败: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"异步服务注册验证失败: {ex.Message}");
         }
     }
 

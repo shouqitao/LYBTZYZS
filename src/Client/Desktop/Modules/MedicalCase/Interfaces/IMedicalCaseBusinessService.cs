@@ -42,5 +42,25 @@ public interface IMedicalCaseBusinessService
     /// </summary>
     Task<ServiceResult<bool>> CancelAsync(Guid id);
 
+    /// <summary>
+    /// 暂停医案
+    /// </summary>
+    Task<ServiceResult<bool>> SuspendAsync(Guid id, string reason);
+
+    /// <summary>
+    /// 恢复医案
+    /// </summary>
+    Task<ServiceResult<bool>> ResumeAsync(Guid id);
+
+    /// <summary>
+    /// 归档医案
+    /// </summary>
+    Task<ServiceResult<bool>> ArchiveAsync(Guid id, string archiveReason);
+
+    /// <summary>
+    /// 搜索医案
+    /// </summary>
+    Task<ServiceResult<List<MedicalCaseDto>>> SearchAsync(string keyword);
+
     #endregion 基础医案业务操作
 }

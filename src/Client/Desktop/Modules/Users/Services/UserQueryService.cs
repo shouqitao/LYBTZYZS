@@ -80,22 +80,106 @@ public class UserQueryService(
         }
     }
 
-    public Task<ServiceResult<UserDto>> GetByUsernameAsync(string username)
+    public async Task<ServiceResult<UserDto>> GetByUsernameAsync(string username)
     {
-        _logger.LogWarning("简单诊所版本暂不支持按用户名查询功能: {Username}", username);
-        return Task.FromResult(ServiceResult<UserDto>.Failure("简单诊所版本暂不支持按用户名查询"));
+        try
+        {
+            _logger.LogDebug("按用户名查询用户: {Username}", username);
+
+            // 使用GetUsersAsync API按用户名搜索
+            var refitResponse = await _userApi.GetUsersAsync(
+                page: 1,
+                pageSize: 1,
+                username: username);
+
+            if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
+            {
+                var apiResponse = refitResponse.Content;
+                if (apiResponse.Success && apiResponse.Data != null && apiResponse.Data.Items.Any())
+                {
+                    var user = apiResponse.Data.Items.First();
+                    return ServiceResult<UserDto>.Success(user, "用户查询成功");
+                }
+
+                return ServiceResult<UserDto>.Failure("未找到指定用户名的用户");
+            }
+
+            return ServiceResult<UserDto>.Failure("按用户名查询网络请求失败");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "按用户名查询用户异常: {Username}", username);
+            return ServiceResult<UserDto>.Failure("按用户名查询用户失败");
+        }
     }
 
-    public Task<ServiceResult<List<UserDto>>> SearchAsync(string keyword)
+    public async Task<ServiceResult<List<UserDto>>> SearchAsync(string keyword)
     {
-        _logger.LogWarning("简单诊所版本暂不支持用户搜索功能: {Keyword}", keyword);
-        return Task.FromResult(ServiceResult<List<UserDto>>.Failure("简单诊所版本暂不支持用户搜索"));
+        try
+        {
+            _logger.LogDebug("搜索用户: {Keyword}", keyword);
+
+            if (string.IsNullOrWhiteSpace(keyword))
+            {
+                return ServiceResult<List<UserDto>>.Success([]);
+            }
+
+            // 使用GetUsersAsync API进行关键字搜索
+            var refitResponse = await _userApi.GetUsersAsync(
+                page: 1,
+                pageSize: 100, // 搜索结果限制为100条
+                keyword: keyword);
+
+            if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
+            {
+                var apiResponse = refitResponse.Content;
+                if (apiResponse.Success && apiResponse.Data != null)
+                {
+                    var users = apiResponse.Data.Items.ToList();
+                    _logger.LogDebug("用户搜索成功: {Keyword}, 结果数: {Count}", keyword, users.Count);
+                    return ServiceResult<List<UserDto>>.Success(users, "搜索成功");
+                }
+
+                return ServiceResult<List<UserDto>>.Failure(apiResponse.Message ?? "用户搜索失败");
+            }
+
+            return ServiceResult<List<UserDto>>.Success([], "搜索网络请求失败，返回空结果");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "用户搜索异常: {Keyword}", keyword);
+            return ServiceResult<List<UserDto>>.Failure($"用户搜索失败: {ex.Message}");
+        }
     }
 
-    public Task<ServiceResult<List<UserDto>>> GetActiveUsersAsync()
+    public async Task<ServiceResult<List<UserDto>>> GetActiveUsersAsync()
     {
-        _logger.LogWarning("简单诊所版本暂不支持获取启用用户列表功能");
-        return Task.FromResult(ServiceResult<List<UserDto>>.Failure("简单诊所版本暂不支持用户状态查询"));
+        try
+        {
+            _logger.LogDebug("获取活跃用户列表");
+
+            var refitResponse = await _userApi.GetActiveUsersAsync();
+
+            if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
+            {
+                var apiResponse = refitResponse.Content;
+                if (apiResponse.Success && apiResponse.Data != null)
+                {
+                    var activeUsers = apiResponse.Data.ToList();
+                    _logger.LogDebug("获取活跃用户列表成功，用户数: {Count}", activeUsers.Count);
+                    return ServiceResult<List<UserDto>>.Success(activeUsers, "获取活跃用户列表成功");
+                }
+
+                return ServiceResult<List<UserDto>>.Failure(apiResponse.Message ?? "获取活跃用户列表失败");
+            }
+
+            return ServiceResult<List<UserDto>>.Failure("获取活跃用户列表网络请求失败");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "获取活跃用户列表异常");
+            return ServiceResult<List<UserDto>>.Failure("获取活跃用户列表失败");
+        }
     }
 
     public Task<ServiceResult<List<object>>> GetRolesAsync()
@@ -112,10 +196,40 @@ public class UserQueryService(
         return Task.FromResult(ServiceResult<List<object>>.Success(roles));
     }
 
-    public Task<ServiceResult<bool>> ValidateUsernameAsync(string username)
+    public async Task<ServiceResult<bool>> ValidateUsernameAsync(string username)
     {
-        _logger.LogWarning("简单诊所版本暂不支持用户名验证功能: {Username}", username);
-        return Task.FromResult(ServiceResult<bool>.Failure("简单诊所版本暂不支持用户名验证"));
+        try
+        {
+            _logger.LogDebug("验证用户名可用性: {Username}", username);
+
+            if (string.IsNullOrWhiteSpace(username))
+            {
+                return ServiceResult<bool>.Failure("用户名不能为空");
+            }
+
+            // 通过查询用户名来验证是否已存在
+            var userResult = await GetByUsernameAsync(username);
+            
+            if (userResult.IsSuccess && userResult.Data != null)
+            {
+                // 用户名已存在
+                return ServiceResult<bool>.Success(false, "用户名已存在");
+            }
+            
+            if (userResult.ErrorMessage?.Contains("未找到") == true)
+            {
+                // 用户名可用
+                return ServiceResult<bool>.Success(true, "用户名可用");
+            }
+
+            // 查询过程中出现其他错误
+            return ServiceResult<bool>.Failure(userResult.ErrorMessage ?? "用户名验证失败");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "用户名验证异常: {Username}", username);
+            return ServiceResult<bool>.Failure("用户名验证失败");
+        }
     }
 
     #endregion 核心查询操作

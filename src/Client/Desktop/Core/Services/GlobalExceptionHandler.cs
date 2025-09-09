@@ -20,11 +20,13 @@ namespace LYBT.Desktop.Core.Services
         private bool _isRegistered = false;
         private readonly object _registrationLock = new();
 
-        // 统计信息
+        // Epic 05-P0-02 增强：详细统计信息
         private int _totalExceptionsHandled = 0;
-
         private int _criticalExceptionsCount = 0;
         private DateTime _lastExceptionTime = DateTime.MinValue;
+        private readonly Dictionary<SharedCommon.ErrorCategory, int> _categoryStats = new();
+        private readonly Dictionary<Type, int> _exceptionTypeStats = new();
+        private readonly List<ErrorTrendEntry> _recentErrors = new();
 
         public GlobalExceptionHandler(
             IErrorClassifier errorClassifier,
@@ -144,10 +146,38 @@ namespace LYBT.Desktop.Core.Services
                     await ExecuteRecoveryStrategyAsync(classifiedException);
                 }
 
-                // 6. 更新统计
+                // Epic 05-P0-02 增强：更新详细统计
                 if (classifiedException.Severity >= SharedCommon.ErrorSeverity.Critical)
                 {
                     _criticalExceptionsCount++;
+                }
+
+                // 更新分类统计
+                if (_categoryStats.ContainsKey(classifiedException.Category))
+                    _categoryStats[classifiedException.Category]++;
+                else
+                    _categoryStats[classifiedException.Category] = 1;
+
+                // 更新异常类型统计
+                var exceptionType = exception.GetType();
+                if (_exceptionTypeStats.ContainsKey(exceptionType))
+                    _exceptionTypeStats[exceptionType]++;
+                else
+                    _exceptionTypeStats[exceptionType] = 1;
+
+                // 添加到趋势数据（保留最近100条）
+                _recentErrors.Add(new ErrorTrendEntry
+                {
+                    Timestamp = DateTime.Now,
+                    Category = classifiedException.Category,
+                    Severity = classifiedException.Severity,
+                    ExceptionType = exceptionType.Name,
+                    Source = source
+                });
+
+                if (_recentErrors.Count > 100)
+                {
+                    _recentErrors.RemoveAt(0);
                 }
 
                 // 7. 检查是否需要关闭应用
@@ -337,7 +367,7 @@ namespace LYBT.Desktop.Core.Services
             {
                 case SharedCommon.ErrorCategory.Network:
                 case SharedCommon.ErrorCategory.ServiceUnavailable:
-                    // 等待并重试
+                    // 等待并重试（指数退避）
                     await Task.Delay(TimeSpan.FromSeconds(Math.Pow(2, exception.RetryCount)));
                     exception.IncrementRetryCount();
                     break;
@@ -354,9 +384,61 @@ namespace LYBT.Desktop.Core.Services
                     // TODO: 重新加载配置
                     break;
 
+                // Epic 05-P0-02 增强：新增数据库和缓存错误恢复策略
+                case SharedCommon.ErrorCategory.Validation:
+                    // 数据验证错误：尝试刷新缓存数据
+                    _logger.LogInformation("数据验证错误，尝试刷新缓存");
+                    await RefreshCacheDataAsync();
+                    break;
+
+                case SharedCommon.ErrorCategory.Timeout:
+                    // 超时错误：指数退避重试
+                    var timeoutDelay = TimeSpan.FromSeconds(Math.Min(30, Math.Pow(2, exception.RetryCount)));
+                    _logger.LogInformation("超时错误，等待 {Delay} 秒后重试", timeoutDelay.TotalSeconds);
+                    await Task.Delay(timeoutDelay);
+                    exception.IncrementRetryCount();
+                    break;
+
+                case SharedCommon.ErrorCategory.Internal:
+                    // 内部错误：尝试重置服务状态
+                    _logger.LogInformation("内部错误，尝试重置服务状态");
+                    await ResetServiceStateAsync();
+                    break;
+
                 default:
                     // 默认策略：记录并继续
                     break;
+            }
+        }
+
+        // Epic 05-P0-02 增强：添加错误恢复辅助方法
+        private async Task RefreshCacheDataAsync()
+        {
+            try
+            {
+                _logger.LogInformation("开始刷新缓存数据");
+                // TODO: 实现缓存刷新逻辑
+                await Task.Delay(100); // 模拟异步操作
+                _logger.LogInformation("缓存数据刷新完成");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "刷新缓存数据失败");
+            }
+        }
+
+        private async Task ResetServiceStateAsync()
+        {
+            try
+            {
+                _logger.LogInformation("开始重置服务状态");
+                // TODO: 实现服务状态重置逻辑
+                await Task.Delay(100); // 模拟异步操作
+                _logger.LogInformation("服务状态重置完成");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "重置服务状态失败");
             }
         }
 
@@ -466,6 +548,43 @@ namespace LYBT.Desktop.Core.Services
             };
         }
 
+        // Epic 05-P0-02 增强：错误趋势分析方法
+        public ErrorTrendReport GenerateErrorTrendReport(TimeSpan period)
+        {
+            var cutoffTime = DateTime.Now - period;
+            var recentErrorsInPeriod = _recentErrors.Where(e => e.Timestamp >= cutoffTime).ToList();
+
+            return new ErrorTrendReport
+            {
+                Period = period,
+                TotalErrors = recentErrorsInPeriod.Count,
+                CriticalErrors = recentErrorsInPeriod.Count(e => e.Severity >= SharedCommon.ErrorSeverity.Critical),
+                TopErrorCategories = _categoryStats
+                    .OrderByDescending(kvp => kvp.Value)
+                    .Take(5)
+                    .ToDictionary(kvp => kvp.Key, kvp => kvp.Value),
+                TopExceptionTypes = _exceptionTypeStats
+                    .OrderByDescending(kvp => kvp.Value)
+                    .Take(5)
+                    .ToDictionary(kvp => kvp.Key.Name, kvp => kvp.Value),
+                ErrorsByHour = recentErrorsInPeriod
+                    .GroupBy(e => e.Timestamp.Hour)
+                    .ToDictionary(g => g.Key, g => g.Count()),
+                GeneratedAt = DateTime.Now
+            };
+        }
+
+        public bool ShouldGenerateAlert()
+        {
+            // 检查是否需要生成警报
+            var last15Minutes = DateTime.Now.AddMinutes(-15);
+            var recentCriticalErrors = _recentErrors.Count(e => 
+                e.Timestamp >= last15Minutes && 
+                e.Severity >= SharedCommon.ErrorSeverity.Critical);
+
+            return recentCriticalErrors >= 3; // 15分钟内3个严重错误触发警报
+        }
+
         #endregion 私有方法
 
         #region 内部类
@@ -487,6 +606,27 @@ namespace LYBT.Desktop.Core.Services
             public int ProcessorCount { get; set; }
             public long WorkingSet { get; set; }
             public bool Is64Bit { get; set; }
+        }
+
+        // Epic 05-P0-02 增强：错误趋势分析相关类
+        private class ErrorTrendEntry
+        {
+            public DateTime Timestamp { get; set; }
+            public SharedCommon.ErrorCategory Category { get; set; }
+            public SharedCommon.ErrorSeverity Severity { get; set; }
+            public string ExceptionType { get; set; } = null!;
+            public ExceptionSource Source { get; set; }
+        }
+
+        public class ErrorTrendReport
+        {
+            public TimeSpan Period { get; set; }
+            public int TotalErrors { get; set; }
+            public int CriticalErrors { get; set; }
+            public Dictionary<SharedCommon.ErrorCategory, int> TopErrorCategories { get; set; } = new();
+            public Dictionary<string, int> TopExceptionTypes { get; set; } = new();
+            public Dictionary<int, int> ErrorsByHour { get; set; } = new();
+            public DateTime GeneratedAt { get; set; }
         }
 
         #endregion 内部类

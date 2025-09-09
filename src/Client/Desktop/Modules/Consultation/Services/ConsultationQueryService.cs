@@ -1,6 +1,8 @@
 ﻿using LYBT.Desktop.Consultation.Interfaces;
+using LYBT.Shared.Interfaces.Api;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
+using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Consultation.Services;
@@ -13,9 +15,12 @@ namespace LYBT.Desktop.Consultation.Services;
 /// 集成企业级日志记录，支持诊断管理和档案查询需求
 /// 适配中医诊所看诊诊断查询场景，确保查询性能和数据安全性
 /// </summary>
-public class ConsultationQueryService(ILogger<ConsultationQueryService> logger) : IConsultationQueryService
+public class ConsultationQueryService(
+    ILogger<ConsultationQueryService> logger,
+    IConsultationApi consultationApi) : IConsultationQueryService
 {
     private readonly ILogger<ConsultationQueryService> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    private readonly IConsultationApi _consultationApi = consultationApi ?? throw new ArgumentNullException(nameof(consultationApi));
 
     /// <summary>
     /// 分页查询看诊诊断记录列表
@@ -57,12 +62,36 @@ public class ConsultationQueryService(ILogger<ConsultationQueryService> logger) 
         try
         {
             _logger.LogDebug("查询看诊诊断详细档案: {ConsultationId}", id);
-            return ServiceResult<ConsultationDto>.Failure("简单诊所版本暂不支持诊断详情查询");
+
+            var refitResponse = await _consultationApi.GetByIdAsync(id);
+
+            if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
+            {
+                var consultation = refitResponse.Content;
+                var consultationDto = new ConsultationDto
+                {
+                    Id = consultation.Id,
+                    PatientId = consultation.PatientId,
+                    MedicalCaseId = consultation.MedicalCaseId,
+                    Status = consultation.Status == ConsultationStatus.Completed ? CommonStatus.Enabled : CommonStatus.Disabled,
+                    CreateTime = consultation.CreateTime,
+                    UpdateTime = consultation.UpdateTime,
+                    UserId = consultation.UserId
+                };
+
+                _logger.LogDebug("看诊诊断详细档案查询成功: {ConsultationId}", id);
+                return ServiceResult<ConsultationDto>.Success(consultationDto, "查询诊断详情成功");
+            }
+
+            _logger.LogWarning(
+                "看诊诊断详细档案HTTP请求失败: {ConsultationId}, 状态码: {StatusCode}",
+                id, refitResponse.StatusCode);
+            return ServiceResult<ConsultationDto>.Failure("查询诊断详情网络请求失败，请检查网络连接");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "查询诊断详情异常: {ConsultationId}", id);
-            return ServiceResult<ConsultationDto>.Failure("查询诊断详情失败");
+            return ServiceResult<ConsultationDto>.Failure($"查询诊断详情失败: {ex.Message}");
         }
     }
 

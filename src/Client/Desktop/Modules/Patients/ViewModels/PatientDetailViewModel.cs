@@ -25,6 +25,7 @@ namespace LYBT.Desktop.Patients.ViewModels
         private readonly ICustomDialogService _dialogService;
         private readonly IRegionManager _regionManager;
         private readonly IMapper _mapper;
+        private readonly IPrescriptionPrintService _printService;
 
         private Guid _patientId;
         private PatientDto? _patient;
@@ -100,6 +101,7 @@ namespace LYBT.Desktop.Patients.ViewModels
             ICustomDialogService dialogService,
             IRegionManager regionManager,
             IMapper mapper,
+            IPrescriptionPrintService printService,
             IErrorHandlingService errorHandlingService,
             IEventAggregator eventAggregator)
             : base(eventAggregator, errorHandlingService)
@@ -108,6 +110,7 @@ namespace LYBT.Desktop.Patients.ViewModels
             _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
             _regionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            _printService = printService ?? throw new ArgumentNullException(nameof(printService));
 
             // 初始化命令
             LoadDataCommand = new DelegateCommand(async () => await LoadDataAsync());
@@ -255,17 +258,53 @@ namespace LYBT.Desktop.Patients.ViewModels
             Task.Run(async () => await LoadDataAsync());
         }
 
+        /// <summary>
+        /// P0-03新增：患者病历打印功能
+        /// Epic 03-P0-03: 实用化患者病历打印功能，专为小诊所设计
+        /// 使用专业的IPrescriptionPrintService打印患者档案和病历信息
+        /// </summary>
         private async Task PrintPatientAsync()
         {
+            if (Patient == null)
+            {
+                await _dialogService.ShowWarningAsync("患者信息不完整，无法打印", "提示");
+                return;
+            }
+
             try
             {
-                await _dialogService.ShowInformationAsync(
-                    "打印功能将在后续版本中提供\n\n当前支持的操作：\n• 查看患者详细信息\n• 编辑患者档案\n• 查看就诊历史",
-                    "功能说明");
+                // P0-03核心：使用专业打印服务生成患者病历预览
+                var previewResult = await _printService.PreviewPrescriptionAsync(Patient);
+                
+                if (!previewResult.Success)
+                {
+                    await _dialogService.ShowErrorAsync(previewResult.Message, "预览失败");
+                    return;
+                }
+
+                // P0-03核心：显示标准化病历打印预览对话框
+                var previewDialog = new LYBT.Desktop.Core.Views.PrintPreviewDialog(
+                    previewResult.Content, 
+                    _printService, 
+                    Patient);
+
+                // 设置对话框标题和属性
+                previewDialog.Title = $"患者病历打印预览 - {Patient.Name}";
+                previewDialog.Owner = System.Windows.Application.Current.MainWindow;
+                previewDialog.WindowStartupLocation = System.Windows.WindowStartupLocation.CenterOwner;
+
+                var dialogResult = previewDialog.ShowDialog();
+                
+                if (dialogResult == true)
+                {
+                    await _dialogService.ShowSuccessAsync(
+                        $"患者 {Patient.Name} 病历打印操作完成", 
+                        "打印成功");
+                }
             }
             catch (Exception ex)
             {
-                await _dialogService.ShowErrorAsync($"打印失败: {ex.Message}", "错误");
+                await _dialogService.ShowErrorAsync($"打印病历失败: {ex.Message}", "打印错误");
             }
         }
 

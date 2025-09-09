@@ -2,6 +2,7 @@
 using LYBT.Shared.Interfaces.Api;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
+using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Herbs.Services;
@@ -96,43 +97,201 @@ public class HerbBusinessService(
     /// <summary>
     /// 启用药材
     /// </summary>
-    public Task<ServiceResult<bool>> EnableAsync(Guid herbId)
+    public async Task<ServiceResult<bool>> EnableAsync(Guid herbId)
     {
-        return Task.FromResult(ServiceResult<bool>.Success(false));
+        _logger.LogInformation("启用药材: {HerbId}", herbId);
+
+        try
+        {
+            var refitResponse = await _herbApi.ToggleStatusAsync(herbId);
+
+            if (refitResponse.IsSuccessStatusCode)
+            {
+                _logger.LogInformation("药材启用成功: {HerbId}", herbId);
+                return ServiceResult<bool>.Success(true, "药材启用成功");
+            }
+            else
+            {
+                var errorMessage = $"药材启用失败: {refitResponse.ReasonPhrase}";
+                _logger.LogError(errorMessage);
+                return ServiceResult<bool>.Failure(errorMessage);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "药材启用异常: {HerbId}", herbId);
+            return ServiceResult<bool>.Failure($"药材启用失败: {ex.Message}");
+        }
     }
 
     /// <summary>
     /// 禁用药材
     /// </summary>
-    public Task<ServiceResult<bool>> DisableAsync(Guid herbId)
+    public async Task<ServiceResult<bool>> DisableAsync(Guid herbId)
     {
-        return Task.FromResult(ServiceResult<bool>.Success(false));
+        _logger.LogInformation("禁用药材: {HerbId}", herbId);
+
+        try
+        {
+            var refitResponse = await _herbApi.ToggleStatusAsync(herbId);
+
+            if (refitResponse.IsSuccessStatusCode)
+            {
+                _logger.LogInformation("药材禁用成功: {HerbId}", herbId);
+                return ServiceResult<bool>.Success(true, "药材禁用成功");
+            }
+            else
+            {
+                var errorMessage = $"药材禁用失败: {refitResponse.ReasonPhrase}";
+                _logger.LogError(errorMessage);
+                return ServiceResult<bool>.Failure(errorMessage);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "药材禁用异常: {HerbId}", herbId);
+            return ServiceResult<bool>.Failure($"药材禁用失败: {ex.Message}");
+        }
     }
 
     /// <summary>
     /// 删除药材
     /// </summary>
-    public Task<ServiceResult<bool>> DeleteAsync(Guid herbId)
+    public async Task<ServiceResult<bool>> DeleteAsync(Guid herbId)
     {
-        return Task.FromResult(ServiceResult<bool>.Success(false));
+        _logger.LogInformation("删除药材: {HerbId}", herbId);
+
+        try
+        {
+            // 注意：当前API接口中没有直接的删除方法，使用状态更新作为软删除
+            var statusDto = new CommonStatusUpdateDto 
+            { 
+                Id = herbId,
+                Status = (int)CommonStatus.Disabled // 将状态设为禁用作为软删除
+            };
+            
+            var refitResponse = await _herbApi.UpdateStatusAsync(statusDto);
+
+            if (refitResponse.IsSuccessStatusCode)
+            {
+                _logger.LogInformation("药材删除（软删除）成功: {HerbId}", herbId);
+                return ServiceResult<bool>.Success(true, "药材删除成功");
+            }
+            else
+            {
+                var errorMessage = $"药材删除失败: {refitResponse.ReasonPhrase}";
+                _logger.LogError(errorMessage);
+                return ServiceResult<bool>.Failure(errorMessage);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "药材删除异常: {HerbId}", herbId);
+            return ServiceResult<bool>.Failure($"药材删除失败: {ex.Message}");
+        }
     }
 
     /// <summary>
     /// 批量导入药材
     /// </summary>
-    public Task<ServiceResult<object>> ImportHerbsAsync(List<HerbCreateDto> herbs)
+    public async Task<ServiceResult<object>> ImportHerbsAsync(List<HerbCreateDto> herbs)
     {
+        ArgumentNullException.ThrowIfNull(herbs, nameof(herbs));
+
+        if (!herbs.Any())
+        {
+            return ServiceResult<object>.Failure("导入的药材列表为空");
+        }
+
         _logger.LogInformation("批量导入药材: {Count}个", herbs.Count);
-        return Task.FromResult(ServiceResult<object>.Failure("简单诊所版本暂不支持批量导入"));
+
+        try
+        {
+            // 将HerbCreateDto转换为HerbImportDto
+            var importDtos = herbs.Select(h => new HerbImportDto
+            {
+                Name = h.Name,
+                // TODO: 根据实际HerbImportDto结构进行完整映射
+                // 暂时使用简化映射，实际应包含更多属性
+            }).ToList();
+
+            var refitResponse = await _herbApi.ImportHerbsAsync(importDtos);
+
+            if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
+            {
+                var importedCount = refitResponse.Content;
+                _logger.LogInformation("药材批量导入成功: {ImportedCount}个", importedCount);
+
+                var result = new
+                {
+                    TotalCount = herbs.Count,
+                    SuccessCount = importedCount,
+                    FailedCount = herbs.Count - importedCount
+                };
+
+                return ServiceResult<object>.Success(result, $"药材批量导入完成，成功: {importedCount}个");
+            }
+            else
+            {
+                var errorMessage = $"药材批量导入失败: {refitResponse.ReasonPhrase}";
+                _logger.LogError(errorMessage);
+                return ServiceResult<object>.Failure(errorMessage);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "药材批量导入异常");
+            return ServiceResult<object>.Failure($"药材批量导入失败: {ex.Message}");
+        }
     }
 
     /// <summary>
     /// 导出药材数据
     /// </summary>
-    public Task<ServiceResult<byte[]>> ExportHerbsAsync(PagedQueryBaseDto query)
+    public async Task<ServiceResult<byte[]>> ExportHerbsAsync(PagedQueryBaseDto query)
     {
+        ArgumentNullException.ThrowIfNull(query, nameof(query));
+
         _logger.LogInformation("导出药材数据");
-        return Task.FromResult(ServiceResult<byte[]>.Failure("简单诊所版本暂不支持数据导出"));
+
+        try
+        {
+            var refitResponse = await _herbApi.ExportHerbsAsync();
+
+            if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
+            {
+                var herbsData = refitResponse.Content;
+                
+                // 简化实现：生成CSV格式数据
+                var csvContent = "药材名称,产地,功效,用法,状态\n";
+                foreach (var herb in herbsData)
+                {
+                    var name = herb.Name ?? "";
+                    var origin = herb.Origin ?? "未知";
+                    var effect = herb.Effect?.Replace(",", "；") ?? "";
+                    var usage = herb.Usage?.Replace(",", "；") ?? "";
+                    var status = herb.IsEnabled ? "启用" : "禁用";
+                    
+                    csvContent += $"{name},{origin},{effect},{usage},{status}\n";
+                }
+
+                var csvBytes = System.Text.Encoding.UTF8.GetBytes(csvContent);
+                _logger.LogInformation("药材数据导出成功: {Count}条", herbsData.Count);
+                
+                return ServiceResult<byte[]>.Success(csvBytes, $"药材数据导出完成，共 {herbsData.Count} 条");
+            }
+            else
+            {
+                var errorMessage = $"药材数据导出失败: {refitResponse.ReasonPhrase}";
+                _logger.LogError(errorMessage);
+                return ServiceResult<byte[]>.Failure(errorMessage);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "药材数据导出异常");
+            return ServiceResult<byte[]>.Failure($"药材数据导出失败: {ex.Message}");
+        }
     }
 
     #endregion 基础业务操作 - 简化实现
