@@ -2,6 +2,7 @@ using AutoMapper;
 using LYBT.Entities.Compatibility;
 using LYBT.Infrastructure.Data;
 using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Compatibility;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;

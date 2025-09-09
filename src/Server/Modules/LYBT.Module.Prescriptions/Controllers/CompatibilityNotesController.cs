@@ -1,8 +1,10 @@
 using LYBT.Module.Prescriptions.Services;
 using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Compatibility;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.Module.Prescriptions.Controllers
 {
