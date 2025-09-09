@@ -133,6 +133,7 @@ namespace LYBT.Desktop.Formula.ViewModels
                 {
                     // UltraThink v2.0: 直接使用FormulaDto
                     Formula = result.Data;
+
                     // TODO: 需要根据实际的FormulaDto结构来处理药材项目
                     // 暂时创建空的药材项目列表
                     HerbItems = new ObservableCollection<FormulaHerbItemDto>();
@@ -210,6 +211,7 @@ namespace LYBT.Desktop.Formula.ViewModels
                 if (result.IsSuccess)
                 {
                     StatusMessage = "验方保存成功";
+
                     // TODO: Close dialog with success
                 }
                 else

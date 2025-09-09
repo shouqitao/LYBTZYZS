@@ -1,4 +1,4 @@
-﻿using System.Windows.Input;
+using System.Windows.Input;
 using LYBT.Desktop.Core.Services;
 
 namespace LYBT.Desktop.Core.Interfaces.Services

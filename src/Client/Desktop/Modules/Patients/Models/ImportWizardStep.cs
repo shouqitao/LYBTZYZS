@@ -1,4 +1,4 @@
-﻿namespace LYBT.Desktop.Patients.Models
+namespace LYBT.Desktop.Patients.Models
 {
 
     /// <summary>

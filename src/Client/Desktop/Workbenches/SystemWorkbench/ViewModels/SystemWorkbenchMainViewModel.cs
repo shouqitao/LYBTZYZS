@@ -278,6 +278,7 @@ ViewModel实例化成功: True
                     {
                         region.Remove(view);
                     }
+
                     var clearMessage = $"🧹 已清除 {existingViews.Count} 个现有视图，准备加载 {item.ViewName} [{DateTime.Now:HH:mm:ss.fff}]";
                     System.Diagnostics.Debug.WriteLine(clearMessage);
                     File.AppendAllText(diagnosticPath, clearMessage + Environment.NewLine);
@@ -314,6 +315,7 @@ ViewModel实例化成功: True
                         }
                     }
                 }
+
                 System.Diagnostics.Debug.WriteLine(resultMessage);
                 File.AppendAllText(diagnosticPath, resultMessage + Environment.NewLine);
             }, parameters);

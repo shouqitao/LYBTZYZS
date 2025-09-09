@@ -42,6 +42,7 @@ namespace LYBT.Desktop.Formula.Views
             {
                 dialogAware.RequestClose -= OnRequestClose;
             }
+
             base.OnClosed(e);
         }
 

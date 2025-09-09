@@ -1,4 +1,4 @@
-﻿using LYBT.Shared.Models.Exceptions;
+using LYBT.Shared.Models.Exceptions;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 
@@ -23,8 +23,9 @@ namespace LYBT.WebAPI.Middleware
             CancellationToken cancellationToken)
         {
             // Epic 05-P0-02 增强：结构化异常日志记录
-            _logger.LogError(exception, 
-                "异常发生 - 类型: {ExceptionType}, 消息: {Message}, 路径: {RequestPath}, 方法: {HttpMethod}, 追踪ID: {TraceId}, 用户: {UserId}", 
+            _logger.LogError(
+                exception,
+                "异常发生 - 类型: {ExceptionType}, 消息: {Message}, 路径: {RequestPath}, 方法: {HttpMethod}, 追踪ID: {TraceId}, 用户: {UserId}",
                 exception.GetType().Name,
                 exception.Message,
                 httpContext.Request.Path,
@@ -45,7 +46,7 @@ namespace LYBT.WebAPI.Middleware
             problemDetails.Extensions["timestamp"] = DateTimeOffset.UtcNow;
             problemDetails.Extensions["requestMethod"] = httpContext.Request.Method;
             problemDetails.Extensions["userAgent"] = httpContext.Request.Headers.UserAgent.ToString();
-            
+
             // 添加用户上下文（如果已认证）
             if (httpContext.User?.Identity?.IsAuthenticated == true)
             {
@@ -152,6 +153,7 @@ namespace LYBT.WebAPI.Middleware
                     {
                         problemDetails.Detail = exception.Message;
                     }
+
                     break;
             }
 

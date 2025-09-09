@@ -103,6 +103,7 @@ namespace LYBT.WebAPI.Controllers
                 {
                     LogOperation("创建药材", result.Data, result.Data.Id);
                 }
+
                 return HandleServiceResult(result, "药材创建成功");
             }
             catch (Exception ex)
@@ -141,6 +142,7 @@ namespace LYBT.WebAPI.Controllers
                 {
                     LogOperation("更新药材信息", result.Data, id);
                 }
+
                 return HandleServiceResult(result, "药材信息更新成功");
             }
             catch (Exception ex)

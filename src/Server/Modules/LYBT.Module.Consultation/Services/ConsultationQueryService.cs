@@ -249,11 +249,13 @@ namespace LYBT.Module.Consultation.Services
                     {
                         Inspection = consultation.Inspection // 实体中的望诊字段
                     },
+
                     // 闻诊 - 听声音、嗅气味
                     Listening = new
                     {
                         AuscultationOlfaction = consultation.AuscultationOlfaction // 实体中的闻诊字段
                     },
+
                     // 问诊 - 询问病情
                     Asking = new
                     {
@@ -261,6 +263,7 @@ namespace LYBT.Module.Consultation.Services
                         PresentIllness = consultation.PresentIllness,
                         Inquiry = consultation.Inquiry // 实体中的问诊字段，替代PastHistory
                     },
+
                     // 切诊 - 脉诊等
                     Palpation = new
                     {

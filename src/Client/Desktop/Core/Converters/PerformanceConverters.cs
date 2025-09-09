@@ -24,11 +24,13 @@ namespace LYBT.Desktop.Core.Converters
                 {
                     return Color.FromRgb(76, 175, 80); // #4CAF50 - 绿色
                 }
+
                 // 库存不足 (橙色)
                 else if (currentStock >= minStock)
                 {
                     return Color.FromRgb(255, 152, 0); // #FF9800 - 橙色
                 }
+
                 // 库存严重不足 (红色)
                 else
                 {
@@ -62,11 +64,13 @@ namespace LYBT.Desktop.Core.Converters
                 {
                     return Color.FromRgb(63, 81, 181); // #3F51B5 - 深蓝色
                 }
+
                 // 中等价格 (蓝色)
                 else if (price >= 20m)
                 {
                     return Color.FromRgb(33, 150, 243); // #2196F3 - 蓝色
                 }
+
                 // 低价格 (绿色)
                 else
                 {

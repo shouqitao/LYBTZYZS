@@ -266,6 +266,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             {
                 _logger.LogError(ex, "添加药材时发生错误");
             }
+
             return Task.CompletedTask;
         }
 
@@ -293,6 +294,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             {
                 _logger.LogError(ex, "导入验方时发生错误");
             }
+
             return Task.CompletedTask;
         }
 
@@ -685,6 +687,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             {
                 _logger.LogError(ex, "加载医疗案例信息失败: {MedicalCaseId}", medicalCaseId);
             }
+
             return Task.CompletedTask;
         }
 

@@ -23,6 +23,7 @@ namespace LYBT.Desktop.Services
             {
                 return false;
             }
+
             // 只有sysadmin有所有权限
             return user.Username == "sysadmin";
         }

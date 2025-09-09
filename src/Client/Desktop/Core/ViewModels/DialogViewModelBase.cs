@@ -86,6 +86,7 @@ namespace LYBT.Desktop.Core.ViewModels
                     DialogResult = true;
                     RequestClose?.Invoke(true);
                 }
+
                 return result;
             }
             catch (Exception ex)

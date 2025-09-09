@@ -58,6 +58,7 @@
             {
                 return Equals(Value, other.Value);
             }
+
             return false;
         }
 

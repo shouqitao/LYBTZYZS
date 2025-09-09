@@ -1,4 +1,4 @@
-﻿using LYBT.Shared.Models.Contracts.Users;
+using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Extensions;
 using Prism.Mvvm;

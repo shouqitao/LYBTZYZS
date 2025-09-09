@@ -8,14 +8,14 @@ namespace LYBT.Desktop.Auth.Services;
 
 /// <summary>
 /// 认证服务适配器 - 解决DT-001服务接口职责混乱问题
-/// 
+///
 /// 架构职责: 将IAuthService业务API接口适配为IAuthenticationService前端认证接口
 /// 设计模式: 适配器模式 (Adapter Pattern)
-/// 优化效果: 
+/// 优化效果:
 /// - 职责分离: AuthModule专注IAuthService业务API，适配器专注UI认证
 /// - 降低耦合: UI层只依赖IAuthenticationService，不直接依赖业务API
 /// - 简化接口: 消除双接口实现的复杂适配逻辑
-/// 
+///
 /// 适用场景: 小型诊所20人以下场景，简化认证流程
 /// </summary>
 public class AuthServiceAdapter(IAuthService authService) : IAuthenticationService

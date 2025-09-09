@@ -177,6 +177,7 @@ namespace LYBT.Desktop.Core.ViewModels
         {
             base.RaiseCanExecuteChanged();
             ConfirmCommand.RaiseCanExecuteChanged();
+
             // CancelCommand通常总是可用，不需要更新
         }
 
@@ -186,6 +187,7 @@ namespace LYBT.Desktop.Core.ViewModels
         protected override void OnLoadingStateChanged(bool isLoading)
         {
             base.OnLoadingStateChanged(isLoading);
+
             // 加载时通常禁用确认，但允许取消
         }
 

@@ -152,6 +152,7 @@ namespace LYBT.Desktop.Core.ViewModels.Base
         private void ExecuteRefresh()
         {
             System.Diagnostics.Debug.WriteLine("🔄 RefreshCommand 被点击 - ExecuteRefresh执行");
+
             // 使用安全的fire-and-forget模式，异常由ExecuteRefreshAsync处理
             _ = ExecuteRefreshAsync();
         }
@@ -230,6 +231,7 @@ namespace LYBT.Desktop.Core.ViewModels.Base
                     System.Windows.Application.Current.Dispatcher.Invoke(() =>
                     {
                         Items = new ObservableCollection<TItem>(result.Data.Items);
+
                         // 强制触发UI更新通知
                         RaisePropertyChanged(nameof(Items));
                     });

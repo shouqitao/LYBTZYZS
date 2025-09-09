@@ -77,6 +77,7 @@ namespace LYBT.Desktop.Core.Events
                         Name = data.PatientName,
                         IdNumber = data.PatientIdNumber,
                         BirthDate = data.PatientAge > 0 ? DateTime.Today.AddYears(-data.PatientAge) : null
+
                         // 转换其他必要字段
                     };
 

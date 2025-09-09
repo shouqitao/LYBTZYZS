@@ -161,6 +161,7 @@ namespace LYBT.Desktop.Core.Controls
             {
                 return current == targetFeedbackType ? Visibility.Visible : Visibility.Collapsed;
             }
+
             return Visibility.Collapsed;
         }
 

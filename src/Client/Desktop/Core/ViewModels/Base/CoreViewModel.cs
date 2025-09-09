@@ -218,6 +218,7 @@ public abstract class CoreViewModel(IEventAggregator eventAggregator) : Bindable
             {
                 OnDisposing();
             }
+
             _disposed = true;
         }
     }

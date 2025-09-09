@@ -1,4 +1,4 @@
-﻿using LYBT.Desktop.Formula.Interfaces;
+using LYBT.Desktop.Formula.Interfaces;
 using LYBT.Shared.Interfaces.Api;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
@@ -284,7 +284,7 @@ public class FormulaBusinessService(
         {
             // 调用核心创建方法
             var result = await CreateFormulaAsync(createDto);
-            
+
             if (result.IsSuccess && result.Data != null)
             {
                 _logger.LogInformation("验方创建业务流程完成: {FormulaId}", result.Data.Id);
@@ -311,7 +311,7 @@ public class FormulaBusinessService(
         {
             // 调用核心更新方法
             var result = await UpdateFormulaAsync(id, updateDto);
-            
+
             if (result.IsSuccess && result.Data != null)
             {
                 _logger.LogInformation("验方更新业务流程完成: {FormulaId}", result.Data.Id);

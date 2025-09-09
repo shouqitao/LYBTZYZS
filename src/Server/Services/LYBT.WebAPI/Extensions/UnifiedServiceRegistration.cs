@@ -144,14 +144,14 @@ public static class UnifiedServiceRegistration
         // 临时注释掉缺失的服务以完成核心功能测试
         // services.AddScoped<IPasswordValidationService, PasswordValidationService>();
         // services.AddScoped<ISecurityConfigurationValidator, SecurityConfigurationValidator>();
-        
+
         // Epic 05-P0-03: 注册数据安全服务
         services.AddScoped<LYBT.Infrastructure.Security.IDataEncryptionService, LYBT.Infrastructure.Security.DataEncryptionService>();
         services.AddScoped<LYBT.Infrastructure.Security.ISecurityAuditService, LYBT.Infrastructure.Security.SecurityAuditService>();
-        
+
         // Epic 05-P0-03: 注册HTTP上下文访问器（审计服务需要）
         services.AddHttpContextAccessor();
-        
+
         // Epic 05-P0-03: 注册敏感数据拦截器
         services.AddScoped<LYBT.Infrastructure.Security.SensitiveDataInterceptor>();
         services.AddScoped<LYBT.Infrastructure.Security.SensitiveDataQueryInterceptor>();
@@ -396,6 +396,7 @@ public static class UnifiedServiceRegistration
                     .ToArray();
                 return $"{genericTypeName}Of{string.Join("And", genericArgs)}";
             }
+
             return type.Name.Replace("[]", "Array");
         }
     }

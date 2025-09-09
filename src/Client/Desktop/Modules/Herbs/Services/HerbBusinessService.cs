@@ -164,12 +164,12 @@ public class HerbBusinessService(
         try
         {
             // 注意：当前API接口中没有直接的删除方法，使用状态更新作为软删除
-            var statusDto = new CommonStatusUpdateDto 
-            { 
+            var statusDto = new CommonStatusUpdateDto
+            {
                 Id = herbId,
                 Status = (int)CommonStatus.Disabled // 将状态设为禁用作为软删除
             };
-            
+
             var refitResponse = await _herbApi.UpdateStatusAsync(statusDto);
 
             if (refitResponse.IsSuccessStatusCode)
@@ -211,6 +211,7 @@ public class HerbBusinessService(
             var importDtos = herbs.Select(h => new HerbImportDto
             {
                 Name = h.Name,
+
                 // TODO: 根据实际HerbImportDto结构进行完整映射
                 // 暂时使用简化映射，实际应包含更多属性
             }).ToList();
@@ -261,23 +262,23 @@ public class HerbBusinessService(
             if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
             {
                 var herbsData = refitResponse.Content;
-                
+
                 // 简化实现：生成CSV格式数据
                 var csvContent = "药材名称,产地,功效,用法,状态\n";
                 foreach (var herb in herbsData)
                 {
-                    var name = herb.Name ?? "";
+                    var name = herb.Name ?? string.Empty;
                     var origin = herb.Origin ?? "未知";
-                    var effect = herb.Effect?.Replace(",", "；") ?? "";
-                    var usage = herb.Usage?.Replace(",", "；") ?? "";
+                    var effect = herb.Effect?.Replace(",", "；") ?? string.Empty;
+                    var usage = herb.Usage?.Replace(",", "；") ?? string.Empty;
                     var status = herb.IsEnabled ? "启用" : "禁用";
-                    
+
                     csvContent += $"{name},{origin},{effect},{usage},{status}\n";
                 }
 
                 var csvBytes = System.Text.Encoding.UTF8.GetBytes(csvContent);
                 _logger.LogInformation("药材数据导出成功: {Count}条", herbsData.Count);
-                
+
                 return ServiceResult<byte[]>.Success(csvBytes, $"药材数据导出完成，共 {herbsData.Count} 条");
             }
             else

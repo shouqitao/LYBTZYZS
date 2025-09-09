@@ -96,7 +96,7 @@ public partial class App : PrismApplication
         {
             // 3.1 服务注册验证（移到后台线程避免UI阻塞）
             await ValidateServiceRegistrationsAsync().ConfigureAwait(false);
-            
+
             // 3.2 应用预热优化（继续后台执行）
             await InitializeApplicationWarmupAsync().ConfigureAwait(false);
         });
@@ -116,6 +116,7 @@ public partial class App : PrismApplication
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"应用预热失败: {ex.Message}");
+
             // 预热失败不影响主流程，仅记录日志
         }
     }
@@ -161,7 +162,7 @@ public partial class App : PrismApplication
             if (validator is ModuleRegistrationValidator moduleValidator)
             {
                 // 在后台线程执行服务验证
-                var validationResult = await Task.Run(() => 
+                var validationResult = await Task.Run(() =>
                     moduleValidator.ValidateRegistrations(Container)).ConfigureAwait(false);
 
                 if (validationResult.IsAllSuccessful)
@@ -179,7 +180,7 @@ public partial class App : PrismApplication
                 }
 
                 // 在后台线程生成诊断报告
-                var report = await Task.Run(() => 
+                var report = await Task.Run(() =>
                     moduleValidator.CreateDiagnosticReport()).ConfigureAwait(false);
                 logger.LogDebug("服务注册诊断报告\n{Report}", report);
             }
@@ -206,6 +207,7 @@ public partial class App : PrismApplication
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"简化模块协调器初始化异常: {ex}");
+
             // 模块协调器初始化失败不应阻塞应用启动
         }
     }
@@ -332,6 +334,7 @@ public partial class App : PrismApplication
         {
             ModuleName = moduleName,
             ModuleType = moduleType.AssemblyQualifiedName,
+
             // 设为按需加载，登录后根据角色决定是否立即加载
             InitializationMode = InitializationMode.OnDemand
         };

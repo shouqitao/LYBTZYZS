@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using LYBT.Entities.Patients;
 using LYBT.Infrastructure.Data;
 using LYBT.Module.Patients.Interfaces;

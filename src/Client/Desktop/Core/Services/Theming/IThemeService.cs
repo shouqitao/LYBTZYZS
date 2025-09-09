@@ -1,4 +1,4 @@
-﻿namespace LYBT.Desktop.Core.Services.Theming
+namespace LYBT.Desktop.Core.Services.Theming
 {
 
     /// <summary>

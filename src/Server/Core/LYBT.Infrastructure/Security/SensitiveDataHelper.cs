@@ -1,6 +1,6 @@
 using System.Reflection;
-using Microsoft.Extensions.Logging;
 using LYBT.Entities.Attributes;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.Infrastructure.Security
 {
@@ -18,7 +18,7 @@ namespace LYBT.Infrastructure.Security
         /// <param name="encryptionService">加密服务</param>
         /// <param name="logger">日志记录器</param>
         /// <returns>解密后的实体</returns>
-        public static T DecryptSensitiveData<T>(T entity, IDataEncryptionService encryptionService, ILogger? logger = null) 
+        public static T DecryptSensitiveData<T>(T entity, IDataEncryptionService encryptionService, ILogger? logger = null)
             where T : class
         {
             if (entity == null || encryptionService == null)
@@ -44,8 +44,9 @@ namespace LYBT.Infrastructure.Security
                     {
                         var decryptedValue = encryptionService.Decrypt(encryptedValue, sensitiveAttr.DataType);
                         property.SetValue(entity, decryptedValue);
-                        
-                        logger?.LogDebug("已解密实体 {EntityType} 的敏感属性 {Property}", 
+
+                        logger?.LogDebug(
+                            "已解密实体 {EntityType} 的敏感属性 {Property}",
                             entityType.Name, property.Name);
                     }
                     catch (Exception ex)
@@ -124,14 +125,15 @@ namespace LYBT.Infrastructure.Security
                         var maskedValue = encryptionService.MaskData(valueToMask, sensitiveAttr.MaskingMode);
                         property.SetValue(entity, maskedValue);
 
-                        logger?.LogDebug("已脱敏实体 {EntityType} 的敏感属性 {Property}",
+                        logger?.LogDebug(
+                            "已脱敏实体 {EntityType} 的敏感属性 {Property}",
                             entityType.Name, property.Name);
                     }
                     catch (Exception ex)
                     {
                         logger?.LogWarning(ex, "脱敏实体 {EntityType} 的属性 {Property} 失败",
                             entityType.Name, property.Name);
-                        
+
                         // 如果脱敏失败，至少显示简单的掩码
                         property.SetValue(entity, "***");
                     }

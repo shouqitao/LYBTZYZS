@@ -1,4 +1,4 @@
-﻿namespace LYBT.Desktop.Core.Models.Prescriptions
+namespace LYBT.Desktop.Core.Models.Prescriptions
 {
 
     /// <summary>

@@ -31,6 +31,7 @@ namespace LYBT.Module.Prescriptions.Mapping
             // 创建映射 - 忽略自动字段
             CreateMap<PrescriptionCreateDto, Prescription>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore());
+
             // CreateTime字段已删除（UltraThink v2.0简化）
             // .ForMember(dest => dest.CreateTime, opt => opt.Ignore());
             CreateMap<PrescriptionItemCreateDto, PrescriptionItemModel>()

@@ -140,6 +140,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components
                 if (success)
                 {
                     _logger.LogInformation("处方保存成功");
+
                     // 可以触发保存成功事件
                     OnPrescriptionSaved?.Invoke();
                 }
@@ -231,6 +232,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components
                         Quantity = 10m, // 默认数量
                         Unit = herbItem.Unit ?? "g",
                         UnitPrice = herbItem.Price
+
                         // Subtotal会自动计算，无需手动赋值
                     };
 
@@ -318,6 +320,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components
                         Quantity = item.Quantity,
                         Unit = item.Unit,
                         UnitPrice = item.UnitPrice
+
                         // Subtotal会自动计算，无需手动赋值
                     };
 
@@ -398,6 +401,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components
                         Quantity = item.Quantity,
                         Unit = item.Unit,
                         UnitPrice = item.UnitPrice
+
                         // Subtotal会自动计算，无需手动赋值
                     };
 

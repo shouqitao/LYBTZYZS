@@ -245,28 +245,23 @@ namespace LYBT.Desktop.Core.ViewModels.Prescriptions
                 "Primary" => (
                     new SolidColorBrush(Color.FromRgb(0, 123, 255)),
                     new SolidColorBrush(Colors.White),
-                    new SolidColorBrush(Color.FromRgb(0, 123, 255))
-                ),
+                    new SolidColorBrush(Color.FromRgb(0, 123, 255))),
                 "Success" => (
                     new SolidColorBrush(Color.FromRgb(40, 167, 69)),
                     new SolidColorBrush(Colors.White),
-                    new SolidColorBrush(Color.FromRgb(40, 167, 69))
-                ),
+                    new SolidColorBrush(Color.FromRgb(40, 167, 69))),
                 "Warning" => (
                     new SolidColorBrush(Color.FromRgb(255, 193, 7)),
                     new SolidColorBrush(Color.FromRgb(33, 37, 41)),
-                    new SolidColorBrush(Color.FromRgb(255, 193, 7))
-                ),
+                    new SolidColorBrush(Color.FromRgb(255, 193, 7))),
                 "Danger" => (
                     new SolidColorBrush(Color.FromRgb(220, 53, 69)),
                     new SolidColorBrush(Colors.White),
-                    new SolidColorBrush(Color.FromRgb(220, 53, 69))
-                ),
+                    new SolidColorBrush(Color.FromRgb(220, 53, 69))),
                 _ => (
                     new SolidColorBrush(Color.FromRgb(108, 117, 125)),
                     new SolidColorBrush(Colors.White),
-                    new SolidColorBrush(Color.FromRgb(108, 117, 125))
-                )
+                    new SolidColorBrush(Color.FromRgb(108, 117, 125)))
             };
         }
 

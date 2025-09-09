@@ -187,6 +187,7 @@ namespace LYBT.Desktop.Core.ViewModels.Base
                     return defaultValue;
                 }
             }
+
             return defaultValue;
         }
 

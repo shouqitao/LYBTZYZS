@@ -135,6 +135,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                     if (targetHerb != null)
                     {
                         SelectedHerb = targetHerb;
+
                         // 使用选中药材的单位作为默认值（如果参数没有提供单位）
                         if (!parameters.ContainsKey("Unit") && !string.IsNullOrEmpty(targetHerb.Unit))
                         {
@@ -224,6 +225,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                 HerbName = SelectedHerb.Name,
                 Quantity = Quantity,
                 UnitPrice = SelectedHerb.Price,
+
                 // UltraThink v2.0: 使用正确的属性名
                 Usage = SelectedHerb.Spec ?? string.Empty,
                 Unit = SelectedHerb.Unit

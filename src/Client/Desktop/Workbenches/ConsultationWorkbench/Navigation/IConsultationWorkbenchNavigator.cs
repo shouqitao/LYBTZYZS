@@ -1,4 +1,4 @@
-﻿namespace LYBT.Desktop.Workbench.Consultation.Navigation
+namespace LYBT.Desktop.Workbench.Consultation.Navigation
 {
 
     /// <summary>

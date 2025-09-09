@@ -1,4 +1,4 @@
-﻿using LYBT.Entities.Prescriptions;
+using LYBT.Entities.Prescriptions;
 
 namespace LYBT.Module.Prescriptions.Interfaces
 {

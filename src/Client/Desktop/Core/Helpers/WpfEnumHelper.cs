@@ -28,6 +28,7 @@ namespace LYBT.Client.Core.Helpers
             {
                 list.Add(new EnumItem<T>(value, value.GetDescription()));
             }
+
             return list;
         }
 

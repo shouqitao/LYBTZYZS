@@ -230,6 +230,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             {
                 return HerbId == other.HerbId;
             }
+
             return false;
         }
 

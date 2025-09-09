@@ -1,4 +1,4 @@
-﻿using System.Data;
+using System.Data;
 using AutoMapper;
 using LYBT.Desktop.Core.Helpers;
 using LYBT.Desktop.Core.Interfaces.Services;

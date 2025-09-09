@@ -118,6 +118,7 @@ public static class UnifiedApplicationInitialization
             {
                 throw;
             }
+
             logger?.LogWarning("⚠️ 开发环境中配置验证失败，但继续启动");
         }
 
@@ -252,6 +253,7 @@ public static class UnifiedApplicationInitialization
         AppDomain.CurrentDomain.ProcessExit += (_, __) =>
         {
             cancellationTokenSource.Cancel();
+
             // 等待应用优雅关闭并确保资源释放
             app.StopAsync().GetAwaiter().GetResult();
         };

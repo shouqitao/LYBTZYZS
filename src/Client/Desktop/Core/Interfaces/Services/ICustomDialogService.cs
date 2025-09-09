@@ -1,4 +1,4 @@
-﻿using System.Windows;
+using System.Windows;
 using LYBT.Desktop.Core.Models.Common;
 
 namespace LYBT.Desktop.Core.Interfaces.Services

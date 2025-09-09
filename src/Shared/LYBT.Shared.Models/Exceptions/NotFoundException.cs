@@ -1,4 +1,4 @@
-﻿namespace LYBT.Shared.Models.Exceptions;
+namespace LYBT.Shared.Models.Exceptions;
 
 /// <summary>
 /// 资源未找到异常 - UltraThink统一异常体系

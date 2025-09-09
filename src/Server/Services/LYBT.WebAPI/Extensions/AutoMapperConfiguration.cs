@@ -1,4 +1,4 @@
-﻿namespace LYBT.WebAPI.Extensions
+namespace LYBT.WebAPI.Extensions
 {
 
     /// <summary>

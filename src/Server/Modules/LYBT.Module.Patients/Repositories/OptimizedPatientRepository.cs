@@ -108,6 +108,7 @@ namespace LYBT.Module.Patients.Repositories
             {
                 query = query.Where(p => p.Status == CommonStatus.Enabled);
             }
+
             return await query.FirstOrDefaultAsync();
         }
 
@@ -123,6 +124,7 @@ namespace LYBT.Module.Patients.Repositories
             }
 
             patient.Status = CommonStatus.Enabled;
+
             // UltraThink v2.0: 删除UpdateTime字段
             return await _context.SaveChangesAsync() > 0;
         }
@@ -139,6 +141,7 @@ namespace LYBT.Module.Patients.Repositories
             }
 
             patient.Status = CommonStatus.Disabled;
+
             // UltraThink v2.0: 删除UpdateTime字段
             return await _context.SaveChangesAsync() > 0;
         }
@@ -207,6 +210,7 @@ namespace LYBT.Module.Patients.Repositories
             {
                 query = query.Where(p => p.Id != excludeId.Value);
             }
+
             return await query.AnyAsync();
         }
 
@@ -220,6 +224,7 @@ namespace LYBT.Module.Patients.Repositories
             {
                 query = query.Where(p => p.Id != excludeId.Value);
             }
+
             return await query.AnyAsync();
         }
 
@@ -446,6 +451,7 @@ namespace LYBT.Module.Patients.Repositories
                 .GroupBy(p => EF.Functions.DateDiffYear(p.BirthDate, DateTime.Now) / 10 * 10)
                 .Select(g => new { AgeGroup = g.Key, Count = g.Count() })
                 .ToDictionaryAsync(x => $"{x.AgeGroup}-{x.AgeGroup + 9}", x => x.Count, cancellationToken);
+
             // 性别分布
             var genderDistributionTask = query
                 .GroupBy(p => p.Gender)

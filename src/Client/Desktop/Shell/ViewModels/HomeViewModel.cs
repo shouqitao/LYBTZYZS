@@ -152,6 +152,7 @@ namespace LYBT.Desktop.Shell.ViewModels
         public DelegateCommand<TodayPatientDto> StartConsultationForPatientCommand { get; }
         public DelegateCommand<TodayPatientDto> ViewPatientDetailsCommand { get; }
         public DelegateCommand RefreshTodayPatientsCommand { get; }
+
         // 非核心功能命令已清理
         #endregion 命令
 
@@ -197,8 +198,10 @@ namespace LYBT.Desktop.Shell.ViewModels
             // 今日患者操作命令
             StartConsultationForPatientCommand = new DelegateCommand<TodayPatientDto>(async patient => await StartConsultationForPatientAsync(patient), CanExecutePatientCommand);
             ViewPatientDetailsCommand = new DelegateCommand<TodayPatientDto>(ViewPatientDetails, CanExecutePatientCommand);
+
             // Epic 04-P0-04: 界面响应性提升 - 优化刷新命令，使用统一的加载方法
             RefreshTodayPatientsCommand = new DelegateCommand(async () => await LoadTodayDataAsync());
+
             // 非核心功能命令初始化已清理
 
             // 初始化定时器
@@ -299,14 +302,14 @@ namespace LYBT.Desktop.Shell.ViewModels
             {
                 // 显示加载状态
                 StatusMessage = "正在加载今日工作台数据...";
-                
+
                 // 并行加载数据以提升响应性
                 var statisticsTask = LoadTodayStatisticsAsync();
                 var patientsTask = LoadTodayPatientsAsync();
-                
+
                 // 等待所有任务完成，但在UI线程上更新状态
                 await Task.WhenAll(statisticsTask, patientsTask);
-                
+
                 StatusMessage = "今日数据加载完成";
                 LogInfo("今日工作台数据加载完成");
             }
@@ -314,7 +317,7 @@ namespace LYBT.Desktop.Shell.ViewModels
             {
                 LogError(ex, "加载今日数据失败");
                 StatusMessage = "数据加载失败，已设置默认值";
-                
+
                 // Epic 04-P0-04: 优雅的错误恢复 - 设置合理的默认值
                 Application.Current.Dispatcher.Invoke(() =>
                 {
@@ -323,7 +326,7 @@ namespace LYBT.Desktop.Shell.ViewModels
                     TodayTotalAmount = 0;
                     TodayPatients.Clear();
                 });
-                
+
                 ShowWarning("今日数据加载失败，请稍后重试或使用刷新按钮");
             }
         }
@@ -369,24 +372,24 @@ namespace LYBT.Desktop.Shell.ViewModels
                 // 获取今日有就诊记录的患者
                 var todayStart = DateTime.Today;
                 var todayEnd = DateTime.Today.AddDays(1).AddTicks(-1);
-                
+
                 var query = new LYBT.Shared.Models.Contracts.Common.PagedQueryBaseDto
                 {
                     PageIndex = 1,
                     PageSize = 100, // 增加页面大小以获取更多今日数据
                     IsDescending = true
                 };
-                
+
                 var medicalCasesResult = await _medicalCaseService.GetPagedAsync(query);
-                
+
                 if (medicalCasesResult?.IsSuccess == true && medicalCasesResult.Data?.Items != null)
                 {
                     var todayCases = medicalCasesResult.Data.Items
                         .Where(c => c.CreateTime >= todayStart && c.CreateTime <= todayEnd)
                         .ToList();
-                    
+
                     var todayPatientsList = new List<TodayPatientDto>();
-                    
+
                     if (todayCases.Any())
                     {
                         // 批量获取患者信息，避免逐个查询
@@ -426,6 +429,7 @@ namespace LYBT.Desktop.Shell.ViewModels
                                     Status = GetCaseStatusText(medicalCase.CaseStatus),
                                     StatusColor = GetCaseStatusColor(medicalCase.CaseStatus),
                                     CreateTime = medicalCase.CreateTime,
+
                                     // 添加更多有用信息
                                     DoctorName = medicalCase.DoctorName ?? "未指定",
                                     CaseStatus = medicalCase.CaseStatus
@@ -434,11 +438,12 @@ namespace LYBT.Desktop.Shell.ViewModels
                             }
                         }
                     }
-                    
+
                     // 更新UI（需要在UI线程上执行）
                     Application.Current.Dispatcher.Invoke(() =>
                     {
                         TodayPatients.Clear();
+
                         // 按状态优先级排序：诊疗中 > 已挂号 > 已完成 > 已取消
                         var sortedPatients = todayPatientsList
                             .OrderBy(p => GetStatusPriority(p.CaseStatus))
@@ -452,7 +457,7 @@ namespace LYBT.Desktop.Shell.ViewModels
                         // 更新统计数据
                         UpdateTodayStatisticsFromPatients(todayPatientsList);
                     });
-                    
+
                     LogInfo($"今日患者列表加载完成，共 {todayPatientsList.Count} 人");
                 }
             }
@@ -492,7 +497,7 @@ namespace LYBT.Desktop.Shell.ViewModels
                 // 待诊人数 = 已挂号 + 诊疗中
                 TodayInProgressCount = registeredCount + inConsultationCount;
                 TodayCompletedCount = completedCount;
-                
+
                 LogInfo($"今日统计更新: 待诊 {TodayInProgressCount} 人, 已完成 {TodayCompletedCount} 人");
             }
             catch (Exception ex)
@@ -500,7 +505,6 @@ namespace LYBT.Desktop.Shell.ViewModels
                 LogError(ex, "更新今日统计数据失败");
             }
         }
-
 
         private string GetCaseStatusText(LYBT.Shared.Models.Enums.MedicalCaseStatus status)
         {
@@ -641,10 +645,10 @@ namespace LYBT.Desktop.Shell.ViewModels
                 };
 
                 _regionManager.RequestNavigate(RegionNames.ContentRegion, "ConsultationMainView", navigationParameters);
-                
+
                 StatusMessage = $"已开始为患者 {patient.Name} 诊疗";
                 ShowSuccess($"已开始为患者 {patient.Name} 诊疗");
-                
+
                 LogInfo($"开始为患者 {patient.Name}(ID: {patient.Id}) 诊疗，医案ID: {patient.MedicalCaseId}");
             }
             catch (Exception ex)
@@ -676,10 +680,10 @@ namespace LYBT.Desktop.Shell.ViewModels
                 };
 
                 _regionManager.RequestNavigate(RegionNames.ContentRegion, "PatientManagementView", navigationParameters);
-                
+
                 StatusMessage = $"已打开患者 {patient.Name} 的详细信息";
                 ShowInfo($"已打开患者 {patient.Name} 的详细信息");
-                
+
                 LogInfo($"查看患者详情: {patient.Name}(ID: {patient.Id})");
             }
             catch (Exception ex)
@@ -705,6 +709,7 @@ namespace LYBT.Desktop.Shell.ViewModels
                 {
                     Interval = TimeSpan.FromMinutes(5)
                 };
+
                 // Epic 04-P0-04: 界面响应性提升 - 优化定时器刷新，避免UI阻塞
                 _refreshTimer.Tick += async (s, e) =>
                 {
@@ -734,6 +739,7 @@ namespace LYBT.Desktop.Shell.ViewModels
         {
             // 停止定时器
             _timer?.Stop();
+
             // DT-013: 同时停止刷新定时器，防止内存泄漏
             _refreshTimer?.Stop();
             LogInfo("HomeViewModel 导航离开");
@@ -750,7 +756,7 @@ namespace LYBT.Desktop.Shell.ViewModels
                 // DT-013: 停止所有定时器，防止内存泄漏
                 _timer?.Stop();
                 _refreshTimer?.Stop();
-                
+
                 System.Diagnostics.Debug.WriteLine("🧹 [HomeViewModel] 所有定时器已停止 - 内存泄漏风险已消除");
                 LogInfo("HomeViewModel 定时器已停止");
             }

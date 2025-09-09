@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using LYBT.Infrastructure.Transactions;
 using LYBT.Infrastructure.Transactions.Steps;
 using LYBT.Module.MedicalCase.Transactions.Steps;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.Module.MedicalCase.Transactions
 {
@@ -20,7 +20,7 @@ namespace LYBT.Module.MedicalCase.Transactions
         private readonly ILogger<StartConsultationTransaction> _logger;
 
         public StartConsultationTransaction(
-            IServiceProvider serviceProvider, 
+            IServiceProvider serviceProvider,
             ILogger<StartConsultationTransaction> logger)
         {
             _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
@@ -65,7 +65,8 @@ namespace LYBT.Module.MedicalCase.Transactions
             ConsultationTransactionOptions? options = null,
             CancellationToken cancellationToken = default)
         {
-            if (context == null) throw new ArgumentNullException(nameof(context));
+            if (context == null)
+                throw new ArgumentNullException(nameof(context));
 
             // 验证上下文
             var (isValid, errors) = context.ValidateContext();
@@ -85,7 +86,7 @@ namespace LYBT.Module.MedicalCase.Transactions
 
             // 创建事务定义
             var definition = CreateDefinition(options);
-            
+
             // 获取事务协调器并执行
             var coordinator = _serviceProvider.GetRequiredService<ITransactionCoordinator<ConsultationTransactionContext>>();
             return await coordinator.ExecuteAsync(definition, context, cancellationToken);
@@ -311,7 +312,8 @@ namespace LYBT.Module.MedicalCase.Transactions
             try
             {
                 // 发送诊疗开始通知
-                _logger.LogInformation("Sending consultation start notification for patient: {PatientId}, doctor: {DoctorId}", 
+                _logger.LogInformation(
+                    "Sending consultation start notification for patient: {PatientId}, doctor: {DoctorId}",
                     context.PatientId, context.DoctorId);
 
                 // 这里可以集成实际的通知系统

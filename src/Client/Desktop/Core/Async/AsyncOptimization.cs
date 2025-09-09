@@ -55,8 +55,7 @@ namespace LYBT.Desktop.Core.Async
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 var batchResults = await Task.WhenAll(
-                    batch.Select(item => selector(item))
-                ).ConfigureAwait(false);
+                    batch.Select(item => selector(item))).ConfigureAwait(false);
                 results.AddRange(batchResults);
             }
 
@@ -76,8 +75,7 @@ namespace LYBT.Desktop.Core.Async
 
             var completedTask = await Task.WhenAny(
                 task,
-                Task.Delay(Timeout.Infinite, linkedCts.Token)
-            ).ConfigureAwait(false);
+                Task.Delay(Timeout.Infinite, linkedCts.Token)).ConfigureAwait(false);
 
             if (completedTask == task)
             {
@@ -202,6 +200,7 @@ namespace LYBT.Desktop.Core.Async
                     results.Add(item);
                 }
             }
+
             return results;
         }
 
@@ -219,6 +218,7 @@ namespace LYBT.Desktop.Core.Async
                     return item;
                 }
             }
+
             return null;
         }
     }

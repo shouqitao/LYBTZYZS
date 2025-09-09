@@ -1,4 +1,4 @@
-﻿using LYBT.Desktop.Core.Constants;
+using LYBT.Desktop.Core.Constants;
 using LYBT.Desktop.Workbench.Consultation.Navigation;
 using Prism.Regions;
 

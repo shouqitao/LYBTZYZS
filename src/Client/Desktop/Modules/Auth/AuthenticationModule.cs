@@ -1,4 +1,4 @@
-﻿using LYBT.Desktop.Auth.Services;
+using LYBT.Desktop.Auth.Services;
 using LYBT.Desktop.Auth.ViewModels;
 using LYBT.Desktop.Auth.Views;
 using Microsoft.Extensions.Logging;

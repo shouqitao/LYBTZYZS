@@ -1,4 +1,4 @@
-﻿namespace LYBT.Desktop.Core.Redux
+namespace LYBT.Desktop.Core.Redux
 {
 
     /// <summary>

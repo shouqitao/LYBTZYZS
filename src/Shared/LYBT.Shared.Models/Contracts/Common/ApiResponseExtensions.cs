@@ -33,6 +33,7 @@
                 TotalCount = totalCount,
                 CurrentPage = currentPage,
                 PageSize = pageSize
+
                 // TotalPages 是计算属性，无需手动设置
             };
 
@@ -55,8 +56,7 @@
                 pagedResult.TotalCount,
                 pagedResult.CurrentPage,
                 pagedResult.PageSize,
-                message
-            );
+                message);
         }
 
         /// <summary>
@@ -77,8 +77,7 @@
                 0,
                 currentPage,
                 pageSize,
-                message
-            );
+                message);
         }
 
         /// <summary>
@@ -100,8 +99,7 @@
             {
                 return ApiResponse<T>.CreateFail(
                     serviceResult.ErrorMessage ?? "操作失败",
-                    serviceResult.Exception?.Message
-                );
+                    serviceResult.Exception?.Message);
             }
         }
 
@@ -123,8 +121,7 @@
             {
                 return ApiResponse.CreateFail(
                     serviceResult.ErrorMessage ?? "操作失败",
-                    serviceResult.Exception?.Message
-                );
+                    serviceResult.Exception?.Message);
             }
         }
     }

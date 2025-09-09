@@ -5,7 +5,6 @@ using LYBT.Shared.Models.Contracts.Common;
 namespace LYBT.Shared.Models.Contracts.Configuration
 {
 
-
     /// <summary>
     /// 日志DTO
     /// </summary>

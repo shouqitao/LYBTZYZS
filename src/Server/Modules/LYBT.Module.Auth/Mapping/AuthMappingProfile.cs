@@ -23,6 +23,7 @@ namespace LYBT.Module.Auth.Mapping
                 .ForMember(dest => dest.RealName, opt => opt.MapFrom(src => src.RealName))
                 .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber))
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status));
+
             // CreateTime/LastLoginTime/Remark字段已删除（UltraThink v2.0简化）
             // .ForMember(dest => dest.CreateTime, opt => opt.MapFrom(src => src.CreateTime))
             // .ForMember(dest => dest.LastLoginTime, opt => opt.MapFrom(src => src.LastLoginTime))

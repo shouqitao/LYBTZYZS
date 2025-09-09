@@ -41,6 +41,7 @@ namespace LYBT.Shared.Models.Extensions
             {
                 result[value] = value.GetDescription();
             }
+
             return result;
         }
 
@@ -59,6 +60,7 @@ namespace LYBT.Shared.Models.Extensions
                     return value;
                 }
             }
+
             return null;
         }
 
@@ -104,6 +106,7 @@ namespace LYBT.Shared.Models.Extensions
                 var description = value.GetDescription();
                 result.Add(new KeyValuePair<int, string>(intValue, description));
             }
+
             return result;
         }
     }

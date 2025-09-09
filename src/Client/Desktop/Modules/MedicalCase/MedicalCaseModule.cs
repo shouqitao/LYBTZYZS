@@ -1,4 +1,4 @@
-﻿using LYBT.Desktop.MedicalCase.ViewModels;
+using LYBT.Desktop.MedicalCase.ViewModels;
 using LYBT.Desktop.MedicalCase.Views;
 using LYBT.Shared.Interfaces.Services;
 using Prism.Ioc;

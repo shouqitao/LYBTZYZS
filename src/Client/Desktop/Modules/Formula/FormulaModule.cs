@@ -1,4 +1,4 @@
-﻿using LYBT.Desktop.Formula.Interfaces;
+using LYBT.Desktop.Formula.Interfaces;
 using LYBT.Desktop.Formula.Services;
 using LYBT.Desktop.Formula.ViewModels;
 using LYBT.Desktop.Formula.Views;

@@ -56,6 +56,7 @@ public class FormulaModule(
         {
             return await _queryService.SearchAsync(keyword);
         }
+
         return await _queryService.GetTemplatesAsync();
     }
 
@@ -213,7 +214,7 @@ public class FormulaModule(
             var csvContent = "验方名称,分类,描述,状态\n";
             foreach (var formula in result.Data.Items)
             {
-                csvContent += $"{formula.Name},{formula.Category ?? "未分类"},{formula.Description?.Replace(",", "；") ?? ""},{(formula.IsEnabled ? "启用" : "禁用")}\n";
+                csvContent += $"{formula.Name},{formula.Category ?? "未分类"},{formula.Description?.Replace(",", "；") ?? string.Empty},{(formula.IsEnabled ? "启用" : "禁用")}\n";
             }
 
             var csvBytes = System.Text.Encoding.UTF8.GetBytes(csvContent);
@@ -341,6 +342,7 @@ public class FormulaModule(
                 successCount++;
             }
         }
+
         return ServiceResult<int>.Success(successCount);
     }
 
@@ -358,6 +360,7 @@ public class FormulaModule(
                 successCount++;
             }
         }
+
         return ServiceResult<int>.Success(successCount);
     }
 
@@ -380,6 +383,7 @@ public class FormulaModule(
             TotalCount = result.Data.TotalCount,
             EnabledCount = result.Data.Items?.Count(f => f.IsEnabled) ?? 0,
             DisabledCount = result.Data.Items?.Count(f => !f.IsEnabled) ?? 0,
+
             // RecentlyCreatedCount = 0 // 移除不存在的属性
         };
 
@@ -397,6 +401,7 @@ public class FormulaModule(
             TotalCount = 0,
             SuccessCount = 0,
             FailedCount = 0,
+
             // ErrorMessages = ["简单诊所版本暂不支持验方导入功能"] // 移除不存在的属性
         };
 

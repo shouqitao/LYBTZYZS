@@ -149,6 +149,7 @@ namespace LYBT.Module.Formula.Services
                     IsShared = false,
                     Status = CommonStatus.Enabled,
                     Remark = $"基于处方【{prescription.Id.ToString()}】创建",
+
                     // CreateTime = DateTime.Now, // 实体中无此字段
                     Herbs = new List<LYBT.Entities.Formula.FormulaHerbItem>()
                 };
@@ -163,6 +164,7 @@ namespace LYBT.Module.Formula.Services
                         Quantity = item.Quantity,
                         Unit = item.Unit,
                         Usage = item.Usage,
+
                         // SortOrder属性在FormulaHerbItem中不存在，已移除
                     });
                 }

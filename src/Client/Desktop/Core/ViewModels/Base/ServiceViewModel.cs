@@ -318,8 +318,7 @@ public abstract class ServiceViewModel(
 
         return new DelegateCommand(
             async () => await ExecuteVoidAsync(executeMethod, executeMethod.Method.Name),
-            canExecuteMethod ?? (() => !IsLoading)
-        );
+            canExecuteMethod ?? (() => !IsLoading));
     }
 
     /// <summary>
@@ -335,8 +334,7 @@ public abstract class ServiceViewModel(
 
         return new DelegateCommand<T>(
             async (parameter) => await ExecuteVoidAsync(() => executeMethod(parameter), executeMethod.Method.Name),
-            canExecuteMethod ?? ((_) => !IsLoading)
-        );
+            canExecuteMethod ?? ((_) => !IsLoading));
     }
 
     #endregion 命令创建辅助方法

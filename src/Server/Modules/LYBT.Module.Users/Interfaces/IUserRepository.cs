@@ -1,4 +1,4 @@
-﻿using LYBT.Entities.Users;
+using LYBT.Entities.Users;
 using LYBT.Infrastructure.Interfaces;
 using SharedUserPagedQueryDto = LYBT.Shared.Models.Contracts.Users.UserPagedQueryDto;
 

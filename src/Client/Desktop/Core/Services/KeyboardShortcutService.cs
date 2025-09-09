@@ -93,6 +93,7 @@ namespace LYBT.Desktop.Core.Services
                 _logger.LogInformation("移除全局快捷键: {Gesture}", keyGesture.DisplayString);
                 return true;
             }
+
             return false;
         }
 
@@ -110,6 +111,7 @@ namespace LYBT.Desktop.Core.Services
                 _logger.LogInformation("移除上下文快捷键: {Context}.{Gesture}", context, keyGesture.DisplayString);
                 return true;
             }
+
             return false;
         }
 

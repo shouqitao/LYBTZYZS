@@ -28,7 +28,7 @@ public interface IExceptionHandler
     /// <param name="context">异常上下文信息</param>
     /// <returns>包含错误信息的ServiceResult</returns>
     ServiceResult HandleException(Exception exception, string methodName, string? context = null);
-    
+
     /// <summary>
     /// 安全执行操作，自动处理异常
     /// </summary>
@@ -38,7 +38,7 @@ public interface IExceptionHandler
     /// <param name="context">操作上下文（可选）</param>
     /// <returns>操作结果</returns>
     Task<ServiceResult<T>> HandleException<T>(Func<Task<ServiceResult<T>>> operation, string methodName, string? context = null);
-    
+
     /// <summary>
     /// 安全执行无返回值的操作，自动处理异常
     /// </summary>
@@ -58,7 +58,7 @@ public interface IExceptionHandler
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>操作结果</returns>
     Task<ServiceResult<T>> HandleException<T>(Func<CancellationToken, Task<ServiceResult<T>>> operation, string methodName, string? context = null, CancellationToken cancellationToken = default);
-    
+
     /// <summary>
     /// 安全执行支持取消令牌的无返回值操作，自动处理异常 - DT-011取消令牌支持
     /// </summary>

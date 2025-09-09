@@ -150,10 +150,10 @@ namespace LYBT.Desktop.Core.ViewModels.Base
 
         public EnhancedServiceManagementViewModel(
             IEventAggregator eventAggregator,
-                                                IErrorHandlingService errorHandlingService,
-                                                IUserSessionManager userSessionManager,
-                                                IPermissionService permissionService,
-                                                TService service)
+            IErrorHandlingService errorHandlingService,
+            IUserSessionManager userSessionManager,
+            IPermissionService permissionService,
+            TService service)
             : base(eventAggregator, errorHandlingService)
         {
             Service = service ?? throw new ArgumentNullException(nameof(service));

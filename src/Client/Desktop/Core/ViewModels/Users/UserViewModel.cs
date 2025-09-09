@@ -1,4 +1,4 @@
-﻿using LYBT.Shared.Models.Contracts.Users;
+using LYBT.Shared.Models.Contracts.Users;
 using Prism.Mvvm;
 
 namespace LYBT.Desktop.Core.ViewModels.Users

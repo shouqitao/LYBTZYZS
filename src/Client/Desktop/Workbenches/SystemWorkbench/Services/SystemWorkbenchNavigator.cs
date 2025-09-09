@@ -1,4 +1,4 @@
-﻿using Prism.Regions;
+using Prism.Regions;
 
 namespace LYBT.Desktop.Workbench.Admin.Services
 {

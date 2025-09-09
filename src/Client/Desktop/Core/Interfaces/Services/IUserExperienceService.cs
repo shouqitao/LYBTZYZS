@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using LYBT.Desktop.Core.Services;
 
 namespace LYBT.Desktop.Core.Interfaces.Services

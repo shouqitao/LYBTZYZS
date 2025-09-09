@@ -1,4 +1,4 @@
-﻿using LYBT.Shared.Models.Contracts.Formula;
+using LYBT.Shared.Models.Contracts.Formula;
 using Prism.Mvvm;
 
 namespace LYBT.Desktop.Core.ViewModels.Formulas

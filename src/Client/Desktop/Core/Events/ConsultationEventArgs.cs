@@ -1,4 +1,4 @@
-﻿namespace LYBT.Desktop.Core.Events
+namespace LYBT.Desktop.Core.Events
 {
 
     /// <summary>

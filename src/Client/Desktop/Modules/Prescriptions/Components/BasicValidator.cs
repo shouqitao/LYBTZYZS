@@ -313,6 +313,7 @@ namespace LYBT.Desktop.Prescriptions.Components
                 {
                     return $"{herbName}常用量为{min}-{max}g，当前用量({quantity}g)可能偏小";
                 }
+
                 if (quantity > max)
                 {
                     return $"{herbName}常用量为{min}-{max}g，当前用量({quantity}g)可能偏大";

@@ -65,6 +65,7 @@ namespace LYBT.Infrastructure
                         {
                             context.Token = accessToken;
                         }
+
                         return Task.CompletedTask;
                     },
                     OnAuthenticationFailed = context =>

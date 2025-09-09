@@ -55,6 +55,7 @@ namespace LYBT.WebAPI.Controllers
                     Name = name,
                     PhoneNumber = phone, // 使用正确的属性名
                     IDNumber = idCard // 使用正确的属性名
+
                     // 注意：IsActive属性在DTO中不存在，删除该字段
                 };
 
@@ -429,10 +430,10 @@ namespace LYBT.WebAPI.Controllers
                 LogOperation("导出患者导入模板", null, null);
                 return Success<object>(
                     new
-                {
-                    message = "患者导入模板",
-                    template = templateData,
-                    instructions = new[]
+                    {
+                        message = "患者导入模板",
+                        template = templateData,
+                        instructions = new[]
                     {
                         "请按照模板格式填写患者信息",
                         "姓名和手机号码为必填项",
@@ -440,7 +441,7 @@ namespace LYBT.WebAPI.Controllers
                         "日期格式：YYYY-MM-DD",
                         "身份证号码必须为18位"
                     }
-                }, "模板导出成功");
+                    }, "模板导出成功");
             }
             catch (Exception ex)
             {

@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using LYBT.Infrastructure.Transactions.Steps;
-using LYBT.Infrastructure.Transactions;
 using LYBT.Infrastructure.Data;
+using LYBT.Infrastructure.Transactions;
+using LYBT.Infrastructure.Transactions.Steps;
 using LYBT.Shared.Models.Enums;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.Module.MedicalCase.Transactions.Steps
 {
@@ -80,7 +80,8 @@ namespace LYBT.Module.MedicalCase.Transactions.Steps
                 // 验证状态转换是否合法
                 if (!IsValidStatusTransition(medicalCase.Status, MedicalCaseStatus.InConsultation))
                 {
-                    context.LogWarning("Invalid medical case status transition: {CurrentStatus} -> {TargetStatus}", 
+                    context.LogWarning(
+                        "Invalid medical case status transition: {CurrentStatus} -> {TargetStatus}",
                         medicalCase.Status, MedicalCaseStatus.InConsultation);
                     return false;
                 }
@@ -96,7 +97,7 @@ namespace LYBT.Module.MedicalCase.Transactions.Steps
 
         /// <inheritdoc />
         protected override async Task<TransactionStepResult> ExecuteDatabaseOperationAsync(
-            ConsultationTransactionContext context, 
+            ConsultationTransactionContext context,
             CancellationToken cancellationToken = default)
         {
             try
@@ -111,12 +112,13 @@ namespace LYBT.Module.MedicalCase.Transactions.Steps
                 {
                     var oldStatus = medicalCase.Status;
                     medicalCase.Status = MedicalCaseStatus.InConsultation;
-                    
+
                     await UpdateEntityAsync(medicalCase, cancellationToken);
                     context.MedicalCaseStatus = medicalCase.Status;
                     updatedEntities.Add($"MedicalCase:{medicalCase.Id}:{oldStatus}->{medicalCase.Status}");
-                    
-                    Logger.LogInformation("Updated medical case status: {MedicalCaseId} from {OldStatus} to {NewStatus}",
+
+                    Logger.LogInformation(
+                        "Updated medical case status: {MedicalCaseId} from {OldStatus} to {NewStatus}",
                         medicalCase.Id, oldStatus, medicalCase.Status);
                 }
 
@@ -125,7 +127,7 @@ namespace LYBT.Module.MedicalCase.Transactions.Steps
                 if (patient != null)
                 {
                     var oldPatientStatus = patient.Status;
-                    
+
                     // 根据业务规则更新患者状态
                     var newPatientStatus = DeterminePatientStatus(context, patient);
                     if (newPatientStatus != oldPatientStatus)
@@ -133,8 +135,9 @@ namespace LYBT.Module.MedicalCase.Transactions.Steps
                         patient.Status = newPatientStatus;
                         await UpdateEntityAsync(patient, cancellationToken);
                         updatedEntities.Add($"Patient:{patient.Id}:{oldPatientStatus}->{newPatientStatus}");
-                        
-                        Logger.LogInformation("Updated patient status: {PatientId} from {OldStatus} to {NewStatus}",
+
+                        Logger.LogInformation(
+                            "Updated patient status: {PatientId} from {OldStatus} to {NewStatus}",
                             patient.Id, oldPatientStatus, newPatientStatus);
                     }
                 }
@@ -159,8 +162,8 @@ namespace LYBT.Module.MedicalCase.Transactions.Steps
 
         /// <inheritdoc />
         public override async Task<TransactionStepResult> CompensateAsync(
-            ConsultationTransactionContext context, 
-            TransactionStepResult originalResult, 
+            ConsultationTransactionContext context,
+            TransactionStepResult originalResult,
             CancellationToken cancellationToken = default)
         {
             if (!SupportsCompensation)
@@ -187,8 +190,9 @@ namespace LYBT.Module.MedicalCase.Transactions.Steps
                             medicalCase.Status = originalStatus;
                             await UpdateEntityAsync(medicalCase, cancellationToken);
                             restoredEntities.Add($"MedicalCase:{medicalCase.Id}:{currentStatus}->{originalStatus}");
-                            
-                            Logger.LogInformation("Restored medical case status: {MedicalCaseId} from {CurrentStatus} to {OriginalStatus}",
+
+                            Logger.LogInformation(
+                                "Restored medical case status: {MedicalCaseId} from {CurrentStatus} to {OriginalStatus}",
                                 medicalCase.Id, currentStatus, originalStatus);
                         }
                     }
@@ -206,8 +210,9 @@ namespace LYBT.Module.MedicalCase.Transactions.Steps
                             patient.Status = originalStatus;
                             await UpdateEntityAsync(patient, cancellationToken);
                             restoredEntities.Add($"Patient:{patient.Id}:{currentStatus}->{originalStatus}");
-                            
-                            Logger.LogInformation("Restored patient status: {PatientId} from {CurrentStatus} to {OriginalStatus}",
+
+                            Logger.LogInformation(
+                                "Restored patient status: {PatientId} from {CurrentStatus} to {OriginalStatus}",
                                 patient.Id, currentStatus, originalStatus);
                         }
                     }
@@ -243,12 +248,12 @@ namespace LYBT.Module.MedicalCase.Transactions.Steps
             // 定义合法的状态转换规则
             return currentStatus switch
             {
-                MedicalCaseStatus.Registered => targetStatus == MedicalCaseStatus.InConsultation || 
+                MedicalCaseStatus.Registered => targetStatus == MedicalCaseStatus.InConsultation ||
                                               targetStatus == MedicalCaseStatus.Cancelled,
-                MedicalCaseStatus.InConsultation => targetStatus == MedicalCaseStatus.Completed || 
+                MedicalCaseStatus.InConsultation => targetStatus == MedicalCaseStatus.Completed ||
                                                    targetStatus == MedicalCaseStatus.Suspended ||
                                                    targetStatus == MedicalCaseStatus.Cancelled,
-                MedicalCaseStatus.Suspended => targetStatus == MedicalCaseStatus.InConsultation || 
+                MedicalCaseStatus.Suspended => targetStatus == MedicalCaseStatus.InConsultation ||
                                               targetStatus == MedicalCaseStatus.Cancelled,
                 MedicalCaseStatus.Completed => targetStatus == MedicalCaseStatus.Archived,
                 MedicalCaseStatus.Cancelled => false, // 取消后不能转换到其他状态
@@ -282,8 +287,8 @@ namespace LYBT.Module.MedicalCase.Transactions.Steps
         /// <param name="changes">变更记录</param>
         /// <param name="cancellationToken">取消令牌</param>
         private async Task RecordStatusChangeHistoryAsync(
-            ConsultationTransactionContext context, 
-            List<string> changes, 
+            ConsultationTransactionContext context,
+            List<string> changes,
             CancellationToken cancellationToken)
         {
             try
@@ -292,12 +297,13 @@ namespace LYBT.Module.MedicalCase.Transactions.Steps
                 // 简化实现：记录到事务元数据中
                 context.ConsultationMetadata["StatusChanges"] = changes;
                 context.ConsultationMetadata["StatusChangeTimestamp"] = DateTime.UtcNow;
-                
+
                 Logger.LogDebug("Recorded status change history: {Changes}", string.Join("; ", changes));
             }
             catch (Exception ex)
             {
                 Logger.LogWarning(ex, "Failed to record status change history");
+
                 // 不抛出异常，因为这不是关键操作
             }
         }
@@ -309,20 +315,21 @@ namespace LYBT.Module.MedicalCase.Transactions.Steps
         /// <param name="restorations">恢复记录</param>
         /// <param name="cancellationToken">取消令牌</param>
         private async Task RecordCompensationHistoryAsync(
-            ConsultationTransactionContext context, 
-            List<string> restorations, 
+            ConsultationTransactionContext context,
+            List<string> restorations,
             CancellationToken cancellationToken)
         {
             try
             {
                 context.ConsultationMetadata["StatusCompensations"] = restorations;
                 context.ConsultationMetadata["CompensationTimestamp"] = DateTime.UtcNow;
-                
+
                 Logger.LogDebug("Recorded compensation history: {Restorations}", string.Join("; ", restorations));
             }
             catch (Exception ex)
             {
                 Logger.LogWarning(ex, "Failed to record compensation history");
+
                 // 不抛出异常，因为这不是关键操作
             }
         }
@@ -335,12 +342,13 @@ namespace LYBT.Module.MedicalCase.Transactions.Steps
         /// <param name="cancellationToken">取消令牌</param>
         /// <returns>是否有其他活跃案例</returns>
         private async Task<bool> HasOtherActiveMedicalCasesAsync(
-            Guid patientId, 
-            Guid excludeMedicalCaseId, 
+            Guid patientId,
+            Guid excludeMedicalCaseId,
             CancellationToken cancellationToken)
         {
             return await DbContext.Set<LYBT.Entities.MedicalCase.MedicalCase>()
-                .AnyAsync(mc => mc.PatientId == patientId &&
+                .AnyAsync(
+                    mc => mc.PatientId == patientId &&
                               mc.Id != excludeMedicalCaseId &&
                               mc.Status != MedicalCaseStatus.Completed &&
                               mc.Status != MedicalCaseStatus.Cancelled &&

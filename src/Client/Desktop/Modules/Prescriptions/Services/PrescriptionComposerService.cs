@@ -194,6 +194,7 @@ namespace LYBT.Desktop.Prescriptions.Services
                     errorResult.AddError("处方信息不能为空");
                     return errorResult;
                 }
+
                 return _basicValidator.ValidatePrescription(prescription);
             }
             catch (Exception ex)
@@ -219,6 +220,7 @@ namespace LYBT.Desktop.Prescriptions.Services
                 {
                     return new PriceCalculationResult { IsSuccess = false, ErrorMessage = "处方信息不能为空" };
                 }
+
                 return _priceCalculator.CalculatePrescriptionPrice(prescription);
             }
             catch (Exception ex)

@@ -375,12 +375,14 @@ namespace LYBT.Desktop.Core.Services
                 case SharedCommon.ErrorCategory.Authentication:
                     // 触发重新登录
                     await _notificationService.ShowErrorAsync("认证失败，请重新登录", SharedCommon.ErrorSeverity.Warning);
+
                     // TODO: 触发登录事件
                     break;
 
                 case SharedCommon.ErrorCategory.Configuration:
                     // 尝试重新加载配置
                     _logger.LogInformation("尝试重新加载配置");
+
                     // TODO: 重新加载配置
                     break;
 
@@ -417,6 +419,7 @@ namespace LYBT.Desktop.Core.Services
             try
             {
                 _logger.LogInformation("开始刷新缓存数据");
+
                 // TODO: 实现缓存刷新逻辑
                 await Task.Delay(100); // 模拟异步操作
                 _logger.LogInformation("缓存数据刷新完成");
@@ -432,6 +435,7 @@ namespace LYBT.Desktop.Core.Services
             try
             {
                 _logger.LogInformation("开始重置服务状态");
+
                 // TODO: 实现服务状态重置逻辑
                 await Task.Delay(100); // 模拟异步操作
                 _logger.LogInformation("服务状态重置完成");
@@ -505,6 +509,7 @@ namespace LYBT.Desktop.Core.Services
             try
             {
                 _logger.LogInformation("保存关键数据");
+
                 // TODO: 实现数据保存逻辑
             }
             catch (Exception ex)
@@ -578,8 +583,8 @@ namespace LYBT.Desktop.Core.Services
         {
             // 检查是否需要生成警报
             var last15Minutes = DateTime.Now.AddMinutes(-15);
-            var recentCriticalErrors = _recentErrors.Count(e => 
-                e.Timestamp >= last15Minutes && 
+            var recentCriticalErrors = _recentErrors.Count(e =>
+                e.Timestamp >= last15Minutes &&
                 e.Severity >= SharedCommon.ErrorSeverity.Critical);
 
             return recentCriticalErrors >= 3; // 15分钟内3个严重错误触发警报

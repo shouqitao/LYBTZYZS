@@ -1,4 +1,4 @@
-﻿namespace LYBT.Shared.Models.Constants
+namespace LYBT.Shared.Models.Constants
 {
 
     /// <summary>

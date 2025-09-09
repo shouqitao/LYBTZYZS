@@ -1,4 +1,4 @@
-﻿namespace LYBT.Desktop.Core.Configuration
+namespace LYBT.Desktop.Core.Configuration
 {
 
     /// <summary>

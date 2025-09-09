@@ -28,6 +28,7 @@ namespace LYBT.Desktop.Core.Converters
                     return "Normal";
                 }
             }
+
             return "Normal";
         }
 

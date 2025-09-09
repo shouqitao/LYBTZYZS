@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.Windows.Input;
 
 namespace LYBT.Desktop.Core.Mvvm;

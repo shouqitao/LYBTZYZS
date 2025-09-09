@@ -1,4 +1,4 @@
-﻿namespace LYBT.WebAPI.Extensions;
+namespace LYBT.WebAPI.Extensions;
 
 /// <summary>
 /// 统一中间件配置管理 - UltraThink中间件配置系统

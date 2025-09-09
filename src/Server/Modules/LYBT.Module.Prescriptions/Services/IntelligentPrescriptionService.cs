@@ -1,4 +1,4 @@
-﻿using LYBT.Module.Prescriptions.Interfaces;
+using LYBT.Module.Prescriptions.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.Extensions.Logging;

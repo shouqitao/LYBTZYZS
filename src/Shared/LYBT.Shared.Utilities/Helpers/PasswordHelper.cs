@@ -428,6 +428,7 @@ namespace LYBT.Shared.Utilities.Helpers
                 var j = (int)(BitConverter.ToUInt32(randomBytes, 0) % (uint)(i + 1));
                 (array[i], array[j]) = (array[j], array[i]);
             }
+
             return new string(array);
         }
 

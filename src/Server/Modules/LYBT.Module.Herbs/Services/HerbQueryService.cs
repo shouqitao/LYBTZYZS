@@ -78,6 +78,7 @@ namespace LYBT.Module.Herbs.Services
                 {
                     queryable = queryable.Where(h => h.Price >= query.MinPrice.Value);
                 }
+
                 if (query.MaxPrice.HasValue)
                 {
                     queryable = queryable.Where(h => h.Price <= query.MaxPrice.Value);

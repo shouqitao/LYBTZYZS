@@ -36,6 +36,7 @@ namespace LYBT.Desktop.Shell.Extensions
             RegisterPerformanceServices(containerRegistry);
             RegisterUltraThinkServices(containerRegistry);
             RegisterModuleServicesManually(containerRegistry); // 简化：直接使用手动注册
+
             // ViewModels和Views通过Prism的ViewModelLocator自动解析，无需手动注册
         }
 
@@ -64,7 +65,7 @@ namespace LYBT.Desktop.Shell.Extensions
             // 注册统一错误处理器
             containerRegistry.RegisterSingleton<LYBT.Desktop.Infrastructure.Services.IStandardErrorHandler,
                 LYBT.Desktop.Infrastructure.Services.StandardErrorHandler>();
-                
+
             // DT-006: 统一异常处理服务注册
             containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Services.Exceptions.IExceptionHandler,
                 LYBT.Desktop.Core.Services.Exceptions.StandardExceptionHandler>();
@@ -105,7 +106,7 @@ namespace LYBT.Desktop.Shell.Extensions
         private static void RegisterCacheServices(IContainerRegistry containerRegistry)
         {
             // 优化内存缓存服务配置，添加性能监控选项
-            containerRegistry.RegisterSingleton<IMemoryCache>(() => 
+            containerRegistry.RegisterSingleton<IMemoryCache>(() =>
             {
                 var options = new MemoryCacheOptions
                 {
@@ -195,20 +196,20 @@ namespace LYBT.Desktop.Shell.Extensions
         {
             // Layer 1: 基础层 - 无外部依赖的基础模块（优先注册）
             RegisterLayer1BasicModules(containerRegistry);
-            
+
             // Layer 2: 认证层 - 依赖基础层
             RegisterLayer2AuthModules(containerRegistry);
-            
+
             // Layer 3: 业务数据层 - 依赖认证层
             RegisterLayer3BusinessDataModules(containerRegistry);
-            
+
             // Layer 4: 流程协调层 - 依赖业务数据层
             RegisterLayer4ProcessModules(containerRegistry);
-            
+
             // Layer 5: 聚合服务层 - 依赖流程协调层
             RegisterLayer5AggregationModules(containerRegistry);
         }
-        
+
         /// <summary>
         /// Layer 1: 基础模块注册 - Herbs, Formula (无外部依赖)
         /// 性能优化：改为Scoped注册，避免启动时立即实例化
@@ -224,7 +225,7 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.Register<LYBT.Desktop.Herbs.Services.HerbModule>();
             containerRegistry.Register<LYBT.Shared.Interfaces.Services.IHerbService,
                 LYBT.Desktop.Herbs.Services.HerbModule>();
-                
+
             // Formula模块 - 验方模板数据，无外部依赖
             // 改为Scoped以支持懒加载，提升启动性能
             containerRegistry.Register<LYBT.Desktop.Formula.Interfaces.IFormulaQueryService,
@@ -235,7 +236,7 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.Register<LYBT.Shared.Interfaces.Services.IFormulaService,
                 LYBT.Desktop.Formula.Services.FormulaModule>();
         }
-        
+
         /// <summary>
         /// Layer 2: 认证模块注册 - 依赖基础层
         /// </summary>
@@ -247,21 +248,21 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterSingleton<LYBT.Desktop.Auth.Interfaces.IAuthBusinessService,
                 LYBT.Desktop.Auth.Services.AuthBusinessService>();
             containerRegistry.RegisterSingleton<LYBT.Desktop.Auth.Services.AuthModule>();
-            containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Services.IAuthService, 
+            containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Services.IAuthService,
                 LYBT.Desktop.Auth.Services.AuthModule>();
             containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.IAuthenticationService,
                 LYBT.Desktop.Auth.Services.AuthServiceAdapter>();
-                
+
             // Users模块 - 依赖认证模块
             containerRegistry.RegisterSingleton<LYBT.Desktop.Users.Interfaces.IUserQueryService,
                 LYBT.Desktop.Users.Services.UserQueryService>();
             containerRegistry.RegisterSingleton<LYBT.Desktop.Users.Interfaces.IUserBusinessService,
                 LYBT.Desktop.Users.Services.UserBusinessService>();
             containerRegistry.RegisterSingleton<LYBT.Desktop.Users.Services.UserModule>();
-            containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Services.IUserService, 
+            containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Services.IUserService,
                 LYBT.Desktop.Users.Services.UserModule>();
         }
-        
+
         /// <summary>
         /// Layer 3: 业务数据模块注册 - 依赖认证层
         /// 性能优化：改为Scoped注册，避免启动时立即实例化
@@ -278,7 +279,7 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.Register<LYBT.Shared.Interfaces.Services.IPatientService,
                 LYBT.Desktop.Patients.Services.PatientModule>();
         }
-        
+
         /// <summary>
         /// Layer 4: 流程协调模块注册 - 依赖业务数据层
         /// 性能优化：改为Scoped注册，避免启动时立即实例化
@@ -294,7 +295,7 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.Register<LYBT.Desktop.MedicalCase.Services.MedicalCaseModule>();
             containerRegistry.Register<LYBT.Shared.Interfaces.Services.IMedicalCaseService,
                 LYBT.Desktop.MedicalCase.Services.MedicalCaseModule>();
-                
+
             // Consultation模块 - 诊断流程
             // 改为Scoped以支持懒加载，提升启动性能
             containerRegistry.Register<LYBT.Desktop.Consultation.Interfaces.IConsultationQueryService,
@@ -305,7 +306,7 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.Register<LYBT.Shared.Interfaces.Services.IConsultationService,
                 LYBT.Desktop.Consultation.Services.ConsultationModule>();
         }
-        
+
         /// <summary>
         /// Layer 5: 聚合服务模块注册 - 依赖流程协调层
         /// 性能优化：改为Scoped注册，避免启动时立即实例化

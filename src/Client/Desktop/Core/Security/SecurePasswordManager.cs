@@ -46,6 +46,7 @@ namespace LYBT.Desktop.Core.Security
                 {
                     _securePassword.AppendChar(c);
                 }
+
                 _securePassword.MakeReadOnly();
             }
         }

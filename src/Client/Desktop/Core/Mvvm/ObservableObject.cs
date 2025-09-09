@@ -166,6 +166,7 @@ public abstract class ObservableObject : INotifyPropertyChanged, INotifyProperty
             {
                 _batchChangedProperties.Add(propertyName);
             }
+
             return;
         }
 
@@ -223,6 +224,7 @@ public abstract class ObservableObject : INotifyPropertyChanged, INotifyProperty
             {
                 OnPropertyChanged(propertyName);
             }
+
             _batchChangedProperties.Clear();
         }
     }
@@ -321,6 +323,7 @@ public abstract class ValidatableObservableObject : ObservableObject, INotifyDat
             {
                 allErrors.AddRange(errors);
             }
+
             return allErrors;
         }
 

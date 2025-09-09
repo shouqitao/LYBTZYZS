@@ -1,4 +1,4 @@
-﻿namespace LYBT.Desktop.Core.Interfaces.Services
+namespace LYBT.Desktop.Core.Interfaces.Services
 {
 
     /// <summary>

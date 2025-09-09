@@ -229,13 +229,15 @@ public class PatientModule(
                 PhoneNumber = p.PhoneNumber,
                 GenderText = p.Gender == 0 ? "男" : "女",
                 BirthDateText = p.BirthDate?.ToString("yyyy-MM-dd"),
+
                 // 根据实际PatientImportDto结构进行完整映射
             }).ToList();
 
             var refitResponse = await _queryService.GetByIdAsync(Guid.Empty); // 使用API端点调用
-            // 注意：这里需要在QueryService中添加ImportPatientsAsync方法
-            // 或者直接调用API
-            
+
+                                                                              // 注意：这里需要在QueryService中添加ImportPatientsAsync方法
+                                                                              // 或者直接调用API
+
             return ServiceResult<object>.Success(new { ImportedCount = patients.Count, TotalCount = patients.Count }, "患者批量导入成功");
         }
         catch (Exception ex)
@@ -258,7 +260,7 @@ public class PatientModule(
                 PageSize = 10000, // 获取所有数据
                 Keyword = query.Keyword
             };
-            
+
             var result = await _queryService.GetPagedAsync(allPatientsQuery);
             if (!result.IsSuccess || result.Data?.Items == null)
             {
@@ -269,12 +271,12 @@ public class PatientModule(
             var csvContent = "患者姓名,性别,联系电话,出生日期,状态\n";
             foreach (var patient in result.Data.Items)
             {
-                var name = patient.Name ?? "";
+                var name = patient.Name ?? string.Empty;
                 var gender = patient.Gender == 0 ? "男" : "女";
-                var phone = patient.PhoneNumber ?? "";
-                var birthDate = patient.BirthDate?.ToString("yyyy-MM-dd") ?? "";
+                var phone = patient.PhoneNumber ?? string.Empty;
+                var birthDate = patient.BirthDate?.ToString("yyyy-MM-dd") ?? string.Empty;
                 var status = patient.Status == Shared.Models.Enums.CommonStatus.Enabled ? "正常" : "禁用";
-                
+
                 csvContent += $"{name},{gender},{phone},{birthDate},{status}\n";
             }
 
@@ -316,7 +318,7 @@ public class PatientModule(
             var templateContent = "患者姓名*,性别(男/女)*,联系电话*,出生日期(yyyy-MM-dd),地址,身份证号\n";
             templateContent += "示例患者,男,13800138000,1990-01-01,北京市朝阳区,110101199001011234\n";
             templateContent += "注意：带*的字段为必填项\n";
-            
+
             var templateBytes = System.Text.Encoding.UTF8.GetBytes(templateContent);
             return ServiceResult<byte[]>.Success(templateBytes, "患者导入模板生成成功");
         }

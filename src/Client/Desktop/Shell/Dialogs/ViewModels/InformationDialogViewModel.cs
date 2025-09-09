@@ -1,4 +1,4 @@
-﻿using LYBT.Desktop.Core.ViewModels;
+using LYBT.Desktop.Core.ViewModels;
 using Prism.Commands;
 
 namespace LYBT.Desktop.Shell.Dialogs.ViewModels

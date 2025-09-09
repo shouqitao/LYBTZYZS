@@ -1,4 +1,4 @@
-﻿namespace LYBT.Infrastructure.Configuration.Options
+namespace LYBT.Infrastructure.Configuration.Options
 {
 
     /// <summary>

@@ -1,4 +1,4 @@
-﻿namespace LYBT.Desktop.Core.Resources
+namespace LYBT.Desktop.Core.Resources
 {
 
     /// <summary>

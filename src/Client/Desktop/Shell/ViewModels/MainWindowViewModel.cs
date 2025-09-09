@@ -215,6 +215,7 @@ public class MainWindowViewModel(
     private void ApplyLightTheme()
     {
         var resources = Application.Current.Resources;
+
         // 浅色主题
         UpdateThemeColor(resources, "BackgroundColor", "#FFF8F9FA");
         UpdateThemeColor(resources, "SurfaceColor", "#FFFFFFFF");
@@ -224,6 +225,7 @@ public class MainWindowViewModel(
     private void ApplyDarkTheme()
     {
         var resources = Application.Current.Resources;
+
         // 深色主题
         UpdateThemeColor(resources, "BackgroundColor", "#FF1E1E1E");
         UpdateThemeColor(resources, "SurfaceColor", "#FF2D2D2D");
@@ -478,6 +480,7 @@ public class MainWindowViewModel(
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"❌ 工作台模块加载失败: {ex.Message}");
+
             // 模块加载失败不应阻塞界面显示
         }
     }

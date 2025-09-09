@@ -703,6 +703,7 @@ namespace LYBT.Infrastructure.Repositories
             {
                 return propertyInfo;
             }
+
             throw new ArgumentException("表达式必须是一个属性选择器", nameof(propertySelector));
         }
 
@@ -883,6 +884,7 @@ namespace LYBT.Infrastructure.Repositories
             {
                 key += $":{param!.GetHashCode()}";
             }
+
             return key;
         }
 

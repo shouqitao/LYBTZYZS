@@ -16,6 +16,7 @@ namespace LYBT.Desktop.Core.Converters
             {
                 return str.Substring(0, 1).ToUpper();
             }
+
             return "?";
         }
 

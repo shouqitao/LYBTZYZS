@@ -1,7 +1,7 @@
 using System.Security.Claims;
-using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.Http;
 using System.Text.Json;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.Infrastructure.Security
 {
@@ -231,8 +231,7 @@ namespace LYBT.Infrastructure.Security
                     entry.ResourceType ?? "N/A",
                     entry.ResourceId ?? "N/A",
                     entry.IpAddress,
-                    entry.Details
-                );
+                    entry.Details);
 
                 // TODO: 可扩展到专用的审计数据库或外部日志系统
                 await Task.CompletedTask;
@@ -240,6 +239,7 @@ namespace LYBT.Infrastructure.Security
             catch (Exception ex)
             {
                 _logger.LogError(ex, "记录安全审计日志失败");
+
                 // 审计日志记录失败不应影响业务操作，但需要记录到事件日志
             }
         }

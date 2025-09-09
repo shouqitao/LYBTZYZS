@@ -96,6 +96,7 @@ namespace LYBT.Desktop.Services
                     {
                         rng.GetBytes(random);
                     }
+
                     File.WriteAllBytes(_credentialFilePath, random);
                     File.Delete(_credentialFilePath);
 

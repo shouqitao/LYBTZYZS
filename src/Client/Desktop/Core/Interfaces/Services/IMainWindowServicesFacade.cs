@@ -1,4 +1,4 @@
-﻿using LYBT.Shared.Interfaces.Services;
+using LYBT.Shared.Interfaces.Services;
 
 namespace LYBT.Desktop.Core.Interfaces.Services
 {

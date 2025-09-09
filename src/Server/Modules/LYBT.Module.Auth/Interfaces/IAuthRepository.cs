@@ -1,4 +1,4 @@
-﻿using LYBT.Entities.Users;
+using LYBT.Entities.Users;
 using LYBT.Infrastructure.Interfaces;
 
 namespace LYBT.Module.Auth.Interfaces

@@ -216,6 +216,7 @@ namespace LYBT.Desktop.Core.Models.Prescriptions
                     total += item.Quantity * item.EstimatedPrice;
                 }
             }
+
             return total * DosageCount;
         }
 
@@ -245,6 +246,7 @@ namespace LYBT.Desktop.Core.Models.Prescriptions
                     HerbName = templateItem.HerbName,
                     Quantity = templateItem.Quantity,
                     Unit = templateItem.Unit
+
                     // Price = templateItem.EstimatedPrice, // 属性不存在：PrescriptionItemDto.Price
                     // Subtotal = templateItem.Quantity * templateItem.EstimatedPrice
                 });
@@ -415,6 +417,7 @@ namespace LYBT.Desktop.Core.Models.Prescriptions
                 {
                     text = $"{HerbName}({ProcessMethod}) {Quantity}{Unit}";
                 }
+
                 return text;
             }
         }

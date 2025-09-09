@@ -6,8 +6,8 @@ using System.Windows.Documents;
 using System.Windows.Media;
 using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.MedicalCase;
-using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Contracts.Patients;
+using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 
@@ -185,6 +185,7 @@ namespace LYBT.Desktop.Core.Services
                     {
                         sb.AppendLine($"    用法: {item.Usage}");
                     }
+
                     index++;
                 }
             }
@@ -315,7 +316,7 @@ namespace LYBT.Desktop.Core.Services
             sb.AppendLine($"证件类型: {patient.IdType ?? "未知"}");
             sb.AppendLine($"婚姻状况: {patient.MaritalStatus ?? "未知"}");
             sb.AppendLine($"职    业: {patient.Profession ?? "未知"}");
-            
+
             if (!string.IsNullOrEmpty(patient.AllergyHistory) && patient.AllergyHistory != "无")
             {
                 sb.AppendLine($"⚠️ 过敏史: {patient.AllergyHistory}");
@@ -342,6 +343,7 @@ namespace LYBT.Desktop.Core.Services
             {
                 sb.AppendLine("家族病史: 无");
             }
+
             sb.AppendLine();
 
             // 紧急联系人
@@ -386,7 +388,6 @@ namespace LYBT.Desktop.Core.Services
                 _ => "未知"
             };
         }
-
 
         /// <summary>获取患者状态显示文本</summary>
         private string GetPatientStatusText(CommonStatus status)

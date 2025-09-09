@@ -1,4 +1,4 @@
-﻿using LYBT.Desktop.Core.Events;
+using LYBT.Desktop.Core.Events;
 using LYBT.Desktop.Core.Models.Consultation;
 using Microsoft.Extensions.Logging;
 using Prism.Events;

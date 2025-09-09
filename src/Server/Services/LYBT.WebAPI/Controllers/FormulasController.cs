@@ -736,6 +736,7 @@ namespace LYBT.WebAPI.Controllers
                     {
                         rowErrors.Add("验方名称长度不能超过100个字符");
                     }
+
                     if (!string.IsNullOrEmpty(formula.Effect) && formula.Effect.Length > 500)
                     {
                         rowErrors.Add("功效描述长度不能超过500个字符");

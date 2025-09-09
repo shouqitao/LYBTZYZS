@@ -104,8 +104,7 @@ namespace LYBT.Desktop.Core.Services.Theming
                 primary: "#FF0FA968",
                 background: "#FFF8F9FA",
                 surface: "#FFFFFFFF",
-                textPrimary: "#FF1A1A1A"
-            );
+                textPrimary: "#FF1A1A1A");
         }
 
         private void ApplyDarkTheme()
@@ -115,8 +114,7 @@ namespace LYBT.Desktop.Core.Services.Theming
                 primary: "#FF3FBF85",
                 background: "#FF1E1E1E",
                 surface: "#FF2D2D2D",
-                textPrimary: "#FFFFFFFF"
-            );
+                textPrimary: "#FFFFFFFF");
         }
 
         private void ApplyHighContrastTheme()
@@ -128,8 +126,7 @@ namespace LYBT.Desktop.Core.Services.Theming
                     primary: SystemColors.HighlightColor.ToString(),
                     background: SystemColors.WindowColor.ToString(),
                     surface: SystemColors.WindowColor.ToString(),
-                    textPrimary: SystemColors.WindowTextColor.ToString()
-                );
+                    textPrimary: SystemColors.WindowTextColor.ToString());
             }
             else
             {
@@ -138,8 +135,7 @@ namespace LYBT.Desktop.Core.Services.Theming
                     primary: "#FF0000FF",
                     background: "#FFFFFFFF",
                     surface: "#FFFFFFFF",
-                    textPrimary: "#FF000000"
-                );
+                    textPrimary: "#FF000000");
             }
         }
 

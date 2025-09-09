@@ -1,4 +1,4 @@
-﻿namespace LYBT.Desktop.Core.ViewModels
+namespace LYBT.Desktop.Core.ViewModels
 {
 
     /// <summary>

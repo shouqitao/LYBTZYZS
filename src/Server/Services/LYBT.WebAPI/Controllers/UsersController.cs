@@ -181,6 +181,7 @@ public class UsersController : BaseApiController
                     RealName = "系统管理员",
                     Role = "Admin",
                     Status = LYBT.Shared.Models.Enums.CommonStatus.Enabled
+
                     // IsActive是计算属性，不需要设置
                 };
 
@@ -277,6 +278,7 @@ public class UsersController : BaseApiController
             {
                 return HandleException<IEnumerable<UserDto>>(new Exception(usersResult.ErrorMessage ?? "获取用户列表失败"), "获取启用用户列表", null);
             }
+
             return Success<IEnumerable<UserDto>>(usersResult.Data, "获取启用用户列表成功");
         }
         catch (Exception ex)
@@ -319,6 +321,7 @@ public class UsersController : BaseApiController
                 RealName = realName,
                 Email = email,
                 PhoneNumber = phoneNumber,
+
                 // Role = role ?? string.Empty, // Role字段已移除
                 Status = isActive.HasValue ? (isActive.Value ? CommonStatus.Enabled : CommonStatus.Disabled) : (CommonStatus?)null
             };
@@ -377,6 +380,7 @@ public class UsersController : BaseApiController
             {
                 LogOperation("创建用户", result.Data, result.Data.Id);
             }
+
             return HandleServiceResult(result, "用户创建成功");
         }
         catch (InvalidOperationException ex) when (ex.Message.Contains("已存在"))

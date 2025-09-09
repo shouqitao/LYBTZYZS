@@ -148,6 +148,7 @@ public class WorkbenchRouter : IWorkbenchRouter
     {
         return
         [
+
             // 用户和患者管理
             new NavigationItem
             {
@@ -230,6 +231,7 @@ public class WorkbenchRouter : IWorkbenchRouter
     {
         return
         [
+
             // 核心诊疗功能
             new NavigationItem
             {
@@ -299,6 +301,7 @@ public class WorkbenchRouter : IWorkbenchRouter
     {
         return
         [
+
             // 患者接待核心功能
             new NavigationItem
             {
@@ -603,8 +606,7 @@ public static class WorkbenchPermissionMapper
     {
         return UserRoleWorkbenchMap.ToDictionary(
             kvp => kvp.Key,
-            kvp => kvp.Value.WorkbenchView
-        );
+            kvp => kvp.Value.WorkbenchView);
     }
 
     /// <summary>

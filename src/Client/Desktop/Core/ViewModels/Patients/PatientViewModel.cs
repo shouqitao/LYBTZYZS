@@ -118,6 +118,7 @@ namespace LYBT.Desktop.Core.ViewModels.Patients
 
                     return Math.Max(0, age);
                 }
+
                 return 0;
             }
         }

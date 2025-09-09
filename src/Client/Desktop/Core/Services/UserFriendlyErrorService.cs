@@ -427,6 +427,7 @@ namespace LYBT.Desktop.Core.Services
                     await Task.Delay(ctx.RetryCount * 1000); // 指数退避
                     return true;
                 }
+
                 return false;
             });
 
@@ -504,6 +505,7 @@ namespace LYBT.Desktop.Core.Services
                             IsAutomated = false
                         });
                     }
+
                     break;
 
                 case "unauthorized":

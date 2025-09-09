@@ -20,6 +20,7 @@
             {
                 return result;
             }
+
             return default(T)!;
         }
 
@@ -36,6 +37,7 @@
             {
                 return result;
             }
+
             return defaultValue;
         }
 
@@ -53,6 +55,7 @@
                 value = result;
                 return true;
             }
+
             value = default(T)!;
             return false;
         }

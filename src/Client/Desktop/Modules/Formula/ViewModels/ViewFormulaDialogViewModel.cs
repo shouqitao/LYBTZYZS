@@ -146,6 +146,7 @@ namespace LYBT.Desktop.Formula.ViewModels
             try
             {
                 StatusMessage = "正在准备打印...";
+
                 // TODO: 实现打印功能
                 await Task.Delay(1000); // 模拟打印准备
                 StatusMessage = "验方已发送到打印机";
@@ -162,6 +163,7 @@ namespace LYBT.Desktop.Formula.ViewModels
             try
             {
                 StatusMessage = "正在导出验方...";
+
                 // TODO: 实现导出功能（PDF或Excel）
                 await Task.Delay(500); // 模拟导出
                 StatusMessage = "验方导出成功";

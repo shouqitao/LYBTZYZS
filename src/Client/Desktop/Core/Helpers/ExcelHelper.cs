@@ -55,8 +55,10 @@ namespace LYBT.Desktop.Core.Helpers
                         var value = property.GetValue(item);
                         SetCellValue(cell, value);
                     }
+
                     columnIndex++;
                 }
+
                 rowIndex++;
             }
 
@@ -64,6 +66,7 @@ namespace LYBT.Desktop.Core.Helpers
             for (int i = 0; i < columns.Count; i++)
             {
                 sheet.AutoSizeColumn(i);
+
                 // 设置最小列宽
                 if (sheet.GetColumnWidth(i) < 3000)
                 {
@@ -76,6 +79,7 @@ namespace LYBT.Desktop.Core.Helpers
             {
                 workbook.Write(fs);
             }
+
             workbook.Close();
         }
 
@@ -122,6 +126,7 @@ namespace LYBT.Desktop.Core.Helpers
             for (int i = 0; i < columns.Length; i++)
             {
                 sheet.AutoSizeColumn(i);
+
                 // 设置最小列宽
                 if (sheet.GetColumnWidth(i) < 3000)
                 {
@@ -134,6 +139,7 @@ namespace LYBT.Desktop.Core.Helpers
             {
                 workbook.Write(fs);
             }
+
             workbook.Close();
         }
 
@@ -201,6 +207,7 @@ namespace LYBT.Desktop.Core.Helpers
                         dataTable.Rows.Add(dataRow);
                     }
                 }
+
                 workbook.Close();
             }
 
@@ -300,6 +307,7 @@ namespace LYBT.Desktop.Core.Helpers
                     {
                         return cell.DateCellValue;
                     }
+
                     return cell.NumericCellValue;
 
                 case CellType.String:
@@ -317,6 +325,7 @@ namespace LYBT.Desktop.Core.Helpers
                     {
                         return cell.StringCellValue;
                     }
+
                 default:
                     return string.Empty;
             }

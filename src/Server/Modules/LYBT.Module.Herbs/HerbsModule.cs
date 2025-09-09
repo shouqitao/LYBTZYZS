@@ -1,4 +1,4 @@
-﻿using LYBT.Module.Herbs.Interfaces;
+using LYBT.Module.Herbs.Interfaces;
 using LYBT.Module.Herbs.Mapping;
 using LYBT.Module.Herbs.Repositories;
 using LYBT.Module.Herbs.Services;

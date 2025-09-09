@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 
 // UltraThink v2.0: HerbInfo模型已被移除，不再引用
 // using LYBT.Desktop.Core.Models.Herbs;

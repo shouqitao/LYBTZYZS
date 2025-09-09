@@ -24,80 +24,80 @@ public class UserBusinessService(
     #region 标准CRUD操作
 
     public async Task<ServiceResult<UserDto>> CreateAsync(UserMutationDto createDto, CancellationToken cancellationToken = default)
-{
-    ArgumentNullException.ThrowIfNull(createDto, nameof(createDto));
+    {
+        ArgumentNullException.ThrowIfNull(createDto, nameof(createDto));
 
-    return await _exceptionHandler.HandleException<UserDto>(
-        async (ct) =>
-        {
-            _logger.LogInformation("开始处理用户创建: {Username}", createDto.Username);
-
-            // 传递取消令牌给API调用
-            var refitResponse = await _userApi.CreateUserAsync(createDto).ConfigureAwait(false);
-            
-            // 检查是否取消
-            ct.ThrowIfCancellationRequested();
-
-            if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
+        return await _exceptionHandler.HandleException<UserDto>(
+            async (ct) =>
             {
-                var apiResponse = refitResponse.Content;
-                if (apiResponse.Success && apiResponse.Data != null)
+                _logger.LogInformation("开始处理用户创建: {Username}", createDto.Username);
+
+                // 传递取消令牌给API调用
+                var refitResponse = await _userApi.CreateUserAsync(createDto).ConfigureAwait(false);
+
+                // 检查是否取消
+                ct.ThrowIfCancellationRequested();
+
+                if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
                 {
-                    _logger.LogInformation("用户创建成功: {Username}", apiResponse.Data.Username);
-                    return ServiceResult<UserDto>.Success(apiResponse.Data);
+                    var apiResponse = refitResponse.Content;
+                    if (apiResponse.Success && apiResponse.Data != null)
+                    {
+                        _logger.LogInformation("用户创建成功: {Username}", apiResponse.Data.Username);
+                        return ServiceResult<UserDto>.Success(apiResponse.Data);
+                    }
+
+                    _logger.LogWarning(
+                        "用户创建业务失败: {Username}, 错误: {Message}",
+                        createDto.Username, apiResponse.Message);
+                    return ServiceResult<UserDto>.Failure(apiResponse.Message ?? "创建用户失败，请检查输入信息");
                 }
 
                 _logger.LogWarning(
-                    "用户创建业务失败: {Username}, 错误: {Message}",
-                    createDto.Username, apiResponse.Message);
-                return ServiceResult<UserDto>.Failure(apiResponse.Message ?? "创建用户失败，请检查输入信息");
-            }
-
-            _logger.LogWarning(
-                "用户创建HTTP请求失败: {Username}, 状态码: {StatusCode}",
-                createDto.Username, refitResponse.StatusCode);
-            return ServiceResult<UserDto>.Failure("创建用户网络请求失败，请检查网络连接");
-        }
-        , nameof(CreateAsync), $"创建用户: {createDto.Username}", cancellationToken);
-}
+                    "用户创建HTTP请求失败: {Username}, 状态码: {StatusCode}",
+                    createDto.Username, refitResponse.StatusCode);
+                return ServiceResult<UserDto>.Failure("创建用户网络请求失败，请检查网络连接");
+            },
+            nameof(CreateAsync), $"创建用户: {createDto.Username}", cancellationToken);
+    }
 
     public async Task<ServiceResult<UserDto>> UpdateAsync(UserMutationDto updateDto, CancellationToken cancellationToken = default)
-{
-    ArgumentNullException.ThrowIfNull(updateDto, nameof(updateDto));
+    {
+        ArgumentNullException.ThrowIfNull(updateDto, nameof(updateDto));
 
-    return await _exceptionHandler.HandleException<UserDto>(
-        async (ct) =>
-        {
-            _logger.LogInformation("开始处理用户更新: {UserId}", updateDto.Id);
-
-            // 传递取消令牌给API调用
-            var refitResponse = await _userApi.UpdateUserAsync(updateDto.Id, updateDto).ConfigureAwait(false);
-            
-            // 检查是否取消
-            ct.ThrowIfCancellationRequested();
-
-            if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
+        return await _exceptionHandler.HandleException<UserDto>(
+            async (ct) =>
             {
-                var apiResponse = refitResponse.Content;
-                if (apiResponse.Success && apiResponse.Data != null)
+                _logger.LogInformation("开始处理用户更新: {UserId}", updateDto.Id);
+
+                // 传递取消令牌给API调用
+                var refitResponse = await _userApi.UpdateUserAsync(updateDto.Id, updateDto).ConfigureAwait(false);
+
+                // 检查是否取消
+                ct.ThrowIfCancellationRequested();
+
+                if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
                 {
-                    _logger.LogInformation("用户更新成功: {UserId}", updateDto.Id);
-                    return ServiceResult<UserDto>.Success(apiResponse.Data);
+                    var apiResponse = refitResponse.Content;
+                    if (apiResponse.Success && apiResponse.Data != null)
+                    {
+                        _logger.LogInformation("用户更新成功: {UserId}", updateDto.Id);
+                        return ServiceResult<UserDto>.Success(apiResponse.Data);
+                    }
+
+                    _logger.LogWarning(
+                        "用户更新业务失败: {UserId}, 错误: {Message}",
+                        updateDto.Id, apiResponse.Message);
+                    return ServiceResult<UserDto>.Failure(apiResponse.Message ?? "更新用户失败，请检查输入信息");
                 }
 
                 _logger.LogWarning(
-                    "用户更新业务失败: {UserId}, 错误: {Message}",
-                    updateDto.Id, apiResponse.Message);
-                return ServiceResult<UserDto>.Failure(apiResponse.Message ?? "更新用户失败，请检查输入信息");
-            }
-
-            _logger.LogWarning(
-                "用户更新HTTP请求失败: {UserId}, 状态码: {StatusCode}",
-                updateDto.Id, refitResponse.StatusCode);
-            return ServiceResult<UserDto>.Failure("更新用户网络请求失败，请检查网络连接");
-        }
-        , nameof(UpdateAsync), $"更新用户: {updateDto.Id}", cancellationToken);
-}
+                    "用户更新HTTP请求失败: {UserId}, 状态码: {StatusCode}",
+                    updateDto.Id, refitResponse.StatusCode);
+                return ServiceResult<UserDto>.Failure("更新用户网络请求失败，请检查网络连接");
+            },
+            nameof(UpdateAsync), $"更新用户: {updateDto.Id}", cancellationToken);
+    }
 
     public async Task<ServiceResult<bool>> DeleteAsync(Guid userId)
     {
@@ -105,11 +105,11 @@ public class UserBusinessService(
             async (ct) =>
             {
                 _logger.LogInformation("删除用户: {UserId}", userId);
-                
+
                 // 注意：这里使用ToggleStatus接口来软删除用户（设为禁用状态）
                 // 这样既实现了"删除"功能，又保持了历史数据完整性
                 var refitResponse = await _userApi.ToggleStatusAsync(userId).ConfigureAwait(false);
-                
+
                 ct.ThrowIfCancellationRequested();
 
                 if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
@@ -127,8 +127,8 @@ public class UserBusinessService(
 
                 _logger.LogWarning("用户删除HTTP请求失败: {UserId}, 状态码: {StatusCode}", userId, refitResponse.StatusCode);
                 return ServiceResult<bool>.Failure("删除用户网络请求失败，请检查网络连接");
-            }
-            , nameof(DeleteAsync), $"删除用户: {userId}", CancellationToken.None);
+            },
+            nameof(DeleteAsync), $"删除用户: {userId}", CancellationToken.None);
     }
 
     #endregion 标准CRUD操作
@@ -141,9 +141,9 @@ public class UserBusinessService(
             async (ct) =>
             {
                 _logger.LogInformation("启用用户: {UserId}", userId);
-                
+
                 var refitResponse = await _userApi.ToggleStatusAsync(userId).ConfigureAwait(false);
-                
+
                 ct.ThrowIfCancellationRequested();
 
                 if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
@@ -161,8 +161,8 @@ public class UserBusinessService(
 
                 _logger.LogWarning("用户启用HTTP请求失败: {UserId}, 状态码: {StatusCode}", userId, refitResponse.StatusCode);
                 return ServiceResult<bool>.Failure("启用用户网络请求失败，请检查网络连接");
-            }
-            , nameof(EnableAsync), $"启用用户: {userId}", CancellationToken.None);
+            },
+            nameof(EnableAsync), $"启用用户: {userId}", CancellationToken.None);
     }
 
     public async Task<ServiceResult<bool>> DisableAsync(Guid userId)
@@ -171,9 +171,9 @@ public class UserBusinessService(
             async (ct) =>
             {
                 _logger.LogInformation("禁用用户: {UserId}", userId);
-                
+
                 var refitResponse = await _userApi.ToggleStatusAsync(userId).ConfigureAwait(false);
-                
+
                 ct.ThrowIfCancellationRequested();
 
                 if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
@@ -191,14 +191,14 @@ public class UserBusinessService(
 
                 _logger.LogWarning("用户禁用HTTP请求失败: {UserId}, 状态码: {StatusCode}", userId, refitResponse.StatusCode);
                 return ServiceResult<bool>.Failure("禁用用户网络请求失败，请检查网络连接");
-            }
-            , nameof(DisableAsync), $"禁用用户: {userId}", CancellationToken.None);
+            },
+            nameof(DisableAsync), $"禁用用户: {userId}", CancellationToken.None);
     }
 
     public async Task<ServiceResult<int>> BatchEnableAsync(List<Guid> ids, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(ids, nameof(ids));
-        
+
         if (!ids.Any())
         {
             return ServiceResult<int>.Failure("用户ID列表不能为空");
@@ -208,10 +208,10 @@ public class UserBusinessService(
             async (ct) =>
             {
                 _logger.LogInformation("批量启用用户，用户数: {Count}", ids.Count);
-                
+
                 var batchDto = new BatchIdsDto { Ids = ids };
                 var refitResponse = await _userApi.BatchEnableAsync(batchDto).ConfigureAwait(false);
-                
+
                 ct.ThrowIfCancellationRequested();
 
                 if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
@@ -229,14 +229,14 @@ public class UserBusinessService(
 
                 _logger.LogWarning("批量启用用户HTTP请求失败，用户数: {Count}, 状态码: {StatusCode}", ids.Count, refitResponse.StatusCode);
                 return ServiceResult<int>.Failure("批量启用用户网络请求失败，请检查网络连接");
-            }
-            , nameof(BatchEnableAsync), $"批量启用用户: {ids.Count}", cancellationToken);
+            },
+            nameof(BatchEnableAsync), $"批量启用用户: {ids.Count}", cancellationToken);
     }
 
     public async Task<ServiceResult<int>> BatchDisableAsync(List<Guid> ids, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(ids, nameof(ids));
-        
+
         if (!ids.Any())
         {
             return ServiceResult<int>.Failure("用户ID列表不能为空");
@@ -246,10 +246,10 @@ public class UserBusinessService(
             async (ct) =>
             {
                 _logger.LogInformation("批量禁用用户，用户数: {Count}", ids.Count);
-                
+
                 var batchDto = new BatchIdsDto { Ids = ids };
                 var refitResponse = await _userApi.BatchDisableAsync(batchDto).ConfigureAwait(false);
-                
+
                 ct.ThrowIfCancellationRequested();
 
                 if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
@@ -267,8 +267,8 @@ public class UserBusinessService(
 
                 _logger.LogWarning("批量禁用用户HTTP请求失败，用户数: {Count}, 状态码: {StatusCode}", ids.Count, refitResponse.StatusCode);
                 return ServiceResult<int>.Failure("批量禁用用户网络请求失败，请检查网络连接");
-            }
-            , nameof(BatchDisableAsync), $"批量禁用用户: {ids.Count}", cancellationToken);
+            },
+            nameof(BatchDisableAsync), $"批量禁用用户: {ids.Count}", cancellationToken);
     }
 
     #endregion 状态管理操作
@@ -281,10 +281,10 @@ public class UserBusinessService(
             async (ct) =>
             {
                 _logger.LogInformation("重置用户密码: {UserId}", userId);
-                
+
                 // 注意：ResetPasswordAsync API不需要newPassword参数，会重置为系统默认密码
                 var refitResponse = await _userApi.ResetPasswordAsync(userId).ConfigureAwait(false);
-                
+
                 ct.ThrowIfCancellationRequested();
 
                 if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
@@ -302,8 +302,8 @@ public class UserBusinessService(
 
                 _logger.LogWarning("用户密码重置HTTP请求失败: {UserId}, 状态码: {StatusCode}", userId, refitResponse.StatusCode);
                 return ServiceResult<bool>.Failure("密码重置网络请求失败，请检查网络连接");
-            }
-            , nameof(ResetPasswordAsync), $"重置用户密码: {userId}", cancellationToken);
+            },
+            nameof(ResetPasswordAsync), $"重置用户密码: {userId}", cancellationToken);
     }
 
     public async Task<ServiceResult<bool>> ChangePasswordAsync(Guid id, string oldPassword, string newPassword, CancellationToken cancellationToken = default)
@@ -315,16 +315,16 @@ public class UserBusinessService(
             async (ct) =>
             {
                 _logger.LogInformation("修改用户密码: {UserId}", id);
-                
+
                 var changePasswordDto = new ChangePasswordDto
                 {
                     UserId = id,
                     OldPassword = oldPassword,
                     NewPassword = newPassword
                 };
-                
+
                 var refitResponse = await _userApi.ChangePasswordAsync(changePasswordDto).ConfigureAwait(false);
-                
+
                 ct.ThrowIfCancellationRequested();
 
                 if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
@@ -342,8 +342,8 @@ public class UserBusinessService(
 
                 _logger.LogWarning("用户密码修改HTTP请求失败: {UserId}, 状态码: {StatusCode}", id, refitResponse.StatusCode);
                 return ServiceResult<bool>.Failure("密码修改网络请求失败，请检查网络连接");
-            }
-            , nameof(ChangePasswordAsync), $"修改用户密码: {id}", cancellationToken);
+            },
+            nameof(ChangePasswordAsync), $"修改用户密码: {id}", cancellationToken);
     }
 
     public async Task<ServiceResult<bool>> ChangeProfileAsync(ChangeProfileDto profileDto, CancellationToken cancellationToken = default)
@@ -354,9 +354,9 @@ public class UserBusinessService(
             async (ct) =>
             {
                 _logger.LogInformation("修改用户个人信息: {UserId}", profileDto.UserId);
-                
+
                 var refitResponse = await _userApi.ChangeProfileAsync(profileDto).ConfigureAwait(false);
-                
+
                 ct.ThrowIfCancellationRequested();
 
                 if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
@@ -374,8 +374,8 @@ public class UserBusinessService(
 
                 _logger.LogWarning("用户个人信息修改HTTP请求失败: {UserId}, 状态码: {StatusCode}", profileDto.UserId, refitResponse.StatusCode);
                 return ServiceResult<bool>.Failure("个人信息修改网络请求失败，请检查网络连接");
-            }
-            , nameof(ChangeProfileAsync), $"修改用户个人信息: {profileDto.UserId}", cancellationToken);
+            },
+            nameof(ChangeProfileAsync), $"修改用户个人信息: {profileDto.UserId}", cancellationToken);
     }
 
     #endregion 密码管理操作

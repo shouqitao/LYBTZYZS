@@ -1,4 +1,4 @@
-﻿using LYBT.Desktop.Workbench.Core;
+using LYBT.Desktop.Workbench.Core;
 
 namespace LYBT.Desktop.Workbench.Admin.Services
 {

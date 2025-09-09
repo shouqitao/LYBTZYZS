@@ -103,6 +103,7 @@ public class MedicalCaseController : BaseApiController
             {
                 LogOperation("创建医疗案例", result.Data, result.Data.Id);
             }
+
             return HandleServiceResult(result, "医疗案例创建成功");
         }
         catch (Exception ex)
@@ -136,6 +137,7 @@ public class MedicalCaseController : BaseApiController
             {
                 LogOperation("更新医疗案例", result.Data, id);
             }
+
             return HandleServiceResult(result, "医疗案例更新成功");
         }
         catch (Exception ex)

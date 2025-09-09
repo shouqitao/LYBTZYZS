@@ -58,6 +58,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                     PatientGender = value.Gender.ToString();
                     PatientAge = value.Age; // UltraThink v2.0: 使用计算属性Age
                 }
+
                 SaveCommand.RaiseCanExecuteChanged();
             }
         }
@@ -277,6 +278,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                     await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
                     {
                         Patients.Clear();
+
                         // UltraThink v2.0: 直接使用DTO，SearchAsync已返回PatientDto列表
                         foreach (var patientDto in result.Data)
                         {
@@ -311,6 +313,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                     {
                         // UltraThink v2.0: 直接使用DTO，从DetailDto转换为Dto
                         var patientDetail = result.Data;
+
                         // 创建基础PatientDto对象
                         var patientDto = new PatientDto
                         {
@@ -320,6 +323,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                             Gender = patientDetail.Gender,
                             BirthDate = patientDetail.BirthDate, // UltraThink v2.0: 统一字段名后直接使用BirthDate
                             Status = patientDetail.Status
+
                             // UltraThink v2.0: 移除已删除的字段 CreateTime, UpdateTime, Remark
                         };
                         SelectedPatient = patientDto;
@@ -349,6 +353,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 if (result.IsSuccess && result.Data != null)
                 {
                     Patients.Clear();
+
                     // UltraThink v2.0: SearchAsync已返回PatientDto列表，直接使用
                     foreach (var patientDto in result.Data)
                     {

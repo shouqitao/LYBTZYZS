@@ -1,4 +1,4 @@
-﻿namespace LYBT.Infrastructure
+namespace LYBT.Infrastructure
 {
 
     /// <summary>

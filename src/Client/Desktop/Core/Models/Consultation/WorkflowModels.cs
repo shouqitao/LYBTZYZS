@@ -1,4 +1,4 @@
-﻿namespace LYBT.Desktop.Core.Models.Consultation
+namespace LYBT.Desktop.Core.Models.Consultation
 {
 
     /// <summary>

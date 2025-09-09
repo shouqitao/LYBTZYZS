@@ -1,4 +1,4 @@
-﻿namespace LYBT.Desktop.Core.Models.Cache
+namespace LYBT.Desktop.Core.Models.Cache
 {
 
     /// <summary>

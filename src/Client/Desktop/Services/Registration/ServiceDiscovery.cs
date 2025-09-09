@@ -254,6 +254,7 @@ public static class ServiceDiscovery
         {
             return true; // 暂时返回true，避免阻断注册
         }
+
         Logger.LogDebug("方法 {MethodName} 的IL长度可能超过纯委托预期", method.Name);
 
         return true; // 暂时返回true，避免阻断注册

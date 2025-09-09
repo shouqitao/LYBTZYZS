@@ -105,6 +105,7 @@ public class ConsultationController : BaseApiController
             {
                 LogOperation("开始看诊", result.Data, result.Data.Id);
             }
+
             return HandleServiceResult(result, "看诊开始成功");
         }
         catch (Exception ex)
@@ -138,6 +139,7 @@ public class ConsultationController : BaseApiController
             {
                 LogOperation("更新看诊记录", result.Data, id);
             }
+
             return HandleServiceResult(result, "看诊记录更新成功");
         }
         catch (Exception ex)

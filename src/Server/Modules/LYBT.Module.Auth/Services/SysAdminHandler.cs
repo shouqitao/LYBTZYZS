@@ -73,6 +73,7 @@ namespace LYBT.Module.Auth.Services
                 RealName = "系统管理员",
                 PinYinCode = "XTGLY",
                 Status = CommonStatus.Enabled,
+
                 // UltraThink v2.0简化：CreateTime字段已删除
                 PasswordHash = string.Empty // 密码从AdminSecrets表获取
             };

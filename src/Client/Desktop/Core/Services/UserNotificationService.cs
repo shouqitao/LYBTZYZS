@@ -614,6 +614,7 @@ namespace LYBT.Desktop.Core.Services
 
                     _logger?.LogInformation("用户通知服务已释放资源");
                 }
+
                 _disposed = true;
             }
         }

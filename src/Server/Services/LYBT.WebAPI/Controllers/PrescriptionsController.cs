@@ -81,6 +81,7 @@ namespace LYBT.WebAPI.Controllers
                     PageSize = pageSize,
                     Keyword = keyword,
                     PrescriptionStatus = status,
+
                     // 注意：其他属性暂时移除，因为PrescriptionQueryDto中没有定义
                     // PatientName、DoctorName、Diagnosis、MinDosageCount、MaxDosageCount等
                 };

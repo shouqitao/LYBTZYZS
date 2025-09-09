@@ -51,13 +51,15 @@ namespace LYBT.Entities.Patients
         /// <summary>证件号码 - Epic 05-P0-03: 敏感数据，需加密存储</summary>
         [StringLength(50)]
         [DisplayName("证件号码")]
+
         // Epic 05-P0-03: 标记为身份敏感数据需要加密
-        [SensitiveData(SensitiveDataType.IdentityInfo, MaskingMode = MaskingMode.Partial)] 
+        [SensitiveData(SensitiveDataType.IdentityInfo, MaskingMode = MaskingMode.Partial)]
         public string? IdNumber { get; set; }
 
         /// <summary>手机号码 - Epic 05-P0-03: 敏感数据，需加密存储</summary>
         [StringLength(20)]
         [DisplayName("手机号码")]
+
         // Epic 05-P0-03: 标记为联系敏感数据需要加密
         [SensitiveData(SensitiveDataType.ContactInfo, MaskingMode = MaskingMode.Partial)]
         public string? PhoneNumber { get; set; }
@@ -65,6 +67,7 @@ namespace LYBT.Entities.Patients
         /// <summary>地址 - Epic 05-P0-03: 敏感数据，需加密存储</summary>
         [StringLength(256)] // 匹配数据库的 nvarchar(256)
         [DisplayName("地址")]
+
         // Epic 05-P0-03: 标记为个人信息敏感数据需要加密
         [SensitiveData(SensitiveDataType.PersonalInfo, MaskingMode = MaskingMode.Default)]
         public string? Address { get; set; }
@@ -72,6 +75,7 @@ namespace LYBT.Entities.Patients
         /// <summary>过敏史 - Epic 05-P0-03: 医疗敏感数据，需加密存储</summary>
         [StringLength(500)]
         [DisplayName("过敏史")]
+
         // Epic 05-P0-03: 标记为医疗敏感数据需要加密
         [SensitiveData(SensitiveDataType.MedicalInfo, MaskingMode = MaskingMode.Hash)]
         public string? AllergyHistory { get; set; }
@@ -143,6 +147,7 @@ namespace LYBT.Entities.Patients
 
                     return age;
                 }
+
                 return null;
             }
         }

@@ -1,4 +1,4 @@
-﻿// UltraThink架构 - 模块化注册扩展
+// UltraThink架构 - 模块化注册扩展
 using LYBT.Module.Auth;
 using LYBT.Module.Consultation;
 using LYBT.Module.Formula;

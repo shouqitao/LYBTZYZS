@@ -48,6 +48,7 @@ namespace LYBT.Desktop.Core.Converters
             {
                 return status.GetDescription();
             }
+
             return "未知状态";
         }
 
@@ -69,6 +70,7 @@ namespace LYBT.Desktop.Core.Converters
             {
                 return status.GetDescription();
             }
+
             return "未知状态";
         }
 

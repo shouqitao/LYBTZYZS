@@ -48,6 +48,7 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
                     {
                         Unit = _selectedHerb.Unit ?? "g";
                     }
+
                     ConfirmCommand?.RaiseCanExecuteChanged();
                 }
             }

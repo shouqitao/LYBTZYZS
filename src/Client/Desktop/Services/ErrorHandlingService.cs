@@ -298,6 +298,7 @@ namespace LYBT.Desktop.Services
                 {
                     await ShowErrorAsync(handledError);
                 }
+
                 return false;
             }
         }
@@ -315,6 +316,7 @@ namespace LYBT.Desktop.Services
                 {
                     await ShowErrorAsync(handledError);
                 }
+
                 return default;
             }
         }
@@ -367,6 +369,7 @@ namespace LYBT.Desktop.Services
             {
                 return messageFunc(exception);
             }
+
             return null;
         }
 

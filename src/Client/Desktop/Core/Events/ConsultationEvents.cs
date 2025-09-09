@@ -1,4 +1,4 @@
-﻿using LYBT.Shared.Models.Contracts.Patients;
+using LYBT.Shared.Models.Contracts.Patients;
 using Prism.Events;
 
 namespace LYBT.Desktop.Core.Events

@@ -1,4 +1,4 @@
-﻿using LYBT.Shared.Models.Contracts.Herbs;
+using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
 using Prism.Mvvm;
 

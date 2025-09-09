@@ -260,6 +260,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 var id = navigationContext.Parameters.GetValue<Guid>("MedicalCaseId");
                 return MedicalCaseId == id;
             }
+
             return false;
         }
 
@@ -419,6 +420,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                     Id = MedicalCase.Id,
                     PatientId = MedicalCase.PatientId,
                     DoctorId = MedicalCase.DoctorId,
+
                     // 更新详细信息字段
                     ChiefComplaint = ChiefComplaint,
                     PresentIllness = CurrentIllnessHistory,

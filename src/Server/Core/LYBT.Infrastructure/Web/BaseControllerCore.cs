@@ -36,6 +36,7 @@ public abstract class BaseControllerCore : ControllerBase
         {
             return (opId, userName, roleStr ?? "User");
         }
+
         throw new UnauthorizedAccessException("未登录或用户信息无效");
     }
 

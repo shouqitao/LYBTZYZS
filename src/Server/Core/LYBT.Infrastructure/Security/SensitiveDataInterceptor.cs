@@ -1,10 +1,10 @@
 using System.Data.Common;
 using System.Reflection;
+using LYBT.Entities.Attributes;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using LYBT.Entities.Attributes;
 
 namespace LYBT.Infrastructure.Security
 {
@@ -97,6 +97,7 @@ namespace LYBT.Infrastructure.Security
             catch (Exception ex)
             {
                 _logger.LogError(ex, "处理敏感数据时发生错误");
+
                 // 不抛出异常，避免影响正常的数据保存操作
             }
         }
@@ -129,7 +130,8 @@ namespace LYBT.Infrastructure.Security
                     var encryptedValue = encryptionService.Encrypt(currentValue, sensitiveAttr.DataType);
                     property.SetValue(entry.Entity, encryptedValue);
 
-                    _logger.LogDebug("已加密实体 {EntityType} 的敏感属性 {Property}",
+                    _logger.LogDebug(
+                        "已加密实体 {EntityType} 的敏感属性 {Property}",
                         entityType.Name, property.Name);
                 }
                 catch (Exception ex)

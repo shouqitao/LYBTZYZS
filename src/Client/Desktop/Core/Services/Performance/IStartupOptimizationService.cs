@@ -1,4 +1,4 @@
-﻿namespace LYBT.Desktop.Core.Services.Performance
+namespace LYBT.Desktop.Core.Services.Performance
 {
 
     /// <summary>

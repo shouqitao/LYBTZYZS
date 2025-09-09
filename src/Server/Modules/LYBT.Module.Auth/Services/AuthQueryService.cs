@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using LYBT.Entities.Users;
 using LYBT.Module.Auth.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;

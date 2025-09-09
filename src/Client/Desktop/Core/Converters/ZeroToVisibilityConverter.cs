@@ -17,6 +17,7 @@ namespace LYBT.Desktop.Core.Converters
             {
                 return count == 0 ? Visibility.Visible : Visibility.Collapsed;
             }
+
             return Visibility.Collapsed;
         }
 

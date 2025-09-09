@@ -113,6 +113,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components
                                 Quantity = item.Quantity,
                                 Unit = item.Unit,
                                 UnitPrice = item.UnitPrice,
+
                                 // Subtotal会自动计算，无需手动赋值
                                 Remark = item.Remark ?? string.Empty
                             };

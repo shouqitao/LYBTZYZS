@@ -91,10 +91,10 @@ namespace LYBT.Desktop.Consultation.ViewModels
         public ICommand LoadPatientsCommand { get; }
         public ICommand SaveConsultationCommand { get; }
         public ICommand ClearDataCommand { get; }
-        
+
         // P0-02新增：患者历史诊疗查询功能
         public ICommand ViewPatientHistoryCommand { get; }
-        
+
         // P0-04新增：四诊录入模板功能
         public ICommand ShowTemplateMenuCommand { get; }
 
@@ -118,10 +118,10 @@ namespace LYBT.Desktop.Consultation.ViewModels
             LoadPatientsCommand = new DelegateCommand(async () => await LoadPatientsAsync());
             SaveConsultationCommand = new DelegateCommand(async () => await SaveConsultationAsync());
             ClearDataCommand = new DelegateCommand(ClearData);
-            
+
             // P0-02新增：初始化患者历史查询命令
             ViewPatientHistoryCommand = new DelegateCommand(async () => await ViewPatientHistoryAsync(), () => SelectedPatient != null);
-            
+
             // P0-04新增：初始化四诊模板命令
             ShowTemplateMenuCommand = new DelegateCommand(async () => await ShowTemplateMenuAsync());
 
@@ -142,6 +142,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
             catch (Exception ex)
             {
                 LogError(ex, "初始化失败");
+
                 // 可以考虑显示用户友好的错误消息
                 ShowError("系统初始化失败，请稍后重试");
             }
@@ -156,6 +157,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
             try
             {
                 IsLoading = true;
+
                 // 使用分页查询获取患者列表
                 var query = new LYBT.Shared.Models.Contracts.Patients.PatientPagedQueryDto
                 {
@@ -294,7 +296,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
 
                 // 获取患者的所有医案历史
                 var medicalCasesResult = await _medicalCaseService.GetByPatientIdAsync(SelectedPatient.Id);
-                
+
                 if (!medicalCasesResult.IsSuccess || medicalCasesResult.Data == null || !medicalCasesResult.Data.Any())
                 {
                     ShowHistoryDialog(SelectedPatient, null);
@@ -362,7 +364,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
         private void ShowHistoryDialog(PatientDto patient, List<PatientHistoryDetail>? historyDetails)
         {
             var historyContent = new System.Text.StringBuilder();
-            
+
             // 患者基本信息
             historyContent.AppendLine("=== 患者历史诊疗记录 ===\n");
             historyContent.AppendLine("【患者信息】");
@@ -370,12 +372,12 @@ namespace LYBT.Desktop.Consultation.ViewModels
             historyContent.AppendLine($"性别: {GetGenderText(patient.Gender)}");
             historyContent.AppendLine($"年龄: {patient.Age}岁");
             historyContent.AppendLine($"电话: {patient.PhoneNumber ?? "未填写"}");
-            
+
             if (!string.IsNullOrEmpty(patient.AllergyHistory) && patient.AllergyHistory != "无")
             {
                 historyContent.AppendLine($"⚠️ 过敏史: {patient.AllergyHistory}");
             }
-            
+
             historyContent.AppendLine();
 
             if (historyDetails == null || !historyDetails.Any())
@@ -387,28 +389,28 @@ namespace LYBT.Desktop.Consultation.ViewModels
             else
             {
                 historyContent.AppendLine($"【诊疗记录】(共 {historyDetails.Count} 次就诊)\n");
-                
+
                 for (int i = 0; i < historyDetails.Count; i++)
                 {
                     var detail = historyDetails[i];
                     var medicalCase = detail.MedicalCase;
-                    
+
                     historyContent.AppendLine($"▶ 第 {i + 1} 次就诊 - {detail.CreateTime:yyyy-MM-dd HH:mm}");
                     historyContent.AppendLine($"   状态: {detail.Status}");
-                    
+
                     if (!string.IsNullOrEmpty(medicalCase.Remark))
                     {
-                        var remark = medicalCase.Remark.Length > 50 ? 
-                            medicalCase.Remark.Substring(0, 50) + "..." : 
+                        var remark = medicalCase.Remark.Length > 50 ?
+                            medicalCase.Remark.Substring(0, 50) + "..." :
                             medicalCase.Remark;
                         historyContent.AppendLine($"   备注: {remark}");
                     }
-                    
+
                     // 显示诊断信息
                     if (detail.HasConsultation && detail.Consultation != null)
                     {
                         var consultation = detail.Consultation;
-                        
+
                         if (!string.IsNullOrEmpty(consultation.ChiefComplaint))
                         {
                             var complaint = consultation.ChiefComplaint.Length > 40 ?
@@ -416,7 +418,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
                                 consultation.ChiefComplaint;
                             historyContent.AppendLine($"   主诉: {complaint}");
                         }
-                        
+
                         if (!string.IsNullOrEmpty(consultation.Diagnosis))
                         {
                             var diagnosis = consultation.Diagnosis.Length > 40 ?
@@ -425,18 +427,18 @@ namespace LYBT.Desktop.Consultation.ViewModels
                             historyContent.AppendLine($"   诊断: {diagnosis}");
                         }
                     }
-                    
+
                     historyContent.AppendLine();
                 }
-                
+
                 if (historyDetails.Count >= 20)
                 {
                     historyContent.AppendLine("📋 注：为保持界面简洁，仅显示最近20条记录。");
                 }
-                
+
                 historyContent.AppendLine("💡 提示：可在医案管理模块查看完整详细记录。");
             }
-            
+
             // 使用基类的通知方法显示历史信息
             ShowInfo(historyContent.ToString());
         }
@@ -498,7 +500,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
             {
                 // 获取常用四诊模板列表
                 var templates = GetCommonTemplates();
-                
+
                 if (!templates.Any())
                 {
                     ShowInfo("暂无可用的四诊模板");
@@ -509,7 +511,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
                 var menuContent = new System.Text.StringBuilder();
                 menuContent.AppendLine("=== 常用四诊录入模板 ===\n");
                 menuContent.AppendLine("请选择要使用的模板（输入数字序号）：\n");
-                
+
                 for (int i = 0; i < templates.Count; i++)
                 {
                     var template = templates[i];
@@ -518,13 +520,13 @@ namespace LYBT.Desktop.Consultation.ViewModels
                     menuContent.AppendLine($"   典型体征：{template.Signs}");
                     menuContent.AppendLine();
                 }
-                
+
                 menuContent.AppendLine("💡 提示：选择模板后将自动填入四诊内容，您可以根据实际情况进行调整");
-                
+
                 // 简化实现：显示模板信息供参考，不实现复杂的选择逻辑
                 // 为小诊所优化，避免过度复杂的用户交互
                 ShowInfo(menuContent.ToString());
-                
+
                 // 应用第一个最常用的模板作为示例
                 if (templates.Any())
                 {
@@ -552,9 +554,9 @@ namespace LYBT.Desktop.Consultation.ViewModels
                 if (!string.IsNullOrEmpty(Consultation.Palpation?.Trim()))
                 {
                     var confirmOverwrite = await ShowConfirmationAsync(
-                        "当前四诊内容不为空，是否要替换为模板内容？", 
+                        "当前四诊内容不为空，是否要替换为模板内容？",
                         "确认替换");
-                        
+
                     if (!confirmOverwrite)
                     {
                         return;
@@ -563,11 +565,11 @@ namespace LYBT.Desktop.Consultation.ViewModels
 
                 // 应用模板内容到四诊录入区域
                 var templateContent = BuildTemplateContent(template);
-                
+
                 // 更新四诊录入内容（映射到Palpation字段）
                 var currentConsultation = Consultation;
                 currentConsultation.Palpation = templateContent;
-                
+
                 // 触发属性变更通知
                 Consultation = currentConsultation;
 
@@ -588,34 +590,34 @@ namespace LYBT.Desktop.Consultation.ViewModels
         private string BuildTemplateContent(FourDiagnosisTemplate template)
         {
             var content = new System.Text.StringBuilder();
-            
+
             content.AppendLine($"【{template.Name}】");
             content.AppendLine();
-            
+
             content.AppendLine("望诊：");
             content.AppendLine($"  面色：{template.FaceColor}");
             content.AppendLine($"  舌质：{template.TongueBody}");
             content.AppendLine($"  舌苔：{template.TongueCoating}");
             content.AppendLine();
-            
+
             content.AppendLine("闻诊：");
             content.AppendLine($"  声音：{template.Voice}");
             content.AppendLine($"  呼吸：{template.Breathing}");
             content.AppendLine();
-            
+
             content.AppendLine("问诊：");
             content.AppendLine($"  主要症状：{template.MainSymptoms}");
             content.AppendLine($"  伴随症状：{template.AccompanyingSymptoms}");
             content.AppendLine();
-            
+
             content.AppendLine("切诊：");
             content.AppendLine($"  脉象：{template.Pulse}");
             content.AppendLine($"  腹诊：{template.Abdomen}");
             content.AppendLine();
-            
+
             content.AppendLine("【辨证要点】");
             content.AppendLine($"  {template.DiagnosisPoints}");
-            
+
             return content.ToString();
         }
 
@@ -716,6 +718,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
         private async Task<bool> ShowConfirmationAsync(string message, string title)
         {
             await Task.Delay(50); // 避免异步警告
+
             // 简化实现：默认确认，避免复杂的UI交互
             return true;
         }

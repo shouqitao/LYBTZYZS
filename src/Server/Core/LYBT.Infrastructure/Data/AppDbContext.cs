@@ -59,10 +59,10 @@ namespace LYBT.Infrastructure.Data
         public DbSet<Formula> Formulas { get; set; }
 
         // ==================== 事务协调器相关实体 ====================
-        
+
         // 事务日志
         public DbSet<TransactionLog> TransactionLogs { get; set; }
-        
+
         // 事务步骤日志
         public DbSet<TransactionStepLog> TransactionStepLogs { get; set; }
 
@@ -84,6 +84,7 @@ namespace LYBT.Infrastructure.Data
             ConfigureAdminSecrets(modelBuilder);
             ConfigureAuth(modelBuilder);
             ConfigurePatients(modelBuilder);
+
             // ConfigureRegistrations(modelBuilder); // 模块已删除
             ConfigureMedicalCases(modelBuilder);
             ConfigureConsultations(modelBuilder);
@@ -91,6 +92,7 @@ namespace LYBT.Infrastructure.Data
             ConfigureHerbs(modelBuilder);
             ConfigureFormulas(modelBuilder);
             ConfigureTransactions(modelBuilder);
+
             // ConfigurePharmacies(modelBuilder); // 模块已删除
             // ConfigurePharmacyHerbs(modelBuilder); // 模块已删除
             // ConfigureCashiers(modelBuilder); // 模块已删除
@@ -99,6 +101,7 @@ namespace LYBT.Infrastructure.Data
 
             // ConfigureConfigurationModels(modelBuilder); // UltraThink v2.0简化：配置实体已移除
             ConfigureSecurityAudit(modelBuilder);
+
             // ConfigureTokenStore(modelBuilder); // UltraThink安全优化 P8-01B (已移除过度设计的令牌存储)
         }
 
@@ -107,14 +110,17 @@ namespace LYBT.Infrastructure.Data
             var entity = modelBuilder.Entity<User>();
             entity.ToTable("Users");
             entity.HasKey(u => u.Id);
+
             // 明确配置字段映射以解决命名冲突
             entity.HasIndex(u => u.Username).IsUnique();
             entity.Property(u => u.Username).HasMaxLength(50).HasColumnName("UserName");
             entity.Property(u => u.RealName).HasMaxLength(100);
             entity.Property(u => u.PasswordHash).HasMaxLength(255);
+
             // CreateTime字段已删除（UltraThink v2.0简化）
             entity.Property(u => u.PinYinCode).HasMaxLength(50);
             entity.Property(u => u.PhoneNumber).HasMaxLength(20);
+
             // UltraThink v2.0: Remark字段已删除（简化用户管理）
             // 配置枚举字段
             entity.Property(u => u.Status).HasConversion<int>();
@@ -168,11 +174,13 @@ namespace LYBT.Infrastructure.Data
             entity.Property(p => p.Name).HasMaxLength(100);
 
             entity.Property(p => p.PinYinCode).HasMaxLength(20);
+
             // CreateTime字段已删除（UltraThink v2.0简化）
             entity.Property(p => p.PhoneNumber).HasMaxLength(20);
             entity.Property(p => p.Address).HasMaxLength(256);
             entity.Property(p => p.IdType).HasMaxLength(20);
             entity.Property(p => p.IdNumber).HasMaxLength(50);
+
             // Occupation、MaritalStatus、Ethnicity、Education字段已删除
             entity.Property(p => p.AllergyHistory).HasMaxLength(500);
 
@@ -189,6 +197,7 @@ namespace LYBT.Infrastructure.Data
             entity.Property(m => m.Remark).HasMaxLength(500);
             entity.HasIndex(m => m.PatientId);
             entity.HasIndex(m => m.DoctorId);
+
             // CreateTime字段已删除（UltraThink v2.0简化）
             entity.HasIndex(m => m.Status);
 
@@ -254,6 +263,7 @@ namespace LYBT.Infrastructure.Data
             entity.Property(h => h.Effect).HasMaxLength(256);
             entity.Property(h => h.Usage).HasMaxLength(256);
             entity.Property(h => h.Price).HasColumnType("decimal(18,2)");
+
             // 配置Status枚举字段
             entity.Property(h => h.Status).HasConversion<int>();
             entity.HasIndex(h => h.Name);
@@ -270,6 +280,7 @@ namespace LYBT.Infrastructure.Data
             entity.Property(f => f.Usage).HasMaxLength(500);
             entity.Property(f => f.Property).HasMaxLength(300);
             entity.Property(f => f.Remark).HasMaxLength(500);
+
             // 配置Status枚举字段
             entity.Property(f => f.Status).HasConversion<int>();
             entity.Property(f => f.IsShared).HasDefaultValue(false);
@@ -293,7 +304,7 @@ namespace LYBT.Infrastructure.Data
             transactionLogEntity.Property(t => t.EntityIds).HasColumnType("nvarchar(max)");
             transactionLogEntity.Property(t => t.Exception).HasColumnType("nvarchar(max)");
             transactionLogEntity.Property(t => t.ContextSnapshot).HasColumnType("nvarchar(max)");
-            
+
             // 索引
             transactionLogEntity.HasIndex(t => t.TransactionId);
             transactionLogEntity.HasIndex(t => t.Status);
@@ -312,7 +323,7 @@ namespace LYBT.Infrastructure.Data
             stepLogEntity.Property(s => s.Metadata).HasColumnType("nvarchar(max)");
             stepLogEntity.Property(s => s.IsCompensation).HasDefaultValue(false);
             stepLogEntity.Property(s => s.RetryCount).HasDefaultValue(0);
-            
+
             // 索引
             stepLogEntity.HasIndex(s => s.TransactionId);
             stepLogEntity.HasIndex(s => s.Status);

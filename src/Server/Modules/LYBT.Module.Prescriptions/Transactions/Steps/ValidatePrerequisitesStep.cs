@@ -2,12 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.EntityFrameworkCore;
-using LYBT.Infrastructure.Transactions.Steps;
-using LYBT.Infrastructure.Transactions;
 using LYBT.Infrastructure.Data;
+using LYBT.Infrastructure.Transactions;
+using LYBT.Infrastructure.Transactions.Steps;
 using LYBT.Shared.Models.Enums;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.Module.Prescriptions.Transactions.Steps
 {
@@ -64,7 +64,7 @@ namespace LYBT.Module.Prescriptions.Transactions.Steps
 
         /// <inheritdoc />
         protected override async Task<TransactionStepResult> ExecuteDatabaseOperationAsync(
-            PrescriptionTransactionContext context, 
+            PrescriptionTransactionContext context,
             CancellationToken cancellationToken = default)
         {
             try
@@ -135,7 +135,8 @@ namespace LYBT.Module.Prescriptions.Transactions.Steps
                 // 验证患者匹配
                 if (medicalCase.PatientId != context.PatientId)
                 {
-                    context.LogError("Medical case patient mismatch: Case.PatientId={CasePatientId}, Context.PatientId={ContextPatientId}", 
+                    context.LogError(
+                        "Medical case patient mismatch: Case.PatientId={CasePatientId}, Context.PatientId={ContextPatientId}",
                         medicalCase.PatientId, context.PatientId);
                     context.SetValidationResult("MedicalCasePatientMatch", false);
                     return CreateFailureResult(new InvalidOperationException("医疗案例与患者不匹配"));
@@ -170,7 +171,8 @@ namespace LYBT.Module.Prescriptions.Transactions.Steps
                     // 验证诊断记录与医疗案例的关联
                     if (consultation.MedicalCaseId != context.MedicalCaseId)
                     {
-                        context.LogError("Consultation medical case mismatch: Consultation.MedicalCaseId={ConsultationMedicalCaseId}, Context.MedicalCaseId={ContextMedicalCaseId}",
+                        context.LogError(
+                            "Consultation medical case mismatch: Consultation.MedicalCaseId={ConsultationMedicalCaseId}, Context.MedicalCaseId={ContextMedicalCaseId}",
                             consultation.MedicalCaseId, context.MedicalCaseId);
                         context.SetValidationResult("ConsultationMedicalCaseMatch", false);
                         return CreateFailureResult(new InvalidOperationException("诊断记录与医疗案例不匹配"));
@@ -214,7 +216,8 @@ namespace LYBT.Module.Prescriptions.Transactions.Steps
                 // 6. 记录验证历史
                 await RecordValidationHistoryAsync(context, validationResults, cancellationToken);
 
-                Logger.LogInformation("Prerequisites validation completed successfully for prescription creation: Patient={PatientId}, Doctor={DoctorId}, MedicalCase={MedicalCaseId}",
+                Logger.LogInformation(
+                    "Prerequisites validation completed successfully for prescription creation: Patient={PatientId}, Doctor={DoctorId}, MedicalCase={MedicalCaseId}",
                     context.PatientId, context.DoctorId, context.MedicalCaseId);
 
                 return CreateSuccessResult(new Dictionary<string, object>
@@ -238,20 +241,21 @@ namespace LYBT.Module.Prescriptions.Transactions.Steps
         /// <param name="validations">验证记录</param>
         /// <param name="cancellationToken">取消令牌</param>
         private async Task RecordValidationHistoryAsync(
-            PrescriptionTransactionContext context, 
-            List<string> validations, 
+            PrescriptionTransactionContext context,
+            List<string> validations,
             CancellationToken cancellationToken)
         {
             try
             {
                 context.PrescriptionMetadata["PrerequisiteValidations"] = validations;
                 context.PrescriptionMetadata["ValidationTimestamp"] = DateTime.UtcNow;
-                
+
                 Logger.LogDebug("Recorded prerequisite validation history: {Validations}", string.Join("; ", validations));
             }
             catch (Exception ex)
             {
                 Logger.LogWarning(ex, "Failed to record prerequisite validation history");
+
                 // 不抛出异常，因为这不是关键操作
             }
         }
@@ -263,11 +267,12 @@ namespace LYBT.Module.Prescriptions.Transactions.Steps
         /// <param name="cancellationToken">取消令牌</param>
         /// <returns>是否存在重复</returns>
         private async Task<bool> HasDuplicateActivePrescriptionAsync(
-            PrescriptionTransactionContext context, 
+            PrescriptionTransactionContext context,
             CancellationToken cancellationToken)
         {
             return await DbContext.Set<LYBT.Entities.Prescriptions.Prescription>()
-                .AnyAsync(p => p.MedicalCaseId == context.MedicalCaseId &&
+                .AnyAsync(
+                    p => p.MedicalCaseId == context.MedicalCaseId &&
                               p.Status == PrescriptionStatus.Draft &&
                               p.Indication == context.Indication, cancellationToken);
         }

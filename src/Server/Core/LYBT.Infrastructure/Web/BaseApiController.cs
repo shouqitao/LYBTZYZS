@@ -63,6 +63,7 @@ namespace LYBT.Infrastructure.Web
             {
                 response.Errors = new { code = errorCode };
             }
+
             response.RequestId = GetRequestId();
             return Ok(response); // 业务失败仍返回200，通过success字段区分
         }
@@ -77,6 +78,7 @@ namespace LYBT.Infrastructure.Web
             {
                 response.Errors = new { code = errorCode };
             }
+
             response.RequestId = GetRequestId();
             return Ok(response);
         }
@@ -91,6 +93,7 @@ namespace LYBT.Infrastructure.Web
             {
                 response.Errors = new { code = errorCode };
             }
+
             response.RequestId = GetRequestId();
             return BadRequest(response);
         }
@@ -105,6 +108,7 @@ namespace LYBT.Infrastructure.Web
             {
                 response.Errors = new { code = errorCode };
             }
+
             response.RequestId = GetRequestId();
             return BadRequest(response);
         }
@@ -119,6 +123,7 @@ namespace LYBT.Infrastructure.Web
             {
                 response.Errors = new { code = errorCode };
             }
+
             response.RequestId = GetRequestId();
             return this.Unauthorized(response);
         }
@@ -133,6 +138,7 @@ namespace LYBT.Infrastructure.Web
             {
                 response.Errors = new { code = errorCode };
             }
+
             response.RequestId = GetRequestId();
             return this.Unauthorized(response);
         }
@@ -147,6 +153,7 @@ namespace LYBT.Infrastructure.Web
             {
                 response.Errors = new { code = errorCode };
             }
+
             response.RequestId = GetRequestId();
             return StatusCode(403, response);
         }
@@ -161,6 +168,7 @@ namespace LYBT.Infrastructure.Web
             {
                 response.Errors = new { code = errorCode };
             }
+
             response.RequestId = GetRequestId();
             return this.NotFound(response);
         }
@@ -175,6 +183,7 @@ namespace LYBT.Infrastructure.Web
             {
                 response.Errors = new { code = errorCode };
             }
+
             response.RequestId = GetRequestId();
             return this.NotFound(response);
         }
@@ -189,6 +198,7 @@ namespace LYBT.Infrastructure.Web
             {
                 response.Errors = new { code = errorCode };
             }
+
             response.RequestId = GetRequestId();
             return StatusCode(500, response);
         }
@@ -203,6 +213,7 @@ namespace LYBT.Infrastructure.Web
             {
                 response.Errors = new { code = errorCode };
             }
+
             response.RequestId = GetRequestId();
             return StatusCode(500, response);
         }
@@ -274,6 +285,7 @@ namespace LYBT.Infrastructure.Web
                 var message = GetValidationErrorMessage();
                 return ValidationFail(message);
             }
+
             return null;
         }
 
@@ -287,6 +299,7 @@ namespace LYBT.Infrastructure.Web
                 var message = GetValidationErrorMessage();
                 return ValidationFail<T>(message);
             }
+
             return null;
         }
 
@@ -299,6 +312,7 @@ namespace LYBT.Infrastructure.Web
             {
                 return ValidationFail($"{paramName}不能为空");
             }
+
             return null;
         }
 
@@ -311,6 +325,7 @@ namespace LYBT.Infrastructure.Web
             {
                 return ValidationFail<T>($"{paramName}不能为空");
             }
+
             return null;
         }
 
@@ -368,6 +383,7 @@ namespace LYBT.Infrastructure.Web
             {
                 response.Errors = new { code = errorCode };
             }
+
             response.Data = pagedResult;
             response.RequestId = GetRequestId();
             return BadRequest(response);
@@ -385,6 +401,7 @@ namespace LYBT.Infrastructure.Web
             {
                 response.Errors = new { code = errorCode };
             }
+
             response.Data = pagedResult;
             response.RequestId = GetRequestId();
             return Ok(response); // 业务失败仍返回200，通过success字段区分
@@ -400,6 +417,7 @@ namespace LYBT.Infrastructure.Web
                 var message = GetValidationErrorMessage();
                 return ValidationFailPaged<T>(message);
             }
+
             return null;
         }
 

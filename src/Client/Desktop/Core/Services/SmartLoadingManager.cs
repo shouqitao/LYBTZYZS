@@ -260,6 +260,7 @@ namespace LYBT.Desktop.Core.Services
             {
                 operationInfo.Operation.Cancel();
             }
+
             _logger.LogDebug("取消所有加载操作，共 {Count} 个", operations.Count);
         }
 

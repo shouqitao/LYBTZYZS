@@ -126,6 +126,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             else
             {
                 _logger.LogInformation("未接收到医疗案例ID参数，切换到管理模式");
+
                 // 没有医疗案例ID，显示历史管理界面
                 LoadManagementWorkflow();
             }
@@ -184,6 +185,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             catch (Exception ex)
             {
                 _logger.LogError(ex, "加载处方工作流时发生错误");
+
                 // 抛出异常让调用者处理，而不是显示对话框
                 throw new InvalidOperationException($"加载处方编辑器失败：{ex.Message}", ex);
             }
@@ -211,6 +213,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             catch (Exception ex)
             {
                 _logger.LogError(ex, "加载处方管理工作流时发生错误");
+
                 // 抛出异常让调用者处理
                 throw new InvalidOperationException($"加载处方管理失败：{ex.Message}", ex);
             }

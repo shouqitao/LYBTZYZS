@@ -50,9 +50,9 @@ namespace LYBT.Infrastructure.Security
         public DataEncryptionService(IConfiguration configuration, ILogger<DataEncryptionService> logger)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            
+
             // 从配置中获取主加密密钥
-            _encryptionKey = configuration["Security:EncryptionKey"] 
+            _encryptionKey = configuration["Security:EncryptionKey"]
                 ?? throw new InvalidOperationException("未配置数据加密密钥");
 
             // 验证密钥长度
@@ -63,8 +63,9 @@ namespace LYBT.Infrastructure.Security
 
             // 为不同类型的敏感数据生成专用密钥
             _typeSpecificKeys = GenerateTypeSpecificKeys();
-            
-            _logger.LogInformation("数据加密服务初始化完成，支持 {DataTypes} 种敏感数据类型", 
+
+            _logger.LogInformation(
+                "数据加密服务初始化完成，支持 {DataTypes} 种敏感数据类型",
                 Enum.GetValues<SensitiveDataType>().Length);
         }
 
@@ -95,9 +96,10 @@ namespace LYBT.Infrastructure.Security
                 Buffer.BlockCopy(encrypted, 0, result, iv.Length, encrypted.Length);
 
                 var base64Result = Convert.ToBase64String(result);
-                _logger.LogDebug("敏感数据加密完成，数据类型: {DataType}, 长度: {Length}", 
+                _logger.LogDebug(
+                    "敏感数据加密完成，数据类型: {DataType}, 长度: {Length}",
                     dataType, plaintext.Length);
-                
+
                 return base64Result;
             }
             catch (Exception ex)
@@ -115,7 +117,7 @@ namespace LYBT.Infrastructure.Security
             try
             {
                 var buffer = Convert.FromBase64String(ciphertext);
-                
+
                 using var aes = Aes.Create();
                 aes.Key = _typeSpecificKeys[dataType];
 
@@ -135,7 +137,7 @@ namespace LYBT.Infrastructure.Security
 
                 var result = srDecrypt.ReadToEnd();
                 _logger.LogDebug("敏感数据解密完成，数据类型: {DataType}", dataType);
-                
+
                 return result;
             }
             catch (Exception ex)
@@ -186,7 +188,7 @@ namespace LYBT.Infrastructure.Security
             var start = data[..visibleChars];
             var end = data[^visibleChars..];
             var maskLength = data.Length - (2 * visibleChars);
-            
+
             return $"{start}{new string('*', maskLength)}{end}";
         }
 
@@ -218,8 +220,9 @@ namespace LYBT.Infrastructure.Security
                 {
                     Array.Clear(key, 0, key.Length);
                 }
+
                 _typeSpecificKeys.Clear();
-                
+
                 _disposed = true;
                 _logger.LogInformation("数据加密服务已释放资源");
             }

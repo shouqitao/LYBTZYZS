@@ -53,15 +53,15 @@ public static class ExceptionMessageMapper
     {
         return exception switch
         {
-            HttpRequestException httpEx when TryExtractHttpStatusCode(httpEx, out var statusCode) 
+            HttpRequestException httpEx when TryExtractHttpStatusCode(httpEx, out var statusCode)
                 => GetHttpStatusMessage(statusCode),
-            
-            AggregateException aggEx when aggEx.InnerExceptions.Count == 1 
+
+            AggregateException aggEx when aggEx.InnerExceptions.Count == 1
                 => GetUserFriendlyMessage(aggEx.InnerExceptions.First()),
-            
-            _ when ExceptionMessageMap.TryGetValue(exception.GetType(), out var message) 
+
+            _ when ExceptionMessageMap.TryGetValue(exception.GetType(), out var message)
                 => message,
-            
+
             _ => GetFallbackMessage(exception)
         };
     }
@@ -72,40 +72,40 @@ public static class ExceptionMessageMapper
     private static bool TryExtractHttpStatusCode(HttpRequestException httpException, out HttpStatusCode statusCode)
     {
         statusCode = HttpStatusCode.InternalServerError;
-        
+
         // 检查异常消息中是否包含状态码信息
         var message = httpException.Message;
-        
+
         if (message.Contains("400") || message.Contains("Bad Request"))
         {
             statusCode = HttpStatusCode.BadRequest;
             return true;
         }
-        
+
         if (message.Contains("401") || message.Contains("Unauthorized"))
         {
             statusCode = HttpStatusCode.Unauthorized;
             return true;
         }
-        
+
         if (message.Contains("403") || message.Contains("Forbidden"))
         {
             statusCode = HttpStatusCode.Forbidden;
             return true;
         }
-        
+
         if (message.Contains("404") || message.Contains("Not Found"))
         {
             statusCode = HttpStatusCode.NotFound;
             return true;
         }
-        
+
         if (message.Contains("409") || message.Contains("Conflict"))
         {
             statusCode = HttpStatusCode.Conflict;
             return true;
         }
-        
+
         if (message.Contains("500") || message.Contains("Internal Server Error"))
         {
             statusCode = HttpStatusCode.InternalServerError;
@@ -120,8 +120,8 @@ public static class ExceptionMessageMapper
     /// </summary>
     private static string GetHttpStatusMessage(HttpStatusCode statusCode)
     {
-        return HttpStatusMessageMap.TryGetValue(statusCode, out var message) 
-            ? message 
+        return HttpStatusMessageMap.TryGetValue(statusCode, out var message)
+            ? message
             : "网络请求失败，请稍后重试";
     }
 
@@ -132,10 +132,10 @@ public static class ExceptionMessageMapper
     {
         // 对于未知异常，提供通用的用户友好消息
         // 在开发环境可以显示更多详细信息
-        #if DEBUG
+#if DEBUG
         return $"操作失败: {exception.GetType().Name} - {exception.Message}";
-        #else
+#else
         return "操作失败，请稍后重试。如问题持续存在，请联系技术支持";
-        #endif
+#endif
     }
 }

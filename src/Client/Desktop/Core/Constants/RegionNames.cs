@@ -27,10 +27,6 @@
         /// </summary>
         public const string ConsultationWorkbenchContentRegion = "ConsultationWorkbenchContentRegion";
 
-
-
-
-
         /// <summary>
         /// 获取工作台内容区域名称
         /// </summary>

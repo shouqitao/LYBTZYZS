@@ -1,4 +1,4 @@
-﻿namespace LYBT.Desktop.Auth.Services;
+namespace LYBT.Desktop.Auth.Services;
 
 /// <summary>
 /// 登录状态DTO

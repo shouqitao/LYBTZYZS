@@ -2,12 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using LYBT.Infrastructure.Transactions.Steps;
-using LYBT.Infrastructure.Transactions;
-using LYBT.Infrastructure.Data;
 using LYBT.Entities.Prescriptions;
+using LYBT.Infrastructure.Data;
+using LYBT.Infrastructure.Transactions;
+using LYBT.Infrastructure.Transactions.Steps;
 using LYBT.Shared.Models.Enums;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.Module.Prescriptions.Transactions.Steps
 {
@@ -57,16 +57,18 @@ namespace LYBT.Module.Prescriptions.Transactions.Steps
 
                 // 验证是否已存在同名处方
                 var existingPrescription = await DbContext.Set<Prescription>()
-                    .FirstOrDefaultAsync(p => p.MedicalCaseId == context.MedicalCaseId &&
+                    .FirstOrDefaultAsync(
+                        p => p.MedicalCaseId == context.MedicalCaseId &&
                                             p.Indication == context.Indication &&
                                             p.Status == PrescriptionStatus.Draft, cancellationToken);
 
                 if (existingPrescription != null)
                 {
-                    context.LogWarning("Prescription with same indication already exists for medical case: {MedicalCaseId}, Indication: {Indication}", 
+                    context.LogWarning(
+                        "Prescription with same indication already exists for medical case: {MedicalCaseId}, Indication: {Indication}",
                         context.MedicalCaseId, context.Indication);
                     context.SetValidationResult("DuplicatePrescription", true);
-                    
+
                     // 可以选择是否允许重复，这里设为允许
                     // return false;
                 }
@@ -84,7 +86,7 @@ namespace LYBT.Module.Prescriptions.Transactions.Steps
 
         /// <inheritdoc />
         protected override async Task<TransactionStepResult> ExecuteDatabaseOperationAsync(
-            PrescriptionTransactionContext context, 
+            PrescriptionTransactionContext context,
             CancellationToken cancellationToken = default)
         {
             try
@@ -113,14 +115,15 @@ namespace LYBT.Module.Prescriptions.Transactions.Steps
 
                 // 保存到数据库
                 var createdPrescription = await CreateEntityAsync(prescription, cancellationToken);
-                
+
                 // 更新上下文
                 context.PrescriptionId = createdPrescription.Id;
-                
+
                 // 设置实体ID用于补偿
                 context.SetEntityId("Prescription", createdPrescription.Id);
-                
-                Logger.LogInformation("Created prescription successfully: {PrescriptionId} for medical case: {MedicalCaseId}, Patient: {PatientId}", 
+
+                Logger.LogInformation(
+                    "Created prescription successfully: {PrescriptionId} for medical case: {MedicalCaseId}, Patient: {PatientId}",
                     createdPrescription.Id, context.MedicalCaseId, context.PatientId);
 
                 // 记录处方创建历史
@@ -150,8 +153,8 @@ namespace LYBT.Module.Prescriptions.Transactions.Steps
 
         /// <inheritdoc />
         public override async Task<TransactionStepResult> CompensateAsync(
-            PrescriptionTransactionContext context, 
-            TransactionStepResult originalResult, 
+            PrescriptionTransactionContext context,
+            TransactionStepResult originalResult,
             CancellationToken cancellationToken = default)
         {
             if (!SupportsCompensation)
@@ -172,20 +175,20 @@ namespace LYBT.Module.Prescriptions.Transactions.Steps
 
                 // 删除创建的处方记录
                 var deleted = await DeleteEntityAsync<Prescription>(prescriptionId.Value, cancellationToken);
-                
+
                 if (deleted)
                 {
                     // 清除上下文中的相关信息
                     context.PrescriptionId = null;
                     context.RemoveEntityId("Prescription");
-                    
+
                     // 记录补偿历史
                     await RecordCompensationHistoryAsync(context, prescriptionId.Value, cancellationToken);
-                    
+
                     Logger.LogInformation("Successfully compensated: deleted prescription {PrescriptionId}", prescriptionId);
-                    
-                    return CreateSuccessResult(new Dictionary<string, object> 
-                    { 
+
+                    return CreateSuccessResult(new Dictionary<string, object>
+                    {
                         ["Action"] = "PrescriptionDeleted",
                         ["DeletedId"] = prescriptionId,
                         ["CompensationTimestamp"] = DateTime.UtcNow
@@ -211,8 +214,8 @@ namespace LYBT.Module.Prescriptions.Transactions.Steps
         /// <param name="prescription">处方实体</param>
         /// <param name="cancellationToken">取消令牌</param>
         private async Task RecordPrescriptionCreationHistoryAsync(
-            PrescriptionTransactionContext context, 
-            Prescription prescription, 
+            PrescriptionTransactionContext context,
+            Prescription prescription,
             CancellationToken cancellationToken)
         {
             try
@@ -230,12 +233,13 @@ namespace LYBT.Module.Prescriptions.Transactions.Steps
                     ItemCount = context.Items.Count,
                     Status = context.PrescriptionStatus.ToString()
                 };
-                
+
                 Logger.LogDebug("Recorded prescription creation history: {PrescriptionId}", prescription.Id);
             }
             catch (Exception ex)
             {
                 Logger.LogWarning(ex, "Failed to record prescription creation history");
+
                 // 不抛出异常，因为这不是关键操作
             }
         }
@@ -247,8 +251,8 @@ namespace LYBT.Module.Prescriptions.Transactions.Steps
         /// <param name="prescriptionId">处方ID</param>
         /// <param name="cancellationToken">取消令牌</param>
         private async Task RecordCompensationHistoryAsync(
-            PrescriptionTransactionContext context, 
-            Guid prescriptionId, 
+            PrescriptionTransactionContext context,
+            Guid prescriptionId,
             CancellationToken cancellationToken)
         {
             try
@@ -259,12 +263,13 @@ namespace LYBT.Module.Prescriptions.Transactions.Steps
                     CompensatedAt = DateTime.UtcNow,
                     Reason = "TransactionRollback"
                 };
-                
+
                 Logger.LogDebug("Recorded compensation history: {PrescriptionId}", prescriptionId);
             }
             catch (Exception ex)
             {
                 Logger.LogWarning(ex, "Failed to record compensation history");
+
                 // 不抛出异常，因为这不是关键操作
             }
         }

@@ -16,6 +16,7 @@ namespace LYBT.Desktop.Core.Converters
             {
                 return !boolValue;
             }
+
             return false;
         }
 
@@ -25,6 +26,7 @@ namespace LYBT.Desktop.Core.Converters
             {
                 return !boolValue;
             }
+
             return false;
         }
     }

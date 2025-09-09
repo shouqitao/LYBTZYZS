@@ -308,6 +308,7 @@ public class UnifiedApiClientManager(HttpClient httpClient, ILogger<UnifiedApiCl
                     _logger.LogError(ex, "释放API客户端管理器资源时发生异常");
                 }
             }
+
             _disposed = true;
         }
     }

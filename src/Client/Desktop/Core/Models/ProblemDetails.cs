@@ -1,4 +1,4 @@
-﻿namespace LYBT.Desktop.Core.Models
+namespace LYBT.Desktop.Core.Models
 {
 
     /// <summary>

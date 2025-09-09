@@ -15,6 +15,7 @@ namespace LYBT.Infrastructure.Transactions
         private readonly TransactionMetrics _transactionMetrics;
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="TransactionCoordinator"/> class.
         /// 初始化事务协调器
         /// </summary>
         /// <param name="logger">日志记录器</param>
@@ -69,7 +70,8 @@ namespace LYBT.Infrastructure.Transactions
                 _transactionMetrics.RecordTransactionSuccess(transactionName);
                 _transactionMetrics.RecordExecutionTime(transactionName, duration);
 
-                _logger.LogInformation("事务执行成功: {TransactionId} - {TransactionName}, 耗时: {Duration}ms",
+                _logger.LogInformation(
+                    "事务执行成功: {TransactionId} - {TransactionName}, 耗时: {Duration}ms",
                     transactionId, transactionName, duration.TotalMilliseconds);
 
                 return true;
@@ -108,9 +110,9 @@ namespace LYBT.Infrastructure.Transactions
         {
             // 基础实现 - 实际应该从存储中查询
             await Task.CompletedTask;
-            
+
             _logger.LogDebug("查询事务状态: {TransactionId}", transactionId);
-            
+
             // 暂时返回null，表示无法确定状态
             // 实际实现需要从数据库或缓存中查询
             return null;

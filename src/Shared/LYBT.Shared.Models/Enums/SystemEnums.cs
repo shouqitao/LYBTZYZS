@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.Text.Json.Serialization;
 
 namespace LYBT.Shared.Models.Enums
@@ -230,5 +230,47 @@ namespace LYBT.Shared.Models.Enums
         /// <summary>全天</summary>
         [Description("全天")]
         AllDay = 3
+    }
+
+    /// <summary>
+    /// 配伍类型枚举
+    /// </summary>
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    public enum CompatibilityType
+    {
+        /// <summary>未知</summary>
+        [Description("未知")]
+        Unknown = 0,
+
+        /// <summary>安全</summary>
+        [Description("安全")]
+        Safe = 1,
+
+        /// <summary>注意</summary>
+        [Description("注意")]
+        Warning = 2,
+
+        /// <summary>冲突</summary>
+        [Description("冲突")]
+        Conflict = 3
+    }
+
+    /// <summary>
+    /// 配伍严重程度枚举
+    /// </summary>
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    public enum CompatibilitySeverity
+    {
+        /// <summary>低</summary>
+        [Description("低")]
+        Low = 1,
+
+        /// <summary>中</summary>
+        [Description("中")]
+        Medium = 2,
+
+        /// <summary>高</summary>
+        [Description("高")]
+        High = 3
     }
 }

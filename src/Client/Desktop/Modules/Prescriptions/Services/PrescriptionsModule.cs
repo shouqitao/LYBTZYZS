@@ -1,4 +1,4 @@
-﻿using LYBT.Desktop.Prescriptions.Interfaces;
+using LYBT.Desktop.Prescriptions.Interfaces;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
@@ -67,7 +67,7 @@ public class PrescriptionsModule(
             }
 
             var original = originalResult.Data;
-            
+
             // 创建复制的处方DTO
             var createDto = new PrescriptionCreateDto
             {
@@ -97,12 +97,12 @@ public class PrescriptionsModule(
 
             // 调用创建方法来复制处方
             var copyResult = await _businessService.CreateAsync(createDto);
-            
+
             if (copyResult.IsSuccess)
             {
                 return ServiceResult<PrescriptionDto>.Success(copyResult.Data!, $"处方复制成功：{newName}");
             }
-            
+
             return ServiceResult<PrescriptionDto>.Failure($"处方复制失败：{copyResult.ErrorMessage}");
         }
         catch (Exception ex)

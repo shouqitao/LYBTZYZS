@@ -497,6 +497,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
                     {
                         return context.Random < percentage;
                     }
+
                     break;
 
                 case RuleType.Time:
@@ -506,6 +507,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
                         var now = DateTime.Now;
                         return now >= startTime && now <= endTime;
                     }
+
                     break;
             }
 
@@ -572,6 +574,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
                 {
                     data.VariantUsage[variant] = 0;
                 }
+
                 data.VariantUsage[variant]++;
             }
         }

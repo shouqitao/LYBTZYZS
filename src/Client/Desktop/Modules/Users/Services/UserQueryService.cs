@@ -1,4 +1,4 @@
-﻿using LYBT.Desktop.Users.Interfaces;
+using LYBT.Desktop.Users.Interfaces;
 using LYBT.Shared.Interfaces.Api;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
@@ -209,13 +209,13 @@ public class UserQueryService(
 
             // 通过查询用户名来验证是否已存在
             var userResult = await GetByUsernameAsync(username);
-            
+
             if (userResult.IsSuccess && userResult.Data != null)
             {
                 // 用户名已存在
                 return ServiceResult<bool>.Success(false, "用户名已存在");
             }
-            
+
             if (userResult.ErrorMessage?.Contains("未找到") == true)
             {
                 // 用户名可用

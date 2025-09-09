@@ -1,4 +1,4 @@
-﻿using LYBT.Desktop.Core.Models.Common;
+using LYBT.Desktop.Core.Models.Common;
 using SharedCommon = LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Desktop.Core.Interfaces.Services

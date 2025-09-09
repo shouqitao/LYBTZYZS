@@ -46,6 +46,7 @@ namespace LYBT.Desktop.Patients.ViewModels
                     {
                         GeneratePinYinCode();
                     }
+
                     SaveCommand.RaiseCanExecuteChanged();
                 }
             }

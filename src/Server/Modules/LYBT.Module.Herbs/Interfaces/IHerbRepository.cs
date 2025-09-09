@@ -1,4 +1,4 @@
-﻿using LYBT.Entities.Herbs;
+using LYBT.Entities.Herbs;
 using LYBT.Infrastructure.Interfaces;
 
 namespace LYBT.Module.Herbs.Interfaces

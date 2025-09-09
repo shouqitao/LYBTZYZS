@@ -186,6 +186,7 @@ namespace LYBT.Desktop.Core.Managers
                     _searchCancellationTokenSource?.Cancel();
                     _searchCancellationTokenSource?.Dispose();
                 }
+
                 _disposed = true;
             }
         }

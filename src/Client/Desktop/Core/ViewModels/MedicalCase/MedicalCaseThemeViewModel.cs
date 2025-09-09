@@ -237,28 +237,23 @@ namespace LYBT.Desktop.Core.ViewModels.MedicalCase
                 "StartConsultation" => (
                     new SolidColorBrush(Color.FromRgb(0, 123, 255)),
                     new SolidColorBrush(Colors.White),
-                    new SolidColorBrush(Color.FromRgb(0, 123, 255))
-                ),
+                    new SolidColorBrush(Color.FromRgb(0, 123, 255))),
                 "Complete" => (
                     new SolidColorBrush(Color.FromRgb(40, 167, 69)),
                     new SolidColorBrush(Colors.White),
-                    new SolidColorBrush(Color.FromRgb(40, 167, 69))
-                ),
+                    new SolidColorBrush(Color.FromRgb(40, 167, 69))),
                 "Cancel" => (
                     new SolidColorBrush(Color.FromRgb(255, 193, 7)),
                     new SolidColorBrush(Color.FromRgb(33, 37, 41)),
-                    new SolidColorBrush(Color.FromRgb(255, 193, 7))
-                ),
+                    new SolidColorBrush(Color.FromRgb(255, 193, 7))),
                 "Delete" => (
                     new SolidColorBrush(Color.FromRgb(220, 53, 69)),
                     new SolidColorBrush(Colors.White),
-                    new SolidColorBrush(Color.FromRgb(220, 53, 69))
-                ),
+                    new SolidColorBrush(Color.FromRgb(220, 53, 69))),
                 _ => (
                     new SolidColorBrush(Color.FromRgb(108, 117, 125)),
                     new SolidColorBrush(Colors.White),
-                    new SolidColorBrush(Color.FromRgb(108, 117, 125))
-                )
+                    new SolidColorBrush(Color.FromRgb(108, 117, 125)))
             };
         }
 
@@ -292,6 +287,7 @@ namespace LYBT.Desktop.Core.ViewModels.MedicalCase
             };
 
             var nodeColor = StatusIconBrush;
+
             // UltraThink v2.0简化：等待中的案例节点较大
             var nodeSize = _medicalCaseData.CaseStatus == MedicalCaseStatus.Registered ? 12.0 : 8.0;
 
@@ -332,8 +328,7 @@ namespace LYBT.Desktop.Core.ViewModels.MedicalCase
             return (
                 new SolidColorBrush(Colors.White),
                 new SolidColorBrush(Colors.Black),
-                new SolidColorBrush(Colors.Black)
-            );
+                new SolidColorBrush(Colors.Black));
         }
 
         #endregion 响应式主题

@@ -397,6 +397,7 @@ namespace LYBT.Desktop.Core.ViewModels
                 {
                     OnDisposing();
                 }
+
                 _disposed = true;
             }
         }

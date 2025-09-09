@@ -34,7 +34,7 @@ namespace LYBT.Desktop.Core.Interfaces.Services
         /// <summary>
         /// 获取当前用户信息
         /// </summary>
-        /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous operation.</placeholder></returns>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         Task<UserDto?> GetCurrentUserAsync();
 
         /// <summary>

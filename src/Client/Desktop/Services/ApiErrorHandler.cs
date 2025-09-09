@@ -47,6 +47,7 @@ namespace LYBT.Desktop.Services
                         {
                             _logger?.LogInformation("API调用在第{Attempt}次重试后成功: {Operation}", attempt, operationName ?? "未知操作");
                         }
+
                         return ServiceResult<T>.Success(response.Content!);
                     }
                     else

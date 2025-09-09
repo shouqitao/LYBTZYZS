@@ -60,6 +60,7 @@ public class AuthBusinessService(
                     catch (Exception sessionEx)
                     {
                         _logger.LogError(sessionEx, "更新会话状态失败: {Username}", response.Data.User.Username);
+
                         // 即使会话更新失败，登录也应该算成功，因为JWT令牌是有效的
                     }
                 }
@@ -105,6 +106,7 @@ public class AuthBusinessService(
                 catch (Exception sessionEx)
                 {
                     _logger.LogError(sessionEx, "清除本地会话状态失败");
+
                     // 登出过程中会话清理失败不应该影响登出结果
                 }
 

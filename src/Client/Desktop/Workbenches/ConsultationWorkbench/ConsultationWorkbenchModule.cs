@@ -1,4 +1,4 @@
-﻿// UltraThink Phase 3.4: 集成Formula模块功能
+// UltraThink Phase 3.4: 集成Formula模块功能
 using LYBT.Desktop.Formula.Views;
 using LYBT.Desktop.Workbench.Consultation.Navigation;
 using LYBT.Desktop.Workbench.Consultation.Services;

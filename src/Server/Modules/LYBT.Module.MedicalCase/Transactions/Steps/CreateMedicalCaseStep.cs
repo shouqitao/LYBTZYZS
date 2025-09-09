@@ -1,12 +1,12 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using LYBT.Infrastructure.Transactions.Steps;
-using LYBT.Infrastructure.Transactions;
 using LYBT.Infrastructure.Data;
+using LYBT.Infrastructure.Transactions;
+using LYBT.Infrastructure.Transactions.Steps;
 using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.Module.MedicalCase.Transactions.Steps
 {
@@ -75,8 +75,9 @@ namespace LYBT.Module.MedicalCase.Transactions.Steps
 
                 // 检查是否已有活跃的医疗案例
                 var hasActiveMedicalCase = await DbContext.Set<LYBT.Entities.MedicalCase.MedicalCase>()
-                    .AnyAsync(mc => mc.PatientId == context.PatientId && 
-                                  mc.Status != MedicalCaseStatus.Completed && 
+                    .AnyAsync(
+                        mc => mc.PatientId == context.PatientId &&
+                                  mc.Status != MedicalCaseStatus.Completed &&
                                   mc.Status != MedicalCaseStatus.Cancelled &&
                                   mc.Status != MedicalCaseStatus.Archived, cancellationToken);
 
@@ -84,7 +85,7 @@ namespace LYBT.Module.MedicalCase.Transactions.Steps
                 {
                     context.LogWarning("Patient already has active medical case: {PatientId}", context.PatientId);
                     context.SetValidationResult("HasActiveMedicalCase", true);
-                    
+
                     // 如果不是急诊，不允许创建重复案例
                     if (!context.IsEmergency)
                     {
@@ -108,7 +109,7 @@ namespace LYBT.Module.MedicalCase.Transactions.Steps
 
         /// <inheritdoc />
         protected override async Task<TransactionStepResult> ExecuteDatabaseOperationAsync(
-            ConsultationTransactionContext context, 
+            ConsultationTransactionContext context,
             CancellationToken cancellationToken = default)
         {
             try
@@ -129,15 +130,16 @@ namespace LYBT.Module.MedicalCase.Transactions.Steps
 
                 // 保存到数据库
                 var createdCase = await CreateEntityAsync(medicalCase, cancellationToken);
-                
+
                 // 更新上下文
                 context.MedicalCaseId = createdCase.Id;
                 context.MedicalCaseStatus = createdCase.Status;
-                
+
                 // 设置实体ID用于补偿
                 context.SetEntityId("MedicalCase", createdCase.Id);
-                
-                Logger.LogInformation("Created medical case successfully: {MedicalCaseId} for patient: {PatientId}", 
+
+                Logger.LogInformation(
+                    "Created medical case successfully: {MedicalCaseId} for patient: {PatientId}",
                     createdCase.Id, context.PatientId);
 
                 // 返回成功结果
@@ -152,8 +154,8 @@ namespace LYBT.Module.MedicalCase.Transactions.Steps
 
         /// <inheritdoc />
         public override async Task<TransactionStepResult> CompensateAsync(
-            ConsultationTransactionContext context, 
-            TransactionStepResult originalResult, 
+            ConsultationTransactionContext context,
+            TransactionStepResult originalResult,
             CancellationToken cancellationToken = default)
         {
             if (!SupportsCompensation)
@@ -174,18 +176,18 @@ namespace LYBT.Module.MedicalCase.Transactions.Steps
 
                 // 删除创建的医疗案例
                 var deleted = await DeleteEntityAsync<LYBT.Entities.MedicalCase.MedicalCase>(medicalCaseId.Value, cancellationToken);
-                
+
                 if (deleted)
                 {
                     // 清除上下文中的相关信息
                     context.MedicalCaseId = null;
                     context.MedicalCaseStatus = null;
                     context.RemoveEntityId("MedicalCase");
-                    
+
                     Logger.LogInformation("Successfully compensated: deleted medical case {MedicalCaseId}", medicalCaseId);
-                    
-                    return CreateSuccessResult(new Dictionary<string, object> 
-                    { 
+
+                    return CreateSuccessResult(new Dictionary<string, object>
+                    {
                         ["Action"] = "MedicalCaseDeleted",
                         ["DeletedId"] = medicalCaseId
                     });
@@ -212,8 +214,9 @@ namespace LYBT.Module.MedicalCase.Transactions.Steps
         private async Task<int> GetActiveCardsCountAsync(Guid patientId, CancellationToken cancellationToken)
         {
             return await DbContext.Set<LYBT.Entities.MedicalCase.MedicalCase>()
-                .CountAsync(mc => mc.PatientId == patientId && 
-                                 mc.Status != MedicalCaseStatus.Completed && 
+                .CountAsync(
+                    mc => mc.PatientId == patientId &&
+                                 mc.Status != MedicalCaseStatus.Completed &&
                                  mc.Status != MedicalCaseStatus.Cancelled &&
                                  mc.Status != MedicalCaseStatus.Archived, cancellationToken);
         }
@@ -228,11 +231,12 @@ namespace LYBT.Module.MedicalCase.Transactions.Steps
         {
             var todayStart = DateTime.Today;
             var todayEnd = DateTime.Today.AddDays(1);
-            
+
             // 检查医生今天的案例数量（简单的负载均衡）
             var todayCasesCount = await DbContext.Set<LYBT.Entities.MedicalCase.MedicalCase>()
-                .CountAsync(mc => mc.DoctorId == doctorId && 
-                                 mc.ConsultationDate >= todayStart && 
+                .CountAsync(
+                    mc => mc.DoctorId == doctorId &&
+                                 mc.ConsultationDate >= todayStart &&
                                  mc.ConsultationDate < todayEnd &&
                                  mc.Status != MedicalCaseStatus.Cancelled, cancellationToken);
 

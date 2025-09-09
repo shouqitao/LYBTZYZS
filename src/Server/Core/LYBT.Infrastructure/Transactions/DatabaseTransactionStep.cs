@@ -18,6 +18,7 @@ namespace LYBT.Infrastructure.Transactions
         protected readonly ILogger Logger;
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="DatabaseTransactionStep{TContext}"/> class.
         /// 初始化数据库事务步骤
         /// </summary>
         /// <param name="logger">日志记录器</param>
@@ -60,7 +61,8 @@ namespace LYBT.Infrastructure.Transactions
                 var result = await ExecuteCoreAsync(context, cancellationToken);
                 result.Duration = DateTime.UtcNow - startTime;
 
-                Logger.LogDebug("事务步骤执行完成: {StepName}, 结果: {IsSuccess}, 耗时: {Duration}ms",
+                Logger.LogDebug(
+                    "事务步骤执行完成: {StepName}, 结果: {IsSuccess}, 耗时: {Duration}ms",
                     StepName, result.IsSuccess, result.Duration.TotalMilliseconds);
 
                 return result;

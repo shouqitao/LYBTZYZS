@@ -589,6 +589,7 @@ namespace LYBT.Desktop.Core.ViewModels.Prescriptions
                     // 取消事件订阅
                     _state.PropertyChanged -= OnStatePropertyChanged;
                 }
+
                 _disposed = true;
             }
         }

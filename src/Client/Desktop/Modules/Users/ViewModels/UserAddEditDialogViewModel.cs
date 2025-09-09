@@ -148,6 +148,7 @@ namespace LYBT.Desktop.Users.ViewModels
             else
             {
                 DialogTitle = SystemConstants.AddUserDialogTitle;
+
                 // 新增模式默认为医生角色
                 SelectedRole = new RoleItem { Value = "Doctor", DisplayName = "医生" };
                 System.Diagnostics.Debug.WriteLine("🔧 构造函数: 新增模式");
@@ -336,6 +337,7 @@ namespace LYBT.Desktop.Users.ViewModels
             else if (!_isEditMode)
             {
                 System.Diagnostics.Debug.WriteLine("🔧 新增模式 - 清空表单数据");
+
                 // 新增模式：确保表单为空白状态
                 UserName = string.Empty;
                 RealName = string.Empty;

@@ -190,6 +190,7 @@ namespace LYBT.Module.Patients.Services
                     ImportedPatients = result.Data
                 });
             }
+
             return ServiceResult<object>.Failure(result.ErrorMessage ?? "导入患者失败");
         }
 
@@ -218,6 +219,7 @@ namespace LYBT.Module.Patients.Services
                 var bytes = System.Text.Encoding.UTF8.GetBytes(csvContent);
                 return ServiceResult<byte[]>.Success(bytes);
             }
+
             return ServiceResult<byte[]>.Failure(result.ErrorMessage ?? "导出患者失败");
         }
 
@@ -233,6 +235,7 @@ namespace LYBT.Module.Patients.Services
                     Errors = validationErrors
                 });
             }
+
             return ServiceResult<object>.Failure(result.ErrorMessage ?? "验证患者信息失败");
         }
 
@@ -248,6 +251,7 @@ namespace LYBT.Module.Patients.Services
                 var bytes = System.Text.Encoding.UTF8.GetBytes(template);
                 return ServiceResult<byte[]>.Success(bytes);
             }
+
             return ServiceResult<byte[]>.Failure(result.ErrorMessage ?? "获取导入模板失败");
         }
 

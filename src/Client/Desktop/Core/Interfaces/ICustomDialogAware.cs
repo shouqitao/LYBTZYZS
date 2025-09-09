@@ -1,4 +1,4 @@
-﻿using LYBT.Desktop.Core.Models.Common;
+using LYBT.Desktop.Core.Models.Common;
 
 namespace LYBT.Desktop.Core.Interfaces
 {

@@ -176,6 +176,7 @@ namespace LYBT.Module.MedicalCase.Transactions
             {
                 return typedResult;
             }
+
             return default(T);
         }
     }

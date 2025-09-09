@@ -102,6 +102,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
             catch (Exception ex)
             {
                 LogError(ex, "初始化看诊管理失败");
+
                 // 提供用户友好的错误提示
                 ShowError("看诊管理模块初始化失败，请尝试刷新页面");
             }

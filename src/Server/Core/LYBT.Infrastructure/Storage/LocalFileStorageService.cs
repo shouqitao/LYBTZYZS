@@ -95,6 +95,7 @@ namespace LYBT.Infrastructure.Storage
                     await Task.CompletedTask;
                     return true;
                 }
+
                 return false;
             }
             catch (Exception ex)
@@ -261,6 +262,7 @@ namespace LYBT.Infrastructure.Storage
         public async Task<string?> GenerateAccessUrlAsync(string filePath, TimeSpan? expiry = null)
         {
             await Task.CompletedTask;
+
             // 本地存储可以返回相对路径或null
             return filePath;
         }

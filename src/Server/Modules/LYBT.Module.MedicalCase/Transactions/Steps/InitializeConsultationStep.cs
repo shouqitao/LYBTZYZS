@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using LYBT.Infrastructure.Transactions.Steps;
-using LYBT.Infrastructure.Transactions;
 using LYBT.Infrastructure.Data;
+using LYBT.Infrastructure.Transactions;
+using LYBT.Infrastructure.Transactions.Steps;
 using LYBT.Shared.Models.Enums;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.Module.MedicalCase.Transactions.Steps
 {
@@ -77,7 +77,7 @@ namespace LYBT.Module.MedicalCase.Transactions.Steps
                 {
                     context.LogWarning("Consultation already exists for medical case: {MedicalCaseId}", context.MedicalCaseId);
                     context.SetValidationResult("ConsultationAlreadyExists", true);
-                    
+
                     // 如果不是强制覆盖，则不允许重复创建
                     var allowOverwrite = context.GetData<bool>("AllowConsultationOverwrite");
                     if (!allowOverwrite)
@@ -102,7 +102,7 @@ namespace LYBT.Module.MedicalCase.Transactions.Steps
 
         /// <inheritdoc />
         protected override async Task<TransactionStepResult> ExecuteDatabaseOperationAsync(
-            ConsultationTransactionContext context, 
+            ConsultationTransactionContext context,
             CancellationToken cancellationToken = default)
         {
             try
@@ -131,32 +131,33 @@ namespace LYBT.Module.MedicalCase.Transactions.Steps
                     UserId = context.DoctorId,
                     ChiefComplaint = context.ChiefComplaint ?? string.Empty,
                     PresentIllness = context.PresentIllness ?? string.Empty,
-                    
+
                     // 中医四诊初始化为空，等待医生填写
                     Inspection = null,
                     AuscultationOlfaction = null,
                     Inquiry = null,
                     Palpation = null,
-                    
+
                     // 中医诊断初始化
                     TCMDiagnosis = "待诊断", // 必填字段，提供默认值
                     TreatmentPrinciple = null,
                     MedicalAdvice = null,
-                    
+
                     Status = CommonStatus.Enabled,
                     Remark = context.Remark
                 };
 
                 // 保存到数据库
                 var createdConsultation = await CreateEntityAsync(consultation, cancellationToken);
-                
+
                 // 更新上下文
                 context.ConsultationId = createdConsultation.Id;
-                
+
                 // 设置实体ID用于补偿
                 context.SetEntityId("Consultation", createdConsultation.Id);
-                
-                Logger.LogInformation("Created consultation successfully: {ConsultationId} for medical case: {MedicalCaseId}", 
+
+                Logger.LogInformation(
+                    "Created consultation successfully: {ConsultationId} for medical case: {MedicalCaseId}",
                     createdConsultation.Id, context.MedicalCaseId);
 
                 // 返回成功结果
@@ -171,8 +172,8 @@ namespace LYBT.Module.MedicalCase.Transactions.Steps
 
         /// <inheritdoc />
         public override async Task<TransactionStepResult> CompensateAsync(
-            ConsultationTransactionContext context, 
-            TransactionStepResult originalResult, 
+            ConsultationTransactionContext context,
+            TransactionStepResult originalResult,
             CancellationToken cancellationToken = default)
         {
             if (!SupportsCompensation)
@@ -193,17 +194,17 @@ namespace LYBT.Module.MedicalCase.Transactions.Steps
 
                 // 删除创建的诊断记录
                 var deleted = await DeleteEntityAsync<LYBT.Entities.Consultation.Consultation>(consultationId.Value, cancellationToken);
-                
+
                 if (deleted)
                 {
                     // 清除上下文中的相关信息
                     context.ConsultationId = null;
                     context.RemoveEntityId("Consultation");
-                    
+
                     Logger.LogInformation("Successfully compensated: deleted consultation {ConsultationId}", consultationId);
-                    
-                    return CreateSuccessResult(new Dictionary<string, object> 
-                    { 
+
+                    return CreateSuccessResult(new Dictionary<string, object>
+                    {
                         ["Action"] = "ConsultationDeleted",
                         ["DeletedId"] = consultationId
                     });

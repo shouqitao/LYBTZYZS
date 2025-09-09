@@ -1,4 +1,4 @@
-﻿using LYBT.Infrastructure.Data;
+using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Repositories;
 using LYBT.Module.Formula.Interfaces;
 using LYBT.Shared.Models.Enums;

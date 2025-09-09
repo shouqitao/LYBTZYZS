@@ -1,4 +1,4 @@
-﻿using System.Windows;
+using System.Windows;
 using LYBT.Desktop.Core.Interfaces.Services;
 using Microsoft.Extensions.Logging;
 

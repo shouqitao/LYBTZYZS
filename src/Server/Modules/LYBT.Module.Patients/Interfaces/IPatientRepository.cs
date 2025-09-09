@@ -1,4 +1,4 @@
-﻿using LYBT.Entities.Patients;
+using LYBT.Entities.Patients;
 using LYBT.Infrastructure.Interfaces;
 
 namespace LYBT.Module.Patients.Interfaces

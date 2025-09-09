@@ -1,4 +1,4 @@
-﻿using System.Runtime.Serialization;
+using System.Runtime.Serialization;
 using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Desktop.Core.Exceptions

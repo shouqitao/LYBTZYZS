@@ -38,10 +38,12 @@ public class ConsultationModule(
             var detail = new ConsultationDetailDto
             {
                 Id = result.Data.Id,
+
                 // 映射其他基础属性
             };
             return ServiceResult<ConsultationDetailDto>.Success(detail);
         }
+
         return ServiceResult<ConsultationDetailDto>.Failure(result.ErrorMessage ?? "获取看诊详情失败");
     }
 
@@ -83,6 +85,7 @@ public class ConsultationModule(
         var simpleUpdate = new ConsultationUpdateDto
         {
             Id = updateDto.Id
+
             // 映射其他基础属性
         };
         return await _businessService.UpdateAsync(id, simpleUpdate);

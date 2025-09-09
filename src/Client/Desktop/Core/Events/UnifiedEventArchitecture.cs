@@ -272,6 +272,7 @@ namespace LYBT.Desktop.Core.Events
             {
                 SourceModule = "Consultation",
                 Message = "患者已选择"
+
                 // 根据输入类型设置具体字段
             };
         }

@@ -45,8 +45,7 @@ namespace LYBT.Module.Auth.Services
                 audience: _jwtOptions.Audience,
                 claims: claims,
                 expires: expires,
-                signingCredentials: creds
-            );
+                signingCredentials: creds);
 
             return _tokenHandler.WriteToken(token);
         }

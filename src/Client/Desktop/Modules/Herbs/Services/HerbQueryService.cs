@@ -69,6 +69,7 @@ public class HerbQueryService(
             if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
             {
                 var detailDto = refitResponse.Content;
+
                 // 将 HerbDetailDto 转换为 HerbDto
                 // HerbDetailDto 继承自 HerbDto，所以可以直接转换
                 var herbDto = new HerbDto

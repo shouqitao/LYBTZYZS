@@ -276,6 +276,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
                 _logger.LogError(ex, "设置安全配置失败: {Key}", key);
                 throw;
             }
+
             return Task.CompletedTask;
         }
 
@@ -294,6 +295,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
                         _logger.LogInformation("安全配置已删除: {Key}", key);
                     }
                 }
+
                 return Task.CompletedTask;
             }
             catch (Exception ex)
@@ -410,9 +412,11 @@ namespace LYBT.Desktop.Core.Services.Configuration
                         {
                             _secureConfigs[kvp.Key] = kvp.Value;
                         }
+
                         throw;
                     }
                 }
+
                 return Task.CompletedTask;
             }
             catch (Exception ex)
@@ -473,6 +477,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
                     LogAccess("*", "KeyRotation", true);
                     _logger.LogInformation("密钥轮换完成，更新了 {Count} 个配置项", reencryptedConfigs.Count);
                 }
+
                 return Task.CompletedTask;
             }
             catch (Exception ex)

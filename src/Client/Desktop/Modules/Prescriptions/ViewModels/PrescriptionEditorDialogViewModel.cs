@@ -28,6 +28,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         #region Dialog Properties
 
         public string Title => IsViewMode ? "查看处方" : (IsEditMode ? "编辑处方" : "新建处方");
+
         // public event Action<IDialogResult>? RequestClose; // Removed for Prism 9 compatibility
         #endregion Dialog Properties
 
@@ -438,6 +439,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         private void CalculateTotalAmount()
         {
             TotalAmount = PrescriptionItems.Sum(item => item.Quantity * item.UnitPrice) * TotalDoses;
+
             // UltraThink v2.0: TotalPrice是计算属性，无需手动赋值
             // 总价会根据Items和DosageCount自动计算
         }
@@ -459,6 +461,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                 // 更新处方信息
                 Prescription.Items = PrescriptionItems.ToList();
                 Prescription.DosageCount = TotalDoses;
+
                 // UltraThink v2.0: TotalPrice是计算属性，无需手动赋值
                 if (IsEditMode && Prescription.Id != Guid.Empty)
                 {
@@ -482,6 +485,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                     {
                         StatusMessage = "处方已更新";
                         await _dialogService.ShowSuccessAsync("处方更新成功", "操作完成");
+
                         // Note: 对话框通过ShowSuccessAsync自动关闭
                     }
                     else
@@ -511,6 +515,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                     if (IsContextMode && MedicalCaseId != Guid.Empty)
                     {
                         _logger.LogInformation("处方将关联医案: {MedicalCaseId}", MedicalCaseId);
+
                         // 注意：需要检查PrescriptionCreateDto是否有MedicalCaseId属性
                         // 如果没有，可以在处方备注中记录医案关联
                         // createDto.MedicalCaseId = MedicalCaseId; // 待DTO支持
@@ -521,6 +526,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                     {
                         StatusMessage = "处方已创建";
                         await _dialogService.ShowSuccessAsync("处方创建成功", "操作完成");
+
                         // Note: 对话框通过ShowSuccessAsync自动关闭
                     }
                     else

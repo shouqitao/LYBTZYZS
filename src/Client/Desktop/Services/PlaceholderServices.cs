@@ -1,4 +1,4 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using LYBT.Desktop.Core.Interfaces.Services;
 
 namespace LYBT.Desktop.Services

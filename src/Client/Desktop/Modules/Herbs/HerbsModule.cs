@@ -1,4 +1,4 @@
-﻿using LYBT.Desktop.Herbs.Services;
+using LYBT.Desktop.Herbs.Services;
 using LYBT.Desktop.Herbs.ViewModels;
 using LYBT.Desktop.Herbs.Views;
 using LYBT.Shared.Interfaces.Services;

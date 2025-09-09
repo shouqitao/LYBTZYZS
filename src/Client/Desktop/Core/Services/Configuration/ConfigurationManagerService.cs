@@ -214,6 +214,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
                             {
                                 AddToDictionary(data, child);
                             }
+
                             sources.Add(new MemoryConfigurationSource { InitialData = data });
                         }
                     }
@@ -372,6 +373,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
                 {
                     nested = (Dictionary<string, object?>)current[parts[i]]!;
                 }
+
                 current = nested;
             }
 
@@ -662,8 +664,10 @@ namespace LYBT.Desktop.Core.Services.Configuration
                 {
                     count++;
                 }
+
                 count += CountKeys(child);
             }
+
             return count;
         }
 
@@ -730,6 +734,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
                 if (_statistics.WriteCount > 0)
                 {
                     _logger.LogDebug("执行配置自动保存");
+
                     // 实现自动保存逻辑
                     await Task.CompletedTask; // Placeholder for async operation
                 }

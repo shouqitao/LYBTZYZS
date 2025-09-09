@@ -326,6 +326,7 @@ namespace LYBT.Desktop.Core.Events
             catch (Exception ex)
             {
                 _logger.LogError(ex, "发布状态消息事件时发生异常");
+
                 // 避免递归，直接记录日志
                 _logger.LogCritical(ex, "发布状态消息事件时发生严重异常");
             }
@@ -418,6 +419,7 @@ namespace LYBT.Desktop.Core.Events
                 {
                     token?.Dispose();
                 }
+
                 _subscriptions.Clear();
 
                 _logger.LogInformation("UnifiedEventHandler已释放资源");

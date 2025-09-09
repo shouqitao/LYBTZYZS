@@ -1,4 +1,4 @@
-﻿namespace LYBT.Module.Users
+namespace LYBT.Module.Users
 {
 
     /// <summary>

@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using LYBT.Infrastructure.Transactions.Steps;
-using LYBT.Infrastructure.Transactions;
 using LYBT.Infrastructure.Data;
+using LYBT.Infrastructure.Transactions;
+using LYBT.Infrastructure.Transactions.Steps;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.Module.Prescriptions.Transactions.Steps
 {
@@ -83,7 +83,7 @@ namespace LYBT.Module.Prescriptions.Transactions.Steps
 
         /// <inheritdoc />
         protected override async Task<TransactionStepResult> ExecuteDatabaseOperationAsync(
-            PrescriptionTransactionContext context, 
+            PrescriptionTransactionContext context,
             CancellationToken cancellationToken = default)
         {
             try
@@ -138,7 +138,8 @@ namespace LYBT.Module.Prescriptions.Transactions.Steps
                 bool overallValid = errors.Count == 0;
                 var severityLevel = DetermineSeverityLevel(errors, warnings);
 
-                Logger.LogInformation("Compatibility validation completed: Valid={IsValid}, Errors={ErrorCount}, Warnings={WarningCount}, Severity={Severity}",
+                Logger.LogInformation(
+                    "Compatibility validation completed: Valid={IsValid}, Errors={ErrorCount}, Warnings={WarningCount}, Severity={Severity}",
                     overallValid, errors.Count, warnings.Count, severityLevel);
 
                 // 根据配置决定是否阻止事务继续
@@ -318,7 +319,7 @@ namespace LYBT.Module.Prescriptions.Transactions.Steps
             {
                 // 获取患者信息
                 var patient = await FindEntityAsync<LYBT.Entities.Patients.Patient>(context.PatientId, cancellationToken);
-                
+
                 // 妊娠禁用药物表（简化版）
                 var pregnancyForbiddenHerbs = new List<string>
                 {
@@ -355,7 +356,7 @@ namespace LYBT.Module.Prescriptions.Transactions.Steps
 
                 // 如果发现禁用药物，返回无效；如果只是慎用，返回有效但有提醒
                 bool isValid = !context.Items.Any(item => pregnancyForbiddenHerbs.Contains(item.HerbName.Trim()));
-                
+
                 return (isValid, issues);
             }
             catch (Exception ex)
@@ -431,7 +432,7 @@ namespace LYBT.Module.Prescriptions.Transactions.Steps
         /// 记录配伍检查历史
         /// </summary>
         private async Task RecordCompatibilityCheckHistoryAsync(
-            PrescriptionTransactionContext context, 
+            PrescriptionTransactionContext context,
             List<string> validationResults,
             List<string> warnings,
             List<string> errors,
@@ -450,12 +451,13 @@ namespace LYBT.Module.Prescriptions.Transactions.Steps
                     ErrorCount = errors.Count,
                     CheckedItemCount = context.Items.Count
                 };
-                
+
                 Logger.LogDebug("Recorded compatibility check history for prescription {PrescriptionId}", context.PrescriptionId);
             }
             catch (Exception ex)
             {
                 Logger.LogWarning(ex, "Failed to record compatibility check history");
+
                 // 不抛出异常，因为这不是关键操作
             }
         }

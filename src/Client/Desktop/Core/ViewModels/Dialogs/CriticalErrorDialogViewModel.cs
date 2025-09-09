@@ -165,6 +165,7 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
         protected override void InitializeDialog()
         {
             base.InitializeDialog();
+
             // 隐藏保存按钮，错误对话框不需要
             SaveCommand.RaiseCanExecuteChanged();
         }

@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using LYBT.Infrastructure.Transactions.Steps;
-using LYBT.Infrastructure.Transactions;
 using LYBT.Infrastructure.Data;
+using LYBT.Infrastructure.Transactions;
+using LYBT.Infrastructure.Transactions.Steps;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.Module.Prescriptions.Transactions.Steps
 {
@@ -99,7 +99,7 @@ namespace LYBT.Module.Prescriptions.Transactions.Steps
 
         /// <inheritdoc />
         protected override async Task<TransactionStepResult> ExecuteDatabaseOperationAsync(
-            PrescriptionTransactionContext context, 
+            PrescriptionTransactionContext context,
             CancellationToken cancellationToken = default)
         {
             try
@@ -114,11 +114,12 @@ namespace LYBT.Module.Prescriptions.Transactions.Steps
                 {
                     var oldPrescriptionId = medicalCase.PrescriptionId;
                     medicalCase.PrescriptionId = context.PrescriptionId;
-                    
+
                     await UpdateEntityAsync(medicalCase, cancellationToken);
                     updatedEntities.Add($"MedicalCase:{medicalCase.Id}:PrescriptionId:{oldPrescriptionId}->{context.PrescriptionId}");
-                    
-                    Logger.LogInformation("Updated medical case prescription association: {MedicalCaseId}, Old: {OldPrescriptionId}, New: {NewPrescriptionId}",
+
+                    Logger.LogInformation(
+                        "Updated medical case prescription association: {MedicalCaseId}, Old: {OldPrescriptionId}, New: {NewPrescriptionId}",
                         medicalCase.Id, oldPrescriptionId, context.PrescriptionId);
                 }
 
@@ -133,11 +134,12 @@ namespace LYBT.Module.Prescriptions.Transactions.Steps
                         // 注意：Consultation实体中可能没有PrescriptionId字段
                         // 这里仅作为示例，实际实现需要根据实体结构调整
                         // consultation.PrescriptionId = context.PrescriptionId;
-                        
+
                         await UpdateEntityAsync(consultation, cancellationToken);
                         updatedEntities.Add($"Consultation:{consultation.Id}:Updated");
-                        
-                        Logger.LogInformation("Updated consultation prescription association: {ConsultationId}, Prescription: {PrescriptionId}",
+
+                        Logger.LogInformation(
+                            "Updated consultation prescription association: {ConsultationId}, Prescription: {PrescriptionId}",
                             consultation.Id, context.PrescriptionId);
                     }
                 }
@@ -148,7 +150,8 @@ namespace LYBT.Module.Prescriptions.Transactions.Steps
                 // 4. 触发相关业务事件（可选）
                 await TriggerPrescriptionCreatedEventAsync(context, cancellationToken);
 
-                Logger.LogInformation("Successfully updated medical case associations for prescription: {PrescriptionId}",
+                Logger.LogInformation(
+                    "Successfully updated medical case associations for prescription: {PrescriptionId}",
                     context.PrescriptionId);
 
                 // 返回成功结果
@@ -172,8 +175,8 @@ namespace LYBT.Module.Prescriptions.Transactions.Steps
 
         /// <inheritdoc />
         public override async Task<TransactionStepResult> CompensateAsync(
-            PrescriptionTransactionContext context, 
-            TransactionStepResult originalResult, 
+            PrescriptionTransactionContext context,
+            TransactionStepResult originalResult,
             CancellationToken cancellationToken = default)
         {
             if (!SupportsCompensation)
@@ -193,12 +196,13 @@ namespace LYBT.Module.Prescriptions.Transactions.Steps
                 {
                     var originalPrescriptionId = context.GetData<Guid?>("OriginalPrescriptionId");
                     var currentPrescriptionId = medicalCase.PrescriptionId;
-                    
+
                     medicalCase.PrescriptionId = originalPrescriptionId;
                     await UpdateEntityAsync(medicalCase, cancellationToken);
                     restoredEntities.Add($"MedicalCase:{medicalCase.Id}:{currentPrescriptionId}->{originalPrescriptionId}");
-                    
-                    Logger.LogInformation("Restored medical case prescription association: {MedicalCaseId} from {Current} to {Original}",
+
+                    Logger.LogInformation(
+                        "Restored medical case prescription association: {MedicalCaseId} from {Current} to {Original}",
                         medicalCase.Id, currentPrescriptionId, originalPrescriptionId);
                 }
 
@@ -212,11 +216,12 @@ namespace LYBT.Module.Prescriptions.Transactions.Steps
                     {
                         // 恢复诊断记录的处方关联
                         // consultation.PrescriptionId = null; // 或者恢复到原来的值
-                        
+
                         await UpdateEntityAsync(consultation, cancellationToken);
                         restoredEntities.Add($"Consultation:{consultation.Id}:Restored");
-                        
-                        Logger.LogInformation("Restored consultation prescription association: {ConsultationId}",
+
+                        Logger.LogInformation(
+                            "Restored consultation prescription association: {ConsultationId}",
                             consultation.Id);
                     }
                 }
@@ -247,8 +252,8 @@ namespace LYBT.Module.Prescriptions.Transactions.Steps
         /// <param name="updates">更新记录</param>
         /// <param name="cancellationToken">取消令牌</param>
         private async Task RecordUpdateHistoryAsync(
-            PrescriptionTransactionContext context, 
-            List<string> updates, 
+            PrescriptionTransactionContext context,
+            List<string> updates,
             CancellationToken cancellationToken)
         {
             try
@@ -262,12 +267,13 @@ namespace LYBT.Module.Prescriptions.Transactions.Steps
                     Updates = updates,
                     UpdateCount = updates.Count
                 };
-                
+
                 Logger.LogDebug("Recorded medical case update history: {Updates}", string.Join("; ", updates));
             }
             catch (Exception ex)
             {
                 Logger.LogWarning(ex, "Failed to record medical case update history");
+
                 // 不抛出异常，因为这不是关键操作
             }
         }
@@ -279,8 +285,8 @@ namespace LYBT.Module.Prescriptions.Transactions.Steps
         /// <param name="restorations">恢复记录</param>
         /// <param name="cancellationToken">取消令牌</param>
         private async Task RecordCompensationHistoryAsync(
-            PrescriptionTransactionContext context, 
-            List<string> restorations, 
+            PrescriptionTransactionContext context,
+            List<string> restorations,
             CancellationToken cancellationToken)
         {
             try
@@ -292,12 +298,13 @@ namespace LYBT.Module.Prescriptions.Transactions.Steps
                     RestorationCount = restorations.Count,
                     Reason = "TransactionRollback"
                 };
-                
+
                 Logger.LogDebug("Recorded compensation history: {Restorations}", string.Join("; ", restorations));
             }
             catch (Exception ex)
             {
                 Logger.LogWarning(ex, "Failed to record compensation history");
+
                 // 不抛出异常，因为这不是关键操作
             }
         }
@@ -308,7 +315,7 @@ namespace LYBT.Module.Prescriptions.Transactions.Steps
         /// <param name="context">事务上下文</param>
         /// <param name="cancellationToken">取消令牌</param>
         private async Task TriggerPrescriptionCreatedEventAsync(
-            PrescriptionTransactionContext context, 
+            PrescriptionTransactionContext context,
             CancellationToken cancellationToken)
         {
             try
@@ -339,6 +346,7 @@ namespace LYBT.Module.Prescriptions.Transactions.Steps
             catch (Exception ex)
             {
                 Logger.LogWarning(ex, "Failed to trigger prescription created event");
+
                 // 不抛出异常，因为这不是关键操作
             }
         }

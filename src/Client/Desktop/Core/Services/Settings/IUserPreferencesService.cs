@@ -1,4 +1,4 @@
-﻿namespace LYBT.Desktop.Core.Services.Settings
+namespace LYBT.Desktop.Core.Services.Settings
 {
 
     /// <summary>

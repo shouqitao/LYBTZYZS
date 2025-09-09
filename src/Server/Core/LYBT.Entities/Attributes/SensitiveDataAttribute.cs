@@ -37,12 +37,16 @@ namespace LYBT.Entities.Attributes
     {
         /// <summary>个人信息</summary>
         PersonalInfo,
+
         /// <summary>医疗信息</summary>
         MedicalInfo,
+
         /// <summary>联系信息</summary>
         ContactInfo,
+
         /// <summary>身份信息</summary>
         IdentityInfo,
+
         /// <summary>财务信息</summary>
         FinancialInfo
     }
@@ -54,10 +58,13 @@ namespace LYBT.Entities.Attributes
     {
         /// <summary>默认脱敏（中间位用*替代）</summary>
         Default,
+
         /// <summary>部分隐藏（显示前后几位）</summary>
         Partial,
+
         /// <summary>完全隐藏</summary>
         Full,
+
         /// <summary>哈希脱敏</summary>
         Hash
     }

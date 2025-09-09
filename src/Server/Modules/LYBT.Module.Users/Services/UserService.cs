@@ -1,4 +1,4 @@
-﻿using LYBT.Module.Users.Services.Interfaces;
+using LYBT.Module.Users.Services.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 

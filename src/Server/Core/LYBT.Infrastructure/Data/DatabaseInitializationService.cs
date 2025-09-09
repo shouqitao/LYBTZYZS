@@ -246,6 +246,7 @@ namespace LYBT.Infrastructure.Data
             try
             {
                 _logger.LogInformation("正在创建数据库...");
+
                 // 使用Migrate而不是EnsureCreated
                 await _dbContext.Database.MigrateAsync();
                 _logger.LogInformation("✅ 数据库创建成功");
@@ -394,6 +395,7 @@ namespace LYBT.Infrastructure.Data
                 catch (Exception tableEx)
                 {
                     _logger.LogWarning($"AdminSecrets表可能不存在: {tableEx.Message}");
+
                     // 如果表不存在，让EF Core的迁移处理它
                     return;
                 }
@@ -437,6 +439,7 @@ namespace LYBT.Infrastructure.Data
             {
                 // 将此错误降级为警告，不影响系统启动
                 _logger.LogWarning(ex, "⚠️ 初始化AdminSecrets表时出现问题，但不影响系统启动");
+
                 // 不再抛出异常，让系统继续启动
             }
         }

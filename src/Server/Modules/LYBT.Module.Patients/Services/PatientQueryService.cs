@@ -284,8 +284,7 @@ namespace LYBT.Module.Patients.Services
                         (p.Name != null && p.Name.Contains(keyword)) ||
                         (p.PhoneNumber != null && p.PhoneNumber.Contains(keyword)) ||
                         (p.IdNumber != null && p.IdNumber.Contains(keyword)) ||
-                        (p.PinYinCode != null && p.PinYinCode.Contains(keyword.ToUpper()))
-                    ))
+                        (p.PinYinCode != null && p.PinYinCode.Contains(keyword.ToUpper()))))
                     .OrderBy(p => p.Name)
                     .Take(20)
                     .ToListAsync();

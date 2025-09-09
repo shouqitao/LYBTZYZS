@@ -390,6 +390,7 @@ namespace LYBT.Desktop.Core.Controls
             catch (Exception ex)
             {
                 _logger?.LogError(ex, "加载数据失败: 页码 {Page}", pageIndex);
+
                 // 这里可以显示错误消息
             }
             finally
@@ -430,6 +431,7 @@ namespace LYBT.Desktop.Core.Controls
             catch (Exception ex)
             {
                 _logger?.LogError(ex, "搜索操作失败");
+
                 // 可以在这里添加用户通知逻辑
             }
         }
@@ -449,6 +451,7 @@ namespace LYBT.Desktop.Core.Controls
             catch (Exception ex)
             {
                 _logger?.LogError(ex, "刷新操作失败");
+
                 // 可以在这里添加用户通知逻辑
             }
         }
@@ -468,6 +471,7 @@ namespace LYBT.Desktop.Core.Controls
             catch (Exception ex)
             {
                 _logger?.LogError(ex, "首页导航失败");
+
                 // 可以在这里添加用户通知逻辑
             }
         }
@@ -490,6 +494,7 @@ namespace LYBT.Desktop.Core.Controls
             catch (Exception ex)
             {
                 _logger?.LogError(ex, "上一页导航失败");
+
                 // 可以在这里添加用户通知逻辑
             }
         }
@@ -512,6 +517,7 @@ namespace LYBT.Desktop.Core.Controls
             catch (Exception ex)
             {
                 _logger?.LogError(ex, "下一页导航失败");
+
                 // 可以在这里添加用户通知逻辑
             }
         }
@@ -531,6 +537,7 @@ namespace LYBT.Desktop.Core.Controls
             catch (Exception ex)
             {
                 _logger?.LogError(ex, "末页导航失败");
+
                 // 可以在这里添加用户通知逻辑
             }
         }
@@ -553,6 +560,7 @@ namespace LYBT.Desktop.Core.Controls
             catch (Exception ex)
             {
                 _logger?.LogError(ex, "页面导航失败，目标页码: {PageNumber}", pageNumber);
+
                 // 可以在这里添加用户通知逻辑
             }
         }

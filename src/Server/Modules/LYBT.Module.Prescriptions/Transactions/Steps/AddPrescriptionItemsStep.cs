@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using LYBT.Infrastructure.Transactions.Steps;
-using LYBT.Infrastructure.Transactions;
-using LYBT.Infrastructure.Data;
 using LYBT.Entities.Prescriptions;
+using LYBT.Infrastructure.Data;
+using LYBT.Infrastructure.Transactions;
+using LYBT.Infrastructure.Transactions.Steps;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.Module.Prescriptions.Transactions.Steps
 {
@@ -125,7 +125,7 @@ namespace LYBT.Module.Prescriptions.Transactions.Steps
 
         /// <inheritdoc />
         protected override async Task<TransactionStepResult> ExecuteDatabaseOperationAsync(
-            PrescriptionTransactionContext context, 
+            PrescriptionTransactionContext context,
             CancellationToken cancellationToken = default)
         {
             try
@@ -151,11 +151,12 @@ namespace LYBT.Module.Prescriptions.Transactions.Steps
 
                     // 保存到数据库
                     var createdItem = await CreateEntityAsync(prescriptionItem, cancellationToken);
-                    
+
                     addedItems.Add(createdItem.Id);
                     addedItemDetails.Add($"{createdItem.HerbName}:{createdItem.Quantity}{createdItem.Unit}@{createdItem.UnitPrice}");
-                    
-                    Logger.LogDebug("Added prescription item: {ItemId} for prescription: {PrescriptionId}, Herb: {HerbName}, Quantity: {Quantity}, UnitPrice: {UnitPrice}",
+
+                    Logger.LogDebug(
+                        "Added prescription item: {ItemId} for prescription: {PrescriptionId}, Herb: {HerbName}, Quantity: {Quantity}, UnitPrice: {UnitPrice}",
                         createdItem.Id, context.PrescriptionId, createdItem.HerbName, createdItem.Quantity, createdItem.UnitPrice);
                 }
 
@@ -166,7 +167,7 @@ namespace LYBT.Module.Prescriptions.Transactions.Steps
                 if (context.AutoCalculatePrice)
                 {
                     context.CalculateTotalPrice();
-                    
+
                     // 更新处方总价（可选）
                     await UpdatePrescriptionTotalAsync(context, cancellationToken);
                 }
@@ -174,7 +175,8 @@ namespace LYBT.Module.Prescriptions.Transactions.Steps
                 // 记录添加历史
                 await RecordItemsAdditionHistoryAsync(context, addedItems, addedItemDetails, cancellationToken);
 
-                Logger.LogInformation("Successfully added {ItemCount} prescription items to prescription: {PrescriptionId}",
+                Logger.LogInformation(
+                    "Successfully added {ItemCount} prescription items to prescription: {PrescriptionId}",
                     addedItems.Count, context.PrescriptionId);
 
                 // 返回成功结果
@@ -197,8 +199,8 @@ namespace LYBT.Module.Prescriptions.Transactions.Steps
 
         /// <inheritdoc />
         public override async Task<TransactionStepResult> CompensateAsync(
-            PrescriptionTransactionContext context, 
-            TransactionStepResult originalResult, 
+            PrescriptionTransactionContext context,
+            TransactionStepResult originalResult,
             CancellationToken cancellationToken = default)
         {
             if (!SupportsCompensation)
@@ -218,7 +220,7 @@ namespace LYBT.Module.Prescriptions.Transactions.Steps
                 Logger.LogInformation("Starting compensation: deleting {ItemCount} prescription items", itemIds.Count);
 
                 var deletedItems = new List<Guid>();
-                
+
                 // 批量删除添加的处方项目
                 foreach (var itemId in itemIds)
                 {
@@ -241,8 +243,8 @@ namespace LYBT.Module.Prescriptions.Transactions.Steps
 
                 Logger.LogInformation("Successfully compensated: deleted {DeletedCount} prescription items", deletedItems.Count);
 
-                return CreateSuccessResult(new Dictionary<string, object> 
-                { 
+                return CreateSuccessResult(new Dictionary<string, object>
+                {
                     ["Action"] = "PrescriptionItemsDeleted",
                     ["DeletedItemIds"] = deletedItems,
                     ["DeletedCount"] = deletedItems.Count,
@@ -271,15 +273,17 @@ namespace LYBT.Module.Prescriptions.Transactions.Steps
                     // 注意：Prescription实体中没有TotalPrice字段，这里仅用于演示
                     // 实际实现中，总价通常在DTO层计算，或者添加到实体中
                     // prescription.TotalPrice = context.TotalPrice;
-                    
+
                     await UpdateEntityAsync(prescription, cancellationToken);
-                    Logger.LogDebug("Updated prescription total price: {PrescriptionId}, Total: {TotalPrice}", 
+                    Logger.LogDebug(
+                        "Updated prescription total price: {PrescriptionId}, Total: {TotalPrice}",
                         prescription.Id, context.TotalPrice);
                 }
             }
             catch (Exception ex)
             {
                 Logger.LogWarning(ex, "Failed to update prescription total price");
+
                 // 不抛出异常，因为这不是关键操作
             }
         }
@@ -292,7 +296,7 @@ namespace LYBT.Module.Prescriptions.Transactions.Steps
         /// <param name="addedItemDetails">添加的项目详情</param>
         /// <param name="cancellationToken">取消令牌</param>
         private async Task RecordItemsAdditionHistoryAsync(
-            PrescriptionTransactionContext context, 
+            PrescriptionTransactionContext context,
             List<Guid> addedItems,
             List<string> addedItemDetails,
             CancellationToken cancellationToken)
@@ -308,13 +312,15 @@ namespace LYBT.Module.Prescriptions.Transactions.Steps
                     ItemCount = addedItems.Count,
                     TotalPrice = context.TotalPrice
                 };
-                
-                Logger.LogDebug("Recorded items addition history: {ItemCount} items for prescription {PrescriptionId}", 
+
+                Logger.LogDebug(
+                    "Recorded items addition history: {ItemCount} items for prescription {PrescriptionId}",
                     addedItems.Count, context.PrescriptionId);
             }
             catch (Exception ex)
             {
                 Logger.LogWarning(ex, "Failed to record items addition history");
+
                 // 不抛出异常，因为这不是关键操作
             }
         }
@@ -326,8 +332,8 @@ namespace LYBT.Module.Prescriptions.Transactions.Steps
         /// <param name="deletedItems">删除的项目ID列表</param>
         /// <param name="cancellationToken">取消令牌</param>
         private async Task RecordCompensationHistoryAsync(
-            PrescriptionTransactionContext context, 
-            List<Guid> deletedItems, 
+            PrescriptionTransactionContext context,
+            List<Guid> deletedItems,
             CancellationToken cancellationToken)
         {
             try
@@ -339,12 +345,13 @@ namespace LYBT.Module.Prescriptions.Transactions.Steps
                     DeletedCount = deletedItems.Count,
                     Reason = "TransactionRollback"
                 };
-                
+
                 Logger.LogDebug("Recorded compensation history: deleted {DeletedCount} prescription items", deletedItems.Count);
             }
             catch (Exception ex)
             {
                 Logger.LogWarning(ex, "Failed to record compensation history");
+
                 // 不抛出异常，因为这不是关键操作
             }
         }
@@ -374,13 +381,13 @@ namespace LYBT.Module.Prescriptions.Transactions.Steps
                         .Select(item => item.HerbName)
                         .Distinct()
                         .ToList();
-                    
+
                     warnings.Add($"发现重复药材：{string.Join(", ", duplicateNames)}");
                 }
 
                 // TODO: 实现具体的配伍禁忌检查逻辑
                 // 例如：十八反、十九畏等配伍禁忌
-                
+
                 return (true, warnings); // 目前返回通过，但记录警告
             }
             catch (Exception ex)

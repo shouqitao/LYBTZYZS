@@ -134,6 +134,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
                 var targetHerbId = navigationContext.Parameters.GetValue<Guid>("HerbId");
                 return HerbId == targetHerbId;
             }
+
             return true;
         }
 
@@ -221,6 +222,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
         private void CancelEdit()
         {
             IsReadOnly = true;
+
             // 重新加载数据以取消更改
             Task.Run(async () => await LoadDataAsync());
         }

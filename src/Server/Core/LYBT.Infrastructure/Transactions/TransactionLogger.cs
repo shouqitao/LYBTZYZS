@@ -13,6 +13,7 @@ namespace LYBT.Infrastructure.Transactions
         private readonly ILogger<TransactionLogger> _logger;
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="TransactionLogger"/> class.
         /// 初始化事务日志记录器
         /// </summary>
         /// <param name="logger">日志记录器</param>
@@ -29,7 +30,8 @@ namespace LYBT.Infrastructure.Transactions
         /// <param name="userId">用户ID</param>
         public void LogTransactionStart(Guid transactionId, string transactionName = "", Guid? userId = null)
         {
-            _logger.LogInformation("事务开始 - ID: {TransactionId}, 名称: {TransactionName}, 用户: {UserId}",
+            _logger.LogInformation(
+                "事务开始 - ID: {TransactionId}, 名称: {TransactionName}, 用户: {UserId}",
                 transactionId, transactionName, userId);
         }
 
@@ -44,12 +46,14 @@ namespace LYBT.Infrastructure.Transactions
         {
             if (success)
             {
-                _logger.LogInformation("事务完成 - ID: {TransactionId}, 成功: {Success}, 耗时: {Duration}ms, 消息: {Message}",
+                _logger.LogInformation(
+                    "事务完成 - ID: {TransactionId}, 成功: {Success}, 耗时: {Duration}ms, 消息: {Message}",
                     transactionId, success, duration.TotalMilliseconds, message);
             }
             else
             {
-                _logger.LogWarning("事务失败 - ID: {TransactionId}, 成功: {Success}, 耗时: {Duration}ms, 消息: {Message}",
+                _logger.LogWarning(
+                    "事务失败 - ID: {TransactionId}, 成功: {Success}, 耗时: {Duration}ms, 消息: {Message}",
                     transactionId, success, duration.TotalMilliseconds, message);
             }
         }
@@ -64,7 +68,8 @@ namespace LYBT.Infrastructure.Transactions
         /// <param name="message">附加消息</param>
         public void LogStepExecution(Guid transactionId, string stepName, bool success, TimeSpan duration, string message = "")
         {
-            _logger.LogDebug("事务步骤 - 事务ID: {TransactionId}, 步骤: {StepName}, 成功: {Success}, 耗时: {Duration}ms, 消息: {Message}",
+            _logger.LogDebug(
+                "事务步骤 - 事务ID: {TransactionId}, 步骤: {StepName}, 成功: {Success}, 耗时: {Duration}ms, 消息: {Message}",
                 transactionId, stepName, success, duration.TotalMilliseconds, message);
         }
 
@@ -87,7 +92,8 @@ namespace LYBT.Infrastructure.Transactions
         /// <param name="reason">回滚原因</param>
         public void LogTransactionRollback(Guid transactionId, string reason)
         {
-            _logger.LogWarning("事务回滚 - ID: {TransactionId}, 原因: {Reason}",
+            _logger.LogWarning(
+                "事务回滚 - ID: {TransactionId}, 原因: {Reason}",
                 transactionId, reason);
         }
 
@@ -101,7 +107,8 @@ namespace LYBT.Infrastructure.Transactions
         {
             await Task.Run(() =>
             {
-                _logger.LogInformation("事务统计 - ID: {TransactionId}, 统计信息: {@Statistics}",
+                _logger.LogInformation(
+                    "事务统计 - ID: {TransactionId}, 统计信息: {@Statistics}",
                     transactionId, statistics);
             });
         }

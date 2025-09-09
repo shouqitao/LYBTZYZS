@@ -62,18 +62,22 @@
             {
                 return $"{(int)(span.TotalDays / 365)}年前";
             }
+
             if (span.TotalDays > 30)
             {
                 return $"{(int)(span.TotalDays / 30)}个月前";
             }
+
             if (span.TotalDays > 1)
             {
                 return $"{(int)span.TotalDays}天前";
             }
+
             if (span.TotalHours > 1)
             {
                 return $"{(int)span.TotalHours}小时前";
             }
+
             if (span.TotalMinutes > 1)
             {
                 return $"{(int)span.TotalMinutes}分钟前";
@@ -167,6 +171,7 @@
             {
                 age--;
             }
+
             return age;
         }
     }

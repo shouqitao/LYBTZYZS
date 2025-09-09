@@ -344,6 +344,7 @@ namespace LYBT.Desktop.Core.Redux
                     subscription.Dispose();
                 }
             }
+
             _subscriptions.Clear();
 
             // 清理中间件

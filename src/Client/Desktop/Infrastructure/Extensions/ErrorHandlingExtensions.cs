@@ -1,4 +1,4 @@
-﻿using LYBT.Desktop.Infrastructure.Services;
+using LYBT.Desktop.Infrastructure.Services;
 using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Desktop.Infrastructure.Extensions;

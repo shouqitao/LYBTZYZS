@@ -1,4 +1,4 @@
-﻿namespace LYBT.Infrastructure.Storage
+namespace LYBT.Infrastructure.Storage
 {
 
     /// <summary>

@@ -110,9 +110,9 @@ namespace LYBT.Module.Users.Repositories
                 dbSet = dbSet.Where(u =>
                     u.Username.Contains(keyword) ||
                     u.RealName.Contains(keyword) ||
-                    (u.PinYinCode != null && u.PinYinCode.Contains(keyword.ToUpperInvariant()))
-                );
+                    (u.PinYinCode != null && u.PinYinCode.Contains(keyword.ToUpperInvariant())));
             }
+
             // 特定字段搜索（精确搜索）
             else
             {
@@ -120,14 +120,17 @@ namespace LYBT.Module.Users.Repositories
                 {
                     dbSet = dbSet.Where(u => u.Username.Contains(query.Username));
                 }
+
                 if (!string.IsNullOrWhiteSpace(query.RealName))
                 {
                     dbSet = dbSet.Where(u => u.RealName.Contains(query.RealName));
                 }
+
                 if (!string.IsNullOrWhiteSpace(query.PhoneNumber))
                 {
                     dbSet = dbSet.Where(u => u.PhoneNumber != null && u.PhoneNumber.Contains(query.PhoneNumber));
                 }
+
                 if (!string.IsNullOrWhiteSpace(query.PinYinCode))
                 {
                     var keyword = query.PinYinCode.ToUpperInvariant();
@@ -301,6 +304,7 @@ namespace LYBT.Module.Users.Repositories
                 {
                     _cache.Remove($"{CacheKeyPrefix}{id}");
                 }
+
                 InvalidateCache();
             }
 

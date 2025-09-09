@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.Windows.Input;
 using LYBT.Desktop.Prescriptions.Constants;
 using LYBT.Desktop.Prescriptions.ViewModels.Components;

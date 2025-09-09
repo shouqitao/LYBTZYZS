@@ -29,6 +29,7 @@ namespace LYBT.Desktop.Core.Configuration
                         }
                     }
                 }
+
                 return _settings!;
             }
         }
@@ -78,7 +79,7 @@ namespace LYBT.Desktop.Core.Configuration
                 // DT-012配置验证：验证配置项的有效性
                 var validationResults = new List<System.ComponentModel.DataAnnotations.ValidationResult>();
                 var validationContext = new System.ComponentModel.DataAnnotations.ValidationContext(settings);
-                
+
                 if (!System.ComponentModel.DataAnnotations.Validator.TryValidateObject(settings, validationContext, validationResults, true))
                 {
                     var errors = validationResults.Select(r => r.ErrorMessage).ToList();

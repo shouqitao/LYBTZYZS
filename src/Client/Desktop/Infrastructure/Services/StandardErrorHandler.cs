@@ -38,6 +38,7 @@ public class StandardErrorHandler(ILogger<StandardErrorHandler> logger) : IStand
                         Microsoft.Extensions.Logging.Abstractions.NullLogger<StandardErrorHandler>.Instance);
                 }
             }
+
             return _instance;
         }
     }

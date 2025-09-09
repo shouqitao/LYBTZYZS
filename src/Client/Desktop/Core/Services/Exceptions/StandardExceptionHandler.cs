@@ -1,6 +1,6 @@
+using System.Net.Http;
 using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.Extensions.Logging;
-using System.Net.Http;
 
 namespace LYBT.Desktop.Core.Services.Exceptions;
 
@@ -58,7 +58,7 @@ public class StandardExceptionHandler : IExceptionHandler
         // 4. 返回统一格式的失败结果
         return ServiceResult.Failure(userMessage);
     }
-    
+
     /// <summary>
     /// 安全执行带数据类型的操作，自动处理异常
     /// </summary>
@@ -73,7 +73,7 @@ public class StandardExceptionHandler : IExceptionHandler
             return HandleException<T>(ex, methodName, context);
         }
     }
-    
+
     /// <summary>
     /// 安全执行无数据的操作，自动处理异常
     /// </summary>
@@ -88,7 +88,7 @@ public class StandardExceptionHandler : IExceptionHandler
             return HandleException(ex, methodName, context);
         }
     }
-    
+
     /// <summary>
     /// 安全执行支持取消令牌的操作，自动处理异常 - DT-011取消令牌支持
     /// </summary>
@@ -98,16 +98,16 @@ public class StandardExceptionHandler : IExceptionHandler
         {
             // 检查操作是否已被取消
             cancellationToken.ThrowIfCancellationRequested();
-            
+
             return await operation(cancellationToken);
         }
         catch (OperationCanceledException)
         {
             // 操作被取消，返回专门的取消消息
-            var cancelMessage = !string.IsNullOrWhiteSpace(context) 
-                ? $"{context}: 操作已被用户取消" 
+            var cancelMessage = !string.IsNullOrWhiteSpace(context)
+                ? $"{context}: 操作已被用户取消"
                 : "操作已被用户取消";
-                
+
             _logger.LogInformation("操作被取消 - 方法: {MethodName}, 上下文: {Context}", methodName, context);
             return ServiceResult<T>.Failure(cancelMessage);
         }
@@ -116,7 +116,7 @@ public class StandardExceptionHandler : IExceptionHandler
             return HandleException<T>(ex, methodName, context);
         }
     }
-    
+
     /// <summary>
     /// 安全执行支持取消令牌的无返回值操作，自动处理异常 - DT-011取消令牌支持
     /// </summary>
@@ -126,16 +126,16 @@ public class StandardExceptionHandler : IExceptionHandler
         {
             // 检查操作是否已被取消
             cancellationToken.ThrowIfCancellationRequested();
-            
+
             return await operation(cancellationToken);
         }
         catch (OperationCanceledException)
         {
             // 操作被取消，返回专门的取消消息
-            var cancelMessage = !string.IsNullOrWhiteSpace(context) 
-                ? $"{context}: 操作已被用户取消" 
+            var cancelMessage = !string.IsNullOrWhiteSpace(context)
+                ? $"{context}: 操作已被用户取消"
                 : "操作已被用户取消";
-                
+
             _logger.LogInformation("操作被取消 - 方法: {MethodName}, 上下文: {Context}", methodName, context);
             return ServiceResult.Failure(cancelMessage);
         }
@@ -151,7 +151,7 @@ public class StandardExceptionHandler : IExceptionHandler
     private void LogException(Exception exception, string methodName, string? context)
     {
         var logLevel = DetermineLogLevel(exception);
-        
+
         var logMessage = "服务方法执行异常 - 方法: {MethodName}";
         var logArgs = new List<object> { methodName };
 
@@ -194,16 +194,16 @@ public class StandardExceptionHandler : IExceptionHandler
             OutOfMemoryException => LogLevel.Error,
             StackOverflowException => LogLevel.Error,
             UnauthorizedAccessException => LogLevel.Error,
-            
+
             // 业务逻辑错误 - Warning级别 (注意继承关系顺序)
             ArgumentNullException => LogLevel.Warning,
             ArgumentException => LogLevel.Warning,
             InvalidOperationException => LogLevel.Warning,
-            
+
             // 网络和外部依赖错误 - Information级别(用于统计分析)
             HttpRequestException => LogLevel.Information,
             TimeoutException => LogLevel.Information,
-            
+
             // 未知异常默认为Error
             _ => LogLevel.Error
         };

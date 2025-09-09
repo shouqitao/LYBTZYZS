@@ -42,6 +42,7 @@ namespace LYBT.Desktop.Herbs.Views
             {
                 dialogAware.RequestClose -= OnRequestClose;
             }
+
             base.OnClosed(e);
         }
     }

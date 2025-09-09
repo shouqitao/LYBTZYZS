@@ -259,6 +259,7 @@ namespace LYBT.Desktop.Patients.ViewModels
                         CurrentStep = ImportWizardStep.DataPreview;
                         _ = Task.Run(LoadDataPreviewAsync);
                     }
+
                     break;
 
                 case ImportWizardStep.DataPreview:
@@ -435,7 +436,8 @@ namespace LYBT.Desktop.Patients.ViewModels
                 ImportWizardStep.DataPreview => ValidationResult?.IsValid == true,
                 ImportWizardStep.ImportExecution => false,
                 _ => false
-            } && !IsImporting;
+            } 
+&& !IsImporting;
 
             NextButtonText = CurrentStep switch
             {
@@ -533,7 +535,7 @@ namespace LYBT.Desktop.Patients.ViewModels
                 // 检查必需列
                 var requiredColumns = new[] { "姓名", "性别" };
                 var optionalColumns = new[] { "年龄", "电话", "证件号", "地址", "过敏史" };
-                
+
                 foreach (var column in requiredColumns)
                 {
                     if (!dataTable.Columns.Contains(column))
@@ -725,9 +727,9 @@ namespace LYBT.Desktop.Patients.ViewModels
                 {
                     new[] { "张三", "男", "35", "13800138000", "110101198801011234", "北京市朝阳区建国路1号", "青霉素过敏" },
                     new[] { "李四", "女", "28", "13900139000", "110101199201020002", "北京市海淀区中关村大街2号", "无" },
-                    new[] { "王五", "男", "42", "18600186000", "", "上海市浦东新区陆家嘴3号", "海鲜过敏" },
-                    new[] { "赵六", "女", "", "15300153000", "310101198103150004", "广州市天河区珠江新城4号", "花粉过敏" },
-                    new[] { "钱七", "未知", "65", "", "", "深圳市南山区科技园5号", "无" }
+                    new[] { "王五", "男", "42", "18600186000", string.Empty, "上海市浦东新区陆家嘴3号", "海鲜过敏" },
+                    new[] { "赵六", "女", string.Empty, "15300153000", "310101198103150004", "广州市天河区珠江新城4号", "花粉过敏" },
+                    new[] { "钱七", "未知", "65", string.Empty, string.Empty, "深圳市南山区科技园5号", "无" }
                 };
 
                 // 创建Excel模板
@@ -905,9 +907,9 @@ namespace LYBT.Desktop.Patients.ViewModels
                     await Task.Delay(50);
                 }
 
-                e.Result = new 
-                { 
-                    SuccessCount = successCount, 
+                e.Result = new
+                {
+                    SuccessCount = successCount,
                     FailCount = failCount,
                     SkipCount = skipCount,
                     Errors = errors,
@@ -917,9 +919,9 @@ namespace LYBT.Desktop.Patients.ViewModels
             catch (Exception ex)
             {
                 _logger.LogError(ex, "导入过程中发生严重错误");
-                e.Result = new 
-                { 
-                    SuccessCount = successCount, 
+                e.Result = new
+                {
+                    SuccessCount = successCount,
                     FailCount = failCount,
                     SkipCount = skipCount,
                     Error = ex.Message,
@@ -980,6 +982,7 @@ namespace LYBT.Desktop.Patients.ViewModels
                     {
                         messageBuilder.AppendLine($"• {errors[i]}");
                     }
+
                     if (errors.Count > 5)
                     {
                         messageBuilder.AppendLine($"• ...还有{errors.Count - 5}个错误，请查看日志获取详细信息");
@@ -1045,6 +1048,7 @@ namespace LYBT.Desktop.Patients.ViewModels
             {
                 return age;
             }
+
             return null;
         }
 

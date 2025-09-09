@@ -1,4 +1,4 @@
-﻿using LYBT.Shared.Interfaces.Api;
+using LYBT.Shared.Interfaces.Api;
 
 namespace LYBT.Desktop.Infrastructure.Api;
 

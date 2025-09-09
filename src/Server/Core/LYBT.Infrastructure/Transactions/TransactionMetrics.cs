@@ -24,7 +24,8 @@ namespace LYBT.Infrastructure.Transactions
         /// <param name="duration">执行时长</param>
         public void RecordExecutionTime(string transactionName, TimeSpan duration)
         {
-            _metrics.AddOrUpdate(transactionName, 
+            _metrics.AddOrUpdate(
+                transactionName,
                 new MetricData { Name = transactionName, ExecutionTimes = [duration] },
                 (key, existing) =>
                 {
@@ -49,7 +50,8 @@ namespace LYBT.Infrastructure.Transactions
 
             if (!string.IsNullOrEmpty(transactionName))
             {
-                _metrics.AddOrUpdate(transactionName,
+                _metrics.AddOrUpdate(
+                    transactionName,
                     new MetricData { Name = transactionName, SuccessCount = 1 },
                     (key, existing) =>
                     {
@@ -76,7 +78,8 @@ namespace LYBT.Infrastructure.Transactions
 
             if (!string.IsNullOrEmpty(transactionName))
             {
-                _metrics.AddOrUpdate(transactionName,
+                _metrics.AddOrUpdate(
+                    transactionName,
                     new MetricData { Name = transactionName, FailureCount = 1 },
                     (key, existing) =>
                     {
@@ -88,12 +91,14 @@ namespace LYBT.Infrastructure.Transactions
                             if (!string.IsNullOrEmpty(errorMessage))
                             {
                                 existing.RecentErrors.Add($"{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}: {errorMessage}");
+
                                 // 只保留最近10个错误
                                 if (existing.RecentErrors.Count > 10)
                                 {
                                     existing.RecentErrors.RemoveAt(0);
                                 }
                             }
+
                             return existing;
                         }
                     });
@@ -151,7 +156,7 @@ namespace LYBT.Infrastructure.Transactions
         public Dictionary<string, TransactionMetricDetails> GetAllMetrics()
         {
             var result = new Dictionary<string, TransactionMetricDetails>();
-            
+
             foreach (var kvp in _metrics)
             {
                 var details = GetTransactionMetrics(kvp.Key);

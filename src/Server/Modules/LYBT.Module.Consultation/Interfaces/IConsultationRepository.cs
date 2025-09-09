@@ -1,4 +1,4 @@
-﻿using LYBT.Infrastructure.Interfaces;
+using LYBT.Infrastructure.Interfaces;
 
 namespace LYBT.Module.Consultation.Interfaces
 {

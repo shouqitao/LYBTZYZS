@@ -167,6 +167,7 @@ public class ModuleRegistrationValidator : IModuleServiceRegistrar
             {
                 report.AppendLine($"  {service.ServiceType.Name} → {service.ImplementationType.Name} ({service.Lifetime})");
             }
+
             report.AppendLine();
         }
 
@@ -184,6 +185,7 @@ public class ModuleRegistrationValidator : IModuleServiceRegistrar
             case ServiceLifetime.Singleton:
                 // 先注册实现类为单例
                 registry.RegisterSingleton(service.ImplementationType);
+
                 // 再注册接口到实现的映射
                 registry.Register(service.ServiceType, container => container.Resolve(service.ImplementationType));
                 break;
@@ -223,6 +225,7 @@ public class ModuleRegistrationValidator : IModuleServiceRegistrar
         {
             return typeName[..^6];
         }
+
         return typeName;
     }
 }

@@ -1,4 +1,4 @@
-﻿using System.Windows.Controls;
+using System.Windows.Controls;
 using LYBT.Desktop.Patients.ViewModels;
 
 namespace LYBT.Desktop.Patients.Views

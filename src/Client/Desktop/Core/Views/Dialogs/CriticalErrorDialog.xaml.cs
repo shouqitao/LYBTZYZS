@@ -1,4 +1,4 @@
-﻿using System.Windows;
+using System.Windows;
 using LYBT.Desktop.Core.ViewModels.Dialogs;
 using SharedCommon = LYBT.Shared.Models.Contracts.Common;
 

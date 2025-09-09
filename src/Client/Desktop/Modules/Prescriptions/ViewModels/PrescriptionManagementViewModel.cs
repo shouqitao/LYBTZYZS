@@ -1,4 +1,9 @@
-﻿using AutoMapper;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using AutoMapper;
 using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.ViewModels;
 using LYBT.Shared.Interfaces.Services;
@@ -6,11 +11,6 @@ using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using Prism.Commands;
 using Prism.Events;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace LYBT.Desktop.Prescriptions.ViewModels
 {
@@ -36,10 +36,10 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
 
         /// <summary>打印处方命令</summary>
         public DelegateCommand PrintCommand { get; }
-        
+
         /// <summary>P0-02新增：查看患者处方历史命令</summary>
         public DelegateCommand ViewPatientHistoryCommand { get; }
-        
+
         /// <summary>Epic 04-P0-02新增：导出处方数据命令</summary>
         public DelegateCommand ExportPrescriptionsCommand { get; }
 
@@ -197,7 +197,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
 
                 // P0-03核心：使用专业打印服务生成预览
                 var previewResult = await _printService.PreviewPrescriptionAsync(prescription);
-                
+
                 if (!previewResult.Success)
                 {
                     await _dialogService.ShowErrorAsync(previewResult.Message, "预览失败");
@@ -206,8 +206,8 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
 
                 // P0-03核心：显示标准化打印预览对话框
                 var previewDialog = new LYBT.Desktop.Core.Views.PrintPreviewDialog(
-                    previewResult.Content, 
-                    _printService, 
+                    previewResult.Content,
+                    _printService,
                     prescription);
 
                 // 设置对话框标题和属性
@@ -216,11 +216,11 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                 previewDialog.WindowStartupLocation = System.Windows.WindowStartupLocation.CenterOwner;
 
                 var dialogResult = previewDialog.ShowDialog();
-                
+
                 if (dialogResult == true)
                 {
                     await _dialogService.ShowSuccessAsync(
-                        $"处方 {prescription.PrescriptionNo ?? prescription.Id.ToString()[..8]} 打印操作完成", 
+                        $"处方 {prescription.PrescriptionNo ?? prescription.Id.ToString()[..8]} 打印操作完成",
                         "打印成功");
                 }
             }
@@ -229,7 +229,6 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                 await _dialogService.ShowErrorAsync($"打印处理失败: {ex.Message}", "打印错误");
             }
         }
-
 
         /// <summary>
         /// P0-02新增：查看患者处方历史
@@ -272,7 +271,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                 else
                 {
                     await _dialogService.ShowErrorAsync(
-                        result.ErrorMessage ?? "获取患者处方历史失败", 
+                        result.ErrorMessage ?? "获取患者处方历史失败",
                         "查询失败");
                 }
             }
@@ -291,7 +290,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         private async void ShowPatientPrescriptionHistory(string patientName, List<PrescriptionDto> prescriptions)
         {
             var historyContent = new System.Text.StringBuilder();
-            
+
             historyContent.AppendLine("=== 患者处方历史记录 ===\n");
             historyContent.AppendLine($"【患者】: {patientName}\n");
 
@@ -302,17 +301,17 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             else
             {
                 historyContent.AppendLine($"【处方记录】(共 {prescriptions.Count} 条)\n");
-                
+
                 for (int i = 0; i < Math.Min(prescriptions.Count, 20); i++) // 最多显示20条
                 {
                     var prescription = prescriptions[i];
-                    
+
                     historyContent.AppendLine($"▶ 第 {i + 1} 张处方 - {prescription.CreateTime:yyyy-MM-dd}");
                     historyContent.AppendLine($"   处方号: {prescription.PrescriptionNo ?? prescription.Id.ToString()[..8]}");
                     historyContent.AppendLine($"   开方医师: {prescription.DoctorName ?? "未知"}");
                     historyContent.AppendLine($"   剂数: {prescription.DosageCount} 剂");
                     historyContent.AppendLine($"   费用: ¥{prescription.TotalPrice:F2}");
-                    
+
                     if (!string.IsNullOrEmpty(prescription.Diagnosis))
                     {
                         var diagnosis = prescription.Diagnosis.Length > 30 ?
@@ -320,28 +319,28 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                             prescription.Diagnosis;
                         historyContent.AppendLine($"   诊断: {diagnosis}");
                     }
-                    
+
                     // 显示主要药材（前5味）
                     if (prescription.Items != null && prescription.Items.Any())
                     {
-                        var mainHerbs = prescription.Items.Take(5).Select(item => 
+                        var mainHerbs = prescription.Items.Take(5).Select(item =>
                             $"{item.HerbName}({item.Quantity}{item.Unit})").ToList();
                         historyContent.AppendLine($"   主要药材: {string.Join("、", mainHerbs)}");
-                        
+
                         if (prescription.Items.Count() > 5)
                         {
                             historyContent.AppendLine($"   等共{prescription.Items.Count()}味药材");
                         }
                     }
-                    
+
                     historyContent.AppendLine();
                 }
-                
+
                 if (prescriptions.Count > 20)
                 {
                     historyContent.AppendLine($"📋 注：为保持界面简洁，仅显示最近20条记录，实际共{prescriptions.Count}条。");
                 }
-                
+
                 historyContent.AppendLine("💡 提示：");
                 historyContent.AppendLine("• 可参考既往处方进行复诊开药");
                 historyContent.AppendLine("• 注意用药间隔和配伍禁忌");
@@ -384,11 +383,11 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                     };
 
                     var result = await _prescriptionService.GetPagedAsync(query);
-                    
+
                     if (result.IsSuccess && result.Data != null)
                     {
                         var prescriptions = result.Data.Items.OrderByDescending(p => p.CreateTime).ToList();
-                        
+
                         if (prescriptions.Any())
                         {
                             StatusMessage = $"正在导出 {prescriptions.Count} 条处方数据...";
@@ -423,23 +422,23 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                                 TotalPrice = p.TotalPrice.ToString("F2"),
                                 Discount = p.Discount.ToString("P1"), // 格式化为百分比
                                 Status = p.Status == LYBT.Shared.Models.Enums.CommonStatus.Enabled ? "正常" : "禁用",
-                                MainHerbs = p.Items != null && p.Items.Any() 
+                                MainHerbs = p.Items != null && p.Items.Any()
                                     ? string.Join("、", p.Items.Take(5).Select(item => $"{item.HerbName}({item.Quantity}{item.Unit})"))
                                     : "无药材信息",
-                                Remark = p.Remark ?? ""
+                                Remark = p.Remark ?? string.Empty
                             }).ToList();
 
                             // 使用ExcelHelper导出
                             LYBT.Desktop.Core.Helpers.ExcelHelper.ExportToExcel(
-                                exportData, 
-                                columns, 
-                                saveDialog.FileName, 
+                                exportData,
+                                columns,
+                                saveDialog.FileName,
                                 "处方数据");
 
                             StatusMessage = "处方数据导出完成";
-                            
+
                             await _dialogService.ShowSuccessAsync(
-                                $"成功导出 {prescriptions.Count} 条处方数据到：\n{saveDialog.FileName}", 
+                                $"成功导出 {prescriptions.Count} 条处方数据到：\n{saveDialog.FileName}",
                                 "导出成功");
                         }
                         else
@@ -450,7 +449,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                     else
                     {
                         await _dialogService.ShowErrorAsync(
-                            result.ErrorMessage ?? "获取处方数据失败", 
+                            result.ErrorMessage ?? "获取处方数据失败",
                             "导出失败");
                     }
                 }

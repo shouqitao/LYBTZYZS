@@ -149,6 +149,7 @@ namespace LYBT.Desktop.Patients.ViewModels
                 var targetPatientId = navigationContext.Parameters.GetValue<Guid>("PatientId");
                 return PatientId == targetPatientId;
             }
+
             return true;
         }
 
@@ -254,6 +255,7 @@ namespace LYBT.Desktop.Patients.ViewModels
         private void CancelEdit()
         {
             IsReadOnly = true;
+
             // 重新加载数据以取消更改
             Task.Run(async () => await LoadDataAsync());
         }
@@ -275,7 +277,7 @@ namespace LYBT.Desktop.Patients.ViewModels
             {
                 // P0-03核心：使用专业打印服务生成患者病历预览
                 var previewResult = await _printService.PreviewPrescriptionAsync(Patient);
-                
+
                 if (!previewResult.Success)
                 {
                     await _dialogService.ShowErrorAsync(previewResult.Message, "预览失败");
@@ -284,8 +286,8 @@ namespace LYBT.Desktop.Patients.ViewModels
 
                 // P0-03核心：显示标准化病历打印预览对话框
                 var previewDialog = new LYBT.Desktop.Core.Views.PrintPreviewDialog(
-                    previewResult.Content, 
-                    _printService, 
+                    previewResult.Content,
+                    _printService,
                     Patient);
 
                 // 设置对话框标题和属性
@@ -294,11 +296,11 @@ namespace LYBT.Desktop.Patients.ViewModels
                 previewDialog.WindowStartupLocation = System.Windows.WindowStartupLocation.CenterOwner;
 
                 var dialogResult = previewDialog.ShowDialog();
-                
+
                 if (dialogResult == true)
                 {
                     await _dialogService.ShowSuccessAsync(
-                        $"患者 {Patient.Name} 病历打印操作完成", 
+                        $"患者 {Patient.Name} 病历打印操作完成",
                         "打印成功");
                 }
             }

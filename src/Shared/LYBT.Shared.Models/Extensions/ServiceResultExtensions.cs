@@ -16,8 +16,7 @@ public static class ServiceResultExtensions
     {
         return ServiceResult<T>.Failure(
             exception.UserMessage ?? exception.Message,
-            exception
-        );
+            exception);
     }
 
     /// <summary>
@@ -27,8 +26,7 @@ public static class ServiceResultExtensions
     {
         return ServiceResult.Failure(
             exception.UserMessage ?? exception.Message,
-            exception
-        );
+            exception);
     }
 
     /// <summary>

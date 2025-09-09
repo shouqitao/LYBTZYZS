@@ -171,6 +171,7 @@ namespace LYBT.Desktop.Core.Events
                     {
                         subscription.InvokeAction(argument);
                     }
+
                     break;
 
                 case EnhancedThreadOption.BackgroundThread:
@@ -404,6 +405,7 @@ namespace LYBT.Desktop.Core.Events
                 else if (_weakAction?.Target != null)
                 {
                     var target = _weakAction.Target;
+
                     // 需要重新创建委托
                     // 这里简化处理，实际应该缓存MethodInfo
                     _strongAction?.Invoke(payload);
@@ -427,6 +429,7 @@ namespace LYBT.Desktop.Core.Events
         public EnhancedEventAggregator(ILogger<EnhancedEventAggregator>? logger = null)
         {
             _logger = logger;
+
             // 定期清理（每5分钟）
             _cleanupTimer = new Timer(_ => Cleanup(), null, TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(5));
         }
@@ -443,6 +446,7 @@ namespace LYBT.Desktop.Core.Events
                 {
                     newEvent.SetLogger(_logger);
                 }
+
                 newEvent.EnableDebugMode(_debugMode);
 
                 _statistics.RegisterEvent(typeof(TEventType).Name);

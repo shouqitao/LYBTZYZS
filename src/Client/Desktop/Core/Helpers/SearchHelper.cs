@@ -41,6 +41,7 @@
                         return true;
                     }
                 }
+
                 return false;
             });
         }
@@ -66,6 +67,7 @@
             {
                 result = result.Where(filter);
             }
+
             return result;
         }
 
@@ -106,6 +108,7 @@
 
                     return true;
                 }
+
                 return false;
             };
         }

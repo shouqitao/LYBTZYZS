@@ -1,4 +1,4 @@
-﻿namespace LYBT.Desktop.Core.Enums
+namespace LYBT.Desktop.Core.Enums
 {
 
     /// <summary>

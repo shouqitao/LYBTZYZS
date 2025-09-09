@@ -1,4 +1,4 @@
-﻿using LYBT.Desktop.MedicalCase.Interfaces;
+using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.MedicalCase;
@@ -81,7 +81,7 @@ public class MedicalCaseModule(
             PastHistory = dto.PastHistory,
             Remark = dto.Remark
         };
-        
+
         return await _businessService.UpdateAsync(id, detailDto);
     }
 

@@ -160,6 +160,7 @@ namespace LYBT.Desktop.Core.Services
                 {
                     return messageProp.GetString() ?? GetDefaultErrorMessage(statusCode);
                 }
+
                 if (document.RootElement.TryGetProperty("error", out var errorProp))
                 {
                     return errorProp.GetString() ?? GetDefaultErrorMessage(statusCode);

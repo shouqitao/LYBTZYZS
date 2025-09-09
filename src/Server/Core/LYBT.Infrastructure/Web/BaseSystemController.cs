@@ -114,6 +114,7 @@ public abstract class BaseSystemController : BaseControllerCore
                 return SystemError(message, 400);
             }
         }
+
         return null;
     }
 

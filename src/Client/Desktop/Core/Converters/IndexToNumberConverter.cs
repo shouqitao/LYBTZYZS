@@ -16,6 +16,7 @@ namespace LYBT.Desktop.Core.Converters
             {
                 return (index + 1).ToString();
             }
+
             return "1";
         }
 

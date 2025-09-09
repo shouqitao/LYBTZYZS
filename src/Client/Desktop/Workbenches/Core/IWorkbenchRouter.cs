@@ -1,4 +1,4 @@
-﻿namespace LYBT.Desktop.Workbench.Core
+namespace LYBT.Desktop.Workbench.Core
 {
 
     /// <summary>

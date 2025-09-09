@@ -135,6 +135,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
             // ✅ 修复: 使用AsyncRelayCommand替代async void模式
             SearchCommand = new AsyncRelayCommand(SearchAsync);
+
             // RefreshCommand由基类提供，已修复async void问题
             AddCommand = new AsyncRelayCommand(AddCaseAsync);
             ViewDetailsCommand = new AsyncRelayCommand<MedicalCaseDto>(ViewDetailsAsync);
@@ -270,6 +271,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             }
 
             _logger.LogInformation("编辑医疗案例: {CaseId}", medicalCase.Id);
+
             // TODO: 实现编辑逻辑
             await Task.CompletedTask;
         }
@@ -282,6 +284,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             }
 
             _logger.LogInformation("查看看诊记录: {CaseId}", medicalCase.Id);
+
             // TODO: 实现查看看诊记录逻辑
             await Task.CompletedTask;
         }
@@ -335,6 +338,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             }
 
             _logger.LogInformation("打印医疗案例: {CaseId}", medicalCase.Id);
+
             // TODO: 实现打印逻辑
             await Task.CompletedTask;
         }

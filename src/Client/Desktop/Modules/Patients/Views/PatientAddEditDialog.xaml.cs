@@ -42,6 +42,7 @@ namespace LYBT.Desktop.Patients.Views
             {
                 dialogAware.RequestClose -= OnRequestClose;
             }
+
             base.OnClosed(e);
         }
     }

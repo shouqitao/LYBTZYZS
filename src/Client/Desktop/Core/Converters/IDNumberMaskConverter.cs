@@ -25,6 +25,7 @@ namespace LYBT.Desktop.Core.Converters
                     return $"{idNumber.Substring(0, 3)}***{idNumber.Substring(idNumber.Length - 3)}";
                 }
             }
+
             return value?.ToString() ?? string.Empty;
         }
 

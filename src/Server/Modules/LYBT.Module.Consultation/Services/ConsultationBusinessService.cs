@@ -102,6 +102,7 @@ namespace LYBT.Module.Consultation.Services
 
                 // 验证状态转换的合法性
                 var currentStatus = consultation.Status;
+
                 // 暂时跳过状态转换验证，因为实体使用CommonStatus而参数使用ConsultationStatus
                 var isValidTransition = true; // TODO: 需要重新设计状态映射逻辑
 
@@ -130,8 +131,10 @@ namespace LYBT.Module.Consultation.Services
             {
                 // 进行中 -> 完成
                 (ConsultationStatus.InProgress, ConsultationStatus.Completed) => true,
+
                 // 进行中 -> 取消
                 (ConsultationStatus.InProgress, ConsultationStatus.Cancelled) => true,
+
                 // 其他转换都不允许
                 _ => false
             };

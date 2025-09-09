@@ -1,4 +1,4 @@
-﻿using LYBT.Desktop.Users.Services;
+using LYBT.Desktop.Users.Services;
 using LYBT.Desktop.Users.ViewModels;
 using LYBT.Desktop.Users.Views;
 using LYBT.Shared.Interfaces.Services;

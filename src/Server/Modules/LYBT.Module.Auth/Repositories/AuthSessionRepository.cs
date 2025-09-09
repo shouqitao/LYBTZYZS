@@ -1,4 +1,4 @@
-﻿using LYBT.Entities.Auth;
+using LYBT.Entities.Auth;
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Repositories;
 using LYBT.Module.Auth.Interfaces;

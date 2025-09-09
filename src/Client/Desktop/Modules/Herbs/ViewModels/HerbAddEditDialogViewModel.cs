@@ -37,6 +37,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
                     {
                         GenerateCodes();
                     }
+
                     SaveCommand.RaiseCanExecuteChanged();
                 }
             }

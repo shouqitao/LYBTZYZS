@@ -34,35 +34,35 @@ public class PatientBusinessService(
     /// <returns>包含新建患者信息的业务结果</returns>
     /// <exception cref="ArgumentNullException">当创建请求为空时抛出</exception>
     public async Task<ServiceResult<PatientDto>> CreateAsync(PatientCreateDto createDto, CancellationToken cancellationToken = default)
-{
-    ArgumentNullException.ThrowIfNull(createDto, nameof(createDto));
+    {
+        ArgumentNullException.ThrowIfNull(createDto, nameof(createDto));
 
-    return await _exceptionHandler.HandleException<PatientDto>(
-        async (ct) =>
-        {
-            _logger.LogInformation(
-                "开始处理患者档案创建: 姓名: {PatientName}, 联系电话: {Phone}",
-                createDto.Name, createDto.PhoneNumber);
-
-            var refitResponse = await _patientApi.CreatePatientAsync(createDto).ConfigureAwait(false);
-            
-            // 检查是否取消
-            ct.ThrowIfCancellationRequested();
-
-            if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
+        return await _exceptionHandler.HandleException<PatientDto>(
+            async (ct) =>
             {
-                var patient = refitResponse.Content;
-                _logger.LogInformation("患者档案创建成功: {PatientName}", patient.Name);
-                return ServiceResult<PatientDto>.Success(patient, "患者档案创建成功");
-            }
+                _logger.LogInformation(
+                    "开始处理患者档案创建: 姓名: {PatientName}, 联系电话: {Phone}",
+                    createDto.Name, createDto.PhoneNumber);
 
-            _logger.LogWarning(
-                "患者档案创建HTTP请求失败: {PatientName}, 状态码: {StatusCode}",
-                createDto.Name, refitResponse.StatusCode);
-            return ServiceResult<PatientDto>.Failure("创建患者档案网络请求失败，请检查网络连接");
-        }
-        , nameof(CreateAsync), $"创建患者档案: {createDto.Name}", cancellationToken);
-}
+                var refitResponse = await _patientApi.CreatePatientAsync(createDto).ConfigureAwait(false);
+
+                // 检查是否取消
+                ct.ThrowIfCancellationRequested();
+
+                if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
+                {
+                    var patient = refitResponse.Content;
+                    _logger.LogInformation("患者档案创建成功: {PatientName}", patient.Name);
+                    return ServiceResult<PatientDto>.Success(patient, "患者档案创建成功");
+                }
+
+                _logger.LogWarning(
+                    "患者档案创建HTTP请求失败: {PatientName}, 状态码: {StatusCode}",
+                    createDto.Name, refitResponse.StatusCode);
+                return ServiceResult<PatientDto>.Failure("创建患者档案网络请求失败，请检查网络连接");
+            },
+            nameof(CreateAsync), $"创建患者档案: {createDto.Name}", cancellationToken);
+    }
 
     /// <summary>
     /// 患者更新业务处理
@@ -73,33 +73,33 @@ public class PatientBusinessService(
     /// <returns>包含更新后患者信息的业务结果</returns>
     /// <exception cref="ArgumentNullException">当更新请求为空时抛出</exception>
     public async Task<ServiceResult<PatientDto>> UpdateAsync(Guid id, PatientUpdateDto updateDto, CancellationToken cancellationToken = default)
-{
-    ArgumentNullException.ThrowIfNull(updateDto, nameof(updateDto));
+    {
+        ArgumentNullException.ThrowIfNull(updateDto, nameof(updateDto));
 
-    return await _exceptionHandler.HandleException<PatientDto>(
-        async (ct) =>
-        {
-            _logger.LogInformation("开始处理患者档案更新: 患者ID: {PatientId}", id);
-
-            var refitResponse = await _patientApi.UpdatePatientAsync(id, updateDto).ConfigureAwait(false);
-            
-            // 检查是否取消
-            ct.ThrowIfCancellationRequested();
-
-            if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
+        return await _exceptionHandler.HandleException<PatientDto>(
+            async (ct) =>
             {
-                var patient = refitResponse.Content;
-                _logger.LogInformation("患者档案更新成功: {PatientName}", patient.Name);
-                return ServiceResult<PatientDto>.Success(patient, "患者档案更新成功");
-            }
+                _logger.LogInformation("开始处理患者档案更新: 患者ID: {PatientId}", id);
 
-            _logger.LogWarning(
-                "患者档案更新HTTP请求失败: 患者ID: {PatientId}, 状态码: {StatusCode}",
-                id, refitResponse.StatusCode);
-            return ServiceResult<PatientDto>.Failure("更新患者档案网络请求失败，请检查网络连接");
-        }
-        , nameof(UpdateAsync), $"更新患者档案: {id}", cancellationToken);
-}
+                var refitResponse = await _patientApi.UpdatePatientAsync(id, updateDto).ConfigureAwait(false);
+
+                // 检查是否取消
+                ct.ThrowIfCancellationRequested();
+
+                if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
+                {
+                    var patient = refitResponse.Content;
+                    _logger.LogInformation("患者档案更新成功: {PatientName}", patient.Name);
+                    return ServiceResult<PatientDto>.Success(patient, "患者档案更新成功");
+                }
+
+                _logger.LogWarning(
+                    "患者档案更新HTTP请求失败: 患者ID: {PatientId}, 状态码: {StatusCode}",
+                    id, refitResponse.StatusCode);
+                return ServiceResult<PatientDto>.Failure("更新患者档案网络请求失败，请检查网络连接");
+            },
+            nameof(UpdateAsync), $"更新患者档案: {id}", cancellationToken);
+    }
 
     /// <summary>
     /// 启用患者档案
@@ -127,8 +127,8 @@ public class PatientBusinessService(
                     "患者档案启用HTTP请求失败: {PatientId}, 状态码: {StatusCode}",
                     patientId, refitResponse.StatusCode);
                 return ServiceResult<bool>.Failure("启用患者档案网络请求失败，请检查网络连接");
-            }
-            , nameof(EnableAsync), $"启用患者档案: {patientId}", CancellationToken.None);
+            },
+            nameof(EnableAsync), $"启用患者档案: {patientId}", CancellationToken.None);
     }
 
     /// <summary>
@@ -157,8 +157,8 @@ public class PatientBusinessService(
                     "患者档案禁用HTTP请求失败: {PatientId}, 状态码: {StatusCode}",
                     patientId, refitResponse.StatusCode);
                 return ServiceResult<bool>.Failure("禁用患者档案网络请求失败，请检查网络连接");
-            }
-            , nameof(DisableAsync), $"禁用患者档案: {patientId}", CancellationToken.None);
+            },
+            nameof(DisableAsync), $"禁用患者档案: {patientId}", CancellationToken.None);
     }
 
     /// <summary>
@@ -187,8 +187,8 @@ public class PatientBusinessService(
                     "患者档案删除HTTP请求失败: {PatientId}, 状态码: {StatusCode}",
                     patientId, refitResponse.StatusCode);
                 return ServiceResult<bool>.Failure("删除患者档案网络请求失败，请检查网络连接");
-            }
-            , nameof(DeleteAsync), $"删除患者档案: {patientId}", CancellationToken.None);
+            },
+            nameof(DeleteAsync), $"删除患者档案: {patientId}", CancellationToken.None);
     }
 
     #endregion 患者业务逻辑专业化实现

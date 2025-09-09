@@ -126,7 +126,7 @@ public static class ServiceExceptionExtensions
     {
         var exceptionHandler = new StandardExceptionHandler(
             (ILogger<StandardExceptionHandler>)logger);
-        
+
         return await operation.ExecuteSafelyAsync(exceptionHandler, methodName, context);
     }
 
@@ -148,7 +148,7 @@ public static class ServiceExceptionExtensions
     {
         var exceptionHandler = new StandardExceptionHandler(
             (ILogger<StandardExceptionHandler>)logger);
-        
+
         return await operation.ExecuteSafelyAsync(exceptionHandler, methodName, context);
     }
 }

@@ -1,4 +1,4 @@
-﻿using LYBT.Desktop.Consultation.Interfaces;
+using LYBT.Desktop.Consultation.Interfaces;
 using LYBT.Shared.Interfaces.Api;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;

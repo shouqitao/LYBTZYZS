@@ -17,6 +17,7 @@ namespace LYBT.Desktop.Core.Converters
             {
                 return boolValue ? Visibility.Collapsed : Visibility.Visible;
             }
+
             return Visibility.Visible;
         }
 
@@ -26,6 +27,7 @@ namespace LYBT.Desktop.Core.Converters
             {
                 return visibility != Visibility.Visible;
             }
+
             return false;
         }
     }

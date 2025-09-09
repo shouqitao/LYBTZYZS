@@ -1,4 +1,4 @@
-﻿namespace LYBT.Shared.Models.Exceptions;
+namespace LYBT.Shared.Models.Exceptions;
 
 /// <summary>
 /// 数据验证异常 - UltraThink统一异常体系

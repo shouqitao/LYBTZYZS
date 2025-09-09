@@ -1,4 +1,4 @@
-﻿namespace LYBT.Desktop.Core.Models.Validation
+namespace LYBT.Desktop.Core.Models.Validation
 {
 
     /// <summary>

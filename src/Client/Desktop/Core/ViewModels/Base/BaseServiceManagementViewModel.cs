@@ -187,23 +187,19 @@ namespace LYBT.Desktop.Core.ViewModels.Base
             // 分页命令
             FirstPageCommand = new DelegateCommand(
                 async () => await GoToPageAsync(1),
-                () => CurrentPage > 1
-            ).ObservesProperty(() => CurrentPage);
+                () => CurrentPage > 1).ObservesProperty(() => CurrentPage);
 
             PreviousPageCommand = new DelegateCommand(
                 async () => await GoToPageAsync(CurrentPage - 1),
-                () => CurrentPage > 1
-            ).ObservesProperty(() => CurrentPage);
+                () => CurrentPage > 1).ObservesProperty(() => CurrentPage);
 
             NextPageCommand = new DelegateCommand(
                 async () => await GoToPageAsync(CurrentPage + 1),
-                () => CurrentPage < TotalPages
-            ).ObservesProperty(() => CurrentPage).ObservesProperty(() => TotalPages);
+                () => CurrentPage < TotalPages).ObservesProperty(() => CurrentPage).ObservesProperty(() => TotalPages);
 
             LastPageCommand = new DelegateCommand(
                 async () => await GoToPageAsync(TotalPages),
-                () => CurrentPage < TotalPages
-            ).ObservesProperty(() => CurrentPage).ObservesProperty(() => TotalPages);
+                () => CurrentPage < TotalPages).ObservesProperty(() => CurrentPage).ObservesProperty(() => TotalPages);
         }
 
         #endregion Constructor
@@ -373,6 +369,7 @@ namespace LYBT.Desktop.Core.ViewModels.Base
                     return false;
                 }
             }
+
             // 如果没有对话框服务，默认返回false（保守操作）
             return false;
         }

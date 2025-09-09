@@ -443,6 +443,7 @@ namespace LYBT.Desktop.Core.ObjectPool
                     disposable.Dispose();
                 }
             }
+
             _currentSize = 0;
         }
 

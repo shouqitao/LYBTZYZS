@@ -1,4 +1,4 @@
-﻿using LYBT.Desktop.Prescriptions.Interfaces;
+using LYBT.Desktop.Prescriptions.Interfaces;
 using LYBT.Shared.Interfaces.Api;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
@@ -44,7 +44,8 @@ public class PrescriptionsQueryService(
             if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
             {
                 var result = refitResponse.Content;
-                _logger.LogDebug("处方分页查询成功，总数: {TotalCount}, 当前页数据数: {ItemCount}",
+                _logger.LogDebug(
+                    "处方分页查询成功，总数: {TotalCount}, 当前页数据数: {ItemCount}",
                     result.TotalCount, result.Items.Count);
                 return ServiceResult<PagedResult<PrescriptionDto>>.Success(result, "查询成功");
             }
@@ -78,6 +79,7 @@ public class PrescriptionsQueryService(
             if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
             {
                 var detailDto = refitResponse.Content;
+
                 // PrescriptionDetailDto 继承自 PrescriptionDto，可以直接使用
                 // 但需要转换为基类类型以避免额外的详情字段
                 var prescriptionDto = new PrescriptionDto
@@ -174,21 +176,22 @@ public class PrescriptionsQueryService(
 
             // 使用分页查询获取数据来生成统计
             var allDataResponse = await _prescriptionApi.GetListAsync(1, 10000); // 获取大量数据用于统计
-            
+
             var stats = new PrescriptionStatisticsDto();
-            
+
             if (allDataResponse.IsSuccessStatusCode && allDataResponse.Content != null)
             {
                 var prescriptions = allDataResponse.Content.Items;
-                
+
                 // 基于实际枚举值进行统计计算
                 stats.TotalCount = allDataResponse.Content.TotalCount;
                 stats.DraftCount = prescriptions.Count(p => p.Status == CommonStatus.Disabled); // 草稿状态
                 stats.CompletedCount = prescriptions.Count(p => p.Status == CommonStatus.Enabled); // 完成状态
                 stats.TotalAmount = prescriptions.Sum(p => p.TotalAmount);
                 stats.AverageAmount = stats.TotalCount > 0 ? stats.TotalAmount / stats.TotalCount : 0;
-                
-                _logger.LogDebug("处方统计数据生成成功: 总数 {Total}, 草稿 {Draft}, 完成 {Completed}", 
+
+                _logger.LogDebug(
+                    "处方统计数据生成成功: 总数 {Total}, 草稿 {Draft}, 完成 {Completed}",
                     stats.TotalCount, stats.DraftCount, stats.CompletedCount);
             }
             else

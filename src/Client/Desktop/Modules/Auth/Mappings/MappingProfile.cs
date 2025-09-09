@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace LYBT.Desktop.Auth.Mappings

@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using LYBT.Entities.Herbs;
 using LYBT.Infrastructure.Data;
 using LYBT.Shared.Models.Common;

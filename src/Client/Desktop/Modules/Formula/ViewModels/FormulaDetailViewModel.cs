@@ -151,6 +151,7 @@ namespace LYBT.Desktop.Formula.ViewModels
                 var targetFormulaId = navigationContext.Parameters.GetValue<Guid>("FormulaId");
                 return FormulaId == targetFormulaId;
             }
+
             return true;
         }
 
@@ -272,6 +273,7 @@ namespace LYBT.Desktop.Formula.ViewModels
         private void CancelEdit()
         {
             IsReadOnly = true;
+
             // 重新加载数据以取消更改
             Task.Run(async () => await LoadDataAsync());
         }

@@ -230,8 +230,7 @@ namespace LYBT.Desktop.Core.Extensions
                         step.Operation,
                         step.Description,
                         layer + 1, // 使用更深的层级
-                        mainOperation.CancellationToken
-                    );
+                        mainOperation.CancellationToken);
                 }
 
                 mainOperation.UpdateProgress(100, "所有步骤完成");

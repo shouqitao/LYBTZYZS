@@ -241,6 +241,7 @@ namespace LYBT.Desktop.Core.Controls
             if (isLayerLoading)
             {
                 UpdateLoadingMessage();
+
                 // 这里可以扩展，获取当前操作的进度信息
                 // ShowProgress = currentOperation?.SupportsProgress ?? false;
                 // ProgressValue = currentOperation?.Progress ?? 0;
@@ -318,6 +319,7 @@ namespace LYBT.Desktop.Core.Controls
             {
                 return boolValue ? Visibility.Visible : Visibility.Collapsed;
             }
+
             return Visibility.Collapsed;
         }
 
@@ -340,6 +342,7 @@ namespace LYBT.Desktop.Core.Controls
             {
                 return Math.Max(0, Math.Min(1, doubleValue / 100.0));
             }
+
             return 0.0;
         }
 

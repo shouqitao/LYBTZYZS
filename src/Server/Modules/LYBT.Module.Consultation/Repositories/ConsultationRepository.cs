@@ -84,7 +84,6 @@ public class ConsultationRepository : OptimizedBaseRepository<LYBT.Entities.Cons
         return consultations;
     }
 
-
     public async Task<List<LYBT.Entities.Consultation.Consultation>> GetByDateRangeAsync(DateTime startDate, DateTime endDate)
     {
         var cacheKey = $"{CacheKeyPrefix}daterange:{startDate:yyyyMMdd}-{endDate:yyyyMMdd}";

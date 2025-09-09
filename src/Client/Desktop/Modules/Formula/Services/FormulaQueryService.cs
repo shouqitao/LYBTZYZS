@@ -47,6 +47,7 @@ public class FormulaQueryService(
             if (refitResponse.IsSuccessStatusCode && refitResponse.Content != null)
             {
                 var detailDto = refitResponse.Content;
+
                 // FormulaDetailDto 继承自 FormulaDto，可以直接使用
                 // 转换为基类类型以避免详情字段的问题
                 var formulaDto = detailDto as FormulaDto;

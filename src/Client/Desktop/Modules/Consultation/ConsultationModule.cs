@@ -1,4 +1,4 @@
-﻿using LYBT.Desktop.Consultation.Services;
+using LYBT.Desktop.Consultation.Services;
 using LYBT.Desktop.Consultation.ViewModels;
 using LYBT.Desktop.Consultation.Views;
 using LYBT.Shared.Interfaces.Services;

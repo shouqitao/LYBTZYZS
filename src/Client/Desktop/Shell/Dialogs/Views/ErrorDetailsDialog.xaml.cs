@@ -46,6 +46,7 @@ namespace LYBT.Desktop.Shell.Dialogs.Views
                 viewModel.CloseRequested -= OnCloseRequested;
                 viewModel.RetryRequested -= OnRetryRequested;
             }
+
             base.OnClosed(e);
         }
     }

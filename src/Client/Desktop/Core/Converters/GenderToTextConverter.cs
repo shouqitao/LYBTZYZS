@@ -47,6 +47,7 @@ namespace LYBT.Desktop.Core.Converters
                     _ => Gender.Unknown
                 };
             }
+
             return Gender.Unknown;
         }
     }

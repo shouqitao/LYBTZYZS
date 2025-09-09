@@ -1,4 +1,4 @@
-﻿// UltraThink v2.0: 使用HerbDto替代HerbInfo模型
+// UltraThink v2.0: 使用HerbDto替代HerbInfo模型
 using LYBT.Shared.Models.Contracts.Herbs;
 using Prism.Mvvm;
 

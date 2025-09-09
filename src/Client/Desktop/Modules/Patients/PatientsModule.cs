@@ -1,4 +1,4 @@
-﻿using LYBT.Desktop.Patients.Services;
+using LYBT.Desktop.Patients.Services;
 using LYBT.Desktop.Patients.ViewModels;
 using LYBT.Desktop.Patients.Views;
 using LYBT.Shared.Interfaces.Services;

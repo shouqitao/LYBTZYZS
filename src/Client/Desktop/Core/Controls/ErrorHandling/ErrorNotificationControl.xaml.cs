@@ -1,4 +1,4 @@
-﻿using System.Windows.Controls;
+using System.Windows.Controls;
 
 namespace LYBT.Desktop.Core.Controls.ErrorHandling
 {

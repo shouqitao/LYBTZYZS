@@ -172,7 +172,7 @@ namespace LYBT.Desktop.Patients.ViewModels
         public DelegateCommand<PatientDto> DeleteCommand { get; private set; } = null!;
         public DelegateCommand<PatientDto> ToggleStatusCommand { get; private set; } = null!;
         public DelegateCommand<PatientDto> ViewDetailsCommand { get; private set; } = null!;
-        
+
         // Phase 2 新增：患者历史记录查询功能
         public DelegateCommand<PatientDto> ViewHistoryCommand { get; private set; } = null!;
 
@@ -247,7 +247,7 @@ namespace LYBT.Desktop.Patients.ViewModels
             DeleteCommand = new DelegateCommand<PatientDto>(async patient => await DeletePatientAsync(patient), CanExecutePatientCommand);
             ToggleStatusCommand = new DelegateCommand<PatientDto>(async patient => await ToggleStatusAsync(patient), CanExecutePatientCommand);
             ViewDetailsCommand = new DelegateCommand<PatientDto>(async patient => await ViewDetailsAsync(patient), CanExecutePatientCommand);
-            
+
             // Phase 2 新增：初始化患者历史记录查询命令
             ViewHistoryCommand = new DelegateCommand<PatientDto>(async patient => await ViewHistoryAsync(patient), CanExecutePatientCommand);
 
@@ -325,7 +325,7 @@ namespace LYBT.Desktop.Patients.ViewModels
             try
             {
                 IsOperationInProgress = true;
-                
+
                 var parameters = new Dictionary<string, object>
                 {
                     ["IsEditMode"] = false
@@ -337,12 +337,12 @@ namespace LYBT.Desktop.Patients.ViewModels
                 {
                     // 显示操作反馈
                     ShowInfo("正在刷新患者列表...");
-                    
+
                     await RefreshDataAsync();
-                    
+
                     // 更新时间戳
                     LastUpdateTime = DateTime.Now;
-                    
+
                     ShowSuccess("患者信息添加成功");
                     await _dialogService.ShowSuccessAsync("患者信息添加成功", "成功");
                 }
@@ -356,6 +356,7 @@ namespace LYBT.Desktop.Patients.ViewModels
             finally
             {
                 IsOperationInProgress = false;
+
                 // 刷新命令状态
                 AddCommand.RaiseCanExecuteChanged();
                 EditCommand.RaiseCanExecuteChanged();
@@ -548,7 +549,7 @@ namespace LYBT.Desktop.Patients.ViewModels
                         var statusText = GetMedicalCaseStatusText((int)mc.Status);
                         historyInfo += $"▶ 第{i + 1}次就诊 - {mc.CreateTime:yyyy-MM-dd HH:mm}\n";
                         historyInfo += $"   状态: {statusText}\n";
-                        
+
                         if (!string.IsNullOrEmpty(mc.Remark))
                         {
                             var remark = mc.Remark.Length > 50 ? mc.Remark.Substring(0, 50) + "..." : mc.Remark;
@@ -558,7 +559,7 @@ namespace LYBT.Desktop.Patients.ViewModels
                         {
                             historyInfo += $"   备注: 未填写\n";
                         }
-                        
+
                         historyInfo += "\n";
                     }
 
@@ -615,7 +616,7 @@ namespace LYBT.Desktop.Patients.ViewModels
             return status switch
             {
                 0 => "已登记",
-                1 => "进行中", 
+                1 => "进行中",
                 2 => "已完成",
                 3 => "已取消",
                 4 => "已暂停",
@@ -1020,26 +1021,26 @@ namespace LYBT.Desktop.Patients.ViewModels
             try
             {
                 IsLoading = true;
-                
+
                 // 设置分页参数
                 AdvancedSearch.PageIndex = 1;
                 AdvancedSearch.PageSize = 20;
-                
+
                 var result = await _patientService.GetPagedAsync(AdvancedSearch);
-                
+
                 if (result.IsSuccess && result.Data != null)
                 {
                     // 更新数据
                     Items = new System.Collections.ObjectModel.ObservableCollection<PatientDto>(result.Data.Items);
                     PaginationCoordinator.UpdatePagination(result.Data.TotalCount);
-                    
+
                     // 添加到搜索历史
                     var searchText = BuildSearchHistoryText(AdvancedSearch);
                     if (!string.IsNullOrEmpty(searchText))
                     {
                         AddToSearchHistory(searchText);
                     }
-                    
+
                     await _dialogService.ShowInformationAsync($"找到 {result.Data.TotalCount} 条符合条件的患者记录", "搜索结果");
                 }
                 else
@@ -1094,16 +1095,24 @@ namespace LYBT.Desktop.Patients.ViewModels
         private string BuildSearchHistoryText(PatientPagedQueryDto query)
         {
             var conditions = new List<string>();
-            
-            if (!string.IsNullOrEmpty(query.Name)) conditions.Add($"姓名:{query.Name}");
-            if (!string.IsNullOrEmpty(query.PhoneNumber)) conditions.Add($"手机:{query.PhoneNumber}");
-            if (!string.IsNullOrEmpty(query.IDNumber)) conditions.Add($"证件号:{query.IDNumber}");
-            if (query.Gender.HasValue) conditions.Add($"性别:{query.Gender}");
-            if (query.MinAge.HasValue) conditions.Add($"年龄≥{query.MinAge}");
-            if (query.MaxAge.HasValue) conditions.Add($"年龄≤{query.MaxAge}");
-            if (!string.IsNullOrEmpty(query.Address)) conditions.Add($"地址:{query.Address}");
-            if (!string.IsNullOrEmpty(query.Profession)) conditions.Add($"职业:{query.Profession}");
-            
+
+            if (!string.IsNullOrEmpty(query.Name))
+                conditions.Add($"姓名:{query.Name}");
+            if (!string.IsNullOrEmpty(query.PhoneNumber))
+                conditions.Add($"手机:{query.PhoneNumber}");
+            if (!string.IsNullOrEmpty(query.IDNumber))
+                conditions.Add($"证件号:{query.IDNumber}");
+            if (query.Gender.HasValue)
+                conditions.Add($"性别:{query.Gender}");
+            if (query.MinAge.HasValue)
+                conditions.Add($"年龄≥{query.MinAge}");
+            if (query.MaxAge.HasValue)
+                conditions.Add($"年龄≤{query.MaxAge}");
+            if (!string.IsNullOrEmpty(query.Address))
+                conditions.Add($"地址:{query.Address}");
+            if (!string.IsNullOrEmpty(query.Profession))
+                conditions.Add($"职业:{query.Profession}");
+
             return conditions.Count > 0 ? string.Join(", ", conditions) : string.Empty;
         }
 
@@ -1112,9 +1121,9 @@ namespace LYBT.Desktop.Patients.ViewModels
         {
             if (string.IsNullOrEmpty(searchText) || SearchHistory.Contains(searchText))
                 return;
-                
+
             SearchHistory.Insert(0, searchText);
-            
+
             // 保持最多20条历史记录
             if (SearchHistory.Count > 20)
             {

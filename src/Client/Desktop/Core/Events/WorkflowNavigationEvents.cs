@@ -1,4 +1,4 @@
-﻿using LYBT.Desktop.Core.Models.Consultation;
+using LYBT.Desktop.Core.Models.Consultation;
 using Prism.Events;
 
 namespace LYBT.Desktop.Core.Events

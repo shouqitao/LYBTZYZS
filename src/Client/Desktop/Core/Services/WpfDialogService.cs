@@ -255,6 +255,7 @@ namespace LYBT.Desktop.Core.Services
                             _logger.LogWarning("无法找到PrescriptionEditorDialogViewModel类型");
                         }
                     }
+
                     // 药材选择对话框特殊处理
                     else if (dialogName == "HerbSelectionDialog")
                     {
@@ -451,6 +452,7 @@ namespace LYBT.Desktop.Core.Services
                             _logger.LogWarning("无法找到CreateMedicalCaseDialogViewModel类型");
                         }
                     }
+
                     // 通用处理：如果DataContext已经是ICustomDialogAware
                     else if (dialog.DataContext is ICustomDialogAware dialogAware && parameters != null)
                     {
@@ -534,6 +536,7 @@ namespace LYBT.Desktop.Core.Services
                 {
                     return dialog.FileName;
                 }
+
                 return null;
             });
         }
@@ -555,6 +558,7 @@ namespace LYBT.Desktop.Core.Services
                 {
                     return dialog.FileName;
                 }
+
                 return null;
             });
         }

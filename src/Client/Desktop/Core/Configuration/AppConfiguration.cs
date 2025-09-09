@@ -82,14 +82,17 @@ namespace LYBT.Desktop.Core.Configuration
                     {
                         return (T)(object)bool.Parse(configValue);
                     }
+
                     if (typeof(T) == typeof(int))
                     {
                         return (T)(object)int.Parse(configValue);
                     }
+
                     if (typeof(T) == typeof(double))
                     {
                         return (T)(object)double.Parse(configValue);
                     }
+
                     if (typeof(T) == typeof(string))
                     {
                         return (T)(object)configValue;

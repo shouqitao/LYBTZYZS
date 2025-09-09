@@ -1,4 +1,4 @@
-﻿using LYBT.Module.Formula.Interfaces;
+using LYBT.Module.Formula.Interfaces;
 using LYBT.Module.Formula.Mapping;
 using LYBT.Module.Formula.Repositories;
 using LYBT.Module.Formula.Services;

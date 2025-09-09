@@ -140,6 +140,7 @@ namespace LYBT.Desktop.Core.Http
             {
                 client?.Dispose();
             }
+
             _clients.Clear();
         }
 
