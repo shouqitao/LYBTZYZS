@@ -1,4 +1,4 @@
-﻿using System.Net.Http;
+using System.Net.Http;
 using AutoMapper;
 using LYBT.Desktop.Core.Configuration;
 using LYBT.Desktop.Core.Mapping;

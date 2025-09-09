@@ -11,6 +11,7 @@ namespace LYBT.Desktop.Core.Converters
     public class BooleanToOnlineStatusConverter : IValueConverter
     {
 
+        /// <inheritdoc/>
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value is bool boolValue)
@@ -21,6 +22,7 @@ namespace LYBT.Desktop.Core.Converters
             return "未知";
         }
 
+        /// <inheritdoc/>
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value is string stringValue)

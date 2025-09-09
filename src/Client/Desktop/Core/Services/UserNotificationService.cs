@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -62,6 +62,7 @@ namespace LYBT.Desktop.Core.Services
 
         #region 公共方法
 
+        /// <inheritdoc/>
         public async Task ShowSuccessAsync(string message, int? durationSeconds = null)
         {
             await ShowNotificationAsync(new NotificationMessage
@@ -75,6 +76,7 @@ namespace LYBT.Desktop.Core.Services
             });
         }
 
+        /// <inheritdoc/>
         public async Task ShowWarningAsync(string message, int? durationSeconds = null)
         {
             await ShowNotificationAsync(new NotificationMessage
@@ -88,6 +90,7 @@ namespace LYBT.Desktop.Core.Services
             });
         }
 
+        /// <inheritdoc/>
         public async Task ShowErrorAsync(string message, SharedCommon.ErrorSeverity severity, int? durationSeconds = null)
         {
             await ShowNotificationAsync(new NotificationMessage
@@ -101,6 +104,7 @@ namespace LYBT.Desktop.Core.Services
             });
         }
 
+        /// <inheritdoc/>
         public async Task ShowInfoAsync(string message, int? durationSeconds = null)
         {
             await ShowNotificationAsync(new NotificationMessage
@@ -114,6 +118,7 @@ namespace LYBT.Desktop.Core.Services
             });
         }
 
+        /// <inheritdoc/>
         public async Task<bool> ShowConfirmationAsync(string message, string title = "确认")
         {
             return await Application.Current.Dispatcher.InvokeAsync(() =>
@@ -129,6 +134,7 @@ namespace LYBT.Desktop.Core.Services
             });
         }
 
+        /// <inheritdoc/>
         public async Task<string?> ShowInputAsync(string prompt, string title = "输入", string defaultValue = "")
         {
             // 创建简单的输入对话框
@@ -240,12 +246,14 @@ namespace LYBT.Desktop.Core.Services
             }
         }
 
+        /// <inheritdoc/>
         public void ShowProgress(string message, int percentage)
         {
             // TODO: 实现进度显示
             _logger?.LogDebug("显示进度: {Message} - {Percentage}%", message, percentage);
         }
 
+        /// <inheritdoc/>
         public void HideProgress()
         {
             // TODO: 隐藏进度显示
@@ -619,6 +627,7 @@ namespace LYBT.Desktop.Core.Services
             }
         }
 
+        /// <inheritdoc/>
         public void Dispose()
         {
             Dispose(true);

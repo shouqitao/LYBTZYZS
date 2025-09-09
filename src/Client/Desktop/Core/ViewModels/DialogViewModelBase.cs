@@ -1,4 +1,4 @@
-﻿using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.ViewModels.Base;
 using Prism.Commands;
 using Prism.Events;
@@ -160,6 +160,7 @@ namespace LYBT.Desktop.Core.ViewModels
             CancelCommand?.RaiseCanExecuteChanged();
         }
 
+        /// <inheritdoc/>
         protected override void OnLoadingStateChanged(bool isLoading)
         {
             base.OnLoadingStateChanged(isLoading);

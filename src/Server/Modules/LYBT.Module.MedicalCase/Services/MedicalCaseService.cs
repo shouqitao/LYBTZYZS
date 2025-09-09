@@ -18,6 +18,7 @@ namespace LYBT.Module.MedicalCase.Services
 
         #region Query Operations
 
+        /// <inheritdoc/>
         public async Task<ServiceResult<MedicalCaseDetailDto>> GetByIdAsync(Guid id)
         {
             var result = await _queryService.GetByIdAsync(id);
@@ -42,18 +43,23 @@ namespace LYBT.Module.MedicalCase.Services
             return ServiceResult<MedicalCaseDetailDto>.Success(detailDto);
         }
 
+        /// <inheritdoc/>
         public async Task<ServiceResult<PagedResult<MedicalCaseDto>>> GetPagedAsync(PagedQueryBaseDto query)
             => await _queryService.GetPagedAsync(query);
 
+        /// <inheritdoc/>
         public async Task<ServiceResult<List<MedicalCaseDto>>> GetByPatientIdAsync(Guid patientId)
             => await _queryService.GetByPatientIdAsync(patientId);
 
+        /// <inheritdoc/>
         public async Task<ServiceResult<MedicalCaseDto>> GetActiveByPatientIdAsync(Guid patientId)
             => await _queryService.GetActiveByPatientIdAsync(patientId);
 
+        /// <inheritdoc/>
         public async Task<ServiceResult<List<MedicalCaseDto>>> SearchAsync(string keyword)
             => await _queryService.SearchAsync(keyword);
 
+        /// <inheritdoc/>
         public async Task<ServiceResult<List<object>>> GetHistory(Guid patientId)
         {
             var result = await _queryService.GetHistoryAsync(patientId);
@@ -79,12 +85,15 @@ namespace LYBT.Module.MedicalCase.Services
 
         #region Core Operations
 
+        /// <inheritdoc/>
         public async Task<ServiceResult<MedicalCaseDto>> CreateAsync(MedicalCaseCreateDto dto)
             => await _businessService.CreateAsync(dto);
 
+        /// <inheritdoc/>
         public async Task<ServiceResult<MedicalCaseDto>> UpdateAsync(Guid id, MedicalCaseUpdateDto dto)
             => await _businessService.UpdateAsync(id, dto);
 
+        /// <inheritdoc/>
         public async Task<ServiceResult<bool>> DeleteAsync(Guid id)
             => await _businessService.DeleteAsync(id);
 
@@ -92,24 +101,30 @@ namespace LYBT.Module.MedicalCase.Services
 
         #region Status Management
 
+        /// <inheritdoc/>
         public async Task<ServiceResult<bool>> CompleteAsync(Guid id, string completionReason)
             => await _businessService.CompleteAsync(id);
 
+        /// <inheritdoc/>
         public async Task<ServiceResult<bool>> Suspend(Guid id, string reason)
             => await _businessService.SuspendAsync(id);
 
+        /// <inheritdoc/>
         public async Task<ServiceResult<bool>> Resume(Guid id)
             => await _businessService.ResumeAsync(id);
 
+        /// <inheritdoc/>
         public async Task<ServiceResult<bool>> Archive(Guid id, string archiveReason)
             => await _businessService.ArchiveAsync(id);
 
+        /// <inheritdoc/>
         public async Task<ServiceResult<bool>> UpdateStatus(Guid id, int status)
         {
             var statusString = ((Shared.Models.Enums.MedicalCaseStatus)status).ToString().ToLower();
             return await _businessService.UpdateStatusAsync(id, statusString);
         }
 
+        /// <inheritdoc/>
         public async Task<ServiceResult<bool>> CancelConsultationAsync(Guid id, string reason)
             => await _businessService.CancelConsultationAsync(id);
 
@@ -140,6 +155,7 @@ namespace LYBT.Module.MedicalCase.Services
         public async Task<ServiceResult<object>> GetStatisticsAsync()
             => await _queryService.GetStatisticsAsync();
 
+        /// <inheritdoc/>
         public Task<ServiceResult<object>> GetStatistics(DateTime? startDate, DateTime? endDate)
         {
             // 委托给无参数版本，忽略日期参数（向后兼容）

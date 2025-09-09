@@ -322,13 +322,16 @@ namespace LYBT.Module.Prescriptions.Transactions
     /// </summary>
     internal class PrescriptionBusinessRuleValidationStep : ConditionalTransactionStep<PrescriptionTransactionContext>
     {
+        /// <inheritdoc/>
         public override string StepName => "PrescriptionBusinessRuleValidation";
+        /// <inheritdoc/>
         public override int Order => 100;
 
         public PrescriptionBusinessRuleValidationStep(ILogger logger) : base(logger)
         {
         }
 
+        /// <inheritdoc/>
         protected override Task<bool> EvaluateConditionAsync(PrescriptionTransactionContext context, CancellationToken cancellationToken = default)
         {
             // 实现具体的业务规则验证逻辑
@@ -336,6 +339,7 @@ namespace LYBT.Module.Prescriptions.Transactions
             return Task.FromResult(true);
         }
 
+        /// <inheritdoc/>
         protected override Task<TransactionStepResult> ExecuteConditionalOperationAsync(PrescriptionTransactionContext context, CancellationToken cancellationToken = default)
         {
             // 执行业务规则验证
@@ -351,8 +355,11 @@ namespace LYBT.Module.Prescriptions.Transactions
     {
         private readonly ILogger _logger;
 
+        /// <inheritdoc/>
         public override string StepName => "SendPrescriptionNotification";
+        /// <inheritdoc/>
         public override int Order => 200;
+        /// <inheritdoc/>
         public override bool SupportsCompensation => false; // 通知通常不需要补偿
 
         public PrescriptionNotificationStep(ILogger logger)
@@ -360,6 +367,7 @@ namespace LYBT.Module.Prescriptions.Transactions
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
+        /// <inheritdoc/>
         public override Task<TransactionStepResult> ExecuteAsync(PrescriptionTransactionContext context, CancellationToken cancellationToken = default)
         {
             try

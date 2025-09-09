@@ -11,6 +11,7 @@ namespace LYBT.Desktop.Core.Converters
     public class PriceFormatConverter : IValueConverter
     {
 
+        /// <inheritdoc/>
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value == null)
@@ -46,6 +47,7 @@ namespace LYBT.Desktop.Core.Converters
             return $"￥{price:F2}";
         }
 
+        /// <inheritdoc/>
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value is string stringValue)

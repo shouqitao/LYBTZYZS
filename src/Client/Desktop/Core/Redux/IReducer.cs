@@ -32,6 +32,7 @@ namespace LYBT.Desktop.Core.Redux
             _reducers = reducers.ToImmutableList();
         }
 
+        /// <inheritdoc/>
         public TState Reduce(TState state, IAction action)
         {
             return _reducers.Aggregate(state, (current, reducer) => reducer.Reduce(current, action));
@@ -50,6 +51,7 @@ namespace LYBT.Desktop.Core.Redux
             _reduceFunc = reduceFunc ?? throw new ArgumentNullException(nameof(reduceFunc));
         }
 
+        /// <inheritdoc/>
         public TState Reduce(TState state, IAction action)
         {
             return _reduceFunc(state, action);
@@ -89,6 +91,7 @@ namespace LYBT.Desktop.Core.Redux
             return this;
         }
 
+        /// <inheritdoc/>
         public TState Reduce(TState state, IAction action)
         {
             // 优先使用Type属性匹配

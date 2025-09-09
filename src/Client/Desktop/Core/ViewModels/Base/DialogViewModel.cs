@@ -148,6 +148,7 @@ namespace LYBT.Desktop.Core.ViewModels.Base
             CancelCommand.RaiseCanExecuteChanged();
         }
 
+        /// <inheritdoc/>
         protected override void OnLoadingStateChanged(bool isLoading)
         {
             base.OnLoadingStateChanged(isLoading);

@@ -1,4 +1,4 @@
-﻿using System.Runtime.InteropServices;
+using System.Runtime.InteropServices;
 using System.Security;
 using System.Security.Cryptography;
 using System.Text;
@@ -140,6 +140,7 @@ namespace LYBT.Desktop.Core.Security
             });
         }
 
+        /// <inheritdoc/>
         public void Dispose()
         {
             Clear();

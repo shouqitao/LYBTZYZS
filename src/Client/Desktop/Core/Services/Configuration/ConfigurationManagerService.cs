@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Memory;
@@ -279,6 +279,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
 
         #region 公共方法
 
+        /// <inheritdoc/>
         public T? GetValue<T>(string key, T? defaultValue = default)
         {
             _statistics.ReadCount++;
@@ -302,12 +303,14 @@ namespace LYBT.Desktop.Core.Services.Configuration
             }
         }
 
+        /// <inheritdoc/>
         public IConfigurationSection GetSection(string key)
         {
             _statistics.ReadCount++;
             return _mergedConfiguration.GetSection(key);
         }
 
+        /// <inheritdoc/>
         public async Task SetValueAsync<T>(string key, T value)
         {
             try
@@ -380,6 +383,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
             current[parts[^1]] = value;
         }
 
+        /// <inheritdoc/>
         public async Task ReloadAsync()
         {
             try
@@ -408,6 +412,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
             }
         }
 
+        /// <inheritdoc/>
         public IDisposable RegisterChangeCallback(Action<ConfigurationChangeEventArgs> callback)
         {
             var registration = new ConfigurationChangeCallback(callback);
@@ -426,6 +431,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
             });
         }
 
+        /// <inheritdoc/>
         public ConfigurationLayerInfo GetLayerInfo(string key)
         {
             var info = new ConfigurationLayerInfo
@@ -457,6 +463,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
             return info;
         }
 
+        /// <inheritdoc/>
         public async Task<string> ExportConfigurationAsync(ConfigurationExportOptions options)
         {
             try
@@ -535,6 +542,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
             }
         }
 
+        /// <inheritdoc/>
         public async Task ImportConfigurationAsync(string configData, ConfigurationImportOptions options)
         {
             try
@@ -586,6 +594,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
             }
         }
 
+        /// <inheritdoc/>
         public ValidationResult ValidateConfiguration()
         {
             var result = new ValidationResult
@@ -648,6 +657,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
             return result;
         }
 
+        /// <inheritdoc/>
         public ConfigurationStatistics GetStatistics()
         {
             _statistics.TotalKeys = CountKeys(_mergedConfiguration);
@@ -775,6 +785,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
 
         #region IDisposable
 
+        /// <inheritdoc/>
         public void Dispose()
         {
             _fileWatcher?.Dispose();
@@ -948,6 +959,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
             _disposeAction = disposeAction;
         }
 
+        /// <inheritdoc/>
         public void Dispose()
         {
             _disposeAction();

@@ -41,11 +41,13 @@ namespace LYBT.Desktop.Core.Redux
             _logState = logState;
         }
 
+        /// <inheritdoc/>
         public void Initialize(IStateStore<TState> store)
         {
             _logger?.LogInformation("LoggingMiddleware初始化");
         }
 
+        /// <inheritdoc/>
         public void Process(IStateStore<TState> store, IAction action, Action<IAction> next)
         {
             var sw = Stopwatch.StartNew();
@@ -96,11 +98,13 @@ namespace LYBT.Desktop.Core.Redux
             _asyncHandlers[actionType] = handler;
         }
 
+        /// <inheritdoc/>
         public void Initialize(IStateStore<TState> store)
         {
             _logger?.LogInformation($"AsyncActionMiddleware初始化，注册了 {_asyncHandlers.Count} 个处理器");
         }
 
+        /// <inheritdoc/>
         public void Process(IStateStore<TState> store, IAction action, Action<IAction> next)
         {
             // 检查是否有异步处理器
@@ -149,11 +153,13 @@ namespace LYBT.Desktop.Core.Redux
             _maxEvents = maxEvents;
         }
 
+        /// <inheritdoc/>
         public void Initialize(IStateStore<TState> store)
         {
             _store = store;
         }
 
+        /// <inheritdoc/>
         public void Process(IStateStore<TState> store, IAction action, Action<IAction> next)
         {
             var prevState = store.State;
@@ -261,10 +267,12 @@ namespace LYBT.Desktop.Core.Redux
             _debounceIntervals[actionType] = interval;
         }
 
+        /// <inheritdoc/>
         public void Initialize(IStateStore<TState> store)
         {
         }
 
+        /// <inheritdoc/>
         public void Process(IStateStore<TState> store, IAction action, Action<IAction> next)
         {
             var interval = _debounceIntervals.TryGetValue(action.Type, out var customInterval)
@@ -311,11 +319,13 @@ namespace LYBT.Desktop.Core.Redux
             _validators.Add(validator);
         }
 
+        /// <inheritdoc/>
         public void Initialize(IStateStore<TState> store)
         {
             _logger?.LogInformation($"ValidationMiddleware初始化，{_validators.Count} 个验证器");
         }
 
+        /// <inheritdoc/>
         public void Process(IStateStore<TState> store, IAction action, Action<IAction> next)
         {
             // 验证Action

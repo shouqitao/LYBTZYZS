@@ -15,6 +15,7 @@ namespace LYBT.Desktop.Auth
     public class AuthenticationModule : IModule
     {
 
+        /// <inheritdoc/>
         public void OnInitialized(IContainerProvider containerProvider)
         {
             // 模块初始化完成
@@ -22,6 +23,7 @@ namespace LYBT.Desktop.Auth
             logger?.LogInformation("Auth模块初始化完成 - UltraThink架构");
         }
 
+        /// <inheritdoc/>
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
             // UltraThink模块化架构：注册模块业务服务

@@ -23,6 +23,7 @@ namespace LYBT.Infrastructure.Security
             _logger = logger;
         }
 
+        /// <inheritdoc/>
         public override async ValueTask<InterceptionResult<int>> SavingChangesAsync(
             DbContextEventData eventData,
             InterceptionResult<int> result,
@@ -36,6 +37,7 @@ namespace LYBT.Infrastructure.Security
             return await base.SavingChangesAsync(eventData, result, cancellationToken);
         }
 
+        /// <inheritdoc/>
         public override InterceptionResult<int> SavingChanges(
             DbContextEventData eventData,
             InterceptionResult<int> result)
@@ -218,6 +220,7 @@ namespace LYBT.Infrastructure.Security
             _logger = logger;
         }
 
+        /// <inheritdoc/>
         public override async ValueTask<DbDataReader> ReaderExecutedAsync(
             DbCommand command,
             CommandExecutedEventData eventData,

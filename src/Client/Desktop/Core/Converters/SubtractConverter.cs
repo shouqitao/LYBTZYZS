@@ -10,6 +10,7 @@ namespace LYBT.Desktop.Core.Converters
     public class SubtractConverter : IMultiValueConverter
     {
 
+        /// <inheritdoc/>
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
             if (values == null || values.Length < 2)
@@ -32,6 +33,7 @@ namespace LYBT.Desktop.Core.Converters
             return 0;
         }
 
+        /// <inheritdoc/>
         public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
         {
             throw new NotImplementedException();

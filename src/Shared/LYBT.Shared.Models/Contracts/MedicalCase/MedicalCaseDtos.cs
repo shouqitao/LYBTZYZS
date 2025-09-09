@@ -38,6 +38,7 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
         [DisplayName("案例状态")]
         public MedicalCaseStatus CaseStatus { get; set; } = MedicalCaseStatus.Registered;
 
+        /// <inheritdoc/>
         [DisplayName("备注")]
         [StringLength(500, ErrorMessage = "备注长度不能超过500个字符")]
         public string? Remark { get; set; }
@@ -138,6 +139,7 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
         [DisplayName("挂号ID")]
         public Guid? RegistrationId { get; set; }
 
+        /// <inheritdoc/>
         [StringLength(500, ErrorMessage = "备注长度不能超过500个字符")]
         [DisplayName("备注")]
         public string? Remark { get; set; }
@@ -160,6 +162,7 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
     public class MedicalCaseEditDto : MedicalCaseInputBaseDto, IIdentifiable<Guid>
     {
 
+        /// <inheritdoc/>
         [Required(ErrorMessage = "医疗案例ID不能为空")]
         [DisplayName("医疗案例ID")]
         public Guid Id { get; set; }

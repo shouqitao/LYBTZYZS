@@ -1,4 +1,4 @@
-﻿using System.Windows.Input;
+using System.Windows.Input;
 using AutoMapper;
 using LYBT.Desktop.Core.Constants;
 using LYBT.Desktop.Core.Interfaces.Services;
@@ -126,6 +126,7 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         #region INavigationAware 实现
 
+        /// <inheritdoc/>
         public void OnNavigatedTo(NavigationContext navigationContext)
         {
             if (navigationContext.Parameters.ContainsKey("PatientId"))
@@ -142,6 +143,7 @@ namespace LYBT.Desktop.Patients.ViewModels
             }
         }
 
+        /// <inheritdoc/>
         public bool IsNavigationTarget(NavigationContext navigationContext)
         {
             if (navigationContext.Parameters.ContainsKey("PatientId"))
@@ -153,6 +155,7 @@ namespace LYBT.Desktop.Patients.ViewModels
             return true;
         }
 
+        /// <inheritdoc/>
         public void OnNavigatedFrom(NavigationContext navigationContext)
         {
             if (!IsReadOnly && HasUnsavedChanges())

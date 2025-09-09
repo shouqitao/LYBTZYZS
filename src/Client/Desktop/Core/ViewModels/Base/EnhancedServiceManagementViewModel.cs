@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Windows.Data;
 using LYBT.Desktop.Core.Interfaces.Services;
@@ -453,6 +453,7 @@ namespace LYBT.Desktop.Core.ViewModels.Base
 
         #endregion 分页命令
 
+        /// <inheritdoc/>
         protected override async Task OnInitializeAsync()
         {
             await LoadDataWithPaginationAsync();

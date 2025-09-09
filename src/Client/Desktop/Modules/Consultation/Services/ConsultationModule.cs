@@ -1,4 +1,4 @@
-﻿using LYBT.Desktop.Consultation.Interfaces;
+using LYBT.Desktop.Consultation.Interfaces;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
@@ -27,9 +27,11 @@ public class ConsultationModule(
     public async Task<ServiceResult<ConsultationDto>> UpdateAsync(Guid id, ConsultationUpdateDto updateDto)
         => await _businessService.UpdateAsync(id, updateDto);
 
+    /// <inheritdoc/>
     public async Task<ServiceResult<bool>> DeleteAsync(Guid id)
         => await _businessService.DeleteAsync(id);
 
+    /// <inheritdoc/>
     public async Task<ServiceResult<ConsultationDetailDto>> GetByIdAsync(Guid id)
     {
         var result = await _queryService.GetByIdAsync(id);
@@ -47,6 +49,7 @@ public class ConsultationModule(
         return ServiceResult<ConsultationDetailDto>.Failure(result.ErrorMessage ?? "获取看诊详情失败");
     }
 
+    /// <inheritdoc/>
     public async Task<ServiceResult<PagedResult<ConsultationDto>>> GetPagedAsync(PagedQueryBaseDto query)
     {
         var consultationQuery = new ConsultationPagedQueryDto
@@ -60,6 +63,7 @@ public class ConsultationModule(
         return await _queryService.GetPaged(consultationQuery);
     }
 
+    /// <inheritdoc/>
     public async Task<ServiceResult<List<ConsultationDto>>> SearchAsync(string keyword)
         => await _queryService.SearchAsync(keyword);
 
@@ -70,16 +74,20 @@ public class ConsultationModule(
         => await _businessService.Disable(id);
 
     // 补充IConsultationService可能需要的其他方法（简化实现）
+    /// <inheritdoc/>
     public async Task<ServiceResult<List<ConsultationDto>>> GetByPatientIdAsync(Guid patientId)
         => await _queryService.SearchAsync($"Patient:{patientId}");
 
+    /// <inheritdoc/>
     public async Task<ServiceResult<List<ConsultationDto>>> GetByMedicalCaseIdAsync(Guid medicalCaseId)
         => await _queryService.SearchAsync($"MedicalCase:{medicalCaseId}");
 
     // 补充IConsultationService接口的其他方法
+    /// <inheritdoc/>
     public async Task<ServiceResult<ConsultationDto>> StartAsync(ConsultationStartDto startDto)
         => await _businessService.StartAsync(startDto);
 
+    /// <inheritdoc/>
     public async Task<ServiceResult<ConsultationDto>> UpdateAsync(Guid id, ConsultationDetailDto updateDto)
     {
         var simpleUpdate = new ConsultationUpdateDto
@@ -91,18 +99,23 @@ public class ConsultationModule(
         return await _businessService.UpdateAsync(id, simpleUpdate);
     }
 
+    /// <inheritdoc/>
     public async Task<ServiceResult<List<ConsultationDto>>> GetByDoctorIdAsync(Guid doctorId)
         => await _queryService.SearchAsync($"Doctor:{doctorId}");
 
+    /// <inheritdoc/>
     public Task<ServiceResult<object>> GetStatisticsAsync(DateTime? startDate = null, DateTime? endDate = null)
         => Task.FromResult(ServiceResult<object>.Success(new ConsultationStatisticsDto()));
 
+    /// <inheritdoc/>
     public async Task<ServiceResult<List<ConsultationDto>>> GetPatientHistoryAsync(Guid patientId)
         => await GetByPatientIdAsync(patientId);
 
+    /// <inheritdoc/>
     public Task<ServiceResult<object>> GetFourDiagnosisByMedicalCaseIdAsync(Guid medicalCaseId)
         => Task.FromResult(ServiceResult<object>.Success(new { InspectionData = string.Empty, AuscultationData = string.Empty, InquiryData = string.Empty, PalpationData = string.Empty }));
 
+    /// <inheritdoc/>
     public Task<ServiceResult<bool>> SaveFourDiagnosisAsync(Guid consultationId, object fourDiagnosisData)
         => Task.FromResult(ServiceResult<bool>.Success(false));
 }

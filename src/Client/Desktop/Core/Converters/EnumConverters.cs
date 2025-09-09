@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using System.Windows.Data;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Extensions;
@@ -12,6 +12,7 @@ namespace LYBT.Desktop.Core.Converters
     public class EnumToDisplayNameConverter : IValueConverter
     {
 
+        /// <inheritdoc/>
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value == null)
@@ -30,6 +31,7 @@ namespace LYBT.Desktop.Core.Converters
             };
         }
 
+        /// <inheritdoc/>
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             throw new NotImplementedException("EnumToDisplayNameConverter 不支持反向转换");
@@ -42,6 +44,7 @@ namespace LYBT.Desktop.Core.Converters
     public class PatientStatusToDisplayNameConverter : IValueConverter
     {
 
+        /// <inheritdoc/>
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value is PatientStatus status)
@@ -52,6 +55,7 @@ namespace LYBT.Desktop.Core.Converters
             return "未知状态";
         }
 
+        /// <inheritdoc/>
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             throw new NotImplementedException();
@@ -64,6 +68,7 @@ namespace LYBT.Desktop.Core.Converters
     public class CommonStatusToDisplayNameConverter : IValueConverter
     {
 
+        /// <inheritdoc/>
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value is CommonStatus status)
@@ -74,6 +79,7 @@ namespace LYBT.Desktop.Core.Converters
             return "未知状态";
         }
 
+        /// <inheritdoc/>
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             throw new NotImplementedException();

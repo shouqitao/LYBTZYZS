@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using LYBT.Desktop.Core.Coordinators;
 
 // UltraThink v2.0: 添加SessionAware相关依赖

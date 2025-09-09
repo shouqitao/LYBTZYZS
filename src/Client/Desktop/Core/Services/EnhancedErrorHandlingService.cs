@@ -23,8 +23,10 @@ namespace LYBT.Desktop.Core.Services
         private readonly ErrorStatisticsCollector _statisticsCollector;
         private readonly ConcurrentDictionary<string, ErrorPattern> _errorPatterns = new();
 
+        /// <inheritdoc/>
         public event EventHandler<SharedCommon.HandledError>? ErrorOccurred;
 
+        /// <inheritdoc/>
         public event EventHandler<SharedCommon.HandledError>? CriticalErrorOccurred;
 
         /// <summary>
@@ -51,11 +53,13 @@ namespace LYBT.Desktop.Core.Services
             _baseService.CriticalErrorOccurred += OnBaseCriticalErrorOccurred;
         }
 
+        /// <inheritdoc/>
         public SharedCommon.HandledError HandleException(Exception exception, ErrorContext? context = null)
         {
             return HandleExceptionAsync(exception, context).GetAwaiter().GetResult();
         }
 
+        /// <inheritdoc/>
         public async Task<SharedCommon.HandledError> HandleExceptionAsync(Exception exception, ErrorContext? context = null)
         {
             var handledError = await _baseService.HandleExceptionAsync(exception, context);
@@ -66,12 +70,14 @@ namespace LYBT.Desktop.Core.Services
             return handledError;
         }
 
+        /// <inheritdoc/>
         public async Task ShowErrorAsync(SharedCommon.HandledError handledError, bool showDialog = true)
         {
             // 使用增强的用户通知
             await ShowEnhancedErrorNotificationAsync(handledError, showDialog);
         }
 
+        /// <inheritdoc/>
         public async Task LogErrorAsync(SharedCommon.HandledError handledError)
         {
             // 增强日志记录
@@ -81,26 +87,31 @@ namespace LYBT.Desktop.Core.Services
             await _baseService.LogErrorAsync(handledError);
         }
 
+        /// <inheritdoc/>
         public string GetUserFriendlyMessage(Exception exception, string? defaultMessage = null)
         {
             return _baseService.GetUserFriendlyMessage(exception, defaultMessage);
         }
 
+        /// <inheritdoc/>
         public bool CanRetry(Exception exception)
         {
             return _baseService.CanRetry(exception);
         }
 
+        /// <inheritdoc/>
         public SharedCommon.ErrorCategory GetErrorCategory(Exception exception)
         {
             return _baseService.GetErrorCategory(exception);
         }
 
+        /// <inheritdoc/>
         public SharedCommon.ErrorSeverity GetErrorSeverity(Exception exception)
         {
             return _baseService.GetErrorSeverity(exception);
         }
 
+        /// <inheritdoc/>
         public string[] GetSuggestedActions(Exception exception)
         {
             var baseActions = _baseService.GetSuggestedActions(exception);
@@ -109,16 +120,19 @@ namespace LYBT.Desktop.Core.Services
             return baseActions.Concat(enhancedActions).Distinct().ToArray();
         }
 
+        /// <inheritdoc/>
         public async Task<bool> ExecuteSafelyAsync(Func<Task> operation, ErrorContext? context = null, bool showErrorDialog = true)
         {
             return await ExecuteSafelyWithRetryAsync(operation, context, showErrorDialog);
         }
 
+        /// <inheritdoc/>
         public async Task<T?> ExecuteSafelyAsync<T>(Func<Task<T>> operation, ErrorContext? context = null, bool showErrorDialog = true)
         {
             return await ExecuteSafelyWithRetryAsync(operation, context, showErrorDialog);
         }
 
+        /// <inheritdoc/>
         public void RegisterGlobalExceptionHandlers()
         {
             _baseService.RegisterGlobalExceptionHandlers();
@@ -627,6 +641,7 @@ namespace LYBT.Desktop.Core.Services
             _logger = logger;
         }
 
+        /// <inheritdoc/>
         public async Task<bool> TryRecoverAsync(SharedCommon.HandledError handledError)
         {
             // 简单的网络连接检查
@@ -656,6 +671,7 @@ namespace LYBT.Desktop.Core.Services
             _logger = logger;
         }
 
+        /// <inheritdoc/>
         public Task<bool> TryRecoverAsync(SharedCommon.HandledError handledError)
         {
             // 认证错误通常需要用户重新登录，自动恢复的可能性较小

@@ -24,6 +24,7 @@ namespace LYBT.Desktop.Core.Services.Performance
             _startupStopwatch = Stopwatch.StartNew();
         }
 
+        /// <inheritdoc/>
         public async Task WarmupApplicationAsync()
         {
             try
@@ -47,6 +48,7 @@ namespace LYBT.Desktop.Core.Services.Performance
             }
         }
 
+        /// <inheritdoc/>
         public async Task PreloadRoleBasedResourcesAsync(string userRole)
         {
             try
@@ -80,6 +82,7 @@ namespace LYBT.Desktop.Core.Services.Performance
             }
         }
 
+        /// <inheritdoc/>
         public StartupPerformanceMetrics GetStartupMetrics()
         {
             _metrics.ApplicationStartupTime = _startupStopwatch.Elapsed;
@@ -87,6 +90,7 @@ namespace LYBT.Desktop.Core.Services.Performance
             return _metrics;
         }
 
+        /// <inheritdoc/>
         public void OptimizeMemoryUsage()
         {
             try

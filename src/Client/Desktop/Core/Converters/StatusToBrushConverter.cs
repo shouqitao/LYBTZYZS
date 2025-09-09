@@ -12,6 +12,7 @@ namespace LYBT.Desktop.Core.Converters
     public class StatusToBrushConverter : IValueConverter
     {
 
+        /// <inheritdoc/>
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             // 处理布尔值
@@ -37,6 +38,7 @@ namespace LYBT.Desktop.Core.Converters
             return new SolidColorBrush(Color.FromRgb(108, 117, 125)); // 默认灰色
         }
 
+        /// <inheritdoc/>
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             throw new NotImplementedException("StatusToBrushConverter does not support ConvertBack");

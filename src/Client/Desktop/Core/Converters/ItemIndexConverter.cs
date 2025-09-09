@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using System.Windows.Controls;
 using System.Windows.Data;
 
@@ -11,6 +11,7 @@ namespace LYBT.Desktop.Core.Converters
     public class ItemIndexConverter : IValueConverter
     {
 
+        /// <inheritdoc/>
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value is ContentPresenter contentPresenter)
@@ -26,6 +27,7 @@ namespace LYBT.Desktop.Core.Converters
             return "1";
         }
 
+        /// <inheritdoc/>
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             throw new NotImplementedException();

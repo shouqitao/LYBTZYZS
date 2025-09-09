@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.Windows.Input;
 using AutoMapper;
 using LYBT.Desktop.Core.Events;
@@ -639,6 +639,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
 
         #region INavigationAware 实现
 
+        /// <inheritdoc/>
         public void OnNavigatedTo(NavigationContext navigationContext)
         {
             // 接收医疗案例ID参数
@@ -661,11 +662,13 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             }
         }
 
+        /// <inheritdoc/>
         public bool IsNavigationTarget(NavigationContext navigationContext)
         {
             return true;
         }
 
+        /// <inheritdoc/>
         public void OnNavigatedFrom(NavigationContext navigationContext)
         {
             // 清理资源

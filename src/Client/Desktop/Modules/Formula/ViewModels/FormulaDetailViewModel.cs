@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.Windows.Input;
 using AutoMapper;
 using LYBT.Desktop.Core.Constants;
@@ -128,6 +128,7 @@ namespace LYBT.Desktop.Formula.ViewModels
 
         #region INavigationAware 实现
 
+        /// <inheritdoc/>
         public void OnNavigatedTo(NavigationContext navigationContext)
         {
             if (navigationContext.Parameters.ContainsKey("FormulaId"))
@@ -144,6 +145,7 @@ namespace LYBT.Desktop.Formula.ViewModels
             }
         }
 
+        /// <inheritdoc/>
         public bool IsNavigationTarget(NavigationContext navigationContext)
         {
             if (navigationContext.Parameters.ContainsKey("FormulaId"))
@@ -155,6 +157,7 @@ namespace LYBT.Desktop.Formula.ViewModels
             return true;
         }
 
+        /// <inheritdoc/>
         public void OnNavigatedFrom(NavigationContext navigationContext)
         {
             if (!IsReadOnly && HasUnsavedChanges())

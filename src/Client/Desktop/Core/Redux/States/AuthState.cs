@@ -173,6 +173,7 @@ namespace LYBT.Desktop.Core.Redux.States
     public class AuthReducer : IReducer<AuthState>
     {
 
+        /// <inheritdoc/>
         public AuthState Reduce(AuthState state, IAction action)
         {
             return action switch

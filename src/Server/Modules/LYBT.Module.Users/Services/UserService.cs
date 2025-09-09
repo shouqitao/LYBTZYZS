@@ -17,27 +17,34 @@ namespace LYBT.Module.Users.Services
 
         #region 查询操作
 
+        /// <inheritdoc/>
         public Task<ServiceResult<PagedResult<UserDto>>> GetPagedAsync(UserPagedQueryDto query)
             => _queryService.GetPagedAsync(query);
 
+        /// <inheritdoc/>
         public Task<ServiceResult<UserDto>> GetByIdAsync(Guid id)
             => _queryService.GetByIdAsync(id);
 
+        /// <inheritdoc/>
         public Task<ServiceResult<UserDto>> GetByUsernameAsync(string username)
             => _queryService.GetByUsernameAsync(username);
 
+        /// <inheritdoc/>
         public Task<ServiceResult<List<UserDto>>> GetActiveUsersAsync()
             => _queryService.GetActiveUsersAsync();
 
+        /// <inheritdoc/>
         public Task<ServiceResult<List<UserDto>>> SearchAsync(string keyword)
             => _queryService.SearchAsync(keyword);
 
+        /// <inheritdoc/>
         public Task<ServiceResult<List<object>>> GetRolesAsync()
             => _queryService.GetRolesAsync();
 
         public Task<ServiceResult<PagedResult<object>>> GetOperationLogsAsync(Guid userId, PagedQueryBaseDto query)
             => _queryService.GetOperationLogsAsync(userId, query);
 
+        /// <inheritdoc/>
         public Task<ServiceResult<bool>> ValidateUsernameAsync(string username)
             => _queryService.ValidateUsernameAsync(username);
 
@@ -45,12 +52,15 @@ namespace LYBT.Module.Users.Services
 
         #region Core Operations
 
+        /// <inheritdoc/>
         public Task<ServiceResult<UserDto>> CreateAsync(UserMutationDto dto)
             => _businessService.CreateUserAsync(dto);
 
+        /// <inheritdoc/>
         public Task<ServiceResult<UserDto>> UpdateAsync(UserMutationDto dto)
             => _businessService.UpdateUserAsync(dto.Id, dto);
 
+        /// <inheritdoc/>
         public Task<ServiceResult<bool>> DeleteAsync(Guid id)
             => _businessService.DeleteUserAsync(id);
 
@@ -58,15 +68,19 @@ namespace LYBT.Module.Users.Services
 
         #region Status Management
 
+        /// <inheritdoc/>
         public Task<ServiceResult<bool>> DisableAsync(Guid id)
             => _businessService.DisableAsync(id);
 
+        /// <inheritdoc/>
         public Task<ServiceResult<bool>> EnableAsync(Guid id)
             => _businessService.EnableAsync(id);
 
+        /// <inheritdoc/>
         public Task<ServiceResult<int>> BatchDisableAsync(List<Guid> ids)
             => _businessService.BatchDisableAsync(ids);
 
+        /// <inheritdoc/>
         public Task<ServiceResult<int>> BatchEnableAsync(List<Guid> ids)
             => _businessService.BatchEnableAsync(ids);
 
@@ -74,12 +88,15 @@ namespace LYBT.Module.Users.Services
 
         #region Password Management
 
+        /// <inheritdoc/>
         public Task<ServiceResult<bool>> ResetPasswordAsync(Guid id, string newPassword)
             => _businessService.ResetPasswordAsync(id, newPassword);
 
+        /// <inheritdoc/>
         public Task<ServiceResult<bool>> ChangePasswordAsync(Guid id, string oldPassword, string newPassword)
             => _businessService.ChangePasswordAsync(id, oldPassword, newPassword);
 
+        /// <inheritdoc/>
         public Task<ServiceResult<bool>> ChangeProfileAsync(ChangeProfileDto dto)
             => _businessService.ChangeProfileAsync(dto.UserId, dto.RealName, dto.PhoneNumber ?? string.Empty);
 

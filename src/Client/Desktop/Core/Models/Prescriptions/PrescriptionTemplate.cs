@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
@@ -260,6 +260,7 @@ namespace LYBT.Desktop.Core.Models.Prescriptions
 
         #region INotifyPropertyChanged
 
+        /// <inheritdoc/>
         public event PropertyChangedEventHandler? PropertyChanged;
 
         protected bool SetProperty<T>(ref T storage, T value, [CallerMemberName] string propertyName = null!)
@@ -424,6 +425,7 @@ namespace LYBT.Desktop.Core.Models.Prescriptions
 
         #region INotifyPropertyChanged
 
+        /// <inheritdoc/>
         public event PropertyChangedEventHandler? PropertyChanged;
 
         protected bool SetProperty<T>(ref T storage, T value, [CallerMemberName] string propertyName = null!)

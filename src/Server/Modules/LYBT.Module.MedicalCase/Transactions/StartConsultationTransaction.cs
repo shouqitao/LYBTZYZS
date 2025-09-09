@@ -269,13 +269,16 @@ namespace LYBT.Module.MedicalCase.Transactions
     /// </summary>
     internal class BusinessRuleValidationStep : ConditionalTransactionStep<ConsultationTransactionContext>
     {
+        /// <inheritdoc/>
         public override string StepName => "BusinessRuleValidation";
+        /// <inheritdoc/>
         public override int Order => 10;
 
         public BusinessRuleValidationStep(ILogger logger) : base(logger)
         {
         }
 
+        /// <inheritdoc/>
         protected override Task<bool> EvaluateConditionAsync(ConsultationTransactionContext context, CancellationToken cancellationToken = default)
         {
             // 实现具体的业务规则验证逻辑
@@ -283,6 +286,7 @@ namespace LYBT.Module.MedicalCase.Transactions
             return Task.FromResult(true);
         }
 
+        /// <inheritdoc/>
         protected override Task<TransactionStepResult> ExecuteConditionalOperationAsync(ConsultationTransactionContext context, CancellationToken cancellationToken = default)
         {
             // 执行业务规则验证
@@ -298,8 +302,11 @@ namespace LYBT.Module.MedicalCase.Transactions
     {
         private readonly ILogger _logger;
 
+        /// <inheritdoc/>
         public override string StepName => "SendNotification";
+        /// <inheritdoc/>
         public override int Order => 20;
+        /// <inheritdoc/>
         public override bool SupportsCompensation => false; // 通知通常不需要补偿
 
         public NotificationStep(ILogger logger)
@@ -307,6 +314,7 @@ namespace LYBT.Module.MedicalCase.Transactions
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
+        /// <inheritdoc/>
         public override Task<TransactionStepResult> ExecuteAsync(ConsultationTransactionContext context, CancellationToken cancellationToken = default)
         {
             try

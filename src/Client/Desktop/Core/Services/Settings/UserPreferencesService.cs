@@ -32,6 +32,7 @@ namespace LYBT.Desktop.Core.Services.Settings
             EnsureDirectoryExists();
         }
 
+        /// <inheritdoc/>
         public async Task<UserPreferences> GetUserPreferencesAsync(string userId)
         {
             try
@@ -57,6 +58,7 @@ namespace LYBT.Desktop.Core.Services.Settings
             }
         }
 
+        /// <inheritdoc/>
         public async Task SaveUserPreferencesAsync(string userId, UserPreferences preferences)
         {
             try
@@ -82,6 +84,7 @@ namespace LYBT.Desktop.Core.Services.Settings
             }
         }
 
+        /// <inheritdoc/>
         public async Task ResetUserPreferencesAsync(string userId)
         {
             try
@@ -98,6 +101,7 @@ namespace LYBT.Desktop.Core.Services.Settings
             }
         }
 
+        /// <inheritdoc/>
         public async Task ApplyPreferencesAsync(UserPreferences preferences)
         {
             try

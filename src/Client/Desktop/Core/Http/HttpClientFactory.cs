@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -134,6 +134,7 @@ namespace LYBT.Desktop.Core.Http
             });
         }
 
+        /// <inheritdoc/>
         public void Dispose()
         {
             foreach (var client in _clients.Values)
@@ -173,6 +174,7 @@ namespace LYBT.Desktop.Core.Http
             _bearerToken = token;
         }
 
+        /// <inheritdoc/>
         protected override async Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
             CancellationToken cancellationToken)
@@ -232,6 +234,7 @@ namespace LYBT.Desktop.Core.Http
             _logger = logger;
         }
 
+        /// <inheritdoc/>
         protected override async Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
             CancellationToken cancellationToken)
@@ -282,6 +285,7 @@ namespace LYBT.Desktop.Core.Http
             _retryPolicy = CreateRetryPolicy();
         }
 
+        /// <inheritdoc/>
         protected override async Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
             CancellationToken cancellationToken)
@@ -336,6 +340,7 @@ namespace LYBT.Desktop.Core.Http
     public class RequestIdHandler : DelegatingHandler
     {
 
+        /// <inheritdoc/>
         protected override Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
             CancellationToken cancellationToken)

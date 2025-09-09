@@ -16,12 +16,14 @@ namespace LYBT.Desktop.Workbench.Admin
     public class SystemWorkbenchModule : IModule
     {
 
+        /// <inheritdoc/>
         public void OnInitialized(IContainerProvider containerProvider)
         {
             // 注册ViewModel映射
             ViewModelLocationProvider.Register<SystemWorkbenchMainView, SystemWorkbenchMainViewModel>();
         }
 
+        /// <inheritdoc/>
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
             // 注册工作台导航器

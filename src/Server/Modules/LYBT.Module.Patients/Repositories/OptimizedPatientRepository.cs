@@ -1,4 +1,4 @@
-﻿using LYBT.Entities.Patients;
+using LYBT.Entities.Patients;
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Repositories;
 using LYBT.Module.Patients.Interfaces;

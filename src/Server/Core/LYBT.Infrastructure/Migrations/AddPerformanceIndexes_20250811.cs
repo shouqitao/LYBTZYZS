@@ -12,6 +12,7 @@ namespace LYBT.Infrastructure.Migrations
     public partial class AddPerformanceIndexes_20250811 : Migration
     {
 
+        /// <inheritdoc/>
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             // ===========================================
@@ -199,6 +200,7 @@ namespace LYBT.Infrastructure.Migrations
                 columns: new[] { "Status", "CreatedAt" });
         }
 
+        /// <inheritdoc/>
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             // ===========================================

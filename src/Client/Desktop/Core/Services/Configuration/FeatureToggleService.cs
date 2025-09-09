@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Core.Services.Configuration
 {
@@ -191,11 +191,13 @@ namespace LYBT.Desktop.Core.Services.Configuration
 
         #region 核心功能
 
+        /// <inheritdoc/>
         public bool IsEnabled(string featureName)
         {
             return IsEnabledForUser(featureName, "default");
         }
 
+        /// <inheritdoc/>
         public bool IsEnabledForUser(string featureName, string userId)
         {
             try
@@ -236,6 +238,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
             }
         }
 
+        /// <inheritdoc/>
         public string GetVariant(string featureName, string userId)
         {
             lock (_lock)
@@ -270,6 +273,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
             }
         }
 
+        /// <inheritdoc/>
         public async Task SetFeatureStateAsync(string featureName, FeatureState state)
         {
             try
@@ -300,6 +304,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
             }
         }
 
+        /// <inheritdoc/>
         public FeatureConfiguration? GetFeatureConfiguration(string featureName)
         {
             lock (_lock)
@@ -323,6 +328,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
             }
         }
 
+        /// <inheritdoc/>
         public List<FeatureInfo> GetAllFeatures()
         {
             lock (_lock)
@@ -341,6 +347,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
             }
         }
 
+        /// <inheritdoc/>
         public async Task RegisterFeatureAsync(FeatureDefinition definition)
         {
             try
@@ -367,6 +374,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
             }
         }
 
+        /// <inheritdoc/>
         public FeatureEvaluationResult Evaluate(string featureName, EvaluationContext context)
         {
             lock (_lock)
@@ -395,6 +403,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
             }
         }
 
+        /// <inheritdoc/>
         public IDisposable OnFeatureChanged(string featureName, Action<FeatureChangeEventArgs> callback)
         {
             lock (_callbacks)
@@ -417,6 +426,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
             }
         }
 
+        /// <inheritdoc/>
         public FeatureUsageStatistics GetUsageStatistics(string featureName)
         {
             lock (_lock)

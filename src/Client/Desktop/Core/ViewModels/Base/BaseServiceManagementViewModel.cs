@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using Prism.Commands;
@@ -206,6 +206,7 @@ namespace LYBT.Desktop.Core.ViewModels.Base
 
         #region Navigation
 
+        /// <inheritdoc/>
         public override void OnNavigatedTo(Dictionary<string, object>? parameters = null)
         {
             base.OnNavigatedTo(parameters);

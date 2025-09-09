@@ -20,41 +20,49 @@ namespace LYBT.Desktop.Workbench.Admin.Services
 
         #region ISystemWorkbenchNavigator Implementation
 
+        /// <inheritdoc/>
         public async Task NavigateToUsersAsync()
         {
             await NavigateToAsync("UserManagementView");
         }
 
+        /// <inheritdoc/>
         public async Task NavigateToPatientsAsync()
         {
             await NavigateToAsync("PatientManagementView");
         }
 
+        /// <inheritdoc/>
         public async Task NavigateToHerbsAsync()
         {
             await NavigateToAsync("HerbManagementView");
         }
 
+        /// <inheritdoc/>
         public async Task NavigateToFormulasAsync()
         {
             await NavigateToAsync("FormulaManagementView");
         }
 
+        /// <inheritdoc/>
         public async Task NavigateToPrescriptionsAsync()
         {
             await NavigateToAsync("PrescriptionManagementView");
         }
 
+        /// <inheritdoc/>
         public async Task NavigateToReportsAsync()
         {
             await NavigateToAsync("ReportsView");
         }
 
+        /// <inheritdoc/>
         public async Task NavigateToSettingsAsync()
         {
             await NavigateToAsync("SettingsView");
         }
 
+        /// <inheritdoc/>
         public async Task NavigateToDashboardAsync()
         {
             await NavigateToAsync("DashboardView");
@@ -64,6 +72,7 @@ namespace LYBT.Desktop.Workbench.Admin.Services
 
         #region IWorkbenchNavigator Implementation
 
+        /// <inheritdoc/>
         public Task NavigateToAsync(string viewName, NavigationParameters? parameters = null)
         {
             return Task.Run(() =>
@@ -78,11 +87,13 @@ namespace LYBT.Desktop.Workbench.Admin.Services
             });
         }
 
+        /// <inheritdoc/>
         public Task NavigateToDefaultAsync()
         {
             return NavigateToUsersAsync(); // 默认导航到用户管理
         }
 
+        /// <inheritdoc/>
         public Task GoBackAsync()
         {
             return Task.Run(() =>
@@ -96,6 +107,7 @@ namespace LYBT.Desktop.Workbench.Admin.Services
             });
         }
 
+        /// <inheritdoc/>
         public bool CanNavigateTo(string viewName)
         {
             // 检查视图是否在可用视图列表中
@@ -114,22 +126,26 @@ namespace LYBT.Desktop.Workbench.Admin.Services
             return Array.Exists(availableViews, v => v.Equals(viewName, StringComparison.OrdinalIgnoreCase));
         }
 
+        /// <inheritdoc/>
         public string GetCurrentView()
         {
             return _currentView ?? string.Empty;
         }
 
+        /// <inheritdoc/>
         public void ClearHistory()
         {
             _navigationHistory.Clear();
             _currentView = null;
         }
 
+        /// <inheritdoc/>
         public void SetRegion(string regionName)
         {
             _contentRegion = regionName;
         }
 
+        /// <inheritdoc/>
         public string GetRegionName()
         {
             return _contentRegion;

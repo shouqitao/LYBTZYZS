@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Windows;
@@ -135,6 +135,7 @@ namespace LYBT.Desktop.Core.Controls
 
         #region INotifyPropertyChanged 实现
 
+        /// <inheritdoc/>
         public event PropertyChangedEventHandler? PropertyChanged;
 
         protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
@@ -152,6 +153,7 @@ namespace LYBT.Desktop.Core.Controls
     {
         public static readonly FeedbackTypeToVisibilityConverter Instance = new();
 
+        /// <inheritdoc/>
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
             if (values.Length >= 2 &&
@@ -165,6 +167,7 @@ namespace LYBT.Desktop.Core.Controls
             return Visibility.Collapsed;
         }
 
+        /// <inheritdoc/>
         public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
         {
             throw new NotImplementedException();
@@ -210,6 +213,7 @@ namespace LYBT.Desktop.Core.Controls
             CurrentTime = DateTime.Now;
         }
 
+        /// <inheritdoc/>
         public event PropertyChangedEventHandler? PropertyChanged;
     }
 }

@@ -21,6 +21,7 @@ namespace LYBT.Module.Herbs.Services
 
         #region Query Operations
 
+        /// <inheritdoc/>
         public Task<ServiceResult<HerbDto>> GetByIdAsync(Guid id)
         {
             return Task.FromResult(ServiceResult<HerbDto>.Failure("GetByIdAsync方法需要在QueryService中实现"));
@@ -29,15 +30,18 @@ namespace LYBT.Module.Herbs.Services
         public async Task<ServiceResult<List<HerbDto>>> GetAllAsync()
             => await _queryService.GetAllAsync();
 
+        /// <inheritdoc/>
         public async Task<ServiceResult<PagedResult<HerbDto>>> GetPagedAsync(HerbPagedQueryDto query)
             => await _queryService.GetPagedAsync(query);
 
+        /// <inheritdoc/>
         public async Task<ServiceResult<List<HerbDto>>> SearchAsync(string keyword)
             => await _queryService.SearchAsync(keyword);
 
         public async Task<ServiceResult<List<HerbDto>>> GetAvailableHerbsAsync()
             => await _queryService.GetAvailableHerbsAsync();
 
+        /// <inheritdoc/>
         public async Task<ServiceResult<List<HerbDto>>> GetByIdsAsync(List<Guid> ids)
             => await _queryService.GetByIdsAsync(ids);
 
@@ -67,9 +71,11 @@ namespace LYBT.Module.Herbs.Services
 
         #region Business Operations
 
+        /// <inheritdoc/>
         public async Task<ServiceResult<HerbDto>> CreateAsync(HerbCreateDto dto)
             => await _businessService.CreateHerbWithAutoCodeAsync(dto);
 
+        /// <inheritdoc/>
         public Task<ServiceResult<HerbDto>> UpdateAsync(Guid id, HerbUpdateDto dto)
         {
             // 简化版本更新逻辑：只允许修改价格和状态
@@ -87,6 +93,7 @@ namespace LYBT.Module.Herbs.Services
             return Task.FromResult(ServiceResult<HerbDto>.Failure("简化版本暂不支持药材信息更新，建议使用SetStatusAsync更改状态"));
         }
 
+        /// <inheritdoc/>
         public async Task<ServiceResult<bool>> DeleteAsync(Guid id)
             => await _businessService.SoftDeleteAsync(id);
 
@@ -96,11 +103,13 @@ namespace LYBT.Module.Herbs.Services
             return result.IsSuccess;
         }
 
+        /// <inheritdoc/>
         public Task<ServiceResult<object>> ImportHerbsAsync(List<HerbCreateDto> herbs)
         {
             return Task.FromResult(ServiceResult<object>.Failure("简单诊所版本暂不支持药材批量导入功能"));
         }
 
+        /// <inheritdoc/>
         public async Task<ServiceResult<byte[]>> ExportHerbsAsync(PagedQueryBaseDto query)
         {
             // 简化实现：获取符合条件的药材并转换为Excel字节数组
@@ -133,12 +142,14 @@ namespace LYBT.Module.Herbs.Services
         public async Task<ServiceResult<bool>> BatchUpdateStatusAsync(BatchStatusUpdateDto dto)
             => await _businessService.BatchUpdateStatusAsync(dto);
 
+        /// <inheritdoc/>
         public async Task<ServiceResult> EnableAsync(Guid id)
         {
             var result = await _businessService.SetStatusAsync(id, true);
             return result.IsSuccess ? ServiceResult.Success() : ServiceResult.Failure(result.ErrorMessage ?? "启用失败");
         }
 
+        /// <inheritdoc/>
         public async Task<ServiceResult> DisableAsync(Guid id)
         {
             var result = await _businessService.SetStatusAsync(id, false);

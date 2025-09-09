@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using LYBT.Desktop.Prescriptions.Components;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Prescriptions;

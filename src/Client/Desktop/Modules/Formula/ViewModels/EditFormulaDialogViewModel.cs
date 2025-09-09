@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using LYBT.Desktop.Core.Constants;
 using LYBT.Shared.Interfaces.Services;
 

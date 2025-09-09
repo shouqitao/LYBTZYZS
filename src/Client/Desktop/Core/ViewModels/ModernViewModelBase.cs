@@ -1,4 +1,4 @@
-﻿using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.Models.Common;
 using Prism.Commands;
 using Prism.Events;
@@ -402,6 +402,7 @@ namespace LYBT.Desktop.Core.ViewModels
             }
         }
 
+        /// <inheritdoc/>
         public void Dispose()
         {
             Dispose(true);

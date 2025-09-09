@@ -17,11 +17,16 @@ namespace LYBT.Desktop.Core.Services
         private DateTime _lastCheckTime = DateTime.MinValue;
         private int _consecutiveFailures = 0;
 
+        /// <inheritdoc/>
         public event EventHandler<ApiHealthStatusChangedEventArgs>? StatusChanged;
 
+        /// <inheritdoc/>
         public bool IsOnline => _isOnline;
+        /// <inheritdoc/>
         public string StatusMessage => _statusMessage;
+        /// <inheritdoc/>
         public DateTime LastCheckTime => _lastCheckTime;
+        /// <inheritdoc/>
         public int ConsecutiveFailures => _consecutiveFailures;
 
         private const int CheckIntervalSeconds = 5;
@@ -131,6 +136,7 @@ namespace LYBT.Desktop.Core.Services
             }
         }
 
+        /// <inheritdoc/>
         public void Dispose()
         {
             StopMonitoring();

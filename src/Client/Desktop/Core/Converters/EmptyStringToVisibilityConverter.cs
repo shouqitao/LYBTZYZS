@@ -13,6 +13,7 @@ namespace LYBT.Desktop.Core.Converters
     public class EmptyStringToVisibilityConverter : IValueConverter
     {
 
+        /// <inheritdoc/>
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             var str = value as string;
@@ -32,6 +33,7 @@ namespace LYBT.Desktop.Core.Converters
             }
         }
 
+        /// <inheritdoc/>
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             throw new NotImplementedException();

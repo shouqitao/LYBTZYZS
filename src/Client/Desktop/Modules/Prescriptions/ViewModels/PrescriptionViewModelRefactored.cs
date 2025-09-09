@@ -463,6 +463,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
 
         private bool _disposed = false;
 
+        /// <inheritdoc/>
         public void Dispose()
         {
             Dispose(true);

@@ -1,4 +1,4 @@
-﻿using LYBT.Shared.Models.Contracts.Prescriptions;
+using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Prescriptions.Components
@@ -362,6 +362,7 @@ namespace LYBT.Desktop.Prescriptions.Components
             return Errors.Concat(Warnings);
         }
 
+        /// <inheritdoc/>
         public override string ToString()
         {
             var messages = new List<string>();

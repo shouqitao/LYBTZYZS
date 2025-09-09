@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using System.Windows.Data;
 using LYBT.Shared.Models.Enums;
 
@@ -11,6 +11,7 @@ namespace LYBT.Desktop.Core.Converters
     public class GenderToTextConverter : IValueConverter
     {
 
+        /// <inheritdoc/>
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value is Gender gender)
@@ -36,6 +37,7 @@ namespace LYBT.Desktop.Core.Converters
             return "未知";
         }
 
+        /// <inheritdoc/>
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value is string text)

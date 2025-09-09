@@ -66,6 +66,7 @@ namespace LYBT.Desktop.Core.Views.Base
             }
         }
 
+        /// <inheritdoc/>
         public override void OnApplyTemplate()
         {
             base.OnApplyTemplate();

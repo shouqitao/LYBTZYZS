@@ -209,6 +209,7 @@ namespace LYBT.Desktop.Prescriptions.Components
         /// <summary>折扣率</summary>
         public decimal Discount { get; set; } = 1.0m;
 
+        /// <inheritdoc/>
         public override string ToString()
         {
             return $"单剂:{SingleDosePrice:C}, 总价:{TotalPrice:C}, 重量:{TotalWeight}g, {ItemCount}味药, {DosageCount}剂";

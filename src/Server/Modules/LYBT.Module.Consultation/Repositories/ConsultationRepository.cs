@@ -1,4 +1,4 @@
-﻿using LYBT.Infrastructure.Data;
+using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Repositories;
 using LYBT.Module.Consultation.Interfaces;
 using LYBT.Shared.Models.Enums;
@@ -24,6 +24,7 @@ public class ConsultationRepository : OptimizedBaseRepository<LYBT.Entities.Cons
 
     // 注意：基础CRUD方法由OptimizedBaseRepository提供
     // GetByIdAsync, GetAllAsync, GetPagedAsync, AddAsync, UpdateAsync, DeleteAsync等都由基类实现，带有缓存优化
+    /// <inheritdoc/>
     public async Task<List<LYBT.Entities.Consultation.Consultation>> GetByPatientIdAsync(Guid patientId)
     {
         var cacheKey = $"{CacheKeyPrefix}patient:{patientId}";
@@ -43,6 +44,7 @@ public class ConsultationRepository : OptimizedBaseRepository<LYBT.Entities.Cons
         return consultations;
     }
 
+    /// <inheritdoc/>
     public async Task<List<LYBT.Entities.Consultation.Consultation>> GetByDoctorIdAsync(Guid doctorId)
     {
         var cacheKey = $"{CacheKeyPrefix}doctor:{doctorId}";
@@ -84,6 +86,7 @@ public class ConsultationRepository : OptimizedBaseRepository<LYBT.Entities.Cons
         return consultations;
     }
 
+    /// <inheritdoc/>
     public async Task<List<LYBT.Entities.Consultation.Consultation>> GetByDateRangeAsync(DateTime startDate, DateTime endDate)
     {
         var cacheKey = $"{CacheKeyPrefix}daterange:{startDate:yyyyMMdd}-{endDate:yyyyMMdd}";
@@ -104,6 +107,7 @@ public class ConsultationRepository : OptimizedBaseRepository<LYBT.Entities.Cons
         return consultations;
     }
 
+    /// <inheritdoc/>
     public async Task<LYBT.Entities.Consultation.Consultation?> GetByMedicalCaseIdAsync(Guid medicalCaseId)
     {
         var cacheKey = $"{CacheKeyPrefix}medicalcase:{medicalCaseId}";

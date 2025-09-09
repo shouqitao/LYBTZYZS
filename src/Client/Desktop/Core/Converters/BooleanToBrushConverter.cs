@@ -12,6 +12,7 @@ namespace LYBT.Desktop.Core.Converters
     public class BooleanToBrushConverter : IValueConverter
     {
 
+        /// <inheritdoc/>
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value is bool boolValue)
@@ -24,6 +25,7 @@ namespace LYBT.Desktop.Core.Converters
             return new SolidColorBrush(Color.FromRgb(108, 117, 125)); // 灰色 #6c757d
         }
 
+        /// <inheritdoc/>
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             throw new NotImplementedException("BooleanToBrushConverter does not support ConvertBack");

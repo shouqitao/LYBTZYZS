@@ -212,11 +212,13 @@ namespace LYBT.Desktop.Core.ViewModels.Users
             return userData != null && Id == userData.Id;
         }
 
+        /// <inheritdoc/>
         public override bool Equals(object? obj)
         {
             return obj is UserViewModel other && IsSameUser(other);
         }
 
+        /// <inheritdoc/>
         public override int GetHashCode()
         {
             return Id.GetHashCode();

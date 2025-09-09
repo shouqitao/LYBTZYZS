@@ -19,11 +19,13 @@ namespace LYBT.Desktop.Prescriptions
     public class PrescriptionsModule : IModule
     {
 
+        /// <inheritdoc/>
         public void OnInitialized(IContainerProvider containerProvider)
         {
             // 模块初始化完成后的操作
         }
 
+        /// <inheritdoc/>
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
             // UltraThink双层架构服务注册

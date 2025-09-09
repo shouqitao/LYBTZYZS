@@ -21,21 +21,27 @@ public class PrescriptionsModule(
     private readonly IPrescriptionsBusinessService _businessService = businessService ?? throw new ArgumentNullException(nameof(businessService));
 
     // IPrescriptionService 委托实现
+    /// <inheritdoc/>
     public async Task<ServiceResult<PrescriptionDto>> CreateAsync(PrescriptionCreateDto createDto)
         => await _businessService.CreateAsync(createDto);
 
+    /// <inheritdoc/>
     public async Task<ServiceResult<PrescriptionDto>> UpdateAsync(Guid id, PrescriptionEditDto updateDto)
         => await _businessService.UpdateAsync(id, updateDto);
 
+    /// <inheritdoc/>
     public async Task<ServiceResult<bool>> DeleteAsync(Guid id)
         => await _businessService.Delete(id);
 
+    /// <inheritdoc/>
     public async Task<ServiceResult<PrescriptionDto>> GetByIdAsync(Guid id)
         => await _queryService.GetByIdAsync(id);
 
+    /// <inheritdoc/>
     public async Task<ServiceResult<PagedResult<PrescriptionDto>>> GetPagedAsync(PrescriptionQueryDto query)
         => await _queryService.GetPagedAsync(query);
 
+    /// <inheritdoc/>
     public async Task<ServiceResult<List<PrescriptionDto>>> SearchAsync(string keyword)
         => await _queryService.Search(keyword);
 
@@ -46,15 +52,19 @@ public class PrescriptionsModule(
         => await _businessService.Disable(id);
 
     // 补充IPrescriptionService接口的其他方法
+    /// <inheritdoc/>
     public async Task<ServiceResult<List<PrescriptionDto>>> GetByPatientIdAsync(Guid patientId)
         => await _queryService.Search($"Patient:{patientId}");
 
+    /// <inheritdoc/>
     public async Task<ServiceResult<List<PrescriptionDto>>> GetByMedicalCaseIdAsync(Guid medicalCaseId)
         => await _queryService.Search($"MedicalCase:{medicalCaseId}");
 
+    /// <inheritdoc/>
     public async Task<ServiceResult<PrescriptionValidationResult>> ValidateAsync(PrescriptionCreateDto createDto)
         => ServiceResult<PrescriptionValidationResult>.Success(new PrescriptionValidationResult { IsValid = true });
 
+    /// <inheritdoc/>
     public async Task<ServiceResult<PrescriptionDto>> CopyAsync(Guid id, string newName)
     {
         try

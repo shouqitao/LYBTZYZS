@@ -51,6 +51,7 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
         [DisplayName("验方来源")]
         public string? FormulaSource { get; set; }
 
+        /// <inheritdoc/>
         [DisplayName("备注")]
         [StringLength(500, ErrorMessage = "备注长度不能超过500个字符")]
         public string? Remark { get; set; }
@@ -132,6 +133,7 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
         [DisplayName("折扣")]
         public new decimal Discount { get; set; } = 1.0m;
 
+        /// <inheritdoc/>
         [DisplayName("备注")]
         [StringLength(500, ErrorMessage = "备注长度不能超过500个字符")]
         public new string? Remark { get; set; }
@@ -160,6 +162,7 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
         [DisplayName("处方项目")]
         public List<PrescriptionItemCreateDto> Items { get; set; } = new();
 
+        /// <inheritdoc/>
         [StringLength(500, ErrorMessage = "备注不能超过500个字符")]
         [DisplayName("备注")]
         public string? Remark { get; set; }
@@ -209,6 +212,7 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
     public class PrescriptionEditDto : PrescriptionInputBaseDto, IIdentifiable<Guid>
     {
 
+        /// <inheritdoc/>
         [Required(ErrorMessage = "处方ID不能为空")]
         [DisplayName("处方ID")]
         public Guid Id { get; set; }
@@ -271,6 +275,7 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
         [DisplayName("用法说明")]
         public string? Usage { get; set; }
 
+        /// <inheritdoc/>
         [DisplayName("备注")]
         [StringLength(500, ErrorMessage = "备注长度不能超过500个字符")]
         public string? Remark { get; set; }

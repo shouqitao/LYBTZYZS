@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using Microsoft.Extensions.Configuration;
 
 namespace LYBT.Desktop.Core.Configuration

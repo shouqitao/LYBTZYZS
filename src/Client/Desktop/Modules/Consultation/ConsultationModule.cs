@@ -20,12 +20,14 @@ namespace LYBT.Desktop.Consultation
     public class ConsultationModule : IModule
     {
 
+        /// <inheritdoc/>
         public void OnInitialized(IContainerProvider containerProvider)
         {
             // 模块初始化完成后，配置ViewModelLocator
             ViewModelLocationProvider.Register<ConsultationMainView, ConsultationMainViewModel>();
         }
 
+        /// <inheritdoc/>
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
             // UltraThink双层架构服务注册

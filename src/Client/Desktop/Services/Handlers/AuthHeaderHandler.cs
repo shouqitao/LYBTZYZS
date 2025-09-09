@@ -20,6 +20,7 @@ namespace LYBT.Desktop.Services.Handlers
             _tokenManager = tokenManager;
         }
 
+        /// <inheritdoc/>
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             var token = _tokenManager.GetToken();

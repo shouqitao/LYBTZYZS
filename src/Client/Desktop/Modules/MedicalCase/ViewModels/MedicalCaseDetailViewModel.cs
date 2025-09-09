@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using LYBT.Desktop.Core.Constants;
 using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.ViewModels.Base;
@@ -243,6 +243,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         #region 导航实现
 
+        /// <inheritdoc/>
         public void OnNavigatedTo(NavigationContext navigationContext)
         {
             if (navigationContext.Parameters.ContainsKey("MedicalCaseId"))
@@ -253,6 +254,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             }
         }
 
+        /// <inheritdoc/>
         public bool IsNavigationTarget(NavigationContext navigationContext)
         {
             if (navigationContext.Parameters.ContainsKey("MedicalCaseId"))
@@ -264,6 +266,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             return false;
         }
 
+        /// <inheritdoc/>
         public void OnNavigatedFrom(NavigationContext navigationContext)
         {
             // 清理资源

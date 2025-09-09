@@ -1,4 +1,4 @@
-﻿using LYBT.Infrastructure.Configuration;
+using LYBT.Infrastructure.Configuration;
 
 // using LYBT.WebAPI.Services; // Removed - enterprise services
 namespace LYBT.WebAPI.Extensions;

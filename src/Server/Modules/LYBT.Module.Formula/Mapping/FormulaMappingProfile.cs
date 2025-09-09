@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using LYBT.Entities.Formula;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Enums;
@@ -31,7 +31,7 @@ namespace LYBT.Module.Formula.Mapping
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => CommonStatus.Enabled))
                 .ForMember(dest => dest.Property, opt => opt.Ignore()) // 实体特有字段，不从DTO更新
 
-                                                                       // 🎯 UltraThink修复：忽略实体中不存在的DTO字段
+                // 🎯 UltraThink修复：忽略实体中不存在的DTO字段
                 .ForSourceMember(src => src.Instructions, opt => opt.DoNotValidate())
                 .ForSourceMember(src => src.Indications, opt => opt.DoNotValidate())
                 .ForSourceMember(src => src.Contraindications, opt => opt.DoNotValidate())
@@ -44,7 +44,7 @@ namespace LYBT.Module.Formula.Mapping
                 .ForMember(dest => dest.Property, opt => opt.Ignore()) // 保持原有Property值
                 .ForMember(dest => dest.Herbs, opt => opt.Ignore()) // Herbs需要特殊处理，不直接映射
 
-                                                                    // 🎯 关键修复：忽略实体中不存在的DTO字段
+                // 🎯 关键修复：忽略实体中不存在的DTO字段
                 .ForSourceMember(src => src.Instructions, opt => opt.DoNotValidate())
                 .ForSourceMember(src => src.Indications, opt => opt.DoNotValidate())
                 .ForSourceMember(src => src.Contraindications, opt => opt.DoNotValidate())

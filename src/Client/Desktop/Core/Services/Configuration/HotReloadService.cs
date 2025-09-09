@@ -98,6 +98,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
 
         #region 启动和停止
 
+        /// <inheritdoc/>
         public async Task StartAsync()
         {
             lock (_lock)
@@ -150,6 +151,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
             }
         }
 
+        /// <inheritdoc/>
         public Task StopAsync()
         {
             lock (_lock)
@@ -204,6 +206,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
 
         #region 处理器注册
 
+        /// <inheritdoc/>
         public void RegisterHandler(string configKey, Action<HotReloadEventArgs> handler)
         {
             lock (_handlers)
@@ -224,6 +227,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
             }
         }
 
+        /// <inheritdoc/>
         public void RegisterAsyncHandler(string configKey, Func<HotReloadEventArgs, Task> handler)
         {
             lock (_handlers)
@@ -248,6 +252,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
 
         #region 手动触发
 
+        /// <inheritdoc/>
         public async Task TriggerReloadAsync(string? configKey = null)
         {
             try
@@ -286,22 +291,26 @@ namespace LYBT.Desktop.Core.Services.Configuration
 
         #region 状态和订阅
 
+        /// <inheritdoc/>
         public HotReloadStatus GetStatus()
         {
             return _status;
         }
 
+        /// <inheritdoc/>
         public IDisposable Subscribe(IObserver<ConfigurationChange> observer)
         {
             return _changeSubject.Subscribe(observer);
         }
 
+        /// <inheritdoc/>
         public void SetReloadStrategy(ReloadStrategy strategy)
         {
             _reloadStrategy = strategy;
             _logger.LogInformation("配置重载策略已更改为: {Strategy}", strategy);
         }
 
+        /// <inheritdoc/>
         public List<ReloadHistoryEntry> GetReloadHistory()
         {
             lock (_history)
@@ -618,6 +627,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
 
         #region IDisposable
 
+        /// <inheritdoc/>
         public void Dispose()
         {
             StopAsync().Wait(TimeSpan.FromSeconds(5));

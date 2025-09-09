@@ -337,6 +337,7 @@ namespace LYBT.Desktop.Core.Validation
             _memberNames = new HashSet<string>(memberNames);
         }
 
+        /// <inheritdoc/>
         public bool CanExecute(IValidationRule rule, string propertyPath, IValidationContext context)
         {
             return _memberNames.Contains(propertyPath);

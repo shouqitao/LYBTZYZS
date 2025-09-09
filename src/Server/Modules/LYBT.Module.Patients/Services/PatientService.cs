@@ -1,4 +1,4 @@
-﻿using LYBT.Module.Patients.Interfaces;
+using LYBT.Module.Patients.Interfaces;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
@@ -19,15 +19,19 @@ namespace LYBT.Module.Patients.Services
 
         #region Core Operations - 委托给BusinessService
 
+        /// <inheritdoc/>
         public Task<ServiceResult<PatientDto>> GetByIdAsync(Guid id)
             => _queryService.GetByIdAsync(id);
 
+        /// <inheritdoc/>
         public Task<ServiceResult<PatientDto>> CreateAsync(PatientCreateDto dto)
             => _businessService.CreateAsync(dto);
 
+        /// <inheritdoc/>
         public Task<ServiceResult<PatientDto>> UpdateAsync(Guid id, PatientUpdateDto dto)
             => _businessService.UpdateAsync(id, dto);
 
+        /// <inheritdoc/>
         public async Task<ServiceResult<bool>> DeleteAsync(Guid id)
         {
             var result = await _businessService.DeleteAsync(id);
@@ -60,6 +64,7 @@ namespace LYBT.Module.Patients.Services
             return result.IsSuccess ? (result.Data ?? new List<PatientDto>()) : new List<PatientDto>();
         }
 
+        /// <inheritdoc/>
         public async Task<ServiceResult<PagedResult<PatientDto>>> GetPagedAsync(PatientPagedQueryDto query)
         {
             // 转换为基础分页查询DTO
@@ -90,6 +95,7 @@ namespace LYBT.Module.Patients.Services
             return result.IsSuccess ? result.Data : null;
         }
 
+        /// <inheritdoc/>
         public Task<ServiceResult<List<PatientDto>>> SearchAsync(string keyword)
             => _queryService.SearchAsync(keyword);
 
@@ -141,6 +147,7 @@ namespace LYBT.Module.Patients.Services
 
         #region Business Operations
 
+        /// <inheritdoc/>
         public async Task<ServiceResult> EnableAsync(Guid id)
         {
             var patientIds = new List<Guid> { id };
@@ -150,6 +157,7 @@ namespace LYBT.Module.Patients.Services
                 : ServiceResult.Failure(result.ErrorMessage ?? "启用患者失败");
         }
 
+        /// <inheritdoc/>
         public async Task<ServiceResult> DisableAsync(Guid id)
         {
             var patientIds = new List<Guid> { id };
@@ -159,6 +167,7 @@ namespace LYBT.Module.Patients.Services
                 : ServiceResult.Failure(result.ErrorMessage ?? "禁用患者失败");
         }
 
+        /// <inheritdoc/>
         public async Task<ServiceResult<object>> ImportPatientsAsync(List<PatientCreateDto> patients)
         {
             // 转换为PatientImportDto列表
@@ -194,6 +203,7 @@ namespace LYBT.Module.Patients.Services
             return ServiceResult<object>.Failure(result.ErrorMessage ?? "导入患者失败");
         }
 
+        /// <inheritdoc/>
         public async Task<ServiceResult<byte[]>> ExportPatientsAsync(PagedQueryBaseDto query)
         {
             // 转换为PatientExportDto
@@ -259,9 +269,11 @@ namespace LYBT.Module.Patients.Services
 
         #region Shared Interface
 
+        /// <inheritdoc/>
         public Task<ServiceResult<PatientDto>> GetByIdCardAsync(string idCard)
             => _queryService.GetByIdCardAsync(idCard);
 
+        /// <inheritdoc/>
         public Task<ServiceResult<List<PatientDto>>> GetByPhoneAsync(string phone)
             => _queryService.GetByPhoneAsync(phone);
 

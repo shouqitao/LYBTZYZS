@@ -11,6 +11,7 @@ namespace LYBT.Desktop.Core.Converters
     {
         public static readonly MultiBooleanAndConverter Instance = new MultiBooleanAndConverter();
 
+        /// <inheritdoc/>
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
             if (values == null || values.Length == 0)
@@ -21,6 +22,7 @@ namespace LYBT.Desktop.Core.Converters
             return values.All(value => value is bool boolValue && boolValue);
         }
 
+        /// <inheritdoc/>
         public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
         {
             throw new NotImplementedException();

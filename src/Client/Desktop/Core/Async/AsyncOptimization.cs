@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks.Dataflow;
@@ -290,16 +290,19 @@ namespace LYBT.Desktop.Core.Async
             }
         }
 
+        /// <inheritdoc/>
         protected override IEnumerable<Task>? GetScheduledTasks()
         {
             return _tasks.ToArray();
         }
 
+        /// <inheritdoc/>
         protected override void QueueTask(Task task)
         {
             _tasks.Add(task);
         }
 
+        /// <inheritdoc/>
         protected override bool TryExecuteTaskInline(Task task, bool taskWasPreviouslyQueued)
         {
             // 允许内联执行

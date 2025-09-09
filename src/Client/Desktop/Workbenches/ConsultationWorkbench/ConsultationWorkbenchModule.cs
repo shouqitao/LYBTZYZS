@@ -18,12 +18,14 @@ namespace LYBT.Desktop.Workbench.Consultation
     public class ConsultationWorkbenchModule : IModule
     {
 
+        /// <inheritdoc/>
         public void OnInitialized(IContainerProvider containerProvider)
         {
             // 注册ViewModel映射
             ViewModelLocationProvider.Register<ConsultationWorkbenchMainView, ConsultationWorkbenchMainViewModel>();
         }
 
+        /// <inheritdoc/>
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
             // 注册工作台导航器

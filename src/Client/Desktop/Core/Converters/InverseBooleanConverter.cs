@@ -11,6 +11,7 @@ namespace LYBT.Desktop.Core.Converters
     {
         public static readonly InverseBooleanConverter Instance = new InverseBooleanConverter();
 
+        /// <inheritdoc/>
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value is bool boolValue)
@@ -21,6 +22,7 @@ namespace LYBT.Desktop.Core.Converters
             return true; // 默认值
         }
 
+        /// <inheritdoc/>
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value is bool boolValue)

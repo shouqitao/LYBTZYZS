@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using LYBT.Desktop.Core.Memory;
 using Microsoft.Extensions.Logging;
@@ -335,12 +335,18 @@ namespace LYBT.Desktop.Core.Events
             Priority = priority;
         }
 
+        /// <inheritdoc/>
         public bool IsAlive => _strongAction != null || (_weakAction?.IsAlive ?? false);
+        /// <inheritdoc/>
         public bool KeepAlive { get; }
+        /// <inheritdoc/>
         public EnhancedThreadOption ThreadOption { get; }
+        /// <inheritdoc/>
         public Predicate<object>? Filter { get; }
+        /// <inheritdoc/>
         public int Priority { get; }
 
+        /// <inheritdoc/>
         public void InvokeAction(object? argument)
         {
             if (_strongAction != null)
@@ -388,12 +394,18 @@ namespace LYBT.Desktop.Core.Events
             Priority = priority;
         }
 
+        /// <inheritdoc/>
         public bool IsAlive => _strongAction != null || (_weakAction?.IsAlive ?? false);
+        /// <inheritdoc/>
         public bool KeepAlive { get; }
+        /// <inheritdoc/>
         public EnhancedThreadOption ThreadOption { get; }
+        /// <inheritdoc/>
         public Predicate<object>? Filter { get; }
+        /// <inheritdoc/>
         public int Priority { get; }
 
+        /// <inheritdoc/>
         public void InvokeAction(object? argument)
         {
             if (argument is TPayload payload)

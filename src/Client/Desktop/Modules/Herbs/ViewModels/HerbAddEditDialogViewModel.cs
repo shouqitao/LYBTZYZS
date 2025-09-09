@@ -1,4 +1,4 @@
-﻿using LYBT.Desktop.Core.Constants;
+using LYBT.Desktop.Core.Constants;
 using LYBT.Desktop.Core.Interfaces;
 using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.Models.Common;
@@ -159,6 +159,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
 
         #region DialogViewModel Implementation
 
+        /// <inheritdoc/>
         protected override async Task<bool> SaveAsync()
         {
             try
@@ -225,6 +226,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
             }
         }
 
+        /// <inheritdoc/>
         protected override bool CanSave()
         {
             return !string.IsNullOrWhiteSpace(HerbName) &&
@@ -232,6 +234,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
                    Price > 0;
         }
 
+        /// <inheritdoc/>
         protected override void InitializeDialog()
         {
             base.InitializeDialog();

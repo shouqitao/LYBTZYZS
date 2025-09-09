@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Threading;
 using LYBT.Desktop.Core.Constants;
@@ -220,6 +220,7 @@ namespace LYBT.Desktop.Shell.ViewModels
 
         #endregion 构造函数
 
+        /// <inheritdoc/>
         protected override void OnUserChanged(UserChangedEventArgs args)
         {
             base.OnUserChanged(args);
@@ -697,6 +698,7 @@ namespace LYBT.Desktop.Shell.ViewModels
 
         #region INavigationAware
 
+        /// <inheritdoc/>
         public void OnNavigatedTo(NavigationContext navigationContext)
         {
             _ = InitializeAsync();
@@ -730,11 +732,13 @@ namespace LYBT.Desktop.Shell.ViewModels
             LogInfo("HomeViewModel 导航进入");
         }
 
+        /// <inheritdoc/>
         public bool IsNavigationTarget(NavigationContext navigationContext)
         {
             return true;
         }
 
+        /// <inheritdoc/>
         public void OnNavigatedFrom(NavigationContext navigationContext)
         {
             // 停止定时器
@@ -749,6 +753,7 @@ namespace LYBT.Desktop.Shell.ViewModels
 
         #region IDisposable 补充实现
 
+        /// <inheritdoc/>
         protected override void Dispose(bool disposing)
         {
             if (disposing)

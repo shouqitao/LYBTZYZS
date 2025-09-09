@@ -1,4 +1,4 @@
-﻿using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using Prism.Commands;

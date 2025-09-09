@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
@@ -292,6 +292,7 @@ namespace LYBT.Desktop.Core.Controls
 
         #region INotifyPropertyChanged
 
+        /// <inheritdoc/>
         public event PropertyChangedEventHandler? PropertyChanged;
 
         protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
@@ -313,6 +314,7 @@ namespace LYBT.Desktop.Core.Controls
     {
         public static readonly BooleanToVisibilityConverter Instance = new();
 
+        /// <inheritdoc/>
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
             if (value is bool boolValue)
@@ -323,6 +325,7 @@ namespace LYBT.Desktop.Core.Controls
             return Visibility.Collapsed;
         }
 
+        /// <inheritdoc/>
         public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
             return value is Visibility.Visible;
@@ -336,6 +339,7 @@ namespace LYBT.Desktop.Core.Controls
     {
         public static readonly ProgressToScaleConverter Instance = new();
 
+        /// <inheritdoc/>
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
             if (value is double doubleValue)
@@ -346,6 +350,7 @@ namespace LYBT.Desktop.Core.Controls
             return 0.0;
         }
 
+        /// <inheritdoc/>
         public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
             throw new NotImplementedException();

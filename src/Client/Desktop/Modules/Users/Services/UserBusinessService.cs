@@ -1,4 +1,4 @@
-﻿using LYBT.Desktop.Core.Services.Exceptions;
+using LYBT.Desktop.Core.Services.Exceptions;
 using LYBT.Desktop.Users.Interfaces;
 using LYBT.Shared.Interfaces.Api;
 using LYBT.Shared.Models.Common;
@@ -23,6 +23,7 @@ public class UserBusinessService(
 
     #region 标准CRUD操作
 
+    /// <inheritdoc/>
     public async Task<ServiceResult<UserDto>> CreateAsync(UserMutationDto createDto, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(createDto, nameof(createDto));
@@ -61,6 +62,7 @@ public class UserBusinessService(
             nameof(CreateAsync), $"创建用户: {createDto.Username}", cancellationToken);
     }
 
+    /// <inheritdoc/>
     public async Task<ServiceResult<UserDto>> UpdateAsync(UserMutationDto updateDto, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(updateDto, nameof(updateDto));
@@ -99,6 +101,7 @@ public class UserBusinessService(
             nameof(UpdateAsync), $"更新用户: {updateDto.Id}", cancellationToken);
     }
 
+    /// <inheritdoc/>
     public async Task<ServiceResult<bool>> DeleteAsync(Guid userId)
     {
         return await _exceptionHandler.HandleException<bool>(
@@ -135,6 +138,7 @@ public class UserBusinessService(
 
     #region 状态管理操作
 
+    /// <inheritdoc/>
     public async Task<ServiceResult<bool>> EnableAsync(Guid userId)
     {
         return await _exceptionHandler.HandleException<bool>(
@@ -165,6 +169,7 @@ public class UserBusinessService(
             nameof(EnableAsync), $"启用用户: {userId}", CancellationToken.None);
     }
 
+    /// <inheritdoc/>
     public async Task<ServiceResult<bool>> DisableAsync(Guid userId)
     {
         return await _exceptionHandler.HandleException<bool>(
@@ -195,6 +200,7 @@ public class UserBusinessService(
             nameof(DisableAsync), $"禁用用户: {userId}", CancellationToken.None);
     }
 
+    /// <inheritdoc/>
     public async Task<ServiceResult<int>> BatchEnableAsync(List<Guid> ids, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(ids, nameof(ids));
@@ -233,6 +239,7 @@ public class UserBusinessService(
             nameof(BatchEnableAsync), $"批量启用用户: {ids.Count}", cancellationToken);
     }
 
+    /// <inheritdoc/>
     public async Task<ServiceResult<int>> BatchDisableAsync(List<Guid> ids, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(ids, nameof(ids));
@@ -275,6 +282,7 @@ public class UserBusinessService(
 
     #region 密码管理操作
 
+    /// <inheritdoc/>
     public async Task<ServiceResult<bool>> ResetPasswordAsync(Guid userId, string newPassword, CancellationToken cancellationToken = default)
     {
         return await _exceptionHandler.HandleException<bool>(
@@ -306,6 +314,7 @@ public class UserBusinessService(
             nameof(ResetPasswordAsync), $"重置用户密码: {userId}", cancellationToken);
     }
 
+    /// <inheritdoc/>
     public async Task<ServiceResult<bool>> ChangePasswordAsync(Guid id, string oldPassword, string newPassword, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(oldPassword, nameof(oldPassword));
@@ -346,6 +355,7 @@ public class UserBusinessService(
             nameof(ChangePasswordAsync), $"修改用户密码: {id}", cancellationToken);
     }
 
+    /// <inheritdoc/>
     public async Task<ServiceResult<bool>> ChangeProfileAsync(ChangeProfileDto profileDto, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(profileDto, nameof(profileDto));

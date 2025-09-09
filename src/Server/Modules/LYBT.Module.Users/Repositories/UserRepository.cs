@@ -1,4 +1,4 @@
-﻿using LYBT.Entities.Users;
+using LYBT.Entities.Users;
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Repositories;
 using LYBT.Module.Users.Interfaces;

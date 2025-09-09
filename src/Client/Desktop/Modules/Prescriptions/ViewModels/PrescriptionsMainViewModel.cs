@@ -1,4 +1,4 @@
-﻿using LYBT.Desktop.Core.Constants;
+using LYBT.Desktop.Core.Constants;
 using LYBT.Desktop.Core.Events;
 using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.ViewModels;
@@ -99,6 +99,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
 
         #region INavigationAware 实现
 
+        /// <inheritdoc/>
         public void OnNavigatedTo(NavigationContext navigationContext)
         {
             _logger.LogInformation(
@@ -132,11 +133,13 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             }
         }
 
+        /// <inheritdoc/>
         public bool IsNavigationTarget(NavigationContext navigationContext)
         {
             return true; // 总是允许导航
         }
 
+        /// <inheritdoc/>
         public void OnNavigatedFrom(NavigationContext navigationContext)
         {
             _logger.LogInformation("从处方模块导航离开");

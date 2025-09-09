@@ -317,6 +317,7 @@ namespace LYBT.Desktop.Core.Services
 
         #region INotifyPropertyChanged 实现
 
+        /// <inheritdoc/>
         public event PropertyChangedEventHandler? PropertyChanged;
 
         protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
@@ -328,6 +329,7 @@ namespace LYBT.Desktop.Core.Services
 
         #region IDisposable 实现
 
+        /// <inheritdoc/>
         public void Dispose()
         {
             _feedbackTimer?.Stop();

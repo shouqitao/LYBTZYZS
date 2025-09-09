@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using System.Net.Http;
 using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.Extensions.Logging;

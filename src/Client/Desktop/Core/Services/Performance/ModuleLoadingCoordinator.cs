@@ -90,6 +90,7 @@ namespace LYBT.Desktop.Core.Services.Performance
             }
         }
 
+        /// <inheritdoc/>
         public async Task PreloadModulesAsync(string userRole)
         {
             _logger.LogInformation("UltraThink模块预加载: 开始为角色 {Role} 预加载模块", userRole);
@@ -158,6 +159,7 @@ namespace LYBT.Desktop.Core.Services.Performance
             }
         }
 
+        /// <inheritdoc/>
         public void TrackModuleInitialization(string moduleName, TimeSpan initializationTime)
         {
             if (_moduleMetrics.TryGetValue(moduleName, out var metrics))
@@ -172,6 +174,7 @@ namespace LYBT.Desktop.Core.Services.Performance
             }
         }
 
+        /// <inheritdoc/>
         public async Task<bool> IsModuleReadyAsync(string moduleName, TimeSpan timeout)
         {
             if (!_moduleReadyTasks.TryGetValue(moduleName, out var tcs))
@@ -198,11 +201,13 @@ namespace LYBT.Desktop.Core.Services.Performance
             }
         }
 
+        /// <inheritdoc/>
         public Dictionary<string, ModuleLoadingMetrics> GetLoadingMetrics()
         {
             return new Dictionary<string, ModuleLoadingMetrics>(_moduleMetrics);
         }
 
+        /// <inheritdoc/>
         public void OptimizeModuleLoadingOrder()
         {
             _logger.LogInformation("UltraThink性能优化: 开始优化模块加载顺序");

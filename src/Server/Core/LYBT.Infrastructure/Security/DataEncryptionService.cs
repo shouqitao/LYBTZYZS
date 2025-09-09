@@ -69,6 +69,7 @@ namespace LYBT.Infrastructure.Security
                 Enum.GetValues<SensitiveDataType>().Length);
         }
 
+        /// <inheritdoc/>
         public string Encrypt(string plaintext, SensitiveDataType dataType = SensitiveDataType.PersonalInfo)
         {
             if (string.IsNullOrEmpty(plaintext))
@@ -109,6 +110,7 @@ namespace LYBT.Infrastructure.Security
             }
         }
 
+        /// <inheritdoc/>
         public string Decrypt(string ciphertext, SensitiveDataType dataType = SensitiveDataType.PersonalInfo)
         {
             if (string.IsNullOrEmpty(ciphertext))
@@ -147,6 +149,7 @@ namespace LYBT.Infrastructure.Security
             }
         }
 
+        /// <inheritdoc/>
         public string MaskData(string data, MaskingMode maskingMode)
         {
             if (string.IsNullOrEmpty(data))
@@ -211,6 +214,7 @@ namespace LYBT.Infrastructure.Security
             return $"#{hashString[..8]}";
         }
 
+        /// <inheritdoc/>
         public void Dispose()
         {
             if (!_disposed)

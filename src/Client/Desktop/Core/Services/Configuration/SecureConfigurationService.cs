@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -173,6 +173,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
 
         #region 核心功能
 
+        /// <inheritdoc/>
         public Task<T?> GetSecureValueAsync<T>(string key, string? passphrase = null)
         {
             try
@@ -224,6 +225,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
             }
         }
 
+        /// <inheritdoc/>
         public Task SetSecureValueAsync<T>(string key, T value, string? passphrase = null)
         {
             try
@@ -280,6 +282,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
             return Task.CompletedTask;
         }
 
+        /// <inheritdoc/>
         public Task RemoveSecureValueAsync(string key)
         {
             try
@@ -306,6 +309,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
             }
         }
 
+        /// <inheritdoc/>
         public bool HasSecureValue(string key)
         {
             lock (_lock)
@@ -314,6 +318,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
             }
         }
 
+        /// <inheritdoc/>
         public List<string> GetSecureKeys()
         {
             lock (_lock)
@@ -326,6 +331,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
 
         #region 导入导出
 
+        /// <inheritdoc/>
         public Task<string> ExportSecureConfigurationAsync(string passphrase)
         {
             try
@@ -366,6 +372,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
             }
         }
 
+        /// <inheritdoc/>
         public Task ImportSecureConfigurationAsync(string encryptedData, string passphrase)
         {
             try
@@ -431,6 +438,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
 
         #region 密钥管理
 
+        /// <inheritdoc/>
         public Task RotateEncryptionKeyAsync(string oldPassphrase, string newPassphrase)
         {
             try
@@ -492,6 +500,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
 
         #region 完整性和审计
 
+        /// <inheritdoc/>
         public Task<IntegrityCheckResult> VerifyIntegrityAsync()
         {
             var result = new IntegrityCheckResult
@@ -557,6 +566,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
             return Task.FromResult(result);
         }
 
+        /// <inheritdoc/>
         public List<SecurityAuditEntry> GetAuditLog(DateTime? startTime = null, DateTime? endTime = null)
         {
             lock (_auditLog)
@@ -577,6 +587,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
             }
         }
 
+        /// <inheritdoc/>
         public void SetAccessPolicy(string key, AccessPolicy policy)
         {
             lock (_accessPolicies)
@@ -586,6 +597,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
             }
         }
 
+        /// <inheritdoc/>
         public Task<int> CleanupExpiredConfigurationsAsync()
         {
             var removed = 0;
@@ -787,6 +799,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
 
         #region IDisposable
 
+        /// <inheritdoc/>
         public void Dispose()
         {
             lock (_lock)

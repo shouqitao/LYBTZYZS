@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
@@ -120,6 +120,7 @@ namespace LYBT.Desktop.Core.Redux
             });
         }
 
+        /// <inheritdoc/>
         public virtual void Dispose()
         {
             if (!_disposed)
@@ -218,6 +219,7 @@ namespace LYBT.Desktop.Core.Redux
             _subscription?.Dispose();
         }
 
+        /// <inheritdoc/>
         public event PropertyChangedEventHandler? PropertyChanged;
 
         protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)

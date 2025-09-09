@@ -1,4 +1,4 @@
-﻿using LYBT.Desktop.Patients.Interfaces;
+using LYBT.Desktop.Patients.Interfaces;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
@@ -235,8 +235,8 @@ public class PatientModule(
 
             var refitResponse = await _queryService.GetByIdAsync(Guid.Empty); // 使用API端点调用
 
-                                                                              // 注意：这里需要在QueryService中添加ImportPatientsAsync方法
-                                                                              // 或者直接调用API
+            // 注意：这里需要在QueryService中添加ImportPatientsAsync方法
+            // 或者直接调用API
 
             return ServiceResult<object>.Success(new { ImportedCount = patients.Count, TotalCount = patients.Count }, "患者批量导入成功");
         }

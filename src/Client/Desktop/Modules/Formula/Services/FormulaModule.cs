@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using LYBT.Desktop.Formula.Interfaces;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
@@ -25,18 +25,23 @@ public class FormulaModule(
 
     #region IFormulaService基础CRUD接口实现
 
+    /// <inheritdoc/>
     public async Task<ServiceResult<PagedResult<FormulaDto>>> GetPagedAsync(FormulaQueryDto query)
         => await _queryService.GetPagedAsync(query);
 
+    /// <inheritdoc/>
     public async Task<ServiceResult<FormulaDto>> GetByIdAsync(Guid id)
         => await _queryService.GetByIdAsync(id);
 
+    /// <inheritdoc/>
     public async Task<ServiceResult<FormulaDto>> CreateAsync(FormulaCreateDto createDto)
         => await _businessService.CreateFormulaAsync(createDto);
 
+    /// <inheritdoc/>
     public async Task<ServiceResult<FormulaDto>> UpdateAsync(Guid id, FormulaUpdateDto updateDto)
         => await _businessService.UpdateFormulaAsync(id, updateDto);
 
+    /// <inheritdoc/>
     public async Task<ServiceResult<bool>> DeleteAsync(Guid id)
         => await _businessService.DeleteFormulaAsync(id);
 
@@ -44,9 +49,11 @@ public class FormulaModule(
 
     #region IFormulaService搜索接口实现（简化版）
 
+    /// <inheritdoc/>
     public async Task<ServiceResult<List<FormulaDto>>> GetTemplatesAsync()
         => await _queryService.GetTemplatesAsync();
 
+    /// <inheritdoc/>
     public async Task<ServiceResult<List<FormulaDto>>> GetByTypeAsync(string formulaType)
         => await _queryService.GetByTypeAsync(formulaType);
 
@@ -63,6 +70,7 @@ public class FormulaModule(
     public async Task<ServiceResult<List<FormulaDto>>> GetAllFormulasAsync()
         => await _queryService.GetTemplatesAsync();
 
+    /// <inheritdoc/>
     public async Task<ServiceResult<List<FormulaDto>>> SearchAsync(string keyword)
         => await _queryService.SearchAsync(keyword);
 
@@ -70,9 +78,11 @@ public class FormulaModule(
 
     #region IFormulaService状态管理接口实现
 
+    /// <inheritdoc/>
     public async Task<ServiceResult> EnableAsync(Guid id)
         => await _businessService.EnableAsync(id);
 
+    /// <inheritdoc/>
     public async Task<ServiceResult> DisableAsync(Guid id)
         => await _businessService.DisableAsync(id);
 
@@ -102,11 +112,13 @@ public class FormulaModule(
         return await _businessService.CloneFormulaAsync(id, newName, currentUserId);
     }
 
+    /// <inheritdoc/>
     public async Task<ServiceResult<List<string>>> GetCategoriesAsync()
     {
         return await _queryService.GetCategoriesAsync();
     }
 
+    /// <inheritdoc/>
     public async Task<ServiceResult<FormulaDto>> CreateFromPrescriptionAsync(Guid prescriptionId, string name)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name, nameof(name));
@@ -143,6 +155,7 @@ public class FormulaModule(
 
     #region 批量操作 - 必需功能（用户明确需求）
 
+    /// <inheritdoc/>
     public async Task<ServiceResult<object>> ImportFormulasAsync(List<FormulaCreateDto> formulas)
     {
         ArgumentNullException.ThrowIfNull(formulas, nameof(formulas));
@@ -189,6 +202,7 @@ public class FormulaModule(
         }
     }
 
+    /// <inheritdoc/>
     public async Task<ServiceResult<byte[]>> ExportFormulasAsync(PagedQueryBaseDto query)
     {
         ArgumentNullException.ThrowIfNull(query, nameof(query));
@@ -412,6 +426,7 @@ public class FormulaModule(
 
     #region 资源清理
 
+    /// <inheritdoc/>
     public void Dispose()
     {
         GC.SuppressFinalize(this);

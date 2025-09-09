@@ -18,18 +18,23 @@ public class UserModule(
 
     #region 查询操作 - QueryService专业负责
 
+    /// <inheritdoc/>
     public async Task<ServiceResult<UserDto>> GetByIdAsync(Guid id)
         => await _queryService.GetByIdAsync(id);
 
+    /// <inheritdoc/>
     public async Task<ServiceResult<PagedResult<UserDto>>> GetPagedAsync(UserPagedQueryDto query)
         => await _queryService.GetPagedAsync(query);
 
+    /// <inheritdoc/>
     public async Task<ServiceResult<UserDto>> GetByUsernameAsync(string username)
         => await _queryService.GetByUsernameAsync(username);
 
+    /// <inheritdoc/>
     public async Task<ServiceResult<List<UserDto>>> GetActiveUsersAsync()
         => await _queryService.GetActiveUsersAsync();
 
+    /// <inheritdoc/>
     public async Task<ServiceResult<List<UserDto>>> SearchAsync(string keyword)
         => await _queryService.SearchAsync(keyword);
 
@@ -37,12 +42,15 @@ public class UserModule(
 
     #region 业务操作 - BusinessService专业负责
 
+    /// <inheritdoc/>
     public async Task<ServiceResult<UserDto>> CreateAsync(UserMutationDto dto)
         => await _businessService.CreateAsync(dto);
 
+    /// <inheritdoc/>
     public async Task<ServiceResult<UserDto>> UpdateAsync(UserMutationDto dto)
         => await _businessService.UpdateAsync(dto);
 
+    /// <inheritdoc/>
     public async Task<ServiceResult<bool>> DeleteAsync(Guid id)
         => await _businessService.DeleteAsync(id);
 
@@ -50,15 +58,19 @@ public class UserModule(
 
     #region 状态管理 - BusinessService批量操作
 
+    /// <inheritdoc/>
     public async Task<ServiceResult<bool>> EnableAsync(Guid id)
         => await _businessService.EnableAsync(id);
 
+    /// <inheritdoc/>
     public async Task<ServiceResult<bool>> DisableAsync(Guid id)
         => await _businessService.DisableAsync(id);
 
+    /// <inheritdoc/>
     public async Task<ServiceResult<int>> BatchEnableAsync(List<Guid> ids)
         => await _businessService.BatchEnableAsync(ids);
 
+    /// <inheritdoc/>
     public async Task<ServiceResult<int>> BatchDisableAsync(List<Guid> ids)
         => await _businessService.BatchDisableAsync(ids);
 
@@ -66,9 +78,11 @@ public class UserModule(
 
     #region 密码管理 - BusinessService安全操作
 
+    /// <inheritdoc/>
     public async Task<ServiceResult<bool>> ResetPasswordAsync(Guid id, string newPassword)
         => await _businessService.ResetPasswordAsync(id, newPassword);
 
+    /// <inheritdoc/>
     public async Task<ServiceResult<bool>> ChangePasswordAsync(Guid id, string oldPassword, string newPassword)
         => await _businessService.ChangePasswordAsync(id, oldPassword, newPassword);
 
@@ -76,6 +90,7 @@ public class UserModule(
 
     #region 个人信息管理 - BusinessService
 
+    /// <inheritdoc/>
     public async Task<ServiceResult<bool>> ChangeProfileAsync(ChangeProfileDto dto)
         => await _businessService.ChangeProfileAsync(dto);
 
@@ -83,9 +98,11 @@ public class UserModule(
 
     #region 辅助功能 - QueryService支持
 
+    /// <inheritdoc/>
     public async Task<ServiceResult<List<object>>> GetRolesAsync()
         => await _queryService.GetRolesAsync();
 
+    /// <inheritdoc/>
     public async Task<ServiceResult<bool>> ValidateUsernameAsync(string username)
         => await _queryService.ValidateUsernameAsync(username);
 

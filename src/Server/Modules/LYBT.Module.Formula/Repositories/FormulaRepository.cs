@@ -25,6 +25,7 @@ namespace LYBT.Module.Formula.Repositories
 
         // 注意：基础CRUD方法由OptimizedBaseRepository提供，带有缓存优化
         // GetAllAsync, GetByIdAsync, AddAsync, UpdateAsync, DeleteAsync等都由基类实现
+        /// <inheritdoc/>
         public async Task<List<LYBT.Entities.Formula.Formula>> GetTemplatesAsync()
         {
             var cacheKey = $"{CacheKeyPrefix}templates";

@@ -13,11 +13,13 @@ namespace LYBT.Desktop.MedicalCase
     public class MedicalCaseModule : IModule
     {
 
+        /// <inheritdoc/>
         public void OnInitialized(IContainerProvider containerProvider)
         {
             // 模块初始化完成
         }
 
+        /// <inheritdoc/>
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
             // UltraThink模块自治：注册业务服务接口实现

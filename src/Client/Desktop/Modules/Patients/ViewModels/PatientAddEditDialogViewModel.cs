@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using LYBT.Desktop.Core.Constants;
 using LYBT.Desktop.Core.Interfaces;
 using LYBT.Desktop.Core.Interfaces.Services;
@@ -212,6 +212,7 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         #region DialogViewModel Implementation
 
+        /// <inheritdoc/>
         protected override async Task<bool> SaveAsync()
         {
             // UltraThink调试：检查SaveAsync是否被调用
@@ -284,6 +285,7 @@ namespace LYBT.Desktop.Patients.ViewModels
             }
         }
 
+        /// <inheritdoc/>
         protected override bool CanSave()
         {
             var canSave = !string.IsNullOrWhiteSpace(PatientName) &&
@@ -296,6 +298,7 @@ namespace LYBT.Desktop.Patients.ViewModels
             return canSave;
         }
 
+        /// <inheritdoc/>
         protected override void InitializeDialog()
         {
             base.InitializeDialog();

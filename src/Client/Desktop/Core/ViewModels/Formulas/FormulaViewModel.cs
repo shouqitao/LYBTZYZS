@@ -246,6 +246,7 @@ namespace LYBT.Desktop.Core.ViewModels.Formulas
 
         #region 比较和相等性
 
+        /// <inheritdoc/>
         public override bool Equals(object? obj)
         {
             if (obj is FormulaViewModel other)
@@ -256,11 +257,13 @@ namespace LYBT.Desktop.Core.ViewModels.Formulas
             return false;
         }
 
+        /// <inheritdoc/>
         public override int GetHashCode()
         {
             return Id.GetHashCode();
         }
 
+        /// <inheritdoc/>
         public override string ToString()
         {
             return $"FormulaViewModel: {DisplayName} (ID: {Id})";

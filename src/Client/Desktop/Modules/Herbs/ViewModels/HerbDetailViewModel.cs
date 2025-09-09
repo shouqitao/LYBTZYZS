@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using LYBT.Desktop.Core.Constants;
 using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.ViewModels;
@@ -111,6 +111,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
 
         #region INavigationAware 实现
 
+        /// <inheritdoc/>
         public void OnNavigatedTo(NavigationContext navigationContext)
         {
             if (navigationContext.Parameters.ContainsKey("HerbId"))
@@ -127,6 +128,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
             }
         }
 
+        /// <inheritdoc/>
         public bool IsNavigationTarget(NavigationContext navigationContext)
         {
             if (navigationContext.Parameters.ContainsKey("HerbId"))
@@ -138,6 +140,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
             return true;
         }
 
+        /// <inheritdoc/>
         public void OnNavigatedFrom(NavigationContext navigationContext)
         {
             if (!IsReadOnly && HasUnsavedChanges())
@@ -260,6 +263,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
 
         private bool CanCancelEdit() => Herb != null && !IsReadOnly && !this.IsLoading;
 
+        /// <inheritdoc/>
         protected override void RaiseCanExecuteChanged()
         {
             base.RaiseCanExecuteChanged();

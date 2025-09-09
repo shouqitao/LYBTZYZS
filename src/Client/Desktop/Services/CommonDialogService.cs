@@ -17,6 +17,7 @@ namespace LYBT.Desktop.Services
 
         #region 消息对话框（异步）
 
+        /// <inheritdoc/>
         public Task<bool> ShowConfirmationAsync(string message, string title = "确认")
         {
             return Task.Run(() =>
@@ -31,6 +32,7 @@ namespace LYBT.Desktop.Services
             });
         }
 
+        /// <inheritdoc/>
         public Task ShowInformationAsync(string message, string title = "信息")
         {
             return Task.Run(() =>
@@ -44,6 +46,7 @@ namespace LYBT.Desktop.Services
             });
         }
 
+        /// <inheritdoc/>
         public Task ShowWarningAsync(string message, string title = "警告")
         {
             return Task.Run(() =>
@@ -57,6 +60,7 @@ namespace LYBT.Desktop.Services
             });
         }
 
+        /// <inheritdoc/>
         public Task ShowErrorAsync(string message, string title = "错误")
         {
             return Task.Run(() =>
@@ -74,6 +78,7 @@ namespace LYBT.Desktop.Services
 
         #region 输入对话框
 
+        /// <inheritdoc/>
         public Task<string?> ShowInputAsync(string message, string title = "输入", string defaultValue = "")
         {
             return Task.Run(() =>
@@ -165,6 +170,7 @@ namespace LYBT.Desktop.Services
 
         #region 文件对话框
 
+        /// <inheritdoc/>
         public Task<string?> ShowOpenFileDialogAsync(string filter = "All Files (*.*)|*.*", string title = "打开文件")
         {
             return Task.Run(() =>
@@ -187,6 +193,7 @@ namespace LYBT.Desktop.Services
             });
         }
 
+        /// <inheritdoc/>
         public Task<string?> ShowSaveFileDialogAsync(string filter = "All Files (*.*)|*.*", string title = "保存文件", string defaultFileName = "")
         {
             return Task.Run(() =>
@@ -210,6 +217,7 @@ namespace LYBT.Desktop.Services
             });
         }
 
+        /// <inheritdoc/>
         public Task<string?> ShowFolderBrowserDialogAsync(string title = "选择文件夹")
         {
             return Task.Run(() =>
@@ -235,6 +243,7 @@ namespace LYBT.Desktop.Services
 
         #region 同步方法（为了兼容旧代码）
 
+        /// <inheritdoc/>
         public bool ShowConfirmation(string message, string title = "确认")
         {
             var result = MessageBox.Show(
@@ -246,6 +255,7 @@ namespace LYBT.Desktop.Services
             return result == MessageBoxResult.Yes;
         }
 
+        /// <inheritdoc/>
         public void ShowInformation(string message, string title = "信息")
         {
             MessageBox.Show(
@@ -256,6 +266,7 @@ namespace LYBT.Desktop.Services
                 MessageBoxImage.Information);
         }
 
+        /// <inheritdoc/>
         public void ShowWarning(string message, string title = "警告")
         {
             MessageBox.Show(
@@ -266,6 +277,7 @@ namespace LYBT.Desktop.Services
                 MessageBoxImage.Warning);
         }
 
+        /// <inheritdoc/>
         public void ShowError(string message, string title = "错误")
         {
             MessageBox.Show(

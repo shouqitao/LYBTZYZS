@@ -1,4 +1,4 @@
-﻿using System.Windows;
+using System.Windows;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Core.Services.Theming
@@ -12,8 +12,10 @@ namespace LYBT.Desktop.Core.Services.Theming
         private readonly ILogger<ThemeService> _logger;
         private string _currentTheme = "Default";
 
+        /// <inheritdoc/>
         public string CurrentTheme => _currentTheme;
 
+        /// <inheritdoc/>
         public string[] AvailableThemes => new[] { "Default", "Dark", "HighContrast" };
 
         public ThemeService(ILogger<ThemeService> logger)
@@ -21,6 +23,7 @@ namespace LYBT.Desktop.Core.Services.Theming
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
+        /// <inheritdoc/>
         public async Task SwitchThemeAsync(string themeName)
         {
             try
@@ -59,6 +62,7 @@ namespace LYBT.Desktop.Core.Services.Theming
             }
         }
 
+        /// <inheritdoc/>
         public async Task ApplyThemeSettingsAsync(int fontSize = 14, bool isDarkMode = false)
         {
             try

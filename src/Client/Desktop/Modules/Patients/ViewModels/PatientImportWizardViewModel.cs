@@ -436,7 +436,8 @@ namespace LYBT.Desktop.Patients.ViewModels
                 ImportWizardStep.DataPreview => ValidationResult?.IsValid == true,
                 ImportWizardStep.ImportExecution => false,
                 _ => false
-            } 
+            }
+
 && !IsImporting;
 
             NextButtonText = CurrentStep switch

@@ -1,4 +1,4 @@
-﻿using LYBT.Desktop.Formula.Interfaces;
+using LYBT.Desktop.Formula.Interfaces;
 using LYBT.Shared.Interfaces.Api;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
@@ -23,6 +23,7 @@ public class FormulaQueryService(
 
     #region 基础查询功能
 
+    /// <inheritdoc/>
     public Task<ServiceResult<PagedResult<FormulaDto>>> GetPagedAsync(FormulaQueryDto query)
     {
         // 简化实现：返回空结果
@@ -75,6 +76,7 @@ public class FormulaQueryService(
         return Task.FromResult(ServiceResult<List<FormulaDto>>.Success(new List<FormulaDto>()));
     }
 
+    /// <inheritdoc/>
     public Task<ServiceResult<List<FormulaDto>>> SearchAsync(string keyword)
     {
         // 简化实现：返回空列表
@@ -97,22 +99,26 @@ public class FormulaQueryService(
     }
 
     // IFormulaQueryService缺失的方法
+    /// <inheritdoc/>
     public Task<ServiceResult<PagedResult<FormulaDto>>> SearchFormulasAsync(PagedQueryBaseDto request)
     {
         var emptyResult = new PagedResult<FormulaDto>(new List<FormulaDto>(), 0, 1, 20);
         return Task.FromResult(ServiceResult<PagedResult<FormulaDto>>.Success(emptyResult));
     }
 
+    /// <inheritdoc/>
     public Task<ServiceResult<List<FormulaDto>>> GetTemplatesAsync()
     {
         return Task.FromResult(ServiceResult<List<FormulaDto>>.Success(new List<FormulaDto>()));
     }
 
+    /// <inheritdoc/>
     public Task<ServiceResult<List<FormulaDto>>> GetByTypeAsync(string formulaType)
     {
         return Task.FromResult(ServiceResult<List<FormulaDto>>.Success(new List<FormulaDto>()));
     }
 
+    /// <inheritdoc/>
     public Task<ServiceResult<List<string>>> GetCategoriesAsync()
     {
         var defaultCategories = new List<string>
@@ -122,16 +128,19 @@ public class FormulaQueryService(
         return Task.FromResult(ServiceResult<List<string>>.Success(defaultCategories));
     }
 
+    /// <inheritdoc/>
     public Task<ServiceResult<List<FormulaRecommendationDto>>> GetRecommendationsBySyndromeAsync(string syndrome)
     {
         return Task.FromResult(ServiceResult<List<FormulaRecommendationDto>>.Success(new List<FormulaRecommendationDto>()));
     }
 
+    /// <inheritdoc/>
     public Task<ServiceResult<List<FormulaRecommendationDto>>> GetRecommendationsAsync(string symptoms, string diagnosis, Guid doctorId)
     {
         return Task.FromResult(ServiceResult<List<FormulaRecommendationDto>>.Success(new List<FormulaRecommendationDto>()));
     }
 
+    /// <inheritdoc/>
     public Task<ServiceResult<FormulaStatisticsDto>> GetBasicStatisticsAsync()
     {
         var stats = new FormulaStatisticsDto

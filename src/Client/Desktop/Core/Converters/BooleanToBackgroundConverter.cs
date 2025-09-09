@@ -11,6 +11,7 @@ namespace LYBT.Desktop.Core.Converters
     public class BooleanToBackgroundConverter : IValueConverter
     {
 
+        /// <inheritdoc/>
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value is bool boolValue && boolValue)
@@ -35,6 +36,7 @@ namespace LYBT.Desktop.Core.Converters
             return Brushes.Transparent;
         }
 
+        /// <inheritdoc/>
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             throw new NotImplementedException();

@@ -338,11 +338,13 @@ namespace LYBT.Desktop.Core.ViewModels.Herbs
                    string.Equals(HerbData.Spec, other.HerbData.Spec, StringComparison.OrdinalIgnoreCase);
         }
 
+        /// <inheritdoc/>
         public override bool Equals(object? obj)
         {
             return obj is HerbViewModel other && IsSameHerb(other);
         }
 
+        /// <inheritdoc/>
         public override int GetHashCode()
         {
             return Id.GetHashCode();
@@ -352,6 +354,7 @@ namespace LYBT.Desktop.Core.ViewModels.Herbs
 
         #region String Representation
 
+        /// <inheritdoc/>
         public override string ToString()
         {
             return $"HerbViewModel: {Name} (ID: {Id})";

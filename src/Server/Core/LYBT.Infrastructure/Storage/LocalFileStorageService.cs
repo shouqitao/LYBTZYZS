@@ -1,4 +1,4 @@
-﻿using System.Security.Cryptography;
+using System.Security.Cryptography;
 using LYBT.Infrastructure.Configuration.Options;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;

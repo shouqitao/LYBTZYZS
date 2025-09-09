@@ -29,8 +29,11 @@ namespace LYBT.Desktop.Core.Models.Common
     /// </summary>
     public class DialogResult : IDialogResult
     {
+        /// <inheritdoc/>
         public ButtonResult Result { get; set; } = ButtonResult.None;
+        /// <inheritdoc/>
         public DialogParameters Parameters { get; set; } = new DialogParameters();
+        /// <inheritdoc/>
         public System.Exception? Exception { get; set; }
 
         public DialogResult()

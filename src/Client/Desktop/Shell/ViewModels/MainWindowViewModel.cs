@@ -1,4 +1,4 @@
-﻿using System.Windows;
+using System.Windows;
 using LYBT.Desktop.Core.Constants;
 using LYBT.Desktop.Core.Events;
 using LYBT.Desktop.Core.Interfaces.Services;

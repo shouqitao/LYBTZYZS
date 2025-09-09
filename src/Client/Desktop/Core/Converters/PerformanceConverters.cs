@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using System.Windows.Data;
 using System.Windows.Media;
 
@@ -12,6 +12,7 @@ namespace LYBT.Desktop.Core.Converters
     public class StockStatusToColorConverter : IMultiValueConverter
     {
 
+        /// <inheritdoc/>
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
             if (values?.Length >= 3 &&
@@ -42,6 +43,7 @@ namespace LYBT.Desktop.Core.Converters
             return Color.FromRgb(158, 158, 158); // #9E9E9E - 灰色
         }
 
+        /// <inheritdoc/>
         public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
         {
             throw new NotImplementedException("StockStatusToColorConverter 不支持反向转换");
@@ -55,6 +57,7 @@ namespace LYBT.Desktop.Core.Converters
     public class PriceToColorConverter : IValueConverter
     {
 
+        /// <inheritdoc/>
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value is decimal price)
@@ -82,6 +85,7 @@ namespace LYBT.Desktop.Core.Converters
             return Color.FromRgb(33, 37, 41); // #212529 - 深灰色
         }
 
+        /// <inheritdoc/>
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             throw new NotImplementedException("PriceToColorConverter 不支持反向转换");
@@ -95,6 +99,7 @@ namespace LYBT.Desktop.Core.Converters
     public class BooleanToColorConverter : IValueConverter
     {
 
+        /// <inheritdoc/>
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value is bool boolValue && parameter is string colorPair)
@@ -124,6 +129,7 @@ namespace LYBT.Desktop.Core.Converters
             return Colors.Gray;
         }
 
+        /// <inheritdoc/>
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             throw new NotImplementedException("BooleanToColorConverter 不支持反向转换");
@@ -137,6 +143,7 @@ namespace LYBT.Desktop.Core.Converters
     public class BooleanToStringConverter : IValueConverter
     {
 
+        /// <inheritdoc/>
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value is bool boolValue && parameter is string stringPair)
@@ -151,6 +158,7 @@ namespace LYBT.Desktop.Core.Converters
             return value?.ToString() ?? string.Empty;
         }
 
+        /// <inheritdoc/>
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value is string stringValue && parameter is string stringPair)

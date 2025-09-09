@@ -194,6 +194,7 @@ public class FormulaBusinessService(
 
     #region 简化的不支持方法
 
+    /// <inheritdoc/>
     public Task<ServiceResult<bool>> CheckNameAvailabilityAsync(string name, Guid? excludeFormulaId = null)
     {
         return Task.FromResult(ServiceResult<bool>.Success(true));
@@ -264,16 +265,19 @@ public class FormulaBusinessService(
         }
     }
 
+    /// <inheritdoc/>
     public ServiceResult ValidateFormulaBusinessRules(FormulaDto formula)
     {
         return ServiceResult.Success("验证通过");
     }
 
+    /// <inheritdoc/>
     public Task<ServiceResult<bool>> CheckFormulaOperationPermissionAsync(Guid formulaId, Guid userId, string operation)
     {
         return Task.FromResult(ServiceResult<bool>.Success(true));
     }
 
+    /// <inheritdoc/>
     public async Task<ServiceResult<FormulaDto>> ProcessFormulaCreationAsync(FormulaCreateDto createDto, Guid operatorId)
     {
         ArgumentNullException.ThrowIfNull(createDto, nameof(createDto));
@@ -301,6 +305,7 @@ public class FormulaBusinessService(
         }
     }
 
+    /// <inheritdoc/>
     public async Task<ServiceResult<FormulaDto>> ProcessFormulaUpdateAsync(Guid id, FormulaUpdateDto updateDto, Guid operatorId)
     {
         ArgumentNullException.ThrowIfNull(updateDto, nameof(updateDto));

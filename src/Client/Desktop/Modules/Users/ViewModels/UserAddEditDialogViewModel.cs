@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using LYBT.Desktop.Core.Constants;
 using LYBT.Desktop.Core.Interfaces;
 using LYBT.Desktop.Core.Interfaces.Services;
@@ -161,6 +161,7 @@ namespace LYBT.Desktop.Users.ViewModels
 
         #region DialogViewModel Implementation
 
+        /// <inheritdoc/>
         protected override async Task<bool> SaveAsync()
         {
             try
@@ -226,6 +227,7 @@ namespace LYBT.Desktop.Users.ViewModels
             }
         }
 
+        /// <inheritdoc/>
         protected override bool CanSave()
         {
             return !string.IsNullOrWhiteSpace(UserName) &&
@@ -233,6 +235,7 @@ namespace LYBT.Desktop.Users.ViewModels
                    SelectedRole != null;
         }
 
+        /// <inheritdoc/>
         protected override void InitializeDialog()
         {
             base.InitializeDialog();

@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 
 namespace LYBT.Desktop.Core.Configuration
@@ -13,12 +13,18 @@ namespace LYBT.Desktop.Core.Configuration
         private readonly IConfiguration _configuration;
         private readonly Dictionary<string, object> _runtimeValues = new();
 
+        /// <inheritdoc/>
         public string ApiBaseUrl => GetValue("ApiBaseUrl", "https://localhost:7001");
+        /// <inheritdoc/>
         public int ConnectionTimeout => GetValue("ConnectionTimeout", 30);
+        /// <inheritdoc/>
         public bool IsDebugMode => GetValue("IsDebugMode", false);
 
+        /// <inheritdoc/>
         public CacheConfiguration Cache { get; private set; } = null!;
+        /// <inheritdoc/>
         public LoggingConfiguration Logging { get; private set; } = null!;
+        /// <inheritdoc/>
         public PerformanceConfiguration Performance { get; private set; } = null!;
 
         private AppConfiguration(IConfiguration configuration)
@@ -64,6 +70,7 @@ namespace LYBT.Desktop.Core.Configuration
 #endif
         }
 
+        /// <inheritdoc/>
         public T GetValue<T>(string key, T? defaultValue = default)
         {
             // 优先从运行时值获取
@@ -110,11 +117,13 @@ namespace LYBT.Desktop.Core.Configuration
             return defaultValue!;
         }
 
+        /// <inheritdoc/>
         public void SetValue<T>(string key, T value)
         {
             _runtimeValues[key] = value ?? (object)string.Empty;
         }
 
+        /// <inheritdoc/>
         public bool HasKey(string key)
         {
             return _runtimeValues.ContainsKey(key) || _configuration[key] != null;

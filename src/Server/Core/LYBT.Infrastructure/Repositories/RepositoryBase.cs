@@ -31,12 +31,14 @@ namespace LYBT.Infrastructure.Repositories
 
         #region Query Operations (优化的查询操作)
 
+        /// <inheritdoc/>
         public virtual async Task<TEntity?> GetByIdAsync(TKey id)
         {
             Logger.LogDebug("Getting entity {EntityType} with ID: {Id}", typeof(TEntity).Name, id);
             return await DbSet.FindAsync(id);
         }
 
+        /// <inheritdoc/>
         public virtual async Task<TEntity?> GetByIdAsNoTrackingAsync(TKey id)
         {
             Logger.LogDebug("Getting entity {EntityType} as no tracking with ID: {Id}", typeof(TEntity).Name, id);
@@ -51,24 +53,28 @@ namespace LYBT.Infrastructure.Repositories
                 .FirstOrDefaultAsync(e => EF.Property<TKey>(e, "Id")!.Equals(id));
         }
 
+        /// <inheritdoc/>
         public virtual async Task<List<TEntity>> GetAllAsync()
         {
             Logger.LogDebug("Getting all entities of type {EntityType}", typeof(TEntity).Name);
             return await DbSet.AsNoTracking().ToListAsync();
         }
 
+        /// <inheritdoc/>
         public virtual async Task<List<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate)
         {
             Logger.LogDebug("Finding entities of type {EntityType} with predicate", typeof(TEntity).Name);
             return await DbSet.AsNoTracking().Where(predicate).ToListAsync();
         }
 
+        /// <inheritdoc/>
         public virtual async Task<TEntity?> FirstOrDefaultAsync(Expression<Func<TEntity, bool>> predicate)
         {
             Logger.LogDebug("Getting first entity of type {EntityType} with predicate", typeof(TEntity).Name);
             return await DbSet.AsNoTracking().FirstOrDefaultAsync(predicate);
         }
 
+        /// <inheritdoc/>
         public virtual async Task<PagedResult<TEntity>> GetPagedAsync<TDto>(
             IPagedQuery<TDto> query,
             Expression<Func<TEntity, bool>>? predicate = null,
@@ -123,6 +129,7 @@ namespace LYBT.Infrastructure.Repositories
             };
         }
 
+        /// <inheritdoc/>
         public virtual async Task<int> CountAsync(Expression<Func<TEntity, bool>>? predicate = null)
         {
             Logger.LogDebug("Counting entities of type {EntityType}", typeof(TEntity).Name);
@@ -135,17 +142,20 @@ namespace LYBT.Infrastructure.Repositories
             return await DbSet.CountAsync(predicate);
         }
 
+        /// <inheritdoc/>
         public virtual async Task<bool> ExistsAsync(Expression<Func<TEntity, bool>> predicate)
         {
             Logger.LogDebug("Checking existence of entity {EntityType}", typeof(TEntity).Name);
             return await DbSet.AsNoTracking().AnyAsync(predicate);
         }
 
+        /// <inheritdoc/>
         public virtual IQueryable<TEntity> Query()
         {
             return DbSet.AsQueryable();
         }
 
+        /// <inheritdoc/>
         public virtual IQueryable<TEntity> QueryAsNoTracking()
         {
             return DbSet.AsNoTracking();
@@ -155,6 +165,7 @@ namespace LYBT.Infrastructure.Repositories
 
         #region Command Operations (写操作)
 
+        /// <inheritdoc/>
         public virtual async Task<TEntity> AddAsync(TEntity entity)
         {
             Logger.LogDebug("Adding entity of type {EntityType}", typeof(TEntity).Name);
@@ -163,6 +174,7 @@ namespace LYBT.Infrastructure.Repositories
             return entry.Entity;
         }
 
+        /// <inheritdoc/>
         public virtual async Task<List<TEntity>> AddRangeAsync(IEnumerable<TEntity> entities)
         {
             Logger.LogDebug("Adding multiple entities of type {EntityType}", typeof(TEntity).Name);
@@ -172,6 +184,7 @@ namespace LYBT.Infrastructure.Repositories
             return entityList;
         }
 
+        /// <inheritdoc/>
         public virtual async Task<TEntity> UpdateAsync(TEntity entity)
         {
             Logger.LogDebug("Updating entity of type {EntityType}", typeof(TEntity).Name);
@@ -180,6 +193,7 @@ namespace LYBT.Infrastructure.Repositories
             return await Task.FromResult(entity);
         }
 
+        /// <inheritdoc/>
         public virtual async Task UpdateRangeAsync(IEnumerable<TEntity> entities)
         {
             Logger.LogDebug("Updating multiple entities of type {EntityType}", typeof(TEntity).Name);
@@ -188,6 +202,7 @@ namespace LYBT.Infrastructure.Repositories
             await Task.CompletedTask;
         }
 
+        /// <inheritdoc/>
         public virtual async Task<bool> DeleteAsync(TKey id)
         {
             Logger.LogDebug("Deleting entity {EntityType} with ID: {Id}", typeof(TEntity).Name, id);
@@ -202,6 +217,7 @@ namespace LYBT.Infrastructure.Repositories
             return true;
         }
 
+        /// <inheritdoc/>
         public virtual async Task DeleteAsync(TEntity entity)
         {
             Logger.LogDebug("Deleting entity of type {EntityType}", typeof(TEntity).Name);
@@ -210,6 +226,7 @@ namespace LYBT.Infrastructure.Repositories
             await Task.CompletedTask;
         }
 
+        /// <inheritdoc/>
         public virtual async Task DeleteRangeAsync(IEnumerable<TEntity> entities)
         {
             Logger.LogDebug("Deleting multiple entities of type {EntityType}", typeof(TEntity).Name);
@@ -218,6 +235,7 @@ namespace LYBT.Infrastructure.Repositories
             await Task.CompletedTask;
         }
 
+        /// <inheritdoc/>
         public virtual async Task<int> DeleteWhereAsync(Expression<Func<TEntity, bool>> predicate)
         {
             Logger.LogDebug("Deleting entities of type {EntityType} with predicate", typeof(TEntity).Name);
@@ -231,18 +249,21 @@ namespace LYBT.Infrastructure.Repositories
 
         #region Unit of Work Support
 
+        /// <inheritdoc/>
         public virtual async Task<int> SaveChangesAsync()
         {
             Logger.LogDebug("Saving changes for {EntityType}", typeof(TEntity).Name);
             return await Context.SaveChangesAsync();
         }
 
+        /// <inheritdoc/>
         public virtual async Task BeginTransactionAsync()
         {
             Logger.LogDebug("Beginning transaction for {EntityType}", typeof(TEntity).Name);
             _transaction = await Context.Database.BeginTransactionAsync();
         }
 
+        /// <inheritdoc/>
         public virtual async Task CommitTransactionAsync()
         {
             Logger.LogDebug("Committing transaction for {EntityType}", typeof(TEntity).Name);
@@ -255,6 +276,7 @@ namespace LYBT.Infrastructure.Repositories
             }
         }
 
+        /// <inheritdoc/>
         public virtual async Task RollbackTransactionAsync()
         {
             Logger.LogDebug("Rolling back transaction for {EntityType}", typeof(TEntity).Name);

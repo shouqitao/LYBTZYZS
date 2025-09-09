@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using AutoMapper;
 using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Shared.Interfaces.Services;

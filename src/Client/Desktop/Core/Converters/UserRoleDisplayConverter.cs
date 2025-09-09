@@ -11,6 +11,7 @@ namespace LYBT.Desktop.Core.Converters
     public class UserRoleDisplayConverter : IValueConverter
     {
 
+        /// <inheritdoc/>
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value is not string role || string.IsNullOrEmpty(role))
@@ -31,6 +32,7 @@ namespace LYBT.Desktop.Core.Converters
             };
         }
 
+        /// <inheritdoc/>
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value is not string displayName || string.IsNullOrEmpty(displayName))

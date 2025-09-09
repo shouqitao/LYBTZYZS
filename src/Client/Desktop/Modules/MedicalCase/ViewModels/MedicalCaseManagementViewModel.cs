@@ -1,4 +1,4 @@
-﻿using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.Mvvm; // ✅ 添加AsyncRelayCommand支持
 using LYBT.Desktop.Core.ViewModels.Base;
 using LYBT.Shared.Interfaces.Services;
@@ -129,6 +129,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         #region Methods
 
+        /// <inheritdoc/>
         protected override void InitializeCommands()
         {
             base.InitializeCommands();
@@ -163,6 +164,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             _ = Task.Run(async () => await RefreshDataAsync());
         }
 
+        /// <inheritdoc/>
         protected override async Task<ServiceResult<PagedResult<MedicalCaseDto>>> LoadDataAsync(PagedQueryBaseDto request)
         {
             try

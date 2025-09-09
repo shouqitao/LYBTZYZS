@@ -1,4 +1,4 @@
-﻿using System.Windows.Input;
+using System.Windows.Input;
 using LYBT.Shared.Interfaces.Services;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;

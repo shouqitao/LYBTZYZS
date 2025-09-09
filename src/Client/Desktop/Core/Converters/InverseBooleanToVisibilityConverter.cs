@@ -12,6 +12,7 @@ namespace LYBT.Desktop.Core.Converters
     public class InverseBooleanToVisibilityConverter : IValueConverter
     {
 
+        /// <inheritdoc/>
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value is bool boolValue)
@@ -23,6 +24,7 @@ namespace LYBT.Desktop.Core.Converters
             return Visibility.Visible;
         }
 
+        /// <inheritdoc/>
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value is Visibility visibility)

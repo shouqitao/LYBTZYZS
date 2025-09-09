@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
 using Prism.Mvvm;
@@ -559,16 +559,19 @@ namespace LYBT.Desktop.Core.ViewModels.Prescriptions
 
         #region Object Overrides
 
+        /// <inheritdoc/>
         public override string ToString()
         {
             return $"PrescriptionViewModel: {DisplayName} ({StatusDisplay})";
         }
 
+        /// <inheritdoc/>
         public override bool Equals(object? obj)
         {
             return obj is PrescriptionViewModel other && Id == other.Id;
         }
 
+        /// <inheritdoc/>
         public override int GetHashCode()
         {
             return Id.GetHashCode();

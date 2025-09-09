@@ -12,6 +12,7 @@ namespace LYBT.Desktop.Core.Converters
     public class BooleanToShareIconConverter : IValueConverter
     {
 
+        /// <inheritdoc/>
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value is bool boolValue)
@@ -24,6 +25,7 @@ namespace LYBT.Desktop.Core.Converters
             return "\uE72E"; // 默认共享图标
         }
 
+        /// <inheritdoc/>
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             throw new NotImplementedException("BooleanToShareIconConverter does not support ConvertBack");

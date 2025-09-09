@@ -16,11 +16,13 @@ namespace LYBT.Desktop.Users
     public class UsersModule : IModule
     {
 
+        /// <inheritdoc/>
         public void OnInitialized(IContainerProvider containerProvider)
         {
             // 模块初始化完成后的操作
         }
 
+        /// <inheritdoc/>
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
             // UltraThink修复：模块自己注册服务接口实现

@@ -48,6 +48,7 @@ namespace LYBT.Infrastructure.Security
             _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
         }
 
+        /// <inheritdoc/>
         public async Task LogDataAccessAsync(DataAccessAuditEntry entry)
         {
             var context = GetAuditContext();
@@ -77,6 +78,7 @@ namespace LYBT.Infrastructure.Security
             await LogAuditEntryAsync(auditLog);
         }
 
+        /// <inheritdoc/>
         public async Task LogAuthenticationAsync(AuthenticationAuditEntry entry)
         {
             var context = GetAuditContext();
@@ -103,6 +105,7 @@ namespace LYBT.Infrastructure.Security
             await LogAuditEntryAsync(auditLog);
         }
 
+        /// <inheritdoc/>
         public async Task LogAuthorizationAsync(AuthorizationAuditEntry entry)
         {
             var context = GetAuditContext();
@@ -130,6 +133,7 @@ namespace LYBT.Infrastructure.Security
             await LogAuditEntryAsync(auditLog);
         }
 
+        /// <inheritdoc/>
         public async Task LogSensitiveOperationAsync(SensitiveOperationAuditEntry entry)
         {
             var context = GetAuditContext();

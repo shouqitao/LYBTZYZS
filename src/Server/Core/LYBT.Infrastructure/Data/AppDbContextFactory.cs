@@ -12,6 +12,7 @@ namespace LYBT.Infrastructure.Data
     public class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
     {
 
+        /// <inheritdoc/>
         public AppDbContext CreateDbContext(string[] args)
         {
             var configuration = new ConfigurationBuilder()

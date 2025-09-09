@@ -53,6 +53,7 @@ namespace LYBT.Desktop.Core.Views.Dialogs
             this.Close();
         }
 
+        /// <inheritdoc/>
         protected override void OnSourceInitialized(EventArgs e)
         {
             base.OnSourceInitialized(e);

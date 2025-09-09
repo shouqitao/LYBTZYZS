@@ -165,6 +165,7 @@ namespace LYBT.Desktop.Formula.ViewModels
             }
         }
 
+        /// <inheritdoc/>
         protected override bool CanSave()
         {
             return !string.IsNullOrWhiteSpace(FormulaName) && HerbItems.Count > 0;

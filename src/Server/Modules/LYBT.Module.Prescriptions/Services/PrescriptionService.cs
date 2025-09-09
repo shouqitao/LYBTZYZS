@@ -18,18 +18,23 @@ namespace LYBT.Module.Prescriptions.Services
 
         #region Query Operations
 
+        /// <inheritdoc/>
         public Task<ServiceResult<PrescriptionDto>> GetByIdAsync(Guid id)
             => _queryService.GetByIdAsync(id);
 
+        /// <inheritdoc/>
         public Task<ServiceResult<PagedResult<PrescriptionDto>>> GetPagedAsync(PrescriptionQueryDto query)
             => _queryService.GetPagedAsync(query);
 
+        /// <inheritdoc/>
         public Task<ServiceResult<List<PrescriptionDto>>> GetByPatientIdAsync(Guid patientId)
             => _queryService.GetByPatientIdAsync(patientId);
 
+        /// <inheritdoc/>
         public Task<ServiceResult<List<PrescriptionDto>>> GetByMedicalCaseIdAsync(Guid medicalCaseId)
             => _queryService.GetByMedicalCaseIdAsync(medicalCaseId);
 
+        /// <inheritdoc/>
         public Task<ServiceResult<List<PrescriptionDto>>> SearchAsync(string keyword)
             => _queryService.SearchAsync(keyword);
 
@@ -49,15 +54,19 @@ namespace LYBT.Module.Prescriptions.Services
 
         #region Business Operations
 
+        /// <inheritdoc/>
         public Task<ServiceResult<PrescriptionDto>> CreateAsync(PrescriptionCreateDto dto)
             => Task.FromResult(ServiceResult<PrescriptionDto>.Failure("CreateAsync方法需要在BusinessService中实现"));
 
+        /// <inheritdoc/>
         public Task<ServiceResult<PrescriptionDto>> UpdateAsync(Guid id, PrescriptionEditDto dto)
             => Task.FromResult(ServiceResult<PrescriptionDto>.Failure("UpdateAsync方法需要在BusinessService中实现"));
 
+        /// <inheritdoc/>
         public Task<ServiceResult<bool>> DeleteAsync(Guid id)
             => Task.FromResult(ServiceResult<bool>.Failure("DeleteAsync方法需要在BusinessService中实现"));
 
+        /// <inheritdoc/>
         public Task<ServiceResult<PrescriptionValidationResult>> ValidateAsync(PrescriptionCreateDto dto)
         {
             var result = new PrescriptionValidationResult
@@ -80,6 +89,7 @@ namespace LYBT.Module.Prescriptions.Services
             return Task.FromResult(ServiceResult<PrescriptionValidationResult>.Success(result));
         }
 
+        /// <inheritdoc/>
         public async Task<ServiceResult<PrescriptionDto>> CopyAsync(Guid id, string newName)
         {
             var operatorId = Guid.Empty;

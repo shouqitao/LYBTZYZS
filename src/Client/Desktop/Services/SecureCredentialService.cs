@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
@@ -32,6 +32,7 @@ namespace LYBT.Desktop.Services
             _entropy = GenerateOrLoadEntropy(appDirectory);
         }
 
+        /// <inheritdoc/>
         public SavedCredentials? LoadCredentials()
         {
             try
@@ -58,6 +59,7 @@ namespace LYBT.Desktop.Services
             }
         }
 
+        /// <inheritdoc/>
         public void SaveCredentials(string username, string password, bool rememberMe)
         {
             try
@@ -133,6 +135,7 @@ namespace LYBT.Desktop.Services
             return entropy;
         }
 
+        /// <inheritdoc/>
         public void DeleteCredentials()
         {
             try

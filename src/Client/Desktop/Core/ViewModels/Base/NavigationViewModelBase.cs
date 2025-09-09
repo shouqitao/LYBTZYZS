@@ -1,4 +1,4 @@
-﻿using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Desktop.Core.Interfaces.Services;
 using Prism.Events;
 
 namespace LYBT.Desktop.Core.ViewModels.Base

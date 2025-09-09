@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using System.Windows.Input;
 using LYBT.Desktop.Core.Exceptions;
 using LYBT.Desktop.Core.Models.Common;

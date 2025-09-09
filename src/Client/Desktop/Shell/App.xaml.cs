@@ -1,4 +1,4 @@
-﻿using System.Windows;
+using System.Windows;
 using LYBT.Desktop.Auth;
 using LYBT.Desktop.Consultation;
 using LYBT.Desktop.Formula;

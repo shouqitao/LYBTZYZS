@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
@@ -31,8 +31,10 @@ namespace LYBT.Desktop.Services
         private readonly Dictionary<Type, ErrorSeverity> _severityMapping;
         private readonly Dictionary<Type, string[]> _actionMapping;
 
+        /// <inheritdoc/>
         public event EventHandler<SharedCommon.HandledError>? ErrorOccurred;
 
+        /// <inheritdoc/>
         public event EventHandler<SharedCommon.HandledError>? CriticalErrorOccurred;
 
         /// <summary>
@@ -50,11 +52,13 @@ namespace LYBT.Desktop.Services
             _actionMapping = InitializeActionMapping();
         }
 
+        /// <inheritdoc/>
         public SharedCommon.HandledError HandleException(Exception exception, ErrorContext? context = null)
         {
             return HandleExceptionAsync(exception, context).GetAwaiter().GetResult();
         }
 
+        /// <inheritdoc/>
         public async Task<SharedCommon.HandledError> HandleExceptionAsync(Exception exception, ErrorContext? context = null)
         {
             if (exception == null)
@@ -79,6 +83,7 @@ namespace LYBT.Desktop.Services
             return handledError;
         }
 
+        /// <inheritdoc/>
         public async Task ShowErrorAsync(SharedCommon.HandledError handledError, bool showDialog = true)
         {
             if (handledError == null)
@@ -138,6 +143,7 @@ namespace LYBT.Desktop.Services
             }
         }
 
+        /// <inheritdoc/>
         public async Task LogErrorAsync(SharedCommon.HandledError handledError)
         {
             try
@@ -161,6 +167,7 @@ namespace LYBT.Desktop.Services
             }
         }
 
+        /// <inheritdoc/>
         public string GetUserFriendlyMessage(Exception exception, string? defaultMessage = null)
         {
             if (exception == null)
@@ -179,6 +186,7 @@ namespace LYBT.Desktop.Services
             };
         }
 
+        /// <inheritdoc/>
         public bool CanRetry(Exception exception)
         {
             return exception switch
@@ -195,6 +203,7 @@ namespace LYBT.Desktop.Services
             };
         }
 
+        /// <inheritdoc/>
         public ErrorCategory GetErrorCategory(Exception exception)
         {
             if (exception == null)
@@ -222,6 +231,7 @@ namespace LYBT.Desktop.Services
             return category;
         }
 
+        /// <inheritdoc/>
         public ErrorSeverity GetErrorSeverity(Exception exception)
         {
             if (exception == null)
@@ -255,6 +265,7 @@ namespace LYBT.Desktop.Services
             };
         }
 
+        /// <inheritdoc/>
         public string[] GetSuggestedActions(Exception exception)
         {
             if (exception == null)
@@ -284,6 +295,7 @@ namespace LYBT.Desktop.Services
             };
         }
 
+        /// <inheritdoc/>
         public async Task<bool> ExecuteSafelyAsync(Func<Task> operation, ErrorContext? context = null, bool showErrorDialog = true)
         {
             try
@@ -303,6 +315,7 @@ namespace LYBT.Desktop.Services
             }
         }
 
+        /// <inheritdoc/>
         public async Task<T?> ExecuteSafelyAsync<T>(Func<Task<T>> operation, ErrorContext? context = null, bool showErrorDialog = true)
         {
             try
@@ -321,6 +334,7 @@ namespace LYBT.Desktop.Services
             }
         }
 
+        /// <inheritdoc/>
         public void RegisterGlobalExceptionHandlers()
         {
             // 注册WPF全局异常处理器

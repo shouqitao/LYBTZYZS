@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
 
@@ -187,11 +187,13 @@ namespace LYBT.Desktop.Core.ObjectPool
             _maxCapacity = maxCapacity;
         }
 
+        /// <inheritdoc/>
         public List<T> Create()
         {
             return new List<T>(_initialCapacity);
         }
 
+        /// <inheritdoc/>
         public bool Return(List<T> obj)
         {
             if (obj.Capacity > _maxCapacity)
@@ -219,11 +221,13 @@ namespace LYBT.Desktop.Core.ObjectPool
             _maxCapacity = maxCapacity;
         }
 
+        /// <inheritdoc/>
         public System.Text.StringBuilder Create()
         {
             return new System.Text.StringBuilder(_initialCapacity);
         }
 
+        /// <inheritdoc/>
         public bool Return(System.Text.StringBuilder obj)
         {
             if (obj.Capacity > _maxCapacity)
@@ -358,6 +362,7 @@ namespace LYBT.Desktop.Core.ObjectPool
 
         public T Object => _object ?? throw new ObjectDisposedException(nameof(PooledObject<T>));
 
+        /// <inheritdoc/>
         public void Dispose()
         {
             if (_object != null)

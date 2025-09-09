@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using LYBT.Shared.Models.Contracts.Consultation;
 
 namespace LYBT.Module.Consultation.Mapping
@@ -23,7 +23,7 @@ namespace LYBT.Module.Consultation.Mapping
                 .ForMember(dest => dest.User, opt => opt.Ignore()) // 导航属性忽略
                 .ForMember(dest => dest.MedicalCase, opt => opt.Ignore()) // 导航属性忽略
 
-                                                                          // 忽略DTO中的显示字段
+                // 忽略DTO中的显示字段
                 .ForSourceMember(src => src.PatientName, opt => opt.DoNotValidate())
                 .ForSourceMember(src => src.DoctorName, opt => opt.DoNotValidate())
                 .ForSourceMember(src => src.ConsultationTime, opt => opt.DoNotValidate())

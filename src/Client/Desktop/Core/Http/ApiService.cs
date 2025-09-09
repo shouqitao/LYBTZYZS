@@ -361,28 +361,35 @@ namespace LYBT.Desktop.Core.Http
         }
 
         // IApiService implementation
+        /// <inheritdoc/>
         public Task<TResponse?> GetAsync<TResponse>(string endpoint, object? parameters = null, CancellationToken cancellationToken = default)
             where TResponse : class
             => _apiService.GetAsync<TResponse>(endpoint, parameters, cancellationToken);
 
+        /// <inheritdoc/>
         public Task<TResponse?> PostAsync<TRequest, TResponse>(string endpoint, TRequest request, CancellationToken cancellationToken = default)
             where TResponse : class
             => _apiService.PostAsync<TRequest, TResponse>(endpoint, request, cancellationToken);
 
+        /// <inheritdoc/>
         public Task<TResponse?> PutAsync<TRequest, TResponse>(string endpoint, TRequest request, CancellationToken cancellationToken = default)
             where TResponse : class
             => _apiService.PutAsync<TRequest, TResponse>(endpoint, request, cancellationToken);
 
+        /// <inheritdoc/>
         public Task<TResponse?> PatchAsync<TRequest, TResponse>(string endpoint, TRequest request, CancellationToken cancellationToken = default)
             where TResponse : class
             => _apiService.PatchAsync<TRequest, TResponse>(endpoint, request, cancellationToken);
 
+        /// <inheritdoc/>
         public Task<bool> DeleteAsync(string endpoint, CancellationToken cancellationToken = default)
             => _apiService.DeleteAsync(endpoint, cancellationToken);
 
+        /// <inheritdoc/>
         public Task<Stream> DownloadAsync(string endpoint, CancellationToken cancellationToken = default)
             => _apiService.DownloadAsync(endpoint, cancellationToken);
 
+        /// <inheritdoc/>
         public Task<TResponse?> UploadAsync<TResponse>(string endpoint, Stream file, string fileName, Dictionary<string, string>? metadata = null, CancellationToken cancellationToken = default)
             where TResponse : class
             => _apiService.UploadAsync<TResponse>(endpoint, file, fileName, metadata, cancellationToken);

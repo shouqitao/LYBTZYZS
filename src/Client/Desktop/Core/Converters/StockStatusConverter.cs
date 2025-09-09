@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using System.Windows.Data;
 
 namespace LYBT.Desktop.Core.Converters
@@ -11,6 +11,7 @@ namespace LYBT.Desktop.Core.Converters
     public class StockStatusConverter : IValueConverter
     {
 
+        /// <inheritdoc/>
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value is int stock)
@@ -32,6 +33,7 @@ namespace LYBT.Desktop.Core.Converters
             return "Normal";
         }
 
+        /// <inheritdoc/>
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             throw new NotImplementedException();

@@ -1,4 +1,4 @@
-﻿using LYBT.Entities.Users;
+using LYBT.Entities.Users;
 using LYBT.Shared.Utilities.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;

@@ -20,11 +20,13 @@ namespace LYBT.Desktop.Formula
     public class FormulaModule : IModule
     {
 
+        /// <inheritdoc/>
         public void OnInitialized(IContainerProvider containerProvider)
         {
             // 模块初始化逻辑
         }
 
+        /// <inheritdoc/>
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
             // UltraThink双层架构服务注册

@@ -29,6 +29,7 @@ namespace LYBT.Shared.Models.Contracts.Formula
         [DisplayName("是否共享")]
         public bool IsShared { get; set; } = false;
 
+        /// <inheritdoc/>
         [DisplayName("备注")]
         [StringLength(500, ErrorMessage = "备注长度不能超过500个字符")]
         public string? Remark { get; set; }
@@ -250,6 +251,7 @@ namespace LYBT.Shared.Models.Contracts.Formula
         [DisplayName("制备方法")]
         public string? Preparation { get; set; }
 
+        /// <inheritdoc/>
         [StringLength(500, ErrorMessage = "备注不能超过500个字符")]
         [DisplayName("备注")]
         public string? Remark { get; set; }
@@ -294,6 +296,7 @@ namespace LYBT.Shared.Models.Contracts.Formula
     public class FormulaUpdateDto : FormulaInputBaseDto, IIdentifiable<Guid>
     {
 
+        /// <inheritdoc/>
         [Required(ErrorMessage = "验方ID不能为空")]
         [DisplayName("验方ID")]
         public Guid Id { get; set; }

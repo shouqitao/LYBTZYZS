@@ -1,5 +1,6 @@
-﻿using LYBT.Entities.Auth;
+using LYBT.Entities.Auth;
 using LYBT.Entities.Common;
+using LYBT.Entities.Compatibility;
 using LYBT.Entities.Consultation;
 using LYBT.Entities.Formula;
 using LYBT.Entities.Herbs;
@@ -58,6 +59,9 @@ namespace LYBT.Infrastructure.Data
         // 验方管理
         public DbSet<Formula> Formulas { get; set; }
 
+        // 配伍管理
+        public DbSet<HerbCompatibilityNote> HerbCompatibilityNotes { get; set; }
+
         // ==================== 事务协调器相关实体 ====================
 
         // 事务日志
@@ -91,6 +95,7 @@ namespace LYBT.Infrastructure.Data
             ConfigurePrescriptions(modelBuilder);
             ConfigureHerbs(modelBuilder);
             ConfigureFormulas(modelBuilder);
+            ConfigureCompatibilityNotes(modelBuilder);
             ConfigureTransactions(modelBuilder);
 
             // ConfigurePharmacies(modelBuilder); // 模块已删除
@@ -287,6 +292,31 @@ namespace LYBT.Infrastructure.Data
 
             // 简化配置，忽略子实体以避免复杂的配置问题
             entity.Ignore(f => f.Herbs);
+        }
+
+        private static void ConfigureCompatibilityNotes(ModelBuilder modelBuilder)
+        {
+            var entity = modelBuilder.Entity<HerbCompatibilityNote>();
+            entity.ToTable("HerbCompatibilityNotes");
+            entity.HasKey(h => h.Id);
+            entity.Property(h => h.HerbCombination).HasMaxLength(200).IsRequired();
+            entity.Property(h => h.CompatibilityNote).HasMaxLength(1000);
+            entity.Property(h => h.ReferenceSource).HasMaxLength(200);
+            entity.Property(h => h.DoctorRecommendation).HasMaxLength(500);
+
+            // 配置枚举字段
+            entity.Property(h => h.CompatibilityType).HasConversion<int>();
+            entity.Property(h => h.SeverityLevel).HasConversion<int>();
+
+            // 索引配置
+            entity.HasIndex(h => new { h.PrescriptionId, h.IsDeleted })
+                  .HasDatabaseName("IX_HerbCompatibilityNotes_PrescriptionId_IsDeleted");
+
+            // 配置与处方的外键关系
+            entity.HasOne<Prescription>()
+                  .WithMany()
+                  .HasForeignKey(h => h.PrescriptionId)
+                  .OnDelete(DeleteBehavior.Cascade);
         }
 
         /// <summary>

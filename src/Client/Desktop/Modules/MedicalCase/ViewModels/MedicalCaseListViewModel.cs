@@ -111,6 +111,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         #region Command Initialization
 
+        /// <inheritdoc/>
         protected override void InitializeCommands()
         {
             AddCommand = new DelegateCommand(async () => await AddMedicalCaseAsync());
@@ -135,6 +136,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         // 直接使用基类的数据加载机制，无需复杂的初始化逻辑
         #region Data Loading Override
 
+        /// <inheritdoc/>
         protected override async Task<ServiceResult<PagedResult<MedicalCaseDto>>> LoadDataAsync(PagedQueryBaseDto request)
         {
             // UltraThink v2.0: 直接使用PagedQueryBaseDto进行医疗案例查询，删除复杂筛选

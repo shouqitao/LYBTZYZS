@@ -17,6 +17,7 @@ namespace LYBT.WebAPI.Middleware
             _logger = logger;
         }
 
+        /// <inheritdoc/>
         public async ValueTask<bool> TryHandleAsync(
             HttpContext httpContext,
             Exception exception,

@@ -40,8 +40,11 @@ namespace LYBT.Desktop.Core.Redux
     /// </summary>
     public abstract class ActionBase : IAction
     {
+        /// <inheritdoc/>
         public string Type { get; }
+        /// <inheritdoc/>
         public DateTimeOffset Timestamp { get; }
+        /// <inheritdoc/>
         public string? Source { get; set; }
 
         protected ActionBase(string type)
@@ -56,6 +59,7 @@ namespace LYBT.Desktop.Core.Redux
     /// </summary>
     public abstract class ActionBase<TPayload> : ActionBase, IAction<TPayload>
     {
+        /// <inheritdoc/>
         public TPayload Payload { get; }
 
         protected ActionBase(string type, TPayload payload) : base(type)
@@ -162,8 +166,11 @@ namespace LYBT.Desktop.Core.Redux
     /// </summary>
     public class AsyncStartAction : ActionBase, IAsyncAction
     {
+        /// <inheritdoc/>
         public bool IsExecuting => true;
+        /// <inheritdoc/>
         public int Progress => 0;
+        /// <inheritdoc/>
         public string? Error => null;
 
         public AsyncStartAction(string type) : base($"{type}_START")
@@ -176,8 +183,11 @@ namespace LYBT.Desktop.Core.Redux
     /// </summary>
     public class AsyncSuccessAction<TResult> : ActionBase<TResult>, IAsyncAction
     {
+        /// <inheritdoc/>
         public bool IsExecuting => false;
+        /// <inheritdoc/>
         public int Progress => 100;
+        /// <inheritdoc/>
         public string? Error => null;
 
         public AsyncSuccessAction(string type, TResult result)
@@ -191,8 +201,11 @@ namespace LYBT.Desktop.Core.Redux
     /// </summary>
     public class AsyncErrorAction : ActionBase, IAsyncAction
     {
+        /// <inheritdoc/>
         public bool IsExecuting => false;
+        /// <inheritdoc/>
         public int Progress => 0;
+        /// <inheritdoc/>
         public string? Error { get; }
 
         public AsyncErrorAction(string type, string error) : base($"{type}_ERROR")

@@ -11,6 +11,7 @@ namespace LYBT.Desktop.Core.Converters
     public class StringToInitialsConverter : IValueConverter
     {
 
+        /// <inheritdoc/>
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value is not string name || string.IsNullOrWhiteSpace(name))
@@ -43,6 +44,7 @@ namespace LYBT.Desktop.Core.Converters
             }
         }
 
+        /// <inheritdoc/>
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             throw new NotImplementedException("StringToInitialsConverter does not support ConvertBack");

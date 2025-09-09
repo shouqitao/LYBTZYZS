@@ -240,6 +240,7 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         #region Command Initialization
 
+        /// <inheritdoc/>
         protected override void InitializeCommands()
         {
             AddCommand = new DelegateCommand(async () => await AddPatientAsync());
@@ -291,6 +292,7 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         #region Data Loading Override
 
+        /// <inheritdoc/>
         protected override async Task<ServiceResult<PagedResult<PatientDto>>> LoadDataAsync(PagedQueryBaseDto request)
         {
             // UltraThink v2.0: 转换为PatientPagedQueryDto进行患者查询

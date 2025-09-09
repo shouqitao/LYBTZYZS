@@ -1,4 +1,4 @@
-﻿using System.Windows;
+using System.Windows;
 using LYBT.Desktop.Core.Interfaces;
 using LYBT.Desktop.Core.Models.Common;
 
@@ -36,6 +36,7 @@ namespace LYBT.Desktop.Users.Views
             Close();
         }
 
+        /// <inheritdoc/>
         protected override void OnClosed(System.EventArgs e)
         {
             if (DataContext is ICustomDialogAware dialogAware)

@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using AutoMapper;
 using LYBT.Desktop.Core.Constants;
 using LYBT.Desktop.Core.Interfaces;
@@ -208,6 +208,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         #region DialogViewModel Implementation
 
+        /// <inheritdoc/>
         protected override async Task<bool> SaveAsync()
         {
             if (SelectedPatient == null)
@@ -247,11 +248,13 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             }
         }
 
+        /// <inheritdoc/>
         protected override bool CanSave()
         {
             return SelectedPatient != null && !IsLoading;
         }
 
+        /// <inheritdoc/>
         protected override void InitializeDialog()
         {
             base.InitializeDialog();

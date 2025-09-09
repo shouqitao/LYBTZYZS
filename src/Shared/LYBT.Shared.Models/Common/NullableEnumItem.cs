@@ -1,4 +1,4 @@
-﻿namespace LYBT.Shared.Models.Common
+namespace LYBT.Shared.Models.Common
 {
 
     /// <summary>

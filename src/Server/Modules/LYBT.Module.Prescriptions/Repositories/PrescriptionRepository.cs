@@ -1,4 +1,4 @@
-﻿using LYBT.Entities.Prescriptions;
+using LYBT.Entities.Prescriptions;
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Repositories;
 using LYBT.Module.Prescriptions.Interfaces;

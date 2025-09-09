@@ -1,4 +1,4 @@
-﻿using LYBT.Desktop.Core.Services.Exceptions;
+using LYBT.Desktop.Core.Services.Exceptions;
 using LYBT.Desktop.Patients.Interfaces;
 using LYBT.Shared.Interfaces.Api;
 using LYBT.Shared.Models.Contracts.Common;

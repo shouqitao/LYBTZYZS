@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Prism.Events;
 
 namespace LYBT.Desktop.Core.Events
@@ -405,6 +405,7 @@ namespace LYBT.Desktop.Core.Events
 
         #region 资源释放
 
+        /// <inheritdoc/>
         public void Dispose()
         {
             if (_disposed)

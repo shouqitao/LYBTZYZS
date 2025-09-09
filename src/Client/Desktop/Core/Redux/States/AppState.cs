@@ -134,6 +134,7 @@ namespace LYBT.Desktop.Core.Redux.States
         private readonly ConsultationReducer _consultationReducer = new();
         private readonly UIReducer _uiReducer = new();
 
+        /// <inheritdoc/>
         public AppState Reduce(AppState state, IAction action)
         {
             return new AppState
@@ -152,6 +153,7 @@ namespace LYBT.Desktop.Core.Redux.States
     public class PatientReducer : IReducer<PatientState>
     {
 
+        /// <inheritdoc/>
         public PatientState Reduce(PatientState state, IAction action)
         {
             return action switch
@@ -187,6 +189,7 @@ namespace LYBT.Desktop.Core.Redux.States
     public class ConsultationReducer : IReducer<ConsultationState>
     {
 
+        /// <inheritdoc/>
         public ConsultationState Reduce(ConsultationState state, IAction action)
         {
             return action switch
@@ -225,6 +228,7 @@ namespace LYBT.Desktop.Core.Redux.States
     public class UIReducer : IReducer<UIState>
     {
 
+        /// <inheritdoc/>
         public UIState Reduce(UIState state, IAction action)
         {
             return action switch

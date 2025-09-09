@@ -431,6 +431,7 @@ namespace LYBT.Desktop.Core.Controls
 
         #region INotifyPropertyChanged
 
+        /// <inheritdoc/>
         public event PropertyChangedEventHandler? PropertyChanged;
 
         protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)

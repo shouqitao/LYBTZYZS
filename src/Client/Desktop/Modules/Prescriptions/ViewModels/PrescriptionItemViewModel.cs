@@ -1,4 +1,4 @@
-﻿using LYBT.Desktop.Core.Models.Prescriptions;
+using LYBT.Desktop.Core.Models.Prescriptions;
 using Prism.Mvvm;
 
 namespace LYBT.Desktop.Prescriptions.ViewModels
@@ -219,11 +219,13 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
 
         #region 重写方法
 
+        /// <inheritdoc/>
         public override string ToString()
         {
             return $"{HerbName} {Quantity}{Unit} @ {UnitPrice:F2}元/{Unit}";
         }
 
+        /// <inheritdoc/>
         public override bool Equals(object? obj)
         {
             if (obj is PrescriptionItemViewModel other)
@@ -234,6 +236,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             return false;
         }
 
+        /// <inheritdoc/>
         public override int GetHashCode()
         {
             return HerbId.GetHashCode();

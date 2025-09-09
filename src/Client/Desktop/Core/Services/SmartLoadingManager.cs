@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Logging;
@@ -158,6 +158,7 @@ namespace LYBT.Desktop.Core.Services
 
         #region 公共属性
 
+        /// <inheritdoc/>
         public bool IsGlobalLoading
         {
             get
@@ -167,6 +168,7 @@ namespace LYBT.Desktop.Core.Services
             }
         }
 
+        /// <inheritdoc/>
         public int ActiveLoadingCount
         {
             get
@@ -180,6 +182,7 @@ namespace LYBT.Desktop.Core.Services
 
         #region 公共方法
 
+        /// <inheritdoc/>
         public ILoadingOperation StartLoading(string operationId, string message = "加载中...",
             int layer = 1, bool supportProgress = false, CancellationToken cancellationToken = default)
         {
@@ -222,11 +225,13 @@ namespace LYBT.Desktop.Core.Services
             }
         }
 
+        /// <inheritdoc/>
         public bool IsLoadingAtLayer(int layer)
         {
             return _activeOperations.Values.Any(op => op.Layer == layer && !op.Operation.IsCancelled);
         }
 
+        /// <inheritdoc/>
         public string GetCurrentLoadingMessage(int layer = -1)
         {
             var operations = _activeOperations.Values
@@ -244,6 +249,7 @@ namespace LYBT.Desktop.Core.Services
             return latest.Message;
         }
 
+        /// <inheritdoc/>
         public void CancelOperation(string operationId)
         {
             if (_activeOperations.TryGetValue(operationId, out var operationInfo))
@@ -253,6 +259,7 @@ namespace LYBT.Desktop.Core.Services
             }
         }
 
+        /// <inheritdoc/>
         public void CancelAllOperations()
         {
             var operations = _activeOperations.Values.ToList();
@@ -264,6 +271,7 @@ namespace LYBT.Desktop.Core.Services
             _logger.LogDebug("取消所有加载操作，共 {Count} 个", operations.Count);
         }
 
+        /// <inheritdoc/>
         public void CleanupExpiredStates()
         {
             PerformCleanup(null);
@@ -365,6 +373,7 @@ namespace LYBT.Desktop.Core.Services
 
         #region INotifyPropertyChanged
 
+        /// <inheritdoc/>
         public event PropertyChangedEventHandler? PropertyChanged;
 
         protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
@@ -376,6 +385,7 @@ namespace LYBT.Desktop.Core.Services
 
         #region IDisposable
 
+        /// <inheritdoc/>
         public void Dispose()
         {
             _cleanupTimer?.Dispose();
@@ -413,12 +423,17 @@ namespace LYBT.Desktop.Core.Services
         private volatile string _message;
         private volatile bool _completed;
 
+        /// <inheritdoc/>
         public string OperationId { get; }
+        /// <inheritdoc/>
         public bool SupportsProgress { get; }
         public int Layer { get; }
 
+        /// <inheritdoc/>
         public int Progress => _progress;
+        /// <inheritdoc/>
         public bool IsCancelled => _cancellationTokenSource.Token.IsCancellationRequested || _externalCancellationToken.IsCancellationRequested;
+        /// <inheritdoc/>
         public CancellationToken CancellationToken => _cancellationTokenSource.Token;
 
         internal LoadingOperation(string operationId, string message, int layer, bool supportsProgress,
@@ -434,6 +449,7 @@ namespace LYBT.Desktop.Core.Services
             _cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(externalCancellationToken);
         }
 
+        /// <inheritdoc/>
         public void UpdateProgress(int progress, string? message = null)
         {
             if (!SupportsProgress || _disposed || _completed)
@@ -449,6 +465,7 @@ namespace LYBT.Desktop.Core.Services
             }
         }
 
+        /// <inheritdoc/>
         public void UpdateMessage(string message)
         {
             if (_disposed || _completed)
@@ -459,6 +476,7 @@ namespace LYBT.Desktop.Core.Services
             _message = message ?? string.Empty;
         }
 
+        /// <inheritdoc/>
         public void Complete()
         {
             if (_disposed || _completed)
@@ -478,6 +496,7 @@ namespace LYBT.Desktop.Core.Services
             }
         }
 
+        /// <inheritdoc/>
         public void Dispose()
         {
             if (_disposed)

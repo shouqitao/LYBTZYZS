@@ -23,26 +23,31 @@ namespace LYBT.Infrastructure.Repositories
             _dbSet = _context.Set<TEntity>();
         }
 
+        /// <inheritdoc/>
         public virtual async Task<TEntity?> GetByIdAsync(Guid id)
         {
             return await _dbSet.AsNoTracking().FirstOrDefaultAsync(e => EF.Property<Guid>(e, "Id") == id);
         }
 
+        /// <inheritdoc/>
         public virtual async Task<IEnumerable<TEntity>> GetAllAsync()
         {
             return await _dbSet.AsNoTracking().ToListAsync();
         }
 
+        /// <inheritdoc/>
         public virtual async Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate)
         {
             return await _dbSet.AsNoTracking().Where(predicate).ToListAsync();
         }
 
+        /// <inheritdoc/>
         public virtual async Task<PagedResult<TEntity>> GetPagedAsync(int pageNumber, int pageSize)
         {
             return await GetPagedAsync(null, pageNumber, pageSize);
         }
 
+        /// <inheritdoc/>
         public virtual async Task<PagedResult<TEntity>> GetPagedAsync(
             Expression<Func<TEntity, bool>>? predicate,
             int pageNumber,
@@ -77,31 +82,37 @@ namespace LYBT.Infrastructure.Repositories
             };
         }
 
+        /// <inheritdoc/>
         public virtual async Task<TEntity?> GetSingleAsync(Expression<Func<TEntity, bool>> predicate)
         {
             return await _dbSet.AsNoTracking().SingleOrDefaultAsync(predicate);
         }
 
+        /// <inheritdoc/>
         public virtual async Task<bool> ExistsAsync(Guid id)
         {
             return await _dbSet.AsNoTracking().AnyAsync(e => EF.Property<Guid>(e, "Id") == id);
         }
 
+        /// <inheritdoc/>
         public virtual async Task<bool> ExistsAsync(Expression<Func<TEntity, bool>> predicate)
         {
             return await _dbSet.AsNoTracking().AnyAsync(predicate);
         }
 
+        /// <inheritdoc/>
         public virtual async Task<long> CountAsync()
         {
             return await _dbSet.AsNoTracking().LongCountAsync();
         }
 
+        /// <inheritdoc/>
         public virtual async Task<long> CountAsync(Expression<Func<TEntity, bool>> predicate)
         {
             return await _dbSet.AsNoTracking().LongCountAsync(predicate);
         }
 
+        /// <inheritdoc/>
         public virtual async Task<TEntity> AddAsync(TEntity entity)
         {
             var entry = await _dbSet.AddAsync(entity);
@@ -109,6 +120,7 @@ namespace LYBT.Infrastructure.Repositories
             return entry.Entity;
         }
 
+        /// <inheritdoc/>
         public virtual async Task<IEnumerable<TEntity>> AddRangeAsync(IEnumerable<TEntity> entities)
         {
             await _dbSet.AddRangeAsync(entities);
@@ -116,6 +128,7 @@ namespace LYBT.Infrastructure.Repositories
             return entities;
         }
 
+        /// <inheritdoc/>
         public virtual async Task<TEntity> UpdateAsync(TEntity entity)
         {
             _dbSet.Update(entity);
@@ -123,6 +136,7 @@ namespace LYBT.Infrastructure.Repositories
             return entity;
         }
 
+        /// <inheritdoc/>
         public virtual async Task<bool> DeleteAsync(TEntity entity)
         {
             _dbSet.Remove(entity);
@@ -130,6 +144,7 @@ namespace LYBT.Infrastructure.Repositories
             return result > 0;
         }
 
+        /// <inheritdoc/>
         public virtual async Task<bool> DeleteAsync(Guid id)
         {
             var entity = await GetByIdAsync(id);
@@ -141,12 +156,14 @@ namespace LYBT.Infrastructure.Repositories
             return await DeleteAsync(entity);
         }
 
+        /// <inheritdoc/>
         public virtual async Task<int> DeleteRangeAsync(IEnumerable<TEntity> entities)
         {
             _dbSet.RemoveRange(entities);
             return await _context.SaveChangesAsync();
         }
 
+        /// <inheritdoc/>
         public virtual async Task<int> DeleteRangeAsync(IEnumerable<Guid> ids)
         {
             var entities = new List<TEntity>();
@@ -167,6 +184,7 @@ namespace LYBT.Infrastructure.Repositories
             return 0;
         }
 
+        /// <inheritdoc/>
         public virtual async Task<int> SaveChangesAsync()
         {
             return await _context.SaveChangesAsync();
@@ -194,26 +212,31 @@ namespace LYBT.Infrastructure.Repositories
             _dbSet = _context.Set<TEntity>();
         }
 
+        /// <inheritdoc/>
         public virtual async Task<TEntity?> GetByIdAsync(Guid id)
         {
             return await _dbSet.AsNoTracking().FirstOrDefaultAsync(e => EF.Property<Guid>(e, "Id") == id);
         }
 
+        /// <inheritdoc/>
         public virtual async Task<IEnumerable<TEntity>> GetAllAsync()
         {
             return await _dbSet.AsNoTracking().ToListAsync();
         }
 
+        /// <inheritdoc/>
         public virtual async Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate)
         {
             return await _dbSet.AsNoTracking().Where(predicate).ToListAsync();
         }
 
+        /// <inheritdoc/>
         public virtual async Task<PagedResult<TEntity>> GetPagedAsync(int pageNumber, int pageSize)
         {
             return await GetPagedAsync(null, pageNumber, pageSize);
         }
 
+        /// <inheritdoc/>
         public virtual async Task<PagedResult<TEntity>> GetPagedAsync(
             Expression<Func<TEntity, bool>>? predicate,
             int pageNumber,
@@ -248,26 +271,31 @@ namespace LYBT.Infrastructure.Repositories
             };
         }
 
+        /// <inheritdoc/>
         public virtual async Task<TEntity?> GetSingleAsync(Expression<Func<TEntity, bool>> predicate)
         {
             return await _dbSet.AsNoTracking().SingleOrDefaultAsync(predicate);
         }
 
+        /// <inheritdoc/>
         public virtual async Task<bool> ExistsAsync(Guid id)
         {
             return await _dbSet.AsNoTracking().AnyAsync(e => EF.Property<Guid>(e, "Id") == id);
         }
 
+        /// <inheritdoc/>
         public virtual async Task<bool> ExistsAsync(Expression<Func<TEntity, bool>> predicate)
         {
             return await _dbSet.AsNoTracking().AnyAsync(predicate);
         }
 
+        /// <inheritdoc/>
         public virtual async Task<long> CountAsync()
         {
             return await _dbSet.AsNoTracking().LongCountAsync();
         }
 
+        /// <inheritdoc/>
         public virtual async Task<long> CountAsync(Expression<Func<TEntity, bool>> predicate)
         {
             return await _dbSet.AsNoTracking().LongCountAsync(predicate);

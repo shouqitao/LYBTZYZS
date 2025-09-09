@@ -17,12 +17,14 @@ namespace LYBT.Module.Formula.Services
 
         #region Query Operations
 
+        /// <inheritdoc/>
         public Task<ServiceResult<FormulaDto>> GetByIdAsync(Guid id)
         {
             // 临时实现：查询功能暂时返回失败
             return Task.FromResult(ServiceResult<FormulaDto>.Failure("GetByIdAsync方法需要在QueryService中实现"));
         }
 
+        /// <inheritdoc/>
         public async Task<ServiceResult<PagedResult<FormulaDto>>> GetPagedAsync(FormulaQueryDto query)
             => await _queryService.GetPagedAsync(query);
 
@@ -35,15 +37,19 @@ namespace LYBT.Module.Formula.Services
         public async Task<ServiceResult<List<FormulaDto>>> GetAllFormulasAsync()
             => await _queryService.GetAllFormulasAsync();
 
+        /// <inheritdoc/>
         public async Task<ServiceResult<List<string>>> GetCategoriesAsync()
             => await _queryService.GetCategoriesAsync();
 
+        /// <inheritdoc/>
         public async Task<ServiceResult<List<FormulaDto>>> GetTemplatesAsync()
             => await _queryService.GetTemplatesAsync();
 
+        /// <inheritdoc/>
         public async Task<ServiceResult<List<FormulaDto>>> GetByTypeAsync(string formulaType)
             => await _queryService.GetByTypeAsync(formulaType);
 
+        /// <inheritdoc/>
         public async Task<ServiceResult<List<FormulaDto>>> SearchAsync(string keyword)
         {
             // 委托给查询服务的搜索方法
@@ -70,26 +76,31 @@ namespace LYBT.Module.Formula.Services
 
         #region Business Operations
 
+        /// <inheritdoc/>
         public Task<ServiceResult<FormulaDto>> CreateAsync(FormulaCreateDto dto)
         {
             return Task.FromResult(ServiceResult<FormulaDto>.Failure("CreateAsync方法需要在BusinessService中实现"));
         }
 
+        /// <inheritdoc/>
         public Task<ServiceResult<FormulaDto>> UpdateAsync(Guid id, FormulaUpdateDto dto)
         {
             return Task.FromResult(ServiceResult<FormulaDto>.Failure("UpdateAsync方法需要在BusinessService中实现"));
         }
 
+        /// <inheritdoc/>
         public Task<ServiceResult<bool>> DeleteAsync(Guid id)
         {
             return Task.FromResult(ServiceResult<bool>.Failure("DeleteAsync方法需要在BusinessService中实现"));
         }
 
+        /// <inheritdoc/>
         public Task<ServiceResult> EnableAsync(Guid id)
         {
             return Task.FromResult(ServiceResult.Failure("EnableAsync方法需要在BusinessService中实现"));
         }
 
+        /// <inheritdoc/>
         public Task<ServiceResult> DisableAsync(Guid id)
         {
             return Task.FromResult(ServiceResult.Failure("DisableAsync方法需要在BusinessService中实现"));
@@ -106,6 +117,7 @@ namespace LYBT.Module.Formula.Services
         public async Task<ServiceResult<FormulaAnalysisResult>> AnalyzeFormulaAsync(Guid formulaId)
             => await _businessService.AnalyzeFormulaAsync(formulaId);
 
+        /// <inheritdoc/>
         public async Task<ServiceResult<FormulaDto>> CreateFromPrescriptionAsync(Guid prescriptionId, string name)
             => await _businessService.CreateFromPrescriptionAsync(prescriptionId, name);
 
@@ -115,6 +127,7 @@ namespace LYBT.Module.Formula.Services
         public async Task<ServiceResult<bool>> UnshareFormulaAsync(Guid id, Guid operatorId, string operatorName)
             => await _businessService.UnshareFormulaAsync(id, operatorId, operatorName);
 
+        /// <inheritdoc/>
         public async Task<ServiceResult<FormulaDto>> CloneFormulaAsync(Guid formulaId, string newName, Guid userId)
         {
             // 委托给BusinessService的复制功能
@@ -125,11 +138,13 @@ namespace LYBT.Module.Formula.Services
 
         #region 批量操作 - 必需功能（用户明确需求）
 
+        /// <inheritdoc/>
         public Task<ServiceResult<object>> ImportFormulasAsync(List<FormulaCreateDto> formulas)
         {
             return Task.FromResult(ServiceResult<object>.Failure("简单诊所版本暂不支持验方批量导入功能"));
         }
 
+        /// <inheritdoc/>
         public Task<ServiceResult<byte[]>> ExportFormulasAsync(PagedQueryBaseDto query)
         {
             return Task.FromResult(ServiceResult<byte[]>.Failure("简单诊所版本暂不支持验方批量导出功能"));

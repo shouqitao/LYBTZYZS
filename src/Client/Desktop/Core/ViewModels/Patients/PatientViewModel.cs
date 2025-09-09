@@ -1,4 +1,4 @@
-﻿using LYBT.Shared.Models.Contracts.Patients;
+using LYBT.Shared.Models.Contracts.Patients;
 using Prism.Mvvm;
 
 namespace LYBT.Desktop.Core.ViewModels.Patients
@@ -242,11 +242,13 @@ namespace LYBT.Desktop.Core.ViewModels.Patients
             return patientData != null && Id == patientData.Id;
         }
 
+        /// <inheritdoc/>
         public override bool Equals(object? obj)
         {
             return obj is PatientViewModel other && IsSamePatient(other);
         }
 
+        /// <inheritdoc/>
         public override int GetHashCode()
         {
             return Id.GetHashCode();

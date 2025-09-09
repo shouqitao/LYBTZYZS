@@ -19,6 +19,7 @@ public class UserQueryService(
 
     #region 核心查询操作
 
+    /// <inheritdoc/>
     public async Task<ServiceResult<PagedResult<UserDto>>> GetPagedAsync(UserPagedQueryDto query)
     {
         try
@@ -52,6 +53,7 @@ public class UserQueryService(
         }
     }
 
+    /// <inheritdoc/>
     public async Task<ServiceResult<UserDto>> GetByIdAsync(Guid id)
     {
         try
@@ -80,6 +82,7 @@ public class UserQueryService(
         }
     }
 
+    /// <inheritdoc/>
     public async Task<ServiceResult<UserDto>> GetByUsernameAsync(string username)
     {
         try
@@ -113,6 +116,7 @@ public class UserQueryService(
         }
     }
 
+    /// <inheritdoc/>
     public async Task<ServiceResult<List<UserDto>>> SearchAsync(string keyword)
     {
         try
@@ -152,6 +156,7 @@ public class UserQueryService(
         }
     }
 
+    /// <inheritdoc/>
     public async Task<ServiceResult<List<UserDto>>> GetActiveUsersAsync()
     {
         try
@@ -182,6 +187,7 @@ public class UserQueryService(
         }
     }
 
+    /// <inheritdoc/>
     public Task<ServiceResult<List<object>>> GetRolesAsync()
     {
         _logger.LogDebug("获取系统角色列表");
@@ -196,6 +202,7 @@ public class UserQueryService(
         return Task.FromResult(ServiceResult<List<object>>.Success(roles));
     }
 
+    /// <inheritdoc/>
     public async Task<ServiceResult<bool>> ValidateUsernameAsync(string username)
     {
         try

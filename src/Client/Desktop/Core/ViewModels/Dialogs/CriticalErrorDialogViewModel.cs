@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Windows;
 using LYBT.Desktop.Core.Constants;
 using LYBT.Desktop.Core.Interfaces.Services;
@@ -151,17 +151,20 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
 
         #region DialogViewModel Implementation
 
+        /// <inheritdoc/>
         protected override Task<bool> SaveAsync()
         {
             // 对于错误对话框，没有保存操作
             return Task.FromResult(true);
         }
 
+        /// <inheritdoc/>
         protected override bool CanSave()
         {
             return false; // 错误对话框不需要保存按钮
         }
 
+        /// <inheritdoc/>
         protected override void InitializeDialog()
         {
             base.InitializeDialog();

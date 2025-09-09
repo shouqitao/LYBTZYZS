@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Core.Redux
@@ -61,6 +61,7 @@ namespace LYBT.Desktop.Core.Redux
         private TState _currentState;
         private int _dispatchDepth;
 
+        /// <inheritdoc/>
         public TState State
         {
             get
@@ -332,6 +333,7 @@ namespace LYBT.Desktop.Core.Redux
             }
         }
 
+        /// <inheritdoc/>
         public void Dispose()
         {
             _stateLock?.Dispose();
@@ -389,6 +391,7 @@ namespace LYBT.Desktop.Core.Redux
             _listener = listener;
         }
 
+        /// <inheritdoc/>
         public void Notify(object state)
         {
             if (!_disposed && state is TState typedState)
@@ -397,6 +400,7 @@ namespace LYBT.Desktop.Core.Redux
             }
         }
 
+        /// <inheritdoc/>
         public void Dispose()
         {
             _disposed = true;

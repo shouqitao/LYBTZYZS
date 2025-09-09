@@ -25,6 +25,7 @@ public class MedicalCaseRepository : OptimizedBaseRepository<LYBT.Entities.Medic
     }
 
     // 覆盖基类方法以支持Include和缓存
+    /// <inheritdoc/>
     public override async Task<LYBT.Entities.MedicalCase.MedicalCase?> GetByIdAsync(Guid id)
     {
         var cacheKey = $"{CacheKeyPrefix}withConsultation:{id}";
@@ -43,6 +44,7 @@ public class MedicalCaseRepository : OptimizedBaseRepository<LYBT.Entities.Medic
         return medicalCase;
     }
 
+    /// <inheritdoc/>
     public override async Task<IEnumerable<LYBT.Entities.MedicalCase.MedicalCase>> GetAllAsync()
     {
         var cacheKey = $"{CacheKeyPrefix}allWithConsultation";
@@ -62,6 +64,7 @@ public class MedicalCaseRepository : OptimizedBaseRepository<LYBT.Entities.Medic
     }
 
     // 覆盖基类方法以支持Include和默认排序
+    /// <inheritdoc/>
     public override async Task<PagedResult<LYBT.Entities.MedicalCase.MedicalCase>> GetPagedAsync(
         Expression<Func<LYBT.Entities.MedicalCase.MedicalCase, bool>>? predicate,
         int pageNumber,
@@ -106,6 +109,7 @@ public class MedicalCaseRepository : OptimizedBaseRepository<LYBT.Entities.Medic
     // 注意：基础CRUD方法（AddAsync, UpdateAsync, DeleteAsync）由BaseRepository提供
 
     // 医疗案例特有的业务方法（带缓存优化）
+    /// <inheritdoc/>
     public async Task<List<LYBT.Entities.MedicalCase.MedicalCase>> GetByPatientIdAsync(Guid patientId)
     {
         var cacheKey = $"{CacheKeyPrefix}patient:{patientId}";
@@ -126,6 +130,7 @@ public class MedicalCaseRepository : OptimizedBaseRepository<LYBT.Entities.Medic
         return medicalCases;
     }
 
+    /// <inheritdoc/>
     public async Task<List<LYBT.Entities.MedicalCase.MedicalCase>> GetByUserIdAsync(Guid userId)
     {
         var cacheKey = $"{CacheKeyPrefix}doctor:{userId}";
@@ -146,6 +151,7 @@ public class MedicalCaseRepository : OptimizedBaseRepository<LYBT.Entities.Medic
         return medicalCases;
     }
 
+    /// <inheritdoc/>
     public async Task<List<LYBT.Entities.MedicalCase.MedicalCase>> GetByStatusAsync(MedicalCaseStatus status)
     {
         var cacheKey = $"{CacheKeyPrefix}status:{status}";
@@ -166,6 +172,7 @@ public class MedicalCaseRepository : OptimizedBaseRepository<LYBT.Entities.Medic
         return medicalCases;
     }
 
+    /// <inheritdoc/>
     public async Task<List<LYBT.Entities.MedicalCase.MedicalCase>> GetByDateRangeAsync(DateTime startDate, DateTime endDate)
     {
         var cacheKey = $"{CacheKeyPrefix}daterange:{startDate:yyyyMMdd}-{endDate:yyyyMMdd}";

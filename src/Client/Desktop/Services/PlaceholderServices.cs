@@ -12,21 +12,25 @@ namespace LYBT.Desktop.Services
     public class NavigationService : INavigationService
     {
 
+        /// <inheritdoc/>
         public Task NavigateToAsync(string viewName)
         {
             return Task.CompletedTask;
         }
 
+        /// <inheritdoc/>
         public Task NavigateToAsync(string viewName, object parameters)
         {
             return Task.CompletedTask;
         }
 
+        /// <inheritdoc/>
         public Task GoBackAsync()
         {
             return Task.CompletedTask;
         }
 
+        /// <inheritdoc/>
         public bool CanGoBack => false;
     }
 }

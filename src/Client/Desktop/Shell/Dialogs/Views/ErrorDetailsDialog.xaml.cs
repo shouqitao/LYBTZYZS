@@ -1,4 +1,4 @@
-﻿using System.Windows;
+using System.Windows;
 using LYBT.Desktop.Shell.Dialogs.ViewModels;
 
 namespace LYBT.Desktop.Shell.Dialogs.Views
@@ -39,6 +39,7 @@ namespace LYBT.Desktop.Shell.Dialogs.Views
             Close();
         }
 
+        /// <inheritdoc/>
         protected override void OnClosed(System.EventArgs e)
         {
             if (DataContext is ErrorDetailsDialogViewModel viewModel)

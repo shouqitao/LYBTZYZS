@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using LYBT.Infrastructure.Data;
 using LYBT.Module.Consultation.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
