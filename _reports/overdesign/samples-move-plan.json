@@ -1,0 +1,341 @@
+{
+  "moveOperations": {
+    "description": "需要移动到samples/或archive/目录的文件清单",
+    "totalFiles": 23,
+    "totalSize": "~2.1MB",
+    "categories": [
+      {
+        "category": "demo-controllers",
+        "description": "演示控制器和API示例",
+        "files": [
+          {
+            "from": "src/Server/Services/LYBT.WebAPI/Examples/MultiVersionControllerExample.cs",
+            "to": "samples/backend/api-examples/MultiVersionControllerExample.cs",
+            "size": "202 lines",
+            "reason": "API版本控制演示代码，非生产业务逻辑"
+          },
+          {
+            "from": "src/Server/Services/LYBT.WebAPI/Examples/ComplexQueryExample.cs",
+            "to": "samples/backend/api-examples/ComplexQueryExample.cs",
+            "size": "156 lines", 
+            "reason": "复杂查询演示，包含LINQ最佳实践示例"
+          },
+          {
+            "from": "src/Server/Services/LYBT.WebAPI/Examples/TransactionPatternExample.cs",
+            "to": "samples/backend/api-examples/TransactionPatternExample.cs",
+            "size": "89 lines",
+            "reason": "事务模式演示，展示EF Core事务最佳实践"
+          },
+          {
+            "from": "src/Server/Services/LYBT.WebAPI/Examples/CachingStrategyExample.cs", 
+            "to": "samples/backend/api-examples/CachingStrategyExample.cs",
+            "size": "134 lines",
+            "reason": "缓存策略演示，包含多级缓存实现示例"
+          }
+        ]
+      },
+      {
+        "category": "test-views",
+        "description": "测试界面和占位符组件",
+        "files": [
+          {
+            "from": "src/Client/Desktop/Shell/Views/TestView.xaml",
+            "to": "samples/frontend/test-components/TestView.xaml",
+            "size": "45 lines",
+            "reason": "WPF测试视图，包含基本MVVM绑定示例"
+          },
+          {
+            "from": "src/Client/Desktop/Shell/Views/TestView.xaml.cs",
+            "to": "samples/frontend/test-components/TestView.xaml.cs", 
+            "size": "31 lines",
+            "reason": "测试视图代码隐藏，展示View-ViewModel交互"
+          },
+          {
+            "from": "src/Client/Desktop/Shell/ViewModels/PlaceholderViewModels.cs",
+            "to": "samples/frontend/placeholder-examples/PlaceholderViewModels.cs",
+            "size": "89 lines",
+            "reason": "占位符ViewModel集合，包含MVVM模式示例"
+          }
+        ]
+      },
+      {
+        "category": "complex-architectures", 
+        "description": "过度复杂的架构实现示例",
+        "files": [
+          {
+            "from": "src/Client/Desktop/Core/Redux/StateStore.cs",
+            "to": "archive/complex-patterns/redux/StateStore.cs",
+            "size": "410 lines",
+            "reason": "Redux状态管理实现，展示复杂状态模式但不适合小型应用"
+          },
+          {
+            "from": "src/Client/Desktop/Core/Redux/IStateStore.cs",
+            "to": "archive/complex-patterns/redux/IStateStore.cs", 
+            "size": "45 lines",
+            "reason": "Redux状态存储接口定义"
+          },
+          {
+            "from": "src/Client/Desktop/Core/Redux/StateActions.cs",
+            "to": "archive/complex-patterns/redux/StateActions.cs",
+            "size": "78 lines", 
+            "reason": "Redux动作定义，包含时间旅行等高级特性"
+          },
+          {
+            "from": "src/Server/Core/LYBT.Infrastructure/Transactions/TransactionCoordinator.cs",
+            "to": "archive/complex-patterns/transactions/TransactionCoordinator.cs",
+            "size": "267 lines",
+            "reason": "分布式事务协调器，过度复杂但展示企业级事务模式"
+          },
+          {
+            "from": "src/Server/Core/LYBT.Infrastructure/Transactions/ITransactionCoordinator.cs",
+            "to": "archive/complex-patterns/transactions/ITransactionCoordinator.cs",
+            "size": "34 lines",
+            "reason": "事务协调器接口"
+          }
+        ]
+      },
+      {
+        "category": "factory-patterns",
+        "description": "工厂模式实现示例",
+        "files": [
+          {
+            "from": "src/Client/Desktop/Infrastructure/Factories/ViewModelFactory.cs",
+            "to": "archive/factory-patterns/ViewModelFactory.cs",
+            "size": "201 lines",
+            "reason": "复杂的ViewModel工厂实现，展示抽象工厂模式"
+          },
+          {
+            "from": "src/Client/Desktop/Infrastructure/Factories/IViewModelFactory.cs", 
+            "to": "archive/factory-patterns/IViewModelFactory.cs",
+            "size": "28 lines",
+            "reason": "ViewModel工厂接口"
+          },
+          {
+            "from": "src/Client/Desktop/Infrastructure/Factories/ServiceFactory.cs",
+            "to": "archive/factory-patterns/ServiceFactory.cs", 
+            "size": "145 lines",
+            "reason": "服务工厂实现，展示服务定位器模式"
+          }
+        ]
+      },
+      {
+        "category": "advanced-security",
+        "description": "高级安全特性实现",
+        "files": [
+          {
+            "from": "src/Server/Core/LYBT.Infrastructure/Security/AdvancedDataEncryptionService.cs",
+            "to": "archive/security-examples/AdvancedDataEncryptionService.cs",
+            "size": "324 lines", 
+            "reason": "复杂加密服务，包含密钥轮转等企业级特性"
+          },
+          {
+            "from": "src/Server/Core/LYBT.Infrastructure/Security/KeyManagementService.cs",
+            "to": "archive/security-examples/KeyManagementService.cs",
+            "size": "198 lines",
+            "reason": "密钥管理服务，展示HSM集成和密钥生命周期管理"
+          },
+          {
+            "from": "src/Server/Core/LYBT.Infrastructure/Security/EncryptionAuditService.cs", 
+            "to": "archive/security-examples/EncryptionAuditService.cs",
+            "size": "156 lines",
+            "reason": "加密审计服务，包含合规性日志记录"
+          }
+        ]
+      },
+      {
+        "category": "workflow-engines",
+        "description": "工作流引擎实现", 
+        "files": [
+          {
+            "from": "src/Client/Desktop/Core/Models/Consultation/WorkflowModels.cs",
+            "to": "archive/workflow-examples/WorkflowModels.cs",
+            "size": "178 lines",
+            "reason": "复杂工作流模型，展示状态机模式实现"
+          },
+          {
+            "from": "src/Client/Desktop/Core/Events/WorkflowNavigationEvents.cs", 
+            "to": "archive/workflow-examples/WorkflowNavigationEvents.cs",
+            "size": "89 lines",
+            "reason": "工作流导航事件定义"
+          },
+          {
+            "from": "src/Client/Desktop/Core/Events/WorkflowEvents.cs",
+            "to": "archive/workflow-examples/WorkflowEvents.cs", 
+            "size": "67 lines",
+            "reason": "工作流通用事件定义"
+          }
+        ]
+      },
+      {
+        "category": "duplicate-repositories",
+        "description": "重复的Repository实现",
+        "files": [
+          {
+            "from": "src/Server/Core/LYBT.Infrastructure/Data/OptimizedBaseRepository.cs",
+            "to": "archive/repository-examples/OptimizedBaseRepository.cs", 
+            "size": "201 lines",
+            "reason": "优化版Repository基类，展示高级查询优化技术"
+          },
+          {
+            "from": "src/Server/Core/LYBT.Infrastructure/Data/GenericRepository.cs",
+            "to": "archive/repository-examples/GenericRepository.cs",
+            "size": "134 lines", 
+            "reason": "泛型Repository实现，展示Repository模式变体"
+          }
+        ]
+      }
+    ]
+  },
+  "directoryStructure": {
+    "samples/": {
+      "description": "可运行的代码示例和最佳实践展示",
+      "subdirectories": {
+        "backend/": {
+          "api-examples/": "API设计和实现示例",
+          "service-patterns/": "服务层设计模式示例",
+          "data-access/": "数据访问层最佳实践"
+        },
+        "frontend/": {
+          "test-components/": "测试用UI组件",
+          "placeholder-examples/": "占位符和模板代码",
+          "mvvm-patterns/": "MVVM模式实现示例"
+        }
+      }
+    },
+    "archive/": {
+      "description": "过度复杂但具有学习价值的历史代码",
+      "subdirectories": {
+        "complex-patterns/": {
+          "redux/": "Redux状态管理模式实现",
+          "transactions/": "分布式事务协调器",
+          "workflow/": "工作流引擎实现"
+        },
+        "factory-patterns/": "各种工厂模式实现示例", 
+        "security-examples/": "企业级安全特性实现",
+        "repository-examples/": "Repository模式变体实现"
+      }
+    }
+  },
+  "moveScript": {
+    "bash": [
+      "#!/bin/bash",
+      "# 过度功能清场 - 文件移动脚本",
+      "# 执行前请确保已备份当前代码",
+      "",
+      "# 创建目标目录结构", 
+      "mkdir -p samples/backend/api-examples",
+      "mkdir -p samples/frontend/test-components",
+      "mkdir -p samples/frontend/placeholder-examples",
+      "mkdir -p archive/complex-patterns/redux",
+      "mkdir -p archive/complex-patterns/transactions", 
+      "mkdir -p archive/factory-patterns",
+      "mkdir -p archive/security-examples",
+      "mkdir -p archive/workflow-examples",
+      "mkdir -p archive/repository-examples",
+      "",
+      "# Demo控制器移动",
+      "mv 'src/Server/Services/LYBT.WebAPI/Examples/MultiVersionControllerExample.cs' 'samples/backend/api-examples/'",
+      "mv 'src/Server/Services/LYBT.WebAPI/Examples/ComplexQueryExample.cs' 'samples/backend/api-examples/'", 
+      "mv 'src/Server/Services/LYBT.WebAPI/Examples/TransactionPatternExample.cs' 'samples/backend/api-examples/'",
+      "mv 'src/Server/Services/LYBT.WebAPI/Examples/CachingStrategyExample.cs' 'samples/backend/api-examples/'",
+      "",
+      "# 测试组件移动",
+      "mv 'src/Client/Desktop/Shell/Views/TestView.xaml' 'samples/frontend/test-components/'",
+      "mv 'src/Client/Desktop/Shell/Views/TestView.xaml.cs' 'samples/frontend/test-components/'",
+      "mv 'src/Client/Desktop/Shell/ViewModels/PlaceholderViewModels.cs' 'samples/frontend/placeholder-examples/'",
+      "",
+      "# 复杂架构归档",
+      "mv 'src/Client/Desktop/Core/Redux/' 'archive/complex-patterns/redux/'",
+      "mv 'src/Server/Core/LYBT.Infrastructure/Transactions/' 'archive/complex-patterns/transactions/'",
+      "",
+      "# 工厂模式归档", 
+      "mv 'src/Client/Desktop/Infrastructure/Factories/' 'archive/factory-patterns/'",
+      "",
+      "# 高级安全特性归档",
+      "mv 'src/Server/Core/LYBT.Infrastructure/Security/AdvancedDataEncryptionService.cs' 'archive/security-examples/'",
+      "mv 'src/Server/Core/LYBT.Infrastructure/Security/KeyManagementService.cs' 'archive/security-examples/'",
+      "mv 'src/Server/Core/LYBT.Infrastructure/Security/EncryptionAuditService.cs' 'archive/security-examples/'",
+      "",
+      "# 工作流引擎归档",
+      "mv 'src/Client/Desktop/Core/Models/Consultation/WorkflowModels.cs' 'archive/workflow-examples/'",
+      "mv 'src/Client/Desktop/Core/Events/WorkflowNavigationEvents.cs' 'archive/workflow-examples/'",
+      "mv 'src/Client/Desktop/Core/Events/WorkflowEvents.cs' 'archive/workflow-examples/'",
+      "",
+      "# 重复Repository归档",
+      "mv 'src/Server/Core/LYBT.Infrastructure/Data/OptimizedBaseRepository.cs' 'archive/repository-examples/'",
+      "mv 'src/Server/Core/LYBT.Infrastructure/Data/GenericRepository.cs' 'archive/repository-examples/'",
+      "",
+      "# 删除空目录",
+      "rmdir 'src/Server/Services/LYBT.WebAPI/Examples' 2>/dev/null || true",
+      "",
+      "echo '文件移动完成，共处理23个文件'",
+      "echo '请检查移动结果并验证编译状态'"
+    ]
+  },
+  "rollbackScript": {
+    "bash": [
+      "#!/bin/bash", 
+      "# 过度功能清场回滚脚本",
+      "# 将samples和archive中的文件恢复到原位置",
+      "",
+      "# 恢复Demo控制器",
+      "mkdir -p 'src/Server/Services/LYBT.WebAPI/Examples'",
+      "mv 'samples/backend/api-examples/MultiVersionControllerExample.cs' 'src/Server/Services/LYBT.WebAPI/Examples/'",
+      "mv 'samples/backend/api-examples/ComplexQueryExample.cs' 'src/Server/Services/LYBT.WebAPI/Examples/'",
+      "mv 'samples/backend/api-examples/TransactionPatternExample.cs' 'src/Server/Services/LYBT.WebAPI/Examples/'", 
+      "mv 'samples/backend/api-examples/CachingStrategyExample.cs' 'src/Server/Services/LYBT.WebAPI/Examples/'",
+      "",
+      "# 恢复测试组件",
+      "mv 'samples/frontend/test-components/TestView.xaml' 'src/Client/Desktop/Shell/Views/'",
+      "mv 'samples/frontend/test-components/TestView.xaml.cs' 'src/Client/Desktop/Shell/Views/'", 
+      "mv 'samples/frontend/placeholder-examples/PlaceholderViewModels.cs' 'src/Client/Desktop/Shell/ViewModels/'",
+      "",
+      "# 恢复复杂架构",
+      "mv 'archive/complex-patterns/redux/' 'src/Client/Desktop/Core/Redux/'",
+      "mv 'archive/complex-patterns/transactions/' 'src/Server/Core/LYBT.Infrastructure/Transactions/'",
+      "",
+      "# 恢复工厂模式",
+      "mv 'archive/factory-patterns/' 'src/Client/Desktop/Infrastructure/Factories/'",
+      "",
+      "# 恢复高级安全特性", 
+      "mv 'archive/security-examples/AdvancedDataEncryptionService.cs' 'src/Server/Core/LYBT.Infrastructure/Security/'",
+      "mv 'archive/security-examples/KeyManagementService.cs' 'src/Server/Core/LYBT.Infrastructure/Security/'",
+      "mv 'archive/security-examples/EncryptionAuditService.cs' 'src/Server/Core/LYBT.Infrastructure/Security/'",
+      "",
+      "# 恢复工作流引擎",
+      "mv 'archive/workflow-examples/WorkflowModels.cs' 'src/Client/Desktop/Core/Models/Consultation/'",
+      "mv 'archive/workflow-examples/WorkflowNavigationEvents.cs' 'src/Client/Desktop/Core/Events/'",
+      "mv 'archive/workflow-examples/WorkflowEvents.cs' 'src/Client/Desktop/Core/Events/'",
+      "",
+      "# 恢复重复Repository",
+      "mv 'archive/repository-examples/OptimizedBaseRepository.cs' 'src/Server/Core/LYBT.Infrastructure/Data/'",
+      "mv 'archive/repository-examples/GenericRepository.cs' 'src/Server/Core/LYBT.Infrastructure/Data/'",
+      "",
+      "echo '文件回滚完成，代码已恢复到移动前状态'",
+      "echo '请验证编译状态和功能完整性'"
+    ]
+  },
+  "postMoveActions": {
+    "createReadme": {
+      "samples/README.md": "# 代码示例集合\n\n本目录包含从生产代码中移出的示例和最佳实践展示。\n\n## 目录说明\n- `backend/`: 后端API设计示例\n- `frontend/`: 前端组件和模式示例\n\n这些代码具有教学价值，但不适合包含在生产系统中。",
+      "archive/README.md": "# 历史架构实现归档\n\n本目录包含过度复杂但具有学习价值的历史代码实现。\n\n## 归档原因\n这些实现展示了各种复杂的设计模式和架构方案，但对于20人以下的小型诊所系统来说过于复杂。保留在此处供学习和参考。\n\n## 使用建议\n- 仅供学习和参考，不建议在小型项目中使用\n- 如果项目规模扩大到中大型，可以考虑重新引入相关模式"
+    },
+    "updateGitignore": [
+      "# 将samples和archive目录添加到gitignore（可选）",
+      "# samples/",
+      "# archive/"
+    ],
+    "cleanupEmptyDirectories": [
+      "find src/ -type d -empty -delete"
+    ]
+  },
+  "validationChecklist": [
+    "✅ 验证所有文件都已成功移动到目标位置",
+    "✅ 确认原始位置的文件已被删除或移动",
+    "✅ 检查编译状态 - dotnet build 应该成功",  
+    "✅ 运行基础功能测试，确保核心业务不受影响",
+    "✅ 验证samples和archive目录结构正确",
+    "✅ 确认README文件已创建，说明清晰",
+    "✅ 测试回滚脚本能够正确恢复文件位置"
+  ]
+}

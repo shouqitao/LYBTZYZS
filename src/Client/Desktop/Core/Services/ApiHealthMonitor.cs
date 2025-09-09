@@ -22,10 +22,13 @@ namespace LYBT.Desktop.Core.Services
 
         /// <inheritdoc/>
         public bool IsOnline => _isOnline;
+
         /// <inheritdoc/>
         public string StatusMessage => _statusMessage;
+
         /// <inheritdoc/>
         public DateTime LastCheckTime => _lastCheckTime;
+
         /// <inheritdoc/>
         public int ConsecutiveFailures => _consecutiveFailures;
 

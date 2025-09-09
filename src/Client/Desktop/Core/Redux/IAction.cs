@@ -42,8 +42,10 @@ namespace LYBT.Desktop.Core.Redux
     {
         /// <inheritdoc/>
         public string Type { get; }
+
         /// <inheritdoc/>
         public DateTimeOffset Timestamp { get; }
+
         /// <inheritdoc/>
         public string? Source { get; set; }
 
@@ -168,8 +170,10 @@ namespace LYBT.Desktop.Core.Redux
     {
         /// <inheritdoc/>
         public bool IsExecuting => true;
+
         /// <inheritdoc/>
         public int Progress => 0;
+
         /// <inheritdoc/>
         public string? Error => null;
 
@@ -185,8 +189,10 @@ namespace LYBT.Desktop.Core.Redux
     {
         /// <inheritdoc/>
         public bool IsExecuting => false;
+
         /// <inheritdoc/>
         public int Progress => 100;
+
         /// <inheritdoc/>
         public string? Error => null;
 
@@ -203,8 +209,10 @@ namespace LYBT.Desktop.Core.Redux
     {
         /// <inheritdoc/>
         public bool IsExecuting => false;
+
         /// <inheritdoc/>
         public int Progress => 0;
+
         /// <inheritdoc/>
         public string? Error { get; }
 

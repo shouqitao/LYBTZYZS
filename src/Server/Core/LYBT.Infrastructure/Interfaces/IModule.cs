@@ -40,8 +40,10 @@ namespace LYBT.Infrastructure.Interfaces
     {
         /// <inheritdoc/>
         public abstract string Name { get; }
+
         /// <inheritdoc/>
         public virtual string Version => "1.0.0";
+
         /// <inheritdoc/>
         public abstract string Description { get; }
 

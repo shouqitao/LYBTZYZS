@@ -425,14 +425,17 @@ namespace LYBT.Desktop.Core.Services
 
         /// <inheritdoc/>
         public string OperationId { get; }
+
         /// <inheritdoc/>
         public bool SupportsProgress { get; }
         public int Layer { get; }
 
         /// <inheritdoc/>
         public int Progress => _progress;
+
         /// <inheritdoc/>
         public bool IsCancelled => _cancellationTokenSource.Token.IsCancellationRequested || _externalCancellationToken.IsCancellationRequested;
+
         /// <inheritdoc/>
         public CancellationToken CancellationToken => _cancellationTokenSource.Token;
 

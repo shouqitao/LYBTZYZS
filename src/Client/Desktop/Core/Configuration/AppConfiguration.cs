@@ -15,15 +15,19 @@ namespace LYBT.Desktop.Core.Configuration
 
         /// <inheritdoc/>
         public string ApiBaseUrl => GetValue("ApiBaseUrl", "https://localhost:7001");
+
         /// <inheritdoc/>
         public int ConnectionTimeout => GetValue("ConnectionTimeout", 30);
+
         /// <inheritdoc/>
         public bool IsDebugMode => GetValue("IsDebugMode", false);
 
         /// <inheritdoc/>
         public CacheConfiguration Cache { get; private set; } = null!;
+
         /// <inheritdoc/>
         public LoggingConfiguration Logging { get; private set; } = null!;
+
         /// <inheritdoc/>
         public PerformanceConfiguration Performance { get; private set; } = null!;
 

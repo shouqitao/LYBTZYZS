@@ -361,6 +361,7 @@ namespace LYBT.Desktop.Core.Http
         }
 
         // IApiService implementation
+
         /// <inheritdoc/>
         public Task<TResponse?> GetAsync<TResponse>(string endpoint, object? parameters = null, CancellationToken cancellationToken = default)
             where TResponse : class

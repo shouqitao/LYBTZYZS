@@ -74,6 +74,7 @@ public class ConsultationModule(
         => await _businessService.Disable(id);
 
     // 补充IConsultationService可能需要的其他方法（简化实现）
+
     /// <inheritdoc/>
     public async Task<ServiceResult<List<ConsultationDto>>> GetByPatientIdAsync(Guid patientId)
         => await _queryService.SearchAsync($"Patient:{patientId}");
@@ -83,6 +84,7 @@ public class ConsultationModule(
         => await _queryService.SearchAsync($"MedicalCase:{medicalCaseId}");
 
     // 补充IConsultationService接口的其他方法
+
     /// <inheritdoc/>
     public async Task<ServiceResult<ConsultationDto>> StartAsync(ConsultationStartDto startDto)
         => await _businessService.StartAsync(startDto);

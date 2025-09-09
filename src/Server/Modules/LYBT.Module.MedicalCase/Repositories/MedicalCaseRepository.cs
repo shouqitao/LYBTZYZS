@@ -25,6 +25,7 @@ public class MedicalCaseRepository : OptimizedBaseRepository<LYBT.Entities.Medic
     }
 
     // 覆盖基类方法以支持Include和缓存
+
     /// <inheritdoc/>
     public override async Task<LYBT.Entities.MedicalCase.MedicalCase?> GetByIdAsync(Guid id)
     {
@@ -64,6 +65,7 @@ public class MedicalCaseRepository : OptimizedBaseRepository<LYBT.Entities.Medic
     }
 
     // 覆盖基类方法以支持Include和默认排序
+
     /// <inheritdoc/>
     public override async Task<PagedResult<LYBT.Entities.MedicalCase.MedicalCase>> GetPagedAsync(
         Expression<Func<LYBT.Entities.MedicalCase.MedicalCase, bool>>? predicate,
@@ -109,6 +111,7 @@ public class MedicalCaseRepository : OptimizedBaseRepository<LYBT.Entities.Medic
     // 注意：基础CRUD方法（AddAsync, UpdateAsync, DeleteAsync）由BaseRepository提供
 
     // 医疗案例特有的业务方法（带缓存优化）
+
     /// <inheritdoc/>
     public async Task<List<LYBT.Entities.MedicalCase.MedicalCase>> GetByPatientIdAsync(Guid patientId)
     {

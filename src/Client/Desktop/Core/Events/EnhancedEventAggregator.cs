@@ -337,12 +337,16 @@ namespace LYBT.Desktop.Core.Events
 
         /// <inheritdoc/>
         public bool IsAlive => _strongAction != null || (_weakAction?.IsAlive ?? false);
+
         /// <inheritdoc/>
         public bool KeepAlive { get; }
+
         /// <inheritdoc/>
         public EnhancedThreadOption ThreadOption { get; }
+
         /// <inheritdoc/>
         public Predicate<object>? Filter { get; }
+
         /// <inheritdoc/>
         public int Priority { get; }
 
@@ -396,12 +400,16 @@ namespace LYBT.Desktop.Core.Events
 
         /// <inheritdoc/>
         public bool IsAlive => _strongAction != null || (_weakAction?.IsAlive ?? false);
+
         /// <inheritdoc/>
         public bool KeepAlive { get; }
+
         /// <inheritdoc/>
         public EnhancedThreadOption ThreadOption { get; }
+
         /// <inheritdoc/>
         public Predicate<object>? Filter { get; }
+
         /// <inheritdoc/>
         public int Priority { get; }
 

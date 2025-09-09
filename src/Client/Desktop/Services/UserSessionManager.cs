@@ -25,10 +25,13 @@ namespace LYBT.Desktop.Services
 
         /// <inheritdoc/>
         public UserDto? CurrentUser => _currentUser;
+
         /// <inheritdoc/>
         public bool IsLoggedIn => _currentUser != null && !string.IsNullOrEmpty(_sessionToken);
+
         /// <inheritdoc/>
         public DateTime? LoginTime => _loginTime;
+
         /// <inheritdoc/>
         public string? SessionToken => _sessionToken;
 

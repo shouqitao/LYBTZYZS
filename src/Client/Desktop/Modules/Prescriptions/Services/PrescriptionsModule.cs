@@ -21,6 +21,7 @@ public class PrescriptionsModule(
     private readonly IPrescriptionsBusinessService _businessService = businessService ?? throw new ArgumentNullException(nameof(businessService));
 
     // IPrescriptionService 委托实现
+
     /// <inheritdoc/>
     public async Task<ServiceResult<PrescriptionDto>> CreateAsync(PrescriptionCreateDto createDto)
         => await _businessService.CreateAsync(createDto);
@@ -52,6 +53,7 @@ public class PrescriptionsModule(
         => await _businessService.Disable(id);
 
     // 补充IPrescriptionService接口的其他方法
+
     /// <inheritdoc/>
     public async Task<ServiceResult<List<PrescriptionDto>>> GetByPatientIdAsync(Guid patientId)
         => await _queryService.Search($"Patient:{patientId}");

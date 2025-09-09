@@ -1,5 +1,7 @@
 using AutoMapper;
+using LYBT.Entities.Compatibility;
 using LYBT.Entities.Prescriptions;
+using LYBT.Shared.Models.Contracts.Compatibility;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 
 namespace LYBT.Module.Prescriptions.Mapping
@@ -40,6 +42,27 @@ namespace LYBT.Module.Prescriptions.Mapping
             // 编辑映射 - 忽略不可修改字段
             CreateMap<PrescriptionEditDto, Prescription>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore()); // UltraThink v2.0简化：CreateTime字段已删除
+
+            // 配伍记录映射
+            CreateMap<HerbCompatibilityNote, CompatibilityNoteDto>();
+            CreateMap<CompatibilityNoteCreateDto, HerbCompatibilityNote>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.PrescriptionId, opt => opt.Ignore())
+                .ForMember(dest => dest.CreateTime, opt => opt.Ignore())
+                .ForMember(dest => dest.UpdateTime, opt => opt.Ignore())
+                .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
+                .ForMember(dest => dest.IsDeleted, opt => opt.Ignore());
+            CreateMap<CompatibilityNoteUpdateDto, HerbCompatibilityNote>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.PrescriptionId, opt => opt.Ignore())
+                .ForMember(dest => dest.HerbCombination, opt => opt.Ignore())
+                .ForMember(dest => dest.CompatibilityType, opt => opt.Ignore())
+                .ForMember(dest => dest.SeverityLevel, opt => opt.Ignore())
+                .ForMember(dest => dest.ReferenceSource, opt => opt.Ignore())
+                .ForMember(dest => dest.CreateTime, opt => opt.Ignore())
+                .ForMember(dest => dest.UpdateTime, opt => opt.Ignore())
+                .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
+                .ForMember(dest => dest.IsDeleted, opt => opt.Ignore());
         }
     }
 }

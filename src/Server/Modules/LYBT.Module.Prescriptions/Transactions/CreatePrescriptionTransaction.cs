@@ -324,6 +324,7 @@ namespace LYBT.Module.Prescriptions.Transactions
     {
         /// <inheritdoc/>
         public override string StepName => "PrescriptionBusinessRuleValidation";
+
         /// <inheritdoc/>
         public override int Order => 100;
 
@@ -357,8 +358,10 @@ namespace LYBT.Module.Prescriptions.Transactions
 
         /// <inheritdoc/>
         public override string StepName => "SendPrescriptionNotification";
+
         /// <inheritdoc/>
         public override int Order => 200;
+
         /// <inheritdoc/>
         public override bool SupportsCompensation => false; // 通知通常不需要补偿
 

@@ -271,6 +271,7 @@ namespace LYBT.Module.MedicalCase.Transactions
     {
         /// <inheritdoc/>
         public override string StepName => "BusinessRuleValidation";
+
         /// <inheritdoc/>
         public override int Order => 10;
 
@@ -304,8 +305,10 @@ namespace LYBT.Module.MedicalCase.Transactions
 
         /// <inheritdoc/>
         public override string StepName => "SendNotification";
+
         /// <inheritdoc/>
         public override int Order => 20;
+
         /// <inheritdoc/>
         public override bool SupportsCompensation => false; // 通知通常不需要补偿
 
