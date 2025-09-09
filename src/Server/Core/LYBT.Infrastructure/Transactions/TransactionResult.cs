@@ -12,22 +12,22 @@ namespace LYBT.Infrastructure.Transactions
         /// 是否成功
         /// </summary>
         public bool Success { get; set; }
-        
+
         /// <summary>
         /// 结果数据
         /// </summary>
         public TResult Data { get; set; }
-        
+
         /// <summary>
         /// 错误消息
         /// </summary>
         public string ErrorMessage { get; set; }
-        
+
         /// <summary>
         /// 异常信息
         /// </summary>
         public Exception Exception { get; set; }
-        
+
         /// <summary>
         /// 创建成功结果
         /// </summary>
@@ -39,7 +39,7 @@ namespace LYBT.Infrastructure.Transactions
                 Data = data
             };
         }
-        
+
         /// <summary>
         /// 创建失败结果
         /// </summary>

@@ -99,14 +99,14 @@ namespace LYBT.Infrastructure.Transactions
                     "数据库事务步骤执行完成: {StepName}, 结果: {IsSuccess}, 耗时: {Duration}ms",
                     StepName, stepResult.IsSuccess, duration.TotalMilliseconds);
 
-                return stepResult.IsSuccess 
-                    ? TransactionResult<TContext>.FromSuccess(context) 
+                return stepResult.IsSuccess
+                    ? TransactionResult<TContext>.FromSuccess(context)
                     : TransactionResult<TContext>.FromError(stepResult.Message, stepResult.Exception);
             }
             catch (Exception ex)
             {
                 var duration = DateTime.UtcNow - startTime;
-                Logger.LogError(ex, "数据库事务步骤执行失败: {StepName}, 耗时: {Duration}ms", 
+                Logger.LogError(ex, "数据库事务步骤执行失败: {StepName}, 耗时: {Duration}ms",
                     StepName, duration.TotalMilliseconds);
 
                 return TransactionResult<TContext>.FromError($"事务步骤 {StepName} 执行失败: {ex.Message}", ex);
@@ -143,6 +143,19 @@ namespace LYBT.Infrastructure.Transactions
         {
             Logger.LogDebug("执行事务步骤回滚: {StepName}", StepName);
             return Task.FromResult(TransactionStepResult.Success($"步骤 {StepName} 回滚完成"));
+        }
+
+        /// <summary>
+        /// 补偿操作（回滚）
+        /// </summary>
+        /// <param name="context">事务上下文</param>
+        /// <param name="originalResult">原始执行结果</param>
+        /// <param name="cancellationToken">取消令牌</param>
+        /// <returns>补偿结果</returns>
+        public virtual Task<TransactionStepResult> CompensateAsync(TContext context, TransactionStepResult originalResult, CancellationToken cancellationToken = default)
+        {
+            Logger.LogDebug("执行事务步骤补偿: {StepName}", StepName);
+            return Task.FromResult(TransactionStepResult.Success($"步骤 {StepName} 补偿完成"));
         }
 
         #region 数据库实体操作辅助方法
