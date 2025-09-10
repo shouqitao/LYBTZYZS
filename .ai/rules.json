@@ -1,0 +1,109 @@
+{
+  "projectRules": {
+    "version": "1.0",
+    "type": "record-only-system",
+    "description": "凌隐宝堂中医诊所系统 - 机器可读规则定义",
+    "lastUpdated": "2025-09-10",
+    "strictMode": true
+  },
+  "architecture": {
+    "pattern": "hybrid",
+    "description": "前端UltraThink双层架构 + 后端传统三层架构",
+    "layers": {
+      "frontend": ["Desktop.ViewModels", "Desktop.Modules", "Desktop.Core"],
+      "backend": ["WebAPI.Controllers", "Modules.Services", "Infrastructure", "Entities"],
+      "shared": ["Shared.Models", "Shared.Interfaces", "Shared.Utilities"]
+    },
+    "businessModules": [
+      "Auth", "Users", "Patients", "MedicalCase", 
+      "Consultation", "Prescriptions", "Herbs", "Formula"
+    ]
+  },
+  "prohibitions": {
+    "frameworks": [
+      "rule-engine", "workflow", "event-bus", 
+      "transaction-pipeline", "saga-pattern", "cqrs"
+    ],
+    "naming": [
+      "Pipeline", "Workflow", "Bus", "Engine", "Saga"
+    ],
+    "routes": [
+      "/api/v2", "/api/v3", "/v2/", "/v3/"
+    ],
+    "patterns": [
+      "event-sourcing", "domain-events", "complex-workflows",
+      "auto-validation-attributes", "custom-pipeline-stages"
+    ]
+  },
+  "requirements": {
+    "apiRoutes": {
+      "prefix": "/api/v1",
+      "pattern": "^/api/v1/[a-z][a-zA-Z0-9]*$",
+      "description": "所有API路由必须以/api/v1开头"
+    },
+    "userIdentity": {
+      "field": "Username",
+      "description": "用户身份标识必须使用Username字段"
+    },
+    "nullability": {
+      "directive": "#nullable enable",
+      "description": "所有新文件必须启用nullable reference types"
+    },
+    "packageManagement": {
+      "type": "central",
+      "file": "Directory.Packages.props",
+      "description": "使用中央包管理模式"
+    }
+  },
+  "businessConstraints": {
+    "principle": "record-only-system",
+    "description": "8个业务模块仅用于数据记录和历史查询",
+    "modules": {
+      "Auth": "身份认证记录",
+      "Users": "用户信息记录", 
+      "Patients": "患者档案记录",
+      "MedicalCase": "医疗案例记录",
+      "Consultation": "看诊记录",
+      "Prescriptions": "处方记录",
+      "Herbs": "中药材记录",
+      "Formula": "验方记录"
+    },
+    "allowedOperations": [
+      "Create", "Read", "Update", "Delete",
+      "Query", "Search", "Export", "Import"
+    ],
+    "prohibitedFeatures": [
+      "智能推荐", "自动配伍", "AI诊断", "复杂工作流",
+      "事件驱动", "实时计算", "预测分析"
+    ]
+  },
+  "codeQuality": {
+    "compilation": {
+      "warnings": 0,
+      "errors": 0,
+      "description": "保持零警告零错误状态"
+    },
+    "testCoverage": {
+      "minimum": 60,
+      "target": 80,
+      "description": "单元测试覆盖率要求"
+    },
+    "documentation": {
+      "required": ["public-api", "business-logic", "architecture-decisions"],
+      "format": "xml-docs + markdown"
+    }
+  },
+  "validation": {
+    "archTests": {
+      "enabled": true,
+      "rules": [
+        "RoutePrefix", "LayerDependency", "NamingConvention", 
+        "ValidationSimplicity", "ModuleBoundary"
+      ]
+    },
+    "ci": {
+      "steps": ["format", "build", "test", "arch-tests"],
+      "failFast": true
+    }
+  }
+}
