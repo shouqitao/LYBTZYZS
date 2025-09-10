@@ -296,7 +296,7 @@ namespace LYBT.Module.Prescriptions.Transactions.Steps
         /// <param name="addedItems">添加的项目ID列表</param>
         /// <param name="addedItemDetails">添加的项目详情</param>
         /// <param name="cancellationToken">取消令牌</param>
-        private async Task RecordItemsAdditionHistoryAsync(
+        private Task RecordItemsAdditionHistoryAsync(
             PrescriptionTransactionContext context,
             List<Guid> addedItems,
             List<string> addedItemDetails,
@@ -324,6 +324,8 @@ namespace LYBT.Module.Prescriptions.Transactions.Steps
 
                 // 不抛出异常，因为这不是关键操作
             }
+            
+            return Task.CompletedTask;
         }
 
         /// <summary>
@@ -332,7 +334,7 @@ namespace LYBT.Module.Prescriptions.Transactions.Steps
         /// <param name="context">事务上下文</param>
         /// <param name="deletedItems">删除的项目ID列表</param>
         /// <param name="cancellationToken">取消令牌</param>
-        private async Task RecordCompensationHistoryAsync(
+        private Task RecordCompensationHistoryAsync(
             PrescriptionTransactionContext context,
             List<Guid> deletedItems,
             CancellationToken cancellationToken)
@@ -355,6 +357,8 @@ namespace LYBT.Module.Prescriptions.Transactions.Steps
 
                 // 不抛出异常，因为这不是关键操作
             }
+            
+            return Task.CompletedTask;
         }
 
         /// <summary>

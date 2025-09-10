@@ -241,7 +241,7 @@ namespace LYBT.Module.Prescriptions.Transactions.Steps
         /// <param name="context">事务上下文</param>
         /// <param name="validations">验证记录</param>
         /// <param name="cancellationToken">取消令牌</param>
-        private async Task RecordValidationHistoryAsync(
+        private Task RecordValidationHistoryAsync(
             PrescriptionTransactionContext context,
             List<string> validations,
             CancellationToken cancellationToken)
@@ -259,6 +259,8 @@ namespace LYBT.Module.Prescriptions.Transactions.Steps
 
                 // 不抛出异常，因为这不是关键操作
             }
+            
+            return Task.CompletedTask;
         }
 
         /// <summary>

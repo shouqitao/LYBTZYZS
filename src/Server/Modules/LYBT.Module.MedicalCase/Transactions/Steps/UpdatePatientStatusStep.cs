@@ -287,7 +287,7 @@ namespace LYBT.Module.MedicalCase.Transactions.Steps
         /// <param name="context">事务上下文</param>
         /// <param name="changes">变更记录</param>
         /// <param name="cancellationToken">取消令牌</param>
-        private async Task RecordStatusChangeHistoryAsync(
+        private Task RecordStatusChangeHistoryAsync(
             ConsultationTransactionContext context,
             List<string> changes,
             CancellationToken cancellationToken)
@@ -307,6 +307,8 @@ namespace LYBT.Module.MedicalCase.Transactions.Steps
 
                 // 不抛出异常，因为这不是关键操作
             }
+            
+            return Task.CompletedTask;
         }
 
         /// <summary>
@@ -315,7 +317,7 @@ namespace LYBT.Module.MedicalCase.Transactions.Steps
         /// <param name="context">事务上下文</param>
         /// <param name="restorations">恢复记录</param>
         /// <param name="cancellationToken">取消令牌</param>
-        private async Task RecordCompensationHistoryAsync(
+        private Task RecordCompensationHistoryAsync(
             ConsultationTransactionContext context,
             List<string> restorations,
             CancellationToken cancellationToken)
@@ -333,6 +335,8 @@ namespace LYBT.Module.MedicalCase.Transactions.Steps
 
                 // 不抛出异常，因为这不是关键操作
             }
+            
+            return Task.CompletedTask;
         }
 
         /// <summary>
