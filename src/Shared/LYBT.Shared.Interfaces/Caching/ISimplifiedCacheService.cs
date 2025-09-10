@@ -12,6 +12,7 @@ namespace LYBT.Shared.Interfaces.Caching
     /// <para>性能优化: 同步+异步双模式，支持高频调用和复杂数据获取场景</para>
     /// <para>使用场景: 用户信息、药材数据、验方模板等频繁访问数据的缓存</para>
     /// </remarks>
+    [Obsolete("Under review for removal - analysis period ends 2025-09-21", false)]
     [Description("简化缓存服务 - 智能内存缓存，8个核心方法")]
     public interface ISimplifiedCacheService
     {
