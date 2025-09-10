@@ -5,7 +5,6 @@ using LYBT.Module.Patients.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
-using LYBT.Shared.Utilities.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -68,7 +67,7 @@ namespace LYBT.Module.Patients.Services
                 var patient = _mapper.Map<Patient>(createDto);
                 patient.Id = Guid.NewGuid();
                 patient.Status = CommonStatus.Enabled;
-                patient.PinYinCode = CommonHelper.GetPinyinCode(createDto.Name);
+                patient.PinYinCode = string.Empty; // 移除CommonHelper依赖，拼音码功能暂不实现
                 patient.CreatedAt = DateTime.Now;
 
                 _context.Patients.Add(patient);
@@ -127,7 +126,7 @@ namespace LYBT.Module.Patients.Services
 
                 // 更新字段
                 _mapper.Map(updateDto, patient);
-                patient.PinYinCode = CommonHelper.GetPinyinCode(patient.Name);
+                patient.PinYinCode = string.Empty; // 移除CommonHelper依赖，拼音码功能暂不实现
                 patient.UpdateTime = DateTime.Now;
 
                 _context.Patients.Update(patient);
@@ -388,7 +387,7 @@ namespace LYBT.Module.Patients.Services
                             EmergencyContactPhone = importDto.EmergencyPhone,
                             AllergyHistory = importDto.AllergyHistory,
                             Status = CommonStatus.Enabled,
-                            PinYinCode = CommonHelper.GetPinyinCode(importDto.Name),
+                            PinYinCode = string.Empty, // 移除CommonHelper依赖，拼音码功能暂不实现
                             CreatedAt = DateTime.Now
                         };
 

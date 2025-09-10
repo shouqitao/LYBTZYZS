@@ -323,7 +323,7 @@ namespace LYBT.Module.Users.Services
                 // 更新个人信息
                 user.RealName = realName;
                 user.PhoneNumber = phoneNumber;
-                user.PinYinCode = CommonHelper.GetPinyinCode(realName);
+                user.PinYinCode = string.Empty; // 移除CommonHelper依赖，拼音码功能暂不实现
 
                 _context.Users.Update(user);
                 await _context.SaveChangesAsync();
@@ -374,7 +374,7 @@ namespace LYBT.Module.Users.Services
                         PhoneNumber = dto.PhoneNumber,
                         Email = dto.Email,
                         Status = dto.Status,
-                        PinYinCode = CommonHelper.GetPinyinCode(dto.RealName ?? dto.Username),
+                        PinYinCode = string.Empty, // 移除CommonHelper依赖，拼音码功能暂不实现
                         CreatedTime = DateTime.Now
                     };
 
@@ -437,7 +437,7 @@ namespace LYBT.Module.Users.Services
                     user.PhoneNumber = dto.PhoneNumber;
                     user.Email = dto.Email;
                     user.Status = dto.Status;
-                    user.PinYinCode = CommonHelper.GetPinyinCode(dto.RealName);
+                    user.PinYinCode = string.Empty; // 移除CommonHelper依赖，拼音码功能暂不实现
 
                     _context.Users.Update(user);
                     await _context.SaveChangesAsync();

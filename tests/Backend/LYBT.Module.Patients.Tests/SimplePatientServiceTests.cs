@@ -116,7 +116,7 @@ namespace LYBT.Module.Patients.Tests
             // Assert
             result.Should().NotBeNull();
             capturedModel.Should().NotBeNull();
-            // 由于CommonHelper.GetPinyinCode目前返回空字符串，暂时跳过此断言
+            // 由于拼音码功能已移除（原CommonHelper.GetPinyinCode返回空字符串），暂时跳过此断言
             // capturedModel!.PinYinCode.Should().NotBeNullOrEmpty();
         }
 
@@ -487,7 +487,7 @@ namespace LYBT.Module.Patients.Tests
             // Assert
             result.Should().NotBeNull();
             capturedModel.Should().NotBeNull();
-            // 注意：由于CommonHelper.CheckIdNumber可能返回false，BirthDate可能没有被设置
+            // 注意：由于身份证验证功能已移除（原CommonHelper.CheckIdNumber返回false），BirthDate可能没有被设置
         }
 
         #endregion

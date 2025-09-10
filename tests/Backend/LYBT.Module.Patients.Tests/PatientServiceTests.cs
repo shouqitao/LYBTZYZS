@@ -417,15 +417,14 @@ namespace LYBT.Module.Patients.Tests
             var operatorId = Guid.NewGuid();
             var operatorName = "操作员";
 
-            // 模拟ID号码验证通过
-            CommonHelper.CheckIdNumber(dto.IDNumber).Should().BeFalse(); // 实际应该是true，但测试环境可能没有实现
+            // 注：CommonHelper.CheckIdNumber已移除，此方法之前总是返回false
 
             // Act
             var result = await _patientService.CreateAsync(dto, operatorId, operatorName);
 
             // Assert
             result.Should().NotBeNull();
-            // 注意：由于CommonHelper.CheckIdNumber可能在测试环境返回false，所以BirthDate可能没有被设置
+            // 注意：由于身份证验证功能已移除（原CommonHelper.CheckIdNumber返回false），所以BirthDate可能没有被设置
         }
 
         #endregion

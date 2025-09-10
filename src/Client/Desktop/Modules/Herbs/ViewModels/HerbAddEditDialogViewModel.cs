@@ -6,7 +6,6 @@ using LYBT.Desktop.Core.ViewModels.Base;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
-using LYBT.Shared.Utilities.Helpers;
 using Prism.Events;
 
 namespace LYBT.Desktop.Herbs.ViewModels
@@ -275,7 +274,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
             // 纯字符串转换工具，无状态、无业务逻辑，前端调用职责划分合理
             if (!string.IsNullOrWhiteSpace(HerbName))
             {
-                PinYinCode = CommonHelper.GetPinyinCode(HerbName);
+                PinYinCode = string.Empty; // 移除CommonHelper依赖，拼音码功能暂不实现
             }
             else
             {

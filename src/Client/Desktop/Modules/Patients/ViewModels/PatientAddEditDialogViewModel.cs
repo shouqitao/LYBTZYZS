@@ -7,7 +7,6 @@ using LYBT.Desktop.Core.ViewModels.Base;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
-using LYBT.Shared.Utilities.Helpers;
 using Prism.Events;
 
 // UltraThink v2.0: Desktop层直接使用DTO，移除Info层转换
@@ -342,7 +341,7 @@ namespace LYBT.Desktop.Patients.ViewModels
             // 这是无状态的字符串转换工具，不涉及业务逻辑，职责划分合理
             if (!string.IsNullOrWhiteSpace(PatientName))
             {
-                PinYinCode = CommonHelper.GetPinyinCode(PatientName);
+                PinYinCode = string.Empty; // 移除CommonHelper依赖，拼音码功能暂不实现
             }
             else
             {
