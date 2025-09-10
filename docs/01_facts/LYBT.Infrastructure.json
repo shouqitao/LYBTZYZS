@@ -1,0 +1,133 @@
+{
+  "projectName": "LYBT.Infrastructure",
+  "relativePath": "src/Server/Core/LYBT.Infrastructure",
+  "projectType": "Library",
+  "targetFramework": "net8.0",
+  "outputType": "Library",
+  "nullable": "enable",
+  "langVersion": "(unknown)",
+  "projectReferences": [
+    "../LYBT.Entities/LYBT.Entities.csproj",
+    "../../../Shared/LYBT.Shared.Models/LYBT.Shared.Models.csproj",
+    "../../../Shared/LYBT.Shared.Utilities/LYBT.Shared.Utilities.csproj",
+    "../../../Shared/LYBT.Shared.Interfaces/LYBT.Shared.Interfaces.csproj"
+  ],
+  "packageReferences": [
+    {
+      "name": "Microsoft.AspNetCore.Authentication.JwtBearer",
+      "version": "(unknown)"
+    },
+    {
+      "name": "Microsoft.AspNetCore.Http",
+      "version": "(unknown)"
+    },
+    {
+      "name": "Microsoft.AspNetCore.Http.Abstractions",
+      "version": "(unknown)"
+    },
+    {
+      "name": "Microsoft.AspNetCore.Mvc.Core",
+      "version": "(unknown)"
+    },
+    {
+      "name": "Microsoft.EntityFrameworkCore",
+      "version": "(unknown)"
+    },
+    {
+      "name": "Microsoft.EntityFrameworkCore.Design",
+      "version": "(unknown)"
+    },
+    {
+      "name": "Microsoft.EntityFrameworkCore.SqlServer",
+      "version": "(unknown)"
+    },
+    {
+      "name": "Microsoft.Extensions.Caching.Abstractions",
+      "version": "(unknown)"
+    },
+    {
+      "name": "Microsoft.Extensions.Caching.Memory",
+      "version": "(unknown)"
+    },
+    {
+      "name": "Microsoft.Extensions.Configuration",
+      "version": "(unknown)"
+    },
+    {
+      "name": "Microsoft.Extensions.Configuration.Json",
+      "version": "(unknown)"
+    },
+    {
+      "name": "Microsoft.Extensions.Configuration.FileExtensions",
+      "version": "(unknown)"
+    },
+    {
+      "name": "Microsoft.Extensions.Configuration.EnvironmentVariables",
+      "version": "(unknown)"
+    },
+    {
+      "name": "Microsoft.Extensions.Logging.Abstractions",
+      "version": "(unknown)"
+    },
+    {
+      "name": "Microsoft.Extensions.Options",
+      "version": "(unknown)"
+    },
+    {
+      "name": "Microsoft.Extensions.Options.ConfigurationExtensions",
+      "version": "(unknown)"
+    },
+    {
+      "name": "Microsoft.Extensions.DependencyInjection.Abstractions",
+      "version": "(unknown)"
+    },
+    {
+      "name": "Microsoft.IdentityModel.Tokens",
+      "version": "(unknown)"
+    },
+    {
+      "name": "System.IdentityModel.Tokens.Jwt",
+      "version": "(unknown)"
+    },
+    {
+      "name": "AutoMapper",
+      "version": "(unknown)"
+    },
+    {
+      "name": "FluentValidation",
+      "version": "(unknown)"
+    }
+  ],
+  "publicSurface": {
+    "webAPI": null,
+    "wpf": null
+  },
+  "dataModels": {
+    "dbContext": {
+      "file": "Data/AppDbContext.cs",
+      "dbSets": [
+        "Users",
+        "Patients", 
+        "MedicalCases",
+        "Consultations",
+        "Prescriptions",
+        "PrescriptionItems",
+        "Herbs",
+        "Formulas",
+        "FormulaHerbItems",
+        "AuthSessions",
+        "AdminSecrets",
+        "HerbCompatibilityNotes",
+        "TransactionLogs",
+        "TransactionStepLogs"
+      ]
+    },
+    "entities": [],
+    "dtos": [],
+    "entityDtoMatches": []
+  },
+  "testCharacteristics": null,
+  "isIntegrationTest": false,
+  "isCore": true,
+  "notes": "核心基础设施项目，包含统一AppDbContext、Repository基类、控制器基类、JWT认证、AutoMapper配置等"
+}

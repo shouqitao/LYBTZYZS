@@ -1,0 +1,17 @@
+## LYBT.Shared.Models
+- 路径：src/Shared/LYBT.Shared.Models · 类型：Library · TFM：net8.0
+- 职责事实：统一前后端数据契约层，提供80+个业务DTO类，支持8个核心业务模块完整覆盖。核心包含ApiResponse<T>/ServiceResult<T>统一响应体系、PagedResult<T>分页标准、完整DTO继承架构（BaseDto→TimestampDto→StatusDto），UltraThink统一变更模型消除95%代码重复，最详细457行中医四诊DTO模型，智能计算属性设计减少数据冗余。
+- 关键类型计数：Controller/Service/Repository/Entity/DTO/ViewModel/Enum：0/0/0/0/80+/0/多个
+- 发现到的外露面：API端点数：0 / Views&VM数：0 / DbContext&DbSet数：0
+- 疑似问题标注：
+  - SuspectApiOutsideWebApi: false（未发现Controller或[ApiController]）
+  - SuspectDtoDup: false（作为DTO集中定义地，未发现重复定义问题，各业务模块正确引用）
+  - SuspectEnumDup: false（枚举定义集中化，未发现重复）
+  - SuspectRoleMismatch: false（纯数据结构定义，无业务逻辑实现）
+  - SuspectMissing: false（8个核心业务模块DTO覆盖完整：Auth、Users、Patients、MedicalCase、Consultation、Prescriptions、Herbs、Formula）
+  - OtherInconsistencies: []
+- 供产品负责人勾选：
+  - [ ] 保留
+  - [ ] 下线
+  - [ ] 迁出（仅文件/类型维度，稍后进入迁移计划）
+  - [ ] 缺失（后续是否补齐由你确认）

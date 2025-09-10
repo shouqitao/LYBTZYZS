@@ -1,0 +1,17 @@
+## LYBT.Module.Formula
+- 路径：src/Server/Modules/LYBT.Module.Formula · 类型：Library · TFM：net8.0
+- 职责事实：验方管理业务模块，采用UltraThink双层架构，提供经典验方库传统验方模板收录、个人验方医生临床经验积累、智能组合可被Prescriptions引用和组合应用，支持小规模诊所验方模板管理体系
+- 关键类型计数：Controller/Service/Repository/Entity/DTO/ViewModel/Enum：0/3/1/0/0/0/0
+- 发现到的外露面：API端点数: 0 / Views&VM数: 0 / DbContext&DbSet数: 0
+- 疑似问题标注：
+  - SuspectApiOutsideWebApi: false（Module项目正确无Controller组件）
+  - SuspectDtoDup: false（使用Shared.Models统一DTO，无重复定义）
+  - SuspectEnumDup: false（无Enum定义）
+  - SuspectRoleMismatch: false（职责完全符合验方管理模块要求：FormulaService、FormulaQueryService、FormulaBusinessService）
+  - SuspectMissing: false（UltraThink双层架构组件齐全：主服务+查询服务+业务服务+Repository层）
+  - OtherInconsistencies: []
+- 供产品负责人勾选：
+  - [ ] 保留
+  - [ ] 下线
+  - [ ] 迁出（仅文件/类型维度，稍后进入迁移计划）
+  - [ ] 缺失（后续是否补齐由你确认）

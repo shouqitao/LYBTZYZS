@@ -1,0 +1,17 @@
+## LYBT.Desktop.Workbench.Core
+- 路径：src/Client/Desktop/Workbenches/Core · 类型：Library · TFM：net8.0-windows
+- 职责事实：WPF工作台核心基础层，为诊疗工作台和系统管理工作台提供共享的基础设施和抽象定义，包含工作台通用组件、基类、接口定义、共享服务等工作台架构基础，支持多个工作台模块的统一架构标准
+- 关键类型计数：Controller/Service/Repository/Entity/DTO/ViewModel/Enum：0/0/0/0/0/多个/0
+- 发现到的外露面：API端点数: 0 / Views&VM数: 工作台基类和通用组件 / DbContext&DbSet数: 0
+- 疑似问题标注：
+  - SuspectApiOutsideWebApi: false（纯工作台核心层，无Web功能）
+  - SuspectDtoDup: false（无DTO定义，使用Shared.Models）
+  - SuspectEnumDup: false（无Enum定义）
+  - SuspectRoleMismatch: false（完全符合工作台核心基础层职责）
+  - SuspectMissing: false（工作台基础设施和抽象定义完整）
+  - OtherInconsistencies: []
+- 供产品负责人勾选：
+  - [ ] 保留
+  - [ ] 下线
+  - [ ] 迁出（仅文件/类型维度，稍后进入迁移计划）
+  - [ ] 缺失（后续是否补齐由你确认）

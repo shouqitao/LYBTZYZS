@@ -1,0 +1,53 @@
+Path,Decision,Reason
+..,SKIP,Parent directory reference
+.ai,DELETE-CANDIDATE,AI related temp directory - not in whitelist
+.claude,KEEP,Claude runtime configuration - whitelist protected
+.claudereports,DELETE-CANDIDATE,Claude reports temp directory - not in whitelist
+.editorconfig,KEEP,Editor configuration - whitelist protected
+.git,KEEP,Version control - whitelist protected
+.gitattributes,KEEP,Git configuration - whitelist protected
+.github,KEEP,GitHub configuration - whitelist protected
+.gitignore,KEEP,Git configuration - whitelist protected
+.gitlab-ci.yml,DELETE-CANDIDATE,GitLab CI config - not in whitelist
+.serena,DELETE-CANDIDATE,Serena related temp directory - not in whitelist
+.vs,DELETE-CANDIDATE,Visual Studio temp directory - not in whitelist
+_archive_noncode,KEEP,Archive directory created by cleanup process
+_governance,DELETE-CANDIDATE,Governance docs directory - not in whitelist
+build,DELETE-CANDIDATE,Build temp directory - not in whitelist
+build_errors.txt,DELETE-CANDIDATE,Log file - blacklist
+C:temp,DELETE-CANDIDATE,Temp directory - blacklist pattern
+ccpm.bat,DELETE-CANDIDATE,Script file - not in tools/ whitelist location
+CLAUDE.md,DELETE-CANDIDATE,Documentation file - blacklist (*.md)
+Directory.Build.props,KEEP,Build configuration - whitelist protected
+Directory.Packages.props,DELETE-CANDIDATE,Package management config - not in whitelist
+fix_password_hash.cs,DELETE-CANDIDATE,Utility script - not in tools/ whitelist location
+fixed_management_test.py,DELETE-CANDIDATE,Test script - not in tests/ whitelist location
+LICENSE,DELETE-CANDIDATE,Documentation file - blacklist pattern
+LYBT.All.sln,KEEP,Solution file - whitelist protected (*.sln)
+LYBT.All.slnLaunch.user,DELETE-CANDIDATE,User specific VS config - temp file pattern
+LYBT.Desktop.sln,KEEP,Solution file - whitelist protected (*.sln)
+LYBT.Server.sln,KEEP,Solution file - whitelist protected (*.sln)
+nul,DELETE-CANDIDATE,System temp file - blacklist
+PasswordHashFixer,DELETE-CANDIDATE,Tool project - should be in tools/ directory
+README.md,DELETE-CANDIDATE,Documentation file - blacklist (*.md)
+samples,DELETE-CANDIDATE,Sample directory - not in whitelist
+scripts,KEEP,Scripts directory - whitelist protected
+server-build-warnings.log,DELETE-CANDIDATE,Log file - blacklist (*.log)
+simple_management_test.py,DELETE-CANDIDATE,Test script - not in tests/ whitelist location
+simple_user_test.js,DELETE-CANDIDATE,Test script - not in tests/ whitelist location
+src,KEEP,Source code directory - whitelist protected
+start_api.bat,DELETE-CANDIDATE,Script file - not in scripts/ whitelist location
+step1-check-env.ps1,DELETE-CANDIDATE,Script file - not in scripts/ whitelist location
+step2-build-report.ps1,DELETE-CANDIDATE,Script file - not in scripts/ whitelist location
+stylecop.json,DELETE-CANDIDATE,Tool config - not in whitelist
+TECH_DEBT_BACKLOG.md,DELETE-CANDIDATE,Documentation file - blacklist (*.md)
+temp,DELETE-CANDIDATE,Temp directory - blacklist
+temp_output.txt,DELETE-CANDIDATE,Temp file - blacklist pattern
+test_management_modules.py,DELETE-CANDIDATE,Test script - not in tests/ whitelist location
+test_refresh_button.py,DELETE-CANDIDATE,Test script - not in tests/ whitelist location
+test_refresh_fix_verification.py,DELETE-CANDIDATE,Test script - not in tests/ whitelist location
+test_ui_thread_refresh.py,DELETE-CANDIDATE,Test script - not in tests/ whitelist location
+test_user_update.js,DELETE-CANDIDATE,Test script - not in tests/ whitelist location
+TestResults,DELETE-CANDIDATE,Test output directory - not in whitelist
+tests,KEEP,Test directory - whitelist protected
+tools,KEEP,Tools directory - whitelist protected

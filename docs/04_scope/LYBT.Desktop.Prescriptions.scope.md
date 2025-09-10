@@ -1,0 +1,17 @@
+## LYBT.Desktop.Prescriptions
+- 路径：src/Client/Desktop/Modules/Prescriptions · 类型：WPF · TFM：net8.0-windows
+- 职责事实：WPF处方管理模块，采用UltraThink双层架构重构完成，提供药材组合管理、价格计算、处方信息存储、数据记录专用、患者处方历史、医案处方记录、高级搜索功能、处方输出标准格式打印复制验证功能等完整处方管理界面，包含完整处方流程的7个ViewModel和6个View，功能最为丰富
+- 关键类型计数：Controller/Service/Repository/Entity/DTO/ViewModel/Enum：0/0/0/0/0/7/0
+- 发现到的外露面：API端点数: 0 / Views&VM数: 7个ViewModel + 6个View / DbContext&DbSet数: 0
+- 疑似问题标注：
+  - SuspectApiOutsideWebApi: false（WPF模块，无Controller组件）
+  - SuspectDtoDup: false（使用Shared.Models统一DTO，无重复定义）
+  - SuspectEnumDup: false（无Enum定义）
+  - SuspectRoleMismatch: false（职责完全符合处方管理模块要求：处方管理、药材组合、价格计算）
+  - SuspectMissing: false（UltraThink双层架构重构完成，处方管理功能界面最完整丰富）
+  - OtherInconsistencies: []
+- 供产品负责人勾选：
+  - [ ] 保留
+  - [ ] 下线
+  - [ ] 迁出（仅文件/类型维度，稍后进入迁移计划）
+  - [ ] 缺失（后续是否补齐由你确认）

@@ -1,0 +1,559 @@
+{
+  "api_analysis": {
+    "scan_date": "2025-01-10",
+    "total_controllers": 12,
+    "total_endpoints": 50,
+    "architecture_pattern": "UltraThink三层控制器体系",
+    "response_format": "统一ApiResponse<T>包装",
+    "authentication": "JWT Bearer Token"
+  },
+  "controller_architecture": {
+    "base_controllers": [
+      {
+        "name": "BaseControllerCore",
+        "path": "src/Server/Core/LYBT.Infrastructure/Web/BaseControllerCore.cs",
+        "type": "Core Base Class",
+        "description": "控制器核心基类，提供基础功能"
+      },
+      {
+        "name": "BaseApiController", 
+        "path": "src/Server/Core/LYBT.Infrastructure/Web/BaseApiController.cs",
+        "type": "Business API Base",
+        "inherits": "BaseControllerCore",
+        "description": "业务API控制器基类，统一异常处理和响应格式"
+      },
+      {
+        "name": "BaseSystemController",
+        "path": "src/Server/Core/LYBT.Infrastructure/Web/BaseSystemController.cs", 
+        "type": "System Management Base",
+        "inherits": "BaseControllerCore",
+        "description": "系统管理控制器基类，用于健康检查等系统功能"
+      }
+    ]
+  },
+  "business_api_controllers": [
+    {
+      "name": "AuthController",
+      "path": "src/Server/Services/LYBT.WebAPI/Controllers/AuthController.cs",
+      "route": "api/v1/auth",
+      "inherits": "BaseApiController",
+      "authorization": "AllowAnonymous/Authorize",
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/login",
+          "action": "Login",
+          "auth": "AllowAnonymous",
+          "input": "LoginRequest",
+          "output": "ApiResponse<LoginResponse>",
+          "description": "用户登录"
+        },
+        {
+          "method": "POST", 
+          "path": "/logout",
+          "action": "Logout",
+          "auth": "Authorize",
+          "input": "LogoutRequest", 
+          "output": "ApiResponse<object>",
+          "description": "用户登出"
+        },
+        {
+          "method": "POST",
+          "path": "/refresh-token", 
+          "action": "RefreshToken",
+          "auth": "Authorize",
+          "input": "string",
+          "output": "ApiResponse<LoginResponse>",
+          "description": "刷新JWT令牌"
+        },
+        {
+          "method": "POST",
+          "path": "/change-password",
+          "action": "ChangePassword", 
+          "auth": "Authorize",
+          "input": "ChangePasswordRequest",
+          "output": "ApiResponse<object>",
+          "description": "修改密码"
+        }
+      ]
+    },
+    {
+      "name": "UsersController",
+      "path": "src/Server/Services/LYBT.WebAPI/Controllers/UsersController.cs",
+      "route": "api/v1/users",
+      "inherits": "BaseApiController", 
+      "authorization": "Authorize",
+      "role_restrictions": "Admin/Doctor",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/",
+          "action": "GetAllUsers", 
+          "auth": "Authorize",
+          "output": "ApiResponse<List<UserDto>>",
+          "description": "获取所有用户列表"
+        },
+        {
+          "method": "GET",
+          "path": "/{id}",
+          "action": "GetUserById",
+          "auth": "Authorize", 
+          "input": "Guid id",
+          "output": "ApiResponse<UserDto>",
+          "description": "根据ID获取用户详情"
+        },
+        {
+          "method": "POST",
+          "path": "/",
+          "action": "CreateUser",
+          "auth": "Authorize(Roles='Admin')",
+          "input": "UserCreateDto",
+          "output": "ApiResponse<UserDto>", 
+          "description": "创建新用户"
+        },
+        {
+          "method": "PUT",
+          "path": "/{id}",
+          "action": "UpdateUser",
+          "auth": "Authorize",
+          "input": "Guid id, UserUpdateDto",
+          "output": "ApiResponse<UserDto>",
+          "description": "更新用户信息"
+        },
+        {
+          "method": "DELETE", 
+          "path": "/{id}",
+          "action": "DeleteUser",
+          "auth": "Authorize(Roles='Admin')",
+          "input": "Guid id",
+          "output": "ApiResponse<object>",
+          "description": "删除用户（软删除）"
+        },
+        {
+          "method": "POST",
+          "path": "/search",
+          "action": "SearchUsers",
+          "auth": "Authorize",
+          "input": "UserSearchDto",
+          "output": "ApiResponse<PagedResult<UserDto>>",
+          "description": "搜索用户"
+        }
+      ]
+    },
+    {
+      "name": "PatientsController", 
+      "path": "src/Server/Services/LYBT.WebAPI/Controllers/PatientsController.cs",
+      "route": "api/v1/patients",
+      "inherits": "BaseApiController",
+      "authorization": "Authorize",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/",
+          "action": "GetAllPatients",
+          "auth": "Authorize",
+          "output": "ApiResponse<List<PatientDto>>",
+          "description": "获取所有患者列表"
+        },
+        {
+          "method": "GET",
+          "path": "/{id}",
+          "action": "GetPatientById", 
+          "auth": "Authorize",
+          "input": "Guid id",
+          "output": "ApiResponse<PatientDto>",
+          "description": "根据ID获取患者详情"
+        },
+        {
+          "method": "POST",
+          "path": "/",
+          "action": "CreatePatient",
+          "auth": "Authorize",
+          "input": "PatientCreateDto",
+          "output": "ApiResponse<PatientDto>",
+          "description": "创建新患者"
+        },
+        {
+          "method": "PUT",
+          "path": "/{id}",
+          "action": "UpdatePatient",
+          "auth": "Authorize",
+          "input": "Guid id, PatientUpdateDto", 
+          "output": "ApiResponse<PatientDto>",
+          "description": "更新患者信息"
+        },
+        {
+          "method": "DELETE",
+          "path": "/{id}",
+          "action": "DeletePatient",
+          "auth": "Authorize",
+          "input": "Guid id",
+          "output": "ApiResponse<object>",
+          "description": "删除患者（软删除）"
+        },
+        {
+          "method": "POST",
+          "path": "/search",
+          "action": "SearchPatients",
+          "auth": "Authorize",
+          "input": "PatientSearchDto",
+          "output": "ApiResponse<PagedResult<PatientDto>>",
+          "description": "搜索患者"
+        }
+      ]
+    },
+    {
+      "name": "MedicalCaseController",
+      "path": "src/Server/Services/LYBT.WebAPI/Controllers/MedicalCaseController.cs",
+      "route": "api/v1/medicalcases",
+      "inherits": "BaseApiController",
+      "authorization": "Authorize",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/",
+          "action": "GetAllMedicalCases",
+          "auth": "Authorize",
+          "output": "ApiResponse<List<MedicalCaseDto>>", 
+          "description": "获取所有医疗案例列表"
+        },
+        {
+          "method": "GET",
+          "path": "/{id}",
+          "action": "GetMedicalCaseById",
+          "auth": "Authorize",
+          "input": "Guid id",
+          "output": "ApiResponse<MedicalCaseDto>",
+          "description": "根据ID获取医疗案例详情"
+        },
+        {
+          "method": "POST",
+          "path": "/",
+          "action": "CreateMedicalCase",
+          "auth": "Authorize",
+          "input": "MedicalCaseCreateDto",
+          "output": "ApiResponse<MedicalCaseDto>",
+          "description": "创建新医疗案例"
+        },
+        {
+          "method": "PUT",
+          "path": "/{id}",
+          "action": "UpdateMedicalCase",
+          "auth": "Authorize",
+          "input": "Guid id, MedicalCaseUpdateDto",
+          "output": "ApiResponse<MedicalCaseDto>", 
+          "description": "更新医疗案例"
+        },
+        {
+          "method": "POST",
+          "path": "/{id}/complete",
+          "action": "CompleteMedicalCase",
+          "auth": "Authorize",
+          "input": "Guid id",
+          "output": "ApiResponse<object>",
+          "description": "完成医疗案例"
+        }
+      ]
+    },
+    {
+      "name": "ConsultationController",
+      "path": "src/Server/Services/LYBT.WebAPI/Controllers/ConsultationController.cs",
+      "route": "api/v1/consultations",
+      "inherits": "BaseApiController",
+      "authorization": "Authorize",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/{id}",
+          "action": "GetConsultationById",
+          "auth": "Authorize",
+          "input": "Guid id",
+          "output": "ApiResponse<ConsultationDto>",
+          "description": "根据ID获取看诊记录"
+        },
+        {
+          "method": "POST",
+          "path": "/",
+          "action": "CreateConsultation", 
+          "auth": "Authorize",
+          "input": "ConsultationCreateDto",
+          "output": "ApiResponse<ConsultationDto>",
+          "description": "创建看诊记录"
+        },
+        {
+          "method": "PUT",
+          "path": "/{id}",
+          "action": "UpdateConsultation",
+          "auth": "Authorize",
+          "input": "Guid id, ConsultationUpdateDto",
+          "output": "ApiResponse<ConsultationDto>",
+          "description": "更新看诊记录"
+        }
+      ]
+    },
+    {
+      "name": "PrescriptionsController",
+      "path": "src/Server/Services/LYBT.WebAPI/Controllers/PrescriptionsController.cs",
+      "route": "api/v1/prescriptions",
+      "inherits": "BaseApiController",
+      "authorization": "Authorize",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/",
+          "action": "GetAllPrescriptions",
+          "auth": "Authorize",
+          "output": "ApiResponse<List<PrescriptionDto>>",
+          "description": "获取所有处方列表"
+        },
+        {
+          "method": "GET",
+          "path": "/{id}",
+          "action": "GetPrescriptionById",
+          "auth": "Authorize", 
+          "input": "Guid id",
+          "output": "ApiResponse<PrescriptionDto>",
+          "description": "根据ID获取处方详情"
+        },
+        {
+          "method": "POST",
+          "path": "/",
+          "action": "CreatePrescription",
+          "auth": "Authorize",
+          "input": "PrescriptionCreateDto",
+          "output": "ApiResponse<PrescriptionDto>",
+          "description": "创建新处方"
+        },
+        {
+          "method": "PUT",
+          "path": "/{id}",
+          "action": "UpdatePrescription",
+          "auth": "Authorize",
+          "input": "Guid id, PrescriptionUpdateDto",
+          "output": "ApiResponse<PrescriptionDto>",
+          "description": "更新处方"
+        },
+        {
+          "method": "POST",
+          "path": "/{id}/calculate",
+          "action": "CalculatePrescription",
+          "auth": "Authorize", 
+          "input": "Guid id",
+          "output": "ApiResponse<PrescriptionCalculationDto>",
+          "description": "计算处方价格"
+        }
+      ]
+    },
+    {
+      "name": "HerbsController",
+      "path": "src/Server/Services/LYBT.WebAPI/Controllers/HerbsController.cs",
+      "route": "api/v1/herbs",
+      "inherits": "BaseApiController",
+      "authorization": "Authorize",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/",
+          "action": "GetAllHerbs",
+          "auth": "Authorize",
+          "output": "ApiResponse<List<HerbDto>>",
+          "description": "获取所有药材列表"
+        },
+        {
+          "method": "GET",
+          "path": "/{id}",
+          "action": "GetHerbById",
+          "auth": "Authorize",
+          "input": "Guid id",
+          "output": "ApiResponse<HerbDto>",
+          "description": "根据ID获取药材详情"
+        },
+        {
+          "method": "POST",
+          "path": "/",
+          "action": "CreateHerb",
+          "auth": "Authorize",
+          "input": "HerbCreateDto",
+          "output": "ApiResponse<HerbDto>",
+          "description": "创建新药材"
+        },
+        {
+          "method": "PUT",
+          "path": "/{id}",
+          "action": "UpdateHerb",
+          "auth": "Authorize",
+          "input": "Guid id, HerbUpdateDto",
+          "output": "ApiResponse<HerbDto>",
+          "description": "更新药材信息"
+        },
+        {
+          "method": "DELETE",
+          "path": "/{id}",
+          "action": "DeleteHerb",
+          "auth": "Authorize",
+          "input": "Guid id",
+          "output": "ApiResponse<object>",
+          "description": "删除药材（软删除）"
+        },
+        {
+          "method": "POST",
+          "path": "/search",
+          "action": "SearchHerbs",
+          "auth": "Authorize",
+          "input": "HerbSearchDto",
+          "output": "ApiResponse<PagedResult<HerbDto>>",
+          "description": "搜索药材"
+        }
+      ]
+    },
+    {
+      "name": "FormulasController",
+      "path": "src/Server/Services/LYBT.WebAPI/Controllers/FormulasController.cs",
+      "route": "api/v1/formulas",
+      "inherits": "BaseApiController",
+      "authorization": "Authorize",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/",
+          "action": "GetAllFormulas",
+          "auth": "Authorize",
+          "output": "ApiResponse<List<FormulaDto>>",
+          "description": "获取所有验方列表"
+        },
+        {
+          "method": "GET",
+          "path": "/{id}",
+          "action": "GetFormulaById",
+          "auth": "Authorize",
+          "input": "Guid id",
+          "output": "ApiResponse<FormulaDto>",
+          "description": "根据ID获取验方详情"
+        },
+        {
+          "method": "POST",
+          "path": "/",
+          "action": "CreateFormula",
+          "auth": "Authorize",
+          "input": "FormulaCreateDto",
+          "output": "ApiResponse<FormulaDto>",
+          "description": "创建新验方"
+        },
+        {
+          "method": "PUT",
+          "path": "/{id}",
+          "action": "UpdateFormula",
+          "auth": "Authorize",
+          "input": "Guid id, FormulaUpdateDto",
+          "output": "ApiResponse<FormulaDto>",
+          "description": "更新验方"
+        },
+        {
+          "method": "DELETE",
+          "path": "/{id}",
+          "action": "DeleteFormula",
+          "auth": "Authorize",
+          "input": "Guid id",
+          "output": "ApiResponse<object>",
+          "description": "删除验方（软删除）"
+        }
+      ]
+    },
+    {
+      "name": "HerbImportExportController",
+      "path": "src/Server/Services/LYBT.WebAPI/Controllers/HerbImportExportController.cs",
+      "route": "api/v1/herbs/import-export",
+      "inherits": "BaseApiController",
+      "authorization": "Authorize(Roles='Admin')",
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/import",
+          "action": "ImportHerbs",
+          "auth": "Authorize(Roles='Admin')",
+          "input": "IFormFile",
+          "output": "ApiResponse<object>",
+          "description": "从Excel导入药材数据"
+        },
+        {
+          "method": "GET",
+          "path": "/export",
+          "action": "ExportHerbs",
+          "auth": "Authorize(Roles='Admin')",
+          "output": "FileResult",
+          "description": "导出药材数据到Excel"
+        }
+      ]
+    }
+  ],
+  "system_controllers": [
+    {
+      "name": "CompatibilityNotesController",
+      "path": "src/Server/Modules/LYBT.Module.Prescriptions/Controllers/CompatibilityNotesController.cs",
+      "route": "api/v1/compatibility-notes",
+      "inherits": "BaseSystemController",
+      "authorization": "Authorize",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/",
+          "action": "GetCompatibilityNotes",
+          "auth": "Authorize",
+          "output": "IActionResult",
+          "description": "获取配伍注记"
+        },
+        {
+          "method": "POST",
+          "path": "/",
+          "action": "CreateCompatibilityNote",
+          "auth": "Authorize",
+          "input": "object",
+          "output": "IActionResult",
+          "description": "创建配伍注记"
+        }
+      ]
+    }
+  ],
+  "authentication_system": {
+    "type": "JWT Bearer Token",
+    "expiration": "8小时",
+    "remember_me": "30天",
+    "roles": ["Admin", "Doctor", "Pharmacist", "Receptionist", "Cashier", "Therapist"],
+    "session_management": "完整会话生命周期管理",
+    "security_features": [
+      "密码哈希存储",
+      "登录失败计数",
+      "账户锁定机制",
+      "强制下线功能"
+    ]
+  },
+  "api_standards": {
+    "response_format": "ApiResponse<T>统一包装",
+    "naming_convention": "RESTful小写命名",
+    "versioning": "URL路径版本控制（v1）",
+    "error_handling": "统一异常处理和错误响应",
+    "validation": "模型验证和参数检查",
+    "logging": "完整的操作日志记录"
+  },
+  "business_coverage": {
+    "core_modules": 8,
+    "api_endpoints": 50,
+    "business_flows": [
+      "用户认证与授权",
+      "患者档案管理",
+      "医疗案例创建",
+      "看诊诊断记录", 
+      "处方开具管理",
+      "药材信息维护",
+      "验方模板管理",
+      "数据导入导出"
+    ],
+    "tcm_features": [
+      "中医四诊支持（望闻问切）",
+      "辨证论治记录",
+      "药材配伍管理",
+      "验方组合应用",
+      "处方价格计算"
+    ]
+  }
+}

@@ -1,0 +1,17 @@
+## LYBT.Module.Auth
+- 路径：src/Server/Modules/LYBT.Module.Auth · 类型：Library · TFM：net8.0
+- 职责事实：身份认证与授权模块，采用UltraThink双层架构，提供JWT令牌生成验证、用户登录登出、密码验证、会话管理、RBAC角色权限验证、安全防护、系统管理员特殊处理等完整认证授权功能，支持小规模诊所<20用户优化
+- 关键类型计数：Controller/Service/Repository/Entity/DTO/ViewModel/Enum：0/3/2/0/0/0/0
+- 发现到的外露面：API端点数: 0 / Views&VM数: 0 / DbContext&DbSet数: 0
+- 疑似问题标注：
+  - SuspectApiOutsideWebApi: false（Module项目正确无Controller组件）
+  - SuspectDtoDup: false（使用Shared.Models统一DTO，无重复定义）
+  - SuspectEnumDup: false（无Enum定义）
+  - SuspectRoleMismatch: false（职责完全符合认证模块要求：AuthService、AuthQueryService、AuthBusinessService）
+  - SuspectMissing: false（UltraThink双层架构组件齐全：主服务+查询服务+业务服务+Repository层+接口层）
+  - OtherInconsistencies: []
+- 供产品负责人勾选：
+  - [ ] 保留
+  - [ ] 下线
+  - [ ] 迁出（仅文件/类型维度，稍后进入迁移计划）
+  - [ ] 缺失（后续是否补齐由你确认）

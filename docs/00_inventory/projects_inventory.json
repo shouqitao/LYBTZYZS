@@ -1,0 +1,373 @@
+{
+  "solution_analysis": {
+    "scan_date": "2025-01-10",
+    "scan_scope": "根目录 *.sln、src/、tests/、.claude/agents/、.claude/commands/、.claude/scripts/",
+    "total_solutions": 3,
+    "total_projects": 50,
+    "total_test_projects": 11
+  },
+  "solutions": [
+    {
+      "name": "LYBT.All.sln",
+      "path": "LYBT.All.sln",
+      "type": "Complete Solution",
+      "project_count": 48,
+      "description": "完整解决方案，包含前后端所有项目"
+    },
+    {
+      "name": "LYBT.Server.sln", 
+      "path": "LYBT.Server.sln",
+      "type": "Backend Solution",
+      "project_count": 25,
+      "description": "后端解决方案，包含服务端和共享项目"
+    },
+    {
+      "name": "LYBT.Desktop.sln",
+      "path": "LYBT.Desktop.sln", 
+      "type": "Frontend Solution",
+      "project_count": 25,
+      "description": "前端解决方案，包含WPF客户端和共享项目"
+    }
+  ],
+  "server_projects": {
+    "core": [
+      {
+        "name": "LYBT.Entities",
+        "path": "src/Server/Core/LYBT.Entities",
+        "type": "Core Library",
+        "framework": "net8.0",
+        "description": "核心实体模型项目，包含8个业务模块的实体定义"
+      },
+      {
+        "name": "LYBT.Infrastructure", 
+        "path": "src/Server/Core/LYBT.Infrastructure",
+        "type": "Core Library",
+        "framework": "net8.0",
+        "description": "基础设施项目，包含AppDbContext、Repository、控制器基类"
+      }
+    ],
+    "modules": [
+      {
+        "name": "LYBT.Module.Auth",
+        "path": "src/Server/Modules/LYBT.Module.Auth",
+        "type": "Business Module",
+        "framework": "net8.0", 
+        "description": "身份认证与授权模块"
+      },
+      {
+        "name": "LYBT.Module.Users",
+        "path": "src/Server/Modules/LYBT.Module.Users",
+        "type": "Business Module", 
+        "framework": "net8.0",
+        "description": "用户管理模块"
+      },
+      {
+        "name": "LYBT.Module.Patients",
+        "path": "src/Server/Modules/LYBT.Module.Patients",
+        "type": "Business Module",
+        "framework": "net8.0",
+        "description": "患者档案管理模块"
+      },
+      {
+        "name": "LYBT.Module.MedicalCase",
+        "path": "src/Server/Modules/LYBT.Module.MedicalCase", 
+        "type": "Business Module",
+        "framework": "net8.0",
+        "description": "医疗案例管理模块（诊疗流程容器）"
+      },
+      {
+        "name": "LYBT.Module.Consultation",
+        "path": "src/Server/Modules/LYBT.Module.Consultation",
+        "type": "Business Module",
+        "framework": "net8.0", 
+        "description": "看诊诊断模块（中医四诊）"
+      },
+      {
+        "name": "LYBT.Module.Prescriptions",
+        "path": "src/Server/Modules/LYBT.Module.Prescriptions",
+        "type": "Business Module",
+        "framework": "net8.0",
+        "description": "处方管理模块"
+      },
+      {
+        "name": "LYBT.Module.Herbs",
+        "path": "src/Server/Modules/LYBT.Module.Herbs",
+        "type": "Business Module", 
+        "framework": "net8.0",
+        "description": "中药材管理模块"
+      },
+      {
+        "name": "LYBT.Module.Formula",
+        "path": "src/Server/Modules/LYBT.Module.Formula",
+        "type": "Business Module",
+        "framework": "net8.0",
+        "description": "验方管理模块"
+      }
+    ],
+    "services": [
+      {
+        "name": "LYBT.WebAPI",
+        "path": "src/Server/Services/LYBT.WebAPI",
+        "type": "Web API Service",
+        "framework": "net8.0",
+        "description": "Web API服务入口，包含10个控制器"
+      }
+    ]
+  },
+  "client_projects": {
+    "core": [
+      {
+        "name": "LYBT.Desktop.Core",
+        "path": "src/Client/Desktop/Core",
+        "type": "Core Library",
+        "framework": "net8.0-windows",
+        "description": "WPF核心基础库，包含控件、ViewModel基类"
+      },
+      {
+        "name": "LYBT.Desktop.Infrastructure", 
+        "path": "src/Client/Desktop/Infrastructure",
+        "type": "Infrastructure Library",
+        "framework": "net8.0-windows",
+        "description": "WPF基础设施库，包含主题、配置、IoC"
+      },
+      {
+        "name": "LYBT.Desktop.Services",
+        "path": "src/Client/Desktop/Services",
+        "type": "Services Library", 
+        "framework": "net8.0-windows",
+        "description": "WPF服务层，包含API客户端服务"
+      }
+    ],
+    "modules": [
+      {
+        "name": "LYBT.Desktop.Auth",
+        "path": "src/Client/Desktop/Modules/Auth",
+        "type": "UI Module",
+        "framework": "net8.0-windows",
+        "description": "身份认证UI模块"
+      },
+      {
+        "name": "LYBT.Desktop.Users",
+        "path": "src/Client/Desktop/Modules/Users", 
+        "type": "UI Module",
+        "framework": "net8.0-windows",
+        "description": "用户管理UI模块"
+      },
+      {
+        "name": "LYBT.Desktop.Patients",
+        "path": "src/Client/Desktop/Modules/Patients",
+        "type": "UI Module",
+        "framework": "net8.0-windows", 
+        "description": "患者档案UI模块"
+      },
+      {
+        "name": "LYBT.Desktop.MedicalCase",
+        "path": "src/Client/Desktop/Modules/MedicalCase",
+        "type": "UI Module",
+        "framework": "net8.0-windows",
+        "description": "医疗案例UI模块"
+      },
+      {
+        "name": "LYBT.Desktop.Consultation",
+        "path": "src/Client/Desktop/Modules/Consultation",
+        "type": "UI Module", 
+        "framework": "net8.0-windows",
+        "description": "看诊诊断UI模块"
+      },
+      {
+        "name": "LYBT.Desktop.Prescriptions",
+        "path": "src/Client/Desktop/Modules/Prescriptions",
+        "type": "UI Module",
+        "framework": "net8.0-windows",
+        "description": "处方管理UI模块"
+      },
+      {
+        "name": "LYBT.Desktop.Herbs", 
+        "path": "src/Client/Desktop/Modules/Herbs",
+        "type": "UI Module",
+        "framework": "net8.0-windows",
+        "description": "中药材UI模块"
+      },
+      {
+        "name": "LYBT.Desktop.Formula",
+        "path": "src/Client/Desktop/Modules/Formula",
+        "type": "UI Module",
+        "framework": "net8.0-windows",
+        "description": "验方UI模块"
+      }
+    ],
+    "workbenches": [
+      {
+        "name": "LYBT.Desktop.ConsultationWorkbench",
+        "path": "src/Client/Desktop/Workbenches/ConsultationWorkbench",
+        "type": "Workbench Module", 
+        "framework": "net8.0-windows",
+        "description": "看诊工作台"
+      },
+      {
+        "name": "LYBT.Desktop.SystemWorkbench",
+        "path": "src/Client/Desktop/Workbenches/SystemWorkbench",
+        "type": "Workbench Module",
+        "framework": "net8.0-windows",
+        "description": "系统管理工作台"
+      }
+    ],
+    "shell": [
+      {
+        "name": "LYBT.Desktop.Shell",
+        "path": "src/Client/Desktop/Shell",
+        "type": "Application Shell",
+        "framework": "net8.0-windows",
+        "description": "应用程序外壳，包含主窗口和应用启动"
+      }
+    ]
+  },
+  "shared_projects": [
+    {
+      "name": "LYBT.Shared.Models",
+      "path": "src/Shared/LYBT.Shared.Models",
+      "type": "Shared Library",
+      "framework": "net8.0", 
+      "description": "前后端共享模型库，包含DTO、枚举、异常"
+    },
+    {
+      "name": "LYBT.Shared.Utilities",
+      "path": "src/Shared/LYBT.Shared.Utilities",
+      "type": "Shared Library",
+      "framework": "net8.0",
+      "description": "前后端共享工具库"
+    },
+    {
+      "name": "LYBT.Shared.Interfaces",
+      "path": "src/Shared/LYBT.Shared.Interfaces", 
+      "type": "Shared Library",
+      "framework": "net8.0",
+      "description": "前后端共享接口库"
+    }
+  ],
+  "test_projects": [
+    {
+      "name": "LYBT.Tests.Infrastructure",
+      "path": "tests/LYBT.Tests.Infrastructure",
+      "type": "Test Library",
+      "framework": "net8.0",
+      "description": "基础设施测试项目"
+    },
+    {
+      "name": "LYBT.Tests.Users",
+      "path": "tests/LYBT.Tests.Users",
+      "type": "Test Library", 
+      "framework": "net8.0",
+      "description": "用户模块测试项目"
+    },
+    {
+      "name": "LYBT.Tests.Patients",
+      "path": "tests/LYBT.Tests.Patients",
+      "type": "Test Library",
+      "framework": "net8.0",
+      "description": "患者模块测试项目"
+    },
+    {
+      "name": "LYBT.Tests.Herbs",
+      "path": "tests/LYBT.Tests.Herbs",
+      "type": "Test Library",
+      "framework": "net8.0",
+      "description": "药材模块测试项目"
+    },
+    {
+      "name": "LYBT.Tests.MedicalCase", 
+      "path": "tests/LYBT.Tests.MedicalCase",
+      "type": "Test Library",
+      "framework": "net8.0",
+      "description": "医疗案例测试项目"
+    },
+    {
+      "name": "LYBT.Tests.Consultation",
+      "path": "tests/LYBT.Tests.Consultation",
+      "type": "Test Library",
+      "framework": "net8.0", 
+      "description": "看诊模块测试项目"
+    },
+    {
+      "name": "LYBT.Tests.Prescriptions",
+      "path": "tests/LYBT.Tests.Prescriptions",
+      "type": "Test Library",
+      "framework": "net8.0",
+      "description": "处方模块测试项目"
+    },
+    {
+      "name": "LYBT.Tests.Formula",
+      "path": "tests/LYBT.Tests.Formula",
+      "type": "Test Library",
+      "framework": "net8.0",
+      "description": "验方模块测试项目"
+    },
+    {
+      "name": "LYBT.Tests.Auth",
+      "path": "tests/LYBT.Tests.Auth",
+      "type": "Test Library", 
+      "framework": "net8.0",
+      "description": "认证模块测试项目"
+    },
+    {
+      "name": "LYBT.Tests.Integration",
+      "path": "tests/LYBT.Tests.Integration",
+      "type": "Integration Test",
+      "framework": "net8.0",
+      "description": "集成测试项目"
+    },
+    {
+      "name": "LYBT.Tests.WebAPI",
+      "path": "tests/LYBT.Tests.WebAPI",
+      "type": "API Test",
+      "framework": "net8.0", 
+      "description": "WebAPI测试项目"
+    }
+  ],
+  "dependencies": {
+    "major_frameworks": [
+      {
+        "name": ".NET 8",
+        "version": "8.0",
+        "usage": "所有项目的目标框架"
+      },
+      {
+        "name": "Entity Framework Core",
+        "version": "8.0.17",
+        "usage": "数据访问层ORM框架"
+      },
+      {
+        "name": "Prism.DryIoc",
+        "version": "9.0.537",
+        "usage": "WPF前端MVVM框架"
+      },
+      {
+        "name": "AutoMapper",
+        "version": "15.0.1",
+        "usage": "对象映射框架"
+      }
+    ],
+    "backend_dependencies": [
+      "Microsoft.AspNetCore.Authentication.JwtBearer",
+      "Microsoft.EntityFrameworkCore.SqlServer", 
+      "Microsoft.Extensions.Caching.Memory",
+      "FluentValidation",
+      "Swashbuckle.AspNetCore"
+    ],
+    "frontend_dependencies": [
+      "Prism.Wpf",
+      "Refit",
+      "Microsoft.Extensions.DependencyInjection",
+      "System.Text.Json"
+    ]
+  },
+  "architecture_summary": {
+    "pattern": "混合架构模式",
+    "backend": "传统三层架构（Controller + Service + Repository）",
+    "frontend": "UltraThink双层架构（QueryService + BusinessService + Module委托）",
+    "data_access": "统一AppDbContext模式",
+    "communication": "RESTful API + Refit客户端",
+    "authentication": "JWT Bearer Token认证",
+    "testing": "完整的单元测试和集成测试体系"
+  }
+}

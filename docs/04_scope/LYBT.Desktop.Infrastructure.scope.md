@@ -1,0 +1,17 @@
+## LYBT.Desktop.Infrastructure
+- 路径：src/Client/Desktop/Infrastructure · 类型：Library · TFM：net8.0-windows
+- 职责事实：WPF客户端基础设施层，提供数据访问抽象、HTTP客户端、Refit集成的类型安全REST客户端、缓存服务、配置管理、日志记录、共享工具类和扩展方法等基础设施实现，为客户端应用提供统一的数据访问接口和基础设施服务支撑
+- 关键类型计数：Controller/Service/Repository/Entity/DTO/ViewModel/Enum：0/多个/0/0/0/0/0
+- 发现到的外露面：API端点数: 0 / Views&VM数: 0 / DbContext&DbSet数: 0
+- 疑似问题标注：
+  - SuspectApiOutsideWebApi: false（纯客户端基础设施，无Web功能）
+  - SuspectDtoDup: false（无DTO定义，使用Shared.Models）
+  - SuspectEnumDup: false（无Enum定义）
+  - SuspectRoleMismatch: false（完全符合客户端基础设施层职责）
+  - SuspectMissing: false（数据访问、HTTP客户端、配置管理、缓存等基础设施完整）
+  - OtherInconsistencies: []
+- 供产品负责人勾选：
+  - [ ] 保留
+  - [ ] 下线
+  - [ ] 迁出（仅文件/类型维度，稍后进入迁移计划）
+  - [ ] 缺失（后续是否补齐由你确认）

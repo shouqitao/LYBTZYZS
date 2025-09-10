@@ -1,0 +1,17 @@
+## LYBT.Module.MedicalCase
+- 路径：src/Server/Modules/LYBT.Module.MedicalCase · 类型：Library · TFM：net8.0
+- 职责事实：医疗案例管理业务模块，采用UltraThink双层架构，提供诊疗流程容器功能、看诊会话管理（1:1关联Consultation）、状态跟踪（Registered→InProgress→Completed）、聚合功能统一管理整个诊疗过程，包含原Records功能，支持小规模诊所医案流程管理
+- 关键类型计数：Controller/Service/Repository/Entity/DTO/ViewModel/Enum：0/3/1/0/0/0/0
+- 发现到的外露面：API端点数: 0 / Views&VM数: 0 / DbContext&DbSet数: 0
+- 疑似问题标注：
+  - SuspectApiOutsideWebApi: false（Module项目正确无Controller组件）
+  - SuspectDtoDup: false（使用Shared.Models统一DTO，无重复定义）
+  - SuspectEnumDup: false（无Enum定义）
+  - SuspectRoleMismatch: false（职责完全符合医疗案例模块要求：MedicalCaseService、MedicalCaseQueryService、MedicalCaseBusinessService）
+  - SuspectMissing: false（UltraThink双层架构组件齐全：主服务+查询服务+业务服务+Repository层）
+  - OtherInconsistencies: []
+- 供产品负责人勾选：
+  - [ ] 保留
+  - [ ] 下线
+  - [ ] 迁出（仅文件/类型维度，稍后进入迁移计划）
+  - [ ] 缺失（后续是否补齐由你确认）

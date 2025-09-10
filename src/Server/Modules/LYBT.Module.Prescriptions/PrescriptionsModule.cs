@@ -30,7 +30,6 @@ namespace LYBT.Module.Prescriptions
 
             // 主服务 - UltraThink纯委托模式，委托给专业服务层
             services.AddScoped<IPrescriptionService, PrescriptionService>();
-            services.AddScoped<IIntelligentPrescriptionService, IntelligentPrescriptionService>();
 
             // 配伍记录服务
             services.AddScoped<CompatibilityNoteService>();

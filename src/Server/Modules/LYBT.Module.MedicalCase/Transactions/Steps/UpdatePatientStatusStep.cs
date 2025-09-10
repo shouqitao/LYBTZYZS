@@ -307,7 +307,7 @@ namespace LYBT.Module.MedicalCase.Transactions.Steps
 
                 // 不抛出异常，因为这不是关键操作
             }
-            
+
             return Task.CompletedTask;
         }
 
@@ -335,7 +335,7 @@ namespace LYBT.Module.MedicalCase.Transactions.Steps
 
                 // 不抛出异常，因为这不是关键操作
             }
-            
+
             return Task.CompletedTask;
         }
 

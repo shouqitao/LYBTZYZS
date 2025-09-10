@@ -1,0 +1,38 @@
+OriginalPath,Reason
+./.claude,documentation directory
+./docs,documentation directory
+./_reports,documentation directory
+./PasswordHashFixer/bin,build artifact directory
+./PasswordHashFixer/obj,build artifact directory
+./src/Backend/Core/LYBT.Infrastructure/obj,build artifact directory
+./src/Backend/Core/LYBT.Models/obj,build artifact directory
+./src/Backend/Modules/LYBT.Module.Auth/obj,build artifact directory
+./src/Backend/Modules/LYBT.Module.Consultation/bin,build artifact directory
+./src/Backend/Modules/LYBT.Module.Consultation/obj,build artifact directory
+./src/Backend/Modules/LYBT.Module.Formula/bin,build artifact directory
+./src/Backend/Modules/LYBT.Module.Formula/obj,build artifact directory
+./src/Backend/Modules/LYBT.Module.Herbs/obj,build artifact directory
+./docs/00_inventory/summary.csv,data file
+./_reports/feature/compat/notes/diff-preview.patch,documentation file
+./_reports/overdesign/dryrun-diff.patch,documentation file
+./_reports/prescriptions/dryrun-diff.patch,documentation file
+./.claude/agents/code-analyzer.md,documentation file
+./.claude/agents/file-analyzer.md,documentation file
+./.claude/agents/parallel-worker.md,documentation file
+./.claude/agents/test-runner.md,documentation file
+./.claude/CLAUDE.md,documentation file
+./.claude/commands/code-rabbit.md,documentation file
+./.claude/commands/context/create.md,documentation file
+./.claude/commands/context/prime.md,documentation file
+./.claude/commands/context/update.md,documentation file
+./.claude/commands/pm/blocked.md,documentation file
+./.claude/commands/pm/clean.md,documentation file
+./.claude/commands/pm/epic-close.md,documentation file
+./.claude/commands/pm/epic-decompose.md,documentation file
+./.claude/commands/pm/epic-edit.md,documentation file
+./.claude/commands/pm/epic-list.md,documentation file
+./.claude/commands/pm/epic-merge.md,documentation file
+./.claude/commands/pm/epic-oneshot.md,documentation file
+./.claude/commands/pm/epic-refresh.md,documentation file
+./.claude/commands/pm/epic-show.md,documentation file
+./.claude/commands/pm/epic-start-worktree.md,documentation file

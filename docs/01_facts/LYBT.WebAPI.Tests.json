@@ -1,0 +1,63 @@
+{
+  "projectName": "LYBT.WebAPI.Tests",
+  "relativePath": "tests/Backend/LYBT.WebAPI.Tests",
+  "projectType": "Test",
+  "targetFramework": "net8.0",
+  "outputType": "Library",
+  "nullable": "enable",
+  "langVersion": "(unknown)",
+  "projectReferences": [
+    "../../../src/Server/Services/LYBT.WebAPI/LYBT.WebAPI.csproj",
+    "../../../src/Server/Core/LYBT.Infrastructure/LYBT.Infrastructure.csproj",
+    "../../../src/Shared/LYBT.Shared.Models/LYBT.Shared.Models.csproj"
+  ],
+  "packageReferences": [
+    {
+      "name": "Microsoft.NET.Test.Sdk",
+      "version": "(unknown)"
+    },
+    {
+      "name": "xunit",
+      "version": "(unknown)"
+    },
+    {
+      "name": "xunit.runner.visualstudio",
+      "version": "(unknown)"
+    },
+    {
+      "name": "coverlet.collector",
+      "version": "(unknown)"
+    },
+    {
+      "name": "Microsoft.AspNetCore.Mvc.Testing",
+      "version": "(unknown)"
+    },
+    {
+      "name": "Microsoft.EntityFrameworkCore.InMemory",
+      "version": "(unknown)"
+    }
+  ],
+  "publicSurface": {
+    "webAPI": null,
+    "wpf": null
+  },
+  "dataModels": {
+    "dbContext": null,
+    "dbSets": [],
+    "entities": [],
+    "dtos": [],
+    "entityDtoMatches": []
+  },
+  "testCharacteristics": {
+    "framework": "xUnit",
+    "testFixtures": [
+      "WebApplicationFactory<T>",
+      "TestServer"
+    ],
+    "startupMethod": "Microsoft.AspNetCore.Mvc.Testing",
+    "hasIntegrationTests": true
+  },
+  "isIntegrationTest": true,
+  "isCore": false,
+  "notes": "WebAPI集成测试项目，检测到Microsoft.AspNetCore.Mvc.Testing和WebApplicationFactory，用于端到端API测试"
+}

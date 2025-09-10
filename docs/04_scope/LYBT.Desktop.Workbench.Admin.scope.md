@@ -1,0 +1,17 @@
+## LYBT.Desktop.Workbench.Admin
+- 路径：src/Client/Desktop/Workbenches/SystemWorkbench · 类型：WPF · TFM：net8.0-windows
+- 职责事实：WPF系统管理工作台模块，集成系统管理功能的工作台环境，提供统一的系统管理操作界面，整合用户管理、系统配置、数据维护、权限管理等系统管理功能，为管理员提供一体化的系统管理工作环境，包含系统管理相关的工作台组件
+- 关键类型计数：Controller/Service/Repository/Entity/DTO/ViewModel/Enum：0/0/0/0/0/1/0
+- 发现到的外露面：API端点数: 0 / Views&VM数: 1个ViewModel + 1个View / DbContext&DbSet数: 0
+- 疑似问题标注：
+  - SuspectApiOutsideWebApi: false（WPF工作台模块，无Controller组件）
+  - SuspectDtoDup: false（使用Shared.Models统一DTO，无重复定义）
+  - SuspectEnumDup: false（无Enum定义）
+  - SuspectRoleMismatch: false（职责完全符合系统管理工作台要求：管理功能整合、统一管理环境）
+  - SuspectMissing: false（系统管理工作台功能完整，提供统一管理界面）
+  - OtherInconsistencies: []
+- 供产品负责人勾选：
+  - [ ] 保留
+  - [ ] 下线
+  - [ ] 迁出（仅文件/类型维度，稍后进入迁移计划）
+  - [ ] 缺失（后续是否补齐由你确认）

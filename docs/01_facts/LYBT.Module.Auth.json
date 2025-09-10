@@ -1,0 +1,74 @@
+{
+  "projectName": "LYBT.Module.Auth",
+  "relativePath": "src/Server/Modules/LYBT.Module.Auth",
+  "projectType": "Library",
+  "targetFramework": "net8.0",
+  "outputType": "Library",
+  "nullable": "enable",
+  "langVersion": "(unknown)",
+  "projectReferences": [
+    "../../../Shared/LYBT.Shared.Models/LYBT.Shared.Models.csproj",
+    "../../../Shared/LYBT.Shared.Utilities/LYBT.Shared.Utilities.csproj",
+    "../../Core/LYBT.Infrastructure/LYBT.Infrastructure.csproj",
+    "../../Core/LYBT.Entities/LYBT.Entities.csproj",
+    "../LYBT.Module.Users/LYBT.Module.Users.csproj"
+  ],
+  "packageReferences": [
+    {
+      "name": "AutoMapper",
+      "version": "(unknown)"
+    },
+    {
+      "name": "Microsoft.EntityFrameworkCore",
+      "version": "(unknown)"
+    },
+    {
+      "name": "Microsoft.EntityFrameworkCore.Design",
+      "version": "(unknown)"
+    },
+    {
+      "name": "Microsoft.EntityFrameworkCore.SqlServer",
+      "version": "(unknown)"
+    },
+    {
+      "name": "Microsoft.IdentityModel.Tokens",
+      "version": "(unknown)"
+    },
+    {
+      "name": "System.IdentityModel.Tokens.Jwt",
+      "version": "(unknown)"
+    }
+  ],
+  "publicSurface": {
+    "webAPI": null,
+    "wpf": null
+  },
+  "dataModels": {
+    "dbContext": null,
+    "dbSets": [],
+    "entities": [
+      {
+        "path": "../../Core/LYBT.Entities/Auth",
+        "type": "AuthSessionModel"
+      },
+      {
+        "path": "../../Core/LYBT.Entities/Users",
+        "type": "AdminSecretModel"
+      }
+    ],
+    "dtos": [
+      {
+        "path": "../../../Shared/LYBT.Shared.Models/Contracts/Auth",
+        "types": ["LoginRequest", "LoginResponse", "LogoutRequest", "ChangePasswordRequest"]
+      }
+    ],
+    "entityDtoMatches": [
+      "AuthSessionModel -> LoginResponse (候选匹配)",
+      "AdminSecretModel -> ChangeSysAdminPassword (候选匹配)"
+    ]
+  },
+  "testCharacteristics": null,
+  "isIntegrationTest": false,
+  "isCore": false,
+  "notes": "UltraThink双层架构：AuthService(委托) + AuthQueryService + AuthBusinessService + JwtAuthenticationService，实现JWT认证和会话管理"
+}

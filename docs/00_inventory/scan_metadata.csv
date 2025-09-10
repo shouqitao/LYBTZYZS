@@ -1,0 +1,66 @@
+类别,项目,文件数量,主要技术栈,状态,备注
+解决方案,LYBT.All.sln,48个项目,.NET 8,完整方案,包含前后端所有项目
+解决方案,LYBT.Server.sln,25个项目,.NET 8,后端方案,服务端和共享项目
+解决方案,LYBT.Desktop.sln,25个项目,.NET 8-windows,前端方案,WPF客户端和共享项目
+
+后端核心,LYBT.Infrastructure,1个项目,EF Core 8.0.17,核心库,AppDbContext和控制器基类
+后端核心,LYBT.Entities,1个项目,.NET 8,核心库,18个业务实体定义
+
+业务模块,LYBT.Module.Auth,1个项目,.NET 8,认证模块,JWT认证与授权
+业务模块,LYBT.Module.Users,1个项目,.NET 8,用户模块,用户管理
+业务模块,LYBT.Module.Patients,1个项目,.NET 8,患者模块,患者档案管理
+业务模块,LYBT.Module.MedicalCase,1个项目,.NET 8,医案模块,诊疗流程容器
+业务模块,LYBT.Module.Consultation,1个项目,.NET 8,看诊模块,中医四诊
+业务模块,LYBT.Module.Prescriptions,1个项目,.NET 8,处方模块,处方管理
+业务模块,LYBT.Module.Herbs,1个项目,.NET 8,药材模块,中药材管理
+业务模块,LYBT.Module.Formula,1个项目,.NET 8,验方模块,验方管理
+
+Web服务,LYBT.WebAPI,10个控制器,ASP.NET Core,API服务,50+个端点
+
+前端核心,LYBT.Desktop.Core,1个项目,WPF + Prism,核心库,控件和ViewModel基类
+前端核心,LYBT.Desktop.Infrastructure,1个项目,WPF + Prism,基础库,主题和配置
+前端核心,LYBT.Desktop.Services,1个项目,Refit,服务层,API客户端
+
+UI模块,LYBT.Desktop.Auth,2个界面,WPF + MVVM,认证UI,登录界面
+UI模块,LYBT.Desktop.Users,6个界面,WPF + MVVM,用户UI,用户管理界面
+UI模块,LYBT.Desktop.Patients,4个界面,WPF + MVVM,患者UI,患者管理界面
+UI模块,LYBT.Desktop.MedicalCase,4个界面,WPF + MVVM,医案UI,医案管理界面
+UI模块,LYBT.Desktop.Consultation,2个界面,WPF + MVVM,看诊UI,看诊记录界面
+UI模块,LYBT.Desktop.Prescriptions,8个界面,WPF + MVVM,处方UI,处方管理界面
+UI模块,LYBT.Desktop.Herbs,3个界面,WPF + MVVM,药材UI,药材管理界面
+UI模块,LYBT.Desktop.Formula,5个界面,WPF + MVVM,验方UI,验方管理界面
+
+工作台,ConsultationWorkbench,1个界面,WPF + MVVM,看诊工作台,集成诊疗环境
+工作台,SystemWorkbench,1个界面,WPF + MVVM,系统工作台,系统管理功能
+
+应用外壳,LYBT.Desktop.Shell,3个界面,WPF + Prism,应用框架,主窗口和应用启动
+
+共享库,LYBT.Shared.Models,1个项目,.NET 8,共享模型,DTO和枚举定义
+共享库,LYBT.Shared.Utilities,1个项目,.NET 8,共享工具,工具类库
+共享库,LYBT.Shared.Interfaces,1个项目,.NET 8,共享接口,接口定义
+
+测试项目,LYBT.Tests.*,11个项目,xUnit + .NET 8,测试体系,覆盖所有核心模块
+
+数据实体,UserModel,1个实体,EF Core,用户实体,多角色医疗人员
+数据实体,PatientModel,1个实体,EF Core,患者实体,敏感数据保护
+数据实体,MedicalCaseModel,1个实体,EF Core,医案实体,诊疗聚合根
+数据实体,ConsultationModel,1个实体,EF Core,看诊实体,中医四诊记录
+数据实体,PrescriptionModel,1个实体,EF Core,处方实体,药材组合管理
+数据实体,HerbModel,1个实体,EF Core,药材实体,中药材信息
+数据实体,FormulaModel,1个实体,EF Core,验方实体,验方模板库
+数据实体,AuthSessionModel,1个实体,EF Core,会话实体,JWT会话管理
+
+API控制器,AuthController,4个端点,RESTful API,认证API,登录登出认证
+API控制器,UsersController,6个端点,RESTful API,用户API,用户CRUD管理
+API控制器,PatientsController,6个端点,RESTful API,患者API,患者CRUD管理
+API控制器,MedicalCaseController,5个端点,RESTful API,医案API,医案流程管理
+API控制器,ConsultationController,3个端点,RESTful API,看诊API,看诊记录管理
+API控制器,PrescriptionsController,5个端点,RESTful API,处方API,处方CRUD管理
+API控制器,HerbsController,6个端点,RESTful API,药材API,药材CRUD管理
+API控制器,FormulasController,5个端点,RESTful API,验方API,验方CRUD管理
+API控制器,HerbImportExportController,2个端点,RESTful API,导入导出,Excel数据处理
+
+主题系统,Colors.xaml,1个文件,WPF资源,色彩主题,基础色彩定义
+主题系统,Typography.xaml,1个文件,WPF资源,字体主题,字体样式定义
+主题系统,ModernButton.xaml,1个文件,WPF控件,现代按钮,现代化控件样式
+主题系统,ModernTextBox.xaml,1个文件,WPF控件,现代文本框,现代化控件样式

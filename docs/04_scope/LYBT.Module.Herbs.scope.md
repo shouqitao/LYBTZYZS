@@ -1,0 +1,17 @@
+## LYBT.Module.Herbs
+- 路径：src/Server/Modules/LYBT.Module.Herbs · 类型：Library · TFM：net8.0
+- 职责事实：中药材管理业务模块，采用UltraThink双层架构，提供药材信息维护（名称、单价、用法信息）、仅处方用药不涉及库存管理、专注处方选择、标准化管理统一药材标准和规格，支持小规模诊所中药材基础信息管理
+- 关键类型计数：Controller/Service/Repository/Entity/DTO/ViewModel/Enum：0/3/1/0/0/0/0
+- 发现到的外露面：API端点数: 0 / Views&VM数: 0 / DbContext&DbSet数: 0
+- 疑似问题标注：
+  - SuspectApiOutsideWebApi: false（Module项目正确无Controller组件）
+  - SuspectDtoDup: false（使用Shared.Models统一DTO，无重复定义）
+  - SuspectEnumDup: false（无Enum定义）
+  - SuspectRoleMismatch: false（职责完全符合中药材管理模块要求：HerbService、HerbQueryService、HerbBusinessService）
+  - SuspectMissing: false（UltraThink双层架构组件齐全：主服务+查询服务+业务服务+Repository层）
+  - OtherInconsistencies: []
+- 供产品负责人勾选：
+  - [ ] 保留
+  - [ ] 下线
+  - [ ] 迁出（仅文件/类型维度，稍后进入迁移计划）
+  - [ ] 缺失（后续是否补齐由你确认）

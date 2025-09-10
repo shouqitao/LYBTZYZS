@@ -1,0 +1,17 @@
+## LYBT.Desktop.MedicalCase
+- 路径：src/Client/Desktop/Modules/MedicalCase · 类型：WPF · TFM：net8.0-windows
+- 职责事实：WPF医疗案例管理模块，采用UltraThink双层架构重构完成，提供诊疗流程容器功能、看诊会话管理（1:1关联Consultation）、状态跟踪（Registered→InProgress→Completed）、聚合功能统一管理整个诊疗过程等医疗案例管理界面，包含医案管理、列表、详情、创建等完整UI组件
+- 关键类型计数：Controller/Service/Repository/Entity/DTO/ViewModel/Enum：0/0/0/0/0/4/0
+- 发现到的外露面：API端点数: 0 / Views&VM数: 4个ViewModel + 4个View / DbContext&DbSet数: 0
+- 疑似问题标注：
+  - SuspectApiOutsideWebApi: false（WPF模块，无Controller组件）
+  - SuspectDtoDup: false（使用Shared.Models统一DTO，无重复定义）
+  - SuspectEnumDup: false（无Enum定义）
+  - SuspectRoleMismatch: false（职责完全符合医疗案例管理模块要求：诊疗流程、医案管理、状态跟踪）
+  - SuspectMissing: false（UltraThink双层架构重构完成，医疗案例管理功能界面完整）
+  - OtherInconsistencies: []
+- 供产品负责人勾选：
+  - [ ] 保留
+  - [ ] 下线
+  - [ ] 迁出（仅文件/类型维度，稍后进入迁移计划）
+  - [ ] 缺失（后续是否补齐由你确认）

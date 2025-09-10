@@ -1,0 +1,17 @@
+## LYBT.Desktop.Consultation
+- 路径：src/Client/Desktop/Modules/Consultation · 类型：WPF · TFM：net8.0-windows
+- 职责事实：WPF看诊诊断模块，采用UltraThink双层架构重构完成，提供中医四诊（望闻问切）数据记录、辨证论治症状分析、中医治疗方案记录、纯数据记录不涉及流程控制、专业化定位专注诊断数据等看诊诊断功能界面，包含诊断主界面、管理等基础UI组件
+- 关键类型计数：Controller/Service/Repository/Entity/DTO/ViewModel/Enum：0/0/0/0/0/2/0
+- 发现到的外露面：API端点数: 0 / Views&VM数: 2个ViewModel + 2个View / DbContext&DbSet数: 0
+- 疑似问题标注：
+  - SuspectApiOutsideWebApi: false（WPF模块，无Controller组件）
+  - SuspectDtoDup: false（使用Shared.Models统一DTO，无重复定义）
+  - SuspectEnumDup: false（无Enum定义）
+  - SuspectRoleMismatch: false（职责完全符合看诊诊断模块要求：中医四诊、诊断记录、症状分析）
+  - SuspectMissing: false（UltraThink双层架构重构完成，看诊诊断功能界面基础完整）
+  - OtherInconsistencies: ["功能相对简单，可考虑是否需要功能扩展"]
+- 供产品负责人勾选：
+  - [ ] 保留
+  - [ ] 下线
+  - [ ] 迁出（仅文件/类型维度，稍后进入迁移计划）
+  - [ ] 缺失（后续是否补齐由你确认）

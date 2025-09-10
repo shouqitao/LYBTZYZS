@@ -1,0 +1,52 @@
+Path,Decision,Action,Status,Message
+.ai,DELETE-CANDIDATE,Moved to backup,Success,Directory moved to backup
+.claudereports,DELETE-CANDIDATE,Moved to backup,Success,Directory moved to backup
+.serena,DELETE-CANDIDATE,Skip,Protected,Protected override - MCP tool
+.vs,DELETE-CANDIDATE,Moved to backup,Success,Directory moved to backup
+_governance,DELETE-CANDIDATE,Moved to backup,Success,Directory moved to backup
+build,DELETE-CANDIDATE,Moved to backup,Success,Directory moved to backup
+C:temp,DELETE-CANDIDATE,Moved to backup,Success,Directory moved to backup
+samples,DELETE-CANDIDATE,Moved to backup,Success,Directory moved to backup
+temp,DELETE-CANDIDATE,Moved to backup,Success,Directory moved to backup
+TestResults,DELETE-CANDIDATE,Moved to backup,Success,Directory moved to backup
+PasswordHashFixer,DELETE-CANDIDATE,Moved to backup,Success,Directory moved to backup
+README.md,DELETE-CANDIDATE,Skip,Protected,Protected override - project documentation
+CLAUDE.md,DELETE-CANDIDATE,Skip,Protected,Protected override - Claude configuration
+build_errors.txt,DELETE-CANDIDATE,Deleted,Success,File deleted
+server-build-warnings.log,DELETE-CANDIDATE,Deleted,Success,File deleted
+.gitlab-ci.yml,DELETE-CANDIDATE,Deleted,Success,File deleted
+Directory.Packages.props,DELETE-CANDIDATE,Deleted,Success,File deleted
+stylecop.json,DELETE-CANDIDATE,Deleted,Success,File deleted
+LICENSE,DELETE-CANDIDATE,Deleted,Success,File deleted
+TECH_DEBT_BACKLOG.md,DELETE-CANDIDATE,Deleted,Success,File deleted
+ccpm.bat,DELETE-CANDIDATE,Deleted,Success,File deleted
+start_api.bat,DELETE-CANDIDATE,Deleted,Success,File deleted
+step1-check-env.ps1,DELETE-CANDIDATE,Deleted,Success,File deleted
+step2-build-report.ps1,DELETE-CANDIDATE,Deleted,Success,File deleted
+fix_password_hash.cs,DELETE-CANDIDATE,Deleted,Success,File deleted
+LYBT.All.slnLaunch.user,DELETE-CANDIDATE,Deleted,Success,File deleted
+nul,DELETE-CANDIDATE,Deleted,Success,File deleted
+temp_output.txt,DELETE-CANDIDATE,Deleted,Success,File deleted
+fixed_management_test.py,DELETE-CANDIDATE,Deleted,Success,File deleted
+simple_management_test.py,DELETE-CANDIDATE,Deleted,Success,File deleted
+simple_user_test.js,DELETE-CANDIDATE,Deleted,Success,File deleted
+test_management_modules.py,DELETE-CANDIDATE,Deleted,Success,File deleted
+test_refresh_button.py,DELETE-CANDIDATE,Deleted,Success,File deleted
+test_refresh_fix_verification.py,DELETE-CANDIDATE,Deleted,Success,File deleted
+test_ui_thread_refresh.py,DELETE-CANDIDATE,Deleted,Success,File deleted
+test_user_update.js,DELETE-CANDIDATE,Deleted,Success,File deleted
+.claude,KEEP,Skip,Kept,Preserved as per whitelist
+.editorconfig,KEEP,Skip,Kept,Preserved as per whitelist
+.git,KEEP,Skip,Kept,Preserved as per whitelist
+.gitattributes,KEEP,Skip,Kept,Preserved as per whitelist
+.github,KEEP,Skip,Kept,Preserved as per whitelist
+.gitignore,KEEP,Skip,Kept,Preserved as per whitelist
+Directory.Build.props,KEEP,Skip,Kept,Preserved as per whitelist
+LYBT.All.sln,KEEP,Skip,Kept,Preserved as per whitelist
+LYBT.Desktop.sln,KEEP,Skip,Kept,Preserved as per whitelist
+LYBT.Server.sln,KEEP,Skip,Kept,Preserved as per whitelist
+_archive_noncode,KEEP,Skip,Kept,Preserved as per whitelist
+scripts,KEEP,Skip,Kept,Preserved as per whitelist
+src,KEEP,Skip,Kept,Preserved as per whitelist
+tests,KEEP,Skip,Kept,Preserved as per whitelist
+tools,KEEP,Skip,Kept,Preserved as per whitelist

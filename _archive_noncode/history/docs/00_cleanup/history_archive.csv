@@ -1,0 +1,10 @@
+OriginalPath,NewPath,Status
+docs/,_archive_noncode/history/docs/,Moved-from-archive
+_reports/,_archive_noncode/history/_reports/,Moved-from-archive
+docs/ (corrected),_archive_noncode/history/docs/,Moved-from-archive
+.claude/context/,_archive_noncode/history/context/,Moved-from-claude_config
+.claude/documents/,_archive_noncode/history/documents/,Moved-from-claude_config
+.claude/epics/,_archive_noncode/history/epics/,Moved-from-claude_config
+.claude/prds/,_archive_noncode/history/prds/,Moved-from-claude_config
+.claude/reports/,_archive_noncode/history/claude_reports/,Moved-from-claude_config
+.claude/rules/,_archive_noncode/history/rules/,Moved-from-claude_config

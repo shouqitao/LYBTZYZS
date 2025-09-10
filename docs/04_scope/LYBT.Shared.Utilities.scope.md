@@ -1,0 +1,17 @@
+## LYBT.Shared.Utilities
+- 路径：src/Shared/LYBT.Shared.Utilities · 类型：Library · TFM：net8.0
+- 职责事实：前后端共享工具类库，提供2个核心工具类：PasswordHelper(478行，提供ASP.NET Core Identity密码哈希/验证/强度检查/安全生成等完整密码管理功能)、CommonHelper(54行，标记为Obsolete准备移除的通用工具方法)。PasswordHelper使用生成正则表达式(C# 12特性)优化性能，包含完整的密码安全策略、强度评估算法、防时序攻击等企业级安全特性。
+- 关键类型计数：Controller/Service/Repository/Entity/DTO/ViewModel/Enum：0/0/0/0/0/0/2，工具类：2个(PasswordHelper + CommonHelper)，枚举：1个(PasswordStrength)
+- 发现到的外露面：API端点数：0 / Views&VM数：0 / DbContext&DbSet数：0
+- 疑似问题标注：
+  - SuspectApiOutsideWebApi: false（纯工具类，无Web功能）
+  - SuspectDtoDup: false（包含PasswordValidationResult辅助类，无重复）
+  - SuspectEnumDup: false（PasswordStrength枚举唯一定义）
+  - SuspectRoleMismatch: false（符合共享工具类职责）
+  - SuspectMissing: false（密码管理工具完整，CommonHelper准备废弃）
+  - OtherInconsistencies: ["CommonHelper标记为Obsolete但未实际移除", "项目规模较小，可考虑合并到其他项目"]
+- 供产品负责人勾选：
+  - [ ] 保留
+  - [ ] 下线
+  - [ ] 迁出（仅文件/类型维度，稍后进入迁移计划）
+  - [ ] 缺失（后续是否补齐由你确认）
