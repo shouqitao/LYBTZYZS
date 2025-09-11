@@ -22,8 +22,9 @@ namespace LYBT.Module.Prescriptions.Interfaces
         Task<ServiceResult<PrescriptionDto>> CopyLastPrescriptionAsync(Guid patientId, Guid doctorId, Guid operatorId, string operatorName);
 
         /// <summary>
-        /// 从模板创建处方
+        /// 从模板创建处方 - Record-Only模式已移除自动套用逻辑
         /// </summary>
+        [Obsolete("Automatic formula application removed in Record-Only mode. Use manual template import instead.", false)]
         Task<ServiceResult<PrescriptionDto>> CreateFromTemplateAsync(Guid templateId, Guid patientId, Guid doctorId, Guid operatorId, string operatorName);
 
         /// <summary>

@@ -155,68 +155,25 @@ namespace LYBT.Module.Prescriptions.Services
         }
 
         /// <summary>
-        /// 从验方模板创建处方
+        /// 从验方模板创建处方 - Record-Only模式已移除自动套用逻辑
         /// </summary>
-        public async Task<ServiceResult<PrescriptionDto>> CreateFromTemplateAsync(Guid templateId, Guid patientId, Guid doctorId, Guid operatorId, string operatorName)
+        [Obsolete("Automatic formula application removed in Record-Only mode. Use manual template import instead.", false)]
+        public Task<ServiceResult<PrescriptionDto>> CreateFromTemplateAsync(Guid templateId, Guid patientId, Guid doctorId, Guid operatorId, string operatorName)
         {
-            using var transaction = await _context.Database.BeginTransactionAsync();
-            try
+            var emptyPrescription = new PrescriptionDto
             {
-                if (templateId == Guid.Empty)
-                {
-                    return ServiceResult<PrescriptionDto>.Failure("验方模板ID不能为空");
-                }
+                Id = Guid.NewGuid(),
+                Indication = "验方自动套用功能在 Record-Only 模式下已移除",
+                PatientId = patientId,
+                UserId = doctorId,
+                Status = CommonStatus.Enabled,
+                Remark = "请手动导入验方模板并调整药材用量",
+                FormulaSource = "手动导入"
+            };
 
-                if (patientId == Guid.Empty)
-                {
-                    return ServiceResult<PrescriptionDto>.Failure("患者ID不能为空");
-                }
-
-                if (doctorId == Guid.Empty)
-                {
-                    return ServiceResult<PrescriptionDto>.Failure("医生ID不能为空");
-                }
-
-                // 获取验方模板 (假设存在FormulaTemplates表)
-                var template = await _context.Set<dynamic>() // TODO: 替换为实际的验方模板实体
-                    .FirstOrDefaultAsync();
-
-                if (template == null)
-                {
-                    return ServiceResult<PrescriptionDto>.Failure("验方模板不存在");
-                }
-
-                // 从模板创建处方 - 具体实现需要根据验方模板的结构调整
-                var prescription = new Prescription
-                {
-                    Id = Guid.NewGuid(),
-                    Indication = $"验方处方 - {DateTime.Now:MM-dd HH:mm}",
-                    PatientId = patientId,
-                    UserId = doctorId,
-                    Status = PrescriptionStatus.Draft,
-                    Remark = $"基于验方模板创建",
-                    FormulaSource = "验方模板"
-                };
-
-                _context.Prescriptions.Add(prescription);
-
-                // TODO: 根据验方模板添加处方项目
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
-
-                _logger.LogInformation(
-                    "从验方模板创建处方成功 - 操作者: {OperatorName} ({OperatorId}), 模板: {TemplateId}, 处方: {PrescriptionId}",
-                    operatorName, operatorId, templateId, prescription.Id);
-
-                var resultDto = _mapper.Map<PrescriptionDto>(prescription);
-                return ServiceResult<PrescriptionDto>.Success(resultDto);
-            }
-            catch (Exception ex)
-            {
-                await transaction.RollbackAsync();
-                _logger.LogError(ex, "从验方模板创建处方失败 - 操作者: {OperatorName}, 模板: {TemplateId}", operatorName, templateId);
-                return ServiceResult<PrescriptionDto>.Failure($"从验方模板创建处方失败: {ex.Message}");
-            }
+            return Task.FromResult(ServiceResult<PrescriptionDto>.Success(
+                emptyPrescription,
+                "验方自动套用功能已在 Record-Only 模式下移除，请使用手动导入模板"));
         }
 
         /// <summary>
