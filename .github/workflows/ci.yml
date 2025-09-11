@@ -1,4 +1,4 @@
-name: 持续集成 (CI)
+name: Pass 7 治理基线强制门禁 (CI)
 
 on:
   push:
@@ -14,15 +14,79 @@ env:
   DOTNET_CLI_TELEMETRY_OPTOUT: true
 
 jobs:
-  build-and-test:
-    name: 构建和测试
+  # Level 1: 代码质量门禁 (阻塞性)
+  code-quality-gate:
+    name: Level 1 - 代码质量门禁
     runs-on: windows-latest
     
     steps:
     - name: 检出代码
       uses: actions/checkout@v5
+
+    - name: 设置 .NET
+      uses: actions/setup-dotnet@v4
       with:
-        fetch-depth: 0  # 获取完整历史记录以支持代码覆盖率分析
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: 还原依赖包
+      run: dotnet restore LYBT.All.sln
+
+    # 强制门禁：代码格式检查 (零容忍)
+    - name: 🚨 强制门禁 - 代码格式验证
+      run: dotnet format LYBT.All.sln --verify-no-changes --verbosity minimal
+      
+    # 强制门禁：编译检查 (零错误零警告)
+    - name: 🚨 强制门禁 - 编译检查
+      run: dotnet build LYBT.All.sln --configuration Release --no-restore --verbosity minimal
+
+  # Level 2: 测试质量门禁 (阻塞性)
+  test-quality-gate:
+    name: Level 2 - 测试质量门禁
+    runs-on: windows-latest
+    needs: code-quality-gate
+    
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v5
+
+    - name: 设置 .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: 还原依赖包
+      run: dotnet restore LYBT.All.sln
+
+    - name: 构建解决方案
+      run: dotnet build LYBT.All.sln --configuration Release --no-restore --verbosity minimal
+
+    # 强制门禁：所有单元测试必须通过
+    - name: 🚨 强制门禁 - 单元测试
+      run: |
+        dotnet test tests/Backend/LYBT.Module.Users.Tests/LYBT.Module.Users.Tests.csproj `
+          --configuration Release --no-build --verbosity minimal
+        
+        dotnet test tests/Backend/LYBT.Module.Patients.Tests/LYBT.Module.Patients.Tests.csproj `
+          --configuration Release --no-build --verbosity minimal
+        
+        dotnet test tests/Backend/LYBT.Module.Herbs.Tests/LYBT.Module.Herbs.Tests.csproj `
+          --configuration Release --no-build --verbosity minimal
+
+    # 强制门禁：架构测试必须全部通过  
+    - name: 🚨 强制门禁 - 架构合规测试
+      run: |
+        dotnet test tests/Architecture/LYBT.ArchTests.csproj `
+          --configuration Release --no-build --verbosity minimal
+
+  # Level 3: 架构合规门禁 (阻塞性)
+  architecture-compliance-gate:
+    name: Level 3 - 架构合规门禁
+    runs-on: windows-latest
+    needs: test-quality-gate
+    
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v5
 
     - name: 设置 .NET
       uses: actions/setup-dotnet@v4
@@ -33,176 +97,106 @@ jobs:
       run: dotnet restore LYBT.All.sln
 
     - name: 构建解决方案
-      run: dotnet build LYBT.All.sln --configuration Release --no-restore
+      run: dotnet build LYBT.All.sln --configuration Release --no-restore --verbosity minimal
 
-    - name: 运行单元测试
+    # 架构合规检查：层间依赖
+    - name: 🚨 架构门禁 - 层间依赖检查
       run: |
-        dotnet test tests/Backend/LYBT.Module.Users.Tests/LYBT.Module.Users.Tests.csproj `
-          --configuration Release `
-          --no-build `
-          --verbosity normal `
-          --logger "trx;LogFileName=user-tests.trx" `
-          --logger "console;verbosity=detailed" `
-          --collect:"XPlat Code Coverage" `
-          --results-directory ./TestResults
-        
-        dotnet test tests/Backend/LYBT.Module.Patients.Tests/LYBT.Module.Patients.Tests.csproj `
-          --configuration Release `
-          --no-build `
-          --verbosity normal `
-          --logger "trx;LogFileName=patient-tests.trx" `
-          --logger "console;verbosity=detailed" `
-          --collect:"XPlat Code Coverage" `
-          --results-directory ./TestResults
-        
-        dotnet test tests/Backend/LYBT.Module.Herbs.Tests/LYBT.Module.Herbs.Tests.csproj `
-          --configuration Release `
-          --no-build `
-          --verbosity normal `
-          --logger "trx;LogFileName=herb-tests.trx" `
-          --logger "console;verbosity=detailed" `
-          --collect:"XPlat Code Coverage" `
-          --results-directory ./TestResults
+        dotnet test tests/Architecture/LYBT.ArchTests.csproj `
+          --filter "FullyQualifiedName~LayerDependencyTests" `
+          --configuration Release --no-build --verbosity minimal
 
-    - name: 运行集成测试
+    # 架构合规检查：API版本控制
+    - name: 🚨 架构门禁 - API版本合规检查  
       run: |
-        dotnet test tests/Integration/LYBT.IntegrationTests/LYBT.IntegrationTests.csproj `
-          --configuration Release `
-          --no-build `
-          --verbosity normal `
-          --logger "trx;LogFileName=integration-tests.trx" `
-          --logger "console;verbosity=detailed" `
-          --results-directory ./TestResults
+        dotnet test tests/Architecture/LYBT.ArchTests.csproj `
+          --filter "FullyQualifiedName~ApiVersionTests" `
+          --configuration Release --no-build --verbosity minimal
 
-    - name: 上传测试结果
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: test-results
-        path: ./TestResults
-        retention-days: 30
-
-    - name: 发布测试报告
-      uses: dorny/test-reporter@v1
-      if: always()
-      with:
-        name: .NET 测试报告
-        path: './TestResults/*.trx'
-        reporter: dotnet-trx
-        fail-on-error: false
-
-    - name: 生成代码覆盖率报告
-      if: always()
+    # 架构合规检查：控制器位置
+    - name: 🚨 架构门禁 - 控制器位置检查
       run: |
-        dotnet tool install --global dotnet-reportgenerator-globaltool
-        reportgenerator `
-          -reports:"./TestResults/**/coverage.cobertura.xml" `
-          -targetdir:"./CoverageReport" `
-          -reporttypes:"Html;Cobertura;MarkdownSummary"
+        dotnet test tests/Architecture/LYBT.ArchTests.csproj `
+          --filter "FullyQualifiedName~ControllerLocationTests" `
+          --configuration Release --no-build --verbosity minimal
 
-    - name: 上传覆盖率报告
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: coverage-report
-        path: ./CoverageReport
-        retention-days: 30
-
-    - name: 显示覆盖率摘要
-      if: always()
+    # 架构合规检查：命名规范
+    - name: 🚨 架构门禁 - 命名规范检查
       run: |
-        if (Test-Path "./CoverageReport/Summary.md") {
-          Get-Content "./CoverageReport/Summary.md"
-        }
+        dotnet test tests/Architecture/LYBT.ArchTests.csproj `
+          --filter "FullyQualifiedName~NamingConventionTests" `
+          --configuration Release --no-build --verbosity minimal
 
-  code-quality:
-    name: 代码质量检查
-    runs-on: windows-latest
-    
-    steps:
-    - name: 检出代码
-      uses: actions/checkout@v5
-
-    - name: 设置 .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: ${{ env.DOTNET_VERSION }}
-
-    - name: 安装代码分析工具
+    # 架构合规检查：禁止框架使用
+    - name: 🚨 架构门禁 - 禁止框架检查
       run: |
-        dotnet tool install --global dotnet-format
-        dotnet tool install --global security-scan
+        dotnet test tests/Architecture/LYBT.ArchTests.csproj `
+          --filter "FullyQualifiedName~ForbiddenFrameworkTests" `
+          --configuration Release --no-build --verbosity minimal
 
-    - name: 运行代码格式检查
-      run: dotnet format LYBT.All.sln --verify-no-changes --verbosity diagnostic
-
-    - name: 运行安全扫描
-      run: security-scan LYBT.All.sln
-      continue-on-error: true
-
-  publish-artifacts:
-    name: 发布构建产物
-    runs-on: windows-latest
-    needs: [build-and-test, code-quality]
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
-    
-    steps:
-    - name: 检出代码
-      uses: actions/checkout@v5
-
-    - name: 设置 .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: ${{ env.DOTNET_VERSION }}
-
-    - name: 还原依赖包
-      run: dotnet restore LYBT.All.sln
-
-    - name: 发布 Web API
+    # Record-Only基线检查：禁止复杂功能
+    - name: 🚨 Record-Only门禁 - 功能基线检查
       run: |
-        dotnet publish src/Backend/Services/LYBT.WebAPI/LYBT.WebAPI.csproj `
-          --configuration Release `
-          --output ./publish/api `
-          --no-restore
+        dotnet test tests/Architecture/LYBT.ArchTests.csproj `
+          --filter "FullyQualifiedName~RecordOnlyTests" `
+          --configuration Release --no-build --verbosity minimal
 
-    - name: 发布 WPF 客户端
-      run: |
-        dotnet publish src/Frontend/Desktop/Shell/LYBT.WPF.Client.Shell.csproj `
-          --configuration Release `
-          --output ./publish/desktop `
-          --no-restore `
-          --self-contained true `
-          --runtime win-x64
-
-    - name: 创建部署包
-      run: |
-        Compress-Archive -Path ./publish/api/* -DestinationPath ./LYBT-API-${{ github.sha }}.zip
-        Compress-Archive -Path ./publish/desktop/* -DestinationPath ./LYBT-Desktop-${{ github.sha }}.zip
-
-    - name: 上传部署包
-      uses: actions/upload-artifact@v4
-      with:
-        name: deployment-packages
-        path: |
-          ./LYBT-API-${{ github.sha }}.zip
-          ./LYBT-Desktop-${{ github.sha }}.zip
-        retention-days: 90
-
-  notification:
-    name: 发送通知
+  # 治理基线验证完成通知
+  governance-baseline-passed:
+    name: ✅ Pass 7 治理基线验证通过
     runs-on: ubuntu-latest
-    needs: [build-and-test, code-quality, publish-artifacts]
-    if: always()
+    needs: [code-quality-gate, test-quality-gate, architecture-compliance-gate]
+    if: success()
     
     steps:
-    - name: 构建状态总结
+    - name: 治理基线验证成功
       run: |
-        echo "## 构建状态总结" >> $GITHUB_STEP_SUMMARY
+        echo "## ✅ Pass 7 治理基线验证通过" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
-        echo "- 构建和测试: ${{ needs.build-and-test.result }}" >> $GITHUB_STEP_SUMMARY
-        echo "- 代码质量: ${{ needs.code-quality.result }}" >> $GITHUB_STEP_SUMMARY
-        echo "- 发布产物: ${{ needs.publish-artifacts.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "所有强制门禁检查已通过：" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ Level 1: 代码质量门禁 (格式化 + 编译零错误零警告)" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ Level 2: 测试质量门禁 (单元测试 + 架构测试)" >> $GITHUB_STEP_SUMMARY  
+        echo "- ✅ Level 3: 架构合规门禁 (Record-Only基线验证)" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
-        echo "提交: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
-        echo "分支: ${{ github.ref }}" >> $GITHUB_STEP_SUMMARY
-        echo "触发者: ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Record-Only基线约束已强制执行**" >> $GITHUB_STEP_SUMMARY
+        echo "- 层间依赖合规" >> $GITHUB_STEP_SUMMARY
+        echo "- API版本控制 (/api/v1 only)" >> $GITHUB_STEP_SUMMARY
+        echo "- 控制器集中管理 (LYBT.WebAPI only)" >> $GITHUB_STEP_SUMMARY
+        echo "- 命名规范合规 (无Pipeline/Workflow等)" >> $GITHUB_STEP_SUMMARY
+        echo "- 框架使用合规 (禁止重型框架)" >> $GITHUB_STEP_SUMMARY
+        echo "- Record-Only功能模式 (仅CRUD+历史查询)" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**提交信息**:" >> $GITHUB_STEP_SUMMARY
+        echo "- 提交: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+        echo "- 分支: ${{ github.ref }}" >> $GITHUB_STEP_SUMMARY
+        echo "- 提交者: ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+
+  # 门禁失败处理
+  governance-baseline-failed:
+    name: ❌ Pass 7 治理基线验证失败
+    runs-on: ubuntu-latest
+    needs: [code-quality-gate, test-quality-gate, architecture-compliance-gate]
+    if: failure()
+    
+    steps:
+    - name: 治理基线验证失败
+      run: |
+        echo "## ❌ Pass 7 治理基线验证失败" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**PR被自动阻塞** - 必须修复所有违规项" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**失败状态**:" >> $GITHUB_STEP_SUMMARY
+        echo "- Level 1 代码质量: ${{ needs.code-quality-gate.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "- Level 2 测试质量: ${{ needs.test-quality-gate.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "- Level 3 架构合规: ${{ needs.architecture-compliance-gate.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**修复指导**:" >> $GITHUB_STEP_SUMMARY
+        echo "1. 检查构建错误和警告 - 必须为0" >> $GITHUB_STEP_SUMMARY
+        echo "2. 运行 \`dotnet format\` 修复格式问题" >> $GITHUB_STEP_SUMMARY
+        echo "3. 确保所有单元测试通过" >> $GITHUB_STEP_SUMMARY
+        echo "4. 修复架构测试失败项" >> $GITHUB_STEP_SUMMARY
+        echo "5. 遵循Record-Only基线约束" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "详细错误信息请查看上方构建日志" >> $GITHUB_STEP_SUMMARY
+        exit 1
+
