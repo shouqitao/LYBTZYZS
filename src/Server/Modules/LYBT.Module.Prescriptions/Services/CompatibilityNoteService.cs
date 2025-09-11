@@ -29,6 +29,7 @@ namespace LYBT.Module.Prescriptions.Services
             _logger = logger;
         }
 
+        /// <inheritdoc/>
         public async Task<ServiceResult<CompatibilityNoteDto>> CreateAsync(
             Guid prescriptionId,
             CompatibilityNoteCreateDto createDto,
@@ -64,6 +65,7 @@ namespace LYBT.Module.Prescriptions.Services
             }
         }
 
+        /// <inheritdoc/>
         public async Task<ServiceResult<List<CompatibilityNoteDto>>> GetByPrescriptionIdAsync(Guid prescriptionId)
         {
             try
@@ -83,6 +85,7 @@ namespace LYBT.Module.Prescriptions.Services
             }
         }
 
+        /// <inheritdoc/>
         public async Task<ServiceResult<CompatibilityNoteDto>> UpdateAsync(
             Guid prescriptionId,
             Guid noteId,
@@ -124,6 +127,7 @@ namespace LYBT.Module.Prescriptions.Services
             }
         }
 
+        /// <inheritdoc/>
         public async Task<ServiceResult<bool>> DeleteAsync(Guid prescriptionId, Guid noteId, Guid currentUserId)
         {
             try
@@ -151,6 +155,7 @@ namespace LYBT.Module.Prescriptions.Services
             }
         }
 
+        /// <inheritdoc/>
         public async Task<ServiceResult<CompatibilityNoteDto>> GetByIdAsync(Guid prescriptionId, Guid noteId)
         {
             try

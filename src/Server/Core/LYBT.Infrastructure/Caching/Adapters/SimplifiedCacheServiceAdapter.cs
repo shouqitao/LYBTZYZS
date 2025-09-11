@@ -26,21 +26,25 @@ namespace LYBT.Infrastructure.Caching.Adapters
 
         #region ISimplifiedCacheService 同步操作
 
+        /// <inheritdoc/>
         public T? Get<T>(string key)
         {
             return _cacheService.Get<T>(key);
         }
 
+        /// <inheritdoc/>
         public void Set<T>(string key, T value, TimeSpan? expiration = null)
         {
             _cacheService.Set(key, value, expiration);
         }
 
+        /// <inheritdoc/>
         public bool Remove(string key)
         {
             return _cacheService.Remove(key);
         }
 
+        /// <inheritdoc/>
         public void Clear()
         {
             _cacheService.Clear();
@@ -50,21 +54,25 @@ namespace LYBT.Infrastructure.Caching.Adapters
 
         #region ISimplifiedCacheService 异步操作
 
+        /// <inheritdoc/>
         public Task<T?> GetAsync<T>(string key)
         {
             return _cacheService.GetAsync<T>(key);
         }
 
+        /// <inheritdoc/>
         public Task SetAsync<T>(string key, T value, TimeSpan? expiration = null)
         {
             return _cacheService.SetAsync(key, value, expiration);
         }
 
+        /// <inheritdoc/>
         public Task<bool> RemoveAsync(string key)
         {
             return _cacheService.RemoveAsync(key);
         }
 
+        /// <inheritdoc/>
         public Task<T> GetOrSetAsync<T>(string key, Func<Task<T>> factory, TimeSpan? expiration = null)
         {
             return _cacheService.GetOrSetAsync(key, factory, expiration);
@@ -92,21 +100,25 @@ namespace LYBT.Infrastructure.Caching.Adapters
 
         #region ISimplifiedCacheService 同步操作
 
+        /// <inheritdoc/>
         public T? Get<T>(string key)
         {
             return _cacheService.Get<T>(key);
         }
 
+        /// <inheritdoc/>
         public void Set<T>(string key, T value, TimeSpan? expiration = null)
         {
             _cacheService.Set(key, value, expiration);
         }
 
+        /// <inheritdoc/>
         public bool Remove(string key)
         {
             return _cacheService.Remove(key);
         }
 
+        /// <inheritdoc/>
         public void Clear()
         {
             _cacheService.Clear();
@@ -116,21 +128,25 @@ namespace LYBT.Infrastructure.Caching.Adapters
 
         #region ISimplifiedCacheService 异步操作
 
+        /// <inheritdoc/>
         public Task<T?> GetAsync<T>(string key)
         {
             return _cacheService.GetAsync<T>(key);
         }
 
+        /// <inheritdoc/>
         public Task SetAsync<T>(string key, T value, TimeSpan? expiration = null)
         {
             return _cacheService.SetAsync(key, value, expiration);
         }
 
+        /// <inheritdoc/>
         public Task<bool> RemoveAsync(string key)
         {
             return _cacheService.RemoveAsync(key);
         }
 
+        /// <inheritdoc/>
         public Task<T> GetOrSetAsync<T>(string key, Func<Task<T>> factory, TimeSpan? expiration = null)
         {
             return _cacheService.GetOrSetAsync(key, factory, expiration);

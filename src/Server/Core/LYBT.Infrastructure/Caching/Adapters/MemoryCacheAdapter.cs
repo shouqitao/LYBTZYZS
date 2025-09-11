@@ -39,6 +39,7 @@ namespace LYBT.Infrastructure.Caching.Adapters
 
         #region 同步操作
 
+        /// <inheritdoc/>
         public T? Get<T>(string key)
         {
             if (string.IsNullOrEmpty(key))
@@ -64,6 +65,7 @@ namespace LYBT.Infrastructure.Caching.Adapters
             }
         }
 
+        /// <inheritdoc/>
         public void Set<T>(string key, T value, TimeSpan? expiration = null)
         {
             if (string.IsNullOrEmpty(key))
@@ -99,6 +101,7 @@ namespace LYBT.Infrastructure.Caching.Adapters
             }
         }
 
+        /// <inheritdoc/>
         public bool Remove(string key)
         {
             if (string.IsNullOrEmpty(key))
@@ -124,6 +127,7 @@ namespace LYBT.Infrastructure.Caching.Adapters
             }
         }
 
+        /// <inheritdoc/>
         public void Clear()
         {
             try
@@ -146,6 +150,7 @@ namespace LYBT.Infrastructure.Caching.Adapters
             }
         }
 
+        /// <inheritdoc/>
         public bool Exists(string key)
         {
             if (string.IsNullOrEmpty(key))
@@ -158,23 +163,27 @@ namespace LYBT.Infrastructure.Caching.Adapters
 
         #region 异步操作
 
+        /// <inheritdoc/>
         public Task<T?> GetAsync<T>(string key, CancellationToken cancellationToken = default)
         {
             // Memory cache operations are synchronous, wrap in Task
             return Task.FromResult(Get<T>(key));
         }
 
+        /// <inheritdoc/>
         public Task SetAsync<T>(string key, T value, TimeSpan? expiration = null, CancellationToken cancellationToken = default)
         {
             Set(key, value, expiration);
             return Task.CompletedTask;
         }
 
+        /// <inheritdoc/>
         public Task<bool> RemoveAsync(string key, CancellationToken cancellationToken = default)
         {
             return Task.FromResult(Remove(key));
         }
 
+        /// <inheritdoc/>
         public async Task<T> GetOrSetAsync<T>(string key, Func<Task<T>> factory, TimeSpan? expiration = null, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(key))
@@ -205,6 +214,7 @@ namespace LYBT.Infrastructure.Caching.Adapters
 
         #region 批量操作
 
+        /// <inheritdoc/>
         public Task<Dictionary<string, T?>> GetManyAsync<T>(IEnumerable<string> keys, CancellationToken cancellationToken = default)
         {
             var result = new Dictionary<string, T?>();
@@ -224,6 +234,7 @@ namespace LYBT.Infrastructure.Caching.Adapters
             return Task.FromResult(result);
         }
 
+        /// <inheritdoc/>
         public Task SetManyAsync<T>(Dictionary<string, T> items, TimeSpan? expiration = null, CancellationToken cancellationToken = default)
         {
             foreach (var item in items)
@@ -237,6 +248,7 @@ namespace LYBT.Infrastructure.Caching.Adapters
             return Task.CompletedTask;
         }
 
+        /// <inheritdoc/>
         public Task<int> RemoveManyAsync(IEnumerable<string> keys, CancellationToken cancellationToken = default)
         {
             int removedCount = 0;
@@ -259,6 +271,7 @@ namespace LYBT.Infrastructure.Caching.Adapters
 
         #region 模式操作
 
+        /// <inheritdoc/>
         public Task<int> RemoveByPatternAsync(string pattern, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(pattern))
@@ -296,6 +309,7 @@ namespace LYBT.Infrastructure.Caching.Adapters
             return Task.FromResult(removedCount);
         }
 
+        /// <inheritdoc/>
         public Task<int> RemoveByPrefixAsync(string prefix, CancellationToken cancellationToken = default)
         {
             return RemoveByPatternAsync($"{prefix}*", cancellationToken);
@@ -305,6 +319,7 @@ namespace LYBT.Infrastructure.Caching.Adapters
 
         #region 统计与监控
 
+        /// <inheritdoc/>
         public Task<CacheStatistics> GetStatisticsAsync(CancellationToken cancellationToken = default)
         {
             var stats = new CacheStatistics

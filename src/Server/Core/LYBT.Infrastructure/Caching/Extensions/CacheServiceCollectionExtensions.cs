@@ -262,6 +262,7 @@ namespace LYBT.Infrastructure.Caching.Extensions
             _logger = logger;
         }
 
+        /// <inheritdoc/>
         public async Task StartAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation("Starting cache warmup...");
@@ -279,6 +280,7 @@ namespace LYBT.Infrastructure.Caching.Extensions
             }
         }
 
+        /// <inheritdoc/>
         public Task StopAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation("Cache warmup service stopped");
