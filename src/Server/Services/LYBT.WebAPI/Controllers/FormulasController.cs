@@ -291,9 +291,10 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 获取验方推荐（按症候）
+        /// 获取验方推荐（按症候） - Record-Only 模式：智能推荐功能已移除
         /// </summary>
         [HttpGet("recommendations/syndrome/{syndrome}")]
+        [Obsolete("Smart recommendation endpoint removed in Record-Only mode. Use basic search endpoints instead.", false)]
         public async Task<ActionResult<ApiResponse<List<FormulaRecommendationDto>>>> GetRecommendationsBySyndrome(string syndrome)
         {
             try
@@ -303,8 +304,8 @@ namespace LYBT.WebAPI.Controllers
                     return ValidationFail<List<FormulaRecommendationDto>>("症候不能为空");
                 }
 
-                // 接口简化后不再支持推荐功能
-                return Success(new List<FormulaRecommendationDto>(), "简单诊所版本不支持验方推荐功能");
+                // Record-Only模式不再支持智能推荐功能
+                return Success(new List<FormulaRecommendationDto>(), "智能推荐功能在 Record-Only 模式下已移除，请使用基础搜索功能");
             }
             catch (Exception ex)
             {
@@ -313,9 +314,10 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 获取验方推荐（按症状和诊断）
+        /// 获取验方推荐（按症状和诊断） - Record-Only 模式：智能推荐功能已移除
         /// </summary>
         [HttpGet("recommendations")]
+        [Obsolete("Smart recommendation endpoint removed in Record-Only mode. Use basic search endpoints instead.", false)]
         public async Task<ActionResult<ApiResponse<List<FormulaRecommendationDto>>>> GetRecommendations(
             [FromQuery] string symptoms,
             [FromQuery] string diagnosis,
@@ -328,8 +330,8 @@ namespace LYBT.WebAPI.Controllers
                     return ValidationFail<List<FormulaRecommendationDto>>("症状和诊断不能为空");
                 }
 
-                // 接口简化后不再支持复杂推荐功能
-                return Success(new List<FormulaRecommendationDto>(), "简单诊所版本不支持复杂验方推荐功能");
+                // Record-Only模式不再支持智能推荐功能
+                return Success(new List<FormulaRecommendationDto>(), "智能推荐功能在 Record-Only 模式下已移除，请使用基础搜索功能");
             }
             catch (Exception ex)
             {

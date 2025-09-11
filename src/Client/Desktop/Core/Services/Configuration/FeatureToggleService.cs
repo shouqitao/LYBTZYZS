@@ -104,12 +104,13 @@ namespace LYBT.Desktop.Core.Services.Configuration
                 new FeatureDefinition
                 {
                     Name = "SmartDiagnosis",
-                    DisplayName = "智能诊断辅助",
-                    Description = "AI辅助的中医诊断建议",
-                    Category = "AI",
+                    DisplayName = "[已移除] 智能诊断辅助",
+                    Description = "Record-Only模式：AI辅助的中医诊断功能已移除",
+                    Category = "Deprecated",
                     DefaultState = FeatureState.Disabled,
+                    CurrentState = FeatureState.Disabled,
                     ReleaseStage = ReleaseStage.Alpha,
-                    Tags = new[] { "ai", "diagnosis", "experimental" }
+                    Tags = new[] { "deprecated", "removed", "record-only" }
                 },
                 new FeatureDefinition
                 {

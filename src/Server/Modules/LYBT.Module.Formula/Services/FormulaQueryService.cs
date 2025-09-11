@@ -193,10 +193,10 @@ namespace LYBT.Module.Formula.Services
 
         #endregion 分类和模板查询
 
-        #region 智能推荐（简化版）
+        #region 基础模板功能（Record-Only保留）
 
         /// <summary>
-        /// 获取验方模板列表
+        /// 获取验方模板列表 - Record-Only模式保留基础功能
         /// </summary>
         /// <returns>包含共享验方模板列表的服务结果，用于处方开具时的模板选择</returns>
         public async Task<ServiceResult<List<FormulaDto>>> GetTemplatesAsync()
@@ -206,7 +206,6 @@ namespace LYBT.Module.Formula.Services
                 // 获取模板验方（IsShared = true的验方作为模板）
                 var templates = await _dbContext.Formulas
                     .Include(f => f.Herbs)
-
                     .Where(f => f.Status == CommonStatus.Enabled && f.IsShared)
                     .OrderBy(f => f.Name)
                     .ToListAsync();
@@ -222,11 +221,10 @@ namespace LYBT.Module.Formula.Services
         }
 
         /// <summary>
-        /// 根据验方类型查询验方
+        /// 根据验方类型查询验方 - Record-Only模式保留基础功能
         /// </summary>
         /// <param name="formulaType">验方类型关键字，不能为空</param>
         /// <returns>包含指定类型验方列表的服务结果，失败时返回错误消息</returns>
-        /// <exception cref="ArgumentException">当验方类型为空时</exception>
         public async Task<ServiceResult<List<FormulaDto>>> GetByTypeAsync(string formulaType)
         {
             try
@@ -239,7 +237,6 @@ namespace LYBT.Module.Formula.Services
                 // 根据验方类型查询（基于名称或功效匹配）
                 var formulas = await _dbContext.Formulas
                     .Include(f => f.Herbs)
-
                     .Where(f => f.Status == CommonStatus.Enabled &&
                                (f.Name.Contains(formulaType) ||
                                 (f.Effect != null && f.Effect.Contains(formulaType))))
@@ -257,107 +254,7 @@ namespace LYBT.Module.Formula.Services
         }
 
         /// <summary>
-        /// 根据症候推荐验方
-        /// </summary>
-        /// <param name="syndrome">症候描述，不能为空</param>
-        /// <returns>包含推荐验方列表的服务结果，按匹配度排序，限制最多10个推荐</returns>
-        /// <exception cref="ArgumentException">当症候为空时</exception>
-        public async Task<ServiceResult<List<FormulaRecommendationDto>>> GetRecommendationsForSyndromeAsync(string syndrome)
-        {
-            try
-            {
-                if (string.IsNullOrWhiteSpace(syndrome))
-                {
-                    return ServiceResult<List<FormulaRecommendationDto>>.Failure("症候不能为空");
-                }
-
-                // 根据症候推荐验方
-                var formulas = await _dbContext.Formulas
-                    .Where(f => f.Status == CommonStatus.Enabled &&
-                               ((f.Effect != null && f.Effect.Contains(syndrome)) ||
-                                (f.Usage != null && f.Usage.Contains(syndrome))))
-                    .OrderBy(f => f.Name)
-                    .Take(10)
-                    .ToListAsync();
-
-                var recommendations = formulas.Select(f => new FormulaRecommendationDto
-                {
-                    Id = Guid.NewGuid(), // 临时ID，推荐结果没有实际ID
-                    FormulaName = f.Name,
-                    Effect = f.Effect ?? string.Empty,
-                    MatchScore = CalculateConfidence(f, syndrome),
-                    UsageCount = 0, // 暂时设为0，实际应统计使用次数
-                    MatchReason = $"适用于{syndrome}相关症候"
-                }).ToList();
-
-                return ServiceResult<List<FormulaRecommendationDto>>.Success(recommendations);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "根据症候推荐验方失败，症候: {Syndrome}", syndrome);
-                return ServiceResult<List<FormulaRecommendationDto>>.Failure($"推荐失败: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// 根据症状和诊断推荐验方
-        /// </summary>
-        /// <param name="symptoms">患者症状描述</param>
-        /// <param name="diagnosis">诊断结果</param>
-        /// <param name="doctorId">医生ID</param>
-        /// <returns>包含智能推荐验方列表的服务结果，综合考虑症状和诊断匹配度</returns>
-        /// <exception cref="ArgumentException">当症状和诊断都为空时</exception>
-        public async Task<ServiceResult<List<FormulaRecommendationDto>>> GetRecommendationsAsync(string symptoms, string diagnosis, Guid doctorId)
-        {
-            try
-            {
-                if (string.IsNullOrWhiteSpace(symptoms) && string.IsNullOrWhiteSpace(diagnosis))
-                {
-                    return ServiceResult<List<FormulaRecommendationDto>>.Failure("症状或诊断不能为空");
-                }
-
-                var searchTerms = new List<string>();
-                if (!string.IsNullOrWhiteSpace(symptoms))
-                {
-                    searchTerms.Add(symptoms);
-                }
-
-                if (!string.IsNullOrWhiteSpace(diagnosis))
-                {
-                    searchTerms.Add(diagnosis);
-                }
-
-                // 根据症状和诊断推荐验方
-                var formulas = await _dbContext.Formulas
-                    .Where(f => f.Status == CommonStatus.Enabled &&
-                               searchTerms.Any(term =>
-                                   (f.Effect != null && f.Effect.Contains(term)) ||
-                                   (f.Usage != null && f.Usage.Contains(term))))
-                    .OrderBy(f => f.Name)
-                    .Take(10)
-                    .ToListAsync();
-
-                var recommendations = formulas.Select(f => new FormulaRecommendationDto
-                {
-                    Id = Guid.NewGuid(), // 临时ID
-                    FormulaName = f.Name,
-                    Effect = f.Effect ?? string.Empty,
-                    MatchScore = CalculateMatchScore(f, symptoms, diagnosis),
-                    UsageCount = 0, // 暂时设为0
-                    MatchReason = $"匹配症状: {symptoms}, 诊断: {diagnosis}"
-                }).ToList();
-
-                return ServiceResult<List<FormulaRecommendationDto>>.Success(recommendations);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "综合推荐验方失败，症状: {Symptoms}, 诊断: {Diagnosis}, 医生: {DoctorId}", symptoms, diagnosis, doctorId);
-                return ServiceResult<List<FormulaRecommendationDto>>.Failure($"推荐失败: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// 根据关键字和分类查询验方
+        /// 根据关键字和分类查询验方 - Record-Only模式保留基础功能
         /// </summary>
         /// <param name="keyword">可选的搜索关键字，用于匹配验方名称或功效</param>
         /// <param name="category">可选的验方分类筛选条件</param>
@@ -396,47 +293,36 @@ namespace LYBT.Module.Formula.Services
         }
 
         /// <summary>
-        /// 根据症候获取验方推荐（通用对象格式）
+        /// 智能推荐功能已移除 - Record-Only模式下不支持推荐功能
         /// </summary>
-        /// <param name="syndrome">症候描述，不能为空</param>
-        /// <returns>包含验方推荐信息的服务结果，返回通用对象格式便于前端展示</returns>
-        /// <exception cref="ArgumentException">当症候为空时</exception>
-        public async Task<ServiceResult<List<object>>> GetRecommendationsAsync(string syndrome)
+        [Obsolete("Smart recommendation feature removed in Record-Only mode. Use basic search instead.", false)]
+        public Task<ServiceResult<List<FormulaRecommendationDto>>> GetRecommendationsForSyndromeAsync(string syndrome)
         {
-            try
-            {
-                if (string.IsNullOrWhiteSpace(syndrome))
-                {
-                    return ServiceResult<List<object>>.Failure("症候不能为空");
-                }
-
-                // 根据症候推荐验方
-                var formulas = await _dbContext.Formulas
-                    .Where(f => f.Status == CommonStatus.Enabled &&
-                               ((f.Effect != null && f.Effect.Contains(syndrome)) ||
-                                (f.Usage != null && f.Usage.Contains(syndrome))))
-                    .OrderBy(f => f.Name)
-                    .Take(10)
-                    .ToListAsync();
-
-                var recommendations = formulas.Select(f => new
-                {
-                    FormulaId = f.Id,
-                    FormulaName = f.Name,
-                    Confidence = CalculateConfidence(f, syndrome),
-                    Reason = $"适用于{syndrome}相关症候"
-                }).ToList<object>();
-
-                return ServiceResult<List<object>>.Success(recommendations);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "根据症候推荐验方失败，症候: {Syndrome}", syndrome);
-                return ServiceResult<List<object>>.Failure($"推荐失败: {ex.Message}");
-            }
+            var emptyRecommendations = new List<FormulaRecommendationDto>();
+            return Task.FromResult(ServiceResult<List<FormulaRecommendationDto>>.Success(emptyRecommendations));
         }
 
-        #endregion 智能推荐（简化版）
+        /// <summary>
+        /// 智能推荐功能已移除 - Record-Only模式下不支持推荐功能
+        /// </summary>
+        [Obsolete("Smart recommendation feature removed in Record-Only mode. Use basic search instead.", false)]
+        public Task<ServiceResult<List<FormulaRecommendationDto>>> GetRecommendationsAsync(string symptoms, string diagnosis, Guid doctorId)
+        {
+            var emptyRecommendations = new List<FormulaRecommendationDto>();
+            return Task.FromResult(ServiceResult<List<FormulaRecommendationDto>>.Success(emptyRecommendations));
+        }
+
+        /// <summary>
+        /// 智能推荐功能已移除 - Record-Only模式下不支持推荐功能
+        /// </summary>
+        [Obsolete("Smart recommendation feature removed in Record-Only mode. Use basic search instead.", false)]
+        public Task<ServiceResult<List<object>>> GetRecommendationsAsync(string syndrome)
+        {
+            var emptyRecommendations = new List<object>();
+            return Task.FromResult(ServiceResult<List<object>>.Success(emptyRecommendations));
+        }
+
+        #endregion 基础模板功能（Record-Only保留）
 
         #region 私有辅助方法
 
@@ -463,40 +349,24 @@ namespace LYBT.Module.Formula.Services
             return query;
         }
 
-        private double CalculateConfidence(LYBT.Entities.Formula.Formula formula, string syndrome)
+        /// <summary>
+        /// 智能推荐计算方法已移除 - Record-Only模式下不再需要复杂的推荐算法
+        /// </summary>
+        [Obsolete("Smart recommendation calculation removed in Record-Only mode.", false)]
+        private static double CalculateConfidence(LYBT.Entities.Formula.Formula formula, string syndrome)
         {
-            double confidence = 0.5; // 基础置信度
-
-            if (formula.Effect?.Contains(syndrome) == true)
-            {
-                confidence += 0.3;
-            }
-
-            if (formula.Usage?.Contains(syndrome) == true)
-            {
-                confidence += 0.2;
-            }
-
-            return Math.Min(confidence, 1.0);
+            // Record-Only模式下不再使用推荐算法
+            return 0.0;
         }
 
-        private double CalculateMatchScore(LYBT.Entities.Formula.Formula formula, string symptoms, string diagnosis)
+        /// <summary>
+        /// 智能推荐计算方法已移除 - Record-Only模式下不再需要复杂的推荐算法
+        /// </summary>
+        [Obsolete("Smart recommendation calculation removed in Record-Only mode.", false)]
+        private static double CalculateMatchScore(LYBT.Entities.Formula.Formula formula, string symptoms, string diagnosis)
         {
-            double score = 0.3; // 基础得分
-
-            if (!string.IsNullOrWhiteSpace(symptoms) &&
-                (formula.Effect?.Contains(symptoms) == true || formula.Usage?.Contains(symptoms) == true))
-            {
-                score += 0.3;
-            }
-
-            if (!string.IsNullOrWhiteSpace(diagnosis) &&
-                (formula.Effect?.Contains(diagnosis) == true || formula.Usage?.Contains(diagnosis) == true))
-            {
-                score += 0.4;
-            }
-
-            return Math.Min(score, 1.0);
+            // Record-Only模式下不再使用推荐算法
+            return 0.0;
         }
 
         #endregion 私有辅助方法
