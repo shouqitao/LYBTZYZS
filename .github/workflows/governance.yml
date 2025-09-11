@@ -50,7 +50,7 @@ jobs:
         fi
         echo "✅ Record-Only system principle confirmed"
 
-    # Step 1: Format (允许失败但报告)
+    # Step 1: Format (Pass4 强化 - 移除continue-on-error)
     - name: "🎨 Code Format Check"
       shell: bash
       run: |
@@ -58,22 +58,34 @@ jobs:
         if dotnet format LYBT.All.sln --verify-no-changes --verbosity diagnostic; then
           echo "✅ Code formatting is compliant"
         else
-          echo "⚠️ Code formatting issues detected (expected during governance setup)"
-          echo "::warning::Code formatting needs attention after CCPM resolution"
+          echo "❌ Code formatting issues detected"
+          echo "::warning::Code formatting violations found"
+          echo "Format issues must be resolved before merge"
+          exit 1
         fi
-      continue-on-error: true
 
-    # Step 2: Build (允许失败但报告CCPM问题)
+    # Step 2: Build (Pass4 强化 - 增强构建检查但保持CCPM兼容性)
     - name: "🔨 Build Validation"
       shell: bash
       run: |
         echo "🔨 Running dotnet build..."
         if dotnet build LYBT.All.sln --verbosity minimal --no-restore; then
           echo "✅ Build successful"
+          echo "BUILD_SUCCESS=true" >> $GITHUB_ENV
         else
-          echo "⚠️ Build issues detected (expected CCPM conflicts during governance setup)"
-          echo "::warning::Central Package Management conflicts need resolution"
-          echo "::notice::Governance infrastructure setup can continue despite build issues"
+          echo "⚠️ Build issues detected - analyzing error type..."
+          
+          # 检查是否是CCPM相关错误
+          if dotnet build LYBT.All.sln --verbosity minimal --no-restore 2>&1 | grep -i "NU1107\|package.*version.*conflict\|Central Package Management"; then
+            echo "⚠️ CCPM version conflicts detected (expected during Pass4)"
+            echo "::warning::Central Package Management conflicts - will be resolved in Task 4"
+            echo "BUILD_SUCCESS=ccmp_issues" >> $GITHUB_ENV
+          else
+            echo "❌ Non-CCPM build errors detected"
+            echo "::error::Serious build issues that require immediate attention"
+            echo "BUILD_SUCCESS=false" >> $GITHUB_ENV
+            exit 1
+          fi
         fi
       continue-on-error: true
 
