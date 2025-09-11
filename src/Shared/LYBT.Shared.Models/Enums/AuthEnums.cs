@@ -173,34 +173,45 @@ namespace LYBT.Shared.Models.Enums
     }
 
     /// <summary>
-    /// 用户角色枚举
+    /// 用户角色枚举 - Record-Only模式简化版本（仅Admin/User）
     /// </summary>
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum UserRole
     {
 
-        /// <summary>管理员</summary>
+        /// <summary>管理员（系统管理、用户管理、系统配置）</summary>
         [Description("管理员")]
-        Admin = 0,
+        Admin = 10,
 
-        /// <summary>医生</summary>
+        /// <summary>普通用户（诊疗、记录、查询等业务操作）</summary>
+        [Description("普通用户")]
+        User = 20,
+
+        // 兼容性映射：旧角色保留以避免序列化错误，但标记为过时
+
+        /// <summary>医生 - 已合并到User角色</summary>
         [Description("医生")]
+        [Obsolete("Use User instead. Doctor role merged into User in Record-Only mode.", false)]
         Doctor = 1,
 
-        /// <summary>药师</summary>
+        /// <summary>药师 - 已合并到User角色</summary>
         [Description("药师")]
+        [Obsolete("Use User instead. Pharmacist role merged into User in Record-Only mode.", false)]
         Pharmacist = 2,
 
-        /// <summary>前台</summary>
+        /// <summary>前台 - 已合并到User角色</summary>
         [Description("前台")]
+        [Obsolete("Use User instead. Receptionist role merged into User in Record-Only mode.", false)]
         Receptionist = 3,
 
-        /// <summary>收银员</summary>
+        /// <summary>收银员 - 已合并到User角色</summary>
         [Description("收银员")]
+        [Obsolete("Use User instead. Cashier role merged into User in Record-Only mode.", false)]
         Cashier = 4,
 
-        /// <summary>理疗师</summary>
+        /// <summary>理疗师 - 已合并到User角色</summary>
         [Description("理疗师")]
+        [Obsolete("Use User instead. Therapist role merged into User in Record-Only mode.", false)]
         Therapist = 5
     }
 }

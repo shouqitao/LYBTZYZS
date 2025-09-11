@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Enums;
+using LYBT.Shared.Models.Extensions;
 
 namespace LYBT.Shared.Models.Contracts.Users
 {
@@ -25,7 +26,7 @@ namespace LYBT.Shared.Models.Contracts.Users
 
         /// <summary>用户角色</summary>
         [DisplayName("用户角色")]
-        public string Role { get; set; } = "Doctor";
+        public string Role { get; set; } = "User";
 
         /// <summary>电话号码</summary>
         [DisplayName("电话号码")]
@@ -65,7 +66,7 @@ namespace LYBT.Shared.Models.Contracts.Users
         /// <summary>用户角色（单选）</summary>
         [Required(ErrorMessage = "用户角色不能为空")]
         [DisplayName("用户角色")]
-        public string Role { get; set; } = "Doctor";
+        public string Role { get; set; } = "User";
 
         /// <summary>账号启用状态（true=启用，false=禁用，必填）</summary>
         [Required(ErrorMessage = "账号启用状态不能为空")]
@@ -111,7 +112,7 @@ namespace LYBT.Shared.Models.Contracts.Users
         /// <summary>用户角色</summary>
         [Required(ErrorMessage = "用户角色不能为空")]
         [DisplayName("用户角色")]
-        public string Role { get; set; } = "Doctor";
+        public string Role { get; set; } = "User";
 
         /// <summary>电话号码</summary>
         [Phone(ErrorMessage = "电话号码格式不正确")]
@@ -135,7 +136,7 @@ namespace LYBT.Shared.Models.Contracts.Users
     }
 
     /// <summary>
-    /// 用户统计DTO
+    /// 用户统计DTO - Record-Only模式简化版本
     /// 用于用户统计信息的展示
     /// </summary>
     public class UserStatisticsDto
@@ -153,28 +154,39 @@ namespace LYBT.Shared.Models.Contracts.Users
         [DisplayName("非活跃用户数")]
         public int InactiveCount { get; set; }
 
-        /// <summary>医生数量</summary>
-        [DisplayName("医生数量")]
-        public int DoctorCount { get; set; }
-
-        /// <summary>收银员数量</summary>
-        [DisplayName("收银员数量")]
-        public int CashierCount { get; set; }
-
-        /// <summary>理疗师数量</summary>
-        [DisplayName("理疗师数量")]
-        public int TherapistCount { get; set; }
-
-        /// <summary>管理员数量</summary>
+        /// <summary>管理员数量（系统管理权限）</summary>
         [DisplayName("管理员数量")]
         public int AdminCount { get; set; }
 
-        /// <summary>药师数量</summary>
+        /// <summary>普通用户数量（业务操作权限）</summary>
+        [DisplayName("普通用户数量")]
+        public int UserCount { get; set; }
+
+        // 兼容性字段：保留旧统计字段以避免前端错误，但标记为过时
+
+        /// <summary>医生数量 - 已合并到UserCount</summary>
+        [DisplayName("医生数量")]
+        [Obsolete("Use UserCount instead. Doctor role merged into User in Record-Only mode.", false)]
+        public int DoctorCount { get; set; }
+
+        /// <summary>收银员数量 - 已合并到UserCount</summary>
+        [DisplayName("收银员数量")]
+        [Obsolete("Use UserCount instead. Cashier role merged into User in Record-Only mode.", false)]
+        public int CashierCount { get; set; }
+
+        /// <summary>理疗师数量 - 已合并到UserCount</summary>
+        [DisplayName("理疗师数量")]
+        [Obsolete("Use UserCount instead. Therapist role merged into User in Record-Only mode.", false)]
+        public int TherapistCount { get; set; }
+
+        /// <summary>药师数量 - 已合并到UserCount</summary>
         [DisplayName("药师数量")]
+        [Obsolete("Use UserCount instead. Pharmacist role merged into User in Record-Only mode.", false)]
         public int PharmacistCount { get; set; }
 
-        /// <summary>前台数量</summary>
+        /// <summary>前台数量 - 已合并到UserCount</summary>
         [DisplayName("前台数量")]
+        [Obsolete("Use UserCount instead. Receptionist role merged into User in Record-Only mode.", false)]
         public int ReceptionistCount { get; set; }
     }
 }
