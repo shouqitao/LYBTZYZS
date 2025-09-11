@@ -40,34 +40,22 @@ namespace LYBT.Module.Prescriptions.Controllers
             {
                 if (prescriptionId == Guid.Empty)
                 {
-                    return BadRequest(new ApiResponse<List<CompatibilityNoteDto>>(
-                        false,
-                        "处方ID不能为空",
-                        null));
+                    return BadRequest(ApiResponse<List<CompatibilityNoteDto>>.CreateFail("处方ID不能为空"));
                 }
 
                 var result = await _compatibilityNoteService.GetByPrescriptionIdAsync(prescriptionId);
 
-                if (result.Success)
+                if (result.IsSuccess)
                 {
-                    return Ok(new ApiResponse<List<CompatibilityNoteDto>>(
-                        true,
-                        result.Message ?? "查询成功",
-                        result.Data));
+                    return Ok(ApiResponse<List<CompatibilityNoteDto>>.CreateSuccess(result.Data, result.Message ?? "查询成功"));
                 }
 
-                return BadRequest(new ApiResponse<List<CompatibilityNoteDto>>(
-                    false,
-                    result.Message ?? "查询失败",
-                    null));
+                return BadRequest(ApiResponse<List<CompatibilityNoteDto>>.CreateFail(result.Message ?? "查询失败"));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "获取处方配伍记录失败: {PrescriptionId}", prescriptionId);
-                return StatusCode(500, new ApiResponse<List<CompatibilityNoteDto>>(
-                    false,
-                    "内部服务器错误",
-                    null));
+                return StatusCode(500, ApiResponse<List<CompatibilityNoteDto>>.CreateFail("内部服务器错误"));
             }
         }
 
@@ -84,34 +72,22 @@ namespace LYBT.Module.Prescriptions.Controllers
             {
                 if (prescriptionId == Guid.Empty || noteId == Guid.Empty)
                 {
-                    return BadRequest(new ApiResponse<CompatibilityNoteDto>(
-                        false,
-                        "处方ID和记录ID不能为空",
-                        null));
+                    return BadRequest(ApiResponse<CompatibilityNoteDto>.CreateFail("处方ID和记录ID不能为空"));
                 }
 
                 var result = await _compatibilityNoteService.GetByIdAsync(prescriptionId, noteId);
 
-                if (result.Success)
+                if (result.IsSuccess)
                 {
-                    return Ok(new ApiResponse<CompatibilityNoteDto>(
-                        true,
-                        result.Message ?? "查询成功",
-                        result.Data));
+                    return Ok(ApiResponse<CompatibilityNoteDto>.CreateSuccess(result.Data, result.Message ?? "查询成功"));
                 }
 
-                return NotFound(new ApiResponse<CompatibilityNoteDto>(
-                    false,
-                    result.Message ?? "记录不存在",
-                    null));
+                return NotFound(ApiResponse<CompatibilityNoteDto>.CreateFail(result.Message ?? "记录不存在"));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "获取配伍记录失败: {PrescriptionId}, {NoteId}", prescriptionId, noteId);
-                return StatusCode(500, new ApiResponse<CompatibilityNoteDto>(
-                    false,
-                    "内部服务器错误",
-                    null));
+                return StatusCode(500, ApiResponse<CompatibilityNoteDto>.CreateFail("内部服务器错误"));
             }
         }
 
@@ -130,18 +106,12 @@ namespace LYBT.Module.Prescriptions.Controllers
             {
                 if (prescriptionId == Guid.Empty)
                 {
-                    return BadRequest(new ApiResponse<CompatibilityNoteDto>(
-                        false,
-                        "处方ID不能为空",
-                        null));
+                    return BadRequest(ApiResponse<CompatibilityNoteDto>.CreateFail("处方ID不能为空"));
                 }
 
                 if (createDto == null)
                 {
-                    return BadRequest(new ApiResponse<CompatibilityNoteDto>(
-                        false,
-                        "请求数据不能为空",
-                        null));
+                    return BadRequest(ApiResponse<CompatibilityNoteDto>.CreateFail("请求数据不能为空"));
                 }
 
                 // 获取当前用户ID (临时使用固定值，实际应从JWT Token获取)
@@ -149,29 +119,20 @@ namespace LYBT.Module.Prescriptions.Controllers
 
                 var result = await _compatibilityNoteService.CreateAsync(prescriptionId, createDto, currentUserId);
 
-                if (result.Success)
+                if (result.IsSuccess)
                 {
                     return CreatedAtAction(
                         nameof(GetById),
                         new { prescriptionId = prescriptionId, noteId = result.Data!.Id },
-                        new ApiResponse<CompatibilityNoteDto>(
-                            true,
-                            result.Message ?? "创建成功",
-                            result.Data));
+                        ApiResponse<CompatibilityNoteDto>.CreateSuccess(result.Data, result.Message ?? "创建成功"));
                 }
 
-                return BadRequest(new ApiResponse<CompatibilityNoteDto>(
-                    false,
-                    result.Message ?? "创建失败",
-                    null));
+                return BadRequest(ApiResponse<CompatibilityNoteDto>.CreateFail(result.Message ?? "创建失败"));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "创建配伍记录失败: {PrescriptionId}", prescriptionId);
-                return StatusCode(500, new ApiResponse<CompatibilityNoteDto>(
-                    false,
-                    "内部服务器错误",
-                    null));
+                return StatusCode(500, ApiResponse<CompatibilityNoteDto>.CreateFail("内部服务器错误"));
             }
         }
 
@@ -192,18 +153,12 @@ namespace LYBT.Module.Prescriptions.Controllers
             {
                 if (prescriptionId == Guid.Empty || noteId == Guid.Empty)
                 {
-                    return BadRequest(new ApiResponse<CompatibilityNoteDto>(
-                        false,
-                        "处方ID和记录ID不能为空",
-                        null));
+                    return BadRequest(ApiResponse<CompatibilityNoteDto>.CreateFail("处方ID和记录ID不能为空"));
                 }
 
                 if (updateDto == null)
                 {
-                    return BadRequest(new ApiResponse<CompatibilityNoteDto>(
-                        false,
-                        "请求数据不能为空",
-                        null));
+                    return BadRequest(ApiResponse<CompatibilityNoteDto>.CreateFail("请求数据不能为空"));
                 }
 
                 // 获取当前用户ID (临时使用固定值，实际应从JWT Token获取)
@@ -211,26 +166,17 @@ namespace LYBT.Module.Prescriptions.Controllers
 
                 var result = await _compatibilityNoteService.UpdateAsync(prescriptionId, noteId, updateDto, currentUserId);
 
-                if (result.Success)
+                if (result.IsSuccess)
                 {
-                    return Ok(new ApiResponse<CompatibilityNoteDto>(
-                        true,
-                        result.Message ?? "更新成功",
-                        result.Data));
+                    return Ok(ApiResponse<CompatibilityNoteDto>.CreateSuccess(result.Data, result.Message ?? "更新成功"));
                 }
 
-                return NotFound(new ApiResponse<CompatibilityNoteDto>(
-                    false,
-                    result.Message ?? "记录不存在",
-                    null));
+                return NotFound(ApiResponse<CompatibilityNoteDto>.CreateFail(result.Message ?? "记录不存在"));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "更新配伍记录失败: {PrescriptionId}, {NoteId}", prescriptionId, noteId);
-                return StatusCode(500, new ApiResponse<CompatibilityNoteDto>(
-                    false,
-                    "内部服务器错误",
-                    null));
+                return StatusCode(500, ApiResponse<CompatibilityNoteDto>.CreateFail("内部服务器错误"));
             }
         }
 
@@ -247,10 +193,7 @@ namespace LYBT.Module.Prescriptions.Controllers
             {
                 if (prescriptionId == Guid.Empty || noteId == Guid.Empty)
                 {
-                    return BadRequest(new ApiResponse<bool>(
-                        false,
-                        "处方ID和记录ID不能为空",
-                        false));
+                    return BadRequest(ApiResponse<bool>.CreateFail("处方ID和记录ID不能为空"));
                 }
 
                 // 获取当前用户ID (临时使用固定值，实际应从JWT Token获取)
@@ -258,26 +201,17 @@ namespace LYBT.Module.Prescriptions.Controllers
 
                 var result = await _compatibilityNoteService.DeleteAsync(prescriptionId, noteId, currentUserId);
 
-                if (result.Success)
+                if (result.IsSuccess)
                 {
-                    return Ok(new ApiResponse<bool>(
-                        true,
-                        result.Message ?? "删除成功",
-                        true));
+                    return Ok(ApiResponse<bool>.CreateSuccess(true, result.Message ?? "删除成功"));
                 }
 
-                return NotFound(new ApiResponse<bool>(
-                    false,
-                    result.Message ?? "记录不存在",
-                    false));
+                return NotFound(ApiResponse<bool>.CreateFail(result.Message ?? "记录不存在"));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "删除配伍记录失败: {PrescriptionId}, {NoteId}", prescriptionId, noteId);
-                return StatusCode(500, new ApiResponse<bool>(
-                    false,
-                    "内部服务器错误",
-                    false));
+                return StatusCode(500, ApiResponse<bool>.CreateFail("内部服务器错误"));
             }
         }
     }
