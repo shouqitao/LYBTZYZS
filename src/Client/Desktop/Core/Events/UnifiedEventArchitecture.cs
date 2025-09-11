@@ -3,14 +3,17 @@ using Prism.Events;
 namespace LYBT.Desktop.Core.Events
 {
     /// <summary>
-    /// UltraThink重构: 统一事件架构设计文档
+    /// UltraThink重构: 统一事件架构设计文档 - Record-Only模式简化版（功能移除）
     ///
     /// 设计原则:
     /// 1. 所有事件使用 PubSubEvent<TEventData> 模式
     /// 2. 事件数据模型独立定义，支持序列化
     /// 3. 业务相关枚举值，便于理解和维护
     /// 4. 统一的错误处理和状态管理
+    ///
+    /// 注意：复杂的事件总线架构已在Record-Only模式中简化，推荐使用基础导航和数据刷新机制
     /// </summary>
+    [Obsolete("Complex unified event architecture removed in Record-Only mode. Use simple Prism events instead.", false)]
 
     #region 统一事件数据模型
 
