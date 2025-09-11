@@ -4,8 +4,9 @@ using LYBT.Shared.Models.Contracts.Compatibility;
 namespace LYBT.Shared.Interfaces.Services
 {
     /// <summary>
-    /// 配伍记录服务接口
+    /// 配伍记录服务接口 - Record-Only模式已移除配伍检查功能
     /// </summary>
+    [Obsolete("Compatibility checking feature removed in Record-Only mode. Use manual notes instead.", false)]
     public interface ICompatibilityNoteService
     {
         /// <summary>

@@ -11,8 +11,9 @@ using Microsoft.Extensions.Logging;
 namespace LYBT.Module.Prescriptions.Services
 {
     /// <summary>
-    /// 配伍记录服务实现
+    /// 配伍记录服务实现 - Record-Only模式已移除复杂配伍检查逻辑
     /// </summary>
+    [Obsolete("Compatibility checking feature removed in Record-Only mode. Use manual notes instead.", false)]
     public class CompatibilityNoteService : ICompatibilityNoteService
     {
         private readonly AppDbContext _context;
@@ -30,152 +31,64 @@ namespace LYBT.Module.Prescriptions.Services
         }
 
         /// <inheritdoc/>
-        public async Task<ServiceResult<CompatibilityNoteDto>> CreateAsync(
+        [Obsolete("Compatibility checking feature removed in Record-Only mode. Use manual notes instead.", false)]
+        public Task<ServiceResult<CompatibilityNoteDto>> CreateAsync(
             Guid prescriptionId,
             CompatibilityNoteCreateDto createDto,
             Guid currentUserId)
         {
-            try
+            var emptyNote = new CompatibilityNoteDto
             {
-                // 验证处方存在性
-                var prescriptionExists = await _context.Prescriptions
-                    .AnyAsync(p => p.Id == prescriptionId);
+                Id = Guid.NewGuid(),
+                PrescriptionId = prescriptionId,
+                HerbCombination = createDto.HerbCombination,
+                CompatibilityType = createDto.CompatibilityType,
+                SeverityLevel = createDto.SeverityLevel,
+                CompatibilityNote = "配伍检查功能在 Record-Only 模式下已移除",
+                DoctorRecommendation = "请手动记录配伍注意事项"
+            };
 
-                if (!prescriptionExists)
-                {
-                    return ServiceResult<CompatibilityNoteDto>.Failure("处方不存在");
-                }
-
-                // 创建实体
-                var entity = _mapper.Map<HerbCompatibilityNote>(createDto);
-                entity.PrescriptionId = prescriptionId;
-                entity.CreatedBy = currentUserId;
-                entity.CreateTime = DateTime.Now;
-
-                _context.HerbCompatibilityNotes.Add(entity);
-                await _context.SaveChangesAsync();
-
-                var dto = _mapper.Map<CompatibilityNoteDto>(entity);
-                return ServiceResult<CompatibilityNoteDto>.Success(dto, "配伍记录创建成功");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "创建配伍记录失败: {PrescriptionId}", prescriptionId);
-                return ServiceResult<CompatibilityNoteDto>.Failure("创建配伍记录失败");
-            }
+            return Task.FromResult(ServiceResult<CompatibilityNoteDto>.Success(
+                emptyNote,
+                "配伍检查功能已在 Record-Only 模式下移除，请使用手动记录"));
         }
 
         /// <inheritdoc/>
-        public async Task<ServiceResult<List<CompatibilityNoteDto>>> GetByPrescriptionIdAsync(Guid prescriptionId)
+        [Obsolete("Compatibility checking feature removed in Record-Only mode. Use manual notes instead.", false)]
+        public Task<ServiceResult<List<CompatibilityNoteDto>>> GetByPrescriptionIdAsync(Guid prescriptionId)
         {
-            try
-            {
-                var entities = await _context.HerbCompatibilityNotes
-                    .Where(n => n.PrescriptionId == prescriptionId && !n.IsDeleted)
-                    .OrderByDescending(n => n.CreateTime)
-                    .ToListAsync();
-
-                var dtos = _mapper.Map<List<CompatibilityNoteDto>>(entities);
-                return ServiceResult<List<CompatibilityNoteDto>>.Success(dtos);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "查询配伍记录失败: {PrescriptionId}", prescriptionId);
-                return ServiceResult<List<CompatibilityNoteDto>>.Failure("查询配伍记录失败");
-            }
+            var emptyList = new List<CompatibilityNoteDto>();
+            return Task.FromResult(ServiceResult<List<CompatibilityNoteDto>>.Success(
+                emptyList,
+                "配伍检查功能已在 Record-Only 模式下移除"));
         }
 
         /// <inheritdoc/>
-        public async Task<ServiceResult<CompatibilityNoteDto>> UpdateAsync(
+        [Obsolete("Compatibility checking feature removed in Record-Only mode. Use manual notes instead.", false)]
+        public Task<ServiceResult<CompatibilityNoteDto>> UpdateAsync(
             Guid prescriptionId,
             Guid noteId,
             CompatibilityNoteUpdateDto updateDto,
             Guid currentUserId)
         {
-            try
-            {
-                var entity = await _context.HerbCompatibilityNotes
-                    .FirstOrDefaultAsync(n => n.Id == noteId && n.PrescriptionId == prescriptionId && !n.IsDeleted);
-
-                if (entity == null)
-                {
-                    return ServiceResult<CompatibilityNoteDto>.Failure("配伍记录不存在");
-                }
-
-                // 更新字段
-                if (!string.IsNullOrEmpty(updateDto.CompatibilityNote))
-                {
-                    entity.CompatibilityNote = updateDto.CompatibilityNote;
-                }
-
-                if (!string.IsNullOrEmpty(updateDto.DoctorRecommendation))
-                {
-                    entity.DoctorRecommendation = updateDto.DoctorRecommendation;
-                }
-
-                entity.UpdateTime = DateTime.Now;
-
-                await _context.SaveChangesAsync();
-
-                var dto = _mapper.Map<CompatibilityNoteDto>(entity);
-                return ServiceResult<CompatibilityNoteDto>.Success(dto, "配伍记录更新成功");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "更新配伍记录失败: {NoteId}", noteId);
-                return ServiceResult<CompatibilityNoteDto>.Failure("更新配伍记录失败");
-            }
+            return Task.FromResult(ServiceResult<CompatibilityNoteDto>.Failure(
+                "配伍检查功能已在 Record-Only 模式下移除，无法更新记录"));
         }
 
         /// <inheritdoc/>
-        public async Task<ServiceResult<bool>> DeleteAsync(Guid prescriptionId, Guid noteId, Guid currentUserId)
+        [Obsolete("Compatibility checking feature removed in Record-Only mode. Use manual notes instead.", false)]
+        public Task<ServiceResult<bool>> DeleteAsync(Guid prescriptionId, Guid noteId, Guid currentUserId)
         {
-            try
-            {
-                var entity = await _context.HerbCompatibilityNotes
-                    .FirstOrDefaultAsync(n => n.Id == noteId && n.PrescriptionId == prescriptionId && !n.IsDeleted);
-
-                if (entity == null)
-                {
-                    return ServiceResult<bool>.Failure("配伍记录不存在");
-                }
-
-                // 软删除
-                entity.IsDeleted = true;
-                entity.UpdateTime = DateTime.Now;
-
-                await _context.SaveChangesAsync();
-
-                return ServiceResult<bool>.Success(true, "配伍记录删除成功");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "删除配伍记录失败: {NoteId}", noteId);
-                return ServiceResult<bool>.Failure("删除配伍记录失败");
-            }
+            return Task.FromResult(ServiceResult<bool>.Failure(
+                "配伍检查功能已在 Record-Only 模式下移除，无法删除记录"));
         }
 
         /// <inheritdoc/>
-        public async Task<ServiceResult<CompatibilityNoteDto>> GetByIdAsync(Guid prescriptionId, Guid noteId)
+        [Obsolete("Compatibility checking feature removed in Record-Only mode. Use manual notes instead.", false)]
+        public Task<ServiceResult<CompatibilityNoteDto>> GetByIdAsync(Guid prescriptionId, Guid noteId)
         {
-            try
-            {
-                var entity = await _context.HerbCompatibilityNotes
-                    .FirstOrDefaultAsync(n => n.Id == noteId && n.PrescriptionId == prescriptionId && !n.IsDeleted);
-
-                if (entity == null)
-                {
-                    return ServiceResult<CompatibilityNoteDto>.Failure("配伍记录不存在");
-                }
-
-                var dto = _mapper.Map<CompatibilityNoteDto>(entity);
-                return ServiceResult<CompatibilityNoteDto>.Success(dto);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取配伍记录失败: {NoteId}", noteId);
-                return ServiceResult<CompatibilityNoteDto>.Failure("获取配伍记录失败");
-            }
+            return Task.FromResult(ServiceResult<CompatibilityNoteDto>.Failure(
+                "配伍检查功能已在 Record-Only 模式下移除"));
         }
     }
 }

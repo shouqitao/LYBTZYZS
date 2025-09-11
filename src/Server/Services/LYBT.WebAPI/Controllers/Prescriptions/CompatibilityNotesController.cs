@@ -10,9 +10,9 @@ using Microsoft.Extensions.Caching.Memory;
 namespace LYBT.WebAPI.Controllers.Prescriptions
 {
     /// <summary>
-    /// 配伍记录控制器 - 统一API网关版本
-    /// 提供处方配伍禁忌记录的REST API端点
+    /// 配伍记录控制器 - Record-Only模式已移除配伍检查功能
     /// </summary>
+    [Obsolete("Compatibility checking feature removed in Record-Only mode. Use manual notes instead.", false)]
     [ApiController]
     [ApiVersion("1")]
     [Route("api/v{version:apiVersion}/prescriptions/{prescriptionId}/compat-notes")]
