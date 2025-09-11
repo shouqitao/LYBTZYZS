@@ -141,9 +141,6 @@ public static class UnifiedServiceRegistration
             .ValidateOnStart();
 
         // =========== 安全配置服务 - Epic 05-P0-03: 数据安全保障 ===========
-        // 临时注释掉缺失的服务以完成核心功能测试
-        // services.AddScoped<IPasswordValidationService, PasswordValidationService>();
-        // services.AddScoped<ISecurityConfigurationValidator, SecurityConfigurationValidator>();
 
         // Epic 05-P0-03: 注册数据安全服务
         services.AddScoped<LYBT.Infrastructure.Security.IDataEncryptionService, LYBT.Infrastructure.Security.DataEncryptionService>();
@@ -157,9 +154,6 @@ public static class UnifiedServiceRegistration
         services.AddScoped<LYBT.Infrastructure.Security.SensitiveDataQueryInterceptor>();
 
         // =========== 监控和健康检查服务 ===========
-        // 临时注释掉缺失的服务以完成核心功能测试
-        // services.AddScoped<ISystemHealthService, SystemHealthService>();
-        // services.AddSingleton<ISystemMetricsCollector, SystemMetricsCollector>();
 
         // =========== 统一服务 ===========
         // 注意：日志系统已简化为标准ILogger，无需单独注册
@@ -194,12 +188,9 @@ public static class UnifiedServiceRegistration
 
         // =========== 数据库性能优化 ===========
         // UltraThink v2.0: 禁用复杂数据库性能优化 - 20人以下小诊所不需要复杂的数据库性能监控和优化
-        // services.AddScoped<LYBT.Infrastructure.Performance.Database.IUnifiedDatabaseOptimizer, LYBT.Infrastructure.Performance.Database.UnifiedDatabaseOptimizer>();
 
         // =========== 异步处理管理 ===========
         // UltraThink简化：移除复杂的异步处理器，使用简单的后台服务即可
-        // services.AddSingleton<LYBT.Infrastructure.Performance.Async.IUnifiedAsyncProcessor, LYBT.Infrastructure.Performance.Async.UnifiedAsyncProcessor>();
-        // services.AddHostedService(provider => (LYBT.Infrastructure.Performance.Async.UnifiedAsyncProcessor)provider.GetRequiredService<LYBT.Infrastructure.Performance.Async.IUnifiedAsyncProcessor>());
         return services;
     }
 
@@ -279,9 +270,6 @@ public static class UnifiedServiceRegistration
         // 注册所有LYBT业务模块服务
         services.AddAllModules();
 
-        // TODO: UltraThink v2.0 Refactor - 暂时禁用Formula服务注册，等待修复
-        // 注册验方模块服务
-        // services.AddScoped<LYBT.Shared.Interfaces.Services.IFormulaService, LYBT.Module.Formula.Services.FormulaService>();
         return services;
     }
 
@@ -421,7 +409,6 @@ public static class UnifiedServiceRegistration
 
         // =========== 监控管理 ===========
         // 注意：IUnifiedMonitor的实现类需要在后续创建
-        // services.AddScoped<LYBT.Infrastructure.Monitoring.IUnifiedMonitor, LYBT.Infrastructure.Monitoring.UnifiedMonitor>();
         return services;
     }
 }
