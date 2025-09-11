@@ -416,62 +416,24 @@ namespace LYBT.Module.Patients.Repositories
         #region 统计和分析
 
         /// <summary>
-        /// 获取患者统计信息（优化版）
+        /// 获取患者统计信息 - Record-Only 模式：统计功能已移除
         /// </summary>
-        public async Task<PatientStatistics> GetStatisticsAsync(
+        [Obsolete("Statistics feature removed in Record-Only mode. Use basic queries instead.", false)]
+        public Task<PatientStatistics> GetStatisticsAsync(
             DateTime? startDate = null,
             DateTime? endDate = null,
             CancellationToken cancellationToken = default)
         {
-            var cacheKey = $"{CacheKeyPrefix}stats:{startDate:yyyyMMdd}:{endDate:yyyyMMdd}";
-            if (_cache.TryGetValue<PatientStatistics>(cacheKey, out var cached))
+            var emptyStats = new PatientStatistics
             {
-                return cached!;
-            }
-
-            // 并行执行多个统计查询
-            var query = _dbSet.AsNoTracking();
-
-            // UltraThink v2.0: 使用LastVisitTime替代已删除的CreateTime进行日期过滤
-            if (startDate.HasValue && endDate.HasValue)
-            {
-                query = query.Where(p => p.LastVisitTime >= startDate && p.LastVisitTime <= endDate);
-            }
-
-            var totalTask = query.CountAsync(cancellationToken);
-            var newThisMonthTask = query
-                .Where(p => p.LastVisitTime >= DateTime.Now.AddMonths(-1))
-                .CountAsync(cancellationToken);
-            var activeTask = query
-                .Where(p => p.LastVisitTime >= DateTime.Now.AddMonths(-3))
-                .CountAsync(cancellationToken);
-
-            // 年龄分布
-            var ageDistributionTask = query
-                .GroupBy(p => EF.Functions.DateDiffYear(p.BirthDate, DateTime.Now) / 10 * 10)
-                .Select(g => new { AgeGroup = g.Key, Count = g.Count() })
-                .ToDictionaryAsync(x => $"{x.AgeGroup}-{x.AgeGroup + 9}", x => x.Count, cancellationToken);
-
-            // 性别分布
-            var genderDistributionTask = query
-                .GroupBy(p => p.Gender)
-                .Select(g => new { Gender = g.Key, Count = g.Count() })
-                .ToDictionaryAsync(x => x.Gender.ToString(), x => x.Count, cancellationToken);
-
-            await Task.WhenAll(totalTask, newThisMonthTask, activeTask, ageDistributionTask, genderDistributionTask);
-
-            var statistics = new PatientStatistics
-            {
-                TotalPatients = await totalTask,
-                NewPatientsThisMonth = await newThisMonthTask,
-                ActivePatients = await activeTask,
-                AgeDistribution = await ageDistributionTask,
-                GenderDistribution = await genderDistributionTask
+                TotalPatients = 0,
+                NewPatientsThisMonth = 0,
+                ActivePatients = 0,
+                AgeDistribution = new Dictionary<string, int>(),
+                GenderDistribution = new Dictionary<string, int>()
             };
 
-            _cache.Set(cacheKey, statistics, TimeSpan.FromHours(1));
-
-            return statistics;
+            return Task.FromResult(emptyStats);
         }
 
         #endregion 统计和分析

@@ -255,50 +255,17 @@ namespace LYBT.Module.MedicalCase.Services
         }
 
         /// <summary>
-        /// 获取医疗案例统计信息
+        /// 获取医疗案例统计信息 - Record-Only 模式：统计功能已移除
         /// </summary>
-        public async Task<ServiceResult<object>> GetStatisticsAsync()
+        [Obsolete("Statistics feature removed in Record-Only mode. Use basic queries instead.", false)]
+        public Task<ServiceResult<object>> GetStatisticsAsync()
         {
-            try
+            var emptyStats = new
             {
-                // 统计各种状态的案例数量
-                var statistics = await _context.MedicalCases
-                    .GroupBy(mc => mc.Status)
-                    .Select(g => new
-                    {
-                        Status = g.Key.ToString(),
-                        Count = g.Count()
-                    })
-                    .ToListAsync();
-
-                // 按日期统计本月案例数量
-                var currentMonth = DateTime.Now.Date.AddDays(1 - DateTime.Now.Day);
-                var monthlyCount = await _context.MedicalCases
-                    .Where(mc => mc.ConsultationDate >= currentMonth)
-                    .CountAsync();
-
-                // 今日案例数量
-                var today = DateTime.Now.Date;
-                var todayCount = await _context.MedicalCases
-                    .Where(mc => mc.ConsultationDate.Date == today)
-                    .CountAsync();
-
-                var result = new
-                {
-                    StatusStatistics = statistics,
-                    MonthlyCount = monthlyCount,
-                    TodayCount = todayCount,
-                    TotalCount = await _context.MedicalCases.CountAsync(),
-                    GeneratedAt = DateTime.Now
-                };
-
-                return ServiceResult<object>.Success(result);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取医疗案例统计信息失败");
-                return ServiceResult<object>.Failure($"获取统计信息失败: {ex.Message}");
-            }
+                Message = "统计功能在 Record-Only 模式下已移除",
+                Suggestion = "请使用基础查询功能获取具体记录"
+            };
+            return Task.FromResult(ServiceResult<object>.Success(emptyStats));
         }
 
         /// <summary>

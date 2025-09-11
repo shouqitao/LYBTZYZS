@@ -240,9 +240,10 @@ public class ConsultationController : BaseApiController
     }
 
     /// <summary>
-    /// 获取看诊统计信息 - 统一API响应格式
+    /// 获取看诊统计信息 - Record-Only 模式：统计功能已移除
     /// </summary>
     [HttpGet("statistics")]
+    [Obsolete("Statistics endpoint removed in Record-Only mode. Use basic list/query endpoints instead.", false)]
     public async Task<ActionResult<ApiResponse<object>>> GetStatistics(
         [FromQuery] DateTime? startDate = null,
         [FromQuery] DateTime? endDate = null)
