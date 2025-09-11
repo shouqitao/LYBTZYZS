@@ -79,13 +79,7 @@ namespace LYBT.Shared.Models.Contracts.Common
 
         public static ApiResponse<T> Fail(string message = "操作失败", string? errorCode = null)
         {
-            return new ApiResponse<T>
-            {
-                Success = false,
-                Message = message,
-                Errors = errorCode != null ? new { code = errorCode } : null,
-                Timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds()
-            };
+            return CreateFail(message, errorCode != null ? new { code = errorCode } : null);
         }
     }
 
@@ -129,13 +123,7 @@ namespace LYBT.Shared.Models.Contracts.Common
 
         public static new ApiResponse Fail(string message = "操作失败", string? errorCode = null)
         {
-            return new ApiResponse
-            {
-                Success = false,
-                Message = message,
-                Errors = errorCode != null ? new { code = errorCode } : null,
-                Timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds()
-            };
+            return CreateFail(message, errorCode != null ? new { code = errorCode } : null);
         }
     }
 }
