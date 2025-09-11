@@ -733,9 +733,10 @@ namespace LYBT.Module.Patients.Tests
 
         #endregion
 
-        #region 档案管理功能测试
+        #region 档案管理功能测试 - Record-Only基线之外，已标记过时
 
         [Fact]
+        [Obsolete("Trimmed under Record-Only baseline - exceeds basic CRUD scope")]
         public async Task GetVisitHistoryAsync_Should_Return_Patient_Visit_History()
         {
             // Arrange
@@ -753,6 +754,7 @@ namespace LYBT.Module.Patients.Tests
         }
 
         [Fact]
+        [Obsolete("Trimmed under Record-Only baseline - exceeds basic CRUD scope")]
         public async Task UpdateAllergyHistoryAsync_Should_Update_Successfully()
         {
             // Arrange
@@ -778,9 +780,10 @@ namespace LYBT.Module.Patients.Tests
 
         #endregion
 
-        #region 批量导入测试
+        #region 批量导入测试 - Record-Only基线之外，已标记过时
 
         [Fact]
+        [Obsolete("Trimmed under Record-Only baseline - exceeds basic CRUD scope")]
         public async Task ImportPatientsAsync_Should_Import_Valid_Patients()
         {
             // Arrange
@@ -818,6 +821,7 @@ namespace LYBT.Module.Patients.Tests
         }
 
         [Fact]
+        [Obsolete("Trimmed under Record-Only baseline - exceeds basic CRUD scope")]
         public async Task ImportPatientsAsync_Should_Handle_Duplicate_IdNumber()
         {
             // Arrange
@@ -849,9 +853,10 @@ namespace LYBT.Module.Patients.Tests
 
         #endregion
 
-        #region 统计功能测试
+        #region 统计功能测试 - Record-Only基线之外，已标记过时
 
         [Fact]
+        [Obsolete("Trimmed under Record-Only baseline - exceeds basic CRUD scope")]
         public async Task GetStatisticsAsync_Should_Return_Correct_Statistics()
         {
             // Act
@@ -867,6 +872,7 @@ namespace LYBT.Module.Patients.Tests
         }
 
         [Fact]
+        [Obsolete("Trimmed under Record-Only baseline - exceeds basic CRUD scope")]
         public async Task GetAgeDistributionAsync_Should_Return_Age_Distribution()
         {
             // Act
@@ -879,6 +885,7 @@ namespace LYBT.Module.Patients.Tests
         }
 
         [Fact]
+        [Obsolete("Trimmed under Record-Only baseline - exceeds basic CRUD scope")]
         public async Task GetGenderDistributionAsync_Should_Return_Gender_Distribution()
         {
             // Act
@@ -892,9 +899,10 @@ namespace LYBT.Module.Patients.Tests
 
         #endregion
 
-        #region 合并患者档案测试
+        #region 合并患者档案测试 - Record-Only基线之外，已标记过时
 
         [Fact]
+        [Obsolete("Trimmed under Record-Only baseline - exceeds basic CRUD scope")]
         public async Task MergeDuplicatePatientsAsync_Should_Merge_Successfully()
         {
             // Arrange
@@ -930,9 +938,10 @@ namespace LYBT.Module.Patients.Tests
 
         #endregion
 
-        #region 活跃度分析测试
+        #region 活跃度分析测试 - Record-Only基线之外，已标记过时
 
         [Fact]
+        [Obsolete("Trimmed under Record-Only baseline - exceeds basic CRUD scope")]
         public async Task GetRecentActivePatientsAsync_Should_Return_Recent_Active_Patients()
         {
             // Arrange
@@ -954,6 +963,7 @@ namespace LYBT.Module.Patients.Tests
         }
 
         [Fact]
+        [Obsolete("Trimmed under Record-Only baseline - exceeds basic CRUD scope")]
         public async Task GetTodayNewPatientsAsync_Should_Return_Today_New_Patients()
         {
             // Arrange
@@ -971,9 +981,10 @@ namespace LYBT.Module.Patients.Tests
 
         #endregion
 
-        #region 重复检查测试
+        #region 重复检查测试 - Record-Only基线之外，已标记过时
 
         [Fact]
+        [Obsolete("Trimmed under Record-Only baseline - exceeds basic CRUD scope")]
         public async Task CheckDuplicatePatientsAsync_Should_Find_Duplicates_By_IdNumber()
         {
             // Arrange
@@ -989,6 +1000,7 @@ namespace LYBT.Module.Patients.Tests
         }
 
         [Fact]
+        [Obsolete("Trimmed under Record-Only baseline - exceeds basic CRUD scope")]
         public async Task CheckDuplicatePatientsAsync_Should_Find_Duplicates_By_PhoneNumber()
         {
             // Arrange

@@ -691,9 +691,10 @@ namespace LYBT.Module.Herbs.Tests
 
         #endregion
 
-        #region ImportAsync 测试
+        #region ImportAsync 测试 - Record-Only基线之外，已标记过时
 
         [Fact]
+        [Obsolete("Trimmed under Record-Only baseline - exceeds basic CRUD scope")]
         public async Task ImportAsync_Should_Import_Herbs_Successfully()
         {
             // Arrange
@@ -729,6 +730,7 @@ namespace LYBT.Module.Herbs.Tests
         }
 
         [Fact]
+        [Obsolete("Trimmed under Record-Only baseline - exceeds basic CRUD scope")]
         public async Task ImportAsync_Should_Generate_PinyinCode_For_Imported_Herbs()
         {
             // Arrange
@@ -750,6 +752,7 @@ namespace LYBT.Module.Herbs.Tests
         }
 
         [Fact]
+        [Obsolete("Trimmed under Record-Only baseline - exceeds basic CRUD scope")]
         public async Task ImportAsync_Should_Return_Zero_When_Repository_Fails()
         {
             // Arrange
@@ -771,9 +774,10 @@ namespace LYBT.Module.Herbs.Tests
 
         #endregion
 
-        #region ExportAsync 测试
+        #region ExportAsync 测试 - Record-Only基线之外，已标记过时
 
         [Fact]
+        [Obsolete("Trimmed under Record-Only baseline - exceeds basic CRUD scope")]
         public async Task ExportAsync_Should_Export_All_Herbs()
         {
             // Act
@@ -789,9 +793,10 @@ namespace LYBT.Module.Herbs.Tests
 
         #endregion
 
-        #region 价格管理功能测试
+        #region 价格管理功能测试 - Record-Only基线之外，已标记过时
 
         [Fact]
+        [Obsolete("Trimmed under Record-Only baseline - exceeds basic CRUD scope")]
         public async Task UpdatePriceAsync_Should_Update_Price_Successfully()
         {
             // Arrange
@@ -872,7 +877,7 @@ namespace LYBT.Module.Herbs.Tests
 
         #endregion
 
-        #region 库存管理功能测试（已禁用功能的兼容性测试）
+        #region 库存管理功能测试 - Record-Only基线之外，已标记过时（已禁用功能的兼容性测试）
 
         [Fact]
         public async Task GetStockWarningListAsync_Should_Return_Empty_List()
