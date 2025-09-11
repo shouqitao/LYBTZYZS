@@ -235,20 +235,23 @@ namespace LYBT.Infrastructure.Caching.Extensions
         }
 
         /// <summary>
-        /// 添加缓存预热服务
+        /// 添加缓存预热服务 - Record-Only模式已移除此功能
         /// </summary>
         /// <param name="services">服务集合</param>
         /// <returns>服务集合</returns>
+        [Obsolete("Cache warmup feature removed in Record-Only mode. Use lazy loading instead.", false)]
         public static IServiceCollection AddCacheWarmup(this IServiceCollection services)
         {
-            services.AddHostedService<CacheWarmupHostedService>();
+            // 在 Record-Only 模式下移除缓存预热功能，使用懒加载替代
+            // services.AddHostedService<CacheWarmupHostedService>(); // 已移除
             return services;
         }
     }
 
     /// <summary>
-    /// 缓存预热后台服务
+    /// 缓存预热后台服务 - Record-Only模式已移除此功能
     /// </summary>
+    [Obsolete("Cache warmup hosted service removed in Record-Only mode. Use lazy loading instead.", false)]
     internal class CacheWarmupHostedService : Microsoft.Extensions.Hosting.IHostedService
     {
         private readonly ICacheService _cacheService;
@@ -263,41 +266,17 @@ namespace LYBT.Infrastructure.Caching.Extensions
         }
 
         /// <inheritdoc/>
-        public async Task StartAsync(CancellationToken cancellationToken)
+        public Task StartAsync(CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Starting cache warmup...");
-
-            try
-            {
-                // 预热常用缓存键
-                await WarmupCommonCaches(cancellationToken);
-
-                _logger.LogInformation("Cache warmup completed successfully");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Cache warmup failed");
-            }
+            _logger.LogInformation("缓存预热功能在 Record-Only 模式下已移除，使用懒加载替代");
+            return Task.CompletedTask;
         }
 
         /// <inheritdoc/>
         public Task StopAsync(CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Cache warmup service stopped");
+            _logger.LogInformation("缓存预热服务已停止（Record-Only 模式下已移除）");
             return Task.CompletedTask;
-        }
-
-        private async Task WarmupCommonCaches(CancellationToken cancellationToken)
-        {
-            // 预热系统配置缓存
-            await _cacheService.SetAsync("system:config", new { initialized = true },
-                TimeSpan.FromHours(1), cancellationToken);
-
-            // 预热应用启动时间
-            await _cacheService.SetAsync("system:startup", DateTime.UtcNow,
-                TimeSpan.FromDays(1), cancellationToken);
-
-            _logger.LogDebug("Warmed up {Count} cache entries", 2);
         }
     }
 }

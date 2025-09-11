@@ -4,9 +4,10 @@ namespace LYBT.Desktop.Core.Services.Configuration
 {
 
     /// <summary>
-    /// 特性开关服务接口 - UltraThink Stage 5.3.2
-    /// 提供功能开关、A/B测试、灰度发布等能力
+    /// 特性开关服务接口 - Record-Only简化版本
+    /// 只提供基础的功能开关能力，移除A/B测试、灰度发布等复杂功能
     /// </summary>
+    [Obsolete("Complex feature toggle features removed in Record-Only mode. Use simple configuration instead.", false)]
     public interface IFeatureToggleService
     {
 
@@ -21,49 +22,57 @@ namespace LYBT.Desktop.Core.Services.Configuration
         bool IsEnabledForUser(string featureName, string userId);
 
         /// <summary>
-        /// 获取特性变体（用于A/B测试）
+        /// 获取特性变体（A/B测试功能已移除）
         /// </summary>
+        [Obsolete("A/B testing removed in Record-Only mode. Returns default value.", false)]
         string GetVariant(string featureName, string userId);
 
         /// <summary>
-        /// 设置特性状态
+        /// 设置特性状态（动态配置已移除）
         /// </summary>
+        [Obsolete("Dynamic configuration removed in Record-Only mode. Use static config instead.", false)]
         Task SetFeatureStateAsync(string featureName, FeatureState state);
 
         /// <summary>
-        /// 获取特性配置
+        /// 获取特性配置（简化版本）
         /// </summary>
         FeatureConfiguration? GetFeatureConfiguration(string featureName);
 
         /// <summary>
-        /// 获取所有特性
+        /// 获取所有特性（简化版本）
         /// </summary>
         List<FeatureInfo> GetAllFeatures();
 
         /// <summary>
-        /// 注册特性
+        /// 注册特性（动态注册已移除）
         /// </summary>
+        [Obsolete("Dynamic feature registration removed in Record-Only mode. Use static config instead.", false)]
         Task RegisterFeatureAsync(FeatureDefinition definition);
 
         /// <summary>
-        /// 评估特性（带上下文）
+        /// 评估特性（复杂评估逻辑已移除）
         /// </summary>
+        [Obsolete("Complex evaluation removed in Record-Only mode. Use simple IsEnabled instead.", false)]
         FeatureEvaluationResult Evaluate(string featureName, EvaluationContext context);
 
         /// <summary>
-        /// 注册特性变更监听
+        /// 注册特性变更监听（动态监听已移除）
         /// </summary>
+        [Obsolete("Feature change monitoring removed in Record-Only mode. Use static config instead.", false)]
         IDisposable OnFeatureChanged(string featureName, Action<FeatureChangeEventArgs> callback);
 
         /// <summary>
-        /// 获取特性使用统计
+        /// 获取特性使用统计（统计功能已移除）
         /// </summary>
+        [Obsolete("Feature usage statistics removed in Record-Only mode. Use logs instead.", false)]
         FeatureUsageStatistics GetUsageStatistics(string featureName);
     }
 
     /// <summary>
-    /// 特性开关服务实现
+    /// 特性开关服务实现 - Record-Only简化版本
+    /// 移除A/B测试、灰度发布、动态配置等复杂功能
     /// </summary>
+    [Obsolete("Complex feature toggle implementation removed in Record-Only mode. Use simple configuration instead.", false)]
     public class FeatureToggleService : IFeatureToggleService
     {
         private readonly ILogger<FeatureToggleService> _logger;
