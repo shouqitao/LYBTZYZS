@@ -189,10 +189,10 @@ namespace LYBT.Infrastructure.Caching.Configuration
                 Environment = "Production",
                 Memory = UnifiedMemoryCacheOptions.HighPerformance(),
                 Statistics = new UnifiedCacheStatisticsOptions { Enabled = false },
-                Performance = new UnifiedCachePerformanceOptions 
-                { 
+                Performance = new UnifiedCachePerformanceOptions
+                {
                     EnableDetailedLogging = false,
-                    EnableBatchOptimization = true 
+                    EnableBatchOptimization = true
                 }
             };
         }

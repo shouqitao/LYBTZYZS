@@ -32,7 +32,7 @@ namespace LYBT.Module.Prescriptions
             services.AddScoped<IPrescriptionService, PrescriptionService>();
 
             // 配伍记录服务
-            services.AddScoped<CompatibilityNoteService>();
+            services.AddScoped<ICompatibilityNoteService, CompatibilityNoteService>();
 
             // AutoMapper配置
             services.AddAutoMapper(cfg =>

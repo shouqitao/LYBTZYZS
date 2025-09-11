@@ -30,7 +30,7 @@ namespace LYBT.Infrastructure.Caching.Extensions
         /// <param name="configuration">配置</param>
         /// <returns>服务集合</returns>
         public static IServiceCollection AddUnifiedCacheService(
-            this IServiceCollection services, 
+            this IServiceCollection services,
             IConfiguration configuration)
         {
             // 1. 注册配置
@@ -39,7 +39,7 @@ namespace LYBT.Infrastructure.Caching.Extensions
 
             // 2. 注册核心缓存服务
             services.AddMemoryCache();
-            
+
             // 3. 注册统一缓存服务
             services.AddSingleton<ICacheService, MemoryCacheAdapter>();
 
@@ -176,7 +176,7 @@ namespace LYBT.Infrastructure.Caching.Extensions
             var descriptorsToRemove = services
                 .Where(d => d.ServiceType == typeof(ISimplifiedCacheService))
                 .ToList();
-            
+
             foreach (var descriptor in descriptorsToRemove)
             {
                 services.Remove(descriptor);
@@ -219,9 +219,9 @@ namespace LYBT.Infrastructure.Caching.Extensions
             }
 
             // 检查配置选项
-            var optionsDescriptor = services.FirstOrDefault(s => 
+            var optionsDescriptor = services.FirstOrDefault(s =>
                 s.ServiceType == typeof(Microsoft.Extensions.Options.IConfigureOptions<UnifiedCacheOptions>));
-            
+
             if (optionsDescriptor == null)
             {
                 errors.Add("UnifiedCacheOptions configuration is not registered");
@@ -265,12 +265,12 @@ namespace LYBT.Infrastructure.Caching.Extensions
         public async Task StartAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation("Starting cache warmup...");
-            
+
             try
             {
                 // 预热常用缓存键
                 await WarmupCommonCaches(cancellationToken);
-                
+
                 _logger.LogInformation("Cache warmup completed successfully");
             }
             catch (Exception ex)
@@ -288,11 +288,11 @@ namespace LYBT.Infrastructure.Caching.Extensions
         private async Task WarmupCommonCaches(CancellationToken cancellationToken)
         {
             // 预热系统配置缓存
-            await _cacheService.SetAsync("system:config", new { initialized = true }, 
+            await _cacheService.SetAsync("system:config", new { initialized = true },
                 TimeSpan.FromHours(1), cancellationToken);
 
             // 预热应用启动时间
-            await _cacheService.SetAsync("system:startup", DateTime.UtcNow, 
+            await _cacheService.SetAsync("system:startup", DateTime.UtcNow,
                 TimeSpan.FromDays(1), cancellationToken);
 
             _logger.LogDebug("Warmed up {Count} cache entries", 2);

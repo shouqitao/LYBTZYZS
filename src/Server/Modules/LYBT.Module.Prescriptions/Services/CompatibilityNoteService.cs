@@ -1,6 +1,7 @@
 using AutoMapper;
 using LYBT.Entities.Compatibility;
 using LYBT.Infrastructure.Data;
+using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Compatibility;
@@ -12,7 +13,7 @@ namespace LYBT.Module.Prescriptions.Services
     /// <summary>
     /// 配伍记录服务实现
     /// </summary>
-    public class CompatibilityNoteService
+    public class CompatibilityNoteService : ICompatibilityNoteService
     {
         private readonly AppDbContext _context;
         private readonly IMapper _mapper;

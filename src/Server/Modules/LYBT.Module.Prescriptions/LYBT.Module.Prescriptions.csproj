@@ -11,10 +11,13 @@
   <ItemGroup>
     <Compile Remove="Exceptions\**" />
     <Compile Remove="Extensions\**" />
+    <Compile Remove="Controllers\**" />
     <EmbeddedResource Remove="Exceptions\**" />
     <EmbeddedResource Remove="Extensions\**" />
+    <EmbeddedResource Remove="Controllers\**" />
     <None Remove="Exceptions\**" />
     <None Remove="Extensions\**" />
+    <None Remove="Controllers\**" />
   </ItemGroup>
 
   <ItemGroup>

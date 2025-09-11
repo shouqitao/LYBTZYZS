@@ -1,10 +1,10 @@
 #nullable enable
 
+using System.Collections.Concurrent;
+using System.Text.Json;
 using LYBT.Infrastructure.Caching.Interfaces;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
-using System.Collections.Concurrent;
-using System.Text.Json;
 
 namespace LYBT.Infrastructure.Caching.Adapters
 {
@@ -73,7 +73,7 @@ namespace LYBT.Infrastructure.Caching.Adapters
             {
                 var options = new MemoryCacheEntryOptions();
                 var exp = expiration ?? DefaultExpiration;
-                
+
                 options.SetSlidingExpiration(exp);
                 options.RegisterPostEvictionCallback((k, v, reason, state) =>
                 {
@@ -90,7 +90,7 @@ namespace LYBT.Infrastructure.Caching.Adapters
 
                 _memoryCache.Set(key, value, options);
                 _keys.TryAdd(key, true);
-                
+
                 _logger.LogDebug("Cache set for key: {Key}, expiration: {Expiration}", key, exp);
             }
             catch (Exception ex)
@@ -109,12 +109,12 @@ namespace LYBT.Infrastructure.Caching.Adapters
                 var existed = _keys.ContainsKey(key);
                 _memoryCache.Remove(key);
                 _keys.TryRemove(key, out _);
-                
+
                 if (existed)
                 {
                     _logger.LogDebug("Cache removed for key: {Key}", key);
                 }
-                
+
                 return existed;
             }
             catch (Exception ex)
@@ -135,8 +135,9 @@ namespace LYBT.Infrastructure.Caching.Adapters
                 {
                     _memoryCache.Remove(key);
                 }
+
                 _keys.Clear();
-                
+
                 _logger.LogInformation("Cache cleared, removed {Count} keys", keysToRemove.Count);
             }
             catch (Exception ex)
@@ -196,7 +197,7 @@ namespace LYBT.Infrastructure.Caching.Adapters
             // Call factory and cache result
             var result = await factory();
             Set(key, result, expiration);
-            
+
             return result;
         }
 
@@ -207,19 +208,19 @@ namespace LYBT.Infrastructure.Caching.Adapters
         public Task<Dictionary<string, T?>> GetManyAsync<T>(IEnumerable<string> keys, CancellationToken cancellationToken = default)
         {
             var result = new Dictionary<string, T?>();
-            
+
             foreach (var key in keys)
             {
                 if (cancellationToken.IsCancellationRequested)
                     break;
-                    
+
                 var value = Get<T>(key);
                 if (value != null)
                 {
                     result[key] = value;
                 }
             }
-            
+
             return Task.FromResult(result);
         }
 
@@ -229,28 +230,28 @@ namespace LYBT.Infrastructure.Caching.Adapters
             {
                 if (cancellationToken.IsCancellationRequested)
                     break;
-                    
+
                 Set(item.Key, item.Value, expiration);
             }
-            
+
             return Task.CompletedTask;
         }
 
         public Task<int> RemoveManyAsync(IEnumerable<string> keys, CancellationToken cancellationToken = default)
         {
             int removedCount = 0;
-            
+
             foreach (var key in keys)
             {
                 if (cancellationToken.IsCancellationRequested)
                     break;
-                    
+
                 if (Remove(key))
                 {
                     removedCount++;
                 }
             }
-            
+
             return Task.FromResult(removedCount);
         }
 
@@ -268,14 +269,15 @@ namespace LYBT.Infrastructure.Caching.Adapters
 
             // Convert pattern to regex
             var regexPattern = pattern.Replace("*", ".*").Replace("?", ".");
-            var regex = new System.Text.RegularExpressions.Regex($"^{regexPattern}$", 
+            var regex = new System.Text.RegularExpressions.Regex(
+                $"^{regexPattern}$",
                 System.Text.RegularExpressions.RegexOptions.IgnoreCase);
 
             foreach (var key in _keys.Keys)
             {
                 if (cancellationToken.IsCancellationRequested)
                     break;
-                    
+
                 if (regex.IsMatch(key))
                 {
                     keysToRemove.Add(key);
