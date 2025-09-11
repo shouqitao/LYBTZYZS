@@ -67,8 +67,8 @@
     "Features": {
       "EnableFormulaSharing": true,
       "EnableHistoricalImport": true,
-      "EnablePriceCalculation": true,
-      "EnableStatistics": true,
+      "EnablePriceCalculation": false,
+      "EnableStatistics": false,
       "EnableBatchPrescription": false,
       "EnableVoiceInput": false,
       "EnableAIAssistant": false
