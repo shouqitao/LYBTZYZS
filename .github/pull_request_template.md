@@ -27,24 +27,47 @@ Closes #
 ## 截图（如适用）
 <!-- 如果有 UI 更改，请附上截图 -->
 
-## Record-Only架构检查
-<!-- 确保遵循Record-Only系统原则 -->
-- [ ] 未引入工作流、事件驱动、消息队列等复杂模式
-- [ ] 未使用Workflow、Pipeline、Bus、Engine、Saga等禁止命名
-- [ ] 遵循UltraThink双层架构标准(前端)或传统三层架构(后端)
-- [ ] API路由使用小写命名规范 (`/api/v1/resource`)
-- [ ] 通过所有ArchTests架构测试 (共11个规则)
-- [ ] 专注小诊所实际需求，避免企业级过度设计
+## 🚨 Pass 7 治理基线强制检查
+<!-- ⚠️ 所有项必须勾选，否则CI将自动阻塞PR合并 -->
+
+### Level 1: 代码质量门禁 (阻塞性)
+- [ ] ✅ 代码格式化检查通过 (`dotnet format --verify-no-changes`)
+- [ ] ✅ 编译零错误零警告 (`dotnet build --configuration Release`)
+- [ ] ✅ 中央包管理合规 (所有包版本在Directory.Packages.props中定义)
+
+### Level 2: 测试质量门禁 (阻塞性)  
+- [ ] ✅ 所有单元测试通过 (`dotnet test --configuration Release`)
+- [ ] ✅ 架构测试全部通过 (`dotnet test tests/Architecture/LYBT.ArchTests.csproj`)
+- [ ] ✅ 新增功能已添加对应测试
+
+### Level 3: 架构合规门禁 (阻塞性)
+- [ ] ✅ 层间依赖合规 (UI层不直接依赖Infrastructure/Entities层)
+- [ ] ✅ API版本控制合规 (仅使用/api/v1/*路由，禁止/api/v2等)
+- [ ] ✅ 控制器位置合规 (所有控制器仅在LYBT.WebAPI项目中)
+- [ ] ✅ 命名规范合规 (禁止Pipeline/Workflow/Bus/Engine/Saga等命名)
+- [ ] ✅ 框架使用合规 (禁止引入工作流引擎、规则引擎、事件总线等重型框架)
+- [ ] ✅ 用户字段命名规范 (统一使用Username，禁止UserName/userName等)
+
+### Record-Only功能模式合规
+- [ ] ✅ 仅实现CRUD + 历史查询功能
+- [ ] ✅ 未引入智能推荐、配伍检查、复杂业务规则引擎
+- [ ] ✅ 未引入工作流引擎、数据流水线、会话管理
+- [ ] ✅ 未引入复杂状态机、事件驱动架构、预测性分析
+- [ ] ✅ 事务管理使用EF Core隐式事务优先，必要时最小显式事务
+
+### 统一四层架构合规
+- [ ] ✅ UI层: 用户交互、HTTP请求处理、数据展示、参数验证
+- [ ] ✅ Application层: 应用服务、业务编排、DTO转换、权限检查  
+- [ ] ✅ Domain层: 实体定义、领域逻辑、业务规则、实体关系
+- [ ] ✅ Infrastructure层: 数据访问、外部服务、技术实现
 
 ## 检查清单
-<!-- 提交前请确认以下事项 -->
-- [ ] 代码符合项目编码规范
+<!-- CI自动验证项，手动确认 -->
+- [ ] 遵循小诊所实际需求，避免企业级过度设计
+- [ ] API响应使用统一ApiResponse<T>格式  
 - [ ] 已添加/更新相关文档
-- [ ] 已添加/更新相关测试
-- [ ] 所有测试通过 (`dotnet test`)
-- [ ] 代码格式化检查通过 (`dotnet format`)
-- [ ] 编译零警告零错误
 - [ ] 已解决所有代码审查意见
+- [ ] 符合Pass 7治理基线所有约束
 
 ## 额外说明
 <!-- 任何需要特别说明的内容 -->
