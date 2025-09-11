@@ -48,12 +48,12 @@ namespace LYBT.Infrastructure.Caching.Adapters
             {
                 if (_memoryCache.TryGetValue(key, out var value))
                 {
-                    Interlocked.Increment(ref _statistics.HitCount);
+                    _statistics.HitCount++;
                     _logger.LogDebug("Cache hit for key: {Key}", key);
                     return value is T typedValue ? typedValue : default;
                 }
 
-                Interlocked.Increment(ref _statistics.MissCount);
+                _statistics.MissCount++;
                 _logger.LogDebug("Cache miss for key: {Key}", key);
                 return default;
             }
@@ -80,11 +80,11 @@ namespace LYBT.Infrastructure.Caching.Adapters
                     _keys.TryRemove(k.ToString()!, out _);
                     if (reason == EvictionReason.Expired)
                     {
-                        Interlocked.Increment(ref _statistics.ExpiredKeys);
+                        _statistics.ExpiredKeys++;
                     }
                     else if (reason == EvictionReason.Capacity || reason == EvictionReason.TokenExpired)
                     {
-                        Interlocked.Increment(ref _statistics.EvictedKeys);
+                        _statistics.EvictedKeys++;
                     }
                 });
 
@@ -185,12 +185,12 @@ namespace LYBT.Infrastructure.Caching.Adapters
             // Try to get from cache first
             if (_memoryCache.TryGetValue(key, out var cachedValue) && cachedValue is T typedValue)
             {
-                Interlocked.Increment(ref _statistics.HitCount);
+                _statistics.HitCount++;
                 _logger.LogDebug("Cache hit for key: {Key}", key);
                 return typedValue;
             }
 
-            Interlocked.Increment(ref _statistics.MissCount);
+            _statistics.MissCount++;
             _logger.LogDebug("Cache miss for key: {Key}, calling factory", key);
 
             // Call factory and cache result
