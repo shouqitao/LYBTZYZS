@@ -11,8 +11,8 @@ namespace LYBT.Module.Auth.Repositories
 {
 
     /// <summary>
-    /// 认证会话仓储实现 - 管理用户登录会话的完整生命周期
-    /// 继承OptimizedBaseRepository获得缓存和性能优化，扩展会话管理特有业务方法
+    /// 认证会话仓储实现 - Record-Only模式简化版本
+    /// 继承OptimizedBaseRepository获得缓存和性能优化，保留基本会话功能
     /// </summary>
     public class AuthSessionRepository : OptimizedBaseRepository<AuthSession>, IAuthSessionRepository
     {
@@ -49,12 +49,12 @@ namespace LYBT.Module.Auth.Repositories
         }
 
         /// <summary>
-        /// 根据用户名获取活跃会话 - UltraThink v2.0简化版（功能移除）
+        /// 根据用户名获取活跃会话 - Record-Only模式简化版（功能移除）
         /// </summary>
+        [Obsolete("Complex session tracking removed in Record-Only mode. Use stateless JWT instead.", false)]
         public Task<List<AuthSession>> GetActiveSessionsByUsernameAsync(string username)
         {
-            // UltraThink v2.0简化版：AuthSession实体中没有Username字段
-            // 功能已简化，返回空列表
+            // Record-Only: 复杂会话跟踪功能移除，使用无状态JWT
             return Task.FromResult(new List<AuthSession>());
         }
 
@@ -81,12 +81,12 @@ namespace LYBT.Module.Auth.Repositories
         }
 
         /// <summary>
-        /// 根据刷新令牌哈希查找会话 - UltraThink v2.0简化版（功能移除）
+        /// 根据刷新令牌哈希查找会话 - Record-Only模式简化版（功能移除）
         /// </summary>
+        [Obsolete("Complex refresh token mechanism removed in Record-Only mode. Use stateless JWT instead.", false)]
         public Task<AuthSession?> GetByRefreshTokenHashAsync(string refreshTokenHash)
         {
-            // UltraThink v2.0简化版：AuthSession实体中没有RefreshTokenHash字段
-            // 刷新令牌功能已简化，返回null
+            // Record-Only: 复杂刷新令牌机制移除，使用无状态JWT
             return Task.FromResult<AuthSession?>(null);
         }
 
@@ -126,12 +126,12 @@ namespace LYBT.Module.Auth.Repositories
         }
 
         /// <summary>
-        /// 更新会话最后活跃时间 - UltraThink v2.0简化版（功能移除）
+        /// 更新会话最后活跃时间 - Record-Only模式简化版（功能移除）
         /// </summary>
+        [Obsolete("Session activity tracking removed in Record-Only mode. Use stateless JWT instead.", false)]
         public async Task UpdateLastActivityAsync(Guid sessionId, DateTime lastActivity)
         {
-            // UltraThink v2.0简化版：AuthSession实体中没有LastActivityTime字段
-            // 功能已简化，无需更新活跃时间
+            // Record-Only: 会话活跃跟踪移除，使用无状态JWT
             await Task.CompletedTask;
         }
 
@@ -157,8 +157,9 @@ namespace LYBT.Module.Auth.Repositories
         }
 
         /// <summary>
-        /// 获取会话统计信息 - UltraThink v2.0简化版
+        /// 获取会话统计信息 - Record-Only模式简化版
         /// </summary>
+        [Obsolete("Complex session statistics removed in Record-Only mode. Use simple user count instead.", false)]
         public async Task<(int TotalSessions, int ActiveSessions, int ExpiredSessions)> GetSessionStatsAsync()
         {
             var totalSessions = await _dbSet.CountAsync();
@@ -169,8 +170,9 @@ namespace LYBT.Module.Auth.Repositories
         }
 
         /// <summary>
-        /// 根据IP地址获取会话（安全监控）- UltraThink v2.0简化版
+        /// 根据IP地址获取会话（安全监控）- Record-Only模式简化版
         /// </summary>
+        [Obsolete("Complex IP-based session monitoring removed in Record-Only mode. Use basic audit logs instead.", false)]
         public async Task<List<AuthSession>> GetSessionsByIpAddressAsync(string ipAddress, TimeSpan? withinTimeSpan = null)
         {
             var query = _dbSet.Where(s => s.IpAddress == ipAddress);
@@ -187,14 +189,15 @@ namespace LYBT.Module.Auth.Repositories
         }
 
         /// <summary>
-        /// 标记会话异常 - UltraThink v2.0简化版
+        /// 标记会话异常 - Record-Only模式简化版
         /// </summary>
+        [Obsolete("Complex session anomaly detection removed in Record-Only mode. Use basic audit logs instead.", false)]
         public async Task MarkSessionAnomalyAsync(Guid sessionId, string description)
         {
             var session = await _dbSet.FindAsync(sessionId);
             if (session != null)
             {
-                // UltraThink v2.0简化版：直接撤销异常会话
+                // Record-Only: 简化异常处理，直接撤销会话
                 session.IsRevoked = true;
                 session.Status = CommonStatus.Disabled;
                 session.LogoutTime = DateTime.Now;
@@ -226,12 +229,12 @@ namespace LYBT.Module.Auth.Repositories
         }
 
         /// <summary>
-        /// 根据设备信息获取会话 - UltraThink v2.0简化版（功能移除）
+        /// 根据设备信息获取会话 - Record-Only模式简化版（功能移除）
         /// </summary>
+        [Obsolete("Complex device-based session tracking removed in Record-Only mode. Use stateless JWT instead.", false)]
         public Task<List<AuthSession>> GetSessionsByDeviceInfoAsync(string deviceInfo, TimeSpan? withinTimeSpan = null)
         {
-            // UltraThink v2.0简化版：AuthSession实体中没有DeviceInfo字段
-            // 设备信息功能已简化，返回空列表
+            // Record-Only: 复杂设备跟踪功能移除，使用无状态JWT
             return Task.FromResult(new List<AuthSession>());
         }
     }

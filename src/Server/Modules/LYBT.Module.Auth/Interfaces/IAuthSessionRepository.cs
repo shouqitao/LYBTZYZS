@@ -6,8 +6,8 @@ namespace LYBT.Module.Auth.Interfaces
 {
 
     /// <summary>
-    /// 认证会话仓储接口 - 管理用户登录会话的完整生命周期
-    /// 继承BaseRepository提供通用CRUD，扩展会话管理特定业务方法
+    /// 认证会话仓储接口 - Record-Only模式简化版本
+    /// 继承BaseRepository提供通用CRUD，保留基本会话功能
     /// </summary>
     public interface IAuthSessionRepository : IBaseRepository<AuthSession>
     {
@@ -20,6 +20,7 @@ namespace LYBT.Module.Auth.Interfaces
         /// <summary>
         /// 根据用户名获取活跃会话
         /// </summary>
+        [Obsolete("Complex session tracking removed in Record-Only mode. Use stateless JWT instead.", false)]
         Task<List<AuthSession>> GetActiveSessionsByUsernameAsync(string username);
 
         /// <summary>
@@ -30,6 +31,7 @@ namespace LYBT.Module.Auth.Interfaces
         /// <summary>
         /// 根据刷新令牌哈希查找会话
         /// </summary>
+        [Obsolete("Complex refresh token mechanism removed in Record-Only mode. Use stateless JWT instead.", false)]
         Task<AuthSession?> GetByRefreshTokenHashAsync(string refreshTokenHash);
 
         /// <summary>
@@ -45,6 +47,7 @@ namespace LYBT.Module.Auth.Interfaces
         /// <summary>
         /// 更新会话最后活跃时间
         /// </summary>
+        [Obsolete("Session activity tracking removed in Record-Only mode. Use stateless JWT instead.", false)]
         Task UpdateLastActivityAsync(Guid sessionId, DateTime lastActivity);
 
         /// <summary>
@@ -55,16 +58,19 @@ namespace LYBT.Module.Auth.Interfaces
         /// <summary>
         /// 获取会话统计信息
         /// </summary>
+        [Obsolete("Complex session statistics removed in Record-Only mode. Use simple user count instead.", false)]
         Task<(int TotalSessions, int ActiveSessions, int ExpiredSessions)> GetSessionStatsAsync();
 
         /// <summary>
         /// 根据IP地址获取会话（安全监控）
         /// </summary>
+        [Obsolete("Complex IP-based session monitoring removed in Record-Only mode. Use basic audit logs instead.", false)]
         Task<List<AuthSession>> GetSessionsByIpAddressAsync(string ipAddress, TimeSpan? withinTimeSpan = null);
 
         /// <summary>
         /// 标记会话异常
         /// </summary>
+        [Obsolete("Complex session anomaly detection removed in Record-Only mode. Use basic audit logs instead.", false)]
         Task MarkSessionAnomalyAsync(Guid sessionId, string description);
 
         /// <summary>
@@ -75,6 +81,7 @@ namespace LYBT.Module.Auth.Interfaces
         /// <summary>
         /// 根据设备信息获取会话
         /// </summary>
+        [Obsolete("Complex device-based session tracking removed in Record-Only mode. Use stateless JWT instead.", false)]
         Task<List<AuthSession>> GetSessionsByDeviceInfoAsync(string deviceInfo, TimeSpan? withinTimeSpan = null);
     }
 }
