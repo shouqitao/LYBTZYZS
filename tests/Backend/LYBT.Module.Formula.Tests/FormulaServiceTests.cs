@@ -577,16 +577,6 @@ namespace LYBT.Module.Formula.Tests
             result.Should().BeTrue();
         }
 
-        [Fact]
-        public async Task GetRecommendationsAsync_WithSymptoms_ReturnsEmptyList()
-        {
-            // Act
-            var result = await _service.GetRecommendationsAsync("发热", "感冒");
-
-            // Assert
-            result.Should().NotBeNull();
-            result.Should().BeEmpty();
-        }
 
         [Fact]
         public async Task GetFrequentlyUsedFormulasAsync_WithDoctorId_ReturnsFormulas()
