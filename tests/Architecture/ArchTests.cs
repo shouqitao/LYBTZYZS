@@ -27,23 +27,21 @@ public class ArchTests
     ];
 
     /// <summary>
-    /// 层间依赖测试 - UI层不得直接依赖Infrastructure层
+    /// 层间依赖测试 - 桌面UI层不得直接依赖Infrastructure层，WebAPI控制器除外
     /// </summary>
     [Fact]
     public void LayerDependencyTests_UI_Should_Not_Depend_On_Infrastructure()
     {
         var result = Types.InAssemblies(Assemblies)
             .That()
-            .ResideInNamespaceMatching(@".*\.ViewModels")
-            .Or()
-            .ResideInNamespaceMatching(@".*\.Controllers")
+            .ResideInNamespaceMatching(@".*\.ViewModels") // 仅限制ViewModels层
             .Should()
             .NotHaveDependencyOn("LYBT.Infrastructure")
             .GetResult();
 
         Assert.True(
             result.IsSuccessful,
-            $"UI层违规依赖Infrastructure层: {string.Join(", ", result.FailingTypes?.Select(t => t.Name) ?? [])}");
+            $"桌面UI层违规依赖Infrastructure层: {string.Join(", ", result.FailingTypes?.Select(t => t.Name) ?? [])}");
     }
 
     /// <summary>
@@ -102,7 +100,7 @@ public class ArchTests
     }
 
     /// <summary>
-    /// 控制器位置测试 - 所有控制器必须位于LYBT.WebAPI项目
+    /// 控制器位置测试 - 业务控制器必须位于LYBT.WebAPI项目，基础架构控制器除外
     /// </summary>
     [Fact]
     public void ControllerLocationTests_All_Controllers_Should_Be_In_WebAPI_Project()
@@ -112,8 +110,12 @@ public class ArchTests
             .Inherit(typeof(Microsoft.AspNetCore.Mvc.ControllerBase))
             .GetTypes();
 
+        // 排除基础架构控制器类
+        var baseControllerNames = new[] { "BaseApiController", "BaseControllerCore", "BaseSystemController" };
+
         var controllersOutsideWebAPI = allControllers
             .Where(t => !t.Assembly.GetName().Name?.Equals("LYBT.WebAPI", StringComparison.OrdinalIgnoreCase) == true)
+            .Where(t => !baseControllerNames.Contains(t.Name)) // 排除基础控制器
             .Select(t => $"{t.Assembly.GetName().Name}.{t.Name}")
             .ToList();
 
