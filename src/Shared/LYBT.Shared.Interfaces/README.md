@@ -35,8 +35,7 @@ LYBT.Shared.Interfaces/
 │   ├── IPatientService.cs # 患者服务接口
 │   ├── IPrescriptionService.cs # 处方服务接口
 │   └── IUserService.cs    # 用户服务接口
-└── Caching/               # 缓存服务接口
-    └── ISimplifiedCacheService.cs # 简化缓存服务接口
+└── Caching/               # 缓存服务接口 (Pass 9已移除，统一使用Infrastructure.ICacheService)
 ```
 
 ## 核心功能
@@ -83,20 +82,12 @@ LYBT.Shared.Interfaces/
 
 ### 3. 缓存服务接口 (Caching/)
 
-#### ISimplifiedCacheService
-提供简化的内存缓存操作接口：
+**Pass 9 - Cache Phase 3 完成**: 缓存接口已统一至 `Infrastructure.ICacheService`
 
-**同步操作**:
-- `Get<T>(string key)`: 获取缓存项
-- `Set<T>(string key, T value, TimeSpan? expiration)`: 设置缓存
-- `Remove(string key)`: 移除缓存
-- `Clear()`: 清空所有缓存
-
-**异步操作**:
-- `GetAsync<T>(string key)`: 异步获取缓存
-- `SetAsync<T>(string key, T value, TimeSpan? expiration)`: 异步设置
-- `RemoveAsync(string key)`: 异步移除
-- `GetOrSetAsync<T>(string key, Func<Task<T>> factory, TimeSpan? expiration)`: 获取或设置（核心方法）
+- ❌ **已移除**: `ISimplifiedCacheService` - 遗留简化缓存接口
+- ✅ **统一使用**: `LYBT.Infrastructure.Caching.Interfaces.ICacheService` - 完整功能缓存接口
+- ✅ **实现**: `MemoryCacheAdapter` - 生产就绪的内存缓存适配器
+- ✅ **功能更强**: 36个方法，支持批量操作、模式匹配、统计监控
 
 ## 技术栈
 
@@ -128,8 +119,8 @@ LYBT.Shared.Interfaces/
 - IAuthService: 认证服务 - 登录、会话、权限管理
 - 6个业务模块服务: 患者、医案、诊断、处方、药材、验方
 
-**缓存服务接口** (1个):
-- ISimplifiedCacheService: 8个方法，同步+异步双模式
+**缓存服务接口**:
+- ❌ Pass 9已移除: ISimplifiedCacheService (统一至Infrastructure.ICacheService)
 
 ### 🔧 技术规格
 
@@ -178,11 +169,13 @@ if (result.Success)
 
 ### 缓存服务使用
 ```csharp
+// Pass 9统一: 使用Infrastructure.ICacheService
 // 获取或设置缓存
 var users = await _cacheService.GetOrSetAsync(
     "users_list", 
     async () => await _userService.GetAllUsersAsync(),
-    TimeSpan.FromMinutes(10)
+    TimeSpan.FromMinutes(10),
+    cancellationToken
 );
 ```
 

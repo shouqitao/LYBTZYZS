@@ -11,7 +11,7 @@ namespace LYBT.Infrastructure.Caching.Interfaces
     /// <para>设计目标: Phase 1缓存接口收口，统一前后端缓存抽象</para>
     /// <para>架构位置: Infrastructure层，作为缓存服务的核心抽象</para>
     /// <para>适配策略: 支持Memory/Redis/Hybrid多种缓存实现</para>
-    /// <para>兼容性: 与现有ISimplifiedCacheService保持API兼容性</para>
+    /// <para>统一完成: Pass 9 - Cache Phase 3 彻底统一缓存接口</para>
     /// </remarks>
     [Description("统一缓存服务 - Infrastructure层核心抽象")]
     public interface ICacheService
