@@ -70,7 +70,7 @@
             <TextBlock Grid.Row="0" Grid.Column="0" Text="用户名："
                        VerticalAlignment="Center" Margin="0,0,10,10" />
             <TextBox Grid.Row="0" Grid.Column="1"
-                     Text="{Binding UserName, UpdateSourceTrigger=PropertyChanged}"
+                     Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}"
                      IsEnabled="{Binding IsNewUser}"
                      Margin="0,0,0,10" Height="25" />
 

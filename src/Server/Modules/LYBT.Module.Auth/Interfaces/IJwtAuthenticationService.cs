@@ -42,7 +42,7 @@ namespace LYBT.Module.Auth.Interfaces
     public class TokenUserInfo
     {
         public string UserId { get; set; } = string.Empty;
-        public string UserName { get; set; } = string.Empty;
+        public string Username { get; set; } = string.Empty;
         public UserRole Role { get; set; } = UserRole.Doctor;
         public DateTime ExpiresAt { get; set; }
     }

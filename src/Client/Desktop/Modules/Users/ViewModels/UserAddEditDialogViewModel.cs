@@ -29,7 +29,7 @@ namespace LYBT.Desktop.Users.ViewModels
         private UserDto? _originalUser; // 🎯 修复：移除readonly，允许在OnDialogOpened中重新赋值
         private bool _isEditMode;
 
-        private string _userName = string.Empty;
+        private string _username = string.Empty;
         private string _realName = string.Empty;
         private string _email = string.Empty;
         private string _phoneNumber = string.Empty;
@@ -47,10 +47,10 @@ namespace LYBT.Desktop.Users.ViewModels
         }
 
         /// <summary>用户名</summary>
-        public string UserName
+        public string Username
         {
-            get => _userName;
-            set => SetProperty(ref _userName, value);
+            get => _username;
+            set => SetProperty(ref _username, value);
         }
 
         /// <summary>真实姓名</summary>
@@ -174,7 +174,7 @@ namespace LYBT.Desktop.Users.ViewModels
                     var updateRequest = new UserMutationDto
                     {
                         Id = _originalUser.Id,
-                        Username = UserName.Trim(),
+                        Username = Username.Trim(),
                         RealName = RealName.Trim(),
                         Role = SelectedRole?.Value ?? _originalUser.Role, // 🎯 修复：使用选中的角色，如果未选择则保持原有角色
                         Email = string.IsNullOrWhiteSpace(Email) ? null : Email.Trim(), // 🎯 修复：包含邮箱字段
@@ -196,7 +196,7 @@ namespace LYBT.Desktop.Users.ViewModels
                     // 新增模式
                     var createRequest = new UserMutationDto
                     {
-                        Username = UserName.Trim(),
+                        Username = Username.Trim(),
                         RealName = RealName.Trim(),
                         Email = string.IsNullOrWhiteSpace(Email) ? null : Email.Trim(), // 🎯 修复：包含邮箱字段
                         PhoneNumber = string.IsNullOrWhiteSpace(PhoneNumber) ? null : PhoneNumber.Trim(),
@@ -230,7 +230,7 @@ namespace LYBT.Desktop.Users.ViewModels
         /// <inheritdoc/>
         protected override bool CanSave()
         {
-            return !string.IsNullOrWhiteSpace(UserName) &&
+            return !string.IsNullOrWhiteSpace(Username) &&
                    !string.IsNullOrWhiteSpace(RealName) &&
                    SelectedRole != null;
         }
@@ -241,7 +241,7 @@ namespace LYBT.Desktop.Users.ViewModels
             base.InitializeDialog();
 
             // 监听属性变化以更新Command状态
-            SaveCommand.ObservesProperty(() => UserName);
+            SaveCommand.ObservesProperty(() => Username);
             SaveCommand.ObservesProperty(() => RealName);
             SaveCommand.ObservesProperty(() => SelectedRole);
         }
@@ -256,7 +256,7 @@ namespace LYBT.Desktop.Users.ViewModels
         private void InitializeEditData(UserDto user)
         {
             DialogTitle = SystemConstants.EditUserDialogTitle;
-            UserName = user.Username;
+            Username = user.Username;
             RealName = user.RealName;
 
             // 🎯 修复：正确设置邮箱数据
@@ -271,7 +271,7 @@ namespace LYBT.Desktop.Users.ViewModels
                           Roles.FirstOrDefault(r => r.Value == "Doctor") ??
                           Roles.First();
 
-            System.Diagnostics.Debug.WriteLine($"✅ InitializeEditData完成: UserName={UserName}, RealName={RealName}, Email={Email}, IsActive={IsActive}, Role={SelectedRole?.DisplayName}");
+            System.Diagnostics.Debug.WriteLine($"✅ InitializeEditData完成: Username={Username}, RealName={RealName}, Email={Email}, IsActive={IsActive}, Role={SelectedRole?.DisplayName}");
         }
 
         // UltraThink v2.0: 移除前端业务验证逻辑
@@ -328,21 +328,21 @@ namespace LYBT.Desktop.Users.ViewModels
                 InitializeEditData(user);
 
                 // 强制触发所有属性变更通知
-                RaisePropertyChanged(nameof(UserName));
+                RaisePropertyChanged(nameof(Username));
                 RaisePropertyChanged(nameof(RealName));
                 RaisePropertyChanged(nameof(Email));
                 RaisePropertyChanged(nameof(PhoneNumber));
                 RaisePropertyChanged(nameof(IsActive));
                 RaisePropertyChanged(nameof(SelectedRole));
 
-                System.Diagnostics.Debug.WriteLine($"✅ 编辑数据初始化完成: UserName={UserName}, RealName={RealName}, Email={Email}");
+                System.Diagnostics.Debug.WriteLine($"✅ 编辑数据初始化完成: Username={Username}, RealName={RealName}, Email={Email}");
             }
             else if (!_isEditMode)
             {
                 System.Diagnostics.Debug.WriteLine("🔧 新增模式 - 清空表单数据");
 
                 // 新增模式：确保表单为空白状态
-                UserName = string.Empty;
+                Username = string.Empty;
                 RealName = string.Empty;
                 Email = string.Empty;
                 PhoneNumber = string.Empty;
@@ -350,7 +350,7 @@ namespace LYBT.Desktop.Users.ViewModels
                 SelectedRole = new RoleItem { Value = "Doctor", DisplayName = "医生" };
 
                 // 触发UI更新
-                RaisePropertyChanged(nameof(UserName));
+                RaisePropertyChanged(nameof(Username));
                 RaisePropertyChanged(nameof(RealName));
                 RaisePropertyChanged(nameof(Email));
                 RaisePropertyChanged(nameof(PhoneNumber));

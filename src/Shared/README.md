@@ -119,7 +119,7 @@ public class ServiceResult<T>
 // 用户信息DTO
 public class UserDto : BaseDto
 {
-    public string UserName { get; set; }
+    public string Username { get; set; }
     public string RealName { get; set; }
     public string Email { get; set; }
     public string PhoneNumber { get; set; }
@@ -130,7 +130,7 @@ public class UserDto : BaseDto
 // 用户创建DTO
 public class UserCreateDto
 {
-    public string UserName { get; set; }
+    public string Username { get; set; }
     public string RealName { get; set; }
     public string Email { get; set; }
     public string PhoneNumber { get; set; }
@@ -190,7 +190,7 @@ services.AddScoped<IUserService, UserModuleService>();
 // 使用DTO进行数据传输
 var createDto = new UserCreateDto 
 {
-    UserName = "doctor01",
+    Username = "doctor01",
     RealName = "张医生",
     Role = UserRole.Doctor
 };

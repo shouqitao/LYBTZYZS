@@ -26,7 +26,7 @@ namespace LYBT.Tests.Core
             var user = new UserModel
             {
                 Id = Guid.NewGuid(),
-                UserName = _faker.Internet.UserName(),
+                Username = _faker.Internet.UserName(),
                 RealName = _faker.Name.FullName(),
                 Email = _faker.Internet.Email(),
                 PhoneNumber = _faker.Phone.PhoneNumber("1##########"),

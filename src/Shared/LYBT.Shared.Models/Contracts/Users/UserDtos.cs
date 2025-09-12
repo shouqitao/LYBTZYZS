@@ -44,10 +44,10 @@ namespace LYBT.Shared.Models.Contracts.Users
         [DisplayName("账号启用状态")]
         public bool IsActive => Status == CommonStatus.Enabled;
 
-        /// <summary>用户名(兼容性别名)</summary>
-        [DisplayName("用户名")]
+        /// <summary>用户显示名(兼容性属性，使用Username字段)</summary>
+        [DisplayName("用户显示名")]
         [JsonPropertyName("userDisplayName")]
-        public string UserName => RealName ?? Username;
+        public string UserDisplayName => RealName ?? Username;
     }
 
     /// <summary>

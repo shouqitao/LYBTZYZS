@@ -56,7 +56,7 @@ namespace LYBT.Infrastructure.Security
             {
                 EventType = "DataAccess",
                 UserId = context.UserId,
-                UserName = context.UserName,
+                Username = context.Username,
                 IpAddress = context.IpAddress,
                 UserAgent = context.UserAgent,
                 Timestamp = DateTime.UtcNow,
@@ -86,7 +86,7 @@ namespace LYBT.Infrastructure.Security
             {
                 EventType = "Authentication",
                 UserId = entry.UserId,
-                UserName = entry.UserName ?? context.UserName,
+                Username = entry.Username ?? context.Username,
                 IpAddress = context.IpAddress,
                 UserAgent = context.UserAgent,
                 Timestamp = DateTime.UtcNow,
@@ -113,7 +113,7 @@ namespace LYBT.Infrastructure.Security
             {
                 EventType = "Authorization",
                 UserId = context.UserId,
-                UserName = context.UserName,
+                Username = context.Username,
                 IpAddress = context.IpAddress,
                 UserAgent = context.UserAgent,
                 Timestamp = DateTime.UtcNow,
@@ -141,7 +141,7 @@ namespace LYBT.Infrastructure.Security
             {
                 EventType = "SensitiveOperation",
                 UserId = context.UserId,
-                UserName = context.UserName,
+                Username = context.Username,
                 IpAddress = context.IpAddress,
                 UserAgent = context.UserAgent,
                 Timestamp = DateTime.UtcNow,
@@ -171,7 +171,7 @@ namespace LYBT.Infrastructure.Security
                 return new AuditContext
                 {
                     UserId = "SYSTEM",
-                    UserName = "SYSTEM",
+                    Username = "SYSTEM",
                     IpAddress = "127.0.0.1",
                     UserAgent = "System Process"
                 };
@@ -181,7 +181,7 @@ namespace LYBT.Infrastructure.Security
             return new AuditContext
             {
                 UserId = user?.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "ANONYMOUS",
-                UserName = user?.FindFirst(ClaimTypes.Name)?.Value ?? "ANONYMOUS",
+                Username = user?.FindFirst(ClaimTypes.Name)?.Value ?? "ANONYMOUS",
                 IpAddress = GetClientIpAddress(httpContext),
                 UserAgent = httpContext.Request.Headers.UserAgent.ToString() ?? "Unknown"
             };
@@ -230,7 +230,7 @@ namespace LYBT.Infrastructure.Security
                     "安全审计 - {EventType}: {Operation} | 用户: {UserName}({UserId}) | 资源: {ResourceType}/{ResourceId} | IP: {IpAddress} | 详情: {Details}",
                     entry.EventType,
                     entry.Operation,
-                    entry.UserName,
+                    entry.Username,
                     entry.UserId,
                     entry.ResourceType ?? "N/A",
                     entry.ResourceId ?? "N/A",
@@ -269,7 +269,7 @@ namespace LYBT.Infrastructure.Security
     public class AuditContext
     {
         public string UserId { get; set; } = null!;
-        public string UserName { get; set; } = null!;
+        public string Username { get; set; } = null!;
         public string IpAddress { get; set; } = null!;
         public string UserAgent { get; set; } = null!;
     }
@@ -281,7 +281,7 @@ namespace LYBT.Infrastructure.Security
     {
         public string EventType { get; set; } = null!;
         public string UserId { get; set; } = null!;
-        public string UserName { get; set; } = null!;
+        public string Username { get; set; } = null!;
         public string IpAddress { get; set; } = null!;
         public string UserAgent { get; set; } = null!;
         public DateTime Timestamp { get; set; }
@@ -314,7 +314,7 @@ namespace LYBT.Infrastructure.Security
     public class AuthenticationAuditEntry
     {
         public string? UserId { get; set; }
-        public string? UserName { get; set; }
+        public string? Username { get; set; }
         public string Operation { get; set; } = null!;
         public string? LoginMethod { get; set; }
         public bool Success { get; set; } = true;

@@ -121,7 +121,7 @@ namespace LYBT.Module.Auth.Services
                 return new TokenUserInfo
                 {
                     UserId = userId,
-                    UserName = userName,
+                    Username = userName,
                     Role = role,
                     ExpiresAt = jsonToken.ValidTo
                 };

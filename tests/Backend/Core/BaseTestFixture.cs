@@ -151,7 +151,7 @@ namespace LYBT.Tests.Backend.Core
                         {
                             Id = Guid.NewGuid(),
                             UserId = userId,
-                            UserName = userName,
+                            Username = userName,
                             ActionType = actionType,
                             Module = module,
                             Function = function,

@@ -61,7 +61,7 @@ namespace LYBT.Module.Users.Tests.Base
                         {
                             Id = Guid.NewGuid(),
                             UserId = userId,
-                            UserName = userName,
+                            Username = userName,
                             ActionType = actionType,
                             Module = module,
                             Function = function,

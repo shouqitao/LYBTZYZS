@@ -225,7 +225,7 @@ namespace LYBT.Desktop.Shell.ViewModels
         {
             base.OnUserChanged(args);
             _ = Task.Run(async () => await InitializeAsync());
-            LogInfo($"用户状态变化，重新初始化HomeViewModel: {args.NewUser?.UserName ?? "null"}");
+            LogInfo($"用户状态变化，重新初始化HomeViewModel: {args.NewUser?.Username ?? "null"}");
         }
 
         #region 初始化
