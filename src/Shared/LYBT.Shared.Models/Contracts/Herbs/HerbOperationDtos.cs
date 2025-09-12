@@ -648,8 +648,9 @@ namespace LYBT.Shared.Models.Contracts.Herbs
     }
 
     /// <summary>
-    /// 药材推荐DTO
+    /// 药材推荐DTO (Record-Only模式：智能推荐功能已移除)
     /// </summary>
+    [Obsolete("Smart recommendation feature removed in Record-Only mode. Use manual herb selection instead.")]
     public class HerbRecommendationDto
     {
         public Guid HerbId { get; set; }

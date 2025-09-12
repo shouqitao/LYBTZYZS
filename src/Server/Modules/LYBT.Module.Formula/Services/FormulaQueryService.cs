@@ -292,6 +292,7 @@ namespace LYBT.Module.Formula.Services
             }
         }
 
+#if ENABLE_SMART_FEATURES
         /// <summary>
         /// 智能推荐功能已移除 - Record-Only模式下不支持推荐功能
         /// </summary>
@@ -301,7 +302,9 @@ namespace LYBT.Module.Formula.Services
             var emptyRecommendations = new List<FormulaRecommendationDto>();
             return Task.FromResult(ServiceResult<List<FormulaRecommendationDto>>.Success(emptyRecommendations));
         }
+#endif
 
+#if ENABLE_SMART_FEATURES
         /// <summary>
         /// 智能推荐功能已移除 - Record-Only模式下不支持推荐功能
         /// </summary>
@@ -311,6 +314,7 @@ namespace LYBT.Module.Formula.Services
             var emptyRecommendations = new List<FormulaRecommendationDto>();
             return Task.FromResult(ServiceResult<List<FormulaRecommendationDto>>.Success(emptyRecommendations));
         }
+#endif
 
         /// <summary>
         /// 智能推荐功能已移除 - Record-Only模式下不支持推荐功能

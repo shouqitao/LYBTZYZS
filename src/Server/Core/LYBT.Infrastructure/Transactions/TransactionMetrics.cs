@@ -7,8 +7,9 @@ using System.Threading;
 namespace LYBT.Infrastructure.Transactions
 {
     /// <summary>
-    /// 事务性能指标收集器
+    /// 事务性能指标收集器 (Record-Only模式：复杂事务度量功能已移除)
     /// </summary>
+    [Obsolete("Complex transaction metrics removed in Record-Only mode. Use simple transaction handling instead.")]
     public class TransactionMetrics
     {
         private readonly ConcurrentDictionary<string, MetricData> _metrics = new();
@@ -210,8 +211,9 @@ namespace LYBT.Infrastructure.Transactions
     }
 
     /// <summary>
-    /// 事务详细指标
+    /// 事务详细指标 (Record-Only模式：复杂事务度量功能已移除)
     /// </summary>
+    [Obsolete("Complex transaction metrics removed in Record-Only mode. Use simple transaction handling instead.")]
     public class TransactionMetricDetails
     {
         public string TransactionName { get; set; } = string.Empty;

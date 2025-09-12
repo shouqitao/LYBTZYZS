@@ -290,6 +290,7 @@ namespace LYBT.WebAPI.Controllers
             }
         }
 
+#if ENABLE_SMART_FEATURES
         /// <summary>
         /// 获取验方推荐（按症候） - Record-Only 模式：智能推荐功能已移除
         /// </summary>
@@ -312,7 +313,9 @@ namespace LYBT.WebAPI.Controllers
                 return HandleException<List<FormulaRecommendationDto>>(ex, "获取验方推荐", syndrome);
             }
         }
+#endif
 
+#if ENABLE_SMART_FEATURES
         /// <summary>
         /// 获取验方推荐（按症状和诊断） - Record-Only 模式：智能推荐功能已移除
         /// </summary>
@@ -338,6 +341,7 @@ namespace LYBT.WebAPI.Controllers
                 return HandleException<List<FormulaRecommendationDto>>(ex, "获取验方推荐", new { symptoms, diagnosis, doctorId });
             }
         }
+#endif
 
         /// <summary>
         /// 搜索验方

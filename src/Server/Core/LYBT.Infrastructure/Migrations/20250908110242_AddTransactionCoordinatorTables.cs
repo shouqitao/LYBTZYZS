@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace LYBT.Infrastructure.Migrations
 {
     /// <inheritdoc />
+    [Obsolete("Complex transaction coordination tables removed in Record-Only mode.")]
     public partial class AddTransactionCoordinatorTables : Migration
     {
         /// <inheritdoc />

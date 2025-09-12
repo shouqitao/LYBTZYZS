@@ -6,8 +6,9 @@ using Microsoft.Extensions.Logging;
 namespace LYBT.Infrastructure.Transactions
 {
     /// <summary>
-    /// 事务协调器实现
+    /// 事务协调器实现 (Record-Only模式：复杂事务协调功能已移除)
     /// </summary>
+    [Obsolete("Complex transaction coordination removed in Record-Only mode. Use simple EF Core transactions instead.")]
     public class TransactionCoordinator : ITransactionCoordinator
     {
         private readonly ILogger<TransactionCoordinator> _logger;

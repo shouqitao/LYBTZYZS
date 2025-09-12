@@ -56,11 +56,13 @@ namespace LYBT.Module.Formula.Services
             return await _queryService.SearchAsync(keyword);
         }
 
+#if ENABLE_SMART_FEATURES
         public async Task<ServiceResult<List<FormulaRecommendationDto>>> GetRecommendationsAsync(string syndrome)
             => await _queryService.GetRecommendationsForSyndromeAsync(syndrome);
 
         public async Task<ServiceResult<List<FormulaRecommendationDto>>> GetRecommendationsAsync(string symptoms, string diagnosis, Guid doctorId)
             => await _queryService.GetRecommendationsAsync(symptoms, diagnosis, doctorId);
+#endif
 
         public Task<bool> ExistsAsync(Guid id)
         {

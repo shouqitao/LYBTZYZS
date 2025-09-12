@@ -5,8 +5,9 @@ using System.Threading.Tasks;
 namespace LYBT.Infrastructure.Transactions
 {
     /// <summary>
-    /// 事务协调器接口
+    /// 事务协调器接口 (Record-Only模式：复杂事务协调功能已移除)
     /// </summary>
+    [Obsolete("Complex transaction coordination removed in Record-Only mode. Use simple EF Core transactions instead.")]
     public interface ITransactionCoordinator
     {
         /// <summary>

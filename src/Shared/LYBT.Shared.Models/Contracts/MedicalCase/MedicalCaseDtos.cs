@@ -386,9 +386,9 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
     }
 
     /// <summary>
-    /// 诊疗流程状态DTO
+    /// 诊疗流程状态DTO (Record-Only模式：仅数据记录，无复杂流程控制)
     /// </summary>
-    public class ConsultationWorkflowStatusDto
+    public class ConsultationProcessStatusDto
     {
         public Guid MedicalCaseId { get; set; }
 

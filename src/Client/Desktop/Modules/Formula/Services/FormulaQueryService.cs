@@ -129,6 +129,7 @@ public class FormulaQueryService(
         return Task.FromResult(ServiceResult<List<string>>.Success(defaultCategories));
     }
 
+#if ENABLE_SMART_FEATURES
     /// <inheritdoc/>
     public Task<ServiceResult<List<FormulaRecommendationDto>>> GetRecommendationsBySyndromeAsync(string syndrome)
     {
@@ -140,6 +141,7 @@ public class FormulaQueryService(
     {
         return Task.FromResult(ServiceResult<List<FormulaRecommendationDto>>.Success(new List<FormulaRecommendationDto>()));
     }
+#endif
 
     /// <inheritdoc/>
     public Task<ServiceResult<FormulaStatisticsDto>> GetBasicStatisticsAsync()
