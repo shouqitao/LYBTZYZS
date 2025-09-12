@@ -3,7 +3,6 @@
 using LYBT.Infrastructure.Caching.Adapters;
 using LYBT.Infrastructure.Caching.Configuration;
 using LYBT.Infrastructure.Caching.Interfaces;
-using LYBT.Shared.Interfaces.Caching;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -43,12 +42,7 @@ namespace LYBT.Infrastructure.Caching.Extensions
             // 3. 注册统一缓存服务
             services.AddSingleton<ICacheService, MemoryCacheAdapter>();
 
-            // 4. 注册兼容性适配器 (过渡期使用)
-            services.AddSingleton<ISimplifiedCacheService>(provider =>
-            {
-                var cacheService = provider.GetRequiredService<ICacheService>();
-                return new CacheServiceToSimplifiedAdapter(cacheService);
-            });
+            // 4. (已移除) 旧的ISimplifiedCacheService适配器 - Pass 9清理
 
             return services;
         }
@@ -72,12 +66,7 @@ namespace LYBT.Infrastructure.Caching.Extensions
             // 3. 注册统一缓存服务
             services.AddSingleton<ICacheService, MemoryCacheAdapter>();
 
-            // 4. 注册兼容性适配器
-            services.AddSingleton<ISimplifiedCacheService>(provider =>
-            {
-                var cacheService = provider.GetRequiredService<ICacheService>();
-                return new CacheServiceToSimplifiedAdapter(cacheService);
-            });
+            // 4. (已移除) 兼容性适配器 - Pass 9清理
 
             return services;
         }
@@ -160,43 +149,13 @@ namespace LYBT.Infrastructure.Caching.Extensions
             });
         }
 
-        /// <summary>
-        /// 替换现有ISimplifiedCacheService注册
-        /// </summary>
-        /// <param name="services">服务集合</param>
-        /// <returns>服务集合</returns>
-        /// <remarks>
-        /// <para>迁移助手: 用于替换现有的ISimplifiedCacheService注册</para>
-        /// <para>向后兼容: 保持ISimplifiedCacheService接口可用</para>
-        /// <para>内部升级: 底层使用新的ICacheService实现</para>
-        /// </remarks>
-        public static IServiceCollection ReplaceSimplifiedCacheService(this IServiceCollection services)
-        {
-            // 移除现有的ISimplifiedCacheService注册（如果存在）
-            var descriptorsToRemove = services
-                .Where(d => d.ServiceType == typeof(ISimplifiedCacheService))
-                .ToList();
-
-            foreach (var descriptor in descriptorsToRemove)
-            {
-                services.Remove(descriptor);
-            }
-
-            // 确保ICacheService已注册
-            if (!services.Any(s => s.ServiceType == typeof(ICacheService)))
-            {
-                services.AddMemoryCacheAdapter();
-            }
-
-            // 重新注册ISimplifiedCacheService为适配器
-            services.AddSingleton<ISimplifiedCacheService>(provider =>
-            {
-                var cacheService = provider.GetRequiredService<ICacheService>();
-                return new CacheServiceToSimplifiedAdapter(cacheService);
-            });
-
-            return services;
-        }
+        // /// <summary>
+        // /// 替换现有ISimplifiedCacheService注册 - Pass 9已移除
+        // /// </summary>
+        // /// <remarks>
+        // /// 该方法在Pass 9中移除，统一使用ICacheService接口
+        // /// </remarks>
+        // [Obsolete("已移除 - Pass 9 Cache Phase 3 统一接口", true)]
 
         /// <summary>
         /// 验证缓存服务配置
