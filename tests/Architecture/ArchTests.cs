@@ -1,5 +1,5 @@
-using NetArchTest.Rules;
 using System.Reflection;
+using NetArchTest.Rules;
 using Xunit;
 
 namespace LYBT.ArchTests;
@@ -10,7 +10,7 @@ namespace LYBT.ArchTests;
 /// </summary>
 public class ArchTests
 {
-    private static readonly Assembly[] Assemblies = 
+    private static readonly Assembly[] Assemblies =
     [
         Assembly.Load("LYBT.WebAPI"),
         Assembly.Load("LYBT.Infrastructure"),
@@ -34,14 +34,15 @@ public class ArchTests
     {
         var result = Types.InAssemblies(Assemblies)
             .That()
-            .ResideInNamespaceMatching("*.ViewModels")
+            .ResideInNamespaceMatching(@".*\.ViewModels")
             .Or()
-            .ResideInNamespaceMatching("*.Controllers")
+            .ResideInNamespaceMatching(@".*\.Controllers")
             .Should()
             .NotHaveDependencyOn("LYBT.Infrastructure")
             .GetResult();
 
-        Assert.True(result.IsSuccessful, 
+        Assert.True(
+            result.IsSuccessful,
             $"UI层违规依赖Infrastructure层: {string.Join(", ", result.FailingTypes?.Select(t => t.Name) ?? [])}");
     }
 
@@ -53,14 +54,15 @@ public class ArchTests
     {
         var result = Types.InAssemblies(Assemblies)
             .That()
-            .ResideInNamespaceMatching("*.ViewModels")
+            .ResideInNamespaceMatching(@".*\.ViewModels")
             .Or()
-            .ResideInNamespaceMatching("*.Controllers")
+            .ResideInNamespaceMatching(@".*\.Controllers")
             .Should()
             .NotHaveDependencyOn("LYBT.Entities")
             .GetResult();
 
-        Assert.True(result.IsSuccessful,
+        Assert.True(
+            result.IsSuccessful,
             $"UI层违规依赖Entities层: {string.Join(", ", result.FailingTypes?.Select(t => t.Name) ?? [])}");
     }
 
@@ -86,7 +88,7 @@ public class ArchTests
             foreach (var routeAttr in routeAttributes)
             {
                 var template = routeAttr.GetType().GetProperty("Template")?.GetValue(routeAttr)?.ToString();
-                if (!string.IsNullOrEmpty(template) && 
+                if (!string.IsNullOrEmpty(template) &&
                     !template.StartsWith("api/v{version:apiVersion}/") &&
                     !template.StartsWith("api/v1/") &&
                     !template.Equals("api/v1/[controller]"))
@@ -125,14 +127,14 @@ public class ArchTests
     public void NamingConventionTests_Should_Not_Contain_Pipeline_Names()
     {
         var prohibitedNames = new[] { "Pipeline", "Workflow", "Bus", "Engine", "Saga" };
-        
+
         var violatingTypes = new List<string>();
 
         foreach (var prohibitedName in prohibitedNames)
         {
             var types = Types.InAssemblies(Assemblies)
                 .That()
-                .HaveNameMatching($"*{prohibitedName}*")
+                .HaveNameMatching($".*{prohibitedName}.*")
                 .GetTypes();
 
             violatingTypes.AddRange(types.Select(t => $"{t.FullName} (contains '{prohibitedName}')"));
@@ -148,14 +150,14 @@ public class ArchTests
     public void NamingConventionTests_Should_Not_Have_Workflow_Namespaces()
     {
         var prohibitedNamespaces = new[] { "Workflows", "Pipelines", "Events", "Commands" };
-        
+
         var violatingTypes = new List<string>();
 
         foreach (var prohibitedNs in prohibitedNamespaces)
         {
             var types = Types.InAssemblies(Assemblies)
                 .That()
-                .ResideInNamespaceMatching($"*.{prohibitedNs}.*")
+                .ResideInNamespaceMatching($@".*\.{prohibitedNs}\..*")
                 .GetTypes();
 
             violatingTypes.AddRange(types.Select(t => $"{t.FullName} (namespace contains '{prohibitedNs}')"));
@@ -181,10 +183,10 @@ public class ArchTests
         foreach (var assembly in Assemblies)
         {
             var referencedAssemblies = assembly.GetReferencedAssemblies();
-            
+
             foreach (var reference in referencedAssemblies)
             {
-                if (prohibitedFrameworks.Any(framework => 
+                if (prohibitedFrameworks.Any(framework =>
                     reference.Name?.Contains(framework, StringComparison.OrdinalIgnoreCase) == true))
                 {
                     violatingReferences.Add($"{assembly.GetName().Name} references {reference.Name}");
@@ -224,7 +226,7 @@ public class ArchTests
     /// <summary>
     /// 事务模式测试 - 禁止使用复杂事务协调框架
     /// </summary>
-    [Fact] 
+    [Fact]
     public void TransactionPatternTests_Should_Not_Use_Complex_Transaction_Frameworks()
     {
         var prohibitedTransactionPatterns = new[]
@@ -239,7 +241,7 @@ public class ArchTests
         {
             var types = Types.InAssemblies(Assemblies)
                 .That()
-                .HaveNameMatching($"*{pattern}*")
+                .HaveNameMatching($".*{pattern}.*")
                 .GetTypes();
 
             violatingTypes.AddRange(types.Select(t => $"{t.FullName} (uses prohibited pattern '{pattern}')"));
@@ -266,7 +268,7 @@ public class ArchTests
         {
             var types = Types.InAssemblies(Assemblies)
                 .That()
-                .HaveNameMatching($"*{feature}*")
+                .HaveNameMatching($".*{feature}.*")
                 .GetTypes();
 
             violatingTypes.AddRange(types.Select(t => $"{t.FullName} (contains prohibited feature '{feature}')"));
@@ -283,7 +285,7 @@ public class ArchTests
     {
         var prohibitedStateMachinePatterns = new[]
         {
-            "StateMachine", "StateTransition", "ComplexState", 
+            "StateMachine", "StateTransition", "ComplexState",
             "AutomatedWorkflow", "ProcessEngine"
         };
 
@@ -293,7 +295,7 @@ public class ArchTests
         {
             var types = Types.InAssemblies(Assemblies)
                 .That()
-                .HaveNameMatching($"*{pattern}*")
+                .HaveNameMatching($".*{pattern}.*")
                 .GetTypes();
 
             violatingTypes.AddRange(types.Select(t => $"{t.FullName} (uses prohibited pattern '{pattern}')"));
@@ -318,11 +320,11 @@ public class ArchTests
         foreach (var assembly in Assemblies)
         {
             var types = assembly.GetTypes();
-            
+
             foreach (var type in types)
             {
                 var properties = type.GetProperties();
-                
+
                 foreach (var property in properties)
                 {
                     if (prohibitedUserFieldNames.Contains(property.Name))
