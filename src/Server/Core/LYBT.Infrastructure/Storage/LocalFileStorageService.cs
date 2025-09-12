@@ -1,7 +1,5 @@
 using System.Security.Cryptography;
-using LYBT.Infrastructure.Configuration.Options;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace LYBT.Infrastructure.Storage
 {
@@ -9,20 +7,20 @@ namespace LYBT.Infrastructure.Storage
     /// <summary>
     /// 本地文件存储服务实现
     /// </summary>
+    [Obsolete("Not used; subject to removal after review")]
+    [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
     public class LocalFileStorageService : IFileStorageService
     {
-        private readonly StorageOptions _options;
+        private readonly string _rootPath;
         private readonly ILogger<LocalFileStorageService> _logger;
 
-        public LocalFileStorageService(
-            IOptions<StorageOptions> options,
-            ILogger<LocalFileStorageService> logger)
+        public LocalFileStorageService(ILogger<LocalFileStorageService> logger)
         {
-            _options = options.Value;
             _logger = logger;
+            _rootPath = Path.Combine(Environment.CurrentDirectory, "storage");
 
             // 确保根目录存在
-            EnsureDirectoryExists(_options.LocalStorage.RootPath);
+            EnsureDirectoryExists(_rootPath);
         }
 
         /// <summary>
@@ -34,7 +32,7 @@ namespace LYBT.Infrastructure.Storage
             {
                 var sanitizedFileName = SanitizeFileName(fileName);
                 var relativePath = GenerateFilePath(sanitizedFileName);
-                var fullPath = Path.Combine(_options.LocalStorage.RootPath, relativePath);
+                var fullPath = Path.Combine(_rootPath, relativePath);
 
                 // 确保目录存在
                 var directory = Path.GetDirectoryName(fullPath);
@@ -63,7 +61,7 @@ namespace LYBT.Infrastructure.Storage
         {
             try
             {
-                var fullPath = Path.Combine(_options.LocalStorage.RootPath, filePath);
+                var fullPath = Path.Combine(_rootPath, filePath);
                 if (!File.Exists(fullPath))
                 {
                     return null;
@@ -87,7 +85,7 @@ namespace LYBT.Infrastructure.Storage
         {
             try
             {
-                var fullPath = Path.Combine(_options.LocalStorage.RootPath, filePath);
+                var fullPath = Path.Combine(_rootPath, filePath);
                 if (File.Exists(fullPath))
                 {
                     File.Delete(fullPath);
@@ -112,7 +110,7 @@ namespace LYBT.Infrastructure.Storage
         {
             try
             {
-                var fullPath = Path.Combine(_options.LocalStorage.RootPath, filePath);
+                var fullPath = Path.Combine(_rootPath, filePath);
                 await Task.CompletedTask;
                 return File.Exists(fullPath);
             }
@@ -130,7 +128,7 @@ namespace LYBT.Infrastructure.Storage
         {
             try
             {
-                var fullPath = Path.Combine(_options.LocalStorage.RootPath, filePath);
+                var fullPath = Path.Combine(_rootPath, filePath);
                 if (!File.Exists(fullPath))
                 {
                     return null;
@@ -164,7 +162,7 @@ namespace LYBT.Infrastructure.Storage
         {
             try
             {
-                var fullPath = Path.Combine(_options.LocalStorage.RootPath, directoryPath);
+                var fullPath = Path.Combine(_rootPath, directoryPath);
                 if (!Directory.Exists(fullPath))
                 {
                     return Enumerable.Empty<FileMetadata>();
@@ -175,7 +173,7 @@ namespace LYBT.Infrastructure.Storage
 
                 foreach (var file in files)
                 {
-                    var relativePath = Path.GetRelativePath(_options.LocalStorage.RootPath, file);
+                    var relativePath = Path.GetRelativePath(_rootPath, file);
                     var metadata = await GetMetadataAsync(relativePath);
                     if (metadata != null)
                     {
@@ -199,8 +197,8 @@ namespace LYBT.Infrastructure.Storage
         {
             try
             {
-                var sourceFullPath = Path.Combine(_options.LocalStorage.RootPath, sourceFilePath);
-                var destinationFullPath = Path.Combine(_options.LocalStorage.RootPath, destinationFilePath);
+                var sourceFullPath = Path.Combine(_rootPath, sourceFilePath);
+                var destinationFullPath = Path.Combine(_rootPath, destinationFilePath);
 
                 if (!File.Exists(sourceFullPath))
                 {
@@ -231,8 +229,8 @@ namespace LYBT.Infrastructure.Storage
         {
             try
             {
-                var sourceFullPath = Path.Combine(_options.LocalStorage.RootPath, sourceFilePath);
-                var destinationFullPath = Path.Combine(_options.LocalStorage.RootPath, destinationFilePath);
+                var sourceFullPath = Path.Combine(_rootPath, sourceFilePath);
+                var destinationFullPath = Path.Combine(_rootPath, destinationFilePath);
 
                 if (!File.Exists(sourceFullPath))
                 {
