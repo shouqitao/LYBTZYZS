@@ -16,10 +16,5 @@ namespace LYBT.Module.Consultation.Interfaces
         /// </summary>
         Task<ServiceResult<bool>> SaveFourDiagnosisAsync(Guid consultationId, object fourDiagnosisData);
 
-        /// <summary>
-        /// 验证工作流状态转换 - Record-Only模式简化版（功能移除）
-        /// </summary>
-        [Obsolete("Complex workflow state validation removed in Record-Only mode. Use simple status updates instead.", false)]
-        Task<ServiceResult<bool>> ValidateWorkflowStateAsync(Guid consultationId, ConsultationStatus targetStatus);
     }
 }

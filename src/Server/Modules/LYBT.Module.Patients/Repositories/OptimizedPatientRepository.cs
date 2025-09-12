@@ -413,30 +413,6 @@ namespace LYBT.Module.Patients.Repositories
 
         #endregion IPatientRepository接口实现
 
-        #region 统计和分析
-
-        /// <summary>
-        /// 获取患者统计信息 - Record-Only 模式：统计功能已移除
-        /// </summary>
-        [Obsolete("Statistics feature removed in Record-Only mode. Use basic queries instead.", false)]
-        public Task<PatientStatistics> GetStatisticsAsync(
-            DateTime? startDate = null,
-            DateTime? endDate = null,
-            CancellationToken cancellationToken = default)
-        {
-            var emptyStats = new PatientStatistics
-            {
-                TotalPatients = 0,
-                NewPatientsThisMonth = 0,
-                ActivePatients = 0,
-                AgeDistribution = new Dictionary<string, int>(),
-                GenderDistribution = new Dictionary<string, int>()
-            };
-
-            return Task.FromResult(emptyStats);
-        }
-
-        #endregion 统计和分析
 
         #region 批量操作优化
 

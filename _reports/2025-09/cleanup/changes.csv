@@ -1,15 +1,17 @@
 Project,Path,Symbol,Kind,Action,Reason,Status
-LYBT.Module.Herbs,Interfaces/IHerbQueryService.cs,IHerbQueryService,Interface,Fix Implementation,Interface defined but not implemented,Pending
-LYBT.Module.Herbs,Interfaces/IHerbBusinessService.cs,IHerbBusinessService,Interface,Fix Implementation,Interface defined but not implemented,Pending
-LYBT.Module.Herbs,Repositories/HerbRepository.cs,ExistsByNameAsync,Method,Mark Obsolete,Only used in unit tests,Pending
-LYBT.Module.Herbs,Repositories/HerbRepository.cs,SearchByPinyinAsync,Method,Mark Obsolete,Only used in tests,Pending
-LYBT.Module.Herbs,Repositories/HerbRepository.cs,AddRangeAsync,Method,Mark Obsolete,Only used in test data preparation,Pending
-LYBT.Module.Formula,Interfaces/IFormulaQueryService.cs,IFormulaQueryService,Interface,Fix Implementation,Interface defined but not implemented,Pending
-LYBT.Module.Formula,Interfaces/IFormulaBusinessService.cs,IFormulaBusinessService,Interface,Fix Implementation,Interface defined but not implemented,Pending
-LYBT.Module.Formula,Services/FormulaQueryService.cs,ENABLE_SMART_FEATURES block,Conditional Code,Delete,Obsolete recommendation algorithm,Pending
-LYBT.Module.Formula,Services/FormulaService.cs,GetByIdAsync,Method,Review,Stub implementation returning failure,Pending
-LYBT.Module.Formula,Services/FormulaService.cs,CreateAsync,Method,Review,Stub implementation returning failure,Pending
-LYBT.Module.Formula,Services/FormulaService.cs,UpdateAsync,Method,Review,Stub implementation returning failure,Pending
-LYBT.Module.Formula,Services/FormulaService.cs,DeleteAsync,Method,Review,Stub implementation returning failure,Pending
-LYBT.Module.Formula,Services/FormulaService.cs,ExistsAsync,Method,Review,Stub implementation returning false,Pending
-LYBT.Module.Formula,Services/FormulaService.cs,IsNameDuplicatedAsync,Method,Review,Stub implementation returning false,Pending
+LYBT.Module.Herbs,Interfaces/IHerbQueryService.cs,IHerbQueryService,Interface,Delete,Interface defined but not implemented,Completed
+LYBT.Module.Herbs,Interfaces/IHerbBusinessService.cs,IHerbBusinessService,Interface,Delete,Interface defined but not implemented,Completed
+LYBT.Module.Herbs,Repositories/HerbRepository.cs,ExistsByNameAsync,Method,Mark Obsolete,Only used in unit tests,Completed
+LYBT.Module.Herbs,Repositories/HerbRepository.cs,SearchByPinyinAsync,Method,Mark Obsolete,Only used in tests,Completed
+LYBT.Module.Herbs,Repositories/HerbRepository.cs,AddRangeAsync,Method,Mark Obsolete,Only used in test data preparation,Completed
+LYBT.Module.Formula,Interfaces/IFormulaQueryService.cs,IFormulaQueryService,Interface,Delete,Interface defined but not implemented,Completed
+LYBT.Module.Formula,Interfaces/IFormulaBusinessService.cs,IFormulaBusinessService,Interface,Delete,Interface defined but not implemented,Completed
+LYBT.Module.Formula,Services/FormulaQueryService.cs,ENABLE_SMART_FEATURES block,Conditional Code,Delete,Obsolete recommendation algorithm,Completed
+LYBT.Module.Formula,Services/FormulaService.cs,GetByIdAsync,Method,Review,Stub implementation returning failure,Completed
+LYBT.Module.Formula,Services/FormulaService.cs,CreateAsync,Method,Review,Stub implementation returning failure,Completed
+LYBT.Module.Formula,Services/FormulaService.cs,UpdateAsync,Method,Review,Stub implementation returning failure,Completed
+LYBT.Module.Formula,Services/FormulaService.cs,DeleteAsync,Method,Review,Stub implementation returning failure,Completed
+LYBT.Module.Formula,Services/FormulaService.cs,ExistsAsync,Method,Review,Stub implementation returning false,Completed
+LYBT.Module.Formula,Services/FormulaService.cs,IsNameDuplicatedAsync,Method,Review,Stub implementation returning false,Completed
+LYBT.Module.Patients,Repositories/OptimizedPatientRepository.cs,GetStatisticsAsync,Method,Delete Obsolete,Statistics feature removed in Record-Only mode,Completed
+LYBT.Module.Consultation,Interfaces/IConsultationBusinessService.cs,ValidateWorkflowStateAsync,Method,Delete Obsolete,Complex workflow validation removed in Record-Only mode,Completed

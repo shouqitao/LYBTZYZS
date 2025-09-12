@@ -56,7 +56,6 @@ namespace LYBT.Module.Formula.Services
             return await _queryService.SearchAsync(keyword);
         }
 
-
         public Task<bool> ExistsAsync(Guid id)
         {
             return Task.FromResult(false); // 临时实现

@@ -79,11 +79,6 @@ namespace LYBT.Module.Consultation.Services
         public async Task<ServiceResult<bool>> SaveFourDiagnosisAsync(Guid consultationId, object fourDiagnosisData)
             => await _businessService.SaveFourDiagnosisAsync(consultationId, fourDiagnosisData);
 
-        public async Task<bool> ValidateWorkflowStateAsync(Guid consultationId, ConsultationStatus targetStatus)
-        {
-            var result = await _businessService.ValidateWorkflowStateAsync(consultationId, targetStatus);
-            return result.IsSuccess && result.Data;
-        }
 
         #endregion Business Operations
 
