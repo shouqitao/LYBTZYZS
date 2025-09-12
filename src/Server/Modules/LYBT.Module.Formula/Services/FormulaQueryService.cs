@@ -292,39 +292,7 @@ namespace LYBT.Module.Formula.Services
             }
         }
 
-#if ENABLE_SMART_FEATURES
-        /// <summary>
-        /// 智能推荐功能已移除 - Record-Only模式下不支持推荐功能
-        /// </summary>
-        [Obsolete("Smart recommendation feature removed in Record-Only mode. Use basic search instead.", false)]
-        public Task<ServiceResult<List<FormulaRecommendationDto>>> GetRecommendationsForSyndromeAsync(string syndrome)
-        {
-            var emptyRecommendations = new List<FormulaRecommendationDto>();
-            return Task.FromResult(ServiceResult<List<FormulaRecommendationDto>>.Success(emptyRecommendations));
-        }
-#endif
 
-#if ENABLE_SMART_FEATURES
-        /// <summary>
-        /// 智能推荐功能已移除 - Record-Only模式下不支持推荐功能
-        /// </summary>
-        [Obsolete("Smart recommendation feature removed in Record-Only mode. Use basic search instead.", false)]
-        public Task<ServiceResult<List<FormulaRecommendationDto>>> GetRecommendationsAsync(string symptoms, string diagnosis, Guid doctorId)
-        {
-            var emptyRecommendations = new List<FormulaRecommendationDto>();
-            return Task.FromResult(ServiceResult<List<FormulaRecommendationDto>>.Success(emptyRecommendations));
-        }
-#endif
-
-        /// <summary>
-        /// 智能推荐功能已移除 - Record-Only模式下不支持推荐功能
-        /// </summary>
-        [Obsolete("Smart recommendation feature removed in Record-Only mode. Use basic search instead.", false)]
-        public Task<ServiceResult<List<object>>> GetRecommendationsAsync(string syndrome)
-        {
-            var emptyRecommendations = new List<object>();
-            return Task.FromResult(ServiceResult<List<object>>.Success(emptyRecommendations));
-        }
 
         #endregion 基础模板功能（Record-Only保留）
 

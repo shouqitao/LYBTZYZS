@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using LYBT.Entities.Herbs;
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Repositories;
@@ -28,6 +29,8 @@ namespace LYBT.Module.Herbs.Repositories
         /// <summary>
         /// 批量新增药材
         /// </summary>
+        [Obsolete("Not used by business logic; subject to removal after review", false)]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public async Task<bool> AddRangeAsync(List<Herb> herbs)
         {
             if (herbs == null || herbs.Count == 0)
@@ -43,6 +46,8 @@ namespace LYBT.Module.Herbs.Repositories
         /// <summary>
         /// 检查药材名称是否存在 - 缓存优化版
         /// </summary>
+        [Obsolete("Not used by business logic; subject to removal after review", false)]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public async Task<bool> ExistsByNameAsync(string name, Guid? excludeId = null)
         {
             var cacheKey = $"{CacheKeyPrefix}exists:name:{name}:{excludeId}";
@@ -69,6 +74,8 @@ namespace LYBT.Module.Herbs.Repositories
         /// <summary>
         /// 根据拼音码搜索药材 - 缓存优化版
         /// </summary>
+        [Obsolete("Not used by business logic; subject to removal after review", false)]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public async Task<List<Herb>> SearchByPinyinAsync(string pinyin)
         {
             var cacheKey = $"{CacheKeyPrefix}pinyin:{pinyin.ToUpperInvariant()}";
