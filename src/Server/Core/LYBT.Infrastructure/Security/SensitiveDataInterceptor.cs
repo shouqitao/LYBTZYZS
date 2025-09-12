@@ -12,6 +12,8 @@ namespace LYBT.Infrastructure.Security
     /// 敏感数据拦截器 - Epic 05-P0-03: 数据安全保障
     /// 自动处理标记了SensitiveDataAttribute的属性的加密和解密
     /// </summary>
+    [Obsolete("Not used; subject to removal after review")]
+    [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
     public class SensitiveDataInterceptor : SaveChangesInterceptor
     {
         private readonly IServiceProvider _serviceProvider;

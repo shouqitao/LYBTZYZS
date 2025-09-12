@@ -98,13 +98,10 @@ public static class UnifiedServiceRegistration
         // =========== 缓存服务 - UltraThink简化版 ===========
         services.AddMemoryCache(options =>
         {
-            var cacheOptions = configService.GetSection<CacheOptions>("CacheOptions");
-            if (cacheOptions?.MemoryCache != null)
-            {
-                options.SizeLimit = cacheOptions.MemoryCache.SizeLimit;
-                options.CompactionPercentage = cacheOptions.MemoryCache.CompactionPercentage;
-                options.ExpirationScanFrequency = TimeSpan.FromSeconds(cacheOptions.MemoryCache.ExpirationScanFrequency);
-            }
+            // 使用默认配置，移除已删除的CacheOptions依赖
+            options.SizeLimit = 100_000; // 默认缓存项目数量
+            options.CompactionPercentage = 0.25; // 内存压力时清理25%
+            options.ExpirationScanFrequency = TimeSpan.FromMinutes(1); // 每分钟扫描过期项
         });
 
         // =========== 配置选项绑定 - UltraThink简化版 ===========
@@ -135,10 +132,7 @@ public static class UnifiedServiceRegistration
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
-        services.AddOptions<CacheOptions>()
-            .Bind(configuration.GetSection(CacheOptions.SectionName))
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
+        // CacheOptions已删除，使用内存缓存默认配置
 
         // =========== 安全配置服务 - Epic 05-P0-03: 数据安全保障 ===========
 

@@ -51,6 +51,8 @@ namespace LYBT.Infrastructure.Configuration
     /// <summary>
     /// 简化配置服务实现
     /// </summary>
+    [Obsolete("Not used; subject to removal after review")]
+    [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
     public class SimplifiedConfigurationService : ISimplifiedConfigurationService
     {
         private readonly IConfiguration _configuration;

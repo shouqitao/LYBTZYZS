@@ -1,7 +1,6 @@
 #nullable enable
 
 using System.Collections.Concurrent;
-using System.Text.Json;
 using LYBT.Infrastructure.Caching.Interfaces;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
