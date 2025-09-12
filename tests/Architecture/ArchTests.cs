@@ -294,12 +294,10 @@ public class ArchTests
                 !t.Name.Contains("SensitiveDataInterceptor") && // 安全组件，非智能功能
                 !t.Name.Contains("TransactionMetric") && // 基础度量，非智能分析
                 !t.Name.Contains("RecommendationDto") && // 已标记过时的推荐DTO
-                !t.Name.Equals("FormulaRecommendationDto") && // 特定的已标记过时类
-                !t.Name.Equals("HerbRecommendationDto") && // 特定的已标记过时类
                 !t.FullName?.Contains("System.") == true && // 系统类型
                 !t.FullName?.Contains("<PrivateImplementationDetails>") == true && // 编译器生成类型
                 !t.GetCustomAttributes(typeof(System.ObsoleteAttribute), true).Any() && // 排除已标记过时的类
-                !t.FullName?.Equals("LYBT.Shared.Models.Contracts.Formula.FormulaRecommendationDto") == true); // Record-Only模式排除
+                true); // All filters applied
 
             violatingTypes.AddRange(filteredTypes.Select(t => $"{t.FullName} (contains prohibited feature '{feature}')"));
         }

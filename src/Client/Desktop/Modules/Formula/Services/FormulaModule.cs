@@ -266,17 +266,6 @@ public class FormulaModule(
         return Task.FromResult(ServiceResult<FormulaAnalysisResult>.Failure("简单诊所版本不支持验方分析功能"));
     }
 
-#if ENABLE_SMART_FEATURES
-    public async Task<ServiceResult<List<FormulaRecommendationDto>>> GetRecommendationsAsync(string syndrome)
-    {
-        return await _queryService.GetRecommendationsBySyndromeAsync(syndrome);
-    }
-
-    public Task<ServiceResult<List<FormulaRecommendationDto>>> GetRecommendationsAsync(string symptoms, string diagnosis, Guid doctorId)
-    {
-        return Task.FromResult(ServiceResult<List<FormulaRecommendationDto>>.Success(new List<FormulaRecommendationDto>()));
-    }
-#endif
 
     public Task<ServiceResult<bool>> ShareFormulaAsync(Guid id, Guid operatorId, string operatorName)
     {

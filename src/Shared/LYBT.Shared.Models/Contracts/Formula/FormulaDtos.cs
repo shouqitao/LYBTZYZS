@@ -410,30 +410,6 @@ namespace LYBT.Shared.Models.Contracts.Formula
         public DateTime EndDate { get; set; }
     }
 
-#if ENABLE_SMART_FEATURES
-    /// <summary>
-    /// 验方推荐DTO (Record-Only模式：智能推荐功能已移除)
-    /// </summary>
-    [Obsolete("Smart recommendation feature removed in Record-Only mode. Use manual formula selection instead.")]
-    public class FormulaRecommendationDto : BaseDto
-    {
-
-        [DisplayName("验方名称")]
-        public string FormulaName { get; set; } = string.Empty;
-
-        [DisplayName("功效")]
-        public string Effect { get; set; } = string.Empty;
-
-        [DisplayName("匹配得分")]
-        public double MatchScore { get; set; }
-
-        [DisplayName("使用次数")]
-        public int UsageCount { get; set; }
-
-        [DisplayName("推荐理由")]
-        public string MatchReason { get; set; } = string.Empty;
-    }
-#endif
 
     // UltraThink v2.0: 导入导出功能DTOs（应用户业务需求恢复）
 

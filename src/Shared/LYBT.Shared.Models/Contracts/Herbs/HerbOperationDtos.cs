@@ -647,20 +647,6 @@ namespace LYBT.Shared.Models.Contracts.Herbs
         public DateTime? ApprovalTime { get; set; }
     }
 
-    /// <summary>
-    /// 药材推荐DTO (Record-Only模式：智能推荐功能已移除)
-    /// </summary>
-    [Obsolete("Smart recommendation feature removed in Record-Only mode. Use manual herb selection instead.")]
-    public class HerbRecommendationDto
-    {
-        public Guid HerbId { get; set; }
-        public string HerbName { get; set; } = string.Empty;
-        public decimal RecommendedDosage { get; set; }
-        public string Unit { get; set; } = "克";
-        public string? Effect { get; set; }
-        public string RecommendationReason { get; set; } = string.Empty;
-        public decimal MatchScore { get; set; } // 0-100的匹配分数
-    }
 
     /// <summary>
     /// 药材使用模式分析DTO

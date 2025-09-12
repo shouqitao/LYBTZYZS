@@ -31,21 +31,6 @@ namespace LYBT.Shared.Models.Contracts.Formula
         public string Description { get; set; } = string.Empty;
     }
 
-    /// <summary>
-    /// 验方推荐 - 继承基础DTO
-    /// </summary>
-    public class FormulaRecommendation : BaseDto
-    {
-
-        [DisplayName("验方名称")]
-        public string Name { get; set; } = string.Empty;
-
-        [DisplayName("推荐理由")]
-        public string Reason { get; set; } = string.Empty;
-
-        [DisplayName("匹配得分")]
-        public decimal MatchScore { get; set; }
-    }
 
     /// <summary>
     /// 验方分析结果
@@ -154,6 +139,6 @@ namespace LYBT.Shared.Models.Contracts.Formula
         public int TotalReviews { get; set; }
         public List<string> PositiveEffects { get; set; } = new List<string>();
         public List<string> SideEffects { get; set; } = new List<string>();
-        public string? RecommendationLevel { get; set; }
+        public string? EffectLevel { get; set; }
     }
 }

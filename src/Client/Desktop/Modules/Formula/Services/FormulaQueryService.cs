@@ -129,19 +129,6 @@ public class FormulaQueryService(
         return Task.FromResult(ServiceResult<List<string>>.Success(defaultCategories));
     }
 
-#if ENABLE_SMART_FEATURES
-    /// <inheritdoc/>
-    public Task<ServiceResult<List<FormulaRecommendationDto>>> GetRecommendationsBySyndromeAsync(string syndrome)
-    {
-        return Task.FromResult(ServiceResult<List<FormulaRecommendationDto>>.Success(new List<FormulaRecommendationDto>()));
-    }
-
-    /// <inheritdoc/>
-    public Task<ServiceResult<List<FormulaRecommendationDto>>> GetRecommendationsAsync(string symptoms, string diagnosis, Guid doctorId)
-    {
-        return Task.FromResult(ServiceResult<List<FormulaRecommendationDto>>.Success(new List<FormulaRecommendationDto>()));
-    }
-#endif
 
     /// <inheritdoc/>
     public Task<ServiceResult<FormulaStatisticsDto>> GetBasicStatisticsAsync()

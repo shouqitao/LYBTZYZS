@@ -47,17 +47,6 @@ public interface IFormulaQueryService
     /// </summary>
     Task<ServiceResult<List<string>>> GetCategoriesAsync();
 
-#if ENABLE_SMART_FEATURES
-    /// <summary>
-    /// 获取验方推荐(按症候) (对应 GET /formulas/recommendations/syndrome/{syndrome})
-    /// </summary>
-    Task<ServiceResult<List<FormulaRecommendationDto>>> GetRecommendationsBySyndromeAsync(string syndrome);
-
-    /// <summary>
-    /// 获取验方推荐(按症状和诊断) (对应 GET /formulas/recommendations)
-    /// </summary>
-    Task<ServiceResult<List<FormulaRecommendationDto>>> GetRecommendationsAsync(string symptoms, string diagnosis, Guid doctorId);
-#endif
 
     #endregion 基础查询功能 - 对应后端FormulasController实际API
 

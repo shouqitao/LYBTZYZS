@@ -290,58 +290,7 @@ namespace LYBT.WebAPI.Controllers
             }
         }
 
-#if ENABLE_SMART_FEATURES
-        /// <summary>
-        /// 获取验方推荐（按症候） - Record-Only 模式：智能推荐功能已移除
-        /// </summary>
-        [HttpGet("recommendations/syndrome/{syndrome}")]
-        [Obsolete("Smart recommendation endpoint removed in Record-Only mode. Use basic search endpoints instead.", false)]
-        public async Task<ActionResult<ApiResponse<List<FormulaRecommendationDto>>>> GetRecommendationsBySyndrome(string syndrome)
-        {
-            try
-            {
-                if (string.IsNullOrWhiteSpace(syndrome))
-                {
-                    return ValidationFail<List<FormulaRecommendationDto>>("症候不能为空");
-                }
 
-                // Record-Only模式不再支持智能推荐功能
-                return Success(new List<FormulaRecommendationDto>(), "智能推荐功能在 Record-Only 模式下已移除，请使用基础搜索功能");
-            }
-            catch (Exception ex)
-            {
-                return HandleException<List<FormulaRecommendationDto>>(ex, "获取验方推荐", syndrome);
-            }
-        }
-#endif
-
-#if ENABLE_SMART_FEATURES
-        /// <summary>
-        /// 获取验方推荐（按症状和诊断） - Record-Only 模式：智能推荐功能已移除
-        /// </summary>
-        [HttpGet("recommendations")]
-        [Obsolete("Smart recommendation endpoint removed in Record-Only mode. Use basic search endpoints instead.", false)]
-        public async Task<ActionResult<ApiResponse<List<FormulaRecommendationDto>>>> GetRecommendations(
-            [FromQuery] string symptoms,
-            [FromQuery] string diagnosis,
-            [FromQuery] Guid doctorId)
-        {
-            try
-            {
-                if (string.IsNullOrWhiteSpace(symptoms) || string.IsNullOrWhiteSpace(diagnosis))
-                {
-                    return ValidationFail<List<FormulaRecommendationDto>>("症状和诊断不能为空");
-                }
-
-                // Record-Only模式不再支持智能推荐功能
-                return Success(new List<FormulaRecommendationDto>(), "智能推荐功能在 Record-Only 模式下已移除，请使用基础搜索功能");
-            }
-            catch (Exception ex)
-            {
-                return HandleException<List<FormulaRecommendationDto>>(ex, "获取验方推荐", new { symptoms, diagnosis, doctorId });
-            }
-        }
-#endif
 
         /// <summary>
         /// 搜索验方
