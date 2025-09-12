@@ -1,0 +1,25 @@
+Project,Path,Symbol,Kind,Action,Reason,Status
+LYBT.Infrastructure,Configuration/Dtos/SettingsCreateDto.cs,SettingsCreateDto,class,delete,完全无引用使用,✅ COMPLETED
+LYBT.Infrastructure,Configuration/Dtos/SettingsEditDto.cs,SettingsEditDto,class,delete,完全无引用使用,✅ COMPLETED
+LYBT.Infrastructure,Configuration/Dtos/EnumMappingDto.cs,EnumMappingDto,class,delete,完全无引用使用,✅ COMPLETED
+LYBT.Infrastructure,Configuration/Options/StorageOptions.cs,StorageOptions,class,delete,配置类无绑定无使用,✅ COMPLETED
+LYBT.Infrastructure,Configuration/Options/CacheOptions.cs,CacheOptions,class,delete,缓存配置已简化此类未使用,✅ COMPLETED
+LYBT.Infrastructure,Configuration/SettingsModel.cs,SettingsModel,class,delete,设置模型无使用场景,✅ COMPLETED
+LYBT.Infrastructure,Configuration/GlobalSettingsModel.cs,GlobalSettingsModel,class,delete,全局设置无使用,✅ COMPLETED
+LYBT.Infrastructure,Transactions/TransactionCoordinator.cs,TransactionCoordinator,class,delete,完整事务系统未被使用,✅ COMPLETED
+LYBT.Infrastructure,Transactions/ITransactionCoordinator.cs,ITransactionCoordinator,interface,delete,接口无实际使用,✅ COMPLETED
+LYBT.Infrastructure,Transactions/TransactionContext.cs,TransactionContext,class,delete,事务上下文无使用场景,✅ COMPLETED
+LYBT.Infrastructure,Transactions/TransactionDefinition.cs,TransactionDefinition,class,delete,事务定义类无使用,✅ COMPLETED
+LYBT.Infrastructure,Transactions/TransactionLogger.cs,TransactionLogger,class,delete,事务日志记录器无使用,✅ COMPLETED
+LYBT.Infrastructure,Transactions/TransactionMetrics.cs,TransactionMetrics,class,delete,事务指标收集器无使用,✅ COMPLETED
+LYBT.Infrastructure,Transactions/TransactionResult.cs,TransactionResult,class,delete,事务结果类无使用,✅ COMPLETED
+LYBT.Infrastructure,Transactions/TransactionStepBase.cs,TransactionStepBase,class,delete,事务步骤基类无继承者,✅ COMPLETED
+LYBT.Infrastructure,Transactions/TransactionStepResult.cs,TransactionStepResult,class,delete,事务步骤结果类无使用,✅ COMPLETED
+LYBT.Infrastructure,Transactions/ITransactionStep.cs,ITransactionStep,interface,delete,事务步骤接口无实现,✅ COMPLETED
+LYBT.Infrastructure,Transactions/DatabaseTransactionStep.cs,DatabaseTransactionStep,class,delete,数据库事务步骤具体实现无使用,✅ COMPLETED
+LYBT.Infrastructure,Transactions/ConditionalTransactionStep.cs,ConditionalTransactionStep,class,delete,条件事务步骤无使用,✅ COMPLETED
+LYBT.Infrastructure,Configuration/SimplifiedConfigurationService.cs,SimplifiedConfigurationService,class,obsolete,创建但无外部引用标记待审查,✅ COMPLETED
+LYBT.Infrastructure,Security/SensitiveDataInterceptor.cs,SensitiveDataInterceptor,class,obsolete,EF拦截器已注册但可能无效,✅ COMPLETED
+LYBT.Infrastructure,Caching/Adapters/MemoryCacheAdapter.cs,using System.Text.Json,using,delete,未使用JsonSerializer,✅ COMPLETED
+LYBT.Infrastructure,Storage/LocalFileStorageService.cs,StorageOptions dependency,dependency,fix,移除对已删除StorageOptions的依赖,✅ COMPLETED
+LYBT.WebAPI,Extensions/UnifiedServiceRegistration.cs,CacheOptions usage,dependency,fix,替换已删除CacheOptions为默认配置,✅ COMPLETED
