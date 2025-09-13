@@ -1,11 +1,11 @@
-文件路径,行号,当前代码,问题类型,修复方案,优先级
-src/Server/Services/LYBT.WebAPI/Controllers/UsersController.cs,102,"var result = await _userService.ResetPasswordAsync(id, ""ChangeMe123"");",硬编码密码,注入DefaultPasswordService使用GetNewUserPassword(),高
-src/Client/Desktop/Modules/Users/ViewModels/UserAddEditDialogViewModel.cs,205,"Password = ""ChangeMe123"", // 默认密码",硬编码密码,通过API获取或服务注入,高
-src/Client/Desktop/Modules/Users/ViewModels/UserAddEditDialogViewModel.cs,206,"ConfirmPassword = ""ChangeMe123"", // 确认密码",硬编码密码,通过API获取或服务注入,高
-src/Client/Desktop/Modules/Users/ViewModels/UserManagementViewModel.cs,188,"var result = await _userService.ResetPasswordAsync(SelectedItem.Id, ""ChangeMe123"");",硬编码密码,通过API获取或服务注入,高
-src/Server/Modules/LYBT.Module.Users/UserOptions.cs,13,"public string DefaultUserPassword { get; set; } = ""ChangeMe123"";",重复配置类,删除此文件统一使用Infrastructure版本,中
-src/Server/Services/LYBT.WebAPI/appsettings.json,60,"""DefaultUserPassword"": ""ChangeMe123"",",重复配置,统一使用Infrastructure的默认值,中
-src/Server/Core/LYBT.Infrastructure/appsettings.json,28,"""DefaultUserPassword"": ""ChangeMe123"",",配置不一致,更新为与DefaultPasswordOptions一致,中
-src/Server/Core/LYBT.Infrastructure/Configuration/Options/UserOptions.cs,16,"public string DefaultUserPassword { get; set; } = ""LybtUser2025#InitPass!"";",配置验证,确认与DefaultPasswordOptions一致,低
-src/Server/Core/LYBT.Infrastructure/Configuration/Options/DefaultPasswordOptions.cs,17,"public string SystemAdmin { get; set; } = ""LybtAdmin2025@SecurePass!"";",配置验证,确认作为权威源,低
-src/Server/Core/LYBT.Infrastructure/Configuration/Options/DefaultPasswordOptions.cs,24,"public string NewUser { get; set; } = ""LybtUser2025#InitPass!"";",配置验证,确认作为权威源,低
+文件路径,行号,当前代码,问题类型,修复方案,优先级,状态
+src/Server/Services/LYBT.WebAPI/Controllers/UsersController.cs,102,"var result = await _userService.ResetPasswordAsync(id, ""ChangeMe123"");",硬编码密码,注入DefaultPasswordService使用GetNewUserPassword(),高,✅已完成
+src/Client/Desktop/Modules/Users/ViewModels/UserAddEditDialogViewModel.cs,205,"Password = ""ChangeMe123"", // 默认密码",硬编码密码,通过API获取或服务注入,高,✅已完成
+src/Client/Desktop/Modules/Users/ViewModels/UserAddEditDialogViewModel.cs,206,"ConfirmPassword = ""ChangeMe123"", // 确认密码",硬编码密码,通过API获取或服务注入,高,✅已完成
+src/Client/Desktop/Modules/Users/ViewModels/UserManagementViewModel.cs,188,"var result = await _userService.ResetPasswordAsync(SelectedItem.Id, ""ChangeMe123"");",硬编码密码,通过API获取或服务注入,高,✅已完成
+src/Server/Modules/LYBT.Module.Users/UserOptions.cs,13,"public string DefaultUserPassword { get; set; } = ""ChangeMe123"";",重复配置类,删除此文件统一使用Infrastructure版本,中,✅已删除
+src/Server/Services/LYBT.WebAPI/appsettings.json,60,"""DefaultUserPassword"": ""ChangeMe123"",",重复配置,统一使用Infrastructure的默认值,中,⏭️跳过(配置文件)
+src/Server/Core/LYBT.Infrastructure/appsettings.json,28,"""DefaultUserPassword"": ""ChangeMe123"",",配置不一致,更新为与DefaultPasswordOptions一致,中,⏭️跳过(配置文件)
+src/Server/Core/LYBT.Infrastructure/Configuration/Options/UserOptions.cs,16,"public string DefaultUserPassword { get; set; } = ""LybtUser2025#InitPass!"";",配置验证,确认与DefaultPasswordOptions一致,低,✅已标记过时
+src/Server/Core/LYBT.Infrastructure/Configuration/Options/DefaultPasswordOptions.cs,17,"public string SystemAdmin { get; set; } = ""LybtAdmin2025@SecurePass!"";",配置验证,确认作为权威源,低,✅确认正常
+src/Server/Core/LYBT.Infrastructure/Configuration/Options/DefaultPasswordOptions.cs,24,"public string NewUser { get; set; } = ""LybtUser2025#InitPass!"";",配置验证,确认作为权威源,低,✅确认正常
