@@ -84,15 +84,15 @@ public static class UnifiedMiddlewareConfiguration
     /// </summary>
     private static WebApplication ConfigureAuthenticationMiddleware(this WebApplication app)
     {
-        // CORS配置
-        if (app.Environment.IsDevelopment())
-        {
-            app.UseCors("Development");
-        }
-        else
-        {
-            app.UseCors("Production");
-        }
+        // CORS配置 - REMOVED (系统不需要跨域功能)
+        // if (app.Environment.IsDevelopment())
+        // {
+        //     app.UseCors("Development");
+        // }
+        // else
+        // {
+        //     app.UseCors("Production");
+        // }
 
         // 认证和授权
         app.UseAuthentication();
