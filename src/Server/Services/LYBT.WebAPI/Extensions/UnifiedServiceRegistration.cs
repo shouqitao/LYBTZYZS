@@ -1,13 +1,13 @@
 using System.Text;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using LYBT.Infrastructure.Configuration;
 using LYBT.Infrastructure.Configuration.Options;
 using LYBT.Infrastructure.Data;
+using LYBT.Infrastructure.Security;
 using LYBT.Module.Auth;
 using LYBT.Module.Users;
-
-// using LYBT.WebAPI.Services; // Removed - enterprise services
 using LYBT.WebAPI.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -87,7 +87,7 @@ public static class UnifiedServiceRegistration
                 }
 
                 // Epic 05-P0-03: 添加敏感数据拦截器
-                var sensitiveDataInterceptor = serviceProvider.GetService<LYBT.Infrastructure.Security.SensitiveDataInterceptor>();
+                var sensitiveDataInterceptor = serviceProvider.GetService<SensitiveDataInterceptor>();
                 if (sensitiveDataInterceptor != null)
                 {
                     options.AddInterceptors(sensitiveDataInterceptor);
@@ -113,7 +113,7 @@ public static class UnifiedServiceRegistration
             configuration.GetSection("SysAdminOptions").Bind(options);
         });
 
-        services.Configure<LYBT.Module.Users.UserOptions>(options =>
+        services.Configure<UserOptions>(options =>
         {
             var userPassword = configService.GetUserDefaultPassword();
             options.DefaultUserPassword = userPassword;
@@ -137,20 +137,15 @@ public static class UnifiedServiceRegistration
         // =========== 安全配置服务 - Epic 05-P0-03: 数据安全保障 ===========
 
         // Epic 05-P0-03: 注册数据安全服务
-        services.AddScoped<LYBT.Infrastructure.Security.IDataEncryptionService, LYBT.Infrastructure.Security.DataEncryptionService>();
-        services.AddScoped<LYBT.Infrastructure.Security.ISecurityAuditService, LYBT.Infrastructure.Security.SecurityAuditService>();
+        services.AddScoped<IDataEncryptionService, DataEncryptionService>();
+        services.AddScoped<ISecurityAuditService, SecurityAuditService>();
 
         // Epic 05-P0-03: 注册HTTP上下文访问器（审计服务需要）
         services.AddHttpContextAccessor();
 
         // Epic 05-P0-03: 注册敏感数据拦截器
-        services.AddScoped<LYBT.Infrastructure.Security.SensitiveDataInterceptor>();
-        services.AddScoped<LYBT.Infrastructure.Security.SensitiveDataQueryInterceptor>();
-
-        // =========== 监控和健康检查服务 ===========
-
-        // =========== 统一服务 ===========
-        // 注意：日志系统已简化为标准ILogger，无需单独注册
+        services.AddScoped<SensitiveDataInterceptor>();
+        services.AddScoped<SensitiveDataQueryInterceptor>();
 
         // =========== 性能优化服务 - UltraThink简化版 ===========
         services.RegisterPerformanceServices(configService);
@@ -159,7 +154,7 @@ public static class UnifiedServiceRegistration
         services.RegisterLoggingAndMonitoringServices(configService);
 
         // =========== 数据库初始化服务 ===========
-        services.AddScoped<LYBT.Infrastructure.Data.DatabaseInitializationService>();
+        services.AddScoped<DatabaseInitializationService>();
 
         return services;
     }
@@ -179,12 +174,6 @@ public static class UnifiedServiceRegistration
             // 使用默认配置，避免复杂的配置选项
             options.SizeLimit = 1000; // 简化：使用固定的缓存大小限制
         });
-
-        // =========== 数据库性能优化 ===========
-        // UltraThink v2.0: 禁用复杂数据库性能优化 - 20人以下小诊所不需要复杂的数据库性能监控和优化
-
-        // =========== 异步处理管理 ===========
-        // UltraThink简化：移除复杂的异步处理器，使用简单的后台服务即可
         return services;
     }
 
@@ -204,7 +193,7 @@ public static class UnifiedServiceRegistration
             // 获取JWT配置
             var jwtSection = configuration.GetSection("JwtOptions");
             var jwtOptions = jwtSection.Get<JwtOptions>()
-                ?? new LYBT.Infrastructure.Configuration.Options.JwtOptions();
+                ?? new JwtOptions();
 
             // 使用简化配置服务获取JWT密钥
             jwtOptions.Secret = configService.GetJwtSecret();
@@ -385,7 +374,7 @@ public static class UnifiedServiceRegistration
             options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
             options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
             options.JsonSerializerOptions.WriteIndented = false;
-            options.JsonSerializerOptions.Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping;
+            options.JsonSerializerOptions.Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping;
         });
 
         return services;
@@ -398,11 +387,6 @@ public static class UnifiedServiceRegistration
         this IServiceCollection services,
         ISimplifiedConfigurationService configService)
     {
-        // =========== 统一日志管理 ===========
-        // 注意：已简化为标准ILogger，无需额外配置
-
-        // =========== 监控管理 ===========
-        // 注意：IUnifiedMonitor的实现类需要在后续创建
         return services;
     }
 }

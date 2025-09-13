@@ -240,26 +240,6 @@ public class ConsultationController : BaseApiController
     }
 
     /// <summary>
-    /// 获取看诊统计信息 - Record-Only 模式：统计功能已移除
-    /// </summary>
-    [HttpGet("statistics")]
-    [Obsolete("Statistics endpoint removed in Record-Only mode. Use basic list/query endpoints instead.", false)]
-    public async Task<ActionResult<ApiResponse<object>>> GetStatistics(
-        [FromQuery] DateTime? startDate = null,
-        [FromQuery] DateTime? endDate = null)
-    {
-        try
-        {
-            var result = await _consultationService.GetStatisticsAsync(startDate, endDate);
-            return HandleServiceResult(result, "获取统计信息成功");
-        }
-        catch (Exception ex)
-        {
-            return HandleException<object>(ex, "获取看诊统计信息", new { startDate, endDate });
-        }
-    }
-
-    /// <summary>
     /// 获取患者历史就诊记录 - 统一API响应格式
     /// </summary>
     [HttpGet("patient/{patientId}/history")]

@@ -4,14 +4,12 @@ using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Module.Auth.Interfaces
 {
-
     /// <summary>
     /// 认证业务服务接口
     /// UltraThink架构 - Business层接口抽象
     /// </summary>
     public interface IAuthBusinessService
     {
-
         /// <summary>
         /// 完整登录流程处理
         /// </summary>
