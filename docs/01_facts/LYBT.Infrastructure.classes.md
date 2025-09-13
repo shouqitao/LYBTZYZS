@@ -585,7 +585,7 @@ public enum AuditSeverity
 |--------|----------|------------------|----------|
 | public static | IServiceCollection | AddJwtAuthentication(this IServiceCollection services, IConfiguration configuration) | 25-85 |
 | public static | IServiceCollection | AddAuthConfiguration(this IServiceCollection services, IConfiguration configuration) | 87-105 |
-| public static | IServiceCollection | AddCorsPolicies(this IServiceCollection services, string policyName = "DefaultPolicy", params string[] allowedOrigins) | 107-135 |
+| ~~public static~~ | ~~IServiceCollection~~ | ~~AddCorsPolicies~~ - REMOVED (系统不需要跨域功能) | ~~107-135~~ |
 | public static | IServiceCollection | AddInfrastructureDbContext(this IServiceCollection services, IConfiguration configuration) | 137-175 |
 | public static | IServiceCollection | AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration) | 177-195 |
 
@@ -616,21 +616,8 @@ public enum AuditSeverity
   };
   ```
 
-#### AddCorsPolicies(this IServiceCollection services, string policyName = "DefaultPolicy", params string[] allowedOrigins)
-- **源码位置**: `src/Server/Core/LYBT.Infrastructure/ServiceCollectionExtensions.cs:107-135`
-- **内部调用**: `services.AddCors()`
-- **CORS配置**:
-  - 灵活的允许来源配置
-  - 凭据支持（`AllowCredentials()`）
-  - 开发环境宽松策略（`AllowAnyOrigin()`）
-  - 生产环境限制来源
-- **默认配置**:
-  ```csharp
-  builder.AllowAnyMethod()
-         .AllowAnyHeader()
-         .AllowCredentials()
-         .WithOrigins(allowedOrigins);
-  ```
+#### ~~AddCorsPolicies~~ - REMOVED (系统不需要跨域功能)
+~~该方法已被完全移除，CORS功能不再支持。系统已简化为无跨域需求架构。~~
 
 #### AddInfrastructureDbContext(this IServiceCollection services, IConfiguration configuration)
 - **源码位置**: `src/Server/Core/LYBT.Infrastructure/ServiceCollectionExtensions.cs:137-175`
@@ -656,7 +643,7 @@ public enum AuditSeverity
 - **服务生命周期**:
   - 大多数服务使用`Scoped`生命周期
   - 配置服务使用`Singleton`生命周期
-- **内部调用**: 其他扩展方法（`AddJwtAuthentication`, `AddDbContext`, `AddCorsPolicies`）
+- **内部调用**: 其他扩展方法（`AddJwtAuthentication`, `AddDbContext`, ~~`AddCorsPolicies`~~）
 
 ### 3) 扩展方法特点
 - **模块化注册**: 按功能分组的服务注册
