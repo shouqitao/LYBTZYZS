@@ -6,6 +6,7 @@ using System.Text.Json.Serialization;
 // using LYBT.Infrastructure.Configuration; // Removed - SimplifiedConfigurationService eliminated
 using LYBT.Infrastructure.Caching.Adapters;
 using LYBT.Infrastructure.Caching.Interfaces;
+using LYBT.Infrastructure.Configuration.Extensions;
 using LYBT.Infrastructure.Configuration.Options;
 using LYBT.Infrastructure.Data;
 
@@ -51,6 +52,10 @@ public static class UnifiedServiceRegistration
 
         // 6. 跨域策略
         services.AddSecureCorsPolicy(configuration, environment);
+
+        // 7. 环境感知配置验证 - Configuration Hardening
+        // 为生产环境提供额外的安全校验，开发环境提供宽松策略
+        services.AddEnvironmentAwareValidation(environment);
 
         return services;
     }
@@ -130,6 +135,38 @@ public static class UnifiedServiceRegistration
 
         services.AddOptions<AuthOptions>()
             .Bind(configuration.GetSection(AuthOptions.SectionName))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+        // =========== 新增配置强校验绑定 - Infra Configuration Hardening ===========
+
+        // DefaultPasswordOptions - 默认密码策略集中管理
+        services.AddOptions<DefaultPasswordOptions>()
+            .Bind(configuration.GetSection(DefaultPasswordOptions.SectionName))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+        // UserOptions - 用户模块配置 (Infrastructure层)
+        services.AddOptions<LYBT.Infrastructure.Configuration.Options.UserOptions>()
+            .Bind(configuration.GetSection("UserOptions"))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+        // SysAdminOptions - 系统管理员配置
+        services.AddOptions<SysAdminOptions>()
+            .Bind(configuration.GetSection(SysAdminOptions.SectionName))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+        // SecurityOptions - 安全配置
+        services.AddOptions<SecurityOptions>()
+            .Bind(configuration.GetSection(SecurityOptions.SectionName))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+        // DatabaseOptions - 数据库配置
+        services.AddOptions<DatabaseOptions>()
+            .Bind(configuration.GetSection(DatabaseOptions.SectionName))
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
