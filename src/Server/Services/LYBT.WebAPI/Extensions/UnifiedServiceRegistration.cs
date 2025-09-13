@@ -6,7 +6,8 @@ using System.Text.Json.Serialization;
 // using LYBT.Infrastructure.Configuration; // Removed - SimplifiedConfigurationService eliminated
 using LYBT.Infrastructure.Configuration.Options;
 using LYBT.Infrastructure.Data;
-using LYBT.Infrastructure.Security;
+
+// using LYBT.Infrastructure.Security; // Removed - obsolete security components eliminated
 using LYBT.Module.Auth;
 using LYBT.Module.Users;
 using LYBT.WebAPI.Middleware;
@@ -85,12 +86,8 @@ public static class UnifiedServiceRegistration
                     options.UseSqlServer(opt => opt.CommandTimeout(dbOptions.CommandTimeout));
                 }
 
-                // Epic 05-P0-03: 添加敏感数据拦截器
-                var sensitiveDataInterceptor = serviceProvider.GetService<SensitiveDataInterceptor>();
-                if (sensitiveDataInterceptor != null)
-                {
-                    options.AddInterceptors(sensitiveDataInterceptor);
-                }
+                // Epic 05-P0-03: 敏感数据拦截器已移除 (SensitiveDataInterceptor marked as Obsolete)
+                // 小型诊所不需要复杂的自动数据加密，使用手动加密更合适
             });
         }
 
@@ -133,18 +130,16 @@ public static class UnifiedServiceRegistration
 
         // CacheOptions已删除，使用内存缓存默认配置
 
-        // =========== 安全配置服务 - Epic 05-P0-03: 数据安全保障 ===========
+        // =========== 安全配置服务 - 最小有效实现 ===========
 
-        // Epic 05-P0-03: 注册数据安全服务
-        services.AddScoped<IDataEncryptionService, DataEncryptionService>();
-        services.AddScoped<ISecurityAuditService, SecurityAuditService>();
-
-        // Epic 05-P0-03: 注册HTTP上下文访问器（审计服务需要）
+        // 保留HTTP上下文访问器（其他服务需要）
         services.AddHttpContextAccessor();
 
-        // Epic 05-P0-03: 注册敏感数据拦截器
-        services.AddScoped<SensitiveDataInterceptor>();
-        services.AddScoped<SensitiveDataQueryInterceptor>();
+        // ❌ 已移除过时的安全组件：
+        // - IDataEncryptionService/DataEncryptionService (标记为Obsolete，小型诊所用不到自动加密)
+        // - ISecurityAuditService/SecurityAuditService (标记为Obsolete，小型诊所用基础日志即可)
+        // - SensitiveDataInterceptor (标记为Obsolete，复杂度过高)
+        // - SensitiveDataQueryInterceptor (标记为Obsolete，自动解密复杂度过高)
 
         // =========== 性能优化服务 - UltraThink简化版 ===========
         services.RegisterPerformanceServices();
