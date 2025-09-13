@@ -19,7 +19,7 @@ public static class PatientsModule
     public static IServiceCollection AddPatientsModuleServices(this IServiceCollection services)
     {
         // 仓储层 - 使用OptimizedBaseRepository优化版本
-        services.AddScoped<IPatientRepository, OptimizedPatientRepository>();
+        services.AddScoped<IPatientRepository, PatientRepository>();
 
         // UltraThink双层架构服务 - 查询和业务逻辑分离
         services.AddScoped<IPatientQueryService, PatientQueryService>();

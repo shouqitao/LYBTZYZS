@@ -11,7 +11,7 @@ namespace LYBT.Module.Patients.Repositories
 {
 
     /// <summary>
-    /// 优化的患者Repository - UltraThink数据访问层优化
+    /// 患者Repository - UltraThink数据访问层优化
     ///
     /// 优化特性：
     /// 1. 智能查询策略
@@ -20,7 +20,7 @@ namespace LYBT.Module.Patients.Repositories
     /// 4. 连接复用
     /// 5. 批量操作优化
     /// </summary>
-    public class OptimizedPatientRepository : OptimizedBaseRepository<Patient>, IPatientRepository
+    public class PatientRepository : OptimizedBaseRepository<Patient>, IPatientRepository
     {
 
         // 预编译查询
@@ -33,11 +33,11 @@ namespace LYBT.Module.Patients.Repositories
                 ctx.Set<Patient>().Where(p => p.Name.Contains(name)));
 
         // 简化实现，移除预编译查询以避免类型匹配问题
-        private readonly ILogger<OptimizedPatientRepository> _typedLogger;
+        private readonly ILogger<PatientRepository> _typedLogger;
 
-        public OptimizedPatientRepository(
+        public PatientRepository(
             AppDbContext context,
-            ILogger<OptimizedPatientRepository> logger,
+            ILogger<PatientRepository> logger,
             IMemoryCache cache)
             : base(context, logger, cache, QueryOptimizationOptions.Performance)
         {
