@@ -1,4 +1,5 @@
 using Asp.Versioning;
+using LYBT.Infrastructure.Configuration.Services;
 using LYBT.Infrastructure.Web;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
@@ -21,11 +22,13 @@ namespace LYBT.WebAPI.Controllers;
 public class UsersController : BaseApiController
 {
     private readonly IUserService _userService;
+    private readonly DefaultPasswordService _defaultPasswordService;
 
-    public UsersController(IUserService userService, IMemoryCache cache, ILogger<UsersController> logger)
+    public UsersController(IUserService userService, DefaultPasswordService defaultPasswordService, IMemoryCache cache, ILogger<UsersController> logger)
         : base(logger, cache)
     {
         _userService = userService;
+        _defaultPasswordService = defaultPasswordService;
     }
 
     // 移除单独的Enable/Disable接口，统一使用ToggleStatus或Status接口
@@ -99,7 +102,15 @@ public class UsersController : BaseApiController
             }
 
             var (operatorId, operatorName, _) = GetOperator();
-            var result = await _userService.ResetPasswordAsync(id, "ChangeMe123");
+
+            // 获取环境感知的默认密码
+            var defaultPassword = _defaultPasswordService.GetNewUserPassword();
+            if (string.IsNullOrEmpty(defaultPassword))
+            {
+                return BusinessFail("当前环境不允许使用默认密码重置功能", ApiErrorCodes.FORBIDDEN);
+            }
+
+            var result = await _userService.ResetPasswordAsync(id, defaultPassword);
 
             if (!result.IsSuccess || !result.Data)
             {

@@ -72,8 +72,8 @@ public static class UnifiedServiceRegistration
         // 直接使用 .NET 内置 IConfiguration，避免额外的包装层
 
         // =========== 统一数据库上下文 ===========
-        var connectionString = configuration.GetConnectionString("DefaultConnection") ?? 
-                              Environment.GetEnvironmentVariable("CONNECTION_STRING") ?? 
+        var connectionString = configuration.GetConnectionString("DefaultConnection") ??
+                              Environment.GetEnvironmentVariable("CONNECTION_STRING") ??
                               string.Empty;
 
         if (!string.IsNullOrEmpty(connectionString))
