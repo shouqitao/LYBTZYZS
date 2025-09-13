@@ -2,8 +2,8 @@ Project,Path,Symbol,Kind,Action,Reason,Status,EstimatedLines
 LYBT.WebAPI,Controllers/Prescriptions/CompatibilityNotesController.cs,CompatibilityNotesController,class,delete,整个控制器标记为Obsolete-配伍检查功能已在Record-Only模式下移除,completed,197
 LYBT.WebAPI,Controllers/ConsultationController.cs,GetStatistics,method,delete,统计端点标记为Obsolete-Record-Only模式下已移除统计功能,completed,25
 LYBT.WebAPI,Controllers/MedicalCaseController.cs,GetStatistics,method,delete,统计端点标记为Obsolete-Record-Only模式下已移除统计功能,completed,25
-LYBT.WebAPI,Extensions/UnifiedServiceRegistration.cs,ICompatibilityNoteService注册,registration,delete,对应控制器删除后此服务注册无用,pending,1
-LYBT.WebAPI,Extensions/UnifiedServiceRegistration.cs,CompatibilityNoteService注册,registration,delete,对应控制器删除后此服务注册无用,pending,1
-LYBT.WebAPI,Swagger配置,配伍相关文档分组,config,delete,配伍功能删除后Swagger分组配置无用,pending,5
-LYBT.WebAPI,路由配置,配伍相关路由映射,config,delete,配伍相关路由配置清理,pending,3
-LYBT.WebAPI,全项目,未使用using语句,using,delete,清理冗余的using语句,pending,10
+LYBT.WebAPI,Extensions/UnifiedServiceRegistration.cs,ICompatibilityNoteService注册,registration,delete,对应控制器删除后此服务注册无用,not_found,0
+LYBT.WebAPI,Extensions/UnifiedServiceRegistration.cs,CompatibilityNoteService注册,registration,delete,对应控制器删除后此服务注册无用,not_found,0
+LYBT.WebAPI,Swagger配置,配伍相关文档分组,config,delete,配伍功能删除后Swagger分组配置无用,not_found,0
+LYBT.WebAPI,路由配置,配伍相关路由映射,config,delete,配伍相关路由配置清理,not_found,0
+LYBT.WebAPI,全项目,未使用using语句,using,delete,清理冗余的using语句,completed,5
