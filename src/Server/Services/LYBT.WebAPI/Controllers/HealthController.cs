@@ -1,5 +1,5 @@
-using Microsoft.AspNetCore.Mvc;
 using System.Reflection;
+using Microsoft.AspNetCore.Mvc;
 
 namespace LYBT.WebAPI.Controllers;
 
@@ -7,7 +7,7 @@ namespace LYBT.WebAPI.Controllers;
 /// 健康检查控制器
 /// </summary>
 [ApiController]
-[Route("api/v1/[controller]")]
+[Route("api/v1/health")]
 public class HealthController : ControllerBase
 {
     /// <summary>
