@@ -111,38 +111,20 @@ public static class UnifiedServiceRegistration
         // 注册统一缓存服务 - 唯一正源
         services.AddSingleton<ICacheService, MemoryCacheAdapter>();
 
-        // =========== 配置选项绑定 - 标记为逐步迁移到DefaultPasswordService ===========
-        // 保留兼容性配置，但开始迁移到统一的DefaultPasswordService
-        services.Configure<SysAdminOptions>(options =>
-        {
-            var adminPassword = ConfigurationHelper.GetAdminPassword(configuration);
-            options.DefaultPassword = adminPassword;
-            configuration.GetSection("SysAdminOptions").Bind(options);
-        });
+        // =========== 统一配置绑定模式 - 消除配置服务套娃 ===========
+        // 使用标准 .NET IOptions 模式，避免手动配置包装
 
-        services.Configure<LYBT.Infrastructure.Configuration.Options.UserOptions>(options =>
-        {
-            var userPassword = ConfigurationHelper.GetUserDefaultPassword(configuration);
-            options.DefaultUserPassword = userPassword;
-            configuration.GetSection("UserOptions").Bind(options);
-        });
-
-        // =========== 默认密码治理服务 - Dev-only 保护 + 单点逻辑 ===========
-        services.AddScoped<DefaultPasswordService>();
-
-        // =========== 配置验证服务 - DT-012优化 ===========
-        // 为小型诊所部署启用启动时配置验证，防止配置错误导致的问题
+        // JwtOptions - JWT认证配置
         services.AddOptions<JwtOptions>()
             .Bind(configuration.GetSection(JwtOptions.SectionName))
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
+        // AuthOptions - 身份认证配置
         services.AddOptions<AuthOptions>()
             .Bind(configuration.GetSection(AuthOptions.SectionName))
             .ValidateDataAnnotations()
             .ValidateOnStart();
-
-        // =========== 新增配置强校验绑定 - Infra Configuration Hardening ===========
 
         // DefaultPasswordOptions - 默认密码策略集中管理
         services.AddOptions<DefaultPasswordOptions>()
@@ -150,15 +132,15 @@ public static class UnifiedServiceRegistration
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
-        // UserOptions - 用户模块配置 (Infrastructure层)
-        services.AddOptions<LYBT.Infrastructure.Configuration.Options.UserOptions>()
-            .Bind(configuration.GetSection("UserOptions"))
+        // SysAdminOptions - 系统管理员配置 (兼容性保留)
+        services.AddOptions<SysAdminOptions>()
+            .Bind(configuration.GetSection(SysAdminOptions.SectionName))
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
-        // SysAdminOptions - 系统管理员配置
-        services.AddOptions<SysAdminOptions>()
-            .Bind(configuration.GetSection(SysAdminOptions.SectionName))
+        // UserOptions - 用户模块配置 (Infrastructure层)
+        services.AddOptions<LYBT.Infrastructure.Configuration.Options.UserOptions>()
+            .Bind(configuration.GetSection("UserOptions"))
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
@@ -174,6 +156,9 @@ public static class UnifiedServiceRegistration
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
+        // =========== 环境感知密码治理服务 ===========
+        services.AddScoped<DefaultPasswordService>();
+
         // CacheOptions已删除，使用内存缓存默认配置
 
         // =========== 安全配置服务 - 最小有效实现 ===========
@@ -188,26 +173,14 @@ public static class UnifiedServiceRegistration
         // - SensitiveDataQueryInterceptor (标记为Obsolete，自动解密复杂度过高)
 
         // =========== 性能优化服务 - UltraThink简化版 ===========
-        services.RegisterPerformanceServices();
+        // 移除空的包装方法，直接使用.NET内置性能计数器和标准服务
 
         // =========== 日志和监控服务 - UltraThink简化版 ===========
-        services.RegisterLoggingAndMonitoringServices();
+        // 使用标准.NET日志和监控，无需额外包装服务
 
         // =========== 数据库初始化服务 ===========
         services.AddScoped<DatabaseInitializationService>();
 
-        return services;
-    }
-
-    /// <summary>
-    /// 注册性能优化服务 - UltraThink简化版本
-    /// 移除过度设计的性能组件，使用.NET内置服务
-    /// </summary>
-    private static IServiceCollection RegisterPerformanceServices(this IServiceCollection services)
-    {
-        // =========== 简化性能监控 ===========
-        // UltraThink简化：移除复杂的性能监控组件，使用标准.NET性能计数器
-        // 缓存服务已在基础设施层统一注册，避免重复注册
         return services;
     }
 
@@ -218,25 +191,20 @@ public static class UnifiedServiceRegistration
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        // =========== JWT认证配置 - 标准IOptions绑定 ===========
+        // =========== JWT认证配置 - 使用已注册的IOptions ===========
         try
         {
-            // 使用标准IOptions配置绑定，支持环境变量覆盖
-            services.Configure<JwtOptions>(options =>
+            // 直接获取JWT密钥用于认证设置（IOptions已在RegisterInfrastructureServices中注册）
+            var jwtSecret = ConfigurationHelper.GetJwtSecret(configuration);
+
+            if (!string.IsNullOrEmpty(jwtSecret))
             {
-                configuration.GetSection("JwtOptions").Bind(options);
+                // 获取JWT配置用于认证设置
+                var jwtSection = configuration.GetSection("JwtOptions");
+                var issuer = jwtSection["Issuer"] ?? "LYBT";
+                var audience = jwtSection["Audience"] ?? "LYBT-Client";
+                var clockSkew = int.TryParse(jwtSection["ClockSkewSeconds"], out var skew) ? skew : 300;
 
-                // 环境变量优先级支持
-                options.Secret = ConfigurationHelper.GetJwtSecret(configuration);
-            });
-
-            // 获取配置用于JWT认证设置
-            var jwtOptions = new JwtOptions();
-            configuration.GetSection("JwtOptions").Bind(jwtOptions);
-            jwtOptions.Secret = ConfigurationHelper.GetJwtSecret(configuration);
-
-            if (!string.IsNullOrEmpty(jwtOptions.Secret))
-            {
                 services.AddAuthentication(options =>
                 {
                     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -250,10 +218,10 @@ public static class UnifiedServiceRegistration
                         ValidateAudience = true,
                         ValidateLifetime = true,
                         ValidateIssuerSigningKey = true,
-                        ValidIssuer = jwtOptions.Issuer,
-                        ValidAudience = jwtOptions.Audience,
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.Secret)),
-                        ClockSkew = TimeSpan.FromSeconds(jwtOptions.ClockSkewSeconds)
+                        ValidIssuer = issuer,
+                        ValidAudience = audience,
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
+                        ClockSkew = TimeSpan.FromSeconds(clockSkew)
                     };
                 });
             }
@@ -370,8 +338,11 @@ public static class UnifiedServiceRegistration
             });
         });
 
-        // AutoMapper配置
-        services.AddAutoMapperConfiguration();
+        // AutoMapper配置 - 简化内联，消除包装方法
+        var assemblies = AppDomain.CurrentDomain.GetAssemblies()
+            .Where(a => a.GetName().Name?.StartsWith("LYBT.") == true)
+            .ToArray();
+        services.AddAutoMapper(cfg => cfg.AddMaps(assemblies), assemblies);
 
         return services;
 
@@ -410,14 +381,6 @@ public static class UnifiedServiceRegistration
             options.JsonSerializerOptions.Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping;
         });
 
-        return services;
-    }
-
-    /// <summary>
-    /// 注册日志和监控服务 - UltraThink简化版
-    /// </summary>
-    private static IServiceCollection RegisterLoggingAndMonitoringServices(this IServiceCollection services)
-    {
         return services;
     }
 }
