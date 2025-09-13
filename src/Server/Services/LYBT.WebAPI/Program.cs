@@ -28,6 +28,17 @@ try
     // 配置Serilog作为日志提供程序
     builder.Host.UseSerilog();
 
+    // =========== 统一端口配置 ===========
+    // 优先读取ASPNETCORE_URLS环境变量，否则使用默认端口
+    var urls = Environment.GetEnvironmentVariable("ASPNETCORE_URLS");
+    if (string.IsNullOrEmpty(urls))
+    {
+        urls = "http://localhost:8080";
+        Environment.SetEnvironmentVariable("ASPNETCORE_URLS", urls);
+    }
+
+    builder.WebHost.UseUrls(urls);
+
     // =========== 额外的环境变量支持 ===========
     // 添加环境变量配置源（确保环境变量优先级高于appsettings.json）
     builder.Configuration.AddEnvironmentVariables();

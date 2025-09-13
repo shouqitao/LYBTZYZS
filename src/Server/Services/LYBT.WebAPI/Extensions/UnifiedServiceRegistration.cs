@@ -51,12 +51,12 @@ public static class UnifiedServiceRegistration
         // 5. 控制器和JSON配置
         services.RegisterControllerServices();
 
-        // 6. 跨域策略 - REMOVED (系统不需要跨域功能)
-        // services.AddSecureCorsPolicy(configuration, environment);
+        // 6. 跨域策略 - 后端CORS兜底支持
+        services.RegisterCorsServices(configuration, environment);
 
         // 7. 环境感知配置验证 - Configuration Hardening
         // 为生产环境提供额外的安全校验，开发环境提供宽松策略
-        services.AddEnvironmentAwareValidation(environment);
+        services.AddEnvironmentAwareValidation(environment, configuration);
 
         return services;
     }
@@ -386,5 +386,135 @@ public static class UnifiedServiceRegistration
         });
 
         return services;
+    }
+
+    /// <summary>
+    /// 注册CORS服务（后端兜底支持）
+    /// </summary>
+    private static IServiceCollection RegisterCorsServices(
+        this IServiceCollection services,
+        IConfiguration configuration,
+        IWebHostEnvironment environment)
+    {
+        services.AddCors(options =>
+        {
+            // 默认策略 - 简化的开发环境CORS
+            options.AddPolicy("DefaultCors", builder =>
+            {
+                if (environment.IsDevelopment())
+                {
+                    // 开发环境：从配置读取允许的源
+                    var allowedOrigins = configuration.GetSection("Security:Cors:AllowedOrigins").Get<string[]>()
+                                        ?? new[] { "http://localhost:3000", "http://localhost:4200", "http://localhost:5173" };
+
+                    builder.WithOrigins(allowedOrigins)
+                           .AllowAnyMethod()
+                           .AllowAnyHeader()
+                           .AllowCredentials();
+                }
+                else
+                {
+                    // 生产环境：严格的CORS策略，不允许通配
+                    var allowedOrigins = configuration.GetSection("Security:Cors:AllowedOrigins").Get<string[]>();
+
+                    if (allowedOrigins == null || allowedOrigins.Length == 0)
+                    {
+                        throw new InvalidOperationException("生产环境必须配置Security:Cors:AllowedOrigins，不能为空");
+                    }
+
+                    builder.WithOrigins(allowedOrigins)
+                           .WithMethods("GET", "POST", "PUT", "DELETE", "PATCH")
+                           .WithHeaders("Content-Type", "Authorization", "X-Requested-With")
+                           .AllowCredentials()
+                           .SetPreflightMaxAge(TimeSpan.FromMinutes(60));
+                }
+            });
+        });
+
+        return services;
+    }
+
+    /// <summary>
+    /// 添加环境感知配置验证
+    /// </summary>
+    private static IServiceCollection AddEnvironmentAwareValidation(
+        this IServiceCollection services,
+        IWebHostEnvironment environment,
+        IConfiguration configuration)
+    {
+        if (environment.IsProduction())
+        {
+            // 生产环境配置校验
+            services.AddSingleton<IStartupFilter>(provider => new ProductionConfigValidationFilter(configuration));
+        }
+
+        return services;
+    }
+}
+
+/// <summary>
+/// 生产环境配置验证过滤器
+/// </summary>
+public class ProductionConfigValidationFilter : IStartupFilter
+{
+    private readonly IConfiguration _configuration;
+
+    public ProductionConfigValidationFilter(IConfiguration configuration)
+    {
+        _configuration = configuration;
+    }
+
+    /// <inheritdoc/>
+    public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next)
+    {
+        return app =>
+        {
+            ValidateProductionConfiguration();
+            next(app);
+        };
+    }
+
+    private void ValidateProductionConfiguration()
+    {
+        var errors = new List<string>();
+
+        // 检查数据库连接字符串
+        var connectionString = _configuration.GetConnectionString("DefaultConnection");
+        if (string.IsNullOrWhiteSpace(connectionString))
+        {
+            errors.Add("数据库连接字符串 (ConnectionStrings:DefaultConnection) 不能为空");
+        }
+
+        // 检查JWT密钥
+        var jwtSecret = _configuration["JwtOptions:Secret"];
+        if (string.IsNullOrWhiteSpace(jwtSecret) || jwtSecret.Length < 32)
+        {
+            errors.Add("JWT密钥 (JwtOptions:Secret) 不能为空且长度至少32位");
+        }
+
+        // 检查CORS配置
+        var corsOrigins = _configuration.GetSection("Security:Cors:AllowedOrigins").Get<string[]>();
+        if (corsOrigins == null || corsOrigins.Length == 0)
+        {
+            errors.Add("CORS允许源 (Security:Cors:AllowedOrigins) 不能为空");
+        }
+
+        if (errors.Count > 0)
+        {
+            var errorReport = string.Join(Environment.NewLine, errors);
+            var reportPath = "_reports/2025-09/webapi/run-fix/config-errors.md";
+
+            try
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(reportPath)!);
+                File.WriteAllText(reportPath, $"# 生产环境配置错误\n\n生成时间: {DateTime.Now:yyyy-MM-dd HH:mm:ss}\n\n## 错误列表\n\n{string.Join("\n", errors.Select(e => $"- {e}"))}\n\n## 解决方案\n\n请设置相应的环境变量或更新配置文件。\n");
+            }
+            catch
+            {
+                // 忽略文件写入错误，不影响启动
+            }
+
+            throw new InvalidOperationException($"生产环境配置验证失败：\n{errorReport}");
+        }
     }
 }

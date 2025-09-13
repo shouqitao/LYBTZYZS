@@ -84,15 +84,11 @@ public static class UnifiedMiddlewareConfiguration
     /// </summary>
     private static WebApplication ConfigureAuthenticationMiddleware(this WebApplication app)
     {
-        // CORS配置 - REMOVED (系统不需要跨域功能)
-        // if (app.Environment.IsDevelopment())
-        // {
-        //     app.UseCors("Development");
-        // }
-        // else
-        // {
-        //     app.UseCors("Production");
-        // }
+        // 按照标准ASP.NET Core管道顺序：UseRouting → UseCors → UseAuthentication → UseAuthorization
+        app.UseRouting();
+
+        // CORS后端兜底支持 - 使用统一的DefaultCors策略
+        app.UseCors("DefaultCors");
 
         // 认证和授权
         app.UseAuthentication();
@@ -106,7 +102,7 @@ public static class UnifiedMiddlewareConfiguration
     /// </summary>
     private static WebApplication ConfigureRoutingMiddleware(this WebApplication app)
     {
-        // 控制器路由
+        // 控制器路由映射（已在ConfigureAuthenticationMiddleware中调用UseRouting）
         app.MapControllers();
 
         return app;

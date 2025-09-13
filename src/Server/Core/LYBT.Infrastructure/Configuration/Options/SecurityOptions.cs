@@ -75,27 +75,27 @@ namespace LYBT.Infrastructure.Configuration.Options
     // public class CorsOptions
     // {
 
-    //     /// <summary>
+    // /// <summary>
     //     /// 允许的源
     //     /// </summary>
     //     public List<string> AllowedOrigins { get; set; } = new();
 
-    //     /// <summary>
+    // /// <summary>
     //     /// 允许的方法
     //     /// </summary>
     //     public List<string> AllowedMethods { get; set; } = new() { "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS" };
 
-    //     /// <summary>
+    // /// <summary>
     //     /// 允许的头
     //     /// </summary>
     //     public List<string> AllowedHeaders { get; set; } = new() { "Content-Type", "Authorization", "X-Requested-With", "Accept", "Origin" };
 
-    //     /// <summary>
+    // /// <summary>
     //     /// 是否允许凭据
     //     /// </summary>
     //     public bool AllowCredentials { get; set; } = true;
 
-    //     /// <summary>
+    // /// <summary>
     //     /// 预检请求最大缓存时间（秒）
     //     /// </summary>
     //     [Range(0, 86400, ErrorMessage = "预检请求最大缓存时间必须在0-86400秒之间")]

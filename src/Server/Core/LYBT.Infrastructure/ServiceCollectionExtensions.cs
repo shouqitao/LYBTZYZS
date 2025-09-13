@@ -115,17 +115,17 @@ namespace LYBT.Infrastructure
         //                 builder.AllowAnyOrigin();
         //             }
 
-        //             builder.AllowAnyMethod()
+        // builder.AllowAnyMethod()
         //                    .AllowAnyHeader();
 
-        //             if (allowedOrigins?.Length > 0)
+        // if (allowedOrigins?.Length > 0)
         //             {
         //                 builder.AllowCredentials();
         //             }
         //         });
         //     });
 
-        //     return services;
+        // return services;
         // }
 
         /// <summary>

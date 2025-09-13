@@ -1,8 +1,8 @@
 using System.Text.RegularExpressions;
 using AutoMapper;
-using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Configuration.Options;
 using LYBT.Infrastructure.Configuration.Services;
+using LYBT.Infrastructure.Data;
 using LYBT.Module.Users.Services.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
