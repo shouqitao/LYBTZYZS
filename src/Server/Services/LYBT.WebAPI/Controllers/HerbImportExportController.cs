@@ -32,7 +32,7 @@ namespace LYBT.WebAPI.Controllers
             IHerbService herbService,
             IMemoryCache memoryCache,
             ILogger<HerbImportExportController> logger)
-            : base(logger)
+            : base(logger, memoryCache)
         {
             _herbService = herbService;
             _memoryCache = memoryCache;
@@ -48,25 +48,14 @@ namespace LYBT.WebAPI.Controllers
             {
                 if (dtos == null || dtos.Count == 0)
                 {
-                    return BadRequest(new ProblemDetails
-                    {
-                        Title = "请求无效",
-                        Detail = "导入数据不能为空",
-                        Status = 400
-                    });
+                    return ValidationFail("导入数据不能为空", "INVALID_IMPORT_DATA");
                 }
 
                 // 数据验证
                 var invalidItems = ValidateImportData(dtos);
                 if (invalidItems.Count != 0)
                 {
-                    return BadRequest(new ProblemDetails
-                    {
-                        Title = "数据验证失败",
-                        Detail = $"存在 {invalidItems.Count} 条无效数据",
-                        Status = 400,
-                        Extensions = { ["invalidItems"] = invalidItems }
-                    });
+                    return ValidationFail($"存在 {invalidItems.Count} 条无效数据", "VALIDATION_FAILED");
                 }
 
                 // 转换 HerbImportDto 到 HerbCreateDto (接口简化后的要求)
@@ -101,21 +90,11 @@ namespace LYBT.WebAPI.Controllers
             }
             catch (ArgumentException ex)
             {
-                return BadRequest(new ProblemDetails
-                {
-                    Title = "参数错误",
-                    Detail = ex.Message,
-                    Status = 400
-                });
+                return ValidationFail(ex.Message, "INVALID_ARGUMENT");
             }
             catch (InvalidOperationException ex)
             {
-                return Conflict(new ProblemDetails
-                {
-                    Title = "操作冲突",
-                    Detail = ex.Message,
-                    Status = 409
-                });
+                return BusinessFail(ex.Message, "OPERATION_CONFLICT");
             }
             catch (Exception ex)
             {
