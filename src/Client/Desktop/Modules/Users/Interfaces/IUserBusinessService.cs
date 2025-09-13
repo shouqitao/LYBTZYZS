@@ -56,9 +56,9 @@ public interface IUserBusinessService
     #region 密码管理操作
 
     /// <summary>
-    /// 重置用户密码 - DT-011取消令牌支持
+    /// 重置用户密码为环境感知的默认密码 - DT-011取消令牌支持
     /// </summary>
-    Task<ServiceResult<bool>> ResetPasswordAsync(Guid userId, string newPassword, CancellationToken cancellationToken = default);
+    Task<ServiceResult<bool>> ResetPasswordAsync(Guid userId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// 修改密码 - DT-011取消令牌支持

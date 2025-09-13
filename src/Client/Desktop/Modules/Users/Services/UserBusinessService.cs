@@ -283,7 +283,7 @@ public class UserBusinessService(
     #region 密码管理操作
 
     /// <inheritdoc/>
-    public async Task<ServiceResult<bool>> ResetPasswordAsync(Guid userId, string newPassword, CancellationToken cancellationToken = default)
+    public async Task<ServiceResult<bool>> ResetPasswordAsync(Guid userId, CancellationToken cancellationToken = default)
     {
         return await _exceptionHandler.HandleException<bool>(
             async (ct) =>

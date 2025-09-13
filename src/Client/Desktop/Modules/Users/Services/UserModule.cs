@@ -80,7 +80,7 @@ public class UserModule(
 
     /// <inheritdoc/>
     public async Task<ServiceResult<bool>> ResetPasswordAsync(Guid id, string newPassword)
-        => await _businessService.ResetPasswordAsync(id, newPassword);
+        => await _businessService.ResetPasswordAsync(id); // newPassword参数被忽略，后端使用DefaultPasswordService
 
     /// <inheritdoc/>
     public async Task<ServiceResult<bool>> ChangePasswordAsync(Guid id, string oldPassword, string newPassword)
