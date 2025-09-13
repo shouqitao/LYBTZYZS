@@ -1,0 +1,12 @@
+Path,Symbol,Kind,Action,Reason
+src/Server/Services/LYBT.WebAPI/Extensions/CorsExtension.cs,AddSecureCorsPolicy,ExtensionMethod,DELETE_FILE,Complete CORS extension class - not needed
+src/Server/Services/LYBT.WebAPI/Extensions/CorsExtension.cs,CorsExtension,Class,DELETE_FILE,CORS extension class container - not needed
+src/Server/Services/LYBT.WebAPI/Extensions/UnifiedMiddlewareConfiguration.cs,app.UseCors(Development),MiddlewareCall,REMOVE_CODE,CORS middleware call in dev - not needed
+src/Server/Services/LYBT.WebAPI/Extensions/UnifiedMiddlewareConfiguration.cs,app.UseCors(Production),MiddlewareCall,REMOVE_CODE,CORS middleware call in prod - not needed
+src/Server/Core/LYBT.Infrastructure/ServiceCollectionExtensions.cs,AddCorsPolicies,ExtensionMethod,REMOVE_CODE,CORS policy registration method - not needed
+src/Server/Core/LYBT.Infrastructure/ServiceCollectionExtensions.cs,services.AddCorsPolicies(),MethodCall,REMOVE_CODE,CORS service registration call - not needed
+src/Server/Core/LYBT.Infrastructure/Configuration/Options/SecurityOptions.cs,Cors,Property,REMOVE_CODE,CORS configuration property - not needed
+src/Server/Core/LYBT.Infrastructure/Configuration/Options/SecurityOptions.cs,CorsOptions,Class,REMOVE_CODE,CORS options class definition - not needed
+src/Server/Services/LYBT.WebAPI/README.md,CORS configuration example,Documentation,UPDATE_DOC,Remove CORS documentation references
+docs/01_facts/LYBT.Infrastructure.classes.md,AddCorsPolicies references,Documentation,UPDATE_DOC,Remove CORS method documentation
+src/Server/Infrastructure/LYBT.Infrastructure/Options/SecurityOptions.cs,Possible duplicate,File,INVESTIGATE,Check if duplicate SecurityOptions exists
