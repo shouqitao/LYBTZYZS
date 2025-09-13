@@ -105,7 +105,7 @@ public abstract class BaseSystemController : BaseControllerCore
     /// <summary>
     /// 验证参数并返回错误响应
     /// </summary>
-    protected IActionResult? ValidateSystemParameters(params (bool condition, string message)[] validations)
+    protected IActionResult? ValidateSystemParameters(params (bool Condition, string Message)[] validations)
     {
         foreach (var (condition, message) in validations)
         {

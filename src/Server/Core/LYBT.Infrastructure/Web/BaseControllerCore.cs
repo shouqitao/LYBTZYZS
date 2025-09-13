@@ -26,7 +26,7 @@ public abstract class BaseControllerCore : ControllerBase
     /// <summary>
     /// 获取当前操作者信息 - 统一实现
     /// </summary>
-    protected (Guid operatorId, string operatorName, string operatorRole) GetOperator()
+    protected (Guid OperatorId, string OperatorName, string OperatorRole) GetOperator()
     {
         var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         var userName = User?.Identity?.Name;

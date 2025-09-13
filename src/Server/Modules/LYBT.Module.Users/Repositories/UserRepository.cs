@@ -85,7 +85,7 @@ namespace LYBT.Module.Users.Repositories
         /// 分页条件查找用户（缓存优化版）
         /// 权限控制：禁用的用户仅管理员可查询
         /// </summary>
-        public async Task<(IList<User> users, int total)> GetPagedAsync(UserPagedQueryDto query, bool includeDisabled = false)
+        public async Task<(IList<User> Users, int Total)> GetPagedAsync(UserPagedQueryDto query, bool includeDisabled = false)
         {
             var cacheKey = GenerateCacheKey("paged", query.GetHashCode(), includeDisabled);
 
@@ -161,7 +161,7 @@ namespace LYBT.Module.Users.Repositories
                 .Take(query.PageSize)
                 .ToListAsync();
 
-            var result = (users, total);
+            var result = (Users: users, Total: total);
 
             // 缓存结果
             _cache.Set(cacheKey, result, DefaultCacheDuration);

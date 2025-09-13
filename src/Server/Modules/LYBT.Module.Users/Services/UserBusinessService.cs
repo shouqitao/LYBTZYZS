@@ -516,7 +516,7 @@ namespace LYBT.Module.Users.Services
         /// <summary>
         /// 统一用户变更DTO验证 - UltraThink现代化DTO设计
         /// </summary>
-        private static async Task<ServiceResult<bool>> ValidateUserMutationAsync(UserMutationDto dto, bool isCreateOperation, Guid? _ = null)
+        private static async Task<ServiceResult<bool>> ValidateUserMutationAsync(UserMutationDto dto, bool isCreateOperation, Guid? existingUserId = null)
         {
             if (dto == null)
             {
