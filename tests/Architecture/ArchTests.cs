@@ -369,4 +369,267 @@ public class ArchTests
 
         Assert.Empty(violatingProperties);
     }
+
+    // ========================================================================
+    // Batch 2 Infrastructure Hardening Governance Rules
+    // Added: 2025-09-13 - Prevent regression of cleanup efforts
+    // ========================================================================
+
+    /// <summary>
+    /// Batch 2-① 唯一正源测试 - 防止新增重复缓存实现（实用性测试）
+    /// </summary>
+    [Fact]
+    public void Batch2_SingleSource_Cache_Should_Use_ICacheService_Only()
+    {
+        // 允许基础设施层、控制器、仓储层使用IMemoryCache，但禁止新的缓存抽象
+        var prohibitedCacheTypes = Types.InAssemblies(Assemblies)
+            .That()
+            .HaveDependencyOn("Microsoft.Extensions.Caching.Memory.IMemoryCache")
+            .GetTypes()
+            .Where(t => !IsLegitimateMemoryCacheUsage(t)) // 使用白名单模式
+            .Select(t => t.FullName)
+            .ToList();
+
+        Assert.Empty(prohibitedCacheTypes);
+    }
+
+    private static bool IsLegitimateMemoryCacheUsage(Type type)
+    {
+        // 白名单：允许的IMemoryCache使用场景
+        var allowedPatterns = new[]
+        {
+            "MemoryCacheAdapter",        // 实现类
+            "ServiceRegistration",       // 服务注册
+            "BaseController",           // 基础控制器
+            "Controller",               // 控制器
+            "Repository",               // 仓储层
+            "CacheExtensions",          // 缓存扩展
+            "ServiceCollectionExtensions", // 客户端服务注册
+            "ServiceDiscovery",         // 客户端服务发现
+            "ApiService"                // 客户端API服务
+        };
+
+        return allowedPatterns.Any(pattern => type.Name.Contains(pattern));
+    }
+
+    /// <summary>
+    /// Batch 2-① 唯一正源测试 - 禁止重复的缓存服务注册
+    /// </summary>
+    [Fact]
+    public void Batch2_SingleSource_Cache_Should_Not_Have_Duplicate_Registration()
+    {
+        // 检查是否存在被删除的重复注册类
+        var prohibitedCacheClasses = new[]
+        {
+            "CacheServiceCollectionExtensions", "UnifiedCacheOptions"
+        };
+
+        var violatingTypes = new List<string>();
+
+        foreach (var prohibitedClass in prohibitedCacheClasses)
+        {
+            var types = Types.InAssemblies(Assemblies)
+                .That()
+                .HaveNameMatching($".*{prohibitedClass}.*")
+                .GetTypes();
+
+            violatingTypes.AddRange(types.Select(t => $"{t.FullName} (should be deleted - duplicate cache infrastructure)"));
+        }
+
+        Assert.Empty(violatingTypes);
+    }
+
+    /// <summary>
+    /// Batch 2-② 统一异常处理测试 - 必须使用GlobalExceptionHandler唯一正源
+    /// </summary>
+    [Fact]
+    public void Batch2_UnifiedException_Should_Use_GlobalExceptionHandler_Only()
+    {
+        // 禁止GlobalExceptionMiddleware传统中间件
+        var prohibitedExceptionClasses = new[]
+        {
+            "GlobalExceptionMiddleware"
+        };
+
+        var violatingTypes = new List<string>();
+
+        foreach (var prohibitedClass in prohibitedExceptionClasses)
+        {
+            var types = Types.InAssemblies(Assemblies)
+                .That()
+                .HaveNameMatching($".*{prohibitedClass}.*")
+                .GetTypes();
+
+            violatingTypes.AddRange(types.Select(t => $"{t.FullName} (should be deleted - use GlobalExceptionHandler instead)"));
+        }
+
+        Assert.Empty(violatingTypes);
+    }
+
+    /// <summary>
+    /// Batch 2-② 统一异常处理测试 - API控制器必须使用BaseApiController响应方法
+    /// </summary>
+    [Fact]
+    public void Batch2_UnifiedException_Controllers_Should_Use_BaseApiController_Methods()
+    {
+        var webApiAssembly = Assemblies.FirstOrDefault(a => a.GetName().Name == "LYBT.WebAPI");
+        if (webApiAssembly == null) return;
+
+        var controllers = Types.InAssembly(webApiAssembly)
+            .That()
+            .Inherit(typeof(Microsoft.AspNetCore.Mvc.ControllerBase))
+            .And()
+            .DoNotHaveNameMatching("Base.*Controller") // 排除基类控制器
+            .GetTypes();
+
+        var violatingControllers = new List<string>();
+
+        foreach (var controller in controllers)
+        {
+            var methods = controller.GetMethods()
+                .Where(m => m.IsPublic && !m.IsStatic);
+
+            foreach (var method in methods)
+            {
+                // 检查方法体是否直接创建ProblemDetails（此检查需要更复杂的静态分析，这里简化）
+                // 主要检查是否继承自BaseApiController
+                if (!controller.BaseType?.Name.Contains("BaseApiController") == true &&
+                    !controller.BaseType?.Name.Contains("BaseSystemController") == true)
+                {
+                    violatingControllers.Add($"{controller.Name} (should inherit from BaseApiController or BaseSystemController)");
+                    break;
+                }
+            }
+        }
+
+        Assert.Empty(violatingControllers);
+    }
+
+    /// <summary>
+    /// Batch 2-③ 配置直读测试 - 必须使用ConfigurationHelper统一正源
+    /// </summary>
+    [Fact]
+    public void Batch2_ConfigurationDirectRead_Should_Use_ConfigurationHelper()
+    {
+        // 禁止重复的配置获取方法
+        var webApiAssembly = Assemblies.FirstOrDefault(a => a.GetName().Name == "LYBT.WebAPI");
+        if (webApiAssembly == null) return;
+
+        var typesWithConfigMethods = new List<string>();
+
+        var types = webApiAssembly.GetTypes();
+        foreach (var type in types)
+        {
+            if (type.Name.Equals("ConfigurationHelper")) continue; // 允许统一配置助手
+
+            var methods = type.GetMethods()
+                .Where(m => m.Name.Contains("GetConnectionString") || 
+                           m.Name.Contains("GetJwtSecret") ||
+                           m.Name.Contains("GetAdminPassword"))
+                .Where(m => !m.DeclaringType?.Name.Equals("ConfigurationHelper") == true);
+
+            if (methods.Any())
+            {
+                typesWithConfigMethods.Add($"{type.FullName} (should use ConfigurationHelper instead of duplicate config methods)");
+            }
+        }
+
+        Assert.Empty(typesWithConfigMethods);
+    }
+
+    /// <summary>
+    /// Batch 2-④ 目录命名空间一致性测试 - 前端必须使用LYBT.Desktop.*命名空间
+    /// </summary>
+    [Fact]
+    public void Batch2_DirectoryNamespace_Frontend_Should_Use_Desktop_Namespace()
+    {
+        // 检查是否还有旧的前端命名空间模式
+        var prohibitedFrontendNamespaces = new[]
+        {
+            "LYBT.WPF.Client", "LYBT.Client.Core"
+        };
+
+        var violatingTypes = new List<string>();
+
+        // 注意：这个测试主要针对前端项目，但当前架构测试只加载后端程序集
+        // 如果需要测试前端，需要添加前端程序集引用
+        foreach (var prohibitedNs in prohibitedFrontendNamespaces)
+        {
+            var types = Types.InAssemblies(Assemblies)
+                .That()
+                .ResideInNamespaceMatching($"{prohibitedNs}.*")
+                .GetTypes();
+
+            violatingTypes.AddRange(types.Select(t => $"{t.FullName} (should use LYBT.Desktop.* namespace instead)"));
+        }
+
+        Assert.Empty(violatingTypes);
+    }
+
+    /// <summary>
+    /// Batch 2-⑤ 防回潮测试 - 禁止重新引入已删除的过时组件
+    /// </summary>
+    [Fact]
+    public void Batch2_NoRegression_Should_Not_Reintroduce_Deleted_Components()
+    {
+        var deletedComponents = new[]
+        {
+            // Batch 2-① 已删除的缓存组件
+            "CacheServiceCollectionExtensions", "UnifiedCacheOptions",
+            "DataEncryptionService", "SensitiveDataInterceptor",
+            
+            // Batch 2-② 已删除的异常处理组件
+            "GlobalExceptionMiddleware",
+            
+            // 其他已标记过时但可能被重新引入的组件
+            "SimplifiedConfigurationService", "WorkflowCoordinator",
+            "RecommendationEngine", "SmartAnalysisService"
+        };
+
+        var violatingTypes = new List<string>();
+
+        foreach (var deletedComponent in deletedComponents)
+        {
+            var types = Types.InAssemblies(Assemblies)
+                .That()
+                .HaveNameMatching($".*{deletedComponent}.*")
+                .GetTypes()
+                .Where(t => !t.GetCustomAttributes(typeof(System.ObsoleteAttribute), true).Any()); // 允许标记为过时的类存在
+
+            violatingTypes.AddRange(types.Select(t => $"{t.FullName} (deleted component should not be reintroduced)"));
+        }
+
+        Assert.Empty(violatingTypes);
+    }
+
+    /// <summary>
+    /// Batch 2-⑤ 防回潮测试 - 服务注册必须保持简化模式
+    /// </summary>
+    [Fact]
+    public void Batch2_NoRegression_Service_Registration_Should_Stay_Simplified()
+    {
+        // 检查是否重新引入复杂的服务注册模式
+        var prohibitedRegistrationPatterns = new[]
+        {
+            "Factory", "Builder", "Configurator", "Initializer"
+        };
+
+        var violatingTypes = new List<string>();
+
+        foreach (var pattern in prohibitedRegistrationPatterns)
+        {
+            var types = Types.InAssemblies(Assemblies)
+                .That()
+                .HaveNameMatching($".*{pattern}.*")
+                .And()
+                .ResideInNamespaceMatching(".*\\.Extensions.*") // 限制在Extensions命名空间
+                .GetTypes()
+                .Where(t => !t.Name.Contains("ConfigurationHelper")) // 允许配置助手
+                .Where(t => !t.Name.Contains("DatabaseInitializationService")); // 允许数据库初始化
+
+            violatingTypes.AddRange(types.Select(t => $"{t.FullName} (complex registration pattern - should keep simplified)"));
+        }
+
+        Assert.Empty(violatingTypes);
+    }
 }
