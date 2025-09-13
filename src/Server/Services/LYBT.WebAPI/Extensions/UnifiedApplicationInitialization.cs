@@ -101,7 +101,7 @@ public static class UnifiedApplicationInitialization
 
             try
             {
-                var _ = GetJwtSecret(configuration);
+                var _ = ConfigurationHelper.GetJwtSecret(configuration);
                 logger?.LogInformation("✅ JWT配置验证通过");
             }
             catch (Exception)
@@ -291,33 +291,4 @@ public static class UnifiedApplicationInitialization
         return configuration.GetConnectionString(name) ?? string.Empty;
     }
 
-    /// <summary>
-    /// 获取JWT密钥 - 直接使用IConfiguration
-    /// 优先级: JWT_SECRET环境变量 -> 配置文件 -> 开发环境默认值
-    /// </summary>
-    private static string GetJwtSecret(IConfiguration configuration)
-    {
-        // 优先使用环境变量
-        var envSecret = Environment.GetEnvironmentVariable("JWT_SECRET");
-        if (!string.IsNullOrEmpty(envSecret))
-        {
-            return envSecret;
-        }
-
-        // 使用配置文件
-        var configSecret = configuration["JwtOptions:Secret"];
-        if (!string.IsNullOrEmpty(configSecret) && !configSecret.Contains("${"))
-        {
-            return configSecret;
-        }
-
-        // 开发环境允许使用默认值
-        var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
-        if (string.Equals(environment, "Development", StringComparison.OrdinalIgnoreCase))
-        {
-            return "UltraThink-LYBT-Development-Secret-Key-2025-09-02-Very-Long-Secret-For-JWT-Signing";
-        }
-
-        throw new InvalidOperationException("JWT密钥未配置：请设置JWT_SECRET环境变量或配置文件中的JwtOptions:Secret");
-    }
 }
