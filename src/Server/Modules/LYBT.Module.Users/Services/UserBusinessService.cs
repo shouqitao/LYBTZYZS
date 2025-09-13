@@ -1,6 +1,7 @@
 using System.Text.RegularExpressions;
 using AutoMapper;
 using LYBT.Infrastructure.Data;
+using LYBT.Infrastructure.Configuration.Options;
 using LYBT.Module.Users.Services.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
@@ -21,12 +22,12 @@ namespace LYBT.Module.Users.Services
         AppDbContext context,
         IMapper mapper,
         ILogger<UserBusinessService> logger,
-        IOptions<UserOptions> options) : IUserBusinessService
+        IOptions<LYBT.Infrastructure.Configuration.Options.UserOptions> options) : IUserBusinessService
     {
         private readonly AppDbContext _context = context ?? throw new ArgumentNullException(nameof(context));
         private readonly IMapper _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         private readonly ILogger<UserBusinessService> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        private readonly UserOptions _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
+        private readonly LYBT.Infrastructure.Configuration.Options.UserOptions _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
 
         #region 生成的正则表达式 - SYSLIB1045 优化
 
