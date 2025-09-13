@@ -58,7 +58,7 @@ namespace LYBT.WebAPI.Controllers
 
                 // 数据验证
                 var invalidItems = ValidateImportData(dtos);
-                if (invalidItems.Any())
+                if (invalidItems.Count != 0)
                 {
                     return BadRequest(new ProblemDetails
                     {
@@ -232,7 +232,7 @@ namespace LYBT.WebAPI.Controllers
         /// <summary>
         /// 验证导入数据
         /// </summary>
-        private List<object> ValidateImportData(List<HerbImportDto> dtos)
+        private static List<object> ValidateImportData(List<HerbImportDto> dtos)
         {
             var invalidItems = new List<object>();
 
@@ -257,7 +257,7 @@ namespace LYBT.WebAPI.Controllers
                     errors.Add("库存不能为负数");
                 }
 
-                if (errors.Any())
+                if (errors.Count != 0)
                 {
                     invalidItems.Add(new
                     {
@@ -274,7 +274,7 @@ namespace LYBT.WebAPI.Controllers
         /// <summary>
         /// 异步验证导入数据（包含数据库检查）
         /// </summary>
-        private Task<List<ImportValidationResult>> ValidateImportDataAsync(List<HerbImportDto> dtos)
+        private static Task<List<ImportValidationResult>> ValidateImportDataAsync(List<HerbImportDto> dtos)
         {
             var results = new List<ImportValidationResult>();
 

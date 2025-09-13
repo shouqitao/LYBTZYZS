@@ -20,6 +20,14 @@ namespace LYBT.WebAPI.Controllers
     public class PatientsController : BaseApiController
     {
         private readonly IPatientService _service;
+        private static readonly string[] data = new[]
+                    {
+                        "请按照模板格式填写患者信息",
+                        "姓名和手机号码为必填项",
+                        "性别请填写：男 或 女",
+                        "日期格式：YYYY-MM-DD",
+                        "身份证号码必须为18位"
+                    };
 
         public PatientsController(IPatientService service, IMemoryCache cache, ILogger<PatientsController> logger)
             : base(logger, cache)
@@ -345,7 +353,7 @@ namespace LYBT.WebAPI.Controllers
 
                 // 数据验证
                 var invalidItems = ValidateImportDataPrivate(patients);
-                if (invalidItems.Any())
+                if (invalidItems.Count != 0)
                 {
                     return ValidationFail<object>($"存在 {invalidItems.Count} 条无效数据");
                 }
@@ -433,14 +441,7 @@ namespace LYBT.WebAPI.Controllers
                     {
                         message = "患者导入模板",
                         template = templateData,
-                        instructions = new[]
-                    {
-                        "请按照模板格式填写患者信息",
-                        "姓名和手机号码为必填项",
-                        "性别请填写：男 或 女",
-                        "日期格式：YYYY-MM-DD",
-                        "身份证号码必须为18位"
-                    }
+                        instructions = data
                     }, "模板导出成功");
             }
             catch (Exception ex)
@@ -524,7 +525,7 @@ namespace LYBT.WebAPI.Controllers
                     errors.Add("性别必须为男或女");
                 }
 
-                if (errors.Any())
+                if (errors.Count != 0)
                 {
                     invalidItems.Add(new
                     {
@@ -589,7 +590,7 @@ namespace LYBT.WebAPI.Controllers
         /// <summary>
         /// 验证手机号码格式
         /// </summary>
-        private bool IsValidPhoneNumber(string phoneNumber)
+        private static bool IsValidPhoneNumber(string phoneNumber)
         {
             if (string.IsNullOrWhiteSpace(phoneNumber))
             {
@@ -602,7 +603,7 @@ namespace LYBT.WebAPI.Controllers
         /// <summary>
         /// 验证身份证号码格式
         /// </summary>
-        private bool IsValidIdCard(string idCard)
+        private static bool IsValidIdCard(string idCard)
         {
             if (string.IsNullOrWhiteSpace(idCard))
             {

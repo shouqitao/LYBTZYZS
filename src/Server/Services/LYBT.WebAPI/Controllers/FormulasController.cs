@@ -476,7 +476,7 @@ namespace LYBT.WebAPI.Controllers
         {
             try
             {
-                if (formulas == null || !formulas.Any())
+                if (formulas == null || formulas.Count == 0)
                 {
                     return ValidationFail<object>("导入数据不能为空");
                 }
@@ -640,7 +640,7 @@ namespace LYBT.WebAPI.Controllers
         {
             try
             {
-                if (formulas == null || !formulas.Any())
+                if (formulas == null || formulas.Count == 0)
                 {
                     return ValidationFail<object>("验证数据不能为空");
                 }
@@ -699,7 +699,7 @@ namespace LYBT.WebAPI.Controllers
                     {
                         Row = i + 1,
                         Name = formula.Name,
-                        IsValid = !rowErrors.Any(),
+                        IsValid = rowErrors.Count == 0,
                         Errors = rowErrors
                     });
                 }

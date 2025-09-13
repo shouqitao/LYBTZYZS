@@ -20,7 +20,7 @@ public static class CorsExtension
             // 开发环境策略
             options.AddPolicy("Development", builder =>
             {
-                if (securityOptions.Cors.AllowedOrigins.Any())
+                if (securityOptions.Cors.AllowedOrigins.Count != 0)
                 {
                     builder.WithOrigins(securityOptions.Cors.AllowedOrigins.ToArray());
                 }
@@ -43,7 +43,7 @@ public static class CorsExtension
             // 生产环境策略
             options.AddPolicy("Production", builder =>
             {
-                if (!securityOptions.Cors.AllowedOrigins.Any())
+                if (securityOptions.Cors.AllowedOrigins.Count == 0)
                 {
                     throw new InvalidOperationException("生产环境必须配置具体的CORS源");
                 }
@@ -62,7 +62,7 @@ public static class CorsExtension
             // 默认策略（基于环境）
             options.AddDefaultPolicy(builder =>
             {
-                if (environment.IsDevelopment() && !securityOptions.Cors.AllowedOrigins.Any())
+                if (environment.IsDevelopment() && securityOptions.Cors.AllowedOrigins.Count == 0)
                 {
                     // 开发环境宽松配置
                     builder.WithOrigins("http://localhost:3000", "http://localhost:5000", "https://localhost:5001", "https://localhost:7001")
@@ -73,7 +73,7 @@ public static class CorsExtension
                 else
                 {
                     // 生产环境严格配置
-                    if (!securityOptions.Cors.AllowedOrigins.Any())
+                    if (securityOptions.Cors.AllowedOrigins.Count == 0)
                     {
                         throw new InvalidOperationException("生产环境必须配置具体的CORS源");
                     }

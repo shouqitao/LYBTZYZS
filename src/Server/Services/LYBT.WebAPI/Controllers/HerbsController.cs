@@ -205,7 +205,7 @@ namespace LYBT.WebAPI.Controllers
                     .ToList();
 
                 // 如果没有分类，返回默认的中医分类
-                if (!categories.Any())
+                if (categories.Count == 0)
                 {
                     categories = new List<string>
                     {
