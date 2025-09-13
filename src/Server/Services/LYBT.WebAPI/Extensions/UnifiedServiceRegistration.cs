@@ -266,7 +266,24 @@ public static class UnifiedServiceRegistration
     /// </summary>
     private static IServiceCollection RegisterApiServices(this IServiceCollection services)
     {
-        // ✅ 简化API版本控制 - 控制器中的 [ApiVersion("1")] 标注已足够
+        // API版本管理服务注册
+        services.AddApiVersioning(options =>
+        {
+            options.DefaultApiVersion = new Asp.Versioning.ApiVersion(1, 0);
+            options.AssumeDefaultVersionWhenUnspecified = true;
+            options.ReportApiVersions = true;
+            options.ApiVersionReader = Asp.Versioning.ApiVersionReader.Combine(
+                new Asp.Versioning.QueryStringApiVersionReader("version"),
+                new Asp.Versioning.HeaderApiVersionReader("X-Version"),
+                new Asp.Versioning.UrlSegmentApiVersionReader());
+        }).AddMvc();
+
+        // 暂时注释掉ApiExplorer配置，专注解决基本API版本问题
+        // services.AddVersionedApiExplorer(options =>
+        // {
+        //     options.GroupNameFormat = "'v'VVV";
+        //     options.SubstituteApiVersionInUrl = true;
+        // });
 
         // ProblemDetails 和异常处理服务
         services.AddProblemDetails();
