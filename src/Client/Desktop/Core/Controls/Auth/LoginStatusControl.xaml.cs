@@ -2,7 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 using LYBT.Shared.Models.Contracts.Auth;
 
-namespace LYBT.WPF.Client.Controls.Auth
+namespace LYBT.Desktop.Core.Controls.Auth
 {
 
     /// <summary>

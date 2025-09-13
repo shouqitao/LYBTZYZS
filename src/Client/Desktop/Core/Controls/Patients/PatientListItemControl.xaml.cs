@@ -2,7 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 using LYBT.Shared.Models.Contracts.Patients;
 
-namespace LYBT.WPF.Client.Controls.Patients
+namespace LYBT.Desktop.Core.Controls.Patients
 {
 
     /// <summary>

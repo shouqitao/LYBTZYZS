@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="LYBT.WPF.Client.Controls.Auth.LoginStatusControl"
+﻿<UserControl x:Class="LYBT.Desktop.Core.Controls.Auth.LoginStatusControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"

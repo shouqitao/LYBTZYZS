@@ -2,7 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 using LYBT.Shared.Models.Contracts.Herbs;
 
-namespace LYBT.WPF.Client.Controls.Herbs
+namespace LYBT.Desktop.Core.Controls.Herbs
 {
 
     /// <summary>

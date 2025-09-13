@@ -4,7 +4,7 @@ using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Extensions;
 using LYBT.Shared.Utilities.Helpers;
 
-namespace LYBT.Client.Core.Helpers
+namespace LYBT.Desktop.Core.Helpers
 {
 
     /// <summary>

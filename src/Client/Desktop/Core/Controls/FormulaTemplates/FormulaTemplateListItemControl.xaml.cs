@@ -2,7 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 using LYBT.Shared.Models.Contracts.Formula;
 
-namespace LYBT.WPF.Client.Controls.Formulas
+namespace LYBT.Desktop.Core.Controls.Formulas
 {
 
     /// <summary>

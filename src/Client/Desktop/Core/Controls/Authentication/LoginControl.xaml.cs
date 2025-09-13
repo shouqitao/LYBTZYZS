@@ -1,7 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 
-namespace LYBT.WPF.Client.Controls.Authentication
+namespace LYBT.Desktop.Core.Controls.Authentication
 {
 
     /// <summary>
