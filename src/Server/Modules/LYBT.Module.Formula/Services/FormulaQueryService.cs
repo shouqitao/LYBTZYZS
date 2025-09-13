@@ -319,25 +319,6 @@ namespace LYBT.Module.Formula.Services
             return query;
         }
 
-        /// <summary>
-        /// 智能推荐计算方法已移除 - Record-Only模式下不再需要复杂的推荐算法
-        /// </summary>
-        [Obsolete("Smart recommendation calculation removed in Record-Only mode.", false)]
-        private static double CalculateConfidence(LYBT.Entities.Formula.Formula formula, string syndrome)
-        {
-            // Record-Only模式下不再使用推荐算法
-            return 0.0;
-        }
-
-        /// <summary>
-        /// 智能推荐计算方法已移除 - Record-Only模式下不再需要复杂的推荐算法
-        /// </summary>
-        [Obsolete("Smart recommendation calculation removed in Record-Only mode.", false)]
-        private static double CalculateMatchScore(LYBT.Entities.Formula.Formula formula, string symptoms, string diagnosis)
-        {
-            // Record-Only模式下不再使用推荐算法
-            return 0.0;
-        }
 
         #endregion 私有辅助方法
 
