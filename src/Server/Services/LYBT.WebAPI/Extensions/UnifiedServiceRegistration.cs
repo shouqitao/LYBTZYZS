@@ -4,6 +4,8 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 
 // using LYBT.Infrastructure.Configuration; // Removed - SimplifiedConfigurationService eliminated
+using LYBT.Infrastructure.Caching.Adapters;
+using LYBT.Infrastructure.Caching.Interfaces;
 using LYBT.Infrastructure.Configuration.Options;
 using LYBT.Infrastructure.Data;
 
@@ -100,6 +102,9 @@ public static class UnifiedServiceRegistration
             options.ExpirationScanFrequency = TimeSpan.FromMinutes(1); // 每分钟扫描过期项
         });
 
+        // 注册统一缓存服务 - 唯一正源
+        services.AddSingleton<ICacheService, MemoryCacheAdapter>();
+
         // =========== 配置选项绑定 - 直接使用 IOptions<T> 模式 ===========
         // 消除配置服务套娃，直接绑定配置并支持环境变量覆盖
         services.Configure<SysAdminOptions>(options =>
@@ -159,13 +164,9 @@ public static class UnifiedServiceRegistration
     /// </summary>
     private static IServiceCollection RegisterPerformanceServices(this IServiceCollection services)
     {
-        // =========== 简化缓存管理 ===========
-        // UltraThink简化：使用内置IMemoryCache替代复杂的UnifiedCacheManager
-        services.AddMemoryCache(options =>
-        {
-            // 使用默认配置，避免复杂的配置选项
-            options.SizeLimit = 1000; // 简化：使用固定的缓存大小限制
-        });
+        // =========== 简化性能监控 ===========
+        // UltraThink简化：移除复杂的性能监控组件，使用标准.NET性能计数器
+        // 缓存服务已在基础设施层统一注册，避免重复注册
         return services;
     }
 
