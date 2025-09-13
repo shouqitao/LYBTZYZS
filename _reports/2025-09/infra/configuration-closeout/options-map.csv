@@ -1,0 +1,13 @@
+OldKey,NewKey,File/Source,Action,Issue,Priority,Status
+UserOptions:DefaultUserPassword,DefaultPasswords:NewUser,"appsettings.json, appsettings.Security.json",迁移到新键并标记过时,硬编码密码分散配置,高,需清理
+SysAdminOptions:DefaultPassword,DefaultPasswords:SystemAdmin,"appsettings.json, appsettings.Security.json",迁移到新键并标记过时,硬编码密码分散配置,高,需清理
+AuthOptions:DefaultSysAdminPassword,DefaultPasswords:SystemAdmin,代码中的过时属性,删除过时属性,重复密码定义,中,需清理
+"UserOptions:DefaultUserPassword=""ChangeMe123""","DefaultPasswords:NewUser=""LybtUser2025#InitPass!""",appsettings.json,替换为标准值,弱密码/不一致值,高,需清理
+"SysAdminOptions:DefaultPassword=""Admin@123456""","DefaultPasswords:SystemAdmin=""LybtAdmin2025@SecurePass!""",appsettings.json,替换为标准值,弱密码/不一致值,高,需清理
+"UserOptions:DefaultUserPassword=""请设置更强的默认密码""",DefaultPasswords:NewUser,appsettings.Production.json,替换为环境变量引用,生产环境占位符,高,需清理
+"SysAdminOptions:DefaultPassword=""请设置强管理员密码""",DefaultPasswords:SystemAdmin,appsettings.Production.json,替换为环境变量引用,生产环境占位符,高,需清理
+${USER_DEFAULT_PASSWORD},DefaultPasswords:NewUser,appsettings.Security.json,配置键已正确,环境变量映射正确,低,✅已正确
+${ADMIN_DEFAULT_PASSWORD},DefaultPasswords:SystemAdmin,appsettings.Security.json,配置键已正确,环境变量映射正确,低,✅已正确
+Infrastructure.UserOptions.DefaultUserPassword,删除或标记更过时,代码中的过时属性,删除属性或提升警告级别,过时成员保留,中,需清理
+Infrastructure.SysAdminOptions.DefaultPassword,删除或标记更过时,代码中的过时属性,删除属性或提升警告级别,过时成员保留,中,需清理
+Infrastructure.AuthOptions.DefaultSysAdminPassword,删除过时属性,代码中的过时属性,彻底删除重复定义,重复密码定义,中,需清理
