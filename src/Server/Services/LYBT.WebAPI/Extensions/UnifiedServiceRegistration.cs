@@ -51,8 +51,8 @@ public static class UnifiedServiceRegistration
         // 5. 控制器和JSON配置
         services.RegisterControllerServices();
 
-        // 6. 跨域策略
-        services.AddSecureCorsPolicy(configuration, environment);
+        // 6. 跨域策略 - REMOVED (系统不需要跨域功能)
+        // services.AddSecureCorsPolicy(configuration, environment);
 
         // 7. 环境感知配置验证 - Configuration Hardening
         // 为生产环境提供额外的安全校验，开发环境提供宽松策略
