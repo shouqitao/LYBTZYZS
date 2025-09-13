@@ -1,0 +1,5 @@
+Project,Path,Symbol,Kind,Action,Reason
+LYBT.Entities,Common/TransactionStepLog.cs,TransactionStepLog,class,delete,仅DbContext定义但无业务使用的分布式事务日志实体
+LYBT.Entities,Common/TransactionLog.cs,TransactionLog,class,delete,仅DbContext定义但无业务使用的分布式事务日志实体
+LYBT.Infrastructure,Data/AppDbContext.cs,TransactionStepLogs DbSet,field,delete,删除对应未使用实体的DbSet定义
+LYBT.Infrastructure,Data/AppDbContext.cs,TransactionLogs DbSet,field,delete,删除对应未使用实体的DbSet定义

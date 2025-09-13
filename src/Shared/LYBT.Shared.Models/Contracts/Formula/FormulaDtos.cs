@@ -410,7 +410,6 @@ namespace LYBT.Shared.Models.Contracts.Formula
         public DateTime EndDate { get; set; }
     }
 
-
     // UltraThink v2.0: 导入导出功能DTOs（应用户业务需求恢复）
 
     /// <summary>

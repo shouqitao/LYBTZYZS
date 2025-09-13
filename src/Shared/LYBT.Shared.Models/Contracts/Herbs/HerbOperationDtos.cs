@@ -647,7 +647,6 @@ namespace LYBT.Shared.Models.Contracts.Herbs
         public DateTime? ApprovalTime { get; set; }
     }
 
-
     /// <summary>
     /// 药材使用模式分析DTO
     /// </summary>

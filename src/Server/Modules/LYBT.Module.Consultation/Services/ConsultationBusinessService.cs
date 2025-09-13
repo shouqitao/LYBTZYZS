@@ -79,6 +79,5 @@ namespace LYBT.Module.Consultation.Services
                 return ServiceResult<bool>.Failure($"保存四诊数据失败: {ex.Message}");
             }
         }
-
     }
 }

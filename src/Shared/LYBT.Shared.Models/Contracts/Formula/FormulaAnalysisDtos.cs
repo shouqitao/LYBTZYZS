@@ -31,7 +31,6 @@ namespace LYBT.Shared.Models.Contracts.Formula
         public string Description { get; set; } = string.Empty;
     }
 
-
     /// <summary>
     /// 验方分析结果
     /// </summary>

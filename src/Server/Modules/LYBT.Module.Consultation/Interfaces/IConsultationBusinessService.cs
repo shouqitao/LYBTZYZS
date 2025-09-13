@@ -15,6 +15,5 @@ namespace LYBT.Module.Consultation.Interfaces
         /// 保存中医四诊信息
         /// </summary>
         Task<ServiceResult<bool>> SaveFourDiagnosisAsync(Guid consultationId, object fourDiagnosisData);
-
     }
 }

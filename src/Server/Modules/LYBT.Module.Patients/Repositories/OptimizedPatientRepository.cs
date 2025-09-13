@@ -413,7 +413,6 @@ namespace LYBT.Module.Patients.Repositories
 
         #endregion IPatientRepository接口实现
 
-
         #region 批量操作优化
 
         /// <summary>

@@ -63,12 +63,7 @@ namespace LYBT.Infrastructure.Data
         public DbSet<HerbCompatibilityNote> HerbCompatibilityNotes { get; set; }
 
         // ==================== 事务协调器相关实体 ====================
-
-        // 事务日志
-        public DbSet<TransactionLog> TransactionLogs { get; set; }
-
-        // 事务步骤日志
-        public DbSet<TransactionStepLog> TransactionStepLogs { get; set; }
+        // UltraThink简化：移除未使用的分布式事务日志实体
 
         // ==================== 日志相关实体 - UltraThink重构：简化 ====================
 
@@ -96,7 +91,8 @@ namespace LYBT.Infrastructure.Data
             ConfigureHerbs(modelBuilder);
             ConfigureFormulas(modelBuilder);
             ConfigureCompatibilityNotes(modelBuilder);
-            ConfigureTransactions(modelBuilder);
+
+            // UltraThink简化：移除未使用的分布式事务日志配置
 
             // ConfigurePharmacies(modelBuilder); // 模块已删除
             // ConfigurePharmacyHerbs(modelBuilder); // 模块已删除
@@ -319,53 +315,7 @@ namespace LYBT.Infrastructure.Data
                   .OnDelete(DeleteBehavior.Cascade);
         }
 
-        /// <summary>
-        /// 配置事务相关实体
-        /// </summary>
-        private static void ConfigureTransactions(ModelBuilder modelBuilder)
-        {
-            // 事务日志配置
-            var transactionLogEntity = modelBuilder.Entity<TransactionLog>();
-            transactionLogEntity.ToTable("TransactionLogs");
-            transactionLogEntity.HasKey(t => t.Id);
-            transactionLogEntity.Property(t => t.TransactionName).HasMaxLength(200).IsRequired();
-            transactionLogEntity.Property(t => t.Status).IsRequired();
-            transactionLogEntity.Property(t => t.StartTime).IsRequired();
-            transactionLogEntity.Property(t => t.EntityIds).HasColumnType("nvarchar(max)");
-            transactionLogEntity.Property(t => t.Exception).HasColumnType("nvarchar(max)");
-            transactionLogEntity.Property(t => t.ContextSnapshot).HasColumnType("nvarchar(max)");
-
-            // 索引
-            transactionLogEntity.HasIndex(t => t.TransactionId);
-            transactionLogEntity.HasIndex(t => t.Status);
-            transactionLogEntity.HasIndex(t => t.StartTime);
-            transactionLogEntity.HasIndex(t => t.UserId);
-
-            // 事务步骤日志配置
-            var stepLogEntity = modelBuilder.Entity<TransactionStepLog>();
-            stepLogEntity.ToTable("TransactionStepLogs");
-            stepLogEntity.HasKey(s => s.Id);
-            stepLogEntity.Property(s => s.StepName).HasMaxLength(200).IsRequired();
-            stepLogEntity.Property(s => s.StepOrder).IsRequired();
-            stepLogEntity.Property(s => s.Status).IsRequired();
-            stepLogEntity.Property(s => s.StartTime).IsRequired();
-            stepLogEntity.Property(s => s.Exception).HasColumnType("nvarchar(max)");
-            stepLogEntity.Property(s => s.Metadata).HasColumnType("nvarchar(max)");
-            stepLogEntity.Property(s => s.IsCompensation).HasDefaultValue(false);
-            stepLogEntity.Property(s => s.RetryCount).HasDefaultValue(0);
-
-            // 索引
-            stepLogEntity.HasIndex(s => s.TransactionId);
-            stepLogEntity.HasIndex(s => s.Status);
-            stepLogEntity.HasIndex(s => s.StartTime);
-            stepLogEntity.HasIndex(s => new { s.TransactionId, s.StepOrder });
-
-            // 配置关联关系
-            stepLogEntity.HasOne(s => s.TransactionLog)
-                         .WithMany()
-                         .HasForeignKey(s => s.TransactionId)
-                         .OnDelete(DeleteBehavior.Cascade);
-        }
+        // UltraThink简化：ConfigureTransactions方法已删除（对应实体已清理）
 
         // 药房模块已删除
         /*        private static void ConfigurePharmacies(ModelBuilder modelBuilder) {
