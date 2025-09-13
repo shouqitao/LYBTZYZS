@@ -93,40 +93,40 @@ namespace LYBT.Infrastructure
             return services;
         }
 
-        /// <summary>
-        /// 添加CORS策略
-        /// </summary>
-        /// <param name="services">服务集合</param>
-        /// <param name="policyName">策略名称</param>
-        /// <param name="allowedOrigins">允许的来源</param>
-        /// <returns>服务集合</returns>
-        public static IServiceCollection AddCorsPolicies(this IServiceCollection services, string policyName = "DefaultPolicy", params string[] allowedOrigins)
-        {
-            services.AddCors(options =>
-            {
-                options.AddPolicy(policyName, builder =>
-                {
-                    if (allowedOrigins?.Length > 0)
-                    {
-                        builder.WithOrigins(allowedOrigins);
-                    }
-                    else
-                    {
-                        builder.AllowAnyOrigin();
-                    }
+        // /// <summary>
+        // /// 添加CORS策略 - REMOVED (系统不需要跨域功能)
+        // /// </summary>
+        // /// <param name="services">服务集合</param>
+        // /// <param name="policyName">策略名称</param>
+        // /// <param name="allowedOrigins">允许的来源</param>
+        // /// <returns>服务集合</returns>
+        // public static IServiceCollection AddCorsPolicies(this IServiceCollection services, string policyName = "DefaultPolicy", params string[] allowedOrigins)
+        // {
+        //     services.AddCors(options =>
+        //     {
+        //         options.AddPolicy(policyName, builder =>
+        //         {
+        //             if (allowedOrigins?.Length > 0)
+        //             {
+        //                 builder.WithOrigins(allowedOrigins);
+        //             }
+        //             else
+        //             {
+        //                 builder.AllowAnyOrigin();
+        //             }
 
-                    builder.AllowAnyMethod()
-                           .AllowAnyHeader();
+        //             builder.AllowAnyMethod()
+        //                    .AllowAnyHeader();
 
-                    if (allowedOrigins?.Length > 0)
-                    {
-                        builder.AllowCredentials();
-                    }
-                });
-            });
+        //             if (allowedOrigins?.Length > 0)
+        //             {
+        //                 builder.AllowCredentials();
+        //             }
+        //         });
+        //     });
 
-            return services;
-        }
+        //     return services;
+        // }
 
         /// <summary>
         /// 添加基础设施数据库上下文
@@ -179,8 +179,8 @@ namespace LYBT.Infrastructure
             // 添加认证配置
             services.AddAuthConfiguration(configuration);
 
-            // 添加CORS策略
-            services.AddCorsPolicies();
+            // 添加CORS策略 - REMOVED (系统不需要跨域功能)
+            // services.AddCorsPolicies();
 
             // 注意：API版本控制在Program.cs中单独配置
             return services;

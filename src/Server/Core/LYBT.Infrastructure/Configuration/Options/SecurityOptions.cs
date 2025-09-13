@@ -15,10 +15,10 @@ namespace LYBT.Infrastructure.Configuration.Options
         /// </summary>
         public HttpsOptions Https { get; set; } = new();
 
-        /// <summary>
-        /// CORS配置
-        /// </summary>
-        public CorsOptions Cors { get; set; } = new();
+        // /// <summary>
+        // /// CORS配置 - REMOVED (系统不需要跨域功能)
+        // /// </summary>
+        // public CorsOptions Cors { get; set; } = new();
 
         /// <summary>
         /// 安全头配置
@@ -69,38 +69,38 @@ namespace LYBT.Infrastructure.Configuration.Options
         public bool HstsPreload { get; set; } = true;
     }
 
-    /// <summary>
-    /// CORS配置
-    /// </summary>
-    public class CorsOptions
-    {
+    // /// <summary>
+    // /// CORS配置 - REMOVED (系统不需要跨域功能)
+    // /// </summary>
+    // public class CorsOptions
+    // {
 
-        /// <summary>
-        /// 允许的源
-        /// </summary>
-        public List<string> AllowedOrigins { get; set; } = new();
+    //     /// <summary>
+    //     /// 允许的源
+    //     /// </summary>
+    //     public List<string> AllowedOrigins { get; set; } = new();
 
-        /// <summary>
-        /// 允许的方法
-        /// </summary>
-        public List<string> AllowedMethods { get; set; } = new() { "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS" };
+    //     /// <summary>
+    //     /// 允许的方法
+    //     /// </summary>
+    //     public List<string> AllowedMethods { get; set; } = new() { "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS" };
 
-        /// <summary>
-        /// 允许的头
-        /// </summary>
-        public List<string> AllowedHeaders { get; set; } = new() { "Content-Type", "Authorization", "X-Requested-With", "Accept", "Origin" };
+    //     /// <summary>
+    //     /// 允许的头
+    //     /// </summary>
+    //     public List<string> AllowedHeaders { get; set; } = new() { "Content-Type", "Authorization", "X-Requested-With", "Accept", "Origin" };
 
-        /// <summary>
-        /// 是否允许凭据
-        /// </summary>
-        public bool AllowCredentials { get; set; } = true;
+    //     /// <summary>
+    //     /// 是否允许凭据
+    //     /// </summary>
+    //     public bool AllowCredentials { get; set; } = true;
 
-        /// <summary>
-        /// 预检请求最大缓存时间（秒）
-        /// </summary>
-        [Range(0, 86400, ErrorMessage = "预检请求最大缓存时间必须在0-86400秒之间")]
-        public int PreflightMaxAge { get; set; } = 3600;
-    }
+    //     /// <summary>
+    //     /// 预检请求最大缓存时间（秒）
+    //     /// </summary>
+    //     [Range(0, 86400, ErrorMessage = "预检请求最大缓存时间必须在0-86400秒之间")]
+    //     public int PreflightMaxAge { get; set; } = 3600;
+    // }
 
     /// <summary>
     /// 安全头配置
