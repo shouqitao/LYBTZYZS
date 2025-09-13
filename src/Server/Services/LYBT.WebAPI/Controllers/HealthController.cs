@@ -1,4 +1,5 @@
 using System.Reflection;
+using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LYBT.WebAPI.Controllers;
@@ -7,7 +8,8 @@ namespace LYBT.WebAPI.Controllers;
 /// 健康检查控制器
 /// </summary>
 [ApiController]
-[Route("api/v1/health")]
+[ApiVersion("1")]
+[Route("api/v{version:apiVersion}/health")]
 public class HealthController : ControllerBase
 {
     /// <summary>
