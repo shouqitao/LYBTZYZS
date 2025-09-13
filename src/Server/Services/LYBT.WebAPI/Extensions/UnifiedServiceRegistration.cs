@@ -114,7 +114,7 @@ public static class UnifiedServiceRegistration
             configuration.GetSection("SysAdminOptions").Bind(options);
         });
 
-        services.Configure<UserOptions>(options =>
+        services.Configure<LYBT.Infrastructure.Configuration.Options.UserOptions>(options =>
         {
             var userPassword = ConfigurationHelper.GetUserDefaultPassword(configuration);
             options.DefaultUserPassword = userPassword;
@@ -184,6 +184,7 @@ public static class UnifiedServiceRegistration
             services.Configure<JwtOptions>(options =>
             {
                 configuration.GetSection("JwtOptions").Bind(options);
+
                 // 环境变量优先级支持
                 options.Secret = ConfigurationHelper.GetJwtSecret(configuration);
             });
@@ -378,5 +379,4 @@ public static class UnifiedServiceRegistration
     {
         return services;
     }
-
 }

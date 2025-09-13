@@ -319,7 +319,6 @@ namespace LYBT.Module.Formula.Services
             return query;
         }
 
-
         #endregion 私有辅助方法
 
         #region 搜索接口 - 简化版接口兼容性

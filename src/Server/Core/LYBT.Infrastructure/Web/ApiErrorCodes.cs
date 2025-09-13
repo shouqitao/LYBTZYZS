@@ -285,34 +285,4 @@ namespace LYBT.Infrastructure.Web
 
         #endregion 系统相关错误
     }
-
-    /// <summary>
-    /// 错误消息常量
-    /// </summary>
-    public static class ApiErrorMessages
-    {
-        public const string VALIDATIONFAILED = "参数验证失败";
-        public const string UNAUTHORIZEDACCESS = "未授权访问";
-        public const string FORBIDDENACCESS = "禁止访问";
-        public const string RESOURCENOTFOUND = "资源未找到";
-        public const string INTERNALSERVERERROR = "服务器内部错误";
-        public const string OPERATIONTIMEOUT = "操作超时";
-        public const string RATELIMITEXCEEDED = "请求频率过高，请稍后再试";
-
-        public const string INVALIDCREDENTIALS = "用户名或密码错误";
-        public const string ACCOUNTLOCKED = "账户已被锁定";
-        public const string ACCOUNTDISABLED = "账户已禁用";
-        public const string TOKENEXPIRED = "登录已过期，请重新登录";
-        public const string INVALIDTOKEN = "无效的访问令牌";
-
-        public const string DATASAVEFAILED = "数据保存失败";
-        public const string DATAUPDATEFAILED = "数据更新失败";
-        public const string DATADELETEFAILED = "数据删除失败";
-
-        public const string USERNAMEEXISTS = "用户名已存在";
-        public const string IDNUMBEREXISTS = "身份证号已存在";
-        public const string PHONEEXISTS = "手机号已存在";
-        public const string HERBNAMEEXISTS = "药材名称已存在";
-        public const string FORMULANAMEEXISTS = "验方名称已存在";
-    }
 }

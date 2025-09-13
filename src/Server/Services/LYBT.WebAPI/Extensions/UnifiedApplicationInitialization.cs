@@ -290,5 +290,4 @@ public static class UnifiedApplicationInitialization
         // 使用配置文件
         return configuration.GetConnectionString(name) ?? string.Empty;
     }
-
 }

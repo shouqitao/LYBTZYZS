@@ -22,8 +22,9 @@ namespace LYBT.Infrastructure.Configuration.Options
         public TimeSpan AccountLockoutDuration { get; set; } = TimeSpan.FromMinutes(15);
 
         /// <summary>
-        /// 系统管理员默认密码
+        /// 系统管理员默认密码（已弃用，请使用DefaultPasswords:SystemAdmin）
         /// </summary>
+        [Obsolete("请使用 DefaultPasswordOptions.SystemAdmin 替代", false)]
         [Required(ErrorMessage = "系统管理员默认密码不能为空")]
         [MinLength(6, ErrorMessage = "系统管理员默认密码长度至少6个字符")]
         public string DefaultSysAdminPassword { get; set; } = "Admin123!";
