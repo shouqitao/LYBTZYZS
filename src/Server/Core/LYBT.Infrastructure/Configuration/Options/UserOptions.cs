@@ -12,7 +12,7 @@ namespace LYBT.Infrastructure.Configuration.Options
         /// <summary>
         /// 新建用户的默认密码（已弃用，请使用DefaultPasswords:NewUser）
         /// </summary>
-        [Obsolete("请使用 DefaultPasswordOptions.NewUser 替代", false)]
+        [Obsolete("请使用 DefaultPasswordOptions.NewUser 替代", true)]
         public string DefaultUserPassword { get; set; } = "LybtUser2025#InitPass!";
 
         /// <summary>
