@@ -185,7 +185,7 @@ namespace LYBT.Desktop.Users.ViewModels
 
                 if (confirm)
                 {
-                    var result = await _userService.ResetPasswordAsync(SelectedItem.Id, "ChangeMe123");
+                    var result = await _userService.ResetPasswordAsync(SelectedItem.Id, string.Empty); // 后端会自动获取环境感知的默认密码
                     if (result.IsSuccess)
                     {
                         await _dialogService.ShowInformationAsync("密码重置成功，请通知用户使用默认密码登录", "成功");

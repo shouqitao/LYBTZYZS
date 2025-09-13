@@ -202,8 +202,8 @@ namespace LYBT.Desktop.Users.ViewModels
                         PhoneNumber = string.IsNullOrWhiteSpace(PhoneNumber) ? null : PhoneNumber.Trim(),
                         Role = SelectedRole?.Value ?? "Doctor", // 新建用户使用选中的角色，默认为医生
                         Status = IsActive ? CommonStatus.Enabled : CommonStatus.Disabled, // 🎯 修复：包含状态字段
-                        Password = "ChangeMe123", // 默认密码
-                        ConfirmPassword = "ChangeMe123", // 确认密码
+                        Password = string.Empty, // 后端会自动设置环境感知的默认密码
+                        ConfirmPassword = string.Empty, // 确认密码
                         IsCreateOperation = true // 设置为创建操作
                     };
 
