@@ -72,7 +72,9 @@ public static class UnifiedServiceRegistration
         // 直接使用 .NET 内置 IConfiguration，避免额外的包装层
 
         // =========== 统一数据库上下文 ===========
-        var connectionString = ConfigurationHelper.GetConnectionString(configuration);
+        var connectionString = configuration.GetConnectionString("DefaultConnection") ?? 
+                              Environment.GetEnvironmentVariable("CONNECTION_STRING") ?? 
+                              string.Empty;
 
         if (!string.IsNullOrEmpty(connectionString))
         {
@@ -84,7 +86,7 @@ public static class UnifiedServiceRegistration
                     sqlOptions.EnableRetryOnFailure(3, TimeSpan.FromSeconds(30), null);
                 });
 
-                var dbOptions = ConfigurationHelper.GetConfigurationSection<DatabaseOptions>(configuration, "DatabaseOptions");
+                var dbOptions = configuration.GetSection("DatabaseOptions").Get<DatabaseOptions>();
                 options.EnableSensitiveDataLogging(dbOptions?.EnableSensitiveDataLogging ?? false);
                 options.EnableDetailedErrors(dbOptions?.EnableDetailedErrors ?? false);
                 options.EnableServiceProviderCaching();
@@ -195,7 +197,9 @@ public static class UnifiedServiceRegistration
         try
         {
             // 直接获取JWT密钥用于认证设置（IOptions已在RegisterInfrastructureServices中注册）
-            var jwtSecret = ConfigurationHelper.GetJwtSecret(configuration);
+            var jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET") ??
+                           configuration["JwtOptions:Secret"] ??
+                           "DefaultDevelopmentSecretKeyForJWTAuthentication_ShouldBeReplacedInProduction";
 
             if (!string.IsNullOrEmpty(jwtSecret))
             {

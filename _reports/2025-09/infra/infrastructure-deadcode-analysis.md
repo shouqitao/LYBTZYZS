@@ -13,6 +13,7 @@
 ### 🔴 确认未使用 - 建议立即删除
 
 #### 1. 文件存储服务 (完全未使用)
+
 - **文件**: `Storage/IFileStorageService.cs`
 - **大小**: 127行
 - **用途**: 文件上传下载服务接口，包含云存储支持
@@ -24,6 +25,7 @@
 - **确信度**: 🟢 **高** (100%确认未使用)
 
 #### 2. 空的缓存目录结构
+
 - **目录**: `Caching/Configuration/` (空目录)
 - **目录**: `Caching/Extensions/` (空目录)  
 - **用途**: 缓存配置和扩展的预留目录
@@ -33,6 +35,7 @@
 - **确信度**: 🟢 **高** (100%确认可删除)
 
 #### 3. Repository接口目录 (疑似多余)
+
 - **目录**: `Interfaces/Repositories/` (空目录)
 - **用途**: Repository接口的预留目录 
 - **分析**: 
@@ -43,6 +46,7 @@
 ### 🟡 需要进一步评估 - 谨慎处理
 
 #### 4. IModule 接口 (后端可能不需要)
+
 - **文件**: `Interfaces/IModule.cs`
 - **大小**: 约20行
 - **用途**: 模块接口定义，用于模块化架构
@@ -54,6 +58,7 @@
 - **确信度**: 🟡 **中** (需要架构决策)
 
 #### 5. stylecop配置重复
+
 - **文件**: `stylecop.json` 和 `stylecop1.json`
 - **用途**: 代码分析配置
 - **分析**: 
@@ -65,21 +70,25 @@
 ### 🟢 正常使用 - 保留
 
 #### 6. 缓存服务 (正常使用)
+
 - **文件**: `Caching/Adapters/MemoryCacheAdapter.cs`
 - **文件**: `Caching/Interfaces/ICacheService.cs`
 - **分析**: ✅ 正常使用，在服务注册中被配置
 
 #### 7. 配置选项类 (正常使用)
+
 - **目录**: `Configuration/Options/`
 - **分析**: ✅ 所有配置类都在使用中，已在配置强化项目中验证
 
 #### 8. Web基础控制器 (正常使用)
+
 - **目录**: `Web/`
 - **分析**: ✅ BaseApiController等被业务控制器继承
 
 ## 详细验证结果
 
 ### IFileStorageService 验证
+
 ```bash
 # 全项目搜索结果
 grep -r "IFileStorageService|FileStorageService" src/
@@ -87,6 +96,7 @@ grep -r "IFileStorageService|FileStorageService" src/
 ```
 
 **具体发现**:
+
 - 没有实现类
 - 没有服务注册 
 - 没有依赖注入使用
@@ -94,6 +104,7 @@ grep -r "IFileStorageService|FileStorageService" src/
 - FileMetadata类包含完整的文件元数据定义，完全未被使用
 
 ### 空目录验证
+
 ```bash
 # 检查空目录
 ls -la src/Server/Core/LYBT.Infrastructure/Caching/Configuration/
@@ -104,6 +115,7 @@ ls -la src/Server/Core/LYBT.Infrastructure/Interfaces/Repositories/
 ```
 
 ### IModule 接口使用分析
+
 - **前端使用**: 8个业务模块 + 2个工作台模块 + 多个服务类使用
 - **后端使用**: 仅在Infrastructure中定义，后端模块没有使用
 - **架构问题**: 后端服务导出前端使用的接口，违反分层原则
@@ -111,17 +123,20 @@ ls -la src/Server/Core/LYBT.Infrastructure/Interfaces/Repositories/
 ## 预期清理效果
 
 ### 代码量减少
+
 - **IFileStorageService.cs**: 127行
 - **空目录清理**: 减少3个无用目录
 - **配置文件重复**: 减少1个重复文件
 - **总计**: 约130+行代码清理
 
 ### 项目结构优化
+
 - **去除过度设计**: 移除未使用的企业级文件存储功能
 - **简化目录结构**: 清理空的预留目录
 - **减少混乱**: 移除重复配置文件
 
 ### 维护成本降低
+
 - **减少认知负荷**: 开发者不再需要理解未使用的接口
 - **简化依赖**: 减少不必要的项目复杂度
 - **提升性能**: 减少编译时需要处理的代码量
@@ -129,21 +144,27 @@ ls -la src/Server/Core/LYBT.Infrastructure/Interfaces/Repositories/
 ## 风险评估
 
 ### 🟢 低风险 - 建议立即执行
+
 1. **删除 IFileStorageService.cs**
+   
    - 风险: 无
    - 原因: 完全未使用，没有任何依赖
 
 2. **删除空目录**
+   
    - 风险: 无  
    - 原因: 空目录不会影响编译或运行
 
 ### 🟡 中风险 - 需要谨慎评估
+
 3. **IModule 接口处理**
+   
    - 风险: 中等
    - 原因: 前端依赖此接口，需要确保前端功能不受影响
    - 建议: 移至Client项目的共享库中
 
 4. **stylecop配置清理**
+   
    - 风险: 低
    - 原因: 可能影响代码分析配置
    - 建议: 先确认哪个文件在使用，保留活跃的版本
@@ -151,16 +172,19 @@ ls -la src/Server/Core/LYBT.Infrastructure/Interfaces/Repositories/
 ## 执行建议
 
 ### 第一阶段: 安全清理 (立即执行)
+
 1. 删除 `Storage/IFileStorageService.cs`
 2. 删除空目录: `Caching/Configuration/`, `Caching/Extensions/`, `Interfaces/Repositories/`
 3. 验证构建和测试通过
 
-### 第二阶段: 架构优化 (需要规划)  
+### 第二阶段: 架构优化 (需要规划)
+
 1. 评估IModule接口的前后端分离方案
 2. 清理重复的stylecop配置
 3. 考虑其他架构层面的优化
 
 ### 第三阶段: 持续监控
+
 1. 建立定期的死代码检测机制
 2. 在代码审查中关注过度设计问题
 3. 保持项目简洁性，符合小型诊所定位
@@ -168,16 +192,19 @@ ls -la src/Server/Core/LYBT.Infrastructure/Interfaces/Repositories/
 ## 类似问题预防
 
 ### 开发约束
+
 1. **功能必要性评估**: 新增代码前评估是否真正需要
 2. **企业级功能控制**: 避免为小型诊所引入过度复杂的功能
 3. **定期清理机制**: 建立季度代码清理review
 
 ### 架构原则
+
 1. **YAGNI原则**: You Aren't Gonna Need It - 不实现暂时不需要的功能
 2. **简洁性优先**: 优先选择简单直接的解决方案
 3. **实际驱动**: 基于实际业务需求而非理论完备性设计
 
 ---
+
 **分析完成**: LYBT.Infrastructure项目未使用代码分析  
 **建议优先级**: 🔴 立即清理文件存储服务 → 🟡 评估IModule架构 → 🟢 持续监控  
 **预期效果**: 减少130+行冗余代码，优化项目结构，降低维护复杂度
