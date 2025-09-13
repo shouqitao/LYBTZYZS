@@ -1,11 +1,13 @@
 using AutoMapper;
 using LYBT.Entities.Users;
+using LYBT.Infrastructure.Configuration.Options;
 using LYBT.Module.Auth.Interfaces;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Utilities.Helpers;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace LYBT.Module.Auth.Services
 {
@@ -22,6 +24,7 @@ namespace LYBT.Module.Auth.Services
         private readonly IMapper _mapper;
         private readonly ILogger<AuthBusinessService> _logger;
         private readonly SysAdminHandler _sysAdminHandler;
+        private readonly AuthOptions _authOptions;
 
         public AuthBusinessService(
             IAuthRepository authRepository,
@@ -29,7 +32,8 @@ namespace LYBT.Module.Auth.Services
             IJwtAuthenticationService jwtAuthenticationService,
             IMapper mapper,
             ILogger<AuthBusinessService> logger,
-            SysAdminHandler sysAdminHandler)
+            SysAdminHandler sysAdminHandler,
+            IOptions<AuthOptions> authOptions)
         {
             _authRepository = authRepository ?? throw new ArgumentNullException(nameof(authRepository));
             _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
@@ -37,6 +41,7 @@ namespace LYBT.Module.Auth.Services
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _sysAdminHandler = sysAdminHandler ?? throw new ArgumentNullException(nameof(sysAdminHandler));
+            _authOptions = authOptions?.Value ?? throw new ArgumentNullException(nameof(authOptions));
         }
 
         /// <summary>
@@ -237,18 +242,21 @@ namespace LYBT.Module.Auth.Services
         /// </summary>
         private async Task IncrementFailedLoginCountAsync(User user)
         {
-            const int maxFailedAttempts = 5; // 最大失败尝试次数
-            const int lockoutMinutes = 30;   // 锁定时间（分钟）
-
             user.FailedLoginCount++;
 
             // 如果达到最大失败次数，锁定账户
-            if (user.FailedLoginCount >= maxFailedAttempts)
+            if (user.FailedLoginCount >= _authOptions.MaxFailedLoginAttempts)
             {
-                user.LockoutEnd = DateTime.UtcNow.AddMinutes(lockoutMinutes);
+                user.LockoutEnd = DateTime.UtcNow.Add(_authOptions.AccountLockoutDuration);
                 _logger.LogWarning(
-                    "用户账户已锁定: {Username}, 失败次数: {FailedCount}, 锁定到期时间: {LockoutEnd}",
-                    user.Username, user.FailedLoginCount, user.LockoutEnd);
+                    "用户账户已锁定: {Username}, 失败次数: {FailedCount}, 锁定到期时间: {LockoutEnd}, 锁定时长: {Duration}",
+                    user.Username, user.FailedLoginCount, user.LockoutEnd, _authOptions.AccountLockoutDuration);
+            }
+            else
+            {
+                _logger.LogWarning(
+                    "登录失败: {Username}, 当前失败次数: {FailedCount}/{MaxAttempts}",
+                    user.Username, user.FailedLoginCount, _authOptions.MaxFailedLoginAttempts);
             }
 
             await _authRepository.UpdateUserSecurityAsync(user.Id, user.FailedLoginCount, user.LockoutEnd);

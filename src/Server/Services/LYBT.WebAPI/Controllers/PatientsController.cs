@@ -20,7 +20,7 @@ namespace LYBT.WebAPI.Controllers
     public class PatientsController : BaseApiController
     {
         private readonly IPatientService _service;
-        private static readonly string[] data = new[]
+        private static readonly string[] Data = new[]
                     {
                         "请按照模板格式填写患者信息",
                         "姓名和手机号码为必填项",
@@ -441,7 +441,7 @@ namespace LYBT.WebAPI.Controllers
                     {
                         message = "患者导入模板",
                         template = templateData,
-                        instructions = data
+                        instructions = Data
                     }, "模板导出成功");
             }
             catch (Exception ex)
