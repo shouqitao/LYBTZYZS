@@ -8,6 +8,7 @@ using LYBT.Infrastructure.Caching.Adapters;
 using LYBT.Infrastructure.Caching.Interfaces;
 using LYBT.Infrastructure.Configuration.Extensions;
 using LYBT.Infrastructure.Configuration.Options;
+using LYBT.Infrastructure.Configuration.Services;
 using LYBT.Infrastructure.Data;
 
 // using LYBT.Infrastructure.Security; // Removed - obsolete security components eliminated
@@ -110,8 +111,8 @@ public static class UnifiedServiceRegistration
         // 注册统一缓存服务 - 唯一正源
         services.AddSingleton<ICacheService, MemoryCacheAdapter>();
 
-        // =========== 配置选项绑定 - 直接使用 IOptions<T> 模式 ===========
-        // 消除配置服务套娃，直接绑定配置并支持环境变量覆盖
+        // =========== 配置选项绑定 - 标记为逐步迁移到DefaultPasswordService ===========
+        // 保留兼容性配置，但开始迁移到统一的DefaultPasswordService
         services.Configure<SysAdminOptions>(options =>
         {
             var adminPassword = ConfigurationHelper.GetAdminPassword(configuration);
@@ -125,6 +126,9 @@ public static class UnifiedServiceRegistration
             options.DefaultUserPassword = userPassword;
             configuration.GetSection("UserOptions").Bind(options);
         });
+
+        // =========== 默认密码治理服务 - Dev-only 保护 + 单点逻辑 ===========
+        services.AddScoped<DefaultPasswordService>();
 
         // =========== 配置验证服务 - DT-012优化 ===========
         // 为小型诊所部署启用启动时配置验证，防止配置错误导致的问题

@@ -51,8 +51,8 @@ public static class ConfigurationHelper
     }
 
     /// <summary>
-    /// 获取管理员默认密码
-    /// 优先级: ADMIN_DEFAULT_PASSWORD环境变量 -> 配置文件
+    /// 获取管理员默认密码 - 统一从DefaultPasswordOptions获取
+    /// 优先级: ADMIN_DEFAULT_PASSWORD环境变量 -> DefaultPasswords配置节 -> 安全默认值
     /// </summary>
     public static string GetAdminPassword(IConfiguration configuration)
     {
@@ -63,13 +63,27 @@ public static class ConfigurationHelper
             return envPassword;
         }
 
-        // 使用配置文件
-        return configuration["SysAdminOptions:DefaultPassword"] ?? "LybtAdmin2025@SecurePass!";
+        // 统一从DefaultPasswords配置节获取
+        var defaultPassword = configuration["DefaultPasswords:SystemAdmin"];
+        if (!string.IsNullOrEmpty(defaultPassword))
+        {
+            return defaultPassword;
+        }
+
+        // 向后兼容：尝试读取旧配置路径
+        var legacyPassword = configuration["SysAdminOptions:DefaultPassword"];
+        if (!string.IsNullOrEmpty(legacyPassword))
+        {
+            return legacyPassword;
+        }
+
+        // 安全默认值
+        return "LybtAdmin2025@SecurePass!";
     }
 
     /// <summary>
-    /// 获取用户默认密码
-    /// 优先级: USER_DEFAULT_PASSWORD环境变量 -> 配置文件
+    /// 获取用户默认密码 - 统一从DefaultPasswordOptions获取
+    /// 优先级: USER_DEFAULT_PASSWORD环境变量 -> DefaultPasswords配置节 -> 安全默认值
     /// </summary>
     public static string GetUserDefaultPassword(IConfiguration configuration)
     {
@@ -80,8 +94,22 @@ public static class ConfigurationHelper
             return envPassword;
         }
 
-        // 使用配置文件
-        return configuration["UserOptions:DefaultUserPassword"] ?? "LybtUser2025#InitPass!";
+        // 统一从DefaultPasswords配置节获取
+        var defaultPassword = configuration["DefaultPasswords:NewUser"];
+        if (!string.IsNullOrEmpty(defaultPassword))
+        {
+            return defaultPassword;
+        }
+
+        // 向后兼容：尝试读取旧配置路径
+        var legacyPassword = configuration["UserOptions:DefaultUserPassword"];
+        if (!string.IsNullOrEmpty(legacyPassword))
+        {
+            return legacyPassword;
+        }
+
+        // 安全默认值
+        return "LybtUser2025#InitPass!";
     }
 
     /// <summary>

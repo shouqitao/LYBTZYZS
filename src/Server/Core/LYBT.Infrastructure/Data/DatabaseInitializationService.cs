@@ -1,4 +1,5 @@
 using LYBT.Entities.Users;
+using LYBT.Infrastructure.Configuration.Services;
 using LYBT.Shared.Utilities.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -16,15 +17,18 @@ namespace LYBT.Infrastructure.Data
         private readonly AppDbContext _dbContext;
         private readonly ILogger<DatabaseInitializationService> _logger;
         private readonly IConfiguration _configuration;
+        private readonly DefaultPasswordService _defaultPasswordService;
 
         public DatabaseInitializationService(
             AppDbContext dbContext,
             ILogger<DatabaseInitializationService> logger,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            DefaultPasswordService defaultPasswordService)
         {
             _dbContext = dbContext;
             _logger = logger;
             _configuration = configuration;
+            _defaultPasswordService = defaultPasswordService;
         }
 
         /// <summary>
@@ -378,6 +382,27 @@ namespace LYBT.Infrastructure.Data
         }
 
         /// <summary>
+        /// 检查数据库是否为空（除了管理员表外）
+        /// </summary>
+        private async Task<bool> IsDatabaseEmptyAsync()
+        {
+            try
+            {
+                // 检查主要业务表是否有数据
+                var userCount = await _dbContext.Users.CountAsync();
+                var patientCount = await _dbContext.Patients.CountAsync();
+                var consultationCount = await _dbContext.Consultations.CountAsync();
+
+                return userCount == 0 && patientCount == 0 && consultationCount == 0;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "检查数据库是否为空时出现异常，默认认为数据库不为空");
+                return false;
+            }
+        }
+
+        /// <summary>
         /// 初始化AdminSecrets表默认数据
         /// </summary>
         private async Task InitializeAdminSecretsAsync()
@@ -406,25 +431,45 @@ namespace LYBT.Infrastructure.Data
 
                 if (existingAdmin == null)
                 {
-                    _logger.LogInformation("正在创建默认超级管理员密码...");
+                    // 检查是否允许创建默认管理员密码
+                    var isDatabaseEmpty = await IsDatabaseEmptyAsync();
 
-                    // 从配置读取默认密码
-                    var defaultPassword = _configuration.GetValue<string>("SysAdminOptions:DefaultPassword") ?? "Admin@123456";
-                    var passwordHash = PasswordHelper.Hash(defaultPassword);
-
-                    // 创建AdminSecret记录
-                    var adminSecret = new AdminSecretModel
+                    if (_defaultPasswordService.IsDefaultPasswordAvailable(isDatabaseEmpty))
                     {
-                        Id = Guid.NewGuid(),
-                        Username = "sysadmin",
-                        PasswordHash = passwordHash
-                    };
+                        var defaultPassword = _defaultPasswordService.GetSystemAdminPassword();
 
-                    _dbContext.AdminSecrets.Add(adminSecret);
-                    await _dbContext.SaveChangesAsync();
+                        if (!string.IsNullOrEmpty(defaultPassword))
+                        {
+                            _logger.LogInformation("正在创建默认超级管理员密码...");
 
-                    _logger.LogInformation("✅ 默认超级管理员密码已创建");
-                    _logger.LogInformation($"默认登录信息: 用户名=sysadmin, 密码={defaultPassword}");
+                            var passwordHash = PasswordHelper.Hash(defaultPassword);
+
+                            // 创建AdminSecret记录
+                            var adminSecret = new AdminSecretModel
+                            {
+                                Id = Guid.NewGuid(),
+                                Username = "sysadmin",
+                                PasswordHash = passwordHash
+                            };
+
+                            _dbContext.AdminSecrets.Add(adminSecret);
+                            await _dbContext.SaveChangesAsync();
+
+                            _logger.LogInformation("✅ 默认超级管理员密码已创建");
+                            _logger.LogInformation($"默认登录信息: 用户名=sysadmin, 密码={defaultPassword}");
+                        }
+                        else
+                        {
+                            _logger.LogWarning("⚠️  默认密码服务未提供管理员密码，跳过默认管理员创建");
+                        }
+                    }
+                    else
+                    {
+                        var summary = _defaultPasswordService.GetConfigurationSummary();
+                        _logger.LogInformation("🔒 默认密码策略禁止创建默认管理员密码");
+                        _logger.LogInformation($"环境状态: 生产={summary.IsProduction}, 开发={summary.IsDevelopment}, 允许默认密码={summary.IsDefaultPasswordAllowed}");
+                        _logger.LogInformation("💡 请手动创建管理员账户或在开发环境启用默认密码功能");
+                    }
                 }
                 else
                 {
