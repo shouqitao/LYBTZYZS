@@ -2,7 +2,8 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using LYBT.Infrastructure.Configuration;
+
+// using LYBT.Infrastructure.Configuration; // Removed - SimplifiedConfigurationService eliminated
 using LYBT.Infrastructure.Configuration.Options;
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Security;
@@ -58,13 +59,11 @@ public static class UnifiedServiceRegistration
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        // =========== 简化配置管理系统 - UltraThink重构 ===========
-        // 使用简化配置服务，替代复杂的ConfigurationManager/EnvironmentManager/SecretManager
-        services.AddScoped<ISimplifiedConfigurationService, SimplifiedConfigurationService>();
+        // =========== 直接使用 IConfiguration - 消除配置服务套娃 ===========
+        // 直接使用 .NET 内置 IConfiguration，避免额外的包装层
 
         // =========== 统一数据库上下文 ===========
-        var configService = services.BuildServiceProvider().GetRequiredService<ISimplifiedConfigurationService>();
-        var connectionString = configService.GetConnectionString();
+        var connectionString = GetConnectionString(configuration);
 
         if (!string.IsNullOrEmpty(connectionString))
         {
@@ -76,7 +75,7 @@ public static class UnifiedServiceRegistration
                     sqlOptions.EnableRetryOnFailure(3, TimeSpan.FromSeconds(30), null);
                 });
 
-                var dbOptions = configService.GetSection<DatabaseOptions>("DatabaseOptions");
+                var dbOptions = GetConfigurationSection<DatabaseOptions>(configuration, "DatabaseOptions");
                 options.EnableSensitiveDataLogging(dbOptions?.EnableSensitiveDataLogging ?? false);
                 options.EnableDetailedErrors(dbOptions?.EnableDetailedErrors ?? false);
                 options.EnableServiceProviderCaching();
@@ -104,18 +103,18 @@ public static class UnifiedServiceRegistration
             options.ExpirationScanFrequency = TimeSpan.FromMinutes(1); // 每分钟扫描过期项
         });
 
-        // =========== 配置选项绑定 - UltraThink简化版 ===========
-        // 使用简化配置服务，自动处理环境变量覆盖
+        // =========== 配置选项绑定 - 直接使用 IOptions<T> 模式 ===========
+        // 消除配置服务套娃，直接绑定配置并支持环境变量覆盖
         services.Configure<SysAdminOptions>(options =>
         {
-            var adminPassword = configService.GetAdminPassword();
+            var adminPassword = GetAdminPassword(configuration);
             options.DefaultPassword = adminPassword;
             configuration.GetSection("SysAdminOptions").Bind(options);
         });
 
         services.Configure<UserOptions>(options =>
         {
-            var userPassword = configService.GetUserDefaultPassword();
+            var userPassword = GetUserDefaultPassword(configuration);
             options.DefaultUserPassword = userPassword;
             configuration.GetSection("UserOptions").Bind(options);
         });
@@ -148,10 +147,10 @@ public static class UnifiedServiceRegistration
         services.AddScoped<SensitiveDataQueryInterceptor>();
 
         // =========== 性能优化服务 - UltraThink简化版 ===========
-        services.RegisterPerformanceServices(configService);
+        services.RegisterPerformanceServices();
 
         // =========== 日志和监控服务 - UltraThink简化版 ===========
-        services.RegisterLoggingAndMonitoringServices(configService);
+        services.RegisterLoggingAndMonitoringServices();
 
         // =========== 数据库初始化服务 ===========
         services.AddScoped<DatabaseInitializationService>();
@@ -163,9 +162,7 @@ public static class UnifiedServiceRegistration
     /// 注册性能优化服务 - UltraThink简化版本
     /// 移除过度设计的性能组件，使用.NET内置服务
     /// </summary>
-    private static IServiceCollection RegisterPerformanceServices(
-        this IServiceCollection services,
-        ISimplifiedConfigurationService configService)
+    private static IServiceCollection RegisterPerformanceServices(this IServiceCollection services)
     {
         // =========== 简化缓存管理 ===========
         // UltraThink简化：使用内置IMemoryCache替代复杂的UnifiedCacheManager
@@ -184,10 +181,7 @@ public static class UnifiedServiceRegistration
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        // =========== JWT认证配置 - UltraThink简化版 ===========
-        var serviceProvider = services.BuildServiceProvider();
-        var configService = serviceProvider.GetRequiredService<ISimplifiedConfigurationService>();
-
+        // =========== JWT认证配置 - 直接使用IConfiguration ===========
         try
         {
             // 获取JWT配置
@@ -195,8 +189,8 @@ public static class UnifiedServiceRegistration
             var jwtOptions = jwtSection.Get<JwtOptions>()
                 ?? new JwtOptions();
 
-            // 使用简化配置服务获取JWT密钥
-            jwtOptions.Secret = configService.GetJwtSecret();
+            // 直接使用配置获取JWT密钥
+            jwtOptions.Secret = GetJwtSecret(configuration);
 
             // 注册处理过的JwtOptions到DI容器
             services.AddSingleton<Microsoft.Extensions.Options.IOptions<JwtOptions>>(
@@ -383,10 +377,112 @@ public static class UnifiedServiceRegistration
     /// <summary>
     /// 注册日志和监控服务 - UltraThink简化版
     /// </summary>
-    private static IServiceCollection RegisterLoggingAndMonitoringServices(
-        this IServiceCollection services,
-        ISimplifiedConfigurationService configService)
+    private static IServiceCollection RegisterLoggingAndMonitoringServices(this IServiceCollection services)
     {
         return services;
+    }
+
+    /// <summary>
+    /// 获取数据库连接字符串 - 直接使用IConfiguration
+    /// 优先级: CONNECTION_STRING环境变量 -> 配置文件
+    /// </summary>
+    private static string GetConnectionString(IConfiguration configuration, string name = "DefaultConnection")
+    {
+        // 优先使用环境变量
+        var envConnectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING");
+        if (!string.IsNullOrEmpty(envConnectionString))
+        {
+            return envConnectionString;
+        }
+
+        // 使用配置文件
+        return configuration.GetConnectionString(name) ?? string.Empty;
+    }
+
+    /// <summary>
+    /// 获取配置节 - 直接使用IConfiguration
+    /// </summary>
+    private static T GetConfigurationSection<T>(IConfiguration configuration, string sectionName) where T : class, new()
+    {
+        var section = configuration.GetSection(sectionName);
+        var config = new T();
+        section.Bind(config);
+        return config;
+    }
+
+    /// <summary>
+    /// 获取管理员密码 - 直接使用IConfiguration
+    /// 优先级: ADMIN_DEFAULT_PASSWORD环境变量 -> 配置文件
+    /// </summary>
+    private static string GetAdminPassword(IConfiguration configuration)
+    {
+        // 优先使用环境变量
+        var envPassword = Environment.GetEnvironmentVariable("ADMIN_DEFAULT_PASSWORD");
+        if (!string.IsNullOrEmpty(envPassword))
+        {
+            return envPassword;
+        }
+
+        // 使用配置文件
+        var configPassword = configuration["SysAdminOptions:DefaultPassword"];
+        if (!string.IsNullOrEmpty(configPassword))
+        {
+            return configPassword;
+        }
+
+        throw new InvalidOperationException("管理员密码未配置：请设置ADMIN_DEFAULT_PASSWORD环境变量或配置文件中的SysAdminOptions:DefaultPassword");
+    }
+
+    /// <summary>
+    /// 获取用户默认密码 - 直接使用IConfiguration
+    /// 优先级: USER_DEFAULT_PASSWORD环境变量 -> 配置文件
+    /// </summary>
+    private static string GetUserDefaultPassword(IConfiguration configuration)
+    {
+        // 优先使用环境变量
+        var envPassword = Environment.GetEnvironmentVariable("USER_DEFAULT_PASSWORD");
+        if (!string.IsNullOrEmpty(envPassword))
+        {
+            return envPassword;
+        }
+
+        // 使用配置文件
+        var configPassword = configuration["UserOptions:DefaultUserPassword"];
+        if (!string.IsNullOrEmpty(configPassword))
+        {
+            return configPassword;
+        }
+
+        throw new InvalidOperationException("用户默认密码未配置：请设置USER_DEFAULT_PASSWORD环境变量或配置文件中的UserOptions:DefaultUserPassword");
+    }
+
+    /// <summary>
+    /// 获取JWT密钥 - 直接使用IConfiguration
+    /// 优先级: JWT_SECRET环境变量 -> 配置文件 -> 开发环境默认值
+    /// </summary>
+    private static string GetJwtSecret(IConfiguration configuration)
+    {
+        // 优先使用环境变量
+        var envSecret = Environment.GetEnvironmentVariable("JWT_SECRET");
+        if (!string.IsNullOrEmpty(envSecret))
+        {
+            return envSecret;
+        }
+
+        // 使用配置文件
+        var configSecret = configuration["JwtOptions:Secret"];
+        if (!string.IsNullOrEmpty(configSecret) && !configSecret.Contains("${"))
+        {
+            return configSecret;
+        }
+
+        // 开发环境允许使用默认值
+        var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+        if (string.Equals(environment, "Development", StringComparison.OrdinalIgnoreCase))
+        {
+            return "UltraThink-LYBT-Development-Secret-Key-2025-09-02-Very-Long-Secret-For-JWT-Signing";
+        }
+
+        throw new InvalidOperationException("JWT密钥未配置：请设置JWT_SECRET环境变量或配置文件中的JwtOptions:Secret");
     }
 }

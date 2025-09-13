@@ -1,4 +1,4 @@
-using LYBT.Infrastructure.Configuration;
+// using LYBT.Infrastructure.Configuration; // Removed - SimplifiedConfigurationService eliminated
 
 // using LYBT.WebAPI.Services; // Removed - enterprise services
 namespace LYBT.WebAPI.Extensions;
@@ -72,18 +72,18 @@ public static class UnifiedApplicationInitialization
     {
         var logger = scope.ServiceProvider.GetService<ILogger<Program>>();
 
-        // =========== 统一配置管理验证 ===========
+        // =========== 直接使用IConfiguration验证 ===========
         try
         {
-            // UltraThink简化配置验证
-            var simplifiedConfigService = scope.ServiceProvider.GetRequiredService<ISimplifiedConfigurationService>();
+            // 直接使用IConfiguration进行配置验证
+            var configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
 
             // 基本配置验证
             logger?.LogInformation("✅ 配置服务初始化完成");
 
             // 显示环境信息
-            var environment = simplifiedConfigService.IsDevelopment ? "Development" :
-                            simplifiedConfigService.IsProduction ? "Production" : "Unknown";
+            var environment = app.Environment.IsDevelopment() ? "Development" :
+                            app.Environment.IsProduction() ? "Production" : "Unknown";
             logger?.LogInformation(
                 "🌍 运行环境: {Environment}, 机器: {MachineName}",
                 environment, Environment.MachineName);
@@ -91,7 +91,7 @@ public static class UnifiedApplicationInitialization
             // 验证关键配置
             try
             {
-                var _ = simplifiedConfigService.GetConnectionString();
+                var _ = GetConnectionString(configuration);
                 logger?.LogInformation("✅ 数据库连接配置验证通过");
             }
             catch (Exception)
@@ -101,7 +101,7 @@ public static class UnifiedApplicationInitialization
 
             try
             {
-                var _ = simplifiedConfigService.GetJwtSecret();
+                var _ = GetJwtSecret(configuration);
                 logger?.LogInformation("✅ JWT配置验证通过");
             }
             catch (Exception)
@@ -122,8 +122,8 @@ public static class UnifiedApplicationInitialization
             logger?.LogWarning("⚠️ 开发环境中配置验证失败，但继续启动");
         }
 
-        // =========== UltraThink v2.0简化版配置服务 ===========
-        // 移除复杂的IUnifiedConfigService，使用SimplifiedConfigurationService
+        // =========== 直接IConfiguration模式 ===========
+        // 消除SimplifiedConfigurationService服务套娃，直接使用.NET内置IConfiguration
         // 基础配置验证已在上面完成，无需额外的复杂初始化
     }
 
@@ -272,5 +272,52 @@ public static class UnifiedApplicationInitialization
             // 确保释放资源
             await app.DisposeAsync();
         }
+    }
+
+    /// <summary>
+    /// 获取数据库连接字符串 - 直接使用IConfiguration
+    /// 优先级: CONNECTION_STRING环境变量 -> 配置文件
+    /// </summary>
+    private static string GetConnectionString(IConfiguration configuration, string name = "DefaultConnection")
+    {
+        // 优先使用环境变量
+        var envConnectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING");
+        if (!string.IsNullOrEmpty(envConnectionString))
+        {
+            return envConnectionString;
+        }
+
+        // 使用配置文件
+        return configuration.GetConnectionString(name) ?? string.Empty;
+    }
+
+    /// <summary>
+    /// 获取JWT密钥 - 直接使用IConfiguration
+    /// 优先级: JWT_SECRET环境变量 -> 配置文件 -> 开发环境默认值
+    /// </summary>
+    private static string GetJwtSecret(IConfiguration configuration)
+    {
+        // 优先使用环境变量
+        var envSecret = Environment.GetEnvironmentVariable("JWT_SECRET");
+        if (!string.IsNullOrEmpty(envSecret))
+        {
+            return envSecret;
+        }
+
+        // 使用配置文件
+        var configSecret = configuration["JwtOptions:Secret"];
+        if (!string.IsNullOrEmpty(configSecret) && !configSecret.Contains("${"))
+        {
+            return configSecret;
+        }
+
+        // 开发环境允许使用默认值
+        var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+        if (string.Equals(environment, "Development", StringComparison.OrdinalIgnoreCase))
+        {
+            return "UltraThink-LYBT-Development-Secret-Key-2025-09-02-Very-Long-Secret-For-JWT-Signing";
+        }
+
+        throw new InvalidOperationException("JWT密钥未配置：请设置JWT_SECRET环境变量或配置文件中的JwtOptions:Secret");
     }
 }
