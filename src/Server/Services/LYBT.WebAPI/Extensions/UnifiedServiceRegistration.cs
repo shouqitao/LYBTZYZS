@@ -96,8 +96,6 @@ public static class UnifiedServiceRegistration
                     options.UseSqlServer(opt => opt.CommandTimeout(dbOptions.CommandTimeout));
                 }
 
-                // Epic 05-P0-03: 敏感数据拦截器已移除 (SensitiveDataInterceptor marked as Obsolete)
-                // 小型诊所不需要复杂的自动数据加密，使用手动加密更合适
             });
         }
 
@@ -167,12 +165,6 @@ public static class UnifiedServiceRegistration
 
         // 保留HTTP上下文访问器（其他服务需要）
         services.AddHttpContextAccessor();
-
-        // ❌ 已移除过时的安全组件：
-        // - IDataEncryptionService/DataEncryptionService (标记为Obsolete，小型诊所用不到自动加密)
-        // - ISecurityAuditService/SecurityAuditService (标记为Obsolete，小型诊所用基础日志即可)
-        // - SensitiveDataInterceptor (标记为Obsolete，复杂度过高)
-        // - SensitiveDataQueryInterceptor (标记为Obsolete，自动解密复杂度过高)
 
         // =========== 性能优化服务 - UltraThink简化版 ===========
         // 移除空的包装方法，直接使用.NET内置性能计数器和标准服务
@@ -278,12 +270,12 @@ public static class UnifiedServiceRegistration
                 new Asp.Versioning.UrlSegmentApiVersionReader());
         }).AddMvc();
 
-        // 暂时注释掉ApiExplorer配置，专注解决基本API版本问题
-        // services.AddVersionedApiExplorer(options =>
-        // {
-        //     options.GroupNameFormat = "'v'VVV";
-        //     options.SubstituteApiVersionInUrl = true;
-        // });
+        // API版本浏览器配置 - 必需用于{version:apiVersion}路由约束
+        services.AddVersionedApiExplorer(options =>
+        {
+            options.GroupNameFormat = "'v'VVV";
+            options.SubstituteApiVersionInUrl = true;
+        });
 
         // ProblemDetails 和异常处理服务
         services.AddProblemDetails();
