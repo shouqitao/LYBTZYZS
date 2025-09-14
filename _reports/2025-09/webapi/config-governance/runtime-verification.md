@@ -166,16 +166,72 @@ Max Pool Size=20, Min Pool Size=2, Pooling=true
 
 ### 🎯 关键功能冒烟测试
 
+#### JWT 认证 API 测试
+
+**登录功能验证**:
+```bash
+curl -X POST "http://localhost:5001/api/v1/auth/login" \
+  -H "Content-Type: application/json" \
+  -d '{"username": "sysadmin", "password": "Admin@123456"}'
+```
+
+**测试结果**: HTTP 200 ✅
+```json
+{
+  "success": true,
+  "message": "登录成功",
+  "data": {
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwMDAwMDAwMC0wMDAwLTAwMDAtMDAwMC0wMDAwMDAwMDAwMDEiLCJ1bmlxdWVfbmFtZSI6InN5c2FkbWluIiwianRpIjoiMDE0OGE2YWYtYzFhZC00MWY3LThkMjUtYmMyN2RmZTNiZmI5IiwiaWF0IjoxNzU3ODEwODE2LCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJBZG1pbiIsImV4cCI6MTc1NzgzOTYxNiwiaXNzIjoiTFlCVC5XZWJBUEkiLCJhdWQiOiJMWUJULkNsaWVudCJ9.y4_HsU0IVLb140AZqpS1i0t97Qgbfh_zqG6HeZhMAOo",
+    "user": {
+      "username": "sysadmin",
+      "realName": "系统管理员",
+      "role": "Admin"
+    }
+  }
+}
+```
+
+**JWT Token 分析**:
+- ✅ **Secret 来源**: UserSecrets 中的 `JwtOptions:Secret` 配置生效
+- ✅ **Token 格式**: 标准 JWT 格式，算法 HS256
+- ✅ **Claims**: 包含用户ID、角色、有效期等关键信息
+- ✅ **Issuer/Audience**: 正确设置为 "LYBT.WebAPI"/"LYBT.Client"
+
+**受保护 API 验证**:
+```bash
+curl -X GET "http://localhost:5001/api/v1/users/profile" \
+  -H "Authorization: Bearer [JWT_TOKEN]"
+```
+
+**测试结果**: HTTP 200 ✅
+```json
+{
+  "success": true,
+  "message": "获取个人信息成功",
+  "data": {
+    "username": "sysadmin",
+    "realName": "系统管理员",
+    "role": "Admin",
+    "isActive": true
+  }
+}
+```
+
+**验证成果**:
+- ✅ **JWT 认证**: Token 验证成功，身份识别正确
+- ✅ **UserSecrets 生效**: 外置的 JWT Secret 配置完全工作
+- ✅ **授权系统**: 受保护资源访问正常
+
 #### 配置治理验证清单
 
 | 验证项目 | 治理前 | 治理后 | 状态 |
 |---------|-------|--------|------|
-| **敏感信息安全** | 硬编码在配置文件 | 外置到UserSecrets | ✅ 验证通过 |
-| **配置加载** | 单一配置文件 | 分层加载(base+env+secrets) | ✅ 验证通过 |
-| **开发环境隔离** | 混合配置 | 专用Development配置 | ✅ 验证通过 |
-| **JWT认证** | 硬编码密钥 | UserSecrets动态加载 | ✅ 验证通过 |
-| **数据库连接** | 基础连接 | 增强配置+连接池 | ✅ 验证通过 |
-| **日志系统** | 基础日志 | 分环境详细日志 | ✅ 验证通过 |
+| **敏感信息安全** | 硬编码在配置文件 | 外置到UserSecrets | ✅ API测试通过 |
+| **配置加载** | 单一配置文件 | 分层加载(base+env+secrets) | ✅ 启动日志验证 |
+| **开发环境隔离** | 混合配置 | 专用Development配置 | ✅ 敏感日志启用证据 |
+| **JWT认证** | 硬编码密钥 | UserSecrets动态加载 | ✅ 登录和认证测试通过 |
+| **数据库连接** | 基础连接 | 增强配置+连接池 | ✅ 13个迁移验证通过 |
+| **日志系统** | 基础日志 | 分环境详细日志 | ✅ Serilog结构化日志正常 |
 
 #### 系统集成验证
 
