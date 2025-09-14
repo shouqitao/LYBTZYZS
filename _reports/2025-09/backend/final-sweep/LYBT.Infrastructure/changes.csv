@@ -1,0 +1,8 @@
+Path,Symbol,Kind,Action,Reason,Confidence
+Repositories/OptimizedBaseRepository.cs,Async result access via .Result,Method,FIX_ASYNC_PATTERN,Replace .Result with await to avoid deadlock risk,High
+Caching/Adapters/MemoryCacheAdapter.cs,InvalidateCache method,Method,ENHANCE_CACHING,Implement smart cache invalidation strategy,High
+ServiceCollectionExtensions.cs,JWT auth failure logging TODO,Comment,COMPLETE_TODO,Add security audit logging for authentication failures,Medium
+Data/DatabaseInitializationService.cs,Direct SqlConnection usage,Method,ABSTRACT_DB_CONNECTION,Use IDbConnection interface or DbContext for better abstraction,Medium
+Repositories/OptimizedBaseRepository.cs,Entire repository class,Class,REFACTOR_SEPARATION,Split into specialized classes using decorator pattern,Medium
+Multiple configuration files,Unused using statements,Import,CLEANUP_IMPORTS,Remove unused namespace imports,Low
+Multiple service classes,Missing XML comments,Documentation,ADD_DOCUMENTATION,Complete API documentation for public methods,Low

@@ -1,0 +1,10 @@
+Path,Symbol,Kind,Action,Reason,Confidence
+Extensions/UnifiedServiceRegistration.cs,AddVersionedApiExplorer configuration,Method,UNCOMMENT_CONFIGURATION,Restore ApiExplorer config to fix route constraint resolution,High
+Extensions/UnifiedServiceRegistration.cs,JWT secret fallback logic,Method,ENHANCE_SECURITY,Add production environment check for JWT secret requirement,High
+Extensions/UnifiedApplicationInitialization.cs,JWT secret fallback logic,Method,ENHANCE_SECURITY,Add production environment check for JWT secret requirement,High
+Controllers/HealthController.cs,HealthController inheritance,Class,CHANGE_BASE_CLASS,Inherit from BaseApiController for consistency,Medium
+Extensions/UnifiedApplicationInitialization.cs,Database connection checks,Method,OPTIMIZE_STARTUP,Reduce redundant database connection checks during startup,Medium
+Extensions/UnifiedApplicationInitialization.cs,Commented security validation code,Code Block,CLEANUP_COMMENTS,Remove or implement simplified security validation,Medium
+Extensions/UnifiedMiddlewareConfiguration.cs,UseRouting middleware call,Method,REVIEW_MIDDLEWARE,Ensure UseRouting is not called multiple times,Low
+appsettings.json vs UnifiedServiceRegistration.cs,Cache configuration inconsistency,Configuration,UNIFY_CONFIG,Use appsettings CacheOptions instead of hardcoded values,Low
+Multiple Controllers,Response format inconsistency,Method,STANDARDIZE_RESPONSES,Use HandleServiceResult consistently across all controllers,Low
