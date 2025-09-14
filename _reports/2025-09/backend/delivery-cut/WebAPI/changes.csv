@@ -1,0 +1,11 @@
+Path,Symbol,Kind,Action,Reason
+"Extensions/UnifiedServiceRegistration.cs","Line 99: Epic 05-P0-03 comment block","Comment","DELETE","Obsolete feature reference - SensitiveDataInterceptor removed"
+"Extensions/UnifiedServiceRegistration.cs","Lines 172-175: Obsolete services comment","Comment","DELETE","Dead code comments about removed enterprise features"
+"Extensions/UnifiedMiddlewareConfiguration.cs","Lines 56-63: ConfigureSecurityMiddleware method","Method","DELETE","Commented out enterprise security middleware - unused"
+"Extensions/UnifiedMiddlewareConfiguration.cs","Line 19: app.ConfigureSecurityMiddleware() call","Code","DELETE","Call to deleted method - clean up reference"
+"Program.cs","Line 9: // using LYBT.WebAPI.Services;","Using","DELETE","Commented out using statement for removed services"
+"Controllers/UsersController.cs","UltraThink v2.0 comments","Comment","SIMPLIFY","Reduce verbose version comments to essential info only"
+"Controllers/AuthController.cs","UltraThink v2.0 comments","Comment","SIMPLIFY","Reduce verbose version comments to essential info only"
+"Controllers/ConsultationController.cs","UltraThink v2.0 comments","Comment","SIMPLIFY","Reduce verbose version comments to essential info only"
+"Controllers/MedicalCaseController.cs","UltraThink v2.0 comments","Comment","SIMPLIFY","Reduce verbose version comments to essential info only"
+"Controllers/UsersController.cs","Line 87: UltraThink v2.0 batch operation comment","Comment","DELETE","Obsolete feature explanation - functionality already removed"

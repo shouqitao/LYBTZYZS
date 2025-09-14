@@ -1,0 +1,23 @@
+Project,Path,Symbol,Kind,Action,Priority,Reason
+WebAPI,Extensions/UnifiedServiceRegistration.cs,Line 99 Epic comment,Comment,DELETE,High,Obsolete feature reference
+WebAPI,Extensions/UnifiedServiceRegistration.cs,Lines 172-175 Obsolete services,Comment,DELETE,High,Dead code comments about removed features
+WebAPI,Extensions/UnifiedMiddlewareConfiguration.cs,Lines 56-63 ConfigureSecurityMiddleware,Method,DELETE,High,Commented out enterprise security middleware
+WebAPI,Extensions/UnifiedMiddlewareConfiguration.cs,Line 19 security middleware call,Code,DELETE,High,Call to deleted method
+WebAPI,Program.cs,Line 9 commented using statement,Using,DELETE,Medium,Unused using statement
+Infrastructure,Security/SecurityAuditService.cs,Entire file (369 lines),File,DELETE,High,Enterprise security audit - beyond scope
+Infrastructure,Configuration/Options/DefaultPasswordOptions.cs,Duplicate password configs,Class,REVIEW,Medium,Multiple password configuration classes
+Infrastructure,Migrations/20250908110242_AddTransactionCoordinatorTables.cs,Transaction coordinator migration,Migration,DELETE,High,Enterprise feature beyond scope
+Infrastructure,Repositories/OptimizedBaseRepository.cs,Enterprise optimization,Class,SIMPLIFY,Medium,Over-engineered for small clinic
+Auth,Services/ComplexSessionManager.cs,Session state management,Class,DELETE,High,Complex enterprise session management
+Auth,Interfaces/IAdvancedAuthService.cs,Advanced auth features,Interface,DELETE,High,Enterprise auth beyond simple login/logout
+Users,Services/UserBatchOperations.cs,Batch operations,Class,DELETE,Medium,Not needed for small clinic
+Patients,Services/PatientImportExport.cs,Import/export features,Class,DELETE,Medium,Complex data operations
+MedicalCase,Services/WorkflowEngine.cs,Workflow state machine,Class,DELETE,High,Complex workflow beyond record-only
+Consultation,Services/DiagnosisRuleEngine.cs,Rule engine,Class,DELETE,High,AI/rules beyond scope
+Prescriptions,Services/DrugInteractionChecker.cs,Drug interaction checking,Class,DELETE,Medium,Complex medical validation
+Herbs,Services/InventoryManager.cs,Inventory management,Class,DELETE,High,Full inventory system beyond scope
+Herbs,Models/StockLevel.cs,Stock tracking,Entity,DELETE,High,Inventory entity not needed
+Formula,Services/FormulaGenerator.cs,AI formula generation,Class,DELETE,Medium,AI features beyond scope
+Shared.Models,Contracts/BatchOperations/,Batch operation DTOs,Folder,DELETE,Medium,Batch operations not needed
+Shared.Interfaces,Services/IComplexReporting.cs,Complex reporting,Interface,DELETE,Medium,Advanced reporting beyond scope
+Shared.Utilities,Helpers/EnterpriseValidationHelper.cs,Enterprise validation,Class,DELETE,Medium,Over-engineered validation
