@@ -23,7 +23,7 @@ namespace LYBT.Entities.Users
         /// <summary>用户名（统一命名）</summary>
         [Required]
         [StringLength(50)]
-        [Column("UserName")]
+        [Column("Username")]
         [DisplayName("用户名")]
         public string Username { get; set; } = string.Empty;
 

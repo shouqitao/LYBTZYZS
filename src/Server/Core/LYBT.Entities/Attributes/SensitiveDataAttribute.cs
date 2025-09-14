@@ -3,8 +3,7 @@ using System;
 namespace LYBT.Entities.Attributes
 {
     /// <summary>
-    /// 敏感数据标记特性 - Epic 05-P0-03: 数据安全保障
-    /// 用于标记需要加密存储的敏感数据字段
+    /// 敏感数据标记特性 - 用于标记需要加密存储和日志脱敏的敏感数据字段
     /// </summary>
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
     public sealed class SensitiveDataAttribute : Attribute

@@ -53,7 +53,7 @@ namespace LYBT.Entities.MedicalCase
 
         /// <summary>状态</summary>
         [DisplayName("状态")]
-        public MedicalCaseStatus Status { get; set; } = MedicalCaseStatus.Registered;
+        public MedicalCaseStatus Status { get; set; } = MedicalCaseStatus.Active;
 
         /// <summary>备注</summary>
         [StringLength(500)]
