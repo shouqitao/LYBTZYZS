@@ -1,0 +1,63 @@
+{
+  "metadata": {
+    "version": "1.0",
+    "created": "2025-09-14T23:59:00+08:00",
+    "purpose": "Backend P2-Fix Batch1 stabilization configuration"
+  },
+  "ports": {
+    "primary": 8080,
+    "fallback": 5080,
+    "alternatives": [3000, 3001, 5000, 5001]
+  },
+  "webapi": {
+    "projectPath": "src/Server/Services/LYBT.WebAPI",
+    "startupCommand": "dotnet run --urls=\"http://localhost:{PORT}\" --no-launch-profile --verbosity minimal",
+    "healthEndpoint": "/api/v1/health",
+    "startupTimeoutSeconds": 30,
+    "healthCheckRetries": 5,
+    "healthCheckDelaySeconds": 3
+  },
+  "environment": {
+    "variables": {
+      "ASPNETCORE_URLS": "http://localhost:{PORT}",
+      "ASPNETCORE_ENVIRONMENT": "Development",
+      "DOTNET_ENVIRONMENT": "Development"
+    },
+    "clearOnRollback": true
+  },
+  "rollback": {
+    "enabled": true,
+    "autoTrigger": false,
+    "conditions": {
+      "healthCheckFailed": true,
+      "portBindingFailed": true,
+      "processStartupFailed": true
+    },
+    "actions": [
+      "kill_dotnet_processes",
+      "clear_build_artifacts",
+      "reset_environment_variables",
+      "verify_port_release"
+    ]
+  },
+  "switches": {
+    "enablePortFallback": true,
+    "enableAutoCleanup": true,
+    "enableHealthRetries": true,
+    "enableRollbackOnFailure": true,
+    "verboseLogging": true
+  },
+  "thresholds": {
+    "maxDotnetProcesses": 10,
+    "maxHealthCheckDuration": 60,
+    "maxStartupWaitTime": 60,
+    "portCheckTimeoutSeconds": 10
+  },
+  "scripts": {
+    "preflight": "scripts/health/preflight.ps1",
+    "cleanup": "scripts/health/cleanup.ps1", 
+    "startup": "scripts/health/run-webapi-single.ps1",
+    "healthcheck": "scripts/health/check.ps1",
+    "rollback": "scripts/health/rollback.ps1"
+  }
+}

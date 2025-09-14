@@ -1,0 +1,8 @@
+﻿{
+    "WorkingDirectory":  "D:\\source\\repos\\LYBTZYZS\\src\\Server\\Services\\LYBT.WebAPI",
+    "StartTime":  "2025-09-15 00:09:18",
+    "ProcessId":  4596,
+    "Command":  "dotnet run --urls=\"http://localhost:8080\" --no-launch-profile --verbosity minimal",
+    "Background":  true,
+    "Port":  8080
+}
