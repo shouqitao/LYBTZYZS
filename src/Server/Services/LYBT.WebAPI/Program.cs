@@ -6,8 +6,6 @@
 using LYBT.WebAPI.Extensions;
 using Serilog;
 
-// using LYBT.WebAPI.Services; // Removed - enterprise services beyond constraint scope
-
 // =========== UltraThink结构化日志配置 ===========
 // 为小型诊所配置生产就绪的结构化日志系统
 Log.Logger = new LoggerConfiguration()

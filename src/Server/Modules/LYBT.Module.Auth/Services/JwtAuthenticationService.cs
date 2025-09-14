@@ -1,10 +1,12 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using System.Text.Json;
 using LYBT.Infrastructure.Authorization;
 using LYBT.Infrastructure.Configuration.Options;
 using LYBT.Module.Auth.Interfaces;
 using LYBT.Shared.Models.Enums;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
@@ -14,10 +16,11 @@ namespace LYBT.Module.Auth.Services
     /// <summary>
     /// JWT认证服务实现
     /// </summary>
-    public class JwtAuthenticationService(IOptions<JwtOptions> jwtOptions) : IJwtAuthenticationService
+    public class JwtAuthenticationService(IOptions<JwtOptions> jwtOptions, ILogger<JwtAuthenticationService> logger) : IJwtAuthenticationService
     {
         private readonly JwtOptions _jwtOptions = jwtOptions?.Value ?? throw new ArgumentNullException(nameof(jwtOptions));
         private readonly JwtSecurityTokenHandler _tokenHandler = new();
+        private readonly ILogger<JwtAuthenticationService> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
         /// <summary>
         /// 生成JWT令牌

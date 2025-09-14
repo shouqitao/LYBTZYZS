@@ -33,28 +33,26 @@ namespace LYBT.Infrastructure.Authorization
         public static readonly string[] ValidRoles = { Admin, Doctor };
 
         /// <summary>
-        /// 获取所有角色（包含遗留角色）
+        /// 获取所有角色（v1统一版本）
         /// </summary>
-        public static readonly string[] AllRoles = { Admin, Doctor, User };
+        public static readonly string[] AllRoles = { Admin, Doctor };
 
         /// <summary>
-        /// 角色映射：将遗留角色映射到新角色
+        /// 角色映射：标准化角色名称
         /// </summary>
         public static readonly Dictionary<string, string> RoleMapping = new()
         {
-            [User] = Doctor,     // User -> Doctor 映射
             [Doctor] = Doctor,   // Doctor -> Doctor 保持
-            [Admin] = Admin // Admin -> Admin 保持
+            [Admin] = Admin      // Admin -> Admin 保持
         };
 
         /// <summary>
-        /// 角色中文显示名称映射
+        /// 角色中文显示名称映射 - v1简化版本
         /// </summary>
         public static readonly Dictionary<string, string> RoleDisplayNames = new()
         {
             [Admin] = "管理员",
-            [Doctor] = "医生",
-            [User] = "普通用户" // 兼容显示
+            [Doctor] = "医生"
         };
 
         /// <summary>
@@ -114,13 +112,13 @@ namespace LYBT.Infrastructure.Authorization
         }
 
         /// <summary>
-        /// 检查角色是否为遗留角色
+        /// 检查角色是否为遗留角色 - v1版本无遗留角色
         /// </summary>
         /// <param name="role">角色名称</param>
         /// <returns>是否为遗留角色</returns>
         public static bool IsLegacyRole(string? role)
         {
-            return string.Equals(role?.Trim(), User, StringComparison.OrdinalIgnoreCase);
+            return false; // v1版本不存在遗留角色
         }
     }
 

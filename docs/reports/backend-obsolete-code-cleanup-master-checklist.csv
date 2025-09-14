@@ -1,0 +1,26 @@
+Project,Component,Priority,Item,Type,Action,Estimate,Risk,Status
+LYBT.WebAPI,Program.cs,High,"注释服务引用行9",Comment,Delete,1h,Low,Pending
+LYBT.WebAPI,UnifiedServiceRegistration.cs,High,"过时安全组件注释(4行)",Comment,Remove,2h,Low,Pending
+LYBT.WebAPI,UnifiedServiceRegistration.cs,Medium,"配置验证文件写入逻辑",Method,Simplify,4h,Medium,Pending
+LYBT.WebAPI,UnifiedServiceRegistration.cs,Low,"Swagger Schema ID生成逻辑",Complex Logic,Simplify,6h,Low,Pending
+LYBT.Infrastructure,SysAdminOptions.cs,High,"DefaultPassword属性",Property,Delete,2h,Medium,Pending
+LYBT.Infrastructure,UserOptions.cs,High,"DefaultUserPassword属性",Property,Delete,2h,Medium,Pending
+LYBT.Infrastructure,RoleConstants.cs,High,"User角色常量",Constant,Evaluate,4h,High,Pending
+LYBT.Infrastructure,RoleConstants.cs,High,"AllRoles数组中User引用",Array,Update,2h,Medium,Pending
+LYBT.Infrastructure,AddTransactionCoordinatorTables.cs,Medium,"过时迁移文件",Migration,Evaluate,8h,High,Pending
+LYBT.Infrastructure,OptimizedBaseRepository.cs,Medium,"重复仓储实现",Class,Review,6h,Medium,Pending
+LYBT.Module.Auth,IAuthSessionRepository.cs,Critical,"复杂会话跟踪方法(7个)",Interface Methods,Delete,16h,High,Pending
+LYBT.Module.Auth,AuthSessionRepository.cs,Critical,"复杂会话跟踪实现(7个)",Method Implementations,Delete,20h,High,Pending
+LYBT.Module.Auth,AuthSessionRepository.cs,Critical,"IP监控和异常检测",Method Implementations,Delete,12h,Medium,Pending
+LYBT.Module.Auth,AuthSessionRepository.cs,Critical,"设备跟踪功能",Method Implementations,Delete,8h,Medium,Pending
+LYBT.Module.Herbs,IHerbRepository.cs,Medium,"未使用业务方法(3个)",Interface Methods,Delete,6h,Low,Pending
+LYBT.Module.Herbs,HerbRepository.cs,Medium,"未使用业务实现(3个)",Method Implementations,Delete,8h,Low,Pending
+LYBT.Module.Herbs,HerbService.cs,Medium,"库存管理功能(4个过时方法)",Method Implementations,Delete,12h,Medium,Pending
+LYBT.Module.Herbs,HerbService.cs,Low,"Excel导出TODO实现",Method,Improve,4h,Low,Pending
+LYBT.Module.MedicalCase,MedicalCaseBusinessService.cs,Medium,"复杂状态转换(5个过时方法)",Method Implementations,Delete,16h,Medium,Pending
+LYBT.Module.MedicalCase,MedicalCaseBusinessService.cs,Medium,"批量状态更新",Method Implementations,Delete,8h,Medium,Pending
+LYBT.Module.MedicalCase,MedicalCaseBusinessService.cs,Low,"TODO获取患者/医生名称",Method Logic,Improve,6h,Low,Pending
+LYBT.Module.MedicalCase,MedicalCaseQueryService.cs,Medium,"统计功能",Method Implementations,Delete,4h,Low,Pending
+LYBT.Module.Prescriptions,CompatibilityNoteService.cs,Medium,"整个配伍检查服务(6个过时方法)",Class,Delete,12h,Medium,Pending
+LYBT.Module.Prescriptions,PrescriptionBusinessService.cs,Medium,"自动公式应用",Method Implementations,Delete,6h,Medium,Pending
+LYBT.Module.Prescriptions,PrescriptionService.cs,Medium,"自动公式应用",Method Implementations,Delete,4h,Medium,Pending

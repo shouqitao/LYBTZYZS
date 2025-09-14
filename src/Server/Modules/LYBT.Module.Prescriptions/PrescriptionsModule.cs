@@ -31,8 +31,7 @@ namespace LYBT.Module.Prescriptions
             // 主服务 - UltraThink纯委托模式，委托给专业服务层
             services.AddScoped<IPrescriptionService, PrescriptionService>();
 
-            // 配伍记录服务
-            services.AddScoped<ICompatibilityNoteService, CompatibilityNoteService>();
+            // 配伍记录服务已移除 - Record-Only模式使用手动备注
 
             // AutoMapper配置
             services.AddAutoMapper(cfg =>

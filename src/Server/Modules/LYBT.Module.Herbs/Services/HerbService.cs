@@ -139,8 +139,8 @@ namespace LYBT.Module.Herbs.Services
             }
         }
 
-        public async Task<ServiceResult<bool>> BatchUpdateStatusAsync(BatchStatusUpdateDto dto)
-            => await _businessService.BatchUpdateStatusAsync(dto);
+        public async Task<ServiceResult<bool>> BatchUpdateStatusAsync(List<Guid> ids, bool status, string? reason = null)
+            => await _businessService.BatchUpdateStatusAsync(ids, status, reason);
 
         /// <inheritdoc/>
         public async Task<ServiceResult> EnableAsync(Guid id)

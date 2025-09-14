@@ -123,28 +123,28 @@ namespace LYBT.Module.Herbs.Services
         }
 
         /// <summary>
-        /// 批量更新状态
+        /// 批量更新状态 - 简化版本，直接使用参数
         /// </summary>
-        public async Task<ServiceResult<bool>> BatchUpdateStatusAsync(BatchStatusUpdateDto dto)
+        public async Task<ServiceResult<bool>> BatchUpdateStatusAsync(List<Guid> ids, bool status, string? reason = null)
         {
             try
             {
-                if (dto?.Ids == null || dto.Ids.Count == 0)
+                if (ids == null || ids.Count == 0)
                 {
                     return ServiceResult<bool>.Success(true); // 空操作视为成功
                 }
 
-                var status = dto.Status ? CommonStatus.Enabled : CommonStatus.Disabled;
+                var targetStatus = status ? CommonStatus.Enabled : CommonStatus.Disabled;
 
                 // 使用EF Core的ExecuteUpdateAsync进行批量更新
                 var affectedRows = await _context.Herbs
-                    .Where(h => dto.Ids.Contains(h.Id))
+                    .Where(h => ids.Contains(h.Id))
                     .ExecuteUpdateAsync(setters => setters
-                        .SetProperty(h => h.Status, status));
+                        .SetProperty(h => h.Status, targetStatus));
 
                 _logger.LogInformation(
                     "批量更新药材状态成功: 更新{Count}条记录为{Status}",
-                    affectedRows, dto.Status ? "启用" : "禁用");
+                    affectedRows, status ? "启用" : "禁用");
 
                 return ServiceResult<bool>.Success(true);
             }

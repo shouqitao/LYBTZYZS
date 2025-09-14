@@ -1,6 +1,5 @@
 using LYBT.Entities.Auth;
 using LYBT.Entities.Common;
-using LYBT.Entities.Compatibility;
 using LYBT.Entities.Consultation;
 using LYBT.Entities.Formula;
 using LYBT.Entities.Herbs;
@@ -59,8 +58,7 @@ namespace LYBT.Infrastructure.Data
         // 验方管理
         public DbSet<Formula> Formulas { get; set; }
 
-        // 配伍管理
-        public DbSet<HerbCompatibilityNote> HerbCompatibilityNotes { get; set; }
+        // 配伍管理 - 移除：HerbCompatibilityNote实体已删除
 
         // ==================== 事务协调器相关实体 ====================
         // UltraThink简化：移除未使用的分布式事务日志实体
@@ -90,7 +88,7 @@ namespace LYBT.Infrastructure.Data
             ConfigurePrescriptions(modelBuilder);
             ConfigureHerbs(modelBuilder);
             ConfigureFormulas(modelBuilder);
-            ConfigureCompatibilityNotes(modelBuilder);
+            // ConfigureCompatibilityNotes(modelBuilder); // 移除：HerbCompatibilityNote实体已删除
 
             // UltraThink简化：移除未使用的分布式事务日志配置
 
@@ -290,30 +288,7 @@ namespace LYBT.Infrastructure.Data
             entity.Ignore(f => f.Herbs);
         }
 
-        private static void ConfigureCompatibilityNotes(ModelBuilder modelBuilder)
-        {
-            var entity = modelBuilder.Entity<HerbCompatibilityNote>();
-            entity.ToTable("HerbCompatibilityNotes");
-            entity.HasKey(h => h.Id);
-            entity.Property(h => h.HerbCombination).HasMaxLength(200).IsRequired();
-            entity.Property(h => h.CompatibilityNote).HasMaxLength(1000);
-            entity.Property(h => h.ReferenceSource).HasMaxLength(200);
-            entity.Property(h => h.DoctorRecommendation).HasMaxLength(500);
-
-            // 配置枚举字段
-            entity.Property(h => h.CompatibilityType).HasConversion<int>();
-            entity.Property(h => h.SeverityLevel).HasConversion<int>();
-
-            // 索引配置
-            entity.HasIndex(h => new { h.PrescriptionId, h.IsDeleted })
-                  .HasDatabaseName("IX_HerbCompatibilityNotes_PrescriptionId_IsDeleted");
-
-            // 配置与处方的外键关系
-            entity.HasOne<Prescription>()
-                  .WithMany()
-                  .HasForeignKey(h => h.PrescriptionId)
-                  .OnDelete(DeleteBehavior.Cascade);
-        }
+        // ConfigureCompatibilityNotes方法已删除 - HerbCompatibilityNote实体不再存在
 
         // UltraThink简化：ConfigureTransactions方法已删除（对应实体已清理）
 
