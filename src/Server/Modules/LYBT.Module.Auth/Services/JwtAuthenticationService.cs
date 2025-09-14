@@ -73,8 +73,19 @@ namespace LYBT.Module.Auth.Services
                 var principal = _tokenHandler.ValidateToken(token, validationParameters, out _);
                 return principal;
             }
-            catch
+            catch (SecurityTokenValidationException ex)
             {
+                _logger.LogWarning("JWT Token验证失败: {ErrorMessage}", ex.Message);
+                return null;
+            }
+            catch (ArgumentException ex)
+            {
+                _logger.LogWarning("JWT Token格式错误: {ErrorMessage}", ex.Message);
+                return null;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "JWT Token验证过程中发生未预期错误");
                 return null;
             }
         }
@@ -127,8 +138,19 @@ namespace LYBT.Module.Auth.Services
                     ExpiresAt = jsonToken.ValidTo
                 };
             }
-            catch
+            catch (SecurityTokenMalformedException ex)
             {
+                _logger.LogWarning("JWT Token格式错误，无法解析: {ErrorMessage}", ex.Message);
+                return null;
+            }
+            catch (JsonException ex)
+            {
+                _logger.LogWarning("JWT Token JSON解析失败: {ErrorMessage}", ex.Message);
+                return null;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "JWT Token信息提取过程中发生未预期错误");
                 return null;
             }
         }

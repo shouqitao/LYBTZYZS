@@ -162,12 +162,7 @@ namespace LYBT.Module.Auth.Services
                     return ServiceResult<UserDto>.Failure("用户ID不能为空");
                 }
 
-                if (!Guid.TryParse(userId, out var userGuid))
-                {
-                    return ServiceResult<UserDto>.Failure("用户ID格式无效");
-                }
-
-                // 检查是否为系统管理员
+                // 检查是否为系统管理员（在Guid验证之前）
                 if (userId.Equals("sysadmin", StringComparison.OrdinalIgnoreCase))
                 {
                     var sysAdminUser = await _sysAdminHandler.GetSysAdminUserAsync("sysadmin");
@@ -178,8 +173,14 @@ namespace LYBT.Module.Auth.Services
                     }
                 }
 
+                // 对普通用户进行Guid格式验证
+                if (!Guid.TryParse(userId, out var userGuid))
+                {
+                    return ServiceResult<UserDto>.Failure("用户ID格式无效");
+                }
+
                 // 获取普通用户
-                var user = await _authRepository.GetByUsernameAsync(userId);
+                var user = await _authRepository.GetByIdAsync(userGuid);
                 if (user == null)
                 {
                     return ServiceResult<UserDto>.Failure("用户不存在");

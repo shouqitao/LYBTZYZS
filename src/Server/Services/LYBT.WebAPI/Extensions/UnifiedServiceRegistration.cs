@@ -190,8 +190,17 @@ public static class UnifiedServiceRegistration
         {
             // 直接获取JWT密钥用于认证设置（IOptions已在RegisterInfrastructureServices中注册）
             var jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET") ??
-                           configuration["JwtOptions:Secret"] ??
-                           "DefaultDevelopmentSecretKeyForJWTAuthentication_ShouldBeReplacedInProduction";
+                           configuration["JwtOptions:Secret"];
+            
+            // 生产环境必须配置JWT密钥，开发环境可使用默认密钥
+            if (string.IsNullOrEmpty(jwtSecret))
+            {
+                if (builder.Environment.IsProduction())
+                {
+                    throw new InvalidOperationException("生产环境必须通过JWT_SECRET环境变量或JwtOptions:Secret配置JWT密钥");
+                }
+                jwtSecret = "DefaultDevelopmentSecretKeyForJWTAuthentication_ShouldBeReplacedInProduction";
+            }
 
             if (!string.IsNullOrEmpty(jwtSecret))
             {
