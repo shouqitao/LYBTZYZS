@@ -178,9 +178,13 @@ namespace LYBT.Infrastructure.Repositories
 
             await Task.WhenAll(countTask, itemsTask);
 
+            // 正确等待异步任务完成，避免潜在死锁
+            var items = await itemsTask;
+            var totalCount = await countTask;
+            
             var result = new PagedResult<TEntity>(
-                itemsTask.Result,
-                countTask.Result,
+                items,
+                totalCount,
                 pageNumber,
                 pageSize);
 
