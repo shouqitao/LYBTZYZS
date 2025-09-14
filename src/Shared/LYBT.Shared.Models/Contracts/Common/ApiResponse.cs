@@ -70,17 +70,6 @@ namespace LYBT.Shared.Models.Contracts.Common
                 Errors = errors
             };
         }
-
-        // BaseApiController兼容方法
-        public static ApiResponse<T> Ok(T? data = default, string message = "操作成功")
-        {
-            return CreateSuccess(data, message);
-        }
-
-        public static ApiResponse<T> Fail(string message = "操作失败", string? errorCode = null)
-        {
-            return CreateFail(message, errorCode != null ? new { code = errorCode } : null);
-        }
     }
 
     /// <summary>
@@ -100,30 +89,6 @@ namespace LYBT.Shared.Models.Contracts.Common
                 Message = message,
                 Data = data
             };
-        }
-
-        /// <summary>
-        /// 创建失败响应
-        /// </summary>
-        public static new ApiResponse CreateFail(string message = "操作失败", object? errors = null)
-        {
-            return new ApiResponse
-            {
-                Success = false,
-                Message = message,
-                Errors = errors
-            };
-        }
-
-        // BaseApiController兼容方法
-        public static ApiResponse Ok(string message = "操作成功")
-        {
-            return CreateSuccess(null, message);
-        }
-
-        public static new ApiResponse Fail(string message = "操作失败", string? errorCode = null)
-        {
-            return CreateFail(message, errorCode != null ? new { code = errorCode } : null);
         }
     }
 }
