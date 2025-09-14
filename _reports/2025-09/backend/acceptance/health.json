@@ -1,0 +1,25 @@
+{
+  "timestamp": "2025-09-14T22:08:00+08:00",
+  "endpoint": "http://localhost:8080/api/v1/health",
+  "status": "FAILED",
+  "httpCode": 0,
+  "error": "TCP connection failed",
+  "details": {
+    "webApiStarted": true,
+    "logMessage": "Now listening on: http://localhost:8080",
+    "dbConnection": "SUCCESS",
+    "portBinding": "FAILED",
+    "netstatCheck": "Port 8080 not in LISTENING state",
+    "tcpTest": "Connection refused",
+    "multipleProcesses": "Multiple dotnet processes running",
+    "launchProfile": "http profile used"
+  },
+  "diagnostic": {
+    "possibleCauses": [
+      "Port binding conflict with multiple dotnet processes",
+      "Firewall blocking port 8080",
+      "Application started but port not actually bound"
+    ],
+    "recommendation": "Kill all dotnet processes and restart single instance"
+  }
+}
