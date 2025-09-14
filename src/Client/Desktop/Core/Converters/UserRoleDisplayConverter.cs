@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Windows.Data;
+using LYBT.Desktop.Core.Constants;
 
 namespace LYBT.Desktop.Core.Converters
 {
@@ -37,15 +38,15 @@ namespace LYBT.Desktop.Core.Converters
         {
             if (value is not string displayName || string.IsNullOrEmpty(displayName))
             {
-                return "Doctor";
+                return SystemConstants.DoctorRole;
             }
 
             return displayName switch
             {
-                "管理员" => "Admin",
-                "医生" => "Doctor",
+                "管理员" => SystemConstants.AdminRole,
+                "医生" => SystemConstants.DoctorRole,
                 "药师" => "Pharmacist",
-                "前台" => "Receptionist",
+                "前台" => "Receptionist", 
                 "收银员" => "Cashier",
                 "理疗师" => "Therapist",
                 _ => displayName.ToUpper()

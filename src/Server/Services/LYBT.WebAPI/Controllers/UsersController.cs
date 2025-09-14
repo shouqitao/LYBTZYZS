@@ -260,11 +260,10 @@ public class UsersController : BaseApiController
     {
         try
         {
-            // 临时返回固定角色列表，实际应该从配置中获取
+            // 使用 RoleConstants 获取统一角色列表
             var roles = new[] {
-                new { Value = "Admin", Label = "管理员" },
-                new { Value = "Doctor", Label = "医生" },
-                new { Value = "Receptionist", Label = "接待员" }
+                new { Value = LYBT.Infrastructure.Authorization.RoleConstants.Admin, Label = "管理员" },
+                new { Value = LYBT.Infrastructure.Authorization.RoleConstants.Doctor, Label = "医生" }
             };
             return Success<IEnumerable<object>>(roles, "获取角色列表成功");
         }

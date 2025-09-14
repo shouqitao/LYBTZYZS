@@ -402,8 +402,8 @@ public class MainWindowViewModel(
         string roleDisplay;
 
         // 管理员判断（包括sysadmin用户名和Admin角色）
-        bool isAdmin = CurrentUser.Username?.Equals("sysadmin", StringComparison.OrdinalIgnoreCase) == true ||
-                      CurrentUser.Role?.Equals("Admin", StringComparison.OrdinalIgnoreCase) == true;
+        bool isAdmin = CurrentUser.Username?.Equals(SystemConstants.SuperAdminUsername, StringComparison.OrdinalIgnoreCase) == true ||
+                      CurrentUser.Role?.Equals(SystemConstants.AdminRole, StringComparison.OrdinalIgnoreCase) == true;
 
         if (isAdmin)
         {
@@ -461,18 +461,18 @@ public class MainWindowViewModel(
             var app = (App)Application.Current;
 
             // 管理员加载SystemWorkbenchModule
-            bool isAdmin = user.Username?.Equals("sysadmin", StringComparison.OrdinalIgnoreCase) == true ||
-                          user.Role?.Equals("Admin", StringComparison.OrdinalIgnoreCase) == true;
+            bool isAdmin = user.Username?.Equals(SystemConstants.SuperAdminUsername, StringComparison.OrdinalIgnoreCase) == true ||
+                          user.Role?.Equals(SystemConstants.AdminRole, StringComparison.OrdinalIgnoreCase) == true;
 
             if (isAdmin)
             {
                 System.Diagnostics.Debug.WriteLine("🔄 加载SystemWorkbenchModule模块...");
-                await app.LoadRoleBasedModulesAsync("Admin");
+                await app.LoadRoleBasedModulesAsync(SystemConstants.AdminRole);
             }
             else
             {
                 System.Diagnostics.Debug.WriteLine("🔄 加载ConsultationWorkbenchModule模块...");
-                await app.LoadRoleBasedModulesAsync("Doctor");
+                await app.LoadRoleBasedModulesAsync(SystemConstants.DoctorRole);
             }
 
             System.Diagnostics.Debug.WriteLine("✅ 工作台模块加载完成");

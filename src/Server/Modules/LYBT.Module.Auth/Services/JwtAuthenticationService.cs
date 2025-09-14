@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using LYBT.Infrastructure.Authorization;
 using LYBT.Infrastructure.Configuration.Options;
 using LYBT.Module.Auth.Interfaces;
 using LYBT.Shared.Models.Enums;
@@ -91,7 +92,7 @@ namespace LYBT.Module.Auth.Services
 
             var userId = principal.FindFirst(JwtRegisteredClaimNames.Sub)?.Value ?? string.Empty;
             var userName = principal.FindFirst(JwtRegisteredClaimNames.UniqueName)?.Value ?? string.Empty;
-            var roleString = principal.FindFirst(ClaimTypes.Role)?.Value ?? "Doctor";
+            var roleString = principal.FindFirst(ClaimTypes.Role)?.Value ?? RoleConstants.Doctor;
             if (Enum.TryParse<UserRole>(roleString, out var role))
             {
                 return GenerateToken(userId, userName, role);
@@ -111,7 +112,7 @@ namespace LYBT.Module.Auth.Services
 
                 var userId = jsonToken.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Sub)?.Value ?? string.Empty;
                 var userName = jsonToken.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.UniqueName)?.Value ?? string.Empty;
-                var roleString = jsonToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value ?? "Doctor";
+                var roleString = jsonToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value ?? RoleConstants.Doctor;
 
                 if (!Enum.TryParse<UserRole>(roleString, out var role))
                 {

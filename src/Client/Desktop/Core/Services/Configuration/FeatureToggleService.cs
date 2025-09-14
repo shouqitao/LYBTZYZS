@@ -1,3 +1,4 @@
+using LYBT.Desktop.Core.Constants;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Core.Services.Configuration
@@ -475,7 +476,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
                     return true;
 
                 case FeatureState.EnabledForAdmins:
-                    return context.UserRole == "Admin";
+                    return context.UserRole == SystemConstants.AdminRole;
             }
 
             // 检查规则
@@ -544,7 +545,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
         {
             // 从用户服务获取角色
             // 这里简化处理
-            return userId == "admin" ? "Admin" : "User";
+            return userId == "admin" ? SystemConstants.AdminRole : SystemConstants.DoctorRole;
         }
 
         private string GetCurrentEnvironment()
@@ -564,7 +565,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
                 return "特性已全局启用";
             }
 
-            if (feature.CurrentState == FeatureState.EnabledForAdmins && context.UserRole == "Admin")
+            if (feature.CurrentState == FeatureState.EnabledForAdmins && context.UserRole == SystemConstants.AdminRole)
             {
                 return "特性对管理员启用";
             }
@@ -722,7 +723,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
     public class EvaluationContext
     {
         public string UserId { get; set; } = string.Empty;
-        public string UserRole { get; set; } = "User";
+        public string UserRole { get; set; } = SystemConstants.DoctorRole;
         public string Environment { get; set; } = "Development";
         public int Random { get; set; }
         public Dictionary<string, object>? CustomData { get; set; }

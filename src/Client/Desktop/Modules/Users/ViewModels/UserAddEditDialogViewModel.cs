@@ -126,8 +126,8 @@ namespace LYBT.Desktop.Users.ViewModels
             // 🎯 修复：角色列表 - 使用正确的UserRole枚举值，删除护士和User角色
             Roles = new List<RoleItem>
             {
-                new RoleItem { Value = "Doctor", DisplayName = "医生" },
-                new RoleItem { Value = "Admin", DisplayName = "管理员" },
+                new RoleItem { Value = SystemConstants.DoctorRole, DisplayName = "医生" },
+                new RoleItem { Value = SystemConstants.AdminRole, DisplayName = "管理员" },
                 new RoleItem { Value = "Pharmacist", DisplayName = "药师" },
                 new RoleItem { Value = "Receptionist", DisplayName = "前台" },
                 new RoleItem { Value = "Cashier", DisplayName = "收银员" },
@@ -150,7 +150,7 @@ namespace LYBT.Desktop.Users.ViewModels
                 DialogTitle = SystemConstants.AddUserDialogTitle;
 
                 // 新增模式默认为医生角色
-                SelectedRole = new RoleItem { Value = "Doctor", DisplayName = "医生" };
+                SelectedRole = new RoleItem { Value = SystemConstants.DoctorRole, DisplayName = "医生" };
                 System.Diagnostics.Debug.WriteLine("🔧 构造函数: 新增模式");
             }
 
@@ -200,7 +200,7 @@ namespace LYBT.Desktop.Users.ViewModels
                         RealName = RealName.Trim(),
                         Email = string.IsNullOrWhiteSpace(Email) ? null : Email.Trim(), // 🎯 修复：包含邮箱字段
                         PhoneNumber = string.IsNullOrWhiteSpace(PhoneNumber) ? null : PhoneNumber.Trim(),
-                        Role = SelectedRole?.Value ?? "Doctor", // 新建用户使用选中的角色，默认为医生
+                        Role = SelectedRole?.Value ?? SystemConstants.DoctorRole, // 新建用户使用选中的角色，默认为医生
                         Status = IsActive ? CommonStatus.Enabled : CommonStatus.Disabled, // 🎯 修复：包含状态字段
                         Password = string.Empty, // 后端会自动设置环境感知的默认密码
                         ConfirmPassword = string.Empty, // 确认密码
@@ -268,7 +268,7 @@ namespace LYBT.Desktop.Users.ViewModels
 
             // 🎯 修复：根据实际角色正确设置选中项
             SelectedRole = Roles.FirstOrDefault(r => r.Value == user.Role) ??
-                          Roles.FirstOrDefault(r => r.Value == "Doctor") ??
+                          Roles.FirstOrDefault(r => r.Value == SystemConstants.DoctorRole) ??
                           Roles.First();
 
             System.Diagnostics.Debug.WriteLine($"✅ InitializeEditData完成: Username={Username}, RealName={RealName}, Email={Email}, IsActive={IsActive}, Role={SelectedRole?.DisplayName}");
@@ -347,7 +347,7 @@ namespace LYBT.Desktop.Users.ViewModels
                 Email = string.Empty;
                 PhoneNumber = string.Empty;
                 IsActive = true; // 新用户默认启用
-                SelectedRole = new RoleItem { Value = "Doctor", DisplayName = "医生" };
+                SelectedRole = new RoleItem { Value = SystemConstants.DoctorRole, DisplayName = "医生" };
 
                 // 触发UI更新
                 RaisePropertyChanged(nameof(Username));

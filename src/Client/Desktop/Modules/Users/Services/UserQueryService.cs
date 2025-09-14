@@ -1,3 +1,4 @@
+using LYBT.Desktop.Core.Constants;
 using LYBT.Desktop.Users.Interfaces;
 using LYBT.Shared.Interfaces.Api;
 using LYBT.Shared.Models.Contracts.Common;
@@ -195,8 +196,8 @@ public class UserQueryService(
         // 简单诊所版本固定角色
         var roles = new List<object>
         {
-            new { Id = "Admin", Name = "管理员" },
-            new { Id = "Doctor", Name = "医生" }
+            new { Id = SystemConstants.AdminRole, Name = "管理员" },
+            new { Id = SystemConstants.DoctorRole, Name = "医生" }
         };
 
         return Task.FromResult(ServiceResult<List<object>>.Success(roles));
