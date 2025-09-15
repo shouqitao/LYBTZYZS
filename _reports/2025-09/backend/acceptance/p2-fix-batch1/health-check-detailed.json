@@ -8,60 +8,30 @@
                          "Status":  "FOUND",
                          "Details":  [
                                          {
-                                             "PID":  4596,
-                                             "StartTime":  "\/Date(1757866158428)\/",
-                                             "CommandLine":  "\"C:\\Program Files\\dotnet\\dotnet.exe\" run --urls=\"http://localhost:8080\" --no-launch-profile --verbosity minimal "
+                                             "PID":  12428,
+                                             "StartTime":  "\/Date(1757928741523)\/",
+                                             "CommandLine":  "\"C:\\Program Files\\dotnet\\dotnet.exe\" run --launch-profile http"
                                          },
                                          {
-                                             "PID":  6872,
-                                             "StartTime":  "\/Date(1757866159513)\/",
-                                             "CommandLine":  "\"C:\\Program Files\\dotnet\\dotnet.exe\" \"C:\\Program Files\\dotnet\\sdk\\9.0.305\\MSBuild.dll\" /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false"
-                                         },
-                                         {
-                                             "PID":  7680,
-                                             "StartTime":  "\/Date(1757866159513)\/",
-                                             "CommandLine":  "\"C:\\Program Files\\dotnet\\dotnet.exe\" \"C:\\Program Files\\dotnet\\sdk\\9.0.305\\MSBuild.dll\" /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false"
-                                         },
-                                         {
-                                             "PID":  13300,
-                                             "StartTime":  "\/Date(1757866159515)\/",
-                                             "CommandLine":  "\"C:\\Program Files\\dotnet\\dotnet.exe\" \"C:\\Program Files\\dotnet\\sdk\\9.0.305\\MSBuild.dll\" /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false"
-                                         },
-                                         {
-                                             "PID":  16960,
-                                             "StartTime":  "\/Date(1757866159517)\/",
-                                             "CommandLine":  "\"C:\\Program Files\\dotnet\\dotnet.exe\" \"C:\\Program Files\\dotnet\\sdk\\9.0.305\\MSBuild.dll\" /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false"
-                                         },
-                                         {
-                                             "PID":  21144,
-                                             "StartTime":  "\/Date(1757866159513)\/",
-                                             "CommandLine":  "\"C:\\Program Files\\dotnet\\dotnet.exe\" \"C:\\Program Files\\dotnet\\sdk\\9.0.305\\MSBuild.dll\" /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false"
-                                         },
-                                         {
-                                             "PID":  23532,
-                                             "StartTime":  "\/Date(1757866159513)\/",
-                                             "CommandLine":  "\"C:\\Program Files\\dotnet\\dotnet.exe\" \"C:\\Program Files\\dotnet\\sdk\\9.0.305\\MSBuild.dll\" /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false"
-                                         },
-                                         {
-                                             "PID":  30160,
-                                             "StartTime":  "\/Date(1757866159513)\/",
-                                             "CommandLine":  "\"C:\\Program Files\\dotnet\\dotnet.exe\" \"C:\\Program Files\\dotnet\\sdk\\9.0.305\\MSBuild.dll\" /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false"
+                                             "PID":  17224,
+                                             "StartTime":  "\/Date(1757916258173)\/",
+                                             "CommandLine":  "\"C:\\Program Files\\dotnet\\dotnet.EXE\"  C:\\Users\\player\\.serena\\language_servers\\static\\CSharpLanguageServer\\Microsoft.CodeAnalysis.LanguageServer.win-x64.5.0.0-1.25329.6\\Microsoft.CodeAnalysis.LanguageServer.dll --logLevel=Information --extensionLogDirectory=C:\\Users\\player\\.serena\\language_servers\\static\\CSharpLanguageServer\\logs --stdio"
                                          }
                                      ],
-                         "Count":  8
+                         "Count":  2
                      },
     "PortCheck":  {
-                      "RawOutput":  "  TCP    127.0.0.1:8080         0.0.0.0:0              LISTENING       26124\n  TCP    192.168.31.8:50251     180.111.196.240:8080   ESTABLISHED     17584\n  TCP    198.18.0.1:50249       180.111.196.240:8080   ESTABLISHED     2364\n  TCP    [::1]:8080             [::]:0                 LISTENING       26124",
+                      "RawOutput":  "  TCP    127.0.0.1:8080         0.0.0.0:0              LISTENING       6404\n  TCP    [::1]:8080             [::]:0                 LISTENING       6404",
                       "Status":  "LISTENING",
                       "ListeningCount":  2,
-                      "EstablishedCount":  2
+                      "EstablishedCount":  0
                   },
-    "Duration":  1.2,
+    "Duration":  0.06,
     "HttpCode":  200,
     "Error":  null,
-    "Response":  "{\"status\":\"Healthy\",\"timestamp\":\"2025-09-14T16:14:04.9653967Z\",\"version\":\"1.0.0.0\",\"environment\":\"Development\"}",
+    "Response":  "{\"status\":\"Healthy\",\"timestamp\":\"2025-09-15T10:38:44.6839094Z\",\"version\":\"1.0.0.0\",\"environment\":\"Development\"}",
     "Status":  "SUCCESS",
     "Endpoint":  "http://localhost:8080/api/v1/health",
     "Port":  8080,
-    "Timestamp":  "2025-09-15 00:14:03"
+    "Timestamp":  "2025-09-15 18:38:44"
 }
