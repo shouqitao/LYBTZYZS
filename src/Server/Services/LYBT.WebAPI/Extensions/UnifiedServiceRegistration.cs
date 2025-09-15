@@ -3,6 +3,7 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Asp.Versioning;
+using Asp.Versioning.ApiExplorer;
 
 // using LYBT.Infrastructure.Configuration; // Removed - SimplifiedConfigurationService eliminated
 using LYBT.Infrastructure.Caching.Adapters;
@@ -96,7 +97,6 @@ public static class UnifiedServiceRegistration
                 {
                     options.UseSqlServer(opt => opt.CommandTimeout(dbOptions.CommandTimeout));
                 }
-
             });
         }
 
@@ -192,7 +192,7 @@ public static class UnifiedServiceRegistration
             // 直接获取JWT密钥用于认证设置（IOptions已在RegisterInfrastructureServices中注册）
             var jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET") ??
                            configuration["JwtOptions:Secret"];
-            
+
             // 生产环境必须配置JWT密钥，开发环境可使用默认密钥
             if (string.IsNullOrEmpty(jwtSecret))
             {
@@ -201,6 +201,7 @@ public static class UnifiedServiceRegistration
                 {
                     throw new InvalidOperationException("生产环境必须通过JWT_SECRET环境变量或JwtOptions:Secret配置JWT密钥");
                 }
+
                 jwtSecret = "DefaultDevelopmentSecretKeyForJWTAuthentication_ShouldBeReplacedInProduction";
             }
 
@@ -281,13 +282,16 @@ public static class UnifiedServiceRegistration
                 new Asp.Versioning.UrlSegmentApiVersionReader());
         }).AddMvc();
 
-        // API版本浏览器配置 - 暂时禁用以修复编译错误
-        // 注意：此配置对{version:apiVersion}路由约束是必需的，需要后续修复
-        // services.AddVersionedApiExplorer(options =>
-        // {
-        //     options.GroupNameFormat = "'v'VVV";
-        //     options.SubstituteApiVersionInUrl = true;
-        // });
+        // API版本浏览器配置 - 重新启用以支持版本化Swagger文档
+        services.AddApiVersioning(options =>
+        {
+            options.DefaultApiVersion = ApiVersion.Default;
+            options.AssumeDefaultVersionWhenUnspecified = true;
+        }).AddApiExplorer(options =>
+        {
+            options.GroupNameFormat = "'v'VVV";
+            options.SubstituteApiVersionInUrl = true;
+        });
 
         // ProblemDetails 和异常处理服务
         services.AddProblemDetails();
