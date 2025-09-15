@@ -43,7 +43,7 @@ namespace LYBT.Infrastructure.Authorization
         public static readonly Dictionary<string, string> RoleMapping = new()
         {
             [Doctor] = Doctor,   // Doctor -> Doctor 保持
-            [Admin] = Admin      // Admin -> Admin 保持
+            [Admin] = Admin // Admin -> Admin 保持
         };
 
         /// <summary>

@@ -74,11 +74,10 @@ public static class UnifiedMiddlewareConfiguration
     /// </summary>
     private static WebApplication ConfigureAuthenticationMiddleware(this WebApplication app)
     {
-        // 按照标准ASP.NET Core管道顺序：UseRouting → UseCors → UseAuthentication → UseAuthorization
+        // 按照标准ASP.NET Core管道顺序：UseRouting → UseAuthentication → UseAuthorization
         app.UseRouting();
 
-        // CORS后端兜底支持 - 使用统一的DefaultCors策略
-        app.UseCors("DefaultCors");
+        // CORS已移除：WPF+WebAPI架构无需跨域支持
 
         // 认证和授权
         app.UseAuthentication();

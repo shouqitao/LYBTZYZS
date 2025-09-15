@@ -181,7 +181,7 @@ namespace LYBT.Infrastructure.Repositories
             // 正确等待异步任务完成，避免潜在死锁
             var items = await itemsTask;
             var totalCount = await countTask;
-            
+
             var result = new PagedResult<TEntity>(
                 items,
                 totalCount,

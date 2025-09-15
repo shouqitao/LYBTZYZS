@@ -421,40 +421,7 @@ public static class UnifiedServiceRegistration
         IConfiguration configuration,
         IWebHostEnvironment environment)
     {
-        services.AddCors(options =>
-        {
-            // 默认策略 - 简化的开发环境CORS
-            options.AddPolicy("DefaultCors", builder =>
-            {
-                if (environment.IsDevelopment())
-                {
-                    // 开发环境：从配置读取允许的源
-                    var allowedOrigins = configuration.GetSection("Security:Cors:AllowedOrigins").Get<string[]>()
-                                        ?? new[] { "http://localhost:3000", "http://localhost:4200", "http://localhost:5173" };
-
-                    builder.WithOrigins(allowedOrigins)
-                           .AllowAnyMethod()
-                           .AllowAnyHeader()
-                           .AllowCredentials();
-                }
-                else
-                {
-                    // 生产环境：严格的CORS策略，不允许通配
-                    var allowedOrigins = configuration.GetSection("Security:Cors:AllowedOrigins").Get<string[]>();
-
-                    if (allowedOrigins == null || allowedOrigins.Length == 0)
-                    {
-                        throw new InvalidOperationException("生产环境必须配置Security:Cors:AllowedOrigins，不能为空");
-                    }
-
-                    builder.WithOrigins(allowedOrigins)
-                           .WithMethods("GET", "POST", "PUT", "DELETE", "PATCH")
-                           .WithHeaders("Content-Type", "Authorization", "X-Requested-With")
-                           .AllowCredentials()
-                           .SetPreflightMaxAge(TimeSpan.FromMinutes(60));
-                }
-            });
-        });
+        // CORS已移除：WPF+WebAPI架构无需跨域支持
 
         return services;
     }

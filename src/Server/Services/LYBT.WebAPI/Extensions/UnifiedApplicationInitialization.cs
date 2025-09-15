@@ -103,15 +103,17 @@ public static class UnifiedApplicationInitialization
             {
                 var jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET") ??
                                configuration["JwtOptions:Secret"];
-                
+
                 if (string.IsNullOrEmpty(jwtSecret))
                 {
                     if (app.Environment.IsProduction())
                     {
                         throw new InvalidOperationException("生产环境必须配置JWT_SECRET环境变量或JwtOptions:Secret");
                     }
+
                     jwtSecret = "DefaultDevelopmentSecretKeyForJWTAuthentication_ShouldBeReplacedInProduction";
                 }
+
                 logger?.LogInformation("✅ JWT配置验证通过");
             }
             catch (Exception)

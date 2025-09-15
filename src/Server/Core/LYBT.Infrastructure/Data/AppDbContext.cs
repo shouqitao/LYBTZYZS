@@ -88,6 +88,7 @@ namespace LYBT.Infrastructure.Data
             ConfigurePrescriptions(modelBuilder);
             ConfigureHerbs(modelBuilder);
             ConfigureFormulas(modelBuilder);
+
             // ConfigureCompatibilityNotes(modelBuilder); // 移除：HerbCompatibilityNote实体已删除
 
             // UltraThink简化：移除未使用的分布式事务日志配置
