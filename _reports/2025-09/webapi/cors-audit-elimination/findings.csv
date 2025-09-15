@@ -1,0 +1,9 @@
+Path,Symbol,Kind,Evidence,Status
+src/Server/Services/LYBT.WebAPI/Extensions/UnifiedServiceRegistration.cs,services.AddCors(),ServiceRegistration,lines 424-457: Complete CORS service registration with DefaultCors policy,REMOVE
+src/Server/Services/LYBT.WebAPI/Extensions/UnifiedServiceRegistration.cs,DefaultCors policy,PolicyDefinition,"lines 427-456: Development and Production CORS policy configurations",REMOVE
+src/Server/Services/LYBT.WebAPI/Extensions/UnifiedMiddlewareConfiguration.cs,app.UseCors("DefaultCors"),MiddlewareCall,line 81: CORS middleware activation in pipeline,REMOVE
+src/Server/Services/LYBT.WebAPI/appsettings.Security.json,Security:Cors section,ConfigurationSection,"lines 10-35: Complete CORS configuration with AllowedOrigins, Methods, Headers",REMOVE
+src/Server/Core/LYBT.Infrastructure/ServiceCollectionExtensions.cs,AddCorsPolicies comment,CommentedCode,"lines 103-129: Commented AddCorsPolicies method implementation",REMOVE
+src/Server/Core/LYBT.Infrastructure/ServiceCollectionExtensions.cs,services.AddCorsPolicies() comment,CommentedCall,line 183: Commented CORS service registration call,REMOVE
+docs/01_facts/LYBT.Infrastructure.classes.md,AddCorsPolicies documentation,Documentation,lines 588+619: Documentation references to removed CORS functionality,UPDATE
+src/Server/Services/LYBT.WebAPI/README.md,CORS configuration note,Documentation,line 706: Documentation note about removed CORS configuration,KEEP
