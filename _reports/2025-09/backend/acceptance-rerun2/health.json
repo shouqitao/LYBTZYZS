@@ -1,0 +1,36 @@
+{
+  "timestamp": "2025-09-15T13:48:00+08:00",
+  "endpoint": "http://localhost:9999/api/v1/health",
+  "status": "FAILED",
+  "httpCode": 500,
+  "error": "API Version Constraint Error",
+  "details": {
+    "webApiStarted": true,
+    "logMessage": "Now listening on: http://localhost:9999",
+    "dbConnection": "SUCCESS",
+    "portBinding": "SUCCESS",
+    "apiVersionError": "The constraint reference 'apiVersion' could not be resolved to a type",
+    "fullError": "System.InvalidOperationException: The constraint reference 'apiVersion' could not be resolved to a type. Register the constraint type with 'Microsoft.AspNetCore.Mvc.Versioning'",
+    "routingEngine": "BLOCKED - all /api/v1/* routes fail",
+    "healthCheckRoute": "/api/v1/health",
+    "swaggerRoute": "/swagger"
+  },
+  "diagnostic": {
+    "rootCause": "API版本约束未正确注册",
+    "impactScope": "所有带版本号的API路由无法工作",
+    "businessImpact": "P0阻断 - 无法执行任何API测试",
+    "technicalCause": "Program.cs中缺少AddApiVersioning和约束注册配置",
+    "evidenceSource": "已在日志847296中观察到该异常",
+    "previousReport": "这正是webapi/cors-audit-elimination报告中发现的真实根因"
+  },
+  "recommendation": {
+    "action": "立即修复API版本约束配置",
+    "priority": "P0 - 阻断所有测试",
+    "nextSteps": [
+      "在Program.cs中添加services.AddApiVersioning()",
+      "注册ApiVersionRouteConstraint到RouteOptions",
+      "验证/api/v1/health端点可访问",
+      "重新运行acceptance smoke test"
+    ]
+  }
+}
