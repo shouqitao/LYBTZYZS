@@ -93,7 +93,6 @@ namespace LYBT.Infrastructure
             return services;
         }
 
-
         /// <summary>
         /// 添加基础设施数据库上下文
         /// </summary>
@@ -144,7 +143,6 @@ namespace LYBT.Infrastructure
 
             // 添加认证配置
             services.AddAuthConfiguration(configuration);
-
 
             // 注意：API版本控制在Program.cs中单独配置
             return services;

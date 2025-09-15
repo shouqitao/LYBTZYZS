@@ -18,6 +18,7 @@ using LYBT.Module.Auth;
 using LYBT.Module.Users;
 using LYBT.WebAPI.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
@@ -270,7 +271,7 @@ public static class UnifiedServiceRegistration
     /// </summary>
     private static IServiceCollection RegisterApiServices(this IServiceCollection services)
     {
-        // API版本管理服务注册
+        // API版本管理服务注册（统一配置）
         services.AddApiVersioning(options =>
         {
             options.DefaultApiVersion = new Asp.Versioning.ApiVersion(1, 0);
@@ -280,14 +281,7 @@ public static class UnifiedServiceRegistration
                 new Asp.Versioning.QueryStringApiVersionReader("version"),
                 new Asp.Versioning.HeaderApiVersionReader("X-Version"),
                 new Asp.Versioning.UrlSegmentApiVersionReader());
-        }).AddMvc();
-
-        // API版本浏览器配置 - 重新启用以支持版本化Swagger文档
-        services.AddApiVersioning(options =>
-        {
-            options.DefaultApiVersion = ApiVersion.Default;
-            options.AssumeDefaultVersionWhenUnspecified = true;
-        }).AddApiExplorer(options =>
+        }).AddMvc().AddApiExplorer(options =>
         {
             options.GroupNameFormat = "'v'VVV";
             options.SubstituteApiVersionInUrl = true;
