@@ -5,25 +5,25 @@
 
   <ItemGroup Label="Core Framework Packages">
     <!-- .NET Core 基础框架包 -->
-    <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="8.0.17" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.17" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.17" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="9.0.9" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.9" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.9" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.17" />
     
     <!-- Microsoft Extensions 系列 - 统一到 9.0.0 解决版本冲突 -->
-    <PackageVersion Include="Microsoft.Extensions.Configuration" Version="9.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="9.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.FileExtensions" Version="9.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="9.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="9.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Logging" Version="9.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="9.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Caching.Abstractions" Version="9.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="9.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Options" Version="9.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="9.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration" Version="9.0.9" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="9.0.9" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.FileExtensions" Version="9.0.9" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="9.0.9" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="9.0.9" />
+    <PackageVersion Include="Microsoft.Extensions.Logging" Version="9.0.9" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.9" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="9.0.9" />
+    <PackageVersion Include="Microsoft.Extensions.Caching.Abstractions" Version="9.0.9" />
+    <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="9.0.9" />
+    <PackageVersion Include="Microsoft.Extensions.Options" Version="9.0.9" />
+    <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="9.0.9" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.9" />
     
     <!-- 对象映射 - 使用MIT开源版本 -->
     <PackageVersion Include="AutoMapper" Version="14.0.0" />
@@ -31,10 +31,10 @@
 
   <ItemGroup Label="Web API Packages">
     <!-- ASP.NET Core Web API -->
-    <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.17" />
+    <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.20" />
     <PackageVersion Include="Microsoft.AspNetCore.Http" Version="2.3.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.0" />
-    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5" />
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Core" Version="2.3.0" />
     
     <!-- API 文档与版本管理 -->
     <PackageVersion Include="Swashbuckle.AspNetCore" Version="9.0.1" />
@@ -44,8 +44,8 @@
 
   <ItemGroup Label="Authentication and Security">
     <!-- JWT 认证 -->
-    <PackageVersion Include="Microsoft.IdentityModel.Tokens" Version="8.3.0" />
-    <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="8.3.0" />
+    <PackageVersion Include="Microsoft.IdentityModel.Tokens" Version="8.14.0" />
+    <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="8.14.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Identity" Version="2.3.1" />
   </ItemGroup>
 
@@ -58,13 +58,13 @@
     <!-- HTTP 客户端 -->
     <PackageVersion Include="Refit" Version="8.0.0" />
     <PackageVersion Include="System.Net.Http" Version="4.3.4" />
-    <PackageVersion Include="Microsoft.Extensions.Http" Version="8.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Http.Polly" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Http" Version="9.0.9" />
+    <PackageVersion Include="Microsoft.Extensions.Http.Polly" Version="9.0.9" />
   </ItemGroup>
 
   <ItemGroup Label="Data Processing and Validation">
     <!-- 数据序列化 -->
-    <PackageVersion Include="System.Text.Json" Version="9.0.7" />
+    <PackageVersion Include="System.Text.Json" Version="9.0.9" />
     <PackageVersion Include="System.ComponentModel.Annotations" Version="5.0.0" />
     
     <!-- 数据验证 - 统一到 12.0.0 解决版本冲突 -->
@@ -73,7 +73,7 @@
 
   <ItemGroup Label="Testing Packages">
     <!-- 测试框架 -->
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
     <PackageVersion Include="xunit" Version="2.6.1" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.5.3" />
     <PackageVersion Include="coverlet.collector" Version="6.0.0" />
@@ -108,7 +108,7 @@
 
   <ItemGroup Label="Additional Packages">
     <!-- 数据库和数据处理 -->
-    <PackageVersion Include="Microsoft.Data.SqlClient" Version="5.1.7" />
+    <PackageVersion Include="Microsoft.Data.SqlClient" Version="6.1.1" />
     
     <!-- UI和设计 -->
     <PackageVersion Include="MaterialDesignThemes" Version="5.1.0" />
@@ -118,7 +118,7 @@
     <PackageVersion Include="Refit.Newtonsoft.Json" Version="8.0.0" />
     
     <!-- 异步和响应式 -->
-    <PackageVersion Include="System.Reactive" Version="6.0.0" />
+    <PackageVersion Include="System.Reactive" Version="6.0.2" />
     
     <!-- HTTP 策略和重试 -->
     <PackageVersion Include="Polly" Version="8.4.1" />
