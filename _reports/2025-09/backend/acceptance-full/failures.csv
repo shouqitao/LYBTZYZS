@@ -1,0 +1,8 @@
+Module,Endpoint,Method,Input,Expected,Actual,StatusCode,Notes,Priority,Category
+Users,GET /api/v1/users,GET,null,200,401,401,JWT authentication failed - unauthorized,P0,Authentication
+Formula,GET /api/v1/formulas,GET,null,200,401,401,JWT authentication failed - unauthorized,P0,Authentication
+Patients,GET /api/v1/patients,GET,null,200,401,401,JWT authentication failed - unauthorized,P0,Authentication
+Herbs,GET /api/v1/herbs,GET,null,200,401,401,JWT authentication failed - unauthorized,P0,Authentication
+Consultation,GET /api/v1/consultations,GET,null,200,404,404,Endpoint not found - routing issue,P1,Routing
+Prescriptions,GET /api/v1/prescriptions,GET,null,200,401,401,JWT authentication failed - unauthorized,P0,Authentication
+MedicalCase,GET /api/v1/medicalcases,GET,null,200,404,404,Endpoint not found - routing issue,P1,Routing
