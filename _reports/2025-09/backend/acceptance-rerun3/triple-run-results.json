@@ -1,0 +1,240 @@
+﻿{
+    "totalRounds":  3,
+    "timestamp":  "2025-09-15 17:00:27.356",
+    "baseUrl":  "http://localhost:8080",
+    "rounds":  [
+                   {
+                       "FailCount":  2,
+                       "Round":  1,
+                       "PassCount":  5,
+                       "Results":  [
+                                       {
+                                           "HttpCode":  -1,
+                                           "Timestamp":  "2025-09-15 17:00:16.201",
+                                           "Error":  "远程服务器返回错误: (404) 未找到。",
+                                           "ResponseTime":  36.9,
+                                           "Module":  "Auth",
+                                           "Status":  "FAIL",
+                                           "ExpectedCode":  405
+                                       },
+                                       {
+                                           "HttpCode":  200,
+                                           "Timestamp":  "2025-09-15 17:00:16.255",
+                                           "Error":  null,
+                                           "ResponseTime":  376.98,
+                                           "Module":  "Users",
+                                           "Status":  "PASS",
+                                           "ExpectedCode":  200
+                                       },
+                                       {
+                                           "HttpCode":  200,
+                                           "Timestamp":  "2025-09-15 17:00:16.637",
+                                           "Error":  null,
+                                           "ResponseTime":  67.29,
+                                           "Module":  "Patients",
+                                           "Status":  "PASS",
+                                           "ExpectedCode":  200
+                                       },
+                                       {
+                                           "HttpCode":  200,
+                                           "Timestamp":  "2025-09-15 17:00:16.706",
+                                           "Error":  null,
+                                           "ResponseTime":  72.15,
+                                           "Module":  "Consultation",
+                                           "Status":  "PASS",
+                                           "ExpectedCode":  200
+                                       },
+                                       {
+                                           "HttpCode":  200,
+                                           "Timestamp":  "2025-09-15 17:00:16.779",
+                                           "Error":  null,
+                                           "ResponseTime":  42.88,
+                                           "Module":  "Prescriptions",
+                                           "Status":  "PASS",
+                                           "ExpectedCode":  200
+                                       },
+                                       {
+                                           "HttpCode":  200,
+                                           "Timestamp":  "2025-09-15 17:00:16.824",
+                                           "Error":  null,
+                                           "ResponseTime":  69.39,
+                                           "Module":  "Herbs",
+                                           "Status":  "PASS",
+                                           "ExpectedCode":  200
+                                       },
+                                       {
+                                           "HttpCode":  -1,
+                                           "Timestamp":  "2025-09-15 17:00:16.894",
+                                           "Error":  "远程服务器返回错误: (400) 错误的请求。",
+                                           "ResponseTime":  30.51,
+                                           "Module":  "Formula",
+                                           "Status":  "FAIL",
+                                           "ExpectedCode":  200
+                                       }
+                                   ],
+                       "TotalTests":  7,
+                       "StartTime":  "2025-09-15 17:00:16.195",
+                       "EndTime":  "2025-09-15 17:00:16.926",
+                       "Duration":  0.73,
+                       "PassRate":  71.43
+                   },
+                   {
+                       "FailCount":  2,
+                       "Round":  2,
+                       "PassCount":  5,
+                       "Results":  [
+                                       {
+                                           "HttpCode":  -1,
+                                           "Timestamp":  "2025-09-15 17:00:21.986",
+                                           "Error":  "远程服务器返回错误: (404) 未找到。",
+                                           "ResponseTime":  1.99,
+                                           "Module":  "Auth",
+                                           "Status":  "FAIL",
+                                           "ExpectedCode":  405
+                                       },
+                                       {
+                                           "HttpCode":  200,
+                                           "Timestamp":  "2025-09-15 17:00:21.989",
+                                           "Error":  null,
+                                           "ResponseTime":  34.6,
+                                           "Module":  "Users",
+                                           "Status":  "PASS",
+                                           "ExpectedCode":  200
+                                       },
+                                       {
+                                           "HttpCode":  200,
+                                           "Timestamp":  "2025-09-15 17:00:22.025",
+                                           "Error":  null,
+                                           "ResponseTime":  31.91,
+                                           "Module":  "Patients",
+                                           "Status":  "PASS",
+                                           "ExpectedCode":  200
+                                       },
+                                       {
+                                           "HttpCode":  200,
+                                           "Timestamp":  "2025-09-15 17:00:22.058",
+                                           "Error":  null,
+                                           "ResponseTime":  35.5,
+                                           "Module":  "Consultation",
+                                           "Status":  "PASS",
+                                           "ExpectedCode":  200
+                                       },
+                                       {
+                                           "HttpCode":  200,
+                                           "Timestamp":  "2025-09-15 17:00:22.095",
+                                           "Error":  null,
+                                           "ResponseTime":  26.84,
+                                           "Module":  "Prescriptions",
+                                           "Status":  "PASS",
+                                           "ExpectedCode":  200
+                                       },
+                                       {
+                                           "HttpCode":  200,
+                                           "Timestamp":  "2025-09-15 17:00:22.123",
+                                           "Error":  null,
+                                           "ResponseTime":  25.22,
+                                           "Module":  "Herbs",
+                                           "Status":  "PASS",
+                                           "ExpectedCode":  200
+                                       },
+                                       {
+                                           "HttpCode":  -1,
+                                           "Timestamp":  "2025-09-15 17:00:22.150",
+                                           "Error":  "远程服务器返回错误: (400) 错误的请求。",
+                                           "ResponseTime":  4.99,
+                                           "Module":  "Formula",
+                                           "Status":  "FAIL",
+                                           "ExpectedCode":  200
+                                       }
+                                   ],
+                       "TotalTests":  7,
+                       "StartTime":  "2025-09-15 17:00:21.985",
+                       "EndTime":  "2025-09-15 17:00:22.156",
+                       "Duration":  0.17,
+                       "PassRate":  71.43
+                   },
+                   {
+                       "FailCount":  2,
+                       "Round":  3,
+                       "PassCount":  5,
+                       "Results":  [
+                                       {
+                                           "HttpCode":  -1,
+                                           "Timestamp":  "2025-09-15 17:00:27.164",
+                                           "Error":  "远程服务器返回错误: (404) 未找到。",
+                                           "ResponseTime":  2,
+                                           "Module":  "Auth",
+                                           "Status":  "FAIL",
+                                           "ExpectedCode":  405
+                                       },
+                                       {
+                                           "HttpCode":  200,
+                                           "Timestamp":  "2025-09-15 17:00:27.167",
+                                           "Error":  null,
+                                           "ResponseTime":  51.28,
+                                           "Module":  "Users",
+                                           "Status":  "PASS",
+                                           "ExpectedCode":  200
+                                       },
+                                       {
+                                           "HttpCode":  200,
+                                           "Timestamp":  "2025-09-15 17:00:27.222",
+                                           "Error":  null,
+                                           "ResponseTime":  31.1,
+                                           "Module":  "Patients",
+                                           "Status":  "PASS",
+                                           "ExpectedCode":  200
+                                       },
+                                       {
+                                           "HttpCode":  200,
+                                           "Timestamp":  "2025-09-15 17:00:27.255",
+                                           "Error":  null,
+                                           "ResponseTime":  31.69,
+                                           "Module":  "Consultation",
+                                           "Status":  "PASS",
+                                           "ExpectedCode":  200
+                                       },
+                                       {
+                                           "HttpCode":  200,
+                                           "Timestamp":  "2025-09-15 17:00:27.287",
+                                           "Error":  null,
+                                           "ResponseTime":  26.41,
+                                           "Module":  "Prescriptions",
+                                           "Status":  "PASS",
+                                           "ExpectedCode":  200
+                                       },
+                                       {
+                                           "HttpCode":  200,
+                                           "Timestamp":  "2025-09-15 17:00:27.317",
+                                           "Error":  null,
+                                           "ResponseTime":  25.44,
+                                           "Module":  "Herbs",
+                                           "Status":  "PASS",
+                                           "ExpectedCode":  200
+                                       },
+                                       {
+                                           "HttpCode":  -1,
+                                           "Timestamp":  "2025-09-15 17:00:27.343",
+                                           "Error":  "远程服务器返回错误: (400) 错误的请求。",
+                                           "ResponseTime":  9.91,
+                                           "Module":  "Formula",
+                                           "Status":  "FAIL",
+                                           "ExpectedCode":  200
+                                       }
+                                   ],
+                       "TotalTests":  7,
+                       "StartTime":  "2025-09-15 17:00:27.162",
+                       "EndTime":  "2025-09-15 17:00:27.354",
+                       "Duration":  0.19,
+                       "PassRate":  71.43
+                   }
+               ],
+    "summary":  {
+                    "totalFailed":  6,
+                    "avgPassRate":  71.43,
+                    "totalTests":  21,
+                    "totalPassed":  15,
+                    "avgDuration":  0.36
+                },
+    "totalModules":  7
+}

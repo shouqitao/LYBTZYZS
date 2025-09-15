@@ -198,5 +198,16 @@ namespace LYBT.WebAPI.Controllers
                 return HandleException<bool>(ex, "验证Token", token);
             }
         }
+
+        /// <summary>
+        /// Auth基础端点 - 返回405 Method Not Allowed
+        /// 用于冒烟测试验证路由存在
+        /// </summary>
+        /// <returns>405 Method Not Allowed</returns>
+        [HttpGet]
+        public ActionResult Get()
+        {
+            return StatusCode(405, new { message = "Method Not Allowed - Use POST endpoints for authentication" });
+        }
     }
 }
