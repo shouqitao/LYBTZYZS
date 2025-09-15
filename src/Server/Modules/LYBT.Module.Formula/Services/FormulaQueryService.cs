@@ -205,7 +205,6 @@ namespace LYBT.Module.Formula.Services
             {
                 // 获取模板验方（IsShared = true的验方作为模板）
                 var templates = await _dbContext.Formulas
-                    .Include(f => f.Herbs)
                     .Where(f => f.Status == CommonStatus.Enabled && f.IsShared)
                     .OrderBy(f => f.Name)
                     .ToListAsync();
@@ -236,7 +235,6 @@ namespace LYBT.Module.Formula.Services
 
                 // 根据验方类型查询（基于名称或功效匹配）
                 var formulas = await _dbContext.Formulas
-                    .Include(f => f.Herbs)
                     .Where(f => f.Status == CommonStatus.Enabled &&
                                (f.Name.Contains(formulaType) ||
                                 (f.Effect != null && f.Effect.Contains(formulaType))))
@@ -299,7 +297,6 @@ namespace LYBT.Module.Formula.Services
         private IQueryable<LYBT.Entities.Formula.Formula> BuildBaseQuery()
         {
             return _dbContext.Formulas
-                .Include(f => f.Herbs)
                 .Where(f => f.Status == CommonStatus.Enabled);
         }
 
