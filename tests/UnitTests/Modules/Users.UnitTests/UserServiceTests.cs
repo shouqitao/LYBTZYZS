@@ -403,10 +403,10 @@ namespace LYBT.Module.Users.Tests
 
         #endregion
 
-        #region CreateUserAsync 测试
+        #region CreateAsync 测试
 
         [Fact]
-        public async Task CreateUserAsync_Should_Create_New_User_Successfully()
+        public async Task CreateAsync_Should_Create_New_User_Successfully()
         {
             // Arrange
             var dto = new UserMutationDto
@@ -420,7 +420,7 @@ namespace LYBT.Module.Users.Tests
             var operatorName = "管理员";
 
             // Act
-            var result = await _userService.CreateUserAsync(dto);
+            var result = await _userService.CreateAsync(dto);
 
             // Assert
             result.Should().NotBeNull();
@@ -433,7 +433,7 @@ namespace LYBT.Module.Users.Tests
         }
 
         [Fact]
-        public async Task CreateUserAsync_Should_Throw_When_Username_Already_Exists()
+        public async Task CreateAsync_Should_Throw_When_Username_Already_Exists()
         {
             // Arrange
             var dto = new UserMutationDto
@@ -448,7 +448,7 @@ namespace LYBT.Module.Users.Tests
 
             // Act & Assert
             await Assert.ThrowsAsync<InvalidOperationException>(
-                async () => await _userService.CreateUserAsync(dto)
+                async () => await _userService.CreateAsync(dto)
             );
         }
 
@@ -472,7 +472,7 @@ namespace LYBT.Module.Users.Tests
             var operatorName = "管理员";
 
             // Act
-            var result = await _userService.UpdateUserAsync(existingUser.Id, dto);
+            var result = await _userService.UpdateAsync(dto);
 
             // Assert
             result.Should().BeTrue();

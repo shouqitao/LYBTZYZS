@@ -84,8 +84,9 @@ namespace LYBT.Module.Users.Tests
 
             // Assert
             result.Should().NotBeNull();
-            result.Items.Should().BeEmpty();
-            result.TotalCount.Should().Be(0);
+            result.IsSuccess.Should().BeTrue();
+            result.Data!.Items.Should().BeEmpty();
+            result.Data.TotalCount.Should().Be(0);
         }
 
         [Fact]
@@ -129,9 +130,10 @@ namespace LYBT.Module.Users.Tests
 
             // Assert
             result.Should().NotBeNull();
-            result.Items.Should().HaveCount(2);
-            result.TotalCount.Should().Be(2);
-            result.Items.First().Username.Should().Be("user1");
+            result.IsSuccess.Should().BeTrue();
+            result.Data!.Items.Should().HaveCount(2);
+            result.Data.TotalCount.Should().Be(2);
+            result.Data.Items.First().Username.Should().Be("user1");
         }
 
         #endregion
@@ -179,16 +181,17 @@ namespace LYBT.Module.Users.Tests
 
             // Assert
             result.Should().NotBeNull();
-            result!.Id.Should().Be(userId);
-            result.Username.Should().Be("testuser");
+            result.IsSuccess.Should().BeTrue();
+            result.Data!.Id.Should().Be(userId);
+            result.Data.Username.Should().Be("testuser");
         }
 
         #endregion
 
-        #region CreateUserAsync 测试
+        #region CreateAsync 测试
 
         [Fact]
-        public async Task CreateUserAsync_Should_Throw_When_Username_Already_Exists()
+        public async Task CreateAsync_Should_Throw_When_Username_Already_Exists()
         {
             // Arrange
             var dto = new UserMutationDto
@@ -204,12 +207,12 @@ namespace LYBT.Module.Users.Tests
 
             // Act & Assert
             await Assert.ThrowsAsync<InvalidOperationException>(
-                async () => await _userService.CreateUserAsync(dto)
+                async () => await _userService.CreateAsync(dto)
             );
         }
 
         [Fact]
-        public async Task CreateUserAsync_Should_Create_User_When_Valid()
+        public async Task CreateAsync_Should_Create_User_When_Valid()
         {
             // Arrange
             var dto = new UserMutationDto
@@ -231,12 +234,13 @@ namespace LYBT.Module.Users.Tests
                 .ReturnsAsync(true);
 
             // Act
-            var result = await _userService.CreateUserAsync(dto);
+            var result = await _userService.CreateAsync(dto);
 
             // Assert
             result.Should().NotBeNull();
-            result!.Username.Should().Be(dto.Username);
-            result.RealName.Should().Be(dto.RealName);
+            result.IsSuccess.Should().BeTrue();
+            result.Data!.Username.Should().Be(dto.Username);
+            result.Data.RealName.Should().Be(dto.RealName);
 
             // 验证是否调用了AddAsync
             _mockUserRepository.Verify(x => x.AddAsync(It.Is<User>(u => 
