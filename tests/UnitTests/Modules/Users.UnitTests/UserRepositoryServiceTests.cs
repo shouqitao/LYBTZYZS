@@ -53,7 +53,7 @@ namespace LYBT.Module.Users.Tests
             await Context.SaveChangesAsync();
 
             // Assert - 验证Service层的业务逻辑
-            result.Should().BeTrue();
+            result.Should().Be(true);
             
             var savedUser = await _userRepository.GetByIdAsync(newUser.Id);
             savedUser.Should().NotBeNull();
@@ -95,7 +95,7 @@ namespace LYBT.Module.Users.Tests
             var result = await _userRepository.UpdatePasswordAsync(user.Id, newPasswordHash);
 
             // Assert
-            result.Should().BeTrue();
+            result.Should().Be(true);
 
             var updatedUser = await Context.Users.FindAsync(user.Id);
             updatedUser.Should().NotBeNull();
@@ -181,7 +181,7 @@ namespace LYBT.Module.Users.Tests
             var result = await _userRepository.UpdateAsync(user);
 
             // Assert
-            result.Should().BeTrue();
+            result.Should().Be(true);
 
             var updatedUser = await Context.Users.FindAsync(user.Id);
             updatedUser.Should().NotBeNull();

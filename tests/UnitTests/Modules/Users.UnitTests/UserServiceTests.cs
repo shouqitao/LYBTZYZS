@@ -159,10 +159,10 @@ namespace LYBT.Module.Users.Tests
             // Setup AddAsync
             _mockUserRepository
                 .Setup(x => x.AddAsync(It.IsAny<User>()))
-                .ReturnsAsync((User user) =>
+                .ReturnsAsync((User user) => 
                 {
                     _testUsers.Add(user);
-                    return true;
+                    return user;
                 });
 
             // Setup UpdateAsync
@@ -175,9 +175,8 @@ namespace LYBT.Module.Users.Tests
                     {
                         _testUsers.Remove(existing);
                         _testUsers.Add(user);
-                        return true;
                     }
-                    return false;
+                    return user;
                 });
 
             // Setup UpdatePasswordAsync
@@ -275,7 +274,7 @@ namespace LYBT.Module.Users.Tests
                     .ForMember(dest => dest.CreatedTime, opt => opt.Ignore())
                     .ForMember(dest => dest.UpdateTime, opt => opt.Ignore())
                     .ForMember(dest => dest.PasswordHash, opt => opt.Ignore());
-            }, NullLoggerFactory.Instance);
+            });
 
             return config.CreateMapper();
         }
@@ -475,7 +474,7 @@ namespace LYBT.Module.Users.Tests
             var result = await _userService.DisableAsync(user.Id);
 
             // Assert
-            result.Should().BeTrue();
+            result.Should().Be(true);
             user.Status.Should().Be(CommonStatus.Disabled);
         }
 
@@ -491,7 +490,7 @@ namespace LYBT.Module.Users.Tests
             var result = await _userService.EnableAsync(user.Id);
 
             // Assert
-            result.Should().BeTrue();
+            result.Should().Be(true);
             user.Status.Should().Be(CommonStatus.Enabled);
         }
 
@@ -624,7 +623,7 @@ namespace LYBT.Module.Users.Tests
             result.Should().NotBeNull();
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
-            roles.Should().HaveCountGreaterThan(0);
+            result.Data.Should().HaveCountGreaterThan(0);
         }
 
         #endregion

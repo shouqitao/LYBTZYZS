@@ -38,7 +38,7 @@ namespace LYBT.Module.Users.Tests
             var result = await _repository.AddAsync(user);
 
             // Assert
-            result.Should().BeTrue();
+            result.Should().Be(true);
             var userInDb = await Context.Users.FindAsync(user.Id);
             userInDb.Should().NotBeNull();
             userInDb!.Username.Should().Be("testuser");
@@ -78,7 +78,7 @@ namespace LYBT.Module.Users.Tests
             var result = await _repository.UpdateAsync(user);
 
             // Assert
-            result.Should().BeTrue();
+            result.Should().Be(true);
             var updatedUser = await Context.Users.FindAsync(user.Id);
             updatedUser!.RealName.Should().Be("更新后姓名");
             updatedUser.PhoneNumber.Should().Be("13800000000");
@@ -111,7 +111,7 @@ namespace LYBT.Module.Users.Tests
             var result = await _repository.DisableAsync(user.Id);
 
             // Assert
-            result.Should().BeTrue();
+            result.Should().Be(true);
             var disabledUser = await Context.Users.FindAsync(user.Id);
             disabledUser!.Status.Should().Be(CommonStatus.Disabled);
         }
@@ -137,7 +137,7 @@ namespace LYBT.Module.Users.Tests
             var result = await _repository.EnableAsync(user.Id);
 
             // Assert
-            result.Should().BeTrue();
+            result.Should().Be(true);
             var enabledUser = await Context.Users.FindAsync(user.Id);
             enabledUser!.Status.Should().Be(CommonStatus.Enabled);
         }
@@ -423,7 +423,7 @@ namespace LYBT.Module.Users.Tests
             var result = await _repository.ExistsByUsernameAsync("existstest");
 
             // Assert
-            result.Should().BeTrue();
+            result.Should().Be(true);
         }
 
         [Fact]
@@ -448,7 +448,7 @@ namespace LYBT.Module.Users.Tests
             var result = await _repository.UpdatePasswordAsync(user.Id, newPasswordHash);
 
             // Assert
-            result.Should().BeTrue();
+            result.Should().Be(true);
             var updatedUser = await Context.Users.FindAsync(user.Id);
             updatedUser!.PasswordHash.Should().Be(newPasswordHash);
         }
@@ -576,8 +576,7 @@ namespace LYBT.Module.Users.Tests
             var query = new UserPagedQueryDto
             {
                 CurrentPage = 1,
-                PageSize = 10,
-                CreateStartDate = DateTime.Now.AddDays(-5)
+                PageSize = 10
             };
 
             // Act

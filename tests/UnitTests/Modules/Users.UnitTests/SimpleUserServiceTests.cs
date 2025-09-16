@@ -231,7 +231,7 @@ namespace LYBT.Module.Users.Tests
 
             _mockUserRepository
                 .Setup(x => x.AddAsync(It.IsAny<User>()))
-                .ReturnsAsync(true);
+                .ReturnsAsync((User user) => user);
 
             // Act
             var result = await _userService.CreateAsync(dto);
@@ -269,7 +269,7 @@ namespace LYBT.Module.Users.Tests
 
             // Act & Assert
             await Assert.ThrowsAsync<InvalidOperationException>(
-                async () => await _userService.DisableAsync(userId, Guid.NewGuid(), "操作员")
+                async () => await _userService.DisableAsync(userId)
             );
         }
 
@@ -296,10 +296,10 @@ namespace LYBT.Module.Users.Tests
                 .ReturnsAsync(true);
 
             // Act
-            var result = await _userService.DisableAsync(userId, Guid.NewGuid(), "操作员");
+            var result = await _userService.DisableAsync(userId);
 
             // Assert
-            result.Should().BeTrue();
+            result.Should().Be(true);
 
             // 验证是否调用了DisableAsync
             _mockUserRepository.Verify(x => x.DisableAsync(userId), Times.Once);
@@ -331,13 +331,13 @@ namespace LYBT.Module.Users.Tests
                 .ReturnsAsync(true);
 
             // Act
-            var result = await _userService.ResetPasswordAsync(userId, Guid.NewGuid(), "操作员");
+            var result = await _userService.ResetPasswordAsync(userId, "NewPassword123!");
 
             // Assert
-            result.Should().BeTrue();
+            result.Should().Be(true);
 
             // 验证是否使用了默认密码
-            var expectedHash = PasswordHelper.Hash(_userOptions.DefaultUserPassword);
+            var expectedHash = PasswordHelper.Hash("LybtUser2025#InitPass!");
             _mockUserRepository.Verify(x => x.UpdatePasswordAsync(
                 userId, 
                 It.IsAny<string>() // 由于Hash每次生成不同，只验证调用
@@ -399,7 +399,7 @@ namespace LYBT.Module.Users.Tests
             var result = await _userService.ChangePasswordAsync(userId, oldPassword, newPassword);
 
             // Assert
-            result.Should().BeTrue();
+            result.Should().Be(true);
             _mockUserRepository.Verify(x => x.UpdatePasswordAsync(userId, It.IsAny<string>()), Times.Once);
         }
 
@@ -440,8 +440,9 @@ namespace LYBT.Module.Users.Tests
 
             // Assert
             result.Should().NotBeNull();
-            result.Should().HaveCount(2);
-            result.Should().AllSatisfy(u => u.Status.Should().Be(CommonStatus.Enabled));
+            result.Data.Should().NotBeNull();
+            result.Data!.Count.Should().Be(2);
+            result.Data.All(u => u.Status == CommonStatus.Enabled).Should().BeTrue();
         }
 
         #endregion
