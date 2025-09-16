@@ -57,7 +57,7 @@ namespace LYBT.Module.Users.Tests
 
     // 创建 Mock Log Service
     _mockLogger = new Mock<ILogger<UserBusinessService>>();
-    SetupLogServiceMethods();
+    // 注: UltraThink架构中UserService不直接依赖日志服务
 
     // 创建 Mapper
     _mapper = CreateUserMapper();

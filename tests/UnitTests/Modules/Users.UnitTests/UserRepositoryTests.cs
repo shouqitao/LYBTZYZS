@@ -265,8 +265,8 @@ namespace LYBT.Module.Users.Tests
             var result = await _repository.GetPagedAsync(query);
 
             // Assert
-            result.users.Should().HaveCount(3);
-            result.total.Should().Be(5);
+            result.Users.Should().HaveCount(3);
+            result.Total.Should().Be(5);
         }
 
         [Fact]
@@ -292,9 +292,9 @@ namespace LYBT.Module.Users.Tests
             var result = await _repository.GetPagedAsync(query);
 
             // Assert
-            result.users.Should().HaveCount(2);
-            result.users.Should().Contain(u => u.Username == "searchtest1");
-            result.users.Should().Contain(u => u.Username == "searchtest2");
+            result.Users.Should().HaveCount(2);
+            result.Users.Should().Contain(u => u.Username == "searchtest1");
+            result.Users.Should().Contain(u => u.Username == "searchtest2");
         }
 
         [Fact]
@@ -318,8 +318,8 @@ namespace LYBT.Module.Users.Tests
             var result = await _repository.GetPagedAsync(query, includeDisabled: true);
 
             // Assert
-            result.users.Should().HaveCount(1);
-            result.users.First().Status.Should().Be(CommonStatus.Enabled);
+            result.Users.Should().HaveCount(1);
+            result.Users.First().Status.Should().Be(CommonStatus.Enabled);
         }
 
         [Fact]
@@ -342,8 +342,8 @@ namespace LYBT.Module.Users.Tests
             var result = await _repository.GetPagedAsync(query, includeDisabled: false);
 
             // Assert
-            result.users.Should().HaveCount(1);
-            result.users.First().Status.Should().Be(CommonStatus.Enabled);
+            result.Users.Should().HaveCount(1);
+            result.Users.First().Status.Should().Be(CommonStatus.Enabled);
         }
 
         #endregion
