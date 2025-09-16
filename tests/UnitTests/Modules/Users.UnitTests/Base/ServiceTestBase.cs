@@ -4,11 +4,10 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using AutoMapper;
-using LYBT.Infrastructure.Logging;
-using LYBT.Infrastructure.Logging.Dtos;
+using Microsoft.Extensions.Logging;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Enums;
-using Microsoft.Extensions.Logging;
+using LYBT.Module.Users.Services;
 using Microsoft.Extensions.Options;
 using Moq;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -20,94 +19,21 @@ namespace LYBT.Module.Users.Tests.Base
     /// </summary>
     public abstract class ServiceTestBase : IDisposable
     {
-        protected readonly Mock<IUnifiedLogService> MockLogService;
-        protected readonly Mock<ILogger> MockLogger;
+        protected readonly Mock<ILogger<UserBusinessService>> MockLogger;
         protected readonly IMapper Mapper;
         protected readonly List<object> CapturedLogs;
 
         protected ServiceTestBase()
         {
             // 设置 Mock 对象
-            MockLogService = new Mock<IUnifiedLogService>();
-            MockLogger = new Mock<ILogger>();
+            MockLogger = new Mock<ILogger<UserBusinessService>>();
             CapturedLogs = new List<object>();
 
-            // 设置 IUnifiedLogService 默认行为
-            MockLogService
-                .Setup(x => x.CreateLogAsync(It.IsAny<LogCreateDto>()))
-                .Callback<LogCreateDto>(log => CapturedLogs.Add(log))
-                .ReturnsAsync(true);
+            // TODO: Logger配置 - Microsoft.Extensions.Logging.ILogger使用不同的接口
+            // 标准的ILogger<T>没有CreateLogAsync等自定义方法
 
-            MockLogService
-                .Setup(x => x.LogUserActionAsync(
-                    It.IsAny<Guid>(), 
-                    It.IsAny<string>(), 
-                    It.IsAny<LogActionType>(),
-                    It.IsAny<string>(), 
-                    It.IsAny<string>(), 
-                    It.IsAny<string>(),
-                    It.IsAny<string>(), 
-                    It.IsAny<string>(),
-                    It.IsAny<string>(), 
-                    It.IsAny<bool>(),
-                    It.IsAny<string>(), 
-                    It.IsAny<string>(),
-                    It.IsAny<string>(), 
-                    It.IsAny<long>()))
-                .Callback<Guid, string, LogActionType, string, string, string, string, string, string, bool, string, string, string, long>(
-                    (userId, userName, actionType, module, function, description, requestPath, httpMethod, parameters, isSuccess, errorMessage, clientIP, userAgent, duration) => 
-                    {
-                        CapturedLogs.Add(new UserActionLogDto
-                        {
-                            Id = Guid.NewGuid(),
-                            UserId = userId,
-                            Username = userName,
-                            ActionType = actionType,
-                            Module = module,
-                            Function = function,
-                            Description = description,
-                            RequestPath = requestPath,
-                            HttpMethod = httpMethod,
-                            Parameters = parameters,
-                            IsSuccess = isSuccess,
-                            ErrorMessage = errorMessage,
-                            ClientIP = clientIP,
-                            UserAgent = userAgent,
-                            ActionTime = DateTime.UtcNow,
-                            Duration = duration
-                        });
-                    })
-                .Returns(Task.CompletedTask);
-
-            // 设置错误日志方法
-            MockLogService
-                .Setup(x => x.LogErrorAsync(
-                    It.IsAny<string>(), 
-                    It.IsAny<string>(), 
-                    It.IsAny<Exception>(),
-                    It.IsAny<Guid?>(), 
-                    It.IsAny<string>()))
-                .Callback<string, string, Exception?, Guid?, string?>(
-                    (source, message, exception, userId, requestId) => 
-                    {
-                        CapturedLogs.Add(new { Source = source, Message = message, Exception = exception, UserId = userId, RequestId = requestId, Type = "SystemError" });
-                    })
-                .Returns(Task.CompletedTask);
-
-            MockLogService
-                .Setup(x => x.LogErrorAsync(
-                    It.IsAny<Exception>(), 
-                    It.IsAny<string>(), 
-                    It.IsAny<string>(),
-                    It.IsAny<Guid?>(), 
-                    It.IsAny<string>(), 
-                    It.IsAny<string>()))
-                .Callback<Exception, string?, string?, Guid?, string?, string?>(
-                    (exception, requestPath, httpMethod, userId, clientIP, userAgent) => 
-                    {
-                        CapturedLogs.Add(new { Exception = exception, RequestPath = requestPath, HttpMethod = httpMethod, UserId = userId, ClientIP = clientIP, UserAgent = userAgent, Type = "ApplicationError" });
-                    })
-                .Returns(Task.CompletedTask);
+            // Logger配置已简化 - ILogger<T>接口与原IUnifiedLogService不兼容
+            // TODO: 如需测试日志记录，可以使用ILogger扩展方法的验证
 
             // 初始化 AutoMapper
             Mapper = CreateMapper();
@@ -118,10 +44,10 @@ namespace LYBT.Module.Users.Tests.Base
         /// 子类应该重写此方法来配置具体的映射
         /// </summary>
         protected virtual IMapper CreateMapper()
-        {
-            var config = new MapperConfiguration(cfg => { }, NullLoggerFactory.Instance);
-            return config.CreateMapper();
-        }
+{
+    var config = new MapperConfiguration(cfg => { });
+    return config.CreateMapper();
+}
 
         /// <summary>
         /// 创建 Mock Repository，支持基本的CRUD操作

@@ -5,6 +5,9 @@ using LYBT.Module.Users.Tests.Base;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
+using Moq;
 using Xunit;
 
 namespace LYBT.Module.Users.Tests
@@ -17,9 +20,11 @@ namespace LYBT.Module.Users.Tests
         private readonly UserRepository _repository;
 
         public UserRepositoryTests()
-        {
-            _repository = new UserRepository(Context);
-        }
+{
+    var logger = new Mock<ILogger<UserRepository>>();
+    var cache = new Mock<IMemoryCache>();
+    _repository = new UserRepository(Context, logger.Object, cache.Object);
+}
 
         #region 创建用户测试
 
@@ -560,10 +565,10 @@ namespace LYBT.Module.Users.Tests
         {
             // Arrange
             var oldUser = TestDataGenerator.CreateTestUser();
-            oldUser.CreateTime = DateTime.Now.AddDays(-10);
+            oldUser.CreatedTime = DateTime.Now.AddDays(-10);
             
             var newUser = TestDataGenerator.CreateTestUser();
-            newUser.CreateTime = DateTime.Now.AddDays(-1);
+            newUser.CreatedTime = DateTime.Now.AddDays(-1);
             
             await _repository.AddAsync(oldUser);
             await _repository.AddAsync(newUser);

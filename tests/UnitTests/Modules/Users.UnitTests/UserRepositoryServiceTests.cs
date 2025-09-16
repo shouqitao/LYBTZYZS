@@ -9,6 +9,9 @@ using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using LYBT.Module.Users.Tests.Base;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
+using Moq;
 using Xunit;
 
 namespace LYBT.Module.Users.Tests
@@ -22,9 +25,11 @@ namespace LYBT.Module.Users.Tests
         private readonly UserRepository _userRepository;
 
         public UserRepositoryServiceTests()
-        {
-            _userRepository = new UserRepository(Context);
-        }
+{
+    var logger = new Mock<ILogger<UserRepository>>();
+    var cache = new Mock<IMemoryCache>();
+    _userRepository = new UserRepository(Context, logger.Object, cache.Object);
+}
 
         #region Service层业务逻辑测试
 
@@ -32,7 +37,7 @@ namespace LYBT.Module.Users.Tests
         public async Task Service_Should_Handle_User_Creation_With_Business_Rules()
         {
             // Arrange - 模拟Service层的业务规则
-            var newUser = new UserModel
+            var newUser = new User
             {
                 Id = Guid.NewGuid(),
                 Username = "serviceuser",
@@ -40,7 +45,7 @@ namespace LYBT.Module.Users.Tests
                 PinYinCode = "FWCCSYH", // Service层会生成拼音码
                 PasswordHash = "hashed_password", // Service层会加密密码
                 Status = CommonStatus.Enabled,
-                CreateTime = DateTime.Now
+                CreatedTime = DateTime.Now
             };
 
             // Act - Repository层操作
@@ -54,7 +59,7 @@ namespace LYBT.Module.Users.Tests
             savedUser.Should().NotBeNull();
             savedUser!.Username.Should().Be("serviceuser");
             savedUser.Status.Should().Be(CommonStatus.Enabled);
-            savedUser.CreateTime.Should().BeCloseTo(DateTime.Now, TimeSpan.FromSeconds(5));
+            savedUser.CreatedTime.Should().BeCloseTo(DateTime.Now, TimeSpan.FromSeconds(5));
         }
 
         [Fact]

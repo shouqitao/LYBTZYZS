@@ -1,4 +1,4 @@
-using LYBT.Infrastructure.Options;
+using LYBT.Infrastructure.Configuration.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,10 +7,12 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.Extensions.Logging.Abstractions;
 using FluentAssertions;
-using LYBT.Infrastructure.Logging;
+using Microsoft.Extensions.Logging;
 using LYBT.Entities.Users;
 using LYBT.Module.Users.Interfaces;
 using LYBT.Module.Users.Services;
+using LYBT.Module.Users.Services.Interfaces;
+using Microsoft.Extensions.Caching.Memory;
 using LYBT.Module.Users.Tests.Base;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Users;
@@ -29,46 +31,47 @@ namespace LYBT.Module.Users.Tests
     {
         private readonly UserService _userService;
         private readonly Mock<IUserRepository> _mockUserRepository;
-        private readonly Mock<IUnifiedLogService> _mockLogService;
+        private readonly Mock<ILogger<UserBusinessService>> _mockLogger;
         private readonly UserOptions _userOptions;
         private readonly IMapper _mapper;
-        private readonly List<UserModel> _testUsers;
+        private readonly List<User> _testUsers;
 
         public UserServiceTests()
-        {
-            // 设置测试数据
-            _testUsers = new List<UserModel>();
-            InitializeTestData();
+{
+    // 设置测试数据
+    _testUsers = new List<User>();
+    InitializeTestData();
 
-            // 配置 UserOptions
-            _userOptions = new UserOptions
-            {
-                DefaultUserPassword = "Test123!",
-                EnableUserCache = false,
-                MaxBatchOperationSize = 100,
-                EnableDetailedAuditLogging = true,
-                SendPasswordResetNotification = false
-            };
+    // 配置 UserOptions
+    _userOptions = new UserOptions
+    {
+        EnableUserCache = false,
+        MaxBatchOperationSize = 100,
+        EnableDetailedAuditLogging = true,
+        SendPasswordResetNotification = false
+    };
 
-            // 创建 Mock Repository
-            _mockUserRepository = new Mock<IUserRepository>();
-            SetupRepositoryMethods();
+    // 创建 Mock Repository
+    _mockUserRepository = new Mock<IUserRepository>();
+    SetupRepositoryMethods();
 
-            // 创建 Mock Log Service
-            _mockLogService = new Mock<IUnifiedLogService>();
-            SetupLogServiceMethods();
+    // 创建 Mock Log Service
+    _mockLogger = new Mock<ILogger<UserBusinessService>>();
+    SetupLogServiceMethods();
 
-            // 创建 Mapper
-            _mapper = CreateUserMapper();
+    // 创建 Mapper
+    _mapper = CreateUserMapper();
 
-            // 创建 UserService 实例
-            _userService = new UserService(
-                _mockUserRepository.Object,
-                _mockLogService.Object,
-                Options.Create(_userOptions),
-                _mapper
-            );
-        }
+    // 创建 Mock Services for new UserService constructor
+    var mockQueryService = new Mock<IUserQueryService>();
+    var mockBusinessService = new Mock<IUserBusinessService>();
+
+    // 创建 UserService 实例 (使用新的双层架构)
+    _userService = new UserService(
+        mockQueryService.Object,
+        mockBusinessService.Object
+    );
+}
 
         #region 初始化测试数据
 
@@ -77,7 +80,7 @@ namespace LYBT.Module.Users.Tests
             // 创建测试用户数据
             for (int i = 0; i < 5; i++)
             {
-                var user = new UserModel
+                var user = new User
                 {
                     Id = Guid.NewGuid(),
                     Username = $"testuser{i}",
@@ -86,7 +89,7 @@ namespace LYBT.Module.Users.Tests
                     PhoneNumber = $"1380000000{i}",
                     PasswordHash = PasswordHelper.Hash("Test123!"),
                     Status = i % 2 == 0 ? CommonStatus.Enabled : CommonStatus.Disabled,
-                    CreateTime = DateTime.UtcNow.AddDays(-i),
+                    CreatedTime = DateTime.UtcNow.AddDays(-i),
                     UpdateTime = DateTime.UtcNow
                 };
                 _testUsers.Add(user);
@@ -155,8 +158,8 @@ namespace LYBT.Module.Users.Tests
 
             // Setup AddAsync
             _mockUserRepository
-                .Setup(x => x.AddAsync(It.IsAny<UserModel>()))
-                .ReturnsAsync((UserModel user) =>
+                .Setup(x => x.AddAsync(It.IsAny<User>()))
+                .ReturnsAsync((User user) =>
                 {
                     _testUsers.Add(user);
                     return true;
@@ -164,8 +167,8 @@ namespace LYBT.Module.Users.Tests
 
             // Setup UpdateAsync
             _mockUserRepository
-                .Setup(x => x.UpdateAsync(It.IsAny<UserModel>()))
-                .ReturnsAsync((UserModel user) =>
+                .Setup(x => x.UpdateAsync(It.IsAny<User>()))
+                .ReturnsAsync((User user) =>
                 {
                     var existing = _testUsers.FirstOrDefault(u => u.Id == user.Id);
                     if (existing != null)
@@ -287,14 +290,14 @@ namespace LYBT.Module.Users.Tests
         {
             var config = new MapperConfiguration(cfg =>
             {
-                cfg.CreateMap<UserModel, UserDto>();
-                cfg.CreateMap<UserCreateDto, UserModel>()
+                cfg.CreateMap<User, UserDto>();
+                cfg.CreateMap<UserCreateDto, User>()
                     .ForMember(dest => dest.Id, opt => opt.Ignore())
-                    .ForMember(dest => dest.CreateTime, opt => opt.Ignore())
+                    .ForMember(dest => dest.CreatedTime, opt => opt.Ignore())
                     .ForMember(dest => dest.UpdateTime, opt => opt.Ignore());
-                cfg.CreateMap<UserUpdateDto, UserModel>()
+                cfg.CreateMap<UserUpdateDto, User>()
                     .ForMember(dest => dest.Id, opt => opt.Ignore())
-                    .ForMember(dest => dest.CreateTime, opt => opt.Ignore())
+                    .ForMember(dest => dest.CreatedTime, opt => opt.Ignore())
                     .ForMember(dest => dest.PasswordHash, opt => opt.Ignore());
             }, NullLoggerFactory.Instance);
 
@@ -638,7 +641,7 @@ namespace LYBT.Module.Users.Tests
 
             // Assert
             result.Should().BeTrue();
-            _mockUserRepository.Verify(x => x.UpdateAsync(It.Is<UserModel>(u => 
+            _mockUserRepository.Verify(x => x.UpdateAsync(It.Is<User>(u => 
                 u.Id == user.Id && 
                 u.RealName == newRealName && 
                 u.PhoneNumber == newPhoneNumber
