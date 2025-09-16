@@ -345,7 +345,10 @@ namespace LYBT.Module.Users.Services
         /// <summary>
         /// 创建用户业务逻辑（使用统一变更DTO）
         /// </summary>
-        public async Task<ServiceResult<UserDto>> CreateUserAsync(UserMutationDto dto)
+        /// <summary>
+        /// 创建用户业务逻辑（使用统一变更DTO）
+        /// </summary>
+        public async Task<ServiceResult<UserDto>> CreateUserAsync(UserMutationDto dto, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -358,44 +361,47 @@ namespace LYBT.Module.Users.Services
 
                 // 检查用户名是否重复
                 var existingUser = await _context.Users
-                    .FirstOrDefaultAsync(u => u.Username == dto.Username);
+                    .FirstOrDefaultAsync(u => u.Username == dto.Username, cancellationToken);
                 if (existingUser != null)
                 {
                     return ServiceResult<UserDto>.Failure("用户名已存在");
                 }
 
-                // 使用事务确保数据一致性
-                using var transaction = await _context.Database.BeginTransactionAsync();
-                try
+                // 使用ExecutionStrategy包装事务确保数据一致性
+                return await _context.Database.CreateExecutionStrategy().ExecuteAsync(async () =>
                 {
-                    var user = new Entities.Users.User
+                    await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
+                    try
                     {
-                        Id = Guid.NewGuid(),
-                        Username = dto.Username,
-                        PasswordHash = PasswordHelper.Hash(dto.Password ?? _defaultPasswordService.GetNewUserPassword() ?? "LybtUser2025#InitPass!"),
-                        RealName = dto.RealName,
-                        Role = Enum.TryParse<UserRole>(dto.Role, out var createRole) ? createRole : UserRole.Doctor,
-                        PhoneNumber = dto.PhoneNumber,
-                        Email = dto.Email,
-                        Status = dto.Status,
-                        PinYinCode = string.Empty, // 移除CommonHelper依赖，拼音码功能暂不实现
-                        CreatedTime = DateTime.Now
-                    };
+                        var user = new Entities.Users.User
+                        {
+                            Id = Guid.NewGuid(),
+                            Username = dto.Username,
+                            PasswordHash = PasswordHelper.Hash(dto.Password ?? _defaultPasswordService.GetNewUserPassword() ?? "LybtUser2025#InitPass!"),
+                            RealName = dto.RealName,
+                            Role = Enum.TryParse<UserRole>(dto.Role, out var createRole) ? createRole : UserRole.Doctor,
+                            PhoneNumber = dto.PhoneNumber,
+                            Email = dto.Email,
+                            Status = dto.Status,
+                            PinYinCode = string.Empty, // 移除CommonHelper依赖，拼音码功能暂不实现
+                            CreatedTime = DateTime.Now
+                        };
 
-                    _context.Users.Add(user);
-                    await _context.SaveChangesAsync();
-                    await transaction.CommitAsync();
+                        _context.Users.Add(user);
+                        await _context.SaveChangesAsync(cancellationToken);
+                        await transaction.CommitAsync(cancellationToken);
 
-                    _logger.LogInformation("创建用户成功: {Username} ({Id})", user.Username, user.Id);
+                        _logger.LogInformation("创建用户成功: {Username} ({Id})", user.Username, user.Id);
 
-                    var resultDto = _mapper.Map<UserDto>(user);
-                    return ServiceResult<UserDto>.Success(resultDto);
-                }
-                catch (Exception)
-                {
-                    await transaction.RollbackAsync();
-                    throw;
-                }
+                        var resultDto = _mapper.Map<UserDto>(user);
+                        return ServiceResult<UserDto>.Success(resultDto);
+                    }
+                    catch (Exception)
+                    {
+                        await transaction.RollbackAsync(cancellationToken);
+                        throw;
+                    }
+                });
             }
             catch (Exception ex)
             {
@@ -407,7 +413,10 @@ namespace LYBT.Module.Users.Services
         /// <summary>
         /// 更新用户业务逻辑
         /// </summary>
-        public async Task<ServiceResult<UserDto>> UpdateUserAsync(Guid id, UserMutationDto dto)
+        /// <summary>
+        /// 更新用户业务逻辑
+        /// </summary>
+        public async Task<ServiceResult<UserDto>> UpdateUserAsync(Guid id, UserMutationDto dto, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -424,39 +433,42 @@ namespace LYBT.Module.Users.Services
                 }
 
                 var user = await _context.Users
-                    .FirstOrDefaultAsync(u => u.Id == id);
+                    .FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
 
                 if (user == null)
                 {
                     return ServiceResult<UserDto>.Failure("用户不存在");
                 }
 
-                // 使用事务确保数据一致性
-                using var transaction = await _context.Database.BeginTransactionAsync();
-                try
+                // 使用ExecutionStrategy包装事务确保数据一致性
+                return await _context.Database.CreateExecutionStrategy().ExecuteAsync(async () =>
                 {
-                    // 更新字段
-                    user.RealName = dto.RealName;
-                    user.Role = Enum.TryParse<UserRole>(dto.Role, out var updateRole) ? updateRole : user.Role;
-                    user.PhoneNumber = dto.PhoneNumber;
-                    user.Email = dto.Email;
-                    user.Status = dto.Status;
-                    user.PinYinCode = string.Empty; // 移除CommonHelper依赖，拼音码功能暂不实现
+                    await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
+                    try
+                    {
+                        // 更新字段
+                        user.RealName = dto.RealName;
+                        user.Role = Enum.TryParse<UserRole>(dto.Role, out var updateRole) ? updateRole : user.Role;
+                        user.PhoneNumber = dto.PhoneNumber;
+                        user.Email = dto.Email;
+                        user.Status = dto.Status;
+                        user.PinYinCode = string.Empty; // 移除CommonHelper依赖，拼音码功能暂不实现
 
-                    _context.Users.Update(user);
-                    await _context.SaveChangesAsync();
-                    await transaction.CommitAsync();
+                        _context.Users.Update(user);
+                        await _context.SaveChangesAsync(cancellationToken);
+                        await transaction.CommitAsync(cancellationToken);
 
-                    _logger.LogInformation("更新用户成功: {Username} ({Id})", user.Username, user.Id);
+                        _logger.LogInformation("更新用户成功: {Username} ({Id})", user.Username, user.Id);
 
-                    var resultDto = _mapper.Map<UserDto>(user);
-                    return ServiceResult<UserDto>.Success(resultDto);
-                }
-                catch (Exception)
-                {
-                    await transaction.RollbackAsync();
-                    throw;
-                }
+                        var resultDto = _mapper.Map<UserDto>(user);
+                        return ServiceResult<UserDto>.Success(resultDto);
+                    }
+                    catch (Exception)
+                    {
+                        await transaction.RollbackAsync(cancellationToken);
+                        throw;
+                    }
+                });
             }
             catch (Exception ex)
             {

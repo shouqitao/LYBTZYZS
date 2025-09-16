@@ -518,29 +518,37 @@ namespace LYBT.Module.Patients.Repositories
                 WHERE Id = @id";
             foreach (var batch in updates.Chunk(100))
             {
-                using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
-                try
+                updated += await _context.Database.CreateExecutionStrategy().ExecuteAsync(async () =>
                 {
-                    foreach (var update in batch)
+                    await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
+                    try
                     {
-                        updated += await _context.Database.ExecuteSqlRawAsync(
-                            sql,
-                            new Microsoft.Data.SqlClient.SqlParameter("@id", update.Key), new Microsoft.Data.SqlClient.SqlParameter("@visitDate", update.Value), new Microsoft.Data.SqlClient.SqlParameter("@now", DateTime.Now));
+                        var batchUpdated = 0;
+                        foreach (var update in batch)
+                        {
+                            batchUpdated += await _context.Database.ExecuteSqlRawAsync(
+                                sql,
+                                new Microsoft.Data.SqlClient.SqlParameter("@id", update.Key), 
+                                new Microsoft.Data.SqlClient.SqlParameter("@visitDate", update.Value), 
+                                new Microsoft.Data.SqlClient.SqlParameter("@now", DateTime.Now));
+                        }
+
+                        await transaction.CommitAsync(cancellationToken);
+
+                        // 清理缓存
+                        foreach (var id in batch.Select(b => b.Key))
+                        {
+                            _cache.Remove($"{CacheKeyPrefix}{id}");
+                        }
+
+                        return batchUpdated;
                     }
-
-                    await transaction.CommitAsync(cancellationToken);
-
-                    // 清理缓存
-                    foreach (var id in batch.Select(b => b.Key))
+                    catch
                     {
-                        _cache.Remove($"{CacheKeyPrefix}{id}");
+                        await transaction.RollbackAsync(cancellationToken);
+                        throw;
                     }
-                }
-                catch
-                {
-                    await transaction.RollbackAsync(cancellationToken);
-                    throw;
-                }
+                });
             }
 
             return updated;

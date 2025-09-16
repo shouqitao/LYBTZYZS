@@ -49,12 +49,18 @@ namespace LYBT.Module.Users.Services.Interfaces
         /// <summary>
         /// 创建用户 - 完整业务流程
         /// </summary>
-        Task<ServiceResult<UserDto>> CreateUserAsync(UserMutationDto dto);
+        /// <summary>
+        /// 创建用户 - 完整业务流程
+        /// </summary>
+        Task<ServiceResult<UserDto>> CreateUserAsync(UserMutationDto dto, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 更新用户 - 完整业务流程
         /// </summary>
-        Task<ServiceResult<UserDto>> UpdateUserAsync(Guid id, UserMutationDto dto);
+        /// <summary>
+        /// 更新用户 - 完整业务流程
+        /// </summary>
+        Task<ServiceResult<UserDto>> UpdateUserAsync(Guid id, UserMutationDto dto, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 删除用户 - 完整业务流程

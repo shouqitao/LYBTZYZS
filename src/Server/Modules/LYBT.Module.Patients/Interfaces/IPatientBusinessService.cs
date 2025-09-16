@@ -15,7 +15,10 @@ namespace LYBT.Module.Patients.Interfaces
         /// <summary>
         /// 创建患者
         /// </summary>
-        Task<ServiceResult<PatientDto>> CreateAsync(PatientCreateDto createDto);
+        /// <summary>
+        /// 创建患者
+        /// </summary>
+        Task<ServiceResult<PatientDto>> CreateAsync(PatientCreateDto createDto, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 更新患者信息

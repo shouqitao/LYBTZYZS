@@ -36,84 +36,87 @@ namespace LYBT.Module.Prescriptions.Services
         /// </summary>
         public async Task<ServiceResult<PrescriptionDto>> CopyAsync(Guid sourceId, string newName, Guid operatorId, string operatorName)
         {
-            using var transaction = await _context.Database.BeginTransactionAsync();
-            try
+            return await _context.Database.CreateExecutionStrategy().ExecuteAsync(async () =>
             {
-                if (sourceId == Guid.Empty)
+                await using var transaction = await _context.Database.BeginTransactionAsync();
+                try
                 {
-                    return ServiceResult<PrescriptionDto>.Failure("源处方ID不能为空");
-                }
-
-                if (string.IsNullOrWhiteSpace(newName))
-                {
-                    return ServiceResult<PrescriptionDto>.Failure("新处方名称不能为空");
-                }
-
-                // 获取源处方
-                var sourcePrescription = await _context.Prescriptions
-                    .Include(p => p.Items)
-                    .FirstOrDefaultAsync(p => p.Id == sourceId);
-
-                if (sourcePrescription == null)
-                {
-                    return ServiceResult<PrescriptionDto>.Failure("源处方不存在");
-                }
-
-                // 创建新处方
-                var newPrescription = new Prescription
-                {
-                    Id = Guid.NewGuid(),
-                    PatientId = sourcePrescription.PatientId,
-                    UserId = sourcePrescription.UserId,
-                    MedicalCaseId = sourcePrescription.MedicalCaseId,
-                    Indication = newName,
-                    DosageCount = sourcePrescription.DosageCount,
-                    Advice = sourcePrescription.Advice,
-                    Status = PrescriptionStatus.Draft,
-                    Remark = $"复制自: {sourcePrescription.Indication}",
-                    FormulaSource = sourcePrescription.FormulaSource,
-                    Discount = sourcePrescription.Discount
-                };
-
-                _context.Prescriptions.Add(newPrescription);
-
-                // 复制处方项目
-                if (sourcePrescription.Items?.Any() == true)
-                {
-                    foreach (var sourceItem in sourcePrescription.Items)
+                    if (sourceId == Guid.Empty)
                     {
-                        var newItem = new PrescriptionItemModel
-                        {
-                            Id = Guid.NewGuid(),
-                            PrescriptionId = newPrescription.Id,
-                            HerbId = sourceItem.HerbId,
-                            HerbName = sourceItem.HerbName,
-                            Quantity = sourceItem.Quantity,
-                            UnitPrice = sourceItem.UnitPrice,
-                            Unit = sourceItem.Unit,
-                            Usage = sourceItem.Usage,
-                            Remark = sourceItem.Remark
-                        };
-                        _context.PrescriptionItems.Add(newItem);
+                        return ServiceResult<PrescriptionDto>.Failure("源处方ID不能为空");
                     }
+
+                    if (string.IsNullOrWhiteSpace(newName))
+                    {
+                        return ServiceResult<PrescriptionDto>.Failure("新处方名称不能为空");
+                    }
+
+                    // 获取源处方
+                    var sourcePrescription = await _context.Prescriptions
+                        .Include(p => p.Items)
+                        .FirstOrDefaultAsync(p => p.Id == sourceId);
+
+                    if (sourcePrescription == null)
+                    {
+                        return ServiceResult<PrescriptionDto>.Failure("源处方不存在");
+                    }
+
+                    // 创建新处方
+                    var newPrescription = new Prescription
+                    {
+                        Id = Guid.NewGuid(),
+                        PatientId = sourcePrescription.PatientId,
+                        UserId = sourcePrescription.UserId,
+                        MedicalCaseId = sourcePrescription.MedicalCaseId,
+                        Indication = newName,
+                        DosageCount = sourcePrescription.DosageCount,
+                        Advice = sourcePrescription.Advice,
+                        Status = PrescriptionStatus.Draft,
+                        Remark = $"复制自: {sourcePrescription.Indication}",
+                        FormulaSource = sourcePrescription.FormulaSource,
+                        Discount = sourcePrescription.Discount
+                    };
+
+                    _context.Prescriptions.Add(newPrescription);
+
+                    // 复制处方项目
+                    if (sourcePrescription.Items?.Any() == true)
+                    {
+                        foreach (var sourceItem in sourcePrescription.Items)
+                        {
+                            var newItem = new PrescriptionItemModel
+                            {
+                                Id = Guid.NewGuid(),
+                                PrescriptionId = newPrescription.Id,
+                                HerbId = sourceItem.HerbId,
+                                HerbName = sourceItem.HerbName,
+                                Quantity = sourceItem.Quantity,
+                                UnitPrice = sourceItem.UnitPrice,
+                                Unit = sourceItem.Unit,
+                                Usage = sourceItem.Usage,
+                                Remark = sourceItem.Remark
+                            };
+                            _context.PrescriptionItems.Add(newItem);
+                        }
+                    }
+
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+
+                    _logger.LogInformation(
+                        "复制处方成功 - 操作者: {OperatorName} ({OperatorId}), 源处方: {SourceId}, 新处方: {NewId}",
+                        operatorName, operatorId, sourceId, newPrescription.Id);
+
+                    var resultDto = _mapper.Map<PrescriptionDto>(newPrescription);
+                    return ServiceResult<PrescriptionDto>.Success(resultDto);
                 }
-
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
-
-                _logger.LogInformation(
-                    "复制处方成功 - 操作者: {OperatorName} ({OperatorId}), 源处方: {SourceId}, 新处方: {NewId}",
-                    operatorName, operatorId, sourceId, newPrescription.Id);
-
-                var resultDto = _mapper.Map<PrescriptionDto>(newPrescription);
-                return ServiceResult<PrescriptionDto>.Success(resultDto);
-            }
-            catch (Exception ex)
-            {
-                await transaction.RollbackAsync();
-                _logger.LogError(ex, "复制处方失败 - 操作者: {OperatorName}, 源处方: {SourceId}", operatorName, sourceId);
-                return ServiceResult<PrescriptionDto>.Failure($"复制处方失败: {ex.Message}");
-            }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    _logger.LogError(ex, "复制处方失败 - 操作者: {OperatorName}, 源处方: {SourceId}", operatorName, sourceId);
+                    return ServiceResult<PrescriptionDto>.Failure($"复制处方失败: {ex.Message}");
+                }
+            });
         }
 
         /// <summary>

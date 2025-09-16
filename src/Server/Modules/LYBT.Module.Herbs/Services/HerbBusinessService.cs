@@ -43,77 +43,80 @@ namespace LYBT.Module.Herbs.Services
                     return ServiceResult<int>.Success(0);
                 }
 
-                var importCount = 0;
-                var errors = new List<string>();
-
-                using var transaction = await _context.Database.BeginTransactionAsync();
-
-                foreach (var importDto in herbs)
+                return await _context.Database.CreateExecutionStrategy().ExecuteAsync(async () =>
                 {
-                    try
+                    var importCount = 0;
+                    var errors = new List<string>();
+
+                    await using var transaction = await _context.Database.BeginTransactionAsync();
+
+                    foreach (var importDto in herbs)
                     {
-                        // 验证导入数据
-                        var validationResult = ValidateImportDto(importDto);
-                        if (!validationResult.IsSuccess)
+                        try
                         {
-                            errors.Add($"行 {importCount + 1}: {validationResult.ErrorMessage}");
-                            continue;
+                            // 验证导入数据
+                            var validationResult = ValidateImportDto(importDto);
+                            if (!validationResult.IsSuccess)
+                            {
+                                errors.Add($"行 {importCount + 1}: {validationResult.ErrorMessage}");
+                                continue;
+                            }
+
+                            // 检查重复名称
+                            var existingHerb = await _context.Herbs
+                                .FirstOrDefaultAsync(h => h.Name == importDto.Name && h.Status != CommonStatus.Disabled);
+
+                            if (existingHerb != null)
+                            {
+                                errors.Add($"行 {importCount + 1}: 药材名称 '{importDto.Name}' 已存在");
+                                continue;
+                            }
+
+                            // 创建药材实体
+                            var herb = new Herb
+                            {
+                                Id = Guid.NewGuid(),
+                                Name = importDto.Name,
+                                PinYinCode = GenerateSimplePinyinCode(importDto.Name),
+                                Origin = importDto.Origin ?? string.Empty,
+                                Spec = importDto.Spec ?? string.Empty,
+                                Unit = importDto.Unit ?? "g",
+                                Price = importDto.Price,
+                                Effect = importDto.Effect ?? string.Empty,
+                                Usage = string.Empty, // 导入时默认为空
+                                Remark = importDto.Remark ?? string.Empty,
+                                Status = CommonStatus.Enabled
+                            };
+
+                            _context.Herbs.Add(herb);
+                            importCount++;
                         }
-
-                        // 检查重复名称
-                        var existingHerb = await _context.Herbs
-                            .FirstOrDefaultAsync(h => h.Name == importDto.Name && h.Status != CommonStatus.Disabled);
-
-                        if (existingHerb != null)
+                        catch (Exception ex)
                         {
-                            errors.Add($"行 {importCount + 1}: 药材名称 '{importDto.Name}' 已存在");
-                            continue;
+                            errors.Add($"行 {importCount + 1}: 处理失败 - {ex.Message}");
+                            _logger.LogError(ex, "导入药材失败: {HerbName}", importDto.Name);
                         }
-
-                        // 创建药材实体
-                        var herb = new Herb
-                        {
-                            Id = Guid.NewGuid(),
-                            Name = importDto.Name,
-                            PinYinCode = GenerateSimplePinyinCode(importDto.Name),
-                            Origin = importDto.Origin ?? string.Empty,
-                            Spec = importDto.Spec ?? string.Empty,
-                            Unit = importDto.Unit ?? "g",
-                            Price = importDto.Price,
-                            Effect = importDto.Effect ?? string.Empty,
-                            Usage = string.Empty, // 导入时默认为空
-                            Remark = importDto.Remark ?? string.Empty,
-                            Status = CommonStatus.Enabled
-                        };
-
-                        _context.Herbs.Add(herb);
-                        importCount++;
                     }
-                    catch (Exception ex)
+
+                    if (importCount > 0)
                     {
-                        errors.Add($"行 {importCount + 1}: 处理失败 - {ex.Message}");
-                        _logger.LogError(ex, "导入药材失败: {HerbName}", importDto.Name);
+                        await _context.SaveChangesAsync();
+                        await transaction.CommitAsync();
+                        _logger.LogInformation("批量导入药材成功: {ImportCount}条", importCount);
                     }
-                }
+                    else
+                    {
+                        await transaction.RollbackAsync();
+                    }
 
-                if (importCount > 0)
-                {
-                    await _context.SaveChangesAsync();
-                    await transaction.CommitAsync();
-                    _logger.LogInformation("批量导入药材成功: {ImportCount}条", importCount);
-                }
-                else
-                {
-                    await transaction.RollbackAsync();
-                }
+                    if (errors.Count > 0)
+                    {
+                        var errorMessage = $"导入完成，成功 {importCount} 条，失败 {errors.Count} 条。错误详情：{string.Join("; ", errors)}";
+                        return ServiceResult<int>.Failure(errorMessage);
+                    }
 
-                if (errors.Count > 0)
-                {
-                    var errorMessage = $"导入完成，成功 {importCount} 条，失败 {errors.Count} 条。错误详情：{string.Join("; ", errors)}";
-                    return ServiceResult<int>.Failure(errorMessage);
-                }
-
-                return ServiceResult<int>.Success(importCount);
+                    return ServiceResult<int>.Success(importCount);
+                });
             }
             catch (Exception ex)
             {

@@ -35,56 +35,59 @@ namespace LYBT.Module.Patients.Services
         /// <summary>
         /// 创建患者
         /// </summary>
-        public async Task<ServiceResult<PatientDto>> CreateAsync(PatientCreateDto createDto)
+        public async Task<ServiceResult<PatientDto>> CreateAsync(PatientCreateDto createDto, CancellationToken cancellationToken = default)
         {
-            using var transaction = await _context.Database.BeginTransactionAsync();
-            try
+            return await _context.Database.CreateExecutionStrategy().ExecuteAsync(async () =>
             {
-                // 数据验证
-                if (createDto == null)
+                await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
+                try
                 {
-                    return ServiceResult<PatientDto>.Failure("患者信息不能为空");
-                }
-
-                if (string.IsNullOrWhiteSpace(createDto.Name))
-                {
-                    return ServiceResult<PatientDto>.Failure("姓名不能为空");
-                }
-
-                // 检查重复手机号
-                if (!string.IsNullOrWhiteSpace(createDto.PhoneNumber))
-                {
-                    var phoneExists = await _context.Patients
-                        .AnyAsync(p => p.PhoneNumber == createDto.PhoneNumber);
-
-                    if (phoneExists)
+                    // 数据验证
+                    if (createDto == null)
                     {
-                        return ServiceResult<PatientDto>.Failure("手机号码已存在");
+                        return ServiceResult<PatientDto>.Failure("患者信息不能为空");
                     }
+
+                    if (string.IsNullOrWhiteSpace(createDto.Name))
+                    {
+                        return ServiceResult<PatientDto>.Failure("姓名不能为空");
+                    }
+
+                    // 检查重复手机号
+                    if (!string.IsNullOrWhiteSpace(createDto.PhoneNumber))
+                    {
+                        var phoneExists = await _context.Patients
+                            .AnyAsync(p => p.PhoneNumber == createDto.PhoneNumber, cancellationToken);
+
+                        if (phoneExists)
+                        {
+                            return ServiceResult<PatientDto>.Failure("手机号码已存在");
+                        }
+                    }
+
+                    // 创建新患者
+                    var patient = _mapper.Map<Patient>(createDto);
+                    patient.Id = Guid.NewGuid();
+                    patient.Status = CommonStatus.Enabled;
+                    patient.PinYinCode = string.Empty; // 移除CommonHelper依赖，拼音码功能暂不实现
+                    patient.CreatedAt = DateTime.Now;
+
+                    _context.Patients.Add(patient);
+                    await _context.SaveChangesAsync(cancellationToken);
+                    await transaction.CommitAsync(cancellationToken);
+
+                    _logger.LogInformation("创建患者成功: {Name} ({Id})", patient.Name, patient.Id);
+
+                    var resultDto = _mapper.Map<PatientDto>(patient);
+                    return ServiceResult<PatientDto>.Success(resultDto);
                 }
-
-                // 创建新患者
-                var patient = _mapper.Map<Patient>(createDto);
-                patient.Id = Guid.NewGuid();
-                patient.Status = CommonStatus.Enabled;
-                patient.PinYinCode = string.Empty; // 移除CommonHelper依赖，拼音码功能暂不实现
-                patient.CreatedAt = DateTime.Now;
-
-                _context.Patients.Add(patient);
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
-
-                _logger.LogInformation("创建患者成功: {Name} ({Id})", patient.Name, patient.Id);
-
-                var resultDto = _mapper.Map<PatientDto>(patient);
-                return ServiceResult<PatientDto>.Success(resultDto);
-            }
-            catch (Exception ex)
-            {
-                await transaction.RollbackAsync();
-                _logger.LogError(ex, "创建患者失败: {Name}", createDto?.Name);
-                return ServiceResult<PatientDto>.Failure($"创建患者失败: {ex.Message}");
-            }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync(cancellationToken);
+                    _logger.LogError(ex, "创建患者失败: {Name}", createDto?.Name);
+                    return ServiceResult<PatientDto>.Failure($"创建患者失败: {ex.Message}");
+                }
+            });
         }
 
         /// <summary>
@@ -188,31 +191,34 @@ namespace LYBT.Module.Patients.Services
         /// </summary>
         public async Task<ServiceResult<bool>> DeleteAsync(List<Guid> patientIds)
         {
-            using var transaction = await _context.Database.BeginTransactionAsync();
-            try
+            return await _context.Database.CreateExecutionStrategy().ExecuteAsync(async () =>
             {
-                if (patientIds == null || !patientIds.Any())
+                await using var transaction = await _context.Database.BeginTransactionAsync();
+                try
                 {
-                    return ServiceResult<bool>.Failure("患者ID列表不能为空");
+                    if (patientIds == null || !patientIds.Any())
+                    {
+                        return ServiceResult<bool>.Failure("患者ID列表不能为空");
+                    }
+
+                    var affectedRows = await _context.Patients
+                        .Where(p => patientIds.Contains(p.Id))
+                        .ExecuteUpdateAsync(setters => setters
+                            .SetProperty(p => p.Status, CommonStatus.Disabled)
+                            .SetProperty(p => p.UpdateTime, DateTime.Now));
+
+                    await transaction.CommitAsync();
+
+                    _logger.LogInformation("批量删除患者成功 - 影响行数: {AffectedRows}", affectedRows);
+                    return ServiceResult<bool>.Success(true);
                 }
-
-                var affectedRows = await _context.Patients
-                    .Where(p => patientIds.Contains(p.Id))
-                    .ExecuteUpdateAsync(setters => setters
-                        .SetProperty(p => p.Status, CommonStatus.Disabled)
-                        .SetProperty(p => p.UpdateTime, DateTime.Now));
-
-                await transaction.CommitAsync();
-
-                _logger.LogInformation("批量删除患者成功 - 影响行数: {AffectedRows}", affectedRows);
-                return ServiceResult<bool>.Success(true);
-            }
-            catch (Exception ex)
-            {
-                await transaction.RollbackAsync();
-                _logger.LogError(ex, "批量删除患者失败");
-                return ServiceResult<bool>.Failure($"批量删除患者失败: {ex.Message}");
-            }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    _logger.LogError(ex, "批量删除患者失败");
+                    return ServiceResult<bool>.Failure($"批量删除患者失败: {ex.Message}");
+                }
+            });
         }
 
         /// <summary>
@@ -220,33 +226,36 @@ namespace LYBT.Module.Patients.Services
         /// </summary>
         public async Task<ServiceResult<bool>> SetStatusAsync(List<Guid> patientIds, string status)
         {
-            using var transaction = await _context.Database.BeginTransactionAsync();
-            try
+            return await _context.Database.CreateExecutionStrategy().ExecuteAsync(async () =>
             {
-                if (patientIds == null || !patientIds.Any())
+                await using var transaction = await _context.Database.BeginTransactionAsync();
+                try
                 {
-                    return ServiceResult<bool>.Failure("患者ID列表不能为空");
+                    if (patientIds == null || !patientIds.Any())
+                    {
+                        return ServiceResult<bool>.Failure("患者ID列表不能为空");
+                    }
+
+                    var commonStatus = status.ToLower() == "enabled" ? CommonStatus.Enabled : CommonStatus.Disabled;
+
+                    var affectedRows = await _context.Patients
+                        .Where(p => patientIds.Contains(p.Id))
+                        .ExecuteUpdateAsync(setters => setters
+                            .SetProperty(p => p.Status, commonStatus)
+                            .SetProperty(p => p.UpdateTime, DateTime.Now));
+
+                    await transaction.CommitAsync();
+
+                    _logger.LogInformation("批量设置患者状态成功 - 状态: {Status}, 影响行数: {AffectedRows}", status, affectedRows);
+                    return ServiceResult<bool>.Success(true);
                 }
-
-                var commonStatus = status.ToLower() == "enabled" ? CommonStatus.Enabled : CommonStatus.Disabled;
-
-                var affectedRows = await _context.Patients
-                    .Where(p => patientIds.Contains(p.Id))
-                    .ExecuteUpdateAsync(setters => setters
-                        .SetProperty(p => p.Status, commonStatus)
-                        .SetProperty(p => p.UpdateTime, DateTime.Now));
-
-                await transaction.CommitAsync();
-
-                _logger.LogInformation("批量设置患者状态成功 - 状态: {Status}, 影响行数: {AffectedRows}", status, affectedRows);
-                return ServiceResult<bool>.Success(true);
-            }
-            catch (Exception ex)
-            {
-                await transaction.RollbackAsync();
-                _logger.LogError(ex, "批量设置患者状态失败");
-                return ServiceResult<bool>.Failure($"批量设置患者状态失败: {ex.Message}");
-            }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    _logger.LogError(ex, "批量设置患者状态失败");
+                    return ServiceResult<bool>.Failure($"批量设置患者状态失败: {ex.Message}");
+                }
+            });
         }
 
         /// <summary>
@@ -254,31 +263,34 @@ namespace LYBT.Module.Patients.Services
         /// </summary>
         public async Task<ServiceResult<bool>> EnableAsync(List<Guid> patientIds)
         {
-            using var transaction = await _context.Database.BeginTransactionAsync();
-            try
+            return await _context.Database.CreateExecutionStrategy().ExecuteAsync(async () =>
             {
-                if (patientIds == null || !patientIds.Any())
+                await using var transaction = await _context.Database.BeginTransactionAsync();
+                try
                 {
-                    return ServiceResult<bool>.Failure("患者ID列表不能为空");
+                    if (patientIds == null || !patientIds.Any())
+                    {
+                        return ServiceResult<bool>.Failure("患者ID列表不能为空");
+                    }
+
+                    var affectedRows = await _context.Patients
+                        .Where(p => patientIds.Contains(p.Id))
+                        .ExecuteUpdateAsync(setters => setters
+                            .SetProperty(p => p.Status, CommonStatus.Enabled)
+                            .SetProperty(p => p.UpdateTime, DateTime.Now));
+
+                    await transaction.CommitAsync();
+
+                    _logger.LogInformation("批量启用患者成功 - 影响行数: {AffectedRows}", affectedRows);
+                    return ServiceResult<bool>.Success(true);
                 }
-
-                var affectedRows = await _context.Patients
-                    .Where(p => patientIds.Contains(p.Id))
-                    .ExecuteUpdateAsync(setters => setters
-                        .SetProperty(p => p.Status, CommonStatus.Enabled)
-                        .SetProperty(p => p.UpdateTime, DateTime.Now));
-
-                await transaction.CommitAsync();
-
-                _logger.LogInformation("批量启用患者成功 - 影响行数: {AffectedRows}", affectedRows);
-                return ServiceResult<bool>.Success(true);
-            }
-            catch (Exception ex)
-            {
-                await transaction.RollbackAsync();
-                _logger.LogError(ex, "批量启用患者失败");
-                return ServiceResult<bool>.Failure($"批量启用患者失败: {ex.Message}");
-            }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    _logger.LogError(ex, "批量启用患者失败");
+                    return ServiceResult<bool>.Failure($"批量启用患者失败: {ex.Message}");
+                }
+            });
         }
 
         /// <summary>
@@ -286,40 +298,43 @@ namespace LYBT.Module.Patients.Services
         /// </summary>
         public async Task<ServiceResult<bool>> DisableAsync(List<Guid> patientIds)
         {
-            using var transaction = await _context.Database.BeginTransactionAsync();
-            try
+            return await _context.Database.CreateExecutionStrategy().ExecuteAsync(async () =>
             {
-                if (patientIds == null || !patientIds.Any())
+                await using var transaction = await _context.Database.BeginTransactionAsync();
+                try
                 {
-                    return ServiceResult<bool>.Failure("患者ID列表不能为空");
+                    if (patientIds == null || !patientIds.Any())
+                    {
+                        return ServiceResult<bool>.Failure("患者ID列表不能为空");
+                    }
+
+                    // 检查是否有活跃的医疗案例
+                    var hasActiveCases = await _context.MedicalCases
+                        .AnyAsync(mc => patientIds.Contains(mc.PatientId) && mc.Status != MedicalCaseStatus.Completed);
+
+                    if (hasActiveCases)
+                    {
+                        return ServiceResult<bool>.Failure("部分患者有活跃的医疗案例，无法禁用");
+                    }
+
+                    var affectedRows = await _context.Patients
+                        .Where(p => patientIds.Contains(p.Id))
+                        .ExecuteUpdateAsync(setters => setters
+                            .SetProperty(p => p.Status, CommonStatus.Disabled)
+                            .SetProperty(p => p.UpdateTime, DateTime.Now));
+
+                    await transaction.CommitAsync();
+
+                    _logger.LogInformation("批量禁用患者成功 - 影响行数: {AffectedRows}", affectedRows);
+                    return ServiceResult<bool>.Success(true);
                 }
-
-                // 检查是否有活跃的医疗案例
-                var hasActiveCases = await _context.MedicalCases
-                    .AnyAsync(mc => patientIds.Contains(mc.PatientId) && mc.Status != MedicalCaseStatus.Completed);
-
-                if (hasActiveCases)
+                catch (Exception ex)
                 {
-                    return ServiceResult<bool>.Failure("部分患者有活跃的医疗案例，无法禁用");
+                    await transaction.RollbackAsync();
+                    _logger.LogError(ex, "批量禁用患者失败");
+                    return ServiceResult<bool>.Failure($"批量禁用患者失败: {ex.Message}");
                 }
-
-                var affectedRows = await _context.Patients
-                    .Where(p => patientIds.Contains(p.Id))
-                    .ExecuteUpdateAsync(setters => setters
-                        .SetProperty(p => p.Status, CommonStatus.Disabled)
-                        .SetProperty(p => p.UpdateTime, DateTime.Now));
-
-                await transaction.CommitAsync();
-
-                _logger.LogInformation("批量禁用患者成功 - 影响行数: {AffectedRows}", affectedRows);
-                return ServiceResult<bool>.Success(true);
-            }
-            catch (Exception ex)
-            {
-                await transaction.RollbackAsync();
-                _logger.LogError(ex, "批量禁用患者失败");
-                return ServiceResult<bool>.Failure($"批量禁用患者失败: {ex.Message}");
-            }
+            });
         }
 
         /// <summary>
@@ -327,96 +342,99 @@ namespace LYBT.Module.Patients.Services
         /// </summary>
         public async Task<ServiceResult<List<PatientDto>>> ImportPatientsAsync(List<PatientImportDto> importDtos)
         {
-            using var transaction = await _context.Database.BeginTransactionAsync();
-            try
+            return await _context.Database.CreateExecutionStrategy().ExecuteAsync(async () =>
             {
-                if (importDtos == null || !importDtos.Any())
+                await using var transaction = await _context.Database.BeginTransactionAsync();
+                try
                 {
-                    return ServiceResult<List<PatientDto>>.Failure("导入数据不能为空");
-                }
-
-                var successfulPatients = new List<PatientDto>();
-                var errors = new List<string>();
-
-                foreach (var importDto in importDtos)
-                {
-                    try
+                    if (importDtos == null || !importDtos.Any())
                     {
-                        // 检查重复手机号
-                        if (!string.IsNullOrEmpty(importDto.PhoneNumber))
-                        {
-                            var existingPatient = await _context.Patients
-                                .AnyAsync(p => p.PhoneNumber == importDto.PhoneNumber);
+                        return ServiceResult<List<PatientDto>>.Failure("导入数据不能为空");
+                    }
 
-                            if (existingPatient)
+                    var successfulPatients = new List<PatientDto>();
+                    var errors = new List<string>();
+
+                    foreach (var importDto in importDtos)
+                    {
+                        try
+                        {
+                            // 检查重复手机号
+                            if (!string.IsNullOrEmpty(importDto.PhoneNumber))
                             {
-                                errors.Add($"患者 {importDto.Name} 手机号 {importDto.PhoneNumber} 已存在");
-                                continue;
+                                var existingPatient = await _context.Patients
+                                    .AnyAsync(p => p.PhoneNumber == importDto.PhoneNumber);
+
+                                if (existingPatient)
+                                {
+                                    errors.Add($"患者 {importDto.Name} 手机号 {importDto.PhoneNumber} 已存在");
+                                    continue;
+                                }
                             }
+
+                            // 解析性别
+                            var gender = importDto.GenderText.ToLower() switch
+                            {
+                                "男" or "male" => Gender.Male,
+                                "女" or "female" => Gender.Female,
+                                _ => Gender.Male // 默认值
+                            };
+
+                            // 解析出生日期
+                            DateTime birthDate = DateTime.Today.AddYears(-30); // 默认30岁
+                            if (!string.IsNullOrEmpty(importDto.BirthDateText))
+                            {
+                                DateTime.TryParse(importDto.BirthDateText, out birthDate);
+                            }
+                            else if (importDto.Age.HasValue)
+                            {
+                                birthDate = DateTime.Today.AddYears(-importDto.Age.Value);
+                            }
+
+                            var patient = new Patient
+                            {
+                                Id = Guid.NewGuid(),
+                                Name = importDto.Name,
+                                Gender = gender,
+                                BirthDate = birthDate,
+                                PhoneNumber = importDto.PhoneNumber,
+                                IdNumber = importDto.IdCardNumber,
+                                Address = importDto.Address,
+                                EmergencyContactName = importDto.EmergencyContact,
+                                EmergencyContactPhone = importDto.EmergencyPhone,
+                                AllergyHistory = importDto.AllergyHistory,
+                                Status = CommonStatus.Enabled,
+                                PinYinCode = string.Empty, // 移除CommonHelper依赖，拼音码功能暂不实现
+                                CreatedAt = DateTime.Now
+                            };
+
+                            _context.Patients.Add(patient);
+                            var patientDto = _mapper.Map<PatientDto>(patient);
+                            successfulPatients.Add(patientDto);
                         }
-
-                        // 解析性别
-                        var gender = importDto.GenderText.ToLower() switch
+                        catch (Exception ex)
                         {
-                            "男" or "male" => Gender.Male,
-                            "女" or "female" => Gender.Female,
-                            _ => Gender.Male // 默认值
-                        };
-
-                        // 解析出生日期
-                        DateTime birthDate = DateTime.Today.AddYears(-30); // 默认30岁
-                        if (!string.IsNullOrEmpty(importDto.BirthDateText))
-                        {
-                            DateTime.TryParse(importDto.BirthDateText, out birthDate);
+                            errors.Add($"患者 {importDto.Name} 导入失败: {ex.Message}");
+                            _logger.LogError(ex, "导入患者失败: {Name}", importDto.Name);
                         }
-                        else if (importDto.Age.HasValue)
-                        {
-                            birthDate = DateTime.Today.AddYears(-importDto.Age.Value);
-                        }
-
-                        var patient = new Patient
-                        {
-                            Id = Guid.NewGuid(),
-                            Name = importDto.Name,
-                            Gender = gender,
-                            BirthDate = birthDate,
-                            PhoneNumber = importDto.PhoneNumber,
-                            IdNumber = importDto.IdCardNumber,
-                            Address = importDto.Address,
-                            EmergencyContactName = importDto.EmergencyContact,
-                            EmergencyContactPhone = importDto.EmergencyPhone,
-                            AllergyHistory = importDto.AllergyHistory,
-                            Status = CommonStatus.Enabled,
-                            PinYinCode = string.Empty, // 移除CommonHelper依赖，拼音码功能暂不实现
-                            CreatedAt = DateTime.Now
-                        };
-
-                        _context.Patients.Add(patient);
-                        var patientDto = _mapper.Map<PatientDto>(patient);
-                        successfulPatients.Add(patientDto);
                     }
-                    catch (Exception ex)
-                    {
-                        errors.Add($"患者 {importDto.Name} 导入失败: {ex.Message}");
-                        _logger.LogError(ex, "导入患者失败: {Name}", importDto.Name);
-                    }
+
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+
+                    _logger.LogInformation(
+                        "导入患者完成 - 成功: {SuccessCount}, 错误: {ErrorCount}",
+                        successfulPatients.Count, errors.Count);
+
+                    return ServiceResult<List<PatientDto>>.Success(successfulPatients);
                 }
-
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
-
-                _logger.LogInformation(
-                    "导入患者完成 - 成功: {SuccessCount}, 错误: {ErrorCount}",
-                    successfulPatients.Count, errors.Count);
-
-                return ServiceResult<List<PatientDto>>.Success(successfulPatients);
-            }
-            catch (Exception ex)
-            {
-                await transaction.RollbackAsync();
-                _logger.LogError(ex, "导入患者失败");
-                return ServiceResult<List<PatientDto>>.Failure($"导入患者失败: {ex.Message}");
-            }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    _logger.LogError(ex, "导入患者失败");
+                    return ServiceResult<List<PatientDto>>.Failure($"导入患者失败: {ex.Message}");
+                }
+            });
         }
 
         /// <summary>

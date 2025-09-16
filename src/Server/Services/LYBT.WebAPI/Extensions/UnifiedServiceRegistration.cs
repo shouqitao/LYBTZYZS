@@ -396,7 +396,8 @@ public static class UnifiedServiceRegistration
 
         services.AddControllers().AddJsonOptions(options =>
         {
-            options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+            options.JsonSerializerOptions.PropertyNamingPolicy = null; // 使用默认PascalCase匹配DTO定义
+            options.JsonSerializerOptions.PropertyNameCaseInsensitive = true; // 允许大小写不敏感
             options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
             options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
             options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;

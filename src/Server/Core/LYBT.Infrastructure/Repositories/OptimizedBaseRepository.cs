@@ -564,28 +564,32 @@ namespace LYBT.Infrastructure.Repositories
             // 分批处理避免内存溢出
             foreach (var batch in entityList.Chunk(_batchSize))
             {
-                using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
-                try
+                // 使用ExecutionStrategy包装事务
+                await _context.Database.CreateExecutionStrategy().ExecuteAsync(async () =>
                 {
-                    await _dbSet.AddRangeAsync(batch, cancellationToken);
+                    await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
+                    try
+                    {
+                        await _dbSet.AddRangeAsync(batch, cancellationToken);
 
-                    // 临时禁用自动检测更改以提高性能
-                    _context.ChangeTracker.AutoDetectChangesEnabled = false;
-                    var added = await _context.SaveChangesAsync(cancellationToken);
-                    _context.ChangeTracker.AutoDetectChangesEnabled = true;
+                        // 临时禁用自动检测更改以提高性能
+                        _context.ChangeTracker.AutoDetectChangesEnabled = false;
+                        var added = await _context.SaveChangesAsync(cancellationToken);
+                        _context.ChangeTracker.AutoDetectChangesEnabled = true;
 
-                    await transaction.CommitAsync(cancellationToken);
-                    totalAdded += added;
+                        await transaction.CommitAsync(cancellationToken);
+                        totalAdded += added;
 
-                    // 清理缓存
-                    InvalidateListCache();
-                }
-                catch (Exception ex)
-                {
-                    await transaction.RollbackAsync(cancellationToken);
-                    _logger.LogError(ex, "批量添加失败");
-                    throw;
-                }
+                        // 清理缓存
+                        InvalidateListCache();
+                    }
+                    catch (Exception ex)
+                    {
+                        await transaction.RollbackAsync(cancellationToken);
+                        _logger.LogError(ex, "批量添加失败");
+                        throw;
+                    }
+                });
             }
 
             return totalAdded;
@@ -608,35 +612,39 @@ namespace LYBT.Infrastructure.Repositories
 
             foreach (var batch in entityList.Chunk(_batchSize))
             {
-                using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
-                try
+                // 使用ExecutionStrategy包装事务
+                await _context.Database.CreateExecutionStrategy().ExecuteAsync(async () =>
                 {
-                    // 使用批量更新
-                    _dbSet.UpdateRange(batch);
-
-                    _context.ChangeTracker.AutoDetectChangesEnabled = false;
-                    var updated = await _context.SaveChangesAsync(cancellationToken);
-                    _context.ChangeTracker.AutoDetectChangesEnabled = true;
-
-                    await transaction.CommitAsync(cancellationToken);
-                    totalUpdated += updated;
-
-                    // 清理相关缓存
-                    foreach (var entity in batch)
+                    await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
+                    try
                     {
-                        var id = entity.GetType().GetProperty("Id")?.GetValue(entity);
-                        if (id != null)
+                        // 使用批量更新
+                        _dbSet.UpdateRange(batch);
+
+                        _context.ChangeTracker.AutoDetectChangesEnabled = false;
+                        var updated = await _context.SaveChangesAsync(cancellationToken);
+                        _context.ChangeTracker.AutoDetectChangesEnabled = true;
+
+                        await transaction.CommitAsync(cancellationToken);
+                        totalUpdated += updated;
+
+                        // 清理相关缓存
+                        foreach (var entity in batch)
                         {
-                            _cache.Remove($"{CacheKeyPrefix}{id}");
+                            var id = entity.GetType().GetProperty("Id")?.GetValue(entity);
+                            if (id != null)
+                            {
+                                _cache.Remove($"{CacheKeyPrefix}{id}");
+                            }
                         }
                     }
-                }
-                catch (Exception ex)
-                {
-                    await transaction.RollbackAsync(cancellationToken);
-                    _logger.LogError(ex, "批量更新失败");
-                    throw;
-                }
+                    catch (Exception ex)
+                    {
+                        await transaction.RollbackAsync(cancellationToken);
+                        _logger.LogError(ex, "批量更新失败");
+                        throw;
+                    }
+                });
             }
 
             InvalidateListCache();
@@ -722,18 +730,21 @@ namespace LYBT.Infrastructure.Repositories
             Func<Task<TResult>> operation,
             CancellationToken cancellationToken = default)
         {
-            using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
-            try
+            return await _context.Database.CreateExecutionStrategy().ExecuteAsync(async () =>
             {
-                var result = await operation();
-                await transaction.CommitAsync(cancellationToken);
-                return result;
-            }
-            catch
-            {
-                await transaction.RollbackAsync(cancellationToken);
-                throw;
-            }
+                await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
+                try
+                {
+                    var result = await operation();
+                    await transaction.CommitAsync(cancellationToken);
+                    return result;
+                }
+                catch
+                {
+                    await transaction.RollbackAsync(cancellationToken);
+                    throw;
+                }
+            });
         }
 
         /// <summary>
@@ -743,34 +754,37 @@ namespace LYBT.Infrastructure.Repositories
             Func<DbContext, Task<int>> bulkOperation,
             CancellationToken cancellationToken = default)
         {
-            using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
-            try
+            return await _context.Database.CreateExecutionStrategy().ExecuteAsync(async () =>
             {
-                // 暂时禁用查询跟踪以提高性能
-                var originalAutoDetectChanges = _context.ChangeTracker.AutoDetectChangesEnabled;
-                var originalQueryTrackingBehavior = _context.ChangeTracker.QueryTrackingBehavior;
+                await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
+                try
+                {
+                    // 暂时禁用查询跟踪以提高性能
+                    var originalAutoDetectChanges = _context.ChangeTracker.AutoDetectChangesEnabled;
+                    var originalQueryTrackingBehavior = _context.ChangeTracker.QueryTrackingBehavior;
 
-                _context.ChangeTracker.AutoDetectChangesEnabled = false;
-                _context.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
+                    _context.ChangeTracker.AutoDetectChangesEnabled = false;
+                    _context.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
 
-                var result = await bulkOperation(_context);
+                    var result = await bulkOperation(_context);
 
-                _context.ChangeTracker.AutoDetectChangesEnabled = originalAutoDetectChanges;
-                _context.ChangeTracker.QueryTrackingBehavior = originalQueryTrackingBehavior;
+                    _context.ChangeTracker.AutoDetectChangesEnabled = originalAutoDetectChanges;
+                    _context.ChangeTracker.QueryTrackingBehavior = originalQueryTrackingBehavior;
 
-                await transaction.CommitAsync(cancellationToken);
+                    await transaction.CommitAsync(cancellationToken);
 
-                // 清理缓存
-                InvalidateCache();
+                    // 清理缓存
+                    InvalidateCache();
 
-                return result;
-            }
-            catch (Exception ex)
-            {
-                await transaction.RollbackAsync(cancellationToken);
-                _logger.LogError(ex, "批量操作失败");
-                throw;
-            }
+                    return result;
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync(cancellationToken);
+                    _logger.LogError(ex, "批量操作失败");
+                    throw;
+                }
+            });
         }
 
         #endregion 事务支持

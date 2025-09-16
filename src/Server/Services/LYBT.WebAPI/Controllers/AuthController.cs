@@ -175,7 +175,64 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 验证Token
+        /// 验证Token (GET方法)
+        /// 从Authorization header中获取Bearer Token进行验证
+        /// </summary>
+        /// <returns>验证结果包含token有效性、用户信息和过期时间</returns>
+        [HttpGet("validate")]
+        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<object>>> ValidateTokenFromHeaderAsync()
+        {
+            try
+            {
+                // 从Authorization header中提取Token
+                var authHeader = Request.Headers.Authorization.FirstOrDefault();
+                if (string.IsNullOrWhiteSpace(authHeader))
+                {
+                    return Unauthorized(new { valid = false, message = "Missing Authorization header" });
+                }
+
+                // 检查Bearer格式
+                if (!authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+                {
+                    return Unauthorized(new { valid = false, message = "Invalid Authorization header format" });
+                }
+
+                // 提取token
+                var token = authHeader.Substring("Bearer ".Length).Trim();
+                if (string.IsNullOrWhiteSpace(token))
+                {
+                    return Unauthorized(new { valid = false, message = "Missing token in Authorization header" });
+                }
+
+                // 调用认证服务验证Token
+                var result = await _authService.ValidateTokenAsync(token);
+
+                if (result.IsSuccess && result.Data == true)
+                {
+                    // Token有效，返回详细信息
+                    var sessionInfo = await _authService.GetSessionInfoAsync(token);
+                    object response = new
+                    {
+                        valid = true,
+                        sub = sessionInfo.Data,
+                        message = "Token is valid"
+                    };
+                    return Success(response, "Token验证成功");
+                }
+                else
+                {
+                    // Token无效
+                    return Unauthorized(new { valid = false, message = result.ErrorMessage ?? "Token is invalid" });
+                }
+            }
+            catch (Exception ex)
+            {
+                return HandleException<object>(ex, "验证Token从Header", null);
+            }
+        }
+
+        /// <summary>
+        /// 验证Token (POST方法)
         /// </summary>
         /// <param name="token">要验证的Token</param>
         /// <returns>验证结果</returns>
