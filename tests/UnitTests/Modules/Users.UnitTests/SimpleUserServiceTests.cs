@@ -15,6 +15,7 @@ using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Utilities.Helpers;
+using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
@@ -108,7 +109,7 @@ namespace LYBT.Module.Users.Tests
                     Username = "user1", 
                     RealName = "用户1",
                     Status = CommonStatus.Enabled,
-                    CreatedTime = DateTime.Now
+                    CreateTime = DateTime.Now
                 },
                 new UserDto 
                 { 
@@ -116,7 +117,7 @@ namespace LYBT.Module.Users.Tests
                     Username = "user2", 
                     RealName = "用户2",
                     Status = CommonStatus.Enabled,
-                    CreatedTime = DateTime.Now
+                    CreateTime = DateTime.Now
                 }
             };
 
@@ -185,7 +186,7 @@ namespace LYBT.Module.Users.Tests
                 Username = "testuser", 
                 RealName = "测试用户",
                 Status = CommonStatus.Enabled,
-                CreatedTime = DateTime.Now
+                CreateTime = DateTime.Now
             };
 
             var expectedResult = ServiceResult<UserDto>.Success(userDto);
@@ -225,7 +226,7 @@ namespace LYBT.Module.Users.Tests
             var expectedResult = ServiceResult<UserDto>.Failure("用户名已存在");
 
             _mockBusinessService
-                .Setup(x => x.CreateAsync(It.IsAny<UserMutationDto>()))
+                .Setup(x => x.CreateUserAsync(It.IsAny<UserMutationDto>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(expectedResult);
 
             // Act
@@ -237,7 +238,7 @@ namespace LYBT.Module.Users.Tests
             result.Message.Should().Be("用户名已存在");
             
             // 验证委托调用
-            _mockBusinessService.Verify(x => x.CreateAsync(dto), Times.Once);
+            _mockBusinessService.Verify(x => x.CreateUserAsync(dto, It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
@@ -259,13 +260,13 @@ namespace LYBT.Module.Users.Tests
                 RealName = dto.RealName,
                 PhoneNumber = dto.PhoneNumber,
                 Status = CommonStatus.Enabled,
-                CreatedTime = DateTime.Now
+                CreateTime = DateTime.Now
             };
 
             var expectedResult = ServiceResult<UserDto>.Success(createdUserDto);
 
             _mockBusinessService
-                .Setup(x => x.CreateAsync(It.IsAny<UserMutationDto>()))
+                .Setup(x => x.CreateUserAsync(It.IsAny<UserMutationDto>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(expectedResult);
 
             // Act
@@ -279,7 +280,7 @@ namespace LYBT.Module.Users.Tests
             result.Data.PhoneNumber.Should().Be(dto.PhoneNumber);
 
             // 验证委托调用
-            _mockBusinessService.Verify(x => x.CreateAsync(dto), Times.Once);
+            _mockBusinessService.Verify(x => x.CreateUserAsync(dto, It.IsAny<CancellationToken>()), Times.Once);
         }
 
         #endregion
@@ -287,19 +288,26 @@ namespace LYBT.Module.Users.Tests
         #region DisableAsync 测试
 
         [Fact]
-        public async Task DisableAsync_Should_Return_False_When_User_Not_Exists()
+        public async Task DisableAsync_Should_Return_Failure_When_User_Not_Exists()
         {
             // Arrange
             var userId = Guid.NewGuid();
+            var expectedResult = ServiceResult<bool>.Failure("用户不存在");
 
-            _mockUserRepository
-                .Setup(x => x.GetByIdAsync(userId, true))
-                .ReturnsAsync((User?)null);
+            _mockBusinessService
+                .Setup(x => x.DisableAsync(userId))
+                .ReturnsAsync(expectedResult);
 
-            // Act & Assert
-            await Assert.ThrowsAsync<InvalidOperationException>(
-                async () => await _userService.DisableAsync(userId)
-            );
+            // Act
+            var result = await _userService.DisableAsync(userId);
+
+            // Assert - FluentAssertions风格
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeFalse();
+            result.Message.Should().Be("用户不存在");
+            
+            // 验证委托调用
+            _mockBusinessService.Verify(x => x.DisableAsync(userId), Times.Once);
         }
 
         [Fact]
@@ -307,31 +315,22 @@ namespace LYBT.Module.Users.Tests
         {
             // Arrange
             var userId = Guid.NewGuid();
-            var user = new User 
-            { 
-                Id = userId, 
-                Username = "testuser",
-                Status = CommonStatus.Enabled,
-                PasswordHash = "hash",
-                CreatedTime = DateTime.Now
-            };
+            var expectedResult = ServiceResult<bool>.Success(true);
 
-            _mockUserRepository
-                .Setup(x => x.GetByIdAsync(userId, true))
-                .ReturnsAsync(user);
-
-            _mockUserRepository
+            _mockBusinessService
                 .Setup(x => x.DisableAsync(userId))
-                .ReturnsAsync(true);
+                .ReturnsAsync(expectedResult);
 
             // Act
             var result = await _userService.DisableAsync(userId);
 
-            // Assert
-            result.Should().Be(true);
+            // Assert - FluentAssertions风格
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().BeTrue();
 
-            // 验证是否调用了DisableAsync
-            _mockUserRepository.Verify(x => x.DisableAsync(userId), Times.Once);
+            // 验证委托调用
+            _mockBusinessService.Verify(x => x.DisableAsync(userId), Times.Once);
         }
 
         #endregion
@@ -343,34 +342,23 @@ namespace LYBT.Module.Users.Tests
         {
             // Arrange
             var userId = Guid.NewGuid();
-            var user = new User 
-            { 
-                Id = userId, 
-                Username = "testuser",
-                PasswordHash = "oldhash",
-                CreatedTime = DateTime.Now
-            };
+            var newPassword = "NewPassword123!";
+            var expectedResult = ServiceResult<bool>.Success(true);
 
-            _mockUserRepository
-                .Setup(x => x.GetByIdAsync(userId, true))
-                .ReturnsAsync(user);
-
-            _mockUserRepository
-                .Setup(x => x.UpdatePasswordAsync(userId, It.IsAny<string>()))
-                .ReturnsAsync(true);
+            _mockBusinessService
+                .Setup(x => x.ResetPasswordAsync(userId, newPassword))
+                .ReturnsAsync(expectedResult);
 
             // Act
-            var result = await _userService.ResetPasswordAsync(userId, "NewPassword123!");
+            var result = await _userService.ResetPasswordAsync(userId, newPassword);
 
-            // Assert
-            result.Should().Be(true);
+            // Assert - FluentAssertions风格
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().BeTrue();
 
-            // 验证是否使用了默认密码
-            var expectedHash = PasswordHelper.Hash("LybtUser2025#InitPass!");
-            _mockUserRepository.Verify(x => x.UpdatePasswordAsync(
-                userId, 
-                It.IsAny<string>() // 由于Hash每次生成不同，只验证调用
-            ), Times.Once);
+            // 验证委托调用
+            _mockBusinessService.Verify(x => x.ResetPasswordAsync(userId, newPassword), Times.Once);
         }
 
         #endregion
@@ -378,58 +366,55 @@ namespace LYBT.Module.Users.Tests
         #region ChangePasswordAsync 测试
 
         [Fact]
-        public async Task ChangePasswordAsync_Should_Throw_When_Old_Password_Wrong()
+        public async Task ChangePasswordAsync_Should_Return_Failure_When_Old_Password_Wrong()
         {
             // Arrange
             var userId = Guid.NewGuid();
-            var user = new User 
-            { 
-                Id = userId, 
-                Username = "testuser",
-                PasswordHash = PasswordHelper.Hash("correctpassword"),
-                CreatedTime = DateTime.Now
-            };
-
-            _mockUserRepository
-                .Setup(x => x.GetByIdAsync(userId, true))
-                .ReturnsAsync(user);
-
-            // Act & Assert
-            await Assert.ThrowsAsync<UnauthorizedAccessException>(
-                async () => await _userService.ChangePasswordAsync(userId, "wrongpassword", "newpassword")
-            );
-        }
-
-        [Fact]
-        public async Task ChangePasswordAsync_Should_Success_When_Old_Password_Correct()
-        {
-            // Arrange
-            var userId = Guid.NewGuid();
-            var oldPassword = "oldpassword";
+            var oldPassword = "wrongpassword";
             var newPassword = "newpassword";
-            var user = new User 
-            { 
-                Id = userId, 
-                Username = "testuser",
-                RealName = "测试用户",
-                PasswordHash = PasswordHelper.Hash(oldPassword),
-                CreatedTime = DateTime.Now
-            };
+            
+            var expectedResult = ServiceResult<bool>.Failure("原密码不正确");
 
-            _mockUserRepository
-                .Setup(x => x.GetByIdAsync(userId, true))
-                .ReturnsAsync(user);
-
-            _mockUserRepository
-                .Setup(x => x.UpdatePasswordAsync(userId, It.IsAny<string>()))
-                .ReturnsAsync(true);
+            _mockBusinessService
+                .Setup(x => x.ChangePasswordAsync(userId, oldPassword, newPassword))
+                .ReturnsAsync(expectedResult);
 
             // Act
             var result = await _userService.ChangePasswordAsync(userId, oldPassword, newPassword);
 
             // Assert
-            result.Should().Be(true);
-            _mockUserRepository.Verify(x => x.UpdatePasswordAsync(userId, It.IsAny<string>()), Times.Once);
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeFalse();
+            result.Message.Should().Be("原密码不正确");
+            
+            // 验证委托调用
+            _mockBusinessService.Verify(x => x.ChangePasswordAsync(userId, oldPassword, newPassword), Times.Once);
+        }
+
+        [Fact]
+        public async Task ChangePasswordAsync_Should_Return_Success_When_Old_Password_Correct()
+        {
+            // Arrange
+            var userId = Guid.NewGuid();
+            var oldPassword = "oldpassword";
+            var newPassword = "newpassword";
+            
+            var expectedResult = ServiceResult<bool>.Success(true);
+
+            _mockBusinessService
+                .Setup(x => x.ChangePasswordAsync(userId, oldPassword, newPassword))
+                .ReturnsAsync(expectedResult);
+
+            // Act
+            var result = await _userService.ChangePasswordAsync(userId, oldPassword, newPassword);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().BeTrue();
+            
+            // 验证委托调用
+            _mockBusinessService.Verify(x => x.ChangePasswordAsync(userId, oldPassword, newPassword), Times.Once);
         }
 
         #endregion
@@ -440,38 +425,221 @@ namespace LYBT.Module.Users.Tests
         public async Task GetActiveUsersAsync_Should_Return_Only_Active_Users()
         {
             // Arrange
-            var activeUsers = new List<User>
+            var activeUserDtos = new List<UserDto>
             {
-                new User 
+                new UserDto 
                 { 
                     Id = Guid.NewGuid(), 
                     Username = "active1",
                     Status = CommonStatus.Enabled,
-                    PasswordHash = "hash",
-                    CreatedTime = DateTime.Now
+                    CreateTime = DateTime.Now
                 },
-                new User 
+                new UserDto 
                 { 
                     Id = Guid.NewGuid(), 
                     Username = "active2",
                     Status = CommonStatus.Enabled,
-                    PasswordHash = "hash",
-                    CreatedTime = DateTime.Now
+                    CreateTime = DateTime.Now
                 }
             };
 
-            _mockUserRepository
+            var expectedResult = ServiceResult<List<UserDto>>.Success(activeUserDtos);
+
+            _mockQueryService
                 .Setup(x => x.GetActiveUsersAsync())
-                .ReturnsAsync(activeUsers);
+                .ReturnsAsync(expectedResult);
 
             // Act
             var result = await _userService.GetActiveUsersAsync();
 
             // Assert
             result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
             result.Data!.Count.Should().Be(2);
             result.Data.All(u => u.Status == CommonStatus.Enabled).Should().BeTrue();
+            
+            // 验证委托调用
+            _mockQueryService.Verify(x => x.GetActiveUsersAsync(), Times.Once);
+        }
+
+        #endregion
+
+        #region 参数化测试 - 覆盖边界值与异常场景
+
+        [Theory]
+        [InlineData(0, 10, false)] // 页码为0 - 边界值
+        [InlineData(1, 0, false)]  // 页面大小为0 - 边界值
+        [InlineData(-1, 10, false)] // 负数页码 - 异常值
+        [InlineData(1, -5, false)]  // 负数页面大小 - 异常值
+        [InlineData(1, 10, true)]   // 正常值 - 基准测试
+        [InlineData(1, 1000, false)] // 页面大小过大 - 边界值
+        public async Task GetPagedAsync_Should_Handle_Various_Page_Parameters(int currentPage, int pageSize, bool shouldSucceed)
+        {
+            // Arrange
+            var query = new UserPagedQueryDto
+            {
+                CurrentPage = currentPage,
+                PageSize = pageSize
+            };
+
+            if (shouldSucceed)
+            {
+                var expectedResult = ServiceResult<PagedResult<UserDto>>.Success(new PagedResult<UserDto>
+                {
+                    Items = new List<UserDto>(),
+                    TotalCount = 0,
+                    CurrentPage = currentPage,
+                    PageSize = pageSize
+                });
+
+                _mockQueryService
+                    .Setup(x => x.GetPagedAsync(It.IsAny<UserPagedQueryDto>()))
+                    .ReturnsAsync(expectedResult);
+            }
+            else
+            {
+                var expectedResult = ServiceResult<PagedResult<UserDto>>.Failure("页面参数无效");
+                _mockQueryService
+                    .Setup(x => x.GetPagedAsync(It.IsAny<UserPagedQueryDto>()))
+                    .ReturnsAsync(expectedResult);
+            }
+
+            // Act
+            var result = await _userService.GetPagedAsync(query);
+
+            // Assert
+            result.Should().NotBeNull();
+            if (shouldSucceed)
+            {
+                result.IsSuccess.Should().BeTrue();
+            }
+            else
+            {
+                result.IsSuccess.Should().BeFalse();
+                result.Message.Should().NotBeNullOrEmpty();
+            }
+            
+            _mockQueryService.Verify(x => x.GetPagedAsync(query), Times.Once);
+        }
+
+        [Theory]
+        [InlineData("")]                    // 空字符串用户名
+        [InlineData("a")]                   // 单字符用户名  
+        [InlineData("ab")]                  // 2字符用户名
+        [InlineData("abc")]                 // 3字符用户名（最小合法）
+        [InlineData("test_user_123")]       // 正常用户名
+        [InlineData("this_is_a_very_long_username_that_exceeds_normal_limits_abcdefghijklmnopqrstuvwxyz")] // 过长用户名
+        public async Task CreateAsync_Should_Handle_Various_Username_Lengths(string username)
+        {
+            // Arrange  
+            var dto = new UserMutationDto
+            {
+                Username = username,
+                RealName = "测试用户",
+                IsCreateOperation = true
+            };
+
+            bool isValidUsername = !string.IsNullOrEmpty(username) && username.Length >= 3 && username.Length <= 50;
+            ServiceResult<UserDto> expectedResult;
+
+            if (isValidUsername)
+            {
+                var createdUserDto = new UserDto
+                {
+                    Id = Guid.NewGuid(),
+                    Username = username,
+                    RealName = "测试用户",
+                    Status = CommonStatus.Enabled,
+                    CreateTime = DateTime.Now
+                };
+                expectedResult = ServiceResult<UserDto>.Success(createdUserDto);
+            }
+            else
+            {
+                expectedResult = ServiceResult<UserDto>.Failure("用户名长度不符合要求");
+            }
+
+            _mockBusinessService
+                .Setup(x => x.CreateUserAsync(It.IsAny<UserMutationDto>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedResult);
+
+            // Act
+            var result = await _userService.CreateAsync(dto);
+
+            // Assert
+            result.Should().NotBeNull();
+            if (isValidUsername)
+            {
+                result.IsSuccess.Should().BeTrue();
+                result.Data!.Username.Should().Be(username);
+            }
+            else
+            {
+                result.IsSuccess.Should().BeFalse();
+                result.Message.Should().NotBeNullOrEmpty();
+            }
+
+            _mockBusinessService.Verify(x => x.CreateUserAsync(dto, It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+        [Theory]
+        [InlineData("13800138000", true)]   // 标准手机号
+        [InlineData("138001380001", false)] // 过长手机号
+        [InlineData("1380013800", false)]   // 过短手机号  
+        [InlineData("abc12345678", false)]  // 包含字母
+        [InlineData("", true)]              // 空字符串（可选字段）
+        [InlineData(null, true)]            // null值（可选字段）
+        public async Task CreateAsync_Should_Validate_Phone_Number_Format(string phoneNumber, bool shouldSucceed)
+        {
+            // Arrange
+            var dto = new UserMutationDto
+            {
+                Username = "test_user",
+                RealName = "测试用户", 
+                PhoneNumber = phoneNumber,
+                IsCreateOperation = true
+            };
+
+            ServiceResult<UserDto> expectedResult;
+            if (shouldSucceed)
+            {
+                var createdUserDto = new UserDto
+                {
+                    Id = Guid.NewGuid(),
+                    Username = dto.Username,
+                    RealName = dto.RealName,
+                    PhoneNumber = phoneNumber,
+                    Status = CommonStatus.Enabled,
+                    CreateTime = DateTime.Now
+                };
+                expectedResult = ServiceResult<UserDto>.Success(createdUserDto);
+            }
+            else
+            {
+                expectedResult = ServiceResult<UserDto>.Failure("手机号格式不正确");
+            }
+
+            _mockBusinessService
+                .Setup(x => x.CreateUserAsync(It.IsAny<UserMutationDto>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedResult);
+
+            // Act
+            var result = await _userService.CreateAsync(dto);
+
+            // Assert  
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().Be(shouldSucceed);
+            if (shouldSucceed)
+            {
+                result.Data!.PhoneNumber.Should().Be(phoneNumber);
+            }
+            else
+            {
+                result.Message.Should().NotBeNullOrEmpty();
+            }
+
+            _mockBusinessService.Verify(x => x.CreateUserAsync(dto, It.IsAny<CancellationToken>()), Times.Once);
         }
 
         #endregion

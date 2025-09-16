@@ -5,6 +5,8 @@
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 	  <UserSecretsId>2e58e08c-c618-42e2-afc6-44f2bb2efbc8</UserSecretsId>
+	  <!-- 为集成测试项目提供内部类型访问权限 -->
+	  <InternalsVisibleTo>LYBT.WebAPI.Tests</InternalsVisibleTo>
   </PropertyGroup>
 
 	<ItemGroup>
