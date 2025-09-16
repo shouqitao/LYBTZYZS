@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- .runsettings file for LYBT test configuration -->
+<!-- Documentation: https://docs.microsoft.com/en-us/visualstudio/test/configure-unit-tests-by-using-a-dot-runsettings-file -->
+<RunSettings>
+  <!-- Configurations that affect the Test Framework -->
+  <RunConfiguration>
+    <!-- Path relative to directory that contains .runsettings file-->
+    <ResultsDirectory>.\TestResults</ResultsDirectory>
+    
+    <!-- x86 or x64 -->
+    <TargetPlatform>x64</TargetPlatform>
+    
+    <!-- Framework35 | [Framework40] | Framework45 -->
+    <TargetFrameworkVersion>net8.0</TargetFrameworkVersion>
+    
+    <!-- Uncomment to control maximum parallel test execution -->
+    <MaxCpuCount>0</MaxCpuCount>
+    
+    <!-- Test session timeout in milliseconds -->
+    <TestSessionTimeout>1800000</TestSessionTimeout>
+    
+    <!-- Set to true to collect logs and attach them to test results -->
+    <CollectSourceInformation>true</CollectSourceInformation>
+  </RunConfiguration>
+
+  <!-- Configurations for data collectors -->
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="Code Coverage" uri="datacollector://Microsoft/CodeCoverage/2.0" assemblyQualifiedName="Microsoft.VisualStudio.Coverage.DynamicCoverageDataCollector, Microsoft.VisualStudio.TraceCollector, Version=11.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+        <Configuration>
+          <CodeCoverage>
+            <!-- Match assembly file paths: -->
+            <ModulePaths>
+              <Include>
+                <ModulePath>.*LYBT\..*\.dll$</ModulePath>
+              </Include>
+              <Exclude>
+                <ModulePath>.*Tests\.dll$</ModulePath>
+                <ModulePath>.*Test\.dll$</ModulePath>
+                <ModulePath>.*testhost\.dll$</ModulePath>
+              </Exclude>
+            </ModulePaths>
+            
+            <!-- Match fully qualified names of functions: -->
+            <Functions>
+              <Exclude>
+                <!-- Exclude generated code -->
+                <Function>.*Program\.Main.*</Function>
+                <Function>.*\.Migrations\..*</Function>
+                <!-- Exclude test infrastructure -->
+                <Function>.*\.Tests\..*</Function>
+                <Function>.*\.TestUtilities\..*</Function>
+              </Exclude>
+            </Functions>
+
+            <!-- Match attributes on any code element: -->
+            <Attributes>
+              <Exclude>
+                <Attribute>^System\.Diagnostics\.DebuggerHiddenAttribute$</Attribute>
+                <Attribute>^System\.Diagnostics\.DebuggerNonUserCodeAttribute$</Attribute>
+                <Attribute>^System\.Runtime\.CompilerServices\.CompilerGeneratedAttribute$</Attribute>
+                <Attribute>^System\.CodeDom\.Compiler\.GeneratedCodeAttribute$</Attribute>
+                <Attribute>^System\.Diagnostics\.CodeAnalysis\.ExcludeFromCodeCoverageAttribute$</Attribute>
+              </Exclude>
+            </Attributes>
+
+            <!-- Match the path of the source files in which each method is defined: -->
+            <Sources>
+              <Exclude>
+                <Source>.*\\bin\\.*</Source>
+                <Source>.*\\obj\\.*</Source>
+                <Source>.*\\Migrations\\.*</Source>
+                <Source>.*\\.vs\\.*</Source>
+                <Source>.*\\TestResults\\.*</Source>
+              </Exclude>
+            </Sources>
+
+            <!-- Match the company name property in the assembly: -->
+            <CompanyNames>
+              <Exclude>
+                <CompanyName>.*Microsoft.*</CompanyName>
+                <CompanyName>.*xunit.*</CompanyName>
+              </Exclude>
+            </CompanyNames>
+
+            <!-- Match the public key token of a signed assembly: -->
+            <PublicKeyTokens>
+              <!-- Exclude Visual Studio instrumentation -->
+              <Exclude>
+                <PublicKeyToken>^B77A5C561934E089$</PublicKeyToken>
+                <PublicKeyToken>^B03F5F7F11D50A3A$</PublicKeyToken>
+                <PublicKeyToken>^31BF3856AD364E35$</PublicKeyToken>
+                <PublicKeyToken>^89845DCD8080CC91$</PublicKeyToken>
+              </Exclude>
+            </PublicKeyTokens>
+          </CodeCoverage>
+        </Configuration>
+      </DataCollector>
+
+      <!-- Coverlet collector for cross-platform code coverage -->
+      <DataCollector friendlyName="XPlat code coverage" uri="datacollector://Microsoft/XPlat/CodeCoverage">
+        <Configuration>
+          <Format>cobertura,opencover</Format>
+          <Exclude>[*Tests]*,[*Test]*,[*TestUtilities]*,[TestBase]*,[TestDataFactory]*</Exclude>
+          <ExcludeByAttribute>Obsolete,GeneratedCodeAttribute,CompilerGeneratedAttribute,ExcludeFromCodeCoverageAttribute</ExcludeByAttribute>
+          <ExcludeByFile>**/Migrations/**,**/bin/**,**/obj/**</ExcludeByFile>
+          <IncludeDirectory>src/</IncludeDirectory>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+
+  <!-- Parameters used by tests at runtime -->
+  <TestRunParameters>
+    <Parameter name="TestDatabaseConnectionString" value="Server=(localdb)\\mssqllocaldb;Database=LYBT_Test;Trusted_Connection=True;MultipleActiveResultSets=true" />
+    <Parameter name="TestEnvironment" value="Test" />
+    <Parameter name="EnableDetailedLogging" value="false" />
+  </TestRunParameters>
+
+  <!-- Configuration for MSTest adapter -->
+  <MSTest>
+    <!-- Comma-separated list of assemblies that contain test -->
+    <AssemblyResolution>
+      <Directory path="bin\" includeSubDirectories="true"/>
+    </AssemblyResolution>
+    
+    <!-- Enable running tests in parallel -->
+    <Parallelize>
+      <Workers>0</Workers>
+      <Scope>MethodLevel</Scope>
+    </Parallelize>
+    
+    <TreatDiscoveryWarningsAsErrors>false</TreatDiscoveryWarningsAsErrors>
+  </MSTest>
+
+  <!-- Configuration for xUnit -->
+  <xUnit>
+    <!-- Enable running tests in parallel -->
+    <ParallelizeAssembly>false</ParallelizeAssembly>
+    <ParallelizeTestCollections>true</ParallelizeTestCollections>
+    <MaxParallelThreads>0</MaxParallelThreads>
+  </xUnit>
+
+  <!-- Adapter specific sections -->
+  <!-- NUnit3 adapter -->
+  <NUnit>
+    <!-- Test result format -->
+    <OutputXmlFile>TestResults\NUnitResults.xml</OutputXmlFile>
+    <DisposeRunners>true</DisposeRunners>
+    <DefaultTimeout>0</DefaultTimeout>
+  </NUnit>
+
+  <!-- Logger configuration -->
+  <LoggerRunSettings>
+    <Loggers>
+      <Logger friendlyName="console" enabled="True">
+        <Configuration>
+          <Verbosity>normal</Verbosity>
+        </Configuration>
+      </Logger>
+      
+      <Logger friendlyName="trx" enabled="True">
+        <Configuration>
+          <LogFileName>TestResults.trx</LogFileName>
+        </Configuration>
+      </Logger>
+
+      <Logger friendlyName="junit" enabled="True">
+        <Configuration>
+          <LogFilePath>TestResults\junit-results.xml</LogFilePath>
+        </Configuration>
+      </Logger>
+    </Loggers>
+  </LoggerRunSettings>
+
+  <!-- Test discovery -->
+  <TestCaseFilter>Category!=Integration&amp;Category!=E2E</TestCaseFilter>
+</RunSettings>

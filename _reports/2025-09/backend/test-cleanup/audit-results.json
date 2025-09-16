@@ -1,0 +1,772 @@
+﻿{
+    "Timestamp":  "2025-09-16 17:30:38",
+    "MigrationPlan":  [
+                          {
+                              "From":  "tests\\Architecture\\LYBT.ArchTests.csproj",
+                              "To":  "tests/LYBT.Arch.UnitTests",
+                              "Type":  "UnitTests"
+                          },
+                          {
+                              "From":  "tests\\Backend\\Core\\LYBT.Tests.Core.csproj",
+                              "To":  "tests/LYBT.Tests.Core.UnitTests",
+                              "Type":  "UnitTests"
+                          },
+                          {
+                              "From":  "tests\\Backend\\Core\\Services\\LYBT.Tests.Simplified.csproj",
+                              "To":  "tests/LYBT.Tests.Simplified.UnitTests",
+                              "Type":  "UnitTests"
+                          },
+                          {
+                              "From":  "tests\\Backend\\LYBT.Module.Auth.Tests\\LYBT.Module.Auth.Tests.csproj",
+                              "To":  "tests/LYBT.Module.Auth.UnitTests",
+                              "Type":  "UnitTests"
+                          },
+                          {
+                              "From":  "tests\\Backend\\LYBT.Module.Consultation.Tests\\LYBT.Module.Consultation.Tests.csproj",
+                              "To":  "tests/LYBT.Module.Consultation.UnitTests",
+                              "Type":  "UnitTests"
+                          },
+                          {
+                              "From":  "tests\\Backend\\LYBT.Module.Formula.Tests\\LYBT.Module.Formula.Tests.csproj",
+                              "To":  "tests/LYBT.Module.Formula.UnitTests",
+                              "Type":  "UnitTests"
+                          },
+                          {
+                              "From":  "tests\\Backend\\LYBT.Module.Herbs.Tests\\LYBT.Module.Herbs.Tests.csproj",
+                              "To":  "tests/LYBT.Module.Herbs.UnitTests",
+                              "Type":  "UnitTests"
+                          },
+                          {
+                              "From":  "tests\\Backend\\LYBT.Module.MedicalCase.Tests\\LYBT.Module.MedicalCase.Tests.csproj",
+                              "To":  "tests/LYBT.Module.MedicalCase.UnitTests",
+                              "Type":  "UnitTests"
+                          },
+                          {
+                              "From":  "tests\\Backend\\LYBT.Module.Patients.Tests\\LYBT.Module.Patients.Tests.csproj",
+                              "To":  "tests/LYBT.Module.Patients.UnitTests",
+                              "Type":  "UnitTests"
+                          },
+                          {
+                              "From":  "tests\\Backend\\LYBT.Module.Prescriptions.Tests\\LYBT.Module.Prescriptions.Tests.csproj",
+                              "To":  "tests/LYBT.Module.Prescriptions.UnitTests",
+                              "Type":  "UnitTests"
+                          },
+                          {
+                              "From":  "tests\\Backend\\LYBT.Module.Users.Tests\\LYBT.Module.Users.Tests.csproj",
+                              "To":  "tests/LYBT.Module.Users.UnitTests",
+                              "Type":  "UnitTests"
+                          },
+                          {
+                              "From":  "tests\\Backend\\LYBT.Shared.Models.Tests\\LYBT.Shared.Models.Tests.csproj",
+                              "To":  "tests/LYBT.Shared.Models.UnitTests",
+                              "Type":  "UnitTests"
+                          },
+                          {
+                              "From":  "tests\\Backend\\LYBT.WebAPI.Tests\\LYBT.WebAPI.Tests.csproj",
+                              "To":  "tests/LYBT.WebAPI.IntegrationTests",
+                              "Type":  "IntegrationTests"
+                          },
+                          {
+                              "From":  "tests\\Backend\\TestBase\\TestBase.csproj",
+                              "To":  "tests/TestBase.UnitTests",
+                              "Type":  "UnitTests"
+                          },
+                          {
+                              "From":  "tests\\Backend\\TestUtilities\\TestUtilities.csproj",
+                              "To":  "tests/TestUtilities.UnitTests",
+                              "Type":  "UnitTests"
+                          },
+                          {
+                              "From":  "tests\\TestDataFactory\\TestDataFactory.csproj",
+                              "To":  "tests/TestDataFactory.UnitTests",
+                              "Type":  "UnitTests"
+                          },
+                          {
+                              "From":  "tests\\UltraThink\\TestInfrastructure\\LYBT.Tests.UltraThink.TestInfrastructure.csproj",
+                              "To":  "tests/LYBT.Tests.UltraThink.TestInfrastructure.UnitTests",
+                              "Type":  "UnitTests"
+                          },
+                          {
+                              "From":  "tests-archive\\Architecture\\LYBT.ArchTests.csproj",
+                              "To":  "tests/LYBT.Arch.UnitTests",
+                              "Type":  "UnitTests"
+                          },
+                          {
+                              "From":  "tests-archive\\Client\\LYBT.WPF.Client.Tests\\LYBT.WPF.Client.Tests.csproj",
+                              "To":  "tests/LYBT.WPF.Client.UnitTests",
+                              "Type":  "UnitTests"
+                          },
+                          {
+                              "From":  "tests-archive\\Enhanced\\Enhanced.Auth.Tests.csproj",
+                              "To":  "tests/Enhanced.Auth.UnitTests",
+                              "Type":  "UnitTests"
+                          },
+                          {
+                              "From":  "tests-archive\\Herbs-Enhanced\\Enhanced.Tests.csproj",
+                              "To":  "tests/Enhanced.UnitTests",
+                              "Type":  "UnitTests"
+                          },
+                          {
+                              "From":  "tests-archive\\LYBT.Infrastructure.Tests\\LYBT.Infrastructure.Tests.csproj",
+                              "To":  "tests/LYBT.Infrastructure.UnitTests",
+                              "Type":  "UnitTests"
+                          },
+                          {
+                              "From":  "tests-archive\\LYBT.Tests.Core.UltraThink\\LYBT.Tests.Core.UltraThink.csproj",
+                              "To":  "tests/LYBT.Tests.Core.UltraThink.UnitTests",
+                              "Type":  "UnitTests"
+                          }
+                      ],
+    "TestProjects":  [
+                         {
+                             "Path":  "tests\\Architecture\\LYBT.ArchTests.csproj",
+                             "Directory":  "Architecture",
+                             "Name":  "LYBT.ArchTests.csproj"
+                         },
+                         {
+                             "Path":  "tests\\Backend\\Core\\LYBT.Tests.Core.csproj",
+                             "Directory":  "Core",
+                             "Name":  "LYBT.Tests.Core.csproj"
+                         },
+                         {
+                             "Path":  "tests\\Backend\\Core\\Services\\LYBT.Tests.Simplified.csproj",
+                             "Directory":  "Services",
+                             "Name":  "LYBT.Tests.Simplified.csproj"
+                         },
+                         {
+                             "Path":  "tests\\Backend\\LYBT.Module.Auth.Tests\\LYBT.Module.Auth.Tests.csproj",
+                             "Directory":  "LYBT.Module.Auth.Tests",
+                             "Name":  "LYBT.Module.Auth.Tests.csproj"
+                         },
+                         {
+                             "Path":  "tests\\Backend\\LYBT.Module.Consultation.Tests\\LYBT.Module.Consultation.Tests.csproj",
+                             "Directory":  "LYBT.Module.Consultation.Tests",
+                             "Name":  "LYBT.Module.Consultation.Tests.csproj"
+                         },
+                         {
+                             "Path":  "tests\\Backend\\LYBT.Module.Formula.Tests\\LYBT.Module.Formula.Tests.csproj",
+                             "Directory":  "LYBT.Module.Formula.Tests",
+                             "Name":  "LYBT.Module.Formula.Tests.csproj"
+                         },
+                         {
+                             "Path":  "tests\\Backend\\LYBT.Module.Herbs.Tests\\LYBT.Module.Herbs.Tests.csproj",
+                             "Directory":  "LYBT.Module.Herbs.Tests",
+                             "Name":  "LYBT.Module.Herbs.Tests.csproj"
+                         },
+                         {
+                             "Path":  "tests\\Backend\\LYBT.Module.MedicalCase.Tests\\LYBT.Module.MedicalCase.Tests.csproj",
+                             "Directory":  "LYBT.Module.MedicalCase.Tests",
+                             "Name":  "LYBT.Module.MedicalCase.Tests.csproj"
+                         },
+                         {
+                             "Path":  "tests\\Backend\\LYBT.Module.Patients.Tests\\LYBT.Module.Patients.Tests.csproj",
+                             "Directory":  "LYBT.Module.Patients.Tests",
+                             "Name":  "LYBT.Module.Patients.Tests.csproj"
+                         },
+                         {
+                             "Path":  "tests\\Backend\\LYBT.Module.Prescriptions.Tests\\LYBT.Module.Prescriptions.Tests.csproj",
+                             "Directory":  "LYBT.Module.Prescriptions.Tests",
+                             "Name":  "LYBT.Module.Prescriptions.Tests.csproj"
+                         },
+                         {
+                             "Path":  "tests\\Backend\\LYBT.Module.Users.Tests\\LYBT.Module.Users.Tests.csproj",
+                             "Directory":  "LYBT.Module.Users.Tests",
+                             "Name":  "LYBT.Module.Users.Tests.csproj"
+                         },
+                         {
+                             "Path":  "tests\\Backend\\LYBT.Shared.Models.Tests\\LYBT.Shared.Models.Tests.csproj",
+                             "Directory":  "LYBT.Shared.Models.Tests",
+                             "Name":  "LYBT.Shared.Models.Tests.csproj"
+                         },
+                         {
+                             "Path":  "tests\\Backend\\LYBT.WebAPI.Tests\\LYBT.WebAPI.Tests.csproj",
+                             "Directory":  "LYBT.WebAPI.Tests",
+                             "Name":  "LYBT.WebAPI.Tests.csproj"
+                         },
+                         {
+                             "Path":  "tests\\Backend\\TestBase\\TestBase.csproj",
+                             "Directory":  "TestBase",
+                             "Name":  "TestBase.csproj"
+                         },
+                         {
+                             "Path":  "tests\\Backend\\TestUtilities\\TestUtilities.csproj",
+                             "Directory":  "TestUtilities",
+                             "Name":  "TestUtilities.csproj"
+                         },
+                         {
+                             "Path":  "tests\\TestDataFactory\\TestDataFactory.csproj",
+                             "Directory":  "TestDataFactory",
+                             "Name":  "TestDataFactory.csproj"
+                         },
+                         {
+                             "Path":  "tests\\UltraThink\\TestInfrastructure\\LYBT.Tests.UltraThink.TestInfrastructure.csproj",
+                             "Directory":  "TestInfrastructure",
+                             "Name":  "LYBT.Tests.UltraThink.TestInfrastructure.csproj"
+                         },
+                         {
+                             "Path":  "tests-archive\\Architecture\\LYBT.ArchTests.csproj",
+                             "Directory":  "Architecture",
+                             "Name":  "LYBT.ArchTests.csproj"
+                         },
+                         {
+                             "Path":  "tests-archive\\Client\\LYBT.WPF.Client.Tests\\LYBT.WPF.Client.Tests.csproj",
+                             "Directory":  "LYBT.WPF.Client.Tests",
+                             "Name":  "LYBT.WPF.Client.Tests.csproj"
+                         },
+                         {
+                             "Path":  "tests-archive\\Enhanced\\Enhanced.Auth.Tests.csproj",
+                             "Directory":  "Enhanced",
+                             "Name":  "Enhanced.Auth.Tests.csproj"
+                         },
+                         {
+                             "Path":  "tests-archive\\Herbs-Enhanced\\Enhanced.Tests.csproj",
+                             "Directory":  "Herbs-Enhanced",
+                             "Name":  "Enhanced.Tests.csproj"
+                         },
+                         {
+                             "Path":  "tests-archive\\LYBT.Infrastructure.Tests\\LYBT.Infrastructure.Tests.csproj",
+                             "Directory":  "LYBT.Infrastructure.Tests",
+                             "Name":  "LYBT.Infrastructure.Tests.csproj"
+                         },
+                         {
+                             "Path":  "tests-archive\\LYBT.Tests.Core.UltraThink\\LYBT.Tests.Core.UltraThink.csproj",
+                             "Directory":  "LYBT.Tests.Core.UltraThink",
+                             "Name":  "LYBT.Tests.Core.UltraThink.csproj"
+                         }
+                     ],
+    "SolutionFiles":  [
+                          "LYBT.All.sln",
+                          "LYBT.Desktop.sln",
+                          "LYBT.Server.sln"
+                      ],
+    "TestFiles":  [
+                      {
+                          "Name":  "UnifiedUserServiceTests.cs",
+                          "Path":  "docs\\examples\\testing\\UnifiedUserServiceTests.cs"
+                      },
+                      {
+                          "Name":  "StateStore.cs",
+                          "Path":  "src\\Client\\Desktop\\Core\\Redux\\StateStore.cs"
+                      },
+                      {
+                          "Name":  "ArchTests.cs",
+                          "Path":  "tests\\Architecture\\ArchTests.cs"
+                      },
+                      {
+                          "Name":  "BaseTestFixture.cs",
+                          "Path":  "tests\\Backend\\Core\\BaseTestFixture.cs"
+                      },
+                      {
+                          "Name":  "DataDrivenTestSupport.cs",
+                          "Path":  "tests\\Backend\\Core\\DataDrivenTestSupport.cs"
+                      },
+                      {
+                          "Name":  "TestBase.cs",
+                          "Path":  "tests\\Backend\\Core\\TestBase.cs"
+                      },
+                      {
+                          "Name":  "TestDataBuilder.cs",
+                          "Path":  "tests\\Backend\\Core\\TestDataBuilder.cs"
+                      },
+                      {
+                          "Name":  "TestDataFactory.cs",
+                          "Path":  "tests\\Backend\\Core\\TestDataFactory.cs"
+                      },
+                      {
+                          "Name":  "SimplifiedServiceTests.cs",
+                          "Path":  "tests\\Backend\\Core\\Services\\SimplifiedServiceTests.cs"
+                      },
+                      {
+                          "Name":  "AuthServiceTests.cs",
+                          "Path":  "tests\\Backend\\LYBT.Module.Auth.Tests\\AuthServiceTests.cs"
+                      },
+                      {
+                          "Name":  "SimpleAuthServiceTests.cs",
+                          "Path":  "tests\\Backend\\LYBT.Module.Auth.Tests\\SimpleAuthServiceTests.cs"
+                      },
+                      {
+                          "Name":  "AuthTestDataGenerator.cs",
+                          "Path":  "tests\\Backend\\LYBT.Module.Auth.Tests\\Base\\AuthTestDataGenerator.cs"
+                      },
+                      {
+                          "Name":  "AuthServiceTests.cs",
+                          "Path":  "tests\\Backend\\LYBT.Module.Auth.Tests\\Services\\AuthServiceTests.cs"
+                      },
+                      {
+                          "Name":  "ConsultationRepositoryTests.cs",
+                          "Path":  "tests\\Backend\\LYBT.Module.Consultation.Tests\\ConsultationRepositoryTests.cs"
+                      },
+                      {
+                          "Name":  "ConsultationServiceTests.cs",
+                          "Path":  "tests\\Backend\\LYBT.Module.Consultation.Tests\\ConsultationServiceTests.cs"
+                      },
+                      {
+                          "Name":  "FormulaServiceTests.cs",
+                          "Path":  "tests\\Backend\\LYBT.Module.Formula.Tests\\FormulaServiceTests.cs"
+                      },
+                      {
+                          "Name":  "FormulaTestDataGenerator.cs",
+                          "Path":  "tests\\Backend\\LYBT.Module.Formula.Tests\\Base\\FormulaTestDataGenerator.cs"
+                      },
+                      {
+                          "Name":  "RepositoryTestBase.cs",
+                          "Path":  "tests\\Backend\\LYBT.Module.Formula.Tests\\Base\\RepositoryTestBase.cs"
+                      },
+                      {
+                          "Name":  "FormulaRepositoryTests.cs",
+                          "Path":  "tests\\Backend\\LYBT.Module.Formula.Tests\\Repositories\\FormulaRepositoryTests.cs"
+                      },
+                      {
+                          "Name":  "HerbRepositoryTests.cs",
+                          "Path":  "tests\\Backend\\LYBT.Module.Herbs.Tests\\HerbRepositoryTests.cs"
+                      },
+                      {
+                          "Name":  "HerbServiceTests.cs",
+                          "Path":  "tests\\Backend\\LYBT.Module.Herbs.Tests\\HerbServiceTests.cs"
+                      },
+                      {
+                          "Name":  "HerbTestDataGenerator.cs",
+                          "Path":  "tests\\Backend\\LYBT.Module.Herbs.Tests\\Base\\HerbTestDataGenerator.cs"
+                      },
+                      {
+                          "Name":  "HerbServiceTests.cs",
+                          "Path":  "tests\\Backend\\LYBT.Module.Herbs.Tests\\Services\\HerbServiceTests.cs"
+                      },
+                      {
+                          "Name":  "MedicalCaseServiceTests.cs",
+                          "Path":  "tests\\Backend\\LYBT.Module.MedicalCase.Tests\\MedicalCaseServiceTests.cs"
+                      },
+                      {
+                          "Name":  "MedicalCaseTestDataGenerator.cs",
+                          "Path":  "tests\\Backend\\LYBT.Module.MedicalCase.Tests\\Base\\MedicalCaseTestDataGenerator.cs"
+                      },
+                      {
+                          "Name":  "RepositoryTestBase.cs",
+                          "Path":  "tests\\Backend\\LYBT.Module.MedicalCase.Tests\\Base\\RepositoryTestBase.cs"
+                      },
+                      {
+                          "Name":  "MedicalCaseRepositoryTests.cs",
+                          "Path":  "tests\\Backend\\LYBT.Module.MedicalCase.Tests\\Repositories\\MedicalCaseRepositoryTests.cs"
+                      },
+                      {
+                          "Name":  "MedicalCaseServiceTests.cs",
+                          "Path":  "tests\\Backend\\LYBT.Module.MedicalCase.Tests\\Services\\MedicalCaseServiceTests.cs"
+                      },
+                      {
+                          "Name":  "PatientRepositoryTests.cs",
+                          "Path":  "tests\\Backend\\LYBT.Module.Patients.Tests\\PatientRepositoryTests.cs"
+                      },
+                      {
+                          "Name":  "PatientServiceTests.cs",
+                          "Path":  "tests\\Backend\\LYBT.Module.Patients.Tests\\PatientServiceTests.cs"
+                      },
+                      {
+                          "Name":  "SimplePatientServiceTests.cs",
+                          "Path":  "tests\\Backend\\LYBT.Module.Patients.Tests\\SimplePatientServiceTests.cs"
+                      },
+                      {
+                          "Name":  "PatientTestDataGenerator.cs",
+                          "Path":  "tests\\Backend\\LYBT.Module.Patients.Tests\\Base\\PatientTestDataGenerator.cs"
+                      },
+                      {
+                          "Name":  "PrescriptionServiceTests.cs",
+                          "Path":  "tests\\Backend\\LYBT.Module.Prescriptions.Tests\\PrescriptionServiceTests.cs"
+                      },
+                      {
+                          "Name":  "PrescriptionTestDataGenerator.cs",
+                          "Path":  "tests\\Backend\\LYBT.Module.Prescriptions.Tests\\Base\\PrescriptionTestDataGenerator.cs"
+                      },
+                      {
+                          "Name":  "RepositoryTestBase.cs",
+                          "Path":  "tests\\Backend\\LYBT.Module.Prescriptions.Tests\\Base\\RepositoryTestBase.cs"
+                      },
+                      {
+                          "Name":  "PrescriptionRepositoryTests.cs",
+                          "Path":  "tests\\Backend\\LYBT.Module.Prescriptions.Tests\\Repositories\\PrescriptionRepositoryTests.cs"
+                      },
+                      {
+                          "Name":  "PrescriptionServiceTests.cs",
+                          "Path":  "tests\\Backend\\LYBT.Module.Prescriptions.Tests\\Services\\PrescriptionServiceTests.cs"
+                      },
+                      {
+                          "Name":  "SimpleUserServiceTests.cs",
+                          "Path":  "tests\\Backend\\LYBT.Module.Users.Tests\\SimpleUserServiceTests.cs"
+                      },
+                      {
+                          "Name":  "UserRepositoryServiceTests.cs",
+                          "Path":  "tests\\Backend\\LYBT.Module.Users.Tests\\UserRepositoryServiceTests.cs"
+                      },
+                      {
+                          "Name":  "UserRepositoryTests.cs",
+                          "Path":  "tests\\Backend\\LYBT.Module.Users.Tests\\UserRepositoryTests.cs"
+                      },
+                      {
+                          "Name":  "UserServiceTests.cs",
+                          "Path":  "tests\\Backend\\LYBT.Module.Users.Tests\\UserServiceTests.cs"
+                      },
+                      {
+                          "Name":  "RepositoryTestBase.cs",
+                          "Path":  "tests\\Backend\\LYBT.Module.Users.Tests\\Base\\RepositoryTestBase.cs"
+                      },
+                      {
+                          "Name":  "ServiceTestBase.cs",
+                          "Path":  "tests\\Backend\\LYBT.Module.Users.Tests\\Base\\ServiceTestBase.cs"
+                      },
+                      {
+                          "Name":  "TestDataGenerator.cs",
+                          "Path":  "tests\\Backend\\LYBT.Module.Users.Tests\\Base\\TestDataGenerator.cs"
+                      },
+                      {
+                          "Name":  "PagedQueryBaseDtoTests.cs",
+                          "Path":  "tests\\Backend\\LYBT.Shared.Models.Tests\\PagedQueryBaseDtoTests.cs"
+                      },
+                      {
+                          "Name":  "RepositoryTestBase.cs",
+                          "Path":  "tests\\Backend\\TestBase\\RepositoryTestBase.cs"
+                      },
+                      {
+                          "Name":  "ServiceTestBase.cs",
+                          "Path":  "tests\\Backend\\TestBase\\ServiceTestBase.cs"
+                      },
+                      {
+                          "Name":  "TestConstants.cs",
+                          "Path":  "tests\\Backend\\TestUtilities\\TestConstants.cs"
+                      },
+                      {
+                          "Name":  "TestHelpers.cs",
+                          "Path":  "tests\\Backend\\TestUtilities\\TestHelpers.cs"
+                      },
+                      {
+                          "Name":  "ConsultationFlowIntegrationTests.cs",
+                          "Path":  "tests\\Integration\\LYBT.IntegrationTests\\ConsultationFlowIntegrationTests.cs"
+                      },
+                      {
+                          "Name":  "IntegrationTestBase.cs",
+                          "Path":  "tests\\Integration\\LYBT.IntegrationTests\\Base\\IntegrationTestBase.cs"
+                      },
+                      {
+                          "Name":  "TestDataHelper.cs",
+                          "Path":  "tests\\Integration\\LYBT.IntegrationTests\\Helpers\\TestDataHelper.cs"
+                      },
+                      {
+                          "Name":  "UnifiedTestDataFactory.cs",
+                          "Path":  "tests\\TestDataFactory\\UnifiedTestDataFactory.cs"
+                      },
+                      {
+                          "Name":  "ConsultationTestDataBuilder.cs",
+                          "Path":  "tests\\UltraThink\\TestInfrastructure\\Builders\\ConsultationTestDataBuilder.cs"
+                      },
+                      {
+                          "Name":  "HerbTestDataBuilder.cs",
+                          "Path":  "tests\\UltraThink\\TestInfrastructure\\Builders\\HerbTestDataBuilder.cs"
+                      },
+                      {
+                          "Name":  "MedicalCaseTestDataBuilder.cs",
+                          "Path":  "tests\\UltraThink\\TestInfrastructure\\Builders\\MedicalCaseTestDataBuilder.cs"
+                      },
+                      {
+                          "Name":  "PrescriptionTestDataBuilder.cs",
+                          "Path":  "tests\\UltraThink\\TestInfrastructure\\Builders\\PrescriptionTestDataBuilder.cs"
+                      },
+                      {
+                          "Name":  "TestDataBuilder.cs",
+                          "Path":  "tests\\UltraThink\\TestInfrastructure\\Builders\\TestDataBuilder.cs"
+                      },
+                      {
+                          "Name":  "UserTestDataBuilder.cs",
+                          "Path":  "tests\\UltraThink\\TestInfrastructure\\Builders\\UserTestDataBuilder.cs"
+                      },
+                      {
+                          "Name":  "PrescriptionServiceTests.cs",
+                          "Path":  "tests-archive\\PrescriptionServiceTests.cs"
+                      },
+                      {
+                          "Name":  "AuthServiceAdvancedTests.cs",
+                          "Path":  "tests-archive\\Advanced-Tests\\AuthServiceAdvancedTests.cs"
+                      },
+                      {
+                          "Name":  "ConsultationServiceAdvancedTests.cs",
+                          "Path":  "tests-archive\\Advanced-Tests\\ConsultationServiceAdvancedTests.cs"
+                      },
+                      {
+                          "Name":  "HerbServiceAdvancedTests.cs",
+                          "Path":  "tests-archive\\Advanced-Tests\\HerbServiceAdvancedTests.cs"
+                      },
+                      {
+                          "Name":  "MedicalCaseServiceAdvancedTests.cs",
+                          "Path":  "tests-archive\\Advanced-Tests\\MedicalCaseServiceAdvancedTests.cs"
+                      },
+                      {
+                          "Name":  "PrescriptionServiceAdvancedTests.cs",
+                          "Path":  "tests-archive\\Advanced-Tests\\PrescriptionServiceAdvancedTests.cs"
+                      },
+                      {
+                          "Name":  "ArchTests.cs",
+                          "Path":  "tests-archive\\Architecture\\ArchTests.cs"
+                      },
+                      {
+                          "Name":  "ConsultationWorkflowIntegrationTests.cs",
+                          "Path":  "tests-archive\\Client\\Desktop\\Consultation\\ConsultationWorkflowIntegrationTests.cs"
+                      },
+                      {
+                          "Name":  "DialogParameterValidationTest.cs",
+                          "Path":  "tests-archive\\Client\\Desktop\\Core\\Services\\DialogParameterValidationTest.cs"
+                      },
+                      {
+                          "Name":  "DialogServiceTest.cs",
+                          "Path":  "tests-archive\\Client\\Desktop\\Core\\Services\\DialogServiceTest.cs"
+                      },
+                      {
+                          "Name":  "ConsultationServiceTests.cs",
+                          "Path":  "tests-archive\\Client\\LYBT.Desktop.Tests\\Services\\ConsultationServiceTests.cs"
+                      },
+                      {
+                          "Name":  "AuthenticationServiceTests.cs",
+                          "Path":  "tests-archive\\Client\\LYBT.WPF.Client.Tests\\Services\\AuthenticationServiceTests.cs"
+                      },
+                      {
+                          "Name":  "ConsultationServiceTests.cs",
+                          "Path":  "tests-archive\\Client\\LYBT.WPF.Client.Tests\\Services\\ConsultationServiceTests.cs"
+                      },
+                      {
+                          "Name":  "FormulaServiceTests.cs",
+                          "Path":  "tests-archive\\Client\\LYBT.WPF.Client.Tests\\Services\\FormulaServiceTests.cs"
+                      },
+                      {
+                          "Name":  "HerbServiceTests.cs",
+                          "Path":  "tests-archive\\Client\\LYBT.WPF.Client.Tests\\Services\\HerbServiceTests.cs"
+                      },
+                      {
+                          "Name":  "MedicalCaseServiceTests.cs",
+                          "Path":  "tests-archive\\Client\\LYBT.WPF.Client.Tests\\Services\\MedicalCaseServiceTests.cs"
+                      },
+                      {
+                          "Name":  "PatientServiceTests.cs",
+                          "Path":  "tests-archive\\Client\\LYBT.WPF.Client.Tests\\Services\\PatientServiceTests.cs"
+                      },
+                      {
+                          "Name":  "PrescriptionServiceTests.cs",
+                          "Path":  "tests-archive\\Client\\LYBT.WPF.Client.Tests\\Services\\PrescriptionServiceTests.cs"
+                      },
+                      {
+                          "Name":  "UserServiceTests.cs",
+                          "Path":  "tests-archive\\Client\\LYBT.WPF.Client.Tests\\Services\\UserServiceTests.cs"
+                      },
+                      {
+                          "Name":  "LoginViewModelTests.cs",
+                          "Path":  "tests-archive\\Client\\LYBT.WPF.Client.Tests\\ViewModels\\LoginViewModelTests.cs"
+                      },
+                      {
+                          "Name":  "MainWindowViewModelTests.cs",
+                          "Path":  "tests-archive\\Client\\LYBT.WPF.Client.Tests\\ViewModels\\MainWindowViewModelTests.cs"
+                      },
+                      {
+                          "Name":  "AuthControllerTests.cs",
+                          "Path":  "tests-archive\\Controller-Tests\\AuthControllerTests.cs"
+                      },
+                      {
+                          "Name":  "ConsultationControllerTests.cs",
+                          "Path":  "tests-archive\\Controller-Tests\\ConsultationControllerTests.cs"
+                      },
+                      {
+                          "Name":  "HealthControllerTests.cs",
+                          "Path":  "tests-archive\\Controller-Tests\\HealthControllerTests.cs"
+                      },
+                      {
+                          "Name":  "HerbControllerTests.cs",
+                          "Path":  "tests-archive\\Controller-Tests\\HerbControllerTests.cs"
+                      },
+                      {
+                          "Name":  "HerbsControllerTests.cs",
+                          "Path":  "tests-archive\\Controller-Tests\\HerbsControllerTests.cs"
+                      },
+                      {
+                          "Name":  "MedicalCaseControllerTests.cs",
+                          "Path":  "tests-archive\\Controller-Tests\\MedicalCaseControllerTests.cs"
+                      },
+                      {
+                          "Name":  "MonitoringControllerTests.cs",
+                          "Path":  "tests-archive\\Controller-Tests\\MonitoringControllerTests.cs"
+                      },
+                      {
+                          "Name":  "PatientsControllerTests.cs",
+                          "Path":  "tests-archive\\Controller-Tests\\PatientsControllerTests.cs"
+                      },
+                      {
+                          "Name":  "UsersControllerTests.cs",
+                          "Path":  "tests-archive\\Controller-Tests\\UsersControllerTests.cs"
+                      },
+                      {
+                          "Name":  "AuthServiceCoverageTests.cs",
+                          "Path":  "tests-archive\\Enhanced\\AuthServiceCoverageTests.cs"
+                      },
+                      {
+                          "Name":  "LoginSecurityTests.cs",
+                          "Path":  "tests-archive\\Enhanced\\LoginSecurityTests.cs"
+                      },
+                      {
+                          "Name":  "AuthServiceExceptionTests.cs",
+                          "Path":  "tests-archive\\Exception-Tests\\AuthServiceExceptionTests.cs"
+                      },
+                      {
+                          "Name":  "ConsultationServiceExceptionTests.cs",
+                          "Path":  "tests-archive\\Exception-Tests\\ConsultationServiceExceptionTests.cs"
+                      },
+                      {
+                          "Name":  "GlobalExceptionMiddlewareTests.cs",
+                          "Path":  "tests-archive\\Exception-Tests\\GlobalExceptionMiddlewareTests.cs"
+                      },
+                      {
+                          "Name":  "HerbServiceExceptionTests.cs",
+                          "Path":  "tests-archive\\Exception-Tests\\HerbServiceExceptionTests.cs"
+                      },
+                      {
+                          "Name":  "MedicalCaseServiceExceptionTests.cs",
+                          "Path":  "tests-archive\\Exception-Tests\\MedicalCaseServiceExceptionTests.cs"
+                      },
+                      {
+                          "Name":  "PrescriptionServiceExceptionTests.cs",
+                          "Path":  "tests-archive\\Exception-Tests\\PrescriptionServiceExceptionTests.cs"
+                      },
+                      {
+                          "Name":  "ConsultationFieldUpdateCompletenessTests.cs",
+                          "Path":  "tests-archive\\FieldUpdate-Tests\\ConsultationFieldUpdateCompletenessTests.cs"
+                      },
+                      {
+                          "Name":  "FormulaFieldUpdateCompletenessTests.cs",
+                          "Path":  "tests-archive\\FieldUpdate-Tests\\FormulaFieldUpdateCompletenessTests.cs"
+                      },
+                      {
+                          "Name":  "HerbFieldUpdateCompletenessTests.cs",
+                          "Path":  "tests-archive\\FieldUpdate-Tests\\HerbFieldUpdateCompletenessTests.cs"
+                      },
+                      {
+                          "Name":  "MedicalCaseFieldUpdateCompletenessTests.cs",
+                          "Path":  "tests-archive\\FieldUpdate-Tests\\MedicalCaseFieldUpdateCompletenessTests.cs"
+                      },
+                      {
+                          "Name":  "HerbServiceCoverageTests.cs",
+                          "Path":  "tests-archive\\Herbs-Enhanced\\HerbServiceCoverageTests.cs"
+                      },
+                      {
+                          "Name":  "ConsultationServiceIntegrationTests.cs",
+                          "Path":  "tests-archive\\Integration-Tests\\ConsultationServiceIntegrationTests.cs"
+                      },
+                      {
+                          "Name":  "MedicalCaseServiceIntegrationTests.cs",
+                          "Path":  "tests-archive\\Integration-Tests\\MedicalCaseServiceIntegrationTests.cs"
+                      },
+                      {
+                          "Name":  "PrescriptionServiceIntegrationTests.cs",
+                          "Path":  "tests-archive\\Integration-Tests\\PrescriptionServiceIntegrationTests.cs"
+                      },
+                      {
+                          "Name":  "TransactionCoordinatorTests.cs",
+                          "Path":  "tests-archive\\LYBT.Infrastructure.Tests\\Transactions\\TransactionCoordinatorTests.cs"
+                      },
+                      {
+                          "Name":  "TransactionLoggerTests.cs",
+                          "Path":  "tests-archive\\LYBT.Infrastructure.Tests\\Transactions\\Monitoring\\TransactionLoggerTests.cs"
+                      },
+                      {
+                          "Name":  "TransactionMetricsTests.cs",
+                          "Path":  "tests-archive\\LYBT.Infrastructure.Tests\\Transactions\\Monitoring\\TransactionMetricsTests.cs"
+                      },
+                      {
+                          "Name":  "UltraThinkTestBase.cs",
+                          "Path":  "tests-archive\\LYBT.Tests.Core.UltraThink\\Base\\UltraThinkTestBase.cs"
+                      },
+                      {
+                          "Name":  "TestMappingProfile.cs",
+                          "Path":  "tests-archive\\LYBT.Tests.Core.UltraThink\\Mapping\\TestMappingProfile.cs"
+                      },
+                      {
+                          "Name":  "UserServiceTests.cs",
+                          "Path":  "tests-archive\\LYBT.Tests.Core.UltraThink\\Services\\UserServiceTests.cs"
+                      },
+                      {
+                          "Name":  "BaseDtoMappingValidationTests.cs",
+                          "Path":  "tests-archive\\Mapping-Tests\\BaseDtoMappingValidationTests.cs"
+                      },
+                      {
+                          "Name":  "ComprehensiveDtoMappingValidationTests.cs",
+                          "Path":  "tests-archive\\Mapping-Tests\\ComprehensiveDtoMappingValidationTests.cs"
+                      },
+                      {
+                          "Name":  "ConsultationDtoMappingValidationTests.cs",
+                          "Path":  "tests-archive\\Mapping-Tests\\ConsultationDtoMappingValidationTests.cs"
+                      },
+                      {
+                          "Name":  "HerbDtoMappingValidationTests.cs",
+                          "Path":  "tests-archive\\Mapping-Tests\\HerbDtoMappingValidationTests.cs"
+                      },
+                      {
+                          "Name":  "MedicalCaseDtoMappingValidationTests.cs",
+                          "Path":  "tests-archive\\Mapping-Tests\\MedicalCaseDtoMappingValidationTests.cs"
+                      },
+                      {
+                          "Name":  "PatientDtoMappingValidationTests.cs",
+                          "Path":  "tests-archive\\Mapping-Tests\\PatientDtoMappingValidationTests.cs"
+                      },
+                      {
+                          "Name":  "UserDtoMappingValidationTests.cs",
+                          "Path":  "tests-archive\\Mapping-Tests\\UserDtoMappingValidationTests.cs"
+                      },
+                      {
+                          "Name":  "PerformanceMonitoringMiddlewareTests.cs",
+                          "Path":  "tests-archive\\Middleware-Tests\\PerformanceMonitoringMiddlewareTests.cs"
+                      },
+                      {
+                          "Name":  "SecurityHeadersMiddlewareTests.cs",
+                          "Path":  "tests-archive\\Middleware-Tests\\SecurityHeadersMiddlewareTests.cs"
+                      },
+                      {
+                          "Name":  "LoginAttemptServiceTests.cs",
+                          "Path":  "tests-archive\\Security-Tests\\LoginAttemptServiceTests.cs"
+                      },
+                      {
+                          "Name":  "ConsultationServiceTCMTests.cs",
+                          "Path":  "tests-archive\\TCM-Tests\\ConsultationServiceTCMTests.cs"
+                      },
+                      {
+                          "Name":  "AuthServiceUltraThinkTests.cs",
+                          "Path":  "tests-archive\\UltraThink-Tests\\AuthServiceUltraThinkTests.cs"
+                      },
+                      {
+                          "Name":  "ConsultationServiceUltraThinkTests.cs",
+                          "Path":  "tests-archive\\UltraThink-Tests\\ConsultationServiceUltraThinkTests.cs"
+                      },
+                      {
+                          "Name":  "MedicalCaseServiceUltraThinkTests.cs",
+                          "Path":  "tests-archive\\UltraThink-Tests\\MedicalCaseServiceUltraThinkTests.cs"
+                      },
+                      {
+                          "Name":  "PatientServiceUltraThinkTests.cs",
+                          "Path":  "tests-archive\\UltraThink-Tests\\PatientServiceUltraThinkTests.cs"
+                      },
+                      {
+                          "Name":  "PrescriptionServiceUltraThinkTests.cs",
+                          "Path":  "tests-archive\\UltraThink-Tests\\PrescriptionServiceUltraThinkTests.cs"
+                      },
+                      {
+                          "Name":  "BaseValidationHelperTests.cs",
+                          "Path":  "tests-archive\\Validation-Tests\\BaseValidationHelperTests.cs"
+                      },
+                      {
+                          "Name":  "HerbValidationHelperTests.cs",
+                          "Path":  "tests-archive\\Validation-Tests\\HerbValidationHelperTests.cs"
+                      },
+                      {
+                          "Name":  "PatientValidationHelperTests.cs",
+                          "Path":  "tests-archive\\Validation-Tests\\PatientValidationHelperTests.cs"
+                      },
+                      {
+                          "Name":  "UserValidationHelperTests.cs",
+                          "Path":  "tests-archive\\Validation-Tests\\UserValidationHelperTests.cs"
+                      },
+                      {
+                          "Name":  "TestView.xaml.cs",
+                          "Path":  "_archive_noncode\\unsafe_root_backup\\samples\\frontend\\test-components\\TestView.xaml.cs"
+                      }
+                  ]
+}

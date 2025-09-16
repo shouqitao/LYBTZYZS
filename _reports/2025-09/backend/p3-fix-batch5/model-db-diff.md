@@ -1,6 +1,6 @@
 ﻿# Entity-Database Model Comparison Report
 
-**Execution Time**: 2025-09-16 16:55:38
+**Execution Time**: 2025-09-16 17:16:10
 **Analysis Scope**: Core entity models vs database schema
 **Purpose**: P3-Fix Batch5 Entity-DTO alignment
 
@@ -154,7 +154,7 @@
 - [ ] All entity 鈫?DTO round-trip tests pass
 
 ---
-*Model-Database Comparison Report Generated: 2025-09-16 16:55:38*
+*Model-Database Comparison Report Generated: 2025-09-16 17:16:10*
 *Script: model-db-diff.ps1*
 *Purpose: P3-Fix Batch5 Entity-DTO alignment preparation*
 

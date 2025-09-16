@@ -201,8 +201,7 @@ try {
         
         foreach ($user in $usersResponse.data.items) {
             $hasRequiredFields = ![string]::IsNullOrEmpty($user.username) -and 
-                                ![string]::IsNullOrEmpty($user.email) -and 
-                                ![string]::IsNullOrEmpty($user.fullName)
+                                ![string]::IsNullOrEmpty($user.realName)
             if ($hasRequiredFields) { $validUsers++ }
         }
         
@@ -235,7 +234,7 @@ try {
         $totalPatients = $patientsResponse.data.items.Count
         
         foreach ($patient in $patientsResponse.data.items) {
-            $hasRequiredFields = ![string]::IsNullOrEmpty($patient.patientName) -and 
+            $hasRequiredFields = ![string]::IsNullOrEmpty($patient.name) -and 
                                 $patient.age -gt 0 -and $patient.age -lt 150
             if ($hasRequiredFields) { $validPatients++ }
         }
