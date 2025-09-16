@@ -24,44 +24,40 @@ using Microsoft.Extensions.Logging.Abstractions;
 namespace LYBT.Module.Users.Tests
 {
     /// <summary>
-    /// UserService 简化单元测试
+    /// UserService 简化单元测试 - UltraThink双层架构适配
     /// 专注于测试核心功能，使用实际的 UserMappingProfile
     /// </summary>
     public class SimpleUserServiceTests
     {
         private readonly UserService _userService;
-        private readonly Mock<IUserRepository> _mockUserRepository;
-        private readonly Mock<ILogger<UserBusinessService>> _mockLogger;
+        private readonly Mock<IUserQueryService> _mockQueryService;
+        private readonly Mock<IUserBusinessService> _mockBusinessService;
         private readonly UserOptions _userOptions;
         private readonly IMapper _mapper;
 
         public SimpleUserServiceTests()
-{
-    // 创建 Mock Services
-    var mockQueryService = new Mock<IUserQueryService>();
-    var mockBusinessService = new Mock<IUserBusinessService>();
+        {
+            // UltraThink双层架构Mock配置
+            _mockQueryService = new Mock<IUserQueryService>();
+            _mockBusinessService = new Mock<IUserBusinessService>();
 
-    // 创建 UserService 实例
-    _userService = new UserService(
-        mockQueryService.Object,
-        mockBusinessService.Object
-    );
+            // 创建 UserService 实例 (主Service委托模式)
+            _userService = new UserService(
+                _mockQueryService.Object,
+                _mockBusinessService.Object
+            );
+            
+            // 配置 UserOptions
+            _userOptions = new UserOptions
+            {
+                EnableDetailedAuditLogging = true,
+                SendPasswordResetNotification = false
+            };
 
-    // 保留已有的 Mock 对象用于其他测试
-    _mockUserRepository = new Mock<IUserRepository>();
-    _mockLogger = new Mock<ILogger<UserBusinessService>>();
-    
-    // 配置 UserOptions (保持向后兼容)
-    _userOptions = new UserOptions
-    {
-        EnableDetailedAuditLogging = true,
-        SendPasswordResetNotification = false
-    };
-
-    // 使用实际的 UserMappingProfile 创建 Mapper (修复构造函数)
-    var config = new MapperConfiguration(cfg => cfg.AddProfile(new UserMappingProfile()));
-    _mapper = config.CreateMapper();
-}
+            // 使用实际的 UserMappingProfile 创建 Mapper
+            var config = new MapperConfiguration(cfg => cfg.AddProfile(new UserMappingProfile()));
+            _mapper = config.CreateMapper();
+        }
 
         #region GetPagedAsync 测试
 
@@ -75,9 +71,17 @@ namespace LYBT.Module.Users.Tests
                 PageSize = 10
             };
 
-            _mockUserRepository
-                .Setup(x => x.GetPagedAsync(It.IsAny<UserPagedQueryDto>(), It.IsAny<bool>()))
-                .ReturnsAsync((new List<User>(), 0));
+            var expectedResult = ServiceResult<PagedResult<UserDto>>.Success(new PagedResult<UserDto>
+            {
+                Items = new List<UserDto>(),
+                TotalCount = 0,
+                CurrentPage = 1,
+                PageSize = 10
+            });
+
+            _mockQueryService
+                .Setup(x => x.GetPagedAsync(It.IsAny<UserPagedQueryDto>()))
+                .ReturnsAsync(expectedResult);
 
             // Act
             var result = await _userService.GetPagedAsync(query);
@@ -87,30 +91,31 @@ namespace LYBT.Module.Users.Tests
             result.IsSuccess.Should().BeTrue();
             result.Data!.Items.Should().BeEmpty();
             result.Data.TotalCount.Should().Be(0);
+            
+            // 验证委托调用
+            _mockQueryService.Verify(x => x.GetPagedAsync(query), Times.Once);
         }
 
         [Fact]
         public async Task GetPagedAsync_Should_Return_Users_When_Exist()
         {
             // Arrange
-            var testUsers = new List<User>
+            var testUserDtos = new List<UserDto>
             {
-                new User 
+                new UserDto 
                 { 
                     Id = Guid.NewGuid(), 
                     Username = "user1", 
                     RealName = "用户1",
                     Status = CommonStatus.Enabled,
-                    PasswordHash = "hash1",
                     CreatedTime = DateTime.Now
                 },
-                new User 
+                new UserDto 
                 { 
                     Id = Guid.NewGuid(), 
                     Username = "user2", 
                     RealName = "用户2",
                     Status = CommonStatus.Enabled,
-                    PasswordHash = "hash2",
                     CreatedTime = DateTime.Now
                 }
             };
@@ -121,9 +126,17 @@ namespace LYBT.Module.Users.Tests
                 PageSize = 10
             };
 
-            _mockUserRepository
-                .Setup(x => x.GetPagedAsync(It.IsAny<UserPagedQueryDto>(), It.IsAny<bool>()))
-                .ReturnsAsync((testUsers, 2));
+            var expectedResult = ServiceResult<PagedResult<UserDto>>.Success(new PagedResult<UserDto>
+            {
+                Items = testUserDtos,
+                TotalCount = 2,
+                CurrentPage = 1,
+                PageSize = 10
+            });
+
+            _mockQueryService
+                .Setup(x => x.GetPagedAsync(It.IsAny<UserPagedQueryDto>()))
+                .ReturnsAsync(expectedResult);
 
             // Act
             var result = await _userService.GetPagedAsync(query);
@@ -134,6 +147,9 @@ namespace LYBT.Module.Users.Tests
             result.Data!.Items.Should().HaveCount(2);
             result.Data.TotalCount.Should().Be(2);
             result.Data.Items.First().Username.Should().Be("user1");
+            
+            // 验证委托调用
+            _mockQueryService.Verify(x => x.GetPagedAsync(query), Times.Once);
         }
 
         #endregion
@@ -146,15 +162,16 @@ namespace LYBT.Module.Users.Tests
             // Arrange
             var userId = Guid.NewGuid();
 
-            _mockUserRepository
-                .Setup(x => x.GetByIdAsync(userId, It.IsAny<bool>()))
-                .ReturnsAsync((User?)null);
+            _mockQueryService
+                .Setup(x => x.GetByIdAsync(userId))
+                .ReturnsAsync((ServiceResult<UserDto>?)null);
 
             // Act
             var result = await _userService.GetByIdAsync(userId);
 
             // Assert
             result.Should().BeNull();
+            _mockQueryService.Verify(x => x.GetByIdAsync(userId), Times.Once);
         }
 
         [Fact]
@@ -162,28 +179,32 @@ namespace LYBT.Module.Users.Tests
         {
             // Arrange
             var userId = Guid.NewGuid();
-            var user = new User 
+            var userDto = new UserDto 
             { 
                 Id = userId, 
                 Username = "testuser", 
                 RealName = "测试用户",
                 Status = CommonStatus.Enabled,
-                PasswordHash = "hash",
                 CreatedTime = DateTime.Now
             };
 
-            _mockUserRepository
-                .Setup(x => x.GetByIdAsync(userId, It.IsAny<bool>()))
-                .ReturnsAsync(user);
+            var expectedResult = ServiceResult<UserDto>.Success(userDto);
+
+            _mockQueryService
+                .Setup(x => x.GetByIdAsync(userId))
+                .ReturnsAsync(expectedResult);
 
             // Act
             var result = await _userService.GetByIdAsync(userId);
 
             // Assert
             result.Should().NotBeNull();
-            result.IsSuccess.Should().BeTrue();
+            result!.IsSuccess.Should().BeTrue();
             result.Data!.Id.Should().Be(userId);
             result.Data.Username.Should().Be("testuser");
+            
+            // 验证委托调用
+            _mockQueryService.Verify(x => x.GetByIdAsync(userId), Times.Once);
         }
 
         #endregion
@@ -191,7 +212,7 @@ namespace LYBT.Module.Users.Tests
         #region CreateAsync 测试
 
         [Fact]
-        public async Task CreateAsync_Should_Throw_When_Username_Already_Exists()
+        public async Task CreateAsync_Should_Return_Error_When_Username_Already_Exists()
         {
             // Arrange
             var dto = new UserMutationDto
@@ -201,14 +222,22 @@ namespace LYBT.Module.Users.Tests
                 IsCreateOperation = true
             };
 
-            _mockUserRepository
-                .Setup(x => x.ExistsByUsernameAsync(dto.Username))
-                .ReturnsAsync(true);
+            var expectedResult = ServiceResult<UserDto>.Failure("用户名已存在");
 
-            // Act & Assert
-            await Assert.ThrowsAsync<InvalidOperationException>(
-                async () => await _userService.CreateAsync(dto)
-            );
+            _mockBusinessService
+                .Setup(x => x.CreateAsync(It.IsAny<UserMutationDto>()))
+                .ReturnsAsync(expectedResult);
+
+            // Act
+            var result = await _userService.CreateAsync(dto);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeFalse();
+            result.Message.Should().Be("用户名已存在");
+            
+            // 验证委托调用
+            _mockBusinessService.Verify(x => x.CreateAsync(dto), Times.Once);
         }
 
         [Fact]
@@ -222,16 +251,22 @@ namespace LYBT.Module.Users.Tests
                 PhoneNumber = "13800138000",
                 IsCreateOperation = true
             };
-            var operatorId = Guid.NewGuid();
-            var operatorName = "管理员";
 
-            _mockUserRepository
-                .Setup(x => x.ExistsByUsernameAsync(dto.Username))
-                .ReturnsAsync(false);
+            var createdUserDto = new UserDto
+            {
+                Id = Guid.NewGuid(),
+                Username = dto.Username,
+                RealName = dto.RealName,
+                PhoneNumber = dto.PhoneNumber,
+                Status = CommonStatus.Enabled,
+                CreatedTime = DateTime.Now
+            };
 
-            _mockUserRepository
-                .Setup(x => x.AddAsync(It.IsAny<User>()))
-                .ReturnsAsync((User user) => user);
+            var expectedResult = ServiceResult<UserDto>.Success(createdUserDto);
+
+            _mockBusinessService
+                .Setup(x => x.CreateAsync(It.IsAny<UserMutationDto>()))
+                .ReturnsAsync(expectedResult);
 
             // Act
             var result = await _userService.CreateAsync(dto);
@@ -241,16 +276,10 @@ namespace LYBT.Module.Users.Tests
             result.IsSuccess.Should().BeTrue();
             result.Data!.Username.Should().Be(dto.Username);
             result.Data.RealName.Should().Be(dto.RealName);
+            result.Data.PhoneNumber.Should().Be(dto.PhoneNumber);
 
-            // 验证是否调用了AddAsync
-            _mockUserRepository.Verify(x => x.AddAsync(It.Is<User>(u => 
-                u.Username == dto.Username && 
-                u.RealName == dto.RealName
-            )), Times.Once);
-
-            // 验证是否记录了日志
-            // TODO: 验证日志记录 - ILogger接口使用不同的日志模式
-            // 当前架构使用Microsoft.Extensions.Logging.ILogger而不是IUnifiedLogService
+            // 验证委托调用
+            _mockBusinessService.Verify(x => x.CreateAsync(dto), Times.Once);
         }
 
         #endregion
