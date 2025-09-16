@@ -291,13 +291,10 @@ namespace LYBT.Module.Users.Tests
             var config = new MapperConfiguration(cfg =>
             {
                 cfg.CreateMap<User, UserDto>();
-                cfg.CreateMap<UserCreateDto, User>()
+                cfg.CreateMap<UserMutationDto, User>()
                     .ForMember(dest => dest.Id, opt => opt.Ignore())
                     .ForMember(dest => dest.CreatedTime, opt => opt.Ignore())
-                    .ForMember(dest => dest.UpdateTime, opt => opt.Ignore());
-                cfg.CreateMap<UserUpdateDto, User>()
-                    .ForMember(dest => dest.Id, opt => opt.Ignore())
-                    .ForMember(dest => dest.CreatedTime, opt => opt.Ignore())
+                    .ForMember(dest => dest.UpdateTime, opt => opt.Ignore())
                     .ForMember(dest => dest.PasswordHash, opt => opt.Ignore());
             }, NullLoggerFactory.Instance);
 
@@ -402,23 +399,24 @@ namespace LYBT.Module.Users.Tests
 
         #endregion
 
-        #region AddAsync 测试
+        #region CreateUserAsync 测试
 
         [Fact]
-        public async Task AddAsync_Should_Create_New_User_Successfully()
+        public async Task CreateUserAsync_Should_Create_New_User_Successfully()
         {
             // Arrange
-            var dto = new UserCreateDto
+            var dto = new UserMutationDto
             {
                 Username = "newuser",
                 RealName = "新用户",
-                PhoneNumber = "13800138000"
+                PhoneNumber = "13800138000",
+                IsCreateOperation = true
             };
             var operatorId = Guid.NewGuid();
             var operatorName = "管理员";
 
             // Act
-            var result = await _userService.AddAsync(dto, operatorId, operatorName);
+            var result = await _userService.CreateUserAsync(dto);
 
             // Assert
             result.Should().NotBeNull();
@@ -445,45 +443,46 @@ namespace LYBT.Module.Users.Tests
         }
 
         [Fact]
-        public async Task AddAsync_Should_Throw_When_Username_Already_Exists()
+        public async Task CreateUserAsync_Should_Throw_When_Username_Already_Exists()
         {
             // Arrange
-            var dto = new UserCreateDto
+            var dto = new UserMutationDto
             {
                 Username = "testuser0", // 已存在的用户名
                 RealName = "重复用户",
-                PhoneNumber = "13800138000"
+                PhoneNumber = "13800138000",
+                IsCreateOperation = true
             };
             var operatorId = Guid.NewGuid();
             var operatorName = "管理员";
 
             // Act & Assert
             await Assert.ThrowsAsync<InvalidOperationException>(
-                async () => await _userService.AddAsync(dto, operatorId, operatorName)
+                async () => await _userService.CreateUserAsync(dto)
             );
         }
 
         #endregion
 
-        #region UpdateAsync 测试
+        #region UpdateUserAsync 测试
 
         [Fact]
-        public async Task UpdateAsync_Should_Update_User_Successfully()
+        public async Task UpdateUserAsync_Should_Update_User_Successfully()
         {
             // Arrange
             var existingUser = _testUsers.First();
-            var dto = new UserUpdateDto
+            var dto = new UserMutationDto
             {
-                Id = existingUser.Id,
                 Username = existingUser.Username,
                 RealName = "更新后的名称",
-                PhoneNumber = "13900139000"
+                PhoneNumber = "13900139000",
+                IsCreateOperation = false
             };
             var operatorId = Guid.NewGuid();
             var operatorName = "管理员";
 
             // Act
-            var result = await _userService.UpdateAsync(dto, operatorId, operatorName);
+            var result = await _userService.UpdateUserAsync(existingUser.Id, dto);
 
             // Assert
             result.Should().BeTrue();
