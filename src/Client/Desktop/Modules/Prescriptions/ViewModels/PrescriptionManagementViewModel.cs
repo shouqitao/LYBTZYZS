@@ -211,7 +211,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                     prescription);
 
                 // 设置对话框标题和属性
-                previewDialog.Title = $"处方打印预览 - {prescription.PatientName ?? "未知患者"}";
+                previewDialog.Title = $"处方打印预览 - {prescription.Name ?? "未知患者"}";
                 previewDialog.Owner = System.Windows.Application.Current.MainWindow;
                 previewDialog.WindowStartupLocation = System.Windows.WindowStartupLocation.CenterOwner;
 
@@ -247,7 +247,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                 // 获取选中处方的患者ID
                 var currentPrescription = SelectedItem;
                 var patientId = currentPrescription.PatientId;
-                var patientName = currentPrescription.PatientName;
+                var patientName = currentPrescription.Name;
 
                 // 获取该患者的所有处方历史
                 var query = new PrescriptionQueryDto
@@ -413,7 +413,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                             var exportData = prescriptions.Select(p => new
                             {
                                 PrescriptionNo = p.PrescriptionNo ?? p.Id.ToString()[..8],
-                                PatientName = p.PatientName ?? "未知患者",
+                                PatientName = p.Name ?? "未知患者",
                                 DoctorName = p.DoctorName ?? "未知医师",
                                 CreateTime = p.CreateTime.ToString("yyyy-MM-dd HH:mm"),
                                 Diagnosis = p.Diagnosis ?? "无诊断信息",

@@ -1,12 +1,14 @@
-# Data Consistency Check Script for P3-Fix Batch3
-# Purpose: Check Users/Patients data consistency issues identified in governance report
+# Data Consistency Check Script for P3-Fix Batch4
+# Purpose: Check Users/Patients data consistency with JWT authentication
 
 param(
     [string]$WebApiUrl = "http://localhost:8080",
-    [string]$ReportPath = "_reports/2025-09/backend/p3-fix-batch3"
+    [string]$ReportPath = "_reports/2025-09/backend/p3-fix-batch4",
+    [string]$Username = "sysadmin",
+    [string]$Password = "Admin@123456"
 )
 
-Write-Host "=== P3-Fix Batch3: Data Consistency Check ===" -ForegroundColor Cyan
+Write-Host "=== P3-Fix Batch4: Data Consistency Check (With Authentication) ===" -ForegroundColor Cyan
 Write-Host "WebAPI URL: $WebApiUrl" -ForegroundColor Gray
 Write-Host "Report Path: $ReportPath" -ForegroundColor Gray
 Write-Host "Execution Time: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')" -ForegroundColor Gray
@@ -19,6 +21,7 @@ if (!(Test-Path $ReportPath)) {
 
 $issues = @()
 $fixedIssues = @()
+$authHeaders = @{}
 
 # Function to check API endpoint
 function Test-ApiEndpoint {
@@ -46,13 +49,61 @@ if (-not $apiHealthy) {
 }
 
 Write-Host ""
-Write-Host "🔍 Step 2: Data Consistency Checks" -ForegroundColor Cyan
+Write-Host "🔐 Step 2: Authentication Setup" -ForegroundColor Cyan
+Write-Host "─────────────────────────────────────────" -ForegroundColor Gray
+
+# Authenticate to get JWT token
+Write-Host "Authenticating with API..." -ForegroundColor Yellow
+try {
+    $loginData = @{
+        username = $Username
+        password = $Password
+        rememberMe = $false
+    } | ConvertTo-Json
+
+    $loginHeaders = @{
+        "Content-Type" = "application/json"
+    }
+
+    $loginResponse = Invoke-RestMethod -Uri "$WebApiUrl/api/v1/auth/login" -Method POST -Body $loginData -Headers $loginHeaders -TimeoutSec 30
+    
+    if ($loginResponse.success -and $loginResponse.data.token) {
+        $token = $loginResponse.data.token
+        $authHeaders = @{
+            "Authorization" = "Bearer $token"
+            "Content-Type" = "application/json"
+        }
+        Write-Host "✅ Authentication successful - Token obtained" -ForegroundColor Green
+    } else {
+        Write-Host "❌ Authentication failed - No token received" -ForegroundColor Red
+        $issues += @{
+            Category = "Authentication Error"
+            Count = 1
+            Details = "Failed to obtain JWT token"
+        }
+        Write-Host "❌ Cannot proceed with authenticated API calls" -ForegroundColor Red
+        exit 1
+    }
+}
+catch {
+    Write-Host "❌ Authentication failed: $($_.Exception.Message)" -ForegroundColor Red
+    $issues += @{
+        Category = "Authentication Error"
+        Count = 1
+        Details = $_.Exception.Message
+    }
+    Write-Host "❌ Cannot proceed with authenticated API calls" -ForegroundColor Red
+    exit 1
+}
+
+Write-Host ""
+Write-Host "🔍 Step 3: Data Consistency Checks" -ForegroundColor Cyan
 Write-Host "─────────────────────────────────────────" -ForegroundColor Gray
 
 # Check 1: Users Data Consistency
 Write-Host "Checking Users data consistency..." -ForegroundColor Yellow
 try {
-    $usersResponse = Invoke-RestMethod -Uri "$WebApiUrl/api/v1/users" -Method Get -TimeoutSec 30
+    $usersResponse = Invoke-RestMethod -Uri "$WebApiUrl/api/v1/users" -Method Get -Headers $authHeaders -TimeoutSec 30
     if ($usersResponse.success) {
         $userCount = $usersResponse.data.items.Count
         Write-Host "✅ Users endpoint accessible - Found $userCount users" -ForegroundColor Green
@@ -69,8 +120,8 @@ try {
             if ([string]::IsNullOrEmpty($user.email)) {
                 $userIssues += "Missing email"
             }
-            if ([string]::IsNullOrEmpty($user.fullName)) {
-                $userIssues += "Missing fullName"
+            if ([string]::IsNullOrEmpty($user.realName)) {
+                $userIssues += "Missing realName"
             }
             
             # Check email format
@@ -118,7 +169,7 @@ catch {
 # Check 2: Patients Data Consistency
 Write-Host "Checking Patients data consistency..." -ForegroundColor Yellow
 try {
-    $patientsResponse = Invoke-RestMethod -Uri "$WebApiUrl/api/v1/patients" -Method Get -TimeoutSec 30
+    $patientsResponse = Invoke-RestMethod -Uri "$WebApiUrl/api/v1/patients" -Method Get -Headers $authHeaders -TimeoutSec 30
     if ($patientsResponse.success) {
         $patientCount = $patientsResponse.data.items.Count
         Write-Host "✅ Patients endpoint accessible - Found $patientCount patients" -ForegroundColor Green
@@ -129,14 +180,15 @@ try {
             $patientIssues = @()
             
             # Check required fields
-            if ([string]::IsNullOrEmpty($patient.patientName)) {
-                $patientIssues += "Missing patientName"
+            if ([string]::IsNullOrEmpty($patient.name)) {
+                $patientIssues += "Missing name"
             }
             if ([string]::IsNullOrEmpty($patient.gender)) {
                 $patientIssues += "Missing gender"
             }
-            if ($patient.age -eq $null -or $patient.age -le 0) {
-                $patientIssues += "Invalid age"
+            # Age is computed from BirthDate, so check BirthDate instead
+            if ($patient.birthDate -eq $null) {
+                $patientIssues += "Missing birthDate"
             }
             
             # Check phone number format (if provided)
@@ -155,7 +207,7 @@ try {
             if ($patientIssues.Count -gt 0) {
                 $patientsWithIssues += @{
                     PatientId = $patient.id
-                    PatientName = $patient.patientName
+                    Name = $patient.name
                     Issues = $patientIssues -join ", "
                 }
             }
@@ -218,7 +270,7 @@ catch {
 }
 
 Write-Host ""
-Write-Host "📋 Step 3: Generate Report" -ForegroundColor Cyan
+Write-Host "📋 Step 4: Generate Report" -ForegroundColor Cyan
 Write-Host "─────────────────────────────────────────" -ForegroundColor Gray
 
 # Generate report

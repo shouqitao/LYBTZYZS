@@ -858,11 +858,12 @@ namespace LYBT.Desktop.Patients.ViewModels
                         }
 
                         // 创建患者DTO
+                        var age = ParseAge(row["年龄"]?.ToString()) ?? 0;
                         var patientDto = new PatientCreateDto
                         {
                             Name = name,
                             Gender = ParseGender(gender),
-                            Age = ParseAge(row["年龄"]?.ToString()) ?? 0,
+                            BirthDate = age > 0 ? DateTime.Today.AddYears(-age) : null,
                             PhoneNumber = row["电话"]?.ToString()?.Trim(),
                             IdNumber = row["证件号"]?.ToString()?.Trim(),
                             Address = row["地址"]?.ToString()?.Trim(),

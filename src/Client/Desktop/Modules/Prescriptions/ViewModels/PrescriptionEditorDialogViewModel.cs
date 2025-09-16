@@ -118,7 +118,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                 {
                     // 选择患者后自动填充处方信息
                     Prescription.PatientId = value.Id;
-                    Prescription.PatientName = value.Name;
+                    Prescription.Name = value.Name;
                     SaveCommand.RaiseCanExecuteChanged();
                     _logger.LogInformation("从列表选择患者: {PatientName} (ID: {PatientId})", value.Name, value.Id);
                 }
@@ -317,11 +317,11 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                         await LoadPatientInfoAsync(patientId);
 
                         // 在上下文模式下，不需要加载患者列表
-                        StatusMessage = $"正在为患者 {Prescription.PatientName} 开具处方（来自医案 {MedicalCaseId}）";
+                        StatusMessage = $"正在为患者 {Prescription.Name} 开具处方（来自医案 {MedicalCaseId}）";
 
                         _logger.LogInformation(
                             "上下文模式初始化完成，医案ID: {MedicalCaseId}，患者: {PatientName}",
-                            MedicalCaseId, Prescription.PatientName);
+                            MedicalCaseId, Prescription.Name);
                     }
                 }
                 else
@@ -427,7 +427,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                 if (result.IsSuccess && result.Data != null)
                 {
                     Prescription.PatientId = patientId;
-                    Prescription.PatientName = result.Data.Name;
+                    Prescription.Name = result.Data.Name;
                 }
             }
             catch (Exception ex)
@@ -866,7 +866,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
 
             // 基础信息
             sb.AppendLine($"处方编号：{Prescription.PrescriptionNo}");
-            sb.AppendLine($"患者姓名：{Prescription.PatientName}");
+            sb.AppendLine($"患者姓名：{Prescription.Name}");
             sb.AppendLine($"开方日期：{Prescription.CreateTime:yyyy-MM-dd HH:mm}");
             sb.AppendLine($"医生：{_userSessionManager.CurrentUser?.RealName ?? "未知"}");
             sb.AppendLine();

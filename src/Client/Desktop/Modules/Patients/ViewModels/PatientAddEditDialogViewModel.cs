@@ -228,7 +228,6 @@ namespace LYBT.Desktop.Patients.ViewModels
                         Id = _originalPatient.Id,
                         Name = PatientName.Trim(),
                         Gender = Gender,
-                        Age = Age,
                         BirthDate = BirthDate, // 修复：添加出生日期
                         PhoneNumber = PhoneNumber?.Trim() ?? string.Empty,
                         Address = Address?.Trim() ?? string.Empty,
@@ -253,7 +252,6 @@ namespace LYBT.Desktop.Patients.ViewModels
                     {
                         Name = PatientName.Trim(),
                         Gender = Gender,
-                        Age = Age,
                         BirthDate = BirthDate, // 修复：添加出生日期
                         PhoneNumber = PhoneNumber?.Trim() ?? string.Empty,
                         Address = Address?.Trim() ?? string.Empty,

@@ -91,7 +91,7 @@ namespace LYBT.Shared.Models.Contracts.Patients
     public class PatientVisitHistoryDto
     {
         public Guid PatientId { get; set; }
-        public string PatientName { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
         public int TotalVisits { get; set; }
         public DateTime? FirstVisitDate { get; set; }
         public DateTime? LastVisitDate { get; set; }

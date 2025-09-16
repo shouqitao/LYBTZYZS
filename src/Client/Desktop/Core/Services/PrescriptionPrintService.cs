@@ -161,7 +161,7 @@ namespace LYBT.Desktop.Core.Services
             // 处方基本信息
             sb.AppendLine($"处方编号: {prescription.PrescriptionNo ?? "未设置"}");
             sb.AppendLine($"开方日期: {prescription.CreateTime:yyyy年MM月dd日}");
-            sb.AppendLine($"患者姓名: {prescription.PatientName ?? "未知"}");
+            sb.AppendLine($"患者姓名: {prescription.Name ?? "未知"}");
             sb.AppendLine();
 
             // 主诉和诊断

@@ -114,7 +114,7 @@ namespace LYBT.Shared.Models.Contracts.Patients
 
     /// <summary>
     /// 患者创建DTO - UltraThink架构优化：统一字段名BirthDate、IdNumber
-    /// 用于创建新患者档案的请求模型
+    /// 用于创建新患者档案的请求模型，Age为计算属性
     /// </summary>
     public class PatientCreateDto
     {
@@ -133,10 +133,27 @@ namespace LYBT.Shared.Models.Contracts.Patients
         [DisplayName("出生日期")]
         public DateTime? BirthDate { get; set; }
 
-        /// <summary>年龄</summary>
-        [Range(0, 200, ErrorMessage = "年龄必须在0-200之间")]
+        /// <summary>年龄（计算属性，基于出生日期）</summary>
         [DisplayName("年龄")]
-        public int Age { get; set; }
+        public int Age
+        {
+            get
+            {
+                if (BirthDate == null)
+                {
+                    return 0;
+                }
+
+                var today = DateTime.Today;
+                var age = today.Year - BirthDate.Value.Year;
+                if (BirthDate.Value.Date > today.AddYears(-age))
+                {
+                    age--;
+                }
+
+                return Math.Max(0, age);
+            }
+        }
 
         /// <summary>身份证号</summary>
         [StringLength(18, ErrorMessage = "身份证号长度不能超过18个字符")]
@@ -195,7 +212,7 @@ namespace LYBT.Shared.Models.Contracts.Patients
 
     /// <summary>
     /// 患者更新DTO - UltraThink架构优化：统一字段名BirthDate、IdNumber
-    /// 用于更新患者档案的请求模型
+    /// 用于更新患者档案的请求模型，Age为计算属性
     /// </summary>
     public class PatientUpdateDto : BaseDto
     {
@@ -214,10 +231,27 @@ namespace LYBT.Shared.Models.Contracts.Patients
         [DisplayName("出生日期")]
         public DateTime? BirthDate { get; set; }
 
-        /// <summary>年龄</summary>
-        [Range(0, 200, ErrorMessage = "年龄必须在0-200之间")]
+        /// <summary>年龄（计算属性，基于出生日期）</summary>
         [DisplayName("年龄")]
-        public int Age { get; set; }
+        public int Age
+        {
+            get
+            {
+                if (BirthDate == null)
+                {
+                    return 0;
+                }
+
+                var today = DateTime.Today;
+                var age = today.Year - BirthDate.Value.Year;
+                if (BirthDate.Value.Date > today.AddYears(-age))
+                {
+                    age--;
+                }
+
+                return Math.Max(0, age);
+            }
+        }
 
         /// <summary>身份证号</summary>
         [StringLength(18, ErrorMessage = "身份证号长度不能超过18个字符")]
@@ -276,7 +310,7 @@ namespace LYBT.Shared.Models.Contracts.Patients
 
     /// <summary>
     /// 快速创建患者DTO - 前后端共享API契约
-    /// 用于快速创建患者档案（仅包含必要字段）
+    /// 用于快速创建患者档案（仅包含必要字段），可通过年龄推算BirthDate
     /// </summary>
     public class QuickPatientCreateDto
     {
@@ -291,10 +325,21 @@ namespace LYBT.Shared.Models.Contracts.Patients
         [DisplayName("性别")]
         public Gender Gender { get; set; } = Gender.Unknown;
 
-        /// <summary>年龄</summary>
+        /// <summary>年龄（用于估算出生日期）</summary>
         [Range(0, 200, ErrorMessage = "年龄必须在0-200之间")]
         [DisplayName("年龄")]
         public int Age { get; set; }
+
+        /// <summary>推算出生日期（基于年龄）</summary>
+        [DisplayName("推算出生日期")]
+        public DateTime? BirthDate
+        {
+            get
+            {
+                if (Age <= 0) return null;
+                return DateTime.Today.AddYears(-Age);
+            }
+        }
 
         /// <summary>手机号</summary>
         [StringLength(20, ErrorMessage = "手机号长度不能超过20个字符")]

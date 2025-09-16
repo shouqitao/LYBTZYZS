@@ -23,7 +23,7 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
         public Guid UserId { get; set; }
 
         [DisplayName("患者姓名")]
-        public string? PatientName { get; set; }
+        public string? Name { get; set; }
 
         [DisplayName("医生姓名")]
         public string? DoctorName { get; set; }
@@ -397,7 +397,7 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
         public string? Keyword { get; set; }
 
         [DisplayName("患者姓名")]
-        public string? PatientName { get; set; }
+        public string? Name { get; set; }
 
         [DisplayName("医生姓名")]
         public string? DoctorName { get; set; }

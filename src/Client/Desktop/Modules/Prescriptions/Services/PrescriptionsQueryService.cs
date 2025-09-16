@@ -88,7 +88,7 @@ public class PrescriptionsQueryService(
                     MedicalCaseId = detailDto.MedicalCaseId,
                     PatientId = detailDto.PatientId,
                     UserId = detailDto.UserId,
-                    PatientName = detailDto.PatientName,
+                    Name = detailDto.Name,
                     DoctorName = detailDto.DoctorName,
                     Diagnosis = detailDto.Diagnosis,
                     Usage = detailDto.Usage,

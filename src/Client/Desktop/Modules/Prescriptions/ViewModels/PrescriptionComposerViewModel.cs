@@ -436,7 +436,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
 
                 // 发布处方保存事件
                 _eventAggregator.GetEvent<CoreEvents.PrescriptionSavedEvent>()
-                    .Publish(new CoreEvents.PrescriptionSavedEventArgs(_currentPrescription.Id, _currentPrescription.PatientId, _currentPrescription.PatientName ?? string.Empty, _currentPrescription.TotalPrice));
+                    .Publish(new CoreEvents.PrescriptionSavedEventArgs(_currentPrescription.Id, _currentPrescription.PatientId, _currentPrescription.Name ?? string.Empty, _currentPrescription.TotalPrice));
             }
             catch (Exception ex)
             {

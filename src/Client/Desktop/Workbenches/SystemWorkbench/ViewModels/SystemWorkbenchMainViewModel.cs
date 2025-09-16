@@ -360,7 +360,7 @@ ViewModel实例化成功: True
                         Name = "测试患者",
                         PhoneNumber = "13800138000",
                         Gender = LYBT.Shared.Models.Enums.Gender.Male,
-                        Age = 30
+                        BirthDate = DateTime.Now.AddYears(-30)
                     };
 
                     var result = await _patientService.CreateAsync(patientDto);
