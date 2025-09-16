@@ -264,27 +264,6 @@ namespace LYBT.Module.Users.Tests
                 });
         }
 
-        private void SetupLogServiceMethods()
-        {
-            // Setup LogUserActionAsync
-            _mockLogService
-                .Setup(x => x.LogUserActionAsync(
-                    It.IsAny<Guid>(),
-                    It.IsAny<string>(),
-                    It.IsAny<LogActionType>(),
-                    It.IsAny<string>(),
-                    It.IsAny<string>(),
-                    It.IsAny<string>(),
-                    It.IsAny<string>(),
-                    It.IsAny<string>(),
-                    It.IsAny<string>(),
-                    It.IsAny<bool>(),
-                    It.IsAny<string>(),
-                    It.IsAny<string>(),
-                    It.IsAny<string>(),
-                    It.IsAny<long>()))
-                .Returns(Task.CompletedTask);
-        }
 
         private IMapper CreateUserMapper()
         {
@@ -475,25 +454,9 @@ namespace LYBT.Module.Users.Tests
             var result = await _userService.UpdateAsync(dto);
 
             // Assert
-            result.Should().BeTrue();
+            result.IsSuccess.Should().BeTrue();
 
-            // 验证日志记录 - 注意UserService内部使用的是强制转换(LogActionType)ActionType.Update
-            _mockLogService.Verify(x => x.LogUserActionAsync(
-                It.Is<Guid>(id => id == operatorId),
-                It.Is<string>(name => name == operatorName),
-                It.Is<LogActionType>(type => type == LogActionType.Update),
-                It.IsAny<string>(),
-                It.IsAny<string>(),
-                It.IsAny<string>(),
-                It.IsAny<string>(),
-                It.IsAny<string>(),
-                It.IsAny<string>(),
-                It.IsAny<bool>(),
-                It.IsAny<string>(),
-                It.IsAny<string>(),
-                It.IsAny<string>(),
-                It.IsAny<long>()
-            ), Times.Once);
+            // 注: UltraThink架构中UserService是纯委托模式，日志记录由BusinessService处理
         }
 
         #endregion
@@ -509,7 +472,7 @@ namespace LYBT.Module.Users.Tests
             var operatorName = "管理员";
 
             // Act
-            var result = await _userService.DisableAsync(user.Id, operatorId, operatorName);
+            var result = await _userService.DisableAsync(user.Id);
 
             // Assert
             result.Should().BeTrue();
@@ -525,7 +488,7 @@ namespace LYBT.Module.Users.Tests
             var operatorName = "管理员";
 
             // Act
-            var result = await _userService.EnableAsync(user.Id, operatorId, operatorName);
+            var result = await _userService.EnableAsync(user.Id);
 
             // Assert
             result.Should().BeTrue();
@@ -548,7 +511,7 @@ namespace LYBT.Module.Users.Tests
             var operatorName = "管理员";
 
             // Act
-            var result = await _userService.BatchDisableAsync(userIds, operatorId, operatorName);
+            var result = await _userService.BatchDisableAsync(userIds);
 
             // Assert
             result.Should().Be(2);
@@ -570,10 +533,12 @@ namespace LYBT.Module.Users.Tests
             var operatorName = "管理员";
 
             // Act
-            var result = await _userService.ResetPasswordAsync(user.Id, operatorId, operatorName);
+            var newPassword = "NewPassword@123";
+            var result = await _userService.ResetPasswordAsync(user.Id, newPassword);
 
             // Assert
-            result.Should().BeTrue();
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().BeTrue();
 
             // 验证密码是否被重置为默认密码
             _mockUserRepository.Verify(x => x.UpdatePasswordAsync(user.Id, It.IsAny<string>()), Times.Once);
@@ -595,7 +560,8 @@ namespace LYBT.Module.Users.Tests
             var result = await _userService.ChangePasswordAsync(user.Id, oldPassword, newPassword);
 
             // Assert
-            result.Should().BeTrue();
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().BeTrue();
             _mockUserRepository.Verify(x => x.UpdatePasswordAsync(user.Id, It.IsAny<string>()), Times.Once);
         }
 
@@ -626,10 +592,17 @@ namespace LYBT.Module.Users.Tests
             var newPhoneNumber = "13999999999";
 
             // Act
-            var result = await _userService.ChangeProfileAsync(user.Id, newRealName, newPhoneNumber);
+            var dto = new ChangeProfileDto
+            {
+                UserId = user.Id,
+                RealName = newRealName,
+                PhoneNumber = newPhoneNumber
+            };
+            var result = await _userService.ChangeProfileAsync(dto);
 
             // Assert
-            result.Should().BeTrue();
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().BeTrue();
             _mockUserRepository.Verify(x => x.UpdateAsync(It.Is<User>(u => 
                 u.Id == user.Id && 
                 u.RealName == newRealName && 
@@ -642,13 +615,15 @@ namespace LYBT.Module.Users.Tests
         #region GetRoles 测试
 
         [Fact]
-        public void GetRoles_Should_Return_Available_Roles()
+        public async Task GetRoles_Should_Return_Available_Roles()
         {
             // Act
-            var roles = _userService.GetRoles();
+            var result = await _userService.GetRolesAsync();
 
             // Assert
-            roles.Should().NotBeNull();
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().NotBeNull();
             roles.Should().HaveCountGreaterThan(0);
         }
 
@@ -664,7 +639,8 @@ namespace LYBT.Module.Users.Tests
 
             // Assert
             result.Should().NotBeNull();
-            result.Should().OnlyContain(u => u.Status == CommonStatus.Enabled);
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().OnlyContain(u => u.Status == CommonStatus.Enabled);
         }
 
         #endregion

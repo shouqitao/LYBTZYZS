@@ -584,8 +584,8 @@ namespace LYBT.Module.Users.Tests
             var result = await _repository.GetPagedAsync(query);
 
             // Assert
-            result.users.Should().HaveCount(1);
-            result.users.First().Id.Should().Be(newUser.Id);
+            result.Users.Should().HaveCount(1);
+            result.Users.First().Id.Should().Be(newUser.Id);
         }
 
         #endregion
