@@ -23,13 +23,13 @@ namespace LYBT.Module.Users.Services
         AppDbContext context,
         IMapper mapper,
         ILogger<UserBusinessService> logger,
-        IOptions<LYBT.Infrastructure.Configuration.Options.UserOptions> options,
+        IOptions<UserOptions> options,
         DefaultPasswordService defaultPasswordService) : IUserBusinessService
     {
         private readonly AppDbContext _context = context ?? throw new ArgumentNullException(nameof(context));
         private readonly IMapper _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         private readonly ILogger<UserBusinessService> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        private readonly LYBT.Infrastructure.Configuration.Options.UserOptions _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
+        private readonly UserOptions _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
         private readonly DefaultPasswordService _defaultPasswordService = defaultPasswordService ?? throw new ArgumentNullException(nameof(defaultPasswordService));
 
         #region 生成的正则表达式 - SYSLIB1045 优化
@@ -345,9 +345,6 @@ namespace LYBT.Module.Users.Services
         /// <summary>
         /// 创建用户业务逻辑（使用统一变更DTO）
         /// </summary>
-        /// <summary>
-        /// 创建用户业务逻辑（使用统一变更DTO）
-        /// </summary>
         public async Task<ServiceResult<UserDto>> CreateUserAsync(UserMutationDto dto, CancellationToken cancellationToken = default)
         {
             try
@@ -410,9 +407,6 @@ namespace LYBT.Module.Users.Services
             }
         }
 
-        /// <summary>
-        /// 更新用户业务逻辑
-        /// </summary>
         /// <summary>
         /// 更新用户业务逻辑
         /// </summary>

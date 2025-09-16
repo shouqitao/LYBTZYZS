@@ -1,4 +1,5 @@
 using LYBT.Module.Users.Services.Interfaces;
+using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 
@@ -10,7 +11,7 @@ namespace LYBT.Module.Users.Services
     /// </summary>
     public class UserService(
         IUserQueryService queryService,
-        IUserBusinessService businessService) : LYBT.Shared.Interfaces.Services.IUserService
+        IUserBusinessService businessService) : IUserService
     {
         private readonly IUserQueryService _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
         private readonly IUserBusinessService _businessService = businessService ?? throw new ArgumentNullException(nameof(businessService));

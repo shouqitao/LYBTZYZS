@@ -1,6 +1,6 @@
 ﻿# Data Consistency Check Report
 
-**Execution Time**: 2025-09-16 14:00:04
+**Execution Time**: 2025-09-16 15:39:36
 **WebAPI URL**: http://localhost:8080
 
 ## Summary
@@ -24,5 +24,5 @@
 - Consider running data cleanup scripts for existing invalid data
 
 ---
-*Data Consistency Check Report Generated: 2025-09-16 14:00:04*
+*Data Consistency Check Report Generated: 2025-09-16 15:39:36*
 *Script: data-consistency-check.ps1*
