@@ -2,8 +2,8 @@
 # Purpose: Run tests with unified configuration
 param(
     [string]$Filter = "",
-    [switch]$Coverage = $true,
-    [switch]$Parallel = $true,
+    [bool]$Coverage = $true,
+    [bool]$Parallel = $true,
     [string]$Output = "TestResults",
     [ValidateSet("Unit", "Integration", "All")]
     [string]$TestType = "Unit"
@@ -23,7 +23,7 @@ if (Test-Path $Output) {
 
 # Build solution first
 Write-Host "Building solution..." -ForegroundColor Blue
-dotnet build --configuration Release --no-restore
+dotnet build LYBT.All.sln --configuration Release --no-restore
 if ($LASTEXITCODE -ne 0) {
     Write-Host "Build failed!" -ForegroundColor Red
     exit 1
