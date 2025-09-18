@@ -630,7 +630,15 @@ namespace LYBT.Desktop.Core.Services.Configuration
         /// <inheritdoc/>
         public void Dispose()
         {
-            StopAsync().Wait(TimeSpan.FromSeconds(5));
+            // 使用超时的同步等待来避免无限阻塞
+            try
+            {
+                StopAsync().Wait(TimeSpan.FromSeconds(5));
+            }
+            catch
+            {
+                // 忽略Dispose过程中的异常
+            }
 
             _configWatcher?.Dispose();
             _featureWatcher?.Dispose();

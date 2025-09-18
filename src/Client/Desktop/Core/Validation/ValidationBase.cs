@@ -200,7 +200,15 @@ namespace LYBT.Desktop.Core.Validation
         /// </summary>
         public virtual bool Validate()
         {
-            return ValidateAsync().GetAwaiter().GetResult();
+            // 警告：同步验证可能导致死锁，建议使用 ValidateAsync()
+            try
+            {
+                return ValidateAsync().GetAwaiter().GetResult();
+            }
+            catch
+            {
+                return false; // 验证异常时返回false
+            }
         }
 
         /// <summary>

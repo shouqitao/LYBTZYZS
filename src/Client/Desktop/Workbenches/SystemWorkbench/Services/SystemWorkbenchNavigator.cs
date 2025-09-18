@@ -153,46 +153,46 @@ namespace LYBT.Desktop.Workbench.Admin.Services
 
         #endregion IWorkbenchNavigator Implementation
 
-        #region Legacy Methods (for backward compatibility)
+        #region Legacy Methods (for backward compatibility) - 改为Fire-and-Forget模式
 
         public void NavigateToUsers()
         {
-            NavigateToUsersAsync().Wait();
+            _ = NavigateToUsersAsync();
         }
 
         public void NavigateToPatients()
         {
-            NavigateToPatientsAsync().Wait();
+            _ = NavigateToPatientsAsync();
         }
 
         public void NavigateToHerbs()
         {
-            NavigateToHerbsAsync().Wait();
+            _ = NavigateToHerbsAsync();
         }
 
         public void NavigateToFormulas()
         {
-            NavigateToFormulasAsync().Wait();
+            _ = NavigateToFormulasAsync();
         }
 
         public void NavigateToPrescriptions()
         {
-            NavigateToPrescriptionsAsync().Wait();
+            _ = NavigateToPrescriptionsAsync();
         }
 
         public void NavigateToReports()
         {
-            NavigateToReportsAsync().Wait();
+            _ = NavigateToReportsAsync();
         }
 
         public void NavigateToSettings()
         {
-            NavigateToSettingsAsync().Wait();
+            _ = NavigateToSettingsAsync();
         }
 
         public void NavigateToView(string viewName, NavigationParameters? parameters = null)
         {
-            NavigateToAsync(viewName, parameters).Wait();
+            _ = NavigateToAsync(viewName, parameters);
         }
 
         public void NavigateToView(string regionName, string viewName, NavigationParameters? parameters = null)
@@ -200,6 +200,6 @@ namespace LYBT.Desktop.Workbench.Admin.Services
             _regionManager.RequestNavigate(regionName, viewName, parameters);
         }
 
-        #endregion Legacy Methods (for backward compatibility)
+        #endregion Legacy Methods (for backward compatibility) - 改为Fire-and-Forget模式
     }
 }

@@ -56,7 +56,20 @@ namespace LYBT.Desktop.Core.Services
         /// <inheritdoc/>
         public SharedCommon.HandledError HandleException(Exception exception, ErrorContext? context = null)
         {
-            return HandleExceptionAsync(exception, context).GetAwaiter().GetResult();
+            // 警告：同步异常处理可能导致死锁，建议使用 HandleExceptionAsync()
+            try
+            {
+                return HandleExceptionAsync(exception, context).GetAwaiter().GetResult();
+            }
+            catch
+            {
+                // 异常处理本身出错时，返回基本错误信息
+                return new SharedCommon.HandledError 
+                { 
+                    Message = exception?.Message ?? "未知错误",
+                    Severity = SharedCommon.ErrorSeverity.Error
+                };
+            }
         }
 
         /// <inheritdoc/>

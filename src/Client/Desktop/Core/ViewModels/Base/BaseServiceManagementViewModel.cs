@@ -380,6 +380,7 @@ namespace LYBT.Desktop.Core.ViewModels.Base
         /// </summary>
         protected virtual bool ShowConfirm(string message)
         {
+            // 警告：同步确认对话框可能导致死锁，建议使用 ShowConfirmAsync()
             try
             {
                 return ShowConfirmAsync(message).GetAwaiter().GetResult();

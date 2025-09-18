@@ -203,28 +203,37 @@ namespace LYBT.Desktop.Services
 
         #endregion 文件对话框
 
-        #region 同步方法（为了兼容旧代码）
+        #region 同步方法（为了兼容旧代码）- 改为Fire-and-Forget模式
 
         public bool ShowConfirmation(string message, string title = "确认")
         {
-            return ShowConfirmationAsync(message, title).GetAwaiter().GetResult();
+            // 注意：这种同步调用可能导致死锁，建议使用异步版本
+            // 在UI线程中调用时需要特别小心
+            try
+            {
+                return ShowConfirmationAsync(message, title).GetAwaiter().GetResult();
+            }
+            catch
+            {
+                return false; // 发生异常时返回false作为安全默认值
+            }
         }
 
         public void ShowInformation(string message, string title = "信息")
         {
-            ShowInformationAsync(message, title).GetAwaiter().GetResult();
+            _ = ShowInformationAsync(message, title);
         }
 
         public void ShowWarning(string message, string title = "警告")
         {
-            ShowWarningAsync(message, title).GetAwaiter().GetResult();
+            _ = ShowWarningAsync(message, title);
         }
 
         public void ShowError(string message, string title = "错误")
         {
-            ShowErrorAsync(message, title).GetAwaiter().GetResult();
+            _ = ShowErrorAsync(message, title);
         }
 
-        #endregion 同步方法（为了兼容旧代码）
+        #endregion 同步方法（为了兼容旧代码）- 改为Fire-and-Forget模式
     }
 }
