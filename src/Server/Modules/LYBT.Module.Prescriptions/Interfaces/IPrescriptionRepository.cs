@@ -1,24 +1,21 @@
 using LYBT.Entities.Prescriptions;
+using LYBT.Infrastructure.Interfaces;
 
 namespace LYBT.Module.Prescriptions.Interfaces
 {
 
     /// <summary>
-    /// 表示IPrescriptionRepository。
+    /// 处方仓储接口 - 数据层统一化重构
+    /// 继承BaseRepository提供通用CRUD，扩展处方特定业务方法
     /// </summary>
-    public interface IPrescriptionRepository
+    public interface IPrescriptionRepository : IBaseRepository<Prescription>
     {
+        // 注意：基础CRUD方法由IBaseRepository提供
+        // 这里只定义处方特有的业务方法
 
-        Task<Prescription?> GetByIdAsync(Guid id);
-
-        Task<List<Prescription>> GetListAsync();
-
-        Task<bool> AddAsync(Prescription model);
-
-        Task<bool> UpdateAsync(Prescription model);
-
-        Task<bool> DeleteAsync(Guid id);
-
+        /// <summary>
+        /// 取消处方
+        /// </summary>
         Task<bool> CancelAsync(Guid id);
     }
 }
