@@ -44,7 +44,7 @@ namespace LYBT.Entities.Prescriptions
         /// <summary>
         /// 实际用量（已计算好的具体剂量）
         /// </summary>
-        [Column(TypeName = "decimal(10,3)")]
+        [Column(TypeName = "decimal(10,2)")]
         [DisplayName("用量")]
         public decimal Quantity { get; set; }
 

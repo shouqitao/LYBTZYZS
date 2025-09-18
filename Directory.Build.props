@@ -23,8 +23,8 @@
     <DebugType Condition="'$(Configuration)' == 'Release'">portable</DebugType>
     <DebugSymbols Condition="'$(Configuration)' == 'Release'">true</DebugSymbols>
     
-    <!-- 防止 AssemblyInfo 重复生成 -->
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <!-- 防止 AssemblyInfo 重复生成 - 保留自动生成，清理手动文件 -->
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
   </PropertyGroup>
 
   <!-- 统一包引用版本管理 -->

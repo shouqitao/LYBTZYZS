@@ -121,6 +121,9 @@ namespace LYBT.Infrastructure.Data
             entity.Property(u => u.PinYinCode).HasMaxLength(50);
             entity.Property(u => u.PhoneNumber).HasMaxLength(20);
 
+            // P1 Batch1: 统一 decimal 精度配置
+            entity.Property(u => u.RegistrationFee).HasPrecision(18, 2);
+
             // UltraThink v2.0: Remark字段已删除（简化用户管理）
             // 配置枚举字段
             entity.Property(u => u.Status).HasConversion<int>();
@@ -244,10 +247,17 @@ namespace LYBT.Infrastructure.Data
             var prescriptionEntity = modelBuilder.Entity<Prescription>();
             prescriptionEntity.ToTable("Prescriptions");
             prescriptionEntity.HasKey(p => p.Id);
+            
+            // P1 Batch1: 统一 decimal 精度配置 - 折扣字段优化精度
+            prescriptionEntity.Property(p => p.Discount).HasPrecision(5, 4);
 
             var itemEntity = modelBuilder.Entity<PrescriptionItem>();
             itemEntity.ToTable("PrescriptionItems");
             itemEntity.HasKey(i => i.Id);
+            
+            // P1 Batch1: 统一 decimal 精度配置
+            itemEntity.Property(i => i.Quantity).HasPrecision(10, 2);  // 统一数量精度为2位小数
+            itemEntity.Property(i => i.UnitPrice).HasPrecision(18, 2);
         }
 
         private static void ConfigureHerbs(ModelBuilder modelBuilder)
@@ -262,7 +272,10 @@ namespace LYBT.Infrastructure.Data
             entity.Property(h => h.Unit).HasMaxLength(10);
             entity.Property(h => h.Effect).HasMaxLength(500);
             entity.Property(h => h.Usage).HasMaxLength(500);
-            entity.Property(h => h.Price).HasColumnType("decimal(18,2)");
+            
+            // P1 Batch1: 统一使用 HasPrecision 配置 decimal 精度
+            entity.Property(h => h.Price).HasPrecision(18, 2);
+            entity.Property(h => h.CostPrice).HasPrecision(18, 2);
 
             // 配置Status枚举字段
             entity.Property(h => h.Status).HasConversion<int>();
