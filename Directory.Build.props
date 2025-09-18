@@ -6,7 +6,7 @@
     <!-- 启用中央包管理 (Central Package Management) -->
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     
-    <!-- 解决Assembly属性重复问题 -->
+    <!-- P3-Fix: 解决Assembly属性重复问题 - 彻底禁用测试项目的自动生成 -->
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
@@ -16,6 +16,11 @@
     <GenerateAssemblyInformationalVersionAttribute>false</GenerateAssemblyInformationalVersionAttribute>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
+    
+    <!-- P3-Fix: 测试项目完全禁用AssemblyInfo自动生成 -->
+    <IsTestProject Condition="$(MSBuildProjectName.Contains('Test'))">true</IsTestProject>
+    <IsTestProject Condition="!$(MSBuildProjectName.Contains('Test'))">false</IsTestProject>
+    <GenerateAssemblyInfo Condition="'$(IsTestProject)' == 'true'">false</GenerateAssemblyInfo>
     
     <!-- 代码分析配置 - DT-007渐进式代码质量提升 -->
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
@@ -30,6 +35,10 @@
     <!-- CS8618: 启用空引用检查，确保数据安全 -->
     <!-- CS8625: 启用空值赋值检查，防止运行时错误 --> 
     <!-- CS1998: 启用异步方法检查，提升性能 -->
+    
+    <!-- P3-Fix: 集成测试支持 - 使Program类对测试项目可见 -->
+    <InternalsVisibleTo Condition="$(MSBuildProjectName.Contains('WebAPI'))">$(MSBuildProjectName).Tests</InternalsVisibleTo>
+    <InternalsVisibleTo Condition="$(MSBuildProjectName.Contains('WebAPI'))">WebAPI.IntegrationTests</InternalsVisibleTo>
     
     <!-- 使用默认输出路径 -->
     <!-- 每个项目将输出到自己的 bin\$(Configuration)\$(TargetFramework) 目录 -->

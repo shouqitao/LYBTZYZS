@@ -28,6 +28,12 @@ namespace LYBT.Module.Users.Tests
 {
     var logger = new Mock<ILogger<UserRepository>>();
     var cache = new Mock<IMemoryCache>();
+    
+    // 🔧 修复：配置缓存Mock以避免NullReferenceException
+    var cacheEntry = new Mock<ICacheEntry>();
+    cache.Setup(x => x.CreateEntry(It.IsAny<object>())).Returns(cacheEntry.Object);
+    cache.Setup(x => x.TryGetValue(It.IsAny<object>(), out It.Ref<object>.IsAny)).Returns(false);
+    
     _userRepository = new UserRepository(Context, logger.Object, cache.Object);
 }
 
@@ -53,7 +59,8 @@ namespace LYBT.Module.Users.Tests
             await Context.SaveChangesAsync();
 
             // Assert - 验证Service层的业务逻辑
-            result.Should().Be(true);
+            result.Should().NotBeNull();
+            result.Should().BeEquivalentTo(newUser);
             
             var savedUser = await _userRepository.GetByIdAsync(newUser.Id);
             savedUser.Should().NotBeNull();
@@ -116,27 +123,25 @@ namespace LYBT.Module.Users.Tests
 
             var userIds = users.Select(u => u.Id).ToList();
 
-            // Act - 批量禁用（Service层的批量操作）
-            // 由于UpdateActiveStatusAsync使用原生SQL，在InMemory数据库中不支持，使用LINQ替代
-            var usersToUpdate = await Context.Users
-                .Where(u => userIds.Contains(u.Id))
-                .ToListAsync();
-            
-            foreach (var user in usersToUpdate)
+            // Act - 批量禁用（测试Repository层的批量操作能力）
+            // 🔧 修复：直接使用DisableAsync方法，避免InMemory数据库ExecuteUpdateAsync问题
+            int updatedCount = 0;
+            foreach (var userId in userIds)
             {
-                user.Status = CommonStatus.Disabled;
+                var success = await _userRepository.DisableAsync(userId);
+                if (success) updatedCount++;
             }
-            await Context.SaveChangesAsync();
-            var updatedCount = usersToUpdate.Count;
 
             // Assert
             updatedCount.Should().Be(5);
-
-            var disabledUsers = await Context.Users
+            
+            // 验证数据库中的状态已更新
+            Context.ChangeTracker.Clear(); // 清除tracking以确保重新从数据库获取
+            var verifyUsers = await Context.Users
                 .Where(u => userIds.Contains(u.Id))
                 .ToListAsync();
-
-            disabledUsers.Should().AllSatisfy(u => u.Status.Should().Be(CommonStatus.Disabled));
+            verifyUsers.Should().HaveCount(5);
+            verifyUsers.Should().AllSatisfy(u => u.Status.Should().Be(CommonStatus.Disabled));
         }
 
         [Fact]
@@ -181,7 +186,10 @@ namespace LYBT.Module.Users.Tests
             var result = await _userRepository.UpdateAsync(user);
 
             // Assert
-            result.Should().Be(true);
+            result.Should().NotBeNull();
+            result.RealName.Should().Be("更新后的名字");
+            result.PhoneNumber.Should().Be("13999999999");
+            result.UpdateTime.Should().NotBeNull();
 
             var updatedUser = await Context.Users.FindAsync(user.Id);
             updatedUser.Should().NotBeNull();

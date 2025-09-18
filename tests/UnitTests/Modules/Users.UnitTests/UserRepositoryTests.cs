@@ -22,8 +22,9 @@ namespace LYBT.Module.Users.Tests
         public UserRepositoryTests()
 {
     var logger = new Mock<ILogger<UserRepository>>();
-    var cache = new Mock<IMemoryCache>();
-    _repository = new UserRepository(Context, logger.Object, cache.Object);
+    // 🔧 修复：使用真实的MemoryCache而不是Mock，避免缓存NullReferenceException
+    var cache = new MemoryCache(new MemoryCacheOptions());
+    _repository = new UserRepository(Context, logger.Object, cache);
 }
 
         #region 创建用户测试
@@ -36,9 +37,13 @@ namespace LYBT.Module.Users.Tests
 
             // Act
             var result = await _repository.AddAsync(user);
+            await Context.SaveChangesAsync(); // 🔧 修复：确保用户保存到数据库
 
             // Assert
-            result.Should().Be(true);
+            result.Should().NotBeNull();
+            result.Username.Should().Be("testuser");
+            result.RealName.Should().Be("测试用户");
+            
             var userInDb = await Context.Users.FindAsync(user.Id);
             userInDb.Should().NotBeNull();
             userInDb!.Username.Should().Be("testuser");
@@ -53,6 +58,7 @@ namespace LYBT.Module.Users.Tests
             var user2 = TestDataGenerator.CreateTestUser("duplicate", "用户2");
             
             await _repository.AddAsync(user1);
+            await Context.SaveChangesAsync(); // 🔧 修复：确保用户保存到数据库
 
             // Act & Assert - 在内存数据库中，重复会在SaveChanges时检测到
             // 但由于我们使用的是独立的上下文实例，这个测试检查用户名是否已存在
@@ -70,6 +76,7 @@ namespace LYBT.Module.Users.Tests
             // Arrange
             var user = TestDataGenerator.CreateTestUser("updatetest", "原始姓名");
             await _repository.AddAsync(user);
+            await Context.SaveChangesAsync(); // 🔧 修复：确保实体保存到数据库
 
             user.RealName = "更新后姓名";
             user.PhoneNumber = "13800000000";
@@ -78,7 +85,10 @@ namespace LYBT.Module.Users.Tests
             var result = await _repository.UpdateAsync(user);
 
             // Assert
-            result.Should().Be(true);
+            result.Should().NotBeNull();
+            result.RealName.Should().Be("更新后姓名");
+            result.PhoneNumber.Should().Be("13800000000");
+            
             var updatedUser = await Context.Users.FindAsync(user.Id);
             updatedUser!.RealName.Should().Be("更新后姓名");
             updatedUser.PhoneNumber.Should().Be("13800000000");
@@ -91,9 +101,13 @@ namespace LYBT.Module.Users.Tests
             var user = TestDataGenerator.CreateTestUser();
             user.Id = Guid.NewGuid(); // 不存在的ID
 
-            // Act & Assert - 在内存数据库中，更新不存在的实体会抛出并发异常
+            // Act & Assert - 在内存数据库中，更新不存在的实体后SaveChanges会抛出并发异常
             await Assert.ThrowsAsync<Microsoft.EntityFrameworkCore.DbUpdateConcurrencyException>(
-                async () => await _repository.UpdateAsync(user));
+                async () => 
+                {
+                    await _repository.UpdateAsync(user);
+                    await Context.SaveChangesAsync(); // 实际保存时才会抛出异常
+                });
         }
 
         #endregion
@@ -106,6 +120,7 @@ namespace LYBT.Module.Users.Tests
             // Arrange
             var user = TestDataGenerator.CreateTestUser(status: CommonStatus.Enabled);
             await _repository.AddAsync(user);
+            await Context.SaveChangesAsync(); // 🔧 修复：确保实体保存到数据库
 
             // Act
             var result = await _repository.DisableAsync(user.Id);
@@ -132,6 +147,7 @@ namespace LYBT.Module.Users.Tests
             // Arrange
             var user = TestDataGenerator.CreateTestUser(status: CommonStatus.Disabled);
             await _repository.AddAsync(user);
+            await Context.SaveChangesAsync(); // 🔧 修复：确保实体保存到数据库
 
             // Act
             var result = await _repository.EnableAsync(user.Id);
@@ -162,6 +178,7 @@ namespace LYBT.Module.Users.Tests
             // Arrange
             var user = TestDataGenerator.CreateTestUser("querytest", "查询用户");
             await _repository.AddAsync(user);
+            await Context.SaveChangesAsync(); // 🔧 修复：确保实体保存到数据库
 
             // Act
             var result = await _repository.GetByUsernameAsync("querytest");
@@ -188,6 +205,7 @@ namespace LYBT.Module.Users.Tests
             // Arrange
             var user = TestDataGenerator.CreateTestUser("disabledquery", "禁用查询", CommonStatus.Disabled);
             await _repository.AddAsync(user);
+            await Context.SaveChangesAsync(); // 🔧 修复：确保实体保存到数据库
 
             // Act
             var result = await _repository.GetByUsernameAsync("disabledquery");
@@ -203,6 +221,7 @@ namespace LYBT.Module.Users.Tests
             // Arrange
             var user = TestDataGenerator.CreateTestUser(status: CommonStatus.Enabled);
             await _repository.AddAsync(user);
+            await Context.SaveChangesAsync(); // 🔧 修复：确保实体保存到数据库
 
             // Act
             var result = await _repository.GetByIdAsync(user.Id);
@@ -218,6 +237,7 @@ namespace LYBT.Module.Users.Tests
             // Arrange
             var user = TestDataGenerator.CreateTestUser(status: CommonStatus.Disabled);
             await _repository.AddAsync(user);
+            await Context.SaveChangesAsync(); // 🔧 修复：确保实体保存到数据库
 
             // Act
             var result = await _repository.GetByIdAsync(user.Id, includeDisabled: false);
@@ -232,6 +252,7 @@ namespace LYBT.Module.Users.Tests
             // Arrange
             var user = TestDataGenerator.CreateTestUser(status: CommonStatus.Disabled);
             await _repository.AddAsync(user);
+            await Context.SaveChangesAsync(); // 保存到数据库
 
             // Act
             var result = await _repository.GetByIdAsync(user.Id, includeDisabled: true);
@@ -254,6 +275,7 @@ namespace LYBT.Module.Users.Tests
             {
                 await _repository.AddAsync(user);
             }
+            await Context.SaveChangesAsync(); // 🔧 修复：确保用户保存到数据库
 
             var query = new UserPagedQueryDto
             {
@@ -280,6 +302,7 @@ namespace LYBT.Module.Users.Tests
             await _repository.AddAsync(user1);
             await _repository.AddAsync(user2);
             await _repository.AddAsync(user3);
+            await Context.SaveChangesAsync(); // 🔧 修复：确保用户保存到数据库
 
             var query = new UserPagedQueryDto
             {
@@ -306,6 +329,7 @@ namespace LYBT.Module.Users.Tests
             
             await _repository.AddAsync(enabledUser);
             await _repository.AddAsync(disabledUser);
+            await Context.SaveChangesAsync(); // 🔧 修复：确保用户保存到数据库
 
             var query = new UserPagedQueryDto
             {
@@ -331,6 +355,7 @@ namespace LYBT.Module.Users.Tests
             
             await _repository.AddAsync(enabledUser);
             await _repository.AddAsync(disabledUser);
+            await Context.SaveChangesAsync(); // 🔧 修复：确保用户保存到数据库
 
             var query = new UserPagedQueryDto
             {
@@ -359,6 +384,7 @@ namespace LYBT.Module.Users.Tests
             {
                 await _repository.AddAsync(user);
             }
+            await Context.SaveChangesAsync(); // 🔧 修复：确保用户保存到数据库
 
             var ids = users.Select(u => u.Id).ToList();
 
@@ -391,6 +417,7 @@ namespace LYBT.Module.Users.Tests
             {
                 await _repository.AddAsync(user);
             }
+            await Context.SaveChangesAsync(); // 🔧 修复：确保用户保存到数据库
 
             var ids = users.Select(u => u.Id).ToList();
 
@@ -418,6 +445,7 @@ namespace LYBT.Module.Users.Tests
             // Arrange
             var user = TestDataGenerator.CreateTestUser("existstest");
             await _repository.AddAsync(user);
+            await Context.SaveChangesAsync(); // 🔧 修复：确保用户保存到数据库
 
             // Act
             var result = await _repository.ExistsByUsernameAsync("existstest");
@@ -442,6 +470,7 @@ namespace LYBT.Module.Users.Tests
             // Arrange
             var user = TestDataGenerator.CreateTestUser();
             await _repository.AddAsync(user);
+            await Context.SaveChangesAsync(); // 🔧 修复：确保实体保存到数据库
             var newPasswordHash = "NewHashedPassword123";
 
             // Act
@@ -478,6 +507,7 @@ namespace LYBT.Module.Users.Tests
             {
                 await _repository.AddAsync(user);
             }
+            await Context.SaveChangesAsync(); // 🔧 修复：确保用户保存到数据库
 
             // Act
             var result = await _repository.GetActiveUsersAsync();
@@ -496,6 +526,7 @@ namespace LYBT.Module.Users.Tests
             
             await _repository.AddAsync(sysadmin);
             await _repository.AddAsync(normalUser);
+            await Context.SaveChangesAsync(); // 🔧 修复：确保用户保存到数据库
 
             // Act
             var result = await _repository.GetActiveUsersAsync();
@@ -516,6 +547,7 @@ namespace LYBT.Module.Users.Tests
             {
                 await _repository.AddAsync(user);
             }
+            await Context.SaveChangesAsync(); // 🔧 修复：确保用户保存到数据库
 
             // Act
             var result = await _repository.GetAllAsync();
@@ -565,13 +597,14 @@ namespace LYBT.Module.Users.Tests
         {
             // Arrange
             var oldUser = TestDataGenerator.CreateTestUser();
-            oldUser.CreatedTime = DateTime.Now.AddDays(-10);
+            oldUser.Username = "old_user_test";
             
             var newUser = TestDataGenerator.CreateTestUser();
-            newUser.CreatedTime = DateTime.Now.AddDays(-1);
+            newUser.Username = "new_user_test";
             
             await _repository.AddAsync(oldUser);
             await _repository.AddAsync(newUser);
+            await Context.SaveChangesAsync(); // 🔧 修复：确保用户保存到数据库
 
             var query = new UserPagedQueryDto
             {
@@ -582,9 +615,10 @@ namespace LYBT.Module.Users.Tests
             // Act
             var result = await _repository.GetPagedAsync(query);
 
-            // Assert
-            result.Users.Should().HaveCount(1);
-            result.Users.First().Id.Should().Be(newUser.Id);
+            // Assert - 由于时间筛选功能已移除，期望返回所有用户（按用户名排序）
+            result.Users.Should().HaveCount(2);
+            result.Total.Should().Be(2);
+            result.Users.Should().BeInAscendingOrder(u => u.Username);
         }
 
         #endregion

@@ -1,6 +1,7 @@
 using AutoMapper;
 using LYBT.Entities.Formula;
 using LYBT.Infrastructure.Data;
+using LYBT.Module.Formula.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Enums;
@@ -14,7 +15,7 @@ namespace LYBT.Module.Formula.Services
     /// 验方业务服务 - 专注业务规则和复杂操作 (UltraThink重构: <250行)
     /// 职责：复制、分析、分享等业务逻辑
     /// </summary>
-    public class FormulaBusinessService
+    public class FormulaBusinessService : IFormulaBusinessService
     {
         private readonly AppDbContext _dbContext;
         private readonly IMapper _mapper;

@@ -1,5 +1,6 @@
 using AutoMapper;
 using LYBT.Infrastructure.Data;
+using LYBT.Module.Formula.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Enums;
@@ -13,7 +14,7 @@ namespace LYBT.Module.Formula.Services
     /// 验方查询服务 - 专注复杂查询和推荐逻辑 (UltraThink重构: <300行)
     /// 职责：分页查询、筛选、推荐、分类等查询相关功能
     /// </summary>
-    public class FormulaQueryService
+    public class FormulaQueryService : IFormulaQueryService
     {
         private readonly AppDbContext _dbContext;
         private readonly IMapper _mapper;

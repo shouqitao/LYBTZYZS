@@ -60,16 +60,39 @@ jobs:
     - name: 构建解决方案
       run: dotnet build LYBT.All.sln --configuration Release --no-restore --verbosity minimal
 
-    # 强制门禁：所有单元测试必须通过
+    # 强制门禁：所有单元测试必须通过 (更新路径)
     - name: 🚨 强制门禁 - 单元测试
       run: |
-        dotnet test tests/Backend/LYBT.Module.Users.Tests/LYBT.Module.Users.Tests.csproj `
+        echo "运行Users模块测试..."
+        dotnet test tests/UnitTests/Modules/Users.UnitTests/LYBT.Module.Users.Tests.csproj `
           --configuration Release --no-build --verbosity minimal
         
-        dotnet test tests/Backend/LYBT.Module.Patients.Tests/LYBT.Module.Patients.Tests.csproj `
+        echo "运行Patients模块测试..."
+        dotnet test tests/UnitTests/Modules/Patients.UnitTests/LYBT.Module.Patients.Tests.csproj `
           --configuration Release --no-build --verbosity minimal
         
-        dotnet test tests/Backend/LYBT.Module.Herbs.Tests/LYBT.Module.Herbs.Tests.csproj `
+        echo "运行Prescriptions模块测试..."
+        dotnet test tests/UnitTests/Modules/Prescriptions.UnitTests/LYBT.Module.Prescriptions.Tests.csproj `
+          --configuration Release --no-build --verbosity minimal
+        
+        echo "运行Consultation模块测试..."
+        dotnet test tests/UnitTests/Modules/Consultation.UnitTests/LYBT.Module.Consultation.Tests.csproj `
+          --configuration Release --no-build --verbosity minimal
+        
+        echo "运行Herbs模块测试..."
+        dotnet test tests/UnitTests/Modules/Herbs.UnitTests/LYBT.Module.Herbs.Tests.csproj `
+          --configuration Release --no-build --verbosity minimal
+        
+        echo "运行Formula模块测试..."
+        dotnet test tests/UnitTests/Modules/Formula.UnitTests/LYBT.Module.Formula.Tests.csproj `
+          --configuration Release --no-build --verbosity minimal
+        
+        echo "运行MedicalCase模块测试..."
+        dotnet test tests/UnitTests/Modules/MedicalCase.UnitTests/LYBT.Module.MedicalCase.Tests.csproj `
+          --configuration Release --no-build --verbosity minimal
+        
+        echo "运行Auth模块测试..."
+        dotnet test tests/UnitTests/Modules/Auth.UnitTests/LYBT.Module.Auth.Tests.csproj `
           --configuration Release --no-build --verbosity minimal
 
     # 强制门禁：架构测试必须全部通过  
@@ -78,11 +101,92 @@ jobs:
         dotnet test tests/Architecture/LYBT.ArchTests.csproj `
           --configuration Release --no-build --verbosity minimal
 
+  # Level 2.5: P3覆盖率门禁 (阻塞性) - Phase 3新增
+  coverage-quality-gate:
+    name: Level 2.5 - P3覆盖率门禁 (≥70%)
+    runs-on: windows-latest
+    needs: test-quality-gate
+    
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v5
+
+    - name: 设置 .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: 还原依赖包
+      run: dotnet restore LYBT.All.sln
+
+    - name: 构建解决方案
+      run: dotnet build LYBT.All.sln --configuration Release --no-restore --verbosity minimal
+
+    # P3强制门禁：70%覆盖率检查
+    - name: 🚨 P3强制门禁 - 70%覆盖率检查
+      run: |
+        echo "🎯 P3任务: 执行覆盖率收集并验证≥70%阈值"
+        
+        # 创建测试结果目录
+        New-Item -ItemType Directory -Force -Path "TestResults/Coverage"
+        
+        # 运行所有模块测试收集覆盖率
+        echo "收集所有8个模块的覆盖率数据..."
+        dotnet test tests/UnitTests/Modules/ `
+          --configuration Release --no-build `
+          --collect:"XPlat Code Coverage" `
+          --results-directory TestResults/Coverage `
+          --logger "console;verbosity=minimal" `
+          -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura
+        
+        # 安装ReportGenerator
+        dotnet tool install -g dotnet-reportgenerator-globaltool
+        
+        # 生成覆盖率报告
+        $coverageFiles = Get-ChildItem -Path "TestResults" -Recurse -Filter "coverage.cobertura.xml" | ForEach-Object { $_.FullName }
+        $coverageInput = $coverageFiles -join ";"
+        
+        if ($coverageFiles.Count -gt 0) {
+          echo "找到 $($coverageFiles.Count) 个覆盖率文件"
+          
+          reportgenerator `
+            "-reports:$coverageInput" `
+            "-targetdir:TestResults/CoverageReport" `
+            "-reporttypes:JsonSummary;TextSummary" `
+            "-sourcedirs:src" `
+            "-assemblyfilters:-*Tests*;-*TestUtilities*" `
+            "-classfilters:-*Tests*;-*Mock*;-*Stub*"
+            
+          # 检查覆盖率阈值
+          $summaryFile = "TestResults/CoverageReport/Summary.json"
+          if (Test-Path $summaryFile) {
+            $summary = Get-Content $summaryFile | ConvertFrom-Json
+            $lineCoverage = [math]::Round($summary.coverage.linecoverage, 2)
+            
+            echo "📊 当前覆盖率: $lineCoverage%"
+            echo "🎯 P3目标阈值: 70%"
+            
+            if ($lineCoverage -lt 70) {
+              echo "❌ P3强制门禁失败: 覆盖率 ($lineCoverage%) < 70%"
+              echo "🔧 请增加测试用例提升覆盖率至70%以上"
+              exit 1
+            } else {
+              echo "✅ P3覆盖率门禁通过: $lineCoverage% ≥ 70%"
+            }
+          } else {
+            echo "❌ 覆盖率报告生成失败"
+            exit 1
+          }
+        } else {
+          echo "❌ 未找到覆盖率数据文件"
+          exit 1
+        }
+
   # Level 3: 架构合规门禁 (阻塞性)
   architecture-compliance-gate:
     name: Level 3 - 架构合规门禁
     runs-on: windows-latest
-    needs: test-quality-gate
+    needs: coverage-quality-gate
     
     steps:
     - name: 检出代码
@@ -145,7 +249,7 @@ jobs:
   governance-baseline-passed:
     name: ✅ Pass 7 治理基线验证通过
     runs-on: ubuntu-latest
-    needs: [code-quality-gate, test-quality-gate, architecture-compliance-gate]
+    needs: [code-quality-gate, test-quality-gate, coverage-quality-gate, architecture-compliance-gate]
     if: success()
     
     steps:
@@ -155,7 +259,8 @@ jobs:
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "所有强制门禁检查已通过：" >> $GITHUB_STEP_SUMMARY
         echo "- ✅ Level 1: 代码质量门禁 (格式化 + 编译零错误零警告)" >> $GITHUB_STEP_SUMMARY
-        echo "- ✅ Level 2: 测试质量门禁 (单元测试 + 架构测试)" >> $GITHUB_STEP_SUMMARY  
+        echo "- ✅ Level 2: 测试质量门禁 (8个模块单元测试 + 架构测试)" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ Level 2.5: P3覆盖率门禁 (≥70%覆盖率强制要求)" >> $GITHUB_STEP_SUMMARY
         echo "- ✅ Level 3: 架构合规门禁 (Record-Only基线验证)" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "**Record-Only基线约束已强制执行**" >> $GITHUB_STEP_SUMMARY
@@ -175,7 +280,7 @@ jobs:
   governance-baseline-failed:
     name: ❌ Pass 7 治理基线验证失败
     runs-on: ubuntu-latest
-    needs: [code-quality-gate, test-quality-gate, architecture-compliance-gate]
+    needs: [code-quality-gate, test-quality-gate, coverage-quality-gate, architecture-compliance-gate]
     if: failure()
     
     steps:
@@ -188,14 +293,16 @@ jobs:
         echo "**失败状态**:" >> $GITHUB_STEP_SUMMARY
         echo "- Level 1 代码质量: ${{ needs.code-quality-gate.result }}" >> $GITHUB_STEP_SUMMARY
         echo "- Level 2 测试质量: ${{ needs.test-quality-gate.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "- Level 2.5 P3覆盖率门禁: ${{ needs.coverage-quality-gate.result }}" >> $GITHUB_STEP_SUMMARY
         echo "- Level 3 架构合规: ${{ needs.architecture-compliance-gate.result }}" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "**修复指导**:" >> $GITHUB_STEP_SUMMARY
         echo "1. 检查构建错误和警告 - 必须为0" >> $GITHUB_STEP_SUMMARY
         echo "2. 运行 \`dotnet format\` 修复格式问题" >> $GITHUB_STEP_SUMMARY
         echo "3. 确保所有单元测试通过" >> $GITHUB_STEP_SUMMARY
-        echo "4. 修复架构测试失败项" >> $GITHUB_STEP_SUMMARY
-        echo "5. 遵循Record-Only基线约束" >> $GITHUB_STEP_SUMMARY
+        echo "4. **P3关键**: 增加测试用例提升覆盖率至≥70%" >> $GITHUB_STEP_SUMMARY
+        echo "5. 修复架构测试失败项" >> $GITHUB_STEP_SUMMARY
+        echo "6. 遵循Record-Only基线约束" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "详细错误信息请查看上方构建日志" >> $GITHUB_STEP_SUMMARY
         exit 1

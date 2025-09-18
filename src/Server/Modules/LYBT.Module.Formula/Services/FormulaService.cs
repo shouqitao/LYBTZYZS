@@ -1,3 +1,4 @@
+using LYBT.Module.Formula.Interfaces;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
@@ -9,11 +10,11 @@ namespace LYBT.Module.Formula.Services
     /// 验方服务 - UltraThink双层架构纯委托模式
     /// </summary>
     public class FormulaService(
-        FormulaQueryService queryService,
-        FormulaBusinessService businessService) : IFormulaService
+        IFormulaQueryService queryService,
+        IFormulaBusinessService businessService) : IFormulaService
     {
-        private readonly FormulaQueryService _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
-        private readonly FormulaBusinessService _businessService = businessService ?? throw new ArgumentNullException(nameof(businessService));
+        private readonly IFormulaQueryService _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
+        private readonly IFormulaBusinessService _businessService = businessService ?? throw new ArgumentNullException(nameof(businessService));
 
         #region Query Operations
 

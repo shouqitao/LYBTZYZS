@@ -5,7 +5,7 @@ using Bogus;
 using LYBT.Entities.Herbs;
 using LYBT.Entities.Patients;
 using LYBT.Entities.Users;
-using LYBT.Entities.Consultations;
+using LYBT.Entities.Consultation;
 using LYBT.Entities.Prescriptions;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Contracts.Users;

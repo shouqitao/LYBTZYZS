@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="AutoMapper"  />
+    <PackageReference Include="Bogus"  />
     <PackageReference Include="FluentAssertions"  />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory"  />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions"  />
@@ -21,9 +22,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\Server\Modules\LYBT.Module.Prescriptions\LYBT.Module.Prescriptions.csproj" />
-    <ProjectReference Include="..\..\..\src\Server\Core\LYBT.Infrastructure\LYBT.Infrastructure.csproj" />
-    <ProjectReference Include="..\..\..\src\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
+    <ProjectReference Include="..\..\..\..\src\Server\Modules\LYBT.Module.Prescriptions\LYBT.Module.Prescriptions.csproj" />
+    <ProjectReference Include="..\..\..\..\src\Server\Core\LYBT.Infrastructure\LYBT.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\..\src\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
+    <ProjectReference Include="..\..\..\..\src\Server\Core\LYBT.Entities\LYBT.Entities.csproj" />
   </ItemGroup>
 
 </Project>

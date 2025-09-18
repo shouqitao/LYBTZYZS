@@ -12,21 +12,19 @@ namespace LYBT.Module.Patients.Tests.Base
         /// <summary>
         /// 患者数据生成器
         /// </summary>
-        public static Faker<PatientModel> PatientGenerator => new Faker<PatientModel>("zh_CN")
+        public static Faker<Patient> PatientGenerator => new Faker<Patient>("zh_CN")
             .RuleFor(p => p.Id, f => Guid.NewGuid())
             .RuleFor(p => p.Name, f => f.Name.FullName())
             .RuleFor(p => p.PinYinCode, (f, p) => GetPinyinCode(p.Name))
-            .RuleFor(p => p.WuBiCode, f => f.Random.AlphaNumeric(6).ToUpper())
             .RuleFor(p => p.Gender, f => f.PickRandom<Gender>())
-            .RuleFor(p => p.Age, f => f.Random.Int(1, 90))
             .RuleFor(p => p.BirthDate, f => f.Date.Past(90, DateTime.Now.AddYears(-1)))
-            .RuleFor(p => p.IdType, f => "身份证")
+            .RuleFor(p => p.IdType, f => 0)
             .RuleFor(p => p.IdNumber, f => GenerateIdNumber())
             .RuleFor(p => p.PhoneNumber, f => f.Phone.PhoneNumber("1##########"))
             .RuleFor(p => p.Address, f => f.Address.FullAddress())
             .RuleFor(p => p.AllergyHistory, f => f.Lorem.Sentence())
             .RuleFor(p => p.Status, f => f.PickRandom<CommonStatus>())
-            .RuleFor(p => p.CreateTime, f => f.Date.Recent(30))
+            .RuleFor(p => p.CreatedAt, f => f.Date.Recent(30))
             .RuleFor(p => p.UpdateTime, f => f.Date.Recent(5))
             .RuleFor(p => p.LastVisitTime, f => f.Date.Recent(10))
             .RuleFor(p => p.VisitCount, f => f.Random.Int(0, 20))
@@ -37,7 +35,7 @@ namespace LYBT.Module.Patients.Tests.Base
         /// <summary>
         /// 创建测试患者
         /// </summary>
-        public static PatientModel CreateTestPatient(
+        public static Patient CreateTestPatient(
             string? name = null,
             string? idNumber = null,
             string? phoneNumber = null,
@@ -62,7 +60,7 @@ namespace LYBT.Module.Patients.Tests.Base
         /// <summary>
         /// 批量创建测试患者
         /// </summary>
-        public static List<PatientModel> CreateTestPatients(int count, CommonStatus? status = null)
+        public static List<Patient> CreateTestPatients(int count, CommonStatus? status = null)
         {
             var generator = PatientGenerator;
 
@@ -75,7 +73,7 @@ namespace LYBT.Module.Patients.Tests.Base
         /// <summary>
         /// 创建启用的测试患者
         /// </summary>
-        public static PatientModel CreateEnabledPatient()
+        public static Patient CreateEnabledPatient()
         {
             return CreateTestPatient(status: CommonStatus.Enabled);
         }
@@ -83,7 +81,7 @@ namespace LYBT.Module.Patients.Tests.Base
         /// <summary>
         /// 创建禁用的测试患者
         /// </summary>
-        public static PatientModel CreateDisabledPatient()
+        public static Patient CreateDisabledPatient()
         {
             return CreateTestPatient(status: CommonStatus.Disabled);
         }
@@ -91,7 +89,7 @@ namespace LYBT.Module.Patients.Tests.Base
         /// <summary>
         /// 创建具有特定身份证号的患者
         /// </summary>
-        public static PatientModel CreatePatientWithIdNumber(string idNumber)
+        public static Patient CreatePatientWithIdNumber(string idNumber)
         {
             return CreateTestPatient(idNumber: idNumber);
         }
@@ -99,7 +97,7 @@ namespace LYBT.Module.Patients.Tests.Base
         /// <summary>
         /// 创建具有特定手机号的患者
         /// </summary>
-        public static PatientModel CreatePatientWithPhoneNumber(string phoneNumber)
+        public static Patient CreatePatientWithPhoneNumber(string phoneNumber)
         {
             return CreateTestPatient(phoneNumber: phoneNumber);
         }

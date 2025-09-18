@@ -1,6 +1,7 @@
 using AutoMapper;
 using LYBT.Entities.Herbs;
 using LYBT.Infrastructure.Data;
+using LYBT.Module.Herbs.Interfaces;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
@@ -15,7 +16,7 @@ namespace LYBT.Module.Herbs.Services
     /// 药材业务逻辑服务 - UltraThink架构
     /// 职责：导入导出、批量操作、业务规则处理
     /// </summary>
-    public class HerbBusinessService
+    public class HerbBusinessService : IHerbBusinessService
     {
         private readonly AppDbContext _context;
         private readonly IMapper _mapper;

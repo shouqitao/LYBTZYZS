@@ -1,3 +1,4 @@
+using LYBT.Module.Herbs.Interfaces;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
@@ -11,12 +12,12 @@ namespace LYBT.Module.Herbs.Services
     /// 药材服务 - UltraThink双层架构纯委托模式
     /// </summary>
     public class HerbService(
-        HerbQueryService queryService,
-        HerbBusinessService businessService,
+        IHerbQueryService queryService,
+        IHerbBusinessService businessService,
         ILogger<HerbService> logger) : IHerbService
     {
-        private readonly HerbQueryService _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
-        private readonly HerbBusinessService _businessService = businessService ?? throw new ArgumentNullException(nameof(businessService));
+        private readonly IHerbQueryService _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
+        private readonly IHerbBusinessService _businessService = businessService ?? throw new ArgumentNullException(nameof(businessService));
         private readonly ILogger<HerbService> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
         #region Query Operations

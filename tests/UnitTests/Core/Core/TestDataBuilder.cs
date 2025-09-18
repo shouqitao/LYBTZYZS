@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Bogus;
-using LYBT.Models;
 using LYBT.Shared.Models;
 
 namespace LYBT.Tests.Core

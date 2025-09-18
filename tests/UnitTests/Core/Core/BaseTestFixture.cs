@@ -7,7 +7,6 @@ using AutoMapper;
 using Bogus;
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Logging;
-using LYBT.Infrastructure.Logging.Dtos;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;

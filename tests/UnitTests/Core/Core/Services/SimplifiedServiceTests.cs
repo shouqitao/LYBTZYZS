@@ -5,8 +5,8 @@ using AutoMapper;
 using LYBT.Infrastructure.Data;
 using LYBT.Entities.Herbs;
 using LYBT.Entities.Users;
-using LYBT.Module.Herbs.Services.Core;
-using LYBT.Module.Users.Services.Core;
+using LYBT.Module.Herbs.Services;
+using LYBT.Module.Users.Services;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
@@ -65,7 +65,7 @@ namespace LYBT.Tests.Backend.Core.Services
         public async Task HerbService_CreateAndRetrieve_Success()
         {
             // Arrange
-            var herbService = new HerbServiceCore(_context, _mapper);
+            var herbService = new HerbBusinessService(_context, _mapper);
             var createDto = new HerbCreateDto
             {
                 Name = "测试药材",
@@ -96,7 +96,7 @@ namespace LYBT.Tests.Backend.Core.Services
         public async Task HerbService_SearchFunctionality_ReturnsCorrectResults()
         {
             // Arrange
-            var herbService = new HerbServiceCore(_context, _mapper);
+            var herbService = new HerbBusinessService(_context, _mapper);
             
             // 添加测试数据
             await _context.Herbs.AddRangeAsync(new[]
@@ -120,7 +120,7 @@ namespace LYBT.Tests.Backend.Core.Services
         public async Task HerbService_UpdatePrice_Success()
         {
             // Arrange
-            var herbService = new HerbServiceCore(_context, _mapper);
+            var herbService = new HerbBusinessService(_context, _mapper);
             var herb = new HerbModel 
             { 
                 Id = Guid.NewGuid(), 
@@ -156,7 +156,7 @@ namespace LYBT.Tests.Backend.Core.Services
         public async Task UserService_CreateAndValidateUser_Success()
         {
             // Arrange  
-            var userService = new UserServiceCore(_context, _mapper);
+            var userService = new UserBusinessService(_context, _mapper);
             var createDto = new UserCreateDto
             {
                 Username = "testuser",
@@ -187,7 +187,7 @@ namespace LYBT.Tests.Backend.Core.Services
         public async Task UserService_GetUsersByRole_ReturnsFilteredResults()
         {
             // Arrange
-            var userService = new UserServiceCore(_context, _mapper);
+            var userService = new UserBusinessService(_context, _mapper);
             
             // 添加不同角色用户
             await _context.Users.AddRangeAsync(new[]
@@ -211,7 +211,7 @@ namespace LYBT.Tests.Backend.Core.Services
         public async Task UserService_UpdateUserStatus_Success()
         {
             // Arrange
-            var userService = new UserServiceCore(_context, _mapper);
+            var userService = new UserBusinessService(_context, _mapper);
             var user = new UserModel
             {
                 Id = Guid.NewGuid(),
@@ -241,8 +241,8 @@ namespace LYBT.Tests.Backend.Core.Services
         public async Task Services_Integration_HerbAndUserWorkflowComplete()
         {
             // Arrange
-            var herbService = new HerbServiceCore(_context, _mapper);
-            var userService = new UserServiceCore(_context, _mapper);
+            var herbService = new HerbBusinessService(_context, _mapper);
+            var userService = new UserBusinessService(_context, _mapper);
 
             // 创建用户
             var userDto = new UserCreateDto
@@ -285,7 +285,7 @@ namespace LYBT.Tests.Backend.Core.Services
         public async Task HerbService_BulkOperations_PerformanceAcceptable()
         {
             // Arrange
-            var herbService = new HerbServiceCore(_context, _mapper);
+            var herbService = new HerbBusinessService(_context, _mapper);
             var importData = new List<HerbImportDto>();
 
             // 创建100个导入项
@@ -319,7 +319,7 @@ namespace LYBT.Tests.Backend.Core.Services
         public async Task Services_ErrorHandling_GracefulFailure()
         {
             // Arrange
-            var herbService = new HerbServiceCore(_context, _mapper);
+            var herbService = new HerbBusinessService(_context, _mapper);
 
             // Act - 尝试获取不存在的记录
             var nonExistentId = Guid.NewGuid();

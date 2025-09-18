@@ -12,6 +12,7 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory"  />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions"  />
     <PackageReference Include="Microsoft.NET.Test.Sdk"  />
+    <PackageReference Include="Bogus"  />
     <PackageReference Include="Moq"  />
     <PackageReference Include="xunit"  />
     <PackageReference Include="xunit.runner.visualstudio" >
@@ -21,9 +22,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\Server\Modules\LYBT.Module.Formula\LYBT.Module.Formula.csproj" />
-    <ProjectReference Include="..\..\..\src\Server\Core\LYBT.Infrastructure\LYBT.Infrastructure.csproj" />
-    <ProjectReference Include="..\..\..\src\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
+    <ProjectReference Include="..\..\..\..\src\Server\Modules\LYBT.Module.Formula\LYBT.Module.Formula.csproj" />
+    <ProjectReference Include="..\..\..\..\src\Server\Core\LYBT.Infrastructure\LYBT.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\..\src\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
+    <ProjectReference Include="..\..\..\..\src\Server\Core\LYBT.Entities\LYBT.Entities.csproj" />
   </ItemGroup>
 
 </Project>

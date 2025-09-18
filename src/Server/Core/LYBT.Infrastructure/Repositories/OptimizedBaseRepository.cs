@@ -5,6 +5,7 @@ using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 
@@ -882,8 +883,11 @@ namespace LYBT.Infrastructure.Repositories
         /// </summary>
         protected virtual void ConfigureQueryOptimizations()
         {
-            // 配置连接重试策略
-            _context.Database.SetCommandTimeout(TimeSpan.FromSeconds(30));
+            // 配置连接重试策略 - 仅在关系型数据库中有效
+            if (_context.Database.ProviderName != "Microsoft.EntityFrameworkCore.InMemory")
+            {
+                _context.Database.SetCommandTimeout(TimeSpan.FromSeconds(30));
+            }
 
             // 配置查询跟踪行为
             if (_queryOptions.UseNoTracking)

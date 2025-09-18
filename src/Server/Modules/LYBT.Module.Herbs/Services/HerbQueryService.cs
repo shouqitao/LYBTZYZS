@@ -1,6 +1,7 @@
 using AutoMapper;
 using LYBT.Entities.Herbs;
 using LYBT.Infrastructure.Data;
+using LYBT.Module.Herbs.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
@@ -14,7 +15,7 @@ namespace LYBT.Module.Herbs.Services
     /// 药材查询服务 - UltraThink架构
     /// 职责：复杂查询、搜索、筛选、分页等只读操作
     /// </summary>
-    public class HerbQueryService
+    public class HerbQueryService : IHerbQueryService
     {
         private readonly AppDbContext _context;
         private readonly IMapper _mapper;

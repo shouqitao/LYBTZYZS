@@ -67,3 +67,6 @@ finally
 {
     Log.CloseAndFlush();
 }
+
+// P3-Fix: 为集成测试提供Program类访问权限
+public partial class Program { }
