@@ -50,7 +50,7 @@ namespace LYBT.Infrastructure.Data
         // 处方管理
         public DbSet<Prescription> Prescriptions { get; set; }
 
-        public DbSet<PrescriptionItemModel> PrescriptionItems { get; set; }
+        public DbSet<PrescriptionItem> PrescriptionItems { get; set; }
 
         // 药材管理
         public DbSet<Herb> Herbs { get; set; }
@@ -111,11 +111,11 @@ namespace LYBT.Infrastructure.Data
             entity.ToTable("Users");
             entity.HasKey(u => u.Id);
 
-            // 明确配置字段映射以解决命名冲突
+            // 明确配置字段映射以解决命名冲突 - 统一为Username列名
             entity.HasIndex(u => u.Username).IsUnique();
-            entity.Property(u => u.Username).HasMaxLength(50).HasColumnName("UserName");
-            entity.Property(u => u.RealName).HasMaxLength(100);
-            entity.Property(u => u.PasswordHash).HasMaxLength(255);
+            entity.Property(u => u.Username).HasMaxLength(50).HasColumnName("Username");
+            entity.Property(u => u.RealName).HasMaxLength(50);
+            entity.Property(u => u.PasswordHash).HasMaxLength(256);
 
             // CreateTime字段已删除（UltraThink v2.0简化）
             entity.Property(u => u.PinYinCode).HasMaxLength(50);
@@ -245,7 +245,7 @@ namespace LYBT.Infrastructure.Data
             prescriptionEntity.ToTable("Prescriptions");
             prescriptionEntity.HasKey(p => p.Id);
 
-            var itemEntity = modelBuilder.Entity<PrescriptionItemModel>();
+            var itemEntity = modelBuilder.Entity<PrescriptionItem>();
             itemEntity.ToTable("PrescriptionItems");
             itemEntity.HasKey(i => i.Id);
         }
