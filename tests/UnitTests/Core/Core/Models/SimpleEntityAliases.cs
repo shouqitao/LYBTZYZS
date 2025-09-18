@@ -12,7 +12,7 @@ global using PrescriptionModel = LYBT.Entities.Prescriptions.Prescription;
 global using MedicalCaseModel = LYBT.Entities.MedicalCase.MedicalCase;
 global using ConsultationModel = LYBT.Entities.Consultation.Consultation;
 global using AuthModel = LYBT.Entities.Auth.AuthSession;
-global using PrescriptionItemModel = LYBT.Entities.Prescriptions.PrescriptionItemModel;
+global using PrescriptionItemModel = LYBT.Entities.Prescriptions.PrescriptionItem;
 
 // P3-Fix: DTO类型别名临时定义，解决测试项目编译错误
 using System;

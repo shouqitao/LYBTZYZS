@@ -42,7 +42,7 @@ namespace LYBT.Tests.UltraThink.TestInfrastructure.Builders
             "遵医嘱服药，不可随意停药"
         };
 
-        private readonly List<PrescriptionItemModel> _items = new List<PrescriptionItemModel>();
+        private readonly List<PrescriptionItem> _items = new List<PrescriptionItem>();
 
         public PrescriptionTestDataBuilder()
         {
@@ -128,7 +128,7 @@ namespace LYBT.Tests.UltraThink.TestInfrastructure.Builders
 
         #region 处方项构建方法
 
-        public PrescriptionTestDataBuilder AddItem(PrescriptionItemModel item)
+        public PrescriptionTestDataBuilder AddItem(PrescriptionItem item)
         {
             _items.Add(item);
             return this;
@@ -136,7 +136,7 @@ namespace LYBT.Tests.UltraThink.TestInfrastructure.Builders
 
         public PrescriptionTestDataBuilder AddItem(Guid herbId, string herbName, decimal quantity, string unit, decimal unitPrice)
         {
-            var item = new PrescriptionItemModel
+            var item = new PrescriptionItem
             {
                 Id = Guid.NewGuid(),
                 HerbId = herbId,
@@ -407,7 +407,7 @@ namespace LYBT.Tests.UltraThink.TestInfrastructure.Builders
             // 确保Items不为null
             if (_entity.Items == null)
             {
-                _entity.Items = new List<PrescriptionItemModel>();
+                _entity.Items = new List<PrescriptionItem>();
             }
         }
     }

@@ -7,7 +7,7 @@ namespace LYBT.Module.Auth.Interfaces
 
     /// <summary>
     /// 认证会话仓储接口 - Record-Only模式简化版本
-    /// 继承BaseRepository提供通用CRUD，保留基本会话功能
+    /// 继承BaseRepository提供通用CRUD，保留基本会话功能.
     /// </summary>
     public interface IAuthSessionRepository : IBaseRepository<AuthSession>
     {

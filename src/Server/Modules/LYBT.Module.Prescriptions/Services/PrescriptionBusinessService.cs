@@ -84,7 +84,7 @@ namespace LYBT.Module.Prescriptions.Services
                     {
                         foreach (var sourceItem in sourcePrescription.Items)
                         {
-                            var newItem = new PrescriptionItemModel
+                            var newItem = new PrescriptionItem
                             {
                                 Id = Guid.NewGuid(),
                                 PrescriptionId = newPrescription.Id,

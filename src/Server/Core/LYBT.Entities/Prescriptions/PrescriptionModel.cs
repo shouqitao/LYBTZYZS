@@ -74,6 +74,6 @@ namespace LYBT.Entities.Prescriptions
         /// 处方项目（药材明细）
         /// </summary>
         [DisplayName("处方项目")]
-        public List<PrescriptionItemModel> Items { get; set; } = new();
+        public List<PrescriptionItem> Items { get; set; } = new();
     }
 }

@@ -29,7 +29,7 @@ namespace LYBT.Module.Prescriptions.Mapping
                 .ForMember(dest => dest.TotalWeight, opt => opt.Ignore()); // 计算属性，由DTO自动计算
 
             // PrescriptionItemModel -> PrescriptionItemDto
-            CreateMap<PrescriptionItemModel, PrescriptionItemDto>();
+            CreateMap<PrescriptionItem, PrescriptionItemDto>();
 
             // 创建映射 - 忽略自动字段
             CreateMap<PrescriptionCreateDto, Prescription>()
@@ -37,7 +37,7 @@ namespace LYBT.Module.Prescriptions.Mapping
 
             // CreateTime字段已删除（UltraThink v2.0简化）
             // .ForMember(dest => dest.CreateTime, opt => opt.Ignore());
-            CreateMap<PrescriptionItemCreateDto, PrescriptionItemModel>()
+            CreateMap<PrescriptionItemCreateDto, PrescriptionItem>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore());
 
             // 编辑映射 - 忽略不可修改字段

@@ -13,7 +13,11 @@ namespace LYBT.Module.Auth.Interfaces
         /// <summary>
         /// 生成JWT令牌
         /// </summary>
-        /// <param name="userId">用户ID</param>        /// <param name="userName">用户名</param>        /// <param name="roles">用户角色</param>        /// <param name="rememberMe">是否记住我（影响令牌过期时间）</param>        /// <returns>JWT令牌</returns>
+        /// <param name="userId">用户ID</param>
+        /// <param name="userName">用户名</param>
+        /// <param name="roles">用户角色</param>
+        /// <param name="rememberMe">是否记住我（影响令牌过期时间）</param>
+        /// <returns>JWT令牌</returns>
         string GenerateToken(string userId, string userName, UserRole role, bool rememberMe = false);
 
         /// <summary>
@@ -37,7 +41,7 @@ namespace LYBT.Module.Auth.Interfaces
     }
 
     /// <summary>
-    /// 令牌用户信息
+    /// 令牌用户信息.
     /// </summary>
     public class TokenUserInfo
     {

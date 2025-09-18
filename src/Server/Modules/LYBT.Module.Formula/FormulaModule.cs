@@ -10,15 +10,16 @@ namespace LYBT.Module.Formula
 
     /// <summary>
     /// 验方模块注册 - UltraThink标准化重构
-    /// 负责注册验方相关的所有服务、仓储和映射配置
-    /// 采用UltraThink双层架构：QueryService + BusinessService 专业分离
+    /// 负责注册验方相关的所有服务、仓储和映射配置.
+    /// 采用UltraThink双层架构：QueryService + BusinessService 专业分离.
     /// </summary>
     public static class FormulaModule
     {
 
         /// <summary>
-        /// 注册验方模块服务 - UltraThink双层架构标准
+        /// 注册验方模块服务 - UltraThink双层架构标准.
         /// </summary>
+        /// <returns></returns>
         public static IServiceCollection AddFormulaModule(this IServiceCollection services)
         {
             // 仓储层

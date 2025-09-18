@@ -1,8 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Bogus;
-using LYBT.Shared.Models;
+using LYBT.Entities.Prescriptions;
 using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Tests.Core
@@ -90,7 +87,7 @@ namespace LYBT.Tests.Core
         public HerbModel BuildHerb(Action<HerbModel> customize = null)
         {
             var herbNames = new[] { "人参", "黄芪", "当归", "川芎", "白芍", "熟地黄", "甘草", "陈皮", "半夏", "茯苓" };
-            
+
             var herb = new HerbModel
             {
                 Id = Guid.NewGuid(),
@@ -145,10 +142,10 @@ namespace LYBT.Tests.Core
             return prescription;
         }
 
-        public List<PrescriptionItemModel> BuildPrescriptionItems(Guid prescriptionId, int count)
+        public List<PrescriptionItem> BuildPrescriptionItems(Guid prescriptionId, int count)
         {
             var herbs = BuildHerbs(count);
-            return herbs.Select((herb, index) => new PrescriptionItemModel
+            return herbs.Select((herb, index) => new PrescriptionItem
             {
                 Id = Guid.NewGuid(),
                 PrescriptionId = prescriptionId,
@@ -169,7 +166,7 @@ namespace LYBT.Tests.Core
         public FormulaModel BuildFormula(Action<FormulaModel> customize = null)
         {
             var formulaNames = new[] { "四君子汤", "四物汤", "补中益气汤", "六味地黄丸", "逍遥散" };
-            
+
             var formula = new FormulaModel
             {
                 Id = Guid.NewGuid(),
@@ -197,7 +194,7 @@ namespace LYBT.Tests.Core
             var day = _faker.Random.Int(1, 28).ToString().PadLeft(2, '0');
             var seq = _faker.Random.Int(100, 999);
             var gender = _faker.Random.Int(0, 9);
-            
+
             return $"110101{year}{month}{day}{seq}{gender}";
         }
 
