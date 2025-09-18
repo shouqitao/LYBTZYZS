@@ -256,12 +256,12 @@ namespace LYBT.Infrastructure.Data
             entity.ToTable("Herbs");
             entity.HasKey(h => h.Id);
             entity.Property(h => h.Name).HasMaxLength(100);
-            entity.Property(h => h.PinYinCode).HasMaxLength(20);
-            entity.Property(h => h.Origin).HasMaxLength(50);
-            entity.Property(h => h.Spec).HasMaxLength(50);
+            entity.Property(h => h.PinYinCode).HasMaxLength(50);
+            entity.Property(h => h.Origin).HasMaxLength(100);
+            entity.Property(h => h.Spec).HasMaxLength(100);
             entity.Property(h => h.Unit).HasMaxLength(10);
-            entity.Property(h => h.Effect).HasMaxLength(256);
-            entity.Property(h => h.Usage).HasMaxLength(256);
+            entity.Property(h => h.Effect).HasMaxLength(500);
+            entity.Property(h => h.Usage).HasMaxLength(500);
             entity.Property(h => h.Price).HasColumnType("decimal(18,2)");
 
             // 配置Status枚举字段
