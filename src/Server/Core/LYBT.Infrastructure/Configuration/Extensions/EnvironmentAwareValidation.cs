@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using Serilog;
 
 namespace LYBT.Infrastructure.Configuration.Extensions
 {
@@ -85,7 +86,7 @@ namespace LYBT.Infrastructure.Configuration.Extensions
                 if (!options.EnableInDevelopment)
                 {
                     // 仅记录警告，不阻止启动
-                    Console.WriteLine("⚠️  开发环境建议启用默认密码功能以便调试 (DefaultPasswordOptions.EnableInDevelopment = true)");
+                    Log.Warning("开发环境建议启用默认密码功能以便调试 (DefaultPasswordOptions.EnableInDevelopment = true)");
                 }
             }
         }
@@ -145,19 +146,19 @@ namespace LYBT.Infrastructure.Configuration.Extensions
                 // 生产环境必须启用性能监控
                 if (!options.Monitoring.EnablePerformanceMonitoring)
                 {
-                    Console.WriteLine("⚠️  生产环境建议启用性能监控 (DatabaseOptions.Monitoring.EnablePerformanceMonitoring = true)");
+                    Log.Warning("生产环境建议启用性能监控 (DatabaseOptions.Monitoring.EnablePerformanceMonitoring = true)");
                 }
 
                 // 生产环境连接池配置验证
                 if (options.ConnectionPool.MaxPoolSize > 100)
                 {
-                    Console.WriteLine("⚠️  生产环境数据库连接池过大，建议不超过100个连接");
+                    Log.Warning("生产环境数据库连接池过大，建议不超过100个连接");
                 }
 
                 // 生产环境建议启用自动备份
                 if (!options.Backup.EnableAutoBackup)
                 {
-                    Console.WriteLine("⚠️  生产环境建议启用自动备份 (DatabaseOptions.Backup.EnableAutoBackup = true)");
+                    Log.Warning("生产环境建议启用自动备份 (DatabaseOptions.Backup.EnableAutoBackup = true)");
                 }
             }
             else if (environment.IsDevelopment())
@@ -165,12 +166,12 @@ namespace LYBT.Infrastructure.Configuration.Extensions
                 // 开发环境建议启用详细日志
                 if (!options.EnableSensitiveDataLogging)
                 {
-                    Console.WriteLine("💡 开发环境建议启用敏感数据日志以便调试 (DatabaseOptions.EnableSensitiveDataLogging = true)");
+                    Log.Information("开发环境建议启用敏感数据日志以便调试 (DatabaseOptions.EnableSensitiveDataLogging = true)");
                 }
 
                 if (!options.EnableDetailedErrors)
                 {
-                    Console.WriteLine("💡 开发环境建议启用详细错误信息以便调试 (DatabaseOptions.EnableDetailedErrors = true)");
+                    Log.Information("开发环境建议启用详细错误信息以便调试 (DatabaseOptions.EnableDetailedErrors = true)");
                 }
             }
         }
