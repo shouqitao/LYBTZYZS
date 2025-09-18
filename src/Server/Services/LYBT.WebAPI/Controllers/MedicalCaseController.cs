@@ -375,24 +375,3 @@ public class MedicalCaseController : BaseApiController
         }
     }
 }
-
-// 辅助DTO类
-public class CompleteMedicalCaseDto
-{
-    public string? CompletionReason { get; set; }
-}
-
-public class SuspendMedicalCaseDto
-{
-    public string? Reason { get; set; }
-}
-
-public class UpdateMedicalCaseStatusDto
-{
-    public int Status { get; set; }
-}
-
-public class ArchiveMedicalCaseDto
-{
-    public string? ArchiveReason { get; set; }
-}

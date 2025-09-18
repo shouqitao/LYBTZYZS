@@ -667,4 +667,50 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
         [DisplayName("缓存命中率")]
         public double CacheHitRate => (CacheHits + CacheMisses) > 0 ? (double)CacheHits / (CacheHits + CacheMisses) * 100 : 0;
     }
+
+    // ========== 医案状态操作DTO（从Controller迁移到Shared） ==========
+
+    /// <summary>
+    /// 完成医案DTO
+    /// </summary>
+    public class CompleteMedicalCaseDto
+    {
+        [StringLength(500, ErrorMessage = "完成原因长度不能超过500个字符")]
+        [DisplayName("完成原因")]
+        public string? CompletionReason { get; set; }
+    }
+
+    /// <summary>
+    /// 暂停医案DTO
+    /// </summary>
+    public class SuspendMedicalCaseDto
+    {
+        [StringLength(500, ErrorMessage = "暂停原因长度不能超过500个字符")]
+        [DisplayName("暂停原因")]
+        public string? Reason { get; set; }
+    }
+
+    /// <summary>
+    /// 更新医案状态DTO
+    /// </summary>
+    public class UpdateMedicalCaseStatusDto
+    {
+        [Required(ErrorMessage = "状态不能为空")]
+        [DisplayName("状态")]
+        public MedicalCaseStatus Status { get; set; }
+
+        [StringLength(500, ErrorMessage = "状态变更原因长度不能超过500个字符")]
+        [DisplayName("状态变更原因")]
+        public string? StatusChangeReason { get; set; }
+    }
+
+    /// <summary>
+    /// 归档医案DTO
+    /// </summary>
+    public class ArchiveMedicalCaseDto
+    {
+        [StringLength(500, ErrorMessage = "归档原因长度不能超过500个字符")]
+        [DisplayName("归档原因")]
+        public string? ArchiveReason { get; set; }
+    }
 }
