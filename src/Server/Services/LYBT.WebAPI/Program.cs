@@ -6,14 +6,30 @@
 using LYBT.WebAPI.Extensions;
 using Serilog;
 
-// =========== UltraThink结构化日志配置 ===========
-// 为小型诊所配置生产就绪的结构化日志系统
+// =========== UltraThink安全配置加载逻辑 ===========
+// 生产环境优先使用安全配置文件，开发环境使用标准配置
+var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production";
+var configBuilder = new ConfigurationBuilder();
+
+if (environment == "Development")
+{
+    // 开发环境：加载基础配置文件（包含开发用默认值）
+    configBuilder.AddJsonFile("appsettings.json", optional: false);
+}
+else
+{
+    // 生产环境：仅使用安全配置模板 + 环境变量
+    configBuilder.AddJsonFile("appsettings.Security.json", optional: false);
+}
+
+// 环境特定配置覆盖（如果存在）
+configBuilder.AddJsonFile($"appsettings.{environment}.json", optional: true);
+
+// 环境变量具有最高优先级（用于敏感配置）
+configBuilder.AddEnvironmentVariables();
+
 Log.Logger = new LoggerConfiguration()
-    .ReadFrom.Configuration(new ConfigurationBuilder()
-        .AddJsonFile("appsettings.json", optional: false)
-        .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production"}.json", optional: true)
-        .AddEnvironmentVariables()
-        .Build())
+    .ReadFrom.Configuration(configBuilder.Build())
     .CreateLogger();
 
 try
