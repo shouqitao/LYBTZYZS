@@ -5,7 +5,9 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
+using Xunit.Sdk;
 using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Tests.Backend.TestUtilities
@@ -112,8 +114,8 @@ namespace LYBT.Tests.Backend.TestUtilities
         public static void AssertPagedResult<T>(PagedResult<T> result, int expectedTotal, int expectedPage, int expectedPageSize, int expectedItemCount = -1)
         {
             Assert.NotNull(result);
-            Assert.Equal(expectedTotal, result.Total);
-            Assert.Equal(expectedPage, result.Page);
+            Assert.Equal(expectedTotal, result.TotalCount);
+            Assert.Equal(expectedPage, result.CurrentPage);
             Assert.Equal(expectedPageSize, result.PageSize);
             Assert.NotNull(result.Items);
             
@@ -387,11 +389,11 @@ namespace LYBT.Tests.Backend.TestUtilities
         /// <summary>
         /// 创建模拟的分页查询参数
         /// </summary>
-        public static PagedQueryDto CreateMockPagedQuery(int page = 1, int pageSize = 10, string keyword = null)
+        public static PagedQueryBaseDto CreateMockPagedQuery(int page = 1, int pageSize = 10, string keyword = null)
         {
-            return new PagedQueryDto
+            return new PagedQueryBaseDto
             {
-                Page = page,
+                PageIndex = page,
                 PageSize = pageSize,
                 Keyword = keyword
             };

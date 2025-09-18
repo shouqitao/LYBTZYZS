@@ -25,7 +25,7 @@ namespace LYBT.Infrastructure.Authorization
         public ClaimsPrincipal NormalizeClaims(ClaimsPrincipal principal)
         {
             if (principal?.Identity?.IsAuthenticated != true)
-                return principal;
+                return principal ?? new ClaimsPrincipal();
 
             var identity = (ClaimsIdentity)principal.Identity;
             var roleClaims = identity.FindAll(ClaimTypes.Role).ToList();

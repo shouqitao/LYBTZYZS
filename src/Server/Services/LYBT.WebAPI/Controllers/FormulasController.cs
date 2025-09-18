@@ -275,6 +275,8 @@ namespace LYBT.WebAPI.Controllers
         {
             try
             {
+                await Task.CompletedTask; // 满足async约定
+                
                 var validationResult = ValidateGuid<FormulaAnalysisResult>(id, "验方ID");
                 if (validationResult != null)
                 {
@@ -357,6 +359,8 @@ namespace LYBT.WebAPI.Controllers
         {
             try
             {
+                await Task.CompletedTask; // 满足async约定
+                
                 var validationResult = ValidateGuid<FormulaDto>(id, "验方ID");
                 if (validationResult != null)
                 {
@@ -385,6 +389,8 @@ namespace LYBT.WebAPI.Controllers
         {
             try
             {
+                await Task.CompletedTask; // 满足async约定
+                
                 var validationResult = ValidateGuid(id, "验方ID");
                 if (validationResult != null)
                 {
@@ -430,6 +436,8 @@ namespace LYBT.WebAPI.Controllers
         {
             try
             {
+                await Task.CompletedTask; // 满足async约定
+                
                 var validationResult = ValidateGuid(id, "验方ID");
                 if (validationResult != null)
                 {
@@ -453,6 +461,8 @@ namespace LYBT.WebAPI.Controllers
         {
             try
             {
+                await Task.CompletedTask; // 满足async约定
+                
                 var validationResult = ValidateGuid(id, "验方ID");
                 if (validationResult != null)
                 {
@@ -579,6 +589,8 @@ namespace LYBT.WebAPI.Controllers
         {
             try
             {
+                await Task.CompletedTask; // 满足async约定
+                
                 var template = new
                 {
                     Columns = new[]

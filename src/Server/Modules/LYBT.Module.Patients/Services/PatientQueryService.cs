@@ -253,7 +253,7 @@ namespace LYBT.Module.Patients.Services
                 }
 
                 var patients = await _context.Patients
-                    .Where(p => p.PhoneNumber.Contains(phone))
+                    .Where(p => p.PhoneNumber != null && p.PhoneNumber.Contains(phone))
                     .OrderBy(p => p.Name)
                     .ToListAsync();
 

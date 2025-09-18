@@ -4,16 +4,16 @@ using Bogus;
 using LYBT.Entities.Users;
 using LYBT.Entities.Patients;
 using LYBT.Entities.Herbs;
-using LYBT.Entities.Consultations;
+using LYBT.Entities.Consultation;
 using LYBT.Entities.Prescriptions;
-using LYBT.Entities.MedicalCases;
-using LYBT.Entities.Formulas;
+using LYBT.Entities.MedicalCase;
+using LYBT.Entities.Formula;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Contracts.Herbs;
-using LYBT.Shared.Models.Contracts.MedicalCases;
-using LYBT.Shared.Models.Contracts.Consultations;
+using LYBT.Shared.Models.Contracts.MedicalCase;
+using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Tests.Backend.TestUtilities;
 
 namespace LYBT.Tests.TestDataFactory
@@ -30,7 +30,7 @@ namespace LYBT.Tests.TestDataFactory
         public UnifiedTestDataFactory(int? seed = null)
         {
             _randomizer = seed.HasValue ? new Randomizer(seed.Value) : new Randomizer();
-            Randomizer.Seed = _randomizer;
+            Randomizer.Seed = new Random();
         }
 
         #region 用户相关数据工厂
@@ -38,23 +38,19 @@ namespace LYBT.Tests.TestDataFactory
         /// <summary>
         /// 用户实体生成器
         /// </summary>
-        public Faker<UserModel> UserModelFaker => new Faker<UserModel>(Locale)
+        public Faker<User> UserModelFaker => new Faker<User>(Locale)
             .RuleFor(u => u.Id, f => f.Random.Guid())
             .RuleFor(u => u.Username, f => $"{TestConstants.TestUsernamePrefix}{f.Internet.UserName()}")
             .RuleFor(u => u.RealName, f => f.Name.FullName())
             .RuleFor(u => u.PhoneNumber, f => f.PickRandom(TestConstants.ValidPhoneNumbers))
             .RuleFor(u => u.Role, f => f.PickRandom<UserRole>())
             .RuleFor(u => u.Status, f => f.PickRandom<CommonStatus>())
-            .RuleFor(u => u.PasswordHash, f => BCrypt.Net.BCrypt.HashPassword(TestConstants.DefaultTestPassword))
-            .RuleFor(u => u.CreateTime, f => f.Date.Between(TestConstants.TestBaseDateTime, DateTime.UtcNow))
-            .RuleFor(u => u.CreatedBy, f => f.Random.Guid())
-            .RuleFor(u => u.CreatedByName, f => f.Name.FullName())
+            .RuleFor(u => u.PasswordHash, f => "AQAAAAEAACcQAAAAEGwrB7Ri8YXw4qPHiXoTJQKoNccNRjvMFWuNi4W5YYp3DhIRRtxb0AHjD+WnzGLCmw==")
+            .RuleFor(u => u.CreatedTime, f => f.Date.Between(TestConstants.TestBaseDateTime, DateTime.UtcNow))
             .RuleFor(u => u.PinYinCode, (f, u) => GeneratePinyinCode(u.RealName))
             .FinishWith((f, u) =>
             {
-                u.UpdateTime = u.CreateTime;
-                u.UpdatedBy = u.CreatedBy;
-                u.UpdatedByName = u.CreatedByName;
+                u.UpdateTime = u.CreatedTime;
             });
 
         /// <summary>
@@ -83,24 +79,20 @@ namespace LYBT.Tests.TestDataFactory
         /// <summary>
         /// 患者实体生成器
         /// </summary>
-        public Faker<PatientModel> PatientModelFaker => new Faker<PatientModel>(Locale)
+        public Faker<Patient> PatientModelFaker => new Faker<Patient>(Locale)
             .RuleFor(p => p.Id, f => f.Random.Guid())
             .RuleFor(p => p.Name, f => f.Name.FullName())
             .RuleFor(p => p.PhoneNumber, f => f.PickRandom(TestConstants.ValidPhoneNumbers))
             .RuleFor(p => p.Gender, f => f.PickRandom<Gender>())
             .RuleFor(p => p.BirthDate, f => f.Date.Between(DateTime.Now.AddYears(-80), DateTime.Now.AddYears(-18)))
-            .RuleFor(p => p.IdCardNumber, f => f.PickRandom(TestConstants.ValidIdCardNumbers))
+            .RuleFor(p => p.IdNumber, f => f.PickRandom(TestConstants.ValidIdCardNumbers))
             .RuleFor(p => p.Address, f => f.Address.FullAddress())
             .RuleFor(p => p.Status, f => f.PickRandom<CommonStatus>())
-            .RuleFor(p => p.CreateTime, f => f.Date.Between(TestConstants.TestBaseDateTime, DateTime.UtcNow))
-            .RuleFor(p => p.CreatedBy, f => f.Random.Guid())
-            .RuleFor(p => p.CreatedByName, f => f.Name.FullName())
+            .RuleFor(p => p.CreatedAt, f => f.Date.Between(TestConstants.TestBaseDateTime, DateTime.UtcNow))
             .RuleFor(p => p.PinYinCode, (f, p) => GeneratePinyinCode(p.Name))
             .FinishWith((f, p) =>
             {
-                p.UpdateTime = p.CreateTime;
-                p.UpdatedBy = p.CreatedBy;
-                p.UpdatedByName = p.CreatedByName;
+                p.UpdateTime = p.CreatedAt;
             });
 
         /// <summary>
@@ -111,7 +103,7 @@ namespace LYBT.Tests.TestDataFactory
             .RuleFor(p => p.PhoneNumber, f => f.PickRandom(TestConstants.ValidPhoneNumbers))
             .RuleFor(p => p.Gender, f => f.PickRandom<Gender>())
             .RuleFor(p => p.BirthDate, f => f.Date.Between(DateTime.Now.AddYears(-80), DateTime.Now.AddYears(-18)))
-            .RuleFor(p => p.IdCardNumber, f => f.PickRandom(TestConstants.ValidIdCardNumbers))
+            .RuleFor(p => p.IdNumber, f => f.PickRandom(TestConstants.ValidIdCardNumbers))
             .RuleFor(p => p.Address, f => f.Address.FullAddress());
 
         #endregion
@@ -121,23 +113,13 @@ namespace LYBT.Tests.TestDataFactory
         /// <summary>
         /// 中药材实体生成器
         /// </summary>
-        public Faker<HerbModel> HerbModelFaker => new Faker<HerbModel>(Locale)
+        public Faker<Herb> HerbModelFaker => new Faker<Herb>(Locale)
             .RuleFor(h => h.Id, f => f.Random.Guid())
             .RuleFor(h => h.Name, f => f.PickRandom(TestConstants.TestHerbNames))
             .RuleFor(h => h.Price, f => f.Random.Decimal(1, 500))
-            .RuleFor(h => h.Stock, f => f.Random.Int(0, 1000))
             .RuleFor(h => h.Unit, f => f.PickRandom("克", "包", "粒", "片", "毫升"))
             .RuleFor(h => h.Status, f => f.PickRandom<CommonStatus>())
-            .RuleFor(h => h.CreateTime, f => f.Date.Between(TestConstants.TestBaseDateTime, DateTime.UtcNow))
-            .RuleFor(h => h.CreatedBy, f => f.Random.Guid())
-            .RuleFor(h => h.CreatedByName, f => f.Name.FullName())
-            .RuleFor(h => h.PinYinCode, (f, h) => GeneratePinyinCode(h.Name))
-            .FinishWith((f, h) =>
-            {
-                h.UpdateTime = h.CreateTime;
-                h.UpdatedBy = h.CreatedBy;
-                h.UpdatedByName = h.CreatedByName;
-            });
+            .RuleFor(h => h.PinYinCode, (f, h) => GeneratePinyinCode(h.Name));
 
         /// <summary>
         /// 中药材创建DTO生成器
@@ -155,29 +137,24 @@ namespace LYBT.Tests.TestDataFactory
         /// <summary>
         /// 医疗案例实体生成器
         /// </summary>
-        public Faker<MedicalCaseModel> MedicalCaseModelFaker => new Faker<MedicalCaseModel>(Locale)
+        public Faker<MedicalCase> MedicalCaseModelFaker => new Faker<MedicalCase>(Locale)
             .RuleFor(m => m.Id, f => f.Random.Guid())
             .RuleFor(m => m.PatientId, f => f.Random.Guid())
             .RuleFor(m => m.Status, f => f.PickRandom<MedicalCaseStatus>())
-            .RuleFor(m => m.ChiefComplaint, f => f.Lorem.Sentence(5, 10))
-            .RuleFor(m => m.PresentIllness, f => f.Lorem.Paragraph(2))
-            .RuleFor(m => m.CreateTime, f => f.Date.Between(TestConstants.TestBaseDateTime, DateTime.UtcNow))
-            .RuleFor(m => m.CreatedBy, f => f.Random.Guid())
-            .RuleFor(m => m.CreatedByName, f => f.Name.FullName())
-            .FinishWith((f, m) =>
-            {
-                m.UpdateTime = m.CreateTime;
-                m.UpdatedBy = m.CreatedBy;
-                m.UpdatedByName = m.CreatedByName;
-            });
+            .RuleFor(m => m.PatientName, f => f.Name.FullName())
+            .RuleFor(m => m.DoctorId, f => f.Random.Guid())
+            .RuleFor(m => m.DoctorName, f => f.Name.FullName())
+            .RuleFor(m => m.ConsultationDate, f => f.Date.Recent(30))
+            .RuleFor(m => m.Remark, f => f.Lorem.Sentence(3, 8));
 
         /// <summary>
         /// 医疗案例创建DTO生成器
         /// </summary>
         public Faker<MedicalCaseCreateDto> MedicalCaseCreateDtoFaker => new Faker<MedicalCaseCreateDto>(Locale)
             .RuleFor(m => m.PatientId, f => f.Random.Guid())
-            .RuleFor(m => m.ChiefComplaint, f => f.Lorem.Sentence(5, 10))
-            .RuleFor(m => m.PresentIllness, f => f.Lorem.Paragraph(2));
+            .RuleFor(m => m.DoctorId, f => f.Random.Guid())
+            .RuleFor(m => m.DiagnosisSummary, f => f.Lorem.Sentence(3, 8))
+            .RuleFor(m => m.Remark, f => f.Lorem.Sentence(3, 8));
 
         #endregion
 
@@ -186,38 +163,30 @@ namespace LYBT.Tests.TestDataFactory
         /// <summary>
         /// 看诊记录实体生成器
         /// </summary>
-        public Faker<ConsultationModel> ConsultationModelFaker => new Faker<ConsultationModel>(Locale)
+        public Faker<Consultation> ConsultationModelFaker => new Faker<Consultation>(Locale)
             .RuleFor(c => c.Id, f => f.Random.Guid())
             .RuleFor(c => c.MedicalCaseId, f => f.Random.Guid())
-            .RuleFor(c => c.Symptoms, f => f.Lorem.Sentence(3, 8))
-            .RuleFor(c => c.Diagnosis, f => f.Lorem.Sentence(5, 10))
-            .RuleFor(c => c.TreatmentPlan, f => f.Lorem.Paragraph(1))
-            .RuleFor(c => c.TCM_Inspection, f => f.Lorem.Sentence(3, 6))
-            .RuleFor(c => c.TCM_Auscultation, f => f.Lorem.Sentence(3, 6))
-            .RuleFor(c => c.TCM_Interrogation, f => f.Lorem.Sentence(5, 10))
-            .RuleFor(c => c.TCM_Palpation, f => f.Lorem.Sentence(3, 6))
-            .RuleFor(c => c.CreateTime, f => f.Date.Between(TestConstants.TestBaseDateTime, DateTime.UtcNow))
-            .RuleFor(c => c.CreatedBy, f => f.Random.Guid())
-            .RuleFor(c => c.CreatedByName, f => f.Name.FullName())
-            .FinishWith((f, c) =>
-            {
-                c.UpdateTime = c.CreateTime;
-                c.UpdatedBy = c.CreatedBy;
-                c.UpdatedByName = c.CreatedByName;
-            });
+            .RuleFor(c => c.PatientId, f => f.Random.Guid())
+            .RuleFor(c => c.UserId, f => f.Random.Guid())
+            .RuleFor(c => c.ChiefComplaint, f => f.Lorem.Sentence(3, 8))
+            .RuleFor(c => c.PresentIllness, f => f.Lorem.Paragraph(1))
+            .RuleFor(c => c.TCMDiagnosis, f => f.Lorem.Sentence(5, 10))
+            .RuleFor(c => c.TreatmentPrinciple, f => f.Lorem.Paragraph(1))
+            .RuleFor(c => c.Inspection, f => f.Lorem.Sentence(3, 6))
+            .RuleFor(c => c.AuscultationOlfaction, f => f.Lorem.Sentence(3, 6))
+            .RuleFor(c => c.Inquiry, f => f.Lorem.Sentence(5, 10))
+            .RuleFor(c => c.Palpation, f => f.Lorem.Sentence(3, 6))
+            .RuleFor(c => c.Status, f => f.PickRandom<CommonStatus>());
 
         /// <summary>
         /// 看诊记录创建DTO生成器
         /// </summary>
         public Faker<ConsultationCreateDto> ConsultationCreateDtoFaker => new Faker<ConsultationCreateDto>(Locale)
             .RuleFor(c => c.MedicalCaseId, f => f.Random.Guid())
-            .RuleFor(c => c.Symptoms, f => f.Lorem.Sentence(3, 8))
-            .RuleFor(c => c.Diagnosis, f => f.Lorem.Sentence(5, 10))
-            .RuleFor(c => c.TreatmentPlan, f => f.Lorem.Paragraph(1))
-            .RuleFor(c => c.TCM_Inspection, f => f.Lorem.Sentence(3, 6))
-            .RuleFor(c => c.TCM_Auscultation, f => f.Lorem.Sentence(3, 6))
-            .RuleFor(c => c.TCM_Interrogation, f => f.Lorem.Sentence(5, 10))
-            .RuleFor(c => c.TCM_Palpation, f => f.Lorem.Sentence(3, 6));
+            .RuleFor(c => c.PatientId, f => f.Random.Guid())
+            .RuleFor(c => c.DoctorId, f => f.Random.Guid())
+            .RuleFor(c => c.ChiefComplaint, f => f.Lorem.Sentence(3, 8))
+            .RuleFor(c => c.PresentIllness, f => f.Lorem.Paragraph(1));
 
         #endregion
 
@@ -226,21 +195,19 @@ namespace LYBT.Tests.TestDataFactory
         /// <summary>
         /// 处方实体生成器
         /// </summary>
-        public Faker<PrescriptionModel> PrescriptionModelFaker => new Faker<PrescriptionModel>(Locale)
+        public Faker<Prescription> PrescriptionModelFaker => new Faker<Prescription>(Locale)
             .RuleFor(p => p.Id, f => f.Random.Guid())
-            .RuleFor(p => p.ConsultationId, f => f.Random.Guid())
-            .RuleFor(p => p.PrescriptionName, f => f.Commerce.ProductName())
-            .RuleFor(p => p.TotalPrice, f => f.Random.Decimal(50, 500))
-            .RuleFor(p => p.Instructions, f => f.Lorem.Sentence(5, 10))
-            .RuleFor(p => p.CreateTime, f => f.Date.Between(TestConstants.TestBaseDateTime, DateTime.UtcNow))
-            .RuleFor(p => p.CreatedBy, f => f.Random.Guid())
-            .RuleFor(p => p.CreatedByName, f => f.Name.FullName())
-            .FinishWith((f, p) =>
-            {
-                p.UpdateTime = p.CreateTime;
-                p.UpdatedBy = p.CreatedBy;
-                p.UpdatedByName = p.CreatedByName;
-            });
+            .RuleFor(p => p.MedicalCaseId, f => f.Random.Guid())
+            .RuleFor(p => p.PatientId, f => f.Random.Guid())
+            .RuleFor(p => p.UserId, f => f.Random.Guid())
+            .RuleFor(p => p.Indication, f => f.Lorem.Sentence(5, 10))
+            .RuleFor(p => p.DosageCount, f => f.Random.Int(3, 15))
+            .RuleFor(p => p.Discount, f => f.Random.Decimal(0.8m, 1.0m))
+            .RuleFor(p => p.Advice, f => f.Lorem.Sentence(5, 10))
+            .RuleFor(p => p.FormulaSource, f => f.PickRandom("四君子汤", "六君子汤", "补中益气汤"))
+            .RuleFor(p => p.Status, f => f.PickRandom<PrescriptionStatus>())
+            .RuleFor(p => p.Remark, f => f.Lorem.Sentence(3, 8))
+;
 
         #endregion
 
@@ -249,21 +216,16 @@ namespace LYBT.Tests.TestDataFactory
         /// <summary>
         /// 验方实体生成器
         /// </summary>
-        public Faker<FormulaModel> FormulaModelFaker => new Faker<FormulaModel>(Locale)
+        public Faker<Formula> FormulaModelFaker => new Faker<Formula>(Locale)
             .RuleFor(f => f.Id, f => f.Random.Guid())
             .RuleFor(f => f.Name, f => f.PickRandom(TestConstants.TestFormulaNames))
-            .RuleFor(f => f.Description, f => f.Lorem.Paragraph(1))
-            .RuleFor(f => f.Indications, f => f.Lorem.Sentence(5, 10))
+            .RuleFor(f => f.Effect, f => f.Lorem.Paragraph(1))
+            .RuleFor(f => f.Usage, f => f.Lorem.Sentence(5, 10))
+            .RuleFor(f => f.Property, f => f.Lorem.Sentence(3, 6))
             .RuleFor(f => f.Status, f => f.PickRandom<CommonStatus>())
-            .RuleFor(f => f.CreateTime, f => f.Date.Between(TestConstants.TestBaseDateTime, DateTime.UtcNow))
-            .RuleFor(f => f.CreatedBy, f => f.Random.Guid())
-            .RuleFor(f => f.CreatedByName, f => f.Name.FullName())
-            .FinishWith((f, formula) =>
-            {
-                formula.UpdateTime = formula.CreateTime;
-                formula.UpdatedBy = formula.CreatedBy;
-                formula.UpdatedByName = formula.CreatedByName;
-            });
+            .RuleFor(f => f.IsShared, f => f.Random.Bool())
+            .RuleFor(f => f.Remark, f => f.Lorem.Sentence(3, 8))
+;
 
         #endregion
 
@@ -274,10 +236,10 @@ namespace LYBT.Tests.TestDataFactory
         /// </summary>
         public class RelatedMedicalRecords
         {
-            public PatientModel Patient { get; set; }
-            public MedicalCaseModel MedicalCase { get; set; }
-            public ConsultationModel Consultation { get; set; }
-            public PrescriptionModel? Prescription { get; set; }
+            public Patient Patient { get; set; }
+            public MedicalCase MedicalCase { get; set; }
+            public Consultation Consultation { get; set; }
+            public Prescription? Prescription { get; set; }
         }
 
         /// <summary>
@@ -286,10 +248,12 @@ namespace LYBT.Tests.TestDataFactory
         public RelatedMedicalRecords GenerateCompleteUserMedicalRecords(bool includePrescription = true)
         {
             var patient = PatientModelFaker.Generate();
-            var medicalCase = MedicalCaseModelFaker.Generate() with { PatientId = patient.Id };
-            var consultation = ConsultationModelFaker.Generate() with { MedicalCaseId = medicalCase.Id };
+            var medicalCase = MedicalCaseModelFaker.Generate();
+            medicalCase.PatientId = patient.Id;
+            var consultation = ConsultationModelFaker.Generate();
+            consultation.MedicalCaseId = medicalCase.Id;
             var prescription = includePrescription 
-                ? PrescriptionModelFaker.Generate() with { ConsultationId = consultation.Id }
+                ? PrescriptionModelFaker.Generate()
                 : null;
 
             return new RelatedMedicalRecords
@@ -304,11 +268,10 @@ namespace LYBT.Tests.TestDataFactory
         /// <summary>
         /// 生成指定医生的患者数据
         /// </summary>
-        public List<PatientModel> GeneratePatientsForDoctor(Guid doctorId, string doctorName, int count = 5)
+        public List<Patient> GeneratePatientsForDoctor(Guid doctorId, string doctorName, int count = 5)
         {
             return PatientModelFaker
                 .RuleFor(p => p.CreatedBy, doctorId)
-                .RuleFor(p => p.CreatedByName, doctorName)
                 .Generate(count);
         }
 
@@ -317,13 +280,25 @@ namespace LYBT.Tests.TestDataFactory
         /// </summary>
         public List<UserCreateDto> GenerateUsernameConflictScenarios(string baseUsername = "testuser")
         {
-            return new List<UserCreateDto>
-            {
-                UserCreateDtoFaker.Generate() with { Username = baseUsername },
-                UserCreateDtoFaker.Generate() with { Username = baseUsername.ToUpper() },
-                UserCreateDtoFaker.Generate() with { Username = baseUsername.ToLower() },
-                UserCreateDtoFaker.Generate() with { Username = $" {baseUsername} " }
-            };
+            var result = new List<UserCreateDto>();
+            
+            var user1 = UserCreateDtoFaker.Generate();
+            user1.Username = baseUsername;
+            result.Add(user1);
+            
+            var user2 = UserCreateDtoFaker.Generate();
+            user2.Username = baseUsername.ToUpper();
+            result.Add(user2);
+            
+            var user3 = UserCreateDtoFaker.Generate();
+            user3.Username = baseUsername.ToLower();
+            result.Add(user3);
+            
+            var user4 = UserCreateDtoFaker.Generate();
+            user4.Username = $" {baseUsername} ";
+            result.Add(user4);
+            
+            return result;
         }
 
         #endregion

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Bogus;
 using LYBT.Shared.Models;
+using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Tests.Core
 {
@@ -31,9 +32,9 @@ namespace LYBT.Tests.Core
                 PhoneNumber = _faker.Phone.PhoneNumber("1##########"),
                 PasswordHash = "AQAAAAEAACcQAAAAEGwrB7Ri8YXw4qPHiXoTJQKoNccNRjvMFWuNi4W5YYp3DhIRRtxb0AHjD+WnzGLCmw==",
                 Role = UserRole.Doctor,
-                IsActive = true,
-                CreatedAt = DateTime.Now.AddDays(-_faker.Random.Int(1, 365)),
-                UpdatedAt = DateTime.Now
+                Status = CommonStatus.Enabled,
+                CreatedTime = DateTime.Now.AddDays(-_faker.Random.Int(1, 365)),
+                UpdateTime = DateTime.Now
             };
 
             customize?.Invoke(user);
@@ -62,13 +63,13 @@ namespace LYBT.Tests.Core
                 IdNumber = GenerateIdNumber(),
                 PhoneNumber = _faker.Phone.PhoneNumber("1##########"),
                 Address = _faker.Address.FullAddress(),
-                EmergencyContact = _faker.Name.FullName(),
-                EmergencyPhone = _faker.Phone.PhoneNumber("1##########"),
-                MedicalHistory = _faker.Lorem.Paragraph(),
+                EmergencyContactName = _faker.Name.FullName(),
+                EmergencyContactPhone = _faker.Phone.PhoneNumber("1##########"),
+                // MedicalHistory property removed
                 AllergyHistory = _faker.Lorem.Sentence(),
-                IsActive = true,
+                Status = CommonStatus.Enabled,
                 CreatedAt = DateTime.Now.AddDays(-_faker.Random.Int(1, 365)),
-                UpdatedAt = DateTime.Now
+                UpdateTime = DateTime.Now
             };
 
             customize?.Invoke(patient);
@@ -94,21 +95,16 @@ namespace LYBT.Tests.Core
             {
                 Id = Guid.NewGuid(),
                 Name = _faker.PickRandom(herbNames),
-                PinYin = "RenShen", // 简化处理
-                Category = _faker.PickRandom("补益药", "解表药", "清热药", "理气药"),
-                Nature = _faker.PickRandom("寒", "热", "温", "凉", "平"),
-                Flavor = _faker.PickRandom("甘", "苦", "辛", "酸", "咸"),
-                Meridian = _faker.PickRandom("肝", "心", "脾", "肺", "肾"),
-                Efficacy = "补气养血，健脾益肺",
+                PinYinCode = "RenShen", // 简化处理
+                Origin = _faker.PickRandom("安徽", "四川", "河南", "山东"),
+                Spec = _faker.PickRandom("特级", "一等", "二等"),
+                Effect = "补气养血，健脾益肺",
                 Usage = "3-9g，水煎服",
-                Contraindication = "实证、热证慎用",
+                Remark = "实证、热证慎用",
                 Price = _faker.Random.Decimal(10, 500),
                 Unit = "g",
-                Stock = _faker.Random.Decimal(0, 10000),
-                MinStock = 100,
-                IsActive = true,
-                CreatedAt = DateTime.Now.AddDays(-_faker.Random.Int(1, 365)),
-                UpdatedAt = DateTime.Now
+                CostPrice = _faker.Random.Decimal(5, 300),
+                Status = CommonStatus.Enabled
             };
 
             customize?.Invoke(herb);
@@ -126,23 +122,21 @@ namespace LYBT.Tests.Core
 
         #region Prescription Data Builders
 
-        public PrescriptionModel BuildPrescription(Guid? patientId = null, Guid? consultationId = null)
+        public PrescriptionModel BuildPrescription(Guid? patientId = null, Guid? medicalCaseId = null)
         {
             var prescription = new PrescriptionModel
             {
                 Id = Guid.NewGuid(),
                 PatientId = patientId ?? Guid.NewGuid(),
-                ConsultationId = consultationId ?? Guid.NewGuid(),
-                PrescriptionNo = $"RX{DateTime.Now:yyyyMMdd}{_faker.Random.Int(1000, 9999)}",
-                Type = PrescriptionType.Decoction,
-                Dosage = 7,
-                DosageUnit = "剂",
-                Usage = "每日1剂，水煎服，分2次温服",
-                TotalAmount = _faker.Random.Decimal(50, 500),
-                Status = PrescriptionStatus.Issued,
-                IssuedDate = DateTime.Now,
-                CreatedAt = DateTime.Now,
-                UpdatedAt = DateTime.Now
+                MedicalCaseId = medicalCaseId ?? Guid.NewGuid(),
+                UserId = Guid.NewGuid(), // 医生ID
+                Indication = "补气养血，健脾益肺",
+                DosageCount = 7,
+                Discount = 1.0m,
+                Advice = "每日1剂，水煎服，分2次温服",
+                FormulaSource = "四君子汤",
+                Status = PrescriptionStatus.Draft,
+                Remark = "注意饮食清淡"
             };
 
             // 添加处方项
@@ -160,14 +154,11 @@ namespace LYBT.Tests.Core
                 PrescriptionId = prescriptionId,
                 HerbId = herb.Id,
                 HerbName = herb.Name,
-                Dosage = _faker.Random.Decimal(3, 30),
+                Quantity = _faker.Random.Decimal(3, 30),
                 Unit = herb.Unit,
-                Price = herb.Price,
-                Subtotal = herb.Price * _faker.Random.Decimal(3, 30),
-                ProcessingMethod = _faker.PickRandom("生", "炒", "蜜炙", "酒炙", "醋炙"),
-                Notes = _faker.Lorem.Sentence(),
-                SortOrder = index,
-                CreatedAt = DateTime.Now
+                UnitPrice = herb.Price,
+                Usage = _faker.PickRandom("生", "炒", "蜜炙", "酒炙", "醋炙"),
+                Remark = _faker.Lorem.Sentence()
             }).ToList();
         }
 
@@ -183,20 +174,12 @@ namespace LYBT.Tests.Core
             {
                 Id = Guid.NewGuid(),
                 Name = _faker.PickRandom(formulaNames),
-                PinYin = "SiJunZiTang",
-                Source = "《太平惠民和剂局方》",
-                Composition = "人参、白术、茯苓、甘草",
-                Dosage = "各等分，研末，每服6-9g",
-                Efficacy = "益气健脾",
-                Indications = "脾胃气虚证",
-                Contraindications = "实证慎用",
-                ModernApplication = "慢性胃炎、消化不良等",
-                Type = FormulaType.Classical,
-                Category = "补益剂",
-                IsTemplate = true,
-                IsActive = true,
-                CreatedAt = DateTime.Now.AddDays(-_faker.Random.Int(1, 365)),
-                UpdatedAt = DateTime.Now
+                Effect = "益气健脾",
+                Usage = "各等分，研末，每服6-9g",
+                Remark = "脾胃气虚证，实证慎用",
+                Property = "性温味甘",
+                Status = CommonStatus.Enabled,
+                IsShared = true
             };
 
             customize?.Invoke(formula);

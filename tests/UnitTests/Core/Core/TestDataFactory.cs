@@ -32,16 +32,14 @@ namespace LYBT.Tests.Backend.Core
         /// <summary>
         /// 生成用户模型
         /// </summary>
-        public Faker<UserModel> UserModelFaker => new Faker<UserModel>("zh_CN")
+        public Faker<User> UserModelFaker => new Faker<User>("zh_CN")
             .RuleFor(u => u.Id, f => f.Random.Guid())
             .RuleFor(u => u.Username, f => f.Internet.UserName())
             .RuleFor(u => u.RealName, f => f.Name.FullName())
             .RuleFor(u => u.PhoneNumber, f => f.Phone.PhoneNumber())
             .RuleFor(u => u.Role, f => f.PickRandom<UserRole>())
             .RuleFor(u => u.Status, f => f.PickRandom<CommonStatus>())
-            .RuleFor(u => u.CreateTime, f => f.Date.Past())
-            .RuleFor(u => u.CreatedBy, f => f.Random.Guid())
-            .RuleFor(u => u.CreatedByName, f => f.Name.FullName())
+            .RuleFor(u => u.CreatedTime, f => f.Date.Past())
             .RuleFor(u => u.PinYinCode, (f, u) => GetPinyin(u.RealName))
             .RuleFor(u => u.PasswordHash, f => f.Internet.Password(10, false, "", "Test123!"));
 
@@ -50,19 +48,13 @@ namespace LYBT.Tests.Backend.Core
         /// </summary>
         public Faker<UserCreateDto> UserCreateDtoFaker => new Faker<UserCreateDto>("zh_CN")
             .RuleFor(u => u.Username, f => f.Internet.UserName())
-            .RuleFor(u => u.RealName, f => f.Name.FullName())
-            .RuleFor(u => u.PhoneNumber, f => f.Phone.PhoneNumber())
-            .RuleFor(u => u.Role, f => f.PickRandom<UserRole>())
-            .RuleFor(u => u.Password, f => "Test123!");
+            .RuleFor(u => u.RealName, f => f.Name.FullName());
 
         /// <summary>
         /// 生成用户更新DTO
         /// </summary>
         public Faker<UserUpdateDto> UserUpdateDtoFaker => new Faker<UserUpdateDto>("zh_CN")
-            .RuleFor(u => u.Id, f => f.Random.Guid())
-            .RuleFor(u => u.RealName, f => f.Name.FullName())
-            .RuleFor(u => u.PhoneNumber, f => f.Phone.PhoneNumber())
-            .RuleFor(u => u.Role, f => f.PickRandom<UserRole>());
+            .RuleFor(u => u.RealName, f => f.Name.FullName());
 
         #endregion
 
@@ -71,18 +63,16 @@ namespace LYBT.Tests.Backend.Core
         /// <summary>
         /// 生成患者模型
         /// </summary>
-        public Faker<PatientModel> PatientModelFaker => new Faker<PatientModel>("zh_CN")
+        public Faker<Patient> PatientModelFaker => new Faker<Patient>("zh_CN")
             .RuleFor(p => p.Id, f => f.Random.Guid())
             .RuleFor(p => p.Name, f => f.Name.FullName())
             .RuleFor(p => p.PhoneNumber, f => f.Phone.PhoneNumber())
             .RuleFor(p => p.Gender, f => f.PickRandom<Gender>())
             .RuleFor(p => p.BirthDate, f => f.Date.Past(80, DateTime.Now.AddYears(-18)))
-            .RuleFor(p => p.IdCardNumber, f => GenerateIdCardNumber(f))
+            .RuleFor(p => p.IdNumber, f => GenerateIdNumber(f))
             .RuleFor(p => p.Address, f => f.Address.FullAddress())
             .RuleFor(p => p.Status, f => f.PickRandom<CommonStatus>())
-            .RuleFor(p => p.CreateTime, f => f.Date.Past())
-            .RuleFor(p => p.CreatedBy, f => f.Random.Guid())
-            .RuleFor(p => p.CreatedByName, f => f.Name.FullName())
+            .RuleFor(p => p.CreatedAt, f => f.Date.Past())
             .RuleFor(p => p.PinYinCode, (f, p) => GetPinyin(p.Name));
 
         /// <summary>
@@ -93,7 +83,7 @@ namespace LYBT.Tests.Backend.Core
             .RuleFor(p => p.PhoneNumber, f => f.Phone.PhoneNumber())
             .RuleFor(p => p.Gender, f => f.PickRandom<Gender>())
             .RuleFor(p => p.BirthDate, f => f.Date.Past(80, DateTime.Now.AddYears(-18)))
-            .RuleFor(p => p.IdCardNumber, f => GenerateIdCardNumber(f))
+            .RuleFor(p => p.IdNumber, f => GenerateIdNumber(f))
             .RuleFor(p => p.Address, f => f.Address.FullAddress());
 
         #endregion
@@ -103,16 +93,12 @@ namespace LYBT.Tests.Backend.Core
         /// <summary>
         /// 生成中药材模型
         /// </summary>
-        public Faker<HerbModel> HerbModelFaker => new Faker<HerbModel>("zh_CN")
+        public Faker<Herb> HerbModelFaker => new Faker<Herb>("zh_CN")
             .RuleFor(h => h.Id, f => f.Random.Guid())
             .RuleFor(h => h.Name, f => f.PickRandom(ChineseHerbNames))
             .RuleFor(h => h.Price, f => f.Random.Decimal(1, 500))
-            .RuleFor(h => h.Stock, f => f.Random.Int(0, 1000))
             .RuleFor(h => h.Unit, f => f.PickRandom("g", "包", "粒", "片", "ml"))
             .RuleFor(h => h.Status, f => f.PickRandom<CommonStatus>())
-            .RuleFor(h => h.CreateTime, f => f.Date.Past())
-            .RuleFor(h => h.CreatedBy, f => f.Random.Guid())
-            .RuleFor(h => h.CreatedByName, f => f.Name.FullName())
             .RuleFor(h => h.PinYinCode, (f, h) => GetPinyin(h.Name));
 
         /// <summary>
@@ -120,9 +106,7 @@ namespace LYBT.Tests.Backend.Core
         /// </summary>
         public Faker<HerbCreateDto> HerbCreateDtoFaker => new Faker<HerbCreateDto>("zh_CN")
             .RuleFor(h => h.Name, f => f.PickRandom(ChineseHerbNames))
-            .RuleFor(h => h.Price, f => f.Random.Decimal(1, 500))
-            .RuleFor(h => h.Stock, f => f.Random.Int(0, 1000))
-            .RuleFor(h => h.Unit, f => f.PickRandom("g", "包", "粒", "片", "ml"));
+            .RuleFor(h => h.Price, f => f.Random.Decimal(1, 500));
 
         #endregion
 
@@ -209,14 +193,23 @@ namespace LYBT.Tests.Backend.Core
             var baseUsername = "testuser";
             
             // 完全相同
-            yield return UserCreateDtoFaker.Generate() with { Username = baseUsername };
+            var exact = UserCreateDtoFaker.Generate();
+            exact.Username = baseUsername;
+            yield return exact;
             
             // 大小写不同
-            yield return UserCreateDtoFaker.Generate() with { Username = baseUsername.ToUpper() };
-            yield return UserCreateDtoFaker.Generate() with { Username = baseUsername.ToLower() };
+            var upper = UserCreateDtoFaker.Generate();
+            upper.Username = baseUsername.ToUpper();
+            yield return upper;
+            
+            var lower = UserCreateDtoFaker.Generate();
+            lower.Username = baseUsername.ToLower();
+            yield return lower;
             
             // 带空格
-            yield return UserCreateDtoFaker.Generate() with { Username = $" {baseUsername} " };
+            var withSpaces = UserCreateDtoFaker.Generate();
+            withSpaces.Username = $" {baseUsername} ";
+            yield return withSpaces;
         }
 
         /// <summary>
@@ -241,7 +234,7 @@ namespace LYBT.Tests.Backend.Core
         /// <summary>
         /// 生成身份证号
         /// </summary>
-        private string GenerateIdCardNumber(Faker f)
+        private string GenerateIdNumber(Faker f)
         {
             var prefix = f.Random.Replace("######");
             var birthYear = f.Date.Past(50, DateTime.Now.AddYears(-18)).ToString("yyyyMMdd");

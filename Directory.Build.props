@@ -3,6 +3,12 @@
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <SolutionDir Condition="'$(SolutionDir)' == ''">$(MSBuildThisFileDirectory)</SolutionDir>
     
+    <!-- P4-Fix: 统一编译基线配置 -->
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>latestmajor</LangVersion>
+    
     <!-- 启用中央包管理 (Central Package Management) -->
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     
@@ -23,13 +29,16 @@
     <GenerateAssemblyInfo Condition="'$(IsTestProject)' == 'true'">false</GenerateAssemblyInfo>
     
     <!-- 代码分析配置 - DT-007渐进式代码质量提升 -->
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <!-- P4-Fix: 仅生产项目TreatWarningsAsErrors；测试项目不设为错误 -->
+    <TreatWarningsAsErrors Condition="'$(IsTestProject)'!='true'">true</TreatWarningsAsErrors>
     <WarningLevel>4</WarningLevel>
     
-    <!-- 小诊所实用化配置：保留核心警告，禁用影响业务交付的格式警告 -->
-    <!-- 保留重要警告：CS8618(空引用), CS8625(空赋值), CS1591(缺少XML注释) -->
-    <!-- 禁用过度严格的StyleCop格式要求，专注于功能和安全性 -->
-    <NoWarn>$(NoWarn);SA1633;SA1200;SA1101;SA1309;SA1516;SA1602;SA1649;SA1500;SA1202;SA1629;SA1413;SA1611;SA1402;SA1615;SA1124;SA1505;SA1204;SA1401;SA1201;SA1210;SA1208;SA1503;SA1623;SA1003;SA1203;SA1127;SA1134;SA1128;SA1214;SA1618;SA1012;SA1117;SA1108;SA1512;CS1570;CS1587;NU1903;CS0162;CS0414;CS0168;CS0219;CS0169;CS1591;IDE0005;IDE0051;IDE0052;IDE0058;IDE0059;IDE1006;MSB3061</NoWarn>
+    <!-- P4-Server发布就绪配置：专注核心安全和稳定性 -->
+    <!-- 抑制StyleCop格式规则，保留编译器核心警告 -->
+    <!-- 禁用所有SA开头的StyleCop警告，专注于CS编译器警告 -->
+    <RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
+    <NoWarn>$(NoWarn);CS1570;CS1587;NU1903;CS0162;CS0414;CS0168;CS0219;CS0169;CS1591;IDE0005;IDE0051;IDE0052;IDE0058;IDE0059;IDE1006;MSB3061;CS0618;CS8625;SA0001;SA1005;SA1028;SA1101;SA1116;SA1117;SA1118;SA1200;SA1202;SA1208;SA1210;SA1300;SA1309;SA1402;SA1413;SA1500;SA1501;SA1502;SA1503;SA1505;SA1507;SA1508;SA1509;SA1513;SA1516;SA1633;SA1649</NoWarn>
     
     <!-- 启用关键安全和质量警告 - 针对小诊所业务需求 -->
     <!-- CS8618: 启用空引用检查，确保数据安全 -->

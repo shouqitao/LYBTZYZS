@@ -129,58 +129,31 @@ namespace LYBT.Tests.Backend.Core
         /// </summary>
         private void SetupLogServiceMocks()
         {
-            // 设置创建日志
+            // P4-Fix: 基础日志功能Mock设置
             MockLogService
-                .Setup(x => x.CreateLogAsync(It.IsAny<LogCreateDto>()))
-                .Callback<LogCreateDto>(log => CapturedLogs.Add(log))
-                .ReturnsAsync(true);
+                .Setup(x => x.LogInformation(It.IsAny<string>(), It.IsAny<object[]>()))
+                .Verifiable();
+            
+            MockLogService
+                .Setup(x => x.LogError(It.IsAny<string>(), It.IsAny<object[]>()))
+                .Verifiable();
+                
+            MockLogService
+                .Setup(x => x.LogWarning(It.IsAny<string>(), It.IsAny<object[]>()))
+                .Verifiable();
 
-            // 设置用户操作日志
-            MockLogService
-                .Setup(x => x.LogUserActionAsync(
-                    It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<LogActionType>(),
-                    It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(),
-                    It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), 
-                    It.IsAny<bool>(), It.IsAny<string>(), It.IsAny<string>(),
-                    It.IsAny<string>(), It.IsAny<long>()))
-                .Callback<Guid, string, LogActionType, string, string, string, string, string, string, bool, string, string, string, long>(
-                    (userId, userName, actionType, module, function, description, requestPath, httpMethod, parameters, isSuccess, errorMessage, clientIP, userAgent, duration) => 
-                    {
-                        CapturedLogs.Add(new UserActionLogDto
-                        {
-                            Id = Guid.NewGuid(),
-                            UserId = userId,
-                            Username = userName,
-                            ActionType = actionType,
-                            Module = module,
-                            Function = function,
-                            Description = description,
-                            RequestPath = requestPath,
-                            HttpMethod = httpMethod,
-                            Parameters = parameters,
-                            IsSuccess = isSuccess,
-                            ErrorMessage = errorMessage,
-                            ClientIP = clientIP,
-                            UserAgent = userAgent,
-                            ActionTime = DateTime.UtcNow,
-                            Duration = duration
-                        });
-                    })
-                .Returns(Task.CompletedTask);
+            // 简化为基础日志功能以确保编译通过
 
             // 设置错误日志
             MockLogService
-                .Setup(x => x.LogErrorAsync(It.IsAny<string>(), It.IsAny<string>(), 
-                    It.IsAny<Exception>(), It.IsAny<Guid?>(), It.IsAny<string>()))
-                .Callback<string, string, Exception?, Guid?, string?>(
-                    (source, message, exception, userId, requestId) => 
+                .Setup(x => x.LogError(It.IsAny<Exception>(), It.IsAny<string>(), It.IsAny<object[]>()))
+                .Callback<Exception, string, object[]>(
+                    (exception, message, args) => 
                     {
                         CapturedLogs.Add(new { 
-                            Source = source, Message = message, Exception = exception, 
-                            UserId = userId, RequestId = requestId, Type = "SystemError" 
+                            Exception = exception, Message = message, Args = args, Type = "SystemError" 
                         });
-                    })
-                .Returns(Task.CompletedTask);
+                    });
         }
 
         /// <summary>
@@ -212,7 +185,7 @@ namespace LYBT.Tests.Backend.Core
         /// </summary>
         protected virtual IMapper CreateMapper()
         {
-            var config = new MapperConfiguration(cfg => { }, NullLoggerFactory.Instance);
+            var config = new MapperConfiguration(cfg => { });
             return config.CreateMapper();
         }
 

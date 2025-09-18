@@ -31,13 +31,13 @@ namespace LYBT.Tests.Backend.TestBase
         /// <summary>
         /// Mock工厂
         /// </summary>
-        protected readonly MockFactory MockFactory;
+        protected readonly LYBT.Tests.UltraThink.TestInfrastructure.Factories.MockFactory MockFactory;
 
         #endregion
 
         protected ServiceTestBase()
         {
-            MockFactory = new MockFactory();
+            MockFactory = new LYBT.Tests.UltraThink.TestInfrastructure.Factories.MockFactory();
             Service = CreateServiceInstance();
         }
 
@@ -56,7 +56,7 @@ namespace LYBT.Tests.Backend.TestBase
             var config = new MapperConfiguration(cfg =>
             {
                 ConfigureMapper(cfg);
-            }, NullLoggerFactory.Instance);
+            });
             
             return config.CreateMapper();
         }
@@ -88,19 +88,8 @@ namespace LYBT.Tests.Backend.TestBase
         {
             var mock = new Mock<IUnifiedLogService>();
             
-            // 设置基本的日志方法
-            mock.Setup(x => x.LogUserActionAsync(
-                It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<LYBT.Shared.Models.Enums.LogActionType>(),
-                It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(),
-                It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(),
-                It.IsAny<bool>(), It.IsAny<string>(), It.IsAny<string>(),
-                It.IsAny<string>(), It.IsAny<long>()))
-                .Returns(Task.CompletedTask);
-
-            mock.Setup(x => x.LogErrorAsync(
-                It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Exception>(),
-                It.IsAny<Guid?>(), It.IsAny<string>()))
-                .Returns(Task.CompletedTask);
+            // P4-Fix简化：移除已不存在的日志方法设置
+            // 简化日志Mock以适应接口更改
 
             return mock;
         }
@@ -157,7 +146,7 @@ namespace LYBT.Tests.Backend.TestBase
         /// <summary>
         /// 验证ServiceResult成功
         /// </summary>
-        protected void AssertSuccess<T>(LYBT.Shared.Models.Common.ServiceResult<T> result, string message = "操作应该成功")
+        protected void AssertSuccess<T>(LYBT.Shared.Models.Contracts.Common.ServiceResult<T> result, string message = "操作应该成功")
         {
             Assert.True(result.IsSuccess, $"{message}. 错误: {result.ErrorMessage}");
             Assert.NotNull(result.Data);
@@ -166,7 +155,7 @@ namespace LYBT.Tests.Backend.TestBase
         /// <summary>
         /// 验证ServiceResult失败
         /// </summary>
-        protected void AssertFailure<T>(LYBT.Shared.Models.Common.ServiceResult<T> result, string expectedError = null, string message = "操作应该失败")
+        protected void AssertFailure<T>(LYBT.Shared.Models.Contracts.Common.ServiceResult<T> result, string expectedError = null, string message = "操作应该失败")
         {
             Assert.False(result.IsSuccess, message);
             Assert.Null(result.Data);
@@ -180,11 +169,11 @@ namespace LYBT.Tests.Backend.TestBase
         /// <summary>
         /// 验证分页结果
         /// </summary>
-        protected void AssertPagedResult<T>(LYBT.Shared.Models.Common.PagedResult<T> result, int expectedTotal, int expectedPage, int expectedPageSize)
+        protected void AssertPagedResult<T>(LYBT.Shared.Models.Contracts.Common.PagedResult<T> result, int expectedTotal, int expectedPage, int expectedPageSize)
         {
             Assert.NotNull(result);
-            Assert.Equal(expectedTotal, result.Total);
-            Assert.Equal(expectedPage, result.Page);
+            Assert.Equal(expectedTotal, result.TotalCount);
+            Assert.Equal(expectedPage, result.CurrentPage);
             Assert.Equal(expectedPageSize, result.PageSize);
             Assert.NotNull(result.Items);
         }

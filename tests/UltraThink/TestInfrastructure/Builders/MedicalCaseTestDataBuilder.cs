@@ -10,7 +10,7 @@ namespace LYBT.Tests.UltraThink.TestInfrastructure.Builders
     /// 代码干净：流畅接口，清晰的医疗流程数据构建
     /// 性能出色：延迟构建，高效生成
     /// </summary>
-    public class MedicalCaseTestDataBuilder : TestDataBuilder<MedicalCaseModel, MedicalCaseTestDataBuilder>
+    public class MedicalCaseTestDataBuilder : TestDataBuilder<MedicalCase, MedicalCaseTestDataBuilder>
     {
         private static readonly string[] Remarks = 
         {
@@ -54,15 +54,27 @@ namespace LYBT.Tests.UltraThink.TestInfrastructure.Builders
             return this;
         }
 
-        public MedicalCaseTestDataBuilder WithUserId(Guid userId)
+        public MedicalCaseTestDataBuilder WithDoctorId(Guid doctorId)
         {
-            _buildActions.Add(m => m.UserId = userId);
+            _buildActions.Add(m => m.DoctorId = doctorId);
             return this;
         }
 
-        public MedicalCaseTestDataBuilder WithConsultationId(Guid? consultationId)
+        public MedicalCaseTestDataBuilder WithPatientName(string patientName)
         {
-            _buildActions.Add(m => m.ConsultationId = consultationId);
+            _buildActions.Add(m => m.PatientName = patientName);
+            return this;
+        }
+
+        public MedicalCaseTestDataBuilder WithDoctorName(string doctorName)
+        {
+            _buildActions.Add(m => m.DoctorName = doctorName);
+            return this;
+        }
+
+        public MedicalCaseTestDataBuilder WithConsultationDate(DateTime consultationDate)
+        {
+            _buildActions.Add(m => m.ConsultationDate = consultationDate);
             return this;
         }
 
@@ -93,21 +105,23 @@ namespace LYBT.Tests.UltraThink.TestInfrastructure.Builders
 
         #region 时间相关构建方法
 
+        // 注意：MedicalCase实体没有审计字段，已简化架构
         public MedicalCaseTestDataBuilder WithCreateTime(DateTime createTime)
         {
-            _buildActions.Add(m => m.CreateTime = createTime);
+            // 使用ConsultationDate代替CreateTime
+            _buildActions.Add(m => m.ConsultationDate = createTime);
             return this;
         }
 
         public MedicalCaseTestDataBuilder WithUpdateTime(DateTime updateTime)
         {
-            _buildActions.Add(m => m.UpdateTime = updateTime);
+            // 审计字段已移除，跳过此操作
             return this;
         }
 
         public MedicalCaseTestDataBuilder WithCompleteTime(DateTime? completeTime)
         {
-            _buildActions.Add(m => m.CompleteTime = completeTime);
+            // MedicalCase实体没有CompleteTime属性，跳过此操作
             return this;
         }
 
@@ -127,25 +141,22 @@ namespace LYBT.Tests.UltraThink.TestInfrastructure.Builders
 
         public MedicalCaseTestDataBuilder AsActive()
         {
-            _buildActions.Add(m => m.IsActive = true);
-            return this;
+            return WithStatus(MedicalCaseStatus.Active);
         }
 
         public MedicalCaseTestDataBuilder AsInactive()
         {
-            _buildActions.Add(m => m.IsActive = false);
-            return this;
+            return WithStatus(MedicalCaseStatus.Cancelled);
         }
 
         public MedicalCaseTestDataBuilder AsRegistered()
         {
-            return WithStatus(MedicalCaseStatus.Registered);
+            return WithStatus(MedicalCaseStatus.Active);
         }
 
         public MedicalCaseTestDataBuilder AsInConsultation()
         {
-            return WithStatus(MedicalCaseStatus.InConsultation)
-                .WithConsultationId(Guid.NewGuid());
+            return WithStatus(MedicalCaseStatus.Active);
         }
 
         public MedicalCaseTestDataBuilder AsCompleted()
@@ -171,7 +182,9 @@ namespace LYBT.Tests.UltraThink.TestInfrastructure.Builders
         {
             return WithId(Guid.NewGuid())
                 .WithPatientId(Guid.NewGuid())
-                .WithUserId(Guid.NewGuid())
+                .WithDoctorId(Guid.NewGuid())
+                .WithPatientName("测试患者")
+                .WithDoctorName("测试医生")
                 .AsRegistered()
                 .AsActive()
                 .WithRandomRemark();
@@ -203,7 +216,6 @@ namespace LYBT.Tests.UltraThink.TestInfrastructure.Builders
         {
             return AsValidMedicalCase()
                 .AsCompleted()
-                .WithConsultationId(Guid.NewGuid())
                 .WithPrescriptionId(Guid.NewGuid())
                 .WithRemark("诊疗完成，已开具处方");
         }
@@ -236,13 +248,12 @@ namespace LYBT.Tests.UltraThink.TestInfrastructure.Builders
             var now = DateTime.Now;
             return WithId(Guid.NewGuid())
                 .WithPatientId(Guid.NewGuid())
-                .WithUserId(Guid.NewGuid())
-                .WithConsultationId(Guid.NewGuid())
+                .WithDoctorId(Guid.NewGuid())
+                .WithPatientName("测试患者")
+                .WithDoctorName("测试医生")
                 .WithPrescriptionId(Guid.NewGuid())
                 .AsCompleted()
                 .WithCreateTime(now.AddHours(-3))
-                .WithUpdateTime(now)
-                .WithCompleteTime(now)
                 .WithRemark("完整诊疗流程，包含看诊和处方");
         }
 
@@ -255,8 +266,7 @@ namespace LYBT.Tests.UltraThink.TestInfrastructure.Builders
             return AsValidMedicalCase()
                 .AsCompleted()
                 .WithCreateTime(createTime)
-                .WithUpdateTime(createTime.AddHours(2))
-                .WithCompleteTime(createTime.AddHours(2))
+                .WithCreateTime(createTime)
                 .WithRemark($"{daysAgo}天前的历史案例");
         }
 
@@ -267,9 +277,9 @@ namespace LYBT.Tests.UltraThink.TestInfrastructure.Builders
         /// <summary>
         /// 生成一组不同状态的医疗案例
         /// </summary>
-        public MedicalCaseModel[] BuildMixedStatusCases(int count)
+        public MedicalCase[] BuildMixedStatusCases(int count)
         {
-            var cases = new MedicalCaseModel[count];
+            var cases = new MedicalCase[count];
             var statuses = Enum.GetValues<MedicalCaseStatus>();
             
             for (int i = 0; i < count; i++)
@@ -279,11 +289,7 @@ namespace LYBT.Tests.UltraThink.TestInfrastructure.Builders
                 
                 if (status == MedicalCaseStatus.Completed)
                 {
-                    builder.WithCompleteTime(DateTime.Now.AddHours(-_random.Next(1, 24)));
-                }
-                else if (status == MedicalCaseStatus.InConsultation)
-                {
-                    builder.WithConsultationId(Guid.NewGuid());
+                    // 完成状态无需额外操作
                 }
                 else if (status == MedicalCaseStatus.Cancelled)
                 {
@@ -299,9 +305,9 @@ namespace LYBT.Tests.UltraThink.TestInfrastructure.Builders
         /// <summary>
         /// 生成一个患者的多次就诊记录
         /// </summary>
-        public MedicalCaseModel[] BuildPatientHistory(Guid patientId, int visitCount)
+        public MedicalCase[] BuildPatientHistory(Guid patientId, int visitCount)
         {
-            var cases = new MedicalCaseModel[visitCount];
+            var cases = new MedicalCase[visitCount];
             
             for (int i = 0; i < visitCount; i++)
             {
@@ -333,25 +339,29 @@ namespace LYBT.Tests.UltraThink.TestInfrastructure.Builders
                 _entity.PatientId = Guid.NewGuid();
             }
 
-            if (_entity.CreateTime == default)
+            if (_entity.ConsultationDate == default)
             {
-                _entity.CreateTime = DateTime.UtcNow;
+                _entity.ConsultationDate = DateTime.Now;
             }
 
-            if (_entity.UpdateTime == default)
+            if (string.IsNullOrEmpty(_entity.PatientName))
             {
-                _entity.UpdateTime = DateTime.UtcNow;
+                _entity.PatientName = "默认患者";
+            }
+
+            if (string.IsNullOrEmpty(_entity.DoctorName))
+            {
+                _entity.DoctorName = "默认医生";
+            }
+
+            if (_entity.DoctorId == Guid.Empty)
+            {
+                _entity.DoctorId = Guid.NewGuid();
             }
 
             if (_entity.Status == 0)
             {
-                _entity.Status = MedicalCaseStatus.Registered;
-            }
-
-            // 默认激活状态
-            if (!_buildActions.Any(a => a.Target?.ToString()?.Contains("IsActive") == true))
-            {
-                _entity.IsActive = true;
+                _entity.Status = MedicalCaseStatus.Active;
             }
         }
     }

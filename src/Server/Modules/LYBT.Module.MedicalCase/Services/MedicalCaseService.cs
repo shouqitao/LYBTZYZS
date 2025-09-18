@@ -22,7 +22,7 @@ namespace LYBT.Module.MedicalCase.Services
         public async Task<ServiceResult<MedicalCaseDetailDto>> GetByIdAsync(Guid id)
         {
             var result = await _queryService.GetByIdAsync(id);
-            if (!result.IsSuccess)
+            if (!result.IsSuccess || result.Data == null)
             {
                 return ServiceResult<MedicalCaseDetailDto>.Failure(result.ErrorMessage ?? "获取失败");
             }

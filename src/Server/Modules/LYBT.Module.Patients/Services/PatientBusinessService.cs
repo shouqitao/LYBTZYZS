@@ -454,7 +454,7 @@ namespace LYBT.Module.Patients.Services
 
                 if (!string.IsNullOrWhiteSpace(exportDto.PhoneNumber))
                 {
-                    patientsQuery = patientsQuery.Where(p => p.PhoneNumber.Contains(exportDto.PhoneNumber));
+                    patientsQuery = patientsQuery.Where(p => p.PhoneNumber != null && p.PhoneNumber.Contains(exportDto.PhoneNumber));
                 }
 
                 var patients = await patientsQuery

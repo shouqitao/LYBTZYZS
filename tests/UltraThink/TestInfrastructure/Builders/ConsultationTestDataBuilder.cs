@@ -11,7 +11,7 @@ namespace LYBT.Tests.UltraThink.TestInfrastructure.Builders
     /// 代码干净：流畅接口，清晰的中医四诊数据构建
     /// 性能出色：延迟构建，高效生成
     /// </summary>
-    public class ConsultationTestDataBuilder : TestDataBuilder<ConsultationModel, ConsultationTestDataBuilder>
+    public class ConsultationTestDataBuilder : TestDataBuilder<Consultation, ConsultationTestDataBuilder>
     {
         private static readonly string[] ChiefComplaints = 
         {
@@ -106,21 +106,21 @@ namespace LYBT.Tests.UltraThink.TestInfrastructure.Builders
             return this;
         }
 
-        public ConsultationTestDataBuilder WithConsultationTime(DateTime consultationTime)
+        public ConsultationTestDataBuilder WithChiefComplaint(string chiefComplaint)
         {
-            _buildActions.Add(c => c.ConsultationTime = consultationTime);
+            _buildActions.Add(c => c.ChiefComplaint = chiefComplaint);
             return this;
         }
 
-        public ConsultationTestDataBuilder WithDiagnosis(string diagnosis)
+        public ConsultationTestDataBuilder WithPresentIllness(string presentIllness)
         {
-            _buildActions.Add(c => c.Diagnosis = diagnosis);
+            _buildActions.Add(c => c.PresentIllness = presentIllness);
             return this;
         }
 
-        public ConsultationTestDataBuilder WithRandomDiagnosis()
+        public ConsultationTestDataBuilder WithRandomChiefComplaint()
         {
-            return WithDiagnosis(ChiefComplaints[_random.Next(ChiefComplaints.Length)]);
+            return WithChiefComplaint(ChiefComplaints[_random.Next(ChiefComplaints.Length)]);
         }
 
         #endregion
@@ -151,9 +151,10 @@ namespace LYBT.Tests.UltraThink.TestInfrastructure.Builders
             return this;
         }
 
+        // 注意：Consultation实体没有单独的TongueInspection属性，合并到Palpation中
         public ConsultationTestDataBuilder WithTongueInspection(string tongueInspection)
         {
-            _buildActions.Add(c => c.TongueInspection = tongueInspection);
+            _buildActions.Add(c => c.Palpation = (c.Palpation ?? "") + $"舌诊：{tongueInspection};");
             return this;
         }
 
@@ -162,9 +163,10 @@ namespace LYBT.Tests.UltraThink.TestInfrastructure.Builders
             return WithTongueInspection(TongueInspections[_random.Next(TongueInspections.Length)]);
         }
 
+        // 注意：Consultation实体没有单独的PulseCondition属性，合并到Palpation中
         public ConsultationTestDataBuilder WithPulseCondition(string pulseCondition)
         {
-            _buildActions.Add(c => c.PulseCondition = pulseCondition);
+            _buildActions.Add(c => c.Palpation = (c.Palpation ?? "") + $"脉诊：{pulseCondition};");
             return this;
         }
 
@@ -241,15 +243,16 @@ namespace LYBT.Tests.UltraThink.TestInfrastructure.Builders
             return WithStatus(CommonStatus.Disabled);
         }
 
+        // 注意：Consultation实体没有审计字段，已简化架构
         public ConsultationTestDataBuilder WithCreateTime(DateTime createTime)
         {
-            _buildActions.Add(c => c.CreateTime = createTime);
+            // 审计字段已移除，跳过此操作
             return this;
         }
 
         public ConsultationTestDataBuilder WithUpdateTime(DateTime updateTime)
         {
-            _buildActions.Add(c => c.UpdateTime = updateTime);
+            // 审计字段已移除，跳过此操作
             return this;
         }
 
@@ -266,8 +269,8 @@ namespace LYBT.Tests.UltraThink.TestInfrastructure.Builders
                 .WithMedicalCaseId(Guid.NewGuid())
                 .WithPatientId(Guid.NewGuid())
                 .WithUserId(Guid.NewGuid())
-                .WithConsultationTime(DateTime.Now)
-                .WithRandomDiagnosis()
+                .WithRandomChiefComplaint()
+                .WithRandomTCMDiagnosis()
                 .AsActive();
         }
 
@@ -293,8 +296,8 @@ namespace LYBT.Tests.UltraThink.TestInfrastructure.Builders
                 .WithMedicalCaseId(Guid.NewGuid())
                 .WithPatientId(Guid.NewGuid())
                 .WithUserId(Guid.NewGuid())
-                .WithConsultationTime(DateTime.Now)
-                .WithDiagnosis("")
+                .WithChiefComplaint("")
+                .WithTCMDiagnosis("")
                 .AsActive();
         }
 
@@ -304,7 +307,7 @@ namespace LYBT.Tests.UltraThink.TestInfrastructure.Builders
         public ConsultationTestDataBuilder AsWindColdCase()
         {
             return AsValidConsultation()
-                .WithDiagnosis("恶寒发热，头身疼痛，鼻塞流涕")
+                .WithChiefComplaint("恶寒发热，头身疼痛，鼻塞流涕")
                 .WithInspection("面色苍白，精神尚可")
                 .WithAuscultationOlfaction("咳嗽声重，痰白稀薄")
                 .WithInquiry("恶寒重发热轻，无汗，口不渴")
@@ -322,7 +325,7 @@ namespace LYBT.Tests.UltraThink.TestInfrastructure.Builders
         public ConsultationTestDataBuilder AsSpleenStomachColdCase()
         {
             return AsValidConsultation()
-                .WithDiagnosis("腹痛隐隐，喜温喜按，食少纳呆")
+                .WithChiefComplaint("腹痛隐隐，喜温喜按，食少纳呆")
                 .WithInspection("面色萎黄，形体消瘦")
                 .WithAuscultationOlfaction("语声低微，口淡无味")
                 .WithInquiry("食欲不振，腹部冷痛，大便溏薄")
@@ -371,24 +374,14 @@ namespace LYBT.Tests.UltraThink.TestInfrastructure.Builders
                 _entity.UserId = Guid.NewGuid();
             }
 
-            if (_entity.ConsultationTime == default)
+            if (string.IsNullOrEmpty(_entity.ChiefComplaint))
             {
-                _entity.ConsultationTime = DateTime.Now;
+                _entity.ChiefComplaint = "待问诊";
             }
 
-            if (string.IsNullOrEmpty(_entity.Diagnosis))
+            if (string.IsNullOrEmpty(_entity.TCMDiagnosis))
             {
-                _entity.Diagnosis = "待诊断";
-            }
-
-            if (_entity.CreateTime == default)
-            {
-                _entity.CreateTime = DateTime.UtcNow;
-            }
-
-            if (_entity.UpdateTime == default)
-            {
-                _entity.UpdateTime = DateTime.UtcNow;
+                _entity.TCMDiagnosis = "待诊断";
             }
 
             if (_entity.Status == 0)

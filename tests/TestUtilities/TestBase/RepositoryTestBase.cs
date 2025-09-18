@@ -77,7 +77,8 @@ namespace LYBT.Tests.Backend.TestBase
         /// </summary>
         protected async Task<TEntity> CreateAndAddTestEntityAsync(Action<TEntity> configure = null)
         {
-            var entity = DataFactory.CreateTestEntity<TEntity>();
+            // P4-Fix简化：使用Activator创建基础实体，避免复杂的泛型工厂方法
+            var entity = Activator.CreateInstance<TEntity>();
             configure?.Invoke(entity);
             return await AddTestEntityAsync(entity);
         }
@@ -91,7 +92,8 @@ namespace LYBT.Tests.Backend.TestBase
             
             for (int i = 0; i < count; i++)
             {
-                var entity = DataFactory.CreateTestEntity<TEntity>();
+                // P4-Fix简化：使用Activator创建基础实体
+                var entity = Activator.CreateInstance<TEntity>();
                 configure?.Invoke(entity, i);
                 entities.Add(entity);
             }

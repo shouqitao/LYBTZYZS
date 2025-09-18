@@ -12,7 +12,7 @@ namespace LYBT.Tests.UltraThink.TestInfrastructure.Builders
     /// 代码干净：流畅接口，清晰的处方数据构建
     /// 性能出色：延迟构建，高效生成
     /// </summary>
-    public class PrescriptionTestDataBuilder : TestDataBuilder<PrescriptionModel, PrescriptionTestDataBuilder>
+    public class PrescriptionTestDataBuilder : TestDataBuilder<Prescription, PrescriptionTestDataBuilder>
     {
         private static readonly string[] Diagnoses = 
         {
@@ -72,15 +72,21 @@ namespace LYBT.Tests.UltraThink.TestInfrastructure.Builders
             return this;
         }
 
-        public PrescriptionTestDataBuilder WithDiagnosis(string diagnosis)
+        public PrescriptionTestDataBuilder WithIndication(string indication)
         {
-            _buildActions.Add(p => p.Diagnosis = diagnosis);
+            _buildActions.Add(p => p.Indication = indication);
             return this;
         }
 
-        public PrescriptionTestDataBuilder WithRandomDiagnosis()
+        public PrescriptionTestDataBuilder WithMedicalCaseId(Guid medicalCaseId)
         {
-            return WithDiagnosis(Diagnoses[_random.Next(Diagnoses.Length)]);
+            _buildActions.Add(p => p.MedicalCaseId = medicalCaseId);
+            return this;
+        }
+
+        public PrescriptionTestDataBuilder WithRandomIndication()
+        {
+            return WithIndication(Diagnoses[_random.Next(Diagnoses.Length)]);
         }
 
         public PrescriptionTestDataBuilder WithAdvice(string advice)
@@ -100,9 +106,21 @@ namespace LYBT.Tests.UltraThink.TestInfrastructure.Builders
             return this;
         }
 
-        public PrescriptionTestDataBuilder WithSingleDosePrice(decimal price)
+        public PrescriptionTestDataBuilder WithDiscount(decimal discount)
         {
-            _buildActions.Add(p => p.SingleDosePrice = price);
+            _buildActions.Add(p => p.Discount = discount);
+            return this;
+        }
+
+        public PrescriptionTestDataBuilder WithFormulaSource(string formulaSource)
+        {
+            _buildActions.Add(p => p.FormulaSource = formulaSource);
+            return this;
+        }
+
+        public PrescriptionTestDataBuilder WithRemark(string remark)
+        {
+            _buildActions.Add(p => p.Remark = remark);
             return this;
         }
 
@@ -125,8 +143,8 @@ namespace LYBT.Tests.UltraThink.TestInfrastructure.Builders
                 HerbName = herbName,
                 Quantity = quantity,
                 Unit = unit,
-                UnitPrice = unitPrice,
-                SubTotal = quantity * unitPrice
+                UnitPrice = unitPrice
+                // Amount是计算属性，不需要设置
             };
             _items.Add(item);
             return this;
@@ -180,24 +198,20 @@ namespace LYBT.Tests.UltraThink.TestInfrastructure.Builders
             return WithStatus(PrescriptionStatus.Completed);
         }
 
-        public PrescriptionTestDataBuilder AsDispensed()
-        {
-            return WithStatus(PrescriptionStatus.Dispensed);
-        }
-
         #endregion
 
         #region 时间相关构建方法
 
+        // 注意：Prescription实体没有审计字段，已简化架构
         public PrescriptionTestDataBuilder WithCreateTime(DateTime createTime)
         {
-            _buildActions.Add(p => p.CreateTime = createTime);
+            // 审计字段已移除，跳过此操作
             return this;
         }
 
         public PrescriptionTestDataBuilder WithUpdateTime(DateTime updateTime)
         {
-            _buildActions.Add(p => p.UpdateTime = updateTime);
+            // 审计字段已移除，跳过此操作
             return this;
         }
 
@@ -223,7 +237,8 @@ namespace LYBT.Tests.UltraThink.TestInfrastructure.Builders
             return WithId(Guid.NewGuid())
                 .WithPatientId(Guid.NewGuid())
                 .WithUserId(Guid.NewGuid())
-                .WithRandomDiagnosis()
+                .WithRandomIndication()
+                .WithMedicalCaseId(Guid.NewGuid())
                 .WithRandomAdvice()
                 .WithDosageCount(7)
                 .AddRandomItems(5)
@@ -246,16 +261,16 @@ namespace LYBT.Tests.UltraThink.TestInfrastructure.Builders
         {
             return AsValidPrescription()
                 .AsCompleted()
-                .WithSingleDosePrice(35.5m);
+                .WithDiscount(0.9m);
         }
 
         /// <summary>
-        /// 构建一个已配药的处方
+        /// 构建一个已完成的处方（配药完毕）
         /// </summary>
         public PrescriptionTestDataBuilder AsDispensedPrescription()
         {
             return AsCompletedPrescription()
-                .AsDispensed()
+                .AsCompleted()
                 .WithUpdateTime(DateTime.Now);
         }
 
@@ -267,7 +282,8 @@ namespace LYBT.Tests.UltraThink.TestInfrastructure.Builders
             return WithId(Guid.NewGuid())
                 .WithPatientId(Guid.NewGuid())
                 .WithUserId(Guid.NewGuid())
-                .WithDiagnosis("风寒感冒，恶寒发热，无汗")
+                .WithIndication("风寒感冒，恶寒发热，无汗")
+                .WithMedicalCaseId(Guid.NewGuid())
                 .WithAdvice("温服，服后覆被取微汗")
                 .WithDosageCount(3)
                 .WithClassicFormula()
@@ -282,7 +298,8 @@ namespace LYBT.Tests.UltraThink.TestInfrastructure.Builders
             return WithId(Guid.NewGuid())
                 .WithPatientId(Guid.NewGuid())
                 .WithUserId(Guid.NewGuid())
-                .WithDiagnosis("待补充")
+                .WithIndication("待补充")
+                .WithMedicalCaseId(Guid.NewGuid())
                 .WithDosageCount(0)
                 .AsDraft();
         }
@@ -290,9 +307,9 @@ namespace LYBT.Tests.UltraThink.TestInfrastructure.Builders
         /// <summary>
         /// 构建患者的历史处方
         /// </summary>
-        public PrescriptionModel[] BuildPatientHistory(Guid patientId, int count)
+        public Prescription[] BuildPatientHistory(Guid patientId, int count)
         {
-            var prescriptions = new PrescriptionModel[count];
+            var prescriptions = new Prescription[count];
             for (int i = 0; i < count; i++)
             {
                 prescriptions[i] = AsValidPrescription()
@@ -307,9 +324,9 @@ namespace LYBT.Tests.UltraThink.TestInfrastructure.Builders
         /// <summary>
         /// 构建医生今日的处方
         /// </summary>
-        public PrescriptionModel[] BuildDoctorTodayPrescriptions(Guid doctorId, int count)
+        public Prescription[] BuildDoctorTodayPrescriptions(Guid doctorId, int count)
         {
-            var prescriptions = new PrescriptionModel[count];
+            var prescriptions = new Prescription[count];
             var today = DateTime.Today;
             for (int i = 0; i < count; i++)
             {
@@ -326,7 +343,7 @@ namespace LYBT.Tests.UltraThink.TestInfrastructure.Builders
         /// <summary>
         /// 构建处方
         /// </summary>
-        public override PrescriptionModel Build()
+        public override Prescription Build()
         {
             var prescription = base.Build();
             
@@ -339,11 +356,7 @@ namespace LYBT.Tests.UltraThink.TestInfrastructure.Builders
             // 计算总价（如果有处方项）
             if (prescription.Items != null && prescription.Items.Any())
             {
-                var totalPrice = prescription.Items.Sum(i => i.SubTotal);
-                if (prescription.DosageCount > 0)
-                {
-                    prescription.SingleDosePrice = totalPrice / prescription.DosageCount;
-                }
+                // 价格计算在DTO层处理，这里不做计算
             }
             
             return prescription;
@@ -369,20 +382,17 @@ namespace LYBT.Tests.UltraThink.TestInfrastructure.Builders
                 _entity.UserId = Guid.NewGuid();
             }
 
-            if (string.IsNullOrEmpty(_entity.Diagnosis))
+            if (string.IsNullOrEmpty(_entity.Indication))
             {
-                _entity.Diagnosis = "待诊断";
+                _entity.Indication = "待诊断";
             }
 
-            if (_entity.CreateTime == default)
+            if (_entity.MedicalCaseId == Guid.Empty)
             {
-                _entity.CreateTime = DateTime.UtcNow;
+                _entity.MedicalCaseId = Guid.NewGuid();
             }
 
-            if (_entity.UpdateTime == default)
-            {
-                _entity.UpdateTime = DateTime.UtcNow;
-            }
+            // 审计字段已移除
 
             if (_entity.Status == 0)
             {

@@ -80,71 +80,56 @@ namespace LYBT.Tests.UltraThink.TestInfrastructure.Factories
             var dataStore = new List<T>();
 
             // Setup GetAllAsync
-            mock.Setup(x => x.GetAllAsync(It.IsAny<CancellationToken>()))
+            mock.Setup(x => x.GetAllAsync())
                 .ReturnsAsync(() => dataStore.ToList());
 
             // Setup GetByIdAsync
-            mock.Setup(x => x.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync((Guid id, CancellationToken ct) =>
+            mock.Setup(x => x.GetByIdAsync(It.IsAny<Guid>()))
+                .ReturnsAsync((Guid id) =>
                 {
                     // 简化实现，实际可能需要反射获取Id属性
                     return dataStore.FirstOrDefault();
                 });
 
             // Setup AddAsync
-            mock.Setup(x => x.AddAsync(It.IsAny<T>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync((T entity, CancellationToken ct) =>
+            mock.Setup(x => x.AddAsync(It.IsAny<T>()))
+                .ReturnsAsync((T entity) =>
                 {
                     dataStore.Add(entity);
                     return entity;
                 });
 
             // Setup UpdateAsync
-            mock.Setup(x => x.UpdateAsync(It.IsAny<T>(), It.IsAny<CancellationToken>()))
-                .Returns((T entity, CancellationToken ct) =>
+            mock.Setup(x => x.UpdateAsync(It.IsAny<T>()))
+                .ReturnsAsync((T entity) =>
                 {
                     // 简化实现
-                    return Task.CompletedTask;
+                    return entity;
                 });
 
-            // Setup DeleteAsync
-            mock.Setup(x => x.DeleteAsync(It.IsAny<T>(), It.IsAny<CancellationToken>()))
-                .Returns((T entity, CancellationToken ct) =>
+            // Setup DeleteAsync (T entity)
+            mock.Setup(x => x.DeleteAsync(It.IsAny<T>()))
+                .Returns((T entity) =>
                 {
                     dataStore.Remove(entity);
                     return Task.CompletedTask;
                 });
 
+            // Setup DeleteAsync (Guid id)
+            mock.Setup(x => x.DeleteAsync(It.IsAny<Guid>()))
+                .Returns((Guid id) =>
+                {
+                    // 简化实现，通过ID删除
+                    return Task.CompletedTask;
+                });
+
             // Setup FindAsync
-            mock.Setup(x => x.FindAsync(It.IsAny<Expression<Func<T, bool>>>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync((Expression<Func<T, bool>> predicate, CancellationToken ct) =>
+            mock.Setup(x => x.FindAsync(It.IsAny<Expression<Func<T, bool>>>()))
+                .ReturnsAsync((Expression<Func<T, bool>> predicate) =>
                 {
                     var compiled = predicate.Compile();
                     return dataStore.Where(compiled).ToList();
                 });
-
-            // Setup ExistsAsync
-            mock.Setup(x => x.ExistsAsync(It.IsAny<Expression<Func<T, bool>>>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync((Expression<Func<T, bool>> predicate, CancellationToken ct) =>
-                {
-                    var compiled = predicate.Compile();
-                    return dataStore.Any(compiled);
-                });
-
-            // Setup CountAsync
-            mock.Setup(x => x.CountAsync(It.IsAny<Expression<Func<T, bool>>>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync((Expression<Func<T, bool>> predicate, CancellationToken ct) =>
-                {
-                    if (predicate == null)
-                        return dataStore.Count;
-                    
-                    var compiled = predicate.Compile();
-                    return dataStore.Count(compiled);
-                });
-
-            // Setup SaveChangesAsync
-            mock.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
-                .ReturnsAsync(1);
 
             return mock;
         }
@@ -157,12 +142,12 @@ namespace LYBT.Tests.UltraThink.TestInfrastructure.Factories
             var mock = CreateRepositoryMock<T>();
             
             // 重新设置GetAllAsync以返回初始数据
-            mock.Setup(x => x.GetAllAsync(It.IsAny<CancellationToken>()))
+            mock.Setup(x => x.GetAllAsync())
                 .ReturnsAsync(initialData);
 
             // 重新设置FindAsync
-            mock.Setup(x => x.FindAsync(It.IsAny<Expression<Func<T, bool>>>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync((Expression<Func<T, bool>> predicate, CancellationToken ct) =>
+            mock.Setup(x => x.FindAsync(It.IsAny<Expression<Func<T, bool>>>()))
+                .ReturnsAsync((Expression<Func<T, bool>> predicate) =>
                 {
                     var compiled = predicate.Compile();
                     return initialData.Where(compiled).ToList();
@@ -228,22 +213,22 @@ namespace LYBT.Tests.UltraThink.TestInfrastructure.Factories
             var mock = new Mock<ICacheService>();
             var cache = new Dictionary<string, object>();
 
-            mock.Setup(x => x.GetAsync<It.IsAnyType>(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync((string key, CancellationToken ct) =>
+            mock.Setup(x => x.GetAsync<object>(It.IsAny<string>()))
+                .ReturnsAsync((string key) =>
                 {
                     cache.TryGetValue(key, out var value);
                     return value;
                 });
 
-            mock.Setup(x => x.SetAsync(It.IsAny<string>(), It.IsAny<object>(), It.IsAny<TimeSpan?>(), It.IsAny<CancellationToken>()))
-                .Returns((string key, object value, TimeSpan? expiry, CancellationToken ct) =>
+            mock.Setup(x => x.SetAsync(It.IsAny<string>(), It.IsAny<object>(), It.IsAny<TimeSpan?>()))
+                .Returns((string key, object value, TimeSpan? expiry) =>
                 {
                     cache[key] = value;
                     return Task.CompletedTask;
                 });
 
-            mock.Setup(x => x.RemoveAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-                .Returns((string key, CancellationToken ct) =>
+            mock.Setup(x => x.RemoveAsync(It.IsAny<string>()))
+                .Returns((string key) =>
                 {
                     cache.Remove(key);
                     return Task.CompletedTask;
@@ -259,13 +244,13 @@ namespace LYBT.Tests.UltraThink.TestInfrastructure.Factories
         {
             var mock = new Mock<IUnitOfWork>();
             
-            mock.Setup(x => x.BeginTransactionAsync(It.IsAny<CancellationToken>()))
+            mock.Setup(x => x.BeginTransactionAsync())
                 .Returns(Task.CompletedTask);
                 
-            mock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>()))
+            mock.Setup(x => x.CommitTransactionAsync())
                 .Returns(Task.CompletedTask);
                 
-            mock.Setup(x => x.RollbackAsync(It.IsAny<CancellationToken>()))
+            mock.Setup(x => x.RollbackTransactionAsync())
                 .Returns(Task.CompletedTask);
                 
             mock.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
@@ -346,24 +331,7 @@ namespace LYBT.Tests.UltraThink.TestInfrastructure.Factories
     /// </summary>
     public static class MockExtensions
     {
-        /// <summary>
-        /// 设置异步方法返回值的简化方法
-        /// </summary>
-        public static IReturnsResult<TMock> ReturnsAsync<TMock, TResult>(
-            this ISetup<TMock, Task<TResult>> setup, 
-            TResult value) where TMock : class
-        {
-            return setup.Returns(Task.FromResult(value));
-        }
-
-        /// <summary>
-        /// 设置异步方法抛出异常的简化方法
-        /// </summary>
-        public static IThrowsResult ThrowsAsync<TMock>(
-            this ISetup<TMock, Task> setup, 
-            Exception exception) where TMock : class
-        {
-            return setup.Throws(exception);
-        }
+        // Moq 4.20+ 已内置 ReturnsAsync 和 ThrowsAsync 方法，无需自定义扩展
+        // 如果需要其他扩展方法，请在此处添加
     }
 }

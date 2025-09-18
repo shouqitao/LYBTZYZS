@@ -124,6 +124,8 @@ public class HealthController : ControllerBase
 
         try
         {
+            await Task.CompletedTask; // 满足async约定
+            
             var assembly = Assembly.GetExecutingAssembly();
             var version = assembly.GetName().Version?.ToString() ?? "Unknown";
             var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Unknown";

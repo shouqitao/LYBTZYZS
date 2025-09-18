@@ -1,5 +1,6 @@
 using System;
 using LYBT.Entities.Herbs;
+using LYBT.Shared.Models.Enums;
 using LYBT.Tests.UltraThink.TestInfrastructure.Builders;
 
 namespace LYBT.Tests.UltraThink.TestInfrastructure.Builders
@@ -68,19 +69,20 @@ namespace LYBT.Tests.UltraThink.TestInfrastructure.Builders
 
         public HerbTestDataBuilder WithPinyin(string pinyin)
         {
-            _buildActions.Add(h => h.Pinyin = pinyin);
+            _buildActions.Add(h => h.PinYinCode = pinyin);
             return this;
         }
 
-        public HerbTestDataBuilder WithCategory(string category)
+        public HerbTestDataBuilder WithOrigin(string origin)
         {
-            _buildActions.Add(h => h.Category = category);
+            _buildActions.Add(h => h.Origin = origin);
             return this;
         }
 
-        public HerbTestDataBuilder WithRandomCategory()
+        public HerbTestDataBuilder WithRandomOrigin()
         {
-            return WithCategory(HerbCategories[_random.Next(HerbCategories.Length)]);
+            string[] origins = {"安徽", "四川", "河南", "山东", "云南", "广西", "甘肃", "东北"};
+            return WithOrigin(origins[_random.Next(origins.Length)]);
         }
 
         public HerbTestDataBuilder WithPrice(decimal price)
@@ -105,24 +107,25 @@ namespace LYBT.Tests.UltraThink.TestInfrastructure.Builders
             return WithUnit(HerbUnits[_random.Next(HerbUnits.Length)]);
         }
 
-        public HerbTestDataBuilder WithStock(int stock)
+        public HerbTestDataBuilder WithSpec(string spec)
         {
-            _buildActions.Add(h => h.Stock = stock);
+            _buildActions.Add(h => h.Spec = spec);
             return this;
         }
 
-        public HerbTestDataBuilder WithRandomStock(int min = 0, int max = 10000)
+        public HerbTestDataBuilder WithRandomSpec()
         {
-            return WithStock(_random.Next(min, max));
+            string[] specs = {"特级", "一等", "二等", "三等", "统货", "选货"};
+            return WithSpec(specs[_random.Next(specs.Length)]);
         }
 
         #endregion
 
         #region 功效和用法构建方法
 
-        public HerbTestDataBuilder WithEfficacy(string efficacy)
+        public HerbTestDataBuilder WithEffect(string effect)
         {
-            _buildActions.Add(h => h.Efficacy = efficacy);
+            _buildActions.Add(h => h.Effect = effect);
             return this;
         }
 
@@ -132,75 +135,81 @@ namespace LYBT.Tests.UltraThink.TestInfrastructure.Builders
             return this;
         }
 
-        public HerbTestDataBuilder WithContraindication(string contraindication)
+        public HerbTestDataBuilder WithRemark(string remark)
         {
-            _buildActions.Add(h => h.Contraindication = contraindication);
+            _buildActions.Add(h => h.Remark = remark);
             return this;
         }
 
-        public HerbTestDataBuilder WithProcessingMethod(string processingMethod)
+        public HerbTestDataBuilder WithCostPrice(decimal costPrice)
         {
-            _buildActions.Add(h => h.ProcessingMethod = processingMethod);
+            _buildActions.Add(h => h.CostPrice = costPrice);
             return this;
         }
 
-        public HerbTestDataBuilder WithStorageMethod(string storageMethod)
+        public HerbTestDataBuilder WithStatus(CommonStatus status)
         {
-            _buildActions.Add(h => h.StorageMethod = storageMethod);
+            _buildActions.Add(h => h.Status = status);
             return this;
         }
 
-        public HerbTestDataBuilder WithRandomStorageMethod()
+        public HerbTestDataBuilder WithRandomStatus()
         {
-            return WithStorageMethod(StorageConditions[_random.Next(StorageConditions.Length)]);
+            var statuses = new[] { CommonStatus.Enabled, CommonStatus.Disabled };
+            return WithStatus(statuses[_random.Next(statuses.Length)]);
         }
 
         #endregion
 
         #region 状态和标识构建方法
 
-        public HerbTestDataBuilder WithIsActive(bool isActive)
+        public HerbTestDataBuilder WithEnabled(bool enabled)
         {
-            _buildActions.Add(h => h.IsActive = isActive);
+            _buildActions.Add(h => h.Status = enabled ? CommonStatus.Enabled : CommonStatus.Disabled);
             return this;
         }
 
-        public HerbTestDataBuilder AsActive()
+        public HerbTestDataBuilder AsEnabled()
         {
-            return WithIsActive(true);
+            return WithEnabled(true);
         }
 
-        public HerbTestDataBuilder AsInactive()
+        public HerbTestDataBuilder AsDisabled()
         {
-            return WithIsActive(false);
+            return WithEnabled(false);
         }
 
+        // 注意：Herb实体没有Code属性，使用PinYinCode代替
         public HerbTestDataBuilder WithCode(string code)
         {
-            _buildActions.Add(h => h.Code = code);
+            _buildActions.Add(h => h.PinYinCode = code);
             return this;
         }
 
         public HerbTestDataBuilder WithRandomCode()
         {
-            return WithCode($"HC{_random.Next(10000, 99999)}");
+            var name = HerbNames[_random.Next(HerbNames.Length)];
+            return WithCode(GetPinYinCode(name));
         }
 
+        // 注意：Herb实体没有Supplier属性，用Remark代替
         public HerbTestDataBuilder WithSupplier(string supplier)
         {
-            _buildActions.Add(h => h.Supplier = supplier);
+            _buildActions.Add(h => h.Remark = $"供应商：{supplier}");
             return this;
         }
 
+        // 注意：Herb实体没有MinStock属性，已移除库存管理功能
         public HerbTestDataBuilder WithMinStock(int minStock)
         {
-            _buildActions.Add(h => h.MinStock = minStock);
+            // 库存功能已移除，跳过此操作
             return this;
         }
 
+        // 注意：Herb实体没有MaxStock属性，已移除库存管理功能
         public HerbTestDataBuilder WithMaxStock(int maxStock)
         {
-            _buildActions.Add(h => h.MaxStock = maxStock);
+            // 库存功能已移除，跳过此操作
             return this;
         }
 
@@ -208,27 +217,28 @@ namespace LYBT.Tests.UltraThink.TestInfrastructure.Builders
 
         #region 审计字段构建方法
 
+        // 注意：Herb实体没有审计字段，已简化架构
         public HerbTestDataBuilder WithCreatedBy(string createdBy)
         {
-            _buildActions.Add(h => h.CreatedBy = createdBy);
+            // 审计字段已移除，跳过此操作
             return this;
         }
 
         public HerbTestDataBuilder WithCreatedAt(DateTime createdAt)
         {
-            _buildActions.Add(h => h.CreatedAt = createdAt);
+            // 审计字段已移除，跳过此操作
             return this;
         }
 
         public HerbTestDataBuilder WithUpdatedBy(string updatedBy)
         {
-            _buildActions.Add(h => h.UpdatedBy = updatedBy);
+            // 审计字段已移除，跳过此操作
             return this;
         }
 
         public HerbTestDataBuilder WithUpdatedAt(DateTime updatedAt)
         {
-            _buildActions.Add(h => h.UpdatedAt = updatedAt);
+            // 审计字段已移除，跳过此操作
             return this;
         }
 
@@ -243,26 +253,25 @@ namespace LYBT.Tests.UltraThink.TestInfrastructure.Builders
         {
             return WithId(Guid.NewGuid())
                 .WithRandomName()
-                .WithRandomCategory()
+                .WithRandomOrigin()
                 .WithRandomPrice()
                 .WithRandomUnit()
-                .WithRandomStock()
+                .WithRandomSpec()
                 .WithRandomCode()
-                .WithEfficacy("清热解毒，疏风散热")
+                .WithEffect("清热解毒，疏风散热")
                 .WithUsage("每次3-9克，水煎服")
-                .WithRandomStorageMethod()
-                .AsActive();
+                .WithRandomStatus()
+                .AsEnabled();
         }
 
         /// <summary>
-        /// 构建一个库存不足的中药材
+        /// 构建一个低价的中药材
         /// </summary>
-        public HerbTestDataBuilder AsLowStockHerb()
+        public HerbTestDataBuilder AsLowPriceHerb()
         {
             return AsValidHerb()
-                .WithStock(5)
-                .WithMinStock(10)
-                .WithMaxStock(100);
+                .WithPrice(5.0m)
+                .WithCostPrice(3.0m);
         }
 
         /// <summary>
@@ -272,15 +281,15 @@ namespace LYBT.Tests.UltraThink.TestInfrastructure.Builders
         {
             return WithId(Guid.NewGuid())
                 .WithName("野生人参")
-                .WithCategory("补虚药")
+                .WithOrigin("东北")
                 .WithPrice(8888.88m)
                 .WithUnit("g")
-                .WithStock(10)
-                .WithCode("HC99999")
-                .WithEfficacy("大补元气，复脉固脱，补脾益肺，生津养血，安神益智")
+                .WithSpec("特级")
+                .WithCode("YSRS")
+                .WithEffect("大补元气，复脉固脱，补脾益肺，生津养血，安神益智")
                 .WithUsage("每次1-3克，研粉冲服或炖服")
-                .WithStorageMethod("密封冷藏保存")
-                .AsActive();
+                .WithRemark("密封冷藏保存")
+                .AsEnabled();
         }
 
         /// <summary>
@@ -289,10 +298,24 @@ namespace LYBT.Tests.UltraThink.TestInfrastructure.Builders
         public HerbTestDataBuilder AsDiscontinuedHerb()
         {
             return AsValidHerb()
-                .AsInactive()
-                .WithStock(0);
+                .AsDisabled()
+                .WithRemark("已停用");
         }
 
+        #endregion
+
+        #region 私有辅助方法
+        
+        /// <summary>
+        /// 获取拼音码（简化版）
+        /// </summary>
+        private string GetPinYinCode(string chinese)
+        {
+            if (string.IsNullOrEmpty(chinese)) return string.Empty;
+            // 简化的拼音转换，实际项目可能使用专门的拼音库
+            return chinese.Substring(0, Math.Min(chinese.Length, 2)).ToUpper();
+        }
+        
         #endregion
 
         /// <summary>
@@ -320,19 +343,14 @@ namespace LYBT.Tests.UltraThink.TestInfrastructure.Builders
                 _entity.Price = GenerateRandomPrice(10, 200);
             }
 
-            if (string.IsNullOrEmpty(_entity.Code))
+            if (string.IsNullOrEmpty(_entity.PinYinCode))
             {
-                _entity.Code = $"HC{_random.Next(10000, 99999)}";
+                _entity.PinYinCode = GetPinYinCode(_entity.Name);
             }
 
-            if (_entity.CreatedAt == default)
+            if (_entity.Status == default)
             {
-                _entity.CreatedAt = DateTime.UtcNow;
-            }
-
-            if (_entity.UpdatedAt == default)
-            {
-                _entity.UpdatedAt = DateTime.UtcNow;
+                _entity.Status = CommonStatus.Enabled;
             }
         }
     }

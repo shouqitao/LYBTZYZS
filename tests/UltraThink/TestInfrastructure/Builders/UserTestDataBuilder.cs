@@ -11,7 +11,7 @@ namespace LYBT.Tests.UltraThink.TestInfrastructure.Builders
     /// 代码干净：流畅接口，清晰的方法命名
     /// 性能出色：延迟构建，高效生成
     /// </summary>
-    public class UserTestDataBuilder : TestDataBuilder<UserModel, UserTestDataBuilder>
+    public class UserTestDataBuilder : TestDataBuilder<User, UserTestDataBuilder>
     {
         private static readonly string[] UserNames = 
         {
@@ -25,7 +25,7 @@ namespace LYBT.Tests.UltraThink.TestInfrastructure.Builders
             "刘八", "周九", "吴十", "郑十一", "冯十二"
         };
 
-        private static readonly string[] Departments = 
+        private static readonly string[] Specialties = 
         {
             "内科", "外科", "儿科", "妇科", "中医科", 
             "骨科", "皮肤科", "眼科", "耳鼻喉科", "口腔科"
@@ -34,8 +34,8 @@ namespace LYBT.Tests.UltraThink.TestInfrastructure.Builders
         public UserTestDataBuilder()
         {
             // 设置默认值
-            WithCreatedAt(DateTime.UtcNow)
-                .WithUpdatedAt(DateTime.UtcNow);
+            WithCreatedTime(DateTime.UtcNow)
+                .WithUpdateTime(DateTime.UtcNow);
         }
 
         #region 基本属性构建方法
@@ -87,26 +87,26 @@ namespace LYBT.Tests.UltraThink.TestInfrastructure.Builders
             return this;
         }
 
-        public UserTestDataBuilder WithPhone(string phone)
+        public UserTestDataBuilder WithPhoneNumber(string phoneNumber)
         {
-            _buildActions.Add(u => u.Phone = phone);
+            _buildActions.Add(u => u.PhoneNumber = phoneNumber);
             return this;
         }
 
-        public UserTestDataBuilder WithRandomPhone()
+        public UserTestDataBuilder WithRandomPhoneNumber()
         {
-            return WithPhone(GeneratePhoneNumber());
+            return WithPhoneNumber(GeneratePhoneNumber());
         }
 
-        public UserTestDataBuilder WithDepartment(string department)
+        public UserTestDataBuilder WithSpecialty(string specialty)
         {
-            _buildActions.Add(u => u.Department = department);
+            _buildActions.Add(u => u.Specialty = specialty);
             return this;
         }
 
-        public UserTestDataBuilder WithRandomDepartment()
+        public UserTestDataBuilder WithRandomSpecialty()
         {
-            return WithDepartment(Departments[_random.Next(Departments.Length)]);
+            return WithSpecialty(Specialties[_random.Next(Specialties.Length)]);
         }
 
         #endregion
@@ -129,7 +129,7 @@ namespace LYBT.Tests.UltraThink.TestInfrastructure.Builders
             return WithStatus(CommonStatus.Disabled);
         }
 
-        public UserTestDataBuilder WithRole(string role)
+        public UserTestDataBuilder WithRole(UserRole role)
         {
             _buildActions.Add(u => u.Role = role);
             return this;
@@ -137,27 +137,15 @@ namespace LYBT.Tests.UltraThink.TestInfrastructure.Builders
 
         public UserTestDataBuilder AsAdmin()
         {
-            return WithRole("Admin")
+            return WithRole(UserRole.Admin)
                 .WithUsername("admin")
                 .WithRealName("系统管理员");
         }
 
         public UserTestDataBuilder AsDoctor()
         {
-            return WithRole("Doctor")
-                .WithRandomDepartment();
-        }
-
-        public UserTestDataBuilder AsNurse()
-        {
-            return WithRole("Nurse")
-                .WithRandomDepartment();
-        }
-
-        public UserTestDataBuilder AsReceptionist()
-        {
-            return WithRole("Receptionist")
-                .WithDepartment("前台");
+            return WithRole(UserRole.Doctor)
+                .WithRandomSpecialty();
         }
 
         #endregion
@@ -188,37 +176,19 @@ namespace LYBT.Tests.UltraThink.TestInfrastructure.Builders
             return this;
         }
 
-        public UserTestDataBuilder WithLoginCount(int count)
-        {
-            _buildActions.Add(u => u.LoginCount = count);
-            return this;
-        }
-
         #endregion
 
-        #region 审计字段构建方法
+        #region 时间字段构建方法
 
-        public UserTestDataBuilder WithCreatedBy(string createdBy)
+        public UserTestDataBuilder WithCreatedTime(DateTime createdTime)
         {
-            _buildActions.Add(u => u.CreatedBy = createdBy);
+            _buildActions.Add(u => u.CreatedTime = createdTime);
             return this;
         }
 
-        public UserTestDataBuilder WithCreatedAt(DateTime createdAt)
+        public UserTestDataBuilder WithUpdateTime(DateTime? updateTime)
         {
-            _buildActions.Add(u => u.CreateTime = createdAt);
-            return this;
-        }
-
-        public UserTestDataBuilder WithUpdatedBy(string updatedBy)
-        {
-            _buildActions.Add(u => u.UpdatedBy = updatedBy);
-            return this;
-        }
-
-        public UserTestDataBuilder WithUpdatedAt(DateTime updatedAt)
-        {
-            _buildActions.Add(u => u.UpdateTime = updatedAt);
+            _buildActions.Add(u => u.UpdateTime = updateTime);
             return this;
         }
 
@@ -236,13 +206,12 @@ namespace LYBT.Tests.UltraThink.TestInfrastructure.Builders
                 .WithRandomRealName()
                 .WithPlainPassword("Test123456")
                 .WithEmail("test@example.com")
-                .WithRandomPhone()
-                .WithRandomDepartment()
+                .WithRandomPhoneNumber()
+                .WithRandomSpecialty()
                 .AsActive()
-                .WithRole("User")
+                .WithRole(UserRole.Doctor)
                 .WithFailedLoginCount(0)
-                .WithLockoutEnd(null)
-                .WithLoginCount(0);
+                .WithLockoutEnd(null);
         }
 
         /// <summary>
@@ -255,9 +224,9 @@ namespace LYBT.Tests.UltraThink.TestInfrastructure.Builders
                 .WithRealName("系统管理员")
                 .WithPlainPassword("Admin@123456")
                 .WithEmail("admin@lybt.com")
-                .WithPhone("13800138000")
+                .WithPhoneNumber("13800138000")
                 .AsActive()
-                .WithRole("Admin")
+                .WithRole(UserRole.Admin)
                 .WithFailedLoginCount(0)
                 .WithLockoutEnd(null);
         }
@@ -268,9 +237,8 @@ namespace LYBT.Tests.UltraThink.TestInfrastructure.Builders
         public UserTestDataBuilder AsNewUser()
         {
             return AsValidUser()
-                .WithLoginCount(0)
                 .WithLastLoginTime(null)
-                .WithCreatedAt(DateTime.Now);
+                .WithCreatedTime(DateTime.Now);
         }
 
         /// <summary>
@@ -279,7 +247,6 @@ namespace LYBT.Tests.UltraThink.TestInfrastructure.Builders
         public UserTestDataBuilder AsActiveUser()
         {
             return AsValidUser()
-                .WithLoginCount(100)
                 .WithLastLoginTime(DateTime.Now.AddMinutes(-5))
                 .WithFailedLoginCount(0);
         }
@@ -290,9 +257,20 @@ namespace LYBT.Tests.UltraThink.TestInfrastructure.Builders
         public UserTestDataBuilder AsInactiveUser()
         {
             return AsValidUser()
-                .WithLoginCount(5)
                 .WithLastLoginTime(DateTime.Now.AddMonths(-6))
                 .AsInactive();
+        }
+
+        #endregion
+
+        #region 私有方法
+
+        /// <summary>
+        /// 生成手机号码
+        /// </summary>
+        private new string GeneratePhoneNumber()
+        {
+            return "1" + _random.Next(30, 90) + _random.Next(10000000, 99999999).ToString();
         }
 
         #endregion
@@ -327,14 +305,14 @@ namespace LYBT.Tests.UltraThink.TestInfrastructure.Builders
                 _entity.Status = CommonStatus.Enabled;
             }
 
-            if (string.IsNullOrEmpty(_entity.Role))
+            if (_entity.Role == 0)
             {
-                _entity.Role = "User";
+                _entity.Role = UserRole.Doctor;
             }
 
-            if (_entity.CreateTime == default)
+            if (_entity.CreatedTime == default)
             {
-                _entity.CreateTime = DateTime.UtcNow;
+                _entity.CreatedTime = DateTime.UtcNow;
             }
 
             if (_entity.UpdateTime == default)

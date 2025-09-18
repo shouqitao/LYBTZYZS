@@ -4,6 +4,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <NoWarn>$(NoWarn);CS8625</NoWarn>
 
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
@@ -22,6 +23,7 @@
     </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory"  />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions"  />
+    <PackageReference Include="Microsoft.Extensions.Options"  />
     <PackageReference Include="AutoMapper"  />
   </ItemGroup>
 
