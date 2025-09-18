@@ -20,19 +20,20 @@ bld/
 [Ll]og/
 [Ll]ogs/
 
-# 新的统一输出目录结构 - 保留主要输出，忽略临时文件
-BIN/temp/
-BIN/LybtWebApi/Debug/
-BIN/LybtWebApi/Release/
-BIN/LybtDesktop/Debug/
-BIN/LybtDesktop/Release/
-# 但是保留一些必要的配置文件
-!BIN/LybtWebApi/Release/appsettings*.json
-!BIN/LybtWebApi/Release/*.bat
-!BIN/LybtDesktop/Release/*.config
-
+# 构建输出目录 - 安全忽略所有构建产物
+BIN/**
+bin/**
+obj/**
+logs/**
+out/**
 build/
 packages/
+artifacts/
+
+# 确保没有发布配置文件泄露 - 删除反忽略规则
+# 已删除：!BIN/LybtWebApi/Release/appsettings*.json (安全风险)
+!BIN/LybtWebApi/Release/*.bat
+!BIN/LybtDesktop/Release/*.config
 
 # User-specific files
 *.rsuser
