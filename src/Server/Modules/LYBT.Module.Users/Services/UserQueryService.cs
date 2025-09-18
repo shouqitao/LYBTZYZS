@@ -1,6 +1,6 @@
 using AutoMapper;
 using LYBT.Infrastructure.Data;
-using LYBT.Module.Users.Services.Interfaces;
+using LYBT.Module.Users.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
