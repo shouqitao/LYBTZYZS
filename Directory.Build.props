@@ -1,63 +1,39 @@
+<!-- Directory.Build.props - 全解决方案构建配置统一 -->
 <Project>
+  
+  <!-- 统一输出路径配置 -->
   <PropertyGroup>
-    <EnableWindowsTargeting>true</EnableWindowsTargeting>
-    <SolutionDir Condition="'$(SolutionDir)' == ''">$(MSBuildThisFileDirectory)</SolutionDir>
+    <!-- 所有构建产物统一输出到解决方案根目录的 BIN 文件夹 -->
+    <BaseOutputPath>$(MSBuildThisFileDirectory)BIN\</BaseOutputPath>
+    <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory)BIN\obj\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
     
-    <!-- P4-Fix: 统一编译基线配置 -->
-    <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <LangVersion>latestmajor</LangVersion>
+    <!-- 确保输出目录存在 -->
+    <CreateOutputPath>true</CreateOutputPath>
+  </PropertyGroup>
+  
+  <!-- 统一编译配置 -->
+  <PropertyGroup>
+    <!-- 统一编译器设置 -->
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningsAsErrors />
+    <WarningsNotAsErrors />
     
-    <!-- 启用中央包管理 (Central Package Management) -->
-    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <!-- 优化设置 -->
+    <Optimize Condition="'$(Configuration)' == 'Release'">true</Optimize>
+    <DebugType Condition="'$(Configuration)' == 'Release'">portable</DebugType>
+    <DebugSymbols Condition="'$(Configuration)' == 'Release'">true</DebugSymbols>
     
-    <!-- P3-Fix: 解决Assembly属性重复问题 - 彻底禁用测试项目的自动生成 -->
-    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
-    <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
-    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
-    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
-    <GenerateAssemblyVersionAttribute>true</GenerateAssemblyVersionAttribute>
-    <GenerateAssemblyFileVersionAttribute>true</GenerateAssemblyFileVersionAttribute>
-    <GenerateAssemblyInformationalVersionAttribute>false</GenerateAssemblyInformationalVersionAttribute>
-    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
-    <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
-    
-    <!-- P3-Fix: 测试项目完全禁用AssemblyInfo自动生成 -->
-    <IsTestProject Condition="$(MSBuildProjectName.Contains('Test'))">true</IsTestProject>
-    <IsTestProject Condition="!$(MSBuildProjectName.Contains('Test'))">false</IsTestProject>
-    <GenerateAssemblyInfo Condition="'$(IsTestProject)' == 'true'">false</GenerateAssemblyInfo>
-    
-    <!-- 代码分析配置 - DT-007渐进式代码质量提升 -->
-    <!-- P4-Fix: 仅生产项目TreatWarningsAsErrors；测试项目不设为错误 -->
-    <TreatWarningsAsErrors Condition="'$(IsTestProject)'!='true'">true</TreatWarningsAsErrors>
-    <WarningLevel>4</WarningLevel>
-    
-    <!-- P4-Server发布就绪配置：专注核心安全和稳定性 -->
-    <!-- 抑制StyleCop格式规则，保留编译器核心警告 -->
-    <!-- 禁用所有SA开头的StyleCop警告，专注于CS编译器警告 -->
-    <RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>
-    <RunCodeAnalysis>false</RunCodeAnalysis>
-    <NoWarn>$(NoWarn);CS1570;CS1587;NU1903;CS0162;CS0414;CS0168;CS0219;CS0169;CS1591;IDE0005;IDE0051;IDE0052;IDE0058;IDE0059;IDE1006;MSB3061;CS0618;CS8625;SA0001;SA1005;SA1028;SA1101;SA1116;SA1117;SA1118;SA1200;SA1202;SA1208;SA1210;SA1300;SA1309;SA1402;SA1413;SA1500;SA1501;SA1502;SA1503;SA1505;SA1507;SA1508;SA1509;SA1513;SA1516;SA1633;SA1649</NoWarn>
-    
-    <!-- 启用关键安全和质量警告 - 针对小诊所业务需求 -->
-    <!-- CS8618: 启用空引用检查，确保数据安全 -->
-    <!-- CS8625: 启用空值赋值检查，防止运行时错误 --> 
-    <!-- CS1998: 启用异步方法检查，提升性能 -->
-    
-    <!-- P3-Fix: 集成测试支持 - 使Program类对测试项目可见 -->
-    <InternalsVisibleTo Condition="$(MSBuildProjectName.Contains('WebAPI'))">$(MSBuildProjectName).Tests</InternalsVisibleTo>
-    <InternalsVisibleTo Condition="$(MSBuildProjectName.Contains('WebAPI'))">WebAPI.IntegrationTests</InternalsVisibleTo>
-    
-    <!-- 使用默认输出路径 -->
-    <!-- 每个项目将输出到自己的 bin\$(Configuration)\$(TargetFramework) 目录 -->
+    <!-- 防止 AssemblyInfo 重复生成 -->
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
 
-  <!-- 对所有 C# 项目自动引用 StyleCop.Analyzers -->
-  <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
-    <PackageReference Include="StyleCop.Analyzers">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-  </ItemGroup>
+  <!-- 统一包引用版本管理 -->
+  <PropertyGroup>
+    <!-- 常用包版本集中管理 -->
+    <AutoMapperVersion>13.0.1</AutoMapperVersion>
+    <EntityFrameworkVersion>8.0.17</EntityFrameworkVersion>
+    <SwashbuckleVersion>9.0.1</SwashbuckleVersion>
+    <PrismVersion>9.0.537</PrismVersion>
+  </PropertyGroup>
+
 </Project>
