@@ -1,4 +1,5 @@
 using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
@@ -334,37 +335,45 @@ namespace LYBT.Infrastructure.Web
         #region 统一异常处理
 
         /// <summary>
-        /// 统一异常处理
+        /// 统一异常处理 - 转换为标准异常类型供GlobalExceptionHandler处理
         /// </summary>
         protected ActionResult<ApiResponse> HandleException(Exception ex, string operation, object? context = null)
         {
             HandleExceptionCore(ex, operation, context);
 
-            // 根据异常类型返回不同的错误响应
-            return ex switch
+            // 转换为标准异常类型，让GlobalExceptionHandler统一处理ProblemDetails响应
+            switch (ex)
             {
-                UnauthorizedAccessException => Unauthorized(ex.Message),
-                ArgumentException => ValidationFail(ex.Message),
-                InvalidOperationException => BusinessFail(ex.Message),
-                _ => InternalError($"{operation}失败")
-            };
+                case UnauthorizedAccessException:
+                    throw ex; // 保持原异常类型
+                case ArgumentException:
+                    throw new ValidationException(ex.Message, ex);
+                case InvalidOperationException:
+                    throw new BusinessException(ex.Message, ex);
+                default:
+                    throw new AppException($"{operation}失败", ex);
+            }
         }
 
         /// <summary>
-        /// 统一异常处理（泛型版本）
+        /// 统一异常处理（泛型版本）- 转换为标准异常类型供GlobalExceptionHandler处理
         /// </summary>
         protected ActionResult<ApiResponse<T>> HandleException<T>(Exception ex, string operation, object? context = null)
         {
             HandleExceptionCore(ex, operation, context);
 
-            // 根据异常类型返回不同的错误响应
-            return ex switch
+            // 转换为标准异常类型，让GlobalExceptionHandler统一处理ProblemDetails响应
+            switch (ex)
             {
-                UnauthorizedAccessException => Unauthorized<T>(ex.Message),
-                ArgumentException => ValidationFail<T>(ex.Message),
-                InvalidOperationException => BusinessFail<T>(ex.Message),
-                _ => InternalError<T>($"{operation}失败: {ex.Message}")
-            };
+                case UnauthorizedAccessException:
+                    throw ex; // 保持原异常类型
+                case ArgumentException:
+                    throw new ValidationException(ex.Message, ex);
+                case InvalidOperationException:
+                    throw new BusinessException(ex.Message, ex);
+                default:
+                    throw new AppException($"{operation}失败", ex);
+            }
         }
 
         #endregion 统一异常处理
@@ -422,29 +431,24 @@ namespace LYBT.Infrastructure.Web
         }
 
         /// <summary>
-        /// 处理分页异常 - 统一格式：ApiResponse<PagedResult<T>>
+        /// 处理分页异常 - 转换为标准异常类型供GlobalExceptionHandler处理
         /// </summary>
         protected ActionResult<ApiResponse<PagedResult<T>>> HandleExceptionPaged<T>(Exception ex, string operation, object? context = null)
         {
             HandleExceptionCore(ex, operation, context);
 
-            var message = ex switch
+            // 转换为标准异常类型，让GlobalExceptionHandler统一处理ProblemDetails响应
+            switch (ex)
             {
-                UnauthorizedAccessException => ex.Message,
-                ArgumentException => ex.Message,
-                InvalidOperationException => ex.Message,
-                _ => $"{operation}失败"
-            };
-
-            var errorCode = ex switch
-            {
-                UnauthorizedAccessException => "UNAUTHORIZED",
-                ArgumentException => "VALIDATION_ERROR",
-                InvalidOperationException => "BUSINESS_ERROR",
-                _ => "INTERNAL_ERROR"
-            };
-
-            return ValidationFailPaged<T>(message, errorCode);
+                case UnauthorizedAccessException:
+                    throw ex; // 保持原异常类型
+                case ArgumentException:
+                    throw new ValidationException(ex.Message, ex);
+                case InvalidOperationException:
+                    throw new BusinessException(ex.Message, ex);
+                default:
+                    throw new AppException($"{operation}失败", ex);
+            }
         }
 
         #endregion 分页响应专用方法
