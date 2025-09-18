@@ -31,7 +31,7 @@ jobs:
         fetch-depth: 0  # 获取完整历史，用于覆盖率对比
         
     - name: 🔧 设置 .NET
-      uses: actions/setup-dotnet@v4
+      uses: actions/setup-dotnet@v5
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
         
