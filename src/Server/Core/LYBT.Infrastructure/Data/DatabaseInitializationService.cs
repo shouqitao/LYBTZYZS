@@ -456,7 +456,7 @@ namespace LYBT.Infrastructure.Data
                             await _dbContext.SaveChangesAsync();
 
                             _logger.LogInformation("✅ 默认超级管理员密码已创建");
-                            _logger.LogInformation($"默认登录信息: 用户名=sysadmin, 密码={defaultPassword}");
+                            _logger.LogInformation($"默认登录信息: 用户名=sysadmin, 密码=****(已屏蔽)");
                         }
                         else
                         {
