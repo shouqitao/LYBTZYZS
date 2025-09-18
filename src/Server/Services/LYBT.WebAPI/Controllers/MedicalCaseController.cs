@@ -275,7 +275,7 @@ public class MedicalCaseController : BaseApiController
                 return validation;
             }
 
-            var result = await _medicalCaseService.UpdateStatus(id, dto.Status);
+            var result = await _medicalCaseService.UpdateStatus(id, (int)dto.Status);
             return HandleBoolServiceResult(result, "状态更新成功");
         }
         catch (Exception ex)
