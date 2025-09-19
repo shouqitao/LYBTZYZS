@@ -1,61 +1,33 @@
 using Microsoft.EntityFrameworkCore;
 using LYBT.Infrastructure.Data;
-using Bogus;
+using LYBT.Tests.Core;
 
 namespace LYBT.Module.Users.Tests.Base
 {
     /// <summary>
-    /// Repository 测试基类
+    /// Repository测试基类 - Phase D1 统一SQL Server测试基座
+    /// 继承SqlServerTestBase以使用真实SQL Server数据库进行测试
     /// </summary>
-    public abstract class RepositoryTestBase : IDisposable
+    public abstract class RepositoryTestBase : SqlServerTestBase
     {
-        protected readonly AppDbContext Context;
-        private readonly string _databaseName;
-
-        protected RepositoryTestBase()
+        protected RepositoryTestBase() : base()
         {
-            _databaseName = $"TestDb_{Guid.NewGuid()}";
-            
-            var options = new DbContextOptionsBuilder<AppDbContext>()
-                .UseInMemoryDatabase(databaseName: _databaseName)
-                .EnableSensitiveDataLogging()
-                .Options;
-
-            Context = new AppDbContext(options);
-            
-            // 确保数据库已创建
-            Context.Database.EnsureCreated();
+            // 基类SqlServerTestBase已经处理了数据库初始化
+            // DbContext已经可以通过基类的DbContext属性访问
         }
 
         /// <summary>
-        /// 初始化测试数据
+        /// 为了向后兼容，提供Context属性
         /// </summary>
-        protected virtual async Task SeedTestDataAsync()
-        {
-            // 子类可以重写此方法来添加特定的测试数据
-            await Task.CompletedTask;
-        }
+        protected AppDbContext Context => DbContext;
 
         /// <summary>
-        /// 清理测试数据
+        /// 重写种子数据方法，专门为用户测试添加必要的数据
         /// </summary>
-        protected virtual async Task ClearTestDataAsync()
+        protected override async Task SeedTestDataAsync()
         {
-            // 清理所有数据
-            Context.Users.RemoveRange(Context.Users);
-            Context.Patients.RemoveRange(Context.Patients);
-            Context.Herbs.RemoveRange(Context.Herbs);
-            Context.Consultations.RemoveRange(Context.Consultations);
-            Context.Prescriptions.RemoveRange(Context.Prescriptions);
-            Context.MedicalCases.RemoveRange(Context.MedicalCases);
-            
-            await Context.SaveChangesAsync();
-        }
-
-        public virtual void Dispose()
-        {
-            Context?.Dispose();
-            GC.SuppressFinalize(this);
+            await base.SeedTestDataAsync();
+            // 可以在这里添加用户模块特定的测试数据
         }
     }
 }
