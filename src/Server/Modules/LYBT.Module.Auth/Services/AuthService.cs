@@ -7,9 +7,9 @@ namespace LYBT.Module.Auth.Services
 {
 
     /// <summary>
-    /// 认证服务 - UltraThink简化架构（纯委托模式）
-    /// 职责：纯粹的服务委托，将请求分发到简化的AuthCore服务
-    /// 简化架构：AuthCore(统一核心功能) + JwtService(JWT处理)
+    /// 认证服务 - UltraThink双层架构（纯委托模式）
+    /// 职责：纯粹的服务委托，将请求分发到QueryService和BusinessService
+    /// 架构：QueryService(查询专业化) + BusinessService(业务逻辑) + JwtService(JWT处理)
     /// </summary>
     public class AuthService(
         IAuthQueryService queryService,

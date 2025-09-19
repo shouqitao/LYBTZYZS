@@ -1,9 +1,12 @@
 using AutoMapper;
 using LYBT.Entities.Users;
+using LYBT.Infrastructure.Configuration.Options;
 using LYBT.Module.Auth.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
+using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace LYBT.Module.Auth.Services
 {
@@ -19,23 +22,27 @@ namespace LYBT.Module.Auth.Services
         private readonly IMapper _mapper;
         private readonly ILogger<AuthQueryService> _logger;
         private readonly SysAdminHandler _sysAdminHandler;
+        private readonly SysAdminOptions _sysAdminOptions;
 
         public AuthQueryService(
             IAuthRepository authRepository,
             IJwtAuthenticationService jwtAuthenticationService,
             IMapper mapper,
             ILogger<AuthQueryService> logger,
-            SysAdminHandler sysAdminHandler)
+            SysAdminHandler sysAdminHandler,
+            IOptions<SysAdminOptions> sysAdminOptions)
         {
             _authRepository = authRepository ?? throw new ArgumentNullException(nameof(authRepository));
             _jwtAuthenticationService = jwtAuthenticationService ?? throw new ArgumentNullException(nameof(jwtAuthenticationService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _sysAdminHandler = sysAdminHandler ?? throw new ArgumentNullException(nameof(sysAdminHandler));
+            _sysAdminOptions = sysAdminOptions?.Value ?? throw new ArgumentNullException(nameof(sysAdminOptions));
         }
 
         /// <summary>
         /// 根据用户名获取用户信息（用于认证）
+        /// 注意：仅处理普通用户，超级管理员走独立认证流程
         /// </summary>
         public async Task<ServiceResult<User>> GetUserForAuthenticationAsync(string username)
         {
@@ -46,14 +53,10 @@ namespace LYBT.Module.Auth.Services
                     return ServiceResult<User>.Failure("用户名不能为空");
                 }
 
-                // 检查是否为系统管理员
-                if (username.Equals("sysadmin", StringComparison.OrdinalIgnoreCase))
+                // 检查是否为系统管理员，如果是则拒绝查询
+                if (_sysAdminHandler.IsSysAdmin(username))
                 {
-                    var sysAdminUser = await _sysAdminHandler.GetSysAdminUserAsync("sysadmin");
-                    if (sysAdminUser != null)
-                    {
-                        return ServiceResult<User>.Success(sysAdminUser);
-                    }
+                    return ServiceResult<User>.Failure("超级管理员走独立认证流程，此方法不处理");
                 }
 
                 // 查询普通用户
@@ -162,15 +165,19 @@ namespace LYBT.Module.Auth.Services
                     return ServiceResult<UserDto>.Failure("用户ID不能为空");
                 }
 
-                // 检查是否为系统管理员（在Guid验证之前）
-                if (userId.Equals("sysadmin", StringComparison.OrdinalIgnoreCase))
+                // 检查是否为系统管理员的固定GUID
+                if (userId.Equals("00000000-0000-0000-0000-000000000001", StringComparison.OrdinalIgnoreCase))
                 {
-                    var sysAdminUser = await _sysAdminHandler.GetSysAdminUserAsync("sysadmin");
-                    if (sysAdminUser != null)
+                    // 直接返回超级管理员信息，无需查询User表
+                    var sysAdminDto = new UserDto
                     {
-                        var sysAdminDto = _mapper.Map<UserDto>(sysAdminUser);
-                        return ServiceResult<UserDto>.Success(sysAdminDto);
-                    }
+                        Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
+                        Username = _sysAdminOptions.Username,
+                        RealName = "系统管理员",
+                        Role = UserRole.Admin.ToString(),
+                        Status = CommonStatus.Enabled
+                    };
+                    return ServiceResult<UserDto>.Success(sysAdminDto);
                 }
 
                 // 对普通用户进行Guid格式验证

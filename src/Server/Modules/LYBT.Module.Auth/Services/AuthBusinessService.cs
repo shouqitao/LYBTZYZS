@@ -5,6 +5,7 @@ using LYBT.Module.Auth.Interfaces;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
+using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Utilities.Helpers;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -45,7 +46,7 @@ namespace LYBT.Module.Auth.Services
         }
 
         /// <summary>
-        /// 完整登录流程处理 - UltraThink简化版（5步验证）
+        /// 完整登录流程处理 - 重构版（独立超级管理员认证）
         /// </summary>
         public async Task<ServiceResult<LoginResponse>> ProcessLoginAsync(LoginRequest request)
         {
@@ -58,6 +59,30 @@ namespace LYBT.Module.Auth.Services
                     return ServiceResult<LoginResponse>.Failure("用户名或密码不能为空");
                 }
 
+                // 2. 超级管理员独立认证流程
+                if (_sysAdminHandler.IsSysAdmin(request.Username))
+                {
+                    _logger.LogInformation("检测到超级管理员登录请求: {Username}", request.Username);
+                    return await ProcessSysAdminLoginAsync(request);
+                }
+
+                // 3. 普通用户认证流程 
+                return await ProcessUserLoginAsync(request);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "登录处理异常: {Username}", request.Username);
+                return ServiceResult<LoginResponse>.Failure("登录处理异常，请稍后重试");
+            }
+        }
+
+        /// <summary>
+        /// 普通用户认证流程
+        /// </summary>
+        private async Task<ServiceResult<LoginResponse>> ProcessUserLoginAsync(LoginRequest request)
+        {
+            try
+            {
                 // 2. 获取并验证用户信息
                 var userResult = await _queryService.GetUserForAuthenticationAsync(request.Username);
                 if (!userResult.IsSuccess || userResult.Data == null)
@@ -111,6 +136,63 @@ namespace LYBT.Module.Auth.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "登录流程处理异常: {Username}", request.Username);
+                return ServiceResult<LoginResponse>.Failure("登录过程中发生异常");
+            }
+        }
+
+        /// <summary>
+        /// 超级管理员独立认证流程
+        /// 专用于超级管理员，不依赖User表，使用AdminSecrets表
+        /// </summary>
+        private async Task<ServiceResult<LoginResponse>> ProcessSysAdminLoginAsync(LoginRequest request)
+        {
+            try
+            {
+                // 1. 验证超级管理员密码
+                var passwordHash = await _sysAdminHandler.GetSysAdminPasswordHashAsync();
+                if (string.IsNullOrEmpty(passwordHash))
+                {
+                    _logger.LogError("超级管理员密码哈希未找到");
+                    return ServiceResult<LoginResponse>.Failure("用户名或密码错误");
+                }
+
+                // 2. 验证密码
+                if (!PasswordHelper.Verify(request.Password, passwordHash))
+                {
+                    _logger.LogWarning("超级管理员密码验证失败: {Username}", request.Username);
+                    return ServiceResult<LoginResponse>.Failure("用户名或密码错误");
+                }
+
+                // 3. 生成JWT Token（超级管理员固定使用Admin角色）
+                var jwtToken = _jwtAuthenticationService.GenerateToken(
+                    "00000000-0000-0000-0000-000000000001", // 固定的超级管理员ID
+                    request.Username,
+                    UserRole.Admin,
+                    request.RememberMe);
+
+                // 4. 创建超级管理员登录响应
+                var userDto = new UserDto
+                {
+                    Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
+                    Username = request.Username,
+                    RealName = "系统管理员",
+                    Role = UserRole.Admin.ToString(),
+                    Status = CommonStatus.Enabled
+                };
+
+                var loginResponse = new LoginResponse
+                {
+                    Token = jwtToken,
+                    User = userDto,
+                    ExpiresAt = DateTime.UtcNow.AddMinutes(request.RememberMe ? 43200 : 480)
+                };
+
+                _logger.LogInformation("超级管理员登录成功: {Username}", request.Username);
+                return ServiceResult<LoginResponse>.Success(loginResponse);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "超级管理员登录处理异常: {Username}", request.Username);
                 return ServiceResult<LoginResponse>.Failure("登录过程中发生异常");
             }
         }

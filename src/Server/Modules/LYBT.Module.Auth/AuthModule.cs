@@ -21,7 +21,6 @@ namespace LYBT.Module.Auth
         {
             // 注册Repository层
             services.AddScoped<IAuthRepository, AuthRepository>();
-            services.AddScoped<IAuthSessionRepository, AuthSessionRepository>();
 
             // 注册核心服务层 - UltraThink双层架构
             services.AddScoped<IAuthQueryService, AuthQueryService>();       // 查询服务层
@@ -34,6 +33,7 @@ namespace LYBT.Module.Auth
 
             // 注册配置选项
             services.AddOptions<AuthOptions>();
+            services.AddOptions<SysAdminOptions>();
 
             return services;
         }
