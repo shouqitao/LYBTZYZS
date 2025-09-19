@@ -69,8 +69,8 @@ namespace LYBT.Module.MedicalCase.Services
             {
                 var queryable = _context.MedicalCases.AsQueryable();
 
-                // 基础筛选 - 排除已删除/取消的案例
-                queryable = queryable.Where(mc => mc.Status != MedicalCaseStatus.Cancelled);
+                // 基础筛选 - 排除已删除/关闭的案例
+                queryable = queryable.Where(mc => mc.Status != MedicalCaseStatus.Closed);
 
                 // 应用搜索条件（如果有）
                 if (!string.IsNullOrWhiteSpace(query.Keyword))
@@ -124,7 +124,7 @@ namespace LYBT.Module.MedicalCase.Services
                 }
 
                 var medicalCases = await _context.MedicalCases
-                    .Where(mc => mc.PatientId == patientId && mc.Status != MedicalCaseStatus.Cancelled)
+                    .Where(mc => mc.PatientId == patientId && mc.Status != MedicalCaseStatus.Closed)
                     .OrderByDescending(mc => mc.ConsultationDate)
                     .ToListAsync();
 
@@ -151,7 +151,7 @@ namespace LYBT.Module.MedicalCase.Services
                 }
 
                 var activeCase = await _context.MedicalCases
-                    .Where(mc => mc.PatientId == patientId && mc.Status == MedicalCaseStatus.InConsultation)
+                    .Where(mc => mc.PatientId == patientId && mc.Status == MedicalCaseStatus.Active)
                     .FirstOrDefaultAsync();
 
                 if (activeCase == null)
@@ -183,7 +183,7 @@ namespace LYBT.Module.MedicalCase.Services
 
                 var searchTerm = keyword.Trim();
                 var medicalCases = await _context.MedicalCases
-                    .Where(mc => mc.Status != MedicalCaseStatus.Cancelled &&
+                    .Where(mc => mc.Status != MedicalCaseStatus.Closed &&
                                (mc.PatientName.Contains(searchTerm) ||
                                 mc.DoctorName.Contains(searchTerm) ||
                                 (mc.Remark != null && mc.Remark.Contains(searchTerm))))
@@ -214,7 +214,7 @@ namespace LYBT.Module.MedicalCase.Services
                 }
 
                 var hasActiveCase = await _context.MedicalCases
-                    .AnyAsync(mc => mc.PatientId == patientId && mc.Status == MedicalCaseStatus.InConsultation);
+                    .AnyAsync(mc => mc.PatientId == patientId && mc.Status == MedicalCaseStatus.Active);
 
                 return ServiceResult<bool>.Success(hasActiveCase);
             }
@@ -240,7 +240,7 @@ namespace LYBT.Module.MedicalCase.Services
                 // 获取患者的已完成案例作为历史记录
                 var historyCases = await _context.MedicalCases
                     .Where(mc => mc.PatientId == patientId &&
-                               (mc.Status == MedicalCaseStatus.Completed || mc.Status == MedicalCaseStatus.Cancelled))
+                               mc.Status == MedicalCaseStatus.Closed)
                     .OrderByDescending(mc => mc.ConsultationDate)
                     .ToListAsync();
 
@@ -260,7 +260,7 @@ namespace LYBT.Module.MedicalCase.Services
         /// <summary>
         /// 获取医疗案例统计信息 - 简化版本仅返回基础信息
         /// </summary>
-        public async Task<ServiceResult<object>> GetStatisticsAsync()
+        public Task<ServiceResult<object>> GetStatisticsAsync()
         {
             try
             {
@@ -271,12 +271,12 @@ namespace LYBT.Module.MedicalCase.Services
                     GeneratedAt = DateTime.Now
                 };
 
-                return ServiceResult<object>.Success(statistics);
+                return Task.FromResult(ServiceResult<object>.Success(statistics));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "获取医疗案例统计信息失败");
-                return ServiceResult<object>.Failure($"获取统计信息失败: {ex.Message}");
+                return Task.FromResult(ServiceResult<object>.Failure($"获取统计信息失败: {ex.Message}"));
             }
         }
 
@@ -294,7 +294,7 @@ namespace LYBT.Module.MedicalCase.Services
                 }
 
                 var medicalCases = await _context.MedicalCases
-                    .Where(mc => mc.DoctorId == doctorId && mc.Status != MedicalCaseStatus.Cancelled)
+                    .Where(mc => mc.DoctorId == doctorId && mc.Status != MedicalCaseStatus.Closed)
                     .OrderByDescending(mc => mc.ConsultationDate)
                     .ToListAsync();
 

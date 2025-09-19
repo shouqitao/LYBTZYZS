@@ -109,17 +109,17 @@ namespace LYBT.Module.MedicalCase.Services
         }
 
         /// <inheritdoc/>
-        public async Task<ServiceResult<bool>> Suspend(Guid id, string reason)
+        public Task<ServiceResult<bool>> Suspend(Guid id, string reason)
         {
             // 简化实现：Record-Only模式不支持复杂状态管理
-            return ServiceResult<bool>.Failure("简化版本不支持暂停功能，请使用完成或删除操作");
+            return Task.FromResult(ServiceResult<bool>.Failure("简化版本不支持暂停功能，请使用完成或删除操作"));
         }
 
         /// <inheritdoc/>
-        public async Task<ServiceResult<bool>> Resume(Guid id)
+        public Task<ServiceResult<bool>> Resume(Guid id)
         {
             // 简化实现：Record-Only模式不支持复杂状态管理
-            return ServiceResult<bool>.Failure("简化版本不支持恢复功能，请创建新的医疗案例");
+            return Task.FromResult(ServiceResult<bool>.Failure("简化版本不支持恢复功能，请创建新的医疗案例"));
         }
 
         /// <inheritdoc/>
