@@ -27,8 +27,8 @@ namespace LYBT.Module.Users.Services
             => _queryService.GetByIdAsync(id);
 
         /// <inheritdoc/>
-        public Task<ServiceResult<UserDto>> GetByUsernameAsync(string username)
-            => _queryService.GetByUsernameAsync(username);
+        public Task<ServiceResult<UserDto>> GetByUsernameAsync(string userName)
+            => _queryService.GetByUsernameAsync(userName);
 
         /// <inheritdoc/>
         public Task<ServiceResult<List<UserDto>>> GetActiveUsersAsync()
@@ -42,12 +42,10 @@ namespace LYBT.Module.Users.Services
         public Task<ServiceResult<List<object>>> GetRolesAsync()
             => _queryService.GetRolesAsync();
 
-        public Task<ServiceResult<PagedResult<object>>> GetOperationLogsAsync(Guid userId, PagedQueryBaseDto query)
-            => _queryService.GetOperationLogsAsync(userId, query);
 
         /// <inheritdoc/>
-        public Task<ServiceResult<bool>> ValidateUsernameAsync(string username)
-            => _queryService.ValidateUsernameAsync(username);
+        public Task<ServiceResult<bool>> ValidateUsernameAsync(string userName)
+            => _queryService.ValidateUsernameAsync(userName);
 
         #endregion 查询操作
 

@@ -24,7 +24,7 @@ namespace LYBT.Module.Users.Interfaces
         /// <summary>
         /// 根据用户名获取用户
         /// </summary>
-        Task<ServiceResult<UserDto>> GetByUsernameAsync(string username);
+        Task<ServiceResult<UserDto>> GetByUsernameAsync(string userName);
 
         /// <summary>
         /// 获取启用的用户列表
@@ -41,15 +41,11 @@ namespace LYBT.Module.Users.Interfaces
         /// </summary>
         Task<ServiceResult<List<object>>> GetRolesAsync();
 
-        /// <summary>
-        /// 获取用户操作日志
-        /// </summary>
-        Task<ServiceResult<PagedResult<object>>> GetOperationLogsAsync(Guid userId, PagedQueryBaseDto query);
 
         /// <summary>
         /// 验证用户名是否可用
         /// </summary>
-        Task<ServiceResult<bool>> ValidateUsernameAsync(string username);
+        Task<ServiceResult<bool>> ValidateUsernameAsync(string userName);
 
         /// <summary>
         /// 获取所有医生

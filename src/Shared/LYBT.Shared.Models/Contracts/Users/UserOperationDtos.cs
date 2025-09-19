@@ -33,21 +33,6 @@ namespace LYBT.Shared.Models.Contracts.Users
         [DisplayName("电话")]
         public string? PhoneNumber { get; set; }
 
-        /// <summary>部门关键词</summary>
-        [DisplayName("部门")]
-        public string? Department { get; set; }
-
-        /// <summary>职位关键词</summary>
-        [DisplayName("职位")]
-        public string? Position { get; set; }
-
-        /// <summary>最后登录日期范围-开始日期</summary>
-        [DisplayName("登录开始日期")]
-        public DateTime? LoginStartDate { get; set; }
-
-        /// <summary>最后登录日期范围-结束日期</summary>
-        [DisplayName("登录结束日期")]
-        public DateTime? LoginEndDate { get; set; }
 
         /// <summary>按拼音码搜索</summary>
         [DisplayName("拼音码")]

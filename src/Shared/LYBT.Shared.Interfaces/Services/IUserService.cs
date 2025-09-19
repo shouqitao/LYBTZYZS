@@ -47,14 +47,14 @@ namespace LYBT.Shared.Interfaces.Services
         /// <summary>
         /// 根据用户名查找用户
         /// </summary>
-        /// <param name="username">用户名 - 系统内唯一标识</param>
+        /// <param name="userName">用户名 - 系统内唯一标识</param>
         /// <returns>匹配的用户信息</returns>
         /// <remarks>
         /// <para>委托: Module → QueryService.GetUserByUsernameAsync</para>
         /// <para>用途: 登录验证、用户名唯一性检查、用户查找</para>
         /// <para>缓存: 根据用户名缓存5分钟，提升登录性能</para>
         /// </remarks>
-        Task<ServiceResult<UserDto>> GetByUsernameAsync(string username);
+        Task<ServiceResult<UserDto>> GetByUsernameAsync(string userName);
 
         /// <summary>
         /// 获取活跃用户列表
@@ -242,14 +242,14 @@ namespace LYBT.Shared.Interfaces.Services
         /// <summary>
         /// 验证用户名可用性
         /// </summary>
-        /// <param name="username">待验证的用户名</param>
+        /// <param name="userName">待验证的用户名</param>
         /// <returns>true: 可用; false: 已存在</returns>
         /// <remarks>
         /// <para>委托: Module → QueryService.ValidateUsernameAsync</para>
         /// <para>用途: 用户注册时实时验证、用户名唯一性检查</para>
         /// <para>规则: 不区分大小写检查、包含软删除用户的检查</para>
         /// </remarks>
-        Task<ServiceResult<bool>> ValidateUsernameAsync(string username);
+        Task<ServiceResult<bool>> ValidateUsernameAsync(string userName);
 
         #endregion 辅助功能 - QueryService支持
     }

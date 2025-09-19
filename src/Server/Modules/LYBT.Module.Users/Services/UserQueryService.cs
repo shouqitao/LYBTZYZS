@@ -123,17 +123,17 @@ namespace LYBT.Module.Users.Services
         /// <summary>
         /// 根据用户名获取用户信息
         /// </summary>
-        public async Task<ServiceResult<UserDto>> GetByUsernameAsync(string username)
+        public async Task<ServiceResult<UserDto>> GetByUsernameAsync(string userName)
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(username))
+                if (string.IsNullOrWhiteSpace(userName))
                 {
                     return ServiceResult<UserDto>.Failure("用户名不能为空");
                 }
 
                 var user = await _context.Users
-                    .FirstOrDefaultAsync(u => u.Username == username);
+                    .FirstOrDefaultAsync(u => u.Username == userName);
 
                 if (user == null)
                 {
@@ -145,7 +145,7 @@ namespace LYBT.Module.Users.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "根据用户名获取用户失败: {Username}", username);
+                _logger.LogError(ex, "根据用户名获取用户失败: {UserName}", userName);
                 return ServiceResult<UserDto>.Failure($"获取用户失败: {ex.Message}");
             }
         }
@@ -229,74 +229,27 @@ namespace LYBT.Module.Users.Services
             }
         }
 
-        /// <summary>
-        /// 获取用户操作日志（简化版）
-        /// </summary>
-        public async Task<ServiceResult<PagedResult<object>>> GetOperationLogsAsync(Guid userId, PagedQueryBaseDto query)
-        {
-            try
-            {
-                if (userId == Guid.Empty)
-                {
-                    return ServiceResult<PagedResult<object>>.Failure("用户ID不能为空");
-                }
-
-                // 简化日志实现 - 返回用户基本信息作为日志
-                var user = await _context.Users
-                    .Where(u => u.Id == userId)
-                    .Select(u => new
-                    {
-                        u.Id,
-                        Action = "用户创建",
-                        Timestamp = u.CreatedTime,
-                        Details = $"用户: {u.RealName}({u.Username})",
-                        Status = u.Status.ToString()
-                    })
-                    .FirstOrDefaultAsync();
-
-                List<object> logs = [];
-                if (user != null)
-                {
-                    logs.Add(user);
-                }
-
-                var pagedResult = new PagedResult<object>
-                {
-                    Items = logs,
-                    TotalCount = logs.Count,
-                    CurrentPage = query.PageIndex,
-                    PageSize = query.PageSize
-                };
-
-                return ServiceResult<PagedResult<object>>.Success(pagedResult);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取用户操作日志失败: {UserId}", userId);
-                return ServiceResult<PagedResult<object>>.Failure($"获取操作日志失败: {ex.Message}");
-            }
-        }
 
         /// <summary>
         /// 验证用户名是否可用
         /// </summary>
-        public async Task<ServiceResult<bool>> ValidateUsernameAsync(string username)
+        public async Task<ServiceResult<bool>> ValidateUsernameAsync(string userName)
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(username))
+                if (string.IsNullOrWhiteSpace(userName))
                 {
                     return ServiceResult<bool>.Failure("用户名不能为空");
                 }
 
                 var exists = await _context.Users
-                    .AnyAsync(u => u.Username == username);
+                    .AnyAsync(u => u.Username == userName);
 
                 return ServiceResult<bool>.Success(!exists);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "验证用户名失败: {Username}", username);
+                _logger.LogError(ex, "验证用户名失败: {UserName}", userName);
                 return ServiceResult<bool>.Failure($"验证用户名失败: {ex.Message}");
             }
         }

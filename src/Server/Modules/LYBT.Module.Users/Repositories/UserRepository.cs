@@ -325,7 +325,7 @@ namespace LYBT.Module.Users.Repositories
 
             var users = await _dbSet
                 .AsNoTracking()
-                .Where(u => u.Status == CommonStatus.Enabled && u.Username != "sysadmin")
+                .Where(u => u.Status == CommonStatus.Enabled)
                 .OrderBy(u => u.RealName)
                 .ToListAsync();
 
