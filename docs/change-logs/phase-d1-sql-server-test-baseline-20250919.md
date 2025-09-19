@@ -21,6 +21,7 @@
   - 性能监控和数据库统计
   - 异步资源清理机制
 - **连接字符串模板**:
+  
   ```
   Server=localhost;Database=LYBTDB_Test_{GUID};Trusted_Connection=True;
   TrustServerCertificate=true;MultipleActiveResultSets=true;
@@ -40,10 +41,12 @@
 **更新的测试项目**:
 
 - **Core测试项目** (`tests/UnitTests/Core/Core/LYBT.Tests.Core.csproj`):
+  
   - ❌ 移除: `Microsoft.EntityFrameworkCore.InMemory`
   - ✅ 添加: `Microsoft.EntityFrameworkCore.SqlServer`
 
 - **Users测试项目** (`tests/UnitTests/Modules/Users.UnitTests/LYBT.Module.Users.Tests.csproj`):
+  
   - ❌ 移除: `Microsoft.EntityFrameworkCore.InMemory`
   - ✅ 添加: `Microsoft.EntityFrameworkCore.SqlServer`
   - ✅ 添加: 引用Core测试项目
@@ -53,11 +56,12 @@
 **文件**: `tests/UnitTests/Modules/Users.UnitTests/Base/RepositoryTestBase.cs`
 
 **重构前**:
+
 ```csharp
 public abstract class RepositoryTestBase : IDisposable
 {
     protected readonly AppDbContext Context;
-    
+
     protected RepositoryTestBase()
     {
         var options = new DbContextOptionsBuilder<AppDbContext>()
@@ -70,6 +74,7 @@ public abstract class RepositoryTestBase : IDisposable
 ```
 
 **重构后**:
+
 ```csharp
 public abstract class RepositoryTestBase : SqlServerTestBase
 {
@@ -77,7 +82,7 @@ public abstract class RepositoryTestBase : SqlServerTestBase
     {
         // 基类SqlServerTestBase已经处理了数据库初始化
     }
-    
+
     // 为了向后兼容，提供Context属性
     protected AppDbContext Context => DbContext;
 }
@@ -99,6 +104,7 @@ public abstract class RepositoryTestBase : SqlServerTestBase
 ### 3. 性能优化配置
 
 **小诊所优化参数**:
+
 - `Connection Timeout=10`: 快速连接超时
 - `Command Timeout=10`: 快速命令超时  
 - `Max Pool Size=5`: 小规模连接池
@@ -122,16 +128,19 @@ public abstract class RepositoryTestBase : SqlServerTestBase
 ## 🎯 验证标准
 
 ### 1. 编译验证
+
 - ✅ 所有测试项目编译通过
 - ✅ 依赖引用正确解析
 - ✅ 命名空间导入无冲突
 
-### 2. 功能验证  
+### 2. 功能验证
+
 - ✅ SqlServerTestBase数据库连接正常
 - ✅ 测试数据库自动创建和清理
 - ✅ 现有测试用例无需修改即可运行
 
 ### 3. 性能验证
+
 - ✅ 连接池配置适合小诊所规模
 - ✅ 超时设置合理（10秒）
 - ✅ 资源占用可控
@@ -141,6 +150,7 @@ public abstract class RepositoryTestBase : SqlServerTestBase
 Phase D1的完成为后续阶段奠定了坚实基础：
 
 1. **Phase E1**: 小诊所资源保守配置
+   
    - 数据库连接池精细调优
    - 内存缓存策略优化
    - 系统资源监控配置

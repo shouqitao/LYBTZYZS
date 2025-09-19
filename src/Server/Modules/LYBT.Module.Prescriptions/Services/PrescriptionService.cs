@@ -103,12 +103,6 @@ namespace LYBT.Module.Prescriptions.Services
             return result.IsSuccess ? result.Data : null;
         }
 
-        [Obsolete("Automatic formula application removed in Record-Only mode. Use manual template import instead.", false)]
-        public async Task<PrescriptionDto?> CreateFromTemplateAsync(Guid templateId, Guid patientId, Guid doctorId, Guid operatorId, string operatorName)
-        {
-            var result = await _businessService.CreateFromTemplateAsync(templateId, patientId, doctorId, operatorId, operatorName);
-            return result.IsSuccess ? result.Data : null;
-        }
 
         public async Task<bool> QuickSaveAsync(Guid prescriptionId, QuickPrescriptionDto dto, Guid operatorId, string operatorName)
         {

@@ -14,25 +14,7 @@ namespace LYBT.Module.Herbs.Interfaces
         // 注意：基础CRUD方法由IBaseRepository提供
         // 这里只定义药材特有的业务方法
 
-        /// <summary>
-        /// 检查药材名称是否存在
-        /// </summary>
-        [Obsolete("Not used by business logic; subject to removal after review", false)]
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        Task<bool> ExistsByNameAsync(string name, Guid? excludeId = null);
 
-        /// <summary>
-        /// 根据拼音码搜索药材
-        /// </summary>
-        [Obsolete("Not used by business logic; subject to removal after review", false)]
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        Task<List<Herb>> SearchByPinyinAsync(string pinyin);
 
-        /// <summary>
-        /// 批量新增药材
-        /// </summary>
-        [Obsolete("Not used by business logic; subject to removal after review", false)]
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        Task<bool> AddRangeAsync(List<Herb> herbs);
     }
 }

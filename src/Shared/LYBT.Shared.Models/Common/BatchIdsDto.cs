@@ -1,24 +1,13 @@
-using System.ComponentModel.DataAnnotations;
+namespace LYBT.Shared.Models.Common;
 
-namespace LYBT.Shared.Models.Common
+/// <summary>
+/// 批量操作ID列表DTO
+/// 用于批量启用、禁用等操作的通用数据传输对象
+/// </summary>
+public class BatchIdsDto
 {
-
     /// <summary>
-    /// 批量操作ID集合DTO（通用版本）
+    /// ID列表
     /// </summary>
-    public class BatchIdsDto
-    {
-
-        /// <summary>
-        /// ID集合
-        /// </summary>
-        [Required(ErrorMessage = "ID集合不能为空")]
-        [MinLength(1, ErrorMessage = "至少需要选择一项")]
-        public List<Guid> Ids { get; set; } = [];
-
-        /// <summary>
-        /// 操作原因（可选）
-        /// </summary>
-        public string? Reason { get; set; }
-    }
+    public List<Guid> Ids { get; set; } = new List<Guid>();
 }

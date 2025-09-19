@@ -2,8 +2,6 @@ using LYBT.Infrastructure.Configuration.Options;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Options;
-using Serilog;
 
 namespace LYBT.Infrastructure.Configuration.Extensions
 {
@@ -86,7 +84,7 @@ namespace LYBT.Infrastructure.Configuration.Extensions
                 if (!options.EnableInDevelopment)
                 {
                     // 仅记录警告，不阻止启动
-                    Log.Warning("开发环境建议启用默认密码功能以便调试 (DefaultPasswordOptions.EnableInDevelopment = true)");
+                    // 开发环境建议启用默认密码功能以便调试
                 }
             }
         }
@@ -146,19 +144,19 @@ namespace LYBT.Infrastructure.Configuration.Extensions
                 // 生产环境必须启用性能监控
                 if (!options.Monitoring.EnablePerformanceMonitoring)
                 {
-                    Log.Warning("生产环境建议启用性能监控 (DatabaseOptions.Monitoring.EnablePerformanceMonitoring = true)");
+                    // 生产环境建议启用性能监控
                 }
 
                 // 生产环境连接池配置验证
                 if (options.ConnectionPool.MaxPoolSize > 100)
                 {
-                    Log.Warning("生产环境数据库连接池过大，建议不超过100个连接");
+                    // 生产环境数据库连接池过大，建议不超过100个连接
                 }
 
                 // 生产环境建议启用自动备份
                 if (!options.Backup.EnableAutoBackup)
                 {
-                    Log.Warning("生产环境建议启用自动备份 (DatabaseOptions.Backup.EnableAutoBackup = true)");
+                    // 生产环境建议启用自动备份
                 }
             }
             else if (environment.IsDevelopment())
@@ -166,12 +164,12 @@ namespace LYBT.Infrastructure.Configuration.Extensions
                 // 开发环境建议启用详细日志
                 if (!options.EnableSensitiveDataLogging)
                 {
-                    Log.Information("开发环境建议启用敏感数据日志以便调试 (DatabaseOptions.EnableSensitiveDataLogging = true)");
+                    // 开发环境建议启用敏感数据日志以便调试
                 }
 
                 if (!options.EnableDetailedErrors)
                 {
-                    Log.Information("开发环境建议启用详细错误信息以便调试 (DatabaseOptions.EnableDetailedErrors = true)");
+                    // 开发环境建议启用详细错误信息以便调试
                 }
             }
         }

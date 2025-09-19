@@ -8,7 +8,6 @@ using Microsoft.Extensions.Logging;
 using LYBT.Entities.Users;
 using LYBT.Module.Users.Interfaces;
 using LYBT.Module.Users.Services;
-using LYBT.Module.Users.Services.Interfaces;
 using Microsoft.Extensions.Caching.Memory;
 using LYBT.Module.Users.Mapping;
 using LYBT.Shared.Models.Common;

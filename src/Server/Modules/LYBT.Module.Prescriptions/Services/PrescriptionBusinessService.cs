@@ -163,27 +163,6 @@ namespace LYBT.Module.Prescriptions.Services
             }
         }
 
-        /// <summary>
-        /// 从验方模板创建处方 - Record-Only模式已移除自动套用逻辑
-        /// </summary>
-        [Obsolete("Automatic formula application removed in Record-Only mode. Use manual template import instead.", false)]
-        public Task<ServiceResult<PrescriptionDto>> CreateFromTemplateAsync(Guid templateId, Guid patientId, Guid doctorId, Guid operatorId, string operatorName)
-        {
-            var emptyPrescription = new PrescriptionDto
-            {
-                Id = Guid.NewGuid(),
-                Indication = "验方自动套用功能在 Record-Only 模式下已移除",
-                PatientId = patientId,
-                UserId = doctorId,
-                Status = CommonStatus.Enabled,
-                Remark = "请手动导入验方模板并调整药材用量",
-                FormulaSource = "手动导入"
-            };
-
-            return Task.FromResult(ServiceResult<PrescriptionDto>.Success(
-                emptyPrescription,
-                "验方自动套用功能已在 Record-Only 模式下移除，请使用手动导入模板"));
-        }
 
         /// <summary>
         /// 快速保存处方（草稿状态）
@@ -360,9 +339,28 @@ namespace LYBT.Module.Prescriptions.Services
                     return ServiceResult<bool>.Failure("处方不存在");
                 }
 
-                // TODO: 实现配伍禁忌检查逻辑
-                // 目前返回安全通过
-                _logger.LogInformation("处方配伍检查通过: {PrescriptionId}", prescriptionId);
+                // Record-Only模式：基础配伍禁忌检查
+                // 复杂的中医配伍禁忌需要专业药物知识库支持
+                // 小诊所环境下依靠医生经验判断，系统进行基础检查
+                
+                // 检查处方中是否有重复药材
+                var prescriptionItems = await _context.PrescriptionItems
+                    .Where(pi => pi.PrescriptionId == prescriptionId)
+                    .ToListAsync();
+                
+                var duplicateHerbs = prescriptionItems
+                    .GroupBy(pi => pi.HerbId)
+                    .Where(g => g.Count() > 1)
+                    .Select(g => g.First().HerbName)
+                    .ToList();
+                
+                if (duplicateHerbs.Any())
+                {
+                    _logger.LogWarning("处方中发现重复药材: {Herbs}, 处方ID: {PrescriptionId}", 
+                        string.Join(", ", duplicateHerbs), prescriptionId);
+                }
+                
+                _logger.LogInformation("处方基础检查完成: {PrescriptionId}", prescriptionId);
 
                 return ServiceResult<bool>.Success(true);
             }

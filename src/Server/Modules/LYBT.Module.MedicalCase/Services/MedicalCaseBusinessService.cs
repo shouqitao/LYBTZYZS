@@ -6,16 +6,14 @@ using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
-using LYBT.Shared.Models.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Module.MedicalCase.Services
 {
-
     /// <summary>
-    /// 医疗案例业务逻辑服务 - UltraThink架构
-    /// 职责：生命周期管理，业务规则，状态转换，批量操作
+    /// 医疗案例业务逻辑服务 - 简化版本
+    /// 职责：增删查改和看诊流程，符合用户要求
     /// </summary>
     public class MedicalCaseBusinessService : IMedicalCaseBusinessService
     {
@@ -50,21 +48,31 @@ namespace LYBT.Module.MedicalCase.Services
                 // 业务规则：检查患者是否有活跃案例（使用简化状态）
                 var hasActiveCase = await _context.MedicalCases
                     .Where(mc => mc.PatientId == dto.PatientId)
-                    .AnyAsync(mc => mc.Status.IsActive());
+                    .AnyAsync(mc => mc.Status == MedicalCaseStatus.Active);
 
                 if (hasActiveCase)
                 {
-                    return ServiceResult<MedicalCaseDto>.Failure("患者已有活跃的医疗案例，请先完成或暂停当前案例");
+                    return ServiceResult<MedicalCaseDto>.Failure("患者已有活跃的医疗案例，请先完成或关闭当前案例");
                 }
+
+                // 获取患者和医生姓名 - Record-Only模式：直接查询数据库保持简单
+                var patient = await _context.Patients.AsNoTracking()
+                    .Where(p => p.Id == dto.PatientId)
+                    .Select(p => p.Name)
+                    .FirstOrDefaultAsync();
+                var doctor = await _context.Users.AsNoTracking()
+                    .Where(u => u.Id == dto.DoctorId)
+                    .Select(u => u.RealName)
+                    .FirstOrDefaultAsync();
 
                 // 创建新案例
                 var medicalCase = new Entities.MedicalCase.MedicalCase
                 {
                     Id = Guid.NewGuid(),
                     PatientId = dto.PatientId,
-                    PatientName = "待获取患者姓名", // TODO: 从Patient服务获取
+                    PatientName = patient ?? "未知患者",
                     DoctorId = dto.DoctorId,
-                    DoctorName = "待获取医生姓名", // TODO: 从User服务获取
+                    DoctorName = doctor ?? "未知医生",
                     ConsultationDate = DateTime.Now,
                     Status = MedicalCaseStatus.Active, // Record-Only: 新建医案直接设为活跃状态
                     Remark = dto.Remark
@@ -121,22 +129,32 @@ namespace LYBT.Module.MedicalCase.Services
                     // 业务规则：检查患者是否有活跃案例
                     var hasActiveCase = await _context.MedicalCases
                         .Where(mc => mc.PatientId == dto.MedicalCase.PatientId)
-                        .AnyAsync(mc => mc.Status.IsActive());
+                        .AnyAsync(mc => mc.Status == MedicalCaseStatus.Active);
 
                     if (hasActiveCase)
                     {
                         return ServiceResult<MedicalCaseWithPrescriptionResultDto>.Failure(
-                            "患者已有活跃的医疗案例，请先完成或暂停当前案例");
+                            "患者已有活跃的医疗案例，请先完成或关闭当前案例");
                     }
 
-                    // Step 1: 创建医疗案例
+                    // Step 1: 获取患者和医生姓名 - Record-Only模式：直接查询数据库保持简单
+                    var patient = await _context.Patients.AsNoTracking()
+                        .Where(p => p.Id == dto.MedicalCase.PatientId)
+                        .Select(p => p.Name)
+                        .FirstOrDefaultAsync();
+                    var doctor = await _context.Users.AsNoTracking()
+                        .Where(u => u.Id == dto.MedicalCase.DoctorId)
+                        .Select(u => u.RealName)
+                        .FirstOrDefaultAsync();
+
+                    // Step 2: 创建医疗案例
                     var medicalCase = new Entities.MedicalCase.MedicalCase
                     {
                         Id = Guid.NewGuid(),
                         PatientId = dto.MedicalCase.PatientId,
-                        PatientName = "待获取患者姓名", // TODO: 从Patient服务获取
+                        PatientName = patient ?? "未知患者",
                         DoctorId = dto.MedicalCase.DoctorId,
-                        DoctorName = "待获取医生姓名", // TODO: 从User服务获取
+                        DoctorName = doctor ?? "未知医生",
                         ConsultationDate = DateTime.Now,
                         Status = MedicalCaseStatus.Active,
                         Remark = dto.MedicalCase.Remark
@@ -144,7 +162,7 @@ namespace LYBT.Module.MedicalCase.Services
 
                     _context.MedicalCases.Add(medicalCase);
 
-                    // Step 2: 如果需要，创建关联处方
+                    // Step 3: 如果需要，创建关联处方
                     Prescription? prescription = null;
                     if (dto.CreatePrescriptionImmediately && dto.Prescription != null)
                     {
@@ -293,9 +311,9 @@ namespace LYBT.Module.MedicalCase.Services
                 }
 
                 // 业务规则：检查是否可以删除
-                if (medicalCase.Status == MedicalCaseStatus.InConsultation)
+                if (medicalCase.Status == MedicalCaseStatus.Active)
                 {
-                    return ServiceResult<bool>.Failure("进行中的医疗案例不能删除，请先完成或暂停");
+                    return ServiceResult<bool>.Failure("活跃的医疗案例不能删除，请先关闭");
                 }
 
                 // 软删除 - 设置状态为已关闭（Record-Only简化）
@@ -310,372 +328,6 @@ namespace LYBT.Module.MedicalCase.Services
             {
                 _logger.LogError(ex, "删除医疗案例失败: {Id}", id);
                 return ServiceResult<bool>.Failure($"删除医疗案例失败: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// 完成医疗案例 - Record-Only简化：直接设为关闭状态
-        /// </summary>
-        [Obsolete("Complex state transition removed in Record-Only mode. Use simple status update instead.", false)]
-        public async Task<ServiceResult<bool>> CompleteAsync(Guid caseId)
-        {
-            try
-            {
-                if (caseId == Guid.Empty)
-                {
-                    return ServiceResult<bool>.Failure("医疗案例ID不能为空");
-                }
-
-                var medicalCase = await _context.MedicalCases
-                    .FirstOrDefaultAsync(mc => mc.Id == caseId);
-
-                if (medicalCase == null)
-                {
-                    return ServiceResult<bool>.Failure("医疗案例不存在");
-                }
-
-                // 业务规则：只有活跃的案例可以关闭（Record-Only简化逻辑）
-                if (!medicalCase.Status.IsActive())
-                {
-                    return ServiceResult<bool>.Failure("只有活跃的案例才能完成");
-                }
-
-                // Record-Only: 直接设为关闭状态
-                medicalCase.Status = MedicalCaseStatus.Closed;
-
-                _context.MedicalCases.Update(medicalCase);
-                await _context.SaveChangesAsync();
-
-                _logger.LogInformation(
-                    "完成医疗案例: {PatientName} ({Id})",
-                    medicalCase.PatientName, medicalCase.Id);
-
-                return ServiceResult<bool>.Success(true);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "完成医疗案例失败: {Id}", caseId);
-                return ServiceResult<bool>.Failure($"完成医疗案例失败: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// 暂停医疗案例
-        /// </summary>
-        [Obsolete("Complex state transition removed in Record-Only mode. Use simple status update instead.", false)]
-        public async Task<ServiceResult<bool>> SuspendAsync(Guid caseId)
-        {
-            try
-            {
-                if (caseId == Guid.Empty)
-                {
-                    return ServiceResult<bool>.Failure("医疗案例ID不能为空");
-                }
-
-                var medicalCase = await _context.MedicalCases
-                    .FirstOrDefaultAsync(mc => mc.Id == caseId);
-
-                if (medicalCase == null)
-                {
-                    return ServiceResult<bool>.Failure("医疗案例不存在");
-                }
-
-                // Record-Only: 简化业务规则，活跃状态保持不变（暂停在UI层处理）
-                if (!medicalCase.Status.IsActive())
-                {
-                    return ServiceResult<bool>.Failure("只有活跃的案例可以操作");
-                }
-
-                // Record-Only: 暂停逻辑简化，保持活跃状态
-                // 实际暂停状态由前端或其他业务字段管理
-                medicalCase.Status = MedicalCaseStatus.Active;
-
-                _context.MedicalCases.Update(medicalCase);
-                await _context.SaveChangesAsync();
-
-                _logger.LogInformation(
-                    "暂停医疗案例: {PatientName} ({Id})",
-                    medicalCase.PatientName, medicalCase.Id);
-
-                return ServiceResult<bool>.Success(true);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "暂停医疗案例失败: {Id}", caseId);
-                return ServiceResult<bool>.Failure($"暂停医疗案例失败: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// 恢复医疗案例
-        /// </summary>
-        [Obsolete("Complex state transition removed in Record-Only mode. Use simple status update instead.", false)]
-        public async Task<ServiceResult<bool>> ResumeAsync(Guid caseId)
-        {
-            try
-            {
-                if (caseId == Guid.Empty)
-                {
-                    return ServiceResult<bool>.Failure("医疗案例ID不能为空");
-                }
-
-                var medicalCase = await _context.MedicalCases
-                    .FirstOrDefaultAsync(mc => mc.Id == caseId);
-
-                if (medicalCase == null)
-                {
-                    return ServiceResult<bool>.Failure("医疗案例不存在");
-                }
-
-                // Record-Only: 简化恢复逻辑，只需要是已关闭的案例可以重新激活
-                if (medicalCase.Status.IsActive())
-                {
-                    return ServiceResult<bool>.Failure("案例已经是活跃状态");
-                }
-
-                // 检查患者是否已有其他活跃案例（使用简化状态）
-                var hasActiveCase = await _context.MedicalCases
-                    .Where(mc => mc.PatientId == medicalCase.PatientId && mc.Id != caseId)
-                    .AnyAsync(mc => mc.Status.IsActive());
-
-                if (hasActiveCase)
-                {
-                    return ServiceResult<bool>.Failure("患者已有其他活跃案例，无法恢复当前案例");
-                }
-
-                // Record-Only: 恢复为活跃状态
-                medicalCase.Status = MedicalCaseStatus.Active;
-
-                _context.MedicalCases.Update(medicalCase);
-                await _context.SaveChangesAsync();
-
-                _logger.LogInformation("恢复医疗案例: {PatientName} ({Id})", medicalCase.PatientName, medicalCase.Id);
-                return ServiceResult<bool>.Success(true);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "恢复医疗案例失败: {Id}", caseId);
-                return ServiceResult<bool>.Failure($"恢复医疗案例失败: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// 归档医疗案例
-        /// </summary>
-        [Obsolete("Complex state transition removed in Record-Only mode. Use simple status update instead.", false)]
-        public async Task<ServiceResult<bool>> ArchiveAsync(Guid caseId)
-        {
-            try
-            {
-                if (caseId == Guid.Empty)
-                {
-                    return ServiceResult<bool>.Failure("医疗案例ID不能为空");
-                }
-
-                var medicalCase = await _context.MedicalCases
-                    .FirstOrDefaultAsync(mc => mc.Id == caseId);
-
-                if (medicalCase == null)
-                {
-                    return ServiceResult<bool>.Failure("医疗案例不存在");
-                }
-
-                // Record-Only: 归档逻辑简化，只需要是关闭状态
-                if (medicalCase.Status.IsActive())
-                {
-                    return ServiceResult<bool>.Failure("只有已关闭的案例才能归档");
-                }
-
-                // Record-Only: 归档就是关闭状态，无需额外处理
-                medicalCase.Status = MedicalCaseStatus.Closed;
-                _context.MedicalCases.Update(medicalCase);
-                await _context.SaveChangesAsync();
-
-                _logger.LogInformation(
-                    "归档医疗案例: {PatientName} ({Id})",
-                    medicalCase.PatientName, medicalCase.Id);
-
-                return ServiceResult<bool>.Success(true);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "归档医疗案例失败: {Id}", caseId);
-                return ServiceResult<bool>.Failure($"归档医疗案例失败: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// 更新医疗案例状态
-        /// </summary>
-        [Obsolete("Complex status strings removed in Record-Only mode. Use simplified Active/Closed states.", false)]
-        public async Task<ServiceResult<bool>> UpdateStatusAsync(Guid caseId, string status)
-        {
-            try
-            {
-                if (caseId == Guid.Empty)
-                {
-                    return ServiceResult<bool>.Failure("医疗案例ID不能为空");
-                }
-
-                if (string.IsNullOrWhiteSpace(status))
-                {
-                    return ServiceResult<bool>.Failure("状态值不能为空");
-                }
-
-                // Record-Only: 简化状态映射到Active/Closed二元状态
-                MedicalCaseStatus medicalCaseStatus;
-                switch (status.ToLower())
-                {
-                    // 活跃状态映射
-                    case "active":
-                    case "registered":
-                    case "inconsultation":
-                    case "suspended":
-                        medicalCaseStatus = MedicalCaseStatus.Active;
-                        break;
-
-                    // 关闭状态映射
-                    case "closed":
-                    case "completed":
-                    case "cancelled":
-                    case "archived":
-                        medicalCaseStatus = MedicalCaseStatus.Closed;
-                        break;
-
-                    default:
-                        return ServiceResult<bool>.Failure($"无效的状态值: {status}，仅支持 active/closed 及其兼容映射");
-                }
-
-                var medicalCase = await _context.MedicalCases
-                    .FirstOrDefaultAsync(mc => mc.Id == caseId);
-
-                if (medicalCase == null)
-                {
-                    return ServiceResult<bool>.Failure("医疗案例不存在");
-                }
-
-                var oldStatus = medicalCase.Status;
-                medicalCase.Status = medicalCaseStatus;
-
-                _context.MedicalCases.Update(medicalCase);
-                await _context.SaveChangesAsync();
-
-                _logger.LogInformation(
-                    "更新医疗案例状态: {PatientName} ({Id}) {OldStatus} -> {NewStatus}",
-                    medicalCase.PatientName, medicalCase.Id, oldStatus, medicalCaseStatus);
-
-                return ServiceResult<bool>.Success(true);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "更新医疗案例状态失败: {Id}", caseId);
-                return ServiceResult<bool>.Failure($"更新医疗案例状态失败: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// 批量更新医疗案例状态
-        /// </summary>
-        [Obsolete("Complex batch status update removed in Record-Only mode. Use simple individual updates instead.", false)]
-        public async Task<ServiceResult<bool>> BatchUpdateStatusAsync(List<Guid> caseIds, string status)
-        {
-            try
-            {
-                if (caseIds == null || caseIds.Count == 0)
-                {
-                    return ServiceResult<bool>.Success(true);
-                }
-
-                if (string.IsNullOrWhiteSpace(status))
-                {
-                    return ServiceResult<bool>.Failure("状态值不能为空");
-                }
-
-                // Record-Only: 批量状态映射到Active/Closed二元状态
-                MedicalCaseStatus medicalCaseStatus;
-                switch (status.ToLower())
-                {
-                    // 活跃状态映射
-                    case "active":
-                    case "registered":
-                    case "inconsultation":
-                    case "suspended":
-                        medicalCaseStatus = MedicalCaseStatus.Active;
-                        break;
-
-                    // 关闭状态映射
-                    case "closed":
-                    case "completed":
-                    case "cancelled":
-                    case "archived":
-                        medicalCaseStatus = MedicalCaseStatus.Closed;
-                        break;
-
-                    default:
-                        return ServiceResult<bool>.Failure($"无效的状态值: {status}，仅支持 active/closed 及其兼容映射");
-                }
-
-                var updatedCount = await _context.MedicalCases
-                    .Where(mc => caseIds.Contains(mc.Id))
-                    .ExecuteUpdateAsync(setters => setters
-                        .SetProperty(mc => mc.Status, medicalCaseStatus));
-
-                _logger.LogInformation(
-                    "批量更新医疗案例状态完成: 更新了 {Count} 条记录，状态: {Status}",
-                    updatedCount, medicalCaseStatus);
-
-                return ServiceResult<bool>.Success(true);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "批量更新医疗案例状态失败");
-                return ServiceResult<bool>.Failure($"批量更新失败: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// 取消看诊
-        /// </summary>
-        [Obsolete("Complex consultation cancellation removed in Record-Only mode. Use simple status update instead.", false)]
-        public async Task<ServiceResult<bool>> CancelConsultationAsync(Guid caseId)
-        {
-            try
-            {
-                if (caseId == Guid.Empty)
-                {
-                    return ServiceResult<bool>.Failure("医疗案例ID不能为空");
-                }
-
-                var medicalCase = await _context.MedicalCases
-                    .FirstOrDefaultAsync(mc => mc.Id == caseId);
-
-                if (medicalCase == null)
-                {
-                    return ServiceResult<bool>.Failure("医疗案例不存在");
-                }
-
-                // Record-Only: 简化取消逻辑，只有活跃案例可以取消
-                if (!medicalCase.Status.IsActive())
-                {
-                    return ServiceResult<bool>.Failure("只有活跃的案例才能取消");
-                }
-
-                // Record-Only: 取消就是关闭状态
-                medicalCase.Status = MedicalCaseStatus.Closed;
-
-                _context.MedicalCases.Update(medicalCase);
-                await _context.SaveChangesAsync();
-
-                _logger.LogInformation(
-                    "取消看诊: {PatientName} ({Id})",
-                    medicalCase.PatientName, medicalCase.Id);
-
-                return ServiceResult<bool>.Success(true);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "取消看诊失败: {Id}", caseId);
-                return ServiceResult<bool>.Failure($"取消看诊失败: {ex.Message}");
             }
         }
 
@@ -742,15 +394,11 @@ namespace LYBT.Module.MedicalCase.Services
                 return ServiceResult<bool>.Failure("患者ID不能为空");
             }
 
-            // PatientName字段不在CreateDto中，由服务从PatientId获取
-            // 跳过PatientName验证
             if (dto.DoctorId == Guid.Empty)
             {
                 return ServiceResult<bool>.Failure("医生ID不能为空");
             }
 
-            // DoctorName字段不在CreateDto中，由服务从DoctorId获取
-            // 跳过DoctorName验证
             return ServiceResult<bool>.Success(true);
         }
 
@@ -764,11 +412,6 @@ namespace LYBT.Module.MedicalCase.Services
                 return ServiceResult<bool>.Failure("医疗案例信息不能为空");
             }
 
-            // PatientName字段不在CreateDto中，由服务从PatientId获取
-            // 跳过PatientName验证
-
-            // DoctorName字段不在CreateDto中，由服务从DoctorId获取
-            // 跳过DoctorName验证
             return ServiceResult<bool>.Success(true);
         }
 

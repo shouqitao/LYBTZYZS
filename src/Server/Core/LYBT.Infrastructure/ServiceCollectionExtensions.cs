@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using JwtOptions = LYBT.Infrastructure.Configuration.Options.JwtOptions;
 
@@ -71,7 +72,12 @@ namespace LYBT.Infrastructure
                     OnAuthenticationFailed = context =>
                     {
                         // 记录认证失败日志
-                        // TODO: 添加日志记录
+                        var logger = context.HttpContext.RequestServices.GetService<ILogger<JwtBearerHandler>>();
+                        logger?.LogWarning(
+                            "JWT认证失败: {Exception}, Path: {Path}, Token: {Token}",
+                            context.Exception?.Message,
+                            context.HttpContext.Request.Path,
+                            context.Request.Headers.Authorization.FirstOrDefault()?.Replace("Bearer ", "")?[..Math.Min(10, context.Request.Headers.Authorization.FirstOrDefault()?.Replace("Bearer ", "")?.Length ?? 0)] + "...");
                         return Task.CompletedTask;
                     }
                 };

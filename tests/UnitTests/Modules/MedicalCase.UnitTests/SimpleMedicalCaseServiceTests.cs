@@ -196,12 +196,12 @@ namespace LYBT.Module.MedicalCase.Tests
         [Fact]
         public async Task UpdateStatus_Should_Return_Success_When_BusinessService_Succeeds()
         {
-            // Arrange
+            // Arrange - 简化版本：状态更新等同于删除/关闭操作
             var medicalCaseId = Guid.NewGuid();
             var newStatus = (int)MedicalCaseStatus.Closed; // 使用int状态值
 
             _mockBusinessService
-                .Setup(x => x.UpdateStatusAsync(medicalCaseId, "closed"))
+                .Setup(x => x.DeleteAsync(medicalCaseId))
                 .ReturnsAsync(ServiceResult<bool>.Success(true));
 
             // Act
@@ -430,12 +430,12 @@ namespace LYBT.Module.MedicalCase.Tests
         [Fact]
         public async Task UpdateStatus_Should_Return_Failure_When_BusinessService_Fails()
         {
-            // Arrange - 状态更新失败测试
+            // Arrange - 状态更新失败测试（简化版本：等同于删除失败）
             var medicalCaseId = Guid.NewGuid();
             var newStatus = (int)MedicalCaseStatus.Closed;
 
             _mockBusinessService
-                .Setup(x => x.UpdateStatusAsync(medicalCaseId, "closed"))
+                .Setup(x => x.DeleteAsync(medicalCaseId))
                 .ReturnsAsync(ServiceResult<bool>.Failure("更新医案状态失败"));
 
             // Act

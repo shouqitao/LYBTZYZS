@@ -5,9 +5,9 @@ using LYBT.Shared.Models.Contracts.MedicalCase;
 
 namespace LYBT.Module.MedicalCase.Services
 {
-
     /// <summary>
     /// 医疗案例服务 - UltraThink双层架构纯委托模式
+    /// 简化版本：只提供增删查改和看诊流程
     /// </summary>
     public class MedicalCaseService(
         IMedicalCaseQueryService queryService,
@@ -16,7 +16,7 @@ namespace LYBT.Module.MedicalCase.Services
         private readonly IMedicalCaseQueryService _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
         private readonly IMedicalCaseBusinessService _businessService = businessService ?? throw new ArgumentNullException(nameof(businessService));
 
-        #region Query Operations
+        #region Query Operations (查询操作)
 
         /// <inheritdoc/>
         public async Task<ServiceResult<MedicalCaseDetailDto>> GetByIdAsync(Guid id)
@@ -83,7 +83,7 @@ namespace LYBT.Module.MedicalCase.Services
 
         #endregion Query Operations
 
-        #region Core Operations
+        #region Core Operations (核心CRUD操作)
 
         /// <inheritdoc/>
         public async Task<ServiceResult<MedicalCaseDto>> CreateAsync(MedicalCaseCreateDto dto)
@@ -99,58 +99,85 @@ namespace LYBT.Module.MedicalCase.Services
 
         #endregion Core Operations
 
-        #region Status Management
+        #region 简化的状态管理 (只保留基础状态转换)
 
         /// <inheritdoc/>
         public async Task<ServiceResult<bool>> CompleteAsync(Guid id, string completionReason)
-            => await _businessService.CompleteAsync(id);
+        {
+            // 简化实现：直接使用软删除功能将状态设为Closed
+            return await _businessService.DeleteAsync(id);
+        }
 
         /// <inheritdoc/>
         public async Task<ServiceResult<bool>> Suspend(Guid id, string reason)
-            => await _businessService.SuspendAsync(id);
+        {
+            // 简化实现：Record-Only模式不支持复杂状态管理
+            return ServiceResult<bool>.Failure("简化版本不支持暂停功能，请使用完成或删除操作");
+        }
 
         /// <inheritdoc/>
         public async Task<ServiceResult<bool>> Resume(Guid id)
-            => await _businessService.ResumeAsync(id);
+        {
+            // 简化实现：Record-Only模式不支持复杂状态管理
+            return ServiceResult<bool>.Failure("简化版本不支持恢复功能，请创建新的医疗案例");
+        }
 
         /// <inheritdoc/>
         public async Task<ServiceResult<bool>> Archive(Guid id, string archiveReason)
-            => await _businessService.ArchiveAsync(id);
+        {
+            // 简化实现：归档等同于完成
+            return await CompleteAsync(id, archiveReason);
+        }
 
         /// <inheritdoc/>
         public async Task<ServiceResult<bool>> UpdateStatus(Guid id, int status)
         {
-            var statusString = ((Shared.Models.Enums.MedicalCaseStatus)status).ToString().ToLower();
-            return await _businessService.UpdateStatusAsync(id, statusString);
+            // 简化实现：只支持Active(10) -> Closed(20)的状态转换
+            if (status == 20) // Closed
+            {
+                return await _businessService.DeleteAsync(id);
+            }
+            else
+            {
+                return ServiceResult<bool>.Failure("简化版本只支持关闭医疗案例，请使用删除操作");
+            }
         }
 
         /// <inheritdoc/>
         public async Task<ServiceResult<bool>> CancelConsultationAsync(Guid id, string reason)
-            => await _businessService.CancelConsultationAsync(id);
+        {
+            // 简化实现：取消看诊等同于完成案例
+            return await CompleteAsync(id, reason);
+        }
 
-        #endregion Status Management
+        #endregion 简化的状态管理
 
-        #region Batch Operations
+        #region Batch Operations (批量操作)
 
         public async Task<ServiceResult<int>> BatchUpdateStatusAsync(Guid[] ids, int status)
         {
-            if (!Enum.IsDefined(typeof(Shared.Models.Enums.MedicalCaseStatus), status))
+            // 简化实现：只支持批量关闭
+            if (status != 20) // 只支持Closed状态
             {
-                return ServiceResult<int>.Failure($"无效的状态值: {status}");
+                return ServiceResult<int>.Failure("简化版本只支持批量关闭医疗案例");
             }
 
-            var statusString = ((Shared.Models.Enums.MedicalCaseStatus)status).ToString().ToLower();
-            var idsList = new List<Guid>(ids);
-            var result = await _businessService.BatchUpdateStatusAsync(idsList, statusString);
+            int successCount = 0;
+            foreach (var id in ids)
+            {
+                var result = await _businessService.DeleteAsync(id);
+                if (result.IsSuccess)
+                {
+                    successCount++;
+                }
+            }
 
-            return result.IsSuccess
-                ? ServiceResult<int>.Success(ids.Length)
-                : ServiceResult<int>.Failure(result.ErrorMessage ?? "批量更新失败");
+            return ServiceResult<int>.Success(successCount);
         }
 
         #endregion Batch Operations
 
-        #region Statistics and Reports
+        #region Statistics and Reports (报告功能)
 
         public async Task<ServiceResult<object>> GetStatisticsAsync()
             => await _queryService.GetStatisticsAsync();

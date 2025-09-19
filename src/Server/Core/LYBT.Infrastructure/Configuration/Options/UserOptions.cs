@@ -9,11 +9,6 @@ namespace LYBT.Infrastructure.Configuration.Options
     {
         public const string SectionName = "UserOptions";
 
-        /// <summary>
-        /// 新建用户的默认密码（已弃用，请使用DefaultPasswords:NewUser）
-        /// </summary>
-        [Obsolete("请使用 DefaultPasswordOptions.NewUser 替代", true)]
-        public string DefaultUserPassword { get; set; } = "LybtUser2025#InitPass!";
 
         /// <summary>
         /// 是否启用用户信息缓存

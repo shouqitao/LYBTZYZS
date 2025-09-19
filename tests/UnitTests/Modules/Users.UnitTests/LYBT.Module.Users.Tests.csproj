@@ -23,6 +23,7 @@
     </PackageReference>
     <PackageReference Include="FluentAssertions"  />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer"  />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory"  />
     <PackageReference Include="Bogus"  />
     <PackageReference Include="Moq"  />
     <PackageReference Include="AutoMapper"  />
@@ -33,7 +34,6 @@
     <ProjectReference Include="..\..\..\..\src\Server\Core\LYBT.Entities\LYBT.Entities.csproj" />
     <ProjectReference Include="..\..\..\..\src\Server\Modules\LYBT.Module.Users\LYBT.Module.Users.csproj" />
     <ProjectReference Include="..\..\..\..\src\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
-    <ProjectReference Include="..\..\Core\Core\LYBT.Tests.Core.csproj" />
   </ItemGroup>
 
 </Project>

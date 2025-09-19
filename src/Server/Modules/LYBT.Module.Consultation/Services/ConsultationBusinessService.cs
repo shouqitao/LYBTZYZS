@@ -60,9 +60,26 @@ namespace LYBT.Module.Consultation.Services
                     return ServiceResult<bool>.Failure("已取消的看诊不能修改四诊数据");
                 }
 
-                // TODO: 根据fourDiagnosisData的实际结构解析和保存四诊数据
-                // 这里需要根据具体的四诊数据结构进行实现
-                // 目前暂时记录日志
+                // 解析和保存四诊数据
+                if (fourDiagnosisData != null)
+                {
+                    // 尝试解析为字典或动态对象
+                    var diagnosisDict = fourDiagnosisData as IDictionary<string, object> ?? 
+                                       System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(fourDiagnosisData.ToString() ?? "{}");
+                    
+                    if (diagnosisDict != null)
+                    {
+                        // 更新四诊字段
+                        if (diagnosisDict.ContainsKey("inspection"))
+                            consultation.Inspection = diagnosisDict["inspection"]?.ToString();
+                        if (diagnosisDict.ContainsKey("auscultationOlfaction"))
+                            consultation.AuscultationOlfaction = diagnosisDict["auscultationOlfaction"]?.ToString();
+                        if (diagnosisDict.ContainsKey("inquiry"))
+                            consultation.Inquiry = diagnosisDict["inquiry"]?.ToString();
+                        if (diagnosisDict.ContainsKey("palpation"))
+                            consultation.Palpation = diagnosisDict["palpation"]?.ToString();
+                    }
+                }
                 _logger.LogInformation(
                     "保存四诊数据 - 看诊: {ChiefComplaint} ({Id})",
                     consultation.ChiefComplaint ?? "无主诉", consultation.Id);

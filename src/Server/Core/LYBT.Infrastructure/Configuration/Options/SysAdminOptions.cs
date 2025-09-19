@@ -10,13 +10,6 @@ namespace LYBT.Infrastructure.Configuration.Options
     {
         public const string SectionName = "SysAdminOptions";
 
-        /// <summary>
-        /// 默认系统管理员密码（已弃用，请使用DefaultPasswords:SystemAdmin）
-        /// </summary>
-        [Obsolete("请使用 DefaultPasswordOptions.SystemAdmin 替代", true)]
-        [Required(ErrorMessage = "系统管理员默认密码不能为空")]
-        [MinLength(8, ErrorMessage = "系统管理员默认密码长度至少8个字符")]
-        public string DefaultPassword { get; set; } = "Admin@123456";
 
         /// <summary>
         /// 是否要求首次登录时更改密码

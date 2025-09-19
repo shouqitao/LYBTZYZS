@@ -255,18 +255,31 @@ namespace LYBT.Module.MedicalCase.Services
         }
 
         /// <summary>
-        /// 获取医疗案例统计信息 - Record-Only 模式：统计功能已移除
+        /// 获取医疗案例统计信息
         /// </summary>
-        [Obsolete("Statistics feature removed in Record-Only mode. Use basic queries instead.", false)]
-        public Task<ServiceResult<object>> GetStatisticsAsync()
+        /// <summary>
+        /// 获取医疗案例统计信息 - 简化版本仅返回基础信息
+        /// </summary>
+        public async Task<ServiceResult<object>> GetStatisticsAsync()
         {
-            var emptyStats = new
+            try
             {
-                Message = "统计功能在 Record-Only 模式下已移除",
-                Suggestion = "请使用基础查询功能获取具体记录"
-            };
-            return Task.FromResult(ServiceResult<object>.Success(emptyStats));
+                // Record-Only模式：极简统计，仅业务运行必需
+                var statistics = new
+                {
+                    Message = "统计功能在简化版本中暂不提供",
+                    GeneratedAt = DateTime.Now
+                };
+
+                return ServiceResult<object>.Success(statistics);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取医疗案例统计信息失败");
+                return ServiceResult<object>.Failure($"获取统计信息失败: {ex.Message}");
+            }
         }
+
 
         /// <summary>
         /// 根据医生ID获取医疗案例

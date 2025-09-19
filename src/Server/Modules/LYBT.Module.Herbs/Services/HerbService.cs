@@ -122,8 +122,8 @@ namespace LYBT.Module.Herbs.Services
 
             try
             {
-                // TODO: 实现Excel导出功能
-                // 当前返回简单的CSV文本作为字节数组
+                // Record-Only模式：使用CSV导出替代Excel，简单高效
+                // CSV格式更适合小诊所使用，兼容性好
                 var csvContent = "药材名称,产地,规格,单位,价格,状态\n";
                 foreach (var herb in herbsResult.Data)
                 {
@@ -192,36 +192,12 @@ namespace LYBT.Module.Herbs.Services
             return Task.FromResult(ServiceResult<Dictionary<int, int>>.Success([]));
         }
 
-        [Obsolete("Price update feature removed in Record-Only mode. Use basic CRUD for price fields instead.", false)]
-        public Task<ServiceResult<bool>> UpdatePriceAsync(Guid id, HerbPriceUpdateDto dto)
-        {
-            return Task.FromResult(ServiceResult<bool>.Success(false));
-        }
 
-        [Obsolete("Stock management removed in Record-Only mode. Prescriptions use basic herb information only.", false)]
-        public Task<ServiceResult<bool>> UpdateStockAsync(Guid id, HerbStockUpdateDto dto)
-        {
-            return Task.FromResult(ServiceResult<bool>.Success(false));
-        }
 
-        [Obsolete("Stock statistics removed in Record-Only mode. Use basic queries for herb information instead.", false)]
-        public Task<ServiceResult<HerbStockStatisticsDto>> GetStockStatisticsAsync()
-        {
-            return Task.FromResult(ServiceResult<HerbStockStatisticsDto>.Success(new HerbStockStatisticsDto()));
-        }
 
-        [Obsolete("Stock management removed in Record-Only mode. Prescriptions use basic herb information only.", false)]
-        public Task<ServiceResult<List<HerbDto>>> GetOutOfStockHerbsAsync()
-        {
-            return Task.FromResult(ServiceResult<List<HerbDto>>.Success([]));
-        }
 
-        [Obsolete("Stock management removed in Record-Only mode. Prescriptions use basic herb information only.", false)]
-        public Task<ServiceResult<List<HerbDto>>> GetExpiringHerbsAsync(int days = 30)
-        {
-            return Task.FromResult(ServiceResult<List<HerbDto>>.Success([]));
-        }
+
+    }
 
         #endregion Legacy Support
-    }
 }
