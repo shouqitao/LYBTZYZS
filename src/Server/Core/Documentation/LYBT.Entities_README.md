@@ -87,9 +87,16 @@ public abstract class BaseEntity
     [Key]
     public Guid Id { get; set; } = Guid.NewGuid();
     
-    public DateTime CreateTime { get; set; } = DateTime.Now;
+    public DateTime CreatedAt { get; set; } = DateTime.Now;
     
-    public DateTime? UpdateTime { get; set; }
+    public DateTime? UpdatedAt { get; set; }
+    
+    public Guid? CreatedBy { get; set; }
+    
+    public Guid? UpdatedBy { get; set; }
+    
+    [Timestamp]
+    public byte[] RowVersion { get; set; } = new byte[8];
     
     public bool IsDeleted { get; set; } = false;
 }
