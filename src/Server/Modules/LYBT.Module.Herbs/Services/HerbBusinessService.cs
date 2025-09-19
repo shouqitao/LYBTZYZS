@@ -33,7 +33,7 @@ namespace LYBT.Module.Herbs.Services
         }
 
         /// <summary>
-        /// 批量导入药材数据
+        /// 批量导入药材数据 - Phase C1 事务优化：50条/批短事务模式
         /// </summary>
         public async Task<ServiceResult<int>> ImportHerbsAsync(List<HerbImportDto> herbs)
         {
@@ -44,22 +44,76 @@ namespace LYBT.Module.Herbs.Services
                     return ServiceResult<int>.Success(0);
                 }
 
-                return await _context.Database.CreateExecutionStrategy().ExecuteAsync(async () =>
+                const int BATCH_SIZE = 50; // Phase C1: 小诊所优化，50条/批减少事务时间
+                var totalImportCount = 0;
+                var totalErrors = new List<string>();
+                var batches = SplitIntoBatches(herbs, BATCH_SIZE);
+
+                _logger.LogInformation("开始分批导入药材 - 总数: {Total}, 批次数: {BatchCount}, 每批: {BatchSize}条", 
+                    herbs.Count, batches.Count, BATCH_SIZE);
+
+                // 分批处理，每批使用独立的短事务
+                for (int batchIndex = 0; batchIndex < batches.Count; batchIndex++)
+                {
+                    var batch = batches[batchIndex];
+                    var batchResult = await ImportHerbsBatch(batch, batchIndex + 1, BATCH_SIZE);
+                    
+                    totalImportCount += batchResult.ImportCount;
+                    totalErrors.AddRange(batchResult.Errors);
+                }
+
+                _logger.LogInformation(
+                    "药材批量导入完成 - 成功: {SuccessCount}, 失败: {ErrorCount}, 批次: {BatchCount}", 
+                    totalImportCount, totalErrors.Count, batches.Count);
+
+                if (totalErrors.Count > 0 && totalImportCount == 0)
+                {
+                    return ServiceResult<int>.Failure($"导入失败，所有记录都有错误：{string.Join("; ", totalErrors.Take(5))}");
+                }
+
+                if (totalErrors.Count > 0)
+                {
+                    var errorSummary = totalErrors.Count > 5 
+                        ? $"{string.Join("; ", totalErrors.Take(5))}... (共{totalErrors.Count}个错误)"
+                        : string.Join("; ", totalErrors);
+                    return ServiceResult<int>.Failure($"部分导入成功 {totalImportCount} 条，失败 {totalErrors.Count} 条。错误详情：{errorSummary}");
+                }
+
+                return ServiceResult<int>.Success(totalImportCount);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "批量导入药材异常");
+                return ServiceResult<int>.Failure($"批量导入药材异常: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 导入单个批次的药材 - Phase C1 短事务实现
+        /// </summary>
+        private async Task<(int ImportCount, List<string> Errors)> ImportHerbsBatch(
+            List<HerbImportDto> batch, int batchNumber, int batchSize)
+        {
+            return await _context.Database.CreateExecutionStrategy().ExecuteAsync(async () =>
+            {
+                await using var transaction = await _context.Database.BeginTransactionAsync();
+                try
                 {
                     var importCount = 0;
                     var errors = new List<string>();
+                    var baseIndex = (batchNumber - 1) * batchSize;
 
-                    await using var transaction = await _context.Database.BeginTransactionAsync();
-
-                    foreach (var importDto in herbs)
+                    foreach (var (importDto, index) in batch.Select((dto, i) => (dto, i)))
                     {
                         try
                         {
+                            var rowNumber = baseIndex + index + 1;
+
                             // 验证导入数据
                             var validationResult = ValidateImportDto(importDto);
                             if (!validationResult.IsSuccess)
                             {
-                                errors.Add($"行 {importCount + 1}: {validationResult.ErrorMessage}");
+                                errors.Add($"行 {rowNumber}: {validationResult.ErrorMessage}");
                                 continue;
                             }
 
@@ -69,7 +123,7 @@ namespace LYBT.Module.Herbs.Services
 
                             if (existingHerb != null)
                             {
-                                errors.Add($"行 {importCount + 1}: 药材名称 '{importDto.Name}' 已存在");
+                                errors.Add($"行 {rowNumber}: 药材名称 '{importDto.Name}' 已存在");
                                 continue;
                             }
 
@@ -94,8 +148,9 @@ namespace LYBT.Module.Herbs.Services
                         }
                         catch (Exception ex)
                         {
-                            errors.Add($"行 {importCount + 1}: 处理失败 - {ex.Message}");
-                            _logger.LogError(ex, "导入药材失败: {HerbName}", importDto.Name);
+                            var rowNumber = baseIndex + index + 1;
+                            errors.Add($"行 {rowNumber}: 处理失败 - {ex.Message}");
+                            _logger.LogError(ex, "导入药材失败: {HerbName}, 批次: {BatchNumber}", importDto.Name, batchNumber);
                         }
                     }
 
@@ -103,27 +158,43 @@ namespace LYBT.Module.Herbs.Services
                     {
                         await _context.SaveChangesAsync();
                         await transaction.CommitAsync();
-                        _logger.LogInformation("批量导入药材成功: {ImportCount}条", importCount);
+                        _logger.LogInformation("批次 {BatchNumber} 导入药材成功: {ImportCount}条", batchNumber, importCount);
                     }
                     else
                     {
                         await transaction.RollbackAsync();
+                        _logger.LogWarning("批次 {BatchNumber} 没有成功导入任何药材", batchNumber);
                     }
 
-                    if (errors.Count > 0)
-                    {
-                        var errorMessage = $"导入完成，成功 {importCount} 条，失败 {errors.Count} 条。错误详情：{string.Join("; ", errors)}";
-                        return ServiceResult<int>.Failure(errorMessage);
-                    }
+                    return (ImportCount: importCount, Errors: errors);
+                }
+                catch (DbUpdateConcurrencyException ex)
+                {
+                    await transaction.RollbackAsync();
+                    _logger.LogWarning(ex, "批次 {BatchNumber} 导入药材并发冲突", batchNumber);
+                    return (ImportCount: 0, Errors: new List<string> { $"批次 {batchNumber}: 数据已被其他用户修改，请重试" });
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    _logger.LogError(ex, "批次 {BatchNumber} 导入药材异常", batchNumber);
+                    return (ImportCount: 0, Errors: new List<string> { $"批次 {batchNumber}: 导入异常 - {ex.Message}" });
+                }
+            });
+        }
 
-                    return ServiceResult<int>.Success(importCount);
-                });
-            }
-            catch (Exception ex)
+        /// <summary>
+        /// 将列表拆分为指定大小的批次 - Phase C1 辅助方法
+        /// </summary>
+        private static List<List<T>> SplitIntoBatches<T>(List<T> items, int batchSize)
+        {
+            var batches = new List<List<T>>();
+            for (int i = 0; i < items.Count; i += batchSize)
             {
-                _logger.LogError(ex, "批量导入药材异常");
-                return ServiceResult<int>.Failure($"批量导入药材异常: {ex.Message}");
+                var batch = items.Skip(i).Take(batchSize).ToList();
+                batches.Add(batch);
             }
+            return batches;
         }
 
         /// <summary>

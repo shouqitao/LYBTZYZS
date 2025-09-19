@@ -343,27 +343,74 @@ namespace LYBT.Module.Patients.Services
         }
 
         /// <summary>
-        /// 导入患者数据
+        /// 导入患者数据 - Phase C1 事务优化：50条/批短事务模式
         /// </summary>
         public async Task<ServiceResult<List<PatientDto>>> ImportPatientsAsync(List<PatientImportDto> importDtos)
+        {
+            try
+            {
+                if (importDtos == null || !importDtos.Any())
+                {
+                    return ServiceResult<List<PatientDto>>.Failure("导入数据不能为空");
+                }
+
+                const int BATCH_SIZE = 50; // Phase C1: 小诊所优化，50条/批减少事务时间
+                var allSuccessfulPatients = new List<PatientDto>();
+                var totalErrors = new List<string>();
+                var batches = SplitIntoBatches(importDtos, BATCH_SIZE);
+
+                _logger.LogInformation("开始分批导入患者 - 总数: {Total}, 批次数: {BatchCount}, 每批: {BatchSize}条", 
+                    importDtos.Count, batches.Count, BATCH_SIZE);
+
+                // 分批处理，每批使用独立的短事务
+                for (int batchIndex = 0; batchIndex < batches.Count; batchIndex++)
+                {
+                    var batch = batches[batchIndex];
+                    var batchResult = await ImportPatientsBatch(batch, batchIndex + 1, BATCH_SIZE);
+                    
+                    allSuccessfulPatients.AddRange(batchResult.SuccessfulPatients);
+                    totalErrors.AddRange(batchResult.Errors);
+                }
+
+                _logger.LogInformation(
+                    "患者批量导入完成 - 成功: {SuccessCount}, 失败: {ErrorCount}, 批次: {BatchCount}",
+                    allSuccessfulPatients.Count, totalErrors.Count, batches.Count);
+
+                if (totalErrors.Count > 0 && allSuccessfulPatients.Count == 0)
+                {
+                    return ServiceResult<List<PatientDto>>.Failure($"导入失败，所有记录都有错误：{string.Join("; ", totalErrors.Take(5))}");
+                }
+
+                return ServiceResult<List<PatientDto>>.Success(allSuccessfulPatients);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "批量导入患者异常");
+                return ServiceResult<List<PatientDto>>.Failure($"批量导入患者异常: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 导入单个批次的患者 - Phase C1 短事务实现
+        /// </summary>
+        private async Task<(List<PatientDto> SuccessfulPatients, List<string> Errors)> ImportPatientsBatch(
+            List<PatientImportDto> batch, int batchNumber, int batchSize)
         {
             return await _context.Database.CreateExecutionStrategy().ExecuteAsync(async () =>
             {
                 await using var transaction = await _context.Database.BeginTransactionAsync();
                 try
                 {
-                    if (importDtos == null || !importDtos.Any())
-                    {
-                        return ServiceResult<List<PatientDto>>.Failure("导入数据不能为空");
-                    }
-
                     var successfulPatients = new List<PatientDto>();
                     var errors = new List<string>();
+                    var baseIndex = (batchNumber - 1) * batchSize;
 
-                    foreach (var importDto in importDtos)
+                    foreach (var (importDto, index) in batch.Select((dto, i) => (dto, i)))
                     {
                         try
                         {
+                            var rowNumber = baseIndex + index + 1;
+
                             // 检查重复手机号
                             if (!string.IsNullOrEmpty(importDto.PhoneNumber))
                             {
@@ -372,7 +419,7 @@ namespace LYBT.Module.Patients.Services
 
                                 if (existingPatient)
                                 {
-                                    errors.Add($"患者 {importDto.Name} 手机号 {importDto.PhoneNumber} 已存在");
+                                    errors.Add($"行 {rowNumber}: 患者 {importDto.Name} 手机号 {importDto.PhoneNumber} 已存在");
                                     continue;
                                 }
                             }
@@ -419,27 +466,55 @@ namespace LYBT.Module.Patients.Services
                         }
                         catch (Exception ex)
                         {
-                            errors.Add($"患者 {importDto.Name} 导入失败: {ex.Message}");
-                            _logger.LogError(ex, "导入患者失败: {Name}", importDto.Name);
+                            var rowNumber = baseIndex + index + 1;
+                            errors.Add($"行 {rowNumber}: 患者 {importDto.Name} 导入失败: {ex.Message}");
+                            _logger.LogError(ex, "导入患者失败: {Name}, 批次: {BatchNumber}", importDto.Name, batchNumber);
                         }
                     }
 
-                    await _context.SaveChangesAsync();
-                    await transaction.CommitAsync();
+                    if (successfulPatients.Count > 0)
+                    {
+                        await _context.SaveChangesAsync();
+                        await transaction.CommitAsync();
+                        _logger.LogInformation("批次 {BatchNumber} 导入患者成功: {ImportCount}条", batchNumber, successfulPatients.Count);
+                    }
+                    else
+                    {
+                        await transaction.RollbackAsync();
+                        _logger.LogWarning("批次 {BatchNumber} 没有成功导入任何患者", batchNumber);
+                    }
 
-                    _logger.LogInformation(
-                        "导入患者完成 - 成功: {SuccessCount}, 错误: {ErrorCount}",
-                        successfulPatients.Count, errors.Count);
-
-                    return ServiceResult<List<PatientDto>>.Success(successfulPatients);
+                    return (SuccessfulPatients: successfulPatients, Errors: errors);
+                }
+                catch (DbUpdateConcurrencyException ex)
+                {
+                    await transaction.RollbackAsync();
+                    _logger.LogWarning(ex, "批次 {BatchNumber} 导入患者并发冲突", batchNumber);
+                    return (SuccessfulPatients: new List<PatientDto>(), 
+                           Errors: new List<string> { $"批次 {batchNumber}: 数据已被其他用户修改，请重试" });
                 }
                 catch (Exception ex)
                 {
                     await transaction.RollbackAsync();
-                    _logger.LogError(ex, "导入患者失败");
-                    return ServiceResult<List<PatientDto>>.Failure($"导入患者失败: {ex.Message}");
+                    _logger.LogError(ex, "批次 {BatchNumber} 导入患者异常", batchNumber);
+                    return (SuccessfulPatients: new List<PatientDto>(), 
+                           Errors: new List<string> { $"批次 {batchNumber}: 导入异常 - {ex.Message}" });
                 }
             });
+        }
+
+        /// <summary>
+        /// 将列表拆分为指定大小的批次 - Phase C1 辅助方法
+        /// </summary>
+        private static List<List<T>> SplitIntoBatches<T>(List<T> items, int batchSize)
+        {
+            var batches = new List<List<T>>();
+            for (int i = 0; i < items.Count; i += batchSize)
+            {
+                var batch = items.Skip(i).Take(batchSize).ToList();
+                batches.Add(batch);
+            }
+            return batches;
         }
 
         /// <summary>
