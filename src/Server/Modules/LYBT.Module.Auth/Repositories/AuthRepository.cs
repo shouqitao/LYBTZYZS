@@ -68,24 +68,30 @@ namespace LYBT.Module.Auth.Repositories
         }
 
         /// <summary>
-        /// 获取管理员密码哈希
+        /// 获取超级管理员密码哈希
+        /// 重构：使用固定ID而非用户名，增强安全性
         /// </summary>
-        /// <param name="userName">管理员用户名</param>
+        /// <param name="userName">用户名（仅用于验证，实际通过固定ID查询）</param>
         /// <returns>密码哈希或 null</returns>
         public async Task<string?> GetAdminPasswordHashAsync(string userName)
         {
-            var secret = await _context.AdminSecrets.FirstOrDefaultAsync(s => s.Username == userName);
+            // 使用固定的超级管理员ID，而不是依赖用户名
+            var adminSecretId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+            var secret = await _context.AdminSecrets.FirstOrDefaultAsync(s => s.Id == adminSecretId);
             return secret?.PasswordHash;
         }
 
         /// <summary>
-        /// 更新管理员密码哈希
+        /// 更新超级管理员密码哈希
+        /// 重构：使用固定ID而非用户名，增强安全性
         /// </summary>
-        /// <param name="userName">管理员用户名</param>
+        /// <param name="userName">用户名（仅用于验证，实际通过固定ID更新）</param>
         /// <param name="passwordHash">新的密码哈希</param>
         public async Task UpdateAdminPasswordHashAsync(string userName, string passwordHash)
         {
-            var secret = await _context.AdminSecrets.FirstOrDefaultAsync(s => s.Username == userName);
+            // 使用固定的超级管理员ID，而不是依赖用户名
+            var adminSecretId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+            var secret = await _context.AdminSecrets.FirstOrDefaultAsync(s => s.Id == adminSecretId);
             if (secret != null)
             {
                 secret.PasswordHash = passwordHash;

@@ -425,9 +425,10 @@ namespace LYBT.Infrastructure.Data
                     return;
                 }
 
-                // 检查是否已存在sysadmin记录
+                // 使用固定的AdminSecret ID检查是否已存在记录
+                var adminSecretId = Guid.Parse("00000000-0000-0000-0000-000000000001");
                 var existingAdmin = await _dbContext.AdminSecrets
-                    .FirstOrDefaultAsync(x => x.Username == "sysadmin");
+                    .FirstOrDefaultAsync(x => x.Id == adminSecretId);
 
                 if (existingAdmin == null)
                 {
@@ -444,11 +445,10 @@ namespace LYBT.Infrastructure.Data
 
                             var passwordHash = PasswordHelper.Hash(defaultPassword);
 
-                            // 创建AdminSecret记录
+                            // 创建AdminSecret记录（使用固定ID，不再存储用户名）
                             var adminSecret = new AdminSecretModel
                             {
-                                Id = Guid.NewGuid(),
-                                Username = "sysadmin",
+                                Id = adminSecretId,
                                 PasswordHash = passwordHash
                             };
 
@@ -456,7 +456,7 @@ namespace LYBT.Infrastructure.Data
                             await _dbContext.SaveChangesAsync();
 
                             _logger.LogInformation("✅ 默认超级管理员密码已创建");
-                            _logger.LogInformation($"默认登录信息: 用户名=sysadmin, 密码=****(已屏蔽)");
+                            _logger.LogInformation("请使用配置文件中指定的超级管理员用户名和默认密码登录");
                         }
                         else
                         {
