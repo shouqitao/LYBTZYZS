@@ -1,3 +1,5 @@
+using LYBT.Shared.Models.Constants;
+
 namespace LYBT.Shared.Models.Exceptions;
 
 /// <summary>
@@ -11,7 +13,7 @@ public class BusinessException : AppException
     /// </summary>
     public string? BusinessRule { get; set; }
 
-    public BusinessException() : base("业务处理失败")
+    public BusinessException() : base(ErrorMessageKeys.BUSINESS_FAILURE)
     {
     }
 

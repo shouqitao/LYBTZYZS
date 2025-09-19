@@ -1,3 +1,5 @@
+using LYBT.Shared.Models.Constants;
+
 namespace LYBT.Shared.Models.Exceptions;
 
 /// <summary>
@@ -21,7 +23,7 @@ public class AppException : Exception
     /// </summary>
     public bool ShowDetailToUser { get; set; }
 
-    public AppException() : base("应用程序异常")
+    public AppException() : base(ErrorMessageKeys.APP_EXCEPTION)
     {
     }
 

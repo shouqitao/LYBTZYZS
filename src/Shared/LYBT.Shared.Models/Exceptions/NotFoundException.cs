@@ -1,3 +1,5 @@
+using LYBT.Shared.Models.Constants;
+
 namespace LYBT.Shared.Models.Exceptions;
 
 /// <summary>
@@ -16,7 +18,7 @@ public class NotFoundException : AppException
     /// </summary>
     public string? ResourceId { get; set; }
 
-    public NotFoundException() : base("请求的资源不存在")
+    public NotFoundException() : base(ErrorMessageKeys.RESOURCE_NOT_FOUND)
     {
         ShowDetailToUser = true; // 资源不存在需要告诉用户
     }
@@ -32,7 +34,7 @@ public class NotFoundException : AppException
     }
 
     public NotFoundException(string resourceType, string resourceId)
-        : base($"{resourceType} (ID: {resourceId}) 不存在")
+        : base(string.Format(ErrorMessageKeys.RESOURCE_WITH_ID_NOT_FOUND, resourceType, resourceId))
     {
         ResourceType = resourceType;
         ResourceId = resourceId;
@@ -47,30 +49,30 @@ public class NotFoundException : AppException
     /// <summary>
     /// 创建用户不存在异常
     /// </summary>
-    public static NotFoundException User(Guid userId) => new("用户", userId);
+    public static NotFoundException User(Guid userId) => new(ErrorMessageKeys.USER_NOT_FOUND.Replace("用户不存在", "用户"), userId);
 
     /// <summary>
     /// 创建患者不存在异常
     /// </summary>
-    public static NotFoundException Patient(Guid patientId) => new("患者", patientId);
+    public static NotFoundException Patient(Guid patientId) => new(ErrorMessageKeys.PATIENT_NOT_FOUND.Replace("患者不存在", "患者"), patientId);
 
     /// <summary>
     /// 创建药材不存在异常
     /// </summary>
-    public static NotFoundException Herb(Guid herbId) => new("药材", herbId);
+    public static NotFoundException Herb(Guid herbId) => new(ErrorMessageKeys.HERB_NOT_FOUND.Replace("药材不存在", "药材"), herbId);
 
     /// <summary>
     /// 创建处方不存在异常
     /// </summary>
-    public static NotFoundException Prescription(Guid prescriptionId) => new("处方", prescriptionId);
+    public static NotFoundException Prescription(Guid prescriptionId) => new(ErrorMessageKeys.PRESCRIPTION_NOT_FOUND.Replace("处方不存在", "处方"), prescriptionId);
 
     /// <summary>
     /// 创建医案不存在异常
     /// </summary>
-    public static NotFoundException MedicalCase(Guid medicalCaseId) => new("医案", medicalCaseId);
+    public static NotFoundException MedicalCase(Guid medicalCaseId) => new(ErrorMessageKeys.MEDICAL_CASE_NOT_FOUND.Replace("医案不存在", "医案"), medicalCaseId);
 
     /// <summary>
     /// 创建诊断不存在异常
     /// </summary>
-    public static NotFoundException Consultation(Guid consultationId) => new("诊断", consultationId);
+    public static NotFoundException Consultation(Guid consultationId) => new(ErrorMessageKeys.CONSULTATION_NOT_FOUND.Replace("诊断不存在", "诊断"), consultationId);
 }

@@ -1,3 +1,5 @@
+using LYBT.Shared.Models.Constants;
+
 namespace LYBT.Shared.Models.Exceptions;
 
 /// <summary>
@@ -16,7 +18,7 @@ public class ValidationException : AppException
     /// </summary>
     public string? FieldName { get; set; }
 
-    public ValidationException() : base("数据验证失败")
+    public ValidationException() : base(ErrorMessageKeys.VALIDATION_FAILURE)
     {
         Errors = new Dictionary<string, string[]>();
         ShowDetailToUser = true; // 验证异常需要显示给用户
@@ -34,7 +36,7 @@ public class ValidationException : AppException
         ShowDetailToUser = true;
     }
 
-    public ValidationException(string fieldName, string errorMessage) : base($"字段 {fieldName} 验证失败: {errorMessage}")
+    public ValidationException(string fieldName, string errorMessage) : base(string.Format(ErrorMessageKeys.FIELD_VALIDATION_FAILED, fieldName, errorMessage))
     {
         FieldName = fieldName;
         Errors = new Dictionary<string, string[]>
@@ -44,7 +46,7 @@ public class ValidationException : AppException
         ShowDetailToUser = true;
     }
 
-    public ValidationException(string fieldName, string[] errorMessages) : base($"字段 {fieldName} 验证失败")
+    public ValidationException(string fieldName, string[] errorMessages) : base(string.Format(ErrorMessageKeys.FIELD_VALIDATION_ERROR, fieldName))
     {
         FieldName = fieldName;
         Errors = new Dictionary<string, string[]>
