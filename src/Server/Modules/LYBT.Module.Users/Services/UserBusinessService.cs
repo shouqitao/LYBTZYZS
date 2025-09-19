@@ -464,6 +464,11 @@ namespace LYBT.Module.Users.Services
                     }
                 });
             }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                _logger.LogWarning(ex, "用户数据并发冲突: {Id}", id);
+                return ServiceResult<UserDto>.Failure("数据已被其他用户修改，请刷新后重试");
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "更新用户失败: {Id}", id);

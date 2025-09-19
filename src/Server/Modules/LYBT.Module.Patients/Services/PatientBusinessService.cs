@@ -140,6 +140,11 @@ namespace LYBT.Module.Patients.Services
                 var resultDto = _mapper.Map<PatientDto>(patient);
                 return ServiceResult<PatientDto>.Success(resultDto);
             }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                _logger.LogWarning(ex, "患者数据并发冲突: {Id}", patientId);
+                return ServiceResult<PatientDto>.Failure("数据已被其他用户修改，请刷新后重试");
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "更新患者失败: {Id}", patientId);

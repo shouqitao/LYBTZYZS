@@ -129,6 +129,11 @@ namespace LYBT.Entities.Patients
         [DisplayName("更新者")]
         public Guid? UpdatedBy { get; set; }
 
+        /// <summary>并发控制字段 - 乐观并发控制</summary>
+        [Timestamp]
+        [DisplayName("版本")]
+        public byte[] RowVersion { get; set; } = new byte[8];
+
         /// <summary>年龄（计算属性）</summary>
         [NotMapped]
         [DisplayName("年龄")]

@@ -68,6 +68,11 @@ namespace LYBT.Entities.Prescriptions
         [DisplayName("备注")]
         public string? Remark { get; set; }
 
+        /// <summary>并发控制字段 - 乐观并发控制</summary>
+        [Timestamp]
+        [DisplayName("版本")]
+        public byte[] RowVersion { get; set; } = new byte[8];
+
         // 关联数据
 
         /// <summary>

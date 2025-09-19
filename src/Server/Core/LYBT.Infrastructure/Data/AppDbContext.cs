@@ -128,6 +128,9 @@ namespace LYBT.Infrastructure.Data
             // 配置枚举字段
             entity.Property(u => u.Status).HasConversion<int>();
             entity.Property(u => u.Role).HasConversion<int>();
+
+            // 配置并发控制字段
+            entity.Property(u => u.RowVersion).IsRowVersion().IsConcurrencyToken();
         }
 
         private static void ConfigureAdminSecrets(ModelBuilder modelBuilder)
@@ -189,6 +192,9 @@ namespace LYBT.Infrastructure.Data
 
             // 配置Status枚举字段
             entity.Property(p => p.Status).HasConversion<int>();
+
+            // 配置并发控制字段
+            entity.Property(p => p.RowVersion).IsRowVersion().IsConcurrencyToken();
         }
 
         private static void ConfigureMedicalCases(ModelBuilder modelBuilder)
@@ -258,6 +264,9 @@ namespace LYBT.Infrastructure.Data
             // P1 Batch1: 统一 decimal 精度配置
             itemEntity.Property(i => i.Quantity).HasPrecision(10, 2);  // 统一数量精度为2位小数
             itemEntity.Property(i => i.UnitPrice).HasPrecision(18, 2);
+
+            // 配置并发控制字段
+            prescriptionEntity.Property(p => p.RowVersion).IsRowVersion().IsConcurrencyToken();
         }
 
         private static void ConfigureHerbs(ModelBuilder modelBuilder)

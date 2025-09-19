@@ -225,6 +225,11 @@ namespace LYBT.Module.Prescriptions.Services
 
                 return ServiceResult<bool>.Success(true);
             }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                _logger.LogWarning(ex, "处方数据并发冲突 - 操作者: {OperatorName}, 处方: {PrescriptionId}", operatorName, prescriptionId);
+                return ServiceResult<bool>.Failure("数据已被其他用户修改，请刷新后重试");
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "快速保存处方失败 - 操作者: {OperatorName}, 处方: {PrescriptionId}", operatorName, prescriptionId);
@@ -315,6 +320,11 @@ namespace LYBT.Module.Prescriptions.Services
                     operatorName, operatorId, id);
 
                 return ServiceResult<bool>.Success(true);
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                _logger.LogWarning(ex, "处方数据并发冲突 - 操作者: {OperatorName}, 处方: {PrescriptionId}", operatorName, id);
+                return ServiceResult<bool>.Failure("数据已被其他用户修改，请刷新后重试");
             }
             catch (Exception ex)
             {
