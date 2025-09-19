@@ -111,27 +111,4 @@ namespace LYBT.Shared.Interfaces.Api
         Task<Refit.ApiResponse<List<object>>> GetHistoryAsync(Guid id);
     }
 
-    /// <summary>
-    /// 完成医疗案例DTO
-    /// </summary>
-    public class CompleteMedicalCaseDto
-    {
-        public string? CompletionReason { get; set; }
-    }
-
-    /// <summary>
-    /// 暂停医疗案例DTO
-    /// </summary>
-    public class SuspendMedicalCaseDto
-    {
-        public string? Reason { get; set; }
-    }
-
-    /// <summary>
-    /// 归档医疗案例DTO
-    /// </summary>
-    public class ArchiveMedicalCaseDto
-    {
-        public string? ArchiveReason { get; set; }
-    }
 }

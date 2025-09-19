@@ -342,41 +342,6 @@ namespace LYBT.Shared.Models.Enums
         Selection = 5
     }
 
-    /// <summary>
-    /// 按钮结果枚举 - 前端对话框专用
-    /// </summary>
-    [Description("按钮结果")]
-    [JsonConverter(typeof(JsonStringEnumConverter))]
-    public enum ButtonResult
-    {
-        /// <summary>无</summary>
-        [Description("无")]
-        None = 0,
-
-        /// <summary>确定</summary>
-        [Description("确定")]
-        OK = 1,
-
-        /// <summary>取消</summary>
-        [Description("取消")]
-        Cancel = 2,
-
-        /// <summary>是</summary>
-        [Description("是")]
-        Yes = 3,
-
-        /// <summary>否</summary>
-        [Description("否")]
-        No = 4,
-
-        /// <summary>重试</summary>
-        [Description("重试")]
-        Retry = 5,
-
-        /// <summary>忽略</summary>
-        [Description("忽略")]
-        Ignore = 6
-    }
 
     /// <summary>
     /// 用户显示模式枚举 - 前端用户控件专用

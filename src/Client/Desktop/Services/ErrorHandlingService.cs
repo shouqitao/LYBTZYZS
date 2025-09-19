@@ -65,7 +65,7 @@ namespace LYBT.Desktop.Services
                 // 异常处理本身出错时，返回基本错误信息
                 return new SharedCommon.HandledError 
                 { 
-                    Message = exception?.Message ?? "未知错误",
+                    UserMessage = exception?.Message ?? "未知错误",
                     Severity = SharedCommon.ErrorSeverity.Error
                 };
             }

@@ -14,9 +14,11 @@
     <!-- 程序集版本信息 - 通过MSBuild属性设置 -->
     <AssemblyVersion>2.1.0.0</AssemblyVersion>
     <FileVersion>2.1.0.0</FileVersion>
-    <!-- 禁用此项目的版本属性自动生成，避免重复定义 -->
+    <!-- 禁用重复属性的自动生成，避免与GlobalAssemblyInfo.cs冲突 -->
     <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
     <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
+    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
     
     <!-- Package Information -->
     <PackageId>LYBT.Desktop.Shell</PackageId>
