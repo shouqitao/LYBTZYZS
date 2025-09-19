@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Shared.Models.Contracts.MedicalCase
@@ -414,6 +415,48 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
 
         [DisplayName("可进行下一步")]
         public bool CanProceedToNext { get; set; }
+    }
+
+    /// <summary>
+    /// 医案+处方联建创建DTO - Phase B2 事务优化
+    /// 在单个事务中创建医案和关联处方
+    /// </summary>
+    public class MedicalCaseWithPrescriptionCreateDto
+    {
+        /// <summary>医案创建信息</summary>
+        [Required(ErrorMessage = "医案信息不能为空")]
+        [DisplayName("医案信息")]
+        public MedicalCaseCreateDto MedicalCase { get; set; } = new();
+
+        /// <summary>处方创建信息（可选）</summary>
+        [DisplayName("处方信息")]
+        public PrescriptionCreateDto? Prescription { get; set; }
+
+        /// <summary>是否立即创建处方</summary>
+        [DisplayName("立即创建处方")]
+        public bool CreatePrescriptionImmediately { get; set; } = false;
+    }
+
+    /// <summary>
+    /// 医案+处方联建结果DTO - Phase B2 事务优化
+    /// </summary>
+    public class MedicalCaseWithPrescriptionResultDto
+    {
+        /// <summary>创建的医案信息</summary>
+        [DisplayName("医案信息")]
+        public MedicalCaseDto MedicalCase { get; set; } = new();
+
+        /// <summary>创建的处方信息（如果创建了处方）</summary>
+        [DisplayName("处方信息")]
+        public PrescriptionDto? Prescription { get; set; }
+
+        /// <summary>操作是否成功</summary>
+        [DisplayName("操作成功")]
+        public bool IsSuccess { get; set; } = true;
+
+        /// <summary>操作消息</summary>
+        [DisplayName("操作消息")]
+        public string Message { get; set; } = string.Empty;
     }
 
     /// <summary>

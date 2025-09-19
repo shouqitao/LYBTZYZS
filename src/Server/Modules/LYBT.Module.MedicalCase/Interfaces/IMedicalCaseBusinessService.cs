@@ -18,6 +18,12 @@ namespace LYBT.Module.MedicalCase.Interfaces
         Task<ServiceResult<MedicalCaseDto>> CreateAsync(MedicalCaseCreateDto createDto);
 
         /// <summary>
+        /// 创建医疗案例并关联处方 - Phase B2 事务优化
+        /// 在单个短事务中创建医案和可选的关联处方
+        /// </summary>
+        Task<ServiceResult<MedicalCaseWithPrescriptionResultDto>> CreateWithPrescriptionAsync(MedicalCaseWithPrescriptionCreateDto createDto, Guid operatorId, string operatorName);
+
+        /// <summary>
         /// 更新医疗案例
         /// </summary>
         Task<ServiceResult<MedicalCaseDto>> UpdateAsync(Guid caseId, MedicalCaseUpdateDto updateDto);

@@ -110,6 +110,12 @@ namespace LYBT.Module.Prescriptions.Services
                     var resultDto = _mapper.Map<PrescriptionDto>(newPrescription);
                     return ServiceResult<PrescriptionDto>.Success(resultDto);
                 }
+                catch (DbUpdateConcurrencyException ex)
+                {
+                    await transaction.RollbackAsync();
+                    _logger.LogWarning(ex, "处方复制并发冲突 - 操作者: {OperatorName}, 源处方: {SourceId}", operatorName, sourceId);
+                    return ServiceResult<PrescriptionDto>.Failure("数据已被其他用户修改，请刷新后重试");
+                }
                 catch (Exception ex)
                 {
                     await transaction.RollbackAsync();

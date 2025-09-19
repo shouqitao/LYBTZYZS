@@ -1,8 +1,10 @@
 using AutoMapper;
+using LYBT.Entities.Prescriptions;
 using LYBT.Infrastructure.Data;
 using LYBT.Module.MedicalCase.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.MedicalCase;
+using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Extensions;
 using Microsoft.EntityFrameworkCore;
@@ -83,6 +85,143 @@ namespace LYBT.Module.MedicalCase.Services
                 _logger.LogError(ex, "创建医疗案例失败: PatientId {PatientId}", dto.PatientId);
                 return ServiceResult<MedicalCaseDto>.Failure($"创建医疗案例失败: {ex.Message}");
             }
+        }
+
+        /// <summary>
+        /// 创建医疗案例并关联处方 - Phase B2 事务优化
+        /// 在单个短事务中创建医案和可选的关联处方
+        /// </summary>
+        public async Task<ServiceResult<MedicalCaseWithPrescriptionResultDto>> CreateWithPrescriptionAsync(
+            MedicalCaseWithPrescriptionCreateDto dto, Guid operatorId, string operatorName)
+        {
+            return await _context.Database.CreateExecutionStrategy().ExecuteAsync(async () =>
+            {
+                await using var transaction = await _context.Database.BeginTransactionAsync();
+                try
+                {
+                    // 数据验证
+                    if (dto?.MedicalCase == null)
+                    {
+                        return ServiceResult<MedicalCaseWithPrescriptionResultDto>.Failure("医疗案例信息不能为空");
+                    }
+
+                    if (dto.CreatePrescriptionImmediately && dto.Prescription == null)
+                    {
+                        return ServiceResult<MedicalCaseWithPrescriptionResultDto>.Failure("要求立即创建处方但未提供处方信息");
+                    }
+
+                    // 验证医案创建信息
+                    var medicalCaseValidation = ValidateCreateDto(dto.MedicalCase);
+                    if (!medicalCaseValidation.IsSuccess)
+                    {
+                        return ServiceResult<MedicalCaseWithPrescriptionResultDto>.Failure(
+                            $"医案数据验证失败: {medicalCaseValidation.ErrorMessage}");
+                    }
+
+                    // 业务规则：检查患者是否有活跃案例
+                    var hasActiveCase = await _context.MedicalCases
+                        .Where(mc => mc.PatientId == dto.MedicalCase.PatientId)
+                        .AnyAsync(mc => mc.Status.IsActive());
+
+                    if (hasActiveCase)
+                    {
+                        return ServiceResult<MedicalCaseWithPrescriptionResultDto>.Failure(
+                            "患者已有活跃的医疗案例，请先完成或暂停当前案例");
+                    }
+
+                    // Step 1: 创建医疗案例
+                    var medicalCase = new Entities.MedicalCase.MedicalCase
+                    {
+                        Id = Guid.NewGuid(),
+                        PatientId = dto.MedicalCase.PatientId,
+                        PatientName = "待获取患者姓名", // TODO: 从Patient服务获取
+                        DoctorId = dto.MedicalCase.DoctorId,
+                        DoctorName = "待获取医生姓名", // TODO: 从User服务获取
+                        ConsultationDate = DateTime.Now,
+                        Status = MedicalCaseStatus.Active,
+                        Remark = dto.MedicalCase.Remark
+                    };
+
+                    _context.MedicalCases.Add(medicalCase);
+
+                    // Step 2: 如果需要，创建关联处方
+                    Prescription? prescription = null;
+                    if (dto.CreatePrescriptionImmediately && dto.Prescription != null)
+                    {
+                        prescription = new Prescription
+                        {
+                            Id = Guid.NewGuid(),
+                            MedicalCaseId = medicalCase.Id, // 关联到新创建的医案
+                            PatientId = dto.MedicalCase.PatientId,
+                            UserId = dto.MedicalCase.DoctorId,
+                            Indication = dto.Prescription.Diagnosis,
+                            DosageCount = dto.Prescription.DosageCount,
+                            Advice = dto.Prescription.Advice,
+                            Status = PrescriptionStatus.Draft,
+                            Remark = dto.Prescription.Remark,
+                            FormulaSource = dto.Prescription.FormulaSource ?? "医案创建时开具",
+                            Discount = 1.0m
+                        };
+
+                        _context.Prescriptions.Add(prescription);
+
+                        // 更新医案的处方关联
+                        medicalCase.PrescriptionId = prescription.Id;
+
+                        // 如果提供了处方项目，创建处方项目
+                        if (dto.Prescription.Items?.Any() == true)
+                        {
+                            foreach (var itemDto in dto.Prescription.Items)
+                            {
+                                var item = new PrescriptionItem
+                                {
+                                    Id = Guid.NewGuid(),
+                                    PrescriptionId = prescription.Id,
+                                    HerbId = itemDto.HerbId,
+                                    HerbName = itemDto.HerbName,
+                                    Quantity = itemDto.Quantity,
+                                    UnitPrice = itemDto.UnitPrice,
+                                    Unit = itemDto.Unit,
+                                    Usage = itemDto.Usage,
+                                    Remark = itemDto.Note ?? itemDto.Remark
+                                };
+                                _context.PrescriptionItems.Add(item);
+                            }
+                        }
+                    }
+
+                    // 一次性保存所有更改
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+
+                    _logger.LogInformation(
+                        "医案+处方联建成功 - 操作者: {OperatorName} ({OperatorId}), 医案: {MedicalCaseId}, 处方: {PrescriptionId}",
+                        operatorName, operatorId, medicalCase.Id, prescription?.Id);
+
+                    // 准备返回结果
+                    var resultDto = new MedicalCaseWithPrescriptionResultDto
+                    {
+                        MedicalCase = _mapper.Map<MedicalCaseDto>(medicalCase),
+                        Prescription = prescription != null ? _mapper.Map<PrescriptionDto>(prescription) : null,
+                        IsSuccess = true,
+                        Message = prescription != null ? "医案和处方创建成功" : "医案创建成功"
+                    };
+
+                    return ServiceResult<MedicalCaseWithPrescriptionResultDto>.Success(resultDto);
+                }
+                catch (DbUpdateConcurrencyException ex)
+                {
+                    await transaction.RollbackAsync();
+                    _logger.LogWarning(ex, "医案+处方联建并发冲突 - 操作者: {OperatorName}", operatorName);
+                    return ServiceResult<MedicalCaseWithPrescriptionResultDto>.Failure("数据已被其他用户修改，请刷新后重试");
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    _logger.LogError(ex, "医案+处方联建失败 - 操作者: {OperatorName}", operatorName);
+                    return ServiceResult<MedicalCaseWithPrescriptionResultDto>.Failure($"医案+处方联建失败: {ex.Message}");
+                }
+            });
         }
 
         /// <summary>
