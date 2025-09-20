@@ -316,14 +316,4 @@ namespace LYBT.Module.Prescriptions.Services
             }
         }
     }
-
-    /// <summary>
-    /// 处方统计DTO
-    /// </summary>
-    public class PrescriptionStatsDto
-    {
-        public int TotalCount { get; set; }
-        public int DraftCount { get; set; }
-        public int CompletedCount { get; set; }
-    }
 }

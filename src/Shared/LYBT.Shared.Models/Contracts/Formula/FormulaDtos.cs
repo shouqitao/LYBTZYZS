@@ -692,4 +692,26 @@ namespace LYBT.Shared.Models.Contracts.Formula
         [DisplayName("数据来源")]
         public string? DataSource { get; set; } = "老系统导入";
     }
+
+    /// <summary>
+    /// 从处方创建验方DTO
+    /// </summary>
+    public class CreateFromPrescriptionDto
+    {
+        [Required(ErrorMessage = "验方名称不能为空")]
+        [StringLength(100, ErrorMessage = "验方名称不能超过100个字符")]
+        [DisplayName("验方名称")]
+        public string Name { get; set; } = string.Empty;
+    }
+
+    /// <summary>
+    /// 复制验方DTO
+    /// </summary>
+    public class CopyFormulaDto
+    {
+        [Required(ErrorMessage = "新验方名称不能为空")]
+        [StringLength(100, ErrorMessage = "新验方名称不能超过100个字符")]
+        [DisplayName("新验方名称")]
+        public string NewName { get; set; } = string.Empty;
+    }
 }

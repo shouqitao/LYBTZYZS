@@ -732,20 +732,4 @@ namespace LYBT.WebAPI.Controllers
             }
         }
     }
-
-    /// <summary>
-    /// 从处方创建验方DTO
-    /// </summary>
-    public class CreateFromPrescriptionDto
-    {
-        public string Name { get; set; } = string.Empty;
-    }
-
-    /// <summary>
-    /// 复制验方DTO
-    /// </summary>
-    public class CopyFormulaDto
-    {
-        public string NewName { get; set; } = string.Empty;
-    }
 }

@@ -331,9 +331,3 @@ public class ConsultationController : BaseApiController
         }
     }
 }
-
-// 辅助DTO类
-public class CancelConsultationDto
-{
-    public string? Reason { get; set; }
-}

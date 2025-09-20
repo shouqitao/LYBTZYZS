@@ -299,4 +299,15 @@ namespace LYBT.Shared.Models.Contracts.Consultation
         [Range(1, 100)]
         public int MaxResults { get; set; } = 20;
     }
+
+    /// <summary>
+    /// 取消看诊DTO
+    /// </summary>
+    public class CancelConsultationDto
+    {
+        /// <summary>取消原因</summary>
+        [StringLength(500, ErrorMessage = "取消原因长度不能超过500个字符")]
+        [DisplayName("取消原因")]
+        public string? Reason { get; set; }
+    }
 }

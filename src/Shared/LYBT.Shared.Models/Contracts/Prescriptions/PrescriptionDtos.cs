@@ -444,4 +444,19 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
         [DisplayName("复制备注")]
         public bool CopyRemark { get; set; } = false;
     }
+
+    /// <summary>
+    /// 处方统计DTO
+    /// </summary>
+    public class PrescriptionStatsDto
+    {
+        [DisplayName("总数")]
+        public int TotalCount { get; set; }
+
+        [DisplayName("草稿数")]
+        public int DraftCount { get; set; }
+
+        [DisplayName("完成数")]
+        public int CompletedCount { get; set; }
+    }
 }
