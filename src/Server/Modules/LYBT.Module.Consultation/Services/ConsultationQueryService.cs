@@ -279,5 +279,35 @@ namespace LYBT.Module.Consultation.Services
                 return ServiceResult<object>.Failure($"获取四诊数据失败: {ex.Message}");
             }
         }
+
+        /// <summary>
+        /// 根据ID获取看诊详情
+        /// </summary>
+        public async Task<ServiceResult<ConsultationDetailDto>> GetByIdAsync(Guid id)
+        {
+            try
+            {
+                if (id == Guid.Empty)
+                {
+                    return ServiceResult<ConsultationDetailDto>.Failure("看诊ID不能为空");
+                }
+
+                var consultation = await _context.Consultations
+                    .FirstOrDefaultAsync(c => c.Id == id && c.Status == CommonStatus.Enabled);
+
+                if (consultation == null)
+                {
+                    return ServiceResult<ConsultationDetailDto>.Failure("看诊记录不存在");
+                }
+
+                var dto = _mapper.Map<ConsultationDetailDto>(consultation);
+                return ServiceResult<ConsultationDetailDto>.Success(dto);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取看诊详情失败: {Id}", id);
+                return ServiceResult<ConsultationDetailDto>.Failure($"获取看诊详情失败: {ex.Message}");
+            }
+        }
     }
 }

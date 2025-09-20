@@ -20,10 +20,8 @@ namespace LYBT.Module.Consultation.Services
         #region Query Operations
 
         /// <inheritdoc/>
-        public Task<ServiceResult<ConsultationDetailDto>> GetByIdAsync(Guid id)
-        {
-            return Task.FromResult(ServiceResult<ConsultationDetailDto>.Failure("GetByIdAsync方法需要在QueryService中实现"));
-        }
+        public async Task<ServiceResult<ConsultationDetailDto>> GetByIdAsync(Guid id)
+            => await _queryService.GetByIdAsync(id);
 
         /// <inheritdoc/>
         public async Task<ServiceResult<PagedResult<ConsultationDto>>> GetPagedAsync(PagedQueryBaseDto query)
@@ -58,22 +56,16 @@ namespace LYBT.Module.Consultation.Services
         #region Business Operations
 
         /// <inheritdoc/>
-        public Task<ServiceResult<ConsultationDto>> StartAsync(ConsultationStartDto dto)
-        {
-            return Task.FromResult(ServiceResult<ConsultationDto>.Failure("StartAsync方法需要在BusinessService中实现"));
-        }
+        public async Task<ServiceResult<ConsultationDto>> StartAsync(ConsultationStartDto dto)
+            => await _businessService.StartAsync(dto);
 
         /// <inheritdoc/>
-        public Task<ServiceResult<ConsultationDto>> UpdateAsync(Guid id, ConsultationDetailDto dto)
-        {
-            return Task.FromResult(ServiceResult<ConsultationDto>.Failure("UpdateAsync方法需要在BusinessService中实现"));
-        }
+        public async Task<ServiceResult<ConsultationDto>> UpdateAsync(Guid id, ConsultationDetailDto dto)
+            => await _businessService.UpdateAsync(id, dto);
 
         /// <inheritdoc/>
-        public Task<ServiceResult<bool>> DeleteAsync(Guid id)
-        {
-            return Task.FromResult(ServiceResult<bool>.Failure("DeleteAsync方法需要在BusinessService中实现"));
-        }
+        public async Task<ServiceResult<bool>> DeleteAsync(Guid id)
+            => await _businessService.DeleteAsync(id);
 
         /// <inheritdoc/>
         public async Task<ServiceResult<bool>> SaveFourDiagnosisAsync(Guid consultationId, object fourDiagnosisData)
