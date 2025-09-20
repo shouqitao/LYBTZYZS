@@ -62,10 +62,6 @@ namespace LYBT.Shared.Models.Contracts.Consultation
         [DisplayName("中医诊断")]
         public string? TCMDiagnosis { get; set; }
 
-        /// <summary>诊断结果</summary>
-        [DisplayName("诊断")]
-        public string? Diagnosis { get; set; }
-
         /// <summary>治疗原则</summary>
         [DisplayName("治疗原则")]
         public string? TreatmentPrinciple { get; set; }
@@ -150,17 +146,13 @@ namespace LYBT.Shared.Models.Contracts.Consultation
         [DisplayName("中医诊断")]
         public string? TCMDiagnosis { get; set; }
 
-        /// <summary>诊断结果</summary>
-        [DisplayName("诊断")]
-        public string? Diagnosis { get; set; }
-
         /// <summary>治疗原则</summary>
         [DisplayName("治疗原则")]
         public string? TreatmentPrinciple { get; set; }
 
         /// <summary>医嘱</summary>
         [DisplayName("医嘱")]
-        public string? DoctorAdvice { get; set; }
+        public string? MedicalAdvice { get; set; }
 
         /// <summary>看诊开始时间</summary>
         [DisplayName("开始时间")]
@@ -186,7 +178,7 @@ namespace LYBT.Shared.Models.Contracts.Consultation
         // 兼容性字段
 
         /// <summary>医嘱（兼容别名）</summary>
-        public string? MedicalAdvice => DoctorAdvice;
+        public string? DoctorAdvice => MedicalAdvice;
 
         /// <summary>状态（兼容别名）</summary>
         public ConsultationStatus Status => ConsultationStatus;
@@ -236,30 +228,14 @@ namespace LYBT.Shared.Models.Contracts.Consultation
         [DisplayName("切诊")]
         public string? Palpation { get; set; }
 
-        /// <summary>舌诊结果</summary>
-        [StringLength(ValidationConstants.DiagnosisMaxLength, ErrorMessage = "舌诊结果长度不能超过{1}个字符")]
-        [DisplayName("舌诊")]
-        public string? TongueInspection { get; set; }
 
-        /// <summary>脉诊结果</summary>
-        [StringLength(ValidationConstants.DiagnosisMaxLength, ErrorMessage = "脉诊结果长度不能超过{1}个字符")]
-        [DisplayName("脉诊")]
-        public string? PulseCondition { get; set; }
 
-        /// <summary>辨证分析</summary>
-        [StringLength(800, ErrorMessage = "辨证分析长度不能超过800个字符")]
-        [DisplayName("辨证分析")]
-        public string? PatternDifferentiation { get; set; }
 
         /// <summary>中医诊断</summary>
         [StringLength(ValidationConstants.DiagnosisMaxLength, ErrorMessage = "中医诊断长度不能超过{1}个字符")]
         [DisplayName("中医诊断")]
         public string? TCMDiagnosis { get; set; }
 
-        /// <summary>西医诊断</summary>
-        [StringLength(ValidationConstants.DiagnosisMaxLength, ErrorMessage = "西医诊断长度不能超过{1}个字符")]
-        [DisplayName("西医诊断")]
-        public string? WesternDiagnosis { get; set; }
 
         /// <summary>诊断结果</summary>
         [StringLength(ValidationConstants.DiagnosisMaxLength, ErrorMessage = "诊断结果长度不能超过{1}个字符")]
@@ -274,7 +250,7 @@ namespace LYBT.Shared.Models.Contracts.Consultation
         /// <summary>医嘱</summary>
         [StringLength(ValidationConstants.LongRemarkMaxLength, ErrorMessage = "医嘱长度不能超过{1}个字符")]
         [DisplayName("医嘱")]
-        public string? DoctorAdvice { get; set; }
+        public string? MedicalAdvice { get; set; }
 
         /// <inheritdoc/>
         [StringLength(ValidationConstants.RemarkMaxLength, ErrorMessage = "备注长度不能超过{1}个字符")]

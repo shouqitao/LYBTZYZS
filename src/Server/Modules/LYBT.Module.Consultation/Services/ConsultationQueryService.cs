@@ -224,61 +224,7 @@ namespace LYBT.Module.Consultation.Services
         /// <summary>
         /// 根据医疗案例ID获取四诊数据
         /// </summary>
-        public async Task<ServiceResult<object>> GetFourDiagnosisByMedicalCaseIdAsync(Guid medicalCaseId)
-        {
-            try
-            {
-                if (medicalCaseId == Guid.Empty)
-                {
-                    return ServiceResult<object>.Failure("医疗案例ID不能为空");
-                }
-
-                var consultation = await _context.Consultations
-                    .FirstOrDefaultAsync(c => c.MedicalCaseId == medicalCaseId && c.Status == CommonStatus.Enabled);
-
-                if (consultation == null)
-                {
-                    return ServiceResult<object>.Failure("未找到相关看诊记录");
-                }
-
-                // 构建四诊数据对象
-                var fourDiagnosis = new
-                {
-                    // 望诊 - 观察
-                    Looking = new
-                    {
-                        Inspection = consultation.Inspection // 实体中的望诊字段
-                    },
-
-                    // 闻诊 - 听声音、嗅气味
-                    Listening = new
-                    {
-                        AuscultationOlfaction = consultation.AuscultationOlfaction // 实体中的闻诊字段
-                    },
-
-                    // 问诊 - 询问病情
-                    Asking = new
-                    {
-                        ChiefComplaint = consultation.ChiefComplaint,
-                        PresentIllness = consultation.PresentIllness,
-                        Inquiry = consultation.Inquiry // 实体中的问诊字段，替代PastHistory
-                    },
-
-                    // 切诊 - 脉诊等
-                    Palpation = new
-                    {
-                        Palpation = consultation.Palpation // 实体中的切诊字段
-                    }
-                };
-
-                return ServiceResult<object>.Success(fourDiagnosis);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取四诊数据失败: {MedicalCaseId}", medicalCaseId);
-                return ServiceResult<object>.Failure($"获取四诊数据失败: {ex.Message}");
-            }
-        }
+        
 
         /// <summary>
         /// 根据ID获取看诊详情

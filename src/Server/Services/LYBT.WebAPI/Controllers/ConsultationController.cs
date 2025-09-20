@@ -262,51 +262,6 @@ public class ConsultationController : BaseApiController
         }
     }
 
-    /// <summary>
-    /// 根据医疗案例ID获取四诊数据 - 统一API响应格式
-    /// </summary>
-    [HttpGet("medical-case/{medicalCaseId}/four-diagnosis")]
-    public async Task<ActionResult<ApiResponse<object>>> GetFourDiagnosis(Guid medicalCaseId)
-    {
-        try
-        {
-            var validation = ValidateGuid<object>(medicalCaseId, "医疗案例ID");
-            if (validation != null)
-            {
-                return validation;
-            }
-
-            var result = await _consultationService.GetFourDiagnosisByMedicalCaseIdAsync(medicalCaseId);
-            return HandleServiceResult(result, "查询成功");
-        }
-        catch (Exception ex)
-        {
-            return HandleException<object>(ex, "获取四诊数据", medicalCaseId);
-        }
-    }
-
-    /// <summary>
-    /// 保存四诊数据 - 统一API响应格式
-    /// </summary>
-    [HttpPost("{consultationId}/four-diagnosis")]
-    public async Task<ActionResult<ApiResponse>> SaveFourDiagnosis(Guid consultationId, [FromBody] object fourDiagnosisData)
-    {
-        try
-        {
-            var validation = ValidateGuid(consultationId, "看诊ID");
-            if (validation != null)
-            {
-                return validation;
-            }
-
-            var result = await _consultationService.SaveFourDiagnosisAsync(consultationId, fourDiagnosisData);
-            return HandleBoolServiceResult(result, "四诊数据保存成功");
-        }
-        catch (Exception ex)
-        {
-            return HandleException(ex, "保存四诊数据", new { consultationId, fourDiagnosisData });
-        }
-    }
 
     /// <summary>
     /// 删除看诊记录（软删除） - 统一API响应格式

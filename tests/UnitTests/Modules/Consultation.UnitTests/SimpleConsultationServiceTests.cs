@@ -193,34 +193,6 @@ namespace LYBT.Module.Consultation.Tests
 
         #endregion
 
-        #region SaveFourDiagnosisAsync 测试
-
-        [Fact]
-        public async Task SaveFourDiagnosisAsync_Should_Return_Success_When_BusinessService_Succeeds()
-        {
-            // Arrange
-            var consultationId = Guid.NewGuid();
-            var fourDiagnosisData = new {
-                Looking = "面色红润",
-                Listening = "声音洪亮",
-                Asking = "无特殊症状",
-                Palpation = "脉象平和"
-            };
-
-            _mockBusinessService
-                .Setup(x => x.SaveFourDiagnosisAsync(consultationId, fourDiagnosisData))
-                .ReturnsAsync(ServiceResult<bool>.Success(true));
-
-            // Act
-            var result = await _consultationService.SaveFourDiagnosisAsync(consultationId, fourDiagnosisData);
-
-            // Assert
-            result.Should().NotBeNull();
-            result.IsSuccess.Should().BeTrue();
-            result.Data.Should().BeTrue();
-        }
-
-        #endregion
 
         #region GetStatisticsAsync 测试
 
@@ -389,30 +361,6 @@ namespace LYBT.Module.Consultation.Tests
             result.ErrorMessage.Should().Be("搜索服务异常");
         }
 
-        [Fact]
-        public async Task SaveFourDiagnosisAsync_Should_Return_Failure_When_BusinessService_Fails()
-        {
-            // Arrange - 业务操作失败测试
-            var consultationId = Guid.NewGuid();
-            var fourDiagnosisData = new {
-                Looking = "面色苍白",
-                Listening = "声音微弱",
-                Asking = "胸闷气短",
-                Palpation = "脉象细弱"
-            };
-
-            _mockBusinessService
-                .Setup(x => x.SaveFourDiagnosisAsync(consultationId, fourDiagnosisData))
-                .ReturnsAsync(ServiceResult<bool>.Failure("保存四诊信息失败"));
-
-            // Act
-            var result = await _consultationService.SaveFourDiagnosisAsync(consultationId, fourDiagnosisData);
-
-            // Assert
-            result.Should().NotBeNull();
-            result.IsSuccess.Should().BeFalse();
-            result.ErrorMessage.Should().Be("保存四诊信息失败");
-        }
 
         [Fact]
         public async Task GetByMedicalCaseIdAsync_Should_Return_Failure_When_MedicalCase_Not_Found()

@@ -65,14 +65,5 @@ namespace LYBT.Shared.Interfaces.Services
         /// </summary>
         Task<ServiceResult<List<ConsultationDto>>> GetPatientHistoryAsync(Guid patientId);
 
-        /// <summary>
-        /// 根据医疗案例ID获取四诊数据
-        /// </summary>
-        Task<ServiceResult<object>> GetFourDiagnosisByMedicalCaseIdAsync(Guid medicalCaseId);
-
-        /// <summary>
-        /// 保存四诊数据
-        /// </summary>
-        Task<ServiceResult<bool>> SaveFourDiagnosisAsync(Guid consultationId, object fourDiagnosisData);
     }
 }

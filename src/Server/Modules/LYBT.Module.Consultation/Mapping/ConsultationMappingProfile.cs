@@ -18,7 +18,7 @@ namespace LYBT.Module.Consultation.Mapping
             CreateMap<ConsultationDetailDto, LYBT.Entities.Consultation.Consultation>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore()) // 忽略ID
                 .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.DoctorId)) // DoctorId -> UserId
-                .ForMember(dest => dest.TCMDiagnosis, opt => opt.MapFrom(src => src.Diagnosis)) // Diagnosis -> TCMDiagnosis
+                .ForMember(dest => dest.TCMDiagnosis, opt => opt.MapFrom(src => src.TCMDiagnosis)) // TCMDiagnosis -> TCMDiagnosis
                 .ForMember(dest => dest.Patient, opt => opt.Ignore()) // 导航属性忽略
                 .ForMember(dest => dest.User, opt => opt.Ignore()) // 导航属性忽略
                 .ForMember(dest => dest.MedicalCase, opt => opt.Ignore()) // 导航属性忽略
@@ -37,7 +37,7 @@ namespace LYBT.Module.Consultation.Mapping
             // Consultation -> ConsultationDto - 基础列表映射
             CreateMap<LYBT.Entities.Consultation.Consultation, ConsultationDto>()
                 .ForMember(dest => dest.DoctorId, opt => opt.MapFrom(src => src.UserId)) // UserId -> DoctorId
-                .ForMember(dest => dest.Diagnosis, opt => opt.MapFrom(src => src.TCMDiagnosis)) // TCMDiagnosis -> Diagnosis
+                // 移除Diagnosis字段映射，使用TCMDiagnosis
                 .ForMember(dest => dest.ConsultationTime, opt => opt.MapFrom(src => DateTime.Now)) // 简单时间映射
                 .ForMember(dest => dest.Auscultation, opt => opt.MapFrom(src => src.AuscultationOlfaction)) // 字段名不同
                 .ForMember(dest => dest.DoctorName, opt => opt.Ignore()); // 需要从关联数据获取
@@ -45,7 +45,7 @@ namespace LYBT.Module.Consultation.Mapping
             // Consultation -> ConsultationDetailDto - 详细信息映射
             CreateMap<LYBT.Entities.Consultation.Consultation, ConsultationDetailDto>()
                 .ForMember(dest => dest.DoctorId, opt => opt.MapFrom(src => src.UserId)) // UserId -> DoctorId
-                .ForMember(dest => dest.Diagnosis, opt => opt.MapFrom(src => src.TCMDiagnosis)) // TCMDiagnosis -> Diagnosis
+                // 移除Diagnosis字段映射，使用TCMDiagnosis
                 .ForMember(dest => dest.PatientName, opt => opt.Ignore()) // 需要从关联数据获取
                 .ForMember(dest => dest.DoctorName, opt => opt.Ignore()) // 需要从关联数据获取
                 .ForMember(dest => dest.ConsultationTime, opt => opt.MapFrom(src => DateTime.Now)) // 简单时间映射

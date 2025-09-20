@@ -42,11 +42,6 @@ namespace LYBT.Module.Consultation.Interfaces
         Task<ServiceResult<List<ConsultationDto>>> GetPatientHistoryAsync(Guid patientId);
 
         /// <summary>
-        /// 根据医疗案例ID获取中医四诊信息
-        /// </summary>
-        Task<ServiceResult<object>> GetFourDiagnosisByMedicalCaseIdAsync(Guid medicalCaseId);
-
-        /// <summary>
         /// 根据ID获取看诊详情
         /// </summary>
         Task<ServiceResult<ConsultationDetailDto>> GetByIdAsync(Guid id);

@@ -47,10 +47,6 @@ namespace LYBT.Module.Consultation.Services
         public async Task<ServiceResult<List<ConsultationDto>>> GetPatientHistoryAsync(Guid patientId)
             => await _queryService.GetPatientHistoryAsync(patientId);
 
-        /// <inheritdoc/>
-        public async Task<ServiceResult<object>> GetFourDiagnosisByMedicalCaseIdAsync(Guid medicalCaseId)
-            => await _queryService.GetFourDiagnosisByMedicalCaseIdAsync(medicalCaseId);
-
         #endregion Query Operations
 
         #region Business Operations
@@ -66,10 +62,6 @@ namespace LYBT.Module.Consultation.Services
         /// <inheritdoc/>
         public async Task<ServiceResult<bool>> DeleteAsync(Guid id)
             => await _businessService.DeleteAsync(id);
-
-        /// <inheritdoc/>
-        public async Task<ServiceResult<bool>> SaveFourDiagnosisAsync(Guid consultationId, object fourDiagnosisData)
-            => await _businessService.SaveFourDiagnosisAsync(consultationId, fourDiagnosisData);
 
         #endregion Business Operations
 

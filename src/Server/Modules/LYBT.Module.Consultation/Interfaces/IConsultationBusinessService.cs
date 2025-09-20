@@ -11,12 +11,6 @@ namespace LYBT.Module.Consultation.Interfaces
     /// </summary>
     public interface IConsultationBusinessService
     {
-
-        /// <summary>
-        /// 保存中医四诊信息
-        /// </summary>
-        Task<ServiceResult<bool>> SaveFourDiagnosisAsync(Guid consultationId, object fourDiagnosisData);
-
         /// <summary>
         /// 开始看诊
         /// </summary>

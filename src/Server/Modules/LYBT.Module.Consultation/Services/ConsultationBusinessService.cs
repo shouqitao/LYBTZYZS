@@ -33,78 +33,7 @@ namespace LYBT.Module.Consultation.Services
         /// <summary>
         /// 保存四诊数据
         /// </summary>
-        public async Task<ServiceResult<bool>> SaveFourDiagnosisAsync(Guid consultationId, object fourDiagnosisData)
-        {
-            try
-            {
-                if (consultationId == Guid.Empty)
-                {
-                    return ServiceResult<bool>.Failure("看诊ID不能为空");
-                }
-
-                var consultation = await _context.Consultations
-                    .FirstOrDefaultAsync(c => c.Id == consultationId);
-
-                if (consultation == null)
-                {
-                    return ServiceResult<bool>.Failure("看诊记录不存在");
-                }
-
-                // 验证是否可以保存四诊数据
-                if (consultation.Status == CommonStatus.Disabled)
-                {
-                    return ServiceResult<bool>.Failure("已完成的看诊不能修改四诊数据");
-                }
-
-                if (consultation.Status == CommonStatus.Disabled)
-                {
-                    return ServiceResult<bool>.Failure("已取消的看诊不能修改四诊数据");
-                }
-
-                // 解析和保存四诊数据
-                if (fourDiagnosisData != null)
-                {
-                    // 尝试解析为字典或动态对象
-                    var diagnosisDict = fourDiagnosisData as IDictionary<string, object> ?? 
-                                       System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(fourDiagnosisData.ToString() ?? "{}");
-                    
-                    if (diagnosisDict != null)
-                    {
-                        // 更新四诊字段
-                        if (diagnosisDict.TryGetValue("inspection", out var inspection))
-                        {
-                            consultation.Inspection = inspection?.ToString();
-                        }
-                        if (diagnosisDict.TryGetValue("auscultationOlfaction", out var auscultation))
-                        {
-                            consultation.AuscultationOlfaction = auscultation?.ToString();
-                        }
-                        if (diagnosisDict.TryGetValue("inquiry", out var inquiry))
-                        {
-                            consultation.Inquiry = inquiry?.ToString();
-                        }
-                        if (diagnosisDict.TryGetValue("palpation", out var palpation))
-                        {
-                            consultation.Palpation = palpation?.ToString();
-                        }
-                    }
-                }
-                _logger.LogInformation(
-                    "保存四诊数据 - 看诊: {ChiefComplaint} ({Id})",
-                    consultation.ChiefComplaint ?? "无主诉", consultation.Id);
-
-                // consultation.UpdatedTime = DateTime.Now; // 实体中无此字段
-                _context.Consultations.Update(consultation);
-                await _context.SaveChangesAsync();
-
-                return ServiceResult<bool>.Success(true);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "保存四诊数据失败 - 看诊: {Id}", consultationId);
-                return ServiceResult<bool>.Failure($"保存四诊数据失败: {ex.Message}");
-            }
-        }
+        
 
         /// <summary>
         /// 开始看诊
@@ -205,7 +134,7 @@ namespace LYBT.Module.Consultation.Services
                 consultation.AuscultationOlfaction = dto.AuscultationOlfaction;
                 consultation.Inquiry = dto.Inquiry;
                 consultation.Palpation = dto.Palpation;
-                consultation.TCMDiagnosis = dto.Diagnosis ?? string.Empty; // 修正：DTO中是Diagnosis字段
+                consultation.TCMDiagnosis = dto.TCMDiagnosis ?? string.Empty; // 修正：使用TCMDiagnosis字段
                 consultation.MedicalAdvice = dto.MedicalAdvice; // 修正：使用MedicalAdvice字段
 
                 _context.Consultations.Update(consultation);
