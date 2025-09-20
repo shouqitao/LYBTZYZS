@@ -32,6 +32,36 @@ namespace LYBT.Module.Herbs.Services
         }
 
         /// <summary>
+        /// 根据ID获取药材详情
+        /// </summary>
+        public async Task<ServiceResult<HerbDto>> GetByIdAsync(Guid id)
+        {
+            try
+            {
+                if (id == Guid.Empty)
+                {
+                    return ServiceResult<HerbDto>.Failure("药材ID不能为空");
+                }
+
+                var herb = await _context.Herbs
+                    .FirstOrDefaultAsync(h => h.Id == id && h.Status == CommonStatus.Enabled);
+
+                if (herb == null)
+                {
+                    return ServiceResult<HerbDto>.Failure("药材不存在");
+                }
+
+                var dto = _mapper.Map<HerbDto>(herb);
+                return ServiceResult<HerbDto>.Success(dto);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取药材详情失败: {Id}", id);
+                return ServiceResult<HerbDto>.Failure($"获取药材详情失败: {ex.Message}");
+            }
+        }
+
+        /// <summary>
         /// 获取所有启用状态的药材列表
         /// </summary>
         public async Task<ServiceResult<List<HerbDto>>> GetAllAsync()

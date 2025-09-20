@@ -1,6 +1,5 @@
 using LYBT.Module.Herbs.Interfaces;
 using LYBT.Shared.Interfaces.Services;
-using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
 using Microsoft.Extensions.Logging;
@@ -9,7 +8,7 @@ namespace LYBT.Module.Herbs.Services
 {
 
     /// <summary>
-    /// 药材服务 - UltraThink双层架构纯委托模式
+    /// 药材服务 - UltraThink双层架构纯委托模式.
     /// </summary>
     public class HerbService(
         IHerbQueryService queryService,
@@ -23,10 +22,8 @@ namespace LYBT.Module.Herbs.Services
         #region Query Operations
 
         /// <inheritdoc/>
-        public Task<ServiceResult<HerbDto>> GetByIdAsync(Guid id)
-        {
-            return Task.FromResult(ServiceResult<HerbDto>.Failure("GetByIdAsync方法需要在QueryService中实现"));
-        }
+        public async Task<ServiceResult<HerbDto>> GetByIdAsync(Guid id)
+            => await _queryService.GetByIdAsync(id);
 
         public async Task<ServiceResult<List<HerbDto>>> GetAllAsync()
             => await _queryService.GetAllAsync();
@@ -77,22 +74,8 @@ namespace LYBT.Module.Herbs.Services
             => await _businessService.CreateHerbWithAutoCodeAsync(dto);
 
         /// <inheritdoc/>
-        public Task<ServiceResult<HerbDto>> UpdateAsync(Guid id, HerbUpdateDto dto)
-        {
-            // 简化版本更新逻辑：只允许修改价格和状态
-            if (id == Guid.Empty)
-            {
-                return Task.FromResult(ServiceResult<HerbDto>.Failure("药材ID不能为空"));
-            }
-
-            if (dto == null)
-            {
-                return Task.FromResult(ServiceResult<HerbDto>.Failure("更新信息不能为空"));
-            }
-
-            // 目前简化版本不支持全量更新，建议使用状态更新方法
-            return Task.FromResult(ServiceResult<HerbDto>.Failure("简化版本暂不支持药材信息更新，建议使用SetStatusAsync更改状态"));
-        }
+        public async Task<ServiceResult<HerbDto>> UpdateAsync(Guid id, HerbUpdateDto dto)
+            => await _businessService.UpdateAsync(id, dto);
 
         /// <inheritdoc/>
         public async Task<ServiceResult<bool>> DeleteAsync(Guid id)
@@ -197,7 +180,6 @@ namespace LYBT.Module.Herbs.Services
 
 
 
-    }
-
         #endregion Legacy Support
+    }
 }

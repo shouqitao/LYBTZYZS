@@ -32,6 +32,11 @@ namespace LYBT.Module.Herbs.Interfaces
         Task<ServiceResult<HerbDto>> CreateHerbWithAutoCodeAsync(HerbCreateDto dto);
 
         /// <summary>
+        /// 更新中药材信息
+        /// </summary>
+        Task<ServiceResult<HerbDto>> UpdateAsync(Guid id, HerbUpdateDto dto);
+
+        /// <summary>
         /// 设置中药材状态
         /// </summary>
         Task<ServiceResult<bool>> SetStatusAsync(Guid id, bool isActive);

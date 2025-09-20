@@ -334,6 +334,77 @@ namespace LYBT.Module.Herbs.Services
         }
 
         /// <summary>
+        /// 更新药材信息
+        /// </summary>
+        public async Task<ServiceResult<HerbDto>> UpdateAsync(Guid id, HerbUpdateDto dto)
+        {
+            try
+            {
+                if (id == Guid.Empty)
+                {
+                    return ServiceResult<HerbDto>.Failure("药材ID不能为空");
+                }
+
+                if (dto == null)
+                {
+                    return ServiceResult<HerbDto>.Failure("更新信息不能为空");
+                }
+
+                var herb = await _context.Herbs
+                    .FirstOrDefaultAsync(h => h.Id == id);
+
+                if (herb == null)
+                {
+                    return ServiceResult<HerbDto>.Failure("药材不存在");
+                }
+
+                if (herb.Status == CommonStatus.Disabled)
+                {
+                    return ServiceResult<HerbDto>.Failure("已删除的药材不能修改");
+                }
+
+                // 检查名称重复（排除自己）
+                if (!string.IsNullOrEmpty(dto.Name) && dto.Name != herb.Name)
+                {
+                    var existingHerb = await _context.Herbs
+                        .FirstOrDefaultAsync(h => h.Name == dto.Name && h.Id != id && h.Status != CommonStatus.Disabled);
+
+                    if (existingHerb != null)
+                    {
+                        return ServiceResult<HerbDto>.Failure($"药材名称 '{dto.Name}' 已存在");
+                    }
+                }
+
+                // 更新药材信息
+                if (!string.IsNullOrEmpty(dto.Name))
+                {
+                    herb.Name = dto.Name;
+                    herb.PinYinCode = GenerateSimplePinyinCode(dto.Name);
+                }
+                if (!string.IsNullOrEmpty(dto.Origin)) herb.Origin = dto.Origin;
+                if (!string.IsNullOrEmpty(dto.Spec)) herb.Spec = dto.Spec;
+                if (!string.IsNullOrEmpty(dto.Unit)) herb.Unit = dto.Unit;
+                if (dto.Price > 0) herb.Price = dto.Price;
+                if (!string.IsNullOrEmpty(dto.Effect)) herb.Effect = dto.Effect;
+                if (!string.IsNullOrEmpty(dto.Usage)) herb.Usage = dto.Usage;
+                if (!string.IsNullOrEmpty(dto.Remark)) herb.Remark = dto.Remark;
+
+                _context.Herbs.Update(herb);
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation("更新药材成功: {HerbName} ({HerbId})", herb.Name, herb.Id);
+
+                var resultDto = _mapper.Map<HerbDto>(herb);
+                return ServiceResult<HerbDto>.Success(resultDto);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "更新药材失败: {Id}", id);
+                return ServiceResult<HerbDto>.Failure($"更新药材失败: {ex.Message}");
+            }
+        }
+
+        /// <summary>
         /// 设置药材启用/禁用状态
         /// </summary>
         public async Task<ServiceResult<bool>> SetStatusAsync(Guid id, bool isActive)

@@ -12,6 +12,11 @@ namespace LYBT.Module.Herbs.Interfaces
     {
 
         /// <summary>
+        /// 根据ID获取中药材详情
+        /// </summary>
+        Task<ServiceResult<HerbDto>> GetByIdAsync(Guid id);
+
+        /// <summary>
         /// 获取所有中药材
         /// </summary>
         Task<ServiceResult<List<HerbDto>>> GetAllAsync();
