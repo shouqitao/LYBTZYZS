@@ -2,7 +2,6 @@ using AutoMapper;
 using LYBT.Entities.Herbs;
 using LYBT.Infrastructure.Data;
 using LYBT.Module.Herbs.Interfaces;
-using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
@@ -11,7 +10,6 @@ using Microsoft.Extensions.Logging;
 
 namespace LYBT.Module.Herbs.Services
 {
-
     /// <summary>
     /// 药材业务逻辑服务 - UltraThink架构
     /// 职责：导入导出、批量操作、业务规则处理
@@ -49,7 +47,7 @@ namespace LYBT.Module.Herbs.Services
                 var totalErrors = new List<string>();
                 var batches = SplitIntoBatches(herbs, BATCH_SIZE);
 
-                _logger.LogInformation("开始分批导入药材 - 总数: {Total}, 批次数: {BatchCount}, 每批: {BatchSize}条", 
+                _logger.LogInformation("开始分批导入药材 - 总数: {Total}, 批次数: {BatchCount}, 每批: {BatchSize}条",
                     herbs.Count, batches.Count, BATCH_SIZE);
 
                 // 分批处理，每批使用独立的短事务
@@ -57,13 +55,13 @@ namespace LYBT.Module.Herbs.Services
                 {
                     var batch = batches[batchIndex];
                     var batchResult = await ImportHerbsBatch(batch, batchIndex + 1, BATCH_SIZE);
-                    
+
                     totalImportCount += batchResult.ImportCount;
                     totalErrors.AddRange(batchResult.Errors);
                 }
 
                 _logger.LogInformation(
-                    "药材批量导入完成 - 成功: {SuccessCount}, 失败: {ErrorCount}, 批次: {BatchCount}", 
+                    "药材批量导入完成 - 成功: {SuccessCount}, 失败: {ErrorCount}, 批次: {BatchCount}",
                     totalImportCount, totalErrors.Count, batches.Count);
 
                 if (totalErrors.Count > 0 && totalImportCount == 0)
@@ -73,7 +71,7 @@ namespace LYBT.Module.Herbs.Services
 
                 if (totalErrors.Count > 0)
                 {
-                    var errorSummary = totalErrors.Count > 5 
+                    var errorSummary = totalErrors.Count > 5
                         ? $"{string.Join("; ", totalErrors.Take(5))}... (共{totalErrors.Count}个错误)"
                         : string.Join("; ", totalErrors);
                     return ServiceResult<int>.Failure($"部分导入成功 {totalImportCount} 条，失败 {totalErrors.Count} 条。错误详情：{errorSummary}");
@@ -89,7 +87,7 @@ namespace LYBT.Module.Herbs.Services
         }
 
         /// <summary>
-        /// 导入单个批次的药材 - Phase C1 短事务实现
+        /// 导入单个批次的药材 - Phase C1 短事务实现.
         /// </summary>
         private async Task<(int ImportCount, List<string> Errors)> ImportHerbsBatch(
             List<HerbImportDto> batch, int batchNumber, int batchSize)
@@ -140,7 +138,7 @@ namespace LYBT.Module.Herbs.Services
                                 Effect = importDto.Effect ?? string.Empty,
                                 Usage = string.Empty, // 导入时默认为空
                                 Remark = importDto.Remark ?? string.Empty,
-                                Status = CommonStatus.Enabled
+                                Status = CommonStatus.Enabled,
                             };
 
                             _context.Herbs.Add(herb);
