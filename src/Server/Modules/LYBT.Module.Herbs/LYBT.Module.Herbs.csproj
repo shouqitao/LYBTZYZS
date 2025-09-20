@@ -5,8 +5,8 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <!-- StyleCop 阶段0→1: 仅收集警告，不作为错误 -->
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <!-- 启用全局StyleCop配置 -->
+    <EnableStyleCop>true</EnableStyleCop>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,11 +17,6 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
-    <!-- StyleCop 阶段0→1: 添加代码分析器进行警告收集 -->
-    <PackageReference Include="StyleCop.Analyzers">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>analyzers</IncludeAssets>
-    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
@@ -30,9 +25,5 @@
     <ProjectReference Include="..\..\..\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <!-- StyleCop 配置文件 -->
-    <AdditionalFiles Include="stylecop.json" />
-  </ItemGroup>
 
 </Project>

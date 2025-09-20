@@ -34,6 +34,33 @@
     <EntityFrameworkVersion>8.0.17</EntityFrameworkVersion>
     <SwashbuckleVersion>9.0.1</SwashbuckleVersion>
     <PrismVersion>9.0.537</PrismVersion>
+    <StyleCopAnalyzersVersion>1.1.118</StyleCopAnalyzersVersion>
   </PropertyGroup>
+
+  <!-- UltraThink全局StyleCop配置 - 相对宽松的规则 -->
+  <PropertyGroup>
+    <!-- C# 语言版本 -->
+    <LangVersion>12.0</LangVersion>
+    
+    <!-- StyleCop禁用规则 - 保持代码整洁但不过度严格 -->
+    <NoWarn>$(NoWarn);SA1101;SA1124;SA1633;SA1309;SA1202;SA1204;SA1128;SA1116;SA1117;SA1505;SA1508;SA1507;SA1513;SA1516;SA1518</NoWarn>
+    
+    <!-- 分析器设置 -->
+    <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
+    <RunAnalyzersDuringBuild>true</RunAnalyzersDuringBuild>
+  </PropertyGroup>
+
+  <!-- StyleCop.Analyzers包引用 - 仅在需要的项目中启用 -->
+  <ItemGroup Condition="'$(EnableStyleCop)' == 'true'">
+    <PackageReference Include="StyleCop.Analyzers">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>analyzers</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <!-- 全局StyleCop配置文件 -->
+  <ItemGroup Condition="'$(EnableStyleCop)' == 'true'">
+    <AdditionalFiles Include="$(MSBuildThisFileDirectory)stylecop.json" />
+  </ItemGroup>
 
 </Project>

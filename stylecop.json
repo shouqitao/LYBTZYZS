@@ -6,26 +6,28 @@
       "copyrightText": "Copyright © 凌隐宝堂中医诊所 2025",
       "documentPrivateElements": false,
       "documentPrivateFields": false,
-      "documentInternalElements": false
+      "documentInternalElements": false,
+      "xmlHeader": false,
+      "fileHeaderTemplate": ""
     },
     "orderingRules": {
       "systemUsingDirectivesFirst": true,
       "usingDirectivesPlacement": "outsideNamespace",
-      "blankLinesBetweenUsingGroups": "require"
+      "blankLinesBetweenUsingGroups": "allow"
     },
     "namingRules": {
-      "allowCommonHungarianPrefixes": false,
-      "allowedHungarianPrefixes": []
+      "allowCommonHungarianPrefixes": true,
+      "allowedHungarianPrefixes": ["_", "m_", "s_", "t_"]
     },
     "maintainabilityRules": {
       "topLevelTypes": ["class", "interface", "struct", "enum", "delegate"]
     },
     "layoutRules": {
-      "newlineAtEndOfFile": "require",
-      "allowConsecutiveUsings": false
+      "newlineAtEndOfFile": "allow",
+      "allowConsecutiveUsings": true
     },
     "readabilityRules": {
-      "allowBuiltInTypeAliases": false
+      "allowBuiltInTypeAliases": true
     },
     "spacingRules": {
       "keywordsMustBeSpacedCorrectly": true
