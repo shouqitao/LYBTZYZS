@@ -327,12 +327,11 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
     }
 
     /// <summary>
-    /// 医案验证结果DTO
+    /// 医案验证结果DTO - 继承自通用验证结果基类
     /// </summary>
-    public class MedicalCaseValidationResult
+    public class MedicalCaseValidationResult : ValidationResultDto
     {
-        public bool IsValid { get; set; } = true;
-        public List<string> Errors { get; set; } = new();
+        // 继承所有基类字段，无需额外定义
     }
 
     /// <summary>
@@ -419,31 +418,11 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
     }
 
     /// <summary>
-    /// 医案批量操作结果DTO
+    /// 医案批量操作结果DTO - 继承自通用批量操作结果基类
     /// </summary>
-    public class MedicalCaseBatchOperationResultDto
+    public class MedicalCaseBatchOperationResultDto : BatchOperationResultDto
     {
-
-        [DisplayName("总数量")]
-        public int TotalCount { get; set; }
-
-        [DisplayName("成功数量")]
-        public int SuccessCount { get; set; }
-
-        [DisplayName("失败数量")]
-        public int FailureCount { get; set; }
-
-        [DisplayName("成功的ID列表")]
-        public List<Guid> SuccessfulIds { get; set; } = new();
-
-        [DisplayName("失败的ID列表")]
-        public List<Guid> FailedIds { get; set; } = new();
-
-        [DisplayName("错误信息列表")]
-        public List<string> ErrorMessages { get; set; } = new();
-
-        [DisplayName("操作成功率")]
-        public decimal SuccessRate => TotalCount > 0 ? (decimal)SuccessCount / TotalCount * 100 : 0;
+        // 继承所有基类字段，无需额外定义
     }
 
     /// <summary>

@@ -653,43 +653,29 @@ namespace LYBT.Shared.Models.Contracts.Formula
     }
 
     /// <summary>
-    /// 批量导入结果DTO
+    /// 批量导入结果DTO - 继承自通用导入结果基类
     /// </summary>
-    public class FormulaImportResultDto
+    public class FormulaImportResultDto : ImportResultDto
     {
-
+        /// <summary>导入批次号（兼容别名）</summary>
         [DisplayName("导入批次号")]
-        public string ImportBatch { get; set; } = string.Empty;
+        public string ImportBatch => ImportBatchId;
 
-        [DisplayName("总数量")]
-        public int TotalCount { get; set; }
-
-        [DisplayName("成功数量")]
-        public int SuccessCount { get; set; }
-
-        [DisplayName("失败数量")]
-        public int FailedCount { get; set; }
-
-        [DisplayName("跳过数量")]
-        public int SkippedCount { get; set; }
-
+        /// <summary>导入开始时间</summary>
         [DisplayName("导入开始时间")]
         public DateTime StartTime { get; set; }
 
+        /// <summary>导入结束时间</summary>
         [DisplayName("导入结束时间")]
         public DateTime EndTime { get; set; }
 
+        /// <summary>成功的验方列表</summary>
         [DisplayName("成功的验方列表")]
         public List<FormulaDto> SuccessfulFormulas { get; set; } = new();
 
+        /// <summary>失败的记录</summary>
         [DisplayName("失败的记录")]
         public List<FormulaImportErrorDto> FailedItems { get; set; } = new();
-
-        /// <summary>导入是否成功</summary>
-        public bool IsSuccess => FailedCount == 0;
-
-        /// <summary>成功率</summary>
-        public double SuccessRate => TotalCount > 0 ? (double)SuccessCount / TotalCount * 100 : 0;
     }
 
     /// <summary>

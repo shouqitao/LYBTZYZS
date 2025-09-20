@@ -216,65 +216,23 @@ namespace LYBT.Shared.Models.Contracts.Patients
     }
 
     /// <summary>
-    /// 患者导入结果DTO
+    /// 患者导入结果DTO - 继承自通用导入结果基类
     /// </summary>
-    public class PatientImportResultDto
+    public class PatientImportResultDto : ImportResultDto
     {
-
-        /// <summary>总记录数</summary>
-        [DisplayName("总记录数")]
-        public int TotalCount { get; set; }
-
-        /// <summary>成功数量</summary>
-        [DisplayName("成功数量")]
-        public int SuccessCount { get; set; }
-
-        /// <summary>失败数量</summary>
-        [DisplayName("失败数量")]
-        public int FailedCount { get; set; }
-
-        /// <summary>跳过数量</summary>
-        [DisplayName("跳过数量")]
-        public int SkippedCount { get; set; }
-
-        /// <summary>重复数量</summary>
-        [DisplayName("重复数量")]
-        public int DuplicateCount { get; set; }
-
-        /// <summary>导入批次ID</summary>
-        [DisplayName("批次ID")]
-        public string ImportBatchId { get; set; } = Guid.NewGuid().ToString();
-
-        /// <summary>重复记录</summary>
-        [DisplayName("重复记录")]
-        public List<string> DuplicateRecords { get; set; } = new();
-
-        /// <summary>错误详情</summary>
-        [DisplayName("错误详情")]
-        public List<ImportErrorDetail> Errors { get; set; } = new();
-
-        /// <summary>失败记录</summary>
-        [DisplayName("失败记录")]
-        public List<string> FailedRecords { get; set; } = new();
-
-        /// <summary>导入时间</summary>
-        [DisplayName("导入时间")]
-        public DateTime ImportTime { get; set; } = DateTime.Now;
+        /// <summary>患者特定错误详情</summary>
+        public new List<PatientImportErrorDetail> Errors { get; set; } = new();
 
         /// <summary>
-        /// 导入错误详情
+        /// 患者导入错误详情
         /// </summary>
-        public class ImportErrorDetail
+        public class PatientImportErrorDetail : ErrorDetail
         {
-
             /// <summary>行号</summary>
             public int RowNumber { get; set; }
 
             /// <summary>患者姓名</summary>
             public string PatientName { get; set; } = string.Empty;
-
-            /// <summary>错误信息</summary>
-            public string ErrorMessage { get; set; } = string.Empty;
         }
     }
 

@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Shared.Models.Contracts.Herbs
@@ -598,17 +599,17 @@ namespace LYBT.Shared.Models.Contracts.Herbs
     }
 
     /// <summary>
-    /// 药材导入结果DTO
+    /// 药材导入结果DTO - 继承自通用导入结果基类
     /// </summary>
-    public class HerbImportResultDto
+    public class HerbImportResultDto : ImportResultDto
     {
-        public int TotalCount { get; set; }
-        public int SuccessCount { get; set; }
-        public int FailedCount { get; set; }
-        public List<string> Errors { get; set; } = new List<string>();
-        public List<string> Warnings { get; set; } = new List<string>();
+        /// <summary>导入者</summary>
+        [DisplayName("导入者")]
         public string ImportedBy { get; set; } = string.Empty;
-        public DateTime ImportTime { get; set; }
+
+        /// <summary>警告信息</summary>
+        [DisplayName("警告信息")]
+        public List<string> Warnings { get; set; } = new();
     }
 
     /// <summary>
@@ -624,14 +625,16 @@ namespace LYBT.Shared.Models.Contracts.Herbs
     }
 
     /// <summary>
-    /// 药材导入验证结果DTO
+    /// 药材导入验证结果DTO - 继承自通用验证结果基类
     /// </summary>
-    public class HerbImportValidationDto
+    public class HerbImportValidationDto : ValidationResultDto
     {
-        public bool IsValid { get; set; }
-        public List<string> Errors { get; set; } = new List<string>();
-        public List<string> Warnings { get; set; } = new List<string>();
+        /// <summary>有效行数</summary>
+        [DisplayName("有效行数")]
         public int ValidRowCount { get; set; }
+
+        /// <summary>无效行数</summary>
+        [DisplayName("无效行数")]
         public int InvalidRowCount { get; set; }
     }
 
