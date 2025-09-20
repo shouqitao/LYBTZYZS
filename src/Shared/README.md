@@ -1,38 +1,61 @@
 # LYBT.Shared
 
-> **前后端共享组件**  
-> 统一的接口、模型和工具类库
+> **前后端共享组件** - .NET 8核心共享库
+> DTO优化完成 | 接口统一 | 类型安全 | 前后端一致性
+> **模块状态**: ✅ **生产就绪** | 🎆 **DTO优化三阶段完成** | **零编译错误** | **2025-09-20更新**
 
 ## 🎯 项目概述
 
-LYBT.Shared 是系统的共享组件库，提供前后端统一的数据传输对象(DTO)、服务接口和通用工具类，确保前后端数据结构和业务逻辑的一致性。
+LYBT.Shared 是系统的核心共享组件库，提供前后端统一的数据传输对象(DTO)、服务接口定义和通用工具类。完成了DTO三阶段优化，实现了类型安全和前后端完全一致的数据契约。
+
+**技术栈**: .NET 8 + System.Text.Json + FluentValidation
+**架构模式**: 契约驱动设计 + 分层DTO模型 + 接口统一化
+**最新优化**: DTO三阶段优化完成（查询标准化、操作结果基类、继承层次优化）
 
 ## 📦 项目结构
 
 ### LYBT.Shared.Models
-数据传输对象和响应模型
+数据传输对象和响应模型 - DTO优化三阶段完成
 
 ```
 LYBT.Shared.Models/
 ├── Common/                    # 通用模型
 │   ├── ApiResponse.cs         # 统一API响应格式
-│   ├── PagedResult.cs          # 分页数据模型
-│   ├── BaseDto.cs            # DTO基类
-│   └── ServiceResult.cs      # 服务结果模型
-├── Contracts/                # 业务契约模型
+│   ├── PagedResult.cs         # 分页数据模型
+│   ├── BaseDto.cs            # DTO基类（包含Id）
+│   ├── StatusDto.cs          # 状态DTO基类（BaseDto + Status字段）
+│   ├── ServiceResult.cs      # 服务层结果模型
+│   └── PagedQueryBaseDto.cs  # 分页查询基类
+├── Contracts/                # 业务契约模型（DTO优化完成）
+│   ├── Common/               # 通用契约
+│   │   └── IIdentifiable.cs # ID接口定义
 │   ├── Auth/                 # 认证相关DTO
+│   │   └── AuthDtos.cs      # LoginDto, TokenDto, RefreshTokenDto
 │   ├── Users/                # 用户相关DTO
+│   │   └── UserDtos.cs      # UserDto, UserCreateDto, UserUpdateDto, UserSearchDto
 │   ├── Patients/             # 患者相关DTO
-│   ├── MedicalCase/          # 医疗案例DTO
-│   ├── Consultation/         # 看诊相关DTO
+│   │   └── PatientDtos.cs   # PatientDto, PatientCreateDto, PatientUpdateDto, PatientSearchDto
+│   ├── MedicalCase/          # 医案相关DTO
+│   │   └── MedicalCaseDtos.cs # MedicalCaseDto, MedicalCaseCreateDto, MedicalCaseSearchDto
+│   ├── Consultation/         # 诊疗相关DTO
+│   │   └── ConsultationDtos.cs # ConsultationDetailDto, ConsultationCreateDto, ConsultationSearchDto
 │   ├── Prescriptions/        # 处方相关DTO
-│   ├── Herbs/                # 中药材DTO
+│   │   ├── PrescriptionDtos.cs # PrescriptionDto, PrescriptionCreateDto, PrescriptionSearchDto
+│   │   └── PrescriptionCalculationDto.cs # 处方计算DTO
+│   ├── Herbs/                # 药材相关DTO
+│   │   └── HerbDtos.cs      # HerbDto, HerbCreateDto, HerbUpdateDto, HerbSearchDto
 │   └── Formula/              # 验方相关DTO
-└── Enums/                    # 枚举定义
-    ├── UserRole.cs           # 用户角色枚举
-    ├── MedicalCaseStatus.cs  # 医疗案例状态
-    ├── PrescriptionStatus.cs # 处方状态
-    └── ConsultationStatus.cs # 看诊状态
+│       └── FormulaDtos.cs   # FormulaDto, FormulaCreateDto, FormulaUpdateDto, FormulaSearchDto
+├── Core/                     # 核心定义
+│   └── Interfaces/           # 核心接口
+├── Enums/                    # 枚举定义
+│   ├── UserRole.cs           # 用户角色枚举（Doctor, Admin）
+│   ├── CommonStatus.cs       # 通用状态枚举（Enabled, Disabled）
+│   ├── MedicalCaseStatus.cs  # 医案状态
+│   └── PrescriptionStatus.cs # 处方状态
+├── Constants/                # 常量定义
+├── Exceptions/               # 异常定义
+└── Extensions/               # 扩展方法
 ```
 
 ### LYBT.Shared.Interfaces  
@@ -112,29 +135,108 @@ public class ServiceResult<T>
 }
 ```
 
+## 🎆 DTO优化三阶段成果
+
+### 第一阶段：查询命名标准化
+- ✅ 统一查询DTO命名：`QueryDto`（基础查询）、`SearchDto`（高级搜索）
+- ✅ 继承`PagedQueryBaseDto`基类，统一分页参数
+
+### 第二阶段：操作结果基类抽取
+- ✅ 创建`StatusDto`基类（BaseDto + Status字段）
+- ✅ 所有业务DTO继承自`StatusDto`
+- ✅ 统一状态管理模式
+
+### 第三阶段：继承层次优化
+- ✅ 分离`CreateDto`和`UpdateDto`
+- ✅ 提取`InputBaseDto`共享字段
+- ✅ 实现`IIdentifiable<T>`接口
+
 ## 🎯 核心DTO模型
 
-### 用户相关
+### 基类层次结构
 ```csharp
-// 用户信息DTO
-public class UserDto : BaseDto
+// 基础DTO - 包含Id
+public abstract class BaseDto : IIdentifiable<Guid>
 {
-    public string Username { get; set; }
-    public string RealName { get; set; }
-    public string Email { get; set; }
-    public string PhoneNumber { get; set; }
-    public UserRole Role { get; set; }
-    public bool IsActive { get; set; }
+    public Guid Id { get; set; }
 }
 
-// 用户创建DTO
-public class UserCreateDto
+// 状态DTO - 添加状态字段
+public abstract class StatusDto : BaseDto
+{
+    public CommonStatus Status { get; set; } = CommonStatus.Enabled;
+}
+
+// 分页查询基类
+public abstract class PagedQueryBaseDto
+{
+    public int PageIndex { get; set; } = 1;
+    public int PageSize { get; set; } = 20;
+    public string? OrderBy { get; set; }
+    public bool IsDescending { get; set; }
+    public string? Keyword { get; set; }
+}
+```
+
+### 用户模块DTO示例（优化后）
+```csharp
+// 用户信息DTO - 继承StatusDto
+public class UserDto : StatusDto
 {
     public string Username { get; set; }
     public string RealName { get; set; }
-    public string Email { get; set; }
-    public string PhoneNumber { get; set; }
+    public string? Email { get; set; }
+    public string? PhoneNumber { get; set; }
     public UserRole Role { get; set; }
+    public string? PinYinCode { get; set; }
+
+    // 兼容性属性
+    public bool IsActive => Status == CommonStatus.Enabled;
+    public string UserDisplayName => RealName ?? Username;
+}
+
+// 用户输入基础DTO - 共享字段
+public abstract class UserInputBaseDto
+{
+    [Required]
+    public string RealName { get; set; }
+    public string? PhoneNumber { get; set; }
+    public string? Email { get; set; }
+    public UserRole Role { get; set; } = UserRole.Doctor;
+    public CommonStatus Status { get; set; } = CommonStatus.Enabled;
+}
+
+// 用户创建DTO - 继承输入基础
+public class UserCreateDto : UserInputBaseDto
+{
+    [Required]
+    public string Username { get; set; }
+    [Required]
+    public string Password { get; set; }
+    [Compare("Password")]
+    public string ConfirmPassword { get; set; }
+}
+
+// 用户更新DTO - 可选字段
+public class UserUpdateDto : UserInputBaseDto, IIdentifiable<Guid>
+{
+    [Required]
+    public Guid Id { get; set; }
+    public new string? RealName { get; set; }  // 可选更新
+    public new UserRole? Role { get; set; }     // 可选更新
+}
+
+// 用户搜索DTO - 高级搜索
+public class UserSearchDto : PagedQueryBaseDto
+{
+    public string? Username { get; set; }
+    public string? RealName { get; set; }
+    public UserRole? Role { get; set; }
+    public CommonStatus? Status { get; set; }
+    public string? PinYinCode { get; set; }
+    public DateTime? StartDate { get; set; }
+    public DateTime? EndDate { get; set; }
+    public bool IncludeInactive { get; set; } = false;
 }
 ```
 

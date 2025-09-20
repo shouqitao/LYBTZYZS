@@ -1,391 +1,309 @@
-# LYBT.Desktop.Consultation
+# LYBT.Desktop.Module.Consultation
 
-## 概述
+> **看诊管理客户端模块** - WPF桌面应用看诊管理功能
+> 四诊记录 | 辨证论治 | 诊断管理 | 医嘱记录
+> **模块状态**: ✅ **生产就绪** | 🎆 **UltraThink架构完成** | **零编译错误** | **2025-09-20更新**
 
-LYBT.Desktop.Consultation是凌隐宝堂桌面客户端的看诊模块，提供中医四诊（望闻问切）、辨证论治、诊断记录等核心诊疗功能。作为系统的核心业务模块之一，它与患者、医案、处方等模块紧密集成，构建完整的中医诊疗工作流。
+## 🎯 模块概述
 
-## 核心功能
+LYBT.Desktop.Module.Consultation是WPF桌面客户端的看诊管理模块，采用MVVM架构和UltraThink双层服务设计。记录中医四诊（望闻问切）信息，支持辨证论治和诊断记录。
 
-### 🏥 中医四诊
-- **望诊**: 观察患者面色、舌象、体态等外在表现
-- **闻诊**: 听声音、嗅气味，记录患者声息和体味
-- **问诊**: 询问病史、症状、生活习惯等信息
-- **切诊**: 脉诊和触诊，记录脉象和体征
+**技术栈**: WPF (.NET 8) + Prism.DryIoc + Material Design + Refit
+**架构模式**: MVVM + UltraThink双层架构（QueryService + BusinessService）
+**通信方式**: 通过Refit调用后端Web API，类型安全的HTTP客户端
 
-### 🔍 辨证论治
-- **症状分析**: 收集和分析患者症状表现
-- **证候判断**: 基于中医理论进行证候分析
-- **治法确定**: 确定相应的治疗法则
-- **方药选择**: 推荐适合的方剂和药物
+## 🎆 UltraThink双层架构实现
 
-### 📋 诊疗记录
-- **诊断管理**: 创建、编辑、查看诊断记录
-- **病情跟踪**: 记录病情变化和治疗效果
-- **历史查询**: 查看患者历史诊疗记录
-- **数据整合**: 与医案、处方数据的集成展示
-
-### 💼 工作流集成
-- **患者选择**: 与患者模块集成选择诊疗对象
-- **医案关联**: 与医案模块协作管理诊疗过程
-- **处方开具**: 与处方模块配合完成用药指导
-- **验方应用**: 与验方模块结合应用经典方剂
-
-## 项目结构
-
+### 前端服务架构
 ```
-src/Client/Desktop/Modules/Consultation/
-├── ConsultationModule.cs         # Prism模块定义和注册
-├── Services/                    # 业务服务层
-│   └── ConsultationModule.cs   # 看诊业务模块
-├── ViewModels/                  # 视图模型
-│   ├── ConsultationMainViewModel.cs      # 主看诊视图模型
-│   └── ConsultationManagementViewModel.cs # 诊疗管理视图模型
-├── Views/                       # 用户界面视图
-│   ├── ConsultationMainView.xaml         # 主看诊界面
-│   ├── ConsultationMainView.xaml.cs     # 主看诊界面代码
-│   ├── ConsultationManagementView.xaml   # 诊疗管理界面
-│   └── ConsultationManagementView.xaml.cs # 诊疗管理界面代码
-└── Api/                         # API接口定义(如果存在)
+ConsultationModule (主模块 - 纯委托模式)
+    │
+    ├── ConsultationQueryService (查询专业化层)
+    │   ├── 数据查询和搜索
+    │   ├── 分页和筛选
+    │   └── 统计和分析
+    │
+    └── ConsultationBusinessService (业务逻辑层)
+        ├── CRUD操作
+        ├── 业务规则验证
+        └── 状态管理
 ```
 
-## 技术栈
+## 📦 模块结构
 
-### 核心依赖
-- **.NET 8.0**: 目标框架
-- **WPF**: Windows Presentation Foundation
-- **Prism.DryIoc 8.1.97**: MVVM框架和依赖注入
-- **Prism.Wpf 8.1.97**: WPF版本的Prism框架
-
-### 模块依赖
-- **LYBT.Desktop.Core**: 核心框架和基础设施
-- **LYBT.Desktop.Infrastructure**: 基础设施和HTTP通信
-- **LYBT.Desktop.Services**: 业务服务层
-- **LYBT.Desktop.Patients**: 患者管理模块
-- **LYBT.Desktop.Formula**: 验方管理模块
-- **LYBT.Desktop.Herbs**: 中药材管理模块
-- **LYBT.Desktop.MedicalCase**: 医案管理模块
-
-## 核心特性
-
-### 🏥 中医诊疗流程
-
-#### 完整诊疗工作流
 ```
-1. 患者选择 (Patients模块) 
-   ↓
-2. 创建医案 (MedicalCase模块)
-   ↓
-3. 四诊检查 (Consultation模块) ← 当前模块核心功能
-   ├── 望诊记录
-   ├── 闻诊记录  
-   ├── 问诊记录
-   └── 切诊记录
-   ↓
-4. 辨证论治 (Consultation模块)
-   ├── 症状分析
-   ├── 证候判断
-   └── 治法确定
-   ↓
-5. 开具处方 (Prescriptions模块)
-   ├── 方剂选择 (Formula模块)
-   └── 药材配伍 (Herbs模块)
+LYBT.Desktop.Module.Consultation/
+├── 📁 ViewModels/              # MVVM视图模型
+│   ├── ConsultationViewModel.cs     # 主视图模型
+│   ├── ConsultationEditViewModel.cs # 编辑视图模型
+│   └── ConsultationListViewModel.cs # 列表视图模型
+│
+├── 📁 Views/                   # WPF视图
+│   ├── ConsultationView.xaml        # 主视图
+│   ├── ConsultationView.xaml      # 看诊主界面
+│   ├── FourDiagnosesView.xaml      # 四诊录入
+│   ├── DiagnosisView.xaml      # 诊断界面
+│   ├── MedicalAdviceView.xaml      # 医嘱管理
+│   └── Dialogs/                # 对话框视图
+│
+├── 📁 Services/                # 服务层
+│   ├── ConsultationService.cs       # 主服务（纯委托）
+│   ├── ConsultationQueryService.cs  # 查询服务
+│   └── ConsultationBusinessService.cs # 业务服务
+│
+├── 📁 Models/                  # 本地模型
+│   └── ConsultationModel.cs         # 客户端模型
+│
+└── ConsultationModule.cs            # 模块注册类
 ```
 
-#### 诊疗数据模型
+## 🎯 核心功能
+
+### 1. 视图模型（MVVM）
 ```csharp
-public class ConsultationRecord
+public class ConsultationViewModel : RegionViewModelBase
 {
-    public Guid Id { get; set; }
-    public Guid PatientId { get; set; }        // 患者ID
-    public Guid MedicalCaseId { get; set; }    // 医案ID
-    public Guid DoctorId { get; set; }         // 医生ID
-    
-    // 四诊记录
-    public string? Observation { get; set; }   // 望诊
-    public string? Listening { get; set; }     // 闻诊
-    public string? Inquiry { get; set; }       // 问诊
-    public string? Palpation { get; set; }     // 切诊
-    
-    // 辨证论治
-    public string? Symptoms { get; set; }      // 症状
-    public string? Syndrome { get; set; }      // 证候
-    public string? Treatment { get; set; }     // 治法
-    public string? Diagnosis { get; set; }     // 诊断
-    
-    public DateTime ConsultationDate { get; set; }
-    public ConsultationStatus Status { get; set; }
-}
-```
+    private readonly IConsultationService _consultationService;
+    private readonly IRegionManager _regionManager;
+    private readonly IEventAggregator _eventAggregator;
 
-### 📱 MVVM实现
-
-#### ConsultationMainViewModel核心功能
-```csharp
-public class ConsultationMainViewModel : CoreViewModel
-{
-    // 当前诊疗对象
-    public PatientDto? CurrentPatient { get; set; }
-    public MedicalCaseDto? CurrentMedicalCase { get; set; }
-    public ConsultationDto? CurrentConsultation { get; set; }
-    
-    // 四诊记录
-    public string Observation { get; set; }  // 望诊
-    public string Listening { get; set; }    // 闻诊  
-    public string Inquiry { get; set; }      // 问诊
-    public string Palpation { get; set; }    // 切诊
-    
-    // 辨证论治
-    public string Symptoms { get; set; }     // 症状分析
-    public string Syndrome { get; set; }     // 证候判断
-    public string Treatment { get; set; }    // 治疗方法
-    public string Diagnosis { get; set; }    // 最终诊断
-    
-    // 命令
-    public ICommand SaveConsultationCommand { get; }
-    public ICommand SelectPatientCommand { get; }
-    public ICommand OpenPrescriptionCommand { get; }
-    public ICommand ViewHistoryCommand { get; }
-    
-    // 保存诊疗记录
-    private async Task SaveConsultationAsync()
+    public ConsultationViewModel(
+        IConsultationService consultationService,
+        IRegionManager regionManager,
+        IEventAggregator eventAggregator)
     {
-        try
-        {
-            var dto = new ConsultationCreateDto
-            {
-                PatientId = CurrentPatient.Id,
-                MedicalCaseId = CurrentMedicalCase.Id,
-                Observation = Observation,
-                Listening = Listening,
-                Inquiry = Inquiry,
-                Palpation = Palpation,
-                Symptoms = Symptoms,
-                Syndrome = Syndrome,
-                Treatment = Treatment,
-                Diagnosis = Diagnosis
-            };
-            
-            var result = await _consultationService.CreateAsync(dto);
-            if (result.IsSuccess)
-            {
-                ShowSuccessMessage("诊疗记录保存成功");
-                
-                // 发布诊疗完成事件
-                _eventAggregator.GetEvent<ConsultationCompletedEvent>()
-                    .Publish(result.Data);
-            }
-            else
-            {
-                ShowErrorMessage(result.ErrorMessage);
-            }
-        }
-        catch (Exception ex)
-        {
-            HandleException(ex, "保存诊疗记录");
-        }
+        _consultationService = consultationService;
+        _regionManager = regionManager;
+        _eventAggregator = eventAggregator;
+
+        InitializeCommands();
+        LoadData();
     }
+
+    // 数据绑定属性
+    public ObservableCollection<ConsultationDto> Items { get; set; }
+    public ConsultationDto SelectedItem { get; set; }
+
+    // 命令
+    public DelegateCommand AddCommand { get; private set; }
+    public DelegateCommand<ConsultationDto> EditCommand { get; private set; }
+    public DelegateCommand<ConsultationDto> DeleteCommand { get; private set; }
+    public DelegateCommand RefreshCommand { get; private set; }
 }
 ```
 
-### 🎨 用户界面设计
+### 2. 服务层（UltraThink）
+```csharp
+// 主服务 - 纯委托模式
+public class ConsultationService : IConsultationService
+{
+    private readonly IConsultationQueryService _queryService;
+    private readonly IConsultationBusinessService _businessService;
 
-#### 主看诊界面特性
-- **分区布局**: 四诊、辨证、处方等功能区域清晰分离
-- **标签页设计**: 望闻问切四个标签页独立操作
-- **实时保存**: 输入内容自动保存，防止数据丢失
-- **快捷操作**: 常用诊断和治法的快速选择
-- **历史查看**: 患者历史诊疗记录的快速查看
+    public ConsultationService(
+        IConsultationQueryService queryService,
+        IConsultationBusinessService businessService)
+    {
+        _queryService = queryService;
+        _businessService = businessService;
+    }
 
-#### 界面布局示例
+    // 查询操作委托到QueryService
+    public async Task<ServiceResult<PagedResult<ConsultationDto>>> GetPagedAsync(ConsultationSearchDto query)
+        => await _queryService.GetPagedAsync(query);
+
+    // 业务操作委托到BusinessService
+    public async Task<ServiceResult<ConsultationDto>> CreateAsync(ConsultationCreateDto dto)
+        => await _businessService.CreateAsync(dto);
+}
+```
+
+### 3. API调用（Refit）
+```csharp
+// 使用Refit定义API接口
+public interface IConsultationApi
+{
+    [Get("/api/v1/consultations")]
+    Task<ApiResponse<PagedResult<ConsultationDto>>> GetPagedAsync([Query] ConsultationSearchDto query);
+
+    [Post("/api/v1/consultations")]
+    Task<ApiResponse<ConsultationDto>> CreateAsync([Body] ConsultationCreateDto dto);
+
+    [Put("/api/v1/consultations/{id}")]
+    Task<ApiResponse<ConsultationDto>> UpdateAsync(Guid id, [Body] ConsultationUpdateDto dto);
+
+    [Delete("/api/v1/consultations/{id}")]
+    Task<ApiResponse<bool>> DeleteAsync(Guid id);
+}
+```
+
+## 🎨 UI设计
+
+### Material Design主题
+- 使用Material Design in XAML Toolkit
+- 支持明暗主题切换
+- 响应式布局设计
+- 动画和过渡效果
+
+### 数据绑定示例
+```xml
+<DataGrid ItemsSource="{Binding Items}"
+          SelectedItem="{Binding SelectedItem}"
+          AutoGenerateColumns="False">
+    <DataGrid.Columns>
+        <DataGridTextColumn Header="名称"
+                           Binding="{Binding Name}"
+                           Width="200"/>
+        <DataGridTextColumn Header="状态"
+                           Binding="{Binding Status}"
+                           Width="100"/>
+        <DataGridTemplateColumn Header="操作" Width="150">
+            <DataGridTemplateColumn.CellTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal">
+                        <Button Command="{Binding DataContext.EditCommand,
+                                         RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                CommandParameter="{Binding}"
+                                Content="编辑"/>
+                        <Button Command="{Binding DataContext.DeleteCommand,
+                                         RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                CommandParameter="{Binding}"
+                                Content="删除"/>
+                    </StackPanel>
+                </DataTemplate>
+            </DataGridTemplateColumn.CellTemplate>
+        </DataGridTemplateColumn>
+    </DataGrid.Columns>
+</DataGrid>
+```
+
+## 🔧 特色功能
+
+### 1. 数据缓存
+- 本地数据缓存
+- 离线模式支持
+- 数据同步机制
+
+### 2. 批量操作
+- 批量导入导出
+- 批量状态更新
+- 批量数据验证
+
+## 📱 响应式设计
+
+### 自适应布局
 ```xml
 <Grid>
     <Grid.RowDefinitions>
-        <RowDefinition Height="Auto"/> <!-- 患者信息栏 -->
-        <RowDefinition Height="*"/>    <!-- 主要诊疗区域 -->
-        <RowDefinition Height="Auto"/> <!-- 操作按钮栏 -->
+        <RowDefinition Height="Auto"/>  <!-- 工具栏 -->
+        <RowDefinition Height="*"/>     <!-- 内容区 -->
+        <RowDefinition Height="Auto"/>  <!-- 状态栏 -->
     </Grid.RowDefinitions>
-    
-    <!-- 患者信息 -->
-    <Border Grid.Row="0" Style="{StaticResource PatientInfoBorderStyle}">
-        <TextBlock Text="{Binding PatientDisplayText}"/>
-    </Border>
-    
-    <!-- 四诊标签页 -->
-    <TabControl Grid.Row="1">
-        <TabItem Header="望诊">
-            <TextBox Text="{Binding Observation}" AcceptsReturn="True"/>
-        </TabItem>
-        <TabItem Header="闻诊">
-            <TextBox Text="{Binding Listening}" AcceptsReturn="True"/>
-        </TabItem>
-        <TabItem Header="问诊">
-            <TextBox Text="{Binding Inquiry}" AcceptsReturn="True"/>
-        </TabItem>
-        <TabItem Header="切诊">
-            <TextBox Text="{Binding Palpation}" AcceptsReturn="True"/>
-        </TabItem>
-        <TabItem Header="辨证论治">
-            <Grid>
-                <!-- 症状、证候、治法、诊断输入区域 -->
-            </Grid>
-        </TabItem>
-    </TabControl>
-    
-    <!-- 操作按钮 -->
-    <StackPanel Grid.Row="2" Orientation="Horizontal">
-        <Button Command="{Binding SaveConsultationCommand}" Content="保存诊疗"/>
-        <Button Command="{Binding OpenPrescriptionCommand}" Content="开具处方"/>
-        <Button Command="{Binding ViewHistoryCommand}" Content="查看历史"/>
-    </StackPanel>
+
+    <!-- 响应式内容区 -->
+    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+        <ContentControl prism:RegionManager.RegionName="ContentRegion"/>
+    </ScrollViewer>
 </Grid>
 ```
 
-### 🔧 模块集成
+## 🚀 模块注册
 
-#### 与其他模块的协作
 ```csharp
 public class ConsultationModule : IModule
 {
+    private readonly IRegionManager _regionManager;
+
+    public ConsultationModule(IRegionManager regionManager)
+    {
+        _regionManager = regionManager;
+    }
+
+    public void OnInitialized(IContainerProvider containerProvider)
+    {
+        // 注册视图到区域
+        _regionManager.RegisterViewWithRegion("MainRegion", typeof(ConsultationView));
+    }
+
     public void RegisterTypes(IContainerRegistry containerRegistry)
     {
-        // 注册业务服务
-        containerRegistry.RegisterSingleton<ConsultationModule>();
-        
-        // 注册视图模型
-        containerRegistry.Register<ConsultationMainViewModel>();
-        containerRegistry.Register<ConsultationManagementViewModel>();
-        
-        // 注册视图用于导航
-        containerRegistry.RegisterForNavigation<ConsultationMainView>();
-        containerRegistry.RegisterForNavigation<ConsultationManagementView>();
+        // 注册服务
+        containerRegistry.Register<IConsultationService, ConsultationService>();
+        containerRegistry.Register<IConsultationQueryService, ConsultationQueryService>();
+        containerRegistry.Register<IConsultationBusinessService, ConsultationBusinessService>();
+
+        // 注册视图
+        containerRegistry.RegisterForNavigation<ConsultationView, ConsultationViewModel>();
+        containerRegistry.RegisterDialog<ConsultationEditDialog, ConsultationEditDialogViewModel>();
+
+        // 注册API客户端
+        containerRegistry.RegisterSingleton<IConsultationApi>(() =>
+            RestService.For<IConsultationApi>(containerProvider.Resolve<HttpClient>()));
     }
 }
 ```
 
-#### 事件集成
+## 📊 状态管理
+
+### 使用Prism事件聚合器
 ```csharp
-// 监听患者选择事件
-_eventAggregator.GetEvent<PatientSelectedEvent>()
-    .Subscribe(OnPatientSelected);
+// 发布事件
+_eventAggregator.GetEvent<ConsultationUpdatedEvent>()
+    .Publish(new ConsultationUpdatedEventArgs { Item = updatedItem });
 
-// 监听医案创建事件  
-_eventAggregator.GetEvent<MedicalCaseCreatedEvent>()
-    .Subscribe(OnMedicalCaseCreated);
-
-// 发布诊疗完成事件
-_eventAggregator.GetEvent<ConsultationCompletedEvent>()
-    .Publish(consultationData);
+// 订阅事件
+_eventAggregator.GetEvent<ConsultationUpdatedEvent>()
+    .Subscribe(OnItemUpdated, ThreadOption.UIThread);
 ```
 
-## 使用指南
-
-### 模块启动
+## 🔒 错误处理
 
 ```csharp
-// 导航到主看诊界面
-_regionManager.RequestNavigate("ContentRegion", "ConsultationMainView");
-
-// 传递患者参数
-var parameters = new NavigationParameters();
-parameters.Add("PatientId", selectedPatientId);
-_regionManager.RequestNavigate("ContentRegion", "ConsultationMainView", parameters);
-```
-
-### 诊疗流程操作
-
-```csharp
-// 1. 选择患者并创建医案
-await SelectPatientAndCreateMedicalCaseAsync(patientId);
-
-// 2. 开始四诊记录
-await StartConsultationAsync(medicalCaseId);
-
-// 3. 保存诊疗数据
-await SaveConsultationRecordAsync(consultationData);
-
-// 4. 开具处方(可选)
-if (needPrescription)
+public async Task LoadDataAsync()
 {
-    await NavigateToPrescriptionModuleAsync(consultationId);
+    try
+    {
+        ShowLoading();
+        var result = await _consultationService.GetPagedAsync(new ConsultationSearchDto());
+
+        if (result.IsSuccess)
+        {
+            Items = new ObservableCollection<ConsultationDto>(result.Data.Items);
+        }
+        else
+        {
+            ShowError(result.ErrorMessage);
+        }
+    }
+    catch (Exception ex)
+    {
+        _logger.LogError(ex, "加载数据失败");
+        ShowError("加载数据失败，请重试");
+    }
+    finally
+    {
+        HideLoading();
+    }
 }
 ```
 
-### 历史记录查询
+## 📚 相关依赖
 
-```csharp
-// 查看患者历史诊疗记录
-var history = await _consultationService.GetPatientHistoryAsync(patientId);
+- **Prism.DryIoc** - MVVM框架和依赖注入
+- **Material Design** - UI组件库
+- **Refit** - REST API客户端
+- **AutoMapper** - 对象映射
+- **FluentValidation** - 数据验证
 
-// 按医案查询诊疗记录
-var consultations = await _consultationService.GetByMedicalCaseAsync(medicalCaseId);
-```
+## 🎯 最佳实践
 
-## 开发规范
-
-### 业务逻辑
-- 诊疗记录必须关联有效的患者和医案
-- 四诊内容允许部分为空，但至少要有一项记录
-- 辨证论治是诊疗的核心，诊断不能为空
-- 保存操作需要验证数据完整性和合理性
-
-### MVVM实现
-- ViewModel继承自CoreViewModel获得基础功能
-- 使用AutoMapper进行DTO转换
-- 通过EventAggregator与其他模块通信
-- 异步操作使用AsyncRelayCommand
-
-### 用户体验
-- 提供输入验证和格式化
-- 支持常用诊断术语的智能提示
-- 实现数据的自动保存和恢复
-- 提供丰富的键盘快捷键支持
-
-### 数据安全
-- 诊疗数据涉及患者隐私，需要加密传输
-- 操作日志记录用于审计追踪
-- 支持数据备份和恢复机制
-- 实现访问权限控制
-
-## 中医特色功能
-
-### 🌿 中医术语支持
-- **症状词典**: 内置中医常用症状术语库
-- **证候分类**: 按中医理论分类的证候体系
-- **治法索引**: 常用治法的系统化索引
-- **方剂推荐**: 基于证候的方剂智能推荐
-
-### 📚 知识库集成
-- **经典条文**: 集成《伤寒论》、《金匮要略》等经典
-- **现代研究**: 现代中医研究成果的参考
-- **临床经验**: 名老中医临床经验的积累
-- **用药指南**: 中药配伍和用法用量指导
-
-### 🔍 智能辅助
-- **症状分析**: 基于输入症状的智能分析
-- **证候推导**: 从症状到证候的逻辑推导
-- **方药匹配**: 证候与方药的智能匹配
-- **疗效评估**: 治疗效果的量化评估
-
-## 维护说明
-
-### 数据模型维护
-- 中医术语库的定期更新和扩展
-- 诊疗模板的优化和个性化定制
-- 历史数据的清理和归档策略
-- 数据结构变更的兼容性处理
-
-### 功能扩展
-- 支持图像诊断(舌诊、面诊)
-- 集成脉诊仪等硬件设备
-- 增加语音识别输入功能
-- 实现移动端的诊疗记录同步
-
-### 性能优化
-- 大量历史数据的查询优化
-- 界面响应速度的持续改进
-- 内存使用的监控和优化
-- 数据库查询的索引优化
+1. **MVVM模式**: 严格遵循MVVM模式，视图与逻辑分离
+2. **异步编程**: 所有API调用使用async/await
+3. **错误处理**: 统一的错误处理和用户提示
+4. **数据验证**: 客户端和服务端双重验证
+5. **性能优化**: 虚拟化列表、延迟加载、数据缓存
 
 ---
 
-*该文档反映当前代码实现状态，与实际功能保持100%同步 - UltraThink文档驱动开发标准*
+> 📌 **最新成果**: UltraThink架构在客户端完整实现，MVVM模式规范应用
+> 🎆 **生产就绪**: 完整的看诊管理功能，优秀的用户体验

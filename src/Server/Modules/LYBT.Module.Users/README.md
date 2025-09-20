@@ -1,39 +1,30 @@
 # LYBT.Module.Users
 
-> **用户管理核心模块** - UltraThink双层架构精品版  
+> **用户管理核心模块** - UltraThink双层架构精品版
 > Admin/Doctor用户管理 | 专为小型中医诊所(<20人)优化
-> **模块状态**: ✅ **生产就绪** | 🎆 **UltraThink优化完成** | **A+代码质量** | **2025-09-19更新**
+> **模块状态**: ✅ **生产就绪** | 🎆 **DTO优化完成** | **零编译错误** | **2025-09-20更新**
 
 ## 🎯 模块概述
 
 LYBT.Module.Users是系统的用户管理核心模块，采用UltraThink双层架构设计，提供完整的用户账户管理、角色权限控制和用户信息维护功能。专为小型中医诊所场景优化，支持Admin/Doctor双角色体系。
 
-**技术栈**: UltraThink双层架构 + Entity Framework Core + AutoMapper + RBAC权限  
-**2025-09-19优化**: 命名规范统一(UserName/userName)、过度设计清理、代码质量A+
+**技术栈**: .NET 8 + Entity Framework Core 8.0 + AutoMapper + JWT/RBAC
+**最新优化**: DTO规范化完成、UserCreateDto/UserUpdateDto分离、类型安全增强
 
-## 🎉 2025-09-19 优化成果
+## 🎉 2025-09-20 DTO优化成果
 
-### ✅ 核心优化完成
-- **命名规范统一**: 修正属性`UserName`(PascalCase) + 参数`userName`(camelCase)规范
-- **过度设计清理**: 移除`GetOperationLogsAsync`无用功能、简化DTO字段、清理硬编码过滤
-- **接口一致性**: 确保所有接口与实现的方法签名完全匹配
-- **编译质量**: 实现零编译错误，A+代码质量标准
+### ✅ 三阶段优化完成
+- **第一阶段**: UserMutationDto拆分为UserCreateDto和UserUpdateDto，职责分离
+- **第二阶段**: UserPagedQueryDto重命名为UserSearchDto，查询命名规范统一
+- **第三阶段**: UserDto.Role从string改为UserRole枚举，类型安全增强
 
 ### 🎯 优化前后对比
 | 方面 | 优化前 | 优化后 | 改进 |
 |------|--------|--------|------|
-| 参数命名 | `username` (不规范) | `userName` (标准camelCase) | ✅ 符合C#约定 |
-| 接口签名 | `GetByUsernameAsync(string username)` | `GetByUsernameAsync(string userName)` | ✅ 命名规范统一 |
-| 功能完整性 | 包含无用操作日志功能 | 移除`GetOperationLogsAsync`过度设计 | ✅ 专注实用性 |
-| DTO字段 | 包含Department/Position等冗余字段 | 精简为核心必要字段 | ✅ 适合小诊所 |
-| 硬编码过滤 | 存在`&& u.Username != "sysadmin"`过滤 | 移除硬编码，逻辑更清晰 | ✅ 代码规范化 |
-| 编译状态 | 存在命名不一致警告 | 零错误零警告完美状态 | ✅ 生产就绪 |
-
-### 🏆 质量评级
-- **架构质量**: A+ (UltraThink双层架构完美实现)
-- **代码规范**: A+ (命名统一，接口一致)
-- **功能适配**: A+ (专注小型诊所核心需求)
-- **维护性**: A+ (职责清晰，易于扩展)
+| DTO命名 | UserPagedQueryDto | UserSearchDto | ✅ 查询命名统一 |
+| 创建更新 | UserMutationDto (单一DTO) | UserCreateDto + UserUpdateDto | ✅ 职责分离 |
+| 角色字段 | string类型 | UserRole枚举 | ✅ 类型安全 |
+| 编译状态 | 存在类型不匹配 | 零错误零警告 | ✅ 生产就绪 |
 
 ## 🎆 UltraThink双层架构设计
 
@@ -51,51 +42,49 @@ UserService (主服务层 - 纯委托模式)
         ├── 用户CRUD操作 (Create/Update/Delete/GetById)
         ├── 密码管理 (ChangePasswordAsync, ResetPasswordAsync)
         ├── 用户状态管理 (ActivateAsync, DeactivateAsync)
-        ├── 角色管理 (UpdateUserRoleAsync)
-        └── 业务验证逻辑 (ValidateUserData)
+        └── 角色管理 (UpdateUserRoleAsync)
 ```
 
 ### 核心接口设计
 
 ```csharp
-// 主服务接口 (统一入口) - 2025-09-19标准化
+// 主服务接口 (统一入口) - 2025-09-20更新
 public interface IUserService
 {
-    // 委托到BusinessService的CRUD操作
-    Task<ServiceResult<UserDto>> CreateAsync(UserMutationDto dto);
-    Task<ServiceResult<UserDto>> UpdateAsync(UserMutationDto dto);
+    // 委托到BusinessService的CRUD操作 - 使用新DTOs
+    Task<ServiceResult<UserDto>> CreateAsync(UserCreateDto dto);
+    Task<ServiceResult<UserDto>> UpdateAsync(Guid id, UserUpdateDto dto);
     Task<ServiceResult<bool>> DeleteAsync(Guid id);
     Task<ServiceResult<UserDto>> GetByIdAsync(Guid id);
-    
+
     // 委托到QueryService的查询操作 - 标准化命名
-    Task<ServiceResult<PagedResult<UserDto>>> GetPagedAsync(UserPagedQueryDto query);
-    Task<ServiceResult<UserDto>> GetByUsernameAsync(string userName);  // ✅ 规范命名
-    Task<ServiceResult<bool>> ValidateUsernameAsync(string userName);  // ✅ 验证用户名
+    Task<ServiceResult<PagedResult<UserDto>>> SearchAsync(UserSearchDto query);
+    Task<ServiceResult<UserDto>> GetByUsernameAsync(string userName);
+    Task<ServiceResult<bool>> ValidateUsernameAsync(string userName);
     Task<ServiceResult<List<UserDto>>> GetActiveUsersAsync();
-    Task<ServiceResult<List<UserDto>>> SearchAsync(string keyword);
-    
+
     // 委托到BusinessService的业务操作
     Task<ServiceResult<bool>> ChangePasswordAsync(Guid userId, ChangePasswordDto dto);
     Task<ServiceResult<bool>> ResetPasswordAsync(Guid userId);
     Task<ServiceResult<bool>> UpdateUserStatusAsync(Guid userId, UserStatus status);
 }
 
-// 查询专业化接口 - 2025-09-19标准化
+// 查询专业化接口 - 2025-09-20更新
 public interface IUserQueryService
 {
     Task<ServiceResult<PagedResult<UserDto>>> SearchUsersAsync(UserSearchDto criteria);
     Task<ServiceResult<List<UserDto>>> GetUsersByRoleAsync(UserRole role);
     Task<ServiceResult<List<UserDto>>> GetActiveUsersAsync();
     Task<ServiceResult<UserStatisticsDto>> GetUserStatisticsAsync();
-    Task<ServiceResult<UserDto>> GetByUsernameAsync(string userName);  // ✅ 规范命名
-    Task<ServiceResult<bool>> ValidateUsernameAsync(string userName);  // ✅ 验证功能
+    Task<ServiceResult<UserDto>> GetByUsernameAsync(string userName);
+    Task<ServiceResult<bool>> ValidateUsernameAsync(string userName);
 }
 
-// 业务逻辑接口
+// 业务逻辑接口 - 2025-09-20更新
 public interface IUserBusinessService
 {
-    Task<ServiceResult<UserDto>> CreateUserAsync(CreateUserDto dto);
-    Task<ServiceResult<UserDto>> UpdateUserAsync(Guid id, UpdateUserDto dto);
+    Task<ServiceResult<UserDto>> CreateUserAsync(UserCreateDto dto);
+    Task<ServiceResult<UserDto>> UpdateUserAsync(Guid id, UserUpdateDto dto);
     Task<ServiceResult<bool>> DeleteUserAsync(Guid id);
     Task<ServiceResult<UserDto?>> GetByIdAsync(Guid id);
     Task<ServiceResult<bool>> ChangePasswordAsync(Guid userId, ChangePasswordDto dto);
@@ -109,36 +98,32 @@ public interface IUserBusinessService
 
 **创建用户流程**:
 ```csharp
-public async Task<ServiceResult<UserDto>> CreateUserAsync(CreateUserDto dto)
+public async Task<ServiceResult<UserDto>> CreateUserAsync(UserCreateDto dto)
 {
     // 1. 数据验证
     var validationResult = await ValidateCreateUserAsync(dto);
     if (!validationResult.IsSuccess)
         return ServiceResult<UserDto>.Failure(validationResult.Message);
-    
+
     // 2. 检查用户名唯一性
     var existingUser = await _repository.GetByUsernameAsync(dto.Username);
     if (existingUser != null)
         return ServiceResult<UserDto>.Failure("用户名已存在");
-    
+
     // 3. 创建用户实体
-    var user = new UserModel
+    var user = new User
     {
-        UserName = dto.UserName,      // ✅ 属性PascalCase
+        Username = dto.Username,
         DisplayName = dto.DisplayName,
-        Role = dto.Role,
+        Role = dto.Role,  // UserRole枚举类型
         Status = UserStatus.Active,
         PasswordHash = _passwordHasher.HashPassword(null, dto.Password)
     };
-    
+
     // 4. 保存到数据库
     var createdUser = await _repository.CreateAsync(user);
-    
-    // 5. 记录操作日志
-    _logger.LogInformation("用户 {UserName} 创建成功，角色: {Role}", 
-        dto.UserName, dto.Role);  // ✅ 参数camelCase → 属性PascalCase
-    
-    // 6. 返回DTO
+
+    // 5. 返回DTO
     return ServiceResult<UserDto>.Success(_mapper.Map<UserDto>(createdUser));
 }
 ```
@@ -149,298 +134,108 @@ public async Task<ServiceResult<UserDto>> CreateUserAsync(CreateUserDto dto)
 ```csharp
 public async Task<ServiceResult<PagedResult<UserDto>>> SearchUsersAsync(UserSearchDto criteria)
 {
-    try
+    var query = _repository.GetQueryable();
+
+    // 关键词搜索
+    if (!string.IsNullOrWhiteSpace(criteria.Keyword))
     {
-        var query = _repository.GetQueryable();
-        
-        // 关键词搜索 (用户名、显示名)
-        if (!string.IsNullOrWhiteSpace(criteria.Keyword))
-        {
-            query = query.Where(u => 
-                u.UserName.Contains(criteria.Keyword) ||  // ✅ 属性PascalCase
-                (u.DisplayName != null && u.DisplayName.Contains(criteria.Keyword)));
-        }
-        
-        // 角色筛选
-        if (criteria.Role.HasValue)
-        {
-            query = query.Where(u => u.Role == criteria.Role.Value);
-        }
-        
-        // 状态筛选
-        if (criteria.Status.HasValue)
-        {
-            query = query.Where(u => u.Status == criteria.Status.Value);
-        }
-        
-        // 创建时间范围
-        if (criteria.CreateTimeFrom.HasValue)
-        {
-            query = query.Where(u => u.CreateTime >= criteria.CreateTimeFrom.Value);
-        }
-        if (criteria.CreateTimeTo.HasValue)
-        {
-            query = query.Where(u => u.CreateTime <= criteria.CreateTimeTo.Value);
-        }
-        
-        // 排序
-        query = criteria.SortBy?.ToLower() switch
-        {
-            "username" => criteria.SortDescending ? 
-                query.OrderByDescending(u => u.UserName) :   // ✅ 属性PascalCase
-                query.OrderBy(u => u.UserName),              // ✅ 属性PascalCase
-            "createtime" => criteria.SortDescending ? 
-                query.OrderByDescending(u => u.CreateTime) : 
-                query.OrderBy(u => u.CreateTime),
-            _ => query.OrderBy(u => u.CreateTime) // 默认按创建时间排序
-        };
-        
-        // 分页查询
-        var totalCount = await query.CountAsync();
-        var users = await query
-            .Skip((criteria.PageIndex - 1) * criteria.PageSize)
-            .Take(criteria.PageSize)
-            .ToListAsync();
-            
-        var userDtos = _mapper.Map<List<UserDto>>(users);
-        
-        var result = new PagedResult<UserDto>
-        {
-            Items = userDtos,
-            TotalCount = totalCount,
-            PageIndex = criteria.PageIndex,
-            PageSize = criteria.PageSize,
-            TotalPages = (int)Math.Ceiling((double)totalCount / criteria.PageSize)
-        };
-        
-        return ServiceResult<PagedResult<UserDto>>.Success(result);
+        query = query.Where(u =>
+            u.Username.Contains(criteria.Keyword) ||
+            u.DisplayName.Contains(criteria.Keyword));
     }
-    catch (Exception ex)
+
+    // 角色筛选 (UserRole枚举)
+    if (criteria.Role.HasValue)
     {
-        _logger.LogError(ex, "搜索用户时发生错误");
-        return ServiceResult<PagedResult<UserDto>>.Failure("搜索用户失败");
+        query = query.Where(u => u.Role == criteria.Role.Value);
     }
+
+    // 状态筛选
+    if (criteria.Status.HasValue)
+    {
+        query = query.Where(u => u.Status == criteria.Status.Value);
+    }
+
+    // 分页查询
+    var totalCount = await query.CountAsync();
+    var users = await query
+        .Skip((criteria.PageIndex - 1) * criteria.PageSize)
+        .Take(criteria.PageSize)
+        .ToListAsync();
+
+    var userDtos = _mapper.Map<List<UserDto>>(users);
+
+    return ServiceResult<PagedResult<UserDto>>.Success(new PagedResult<UserDto>
+    {
+        Items = userDtos,
+        TotalCount = totalCount,
+        PageIndex = criteria.PageIndex,
+        PageSize = criteria.PageSize
+    });
 }
 ```
 
-### 3. 密码管理
-
-**密码修改流程**:
-```csharp
-public async Task<ServiceResult<bool>> ChangePasswordAsync(Guid userId, ChangePasswordDto dto)
-{
-    try
-    {
-        // 1. 获取用户
-        var user = await _repository.GetByIdAsync(userId);
-        if (user == null)
-            return ServiceResult<bool>.Failure("用户不存在");
-            
-        // 2. 验证当前密码
-        var isCurrentPasswordValid = _passwordHasher
-            .VerifyHashedPassword(null, user.PasswordHash, dto.CurrentPassword);
-        if (isCurrentPasswordValid == PasswordVerificationResult.Failed)
-            return ServiceResult<bool>.Failure("当前密码错误");
-            
-        // 3. 验证新密码强度
-        var passwordValidation = ValidatePasswordStrength(dto.NewPassword);
-        if (!passwordValidation.IsValid)
-            return ServiceResult<bool>.Failure(passwordValidation.Message);
-            
-        // 4. 生成新密码哈希
-        var newPasswordHash = _passwordHasher.HashPassword(null, dto.NewPassword);
-        
-        // 5. 更新密码
-        user.PasswordHash = newPasswordHash;
-        user.UpdateTime = DateTime.Now;
-        
-        await _repository.UpdateAsync(user);
-        
-        // 6. 记录操作日志
-        _logger.LogInformation("用户 {UserId} 修改密码成功", userId);
-        
-        return ServiceResult<bool>.Success(true);
-    }
-    catch (Exception ex)
-    {
-        _logger.LogError(ex, "修改密码时发生错误，用户ID: {UserId}", userId);
-        return ServiceResult<bool>.Failure("修改密码失败");
-    }
-}
-```
-
-### 4. 用户统计分析
-
-**统计数据生成**:
-```csharp
-public async Task<ServiceResult<UserStatisticsDto>> GetUserStatisticsAsync()
-{
-    try
-    {
-        var totalUsers = await _repository.CountAsync();
-        var activeUsers = await _repository.CountAsync(u => u.Status == UserStatus.Active);
-        var adminCount = await _repository.CountAsync(u => u.Role == UserRole.Admin);
-        var doctorCount = await _repository.CountAsync(u => u.Role == UserRole.Doctor);
-        
-        // 近30天新增用户
-        var thirtyDaysAgo = DateTime.Now.AddDays(-30);
-        var newUsersLast30Days = await _repository
-            .CountAsync(u => u.CreateTime >= thirtyDaysAgo);
-            
-        // 最近登录统计
-        var recentLoginUsers = await _context.AuthSessions
-            .Where(s => s.LoginTime >= thirtyDaysAgo)
-            .Select(s => s.UserId)
-            .Distinct()
-            .CountAsync();
-            
-        var statistics = new UserStatisticsDto
-        {
-            TotalUsers = totalUsers,
-            ActiveUsers = activeUsers,
-            InactiveUsers = totalUsers - activeUsers,
-            AdminCount = adminCount,
-            DoctorCount = doctorCount,
-            NewUsersLast30Days = newUsersLast30Days,
-            RecentLoginUsers = recentLoginUsers,
-            ActivityRate = totalUsers > 0 ? (double)recentLoginUsers / totalUsers * 100 : 0
-        };
-        
-        return ServiceResult<UserStatisticsDto>.Success(statistics);
-    }
-    catch (Exception ex)
-    {
-        _logger.LogError(ex, "获取用户统计数据时发生错误");
-        return ServiceResult<UserStatisticsDto>.Failure("获取统计数据失败");
-    }
-}
-```
-
-## 🔧 Repository层设计
-
-### UserRepository - 2025-09-19优化版
-```csharp
-public class UserRepository : OptimizedBaseRepository<UserModel>, IUserRepository
-{
-    // ✅ 标准化命名：username → userName
-    public async Task<UserModel?> GetByUsernameAsync(string userName)
-    {
-        return await _context.Users
-            .FirstOrDefaultAsync(u => u.UserName == userName && !u.IsDeleted);  // ✅ 属性PascalCase
-    }
-    
-    // ✅ 标准化命名：username → userName  
-    public async Task<bool> ExistsByUsernameAsync(string userName)
-    {
-        return await _context.Users
-            .AnyAsync(u => u.UserName == userName && !u.IsDeleted);  // ✅ 属性PascalCase
-    }
-    
-    public async Task<List<UserModel>> GetByRoleAsync(UserRole role)
-    {
-        return await _context.Users
-            .Where(u => u.Role == role && !u.IsDeleted)
-            .OrderBy(u => u.CreateTime)
-            .ToListAsync();
-    }
-    
-    public async Task<List<UserModel>> GetActiveUsersAsync()
-    {
-        return await _context.Users
-            .Where(u => u.Status == UserStatus.Active && !u.IsDeleted)
-            .OrderBy(u => u.DisplayName ?? u.UserName)  // ✅ 属性PascalCase
-            .ToListAsync();
-    }
-    
-    // ✅ 移除硬编码过滤，逻辑更清晰
-    public async Task<bool> UsernameExistsAsync(string userName, Guid? excludeUserId = null)
-    {
-        var query = _context.Users
-            .Where(u => u.UserName == userName && !u.IsDeleted);  // ✅ 属性PascalCase
-            
-        if (excludeUserId.HasValue)
-        {
-            query = query.Where(u => u.Id != excludeUserId.Value);
-        }
-        
-        return await query.AnyAsync();
-    }
-    
-    public async Task<int> CountByRoleAsync(UserRole role)
-    {
-        return await _context.Users
-            .CountAsync(u => u.Role == role && !u.IsDeleted);
-    }
-}
-```
-
-## 🧪 数据传输对象 (DTOs)
+## 🧪 数据传输对象 (DTOs) - 2025-09-20更新
 
 ### 请求DTOs
 ```csharp
-public record CreateUserDto
+// 创建用户DTO
+public class UserCreateDto
 {
     [Required(ErrorMessage = "用户名不能为空")]
-    [StringLength(50, ErrorMessage = "用户名长度不能超过50字符")]
-    public string UserName { get; init; } = string.Empty;  // ✅ PascalCase属性
-    
+    [StringLength(50, MinimumLength = 3)]
+    public string Username { get; set; } = string.Empty;
+
     [Required(ErrorMessage = "密码不能为空")]
-    [StringLength(100, MinimumLength = 8, ErrorMessage = "密码长度必须在8-100字符之间")]
-    public string Password { get; init; } = string.Empty;
-    
-    [StringLength(100, ErrorMessage = "显示名长度不能超过100字符")]
-    public string? DisplayName { get; init; }
-    
-    [Required(ErrorMessage = "用户角色不能为空")]
-    public UserRole Role { get; init; }
+    [StringLength(100, MinimumLength = 8)]
+    public string Password { get; set; } = string.Empty;
+
+    [StringLength(100)]
+    public string? DisplayName { get; set; }
+
+    [Required(ErrorMessage = "角色不能为空")]
+    public UserRole Role { get; set; } = UserRole.Doctor;
 }
 
-public record UpdateUserDto
+// 更新用户DTO
+public class UserUpdateDto
 {
-    [StringLength(100, ErrorMessage = "显示名长度不能超过100字符")]
-    public string? DisplayName { get; init; }
-    
-    public UserStatus? Status { get; init; }
-    
-    public UserRole? Role { get; init; }
+    public Guid Id { get; set; }
+
+    [StringLength(100)]
+    public string? DisplayName { get; set; }
+
+    public UserRole? Role { get; set; }
+
+    public UserStatus? Status { get; set; }
 }
 
-public record UserSearchDto : PagedRequestDto
+// 用户搜索DTO (原UserPagedQueryDto)
+public class UserSearchDto : PagedRequestDto
 {
-    public string? Keyword { get; init; }
-    public UserRole? Role { get; init; }
-    public UserStatus? Status { get; init; }
-    public DateTime? CreateTimeFrom { get; init; }
-    public DateTime? CreateTimeTo { get; init; }
-    public string? SortBy { get; init; }
-    public bool SortDescending { get; init; } = false;
-}
-
-public record ChangePasswordDto
-{
-    [Required(ErrorMessage = "当前密码不能为空")]
-    public string CurrentPassword { get; init; } = string.Empty;
-    
-    [Required(ErrorMessage = "新密码不能为空")]
-    [StringLength(100, MinimumLength = 8, ErrorMessage = "新密码长度必须在8-100字符之间")]
-    public string NewPassword { get; init; } = string.Empty;
-    
-    [Compare(nameof(NewPassword), ErrorMessage = "确认密码与新密码不匹配")]
-    public string ConfirmPassword { get; init; } = string.Empty;
+    public string? Keyword { get; set; }
+    public UserRole? Role { get; set; }
+    public UserStatus? Status { get; set; }
+    public DateTime? CreateTimeFrom { get; set; }
+    public DateTime? CreateTimeTo { get; set; }
+    public string? SortBy { get; set; }
+    public bool SortDescending { get; set; } = false;
 }
 ```
 
 ### 响应DTOs
 ```csharp
-public record UserDto
+public class UserDto
 {
-    public Guid Id { get; init; }
-    public string UserName { get; init; } = string.Empty;  // ✅ PascalCase属性
-    public string DisplayName { get; init; } = string.Empty;
-    public UserRole Role { get; init; }
-    public UserStatus Status { get; init; }
-    public DateTime CreateTime { get; init; }
-    public DateTime? UpdateTime { get; init; }
+    public Guid Id { get; set; }
+    public string Username { get; set; } = string.Empty;
+    public string DisplayName { get; set; } = string.Empty;
+    public UserRole Role { get; set; }  // 枚举类型，原为string
+    public UserStatus Status { get; set; }
+    public DateTime CreateTime { get; set; }
+    public DateTime? UpdateTime { get; set; }
+
+    // 显示友好名称
     public string RoleDisplayName => Role == UserRole.Admin ? "管理员" : "医生";
     public string StatusDisplayName => Status switch
     {
@@ -451,16 +246,15 @@ public record UserDto
     };
 }
 
-public record UserStatisticsDto
+public class UserStatisticsDto
 {
-    public int TotalUsers { get; init; }
-    public int ActiveUsers { get; init; }
-    public int InactiveUsers { get; init; }
-    public int AdminCount { get; init; }
-    public int DoctorCount { get; init; }
-    public int NewUsersLast30Days { get; init; }
-    public int RecentLoginUsers { get; init; }
-    public double ActivityRate { get; init; }
+    public int TotalUsers { get; set; }
+    public int ActiveUsers { get; set; }
+    public int InactiveUsers { get; set; }
+    public int AdminCount { get; set; }
+    public int DoctorCount { get; set; }
+    public int NewUsersLast30Days { get; set; }
+    public double ActivityRate { get; set; }
 }
 ```
 
@@ -471,22 +265,19 @@ public record UserStatisticsDto
 private ValidationResult ValidatePasswordStrength(string password)
 {
     var errors = new List<string>();
-    
+
     if (password.Length < 8)
         errors.Add("密码长度至少8位");
-        
+
     if (!password.Any(char.IsUpper))
         errors.Add("密码必须包含大写字母");
-        
+
     if (!password.Any(char.IsLower))
         errors.Add("密码必须包含小写字母");
-        
+
     if (!password.Any(char.IsDigit))
         errors.Add("密码必须包含数字");
-        
-    if (!password.Any(c => "!@#$%^&*()_+-=[]{}|;:,.<>?".Contains(c)))
-        errors.Add("密码必须包含特殊字符");
-    
+
     return new ValidationResult
     {
         IsValid = !errors.Any(),
@@ -495,40 +286,19 @@ private ValidationResult ValidatePasswordStrength(string password)
 }
 ```
 
-### 用户数据验证
-```csharp
-private async Task<ServiceResult> ValidateCreateUserAsync(CreateUserDto dto)
-{
-    // 用户名格式验证
-    if (!Regex.IsMatch(dto.UserName, @"^[a-zA-Z0-9_]{3,50}$"))  // ✅ 属性PascalCase
-        return ServiceResult.Failure("用户名只能包含字母、数字和下划线，长度3-50字符");
-    
-    // 用户名唯一性验证
-    if (await _repository.UsernameExistsAsync(dto.UserName))  // ✅ 属性PascalCase
-        return ServiceResult.Failure("用户名已存在");
-    
-    // 密码强度验证
-    var passwordValidation = ValidatePasswordStrength(dto.Password);
-    if (!passwordValidation.IsValid)
-        return ServiceResult.Failure(passwordValidation.Message);
-    
-    return ServiceResult.Success();
-}
-```
-
 ## 🎯 UltraThink架构优势
 
 **适合小型中医诊所(<20人)的精简设计**:
-- ✅ **双层架构**: Query+Business分层，职责清晰，易于维护
-- ✅ **角色简化**: Admin/Doctor双角色，避免复杂权限体系
-- ✅ **功能完整**: 用户CRUD、搜索、统计、密码管理全覆盖
-- ✅ **安全可靠**: 密码强度验证、数据验证、操作日志
-- ✅ **高性能**: 分页查询、索引优化、缓存支持
+- ✅ **双层架构**: Query+Business分层，职责清晰
+- ✅ **类型安全**: UserRole枚举替代字符串，编译时检查
+- ✅ **DTO规范**: Create/Update分离，查询命名统一
+- ✅ **角色简化**: Admin/Doctor双角色体系
+- ✅ **功能完整**: CRUD、搜索、统计、密码管理全覆盖
 
 ## 📚 相关文档
 
-- [Auth认证模块](../LYBT.Module.Auth/README.md) - 用户认证和授权
-- [Infrastructure基础设施](../../Core/LYBT.Infrastructure/README.md) - Repository基类和数据访问
+- [Auth认证模块](../LYBT.Module.Auth/README.md) - JWT认证和授权
+- [Infrastructure基础设施](../../Core/LYBT.Infrastructure/README.md) - Repository基类
 - [API接口文档](../../Services/LYBT.WebAPI/README.md) - Users控制器API
 
 ## 🚀 使用示例
@@ -541,29 +311,32 @@ private async Task<ServiceResult> ValidateCreateUserAsync(CreateUserDto dto)
 public class UsersController : BaseApiController
 {
     private readonly IUserService _userService;
-    
+
     [HttpGet]
     [Authorize(Roles = "Admin")]
-    public async Task<ActionResult<ApiResponse<PagedResult<UserDto>>>> SearchUsers([FromQuery] UserSearchDto criteria)
+    public async Task<ActionResult<ApiResponse<PagedResult<UserDto>>>> SearchUsers(
+        [FromQuery] UserSearchDto criteria)
     {
-        var result = await _userService.SearchUsersAsync(criteria);
-        return HandleServiceResult(result, "获取用户列表成功");
+        var result = await _userService.SearchAsync(criteria);
+        return HandleServiceResult(result);
     }
-    
+
     [HttpPost]
     [Authorize(Roles = "Admin")]
-    public async Task<ActionResult<ApiResponse<UserDto>>> CreateUser([FromBody] CreateUserDto dto)
+    public async Task<ActionResult<ApiResponse<UserDto>>> CreateUser(
+        [FromBody] UserCreateDto dto)
     {
-        var result = await _userService.CreateUserAsync(dto);
-        return HandleServiceResult(result, "创建用户成功");
+        var result = await _userService.CreateAsync(dto);
+        return HandleServiceResult(result);
     }
-    
-    [HttpPut("password")]
-    public async Task<ActionResult<ApiResponse<bool>>> ChangePassword([FromBody] ChangePasswordDto dto)
+
+    [HttpPut("{id}")]
+    [Authorize(Roles = "Admin")]
+    public async Task<ActionResult<ApiResponse<UserDto>>> UpdateUser(
+        Guid id, [FromBody] UserUpdateDto dto)
     {
-        var userId = GetCurrentUserId();
-        var result = await _userService.ChangePasswordAsync(userId, dto);
-        return HandleServiceResult(result, "修改密码成功");
+        var result = await _userService.UpdateAsync(id, dto);
+        return HandleServiceResult(result);
     }
 }
 ```
@@ -579,5 +352,5 @@ services.AddScoped<IUserRepository, UserRepository>();
 
 ---
 
-> 📌 **UltraThink成果**: Users模块采用双层架构设计，功能完整，安全可靠
-> 🎆 **生产就绪**: 零编译错误，完整的用户管理体系，可直接支撑小型诊所用户管理需求
+> 📌 **最新成果**: DTO优化三阶段完成，类型安全增强，零编译错误
+> 🎆 **生产就绪**: 完整的用户管理体系，可直接支撑小型诊所需求

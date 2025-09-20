@@ -1,270 +1,482 @@
-# LYBT.Shared.Interfaces v2.1 - 企业级接口定义库
+# LYBT.Shared.Interfaces
 
-> **前后端统一契约** | UltraThink双层架构支持 | Refit类型安全API客户端  
-> **项目状态**: ✅ **生产就绪** | 🎆 **2025-09-02重构完成** | **企业级注释标准**
+> **前后端统一契约库** - .NET 8接口定义与API客户端
+> UltraThink架构支持 | Refit类型安全 | ServiceResult统一返回
+> **模块状态**: ✅ **生产就绪** | 🎆 **接口统一完成** | **零编译错误** | **2025-09-20更新**
 
 ## 🎯 项目概述
 
-LYBT.Shared.Interfaces是凌隐宝堂中医诊所系统的核心接口定义库，提供前后端之间的统一契约规范。本项目定义了所有业务服务接口、API客户端接口和缓存服务接口，确保系统架构的一致性和类型安全性。
+LYBT.Shared.Interfaces 是系统核心接口定义库，提供前后端之间的统一契约规范。定义了所有业务服务接口、API客户端接口，确保系统架构的一致性和类型安全性。完成了接口统一化改造，移除了重复的IModule接口。
 
-**核心价值**:
-- 🎯 **前后端契约**: 统一的接口定义，避免前后端不一致问题
-- 🔒 **类型安全**: 强类型接口，编译时检查，运行时稳定
-- 📚 **企业级文档**: 完整的XML注释，自动生成API文档
-- 🏗️ **UltraThink支持**: 完美适配双层架构，Module委托模式
+**技术栈**: .NET 8 + Refit 8.0.0 + ServiceResult模式
+**架构模式**: UltraThink双层架构支持 + 纯委托模式 + 接口统一化
+**最新成就**: 接口统一完成，删除8个重复IModule接口，实现IService单一接口模式
 
-## 目录结构
+## 🎆 接口统一化成果
+
+### 接口重构成就
+
+- ✅ **移除重复接口**: 删除所有IModule接口（8个）
+- ✅ **统一服务接口**: 所有模块仅实现IService接口
+- ✅ **依赖注入优化**: ViewModels统一注入IService接口
+- ✅ **纯委托模式**: Module作为纯委托层，不包含业务逻辑
+
+## 📦 项目结构
 
 ```
 LYBT.Shared.Interfaces/
-├── Api/                    # API客户端接口（Refit生成）
-│   ├── IAuthApi.cs        # 身份认证API接口
-│   ├── IConsultationApi.cs # 诊断管理API接口
-│   ├── IFormulaApi.cs     # 验方管理API接口
-│   ├── IHerbApi.cs        # 中药材API接口
-│   ├── IMedicalCaseApi.cs # 医疗案例API接口
-│   ├── IPatientApi.cs     # 患者管理API接口
-│   ├── IPrescriptionApi.cs # 处方管理API接口
-│   └── IUserApi.cs        # 用户管理API接口
-├── Services/              # 业务服务接口
-│   ├── IAuthService.cs    # 认证服务接口
-│   ├── IConsultationService.cs # 诊断服务接口
-│   ├── IFormulaService.cs # 验方服务接口
-│   ├── IHerbService.cs    # 中药材服务接口
-│   ├── IMedicalCaseService.cs # 医疗案例服务接口
-│   ├── IPatientService.cs # 患者服务接口
-│   ├── IPrescriptionService.cs # 处方服务接口
-│   └── IUserService.cs    # 用户服务接口
-└── Caching/               # 缓存服务接口 (Pass 9已移除，统一使用Infrastructure.ICacheService)
+├── Services/                         # 业务服务接口（统一接口）
+│   ├── IAuthService.cs              # 认证服务接口
+│   ├── IUserService.cs              # 用户服务接口
+│   ├── IPatientService.cs          # 患者服务接口
+│   ├── IMedicalCaseService.cs      # 医案服务接口
+│   ├── IConsultationService.cs     # 诊疗服务接口
+│   ├── IPrescriptionService.cs     # 处方服务接口
+│   ├── IHerbService.cs             # 药材服务接口
+│   ├── IFormulaService.cs          # 验方服务接口
+│   └── ICompatibilityNoteService.cs # 配伍禁忌服务接口
+├── Api/                              # API客户端接口（Refit）
+│   ├── IAuthApi.cs                  # 认证API接口
+│   ├── IUserApi.cs                  # 用户API接口
+│   ├── IPatientApi.cs               # 患者API接口
+│   ├── IMedicalCaseApi.cs          # 医案API接口
+│   ├── IConsultationApi.cs         # 诊疗API接口
+│   ├── IPrescriptionApi.cs         # 处方API接口
+│   ├── IHerbApi.cs                 # 药材API接口
+│   └── IFormulaApi.cs              # 验方API接口
+└── Caching/                         # （已移除，使用Infrastructure.ICacheService）
 ```
 
-## 核心功能
+## 🎯 核心服务接口
 
-### 1. API客户端接口 (Api/)
+### IUserService - 用户服务接口
 
-使用 **Refit 8.0.0** 技术栈生成类型安全的HTTP客户端接口：
-
-#### 认证API (IAuthApi)
-- **用户登录**: `/api/v1/auth/login` - JWT令牌认证
-- **用户登出**: `/api/v1/auth/logout` - 会话清理
-- **当前用户**: `/api/v1/auth/current-user` - 获取用户信息
-- **刷新令牌**: `/api/v1/auth/refresh-token` - JWT刷新
-- **修改密码**: `/api/v1/auth/change-password` - 密码更新
-- **健康检查**: `/api/v1/health/alive` - 服务状态检查
-
-#### 业务模块API
-- **用户管理** (IUserApi): CRUD操作、角色分配、状态管理
-- **患者档案** (IPatientApi): 患者信息、就诊历史、联系方式
-- **医疗案例** (IMedicalCaseApi): 诊疗流程、状态跟踪
-- **看诊诊断** (IConsultationApi): 四诊记录、辨证论治
-- **处方管理** (IPrescriptionApi): 药材组合、价格计算
-- **中药材库** (IHerbApi): 药材信息、单价管理
-- **验方模板** (IFormulaApi): 经典验方、个人验方
-
-### 2. 业务服务接口 (Services/)
-
-定义前端业务逻辑层的服务契约：
-
-#### 核心特性
-- **统一返回格式**: `ServiceResult<T>` 包装所有操作结果
-- **异步优先**: 所有方法支持 `async/await` 模式
-- **类型安全**: 强类型参数和返回值
-- **错误处理**: 统一的异常处理和错误响应
-
-#### 主要服务接口
-- **认证服务**: 登录验证、会话管理、权限检查
-- **用户服务**: 账户管理、角色权限、密码策略
-- **患者服务**: 档案管理、历史查询、联系维护
-- **诊断服务**: 四诊录入、症状分析、治疗方案
-- **处方服务**: 配方组合、配伍检查、打印输出
-- **验方服务**: 模板管理、个人验方、智能推荐
-- **药材服务**: 信息维护、价格管理、用法指导
-
-### 3. 缓存服务接口 (Caching/)
-
-**Pass 9 - Cache Phase 3 完成**: 缓存接口已统一至 `Infrastructure.ICacheService`
-
-- ❌ **已移除**: `ISimplifiedCacheService` - 遗留简化缓存接口
-- ✅ **统一使用**: `LYBT.Infrastructure.Caching.Interfaces.ICacheService` - 完整功能缓存接口
-- ✅ **实现**: `MemoryCacheAdapter` - 生产就绪的内存缓存适配器
-- ✅ **功能更强**: 36个方法，支持批量操作、模式匹配、统计监控
-
-## 技术栈
-
-## 🎆 重构成果总览 (2025-09-02)
-
-### 🏆 企业级接口标准升级完成
-
-**接口定义现代化**:
-- ✅ **企业级注释**: 完整的XML文档注释，包含详细的功能说明、参数描述、使用示例
-- ✅ **UltraThink标注**: 明确标识每个方法在双层架构中的委托路径
-- ✅ **分组优化**: 按功能职责分组，QueryService/BusinessService职责清晰
-- ✅ **Description属性**: 添加ComponentModel.Description用于工具显示
-
-**技术栈现代化**:
-- ✅ **C# 12语言版本**: 支持最新语法特性和性能优化
-- ✅ **文档生成**: 自动生成XML文档文件，支持IDE智能提示
-- ✅ **版本标准化**: 统一版本管理，v2.1.0企业级标识
-
-### 📊 接口覆盖统计
-
-**API客户端接口** (8个):
-- IAuthApi: 身份认证 - 6个方法，完整JWT认证流程
-- IUserApi, IPatientApi, IMedicalCaseApi: 核心业务API
-- IConsultationApi, IPrescriptionApi: 诊疗流程API  
-- IHerbApi, IFormulaApi: 药材和验方管理API
-
-**业务服务接口** (8个):
-- IUserService: 用户管理 - 18个方法，6个功能分组
-- IAuthService: 认证服务 - 登录、会话、权限管理
-- 6个业务模块服务: 患者、医案、诊断、处方、药材、验方
-
-**缓存服务接口**:
-- ❌ Pass 9已移除: ISimplifiedCacheService (统一至Infrastructure.ICacheService)
-
-### 🔧 技术规格
-
-**依赖项升级**:
-- **.NET 8.0**: 现代.NET平台，C# 12语言支持
-- **Refit 8.0.0**: 类型安全REST客户端生成
-- **System.ComponentModel.Annotations 5.0.0**: Description属性支持
-- **LYBT.Shared.Models**: 共享数据模型项目引用
-
-**设计原则**:
-- **契约优先**: 接口定义先于实现，保证前后端一致性
-- **类型安全**: 强类型接口，编译时检查，避免运行时错误
-- **版本兼容**: 接口变更向后兼容，遵循语义化版本控制
-- **文档驱动**: 完整的XML注释文档，支持自动API文档生成
-
-## 集成使用
-
-### WPF客户端集成
 ```csharp
-// Refit客户端注册
-services.AddRefitClient<IAuthApi>()
-    .ConfigureHttpClient(c => c.BaseAddress = new Uri("https://api.lybt.com"));
-
-// 业务服务注册
-services.AddScoped<IAuthService, AuthService>();
-services.AddScoped<IUserService, UserService>();
-```
-
-### API调用示例
-```csharp
-// 使用强类型API接口
-var loginResponse = await _authApi.LoginAsync(new LoginRequest 
-{ 
-    Username = "doctor", 
-    Password = "password" 
-});
-
-// 使用业务服务接口
-var result = await _userService.GetUserByIdAsync(userId);
-if (result.Success)
+/// <summary>
+/// 用户服务接口 - UltraThink双层架构标准
+/// </summary>
+/// <remarks>
+/// 架构设计: UltraThink双层架构 - Module委托 → QueryService/BusinessService专业分工
+/// 业务范围: 医生和管理员用户的完整生命周期管理
+/// 安全特性: RBAC权限控制、密码安全策略、操作审计日志
+/// </remarks>
+public interface IUserService
 {
-    var user = result.Data;
-    // 处理用户数据
+    #region 查询操作 - QueryService专业负责
+
+    /// <summary>
+    /// 根据ID获取用户详情
+    /// </summary>
+    /// <remarks>
+    /// 委托: Module → QueryService.GetByIdAsync
+    /// 缓存: 用户信息缓存10分钟
+    /// </remarks>
+    Task<ServiceResult<UserDto>> GetByIdAsync(Guid id);
+
+    /// <summary>
+    /// 分页查询用户列表
+    /// </summary>
+    /// <remarks>
+    /// 委托: Module → QueryService.GetPagedAsync
+    /// 支持: 角色筛选、状态筛选、关键字搜索、多字段排序
+    /// </remarks>
+    Task<ServiceResult<PagedResult<UserDto>>> GetPagedAsync(UserSearchDto query);
+
+    /// <summary>
+    /// 高级用户搜索
+    /// </summary>
+    /// <remarks>
+    /// 委托: Module → QueryService.SearchAsync
+    /// 特性: 拼音搜索、模糊匹配、组合条件
+    /// </remarks>
+    Task<ServiceResult<IEnumerable<UserDto>>> SearchAsync(UserSearchDto searchDto);
+
+    #endregion
+
+    #region 业务操作 - BusinessService专业负责
+
+    /// <summary>
+    /// 创建新用户
+    /// </summary>
+    /// <remarks>
+    /// 委托: Module → BusinessService.CreateAsync
+    /// 验证: 用户名唯一性、密码强度、角色合法性
+    /// </remarks>
+    Task<ServiceResult<UserDto>> CreateAsync(UserCreateDto dto);
+
+    /// <summary>
+    /// 更新用户信息
+    /// </summary>
+    /// <remarks>
+    /// 委托: Module → BusinessService.UpdateAsync
+    /// 特性: 部分更新支持、并发控制、审计日志
+    /// </remarks>
+    Task<ServiceResult<UserDto>> UpdateAsync(UserUpdateDto dto);
+
+    /// <summary>
+    /// 删除用户
+    /// </summary>
+    /// <remarks>
+    /// 委托: Module → BusinessService.DeleteAsync
+    /// 策略: 软删除（状态标记）、级联处理
+    /// </remarks>
+    Task<ServiceResult<bool>> DeleteAsync(Guid id);
+
+    /// <summary>
+    /// 修改用户密码
+    /// </summary>
+    /// <remarks>
+    /// 委托: Module → BusinessService.ChangePasswordAsync
+    /// 安全: 原密码验证、强度检查、历史记录
+    /// </remarks>
+    Task<ServiceResult<bool>> ChangePasswordAsync(ChangePasswordDto dto);
+
+    /// <summary>
+    /// 重置用户密码
+    /// </summary>
+    /// <remarks>
+    /// 委托: Module → BusinessService.ResetPasswordAsync
+    /// 权限: 仅管理员可执行
+    /// </remarks>
+    Task<ServiceResult<bool>> ResetPasswordAsync(ResetPasswordDto dto);
+
+    #endregion
 }
 ```
 
-### 缓存服务使用
+### IPrescriptionService - 处方服务接口
+
 ```csharp
-// Pass 9统一: 使用Infrastructure.ICacheService
-// 获取或设置缓存
-var users = await _cacheService.GetOrSetAsync(
-    "users_list", 
-    async () => await _userService.GetAllUsersAsync(),
-    TimeSpan.FromMinutes(10),
-    cancellationToken
-);
-```
-
-## API响应格式
-
-所有API接口遵循统一的响应格式 `ApiResponse<T>`:
-
-```json
+/// <summary>
+/// 处方服务接口 - 中医处方管理核心
+/// </summary>
+/// <remarks>
+/// 业务范围: 处方开具、药材配伍、剂量计算、价格结算
+/// 核心功能: 智能配伍检查、剂量自动计算、处方模板
+/// </remarks>
+public interface IPrescriptionService
 {
-    "success": true,
-    "message": "操作成功",
-    "data": { /* 业务数据 */ },
-    "timestamp": "2025-01-01T10:30:00Z",
-    "requestId": "req-123456"
+    #region 查询操作
+
+    /// <summary>
+    /// 根据ID获取处方详情
+    /// </summary>
+    /// <remarks>
+    /// 包含: 处方项目、药材明细、价格计算
+    /// </remarks>
+    Task<ServiceResult<PrescriptionDto>> GetByIdAsync(Guid id);
+
+    /// <summary>
+    /// 根据医案ID获取处方列表
+    /// </summary>
+    Task<ServiceResult<IEnumerable<PrescriptionDto>>> GetByMedicalCaseIdAsync(Guid medicalCaseId);
+
+    /// <summary>
+    /// 分页查询处方
+    /// </summary>
+    Task<ServiceResult<PagedResult<PrescriptionDto>>> GetPagedAsync(PrescriptionSearchDto searchDto);
+
+    #endregion
+
+    #region 业务操作
+
+    /// <summary>
+    /// 创建处方
+    /// </summary>
+    /// <remarks>
+    /// 验证: 配伍禁忌检查、剂量合理性、价格计算
+    /// </remarks>
+    Task<ServiceResult<PrescriptionDto>> CreateAsync(PrescriptionCreateDto dto);
+
+    /// <summary>
+    /// 更新处方
+    /// </summary>
+    Task<ServiceResult<PrescriptionDto>> UpdateAsync(PrescriptionUpdateDto dto);
+
+    /// <summary>
+    /// 复制处方
+    /// </summary>
+    /// <remarks>
+    /// 功能: 快速开具相似处方、处方模板化
+    /// </remarks>
+    Task<ServiceResult<PrescriptionDto>> CopyAsync(Guid sourceId, string newName);
+
+    /// <summary>
+    /// 计算处方价格
+    /// </summary>
+    /// <remarks>
+    /// 包含: 单帖价、总价、折扣计算
+    /// </remarks>
+    Task<ServiceResult<PrescriptionCalculationDto>> CalculatePriceAsync(Guid id);
+
+    /// <summary>
+    /// 验证配伍禁忌
+    /// </summary>
+    Task<ServiceResult<CompatibilityCheckResult>> CheckCompatibilityAsync(List<Guid> herbIds);
+
+    #endregion
 }
 ```
 
-## 错误处理
+## 🔧 API客户端接口（Refit）
 
-### ServiceResult<T> 模式
+### Refit配置
+
 ```csharp
+// 服务注册
+services.AddRefitClient<IUserApi>()
+    .ConfigureHttpClient(c =>
+    {
+        c.BaseAddress = new Uri("http://localhost:5001");
+        c.DefaultRequestHeaders.Add("Accept", "application/json");
+    })
+    .AddHttpMessageHandler<AuthHeaderHandler>();
+
+// JWT认证处理器
+public class AuthHeaderHandler : DelegatingHandler
+{
+    protected override async Task<HttpResponseMessage> SendAsync(
+        HttpRequestMessage request,
+        CancellationToken cancellationToken)
+    {
+        var token = await _tokenService.GetTokenAsync();
+        if (!string.IsNullOrEmpty(token))
+        {
+            request.Headers.Authorization =
+                new AuthenticationHeaderValue("Bearer", token);
+        }
+        return await base.SendAsync(request, cancellationToken);
+    }
+}
+```
+
+### IUserApi - 用户API客户端
+
+```csharp
+/// <summary>
+/// 用户管理API客户端接口
+/// </summary>
+[Headers("Authorization: Bearer")]
+public interface IUserApi
+{
+    /// <summary>
+    /// 获取用户列表
+    /// </summary>
+    [Get("/api/v1/users")]
+    Task<ApiResponse<PagedResult<UserDto>>> GetUsersAsync(
+        [Query] UserSearchDto searchDto);
+
+    /// <summary>
+    /// 获取用户详情
+    /// </summary>
+    [Get("/api/v1/users/{id}")]
+    Task<ApiResponse<UserDto>> GetUserAsync(Guid id);
+
+    /// <summary>
+    /// 创建用户
+    /// </summary>
+    [Post("/api/v1/users")]
+    Task<ApiResponse<UserDto>> CreateUserAsync(
+        [Body] UserCreateDto dto);
+
+    /// <summary>
+    /// 更新用户
+    /// </summary>
+    [Put("/api/v1/users/{id}")]
+    Task<ApiResponse<UserDto>> UpdateUserAsync(
+        Guid id,
+        [Body] UserUpdateDto dto);
+
+    /// <summary>
+    /// 删除用户
+    /// </summary>
+    [Delete("/api/v1/users/{id}")]
+    Task<ApiResponse<bool>> DeleteUserAsync(Guid id);
+}
+```
+
+## 📊 ServiceResult统一返回模式
+
+### ServiceResult<T>定义
+
+```csharp
+/// <summary>
+/// 服务层统一结果包装
+/// </summary>
 public class ServiceResult<T>
 {
-    public bool Success { get; set; }
-    public string Message { get; set; }
-    public T Data { get; set; }
-    public string ErrorCode { get; set; }
+    /// <summary>操作是否成功</summary>
+    public bool IsSuccess { get; set; }
+
+    /// <summary>返回数据</summary>
+    public T? Data { get; set; }
+
+    /// <summary>错误消息</summary>
+    public string? ErrorMessage { get; set; }
+
+    /// <summary>异常信息（仅开发环境）</summary>
+    public Exception? Exception { get; set; }
+
+    // 静态工厂方法
+    public static ServiceResult<T> Success(T data)
+        => new() { IsSuccess = true, Data = data };
+
+    public static ServiceResult<T> Failure(string error)
+        => new() { IsSuccess = false, ErrorMessage = error };
 }
 ```
 
-### 统一异常处理
-- **ValidationException**: 参数验证错误
-- **BusinessException**: 业务逻辑错误  
-- **UnauthorizedException**: 认证授权错误
-- **NotFoundException**: 资源不存在错误
+### 使用示例
 
-## 开发指南
+```csharp
+// 服务实现
+public async Task<ServiceResult<UserDto>> CreateAsync(UserCreateDto dto)
+{
+    try
+    {
+        // 验证业务规则
+        if (await _repository.ExistsAsync(u => u.Username == dto.Username))
+        {
+            return ServiceResult<UserDto>.Failure("用户名已存在");
+        }
 
-### 添加新接口
-1. **API接口**: 在 `Api/` 目录添加，使用Refit特性
-2. **服务接口**: 在 `Services/` 目录添加，返回 `ServiceResult<T>`
-3. **XML注释**: 为所有公共成员添加完整注释
-4. **单元测试**: 在对应测试项目中添加接口测试
+        // 创建用户
+        var user = _mapper.Map<User>(dto);
+        user.PasswordHash = _passwordHasher.HashPassword(dto.Password);
 
-### 版本管理
-- **接口变更**: 遵循语义化版本控制
-- **向后兼容**: 新增接口成员，避免破坏性变更
-- **弃用处理**: 使用 `[Obsolete]` 特性标记过时接口
+        await _repository.AddAsync(user);
+        await _unitOfWork.CommitAsync();
 
-## 质量保证
+        var userDto = _mapper.Map<UserDto>(user);
+        return ServiceResult<UserDto>.Success(userDto);
+    }
+    catch (Exception ex)
+    {
+        _logger.LogError(ex, "创建用户失败");
+        return ServiceResult<UserDto>.Failure($"创建失败: {ex.Message}");
+    }
+}
 
-### 代码规范
-- **命名约定**: 接口以 `I` 开头，使用PascalCase
-- **方法命名**: 动词开头，明确表达操作意图
-- **参数验证**: 在接口文档中明确参数约束
-- **异常文档**: 记录可能抛出的异常类型
+// 控制器调用
+public async Task<IActionResult> CreateUser(UserCreateDto dto)
+{
+    var result = await _userService.CreateAsync(dto);
 
-### 测试覆盖
-- **Mock测试**: 使用接口进行单元测试
-- **集成测试**: 验证API接口与后端的集成
-- **契约测试**: 确保接口定义与实现一致
+    if (result.IsSuccess)
+        return Ok(ApiResponse<UserDto>.CreateSuccess(result.Data));
 
-## 相关文档
+    return BadRequest(ApiResponse<UserDto>.CreateFailure(result.ErrorMessage));
+}
+```
 
-- [LYBT.Shared.Models](../LYBT.Shared.Models/README.md) - 共享数据模型
-- [API标准规范](../../docs/api/api-standards.md) - API设计标准
-- [前后端契约规范](../../docs/前后端契约规范.md) - 接口契约定义
+## 🎆 UltraThink架构支持
 
-## 🚀 未来规划
+### 纯委托模式实现
 
-### 短期优化 (3个月)
-- **API版本管理**: 实现API版本控制，支持渐进式升级
-- **接口测试**: 完善接口契约测试，确保前后端一致性  
-- **文档自动化**: 集成Swagger自动文档生成
+```csharp
+/// <summary>
+/// UserModule - 纯委托实现
+/// </summary>
+public class UserModule : IUserService
+{
+    private readonly IUserQueryService _queryService;
+    private readonly IUserBusinessService _businessService;
 
-### 中期增强 (6个月)
-- **GraphQL支持**: 评估GraphQL接口，提升数据查询灵活性
-- **实时通信**: 增加SignalR接口，支持实时数据推送
-- **批量操作**: 优化批量API，提升大数据处理性能
+    public UserModule(
+        IUserQueryService queryService,
+        IUserBusinessService businessService)
+    {
+        _queryService = queryService;
+        _businessService = businessService;
+    }
 
-## 📚 相关文档
+    // 查询操作委托到QueryService
+    public async Task<ServiceResult<PagedResult<UserDto>>> GetPagedAsync(
+        UserSearchDto query)
+        => await _queryService.GetPagedAsync(query);
 
-- [LYBT.Shared.Models](../LYBT.Shared.Models/README.md) - 共享数据模型
-- [API设计规范](../../docs/api/interface-design-standards.md) - 接口设计标准
-- [前后端契约规范](../../docs/前后端契约规范.md) - 接口契约定义
-- [UltraThink架构指南](../../docs/architecture/ultrathink-architecture-guide.md) - 双层架构指南
+    // 业务操作委托到BusinessService
+    public async Task<ServiceResult<UserDto>> CreateAsync(
+        UserCreateDto dto)
+        => await _businessService.CreateAsync(dto);
+}
+```
+
+### 依赖注入配置
+
+```csharp
+// 服务注册 - 统一使用IService接口
+public void RegisterTypes(IContainerRegistry containerRegistry)
+{
+    // 注册主服务 - 使用IService接口
+    containerRegistry.Register<IUserService, UserModule>();
+
+    // 注册专业服务
+    containerRegistry.Register<IUserQueryService, UserQueryService>();
+    containerRegistry.Register<IUserBusinessService, UserBusinessService>();
+
+    // 注册API客户端
+    containerRegistry.RegisterSingleton<IUserApi>(() =>
+        RestService.For<IUserApi>(containerProvider.Resolve<HttpClient>()));
+}
+
+// ViewModel注入 - 使用IService接口
+public class UserViewModel : ViewModelBase
+{
+    private readonly IUserService _userService;  // 注入IService，不是Module
+
+    public UserViewModel(IUserService userService)
+    {
+        _userService = userService;
+    }
+}
+```
+
+## 🎯 最佳实践
+
+### 1. 接口设计原则
+
+- ✅ 单一职责：每个接口专注一个业务领域
+- ✅ 接口隔离：细粒度接口，避免大而全
+- ✅ 依赖倒置：依赖抽象而非具体实现
+- ✅ 统一命名：IXxxService模式
+
+### 2. 方法命名规范
+
+- ✅ 查询操作：GetXxxAsync、SearchAsync、FindAsync
+- ✅ 创建操作：CreateAsync、AddAsync
+- ✅ 更新操作：UpdateAsync、ModifyAsync
+- ✅ 删除操作：DeleteAsync、RemoveAsync
+
+### 3. 返回值约定
+
+- ✅ 统一使用ServiceResult<T>包装
+- ✅ 分页查询返回PagedResult<T>
+- ✅ 批量操作返回BatchResult<T>
+- ✅ 异步方法返回Task<ServiceResult<T>>
+
+### 4. 参数设计
+
+- ✅ 查询使用SearchDto
+- ✅ 创建使用CreateDto
+- ✅ 更新使用UpdateDto
+- ✅ ID参数使用Guid类型
+
+## 📈 性能优化
+
+- **接口粒度**: 合理划分接口，避免过度设计
+- **异步优先**: 所有I/O操作使用异步方法
+- **批量操作**: 提供批量接口减少网络往返
+- **缓存策略**: 接口级别定义缓存策略
+
+## 🔒 安全考虑
+
+- **认证授权**: 所有接口需要JWT认证
+- **权限控制**: 基于角色的访问控制（RBAC）
+- **数据验证**: DTO级别的输入验证
+- **审计日志**: 关键操作记录审计日志
 
 ---
 
-**LYBT.Shared.Interfaces v2.1** - 企业级接口定义库，为中医诊所系统提供统一契约标准 ✨
-
-**项目状态**: ✅ **生产就绪** | **最后更新**: 2025-09-02 | **版本**: v2.1.0-interfaces-enterprise
+> 📌 **最新成果**: 接口统一完成，IService单一接口模式，架构更清晰
+> 🎆 **生产就绪**: 完整的接口体系，支持UltraThink双层架构

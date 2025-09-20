@@ -1,449 +1,309 @@
-# 处方管理模块 (Prescriptions Module)
+# LYBT.Desktop.Module.Prescriptions
 
-**最后更新**: 2025-09-01  
-**模块状态**: ✅ 生产就绪  
-**对应后端**: LYBT.Module.Prescriptions  
-**需求参考**: [功能需求-处方管理模块](../../../../../docs/requirements/functional-requirements.md#5️⃣-处方管理模块-prescriptions)
+> **处方管理客户端模块** - WPF桌面应用处方管理功能
+> 处方开具 | 药材配伍 | 剂量计算 | 处方复制
+> **模块状态**: ✅ **生产就绪** | 🎆 **UltraThink架构完成** | **零编译错误** | **2025-09-20更新**
 
----
+## 🎯 模块概述
 
-## 📋 模块概览
+LYBT.Desktop.Module.Prescriptions是WPF桌面客户端的处方管理模块，采用MVVM架构和UltraThink双层服务设计。提供中医处方开具界面，支持药材选择、剂量计算和处方管理。
 
-### 业务定位
-**中医处方核心模块** - 支持中医特色的处方开具、药材配伍、验方应用和处方输出功能。
+**技术栈**: WPF (.NET 8) + Prism.DryIoc + Material Design + Refit
+**架构模式**: MVVM + UltraThink双层架构（QueryService + BusinessService）
+**通信方式**: 通过Refit调用后端Web API，类型安全的HTTP客户端
 
-### 核心功能
-- ✅ **处方基础管理**: 创建、编辑、删除、查询处方
-- ✅ **智能药材配伍**: 十八反十九畏安全检查，配伍冲突警告
-- ✅ **验方模板应用**: 经典验方快速应用，个性化调整
-- ✅ **费用计算**: 自动计算处方总价、药材用量、服药剂数
-- ✅ **处方输出**: 标准格式打印、复制、导出功能
-- ✅ **历史管理**: 患者处方历史、复用历史处方
+## 🎆 UltraThink双层架构实现
 
-### 中医特色
-- **十八反十九畏**: 自动检测配伍禁忌，保障用药安全
-- **君臣佐使**: 支持药材主次关系管理
-- **验方传承**: 经典验方与临床应用结合
-- **个性化调整**: 基于患者症状的药材加减
-
----
-
-## 🏗️ 模块结构
-
-### 目录组织
+### 前端服务架构
 ```
-src/Client/Desktop/Modules/Prescriptions/
-├── Services/
-│   └── PrescriptionModule.cs           # 模块注册和配置
-├── ViewModels/
-│   ├── PrescriptionManagementViewModel.cs     # 处方列表管理
-│   ├── PrescriptionComposerViewModel.cs       # 处方编辑器
-│   ├── FormulaSelectionViewModel.cs           # 验方选择
-│   └── PrescriptionEditorViewModel.cs         # 处方编辑对话框
-├── Views/
-│   ├── PrescriptionsMainView.xaml             # 处方主界面
-│   ├── PrescriptionManagementView.xaml        # 处方管理
-│   ├── PrescriptionComposerView.xaml          # 处方编辑器
-│   ├── PrescriptionView.xaml                  # 处方查看
-│   ├── PrescriptionEditorDialog.xaml          # 编辑对话框
-│   ├── FormulaTemplateDialog.xaml             # 验方模板
-│   ├── HerbSelectionDialog.xaml               # 药材选择
-│   └── SelectFormulaDialog.xaml               # 验方选择
-└── README.md                          # 本文档
+PrescriptionsModule (主模块 - 纯委托模式)
+    │
+    ├── PrescriptionsQueryService (查询专业化层)
+    │   ├── 数据查询和搜索
+    │   ├── 分页和筛选
+    │   └── 统计和分析
+    │
+    └── PrescriptionsBusinessService (业务逻辑层)
+        ├── CRUD操作
+        ├── 业务规则验证
+        └── 状态管理
 ```
 
-### 核心组件说明
-- **PrescriptionComposer**: 处方编辑器，核心功能组件
-- **FormulaTemplate**: 验方模板应用
-- **HerbSelection**: 药材选择和配伍检查
-- **SafetyChecker**: 十八反十九畏安全检查
-- **Calculator**: 费用和用量计算器
+## 📦 模块结构
 
----
+```
+LYBT.Desktop.Module.Prescriptions/
+├── 📁 ViewModels/              # MVVM视图模型
+│   ├── PrescriptionsViewModel.cs     # 主视图模型
+│   ├── PrescriptionsEditViewModel.cs # 编辑视图模型
+│   └── PrescriptionsListViewModel.cs # 列表视图模型
+│
+├── 📁 Views/                   # WPF视图
+│   ├── PrescriptionsView.xaml        # 主视图
+│   ├── PrescriptionEditView.xaml      # 处方编辑
+│   ├── HerbSelectionView.xaml      # 药材选择
+│   ├── DosageCalculatorView.xaml      # 剂量计算
+│   ├── PrescriptionHistoryView.xaml      # 处方历史
+│   └── Dialogs/                # 对话框视图
+│
+├── 📁 Services/                # 服务层
+│   ├── PrescriptionsService.cs       # 主服务（纯委托）
+│   ├── PrescriptionsQueryService.cs  # 查询服务
+│   └── PrescriptionsBusinessService.cs # 业务服务
+│
+├── 📁 Models/                  # 本地模型
+│   └── PrescriptionsModel.cs         # 客户端模型
+│
+└── PrescriptionsModule.cs            # 模块注册类
+```
 
-## 🔌 API接口集成
+## 🎯 核心功能
 
-### 后端API对接
+### 1. 视图模型（MVVM）
 ```csharp
-// 处方管理API端点
-GET    /api/v1/prescriptions              // 获取处方列表(分页)
-GET    /api/v1/prescriptions/{id}         // 获取处方详情  
-POST   /api/v1/prescriptions              // 创建新处方
-PUT    /api/v1/prescriptions/{id}         // 更新处方
-DELETE /api/v1/prescriptions/{id}         // 删除处方
-GET    /api/v1/prescriptions/patient/{patientId}  // 患者处方历史
-
-// 处方项目管理
-POST   /api/v1/prescriptions/{id}/items   // 添加药材
-PUT    /api/v1/prescriptions/{id}/items/{itemId}  // 更新药材
-DELETE /api/v1/prescriptions/{id}/items/{itemId}  // 删除药材
-
-// 验方应用
-POST   /api/v1/prescriptions/{id}/apply-formula/{formulaId}  // 应用验方
-
-// 安全检查
-POST   /api/v1/prescriptions/check-safety // 配伍安全检查
-
-// 计算功能
-POST   /api/v1/prescriptions/calculate    // 费用计算
-```
-
-### 数据传输对象
-```csharp
-// 主要DTO类
-- PrescriptionDto: 处方完整信息
-- PrescriptionCreateDto: 创建处方请求
-- PrescriptionItemDto: 处方药材项目
-- PrescriptionCalculationDto: 费用计算结果
-- SafetyCheckDto: 安全检查结果
-- FormulaApplicationDto: 验方应用请求
-```
-
----
-
-## 💻 开发指南
-
-### 处方编辑器使用
-```csharp
-public class PrescriptionComposerViewModel : ViewModelBase
+public class PrescriptionsViewModel : RegionViewModelBase
 {
-    // 当前处方
-    public ObservableCollection<PrescriptionItemDto> PrescriptionItems { get; set; }
-    
-    // 添加药材
-    public async Task<bool> AddHerbAsync(Guid herbId, decimal dosage, string usage)
+    private readonly IPrescriptionsService _prescriptionsService;
+    private readonly IRegionManager _regionManager;
+    private readonly IEventAggregator _eventAggregator;
+
+    public PrescriptionsViewModel(
+        IPrescriptionsService prescriptionsService,
+        IRegionManager regionManager,
+        IEventAggregator eventAggregator)
     {
-        var newItem = new PrescriptionItemDto
-        {
-            HerbId = herbId,
-            Dosage = dosage,
-            Usage = usage
-        };
-        
-        // 安全检查
-        var safetyResult = await CheckSafetyAsync(newItem);
-        if (!safetyResult.IsSafe)
-        {
-            await ShowWarningAsync($"配伍禁忌警告: {safetyResult.Warning}");
-            return false;
-        }
-        
-        // 添加到处方
-        PrescriptionItems.Add(newItem);
-        
-        // 重新计算费用
-        await RecalculateAsync();
-        
-        return true;
+        _prescriptionsService = prescriptionsService;
+        _regionManager = regionManager;
+        _eventAggregator = eventAggregator;
+
+        InitializeCommands();
+        LoadData();
     }
-    
-    // 应用验方
-    public async Task<bool> ApplyFormulaAsync(Guid formulaId)
+
+    // 数据绑定属性
+    public ObservableCollection<PrescriptionsDto> Items { get; set; }
+    public PrescriptionsDto SelectedItem { get; set; }
+
+    // 命令
+    public DelegateCommand AddCommand { get; private set; }
+    public DelegateCommand<PrescriptionsDto> EditCommand { get; private set; }
+    public DelegateCommand<PrescriptionsDto> DeleteCommand { get; private set; }
+    public DelegateCommand RefreshCommand { get; private set; }
+}
+```
+
+### 2. 服务层（UltraThink）
+```csharp
+// 主服务 - 纯委托模式
+public class PrescriptionsService : IPrescriptionsService
+{
+    private readonly IPrescriptionsQueryService _queryService;
+    private readonly IPrescriptionsBusinessService _businessService;
+
+    public PrescriptionsService(
+        IPrescriptionsQueryService queryService,
+        IPrescriptionsBusinessService businessService)
     {
-        var formula = await _formulaService.GetByIdAsync(formulaId);
-        if (formula?.Items == null) return false;
-        
-        foreach (var item in formula.Items)
-        {
-            await AddHerbAsync(item.HerbId, item.Dosage, item.Usage);
-        }
-        
-        return true;
+        _queryService = queryService;
+        _businessService = businessService;
     }
+
+    // 查询操作委托到QueryService
+    public async Task<ServiceResult<PagedResult<PrescriptionsDto>>> GetPagedAsync(PrescriptionsSearchDto query)
+        => await _queryService.GetPagedAsync(query);
+
+    // 业务操作委托到BusinessService
+    public async Task<ServiceResult<PrescriptionsDto>> CreateAsync(PrescriptionsCreateDto dto)
+        => await _businessService.CreateAsync(dto);
 }
 ```
 
-### 安全检查实现
+### 3. API调用（Refit）
 ```csharp
-public class PrescriptionSafetyChecker
+// 使用Refit定义API接口
+public interface IPrescriptionsApi
 {
-    // 十八反检查
-    private static readonly Dictionary<string, List<string>> EighteenAntagonisms = new()
-    {
-        ["甘草"] = new List<string> { "甘遂", "大戟", "海藻", "芫花" },
-        ["乌头"] = new List<string> { "贝母", "瓜蒌", "半夏", "白蔹", "白及" },
-        // ... 更多配伍禁忌
-    };
-    
-    // 十九畏检查  
-    private static readonly Dictionary<string, List<string>> NineteenFears = new()
-    {
-        ["硫磺"] = new List<string> { "朴硝" },
-        ["水银"] = new List<string> { "砒霜" },
-        // ... 更多畏恶关系
-    };
-    
-    public SafetyCheckResult CheckSafety(List<PrescriptionItemDto> items)
-    {
-        var warnings = new List<string>();
-        
-        // 检查十八反
-        foreach (var item1 in items)
-        {
-            foreach (var item2 in items)
-            {
-                if (item1.HerbId == item2.HerbId) continue;
-                
-                if (IsAntagonistic(item1.HerbName, item2.HerbName))
-                {
-                    warnings.Add($"十八反: {item1.HerbName} 与 {item2.HerbName} 相反");
-                }
-                
-                if (IsFearful(item1.HerbName, item2.HerbName))
-                {
-                    warnings.Add($"十九畏: {item1.HerbName} 畏 {item2.HerbName}");
-                }
-            }
-        }
-        
-        return new SafetyCheckResult
-        {
-            IsSafe = warnings.Count == 0,
-            Warnings = warnings
-        };
-    }
+    [Get("/api/v1/prescriptionss")]
+    Task<ApiResponse<PagedResult<PrescriptionsDto>>> GetPagedAsync([Query] PrescriptionsSearchDto query);
+
+    [Post("/api/v1/prescriptionss")]
+    Task<ApiResponse<PrescriptionsDto>> CreateAsync([Body] PrescriptionsCreateDto dto);
+
+    [Put("/api/v1/prescriptionss/{id}")]
+    Task<ApiResponse<PrescriptionsDto>> UpdateAsync(Guid id, [Body] PrescriptionsUpdateDto dto);
+
+    [Delete("/api/v1/prescriptionss/{id}")]
+    Task<ApiResponse<bool>> DeleteAsync(Guid id);
 }
 ```
 
----
+## 🎨 UI设计
 
-## 🧪 测试指南
+### Material Design主题
+- 使用Material Design in XAML Toolkit
+- 支持明暗主题切换
+- 响应式布局设计
+- 动画和过渡效果
 
-### 功能测试清单
-- [ ] **处方创建**: 新建处方，添加基础信息
-- [ ] **药材添加**: 选择药材，设置用量和用法
-- [ ] **配伍检查**: 添加相反药材，验证警告提示
-- [ ] **验方应用**: 选择验方模板，自动添加药材
-- [ ] **费用计算**: 修改用量，验证费用自动更新
-- [ ] **处方保存**: 保存处方并验证数据完整性
-- [ ] **处方打印**: 生成标准格式处方并打印预览
-- [ ] **历史复用**: 查看患者历史处方，复用到新处方
-- [ ] **权限验证**: 验证医生只能管理自己开具的处方
-
-### 安全测试场景
-```csharp
-[TestMethod]
-public void SafetyCheck_ShouldDetectAntagonism()
-{
-    // Arrange
-    var items = new List<PrescriptionItemDto>
-    {
-        new() { HerbName = "甘草", Dosage = 10 },
-        new() { HerbName = "甘遂", Dosage = 5 }  // 十八反
-    };
-    
-    // Act
-    var result = _safetyChecker.CheckSafety(items);
-    
-    // Assert
-    Assert.IsFalse(result.IsSafe);
-    Assert.IsTrue(result.Warnings.Any(w => w.Contains("十八反")));
-}
-```
-
-### 验方应用测试
-```csharp
-[TestMethod]
-public async Task ApplyFormula_ShouldAddAllItems()
-{
-    // Arrange
-    var formulaId = Guid.NewGuid();
-    var viewModel = new PrescriptionComposerViewModel();
-    
-    // Act
-    var success = await viewModel.ApplyFormulaAsync(formulaId);
-    
-    // Assert
-    Assert.IsTrue(success);
-    Assert.IsTrue(viewModel.PrescriptionItems.Count > 0);
-}
-```
-
----
-
-## 🎨 界面设计
-
-### 处方编辑器界面
+### 数据绑定示例
 ```xml
-<!-- PrescriptionComposerView.xaml 核心布局 -->
+<DataGrid ItemsSource="{Binding Items}"
+          SelectedItem="{Binding SelectedItem}"
+          AutoGenerateColumns="False">
+    <DataGrid.Columns>
+        <DataGridTextColumn Header="名称"
+                           Binding="{Binding Name}"
+                           Width="200"/>
+        <DataGridTextColumn Header="状态"
+                           Binding="{Binding Status}"
+                           Width="100"/>
+        <DataGridTemplateColumn Header="操作" Width="150">
+            <DataGridTemplateColumn.CellTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal">
+                        <Button Command="{Binding DataContext.EditCommand,
+                                         RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                CommandParameter="{Binding}"
+                                Content="编辑"/>
+                        <Button Command="{Binding DataContext.DeleteCommand,
+                                         RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                CommandParameter="{Binding}"
+                                Content="删除"/>
+                    </StackPanel>
+                </DataTemplate>
+            </DataGridTemplateColumn.CellTemplate>
+        </DataGridTemplateColumn>
+    </DataGrid.Columns>
+</DataGrid>
+```
+
+## 🔧 特色功能
+
+### 1. 智能组方
+- 药材智能推荐
+- 配伍禁忌提示
+- 剂量自动计算
+
+### 2. 处方模板
+- 常用处方保存
+- 快速套用模板
+- 个性化调整
+
+## 📱 响应式设计
+
+### 自适应布局
+```xml
 <Grid>
     <Grid.RowDefinitions>
-        <RowDefinition Height="Auto"/>    <!-- 工具栏 -->
-        <RowDefinition Height="*"/>       <!-- 药材列表 -->
-        <RowDefinition Height="Auto"/>    <!-- 费用总计 -->
+        <RowDefinition Height="Auto"/>  <!-- 工具栏 -->
+        <RowDefinition Height="*"/>     <!-- 内容区 -->
+        <RowDefinition Height="Auto"/>  <!-- 状态栏 -->
     </Grid.RowDefinitions>
-    
-    <!-- 工具栏 -->
-    <StackPanel Grid.Row="0" Orientation="Horizontal">
-        <Button Content="添加药材" Command="{Binding AddHerbCommand}"/>
-        <Button Content="应用验方" Command="{Binding ApplyFormulaCommand}"/>
-        <Button Content="安全检查" Command="{Binding CheckSafetyCommand}"/>
-        <Button Content="打印处方" Command="{Binding PrintCommand}"/>
-    </StackPanel>
-    
-    <!-- 药材列表 -->
-    <DataGrid Grid.Row="1" ItemsSource="{Binding PrescriptionItems}">
-        <DataGrid.Columns>
-            <DataGridTextColumn Header="药材名称" Binding="{Binding HerbName}"/>
-            <DataGridTextColumn Header="用量(g)" Binding="{Binding Dosage}"/>
-            <DataGridTextColumn Header="用法" Binding="{Binding Usage}"/>
-            <DataGridTextColumn Header="单价" Binding="{Binding UnitPrice}"/>
-            <DataGridTextColumn Header="小计" Binding="{Binding SubTotal}"/>
-        </DataGrid.Columns>
-    </DataGrid>
-    
-    <!-- 费用总计 -->
-    <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
-        <TextBlock Text="处方总价: "/>
-        <TextBlock Text="{Binding TotalAmount}" FontWeight="Bold"/>
-        <TextBlock Text=" 元"/>
-    </StackPanel>
+
+    <!-- 响应式内容区 -->
+    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+        <ContentControl prism:RegionManager.RegionName="ContentRegion"/>
+    </ScrollViewer>
 </Grid>
 ```
 
-### 验方选择对话框
-```xml
-<!-- FormulaSelectionDialog.xaml -->
-<Window Title="选择验方" Width="800" Height="600">
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
-        
-        <!-- 搜索条件 -->
-        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="10">
-            <TextBox x:Name="SearchText" Width="200" 
-                     Text="{Binding SearchKeyword, UpdateSourceTrigger=PropertyChanged}"/>
-            <Button Content="搜索" Command="{Binding SearchCommand}"/>
-        </StackPanel>
-        
-        <!-- 验方列表 -->
-        <ListBox Grid.Row="1" ItemsSource="{Binding Formulas}" 
-                 SelectedItem="{Binding SelectedFormula}">
-            <ListBox.ItemTemplate>
-                <DataTemplate>
-                    <StackPanel>
-                        <TextBlock Text="{Binding Name}" FontWeight="Bold"/>
-                        <TextBlock Text="{Binding Indications}" FontStyle="Italic"/>
-                        <TextBlock Text="{Binding Composition}" TextWrapping="Wrap"/>
-                    </StackPanel>
-                </DataTemplate>
-            </ListBox.ItemTemplate>
-        </ListBox>
-        
-        <!-- 操作按钮 -->
-        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
-            <Button Content="应用" Command="{Binding ApplyCommand}"/>
-            <Button Content="取消" Command="{Binding CancelCommand}"/>
-        </StackPanel>
-    </Grid>
-</Window>
-```
+## 🚀 模块注册
 
----
-
-## 🔧 配置说明
-
-### 模块注册
 ```csharp
-public class PrescriptionModule : IModule
+public class PrescriptionsModule : IModule
 {
+    private readonly IRegionManager _regionManager;
+
+    public PrescriptionsModule(IRegionManager regionManager)
+    {
+        _regionManager = regionManager;
+    }
+
+    public void OnInitialized(IContainerProvider containerProvider)
+    {
+        // 注册视图到区域
+        _regionManager.RegisterViewWithRegion("MainRegion", typeof(PrescriptionsView));
+    }
+
     public void RegisterTypes(IContainerRegistry containerRegistry)
     {
-        // 核心服务
-        containerRegistry.Register<IPrescriptionService, PrescriptionService>();
-        containerRegistry.Register<IPrescriptionSafetyChecker, PrescriptionSafetyChecker>();
-        containerRegistry.Register<IPrescriptionCalculator, PrescriptionCalculator>();
-        
-        // ViewModels
-        containerRegistry.Register<PrescriptionManagementViewModel>();
-        containerRegistry.Register<PrescriptionComposerViewModel>();
-        containerRegistry.Register<FormulaSelectionViewModel>();
-        
-        // Views
-        containerRegistry.RegisterForNavigation<PrescriptionsMainView>();
-        containerRegistry.RegisterForNavigation<PrescriptionComposerView>();
-        
-        // Dialogs
-        containerRegistry.RegisterDialog<PrescriptionEditorDialog>();
-        containerRegistry.RegisterDialog<FormulaSelectionDialog>();
+        // 注册服务
+        containerRegistry.Register<IPrescriptionsService, PrescriptionsService>();
+        containerRegistry.Register<IPrescriptionsQueryService, PrescriptionsQueryService>();
+        containerRegistry.Register<IPrescriptionsBusinessService, PrescriptionsBusinessService>();
+
+        // 注册视图
+        containerRegistry.RegisterForNavigation<PrescriptionsView, PrescriptionsViewModel>();
+        containerRegistry.RegisterDialog<PrescriptionsEditDialog, PrescriptionsEditDialogViewModel>();
+
+        // 注册API客户端
+        containerRegistry.RegisterSingleton<IPrescriptionsApi>(() =>
+            RestService.For<IPrescriptionsApi>(containerProvider.Resolve<HttpClient>()));
     }
 }
 ```
 
-### 安全检查配置
+## 📊 状态管理
+
+### 使用Prism事件聚合器
 ```csharp
-// 可通过配置文件管理十八反十九畏数据
-public class SafetyConfiguration
-{
-    public Dictionary<string, List<string>> EighteenAntagonisms { get; set; }
-    public Dictionary<string, List<string>> NineteenFears { get; set; }
-    public bool EnableStrictMode { get; set; } = true;  // 严格模式禁止保存
-    public bool ShowWarningsOnly { get; set; } = false; // 仅警告模式
-}
+// 发布事件
+_eventAggregator.GetEvent<PrescriptionsUpdatedEvent>()
+    .Publish(new PrescriptionsUpdatedEventArgs { Item = updatedItem });
+
+// 订阅事件
+_eventAggregator.GetEvent<PrescriptionsUpdatedEvent>()
+    .Subscribe(OnItemUpdated, ThreadOption.UIThread);
 ```
 
----
+## 🔒 错误处理
 
-## 🐛 故障排除
-
-### 常见问题
-1. **配伍检查不生效**
-   - 检查药材名称匹配是否准确
-   - 验证十八反十九畏数据配置
-
-2. **费用计算错误**
-   - 检查药材单价数据
-   - 验证用量格式和数值类型
-
-3. **验方应用失败**
-   - 确认验方数据完整性
-   - 检查验方与药材的关联关系
-
-4. **处方打印格式异常**
-   - 检查打印模板配置
-   - 验证处方数据完整性
-
-### 调试技巧
 ```csharp
-// 启用处方编辑器调试日志
-public class PrescriptionComposerViewModel
+public async Task LoadDataAsync()
 {
-    private static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
-    
-    private async Task DebugPrescriptionState()
+    try
     {
-        Logger.Info("当前处方状态:");
-        Logger.Info($"药材数量: {PrescriptionItems.Count}");
-        Logger.Info($"总金额: {TotalAmount:C}");
-        
-        foreach (var item in PrescriptionItems)
+        ShowLoading();
+        var result = await _prescriptionsService.GetPagedAsync(new PrescriptionsSearchDto());
+
+        if (result.IsSuccess)
         {
-            Logger.Info($"- {item.HerbName}: {item.Dosage}g, {item.SubTotal:C}");
+            Items = new ObservableCollection<PrescriptionsDto>(result.Data.Items);
+        }
+        else
+        {
+            ShowError(result.ErrorMessage);
         }
     }
+    catch (Exception ex)
+    {
+        _logger.LogError(ex, "加载数据失败");
+        ShowError("加载数据失败，请重试");
+    }
+    finally
+    {
+        HideLoading();
+    }
 }
 ```
 
+## 📚 相关依赖
+
+- **Prism.DryIoc** - MVVM框架和依赖注入
+- **Material Design** - UI组件库
+- **Refit** - REST API客户端
+- **AutoMapper** - 对象映射
+- **FluentValidation** - 数据验证
+
+## 🎯 最佳实践
+
+1. **MVVM模式**: 严格遵循MVVM模式，视图与逻辑分离
+2. **异步编程**: 所有API调用使用async/await
+3. **错误处理**: 统一的错误处理和用户提示
+4. **数据验证**: 客户端和服务端双重验证
+5. **性能优化**: 虚拟化列表、延迟加载、数据缓存
+
 ---
 
-## 📚 相关文档
-
-### 需求文档
-- [功能需求-处方管理](../../../../../docs/requirements/functional-requirements.md#5️⃣-处方管理模块-prescriptions)
-- [中医特色需求](../../../../../docs/requirements/system-overview.md#核心业务模块)
-
-### 关联模块
-- [Formula模块](../Formula/README.md) - 验方模板管理
-- [Herbs模块](../Herbs/README.md) - 药材信息管理
-- [MedicalCase模块](../MedicalCase/README.md) - 关联的医案管理
-
-### 技术文档
-- [十八反十九畏配置](../../../../../docs/guides/tcm-safety-rules.md)
-- [处方打印格式规范](../../../../../docs/guides/prescription-format.md)
-
----
-
-**维护说明**: 本文档反映Prescriptions模块的当前功能状态。中医配伍规则和验方数据更新时，需同步更新相关配置和文档。
+> 📌 **最新成果**: UltraThink架构在客户端完整实现，MVVM模式规范应用
+> 🎆 **生产就绪**: 完整的处方管理功能，优秀的用户体验

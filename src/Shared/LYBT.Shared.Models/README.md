@@ -1,103 +1,380 @@
 # LYBT.Shared.Models
 
-凌隐宝堂中医诊所系统 - 共享数据模型项目
+> **共享数据模型库** - .NET 8 DTO与契约定义
+> DTO优化完成 | 类型安全 | 前后端一致 | 验证增强
+> **模块状态**: ✅ **生产就绪** | 🎆 **DTO三阶段优化完成** | **零编译错误** | **2025-09-20更新**
 
-## 项目概述
+## 🎯 项目概述
 
-这是系统的核心数据模型项目，定义了前后端共享的数据传输对象(DTO)、实体模型、枚举类型、异常类和扩展方法。作为整个系统的数据契约基础，确保前后端数据结构的一致性和类型安全。
+LYBT.Shared.Models 是系统核心数据模型项目，定义了前后端共享的数据传输对象(DTO)、实体模型、枚举类型、异常类和扩展方法。完成了DTO三阶段系统性优化，实现了完全类型安全的数据契约。
 
-## 目录结构
+**技术栈**: .NET 8 + System.Text.Json + FluentValidation + DataAnnotations
+**架构模式**: 分层DTO设计 + 继承优化 + 接口驱动
+**最新成就**: DTO优化三阶段全部完成，代码质量显著提升
+
+## 🎆 DTO优化三阶段成果
+
+### 第一阶段：查询命名标准化 ✅
+- 统一查询DTO命名模式：`QueryDto`（基础）和`SearchDto`（高级）
+- 所有查询DTO继承`PagedQueryBaseDto`基类
+- 统一分页、排序、关键词搜索参数
+
+### 第二阶段：操作结果基类抽取 ✅
+- 创建`StatusDto`基类（BaseDto + Status字段）
+- 所有业务DTO继承自`StatusDto`
+- 统一状态管理模式（CommonStatus枚举）
+
+### 第三阶段：继承层次优化 ✅
+- 完全分离`CreateDto`和`UpdateDto`
+- 提取`InputBaseDto`共享字段
+- 实现`IIdentifiable<T>`接口
+- 删除未使用的字段和过时代码
+
+## 📦 项目结构
 
 ```
 LYBT.Shared.Models/
-├── Base/                              # 基础模型定义
-├── Common/                           # 通用模型和工具类
-│   ├── BaseModel.cs                  # 基础模型抽象类
-│   ├── BatchIdsDto.cs                # 批量ID操作DTO
-│   ├── BatchOperationDto.cs          # 批量操作DTO
-│   ├── EnumItem.cs                   # 枚举项展示模型
-│   └── NullableEnumItem.cs           # 可空枚举项模型
-├── Constants/                        # 系统常量定义
-│   └── SystemConstants.cs            # 系统级常量
+├── Common/                           # 通用模型
+│   ├── BaseDto.cs                   # 基础DTO（包含Id）
+│   ├── StatusDto.cs                 # 状态DTO（BaseDto + Status）
+│   ├── PagedQueryBaseDto.cs         # 分页查询基类
+│   ├── ApiResponse.cs               # 统一API响应格式
+│   ├── ServiceResult.cs             # 服务层结果包装
+│   ├── PagedResult.cs               # 分页结果模型
+│   └── IIdentifiable.cs             # ID接口定义
 ├── Contracts/                        # 数据传输对象(DTO)
+│   ├── Common/                       # 通用契约
+│   │   ├── IRemarkable.cs           # 备注接口
+│   │   └── BatchOperationDto.cs     # 批量操作DTO
 │   ├── Auth/                         # 认证相关DTO
-│   ├── Common/                       # 通用DTO和响应格式
-│   ├── Configuration/                # 配置相关DTO
-│   ├── Consultation/                 # 诊断相关DTO
-│   ├── Formula/                      # 验方相关DTO
-│   ├── Herbs/                        # 中药材相关DTO
-│   ├── MedicalCase/                  # 医疗案例相关DTO
-│   ├── Patients/                     # 患者相关DTO
-│   ├── Prescriptions/                # 处方相关DTO
-│   └── Users/                        # 用户相关DTO
-├── Core/                             # 核心业务模型
-│   └── BaseAuthSession.cs            # 基础认证会话模型
+│   │   └── AuthDtos.cs              # 完整认证DTO集合
+│   ├── Users/                        # 用户相关DTO（优化完成）
+│   │   └── UserDtos.cs              # UserDto, UserCreateDto, UserUpdateDto, UserSearchDto
+│   ├── Patients/                     # 患者相关DTO（优化完成）
+│   │   └── PatientDtos.cs           # PatientDto, PatientCreateDto, PatientUpdateDto, PatientSearchDto
+│   ├── MedicalCase/                  # 医案相关DTO（优化完成）
+│   │   └── MedicalCaseDtos.cs       # MedicalCaseDto, MedicalCaseCreateDto, MedicalCaseSearchDto
+│   ├── Consultation/                 # 诊疗相关DTO（优化完成）
+│   │   └── ConsultationDtos.cs      # ConsultationDetailDto, ConsultationCreateDto, ConsultationSearchDto
+│   ├── Prescriptions/                # 处方相关DTO（优化完成）
+│   │   ├── PrescriptionDtos.cs      # PrescriptionDto, PrescriptionCreateDto, PrescriptionSearchDto
+│   │   └── PrescriptionCalculationDto.cs # 处方计算DTO
+│   ├── Herbs/                        # 药材相关DTO（优化完成）
+│   │   └── HerbDtos.cs              # HerbDto, HerbCreateDto, HerbUpdateDto, HerbSearchDto
+│   └── Formula/                      # 验方相关DTO（优化完成）
+│       └── FormulaDtos.cs           # FormulaDto, FormulaCreateDto, FormulaSearchDto
 ├── Enums/                           # 枚举定义
-│   ├── AuthEnums.cs                  # 认证相关枚举
-│   ├── Gender.cs                     # 性别枚举
-│   ├── LogEnums.cs                   # 日志相关枚举
-│   ├── MedicalCaseEnums.cs          # 医疗案例枚举
-│   ├── PatientStatus.cs              # 患者状态枚举
-│   ├── PrescriptionStatus.cs         # 处方状态枚举
-│   ├── RecordEnums.cs                # 记录相关枚举
-│   └── SystemEnums.cs                # 系统级枚举
+│   ├── CommonStatus.cs              # 通用状态（Enabled/Disabled）
+│   ├── UserRole.cs                  # 用户角色（Doctor/Admin）
+│   ├── Gender.cs                    # 性别枚举
+│   └── MedicalCaseStatus.cs         # 医案状态
 ├── Exceptions/                       # 异常定义
-│   ├── ApiException.cs               # API异常
-│   ├── AppException.cs               # 应用程序异常基类
-│   ├── BusinessException.cs          # 业务异常
-│   ├── ExceptionFactory.cs           # 异常工厂
-│   ├── NotFoundException.cs          # 资源未找到异常
-│   └── ValidationException.cs        # 验证异常
+│   ├── AppException.cs              # 应用异常基类
+│   ├── BusinessException.cs         # 业务异常
+│   ├── ValidationException.cs       # 验证异常
+│   └── NotFoundException.cs         # 资源未找到异常
 └── Extensions/                       # 扩展方法
-    ├── DateTimeExtensions.cs         # 日期时间扩展
-    ├── EnumExtensions.cs             # 枚举扩展方法
-    ├── ServiceResultExtensions.cs    # 服务结果扩展
-    └── StringExtensions.cs           # 字符串扩展方法
+    ├── EnumExtensions.cs            # 枚举扩展
+    ├── DateTimeExtensions.cs        # 日期时间扩展
+    └── StringExtensions.cs          # 字符串扩展
 ```
 
-## 核心功能
+## 🎯 核心DTO层次结构
 
-### 1. 通用响应格式 (Contracts/Common)
+### 基类继承体系
 
-#### ApiResponse<T> - 统一API响应格式
-系统所有API端点使用的标准响应格式：
+```csharp
+// 1. 基础DTO - 所有DTO的根基类
+public abstract class BaseDto : IIdentifiable<Guid>
+{
+    [DisplayName("ID")]
+    public Guid Id { get; set; }
+}
+
+// 2. 状态DTO - 添加状态管理
+public abstract class StatusDto : BaseDto
+{
+    [DisplayName("状态")]
+    public CommonStatus Status { get; set; } = CommonStatus.Enabled;
+}
+
+// 3. 分页查询基类 - 统一查询参数
+public abstract class PagedQueryBaseDto
+{
+    [DisplayName("页码")]
+    public int PageIndex { get; set; } = 1;
+
+    [DisplayName("每页条数")]
+    public int PageSize { get; set; } = 20;
+
+    [DisplayName("排序字段")]
+    public string? OrderBy { get; set; }
+
+    [DisplayName("降序排序")]
+    public bool IsDescending { get; set; }
+
+    [DisplayName("搜索关键词")]
+    public string? Keyword { get; set; }
+}
+```
+
+## 📚 模块DTO设计示例
+
+### 用户模块（完整优化示例）
+
+```csharp
+#region 基础DTO
+
+/// <summary>
+/// 用户信息DTO - 继承StatusDto
+/// </summary>
+public class UserDto : StatusDto
+{
+    [DisplayName("用户名")]
+    public string Username { get; set; } = string.Empty;
+
+    [DisplayName("真实姓名")]
+    public string RealName { get; set; } = string.Empty;
+
+    [DisplayName("用户角色")]
+    public UserRole Role { get; set; } = UserRole.Doctor;
+
+    [DisplayName("电话号码")]
+    public string? PhoneNumber { get; set; }
+
+    [DisplayName("邮箱地址")]
+    public string? Email { get; set; }
+
+    [DisplayName("拼音码")]
+    public string? PinYinCode { get; set; }
+
+    // 兼容性属性
+    [DisplayName("账号启用状态")]
+    public bool IsActive => Status == CommonStatus.Enabled;
+
+    [DisplayName("用户显示名")]
+    public string UserDisplayName => RealName ?? Username;
+}
+
+#endregion
+
+#region 输入DTO
+
+/// <summary>
+/// 用户输入基础DTO - 共享字段
+/// </summary>
+public abstract class UserInputBaseDto
+{
+    [Required(ErrorMessage = "真实姓名不能为空")]
+    [StringLength(50, ErrorMessage = "真实姓名长度不能超过50个字符")]
+    [DisplayName("真实姓名")]
+    public string RealName { get; set; } = string.Empty;
+
+    [Phone(ErrorMessage = "电话号码格式不正确")]
+    [DisplayName("手机号码")]
+    public string? PhoneNumber { get; set; }
+
+    [EmailAddress(ErrorMessage = "邮箱格式不正确")]
+    [DisplayName("邮箱地址")]
+    public string? Email { get; set; }
+
+    [Required(ErrorMessage = "用户角色不能为空")]
+    [DisplayName("用户角色")]
+    public UserRole Role { get; set; } = UserRole.Doctor;
+
+    [DisplayName("状态")]
+    public CommonStatus Status { get; set; } = CommonStatus.Enabled;
+}
+
+/// <summary>
+/// 用户创建DTO - 继承输入基础
+/// </summary>
+public class UserCreateDto : UserInputBaseDto
+{
+    [Required(ErrorMessage = "用户名不能为空")]
+    [StringLength(32, MinimumLength = 3)]
+    [RegularExpression(@"^[a-zA-Z0-9_]+$")]
+    [DisplayName("用户名")]
+    public string Username { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "密码不能为空")]
+    [StringLength(128, MinimumLength = 6)]
+    [DisplayName("密码")]
+    public string Password { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "确认密码不能为空")]
+    [Compare("Password", ErrorMessage = "两次输入的密码不一致")]
+    [DisplayName("确认密码")]
+    public string ConfirmPassword { get; set; } = string.Empty;
+}
+
+/// <summary>
+/// 用户更新DTO - 可选更新
+/// </summary>
+public class UserUpdateDto : UserInputBaseDto, IIdentifiable<Guid>
+{
+    [Required(ErrorMessage = "用户ID不能为空")]
+    [DisplayName("用户ID")]
+    public Guid Id { get; set; }
+
+    // 使用new修饰符实现可选更新
+    [DisplayName("真实姓名")]
+    public new string? RealName { get; set; }
+
+    [DisplayName("用户角色")]
+    public new UserRole? Role { get; set; }
+}
+
+#endregion
+
+#region 查询DTO
+
+/// <summary>
+/// 用户查询DTO - 基础查询
+/// </summary>
+public class UserQueryDto : PagedQueryBaseDto
+{
+    [DisplayName("用户名")]
+    public string? Username { get; set; }
+
+    [DisplayName("真实姓名")]
+    public string? RealName { get; set; }
+
+    [DisplayName("用户角色")]
+    public UserRole? Role { get; set; }
+
+    [DisplayName("状态")]
+    public CommonStatus? Status { get; set; }
+}
+
+/// <summary>
+/// 用户搜索DTO - 高级搜索
+/// </summary>
+public class UserSearchDto : UserQueryDto
+{
+    [DisplayName("邮箱")]
+    public string? Email { get; set; }
+
+    [DisplayName("电话")]
+    public string? PhoneNumber { get; set; }
+
+    [DisplayName("拼音码")]
+    public string? PinYinCode { get; set; }
+
+    [DisplayName("开始日期")]
+    public DateTime? StartDate { get; set; }
+
+    [DisplayName("结束日期")]
+    public DateTime? EndDate { get; set; }
+
+    [DisplayName("包含已禁用")]
+    public bool IncludeInactive { get; set; } = false;
+}
+
+#endregion
+```
+
+### 处方模块（计算属性示例）
+
+```csharp
+/// <summary>
+/// 处方信息DTO - 包含计算属性
+/// </summary>
+public class PrescriptionDto : StatusDto, IRemarkable
+{
+    [DisplayName("医疗案例ID")]
+    public Guid MedicalCaseId { get; set; }
+
+    [DisplayName("患者ID")]
+    public Guid PatientId { get; set; }
+
+    [DisplayName("患者姓名")]
+    public string? Name { get; set; }
+
+    [DisplayName("诊断")]
+    public string? Diagnosis { get; set; }
+
+    [DisplayName("剂数")]
+    public int DosageCount { get; set; } = 7;
+
+    [DisplayName("折扣")]
+    public decimal Discount { get; set; } = 1.0m;
+
+    [DisplayName("处方项目")]
+    public List<PrescriptionItemDto> Items { get; set; } = new();
+
+    // 计算属性 - 单帖价格
+    [DisplayName("单帖价格")]
+    public decimal SingleDosePrice
+    {
+        get
+        {
+            if (Items == null || !Items.Any())
+                return 0m;
+
+            var subtotal = Items.Sum(item => item.UnitPrice * item.Quantity);
+            return subtotal * Discount;
+        }
+    }
+
+    // 计算属性 - 总价格
+    [DisplayName("总价格")]
+    public decimal TotalPrice => SingleDosePrice * DosageCount;
+
+    [DisplayName("备注")]
+    public string? Remark { get; set; }
+}
+```
+
+## 🔧 通用响应格式
+
+### ApiResponse<T> - API统一响应
 
 ```csharp
 public class ApiResponse<T>
 {
     [JsonPropertyName("success")]
     public bool Success { get; set; }
-    
+
     [JsonPropertyName("message")]
     public string Message { get; set; } = string.Empty;
-    
+
     [JsonPropertyName("data")]
     public T? Data { get; set; }
-    
-    [JsonPropertyName("errors")]
-    public object? Errors { get; set; }
-    
+
     [JsonPropertyName("timestamp")]
     public long Timestamp { get; set; }
-    
+
     [JsonPropertyName("requestId")]
     public string RequestId { get; set; } = string.Empty;
+
+    // 静态工厂方法
+    public static ApiResponse<T> CreateSuccess(T data, string message = "操作成功")
+    {
+        return new ApiResponse<T>
+        {
+            Success = true,
+            Message = message,
+            Data = data,
+            Timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
+            RequestId = Guid.NewGuid().ToString()
+        };
+    }
+
+    public static ApiResponse<T> CreateFailure(string message)
+    {
+        return new ApiResponse<T>
+        {
+            Success = false,
+            Message = message,
+            Timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
+            RequestId = Guid.NewGuid().ToString()
+        };
+    }
 }
 ```
 
-**响应示例**:
-```json
-{
-    "success": true,
-    "message": "操作成功",
-    "data": { "id": "123", "name": "患者张三" },
-    "timestamp": 1704067200,
-    "requestId": "req-123456"
-}
-```
-
-#### ServiceResult<T> - 服务层结果包装
-前端业务服务使用的结果包装器：
+### ServiceResult<T> - 服务层结果
 
 ```csharp
 public class ServiceResult<T>
@@ -106,463 +383,219 @@ public class ServiceResult<T>
     public T? Data { get; set; }
     public string? ErrorMessage { get; set; }
     public Exception? Exception { get; set; }
-    public string? Message => ErrorMessage; // 兼容性属性
+
+    // 兼容性属性
+    public string? Message => ErrorMessage;
+
+    // 静态工厂方法
+    public static ServiceResult<T> Success(T data)
+    {
+        return new ServiceResult<T>
+        {
+            IsSuccess = true,
+            Data = data
+        };
+    }
+
+    public static ServiceResult<T> Failure(string errorMessage, Exception? exception = null)
+    {
+        return new ServiceResult<T>
+        {
+            IsSuccess = false,
+            ErrorMessage = errorMessage,
+            Exception = exception
+        };
+    }
 }
 ```
 
-#### PagedResult<T> - 分页结果
-支持分页查询的统一结果格式：
+## 📊 枚举定义
+
+### 核心业务枚举
 
 ```csharp
-public class PagedResult<T>
+// 通用状态枚举
+[JsonConverter(typeof(JsonStringEnumConverter))]
+public enum CommonStatus
 {
-    public List<T> Items { get; set; } = [];
-    public int TotalCount { get; set; }
-    public int PageNumber { get; set; }
-    public int PageSize { get; set; }
-    public int TotalPages => (int)Math.Ceiling((double)TotalCount / PageSize);
-    public bool HasPreviousPage => PageNumber > 1;
-    public bool HasNextPage => PageNumber < TotalPages;
+    [Description("禁用")]
+    Disabled = 0,
+
+    [Description("启用")]
+    Enabled = 1
 }
-```
 
-### 2. 核心业务枚举 (Enums/)
-
-#### UserRole - 用户角色枚举
-```csharp
+// 用户角色枚举
 [JsonConverter(typeof(JsonStringEnumConverter))]
 public enum UserRole
 {
-    [Description("管理员")]
-    Admin = 0,
-    
     [Description("医生")]
-    Doctor = 1,
-    
-    [Description("药师")]
-    Pharmacist = 2,
-    
-    [Description("前台")]
-    Receptionist = 3,
-    
-    [Description("收银员")]
-    Cashier = 4,
-    
-    [Description("理疗师")]
-    Therapist = 5
-}
-```
+    Doctor = 0,
 
-#### Gender - 性别枚举
-```csharp
+    [Description("管理员")]
+    Admin = 1
+}
+
+// 性别枚举
 [JsonConverter(typeof(JsonStringEnumConverter))]
 public enum Gender
 {
     [Description("未知")]
     Unknown = 0,
-    
+
     [Description("男")]
     Male = 1,
-    
+
     [Description("女")]
     Female = 2
 }
 ```
 
-#### CommonStatus - 通用状态枚举
+## 🚀 使用示例
+
+### 控制器使用
+
 ```csharp
-public enum CommonStatus
+[ApiController]
+[Route("api/v1/[controller]")]
+public class UsersController : BaseApiController
 {
-    [Description("禁用")]
-    Disabled = 0,
-    
-    [Description("启用")]
-    Enabled = 1
-}
-```
-
-### 3. 业务数据传输对象
-
-#### 认证模块 (Contracts/Auth)
-- **LoginRequest**: 登录请求参数
-- **LoginResponse**: 登录响应，包含JWT令牌
-- **ChangePasswordRequest**: 修改密码请求
-- **ChangeSysAdminPassword**: 系统管理员密码修改
-- **LogoutRequest**: 登出请求
-
-#### 用户管理 (Contracts/Users)
-- **UserDto**: 用户基本信息展示
-- **UserCreateDto**: 用户创建参数
-- **UserUpdateDto**: 用户更新参数
-- **UserSearchDto**: 用户搜索条件
-- **UserOperationDto**: 用户操作相关DTO
-
-#### 患者管理 (Contracts/Patients)
-- **PatientDto**: 患者基本信息
-- **PatientCreateDto**: 患者创建参数
-- **PatientUpdateDto**: 患者更新参数
-- **PatientSearchDto**: 患者搜索条件
-- **PatientStatisticsDto**: 患者统计信息
-
-#### 医疗诊断 (Contracts/Consultation)
-- **ConsultationDto**: 诊断记录详情
-- **ConsultationCreateDto**: 创建诊断记录
-- **ConsultationUpdateDto**: 更新诊断记录
-- **ConsultationOperationDto**: 诊断操作DTO
-
-#### 处方管理 (Contracts/Prescriptions)
-- **PrescriptionDto**: 处方详细信息
-- **PrescriptionCreateDto**: 处方创建参数
-- **PrescriptionCalculationDto**: 处方价格计算
-- **PrescriptionItemDto**: 处方明细项
-
-#### 中药材管理 (Contracts/Herbs)
-- **HerbDto**: 中药材基本信息
-- **HerbCreateDto**: 中药材创建参数
-- **HerbUpdateDto**: 中药材更新参数
-- **HerbOperationDto**: 中药材操作DTO
-
-#### 验方管理 (Contracts/Formula)
-- **FormulaDto**: 验方基本信息
-- **FormulaCreateDto**: 验方创建参数
-- **FormulaAnalysisDto**: 验方分析数据
-- **FormulaItemDto**: 验方药材明细
-
-### 4. 异常处理体系 (Exceptions/)
-
-#### 异常层级结构
-```
-Exception (System)
-└── AppException (基础应用异常)
-    ├── BusinessException (业务逻辑异常)
-    ├── ValidationException (数据验证异常)  
-    ├── NotFoundException (资源未找到)
-    └── ApiException (API调用异常)
-```
-
-#### BusinessException - 业务异常
-用于业务规则验证失败的场景：
-```csharp
-public class BusinessException : AppException
-{
-    public string? BusinessRule { get; set; }
-    
-    public BusinessException(string message, string businessRule) : base(message)
+    // 分页查询
+    [HttpGet]
+    public async Task<ActionResult<ApiResponse<PagedResult<UserDto>>>> GetUsers(
+        [FromQuery] UserSearchDto searchDto)
     {
-        BusinessRule = businessRule;
-        ShowDetailToUser = true; // 业务异常通常需要显示给用户
+        var result = await _userService.GetPagedAsync(searchDto);
+
+        if (result.IsSuccess)
+            return Ok(ApiResponse<PagedResult<UserDto>>.CreateSuccess(result.Data));
+
+        return BadRequest(ApiResponse<PagedResult<UserDto>>.CreateFailure(result.ErrorMessage));
+    }
+
+    // 创建用户
+    [HttpPost]
+    public async Task<ActionResult<ApiResponse<UserDto>>> CreateUser(
+        [FromBody] UserCreateDto createDto)
+    {
+        var result = await _userService.CreateAsync(createDto);
+
+        if (result.IsSuccess)
+            return Ok(ApiResponse<UserDto>.CreateSuccess(result.Data, "用户创建成功"));
+
+        return BadRequest(ApiResponse<UserDto>.CreateFailure(result.ErrorMessage));
+    }
+
+    // 更新用户
+    [HttpPut("{id}")]
+    public async Task<ActionResult<ApiResponse<UserDto>>> UpdateUser(
+        Guid id,
+        [FromBody] UserUpdateDto updateDto)
+    {
+        if (id != updateDto.Id)
+            return BadRequest(ApiResponse<UserDto>.CreateFailure("ID不匹配"));
+
+        var result = await _userService.UpdateAsync(updateDto);
+
+        if (result.IsSuccess)
+            return Ok(ApiResponse<UserDto>.CreateSuccess(result.Data, "用户更新成功"));
+
+        return BadRequest(ApiResponse<UserDto>.CreateFailure(result.ErrorMessage));
     }
 }
 ```
 
-#### ValidationException - 验证异常  
-用于数据格式或约束验证失败：
+### 服务层使用
+
 ```csharp
-public class ValidationException : AppException
+public class UserService : IUserService
 {
-    public Dictionary<string, List<string>>? ValidationErrors { get; set; }
-    
-    public ValidationException(string message) : base(message)
+    // 分页查询
+    public async Task<ServiceResult<PagedResult<UserDto>>> GetPagedAsync(UserSearchDto searchDto)
     {
-        ShowDetailToUser = true;
+        try
+        {
+            var query = _context.Users.AsQueryable();
+
+            // 应用搜索条件
+            if (!string.IsNullOrWhiteSpace(searchDto.Username))
+                query = query.Where(u => u.Username.Contains(searchDto.Username));
+
+            if (searchDto.Role.HasValue)
+                query = query.Where(u => u.Role == searchDto.Role.Value);
+
+            if (!searchDto.IncludeInactive)
+                query = query.Where(u => u.Status == CommonStatus.Enabled);
+
+            // 分页
+            var totalCount = await query.CountAsync();
+            var items = await query
+                .OrderBy(searchDto.OrderBy ?? "Username", searchDto.IsDescending)
+                .Skip((searchDto.PageIndex - 1) * searchDto.PageSize)
+                .Take(searchDto.PageSize)
+                .ProjectTo<UserDto>(_mapper.ConfigurationProvider)
+                .ToListAsync();
+
+            var pagedResult = new PagedResult<UserDto>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                PageIndex = searchDto.PageIndex,
+                PageSize = searchDto.PageSize
+            };
+
+            return ServiceResult<PagedResult<UserDto>>.Success(pagedResult);
+        }
+        catch (Exception ex)
+        {
+            return ServiceResult<PagedResult<UserDto>>.Failure($"查询失败: {ex.Message}", ex);
+        }
     }
 }
 ```
 
-#### ExceptionFactory - 异常工厂
-提供统一的异常创建方法：
-```csharp
-public static class ExceptionFactory
-{
-    public static BusinessException CreateBusinessException(string message, string rule = "")
-    public static ValidationException CreateValidationException(string field, string message)
-    public static NotFoundException CreateNotFoundException(string resourceType, object id)
-}
-```
+## 🎯 最佳实践
 
-### 5. 扩展方法库 (Extensions/)
+### 1. DTO设计原则
+- ✅ 使用继承优化代码复用
+- ✅ 分离创建和更新DTO
+- ✅ 使用DataAnnotations验证
+- ✅ 提供计算属性而非冗余字段
+- ✅ 使用可空类型表示可选字段
 
-#### EnumExtensions - 枚举扩展
-```csharp
-public static class EnumExtensions
-{
-    // 获取枚举的Description特性值
-    public static string GetDescription(this Enum enumValue)
-    
-    // 获取所有枚举值的键值对
-    public static List<KeyValuePair<TEnum, string>> GetKeyValuePairs<TEnum>()
-}
-```
+### 2. 命名规范
+- ✅ DTO后缀：`UserDto`
+- ✅ 创建DTO：`UserCreateDto`
+- ✅ 更新DTO：`UserUpdateDto`
+- ✅ 查询DTO：`UserQueryDto`（基础）、`UserSearchDto`（高级）
 
-#### DateTimeExtensions - 日期扩展
-```csharp
-public static class DateTimeExtensions
-{
-    // 转换为Unix时间戳
-    public static long ToUnixTimestamp(this DateTime dateTime)
-    
-    // 从Unix时间戳转换
-    public static DateTime FromUnixTimestamp(long timestamp)
-    
-    // 友好的时间显示
-    public static string ToFriendlyString(this DateTime dateTime)
-}
-```
+### 3. 验证规则
+- ✅ 使用DataAnnotations属性
+- ✅ 提供清晰的错误消息
+- ✅ 前后端验证保持一致
+- ✅ 使用FluentValidation处理复杂验证
 
-#### StringExtensions - 字符串扩展
-```csharp
-public static class StringExtensions
-{
-    // 安全截取字符串
-    public static string SafeSubstring(this string str, int maxLength)
-    
-    // 检查是否为有效的中文姓名
-    public static bool IsValidChineseName(this string name)
-    
-    // 生成拼音首字母
-    public static string ToPinyinInitials(this string chineseText)
-}
-```
+### 4. JSON序列化
+- ✅ 使用camelCase命名
+- ✅ 枚举序列化为字符串
+- ✅ 忽略null值
+- ✅ 使用UTC时间
 
-### 6. 系统常量 (Constants/)
+## 📈 性能优化
 
-#### SystemConstants - 系统级常量
-```csharp
-public static class SystemConstants
-{
-    // API相关常量
-    public const string API_VERSION = "v1";
-    public const int DEFAULT_PAGE_SIZE = 20;
-    public const int MAX_PAGE_SIZE = 100;
-    
-    // JWT相关常量
-    public const int JWT_EXPIRE_HOURS = 8;
-    public const int REMEMBER_ME_DAYS = 30;
-    
-    // 文件上传常量
-    public const int MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-    public const string[] ALLOWED_IMAGE_EXTENSIONS = { ".jpg", ".jpeg", ".png", ".gif" };
-    
-    // 业务常量
-    public const decimal MIN_PRESCRIPTION_AMOUNT = 0.01m;
-    public const int MAX_PRESCRIPTION_DAYS = 30;
-}
-```
+- **轻量级DTO**: 仅包含必要字段
+- **计算属性**: 避免存储冗余数据
+- **延迟加载**: 导航属性按需加载
+- **投影查询**: 使用AutoMapper投影优化查询
 
-## 数据模型设计原则
+## 🔒 安全考虑
 
-### 1. 一致性原则
-- **命名规范**: 所有DTO使用Pascal命名法，属性名与数据库字段对应
-- **时间字段**: 统一使用`DateTime`类型，UTC时间存储
-- **ID字段**: 统一使用`Guid`类型作为主键
-- **状态字段**: 使用枚举类型，避免魔法数字
-
-### 2. 验证约束
-```csharp
-public class UserCreateDto : DtoBase
-{
-    [Required(ErrorMessage = "用户名不能为空")]
-    [StringLength(50, MinimumLength = 3, ErrorMessage = "用户名长度必须在3-50个字符之间")]
-    public string Username { get; set; } = string.Empty;
-    
-    [Required(ErrorMessage = "真实姓名不能为空")]
-    [StringLength(20, MinimumLength = 2, ErrorMessage = "真实姓名长度必须在2-20个字符之间")]
-    public string RealName { get; set; } = string.Empty;
-    
-    [EmailAddress(ErrorMessage = "邮箱格式不正确")]
-    public string? Email { get; set; }
-    
-    [Phone(ErrorMessage = "电话号码格式不正确")]
-    public string? PhoneNumber { get; set; }
-}
-```
-
-### 3. JSON序列化配置
-```csharp
-[JsonPropertyName("username")]        // 小写驼峰命名
-[JsonConverter(typeof(JsonStringEnumConverter))]  // 枚举字符串序列化
-[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]  // 忽略null值
-```
-
-## 使用示例
-
-### API响应处理
-```csharp
-// 控制器中创建成功响应
-public async Task<ActionResult<ApiResponse<UserDto>>> GetUser(Guid id)
-{
-    var user = await _userService.GetByIdAsync(id);
-    return ApiResponse<UserDto>.CreateSuccess(user, "获取用户信息成功");
-}
-
-// 前端处理API响应
-var response = await _userApi.GetUserAsync(userId);
-if (response.Success)
-{
-    var userData = response.Data;
-    DisplayUserInfo(userData);
-}
-else
-{
-    ShowError(response.Message);
-}
-```
-
-### 服务层结果处理
-```csharp
-// 服务层返回结果
-public async Task<ServiceResult<User>> CreateUserAsync(UserCreateDto dto)
-{
-    try
-    {
-        var user = await _repository.CreateAsync(dto);
-        return ServiceResult<User>.Success(user);
-    }
-    catch (ValidationException ex)
-    {
-        return ServiceResult<User>.Failure(ex.Message, ex);
-    }
-}
-
-// 调用服务并处理结果
-var result = await _userService.CreateUserAsync(createDto);
-if (result.IsSuccess)
-{
-    await ShowSuccessMessage("用户创建成功");
-}
-else
-{
-    await ShowError(result.ErrorMessage);
-}
-```
-
-### 分页数据处理
-```csharp
-// 控制器中分页查询
-public async Task<ActionResult<ApiResponse<PagedResult<UserDto>>>> GetUsers([FromQuery] UserSearchDto searchDto)
-{
-    var pagedResult = await _userService.GetPagedUsersAsync(searchDto);
-    return ApiResponse<PagedResult<UserDto>>.CreateSuccess(pagedResult);
-}
-
-// 前端分页处理
-var searchRequest = new UserSearchDto 
-{ 
-    PageNumber = 1, 
-    PageSize = 20, 
-    Keyword = "张三" 
-};
-var response = await _userApi.GetUsersAsync(searchRequest);
-if (response.Success)
-{
-    var pagedData = response.Data;
-    UpdateUserList(pagedData.Items);
-    UpdatePagination(pagedData.TotalCount, pagedData.PageNumber, pagedData.PageSize);
-}
-```
-
-### 异常处理
-```csharp
-// 抛出业务异常
-if (user.Status == CommonStatus.Disabled)
-{
-    throw new BusinessException("用户已被禁用，无法执行此操作", "UserDisabled");
-}
-
-// 抛出验证异常
-if (!IsValidPhoneNumber(dto.PhoneNumber))
-{
-    throw new ValidationException("电话号码格式不正确");
-}
-
-// 统一异常处理
-try
-{
-    await _userService.UpdateUserAsync(userId, updateDto);
-}
-catch (BusinessException ex)
-{
-    await ShowWarning(ex.Message);
-}
-catch (ValidationException ex)
-{
-    await ShowValidationErrors(ex.ValidationErrors);
-}
-```
-
-## 技术特性
-
-### 现代化C#语法支持
-- **记录类型**: 使用`record`定义不可变DTO
-- **可空引用类型**: 启用nullable reference types
-- **模式匹配**: 枚举和状态判断使用模式匹配
-- **集合表达式**: 使用`[]`初始化集合
-
-### JSON序列化优化
-- **System.Text.Json**: 使用现代JSON序列化器
-- **驼峰命名**: API返回字段使用camelCase命名
-- **枚举处理**: 枚举序列化为字符串而非数字
-- **日期格式**: 统一的ISO 8601日期格式
-
-### 国际化支持
-- **多语言异常消息**: 支持中英文错误消息
-- **本地化枚举**: 枚举Description支持多语言
-- **文化相关格式**: 日期、数字格式本地化
-
-## 开发指南
-
-### 添加新的DTO
-1. **选择合适的命名空间**: 根据业务模块放置DTO文件
-2. **继承基类**: 继承`DtoBase`或合适的基础类
-3. **添加验证特性**: 使用`DataAnnotations`添加验证
-4. **JSON配置**: 配置JSON序列化属性
-5. **XML文档**: 为所有公共成员添加XML注释
-
-### 异常处理最佳实践
-1. **选择合适异常类型**: 根据错误性质选择异常类型
-2. **提供详细信息**: 包含错误代码和用户友好消息
-3. **避免敏感信息泄露**: 生产环境隐藏技术细节
-4. **使用异常工厂**: 统一异常创建方式
-
-### 版本兼容性
-1. **向前兼容**: 新增字段使用可选属性
-2. **弃用处理**: 使用`[Obsolete]`标记过时成员
-3. **版本标记**: 使用命名空间区分版本
-4. **迁移支持**: 提供版本间数据迁移方法
-
-## 测试支持
-
-### 单元测试辅助
-```csharp
-// 测试数据构建器
-public class UserDtoBuilder
-{
-    public static UserDto CreateSampleUser() => new()
-    {
-        Id = Guid.NewGuid(),
-        Username = "testuser",
-        RealName = "测试用户",
-        Role = "Doctor",
-        Status = CommonStatus.Enabled
-    };
-}
-
-// 异常测试
-[Test]
-public void BusinessException_Should_SetShowDetailToUser_True()
-{
-    var exception = new BusinessException("业务错误");
-    Assert.IsTrue(exception.ShowDetailToUser);
-}
-```
-
-## 相关文档
-
-- [LYBT.Shared.Interfaces](../LYBT.Shared.Interfaces/README.md) - 共享接口定义
-- [LYBT.Shared.Utilities](../LYBT.Shared.Utilities/README.md) - 共享工具类库
-- [API规范文档](../../docs/api/api-standards.md) - API设计标准
-- [数据模型设计指南](../../docs/guides/data-model-design-guide.md) - 模型设计规范
+- **密码处理**: 密码字段仅在创建/修改时传输
+- **敏感信息**: 避免在DTO中暴露敏感数据
+- **权限控制**: 根据角色过滤返回字段
+- **输入验证**: 严格的输入验证防止注入
 
 ---
 
-**项目状态**: ✅ 生产就绪 | **最后更新**: 2025-01-01
+> 📌 **最新成果**: DTO三阶段优化完成，类型安全和代码质量大幅提升
+> 🎆 **生产就绪**: 完整的DTO体系，支撑整个系统的数据传输

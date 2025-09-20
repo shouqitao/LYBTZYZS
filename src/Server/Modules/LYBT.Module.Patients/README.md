@@ -1,80 +1,84 @@
 # LYBT.Module.Patients
 
-> **患者档案管理核心模块** - UltraThink双层架构版  
-> 完整患者档案管理与诊疗历史追踪 | 专为小型中医诊所(<20人)优化
-> **模块状态**: ✅ **生产就绪** | 🎆 **UltraThink双层架构完成** | **零编译错误**
+> **患者档案管理核心模块** - 中医诊疗患者信息中心
+> 完整病历管理 | 就诊历史追踪 | 健康档案维护
+> **模块状态**: ✅ **生产就绪** | 🎆 **DTO优化完成** | **零编译错误** | **2025-09-20更新**
 
 ## 🎯 模块概述
 
-LYBT.Module.Patients是系统的患者档案管理核心模块，采用UltraThink双层架构设计，提供完整的患者基础信息管理、快速检索和诊疗历史追踪功能。专为中医诊所场景优化，支持患者全生命周期管理。
+LYBT.Module.Patients是系统的患者管理核心模块，采用UltraThink双层架构设计，提供完整的患者档案管理、就诊历史记录、健康信息维护等功能。专为中医诊所场景优化，支持中医特色的体质辨识、过敏史记录等功能。
 
-**技术栈**: UltraThink双层架构 + Entity Framework Core + AutoMapper + 优化查询缓存
+**技术栈**: .NET 8 + Entity Framework Core 8.0 + AutoMapper + LINQ
+**最新优化**: DTO字段与实体完全对齐、PatientSearchDto命名规范化、字段类型安全增强
 
-## 🎆 UltraThink双层架构设计
+## 🎉 2025-09-20 DTO优化成果
 
-**架构层次**:
+### ✅ 优化完成内容
+- **查询DTO规范**: PatientPagedQueryDto → PatientSearchDto，命名统一
+- **字段对齐**: PatientDto字段100%与Patient实体对齐
+- **类型修正**: MaritalStatus从string改为int类型
+- **字段重命名**:
+  - EmergencyContact → EmergencyContactName
+  - EmergencyPhone → EmergencyContactPhone
+- **编译状态**: 零错误零警告，完全生产就绪
+
+## 🏗️ UltraThink双层架构设计
+
 ```
 PatientService (主服务层 - 纯委托模式)
     │
     ├── PatientQueryService (查询专业化层)
     │   ├── 患者搜索和筛选 (SearchPatientsAsync)
-    │   ├── 统计分析 (GetPatientStatisticsAsync) 
-    │   ├── 诊疗历史查询 (GetPatientHistoryAsync)
-    │   ├── 快速查找 (QuickSearchAsync)
+    │   ├── 就诊历史查询 (GetMedicalHistoryAsync)
+    │   ├── 统计分析 (GetPatientStatisticsAsync)
     │   └── 复杂条件查询 (GetPatientsByConditionAsync)
     │
     └── PatientBusinessService (业务逻辑+CRUD层)
         ├── 患者CRUD操作 (Create/Update/Delete/GetById)
-        ├── 档案管理 (ArchivePatientAsync, RestorePatientAsync)
-        ├── 状态管理 (UpdatePatientStatusAsync)
-        ├── 联系方式更新 (UpdateContactInfoAsync)
-        ├── 数据导入导出 (ImportPatientsAsync, ExportPatientsAsync)
-        └── 业务验证逻辑 (ValidatePatientData, CheckDuplicates)
+        ├── 档案管理 (UpdateHealthInfoAsync)
+        ├── 过敏史管理 (UpdateAllergiesAsync)
+        └── 体质辨识 (UpdateConstitutionAsync)
 ```
 
 ### 核心接口设计
 
 ```csharp
-// 主服务接口 (统一入口)
+// 主服务接口 (统一入口) - 2025-09-20更新
 public interface IPatientService
 {
-    // 委托到BusinessService的CRUD操作
-    Task<ServiceResult<PatientDto>> CreatePatientAsync(CreatePatientDto dto);
-    Task<ServiceResult<PatientDto>> UpdatePatientAsync(Guid id, UpdatePatientDto dto);
-    Task<ServiceResult<bool>> DeletePatientAsync(Guid id);
-    Task<ServiceResult<PatientDto?>> GetByIdAsync(Guid id);
-    
-    // 委托到QueryService的查询操作
-    Task<ServiceResult<PagedResult<PatientDto>>> SearchPatientsAsync(PatientSearchDto criteria);
-    Task<ServiceResult<List<PatientDto>>> QuickSearchAsync(string keyword);
-    Task<ServiceResult<PatientStatisticsDto>> GetPatientStatisticsAsync();
-    Task<ServiceResult<List<PatientHistoryDto>>> GetPatientHistoryAsync(Guid patientId);
-    
-    // 委托到BusinessService的业务操作
-    Task<ServiceResult<bool>> UpdateContactInfoAsync(Guid id, UpdateContactDto dto);
-    Task<ServiceResult<bool>> ArchivePatientAsync(Guid id, string reason);
-    Task<ServiceResult<List<PatientDto>>> ImportPatientsAsync(ImportPatientsDto dto);
+    // CRUD操作
+    Task<ServiceResult<PatientDto>> CreateAsync(PatientCreateDto dto);
+    Task<ServiceResult<PatientDto>> UpdateAsync(Guid id, PatientUpdateDto dto);
+    Task<ServiceResult<bool>> DeleteAsync(Guid id);
+    Task<ServiceResult<PatientDto>> GetByIdAsync(Guid id);
+
+    // 查询操作 - 使用新的SearchDto
+    Task<ServiceResult<PagedResult<PatientDto>>> SearchAsync(PatientSearchDto query);
+    Task<ServiceResult<PatientDto>> GetByIdCardAsync(string idCard);
+    Task<ServiceResult<List<PatientDto>>> GetByPhoneAsync(string phone);
+
+    // 业务操作
+    Task<ServiceResult<bool>> UpdateHealthInfoAsync(Guid id, HealthInfoDto dto);
+    Task<ServiceResult<List<MedicalCaseDto>>> GetMedicalHistoryAsync(Guid id);
 }
 
 // 查询专业化接口
 public interface IPatientQueryService
 {
     Task<ServiceResult<PagedResult<PatientDto>>> SearchPatientsAsync(PatientSearchDto criteria);
-    Task<ServiceResult<List<PatientDto>>> QuickSearchAsync(string keyword);
-    Task<ServiceResult<PatientStatisticsDto>> GetPatientStatisticsAsync();
-    Task<ServiceResult<List<PatientHistoryDto>>> GetPatientHistoryAsync(Guid patientId);
-    Task<ServiceResult<List<PatientDto>>> GetRecentPatientsAsync(int count = 10);
+    Task<ServiceResult<List<PatientDto>>> GetRecentPatientsAsync(int days = 7);
+    Task<ServiceResult<PatientStatisticsDto>> GetStatisticsAsync();
+    Task<ServiceResult<List<PatientDto>>> GetPatientsByConstitutionAsync(string constitution);
 }
 
 // 业务逻辑接口
 public interface IPatientBusinessService
 {
-    Task<ServiceResult<PatientDto>> CreatePatientAsync(CreatePatientDto dto);
-    Task<ServiceResult<PatientDto>> UpdatePatientAsync(Guid id, UpdatePatientDto dto);
+    Task<ServiceResult<PatientDto>> CreatePatientAsync(PatientCreateDto dto);
+    Task<ServiceResult<PatientDto>> UpdatePatientAsync(Guid id, PatientUpdateDto dto);
     Task<ServiceResult<bool>> DeletePatientAsync(Guid id);
-    Task<ServiceResult<PatientDto?>> GetByIdAsync(Guid id);
-    Task<ServiceResult<bool>> UpdateContactInfoAsync(Guid id, UpdateContactDto dto);
-    Task<ServiceResult<ValidationResult>> ValidatePatientDataAsync(PatientDataDto dto);
+    Task<ServiceResult<bool>> UpdateAllergiesAsync(Guid id, string[] allergies);
+    Task<ServiceResult<bool>> UpdateConstitutionAsync(Guid id, string constitution);
 }
 ```
 
@@ -82,685 +86,334 @@ public interface IPatientBusinessService
 
 ### 1. 患者档案管理
 
-**创建患者档案流程**:
+**创建患者档案**:
 ```csharp
-public async Task<ServiceResult<PatientDto>> CreatePatientAsync(CreatePatientDto dto)
+public async Task<ServiceResult<PatientDto>> CreatePatientAsync(PatientCreateDto dto)
 {
-    try
+    // 1. 验证身份证唯一性
+    if (!string.IsNullOrEmpty(dto.IdCard))
     {
-        // 1. 数据验证
-        var validationResult = await ValidatePatientDataAsync(dto);
-        if (!validationResult.IsSuccess)
-            return ServiceResult<PatientDto>.Failure(validationResult.Message);
-        
-        // 2. 检查重复患者
-        var duplicateCheck = await CheckForDuplicatesAsync(dto);
-        if (duplicateCheck.HasDuplicates)
-        {
-            return ServiceResult<PatientDto>.Failure(
-                $"发现可能重复的患者记录: {string.Join(", ", duplicateCheck.SimilarPatients)}");
-        }
-        
-        // 3. 创建患者实体
-        var patient = new PatientModel
-        {
-            Name = dto.Name.Trim(),
-            Gender = dto.Gender,
-            Age = dto.Age,
-            DateOfBirth = dto.DateOfBirth,
-            PhoneNumber = dto.PhoneNumber?.Trim(),
-            IdNumber = dto.IdNumber?.Trim(),
-            Address = dto.Address?.Trim(),
-            EmergencyContact = dto.EmergencyContact?.Trim(),
-            EmergencyPhone = dto.EmergencyPhone?.Trim(),
-            Allergies = dto.Allergies?.Trim(),
-            MedicalHistory = dto.MedicalHistory?.Trim(),
-            Remarks = dto.Remarks?.Trim(),
-            Status = PatientStatus.Active
-        };
-        
-        // 4. 保存到数据库
-        var createdPatient = await _repository.CreateAsync(patient);
-        
-        // 5. 记录操作日志
-        _logger.LogInformation("患者档案创建成功: {PatientName}, ID: {PatientId}", 
-            dto.Name, createdPatient.Id);
-        
-        // 6. 返回DTO
-        return ServiceResult<PatientDto>.Success(_mapper.Map<PatientDto>(createdPatient));
+        var existing = await _repository.GetByIdCardAsync(dto.IdCard);
+        if (existing != null)
+            return ServiceResult<PatientDto>.Failure("该身份证号已存在");
     }
-    catch (Exception ex)
+
+    // 2. 创建患者实体
+    var patient = new Patient
     {
-        _logger.LogError(ex, "创建患者档案时发生错误: {PatientName}", dto.Name);
-        return ServiceResult<PatientDto>.Failure("创建患者档案失败");
-    }
+        Id = Guid.NewGuid(),
+        Name = dto.Name,
+        Gender = dto.Gender,
+        BirthDate = dto.BirthDate,
+        Phone = dto.Phone,
+        IdCard = dto.IdCard,
+        Address = dto.Address,
+        EmergencyContactName = dto.EmergencyContactName,  // 新字段名
+        EmergencyContactPhone = dto.EmergencyContactPhone,  // 新字段名
+        MaritalStatus = dto.MaritalStatus,  // int类型
+        Occupation = dto.Occupation,
+        Allergies = dto.Allergies,
+        MedicalHistory = dto.MedicalHistory,
+        CreateTime = DateTime.UtcNow
+    };
+
+    // 3. 保存到数据库
+    var created = await _repository.CreateAsync(patient);
+
+    // 4. 返回DTO
+    return ServiceResult<PatientDto>.Success(_mapper.Map<PatientDto>(created));
 }
 ```
 
-### 2. 高级搜索和查询
+### 2. 患者搜索查询
 
-**多维度搜索功能**:
+**高级搜索功能**:
 ```csharp
 public async Task<ServiceResult<PagedResult<PatientDto>>> SearchPatientsAsync(PatientSearchDto criteria)
 {
-    try
+    var query = _repository.GetQueryable();
+
+    // 关键词搜索（姓名、电话、身份证）
+    if (!string.IsNullOrWhiteSpace(criteria.Keyword))
     {
-        var query = _repository.GetQueryable();
-        
-        // 关键词搜索 (姓名、电话、身份证)
-        if (!string.IsNullOrWhiteSpace(criteria.Keyword))
-        {
-            var keyword = criteria.Keyword.Trim().ToLower();
-            query = query.Where(p => 
-                p.Name.ToLower().Contains(keyword) ||
-                (p.PhoneNumber != null && p.PhoneNumber.Contains(keyword)) ||
-                (p.IdNumber != null && p.IdNumber.ToLower().Contains(keyword)));
-        }
-        
-        // 性别筛选
-        if (criteria.Gender.HasValue)
-        {
-            query = query.Where(p => p.Gender == criteria.Gender.Value);
-        }
-        
-        // 年龄范围
-        if (criteria.AgeFrom.HasValue)
-        {
-            query = query.Where(p => p.Age >= criteria.AgeFrom.Value);
-        }
-        if (criteria.AgeTo.HasValue)
-        {
-            query = query.Where(p => p.Age <= criteria.AgeTo.Value);
-        }
-        
-        // 状态筛选
-        if (criteria.Status.HasValue)
-        {
-            query = query.Where(p => p.Status == criteria.Status.Value);
-        }
-        
-        // 创建时间范围 (注册时间)
-        if (criteria.RegisterTimeFrom.HasValue)
-        {
-            query = query.Where(p => p.CreateTime >= criteria.RegisterTimeFrom.Value);
-        }
-        if (criteria.RegisterTimeTo.HasValue)
-        {
-            query = query.Where(p => p.CreateTime <= criteria.RegisterTimeTo.Value);
-        }
-        
-        // 过敏史筛选
-        if (!string.IsNullOrWhiteSpace(criteria.AllergyKeyword))
-        {
-            query = query.Where(p => p.Allergies != null && 
-                p.Allergies.ToLower().Contains(criteria.AllergyKeyword.ToLower()));
-        }
-        
-        // 排序
-        query = criteria.SortBy?.ToLower() switch
-        {
-            "name" => criteria.SortDescending ? 
-                query.OrderByDescending(p => p.Name) : 
-                query.OrderBy(p => p.Name),
-            "age" => criteria.SortDescending ? 
-                query.OrderByDescending(p => p.Age) : 
-                query.OrderBy(p => p.Age),
-            "createtime" => criteria.SortDescending ? 
-                query.OrderByDescending(p => p.CreateTime) : 
-                query.OrderBy(p => p.CreateTime),
-            _ => query.OrderByDescending(p => p.CreateTime) // 默认按注册时间倒序
-        };
-        
-        // 分页查询
-        var totalCount = await query.CountAsync();
-        var patients = await query
-            .Skip((criteria.PageIndex - 1) * criteria.PageSize)
-            .Take(criteria.PageSize)
-            .ToListAsync();
-            
-        // 加载诊疗次数统计
-        var patientIds = patients.Select(p => p.Id).ToList();
-        var visitCounts = await _context.MedicalCases
-            .Where(mc => patientIds.Contains(mc.PatientId))
-            .GroupBy(mc => mc.PatientId)
-            .Select(g => new { PatientId = g.Key, VisitCount = g.Count() })
-            .ToListAsync();
-            
-        var patientDtos = _mapper.Map<List<PatientDto>>(patients);
-        
-        // 填充诊疗次数
-        foreach (var dto in patientDtos)
-        {
-            dto.TotalVisits = visitCounts
-                .FirstOrDefault(vc => vc.PatientId == dto.Id)?.VisitCount ?? 0;
-        }
-        
-        var result = new PagedResult<PatientDto>
-        {
-            Items = patientDtos,
-            TotalCount = totalCount,
-            PageIndex = criteria.PageIndex,
-            PageSize = criteria.PageSize,
-            TotalPages = (int)Math.Ceiling((double)totalCount / criteria.PageSize)
-        };
-        
-        return ServiceResult<PagedResult<PatientDto>>.Success(result);
+        query = query.Where(p =>
+            p.Name.Contains(criteria.Keyword) ||
+            p.Phone.Contains(criteria.Keyword) ||
+            p.IdCard.Contains(criteria.Keyword));
     }
-    catch (Exception ex)
+
+    // 性别筛选
+    if (criteria.Gender.HasValue)
     {
-        _logger.LogError(ex, "搜索患者时发生错误");
-        return ServiceResult<PagedResult<PatientDto>>.Failure("搜索患者失败");
+        query = query.Where(p => p.Gender == criteria.Gender.Value);
     }
+
+    // 年龄范围筛选
+    if (criteria.MinAge.HasValue)
+    {
+        var maxBirthDate = DateTime.Today.AddYears(-criteria.MinAge.Value);
+        query = query.Where(p => p.BirthDate <= maxBirthDate);
+    }
+    if (criteria.MaxAge.HasValue)
+    {
+        var minBirthDate = DateTime.Today.AddYears(-criteria.MaxAge.Value - 1);
+        query = query.Where(p => p.BirthDate >= minBirthDate);
+    }
+
+    // 创建时间范围
+    if (criteria.CreateTimeFrom.HasValue)
+    {
+        query = query.Where(p => p.CreateTime >= criteria.CreateTimeFrom.Value);
+    }
+    if (criteria.CreateTimeTo.HasValue)
+    {
+        query = query.Where(p => p.CreateTime <= criteria.CreateTimeTo.Value);
+    }
+
+    // 分页查询
+    var totalCount = await query.CountAsync();
+    var patients = await query
+        .OrderByDescending(p => p.CreateTime)
+        .Skip((criteria.PageIndex - 1) * criteria.PageSize)
+        .Take(criteria.PageSize)
+        .ToListAsync();
+
+    return ServiceResult<PagedResult<PatientDto>>.Success(new PagedResult<PatientDto>
+    {
+        Items = _mapper.Map<List<PatientDto>>(patients),
+        TotalCount = totalCount,
+        PageIndex = criteria.PageIndex,
+        PageSize = criteria.PageSize
+    });
 }
 ```
 
-### 3. 快速检索功能
+### 3. 就诊历史管理
 
-**智能快速搜索**:
+**获取患者就诊历史**:
 ```csharp
-public async Task<ServiceResult<List<PatientDto>>> QuickSearchAsync(string keyword)
+public async Task<ServiceResult<List<MedicalCaseDto>>> GetMedicalHistoryAsync(Guid patientId)
 {
-    try
-    {
-        if (string.IsNullOrWhiteSpace(keyword))
-            return ServiceResult<List<PatientDto>>.Success(new List<PatientDto>());
-            
-        var searchKey = keyword.Trim().ToLower();
-        
-        // 缓存键
-        var cacheKey = $"QuickSearch_{searchKey.GetHashCode()}";
-        if (_cache.TryGetValue(cacheKey, out List<PatientDto>? cachedResult))
-            return ServiceResult<List<PatientDto>>.Success(cachedResult);
-        
-        // 智能搜索策略
-        var patients = await _repository.GetQueryable()
-            .Where(p => p.Status == PatientStatus.Active)
-            .Where(p => 
-                p.Name.ToLower().Contains(searchKey) ||
-                (p.PhoneNumber != null && p.PhoneNumber.Contains(keyword)) ||
-                (p.IdNumber != null && p.IdNumber.ToLower().Contains(searchKey)))
-            .OrderBy(p => p.Name.ToLower().StartsWith(searchKey) ? 0 : 1) // 姓名开头匹配优先
-            .ThenBy(p => p.Name)
-            .Take(10) // 限制返回数量
-            .ToListAsync();
-            
-        var result = _mapper.Map<List<PatientDto>>(patients);
-        
-        // 缓存结果 (3分钟)
-        _cache.Set(cacheKey, result, TimeSpan.FromMinutes(3));
-        
-        return ServiceResult<List<PatientDto>>.Success(result);
-    }
-    catch (Exception ex)
-    {
-        _logger.LogError(ex, "快速搜索患者时发生错误，关键词: {Keyword}", keyword);
-        return ServiceResult<List<PatientDto>>.Failure("快速搜索失败");
-    }
+    var patient = await _repository.GetByIdAsync(patientId);
+    if (patient == null)
+        return ServiceResult<List<MedicalCaseDto>>.Failure("患者不存在");
+
+    var medicalCases = await _medicalCaseRepository
+        .GetByPatientIdAsync(patientId);
+
+    var caseDtos = medicalCases
+        .OrderByDescending(c => c.CreateTime)
+        .Select(c => new MedicalCaseDto
+        {
+            Id = c.Id,
+            VisitDate = c.VisitDate,
+            ChiefComplaint = c.ChiefComplaint,
+            Diagnosis = c.Diagnosis,
+            Treatment = c.Treatment,
+            DoctorName = c.Doctor?.DisplayName,
+            Status = c.Status
+        })
+        .ToList();
+
+    return ServiceResult<List<MedicalCaseDto>>.Success(caseDtos);
 }
 ```
 
-### 4. 患者统计分析
-
-**统计数据生成**:
-```csharp
-public async Task<ServiceResult<PatientStatisticsDto>> GetPatientStatisticsAsync()
-{
-    try
-    {
-        var totalPatients = await _repository.CountAsync();
-        var activePatients = await _repository.CountAsync(p => p.Status == PatientStatus.Active);
-        
-        // 性别统计
-        var maleCount = await _repository.CountAsync(p => p.Gender == Gender.Male);
-        var femaleCount = await _repository.CountAsync(p => p.Gender == Gender.Female);
-        
-        // 年龄段统计
-        var ageGroups = await _repository.GetQueryable()
-            .Where(p => p.Status == PatientStatus.Active)
-            .GroupBy(p => 
-                p.Age < 18 ? "儿童" :
-                p.Age < 35 ? "青年" :
-                p.Age < 60 ? "中年" : "老年")
-            .Select(g => new AgeGroupStatistic 
-            { 
-                AgeGroup = g.Key, 
-                Count = g.Count() 
-            })
-            .ToListAsync();
-        
-        // 近期新增患者
-        var thirtyDaysAgo = DateTime.Now.AddDays(-30);
-        var newPatientsLast30Days = await _repository
-            .CountAsync(p => p.CreateTime >= thirtyDaysAgo);
-            
-        // 最近就诊患者
-        var recentVisitPatients = await _context.MedicalCases
-            .Where(mc => mc.CreateTime >= thirtyDaysAgo)
-            .Select(mc => mc.PatientId)
-            .Distinct()
-            .CountAsync();
-            
-        // 有过敏史的患者
-        var patientsWithAllergies = await _repository
-            .CountAsync(p => !string.IsNullOrEmpty(p.Allergies));
-            
-        var statistics = new PatientStatisticsDto
-        {
-            TotalPatients = totalPatients,
-            ActivePatients = activePatients,
-            InactivePatients = totalPatients - activePatients,
-            MalePatients = maleCount,
-            FemalePatients = femaleCount,
-            NewPatientsLast30Days = newPatientsLast30Days,
-            RecentVisitPatients = recentVisitPatients,
-            PatientsWithAllergies = patientsWithAllergies,
-            AgeGroupDistribution = ageGroups,
-            AverageAge = await _repository.GetQueryable()
-                .Where(p => p.Status == PatientStatus.Active)
-                .AverageAsync(p => (double?)p.Age) ?? 0
-        };
-        
-        return ServiceResult<PatientStatisticsDto>.Success(statistics);
-    }
-    catch (Exception ex)
-    {
-        _logger.LogError(ex, "获取患者统计数据时发生错误");
-        return ServiceResult<PatientStatisticsDto>.Failure("获取统计数据失败");
-    }
-}
-```
-
-### 5. 诊疗历史查询
-
-**患者就诊历史**:
-```csharp
-public async Task<ServiceResult<List<PatientHistoryDto>>> GetPatientHistoryAsync(Guid patientId)
-{
-    try
-    {
-        // 验证患者存在
-        var patient = await _repository.GetByIdAsync(patientId);
-        if (patient == null)
-            return ServiceResult<List<PatientHistoryDto>>.Failure("患者不存在");
-            
-        // 查询医疗案例历史
-        var medicalCases = await _context.MedicalCases
-            .Where(mc => mc.PatientId == patientId)
-            .Include(mc => mc.Consultation)
-            .Include(mc => mc.Doctor)
-            .OrderByDescending(mc => mc.CreateTime)
-            .ToListAsync();
-            
-        var history = new List<PatientHistoryDto>();
-        
-        foreach (var medicalCase in medicalCases)
-        {
-            var historyItem = new PatientHistoryDto
-            {
-                VisitDate = medicalCase.CreateTime,
-                MedicalCaseId = medicalCase.Id,
-                DoctorName = medicalCase.Doctor?.DisplayName ?? medicalCase.Doctor?.Username ?? "未知医生",
-                ChiefComplaint = medicalCase.Consultation?.ChiefComplaint ?? "",
-                TcmDiagnosis = medicalCase.Consultation?.TcmDiagnosis ?? "",
-                Status = medicalCase.Status,
-                HasPrescription = await _context.Prescriptions
-                    .AnyAsync(p => p.MedicalCaseId == medicalCase.Id)
-            };
-            
-            // 获取处方信息
-            if (historyItem.HasPrescription)
-            {
-                var prescription = await _context.Prescriptions
-                    .Where(p => p.MedicalCaseId == medicalCase.Id)
-                    .Include(p => p.Items)
-                    .ThenInclude(i => i.Herb)
-                    .FirstOrDefaultAsync();
-                    
-                if (prescription != null)
-                {
-                    historyItem.PrescriptionSummary = string.Join("、", 
-                        prescription.Items.Take(3).Select(i => i.Herb.Name));
-                    if (prescription.Items.Count > 3)
-                        historyItem.PrescriptionSummary += "等";
-                }
-            }
-            
-            history.Add(historyItem);
-        }
-        
-        return ServiceResult<List<PatientHistoryDto>>.Success(history);
-    }
-    catch (Exception ex)
-    {
-        _logger.LogError(ex, "获取患者诊疗历史时发生错误，患者ID: {PatientId}", patientId);
-        return ServiceResult<List<PatientHistoryDto>>.Failure("获取诊疗历史失败");
-    }
-}
-```
-
-## 🔧 Repository层设计
-
-### PatientRepository (优化版)
-```csharp
-public class OptimizedPatientRepository : BaseRepository<PatientModel>, IPatientRepository
-{
-    public async Task<PatientModel?> GetByPhoneNumberAsync(string phoneNumber)
-    {
-        return await _context.Patients
-            .FirstOrDefaultAsync(p => p.PhoneNumber == phoneNumber && !p.IsDeleted);
-    }
-    
-    public async Task<PatientModel?> GetByIdNumberAsync(string idNumber)
-    {
-        return await _context.Patients
-            .FirstOrDefaultAsync(p => p.IdNumber == idNumber && !p.IsDeleted);
-    }
-    
-    public async Task<List<PatientModel>> GetSimilarPatientsAsync(string name, DateTime? dateOfBirth, string? phoneNumber)
-    {
-        var query = _context.Patients.Where(p => !p.IsDeleted);
-        
-        // 姓名相似度检查 (简化版)
-        if (!string.IsNullOrEmpty(name))
-        {
-            query = query.Where(p => p.Name.Contains(name) || name.Contains(p.Name));
-        }
-        
-        // 出生日期匹配
-        if (dateOfBirth.HasValue)
-        {
-            query = query.Where(p => p.DateOfBirth == dateOfBirth.Value);
-        }
-        
-        // 电话号码匹配
-        if (!string.IsNullOrEmpty(phoneNumber))
-        {
-            query = query.Where(p => p.PhoneNumber == phoneNumber);
-        }
-        
-        return await query.Take(5).ToListAsync();
-    }
-    
-    public async Task<List<PatientModel>> GetRecentPatientsAsync(int count)
-    {
-        return await _context.Patients
-            .Where(p => p.Status == PatientStatus.Active && !p.IsDeleted)
-            .OrderByDescending(p => p.UpdateTime ?? p.CreateTime)
-            .Take(count)
-            .ToListAsync();
-    }
-    
-    public async Task<int> CountByAgeRangeAsync(int minAge, int maxAge)
-    {
-        return await _context.Patients
-            .CountAsync(p => p.Age >= minAge && p.Age <= maxAge && 
-                           p.Status == PatientStatus.Active && !p.IsDeleted);
-    }
-    
-    public async Task<Dictionary<Gender, int>> GetGenderDistributionAsync()
-    {
-        return await _context.Patients
-            .Where(p => p.Status == PatientStatus.Active && !p.IsDeleted)
-            .GroupBy(p => p.Gender)
-            .ToDictionaryAsync(g => g.Key, g => g.Count());
-    }
-}
-```
-
-## 🧪 数据传输对象 (DTOs)
+## 🧪 数据传输对象 (DTOs) - 2025-09-20更新
 
 ### 请求DTOs
 ```csharp
-public record CreatePatientDto
+// 创建患者DTO
+public class PatientCreateDto
 {
-    [Required(ErrorMessage = "患者姓名不能为空")]
-    [StringLength(50, ErrorMessage = "患者姓名长度不能超过50字符")]
-    public string Name { get; init; } = string.Empty;
-    
+    [Required(ErrorMessage = "姓名不能为空")]
+    [StringLength(50)]
+    public string Name { get; set; } = string.Empty;
+
     [Required(ErrorMessage = "性别不能为空")]
-    public Gender Gender { get; init; }
-    
-    [Range(0, 150, ErrorMessage = "年龄必须在0-150之间")]
-    public int Age { get; init; }
-    
-    public DateTime? DateOfBirth { get; init; }
-    
-    [Phone(ErrorMessage = "手机号码格式不正确")]
-    [StringLength(20, ErrorMessage = "手机号码长度不能超过20字符")]
-    public string? PhoneNumber { get; init; }
-    
-    [StringLength(18, ErrorMessage = "身份证号码长度不能超过18字符")]
-    public string? IdNumber { get; init; }
-    
-    [StringLength(200, ErrorMessage = "地址长度不能超过200字符")]
-    public string? Address { get; init; }
-    
-    [StringLength(50, ErrorMessage = "紧急联系人姓名长度不能超过50字符")]
-    public string? EmergencyContact { get; init; }
-    
-    [Phone(ErrorMessage = "紧急联系人电话格式不正确")]
-    [StringLength(20, ErrorMessage = "紧急联系人电话长度不能超过20字符")]
-    public string? EmergencyPhone { get; init; }
-    
-    [StringLength(500, ErrorMessage = "过敏史长度不能超过500字符")]
-    public string? Allergies { get; init; }
-    
-    [StringLength(1000, ErrorMessage = "既往病史长度不能超过1000字符")]
-    public string? MedicalHistory { get; init; }
-    
-    [StringLength(500, ErrorMessage = "备注长度不能超过500字符")]
-    public string? Remarks { get; init; }
+    public Gender Gender { get; set; }
+
+    public DateTime? BirthDate { get; set; }
+
+    [Required(ErrorMessage = "电话不能为空")]
+    [Phone(ErrorMessage = "电话格式无效")]
+    public string Phone { get; set; } = string.Empty;
+
+    [StringLength(18)]
+    public string? IdCard { get; set; }
+
+    [StringLength(200)]
+    public string? Address { get; set; }
+
+    [StringLength(50)]
+    public string? EmergencyContactName { get; set; }  // 原EmergencyContact
+
+    [Phone]
+    public string? EmergencyContactPhone { get; set; }  // 原EmergencyPhone
+
+    public int MaritalStatus { get; set; } = 0;  // int类型，原string
+
+    [StringLength(50)]
+    public string? Occupation { get; set; }
+
+    public string? Allergies { get; set; }
+    public string? MedicalHistory { get; set; }
 }
 
-public record PatientSearchDto : PagedRequestDto
+// 更新患者DTO
+public class PatientUpdateDto
 {
-    public string? Keyword { get; init; }
-    public Gender? Gender { get; init; }
-    public int? AgeFrom { get; init; }
-    public int? AgeTo { get; init; }
-    public PatientStatus? Status { get; init; }
-    public DateTime? RegisterTimeFrom { get; init; }
-    public DateTime? RegisterTimeTo { get; init; }
-    public string? AllergyKeyword { get; init; }
-    public string? SortBy { get; init; }
-    public bool SortDescending { get; init; } = false;
+    [StringLength(50)]
+    public string? Name { get; set; }
+
+    public Gender? Gender { get; set; }
+    public DateTime? BirthDate { get; set; }
+
+    [Phone]
+    public string? Phone { get; set; }
+
+    [StringLength(200)]
+    public string? Address { get; set; }
+
+    [StringLength(50)]
+    public string? EmergencyContactName { get; set; }
+
+    [Phone]
+    public string? EmergencyContactPhone { get; set; }
+
+    public int? MaritalStatus { get; set; }  // int类型
+
+    [StringLength(50)]
+    public string? Occupation { get; set; }
+
+    public string? Allergies { get; set; }
+    public string? MedicalHistory { get; set; }
+    public string? Constitution { get; set; }  // 中医体质
 }
 
-public record UpdateContactDto
+// 患者搜索DTO (原PatientPagedQueryDto)
+public class PatientSearchDto : PagedRequestDto
 {
-    [Phone(ErrorMessage = "手机号码格式不正确")]
-    [StringLength(20, ErrorMessage = "手机号码长度不能超过20字符")]
-    public string? PhoneNumber { get; init; }
-    
-    [StringLength(200, ErrorMessage = "地址长度不能超过200字符")]
-    public string? Address { get; init; }
-    
-    [StringLength(50, ErrorMessage = "紧急联系人姓名长度不能超过50字符")]
-    public string? EmergencyContact { get; init; }
-    
-    [Phone(ErrorMessage = "紧急联系人电话格式不正确")]
-    [StringLength(20, ErrorMessage = "紧急联系人电话长度不能超过20字符")]
-    public string? EmergencyPhone { get; init; }
+    public string? Keyword { get; set; }
+    public Gender? Gender { get; set; }
+    public int? MinAge { get; set; }
+    public int? MaxAge { get; set; }
+    public DateTime? CreateTimeFrom { get; set; }
+    public DateTime? CreateTimeTo { get; set; }
+    public string? Constitution { get; set; }  // 体质筛选
 }
 ```
 
 ### 响应DTOs
 ```csharp
-public record PatientDto
+public class PatientDto
 {
-    public Guid Id { get; init; }
-    public string Name { get; init; } = string.Empty;
-    public Gender Gender { get; init; }
-    public int Age { get; init; }
-    public DateTime? DateOfBirth { get; init; }
-    public string? PhoneNumber { get; init; }
-    public string? IdNumber { get; init; }
-    public string? Address { get; init; }
-    public string? EmergencyContact { get; init; }
-    public string? EmergencyPhone { get; init; }
-    public string? Allergies { get; init; }
-    public string? MedicalHistory { get; init; }
-    public string? Remarks { get; init; }
-    public PatientStatus Status { get; init; }
-    public DateTime CreateTime { get; init; }
-    public DateTime? UpdateTime { get; init; }
-    
+    public Guid Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public Gender Gender { get; set; }
+    public DateTime? BirthDate { get; set; }
+    public string Phone { get; set; } = string.Empty;
+    public string? IdCard { get; set; }
+    public string? Address { get; set; }
+    public string? EmergencyContactName { get; set; }  // 原EmergencyContact
+    public string? EmergencyContactPhone { get; set; }  // 原EmergencyPhone
+    public int MaritalStatus { get; set; }  // int类型，原string
+    public string? Occupation { get; set; }
+    public string? Allergies { get; set; }
+    public string? MedicalHistory { get; set; }
+    public string? Constitution { get; set; }  // 中医体质
+    public DateTime CreateTime { get; set; }
+    public DateTime? UpdateTime { get; set; }
+
     // 计算属性
-    public string GenderDisplay => Gender == Gender.Male ? "男" : 
-                                 Gender == Gender.Female ? "女" : "其他";
-    public string StatusDisplay => Status switch
+    public int? Age => BirthDate.HasValue ?
+        DateTime.Today.Year - BirthDate.Value.Year : null;
+
+    public string GenderDisplay => Gender == Gender.Male ? "男" : "女";
+
+    public string MaritalStatusDisplay => MaritalStatus switch
     {
-        PatientStatus.Active => "正常",
-        PatientStatus.Inactive => "停用",
-        PatientStatus.Archived => "归档",
+        0 => "未婚",
+        1 => "已婚",
+        2 => "离异",
+        3 => "丧偶",
         _ => "未知"
     };
-    public int TotalVisits { get; set; }
-    public DateTime? LastVisitTime { get; init; }
-    public bool HasAllergies => !string.IsNullOrEmpty(Allergies);
-    public int CalculatedAge => DateOfBirth.HasValue ? 
-        DateTime.Now.Year - DateOfBirth.Value.Year : Age;
 }
 
-public record PatientStatisticsDto
+public class PatientStatisticsDto
 {
-    public int TotalPatients { get; init; }
-    public int ActivePatients { get; init; }
-    public int InactivePatients { get; init; }
-    public int MalePatients { get; init; }
-    public int FemalePatients { get; init; }
-    public int NewPatientsLast30Days { get; init; }
-    public int RecentVisitPatients { get; init; }
-    public int PatientsWithAllergies { get; init; }
-    public double AverageAge { get; init; }
-    public List<AgeGroupStatistic> AgeGroupDistribution { get; init; } = new();
-}
-
-public record PatientHistoryDto
-{
-    public DateTime VisitDate { get; init; }
-    public Guid MedicalCaseId { get; init; }
-    public string DoctorName { get; init; } = string.Empty;
-    public string ChiefComplaint { get; init; } = string.Empty;
-    public string TcmDiagnosis { get; init; } = string.Empty;
-    public MedicalCaseStatus Status { get; init; }
-    public bool HasPrescription { get; init; }
-    public string? PrescriptionSummary { get; init; }
-}
-
-public record AgeGroupStatistic
-{
-    public string AgeGroup { get; init; } = string.Empty;
-    public int Count { get; init; }
+    public int TotalPatients { get; set; }
+    public int NewPatientsThisMonth { get; set; }
+    public int ActivePatients { get; set; }  // 近3个月有就诊
+    public Dictionary<Gender, int> GenderDistribution { get; set; }
+    public Dictionary<string, int> AgeDistribution { get; set; }
+    public Dictionary<string, int> ConstitutionDistribution { get; set; }
 }
 ```
 
-## 🔒 数据验证和重复检查
+## 🔧 Repository层设计
 
-### 重复患者检测
 ```csharp
-private async Task<DuplicateCheckResult> CheckForDuplicatesAsync(CreatePatientDto dto)
+public class PatientRepository : BaseRepository<Patient>, IPatientRepository
 {
-    var similarPatients = new List<string>();
-    
-    // 检查完全相同的姓名和生日
-    if (dto.DateOfBirth.HasValue)
+    public async Task<Patient?> GetByIdCardAsync(string idCard)
     {
-        var exactMatch = await _repository.GetQueryable()
-            .Where(p => p.Name == dto.Name && p.DateOfBirth == dto.DateOfBirth.Value)
-            .Select(p => p.Name)
-            .FirstOrDefaultAsync();
-            
-        if (exactMatch != null)
-            similarPatients.Add($"姓名生日完全匹配: {exactMatch}");
+        return await _context.Patients
+            .FirstOrDefaultAsync(p => p.IdCard == idCard && !p.IsDeleted);
     }
-    
-    // 检查相同电话号码
-    if (!string.IsNullOrEmpty(dto.PhoneNumber))
+
+    public async Task<List<Patient>> GetByPhoneAsync(string phone)
     {
-        var phoneMatch = await _repository.GetByPhoneNumberAsync(dto.PhoneNumber);
-        if (phoneMatch != null)
-            similarPatients.Add($"电话号码重复: {phoneMatch.Name}");
+        return await _context.Patients
+            .Where(p => p.Phone == phone && !p.IsDeleted)
+            .ToListAsync();
     }
-    
-    // 检查身份证号码
-    if (!string.IsNullOrEmpty(dto.IdNumber))
+
+    public async Task<List<Patient>> GetRecentPatientsAsync(int days)
     {
-        var idMatch = await _repository.GetByIdNumberAsync(dto.IdNumber);
-        if (idMatch != null)
-            similarPatients.Add($"身份证号码重复: {idMatch.Name}");
+        var startDate = DateTime.Today.AddDays(-days);
+        return await _context.Patients
+            .Where(p => p.CreateTime >= startDate && !p.IsDeleted)
+            .OrderByDescending(p => p.CreateTime)
+            .ToListAsync();
     }
-    
-    return new DuplicateCheckResult
+
+    public async Task<Dictionary<string, int>> GetConstitutionDistributionAsync()
     {
-        HasDuplicates = similarPatients.Any(),
-        SimilarPatients = similarPatients
-    };
+        return await _context.Patients
+            .Where(p => !p.IsDeleted && !string.IsNullOrEmpty(p.Constitution))
+            .GroupBy(p => p.Constitution)
+            .Select(g => new { Constitution = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.Constitution!, x => x.Count);
+    }
 }
 ```
 
-### 数据验证增强
-```csharp
-private async Task<ValidationResult> ValidatePatientDataAsync(PatientDataDto dto)
-{
-    var errors = new List<string>();
-    
-    // 姓名格式验证
-    if (string.IsNullOrWhiteSpace(dto.Name))
-        errors.Add("患者姓名不能为空");
-    else if (dto.Name.Length > 50)
-        errors.Add("患者姓名长度不能超过50字符");
-    else if (Regex.IsMatch(dto.Name, @"[0-9]"))
-        errors.Add("患者姓名不能包含数字");
-    
-    // 年龄和生日验证
-    if (dto.DateOfBirth.HasValue)
-    {
-        var calculatedAge = DateTime.Now.Year - dto.DateOfBirth.Value.Year;
-        if (Math.Abs(calculatedAge - dto.Age) > 1)
-            errors.Add("年龄与出生日期不符");
-    }
-    
-    // 电话号码验证
-    if (!string.IsNullOrEmpty(dto.PhoneNumber) && 
-        !Regex.IsMatch(dto.PhoneNumber, @"^1[3-9]\d{9}$"))
-        errors.Add("手机号码格式不正确");
-    
-    // 身份证号码验证
-    if (!string.IsNullOrEmpty(dto.IdNumber) && 
-        !IsValidIdNumber(dto.IdNumber))
-        errors.Add("身份证号码格式不正确");
-    
-    return new ValidationResult
-    {
-        IsValid = !errors.Any(),
-        Message = errors.Any() ? string.Join("；", errors) : "数据验证通过",
-        Errors = errors
-    };
-}
+## 🎯 中医特色功能
 
-private static bool IsValidIdNumber(string idNumber)
-{
-    // 简化的身份证验证
-    return Regex.IsMatch(idNumber, @"^[1-9]\d{5}(18|19|20)\d{2}(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])\d{3}[\dX]$");
-}
-```
+### 体质辨识
+- 九种体质分类：平和质、气虚质、阳虚质、阴虚质、痰湿质、湿热质、血瘀质、气郁质、特禀质
+- 体质评估记录
+- 体质调理建议关联
 
-## 🎯 UltraThink架构优势
+### 过敏史管理
+- 药物过敏记录
+- 食物过敏记录
+- 过敏严重程度分级
+- 处方开具时自动提醒
 
-**适合小型中医诊所(<20人)的精简设计**:
-- ✅ **双层架构**: Query+Business分层，查询优化，业务清晰
-- ✅ **智能搜索**: 多维度检索，快速定位患者档案
-- ✅ **重复检测**: 防止重复建档，保证数据质量
-- ✅ **诊疗追踪**: 完整的就诊历史，支持医疗连续性
-- ✅ **统计分析**: 患者结构分析，支持诊所运营决策
-- ✅ **缓存优化**: 快速搜索缓存，提升用户体验
+### 就诊关联
+- 与MedicalCase模块深度集成
+- 完整就诊历史追踪
+- 历史处方查询
+- 疗效跟踪评估
 
 ## 📚 相关文档
 
-- [MedicalCase医疗案例](../LYBT.Module.MedicalCase/README.md) - 患者就诊流程管理
-- [Consultation诊断记录](../LYBT.Module.Consultation/README.md) - 患者诊疗记录
-- [Infrastructure基础设施](../../Core/LYBT.Infrastructure/README.md) - Repository基类和缓存
+- [MedicalCase医案模块](../LYBT.Module.MedicalCase/README.md) - 就诊记录
+- [Consultation诊察模块](../LYBT.Module.Consultation/README.md) - 四诊信息
+- [Prescriptions处方模块](../LYBT.Module.Prescriptions/README.md) - 处方管理
 
 ## 🚀 使用示例
 
@@ -772,56 +425,41 @@ private static bool IsValidIdNumber(string idNumber)
 public class PatientsController : BaseApiController
 {
     private readonly IPatientService _patientService;
-    
-    [HttpGet("search")]
-    public async Task<ActionResult<ApiResponse<PagedResult<PatientDto>>>> SearchPatients([FromQuery] PatientSearchDto criteria)
-    {
-        var result = await _patientService.SearchPatientsAsync(criteria);
-        return HandleServiceResult(result, "获取患者列表成功");
-    }
-    
-    [HttpGet("quick-search")]
-    public async Task<ActionResult<ApiResponse<List<PatientDto>>>> QuickSearch([FromQuery] string keyword)
-    {
-        var result = await _patientService.QuickSearchAsync(keyword);
-        return HandleServiceResult(result, "快速搜索成功");
-    }
-    
-    [HttpPost]
-    [Authorize(Roles = "Admin,Doctor")]
-    public async Task<ActionResult<ApiResponse<PatientDto>>> CreatePatient([FromBody] CreatePatientDto dto)
-    {
-        var result = await _patientService.CreatePatientAsync(dto);
-        return HandleServiceResult(result, "创建患者档案成功");
-    }
-    
-    [HttpGet("{id}/history")]
-    public async Task<ActionResult<ApiResponse<List<PatientHistoryDto>>>> GetPatientHistory(Guid id)
-    {
-        var result = await _patientService.GetPatientHistoryAsync(id);
-        return HandleServiceResult(result, "获取患者诊疗历史成功");
-    }
-}
-```
 
-### 前端集成示例
-```csharp
-// WPF前端快速搜索
-private async void QuickSearch_TextChanged(object sender, TextChangedEventArgs e)
-{
-    var keyword = ((TextBox)sender).Text;
-    if (string.IsNullOrWhiteSpace(keyword)) return;
-    
-    var result = await _patientService.QuickSearchAsync(keyword);
-    if (result.Success)
+    [HttpGet]
+    public async Task<ActionResult<ApiResponse<PagedResult<PatientDto>>>> SearchPatients(
+        [FromQuery] PatientSearchDto criteria)
     {
-        PatientSuggestions.ItemsSource = result.Data;
-        PatientSuggestions.IsOpen = result.Data.Count > 0;
+        var result = await _patientService.SearchAsync(criteria);
+        return HandleServiceResult(result);
+    }
+
+    [HttpPost]
+    public async Task<ActionResult<ApiResponse<PatientDto>>> CreatePatient(
+        [FromBody] PatientCreateDto dto)
+    {
+        var result = await _patientService.CreateAsync(dto);
+        return HandleServiceResult(result);
+    }
+
+    [HttpPut("{id}")]
+    public async Task<ActionResult<ApiResponse<PatientDto>>> UpdatePatient(
+        Guid id, [FromBody] PatientUpdateDto dto)
+    {
+        var result = await _patientService.UpdateAsync(id, dto);
+        return HandleServiceResult(result);
+    }
+
+    [HttpGet("{id}/history")]
+    public async Task<ActionResult<ApiResponse<List<MedicalCaseDto>>>> GetMedicalHistory(Guid id)
+    {
+        var result = await _patientService.GetMedicalHistoryAsync(id);
+        return HandleServiceResult(result);
     }
 }
 ```
 
 ---
 
-> 📌 **UltraThink成果**: Patients模块采用双层架构，实现智能搜索和完整档案管理
-> 🎆 **生产就绪**: 零编译错误，完整的患者管理体系，支持中医诊所患者全生命周期管理
+> 📌 **最新成果**: DTO字段完全对齐，类型安全增强，零编译错误
+> 🎆 **生产就绪**: 完整的患者档案管理体系，支撑中医诊所核心业务
