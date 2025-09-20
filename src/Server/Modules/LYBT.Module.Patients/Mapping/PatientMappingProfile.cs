@@ -43,7 +43,7 @@ namespace LYBT.Module.Patients.Mapping
                 .ForMember(dest => dest.PinYinCode, opt => opt.MapFrom(src => src.PinYinCode))
                 .ForMember(dest => dest.IdNumber, opt => opt.MapFrom(src => src.IdNumber));
 
-            // 🔧 UltraThink修复：添加缺失的DTO间映射配置
+            // UltraThink修复：添加缺失的DTO间映射配置
             // PatientCreateDto -> PatientDto（用于验证服务）
             CreateMap<PatientCreateDto, PatientDto>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())

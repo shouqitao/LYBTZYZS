@@ -1,14 +1,10 @@
 using System.Text;
 using System.Text.Encodings.Web;
-using System.Text.Json;
 using System.Text.Json.Serialization;
-using Asp.Versioning;
-using Asp.Versioning.ApiExplorer;
 
 // using LYBT.Infrastructure.Configuration; // Removed - SimplifiedConfigurationService eliminated
 using LYBT.Infrastructure.Caching.Adapters;
 using LYBT.Infrastructure.Caching.Interfaces;
-using LYBT.Infrastructure.Configuration.Extensions;
 using LYBT.Infrastructure.Configuration.Options;
 using LYBT.Infrastructure.Configuration.Services;
 using LYBT.Infrastructure.Data;
@@ -18,7 +14,6 @@ using LYBT.Module.Auth;
 using LYBT.Module.Users;
 using LYBT.WebAPI.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
@@ -161,18 +156,10 @@ public static class UnifiedServiceRegistration
         // =========== 环境感知密码治理服务 ===========
         services.AddScoped<DefaultPasswordService>();
 
-        // CacheOptions已删除，使用内存缓存默认配置
-
         // =========== 安全配置服务 - 最小有效实现 ===========
 
         // 保留HTTP上下文访问器（其他服务需要）
         services.AddHttpContextAccessor();
-
-        // =========== 性能优化服务 - UltraThink简化版 ===========
-        // 移除空的包装方法，直接使用.NET内置性能计数器和标准服务
-
-        // =========== 日志和监控服务 - UltraThink简化版 ===========
-        // 使用标准.NET日志和监控，无需额外包装服务
 
         // =========== 数据库初始化服务 ===========
         services.AddScoped<DatabaseInitializationService>();

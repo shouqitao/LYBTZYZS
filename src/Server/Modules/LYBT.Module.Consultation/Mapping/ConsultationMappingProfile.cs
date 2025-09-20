@@ -13,7 +13,7 @@ namespace LYBT.Module.Consultation.Mapping
 
         public ConsultationMappingProfile()
         {
-            // 🎯 UltraThink修复：启用AutoMapper配置，解决字段更新不完整问题
+            // UltraThink修复：启用AutoMapper配置，解决字段更新不完整问题
 
             // ConsultationDetailDto -> Consultation - 核心更新映射
             CreateMap<ConsultationDetailDto, LYBT.Entities.Consultation.Consultation>()

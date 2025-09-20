@@ -68,7 +68,7 @@ namespace LYBT.Module.Users.Tests
 
             // Act
             var result = await _repository.AddAsync(user);
-            await _context.SaveChangesAsync(); // 🔧 修复：确保用户保存到数据库
+            await _context.SaveChangesAsync(); // 修复：确保用户保存到数据库
 
             // Assert
             result.Should().NotBeNull();
@@ -89,7 +89,7 @@ namespace LYBT.Module.Users.Tests
             var user2 = CreateTestUser("duplicate", "用户2");
             
             await _repository.AddAsync(user1);
-            await _context.SaveChangesAsync(); // 🔧 修复：确保用户保存到数据库
+            await _context.SaveChangesAsync(); // 修复：确保用户保存到数据库
 
             // Act & Assert - 在内存数据库中，重复会在SaveChanges时检测到
             // 但由于我们使用的是独立的上下文实例，这个测试检查用户名是否已存在
@@ -107,7 +107,7 @@ namespace LYBT.Module.Users.Tests
             // Arrange
             var user = CreateTestUser("updatetest", "原始姓名");
             await _repository.AddAsync(user);
-            await _context.SaveChangesAsync(); // 🔧 修复：确保实体保存到数据库
+            await _context.SaveChangesAsync(); // 修复：确保实体保存到数据库
 
             user.RealName = "更新后姓名";
             user.PhoneNumber = "13800000000";
@@ -151,7 +151,7 @@ namespace LYBT.Module.Users.Tests
             // Arrange
             var user = CreateTestUser(status: CommonStatus.Enabled);
             await _repository.AddAsync(user);
-            await _context.SaveChangesAsync(); // 🔧 修复：确保实体保存到数据库
+            await _context.SaveChangesAsync(); // 修复：确保实体保存到数据库
 
             // Act
             var result = await _repository.DisableAsync(user.Id);
@@ -178,7 +178,7 @@ namespace LYBT.Module.Users.Tests
             // Arrange
             var user = CreateTestUser(status: CommonStatus.Disabled);
             await _repository.AddAsync(user);
-            await _context.SaveChangesAsync(); // 🔧 修复：确保实体保存到数据库
+            await _context.SaveChangesAsync(); // 修复：确保实体保存到数据库
 
             // Act
             var result = await _repository.EnableAsync(user.Id);
@@ -209,7 +209,7 @@ namespace LYBT.Module.Users.Tests
             // Arrange
             var user = CreateTestUser("querytest", "查询用户");
             await _repository.AddAsync(user);
-            await _context.SaveChangesAsync(); // 🔧 修复：确保实体保存到数据库
+            await _context.SaveChangesAsync(); // 修复：确保实体保存到数据库
 
             // Act
             var result = await _repository.GetByUsernameAsync("querytest");
@@ -236,7 +236,7 @@ namespace LYBT.Module.Users.Tests
             // Arrange
             var user = CreateTestUser("disabledquery", "禁用查询", CommonStatus.Disabled);
             await _repository.AddAsync(user);
-            await _context.SaveChangesAsync(); // 🔧 修复：确保实体保存到数据库
+            await _context.SaveChangesAsync(); // 修复：确保实体保存到数据库
 
             // Act
             var result = await _repository.GetByUsernameAsync("disabledquery");
@@ -252,7 +252,7 @@ namespace LYBT.Module.Users.Tests
             // Arrange
             var user = CreateTestUser(status: CommonStatus.Enabled);
             await _repository.AddAsync(user);
-            await _context.SaveChangesAsync(); // 🔧 修复：确保实体保存到数据库
+            await _context.SaveChangesAsync(); // 修复：确保实体保存到数据库
 
             // Act
             var result = await _repository.GetByIdAsync(user.Id);
@@ -268,7 +268,7 @@ namespace LYBT.Module.Users.Tests
             // Arrange
             var user = CreateTestUser(status: CommonStatus.Disabled);
             await _repository.AddAsync(user);
-            await _context.SaveChangesAsync(); // 🔧 修复：确保实体保存到数据库
+            await _context.SaveChangesAsync(); // 修复：确保实体保存到数据库
 
             // Act
             var result = await _repository.GetByIdAsync(user.Id, includeDisabled: false);
@@ -306,7 +306,7 @@ namespace LYBT.Module.Users.Tests
             {
                 await _repository.AddAsync(user);
             }
-            await _context.SaveChangesAsync(); // 🔧 修复：确保用户保存到数据库
+            await _context.SaveChangesAsync(); // 修复：确保用户保存到数据库
 
             var query = new UserSearchDto
             {
@@ -333,7 +333,7 @@ namespace LYBT.Module.Users.Tests
             await _repository.AddAsync(user1);
             await _repository.AddAsync(user2);
             await _repository.AddAsync(user3);
-            await _context.SaveChangesAsync(); // 🔧 修复：确保用户保存到数据库
+            await _context.SaveChangesAsync(); // 修复：确保用户保存到数据库
 
             var query = new UserSearchDto
             {
@@ -360,7 +360,7 @@ namespace LYBT.Module.Users.Tests
             
             await _repository.AddAsync(enabledUser);
             await _repository.AddAsync(disabledUser);
-            await _context.SaveChangesAsync(); // 🔧 修复：确保用户保存到数据库
+            await _context.SaveChangesAsync(); // 修复：确保用户保存到数据库
 
             var query = new UserSearchDto
             {
@@ -386,7 +386,7 @@ namespace LYBT.Module.Users.Tests
             
             await _repository.AddAsync(enabledUser);
             await _repository.AddAsync(disabledUser);
-            await _context.SaveChangesAsync(); // 🔧 修复：确保用户保存到数据库
+            await _context.SaveChangesAsync(); // 修复：确保用户保存到数据库
 
             var query = new UserSearchDto
             {
@@ -415,7 +415,7 @@ namespace LYBT.Module.Users.Tests
             {
                 await _repository.AddAsync(user);
             }
-            await _context.SaveChangesAsync(); // 🔧 修复：确保用户保存到数据库
+            await _context.SaveChangesAsync(); // 修复：确保用户保存到数据库
 
             var ids = users.Select(u => u.Id).ToList();
 
@@ -448,7 +448,7 @@ namespace LYBT.Module.Users.Tests
             {
                 await _repository.AddAsync(user);
             }
-            await _context.SaveChangesAsync(); // 🔧 修复：确保用户保存到数据库
+            await _context.SaveChangesAsync(); // 修复：确保用户保存到数据库
 
             var ids = users.Select(u => u.Id).ToList();
 
@@ -476,7 +476,7 @@ namespace LYBT.Module.Users.Tests
             // Arrange
             var user = CreateTestUser("existstest");
             await _repository.AddAsync(user);
-            await _context.SaveChangesAsync(); // 🔧 修复：确保用户保存到数据库
+            await _context.SaveChangesAsync(); // 修复：确保用户保存到数据库
 
             // Act
             var result = await _repository.ExistsByUsernameAsync("existstest");
@@ -501,7 +501,7 @@ namespace LYBT.Module.Users.Tests
             // Arrange
             var user = CreateTestUser();
             await _repository.AddAsync(user);
-            await _context.SaveChangesAsync(); // 🔧 修复：确保实体保存到数据库
+            await _context.SaveChangesAsync(); // 修复：确保实体保存到数据库
             var newPasswordHash = "NewHashedPassword123";
 
             // Act
@@ -538,7 +538,7 @@ namespace LYBT.Module.Users.Tests
             {
                 await _repository.AddAsync(user);
             }
-            await _context.SaveChangesAsync(); // 🔧 修复：确保用户保存到数据库
+            await _context.SaveChangesAsync(); // 修复：确保用户保存到数据库
 
             // Act
             var result = await _repository.GetActiveUsersAsync();
@@ -557,7 +557,7 @@ namespace LYBT.Module.Users.Tests
             
             await _repository.AddAsync(sysadmin);
             await _repository.AddAsync(normalUser);
-            await _context.SaveChangesAsync(); // 🔧 修复：确保用户保存到数据库
+            await _context.SaveChangesAsync(); // 修复：确保用户保存到数据库
 
             // Act
             var result = await _repository.GetActiveUsersAsync();
@@ -578,7 +578,7 @@ namespace LYBT.Module.Users.Tests
             {
                 await _repository.AddAsync(user);
             }
-            await _context.SaveChangesAsync(); // 🔧 修复：确保用户保存到数据库
+            await _context.SaveChangesAsync(); // 修复：确保用户保存到数据库
 
             // Act
             var result = await _repository.GetAllAsync();
@@ -635,7 +635,7 @@ namespace LYBT.Module.Users.Tests
             
             await _repository.AddAsync(oldUser);
             await _repository.AddAsync(newUser);
-            await _context.SaveChangesAsync(); // 🔧 修复：确保用户保存到数据库
+            await _context.SaveChangesAsync(); // 修复：确保用户保存到数据库
 
             var query = new UserSearchDto
             {

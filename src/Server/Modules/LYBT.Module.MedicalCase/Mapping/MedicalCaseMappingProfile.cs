@@ -30,7 +30,7 @@ namespace LYBT.Module.MedicalCase.Mapping
                 .ForMember(dest => dest.Consultation, opt => opt.Ignore()) // 导航属性忽略
                 .ForMember(dest => dest.Prescription, opt => opt.Ignore()) // 导航属性忽略
 
-                // 🎯 UltraThink修复：明确忽略不属于MedicalCase实体的DTO字段
+                // UltraThink修复：明确忽略不属于MedicalCase实体的DTO字段
                 .ForMember(dest => dest.PatientName, opt => opt.Ignore()) // 显示字段，不更新
                 .ForMember(dest => dest.DoctorName, opt => opt.Ignore()) // 显示字段，不更新
 
