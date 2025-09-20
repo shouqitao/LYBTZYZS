@@ -19,11 +19,8 @@ namespace LYBT.Module.Formula.Services
         #region Query Operations
 
         /// <inheritdoc/>
-        public Task<ServiceResult<FormulaDto>> GetByIdAsync(Guid id)
-        {
-            // 临时实现：查询功能暂时返回失败
-            return Task.FromResult(ServiceResult<FormulaDto>.Failure("GetByIdAsync方法需要在QueryService中实现"));
-        }
+        public async Task<ServiceResult<FormulaDto>> GetByIdAsync(Guid id)
+            => await _queryService.GetByIdAsync(id);
 
         /// <inheritdoc/>
         public async Task<ServiceResult<PagedResult<FormulaDto>>> GetPagedAsync(FormulaQueryDto query)
@@ -57,14 +54,25 @@ namespace LYBT.Module.Formula.Services
             return await _queryService.SearchAsync(keyword);
         }
 
-        public Task<bool> ExistsAsync(Guid id)
+        public async Task<bool> ExistsAsync(Guid id)
         {
-            return Task.FromResult(false); // 临时实现
+            var result = await _queryService.GetByIdAsync(id);
+            return result.IsSuccess;
         }
 
-        public Task<bool> IsNameDuplicatedAsync(string name, Guid? excludeId = null)
+        public async Task<bool> IsNameDuplicatedAsync(string name, Guid? excludeId = null)
         {
-            return Task.FromResult(false); // 临时实现
+            if (string.IsNullOrWhiteSpace(name))
+                return false;
+
+            // 获取所有验方并检查名称重复
+            var allFormulasResult = await _queryService.GetAllFormulasAsync();
+            if (!allFormulasResult.IsSuccess)
+                return false;
+
+            return allFormulasResult.Data?.Any(f => 
+                f.Name.Equals(name, StringComparison.OrdinalIgnoreCase) && 
+                (!excludeId.HasValue || f.Id != excludeId.Value)) ?? false;
         }
 
         #endregion Query Operations
@@ -72,39 +80,27 @@ namespace LYBT.Module.Formula.Services
         #region Business Operations
 
         /// <inheritdoc/>
-        public Task<ServiceResult<FormulaDto>> CreateAsync(FormulaCreateDto dto)
-        {
-            return Task.FromResult(ServiceResult<FormulaDto>.Failure("CreateAsync方法需要在BusinessService中实现"));
-        }
+        public async Task<ServiceResult<FormulaDto>> CreateAsync(FormulaCreateDto dto)
+            => await _businessService.CreateAsync(dto);
 
         /// <inheritdoc/>
-        public Task<ServiceResult<FormulaDto>> UpdateAsync(Guid id, FormulaUpdateDto dto)
-        {
-            return Task.FromResult(ServiceResult<FormulaDto>.Failure("UpdateAsync方法需要在BusinessService中实现"));
-        }
+        public async Task<ServiceResult<FormulaDto>> UpdateAsync(Guid id, FormulaUpdateDto dto)
+            => await _businessService.UpdateAsync(id, dto);
 
         /// <inheritdoc/>
-        public Task<ServiceResult<bool>> DeleteAsync(Guid id)
-        {
-            return Task.FromResult(ServiceResult<bool>.Failure("DeleteAsync方法需要在BusinessService中实现"));
-        }
+        public async Task<ServiceResult<bool>> DeleteAsync(Guid id)
+            => await _businessService.DeleteAsync(id);
 
         /// <inheritdoc/>
-        public Task<ServiceResult> EnableAsync(Guid id)
-        {
-            return Task.FromResult(ServiceResult.Failure("EnableAsync方法需要在BusinessService中实现"));
-        }
+        public async Task<ServiceResult> EnableAsync(Guid id)
+            => await _businessService.EnableAsync(id);
 
         /// <inheritdoc/>
-        public Task<ServiceResult> DisableAsync(Guid id)
-        {
-            return Task.FromResult(ServiceResult.Failure("DisableAsync方法需要在BusinessService中实现"));
-        }
+        public async Task<ServiceResult> DisableAsync(Guid id)
+            => await _businessService.DisableAsync(id);
 
-        public Task<ServiceResult<bool>> ToggleStatusAsync(Guid id)
-        {
-            return Task.FromResult(ServiceResult<bool>.Failure("ToggleStatusAsync方法需要在BusinessService中实现"));
-        }
+        public async Task<ServiceResult<bool>> ToggleStatusAsync(Guid id)
+            => await _businessService.ToggleStatusAsync(id);
 
         public async Task<ServiceResult<FormulaDto>> CopyAsync(Guid id, string newName)
             => await _businessService.CopyAsync(id, newName);

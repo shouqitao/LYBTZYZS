@@ -3,14 +3,12 @@ using LYBT.Shared.Models.Contracts.Users;
 
 namespace LYBT.Module.Users.Interfaces
 {
-
     /// <summary>
     /// 用户业务服务接口 - UltraThink三层架构
     /// 职责：业务流程编排，完整事务管理和业务逻辑处理
     /// </summary>
     public interface IUserBusinessService
     {
-
         /// <summary>
         /// 禁用用户
         /// </summary>
@@ -49,14 +47,8 @@ namespace LYBT.Module.Users.Interfaces
         /// <summary>
         /// 创建用户 - 完整业务流程
         /// </summary>
-        /// <summary>
-        /// 创建用户 - 完整业务流程
-        /// </summary>
         Task<ServiceResult<UserDto>> CreateUserAsync(UserMutationDto dto, CancellationToken cancellationToken = default);
 
-        /// <summary>
-        /// 更新用户 - 完整业务流程
-        /// </summary>
         /// <summary>
         /// 更新用户 - 完整业务流程
         /// </summary>

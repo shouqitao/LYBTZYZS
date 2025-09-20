@@ -352,5 +352,246 @@ namespace LYBT.Module.Formula.Services
         }
 
         #endregion 私有分析方法
+
+        #region 基础CRUD操作
+
+        /// <summary>
+        /// 创建验方
+        /// </summary>
+        /// <param name="dto">验方创建数据传输对象</param>
+        /// <returns>包含创建的验方的服务结果，失败时返回错误消息</returns>
+        public async Task<ServiceResult<FormulaDto>> CreateAsync(FormulaCreateDto dto)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(dto.Name))
+                {
+                    return ServiceResult<FormulaDto>.Failure("验方名称不能为空");
+                }
+
+                // 检查名称是否重复
+                var existingFormula = await _dbContext.Formulas
+                    .FirstOrDefaultAsync(f => f.Name == dto.Name);
+                if (existingFormula != null)
+                {
+                    return ServiceResult<FormulaDto>.Failure("验方名称已存在");
+                }
+
+                var formula = _mapper.Map<LYBT.Entities.Formula.Formula>(dto);
+                formula.Id = Guid.NewGuid();
+                formula.Status = CommonStatus.Enabled;
+                formula.IsShared = false;
+
+                _dbContext.Formulas.Add(formula);
+                await _dbContext.SaveChangesAsync();
+
+                _logger.LogInformation("创建验方成功: {FormulaName}", dto.Name);
+                var resultDto = _mapper.Map<FormulaDto>(formula);
+                return ServiceResult<FormulaDto>.Success(resultDto);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "创建验方失败: {FormulaName}", dto.Name);
+                return ServiceResult<FormulaDto>.Failure($"创建验方失败: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 更新验方
+        /// </summary>
+        /// <param name="id">验方ID</param>
+        /// <param name="dto">验方更新数据传输对象</param>
+        /// <returns>包含更新后验方的服务结果，失败时返回错误消息</returns>
+        public async Task<ServiceResult<FormulaDto>> UpdateAsync(Guid id, FormulaUpdateDto dto)
+        {
+            try
+            {
+                if (id == Guid.Empty)
+                {
+                    return ServiceResult<FormulaDto>.Failure("验方ID不能为空");
+                }
+
+                var formula = await _dbContext.Formulas
+                    .Include(f => f.Herbs)
+                    .FirstOrDefaultAsync(f => f.Id == id);
+
+                if (formula == null)
+                {
+                    return ServiceResult<FormulaDto>.Failure("验方不存在");
+                }
+
+                // 检查名称重复
+                if (!string.IsNullOrWhiteSpace(dto.Name) && dto.Name != formula.Name)
+                {
+                    var nameExists = await _dbContext.Formulas
+                        .AnyAsync(f => f.Name == dto.Name && f.Id != id);
+                    if (nameExists)
+                    {
+                        return ServiceResult<FormulaDto>.Failure("验方名称已存在");
+                    }
+                    formula.Name = dto.Name;
+                }
+
+                // 更新基本信息
+                if (!string.IsNullOrWhiteSpace(dto.Effect))
+                    formula.Effect = dto.Effect;
+                if (!string.IsNullOrWhiteSpace(dto.Usage))
+                    formula.Usage = dto.Usage;
+                if (!string.IsNullOrWhiteSpace(dto.Remark))
+                    formula.Remark = dto.Remark;
+                if (!string.IsNullOrWhiteSpace(dto.Instructions))
+                    formula.Property = dto.Instructions; // 使用Instructions字段映射到Property
+
+                await _dbContext.SaveChangesAsync();
+
+                _logger.LogInformation("更新验方成功: {FormulaName}", formula.Name);
+                var resultDto = _mapper.Map<FormulaDto>(formula);
+                return ServiceResult<FormulaDto>.Success(resultDto);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "更新验方失败，ID: {FormulaId}", id);
+                return ServiceResult<FormulaDto>.Failure($"更新验方失败: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 删除验方
+        /// </summary>
+        /// <param name="id">验方ID</param>
+        /// <returns>表示删除操作成功或失败的服务结果</returns>
+        public async Task<ServiceResult<bool>> DeleteAsync(Guid id)
+        {
+            try
+            {
+                if (id == Guid.Empty)
+                {
+                    return ServiceResult<bool>.Failure("验方ID不能为空");
+                }
+
+                var formula = await _dbContext.Formulas.FindAsync(id);
+                if (formula == null)
+                {
+                    return ServiceResult<bool>.Failure("验方不存在");
+                }
+
+                // 软删除：设置状态为已删除
+                formula.Status = CommonStatus.Disabled;
+                await _dbContext.SaveChangesAsync();
+
+                _logger.LogInformation("删除验方成功: {FormulaName}", formula.Name);
+                return ServiceResult<bool>.Success(true);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "删除验方失败，ID: {FormulaId}", id);
+                return ServiceResult<bool>.Failure($"删除验方失败: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 启用验方
+        /// </summary>
+        /// <param name="id">验方ID</param>
+        /// <returns>表示启用操作成功或失败的服务结果</returns>
+        public async Task<ServiceResult> EnableAsync(Guid id)
+        {
+            try
+            {
+                if (id == Guid.Empty)
+                {
+                    return ServiceResult.Failure("验方ID不能为空");
+                }
+
+                var formula = await _dbContext.Formulas.FindAsync(id);
+                if (formula == null)
+                {
+                    return ServiceResult.Failure("验方不存在");
+                }
+
+                formula.Status = CommonStatus.Enabled;
+                await _dbContext.SaveChangesAsync();
+
+                _logger.LogInformation("启用验方成功: {FormulaName}", formula.Name);
+                return ServiceResult.Success();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "启用验方失败，ID: {FormulaId}", id);
+                return ServiceResult.Failure($"启用验方失败: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 禁用验方
+        /// </summary>
+        /// <param name="id">验方ID</param>
+        /// <returns>表示禁用操作成功或失败的服务结果</returns>
+        public async Task<ServiceResult> DisableAsync(Guid id)
+        {
+            try
+            {
+                if (id == Guid.Empty)
+                {
+                    return ServiceResult.Failure("验方ID不能为空");
+                }
+
+                var formula = await _dbContext.Formulas.FindAsync(id);
+                if (formula == null)
+                {
+                    return ServiceResult.Failure("验方不存在");
+                }
+
+                formula.Status = CommonStatus.Disabled;
+                await _dbContext.SaveChangesAsync();
+
+                _logger.LogInformation("禁用验方成功: {FormulaName}", formula.Name);
+                return ServiceResult.Success();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "禁用验方失败，ID: {FormulaId}", id);
+                return ServiceResult.Failure($"禁用验方失败: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 切换验方状态
+        /// </summary>
+        /// <param name="id">验方ID</param>
+        /// <returns>表示切换操作成功或失败的服务结果</returns>
+        public async Task<ServiceResult<bool>> ToggleStatusAsync(Guid id)
+        {
+            try
+            {
+                if (id == Guid.Empty)
+                {
+                    return ServiceResult<bool>.Failure("验方ID不能为空");
+                }
+
+                var formula = await _dbContext.Formulas.FindAsync(id);
+                if (formula == null)
+                {
+                    return ServiceResult<bool>.Failure("验方不存在");
+                }
+
+                // 切换状态
+                formula.Status = formula.Status == CommonStatus.Enabled 
+                    ? CommonStatus.Disabled 
+                    : CommonStatus.Enabled;
+                
+                await _dbContext.SaveChangesAsync();
+
+                _logger.LogInformation("切换验方状态成功: {FormulaName} -> {Status}", formula.Name, formula.Status);
+                return ServiceResult<bool>.Success(formula.Status == CommonStatus.Enabled);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "切换验方状态失败，ID: {FormulaId}", id);
+                return ServiceResult<bool>.Failure($"切换验方状态失败: {ex.Message}");
+            }
+        }
+
+        #endregion 基础CRUD操作
     }
 }

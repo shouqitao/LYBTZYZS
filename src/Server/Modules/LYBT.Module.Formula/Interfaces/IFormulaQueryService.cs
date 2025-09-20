@@ -55,5 +55,10 @@ namespace LYBT.Module.Formula.Interfaces
         /// 获取验方分类列表
         /// </summary>
         Task<ServiceResult<List<string>>> GetCategoriesAsync();
+
+        /// <summary>
+        /// 根据ID获取验方详情
+        /// </summary>
+        Task<ServiceResult<FormulaDto>> GetByIdAsync(Guid id);
     }
 }

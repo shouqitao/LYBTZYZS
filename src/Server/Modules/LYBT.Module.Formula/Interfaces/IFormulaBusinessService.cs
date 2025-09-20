@@ -35,5 +35,35 @@ namespace LYBT.Module.Formula.Interfaces
         /// 分析验方
         /// </summary>
         Task<ServiceResult<FormulaAnalysisResult>> AnalyzeFormulaAsync(Guid formulaId);
+
+        /// <summary>
+        /// 创建验方
+        /// </summary>
+        Task<ServiceResult<FormulaDto>> CreateAsync(FormulaCreateDto dto);
+
+        /// <summary>
+        /// 更新验方
+        /// </summary>
+        Task<ServiceResult<FormulaDto>> UpdateAsync(Guid id, FormulaUpdateDto dto);
+
+        /// <summary>
+        /// 删除验方
+        /// </summary>
+        Task<ServiceResult<bool>> DeleteAsync(Guid id);
+
+        /// <summary>
+        /// 启用验方
+        /// </summary>
+        Task<ServiceResult> EnableAsync(Guid id);
+
+        /// <summary>
+        /// 禁用验方
+        /// </summary>
+        Task<ServiceResult> DisableAsync(Guid id);
+
+        /// <summary>
+        /// 切换验方状态
+        /// </summary>
+        Task<ServiceResult<bool>> ToggleStatusAsync(Guid id);
     }
 }

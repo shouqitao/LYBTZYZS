@@ -332,5 +332,42 @@ namespace LYBT.Module.Formula.Services
         }
 
         #endregion 搜索接口 - 简化版接口兼容性
+
+        #region 单个验方查询
+
+        /// <summary>
+        /// 根据ID获取验方详情
+        /// </summary>
+        /// <param name="id">验方ID，不能为空</param>
+        /// <returns>包含验方详情的服务结果，失败时返回错误消息</returns>
+        public async Task<ServiceResult<FormulaDto>> GetByIdAsync(Guid id)
+        {
+            try
+            {
+                if (id == Guid.Empty)
+                {
+                    return ServiceResult<FormulaDto>.Failure("验方ID不能为空");
+                }
+
+                var formula = await _dbContext.Formulas
+                    .Include(f => f.Herbs)
+                    .FirstOrDefaultAsync(f => f.Id == id && f.Status == CommonStatus.Enabled);
+
+                if (formula == null)
+                {
+                    return ServiceResult<FormulaDto>.Failure("验方不存在或已禁用");
+                }
+
+                var dto = _mapper.Map<FormulaDto>(formula);
+                return ServiceResult<FormulaDto>.Success(dto);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取验方详情失败，ID: {FormulaId}", id);
+                return ServiceResult<FormulaDto>.Failure($"获取验方详情失败: {ex.Message}");
+            }
+        }
+
+        #endregion 单个验方查询
     }
 }
