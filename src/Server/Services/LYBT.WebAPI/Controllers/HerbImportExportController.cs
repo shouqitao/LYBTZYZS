@@ -63,7 +63,6 @@ namespace LYBT.WebAPI.Controllers
                 {
                     Name = dto.Name,
                     PinYinCode = null, // HerbImportDto没有此字段
-                    WuBiCode = null,   // HerbImportDto没有此字段
                     Origin = dto.Origin,
                     Spec = dto.Spec,
                     Unit = dto.Unit ?? "克",

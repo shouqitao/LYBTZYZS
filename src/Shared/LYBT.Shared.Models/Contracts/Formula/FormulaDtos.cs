@@ -45,14 +45,6 @@ namespace LYBT.Shared.Models.Contracts.Formula
             set => Herbs = value;
         }
 
-        /// <summary>验方描述</summary>
-        [DisplayName("验方描述")]
-        public string? Description { get; set; }
-
-        /// <summary>配制难度</summary>
-        [DisplayName("配制难度")]
-        public string? Difficulty { get; set; }
-
         /// <summary>药材数量（计算属性）</summary>
         [DisplayName("药材数量")]
         public int HerbCount => Herbs?.Count ?? 0;

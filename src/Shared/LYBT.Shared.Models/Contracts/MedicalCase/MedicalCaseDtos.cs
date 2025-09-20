@@ -92,35 +92,17 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
     public class MedicalCaseDetailDto : MedicalCaseDto
     {
 
-        [DisplayName("挂号ID")]
-        public Guid? RegistrationId { get; set; }
-
         [DisplayName("主诉")]
         public string? ChiefComplaint { get; set; }
 
         [DisplayName("现病史")]
         public string? PresentIllness { get; set; }
 
-        [DisplayName("既往史")]
-        public string? PastHistory { get; set; }
-
-        [DisplayName("体格检查")]
-        public string? PhysicalExamination { get; set; }
-
-        [DisplayName("辅助检查")]
-        public string? AuxiliaryExamination { get; set; }
-
         [DisplayName("诊断结果")]
         public string? DiagnosisResult { get; set; }
 
         [DisplayName("治疗方案")]
         public string? TreatmentPlan { get; set; }
-
-        [DisplayName("处方信息")]
-        public string? PrescriptionInfo { get; set; }
-
-        [DisplayName("随访计划")]
-        public string? FollowUpPlan { get; set; }
     }
 
     /// <summary>
@@ -136,9 +118,6 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
         [Required(ErrorMessage = "医生ID不能为空")]
         [DisplayName("医生ID")]
         public Guid DoctorId { get; set; }
-
-        [DisplayName("挂号ID")]
-        public Guid? RegistrationId { get; set; }
 
         /// <inheritdoc/>
         [StringLength(500, ErrorMessage = "备注长度不能超过500个字符")]

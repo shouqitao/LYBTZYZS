@@ -18,10 +18,6 @@ namespace LYBT.Shared.Models.Contracts.Patients
         [DisplayName("患者姓名")]
         public string Name { get; set; } = string.Empty;
 
-        /// <summary>患者编号</summary>
-        [DisplayName("患者编号")]
-        public string? PatientCode { get; set; }
-
         /// <summary>性别</summary>
         [DisplayName("性别")]
         public Gender Gender { get; set; }
@@ -64,10 +60,6 @@ namespace LYBT.Shared.Models.Contracts.Patients
         [DisplayName("地址")]
         public string? Address { get; set; }
 
-        /// <summary>职业</summary>
-        [DisplayName("职业")]
-        public string? Profession { get; set; }
-
         /// <summary>婚姻状况</summary>
         [DisplayName("婚姻状况")]
         public string? MaritalStatus { get; set; }
@@ -75,14 +67,6 @@ namespace LYBT.Shared.Models.Contracts.Patients
         /// <summary>过敏史</summary>
         [DisplayName("过敏史")]
         public string? AllergyHistory { get; set; }
-
-        /// <summary>既往病史</summary>
-        [DisplayName("既往病史")]
-        public string? MedicalHistory { get; set; }
-
-        /// <summary>家族史</summary>
-        [DisplayName("家族史")]
-        public string? FamilyHistory { get; set; }
 
         /// <summary>紧急联系人</summary>
         [DisplayName("紧急联系人")]
@@ -104,10 +88,6 @@ namespace LYBT.Shared.Models.Contracts.Patients
         [DisplayName("患者状态")]
         public PatientStatus PatientStatus { get; set; } = PatientStatus.Active;
 
-        /// <summary>标签</summary>
-        [DisplayName("标签")]
-        public List<string> Tags { get; set; } = new();
-
         /// <summary>备注信息</summary>
         [DisplayName("备注")]
         public string? Remark { get; set; }
@@ -115,10 +95,6 @@ namespace LYBT.Shared.Models.Contracts.Patients
         /// <summary>拼音码</summary>
         [DisplayName("拼音码")]
         public string? PinYinCode { get; set; }
-
-        /// <summary>五笔码</summary>
-        [DisplayName("五笔码")]
-        public string? WuBiCode { get; set; }
     }
 
     /// <summary>

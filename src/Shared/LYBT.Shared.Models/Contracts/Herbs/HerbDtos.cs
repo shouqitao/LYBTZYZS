@@ -55,7 +55,7 @@ namespace LYBT.Shared.Models.Contracts.Herbs
     /// 中药材详情DTO - 继承完整基础DTO
     /// 用于中药材档案详情的展示和传输
     /// </summary>
-    public class HerbDetailDto : StatusDto, ICodeable, IRemarkable
+    public class HerbDetailDto : StatusDto, IRemarkable
     {
 
         /// <summary>药材名称</summary>
@@ -68,11 +68,6 @@ namespace LYBT.Shared.Models.Contracts.Herbs
         [StringLength(50, ErrorMessage = "拼音码长度不能超过50个字符")]
         [DisplayName("拼音码")]
         public string? PinYinCode { get; set; }
-
-        /// <summary>五笔码</summary>
-        [StringLength(50, ErrorMessage = "五笔码长度不能超过50个字符")]
-        [DisplayName("五笔码")]
-        public string? WuBiCode { get; set; }
 
         /// <summary>产地</summary>
         [StringLength(100, ErrorMessage = "产地长度不能超过100个字符")]
@@ -114,7 +109,7 @@ namespace LYBT.Shared.Models.Contracts.Herbs
     /// 中药材创建DTO - 继承创建基类
     /// 用于创建新中药材档案的请求模型
     /// </summary>
-    public class HerbCreateDto : CreateDtoBase, ICodeable
+    public class HerbCreateDto : CreateDtoBase
     {
 
         /// <summary>药材名称</summary>
@@ -127,11 +122,6 @@ namespace LYBT.Shared.Models.Contracts.Herbs
         [StringLength(50, ErrorMessage = "拼音码长度不能超过50个字符")]
         [DisplayName("拼音码")]
         public string? PinYinCode { get; set; }
-
-        /// <summary>五笔码</summary>
-        [StringLength(50, ErrorMessage = "五笔码长度不能超过50个字符")]
-        [DisplayName("五笔码")]
-        public string? WuBiCode { get; set; }
 
         /// <summary>产地</summary>
         [StringLength(100, ErrorMessage = "产地长度不能超过100个字符")]
@@ -185,7 +175,7 @@ namespace LYBT.Shared.Models.Contracts.Herbs
     /// 中药材更新DTO - 继承更新基类
     /// 用于更新中药材档案的请求模型
     /// </summary>
-    public class HerbUpdateDto : UpdateDtoBase, ICodeable
+    public class HerbUpdateDto : UpdateDtoBase
     {
 
         /// <summary>药材名称</summary>
@@ -198,11 +188,6 @@ namespace LYBT.Shared.Models.Contracts.Herbs
         [StringLength(50, ErrorMessage = "拼音码长度不能超过50个字符")]
         [DisplayName("拼音码")]
         public string? PinYinCode { get; set; }
-
-        /// <summary>五笔码</summary>
-        [StringLength(50, ErrorMessage = "五笔码长度不能超过50个字符")]
-        [DisplayName("五笔码")]
-        public string? WuBiCode { get; set; }
 
         /// <summary>产地</summary>
         [StringLength(100, ErrorMessage = "产地长度不能超过100个字符")]

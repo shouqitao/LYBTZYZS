@@ -146,25 +146,9 @@ namespace LYBT.Shared.Models.Contracts.Consultation
         [DisplayName("切诊")]
         public string? Palpation { get; set; }
 
-        /// <summary>舌诊结果</summary>
-        [DisplayName("舌诊")]
-        public string? TongueInspection { get; set; }
-
-        /// <summary>脉诊结果</summary>
-        [DisplayName("脉诊")]
-        public string? PulseCondition { get; set; }
-
-        /// <summary>辨证分析</summary>
-        [DisplayName("辨证分析")]
-        public string? PatternDifferentiation { get; set; }
-
         /// <summary>中医诊断</summary>
         [DisplayName("中医诊断")]
         public string? TCMDiagnosis { get; set; }
-
-        /// <summary>西医诊断</summary>
-        [DisplayName("西医诊断")]
-        public string? WesternDiagnosis { get; set; }
 
         /// <summary>诊断结果</summary>
         [DisplayName("诊断")]
