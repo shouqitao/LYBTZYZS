@@ -200,7 +200,7 @@ namespace LYBT.WebAPI.Tests
         #region API版本一致性验证
 
         [Fact]
-        public async Task API_Endpoints_Should_Follow_Version_Pattern()
+        public Task API_Endpoints_Should_Follow_Version_Pattern()
         {
             // Arrange
             var endpoints = new[]
@@ -216,6 +216,8 @@ namespace LYBT.WebAPI.Tests
             {
                 endpoint.Should().StartWith("/api/v1/", $"端点 {endpoint} 应该遵循版本化URL模式");
             }
+
+            return Task.CompletedTask;
         }
 
         [Fact]

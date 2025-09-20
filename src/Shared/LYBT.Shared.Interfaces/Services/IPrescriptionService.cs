@@ -96,8 +96,19 @@ namespace LYBT.Shared.Interfaces.Services
     /// </summary>
     public class PrescriptionValidationResult
     {
+        /// <summary>
+        /// 验证是否通过
+        /// </summary>
         public bool IsValid { get; set; }
+
+        /// <summary>
+        /// 验证错误列表
+        /// </summary>
         public List<string> Errors { get; set; } = new List<string>();
+
+        /// <summary>
+        /// 验证警告列表
+        /// </summary>
         public List<string> Warnings { get; set; } = new List<string>();
     }
 }

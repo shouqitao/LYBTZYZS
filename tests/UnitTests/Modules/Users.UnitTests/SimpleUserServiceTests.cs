@@ -164,7 +164,7 @@ namespace LYBT.Module.Users.Tests
 
             _mockQueryService
                 .Setup(x => x.GetByIdAsync(userId))
-                .ReturnsAsync((ServiceResult<UserDto>?)null);
+                .ReturnsAsync(ServiceResult<UserDto>.Failure("用户不存在"));
 
             // Act
             var result = await _userService.GetByIdAsync(userId);
@@ -588,8 +588,8 @@ namespace LYBT.Module.Users.Tests
         [InlineData("1380013800", false)]   // 过短手机号  
         [InlineData("abc12345678", false)]  // 包含字母
         [InlineData("", true)]              // 空字符串（可选字段）
-        [InlineData(null, true)]            // null值（可选字段）
-        public async Task CreateAsync_Should_Validate_Phone_Number_Format(string phoneNumber, bool shouldSucceed)
+        [InlineData(null!, true)]            // null值（可选字段）
+        public async Task CreateAsync_Should_Validate_Phone_Number_Format(string? phoneNumber, bool shouldSucceed)
         {
             // Arrange
             var dto = new UserMutationDto
