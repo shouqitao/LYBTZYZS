@@ -381,36 +381,6 @@ namespace LYBT.Shared.Models.Contracts.Formula
         public bool IsAscending { get; set; } = false;
     }
 
-    /// <summary>
-    /// 验方分页查询DTO - 兼容旧代码（已废弃，使用FormulaSearchDto替代）
-    /// </summary>
-    [Obsolete("请使用FormulaSearchDto替代")]
-    public class FormulaPagedQueryDto : ExtendedQueryDto
-    {
-        [DisplayName("验方名称")]
-        public string? Name { get; set; }
-
-        [DisplayName("功效")]
-        public string? Effect { get; set; }
-
-        [DisplayName("是否共享")]
-        public bool? IsShared { get; set; }
-
-        [DisplayName("创建者ID")]
-        public Guid? CreatedById { get; set; }
-
-        [DisplayName("排序字段")]
-        public string OrderBy { get; set; } = "CreateTime";
-
-        [DisplayName("升序排序")]
-        public bool IsAscending { get; set; } = false;
-
-        /// <summary>页码兼容性别名</summary>
-        public int Page { get => PageIndex; set => PageIndex = value; }
-
-        /// <summary>页大小兼容性别名</summary>
-        public int Size { get => PageSize; set => PageSize = value; }
-    }
 
     /// <summary>
     /// 从处方创建验方DTO - 继承验方输入基础DTO

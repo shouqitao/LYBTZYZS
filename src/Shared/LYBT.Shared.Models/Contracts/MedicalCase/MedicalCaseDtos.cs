@@ -259,28 +259,6 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
     }
 
     /// <summary>
-    /// 医疗案例分页查询DTO - 兼容旧代码（已废弃，使用MedicalCaseSearchDto替代）
-    /// </summary>
-    [Obsolete("请使用MedicalCaseSearchDto替代")]
-    public class MedicalCasePagedQueryDto : ExtendedQueryDto
-    {
-        [DisplayName("患者ID")]
-        public Guid? PatientId { get; set; }
-
-        [DisplayName("医生ID")]
-        public Guid? DoctorId { get; set; }
-
-        [DisplayName("案例状态")]
-        public string? CaseStatus { get; set; }
-
-        [DisplayName("排序字段")]
-        public string OrderBy { get; set; } = "CreateTime";
-
-        [DisplayName("升序排序")]
-        public bool IsAscending { get; set; } = false;
-    }
-
-    /// <summary>
     /// 医疗案例统计DTO - 继承统计DTO基础类
     /// </summary>
     public class MedicalCaseStatisticsDto : StatisticsDto
@@ -478,31 +456,6 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
     }
 
     /// <summary>
-    /// 医案高级搜索DTO - 兼容旧代码（已废弃，使用MedicalCaseSearchDto替代）
-    /// </summary>
-    [Obsolete("请使用MedicalCaseSearchDto替代")]
-    public class MedicalCaseAdvancedSearchDto : PagedQueryBaseDto
-    {
-        [DisplayName("患者ID")]
-        public Guid? PatientId { get; set; }
-
-        [DisplayName("医生ID")]
-        public Guid? DoctorId { get; set; }
-
-        [DisplayName("状态")]
-        public MedicalCaseStatus? Status { get; set; }
-
-        [DisplayName("开始日期")]
-        public DateTime? StartDate { get; set; }
-
-        [DisplayName("结束日期")]
-        public DateTime? EndDate { get; set; }
-
-        [DisplayName("诊断关键词")]
-        public string? DiagnosisKeyword { get; set; }
-    }
-
-    /// <summary>
     /// 诊断频次统计DTO
     /// </summary>
     public class DiagnosisFrequencyDto
@@ -655,35 +608,6 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
 
         [DisplayName("诊断结果")]
         public string? DiagnosisResult { get; set; }
-    }
-
-    /// <summary>
-    /// 医案完整信息DTO - 优化继承层次（直接继承MedicalCaseDto）
-    /// </summary>
-    public class MedicalCaseCompleteInfoDto : MedicalCaseDto
-    {
-        // 来自MedicalCaseDetailDto的字段
-        [DisplayName("主诉")]
-        public string? ChiefComplaint { get; set; }
-
-        [DisplayName("现病史")]
-        public string? PresentIllness { get; set; }
-
-        [DisplayName("诊断结果")]
-        public string? DiagnosisResult { get; set; }
-
-        [DisplayName("治疗方案")]
-        public string? TreatmentPlan { get; set; }
-
-        // 完整信息字段
-        [DisplayName("患者完整信息")]
-        public string PatientFullInfo { get; set; } = string.Empty;
-
-        [DisplayName("医生完整信息")]
-        public string DoctorFullInfo { get; set; } = string.Empty;
-
-        [DisplayName("看诊完整记录")]
-        public string ConsultationFullRecord { get; set; } = string.Empty;
     }
 
     /// <summary>

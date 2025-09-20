@@ -171,7 +171,7 @@ public class FormulaModule(
             {
                 TotalCount = formulas.Count,
                 SuccessCount = 0,
-                FailedCount = 0
+                FailureCount = 0
             };
 
             foreach (var formula in formulas)
@@ -185,16 +185,16 @@ public class FormulaModule(
                     }
                     else
                     {
-                        importResult.FailedCount++;
+                        importResult.FailureCount++;
                     }
                 }
                 catch
                 {
-                    importResult.FailedCount++;
+                    importResult.FailureCount++;
                 }
             }
 
-            return ServiceResult<object>.Success(importResult, $"验方批量导入完成，成功: {importResult.SuccessCount}, 失败: {importResult.FailedCount}");
+            return ServiceResult<object>.Success(importResult, $"验方批量导入完成，成功: {importResult.SuccessCount}, 失败: {importResult.FailureCount}");
         }
         catch (Exception ex)
         {
@@ -228,7 +228,7 @@ public class FormulaModule(
             var csvContent = "验方名称,分类,描述,状态\n";
             foreach (var formula in result.Data.Items)
             {
-                csvContent += $"{formula.Name},{formula.Category ?? "未分类"},{formula.Description?.Replace(",", "；") ?? string.Empty},{(formula.IsEnabled ? "启用" : "禁用")}\n";
+                csvContent += $"{formula.Name},{formula.Effect?.Replace(",", "；") ?? string.Empty},{formula.Remark?.Replace(",", "；") ?? string.Empty},{(formula.IsEnabled ? "启用" : "禁用")}\n";
             }
 
             var csvBytes = System.Text.Encoding.UTF8.GetBytes(csvContent);
@@ -405,7 +405,7 @@ public class FormulaModule(
         {
             TotalCount = 0,
             SuccessCount = 0,
-            FailedCount = 0,
+            FailureCount = 0,
 
             // ErrorMessages = ["简单诊所版本暂不支持验方导入功能"] // 移除不存在的属性
         };

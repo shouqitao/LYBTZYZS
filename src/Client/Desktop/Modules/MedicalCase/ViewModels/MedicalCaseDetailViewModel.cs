@@ -294,9 +294,9 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                     CaseNumber = $"MC{MedicalCase.Id.ToString().Substring(0, 8).ToUpper()}";
                     ChiefComplaint = MedicalCase.ChiefComplaint ?? string.Empty;
                     CurrentIllnessHistory = MedicalCase.PresentIllness ?? string.Empty;
-                    PastMedicalHistory = MedicalCase.PastHistory ?? string.Empty;
-                    PhysicalExamination = MedicalCase.PhysicalExamination ?? string.Empty;
-                    AuxiliaryExamination = MedicalCase.AuxiliaryExamination ?? string.Empty;
+                    PastMedicalHistory = string.Empty;
+                    PhysicalExamination = string.Empty;
+                    AuxiliaryExamination = string.Empty;
                     DiagnosisSummary = MedicalCase.DiagnosisResult ?? string.Empty;
                     TreatmentPlan = MedicalCase.TreatmentPlan ?? string.Empty;
                     ClinicalNotes = MedicalCase.Remark ?? string.Empty;

@@ -323,7 +323,7 @@ namespace LYBT.Desktop.Patients.ViewModels
             BirthDate = null; // PatientDto中可能没有BirthDate，根据实际DTO结构调整
             PhoneNumber = patient.PhoneNumber ?? string.Empty;
             Address = patient.Address ?? string.Empty;
-            IdType = patient.IdType ?? SystemConstants.DefaultIdType;
+            IdType = SystemConstants.DefaultIdType;
             IdNumber = patient.IdNumber ?? string.Empty;
             EmergencyContact = string.Empty; // PatientDto中可能没有，根据实际DTO结构调整
             EmergencyPhone = string.Empty; // PatientDto中可能没有，根据实际DTO结构调整

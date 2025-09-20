@@ -374,7 +374,7 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         private string GetStatusText()
         {
-            if (Patient?.IsActive == true)
+            if (Patient?.IsEnabled == true)
             {
                 return "正常";
             }

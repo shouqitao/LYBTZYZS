@@ -67,8 +67,6 @@ namespace LYBT.Desktop.Formula.ViewModels
         public string Effect => Formula?.Effect ?? string.Empty;
         public string Usage => Formula?.Usage ?? string.Empty;
         public string Property => Formula?.Property ?? string.Empty;
-        public string Description => Formula?.Description ?? string.Empty;
-        public string Difficulty => Formula?.Difficulty ?? string.Empty;
         public string Remark => Formula?.Remark ?? string.Empty;
         public bool IsShared => Formula?.IsShared ?? false;
         public DateTime? CreateTime => Formula?.CreateTime;
@@ -374,8 +372,6 @@ namespace LYBT.Desktop.Formula.ViewModels
             RaisePropertyChanged(nameof(Effect));
             RaisePropertyChanged(nameof(Usage));
             RaisePropertyChanged(nameof(Property));
-            RaisePropertyChanged(nameof(Description));
-            RaisePropertyChanged(nameof(Difficulty));
             RaisePropertyChanged(nameof(Remark));
             RaisePropertyChanged(nameof(IsShared));
             RaisePropertyChanged(nameof(CreateTime));

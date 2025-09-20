@@ -84,7 +84,6 @@ public class MedicalCaseBusinessService(
                 DoctorId = dto.DoctorId,
                 ChiefComplaint = dto.ChiefComplaint,
                 PresentIllness = dto.PresentIllness,
-                PastHistory = dto.PastHistory,
                 Remark = dto.Remark
             };
 

@@ -76,7 +76,7 @@ public class ConsultationQueryService(
                     Status = consultation.Status == ConsultationStatus.Completed ? CommonStatus.Enabled : CommonStatus.Disabled,
                     CreateTime = consultation.CreateTime,
                     UpdateTime = consultation.UpdateTime,
-                    UserId = consultation.UserId
+                    DoctorId = consultation.DoctorId
                 };
 
                 _logger.LogDebug("看诊诊断详细档案查询成功: {ConsultationId}", id);

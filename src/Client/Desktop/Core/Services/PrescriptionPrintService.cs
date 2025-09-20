@@ -313,9 +313,7 @@ namespace LYBT.Desktop.Core.Services
 
             // 健康状况
             sb.AppendLine("【健康状况】");
-            sb.AppendLine($"证件类型: {patient.IdType ?? "未知"}");
             sb.AppendLine($"婚姻状况: {patient.MaritalStatus ?? "未知"}");
-            sb.AppendLine($"职    业: {patient.Profession ?? "未知"}");
 
             if (!string.IsNullOrEmpty(patient.AllergyHistory) && patient.AllergyHistory != "无")
             {
@@ -324,24 +322,6 @@ namespace LYBT.Desktop.Core.Services
             else
             {
                 sb.AppendLine("过 敏 史: 无");
-            }
-
-            if (!string.IsNullOrEmpty(patient.MedicalHistory) && patient.MedicalHistory != "无")
-            {
-                sb.AppendLine($"既往病史: {patient.MedicalHistory}");
-            }
-            else
-            {
-                sb.AppendLine("既往病史: 无");
-            }
-
-            if (!string.IsNullOrEmpty(patient.FamilyHistory) && patient.FamilyHistory != "无")
-            {
-                sb.AppendLine($"家族病史: {patient.FamilyHistory}");
-            }
-            else
-            {
-                sb.AppendLine("家族病史: 无");
             }
 
             sb.AppendLine();

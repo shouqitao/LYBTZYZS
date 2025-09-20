@@ -59,7 +59,7 @@ public class ConsultationBusinessService(
                     MedicalCaseId = consultation.MedicalCaseId,
                     Status = consultation.Status == ConsultationStatus.Completed ? CommonStatus.Enabled : CommonStatus.Disabled,
                     CreateTime = consultation.CreateTime,
-                    UserId = consultation.UserId
+                    DoctorId = consultation.DoctorId
                 };
                 _logger.LogInformation("看诊诊断创建成功: {ConsultationId}", consultation.Id);
                 return ServiceResult<ConsultationDto>.Success(consultationDto, "看诊诊断创建成功");
@@ -105,7 +105,7 @@ public class ConsultationBusinessService(
                     MedicalCaseId = consultation.MedicalCaseId,
                     Status = consultation.Status == ConsultationStatus.Completed ? CommonStatus.Enabled : CommonStatus.Disabled,
                     CreateTime = consultation.CreateTime,
-                    UserId = consultation.UserId
+                    DoctorId = consultation.DoctorId
                 };
                 _logger.LogInformation("看诊诊断更新成功: {ConsultationId}", id);
                 return ServiceResult<ConsultationDto>.Success(consultationDto, "看诊诊断更新成功");

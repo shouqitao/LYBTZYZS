@@ -206,7 +206,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
                 Consultation.PatientId = SelectedPatient.Id;
                 Consultation.DoctorId = CurrentUser?.Id ?? Guid.Empty;
                 Consultation.MedicalCaseId = MedicalCaseId ?? Guid.NewGuid();
-                Consultation.ConsultationTime = DateTime.Now;
+                Consultation.StartTime = DateTime.Now;
                 Consultation.DoctorName = CurrentUser?.RealName ?? string.Empty;
 
                 var createDto = new ConsultationStartDto
