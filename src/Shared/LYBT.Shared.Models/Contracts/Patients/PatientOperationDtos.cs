@@ -27,10 +27,6 @@ namespace LYBT.Shared.Models.Contracts.Patients
         [DisplayName("拼音码")]
         public string? PinYinCode { get; set; }
 
-        /// <summary>五笔码</summary>
-        [DisplayName("五笔码")]
-        public string? WuBiCode { get; set; }
-
         /// <summary>关键词搜索</summary>
         [DisplayName("关键词")]
         public new string? Keyword { get; set; }
@@ -119,10 +115,6 @@ namespace LYBT.Shared.Models.Contracts.Patients
         /// <summary>按拼音码搜索</summary>
         [DisplayName("拼音码")]
         public new string? PinYinCode { get; set; }
-
-        /// <summary>按五笔码搜索</summary>
-        [DisplayName("五笔码")]
-        public new string? WuBiCode { get; set; }
     }
 
     /// <summary>

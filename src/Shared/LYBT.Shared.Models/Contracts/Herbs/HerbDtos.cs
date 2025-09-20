@@ -239,10 +239,6 @@ namespace LYBT.Shared.Models.Contracts.Herbs
         [DisplayName("拼音码")]
         public string? PinYinCode { get; set; }
 
-        /// <summary>五笔码</summary>
-        [DisplayName("五笔码")]
-        public string? WuBiCode { get; set; }
-
         /// <summary>关键词搜索</summary>
         [DisplayName("关键词")]
         public new string? Keyword { get; set; }
@@ -300,11 +296,6 @@ namespace LYBT.Shared.Models.Contracts.Herbs
         [StringLength(50, ErrorMessage = "拼音码长度不能超过50个字符")]
         [DisplayName("拼音码")]
         public new string? PinYinCode { get; set; }
-
-        /// <summary>五笔码关键词</summary>
-        [StringLength(50, ErrorMessage = "五笔码长度不能超过50个字符")]
-        [DisplayName("五笔码")]
-        public new string? WuBiCode { get; set; }
 
         /// <summary>产地关键词</summary>
         [DisplayName("产地")]

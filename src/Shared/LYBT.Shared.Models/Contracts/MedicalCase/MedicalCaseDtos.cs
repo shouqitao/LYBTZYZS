@@ -658,11 +658,24 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
     }
 
     /// <summary>
-    /// 医案完整信息DTO
+    /// 医案完整信息DTO - 优化继承层次（直接继承MedicalCaseDto）
     /// </summary>
-    public class MedicalCaseCompleteInfoDto : MedicalCaseDetailDto
+    public class MedicalCaseCompleteInfoDto : MedicalCaseDto
     {
+        // 来自MedicalCaseDetailDto的字段
+        [DisplayName("主诉")]
+        public string? ChiefComplaint { get; set; }
 
+        [DisplayName("现病史")]
+        public string? PresentIllness { get; set; }
+
+        [DisplayName("诊断结果")]
+        public string? DiagnosisResult { get; set; }
+
+        [DisplayName("治疗方案")]
+        public string? TreatmentPlan { get; set; }
+
+        // 完整信息字段
         [DisplayName("患者完整信息")]
         public string PatientFullInfo { get; set; } = string.Empty;
 

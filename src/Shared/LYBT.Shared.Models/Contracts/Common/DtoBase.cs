@@ -52,16 +52,13 @@ namespace LYBT.Shared.Models.Contracts.Common
     }
 
     /// <summary>
-    /// 编码接口 - 提供拼音码和五笔码
+    /// 编码接口 - 提供拼音码
     /// </summary>
     public interface ICodeable
     {
 
         /// <summary>拼音码</summary>
         string? PinYinCode { get; set; }
-
-        /// <summary>五笔码</summary>
-        string? WuBiCode { get; set; }
     }
 
     #endregion 核心接口定义
@@ -176,10 +173,6 @@ namespace LYBT.Shared.Models.Contracts.Common
         /// <summary>拼音码搜索</summary>
         [DisplayName("拼音码")]
         public string? PinYinCode { get; set; }
-
-        /// <summary>五笔码搜索</summary>
-        [DisplayName("五笔码")]
-        public string? WuBiCode { get; set; }
     }
 
     #endregion 查询DTO基类 - UltraThink简化
