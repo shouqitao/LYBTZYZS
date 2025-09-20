@@ -171,16 +171,16 @@ namespace LYBT.Desktop.Users.ViewModels
                 if (_isEditMode && _originalUser != null)
                 {
                     // 编辑模式
-                    var updateRequest = new UserMutationDto
+                    var updateRequest = new UserUpdateDto
                     {
                         Id = _originalUser.Id,
-                        Username = Username.Trim(),
                         RealName = RealName.Trim(),
-                        Role = SelectedRole?.Value ?? _originalUser.Role, // 🎯 修复：使用选中的角色，如果未选择则保持原有角色
-                        Email = string.IsNullOrWhiteSpace(Email) ? null : Email.Trim(), // 🎯 修复：包含邮箱字段
+                        Role = !string.IsNullOrEmpty(SelectedRole?.Value) && Enum.TryParse<UserRole>(SelectedRole.Value, out var selectedRole)
+                            ? selectedRole
+                            : Enum.TryParse<UserRole>(_originalUser.Role, out var originalRole) ? originalRole : UserRole.Doctor,
+                        Email = string.IsNullOrWhiteSpace(Email) ? null : Email.Trim(),
                         PhoneNumber = string.IsNullOrWhiteSpace(PhoneNumber) ? null : PhoneNumber.Trim(),
-                        Status = IsActive ? CommonStatus.Enabled : CommonStatus.Disabled, // 🎯 修复：包含状态字段
-                        IsCreateOperation = false // 设置为更新操作
+                        Status = IsActive ? CommonStatus.Enabled : CommonStatus.Disabled
                     };
 
                     var response = await _userService.UpdateAsync(updateRequest);
@@ -194,17 +194,18 @@ namespace LYBT.Desktop.Users.ViewModels
                 else
                 {
                     // 新增模式
-                    var createRequest = new UserMutationDto
+                    var createRequest = new UserCreateDto
                     {
                         Username = Username.Trim(),
                         RealName = RealName.Trim(),
-                        Email = string.IsNullOrWhiteSpace(Email) ? null : Email.Trim(), // 🎯 修复：包含邮箱字段
+                        Email = string.IsNullOrWhiteSpace(Email) ? null : Email.Trim(),
                         PhoneNumber = string.IsNullOrWhiteSpace(PhoneNumber) ? null : PhoneNumber.Trim(),
-                        Role = SelectedRole?.Value ?? SystemConstants.DoctorRole, // 新建用户使用选中的角色，默认为医生
-                        Status = IsActive ? CommonStatus.Enabled : CommonStatus.Disabled, // 🎯 修复：包含状态字段
+                        Role = !string.IsNullOrEmpty(SelectedRole?.Value) && Enum.TryParse<UserRole>(SelectedRole.Value, out var selectedRole)
+                            ? selectedRole
+                            : UserRole.Doctor,
+                        Status = IsActive ? CommonStatus.Enabled : CommonStatus.Disabled,
                         Password = string.Empty, // 后端会自动设置环境感知的默认密码
-                        ConfirmPassword = string.Empty, // 确认密码
-                        IsCreateOperation = true // 设置为创建操作
+                        ConfirmPassword = string.Empty // 确认密码
                     };
 
                     var response = await _userService.CreateAsync(createRequest);
@@ -266,7 +267,7 @@ namespace LYBT.Desktop.Users.ViewModels
             // 🎯 修复：正确设置启用状态
             IsActive = user.Status == CommonStatus.Enabled;
 
-            // 🎯 修复：根据实际角色正确设置选中项
+            // 🎯 修复：根据实际角色正确设置选中项（user.Role是string类型）
             SelectedRole = Roles.FirstOrDefault(r => r.Value == user.Role) ??
                           Roles.FirstOrDefault(r => r.Value == SystemConstants.DoctorRole) ??
                           Roles.First();

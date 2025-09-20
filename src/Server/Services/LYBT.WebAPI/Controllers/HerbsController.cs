@@ -45,7 +45,7 @@ namespace LYBT.WebAPI.Controllers
                     return ValidationFailPaged<HerbDto>("页码和页大小参数无效（页码>0，页大小1-100）");
                 }
 
-                var query = new HerbPagedQueryDto
+                var query = new HerbSearchDto
                 {
                     PageIndex = page,
                     PageSize = pageSize,
@@ -183,11 +183,11 @@ namespace LYBT.WebAPI.Controllers
             try
             {
                 // 获取所有启用的药材 (使用分页查询替代GetAvailableHerbsAsync)
-                var query = new HerbPagedQueryDto
+                var query = new HerbSearchDto
                 {
                     PageIndex = 1,
                     PageSize = 10000,
-                    Status = LYBT.Shared.Models.Enums.CommonStatus.Enabled
+                    IncludeExpired = false // 只获取启用的药材
                 };
                 var allHerbsResult = await _herbService.GetPagedAsync(query);
                 if (!allHerbsResult.IsSuccess || allHerbsResult.Data?.Items == null)

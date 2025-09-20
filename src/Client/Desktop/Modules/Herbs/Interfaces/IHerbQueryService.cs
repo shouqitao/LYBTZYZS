@@ -15,7 +15,7 @@ public interface IHerbQueryService
     /// <summary>
     /// 分页查询药材
     /// </summary>
-    Task<ServiceResult<PagedResult<HerbDto>>> GetPagedAsync(HerbPagedQueryDto query);
+    Task<ServiceResult<PagedResult<HerbDto>>> GetPagedAsync(HerbSearchDto query);
 
     /// <summary>
     /// 根据ID获取药材

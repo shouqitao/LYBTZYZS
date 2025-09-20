@@ -15,12 +15,12 @@ public interface IUserBusinessService
     /// <summary>
     /// 创建用户 - DT-011取消令牌支持
     /// </summary>
-    Task<ServiceResult<UserDto>> CreateAsync(UserMutationDto createDto, CancellationToken cancellationToken = default);
+    Task<ServiceResult<UserDto>> CreateAsync(UserCreateDto createDto, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// 更新用户信息 - DT-011取消令牌支持
     /// </summary>
-    Task<ServiceResult<UserDto>> UpdateAsync(UserMutationDto updateDto, CancellationToken cancellationToken = default);
+    Task<ServiceResult<UserDto>> UpdateAsync(UserUpdateDto updateDto, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// 删除用户

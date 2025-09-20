@@ -42,7 +42,7 @@ namespace LYBT.Shared.Interfaces.Services
         /// <para>功能: 支持角色筛选、状态筛选、关键字搜索、多字段排序</para>
         /// <para>权限: 仅管理员可执行，医生无权查看其他用户列表</para>
         /// </remarks>
-        Task<ServiceResult<PagedResult<UserDto>>> GetPagedAsync(UserPagedQueryDto query);
+        Task<ServiceResult<PagedResult<UserDto>>> GetPagedAsync(UserSearchDto query);
 
         /// <summary>
         /// 根据用户名查找用户
@@ -94,7 +94,7 @@ namespace LYBT.Shared.Interfaces.Services
         /// <para>处理: 密码PBKDF2哈希、默认状态设置、创建时间记录</para>
         /// <para>审计: 记录用户创建操作日志</para>
         /// </remarks>
-        Task<ServiceResult<UserDto>> CreateAsync(UserMutationDto dto);
+        Task<ServiceResult<UserDto>> CreateAsync(UserCreateDto dto);
 
         /// <summary>
         /// 更新用户信息 - UltraThink消除ID参数重复
@@ -107,7 +107,7 @@ namespace LYBT.Shared.Interfaces.Services
         /// <para>处理: 字段更新、更新时间记录、缓存失效</para>
         /// <para>限制: 不允许修改用户名、创建时间、ID等关键字段</para>
         /// </remarks>
-        Task<ServiceResult<UserDto>> UpdateAsync(UserMutationDto dto);
+        Task<ServiceResult<UserDto>> UpdateAsync(UserUpdateDto dto);
 
         /// <summary>
         /// 删除用户 (软删除)

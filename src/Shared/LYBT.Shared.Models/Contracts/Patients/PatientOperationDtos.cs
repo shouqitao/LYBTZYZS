@@ -74,48 +74,6 @@ namespace LYBT.Shared.Models.Contracts.Patients
         public bool IncludeInactive { get; set; } = false;
     }
 
-    /// <summary>
-    /// 患者分页查询DTO - 兼容旧代码（已废弃，使用PatientSearchDto替代）
-    /// </summary>
-    [Obsolete("请使用PatientSearchDto替代")]
-    public class PatientPagedQueryDto : ExtendedQueryDto, ICodeable
-    {
-        /// <summary>姓名关键词</summary>
-        [DisplayName("姓名关键词")]
-        public string? Name { get; set; }
-
-        /// <summary>手机号关键词</summary>
-        [DisplayName("手机号")]
-        public string? PhoneNumber { get; set; }
-
-        /// <summary>证件号关键词</summary>
-        [DisplayName("证件号")]
-        public string? IDNumber { get; set; }
-
-        /// <summary>性别筛选</summary>
-        [DisplayName("性别")]
-        public Gender? Gender { get; set; }
-
-        /// <summary>年龄范围-最小值</summary>
-        [DisplayName("最小年龄")]
-        public int? MinAge { get; set; }
-
-        /// <summary>年龄范围-最大值</summary>
-        [DisplayName("最大年龄")]
-        public int? MaxAge { get; set; }
-
-        /// <summary>地址关键词</summary>
-        [DisplayName("地址")]
-        public string? Address { get; set; }
-
-        /// <summary>职业关键词</summary>
-        [DisplayName("职业")]
-        public string? Profession { get; set; }
-
-        /// <summary>按拼音码搜索</summary>
-        [DisplayName("拼音码")]
-        public new string? PinYinCode { get; set; }
-    }
 
     /// <summary>
     /// 分配医生DTO - 前后端共享API契约

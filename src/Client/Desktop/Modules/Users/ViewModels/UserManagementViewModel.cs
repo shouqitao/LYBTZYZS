@@ -95,7 +95,7 @@ namespace LYBT.Desktop.Users.ViewModels
         /// <summary>加载数据</summary>
         protected override async Task<ServiceResult<PagedResult<UserDto>>> LoadDataAsync(int page, int pageSize, string? keyword = null)
         {
-            var userQuery = new UserPagedQueryDto
+            var userQuery = new UserSearchDto
             {
                 CurrentPage = page,
                 PageSize = pageSize,

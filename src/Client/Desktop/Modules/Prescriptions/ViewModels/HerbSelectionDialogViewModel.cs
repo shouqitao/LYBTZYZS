@@ -158,7 +158,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             try
             {
                 IsLoading = true;
-                var result = await _herbService.GetPagedAsync(new HerbPagedQueryDto { PageSize = 100 });
+                var result = await _herbService.GetPagedAsync(new HerbSearchDto { PageSize = 100 });
                 if (result.IsSuccess && result.Data != null)
                 {
                     AvailableHerbs = new ObservableCollection<HerbDto>(result.Data.Items);
@@ -188,7 +188,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             try
             {
                 IsLoading = true;
-                var result = await _herbService.GetPagedAsync(new HerbPagedQueryDto
+                var result = await _herbService.GetPagedAsync(new HerbSearchDto
                 {
                     Name = SearchText,
                     PageSize = 100

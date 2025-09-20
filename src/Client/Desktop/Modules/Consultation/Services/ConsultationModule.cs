@@ -52,7 +52,7 @@ public class ConsultationModule(
     /// <inheritdoc/>
     public async Task<ServiceResult<PagedResult<ConsultationDto>>> GetPagedAsync(PagedQueryBaseDto query)
     {
-        var consultationQuery = new ConsultationPagedQueryDto
+        var consultationQuery = new ConsultationSearchDto
         {
             Keyword = query.Keyword,
             PageIndex = query.PageIndex,

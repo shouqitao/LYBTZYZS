@@ -29,7 +29,7 @@ namespace LYBT.Module.Herbs.Services
             => await _queryService.GetAllAsync();
 
         /// <inheritdoc/>
-        public async Task<ServiceResult<PagedResult<HerbDto>>> GetPagedAsync(HerbPagedQueryDto query)
+        public async Task<ServiceResult<PagedResult<HerbDto>>> GetPagedAsync(HerbSearchDto query)
             => await _queryService.GetPagedAsync(query);
 
         /// <inheritdoc/>
@@ -52,7 +52,7 @@ namespace LYBT.Module.Herbs.Services
         public async Task<ServiceResult<List<HerbDto>>> SearchByNameAsync(string name)
             => await SearchAsync(name);
 
-        public async Task<ServiceResult<List<HerbDto>>> GetListAsync(HerbPagedQueryDto? query = null)
+        public async Task<ServiceResult<List<HerbDto>>> GetListAsync(HerbSearchDto? query = null)
         {
             if (query == null)
             {

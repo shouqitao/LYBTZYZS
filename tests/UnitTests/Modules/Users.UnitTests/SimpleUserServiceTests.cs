@@ -65,7 +65,7 @@ namespace LYBT.Module.Users.Tests
         public async Task GetPagedAsync_Should_Return_Empty_Result_When_No_Users()
         {
             // Arrange
-            var query = new UserPagedQueryDto
+            var query = new UserSearchDto
             {
                 CurrentPage = 1,
                 PageSize = 10
@@ -80,7 +80,7 @@ namespace LYBT.Module.Users.Tests
             });
 
             _mockQueryService
-                .Setup(x => x.GetPagedAsync(It.IsAny<UserPagedQueryDto>()))
+                .Setup(x => x.GetPagedAsync(It.IsAny<UserSearchDto>()))
                 .ReturnsAsync(expectedResult);
 
             // Act
@@ -120,7 +120,7 @@ namespace LYBT.Module.Users.Tests
                 }
             };
 
-            var query = new UserPagedQueryDto
+            var query = new UserSearchDto
             {
                 CurrentPage = 1,
                 PageSize = 10
@@ -135,7 +135,7 @@ namespace LYBT.Module.Users.Tests
             });
 
             _mockQueryService
-                .Setup(x => x.GetPagedAsync(It.IsAny<UserPagedQueryDto>()))
+                .Setup(x => x.GetPagedAsync(It.IsAny<UserSearchDto>()))
                 .ReturnsAsync(expectedResult);
 
             // Act
@@ -215,17 +215,20 @@ namespace LYBT.Module.Users.Tests
         public async Task CreateAsync_Should_Return_Error_When_Username_Already_Exists()
         {
             // Arrange
-            var dto = new UserMutationDto
+            var dto = new UserCreateDto
             {
                 Username = "existinguser",
                 RealName = "已存在用户",
-                IsCreateOperation = true
+                Password = "Password123!",
+                ConfirmPassword = "Password123!",
+                Role = UserRole.Doctor,
+                Status = CommonStatus.Enabled
             };
 
             var expectedResult = ServiceResult<UserDto>.Failure("用户名已存在");
 
             _mockBusinessService
-                .Setup(x => x.CreateUserAsync(It.IsAny<UserMutationDto>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.CreateUserAsync(It.IsAny<UserCreateDto>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(expectedResult);
 
             // Act
@@ -244,12 +247,15 @@ namespace LYBT.Module.Users.Tests
         public async Task CreateAsync_Should_Create_User_When_Valid()
         {
             // Arrange
-            var dto = new UserMutationDto
+            var dto = new UserCreateDto
             {
                 Username = "newuser",
                 RealName = "新用户",
                 PhoneNumber = "13800138000",
-                IsCreateOperation = true
+                Password = "Password123!",
+                ConfirmPassword = "Password123!",
+                Role = UserRole.Doctor,
+                Status = CommonStatus.Enabled
             };
 
             var createdUserDto = new UserDto
@@ -265,7 +271,7 @@ namespace LYBT.Module.Users.Tests
             var expectedResult = ServiceResult<UserDto>.Success(createdUserDto);
 
             _mockBusinessService
-                .Setup(x => x.CreateUserAsync(It.IsAny<UserMutationDto>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.CreateUserAsync(It.IsAny<UserCreateDto>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(expectedResult);
 
             // Act
@@ -476,7 +482,7 @@ namespace LYBT.Module.Users.Tests
         public async Task GetPagedAsync_Should_Handle_Various_Page_Parameters(int currentPage, int pageSize, bool shouldSucceed)
         {
             // Arrange
-            var query = new UserPagedQueryDto
+            var query = new UserSearchDto
             {
                 CurrentPage = currentPage,
                 PageSize = pageSize
@@ -493,14 +499,14 @@ namespace LYBT.Module.Users.Tests
                 });
 
                 _mockQueryService
-                    .Setup(x => x.GetPagedAsync(It.IsAny<UserPagedQueryDto>()))
+                    .Setup(x => x.GetPagedAsync(It.IsAny<UserSearchDto>()))
                     .ReturnsAsync(expectedResult);
             }
             else
             {
                 var expectedResult = ServiceResult<PagedResult<UserDto>>.Failure("页面参数无效");
                 _mockQueryService
-                    .Setup(x => x.GetPagedAsync(It.IsAny<UserPagedQueryDto>()))
+                    .Setup(x => x.GetPagedAsync(It.IsAny<UserSearchDto>()))
                     .ReturnsAsync(expectedResult);
             }
 
@@ -532,11 +538,14 @@ namespace LYBT.Module.Users.Tests
         public async Task CreateAsync_Should_Handle_Various_Username_Lengths(string username)
         {
             // Arrange  
-            var dto = new UserMutationDto
+            var dto = new UserCreateDto
             {
                 Username = username,
                 RealName = "测试用户",
-                IsCreateOperation = true
+                Password = "Password123!",
+                ConfirmPassword = "Password123!",
+                Role = UserRole.Doctor,
+                Status = CommonStatus.Enabled
             };
 
             bool isValidUsername = !string.IsNullOrEmpty(username) && username.Length >= 3 && username.Length <= 50;
@@ -560,7 +569,7 @@ namespace LYBT.Module.Users.Tests
             }
 
             _mockBusinessService
-                .Setup(x => x.CreateUserAsync(It.IsAny<UserMutationDto>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.CreateUserAsync(It.IsAny<UserCreateDto>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(expectedResult);
 
             // Act
@@ -592,12 +601,15 @@ namespace LYBT.Module.Users.Tests
         public async Task CreateAsync_Should_Validate_Phone_Number_Format(string? phoneNumber, bool shouldSucceed)
         {
             // Arrange
-            var dto = new UserMutationDto
+            var dto = new UserCreateDto
             {
                 Username = "test_user",
                 RealName = "测试用户", 
                 PhoneNumber = phoneNumber,
-                IsCreateOperation = true
+                Password = "Password123!",
+                ConfirmPassword = "Password123!",
+                Role = UserRole.Doctor,
+                Status = CommonStatus.Enabled
             };
 
             ServiceResult<UserDto> expectedResult;
@@ -620,7 +632,7 @@ namespace LYBT.Module.Users.Tests
             }
 
             _mockBusinessService
-                .Setup(x => x.CreateUserAsync(It.IsAny<UserMutationDto>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.CreateUserAsync(It.IsAny<UserCreateDto>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(expectedResult);
 
             // Act

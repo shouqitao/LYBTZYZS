@@ -15,7 +15,7 @@ public interface IUserQueryService
     /// <summary>
     /// 分页查询用户
     /// </summary>
-    Task<ServiceResult<PagedResult<UserDto>>> GetPagedAsync(UserPagedQueryDto query);
+    Task<ServiceResult<PagedResult<UserDto>>> GetPagedAsync(UserSearchDto query);
 
     /// <summary>
     /// 根据ID获取用户

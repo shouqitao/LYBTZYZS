@@ -24,7 +24,7 @@ namespace LYBT.Module.Herbs.Interfaces
         /// <summary>
         /// 分页查询中药材
         /// </summary>
-        Task<ServiceResult<PagedResult<HerbDto>>> GetPagedAsync(HerbPagedQueryDto query);
+        Task<ServiceResult<PagedResult<HerbDto>>> GetPagedAsync(HerbSearchDto query);
 
         /// <summary>
         /// 关键词搜索中药材

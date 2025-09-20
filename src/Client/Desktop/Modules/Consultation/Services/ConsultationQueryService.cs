@@ -28,7 +28,7 @@ public class ConsultationQueryService(
     /// </summary>
     /// <param name="query">分页查询参数</param>
     /// <returns>包含诊断记录列表和总数的分页结果</returns>
-    public Task<ServiceResult<PagedResult<ConsultationDto>>> GetPaged(ConsultationPagedQueryDto query)
+    public Task<ServiceResult<PagedResult<ConsultationDto>>> GetPaged(ConsultationSearchDto query)
     {
         try
         {

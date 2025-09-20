@@ -25,7 +25,7 @@ public class HerbModule(
     /// <summary>
     /// 分页查询药材
     /// </summary>
-    public async Task<ServiceResult<PagedResult<HerbDto>>> GetPagedAsync(HerbPagedQueryDto query)
+    public async Task<ServiceResult<PagedResult<HerbDto>>> GetPagedAsync(HerbSearchDto query)
         => await _queryService.GetPagedAsync(query);
 
     /// <summary>

@@ -13,7 +13,7 @@ public interface IConsultationQueryService
     /// <summary>
     /// 分页查询看诊记录
     /// </summary>
-    Task<ServiceResult<PagedResult<ConsultationDto>>> GetPaged(ConsultationPagedQueryDto query);
+    Task<ServiceResult<PagedResult<ConsultationDto>>> GetPaged(ConsultationSearchDto query);
 
     /// <summary>
     /// 根据ID获取看诊详情

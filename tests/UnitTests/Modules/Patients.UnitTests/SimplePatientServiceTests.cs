@@ -112,7 +112,7 @@ namespace LYBT.Module.Patients.Tests
         public async Task GetPagedAsync_Should_Return_Empty_Result_When_No_Patients()
         {
             // Arrange
-            var query = new PatientPagedQueryDto
+            var query = new PatientSearchDto
             {
                 PageIndex = 1,
                 PageSize = 10
@@ -275,7 +275,7 @@ namespace LYBT.Module.Patients.Tests
         public async Task GetPagedAsync_With_Large_PageSize_Should_Handle_Gracefully()
         {
             // Arrange - 边界值测试：大页面大小
-            var query = new PatientPagedQueryDto
+            var query = new PatientSearchDto
             {
                 PageIndex = 1,
                 PageSize = int.MaxValue // 极端值

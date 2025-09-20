@@ -15,7 +15,7 @@ public interface IPatientQueryService
     /// <summary>
     /// 分页查询患者
     /// </summary>
-    Task<ServiceResult<PagedResult<PatientDto>>> GetPagedAsync(PatientPagedQueryDto query);
+    Task<ServiceResult<PagedResult<PatientDto>>> GetPagedAsync(PatientSearchDto query);
 
     /// <summary>
     /// 根据ID获取患者

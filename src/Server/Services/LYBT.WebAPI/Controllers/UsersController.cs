@@ -262,8 +262,8 @@ public class UsersController : BaseApiController
         {
             // 使用 RoleConstants 获取统一角色列表
             var roles = new[] {
-                new { Value = LYBT.Infrastructure.Authorization.RoleConstants.Admin, Label = "管理员" },
-                new { Value = LYBT.Infrastructure.Authorization.RoleConstants.Doctor, Label = "医生" }
+                new { Value = LYBT.Shared.Utilities.Security.RoleHelper.Roles.Admin, Label = "管理员" },
+                new { Value = LYBT.Shared.Utilities.Security.RoleHelper.Roles.Doctor, Label = "医生" }
             };
             return Success<IEnumerable<object>>(roles, "获取角色列表成功");
         }
@@ -322,7 +322,7 @@ public class UsersController : BaseApiController
             }
 
             var (_, _, operatorRole) = GetOperator();
-            var query = new LYBT.Shared.Models.Contracts.Users.UserPagedQueryDto
+            var query = new LYBT.Shared.Models.Contracts.Users.UserSearchDto
             {
                 PageIndex = page,
                 PageSize = pageSize,
@@ -370,10 +370,10 @@ public class UsersController : BaseApiController
     }
 
     /// <summary>
-    /// 创建新用户 (现代化版本，直接使用UserMutationDto) - 统一API响应格式
+    /// 创建新用户 - 统一API响应格式
     /// </summary>
     [HttpPost]
-    public async Task<ActionResult<ApiResponse<UserDto>>> CreateUser([FromBody] UserMutationDto dto)
+    public async Task<ActionResult<ApiResponse<UserDto>>> CreateUser([FromBody] UserCreateDto dto)
     {
         try
         {
@@ -383,7 +383,6 @@ public class UsersController : BaseApiController
                 return validation;
             }
 
-            dto.IsCreateOperation = true; // 标记为创建操作
             var result = await _userService.CreateAsync(dto);
 
             if (result.IsSuccess && result.Data != null)
@@ -404,10 +403,10 @@ public class UsersController : BaseApiController
     }
 
     /// <summary>
-    /// 更新用户信息 (现代化版本，直接使用UserMutationDto) - 统一API响应格式
+    /// 更新用户信息 - 统一API响应格式
     /// </summary>
     [HttpPut("{id}")]
-    public async Task<ActionResult<ApiResponse<UserDto>>> UpdateUser(Guid id, [FromBody] UserMutationDto dto)
+    public async Task<ActionResult<ApiResponse<UserDto>>> UpdateUser(Guid id, [FromBody] UserUpdateDto dto)
     {
         try
         {
@@ -429,7 +428,6 @@ public class UsersController : BaseApiController
                 return ValidationFail<UserDto>("URL中的ID与请求体中的ID不匹配");
             }
 
-            dto.IsCreateOperation = false; // 标记为更新操作
             var result = await _userService.UpdateAsync(dto);
 
             return HandleServiceResult(result, "用户信息更新成功");

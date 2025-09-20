@@ -38,13 +38,13 @@ namespace LYBT.Shared.Interfaces.Api
         /// 创建用户
         /// </summary>
         [Post("/api/v1/users")]
-        Task<Refit.ApiResponse<LYBT.Shared.Models.Contracts.Common.ApiResponse<UserDto>>> CreateUserAsync([Body] UserMutationDto dto);
+        Task<Refit.ApiResponse<LYBT.Shared.Models.Contracts.Common.ApiResponse<UserDto>>> CreateUserAsync([Body] UserCreateDto dto);
 
         /// <summary>
         /// 更新用户
         /// </summary>
         [Put("/api/v1/users/{id}")]
-        Task<Refit.ApiResponse<LYBT.Shared.Models.Contracts.Common.ApiResponse<UserDto>>> UpdateUserAsync(Guid id, [Body] UserMutationDto dto);
+        Task<Refit.ApiResponse<LYBT.Shared.Models.Contracts.Common.ApiResponse<UserDto>>> UpdateUserAsync(Guid id, [Body] UserUpdateDto dto);
 
         /// <summary>
         /// 切换用户状态

@@ -84,7 +84,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
         /// <summary>加载数据</summary>
         protected override async Task<ServiceResult<PagedResult<HerbDto>>> LoadDataAsync(int page, int pageSize, string? keyword = null)
         {
-            var herbQuery = new HerbPagedQueryDto
+            var herbQuery = new HerbSearchDto
             {
                 PageIndex = page,
                 PageSize = pageSize,
@@ -190,7 +190,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
                     IsLoading = true;
 
                     // 获取所有药材数据
-                    var allHerbsResult = await _herbService.GetPagedAsync(new HerbPagedQueryDto
+                    var allHerbsResult = await _herbService.GetPagedAsync(new HerbSearchDto
                     {
                         PageIndex = 1,
                         PageSize = 10000,  // 获取大量数据用于导出

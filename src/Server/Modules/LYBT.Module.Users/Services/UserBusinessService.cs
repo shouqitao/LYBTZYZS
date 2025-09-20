@@ -343,14 +343,14 @@ namespace LYBT.Module.Users.Services
         }
 
         /// <summary>
-        /// 创建用户业务逻辑（使用统一变更DTO）
+        /// 创建用户业务逻辑
         /// </summary>
-        public async Task<ServiceResult<UserDto>> CreateUserAsync(UserMutationDto dto, CancellationToken cancellationToken = default)
+        public async Task<ServiceResult<UserDto>> CreateUserAsync(UserCreateDto dto, CancellationToken cancellationToken = default)
         {
             try
             {
                 // 业务规则验证
-                var validationResult = await ValidateUserMutationAsync(dto, true); // true for create operation
+                var validationResult = await ValidateUserCreationAsync(dto);
                 if (!validationResult.IsSuccess)
                 {
                     return ServiceResult<UserDto>.Failure(validationResult.ErrorMessage ?? "用户数据验证失败");
@@ -376,7 +376,7 @@ namespace LYBT.Module.Users.Services
                             Username = dto.Username,
                             PasswordHash = PasswordHelper.Hash(dto.Password ?? _defaultPasswordService.GetNewUserPassword() ?? "LybtUser2025#InitPass!"),
                             RealName = dto.RealName,
-                            Role = Enum.TryParse<UserRole>(dto.Role, out var createRole) ? createRole : UserRole.Doctor,
+                            Role = dto.Role,
                             PhoneNumber = dto.PhoneNumber,
                             Email = dto.Email,
                             Status = dto.Status,
@@ -410,7 +410,7 @@ namespace LYBT.Module.Users.Services
         /// <summary>
         /// 更新用户业务逻辑
         /// </summary>
-        public async Task<ServiceResult<UserDto>> UpdateUserAsync(Guid id, UserMutationDto dto, CancellationToken cancellationToken = default)
+        public async Task<ServiceResult<UserDto>> UpdateUserAsync(Guid id, UserUpdateDto dto, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -420,7 +420,7 @@ namespace LYBT.Module.Users.Services
                 }
 
                 // 业务规则验证
-                var validationResult = await ValidateUserMutationAsync(dto, false, id); // false for update operation
+                var validationResult = await ValidateUserUpdateAsync(dto, id);
                 if (!validationResult.IsSuccess)
                 {
                     return ServiceResult<UserDto>.Failure(validationResult.ErrorMessage ?? "用户数据验证失败");
@@ -441,8 +441,10 @@ namespace LYBT.Module.Users.Services
                     try
                     {
                         // 更新字段
-                        user.RealName = dto.RealName;
-                        user.Role = Enum.TryParse<UserRole>(dto.Role, out var updateRole) ? updateRole : user.Role;
+                        if (!string.IsNullOrEmpty(dto.RealName))
+                            user.RealName = dto.RealName;
+                        if (dto.Role.HasValue)
+                            user.Role = dto.Role.Value;
                         user.PhoneNumber = dto.PhoneNumber;
                         user.Email = dto.Email;
                         user.Status = dto.Status;
@@ -527,6 +529,97 @@ namespace LYBT.Module.Users.Services
         /// <summary>
         /// 统一用户变更DTO验证 - UltraThink现代化DTO设计
         /// </summary>
+        private static async Task<ServiceResult<bool>> ValidateUserCreationAsync(UserCreateDto dto)
+        {
+            if (dto == null)
+            {
+                return ServiceResult<bool>.Failure("用户信息不能为空");
+            }
+
+            if (string.IsNullOrWhiteSpace(dto.Username))
+            {
+                return ServiceResult<bool>.Failure("用户名不能为空");
+            }
+
+            if (dto.Username.Length < 3 || dto.Username.Length > 50)
+            {
+                return ServiceResult<bool>.Failure("用户名长度必须在3-50字符之间");
+            }
+
+            // 检查用户名格式（只能包含字母、数字、下划线）- 使用生成的正则表达式
+            if (!UsernameValidationRegex().IsMatch(dto.Username))
+            {
+                return ServiceResult<bool>.Failure("用户名只能包含字母、数字和下划线");
+            }
+
+            if (string.IsNullOrWhiteSpace(dto.RealName))
+            {
+                return ServiceResult<bool>.Failure("真实姓名不能为空");
+            }
+
+            // 邮箱格式验证（如果提供）- 使用生成的正则表达式
+            if (!string.IsNullOrWhiteSpace(dto.Email))
+            {
+                if (!EmailValidationRegex().IsMatch(dto.Email))
+                {
+                    return ServiceResult<bool>.Failure("邮箱格式不正确");
+                }
+            }
+
+            // 手机号格式验证（如果提供）- 使用生成的正则表达式
+            if (!string.IsNullOrWhiteSpace(dto.PhoneNumber))
+            {
+                if (!PhoneValidationRegex().IsMatch(dto.PhoneNumber))
+                {
+                    return ServiceResult<bool>.Failure("手机号格式不正确");
+                }
+            }
+
+            await Task.CompletedTask; // 保持异步签名
+            return ServiceResult<bool>.Success(true);
+        }
+
+        private static async Task<ServiceResult<bool>> ValidateUserUpdateAsync(UserUpdateDto dto, Guid existingUserId)
+        {
+            if (dto == null)
+            {
+                return ServiceResult<bool>.Failure("用户信息不能为空");
+            }
+
+            if (existingUserId == Guid.Empty)
+            {
+                return ServiceResult<bool>.Failure("用户ID无效");
+            }
+
+            if (string.IsNullOrWhiteSpace(dto.RealName))
+            {
+                return ServiceResult<bool>.Failure("真实姓名不能为空");
+            }
+
+            // 邮箱格式验证（如果提供）- 使用生成的正则表达式
+            if (!string.IsNullOrWhiteSpace(dto.Email))
+            {
+                if (!EmailValidationRegex().IsMatch(dto.Email))
+                {
+                    return ServiceResult<bool>.Failure("邮箱格式不正确");
+                }
+            }
+
+            // 手机号格式验证（如果提供）- 使用生成的正则表达式
+            if (!string.IsNullOrWhiteSpace(dto.PhoneNumber))
+            {
+                if (!PhoneValidationRegex().IsMatch(dto.PhoneNumber))
+                {
+                    return ServiceResult<bool>.Failure("手机号格式不正确");
+                }
+            }
+
+            await Task.CompletedTask; // 保持异步签名
+            return ServiceResult<bool>.Success(true);
+        }
+
+        // 保留原方法用于向后兼容，标记为过时
+        [Obsolete("使用 ValidateUserCreationAsync 或 ValidateUserUpdateAsync 替代")]
         private static async Task<ServiceResult<bool>> ValidateUserMutationAsync(UserMutationDto dto, bool isCreateOperation, Guid? existingUserId = null)
         {
             if (dto == null)

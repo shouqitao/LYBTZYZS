@@ -25,7 +25,7 @@ public class PatientModule(
     /// <summary>
     /// 分页查询患者
     /// </summary>
-    public async Task<ServiceResult<PagedResult<PatientDto>>> GetPagedAsync(PatientPagedQueryDto query)
+    public async Task<ServiceResult<PagedResult<PatientDto>>> GetPagedAsync(PatientSearchDto query)
         => await _queryService.GetPagedAsync(query);
 
     /// <summary>
@@ -254,7 +254,7 @@ public class PatientModule(
         try
         {
             // 使用QueryService获取所有患者数据
-            var allPatientsQuery = new PatientPagedQueryDto
+            var allPatientsQuery = new PatientSearchDto
             {
                 PageIndex = 1,
                 PageSize = 10000, // 获取所有数据

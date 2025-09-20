@@ -19,7 +19,7 @@ public class PatientService(
     #region 查询操作 - 委托给QueryService
 
     /// <inheritdoc/>
-    public Task<ServiceResult<PagedResult<PatientDto>>> GetPagedAsync(PatientPagedQueryDto query)
+    public Task<ServiceResult<PagedResult<PatientDto>>> GetPagedAsync(PatientSearchDto query)
     {
         // 转换为基础分页查询DTO
         var baseQuery = new PagedQueryBaseDto

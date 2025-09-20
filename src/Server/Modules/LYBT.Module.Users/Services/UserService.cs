@@ -19,7 +19,7 @@ namespace LYBT.Module.Users.Services
         #region 查询操作
 
         /// <inheritdoc/>
-        public Task<ServiceResult<PagedResult<UserDto>>> GetPagedAsync(UserPagedQueryDto query)
+        public Task<ServiceResult<PagedResult<UserDto>>> GetPagedAsync(UserSearchDto query)
             => _queryService.GetPagedAsync(query);
 
         /// <inheritdoc/>
@@ -52,11 +52,11 @@ namespace LYBT.Module.Users.Services
         #region Core Operations
 
         /// <inheritdoc/>
-        public Task<ServiceResult<UserDto>> CreateAsync(UserMutationDto dto)
+        public Task<ServiceResult<UserDto>> CreateAsync(UserCreateDto dto)
             => _businessService.CreateUserAsync(dto);
 
         /// <inheritdoc/>
-        public Task<ServiceResult<UserDto>> UpdateAsync(UserMutationDto dto)
+        public Task<ServiceResult<UserDto>> UpdateAsync(UserUpdateDto dto)
             => _businessService.UpdateUserAsync(dto.Id, dto);
 
         /// <inheritdoc/>

@@ -159,7 +159,7 @@ namespace LYBT.Desktop.Formula.ViewModels
         {
             try
             {
-                var query = new HerbPagedQueryDto { PageIndex = 1, PageSize = 1000 };
+                var query = new HerbSearchDto { PageIndex = 1, PageSize = 1000 };
                 var herbsResult = await _herbService.GetPagedAsync(query);
                 if (herbsResult.IsSuccess && herbsResult.Data?.Items != null)
                 {

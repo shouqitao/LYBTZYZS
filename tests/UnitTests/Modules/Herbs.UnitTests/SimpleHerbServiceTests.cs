@@ -76,7 +76,7 @@ namespace LYBT.Module.Herbs.Tests
         public async Task GetPagedAsync_Should_Return_Paged_Result()
         {
             // Arrange
-            var query = new HerbPagedQueryDto
+            var query = new HerbSearchDto
             {
                 PageIndex = 1,
                 PageSize = 10
@@ -235,7 +235,7 @@ namespace LYBT.Module.Herbs.Tests
         public async Task GetPagedAsync_Should_Return_Failure_When_QueryService_Fails()
         {
             // Arrange - 业务失败分支测试
-            var query = new HerbPagedQueryDto { PageIndex = 1, PageSize = 10 };
+            var query = new HerbSearchDto { PageIndex = 1, PageSize = 10 };
             var expectedResult = ServiceResult<PagedResult<HerbDto>>.Failure("查询服务异常");
 
             _mockQueryService
@@ -298,7 +298,7 @@ namespace LYBT.Module.Herbs.Tests
         public async Task GetPagedAsync_With_Large_PageSize_Should_Handle_Gracefully()
         {
             // Arrange - 极端值测试：大分页尺寸
-            var query = new HerbPagedQueryDto { PageIndex = 1, PageSize = 999999 };
+            var query = new HerbSearchDto { PageIndex = 1, PageSize = 999999 };
             var herbs = new List<HerbDto>
             {
                 new() { Id = Guid.NewGuid(), Name = "中药材1", Price = 10.00m },

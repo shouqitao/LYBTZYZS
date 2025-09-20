@@ -282,46 +282,6 @@ namespace LYBT.Shared.Models.Contracts.Herbs
         public bool IncludeExpired { get; set; } = false;
     }
 
-    /// <summary>
-    /// 中药材分页查询DTO - 兼容旧代码（已废弃，使用HerbSearchDto替代）
-    /// </summary>
-    [Obsolete("请使用HerbSearchDto替代")]
-    public class HerbPagedQueryDto : ExtendedQueryDto, ICodeable
-    {
-        /// <summary>药材名称关键词</summary>
-        [DisplayName("药材名称")]
-        public string? Name { get; set; }
-
-        /// <summary>拼音码关键词</summary>
-        [StringLength(50, ErrorMessage = "拼音码长度不能超过50个字符")]
-        [DisplayName("拼音码")]
-        public new string? PinYinCode { get; set; }
-
-        /// <summary>产地关键词</summary>
-        [DisplayName("产地")]
-        public string? Origin { get; set; }
-
-        /// <summary>规格关键词</summary>
-        [DisplayName("规格")]
-        public string? Spec { get; set; }
-
-        /// <summary>最小单价</summary>
-        [DisplayName("最小单价")]
-        public decimal? MinPrice { get; set; }
-
-        /// <summary>最大单价</summary>
-        [DisplayName("最大单价")]
-        public decimal? MaxPrice { get; set; }
-
-        /// <summary>页码兼容性别名</summary>
-        public int Page { get => PageIndex; set => PageIndex = value; }
-
-        /// <summary>页大小兼容性别名</summary>
-        public int Size { get => PageSize; set => PageSize = value; }
-
-        /// <summary>排序字段兼容性别名</summary>
-        public string? SortBy { get => SortField; set => SortField = value; }
-    }
 
     /// <summary>
     /// 中药材统计DTO - 继承统计DTO基础类

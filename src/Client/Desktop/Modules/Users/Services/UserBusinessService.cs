@@ -24,7 +24,7 @@ public class UserBusinessService(
     #region 标准CRUD操作
 
     /// <inheritdoc/>
-    public async Task<ServiceResult<UserDto>> CreateAsync(UserMutationDto createDto, CancellationToken cancellationToken = default)
+    public async Task<ServiceResult<UserDto>> CreateAsync(UserCreateDto createDto, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(createDto, nameof(createDto));
 
@@ -63,7 +63,7 @@ public class UserBusinessService(
     }
 
     /// <inheritdoc/>
-    public async Task<ServiceResult<UserDto>> UpdateAsync(UserMutationDto updateDto, CancellationToken cancellationToken = default)
+    public async Task<ServiceResult<UserDto>> UpdateAsync(UserUpdateDto updateDto, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(updateDto, nameof(updateDto));
 

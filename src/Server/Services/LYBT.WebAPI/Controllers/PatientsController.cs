@@ -55,7 +55,7 @@ namespace LYBT.WebAPI.Controllers
                     return ValidationFailPaged<PatientDto>("页码和页大小参数无效（页码>0，页大小1-100）");
                 }
 
-                var query = new PatientPagedQueryDto
+                var query = new PatientSearchDto
                 {
                     PageIndex = page,
                     PageSize = pageSize,

@@ -85,11 +85,11 @@ namespace LYBT.Module.Herbs.Services
         /// <summary>
         /// 分页查询药材
         /// </summary>
-        public async Task<ServiceResult<PagedResult<HerbDto>>> GetPagedAsync(HerbPagedQueryDto query)
+        public async Task<ServiceResult<PagedResult<HerbDto>>> GetPagedAsync(HerbSearchDto query)
         {
             try
             {
-                query ??= new HerbPagedQueryDto();
+                query ??= new HerbSearchDto();
 
                 var queryable = BuildBaseQuery();
 
@@ -115,10 +115,10 @@ namespace LYBT.Module.Herbs.Services
                     queryable = queryable.Where(h => h.Price <= query.MaxPrice.Value);
                 }
 
-                // 状态筛选
-                if (query.Status.HasValue)
+                // 状态筛选 - 默认只返回启用的药材
+                if (!query.IncludeExpired)
                 {
-                    queryable = queryable.Where(h => h.Status == query.Status.Value);
+                    queryable = queryable.Where(h => h.Status == CommonStatus.Enabled);
                 }
 
                 // 总数量

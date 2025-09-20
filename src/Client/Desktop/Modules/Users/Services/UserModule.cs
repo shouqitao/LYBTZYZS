@@ -23,7 +23,7 @@ public class UserModule(
         => await _queryService.GetByIdAsync(id);
 
     /// <inheritdoc/>
-    public async Task<ServiceResult<PagedResult<UserDto>>> GetPagedAsync(UserPagedQueryDto query)
+    public async Task<ServiceResult<PagedResult<UserDto>>> GetPagedAsync(UserSearchDto query)
         => await _queryService.GetPagedAsync(query);
 
     /// <inheritdoc/>
@@ -43,11 +43,11 @@ public class UserModule(
     #region 业务操作 - BusinessService专业负责
 
     /// <inheritdoc/>
-    public async Task<ServiceResult<UserDto>> CreateAsync(UserMutationDto dto)
+    public async Task<ServiceResult<UserDto>> CreateAsync(UserCreateDto dto)
         => await _businessService.CreateAsync(dto);
 
     /// <inheritdoc/>
-    public async Task<ServiceResult<UserDto>> UpdateAsync(UserMutationDto dto)
+    public async Task<ServiceResult<UserDto>> UpdateAsync(UserUpdateDto dto)
         => await _businessService.UpdateAsync(dto);
 
     /// <inheritdoc/>

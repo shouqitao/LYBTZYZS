@@ -133,7 +133,7 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
             {
                 IsLoading = true;
 
-                var query = new HerbPagedQueryDto { PageIndex = 1, PageSize = 1000 };
+                var query = new HerbSearchDto { PageIndex = 1, PageSize = 1000 };
                 var result = await _herbService.GetPagedAsync(query);
                 if (result.IsSuccess && result.Data?.Items != null)
                 {
@@ -166,7 +166,7 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
             {
                 IsLoading = true;
 
-                var query = new HerbPagedQueryDto { PageIndex = 1, PageSize = 1000 };
+                var query = new HerbSearchDto { PageIndex = 1, PageSize = 1000 };
                 var result = await _herbService.GetPagedAsync(query);
                 if (result.IsSuccess && result.Data?.Items != null)
                 {

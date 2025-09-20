@@ -21,7 +21,7 @@ public class UserQueryService(
     #region 核心查询操作
 
     /// <inheritdoc/>
-    public async Task<ServiceResult<PagedResult<UserDto>>> GetPagedAsync(UserPagedQueryDto query)
+    public async Task<ServiceResult<PagedResult<UserDto>>> GetPagedAsync(UserSearchDto query)
     {
         try
         {

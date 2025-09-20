@@ -308,7 +308,7 @@ namespace LYBT.Module.Users.Tests
             }
             await _context.SaveChangesAsync(); // 🔧 修复：确保用户保存到数据库
 
-            var query = new UserPagedQueryDto
+            var query = new UserSearchDto
             {
                 CurrentPage = 1,
                 PageSize = 3
@@ -335,7 +335,7 @@ namespace LYBT.Module.Users.Tests
             await _repository.AddAsync(user3);
             await _context.SaveChangesAsync(); // 🔧 修复：确保用户保存到数据库
 
-            var query = new UserPagedQueryDto
+            var query = new UserSearchDto
             {
                 CurrentPage = 1,
                 PageSize = 10,
@@ -362,7 +362,7 @@ namespace LYBT.Module.Users.Tests
             await _repository.AddAsync(disabledUser);
             await _context.SaveChangesAsync(); // 🔧 修复：确保用户保存到数据库
 
-            var query = new UserPagedQueryDto
+            var query = new UserSearchDto
             {
                 CurrentPage = 1,
                 PageSize = 10,
@@ -388,7 +388,7 @@ namespace LYBT.Module.Users.Tests
             await _repository.AddAsync(disabledUser);
             await _context.SaveChangesAsync(); // 🔧 修复：确保用户保存到数据库
 
-            var query = new UserPagedQueryDto
+            var query = new UserSearchDto
             {
                 CurrentPage = 1,
                 PageSize = 10
@@ -595,7 +595,7 @@ namespace LYBT.Module.Users.Tests
         public async Task GetPagedAsync_WithNullSearchKeyword_ShouldNotThrow()
         {
             // Arrange
-            var query = new UserPagedQueryDto
+            var query = new UserSearchDto
             {
                 CurrentPage = 1,
                 PageSize = 10,
@@ -611,7 +611,7 @@ namespace LYBT.Module.Users.Tests
         public async Task GetPagedAsync_WithEmptySearchKeyword_ShouldNotThrow()
         {
             // Arrange
-            var query = new UserPagedQueryDto
+            var query = new UserSearchDto
             {
                 CurrentPage = 1,
                 PageSize = 10,
@@ -637,7 +637,7 @@ namespace LYBT.Module.Users.Tests
             await _repository.AddAsync(newUser);
             await _context.SaveChangesAsync(); // 🔧 修复：确保用户保存到数据库
 
-            var query = new UserPagedQueryDto
+            var query = new UserSearchDto
             {
                 CurrentPage = 1,
                 PageSize = 10

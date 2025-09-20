@@ -29,7 +29,7 @@ public class HerbQueryService(
     /// </summary>
     /// <param name="query">分页查询参数</param>
     /// <returns>包含药材列表和总数的分页结果</returns>
-    public async Task<ServiceResult<PagedResult<HerbDto>>> GetPagedAsync(HerbPagedQueryDto query)
+    public async Task<ServiceResult<PagedResult<HerbDto>>> GetPagedAsync(HerbSearchDto query)
     {
         try
         {

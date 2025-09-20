@@ -82,7 +82,7 @@ namespace LYBT.Desktop.Patients.ViewModels
         private bool _showAdvancedSearch = false;
         private bool _advancedSearchExpanded = true;
         private bool _showSearchSuggestions = false;
-        private PatientPagedQueryDto _advancedSearch = new();
+        private PatientSearchDto _advancedSearch = new();
         private List<string> _searchSuggestions = [];
         private string? _selectedSearchSuggestion;
         private List<string> _searchHistory = [];
@@ -109,7 +109,7 @@ namespace LYBT.Desktop.Patients.ViewModels
         }
 
         /// <summary>高级搜索条件</summary>
-        public PatientPagedQueryDto AdvancedSearch
+        public PatientSearchDto AdvancedSearch
         {
             get => _advancedSearch;
             set => SetProperty(ref _advancedSearch, value);
@@ -295,8 +295,8 @@ namespace LYBT.Desktop.Patients.ViewModels
         /// <inheritdoc/>
         protected override async Task<ServiceResult<PagedResult<PatientDto>>> LoadDataAsync(PagedQueryBaseDto request)
         {
-            // UltraThink v2.0: 转换为PatientPagedQueryDto进行患者查询
-            var patientQuery = new PatientPagedQueryDto
+            // UltraThink v2.0: 转换为PatientSearchDto进行患者查询
+            var patientQuery = new PatientSearchDto
             {
                 Keyword = request.Keyword,
                 PageIndex = request.PageIndex,
@@ -654,7 +654,7 @@ namespace LYBT.Desktop.Patients.ViewModels
                     IsLoading = true;
 
                     // 获取所有患者数据
-                    var allPatientsResult = await _patientService.GetPagedAsync(new PatientPagedQueryDto
+                    var allPatientsResult = await _patientService.GetPagedAsync(new PatientSearchDto
                     {
                         PageIndex = 1,
                         PageSize = 10000,  // 获取大量数据用于导出
@@ -1065,7 +1065,7 @@ namespace LYBT.Desktop.Patients.ViewModels
         /// <summary>清空高级搜索条件</summary>
         private void ClearAdvancedSearch()
         {
-            AdvancedSearch = new PatientPagedQueryDto
+            AdvancedSearch = new PatientSearchDto
             {
                 PageIndex = 1,
                 PageSize = 20
@@ -1095,7 +1095,7 @@ namespace LYBT.Desktop.Patients.ViewModels
         }
 
         /// <summary>构建搜索历史文本</summary>
-        private string BuildSearchHistoryText(PatientPagedQueryDto query)
+        private string BuildSearchHistoryText(PatientSearchDto query)
         {
             var conditions = new List<string>();
 

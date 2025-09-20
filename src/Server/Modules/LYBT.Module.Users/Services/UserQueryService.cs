@@ -56,7 +56,7 @@ namespace LYBT.Module.Users.Services
         /// <summary>
         /// 分页查询用户
         /// </summary>
-        public async Task<ServiceResult<PagedResult<UserDto>>> GetPagedAsync(UserPagedQueryDto query)
+        public async Task<ServiceResult<PagedResult<UserDto>>> GetPagedAsync(UserSearchDto query)
         {
             try
             {
@@ -77,12 +77,9 @@ namespace LYBT.Module.Users.Services
                 }
 
                 // 角色筛选
-                if (!string.IsNullOrWhiteSpace(query.Role))
+                if (query.Role.HasValue)
                 {
-                    if (Enum.TryParse<UserRole>(query.Role, out var roleEnum))
-                    {
-                        queryable = queryable.Where(u => u.Role == roleEnum);
-                    }
+                    queryable = queryable.Where(u => u.Role == query.Role.Value);
                 }
 
                 // 状态筛选

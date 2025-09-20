@@ -19,7 +19,7 @@ namespace LYBT.Module.Users.Interfaces
         /// <summary>
         /// 分页获取用户列表
         /// </summary>
-        Task<ServiceResult<PagedResult<UserDto>>> GetPagedAsync(UserPagedQueryDto query);
+        Task<ServiceResult<PagedResult<UserDto>>> GetPagedAsync(UserSearchDto query);
 
         /// <summary>
         /// 根据用户名获取用户

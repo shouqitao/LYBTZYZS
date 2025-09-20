@@ -25,7 +25,7 @@ public class PatientQueryService(ILogger<PatientQueryService> logger) : IPatient
     /// </summary>
     /// <param name="query">分页查询参数</param>
     /// <returns>包含患者列表和总数的分页结果</returns>
-    public Task<ServiceResult<PagedResult<PatientDto>>> GetPagedAsync(PatientPagedQueryDto query)
+    public Task<ServiceResult<PagedResult<PatientDto>>> GetPagedAsync(PatientSearchDto query)
     {
         try
         {

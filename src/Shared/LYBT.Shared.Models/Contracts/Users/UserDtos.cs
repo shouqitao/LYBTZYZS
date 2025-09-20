@@ -255,36 +255,6 @@ namespace LYBT.Shared.Models.Contracts.Users
         public bool IncludeInactive { get; set; } = false;
     }
 
-    /// <summary>
-    /// 用户分页查询DTO - 兼容旧代码（已废弃，使用UserSearchDto替代）
-    /// </summary>
-    [Obsolete("请使用UserSearchDto替代")]
-    public class UserPagedQueryDto : ExtendedQueryDto, ICodeable
-    {
-        /// <summary>用户名关键词</summary>
-        [DisplayName("用户名")]
-        public string? Username { get; set; }
-
-        /// <summary>真实姓名关键词</summary>
-        [DisplayName("真实姓名")]
-        public string? RealName { get; set; }
-
-        /// <summary>角色筛选</summary>
-        [DisplayName("用户角色")]
-        public string? Role { get; set; }
-
-        /// <summary>邮箱关键词</summary>
-        [DisplayName("邮箱")]
-        public string? Email { get; set; }
-
-        /// <summary>电话关键词</summary>
-        [DisplayName("电话")]
-        public string? PhoneNumber { get; set; }
-
-        /// <summary>按拼音码搜索</summary>
-        [DisplayName("拼音码")]
-        public new string? PinYinCode { get; set; }
-    }
 
     #endregion
 

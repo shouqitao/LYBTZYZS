@@ -19,11 +19,13 @@ namespace LYBT.Desktop.Core.Mapping
 
             // 仅保留必要的DTO之间的工具映射
             // 例如：DetailDto → UpdateDto 用于编辑功能
-            CreateMap<UserDto, UserMutationDto>()
-                .ForMember(dest => dest.Username, opt => opt.MapFrom(src => src.Username))
+            CreateMap<UserDto, UserUpdateDto>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
                 .ForMember(dest => dest.RealName, opt => opt.MapFrom(src => src.RealName))
                 .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber))
-                .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.Role));
+                .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.Role))
+                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status));
 
             CreateMap<PatientDto, PatientUpdateDto>()
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))

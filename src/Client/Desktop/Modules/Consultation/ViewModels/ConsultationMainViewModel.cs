@@ -159,7 +159,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
                 IsLoading = true;
 
                 // 使用分页查询获取患者列表
-                var query = new LYBT.Shared.Models.Contracts.Patients.PatientPagedQueryDto
+                var query = new LYBT.Shared.Models.Contracts.Patients.PatientSearchDto
                 {
                     PageIndex = 1,
                     PageSize = 100,

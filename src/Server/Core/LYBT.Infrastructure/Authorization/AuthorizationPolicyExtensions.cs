@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.DependencyInjection;
+using LYBT.Shared.Utilities.Security;
 
 namespace LYBT.Infrastructure.Authorization
 {
@@ -19,20 +20,20 @@ namespace LYBT.Infrastructure.Authorization
             services.AddAuthorization(options =>
             {
                 // 管理员策略
-                options.AddPolicy(RolePolicies.AdminPolicy, policy =>
-                    policy.RequireRole(RoleConstants.Admin));
+                options.AddPolicy(RoleHelper.Policies.AdminOnly, policy =>
+                    policy.RequireRole(RoleHelper.Roles.Admin));
 
                 // 医生策略（包含兼容性）
-                options.AddPolicy(RolePolicies.DoctorPolicy, policy =>
-                    policy.RequireRole(RoleConstants.Doctor));
+                options.AddPolicy(RoleHelper.Policies.DoctorOnly, policy =>
+                    policy.RequireRole(RoleHelper.Roles.Doctor));
 
                 // 医生或管理员策略
-                options.AddPolicy(RolePolicies.DoctorOrAdminPolicy, policy =>
-                    policy.RequireRole(RoleConstants.Doctor, RoleConstants.Admin));
+                options.AddPolicy(RoleHelper.Policies.DoctorOrAdmin, policy =>
+                    policy.RequireRole(RoleHelper.Roles.Doctor, RoleHelper.Roles.Admin));
 
                 // 兼容性策略：User 角色映射到 Doctor 策略
                 options.AddPolicy("UserPolicy", policy =>
-                    policy.RequireRole(RoleConstants.Doctor)); // User -> Doctor 映射
+                    policy.RequireRole(RoleHelper.Roles.Doctor)); // User -> Doctor 映射
 
                 // 默认策略：要求认证用户
                 options.DefaultPolicy = new AuthorizationPolicyBuilder()
@@ -55,7 +56,7 @@ namespace LYBT.Infrastructure.Authorization
         /// <returns>服务集合</returns>
         public static IServiceCollection AddClaimsNormalization(this IServiceCollection services)
         {
-            services.AddSingleton<ClaimsNormalizer>();
+            // Claims规范化现在由Shared.Utilities处理
             return services;
         }
 
@@ -82,17 +83,17 @@ namespace LYBT.Infrastructure.Authorization
         /// <summary>
         /// 管理员授权属性
         /// </summary>
-        public static readonly AuthorizeAttribute Admin = new(RolePolicies.AdminPolicy);
+        public static readonly AuthorizeAttribute Admin = new(RoleHelper.Policies.AdminOnly);
 
         /// <summary>
         /// 医生授权属性
         /// </summary>
-        public static readonly AuthorizeAttribute Doctor = new(RolePolicies.DoctorPolicy);
+        public static readonly AuthorizeAttribute Doctor = new(RoleHelper.Policies.DoctorOnly);
 
         /// <summary>
         /// 医生或管理员授权属性
         /// </summary>
-        public static readonly AuthorizeAttribute DoctorOrAdmin = new(RolePolicies.DoctorOrAdminPolicy);
+        public static readonly AuthorizeAttribute DoctorOrAdmin = new(RoleHelper.Policies.DoctorOrAdmin);
 
         /// <summary>
         /// 创建角色授权属性
@@ -101,7 +102,7 @@ namespace LYBT.Infrastructure.Authorization
         /// <returns>授权属性</returns>
         public static AuthorizeAttribute RequireRoles(params string[] roles)
         {
-            var normalizedRoles = roles.Select(RoleConstants.NormalizeRole).ToArray();
+            var normalizedRoles = roles.Select(RoleHelper.NormalizeRole).ToArray();
             return new AuthorizeAttribute { Roles = string.Join(",", normalizedRoles) };
         }
 
