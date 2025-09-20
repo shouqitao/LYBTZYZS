@@ -31,5 +31,20 @@ namespace LYBT.Module.Prescriptions.Interfaces
         /// 取消处方
         /// </summary>
         Task<ServiceResult<bool>> CancelAsync(Guid id, Guid operatorId, string operatorName);
+
+        /// <summary>
+        /// 创建处方
+        /// </summary>
+        Task<ServiceResult<PrescriptionDto>> CreateAsync(PrescriptionCreateDto dto);
+
+        /// <summary>
+        /// 更新处方
+        /// </summary>
+        Task<ServiceResult<PrescriptionDto>> UpdateAsync(Guid id, PrescriptionEditDto dto);
+
+        /// <summary>
+        /// 删除处方
+        /// </summary>
+        Task<ServiceResult<bool>> DeleteAsync(Guid id);
     }
 }

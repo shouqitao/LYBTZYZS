@@ -370,5 +370,136 @@ namespace LYBT.Module.Prescriptions.Services
                 return ServiceResult<bool>.Failure($"处方配伍检查失败: {ex.Message}");
             }
         }
+
+        #region 基础CRUD操作
+
+        /// <summary>
+        /// 创建处方
+        /// </summary>
+        /// <param name="dto">处方创建数据传输对象</param>
+        /// <returns>包含创建的处方的服务结果，失败时返回错误消息</returns>
+        public async Task<ServiceResult<PrescriptionDto>> CreateAsync(PrescriptionCreateDto dto)
+        {
+            try
+            {
+                if (dto.PatientId == Guid.Empty)
+                {
+                    return ServiceResult<PrescriptionDto>.Failure("患者ID不能为空");
+                }
+
+                if (string.IsNullOrWhiteSpace(dto.Diagnosis))
+                {
+                    return ServiceResult<PrescriptionDto>.Failure("诊断不能为空");
+                }
+
+                var prescription = _mapper.Map<Prescription>(dto);
+                prescription.Id = Guid.NewGuid();
+                prescription.Status = PrescriptionStatus.Draft;
+
+                _context.Prescriptions.Add(prescription);
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation("创建处方成功: 患者ID {PatientId}", dto.PatientId);
+                var resultDto = _mapper.Map<PrescriptionDto>(prescription);
+                return ServiceResult<PrescriptionDto>.Success(resultDto);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "创建处方失败: 患者ID {PatientId}", dto.PatientId);
+                return ServiceResult<PrescriptionDto>.Failure($"创建处方失败: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 更新处方
+        /// </summary>
+        /// <param name="id">处方ID</param>
+        /// <param name="dto">处方更新数据传输对象</param>
+        /// <returns>包含更新后处方的服务结果，失败时返回错误消息</returns>
+        public async Task<ServiceResult<PrescriptionDto>> UpdateAsync(Guid id, PrescriptionEditDto dto)
+        {
+            try
+            {
+                if (id == Guid.Empty)
+                {
+                    return ServiceResult<PrescriptionDto>.Failure("处方ID不能为空");
+                }
+
+                var prescription = await _context.Prescriptions
+                    .Include(p => p.Items)
+                    .FirstOrDefaultAsync(p => p.Id == id);
+
+                if (prescription == null)
+                {
+                    return ServiceResult<PrescriptionDto>.Failure("处方不存在");
+                }
+
+                // 只允许更新草稿状态的处方
+                if (prescription.Status != PrescriptionStatus.Draft)
+                {
+                    return ServiceResult<PrescriptionDto>.Failure("只能修改草稿状态的处方");
+                }
+
+                // 更新基本信息
+                if (!string.IsNullOrWhiteSpace(dto.Diagnosis))
+                    prescription.Indication = dto.Diagnosis; // DTO的Diagnosis映射到实体的Indication
+                if (!string.IsNullOrWhiteSpace(dto.Advice))
+                    prescription.Advice = dto.Advice;
+
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation("更新处方成功: {PrescriptionId}", id);
+                var resultDto = _mapper.Map<PrescriptionDto>(prescription);
+                return ServiceResult<PrescriptionDto>.Success(resultDto);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "更新处方失败，ID: {PrescriptionId}", id);
+                return ServiceResult<PrescriptionDto>.Failure($"更新处方失败: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 删除处方
+        /// </summary>
+        /// <param name="id">处方ID</param>
+        /// <returns>表示删除操作成功或失败的服务结果</returns>
+        public async Task<ServiceResult<bool>> DeleteAsync(Guid id)
+        {
+            try
+            {
+                if (id == Guid.Empty)
+                {
+                    return ServiceResult<bool>.Failure("处方ID不能为空");
+                }
+
+                var prescription = await _context.Prescriptions.FindAsync(id);
+                if (prescription == null)
+                {
+                    return ServiceResult<bool>.Failure("处方不存在");
+                }
+
+                // 只允许删除草稿状态的处方
+                if (prescription.Status != PrescriptionStatus.Draft)
+                {
+                    return ServiceResult<bool>.Failure("只能删除草稿状态的处方");
+                }
+
+                // 软删除：使用硬删除（因为PrescriptionStatus没有Cancelled状态）
+                _context.Prescriptions.Remove(prescription);
+                
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation("删除处方成功: {PrescriptionId}", id);
+                return ServiceResult<bool>.Success(true);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "删除处方失败，ID: {PrescriptionId}", id);
+                return ServiceResult<bool>.Failure($"删除处方失败: {ex.Message}");
+            }
+        }
+
+        #endregion 基础CRUD操作
     }
 }

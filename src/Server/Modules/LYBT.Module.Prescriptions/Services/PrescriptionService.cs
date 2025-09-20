@@ -55,16 +55,16 @@ namespace LYBT.Module.Prescriptions.Services
         #region Business Operations
 
         /// <inheritdoc/>
-        public Task<ServiceResult<PrescriptionDto>> CreateAsync(PrescriptionCreateDto dto)
-            => Task.FromResult(ServiceResult<PrescriptionDto>.Failure("CreateAsync方法需要在BusinessService中实现"));
+        public async Task<ServiceResult<PrescriptionDto>> CreateAsync(PrescriptionCreateDto dto)
+            => await _businessService.CreateAsync(dto);
 
         /// <inheritdoc/>
-        public Task<ServiceResult<PrescriptionDto>> UpdateAsync(Guid id, PrescriptionEditDto dto)
-            => Task.FromResult(ServiceResult<PrescriptionDto>.Failure("UpdateAsync方法需要在BusinessService中实现"));
+        public async Task<ServiceResult<PrescriptionDto>> UpdateAsync(Guid id, PrescriptionEditDto dto)
+            => await _businessService.UpdateAsync(id, dto);
 
         /// <inheritdoc/>
-        public Task<ServiceResult<bool>> DeleteAsync(Guid id)
-            => Task.FromResult(ServiceResult<bool>.Failure("DeleteAsync方法需要在BusinessService中实现"));
+        public async Task<ServiceResult<bool>> DeleteAsync(Guid id)
+            => await _businessService.DeleteAsync(id);
 
         /// <inheritdoc/>
         public Task<ServiceResult<PrescriptionValidationResult>> ValidateAsync(PrescriptionCreateDto dto)
