@@ -313,7 +313,7 @@ namespace LYBT.Desktop.Core.Services
 
             // 健康状况
             sb.AppendLine("【健康状况】");
-            sb.AppendLine($"婚姻状况: {patient.MaritalStatus ?? "未知"}");
+            sb.AppendLine($"婚姻状况: {(patient.MaritalStatus == 0 ? "未知" : patient.MaritalStatus.ToString())}");
 
             if (!string.IsNullOrEmpty(patient.AllergyHistory) && patient.AllergyHistory != "无")
             {
@@ -328,8 +328,8 @@ namespace LYBT.Desktop.Core.Services
 
             // 紧急联系人
             sb.AppendLine("【紧急联系人】");
-            sb.AppendLine($"联系人姓名: {patient.EmergencyContact ?? "未填写"}");
-            sb.AppendLine($"联系人电话: {patient.EmergencyPhone ?? "未填写"}");
+            sb.AppendLine($"联系人姓名: {patient.EmergencyContactName ?? "未填写"}");
+            sb.AppendLine($"联系人电话: {patient.EmergencyContactPhone ?? "未填写"}");
             sb.AppendLine();
 
             // 其他信息

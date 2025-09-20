@@ -74,8 +74,8 @@ namespace LYBT.Desktop.Patients.ViewModels
         public string PhoneNumber => Patient?.PhoneNumber ?? string.Empty;
         public string IdNumber => Patient?.IdNumber ?? string.Empty;
         public string Address => Patient?.Address ?? string.Empty;
-        public string EmergencyContact => Patient?.EmergencyContact ?? string.Empty;
-        public string EmergencyPhone => Patient?.EmergencyPhone ?? string.Empty;
+        public string EmergencyContact => Patient?.EmergencyContactName ?? string.Empty;
+        public string EmergencyPhone => Patient?.EmergencyContactPhone ?? string.Empty;
         public DateTime? CreateTime => Patient?.CreateTime;
         public DateTime? UpdateTime => Patient?.UpdateTime;
         public string StatusText => GetStatusText();

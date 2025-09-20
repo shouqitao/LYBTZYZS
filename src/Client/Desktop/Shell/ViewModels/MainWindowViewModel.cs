@@ -4,6 +4,7 @@ using LYBT.Desktop.Core.Events;
 using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Users;
+using LYBT.Shared.Models.Enums;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Regions;
@@ -403,7 +404,7 @@ public class MainWindowViewModel(
 
         // 管理员判断（包括sysadmin用户名和Admin角色）
         bool isAdmin = CurrentUser.Username?.Equals(SystemConstants.SuperAdminUsername, StringComparison.OrdinalIgnoreCase) == true ||
-                      CurrentUser.Role?.Equals(SystemConstants.AdminRole, StringComparison.OrdinalIgnoreCase) == true;
+                      CurrentUser.Role == UserRole.Admin;
 
         if (isAdmin)
         {
@@ -462,7 +463,7 @@ public class MainWindowViewModel(
 
             // 管理员加载SystemWorkbenchModule
             bool isAdmin = user.Username?.Equals(SystemConstants.SuperAdminUsername, StringComparison.OrdinalIgnoreCase) == true ||
-                          user.Role?.Equals(SystemConstants.AdminRole, StringComparison.OrdinalIgnoreCase) == true;
+                          user.Role == UserRole.Admin;
 
             if (isAdmin)
             {

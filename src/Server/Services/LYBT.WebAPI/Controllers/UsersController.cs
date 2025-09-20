@@ -190,7 +190,7 @@ public class UsersController : BaseApiController
                     Id = sysadminId,
                     Username = "sysadmin",
                     RealName = "系统管理员",
-                    Role = "Admin",
+                    Role = UserRole.Admin,
                     Status = LYBT.Shared.Models.Enums.CommonStatus.Enabled
 
                     // IsActive是计算属性，不需要设置

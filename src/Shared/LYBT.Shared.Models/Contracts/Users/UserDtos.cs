@@ -26,7 +26,7 @@ namespace LYBT.Shared.Models.Contracts.Users
 
         /// <summary>用户角色</summary>
         [DisplayName("用户角色")]
-        public string Role { get; set; } = "Doctor";
+        public UserRole Role { get; set; } = UserRole.Doctor;
 
         /// <summary>电话号码</summary>
         [DisplayName("电话号码")]
@@ -135,61 +135,6 @@ namespace LYBT.Shared.Models.Contracts.Users
         public new UserRole? Role { get; set; }
     }
 
-    /// <summary>
-    /// 用户变更DTO - UltraThink架构优化：统一创建和更新操作（已废弃，使用UserCreateDto或UserUpdateDto）
-    /// </summary>
-    [Obsolete("请使用UserCreateDto或UserUpdateDto替代")]
-    public class UserMutationDto : BaseDto
-    {
-
-        /// <summary>用户名</summary>
-        [Required(ErrorMessage = "用户名不能为空")]
-        [StringLength(32, MinimumLength = 3, ErrorMessage = "用户名长度必须在3-32个字符之间")]
-        [RegularExpression(@"^[a-zA-Z0-9_]+$", ErrorMessage = "用户名只能包含字母、数字和下划线")]
-        [DisplayName("用户名")]
-        public string Username { get; set; } = string.Empty;
-
-        /// <summary>密码 - 创建时必须，更新时可选（null=不更新密码）</summary>
-        [StringLength(128, MinimumLength = 6, ErrorMessage = "密码长度必须在6-128个字符之间")]
-        [DisplayName("密码")]
-        public string? Password { get; set; }
-
-        /// <summary>确认密码 - 仅当提供密码时需要</summary>
-        [Compare("Password", ErrorMessage = "两次输入的密码不一致")]
-        [DisplayName("确认密码")]
-        public string? ConfirmPassword { get; set; }
-
-        /// <summary>真实姓名</summary>
-        [Required(ErrorMessage = "真实姓名不能为空")]
-        [StringLength(50, ErrorMessage = "真实姓名长度不能超过50个字符")]
-        [DisplayName("真实姓名")]
-        public string RealName { get; set; } = string.Empty;
-
-        /// <summary>用户角色</summary>
-        [Required(ErrorMessage = "用户角色不能为空")]
-        [DisplayName("用户角色")]
-        public string Role { get; set; } = "Doctor";
-
-        /// <summary>电话号码</summary>
-        [Phone(ErrorMessage = "电话号码格式不正确")]
-        [StringLength(20, ErrorMessage = "电话号码长度不能超过20个字符")]
-        [DisplayName("电话号码")]
-        public string? PhoneNumber { get; set; }
-
-        /// <summary>邮箱地址</summary>
-        [EmailAddress(ErrorMessage = "邮箱格式不正确")]
-        [StringLength(100, ErrorMessage = "邮箱长度不能超过100个字符")]
-        [DisplayName("邮箱地址")]
-        public string? Email { get; set; }
-
-        /// <summary>状态</summary>
-        [DisplayName("状态")]
-        public CommonStatus Status { get; set; } = CommonStatus.Enabled;
-
-        /// <summary>操作类型标识 - 用于区分创建或更新操作</summary>
-        [DisplayName("操作类型")]
-        public bool IsCreateOperation { get; set; }
-    }
 
     #endregion
 

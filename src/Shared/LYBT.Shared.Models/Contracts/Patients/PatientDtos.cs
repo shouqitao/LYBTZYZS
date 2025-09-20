@@ -60,37 +60,33 @@ namespace LYBT.Shared.Models.Contracts.Patients
         [DisplayName("地址")]
         public string? Address { get; set; }
 
-        /// <summary>婚姻状况</summary>
-        [DisplayName("婚姻状况")]
-        public string? MaritalStatus { get; set; }
+        /// <summary>婚姻状态</summary>
+        [DisplayName("婚姻状态")]
+        public int MaritalStatus { get; set; } = 0;
 
         /// <summary>过敏史</summary>
         [DisplayName("过敏史")]
         public string? AllergyHistory { get; set; }
 
-        /// <summary>紧急联系人</summary>
-        [DisplayName("紧急联系人")]
-        public string? EmergencyContact { get; set; }
+        /// <summary>紧急联系人姓名</summary>
+        [DisplayName("紧急联系人姓名")]
+        public string? EmergencyContactName { get; set; }
 
-        /// <summary>紧急联系电话</summary>
-        [DisplayName("紧急联系电话")]
-        public string? EmergencyPhone { get; set; }
+        /// <summary>紧急联系人电话</summary>
+        [DisplayName("紧急联系人电话")]
+        public string? EmergencyContactPhone { get; set; }
 
         /// <summary>最后就诊时间</summary>
         [DisplayName("最后就诊时间")]
-        public DateTime? LastVisitDate { get; set; }
+        public DateTime? LastVisitTime { get; set; }
 
         /// <summary>就诊次数</summary>
         [DisplayName("就诊次数")]
         public int VisitCount { get; set; }
 
-        /// <summary>患者状态</summary>
-        [DisplayName("患者状态")]
-        public PatientStatus PatientStatus { get; set; } = PatientStatus.Active;
-
-        /// <summary>备注信息</summary>
-        [DisplayName("备注")]
-        public string? Remark { get; set; }
+        /// <summary>禁用原因</summary>
+        [DisplayName("禁用原因")]
+        public string? DisableReason { get; set; }
 
         /// <summary>拼音码</summary>
         [DisplayName("拼音码")]
@@ -175,10 +171,9 @@ namespace LYBT.Shared.Models.Contracts.Patients
         [DisplayName("职业")]
         public string? Profession { get; set; }
 
-        /// <summary>婚姻状况</summary>
-        [StringLength(20, ErrorMessage = "婚姻状况长度不能超过20个字符")]
-        [DisplayName("婚姻状况")]
-        public string? MaritalStatus { get; set; }
+        /// <summary>婚姻状态</summary>
+        [DisplayName("婚姻状态")]
+        public int MaritalStatus { get; set; } = 0;
 
         /// <summary>紧急联系人</summary>
         [StringLength(ValidationConstants.NameMaxLength, ErrorMessage = "紧急联系人长度不能超过{1}个字符")]

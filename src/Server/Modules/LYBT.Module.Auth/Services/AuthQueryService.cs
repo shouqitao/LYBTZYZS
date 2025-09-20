@@ -174,7 +174,7 @@ namespace LYBT.Module.Auth.Services
                         Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                         Username = _sysAdminOptions.Username,
                         RealName = "系统管理员",
-                        Role = UserRole.Admin.ToString(),
+                        Role = UserRole.Admin,
                         Status = CommonStatus.Enabled
                     };
                     return ServiceResult<UserDto>.Success(sysAdminDto);

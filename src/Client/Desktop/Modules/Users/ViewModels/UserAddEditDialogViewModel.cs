@@ -177,7 +177,7 @@ namespace LYBT.Desktop.Users.ViewModels
                         RealName = RealName.Trim(),
                         Role = !string.IsNullOrEmpty(SelectedRole?.Value) && Enum.TryParse<UserRole>(SelectedRole.Value, out var selectedRole)
                             ? selectedRole
-                            : Enum.TryParse<UserRole>(_originalUser.Role, out var originalRole) ? originalRole : UserRole.Doctor,
+                            : _originalUser.Role,
                         Email = string.IsNullOrWhiteSpace(Email) ? null : Email.Trim(),
                         PhoneNumber = string.IsNullOrWhiteSpace(PhoneNumber) ? null : PhoneNumber.Trim(),
                         Status = IsActive ? CommonStatus.Enabled : CommonStatus.Disabled
@@ -267,8 +267,8 @@ namespace LYBT.Desktop.Users.ViewModels
             // 🎯 修复：正确设置启用状态
             IsActive = user.Status == CommonStatus.Enabled;
 
-            // 🎯 修复：根据实际角色正确设置选中项（user.Role是string类型）
-            SelectedRole = Roles.FirstOrDefault(r => r.Value == user.Role) ??
+            // 🎯 修复：根据实际角色正确设置选中项（user.Role是UserRole枚举类型）
+            SelectedRole = Roles.FirstOrDefault(r => r.Value == user.Role.ToString()) ??
                           Roles.FirstOrDefault(r => r.Value == SystemConstants.DoctorRole) ??
                           Roles.First();
 

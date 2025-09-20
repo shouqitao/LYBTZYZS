@@ -176,7 +176,7 @@ namespace LYBT.Module.Auth.Services
                     Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                     Username = request.Username,
                     RealName = "系统管理员",
-                    Role = UserRole.Admin.ToString(),
+                    Role = UserRole.Admin,
                     Status = CommonStatus.Enabled
                 };
 
@@ -313,7 +313,7 @@ namespace LYBT.Module.Auth.Services
                 Id = user.Id,
                 Username = user.Username,
                 RealName = user.RealName,
-                Role = user.Role.ToString(),
+                Role = user.Role,
                 Status = user.Status,
                 PhoneNumber = user.PhoneNumber
             };

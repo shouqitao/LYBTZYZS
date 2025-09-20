@@ -7,6 +7,7 @@ using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.ViewModels.Base;
 using LYBT.Desktop.Shell.Models;
 using LYBT.Shared.Interfaces.Services;
+using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
@@ -248,7 +249,7 @@ namespace LYBT.Desktop.Shell.ViewModels
                     WelcomeMessage = $"欢迎，{currentUser.RealName}";
 
                     // 判断用户角色
-                    if (currentUser.Role?.Equals("Admin", StringComparison.OrdinalIgnoreCase) == true)
+                    if (currentUser.Role == UserRole.Admin)
                     {
                         IsAdminRole = true;
                         IsDoctorRole = false;

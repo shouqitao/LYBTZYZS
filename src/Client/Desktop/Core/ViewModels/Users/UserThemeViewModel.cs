@@ -42,7 +42,7 @@ namespace LYBT.Desktop.Core.ViewModels.Users
         public SolidColorBrush StatusBrush => new SolidColorBrush((Color)ColorConverter.ConvertFromString(StatusColor));
 
         /// <summary>角色颜色</summary>
-        public string RoleColor => _userData.Role?.ToLower() switch
+        public string RoleColor => _userData.Role.ToString().ToLower() switch
         {
             "admin" => "#FF9800",          // 橙色 - 管理员
             "doctor" => "#2196F3",         // 蓝色 - 医生
