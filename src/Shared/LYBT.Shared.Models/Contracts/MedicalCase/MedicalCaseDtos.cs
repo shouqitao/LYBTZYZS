@@ -37,7 +37,7 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
 
         /// <summary>医疗案例专用状态</summary>
         [DisplayName("案例状态")]
-        public MedicalCaseStatus CaseStatus { get; set; } = MedicalCaseStatus.Registered;
+        public MedicalCaseStatus CaseStatus { get; set; } = MedicalCaseStatus.Active;
 
         /// <inheritdoc/>
         [DisplayName("备注")]
@@ -65,25 +65,25 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
         public bool IsUrgent() => GetPriority() >= 3;
 
         /// <summary>是否需要医生注意 - 基于看诊时间</summary>
-        public bool NeedsDoctorAttention() => CaseStatus != MedicalCaseStatus.Completed && (DateTime.Now - ConsultationDate).TotalHours > 24;
+        public bool NeedsDoctorAttention() => CaseStatus != MedicalCaseStatus.Closed && (DateTime.Now - ConsultationDate).TotalHours > 24;
 
         /// <summary>是否可以开始诊疗</summary>
-        public bool CanStartConsultation() => CaseStatus == MedicalCaseStatus.Registered;
+        public bool CanStartConsultation() => CaseStatus == MedicalCaseStatus.Active;
 
         /// <summary>是否可以完成</summary>
-        public bool CanComplete() => CaseStatus == MedicalCaseStatus.InConsultation;
+        public bool CanComplete() => CaseStatus == MedicalCaseStatus.Active;
 
         /// <summary>是否可以取消</summary>
-        public bool CanCancel() => CaseStatus == MedicalCaseStatus.Registered || CaseStatus == MedicalCaseStatus.InConsultation;
+        public bool CanCancel() => CaseStatus == MedicalCaseStatus.Active;
 
         /// <summary>是否可以删除</summary>
-        public bool CanDelete() => CaseStatus == MedicalCaseStatus.Cancelled || CaseStatus == MedicalCaseStatus.Completed;
+        public bool CanDelete() => CaseStatus == MedicalCaseStatus.Closed;
 
         /// <summary>是否可以编辑</summary>
-        public bool CanEdit() => CaseStatus != MedicalCaseStatus.Completed && CaseStatus != MedicalCaseStatus.Cancelled;
+        public bool CanEdit() => CaseStatus != MedicalCaseStatus.Closed;
 
         /// <summary>是否已完成</summary>
-        public bool IsCompleted() => CaseStatus == MedicalCaseStatus.Completed;
+        public bool IsCompleted() => CaseStatus == MedicalCaseStatus.Closed;
     }
 
     /// <summary>

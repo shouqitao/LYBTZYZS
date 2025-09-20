@@ -315,7 +315,7 @@ namespace LYBT.Module.Patients.Services
 
                     // 检查是否有活跃的医疗案例
                     var hasActiveCases = await _context.MedicalCases
-                        .AnyAsync(mc => patientIds.Contains(mc.PatientId) && mc.Status != MedicalCaseStatus.Completed);
+                        .AnyAsync(mc => patientIds.Contains(mc.PatientId) && mc.Status != MedicalCaseStatus.Closed);
 
                     if (hasActiveCases)
                     {
