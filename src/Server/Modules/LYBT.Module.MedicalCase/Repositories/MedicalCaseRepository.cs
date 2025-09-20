@@ -14,7 +14,7 @@ namespace LYBT.Module.MedicalCase.Repositories;
 /// 医疗案例仓储实现 - 数据层统一化重构
 /// 继承OptimizedBaseRepository获得缓存和性能优化，覆盖部分方法以支持Include
 /// </summary>
-public class MedicalCaseRepository : OptimizedBaseRepository<LYBT.Entities.MedicalCase.MedicalCase>, IMedicalCaseRepository
+public class MedicalCaseRepository : OptimizedBaseRepository<Entities.MedicalCase.MedicalCase>, IMedicalCaseRepository
 {
 
     public MedicalCaseRepository(
@@ -216,6 +216,4 @@ public class MedicalCaseRepository : OptimizedBaseRepository<LYBT.Entities.Medic
         _cache.Set(cacheKey, latestMedicalCase, TimeSpan.FromMinutes(2));
         return latestMedicalCase;
     }
-
-    // AddAsync和GetListAsync由BaseRepository提供，无需重复实现
 }
