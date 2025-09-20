@@ -22,9 +22,9 @@ namespace LYBT.Shared.Models.Contracts.Consultation
         [DisplayName("患者ID")]
         public Guid PatientId { get; set; }
 
-        /// <summary>医生ID</summary>
-        [DisplayName("医生ID")]
-        public Guid DoctorId { get; set; }
+        /// <summary>关联用户ID（医生）</summary>
+        [DisplayName("关联用户ID")]
+        public Guid UserId { get; set; }
 
         /// <summary>患者姓名</summary>
         [DisplayName("患者姓名")]
@@ -83,13 +83,6 @@ namespace LYBT.Shared.Models.Contracts.Consultation
         [StringLength(ValidationConstants.RemarkMaxLength, ErrorMessage = "备注长度不能超过{1}个字符")]
         public string? Remark { get; set; }
 
-        // 兼容性字段
-
-        /// <summary>看诊时间（兼容别名）</summary>
-        public DateTime ConsultationTime => StartTime;
-
-        /// <summary>听诊（兼容别名）</summary>
-        public string? Auscultation => AuscultationOlfaction;
     }
 
     /// <summary>
@@ -106,9 +99,9 @@ namespace LYBT.Shared.Models.Contracts.Consultation
         [DisplayName("患者ID")]
         public Guid PatientId { get; set; }
 
-        /// <summary>医生ID</summary>
-        [DisplayName("医生ID")]
-        public Guid DoctorId { get; set; }
+        /// <summary>关联用户ID（医生）</summary>
+        [DisplayName("关联用户ID")]
+        public Guid UserId { get; set; }
 
         /// <summary>患者姓名</summary>
         [DisplayName("患者姓名")]
@@ -175,22 +168,10 @@ namespace LYBT.Shared.Models.Contracts.Consultation
         [StringLength(ValidationConstants.RemarkMaxLength, ErrorMessage = "备注长度不能超过{1}个字符")]
         public string? Remark { get; set; }
 
-        // 兼容性字段
-
-        /// <summary>医嘱（兼容别名）</summary>
-        public string? DoctorAdvice => MedicalAdvice;
-
-        /// <summary>状态（兼容别名）</summary>
-        public ConsultationStatus Status => ConsultationStatus;
+        // 计算属性
 
         /// <summary>是否已完成</summary>
         public bool IsCompleted => ConsultationStatus == ConsultationStatus.Completed;
-
-        /// <summary>用户ID（兼容别名）</summary>
-        public Guid UserId => DoctorId;
-
-        /// <summary>看诊时间（兼容别名）</summary>
-        public DateTime ConsultationTime => StartTime;
     }
 
     /// <summary>
@@ -273,10 +254,10 @@ namespace LYBT.Shared.Models.Contracts.Consultation
         [DisplayName("患者ID")]
         public Guid PatientId { get; set; }
 
-        /// <summary>医生ID</summary>
-        [Required(ErrorMessage = "医生ID不能为空")]
-        [DisplayName("医生ID")]
-        public Guid DoctorId { get; set; }
+        /// <summary>关联用户ID（医生）</summary>
+        [Required(ErrorMessage = "关联用户ID不能为空")]
+        [DisplayName("关联用户ID")]
+        public Guid UserId { get; set; }
 
         /// <summary>看诊开始时间</summary>
         [DisplayName("开始时间")]
