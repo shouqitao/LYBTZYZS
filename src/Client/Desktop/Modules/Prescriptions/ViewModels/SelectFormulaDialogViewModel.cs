@@ -306,10 +306,11 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                 preview += $"分类：{SelectedFormula.Category}\n";
             }
 
-            if (!string.IsNullOrWhiteSpace(SelectedFormula.Source))
-            {
-                preview += $"来源：{SelectedFormula.Source}\n";
-            }
+            // 注释：Source字段已从FormulaDto中删除
+            // if (!string.IsNullOrWhiteSpace(SelectedFormula.Source))
+            // {
+            //     preview += $"来源：{SelectedFormula.Source}\n";
+            // }
 
             if (!string.IsNullOrWhiteSpace(SelectedFormula.Effect))
             {

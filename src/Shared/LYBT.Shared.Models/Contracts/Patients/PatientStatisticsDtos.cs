@@ -194,15 +194,15 @@ namespace LYBT.Shared.Models.Contracts.Patients
         [DisplayName("地址")]
         public string? Address { get; set; }
 
-        /// <summary>紧急联系人</summary>
-        [StringLength(50, ErrorMessage = "紧急联系人长度不能超过50个字符")]
-        [DisplayName("紧急联系人")]
-        public string? EmergencyContact { get; set; }
+        /// <summary>紧急联系人姓名</summary>
+        [StringLength(50, ErrorMessage = "紧急联系人姓名长度不能超过50个字符")]
+        [DisplayName("紧急联系人姓名")]
+        public string? EmergencyContactName { get; set; }
 
-        /// <summary>紧急联系电话</summary>
-        [StringLength(20, ErrorMessage = "紧急联系电话长度不能超过20个字符")]
-        [DisplayName("紧急联系电话")]
-        public string? EmergencyPhone { get; set; }
+        /// <summary>紧急联系人电话</summary>
+        [StringLength(20, ErrorMessage = "紧急联系人电话长度不能超过20个字符")]
+        [DisplayName("紧急联系人电话")]
+        public string? EmergencyContactPhone { get; set; }
 
         /// <summary>过敏史</summary>
         [StringLength(500, ErrorMessage = "过敏史长度不能超过500个字符")]
@@ -274,13 +274,13 @@ namespace LYBT.Shared.Models.Contracts.Patients
         [DisplayName("地址")]
         public string? Address { get; set; }
 
-        /// <summary>紧急联系人</summary>
-        [DisplayName("紧急联系人")]
-        public string? EmergencyContact { get; set; }
+        /// <summary>紧急联系人姓名</summary>
+        [DisplayName("紧急联系人姓名")]
+        public string? EmergencyContactName { get; set; }
 
-        /// <summary>紧急联系电话</summary>
-        [DisplayName("紧急联系电话")]
-        public string? EmergencyPhone { get; set; }
+        /// <summary>紧急联系人电话</summary>
+        [DisplayName("紧急联系人电话")]
+        public string? EmergencyContactPhone { get; set; }
 
         /// <summary>首次就诊日期</summary>
         [DisplayName("首次就诊日期")]

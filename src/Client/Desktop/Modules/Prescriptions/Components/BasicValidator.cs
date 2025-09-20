@@ -34,8 +34,8 @@ namespace LYBT.Desktop.Prescriptions.Components
                     return result;
                 }
 
-                // 验证诊断
-                ValidateDiagnosis(prescription.Diagnosis ?? string.Empty, result);
+                // 验证主治（原诊断字段）
+                ValidateDiagnosis(prescription.Indication ?? string.Empty, result);
 
                 // 验证剂数
                 ValidateDosageCount(prescription.DosageCount, result);
@@ -236,7 +236,7 @@ namespace LYBT.Desktop.Prescriptions.Components
                     return false;
                 }
 
-                if (string.IsNullOrWhiteSpace(prescription.Diagnosis))
+                if (string.IsNullOrWhiteSpace(prescription.Indication))
                 {
                     return false;
                 }

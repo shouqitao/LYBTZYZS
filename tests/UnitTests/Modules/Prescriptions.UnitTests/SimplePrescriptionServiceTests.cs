@@ -46,7 +46,6 @@ namespace LYBT.Module.Prescriptions.Tests
             {
                 Id = prescriptionId,
                 PatientId = Guid.NewGuid(),
-                Name = "测试患者",
                 Status = CommonStatus.Enabled
             });
 
@@ -95,8 +94,8 @@ namespace LYBT.Module.Prescriptions.Tests
             var patientId = Guid.NewGuid();
             var prescriptions = new List<PrescriptionDto>
             {
-                new() { Id = Guid.NewGuid(), PatientId = patientId, Name = "测试患者" },
-                new() { Id = Guid.NewGuid(), PatientId = patientId, Name = "测试患者" }
+                new() { Id = Guid.NewGuid(), PatientId = patientId },
+                new() { Id = Guid.NewGuid(), PatientId = patientId }
             };
 
             var expectedResult = ServiceResult<List<PrescriptionDto>>.Success(prescriptions);
@@ -132,8 +131,8 @@ namespace LYBT.Module.Prescriptions.Tests
 
             var prescriptions = new List<PrescriptionDto>
             {
-                new() { Id = Guid.NewGuid(), Name = "患者1" },
-                new() { Id = Guid.NewGuid(), Name = "患者2" }
+                new() { Id = Guid.NewGuid(), }, // Name字段已删除
+                new() { Id = Guid.NewGuid(), } // Name字段已删除
             };
 
             var expectedResult = ServiceResult<PagedResult<PrescriptionDto>>.Success(new PagedResult<PrescriptionDto>
@@ -170,8 +169,8 @@ namespace LYBT.Module.Prescriptions.Tests
             var keyword = "测试";
             var prescriptions = new List<PrescriptionDto>
             {
-                new() { Id = Guid.NewGuid(), Name = "测试患者1" },
-                new() { Id = Guid.NewGuid(), Name = "测试患者2" }
+                new() { Id = Guid.NewGuid(), }, // Name字段已删除
+                new() { Id = Guid.NewGuid(), } // Name字段已删除
             };
 
             var expectedResult = ServiceResult<List<PrescriptionDto>>.Success(prescriptions);
@@ -221,9 +220,9 @@ namespace LYBT.Module.Prescriptions.Tests
             // Arrange
             var prescriptions = new List<PrescriptionDto>
             {
-                new() { Id = Guid.NewGuid(), Name = "患者1" },
-                new() { Id = Guid.NewGuid(), Name = "患者2" },
-                new() { Id = Guid.NewGuid(), Name = "患者3" }
+                new() { Id = Guid.NewGuid(), }, // Name字段已删除
+                new() { Id = Guid.NewGuid(), }, // Name字段已删除
+                new() { Id = Guid.NewGuid(), } // Name字段已删除
             };
 
             var expectedResult = ServiceResult<List<PrescriptionDto>>.Success(prescriptions);
@@ -292,7 +291,7 @@ namespace LYBT.Module.Prescriptions.Tests
             {
                 Id = Guid.Empty,
                 PatientId = Guid.NewGuid(),
-                Name = "边界测试处方"
+                // Name = "边界测试处方" // Name字段已删除
             });
 
             _mockQueryService
@@ -321,8 +320,8 @@ namespace LYBT.Module.Prescriptions.Tests
 
             var prescriptions = new List<PrescriptionDto>
             {
-                new() { Id = Guid.NewGuid(), Name = "处方1" },
-                new() { Id = Guid.NewGuid(), Name = "处方2" }
+                new() { Id = Guid.NewGuid(), }, // Name字段已删除
+                new() { Id = Guid.NewGuid(), } // Name字段已删除
             };
 
             var expectedResult = ServiceResult<PagedResult<PrescriptionDto>>.Success(new PagedResult<PrescriptionDto>

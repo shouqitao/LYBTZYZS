@@ -90,7 +90,6 @@ namespace LYBT.Module.Formula.Services
                 _dbContext.Formulas.Add(copyFormula);
                 await _dbContext.SaveChangesAsync();
 
-                _logger.LogInformation("复制验方成功: {OriginalName} -> {NewName}", originalFormula.Name, newName);
                 var dto = _mapper.Map<FormulaDto>(copyFormula);
                 return ServiceResult<FormulaDto>.Success(dto);
             }
@@ -181,7 +180,6 @@ namespace LYBT.Module.Formula.Services
 
                 var dto = _mapper.Map<FormulaDto>(createdFormula);
 
-                _logger.LogInformation("从处方创建验方成功: {FormulaName}, 处方ID: {PrescriptionId}", name, prescriptionId);
                 return ServiceResult<FormulaDto>.Success(dto);
             }
             catch (Exception ex)
@@ -385,7 +383,6 @@ namespace LYBT.Module.Formula.Services
                 _dbContext.Formulas.Add(formula);
                 await _dbContext.SaveChangesAsync();
 
-                _logger.LogInformation("创建验方成功: {FormulaName}", dto.Name);
                 var resultDto = _mapper.Map<FormulaDto>(formula);
                 return ServiceResult<FormulaDto>.Success(resultDto);
             }
@@ -444,7 +441,6 @@ namespace LYBT.Module.Formula.Services
 
                 await _dbContext.SaveChangesAsync();
 
-                _logger.LogInformation("更新验方成功: {FormulaName}", formula.Name);
                 var resultDto = _mapper.Map<FormulaDto>(formula);
                 return ServiceResult<FormulaDto>.Success(resultDto);
             }
@@ -479,7 +475,6 @@ namespace LYBT.Module.Formula.Services
                 formula.Status = CommonStatus.Disabled;
                 await _dbContext.SaveChangesAsync();
 
-                _logger.LogInformation("删除验方成功: {FormulaName}", formula.Name);
                 return ServiceResult<bool>.Success(true);
             }
             catch (Exception ex)
@@ -512,7 +507,6 @@ namespace LYBT.Module.Formula.Services
                 formula.Status = CommonStatus.Enabled;
                 await _dbContext.SaveChangesAsync();
 
-                _logger.LogInformation("启用验方成功: {FormulaName}", formula.Name);
                 return ServiceResult.Success();
             }
             catch (Exception ex)
@@ -545,7 +539,6 @@ namespace LYBT.Module.Formula.Services
                 formula.Status = CommonStatus.Disabled;
                 await _dbContext.SaveChangesAsync();
 
-                _logger.LogInformation("禁用验方成功: {FormulaName}", formula.Name);
                 return ServiceResult.Success();
             }
             catch (Exception ex)
@@ -582,7 +575,6 @@ namespace LYBT.Module.Formula.Services
                 
                 await _dbContext.SaveChangesAsync();
 
-                _logger.LogInformation("切换验方状态成功: {FormulaName} -> {Status}", formula.Name, formula.Status);
                 return ServiceResult<bool>.Success(formula.Status == CommonStatus.Enabled);
             }
             catch (Exception ex)

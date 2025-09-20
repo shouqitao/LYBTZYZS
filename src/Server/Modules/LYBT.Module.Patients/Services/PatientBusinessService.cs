@@ -452,8 +452,8 @@ namespace LYBT.Module.Patients.Services
                                 PhoneNumber = importDto.PhoneNumber,
                                 IdNumber = importDto.IdCardNumber,
                                 Address = importDto.Address,
-                                EmergencyContactName = importDto.EmergencyContact,
-                                EmergencyContactPhone = importDto.EmergencyPhone,
+                                EmergencyContactName = importDto.EmergencyContactName,
+                                EmergencyContactPhone = importDto.EmergencyContactPhone,
                                 AllergyHistory = importDto.AllergyHistory,
                                 Status = CommonStatus.Enabled,
                                 PinYinCode = string.Empty, // 移除CommonHelper依赖，拼音码功能暂不实现

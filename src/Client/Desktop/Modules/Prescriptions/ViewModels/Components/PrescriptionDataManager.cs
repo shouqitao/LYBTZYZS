@@ -93,9 +93,12 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components
                     _logger.LogDebug("找到现有处方数据，开始加载");
 
                     // 加载基础信息
-                    PrescriptionNo = existingPrescription.PrescriptionNo ?? GeneratePrescriptionNoInternal();
+                    // PrescriptionNo字段已删除
+                    // PrescriptionNo = existingPrescription.PrescriptionNo ?? GeneratePrescriptionNoInternal();
                     DosageCount = existingPrescription.DosageCount;
-                    Usage = existingPrescription.Usage ?? "水煎服，一日三次，饭后服用";
+                    // Usage字段已删除
+                    // Usage = existingPrescription.Usage ?? "水煎服，一日三次，饭后服用";
+                    Usage = "水煎服，一日三次，饭后服用"; // 使用默认值
                     MedicalAdvice = existingPrescription.Advice ?? string.Empty;
                     Remark = existingPrescription.Remark ?? string.Empty;
                     Discount = existingPrescription.Discount;

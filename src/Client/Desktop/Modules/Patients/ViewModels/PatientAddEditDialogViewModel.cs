@@ -233,8 +233,8 @@ namespace LYBT.Desktop.Patients.ViewModels
                         Address = Address?.Trim() ?? string.Empty,
                         IdNumber = IdNumber?.Trim() ?? string.Empty,
                         AllergyHistory = AllergyHistory?.Trim() ?? string.Empty,
-                        EmergencyContact = EmergencyContact?.Trim() ?? string.Empty, // 修复：添加紧急联系人
-                        EmergencyPhone = EmergencyPhone?.Trim() ?? string.Empty // 修复：添加紧急联系电话
+                        EmergencyContactName = EmergencyContact?.Trim() ?? string.Empty, // 修复：添加紧急联系人
+                        EmergencyContactPhone = EmergencyPhone?.Trim() ?? string.Empty // 修复：添加紧急联系电话
                     };
 
                     var serviceResult = await _patientService.UpdateAsync(_originalPatient.Id, updateDto);
@@ -257,8 +257,8 @@ namespace LYBT.Desktop.Patients.ViewModels
                         Address = Address?.Trim() ?? string.Empty,
                         IdNumber = IdNumber?.Trim() ?? string.Empty,
                         AllergyHistory = AllergyHistory?.Trim() ?? string.Empty,
-                        EmergencyContact = EmergencyContact?.Trim() ?? string.Empty, // 修复：添加紧急联系人
-                        EmergencyPhone = EmergencyPhone?.Trim() ?? string.Empty, // 修复：添加紧急联系电话
+                        EmergencyContactName = EmergencyContact?.Trim() ?? string.Empty, // 修复：添加紧急联系人
+                        EmergencyContactPhone = EmergencyPhone?.Trim() ?? string.Empty, // 修复：添加紧急联系电话
                         Status = CommonStatus.Enabled // 修复：设置默认状态
                     };
 

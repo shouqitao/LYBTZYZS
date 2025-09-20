@@ -67,8 +67,7 @@ namespace LYBT.Desktop.Prescriptions.Services
                     PatientId = patientId,
                     UserId = doctorId,
                     DosageCount = 7, // 默认7剂
-                    Usage = "水煎服，日一剂，分早晚服", // 默认用法
-                    DosageForm = "汤剂", // 默认剂型
+                    // Usage 和 DosageForm 字段已从PrescriptionDto中删除
                     Status = 0, // 草稿状态
                     CreateTime = DateTime.Now
                 };
@@ -94,9 +93,9 @@ namespace LYBT.Desktop.Prescriptions.Services
                 _logger.LogInformation("保存处方草稿: {PrescriptionId}", prescription.Id);
 
                 // 基础验证
-                if (string.IsNullOrWhiteSpace(prescription.Diagnosis))
+                if (string.IsNullOrWhiteSpace(prescription.Indication))
                 {
-                    return (false, "诊断不能为空");
+                    return (false, "主治不能为空");
                 }
 
                 // 设置草稿状态
@@ -148,11 +147,11 @@ namespace LYBT.Desktop.Prescriptions.Services
                 prescription.Status = CommonStatus.Enabled;
                 prescription.UpdateTime = DateTime.Now;
 
-                // 生成处方编号
-                if (string.IsNullOrWhiteSpace(prescription.PrescriptionNo))
-                {
-                    prescription.PrescriptionNo = await GeneratePrescriptionNoAsync();
-                }
+                // 注释：PrescriptionNo字段已从PrescriptionDto中删除
+                // if (string.IsNullOrWhiteSpace(prescription.PrescriptionNo))
+                // {
+                //     prescription.PrescriptionNo = await GeneratePrescriptionNoAsync();
+                // }
 
                 // 计算并设置价格信息
                 var priceResult = _priceCalculator.CalculatePrescriptionPrice(prescription);

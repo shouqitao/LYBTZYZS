@@ -159,15 +159,15 @@ namespace LYBT.Desktop.Core.Services
             sb.AppendLine();
 
             // 处方基本信息
-            sb.AppendLine($"处方编号: {prescription.PrescriptionNo ?? "未设置"}");
+            sb.AppendLine($"处方编号: RX{prescription.Id.ToString().Substring(0, 8)}");
             sb.AppendLine($"开方日期: {prescription.CreateTime:yyyy年MM月dd日}");
-            sb.AppendLine($"患者姓名: {prescription.Name ?? "未知"}");
+            sb.AppendLine($"患者ID: {prescription.PatientId}");
             sb.AppendLine();
 
-            // 主诉和诊断
-            if (!string.IsNullOrEmpty(prescription.Diagnosis))
+            // 主治
+            if (!string.IsNullOrEmpty(prescription.Indication))
             {
-                sb.AppendLine($"诊断: {prescription.Diagnosis}");
+                sb.AppendLine($"主治: {prescription.Indication}");
                 sb.AppendLine();
             }
 
@@ -198,14 +198,7 @@ namespace LYBT.Desktop.Core.Services
             sb.AppendLine();
 
             // 用法用量
-            if (!string.IsNullOrEmpty(prescription.Usage))
-            {
-                sb.AppendLine($"用法用量: {prescription.Usage}");
-            }
-            else
-            {
-                sb.AppendLine("用法用量: 水煎服，每日一剂，分早晚两次服用");
-            }
+            sb.AppendLine("用法用量: 水煎服，每日一剂，分早晚两次服用");
 
             // 医嘱
             if (!string.IsNullOrEmpty(prescription.Advice))

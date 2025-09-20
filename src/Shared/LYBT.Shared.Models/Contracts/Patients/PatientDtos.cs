@@ -64,6 +64,14 @@ namespace LYBT.Shared.Models.Contracts.Patients
         [DisplayName("婚姻状态")]
         public int MaritalStatus { get; set; } = 0;
 
+        /// <summary>证件类型</summary>
+        [DisplayName("证件类型")]
+        public int IdType { get; set; } = 0;
+
+        /// <summary>血型</summary>
+        [DisplayName("血型")]
+        public int BloodType { get; set; } = 0;
+
         /// <summary>过敏史</summary>
         [DisplayName("过敏史")]
         public string? AllergyHistory { get; set; }
@@ -75,6 +83,10 @@ namespace LYBT.Shared.Models.Contracts.Patients
         /// <summary>紧急联系人电话</summary>
         [DisplayName("紧急联系人电话")]
         public string? EmergencyContactPhone { get; set; }
+
+        /// <summary>紧急联系人关系</summary>
+        [DisplayName("紧急联系人关系")]
+        public string? EmergencyContactRelation { get; set; }
 
         /// <summary>最后就诊时间</summary>
         [DisplayName("最后就诊时间")]
@@ -156,43 +168,36 @@ namespace LYBT.Shared.Models.Contracts.Patients
         [DisplayName("过敏史")]
         public string? AllergyHistory { get; set; }
 
-        /// <summary>既往病史</summary>
-        [StringLength(ValidationConstants.LongRemarkMaxLength, ErrorMessage = "既往病史长度不能超过{1}个字符")]
-        [DisplayName("既往病史")]
-        public string? MedicalHistory { get; set; }
-
-        /// <summary>家族史</summary>
-        [StringLength(ValidationConstants.RemarkMaxLength, ErrorMessage = "家族史长度不能超过{1}个字符")]
-        [DisplayName("家族史")]
-        public string? FamilyHistory { get; set; }
-
-        /// <summary>职业</summary>
-        [StringLength(ValidationConstants.NameMaxLength, ErrorMessage = "职业长度不能超过{1}个字符")]
-        [DisplayName("职业")]
-        public string? Profession { get; set; }
-
         /// <summary>婚姻状态</summary>
         [DisplayName("婚姻状态")]
         public int MaritalStatus { get; set; } = 0;
 
-        /// <summary>紧急联系人</summary>
-        [StringLength(ValidationConstants.NameMaxLength, ErrorMessage = "紧急联系人长度不能超过{1}个字符")]
-        [DisplayName("紧急联系人")]
-        public string? EmergencyContact { get; set; }
+        /// <summary>证件类型</summary>
+        [DisplayName("证件类型")]
+        public int IdType { get; set; } = 0;
 
-        /// <summary>紧急联系电话</summary>
-        [StringLength(ValidationConstants.PhoneMaxLength, ErrorMessage = "紧急联系电话长度不能超过{1}个字符")]
-        [DisplayName("紧急联系电话")]
-        public string? EmergencyPhone { get; set; }
+        /// <summary>血型</summary>
+        [DisplayName("血型")]
+        public int BloodType { get; set; } = 0;
+
+        /// <summary>紧急联系人姓名</summary>
+        [StringLength(ValidationConstants.NameMaxLength, ErrorMessage = "紧急联系人姓名长度不能超过{1}个字符")]
+        [DisplayName("紧急联系人姓名")]
+        public string? EmergencyContactName { get; set; }
+
+        /// <summary>紧急联系人电话</summary>
+        [StringLength(ValidationConstants.PhoneMaxLength, ErrorMessage = "紧急联系人电话长度不能超过{1}个字符")]
+        [DisplayName("紧急联系人电话")]
+        public string? EmergencyContactPhone { get; set; }
+
+        /// <summary>紧急联系人关系</summary>
+        [StringLength(ValidationConstants.NameMaxLength, ErrorMessage = "紧急联系人关系长度不能超过{1}个字符")]
+        [DisplayName("紧急联系人关系")]
+        public string? EmergencyContactRelation { get; set; }
 
         /// <summary>状态</summary>
         [DisplayName("状态")]
         public CommonStatus Status { get; set; } = CommonStatus.Enabled;
-
-        /// <summary>备注</summary>
-        [StringLength(ValidationConstants.RemarkMaxLength, ErrorMessage = "备注长度不能超过{1}个字符")]
-        [DisplayName("备注")]
-        public string? Remark { get; set; }
     }
 
     /// <summary>

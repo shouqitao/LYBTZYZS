@@ -86,11 +86,9 @@ public class PrescriptionsModule(
                 PatientId = original.PatientId,
                 DoctorId = original.UserId, // 使用UserId作为DoctorId
                 ConsultationId = null, // 新处方不关联特定会诊
-                Diagnosis = original.Diagnosis ?? string.Empty,
+                Diagnosis = original.Indication ?? string.Empty,
                 DosageCount = original.DosageCount,
                 Advice = original.Advice,
-                DosageForm = original.DosageForm,
-                Usage = original.Usage,
                 TotalAmount = original.TotalAmount,
                 FormulaSource = original.FormulaSource,
                 Remark = $"复制自原处方 - {newName}",

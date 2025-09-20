@@ -1,8 +1,6 @@
 using System.ComponentModel;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Users;
-using Refit;
-
 namespace LYBT.Shared.Interfaces.Api
 {
 
@@ -29,8 +27,8 @@ namespace LYBT.Shared.Interfaces.Api
         /// <para>令牌: 访问令牌8小时有效期，刷新令牌30天(Remember Me)或1天</para>
         /// <para>安全: PBKDF2密码哈希验证、失败次数限制、IP地址记录</para>
         /// </remarks>
-        [Post("/api/v1/auth/login")]
-        Task<LYBT.Shared.Models.Contracts.Common.ApiResponse<LoginResponse>> LoginAsync([Body] LoginRequest loginRequest);
+        [Refit.Post("/api/v1/auth/login")]
+        Task<LYBT.Shared.Models.Contracts.Common.ApiResponse<LoginResponse>> LoginAsync([Refit.Body] LoginRequest loginRequest);
 
         /// <summary>
         /// 用户登出操作
@@ -41,7 +39,7 @@ namespace LYBT.Shared.Interfaces.Api
         /// <para>操作: 令牌加入黑名单、清理缓存、记录登出日志</para>
         /// <para>安全: 防止令牌被恶意使用，确保会话完全终止</para>
         /// </remarks>
-        [Post("/api/v1/auth/logout")]
+        [Refit.Post("/api/v1/auth/logout")]
         Task<LYBT.Shared.Models.Contracts.Common.ApiResponse<object>> LogoutAsync();
 
         /// <summary>
@@ -53,7 +51,7 @@ namespace LYBT.Shared.Interfaces.Api
         /// <para>信息: 用户ID、用户名、显示名、角色、状态、最后登录时间</para>
         /// <para>缓存: 用户信息缓存10分钟，减少数据库查询</para>
         /// </remarks>
-        [Get("/api/v1/auth/current-user")]
+        [Refit.Get("/api/v1/auth/current-user")]
         Task<LYBT.Shared.Models.Contracts.Common.ApiResponse<UserDto>> GetCurrentUserAsync();
 
         /// <summary>
@@ -65,7 +63,7 @@ namespace LYBT.Shared.Interfaces.Api
         /// <para>触发: 访问令牌即将过期时自动调用，保持用户会话连续</para>
         /// <para>安全: 刷新令牌单次使用，更新后旧令牌立即失效</para>
         /// </remarks>
-        [Post("/api/v1/auth/refresh-token")]
+        [Refit.Post("/api/v1/auth/refresh-token")]
         Task<LYBT.Shared.Models.Contracts.Common.ApiResponse<LoginResponse>> RefreshTokenAsync();
 
         /// <summary>
@@ -78,8 +76,8 @@ namespace LYBT.Shared.Interfaces.Api
         /// <para>验证: 旧密码验证、新密码强度检查、密码历史检查</para>
         /// <para>安全: 密码PBKDF2哈希存储、操作日志记录、会话失效</para>
         /// </remarks>
-        [Post("/api/v1/auth/change-password")]
-        Task<LYBT.Shared.Models.Contracts.Common.ApiResponse<object>> ChangePasswordAsync([Body] ChangePasswordRequest changePasswordRequest);
+        [Refit.Post("/api/v1/auth/change-password")]
+        Task<LYBT.Shared.Models.Contracts.Common.ApiResponse<object>> ChangePasswordAsync([Refit.Body] ChangePasswordRequest changePasswordRequest);
 
         /// <summary>
         /// API服务健康状态检查
@@ -90,7 +88,7 @@ namespace LYBT.Shared.Interfaces.Api
         /// <para>用途: 客户端连接测试、服务监控、网络诊断</para>
         /// <para>响应: 简单字符串响应，无需认证，用于快速连通性测试</para>
         /// </remarks>
-        [Get("/api/v1/health/alive")]
+        [Refit.Get("/api/v1/health/alive")]
         Task<string> HealthCheckAsync();
     }
 }

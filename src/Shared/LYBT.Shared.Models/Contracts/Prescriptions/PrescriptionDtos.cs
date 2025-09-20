@@ -22,20 +22,6 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
         [DisplayName("医生ID")]
         public Guid UserId { get; set; }
 
-        [DisplayName("患者姓名")]
-        public string? Name { get; set; }
-
-        [DisplayName("医生姓名")]
-        public string? DoctorName { get; set; }
-
-        [DisplayName("诊断")]
-        [StringLength(500, ErrorMessage = "诊断长度不能超过500个字符")]
-        public string? Diagnosis { get; set; }
-
-        [DisplayName("用法")]
-        [StringLength(200, ErrorMessage = "用法长度不能超过200个字符")]
-        public string? Usage { get; set; }
-
         [DisplayName("主治")]
         public string? Indication { get; set; }
 
@@ -83,13 +69,6 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
         [DisplayName("总金额")]
         public decimal TotalAmount => TotalPrice;
 
-        /// <summary>剂型</summary>
-        [DisplayName("剂型")]
-        public string? DosageForm { get; set; } = "汤剂";
-
-        [DisplayName("处方编号")]
-        public string? PrescriptionNo { get; set; }
-
         /// <summary>总重量（计算属性）</summary>
         [DisplayName("总重量")]
         public decimal TotalWeight
@@ -122,10 +101,10 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
         public string? MissingDrugWarning { get; set; }
 
         [DisplayName("处方编号")]
-        public new string? PrescriptionNo { get; set; }
+        public string? PrescriptionNo { get; set; }
 
         [DisplayName("用法")]
-        public new string? Usage { get; set; }
+        public string? Usage { get; set; }
 
         [DisplayName("医嘱")]
         public string? MedicalAdvice { get; set; }

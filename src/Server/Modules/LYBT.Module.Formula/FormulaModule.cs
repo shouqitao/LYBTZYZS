@@ -26,8 +26,8 @@ namespace LYBT.Module.Formula
             services.AddScoped<IFormulaRepository, FormulaRepository>();
 
             // UltraThink双层架构服务 - 查询和业务逻辑分离
-            services.AddScoped<FormulaQueryService>();
-            services.AddScoped<FormulaBusinessService>();
+            services.AddScoped<IFormulaQueryService, FormulaQueryService>();
+            services.AddScoped<IFormulaBusinessService, FormulaBusinessService>();
 
             // 主服务 - UltraThink纯委托模式，委托给专业服务层
             services.AddScoped<IFormulaService, FormulaService>();

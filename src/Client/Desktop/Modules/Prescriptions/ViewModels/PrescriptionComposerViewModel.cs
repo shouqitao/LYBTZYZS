@@ -91,16 +91,16 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         }
 
         /// <summary>
-        /// 诊断
+        /// 主治（诊断）
         /// </summary>
         public string Diagnosis
         {
-            get => _currentPrescription.Diagnosis ?? string.Empty;
+            get => _currentPrescription.Indication ?? string.Empty;
             set
             {
-                if (_currentPrescription.Diagnosis != value)
+                if (_currentPrescription.Indication != value)
                 {
-                    _currentPrescription.Diagnosis = value;
+                    _currentPrescription.Indication = value;
                     RaisePropertyChanged();
                 }
             }
@@ -124,18 +124,19 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         }
 
         /// <summary>
-        /// 用法
+        /// 用法 - 已注释，Usage字段已从PrescriptionDto中删除
         /// </summary>
         public string Usage
         {
-            get => _currentPrescription.Usage ?? string.Empty;
+            get => string.Empty; // _currentPrescription.Usage ?? string.Empty;
             set
             {
-                if (_currentPrescription.Usage != value)
-                {
-                    _currentPrescription.Usage = value;
-                    RaisePropertyChanged();
-                }
+                // Usage字段已从PrescriptionDto中删除
+                // if (_currentPrescription.Usage != value)
+                // {
+                //     _currentPrescription.Usage = value;
+                //     RaisePropertyChanged();
+                // }
             }
         }
 
@@ -215,9 +216,8 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             _currentPrescription = new PrescriptionDto
             {
                 Id = Guid.NewGuid(),
-                DosageCount = 7,
-                Usage = "水煎服，日一剂，分早晚服",
-                DosageForm = "汤剂"
+                DosageCount = 7
+                // Usage 和 DosageForm 字段已从PrescriptionDto中删除
             };
         }
 
@@ -434,9 +434,9 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
 
                 ShowMessage("处方保存成功");
 
-                // 发布处方保存事件
+                // 发布处方保存事件 - Name字段已删除，使用空字符串
                 _eventAggregator.GetEvent<CoreEvents.PrescriptionSavedEvent>()
-                    .Publish(new CoreEvents.PrescriptionSavedEventArgs(_currentPrescription.Id, _currentPrescription.PatientId, _currentPrescription.Name ?? string.Empty, _currentPrescription.TotalPrice));
+                    .Publish(new CoreEvents.PrescriptionSavedEventArgs(_currentPrescription.Id, _currentPrescription.PatientId, string.Empty, _currentPrescription.TotalPrice));
             }
             catch (Exception ex)
             {

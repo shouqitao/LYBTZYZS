@@ -37,6 +37,10 @@ namespace LYBT.Shared.Models.Contracts.Herbs
         [DisplayName("单价")]
         public decimal Price { get; set; }
 
+        /// <summary>成本价（元/单位）</summary>
+        [DisplayName("成本价")]
+        public decimal? CostPrice { get; set; }
+
         /// <summary>功效说明</summary>
         [DisplayName("功效")]
         public string? Effect { get; set; }
@@ -145,20 +149,10 @@ namespace LYBT.Shared.Models.Contracts.Herbs
         [DisplayName("单价")]
         public decimal Price { get; set; }
 
-        /// <summary>库存数量</summary>
-        [Required(ErrorMessage = "库存数量不能为空")]
-        [Range(0, int.MaxValue, ErrorMessage = "库存数量不能为负数")]
-        [DisplayName("库存数量")]
-        public int Stock { get; set; }
-
-        /// <summary>批号</summary>
-        [StringLength(50, ErrorMessage = "批号长度不能超过50个字符")]
-        [DisplayName("批号")]
-        public string? BatchNo { get; set; }
-
-        /// <summary>有效期</summary>
-        [DisplayName("有效期")]
-        public DateTime? ExpireDate { get; set; }
+        /// <summary>成本价</summary>
+        [Range(0, 999999.99, ErrorMessage = "成本价必须在0-999999.99之间")]
+        [DisplayName("成本价")]
+        public decimal? CostPrice { get; set; }
 
         /// <summary>功效说明</summary>
         [StringLength(1000, ErrorMessage = "功效说明长度不能超过1000个字符")]
@@ -210,6 +204,11 @@ namespace LYBT.Shared.Models.Contracts.Herbs
         [Range(0, 999999.99, ErrorMessage = "单价必须在0-999999.99之间")]
         [DisplayName("单价")]
         public decimal Price { get; set; }
+
+        /// <summary>成本价</summary>
+        [Range(0, 999999.99, ErrorMessage = "成本价必须在0-999999.99之间")]
+        [DisplayName("成本价")]
+        public decimal? CostPrice { get; set; }
 
         /// <summary>功效说明</summary>
         [StringLength(1000, ErrorMessage = "功效说明长度不能超过1000个字符")]

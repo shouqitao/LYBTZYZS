@@ -102,8 +102,8 @@ public class PatientService(
             PhoneNumber = p.PhoneNumber,
             IdCardNumber = p.IdNumber,
             Address = p.Address,
-            EmergencyContact = p.EmergencyContact,
-            EmergencyPhone = p.EmergencyPhone,
+            EmergencyContactName = p.EmergencyContactName,
+            EmergencyContactPhone = p.EmergencyContactPhone,
             AllergyHistory = p.AllergyHistory
         }).ToList();
 

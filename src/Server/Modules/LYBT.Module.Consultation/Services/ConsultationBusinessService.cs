@@ -71,14 +71,22 @@ namespace LYBT.Module.Consultation.Services
                     if (diagnosisDict != null)
                     {
                         // 更新四诊字段
-                        if (diagnosisDict.ContainsKey("inspection"))
-                            consultation.Inspection = diagnosisDict["inspection"]?.ToString();
-                        if (diagnosisDict.ContainsKey("auscultationOlfaction"))
-                            consultation.AuscultationOlfaction = diagnosisDict["auscultationOlfaction"]?.ToString();
-                        if (diagnosisDict.ContainsKey("inquiry"))
-                            consultation.Inquiry = diagnosisDict["inquiry"]?.ToString();
-                        if (diagnosisDict.ContainsKey("palpation"))
-                            consultation.Palpation = diagnosisDict["palpation"]?.ToString();
+                        if (diagnosisDict.TryGetValue("inspection", out var inspection))
+                        {
+                            consultation.Inspection = inspection?.ToString();
+                        }
+                        if (diagnosisDict.TryGetValue("auscultationOlfaction", out var auscultation))
+                        {
+                            consultation.AuscultationOlfaction = auscultation?.ToString();
+                        }
+                        if (diagnosisDict.TryGetValue("inquiry", out var inquiry))
+                        {
+                            consultation.Inquiry = inquiry?.ToString();
+                        }
+                        if (diagnosisDict.TryGetValue("palpation", out var palpation))
+                        {
+                            consultation.Palpation = palpation?.ToString();
+                        }
                     }
                 }
                 _logger.LogInformation(
@@ -197,7 +205,7 @@ namespace LYBT.Module.Consultation.Services
                 consultation.AuscultationOlfaction = dto.AuscultationOlfaction;
                 consultation.Inquiry = dto.Inquiry;
                 consultation.Palpation = dto.Palpation;
-                consultation.TCMDiagnosis = dto.Diagnosis; // 修正：DTO中是Diagnosis字段
+                consultation.TCMDiagnosis = dto.Diagnosis ?? string.Empty; // 修正：DTO中是Diagnosis字段
                 consultation.MedicalAdvice = dto.MedicalAdvice; // 修正：使用MedicalAdvice字段
 
                 _context.Consultations.Update(consultation);

@@ -211,7 +211,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                     prescription);
 
                 // 设置对话框标题和属性
-                previewDialog.Title = $"处方打印预览 - {prescription.Name ?? "未知患者"}";
+                previewDialog.Title = $"处方打印预览 - {prescription.Id.ToString()[..8]}";
                 previewDialog.Owner = System.Windows.Application.Current.MainWindow;
                 previewDialog.WindowStartupLocation = System.Windows.WindowStartupLocation.CenterOwner;
 
@@ -220,7 +220,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                 if (dialogResult == true)
                 {
                     await _dialogService.ShowSuccessAsync(
-                        $"处方 {prescription.PrescriptionNo ?? prescription.Id.ToString()[..8]} 打印操作完成",
+                        $"处方 {prescription.Id.ToString()[..8]} 打印操作完成",
                         "打印成功");
                 }
             }
@@ -247,7 +247,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                 // 获取选中处方的患者ID
                 var currentPrescription = SelectedItem;
                 var patientId = currentPrescription.PatientId;
-                var patientName = currentPrescription.Name;
+                var patientName = "未知患者"; // Name字段已删除，使用默认值
 
                 // 获取该患者的所有处方历史
                 var query = new PrescriptionQueryDto
@@ -307,17 +307,16 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                     var prescription = prescriptions[i];
 
                     historyContent.AppendLine($"▶ 第 {i + 1} 张处方 - {prescription.CreateTime:yyyy-MM-dd}");
-                    historyContent.AppendLine($"   处方号: {prescription.PrescriptionNo ?? prescription.Id.ToString()[..8]}");
-                    historyContent.AppendLine($"   开方医师: {prescription.DoctorName ?? "未知"}");
+                    historyContent.AppendLine($"   处方ID: {prescription.Id.ToString()[..8]}");
                     historyContent.AppendLine($"   剂数: {prescription.DosageCount} 剂");
-                    historyContent.AppendLine($"   费用: ¥{prescription.TotalPrice:F2}");
+                    historyContent.AppendLine($"   费用: ¥{prescription.TotalAmount:F2}");
 
-                    if (!string.IsNullOrEmpty(prescription.Diagnosis))
+                    if (!string.IsNullOrEmpty(prescription.Indication))
                     {
-                        var diagnosis = prescription.Diagnosis.Length > 30 ?
-                            prescription.Diagnosis.Substring(0, 30) + "..." :
-                            prescription.Diagnosis;
-                        historyContent.AppendLine($"   诊断: {diagnosis}");
+                        var indication = prescription.Indication.Length > 30 ?
+                            prescription.Indication.Substring(0, 30) + "..." :
+                            prescription.Indication;
+                        historyContent.AppendLine($"   主治: {indication}");
                     }
 
                     // 显示主要药材（前5味）
@@ -412,14 +411,14 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                             // 转换数据为导出格式
                             var exportData = prescriptions.Select(p => new
                             {
-                                PrescriptionNo = p.PrescriptionNo ?? p.Id.ToString()[..8],
-                                PatientName = p.Name ?? "未知患者",
-                                DoctorName = p.DoctorName ?? "未知医师",
+                                PrescriptionNo = p.Id.ToString()[..8],
+                                PatientName = "未知患者", // Name字段已删除
+                                DoctorName = "未知医师", // DoctorName字段已删除
                                 CreateTime = p.CreateTime.ToString("yyyy-MM-dd HH:mm"),
-                                Diagnosis = p.Diagnosis ?? "无诊断信息",
+                                Diagnosis = p.Indication ?? "无主治信息",
                                 DosageCount = p.DosageCount.ToString(),
-                                SingleDosePrice = p.SingleDosePrice.ToString("F2"),
-                                TotalPrice = p.TotalPrice.ToString("F2"),
+                                SingleDosePrice = "0.00", // SingleDosePrice字段已删除
+                                TotalPrice = p.TotalAmount.ToString("F2"),
                                 Discount = p.Discount.ToString("P1"), // 格式化为百分比
                                 Status = p.Status == LYBT.Shared.Models.Enums.CommonStatus.Enabled ? "正常" : "禁用",
                                 MainHerbs = p.Items != null && p.Items.Any()

@@ -41,13 +41,13 @@ namespace LYBT.Desktop.Core.ViewModels.Formulas
         public string HerbCountDisplay => $"{_formulaData.HerbCount} 味药材";
 
         /// <summary>适应症显示</summary>
-        public string IndicationsDisplay => string.IsNullOrWhiteSpace(_formulaData.Indications) ? "未录入" : _formulaData.Indications;
+        public string IndicationsDisplay => "请咨询医师";
 
         /// <summary>禁忌显示</summary>
-        public string ContraindicationsDisplay => string.IsNullOrWhiteSpace(_formulaData.Contraindications) ? "无特殊禁忌" : _formulaData.Contraindications;
+        public string ContraindicationsDisplay => "无特殊禁忌";
 
         /// <summary>来源显示</summary>
-        public string SourceDisplay => string.IsNullOrWhiteSpace(_formulaData.Source) ? "未知来源" : _formulaData.Source;
+        public string SourceDisplay => "传统验方";
 
         /// <summary>创建人显示</summary>
         public string CreatedByDisplay => "系统"; // UltraThink v2.0简化：移除CreatedBy字段
@@ -69,7 +69,7 @@ namespace LYBT.Desktop.Core.ViewModels.Formulas
         public string FullDescription => string.IsNullOrWhiteSpace(_formulaData.Remark) ? "暂无描述" : _formulaData.Remark;
 
         /// <summary>用法用量显示</summary>
-        public string DosageInstructionDisplay => string.IsNullOrWhiteSpace(_formulaData.DosageInstruction) ? "请咨询医师" : _formulaData.DosageInstruction;
+        public string DosageInstructionDisplay => "请咨询医师";
 
         #endregion 显示属性
 

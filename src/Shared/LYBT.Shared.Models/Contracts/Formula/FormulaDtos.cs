@@ -128,23 +128,6 @@ namespace LYBT.Shared.Models.Contracts.Formula
             }
         }
 
-        /// <summary>适应症</summary>
-        public string? Indications { get; set; }
-
-        /// <summary>来源</summary>
-        public string? Source { get; set; }
-
-        /// <summary>用药指导</summary>
-        public string? Instructions { get; set; }
-
-        /// <summary>禁忌症</summary>
-        public string? Contraindications { get; set; }
-
-        /// <summary>制备方法</summary>
-        public string? Preparation { get; set; }
-
-        /// <summary>用药指导</summary>
-        public string? DosageInstruction { get; set; }
     }
 
     /// <summary>
@@ -153,10 +136,6 @@ namespace LYBT.Shared.Models.Contracts.Formula
     public class FormulaDetailDto : FormulaDto
     {
         public new List<FormulaHerbItemDto> Herbs { get; set; } = new();
-        public new string? Instructions { get; set; }
-        public new string? Indications { get; set; }
-        public new string? Contraindications { get; set; }
-        public new string? Preparation { get; set; }
     }
 
     /// <summary>

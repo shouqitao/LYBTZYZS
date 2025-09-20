@@ -22,24 +22,24 @@ LYBT.Entities是系统的数据实体核心模块，定义了所有业务核心�
 
 ### 8个业务核心实体
 
-| 实体类 | 功能描述 | 关系 | 状态 |
-|--------|----------|------|------|
-| **UserModel** | 用户账户信息(Admin/Doctor角色) | 1:N → MedicalCase | ✅ 完成 |
-| **PatientModel** | 患者档案基本信息 | 1:N → MedicalCase | ✅ 完成 |
-| **MedicalCaseModel** | 医疗案例(看诊流程容器) | 1:1 → Consultation | ✅ 完成 |
-| **ConsultationModel** | 看诊诊断(中医四诊记录) | 1:0..1 → Prescription | ✅ 完成 |
-| **PrescriptionModel** | 处方管理(中药配方) | N:M → Herbs | ✅ 完成 |
-| **PrescriptionItemModel** | 处方条目(药材用量) | N:1 → Prescription | ✅ 完成 |
-| **HerbModel** | 中药材信息管理 | 1:N → PrescriptionItem | ✅ 完成 |
-| **FormulaModel** | 验方模板管理 | 1:N → FormulaHerbItem | ✅ 完成 |
+| 实体类                       | 功能描述                   | 关系                     | 状态   |
+| ------------------------- | ---------------------- | ---------------------- | ---- |
+| **UserModel**             | 用户账户信息(Admin/Doctor角色) | 1:N → MedicalCase      | ✅ 完成 |
+| **PatientModel**          | 患者档案基本信息               | 1:N → MedicalCase      | ✅ 完成 |
+| **MedicalCaseModel**      | 医疗案例(看诊流程容器)           | 1:1 → Consultation     | ✅ 完成 |
+| **ConsultationModel**     | 看诊诊断(中医四诊记录)           | 1:0..1 → Prescription  | ✅ 完成 |
+| **PrescriptionModel**     | 处方管理(中药配方)             | N:M → Herbs            | ✅ 完成 |
+| **PrescriptionItemModel** | 处方条目(药材用量)             | N:1 → Prescription     | ✅ 完成 |
+| **HerbModel**             | 中药材信息管理                | 1:N → PrescriptionItem | ✅ 完成 |
+| **FormulaModel**          | 验方模板管理                 | 1:N → FormulaHerbItem  | ✅ 完成 |
 
 ### 支持实体
 
-| 实体类 | 功能描述 | 关系 | 状态 |
-|--------|----------|------|------|
-| **FormulaHerbItem** | 验方药材条目 | N:1 → Formula | ✅ 完成 |
-| **AuthSessionModel** | 用户会话管理 | N:1 → User | ✅ 完成 |
-| **AdminSecretModel** | 管理员密钥表 | 独立表 | ✅ 完成 |
+| 实体类                  | 功能描述   | 关系            | 状态   |
+| -------------------- | ------ | ------------- | ---- |
+| **FormulaHerbItem**  | 验方药材条目 | N:1 → Formula | ✅ 完成 |
+| **AuthSessionModel** | 用户会话管理 | N:1 → User    | ✅ 完成 |
+| **AdminSecretModel** | 管理员密钥表 | 独立表           | ✅ 完成 |
 
 ## 🔗 实体关系架构
 
@@ -69,6 +69,7 @@ PrescriptionModel (基于验方开方)
 ```
 
 ### 关系说明
+
 - **用户 → 医案**: 一对多，医生可以处理多个医案
 - **患者 → 医案**: 一对多，患者可以有多次就诊记录(支持复诊)
 - **医案 → 诊断**: 一对一，每个医案对应一次完整诊断记录
@@ -86,18 +87,18 @@ public abstract class BaseEntity
 {
     [Key]
     public Guid Id { get; set; } = Guid.NewGuid();
-    
+
     public DateTime CreatedAt { get; set; } = DateTime.Now;
-    
+
     public DateTime? UpdatedAt { get; set; }
-    
+
     public Guid? CreatedBy { get; set; }
-    
+
     public Guid? UpdatedBy { get; set; }
-    
+
     [Timestamp]
     public byte[] RowVersion { get; set; } = new byte[8];
-    
+
     public bool IsDeleted { get; set; } = false;
 }
 ```
@@ -167,16 +168,16 @@ public DbSet<AdminSecretModel> AdminSecrets { get; set; }
 
 ### 数据库表映射
 
-| 实体类 | 数据库表名 | 主键 | 说明 |
-|--------|------------|------|------|
-| UserModel | Users | Id(Guid) | 用户账户表 |
-| PatientModel | Patients | Id(Guid) | 患者档案表 |
-| MedicalCaseModel | MedicalCases | Id(Guid) | 医疗案例表 |
-| ConsultationModel | Consultations | Id(Guid) | 诊断记录表 |
-| PrescriptionModel | Prescriptions | Id(Guid) | 处方主表 |
+| 实体类                   | 数据库表名             | 主键       | 说明    |
+| --------------------- | ----------------- | -------- | ----- |
+| UserModel             | Users             | Id(Guid) | 用户账户表 |
+| PatientModel          | Patients          | Id(Guid) | 患者档案表 |
+| MedicalCaseModel      | MedicalCases      | Id(Guid) | 医疗案例表 |
+| ConsultationModel     | Consultations     | Id(Guid) | 诊断记录表 |
+| PrescriptionModel     | Prescriptions     | Id(Guid) | 处方主表  |
 | PrescriptionItemModel | PrescriptionItems | Id(Guid) | 处方明细表 |
-| HerbModel | Herbs | Id(Guid) | 药材信息表 |
-| FormulaModel | Formulas | Id(Guid) | 验方模板表 |
+| HerbModel             | Herbs             | Id(Guid) | 药材信息表 |
+| FormulaModel          | Formulas          | Id(Guid) | 验方模板表 |
 
 ## 🧪 数据验证架构
 
@@ -198,7 +199,7 @@ public class PatientModel : BaseEntity
     [Phone(ErrorMessage = "手机号码格式不正确")]
     [StringLength(20, ErrorMessage = "手机号码长度不能超过20字符")]
     public string? PhoneNumber { get; set; }
-    
+
     [StringLength(500, ErrorMessage = "地址长度不能超过500字符")]
     public string? Address { get; set; }
 }
@@ -219,20 +220,20 @@ public class ConsultationModel : BaseEntity
     // 中医四诊
     [StringLength(500, ErrorMessage = "望诊记录长度不能超过500字符")]
     public string? Inspection { get; set; }  // 望诊
-    
+
     [StringLength(500, ErrorMessage = "闻诊记录长度不能超过500字符")]
     public string? Auscultation { get; set; }  // 闻诊
-    
+
     [StringLength(500, ErrorMessage = "问诊记录长度不能超过500字符")]
     public string? Inquiry { get; set; }  // 问诊
-    
+
     [StringLength(500, ErrorMessage = "切诊记录长度不能超过500字符")]
     public string? Palpation { get; set; }  // 切诊
 
     // 中医诊断
     [StringLength(200, ErrorMessage = "中医诊断长度不能超过200字符")]
     public string? TcmDiagnosis { get; set; }
-    
+
     [StringLength(200, ErrorMessage = "治法长度不能超过200字符")]
     public string? TreatmentMethod { get; set; }
 }
@@ -243,6 +244,7 @@ public class ConsultationModel : BaseEntity
 ### 新增实体步骤
 
 1. **创建实体类**
+   
    ```csharp
    public class NewEntityModel : BaseEntity
    {
@@ -251,16 +253,19 @@ public class ConsultationModel : BaseEntity
    ```
 
 2. **添加到DbContext**
+   
    ```csharp
    public DbSet<NewEntityModel> NewEntities { get; set; }
    ```
 
 3. **生成数据库迁移**
+   
    ```bash
    dotnet ef migrations add AddNewEntity --project LYBT.Infrastructure --startup-project LYBT.WebAPI
    ```
 
 4. **应用迁移**
+   
    ```bash
    dotnet ef database update --project LYBT.Infrastructure --startup-project LYBT.WebAPI
    ```
@@ -276,12 +281,14 @@ public class ConsultationModel : BaseEntity
 ## 📈 性能优化
 
 ### 查询优化
+
 - **延迟加载**: 默认使用延迟加载减少查询开销
 - **Include预加载**: 对必需的关联数据使用Include
 - **投影查询**: 使用Select投影减少数据传输
 - **分页查询**: 对大量数据使用Skip/Take分页
 
 ### 索引策略
+
 ```sql
 -- 常用查询字段创建索引
 CREATE INDEX IX_Patients_PhoneNumber ON Patients(PhoneNumber);
@@ -294,6 +301,7 @@ CREATE INDEX IX_Prescriptions_MedicalCaseId ON Prescriptions(MedicalCaseId);
 ## 🎯 UltraThink架构特点
 
 **适合小型中医诊所(<20人)的精简设计**:
+
 - ✅ **实体精简**: 8个核心实体覆盖完整业务流程，避免过度设计
 - ✅ **关系清晰**: 业务关系映射直观，易于理解和维护
 - ✅ **中医特色**: 四诊合参、辨证论治的中医诊疗流程支持

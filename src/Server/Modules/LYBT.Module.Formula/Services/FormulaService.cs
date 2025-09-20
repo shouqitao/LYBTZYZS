@@ -2,6 +2,7 @@ using LYBT.Module.Formula.Interfaces;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.Module.Formula.Services
 {
@@ -81,15 +82,42 @@ namespace LYBT.Module.Formula.Services
 
         /// <inheritdoc/>
         public async Task<ServiceResult<FormulaDto>> CreateAsync(FormulaCreateDto dto)
-            => await _businessService.CreateAsync(dto);
+        {
+            try
+            {
+                return await _businessService.CreateAsync(dto);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
 
         /// <inheritdoc/>
         public async Task<ServiceResult<FormulaDto>> UpdateAsync(Guid id, FormulaUpdateDto dto)
-            => await _businessService.UpdateAsync(id, dto);
+        {
+            try
+            {
+                return await _businessService.UpdateAsync(id, dto);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
 
         /// <inheritdoc/>
         public async Task<ServiceResult<bool>> DeleteAsync(Guid id)
-            => await _businessService.DeleteAsync(id);
+        {
+            try
+            {
+                return await _businessService.DeleteAsync(id);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
 
         /// <inheritdoc/>
         public async Task<ServiceResult> EnableAsync(Guid id)

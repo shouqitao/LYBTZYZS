@@ -118,7 +118,8 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                 {
                     // 选择患者后自动填充处方信息
                     Prescription.PatientId = value.Id;
-                    Prescription.Name = value.Name;
+                    // Name字段已从PrescriptionDto中删除
+                    // Prescription.Name = value.Name;
                     SaveCommand.RaiseCanExecuteChanged();
                     _logger.LogInformation("从列表选择患者: {PatientName} (ID: {PatientId})", value.Name, value.Id);
                 }
@@ -317,11 +318,11 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                         await LoadPatientInfoAsync(patientId);
 
                         // 在上下文模式下，不需要加载患者列表
-                        StatusMessage = $"正在为患者 {Prescription.Name} 开具处方（来自医案 {MedicalCaseId}）";
+                        StatusMessage = $"正在为患者开具处方（来自医案 {MedicalCaseId}）";
 
                         _logger.LogInformation(
-                            "上下文模式初始化完成，医案ID: {MedicalCaseId}，患者: {PatientName}",
-                            MedicalCaseId, Prescription.Name);
+                            "上下文模式初始化完成，医案ID: {MedicalCaseId}",
+                            MedicalCaseId);
                     }
                 }
                 else
@@ -352,7 +353,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                 UserId = _userSessionManager.CurrentUser?.Id ?? Guid.Empty,
                 Status = CommonStatus.Enabled, // UltraThink v2.0: 使用CommonStatus，通过业务逻辑映射到处方状态
                 DosageCount = 1,
-                PrescriptionNo = GeneratePrescriptionNo(),
+                // PrescriptionNo 字段已从PrescriptionDto中删除
                 CreateTime = DateTime.Now
             };
             TotalDoses = 1;
@@ -360,10 +361,11 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             _logger.LogInformation("初始化新处方，医生ID: {DoctorId}", Prescription.UserId);
         }
 
-        private string GeneratePrescriptionNo()
-        {
-            return $"RX{DateTime.Now:yyyyMMddHHmmss}{new Random().Next(1000, 9999)}";
-        }
+        // PrescriptionNo已删除，注释掉生成方法
+        // private string GeneratePrescriptionNo()
+        // {
+        //     return $"RX{DateTime.Now:yyyyMMddHHmmss}{new Random().Next(1000, 9999)}";
+        // }
 
         private async Task LoadPrescriptionAsync(Guid prescriptionId)
         {
@@ -427,7 +429,8 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                 if (result.IsSuccess && result.Data != null)
                 {
                     Prescription.PatientId = patientId;
-                    Prescription.Name = result.Data.Name;
+                    // Name字段已从PrescriptionDto中删除
+                    // Prescription.Name = result.Data.Name;
                 }
             }
             catch (Exception ex)
@@ -841,7 +844,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                 await _dialogService.ShowInformationAsync(printData, "处方预览");
 
                 StatusMessage = "预览完成";
-                _logger.LogInformation("处方预览成功，处方号: {PrescriptionNo}", Prescription.PrescriptionNo);
+                _logger.LogInformation("处方预览成功");
             }
             catch (Exception ex)
             {
@@ -865,8 +868,11 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             sb.AppendLine();
 
             // 基础信息
-            sb.AppendLine($"处方编号：{Prescription.PrescriptionNo}");
-            sb.AppendLine($"患者姓名：{Prescription.Name}");
+            // PrescriptionNo和Name字段已删除
+            // sb.AppendLine($"处方编号：{Prescription.PrescriptionNo}");
+            // sb.AppendLine($"患者姓名：{Prescription.Name}");
+            sb.AppendLine("处方编号：[已移除]");
+            sb.AppendLine("患者姓名：[已移除]");
             sb.AppendLine($"开方日期：{Prescription.CreateTime:yyyy-MM-dd HH:mm}");
             sb.AppendLine($"医生：{_userSessionManager.CurrentUser?.RealName ?? "未知"}");
             sb.AppendLine();
@@ -884,7 +890,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                 totalItemAmount += amount;
 
                 sb.AppendLine($"{item.HerbName?.PadRight(12) ?? "未知".PadRight(12)}\t" +
-                             $"{(item.Usage ?? string.Empty).PadRight(8)}\t" +
+                             $"{string.Empty.PadRight(8)}\t" + // Usage字段已删除
                              $"{item.Quantity}\t\t" +
                              $"¥{item.UnitPrice:F2}\t\t" +
                              $"¥{amount:F2}");
@@ -897,12 +903,13 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             sb.AppendLine();
 
             // 用法用量（如果有）
-            if (!string.IsNullOrEmpty(Prescription.Usage))
-            {
-                sb.AppendLine("用法用量：");
-                sb.AppendLine(Prescription.Usage);
-                sb.AppendLine();
-            }
+            // Usage字段已从PrescriptionDto中删除
+            // if (!string.IsNullOrEmpty(Prescription.Usage))
+            // {
+            //     sb.AppendLine("用法用量：");
+            //     sb.AppendLine(Prescription.Usage);
+            //     sb.AppendLine();
+            // }
 
             // 医嘱（如果有）
             if (!string.IsNullOrEmpty(Prescription.Advice))

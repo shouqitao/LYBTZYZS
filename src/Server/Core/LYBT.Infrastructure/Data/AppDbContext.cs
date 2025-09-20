@@ -58,6 +58,9 @@ namespace LYBT.Infrastructure.Data
         // 验方管理
         public DbSet<Formula> Formulas { get; set; }
 
+        // 系统日志
+        public DbSet<SystemLog> SystemLogs { get; set; }
+
         // 配伍管理 - 移除：HerbCompatibilityNote实体已删除
 
         // ==================== 事务协调器相关实体 ====================
@@ -88,6 +91,7 @@ namespace LYBT.Infrastructure.Data
             ConfigurePrescriptions(modelBuilder);
             ConfigureHerbs(modelBuilder);
             ConfigureFormulas(modelBuilder);
+            ConfigureSystemLogs(modelBuilder);
 
             // ConfigureCompatibilityNotes(modelBuilder); // 移除：HerbCompatibilityNote实体已删除
 
@@ -306,6 +310,32 @@ namespace LYBT.Infrastructure.Data
 
             // 简化配置，忽略子实体以避免复杂的配置问题
             entity.Ignore(f => f.Herbs);
+        }
+
+        private static void ConfigureSystemLogs(ModelBuilder modelBuilder)
+        {
+            var entity = modelBuilder.Entity<SystemLog>();
+            entity.ToTable("SystemLogs");
+            entity.HasKey(sl => sl.Id);
+            
+            // 配置字段
+            entity.Property(sl => sl.Timestamp).IsRequired();
+            entity.Property(sl => sl.Level).HasMaxLength(50).IsRequired();
+            entity.Property(sl => sl.Message).IsRequired();
+            entity.Property(sl => sl.Exception);
+            entity.Property(sl => sl.LoggerName).HasMaxLength(255);
+            entity.Property(sl => sl.UserId);
+            entity.Property(sl => sl.RequestId).HasMaxLength(36);
+            entity.Property(sl => sl.MachineName).HasMaxLength(100);
+            entity.Property(sl => sl.ThreadId);
+            entity.Property(sl => sl.Properties);
+            
+            // 添加索引以提高查询性能
+            entity.HasIndex(sl => sl.Timestamp).HasDatabaseName("IX_SystemLogs_Timestamp");
+            entity.HasIndex(sl => sl.Level).HasDatabaseName("IX_SystemLogs_Level");
+            entity.HasIndex(sl => sl.LoggerName).HasDatabaseName("IX_SystemLogs_LoggerName");
+            entity.HasIndex(sl => sl.UserId).HasDatabaseName("IX_SystemLogs_UserId");
+            entity.HasIndex(sl => new { sl.Timestamp, sl.Level }).HasDatabaseName("IX_SystemLogs_Timestamp_Level");
         }
 
         // ConfigureCompatibilityNotes方法已删除 - HerbCompatibilityNote实体不再存在
