@@ -75,30 +75,6 @@ namespace LYBT.Shared.Models.Contracts.Formula
         public int Count { get; set; }
     }
 
-    /// <summary>
-    /// 验方搜索DTO
-    /// </summary>
-    public class FormulaSearchDto : PagedQueryBaseDto
-    {
-
-        [DisplayName("验方名称")]
-        public string? Name { get; set; }
-
-        [DisplayName("功效关键词")]
-        public string? Effect { get; set; }
-
-        [DisplayName("验方类型")]
-        public string? Type { get; set; }
-
-        [DisplayName("包含药材")]
-        public List<Guid>? HerbIds { get; set; }
-
-        [DisplayName("症状关键词")]
-        public string? Symptoms { get; set; }
-
-        [DisplayName("创建者")]
-        public Guid? CreatedBy { get; set; }
-    }
 
     /// <summary>
     /// 验方复制结果DTO

@@ -220,11 +220,71 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
     }
 
     /// <summary>
-    /// 医疗案例查询DTO - 继承完整分页查询DTO，提供分页、时间范围、关键词搜索功能
+    /// 医疗案例查询DTO - 基础查询条件
     /// </summary>
-    public class MedicalCaseQueryDto : ExtendedQueryDto
+    public class MedicalCaseQueryDto : PagedQueryBaseDto
     {
+        /// <summary>患者ID</summary>
+        [DisplayName("患者ID")]
+        public Guid? PatientId { get; set; }
 
+        /// <summary>医生ID</summary>
+        [DisplayName("医生ID")]
+        public Guid? DoctorId { get; set; }
+
+        /// <summary>案例状态</summary>
+        [DisplayName("案例状态")]
+        public MedicalCaseStatus? CaseStatus { get; set; }
+
+        /// <summary>关键词搜索</summary>
+        [DisplayName("关键词")]
+        public new string? Keyword { get; set; }
+    }
+
+    /// <summary>
+    /// 医疗案例搜索DTO - 高级搜索条件
+    /// </summary>
+    public class MedicalCaseSearchDto : MedicalCaseQueryDto
+    {
+        /// <summary>诊断关键词</summary>
+        [DisplayName("诊断关键词")]
+        public string? DiagnosisKeyword { get; set; }
+
+        /// <summary>开始日期</summary>
+        [DisplayName("开始日期")]
+        public DateTime? StartDate { get; set; }
+
+        /// <summary>结束日期</summary>
+        [DisplayName("结束日期")]
+        public DateTime? EndDate { get; set; }
+
+        /// <summary>主诉关键词</summary>
+        [DisplayName("主诉")]
+        public string? ChiefComplaint { get; set; }
+
+        /// <summary>挂号ID</summary>
+        [DisplayName("挂号ID")]
+        public Guid? RegistrationId { get; set; }
+
+        /// <summary>是否包含已关闭案例</summary>
+        [DisplayName("包含已关闭")]
+        public bool IncludeClosed { get; set; } = false;
+
+        /// <summary>排序字段</summary>
+        [DisplayName("排序字段")]
+        public string OrderBy { get; set; } = "CreateTime";
+
+        /// <summary>升序排序</summary>
+        [DisplayName("升序排序")]
+        public bool IsAscending { get; set; } = false;
+    }
+
+    /// <summary>
+    /// 医疗案例分页查询DTO - 兼容旧代码（已废弃，使用MedicalCaseSearchDto替代）
+    /// </summary>
+    [Obsolete("请使用MedicalCaseSearchDto替代")]
+    public class MedicalCasePagedQueryDto : ExtendedQueryDto
+    {
         [DisplayName("患者ID")]
         public Guid? PatientId { get; set; }
 
@@ -460,11 +520,11 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
     }
 
     /// <summary>
-    /// 医案高级搜索DTO
+    /// 医案高级搜索DTO - 兼容旧代码（已废弃，使用MedicalCaseSearchDto替代）
     /// </summary>
+    [Obsolete("请使用MedicalCaseSearchDto替代")]
     public class MedicalCaseAdvancedSearchDto : PagedQueryBaseDto
     {
-
         [DisplayName("患者ID")]
         public Guid? PatientId { get; set; }
 

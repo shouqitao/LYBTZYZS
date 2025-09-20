@@ -7,12 +7,83 @@ namespace LYBT.Shared.Models.Contracts.Patients
 {
 
     /// <summary>
-    /// 患者分页查询DTO - 继承完整查询基类 + 编码接口
-    /// 用于患者档案的分页查询和筛选
+    /// 患者查询DTO - 基础查询条件
     /// </summary>
+    public class PatientQueryDto : PagedQueryBaseDto, ICodeable
+    {
+        /// <summary>姓名</summary>
+        [DisplayName("姓名")]
+        public string? Name { get; set; }
+
+        /// <summary>手机号</summary>
+        [DisplayName("手机号")]
+        public string? PhoneNumber { get; set; }
+
+        /// <summary>性别</summary>
+        [DisplayName("性别")]
+        public Gender? Gender { get; set; }
+
+        /// <summary>拼音码</summary>
+        [DisplayName("拼音码")]
+        public string? PinYinCode { get; set; }
+
+        /// <summary>五笔码</summary>
+        [DisplayName("五笔码")]
+        public string? WuBiCode { get; set; }
+
+        /// <summary>关键词搜索</summary>
+        [DisplayName("关键词")]
+        public new string? Keyword { get; set; }
+    }
+
+    /// <summary>
+    /// 患者搜索DTO - 高级搜索条件（实际使用的主要DTO）
+    /// </summary>
+    public class PatientSearchDto : PatientQueryDto
+    {
+        /// <summary>证件号</summary>
+        [DisplayName("证件号")]
+        public string? IDNumber { get; set; }
+
+        /// <summary>年龄范围-最小值</summary>
+        [DisplayName("最小年龄")]
+        public int? MinAge { get; set; }
+
+        /// <summary>年龄范围-最大值</summary>
+        [DisplayName("最大年龄")]
+        public int? MaxAge { get; set; }
+
+        /// <summary>地址关键词</summary>
+        [DisplayName("地址")]
+        public string? Address { get; set; }
+
+        /// <summary>职业关键词</summary>
+        [DisplayName("职业")]
+        public string? Profession { get; set; }
+
+        /// <summary>紧急联系人</summary>
+        [DisplayName("紧急联系人")]
+        public string? EmergencyContact { get; set; }
+
+        /// <summary>创建日期范围-开始日期</summary>
+        [DisplayName("开始日期")]
+        public DateTime? StartDate { get; set; }
+
+        /// <summary>创建日期范围-结束日期</summary>
+        [DisplayName("结束日期")]
+        public DateTime? EndDate { get; set; }
+
+        /// <summary>是否包含已禁用项</summary>
+        [DisplayName("包含已禁用")]
+        public bool IncludeInactive { get; set; } = false;
+    }
+
+    /// <summary>
+    /// 患者分页查询DTO - 兼容旧代码（已废弃，使用PatientSearchDto替代）
+    /// </summary>
+    [Obsolete("请使用PatientSearchDto替代")]
     public class PatientPagedQueryDto : ExtendedQueryDto, ICodeable
     {
-
         /// <summary>姓名关键词</summary>
         [DisplayName("姓名关键词")]
         public string? Name { get; set; }
@@ -242,14 +313,6 @@ namespace LYBT.Shared.Models.Contracts.Patients
         public decimal AverageCost { get; set; }
     }
 
-    /// <summary>
-    /// 患者搜索DTO - 别名支持
-    /// 为向后兼容而创建的别名，实际使用PatientPagedQueryDto
-    /// </summary>
-    public class PatientSearchDto : PatientPagedQueryDto
-    {
-        // 继承所有PatientPagedQueryDto功能，提供别名支持
-    }
 
     /// <summary>
     /// 患者搜索结果DTO

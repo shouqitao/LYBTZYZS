@@ -330,20 +330,71 @@ namespace LYBT.Shared.Models.Contracts.Formula
     }
 
     /// <summary>
-    /// 验方分页查询DTO - 别名支持
-    /// 为向后兼容而创建的别名，实际使用FormulaQueryDto
+    /// 验方查询DTO - 基础查询条件
     /// </summary>
-    public class FormulaPagedQueryDto : FormulaQueryDto
+    public class FormulaQueryDto : PagedQueryBaseDto
     {
-        // 继承所有FormulaQueryDto功能，提供别名支持
+        /// <summary>验方名称</summary>
+        [DisplayName("验方名称")]
+        public string? Name { get; set; }
+
+        /// <summary>功效关键词</summary>
+        [DisplayName("功效")]
+        public string? Effect { get; set; }
+
+        /// <summary>是否共享</summary>
+        [DisplayName("是否共享")]
+        public bool? IsShared { get; set; }
+
+        /// <summary>关键词搜索</summary>
+        [DisplayName("关键词")]
+        public new string? Keyword { get; set; }
+
+        /// <summary>状态（兼容旧代码）</summary>
+        [DisplayName("状态")]
+        public CommonStatus? Status { get; set; }
     }
 
     /// <summary>
-    /// 验方查询DTO - 继承完整分页查询DTO，提供分页、时间范围、关键词搜索功能
+    /// 验方搜索DTO - 高级搜索条件
     /// </summary>
-    public class FormulaQueryDto : ExtendedQueryDto
+    public class FormulaSearchDto : FormulaQueryDto
     {
+        /// <summary>创建者ID</summary>
+        [DisplayName("创建者ID")]
+        public Guid? CreatedById { get; set; }
 
+        /// <summary>主治症状</summary>
+        [DisplayName("主治症状")]
+        public string? Indications { get; set; }
+
+        /// <summary>来源</summary>
+        [DisplayName("来源")]
+        public string? Source { get; set; }
+
+        /// <summary>创建日期范围-开始日期</summary>
+        [DisplayName("开始日期")]
+        public DateTime? StartDate { get; set; }
+
+        /// <summary>创建日期范围-结束日期</summary>
+        [DisplayName("结束日期")]
+        public DateTime? EndDate { get; set; }
+
+        /// <summary>排序字段</summary>
+        [DisplayName("排序字段")]
+        public string OrderBy { get; set; } = "CreateTime";
+
+        /// <summary>升序排序</summary>
+        [DisplayName("升序排序")]
+        public bool IsAscending { get; set; } = false;
+    }
+
+    /// <summary>
+    /// 验方分页查询DTO - 兼容旧代码（已废弃，使用FormulaSearchDto替代）
+    /// </summary>
+    [Obsolete("请使用FormulaSearchDto替代")]
+    public class FormulaPagedQueryDto : ExtendedQueryDto
+    {
         [DisplayName("验方名称")]
         public string? Name { get; set; }
 
@@ -361,8 +412,6 @@ namespace LYBT.Shared.Models.Contracts.Formula
 
         [DisplayName("升序排序")]
         public bool IsAscending { get; set; } = false;
-
-        // UltraThink兼容性别名 - 确保架构统一
 
         /// <summary>页码兼容性别名</summary>
         public int Page { get => PageIndex; set => PageIndex = value; }

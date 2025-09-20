@@ -238,12 +238,75 @@ namespace LYBT.Shared.Models.Contracts.Herbs
     }
 
     /// <summary>
-    /// 中药材分页查询DTO - 继承完整查询基类
-    /// 用于中药材档案的分页查询和筛选
+    /// 中药材查询DTO - 基础查询条件
     /// </summary>
+    public class HerbQueryDto : PagedQueryBaseDto, ICodeable
+    {
+        /// <summary>药材名称</summary>
+        [DisplayName("药材名称")]
+        public string? Name { get; set; }
+
+        /// <summary>产地</summary>
+        [DisplayName("产地")]
+        public string? Origin { get; set; }
+
+        /// <summary>拼音码</summary>
+        [DisplayName("拼音码")]
+        public string? PinYinCode { get; set; }
+
+        /// <summary>五笔码</summary>
+        [DisplayName("五笔码")]
+        public string? WuBiCode { get; set; }
+
+        /// <summary>关键词搜索</summary>
+        [DisplayName("关键词")]
+        public new string? Keyword { get; set; }
+    }
+
+    /// <summary>
+    /// 中药材搜索DTO - 高级搜索条件
+    /// </summary>
+    public class HerbSearchDto : HerbQueryDto
+    {
+        /// <summary>规格</summary>
+        [DisplayName("规格")]
+        public string? Spec { get; set; }
+
+        /// <summary>最小单价</summary>
+        [DisplayName("最小单价")]
+        public decimal? MinPrice { get; set; }
+
+        /// <summary>最大单价</summary>
+        [DisplayName("最大单价")]
+        public decimal? MaxPrice { get; set; }
+
+        /// <summary>功效关键词</summary>
+        [DisplayName("功效")]
+        public string? Effect { get; set; }
+
+        /// <summary>批号</summary>
+        [DisplayName("批号")]
+        public string? BatchNo { get; set; }
+
+        /// <summary>库存范围-最小值</summary>
+        [DisplayName("最小库存")]
+        public int? MinStock { get; set; }
+
+        /// <summary>库存范围-最大值</summary>
+        [DisplayName("最大库存")]
+        public int? MaxStock { get; set; }
+
+        /// <summary>是否包含过期药材</summary>
+        [DisplayName("包含过期")]
+        public bool IncludeExpired { get; set; } = false;
+    }
+
+    /// <summary>
+    /// 中药材分页查询DTO - 兼容旧代码（已废弃，使用HerbSearchDto替代）
+    /// </summary>
+    [Obsolete("请使用HerbSearchDto替代")]
     public class HerbPagedQueryDto : ExtendedQueryDto, ICodeable
     {
-
         /// <summary>药材名称关键词</summary>
         [DisplayName("药材名称")]
         public string? Name { get; set; }
@@ -273,8 +336,6 @@ namespace LYBT.Shared.Models.Contracts.Herbs
         /// <summary>最大单价</summary>
         [DisplayName("最大单价")]
         public decimal? MaxPrice { get; set; }
-
-        // UltraThink兼容性别名 - 确保架构统一
 
         /// <summary>页码兼容性别名</summary>
         public int Page { get => PageIndex; set => PageIndex = value; }

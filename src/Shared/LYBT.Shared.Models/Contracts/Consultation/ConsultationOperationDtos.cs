@@ -114,12 +114,63 @@ namespace LYBT.Shared.Models.Contracts.Consultation
     }
 
     /// <summary>
-    /// 看诊分页查询DTO - 继承完整查询基类
-    /// 用于看诊记录的分页查询和筛选
+    /// 看诊查询DTO - 基础查询条件
     /// </summary>
+    public class ConsultationQueryDto : PagedQueryBaseDto
+    {
+        /// <summary>患者ID</summary>
+        [DisplayName("患者ID")]
+        public Guid? PatientId { get; set; }
+
+        /// <summary>医生ID</summary>
+        [DisplayName("医生ID")]
+        public Guid? DoctorId { get; set; }
+
+        /// <summary>看诊状态</summary>
+        [DisplayName("看诊状态")]
+        public ConsultationStatus? ConsultationStatus { get; set; }
+
+        /// <summary>关键词搜索</summary>
+        [DisplayName("关键词")]
+        public new string? Keyword { get; set; }
+    }
+
+    /// <summary>
+    /// 看诊搜索DTO - 高级搜索条件
+    /// </summary>
+    public class ConsultationSearchDto : ConsultationQueryDto
+    {
+        /// <summary>患者姓名关键词</summary>
+        [DisplayName("患者姓名")]
+        public string? PatientName { get; set; }
+
+        /// <summary>医生姓名关键词</summary>
+        [DisplayName("医生姓名")]
+        public string? DoctorName { get; set; }
+
+        /// <summary>诊断关键词</summary>
+        [DisplayName("诊断关键词")]
+        public string? Diagnosis { get; set; }
+
+        /// <summary>看诊类型筛选</summary>
+        [DisplayName("看诊类型")]
+        public string? ConsultationType { get; set; }
+
+        /// <summary>是否包含已完成的看诊</summary>
+        [DisplayName("包含已完成")]
+        public bool IncludeCompleted { get; set; } = true;
+
+        /// <summary>是否包含取消的看诊</summary>
+        [DisplayName("包含已取消")]
+        public bool IncludeCancelled { get; set; } = false;
+    }
+
+    /// <summary>
+    /// 看诊分页查询DTO - 兼容旧代码（已废弃，使用ConsultationSearchDto替代）
+    /// </summary>
+    [Obsolete("请使用ConsultationSearchDto替代")]
     public class ConsultationPagedQueryDto : ExtendedQueryDto
     {
-
         /// <summary>患者姓名关键词</summary>
         [DisplayName("患者姓名")]
         public string? PatientName { get; set; }
@@ -274,11 +325,10 @@ namespace LYBT.Shared.Models.Contracts.Consultation
     }
 
     /// <summary>
-    /// 看诊历史查询DTO
+    /// 看诊历史查询DTO - 患者看诊历史查询
     /// </summary>
     public class ConsultationHistoryQueryDto
     {
-
         /// <summary>患者ID</summary>
         [Required(ErrorMessage = "患者ID不能为空")]
         public Guid PatientId { get; set; }
