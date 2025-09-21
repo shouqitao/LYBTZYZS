@@ -203,7 +203,7 @@ namespace LYBT.Infrastructure.Data
             var entity = modelBuilder.Entity<MedicalCase>();
             entity.ToTable("MedicalCases");
             entity.HasKey(m => m.Id);
-            entity.Property(m => m.Status).HasConversion<string>();
+            entity.Property(m => m.Status).HasConversion<int>();
             entity.Property(m => m.Remark).HasMaxLength(500);
             entity.HasIndex(m => m.PatientId);
             entity.HasIndex(m => m.DoctorId);
@@ -218,11 +218,11 @@ namespace LYBT.Infrastructure.Data
             entity.Property(m => m.CreatedAt).IsRequired();
 
             // 根据文档要求：单患者仅一条未完成病案 - 过滤唯一索引
-            // Status枚举值：Active=1, Completed=2, Cancelled=3
+            // Status枚举值：Active=10, Closed=20
             entity.HasIndex(m => m.PatientId)
                   .HasDatabaseName("UX_MedicalCases_Patient_ActiveOnly")
                   .IsUnique()
-                  .HasFilter("[Status] = 'Active' OR [Status] = 'Draft'");
+                  .HasFilter("[Status] = 10");
 
             // 删除PrescriptionId外键关系，改为通过Prescription.MedicalCaseId关联
             // 不再需要下面这行
@@ -280,6 +280,9 @@ namespace LYBT.Infrastructure.Data
 
             // 根据文档要求：折扣精度为(3,2)，例如0.80表示八折
             prescriptionEntity.Property(p => p.Discount).HasPrecision(3, 2);
+
+            // 配置Status枚举字段
+            prescriptionEntity.Property(p => p.Status).HasConversion<int>();
 
             // 根据文档要求：一病案至多一处方 - 唯一索引
             prescriptionEntity.HasIndex(p => p.MedicalCaseId)
