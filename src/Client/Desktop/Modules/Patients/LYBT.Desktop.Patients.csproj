@@ -7,9 +7,6 @@
     <UseWPF>true</UseWPF>
     <ImplicitUsings>enable</ImplicitUsings>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-    <WarningsAsErrors />
-    
     <!-- Assembly Information -->
     <AssemblyTitle>LYBT.Desktop.Patients</AssemblyTitle>
     <AssemblyDescription>凌隐宝堂中医诊所系统 - 患者管理模块 | 患者档案管理 | 就诊历史跟踪</AssemblyDescription>

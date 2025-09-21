@@ -7,9 +7,6 @@
     <UseWPF>true</UseWPF>
     <ImplicitUsings>enable</ImplicitUsings>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-    <WarningsAsErrors />
-    
     <!-- Assembly Information -->
     <AssemblyTitle>LYBT.Desktop.Workbench.Core</AssemblyTitle>
     <AssemblyDescription>凌隐宝堂中医诊所系统 - 工作台核心框架 | 导航路由系统 | 角色工作台基础</AssemblyDescription>

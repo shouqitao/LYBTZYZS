@@ -7,9 +7,6 @@
     <UseWPF>true</UseWPF>
     <ImplicitUsings>enable</ImplicitUsings>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-    <WarningsAsErrors />
-    
     <!-- Assembly Information -->
     <AssemblyTitle>LYBT.Desktop.Consultation</AssemblyTitle>
     <AssemblyDescription>凌隐宝堂中医诊所系统 - 看诊诊断模块 | 中医四诊 | 辨证论治</AssemblyDescription>
