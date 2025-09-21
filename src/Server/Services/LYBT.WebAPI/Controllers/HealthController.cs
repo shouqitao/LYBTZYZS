@@ -1,5 +1,6 @@
 using System.Reflection;
 using Asp.Versioning;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
@@ -14,6 +15,7 @@ namespace LYBT.WebAPI.Controllers;
 [ApiController]
 [ApiVersion("1")]
 [Route("api/v{version:apiVersion}/health")]
+[Authorize]  // 默认需要认证，公开端点使用 AllowAnonymous 覆盖
 public class HealthController : BaseApiController
 {
     private readonly AppDbContext _dbContext;
@@ -29,6 +31,7 @@ public class HealthController : BaseApiController
     /// </summary>
     /// <returns>健康状态</returns>
     [HttpGet]
+    [AllowAnonymous]  // 基础健康检查允许匿名访问
     public IActionResult Get()
     {
         return Ok(new
@@ -45,6 +48,7 @@ public class HealthController : BaseApiController
     /// </summary>
     /// <returns>Pong响应</returns>
     [HttpGet("ping")]
+    [AllowAnonymous]  // Ping端点允许匿名访问
     public IActionResult Ping()
     {
         return Ok(new
@@ -59,6 +63,7 @@ public class HealthController : BaseApiController
     /// </summary>
     /// <returns>详细的系统健康状态</returns>
     [HttpGet("details")]
+    [Authorize]  // 详细健康检查需要认证
     public async Task<IActionResult> GetDetailedHealth()
     {
         var startTime = DateTime.UtcNow;

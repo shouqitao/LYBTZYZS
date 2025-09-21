@@ -220,6 +220,27 @@ public static class UnifiedServiceRegistration
             throw new InvalidOperationException("配置 JWT 认证失败", ex);
         }
 
+        // 配置授权策略
+        services.AddAuthorization(options =>
+        {
+            // 设置全局回退策略 - 要求所有用户必须认证
+            options.FallbackPolicy = new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder()
+                .RequireAuthenticatedUser()
+                .Build();
+
+            // 定义基于角色的策略
+            options.AddPolicy("AdminOnly", policy =>
+                policy.RequireAuthenticatedUser()
+                      .RequireRole("Admin"));
+
+            options.AddPolicy("DoctorOrAdmin", policy =>
+                policy.RequireAuthenticatedUser()
+                      .RequireRole("Doctor", "Admin"));
+
+            options.AddPolicy("RequireAuthenticated", policy =>
+                policy.RequireAuthenticatedUser());
+        });
+
         return services;
     }
 
