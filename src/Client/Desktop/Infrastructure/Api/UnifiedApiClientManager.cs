@@ -2,6 +2,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using LYBT.Shared.Interfaces.Api;
+using LYBT.Shared.Utilities.Constants;
 using Microsoft.Extensions.Logging;
 using Refit;
 
@@ -166,7 +167,7 @@ public class UnifiedApiClientManager(HttpClient httpClient, ILogger<UnifiedApiCl
     {
         try
         {
-            using var response = await _httpClient.GetAsync("api/v1/health").ConfigureAwait(false);
+            using var response = await _httpClient.GetAsync(ApiRoutes.Health.Check).ConfigureAwait(false);
             var isHealthy = response.IsSuccessStatusCode;
 
             _logger.LogInformation(
