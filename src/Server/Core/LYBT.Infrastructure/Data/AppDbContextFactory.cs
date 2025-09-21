@@ -23,7 +23,7 @@ namespace LYBT.Infrastructure.Data
 
             var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
             var connectionString = configuration.GetConnectionString("DefaultConnection")
-                                  ?? "Server=192.168.190.243;Database=LYBTDB;User Id=sa;Password=Shou@850528;TrustServerCertificate=true;";
+                                  ?? throw new InvalidOperationException("DefaultConnection not found in configuration. Please configure connection string via user secrets or environment variables.");
 
             optionsBuilder.UseSqlServer(connectionString, options =>
             {

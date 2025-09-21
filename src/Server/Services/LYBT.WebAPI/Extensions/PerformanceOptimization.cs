@@ -91,9 +91,11 @@ public static class PerformanceOptimization
                 gracePeriod: TimeSpan.FromSeconds(5));
         });
 
-        // 5. 线程池优化
-        var minWorkerThreads = configuration.GetValue<int>("Performance:MinWorkerThreads", 50);
-        var minIoThreads = configuration.GetValue<int>("Performance:MinIoThreads", 50);
+        // 5. 线程池优化 - P3配置直读统一：使用IOptions<WebApiConfigurationOptions>
+        // 注意：此处为了保持向后兼容，暂时保留直接配置读取
+        // 后续应迁移到通过构造函数注入IOptions<WebApiConfigurationOptions>
+        var minWorkerThreads = configuration.GetValue<int>("WebApiOptions:Performance:MinWorkerThreads", 50);
+        var minIoThreads = configuration.GetValue<int>("WebApiOptions:Performance:MinIoThreads", 50);
         ThreadPool.SetMinThreads(minWorkerThreads, minIoThreads);
 
         // 6. 添加健康检查增强

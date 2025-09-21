@@ -2,11 +2,12 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 
-namespace LYBT.Shared.Utilities.Extensions.Application
+namespace LYBT.WebAPI.Extensions.Application
 {
     /// <summary>
-    /// 中间件配置扩展方法
+    /// 中间件配置扩展方法 - 已废弃，请使用UnifiedMiddlewareConfiguration
     /// </summary>
+    [Obsolete("已废弃：请使用UnifiedMiddlewareConfiguration进行中间件配置。此类将在下个版本移除。", false)]
     public static class MiddlewareConfigurationExtensions
     {
         /// <summary>

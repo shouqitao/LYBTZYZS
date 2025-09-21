@@ -5,8 +5,9 @@
   <PropertyGroup>
     <!-- 所有构建产物统一输出到解决方案根目录的 BIN 文件夹 -->
     <BaseOutputPath>$(MSBuildThisFileDirectory)BIN\</BaseOutputPath>
-    <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory)BIN\obj\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
-    
+    <!-- 恢复默认中间输出路径 -->
+    <!-- <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory)BIN\obj\$(MSBuildProjectName)\</BaseIntermediateOutputPath> -->
+
     <!-- 确保输出目录存在 -->
     <CreateOutputPath>true</CreateOutputPath>
   </PropertyGroup>
@@ -14,15 +15,17 @@
   <!-- 统一编译配置 -->
   <PropertyGroup>
     <!-- 统一编译器设置 -->
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <!-- CI 环境告警即错误，本地保持宽松 -->
+    <TreatWarningsAsErrors Condition="'$(CI)' == 'true'">true</TreatWarningsAsErrors>
+    <TreatWarningsAsErrors Condition="'$(CI)' != 'true'">false</TreatWarningsAsErrors>
     <WarningsAsErrors />
     <WarningsNotAsErrors />
-    
+
     <!-- 优化设置 -->
     <Optimize Condition="'$(Configuration)' == 'Release'">true</Optimize>
     <DebugType Condition="'$(Configuration)' == 'Release'">portable</DebugType>
     <DebugSymbols Condition="'$(Configuration)' == 'Release'">true</DebugSymbols>
-    
+
     <!-- 防止 AssemblyInfo 重复生成 - 保留自动生成，清理手动文件 -->
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
   </PropertyGroup>

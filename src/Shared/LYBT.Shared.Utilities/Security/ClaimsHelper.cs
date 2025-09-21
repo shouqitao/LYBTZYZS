@@ -1,4 +1,3 @@
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
 namespace LYBT.Shared.Utilities.Security
@@ -26,12 +25,10 @@ namespace LYBT.Shared.Utilities.Security
             {
                 new(ClaimTypes.NameIdentifier, userId),
                 new(ClaimTypes.Name, username),
-                new(JwtRegisteredClaimNames.Sub, userId),
-                new(JwtRegisteredClaimNames.UniqueName, username),
-                new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new(JwtRegisteredClaimNames.Iat,
-                    new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds().ToString(),
-                    ClaimValueTypes.Integer64)
+                new("sub", userId),
+                new("unique_name", username),
+                new("jti", Guid.NewGuid().ToString()),
+                new("iat", new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64)
             };
 
             // 规范化并添加角色Claim
@@ -61,7 +58,7 @@ namespace LYBT.Shared.Utilities.Security
                 return null;
 
             return principal.FindFirst(ClaimTypes.NameIdentifier)?.Value ??
-                   principal.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+                   principal.FindFirst("sub")?.Value;
         }
 
         /// <summary>
@@ -75,7 +72,7 @@ namespace LYBT.Shared.Utilities.Security
                 return null;
 
             return principal.FindFirst(ClaimTypes.Name)?.Value ??
-                   principal.FindFirst(JwtRegisteredClaimNames.UniqueName)?.Value;
+                   principal.FindFirst("unique_name")?.Value;
         }
 
         /// <summary>

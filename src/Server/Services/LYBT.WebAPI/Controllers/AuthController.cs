@@ -3,6 +3,7 @@ using LYBT.Infrastructure.Web;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Auth;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace LYBT.WebAPI.Controllers
@@ -34,6 +35,7 @@ namespace LYBT.WebAPI.Controllers
         /// <param name="request">登录请求</param>
         /// <returns>登录响应，包含JWT Token</returns>
         [HttpPost("login")]
+        [EnableRateLimiting("Login")]
         public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<LoginResponse>>> LoginAsync([FromBody] LoginRequest request)
         {
             try

@@ -1,99 +1,151 @@
+using LYBT.Infrastructure.Configuration.Options;
+using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Options;
+
 namespace LYBT.WebAPI.Extensions;
 
 /// <summary>
-/// 统一中间件配置管理 - UltraThink中间件配置系统
-/// 将所有中间件配置逻辑统一管理，确保正确的执行顺序
+/// 统一中间件配置（UltraThink 中间件装配体系）
+/// 将应用中间件装配逻辑统一在此，保证顺序正确、行为一致。
 /// </summary>
 public static class UnifiedMiddlewareConfiguration
 {
-
     /// <summary>
-    /// 配置所有应用中间件（统一入口）
+    /// 配置应用中间件（统一入口）
     /// </summary>
     public static WebApplication ConfigureAllMiddleware(this WebApplication app)
     {
-        // 1. 开发环境专用中间件
+        // 1. 开发/生产专用中间件
         app.ConfigureDevelopmentMiddleware();
 
-        // 2. 路由中间件 - 提升到顶层统一调用
+        // 1.1 安全响应头（按配置应用）
+        app.ConfigureSecurityHeadersFromOptions();
+
+        // 2. 路由中间件
         app.UseRouting();
 
-        // 3. API文档中间件
+        // 2.1 速率限制（全局）
+        app.UseRateLimiter();
+
+        // 2.2 性能优化（压缩/响应缓存/输出缓存）
+        app.UsePerformanceOptimizations();
+
+        // 3. API 文档中间件（仅非生产）
         app.ConfigureSwaggerMiddleware();
 
-        // 4. 认证和授权中间件（不再包含UseRouting）
+        // 4. 认证与授权（置于路由之后）
         app.ConfigureAuthenticationMiddleware();
 
-        // 5. 端点映射
+        // 5. 终端映射
         app.ConfigureEndpointMapping();
 
         return app;
     }
 
     /// <summary>
-    /// 配置开发环境专用中间件
+    /// 配置开发/生产专用中间件
     /// </summary>
     private static WebApplication ConfigureDevelopmentMiddleware(this WebApplication app)
     {
         if (app.Environment.IsDevelopment())
         {
-            // 开发环境异常页面
+            // 开发异常页
             app.UseDeveloperExceptionPage();
         }
         else
         {
-            // 生产环境HTTPS重定向和安全头
+            // 生产启用 HTTPS 重定向与 HSTS
             app.UseHttpsRedirection();
             app.UseHsts();
         }
 
-        // Epic 05-P0-02 修复：启用全局异常处理器
+        // 统一全局异常处理（ProblemDetails）
         app.UseExceptionHandler();
+        return app;
+    }
+
+    /// <summary>
+    /// 配置 Swagger API 文档
+    /// </summary>
+    private static WebApplication ConfigureSwaggerMiddleware(this WebApplication app)
+    {
+        // 仅在非生产环境启用 Swagger
+        if (!app.Environment.IsProduction())
+        {
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "凌隐宝堂中医诊所 API v1");
+                c.RoutePrefix = "swagger";
+                c.DocExpansion(Swashbuckle.AspNetCore.SwaggerUI.DocExpansion.List);
+            });
+        }
 
         return app;
     }
 
     /// <summary>
-    /// 配置Swagger API文档中间件
+    /// 配置认证与授权中间件
     /// </summary>
-    private static WebApplication ConfigureSwaggerMiddleware(this WebApplication app)
+    private static WebApplication ConfigureAuthenticationMiddleware(this WebApplication app)
     {
-        // 启用Swagger（优先级最高）
-        app.UseSwagger();
-        app.UseSwaggerUI(c =>
+        // 认证 + 授权
+        app.UseAuthentication();
+        app.UseAuthorization();
+        return app;
+    }
+
+    /// <summary>
+    /// 配置终端映射
+    /// </summary>
+    private static WebApplication ConfigureEndpointMapping(this WebApplication app)
+    {
+        // 常规控制器路由
+        app.MapControllers();
+        return app;
+    }
+}
+
+/// <summary>
+/// 安全响应头：按配置应用 CSP/Frame/Referrer/CTO/Permissions-Policy 等
+/// </summary>
+internal static class SecurityHeadersMiddleware
+{
+    public static WebApplication ConfigureSecurityHeadersFromOptions(this WebApplication app)
+    {
+        var options = app.Services.GetService<IOptions<SecurityOptions>>()?.Value;
+        if (options == null)
         {
-            c.SwaggerEndpoint("/swagger/v1/swagger.json", "LYBT API v1");
-            c.RoutePrefix = "swagger";
-            c.DocExpansion(Swashbuckle.AspNetCore.SwaggerUI.DocExpansion.List);
+            return app;
+        }
+
+        var headers = options.SecurityHeaders;
+        app.Use(async (context, next) =>
+        {
+            if (!string.IsNullOrWhiteSpace(headers.ContentSecurityPolicy))
+            {
+                context.Response.Headers["Content-Security-Policy"] = headers.ContentSecurityPolicy;
+            }
+            if (!string.IsNullOrWhiteSpace(headers.XFrameOptions))
+            {
+                context.Response.Headers["X-Frame-Options"] = headers.XFrameOptions;
+            }
+            if (!string.IsNullOrWhiteSpace(headers.XContentTypeOptions))
+            {
+                context.Response.Headers["X-Content-Type-Options"] = headers.XContentTypeOptions;
+            }
+            if (!string.IsNullOrWhiteSpace(headers.ReferrerPolicy))
+            {
+                context.Response.Headers["Referrer-Policy"] = headers.ReferrerPolicy;
+            }
+            if (!string.IsNullOrWhiteSpace(headers.PermissionsPolicy))
+            {
+                context.Response.Headers["Permissions-Policy"] = headers.PermissionsPolicy;
+            }
+            await next();
         });
 
         return app;
     }
-
-    /// <summary>
-    /// 配置认证和授权中间件
-    /// </summary>
-    private static WebApplication ConfigureAuthenticationMiddleware(this WebApplication app)
-    {
-        // UseRouting已在ConfigureAllMiddleware顶层调用
-
-        // CORS已移除：WPF+WebAPI架构无需跨域支持
-
-        // 认证和授权
-        app.UseAuthentication();
-        app.UseAuthorization();
-
-        return app;
-    }
-
-    /// <summary>
-    /// 配置端点映射
-    /// </summary>
-    private static WebApplication ConfigureEndpointMapping(this WebApplication app)
-    {
-        // 控制器端点映射
-        app.MapControllers();
-
-        return app;
-    }
 }
+

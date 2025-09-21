@@ -92,6 +92,8 @@
 
 ## 🏗️ 项目结构 (48个项目)
 
+明确项目结构：`src/Server`、`src/Client/Desktop`、`src/Shared`、`tests`、`docs`、`scripts`；构建产物统一输出 `BIN/`。
+
 ```
 LYBTZYZS/
 ├── 📁 解决方案文件 (3个)

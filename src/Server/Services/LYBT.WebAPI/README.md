@@ -238,8 +238,7 @@ public class ExampleController : BaseApiController
 - **Token安全**: HMAC-SHA256签名 + 8小时过期 (Remember Me: 30天)
 - **API安全**: 所有敏感端点强制JWT认证
 - **SQL注入防护**: 全部使用LINQ + EF Core参数化查询
-- **CORS配置**: 生产环境严格CORS策略
-- **Rate Limiting**: API调用频率限制 (计划实现)
+- **Rate Limiting**: API调用频率限制（已实现）
 
 ## 📊 健康监控体系
 
@@ -327,8 +326,7 @@ public class HealthController : BaseSystemController
       "LYBT": "Debug"
     }
   },
-  "AllowedHosts": "*",
-  "CorsOrigins": ["http://localhost:3000", "https://localhost:3001"]
+  "AllowedHosts": "*"
 }
 
 // appsettings.Production.json - 生产环境
@@ -702,8 +700,6 @@ services.AddApiVersioning(opt =>
 public class ExampleController : BaseApiController
 ```
 
-### ~~CORS配置增强~~ - REMOVED (系统不需要跨域功能)
-~~`services.AddCors()` 相关配置已移除，系统已简化为无跨域需求架构。~~
 
 ## 🎯 UltraThink质量标准
 

@@ -2,7 +2,6 @@ using System.ComponentModel;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
-using Microsoft.AspNetCore.Identity;
 
 namespace LYBT.Shared.Utilities.Helpers
 {
@@ -75,7 +74,9 @@ namespace LYBT.Shared.Utilities.Helpers
     [Description("密码工具类")]
     public static partial class PasswordHelper
     {
-        private static readonly PasswordHasher<object> _hasher = new();
+        private const int SaltSize = 32; // 256 bits
+        private const int KeySize = 64;  // 512 bits
+        private const int Iterations = 100_000;
 
         // 常见弱密码列表（23个）
         private static readonly HashSet<string> WeakPasswords = new(StringComparer.OrdinalIgnoreCase)
@@ -93,14 +94,31 @@ namespace LYBT.Shared.Utilities.Helpers
 
         /// <summary>
         /// 对明文密码进行哈希
-        /// 使用 ASP.NET Core Identity 的 PBKDF2 算法
+        /// 使用 PBKDF2 算法
         /// </summary>
         /// <param name="password">明文密码</param>
         /// <returns>哈希后的密码</returns>
         public static string Hash(string password)
         {
             ArgumentException.ThrowIfNullOrEmpty(password);
-            return _hasher.HashPassword(null!, password);
+
+            // 生成随机盐
+            var salt = RandomNumberGenerator.GetBytes(SaltSize);
+
+            // 使用PBKDF2进行密码散列
+            var hash = Rfc2898DeriveBytes.Pbkdf2(
+                Encoding.UTF8.GetBytes(password),
+                salt,
+                Iterations,
+                HashAlgorithmName.SHA256,
+                KeySize);
+
+            // 将盐和哈希值组合并编码为Base64
+            var result = new byte[SaltSize + KeySize];
+            Array.Copy(salt, 0, result, 0, SaltSize);
+            Array.Copy(hash, 0, result, SaltSize, KeySize);
+
+            return Convert.ToBase64String(result);
         }
 
         /// <summary>
@@ -113,10 +131,35 @@ namespace LYBT.Shared.Utilities.Helpers
         {
             ArgumentException.ThrowIfNullOrEmpty(hash);
             ArgumentException.ThrowIfNullOrEmpty(password);
-            
-            var result = _hasher.VerifyHashedPassword(null!, hash, password);
-            return result == PasswordVerificationResult.Success || 
-                   result == PasswordVerificationResult.SuccessRehashNeeded;
+
+            try
+            {
+                // 解码存储的哈希
+                var hashBytes = Convert.FromBase64String(hash);
+
+                // 提取盐
+                var salt = new byte[SaltSize];
+                Array.Copy(hashBytes, 0, salt, 0, SaltSize);
+
+                // 提取存储的哈希值
+                var storedHash = new byte[KeySize];
+                Array.Copy(hashBytes, SaltSize, storedHash, 0, KeySize);
+
+                // 使用相同的盐对输入密码进行哈希
+                var computedHash = Rfc2898DeriveBytes.Pbkdf2(
+                    Encoding.UTF8.GetBytes(password),
+                    salt,
+                    Iterations,
+                    HashAlgorithmName.SHA256,
+                    KeySize);
+
+                // 安全比较哈希值
+                return CryptographicOperations.FixedTimeEquals(computedHash, storedHash);
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         /// <summary>

@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 using System.Security.Claims;
 
-namespace LYBT.Shared.Utilities.Extensions.ServiceCollection
+namespace LYBT.WebAPI.Extensions.ServiceCollection
 {
     /// <summary>
     /// 授权策略相关的扩展方法

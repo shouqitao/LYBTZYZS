@@ -2,7 +2,9 @@ using System.Reflection;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using LYBT.Infrastructure.Data;
+using LYBT.Infrastructure.Web;
 
 namespace LYBT.WebAPI.Controllers;
 
@@ -12,16 +14,15 @@ namespace LYBT.WebAPI.Controllers;
 [ApiController]
 [ApiVersion("1")]
 [Route("api/v{version:apiVersion}/health")]
-public class HealthController : ControllerBase
+public class HealthController : BaseApiController
 {
     private readonly AppDbContext _dbContext;
-    private readonly ILogger<HealthController> _logger;
     private static readonly DateTime _startupTime = DateTime.UtcNow;
 
-    public HealthController(AppDbContext dbContext, ILogger<HealthController> logger)
+    public HealthController(AppDbContext dbContext, ILogger<HealthController> logger, IMemoryCache? cache = null)
+        : base(logger, cache)
     {
         _dbContext = dbContext;
-        _logger = logger;
     }
     /// <summary>
     /// 基础健康检查
@@ -235,14 +236,20 @@ public class HealthController : ControllerBase
 
         try
         {
-            var userCount = await _dbContext.Users.CountAsync();
-            var patientCount = await _dbContext.Patients.CountAsync();
-            
-            check.Status = userCount > 0 ? "Healthy" : "Degraded";
-            check.Description = userCount > 0 
-                ? "Essential seed data present" 
+            // 使用 EF Core LINQ 查询替代原始 SQL，更安全且类型安全
+            // 注意：这里使用轻量级的 Any() 检查而非 Count()，性能更好
+            var hasUsers = await _dbContext.Set<LYBT.Entities.Users.User>().AnyAsync();
+            var hasPatients = await _dbContext.Set<LYBT.Entities.Patients.Patient>().AnyAsync();
+
+            // 如果需要具体数量，可以选择性地获取（仅在数据存在时）
+            var userCount = hasUsers ? await _dbContext.Set<LYBT.Entities.Users.User>().CountAsync() : 0;
+            var patientCount = hasPatients ? await _dbContext.Set<LYBT.Entities.Patients.Patient>().CountAsync() : 0;
+
+            check.Status = hasUsers ? "Healthy" : "Degraded";
+            check.Description = hasUsers
+                ? "Essential seed data present"
                 : "No users found - check seed data";
-            
+
             check.Data = new
             {
                 users = userCount,

@@ -7,7 +7,9 @@ namespace LYBT.WebAPI.Extensions;
 
 /// <summary>
 /// API版本控制配置 - 统一版本管理策略
+/// 注意：UseVersionedSwagger方法已废弃，请使用UnifiedMiddlewareConfiguration中的配置
 /// </summary>
+[Obsolete("已废弃：UseVersionedSwagger方法无条件暴露Swagger，存在安全风险。请使用UnifiedMiddlewareConfiguration进行中间件配置。", false)]
 public static class ApiVersioningConfiguration
 {
     /// <summary>
@@ -109,7 +111,7 @@ public static class ApiVersioningConfiguration
     }
 
     /// <summary>
-    /// 创建API版本信息
+    /// 创建API版本信息 - P3配置直读统一：使用固定值避免配置分散
     /// </summary>
     private static Microsoft.OpenApi.Models.OpenApiInfo CreateInfoForApiVersion(
         ApiVersionDescription description,
@@ -117,24 +119,18 @@ public static class ApiVersioningConfiguration
     {
         var info = new Microsoft.OpenApi.Models.OpenApiInfo
         {
-            Title = configuration["Swagger:Title"] ?? "凌隐宝堂中医诊所诊疗系统 API",
+            Title = "凌隐宝堂中医诊所诊疗系统 API",
             Version = description.ApiVersion.ToString(),
-            Description = configuration["Swagger:Description"] ??
-                "企业级中医诊所管理系统RESTful API接口文档",
+            Description = "企业级中医诊所管理系统RESTful API接口文档",
             Contact = new Microsoft.OpenApi.Models.OpenApiContact
             {
-                Name = configuration["Swagger:ContactName"] ?? "技术支持",
-                Email = configuration["Swagger:ContactEmail"],
-                Url = string.IsNullOrEmpty(configuration["Swagger:ContactUrl"])
-                    ? null
-                    : new Uri(configuration["Swagger:ContactUrl"])
+                Name = "技术支持",
+                Email = "support@lybt.com"
             },
             License = new Microsoft.OpenApi.Models.OpenApiLicense
             {
-                Name = configuration["Swagger:LicenseName"] ?? "Proprietary",
-                Url = string.IsNullOrEmpty(configuration["Swagger:LicenseUrl"])
-                    ? null
-                    : new Uri(configuration["Swagger:LicenseUrl"])
+                Name = "专有软件许可",
+                Url = new Uri("https://lybt.com/license")
             }
         };
 

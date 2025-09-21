@@ -1,0 +1,49 @@
+<Project>
+  <!-- 为所有测试项目自动添加覆盖率工具 -->
+  <ItemGroup Condition="'$(IsTestProject)' == 'true'">
+    <!-- Coverlet MSBuild 集成，用于命令行覆盖率收集 -->
+    <PackageReference Include="coverlet.msbuild">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+
+    <!-- Coverlet Collector，用于 dotnet test 集成 -->
+    <PackageReference Include="coverlet.collector">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <!-- 覆盖率收集配置 -->
+  <PropertyGroup Condition="'$(IsTestProject)' == 'true'">
+    <!-- 排除不需要覆盖的命名空间和类型 -->
+    <ExcludeByAttribute>ObsoleteAttribute,GeneratedCodeAttribute,CompilerGeneratedAttribute</ExcludeByAttribute>
+    <ExcludeByFile>**/*.Designer.cs,**/*.g.cs,**/*.g.i.cs</ExcludeByFile>
+
+    <!-- 覆盖率输出格式 -->
+    <CoverletOutputFormat>cobertura,opencover,json</CoverletOutputFormat>
+
+    <!-- 覆盖率输出路径 -->
+    <CoverletOutput>$(MSBuildProjectDirectory)\..\..\BIN\TestResults\$(MSBuildProjectName)\</CoverletOutput>
+
+    <!-- 跳过自动生成的文件 -->
+    <ExcludeFromCodeCoverage>true</ExcludeFromCodeCoverage>
+
+    <!-- 收集覆盖率 -->
+    <CollectCoverage>true</CollectCoverage>
+  </PropertyGroup>
+
+  <!-- 覆盖率阈值配置（可选，用于CI门禁） -->
+  <PropertyGroup Condition="'$(IsTestProject)' == 'true' and '$(EnforceCoverageThresholds)' == 'true'">
+    <!-- 整体行覆盖率阈值 -->
+    <Threshold>90</Threshold>
+    <ThresholdType>line,branch</ThresholdType>
+    <ThresholdStat>total</ThresholdStat>
+
+    <!-- 关键模块更高的覆盖率要求 -->
+    <ThresholdAuth>95</ThresholdAuth>
+    <ThresholdUsers>95</ThresholdUsers>
+    <ThresholdMedicalCase>95</ThresholdMedicalCase>
+    <ThresholdPrescriptions>95</ThresholdPrescriptions>
+  </PropertyGroup>
+</Project>
