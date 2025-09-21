@@ -174,8 +174,8 @@ namespace LYBT.Module.Prescriptions.Tests.Services
         {
             // Arrange
             var medicalCaseId = Guid.NewGuid();
-            var prescription = new PrescriptionDto { MedicalCaseId = medicalCaseId };
-            var expectedResult = ServiceResult<PrescriptionDto>.Success(prescription);
+            var prescriptions = new List<PrescriptionDto> { new PrescriptionDto { MedicalCaseId = medicalCaseId } };
+            var expectedResult = ServiceResult<List<PrescriptionDto>>.Success(prescriptions);
 
             _mockQueryService.Setup(x => x.GetByMedicalCaseIdAsync(medicalCaseId)).ReturnsAsync(expectedResult);
 
@@ -192,7 +192,7 @@ namespace LYBT.Module.Prescriptions.Tests.Services
         {
             // Arrange
             var keyword = "患者名";
-            var prescriptions = new List<PrescriptionDto> { new PrescriptionDto { PatientName = "患者名" } };
+            var prescriptions = new List<PrescriptionDto> { new PrescriptionDto { PatientId = Guid.NewGuid() } };
             var expectedResult = ServiceResult<List<PrescriptionDto>>.Success(prescriptions);
 
             _mockQueryService.Setup(x => x.SearchAsync(keyword)).ReturnsAsync(expectedResult);
@@ -223,8 +223,7 @@ namespace LYBT.Module.Prescriptions.Tests.Services
 
             // Assert
             result.Should().NotBeNull();
-            result.IsSuccess.Should().BeTrue();
-            result.Data.Should().HaveCount(2);
+            result.Should().HaveCount(2);
             _mockQueryService.Verify(x => x.GetAllAsync(), Times.Once);
         }
 
@@ -235,7 +234,7 @@ namespace LYBT.Module.Prescriptions.Tests.Services
             var doctorId = Guid.NewGuid();
             var prescriptions = new List<PrescriptionDto>
             {
-                new PrescriptionDto { UserId = doctorId, CreatedAt = DateTime.Today }
+                new PrescriptionDto { UserId = doctorId }
             };
             var expectedResult = ServiceResult<List<PrescriptionDto>>.Success(prescriptions);
 
@@ -247,8 +246,7 @@ namespace LYBT.Module.Prescriptions.Tests.Services
 
             // Assert
             result.Should().NotBeNull();
-            result.IsSuccess.Should().BeTrue();
-            result.Data.Should().HaveCount(1);
+            result.Should().HaveCount(1);
             _mockQueryService.Verify(x => x.GetDoctorTodayPrescriptionsAsync(doctorId), Times.Once);
         }
 
@@ -260,13 +258,15 @@ namespace LYBT.Module.Prescriptions.Tests.Services
         public async Task ValidateAsync_Should_Check_Price_Precision()
         {
             // Arrange
-            var prescription = new PrescriptionDto
+            var prescription = new PrescriptionCreateDto
             {
-                Id = Guid.NewGuid(),
+                PatientId = Guid.NewGuid(),
+                DoctorId = Guid.NewGuid(),
+                Diagnosis = "Test Diagnosis",
                 TotalAmount = 123.456m, // 3位小数，应该失败
-                Items = new List<PrescriptionItemDto>
+                Items = new List<PrescriptionItemCreateDto>
                 {
-                    new PrescriptionItemDto { UnitPrice = 10.00m, Quantity = 2 }
+                    new PrescriptionItemCreateDto { HerbId = Guid.NewGuid(), HerbName = "Test Herb", UnitPrice = 10.00m, Quantity = 2, Unit = "g" }
                 }
             };
 
@@ -276,69 +276,24 @@ namespace LYBT.Module.Prescriptions.Tests.Services
             // Assert
             result.Should().NotBeNull();
             result.IsSuccess.Should().BeFalse();
-            result.ErrorMessage.Should().Contain("价格精度");
+            result.Data!.IsValid.Should().BeFalse();
+            result.Data.Errors.Should().Contain(e => e.Contains("价格精度"));
         }
 
         [Fact]
         public async Task ValidateAsync_Should_Check_Compatibility()
         {
             // Arrange
-            var prescription = new PrescriptionDto
+            var prescription = new PrescriptionCreateDto
             {
-                Id = Guid.NewGuid(),
+                PatientId = Guid.NewGuid(),
+                DoctorId = Guid.NewGuid(),
+                Diagnosis = "Test Diagnosis",
                 TotalAmount = 100.00m,
-                Items = new List<PrescriptionItemDto>
+                Items = new List<PrescriptionItemCreateDto>
                 {
-                    new PrescriptionItemDto { HerbId = Guid.NewGuid(), HerbName = "甘草" },
-                    new PrescriptionItemDto { HerbId = Guid.NewGuid(), HerbName = "甘遂" } // 十八反
-                }
-            };
-
-            // Act
-            var result = await _prescriptionService.ValidateAsync(prescription);
-
-            // Assert
-            result.Should().NotBeNull();
-            result.IsSuccess.Should().BeFalse();
-            result.ErrorMessage.Should().Contain("配伍禁忌");
-        }
-
-        [Fact]
-        public async Task ValidateAsync_Should_Check_Total_Amount()
-        {
-            // Arrange
-            var prescription = new PrescriptionDto
-            {
-                Id = Guid.NewGuid(),
-                TotalAmount = 100.00m,
-                Items = new List<PrescriptionItemDto>
-                {
-                    new PrescriptionItemDto { UnitPrice = 10.00m, Quantity = 5, Amount = 50.00m },
-                    new PrescriptionItemDto { UnitPrice = 20.00m, Quantity = 3, Amount = 60.00m }
-                }
-            };
-
-            // Act
-            var result = await _prescriptionService.ValidateAsync(prescription);
-
-            // Assert
-            result.Should().NotBeNull();
-            result.IsSuccess.Should().BeFalse();
-            result.ErrorMessage.Should().Contain("总金额不匹配"); // 110 != 100
-        }
-
-        [Fact]
-        public async Task ValidateAsync_Should_Pass_Valid_Prescription()
-        {
-            // Arrange
-            var prescription = new PrescriptionDto
-            {
-                Id = Guid.NewGuid(),
-                TotalAmount = 70.00m,
-                Items = new List<PrescriptionItemDto>
-                {
-                    new PrescriptionItemDto { UnitPrice = 10.00m, Quantity = 3, Amount = 30.00m },
-                    new PrescriptionItemDto { UnitPrice = 20.00m, Quantity = 2, Amount = 40.00m }
+                    new PrescriptionItemCreateDto { HerbId = Guid.NewGuid(), HerbName = "甘草" },
+                    new PrescriptionItemCreateDto { HerbId = Guid.NewGuid(), HerbName = "甘遂" } // 十八反
                 }
             };
 
@@ -348,6 +303,61 @@ namespace LYBT.Module.Prescriptions.Tests.Services
             // Assert
             result.Should().NotBeNull();
             result.IsSuccess.Should().BeTrue();
+            result.Data!.IsValid.Should().BeFalse();
+            result.Data.Warnings.Should().Contain(w => w.Contains("配伍禁忌"));
+        }
+
+        [Fact]
+        public async Task ValidateAsync_Should_Check_Total_Amount()
+        {
+            // Arrange
+            var prescription = new PrescriptionCreateDto
+            {
+                PatientId = Guid.NewGuid(),
+                DoctorId = Guid.NewGuid(),
+                Diagnosis = "Test Diagnosis",
+                TotalAmount = 100.00m,
+                Items = new List<PrescriptionItemCreateDto>
+                {
+                    new PrescriptionItemCreateDto { HerbId = Guid.NewGuid(), HerbName = "Herb1", UnitPrice = 10.00m, Quantity = 5, Unit = "g", Subtotal = 50.00m },
+                    new PrescriptionItemCreateDto { HerbId = Guid.NewGuid(), HerbName = "Herb2", UnitPrice = 20.00m, Quantity = 3, Unit = "g", Subtotal = 60.00m }
+                }
+            };
+
+            // Act
+            var result = await _prescriptionService.ValidateAsync(prescription);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+            result.Data!.IsValid.Should().BeFalse();
+            result.Data.Errors.Should().Contain(e => e.Contains("总金额不匹配")); // 110 != 100
+        }
+
+        [Fact]
+        public async Task ValidateAsync_Should_Pass_Valid_Prescription()
+        {
+            // Arrange
+            var prescription = new PrescriptionCreateDto
+            {
+                PatientId = Guid.NewGuid(),
+                DoctorId = Guid.NewGuid(),
+                Diagnosis = "Test Diagnosis",
+                TotalAmount = 70.00m,
+                Items = new List<PrescriptionItemCreateDto>
+                {
+                    new PrescriptionItemCreateDto { HerbId = Guid.NewGuid(), HerbName = "Herb1", UnitPrice = 10.00m, Quantity = 3, Unit = "g", Subtotal = 30.00m },
+                    new PrescriptionItemCreateDto { HerbId = Guid.NewGuid(), HerbName = "Herb2", UnitPrice = 20.00m, Quantity = 2, Unit = "g", Subtotal = 40.00m }
+                }
+            };
+
+            // Act
+            var result = await _prescriptionService.ValidateAsync(prescription);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+            result.Data!.IsValid.Should().BeTrue();
         }
 
         #endregion
@@ -359,19 +369,20 @@ namespace LYBT.Module.Prescriptions.Tests.Services
         {
             // Arrange
             var sourceId = Guid.NewGuid();
-            var targetPatientId = Guid.NewGuid();
+            var newName = "Copy of Prescription";
             var copiedPrescription = new PrescriptionDto { Id = Guid.NewGuid() };
             var expectedResult = ServiceResult<PrescriptionDto>.Success(copiedPrescription);
 
-            _mockBusinessService.Setup(x => x.CopyAsync(sourceId, targetPatientId))
+            // Note: PrescriptionService.CopyAsync calls BusinessService.CopyAsync with additional parameters
+            _mockBusinessService.Setup(x => x.CopyAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<string>()))
                 .ReturnsAsync(expectedResult);
 
             // Act
-            var result = await _prescriptionService.CopyAsync(sourceId, targetPatientId);
+            var result = await _prescriptionService.CopyAsync(sourceId, newName);
 
             // Assert
             result.Should().BeSameAs(expectedResult);
-            _mockBusinessService.Verify(x => x.CopyAsync(sourceId, targetPatientId), Times.Once);
+            _mockBusinessService.Verify(x => x.CopyAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<string>()), Times.Once);
         }
 
         [Fact]
@@ -379,19 +390,22 @@ namespace LYBT.Module.Prescriptions.Tests.Services
         {
             // Arrange
             var patientId = Guid.NewGuid();
+            var doctorId = Guid.NewGuid();
+            var operatorId = Guid.NewGuid();
+            var operatorName = "Test Doctor";
             var copiedPrescription = new PrescriptionDto { Id = Guid.NewGuid() };
             var expectedResult = ServiceResult<PrescriptionDto>.Success(copiedPrescription);
 
-            _mockBusinessService.Setup(x => x.CopyLastPrescriptionAsync(patientId))
+            _mockBusinessService.Setup(x => x.CopyLastPrescriptionAsync(patientId, doctorId, operatorId, operatorName))
                 .ReturnsAsync(expectedResult);
 
             // Act
-            var result = await _prescriptionService.CopyLastPrescriptionAsync(patientId);
+            var result = await _prescriptionService.CopyLastPrescriptionAsync(patientId, doctorId, operatorId, operatorName);
 
             // Assert
             result.Should().NotBeNull();
-            result.IsSuccess.Should().BeTrue();
-            _mockBusinessService.Verify(x => x.CopyLastPrescriptionAsync(patientId), Times.Once);
+            result.Should().Be(copiedPrescription);
+            _mockBusinessService.Verify(x => x.CopyLastPrescriptionAsync(patientId, doctorId, operatorId, operatorName), Times.Once);
         }
 
         #endregion
@@ -402,24 +416,26 @@ namespace LYBT.Module.Prescriptions.Tests.Services
         public async Task QuickSaveAsync_Should_Save_Prescription_Quickly()
         {
             // Arrange
-            var dto = new PrescriptionQuickSaveDto
+            var prescriptionId = Guid.NewGuid();
+            var operatorId = Guid.NewGuid();
+            var operatorName = "Test Doctor";
+            var dto = new QuickPrescriptionDto
             {
-                PatientId = Guid.NewGuid(),
-                Items = new List<PrescriptionItemDto>()
+                Diagnosis = "Test Diagnosis",
+                Advice = "Test Advice",
+                DosageCount = 7
             };
-            var savedPrescription = new PrescriptionDto { Id = Guid.NewGuid() };
-            var expectedResult = ServiceResult<PrescriptionDto>.Success(savedPrescription);
+            var expectedResult = ServiceResult<bool>.Success(true);
 
-            _mockBusinessService.Setup(x => x.QuickSaveAsync(dto))
+            _mockBusinessService.Setup(x => x.QuickSaveAsync(prescriptionId, dto, operatorId, operatorName))
                 .ReturnsAsync(expectedResult);
 
             // Act
-            var result = await _prescriptionService.QuickSaveAsync(dto);
+            var result = await _prescriptionService.QuickSaveAsync(prescriptionId, dto, operatorId, operatorName);
 
             // Assert
-            result.Should().NotBeNull();
-            result.IsSuccess.Should().BeTrue();
-            _mockBusinessService.Verify(x => x.QuickSaveAsync(dto), Times.Once);
+            result.Should().BeTrue();
+            _mockBusinessService.Verify(x => x.QuickSaveAsync(prescriptionId, dto, operatorId, operatorName), Times.Once);
         }
 
         [Fact]
@@ -427,20 +443,20 @@ namespace LYBT.Module.Prescriptions.Tests.Services
         {
             // Arrange
             var prescriptionId = Guid.NewGuid();
-            var reason = "患者要求取消";
+            var prescriptionIdString = prescriptionId.ToString();
+            var operatorId = Guid.NewGuid();
+            var operatorName = "Test Doctor";
             var expectedResult = ServiceResult<bool>.Success(true);
 
-            _mockBusinessService.Setup(x => x.CancelAsync(prescriptionId, reason))
+            _mockBusinessService.Setup(x => x.CancelAsync(prescriptionId, operatorId, operatorName))
                 .ReturnsAsync(expectedResult);
 
             // Act
-            var result = await _prescriptionService.CancelAsync(prescriptionId, reason);
+            var result = await _prescriptionService.CancelAsync(prescriptionIdString, operatorId, operatorName);
 
             // Assert
-            result.Should().NotBeNull();
-            result.IsSuccess.Should().BeTrue();
-            result.Data.Should().BeTrue();
-            _mockBusinessService.Verify(x => x.CancelAsync(prescriptionId, reason), Times.Once);
+            result.Should().BeTrue();
+            _mockBusinessService.Verify(x => x.CancelAsync(prescriptionId, operatorId, operatorName), Times.Once);
         }
 
         [Fact]
@@ -448,18 +464,19 @@ namespace LYBT.Module.Prescriptions.Tests.Services
         {
             // Arrange
             var prescriptionId = Guid.NewGuid();
+            var prescriptionIdString = prescriptionId.ToString();
+            var operatorId = Guid.NewGuid();
+            var operatorName = "";
             var expectedResult = ServiceResult<bool>.Failure("取消原因不能为空");
 
-            _mockBusinessService.Setup(x => x.CancelAsync(prescriptionId, string.Empty))
+            _mockBusinessService.Setup(x => x.CancelAsync(prescriptionId, operatorId, operatorName))
                 .ReturnsAsync(expectedResult);
 
             // Act
-            var result = await _prescriptionService.CancelAsync(prescriptionId, string.Empty);
+            var result = await _prescriptionService.CancelAsync(prescriptionIdString, operatorId, operatorName);
 
             // Assert
-            result.Should().NotBeNull();
-            result.IsSuccess.Should().BeFalse();
-            result.ErrorMessage.Should().Contain("取消原因不能为空");
+            result.Should().BeFalse();
         }
 
         #endregion

@@ -239,9 +239,9 @@ namespace LYBT.Module.Patients.Tests.Services
         {
             // Arrange
             var patientId = Guid.NewGuid();
-            var expectedResult = ServiceResult.Success();
+            var expectedResult = ServiceResult<bool>.Success(true);
 
-            _mockBusinessService.Setup(x => x.EnableAsync(It.IsAny<List<Guid>>())).ReturnsAsync(expectedResult);
+            _mockBusinessService.Setup(x => x.EnableAsync(It.IsAny<List<Guid>>())).Returns(Task.FromResult(expectedResult));
 
             // Act
             var result = await _patientService.EnableAsync(patientId);
@@ -258,9 +258,9 @@ namespace LYBT.Module.Patients.Tests.Services
         {
             // Arrange
             var patientId = Guid.NewGuid();
-            var expectedResult = ServiceResult.Success();
+            var expectedResult = ServiceResult<bool>.Success(true);
 
-            _mockBusinessService.Setup(x => x.DisableAsync(It.IsAny<List<Guid>>())).ReturnsAsync(expectedResult);
+            _mockBusinessService.Setup(x => x.DisableAsync(It.IsAny<List<Guid>>())).Returns(Task.FromResult(expectedResult));
 
             // Act
             var result = await _patientService.DisableAsync(patientId);
@@ -277,9 +277,9 @@ namespace LYBT.Module.Patients.Tests.Services
         {
             // Arrange
             var patientId = Guid.NewGuid();
-            var expectedResult = ServiceResult.Failure("启用失败");
+            var expectedResult = ServiceResult<bool>.Failure("启用失败");
 
-            _mockBusinessService.Setup(x => x.EnableAsync(It.IsAny<List<Guid>>())).ReturnsAsync(expectedResult);
+            _mockBusinessService.Setup(x => x.EnableAsync(It.IsAny<List<Guid>>())).Returns(Task.FromResult(expectedResult));
 
             // Act
             var result = await _patientService.EnableAsync(patientId);
@@ -295,9 +295,9 @@ namespace LYBT.Module.Patients.Tests.Services
         {
             // Arrange
             var patientId = Guid.NewGuid();
-            var expectedResult = ServiceResult.Failure("禁用失败");
+            var expectedResult = ServiceResult<bool>.Failure("禁用失败");
 
-            _mockBusinessService.Setup(x => x.DisableAsync(It.IsAny<List<Guid>>())).ReturnsAsync(expectedResult);
+            _mockBusinessService.Setup(x => x.DisableAsync(It.IsAny<List<Guid>>())).Returns(Task.FromResult(expectedResult));
 
             // Act
             var result = await _patientService.DisableAsync(patientId);

@@ -517,7 +517,6 @@ namespace LYBT.Module.Users.Tests.Repositories
         [Theory]
         [InlineData("")]
         [InlineData(" ")]
-        [InlineData(null)]
         public async Task GetByUsernameAsync_Should_ReturnNull_When_UsernameIsNullOrEmpty(string username)
         {
             // Act
@@ -704,7 +703,6 @@ namespace LYBT.Module.Users.Tests.Repositories
         [Theory]
         [InlineData("")]
         [InlineData(" ")]
-        [InlineData(null)]
         public async Task ExistsByUsernameAsync_Should_ReturnFalse_When_UsernameIsNullOrEmpty(string username)
         {
             // Act

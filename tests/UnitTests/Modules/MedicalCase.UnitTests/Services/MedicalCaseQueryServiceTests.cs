@@ -340,7 +340,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
             result.Data!.Should().HaveCount(1);
-            result.Data.First().CaseStatus.Should().Be(MedicalCaseStatus.Closed);
+            result.Data!.First().CaseStatus.Should().Be(MedicalCaseStatus.Closed);
         }
 
         [Fact]
@@ -405,7 +405,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
             result.Data!.Should().HaveCount(1);
-            result.Data.First().ConsultationDate.Should().BeAfter(DateTime.Now.AddDays(-5));
+            result.Data!.First().ConsultationDate.Should().BeAfter(DateTime.Now.AddDays(-5));
         }
 
         #endregion

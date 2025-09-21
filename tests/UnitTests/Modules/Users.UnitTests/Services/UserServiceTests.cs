@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using LYBT.Module.Users.Interfaces;
@@ -42,7 +43,6 @@ namespace LYBT.Module.Users.Tests.Services
         }
 
         [Theory]
-        [InlineData(null)]
         [InlineData("")]
         [InlineData(" ")]
         public async Task GetByUsernameAsync_Should_Handle_Invalid_Input(string invalidUsername)
@@ -60,10 +60,25 @@ namespace LYBT.Module.Users.Tests.Services
         }
 
         [Fact]
+        public async Task GetByUsernameAsync_Should_Handle_Null_Input()
+        {
+            // Arrange
+            _mockQueryService.Setup(x => x.GetByUsernameAsync(It.IsAny<string>()))
+                .ReturnsAsync(ServiceResult<UserDto>.Failure("用户名不能为空"));
+
+            // Act
+            var result = await _userService.GetByUsernameAsync(null!);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeFalse();
+        }
+
+        [Fact]
         public async Task CreateAsync_Should_Handle_Null_Dto()
         {
             // Arrange
-            _mockBusinessService.Setup(x => x.CreateUserAsync(It.IsAny<UserCreateDto>()))
+            _mockBusinessService.Setup(x => x.CreateUserAsync(It.IsAny<UserCreateDto>(), It.IsAny<CancellationToken>()))
                 .ThrowsAsync(new ArgumentNullException());
 
             // Act & Assert
@@ -75,12 +90,12 @@ namespace LYBT.Module.Users.Tests.Services
         public async Task UpdateAsync_Should_Handle_Null_Dto()
         {
             // Arrange
-            _mockBusinessService.Setup(x => x.UpdateUserAsync(It.IsAny<Guid>(), It.IsAny<UserUpdateDto>()))
+            _mockBusinessService.Setup(x => x.UpdateUserAsync(It.IsAny<Guid>(), It.IsAny<UserUpdateDto>(), It.IsAny<CancellationToken>()))
                 .ThrowsAsync(new ArgumentNullException());
 
             // Act & Assert
             await Assert.ThrowsAsync<ArgumentNullException>(async () =>
-                await _userService.UpdateAsync(Guid.NewGuid(), null!));
+                await _userService.UpdateAsync(null!));
         }
 
         [Fact]
@@ -88,7 +103,7 @@ namespace LYBT.Module.Users.Tests.Services
         {
             // Arrange
             var emptyList = new List<Guid>();
-            _mockBusinessService.Setup(x => x.BatchDisableAsync(It.IsAny<IEnumerable<Guid>>()))
+            _mockBusinessService.Setup(x => x.BatchDisableAsync(It.IsAny<List<Guid>>()))
                 .ReturnsAsync(ServiceResult<int>.Success(0));
 
             // Act
@@ -105,7 +120,7 @@ namespace LYBT.Module.Users.Tests.Services
         {
             // Arrange
             var emptyList = new List<Guid>();
-            _mockBusinessService.Setup(x => x.BatchEnableAsync(It.IsAny<IEnumerable<Guid>>()))
+            _mockBusinessService.Setup(x => x.BatchEnableAsync(It.IsAny<List<Guid>>()))
                 .ReturnsAsync(ServiceResult<int>.Success(0));
 
             // Act
@@ -143,18 +158,18 @@ namespace LYBT.Module.Users.Tests.Services
                 PageSize = 20
             };
 
-            _mockQueryService.Setup(x => x.SearchAsync(It.IsAny<UserSearchDto>()))
-                .ReturnsAsync(ServiceResult<PagedResult<UserDto>>.Success(pagedResult));
+            _mockQueryService.Setup(x => x.SearchAsync(It.IsAny<string>()))
+                .ReturnsAsync(ServiceResult<List<UserDto>>.Success(pagedResult.Items.ToList()));
 
             // Act
-            var result = await _userService.SearchAsync(searchDto);
+            var result = await _userService.SearchAsync(searchDto.Keyword!);
 
             // Assert
             result.Should().NotBeNull();
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
-            result.Data!.Items.Should().HaveCount(1);
-            result.Data.Items[0].Role.Should().Be(UserRole.Doctor);
+            result.Data!.Should().HaveCount(1);
+            result.Data![0].Role.Should().Be(UserRole.Doctor);
         }
 
         [Fact]
@@ -759,7 +774,6 @@ namespace LYBT.Module.Users.Tests.Services
         {
             // Arrange
             var query = new UserSearchDto();
-            var username = "testuser";
             var expectedResult = ServiceResult<PagedResult<UserDto>>.Failure("查询失败");
 
             _mockQueryService.Setup(x => x.GetPagedAsync(query)).ReturnsAsync(expectedResult);

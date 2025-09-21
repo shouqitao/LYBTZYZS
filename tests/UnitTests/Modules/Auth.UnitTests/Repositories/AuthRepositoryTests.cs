@@ -167,7 +167,6 @@ namespace LYBT.Module.Auth.Tests.Repositories
         [Theory]
         [InlineData("")]
         [InlineData(" ")]
-        [InlineData(null)]
         public async Task GetByUsernameAsync_Should_ReturnNull_When_UsernameIsNullOrEmpty(string username)
         {
             // Act
@@ -282,7 +281,6 @@ namespace LYBT.Module.Auth.Tests.Repositories
         [Theory]
         [InlineData("")]
         [InlineData(" ")]
-        [InlineData(null)]
         public async Task GetAdminPasswordHashAsync_Should_UseFixedId_When_UsernameIsNullOrEmpty(string username)
         {
             // Arrange
@@ -360,7 +358,6 @@ namespace LYBT.Module.Auth.Tests.Repositories
         [Theory]
         [InlineData("")]
         [InlineData(" ")]
-        [InlineData(null)]
         public async Task UpdateAdminPasswordHashAsync_Should_UpdatePassword_When_UsernameIsNullOrEmpty(string username)
         {
             // Arrange

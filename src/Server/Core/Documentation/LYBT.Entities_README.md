@@ -1,14 +1,14 @@
 ﻿# LYBT.Entities
 
-> **数据实体核心模块**  
+> **数据实体核心模块** 
 > 凌隐宝堂中医诊所系统的核心数据模型和实体类定义
-> **项目状态**: ✅ **生产就绪** | 🎆 **UltraThink架构完成** | **零编译错误**
+> 项目状态: ✅ **生产就绪** | 🎆 **分层架构完成** | **编译通过**
 
 ## 🎯 模块概述
 
 LYBT.Entities是系统的数据实体核心模块，定义了所有业务核心实体类、基础模型和数据注释规范。作为整个系统的数据结构基础，为业务逻辑、数据访问和接口传输提供统一的类型安全保障。
 
-**技术栈**: .NET 8.0 + Entity Framework Core 8.0.17 + Data Annotations
+**技术栈**: .NET 8.0 + 实体（实体（Entity）） Framework Core 8.0.17 + Data Annotations
 
 ## 📦 核心功能
 
@@ -22,24 +22,24 @@ LYBT.Entities是系统的数据实体核心模块，定义了所有业务核心�
 
 ### 8个业务核心实体
 
-| 实体类                       | 功能描述                   | 关系                     | 状态   |
+| 实体类 | 功能描述 | 关系 | 状态 |
 | ------------------------- | ---------------------- | ---------------------- | ---- |
-| **UserModel**             | 用户账户信息(Admin/Doctor角色) | 1:N → MedicalCase      | ✅ 完成 |
-| **PatientModel**          | 患者档案基本信息               | 1:N → MedicalCase      | ✅ 完成 |
-| **MedicalCaseModel**      | 医疗案例(看诊流程容器)           | 1:1 → Consultation     | ✅ 完成 |
-| **ConsultationModel**     | 看诊诊断(中医四诊记录)           | 1:0..1 → Prescription  | ✅ 完成 |
-| **PrescriptionModel**     | 处方管理(中药配方)             | N:M → Herbs            | ✅ 完成 |
-| **PrescriptionItemModel** | 处方条目(药材用量)             | N:1 → Prescription     | ✅ 完成 |
-| **HerbModel**             | 中药材信息管理                | 1:N → PrescriptionItem | ✅ 完成 |
-| **FormulaModel**          | 验方模板管理                 | 1:N → FormulaHerbItem  | ✅ 完成 |
+| **UserModel** | 用户账户信息(Admin/Doctor角色) | 1:N → MedicalCase | ✅ 完成 |
+| **PatientModel** | 患者档案基本信息 | 1:N → MedicalCase | ✅ 完成 |
+| **MedicalCaseModel** | 医疗案例(看诊流程容器) | 1:1 → Consultation | ✅ 完成 |
+| **ConsultationModel** | 看诊诊断(中医四诊记录) | 1:0..1 → Prescription | ✅ 完成 |
+| **PrescriptionModel** | 处方管理(中药配方) | N:M → Herbs | ✅ 完成 |
+| **PrescriptionItemModel** | 处方条目(药材用量) | N:1 → Prescription | ✅ 完成 |
+| **HerbModel** | 中药材信息管理 | 1:N → PrescriptionItem | ✅ 完成 |
+| **FormulaModel** | 验方模板管理 | 1:N → FormulaHerbItem | ✅ 完成 |
 
 ### 支持实体
 
-| 实体类                  | 功能描述   | 关系            | 状态   |
+| 实体类 | 功能描述 | 关系 | 状态 |
 | -------------------- | ------ | ------------- | ---- |
-| **FormulaHerbItem**  | 验方药材条目 | N:1 → Formula | ✅ 完成 |
-| **AuthSessionModel** | 用户会话管理 | N:1 → User    | ✅ 完成 |
-| **AdminSecretModel** | 管理员密钥表 | 独立表           | ✅ 完成 |
+| **FormulaHerbItem** | 验方药材条目 | N:1 → Formula | ✅ 完成 |
+| **AuthSessionModel** | 用户会话管理 | N:1 → User | ✅ 完成 |
+| **AdminSecretModel** | 管理员密钥表 | 独立表 | ✅ 完成 |
 
 ## 🔗 实体关系架构
 
@@ -168,16 +168,16 @@ public DbSet<AdminSecretModel> AdminSecrets { get; set; }
 
 ### 数据库表映射
 
-| 实体类                   | 数据库表名             | 主键       | 说明    |
+| 实体类 | 数据库表名 | 主键 | 说明 |
 | --------------------- | ----------------- | -------- | ----- |
-| UserModel             | Users             | Id(Guid) | 用户账户表 |
-| PatientModel          | Patients          | Id(Guid) | 患者档案表 |
-| MedicalCaseModel      | MedicalCases      | Id(Guid) | 医疗案例表 |
-| ConsultationModel     | Consultations     | Id(Guid) | 诊断记录表 |
-| PrescriptionModel     | Prescriptions     | Id(Guid) | 处方主表  |
+| UserModel | Users | Id(Guid) | 用户账户表 |
+| PatientModel | Patients | Id(Guid) | 患者档案表 |
+| MedicalCaseModel | MedicalCases | Id(Guid) | 医疗案例表 |
+| ConsultationModel | Consultations | Id(Guid) | 诊断记录表 |
+| PrescriptionModel | Prescriptions | Id(Guid) | 处方主表 |
 | PrescriptionItemModel | PrescriptionItems | Id(Guid) | 处方明细表 |
-| HerbModel             | Herbs             | Id(Guid) | 药材信息表 |
-| FormulaModel          | Formulas          | Id(Guid) | 验方模板表 |
+| HerbModel | Herbs | Id(Guid) | 药材信息表 |
+| FormulaModel | Formulas | Id(Guid) | 验方模板表 |
 
 ## 🧪 数据验证架构
 
@@ -244,7 +244,7 @@ public class ConsultationModel : BaseEntity
 ### 新增实体步骤
 
 1. **创建实体类**
-   
+ 
    ```csharp
    public class NewEntityModel : BaseEntity
    {
@@ -253,19 +253,19 @@ public class ConsultationModel : BaseEntity
    ```
 
 2. **添加到DbContext**
-   
+ 
    ```csharp
    public DbSet<NewEntityModel> NewEntities { get; set; }
    ```
 
 3. **生成数据库迁移**
-   
+ 
    ```bash
    dotnet ef migrations add AddNewEntity --project LYBT.Infrastructure --startup-project LYBT.WebAPI
    ```
 
 4. **应用迁移**
-   
+ 
    ```bash
    dotnet ef database update --project LYBT.Infrastructure --startup-project LYBT.WebAPI
    ```
@@ -298,7 +298,7 @@ CREATE INDEX IX_MedicalCases_Status ON MedicalCases(Status);
 CREATE INDEX IX_Prescriptions_MedicalCaseId ON Prescriptions(MedicalCaseId);
 ```
 
-## 🎯 UltraThink架构特点
+## 🎯 分层架构特点
 
 **适合小型中医诊所(<20人)的精简设计**:
 
@@ -310,11 +310,11 @@ CREATE INDEX IX_Prescriptions_MedicalCaseId ON Prescriptions(MedicalCaseId);
 
 ## 📚 相关文档
 
-- [LYBT.Infrastructure](../LYBT.Infrastructure/README.md) - 基础设施层(包含AppDbContext)
-- [数据库迁移指南](../LYBT.Infrastructure/README.md#数据库迁移) - EF Core迁移操作指南
+- [LYBT.基础设施（基础设施（Infrastructure））](../LYBT.基础设施（基础设施（Infrastructure））/README.md) - 基础设施层(包含AppDbContext)
+- [数据库迁移指南](../LYBT.基础设施（基础设施（Infrastructure））/README.md#数据库迁移) - EF Core迁移操作指南
 - [API规范文档](../../Services/LYBT.WebAPI/README.md) - RESTful API设计规范
 
 ---
 
 > 📌 **开发提醒**: 修改实体结构后务必生成数据库迁移并同步更新对应的DTO模型
-> 🎆 **UltraThink成果**: 实体模型设计简洁高效，完美支持中医诊所核心业务流程
+> 🎆 **成果**: 实体模型设计简洁高效，完美支持中医诊所核心业务流程

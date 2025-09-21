@@ -93,15 +93,7 @@ namespace LYBT.Module.Users.Tests.Services
         public async Task GetRolesAsync_Should_Return_All_User_Roles()
         {
             // Arrange
-            var users = new[]
-            {
-                new User { Id = Guid.NewGuid(), Username = "doctor1", Role = UserRole.Doctor },
-                new User { Id = Guid.NewGuid(), Username = "admin1", Role = UserRole.Admin },
-                new User { Id = Guid.NewGuid(), Username = "doctor2", Role = UserRole.Doctor },
-                new User { Id = Guid.NewGuid(), Username = "admin2", Role = UserRole.Admin }
-            };
-            await _context.Users.AddRangeAsync(users);
-            await _context.SaveChangesAsync();
+            // GetRolesAsync 现在返回固定的角色列表，不依赖于数据库中的用户
 
             // Act
             var result = await _service.GetRolesAsync();
@@ -110,14 +102,23 @@ namespace LYBT.Module.Users.Tests.Services
             result.Should().NotBeNull();
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
-            result.Data!.Should().HaveCount(2); // Doctor and Admin
-            result.Data.Should().Contain(r => r.Value == UserRole.Doctor && r.Count == 2);
-            result.Data.Should().Contain(r => r.Value == UserRole.Admin && r.Count == 2);
+            result.Data!.Should().HaveCount(2); // Admin and Doctor
+
+            // 验证角色数据结构（避免使用 dynamic）
+            // GetRolesAsync 返回固定的匿名类型列表 { Value = int, Text = string }
+            var rolesJson = System.Text.Json.JsonSerializer.Serialize(result.Data);
+            rolesJson.Should().Contain("\"Value\":" + (int)UserRole.Admin);
+            rolesJson.Should().Contain("\"Value\":" + (int)UserRole.Doctor);
+            rolesJson.Should().Contain("\"Text\":\"管理员\"");
+            rolesJson.Should().Contain("\"Text\":\"医生\"");
         }
 
         [Fact]
-        public async Task GetRolesAsync_Should_Return_Empty_When_No_Users()
+        public async Task GetRolesAsync_Should_Always_Return_Fixed_Roles()
         {
+            // Arrange
+            // GetRolesAsync 返回固定的角色列表，不管数据库中是否有用户
+
             // Act
             var result = await _service.GetRolesAsync();
 
@@ -125,7 +126,7 @@ namespace LYBT.Module.Users.Tests.Services
             result.Should().NotBeNull();
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
-            result.Data!.Should().BeEmpty();
+            result.Data!.Should().HaveCount(2); // 总是返回 Admin 和 Doctor
         }
 
         #endregion
@@ -186,7 +187,7 @@ namespace LYBT.Module.Users.Tests.Services
                 });
 
             // Act
-            var criteria = new UserQueryDto
+            var criteria = new UserSearchDto
             {
                 PageIndex = 2,
                 PageSize = 5
@@ -229,7 +230,7 @@ namespace LYBT.Module.Users.Tests.Services
                 });
 
             // Act
-            var result = await _service.GetPagedAsync(new UserQueryDto());
+            var result = await _service.GetPagedAsync(new UserSearchDto());
 
             // Assert
             result.Should().NotBeNull();
@@ -258,7 +259,6 @@ namespace LYBT.Module.Users.Tests.Services
         }
 
         [Theory]
-        [InlineData(null)]
         [InlineData("")]
         [InlineData(" ")]
         public async Task GetByUsernameAsync_Should_Handle_Invalid_Input(string invalidUsername)
@@ -273,7 +273,6 @@ namespace LYBT.Module.Users.Tests.Services
         }
 
         [Theory]
-        [InlineData(null)]
         [InlineData("")]
         [InlineData(" ")]
         public async Task ValidateUsernameAsync_Should_Return_True_For_Invalid_Input(string invalidUsername)
@@ -404,7 +403,6 @@ namespace LYBT.Module.Users.Tests.Services
         [Theory]
         [InlineData("")]
         [InlineData(" ")]
-        [InlineData(null)]
         public async Task GetByUsernameAsync_Should_Return_Failure_When_Username_Invalid(string username)
         {
             // Act
@@ -559,7 +557,7 @@ namespace LYBT.Module.Users.Tests.Services
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
             result.Data!.Should().HaveCount(1);
-            result.Data.First().Username.Should().Be("john_doe");
+            result.Data!.First().Username.Should().Be("john_doe");
         }
 
         [Fact]

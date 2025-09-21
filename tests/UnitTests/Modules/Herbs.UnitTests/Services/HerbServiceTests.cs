@@ -7,6 +7,7 @@ using LYBT.Module.Herbs.Services;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
+using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
@@ -438,7 +439,7 @@ namespace LYBT.Module.Herbs.Tests.Services
                     Spec = "片",
                     Unit = "g",
                     Price = 0.8m,
-                    IsEnabled = true
+                    Status = CommonStatus.Enabled
                 },
                 new()
                 {
@@ -448,7 +449,7 @@ namespace LYBT.Module.Herbs.Tests.Services
                     Spec = "段",
                     Unit = "g",
                     Price = 0.9m,
-                    IsEnabled = false
+                    Status = CommonStatus.Disabled
                 }
             };
             var expectedResult = ServiceResult<List<HerbDto>>.Success(herbs);

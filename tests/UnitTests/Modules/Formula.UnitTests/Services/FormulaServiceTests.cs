@@ -273,7 +273,7 @@ namespace LYBT.Module.Formula.Tests.Services
             // Arrange
             var templates = new List<FormulaDto>
             {
-                new() { Id = Guid.NewGuid(), Name = "四君子汤", IsTemplate = true }
+                new() { Id = Guid.NewGuid(), Name = "四君子汤", IsShared = true }
             };
             var expectedResult = ServiceResult<List<FormulaDto>>.Success(templates);
 
@@ -478,7 +478,7 @@ namespace LYBT.Module.Formula.Tests.Services
         {
             // Arrange
             var formulaId = Guid.NewGuid();
-            var analysisResult = new FormulaAnalysisResult { FormulaId = formulaId, Summary = "分析结果" };
+            var analysisResult = new FormulaAnalysisResult { Summary = "分析结果" };
             var expectedResult = ServiceResult<FormulaAnalysisResult>.Success(analysisResult);
 
             _mockBusinessService.Setup(x => x.AnalyzeFormulaAsync(formulaId)).ReturnsAsync(expectedResult);
