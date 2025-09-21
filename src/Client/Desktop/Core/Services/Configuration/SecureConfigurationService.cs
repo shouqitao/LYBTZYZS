@@ -89,8 +89,8 @@ namespace LYBT.Desktop.Core.Services.Configuration
         private readonly object _lock = new object();
 
         private byte[] _masterKey;
-        private readonly string _keyDerivationSalt = "LYBT_SECURE_CONFIG_2025";
-        private readonly int _keyIterations = 10000;
+        private readonly int _keyIterations = 100000; // OWASP 2025 建议最小值
+        private const int _saltLength = 32; // 256-bit 盐长度
 
         public SecureConfigurationService(ILogger<SecureConfigurationService> logger)
         {
@@ -102,14 +102,41 @@ namespace LYBT.Desktop.Core.Services.Configuration
 
             Directory.CreateDirectory(_secureStorePath);
 
-            // 初始化主密钥
-            _masterKey = DeriveKey(GetMachineKey(), _keyDerivationSalt);
+            // 初始化主密钥（使用持久化的随机盐）
+            InitializeMasterKey();
 
             LoadSecureConfigurations();
             InitializeDefaultPolicies();
         }
 
         #region 初始化
+
+        private void InitializeMasterKey()
+        {
+            var saltFile = Path.Combine(_secureStorePath, "master.salt");
+            byte[] salt;
+
+            if (File.Exists(saltFile))
+            {
+                // 读取已存在的盐值
+                var saltData = File.ReadAllText(saltFile);
+                salt = Convert.FromBase64String(saltData);
+                _logger.LogDebug("使用已存在的主密钥盐值");
+            }
+            else
+            {
+                // 生成新的随机盐值
+                salt = GenerateRandomSalt();
+                File.WriteAllText(saltFile, Convert.ToBase64String(salt));
+
+                // 设置文件属性为隐藏和系统
+                File.SetAttributes(saltFile, FileAttributes.Hidden | FileAttributes.System);
+                _logger.LogInformation("生成新的主密钥盐值");
+            }
+
+            // 使用机器密钥和盐值派生主密钥
+            _masterKey = DeriveKey(GetMachineKey(), salt);
+        }
 
         private void LoadSecureConfigurations()
         {
@@ -198,13 +225,34 @@ namespace LYBT.Desktop.Core.Services.Configuration
                         return Task.FromResult<T?>(default);
                     }
 
-                    // 解密值
-                    var decryptKey = string.IsNullOrEmpty(passphrase) ?
-                        _masterKey : DeriveKey(passphrase, key);
+                    // 解密值（支持新旧格式）
+                    string decryptedData;
+                    var encryptedBytes = Convert.FromBase64String(entry.EncryptedValue);
 
-                    var decryptedData = DecryptData(
-                        Convert.FromBase64String(entry.EncryptedValue),
-                        decryptKey);
+                    if (!string.IsNullOrEmpty(entry.Salt))
+                    {
+                        // 新格式：使用记录特定的盐值
+                        var salt = Convert.FromBase64String(entry.Salt);
+                        var iterations = entry.Iterations ?? _keyIterations;
+
+                        // 使用记录的迭代次数（支持渐进升级）
+                        var decryptKey = string.IsNullOrEmpty(passphrase) ?
+                            DeriveKeyWithIterations(Convert.ToBase64String(_masterKey), salt, iterations) :
+                            DeriveKeyWithIterations(passphrase, salt, iterations);
+
+                        decryptedData = DecryptData(encryptedBytes, decryptKey);
+                    }
+                    else
+                    {
+                        // 旧格式：向后兼容（无独立盐值）
+                        var decryptKey = string.IsNullOrEmpty(passphrase) ?
+                            _masterKey : DeriveKey(passphrase, Encoding.UTF8.GetBytes(key));
+
+                        decryptedData = DecryptData(encryptedBytes, decryptKey);
+
+                        // 可选：自动迁移到新格式
+                        _logger.LogInformation("检测到旧格式配置 {Key}，建议运行密钥轮换升级", key);
+                    }
 
                     var value = JsonSerializer.Deserialize<T>(decryptedData);
 
@@ -237,9 +285,15 @@ namespace LYBT.Desktop.Core.Services.Configuration
                 // 序列化值
                 var json = JsonSerializer.Serialize(value);
 
-                // 加密
+                // 为每条记录生成独立的随机盐
+                var recordSalt = GenerateRandomSalt();
+
+                // 使用记录特定的盐值派生密钥
                 var encryptKey = string.IsNullOrEmpty(passphrase) ?
-                    _masterKey : DeriveKey(passphrase, key);
+                    DeriveKey(Convert.ToBase64String(_masterKey), recordSalt) :
+                    DeriveKey(passphrase, recordSalt);
+
+                // 加密数据
                 var encryptedData = EncryptData(json, encryptKey);
 
                 lock (_lock)
@@ -250,6 +304,8 @@ namespace LYBT.Desktop.Core.Services.Configuration
                     {
                         Key = key,
                         EncryptedValue = Convert.ToBase64String(encryptedData),
+                        Salt = Convert.ToBase64String(recordSalt), // 存储盐值
+                        Iterations = _keyIterations, // 记录迭代次数
                         CreatedAt = isNew ? DateTime.Now : _secureConfigs[key].CreatedAt,
                         UpdatedAt = DateTime.Now,
                         LastAccessed = DateTime.Now,
@@ -357,7 +413,8 @@ namespace LYBT.Desktop.Core.Services.Configuration
                     });
 
                     // 使用提供的密码加密
-                    var exportKey = DeriveKey(passphrase, "EXPORT");
+                    var exportSalt = Encoding.UTF8.GetBytes("EXPORT_SALT_2025");
+                    var exportKey = DeriveKey(passphrase, exportSalt);
                     var encryptedData = EncryptData(json, exportKey);
 
                     LogAccess("*", "Export", true);
@@ -379,7 +436,8 @@ namespace LYBT.Desktop.Core.Services.Configuration
             try
             {
                 // 解密导入数据
-                var exportKey = DeriveKey(passphrase, "EXPORT");
+                var exportSalt = Encoding.UTF8.GetBytes("EXPORT_SALT_2025");
+                var exportKey = DeriveKey(passphrase, exportSalt);
                 var decryptedJson = DecryptData(Convert.FromBase64String(encryptedData), exportKey);
 
                 var importData = JsonSerializer.Deserialize<SecureConfigExport>(decryptedJson);
@@ -446,9 +504,10 @@ namespace LYBT.Desktop.Core.Services.Configuration
             {
                 _logger.LogInformation("开始轮换加密密钥");
 
-                var oldKey = string.IsNullOrEmpty(oldPassphrase) ?
-                    _masterKey : DeriveKey(oldPassphrase, _keyDerivationSalt);
-                var newKey = DeriveKey(newPassphrase, _keyDerivationSalt);
+                // 为密钥轮换生成新的盐值
+                var rotationSalt = GenerateRandomSalt();
+                var oldKey = _masterKey;
+                var newKey = DeriveKey(newPassphrase, rotationSalt);
 
                 lock (_lock)
                 {
@@ -723,12 +782,33 @@ namespace LYBT.Desktop.Core.Services.Configuration
 
         #region 加密方法
 
-        private byte[] DeriveKey(string passphrase, string salt)
+        private byte[] DeriveKey(string passphrase, byte[] salt)
         {
+            // 使用 PBKDF2 with SHA-256，100,000 次迭代（OWASP 2025 推荐）
             using (var pbkdf2 = new Rfc2898DeriveBytes(
                 passphrase,
-                Encoding.UTF8.GetBytes(salt),
+                salt,
                 _keyIterations,
+                HashAlgorithmName.SHA256))
+            {
+                return pbkdf2.GetBytes(32); // 256-bit key
+            }
+        }
+
+        private byte[] GenerateRandomSalt()
+        {
+            var salt = new byte[_saltLength];
+            RandomNumberGenerator.Fill(salt);
+            return salt;
+        }
+
+        private byte[] DeriveKeyWithIterations(string passphrase, byte[] salt, int iterations)
+        {
+            // 使用指定的迭代次数派生密钥（支持渐进升级）
+            using (var pbkdf2 = new Rfc2898DeriveBytes(
+                passphrase,
+                salt,
+                iterations,
                 HashAlgorithmName.SHA256))
             {
                 return pbkdf2.GetBytes(32); // 256-bit key
@@ -848,6 +928,8 @@ namespace LYBT.Desktop.Core.Services.Configuration
         public string Key { get; set; } = string.Empty;
         public string EncryptedValue { get; set; } = string.Empty;
         public string Checksum { get; set; } = string.Empty;
+        public string? Salt { get; set; } // 每条记录独立的盐值（Base64）
+        public int? Iterations { get; set; } // 记录使用的迭代次数，支持渐进升级
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
         public DateTime? LastAccessed { get; set; }
