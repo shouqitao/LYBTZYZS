@@ -1,98 +1,79 @@
-# 📚 LYBTZYZS 文档中心
+# 文档主页（LYBTZYZS）
 
-> 凌隐宝堂中医诊所诊疗系统 - 技术文档导航
-> 更新时间：2025-09-21
+本页面作为项目文档的入口与导航。所有细节以根目录 `README.md` 为权威说明，以下专题文档提供更细的操作与背景。
 
-## 🗺️ 快速导航
+## 快速事实
+- 目标框架：.NET 8；SDK 由 `global.json` 锁定（9.0.305）
+- 输出目录：统一 `BIN/`（见 `Directory.Build.props`）
+- 测试与覆盖率产物：`BIN/TestResults/`（由 `.runsettings` 与 `tests/Directory.Build.targets` 统一约定）
+- 依赖管理：集中在 `Directory.Packages.props`
+- API 路由：`/api/v1/*`（ASP.NET API Versioning）
+- 序列化：前后端统一 System.Text.Json
 
-### 📋 项目概述
-- [系统介绍](../README.md)
-- [项目状态](../README.md#项目状态)
-- [核心特性](../README.md#核心特性)
-- [技术栈](architecture/tech-stack.md)
+## 文档目录
+- 架构概览：architecture/overview.md
+- 配置与环境：configuration.md
+- API 总览：api/README.md
+- 测试与覆盖率：testing/README.md
+- 代码风格与规范：styleguide.md
+- 运行手册与排障：runbook.md
+- 模块索引：modules/index.md
+- 变更记录：../CHANGELOG.md
 
-### 🏗️ 架构文档
-- [系统架构设计](architecture/)
-- [UltraThink架构](ultrathink/)
-- [数据库设计](database/)
-- [API设计规范](api/)
+## 目录结构（docs/）
+```
+docs/
+├── index.md                      # 文档主页（本页）
+├── configuration.md              # 配置与环境
+├── styleguide.md                 # 代码风格与规范
+├── runbook.md                    # 运行手册与排障
+│
+├── architecture/
+│   └── overview.md               # 架构概览
+│
+├── api/
+│   └── README.md                 # API 总览与调试指引（可选 openapi.v1.json）
+│
+├── testing/
+│   └── README.md                 # 测试与覆盖率（命令/产物）
+│
+├── modules/
+│   └── index.md                  # 后端控制器 ↔ 前端 Refit ↔ 路由映射
+│
+├── ccpm/                         # PRD 与工作流
+│   ├── PREFERENCES.md
+│   ├── PRD-TEMPLATE.md
+│   ├── PRD-SUMMARY-TEMPLATE.md
+│   └── ...（PRD 需求文档存放于此）
+│
+├── development/
+│   └── server-tests-coverage-epic-summary.md
+│
+├── prds-summary/                 # PRD 完成总结与实施产出汇总
+│   ├── PRD-desktop-sln-quick-fix-20250921-SUMMARY.md
+│   ├── PRD-server-entity-consistency-optimization-20250921-SUMMARY.md
+│   ├── PRD-server-tests-coverage-20250921-SUMMARY.md
+│   ├── PRD-server-shared-inventory-and-structure-optimization-20250921-SUMMARY.md
+│   └── shared-inventory/         # 共享清单/依赖/规范等产物
+│       ├── shared-types.md
+│       ├── shared-deps.md
+│       ├── shared-enums-spec.md
+│       ├── shared-structure-proposal.md
+│       └── shared-arch-gates.md
+│
+├── reports/
+│   └── cleanup-summary-20250921.md
+│
+└── _archive/                     # 本地归档（已 gitignore，不推送）
+    └── yyyy-MM-dd/
+```
 
-### 📦 Shared层规范
-- **[类型清单](shared-inventory/shared-types.md)** - 268+类型完整清单
-- **[依赖关系](shared-inventory/shared-deps.md)** - 模块依赖关系图
-- **[枚举规范](shared-inventory/shared-enums-spec.md)** - 枚举标准与i18n
-- **[结构优化](shared-inventory/shared-structure-proposal.md)** - 目录重构方案
-- **[架构门禁](shared-inventory/shared-arch-gates.md)** - 依赖边界规范
-
-### 💻 开发指南
-- [环境配置](development/setup.md)
-- [编码规范](development/coding-standards.md)
-- [Git工作流](development/git-workflow.md)
-- [贡献指南](development/CONTRIBUTING.md)
-
-### 🧪 测试文档
-- [测试策略](testing/test-strategy.md)
-- [测试指南](testing/test-guidelines.md)
-- [覆盖率报告](reports/)
-
-### 📦 部署运维
-- [部署指南](deployment/)
-- [配置说明](deployment/configuration.md)
-- [运维手册](deployment/operations.md)
-- [故障排查](deployment/troubleshooting.md)
-
-### 📖 业务文档
-- [需求文档](requirements/)
-- [用户手册](user-guide/)
-- [培训材料](training/)
-
-## 🔍 按模块查看
-
-### 后端模块 (Server)
-1. [Auth模块](modules/auth/) - 认证授权
-2. [Users模块](modules/users/) - 用户管理
-3. [Patients模块](modules/patients/) - 患者管理
-4. [MedicalCase模块](modules/medical-case/) - 病历管理
-5. [Consultation模块](modules/consultation/) - 问诊管理
-6. [Prescriptions模块](modules/prescriptions/) - 处方管理
-7. [Herbs模块](modules/herbs/) - 药材管理
-8. [Formula模块](modules/formula/) - 方剂管理
-
-### 前端模块 (Client)
-- [Shell主程序](client/shell/)
-- [各业务模块](client/modules/)
-- [共享组件](client/shared/)
-
-## 📈 最新更新
-
-### 2025-09-21
-- ✅ 添加Shared层规范文档（5个新文档）
-- ✅ 类型清单梳理完成（268+类型）
-- ✅ 依赖关系图绘制完成
-- ✅ 枚举规范制定完成
-- ✅ 架构门禁规范发布
-
-### 2025-09-20
-- ✅ DTO优化三阶段完成
-- ✅ 接口统一化完成
-- ✅ 达到零编译错误
-
-## 🔗 相关资源
-
-- [GitHub仓库](https://github.com/shouqitao/LYBTZYZS)
-- [Issues追踪](https://github.com/shouqitao/LYBTZYZS/issues)
-- [Wiki文档](https://github.com/shouqitao/LYBTZYZS/wiki)
-- [更新日志](CHANGELOG.md)
-
-## 📝 文档规范
-
-所有文档遵循以下规范：
-- 使用Markdown格式
-- 包含更新时间戳
-- 提供清晰的目录结构
-- 包含代码示例
-- 保持与代码同步
+## PRD 工作流（CCPM）
+- PRD 文档：存放于 `docs/ccpm/`（对外）与 `.claude/prds/`（镜像，便于命令集）
+- 模板：`docs/ccpm/PRD-TEMPLATE.md`（中文）/ `.claude/prds/_TEMPLATE.md`（英文）
+- 严格要求：实现必须严格遵循 PRD（范围/需求/验收标准）；任何偏差须先更新 PRD 并获批准
+- 完成总结：每个 PRD 完成后，按模板（`docs/ccpm/PRD-SUMMARY-TEMPLATE.md`）生成“完成总结文档”至 `docs/prds-summary/`，并同步更新相关 README 与文档链接
 
 ---
 
-*凌隐宝堂中医诊所诊疗系统 - 让中医诊疗更智能、更高效、更专业*
+如需新增文档，请先更新本页目录与目录结构以保持一致性。

@@ -154,3 +154,23 @@ appsettings.Local.json
 *.env
 
 docs/_archive/
+
+# Test helper scripts (excluded from VCS)
+tests/*.ps1
+tests/**/*.ps1
+tests/*.sh
+tests/**/*.sh
+tests/*.py
+tests/**/*.py
+
+# Local worktrees and publish output (do not commit)
+.worktrees/
+publish/**
+
+# Process/temporary files in repo root (keep locally, exclude from VCS)
+apply-summary-*.md
+pass*-apply-summary*.md
+error.txt
+temp_auth.json
+scriptshealth-check.ps1
+update_client_readmes_detailed.py

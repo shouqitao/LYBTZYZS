@@ -45,16 +45,13 @@ jobs:
       run: |
         echo "🎯 运行关键模块测试: Users, Patients, Prescriptions, Consultation, Herbs, Formula"
         
-        # 创建测试结果目录
-        mkdir -p TestResults/Coverage
-        
         # 运行用户模块测试
         echo "👤 运行Users模块测试..."
         dotnet test tests/**/Users.UnitTests/*.csproj \
           --configuration Release \
           --no-build \
+          --settings .runsettings \
           --collect:"XPlat Code Coverage" \
-          --results-directory TestResults/Users \
           --logger "trx;LogFileName=users-test-results.trx" \
           --logger "console;verbosity=detailed" \
           -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura || true
@@ -67,7 +64,7 @@ jobs:
         echo "📈 合并覆盖率数据并生成报告..."
         
         # 查找所有覆盖率文件
-        coverage_files=$(find TestResults -name "coverage.cobertura.xml" | paste -sd ";" -)
+        coverage_files=$(find BIN/TestResults -name "coverage.cobertura.xml" | paste -sd ";" -)
         
         if [ -n "$coverage_files" ]; then
           echo "找到覆盖率文件: $coverage_files"
@@ -75,14 +72,14 @@ jobs:
           # 生成HTML报告和徽章
           reportgenerator \
             "-reports:$coverage_files" \
-            "-targetdir:TestResults/CoverageReport" \
+            "-targetdir:BIN/TestResults/CoverageReport" \
             "-reporttypes:Html;JsonSummary;Badges;TextSummary" \
             "-sourcedirs:src" \
             "-title:LYBTZYZS P3-测试覆盖率报告" \
             "-tag:${{ github.sha }}" \
             "-assemblyfilters:-*Tests*;-*TestUtilities*" \
             "-classfilters:-*Tests*;-*Mock*;-*Stub*"
-            
+          
           echo "✅ 覆盖率报告生成完成"
         else
           echo "⚠️ 未找到覆盖率数据文件"
@@ -119,5 +116,5 @@ jobs:
       if: always()
       with:
         name: coverage-report-${{ github.run_number }}
-        path: TestResults/CoverageReport/
+        path: BIN/TestResults/CoverageReport/
         retention-days: 30

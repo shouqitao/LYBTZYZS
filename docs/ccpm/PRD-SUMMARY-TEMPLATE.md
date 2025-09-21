@@ -2,6 +2,7 @@
 
 - 标题：PRD 完成总结 — <feature/slug> — <YYYY-MM-DD>
 - 关联 PRD：docs/ccpm/PRD-<slug>-<YYYYMMDD>.md
+- 存放位置：docs/prds-summary/PRD-<slug>-<YYYYMMDD>-SUMMARY.md
 
 ## 实施范围与关键变更
 - 变更文件与路径：

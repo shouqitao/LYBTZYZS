@@ -65,41 +65,50 @@ jobs:
       run: |
         echo "运行Users模块测试..."
         dotnet test tests/UnitTests/Modules/Users.UnitTests/LYBT.Module.Users.Tests.csproj `
-          --configuration Release --no-build --verbosity minimal
+          --configuration Release --no-build --verbosity minimal `
+          --settings .runsettings
         
         echo "运行Patients模块测试..."
         dotnet test tests/UnitTests/Modules/Patients.UnitTests/LYBT.Module.Patients.Tests.csproj `
-          --configuration Release --no-build --verbosity minimal
+          --configuration Release --no-build --verbosity minimal `
+          --settings .runsettings
         
         echo "运行Prescriptions模块测试..."
         dotnet test tests/UnitTests/Modules/Prescriptions.UnitTests/LYBT.Module.Prescriptions.Tests.csproj `
-          --configuration Release --no-build --verbosity minimal
+          --configuration Release --no-build --verbosity minimal `
+          --settings .runsettings
         
         echo "运行Consultation模块测试..."
         dotnet test tests/UnitTests/Modules/Consultation.UnitTests/LYBT.Module.Consultation.Tests.csproj `
-          --configuration Release --no-build --verbosity minimal
+          --configuration Release --no-build --verbosity minimal `
+          --settings .runsettings
         
         echo "运行Herbs模块测试..."
         dotnet test tests/UnitTests/Modules/Herbs.UnitTests/LYBT.Module.Herbs.Tests.csproj `
-          --configuration Release --no-build --verbosity minimal
+          --configuration Release --no-build --verbosity minimal `
+          --settings .runsettings
         
         echo "运行Formula模块测试..."
         dotnet test tests/UnitTests/Modules/Formula.UnitTests/LYBT.Module.Formula.Tests.csproj `
-          --configuration Release --no-build --verbosity minimal
+          --configuration Release --no-build --verbosity minimal `
+          --settings .runsettings
         
         echo "运行MedicalCase模块测试..."
         dotnet test tests/UnitTests/Modules/MedicalCase.UnitTests/LYBT.Module.MedicalCase.Tests.csproj `
-          --configuration Release --no-build --verbosity minimal
+          --configuration Release --no-build --verbosity minimal `
+          --settings .runsettings
         
         echo "运行Auth模块测试..."
         dotnet test tests/UnitTests/Modules/Auth.UnitTests/LYBT.Module.Auth.Tests.csproj `
-          --configuration Release --no-build --verbosity minimal
+          --configuration Release --no-build --verbosity minimal `
+          --settings .runsettings
 
     # 强制门禁：架构测试必须全部通过  
     - name: 🚨 强制门禁 - 架构合规测试
       run: |
         dotnet test tests/Architecture/LYBT.ArchTests.csproj `
-          --configuration Release --no-build --verbosity minimal
+          --configuration Release --no-build --verbosity minimal `
+          --settings .runsettings
 
   # Level 2.5: P3覆盖率门禁 (阻塞性) - Phase 3新增
   coverage-quality-gate:
@@ -128,14 +137,14 @@ jobs:
         echo "🎯 P3任务: 执行覆盖率收集并验证≥70%阈值"
         
         # 创建测试结果目录
-        New-Item -ItemType Directory -Force -Path "TestResults/Coverage"
+        New-Item -ItemType Directory -Force -Path "BIN/TestResults/Coverage"
         
         # 运行所有模块测试收集覆盖率
         echo "收集所有8个模块的覆盖率数据..."
         dotnet test tests/UnitTests/Modules/ `
           --configuration Release --no-build `
+          --settings .runsettings `
           --collect:"XPlat Code Coverage" `
-          --results-directory TestResults/Coverage `
           --logger "console;verbosity=minimal" `
           -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura
         
@@ -143,7 +152,7 @@ jobs:
         dotnet tool install -g dotnet-reportgenerator-globaltool
         
         # 生成覆盖率报告
-        $coverageFiles = Get-ChildItem -Path "TestResults" -Recurse -Filter "coverage.cobertura.xml" | ForEach-Object { $_.FullName }
+        $coverageFiles = Get-ChildItem -Path "BIN/TestResults" -Recurse -Filter "coverage.cobertura.xml" | ForEach-Object { $_.FullName }
         $coverageInput = $coverageFiles -join ";"
         
         if ($coverageFiles.Count -gt 0) {
@@ -151,14 +160,14 @@ jobs:
           
           reportgenerator `
             "-reports:$coverageInput" `
-            "-targetdir:TestResults/CoverageReport" `
+            "-targetdir:BIN/TestResults/CoverageReport" `
             "-reporttypes:JsonSummary;TextSummary" `
             "-sourcedirs:src" `
             "-assemblyfilters:-*Tests*;-*TestUtilities*" `
             "-classfilters:-*Tests*;-*Mock*;-*Stub*"
             
           # 检查覆盖率阈值
-          $summaryFile = "TestResults/CoverageReport/Summary.json"
+          $summaryFile = "BIN/TestResults/CoverageReport/Summary.json"
           if (Test-Path $summaryFile) {
             $summary = Get-Content $summaryFile | ConvertFrom-Json
             $lineCoverage = [math]::Round($summary.coverage.linecoverage, 2)

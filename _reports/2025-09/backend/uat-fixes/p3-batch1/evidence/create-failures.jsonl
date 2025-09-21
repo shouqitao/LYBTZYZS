@@ -1,19 +1,0 @@
-  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
-                                 Dload  Upload   Total   Spent    Left  Speed
-  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   559    0   364  100   195   121k  66598 --:--:-- --:--:-- --:--:--  272k{"type":"https://tools.ietf.org/html/rfc9110#section-15.5.1","title":"One or more validation errors occurred.","status":400,"errors":{"dto":["The dto field is required."],"$.name":["The JSON value could not be converted to System.String. Path: $.name | LineNumber: 1 | BytePositionInLine: 16."]},"traceId":"00-0a7d58174d5f5d708dc5c499ff15afdc-f230c52cb96e1aad-00"}
----
-HTTP Status: 400
-Time: 0.002928s
-
-=== Users Create Test ===
-  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
-                                 Dload  Upload   Total   Spent    Left  Speed
-  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   480    0   372  100   108  94034  27300 --:--:-- --:--:-- --:--:--  156k{"type":"https://tools.ietf.org/html/rfc9110#section-15.5.1","title":"One or more validation errors occurred.","status":400,"errors":{"dto":["The dto field is required."],"$.realName":["The JSON value could not be converted to System.String. Path: $.realName | LineNumber: 2 | BytePositionInLine: 24."]},"traceId":"00-bdeaf6df847df3798ec0e6093e922bd0-2610180e7b7aab5c-00"}
-HTTP Status: 400
-
-=== Consultations Create Test ===
-  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
-                                 Dload  Upload   Total   Spent    Left  Speed
-  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   620    0   388  100   232  12792   7649 --:--:-- --:--:-- --:--:-- 20666{"type":"https://tools.ietf.org/html/rfc9110#section-15.5.1","title":"One or more validation errors occurred.","status":400,"errors":{"dto":["The dto field is required."],"$.initialComplaint":["The JSON value could not be converted to System.String. Path: $.initialComplaint | LineNumber: 4 | BytePositionInLine: 32."]},"traceId":"00-d150478b818f2812c55ce8a713fc9d34-809f8c0e8278a78d-00"}
-HTTP Status: 400
-

@@ -58,17 +58,17 @@ jobs:
           --configuration Release `
           --no-build `
           --verbosity normal `
+          --settings .runsettings `
           --logger "trx;LogFileName=$projectName.trx" `
           --logger "html;LogFileName=$projectName.html" `
-          --collect:"XPlat Code Coverage" `
-          --results-directory ./TestResults/$projectName
+          --collect:"XPlat Code Coverage"
 
     - name: 上传测试结果
       uses: actions/upload-artifact@v4
       if: always()
       with:
         name: test-results-${{ strategy.job-index }}
-        path: ./TestResults
+        path: ./BIN/TestResults
         retention-days: 7
 
   integration-tests:
@@ -126,8 +126,9 @@ jobs:
           --configuration Release `
           --no-build `
           --verbosity normal `
+          --settings .runsettings `
           --logger "trx;LogFileName=integration-tests.trx" `
-          --results-directory ./TestResults/Integration
+          
 
     - name: 运行 Python API 测试
       run: |
@@ -140,7 +141,7 @@ jobs:
       if: always()
       with:
         name: integration-test-results
-        path: ./TestResults/Integration
+        path: ./BIN/TestResults
         retention-days: 7
 
   test-summary:

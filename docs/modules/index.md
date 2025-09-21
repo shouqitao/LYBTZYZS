@@ -130,9 +130,9 @@ graph LR
 | **LYBT.Shared.Utilities** | 工具类、扩展方法 | 部分模块 |
 
 详细规范请查看：
-- [Shared类型清单](../shared-inventory/shared-types.md)
-- [Shared依赖关系](../shared-inventory/shared-deps.md)
-- [架构门禁规范](../shared-inventory/shared-arch-gates.md)
+- [Shared类型清单](../prds-summary/shared-inventory/shared-types.md)
+- [Shared依赖关系](../prds-summary/shared-inventory/shared-deps.md)
+- [架构门禁规范](../prds-summary/shared-inventory/shared-arch-gates.md)
 
 ## 🔧 开发规范
 

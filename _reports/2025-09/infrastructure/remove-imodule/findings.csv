@@ -1,7 +1,0 @@
-Path,Line,Context,Notes
-"src/Server/Core/LYBT.Infrastructure/Interfaces/IModule.cs",10,"public interface IModule","IModule接口定义 - 仅此一处后端定义"
-"src/Server/Core/LYBT.Infrastructure/Interfaces/IModule.cs",39,"public abstract class BaseModule : IModule","BaseModule实现 - 继承自IModule"
-"src/Server/Core/LYBT.Infrastructure/Interfaces/IModule.cs",102,"where T : IModule, new()","泛型约束 - ModuleExtensions.AddModule方法"
-"src/Server/Core/LYBT.Infrastructure/Interfaces/IModule.cs",111,"public static IServiceCollection AddModule(this IServiceCollection services, IModule module)","扩展方法参数 - ModuleExtensions.AddModule重载"
-"src/Client/Desktop/[多个文件]",N/A,"IModule (Prism框架)","前端Prism模块接口 - 与后端IModule不同，用于UI模块化"
-"docs/[多个文档文件]",N/A,"IModule引用","文档中的历史引用 - 提及已删除的重复接口问题"

@@ -16,6 +16,8 @@
 
   <!-- 覆盖率收集配置 -->
   <PropertyGroup Condition="'$(IsTestProject)' == 'true'">
+    <!-- 仓库根目录（以 tests/ 为基准向上一层） -->
+    <RepoRoot>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\'))</RepoRoot>
     <!-- 排除不需要覆盖的命名空间和类型 -->
     <ExcludeByAttribute>ObsoleteAttribute,GeneratedCodeAttribute,CompilerGeneratedAttribute</ExcludeByAttribute>
     <ExcludeByFile>**/*.Designer.cs,**/*.g.cs,**/*.g.i.cs</ExcludeByFile>
@@ -23,14 +25,17 @@
     <!-- 覆盖率输出格式 -->
     <CoverletOutputFormat>cobertura,opencover,json</CoverletOutputFormat>
 
-    <!-- 覆盖率输出路径 -->
-    <CoverletOutput>$(MSBuildProjectDirectory)\..\..\BIN\TestResults\$(MSBuildProjectName)\</CoverletOutput>
+    <!-- 覆盖率输出路径（统一到仓库根 BIN/TestResults） -->
+    <CoverletOutput>$(RepoRoot)BIN\TestResults\$(MSBuildProjectName)\</CoverletOutput>
 
     <!-- 跳过自动生成的文件 -->
     <ExcludeFromCodeCoverage>true</ExcludeFromCodeCoverage>
 
     <!-- 收集覆盖率 -->
     <CollectCoverage>true</CollectCoverage>
+
+    <!-- VSTest 结果目录（trx/junit 等）统一到仓库根 BIN/TestResults -->
+    <VSTestResultsDirectory>$(RepoRoot)BIN\TestResults</VSTestResultsDirectory>
   </PropertyGroup>
 
   <!-- 覆盖率阈值配置（可选，用于CI门禁） -->

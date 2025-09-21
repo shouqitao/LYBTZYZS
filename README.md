@@ -14,6 +14,12 @@
 
 凌隐宝堂中医诊所诊疗系统是基于 .NET 8 的企业级纯中医诊所管理系统，采用 Web API 后端 + WPF 桌面前端架构，专为中医诊所量身定制的完整诊疗解决方案。
 
+### 🔎 快速事实
+- 目标框架：.NET 8（由 `global.json` 锁定）
+- 统一构建产物目录：`BIN/`（见 `Directory.Build.props`）
+- 测试与覆盖率产物：`BIN/TestResults/`（由 `.runsettings` 与 `tests/Directory.Build.targets` 约定）
+- 本地测试命令与说明：见 `docs/testing/README.md`
+
 ## 📈 项目状态
 
 ### 🏆 最新成就 (2025-09-20)
@@ -241,6 +247,13 @@ chore: 构建/工具变更
 
 欢迎贡献代码！请查看 [贡献指南](docs/development/CONTRIBUTING.md) 了解如何参与项目开发。
 
+快速运行测试（统一产物在 `BIN/TestResults/`）：
+
+```bash
+dotnet test tests -c Release --no-build --settings .runsettings
+dotnet test tests -c Release --collect:"XPlat Code Coverage" --settings .runsettings
+```
+
 ## 📚 文档导航
 
 ### 架构文档
@@ -249,11 +262,11 @@ chore: 构建/工具变更
 - [技术选型文档](docs/architecture/tech-stack.md)
 
 ### Shared层规范文档
-- [Shared类型清单](docs/shared-inventory/shared-types.md) - 268+类型完整清单
-- [Shared依赖关系](docs/shared-inventory/shared-deps.md) - 模块依赖关系图
-- [枚举规范文档](docs/shared-inventory/shared-enums-spec.md) - 枚举标准与i18n
-- [结构优化建议](docs/shared-inventory/shared-structure-proposal.md) - 目录重构方案
-- [架构门禁规范](docs/shared-inventory/shared-arch-gates.md) - 依赖边界与禁止项
+- [Shared类型清单](docs/prds-summary/shared-inventory/shared-types.md) - 268+类型完整清单
+- [Shared依赖关系](docs/prds-summary/shared-inventory/shared-deps.md) - 模块依赖关系图
+- [枚举规范文档](docs/prds-summary/shared-inventory/shared-enums-spec.md) - 枚举标准与i18n
+- [结构优化建议](docs/prds-summary/shared-inventory/shared-structure-proposal.md) - 目录重构方案
+- [架构门禁规范](docs/prds-summary/shared-inventory/shared-arch-gates.md) - 依赖边界与禁止项
 
 ### 开发文档
 - [开发环境配置](docs/development/setup.md)

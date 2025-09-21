@@ -107,6 +107,7 @@ jobs:
           --configuration ${{ matrix.configuration }} \
           --no-build \
           --verbosity normal \
+          --settings .runsettings \
           --logger "trx;LogFileName=unit-test-results.trx" \
           --logger "html;LogFileName=unit-test-results.html" \
           --collect:"XPlat Code Coverage" \
@@ -118,6 +119,7 @@ jobs:
           --configuration ${{ matrix.configuration }} \
           --no-build \
           --verbosity normal \
+          --settings .runsettings \
           --logger "trx;LogFileName=integration-test-results.trx" \
           --logger "html;LogFileName=integration-test-results.html"
       if: matrix.configuration == 'Release'
@@ -128,9 +130,9 @@ jobs:
       with:
         name: test-results-${{ matrix.os }}-${{ matrix.configuration }}
         path: |
-          **/*.trx
-          **/*.html
-          **/coverage.opencover.xml
+          BIN/TestResults/**/*.trx
+          BIN/TestResults/**/*.html
+          BIN/TestResults/**/coverage.opencover.xml
 
     - name: 📈 发布代码覆盖率
       uses: codecov/codecov-action@v5

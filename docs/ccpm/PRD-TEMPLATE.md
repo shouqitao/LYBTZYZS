@@ -52,4 +52,4 @@
 
 ## 产出物（Deliverables）
 - 代码/配置/文档/脚本/说明。
-
+- 完成总结（路径）：`docs/prds-summary/PRD-<slug>-<YYYYMMDD>-SUMMARY.md`（按 `docs/ccpm/PRD-SUMMARY-TEMPLATE.md` 生成）

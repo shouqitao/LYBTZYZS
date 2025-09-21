@@ -55,8 +55,8 @@ jobs:
           --configuration Release \
           --no-build \
           --verbosity normal \
+          --settings .runsettings \
           --collect:"XPlat Code Coverage" \
-          --results-directory ./TestResults \
           --logger "trx;LogFileName=TestResults.trx" \
           -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover \
           -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.ExcludeByFile="**/Migrations/**" \
@@ -66,8 +66,8 @@ jobs:
       run: |
         # 合并所有覆盖率文件
         reportgenerator \
-          "-reports:TestResults/**/coverage.opencover.xml" \
-          "-targetdir:TestResults/CoverageReport" \
+          "-reports:BIN/TestResults/**/coverage.opencover.xml" \
+          "-targetdir:BIN/TestResults/CoverageReport" \
           "-reporttypes:Html;Cobertura;JsonSummary;MarkdownSummary;Badges;Json" \
           "-filefilters:-**/Migrations/**;-**/Program.cs;-**/Startup.cs" \
           "-classfilters:-*.Migrations.*" \
@@ -75,27 +75,27 @@ jobs:
           "-verbosity:Info"
 
         # 显示覆盖率报告路径
-        echo "覆盖率报告已生成到: TestResults/CoverageReport/"
-        ls -la TestResults/CoverageReport/
+        echo "覆盖率报告已生成到: BIN/TestResults/CoverageReport/"
+        ls -la BIN/TestResults/CoverageReport/
 
         # 检查生成的文件
         echo "=== 生成的覆盖率文件 ==="
-        find TestResults -name "*.json" -o -name "*.xml" | head -10
+        find BIN/TestResults -name "*.json" -o -name "*.xml" | head -10
 
         # 如果Summary.json存在，显示其结构
-        if [ -f "TestResults/CoverageReport/Summary.json" ]; then
+        if [ -f "BIN/TestResults/CoverageReport/Summary.json" ]; then
           echo "=== Summary.json 结构预览 ==="
-          jq '.' TestResults/CoverageReport/Summary.json | head -20
+          jq '.' BIN/TestResults/CoverageReport/Summary.json | head -20
         fi
 
     - name: 📈 解析覆盖率数据
       id: coverage
       run: |
         # 从JSON摘要中提取覆盖率数据
-        if [ -f "TestResults/CoverageReport/Summary.json" ]; then
-          LINE_COVERAGE=$(jq -r '.summary.linecoverage' TestResults/CoverageReport/Summary.json)
-          BRANCH_COVERAGE=$(jq -r '.summary.branchcoverage' TestResults/CoverageReport/Summary.json)
-          METHOD_COVERAGE=$(jq -r '.summary.methodcoverage' TestResults/CoverageReport/Summary.json)
+        if [ -f "BIN/TestResults/CoverageReport/Summary.json" ]; then
+          LINE_COVERAGE=$(jq -r '.summary.linecoverage' BIN/TestResults/CoverageReport/Summary.json)
+          BRANCH_COVERAGE=$(jq -r '.summary.branchcoverage' BIN/TestResults/CoverageReport/Summary.json)
+          METHOD_COVERAGE=$(jq -r '.summary.methodcoverage' BIN/TestResults/CoverageReport/Summary.json)
 
           echo "line_coverage=$LINE_COVERAGE" >> $GITHUB_OUTPUT
           echo "branch_coverage=$BRANCH_COVERAGE" >> $GITHUB_OUTPUT
@@ -136,7 +136,7 @@ jobs:
         echo "|------|----------|----------|------|" >> $GITHUB_STEP_SUMMARY
 
         # 检查JSON摘要文件是否存在
-        if [ -f "TestResults/CoverageReport/Summary.json" ]; then
+        if [ -f "BIN/TestResults/CoverageReport/Summary.json" ]; then
           for module_name in "${!critical_modules_map[@]}"; do
             assembly_name="${critical_modules_map[$module_name]}"
 
@@ -153,7 +153,7 @@ jobs:
             if [ "$module_coverage" = "0" ] || [ "$module_coverage" = "null" ]; then
               echo "⚠️ 无法从JSON摘要中获取 $module_name 覆盖率，尝试其他方法..."
               # 使用grep从coverage.xml中提取
-              coverage_file=$(find TestResults -name "coverage.opencover.xml" | head -1)
+              coverage_file=$(find BIN/TestResults -name "coverage.opencover.xml" | head -1)
               if [ -f "$coverage_file" ]; then
                 module_coverage=$(grep -A5 "assemblyidentity.*$assembly_name" "$coverage_file" | \
                   grep "sequencecoverage" | \
@@ -282,8 +282,8 @@ jobs:
       with:
         name: coverage-report-${{ github.run_id }}
         path: |
-          TestResults/CoverageReport/
-          TestResults/**/*.trx
+          BIN/TestResults/CoverageReport/
+          BIN/TestResults/**/*.trx
         retention-days: 30
 
     - name: 📈 发布覆盖率到Codecov
@@ -291,7 +291,7 @@ jobs:
       if: always()
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
-        files: TestResults/**/coverage.opencover.xml
+        files: BIN/TestResults/**/coverage.opencover.xml
         flags: unittests
         name: codecov-umbrella
         fail_ci_if_error: false

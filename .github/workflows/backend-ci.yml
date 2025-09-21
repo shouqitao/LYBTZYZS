@@ -53,18 +53,21 @@ jobs:
         dotnet test tests/Backend/LYBT.Module.Users.Tests/LYBT.Module.Users.Tests.csproj \
           --configuration ${{ env.CONFIGURATION }} \
           --no-build \
+          --settings .runsettings \
           --logger "trx;LogFileName=users-tests.trx" \
           --collect:"XPlat Code Coverage"
           
         dotnet test tests/Backend/LYBT.Module.Patients.Tests/LYBT.Module.Patients.Tests.csproj \
           --configuration ${{ env.CONFIGURATION }} \
           --no-build \
+          --settings .runsettings \
           --logger "trx;LogFileName=patients-tests.trx" \
           --collect:"XPlat Code Coverage"
           
         dotnet test tests/Backend/LYBT.Module.Herbs.Tests/LYBT.Module.Herbs.Tests.csproj \
           --configuration ${{ env.CONFIGURATION }} \
           --no-build \
+          --settings .runsettings \
           --logger "trx;LogFileName=herbs-tests.trx" \
           --collect:"XPlat Code Coverage"
           
@@ -73,7 +76,7 @@ jobs:
       if: always()
       with:
         name: 后端测试报告
-        path: '**/*.trx'
+        path: 'BIN/TestResults/**/*.trx'
         reporter: dotnet-trx
         
     - name: 上传覆盖率报告
@@ -81,7 +84,7 @@ jobs:
       if: always()
       with:
         name: coverage-reports
-        path: '**/coverage.cobertura.xml'
+        path: 'BIN/TestResults/**/coverage.cobertura.xml'
         
     - name: 发布 Web API
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
