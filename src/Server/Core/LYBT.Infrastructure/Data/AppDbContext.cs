@@ -194,6 +194,14 @@ namespace LYBT.Infrastructure.Data
             // 配置Status枚举字段
             entity.Property(p => p.Status).HasConversion<int>();
 
+            // 索引优化 - 患者查询
+            entity.HasIndex(p => new { p.Status, p.Name })
+                  .HasDatabaseName("IX_Patients_Status_Name")
+                  .HasFilter("[Status] = 1");  // 只索引启用的患者
+
+            entity.HasIndex(p => p.PhoneNumber)
+                  .HasDatabaseName("IX_Patients_PhoneNumber");
+
             // 配置并发控制字段
             entity.Property(p => p.RowVersion).IsRowVersion().IsConcurrencyToken();
         }
@@ -205,10 +213,29 @@ namespace LYBT.Infrastructure.Data
             entity.HasKey(m => m.Id);
             entity.Property(m => m.Status).HasConversion<string>();
             entity.Property(m => m.Remark).HasMaxLength(500);
-            entity.HasIndex(m => m.PatientId);
-            entity.HasIndex(m => m.DoctorId);
+
+            // 配置外键关系 - 使用 Restrict 防止意外级联删除
+            entity.HasOne<LYBT.Entities.Patients.Patient>()
+                  .WithMany()
+                  .HasForeignKey(m => m.PatientId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne<LYBT.Entities.Users.User>()
+                  .WithMany()
+                  .HasForeignKey(m => m.DoctorId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            // 单列索引
             entity.HasIndex(m => m.Status);
             entity.HasIndex(m => m.CreatedAt);
+
+            // 复合索引优化高频查询
+            entity.HasIndex(m => new { m.PatientId, m.CreatedAt })
+                  .HasDatabaseName("IX_MedicalCases_PatientId_CreatedAt");
+
+            entity.HasIndex(m => new { m.DoctorId, m.CreatedAt })
+                  .HasDatabaseName("IX_MedicalCases_DoctorId_CreatedAt")
+                  .HasFilter("[Status] = 'Active'");
 
             // 添加并发控制
             entity.Property(m => m.RowVersion).IsRowVersion().IsConcurrencyToken();
