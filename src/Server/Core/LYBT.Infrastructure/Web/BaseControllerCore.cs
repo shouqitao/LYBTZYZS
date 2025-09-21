@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using LYBT.Shared.Utilities.Security;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
@@ -41,14 +42,15 @@ public abstract class BaseControllerCore : ControllerBase
     }
 
     /// <summary>
-    /// 统一日志记录
+    /// 统一日志记录（自动脱敏）
     /// </summary>
     protected void LogOperation(string operation, object? data = null, Guid? targetId = null)
     {
         try
         {
             var (operatorId, operatorName, _) = GetOperator();
-            var logData = data != null ? System.Text.Json.JsonSerializer.Serialize(data) : null;
+            // 对数据进行脱敏处理
+            var logData = data != null ? SensitiveDataMasker.MaskSensitiveData(data) : null;
             _logger.LogInformation(
                 "{Operation}，操作者: {OperatorName}({OperatorId}), 目标ID: {TargetId}, 数据: {Data}",
                 operation, operatorName, operatorId, targetId, logData);
@@ -60,12 +62,15 @@ public abstract class BaseControllerCore : ControllerBase
     }
 
     /// <summary>
-    /// 核心异常处理 - 统一日志记录
+    /// 核心异常处理 - 统一日志记录（自动脱敏）
     /// </summary>
     protected void HandleExceptionCore(Exception ex, string operation, object? context = null)
     {
-        var contextInfo = context != null ? $", 上下文: {System.Text.Json.JsonSerializer.Serialize(context)}" : string.Empty;
-        _logger.LogError(ex, "{Operation}失败{Context}", operation, contextInfo);
+        // 对上下文数据进行脱敏处理
+        var contextInfo = context != null ? $", 上下文: {SensitiveDataMasker.MaskSensitiveData(context)}" : string.Empty;
+        // 创建脱敏的异常消息
+        var safeMessage = SensitiveDataMasker.CreateSafeExceptionMessage(ex);
+        _logger.LogError(ex, "{Operation}失败{Context}, 错误: {SafeMessage}", operation, contextInfo, safeMessage);
     }
 
     /// <summary>
