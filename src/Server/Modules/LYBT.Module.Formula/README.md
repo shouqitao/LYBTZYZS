@@ -609,3 +609,14 @@ services.AddScoped<IFormulaRepository, FormulaRepository>();
 
 ## 🚀 快速开始
 - [待补充] 基本操作：dotnet restore/build/test；如何运行/调试当前模块。
+
+## 🔌 API 接口
+- [待补充] API 路由前缀：/api/v1/formula
+- [待补充] 控制器与端点：列出主要 Controller 与示例端点
+- 参考 WebAPI：src/Server/Services/LYBT.WebAPI/README.md
+
+## 📚 相关文档
+- docs/architecture/overview.md
+- docs/api/README.md
+- docs/modules/index.md
+- [待补充] 本模块相关的设计/实现文档链接

@@ -315,3 +315,7 @@ public async Task SyncWithHISAsync()
 
 ## 🚀 快速开始
 - [待补充] 基本操作：dotnet restore/build/test；如何运行/调试当前模块。
+
+## 🔌 API 接口
+- [待补充] 集成的 API/Refit 客户端：例如 ISystemWorkbenchApi
+- [待补充] 关键调用路径与鉴权方式（JWT Bearer）

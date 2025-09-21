@@ -140,3 +140,13 @@ services.AddRefitClient<IAuthApi>()
 
 ## 📦 项目结构
 - [待补充] 列出子目录/关键文件与职责（如 Controllers/Services/Repositories 等）。
+
+## 🔌 API 接口
+- [待补充] 集成的 API/Refit 客户端：例如 IDesktopApi
+- [待补充] 关键调用路径与鉴权方式（JWT Bearer）
+
+## 📚 相关文档
+- docs/architecture/overview.md
+- docs/api/README.md
+- docs/modules/index.md
+- [待补充] 本模块相关的设计/实现文档链接

@@ -795,3 +795,6 @@ curl -X GET https://localhost:7001/health/database
 
 ## 📦 项目结构
 - [待补充] 列出子目录/关键文件与职责（如 Controllers/Services/Repositories 等）。
+
+## 🔌 API 接口
+- [待补充] 相关 API 或对外接口描述

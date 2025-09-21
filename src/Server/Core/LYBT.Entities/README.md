@@ -330,3 +330,6 @@ CREATE INDEX IX_Prescriptions_MedicalCaseId ON Prescriptions(MedicalCaseId);
 
 ## 🚀 快速开始
 - [待补充] 基本操作：dotnet restore/build/test；如何运行/调试当前模块。
+
+## 🔌 API 接口
+- [待补充] 相关 API 或对外接口描述
