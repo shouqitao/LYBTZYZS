@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>LYBT Security Audit Report</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .header { background: #2c3e50; color: white; padding: 20px; border-radius: 5px; }
+        .summary { display: flex; justify-content: space-around; margin: 20px 0; }
+        .summary-item { background: white; padding: 15px; border-radius: 5px; text-align: center; }
+        .pass { color: #27ae60; }
+        .fail { color: #e74c3c; }
+        .warn { color: #f39c12; }
+        table { width: 100%; background: white; border-collapse: collapse; margin: 20px 0; }
+        th { background: #34495e; color: white; padding: 10px; text-align: left; }
+        td { padding: 10px; border-bottom: 1px solid #ecf0f1; }
+        .score { font-size: 48px; font-weight: bold; margin: 20px 0; text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>LYBT Security Audit Report</h1>
+        <p>Generated: 2025-09-22 06:07:14</p>
+    </div>
+
+    <div class="score warn">
+        Security Score: 65.22%
+    </div>
+
+    <div class="summary">
+        <div class="summary-item">
+            <h3>Total Checks</h3>
+            <p>23</p>
+        </div>
+        <div class="summary-item">
+            <h3 class="pass">Passed</h3>
+            <p>15</p>
+        </div>
+        <div class="summary-item">
+            <h3 class="fail">Failed</h3>
+            <p>4</p>
+        </div>
+        <div class="summary-item">
+            <h3 class="warn">Warnings</h3>
+            <p>4</p>
+        </div>
+    </div>
+
+    <h2>Detailed Results</h2>
+    <table>
+        <tr>
+            <th>Category</th>
+            <th>Check</th>
+            <th>Status</th>
+            <th>Details</th>
+        </tr>        <tr>
+            <td>Configuration</td>
+            <td>appsettings.json secrets</td>
+            <td class="warn">WARN</td>
+            <td>Contains development secrets</td>
+        </tr>        <tr>
+            <td>Configuration</td>
+            <td>appsettings.json logging</td>
+            <td class="pass">PASS</td>
+            <td></td>
+        </tr>        <tr>
+            <td>Configuration</td>
+            <td>appsettings.Development.json secrets</td>
+            <td class="warn">WARN</td>
+            <td>Contains development secrets</td>
+        </tr>        <tr>
+            <td>Configuration</td>
+            <td>appsettings.Development.json logging</td>
+            <td class="fail">FAIL</td>
+            <td>Sensitive data logging enabled</td>
+        </tr>        <tr>
+            <td>Configuration</td>
+            <td>appsettings.Production.json secrets</td>
+            <td class="fail">FAIL</td>
+            <td>Contains hardcoded secrets</td>
+        </tr>        <tr>
+            <td>Configuration</td>
+            <td>appsettings.Production.json logging</td>
+            <td class="pass">PASS</td>
+            <td></td>
+        </tr>        <tr>
+            <td>Code Security</td>
+            <td>SQL Injection</td>
+            <td class="pass">PASS</td>
+            <td></td>
+        </tr>        <tr>
+            <td>Code Security</td>
+            <td>Hardcoded Credentials</td>
+            <td class="fail">FAIL</td>
+            <td>2 instances found</td>
+        </tr>        <tr>
+            <td>Security Headers</td>
+            <td>X-Content-Type-Options</td>
+            <td class="pass">PASS</td>
+            <td></td>
+        </tr>        <tr>
+            <td>Security Headers</td>
+            <td>X-Frame-Options</td>
+            <td class="pass">PASS</td>
+            <td></td>
+        </tr>        <tr>
+            <td>Security Headers</td>
+            <td>X-XSS-Protection</td>
+            <td class="pass">PASS</td>
+            <td></td>
+        </tr>        <tr>
+            <td>Security Headers</td>
+            <td>Content-Security-Policy</td>
+            <td class="pass">PASS</td>
+            <td></td>
+        </tr>        <tr>
+            <td>Security Headers</td>
+            <td>Referrer-Policy</td>
+            <td class="pass">PASS</td>
+            <td></td>
+        </tr>        <tr>
+            <td>Security Headers</td>
+            <td>Permissions-Policy</td>
+            <td class="pass">PASS</td>
+            <td></td>
+        </tr>        <tr>
+            <td>Authentication</td>
+            <td>JWT Configuration</td>
+            <td class="fail">FAIL</td>
+            <td>JWT not configured</td>
+        </tr>        <tr>
+            <td>Password Policy</td>
+            <td>Minimum Length</td>
+            <td class="warn">WARN</td>
+            <td>8 characters (recommend 12+)</td>
+        </tr>        <tr>
+            <td>Password Policy</td>
+            <td>Complexity Requirements</td>
+            <td class="pass">PASS</td>
+            <td></td>
+        </tr>        <tr>
+            <td>Rate Limiting</td>
+            <td>Configuration</td>
+            <td class="pass">PASS</td>
+            <td></td>
+        </tr>        <tr>
+            <td>Rate Limiting</td>
+            <td>Implementation</td>
+            <td class="pass">PASS</td>
+            <td></td>
+        </tr>        <tr>
+            <td>HTTPS</td>
+            <td>Redirection</td>
+            <td class="warn">WARN</td>
+            <td>Not configured</td>
+        </tr>        <tr>
+            <td>Security Tests</td>
+            <td>SecurityValidationTests.cs</td>
+            <td class="pass">PASS</td>
+            <td></td>
+        </tr>        <tr>
+            <td>Security Tests</td>
+            <td>PasswordPolicyValidatorTests.cs</td>
+            <td class="pass">PASS</td>
+            <td></td>
+        </tr>        <tr>
+            <td>Security Tests</td>
+            <td>AuthorizationTests.cs</td>
+            <td class="pass">PASS</td>
+            <td></td>
+        </tr>    </table>
+
+    <div class="footer">
+        <p>Report generated by LYBT Security Audit Script</p>
+    </div>
+</body>
+</html>

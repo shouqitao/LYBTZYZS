@@ -37,6 +37,7 @@ public class UsersController : BaseApiController
     /// 切换用户状态（启用/禁用） - 统一API响应格式
     /// </summary>
     [HttpPatch("{id}/toggle-status")]
+    [Authorize(Roles = "Admin")]  // 仅管理员可启用/禁用用户
     public async Task<ActionResult<ApiResponse>> ToggleStatus(Guid id)
     {
         try
@@ -373,6 +374,7 @@ public class UsersController : BaseApiController
     /// 创建新用户 - 统一API响应格式
     /// </summary>
     [HttpPost]
+    [Authorize(Roles = "Admin")]  // 仅管理员可创建用户
     public async Task<ActionResult<ApiResponse<UserDto>>> CreateUser([FromBody] UserCreateDto dto)
     {
         try
@@ -406,6 +408,7 @@ public class UsersController : BaseApiController
     /// 更新用户信息 - 统一API响应格式
     /// </summary>
     [HttpPut("{id}")]
+    [Authorize(Roles = "Admin")]  // 仅管理员可更新其他用户信息
     public async Task<ActionResult<ApiResponse<UserDto>>> UpdateUser(Guid id, [FromBody] UserUpdateDto dto)
     {
         try

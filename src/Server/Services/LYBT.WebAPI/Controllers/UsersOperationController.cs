@@ -16,7 +16,7 @@ namespace LYBT.WebAPI.Controllers
     [ApiController]
     [ApiVersion("1")]
     [Route("api/v{version:apiVersion}/users/operation")]
-    [Authorize]
+    [Authorize(Roles = "Admin")]  // 仅管理员可访问用户管理操作
     public class UsersOperationController : BaseApiController
     {
         private readonly IUserBusinessService _businessService;

@@ -2,6 +2,7 @@ using Asp.Versioning;
 using LYBT.Infrastructure.Web;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Auth;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Caching.Memory;
@@ -16,6 +17,7 @@ namespace LYBT.WebAPI.Controllers
     [ApiController]
     [ApiVersion("1")]
     [Route("api/v{version:apiVersion}/[controller]")]
+    [Authorize]  // 默认需要认证，公开端点使用 AllowAnonymous 覆盖
     public class AuthController : BaseApiController
     {
         private readonly IAuthService _authService;
@@ -35,6 +37,7 @@ namespace LYBT.WebAPI.Controllers
         /// <param name="request">登录请求</param>
         /// <returns>登录响应，包含JWT Token</returns>
         [HttpPost("login")]
+        [AllowAnonymous]  // 登录端点允许匿名访问
         [EnableRateLimiting("Login")]
         public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<LoginResponse>>> LoginAsync([FromBody] LoginRequest request)
         {
@@ -115,6 +118,7 @@ namespace LYBT.WebAPI.Controllers
         /// <param name="request">修改密码请求</param>
         /// <returns>修改结果</returns>
         [HttpPost("changeSysAdminPassword")]
+        [Authorize(Roles = "Admin")]  // 仅管理员可访问
         public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse>> ChangeSysAdminPasswordAsync([FromBody] ChangeSysAdminPassword request)
         {
             try
@@ -136,9 +140,10 @@ namespace LYBT.WebAPI.Controllers
                     return ValidationFail("新密码不能为空");
                 }
 
-                if (request.NewPassword.Length < 6)
+                // 验证密码复杂度
+                if (!LYBT.Shared.Utilities.Security.PasswordPolicyValidator.Validate(request.NewPassword, out var errors))
                 {
-                    return ValidationFail("新密码长度不能小于6位");
+                    return ValidationFail($"密码不符合复杂度要求：{string.Join("；", errors)}");
                 }
 
                 // 调用认证服务修改密码
@@ -157,6 +162,7 @@ namespace LYBT.WebAPI.Controllers
         /// <param name="refreshToken">刷新Token</param>
         /// <returns>新的登录响应</returns>
         [HttpPost("refresh")]
+        [AllowAnonymous]  // 刷新令牌允许匿名（使用refresh token验证）
         public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<LoginResponse>>> RefreshTokenAsync([FromBody] string refreshToken)
         {
             try
