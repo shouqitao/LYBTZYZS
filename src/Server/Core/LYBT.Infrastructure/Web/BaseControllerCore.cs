@@ -24,13 +24,26 @@ public abstract class BaseControllerCore : ControllerBase
     #region 核心通用功能
 
     /// <summary>
-    /// 获取当前操作者信息 - 统一实现
+    /// 获取当前操作者信息 - 统一实现（兼容多源声明）
     /// </summary>
     protected (Guid OperatorId, string OperatorName, string OperatorRole) GetOperator()
     {
-        var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        var userName = User?.Identity?.Name;
-        var roleStr = User?.FindFirst("Admin")?.Value;
+        // 兼容多源用户ID解析
+        var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                  ?? User?.FindFirst("sub")?.Value  // JWT标准声明
+                  ?? User?.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
+
+        // 兼容多源用户名解析
+        var userName = User?.Identity?.Name
+                    ?? User?.FindFirst(ClaimTypes.Name)?.Value
+                    ?? User?.FindFirst("unique_name")?.Value  // JWT标准声明
+                    ?? User?.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name")?.Value;
+
+        // 兼容多源角色解析
+        var roleStr = User?.FindFirst(ClaimTypes.Role)?.Value
+                   ?? User?.FindFirst("role")?.Value
+                   ?? User?.FindFirst("http://schemas.microsoft.com/ws/2008/06/identity/claims/role")?.Value
+                   ?? User?.FindFirst("Admin")?.Value;  // 向后兼容
 
         if (Guid.TryParse(userId, out var opId) && !string.IsNullOrEmpty(userName))
         {

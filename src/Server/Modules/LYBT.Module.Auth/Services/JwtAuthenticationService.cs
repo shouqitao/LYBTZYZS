@@ -28,14 +28,17 @@ namespace LYBT.Module.Auth.Services
         public string GenerateToken(string userId, string userName, UserRole role, bool rememberMe = false)
         {
             var claims = new List<Claim> {
+                // JWT标准声明（向后兼容）
                 new(JwtRegisteredClaimNames.Sub, userId),
                 new(JwtRegisteredClaimNames.UniqueName, userName),
                 new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64)
-            };
+                new(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64),
 
-            // 添加角色声明
-            claims.Add(new Claim(ClaimTypes.Role, role.ToString()));
+                // 添加标准ClaimTypes声明（新增）
+                new(ClaimTypes.NameIdentifier, userId),
+                new(ClaimTypes.Name, userName),
+                new(ClaimTypes.Role, role.ToString())
+            };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.Secret));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -104,9 +107,17 @@ namespace LYBT.Module.Auth.Services
                 throw new SecurityTokenException("Invalid token");
             }
 
-            var userId = principal.FindFirst(JwtRegisteredClaimNames.Sub)?.Value ?? string.Empty;
-            var userName = principal.FindFirst(JwtRegisteredClaimNames.UniqueName)?.Value ?? string.Empty;
+            // 兼容多源声明解析
+            var userId = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                      ?? principal.FindFirst(JwtRegisteredClaimNames.Sub)?.Value
+                      ?? string.Empty;
+
+            var userName = principal.FindFirst(ClaimTypes.Name)?.Value
+                        ?? principal.FindFirst(JwtRegisteredClaimNames.UniqueName)?.Value
+                        ?? string.Empty;
+
             var roleString = principal.FindFirst(ClaimTypes.Role)?.Value ?? RoleHelper.Roles.Doctor;
+
             if (Enum.TryParse<UserRole>(roleString, out var role))
             {
                 return GenerateToken(userId, userName, role);
@@ -124,9 +135,17 @@ namespace LYBT.Module.Auth.Services
             {
                 var jsonToken = _tokenHandler.ReadJwtToken(token);
 
-                var userId = jsonToken.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Sub)?.Value ?? string.Empty;
-                var userName = jsonToken.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.UniqueName)?.Value ?? string.Empty;
-                var roleString = jsonToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value ?? RoleHelper.Roles.Doctor;
+                // 兼容多源声明解析
+                var userId = jsonToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value
+                          ?? jsonToken.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Sub)?.Value
+                          ?? string.Empty;
+
+                var userName = jsonToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value
+                            ?? jsonToken.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.UniqueName)?.Value
+                            ?? string.Empty;
+
+                var roleString = jsonToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value
+                              ?? RoleHelper.Roles.Doctor;
 
                 if (!Enum.TryParse<UserRole>(roleString, out var role))
                 {
