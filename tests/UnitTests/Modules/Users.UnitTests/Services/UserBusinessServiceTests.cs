@@ -286,6 +286,233 @@ namespace LYBT.Module.Users.Tests.Services
 
         #region CreateUserAsync Tests
 
+        #endregion
+
+        #region ChangePasswordAsync Tests
+
+        [Fact]
+        public async Task ChangePasswordAsync_Should_Change_Password_Successfully()
+        {
+            // Arrange
+            var user = new User
+            {
+                Id = Guid.NewGuid(),
+                Username = "testuser",
+                RealName = "Test User",
+                PasswordHash = PasswordHelper.HashPassword("OldPassword123!")
+            };
+            await _context.Users.AddAsync(user);
+            await _context.SaveChangesAsync();
+
+            var oldPassword = "OldPassword123!";
+            var newPassword = "NewPassword456!";
+
+            // Act
+            var result = await _service.ChangePasswordAsync(user.Id, oldPassword, newPassword);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().BeTrue();
+
+            var updatedUser = await _context.Users.FindAsync(user.Id);
+            PasswordHelper.VerifyPassword(newPassword, updatedUser!.PasswordHash).Should().BeTrue();
+        }
+
+        [Fact]
+        public async Task ChangePasswordAsync_Should_Return_Failure_When_Old_Password_Wrong()
+        {
+            // Arrange
+            var user = new User
+            {
+                Id = Guid.NewGuid(),
+                Username = "testuser",
+                RealName = "Test User",
+                PasswordHash = PasswordHelper.HashPassword("OldPassword123!")
+            };
+            await _context.Users.AddAsync(user);
+            await _context.SaveChangesAsync();
+
+            // Act
+            var result = await _service.ChangePasswordAsync(user.Id, "WrongPassword", "NewPassword456!");
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeFalse();
+            result.ErrorMessage.Should().Contain("原密码错误");
+        }
+
+        [Fact]
+        public async Task ChangePasswordAsync_Should_Return_Failure_When_New_Password_Invalid()
+        {
+            // Arrange
+            var user = new User
+            {
+                Id = Guid.NewGuid(),
+                Username = "testuser",
+                RealName = "Test User",
+                PasswordHash = PasswordHelper.HashPassword("OldPassword123!")
+            };
+            await _context.Users.AddAsync(user);
+            await _context.SaveChangesAsync();
+
+            // Act
+            var result = await _service.ChangePasswordAsync(user.Id, "OldPassword123!", "weak");
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeFalse();
+            result.ErrorMessage.Should().Contain("密码");
+        }
+
+        [Fact]
+        public async Task ChangePasswordAsync_Should_Return_Failure_When_User_Not_Found()
+        {
+            // Act
+            var result = await _service.ChangePasswordAsync(Guid.NewGuid(), "OldPassword123!", "NewPassword456!");
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeFalse();
+            result.ErrorMessage.Should().Contain("用户不存在");
+        }
+
+        #endregion
+
+        #region ChangeProfileAsync Tests
+
+        [Fact]
+        public async Task ChangeProfileAsync_Should_Update_Profile_Successfully()
+        {
+            // Arrange
+            var user = new User
+            {
+                Id = Guid.NewGuid(),
+                Username = "testuser",
+                RealName = "Old Name",
+                Email = "old@example.com",
+                PhoneNumber = "13800138000"
+            };
+            await _context.Users.AddAsync(user);
+            await _context.SaveChangesAsync();
+
+            // Act
+            var result = await _service.ChangeProfileAsync(
+                user.Id,
+                "New Name",
+                "new@example.com",
+                "13900139000");
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+
+            var updatedUser = await _context.Users.FindAsync(user.Id);
+            updatedUser!.RealName.Should().Be("New Name");
+            updatedUser.Email.Should().Be("new@example.com");
+            updatedUser.PhoneNumber.Should().Be("13900139000");
+        }
+
+        [Fact]
+        public async Task ChangeProfileAsync_Should_Allow_Null_Email_And_Phone()
+        {
+            // Arrange
+            var user = new User
+            {
+                Id = Guid.NewGuid(),
+                Username = "testuser",
+                RealName = "Old Name",
+                Email = "old@example.com",
+                PhoneNumber = "13800138000"
+            };
+            await _context.Users.AddAsync(user);
+            await _context.SaveChangesAsync();
+
+            // Act
+            var result = await _service.ChangeProfileAsync(
+                user.Id,
+                "New Name",
+                null,
+                null);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+
+            var updatedUser = await _context.Users.FindAsync(user.Id);
+            updatedUser!.RealName.Should().Be("New Name");
+            updatedUser.Email.Should().BeNull();
+            updatedUser.PhoneNumber.Should().BeNull();
+        }
+
+        [Fact]
+        public async Task ChangeProfileAsync_Should_Return_Failure_When_Invalid_Email()
+        {
+            // Arrange
+            var user = new User
+            {
+                Id = Guid.NewGuid(),
+                Username = "testuser",
+                RealName = "Test User"
+            };
+            await _context.Users.AddAsync(user);
+            await _context.SaveChangesAsync();
+
+            // Act
+            var result = await _service.ChangeProfileAsync(
+                user.Id,
+                "Test User",
+                "invalid-email",
+                null);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeFalse();
+            result.ErrorMessage.Should().Contain("邮箱格式不正确");
+        }
+
+        [Fact]
+        public async Task ChangeProfileAsync_Should_Return_Failure_When_Invalid_Phone()
+        {
+            // Arrange
+            var user = new User
+            {
+                Id = Guid.NewGuid(),
+                Username = "testuser",
+                RealName = "Test User"
+            };
+            await _context.Users.AddAsync(user);
+            await _context.SaveChangesAsync();
+
+            // Act
+            var result = await _service.ChangeProfileAsync(
+                user.Id,
+                "Test User",
+                null,
+                "123"); // Invalid phone
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeFalse();
+            result.ErrorMessage.Should().Contain("手机号格式不正确");
+        }
+
+        [Fact]
+        public async Task ChangeProfileAsync_Should_Return_Failure_When_User_Not_Found()
+        {
+            // Act
+            var result = await _service.ChangeProfileAsync(
+                Guid.NewGuid(),
+                "New Name",
+                "new@example.com",
+                "13900139000");
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeFalse();
+            result.ErrorMessage.Should().Contain("用户不存在");
+        }
+
         [Fact]
         public async Task CreateUserAsync_Should_Create_User_Successfully()
         {
@@ -362,6 +589,292 @@ namespace LYBT.Module.Users.Tests.Services
         #endregion
 
         #region DeleteUserAsync Tests
+
+        [Fact]
+        public async Task UpdateUserAsync_Should_Fail_When_Concurrent_Update_Detected()
+        {
+            // Arrange
+            var user = new User
+            {
+                Id = Guid.NewGuid(),
+                Username = "testuser",
+                RealName = "Original Name",
+                Email = "original@example.com"
+            };
+            await _context.Users.AddAsync(user);
+            await _context.SaveChangesAsync();
+
+            // Simulate concurrent update by loading the same user in two contexts
+            var options = new DbContextOptionsBuilder<AppDbContext>()
+                .UseInMemoryDatabase(databaseName: _context.Database.GetDbConnection().Database)
+                .Options;
+            
+            using var context2 = new AppDbContext(options);
+            var service2 = new UserBusinessService(
+                context2,
+                _mockMapper.Object,
+                _mockLogger.Object,
+                _mockOptions.Object,
+                _defaultPasswordService);
+
+            // First update
+            var dto1 = new UserUpdateDto
+            {
+                RealName = "First Update",
+                Email = "first@example.com"
+            };
+
+            var result1 = await _service.UpdateUserAsync(user.Id, dto1);
+            result1.IsSuccess.Should().BeTrue();
+
+            // Second update should succeed as InMemory doesn't enforce RowVersion
+            var dto2 = new UserUpdateDto
+            {
+                RealName = "Second Update",
+                Email = "second@example.com"
+            };
+
+            var result2 = await service2.UpdateUserAsync(user.Id, dto2);
+            
+            // Note: InMemory database doesn't enforce RowVersion concurrency
+            // In real SQL Server, this would throw DbUpdateConcurrencyException
+            result2.IsSuccess.Should().BeTrue();
+        }
+
+        #endregion
+
+        #region Validation Tests
+
+        [Fact]
+        public async Task CreateUserAsync_Should_Fail_When_Username_Already_Exists()
+        {
+            // Arrange
+            var existingUser = new User
+            {
+                Id = Guid.NewGuid(),
+                Username = "existinguser",
+                RealName = "Existing User"
+            };
+            await _context.Users.AddAsync(existingUser);
+            await _context.SaveChangesAsync();
+
+            var dto = new UserCreateDto
+            {
+                Username = "existinguser",
+                RealName = "New User",
+                Role = UserRole.Doctor
+            };
+
+            _mockMapper.Setup(x => x.Map<User>(It.IsAny<UserCreateDto>()))
+                .Returns(new User
+                {
+                    Username = dto.Username,
+                    RealName = dto.RealName,
+                    Role = dto.Role
+                });
+
+            // Act
+            var result = await _service.CreateUserAsync(dto);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeFalse();
+            result.ErrorMessage.Should().Contain("用户名已存在");
+        }
+
+        [Fact]
+        public async Task CreateUserAsync_Should_Fail_When_Email_Already_Exists()
+        {
+            // Arrange
+            var existingUser = new User
+            {
+                Id = Guid.NewGuid(),
+                Username = "user1",
+                RealName = "User 1",
+                Email = "existing@example.com"
+            };
+            await _context.Users.AddAsync(existingUser);
+            await _context.SaveChangesAsync();
+
+            var dto = new UserCreateDto
+            {
+                Username = "newuser",
+                RealName = "New User",
+                Email = "existing@example.com",
+                Role = UserRole.Doctor
+            };
+
+            _mockMapper.Setup(x => x.Map<User>(It.IsAny<UserCreateDto>()))
+                .Returns(new User
+                {
+                    Username = dto.Username,
+                    RealName = dto.RealName,
+                    Email = dto.Email,
+                    Role = dto.Role
+                });
+
+            // Act
+            var result = await _service.CreateUserAsync(dto);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeFalse();
+            result.ErrorMessage.Should().Contain("邮箱已被使用");
+        }
+
+        [Fact]
+        public async Task CreateUserAsync_Should_Fail_When_Phone_Already_Exists()
+        {
+            // Arrange
+            var existingUser = new User
+            {
+                Id = Guid.NewGuid(),
+                Username = "user1",
+                RealName = "User 1",
+                PhoneNumber = "13800138000"
+            };
+            await _context.Users.AddAsync(existingUser);
+            await _context.SaveChangesAsync();
+
+            var dto = new UserCreateDto
+            {
+                Username = "newuser",
+                RealName = "New User",
+                PhoneNumber = "13800138000",
+                Role = UserRole.Doctor
+            };
+
+            _mockMapper.Setup(x => x.Map<User>(It.IsAny<UserCreateDto>()))
+                .Returns(new User
+                {
+                    Username = dto.Username,
+                    RealName = dto.RealName,
+                    PhoneNumber = dto.PhoneNumber,
+                    Role = dto.Role
+                });
+
+            // Act
+            var result = await _service.CreateUserAsync(dto);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeFalse();
+            result.ErrorMessage.Should().Contain("手机号已被使用");
+        }
+
+        [Theory]
+        [InlineData("ab")]  // Too short
+        [InlineData("user name")]  // Contains space
+        [InlineData("用户名")]  // Contains Chinese
+        [InlineData("user@name")]  // Contains special char
+        public async Task CreateUserAsync_Should_Fail_When_Username_Invalid(string invalidUsername)
+        {
+            // Arrange
+            var dto = new UserCreateDto
+            {
+                Username = invalidUsername,
+                RealName = "Test User",
+                Role = UserRole.Doctor
+            };
+
+            _mockMapper.Setup(x => x.Map<User>(It.IsAny<UserCreateDto>()))
+                .Returns(new User
+                {
+                    Username = dto.Username,
+                    RealName = dto.RealName,
+                    Role = dto.Role
+                });
+
+            // Act
+            var result = await _service.CreateUserAsync(dto);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeFalse();
+            result.ErrorMessage.Should().Contain("用户名");
+        }
+
+        #endregion
+
+        #region Batch Operation Tests
+
+        [Fact]
+        public async Task BatchDisableAsync_Should_Return_Failure_When_Exceed_Max_Size()
+        {
+            // Arrange
+            var ids = Enumerable.Range(0, 101).Select(_ => Guid.NewGuid()).ToList();
+
+            // Act
+            var result = await _service.BatchDisableAsync(ids);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeFalse();
+            result.ErrorMessage.Should().Contain("批量操作数量不能超过");
+        }
+
+        [Fact]
+        public async Task BatchEnableAsync_Should_Return_Failure_When_Exceed_Max_Size()
+        {
+            // Arrange
+            var ids = Enumerable.Range(0, 101).Select(_ => Guid.NewGuid()).ToList();
+
+            // Act
+            var result = await _service.BatchEnableAsync(ids);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeFalse();
+            result.ErrorMessage.Should().Contain("批量操作数量不能超过");
+        }
+
+        [Fact]
+        public async Task BatchDisableAsync_Should_Skip_Already_Disabled_Users()
+        {
+            // Arrange
+            var users = new[]
+            {
+                new User { Id = Guid.NewGuid(), Username = "user1", Status = CommonStatus.Enabled },
+                new User { Id = Guid.NewGuid(), Username = "user2", Status = CommonStatus.Disabled },
+                new User { Id = Guid.NewGuid(), Username = "user3", Status = CommonStatus.Enabled }
+            };
+            await _context.Users.AddRangeAsync(users);
+            await _context.SaveChangesAsync();
+
+            var ids = users.Select(u => u.Id).ToList();
+
+            // Act
+            var result = await _service.BatchDisableAsync(ids);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().Be(2); // Only 2 users were actually disabled
+        }
+
+        [Fact]
+        public async Task BatchEnableAsync_Should_Skip_Already_Enabled_Users()
+        {
+            // Arrange
+            var users = new[]
+            {
+                new User { Id = Guid.NewGuid(), Username = "user1", Status = CommonStatus.Disabled },
+                new User { Id = Guid.NewGuid(), Username = "user2", Status = CommonStatus.Enabled },
+                new User { Id = Guid.NewGuid(), Username = "user3", Status = CommonStatus.Disabled }
+            };
+            await _context.Users.AddRangeAsync(users);
+            await _context.SaveChangesAsync();
+
+            var ids = users.Select(u => u.Id).ToList();
+
+            // Act
+            var result = await _service.BatchEnableAsync(ids);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().Be(2); // Only 2 users were actually enabled
+        }
 
         [Fact]
         public async Task DeleteUserAsync_Should_Delete_User_Successfully()

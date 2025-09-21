@@ -23,6 +23,180 @@ namespace LYBT.Module.Users.Tests.Services
         private readonly Mock<IUserQueryService> _mockQueryService;
         private readonly Mock<IUserBusinessService> _mockBusinessService;
 
+        #region Edge Cases and Error Handling Tests
+
+        [Fact]
+        public async Task GetByIdAsync_Should_Handle_Empty_Guid()
+        {
+            // Arrange
+            _mockQueryService.Setup(x => x.GetByIdAsync(It.IsAny<Guid>()))
+                .ReturnsAsync(ServiceResult<UserDto>.Failure("用户不存在"));
+
+            // Act
+            var result = await _userService.GetByIdAsync(Guid.Empty);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeFalse();
+            result.ErrorMessage.Should().Contain("用户不存在");
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData(" ")]
+        public async Task GetByUsernameAsync_Should_Handle_Invalid_Input(string invalidUsername)
+        {
+            // Arrange
+            _mockQueryService.Setup(x => x.GetByUsernameAsync(It.IsAny<string>()))
+                .ReturnsAsync(ServiceResult<UserDto>.Failure("用户名不能为空"));
+
+            // Act
+            var result = await _userService.GetByUsernameAsync(invalidUsername);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task CreateAsync_Should_Handle_Null_Dto()
+        {
+            // Arrange
+            _mockBusinessService.Setup(x => x.CreateUserAsync(It.IsAny<UserCreateDto>()))
+                .ThrowsAsync(new ArgumentNullException());
+
+            // Act & Assert
+            await Assert.ThrowsAsync<ArgumentNullException>(async () =>
+                await _userService.CreateAsync(null!));
+        }
+
+        [Fact]
+        public async Task UpdateAsync_Should_Handle_Null_Dto()
+        {
+            // Arrange
+            _mockBusinessService.Setup(x => x.UpdateUserAsync(It.IsAny<Guid>(), It.IsAny<UserUpdateDto>()))
+                .ThrowsAsync(new ArgumentNullException());
+
+            // Act & Assert
+            await Assert.ThrowsAsync<ArgumentNullException>(async () =>
+                await _userService.UpdateAsync(Guid.NewGuid(), null!));
+        }
+
+        [Fact]
+        public async Task BatchDisableAsync_Should_Handle_Empty_List()
+        {
+            // Arrange
+            var emptyList = new List<Guid>();
+            _mockBusinessService.Setup(x => x.BatchDisableAsync(It.IsAny<IEnumerable<Guid>>()))
+                .ReturnsAsync(ServiceResult<int>.Success(0));
+
+            // Act
+            var result = await _userService.BatchDisableAsync(emptyList);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().Be(0);
+        }
+
+        [Fact]
+        public async Task BatchEnableAsync_Should_Handle_Empty_List()
+        {
+            // Arrange
+            var emptyList = new List<Guid>();
+            _mockBusinessService.Setup(x => x.BatchEnableAsync(It.IsAny<IEnumerable<Guid>>()))
+                .ReturnsAsync(ServiceResult<int>.Success(0));
+
+            // Act
+            var result = await _userService.BatchEnableAsync(emptyList);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().Be(0);
+        }
+
+        [Fact]
+        public async Task SearchAsync_Should_Handle_Complex_Search_Criteria()
+        {
+            // Arrange
+            var searchDto = new UserSearchDto
+            {
+                Keyword = "test",
+                Role = UserRole.Doctor,
+                Status = CommonStatus.Enabled,
+                StartDate = DateTime.Now.AddDays(-30),
+                EndDate = DateTime.Now,
+                PageIndex = 1,
+                PageSize = 20
+            };
+
+            var pagedResult = new PagedResult<UserDto>
+            {
+                Items = new List<UserDto>
+                {
+                    new UserDto { Id = Guid.NewGuid(), Username = "testdoctor", Role = UserRole.Doctor }
+                },
+                TotalCount = 1,
+                CurrentPage = 1,
+                PageSize = 20
+            };
+
+            _mockQueryService.Setup(x => x.SearchAsync(It.IsAny<UserSearchDto>()))
+                .ReturnsAsync(ServiceResult<PagedResult<UserDto>>.Success(pagedResult));
+
+            // Act
+            var result = await _userService.SearchAsync(searchDto);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().NotBeNull();
+            result.Data!.Items.Should().HaveCount(1);
+            result.Data.Items[0].Role.Should().Be(UserRole.Doctor);
+        }
+
+        [Fact]
+        public async Task ResetPasswordAsync_Should_Handle_Weak_Password()
+        {
+            // Arrange
+            var userId = Guid.NewGuid();
+            var weakPassword = "123"; // Too weak
+
+            _mockBusinessService.Setup(x => x.ResetPasswordAsync(It.IsAny<Guid>(), It.IsAny<string>()))
+                .ReturnsAsync(ServiceResult<bool>.Failure("密码强度不足"));
+
+            // Act
+            var result = await _userService.ResetPasswordAsync(userId, weakPassword);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeFalse();
+            result.ErrorMessage.Should().Contain("密码强度不足");
+        }
+
+        [Fact]
+        public async Task ChangePasswordAsync_Should_Handle_Same_Old_And_New_Password()
+        {
+            // Arrange
+            var userId = Guid.NewGuid();
+            var samePassword = "Password123!";
+
+            _mockBusinessService.Setup(x => x.ChangePasswordAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>()))
+                .ReturnsAsync(ServiceResult<bool>.Failure("新密码不能与旧密码相同"));
+
+            // Act
+            var result = await _userService.ChangePasswordAsync(userId, samePassword, samePassword);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeFalse();
+            result.ErrorMessage.Should().Contain("新密码不能与旧密码相同");
+        }
+
+        #endregion
+
         public UserServiceTests()
         {
             _mockQueryService = new Mock<IUserQueryService>();

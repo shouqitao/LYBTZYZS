@@ -87,6 +87,231 @@ namespace LYBT.Module.Users.Tests.Services
                 });
         }
 
+        #region GetRolesAsync Tests
+
+        [Fact]
+        public async Task GetRolesAsync_Should_Return_All_User_Roles()
+        {
+            // Arrange
+            var users = new[]
+            {
+                new User { Id = Guid.NewGuid(), Username = "doctor1", Role = UserRole.Doctor },
+                new User { Id = Guid.NewGuid(), Username = "admin1", Role = UserRole.Admin },
+                new User { Id = Guid.NewGuid(), Username = "doctor2", Role = UserRole.Doctor },
+                new User { Id = Guid.NewGuid(), Username = "admin2", Role = UserRole.Admin }
+            };
+            await _context.Users.AddRangeAsync(users);
+            await _context.SaveChangesAsync();
+
+            // Act
+            var result = await _service.GetRolesAsync();
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().NotBeNull();
+            result.Data!.Should().HaveCount(2); // Doctor and Admin
+            result.Data.Should().Contain(r => r.Value == UserRole.Doctor && r.Count == 2);
+            result.Data.Should().Contain(r => r.Value == UserRole.Admin && r.Count == 2);
+        }
+
+        [Fact]
+        public async Task GetRolesAsync_Should_Return_Empty_When_No_Users()
+        {
+            // Act
+            var result = await _service.GetRolesAsync();
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().NotBeNull();
+            result.Data!.Should().BeEmpty();
+        }
+
+        #endregion
+
+        #region Additional Search Tests
+
+        [Fact]
+        public async Task SearchAsync_Should_Filter_By_Status()
+        {
+            // Arrange
+            var users = new[]
+            {
+                new User { Id = Guid.NewGuid(), Username = "active1", RealName = "Active One", Status = CommonStatus.Enabled },
+                new User { Id = Guid.NewGuid(), Username = "disabled1", RealName = "Disabled One", Status = CommonStatus.Disabled },
+                new User { Id = Guid.NewGuid(), Username = "active2", RealName = "Active Two", Status = CommonStatus.Enabled }
+            };
+            await _context.Users.AddRangeAsync(users);
+            await _context.SaveChangesAsync();
+
+            // Act - Search only active users
+            var result = await _service.GetActiveUsersAsync();
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().NotBeNull();
+            result.Data!.Should().HaveCount(2);
+            result.Data.Should().AllSatisfy(u => u.Status.Should().Be(CommonStatus.Enabled));
+        }
+
+        [Fact]
+        public async Task GetPagedAsync_Should_Support_Pagination()
+        {
+            // Arrange
+            for (int i = 1; i <= 15; i++)
+            {
+                await _context.Users.AddAsync(new User
+                {
+                    Id = Guid.NewGuid(),
+                    Username = $"user{i:D2}",
+                    RealName = $"User {i}"
+                });
+            }
+            await _context.SaveChangesAsync();
+
+            _mockMapper.Setup(x => x.Map<PagedResult<UserDto>>(It.IsAny<PagedResult<User>>()))
+                .Returns((PagedResult<User> paged) => new PagedResult<UserDto>
+                {
+                    Items = paged.Items.Select(u => new UserDto
+                    {
+                        Id = u.Id,
+                        Username = u.Username,
+                        RealName = u.RealName
+                    }).ToList(),
+                    TotalCount = paged.TotalCount,
+                    CurrentPage = paged.CurrentPage,
+                    PageSize = paged.PageSize
+                });
+
+            // Act
+            var criteria = new UserQueryDto
+            {
+                PageIndex = 2,
+                PageSize = 5
+            };
+            var result = await _service.GetPagedAsync(criteria);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().NotBeNull();
+            result.Data!.Items.Should().HaveCount(5);
+            result.Data.TotalCount.Should().Be(15);
+            result.Data.CurrentPage.Should().Be(2);
+        }
+
+        [Fact]
+        public async Task GetPagedAsync_Should_Sort_By_CreatedTime_Descending()
+        {
+            // Arrange
+            var now = DateTime.UtcNow;
+            var users = new[]
+            {
+                new User { Id = Guid.NewGuid(), Username = "user1", RealName = "User 1", CreatedTime = now.AddDays(-3) },
+                new User { Id = Guid.NewGuid(), Username = "user2", RealName = "User 2", CreatedTime = now.AddDays(-1) },
+                new User { Id = Guid.NewGuid(), Username = "user3", RealName = "User 3", CreatedTime = now.AddDays(-2) }
+            };
+            await _context.Users.AddRangeAsync(users);
+            await _context.SaveChangesAsync();
+
+            _mockMapper.Setup(x => x.Map<PagedResult<UserDto>>(It.IsAny<PagedResult<User>>()))
+                .Returns((PagedResult<User> paged) => new PagedResult<UserDto>
+                {
+                    Items = paged.Items.Select(u => new UserDto
+                    {
+                        Id = u.Id,
+                        Username = u.Username,
+                        CreateTime = u.CreatedTime
+                    }).ToList(),
+                    TotalCount = paged.TotalCount
+                });
+
+            // Act
+            var result = await _service.GetPagedAsync(new UserQueryDto());
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().NotBeNull();
+            result.Data!.Items.Should().HaveCount(3);
+            result.Data.Items[0].Username.Should().Be("user2"); // Most recent
+            result.Data.Items[1].Username.Should().Be("user3");
+            result.Data.Items[2].Username.Should().Be("user1"); // Oldest
+        }
+
+        #endregion
+
+        #region Edge Case Tests
+
+        [Fact]
+        public async Task GetByIdAsync_Should_Handle_Empty_Guid()
+        {
+            // Act
+            var result = await _service.GetByIdAsync(Guid.Empty);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeFalse();
+            result.ErrorMessage.Should().Contain("用户不存在");
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData(" ")]
+        public async Task GetByUsernameAsync_Should_Handle_Invalid_Input(string invalidUsername)
+        {
+            // Act
+            var result = await _service.GetByUsernameAsync(invalidUsername);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeFalse();
+            result.ErrorMessage.Should().NotBeNullOrWhiteSpace();
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData(" ")]
+        public async Task ValidateUsernameAsync_Should_Return_True_For_Invalid_Input(string invalidUsername)
+        {
+            // Act
+            var result = await _service.ValidateUsernameAsync(invalidUsername);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().BeTrue(); // Invalid usernames are "available"
+        }
+
+        [Fact]
+        public async Task IsDoctorAvailableAsync_Should_Return_False_For_Non_Doctor()
+        {
+            // Arrange
+            var adminUser = new User
+            {
+                Id = Guid.NewGuid(),
+                Username = "admin",
+                Role = UserRole.Admin,
+                Status = CommonStatus.Enabled
+            };
+            await _context.Users.AddAsync(adminUser);
+            await _context.SaveChangesAsync();
+
+            // Act
+            var result = await _service.IsDoctorAvailableAsync(adminUser.Id);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().BeFalse(); // Admin is not a doctor
+        }
+
+        #endregion
+
         public void Dispose()
         {
             _context.Dispose();

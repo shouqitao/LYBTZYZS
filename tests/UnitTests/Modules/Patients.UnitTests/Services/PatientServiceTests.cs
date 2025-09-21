@@ -232,6 +232,311 @@ namespace LYBT.Module.Patients.Tests.Services
 
         #endregion
 
+        #region 状态操作测试
+
+        [Fact]
+        public async Task EnableAsync_Should_Delegate_To_BusinessService()
+        {
+            // Arrange
+            var patientId = Guid.NewGuid();
+            var expectedResult = ServiceResult.Success();
+
+            _mockBusinessService.Setup(x => x.EnableAsync(It.IsAny<List<Guid>>())).ReturnsAsync(expectedResult);
+
+            // Act
+            var result = await _patientService.EnableAsync(patientId);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+            _mockBusinessService.Verify(x => x.EnableAsync(It.Is<List<Guid>>(list =>
+                list.Count == 1 && list[0] == patientId)), Times.Once);
+        }
+
+        [Fact]
+        public async Task DisableAsync_Should_Delegate_To_BusinessService()
+        {
+            // Arrange
+            var patientId = Guid.NewGuid();
+            var expectedResult = ServiceResult.Success();
+
+            _mockBusinessService.Setup(x => x.DisableAsync(It.IsAny<List<Guid>>())).ReturnsAsync(expectedResult);
+
+            // Act
+            var result = await _patientService.DisableAsync(patientId);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+            _mockBusinessService.Verify(x => x.DisableAsync(It.Is<List<Guid>>(list =>
+                list.Count == 1 && list[0] == patientId)), Times.Once);
+        }
+
+        [Fact]
+        public async Task EnableAsync_Should_Return_Failure_When_BusinessService_Fails()
+        {
+            // Arrange
+            var patientId = Guid.NewGuid();
+            var expectedResult = ServiceResult.Failure("启用失败");
+
+            _mockBusinessService.Setup(x => x.EnableAsync(It.IsAny<List<Guid>>())).ReturnsAsync(expectedResult);
+
+            // Act
+            var result = await _patientService.EnableAsync(patientId);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeFalse();
+            result.ErrorMessage.Should().Be("启用失败");
+        }
+
+        [Fact]
+        public async Task DisableAsync_Should_Return_Failure_When_BusinessService_Fails()
+        {
+            // Arrange
+            var patientId = Guid.NewGuid();
+            var expectedResult = ServiceResult.Failure("禁用失败");
+
+            _mockBusinessService.Setup(x => x.DisableAsync(It.IsAny<List<Guid>>())).ReturnsAsync(expectedResult);
+
+            // Act
+            var result = await _patientService.DisableAsync(patientId);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeFalse();
+            result.ErrorMessage.Should().Be("禁用失败");
+        }
+
+        #endregion
+
+        #region 批量操作测试
+
+        [Fact]
+        public async Task ImportPatientsAsync_Should_Convert_And_Delegate_To_BusinessService()
+        {
+            // Arrange
+            var patients = new List<PatientCreateDto>
+            {
+                new PatientCreateDto
+                {
+                    Name = "张三",
+                    Gender = Gender.Male,
+                    BirthDate = DateTime.Parse("1990-01-01"),
+                    PhoneNumber = "13800138000",
+                    IdNumber = "110101199001011234",
+                    Address = "北京市朝阳区",
+                    EmergencyContactName = "张四",
+                    EmergencyContactPhone = "13800138001",
+                    AllergyHistory = "青霉素过敏"
+                }
+            };
+
+            var importedPatients = new List<PatientDto>
+            {
+                new PatientDto { Id = Guid.NewGuid(), Name = "张三" }
+            };
+            var expectedResult = ServiceResult<List<PatientDto>>.Success(importedPatients);
+
+            _mockBusinessService.Setup(x => x.ImportPatientsAsync(It.IsAny<List<PatientImportDto>>()))
+                .ReturnsAsync(expectedResult);
+
+            // Act
+            var result = await _patientService.ImportPatientsAsync(patients);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().NotBeNull();
+
+            _mockBusinessService.Verify(x => x.ImportPatientsAsync(It.Is<List<PatientImportDto>>(list =>
+                list.Count == 1 &&
+                list[0].Name == "张三" &&
+                list[0].GenderText == "男" &&
+                list[0].BirthDateText == "1990-01-01" &&
+                list[0].PhoneNumber == "13800138000" &&
+                list[0].IdCardNumber == "110101199001011234")), Times.Once);
+        }
+
+        [Fact]
+        public async Task ImportPatientsAsync_Should_Handle_Female_Gender()
+        {
+            // Arrange
+            var patients = new List<PatientCreateDto>
+            {
+                new PatientCreateDto
+                {
+                    Name = "李四",
+                    Gender = Gender.Female,
+                    BirthDate = DateTime.Parse("1995-05-05")
+                }
+            };
+
+            var importedPatients = new List<PatientDto>
+            {
+                new PatientDto { Id = Guid.NewGuid(), Name = "李四" }
+            };
+            var expectedResult = ServiceResult<List<PatientDto>>.Success(importedPatients);
+
+            _mockBusinessService.Setup(x => x.ImportPatientsAsync(It.IsAny<List<PatientImportDto>>()))
+                .ReturnsAsync(expectedResult);
+
+            // Act
+            var result = await _patientService.ImportPatientsAsync(patients);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+
+            _mockBusinessService.Verify(x => x.ImportPatientsAsync(It.Is<List<PatientImportDto>>(list =>
+                list.Count == 1 &&
+                list[0].GenderText == "女")), Times.Once);
+        }
+
+        [Fact]
+        public async Task ImportPatientsAsync_Should_Return_Failure_When_BusinessService_Fails()
+        {
+            // Arrange
+            var patients = new List<PatientCreateDto>
+            {
+                new PatientCreateDto { Name = "测试患者" }
+            };
+
+            var expectedResult = ServiceResult<List<PatientDto>>.Failure("导入失败");
+
+            _mockBusinessService.Setup(x => x.ImportPatientsAsync(It.IsAny<List<PatientImportDto>>()))
+                .ReturnsAsync(expectedResult);
+
+            // Act
+            var result = await _patientService.ImportPatientsAsync(patients);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeFalse();
+            result.ErrorMessage.Should().Be("导入失败");
+        }
+
+        [Fact]
+        public async Task ExportPatientsAsync_Should_Convert_To_CSV_Bytes()
+        {
+            // Arrange
+            var query = new PagedQueryBaseDto
+            {
+                Keyword = "张",
+                PageIndex = 1,
+                PageSize = 10
+            };
+
+            var patients = new List<PatientDto>
+            {
+                new PatientDto
+                {
+                    Id = Guid.NewGuid(),
+                    Name = "张三",
+                    Gender = Gender.Male,
+                    BirthDate = DateTime.Parse("1990-01-01"),
+                    PhoneNumber = "13800138000",
+                    IdNumber = "110101199001011234",
+                    Address = "北京市朝阳区"
+                },
+                new PatientDto
+                {
+                    Id = Guid.NewGuid(),
+                    Name = "张四",
+                    Gender = Gender.Female,
+                    BirthDate = DateTime.Parse("1995-05-05"),
+                    PhoneNumber = "13800138001",
+                    IdNumber = "110101199505051234",
+                    Address = "上海市浦东区"
+                }
+            };
+
+            var expectedResult = ServiceResult<List<PatientDto>>.Success(patients);
+
+            _mockBusinessService.Setup(x => x.ExportPatientsAsync(It.IsAny<PatientExportDto>()))
+                .ReturnsAsync(expectedResult);
+
+            // Act
+            var result = await _patientService.ExportPatientsAsync(query);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().NotBeNull();
+
+            var csvContent = System.Text.Encoding.UTF8.GetString(result.Data!);
+            csvContent.Should().Contain("姓名,性别,出生日期,手机号码,身份证号,地址");
+            csvContent.Should().Contain("张三,男,1990-01-01,13800138000,110101199001011234,北京市朝阳区");
+            csvContent.Should().Contain("张四,女,1995-05-05,13800138001,110101199505051234,上海市浦东区");
+
+            _mockBusinessService.Verify(x => x.ExportPatientsAsync(It.Is<PatientExportDto>(dto =>
+                dto.Name == "张")), Times.Once);
+        }
+
+        [Fact]
+        public async Task ExportPatientsAsync_Should_Handle_Empty_Result()
+        {
+            // Arrange
+            var query = new PagedQueryBaseDto { Keyword = "不存在" };
+            var expectedResult = ServiceResult<List<PatientDto>>.Success(new List<PatientDto>());
+
+            _mockBusinessService.Setup(x => x.ExportPatientsAsync(It.IsAny<PatientExportDto>()))
+                .ReturnsAsync(expectedResult);
+
+            // Act
+            var result = await _patientService.ExportPatientsAsync(query);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().NotBeNull();
+
+            var csvContent = System.Text.Encoding.UTF8.GetString(result.Data!);
+            csvContent.Should().Be("姓名,性别,出生日期,手机号码,身份证号,地址\n");
+        }
+
+        [Fact]
+        public async Task ExportPatientsAsync_Should_Return_Failure_When_BusinessService_Fails()
+        {
+            // Arrange
+            var query = new PagedQueryBaseDto { Keyword = "test" };
+            var expectedResult = ServiceResult<List<PatientDto>>.Failure("导出失败");
+
+            _mockBusinessService.Setup(x => x.ExportPatientsAsync(It.IsAny<PatientExportDto>()))
+                .ReturnsAsync(expectedResult);
+
+            // Act
+            var result = await _patientService.ExportPatientsAsync(query);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeFalse();
+            result.ErrorMessage.Should().Be("导出失败");
+        }
+
+        [Fact]
+        public async Task ExportPatientsAsync_Should_Handle_Null_Keyword()
+        {
+            // Arrange
+            var query = new PagedQueryBaseDto { Keyword = null };
+            var expectedResult = ServiceResult<List<PatientDto>>.Success(new List<PatientDto>());
+
+            _mockBusinessService.Setup(x => x.ExportPatientsAsync(It.IsAny<PatientExportDto>()))
+                .ReturnsAsync(expectedResult);
+
+            // Act
+            var result = await _patientService.ExportPatientsAsync(query);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+
+            _mockBusinessService.Verify(x => x.ExportPatientsAsync(It.Is<PatientExportDto>(dto =>
+                dto.Name == string.Empty)), Times.Once);
+        }
+
+        #endregion
+
         #region 边界值和异常测试
 
         [Fact]
