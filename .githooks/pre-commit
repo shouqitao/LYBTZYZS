@@ -7,12 +7,43 @@ run_pwsh() {
   if command -v pwsh >/dev/null 2>&1; then
     pwsh -NoLogo -NoProfile -File scripts/fix-cn-titles.ps1 -Root .
     pwsh -NoLogo -NoProfile -File scripts/clean-module-readmes.ps1 -Root .
-    pwsh -NoLogo -NoProfile -File scripts/ensure-module-readme-structure.ps1 -Root .
+
+    # Detect touched modules and only enforce/fill for those
+    changed=$(git diff --cached --name-only | tr '\r' '\n' | sed '/^$/d')
+    server_mods=$(echo "$changed" | awk -F/ '/^src\/Server\/Modules\// {print $4}' | sort -u)
+    client_mods=$(echo "$changed" | awk -F/ '/^src\/Client\/Desktop\/Modules\// {print $6}' | sort -u)
+
+    # Enforce structure only for touched module directories
+    for m in $server_mods; do
+      [ -n "$m" ] && pwsh -NoLogo -NoProfile -File scripts/ensure-module-readme-structure.ps1 -Root "src/Server/Modules/$m"
+    done
+    for m in $client_mods; do
+      [ -n "$m" ] && pwsh -NoLogo -NoProfile -File scripts/ensure-module-readme-structure.ps1 -Root "src/Client/Desktop/Modules/$m"
+    done
+
+    # Fill API/Refs only for touched modules
+    modules_list=""
+    for m in $server_mods; do [ -n "$m" ] && modules_list+=" $m"; done
+    for m in $client_mods; do [ -n "$m" ] && modules_list+=" $m"; done
+    if [ -n "$modules_list" ]; then
+      pwsh -NoLogo -NoProfile -File scripts/fill-module-readme-api.ps1 -Modules $modules_list
+    fi
     return 0
   elif command -v powershell >/dev/null 2>&1; then
     powershell -NoProfile -ExecutionPolicy Bypass -File scripts/fix-cn-titles.ps1 -Root .
     powershell -NoProfile -ExecutionPolicy Bypass -File scripts/clean-module-readmes.ps1 -Root .
-    powershell -NoProfile -ExecutionPolicy Bypass -File scripts/ensure-module-readme-structure.ps1 -Root .
+
+    $changed = git diff --cached --name-only | Out-String
+    $serverMods = ($changed -split "`n" | Where-Object { $_ -match '^src/Server/Modules/' } | ForEach-Object { ($_ -split '/') [3] } | Sort-Object -Unique)
+    $clientMods = ($changed -split "`n" | Where-Object { $_ -match '^src/Client/Desktop/Modules/' } | ForEach-Object { ($_ -split '/') [5] } | Sort-Object -Unique)
+
+    foreach ($m in $serverMods) { if ($m) { powershell -NoProfile -ExecutionPolicy Bypass -File scripts/ensure-module-readme-structure.ps1 -Root "src/Server/Modules/$m" } }
+    foreach ($m in $clientMods) { if ($m) { powershell -NoProfile -ExecutionPolicy Bypass -File scripts/ensure-module-readme-structure.ps1 -Root "src/Client/Desktop/Modules/$m" } }
+
+    $modules = @(); if ($serverMods) { $modules += $serverMods }; if ($clientMods) { $modules += $clientMods }
+    if ($modules.Count -gt 0) {
+      powershell -NoProfile -ExecutionPolicy Bypass -File scripts/fill-module-readme-api.ps1 -Modules $modules
+    }
     return 0
   else
     echo "PowerShell not found; skipping docs normalization." >&2

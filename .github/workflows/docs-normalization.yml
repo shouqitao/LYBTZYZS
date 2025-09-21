@@ -17,12 +17,38 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Compute changed files
+        id: changed
+        shell: bash
+        run: |
+          git fetch --no-tags --depth=1 origin "+refs/heads/${{ github.base_ref }}:refs/remotes/origin/${{ github.base_ref }}" || true
+          base="origin/${{ github.base_ref }}"
+          if [ -z "${{ github.base_ref }}" ]; then base="HEAD^"; fi
+          git diff --name-only "$base"...HEAD > changed.txt || true
+          echo "Changed files:"; cat changed.txt || true
+          # Extract server/client modules
+          server_mods=$(awk -F/ '/^src\/Server\/Modules\// {print $4}' changed.txt | sort -u | tr '\n' ' ')
+          client_mods=$(awk -F/ '/^src\/Client\/Desktop\/Modules\// {print $6}' changed.txt | sort -u | tr '\n' ' ')
+          echo "server_mods=$server_mods" >> $GITHUB_OUTPUT
+          echo "client_mods=$client_mods" >> $GITHUB_OUTPUT
+
       - name: Run title/terminology normalization
         shell: pwsh
         run: |
           pwsh -NoLogo -NoProfile -File scripts/fix-cn-titles.ps1 -Root .
           pwsh -NoLogo -NoProfile -File scripts/clean-module-readmes.ps1 -Root .
-          pwsh -NoLogo -NoProfile -File scripts/ensure-module-readme-structure.ps1 -Root .
+          # Enforce structure only for changed modules
+          $server = "${{ steps.changed.outputs.server_mods }}".Trim()
+          $client = "${{ steps.changed.outputs.client_mods }}".Trim()
+          foreach ($m in $server.Split(' ',[System.StringSplitOptions]::RemoveEmptyEntries)) {
+            pwsh -NoLogo -NoProfile -File scripts/ensure-module-readme-structure.ps1 -Root "src/Server/Modules/$m"
+          }
+          foreach ($m in $client.Split(' ',[System.StringSplitOptions]::RemoveEmptyEntries)) {
+            pwsh -NoLogo -NoProfile -File scripts/ensure-module-readme-structure.ps1 -Root "src/Client/Desktop/Modules/$m"
+          }
+          # Fill API/Refs only for changed modules
+          $mods = @(); if ($server) { $mods += $server.Split(' ',[System.StringSplitOptions]::RemoveEmptyEntries) }; if ($client) { $mods += $client.Split(' ',[System.StringSplitOptions]::RemoveEmptyEntries) }
+          if ($mods.Count -gt 0) { pwsh -NoLogo -NoProfile -File scripts/fill-module-readme-api.ps1 -Modules $mods }
 
       - name: Check for changes
         id: diff
