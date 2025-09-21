@@ -4,8 +4,10 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using LYBT.Module.Herbs.Interfaces;
 using LYBT.Module.Herbs.Services;
+using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
@@ -19,12 +21,14 @@ namespace LYBT.Module.Herbs.Tests.Services
         private readonly HerbService _herbService;
         private readonly Mock<IHerbQueryService> _mockQueryService;
         private readonly Mock<IHerbBusinessService> _mockBusinessService;
+        private readonly Mock<ILogger<HerbService>> _mockLogger;
 
         public HerbServiceTests()
         {
             _mockQueryService = new Mock<IHerbQueryService>();
             _mockBusinessService = new Mock<IHerbBusinessService>();
-            _herbService = new HerbService(_mockQueryService.Object, _mockBusinessService.Object);
+            _mockLogger = new Mock<ILogger<HerbService>>();
+            _herbService = new HerbService(_mockQueryService.Object, _mockBusinessService.Object, _mockLogger.Object);
         }
 
         #region 构造函数测试
@@ -32,15 +36,22 @@ namespace LYBT.Module.Herbs.Tests.Services
         [Fact]
         public void Constructor_Should_Throw_When_QueryService_Is_Null()
         {
-            var action = () => new HerbService(null!, _mockBusinessService.Object);
+            var action = () => new HerbService(null!, _mockBusinessService.Object, _mockLogger.Object);
             action.Should().Throw<ArgumentNullException>().WithParameterName("queryService");
         }
 
         [Fact]
         public void Constructor_Should_Throw_When_BusinessService_Is_Null()
         {
-            var action = () => new HerbService(_mockQueryService.Object, null!);
+            var action = () => new HerbService(_mockQueryService.Object, null!, _mockLogger.Object);
             action.Should().Throw<ArgumentNullException>().WithParameterName("businessService");
+        }
+
+        [Fact]
+        public void Constructor_Should_Throw_When_Logger_Is_Null()
+        {
+            var action = () => new HerbService(_mockQueryService.Object, _mockBusinessService.Object, null!);
+            action.Should().Throw<ArgumentNullException>().WithParameterName("logger");
         }
 
         #endregion
@@ -112,18 +123,18 @@ namespace LYBT.Module.Herbs.Tests.Services
         public async Task CreateAsync_Should_Delegate_To_BusinessService()
         {
             // Arrange
-            var createDto = new HerbCreateDto { Name = "当归", Properties = "甘、辛，温" };
+            var createDto = new HerbCreateDto { Name = "当归", Origin = "甘肃", Price = 0.8m, Unit = "g" };
             var createdHerb = new HerbDto { Id = Guid.NewGuid(), Name = "当归" };
             var expectedResult = ServiceResult<HerbDto>.Success(createdHerb);
 
-            _mockBusinessService.Setup(x => x.CreateAsync(createDto)).ReturnsAsync(expectedResult);
+            _mockBusinessService.Setup(x => x.CreateHerbWithAutoCodeAsync(createDto)).ReturnsAsync(expectedResult);
 
             // Act
             var result = await _herbService.CreateAsync(createDto);
 
             // Assert
             result.Should().BeSameAs(expectedResult);
-            _mockBusinessService.Verify(x => x.CreateAsync(createDto), Times.Once);
+            _mockBusinessService.Verify(x => x.CreateHerbWithAutoCodeAsync(createDto), Times.Once);
         }
 
         [Fact]
@@ -138,7 +149,7 @@ namespace LYBT.Module.Herbs.Tests.Services
             _mockBusinessService.Setup(x => x.UpdateAsync(herbId, updateDto)).ReturnsAsync(expectedResult);
 
             // Act
-            var result = await _herbService.UpdateAsync(updateDto);
+            var result = await _herbService.UpdateAsync(herbId, updateDto);
 
             // Assert
             result.Should().BeSameAs(expectedResult);
@@ -152,14 +163,14 @@ namespace LYBT.Module.Herbs.Tests.Services
             var herbId = Guid.NewGuid();
             var expectedResult = ServiceResult<bool>.Success(true);
 
-            _mockBusinessService.Setup(x => x.DeleteAsync(herbId)).ReturnsAsync(expectedResult);
+            _mockBusinessService.Setup(x => x.SoftDeleteAsync(herbId)).ReturnsAsync(expectedResult);
 
             // Act
             var result = await _herbService.DeleteAsync(herbId);
 
             // Assert
             result.Should().BeSameAs(expectedResult);
-            _mockBusinessService.Verify(x => x.DeleteAsync(herbId), Times.Once);
+            _mockBusinessService.Verify(x => x.SoftDeleteAsync(herbId), Times.Once);
         }
 
         #endregion
@@ -167,64 +178,69 @@ namespace LYBT.Module.Herbs.Tests.Services
         #region 药材分类测试
 
         [Fact]
-        public async Task GetByCategoryAsync_Should_Delegate_To_QueryService()
+        public async Task GetByPriceRangeAsync_Should_Delegate_To_QueryService()
         {
             // Arrange
-            var category = "补血药";
+            var minPrice = 1.0m;
+            var maxPrice = 10.0m;
             var herbs = new List<HerbDto>
             {
-                new() { Name = "当归", Category = category },
-                new() { Name = "熟地黄", Category = category }
+                new() { Name = "当归", Price = 5.0m },
+                new() { Name = "黄芪", Price = 8.0m }
             };
             var expectedResult = ServiceResult<List<HerbDto>>.Success(herbs);
 
-            _mockQueryService.Setup(x => x.GetByCategoryAsync(category)).ReturnsAsync(expectedResult);
+            _mockQueryService.Setup(x => x.GetByPriceRangeAsync(minPrice, maxPrice)).ReturnsAsync(expectedResult);
 
             // Act
-            var result = await _herbService.GetByCategoryAsync(category);
+            var result = await _herbService.GetByPriceRangeAsync(minPrice, maxPrice);
 
             // Assert
             result.Should().BeSameAs(expectedResult);
-            _mockQueryService.Verify(x => x.GetByCategoryAsync(category), Times.Once);
+            _mockQueryService.Verify(x => x.GetByPriceRangeAsync(minPrice, maxPrice), Times.Once);
         }
 
         [Fact]
-        public async Task GetCategoriesAsync_Should_Delegate_To_QueryService()
+        public async Task GetAvailableHerbsAsync_Should_Delegate_To_QueryService()
         {
             // Arrange
-            var categories = new List<string> { "补血药", "补气药", "清热药" };
-            var expectedResult = ServiceResult<List<string>>.Success(categories);
+            var herbs = new List<HerbDto>
+            {
+                new() { Name = "当归", Price = 5.0m },
+                new() { Name = "黄芪", Price = 8.0m }
+            };
+            var expectedResult = ServiceResult<List<HerbDto>>.Success(herbs);
 
-            _mockQueryService.Setup(x => x.GetCategoriesAsync()).ReturnsAsync(expectedResult);
+            _mockQueryService.Setup(x => x.GetAvailableHerbsAsync()).ReturnsAsync(expectedResult);
 
             // Act
-            var result = await _herbService.GetCategoriesAsync();
+            var result = await _herbService.GetAvailableHerbsAsync();
 
             // Assert
             result.Should().BeSameAs(expectedResult);
-            _mockQueryService.Verify(x => x.GetCategoriesAsync(), Times.Once);
+            _mockQueryService.Verify(x => x.GetAvailableHerbsAsync(), Times.Once);
         }
 
         #endregion
 
-        #region 兼容性检查测试
+        #region 状态管理测试
 
         [Fact]
-        public async Task CheckCompatibilityAsync_Should_Delegate_To_BusinessService()
+        public async Task SetStatusAsync_Should_Delegate_To_BusinessService()
         {
             // Arrange
-            var herbIds = new List<Guid> { Guid.NewGuid(), Guid.NewGuid() };
-            var compatibilityResult = new HerbCompatibilityResult { IsCompatible = true };
-            var expectedResult = ServiceResult<HerbCompatibilityResult>.Success(compatibilityResult);
+            var herbId = Guid.NewGuid();
+            var isActive = true;
+            var expectedResult = ServiceResult<bool>.Success(true);
 
-            _mockBusinessService.Setup(x => x.CheckCompatibilityAsync(herbIds)).ReturnsAsync(expectedResult);
+            _mockBusinessService.Setup(x => x.SetStatusAsync(herbId, isActive)).ReturnsAsync(expectedResult);
 
             // Act
-            var result = await _herbService.CheckCompatibilityAsync(herbIds);
+            var result = await _herbService.SetStatusAsync(herbId, isActive);
 
             // Assert
-            result.Should().BeSameAs(expectedResult);
-            _mockBusinessService.Verify(x => x.CheckCompatibilityAsync(herbIds), Times.Once);
+            result.Should().BeTrue();
+            _mockBusinessService.Verify(x => x.SetStatusAsync(herbId, isActive), Times.Once);
         }
 
         #endregion

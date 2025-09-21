@@ -319,7 +319,7 @@ public class SessionManager(ILogger<SessionManager> logger) : Prism.Mvvm.Bindabl
             Id = Guid.NewGuid(),
             PatientId = patient.Id,
             MedicalCaseId = CurrentMedicalCaseId!.Value,
-            DoctorId = CurrentUser?.Id ?? Guid.Empty,
+            UserId = CurrentUser?.Id ?? Guid.Empty,
             StartTime = DateTime.Now,
             Status = Shared.Models.Enums.CommonStatus.Enabled,
             CreateTime = DateTime.Now,

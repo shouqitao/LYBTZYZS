@@ -6,6 +6,7 @@ using LYBT.Module.MedicalCase.Interfaces;
 using LYBT.Module.MedicalCase.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.MedicalCase;
+using LYBT.Shared.Interfaces.Services;
 using Moq;
 using Xunit;
 
@@ -116,7 +117,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
             _mockBusinessService.Setup(x => x.UpdateAsync(caseId, updateDto)).ReturnsAsync(expectedResult);
 
             // Act
-            var result = await _medicalCaseService.UpdateAsync(updateDto);
+            var result = await _medicalCaseService.UpdateAsync(caseId, updateDto);
 
             // Assert
             result.Should().BeSameAs(expectedResult);
@@ -130,7 +131,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
         [Fact]
         public void MedicalCaseService_Should_Implement_IMedicalCaseService()
         {
-            _medicalCaseService.Should().BeAssignableTo<IMedicalCaseService>();
+            _medicalCaseService.Should().BeAssignableTo<LYBT.Shared.Interfaces.Services.IMedicalCaseService>();
         }
 
         #endregion

@@ -218,9 +218,9 @@ ErrorMessage = string.Empty;
 
 var request = new PagedQueryBaseDto
 {
-CurrentPage = PaginationCoordinator.CurrentPage,
+PageIndex = PaginationCoordinator.CurrentPage,
 PageSize = PaginationCoordinator.PageSize,
-SearchKeyword = SearchManager.SearchKeyword
+Keyword = SearchManager.SearchKeyword
 };
 
 var result = await LoadDataAsync(request);

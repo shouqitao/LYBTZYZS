@@ -7,6 +7,7 @@ using LYBT.Module.Users.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
+using LYBT.Shared.Interfaces.Services;
 using Moq;
 using Xunit;
 
@@ -72,7 +73,7 @@ namespace LYBT.Module.Users.Tests.Services
             {
                 Items = new List<UserDto>(),
                 TotalCount = 0,
-                PageIndex = 1,
+                CurrentPage = 1,
                 PageSize = 10
             });
 
@@ -217,14 +218,14 @@ namespace LYBT.Module.Users.Tests.Services
             var createdUser = new UserDto { Id = Guid.NewGuid(), Username = "newuser" };
             var expectedResult = ServiceResult<UserDto>.Success(createdUser);
 
-            _mockBusinessService.Setup(x => x.CreateUserAsync(createDto)).ReturnsAsync(expectedResult);
+            _mockBusinessService.Setup(x => x.CreateUserAsync(createDto, It.IsAny<CancellationToken>())).ReturnsAsync(expectedResult);
 
             // Act
             var result = await _userService.CreateAsync(createDto);
 
             // Assert
             result.Should().BeSameAs(expectedResult);
-            _mockBusinessService.Verify(x => x.CreateUserAsync(createDto), Times.Once);
+            _mockBusinessService.Verify(x => x.CreateUserAsync(createDto, It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
@@ -241,14 +242,14 @@ namespace LYBT.Module.Users.Tests.Services
             var updatedUser = new UserDto { Id = userId, RealName = "更新用户" };
             var expectedResult = ServiceResult<UserDto>.Success(updatedUser);
 
-            _mockBusinessService.Setup(x => x.UpdateUserAsync(userId, updateDto)).ReturnsAsync(expectedResult);
+            _mockBusinessService.Setup(x => x.UpdateUserAsync(userId, updateDto, It.IsAny<CancellationToken>())).ReturnsAsync(expectedResult);
 
             // Act
             var result = await _userService.UpdateAsync(updateDto);
 
             // Assert
             result.Should().BeSameAs(expectedResult);
-            _mockBusinessService.Verify(x => x.UpdateUserAsync(userId, updateDto), Times.Once);
+            _mockBusinessService.Verify(x => x.UpdateUserAsync(userId, updateDto, It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
@@ -560,7 +561,7 @@ namespace LYBT.Module.Users.Tests.Services
 
             _mockQueryService.Setup(x => x.GetByIdAsync(It.IsAny<Guid>()))
                 .ReturnsAsync(ServiceResult<UserDto>.Success(new UserDto()));
-            _mockBusinessService.Setup(x => x.CreateUserAsync(It.IsAny<UserCreateDto>()))
+            _mockBusinessService.Setup(x => x.CreateUserAsync(It.IsAny<UserCreateDto>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(ServiceResult<UserDto>.Success(new UserDto()));
 
             // Act & Assert - 所有方法都应该能正常调用
@@ -569,14 +570,14 @@ namespace LYBT.Module.Users.Tests.Services
 
             // Verify
             _mockQueryService.Verify(x => x.GetByIdAsync(userId), Times.Once);
-            _mockBusinessService.Verify(x => x.CreateUserAsync(It.IsAny<UserCreateDto>()), Times.Once);
+            _mockBusinessService.Verify(x => x.CreateUserAsync(It.IsAny<UserCreateDto>(), It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
         public void UserService_Should_Implement_IUserService()
         {
             // Assert
-            _userService.Should().BeAssignableTo<IUserService>();
+            _userService.Should().BeAssignableTo<LYBT.Shared.Interfaces.Services.IUserService>();
         }
 
         [Fact]
@@ -604,7 +605,7 @@ namespace LYBT.Module.Users.Tests.Services
             var createDto = new UserCreateDto { Username = "testuser" };
             var expectedResult = ServiceResult<UserDto>.Failure("创建失败");
 
-            _mockBusinessService.Setup(x => x.CreateUserAsync(createDto)).ReturnsAsync(expectedResult);
+            _mockBusinessService.Setup(x => x.CreateUserAsync(createDto, It.IsAny<CancellationToken>())).ReturnsAsync(expectedResult);
 
             // Act
             var result = await _userService.CreateAsync(createDto);

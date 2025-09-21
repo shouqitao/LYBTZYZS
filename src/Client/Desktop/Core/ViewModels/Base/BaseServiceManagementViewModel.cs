@@ -228,9 +228,9 @@ namespace LYBT.Desktop.Core.ViewModels.Base
 
                 var request = new PagedQueryBaseDto
                 {
-                    CurrentPage = CurrentPage,
+                    PageIndex = CurrentPage,
                     PageSize = PageSize,
-                    SearchKeyword = SearchKeyword
+                    Keyword = SearchKeyword
                 };
 
                 var result = await LoadDataFromServiceAsync(request);

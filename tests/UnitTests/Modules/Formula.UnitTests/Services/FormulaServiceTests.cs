@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using LYBT.Module.Formula.Interfaces;
 using LYBT.Module.Formula.Services;
+using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
 using Moq;
@@ -51,7 +52,7 @@ namespace LYBT.Module.Formula.Tests.Services
         public async Task GetPagedAsync_Should_Delegate_To_QueryService()
         {
             // Arrange
-            var query = new FormulaSearchDto { PageIndex = 1, PageSize = 10 };
+            var query = new FormulaQueryDto { PageIndex = 1, PageSize = 10 };
             var expectedResult = ServiceResult<PagedResult<FormulaDto>>.Success(new PagedResult<FormulaDto>());
 
             _mockQueryService.Setup(x => x.GetPagedAsync(query)).ReturnsAsync(expectedResult);
@@ -112,7 +113,7 @@ namespace LYBT.Module.Formula.Tests.Services
         public async Task CreateAsync_Should_Delegate_To_BusinessService()
         {
             // Arrange
-            var createDto = new FormulaCreateDto { Name = "四君子汤", Category = "补益剂" };
+            var createDto = new FormulaCreateDto { Name = "四君子汤", Effect = "益气健脾", Usage = "水煎服", Herbs = new List<FormulaHerbItemCreateDto>() };
             var createdFormula = new FormulaDto { Id = Guid.NewGuid(), Name = "四君子汤" };
             var expectedResult = ServiceResult<FormulaDto>.Success(createdFormula);
 
@@ -131,14 +132,14 @@ namespace LYBT.Module.Formula.Tests.Services
         {
             // Arrange
             var formulaId = Guid.NewGuid();
-            var updateDto = new FormulaUpdateDto { Id = formulaId, Name = "加味四君子汤" };
+            var updateDto = new FormulaUpdateDto { Id = formulaId, Name = "加味四君子汤", Herbs = new List<FormulaHerbItemUpdateDto>() };
             var updatedFormula = new FormulaDto { Id = formulaId, Name = "加味四君子汤" };
             var expectedResult = ServiceResult<FormulaDto>.Success(updatedFormula);
 
             _mockBusinessService.Setup(x => x.UpdateAsync(formulaId, updateDto)).ReturnsAsync(expectedResult);
 
             // Act
-            var result = await _formulaService.UpdateAsync(updateDto);
+            var result = await _formulaService.UpdateAsync(formulaId, updateDto);
 
             // Assert
             result.Should().BeSameAs(expectedResult);
@@ -164,97 +165,36 @@ namespace LYBT.Module.Formula.Tests.Services
 
         #endregion
 
-        #region 方剂组成测试
-
-        [Fact]
-        public async Task GetFormulaItemsAsync_Should_Delegate_To_QueryService()
-        {
-            // Arrange
-            var formulaId = Guid.NewGuid();
-            var formulaItems = new List<FormulaItemDto>
-            {
-                new() { HerbName = "人参", Dosage = "9g" },
-                new() { HerbName = "白术", Dosage = "9g" }
-            };
-            var expectedResult = ServiceResult<List<FormulaItemDto>>.Success(formulaItems);
-
-            _mockQueryService.Setup(x => x.GetFormulaItemsAsync(formulaId)).ReturnsAsync(expectedResult);
-
-            // Act
-            var result = await _formulaService.GetFormulaItemsAsync(formulaId);
-
-            // Assert
-            result.Should().BeSameAs(expectedResult);
-            _mockQueryService.Verify(x => x.GetFormulaItemsAsync(formulaId), Times.Once);
-        }
-
-        [Fact]
-        public async Task AddFormulaItemAsync_Should_Delegate_To_BusinessService()
-        {
-            // Arrange
-            var formulaId = Guid.NewGuid();
-            var itemDto = new FormulaItemCreateDto { HerbId = Guid.NewGuid(), Dosage = "9g" };
-            var expectedResult = ServiceResult<bool>.Success(true);
-
-            _mockBusinessService.Setup(x => x.AddFormulaItemAsync(formulaId, itemDto)).ReturnsAsync(expectedResult);
-
-            // Act
-            var result = await _formulaService.AddFormulaItemAsync(formulaId, itemDto);
-
-            // Assert
-            result.Should().BeSameAs(expectedResult);
-            _mockBusinessService.Verify(x => x.AddFormulaItemAsync(formulaId, itemDto), Times.Once);
-        }
-
-        [Fact]
-        public async Task RemoveFormulaItemAsync_Should_Delegate_To_BusinessService()
-        {
-            // Arrange
-            var formulaId = Guid.NewGuid();
-            var herbId = Guid.NewGuid();
-            var expectedResult = ServiceResult<bool>.Success(true);
-
-            _mockBusinessService.Setup(x => x.RemoveFormulaItemAsync(formulaId, herbId)).ReturnsAsync(expectedResult);
-
-            // Act
-            var result = await _formulaService.RemoveFormulaItemAsync(formulaId, herbId);
-
-            // Assert
-            result.Should().BeSameAs(expectedResult);
-            _mockBusinessService.Verify(x => x.RemoveFormulaItemAsync(formulaId, herbId), Times.Once);
-        }
-
-        #endregion
 
         #region 方剂分类测试
 
         [Fact]
-        public async Task GetByCategoryAsync_Should_Delegate_To_QueryService()
+        public async Task GetByTypeAsync_Should_Delegate_To_QueryService()
         {
             // Arrange
-            var category = "补益剂";
+            var formulaType = "经方";
             var formulas = new List<FormulaDto>
             {
-                new() { Name = "四君子汤", Category = category },
-                new() { Name = "六君子汤", Category = category }
+                new() { Name = "四君子汤" },
+                new() { Name = "六君子汤" }
             };
             var expectedResult = ServiceResult<List<FormulaDto>>.Success(formulas);
 
-            _mockQueryService.Setup(x => x.GetByCategoryAsync(category)).ReturnsAsync(expectedResult);
+            _mockQueryService.Setup(x => x.GetByTypeAsync(formulaType)).ReturnsAsync(expectedResult);
 
             // Act
-            var result = await _formulaService.GetByCategoryAsync(category);
+            var result = await _formulaService.GetByTypeAsync(formulaType);
 
             // Assert
             result.Should().BeSameAs(expectedResult);
-            _mockQueryService.Verify(x => x.GetByCategoryAsync(category), Times.Once);
+            _mockQueryService.Verify(x => x.GetByTypeAsync(formulaType), Times.Once);
         }
 
         [Fact]
         public async Task GetCategoriesAsync_Should_Delegate_To_QueryService()
         {
             // Arrange
-            var categories = new List<string> { "补益剂", "清热剂", "温里剂" };
+            var categories = new List<string> { "内科方", "外科方", "妇科方" };
             var expectedResult = ServiceResult<List<string>>.Success(categories);
 
             _mockQueryService.Setup(x => x.GetCategoriesAsync()).ReturnsAsync(expectedResult);
@@ -269,27 +209,6 @@ namespace LYBT.Module.Formula.Tests.Services
 
         #endregion
 
-        #region 方剂应用测试
-
-        [Fact]
-        public async Task ApplyToConsultationAsync_Should_Delegate_To_BusinessService()
-        {
-            // Arrange
-            var formulaId = Guid.NewGuid();
-            var consultationId = Guid.NewGuid();
-            var expectedResult = ServiceResult<bool>.Success(true);
-
-            _mockBusinessService.Setup(x => x.ApplyToConsultationAsync(formulaId, consultationId)).ReturnsAsync(expectedResult);
-
-            // Act
-            var result = await _formulaService.ApplyToConsultationAsync(formulaId, consultationId);
-
-            // Assert
-            result.Should().BeSameAs(expectedResult);
-            _mockBusinessService.Verify(x => x.ApplyToConsultationAsync(formulaId, consultationId), Times.Once);
-        }
-
-        #endregion
 
         #region 边界值测试
 

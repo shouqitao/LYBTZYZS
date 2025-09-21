@@ -21,7 +21,7 @@ namespace LYBT.Module.Consultation.Tests.Mapping
             var config = new MapperConfiguration(cfg =>
             {
                 cfg.AddProfile(new ConsultationMappingProfile());
-            }, NullLoggerFactory.Instance);
+            });
 
             _mapper = config.CreateMapper();
         }
@@ -33,7 +33,7 @@ namespace LYBT.Module.Consultation.Tests.Mapping
             var config = new MapperConfiguration(cfg =>
             {
                 cfg.AddProfile(new ConsultationMappingProfile());
-            }, NullLoggerFactory.Instance);
+            });
 
             // Assert
             config.AssertConfigurationIsValid();
@@ -47,24 +47,24 @@ namespace LYBT.Module.Consultation.Tests.Mapping
             {
                 Id = Guid.NewGuid(),
                 PatientId = Guid.NewGuid(),
-                DoctorId = Guid.NewGuid(),
+                UserId = Guid.NewGuid(),
                 MedicalCaseId = Guid.NewGuid(),
                 ChiefComplaint = "头痛",
                 PresentIllness = "头痛3天，伴有恶心",
-                PastHistory = "高血压病史",
-                PersonalHistory = "无特殊",
-                FamilyHistory = "父亲有高血压",
+                Inspection = "面色红润",
+                AuscultationOlfaction = "无异味",
+                Inquiry = "饮食正常",
+                Palpation = "脉滑数",
                 TCMDiagnosis = "肝阳上亢",
-                DiagnosisResult = "头痛（肝阳上亢证）",
-                TreatmentPlan = "平肝潜阳",
-                ConsultationNotes = "患者精神状态良好",
+                // Diagnosis属性仅在基类ConsultationInputBaseDto中
+                TreatmentPrinciple = "平肝潜阳",
+                MedicalAdvice = "患者精神状态良好",
                 // 显示字段，应该被忽略
                 PatientName = "张三",
                 DoctorName = "李医生",
                 StartTime = DateTime.Now,
                 EndTime = DateTime.Now.AddHours(1),
-                ConsultationStatus = ConsultationStatus.InProgress,
-                IsCompleted = false
+                ConsultationStatus = ConsultationStatus.InProgress
             };
 
             // Act
@@ -73,17 +73,19 @@ namespace LYBT.Module.Consultation.Tests.Mapping
             // Assert
             consultation.Should().NotBeNull();
             consultation.PatientId.Should().Be(detailDto.PatientId);
-            consultation.DoctorId.Should().Be(detailDto.DoctorId);
+            consultation.UserId.Should().Be(detailDto.UserId);
             consultation.MedicalCaseId.Should().Be(detailDto.MedicalCaseId);
             consultation.ChiefComplaint.Should().Be(detailDto.ChiefComplaint);
             consultation.PresentIllness.Should().Be(detailDto.PresentIllness);
-            consultation.PastHistory.Should().Be(detailDto.PastHistory);
-            consultation.PersonalHistory.Should().Be(detailDto.PersonalHistory);
-            consultation.FamilyHistory.Should().Be(detailDto.FamilyHistory);
+            consultation.Inspection.Should().Be(detailDto.Inspection);
+            consultation.AuscultationOlfaction.Should().Be(detailDto.AuscultationOlfaction);
+            consultation.Inquiry.Should().Be(detailDto.Inquiry);
+            consultation.Palpation.Should().Be(detailDto.Palpation);
             consultation.TCMDiagnosis.Should().Be(detailDto.TCMDiagnosis);
-            consultation.DiagnosisResult.Should().Be(detailDto.DiagnosisResult);
-            consultation.TreatmentPlan.Should().Be(detailDto.TreatmentPlan);
-            consultation.ConsultationNotes.Should().Be(detailDto.ConsultationNotes);
+            // TCMDiagnosis and TreatmentPrinciple should map from Diagnosis and TreatmentPrinciple DTOs
+            // Note: Entity doesn't have Diagnosis field, only TCMDiagnosis
+            consultation.TreatmentPrinciple.Should().Be(detailDto.TreatmentPrinciple);
+            consultation.MedicalAdvice.Should().Be(detailDto.MedicalAdvice);
 
             // 验证忽略字段
             consultation.Id.Should().Be(Guid.Empty);
@@ -100,15 +102,13 @@ namespace LYBT.Module.Consultation.Tests.Mapping
             {
                 Id = Guid.NewGuid(),
                 PatientId = Guid.NewGuid(),
-                DoctorId = Guid.NewGuid(),
+                UserId = Guid.NewGuid(),
                 MedicalCaseId = Guid.NewGuid(),
                 ChiefComplaint = "咳嗽",
                 PresentIllness = "咳嗽2周",
                 TCMDiagnosis = "肺燥咳嗽",
-                DiagnosisResult = "咳嗽（肺燥证）",
-                TreatmentPlan = "润肺止咳",
-                ConsultationTime = DateTime.Now,
-                Status = CommonStatus.Active
+                TreatmentPrinciple = "润肺止咳",
+                Status = CommonStatus.Enabled
             };
 
             // Act
@@ -118,14 +118,13 @@ namespace LYBT.Module.Consultation.Tests.Mapping
             dto.Should().NotBeNull();
             dto.Id.Should().Be(consultation.Id);
             dto.PatientId.Should().Be(consultation.PatientId);
-            dto.DoctorId.Should().Be(consultation.DoctorId);
+            dto.UserId.Should().Be(consultation.UserId);
             dto.MedicalCaseId.Should().Be(consultation.MedicalCaseId);
             dto.ChiefComplaint.Should().Be(consultation.ChiefComplaint);
             dto.PresentIllness.Should().Be(consultation.PresentIllness);
             dto.TCMDiagnosis.Should().Be(consultation.TCMDiagnosis);
-            dto.DiagnosisResult.Should().Be(consultation.DiagnosisResult);
-            dto.TreatmentPlan.Should().Be(consultation.TreatmentPlan);
-            dto.ConsultationTime.Should().Be(consultation.ConsultationTime);
+            dto.TCMDiagnosis.Should().Be(consultation.TCMDiagnosis);
+            dto.TreatmentPrinciple.Should().Be(consultation.TreatmentPrinciple);
             dto.Status.Should().Be(consultation.Status);
 
             // DoctorName需要从关联数据获取，所以会被忽略
@@ -140,19 +139,18 @@ namespace LYBT.Module.Consultation.Tests.Mapping
             {
                 Id = Guid.NewGuid(),
                 PatientId = Guid.NewGuid(),
-                DoctorId = Guid.NewGuid(),
+                UserId = Guid.NewGuid(),
                 MedicalCaseId = Guid.NewGuid(),
                 ChiefComplaint = "胃痛",
                 PresentIllness = "胃痛1周",
-                PastHistory = "胃炎",
-                PersonalHistory = "吸烟史",
-                FamilyHistory = "无特殊",
+                Inspection = "面色萎黄",
+                AuscultationOlfaction = "口中有异味",
+                Inquiry = "饮食不规律",
+                Palpation = "脉弦细",
                 TCMDiagnosis = "胃气郁滞",
-                DiagnosisResult = "胃痛（气滞证）",
-                TreatmentPlan = "理气和胃",
-                ConsultationNotes = "建议戒烟",
-                ConsultationTime = DateTime.Now,
-                Status = CommonStatus.Active
+                TreatmentPrinciple = "理气和胃",
+                MedicalAdvice = "建议戒烟",
+                Status = CommonStatus.Enabled
             };
 
             // Act
@@ -162,18 +160,18 @@ namespace LYBT.Module.Consultation.Tests.Mapping
             detailDto.Should().NotBeNull();
             detailDto.Id.Should().Be(consultation.Id);
             detailDto.PatientId.Should().Be(consultation.PatientId);
-            detailDto.DoctorId.Should().Be(consultation.DoctorId);
+            detailDto.UserId.Should().Be(consultation.UserId);
             detailDto.MedicalCaseId.Should().Be(consultation.MedicalCaseId);
             detailDto.ChiefComplaint.Should().Be(consultation.ChiefComplaint);
             detailDto.PresentIllness.Should().Be(consultation.PresentIllness);
-            detailDto.PastHistory.Should().Be(consultation.PastHistory);
-            detailDto.PersonalHistory.Should().Be(consultation.PersonalHistory);
-            detailDto.FamilyHistory.Should().Be(consultation.FamilyHistory);
+            detailDto.Inspection.Should().Be(consultation.Inspection);
+            detailDto.AuscultationOlfaction.Should().Be(consultation.AuscultationOlfaction);
+            detailDto.Inquiry.Should().Be(consultation.Inquiry);
+            detailDto.Palpation.Should().Be(consultation.Palpation);
             detailDto.TCMDiagnosis.Should().Be(consultation.TCMDiagnosis);
-            detailDto.DiagnosisResult.Should().Be(consultation.DiagnosisResult);
-            detailDto.TreatmentPlan.Should().Be(consultation.TreatmentPlan);
-            detailDto.ConsultationNotes.Should().Be(consultation.ConsultationNotes);
-            detailDto.ConsultationTime.Should().Be(consultation.ConsultationTime);
+            detailDto.TCMDiagnosis.Should().Be(consultation.TCMDiagnosis);
+            detailDto.TreatmentPrinciple.Should().Be(consultation.TreatmentPrinciple);
+            detailDto.MedicalAdvice.Should().Be(consultation.MedicalAdvice);
 
             // 验证状态映射
             detailDto.ConsultationStatus.Should().Be(ConsultationStatus.InProgress);
@@ -193,7 +191,7 @@ namespace LYBT.Module.Consultation.Tests.Mapping
             {
                 Id = Guid.NewGuid(),
                 PatientId = Guid.NewGuid(),
-                DoctorId = Guid.NewGuid(),
+                UserId = Guid.NewGuid(),
                 Status = CommonStatus.Disabled
             };
 
@@ -213,8 +211,8 @@ namespace LYBT.Module.Consultation.Tests.Mapping
             {
                 Id = Guid.NewGuid(),
                 PatientId = Guid.NewGuid(),
-                DoctorId = Guid.NewGuid(),
-                Status = CommonStatus.Active
+                UserId = Guid.NewGuid(),
+                Status = CommonStatus.Enabled
             };
 
             // Act
@@ -232,16 +230,17 @@ namespace LYBT.Module.Consultation.Tests.Mapping
             var detailDto = new ConsultationDetailDto
             {
                 PatientId = Guid.NewGuid(),
-                DoctorId = Guid.NewGuid(),
+                UserId = Guid.NewGuid(),
                 ChiefComplaint = "主诉",
                 PresentIllness = null,
-                PastHistory = null,
-                PersonalHistory = null,
-                FamilyHistory = null,
+                Inspection = null,
+                AuscultationOlfaction = null,
+                Inquiry = null,
+                Palpation = null,
                 TCMDiagnosis = null,
-                DiagnosisResult = null,
-                TreatmentPlan = null,
-                ConsultationNotes = null
+                // Diagnosis属性仅在基类ConsultationInputBaseDto中
+                TreatmentPrinciple = null,
+                MedicalAdvice = null
             };
 
             // Act
@@ -250,16 +249,17 @@ namespace LYBT.Module.Consultation.Tests.Mapping
             // Assert
             consultation.Should().NotBeNull();
             consultation.PatientId.Should().Be(detailDto.PatientId);
-            consultation.DoctorId.Should().Be(detailDto.DoctorId);
+            consultation.UserId.Should().Be(detailDto.UserId);
             consultation.ChiefComplaint.Should().Be(detailDto.ChiefComplaint);
             consultation.PresentIllness.Should().BeNull();
-            consultation.PastHistory.Should().BeNull();
-            consultation.PersonalHistory.Should().BeNull();
-            consultation.FamilyHistory.Should().BeNull();
+            consultation.Inspection.Should().BeNull();
+            consultation.AuscultationOlfaction.Should().BeNull();
+            consultation.Inquiry.Should().BeNull();
+            consultation.Palpation.Should().BeNull();
             consultation.TCMDiagnosis.Should().BeNull();
-            consultation.DiagnosisResult.Should().BeNull();
-            consultation.TreatmentPlan.Should().BeNull();
-            consultation.ConsultationNotes.Should().BeNull();
+            consultation.TCMDiagnosis.Should().BeNull();
+            consultation.TreatmentPrinciple.Should().BeNull();
+            consultation.MedicalAdvice.Should().BeNull();
         }
 
         [Fact]
@@ -270,10 +270,9 @@ namespace LYBT.Module.Consultation.Tests.Mapping
             {
                 Id = Guid.NewGuid(),
                 PatientId = Guid.NewGuid(),
-                DoctorId = Guid.NewGuid(),
+                UserId = Guid.NewGuid(),
                 TCMDiagnosis = "肝郁脾虚，痰湿内阻",
-                DiagnosisResult = "失眠（肝郁脾虚证）",
-                TreatmentPlan = "疏肝健脾，化痰安神"
+                TreatmentPrinciple = "疏肝健脾，化痰安神"
             };
 
             // Act
@@ -282,8 +281,8 @@ namespace LYBT.Module.Consultation.Tests.Mapping
             // Assert
             dto.Should().NotBeNull();
             dto.TCMDiagnosis.Should().Be("肝郁脾虚，痰湿内阻");
-            dto.DiagnosisResult.Should().Be("失眠（肝郁脾虚证）");
-            dto.TreatmentPlan.Should().Be("疏肝健脾，化痰安神");
+            // Note: Entity doesn't have DiagnosisResult, check TCMDiagnosis instead
+            dto.TreatmentPrinciple.Should().Be("疏肝健脾，化痰安神");
         }
 
         [Fact]
@@ -295,8 +294,8 @@ namespace LYBT.Module.Consultation.Tests.Mapping
             {
                 Id = Guid.NewGuid(),
                 PatientId = Guid.NewGuid(),
-                DoctorId = Guid.NewGuid(),
-                ConsultationNotes = longNotes
+                UserId = Guid.NewGuid(),
+                MedicalAdvice = longNotes
             };
 
             // Act
@@ -304,7 +303,7 @@ namespace LYBT.Module.Consultation.Tests.Mapping
 
             // Assert
             detailDto.Should().NotBeNull();
-            detailDto.ConsultationNotes.Should().Be(longNotes);
+            detailDto.MedicalAdvice.Should().Be(longNotes);
         }
     }
 }

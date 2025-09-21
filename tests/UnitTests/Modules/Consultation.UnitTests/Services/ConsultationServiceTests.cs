@@ -6,6 +6,7 @@ using LYBT.Module.Consultation.Interfaces;
 using LYBT.Module.Consultation.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
+using LYBT.Shared.Interfaces.Services;
 using Moq;
 using Xunit;
 
@@ -51,7 +52,7 @@ namespace LYBT.Module.Consultation.Tests.Services
         public async Task GetPagedAsync_Should_Delegate_To_QueryService()
         {
             // Arrange
-            var query = new ConsultationSearchDto { PageIndex = 1, PageSize = 10 };
+            var query = new PagedQueryBaseDto { PageIndex = 1, PageSize = 10 };
             var expectedResult = ServiceResult<PagedResult<ConsultationDto>>.Success(new PagedResult<ConsultationDto>());
 
             _mockQueryService.Setup(x => x.GetPagedAsync(query)).ReturnsAsync(expectedResult);
@@ -69,8 +70,8 @@ namespace LYBT.Module.Consultation.Tests.Services
         {
             // Arrange
             var consultationId = Guid.NewGuid();
-            var consultationDto = new ConsultationDto { Id = consultationId };
-            var expectedResult = ServiceResult<ConsultationDto>.Success(consultationDto);
+            var consultationDetailDto = new ConsultationDetailDto { Id = consultationId };
+            var expectedResult = ServiceResult<ConsultationDetailDto>.Success(consultationDetailDto);
 
             _mockQueryService.Setup(x => x.GetByIdAsync(consultationId)).ReturnsAsync(expectedResult);
 
@@ -87,21 +88,21 @@ namespace LYBT.Module.Consultation.Tests.Services
         #region 业务操作测试
 
         [Fact]
-        public async Task CreateAsync_Should_Delegate_To_BusinessService()
+        public async Task StartAsync_Should_Delegate_To_BusinessService()
         {
             // Arrange
-            var createDto = new ConsultationCreateDto { MedicalCaseId = Guid.NewGuid() };
+            var startDto = new ConsultationStartDto { MedicalCaseId = Guid.NewGuid() };
             var createdConsultation = new ConsultationDto { Id = Guid.NewGuid() };
             var expectedResult = ServiceResult<ConsultationDto>.Success(createdConsultation);
 
-            _mockBusinessService.Setup(x => x.CreateAsync(createDto)).ReturnsAsync(expectedResult);
+            _mockBusinessService.Setup(x => x.StartAsync(startDto)).ReturnsAsync(expectedResult);
 
             // Act
-            var result = await _consultationService.CreateAsync(createDto);
+            var result = await _consultationService.StartAsync(startDto);
 
             // Assert
             result.Should().BeSameAs(expectedResult);
-            _mockBusinessService.Verify(x => x.CreateAsync(createDto), Times.Once);
+            _mockBusinessService.Verify(x => x.StartAsync(startDto), Times.Once);
         }
 
         [Fact]
@@ -109,14 +110,14 @@ namespace LYBT.Module.Consultation.Tests.Services
         {
             // Arrange
             var consultationId = Guid.NewGuid();
-            var updateDto = new ConsultationUpdateDto { Id = consultationId };
+            var updateDto = new ConsultationDetailDto { Id = consultationId };
             var updatedConsultation = new ConsultationDto { Id = consultationId };
             var expectedResult = ServiceResult<ConsultationDto>.Success(updatedConsultation);
 
             _mockBusinessService.Setup(x => x.UpdateAsync(consultationId, updateDto)).ReturnsAsync(expectedResult);
 
             // Act
-            var result = await _consultationService.UpdateAsync(updateDto);
+            var result = await _consultationService.UpdateAsync(consultationId, updateDto);
 
             // Assert
             result.Should().BeSameAs(expectedResult);
@@ -127,41 +128,8 @@ namespace LYBT.Module.Consultation.Tests.Services
 
         #region TCM诊断测试
 
-        [Fact]
-        public async Task UpdateWangZhenAsync_Should_Delegate_To_BusinessService()
-        {
-            // Arrange
-            var consultationId = Guid.NewGuid();
-            var wangZhen = "面色苍白，精神疲倦";
-            var expectedResult = ServiceResult<bool>.Success(true);
-
-            _mockBusinessService.Setup(x => x.UpdateWangZhenAsync(consultationId, wangZhen)).ReturnsAsync(expectedResult);
-
-            // Act
-            var result = await _consultationService.UpdateWangZhenAsync(consultationId, wangZhen);
-
-            // Assert
-            result.Should().BeSameAs(expectedResult);
-            _mockBusinessService.Verify(x => x.UpdateWangZhenAsync(consultationId, wangZhen), Times.Once);
-        }
-
-        [Fact]
-        public async Task UpdateWenZhenAsync_Should_Delegate_To_BusinessService()
-        {
-            // Arrange
-            var consultationId = Guid.NewGuid();
-            var wenZhen = "声音低微，气短懒言";
-            var expectedResult = ServiceResult<bool>.Success(true);
-
-            _mockBusinessService.Setup(x => x.UpdateWenZhenAsync(consultationId, wenZhen)).ReturnsAsync(expectedResult);
-
-            // Act
-            var result = await _consultationService.UpdateWenZhenAsync(consultationId, wenZhen);
-
-            // Assert
-            result.Should().BeSameAs(expectedResult);
-            _mockBusinessService.Verify(x => x.UpdateWenZhenAsync(consultationId, wenZhen), Times.Once);
-        }
+        // TCM诊断相关方法已在新架构中整合到UpdateAsync方法中
+        // 这些专门的更新方法不再需要单独测试
 
         #endregion
 
@@ -170,7 +138,7 @@ namespace LYBT.Module.Consultation.Tests.Services
         [Fact]
         public void ConsultationService_Should_Implement_IConsultationService()
         {
-            _consultationService.Should().BeAssignableTo<IConsultationService>();
+            _consultationService.Should().BeAssignableTo<LYBT.Shared.Interfaces.Services.IConsultationService>();
         }
 
         #endregion

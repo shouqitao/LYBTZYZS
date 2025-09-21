@@ -3,8 +3,9 @@ using FluentAssertions;
 using LYBT.Entities.Users;
 using LYBT.Module.Users.Mapping;
 using LYBT.Shared.Models.Contracts.Users;
-using Microsoft.Extensions.Logging.Abstractions;
+using LYBT.Shared.Models.Enums;
 using Xunit;
+using System;
 
 namespace LYBT.Module.Users.Tests.Mapping
 {
@@ -21,7 +22,7 @@ namespace LYBT.Module.Users.Tests.Mapping
             var config = new MapperConfiguration(cfg =>
             {
                 cfg.AddProfile(new UserMappingProfile());
-            }, NullLoggerFactory.Instance);
+            });
 
             _mapper = config.CreateMapper();
         }
@@ -33,7 +34,7 @@ namespace LYBT.Module.Users.Tests.Mapping
             var config = new MapperConfiguration(cfg =>
             {
                 cfg.AddProfile(new UserMappingProfile());
-            }, NullLoggerFactory.Instance);
+            });
 
             // Assert
             config.AssertConfigurationIsValid();
@@ -50,7 +51,7 @@ namespace LYBT.Module.Users.Tests.Mapping
                 RealName = "测试用户",
                 PhoneNumber = "13812345678",
                 Role = UserRole.Doctor,
-                Status = UserStatus.Active,
+                Status = CommonStatus.Enabled,
                 CreatedTime = DateTime.Now,
                 UpdateTime = DateTime.Now,
                 PinYinCode = "CSYH"
@@ -80,7 +81,7 @@ namespace LYBT.Module.Users.Tests.Mapping
                 RealName = "新用户",
                 PhoneNumber = "13987654321",
                 Role = UserRole.Doctor,
-                Status = UserStatus.Active
+                Status = CommonStatus.Enabled
             };
 
             // Act
@@ -114,7 +115,7 @@ namespace LYBT.Module.Users.Tests.Mapping
                 RealName = "更新用户",
                 PhoneNumber = "13911111111",
                 Role = UserRole.Admin,
-                Status = UserStatus.Inactive
+                Status = CommonStatus.Disabled
             };
 
             // Act
@@ -148,7 +149,7 @@ namespace LYBT.Module.Users.Tests.Mapping
                 Username = "admin",
                 RealName = "管理员",
                 Role = UserRole.Admin,
-                Status = UserStatus.Active
+                Status = CommonStatus.Enabled
             };
 
             // Act
@@ -171,7 +172,7 @@ namespace LYBT.Module.Users.Tests.Mapping
                 Username = "doctor",
                 RealName = "医生",
                 Role = UserRole.Doctor,
-                Status = UserStatus.Active
+                Status = CommonStatus.Enabled
             };
 
             // Act
@@ -192,7 +193,7 @@ namespace LYBT.Module.Users.Tests.Mapping
             {
                 Id = Guid.NewGuid(),
                 Username = "lockeduser",
-                Status = UserStatus.Locked,
+                Status = CommonStatus.Disabled,
                 FailedLoginCount = 5,
                 LockoutEnd = DateTime.Now.AddHours(1)
             };
@@ -202,7 +203,7 @@ namespace LYBT.Module.Users.Tests.Mapping
 
             // Assert
             userDto.Should().NotBeNull();
-            userDto.Status.Should().Be(UserStatus.Locked);
+            userDto.Status.Should().Be(CommonStatus.Disabled);
             userDto.Username.Should().Be("lockeduser");
         }
 
@@ -215,7 +216,7 @@ namespace LYBT.Module.Users.Tests.Mapping
                 Username = "minimumuser",
                 Password = "password123",
                 Role = UserRole.Doctor,
-                Status = UserStatus.Active,
+                Status = CommonStatus.Enabled,
                 RealName = null,
                 PhoneNumber = null
             };
@@ -240,7 +241,7 @@ namespace LYBT.Module.Users.Tests.Mapping
             {
                 Id = Guid.NewGuid(),
                 Role = UserRole.Doctor,
-                Status = UserStatus.Active,
+                Status = CommonStatus.Enabled,
                 RealName = null,
                 PhoneNumber = null
             };

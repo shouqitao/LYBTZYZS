@@ -6,6 +6,7 @@ using LYBT.Module.Prescriptions.Interfaces;
 using LYBT.Module.Prescriptions.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
+using LYBT.Shared.Interfaces.Services;
 using Moq;
 using Xunit;
 
@@ -51,17 +52,17 @@ namespace LYBT.Module.Prescriptions.Tests.Services
         public async Task GetPagedAsync_Should_Delegate_To_QueryService()
         {
             // Arrange
-            var query = new PrescriptionSearchDto { PageIndex = 1, PageSize = 10 };
+            var query = new PrescriptionQueryDto { PageIndex = 1, PageSize = 10 };
             var expectedResult = ServiceResult<PagedResult<PrescriptionDto>>.Success(new PagedResult<PrescriptionDto>());
 
-            _mockQueryService.Setup(x => x.GetPagedAsync(query)).ReturnsAsync(expectedResult);
+            _mockQueryService.Setup(x => x.GetPagedAsync(It.IsAny<PrescriptionQueryDto>())).ReturnsAsync(expectedResult);
 
             // Act
             var result = await _prescriptionService.GetPagedAsync(query);
 
             // Assert
             result.Should().BeSameAs(expectedResult);
-            _mockQueryService.Verify(x => x.GetPagedAsync(query), Times.Once);
+            _mockQueryService.Verify(x => x.GetPagedAsync(It.Is<PrescriptionQueryDto>(q => q.PageIndex == 1 && q.PageSize == 10)), Times.Once);
         }
 
         [Fact]
@@ -109,14 +110,14 @@ namespace LYBT.Module.Prescriptions.Tests.Services
         {
             // Arrange
             var prescriptionId = Guid.NewGuid();
-            var updateDto = new PrescriptionUpdateDto { Id = prescriptionId };
+            var updateDto = new PrescriptionEditDto { Id = prescriptionId };
             var updatedPrescription = new PrescriptionDto { Id = prescriptionId };
             var expectedResult = ServiceResult<PrescriptionDto>.Success(updatedPrescription);
 
             _mockBusinessService.Setup(x => x.UpdateAsync(prescriptionId, updateDto)).ReturnsAsync(expectedResult);
 
             // Act
-            var result = await _prescriptionService.UpdateAsync(updateDto);
+            var result = await _prescriptionService.UpdateAsync(prescriptionId, updateDto);
 
             // Assert
             result.Should().BeSameAs(expectedResult);
@@ -125,74 +126,14 @@ namespace LYBT.Module.Prescriptions.Tests.Services
 
         #endregion
 
-        #region 处方项操作测试
-
-        [Fact]
-        public async Task AddPrescriptionItemAsync_Should_Delegate_To_BusinessService()
-        {
-            // Arrange
-            var prescriptionId = Guid.NewGuid();
-            var itemDto = new PrescriptionItemCreateDto { HerbId = Guid.NewGuid(), Quantity = 10 };
-            var expectedResult = ServiceResult<bool>.Success(true);
-
-            _mockBusinessService.Setup(x => x.AddPrescriptionItemAsync(prescriptionId, itemDto)).ReturnsAsync(expectedResult);
-
-            // Act
-            var result = await _prescriptionService.AddPrescriptionItemAsync(prescriptionId, itemDto);
-
-            // Assert
-            result.Should().BeSameAs(expectedResult);
-            _mockBusinessService.Verify(x => x.AddPrescriptionItemAsync(prescriptionId, itemDto), Times.Once);
-        }
-
-        [Fact]
-        public async Task RemovePrescriptionItemAsync_Should_Delegate_To_BusinessService()
-        {
-            // Arrange
-            var prescriptionId = Guid.NewGuid();
-            var herbId = Guid.NewGuid();
-            var expectedResult = ServiceResult<bool>.Success(true);
-
-            _mockBusinessService.Setup(x => x.RemovePrescriptionItemAsync(prescriptionId, herbId)).ReturnsAsync(expectedResult);
-
-            // Act
-            var result = await _prescriptionService.RemovePrescriptionItemAsync(prescriptionId, herbId);
-
-            // Assert
-            result.Should().BeSameAs(expectedResult);
-            _mockBusinessService.Verify(x => x.RemovePrescriptionItemAsync(prescriptionId, herbId), Times.Once);
-        }
-
-        #endregion
-
-        #region 兼容性检查测试
-
-        [Fact]
-        public async Task CheckHerbCompatibilityAsync_Should_Delegate_To_BusinessService()
-        {
-            // Arrange
-            var herbIds = new List<Guid> { Guid.NewGuid(), Guid.NewGuid() };
-            var compatibilityResult = new HerbCompatibilityResult { IsCompatible = true };
-            var expectedResult = ServiceResult<HerbCompatibilityResult>.Success(compatibilityResult);
-
-            _mockBusinessService.Setup(x => x.CheckHerbCompatibilityAsync(herbIds)).ReturnsAsync(expectedResult);
-
-            // Act
-            var result = await _prescriptionService.CheckHerbCompatibilityAsync(herbIds);
-
-            // Assert
-            result.Should().BeSameAs(expectedResult);
-            _mockBusinessService.Verify(x => x.CheckHerbCompatibilityAsync(herbIds), Times.Once);
-        }
-
-        #endregion
+        // Note: 处方项操作和兼容性检查方法在当前接口中不存在，已移除相关测试
 
         #region 边界值测试
 
         [Fact]
         public void PrescriptionService_Should_Implement_IPrescriptionService()
         {
-            _prescriptionService.Should().BeAssignableTo<IPrescriptionService>();
+            _prescriptionService.Should().BeAssignableTo<LYBT.Shared.Interfaces.Services.IPrescriptionService>();
         }
 
         #endregion

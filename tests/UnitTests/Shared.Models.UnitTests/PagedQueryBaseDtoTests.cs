@@ -35,12 +35,12 @@ namespace LYBT.Shared.Models.Tests
         }
 
         [Fact]
-        public void CompatibilityAliases_WorkCorrectly()
+        public void Properties_WorkCorrectly()
         {
             var request = new PagedQueryBaseDto();
 
-            request.CurrentPage = 5;
-            request.SearchKeyword = "test";
+            request.PageIndex = 5;
+            request.Keyword = "test";
 
             Assert.Equal(5, request.PageIndex);
             Assert.Equal("test", request.Keyword);

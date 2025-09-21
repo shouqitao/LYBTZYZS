@@ -1,10 +1,11 @@
+using System;
+using System.Collections.Generic;
 using AutoMapper;
 using FluentAssertions;
 using LYBT.Entities.Formula;
 using LYBT.Module.Formula.Mapping;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Enums;
-using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace LYBT.Module.Formula.Tests.Mapping
@@ -22,7 +23,7 @@ namespace LYBT.Module.Formula.Tests.Mapping
             var config = new MapperConfiguration(cfg =>
             {
                 cfg.AddProfile(new FormulaMappingProfile());
-            }, NullLoggerFactory.Instance);
+            });
 
             _mapper = config.CreateMapper();
         }
@@ -34,7 +35,7 @@ namespace LYBT.Module.Formula.Tests.Mapping
             var config = new MapperConfiguration(cfg =>
             {
                 cfg.AddProfile(new FormulaMappingProfile());
-            }, NullLoggerFactory.Instance);
+            });
 
             // Assert
             config.AssertConfigurationIsValid();
@@ -48,14 +49,13 @@ namespace LYBT.Module.Formula.Tests.Mapping
             {
                 Id = Guid.NewGuid(),
                 Name = "逍遥散",
-                Category = "和解剂",
-                Source = "太平惠民和剂局方",
-                Composition = "柴胡、当归、白芍、白术、茯苓、甘草、薄荷、生姜",
+                Effect = "疏肝解郁，健脾和营",
                 Usage = "水煎服，每日2次",
-                Function = "疏肝解郁，健脾和营",
-                Indication = "肝郁脾虚证",
+                Property = "和解剂",
+                Remark = "肝郁脾虚证",
                 Status = CommonStatus.Enabled,
-                Property = "和解剂"
+                IsShared = true,
+                Herbs = new List<FormulaHerbItem>()
             };
 
             // Act
@@ -65,12 +65,11 @@ namespace LYBT.Module.Formula.Tests.Mapping
             dto.Should().NotBeNull();
             dto.Id.Should().Be(formula.Id);
             dto.Name.Should().Be(formula.Name);
-            dto.Category.Should().Be(formula.Category);
-            dto.Source.Should().Be(formula.Source);
-            dto.Composition.Should().Be(formula.Composition);
+            dto.Effect.Should().Be(formula.Effect);
             dto.Usage.Should().Be(formula.Usage);
-            dto.Function.Should().Be(formula.Function);
-            dto.Indication.Should().Be(formula.Indication);
+            dto.Property.Should().Be(formula.Property);
+            dto.Remark.Should().Be(formula.Remark);
+            dto.IsShared.Should().Be(formula.IsShared);
             dto.Status.Should().Be(formula.Status);
 
             // 验证计算属性被忽略
@@ -86,14 +85,13 @@ namespace LYBT.Module.Formula.Tests.Mapping
             {
                 Id = Guid.NewGuid(),
                 Name = "四君子汤",
-                Category = "补益剂",
-                Source = "太平惠民和剂局方",
-                Composition = "人参、白术、茯苓、甘草",
+                Effect = "益气健脾",
                 Usage = "水煎服",
-                Function = "益气健脾",
-                Indication = "脾胃气虚证",
+                Property = "补气剂",
+                Remark = "脾胃气虚证",
                 Status = CommonStatus.Enabled,
-                Property = "补气剂"
+                IsShared = false,
+                Herbs = new List<FormulaHerbItem>()
             };
 
             // Act
@@ -103,12 +101,11 @@ namespace LYBT.Module.Formula.Tests.Mapping
             detailDto.Should().NotBeNull();
             detailDto.Id.Should().Be(formula.Id);
             detailDto.Name.Should().Be(formula.Name);
-            detailDto.Category.Should().Be(formula.Category);
-            detailDto.Source.Should().Be(formula.Source);
-            detailDto.Composition.Should().Be(formula.Composition);
+            detailDto.Effect.Should().Be(formula.Effect);
             detailDto.Usage.Should().Be(formula.Usage);
-            detailDto.Function.Should().Be(formula.Function);
-            detailDto.Indication.Should().Be(formula.Indication);
+            detailDto.Property.Should().Be(formula.Property);
+            detailDto.Remark.Should().Be(formula.Remark);
+            detailDto.IsShared.Should().Be(formula.IsShared);
             detailDto.Status.Should().Be(formula.Status);
 
             // 验证计算属性被忽略
@@ -124,17 +121,15 @@ namespace LYBT.Module.Formula.Tests.Mapping
             var createDto = new FormulaCreateDto
             {
                 Name = "六味地黄丸",
-                Category = "补益剂",
-                Source = "小儿药证直诀",
-                Composition = "地黄、山药、山茱萸、茯苓、泽泻、牡丹皮",
+                Effect = "滋阴补肾",
                 Usage = "口服，每次8粒",
-                Function = "滋阴补肾",
-                Indication = "肾阴亏损证",
-                // 这些字段应该被忽略，因为实体中不存在
+                IsShared = false,
                 Instructions = "温开水送服",
-                Indications = "头晕耳鸣",
+                Indications = "头晕耳鸣，肾阴亏损证",
                 Contraindications = "脾虚湿重者慎用",
-                Preparation = "蜜丸"
+                Preparation = "蜜丸",
+                Remark = "小儿药证直诀",
+                Herbs = new List<FormulaHerbItemCreateDto>()
             };
 
             // Act
@@ -143,12 +138,10 @@ namespace LYBT.Module.Formula.Tests.Mapping
             // Assert
             formula.Should().NotBeNull();
             formula.Name.Should().Be(createDto.Name);
-            formula.Category.Should().Be(createDto.Category);
-            formula.Source.Should().Be(createDto.Source);
-            formula.Composition.Should().Be(createDto.Composition);
+            formula.Effect.Should().Be(createDto.Effect);
             formula.Usage.Should().Be(createDto.Usage);
-            formula.Function.Should().Be(createDto.Function);
-            formula.Indication.Should().Be(createDto.Indication);
+            formula.IsShared.Should().Be(createDto.IsShared);
+            formula.Remark.Should().Be(createDto.Remark);
 
             // 验证忽略字段和默认值
             formula.Id.Should().Be(Guid.Empty);
@@ -164,17 +157,15 @@ namespace LYBT.Module.Formula.Tests.Mapping
             {
                 Id = Guid.NewGuid(),
                 Name = "更新的方剂",
-                Category = "更新类别",
-                Source = "更新来源",
-                Composition = "更新组成",
+                Effect = "更新功效",
                 Usage = "更新用法",
-                Function = "更新功能",
-                Indication = "更新主治",
-                // 这些字段应该被忽略
+                IsShared = true,
                 Instructions = "更新说明",
                 Indications = "更新适应症",
                 Contraindications = "更新禁忌症",
-                Preparation = "更新制法"
+                Preparation = "更新制法",
+                Remark = "更新备注",
+                Herbs = new List<FormulaHerbItemUpdateDto>()
             };
 
             // Act
@@ -183,12 +174,10 @@ namespace LYBT.Module.Formula.Tests.Mapping
             // Assert
             formula.Should().NotBeNull();
             formula.Name.Should().Be(updateDto.Name);
-            formula.Category.Should().Be(updateDto.Category);
-            formula.Source.Should().Be(updateDto.Source);
-            formula.Composition.Should().Be(updateDto.Composition);
+            formula.Effect.Should().Be(updateDto.Effect);
             formula.Usage.Should().Be(updateDto.Usage);
-            formula.Function.Should().Be(updateDto.Function);
-            formula.Indication.Should().Be(updateDto.Indication);
+            formula.IsShared.Should().Be(updateDto.IsShared);
+            formula.Remark.Should().Be(updateDto.Remark);
 
             // 验证忽略字段
             formula.Id.Should().Be(Guid.Empty);
@@ -203,11 +192,11 @@ namespace LYBT.Module.Formula.Tests.Mapping
             // Arrange
             var herbItem = new FormulaHerbItem
             {
-                Id = Guid.NewGuid(),
-                FormulaId = Guid.NewGuid(),
                 HerbId = Guid.NewGuid(),
-                Quantity = 12.0m,
+                HerbName = "当归",
+                Quantity = 12,
                 Unit = "g",
+                Usage = "后下",
                 Remark = "君药"
             };
 
@@ -216,15 +205,11 @@ namespace LYBT.Module.Formula.Tests.Mapping
 
             // Assert
             dto.Should().NotBeNull();
-            dto.Id.Should().Be(herbItem.Id);
-            dto.FormulaId.Should().Be(herbItem.FormulaId);
             dto.HerbId.Should().Be(herbItem.HerbId);
+            dto.HerbName.Should().Be(herbItem.HerbName);
             dto.Quantity.Should().Be(herbItem.Quantity);
             dto.Unit.Should().Be(herbItem.Unit);
-            dto.Remark.Should().Be(herbItem.Remark);
-
-            // HerbName需要从关联获取，所以为空字符串
-            dto.HerbName.Should().Be(string.Empty);
+            dto.Usage.Should().Be(herbItem.Usage);
         }
 
         [Fact]
@@ -235,8 +220,9 @@ namespace LYBT.Module.Formula.Tests.Mapping
             {
                 HerbId = Guid.NewGuid(),
                 Quantity = 9.0m,
-                Unit = "g",
-                Remark = "臣药"
+                Preparation = "酒炒",
+                Usage = "先煎",
+                SortOrder = 1
             };
 
             // Act
@@ -245,9 +231,8 @@ namespace LYBT.Module.Formula.Tests.Mapping
             // Assert
             herbItem.Should().NotBeNull();
             herbItem.HerbId.Should().Be(createDto.HerbId);
-            herbItem.Quantity.Should().Be(createDto.Quantity);
-            herbItem.Unit.Should().Be(createDto.Unit);
-            herbItem.Remark.Should().Be(createDto.Remark);
+            herbItem.Quantity.Should().Be((int)createDto.Quantity);
+            herbItem.Usage.Should().Be(createDto.Usage);
         }
 
         [Fact]
@@ -259,8 +244,9 @@ namespace LYBT.Module.Formula.Tests.Mapping
                 Id = Guid.NewGuid(),
                 HerbId = Guid.NewGuid(),
                 Quantity = 6.0m,
-                Unit = "g",
-                Remark = "佐药"
+                Preparation = "醋炙",
+                Usage = "后下",
+                SortOrder = 2
             };
 
             // Act
@@ -269,9 +255,8 @@ namespace LYBT.Module.Formula.Tests.Mapping
             // Assert
             herbItem.Should().NotBeNull();
             herbItem.HerbId.Should().Be(updateDto.HerbId);
-            herbItem.Quantity.Should().Be(updateDto.Quantity);
-            herbItem.Unit.Should().Be(updateDto.Unit);
-            herbItem.Remark.Should().Be(updateDto.Remark);
+            herbItem.Quantity.Should().Be((int)updateDto.Quantity);
+            herbItem.Usage.Should().Be(updateDto.Usage);
         }
 
         [Fact]
@@ -302,14 +287,13 @@ namespace LYBT.Module.Formula.Tests.Mapping
             {
                 Id = Guid.NewGuid(),
                 Name = "简单方剂",
-                Category = null,
-                Source = null,
-                Composition = null,
+                Effect = null,
                 Usage = null,
-                Function = null,
-                Indication = null,
+                Property = null,
+                Remark = null,
+                IsShared = false,
                 Status = CommonStatus.Enabled,
-                Property = null
+                Herbs = new List<FormulaHerbItem>()
             };
 
             // Act
@@ -318,12 +302,11 @@ namespace LYBT.Module.Formula.Tests.Mapping
             // Assert
             dto.Should().NotBeNull();
             dto.Name.Should().Be("简单方剂");
-            dto.Category.Should().BeNull();
-            dto.Source.Should().BeNull();
-            dto.Composition.Should().BeNull();
+            dto.Effect.Should().BeNull();
             dto.Usage.Should().BeNull();
-            dto.Function.Should().BeNull();
-            dto.Indication.Should().BeNull();
+            dto.Property.Should().BeNull();
+            dto.Remark.Should().BeNull();
+            dto.IsShared.Should().BeFalse();
             dto.Status.Should().Be(CommonStatus.Enabled);
         }
 
@@ -333,10 +316,11 @@ namespace LYBT.Module.Formula.Tests.Mapping
             // Arrange
             var herbItem = new FormulaHerbItem
             {
-                Id = Guid.NewGuid(),
                 HerbId = Guid.NewGuid(),
-                Quantity = 1.5m,
+                HerbName = "甘草",
+                Quantity = 2,
                 Unit = "g",
+                Usage = "另煎",
                 Remark = "使药"
             };
 
@@ -345,9 +329,9 @@ namespace LYBT.Module.Formula.Tests.Mapping
 
             // Assert
             dto.Should().NotBeNull();
-            dto.Quantity.Should().Be(1.5m);
+            dto.Quantity.Should().Be(2);
             dto.Unit.Should().Be("g");
-            dto.Remark.Should().Be("使药");
+            dto.Usage.Should().Be("另煎");
         }
 
         [Fact]
@@ -357,12 +341,14 @@ namespace LYBT.Module.Formula.Tests.Mapping
             var createDto = new FormulaCreateDto
             {
                 Name = "最简方剂",
-                Category = null,
-                Source = null,
-                Composition = null,
-                Usage = null,
-                Function = null,
-                Indication = null
+                Effect = "",
+                Usage = "",
+                Instructions = null,
+                Indications = null,
+                Contraindications = null,
+                Preparation = null,
+                Remark = null,
+                Herbs = new List<FormulaHerbItemCreateDto>()
             };
 
             // Act
@@ -382,12 +368,14 @@ namespace LYBT.Module.Formula.Tests.Mapping
             {
                 Id = Guid.NewGuid(),
                 Name = "部分更新方剂",
-                Category = null,
-                Source = "新来源",
-                Composition = null,
+                Effect = "新功效",
                 Usage = "新用法",
-                Function = null,
-                Indication = null
+                Instructions = null,
+                Indications = null,
+                Contraindications = null,
+                Preparation = null,
+                Remark = "新来源",
+                Herbs = new List<FormulaHerbItemUpdateDto>()
             };
 
             // Act
@@ -396,12 +384,9 @@ namespace LYBT.Module.Formula.Tests.Mapping
             // Assert
             formula.Should().NotBeNull();
             formula.Name.Should().Be("部分更新方剂");
-            formula.Category.Should().BeNull();
-            formula.Source.Should().Be("新来源");
-            formula.Composition.Should().BeNull();
+            formula.Effect.Should().Be("新功效");
             formula.Usage.Should().Be("新用法");
-            formula.Function.Should().BeNull();
-            formula.Indication.Should().BeNull();
+            formula.Remark.Should().Be("新来源");
         }
     }
 }

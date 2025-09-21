@@ -1,3 +1,4 @@
+using System;
 using AutoMapper;
 using FluentAssertions;
 using LYBT.Entities.Auth;
@@ -6,7 +7,7 @@ using LYBT.Module.Auth.Mapping;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Core;
-using Microsoft.Extensions.Logging.Abstractions;
+using LYBT.Shared.Models.Enums;
 using Xunit;
 
 namespace LYBT.Module.Auth.Tests.Mapping
@@ -24,7 +25,7 @@ namespace LYBT.Module.Auth.Tests.Mapping
             var config = new MapperConfiguration(cfg =>
             {
                 cfg.AddProfile(new AuthMappingProfile());
-            }, NullLoggerFactory.Instance);
+            });
 
             _mapper = config.CreateMapper();
         }
@@ -36,7 +37,7 @@ namespace LYBT.Module.Auth.Tests.Mapping
             var config = new MapperConfiguration(cfg =>
             {
                 cfg.AddProfile(new AuthMappingProfile());
-            }, NullLoggerFactory.Instance);
+            });
 
             // Assert
             config.AssertConfigurationIsValid();
@@ -52,7 +53,7 @@ namespace LYBT.Module.Auth.Tests.Mapping
                 Username = "testuser",
                 RealName = "测试用户",
                 PhoneNumber = "13812345678",
-                Status = UserStatus.Active
+                Status = CommonStatus.Enabled
             };
 
             // Act
@@ -97,8 +98,8 @@ namespace LYBT.Module.Auth.Tests.Mapping
             // Arrange
             var changeSysAdminPassword = new ChangeSysAdminPassword
             {
-                NewPassword = "newSysAdminPassword123",
-                SecretKey = "secretKey456"
+                OldPassword = "oldSysAdminPassword123",
+                NewPassword = "newSysAdminPassword456"
             };
 
             // Act
@@ -107,12 +108,12 @@ namespace LYBT.Module.Auth.Tests.Mapping
 
             // Assert
             mapped.Should().NotBeNull();
+            mapped.OldPassword.Should().Be(changeSysAdminPassword.OldPassword);
             mapped.NewPassword.Should().Be(changeSysAdminPassword.NewPassword);
-            mapped.SecretKey.Should().Be(changeSysAdminPassword.SecretKey);
 
             mappedBack.Should().NotBeNull();
+            mappedBack.OldPassword.Should().Be(changeSysAdminPassword.OldPassword);
             mappedBack.NewPassword.Should().Be(changeSysAdminPassword.NewPassword);
-            mappedBack.SecretKey.Should().Be(changeSysAdminPassword.SecretKey);
         }
 
         [Fact]
@@ -121,7 +122,8 @@ namespace LYBT.Module.Auth.Tests.Mapping
             // Arrange
             var adminSecret = new AdminSecretModel
             {
-                SecretKey = "adminSecretKey789"
+                Id = Guid.NewGuid(),
+                PasswordHash = "hashedPasswordValue123456"
             };
 
             // Act
@@ -130,10 +132,12 @@ namespace LYBT.Module.Auth.Tests.Mapping
 
             // Assert
             mapped.Should().NotBeNull();
-            mapped.SecretKey.Should().Be(adminSecret.SecretKey);
+            mapped.Id.Should().Be(adminSecret.Id);
+            mapped.PasswordHash.Should().Be(adminSecret.PasswordHash);
 
             mappedBack.Should().NotBeNull();
-            mappedBack.SecretKey.Should().Be(adminSecret.SecretKey);
+            mappedBack.Id.Should().Be(adminSecret.Id);
+            mappedBack.PasswordHash.Should().Be(adminSecret.PasswordHash);
         }
 
         [Fact]
@@ -144,9 +148,10 @@ namespace LYBT.Module.Auth.Tests.Mapping
             {
                 Id = Guid.NewGuid(),
                 UserId = Guid.NewGuid(),
-                Token = "test-token-123",
-                ExpiryTime = DateTime.UtcNow.AddHours(8),
-                IsActive = true
+                Username = "testuser",
+                LoginTime = DateTime.Now,
+                Status = AuthSessionStatus.Active,
+                RememberMe = false
             };
 
             // Act
@@ -155,10 +160,9 @@ namespace LYBT.Module.Auth.Tests.Mapping
             // Assert
             authSession.Should().NotBeNull();
             authSession.Id.Should().Be(baseAuthSession.Id);
-            authSession.UserId.Should().Be(baseAuthSession.UserId);
-            authSession.Token.Should().Be(baseAuthSession.Token);
-            authSession.ExpiryTime.Should().Be(baseAuthSession.ExpiryTime);
-            authSession.IsActive.Should().Be(baseAuthSession.IsActive);
+            authSession.UserId.Should().Be(baseAuthSession.UserId.Value);
+            authSession.LoginTime.Should().BeCloseTo(baseAuthSession.LoginTime, TimeSpan.FromSeconds(1));
+            authSession.Status.Should().Be(CommonStatus.Enabled);
         }
 
         [Fact]
@@ -169,9 +173,12 @@ namespace LYBT.Module.Auth.Tests.Mapping
             {
                 Id = Guid.NewGuid(),
                 UserId = Guid.NewGuid(),
-                Token = "test-token-456",
-                ExpiryTime = DateTime.UtcNow.AddHours(8),
-                IsActive = true
+                TokenHash = "hashedToken456",
+                LoginTime = DateTime.Now,
+                ExpiryTime = DateTime.Now.AddHours(8),
+                IpAddress = "192.168.1.1",
+                IsRevoked = false,
+                Status = CommonStatus.Enabled
             };
 
             // Act
@@ -181,9 +188,8 @@ namespace LYBT.Module.Auth.Tests.Mapping
             baseAuthSession.Should().NotBeNull();
             baseAuthSession.Id.Should().Be(authSession.Id);
             baseAuthSession.UserId.Should().Be(authSession.UserId);
-            baseAuthSession.Token.Should().Be(authSession.Token);
-            baseAuthSession.ExpiryTime.Should().Be(authSession.ExpiryTime);
-            baseAuthSession.IsActive.Should().Be(authSession.IsActive);
+            baseAuthSession.LoginTime.Should().BeCloseTo(authSession.LoginTime, TimeSpan.FromSeconds(1));
+            baseAuthSession.Status.Should().Be(AuthSessionStatus.Active);
         }
 
         [Fact]
@@ -196,7 +202,7 @@ namespace LYBT.Module.Auth.Tests.Mapping
                 Username = "testuser",
                 RealName = null,
                 PhoneNumber = null,
-                Status = UserStatus.Active
+                Status = CommonStatus.Enabled
             };
 
             // Act
@@ -212,30 +218,30 @@ namespace LYBT.Module.Auth.Tests.Mapping
         }
 
         [Fact]
-        public void Map_User_With_Different_UserStatus_Should_Success()
+        public void Map_User_With_Different_Status_Should_Success()
         {
             // Arrange
-            var inactiveUser = new User
+            var disabledUser = new User
             {
                 Id = Guid.NewGuid(),
-                Username = "inactiveuser",
-                Status = UserStatus.Inactive
+                Username = "disableduser",
+                Status = CommonStatus.Disabled
             };
 
-            var lockedUser = new User
+            var enabledUser = new User
             {
                 Id = Guid.NewGuid(),
-                Username = "lockeduser",
-                Status = UserStatus.Locked
+                Username = "enableduser",
+                Status = CommonStatus.Enabled
             };
 
             // Act
-            var inactiveDto = _mapper.Map<UserDto>(inactiveUser);
-            var lockedDto = _mapper.Map<UserDto>(lockedUser);
+            var disabledDto = _mapper.Map<UserDto>(disabledUser);
+            var enabledDto = _mapper.Map<UserDto>(enabledUser);
 
             // Assert
-            inactiveDto.Status.Should().Be(UserStatus.Inactive);
-            lockedDto.Status.Should().Be(UserStatus.Locked);
+            disabledDto.Status.Should().Be(CommonStatus.Disabled);
+            enabledDto.Status.Should().Be(CommonStatus.Enabled);
         }
     }
 }

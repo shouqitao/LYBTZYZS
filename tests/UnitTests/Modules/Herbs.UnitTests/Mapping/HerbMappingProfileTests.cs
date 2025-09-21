@@ -1,9 +1,10 @@
+using System;
 using AutoMapper;
 using FluentAssertions;
 using LYBT.Entities.Herbs;
 using LYBT.Module.Herbs.Mapping;
 using LYBT.Shared.Models.Contracts.Herbs;
-using Microsoft.Extensions.Logging.Abstractions;
+using LYBT.Shared.Models.Enums;
 using Xunit;
 
 namespace LYBT.Module.Herbs.Tests.Mapping
@@ -21,7 +22,7 @@ namespace LYBT.Module.Herbs.Tests.Mapping
             var config = new MapperConfiguration(cfg =>
             {
                 cfg.AddProfile(new HerbMappingProfile());
-            }, NullLoggerFactory.Instance);
+            });
 
             _mapper = config.CreateMapper();
         }
@@ -33,7 +34,7 @@ namespace LYBT.Module.Herbs.Tests.Mapping
             var config = new MapperConfiguration(cfg =>
             {
                 cfg.AddProfile(new HerbMappingProfile());
-            }, NullLoggerFactory.Instance);
+            });
 
             // Assert
             config.AssertConfigurationIsValid();
@@ -48,17 +49,15 @@ namespace LYBT.Module.Herbs.Tests.Mapping
                 Id = Guid.NewGuid(),
                 Name = "当归",
                 PinYinCode = "DG",
-                Category = "补血药",
-                Nature = "温",
-                Flavor = "甘、辛",
-                Meridian = "肝、心、脾经",
-                Efficacy = "补血活血，调经止痛",
-                MainFunction = "血虚萎黄，月经不调",
+                Origin = "甘肃",
+                Spec = "统货",
+                Effect = "补血活血，调经止痛",
                 Usage = "煎服，6-12g",
-                Precautions = "孕妇慎用",
-                UnitPrice = 0.8m,
+                Price = 0.8m,
+                CostPrice = 0.5m,
                 Unit = "g",
-                Remark = "当归身补血，当归尾活血"
+                Remark = "当归身补血，当归尾活血",
+                Status = CommonStatus.Enabled
             };
 
             // Act
@@ -69,15 +68,12 @@ namespace LYBT.Module.Herbs.Tests.Mapping
             detailDto.Id.Should().Be(herb.Id);
             detailDto.Name.Should().Be(herb.Name);
             detailDto.PinYinCode.Should().Be(herb.PinYinCode);
-            detailDto.Category.Should().Be(herb.Category);
-            detailDto.Nature.Should().Be(herb.Nature);
-            detailDto.Flavor.Should().Be(herb.Flavor);
-            detailDto.Meridian.Should().Be(herb.Meridian);
-            detailDto.Efficacy.Should().Be(herb.Efficacy);
-            detailDto.MainFunction.Should().Be(herb.MainFunction);
+            detailDto.Origin.Should().Be(herb.Origin);
+            detailDto.Spec.Should().Be(herb.Spec);
+            detailDto.Effect.Should().Be(herb.Effect);
             detailDto.Usage.Should().Be(herb.Usage);
-            detailDto.Precautions.Should().Be(herb.Precautions);
-            detailDto.UnitPrice.Should().Be(herb.UnitPrice);
+            detailDto.Price.Should().Be(herb.Price);
+            // CostPrice 不在 HerbDetailDto 中
             detailDto.Unit.Should().Be(herb.Unit);
             detailDto.Remark.Should().Be(herb.Remark);
         }
@@ -90,14 +86,11 @@ namespace LYBT.Module.Herbs.Tests.Mapping
             {
                 Name = "黄芪",
                 PinYinCode = "HQ",
-                Category = "补气药",
-                Nature = "微温",
-                Flavor = "甘",
-                Meridian = "肺、脾经",
-                Efficacy = "补气升阳，固表止汗",
-                MainFunction = "气虚乏力，中气下陷",
-                Precautions = "阴虚阳亢者忌用",
-                UnitPrice = 0.6m,
+                Origin = "内蒙古",
+                Spec = "片",
+                Effect = "补气升阳，固表止汗",
+                Usage = "煎服，9-30g",
+                Price = 0.6m,
                 Unit = "g",
                 Remark = "生用补气，炙用温中"
             };
@@ -109,20 +102,17 @@ namespace LYBT.Module.Herbs.Tests.Mapping
             herb.Should().NotBeNull();
             herb.Name.Should().Be(createDto.Name);
             herb.PinYinCode.Should().Be(createDto.PinYinCode);
-            herb.Category.Should().Be(createDto.Category);
-            herb.Nature.Should().Be(createDto.Nature);
-            herb.Flavor.Should().Be(createDto.Flavor);
-            herb.Meridian.Should().Be(createDto.Meridian);
-            herb.Efficacy.Should().Be(createDto.Efficacy);
-            herb.MainFunction.Should().Be(createDto.MainFunction);
-            herb.Precautions.Should().Be(createDto.Precautions);
-            herb.UnitPrice.Should().Be(createDto.UnitPrice);
+            herb.Origin.Should().Be(createDto.Origin);
+            herb.Spec.Should().Be(createDto.Spec);
+            herb.Effect.Should().Be(createDto.Effect);
+            herb.Usage.Should().Be(createDto.Usage);
+            herb.Price.Should().Be(createDto.Price);
             herb.Unit.Should().Be(createDto.Unit);
             herb.Remark.Should().Be(createDto.Remark);
 
             // 验证忽略字段
             herb.Id.Should().Be(Guid.Empty);
-            herb.Usage.Should().BeNull();
+            herb.Status.Should().Be(CommonStatus.Enabled);
         }
 
         [Fact]
@@ -134,17 +124,14 @@ namespace LYBT.Module.Herbs.Tests.Mapping
                 Id = Guid.NewGuid(),
                 Name = "人参",
                 PinYinCode = "RS",
-                Category = "补气药",
-                Nature = "微温",
-                Flavor = "甘、微苦",
-                Meridian = "肺、脾、心、肾经",
-                Efficacy = "大补元气，复脉固脱",
-                MainFunction = "气虚欲脱，心力衰竭",
+                Origin = "吉林",
+                Spec = "统货",
+                Effect = "大补元气，复脉固脱",
                 Usage = "煎服，3-9g",
-                Precautions = "实热证忌用",
-                UnitPrice = 15.0m,
+                Price = 15.0m,
                 Unit = "g",
-                Remark = "野山参效果最佳"
+                Remark = "野山参效果最佳",
+                Status = CommonStatus.Enabled
             };
 
             // Act
@@ -154,15 +141,11 @@ namespace LYBT.Module.Herbs.Tests.Mapping
             herb.Should().NotBeNull();
             herb.Name.Should().Be(updateDto.Name);
             herb.PinYinCode.Should().Be(updateDto.PinYinCode);
-            herb.Category.Should().Be(updateDto.Category);
-            herb.Nature.Should().Be(updateDto.Nature);
-            herb.Flavor.Should().Be(updateDto.Flavor);
-            herb.Meridian.Should().Be(updateDto.Meridian);
-            herb.Efficacy.Should().Be(updateDto.Efficacy);
-            herb.MainFunction.Should().Be(updateDto.MainFunction);
+            herb.Origin.Should().Be(updateDto.Origin);
+            herb.Spec.Should().Be(updateDto.Spec);
+            herb.Effect.Should().Be(updateDto.Effect);
             herb.Usage.Should().Be(updateDto.Usage);
-            herb.Precautions.Should().Be(updateDto.Precautions);
-            herb.UnitPrice.Should().Be(updateDto.UnitPrice);
+            herb.Price.Should().Be(updateDto.Price);
             herb.Unit.Should().Be(updateDto.Unit);
             herb.Remark.Should().Be(updateDto.Remark);
 
@@ -179,14 +162,15 @@ namespace LYBT.Module.Herbs.Tests.Mapping
                 Id = Guid.NewGuid(),
                 Name = "甘草",
                 PinYinCode = "GC",
-                Category = "补气药",
-                Nature = "平",
-                Flavor = "甘",
-                Meridian = "心、肺、脾、胃经",
-                Efficacy = "补脾益气，清热解毒",
-                MainFunction = "脾胃虚弱，咳嗽痰多",
-                UnitPrice = 0.3m,
-                Unit = "g"
+                Origin = "内蒙古",
+                Spec = "统货",
+                Effect = "补脾益气，清热解毒",
+                Usage = "煎服，3-10g",
+                Price = 0.3m,
+                CostPrice = 0.2m,
+                Unit = "g",
+                Remark = "脾胃虚弱，咳嗽痰多",
+                Status = CommonStatus.Enabled
             };
 
             // Act
@@ -197,14 +181,14 @@ namespace LYBT.Module.Herbs.Tests.Mapping
             dto.Id.Should().Be(herb.Id);
             dto.Name.Should().Be(herb.Name);
             dto.PinYinCode.Should().Be(herb.PinYinCode);
-            dto.Category.Should().Be(herb.Category);
-            dto.Nature.Should().Be(herb.Nature);
-            dto.Flavor.Should().Be(herb.Flavor);
-            dto.Meridian.Should().Be(herb.Meridian);
-            dto.Efficacy.Should().Be(herb.Efficacy);
-            dto.MainFunction.Should().Be(herb.MainFunction);
-            dto.UnitPrice.Should().Be(herb.UnitPrice);
+            dto.Origin.Should().Be(herb.Origin);
+            dto.Spec.Should().Be(herb.Spec);
+            dto.Effect.Should().Be(herb.Effect);
+            dto.Usage.Should().Be(herb.Usage);
+            dto.Price.Should().Be(herb.Price);
+            dto.CostPrice.Should().Be(herb.CostPrice);
             dto.Unit.Should().Be(herb.Unit);
+            dto.Remark.Should().Be(herb.Remark);
         }
 
         [Fact]
@@ -214,17 +198,15 @@ namespace LYBT.Module.Herbs.Tests.Mapping
             var importDto = new HerbImportDto
             {
                 Name = "川芎",
-                PinYinCode = "CX",
-                Category = "活血化瘀药",
-                Nature = "温",
-                Flavor = "辛",
-                Meridian = "肝、胆、心包经",
-                Efficacy = "活血行气，祛风止痛",
-                MainFunction = "月经不调，头痛眩晕",
-                Precautions = "阴虚火旺者慎用",
-                UnitPrice = 1.2m,
+                Origin = "四川",
+                Spec = "片",
+                Effect = "活血行气，祛风止痛",
                 Unit = "g",
-                Remark = "川芎辛散温燥"
+                Price = 1.2m,
+                Stock = 500,
+                BatchNo = "2025-01",
+                ExpireDate = DateTime.Now.AddYears(2),
+                Remark = "川芎辛散温燥，阴虚火旺者慎用"
             };
 
             // Act
@@ -233,36 +215,33 @@ namespace LYBT.Module.Herbs.Tests.Mapping
             // Assert
             herb.Should().NotBeNull();
             herb.Name.Should().Be(importDto.Name);
-            herb.PinYinCode.Should().Be(importDto.PinYinCode);
-            herb.Category.Should().Be(importDto.Category);
-            herb.Nature.Should().Be(importDto.Nature);
-            herb.Flavor.Should().Be(importDto.Flavor);
-            herb.Meridian.Should().Be(importDto.Meridian);
-            herb.Efficacy.Should().Be(importDto.Efficacy);
-            herb.MainFunction.Should().Be(importDto.MainFunction);
-            herb.Precautions.Should().Be(importDto.Precautions);
-            herb.UnitPrice.Should().Be(importDto.UnitPrice);
+            herb.Origin.Should().Be(importDto.Origin);
+            herb.Spec.Should().Be(importDto.Spec);
+            herb.Effect.Should().Be(importDto.Effect);
             herb.Unit.Should().Be(importDto.Unit);
+            herb.Price.Should().Be(importDto.Price);
             herb.Remark.Should().Be(importDto.Remark);
 
             // 验证忽略字段
             herb.Id.Should().Be(Guid.Empty);
-            herb.Usage.Should().BeNull();
+            herb.Status.Should().Be(CommonStatus.Enabled);
         }
 
         [Fact]
-        public void Map_Herb_With_ColdNature_Should_Success()
+        public void Map_Herb_With_SpecialPrice_Should_Success()
         {
             // Arrange
             var herb = new Herb
             {
                 Id = Guid.NewGuid(),
                 Name = "黄连",
-                Category = "清热燥湿药",
-                Nature = "寒",
-                Flavor = "苦",
-                Efficacy = "清热燥湿，泻火解毒",
-                UnitPrice = 8.0m
+                Origin = "四川",
+                Spec = "统货",
+                Effect = "清热燥湿，泻火解毒",
+                Price = 8.0m,
+                CostPrice = 5.0m,
+                Unit = "g",
+                Status = CommonStatus.Enabled
             };
 
             // Act
@@ -271,24 +250,27 @@ namespace LYBT.Module.Herbs.Tests.Mapping
             // Assert
             dto.Should().NotBeNull();
             dto.Name.Should().Be("黄连");
-            dto.Nature.Should().Be("寒");
-            dto.Flavor.Should().Be("苦");
-            dto.UnitPrice.Should().Be(8.0m);
+            dto.Origin.Should().Be("四川");
+            dto.Effect.Should().Be("清热燥湿，泻火解毒");
+            dto.Price.Should().Be(8.0m);
+            dto.CostPrice.Should().Be(5.0m);
         }
 
         [Fact]
-        public void Map_Herb_With_HotNature_Should_Success()
+        public void Map_Herb_With_HighPrice_Should_Success()
         {
             // Arrange
             var herb = new Herb
             {
                 Id = Guid.NewGuid(),
                 Name = "附子",
-                Category = "温里药",
-                Nature = "热",
-                Flavor = "辛、甘",
-                Efficacy = "回阳救逆，补火助阳",
-                Precautions = "孕妇禁用，有毒"
+                Origin = "四川",
+                Spec = "制附片",
+                Effect = "回阳救逆，补火助阳",
+                Usage = "煎服，3-15g",
+                Price = 10.0m,
+                Remark = "孕妇禁用，有毒",
+                Status = CommonStatus.Enabled
             };
 
             // Act
@@ -297,8 +279,8 @@ namespace LYBT.Module.Herbs.Tests.Mapping
             // Assert
             detailDto.Should().NotBeNull();
             detailDto.Name.Should().Be("附子");
-            detailDto.Nature.Should().Be("热");
-            detailDto.Precautions.Should().Be("孕妇禁用，有毒");
+            detailDto.Effect.Should().Be("回阳救逆，补火助阳");
+            detailDto.Remark.Should().Be("孕妇禁用，有毒");
         }
 
         [Fact]
@@ -310,17 +292,15 @@ namespace LYBT.Module.Herbs.Tests.Mapping
                 Id = Guid.NewGuid(),
                 Name = "简单药材",
                 PinYinCode = "JDYC",
-                Category = null,
-                Nature = null,
-                Flavor = null,
-                Meridian = null,
-                Efficacy = null,
-                MainFunction = null,
+                Origin = null,
+                Spec = null,
+                Effect = null,
                 Usage = null,
-                Precautions = null,
-                UnitPrice = 1.0m,
+                Price = 1.0m,
+                CostPrice = null,
                 Unit = "g",
-                Remark = null
+                Remark = null,
+                Status = CommonStatus.Enabled
             };
 
             // Act
@@ -330,31 +310,30 @@ namespace LYBT.Module.Herbs.Tests.Mapping
             dto.Should().NotBeNull();
             dto.Name.Should().Be("简单药材");
             dto.PinYinCode.Should().Be("JDYC");
-            dto.Category.Should().BeNull();
-            dto.Nature.Should().BeNull();
-            dto.Flavor.Should().BeNull();
-            dto.Meridian.Should().BeNull();
-            dto.Efficacy.Should().BeNull();
-            dto.MainFunction.Should().BeNull();
-            dto.UnitPrice.Should().Be(1.0m);
+            dto.Origin.Should().BeNull();
+            dto.Spec.Should().BeNull();
+            dto.Effect.Should().BeNull();
+            dto.Usage.Should().BeNull();
+            dto.Price.Should().Be(1.0m);
+            dto.CostPrice.Should().BeNull();
             dto.Unit.Should().Be("g");
+            dto.Remark.Should().BeNull();
         }
 
         [Fact]
-        public void Map_HerbCreateDto_With_ComplexMeridian_Should_Success()
+        public void Map_HerbCreateDto_With_CompleteData_Should_Success()
         {
             // Arrange
             var createDto = new HerbCreateDto
             {
                 Name = "柴胡",
                 PinYinCode = "CH",
-                Category = "解表药",
-                Nature = "微寒",
-                Flavor = "苦、辛",
-                Meridian = "肝、胆、心包、三焦经",
-                Efficacy = "疏肝解郁，升举阳气",
-                MainFunction = "肝郁气滞，月经不调",
-                UnitPrice = 2.5m,
+                Origin = "湖北",
+                Spec = "片",
+                Effect = "疏肝解郁，升举阳气",
+                Usage = "煎服，3-10g",
+                Price = 2.5m,
+                CostPrice = 1.5m,
                 Unit = "g"
             };
 
@@ -364,9 +343,12 @@ namespace LYBT.Module.Herbs.Tests.Mapping
             // Assert
             herb.Should().NotBeNull();
             herb.Name.Should().Be("柴胡");
-            herb.Meridian.Should().Be("肝、胆、心包、三焦经");
-            herb.Flavor.Should().Be("苦、辛");
-            herb.UnitPrice.Should().Be(2.5m);
+            herb.PinYinCode.Should().Be("CH");
+            herb.Origin.Should().Be("湖北");
+            herb.Spec.Should().Be("片");
+            herb.Effect.Should().Be("疏肝解郁，升举阳气");
+            herb.Usage.Should().Be("煎服，3-10g");
+            herb.Price.Should().Be(2.5m);
         }
 
         [Fact]
@@ -377,12 +359,13 @@ namespace LYBT.Module.Herbs.Tests.Mapping
             {
                 Id = Guid.NewGuid(),
                 Name = "冬虫夏草",
-                Category = "补阳药",
-                Nature = "温",
-                Flavor = "甘",
-                UnitPrice = 500.0m,
+                Origin = "西藏",
+                Spec = "整条",
+                Effect = "补肺益肾，止血化痰",
+                Price = 500.0m,
+                CostPrice = 400.0m,
                 Unit = "g",
-                Precautions = "价格昂贵，谨慎使用"
+                Status = CommonStatus.Enabled
             };
 
             // Act
@@ -391,8 +374,8 @@ namespace LYBT.Module.Herbs.Tests.Mapping
             // Assert
             herb.Should().NotBeNull();
             herb.Name.Should().Be("冬虫夏草");
-            herb.UnitPrice.Should().Be(500.0m);
-            herb.Precautions.Should().Be("价格昂贵，谨慎使用");
+            herb.Price.Should().Be(500.0m);
+            herb.CostPrice.Should().Be(400.0m);
         }
 
         [Fact]
@@ -402,8 +385,9 @@ namespace LYBT.Module.Herbs.Tests.Mapping
             var importDto = new HerbImportDto
             {
                 Name = "最简药材",
-                UnitPrice = 0.1m,
-                Unit = "g"
+                Price = 0.1m,
+                Unit = "g",
+                Stock = 100
             };
 
             // Act
@@ -412,7 +396,7 @@ namespace LYBT.Module.Herbs.Tests.Mapping
             // Assert
             herb.Should().NotBeNull();
             herb.Name.Should().Be("最简药材");
-            herb.UnitPrice.Should().Be(0.1m);
+            herb.Price.Should().Be(0.1m);
             herb.Unit.Should().Be("g");
         }
     }

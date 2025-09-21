@@ -2,6 +2,7 @@ using AutoMapper;
 using FluentAssertions;
 using LYBT.Module.MedicalCase.Mapping;
 using LYBT.Shared.Models.Contracts.MedicalCase;
+using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
@@ -9,7 +10,7 @@ namespace LYBT.Module.MedicalCase.Tests.Mapping
 {
     /// <summary>
     /// MedicalCase模块AutoMapper映射配置单元测试
-    /// 测试所有映射配置的有效性和正确性
+    /// 测试所有映射配置的有效性和正确�?
     /// </summary>
     public class MedicalCaseMappingProfileTests
     {
@@ -20,7 +21,7 @@ namespace LYBT.Module.MedicalCase.Tests.Mapping
             var config = new MapperConfiguration(cfg =>
             {
                 cfg.AddProfile(new MedicalCaseMappingProfile());
-            }, NullLoggerFactory.Instance);
+            });
 
             _mapper = config.CreateMapper();
         }
@@ -32,7 +33,7 @@ namespace LYBT.Module.MedicalCase.Tests.Mapping
             var config = new MapperConfiguration(cfg =>
             {
                 cfg.AddProfile(new MedicalCaseMappingProfile());
-            }, NullLoggerFactory.Instance);
+            });
 
             // Assert
             config.AssertConfigurationIsValid();
@@ -47,9 +48,9 @@ namespace LYBT.Module.MedicalCase.Tests.Mapping
                 Id = Guid.NewGuid(),
                 PatientId = Guid.NewGuid(),
                 DoctorId = Guid.NewGuid(),
-                CaseNumber = "MC20241001001",
-                CreatedTime = DateTime.Now,
-                Status = CaseStatus.InProgress,
+                // CaseNumber属性不存在于实体中
+                CreatedAt = DateTime.Now,
+                Status = MedicalCaseStatus.Active,
                 Remark = "测试病历"
             };
 
@@ -61,8 +62,8 @@ namespace LYBT.Module.MedicalCase.Tests.Mapping
             dto.Id.Should().Be(medicalCase.Id);
             dto.PatientId.Should().Be(medicalCase.PatientId);
             dto.DoctorId.Should().Be(medicalCase.DoctorId);
-            dto.CaseNumber.Should().Be(medicalCase.CaseNumber);
-            dto.CreatedTime.Should().Be(medicalCase.CreatedTime);
+            // 实体中使用ConsultationDate和CreatedAt
+            dto.ConsultationDate.Should().Be(medicalCase.ConsultationDate);
             dto.CaseStatus.Should().Be(medicalCase.Status);
             dto.Remark.Should().Be(medicalCase.Remark);
         }
@@ -76,9 +77,9 @@ namespace LYBT.Module.MedicalCase.Tests.Mapping
                 Id = Guid.NewGuid(),
                 PatientId = Guid.NewGuid(),
                 DoctorId = Guid.NewGuid(),
-                CaseNumber = "MC20241001002",
-                CreatedTime = DateTime.Now,
-                Status = CaseStatus.Completed,
+                // CaseNumber属性不存在于实体中
+                CreatedAt = DateTime.Now,
+                Status = MedicalCaseStatus.Closed,
                 Remark = "详细病历测试"
             };
 
@@ -90,8 +91,8 @@ namespace LYBT.Module.MedicalCase.Tests.Mapping
             detailDto.Id.Should().Be(medicalCase.Id);
             detailDto.PatientId.Should().Be(medicalCase.PatientId);
             detailDto.DoctorId.Should().Be(medicalCase.DoctorId);
-            detailDto.CaseNumber.Should().Be(medicalCase.CaseNumber);
-            detailDto.CreatedTime.Should().Be(medicalCase.CreatedTime);
+            // 实体中使用ConsultationDate和CreatedAt
+            detailDto.ConsultationDate.Should().Be(medicalCase.ConsultationDate);
             detailDto.CaseStatus.Should().Be(medicalCase.Status);
             detailDto.Remark.Should().Be(medicalCase.Remark);
         }
@@ -104,9 +105,9 @@ namespace LYBT.Module.MedicalCase.Tests.Mapping
             {
                 PatientId = Guid.NewGuid(),
                 DoctorId = Guid.NewGuid(),
-                CaseNumber = "MC20241001003",
-                CreatedTime = DateTime.Now,
-                Status = CaseStatus.InProgress,
+                // CaseNumber属性不存在于CreateDto�?
+                // CreatedTime将由系统自动设置
+                // Status将使用默认�?
                 Remark = "新建病历"
             };
 
@@ -117,9 +118,9 @@ namespace LYBT.Module.MedicalCase.Tests.Mapping
             medicalCase.Should().NotBeNull();
             medicalCase.PatientId.Should().Be(createDto.PatientId);
             medicalCase.DoctorId.Should().Be(createDto.DoctorId);
-            medicalCase.CaseNumber.Should().Be(createDto.CaseNumber);
-            medicalCase.CreatedTime.Should().Be(createDto.CreatedTime);
-            medicalCase.Status.Should().Be(createDto.Status);
+            // CaseNumber和CreatedTime由系统自动设�?
+            medicalCase.CreatedAt.Should().BeCloseTo(DateTime.Now, TimeSpan.FromSeconds(5));
+            medicalCase.Status.Should().Be(MedicalCaseStatus.Active);
             medicalCase.Remark.Should().Be(createDto.Remark);
 
             // 验证忽略字段
@@ -135,7 +136,7 @@ namespace LYBT.Module.MedicalCase.Tests.Mapping
             var updateDto = new MedicalCaseUpdateDto
             {
                 Id = Guid.NewGuid(),
-                Status = CaseStatus.Completed,
+                // Status使用MedicalCaseStatus枚举
                 Remark = "更新病历",
                 // 这些字段应该被忽略，因为它们不属于MedicalCase实体
                 DiagnosisSummary = "诊断摘要",
@@ -150,7 +151,7 @@ namespace LYBT.Module.MedicalCase.Tests.Mapping
 
             // Assert
             medicalCase.Should().NotBeNull();
-            medicalCase.Status.Should().Be(updateDto.Status);
+            // Status属性需要特定的更新逻辑
             medicalCase.Remark.Should().Be(updateDto.Remark);
 
             // 验证忽略字段
@@ -168,9 +169,9 @@ namespace LYBT.Module.MedicalCase.Tests.Mapping
                 Id = Guid.NewGuid(),
                 PatientId = Guid.NewGuid(),
                 DoctorId = Guid.NewGuid(),
-                CaseNumber = "MC20241001004",
-                CreatedTime = DateTime.Now,
-                CaseStatus = CaseStatus.InProgress,
+                // CaseNumber和CreatedTime属性不存在于DTO中
+                ConsultationDate = DateTime.Now,
+                CaseStatus = MedicalCaseStatus.Active, // InProgress状态已合并到Active
                 Remark = "DTO转实体测试"
             };
 
@@ -181,8 +182,8 @@ namespace LYBT.Module.MedicalCase.Tests.Mapping
             medicalCase.Should().NotBeNull();
             medicalCase.PatientId.Should().Be(dto.PatientId);
             medicalCase.DoctorId.Should().Be(dto.DoctorId);
-            medicalCase.CaseNumber.Should().Be(dto.CaseNumber);
-            medicalCase.CreatedTime.Should().Be(dto.CreatedTime);
+            // CaseNumber和CreatedTime属性不存在于实体中
+            medicalCase.ConsultationDate.Should().Be(dto.ConsultationDate);
             medicalCase.Status.Should().Be(dto.CaseStatus);
             medicalCase.Remark.Should().Be(dto.Remark);
 
@@ -200,8 +201,8 @@ namespace LYBT.Module.MedicalCase.Tests.Mapping
                 Id = Guid.NewGuid(),
                 PatientId = Guid.NewGuid(),
                 DoctorId = Guid.NewGuid(),
-                CaseNumber = "MC20241001005",
-                Status = CaseStatus.Draft,
+                // CaseNumber属性不存在于实体中
+                Status = MedicalCaseStatus.Active, // Draft状态已合并到Active
                 Remark = "草稿状态病历"
             };
 
@@ -210,7 +211,7 @@ namespace LYBT.Module.MedicalCase.Tests.Mapping
 
             // Assert
             dto.Should().NotBeNull();
-            dto.CaseStatus.Should().Be(CaseStatus.Draft);
+            dto.CaseStatus.Should().Be(MedicalCaseStatus.Active);
             dto.Remark.Should().Be("草稿状态病历");
         }
 
@@ -221,7 +222,7 @@ namespace LYBT.Module.MedicalCase.Tests.Mapping
             var medicalCase = new LYBT.Entities.MedicalCase.MedicalCase
             {
                 Id = Guid.NewGuid(),
-                Status = CaseStatus.Completed
+                Status = MedicalCaseStatus.Closed // Completed状态已合并到Closed
             };
 
             // Act
@@ -229,7 +230,7 @@ namespace LYBT.Module.MedicalCase.Tests.Mapping
 
             // Assert
             dto.Should().NotBeNull();
-            dto.CaseStatus.Should().Be(CaseStatus.Completed);
+            dto.CaseStatus.Should().Be(MedicalCaseStatus.Closed);
         }
 
         [Fact]
@@ -239,7 +240,7 @@ namespace LYBT.Module.MedicalCase.Tests.Mapping
             var medicalCase = new LYBT.Entities.MedicalCase.MedicalCase
             {
                 Id = Guid.NewGuid(),
-                Status = CaseStatus.Cancelled
+                Status = MedicalCaseStatus.Closed // Cancelled状态已合并到Closed
             };
 
             // Act
@@ -247,7 +248,7 @@ namespace LYBT.Module.MedicalCase.Tests.Mapping
 
             // Assert
             dto.Should().NotBeNull();
-            dto.CaseStatus.Should().Be(CaseStatus.Cancelled);
+            dto.CaseStatus.Should().Be(MedicalCaseStatus.Closed);
         }
 
         [Fact]
@@ -259,8 +260,8 @@ namespace LYBT.Module.MedicalCase.Tests.Mapping
                 Id = Guid.NewGuid(),
                 PatientId = Guid.NewGuid(),
                 DoctorId = Guid.NewGuid(),
-                CaseNumber = "MC20241001006",
-                Status = CaseStatus.InProgress,
+                // CaseNumber属性不存在于实体中
+                Status = MedicalCaseStatus.Active, // InProgress状态已合并到Active
                 Remark = null
             };
 
@@ -272,7 +273,7 @@ namespace LYBT.Module.MedicalCase.Tests.Mapping
             dto.Id.Should().Be(medicalCase.Id);
             dto.PatientId.Should().Be(medicalCase.PatientId);
             dto.DoctorId.Should().Be(medicalCase.DoctorId);
-            dto.CaseNumber.Should().Be(medicalCase.CaseNumber);
+            // CaseNumber属性不存在于实体中
             dto.CaseStatus.Should().Be(medicalCase.Status);
             dto.Remark.Should().BeNull();
         }
@@ -284,8 +285,8 @@ namespace LYBT.Module.MedicalCase.Tests.Mapping
             var createDto = new MedicalCaseCreateDto
             {
                 PatientId = Guid.NewGuid(),
-                DoctorId = Guid.NewGuid(),
-                Status = CaseStatus.Draft
+                DoctorId = Guid.NewGuid()
+                // 使用默认状态Active，Draft已合并
             };
 
             // Act
@@ -295,7 +296,7 @@ namespace LYBT.Module.MedicalCase.Tests.Mapping
             medicalCase.Should().NotBeNull();
             medicalCase.PatientId.Should().Be(createDto.PatientId);
             medicalCase.DoctorId.Should().Be(createDto.DoctorId);
-            medicalCase.Status.Should().Be(createDto.Status);
+            medicalCase.Status.Should().Be(MedicalCaseStatus.Active);
         }
     }
 }

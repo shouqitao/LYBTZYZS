@@ -67,7 +67,7 @@ namespace LYBT.Module.Users.Tests
             // Arrange
             var query = new UserSearchDto
             {
-                CurrentPage = 1,
+                PageIndex = 1,
                 PageSize = 10
             };
 
@@ -122,7 +122,7 @@ namespace LYBT.Module.Users.Tests
 
             var query = new UserSearchDto
             {
-                CurrentPage = 1,
+                PageIndex = 1,
                 PageSize = 10
             };
 
@@ -484,7 +484,7 @@ namespace LYBT.Module.Users.Tests
             // Arrange
             var query = new UserSearchDto
             {
-                CurrentPage = currentPage,
+                PageIndex = currentPage,
                 PageSize = pageSize
             };
 

@@ -310,7 +310,7 @@ namespace LYBT.Module.Users.Tests
 
             var query = new UserSearchDto
             {
-                CurrentPage = 1,
+                PageIndex = 1,
                 PageSize = 3
             };
 
@@ -323,7 +323,7 @@ namespace LYBT.Module.Users.Tests
         }
 
         [Fact]
-        public async Task GetPagedAsync_WithSearchKeyword_ShouldReturnFilteredResult()
+        public async Task GetPagedAsync_WithKeyword_ShouldReturnFilteredResult()
         {
             // Arrange
             var user1 = CreateTestUser("searchtest1", "张三");
@@ -337,9 +337,9 @@ namespace LYBT.Module.Users.Tests
 
             var query = new UserSearchDto
             {
-                CurrentPage = 1,
+                PageIndex = 1,
                 PageSize = 10,
-                SearchKeyword = "search"
+                Keyword = "search"
             };
 
             // Act
@@ -364,7 +364,7 @@ namespace LYBT.Module.Users.Tests
 
             var query = new UserSearchDto
             {
-                CurrentPage = 1,
+                PageIndex = 1,
                 PageSize = 10,
                 Status = CommonStatus.Enabled
             };
@@ -390,7 +390,7 @@ namespace LYBT.Module.Users.Tests
 
             var query = new UserSearchDto
             {
-                CurrentPage = 1,
+                PageIndex = 1,
                 PageSize = 10
             };
 
@@ -592,14 +592,14 @@ namespace LYBT.Module.Users.Tests
         #region 边界条件和异常测试
 
         [Fact]
-        public async Task GetPagedAsync_WithNullSearchKeyword_ShouldNotThrow()
+        public async Task GetPagedAsync_WithNullKeyword_ShouldNotThrow()
         {
             // Arrange
             var query = new UserSearchDto
             {
-                CurrentPage = 1,
+                PageIndex = 1,
                 PageSize = 10,
-                SearchKeyword = null
+                Keyword = null
             };
 
             // Act & Assert
@@ -608,14 +608,14 @@ namespace LYBT.Module.Users.Tests
         }
 
         [Fact]
-        public async Task GetPagedAsync_WithEmptySearchKeyword_ShouldNotThrow()
+        public async Task GetPagedAsync_WithEmptyKeyword_ShouldNotThrow()
         {
             // Arrange
             var query = new UserSearchDto
             {
-                CurrentPage = 1,
+                PageIndex = 1,
                 PageSize = 10,
-                SearchKeyword = ""
+                Keyword = ""
             };
 
             // Act & Assert
@@ -639,7 +639,7 @@ namespace LYBT.Module.Users.Tests
 
             var query = new UserSearchDto
             {
-                CurrentPage = 1,
+                PageIndex = 1,
                 PageSize = 10
             };
 

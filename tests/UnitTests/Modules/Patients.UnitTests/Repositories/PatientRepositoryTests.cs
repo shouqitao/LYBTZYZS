@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 using FluentAssertions;
+using System.Threading;
 
 namespace LYBT.Module.Patients.Tests.Repositories
 {
@@ -40,13 +41,13 @@ namespace LYBT.Module.Patients.Tests.Repositories
                 Name = name,
                 PhoneNumber = phoneNumber,
                 Gender = gender,
-                Age = 30,
+                BirthDate = DateTime.Now.AddYears(-30), // 设置出生日期让Age属性有值
                 Address = "测试地址",
-                IdCard = "310101199001011234",
-                EmergencyContact = "紧急联系人",
-                EmergencyPhone = "13900000000",
-                Allergies = "无过敏史",
-                MedicalHistory = "无重大疾病史"
+                IdNumber = "310101199001011234", // IdCard已改名为IdNumber
+                EmergencyContactName = "紧急联系人", // 正确的属性名
+                EmergencyContactPhone = "13900000000", // 正确的属性名
+                AllergyHistory = "无过敏史"
+                // MedicalHistory不存在于实体中
             };
         }
 
@@ -182,13 +183,13 @@ namespace LYBT.Module.Patients.Tests.Repositories
             await _context.SaveChangesAsync();
 
             // Act
-            var result = await _repository.GetPagedAsync(null, 1, 3);
+            var result = await _repository.GetPagedAsync(null, 1, 3, null, false, CancellationToken.None);
 
             // Assert
             result.Should().NotBeNull();
             result.Items.Should().HaveCount(3);
             result.TotalCount.Should().Be(5);
-            result.PageNumber.Should().Be(1);
+            result.CurrentPage.Should().Be(1);
             result.PageSize.Should().Be(3);
         }
 
@@ -206,7 +207,7 @@ namespace LYBT.Module.Patients.Tests.Repositories
             await _context.SaveChangesAsync();
 
             // Act
-            var result = await _repository.GetPagedAsync(p => p.Gender == Gender.Male, 1, 10);
+            var result = await _repository.GetPagedAsync(p => p.Gender == Gender.Male, 1, 10, null, false, CancellationToken.None);
 
             // Assert
             result.Items.Should().HaveCount(2);
@@ -275,9 +276,9 @@ namespace LYBT.Module.Patients.Tests.Repositories
             // Arrange
             var patients = new[]
             {
-                CreateTestPatient("患者1", "13800000001", Gender.Male),
-                CreateTestPatient("患者2", "13800000002", Gender.Female),
-                CreateTestPatient("患者3", "13800000003", Gender.Male)
+                CreateTestPatient("患者A", "13800000001", Gender.Male),
+                CreateTestPatient("患者B", "13800000002", Gender.Female),
+                CreateTestPatient("患者C", "13800000003", Gender.Male)
             };
             await _context.Patients.AddRangeAsync(patients);
             await _context.SaveChangesAsync();
@@ -400,8 +401,8 @@ namespace LYBT.Module.Patients.Tests.Repositories
             // Arrange
             var patients = new[]
             {
-                CreateTestPatient("患者1", "13800000001"),
-                CreateTestPatient("患者2", "13800000002")
+                CreateTestPatient("患者A", "13800000001"),
+                CreateTestPatient("患者B", "13800000002")
             };
             await _context.Patients.AddRangeAsync(patients);
             await _context.SaveChangesAsync();
@@ -477,13 +478,13 @@ namespace LYBT.Module.Patients.Tests.Repositories
                 Name = "集成测试患者",
                 PhoneNumber = "13800000000",
                 Gender = Gender.Male,
-                Age = 35,
+                BirthDate = DateTime.Now.AddYears(-35), // 设置出生日期而非直接设置Age
                 Address = "上海市浦东新区",
-                IdCard = "310115198801011234",
-                EmergencyContact = "家属姓名",
-                EmergencyPhone = "13900000000",
-                Allergies = "青霉素过敏",
-                MedicalHistory = "高血压病史5年"
+                IdNumber = "310115198801011234",
+                EmergencyContactName = "家属姓名",
+                EmergencyContactPhone = "13900000000",
+                AllergyHistory = "青霉素过敏"
+                // MedicalHistory不存在于实体中
             };
 
             // Act & Assert - 模拟完整患者管理流程
@@ -498,21 +499,21 @@ namespace LYBT.Module.Patients.Tests.Repositories
 
             // 3. 更新患者信息
             foundPatient.Address = "上海市黄浦区";
-            foundPatient.Age = 36;
+            foundPatient.PhoneNumber = "13800000001"; // 更新手机号而非Age
             await _repository.UpdateAsync(foundPatient);
             await _repository.SaveChangesAsync();
 
             // 4. 验证更新
             var updatedPatient = await _repository.GetByIdAsync(patient.Id);
             updatedPatient!.Address.Should().Be("上海市黄浦区");
-            updatedPatient.Age.Should().Be(36);
+            updatedPatient.PhoneNumber.Should().Be("13800000001");
 
             // 5. 搜索患者
             var searchResults = await _repository.FindAsync(p => p.Name.Contains("集成"));
             searchResults.Should().HaveCount(1);
 
             // 6. 分页查询
-            var pagedResult = await _repository.GetPagedAsync(null, 1, 10);
+            var pagedResult = await _repository.GetPagedAsync(null, 1, 10, null, false, CancellationToken.None);
             pagedResult.Items.Should().HaveCount(1);
             pagedResult.TotalCount.Should().Be(1);
         }

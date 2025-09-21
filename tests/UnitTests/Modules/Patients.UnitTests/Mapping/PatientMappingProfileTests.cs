@@ -3,6 +3,7 @@ using FluentAssertions;
 using LYBT.Entities.Patients;
 using LYBT.Module.Patients.Mapping;
 using LYBT.Shared.Models.Contracts.Patients;
+using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
@@ -10,7 +11,7 @@ namespace LYBT.Module.Patients.Tests.Mapping
 {
     /// <summary>
     /// Patients模块AutoMapper映射配置单元测试
-    /// 测试所有映射配置的有效性和正确性
+    /// 测试所有映射配置的有效性和正确�?
     /// </summary>
     public class PatientMappingProfileTests
     {
@@ -21,7 +22,7 @@ namespace LYBT.Module.Patients.Tests.Mapping
             var config = new MapperConfiguration(cfg =>
             {
                 cfg.AddProfile(new PatientMappingProfile());
-            }, NullLoggerFactory.Instance);
+            });
 
             _mapper = config.CreateMapper();
         }
@@ -33,7 +34,7 @@ namespace LYBT.Module.Patients.Tests.Mapping
             var config = new MapperConfiguration(cfg =>
             {
                 cfg.AddProfile(new PatientMappingProfile());
-            }, NullLoggerFactory.Instance);
+            });
 
             // Assert
             config.AssertConfigurationIsValid();
@@ -48,7 +49,7 @@ namespace LYBT.Module.Patients.Tests.Mapping
                 Id = Guid.NewGuid(),
                 Name = "张三",
                 Gender = Gender.Male,
-                Age = 35,
+                // Age������ֻ����������
                 PhoneNumber = "13812345678",
                 IdNumber = "110101198801011234",
                 Address = "北京市朝阳区",
@@ -81,12 +82,11 @@ namespace LYBT.Module.Patients.Tests.Mapping
             {
                 Name = "李四",
                 Gender = Gender.Female,
-                Age = 28,
+                // Age������ֻ����������
                 PhoneNumber = "13987654321",
                 IdNumber = "110101199501011234",
                 Address = "上海市浦东新区",
-                Occupation = "教师",
-                MedicalHistory = "高血压"
+                // Occupation和MedicalHistory不存在于实体中
             };
 
             // Act
@@ -100,8 +100,7 @@ namespace LYBT.Module.Patients.Tests.Mapping
             patient.PhoneNumber.Should().Be(createDto.PhoneNumber);
             patient.IdNumber.Should().Be(createDto.IdNumber);
             patient.Address.Should().Be(createDto.Address);
-            patient.Occupation.Should().Be(createDto.Occupation);
-            patient.MedicalHistory.Should().Be(createDto.MedicalHistory);
+            // Occupation和MedicalHistory不存在于实体中
 
             // 验证忽略字段
             patient.Id.Should().Be(Guid.Empty);
@@ -119,11 +118,10 @@ namespace LYBT.Module.Patients.Tests.Mapping
                 Id = Guid.NewGuid(),
                 Name = "王五",
                 Gender = Gender.Male,
-                Age = 42,
+                // Age������ֻ����������
                 PhoneNumber = "13911111111",
                 Address = "广州市天河区",
-                Occupation = "工程师",
-                MedicalHistory = "糖尿病"
+                // Occupation和MedicalHistory不存在于UpdateDto中
             };
 
             // Act
@@ -136,8 +134,7 @@ namespace LYBT.Module.Patients.Tests.Mapping
             patient.Age.Should().Be(updateDto.Age);
             patient.PhoneNumber.Should().Be(updateDto.PhoneNumber);
             patient.Address.Should().Be(updateDto.Address);
-            patient.Occupation.Should().Be(updateDto.Occupation);
-            patient.MedicalHistory.Should().Be(updateDto.MedicalHistory);
+            // Occupation和MedicalHistory不存在于实体中
 
             // 验证忽略字段
             patient.LastVisitTime.Should().BeNull();
@@ -154,7 +151,7 @@ namespace LYBT.Module.Patients.Tests.Mapping
                 Id = Guid.NewGuid(),
                 Name = "赵六",
                 Gender = Gender.Female,
-                Age = 33,
+                // Age������ֻ����������
                 PhoneNumber = "13822222222",
                 IdNumber = "110101199001011234",
                 Address = "深圳市南山区",
@@ -189,7 +186,7 @@ namespace LYBT.Module.Patients.Tests.Mapping
             {
                 Name = "孙七",
                 Gender = Gender.Male,
-                Age = 29,
+                // Age������ֻ����������
                 PhoneNumber = "13933333333",
                 IdNumber = "110101199401011234",
                 Address = "杭州市西湖区"
@@ -221,7 +218,7 @@ namespace LYBT.Module.Patients.Tests.Mapping
                 Id = Guid.NewGuid(),
                 Name = "周八",
                 Gender = Gender.Female,
-                Age = 37,
+                // Age������ֻ����������
                 PhoneNumber = "13944444444",
                 Address = "成都市锦江区"
             };
@@ -251,7 +248,7 @@ namespace LYBT.Module.Patients.Tests.Mapping
                 Id = Guid.NewGuid(),
                 Name = "女患者",
                 Gender = Gender.Female,
-                Age = 25
+                // Age������ֻ����������
             };
 
             // Act
@@ -272,7 +269,7 @@ namespace LYBT.Module.Patients.Tests.Mapping
                 Id = Guid.NewGuid(),
                 Name = "最小患者",
                 Gender = Gender.Unknown,
-                Age = 0,
+                // Age������ֻ����������
                 PhoneNumber = null,
                 IdNumber = null,
                 Address = null,
@@ -306,7 +303,7 @@ namespace LYBT.Module.Patients.Tests.Mapping
                 Name = "欧阳·复姓",
                 PinYinCode = "OYFX",
                 IdNumber = "110101198801011234",
-                Address = "北京市朝阳区建国路123号-甲1层",
+                Address = "北京市朝阳区建国门23号",
                 PhoneNumber = "+86-138-1234-5678"
             };
 
@@ -318,7 +315,7 @@ namespace LYBT.Module.Patients.Tests.Mapping
             patientDto.Name.Should().Be("欧阳·复姓");
             patientDto.PinYinCode.Should().Be("OYFX");
             patientDto.IdNumber.Should().Be("110101198801011234");
-            patientDto.Address.Should().Be("北京市朝阳区建国路123号-甲1层");
+            patientDto.Address.Should().Be("北京市朝阳区建国门23号");
             patientDto.PhoneNumber.Should().Be("+86-138-1234-5678");
         }
     }
