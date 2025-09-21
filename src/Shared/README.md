@@ -12,6 +12,14 @@ LYBT.Shared 是系统的核心共享组件库，提供前后端统一的数据�
 **架构模式**: 契约驱动设计 + 分层DTO模型 + 接口统一化
 **最新优化**: DTO三阶段优化完成（查询标准化、操作结果基类、继承层次优化）
 
+## 📚 规范文档
+
+- **[Shared类型清单](../../docs/shared-inventory/shared-types.md)** - 268+类型完整清单和分类
+- **[Shared依赖关系](../../docs/shared-inventory/shared-deps.md)** - 模块间依赖关系图
+- **[枚举规范文档](../../docs/shared-inventory/shared-enums-spec.md)** - 枚举命名、i18n和前端缓存规范
+- **[结构优化建议](../../docs/shared-inventory/shared-structure-proposal.md)** - 目录结构重构方案
+- **[架构门禁规范](../../docs/shared-inventory/shared-arch-gates.md)** - 依赖边界和禁止项清单
+
 ## 📦 项目结构
 
 ### LYBT.Shared.Models
