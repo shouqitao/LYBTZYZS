@@ -1,4 +1,4 @@
-# 文档主页（LYBTZYZS）
+﻿# 文档主页（LYBTZYZS）
 
 本页面作为项目文档的入口与导航。所有细节以根目录 `README.md` 为权威说明，以下专题文档提供更细的操作与背景。
 
@@ -50,10 +50,10 @@ docs/
 │   └── server-tests-coverage-epic-summary.md
 │
 ├── prds-summary/                 # PRD 完成总结与实施产出汇总
-│   ├── PRD-desktop-sln-quick-fix-20250921-SUMMARY.md
-│   ├── PRD-server-entity-consistency-optimization-20250921-SUMMARY.md
-│   ├── PRD-server-tests-coverage-20250921-SUMMARY.md
-│   ├── PRD-server-shared-inventory-and-structure-optimization-20250921-SUMMARY.md
+│   ├── PRD-desktop-20250921-SUMMARY.md
+│   ├── PRD-server-entity-20250921-SUMMARY.md
+│   ├── PRD-server-coverage-20250921-SUMMARY.md
+│   ├── PRD-server-shared-20250921-SUMMARY.md
 │   └── shared-inventory/         # 共享清单/依赖/规范等产物
 │       ├── shared-types.md
 │       ├── shared-deps.md

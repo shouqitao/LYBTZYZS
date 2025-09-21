@@ -1,6 +1,6 @@
-# PRD 完成总结 — server-tests-coverage — 2025-09-21
+﻿# PRD 完成总结 — server-tests-coverage — 2025-09-21
 
-- 关联 PRD：docs/ccpm/PRD-server-tests-coverage-20250921.md
+- 关联 PRD：docs/ccpm/PRD-server-coverage-20250921.md
 
 ## 实施范围与关键变更
 - 范围：LYBT.Server.sln、src/Server/*、\tests/*，测试命令与覆盖率产物规范化，文档与入口导航完善

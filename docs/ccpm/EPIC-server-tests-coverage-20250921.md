@@ -1,6 +1,6 @@
-# EPIC｜服务端单元测试全覆盖与测试报告（凌隐宝堂中医诊所）
+﻿# EPIC｜服务端单元测试全覆盖与测试报告（凌隐宝堂中医诊所）
 
-- 关联 PRD：docs/ccpm/PRD-server-tests-coverage-20250921.md
+- 关联 PRD：docs/ccpm/PRD-server-coverage-20250921.md
 - 技术负责人：待指派
 
 ## 一、技术方案
