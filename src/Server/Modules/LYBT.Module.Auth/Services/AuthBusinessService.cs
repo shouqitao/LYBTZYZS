@@ -157,7 +157,7 @@ namespace LYBT.Module.Auth.Services
                 }
 
                 // 2. 验证密码
-                if (!PasswordHelper.Verify(request.Password, passwordHash))
+                if (!PasswordHelper.Verify(passwordHash, request.Password))
                 {
                     _logger.LogWarning("超级管理员密码验证失败: {Username}", request.Username);
                     return ServiceResult<LoginResponse>.Failure("用户名或密码错误");
