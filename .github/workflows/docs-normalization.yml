@@ -1,0 +1,54 @@
+name: Docs Normalization
+
+on:
+  pull_request:
+    paths:
+      - "**/*.md"
+      - "scripts/*.ps1"
+      - ".github/workflows/docs-normalization.yml"
+  workflow_dispatch: {}
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run title/terminology normalization
+        shell: pwsh
+        run: |
+          pwsh -NoLogo -NoProfile -File scripts/fix-cn-titles.ps1 -Root .
+          pwsh -NoLogo -NoProfile -File scripts/clean-module-readmes.ps1 -Root .
+
+      - name: Check for changes
+        id: diff
+        shell: bash
+        run: |
+          if ! git diff --quiet; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Show diff when changes found
+        if: steps.diff.outputs.changed == 'true'
+        shell: bash
+        run: |
+          echo "Normalization found differences. Please run:"
+          echo "  pwsh -File scripts/fix-cn-titles.ps1"
+          echo "  pwsh -File scripts/clean-module-readmes.ps1"
+          echo
+          git --no-pager diff --stat
+          echo
+          git --no-pager diff
+
+      - name: Fail if normalization needed
+        if: steps.diff.outputs.changed == 'true'
+        shell: bash
+        run: |
+          echo "Docs normalization required. Commit the changes and update this PR." >&2
+          exit 1
+

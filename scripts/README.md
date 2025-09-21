@@ -76,3 +76,25 @@ dotnet publish src/Server/Services/LYBT.WebAPI -c Release -o out/webapi-self --s
 **文档版本**: P4 Release 1.0  
 **更新时间**: 2025-09-12  
 **适用版本**: .NET 8.0 + LYBT系统
+
+
+## 🧹 文档规范化
+
+- fix-cn-titles.ps1：修正常见中文标题乱码与连写模式；仅处理 Markdown 标题行。
+- clean-module-readmes.ps1：统一 Server/Client 模块 README 的术语与措辞（跳过代码块）。
+- setup-hooks.ps1：配置 Git hooks 使用 .githooks，启用 pre-commit 自动规范。
+
+本地运行：
+
+`powershell
+pwsh -File scripts/fix-cn-titles.ps1 -Root .
+pwsh -File scripts/clean-module-readmes.ps1 -Root .
+``r
+
+启用本地 pre-commit：
+
+`powershell
+pwsh -File scripts/setup-hooks.ps1
+``r
+
+CI 校验：.github/workflows/docs-normalization.yml 会在 PR 中运行以上脚本，如存在差异会提示并失败。

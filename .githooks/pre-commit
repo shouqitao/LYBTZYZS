@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Run documentation normalization before commit
+
+run_pwsh() {
+  if command -v pwsh >/dev/null 2>&1; then
+    pwsh -NoLogo -NoProfile -File scripts/fix-cn-titles.ps1 -Root .
+    pwsh -NoLogo -NoProfile -File scripts/clean-module-readmes.ps1 -Root .
+    return 0
+  elif command -v powershell >/dev/null 2>&1; then
+    powershell -NoProfile -ExecutionPolicy Bypass -File scripts/fix-cn-titles.ps1 -Root .
+    powershell -NoProfile -ExecutionPolicy Bypass -File scripts/clean-module-readmes.ps1 -Root .
+    return 0
+  else
+    echo "PowerShell not found; skipping docs normalization." >&2
+    return 0
+  fi
+}
+
+run_pwsh
+
+# Re-stage changed markdown files if any
+if ! git diff --quiet -- '**/*.md'; then
+  git add **/*.md || true
+fi
+
+exit 0
+
