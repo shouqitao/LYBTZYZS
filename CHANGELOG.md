@@ -1,4 +1,4 @@
-# 变更记录（摘要）
+﻿# 变更记录（摘要）
 
 ## 2025-09-21
 - 文档体系搭建：新增 docs/index.md、architecture/overview.md、configuration.md、api/README.md、testing/README.md、styleguide.md、runbook.md、modules/index.md

@@ -1,4 +1,4 @@
-# PRD 完成总结 — server-entity-consistency-optimization — 2025-09-21
+﻿# PRD 完成总结 — server-entity-consistency-optimization — 2025-09-21
 
 - 关联 PRD：.claude/prds/server-entity-consistency-optimization-20250921.md
 

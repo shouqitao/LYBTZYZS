@@ -1,4 +1,4 @@
-# LYBT.Desktop.Module.MedicalCase
+﻿# LYBT.Desktop.Module.MedicalCase
 
 > **医案管理客户端模块** - WPF桌面应用医案管理功能
 > 病历管理 | 诊疗记录 | 处方关联 | 档案归档

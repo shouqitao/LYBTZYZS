@@ -1,4 +1,4 @@
-# LYBT.Module.Herbs
+﻿# LYBT.Module.Herbs
 
 > **药材管理核心模块** - 中药材信息管理中心
 > 药材档案管理 | 价格维护 | 拼音检索 | 批量导入导出

@@ -1,4 +1,4 @@
-# LYBT.Desktop.Module.Herbs
+﻿# LYBT.Desktop.Module.Herbs
 
 > **药材管理客户端模块** - WPF桌面应用药材管理功能
 > 药材检索 | 价格维护 | 拼音搜索 | 批量管理

@@ -1,4 +1,4 @@
-# LYBT.Desktop.Module.Users
+﻿# LYBT.Desktop.Module.Users
 
 > **用户管理客户端模块** - WPF桌面应用用户管理功能
 > 用户CRUD | 角色管理 | 密码管理 | 状态控制

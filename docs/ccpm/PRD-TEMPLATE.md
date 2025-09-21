@@ -1,4 +1,4 @@
-# PRD 模板（CCPM 风格）
+﻿# PRD 模板（CCPM 风格）
 
 - 文档日期：YYYY-MM-DD
 - 项目经理：ccpm（Claude Code Project Manager）

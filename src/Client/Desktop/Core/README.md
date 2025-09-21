@@ -1,4 +1,4 @@
-# LYBT.Desktop.Core v2.1 - WPF核心基础设施库
+﻿# LYBT.Desktop.Core v2.1 - WPF核心基础设施库
 
 > **企业级WPF框架** | UltraThink架构支撑 | Prism.DryIoc模块化 | MVVM标准化  
 > **项目状态**: ✅ **生产就绪** | 🎆 **2025-09-02重构完成** | **企业级标准**

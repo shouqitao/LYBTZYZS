@@ -1,4 +1,4 @@
-# LYBT.Desktop.Module.Formula
+﻿# LYBT.Desktop.Module.Formula
 
 > **验方管理客户端模块** - WPF桌面应用验方管理功能
 > 验方管理 | 组方配置 | 经验积累 | 方剂分享

@@ -1,4 +1,4 @@
-# LYBT.Desktop.Module.Consultation
+﻿# LYBT.Desktop.Module.Consultation
 
 > **看诊管理客户端模块** - WPF桌面应用看诊管理功能
 > 四诊记录 | 辨证论治 | 诊断管理 | 医嘱记录

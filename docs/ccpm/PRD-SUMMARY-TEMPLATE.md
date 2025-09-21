@@ -1,4 +1,4 @@
-# PRD 完成总结（模板）
+﻿# PRD 完成总结（模板）
 
 - 标题：PRD 完成总结 — <feature/slug> — <YYYY-MM-DD>
 - 关联 PRD：docs/ccpm/PRD-<slug>-<YYYYMMDD>.md

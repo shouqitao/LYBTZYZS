@@ -1,4 +1,4 @@
-# PRD——LYBT.Desktop.sln 桌面解决方案“快速修复清单”落地（CCPM）
+﻿# PRD——LYBT.Desktop.sln 桌面解决方案“快速修复清单”落地（CCPM）
 
 - 文档日期：2025-09-21
 - 项目经理：ccpm（Claude Code Project Manager）

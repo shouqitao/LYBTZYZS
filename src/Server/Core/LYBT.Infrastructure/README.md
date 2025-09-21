@@ -1,4 +1,4 @@
-# LYBT.Infrastructure
+﻿# LYBT.Infrastructure
 
 > **基础设施核心模块** - UltraThink架构优化版  
 > 系统底层数据访问、配置管理和核心服务的统一基础设施

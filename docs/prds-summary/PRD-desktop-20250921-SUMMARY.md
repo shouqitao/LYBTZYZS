@@ -1,4 +1,4 @@
-# PRD 完成总结 — desktop-sln-quick-fix — 2025-09-21
+﻿# PRD 完成总结 — desktop-sln-quick-fix — 2025-09-21
 
 - 关联 PRD：.claude/prds/desktop-sln-quick-fix.md
 

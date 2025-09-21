@@ -1,4 +1,4 @@
-# LYBT.Module.Auth
+﻿# LYBT.Module.Auth
 
 > **身份认证与授权核心模块** - JWT Token + RBAC权限控制
 > 专为小型中医诊所(<20人)优化 | Admin/Doctor双角色体系

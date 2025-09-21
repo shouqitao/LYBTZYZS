@@ -1,4 +1,4 @@
-# LYBT.Module.Consultation - 看诊模块
+﻿# LYBT.Module.Consultation - 看诊模块
 
 ## 📋 模块概述
 

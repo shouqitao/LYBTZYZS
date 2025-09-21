@@ -1,4 +1,4 @@
-# P4 Release - WebAPI运行脚本使用指南
+﻿# P4 Release - WebAPI运行脚本使用指南
 
 本目录包含P4 Release阶段的WebAPI服务运行和健康检查脚本，提供一键启动、停止和监控功能。
 

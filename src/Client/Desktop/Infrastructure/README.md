@@ -1,4 +1,4 @@
-# LYBT.Desktop.Infrastructure v2.1 - WPF基础设施服务库
+﻿# LYBT.Desktop.Infrastructure v2.1 - WPF基础设施服务库
 
 > **API客户端管理** | HTTP通信层 | 数据访问抽象 | Refit类型安全集成  
 > **项目状态**: ✅ **生产就绪** | 🎆 **2025-09-02重构完成** | **企业级通信标准**

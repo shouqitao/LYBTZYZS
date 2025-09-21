@@ -1,4 +1,4 @@
-# LYBT.Shared.Models
+﻿# LYBT.Shared.Models
 
 > **共享数据模型库** - .NET 8 DTO与契约定义
 > DTO优化完成 | 类型安全 | 前后端一致 | 验证增强

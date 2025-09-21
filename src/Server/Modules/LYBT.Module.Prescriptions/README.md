@@ -1,4 +1,4 @@
-# LYBT.Module.Prescriptions
+﻿# LYBT.Module.Prescriptions
 
 > **处方管理核心模块** - 中医智能处方系统
 > 处方开具与管理 | 药材项目管理 | 剂量自动计算 | 处方复制功能

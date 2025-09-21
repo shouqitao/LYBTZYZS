@@ -1,4 +1,4 @@
-# CCPM PRD 生成偏好（持久化）
+﻿# CCPM PRD 生成偏好（持久化）
 
 - 默认规范：遵循 https://github.com/automazeio/ccpm 的 PRD 要求与结构。
 - 输出位置：

@@ -1,4 +1,4 @@
-# Cleanup Summary — 2025-09-21
+﻿# Cleanup Summary — 2025-09-21
 
 - Purpose: archive historical docs/scripts/outputs to keep the root tidy and prevent stale info from interfering with development.
 - Archive root: `docs/_archive/2025-09-21/`

@@ -1,4 +1,4 @@
-# LYBT.Desktop
+﻿# LYBT.Desktop
 
 > **凌隐宝堂中医诊所 - WPF桌面客户端**  
 > 基于 .NET 8.0 的现代化中医诊所管理桌面应用

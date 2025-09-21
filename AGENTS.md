@@ -1,4 +1,4 @@
-# Repository Guidelines
+﻿# Repository Guidelines
 
 ## 项目结构与模块组织
 - 明确项目结构：`src/Server`、`src/Client/Desktop`、`src/Shared`、`tests`、`docs`、`scripts`；构建产物统一输出 `BIN/`。

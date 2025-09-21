@@ -1,4 +1,4 @@
-# LYBT.Desktop.Module.Prescriptions
+﻿# LYBT.Desktop.Module.Prescriptions
 
 > **处方管理客户端模块** - WPF桌面应用处方管理功能
 > 处方开具 | 药材配伍 | 剂量计算 | 处方复制

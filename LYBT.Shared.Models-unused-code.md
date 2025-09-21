@@ -1,4 +1,4 @@
-# LYBT.Shared.Models 待清除代码清单（全方案）
+﻿# LYBT.Shared.Models 待清除代码清单（全方案）
 
 ## 范围与方法
 - 适用方案：`LYBT.All.sln`（Server + Desktop + Shared + Tests）。

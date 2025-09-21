@@ -1,4 +1,4 @@
-# PRD 完成总结 — server-shared-inventory-and-structure-optimization — 2025-09-21
+﻿# PRD 完成总结 — server-shared-inventory-and-structure-optimization — 2025-09-21
 
 - 关联 PRD：.claude/prds/server-shared-inventory-and-structure-optimization-20250921.md
 

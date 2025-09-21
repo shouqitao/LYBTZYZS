@@ -1,4 +1,4 @@
-# Claude Code CLI 通用引导（仅需首次加载）
+﻿# Claude Code CLI 通用引导（仅需首次加载）
 
 Purpose
 - 为本仓库的所有任务提供统一的执行与报告要求。

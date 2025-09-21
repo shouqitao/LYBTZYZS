@@ -1,4 +1,4 @@
-# LYBT.Shared.Utilities
+﻿# LYBT.Shared.Utilities
 
 > **共享工具类库** - .NET 8通用工具与扩展方法
 > 配置管理 | 安全工具 | 扩展方法 | 中间件配置

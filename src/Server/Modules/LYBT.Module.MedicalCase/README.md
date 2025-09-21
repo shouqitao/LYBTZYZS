@@ -1,4 +1,4 @@
-# LYBT.Module.MedicalCase
+﻿# LYBT.Module.MedicalCase
 
 > **医疗案例管理核心模块** - 中医诊疗流程管理容器
 > 看诊流程管理 + 诊疗记录聚合 | 专为中医诊所优化

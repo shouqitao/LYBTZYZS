@@ -1,4 +1,4 @@
-# LYBT.Module.Patients
+﻿# LYBT.Module.Patients
 
 > **患者档案管理核心模块** - 中医诊疗患者信息中心
 > 完整病历管理 | 就诊历史追踪 | 健康档案维护

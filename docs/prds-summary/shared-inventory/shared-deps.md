@@ -1,4 +1,4 @@
-# Shared 依赖关系图
+﻿# Shared 依赖关系图
 
 > 生成时间：2025-09-21
 > 分析范围：LYBT.Shared.* ↔ Server/Client 依赖关系

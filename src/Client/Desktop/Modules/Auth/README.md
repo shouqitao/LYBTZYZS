@@ -1,4 +1,4 @@
-# LYBT.Desktop.Module.Auth
+﻿# LYBT.Desktop.Module.Auth
 
 > **认证授权客户端模块** - WPF桌面应用认证授权功能
 > JWT令牌管理 | 自动登录 | 权限验证 | 会话管理

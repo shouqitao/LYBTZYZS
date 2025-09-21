@@ -1,4 +1,4 @@
-# LYBT.Shared.Interfaces
+﻿# LYBT.Shared.Interfaces
 
 > **前后端统一契约库** - .NET 8接口定义与API客户端
 > UltraThink架构支持 | Refit类型安全 | ServiceResult统一返回

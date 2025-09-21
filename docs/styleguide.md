@@ -1,4 +1,4 @@
-# 代码风格与规范
+﻿# 代码风格与规范
 
 - 缩进：C# 4 空格；XML/JSON/YAML 2 空格；UTF-8，CRLF，去除行尾空白
 - using 顺序：`System.*` 优先；using 放在命名空间外；尽量单行

@@ -1,4 +1,4 @@
-# LYBT.WebAPI
+﻿# LYBT.WebAPI
 
 > **凌隐宝堂中医诊所管理系统 - Web API 核心服务**  
 > 基于ASP.NET Core 8.0的企业级中医诊所管理REST API | 专为小型诊所(<20人)优化  

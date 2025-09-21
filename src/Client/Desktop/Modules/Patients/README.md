@@ -1,4 +1,4 @@
-# LYBT.Desktop.Module.Patients
+﻿# LYBT.Desktop.Module.Patients
 
 > **患者管理客户端模块** - WPF桌面应用患者管理功能
 > 患者档案 | 就诊历史 | 快速检索 | 信息维护

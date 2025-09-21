@@ -1,4 +1,4 @@
-# LYBT.Module.Formula
+﻿# LYBT.Module.Formula
 
 > **验方管理核心模块** - 经典方剂与经验方管理中心
 > 验方档案管理 | 药材组成配置 | 方剂复制与分享 | 处方转验方

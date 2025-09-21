@@ -1,4 +1,4 @@
-# 配置与环境
+﻿# 配置与环境
 
 ## SDK 与框架
 - .NET SDK: 由 `global.json` 锁定为 9.0.305（rollForward: latestMinor）
