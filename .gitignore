@@ -152,3 +152,5 @@ appsettings.Local.json
 .env.staging
 .env.production
 *.env
+
+docs/_archive/
