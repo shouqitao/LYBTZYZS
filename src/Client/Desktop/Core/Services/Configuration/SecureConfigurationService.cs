@@ -1,4 +1,5 @@
 using System.IO;
+using System.Security;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -743,23 +744,29 @@ namespace LYBT.Desktop.Core.Services.Configuration
 
         private byte[] EncryptData(string plainText, byte[] key)
         {
-            using (var aes = Aes.Create())
+            // 使用 AES-GCM 实现 AEAD 加密
+            using (var aesGcm = new AesGcm(key))
             {
-                aes.Key = key;
-                aes.GenerateIV();
+                // 生成随机 nonce (12 bytes for AES-GCM)
+                var nonce = new byte[AesGcm.NonceByteSizes.MaxSize];
+                RandomNumberGenerator.Fill(nonce);
 
-                using (var encryptor = aes.CreateEncryptor())
+                // 准备明文数据
+                var plaintextBytes = Encoding.UTF8.GetBytes(plainText);
+                var ciphertext = new byte[plaintextBytes.Length];
+
+                // 生成认证标签 (16 bytes)
+                var tag = new byte[AesGcm.TagByteSizes.MaxSize];
+
+                // 执行加密
+                aesGcm.Encrypt(nonce, plaintextBytes, ciphertext, tag);
+
+                // 组合结果: nonce + tag + ciphertext
                 using (var ms = new MemoryStream())
                 {
-                    // 写入IV
-                    ms.Write(aes.IV, 0, aes.IV.Length);
-
-                    using (var cs = new CryptoStream(ms, encryptor, CryptoStreamMode.Write))
-                    using (var sw = new StreamWriter(cs))
-                    {
-                        sw.Write(plainText);
-                    }
-
+                    ms.Write(nonce, 0, nonce.Length);
+                    ms.Write(tag, 0, tag.Length);
+                    ms.Write(ciphertext, 0, ciphertext.Length);
                     return ms.ToArray();
                 }
             }
@@ -767,27 +774,45 @@ namespace LYBT.Desktop.Core.Services.Configuration
 
         private string DecryptData(byte[] cipherData, byte[] key)
         {
-            using (var aes = Aes.Create())
+            // 使用 AES-GCM 实现 AEAD 解密
+            try
             {
-                aes.Key = key;
-
-                // 读取IV
-                var iv = new byte[16];
-                Array.Copy(cipherData, 0, iv, 0, iv.Length);
-                aes.IV = iv;
-
-                using (var decryptor = aes.CreateDecryptor())
-                using (var ms = new MemoryStream(cipherData, 16, cipherData.Length - 16))
-                using (var cs = new CryptoStream(ms, decryptor, CryptoStreamMode.Read))
-                using (var sr = new StreamReader(cs))
+                using (var aesGcm = new AesGcm(key))
                 {
-                    return sr.ReadToEnd();
+                    // 提取 nonce (12 bytes)
+                    var nonce = new byte[AesGcm.NonceByteSizes.MaxSize];
+                    Array.Copy(cipherData, 0, nonce, 0, nonce.Length);
+
+                    // 提取认证标签 (16 bytes)
+                    var tag = new byte[AesGcm.TagByteSizes.MaxSize];
+                    Array.Copy(cipherData, nonce.Length, tag, 0, tag.Length);
+
+                    // 提取密文
+                    var ciphertextLength = cipherData.Length - nonce.Length - tag.Length;
+                    var ciphertext = new byte[ciphertextLength];
+                    Array.Copy(cipherData, nonce.Length + tag.Length, ciphertext, 0, ciphertextLength);
+
+                    // 准备明文缓冲区
+                    var plaintext = new byte[ciphertextLength];
+
+                    // 执行解密并验证认证标签
+                    aesGcm.Decrypt(nonce, ciphertext, tag, plaintext);
+
+                    return Encoding.UTF8.GetString(plaintext);
                 }
+            }
+            catch (CryptographicException ex)
+            {
+                // 认证失败或数据被篡改
+                _logger.LogError(ex, "解密失败：数据可能被篡改或密钥不正确");
+                throw new SecurityException("数据完整性验证失败，配置可能被篡改", ex);
             }
         }
 
         private string ComputeChecksum(byte[] data)
         {
+            // AES-GCM 已经包含认证标签，此方法保留为兼容性
+            // 可以用于记录数据指纹用于审计
             using (var sha256 = SHA256.Create())
             {
                 var hash = sha256.ComputeHash(data);
