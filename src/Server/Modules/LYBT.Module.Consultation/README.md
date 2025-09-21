@@ -413,12 +413,11 @@ var historyResult = await _consultationService.GetPatientHistoryAsync(patientId)
 - [待补充] 基本操作：dotnet restore/build/test；如何运行/调试当前模块。
 
 ## 🔌 API 接口
-- [待补充] API 路由前缀：/api/v1/consultation
-- [待补充] 控制器与端点：列出主要 Controller 与示例端点
-- 参考 WebAPI：src/Server/Services/LYBT.WebAPI/README.md
-
+- 控制器:   路由前缀: /api/v1/consultations
+- 控制器:   路由前缀: /api/v1/consultation/operation
 ## 📚 相关文档
 - docs/architecture/overview.md
 - docs/api/README.md
 - docs/modules/index.md
-- [待补充] 本模块相关的设计/实现文档链接
+- src/Shared/LYBT.Shared.Interfaces/Api/IConsultationApi.cs
+

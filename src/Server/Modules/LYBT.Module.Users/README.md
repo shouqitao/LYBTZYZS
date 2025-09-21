@@ -296,11 +296,10 @@ private ValidationResult ValidatePasswordStrength(string password)
 - ✅ **功能完整**: CRUD、搜索、统计、密码管理全覆盖
 
 ## 📚 相关文档
-
-- [Auth认证模块](../LYBT.Module.Auth/README.md) - JWT认证和授权
-- [Infrastructure基础设施](../../Core/LYBT.基础设施（基础设施（Infrastructure））/README.md) - Repository基类
-- [API接口文档](../../Services/LYBT.WebAPI/README.md) - Users控制器API
-
+- docs/architecture/overview.md
+- docs/api/README.md
+- docs/modules/index.md
+- src/Shared/LYBT.Shared.Interfaces/Api/IUsersApi.cs
 ## 🚀 使用示例
 
 ### 控制器集成
@@ -368,6 +367,6 @@ services.AddScoped<IUserRepository, UserRepository>();
 - [待补充] 基本操作：dotnet restore/build/test；如何运行/调试当前模块。
 
 ## 🔌 API 接口
-- [待补充] API 路由前缀：/api/v1/users
-- [待补充] 控制器与端点：列出主要 Controller 与示例端点
-- 参考 WebAPI：src/Server/Services/LYBT.WebAPI/README.md
+- 控制器:   路由前缀: /api/v1/Users
+- 控制器:   路由前缀: /api/v1/users/operation
+

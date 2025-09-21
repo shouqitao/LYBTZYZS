@@ -496,16 +496,10 @@ private IQueryable<MedicalCase> ApplyDoctorFilter(IQueryable<MedicalCase> query)
 - 收入统计（可选）
 
 ## 📚 相关文档
-
-- [Consultation诊察模块](../LYBT.Module.Consultation/README.md) - 四诊信息
-- [Patients患者模块](../LYBT.Module.Patients/README.md) - 患者管理
-- [Prescriptions处方模块](../LYBT.Module.Prescriptions/README.md) - 处方管理
-
----
-
-> 📌 **最新成果**: DTO命名规范化，状态管理简化，编译通过
-> 🎆 **生产就绪**: 完整的医案管理体系，支撑中医诊所核心诊疗流程
-
+- docs/architecture/overview.md
+- docs/api/README.md
+- docs/modules/index.md
+- src/Shared/LYBT.Shared.Interfaces/Api/IMedicalCaseApi.cs
 ## 🎯 项目概述
 - [待补充] 简要描述 LYBT.Module.MedicalCase 的职责、边界及与其他模块关系。
 
@@ -519,6 +513,6 @@ private IQueryable<MedicalCase> ApplyDoctorFilter(IQueryable<MedicalCase> query)
 - [待补充] 基本操作：dotnet restore/build/test；如何运行/调试当前模块。
 
 ## 🔌 API 接口
-- [待补充] API 路由前缀：/api/v1/medicalcase
-- [待补充] 控制器与端点：列出主要 Controller 与示例端点
-- 参考 WebAPI：src/Server/Services/LYBT.WebAPI/README.md
+- 控制器:   路由前缀: /api/v1/medicalcases
+- 控制器:   路由前缀: /api/v1/medical-case/operation
+

@@ -410,11 +410,10 @@ public class PatientRepository : BaseRepository<Patient>, IPatientRepository
 - 疗效跟踪评估
 
 ## 📚 相关文档
-
-- [MedicalCase医案模块](../LYBT.Module.MedicalCase/README.md) - 就诊记录
-- [Consultation诊察模块](../LYBT.Module.Consultation/README.md) - 四诊信息
-- [Prescriptions处方模块](../LYBT.Module.Prescriptions/README.md) - 处方管理
-
+- docs/architecture/overview.md
+- docs/api/README.md
+- docs/modules/index.md
+- src/Shared/LYBT.Shared.Interfaces/Api/IPatientsApi.cs
 ## 🚀 使用示例
 
 ### 控制器集成
@@ -477,6 +476,6 @@ public class PatientsController : BaseApiController
 - [待补充] 基本操作：dotnet restore/build/test；如何运行/调试当前模块。
 
 ## 🔌 API 接口
-- [待补充] API 路由前缀：/api/v1/patients
-- [待补充] 控制器与端点：列出主要 Controller 与示例端点
-- 参考 WebAPI：src/Server/Services/LYBT.WebAPI/README.md
+- 控制器:   路由前缀: /api/v1/Patients
+- 控制器:   路由前缀: /api/v1/patients/operation
+

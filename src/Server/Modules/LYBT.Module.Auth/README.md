@@ -304,11 +304,10 @@ services.AddAuthorization(options =>
  - 记录异常登录行为
 
 ## 📚 相关文档
-
-- [Users用户模块](../LYBT.Module.Users/README.md) - 用户管理
-- [Infrastructure基础设施](../../Core/LYBT.基础设施（基础设施（Infrastructure））/README.md) - JWT配置
-- [API接口文档](../../Services/LYBT.WebAPI/README.md) - 认证API
-
+- docs/architecture/overview.md
+- docs/api/README.md
+- docs/modules/index.md
+- src/Shared/LYBT.Shared.Interfaces/Api/IAuthApi.cs
 ## 🚀 使用示例
 
 ### 控制器集成
@@ -391,6 +390,5 @@ services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 - [待补充] 基本操作：dotnet restore/build/test；如何运行/调试当前模块。
 
 ## 🔌 API 接口
-- [待补充] API 路由前缀：/api/v1/auth
-- [待补充] 控制器与端点：列出主要 Controller 与示例端点
-- 参考 WebAPI：src/Server/Services/LYBT.WebAPI/README.md
+- 控制器:   路由前缀: /api/v1/Auth
+
