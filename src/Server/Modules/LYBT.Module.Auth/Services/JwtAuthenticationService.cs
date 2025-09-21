@@ -23,19 +23,25 @@ namespace LYBT.Module.Auth.Services
         private readonly ILogger<JwtAuthenticationService> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
         /// <summary>
-        /// 生成JWT令牌
+        /// 生成JWT令牌（包含标准Claims）
         /// </summary>
         public string GenerateToken(string userId, string userName, UserRole role, bool rememberMe = false)
         {
             var claims = new List<Claim> {
+                // JWT标准Claims
                 new(JwtRegisteredClaimNames.Sub, userId),
                 new(JwtRegisteredClaimNames.UniqueName, userName),
                 new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64)
-            };
+                new(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64),
 
-            // 添加角色声明
-            claims.Add(new Claim(ClaimTypes.Role, role.ToString()));
+                // ClaimTypes标准Claims（兼容性）
+                new(ClaimTypes.NameIdentifier, userId),
+                new(ClaimTypes.Name, userName),
+
+                // 角色声明（同时使用两种格式）
+                new(ClaimTypes.Role, role.ToString()),
+                new("role", role.ToString())  // JWT标准的role claim
+            };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.Secret));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);

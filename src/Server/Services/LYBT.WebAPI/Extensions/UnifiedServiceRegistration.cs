@@ -228,7 +228,12 @@ public static class UnifiedServiceRegistration
         // 配置授权策略
         services.AddAuthorization(options =>
         {
-            // 设置全局回退策略 - 要求所有用户必须认证
+            // 设置默认策略 - 要求所有端点默认需要认证
+            options.DefaultPolicy = new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder()
+                .RequireAuthenticatedUser()
+                .Build();
+
+            // 设置全局回退策略 - 要求所有用户必须认证（未标注任何授权属性的端点）
             options.FallbackPolicy = new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder()
                 .RequireAuthenticatedUser()
                 .Build();

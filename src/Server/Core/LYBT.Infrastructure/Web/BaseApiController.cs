@@ -339,9 +339,11 @@ namespace LYBT.Infrastructure.Web
         /// </summary>
         protected ActionResult<ApiResponse> HandleException(Exception ex, string operation, object? context = null)
         {
+            // 记录带脱敏的异常信息，但不传递敏感的context到异常
             HandleExceptionCore(ex, operation, context);
 
             // 转换为标准异常类型，让GlobalExceptionHandler统一处理ProblemDetails响应
+            // 注意：不再将context信息包含在抛出的异常中
             switch (ex)
             {
                 case UnauthorizedAccessException:
@@ -360,9 +362,11 @@ namespace LYBT.Infrastructure.Web
         /// </summary>
         protected ActionResult<ApiResponse<T>> HandleException<T>(Exception ex, string operation, object? context = null)
         {
+            // 记录带脱敏的异常信息，但不传递敏感的context到异常
             HandleExceptionCore(ex, operation, context);
 
             // 转换为标准异常类型，让GlobalExceptionHandler统一处理ProblemDetails响应
+            // 注意：不再将context信息包含在抛出的异常中
             switch (ex)
             {
                 case UnauthorizedAccessException:
@@ -435,9 +439,11 @@ namespace LYBT.Infrastructure.Web
         /// </summary>
         protected ActionResult<ApiResponse<PagedResult<T>>> HandleExceptionPaged<T>(Exception ex, string operation, object? context = null)
         {
+            // 记录带脱敏的异常信息，但不传递敏感的context到异常
             HandleExceptionCore(ex, operation, context);
 
             // 转换为标准异常类型，让GlobalExceptionHandler统一处理ProblemDetails响应
+            // 注意：不再将context信息包含在抛出的异常中
             switch (ex)
             {
                 case UnauthorizedAccessException:

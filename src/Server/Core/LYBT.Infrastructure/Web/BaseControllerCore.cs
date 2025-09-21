@@ -1,4 +1,6 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using LYBT.Infrastructure.Utilities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
@@ -24,13 +26,27 @@ public abstract class BaseControllerCore : ControllerBase
     #region 核心通用功能
 
     /// <summary>
-    /// 获取当前操作者信息 - 统一实现
+    /// 获取当前操作者信息 - 兼容多种Claims标准
     /// </summary>
     protected (Guid OperatorId, string OperatorName, string OperatorRole) GetOperator()
     {
-        var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        var userName = User?.Identity?.Name;
-        var roleStr = User?.FindFirst("Admin")?.Value;
+        // 尝试多种方式获取用户ID（兼容JwtRegisteredClaimNames和ClaimTypes）
+        var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                    ?? User?.FindFirst(JwtRegisteredClaimNames.Sub)?.Value
+                    ?? User?.FindFirst("sub")?.Value;
+
+        // 尝试多种方式获取用户名
+        var userName = User?.Identity?.Name
+                      ?? User?.FindFirst(ClaimTypes.Name)?.Value
+                      ?? User?.FindFirst(JwtRegisteredClaimNames.UniqueName)?.Value
+                      ?? User?.FindFirst("unique_name")?.Value
+                      ?? User?.FindFirst("name")?.Value;
+
+        // 尝试多种方式获取角色
+        var roleStr = User?.FindFirst(ClaimTypes.Role)?.Value
+                     ?? User?.FindFirst("role")?.Value
+                     ?? User?.FindFirst("roles")?.Value
+                     ?? User?.FindFirst("Admin")?.Value;  // 兼容旧版本
 
         if (Guid.TryParse(userId, out var opId) && !string.IsNullOrEmpty(userName))
         {
@@ -41,14 +57,14 @@ public abstract class BaseControllerCore : ControllerBase
     }
 
     /// <summary>
-    /// 统一日志记录
+    /// 统一日志记录（带脱敏）
     /// </summary>
     protected void LogOperation(string operation, object? data = null, Guid? targetId = null)
     {
         try
         {
             var (operatorId, operatorName, _) = GetOperator();
-            var logData = data != null ? System.Text.Json.JsonSerializer.Serialize(data) : null;
+            var logData = data != null ? LogSanitizer.SerializeWithSanitization(data) : null;
             _logger.LogInformation(
                 "{Operation}，操作者: {OperatorName}({OperatorId}), 目标ID: {TargetId}, 数据: {Data}",
                 operation, operatorName, operatorId, targetId, logData);
@@ -60,12 +76,17 @@ public abstract class BaseControllerCore : ControllerBase
     }
 
     /// <summary>
-    /// 核心异常处理 - 统一日志记录
+    /// 核心异常处理 - 统一日志记录（带脱敏）
     /// </summary>
     protected void HandleExceptionCore(Exception ex, string operation, object? context = null)
     {
-        var contextInfo = context != null ? $", 上下文: {System.Text.Json.JsonSerializer.Serialize(context)}" : string.Empty;
-        _logger.LogError(ex, "{Operation}失败{Context}", operation, contextInfo);
+        var sanitizedContext = context != null
+            ? LogSanitizer.SerializeWithSanitization(context)
+            : null;
+        var contextInfo = sanitizedContext != null ? $", 上下文: {sanitizedContext}" : string.Empty;
+
+        var sanitizedException = LogSanitizer.SanitizeException(ex);
+        _logger.LogError("{Operation}失败{Context}, 错误: {Error}", operation, contextInfo, sanitizedException);
     }
 
     /// <summary>

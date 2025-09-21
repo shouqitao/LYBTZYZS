@@ -245,6 +245,7 @@ namespace LYBT.WebAPI.Controllers
         /// <param name="token">要验证的Token</param>
         /// <returns>验证结果</returns>
         [HttpPost("validate")]
+        [AllowAnonymous]  // Token验证端点需要允许匿名访问（通过参数传递token）
         public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<bool>>> ValidateTokenAsync([FromBody] string token)
         {
             try
