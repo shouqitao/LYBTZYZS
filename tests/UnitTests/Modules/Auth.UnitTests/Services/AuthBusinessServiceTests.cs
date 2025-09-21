@@ -30,7 +30,7 @@ namespace LYBT.Module.Auth.Tests.Services
         private readonly Mock<IJwtAuthenticationService> _mockJwtAuthenticationService;
         private readonly Mock<IMapper> _mockMapper;
         private readonly Mock<ILogger<AuthBusinessService>> _mockLogger;
-        private readonly Mock<SysAdminHandler> _mockSysAdminHandler;
+        private readonly Mock<ISysAdminHandler> _mockSysAdminHandler;
         private readonly Mock<IOptions<AuthOptions>> _mockAuthOptions;
         private readonly AuthOptions _authOptions;
 
@@ -41,7 +41,7 @@ namespace LYBT.Module.Auth.Tests.Services
             _mockJwtAuthenticationService = new Mock<IJwtAuthenticationService>();
             _mockMapper = new Mock<IMapper>();
             _mockLogger = new Mock<ILogger<AuthBusinessService>>();
-            _mockSysAdminHandler = new Mock<SysAdminHandler>();
+            _mockSysAdminHandler = new Mock<ISysAdminHandler>();
             _mockAuthOptions = new Mock<IOptions<AuthOptions>>();
 
             _authOptions = new AuthOptions

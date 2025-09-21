@@ -119,10 +119,13 @@ namespace LYBT.Module.Auth.Repositories
         /// <param name="lockoutEnd">锁定结束时间</param>
         public async Task UpdateUserSecurityAsync(Guid userId, int failedLoginCount, DateTime? lockoutEnd)
         {
-            await _dbSet.Where(u => u.Id == userId)
-                .ExecuteUpdateAsync(setters => setters
-                    .SetProperty(u => u.FailedLoginCount, failedLoginCount)
-                    .SetProperty(u => u.LockoutEnd, lockoutEnd));
+            var user = await _dbSet.FirstOrDefaultAsync(u => u.Id == userId);
+            if (user != null)
+            {
+                user.FailedLoginCount = failedLoginCount;
+                user.LockoutEnd = lockoutEnd;
+                await _context.SaveChangesAsync();
+            }
         }
 
         /// <summary>
@@ -133,10 +136,13 @@ namespace LYBT.Module.Auth.Repositories
         /// <param name="lockoutEnd">锁定结束时间</param>
         public async Task UpdateFailedLoginInfoAsync(Guid userId, int failedLoginCount, DateTime? lockoutEnd)
         {
-            await _dbSet.Where(u => u.Id == userId)
-                .ExecuteUpdateAsync(setters => setters
-                    .SetProperty(u => u.FailedLoginCount, failedLoginCount)
-                    .SetProperty(u => u.LockoutEnd, lockoutEnd));
+            var user = await _dbSet.FirstOrDefaultAsync(u => u.Id == userId);
+            if (user != null)
+            {
+                user.FailedLoginCount = failedLoginCount;
+                user.LockoutEnd = lockoutEnd;
+                await _context.SaveChangesAsync();
+            }
         }
     }
 }

@@ -26,7 +26,7 @@ namespace LYBT.Module.Auth
             services.AddScoped<IAuthQueryService, AuthQueryService>();       // 查询服务层
             services.AddScoped<IAuthBusinessService, AuthBusinessService>(); // 业务服务层
             services.AddScoped<IAuthService, AuthService>();                 // 主服务：纯委托模式
-            services.AddScoped<SysAdminHandler>();                           // 管理员特殊处理
+            services.AddScoped<ISysAdminHandler, SysAdminHandler>();         // 管理员特殊处理
 
             // 注册JWT服务 - 保留核心JWT功能
             services.AddScoped<IJwtAuthenticationService, JwtAuthenticationService>();

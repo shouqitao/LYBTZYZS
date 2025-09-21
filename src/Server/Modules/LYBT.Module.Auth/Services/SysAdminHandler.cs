@@ -8,7 +8,7 @@ namespace LYBT.Module.Auth.Services
     /// 系统管理员特殊处理器
     /// 重构后支持可配置的超级管理员用户名，增强安全性
     /// </summary>
-    public class SysAdminHandler
+    public class SysAdminHandler : ISysAdminHandler
     {
         private readonly IAuthRepository _authRepository;
         private readonly SysAdminOptions _sysAdminOptions; public SysAdminHandler(IAuthRepository authRepository, IOptions<SysAdminOptions> sysAdminOptions)

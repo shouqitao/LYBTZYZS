@@ -24,7 +24,7 @@ namespace LYBT.Module.Auth.Services
         private readonly IJwtAuthenticationService _jwtAuthenticationService;
         private readonly IMapper _mapper;
         private readonly ILogger<AuthBusinessService> _logger;
-        private readonly SysAdminHandler _sysAdminHandler;
+        private readonly ISysAdminHandler _sysAdminHandler;
         private readonly AuthOptions _authOptions;
 
         public AuthBusinessService(
@@ -33,7 +33,7 @@ namespace LYBT.Module.Auth.Services
             IJwtAuthenticationService jwtAuthenticationService,
             IMapper mapper,
             ILogger<AuthBusinessService> logger,
-            SysAdminHandler sysAdminHandler,
+            ISysAdminHandler sysAdminHandler,
             IOptions<AuthOptions> authOptions)
         {
             _authRepository = authRepository ?? throw new ArgumentNullException(nameof(authRepository));
