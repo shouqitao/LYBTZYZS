@@ -1,0 +1,360 @@
+# 测试覆盖率检查与门禁 - Epic测试覆盖率专用工作流
+name: Test Coverage Check
+
+on:
+  push:
+    branches: [ master, main, develop, release/* ]
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - '.github/workflows/coverage-check.yml'
+  pull_request:
+    branches: [ master, main, develop ]
+    paths:
+      - 'src/**'
+      - 'tests/**'
+
+env:
+  DOTNET_VERSION: '8.0.x'
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  COVERAGE_THRESHOLD_LINE: 90
+  COVERAGE_THRESHOLD_BRANCH: 80
+  COVERAGE_THRESHOLD_CRITICAL: 95
+
+jobs:
+  # ==================== 覆盖率收集与报告 ====================
+  coverage-check:
+    name: 覆盖率检查与门禁
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 📥 检出代码
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: 🔧 安装.NET SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: 📦 恢复NuGet包
+      run: dotnet restore
+
+    - name: 🔨 构建解决方案
+      run: dotnet build --configuration Release --no-restore
+
+    - name: 🧪 运行测试并收集覆盖率
+      run: |
+        # 安装覆盖率工具
+        dotnet tool install -g dotnet-reportgenerator-globaltool
+
+        # 运行所有测试项目并收集覆盖率
+        dotnet test \
+          --configuration Release \
+          --no-build \
+          --verbosity normal \
+          --collect:"XPlat Code Coverage" \
+          --results-directory ./TestResults \
+          --logger "trx;LogFileName=TestResults.trx" \
+          -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover \
+          -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.ExcludeByFile="**/Migrations/**" \
+          -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.ExcludeByAttribute="Obsolete,GeneratedCodeAttribute,CompilerGeneratedAttribute"
+
+    - name: 📊 生成覆盖率报告
+      run: |
+        # 合并所有覆盖率文件
+        reportgenerator \
+          "-reports:TestResults/**/coverage.opencover.xml" \
+          "-targetdir:TestResults/CoverageReport" \
+          "-reporttypes:Html;Cobertura;JsonSummary;MarkdownSummary;Badges;Json" \
+          "-filefilters:-**/Migrations/**;-**/Program.cs;-**/Startup.cs" \
+          "-classfilters:-*.Migrations.*" \
+          "-assemblyfilters:-*Tests*;-*TestUtils*" \
+          "-verbosity:Info"
+
+        # 显示覆盖率报告路径
+        echo "覆盖率报告已生成到: TestResults/CoverageReport/"
+        ls -la TestResults/CoverageReport/
+
+        # 检查生成的文件
+        echo "=== 生成的覆盖率文件 ==="
+        find TestResults -name "*.json" -o -name "*.xml" | head -10
+
+        # 如果Summary.json存在，显示其结构
+        if [ -f "TestResults/CoverageReport/Summary.json" ]; then
+          echo "=== Summary.json 结构预览 ==="
+          jq '.' TestResults/CoverageReport/Summary.json | head -20
+        fi
+
+    - name: 📈 解析覆盖率数据
+      id: coverage
+      run: |
+        # 从JSON摘要中提取覆盖率数据
+        if [ -f "TestResults/CoverageReport/Summary.json" ]; then
+          LINE_COVERAGE=$(jq -r '.summary.linecoverage' TestResults/CoverageReport/Summary.json)
+          BRANCH_COVERAGE=$(jq -r '.summary.branchcoverage' TestResults/CoverageReport/Summary.json)
+          METHOD_COVERAGE=$(jq -r '.summary.methodcoverage' TestResults/CoverageReport/Summary.json)
+
+          echo "line_coverage=$LINE_COVERAGE" >> $GITHUB_OUTPUT
+          echo "branch_coverage=$BRANCH_COVERAGE" >> $GITHUB_OUTPUT
+          echo "method_coverage=$METHOD_COVERAGE" >> $GITHUB_OUTPUT
+
+          echo "## 📊 测试覆盖率报告" >> $GITHUB_STEP_SUMMARY
+          echo "| 覆盖率类型 | 当前值 | 目标阈值 | 状态 |" >> $GITHUB_STEP_SUMMARY
+          echo "|------------|--------|----------|------|" >> $GITHUB_STEP_SUMMARY
+          echo "| 行覆盖率 | ${LINE_COVERAGE}% | ${{ env.COVERAGE_THRESHOLD_LINE }}% | $(if (( $(echo "$LINE_COVERAGE >= ${{ env.COVERAGE_THRESHOLD_LINE }}" | bc -l) )); then echo "✅ 通过"; else echo "❌ 未达标"; fi) |" >> $GITHUB_STEP_SUMMARY
+          echo "| 分支覆盖率 | ${BRANCH_COVERAGE}% | ${{ env.COVERAGE_THRESHOLD_BRANCH }}% | $(if (( $(echo "$BRANCH_COVERAGE >= ${{ env.COVERAGE_THRESHOLD_BRANCH }}" | bc -l) )); then echo "✅ 通过"; else echo "❌ 未达标"; fi) |" >> $GITHUB_STEP_SUMMARY
+          echo "| 方法覆盖率 | ${METHOD_COVERAGE}% | - | ℹ️ 参考 |" >> $GITHUB_STEP_SUMMARY
+
+          echo "覆盖率数据: Line=${LINE_COVERAGE}%, Branch=${BRANCH_COVERAGE}%, Method=${METHOD_COVERAGE}%"
+        else
+          echo "警告: 无法找到覆盖率摘要文件"
+          echo "line_coverage=0" >> $GITHUB_OUTPUT
+          echo "branch_coverage=0" >> $GITHUB_OUTPUT
+          echo "method_coverage=0" >> $GITHUB_OUTPUT
+        fi
+
+    - name: 🎯 检查关键模块覆盖率
+      id: critical_modules
+      run: |
+        # 检查关键模块覆盖率 (Auth, Users, MedicalCase, Prescriptions)
+        echo "正在检查关键模块覆盖率..."
+
+        # 定义关键模块映射 (模块名 -> 程序集名)
+        declare -A critical_modules_map
+        critical_modules_map["Auth"]="LYBT.Module.Auth"
+        critical_modules_map["Users"]="LYBT.Module.Users"
+        critical_modules_map["MedicalCase"]="LYBT.Module.MedicalCase"
+        critical_modules_map["Prescriptions"]="LYBT.Module.Prescriptions"
+
+        all_critical_pass=true
+
+        echo "## 🔑 关键模块覆盖率检查" >> $GITHUB_STEP_SUMMARY
+        echo "| 模块 | 行覆盖率 | 目标阈值 | 状态 |" >> $GITHUB_STEP_SUMMARY
+        echo "|------|----------|----------|------|" >> $GITHUB_STEP_SUMMARY
+
+        # 检查JSON摘要文件是否存在
+        if [ -f "TestResults/CoverageReport/Summary.json" ]; then
+          for module_name in "${!critical_modules_map[@]}"; do
+            assembly_name="${critical_modules_map[$module_name]}"
+
+            # 从JSON摘要中提取特定程序集的覆盖率
+            # 注意: 这里假设Summary.json包含assembly级别的详细信息
+            # 如果没有，需要解析更详细的报告文件
+            module_coverage=$(jq -r --arg assembly "$assembly_name" '
+              .coverage.assemblies[] |
+              select(.name | test($assembly)) |
+              .linecoverage // 0
+            ' TestResults/CoverageReport/Summary.json 2>/dev/null || echo "0")
+
+            # 如果无法从JSON中提取，尝试从HTML报告中解析
+            if [ "$module_coverage" = "0" ] || [ "$module_coverage" = "null" ]; then
+              echo "⚠️ 无法从JSON摘要中获取 $module_name 覆盖率，尝试其他方法..."
+              # 使用grep从coverage.xml中提取
+              coverage_file=$(find TestResults -name "coverage.opencover.xml" | head -1)
+              if [ -f "$coverage_file" ]; then
+                module_coverage=$(grep -A5 "assemblyidentity.*$assembly_name" "$coverage_file" | \
+                  grep "sequencecoverage" | \
+                  sed 's/.*sequencecoverage="\([^"]*\)".*/\1/' | \
+                  head -1 || echo "0")
+              else
+                echo "⚠️ 找不到覆盖率文件，使用默认值"
+                module_coverage=0
+              fi
+            fi
+
+            # 确保module_coverage是数字
+            if ! [[ "$module_coverage" =~ ^[0-9]+\.?[0-9]*$ ]]; then
+              module_coverage=0
+            fi
+
+            # 转换为整数进行比较
+            module_coverage_int=$(echo "$module_coverage" | cut -d. -f1)
+
+            if (( module_coverage_int >= ${{ env.COVERAGE_THRESHOLD_CRITICAL }} )); then
+              status="✅ 通过"
+            else
+              status="❌ 未达标"
+              all_critical_pass=false
+            fi
+
+            echo "| $module_name | ${module_coverage}% | ${{ env.COVERAGE_THRESHOLD_CRITICAL }}% | $status |" >> $GITHUB_STEP_SUMMARY
+          done
+        else
+          echo "⚠️ 覆盖率摘要文件不存在，跳过关键模块检查"
+          all_critical_pass=false
+          echo "| - | - | - | ❌ 摘要文件缺失 |" >> $GITHUB_STEP_SUMMARY
+        fi
+
+        echo "all_critical_pass=$all_critical_pass" >> $GITHUB_OUTPUT
+
+    - name: 🚨 覆盖率门禁检查
+      run: |
+        LINE_COVERAGE="${{ steps.coverage.outputs.line_coverage }}"
+        BRANCH_COVERAGE="${{ steps.coverage.outputs.branch_coverage }}"
+        METHOD_COVERAGE="${{ steps.coverage.outputs.method_coverage }}"
+        CRITICAL_PASS="${{ steps.critical_modules.outputs.all_critical_pass }}"
+
+        echo "=== 覆盖率门禁检查开始 ==="
+        echo "📊 当前覆盖率数据:"
+        echo "  行覆盖率: ${LINE_COVERAGE}% (阈值: ${{ env.COVERAGE_THRESHOLD_LINE }}%)"
+        echo "  分支覆盖率: ${BRANCH_COVERAGE}% (阈值: ${{ env.COVERAGE_THRESHOLD_BRANCH }}%)"
+        echo "  方法覆盖率: ${METHOD_COVERAGE}% (参考值)"
+        echo "  关键模块状态: ${CRITICAL_PASS}"
+        echo ""
+
+        # 验证覆盖率数据有效性
+        if [[ -z "$LINE_COVERAGE" ]] || [[ "$LINE_COVERAGE" == "0" ]]; then
+          echo "⚠️ 警告: 行覆盖率数据无效 ($LINE_COVERAGE)"
+          LINE_COVERAGE=0
+        fi
+
+        if [[ -z "$BRANCH_COVERAGE" ]] || [[ "$BRANCH_COVERAGE" == "0" ]]; then
+          echo "⚠️ 警告: 分支覆盖率数据无效 ($BRANCH_COVERAGE)"
+          BRANCH_COVERAGE=0
+        fi
+
+        # 安装bc用于浮点数比较 (如果没有安装)
+        if ! command -v bc &> /dev/null; then
+          echo "安装bc用于数值比较..."
+          sudo apt-get update && sudo apt-get install -y bc
+        fi
+
+        # 检查覆盖率是否达标
+        line_pass=$(echo "$LINE_COVERAGE >= ${{ env.COVERAGE_THRESHOLD_LINE }}" | bc -l)
+        branch_pass=$(echo "$BRANCH_COVERAGE >= ${{ env.COVERAGE_THRESHOLD_BRANCH }}" | bc -l)
+
+        echo "🔍 门禁检查结果:"
+        echo "  行覆盖率检查: $([ "$line_pass" == "1" ] && echo "✅ 通过" || echo "❌ 失败")"
+        echo "  分支覆盖率检查: $([ "$branch_pass" == "1" ] && echo "✅ 通过" || echo "❌ 失败")"
+        echo "  关键模块检查: $([ "$CRITICAL_PASS" == "true" ] && echo "✅ 通过" || echo "❌ 失败")"
+        echo ""
+
+        # 汇总检查结果
+        if [[ "$line_pass" == "1" && "$branch_pass" == "1" && "$CRITICAL_PASS" == "true" ]]; then
+          echo "🎉 所有覆盖率检查通过！代码质量门禁已满足。"
+          echo "## ✅ 覆盖率门禁检查通过" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "🎉 **恭喜！所有覆盖率指标均达到要求的阈值。**" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📈 覆盖率详情" >> $GITHUB_STEP_SUMMARY
+          echo "- **行覆盖率**: ${LINE_COVERAGE}% ≥ ${{ env.COVERAGE_THRESHOLD_LINE }}% ✅" >> $GITHUB_STEP_SUMMARY
+          echo "- **分支覆盖率**: ${BRANCH_COVERAGE}% ≥ ${{ env.COVERAGE_THRESHOLD_BRANCH }}% ✅" >> $GITHUB_STEP_SUMMARY
+          echo "- **方法覆盖率**: ${METHOD_COVERAGE}% (参考)" >> $GITHUB_STEP_SUMMARY
+          echo "- **关键模块**: 全部达标 ✅" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "💥 覆盖率检查失败！请查看详细信息并提升覆盖率。"
+          echo "## ❌ 覆盖率门禁检查失败" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "💥 **代码质量门禁未通过。以下指标需要改进:**" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [[ "$line_pass" != "1" ]]; then
+            echo "- ❌ **行覆盖率**: ${LINE_COVERAGE}% < ${{ env.COVERAGE_THRESHOLD_LINE }}% (差距: $(echo "${{ env.COVERAGE_THRESHOLD_LINE }} - $LINE_COVERAGE" | bc)个百分点)" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [[ "$branch_pass" != "1" ]]; then
+            echo "- ❌ **分支覆盖率**: ${BRANCH_COVERAGE}% < ${{ env.COVERAGE_THRESHOLD_BRANCH }}% (差距: $(echo "${{ env.COVERAGE_THRESHOLD_BRANCH }} - $BRANCH_COVERAGE" | bc)个百分点)" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [[ "$CRITICAL_PASS" != "true" ]]; then
+            echo "- ❌ **关键模块覆盖率**: 部分模块未达到 ${{ env.COVERAGE_THRESHOLD_CRITICAL }}% 阈值" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📋 改进建议" >> $GITHUB_STEP_SUMMARY
+          echo "1. 为未覆盖的代码路径添加单元测试" >> $GITHUB_STEP_SUMMARY
+          echo "2. 重点关注关键业务模块的测试覆盖率" >> $GITHUB_STEP_SUMMARY
+          echo "3. 确保异常处理分支有相应的测试用例" >> $GITHUB_STEP_SUMMARY
+          echo "4. 参考已有测试用例的最佳实践" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "📈 [查看详细覆盖率报告](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
+
+          echo "终止构建流程..."
+          exit 1
+        fi
+
+    - name: 📤 上传覆盖率报告
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: coverage-report-${{ github.run_id }}
+        path: |
+          TestResults/CoverageReport/
+          TestResults/**/*.trx
+        retention-days: 30
+
+    - name: 📈 发布覆盖率到Codecov
+      uses: codecov/codecov-action@v4
+      if: always()
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        files: TestResults/**/coverage.opencover.xml
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
+        verbose: true
+
+    - name: 💬 PR覆盖率评论
+      uses: marocchino/sticky-pull-request-comment@v2
+      if: github.event_name == 'pull_request' && always()
+      with:
+        recreate: true
+        message: |
+          ## 📊 测试覆盖率报告
+
+          | 覆盖率类型 | 当前值 | 目标阈值 | 状态 |
+          |------------|--------|----------|------|
+          | 行覆盖率 | ${{ steps.coverage.outputs.line_coverage }}% | ${{ env.COVERAGE_THRESHOLD_LINE }}% | ${{ steps.coverage.outputs.line_coverage >= env.COVERAGE_THRESHOLD_LINE && '✅ 通过' || '❌ 未达标' }} |
+          | 分支覆盖率 | ${{ steps.coverage.outputs.branch_coverage }}% | ${{ env.COVERAGE_THRESHOLD_BRANCH }}% | ${{ steps.coverage.outputs.branch_coverage >= env.COVERAGE_THRESHOLD_BRANCH && '✅ 通过' || '❌ 未达标' }} |
+          | 方法覆盖率 | ${{ steps.coverage.outputs.method_coverage }}% | - | ℹ️ 参考 |
+
+          📈 [查看详细覆盖率报告](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+          ---
+          🤖 *此评论由覆盖率检查工作流自动生成*
+
+  # ==================== 覆盖率趋势分析 ====================
+  coverage-trend:
+    name: 覆盖率趋势分析
+    runs-on: ubuntu-latest
+    needs: coverage-check
+    if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
+
+    steps:
+    - name: 📥 检出代码
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: 📊 下载覆盖率报告
+      uses: actions/download-artifact@v4
+      with:
+        name: coverage-report-${{ github.run_id }}
+        path: ./coverage-report
+
+    - name: 📈 分析覆盖率趋势
+      run: |
+        # 从历史数据中分析覆盖率趋势
+        echo "正在分析覆盖率趋势..."
+
+        # 这里可以集成更复杂的趋势分析逻辑
+        # 比如与上一次主分支的覆盖率进行对比
+
+        echo "## 📈 覆盖率趋势分析" >> $GITHUB_STEP_SUMMARY
+        echo "当前主分支覆盖率已记录，可用于后续趋势分析。" >> $GITHUB_STEP_SUMMARY
+
+    - name: 🗃️ 存储覆盖率历史
+      run: |
+        # 将覆盖率数据保存到历史记录中
+        mkdir -p .coverage-history
+        echo '{"date":"$(date -u +%Y-%m-%dT%H:%M:%SZ)","commit":"${{ github.sha }}","line_coverage":"${{ needs.coverage-check.outputs.line_coverage }}","branch_coverage":"${{ needs.coverage-check.outputs.branch_coverage }}"}' > .coverage-history/$(date +%Y%m%d_%H%M%S).json
+
+        # 提交历史记录 (如果需要)
+        # git config user.name "Coverage Bot"
+        # git config user.email "coverage-bot@lybt.com"
+        # git add .coverage-history/
+        # git commit -m "chore: update coverage history [skip ci]"
+        # git push
