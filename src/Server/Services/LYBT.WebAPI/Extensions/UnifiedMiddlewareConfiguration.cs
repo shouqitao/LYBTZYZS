@@ -1,4 +1,5 @@
 using LYBT.Infrastructure.Configuration.Options;
+using LYBT.WebAPI.Middleware;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Options;
 
@@ -18,8 +19,8 @@ public static class UnifiedMiddlewareConfiguration
         // 1. 开发/生产专用中间件
         app.ConfigureDevelopmentMiddleware();
 
-        // 1.1 安全响应头（按配置应用）
-        app.ConfigureSecurityHeadersFromOptions();
+        // 1.1 安全响应头（使用新的中间件）
+        app.UseSecurityHeaders();
 
         // 2. 路由中间件
         app.UseRouting();

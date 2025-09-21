@@ -151,6 +151,11 @@ public static class UnifiedServiceRegistration
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
+        services.AddOptions<RateLimitingOptions>()
+            .Bind(configuration.GetSection(RateLimitingOptions.SectionName))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
         // 常用服务
         services.AddHttpContextAccessor();
         services.AddScoped<DefaultPasswordService>();
@@ -408,11 +413,32 @@ public static class UnifiedServiceRegistration
         IConfiguration configuration,
         IWebHostEnvironment environment)
     {
+        // 绑定速率限制配置
+        var rateLimitingOptions = new RateLimitingOptions();
+        configuration.GetSection(RateLimitingOptions.SectionName).Bind(rateLimitingOptions);
+
+        // 如果配置中没有速率限制节，使用默认值
+        if (!configuration.GetSection(RateLimitingOptions.SectionName).Exists())
+        {
+            // 生产环境使用更严格的默认值
+            if (environment.IsProduction())
+            {
+                rateLimitingOptions.Global.PermitLimit = 60;
+                rateLimitingOptions.Login.PermitLimit = 10;
+            }
+        }
+
+        // 如果禁用了速率限制，直接返回
+        if (!rateLimitingOptions.Enabled)
+        {
+            return services;
+        }
+
         services.AddRateLimiter(options =>
         {
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 
-            // 全局：每用户 Token 120/分钟（未登录按 IP），队列 60
+            // 全局速率限制
             options.GlobalLimiter = System.Threading.RateLimiting.PartitionedRateLimiter.Create<HttpContext, string>(context =>
             {
                 var userKey = context.User?.Identity?.IsAuthenticated == true
@@ -423,46 +449,60 @@ public static class UnifiedServiceRegistration
                     partitionKey: userKey,
                     factory: _ => new System.Threading.RateLimiting.FixedWindowRateLimiterOptions
                     {
-                        PermitLimit = 120,
-                        Window = TimeSpan.FromMinutes(1),
+                        PermitLimit = rateLimitingOptions.Global.PermitLimit,
+                        Window = TimeSpan.FromSeconds(rateLimitingOptions.Global.WindowSeconds),
                         QueueProcessingOrder = System.Threading.RateLimiting.QueueProcessingOrder.OldestFirst,
-                        QueueLimit = 60
+                        QueueLimit = rateLimitingOptions.Global.QueueLimit
                     });
             });
 
-            // 登录：每 IP 30/分钟（内网 1000/分钟），队列 20/200
+            // 登录端点速率限制
             options.AddPolicy("Login", httpContext =>
             {
                 var ip = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown-ip";
 
-                static bool IsPrivateIp(string ip)
-                {
-                    if (string.IsNullOrEmpty(ip)) return false;
-                    if (ip.StartsWith("127.")) return true;
-                    if (ip.Equals("::1")) return true;
-                    if (ip.StartsWith("10.")) return true;
-                    if (ip.StartsWith("192.168.")) return true;
-                    if (ip.StartsWith("172."))
-                    {
-                        var parts = ip.Split('.');
-                        if (parts.Length > 1 && int.TryParse(parts[1], out var b) && b >= 16 && b <= 31)
-                            return true;
-                    }
-                    return false;
-                }
+                // 检查是否为白名单IP
+                var isWhitelisted = IsWhitelistedIp(ip, rateLimitingOptions.WhitelistedIPs) ||
+                                   IsPrivateIp(ip);
 
-                var isWhitelisted = IsPrivateIp(ip);
-                var limit = isWhitelisted ? 1000 : 30;
-                var queue = isWhitelisted ? 200 : 20;
+                var limit = isWhitelisted
+                    ? rateLimitingOptions.Login.InternalPermitLimit
+                    : rateLimitingOptions.Login.PermitLimit;
+
+                var queue = isWhitelisted
+                    ? rateLimitingOptions.Login.InternalQueueLimit
+                    : rateLimitingOptions.Login.QueueLimit;
 
                 return System.Threading.RateLimiting.RateLimitPartition.GetFixedWindowLimiter(
                     partitionKey: ip,
                     factory: _ => new System.Threading.RateLimiting.FixedWindowRateLimiterOptions
                     {
                         PermitLimit = limit,
-                        Window = TimeSpan.FromMinutes(1),
+                        Window = TimeSpan.FromSeconds(rateLimitingOptions.Login.WindowSeconds),
                         QueueProcessingOrder = System.Threading.RateLimiting.QueueProcessingOrder.OldestFirst,
                         QueueLimit = queue
+                    });
+            });
+
+            // API端点速率限制（基于角色）
+            options.AddPolicy("Api", httpContext =>
+            {
+                var user = httpContext.User;
+                var isAdmin = user?.IsInRole("Admin") ?? false;
+                var userKey = user?.Identity?.Name ?? httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+
+                var limit = isAdmin
+                    ? rateLimitingOptions.Api.AdminPermitLimit
+                    : rateLimitingOptions.Api.UserPermitLimit;
+
+                return System.Threading.RateLimiting.RateLimitPartition.GetFixedWindowLimiter(
+                    partitionKey: userKey,
+                    factory: _ => new System.Threading.RateLimiting.FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = limit,
+                        Window = TimeSpan.FromSeconds(rateLimitingOptions.Api.WindowSeconds),
+                        QueueProcessingOrder = System.Threading.RateLimiting.QueueProcessingOrder.OldestFirst,
+                        QueueLimit = rateLimitingOptions.Api.QueueLimit
                     });
             });
         });
@@ -470,4 +510,33 @@ public static class UnifiedServiceRegistration
         return services;
     }
 
+    /// <summary>
+    /// 检查是否为私有IP地址
+    /// </summary>
+    private static bool IsPrivateIp(string ip)
+    {
+        if (string.IsNullOrEmpty(ip)) return false;
+        if (ip.StartsWith("127.")) return true;
+        if (ip.Equals("::1")) return true;
+        if (ip.StartsWith("10.")) return true;
+        if (ip.StartsWith("192.168.")) return true;
+        if (ip.StartsWith("172."))
+        {
+            var parts = ip.Split('.');
+            if (parts.Length > 1 && int.TryParse(parts[1], out var b) && b >= 16 && b <= 31)
+                return true;
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// 检查是否为白名单IP
+    /// </summary>
+    private static bool IsWhitelistedIp(string ip, List<string> whitelistedIPs)
+    {
+        if (string.IsNullOrEmpty(ip) || whitelistedIPs == null || whitelistedIPs.Count == 0)
+            return false;
+
+        return whitelistedIPs.Contains(ip);
+    }
 }

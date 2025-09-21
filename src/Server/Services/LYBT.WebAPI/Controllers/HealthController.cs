@@ -1,6 +1,7 @@
 using System.Reflection;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
@@ -21,10 +22,13 @@ public class HealthController : BaseApiController
     private readonly AppDbContext _dbContext;
     private static readonly DateTime _startupTime = DateTime.UtcNow;
 
-    public HealthController(AppDbContext dbContext, ILogger<HealthController> logger, IMemoryCache? cache = null)
+    private readonly IWebHostEnvironment _environment;
+
+    public HealthController(AppDbContext dbContext, ILogger<HealthController> logger, IWebHostEnvironment environment, IMemoryCache? cache = null)
         : base(logger, cache)
     {
         _dbContext = dbContext;
+        _environment = environment;
     }
     /// <summary>
     /// 基础健康检查
@@ -34,12 +38,23 @@ public class HealthController : BaseApiController
     [AllowAnonymous]  // 基础健康检查允许匿名访问
     public IActionResult Get()
     {
+        // 生产环境最小化信息暴露
+        if (_environment.IsProduction())
+        {
+            return Ok(new
+            {
+                status = "Healthy",
+                timestamp = DateTime.UtcNow
+            });
+        }
+
+        // 开发环境可以返回更多信息
         return Ok(new
         {
             status = "Healthy",
             timestamp = DateTime.UtcNow,
             version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "Unknown",
-            environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Unknown"
+            environment = _environment.EnvironmentName
         });
     }
 
@@ -72,37 +87,72 @@ public class HealthController : BaseApiController
 
         try
         {
-            // App信息检查
-            checks.Add(await CheckAppInfo());
-
-            // 数据库检查
-            var dbCheck = await CheckDatabase();
-            checks.Add(dbCheck);
-            if (dbCheck.Status != "Healthy") overallStatus = "Degraded";
-
-            // 外部依赖检查 (占位)
-            checks.Add(CheckExternalDependencies());
-
-            // 种子数据检查
-            var seedCheck = await CheckSeedData();
-            checks.Add(seedCheck);
-            if (seedCheck.Status == "Unhealthy") overallStatus = "Unhealthy";
-
-            var response = new
+            // 生产环境简化检查
+            if (_environment.IsProduction())
             {
-                status = overallStatus,
-                uptimeMs = (long)(DateTime.UtcNow - _startupTime).TotalMilliseconds,
-                nowUtc = DateTime.UtcNow,
-                checks = checks.Select(c => new
+                // 仅执行关键检查
+                var dbCheck = await CheckDatabase();
+                checks.Add(new HealthCheck("system", "System Health")
                 {
-                    name = c.Name,
-                    status = c.Status,
-                    description = c.Description,
-                    data = c.Data,
-                    duration = c.Duration,
-                    error = c.Error
-                }).ToArray()
-            };
+                    Status = dbCheck.Status,
+                    Duration = dbCheck.Duration
+                });
+
+                if (dbCheck.Status != "Healthy") overallStatus = "Degraded";
+            }
+            else
+            {
+                // 开发环境执行全部检查
+                // App信息检查
+                checks.Add(await CheckAppInfo());
+
+                // 数据库检查
+                var dbCheck = await CheckDatabase();
+                checks.Add(dbCheck);
+                if (dbCheck.Status != "Healthy") overallStatus = "Degraded";
+
+                // 外部依赖检查 (占位)
+                checks.Add(CheckExternalDependencies());
+
+                // 种子数据检查
+                var seedCheck = await CheckSeedData();
+                checks.Add(seedCheck);
+                if (seedCheck.Status == "Unhealthy") overallStatus = "Unhealthy";
+            }
+
+            // 生产环境简化响应
+            object response;
+            if (_environment.IsProduction())
+            {
+                response = new
+                {
+                    status = overallStatus,
+                    timestamp = DateTime.UtcNow,
+                    checks = checks.Select(c => new
+                    {
+                        name = c.Name,
+                        status = c.Status
+                    }).ToArray()
+                };
+            }
+            else
+            {
+                response = new
+                {
+                    status = overallStatus,
+                    uptimeMs = (long)(DateTime.UtcNow - _startupTime).TotalMilliseconds,
+                    nowUtc = DateTime.UtcNow,
+                    checks = checks.Select(c => new
+                    {
+                        name = c.Name,
+                        status = c.Status,
+                        description = c.Description,
+                        data = c.Data,
+                        duration = c.Duration,
+                        error = c.Error
+                    }).ToArray()
+                };
+            }
 
             var statusCode = overallStatus == "Unhealthy" ? 503 : 200;
             return StatusCode(statusCode, response);
