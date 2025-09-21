@@ -1,4 +1,4 @@
-# 🏥 凌隐宝堂中医诊所诊疗系统 (LYBTZYZS)
+﻿# 🏥 凌隐宝堂中医诊所诊疗系统 (LYBTZYZS)
 
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/shouqitao/LYBTZYZS)
 [![.NET](https://img.shields.io/badge/.NET-8.0-purple)](https://dotnet.microsoft.com/download/dotnet/8.0)
@@ -20,7 +20,7 @@
 - 测试与覆盖率产物：`BIN/TestResults/`（由 `.runsettings` 与 `tests/Directory.Build.targets` 约定）
 - 本地测试命令与说明：见 `docs/testing/README.md`
 
-## 📈 项目状态
+<a id="project-status"></a>`r`n## 📈 项目状态
 
 ### 🏆 最新成就 (2025-09-20)
 
@@ -96,7 +96,7 @@
 - **审计日志系统**: 完整操作记录，数据追溯
 - **并发控制机制**: 乐观锁RowVersion，数据一致性
 
-## 🏗️ 项目结构 (48个项目)
+<a id="project-structure"></a>`r`n## 🏗️ 项目结构 (48个项目)
 
 明确项目结构：`src/Server`、`src/Client/Desktop`、`src/Shared`、`tests`、`docs`、`scripts`；构建产物统一输出 `BIN/`。
 
