@@ -789,3 +789,9 @@ curl -X GET https://localhost:7001/health/database
 
 > 📌 **成果**: WebAPI服务经过全面优化重构，实现58%代码精简，零编译警告
 > 🎆 **生产就绪**: 93个API端点，完整认证授权，8个健康监控，可直接支撑小型诊所运营需求
+
+## 🎯 项目概述
+- [待补充] 简要描述 LYBT.WebAPI 的职责、边界及与其他模块关系。
+
+## 📦 项目结构
+- [待补充] 列出子目录/关键文件与职责（如 Controllers/Services/Repositories 等）。

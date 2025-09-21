@@ -436,3 +436,15 @@ public class AuthService
 
 > 📌 **分层架构清晰，适合小型诊所部署
 > 🎆 **生产就绪**: 编译通过，完整的安全、缓存、数据库基础设施，可直接投入生产使用
+
+## 🎯 项目概述
+- [待补充] 简要描述 LYBT.Infrastructure 的职责、边界及与其他模块关系。
+
+## 📦 项目结构
+- [待补充] 列出子目录/关键文件与职责（如 Controllers/Services/Repositories 等）。
+
+## 🛠 技术栈
+- [待补充] 框架/库/运行时示例：.NET 8、ASP.NET Core、EF Core、Prism、Refit、AutoMapper 等。
+
+## 🚀 快速开始
+- [待补充] 基本操作：dotnet restore/build/test；如何运行/调试当前模块。

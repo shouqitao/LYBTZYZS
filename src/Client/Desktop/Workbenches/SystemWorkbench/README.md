@@ -309,3 +309,9 @@ public async Task SyncWithHISAsync()
 ---
 
 > 项目状态: ✅ 生产就绪 | **最后更新**: 2025-01-01
+
+## 📦 项目结构
+- [待补充] 列出子目录/关键文件与职责（如 Controllers/Services/Repositories 等）。
+
+## 🚀 快速开始
+- [待补充] 基本操作：dotnet restore/build/test；如何运行/调试当前模块。

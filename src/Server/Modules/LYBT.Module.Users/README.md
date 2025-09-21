@@ -354,3 +354,15 @@ services.AddScoped<IUserRepository, UserRepository>();
 
 > 📌 **最新成果**: DTO优化三阶段完成，类型安全增强，编译通过
 > 🎆 **生产就绪**: 完整的用户管理体系，可直接支撑小型诊所需求
+
+## 🎯 项目概述
+- [待补充] 简要描述 LYBT.Module.Users 的职责、边界及与其他模块关系。
+
+## 📦 项目结构
+- [待补充] 列出子目录/关键文件与职责（如 Controllers/Services/Repositories 等）。
+
+## 🛠 技术栈
+- [待补充] 框架/库/运行时示例：.NET 8、ASP.NET Core、EF Core、Prism、Refit、AutoMapper 等。
+
+## 🚀 快速开始
+- [待补充] 基本操作：dotnet restore/build/test；如何运行/调试当前模块。

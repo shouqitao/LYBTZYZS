@@ -597,3 +597,15 @@ services.AddScoped<IFormulaRepository, FormulaRepository>();
 
 > 📌 **最新成果**: 分层架构完整实现，验方管理功能全覆盖
 > 🎆 **生产就绪**: 完整的验方管理体系，支持经验积累与分享
+
+## 🎯 项目概述
+- [待补充] 简要描述 LYBT.Module.Formula 的职责、边界及与其他模块关系。
+
+## 📦 项目结构
+- [待补充] 列出子目录/关键文件与职责（如 Controllers/Services/Repositories 等）。
+
+## 🛠 技术栈
+- [待补充] 框架/库/运行时示例：.NET 8、ASP.NET Core、EF Core、Prism、Refit、AutoMapper 等。
+
+## 🚀 快速开始
+- [待补充] 基本操作：dotnet restore/build/test；如何运行/调试当前模块。

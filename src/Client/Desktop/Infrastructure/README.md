@@ -594,3 +594,6 @@ public async Task ExportPatientsToExcelAsync(List<PatientDto> patients)
 **LYBT.Desktop.基础设施（基础设施（Infrastructure）） v2.1** - WPF基础设施服务库，为中医诊所系统提供HTTP通信基础 ✨
 
 > 项目状态: ✅ **生产就绪** | **最后更新**: 2025-09-02 | **版本**: v2.1.0-infrastructure-enterprise
+
+## 🚀 快速开始
+- [待补充] 基本操作：dotnet restore/build/test；如何运行/调试当前模块。

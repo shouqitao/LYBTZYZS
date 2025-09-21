@@ -137,3 +137,6 @@ services.AddRefitClient<IAuthApi>()
 ---
 
 > 📌 **开发提醒**: 遵循 [CLAUDE.md](../../../CLAUDE.md) 中的开发规范和架构约定
+
+## 📦 项目结构
+- [待补充] 列出子目录/关键文件与职责（如 Controllers/Services/Repositories 等）。

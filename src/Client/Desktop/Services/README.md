@@ -332,3 +332,6 @@ public class MockIDCardReaderService : IIDCardReaderService
 ---
 
 *该文档反映当前代码实现状态，与实际功能保持100%同步 - 文档驱动开发标准*
+
+## 🚀 快速开始
+- [待补充] 基本操作：dotnet restore/build/test；如何运行/调试当前模块。
