@@ -1,0 +1,114 @@
+using FluentAssertions;
+using LYBT.Infrastructure.Configuration.Options;
+using LYBT.Module.Users;
+using LYBT.Module.Users.Interfaces;
+using LYBT.Module.Users.Services;
+using LYBT.Module.Users.Repositories;
+using LYBT.Shared.Interfaces.Services;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using Xunit;
+
+namespace LYBT.Module.Users.Tests
+{
+    public class UsersModuleTests
+    {
+        [Fact]
+        public void AddUsersModuleServices_Should_Register_All_Services()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+
+            // 添加必要的配置
+            services.AddLogging();
+            services.Configure<UserOptions>(options =>
+            {
+                options.EnableUserCache = true;
+                options.UserCacheExpirationMinutes = 30;
+                options.MaxBatchOperationSize = 100;
+                options.EnableDetailedAuditLogging = true;
+                options.SendPasswordResetNotification = false;
+                options.SessionTimeoutMinutes = 480;
+                options.EnableOnlineStatusTracking = true;
+            });
+
+            // Act
+            services.AddUsersModuleServices();
+            var serviceProvider = services.BuildServiceProvider();
+
+            // Assert - 验证Repository注册
+            serviceProvider.GetService<IUserRepository>()
+                .Should().NotBeNull("IUserRepository should be registered");
+
+            // Assert - 验证Service注册
+            serviceProvider.GetService<IUserQueryService>()
+                .Should().NotBeNull("IUserQueryService should be registered");
+
+            serviceProvider.GetService<IUserBusinessService>()
+                .Should().NotBeNull("IUserBusinessService should be registered");
+
+            serviceProvider.GetService<IUserService>()
+                .Should().NotBeNull("IUserService should be registered");
+
+            // Assert - 验证Options注册
+            serviceProvider.GetService<IOptions<UserOptions>>()
+                .Should().NotBeNull("UserOptions should be registered");
+        }
+
+        [Fact]
+        public void AddUsersModuleServices_Should_Register_Services_As_Scoped()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            services.AddLogging();
+            services.Configure<UserOptions>(options => { });
+
+            // Act
+            services.AddUsersModuleServices();
+
+            // Assert - 验证服务生命周期
+            services.Should().Contain(x =>
+                x.ServiceType == typeof(IUserRepository) &&
+                x.Lifetime == ServiceLifetime.Scoped);
+
+            services.Should().Contain(x =>
+                x.ServiceType == typeof(IUserQueryService) &&
+                x.Lifetime == ServiceLifetime.Scoped);
+
+            services.Should().Contain(x =>
+                x.ServiceType == typeof(IUserBusinessService) &&
+                x.Lifetime == ServiceLifetime.Scoped);
+
+            services.Should().Contain(x =>
+                x.ServiceType == typeof(IUserService) &&
+                x.Lifetime == ServiceLifetime.Scoped);
+        }
+
+        [Fact]
+        public void AddUsersModuleServices_Should_Return_ServiceCollection()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+
+            // Act
+            var result = services.AddUsersModuleServices();
+
+            // Assert
+            result.Should().BeSameAs(services);
+        }
+
+        [Fact]
+        public void AddUsersModuleServices_Can_Be_Called_Multiple_Times()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+
+            // Act
+            services.AddUsersModuleServices();
+            services.AddUsersModuleServices(); // Should not throw
+
+            // Assert
+            services.Should().NotBeNull();
+        }
+    }
+}
