@@ -7,10 +7,12 @@ run_pwsh() {
   if command -v pwsh >/dev/null 2>&1; then
     pwsh -NoLogo -NoProfile -File scripts/fix-cn-titles.ps1 -Root .
     pwsh -NoLogo -NoProfile -File scripts/clean-module-readmes.ps1 -Root .
+    pwsh -NoLogo -NoProfile -File scripts/ensure-module-readme-structure.ps1 -Root .
     return 0
   elif command -v powershell >/dev/null 2>&1; then
     powershell -NoProfile -ExecutionPolicy Bypass -File scripts/fix-cn-titles.ps1 -Root .
     powershell -NoProfile -ExecutionPolicy Bypass -File scripts/clean-module-readmes.ps1 -Root .
+    powershell -NoProfile -ExecutionPolicy Bypass -File scripts/ensure-module-readme-structure.ps1 -Root .
     return 0
   else
     echo "PowerShell not found; skipping docs normalization." >&2
@@ -26,4 +28,3 @@ if ! git diff --quiet -- '**/*.md'; then
 fi
 
 exit 0
-

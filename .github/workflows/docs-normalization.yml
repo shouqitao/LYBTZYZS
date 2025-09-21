@@ -22,6 +22,7 @@ jobs:
         run: |
           pwsh -NoLogo -NoProfile -File scripts/fix-cn-titles.ps1 -Root .
           pwsh -NoLogo -NoProfile -File scripts/clean-module-readmes.ps1 -Root .
+          pwsh -NoLogo -NoProfile -File scripts/ensure-module-readme-structure.ps1 -Root .
 
       - name: Check for changes
         id: diff
@@ -51,4 +52,3 @@ jobs:
         run: |
           echo "Docs normalization required. Commit the changes and update this PR." >&2
           exit 1
-
