@@ -217,12 +217,17 @@ namespace LYBT.Infrastructure.Data
             entity.Property(m => m.CreatedBy).IsRequired();
             entity.Property(m => m.CreatedAt).IsRequired();
 
-            // 根据文档要求：单患者仅一条未完成病案 - 过滤唯一索引
-            // Status枚举值：Active=1, Completed=2, Cancelled=3
-            entity.HasIndex(m => m.PatientId)
-                  .HasDatabaseName("UX_MedicalCases_Patient_ActiveOnly")
-                  .IsUnique()
-                  .HasFilter("[Status] = 'Active' OR [Status] = 'Draft'");
+            // 配置 IsOpenComputed 计算列
+            entity.Property(m => m.IsOpenComputed)
+                  .HasComputedColumnSql("CASE WHEN [Status] = 'Active' THEN CAST(1 AS BIT) ELSE NULL END")
+                  .ValueGeneratedOnAddOrUpdate();
+
+            // 根据文档要求：单患者仅一条开放病案 - 基于 IsOpenComputed 的唯一约束
+            // 使用计算列 IsOpenComputed，当状态为 Active 时值为 1，否则为 NULL
+            // SQL Server 的唯一约束会忽略 NULL 值，从而实现每个患者只能有一个 Active 状态的病案
+            entity.HasIndex(m => new { m.PatientId, m.IsOpenComputed })
+                  .HasDatabaseName("UX_MedicalCases_Patient_OneActive")
+                  .IsUnique();
 
             // 删除PrescriptionId外键关系，改为通过Prescription.MedicalCaseId关联
             // 不再需要下面这行

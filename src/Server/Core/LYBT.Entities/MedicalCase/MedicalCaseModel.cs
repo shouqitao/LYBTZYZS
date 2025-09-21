@@ -61,6 +61,22 @@ namespace LYBT.Entities.MedicalCase
         [DisplayName("状态")]
         public MedicalCaseStatus Status { get; set; } = MedicalCaseStatus.Active;
 
+        /// <summary>
+        /// 是否开放状态（计算属性）
+        /// 用于唯一约束：每个患者只能有一个开放的医疗案例
+        /// </summary>
+        [NotMapped]
+        [DisplayName("是否开放")]
+        public bool IsOpen => Status == MedicalCaseStatus.Active;
+
+        /// <summary>
+        /// 用于数据库索引的 IsOpen 字段
+        /// 计算列，用于创建过滤唯一索引
+        /// </summary>
+        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+        [DisplayName("开放标识")]
+        public bool? IsOpenComputed { get; set; }
+
         /// <summary>备注</summary>
         [StringLength(500)]
         [DisplayName("备注")]
