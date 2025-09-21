@@ -7,6 +7,7 @@ using LYBT.Entities.MedicalCase;
 using LYBT.Entities.Patients;
 using LYBT.Entities.Prescriptions;
 using LYBT.Entities.Users;
+using LYBT.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace LYBT.Infrastructure.Data
@@ -17,9 +18,15 @@ namespace LYBT.Infrastructure.Data
     /// </summary>
     public class AppDbContext : DbContext
     {
+        private readonly ICurrentUserService? _currentUserService;
 
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
+        }
+
+        public AppDbContext(DbContextOptions<AppDbContext> options, ICurrentUserService currentUserService) : base(options)
+        {
+            _currentUserService = currentUserService;
         }
 
         // 用户管理
@@ -476,5 +483,126 @@ namespace LYBT.Infrastructure.Data
         }
 
         // ConfigureTokenStore方法已移除 - UltraThink简化架构，移除过度设计的令牌存储实体
+
+        #region 审计字段自动维护
+
+        /// <summary>
+        /// 重写SaveChanges以自动维护审计字段
+        /// </summary>
+        public override int SaveChanges()
+        {
+            UpdateAuditFields();
+            return base.SaveChanges();
+        }
+
+        /// <summary>
+        /// 重写SaveChangesAsync以自动维护审计字段
+        /// </summary>
+        public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            UpdateAuditFields();
+            return base.SaveChangesAsync(cancellationToken);
+        }
+
+        /// <summary>
+        /// 更新审计字段
+        /// </summary>
+        private void UpdateAuditFields()
+        {
+            var entries = ChangeTracker.Entries()
+                .Where(e => e.State == EntityState.Added || e.State == EntityState.Modified);
+
+            var currentTime = DateTime.Now;
+            var currentUserId = GetCurrentUserId();
+
+            foreach (var entry in entries)
+            {
+                // 处理 BaseEntity 类型
+                if (entry.Entity is BaseEntity baseEntity)
+                {
+                    if (entry.State == EntityState.Added)
+                    {
+                        baseEntity.CreatedAt = currentTime;
+                        baseEntity.CreatedBy = currentUserId;
+                    }
+
+                    if (entry.State == EntityState.Modified)
+                    {
+                        baseEntity.UpdatedAt = currentTime;
+                        baseEntity.UpdatedBy = currentUserId;
+
+                        // 确保创建时间和创建者不被修改
+                        entry.Property(nameof(BaseEntity.CreatedAt)).IsModified = false;
+                        entry.Property(nameof(BaseEntity.CreatedBy)).IsModified = false;
+                    }
+                }
+                // 处理未继承 BaseEntity 但有审计字段的实体
+                else
+                {
+                    var entityType = entry.Entity.GetType();
+
+                    if (entry.State == EntityState.Added)
+                    {
+                        // CreatedAt
+                        var createdAtProp = entityType.GetProperty("CreatedAt");
+                        if (createdAtProp != null && createdAtProp.PropertyType == typeof(DateTime))
+                        {
+                            createdAtProp.SetValue(entry.Entity, currentTime);
+                        }
+
+                        // CreatedBy
+                        var createdByProp = entityType.GetProperty("CreatedBy");
+                        if (createdByProp != null && createdByProp.PropertyType == typeof(Guid))
+                        {
+                            createdByProp.SetValue(entry.Entity, currentUserId ?? Guid.Empty);
+                        }
+                    }
+
+                    if (entry.State == EntityState.Modified)
+                    {
+                        // UpdatedAt
+                        var updatedAtProp = entityType.GetProperty("UpdatedAt");
+                        if (updatedAtProp != null && updatedAtProp.PropertyType == typeof(DateTime?))
+                        {
+                            updatedAtProp.SetValue(entry.Entity, currentTime);
+                        }
+
+                        // UpdatedBy
+                        var updatedByProp = entityType.GetProperty("UpdatedBy");
+                        if (updatedByProp != null && updatedByProp.PropertyType == typeof(Guid?))
+                        {
+                            updatedByProp.SetValue(entry.Entity, currentUserId);
+                        }
+
+                        // 确保创建时间不被修改
+                        if (entry.Properties.Any(p => p.Metadata.Name == "CreatedAt"))
+                        {
+                            entry.Property("CreatedAt").IsModified = false;
+                        }
+                        if (entry.Properties.Any(p => p.Metadata.Name == "CreatedBy"))
+                        {
+                            entry.Property("CreatedBy").IsModified = false;
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// 获取当前用户ID
+        /// </summary>
+        private Guid? GetCurrentUserId()
+        {
+            // 优先从注入的服务获取当前用户
+            if (_currentUserService?.IsAuthenticated == true)
+            {
+                return _currentUserService.UserId;
+            }
+
+            // 如果没有认证用户，返回系统用户ID
+            return Guid.Parse("00000000-0000-0000-0000-000000000001");
+        }
+
+        #endregion
     }
 }

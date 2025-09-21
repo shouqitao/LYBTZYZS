@@ -8,6 +8,7 @@ using LYBT.Infrastructure.Configuration.Options;
 using LYBT.Infrastructure.Configuration.Services;
 using LYBT.Infrastructure.Configuration.Extensions;
 using LYBT.Infrastructure.Data;
+using LYBT.Infrastructure.Services;
 using LYBT.Module.Auth;
 using LYBT.Module.Users;
 using LYBT.WebAPI.Configuration;
@@ -153,6 +154,7 @@ public static class UnifiedServiceRegistration
 
         // 常用服务
         services.AddHttpContextAccessor();
+        services.AddScoped<ICurrentUserService, CurrentUserService>();
         services.AddScoped<DefaultPasswordService>();
         services.AddScoped<DatabaseInitializationService>();
 
