@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -375,7 +376,8 @@ namespace LYBT.Desktop.Services
                 Category = category,
                 Severity = severity,
                 UserMessage = userMessage,
-                TechnicalDetails = exception.ToString(),
+                // 安全加固：脱敏技术细节，移除敏感路径和堆栈信息
+                TechnicalDetails = SanitizeTechnicalDetails(exception),
                 Exception = exception,
                 CanRetry = canRetry,
                 RequiresUserAcknowledgment = severity >= ErrorSeverity.Warning
@@ -645,6 +647,62 @@ namespace LYBT.Desktop.Services
                     }
                 }
             });
+        }
+
+        /// <summary>
+        /// 脱敏技术细节，移除可能包含的敏感信息
+        /// </summary>
+        private string SanitizeTechnicalDetails(Exception exception)
+        {
+            if (exception == null)
+            {
+                return "Unknown error";
+            }
+
+            try
+            {
+                var details = exception.ToString();
+
+                // 移除完整路径，只保留文件名
+                details = System.Text.RegularExpressions.Regex.Replace(
+                    details,
+                    @"[A-Z]:\\[^:\r\n]*\\([^\\:\r\n]+\.[a-z]+)",
+                    "$1");
+
+                // 移除用户目录路径
+                details = System.Text.RegularExpressions.Regex.Replace(
+                    details,
+                    @"C:\\Users\\[^\\]+\\",
+                    @"C:\Users\[REDACTED]\");
+
+                // 移除可能的密码或令牌信息
+                details = System.Text.RegularExpressions.Regex.Replace(
+                    details,
+                    @"(password|token|key|secret|authorization|bearer)[\s]*[:=][\s]*[^\s\r\n]+",
+                    "$1=[REDACTED]",
+                    System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
+                // 移除连接字符串中的敏感信息
+                details = System.Text.RegularExpressions.Regex.Replace(
+                    details,
+                    @"(Data Source|Initial Catalog|User ID|Password|Integrated Security)=[^;]+",
+                    "$1=[REDACTED]",
+                    System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
+                // 限制堆栈跟踪深度（只保留前10行）
+                var lines = details.Split('\n');
+                if (lines.Length > 10)
+                {
+                    details = string.Join("\n", lines.Take(10)) + "\n... [堆栈跟踪已截断]";
+                }
+
+                return details;
+            }
+            catch
+            {
+                // 如果脱敏失败，返回基本信息
+                return $"{exception.GetType().Name}: {exception.Message}";
+            }
         }
 
         #endregion 私有方法

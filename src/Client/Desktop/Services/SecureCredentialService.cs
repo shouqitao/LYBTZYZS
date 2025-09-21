@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -9,13 +10,15 @@ namespace LYBT.Desktop.Services
 {
 
     /// <summary>
-    /// 安全凭据服务 - 使用加密存储凭据
+    /// 安全凭据服务 - 使用DPAPI+随机熵加密存储凭据
+    /// 统一的安全凭据实现，取代所有弱加密版本
     /// </summary>
     public class SecureCredentialService : ICredentialService
     {
         private readonly ILogger<SecureCredentialService>? _logger;
         private readonly string _credentialFilePath;
         private readonly byte[] _entropy;
+        private const int ENTROPY_SIZE = 64; // 增强熵值长度到512位
 
         public SecureCredentialService(ILogger<SecureCredentialService>? logger = null)
         {
@@ -91,18 +94,9 @@ namespace LYBT.Desktop.Services
             {
                 if (File.Exists(_credentialFilePath))
                 {
-                    // 安全删除：先覆盖再删除
-                    var size = new FileInfo(_credentialFilePath).Length;
-                    var random = new byte[size];
-                    using (var rng = RandomNumberGenerator.Create())
-                    {
-                        rng.GetBytes(random);
-                    }
-
-                    File.WriteAllBytes(_credentialFilePath, random);
-                    File.Delete(_credentialFilePath);
-
-                    _logger?.LogDebug("成功清除凭据");
+                    // 安全删除：多次覆盖后删除（DoD 5220.22-M 标准）
+                    SecureDeleteFile(_credentialFilePath);
+                    _logger?.LogDebug("成功安全清除凭据");
                 }
             }
             catch (Exception ex)
@@ -117,20 +111,32 @@ namespace LYBT.Desktop.Services
 
             if (File.Exists(entropyFile))
             {
-                return File.ReadAllBytes(entropyFile);
+                try
+                {
+                    // 使用 DPAPI 保护熵值文件
+                    var encryptedEntropy = File.ReadAllBytes(entropyFile);
+                    return ProtectedData.Unprotect(encryptedEntropy, null, DataProtectionScope.CurrentUser);
+                }
+                catch
+                {
+                    // 如果解密失败（用户变更），重新生成
+                    _logger?.LogWarning("熵值解密失败，将重新生成");
+                }
             }
 
-            // 生成新的熵值
-            var entropy = new byte[32];
+            // 生成增强的随机熵值
+            var entropy = new byte[ENTROPY_SIZE];
             using (var rng = RandomNumberGenerator.Create())
             {
                 rng.GetBytes(entropy);
             }
 
-            File.WriteAllBytes(entropyFile, entropy);
+            // 使用 DPAPI 保护熵值
+            var protectedEntropy = ProtectedData.Protect(entropy, null, DataProtectionScope.CurrentUser);
+            File.WriteAllBytes(entropyFile, protectedEntropy);
 
-            // 隐藏文件
-            File.SetAttributes(entropyFile, FileAttributes.Hidden | FileAttributes.System);
+            // 设置文件属性
+            File.SetAttributes(entropyFile, FileAttributes.Hidden | FileAttributes.System | FileAttributes.ReadOnly);
 
             return entropy;
         }
@@ -138,17 +144,70 @@ namespace LYBT.Desktop.Services
         /// <inheritdoc/>
         public void DeleteCredentials()
         {
+            ClearCredentials(); // 使用安全清除方法
+        }
+
+        /// <summary>
+        /// 安全删除文件 - DoD 5220.22-M 标准
+        /// </summary>
+        private void SecureDeleteFile(string filePath)
+        {
+            if (!File.Exists(filePath))
+                return;
+
+            var fileInfo = new FileInfo(filePath);
+            var fileSize = fileInfo.Length;
+
+            // 三次覆盖：0x00, 0xFF, 随机数据
+            byte[][] patterns = new byte[][]
+            {
+                new byte[fileSize],  // 0x00
+                Enumerable.Repeat((byte)0xFF, (int)fileSize).ToArray(),  // 0xFF
+                new byte[fileSize]    // 随机
+            };
+
+            using (var rng = RandomNumberGenerator.Create())
+            {
+                rng.GetBytes(patterns[2]);
+            }
+
+            foreach (var pattern in patterns)
+            {
+                File.WriteAllBytes(filePath, pattern);
+            }
+
+            // 最后删除文件
+            File.Delete(filePath);
+        }
+
+        /// <summary>
+        /// 检测并清理旧版本凭据文件
+        /// </summary>
+        public void MigrateAndCleanupLegacyCredentials()
+        {
             try
             {
-                if (File.Exists(_credentialFilePath))
+                // 旧版本路径
+                var legacyPaths = new[]
                 {
-                    File.Delete(_credentialFilePath);
-                    _logger?.LogDebug("凭据已删除");
+                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                        "LYBT.WPF.Client", "credentials.dat"),
+                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                        "LYBT", "credentials.dat")
+                };
+
+                foreach (var legacyPath in legacyPaths)
+                {
+                    if (File.Exists(legacyPath))
+                    {
+                        _logger?.LogInformation("发现旧版本凭据文件，正在安全清理: {Path}", legacyPath);
+                        SecureDeleteFile(legacyPath);
+                    }
                 }
             }
             catch (Exception ex)
             {
-                _logger?.LogError(ex, "删除凭据失败");
+                _logger?.LogError(ex, "清理旧版本凭据失败");
             }
         }
     }

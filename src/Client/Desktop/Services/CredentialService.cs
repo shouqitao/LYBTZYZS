@@ -10,6 +10,7 @@ namespace LYBT.Desktop.Services
     /// <summary>
     /// 凭据管理服务 - 安全地保存和加载用户凭据
     /// </summary>
+    [Obsolete("此类已被 SecureCredentialService 替代，将在下一版本中移除。请使用 SecureCredentialService 以获得增强的安全性。", false)]
     public class CredentialService : ICredentialService
     {
         private readonly string _credentialFilePath;

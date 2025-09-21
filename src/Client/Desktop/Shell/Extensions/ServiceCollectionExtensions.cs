@@ -341,6 +341,9 @@ namespace LYBT.Desktop.Shell.Extensions
             // 权限服务
             containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.IPermissionService, PermissionService>();
 
+            // 凭据服务 - 使用强化的 DPAPI 保护版本
+            containerRegistry.RegisterSingleton<ICredentialService, SecureCredentialService>();
+
             // 会话管理服务 - DT-002修复: UserSessionManager实现多个接口，使用标准注册
             containerRegistry.RegisterSingleton<UserSessionManager>();
             containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.IUserSessionManager, UserSessionManager>();
