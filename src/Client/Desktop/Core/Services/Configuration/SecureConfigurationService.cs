@@ -1,4 +1,5 @@
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Security;
 using System.Security.Cryptography;
 using System.Text;
@@ -113,29 +114,50 @@ namespace LYBT.Desktop.Core.Services.Configuration
 
         private void InitializeMasterKey()
         {
+            var masterKeyFile = Path.Combine(_secureStorePath, "master.key");
             var saltFile = Path.Combine(_secureStorePath, "master.salt");
-            byte[] salt;
 
-            if (File.Exists(saltFile))
+            if (File.Exists(masterKeyFile))
             {
-                // 读取已存在的盐值
-                var saltData = File.ReadAllText(saltFile);
-                salt = Convert.FromBase64String(saltData);
-                _logger.LogDebug("使用已存在的主密钥盐值");
+                try
+                {
+                    // 使用 DPAPI 解密已存在的主密钥
+                    var encryptedKey = File.ReadAllBytes(masterKeyFile);
+                    _masterKey = UnprotectDataWithDPAPI(encryptedKey);
+                    _logger.LogDebug("使用 DPAPI 加载已存在的主密钥");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "DPAPI 解密主密钥失败，将重新生成");
+                    GenerateAndProtectMasterKey(masterKeyFile, saltFile);
+                }
             }
             else
             {
-                // 生成新的随机盐值
-                salt = GenerateRandomSalt();
-                File.WriteAllText(saltFile, Convert.ToBase64String(salt));
-
-                // 设置文件属性为隐藏和系统
-                File.SetAttributes(saltFile, FileAttributes.Hidden | FileAttributes.System);
-                _logger.LogInformation("生成新的主密钥盐值");
+                // 生成新的主密钥并使用 DPAPI 保护
+                GenerateAndProtectMasterKey(masterKeyFile, saltFile);
             }
+        }
 
-            // 使用机器密钥和盐值派生主密钥
-            _masterKey = DeriveKey(GetMachineKey(), salt);
+        private void GenerateAndProtectMasterKey(string masterKeyFile, string saltFile)
+        {
+            // 生成随机主密钥（不再依赖机器名）
+            _masterKey = new byte[32]; // 256-bit key
+            RandomNumberGenerator.Fill(_masterKey);
+
+            // 使用 DPAPI 加密主密钥（用户级别保护）
+            var protectedKey = ProtectDataWithDPAPI(_masterKey);
+            File.WriteAllBytes(masterKeyFile, protectedKey);
+
+            // 设置文件属性为隐藏和系统
+            File.SetAttributes(masterKeyFile, FileAttributes.Hidden | FileAttributes.System);
+
+            // 保存随机熵值以保证文件完整性验证
+            var entropy = GenerateRandomSalt();
+            File.WriteAllBytes(saltFile, entropy);
+            File.SetAttributes(saltFile, FileAttributes.Hidden | FileAttributes.System);
+
+            _logger.LogInformation("生成新的主密钥并使用 DPAPI 保护");
         }
 
         private void LoadSecureConfigurations()
@@ -815,9 +837,76 @@ namespace LYBT.Desktop.Core.Services.Configuration
             }
         }
 
+        private byte[] ProtectDataWithDPAPI(byte[] data)
+        {
+            try
+            {
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    // Windows DPAPI 用户级别保护
+                    return ProtectedData.Protect(data, null, DataProtectionScope.CurrentUser);
+                }
+                else
+                {
+                    // 非 Windows 平台回退到基于文件的加密
+                    _logger.LogWarning("当前平台不支持 DPAPI，使用备用加密");
+                    return FallbackProtection(data);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "DPAPI 加密失败");
+                throw new SecurityException("无法保护主密钥", ex);
+            }
+        }
+
+        private byte[] UnprotectDataWithDPAPI(byte[] protectedData)
+        {
+            try
+            {
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    // Windows DPAPI 解密
+                    return ProtectedData.Unprotect(protectedData, null, DataProtectionScope.CurrentUser);
+                }
+                else
+                {
+                    // 非 Windows 平台回退
+                    _logger.LogWarning("当前平台不支持 DPAPI，使用备用解密");
+                    return FallbackUnprotection(protectedData);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "DPAPI 解密失败");
+                throw new SecurityException("无法解密主密钥，可能是用户账号变更", ex);
+            }
+        }
+
+        private byte[] FallbackProtection(byte[] data)
+        {
+            // 非 Windows 平台的备用保护（使用用户特定的密钥）
+            var userKey = DeriveKey(
+                $"{Environment.UserName}:{Environment.MachineName}",
+                Encoding.UTF8.GetBytes("LYBT_FALLBACK_2025")
+            );
+            return EncryptData(Convert.ToBase64String(data), userKey);
+        }
+
+        private byte[] FallbackUnprotection(byte[] protectedData)
+        {
+            // 非 Windows 平台的备用解密
+            var userKey = DeriveKey(
+                $"{Environment.UserName}:{Environment.MachineName}",
+                Encoding.UTF8.GetBytes("LYBT_FALLBACK_2025")
+            );
+            var decrypted = DecryptData(protectedData, userKey);
+            return Convert.FromBase64String(decrypted);
+        }
+
         private string GetMachineKey()
         {
-            // 组合多个机器特征生成唯一密钥
+            // 已废弃，仅保留以便向后兼容
             var machineKey = $"{Environment.MachineName}:{Environment.UserName}:{Environment.ProcessorCount}";
             return machineKey;
         }

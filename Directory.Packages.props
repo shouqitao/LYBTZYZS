@@ -28,6 +28,7 @@
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="8.0.1" />
     <PackageVersion Include="Microsoft.Extensions.ObjectPool" Version="8.0.8" />
+    <PackageVersion Include="System.Security.Cryptography.ProtectedData" Version="8.0.0" />
     <!-- 对象映射 - 使用MIT开源版本 -->
     <PackageVersion Include="AutoMapper" Version="14.0.0" />
   </ItemGroup>
