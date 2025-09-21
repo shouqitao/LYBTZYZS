@@ -174,3 +174,6 @@ error.txt
 temp_auth.json
 scriptshealth-check.ps1
 update_client_readmes_detailed.py
+ 
+# Ignore Adobe Illustrator files
+*.ai
