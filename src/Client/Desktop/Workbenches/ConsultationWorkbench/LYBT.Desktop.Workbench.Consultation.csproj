@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
@@ -8,7 +8,9 @@
 		<UseWPF>true</UseWPF>
 		<AssemblyName>LYBT.Desktop.Workbench.Consultation</AssemblyName>
 		<RootNamespace>LYBT.Desktop.Workbench.Consultation</RootNamespace>
-	</PropertyGroup>
+	    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <DocumentationFile>$(OutputPath)$(AssemblyName).xml</DocumentationFile>
+</PropertyGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Prism.DryIoc"  />
