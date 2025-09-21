@@ -705,4 +705,197 @@ public class ArchTests
             result.IsSuccessful,
             $"共享工具库违规依赖Swashbuckle: {string.Join(", ", result.FailingTypes?.Select(t => t.Name) ?? [])}");
     }
+
+    // ========================================================================
+    // Entity Consistency Governance Rules
+    // Added: 2025-09-21 - 实体一致性规范约束
+    // ========================================================================
+
+    /// <summary>
+    /// 实体一致性门禁 - 所有实体必须具有审计字段
+    /// </summary>
+    [Fact]
+    public void EntityConsistency_AllEntities_Should_HaveAuditFields()
+    {
+        var entityAssembly = Assemblies.FirstOrDefault(a => a.GetName().Name == "LYBT.Entities");
+        if (entityAssembly == null) return;
+
+        var entityTypes = Types.InAssembly(entityAssembly)
+            .That()
+            .HaveNameEndingWith("Model")
+            .And()
+            .DoNotHaveNameMatching(".*Base.*")
+            .GetTypes();
+
+        var violatingEntities = new List<string>();
+
+        foreach (var entityType in entityTypes)
+        {
+            var auditFields = new[] { "CreatedAt", "CreatedBy", "UpdatedAt", "UpdatedBy" };
+            var missingFields = auditFields.Where(field => entityType.GetProperty(field) == null).ToList();
+
+            if (missingFields.Any())
+            {
+                violatingEntities.Add($"{entityType.Name} missing: {string.Join(", ", missingFields)}");
+            }
+        }
+
+        Assert.Empty(violatingEntities);
+    }
+
+    /// <summary>
+    /// 实体一致性门禁 - 状态字段必须为枚举类型
+    /// </summary>
+    [Fact]
+    public void EntityConsistency_StatusFields_Should_BeEnums()
+    {
+        var entityAssembly = Assemblies.FirstOrDefault(a => a.GetName().Name == "LYBT.Entities");
+        if (entityAssembly == null) return;
+
+        var entityTypes = Types.InAssembly(entityAssembly)
+            .That()
+            .HaveNameEndingWith("Model")
+            .GetTypes();
+
+        var violatingEntities = new List<string>();
+
+        foreach (var entityType in entityTypes)
+        {
+            var statusProperty = entityType.GetProperty("Status");
+            if (statusProperty != null && !statusProperty.PropertyType.IsEnum)
+            {
+                violatingEntities.Add($"{entityType.Name}.Status should be enum type, but is {statusProperty.PropertyType.Name}");
+            }
+        }
+
+        Assert.Empty(violatingEntities);
+    }
+
+    /// <summary>
+    /// 实体一致性门禁 - 实体必须继承自正确的基类
+    /// </summary>
+    [Fact]
+    public void EntityConsistency_Entities_Should_InheritFromBaseEntity()
+    {
+        var entityAssembly = Assemblies.FirstOrDefault(a => a.GetName().Name == "LYBT.Entities");
+        if (entityAssembly == null) return;
+
+        var entityTypes = Types.InAssembly(entityAssembly)
+            .That()
+            .HaveNameEndingWith("Model")
+            .And()
+            .DoNotHaveNameMatching(".*Base.*")
+            .GetTypes();
+
+        var violatingEntities = new List<string>();
+
+        foreach (var entityType in entityTypes)
+        {
+            // 检查是否继承自BaseEntity或类似基类
+            var hasIdProperty = entityType.GetProperty("Id") != null;
+            var hasAuditFields = new[] { "CreatedAt", "CreatedBy" }.All(field => entityType.GetProperty(field) != null);
+
+            if (!hasIdProperty || !hasAuditFields)
+            {
+                violatingEntities.Add($"{entityType.Name} should inherit from BaseEntity or implement IAuditable");
+            }
+        }
+
+        Assert.Empty(violatingEntities);
+    }
+
+    /// <summary>
+    /// 实体一致性门禁 - 禁止在实体中使用string类型的状态字段
+    /// </summary>
+    [Fact]
+    public void EntityConsistency_StatusFields_Should_NotBeStrings()
+    {
+        var entityAssembly = Assemblies.FirstOrDefault(a => a.GetName().Name == "LYBT.Entities");
+        if (entityAssembly == null) return;
+
+        var entityTypes = Types.InAssembly(entityAssembly)
+            .That()
+            .HaveNameEndingWith("Model")
+            .GetTypes();
+
+        var violatingEntities = new List<string>();
+
+        foreach (var entityType in entityTypes)
+        {
+            var statusProperty = entityType.GetProperty("Status");
+            if (statusProperty?.PropertyType == typeof(string))
+            {
+                violatingEntities.Add($"{entityType.Name}.Status should not be string type - use enum with HasConversion<int>()");
+            }
+        }
+
+        Assert.Empty(violatingEntities);
+    }
+
+    /// <summary>
+    /// 实体一致性门禁 - MedicalCase必须有IsOpen计算属性
+    /// </summary>
+    [Fact]
+    public void EntityConsistency_MedicalCase_Should_HaveIsOpenProperty()
+    {
+        var entityAssembly = Assemblies.FirstOrDefault(a => a.GetName().Name == "LYBT.Entities");
+        if (entityAssembly == null) return;
+
+        var medicalCaseType = Types.InAssembly(entityAssembly)
+            .That()
+            .HaveNameMatching(".*MedicalCase.*")
+            .GetTypes()
+            .FirstOrDefault();
+
+        if (medicalCaseType == null) return;
+
+        var isOpenProperty = medicalCaseType.GetProperty("IsOpen");
+        var isOpenComputedProperty = medicalCaseType.GetProperty("IsOpenComputed");
+
+        var violations = new List<string>();
+
+        if (isOpenProperty == null)
+            violations.Add("Missing IsOpen property");
+
+        if (isOpenComputedProperty == null)
+            violations.Add("Missing IsOpenComputed property for database constraint");
+
+        if (isOpenProperty?.PropertyType != typeof(bool))
+            violations.Add("IsOpen property should be bool type");
+
+        Assert.Empty(violations);
+    }
+
+    /// <summary>
+    /// 实体一致性门禁 - 外键字段必须使用Guid类型
+    /// </summary>
+    [Fact]
+    public void EntityConsistency_ForeignKeys_Should_BeGuidType()
+    {
+        var entityAssembly = Assemblies.FirstOrDefault(a => a.GetName().Name == "LYBT.Entities");
+        if (entityAssembly == null) return;
+
+        var entityTypes = Types.InAssembly(entityAssembly)
+            .That()
+            .HaveNameEndingWith("Model")
+            .GetTypes();
+
+        var violatingProperties = new List<string>();
+
+        foreach (var entityType in entityTypes)
+        {
+            var properties = entityType.GetProperties()
+                .Where(p => p.Name.EndsWith("Id") && p.Name != "Id");
+
+            foreach (var property in properties)
+            {
+                if (property.PropertyType != typeof(Guid) && property.PropertyType != typeof(Guid?))
+                {
+                    violatingProperties.Add($"{entityType.Name}.{property.Name} should be Guid or Guid? type");
+                }
+            }
+        }
+
+        Assert.Empty(violatingProperties);
+    }
 }
