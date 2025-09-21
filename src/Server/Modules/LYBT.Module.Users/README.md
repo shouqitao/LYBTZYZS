@@ -1,14 +1,14 @@
 ﻿# LYBT.Module.Users
 
-> **用户管理核心模块** - UltraThink双层架构精品版
+> **用户管理核心模块** - 分层架构精品版
 > Admin/Doctor用户管理 | 专为小型中医诊所(<20人)优化
-> **模块状态**: ✅ **生产就绪** | 🎆 **DTO优化完成** | **零编译错误** | **2025-09-20更新**
+> 模块状态: ✅ **生产就绪** | 🎆 **DTO优化完成** | **编译通过** | **2025-09-20更新**
 
 ## 🎯 模块概述
 
-LYBT.Module.Users是系统的用户管理核心模块，采用UltraThink双层架构设计，提供完整的用户账户管理、角色权限控制和用户信息维护功能。专为小型中医诊所场景优化，支持Admin/Doctor双角色体系。
+LYBT.Module.Users是系统的用户管理核心模块，采用分层架构设计，提供完整的用户账户管理、角色权限控制和用户信息维护功能。专为小型中医诊所场景优化，支持Admin/Doctor双角色体系。
 
-**技术栈**: .NET 8 + Entity Framework Core 8.0 + AutoMapper + JWT/RBAC
+**技术栈**: .NET 8 + 实体（实体（Entity）） Framework Core 8.0 + AutoMapper + JWT/RBAC
 **最新优化**: DTO规范化完成、UserCreateDto/UserUpdateDto分离、类型安全增强
 
 ## 🎉 2025-09-20 DTO优化成果
@@ -26,7 +26,7 @@ LYBT.Module.Users是系统的用户管理核心模块，采用UltraThink双层�
 | 角色字段 | string类型 | UserRole枚举 | ✅ 类型安全 |
 | 编译状态 | 存在类型不匹配 | 零错误零警告 | ✅ 生产就绪 |
 
-## 🎆 UltraThink双层架构设计
+## 🎆 分层架构设计
 
 **架构层次**:
 ```
@@ -175,7 +175,7 @@ public async Task<ServiceResult<PagedResult<UserDto>>> SearchUsersAsync(UserSear
 }
 ```
 
-## 🧪 数据传输对象 (DTOs) - 2025-09-20更新
+## 🧪 数据传输对象 (数据传输对象（数据传输对象（DTO））) - 2025-09-20更新
 
 ### 请求DTOs
 ```csharp
@@ -286,10 +286,10 @@ private ValidationResult ValidatePasswordStrength(string password)
 }
 ```
 
-## 🎯 UltraThink架构优势
+## 🎯 分层架构优势
 
 **适合小型中医诊所(<20人)的精简设计**:
-- ✅ **双层架构**: Query+Business分层，职责清晰
+- ✅ **分层架构**: Query+Business分层，职责清晰
 - ✅ **类型安全**: UserRole枚举替代字符串，编译时检查
 - ✅ **DTO规范**: Create/Update分离，查询命名统一
 - ✅ **角色简化**: Admin/Doctor双角色体系
@@ -298,7 +298,7 @@ private ValidationResult ValidatePasswordStrength(string password)
 ## 📚 相关文档
 
 - [Auth认证模块](../LYBT.Module.Auth/README.md) - JWT认证和授权
-- [Infrastructure基础设施](../../Core/LYBT.Infrastructure/README.md) - Repository基类
+- [Infrastructure基础设施](../../Core/LYBT.基础设施（基础设施（Infrastructure））/README.md) - Repository基类
 - [API接口文档](../../Services/LYBT.WebAPI/README.md) - Users控制器API
 
 ## 🚀 使用示例
@@ -352,5 +352,5 @@ services.AddScoped<IUserRepository, UserRepository>();
 
 ---
 
-> 📌 **最新成果**: DTO优化三阶段完成，类型安全增强，零编译错误
+> 📌 **最新成果**: DTO优化三阶段完成，类型安全增强，编译通过
 > 🎆 **生产就绪**: 完整的用户管理体系，可直接支撑小型诊所需求

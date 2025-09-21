@@ -2,7 +2,7 @@
 
 ## 📋 模块概述
 
-**看诊模块 (Consultation Module)** 是凌隐宝堂中医诊所系统的核心业务模块，专门处理中医看诊过程中的四诊合参（望、闻、问、切）诊断记录管理。基于UltraThink双层架构设计，提供完整的看诊生命周期管理功能。
+**看诊模块 (Consultation Module)** 是凌隐宝堂中医诊所系统的核心业务模块，专门处理中医看诊过程中的四诊合参（望、闻、问、切）诊断记录管理。基于分层架构设计，提供完整的看诊生命周期管理功能。
 
 ### 🎯 核心功能
 
@@ -13,7 +13,7 @@
 
 ### 🏗️ 架构特点
 
-- **UltraThink双层架构**：QueryService + BusinessService 专业分离
+- **分层架构**：QueryService + BusinessService 专业分离
 - **纯委托模式**：主服务完全委托给专业服务层，职责清晰
 - **缓存优化**：继承OptimizedBaseRepository，提供智能缓存机制
 - **AutoMapper集成**：完整的实体-DTO映射配置
@@ -242,12 +242,12 @@ Task<ServiceResult<bool>> DeleteAsync(Guid id);
 Task<ServiceResult<bool>> SaveFourDiagnosisAsync(Guid consultationId, object fourDiagnosisData);
 ```
 
-## 🔄 数据传输对象 (DTOs)
+## 🔄 数据传输对象 (数据传输对象（数据传输对象（DTO））)
 
 ### ConsultationDto（基础DTO）
 
 - **基本信息**：Id, PatientId, MedicalCaseId, DoctorId
-- **四诊信息**：Inspection, AuscultationOlfaction, Inquiry, Palpation  
+- **四诊信息**：Inspection, AuscultationOlfaction, Inquiry, Palpation 
 - **诊断信息**：ChiefComplaint, PresentIllness, Diagnosis
 - **时间信息**：ConsultationTime
 - **显示信息**：DoctorName
@@ -269,21 +269,21 @@ Task<ServiceResult<bool>> SaveFourDiagnosisAsync(Guid consultationId, object fou
 
 ### 实体字段映射
 
-| 实体字段                  | DTO字段                       | 说明     |
+| 实体字段 | DTO字段 | 说明 |
 | --------------------- | --------------------------- | ------ |
-| UserId                | DoctorId                    | 医生ID映射 |
-| TCMDiagnosis          | Diagnosis                   | 中医诊断映射 |
-| AuscultationOlfaction | Auscultation                | 闻诊字段映射 |
+| UserId | DoctorId | 医生ID映射 |
+| TCMDiagnosis | Diagnosis | 中医诊断映射 |
+| AuscultationOlfaction | Auscultation | 闻诊字段映射 |
 | Status (CommonStatus) | Status (ConsultationStatus) | 状态类型转换 |
 
 ### 四诊字段结构
 
-| 中医术语 | 实体字段                                    | 说明       |
+| 中医术语 | 实体字段 | 说明 |
 | ---- | --------------------------------------- | -------- |
-| 望诊   | Inspection                              | 观察患者神色形态 |
-| 闻诊   | AuscultationOlfaction                   | 听声音、嗅气味  |
-| 问诊   | Inquiry, ChiefComplaint, PresentIllness | 询问症状和病史  |
-| 切诊   | Palpation                               | 脉诊、按诊等   |
+| 望诊 | Inspection | 观察患者神色形态 |
+| 闻诊 | AuscultationOlfaction | 听声音、嗅气味 |
+| 问诊 | Inquiry, ChiefComplaint, PresentIllness | 询问症状和病史 |
+| 切诊 | Palpation | 脉诊、按诊等 |
 
 ## 🚀 性能优化
 
@@ -359,7 +359,7 @@ var historyResult = await _consultationService.GetPatientHistoryAsync(patientId)
 
 ### v2.0.0 (当前版本)
 
-- ✅ **UltraThink双层架构**：完整重构为QueryService + BusinessService
+- ✅ **分层架构**：完整重构为QueryService + BusinessService
 - ✅ **纯委托模式**：主服务完全委托，职责清晰分离
 - ✅ **缓存优化**：继承OptimizedBaseRepository，性能大幅提升
 - ✅ **AutoMapper完善**：解决字段更新不完整问题
@@ -377,13 +377,13 @@ var historyResult = await _consultationService.GetPatientHistoryAsync(patientId)
 ### 环境要求
 
 - .NET 8.0+
-- Entity Framework Core 8.0.17+
+- 实体（实体（Entity）） Framework Core 8.0.17+
 - AutoMapper 13.0.1+
 - SQL Server
 
 ### 依赖项目
 
-- LYBT.Infrastructure（数据访问基础）
+- LYBT.基础设施（基础设施（Infrastructure））（数据访问基础）
 - LYBT.Shared.Models（DTO定义）
 - LYBT.Shared.Interfaces（接口定义）
 - LYBT.Entities（实体定义）

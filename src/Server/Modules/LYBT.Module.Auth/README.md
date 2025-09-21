@@ -2,13 +2,13 @@
 
 > **身份认证与授权核心模块** - JWT Token + RBAC权限控制
 > 专为小型中医诊所(<20人)优化 | Admin/Doctor双角色体系
-> **模块状态**: ✅ **生产就绪** | 🎆 **零编译错误** | **2025-09-20更新**
+> 模块状态: ✅ **生产就绪** | 🎆 **编译通过** | **2025-09-20更新**
 
 ## 🎯 模块概述
 
 LYBT.Module.Auth是系统的身份认证与授权核心模块，提供JWT无状态认证、RBAC角色权限控制和完整的安全审计功能。专为小型中医诊所场景优化，支持Admin/Doctor双角色管理。
 
-**技术栈**: JWT Bearer Token + RBAC + Entity Framework Core 8.0 + BCrypt密码哈希
+**技术栈**: JWT Bearer Token + RBAC + 实体（实体（Entity）） Framework Core 8.0 + BCrypt密码哈希
 **最新更新**: DTO优化完成、类型安全增强、Role字段统一使用UserRole枚举
 
 ## 🏗️ 核心架构设计
@@ -181,7 +181,7 @@ public async Task<ServiceResult<UserDto>> RegisterAsync(RegisterRequest request)
 }
 ```
 
-## 🧪 数据传输对象 (DTOs) - 2025-09-20更新
+## 🧪 数据传输对象 (数据传输对象（数据传输对象（DTO））) - 2025-09-20更新
 
 ### 请求DTOs
 ```csharp
@@ -289,24 +289,24 @@ services.AddAuthorization(options =>
 ## 🎯 安全最佳实践
 
 1. **Token安全**
-   - JWT密钥通过环境变量配置，不硬编码
-   - Token过期时间：普通8小时，记住我30天
-   - 支持Token黑名单机制
+ - JWT密钥通过环境变量配置，不硬编码
+ - Token过期时间：普通8小时，记住我30天
+ - 支持Token黑名单机制
 
 2. **密码安全**
-   - BCrypt哈希算法，防止彩虹表攻击
-   - 强密码策略可配置
-   - 登录失败锁定机制（可选）
+ - BCrypt哈希算法，防止彩虹表攻击
+ - 强密码策略可配置
+ - 登录失败锁定机制（可选）
 
 3. **审计日志**
-   - 记录所有登录尝试
-   - 记录密码修改操作
-   - 记录异常登录行为
+ - 记录所有登录尝试
+ - 记录密码修改操作
+ - 记录异常登录行为
 
 ## 📚 相关文档
 
 - [Users用户模块](../LYBT.Module.Users/README.md) - 用户管理
-- [Infrastructure基础设施](../../Core/LYBT.Infrastructure/README.md) - JWT配置
+- [Infrastructure基础设施](../../Core/LYBT.基础设施（基础设施（Infrastructure））/README.md) - JWT配置
 - [API接口文档](../../Services/LYBT.WebAPI/README.md) - 认证API
 
 ## 🚀 使用示例
@@ -376,4 +376,4 @@ services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 ---
 
 > 📌 **核心功能**: JWT无状态认证、RBAC权限控制、安全审计完备
-> 🎆 **生产就绪**: 零编译错误，完整的认证授权体系，支撑诊所安全需求
+> 🎆 **生产就绪**: 编译通过，完整的认证授权体系，支撑诊所安全需求

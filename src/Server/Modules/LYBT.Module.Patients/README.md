@@ -2,13 +2,13 @@
 
 > **患者档案管理核心模块** - 中医诊疗患者信息中心
 > 完整病历管理 | 就诊历史追踪 | 健康档案维护
-> **模块状态**: ✅ **生产就绪** | 🎆 **DTO优化完成** | **零编译错误** | **2025-09-20更新**
+> 模块状态: ✅ **生产就绪** | 🎆 **DTO优化完成** | **编译通过** | **2025-09-20更新**
 
 ## 🎯 模块概述
 
-LYBT.Module.Patients是系统的患者管理核心模块，采用UltraThink双层架构设计，提供完整的患者档案管理、就诊历史记录、健康信息维护等功能。专为中医诊所场景优化，支持中医特色的体质辨识、过敏史记录等功能。
+LYBT.Module.Patients是系统的患者管理核心模块，采用分层架构设计，提供完整的患者档案管理、就诊历史记录、健康信息维护等功能。专为中医诊所场景优化，支持中医特色的体质辨识、过敏史记录等功能。
 
-**技术栈**: .NET 8 + Entity Framework Core 8.0 + AutoMapper + LINQ
+**技术栈**: .NET 8 + 实体（实体（Entity）） Framework Core 8.0 + AutoMapper + LINQ
 **最新优化**: DTO字段与实体完全对齐、PatientSearchDto命名规范化、字段类型安全增强
 
 ## 🎉 2025-09-20 DTO优化成果
@@ -18,11 +18,11 @@ LYBT.Module.Patients是系统的患者管理核心模块，采用UltraThink双�
 - **字段对齐**: PatientDto字段100%与Patient实体对齐
 - **类型修正**: MaritalStatus从string改为int类型
 - **字段重命名**:
-  - EmergencyContact → EmergencyContactName
-  - EmergencyPhone → EmergencyContactPhone
+ - EmergencyContact → EmergencyContactName
+ - EmergencyPhone → EmergencyContactPhone
 - **编译状态**: 零错误零警告，完全生产就绪
 
-## 🏗️ UltraThink双层架构设计
+## 🏗️ 分层架构设计
 
 ```
 PatientService (主服务层 - 纯委托模式)
@@ -219,7 +219,7 @@ public async Task<ServiceResult<List<MedicalCaseDto>>> GetMedicalHistoryAsync(Gu
 }
 ```
 
-## 🧪 数据传输对象 (DTOs) - 2025-09-20更新
+## 🧪 数据传输对象 (数据传输对象（数据传输对象（DTO））) - 2025-09-20更新
 
 ### 请求DTOs
 ```csharp
@@ -461,5 +461,5 @@ public class PatientsController : BaseApiController
 
 ---
 
-> 📌 **最新成果**: DTO字段完全对齐，类型安全增强，零编译错误
+> 📌 **最新成果**: DTO字段完全对齐，类型安全增强，编译通过
 > 🎆 **生产就绪**: 完整的患者档案管理体系，支撑中医诊所核心业务

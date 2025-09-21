@@ -1,7 +1,7 @@
-﻿# LYBT.Desktop.Infrastructure v2.1 - WPF基础设施服务库
+﻿# LYBT.Desktop.基础设施（基础设施（Infrastructure）） v2.1 - WPF基础设施服务库
 
-> **API客户端管理** | HTTP通信层 | 数据访问抽象 | Refit类型安全集成  
-> **项目状态**: ✅ **生产就绪** | 🎆 **2025-09-02重构完成** | **企业级通信标准**
+> **API客户端管理** | HTTP通信层 | 数据访问抽象 | Refit类型安全集成 
+> 项目状态: ✅ **生产就绪** | 🎆 **2025-09-02重构完成** | **通信标准**
 
 ## 🎯 项目概述
 
@@ -18,7 +18,7 @@ LYBT.Desktop.Infrastructure是凌隐宝堂中医诊所系统WPF客户端的核�
 ### 🌐 HTTP通信基础设施
 - **Refit 8.0.0**: 类型安全的REST API客户端生成，零手写HTTP代码
 - **HttpClientFactory**: HTTP客户端统一管理和连接池优化
-- **Polly弹性策略**: HTTP请求重试、熔断、超时的企业级处理
+- **Polly弹性策略**: HTTP请求重试、熔断、超时的处理
 - **JSON序列化**: 统一的Newtonsoft.Json配置和类型转换器
 
 ### ⚙️ API客户端管理
@@ -43,7 +43,7 @@ LYBT.Desktop.Infrastructure是凌隐宝堂中医诊所系统WPF客户端的核�
 - **数据转换**: 患者、药材、验方数据的Excel格式支持
 - **文档生成**: 处方单据和诊疗报表的格式化输出
 
-## 项目结构
+## 📦 项目结构
 
 ```
 src/Client/Desktop/Infrastructure/
@@ -64,7 +64,7 @@ src/Client/Desktop/Infrastructure/
     └── DefaultSettings.json      # 默认配置设置
 ```
 
-## 技术栈
+## 🛠 技术栈
 
 ### 核心依赖
 - **.NET 8.0**: 目标框架，支持C# 12最新特性
@@ -139,7 +139,7 @@ public interface IPatientApi
 }
 ```
 
-### 🔄 企业级弹性策略
+### 🔄 弹性策略
 
 集成Polly库提供完整的弹性处理能力，确保网络通信的高可用性和用户体验的平滑性。
 
@@ -195,7 +195,7 @@ public static IAsyncPolicy<HttpResponseMessage> GetCircuitBreakerPolicy()
 - **DNS刷新**: 定期刷新DNS解析，适应网络变化
 - **并发控制**: 限制同时进行的HTTP请求数量
 
-### ⚙️ 依赖注入集成
+### ⚙️ 依赖注入（DI）集成
 
 提供完整的服务注册和配置管理，简化API客户端的使用。
 
@@ -505,12 +505,12 @@ public async Task ExportPatientsToExcelAsync(List<PatientDto> patients)
 
 ## 🎆 重构成果总览 (2025-09-02)
 
-### 🏆 企业级基础设施标准升级完成
+### 🏆 基础设施标准升级完成
 
 **技术栈现代化**:
 - ✅ **C# 12支持**: 最新语言特性和性能优化
 - ✅ **Refit 8.0.0**: 类型安全API客户端生成
-- ✅ **Polly集成**: 企业级弹性处理策略
+- ✅ **Polly集成**: 弹性处理策略
 - ✅ **依赖组织**: 按功能分组的包引用管理
 
 **架构优化成果**:
@@ -535,7 +535,7 @@ public async Task ExportPatientsToExcelAsync(List<PatientDto> patients)
 
 ### 项目引用
 - **LYBT.Desktop.Core**: 核心框架和基础配置 → 提供MVVM基础和服务接口
-- 依赖关系: Infrastructure → Core (单向依赖)
+- 依赖关系: 基础设施（基础设施（Infrastructure）） → Core (单向依赖)
 
 ### NuGet包依赖
 **WPF框架**:
@@ -591,6 +591,6 @@ public async Task ExportPatientsToExcelAsync(List<PatientDto> patients)
 
 ---
 
-**LYBT.Desktop.Infrastructure v2.1** - WPF基础设施服务库，为中医诊所系统提供企业级HTTP通信基础 ✨
+**LYBT.Desktop.基础设施（基础设施（Infrastructure）） v2.1** - WPF基础设施服务库，为中医诊所系统提供HTTP通信基础 ✨
 
-**项目状态**: ✅ **生产就绪** | **最后更新**: 2025-09-02 | **版本**: v2.1.0-infrastructure-enterprise
+> 项目状态: ✅ **生产就绪** | **最后更新**: 2025-09-02 | **版本**: v2.1.0-infrastructure-enterprise

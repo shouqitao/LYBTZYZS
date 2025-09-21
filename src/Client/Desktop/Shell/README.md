@@ -1,17 +1,17 @@
 ﻿# LYBT.Desktop.Shell v2.1 - WPF应用程序外壳
 
-> **Prism模块化架构** | 统一应用入口 | 容器编排管理 | 企业级桌面应用  
-> **项目状态**: ✅ **生产就绪** | 🎆 **2025-09-02重构完成** | **模块化架构标准**
+> **Prism模块化架构** | 统一应用入口 | 容器编排管理 | 桌面应用 
+> 项目状态: ✅ **生产就绪** | 🎆 **2025-09-02重构完成** | **模块化架构标准**
 
 ## 🎯 项目概述
 
-LYBT.Desktop.Shell是凌隐宝堂中医诊所系统WPF客户端的核心应用程序外壳，基于Prism.DryIoc 8.1.97构建的企业级模块化架构。作为整个桌面应用的统一入口点，负责应用启动、模块编排、依赖注入容器管理和全局配置。集成8个业务模块、7个工作台和完整的基础服务体系。
+LYBT.Desktop.Shell是凌隐宝堂中医诊所系统WPF客户端的核心应用程序外壳，基于Prism.DryIoc 8.1.97构建的模块化架构。作为整个桌面应用的统一入口点，负责应用启动、模块编排、依赖注入（DI）容器管理和全局配置。集成8个业务模块、7个工作台和完整的基础服务体系。
 
 **核心价值**:
 - 🏗️ **模块化架构**: Prism框架提供完整的模块化开发和管理能力
 - ⚡ **统一入口**: 单一启动点统一管理所有业务功能和工作台
-- 🔧 **容器编排**: DryIoc依赖注入容器提供高性能的服务管理
-- 📱 **企业体验**: 完整的企业级桌面应用用户体验
+- 🔧 **容器编排**: DryIoc依赖注入（DI）容器提供高性能的服务管理
+- 📱 **企业体验**: 完整的桌面应用用户体验
 
 ## 核心功能
 
@@ -19,9 +19,9 @@ LYBT.Desktop.Shell是凌隐宝堂中医诊所系统WPF客户端的核心应用�
 - **应用程序入口**: WPF应用的主启动点，完整的应用生命周期管理
 - **模块自动发现**: 基于Prism的模块自动发现和动态加载机制
 - **配置系统**: 多环境配置加载、验证和热重载支持
-- **依赖注入**: DryIoc容器的高性能服务注册和解析
+- **依赖注入（DI）**: DryIoc容器的高性能服务注册和解析
 
-### 🖥️ 企业级主界面框架
+### 🖥️ 主界面框架
 - **主窗口容器**: 响应式布局的主应用程序界面容器
 - **导航系统**: Prism Region导航，支持参数传递和导航历史
 - **菜单体系**: 模块化的主菜单和上下文菜单系统
@@ -29,17 +29,17 @@ LYBT.Desktop.Shell是凌隐宝堂中医诊所系统WPF客户端的核心应用�
 
 ### 🎨 统一UI框架
 - **对话框系统**: Prism对话框服务，支持模态和非模态对话框
-- **样式系统**: 企业级样式资源，支持主题动态切换
+- **样式系统**: 样式资源，支持主题动态切换
 - **错误处理**: 全局异常处理机制和用户友好的错误提示
 - **开发者工具**: UI展示窗口、测试视图和开发阶段调试支持
 
 ### 📦 完整模块编排
 - **8个业务模块**: Auth、Users、Patients、MedicalCase、Consultation、Prescriptions、Herbs、Formula
 - **7个工作台**: Core、Admin、Consultation等专业角色工作台
-- **基础设施**: Core、Infrastructure、Services三层基础架构
+- **基础设施**: Core、基础设施（基础设施（Infrastructure））、Services三层基础架构
 - **共享资源**: 跨模块的资源共享和配置统一管理
 
-## 项目结构
+## 📦 项目结构
 
 ```
 src/Client/Desktop/Shell/
@@ -76,12 +76,12 @@ src/Client/Desktop/Shell/
     └── CommonStyles.xaml        # 通用样式定义
 ```
 
-## 技术栈
+## 🛠 技术栈
 
 ### 核心依赖
 - **.NET 8.0**: 目标框架 
 - **WPF**: Windows Presentation Foundation
-- **Prism.DryIoc 8.1.97**: MVVM框架和依赖注入
+- **Prism.DryIoc 8.1.97**: MVVM框架和依赖注入（DI）
 - **AutoMapper 15.0.1**: 对象映射
 
 ### 配置和日志
@@ -93,7 +93,7 @@ src/Client/Desktop/Shell/
 ### 模块依赖
 - **LYBT.Desktop.Core**: 核心框架
 - **LYBT.Desktop.Services**: 业务服务层
-- **LYBT.Desktop.Infrastructure**: 基础设施
+- **LYBT.Desktop.基础设施（基础设施（Infrastructure））**: 基础设施
 - **8个业务模块**: Auth、Users、Patients、MedicalCase、Consultation、Prescriptions、Herbs、Formula
 - **3个工作台**: Core、Admin、Consultation
 - **LYBT.Shared.Models**: 共享模型
@@ -442,7 +442,7 @@ _dialogService.ShowDialog("ConfirmationDialog", parameters, (result) =>
 ### 模块集成
 - 所有新模块必须在App.xaml.cs中注册
 - 模块间通过EventAggregator通信
-- 使用依赖注入管理模块依赖
+- 使用依赖注入（DI）管理模块依赖
 - 遵循Prism模块化架构原则
 
 ### UI一致性
@@ -539,4 +539,4 @@ _dialogService.ShowDialog("ConfirmationDialog", parameters, (result) =>
 
 ---
 
-*该文档反映当前代码实现状态，与实际功能保持100%同步 - UltraThink文档驱动开发标准*
+*该文档反映当前代码实现状态，与实际功能保持100%同步 - 文档驱动开发标准*

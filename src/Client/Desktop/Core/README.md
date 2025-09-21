@@ -1,23 +1,23 @@
 ﻿# LYBT.Desktop.Core v2.1 - WPF核心基础设施库
 
-> **企业级WPF框架** | UltraThink架构支撑 | Prism.DryIoc模块化 | MVVM标准化  
-> **项目状态**: ✅ **生产就绪** | 🎆 **2025-09-02重构完成** | **企业级标准**
+> **WPF框架** | 分层架构支撑 | Prism.DryIoc模块化 | MVVM标准化 
+> 项目状态: ✅ **生产就绪** | 🎆 **2025-09-02重构完成** | **标准**
 
 ## 🎯 项目概述
 
-LYBT.Desktop.Core是凌隐宝堂中医诊所系统WPF客户端的核心基础设施库，提供完整的企业级WPF应用程序开发框架。基于Prism.DryIoc 8.1.97构建，采用MVVM架构模式，为8个业务模块和7个工作台提供统一的技术底座和UltraThink架构支撑。
+LYBT.Desktop.Core是凌隐宝堂中医诊所系统WPF客户端的核心基础设施库，提供完整的WPF应用程序开发框架。基于Prism.DryIoc 8.1.97构建，采用MVVM架构模式，为8个业务模块和7个工作台提供统一的技术底座和分层架构支撑。
 
 **核心价值**:
 - 🏗️ **架构统一**: 为所有前端模块提供统一的MVVM架构基础
 - ⚡ **开发高效**: 丰富的基础组件和服务，减少重复开发
 - 🔧 **高度可配置**: 完整的配置管理和主题系统
-- 📱 **用户体验**: 企业级UI组件和交互设计
+- 📱 **用户体验**: UI组件和交互设计
 
 ## 核心功能
 
 ### 🏗️ 架构基础
 - **MVVM框架**: 基于Prism.DryIoc的完整MVVM架构实现
-- **依赖注入**: DryIoc容器管理服务生命周期
+- **依赖注入（DI）**: DryIoc容器管理服务生命周期
 - **事件聚合**: 模块间松耦合通信机制
 - **导航服务**: 统一的视图导航和参数传递
 - **对话框服务**: 标准化的弹窗和确认对话框
@@ -30,7 +30,7 @@ LYBT.Desktop.Core是凌隐宝堂中医诊所系统WPF客户端的核心基础设
 
 ### 🔧 核心服务
 - **SessionManager**: 用户会话和状态管理
-- **NotificationService**: 统一的消息通知服务  
+- **NotificationService**: 统一的消息通知服务 
 - **ErrorHandlingService**: 全局异常处理和错误分类
 - **ThemeService**: 主题切换和UI样式管理
 - **CacheWarmupService**: 智能缓存预热机制
@@ -48,7 +48,7 @@ LYBT.Desktop.Core是凌隐宝堂中医诊所系统WPF客户端的核心基础设
 - **数据绑定**: ObservableObject响应式对象基类
 - **列表管理**: BaseListViewModel分页列表基类
 
-## 项目结构
+## 📦 项目结构
 
 ```
 src/Client/Desktop/Core/
@@ -78,16 +78,16 @@ src/Client/Desktop/Core/
 └── Extensions/            # 扩展方法
 ```
 
-## 技术栈
+## 🛠 技术栈
 
 ### 核心依赖
 - **.NET 8.0**: 目标框架
 - **WPF**: Windows Presentation Foundation
-- **Prism.DryIoc 8.1.97**: MVVM框架和依赖注入
+- **Prism.DryIoc 8.1.97**: MVVM框架和依赖注入（DI）
 - **AutoMapper 15.0.1**: 对象映射
 - **FluentValidation 12.0.0**: 数据验证
 
-### 支持库  
+### 支持库 
 - **Polly 8.5.1**: 弹性和瞬态故障处理
 - **Newtonsoft.Json 13.0.3**: JSON序列化
 - **Microsoft.Extensions.Configuration 9.0.7**: 配置管理
@@ -98,7 +98,7 @@ src/Client/Desktop/Core/
 
 ### 🚀 性能优化
 - **启动优化**: StartupOptimizationService减少冷启动时间
-- **模块懒加载**: ModuleLoadingCoordinator按需加载业务模块  
+- **模块懒加载**: ModuleLoadingCoordinator按需加载业务模块 
 - **UI虚拟化**: 大数据集合的虚拟化显示
 - **智能缓存**: 多层级缓存策略和预热机制
 - **对象池**: ObjectPoolService减少对象分配开销
@@ -178,7 +178,7 @@ containerRegistry.Register<INotificationService, NotificationService>();
 
 ## 相关模块
 
-- **LYBT.Desktop.Infrastructure**: 基础设施和数据访问
+- **LYBT.Desktop.基础设施（基础设施（Infrastructure））**: 基础设施和数据访问
 - **LYBT.Desktop.Services**: 业务服务层
 - **LYBT.Desktop.Auth**: 认证和权限模块
 - **LYBT.Shared.Models**: 共享数据模型
@@ -195,4 +195,4 @@ containerRegistry.Register<INotificationService, NotificationService>();
 
 ---
 
-*该文档反映当前代码实现状态，与实际功能保持100%同步 - UltraThink文档驱动开发标准*
+*该文档反映当前代码实现状态，与实际功能保持100%同步 - 文档驱动开发标准*

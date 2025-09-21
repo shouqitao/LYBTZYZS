@@ -1,20 +1,20 @@
-﻿# LYBT.Infrastructure
+﻿# LYBT.基础设施（基础设施（Infrastructure））
 
-> **基础设施核心模块** - UltraThink架构优化版  
+> **基础设施核心模块** - 分层架构优化版 
 > 系统底层数据访问、配置管理和核心服务的统一基础设施
-> **项目状态**: ✅ **生产就绪** | 🎆 **P8-01E架构重构完成** | **零编译错误**
+> 项目状态: ✅ **生产就绪** | 🎆 **P8-01E架构重构完成** | **编译通过**
 
 ## 🎯 模块概述
 
-LYBT.Infrastructure是系统的核心基础设施模块，采用UltraThink简化架构设计，专为小型中医诊所（<20人）优化。提供数据库访问、配置管理、安全服务等核心基础功能，是所有业务模块的统一底层支撑。
+LYBT.Infrastructure是系统的核心基础设施模块，采用分层架构设计，专为小型中医诊所（<20人）优化。提供数据库访问、配置管理、安全服务等核心基础功能，是所有业务模块的统一底层支撑。
 
-**技术栈**: .NET 8.0 + Entity Framework Core 8.0.17 + SQL Server + IMemoryCache
+**技术栈**: .NET 8.0 + 实体（实体（Entity）） Framework Core 8.0.17 + SQL Server + IMemoryCache
 
 ## 🎆 P8-01E架构重构成果 (历史性完成)
 
-**UltraThink目录结构简化 (2025-09-02完成)**:
+**目录结构简化 (2025-09-02完成)**:
 - ✅ **目录精简52%**: 从21个目录 → 10个目录
-- ✅ **命名空间统一**: 消除层级混乱，统一命名规范  
+- ✅ **命名空间统一**: 消除层级混乱，统一命名规范 
 - ✅ **功能集中化**: Data、Configuration、Security功能明确分离
 - ✅ **标准化迁移**: Migrations目录符合EF Core标准位置
 - ✅ **代码无冗余**: 移除单文件目录和过度嵌套结构
@@ -38,7 +38,7 @@ LYBT.Infrastructure是系统的核心基础设施模块，采用UltraThink简化
 └── ...13 more directories
 ```
 
-## 🏗️ 核心架构 (UltraThink简化版)
+## 🏗️ 核心架构 (简化版)
 
 ### 统一数据访问 - AppDbContext
 
@@ -223,7 +223,7 @@ dotnet ef migrations list \
 | 迁移文件 | 功能描述 | 日期 |
 |----------|----------|------|
 | `20250902150113_JWT_TokenStore_Security_Enhancement` | JWT Token存储安全增强 | 2025-09-02 |
-| `20250810112700_Auth_UltraThink_Refactor` | Auth模块UltraThink重构 | 2025-08-10 |
+| `20250810112700_Auth__Refactor` | Auth模块重构 | 2025-08-10 |
 | `AddPerformanceIndexes_20250811` | 性能索引优化 | 2025-08-11 |
 | `20250807044558_FieldStandardization_RemoveUnusedFields` | 字段标准化 | 2025-08-07 |
 | `20250802153359_AddSysAdminSeedData` | 系统管理员种子数据 | 2025-08-02 |
@@ -326,7 +326,7 @@ public static class ServiceCollectionExtensions
 }
 ```
 
-## 🎯 UltraThink架构特点
+## 🎯 分层架构特点
 
 **适合小型中医诊所(<20人)的精简设计**:
 - ✅ **目录精简**: 52%目录减少，结构清晰易维护
@@ -405,7 +405,7 @@ public class AuthService
 ## 📚 相关文档
 
 - [LYBT.Entities](../LYBT.Entities/README.md) - 数据实体模型
-- [业务模块文档](../../Modules/) - 8个业务模块详细说明  
+- [业务模块文档](../../Modules/) - 8个业务模块详细说明 
 - [WebAPI服务](../../Services/LYBT.WebAPI/README.md) - Web API接口文档
 - [数据库设计](./Data/DATABASE_DESIGN.md) - 数据库结构设计文档
 
@@ -434,5 +434,5 @@ public class AuthService
 
 ---
 
-> 📌 **UltraThink成果**: Infrastructure模块经过P8-01E重构，实现52%目录精简，架构清晰，适合小型诊所部署
-> 🎆 **生产就绪**: 零编译错误，完整的安全、缓存、数据库基础设施，可直接投入生产使用
+> 📌 **分层架构清晰，适合小型诊所部署
+> 🎆 **生产就绪**: 编译通过，完整的安全、缓存、数据库基础设施，可直接投入生产使用

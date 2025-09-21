@@ -1,6 +1,6 @@
 ﻿# LYBT.Desktop.Services
 
-## 概述
+## 🎯 项目概述
 
 LYBT.Desktop.Services是凌隐宝堂桌面客户端的业务服务层，提供用户认证、权限管理、对话框服务、错误处理等核心业务支持服务。该模块作为桌面端与后端API的中间层，负责业务逻辑的协调和用户体验的优化。
 
@@ -35,7 +35,7 @@ LYBT.Desktop.Services是凌隐宝堂桌面客户端的业务服务层，提供�
 - **PlaceholderServices**: 占位符服务实现
 - **测试支持**: 单元测试和集成测试支持
 
-## 项目结构
+## 📦 项目结构
 
 ```
 src/Client/Desktop/Services/
@@ -56,7 +56,7 @@ src/Client/Desktop/Services/
 └── Interfaces/               # 服务接口定义
 ```
 
-## 技术栈
+## 🛠 技术栈
 
 ### 核心依赖
 - **.NET 8.0**: 目标框架
@@ -209,7 +209,7 @@ public class PrismDialogService : IDialogService
 
 ## 服务配置和使用
 
-### 依赖注入注册
+### 依赖注入（DI）注册
 
 ```csharp
 // 在应用程序启动时注册服务
@@ -261,7 +261,7 @@ var permissionConfig = new PermissionConfiguration
 
 ### 服务实现规范
 - 所有服务必须实现对应的接口
-- 使用依赖注入获取其他服务依赖
+- 使用依赖注入（DI）获取其他服务依赖
 - 异步方法命名以Async结尾
 - 错误处理统一使用ErrorHandlingService
 
@@ -331,4 +331,4 @@ public class MockIDCardReaderService : IIDCardReaderService
 
 ---
 
-*该文档反映当前代码实现状态，与实际功能保持100%同步 - UltraThink文档驱动开发标准*
+*该文档反映当前代码实现状态，与实际功能保持100%同步 - 文档驱动开发标准*

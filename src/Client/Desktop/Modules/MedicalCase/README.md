@@ -2,17 +2,17 @@
 
 > **医案管理客户端模块** - WPF桌面应用医案管理功能
 > 病历管理 | 诊疗记录 | 处方关联 | 档案归档
-> **模块状态**: ✅ **生产就绪** | 🎆 **UltraThink架构完成** | **零编译错误** | **2025-09-20更新**
+> 模块状态: ✅ **生产就绪** | 🎆 **分层架构完成** | **编译通过** | **2025-09-20更新**
 
 ## 🎯 模块概述
 
-LYBT.Desktop.Module.MedicalCase是WPF桌面客户端的医案管理模块，采用MVVM架构和UltraThink双层服务设计。作为诊疗流程的容器，管理完整的医案信息，包括诊断、处方等。
+LYBT.Desktop.Module.MedicalCase是WPF桌面客户端的医案管理模块，采用MVVM架构和双层服务设计。作为诊疗流程的容器，管理完整的医案信息，包括诊断、处方等。
 
 **技术栈**: WPF (.NET 8) + Prism.DryIoc + Material Design + Refit
-**架构模式**: MVVM + UltraThink双层架构（QueryService + BusinessService）
+**架构模式**: MVVM + 分层架构（QueryService + BusinessService）
 **通信方式**: 通过Refit调用后端Web API，类型安全的HTTP客户端
 
-## 🎆 UltraThink双层架构实现
+## 🎆 分层架构实现
 
 ### 前端服务架构
 ```
@@ -92,7 +92,7 @@ public class MedicalCaseViewModel : RegionViewModelBase
 }
 ```
 
-### 2. 服务层（UltraThink）
+### 2. 服务层（）
 ```csharp
 // 主服务 - 纯委托模式
 public class MedicalCaseService : IMedicalCaseService
@@ -289,7 +289,7 @@ public async Task LoadDataAsync()
 
 ## 📚 相关依赖
 
-- **Prism.DryIoc** - MVVM框架和依赖注入
+- **Prism.DryIoc** - MVVM框架和依赖注入（DI）
 - **Material Design** - UI组件库
 - **Refit** - REST API客户端
 - **AutoMapper** - 对象映射
@@ -305,5 +305,5 @@ public async Task LoadDataAsync()
 
 ---
 
-> 📌 **最新成果**: UltraThink架构在客户端完整实现，MVVM模式规范应用
+> 📌 **最新成果**: 分层架构在客户端完整实现，MVVM模式规范应用
 > 🎆 **生产就绪**: 完整的医案管理功能，优秀的用户体验

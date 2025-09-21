@@ -1,14 +1,14 @@
 ﻿# LYBT.WebAPI
 
-> **凌隐宝堂中医诊所管理系统 - Web API 核心服务**  
-> 基于ASP.NET Core 8.0的企业级中医诊所管理REST API | 专为小型诊所(<20人)优化  
-> **服务状态**: ✅ **生产就绪** | 🎆 **UltraThink优化完成** | **零编译错误**
+> **凌隐宝堂中医诊所管理系统 - Web API 核心服务** 
+> 基于ASP.NET Core 8.0的中医诊所管理REST API | 专为小型诊所(<20人)优化 
+> **服务状态**: ✅ **生产就绪** | 🎆 **优化完成** | **编译通过**
 
 ## 🎯 服务概述
 
-LYBT.WebAPI是系统的核心后端服务，作为统一API网关集成8个业务模块，通过RESTful API对外提供完整的中医诊所管理功能。采用UltraThink三层架构设计，支持从患者接诊到处方开具的完整诊疗流程，专为小型中医诊所场景优化。
+LYBT.WebAPI是系统的核心后端服务，作为统一API网关集成8个业务模块，通过RESTful API对外提供完整的中医诊所管理功能。采用分层架构设计，支持从患者接诊到处方开具的完整诊疗流程，专为小型中医诊所场景优化。
 
-**技术栈**: ASP.NET Core 8.0 + Entity Framework Core + JWT认证 + Swagger API文档 + IMemoryCache智能缓存
+**技术栈**: ASP.NET Core 8.0 + 实体（实体（Entity）） Framework Core + JWT认证 + Swagger API文档 + IMemoryCache智能缓存
 
 ## 🎆 WebAPI优化重构成果 (历史性完成)
 
@@ -33,16 +33,16 @@ LYBT.WebAPI是系统的核心后端服务，作为统一API网关集成8个业�
 ## 📦 集成业务模块架构
 
 ### 8个核心业务模块
-| 模块 | 控制器 | UltraThink架构层 | 功能描述 | 端点数量 |
+| 模块 | 控制器 | 分层架构层 | 功能描述 | 端点数量 |
 |------|--------|-----------------|----------|----------|
-| **Auth** | AuthController | 双层架构 | JWT认证、登录登出、会话管理 | 5个端点 |
-| **Users** | UsersController | 双层架构 | 用户管理、角色分配、密码管理 | 8个端点 |
-| **Patients** | PatientsController | 双层架构 | 患者档案、病历管理、统计查询 | 9个端点 |
-| **MedicalCase** | MedicalCaseController | 双层架构 | 医疗案例、诊疗流程管理容器 | 7个端点 |
-| **Consultation** | ConsultationController | 双层架构 | 中医四诊、辨证论治数据记录 | 6个端点 |
-| **Prescriptions** | PrescriptionsController | 双层架构 | 处方管理、智能配伍检查 | 10个端点 |
-| **Herbs** | HerbsController | 双层架构 | 中药材管理、导入导出 | 9个端点 |
-| **Formula** | FormulasController | 双层架构 | 验方模板管理、克隆应用 | 11个端点 |
+| **Auth** | AuthController | 分层架构 | JWT认证、登录登出、会话管理 | 5个端点 |
+| **Users** | UsersController | 分层架构 | 用户管理、角色分配、密码管理 | 8个端点 |
+| **Patients** | PatientsController | 分层架构 | 患者档案、病历管理、统计查询 | 9个端点 |
+| **MedicalCase** | MedicalCaseController | 分层架构 | 医疗案例、诊疗流程管理容器 | 7个端点 |
+| **Consultation** | ConsultationController | 分层架构 | 中医四诊、辨证论治数据记录 | 6个端点 |
+| **Prescriptions** | PrescriptionsController | 分层架构 | 处方管理、智能配伍检查 | 10个端点 |
+| **Herbs** | HerbsController | 分层架构 | 中药材管理、导入导出 | 9个端点 |
+| **Formula** | FormulasController | 分层架构 | 验方模板管理、克隆应用 | 11个端点 |
 
 ### 5个系统管理模块
 | 模块 | 控制器 | 功能描述 | 状态 |
@@ -57,10 +57,10 @@ LYBT.WebAPI是系统的核心后端服务，作为统一API网关集成8个业�
 
 ### ASP.NET Core 8.0 技术栈
 - **Web Framework**: ASP.NET Core 8.0 Minimal API + MVC控制器
-- **数据访问**: Entity Framework Core 8.0.17 + SQL Server
+- **数据访问**: 实体（实体（Entity）） Framework Core 8.0.17 + SQL Server
 - **认证授权**: JWT Bearer Token + ASP.NET Core Identity密码哈希
 - **API文档**: Swagger/Swashbuckle 9.0.1 + OpenAPI 3.0
-- **依赖注入**: Microsoft.Extensions.DependencyInjection (内置容器)
+- **依赖注入（DI）**: Microsoft.Extensions.DependencyInjection (内置容器)
 - **缓存策略**: IMemoryCache + 智能过期策略
 - **日志记录**: Microsoft.Extensions.Logging + Serilog结构化日志
 - **健康检查**: ASP.NET Core Health Checks + 8个监控端点
@@ -149,7 +149,7 @@ private static IServiceCollection RegisterAuthenticationServices(this IServiceCo
 ## 🚀 核心API端点总览
 
 ### RESTful API设计标准
-遵循UltraThink API响应标准，所有业务端点返回统一的`ApiResponse<T>`格式：
+遵循 API响应标准，所有业务端点返回统一的`ApiResponse<T>`格式：
 
 ```json
 {
@@ -701,7 +701,7 @@ public class ExampleController : BaseApiController
 ```
 
 
-## 🎯 UltraThink质量标准
+## 🎯 质量标准
 
 ### 编译质量保证 ✅
 - ✅ **零编译警告**: 48个项目全部达到零警告标准
@@ -710,7 +710,7 @@ public class ExampleController : BaseApiController
 - ✅ **平台兼容**: Windows特定代码正确平台标记
 - ✅ **内存安全**: 无内存泄漏，正确资源释放
 
-### 代码质量等级: A+
+### 代码质量等级: 高质量
 - **CS1998修复**: 移除无效async关键字，提升性能
 - **ASP0019修复**: HTTP响应头操作使用最佳实践
 - **CS0618修复**: 升级到最新Microsoft.Data.SqlClient包
@@ -730,7 +730,7 @@ public class ExampleController : BaseApiController
 ## 📚 相关文档
 
 - [项目开发规范](../../../../CLAUDE.md) - 完整开发指南和架构约束
-- [基础设施文档](../../Core/LYBT.Infrastructure/README.md) - 数据访问和JWT配置
+- [基础设施文档](../../Core/LYBT.基础设施（基础设施（Infrastructure））/README.md) - 数据访问和JWT配置
 - [实体模型文档](../../Core/LYBT.Entities/README.md) - 数据模型定义
 - [前端客户端文档](../../../Client/Desktop/README.md) - WPF客户端集成
 - [API测试文档](../../../../tests/api/README.md) - API自动化测试指南
@@ -787,5 +787,5 @@ curl -X GET https://localhost:7001/health/database
 
 ---
 
-> 📌 **UltraThink成果**: WebAPI服务经过全面优化重构，实现58%代码精简，零编译警告
+> 📌 **成果**: WebAPI服务经过全面优化重构，实现58%代码精简，零编译警告
 > 🎆 **生产就绪**: 93个API端点，完整认证授权，8个健康监控，可直接支撑小型诊所运营需求

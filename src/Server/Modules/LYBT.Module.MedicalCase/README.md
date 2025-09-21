@@ -2,13 +2,13 @@
 
 > **医疗案例管理核心模块** - 中医诊疗流程管理容器
 > 看诊流程管理 + 诊疗记录聚合 | 专为中医诊所优化
-> **模块状态**: ✅ **生产就绪** | 🎆 **DTO优化完成** | **零编译错误** | **2025-09-20更新**
+> 模块状态: ✅ **生产就绪** | 🎆 **DTO优化完成** | **编译通过** | **2025-09-20更新**
 
 ## 🎯 模块概述
 
-LYBT.Module.MedicalCase是系统的医疗案例管理核心模块，采用UltraThink双层架构设计，作为整个诊疗流程的管理容器和聚合根。每个MedicalCase代表一次完整的看诊会话，1:1关联Consultation诊断记录，统一管理患者从接诊到完成的全程诊疗状态。
+LYBT.Module.MedicalCase是系统的医疗案例管理核心模块，采用分层架构设计，作为整个诊疗流程的管理容器和聚合根。每个MedicalCase代表一次完整的看诊会话，1:1关联Consultation诊断记录，统一管理患者从接诊到完成的全程诊疗状态。
 
-**技术栈**: .NET 8 + Entity Framework Core 8.0 + AutoMapper + UltraThink双层架构
+**技术栈**: .NET 8 + 实体（实体（Entity）） Framework Core 8.0 + AutoMapper + 分层架构
 **最新优化**: DTO命名规范化、查询DTO更新为SearchDto、状态管理简化
 
 ## 🎉 2025-09-20 DTO优化成果
@@ -19,7 +19,7 @@ LYBT.Module.MedicalCase是系统的医疗案例管理核心模块，采用UltraT
 - **接口一致性**: 所有查询接口使用统一的SearchDto模式
 - **编译状态**: 零错误零警告，完全生产就绪
 
-## 🏗️ UltraThink双层架构设计
+## 🏗️ 分层架构设计
 
 ```
 MedicalCaseService (主服务层 - 纯委托模式)
@@ -220,7 +220,7 @@ public async Task<ServiceResult<PagedResult<MedicalCaseDto>>> SearchMedicalCases
 }
 ```
 
-## 🧪 数据传输对象 (DTOs) - 2025-09-20更新
+## 🧪 数据传输对象 (数据传输对象（数据传输对象（DTO））) - 2025-09-20更新
 
 ### 请求DTOs
 ```csharp
@@ -503,5 +503,5 @@ private IQueryable<MedicalCase> ApplyDoctorFilter(IQueryable<MedicalCase> query)
 
 ---
 
-> 📌 **最新成果**: DTO命名规范化，状态管理简化，零编译错误
+> 📌 **最新成果**: DTO命名规范化，状态管理简化，编译通过
 > 🎆 **生产就绪**: 完整的医案管理体系，支撑中医诊所核心诊疗流程

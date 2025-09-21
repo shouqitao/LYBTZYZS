@@ -2,17 +2,17 @@
 
 > **处方管理核心模块** - 中医智能处方系统
 > 处方开具与管理 | 药材项目管理 | 剂量自动计算 | 处方复制功能
-> **模块状态**: ✅ **生产就绪** | 🎆 **UltraThink架构完成** | **零编译错误** | **2025-09-20更新**
+> 模块状态: ✅ **生产就绪** | 🎆 **分层架构完成** | **编译通过** | **2025-09-20更新**
 
 ## 🎯 模块概述
 
-LYBT.Module.Prescriptions是系统的处方管理核心模块，采用UltraThink双层架构设计，提供完整的中医处方开具、管理、验证和统计功能。与MedicalCase（医案）、Consultation（看诊）和Herbs（药材）模块紧密集成，支撑完整的诊疗流程。
+LYBT.Module.Prescriptions是系统的处方管理核心模块，采用分层架构设计，提供完整的中医处方开具、管理、验证和统计功能。与MedicalCase（医案）、Consultation（看诊）和Herbs（药材）模块紧密集成，支撑完整的诊疗流程。
 
-**技术栈**: .NET 8 + Entity Framework Core 8.0 + AutoMapper 13.0.1 + FluentValidation
-**架构特色**: UltraThink双层架构（QueryService + BusinessService）+ 纯委托模式
+**技术栈**: .NET 8 + 实体（实体（Entity）） Framework Core 8.0 + AutoMapper 13.0.1 + FluentValidation
+**架构特色**: 分层架构（QueryService + BusinessService）+ 纯委托模式
 **业务特色**: 支持处方复制、快速保存、剂量计算、处方统计等中医特色功能
 
-## 🎆 UltraThink双层架构实现
+## 🎆 分层架构实现
 
 ### 架构层次图
 ```
@@ -117,7 +117,7 @@ public interface IPrescriptionBusinessService
 }
 ```
 
-## 🧪 数据传输对象（DTOs）
+## 🧪 数据传输对象（数据传输对象（数据传输对象（DTO）））
 
 ### 核心DTOs
 ```csharp
@@ -546,5 +546,5 @@ services.AddScoped<IPrescriptionRepository, PrescriptionRepository>();
 
 ---
 
-> 📌 **最新成果**: UltraThink架构完整实现，处方管理功能全覆盖
+> 📌 **最新成果**: 分层架构完整实现，处方管理功能全覆盖
 > 🎆 **生产就绪**: 支持完整的中医处方开具流程，可直接应用于临床

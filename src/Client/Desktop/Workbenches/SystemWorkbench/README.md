@@ -2,7 +2,7 @@
 
 凌隐宝堂中医诊所系统 - 系统管理工作台模块
 
-## 项目概述
+## 🎯 项目概述
 
 系统管理工作台是专为系统管理员设计的综合性管理环境，提供用户管理、系统配置、数据维护、监控报表等管理功能。采用现代化WPF界面和Prism MVVM架构，支持对整个诊所管理系统的全面管理。
 
@@ -62,13 +62,13 @@ SystemWorkbench/
 
 ### 框架技术栈
 - **.NET 8.0-windows**: 现代.NET平台
-- **WPF**: Windows桌面应用程序框架  
-- **Prism.DryIoc 8.1.97**: MVVM框架和依赖注入
+- **WPF**: Windows桌面应用程序框架 
+- **Prism.DryIoc 8.1.97**: MVVM框架和依赖注入（DI）
 - **LYBT.Desktop.Core**: 桌面应用程序核心框架
 
 ### 设计模式
 - **MVVM模式**: 视图-视图模型-模型分离
-- **依赖注入**: 使用DryIoc容器管理依赖关系
+- **依赖注入（DI）**: 使用DryIoc容器管理依赖关系
 - **模块化架构**: Prism模块化应用程序结构
 - **权限模式**: 基于角色的访问控制(RBAC)
 
@@ -101,7 +101,7 @@ public interface ISystemWorkbenchNavigator
 系统工作台集成以下业务模块的管理视图：
 
 - **UserManagementView**: 用户管理界面
-- **PatientManagementView**: 患者管理界面  
+- **PatientManagementView**: 患者管理界面 
 - **MedicalCaseListView**: 医疗案例列表管理
 - **ConsultationMainView**: 诊断记录管理
 - **HerbManagementView**: 中药材管理界面
@@ -308,4 +308,4 @@ public async Task SyncWithHISAsync()
 
 ---
 
-**项目状态**: ✅ 生产就绪 | **最后更新**: 2025-01-01
+> 项目状态: ✅ 生产就绪 | **最后更新**: 2025-01-01

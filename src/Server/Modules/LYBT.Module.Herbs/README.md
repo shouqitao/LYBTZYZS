@@ -2,17 +2,17 @@
 
 > **药材管理核心模块** - 中药材信息管理中心
 > 药材档案管理 | 价格维护 | 拼音检索 | 批量导入导出
-> **模块状态**: ✅ **生产就绪** | 🎆 **UltraThink架构完成** | **零编译错误** | **2025-09-20更新**
+> 模块状态: ✅ **生产就绪** | 🎆 **分层架构完成** | **编译通过** | **2025-09-20更新**
 
 ## 🎯 模块概述
 
-LYBT.Module.Herbs是系统的药材管理核心模块，采用UltraThink双层架构设计，提供完整的中药材信息管理、价格维护、拼音检索和批量导入导出功能。作为处方系统的基础数据支撑，专注于药材档案的记录和管理，不涉及库存管理。
+LYBT.Module.Herbs是系统的药材管理核心模块，采用分层架构设计，提供完整的中药材信息管理、价格维护、拼音检索和批量导入导出功能。作为处方系统的基础数据支撑，专注于药材档案的记录和管理，不涉及库存管理。
 
-**技术栈**: .NET 8 + Entity Framework Core 8.0 + AutoMapper 13.0.1
-**架构特色**: UltraThink双层架构（QueryService + BusinessService）+ 纯委托模式
+**技术栈**: .NET 8 + 实体（实体（Entity）） Framework Core 8.0 + AutoMapper 13.0.1
+**架构特色**: 分层架构（QueryService + BusinessService）+ 纯委托模式
 **业务特色**: Record-Only模式，纯药材档案管理，无库存概念，适合小诊所
 
-## 🎆 UltraThink双层架构实现
+## 🎆 分层架构实现
 
 ### 架构层次图
 ```
@@ -120,7 +120,7 @@ public interface IHerbBusinessService
 }
 ```
 
-## 🧪 数据传输对象（DTOs）
+## 🧪 数据传输对象（数据传输对象（数据传输对象（DTO）））
 
 ### 核心DTOs
 ```csharp
@@ -473,7 +473,7 @@ public async Task<ServiceResult<bool>> BatchUpdateStatusAsync(
 
 - [Prescriptions处方模块](../LYBT.Module.Prescriptions/README.md) - 使用药材开具处方
 - [Formula验方模块](../LYBT.Module.Formula/README.md) - 经典方剂药材组成
-- [Infrastructure基础设施](../../Core/LYBT.Infrastructure/README.md) - 数据访问基础
+- [Infrastructure基础设施](../../Core/LYBT.基础设施（基础设施（Infrastructure））/README.md) - 数据访问基础
 
 ## 🚀 使用示例
 
@@ -538,5 +538,5 @@ services.AddSingleton<IPinYinHelper, PinYinHelper>();
 
 ---
 
-> 📌 **最新成果**: UltraThink架构完整实现，Record-Only模式精简高效
+> 📌 **最新成果**: 分层架构完整实现，Record-Only模式精简高效
 > 🎆 **生产就绪**: 完整的药材档案管理，适合小型中医诊所需求

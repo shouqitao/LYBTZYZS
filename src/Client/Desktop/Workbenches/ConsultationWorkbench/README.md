@@ -2,7 +2,7 @@
 
 凌隐宝堂中医诊所系统 - 诊疗工作台模块
 
-## 项目概述
+## 🎯 项目概述
 
 诊疗工作台是专为医生设计的综合性诊疗环境，提供中医诊疗流程的完整支持，包括患者管理、四诊记录、辨证论治、处方开具等核心功能。采用现代化WPF界面和Prism MVVM架构。
 
@@ -37,7 +37,7 @@ ConsultationWorkbench/
 - **医疗案例创建**: 为新患者创建诊疗案例容器
 - **预约管理**: 处理患者预约和排队信息
 
-#### 中医四诊阶段  
+#### 中医四诊阶段 
 - **望诊记录**: 观察患者面色、舌象、神态等外在表现
 - **闻诊记录**: 记录声音、气味等信息
 - **问诊记录**: 主诉、现病史、既往史、家族史等详细问诊
@@ -59,7 +59,7 @@ ConsultationWorkbench/
 
 - **患者管理** (LYBT.Desktop.Patients): 患者档案、联系信息管理
 - **诊断记录** (LYBT.Desktop.Consultation): 中医四诊数据录入
-- **医疗案例** (LYBT.Desktop.MedicalCase): 诊疗流程管理容器  
+- **医疗案例** (LYBT.Desktop.MedicalCase): 诊疗流程管理容器 
 - **处方管理** (LYBT.Desktop.Prescriptions): 处方开具和管理
 - **验方模板** (LYBT.Desktop.Formula): 经典验方和个人验方
 - **中药材库** (LYBT.Desktop.Herbs): 药材信息和价格管理
@@ -69,12 +69,12 @@ ConsultationWorkbench/
 ### 框架技术栈
 - **.NET 8.0-windows**: 现代.NET平台
 - **WPF**: Windows桌面应用程序框架
-- **Prism.DryIoc 8.1.97**: MVVM框架和依赖注入
+- **Prism.DryIoc 8.1.97**: MVVM框架和依赖注入（DI）
 - **LYBT.Desktop.Core**: 桌面应用程序核心框架
 
 ### 设计模式
 - **MVVM模式**: 视图-视图模型-模型分离
-- **依赖注入**: 使用DryIoc容器管理依赖关系
+- **依赖注入（DI）**: 使用DryIoc容器管理依赖关系
 - **导航模式**: 统一的页面导航和状态管理
 - **模块化架构**: Prism模块化应用程序结构
 
@@ -215,7 +215,7 @@ if (await _authService.HasPermissionAsync("consultation:create"))
 - **延迟加载**: 非核心数据按需加载
 - **缓存机制**: 常用数据本地缓存
 
-### 业务性能  
+### 业务性能 
 - **异步操作**: 所有IO操作使用异步模式
 - **批量处理**: 支持批量数据操作
 - **索引优化**: 关键查询使用数据库索引
@@ -255,4 +255,4 @@ if (await _authService.HasPermissionAsync("consultation:create"))
 
 ---
 
-**项目状态**: ✅ 生产就绪 | **最后更新**: 2025-01-01
+> 项目状态: ✅ 生产就绪 | **最后更新**: 2025-01-01
