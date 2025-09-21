@@ -215,9 +215,10 @@ namespace LYBT.Module.Users.Services
                     return ServiceResult<bool>.Failure("新密码不能为空");
                 }
 
-                if (newPassword.Length < 6)
+                // 验证密码复杂度
+                if (!Shared.Utilities.Security.PasswordPolicyValidator.Validate(newPassword, out var errors))
                 {
-                    return ServiceResult<bool>.Failure("密码长度不能少于6位");
+                    return ServiceResult<bool>.Failure($"密码不符合复杂度要求：{string.Join("；", errors)}");
                 }
 
                 var user = await _context.Users
@@ -265,9 +266,10 @@ namespace LYBT.Module.Users.Services
                     return ServiceResult<bool>.Failure("新密码不能为空");
                 }
 
-                if (newPassword.Length < 6)
+                // 验证密码复杂度
+                if (!Shared.Utilities.Security.PasswordPolicyValidator.Validate(newPassword, out var errors))
                 {
-                    return ServiceResult<bool>.Failure("密码长度不能少于6位");
+                    return ServiceResult<bool>.Failure($"密码不符合复杂度要求：{string.Join("；", errors)}");
                 }
 
                 var user = await _context.Users

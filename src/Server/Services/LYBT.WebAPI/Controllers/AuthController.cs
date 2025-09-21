@@ -140,9 +140,10 @@ namespace LYBT.WebAPI.Controllers
                     return ValidationFail("新密码不能为空");
                 }
 
-                if (request.NewPassword.Length < 6)
+                // 验证密码复杂度
+                if (!LYBT.Shared.Utilities.Security.PasswordPolicyValidator.Validate(request.NewPassword, out var errors))
                 {
-                    return ValidationFail("新密码长度不能小于6位");
+                    return ValidationFail($"密码不符合复杂度要求：{string.Join("；", errors)}");
                 }
 
                 // 调用认证服务修改密码

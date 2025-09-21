@@ -263,9 +263,10 @@ namespace LYBT.Module.Auth.Services
                     return ServiceResult<bool>.Failure("新密码不能为空");
                 }
 
-                if (newPassword.Length < 8)
+                // 验证密码复杂度
+                if (!LYBT.Shared.Utilities.Security.PasswordPolicyValidator.Validate(newPassword, out var errors))
                 {
-                    return ServiceResult<bool>.Failure("密码长度不能少于8位");
+                    return ServiceResult<bool>.Failure($"密码不符合复杂度要求：{string.Join("；", errors)}");
                 }
 
                 var passwordHash = PasswordHelper.Hash(newPassword);
