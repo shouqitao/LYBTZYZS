@@ -65,10 +65,6 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
         [DisplayName("总价格")]
         public decimal TotalPrice => SingleDosePrice * DosageCount;
 
-        /// <summary>总金额（兼容性别名）</summary>
-        [DisplayName("总金额")]
-        public decimal TotalAmount => TotalPrice;
-
         /// <summary>总重量（计算属性）</summary>
         [DisplayName("总重量")]
         public decimal TotalWeight
@@ -233,14 +229,6 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
 
         [DisplayName("单价")]
         public decimal UnitPrice { get; set; }
-
-        /// <summary>价格（兼容属性，映射到UnitPrice）</summary>
-        [DisplayName("价格")]
-        public decimal Price
-        {
-            get => UnitPrice;
-            set => UnitPrice = value;
-        }
 
         [DisplayName("总价")]
         public decimal TotalPrice { get; set; }

@@ -15,16 +15,17 @@ public static class UnifiedMiddlewareConfiguration
         // 1. 开发环境专用中间件
         app.ConfigureDevelopmentMiddleware();
 
-        // 2. 安全和性能中间件已简化为基础功能
+        // 2. 路由中间件 - 提升到顶层统一调用
+        app.UseRouting();
 
         // 3. API文档中间件
         app.ConfigureSwaggerMiddleware();
 
-        // 4. 认证和授权中间件
+        // 4. 认证和授权中间件（不再包含UseRouting）
         app.ConfigureAuthenticationMiddleware();
 
-        // 5. 路由中间件
-        app.ConfigureRoutingMiddleware();
+        // 5. 端点映射
+        app.ConfigureEndpointMapping();
 
         return app;
     }
@@ -74,8 +75,7 @@ public static class UnifiedMiddlewareConfiguration
     /// </summary>
     private static WebApplication ConfigureAuthenticationMiddleware(this WebApplication app)
     {
-        // 按照标准ASP.NET Core管道顺序：UseRouting → UseAuthentication → UseAuthorization
-        app.UseRouting();
+        // UseRouting已在ConfigureAllMiddleware顶层调用
 
         // CORS已移除：WPF+WebAPI架构无需跨域支持
 
@@ -87,11 +87,11 @@ public static class UnifiedMiddlewareConfiguration
     }
 
     /// <summary>
-    /// 配置路由中间件
+    /// 配置端点映射
     /// </summary>
-    private static WebApplication ConfigureRoutingMiddleware(this WebApplication app)
+    private static WebApplication ConfigureEndpointMapping(this WebApplication app)
     {
-        // 控制器路由映射（已在ConfigureAuthenticationMiddleware中调用UseRouting）
+        // 控制器端点映射
         app.MapControllers();
 
         return app;

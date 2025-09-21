@@ -14,10 +14,5 @@ namespace LYBT.Shared.Models.Contracts.Common
 
         public int Skip => (PageIndex - 1) * PageSize;
         public Dictionary<string, object> Extensions { get; set; } = new();
-
-        // 兼容性别名
-        public int CurrentPage { get => PageIndex; set => PageIndex = value; }
-
-        public string? SearchKeyword { get => Keyword; set => Keyword = value; }
     }
 }

@@ -52,7 +52,13 @@ public static class UnifiedServiceRegistration
         // 6. 跨域策略 - 后端CORS兜底支持
         services.RegisterCorsServices(configuration, environment);
 
-        // 7. 环境感知配置验证 - Configuration Hardening
+        // 7. 性能优化配置 - 新增
+        services.ConfigurePerformanceOptimizations(configuration);
+
+        // 8. API版本控制 - 新增
+        services.ConfigureApiVersioning();
+
+        // 9. 环境感知配置验证 - Configuration Hardening
         // 为生产环境提供额外的安全校验，开发环境提供宽松策略
         services.AddEnvironmentAwareValidation(environment, configuration);
 
@@ -241,13 +247,7 @@ public static class UnifiedServiceRegistration
     /// </summary>
     private static IServiceCollection RegisterBusinessModules(this IServiceCollection services)
     {
-        // 注册Users模块服务
-        services.AddUsersModuleServices();
-
-        // 注册Auth模块服务
-        services.AddAuthModule();
-
-        // 注册所有LYBT业务模块服务
+        // 注册所有LYBT业务模块服务（包含Users和Auth）
         services.AddAllModules();
 
         return services;
@@ -466,28 +466,12 @@ public class ProductionConfigValidationFilter : IStartupFilter
             errors.Add("JWT密钥 (JwtOptions:Secret) 不能为空且长度至少32位");
         }
 
-        // 检查CORS配置
-        var corsOrigins = _configuration.GetSection("Security:Cors:AllowedOrigins").Get<string[]>();
-        if (corsOrigins == null || corsOrigins.Length == 0)
-        {
-            errors.Add("CORS允许源 (Security:Cors:AllowedOrigins) 不能为空");
-        }
+        // 移除CORS检查（项目已不使用CORS）
 
         if (errors.Count > 0)
         {
+            // 直接抛出异常，日志由全局异常处理器记录
             var errorReport = string.Join(Environment.NewLine, errors);
-            var reportPath = "_reports/2025-09/webapi/run-fix/config-errors.md";
-
-            try
-            {
-                Directory.CreateDirectory(Path.GetDirectoryName(reportPath)!);
-                File.WriteAllText(reportPath, $"# 生产环境配置错误\n\n生成时间: {DateTime.Now:yyyy-MM-dd HH:mm:ss}\n\n## 错误列表\n\n{string.Join("\n", errors.Select(e => $"- {e}"))}\n\n## 解决方案\n\n请设置相应的环境变量或更新配置文件。\n");
-            }
-            catch
-            {
-                // 忽略文件写入错误，不影响启动
-            }
-
             throw new InvalidOperationException($"生产环境配置验证失败：\n{errorReport}");
         }
     }

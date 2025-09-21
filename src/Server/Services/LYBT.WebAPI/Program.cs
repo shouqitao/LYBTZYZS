@@ -25,7 +25,7 @@ else
 // 环境特定配置覆盖（如果存在）
 configBuilder.AddJsonFile($"appsettings.{environment}.json", optional: true);
 
-// 环境变量具有最高优先级（用于敏感配置）
+// 环境变量具有最高优先级（用于敏感配置）- 只保留这一处
 configBuilder.AddEnvironmentVariables();
 
 Log.Logger = new LoggerConfiguration()
@@ -36,7 +36,6 @@ try
 {
     Log.Information("启动 LYBT WebAPI 服务...");
 
-    // =========== UltraThink安全配置增强 - 提前加载环境变量 ===========
     var builder = WebApplication.CreateBuilder(args);
 
     // 配置Serilog作为日志提供程序
@@ -53,9 +52,7 @@ try
 
     builder.WebHost.UseUrls(urls);
 
-    // =========== 额外的环境变量支持 ===========
-    // 添加环境变量配置源（确保环境变量优先级高于appsettings.json）
-    builder.Configuration.AddEnvironmentVariables();
+    // 移除重复的环境变量配置（已在上面configBuilder中添加）
 
     // =========== UltraThink统一服务注册 ===========
     builder.Services.RegisterAllApplicationServices(builder.Configuration, builder.Environment);

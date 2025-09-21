@@ -43,11 +43,6 @@ namespace LYBT.Shared.Models.Contracts.Users
         /// <summary>账号启用状态 - UltraThink兼容性别名</summary>
         [DisplayName("账号启用状态")]
         public bool IsActive => Status == CommonStatus.Enabled;
-
-        /// <summary>用户显示名(兼容性属性，使用Username字段)</summary>
-        [DisplayName("用户显示名")]
-        [JsonPropertyName("userDisplayName")]
-        public string UserDisplayName => RealName ?? Username;
     }
 
     #endregion

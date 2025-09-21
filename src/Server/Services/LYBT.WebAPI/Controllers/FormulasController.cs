@@ -47,7 +47,7 @@ namespace LYBT.WebAPI.Controllers
 
                 var query = new FormulaQueryDto
                 {
-                    CurrentPage = page,
+                    PageIndex = page,
                     PageSize = pageSize,
                     Keyword = keyword,
                     Name = keyword, // 使用Name字段进行搜索
@@ -310,7 +310,7 @@ namespace LYBT.WebAPI.Controllers
 
                 var query = new PagedQueryBaseDto
                 {
-                    CurrentPage = page,
+                    PageIndex = page,
                     PageSize = pageSize,
                     Keyword = keyword
                 };
