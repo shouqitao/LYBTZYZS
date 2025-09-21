@@ -183,8 +183,8 @@ namespace LYBT.Module.MedicalCase.Services
 
                         _context.Prescriptions.Add(prescription);
 
-                        // 更新医案的处方关联
-                        medicalCase.PrescriptionId = prescription.Id;
+                        // 根据文档要求，删除PrescriptionId字段，通过Prescription.MedicalCaseId关联
+                        // medicalCase.PrescriptionId = prescription.Id; // 已删除此字段
 
                         // 如果提供了处方项目，创建处方项目
                         if (dto.Prescription.Items?.Any() == true)
@@ -197,7 +197,7 @@ namespace LYBT.Module.MedicalCase.Services
                                     PrescriptionId = prescription.Id,
                                     HerbId = itemDto.HerbId,
                                     HerbName = itemDto.HerbName,
-                                    Quantity = itemDto.Quantity,
+                                    Quantity = (int)itemDto.Quantity, // 强制转换为int
                                     UnitPrice = itemDto.UnitPrice,
                                     Unit = itemDto.Unit,
                                     Usage = itemDto.Usage,

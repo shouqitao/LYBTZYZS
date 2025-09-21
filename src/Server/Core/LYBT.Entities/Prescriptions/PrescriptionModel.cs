@@ -35,6 +35,11 @@ namespace LYBT.Entities.Prescriptions
         [DisplayName("关联用户ID")]
         public Guid UserId { get; set; }
 
+        /// <summary>创建人ID（医生用户ID）</summary>
+        [Required]
+        [DisplayName("创建人")]
+        public Guid CreatedBy { get; set; }
+
         /// <summary>主治（适应症/主要症状描述）</summary>
         [StringLength(500)]
         [DisplayName("主治")]

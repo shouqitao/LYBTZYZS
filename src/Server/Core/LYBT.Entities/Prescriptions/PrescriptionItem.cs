@@ -1,15 +1,15 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using LYBT.Entities.Common;
 
 namespace LYBT.Entities.Prescriptions
 {
 
     /// <summary>
     /// 处方药材项 - 处方中的药材明细，包含药材名称、剂量和单价，用于收费计算
+    /// 根据文档要求：剂量使用整数，不继承IHerbItem接口
     /// </summary>
-    public class PrescriptionItem : IHerbItem
+    public class PrescriptionItem
     {
 
         /// <summary>
@@ -42,11 +42,10 @@ namespace LYBT.Entities.Prescriptions
         public string HerbName { get; set; } = string.Empty;
 
         /// <summary>
-        /// 实际用量（已计算好的具体剂量）
+        /// 实际用量（整数剂量，根据文档要求不使用小数）
         /// </summary>
-        [Column(TypeName = "decimal(10,2)")]
         [DisplayName("用量")]
-        public decimal Quantity { get; set; }
+        public int Quantity { get; set; }
 
         /// <summary>
         /// 单位（如：克、钱、两等）

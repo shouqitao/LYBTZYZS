@@ -37,6 +37,11 @@ namespace LYBT.Entities.Consultation
         [DisplayName("关联用户ID")]
         public Guid UserId { get; set; }
 
+        /// <summary>创建人ID（医生用户ID）</summary>
+        [Required]
+        [DisplayName("创建人")]
+        public Guid CreatedBy { get; set; }
+
         /// <summary>主诉</summary>
         [StringLength(500)]
         [DisplayName("主诉")]
@@ -95,6 +100,11 @@ namespace LYBT.Entities.Consultation
         [StringLength(500)]
         [DisplayName("备注")]
         public string? Remark { get; set; }
+
+        /// <summary>并发控制字段 - 乐观并发控制</summary>
+        [Timestamp]
+        [DisplayName("版本")]
+        public byte[] RowVersion { get; set; } = new byte[8];
 
         // 导航属性
 

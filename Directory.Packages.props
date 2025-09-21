@@ -8,6 +8,7 @@
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.17" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.17" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.17" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.17" />
     <!-- Microsoft Extensions 系列 - 统一到 9.0.0 解决版本冲突 -->
     <PackageVersion Include="Microsoft.Extensions.Configuration" Version="9.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="9.0.0" />

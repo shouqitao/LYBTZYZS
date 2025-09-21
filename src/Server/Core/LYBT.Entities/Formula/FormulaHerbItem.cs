@@ -1,14 +1,14 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using LYBT.Entities.Common;
 
 namespace LYBT.Entities.Formula
 {
 
     /// <summary>
-    /// 验方明细 - 验方中的药材组成，包含药材名称和剂量倍数.
+    /// 验方明细 - 验方中的药材组成，包含药材名称和剂量
+    /// 根据用户要求：剂量使用整数，不继承IHerbItem接口
     /// </summary>
-    public class FormulaHerbItem : IHerbItem
+    public class FormulaHerbItem
     {
 
         /// <summary>
@@ -26,11 +26,10 @@ namespace LYBT.Entities.Formula
         public string HerbName { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets 剂量倍数（药材规格的倍数，如：5倍）
-        /// 实际用量 = 药材规格 × 剂量倍数.
+        /// Gets or sets 剂量（整数，根据用户要求）
         /// </summary>
-        [DisplayName("剂量倍数")]
-        public decimal Quantity { get; set; } = 1;
+        [DisplayName("剂量")]
+        public int Quantity { get; set; } = 1;
 
         /// <summary>
         /// Gets or sets 单位（从药材库继承，如：克、钱、两等）.
