@@ -241,6 +241,36 @@ chore: 构建/工具变更
 
 欢迎贡献代码！请查看 [贡献指南](docs/development/CONTRIBUTING.md) 了解如何参与项目开发。
 
+## 📚 文档导航
+
+### 架构文档
+- [系统架构设计](docs/architecture/)
+- [UltraThink架构说明](docs/ultrathink/)
+- [技术选型文档](docs/architecture/tech-stack.md)
+
+### Shared层规范文档
+- [Shared类型清单](docs/shared-inventory/shared-types.md) - 268+类型完整清单
+- [Shared依赖关系](docs/shared-inventory/shared-deps.md) - 模块依赖关系图
+- [枚举规范文档](docs/shared-inventory/shared-enums-spec.md) - 枚举标准与i18n
+- [结构优化建议](docs/shared-inventory/shared-structure-proposal.md) - 目录重构方案
+- [架构门禁规范](docs/shared-inventory/shared-arch-gates.md) - 依赖边界与禁止项
+
+### 开发文档
+- [开发环境配置](docs/development/setup.md)
+- [编码规范指南](docs/development/coding-standards.md)
+- [API接口文档](docs/api/)
+- [数据库设计文档](docs/database/)
+
+### 测试文档
+- [测试策略](docs/testing/test-strategy.md)
+- [测试指南](docs/testing/test-guidelines.md)
+- [测试覆盖率报告](docs/reports/)
+
+### 部署文档
+- [部署指南](docs/deployment/)
+- [配置说明](docs/deployment/configuration.md)
+- [运维手册](docs/deployment/operations.md)
+
 ## 📄 许可证
 
 本项目采用 MIT 许可证。详情请查看 [LICENSE](LICENSE) 文件。
