@@ -144,7 +144,7 @@ public class MedicalCaseBusinessService(
     /// <returns>状态转换结果</returns>
     public async Task<ServiceResult<bool>> StartAsync(Guid id)
     {
-        return await UpdateStatusAsync(id, MedicalCaseStatus.InConsultation, "开始医案");
+        return await UpdateStatusAsync(id, MedicalCaseStatus.Active, "开始就诊");
     }
 
     /// <summary>
@@ -155,7 +155,7 @@ public class MedicalCaseBusinessService(
     /// <returns>状态转换结果</returns>
     public async Task<ServiceResult<bool>> CompleteAsync(Guid id)
     {
-        return await UpdateStatusAsync(id, MedicalCaseStatus.Completed, "完成医案");
+        return await UpdateStatusAsync(id, MedicalCaseStatus.Closed, "结束就诊");
     }
 
     /// <summary>
@@ -166,7 +166,7 @@ public class MedicalCaseBusinessService(
     /// <returns>状态转换结果</returns>
     public async Task<ServiceResult<bool>> CancelAsync(Guid id)
     {
-        return await UpdateStatusAsync(id, MedicalCaseStatus.Cancelled, "取消医案");
+        return await UpdateStatusAsync(id, MedicalCaseStatus.Closed, "取消就诊");
     }
 
     /// <summary>
@@ -341,3 +341,6 @@ public class MedicalCaseBusinessService(
 
     #endregion 医疗案例业务逻辑专业化实现
 }
+
+
+

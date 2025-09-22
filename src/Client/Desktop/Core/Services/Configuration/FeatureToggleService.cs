@@ -8,7 +8,6 @@ namespace LYBT.Desktop.Core.Services.Configuration
     /// 特性开关服务接口 - Record-Only简化版本
     /// 只提供基础的功能开关能力，移除A/B测试、灰度发布等复杂功能
     /// </summary>
-    [Obsolete("Complex feature toggle features removed in Record-Only mode. Use simple configuration instead.", false)]
     public interface IFeatureToggleService
     {
 
@@ -25,13 +24,11 @@ namespace LYBT.Desktop.Core.Services.Configuration
         /// <summary>
         /// 获取特性变体（A/B测试功能已移除）
         /// </summary>
-        [Obsolete("A/B testing removed in Record-Only mode. Returns default value.", false)]
         string GetVariant(string featureName, string userId);
 
         /// <summary>
         /// 设置特性状态（动态配置已移除）
         /// </summary>
-        [Obsolete("Dynamic configuration removed in Record-Only mode. Use static config instead.", false)]
         Task SetFeatureStateAsync(string featureName, FeatureState state);
 
         /// <summary>
@@ -47,25 +44,21 @@ namespace LYBT.Desktop.Core.Services.Configuration
         /// <summary>
         /// 注册特性（动态注册已移除）
         /// </summary>
-        [Obsolete("Dynamic feature registration removed in Record-Only mode. Use static config instead.", false)]
         Task RegisterFeatureAsync(FeatureDefinition definition);
 
         /// <summary>
         /// 评估特性（复杂评估逻辑已移除）
         /// </summary>
-        [Obsolete("Complex evaluation removed in Record-Only mode. Use simple IsEnabled instead.", false)]
         FeatureEvaluationResult Evaluate(string featureName, EvaluationContext context);
 
         /// <summary>
         /// 注册特性变更监听（动态监听已移除）
         /// </summary>
-        [Obsolete("Feature change monitoring removed in Record-Only mode. Use static config instead.", false)]
         IDisposable OnFeatureChanged(string featureName, Action<FeatureChangeEventArgs> callback);
 
         /// <summary>
         /// 获取特性使用统计（统计功能已移除）
         /// </summary>
-        [Obsolete("Feature usage statistics removed in Record-Only mode. Use logs instead.", false)]
         FeatureUsageStatistics GetUsageStatistics(string featureName);
     }
 
@@ -73,7 +66,6 @@ namespace LYBT.Desktop.Core.Services.Configuration
     /// 特性开关服务实现 - Record-Only简化版本
     /// 移除A/B测试、灰度发布、动态配置等复杂功能
     /// </summary>
-    [Obsolete("Complex feature toggle implementation removed in Record-Only mode. Use simple configuration instead.", false)]
     public class FeatureToggleService : IFeatureToggleService
     {
         private readonly ILogger<FeatureToggleService> _logger;

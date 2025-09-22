@@ -240,7 +240,6 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 }
             };
         }
-
         #region 导航实现
 
         /// <inheritdoc/>
@@ -308,7 +307,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
                     // UltraThink v2.0: 创建时间和完成时间从ConsultationDate计算
                     CreateTime = result.Data.ConsultationDate;
-                    CompleteTime = result.Data.CaseStatus == MedicalCaseStatus.Completed
+                    CompleteTime = result.Data.CaseStatus == MedicalCaseStatus.Closed
                         ? result.Data.ConsultationDate.AddHours(1) // 默认1小时后完成
                         : null;
                 }
@@ -478,23 +477,23 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         private bool CanStartConsultation()
         {
-            return Status == MedicalCaseStatus.Registered;
+            return Status == MedicalCaseStatus.Active;
         }
 
         private bool CanCompleteCase()
         {
-            return Status == MedicalCaseStatus.InConsultation;
+            return Status == MedicalCaseStatus.Active;
         }
 
         private static MedicalCaseStatus ParseStatus(string? status)
         {
             return status?.ToLower() switch
             {
-                "registered" or "已挂号" => MedicalCaseStatus.Registered,
-                "inconsultation" or "看诊中" => MedicalCaseStatus.InConsultation,
-                "completed" or "已完成" => MedicalCaseStatus.Completed,
-                "cancelled" or "已取消" => MedicalCaseStatus.Cancelled,
-                _ => MedicalCaseStatus.Registered
+                "registered" or "已挂号" => MedicalCaseStatus.Active,
+                "inconsultation" or "看诊中" => MedicalCaseStatus.Active,
+                "completed" or "已完成" => MedicalCaseStatus.Closed,
+                "cancelled" or "已取消" => MedicalCaseStatus.Closed,
+                _ => MedicalCaseStatus.Active
             };
         }
 
@@ -502,10 +501,8 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         {
             return status switch
             {
-                MedicalCaseStatus.Registered => "已挂号",
-                MedicalCaseStatus.InConsultation => "看诊中",
-                MedicalCaseStatus.Completed => "已完成",
-                MedicalCaseStatus.Cancelled => "已取消",
+                MedicalCaseStatus.Active => "进行中",
+                MedicalCaseStatus.Closed => "已关闭",
                 _ => "未知"
             };
         }
@@ -513,3 +510,5 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         #endregion 私有方法
     }
 }
+
+ 

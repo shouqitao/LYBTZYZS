@@ -87,11 +87,11 @@ namespace LYBT.Desktop.Shell.Models
         /// <summary>
         /// 是否可以开始诊疗（已挂号状态）
         /// </summary>
-        public bool CanStartConsultation => CaseStatus == MedicalCaseStatus.Registered;
+        public bool CanStartConsultation => CaseStatus == MedicalCaseStatus.Active;
 
         /// <summary>
         /// 是否正在诊疗中
         /// </summary>
-        public bool IsInConsultation => CaseStatus == MedicalCaseStatus.InConsultation;
+        public bool IsInConsultation => CaseStatus == MedicalCaseStatus.Active;
     }
 }

@@ -7,7 +7,6 @@ namespace LYBT.Desktop.Core.Events
     /// <summary>
     /// 工作流步骤完成事件 - Record-Only模式简化版（功能移除）
     /// </summary>
-    [Obsolete("Complex workflow step tracking removed in Record-Only mode. Use simple navigation events instead.", false)]
     public class WorkflowStepCompletedEvent : PubSubEvent<WorkflowStepData>
     {
     }
@@ -15,7 +14,6 @@ namespace LYBT.Desktop.Core.Events
     /// <summary>
     /// 工作流完成事件 - Record-Only模式简化版（功能移除）
     /// </summary>
-    [Obsolete("Complex workflow completion tracking removed in Record-Only mode. Use simple navigation events instead.", false)]
     public class WorkflowCompletedEvent : PubSubEvent<WorkflowCompletionData>
     {
     }
@@ -37,7 +35,6 @@ namespace LYBT.Desktop.Core.Events
     /// <summary>
     /// 步骤验证请求事件 - Record-Only模式简化版（功能移除）
     /// </summary>
-    [Obsolete("Complex step validation removed in Record-Only mode. Use simple form validation instead.", false)]
     public class StepValidationRequestEvent : PubSubEvent<WorkflowStep>
     {
     }

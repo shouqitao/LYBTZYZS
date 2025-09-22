@@ -13,7 +13,7 @@ namespace LYBT.Desktop.Core.Events
     ///
     /// 注意：复杂的事件总线架构已在Record-Only模式中简化，推荐使用基础导航和数据刷新机制
     /// </summary>
-    [Obsolete("Complex unified event architecture removed in Record-Only mode. Use simple Prism events instead.", false)]
+    // 说明：保留该轻量事件模型作为兼容层，已与 Prism 事件用法对齐
 
     #region 统一事件数据模型
 

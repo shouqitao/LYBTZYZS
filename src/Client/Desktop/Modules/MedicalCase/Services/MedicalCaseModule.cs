@@ -139,9 +139,8 @@ public class MedicalCaseModule(
         var medicalCaseStatus = (MedicalCaseStatus)status;
         return medicalCaseStatus switch
         {
-            MedicalCaseStatus.InConsultation => await _businessService.StartAsync(id),
-            MedicalCaseStatus.Completed => await _businessService.CompleteAsync(id),
-            MedicalCaseStatus.Cancelled => await _businessService.CancelAsync(id),
+            MedicalCaseStatus.Active => await _businessService.StartAsync(id),
+            MedicalCaseStatus.Closed  => await _businessService.CompleteAsync(id),
             _ => ServiceResult<bool>.Failure($"不支持的状态更新: {medicalCaseStatus}")
         };
     }
@@ -172,3 +171,6 @@ public class MedicalCaseModule(
 
     #endregion 共享接口IMedicalCaseService额外方法 - 委托给相应服务层
 }
+
+
+
