@@ -16,14 +16,34 @@ dotnet run --project src/Client/Desktop/Shell/LYBT.Desktop.Shell.csproj
 ```
 
 ## 常见问题
-- 桌面构建缺少 `Microsoft.Extensions.ObjectPool`
+
+### 端口配置
+- **WebAPI 默认端口**:
+  - 开发环境: http://localhost:5001
+  - 生产环境: https://localhost:7001
+  - 如端口被占用，可通过 `--urls` 参数指定：`dotnet run --urls "http://localhost:8080"`
+
+### 数据库连接
+- **SQL Server 配置**:
+  - 确保 SQL Server 服务正在运行
+  - 连接字符串位于 `appsettings.json`
+  - 默认数据库名: LYBTDB
+  - 如遇连接失败，检查 Windows 认证或 SQL 认证配置
+
+### Desktop 客户端问题
+- **API 连接失败**:
+  - 确认 WebAPI 已启动且可访问
+  - 检查 Desktop 配置中的 API 地址是否正确
+  - 防火墙可能阻止本地连接
+
+- **桌面构建缺少 `Microsoft.Extensions.ObjectPool`**:
   - 现象：编译报错找不到 `ObjectPool<T>`/`IPooledObjectPolicy<T>` 类型
-  - 处理：给 `LYBT.Desktop.Core` 添加 `Microsoft.Extensions.ObjectPool` 包；避免命名空间与类型同名（可使用 `Microsoft.Extensions.ObjectPool.ObjectPool<T>` 全名或更名命名空间）
-- JSON 栈混用
+  - 处理：给 `LYBT.Desktop.Core` 添加 `Microsoft.Extensions.ObjectPool` 包
+
+### JSON 序列化
+- **JSON 栈混用**:
   - 现象：文档与代码已统一 System.Text.Json，但仍保留 `Refit.Newtonsoft.Json` 依赖
-  - 处理：按 PRD “一致性治理”阶段移除该依赖，保持 Refit 使用 `SystemTextJsonContentSerializer`
-- 端口/证书
-  - WebAPI 默认 `https://localhost:7001`，如端口被占用或证书异常，请检查 Kestrel 配置与本机证书
+  - 处理：按 PRD "一致性治理"阶段移除该依赖，保持 Refit 使用 `SystemTextJsonContentSerializer`
 
 ## 小贴士
 - 输出目录统一 `BIN/`；避免提交 `out/`、`obj/`、`TestResults/` 等生成物
