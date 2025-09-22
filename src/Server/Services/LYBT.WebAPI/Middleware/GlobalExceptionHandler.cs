@@ -1,3 +1,4 @@
+using LYBT.Infrastructure.Utilities;
 using LYBT.Shared.Models.Exceptions;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
@@ -23,12 +24,13 @@ namespace LYBT.WebAPI.Middleware
             Exception exception,
             CancellationToken cancellationToken)
         {
-            // Epic 05-P0-02 增强：结构化异常日志记录
+            // Epic 05-P0-02 增强：结构化异常日志记录（带脱敏）
+            var sanitizedMessage = LogSanitizer.SanitizeString(exception.Message);
             _logger.LogError(
                 exception,
                 "异常发生 - 类型: {ExceptionType}, 消息: {Message}, 路径: {RequestPath}, 方法: {HttpMethod}, 追踪ID: {TraceId}, 用户: {UserId}",
                 exception.GetType().Name,
-                exception.Message,
+                sanitizedMessage,
                 httpContext.Request.Path,
                 httpContext.Request.Method,
                 httpContext.TraceIdentifier,
@@ -152,7 +154,8 @@ namespace LYBT.WebAPI.Middleware
                     // 生产环境不暴露详细错误信息
                     if (httpContext.RequestServices.GetRequiredService<IWebHostEnvironment>().IsDevelopment())
                     {
-                        problemDetails.Detail = exception.Message;
+                        // 开发环境也需要脱敏
+                        problemDetails.Detail = LogSanitizer.SanitizeString(exception.Message);
                     }
 
                     break;

@@ -281,7 +281,7 @@ namespace LYBT.Module.Users.Services
                 }
 
                 // 验证原密码
-                if (!PasswordHelper.Verify(oldPassword, user.PasswordHash))
+                if (!PasswordHelper.Verify(user.PasswordHash, oldPassword))
                 {
                     return ServiceResult<bool>.Failure("原密码错误");
                 }

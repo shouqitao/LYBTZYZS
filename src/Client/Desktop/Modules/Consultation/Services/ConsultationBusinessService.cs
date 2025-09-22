@@ -44,7 +44,7 @@ public class ConsultationBusinessService(
             {
                 PatientId = createDto.PatientId,
                 MedicalCaseId = createDto.MedicalCaseId,
-                DoctorId = createDto.DoctorId
+                DoctorId = createDto.UserId
             };
 
             var refitResponse = await _consultationApi.StartConsultationAsync(startDto);
@@ -57,9 +57,9 @@ public class ConsultationBusinessService(
                     Id = consultation.Id,
                     PatientId = consultation.PatientId,
                     MedicalCaseId = consultation.MedicalCaseId,
-                    Status = consultation.Status == ConsultationStatus.Completed ? CommonStatus.Enabled : CommonStatus.Disabled,
+                    Status = consultation.ConsultationStatus == ConsultationStatus.Completed ? CommonStatus.Enabled : CommonStatus.Disabled,
                     CreateTime = consultation.CreateTime,
-                    DoctorId = consultation.DoctorId
+                    UserId = consultation.UserId
                 };
                 _logger.LogInformation("看诊诊断创建成功: {ConsultationId}", consultation.Id);
                 return ServiceResult<ConsultationDto>.Success(consultationDto, "看诊诊断创建成功");
@@ -103,9 +103,9 @@ public class ConsultationBusinessService(
                     Id = consultation.Id,
                     PatientId = consultation.PatientId,
                     MedicalCaseId = consultation.MedicalCaseId,
-                    Status = consultation.Status == ConsultationStatus.Completed ? CommonStatus.Enabled : CommonStatus.Disabled,
+                    Status = consultation.ConsultationStatus == ConsultationStatus.Completed ? CommonStatus.Enabled : CommonStatus.Disabled,
                     CreateTime = consultation.CreateTime,
-                    DoctorId = consultation.DoctorId
+                    UserId = consultation.UserId
                 };
                 _logger.LogInformation("看诊诊断更新成功: {ConsultationId}", id);
                 return ServiceResult<ConsultationDto>.Success(consultationDto, "看诊诊断更新成功");
@@ -228,7 +228,7 @@ public class ConsultationBusinessService(
                     Id = consultation.Id,
                     PatientId = consultation.PatientId,
                     MedicalCaseId = consultation.MedicalCaseId,
-                    Status = consultation.Status == ConsultationStatus.Completed ? CommonStatus.Enabled : CommonStatus.Disabled,
+                    Status = consultation.ConsultationStatus == ConsultationStatus.Completed ? CommonStatus.Enabled : CommonStatus.Disabled,
                     CreateTime = consultation.CreateTime,
                     UpdateTime = consultation.UpdateTime
                 };

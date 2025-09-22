@@ -30,7 +30,8 @@ System.Diagnostics.Debug.WriteLine($"🔐 AuthHeaderHandler: URL={request.Reques
 if (!string.IsNullOrEmpty(token))
 {
 request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
-System.Diagnostics.Debug.WriteLine($"🔐 已添加认证头: Bearer {token.Substring(0, Math.Min(20, token.Length))}...");
+// 安全加固：不输出任何 token 内容，只记录状态
+System.Diagnostics.Debug.WriteLine($"🔐 已添加认证头: Bearer [REDACTED-{token.Length}chars]");
 }
 else
 {

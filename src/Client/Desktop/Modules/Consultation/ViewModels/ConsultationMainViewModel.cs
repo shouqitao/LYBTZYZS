@@ -204,7 +204,7 @@ IsLoading = true;
 
 // 设置基本信息
 Consultation.PatientId = SelectedPatient.Id;
-Consultation.DoctorId = CurrentUser?.Id ?? Guid.Empty;
+Consultation.UserId = CurrentUser?.Id ?? Guid.Empty;
 Consultation.MedicalCaseId = MedicalCaseId ?? Guid.NewGuid();
 Consultation.StartTime = DateTime.Now;
 Consultation.DoctorName = CurrentUser?.RealName ?? string.Empty;
@@ -422,11 +422,11 @@ consultation.ChiefComplaint;
 historyContent.AppendLine($" 主诉: {complaint}");
 }
 
-if (!string.IsNullOrEmpty(consultation.Diagnosis))
+if (!string.IsNullOrEmpty(consultation.TCMDiagnosis))
 {
-var diagnosis = consultation.Diagnosis.Length > 40 ?
-consultation.Diagnosis.Substring(0, 40) + "..." :
-consultation.Diagnosis;
+var diagnosis = consultation.TCMDiagnosis.Length > 40 ?
+consultation.TCMDiagnosis.Substring(0, 40) + "..." :
+consultation.TCMDiagnosis;
 historyContent.AppendLine($" 诊断: {diagnosis}");
 }
 }

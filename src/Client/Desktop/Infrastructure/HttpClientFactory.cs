@@ -109,9 +109,30 @@ public static class HttpClientFactory
     {
 #if DEBUG
         // 开发环境忽略SSL证书验证，便于本地调试
+        // 安全加固：添加警告日志和护栏
+        System.Diagnostics.Debug.WriteLine("⚠️ 警告: SSL证书验证已禁用（仅限DEBUG模式）");
+        System.Diagnostics.Debug.WriteLine("⚠️ 警告: 请勿在生产环境使用此配置");
+
         return new HttpClientHandler
         {
-            ServerCertificateCustomValidationCallback = (_, _, _, _) => true
+            ServerCertificateCustomValidationCallback = (sender, certificate, chain, sslPolicyErrors) =>
+            {
+                // 记录证书信息，便于调试
+                if (certificate != null)
+                {
+                    System.Diagnostics.Debug.WriteLine($"🔒 证书主题: {certificate.Subject}");
+                    System.Diagnostics.Debug.WriteLine($"🔒 证书颁发者: {certificate.Issuer}");
+                    System.Diagnostics.Debug.WriteLine($"🔒 证书有效期: {certificate.NotBefore:yyyy-MM-dd} 至 {certificate.NotAfter:yyyy-MM-dd}");
+                }
+
+                if (sslPolicyErrors != System.Net.Security.SslPolicyErrors.None)
+                {
+                    System.Diagnostics.Debug.WriteLine($"⚠️ SSL策略错误: {sslPolicyErrors}");
+                }
+
+                // DEBUG模式下仍允许连接，但记录警告
+                return true;
+            }
         };
 #else
         // 生产环境使用默认SSL验证设置

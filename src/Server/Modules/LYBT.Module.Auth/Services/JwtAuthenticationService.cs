@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.Json;
 using LYBT.Shared.Utilities.Security;
 using LYBT.Infrastructure.Configuration.Options;
+using LYBT.Infrastructure.Security;
 using LYBT.Module.Auth.Interfaces;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
@@ -14,30 +15,49 @@ namespace LYBT.Module.Auth.Services
 {
 
     /// <summary>
-    /// JWT认证服务实现
+    /// JWT认证服务实现 - 集成密钥管理服务
     /// </summary>
-    public class JwtAuthenticationService(IOptions<JwtOptions> jwtOptions, ILogger<JwtAuthenticationService> logger) : IJwtAuthenticationService
+    public class JwtAuthenticationService : IJwtAuthenticationService
     {
-        private readonly JwtOptions _jwtOptions = jwtOptions?.Value ?? throw new ArgumentNullException(nameof(jwtOptions));
+        private readonly JwtOptions _jwtOptions;
         private readonly JwtSecurityTokenHandler _tokenHandler = new();
-        private readonly ILogger<JwtAuthenticationService> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        private readonly ILogger<JwtAuthenticationService> _logger;
+        private readonly IKeyManagementService? _keyManagementService;
+
+        public JwtAuthenticationService(
+            IOptions<JwtOptions> jwtOptions,
+            ILogger<JwtAuthenticationService> logger,
+            IKeyManagementService? keyManagementService = null)
+        {
+            _jwtOptions = jwtOptions?.Value ?? throw new ArgumentNullException(nameof(jwtOptions));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _keyManagementService = keyManagementService; // 可选注入，保持向后兼容
+        }
 
         /// <summary>
-        /// 生成JWT令牌
+        /// 生成JWT令牌（包含标准Claims）
         /// </summary>
         public string GenerateToken(string userId, string userName, UserRole role, bool rememberMe = false)
         {
             var claims = new List<Claim> {
+                // JWT标准Claims
                 new(JwtRegisteredClaimNames.Sub, userId),
                 new(JwtRegisteredClaimNames.UniqueName, userName),
                 new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64)
+                new(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64),
+
+                // ClaimTypes标准Claims（兼容性）
+                new(ClaimTypes.NameIdentifier, userId),
+                new(ClaimTypes.Name, userName),
+
+                // 角色声明（同时使用两种格式）
+                new(ClaimTypes.Role, role.ToString()),
+                new("role", role.ToString())  // JWT标准的role claim
             };
 
-            // 添加角色声明
-            claims.Add(new Claim(ClaimTypes.Role, role.ToString()));
-
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.Secret));
+            // 获取密钥（优先使用密钥管理服务）
+            var secret = GetCurrentSecret().GetAwaiter().GetResult();
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             // 根据"记住我"选项设置不同的过期时间
@@ -61,24 +81,36 @@ namespace LYBT.Module.Auth.Services
         {
             try
             {
-                var validationParameters = new TokenValidationParameters
-                {
-                    ValidateIssuer = true,
-                    ValidateAudience = true,
-                    ValidateLifetime = true,
-                    ValidateIssuerSigningKey = true,
-                    ValidIssuer = _jwtOptions.Issuer,
-                    ValidAudience = _jwtOptions.Audience,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.Secret)),
-                    ClockSkew = TimeSpan.Zero
-                };
+                // 获取所有有效的密钥
+                var validSecrets = GetValidSecrets().GetAwaiter().GetResult();
 
-                var principal = _tokenHandler.ValidateToken(token, validationParameters, out _);
-                return principal;
-            }
-            catch (SecurityTokenValidationException ex)
-            {
-                _logger.LogWarning("JWT Token验证失败: {ErrorMessage}", ex.Message);
+                foreach (var secret in validSecrets)
+                {
+                    try
+                    {
+                        var validationParameters = new TokenValidationParameters
+                        {
+                            ValidateIssuer = true,
+                            ValidateAudience = true,
+                            ValidateLifetime = true,
+                            ValidateIssuerSigningKey = true,
+                            ValidIssuer = _jwtOptions.Issuer,
+                            ValidAudience = _jwtOptions.Audience,
+                            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret)),
+                            ClockSkew = TimeSpan.Zero
+                        };
+
+                        var principal = _tokenHandler.ValidateToken(token, validationParameters, out _);
+                        return principal; // 验证成功，返回
+                    }
+                    catch (SecurityTokenValidationException)
+                    {
+                        // 当前密钥验证失败，尝试下一个
+                        continue;
+                    }
+                }
+
+                _logger.LogWarning("JWT Token验证失败：所有密钥均无法验证");
                 return null;
             }
             catch (ArgumentException ex)
@@ -157,5 +189,49 @@ namespace LYBT.Module.Auth.Services
                 return null;
             }
         }
+
+        #region 私有辅助方法
+
+        /// <summary>
+        /// 获取当前JWT密钥
+        /// </summary>
+        private async Task<string> GetCurrentSecret()
+        {
+            if (_keyManagementService != null)
+            {
+                try
+                {
+                    return await _keyManagementService.GetCurrentJwtSecretAsync();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "从密钥管理服务获取JWT密钥失败，使用配置文件中的密钥");
+                }
+            }
+
+            return _jwtOptions.Secret;
+        }
+
+        /// <summary>
+        /// 获取所有有效的JWT密钥（用于验证）
+        /// </summary>
+        private async Task<IEnumerable<string>> GetValidSecrets()
+        {
+            if (_keyManagementService != null)
+            {
+                try
+                {
+                    return await _keyManagementService.GetValidJwtSecretsAsync();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "从密钥管理服务获取有效JWT密钥列表失败");
+                }
+            }
+
+            return new[] { _jwtOptions.Secret };
+        }
+
+        #endregion
     }
 }

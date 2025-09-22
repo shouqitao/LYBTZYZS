@@ -70,28 +70,6 @@ namespace LYBT.Entities.Users
         [DisplayName("锁定结束时间")]
         public DateTime? LockoutEnd { get; set; }
 
-        // ==== 医生专属字段 ====
-
-        /// <summary>专长（医生用户填写，普通用户为空）</summary>
-        [DisplayName("专长")]
-        [StringLength(200)]
-        public string? Specialty { get; set; }
-
-        /// <summary>挂号费（医生用户填写）</summary>
-        [DisplayName("挂号费")]
-        [Column(TypeName = "decimal(18,2)")]
-        public decimal? RegistrationFee { get; set; }
-
-        /// <summary>执业证书号（医生用户填写）</summary>
-        [DisplayName("执业证书号")]
-        [StringLength(50)]
-        public string? LicenseNumber { get; set; }
-
-        /// <summary>简介（医生用户填写）</summary>
-        [DisplayName("简介")]
-        [StringLength(1000)]
-        public string? Introduction { get; set; }
-
         // ==== 基础时间字段 ====
 
         /// <summary>创建时间</summary>

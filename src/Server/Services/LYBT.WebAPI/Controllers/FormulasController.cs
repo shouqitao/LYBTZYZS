@@ -268,31 +268,6 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 分析验方
-        /// </summary>
-        [HttpPost("{id}/analyze")]
-        public async Task<ActionResult<ApiResponse<FormulaAnalysisResult>>> AnalyzeFormula(Guid id)
-        {
-            try
-            {
-                await Task.CompletedTask; // 满足async约定
-                
-                var validationResult = ValidateGuid<FormulaAnalysisResult>(id, "验方ID");
-                if (validationResult != null)
-                {
-                    return validationResult;
-                }
-
-                // 接口简化后不再支持复杂分析功能
-                return BusinessFail<FormulaAnalysisResult>("简单诊所版本不支持验方分析功能", ApiErrorCodes.FEATURENOTIMPLEMENTED);
-            }
-            catch (Exception ex)
-            {
-                return HandleException<FormulaAnalysisResult>(ex, "分析验方", id);
-            }
-        }
-
-        /// <summary>
         /// 搜索验方
         /// </summary>
         [HttpGet("search")]

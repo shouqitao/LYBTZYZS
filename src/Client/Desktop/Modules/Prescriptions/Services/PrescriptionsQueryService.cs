@@ -181,7 +181,7 @@ public class PrescriptionsQueryService(
                 stats.TotalCount = allDataResponse.Content.TotalCount;
                 stats.DraftCount = prescriptions.Count(p => p.Status == CommonStatus.Disabled); // 草稿状态
                 stats.CompletedCount = prescriptions.Count(p => p.Status == CommonStatus.Enabled); // 完成状态
-                stats.TotalAmount = prescriptions.Sum(p => p.TotalAmount);
+                stats.TotalAmount = prescriptions.Sum(p => p.TotalPrice);
                 stats.AverageAmount = stats.TotalCount > 0 ? stats.TotalAmount / stats.TotalCount : 0;
 
                 _logger.LogDebug(

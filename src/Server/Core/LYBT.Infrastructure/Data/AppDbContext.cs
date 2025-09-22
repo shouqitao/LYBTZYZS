@@ -125,9 +125,6 @@ namespace LYBT.Infrastructure.Data
             entity.Property(u => u.PinYinCode).HasMaxLength(50);
             entity.Property(u => u.PhoneNumber).HasMaxLength(20);
 
-            // P1 Batch1: 统一 decimal 精度配置
-            entity.Property(u => u.RegistrationFee).HasPrecision(18, 2);
-
             // UltraThink v2.0: Remark字段已删除（简化用户管理）
             // 配置枚举字段
             entity.Property(u => u.Status).HasConversion<int>();

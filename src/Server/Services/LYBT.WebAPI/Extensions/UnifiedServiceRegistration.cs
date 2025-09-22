@@ -11,6 +11,7 @@ using LYBT.Infrastructure.Data;
 using LYBT.Module.Auth;
 using LYBT.Module.Users;
 using LYBT.WebAPI.Configuration;
+using LYBT.WebAPI.Extensions.ServiceCollection;
 using LYBT.WebAPI.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Hosting;
@@ -60,7 +61,10 @@ public static class UnifiedServiceRegistration
         // 9）速率限制（全局 + 登录）
         services.ConfigureRateLimiting(configuration, environment);
 
-        // 10）环境感知配置校验（生产强校验）- 使用Infrastructure统一实现
+        // 10）安全服务（数据保护、密钥管理、密钥旋转）
+        services.AddSecurityServices(configuration, environment);
+
+        // 11）环境感知配置校验（生产强校验）- 使用Infrastructure统一实现
         services.AddEnvironmentAwareValidation(environment);
 
         return services;
@@ -111,8 +115,8 @@ public static class UnifiedServiceRegistration
         services.AddSingleton<ICacheService, MemoryCacheAdapter>();
 
         // 选项绑定（IOptions）
-        services.AddOptions<JwtOptions>()
-            .Bind(configuration.GetSection(JwtOptions.SectionName))
+        services.AddOptions<LYBT.Infrastructure.Configuration.Options.JwtOptions>()
+            .Bind(configuration.GetSection(LYBT.Infrastructure.Configuration.Options.JwtOptions.SectionName))
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
@@ -228,7 +232,12 @@ public static class UnifiedServiceRegistration
         // 配置授权策略
         services.AddAuthorization(options =>
         {
-            // 设置全局回退策略 - 要求所有用户必须认证
+            // 设置默认策略 - 要求所有端点默认需要认证
+            options.DefaultPolicy = new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder()
+                .RequireAuthenticatedUser()
+                .Build();
+
+            // 设置全局回退策略 - 要求所有用户必须认证（未标注任何授权属性的端点）
             options.FallbackPolicy = new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder()
                 .RequireAuthenticatedUser()
                 .Build();
@@ -413,18 +422,55 @@ public static class UnifiedServiceRegistration
         IConfiguration configuration,
         IWebHostEnvironment environment)
     {
-        // 绑定速率限制配置
-        var rateLimitingOptions = new RateLimitingOptions();
-        configuration.GetSection(RateLimitingOptions.SectionName).Bind(rateLimitingOptions);
+        // 优先从 SecurityOptions.RateLimit 读取配置
+        var securityOptions = new SecurityOptions();
+        configuration.GetSection(SecurityOptions.SectionName).Bind(securityOptions);
 
-        // 如果配置中没有速率限制节，使用默认值
-        if (!configuration.GetSection(RateLimitingOptions.SectionName).Exists())
+        // 绑定速率限制配置（优先级：SecurityOptions.RateLimit > RateLimiting section > 默认值）
+        var rateLimitingOptions = new RateLimitingOptions();
+
+        // 先尝试从 RateLimiting 节读取
+        if (configuration.GetSection(RateLimitingOptions.SectionName).Exists())
         {
-            // 生产环境使用更严格的默认值
+            configuration.GetSection(RateLimitingOptions.SectionName).Bind(rateLimitingOptions);
+        }
+        // 如果SecurityOptions.RateLimit存在，则使用它（覆盖RateLimiting节）
+        else if (securityOptions.RateLimit != null)
+        {
+            // 映射 SecurityOptions.RateLimit 到 RateLimitingOptions
+            rateLimitingOptions.Enabled = securityOptions.RateLimit.Enabled;
+
+            // 映射 General 限流规则
+            rateLimitingOptions.Global.PermitLimit = securityOptions.RateLimit.General.RequestsPerMinute;
+            rateLimitingOptions.Global.WindowSeconds = 60; // 固定为每分钟
+            rateLimitingOptions.Global.QueueLimit = securityOptions.RateLimit.General.RequestsPerMinute / 2;
+
+            // 映射 Authentication 限流规则
+            rateLimitingOptions.Login.PermitLimit = securityOptions.RateLimit.Authentication.RequestsPerMinute;
+            rateLimitingOptions.Login.WindowSeconds = 60;
+            rateLimitingOptions.Login.QueueLimit = securityOptions.RateLimit.Authentication.RequestsPerMinute;
+
+            // 映射 API 限流规则
+            rateLimitingOptions.Api.UserPermitLimit = securityOptions.RateLimit.General.RequestsPerMinute;
+            rateLimitingOptions.Api.AdminPermitLimit = securityOptions.RateLimit.ApiKey.RequestsPerMinute;
+            rateLimitingOptions.Api.WindowSeconds = 60;
+            rateLimitingOptions.Api.QueueLimit = securityOptions.RateLimit.General.RequestsPerMinute / 2;
+
+            // 映射白名单IP（如果SecurityOptions中有相关配置）
+            if (securityOptions.Environment?.TrustedProxies != null)
+            {
+                rateLimitingOptions.WhitelistedIPs = securityOptions.Environment.TrustedProxies;
+            }
+        }
+        // 否则使用默认值，生产环境更严格
+        else
+        {
             if (environment.IsProduction())
             {
                 rateLimitingOptions.Global.PermitLimit = 60;
-                rateLimitingOptions.Login.PermitLimit = 10;
+                rateLimitingOptions.Login.PermitLimit = 5;
+                rateLimitingOptions.Api.UserPermitLimit = 60;
+                rateLimitingOptions.Api.AdminPermitLimit = 200;
             }
         }
 
