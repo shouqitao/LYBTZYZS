@@ -321,6 +321,11 @@ public partial class App : PrismApplication
     }
 
     /// <summary>
+    /// 模块-角色映射字典，用于角色基础的按需加载
+    /// </summary>
+    private static readonly Dictionary<string, string[]> ModuleRoleMapping = new();
+
+    /// <summary>
     /// 添加基于角色的智能模块配置
     /// 根据用户角色决定模块加载时机，提升启动性能
     /// </summary>
@@ -339,7 +344,8 @@ public partial class App : PrismApplication
             InitializationMode = InitializationMode.OnDemand
         };
 
-        // 记录模块角色信息（简化处理，当前不限制角色访问）
+        // 记录模块角色映射信息
+        ModuleRoleMapping[moduleName] = requiredRoles;
         moduleCatalog.AddModule(moduleInfo);
     }
 
@@ -364,11 +370,29 @@ public partial class App : PrismApplication
 
             var modulesToLoad = new List<string>();
 
-            // 遍历所有按需加载的模块，简化处理
+            // 遍历所有按需加载的模块，根据角色过滤
             foreach (var module in moduleCatalog.Modules.Where(m => m.InitializationMode == InitializationMode.OnDemand))
             {
-                // 简化版本：所有OnDemand模块都加载（可根据需要后续优化）
-                modulesToLoad.Add(module.ModuleName);
+                // 检查模块是否允许该角色访问
+                if (ModuleRoleMapping.TryGetValue(module.ModuleName, out var allowedRoles))
+                {
+                    // 检查用户角色是否在允许列表中（不区分大小写）
+                    if (allowedRoles.Any(role => string.Equals(role, userRole, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        modulesToLoad.Add(module.ModuleName);
+                        logger.LogDebug("模块 {ModuleName} 允许角色 {UserRole} 访问", module.ModuleName, userRole);
+                    }
+                    else
+                    {
+                        logger.LogDebug("模块 {ModuleName} 不允许角色 {UserRole} 访问，跳过加载", module.ModuleName, userRole);
+                    }
+                }
+                else
+                {
+                    // 没有角色限制的模块，所有角色都可以加载
+                    modulesToLoad.Add(module.ModuleName);
+                    logger.LogDebug("模块 {ModuleName} 无角色限制，允许加载", module.ModuleName);
+                }
             }
 
             // 批量加载匹配的模块
