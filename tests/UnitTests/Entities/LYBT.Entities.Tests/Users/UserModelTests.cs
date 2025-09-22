@@ -28,11 +28,7 @@ namespace LYBT.Entities.Tests.Users
             user.PasswordHash.Should().Be(string.Empty);
             user.FailedLoginCount.Should().Be(0);
             user.LockoutEnd.Should().BeNull();
-            user.Specialty.Should().BeNull();
-            user.RegistrationFee.Should().BeNull();
-            user.LicenseNumber.Should().BeNull();
-            user.Introduction.Should().BeNull();
-            user.CreatedAt.Should().BeCloseTo(DateTime.Now, TimeSpan.FromSeconds(1));
+            user.CreatedTime.Should().BeCloseTo(DateTime.Now, TimeSpan.FromSeconds(1));
             user.UpdateTime.Should().BeNull();
             user.LastLoginTime.Should().BeNull();
             user.Remark.Should().BeNull();
@@ -195,73 +191,17 @@ namespace LYBT.Entities.Tests.Users
         }
 
         [Fact]
-        public void Specialty_PropertyCanBeSetAndGet()
-        {
-            // Arrange
-            var user = new User();
-            const string testSpecialty = "中医内科";
-
-            // Act
-            user.Specialty = testSpecialty;
-
-            // Assert
-            user.Specialty.Should().Be(testSpecialty);
-        }
-
-        [Fact]
-        public void RegistrationFee_PropertyCanBeSetAndGet()
-        {
-            // Arrange
-            var user = new User();
-            const decimal testFee = 50.00m;
-
-            // Act
-            user.RegistrationFee = testFee;
-
-            // Assert
-            user.RegistrationFee.Should().Be(testFee);
-        }
-
-        [Fact]
-        public void LicenseNumber_PropertyCanBeSetAndGet()
-        {
-            // Arrange
-            var user = new User();
-            const string testLicenseNumber = "110101199001011234";
-
-            // Act
-            user.LicenseNumber = testLicenseNumber;
-
-            // Assert
-            user.LicenseNumber.Should().Be(testLicenseNumber);
-        }
-
-        [Fact]
-        public void Introduction_PropertyCanBeSetAndGet()
-        {
-            // Arrange
-            var user = new User();
-            const string testIntroduction = "擅长治疗内科疾病，具有丰富的临床经验。";
-
-            // Act
-            user.Introduction = testIntroduction;
-
-            // Assert
-            user.Introduction.Should().Be(testIntroduction);
-        }
-
-        [Fact]
-        public void CreatedAt_PropertyCanBeSetAndGet()
+        public void CreatedTime_PropertyCanBeSetAndGet()
         {
             // Arrange
             var user = new User();
             var testTime = new DateTime(2024, 1, 1, 10, 0, 0);
 
             // Act
-            user.CreatedAt = testTime;
+            user.CreatedTime = testTime;
 
             // Assert
-            user.CreatedAt.Should().Be(testTime);
+            user.CreatedTime.Should().Be(testTime);
         }
 
         [Fact]
@@ -331,10 +271,6 @@ namespace LYBT.Entities.Tests.Users
             user.PhoneNumber = null;
             user.Email = null;
             user.LockoutEnd = null;
-            user.Specialty = null;
-            user.RegistrationFee = null;
-            user.LicenseNumber = null;
-            user.Introduction = null;
             user.UpdateTime = null;
             user.LastLoginTime = null;
             user.Remark = null;
@@ -344,10 +280,6 @@ namespace LYBT.Entities.Tests.Users
             user.PhoneNumber.Should().BeNull();
             user.Email.Should().BeNull();
             user.LockoutEnd.Should().BeNull();
-            user.Specialty.Should().BeNull();
-            user.RegistrationFee.Should().BeNull();
-            user.LicenseNumber.Should().BeNull();
-            user.Introduction.Should().BeNull();
             user.UpdateTime.Should().BeNull();
             user.LastLoginTime.Should().BeNull();
             user.Remark.Should().BeNull();
@@ -372,11 +304,7 @@ namespace LYBT.Entities.Tests.Users
             user.Status = CommonStatus.Enabled;
             user.PasswordHash = "hashed_password";
             user.FailedLoginCount = 0;
-            user.Specialty = "中医内科";
-            user.RegistrationFee = 100.00m;
-            user.LicenseNumber = "医师证123456";
-            user.Introduction = "专业中医医师";
-            user.CreatedAt = createdTime;
+            user.CreatedTime = createdTime;
             user.Remark = "优秀医生";
 
             // Assert
@@ -390,11 +318,7 @@ namespace LYBT.Entities.Tests.Users
             user.Status.Should().Be(CommonStatus.Enabled);
             user.PasswordHash.Should().Be("hashed_password");
             user.FailedLoginCount.Should().Be(0);
-            user.Specialty.Should().Be("中医内科");
-            user.RegistrationFee.Should().Be(100.00m);
-            user.LicenseNumber.Should().Be("医师证123456");
-            user.Introduction.Should().Be("专业中医医师");
-            user.CreatedAt.Should().Be(createdTime);
+            user.CreatedTime.Should().Be(createdTime);
             user.Remark.Should().Be("优秀医生");
         }
     }
