@@ -11,7 +11,6 @@
         Background="White">
 
     <Window.Resources>
-        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
     </Window.Resources>
 
     <!-- UltraThink Phase H: 全局键盘快捷键绑定 -->

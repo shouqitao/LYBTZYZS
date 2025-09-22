@@ -10,10 +10,7 @@
         ResizeMode="NoResize">
 
     <Window.Resources>
-        <!-- Boolean to Visibility Converter -->
-        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
-
-        <!-- Inverted Boolean to Visibility Converter -->
+        <!-- Inverted Boolean to Visibility Style -->
         <Style x:Key="InvertedBooleanToVisibilityStyle" TargetType="FrameworkElement">
             <Setter Property="Visibility" Value="Visible" />
             <Style.Triggers>

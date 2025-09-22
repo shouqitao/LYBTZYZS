@@ -21,9 +21,7 @@
                 <ResourceDictionary Source="../../Themes/Design/HighContrastTheme.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
-            <!-- 转换器 -->
-            <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
-            <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter" />
+            <!-- 转换器：统一使用全局资源中的定义 -->
 
             <!-- 窗口级动画资源 -->
             <Storyboard x:Key="FadeInAnimation">

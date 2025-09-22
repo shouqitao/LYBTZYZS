@@ -1,391 +1,313 @@
 using LYBT.Desktop.Core.Interfaces.Services;
-using LYBT.Desktop.Core.Mvvm; // 添加AsyncRelayCommand支持
-using LYBT.Desktop.Core.ViewModels.Base;
+using LYBT.Desktop.Core.ViewModels;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
+using Prism.Events;
 
-namespace LYBT.Desktop.MedicalCase.ViewModels
+namespace LYBT.Desktop.MedicalCase.ViewModels;
+
+/// <summary>
+/// 医疗案例管理视图模型（兼容迁移至 ModernManagementViewModel 体系）。
+/// 保持原有命令/属性命名，尽量不影响现有 XAML 绑定。
+/// </summary>
+public class MedicalCaseManagementViewModel : ModernManagementViewModel<MedicalCaseDto>
 {
-    /// <summary>
-    /// 医疗案例管理视图模型 - UltraThink双层架构UI层
-    /// 采用UltraThink架构标准，使用C# 12现代化特性
-    /// 职责：医疗案例列表管理、搜索过滤、分页展示、CRUD操作交互
-    /// 基于NewBaseListViewModel统一列表管理模式，集成AsyncRelayCommand异步命令
-    /// 支持医案创建、查看、编辑、删除、处方开具等完整诊疗流程管理
-    /// 适配中医诊所医案管理界面，确保用户体验和数据操作安全性
-    /// </summary>
-#pragma warning disable CS0618 // NewBaseListViewModel已过时，计划未来架构升级
+    private readonly IMedicalCaseService _medicalCaseService;
+    private readonly ICustomDialogService _dialogService;
+    private readonly ILogger<MedicalCaseManagementViewModel> _logger;
 
-    public class MedicalCaseManagementViewModel : NewBaseListViewModel<MedicalCaseDto>
-#pragma warning restore CS0618
+    // 过滤条件
+    private string _filterStatus = "全局状态";
+    public string FilterStatus
     {
-        #region Fields
+        get => _filterStatus;
+        set => SetProperty(ref _filterStatus, value);
+    }
 
-        private readonly IMedicalCaseService _medicalCaseService;
-        private readonly ICustomDialogService _dialogService;
-        private readonly ILogger<MedicalCaseManagementViewModel> _logger;
+    private DateTime? _startDate;
+    public DateTime? StartDate
+    {
+        get => _startDate;
+        set => SetProperty(ref _startDate, value);
+    }
 
-        #endregion Fields
+    private DateTime? _endDate;
+    public DateTime? EndDate
+    {
+        get => _endDate;
+        set => SetProperty(ref _endDate, value);
+    }
 
-        #region Properties
+    // 状态栏文本
+    public string StatusText => $"共 {TotalCount} 条记录";
 
-        private string _searchKeyword = string.Empty;
+    // 自定义命令（基类已提供 Search/Add/Edit/Delete/ViewDetails/Refresh/PreviousPage/NextPage）
+    public DelegateCommand<MedicalCaseDto> ViewConsultationCommand { get; private set; } = null!;
+    public DelegateCommand<MedicalCaseDto> CreatePrescriptionCommand { get; private set; } = null!;
+    public DelegateCommand<MedicalCaseDto> PrintCommand { get; private set; } = null!;
 
-        /// <summary>
-        /// 搜索关键词（患者姓名或案例编号）
-        /// </summary>
-        public string SearchKeyword
-        {
-            get => _searchKeyword;
-            set => SetProperty(ref _searchKeyword, value);
-        }
+    // 兼容旧分页按钮（基类已有 Previous/Next）
+    public DelegateCommand FirstPageCommand { get; private set; } = null!;
+    public DelegateCommand LastPageCommand { get; private set; } = null!;
 
-        private string _filterStatus = "全部状态";
-
-        /// <summary>
-        /// 过滤状态
-        /// </summary>
-        public string FilterStatus
-        {
-            get => _filterStatus;
-            set => SetProperty(ref _filterStatus, value);
-        }
-
-        private DateTime? _startDate;
-
-        /// <summary>
-        /// 开始日期
-        /// </summary>
-        public DateTime? StartDate
-        {
-            get => _startDate;
-            set => SetProperty(ref _startDate, value);
-        }
-
-        private DateTime? _endDate;
-
-        /// <summary>
-        /// 结束日期
-        /// </summary>
-        public DateTime? EndDate
-        {
-            get => _endDate;
-            set => SetProperty(ref _endDate, value);
-        }
-
-        // 暴露基类的分页和搜索属性供XAML绑定
-        public int CurrentPage => PaginationCoordinator.CurrentPage;
-
-        public int TotalPages => PaginationCoordinator.TotalPages;
-        public string StatusText => $"共 {PaginationCoordinator.TotalCount} 条记录";
-
-        #endregion Properties
-
-        #region Commands
-
-        // 使用AsyncRelayCommand替代DelegateCommand避免async void
-        public AsyncRelayCommand SearchCommand { get; private set; } = null!;
-
-        // 注意：RefreshCommand由基类NewBaseListViewModel提供，已修复async void问题
-        public AsyncRelayCommand AddCommand { get; private set; } = null!;
-
-        public AsyncRelayCommand<MedicalCaseDto> ViewDetailsCommand { get; private set; } = null!;
-        public AsyncRelayCommand<MedicalCaseDto> EditCommand { get; private set; } = null!;
-        public AsyncRelayCommand<MedicalCaseDto> ViewConsultationCommand { get; private set; } = null!;
-        public AsyncRelayCommand<MedicalCaseDto> CreatePrescriptionCommand { get; private set; } = null!;
-        public AsyncRelayCommand<MedicalCaseDto> PrintCommand { get; private set; } = null!;
-        public AsyncRelayCommand<MedicalCaseDto> DeleteCommand { get; private set; } = null!;
-
-        // 分页命令
-        public DelegateCommand FirstPageCommand { get; private set; } = null!;
-
-        public DelegateCommand PreviousPageCommand { get; private set; } = null!;
-        public DelegateCommand NextPageCommand { get; private set; } = null!;
-        public DelegateCommand LastPageCommand { get; private set; } = null!;
-
-        #endregion Commands
-
-        #region Constructor
-
-        public MedicalCaseManagementViewModel(
+    public MedicalCaseManagementViewModel(
         IMedicalCaseService medicalCaseService,
         ICustomDialogService dialogService,
-        ISessionManager sessionManager,
-        INotificationService notificationService,
-        ILogger<MedicalCaseManagementViewModel> logger)
-        : base(sessionManager, notificationService, logger)
+        IEventAggregator eventAggregator,
+        IErrorHandlingService? errorHandlingService = null,
+        ILogger<MedicalCaseManagementViewModel>? logger = null)
+        : base(eventAggregator, errorHandlingService)
+    {
+        _medicalCaseService = medicalCaseService ?? throw new ArgumentNullException(nameof(medicalCaseService));
+        _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
+        _logger = logger ?? Microsoft.Extensions.Logging.Abstractions.NullLogger<MedicalCaseManagementViewModel>.Instance;
+
+        InitializeCommandsCompat();
+
+        // 首次加载
+        RefreshCommand.Execute();
+    }
+
+    private void InitializeCommandsCompat()
+    {
+        ViewConsultationCommand = new DelegateCommand<MedicalCaseDto>(async (item) => await ViewConsultationAsync(item), (item) => item != null);
+        CreatePrescriptionCommand = new DelegateCommand<MedicalCaseDto>(async (item) => await CreatePrescriptionAsync(item), (item) => item != null);
+        PrintCommand = new DelegateCommand<MedicalCaseDto>(async (item) => await PrintCaseAsync(item), (item) => item != null);
+
+        FirstPageCommand = new DelegateCommand(() =>
         {
-            _medicalCaseService = medicalCaseService ?? throw new ArgumentNullException(nameof(medicalCaseService));
-            _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-
-            InitializeData();
-        }
-
-        #endregion Constructor
-
-        #region Methods
-
-        /// <inheritdoc/>
-        protected override void InitializeCommands()
-        {
-            base.InitializeCommands();
-
-            // 修复: 使用AsyncRelayCommand替代async void模式
-            SearchCommand = new AsyncRelayCommand(SearchAsync);
-
-            // RefreshCommand由基类提供，已修复async void问题
-            AddCommand = new AsyncRelayCommand(AddCaseAsync);
-            ViewDetailsCommand = new AsyncRelayCommand<MedicalCaseDto>(ViewDetailsAsync);
-            EditCommand = new AsyncRelayCommand<MedicalCaseDto>(EditCaseAsync);
-            ViewConsultationCommand = new AsyncRelayCommand<MedicalCaseDto>(ViewConsultationAsync);
-            CreatePrescriptionCommand = new AsyncRelayCommand<MedicalCaseDto>(CreatePrescriptionAsync);
-            PrintCommand = new AsyncRelayCommand<MedicalCaseDto>(PrintCaseAsync);
-            DeleteCommand = new AsyncRelayCommand<MedicalCaseDto>(DeleteCaseAsync);
-
-            // 初始化分页命令
-            FirstPageCommand = new DelegateCommand(async () => await PaginationCoordinator.GoToFirstPageAsync());
-            PreviousPageCommand = new DelegateCommand(async () => await PaginationCoordinator.GoToPreviousPageAsync());
-            NextPageCommand = new DelegateCommand(async () => await PaginationCoordinator.GoToNextPageAsync());
-            LastPageCommand = new DelegateCommand(async () => await PaginationCoordinator.GoToLastPageAsync());
-        }
-
-        private void InitializeData()
-        {
-            // 设置默认的日期范围
-            EndDate = DateTime.Today;
-            StartDate = DateTime.Today.AddMonths(-1);
-            FilterStatus = "全部状态";
-
-            // 加载数据
-            _ = Task.Run(async () => await RefreshDataAsync());
-        }
-
-        /// <inheritdoc/>
-        protected override async Task<ServiceResult<PagedResult<MedicalCaseDto>>> LoadDataAsync(PagedQueryBaseDto request)
-        {
-            try
+            if (CurrentPage != 1)
             {
-                _logger.LogInformation(
-                "加载医疗案例数据，页码: {CurrentPage}, 页大小: {PageSize}, 搜索关键词: {SearchKeyword}",
-                request.PageIndex, request.PageSize, request.Keyword);
-
-                var result = await _medicalCaseService.GetPagedAsync(request);
-
-                if (result.IsSuccess)
-                {
-                    _logger.LogInformation("医疗案例管理数据加载完成，共 {Count} 条记录", result.Data?.Items?.Count ?? 0);
-                    return result;
-                }
-                else
-                {
-                    _logger.LogError("加载医疗案例数据失败: {ErrorMessage}", result.ErrorMessage);
-                    return ServiceResult<PagedResult<MedicalCaseDto>>.Failure(
-                    result.ErrorMessage ?? "加载数据失败",
-                    result.Exception);
-                }
+                CurrentPage = 1;
+                RefreshCommand.Execute();
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "加载医疗案例数据时发生异常");
-                return ServiceResult<PagedResult<MedicalCaseDto>>.Failure("加载数据失败", ex);
-            }
-        }
+        });
 
-        private async Task SearchAsync()
+        LastPageCommand = new DelegateCommand(() =>
         {
-            _logger.LogInformation(
-            "搜索医疗案例: 关键词={SearchKeyword}, 状态={FilterStatus}",
-            SearchKeyword, FilterStatus);
-            await RefreshDataAsync();
-        }
-
-        private async Task AddCaseAsync()
-        {
-            try
+            if (CurrentPage != TotalPages && TotalPages > 0)
             {
-                _logger.LogInformation("打开新建医疗案例对话框");
-
-                var parameters = new Dictionary<string, object>();
-                var result = await _dialogService.ShowDialogAsync("CreateMedicalCaseDialog", parameters);
-
-                if (result.Result == true)
-                {
-                    _logger.LogInformation("医疗案例创建成功，刷新数据列表");
-                    await RefreshDataAsync();
-                    await _dialogService.ShowSuccessAsync("医疗案例创建成功", "成功");
-                }
+                CurrentPage = TotalPages;
+                RefreshCommand.Execute();
             }
-            catch (Exception ex)
+        });
+    }
+
+    // 基类数据加载回调
+    protected override async Task<ServiceResult<PagedResult<MedicalCaseDto>>> LoadDataAsync(int page, int pageSize, string? keyword = null)
+    {
+        try
+        {
+            _logger.LogInformation("加载医疗案例数据，页码: {Page}, 页大小: {Size}, 关键字: {Keyword}", page, pageSize, keyword);
+
+            var request = new PagedQueryBaseDto
             {
-                _logger.LogError(ex, "创建医疗案例时发生错误");
-                await _dialogService.ShowErrorAsync($"创建医疗案例失败: {ex.Message}", "错误");
+                PageIndex = page,
+                PageSize = pageSize,
+                Keyword = keyword
+            };
+
+            if (!string.IsNullOrWhiteSpace(FilterStatus)) request.Extensions["Status"] = FilterStatus!;
+            if (StartDate.HasValue) request.Extensions["StartDate"] = StartDate.Value;
+            if (EndDate.HasValue) request.Extensions["EndDate"] = EndDate.Value;
+
+            return await _medicalCaseService.GetPagedAsync(request);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "加载医疗案例数据异常");
+            return ServiceResult<PagedResult<MedicalCaseDto>>.Failure($"加载失败: {ex.Message}");
+        }
+    }
+
+    // 映射到统一命令
+    protected override Task OnAddAsync() => AddCaseAsync();
+    protected override Task OnEditAsync(MedicalCaseDto item) => EditCaseAsync(item);
+    protected override Task OnDeleteAsync(MedicalCaseDto item) => DeleteCaseAsync(item);
+    protected override Task OnViewDetailsAsync(MedicalCaseDto item) => ViewDetailsAsync(item);
+
+    protected override void RaiseCanExecuteChanged()
+    {
+        base.RaiseCanExecuteChanged();
+        ViewConsultationCommand.RaiseCanExecuteChanged();
+        CreatePrescriptionCommand.RaiseCanExecuteChanged();
+        PrintCommand.RaiseCanExecuteChanged();
+    }
+
+    #region 业务方法（复制自原实现，保持行为）
+
+    private async Task AddCaseAsync()
+    {
+        try
+        {
+            _logger.LogInformation("打开新建医疗案例对话框");
+
+            var parameters = new Dictionary<string, object>();
+            var result = await _dialogService.ShowDialogAsync("CreateMedicalCaseDialog", parameters);
+
+            if (result.Result == true)
+            {
+                _logger.LogInformation("医疗案例创建成功，刷新数据列表");
+                RefreshCommand.Execute();
+                await _dialogService.ShowSuccessAsync("医疗案例创建成功", "成功");
             }
         }
-
-        private async Task ViewDetailsAsync(MedicalCaseDto medicalCase)
+        catch (Exception ex)
         {
-            if (medicalCase == null)
-            {
-                return;
-            }
+            _logger.LogError(ex, "创建医疗案例时发生异常");
+            await _dialogService.ShowErrorAsync($"创建医疗案例失败: {ex.Message}", "错误");
+        }
+    }
 
-            try
-            {
-                _logger.LogInformation("查看医疗案例详情: {CaseId}", medicalCase.Id);
-
-                var result = await _medicalCaseService.GetByIdAsync(medicalCase.Id);
-                if (result.IsSuccess && result.Data != null)
-                {
-                    var detailInfo = $"案例ID: {result.Data.Id}\n" +
-                    $"患者姓名: {result.Data.PatientName}\n" +
-                    $"医生: {result.Data.DoctorName}\n" +
-                    $"创建时间: {result.Data.CreateTime:yyyy-MM-dd HH:mm}\n" +
-                    $"状态: {result.Data.Status}\n" +
-                    $"诊断结果: {result.Data.DiagnosisResult ?? "暂无"}\n" +
-                    $"备注: {result.Data.Remark ?? "暂无"}";
-
-                    await _dialogService.ShowInformationAsync(detailInfo, $"医疗案例详情 - {result.Data.PatientName}");
-                }
-                else
-                {
-                    await _dialogService.ShowErrorAsync(
-                    result.ErrorMessage ?? "获取医疗案例详情失败",
-                    "错误");
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "查看医疗案例详情时发生错误");
-                await _dialogService.ShowErrorAsync($"查看详情失败: {ex.Message}", "错误");
-            }
+    private async Task ViewDetailsAsync(MedicalCaseDto medicalCase)
+    {
+        if (medicalCase == null)
+        {
+            return;
         }
 
-        private async Task EditCaseAsync(MedicalCaseDto medicalCase)
+        try
         {
-            if (medicalCase == null)
+            _logger.LogInformation("查看医疗案例详情: {CaseId}", medicalCase.Id);
+
+            var result = await _medicalCaseService.GetByIdAsync(medicalCase.Id);
+            if (result.IsSuccess && result.Data != null)
             {
-                return;
+                var detailInfo = $"案例ID: {result.Data.Id}\n" +
+                                 $"患者: {result.Data.PatientName}\n" +
+                                 $"医生: {result.Data.DoctorName}\n" +
+                                 $"创建时间: {result.Data.CreateTime:yyyy-MM-dd HH:mm}\n" +
+                                 $"状态: {result.Data.Status}\n" +
+                                 $"诊疗结果: {result.Data.DiagnosisResult ?? "暂无"}\n" +
+                                 $"备注: {result.Data.Remark ?? "暂无"}";
+
+                await _dialogService.ShowInformationAsync(detailInfo, $"医疗案例详情 - {result.Data.PatientName}");
             }
-
-            _logger.LogInformation("编辑医疗案例: {CaseId}", medicalCase.Id);
-
-            // TODO: 实现编辑逻辑
-            await Task.CompletedTask;
-        }
-
-        private async Task ViewConsultationAsync(MedicalCaseDto medicalCase)
-        {
-            if (medicalCase == null)
+            else
             {
-                return;
-            }
-
-            _logger.LogInformation("查看看诊记录: {CaseId}", medicalCase.Id);
-
-            // TODO: 实现查看看诊记录逻辑
-            await Task.CompletedTask;
-        }
-
-        private async Task CreatePrescriptionAsync(MedicalCaseDto medicalCase)
-        {
-            if (medicalCase == null)
-            {
-                return;
-            }
-
-            try
-            {
-                _logger.LogInformation("从医案 {CaseId} 开具处方，患者: {PatientName}", medicalCase.Id, medicalCase.PatientName);
-
-                // 创建处方编辑对话框参数，传递医案和患者信息
-                var parameters = new Dictionary<string, object>
-                {
-                    ["IsEditMode"] = false,
-                    ["MedicalCaseId"] = medicalCase.Id,
-                    ["PatientId"] = medicalCase.PatientId,
-                    ["PatientName"] = medicalCase.PatientName,
-                    ["ContextMode"] = "MedicalCase"
-                };
-
-                var result = await _dialogService.ShowDialogAsync("PrescriptionEditorDialog", parameters);
-
-                if (result.Result == true)
-                {
-                    _logger.LogInformation("处方创建成功，医案: {CaseId}", medicalCase.Id);
-                    await _dialogService.ShowSuccessAsync(
-                    $"为患者 {medicalCase.PatientName} 开具的处方已创建成功",
-                    "处方创建完成");
-
-                    // 可选：刷新医案状态或记录
-                    // await RefreshDataAsync();
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "从医案开具处方时发生错误: {CaseId}", medicalCase.Id);
-                await _dialogService.ShowErrorAsync($"开具处方失败: {ex.Message}", "错误");
+                await _dialogService.ShowErrorAsync(result.ErrorMessage ?? "获取医疗案例详情失败", "错误");
             }
         }
-
-        private async Task PrintCaseAsync(MedicalCaseDto medicalCase)
+        catch (Exception ex)
         {
-            if (medicalCase == null)
-            {
-                return;
-            }
+            _logger.LogError(ex, "查看医疗案例详情时发生异常");
+            await _dialogService.ShowErrorAsync($"查看详情失败: {ex.Message}", "错误");
+        }
+    }
 
-            _logger.LogInformation("打印医疗案例: {CaseId}", medicalCase.Id);
-
-            // TODO: 实现打印逻辑
-            await Task.CompletedTask;
+    private async Task EditCaseAsync(MedicalCaseDto medicalCase)
+    {
+        if (medicalCase == null)
+        {
+            return;
         }
 
-        private async Task DeleteCaseAsync(MedicalCaseDto medicalCase)
+        _logger.LogInformation("编辑医疗案例: {CaseId}", medicalCase.Id);
+        // TODO: 实现编辑逻辑
+        await Task.CompletedTask;
+    }
+
+    private async Task ViewConsultationAsync(MedicalCaseDto medicalCase)
+    {
+        if (medicalCase == null)
         {
-            if (medicalCase == null)
+            return;
+        }
+
+        _logger.LogInformation("查看诊疗记录: {CaseId}", medicalCase.Id);
+        // TODO: 实现查看诊疗记录逻辑
+        await Task.CompletedTask;
+    }
+
+    private async Task CreatePrescriptionAsync(MedicalCaseDto medicalCase)
+    {
+        if (medicalCase == null)
+        {
+            return;
+        }
+
+        try
+        {
+            _logger.LogInformation("为案例 {CaseId} 创建处方: {PatientName}", medicalCase.Id, medicalCase.PatientName);
+
+            var parameters = new Dictionary<string, object>
             {
-                return;
+                ["IsEditMode"] = false,
+                ["MedicalCaseId"] = medicalCase.Id,
+                ["PatientId"] = medicalCase.PatientId,
+                ["PatientName"] = medicalCase.PatientName,
+                ["ContextMode"] = "MedicalCase"
+            };
+
+            var result = await _dialogService.ShowDialogAsync("PrescriptionEditorDialog", parameters);
+
+            if (result.Result == true)
+            {
+                _logger.LogInformation("处方创建成功: {CaseId}", medicalCase.Id);
+                await _dialogService.ShowSuccessAsync($"为患者 {medicalCase.PatientName} 创建的处方已保存", "操作成功");
             }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "创建处方时发生异常: {CaseId}", medicalCase.Id);
+            await _dialogService.ShowErrorAsync($"创建处方失败: {ex.Message}", "错误");
+        }
+    }
 
-            try
-            {
-                _logger.LogInformation("删除医疗案例: {CaseId}", medicalCase.Id);
+    private async Task PrintCaseAsync(MedicalCaseDto medicalCase)
+    {
+        if (medicalCase == null)
+        {
+            return;
+        }
 
-                var confirm = await _dialogService.ShowConfirmationAsync(
-                $"确定要删除医疗案例吗？\n" +
+        _logger.LogInformation("打印医疗案例: {CaseId}", medicalCase.Id);
+        // TODO: 实现打印逻辑
+        await Task.CompletedTask;
+    }
+
+    private async Task DeleteCaseAsync(MedicalCaseDto medicalCase)
+    {
+        if (medicalCase == null)
+        {
+            return;
+        }
+
+        try
+        {
+            _logger.LogInformation("删除医疗案例: {CaseId}", medicalCase.Id);
+
+            var confirm = await _dialogService.ShowConfirmationAsync(
+                $"确定要删除医疗案例？\n" +
                 $"患者: {medicalCase.PatientName}\n" +
                 $"创建时间: {medicalCase.CreateTime:yyyy-MM-dd HH:mm}\n" +
-                $"此操作不可恢复。",
+                $"此操作不可恢复",
                 "确认删除");
 
-                if (confirm)
+            if (confirm)
+            {
+                var result = await _medicalCaseService.DeleteAsync(medicalCase.Id);
+                if (result.IsSuccess)
                 {
-                    var result = await _medicalCaseService.DeleteAsync(medicalCase.Id);
-                    if (result.IsSuccess)
-                    {
-                        _logger.LogInformation("医疗案例删除成功: {CaseId}", medicalCase.Id);
-                        await RefreshDataAsync();
-                        await _dialogService.ShowInformationAsync("医疗案例删除成功", "成功");
-                    }
-                    else
-                    {
-                        await _dialogService.ShowErrorAsync(
-                        result.ErrorMessage ?? "删除失败",
-                        "错误");
-                    }
+                    _logger.LogInformation("医疗案例删除成功: {CaseId}", medicalCase.Id);
+                    RefreshCommand.Execute();
+                    await _dialogService.ShowInformationAsync("医疗案例删除成功", "成功");
+                }
+                else
+                {
+                    await _dialogService.ShowErrorAsync(result.ErrorMessage ?? "删除失败", "错误");
                 }
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "删除医疗案例时发生错误");
-                await _dialogService.ShowErrorAsync($"删除失败: {ex.Message}", "错误");
-            }
         }
-
-        #endregion Methods
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "删除医疗案例时发生异常");
+            await _dialogService.ShowErrorAsync($"删除失败: {ex.Message}", "错误");
+        }
     }
+
+    #endregion 业务方法
 }

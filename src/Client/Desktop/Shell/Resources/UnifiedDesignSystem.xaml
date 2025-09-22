@@ -4,9 +4,10 @@
     
     <!-- UltraThink 统一设计系统 -->
     
-    <!-- 通用转换器 -->
+    <!-- 通用转换器（全局） -->
     <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
     <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter" />
+    <converters:EmptyStringToVisibilityConverter x:Key="EmptyStringToVisibilityConverter" />
     <!-- 基础颜色 -->
     <SolidColorBrush x:Key="PrimaryBrush" Color="#2196F3"/>
     <SolidColorBrush x:Key="SecondaryBrush" Color="#FF9800"/>

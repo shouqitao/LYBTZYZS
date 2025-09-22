@@ -268,8 +268,7 @@
         <Setter Property="Height" Value="40" />
     </Style>
 
-    <!-- 转换器 -->
-    <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+    <!-- 转换器：移除重复定义，统一使用全局 UnifiedDesignSystem.xaml 中的资源 -->
 
     <!-- 反向布尔转换器 -->
     <Style x:Key="NotNullToBooleanConverter" TargetType="FrameworkElement">

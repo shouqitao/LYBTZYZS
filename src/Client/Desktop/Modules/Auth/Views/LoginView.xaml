@@ -4,7 +4,6 @@
              xmlns:prism="http://prismlibrary.com/"
              prism:ViewModelLocator.AutoWireViewModel="True">
     <UserControl.Resources>
-        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
     </UserControl.Resources>
     <!-- 登录内容，移除外层边框，因为主窗口已经有了 -->
     <Grid Margin="25">
