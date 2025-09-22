@@ -1,0 +1,41 @@
+name: PR - Build All Solution
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited, ready_for_review]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: all-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-all:
+    name: Build LYBT.All.sln (Windows)
+    runs-on: windows-latest
+    if: ${{ github.event.pull_request.draft != true }}
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: 1
+      DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+      NUGET_PACKAGES: ${{ github.workspace }}\.nuget\packages
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET from global.json
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Dotnet info
+        run: dotnet --info
+
+      - name: Restore (All)
+        run: dotnet restore LYBT.All.sln --nologo
+
+      - name: Build (All, Release)
+        run: dotnet build LYBT.All.sln -c Release --no-restore --nologo --verbosity minimal
+
