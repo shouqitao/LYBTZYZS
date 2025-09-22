@@ -31,7 +31,7 @@ public class PatientQueryService(ILogger<PatientQueryService> logger) : IPatient
         {
             _logger.LogDebug(
                 "执行患者分页查询，页码: {PageNumber}, 页大小: {PageSize}",
-                query.CurrentPage, query.PageSize);
+                query.PageIndex, query.PageSize);
 
             var emptyResult = new PagedResult<PatientDto>
             {

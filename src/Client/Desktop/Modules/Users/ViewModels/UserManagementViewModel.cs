@@ -97,9 +97,9 @@ namespace LYBT.Desktop.Users.ViewModels
         {
             var userQuery = new UserSearchDto
             {
-                CurrentPage = page,
+                PageIndex = page,
                 PageSize = pageSize,
-                SearchKeyword = keyword ?? string.Empty
+                Keyword = keyword ?? string.Empty
             };
             return await _userService.GetPagedAsync(userQuery);
         }
