@@ -349,10 +349,10 @@ var result = await _medicalCaseService.GetPagedAsync(query);
 if (result != null && result.IsSuccess && result.Data?.Items != null)
 {
 TodayCompletedCount = result.Data.Items
-.Count(c => c.CaseStatus == LYBT.Shared.Models.Enums.MedicalCaseStatus.Completed);
+.Count(c => c.CaseStatus == LYBT.Shared.Models.Enums.MedicalCaseStatus.Closed);
 
 TodayInProgressCount = result.Data.Items
-.Count(c => c.CaseStatus == LYBT.Shared.Models.Enums.MedicalCaseStatus.InConsultation);
+.Count(c => c.CaseStatus == LYBT.Shared.Models.Enums.MedicalCaseStatus.Active);
 
 // 简化收入计算 (每个案例固定150元)
 TodayTotalAmount = TodayCompletedCount * 150;
@@ -428,8 +428,8 @@ Age = patient.Age,
 Gender = patient.Gender,
 PhoneNumber = patient.PhoneNumber ?? string.Empty,
 MedicalCaseId = medicalCase.Id,
-Status = GetCaseStatusText(medicalCase.CaseStatus),
-StatusColor = GetCaseStatusColor(medicalCase.CaseStatus),
+Status = GetCaseStatusText2(medicalCase.CaseStatus),
+StatusColor = GetCaseStatusColor2(medicalCase.CaseStatus),
 CreateTime = medicalCase.CreateTime,
 
 // 添加更多有用信息
@@ -477,11 +477,11 @@ private int GetStatusPriority(LYBT.Shared.Models.Enums.MedicalCaseStatus status)
 {
 return status switch
 {
-LYBT.Shared.Models.Enums.MedicalCaseStatus.InConsultation => 1, // 最高优先级
-LYBT.Shared.Models.Enums.MedicalCaseStatus.Registered => 2,
+LYBT.Shared.Models.Enums.MedicalCaseStatus.Active => 1,
+LYBT.Shared.Models.Enums.MedicalCaseStatus.Closed => 2,
 LYBT.Shared.Models.Enums.MedicalCaseStatus.Completed => 3,
 LYBT.Shared.Models.Enums.MedicalCaseStatus.Cancelled => 4,
-_ => 5
+_ => 3
 };
 }
 
@@ -492,13 +492,13 @@ private void UpdateTodayStatisticsFromPatients(List<TodayPatientDto> patients)
 {
 try
 {
-var registeredCount = patients.Count(p => p.CaseStatus == LYBT.Shared.Models.Enums.MedicalCaseStatus.Registered);
-var inConsultationCount = patients.Count(p => p.CaseStatus == LYBT.Shared.Models.Enums.MedicalCaseStatus.InConsultation);
-var completedCount = patients.Count(p => p.CaseStatus == LYBT.Shared.Models.Enums.MedicalCaseStatus.Completed);
+var activeCount = patients.Count(p => p.CaseStatus == LYBT.Shared.Models.Enums.MedicalCaseStatus.Active);
+var closedCount = patients.Count(p => p.CaseStatus == LYBT.Shared.Models.Enums.MedicalCaseStatus.Closed);
+// 统一 Active/Closed 语义后，无需 Completed 统计
 
 // 待诊人数 = 已挂号 + 诊疗中
-TodayInProgressCount = registeredCount + inConsultationCount;
-TodayCompletedCount = completedCount;
+TodayInProgressCount = activeCount;
+TodayCompletedCount = closedCount;
 
 LogInfo($"今日统计更新: 待诊 {TodayInProgressCount} 人, 已完成 {TodayCompletedCount} 人");
 }
@@ -535,6 +535,27 @@ _ => "#808080" // 灰色 - 未知
 private void UpdateDateTime()
 {
 CurrentDateTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+}
+
+// 新版状态映射（Active/Closed）
+private string GetCaseStatusText2(LYBT.Shared.Models.Enums.MedicalCaseStatus status)
+{
+    return status switch
+    {
+        LYBT.Shared.Models.Enums.MedicalCaseStatus.Active => "进行中",
+        LYBT.Shared.Models.Enums.MedicalCaseStatus.Closed => "已关闭",
+        _ => "未知"
+    };
+}
+
+private string GetCaseStatusColor2(LYBT.Shared.Models.Enums.MedicalCaseStatus status)
+{
+    return status switch
+    {
+        LYBT.Shared.Models.Enums.MedicalCaseStatus.Active => "#1E90FF",
+        LYBT.Shared.Models.Enums.MedicalCaseStatus.Closed => "#32CD32",
+        _ => "#808080"
+    };
 }
 
 #endregion 初始化
