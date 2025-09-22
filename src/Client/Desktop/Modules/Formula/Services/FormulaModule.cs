@@ -261,12 +261,6 @@ public class FormulaModule(
         return Task.FromResult(ServiceResult<byte[]>.Failure("简单诊所版本不支持模板下载"));
     }
 
-    public Task<ServiceResult<FormulaAnalysisResult>> AnalyzeFormulaAsync(Guid formulaId)
-    {
-        return Task.FromResult(ServiceResult<FormulaAnalysisResult>.Failure("简单诊所版本不支持验方分析功能"));
-    }
-
-
     public Task<ServiceResult<bool>> ShareFormulaAsync(Guid id, Guid operatorId, string operatorName)
     {
         return Task.FromResult(ServiceResult<bool>.Failure("简单诊所版本不支持验方分享功能"));
