@@ -6,14 +6,15 @@ using LYBT.Shared.Models.Contracts.Consultation;
 namespace LYBT.Desktop.Consultation.Services;
 
 /// <summary>
-/// 看诊诊断模块 - UltraThink双层架构纯委托层
+/// 看诊诊断服务 - UltraThink双层架构纯委托层
+/// 重构：从ConsultationModule重命名为ConsultationService，避免与Prism IModule混淆
 /// 采用UltraThink架构标准，使用C# 12现代化特性
 /// 职责：统一服务入口，请求路由分发到QueryService和BusinessService
 /// 实现IConsultationService接口，与后端标准完全对齐
 /// 集成中医四诊、辨证论治、诊断记录和状态管理功能
 /// 适配中医诊所看诊诊断需求，确保诊疗流程完整性和数据安全性
 /// </summary>
-public class ConsultationModule(
+public class ConsultationService(
     IConsultationQueryService queryService,
     IConsultationBusinessService businessService) : IConsultationService
 {

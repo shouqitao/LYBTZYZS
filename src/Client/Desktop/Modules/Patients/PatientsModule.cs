@@ -30,8 +30,8 @@ namespace LYBT.Desktop.Patients
             containerRegistry.RegisterSingleton<LYBT.Desktop.Patients.Interfaces.IPatientBusinessService, PatientBusinessService>();
 
             // UltraThink纯委托主服务注册
-            containerRegistry.RegisterSingleton<Services.PatientModule>();
-            containerRegistry.RegisterSingleton<IPatientService>(container => container.Resolve<Services.PatientModule>());
+            containerRegistry.RegisterSingleton<Services.PatientService>();
+            containerRegistry.RegisterSingleton<IPatientService>(container => container.Resolve<Services.PatientService>());
 
             // 注册视图和视图模型
             containerRegistry.RegisterForNavigation<PatientManagementView, PatientManagementViewModel>();

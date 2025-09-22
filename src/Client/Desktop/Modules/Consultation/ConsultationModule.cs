@@ -35,8 +35,8 @@ namespace LYBT.Desktop.Consultation
             containerRegistry.RegisterSingleton<LYBT.Desktop.Consultation.Interfaces.IConsultationBusinessService, ConsultationBusinessService>();
 
             // UltraThink纯委托主服务注册
-            containerRegistry.RegisterSingleton<Services.ConsultationModule>();
-            containerRegistry.RegisterSingleton<IConsultationService>(container => container.Resolve<Services.ConsultationModule>());
+            containerRegistry.RegisterSingleton<Services.ConsultationService>();
+            containerRegistry.RegisterSingleton<IConsultationService>(container => container.Resolve<Services.ConsultationService>());
 
             // 注册简化后的视图模型
             containerRegistry.Register<ConsultationMainViewModel>();

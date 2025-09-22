@@ -34,8 +34,8 @@ namespace LYBT.Desktop.Formula
             containerRegistry.RegisterSingleton<IFormulaBusinessService, FormulaBusinessService>();
 
             // UltraThink纯委托主服务注册
-            containerRegistry.RegisterSingleton<Services.FormulaModule>();
-            containerRegistry.RegisterSingleton<IFormulaService>(container => container.Resolve<Services.FormulaModule>());
+            containerRegistry.RegisterSingleton<Services.FormulaService>();
+            containerRegistry.RegisterSingleton<IFormulaService>(container => container.Resolve<Services.FormulaService>());
 
             // 注册视图和视图模型
             containerRegistry.RegisterForNavigation<FormulaManagementView, FormulaManagementViewModel>();

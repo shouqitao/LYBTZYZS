@@ -6,14 +6,15 @@ using LYBT.Shared.Models.Contracts.Prescriptions;
 namespace LYBT.Desktop.Prescriptions.Services;
 
 /// <summary>
-/// 处方管理模块 - UltraThink双层架构纯委托层
+/// 处方管理服务 - UltraThink双层架构纯委托层
+/// 重构：从PrescriptionsModule重命名为PrescriptionsService，避免与Prism IModule混淆
 /// 采用UltraThink架构标准，使用C# 12现代化特性
 /// 职责：统一服务入口，请求路由分发到QueryService和BusinessService
 /// 实现IPrescriptionService接口，与后端标准完全对齐
 /// 集成处方开具、药材配伍、验方组合、智能计算和打印输出功能
 /// 适配中医诊所处方管理需求，确保配伍安全性和计算准确性
 /// </summary>
-public class PrescriptionsModule(
+public class PrescriptionsService(
     IPrescriptionsQueryService queryService,
     IPrescriptionsBusinessService businessService) : IPrescriptionService
 {

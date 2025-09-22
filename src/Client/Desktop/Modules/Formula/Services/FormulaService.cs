@@ -7,14 +7,15 @@ using LYBT.Shared.Models.Contracts.Formula;
 namespace LYBT.Desktop.Formula.Services;
 
 /// <summary>
-/// 验方管理模块 - UltraThink双层架构纯委托层
+/// 验方管理服务 - UltraThink双层架构纯委托层
+/// 重构：从FormulaModule重命名为FormulaService，避免与Prism IModule混淆
 /// 采用UltraThink架构标准，使用C# 12现代化特性
 /// 职责：统一服务入口，请求路由分发到QueryService和BusinessService
 /// 实现IFormulaService接口，与后端标准完全对齐
 /// 集成经典验方库管理、个人验方创建、验方组合、处方引用功能
 /// 适配中医诊所验方管理需求，确保验方质量和临床应用便利性
 /// </summary>
-public class FormulaModule(
+public class FormulaService(
     IFormulaQueryService queryService,
     IFormulaBusinessService businessService,
     IMapper mapper) : IFormulaService, IDisposable

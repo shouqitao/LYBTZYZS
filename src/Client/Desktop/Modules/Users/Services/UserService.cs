@@ -6,10 +6,11 @@ using LYBT.Shared.Models.Contracts.Users;
 namespace LYBT.Desktop.Users.Services;
 
 /// <summary>
-/// 用户模块 - UltraThink双层架构纯委托层（精简版）
+/// 用户业务主服务 - UltraThink双层架构纯委托层（精简版）
 /// 职责：统一服务入口，请求路由分发到QueryService和BusinessService
+/// 重构：从UserModule重命名为UserService，避免与Prism IModule混淆
 /// </summary>
-public class UserModule(
+public class UserService(
     IUserQueryService queryService,
     IUserBusinessService businessService) : IUserService
 {

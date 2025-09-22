@@ -33,8 +33,8 @@ namespace LYBT.Desktop.Herbs
             containerRegistry.RegisterSingleton<LYBT.Desktop.Herbs.Interfaces.IHerbBusinessService, HerbBusinessService>();
 
             // UltraThink纯委托主服务注册
-            containerRegistry.RegisterSingleton<Services.HerbModule>();
-            containerRegistry.RegisterSingleton<IHerbService>(container => container.Resolve<Services.HerbModule>());
+            containerRegistry.RegisterSingleton<Services.HerbService>();
+            containerRegistry.RegisterSingleton<IHerbService>(container => container.Resolve<Services.HerbService>());
 
             // 视图和视图模型注册
             containerRegistry.RegisterForNavigation<HerbManagementView, HerbManagementViewModel>();

@@ -7,14 +7,15 @@ using LYBT.Shared.Models.Enums;
 namespace LYBT.Desktop.MedicalCase.Services;
 
 /// <summary>
-/// 医疗案例模块 - UltraThink双层架构纯委托层
+/// 医疗案例服务 - UltraThink双层架构纯委托层
+/// 重构：从MedicalCaseModule重命名为MedicalCaseService，避免与Prism IModule混淆
 /// 采用UltraThink架构标准，使用C# 12现代化特性
 /// 职责：统一服务入口，请求路由分发到QueryService和BusinessService
 /// 实现IMedicalCaseService共享接口，与后端标准完全对齐
 /// 集成医案查询、CRUD操作、状态管理和流程控制功能
 /// 适配中医诊所医疗案例管理需求，确保诊疗流程完整性和数据安全性
 /// </summary>
-public class MedicalCaseModule(
+public class MedicalCaseService(
     IMedicalCaseQueryService queryService,
     IMedicalCaseBusinessService businessService) : IMedicalCaseService
 {

@@ -33,8 +33,8 @@ namespace LYBT.Desktop.Prescriptions
             containerRegistry.RegisterSingleton<LYBT.Desktop.Prescriptions.Interfaces.IPrescriptionsBusinessService, PrescriptionsBusinessService>();
 
             // UltraThink纯委托主服务注册
-            containerRegistry.RegisterSingleton<Services.PrescriptionsModule>();
-            containerRegistry.RegisterSingleton<IPrescriptionService>(container => container.Resolve<Services.PrescriptionsModule>());
+            containerRegistry.RegisterSingleton<Services.PrescriptionsService>();
+            containerRegistry.RegisterSingleton<IPrescriptionService>(container => container.Resolve<Services.PrescriptionsService>());
 
             // UltraThink核心视图：专注处方组成编辑
 

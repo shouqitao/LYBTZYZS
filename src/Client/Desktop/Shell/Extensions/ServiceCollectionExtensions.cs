@@ -15,6 +15,35 @@ namespace LYBT.Desktop.Shell.Extensions
 
     /// <summary>
     /// 服务注册扩展方法
+    ///
+    /// 服务生命周期管理策略（Prism 8.1.97 + DryIoc）：
+    ///
+    /// 1. Singleton（单例）- 全应用程序生命周期
+    ///    - 基础设施服务：ILoggerFactory, IMemoryCache, HttpClient, IThemeService
+    ///    - 认证服务：AuthService, UserService（保持会话状态）
+    ///    - 系统服务：IPermissionService, IUserSessionManager, INavigationService
+    ///    - 工作台服务：IWorkbenchRouter, IMainWindowServicesFacade
+    ///
+    /// 2. Scoped（作用域）- 按需创建，同一作用域内复用
+    ///    - 业务服务：PatientService, HerbService, FormulaService
+    ///    - API客户端：IAuthApi, IUserApi, IPatientApi等
+    ///    - 流程服务：MedicalCaseService, ConsultationService
+    ///    - 聚合服务：PrescriptionsService（依赖多个服务）
+    ///
+    /// 3. Transient（瞬态）- 每次请求创建新实例
+    ///    - 处理器：AuthHeaderHandler
+    ///    - 临时对象：对话框、临时处理器
+    ///
+    /// 分层注册策略（避免循环依赖）：
+    /// - Layer 1: 基础设施（无依赖）
+    /// - Layer 2: 认证模块（依赖Layer 1）
+    /// - Layer 3: 业务数据（依赖Layer 2）
+    /// - Layer 4: 流程协调（依赖Layer 3）
+    /// - Layer 5: 聚合服务（依赖Layer 4）
+    ///
+    /// 重构：2025-01-23 UltraThink架构优化
+    /// - 业务Module重命名为Service避免与Prism IModule混淆
+    /// - 添加集中式NavigationService解决导航分散问题
     /// </summary>
     public static class ServiceCollectionExtensions
     {
@@ -221,9 +250,9 @@ namespace LYBT.Desktop.Shell.Extensions
                 LYBT.Desktop.Herbs.Services.HerbQueryService>();
             containerRegistry.Register<LYBT.Desktop.Herbs.Interfaces.IHerbBusinessService,
                 LYBT.Desktop.Herbs.Services.HerbBusinessService>();
-            containerRegistry.Register<LYBT.Desktop.Herbs.Services.HerbModule>();
+            containerRegistry.Register<LYBT.Desktop.Herbs.Services.HerbService>();
             containerRegistry.Register<LYBT.Shared.Interfaces.Services.IHerbService,
-                LYBT.Desktop.Herbs.Services.HerbModule>();
+                LYBT.Desktop.Herbs.Services.HerbService>();
 
             // Formula模块 - 验方模板数据，无外部依赖
             // 改为Scoped以支持懒加载，提升启动性能
@@ -231,9 +260,9 @@ namespace LYBT.Desktop.Shell.Extensions
                 LYBT.Desktop.Formula.Services.FormulaQueryService>();
             containerRegistry.Register<LYBT.Desktop.Formula.Interfaces.IFormulaBusinessService,
                 LYBT.Desktop.Formula.Services.FormulaBusinessService>();
-            containerRegistry.Register<LYBT.Desktop.Formula.Services.FormulaModule>();
+            containerRegistry.Register<LYBT.Desktop.Formula.Services.FormulaService>();
             containerRegistry.Register<LYBT.Shared.Interfaces.Services.IFormulaService,
-                LYBT.Desktop.Formula.Services.FormulaModule>();
+                LYBT.Desktop.Formula.Services.FormulaService>();
         }
 
         /// <summary>
@@ -246,9 +275,9 @@ namespace LYBT.Desktop.Shell.Extensions
                 LYBT.Desktop.Auth.Services.AuthQueryService>();
             containerRegistry.RegisterSingleton<LYBT.Desktop.Auth.Interfaces.IAuthBusinessService,
                 LYBT.Desktop.Auth.Services.AuthBusinessService>();
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Auth.Services.AuthModule>();
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Auth.Services.AuthService>();
             containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Services.IAuthService,
-                LYBT.Desktop.Auth.Services.AuthModule>();
+                LYBT.Desktop.Auth.Services.AuthService>();
             containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.IAuthenticationService,
                 LYBT.Desktop.Auth.Services.AuthServiceAdapter>();
 
@@ -257,9 +286,9 @@ namespace LYBT.Desktop.Shell.Extensions
                 LYBT.Desktop.Users.Services.UserQueryService>();
             containerRegistry.RegisterSingleton<LYBT.Desktop.Users.Interfaces.IUserBusinessService,
                 LYBT.Desktop.Users.Services.UserBusinessService>();
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Users.Services.UserModule>();
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Users.Services.UserService>();
             containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Services.IUserService,
-                LYBT.Desktop.Users.Services.UserModule>();
+                LYBT.Desktop.Users.Services.UserService>();
         }
 
         /// <summary>
@@ -274,9 +303,9 @@ namespace LYBT.Desktop.Shell.Extensions
                 LYBT.Desktop.Patients.Services.PatientQueryService>();
             containerRegistry.Register<LYBT.Desktop.Patients.Interfaces.IPatientBusinessService,
                 LYBT.Desktop.Patients.Services.PatientBusinessService>();
-            containerRegistry.Register<LYBT.Desktop.Patients.Services.PatientModule>();
+            containerRegistry.Register<LYBT.Desktop.Patients.Services.PatientService>();
             containerRegistry.Register<LYBT.Shared.Interfaces.Services.IPatientService,
-                LYBT.Desktop.Patients.Services.PatientModule>();
+                LYBT.Desktop.Patients.Services.PatientService>();
         }
 
         /// <summary>
@@ -291,9 +320,9 @@ namespace LYBT.Desktop.Shell.Extensions
                 LYBT.Desktop.MedicalCase.Services.MedicalCaseQueryService>();
             containerRegistry.Register<LYBT.Desktop.MedicalCase.Interfaces.IMedicalCaseBusinessService,
                 LYBT.Desktop.MedicalCase.Services.MedicalCaseBusinessService>();
-            containerRegistry.Register<LYBT.Desktop.MedicalCase.Services.MedicalCaseModule>();
+            containerRegistry.Register<LYBT.Desktop.MedicalCase.Services.MedicalCaseService>();
             containerRegistry.Register<LYBT.Shared.Interfaces.Services.IMedicalCaseService,
-                LYBT.Desktop.MedicalCase.Services.MedicalCaseModule>();
+                LYBT.Desktop.MedicalCase.Services.MedicalCaseService>();
 
             // Consultation模块 - 诊断流程
             // 改为Scoped以支持懒加载，提升启动性能
@@ -301,9 +330,9 @@ namespace LYBT.Desktop.Shell.Extensions
                 LYBT.Desktop.Consultation.Services.ConsultationQueryService>();
             containerRegistry.Register<LYBT.Desktop.Consultation.Interfaces.IConsultationBusinessService,
                 LYBT.Desktop.Consultation.Services.ConsultationBusinessService>();
-            containerRegistry.Register<LYBT.Desktop.Consultation.Services.ConsultationModule>();
+            containerRegistry.Register<LYBT.Desktop.Consultation.Services.ConsultationService>();
             containerRegistry.Register<LYBT.Shared.Interfaces.Services.IConsultationService,
-                LYBT.Desktop.Consultation.Services.ConsultationModule>();
+                LYBT.Desktop.Consultation.Services.ConsultationService>();
         }
 
         /// <summary>
@@ -318,9 +347,9 @@ namespace LYBT.Desktop.Shell.Extensions
                 LYBT.Desktop.Prescriptions.Services.PrescriptionsQueryService>();
             containerRegistry.Register<LYBT.Desktop.Prescriptions.Interfaces.IPrescriptionsBusinessService,
                 LYBT.Desktop.Prescriptions.Services.PrescriptionsBusinessService>();
-            containerRegistry.Register<LYBT.Desktop.Prescriptions.Services.PrescriptionsModule>();
+            containerRegistry.Register<LYBT.Desktop.Prescriptions.Services.PrescriptionsService>();
             containerRegistry.Register<LYBT.Shared.Interfaces.Services.IPrescriptionService,
-                LYBT.Desktop.Prescriptions.Services.PrescriptionsModule>();
+                LYBT.Desktop.Prescriptions.Services.PrescriptionsService>();
         }
 
         /// <summary>
@@ -337,6 +366,9 @@ namespace LYBT.Desktop.Shell.Extensions
         /// </summary>
         private static void RegisterCoreServices(IContainerRegistry containerRegistry)
         {
+            // 注册集中式导航服务 - 解决导航逻辑分散问题
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Services.Navigation.INavigationService,
+                LYBT.Desktop.Core.Services.Navigation.NavigationService>();
             // 权限服务
             containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.IPermissionService, PermissionService>();
 

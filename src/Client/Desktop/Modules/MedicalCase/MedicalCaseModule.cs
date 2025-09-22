@@ -1,3 +1,4 @@
+using LYBT.Desktop.MedicalCase.Services;
 using LYBT.Desktop.MedicalCase.ViewModels;
 using LYBT.Desktop.MedicalCase.Views;
 using LYBT.Shared.Interfaces.Services;
@@ -23,8 +24,8 @@ namespace LYBT.Desktop.MedicalCase
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
             // UltraThink模块自治：注册业务服务接口实现
-            containerRegistry.RegisterSingleton<Services.MedicalCaseModule>();
-            containerRegistry.RegisterSingleton<IMedicalCaseService>(container => container.Resolve<Services.MedicalCaseModule>());
+            containerRegistry.RegisterSingleton<Services.MedicalCaseService>();
+            containerRegistry.RegisterSingleton<IMedicalCaseService>(container => container.Resolve<Services.MedicalCaseService>());
 
             // UltraThink四层架构：注册标准ViewModel
             containerRegistry.RegisterForNavigation<MedicalCaseListView, MedicalCaseListViewModel>();

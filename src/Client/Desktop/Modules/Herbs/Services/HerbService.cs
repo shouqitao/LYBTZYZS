@@ -6,14 +6,15 @@ using LYBT.Shared.Models.Contracts.Herbs;
 namespace LYBT.Desktop.Herbs.Services;
 
 /// <summary>
-/// 中药材管理模块 - UltraThink双层架构纯委托层
+/// 中药材管理服务 - UltraThink双层架构纯委托层
+/// 重构：从HerbModule重命名为HerbService，避免与Prism IModule混淆
 /// 采用UltraThink架构标准，使用C# 12现代化特性
 /// 职责：统一服务入口，请求路由分发到QueryService和BusinessService
 /// 实现IHerbService接口，与后端标准完全对齐
 /// 集成中药材档案管理、用法用量、价格管理、Excel导入导出功能
 /// 适配中医诊所药材管理需求，确保药材信息准确和处方选择便利性
 /// </summary>
-public class HerbModule(
+public class HerbService(
     IHerbQueryService queryService,
     IHerbBusinessService businessService) : IHerbService, IDisposable
 {

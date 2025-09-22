@@ -6,14 +6,15 @@ using LYBT.Shared.Models.Contracts.Patients;
 namespace LYBT.Desktop.Patients.Services;
 
 /// <summary>
-/// 患者模块 - UltraThink双层架构纯委托层
+/// 患者服务 - UltraThink双层架构纯委托层
+/// 重构：从PatientModule重命名为PatientService，避免与Prism IModule混淆
 /// 采用UltraThink架构标准，使用C# 12现代化特性
 /// 职责：统一服务入口，请求路由分发到QueryService和BusinessService
 /// 实现IPatientService共享接口，与后端标准完全对齐
 /// 集成患者查询、CRUD操作、状态管理和高级搜索功能
 /// 适配中医诊所患者档案管理需求，确保数据安全性和操作便利性
 /// </summary>
-public class PatientModule(
+public class PatientService(
     IPatientQueryService queryService,
     IPatientBusinessService businessService) : IPatientService
 {
