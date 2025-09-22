@@ -397,22 +397,22 @@ namespace LYBT.Desktop.Core.ViewModels.MedicalCase
         /// <summary>
         /// 检查案例是否已完成
         /// </summary>
-        public bool IsCompleted => _medicalCaseData.CaseStatus == MedicalCaseStatus.Completed; // UltraThink v2.0简化：基于状态直接判断
+        public bool IsCompleted => _medicalCaseData.CaseStatus == MedicalCaseStatus.Closed;
 
         /// <summary>
         /// 检查案例是否进行中
         /// </summary>
-        public bool IsInProgress => _medicalCaseData.CaseStatus == MedicalCaseStatus.InConsultation; // UltraThink v2.0简化：基于状态直接判断
+        public bool IsInProgress => _medicalCaseData.CaseStatus == MedicalCaseStatus.Active;
 
         /// <summary>
         /// 检查案例是否已取消
         /// </summary>
-        public bool IsCancelled => _medicalCaseData.CaseStatus == MedicalCaseStatus.Cancelled; // UltraThink v2.0简化：基于状态直接判断
+        public bool IsCancelled => _medicalCaseData.CaseStatus == MedicalCaseStatus.Closed;
 
         /// <summary>
         /// 检查案例是否为新创建
         /// </summary>
-        public bool IsNew => _medicalCaseData.CaseStatus == MedicalCaseStatus.Registered; // UltraThink v2.0简化：基于状态直接判断
+        public bool IsNew => _medicalCaseData.CaseStatus == MedicalCaseStatus.Active;
 
         /// <summary>
         /// 检查案例是否紧急
@@ -432,22 +432,22 @@ namespace LYBT.Desktop.Core.ViewModels.MedicalCase
         /// <summary>
         /// 检查是否可以完成案例
         /// </summary>
-        public bool CanComplete => _medicalCaseData.CaseStatus == MedicalCaseStatus.InConsultation && _state.CanComplete; // UltraThink v2.0简化：基于状态判断
+        public bool CanComplete => _medicalCaseData.CaseStatus == MedicalCaseStatus.Active && _state.CanComplete;
 
         /// <summary>
         /// 检查是否可以取消案例
         /// </summary>
-        public bool CanCancel => _medicalCaseData.CaseStatus != MedicalCaseStatus.Completed && _state.CanCancel; // UltraThink v2.0简化：基于状态判断
+        public bool CanCancel => _medicalCaseData.CaseStatus != MedicalCaseStatus.Closed && _state.CanCancel;
 
         /// <summary>
         /// 检查是否可以删除
         /// </summary>
-        public bool CanDelete => _medicalCaseData.CaseStatus != MedicalCaseStatus.Completed && _state.CanDelete; // UltraThink v2.0简化：基于状态判断
+        public bool CanDelete => _medicalCaseData.CaseStatus != MedicalCaseStatus.Closed && _state.CanDelete;
 
         /// <summary>
         /// 检查是否可以编辑
         /// </summary>
-        public bool CanEdit => _medicalCaseData.CaseStatus != MedicalCaseStatus.Completed && _state.CanEdit; // UltraThink v2.0简化：基于状态判断
+        public bool CanEdit => _medicalCaseData.CaseStatus != MedicalCaseStatus.Closed && _state.CanEdit;
 
         /// <summary>
         /// 获取案例持续时间（分钟）

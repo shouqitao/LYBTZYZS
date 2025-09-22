@@ -24,20 +24,16 @@ namespace LYBT.Desktop.Core.ViewModels.MedicalCase
         /// <summary>主背景色</summary>
         public Brush BackgroundBrush => _medicalCaseData.CaseStatus switch
         {
-            MedicalCaseStatus.Registered => new SolidColorBrush(Color.FromRgb(255, 248, 230)), // 浅橙色
-            MedicalCaseStatus.InConsultation => new SolidColorBrush(Color.FromRgb(230, 245, 255)), // 浅蓝色
-            MedicalCaseStatus.Completed => new SolidColorBrush(Color.FromRgb(230, 255, 230)), // 浅绿色
-            MedicalCaseStatus.Cancelled => new SolidColorBrush(Color.FromRgb(255, 230, 230)), // 浅红色
+            MedicalCaseStatus.Active => new SolidColorBrush(Color.FromRgb(230, 245, 255)), // 浅蓝色（进行中）
+            MedicalCaseStatus.Closed => new SolidColorBrush(Color.FromRgb(230, 255, 230)), // 浅绿色（已关闭）
             _ => new SolidColorBrush(Color.FromRgb(248, 248, 248)) // 默认灰色
         };
 
         /// <summary>边框颜色</summary>
         public Brush BorderBrush => _medicalCaseData.CaseStatus switch
         {
-            MedicalCaseStatus.Registered => new SolidColorBrush(Color.FromRgb(255, 193, 7)), // 橙色
-            MedicalCaseStatus.InConsultation => new SolidColorBrush(Color.FromRgb(0, 123, 255)), // 蓝色
-            MedicalCaseStatus.Completed => new SolidColorBrush(Color.FromRgb(40, 167, 69)), // 绿色
-            MedicalCaseStatus.Cancelled => new SolidColorBrush(Color.FromRgb(220, 53, 69)), // 红色
+            MedicalCaseStatus.Active => new SolidColorBrush(Color.FromRgb(0, 123, 255)), // 蓝色（进行中）
+            MedicalCaseStatus.Closed => new SolidColorBrush(Color.FromRgb(40, 167, 69)), // 绿色（已关闭）
             _ => new SolidColorBrush(Color.FromRgb(206, 212, 218)) // 默认边框色
         };
 
@@ -49,7 +45,7 @@ namespace LYBT.Desktop.Core.ViewModels.MedicalCase
         };
 
         /// <summary>强调色（用于重要信息）</summary>
-        public Brush AccentBrush => _medicalCaseData.CaseStatus == MedicalCaseStatus.Registered
+        public Brush AccentBrush => _medicalCaseData.CaseStatus == MedicalCaseStatus.Active
             ? new SolidColorBrush(Color.FromRgb(220, 53, 69)) // UltraThink v2.0简化：按状态判断紧急程度
             : new SolidColorBrush(Color.FromRgb(76, 175, 80)); // 正常时绿色
 
@@ -60,19 +56,16 @@ namespace LYBT.Desktop.Core.ViewModels.MedicalCase
         /// <summary>状态图标颜色</summary>
         public Brush StatusIconBrush => _medicalCaseData.CaseStatus switch
         {
-            MedicalCaseStatus.Registered => new SolidColorBrush(Color.FromRgb(255, 193, 7)), // 橙色
-            MedicalCaseStatus.InConsultation => new SolidColorBrush(Color.FromRgb(0, 123, 255)), // 蓝色
-            MedicalCaseStatus.Completed => new SolidColorBrush(Color.FromRgb(40, 167, 69)), // 绿色
-            MedicalCaseStatus.Cancelled => new SolidColorBrush(Color.FromRgb(220, 53, 69)), // 红色
+            MedicalCaseStatus.Active => new SolidColorBrush(Color.FromRgb(0, 123, 255)), // 蓝色（进行中）
+            MedicalCaseStatus.Closed => new SolidColorBrush(Color.FromRgb(40, 167, 69)), // 绿色（已关闭）
             _ => new SolidColorBrush(Color.FromRgb(108, 117, 125)) // 默认灰色
         };
 
         /// <summary>优先级颜色</summary>
         public Brush PriorityBrush => _medicalCaseData.CaseStatus switch
         {
-            MedicalCaseStatus.Registered => new SolidColorBrush(Color.FromRgb(220, 53, 69)), // 红色 - 等待中
-            MedicalCaseStatus.InConsultation => new SolidColorBrush(Color.FromRgb(255, 193, 7)), // 黄色 - 诊疗中
-            MedicalCaseStatus.Completed => new SolidColorBrush(Color.FromRgb(40, 167, 69)), // 绿色 - 已完成
+            MedicalCaseStatus.Active => new SolidColorBrush(Color.FromRgb(255, 193, 7)), // 黄色 - 进行中
+            MedicalCaseStatus.Closed => new SolidColorBrush(Color.FromRgb(40, 167, 69)), // 绿色 - 已关闭
             _ => new SolidColorBrush(Color.FromRgb(108, 117, 125)) // 灰色 - 其他
         };
 
