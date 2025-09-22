@@ -418,18 +418,55 @@ public static class UnifiedServiceRegistration
         IConfiguration configuration,
         IWebHostEnvironment environment)
     {
-        // 绑定速率限制配置
-        var rateLimitingOptions = new RateLimitingOptions();
-        configuration.GetSection(RateLimitingOptions.SectionName).Bind(rateLimitingOptions);
+        // 优先从 SecurityOptions.RateLimit 读取配置
+        var securityOptions = new SecurityOptions();
+        configuration.GetSection(SecurityOptions.SectionName).Bind(securityOptions);
 
-        // 如果配置中没有速率限制节，使用默认值
-        if (!configuration.GetSection(RateLimitingOptions.SectionName).Exists())
+        // 绑定速率限制配置（优先级：SecurityOptions.RateLimit > RateLimiting section > 默认值）
+        var rateLimitingOptions = new RateLimitingOptions();
+
+        // 先尝试从 RateLimiting 节读取
+        if (configuration.GetSection(RateLimitingOptions.SectionName).Exists())
         {
-            // 生产环境使用更严格的默认值
+            configuration.GetSection(RateLimitingOptions.SectionName).Bind(rateLimitingOptions);
+        }
+        // 如果SecurityOptions.RateLimit存在，则使用它（覆盖RateLimiting节）
+        else if (securityOptions.RateLimit != null)
+        {
+            // 映射 SecurityOptions.RateLimit 到 RateLimitingOptions
+            rateLimitingOptions.Enabled = securityOptions.RateLimit.Enabled;
+
+            // 映射 General 限流规则
+            rateLimitingOptions.Global.PermitLimit = securityOptions.RateLimit.General.RequestsPerMinute;
+            rateLimitingOptions.Global.WindowSeconds = 60; // 固定为每分钟
+            rateLimitingOptions.Global.QueueLimit = securityOptions.RateLimit.General.RequestsPerMinute / 2;
+
+            // 映射 Authentication 限流规则
+            rateLimitingOptions.Login.PermitLimit = securityOptions.RateLimit.Authentication.RequestsPerMinute;
+            rateLimitingOptions.Login.WindowSeconds = 60;
+            rateLimitingOptions.Login.QueueLimit = securityOptions.RateLimit.Authentication.RequestsPerMinute;
+
+            // 映射 API 限流规则
+            rateLimitingOptions.Api.UserPermitLimit = securityOptions.RateLimit.General.RequestsPerMinute;
+            rateLimitingOptions.Api.AdminPermitLimit = securityOptions.RateLimit.ApiKey.RequestsPerMinute;
+            rateLimitingOptions.Api.WindowSeconds = 60;
+            rateLimitingOptions.Api.QueueLimit = securityOptions.RateLimit.General.RequestsPerMinute / 2;
+
+            // 映射白名单IP（如果SecurityOptions中有相关配置）
+            if (securityOptions.Environment?.TrustedProxies != null)
+            {
+                rateLimitingOptions.WhitelistedIPs = securityOptions.Environment.TrustedProxies;
+            }
+        }
+        // 否则使用默认值，生产环境更严格
+        else
+        {
             if (environment.IsProduction())
             {
                 rateLimitingOptions.Global.PermitLimit = 60;
-                rateLimitingOptions.Login.PermitLimit = 10;
+                rateLimitingOptions.Login.PermitLimit = 5;
+                rateLimitingOptions.Api.UserPermitLimit = 60;
+                rateLimitingOptions.Api.AdminPermitLimit = 200;
             }
         }
 
