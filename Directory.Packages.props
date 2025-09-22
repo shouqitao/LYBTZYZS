@@ -109,7 +109,6 @@
     <PackageVersion Include="MaterialDesignThemes" Version="5.1.0" />
     <PackageVersion Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.135" />
     <!-- HTTP和API -->
-    <PackageVersion Include="Refit.Newtonsoft.Json" Version="8.0.0" />
     <!-- 异步和响应式 -->
     <PackageVersion Include="System.Reactive" Version="6.0.0" />
     <!-- HTTP 策略和重试 -->

@@ -4,6 +4,7 @@ using LYBT.Shared.Interfaces.Api;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.Extensions.Logging;
+using LYBT.Desktop.Infrastructure.Api;
 
 namespace LYBT.Desktop.Auth.Services;
 
@@ -18,11 +19,13 @@ namespace LYBT.Desktop.Auth.Services;
 public class AuthBusinessService(
     ILogger<AuthBusinessService> logger,
     IAuthApi authApi,
-    ISessionManager sessionManager) : IAuthBusinessService
+    ISessionManager sessionManager,
+    IUnifiedApiClientManager apiClientManager) : IAuthBusinessService
 {
     private readonly ILogger<AuthBusinessService> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private readonly IAuthApi _authApi = authApi ?? throw new ArgumentNullException(nameof(authApi));
     private readonly ISessionManager _sessionManager = sessionManager ?? throw new ArgumentNullException(nameof(sessionManager));
+    private readonly IUnifiedApiClientManager _apiClientManager = apiClientManager ?? throw new ArgumentNullException(nameof(apiClientManager));
 
     #region 核心认证业务逻辑 - 企业级实现
 
@@ -56,6 +59,9 @@ public class AuthBusinessService(
                     {
                         _sessionManager.SetUserSession(response.Data.User, response.Data.Token);
                         _logger.LogInformation("会话状态已更新: {Username}", response.Data.User.Username);
+
+                        // 设置统一API客户端的认证令牌，确保后续所有请求携带Bearer
+                        _apiClientManager.SetAuthorizationToken(response.Data.Token);
                     }
                     catch (Exception sessionEx)
                     {
@@ -102,6 +108,9 @@ public class AuthBusinessService(
                 {
                     _sessionManager.ClearUserSession();
                     _logger.LogInformation("本地会话状态已清除");
+
+                    // 清理统一API客户端的认证令牌
+                    _apiClientManager.SetAuthorizationToken(null);
                 }
                 catch (Exception sessionEx)
                 {

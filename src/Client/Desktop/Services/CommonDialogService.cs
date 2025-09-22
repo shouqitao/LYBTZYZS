@@ -3,7 +3,6 @@ using System.Windows;
 using LYBT.Desktop.Core.Interfaces.Services;
 using Microsoft.Win32;
 using Application = System.Windows.Application;
-using FolderBrowserDialog = System.Windows.Forms.FolderBrowserDialog;
 using MessageBox = System.Windows.MessageBox;
 
 namespace LYBT.Desktop.Services
@@ -224,13 +223,26 @@ namespace LYBT.Desktop.Services
             {
                 return Application.Current.Dispatcher.Invoke(() =>
                 {
-                    using (var dialog = new FolderBrowserDialog())
+                    // 使用 SaveFileDialog 选择“目标文件夹”并取其目录（无WinForms依赖）
+                    var dialog = new SaveFileDialog
                     {
-                        dialog.Description = title;
+                        Title = title,
+                        FileName = "选择此文件夹",
+                        Filter = "Folder|*.folder",
+                        AddExtension = false,
+                        OverwritePrompt = false,
+                        CheckPathExists = true
+                    };
 
-                        if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                    if (dialog.ShowDialog() == true)
+                    {
+                        try
                         {
-                            return dialog.SelectedPath;
+                            return System.IO.Path.GetDirectoryName(dialog.FileName);
+                        }
+                        catch
+                        {
+                            return null;
                         }
                     }
 

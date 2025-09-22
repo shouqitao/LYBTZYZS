@@ -1,0 +1,884 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>LYBT.Desktop.Patients</name>
+    </assembly>
+    <members>
+        <member name="T:LYBT.Desktop.Patients.Interfaces.IPatientBusinessService">
+            <summary>
+            患者业务服务接口 - UltraThink双层架构简化版
+            职责：基础业务操作
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.Interfaces.IPatientBusinessService.CreateAsync(LYBT.Shared.Models.Contracts.Patients.PatientCreateDto,System.Threading.CancellationToken)">
+            <summary>
+            创建患者 - DT-011取消令牌支持
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.Interfaces.IPatientBusinessService.UpdateAsync(System.Guid,LYBT.Shared.Models.Contracts.Patients.PatientUpdateDto,System.Threading.CancellationToken)">
+            <summary>
+            更新患者 - DT-011取消令牌支持
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.Interfaces.IPatientBusinessService.EnableAsync(System.Guid)">
+            <summary>
+            启用患者
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.Interfaces.IPatientBusinessService.DisableAsync(System.Guid)">
+            <summary>
+            禁用患者
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.Interfaces.IPatientBusinessService.DeleteAsync(System.Guid)">
+            <summary>
+            删除患者
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Patients.Interfaces.IPatientQueryService">
+            <summary>
+            患者查询服务接口 - UltraThink双层架构精简版（仅核心查询功能）
+            职责：查询和搜索操作
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.Interfaces.IPatientQueryService.GetPagedAsync(LYBT.Shared.Models.Contracts.Patients.PatientSearchDto)">
+            <summary>
+            分页查询患者
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.Interfaces.IPatientQueryService.GetByIdAsync(System.Guid)">
+            <summary>
+            根据ID获取患者
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.Interfaces.IPatientQueryService.GetByIdCardAsync(System.String)">
+            <summary>
+            根据身份证号查找患者
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.Interfaces.IPatientQueryService.GetByPhoneAsync(System.String)">
+            <summary>
+            根据电话号码查找患者
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.Interfaces.IPatientQueryService.SearchAsync(System.String)">
+            <summary>
+            搜索患者（按姓名或身份证）
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.Interfaces.IPatientQueryService.GetStatisticsAsync">
+            <summary>
+            获取患者统计数据
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Patients.Models.ImportWizardStep">
+            <summary>
+            导入向导步骤枚举
+            </summary>
+        </member>
+        <member name="F:LYBT.Desktop.Patients.Models.ImportWizardStep.TemplateDownload">
+            <summary>
+            步骤1：模板下载
+            </summary>
+        </member>
+        <member name="F:LYBT.Desktop.Patients.Models.ImportWizardStep.FileSelection">
+            <summary>
+            步骤2：文件选择
+            </summary>
+        </member>
+        <member name="F:LYBT.Desktop.Patients.Models.ImportWizardStep.DataPreview">
+            <summary>
+            步骤3：数据预览
+            </summary>
+        </member>
+        <member name="F:LYBT.Desktop.Patients.Models.ImportWizardStep.ImportExecution">
+            <summary>
+            步骤4：导入执行
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Patients.Models.ImportProgressInfo">
+            <summary>
+            导入进度信息
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Patients.Models.ImportProgressInfo.PercentComplete">
+            <summary>
+            进度百分比 (0-100)
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Patients.Models.ImportProgressInfo.CurrentItem">
+            <summary>
+            当前处理的项目描述
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Patients.Models.ImportProgressInfo.ProcessedCount">
+            <summary>
+            已处理数量
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Patients.Models.ImportProgressInfo.TotalCount">
+            <summary>
+            总数量
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Patients.Models.ImportProgressInfo.Message">
+            <summary>
+            状态消息
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Patients.Models.ImportValidationResult">
+            <summary>
+            导入验证结果
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Patients.Models.ImportValidationResult.IsValid">
+            <summary>
+            验证是否通过
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Patients.Models.ImportValidationResult.Errors">
+            <summary>
+            验证错误列表
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Patients.Models.ImportValidationResult.Warnings">
+            <summary>
+            警告信息列表
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Patients.Models.ImportValidationResult.ValidRowCount">
+            <summary>
+            有效数据行数
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Patients.Models.ImportValidationResult.InvalidRowCount">
+            <summary>
+            无效数据行数
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Patients.PatientsModule">
+            <summary>
+            患者管理模块 - 独立业务模块
+            对应后端: LYBT.Module.Patients
+            遵循原始设计：前后端模块一一对应
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.PatientsModule.OnInitialized(Prism.Ioc.IContainerProvider)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.PatientsModule.RegisterTypes(Prism.Ioc.IContainerRegistry)">
+            <inheritdoc/>
+        </member>
+        <member name="T:LYBT.Desktop.Patients.Services.PatientBusinessService">
+            <summary>
+            患者业务服务 - UltraThink双层架构业务逻辑层
+            采用UltraThink架构标准，使用C# 12现代化特性
+            职责：处理患者业务逻辑、CRUD操作、状态管理、数据验证
+            集成企业级错误处理和审计日志，提供完整患者档案管理功能
+            支持患者创建、更新、状态切换、删除等核心档案功能
+            适配中医诊所患者管理需求，确保档案数据安全性和操作合规性
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.Services.PatientBusinessService.#ctor(Microsoft.Extensions.Logging.ILogger{LYBT.Desktop.Patients.Services.PatientBusinessService},LYBT.Shared.Interfaces.Api.IPatientApi,LYBT.Desktop.Core.Services.Exceptions.IExceptionHandler)">
+            <summary>
+            患者业务服务 - UltraThink双层架构业务逻辑层
+            采用UltraThink架构标准，使用C# 12现代化特性
+            职责：处理患者业务逻辑、CRUD操作、状态管理、数据验证
+            集成企业级错误处理和审计日志，提供完整患者档案管理功能
+            支持患者创建、更新、状态切换、删除等核心档案功能
+            适配中医诊所患者管理需求，确保档案数据安全性和操作合规性
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.Services.PatientBusinessService.CreateAsync(LYBT.Shared.Models.Contracts.Patients.PatientCreateDto,System.Threading.CancellationToken)">
+            <summary>
+            患者创建业务处理
+            执行完整患者创建流程：数据验证、档案建立、状态初始化、审计记录
+            </summary>
+            <param name="createDto">患者创建请求信息</param>
+            <returns>包含新建患者信息的业务结果</returns>
+            <exception cref="T:System.ArgumentNullException">当创建请求为空时抛出</exception>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.Services.PatientBusinessService.UpdateAsync(System.Guid,LYBT.Shared.Models.Contracts.Patients.PatientUpdateDto,System.Threading.CancellationToken)">
+            <summary>
+            患者更新业务处理
+            执行完整患者更新流程：ID验证、数据验证、档案更新、状态处理、审计记录
+            </summary>
+            <param name="id">患者唯一标识</param>
+            <param name="updateDto">患者更新请求信息</param>
+            <returns>包含更新后患者信息的业务结果</returns>
+            <exception cref="T:System.ArgumentNullException">当更新请求为空时抛出</exception>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.Services.PatientBusinessService.EnableAsync(System.Guid)">
+            <summary>
+            启用患者档案
+            执行患者状态转换：转为可用状态
+            </summary>
+            <param name="patientId">患者唯一标识</param>
+            <returns>状态转换结果</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.Services.PatientBusinessService.DisableAsync(System.Guid)">
+            <summary>
+            禁用患者档案
+            执行患者状态转换：转为禁用状态
+            </summary>
+            <param name="patientId">患者唯一标识</param>
+            <returns>状态转换结果</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.Services.PatientBusinessService.DeleteAsync(System.Guid)">
+            <summary>
+            删除患者档案业务处理
+            执行完整删除流程：ID验证、关联检查、软删除操作、审计记录
+            </summary>
+            <param name="patientId">患者唯一标识</param>
+            <returns>删除操作结果</returns>
+        </member>
+        <member name="T:LYBT.Desktop.Patients.Services.PatientModule">
+            <summary>
+            患者模块 - UltraThink双层架构纯委托层
+            采用UltraThink架构标准，使用C# 12现代化特性
+            职责：统一服务入口，请求路由分发到QueryService和BusinessService
+            实现IPatientService共享接口，与后端标准完全对齐
+            集成患者查询、CRUD操作、状态管理和高级搜索功能
+            适配中医诊所患者档案管理需求，确保数据安全性和操作便利性
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.Services.PatientModule.#ctor(LYBT.Desktop.Patients.Interfaces.IPatientQueryService,LYBT.Desktop.Patients.Interfaces.IPatientBusinessService)">
+            <summary>
+            患者模块 - UltraThink双层架构纯委托层
+            采用UltraThink架构标准，使用C# 12现代化特性
+            职责：统一服务入口，请求路由分发到QueryService和BusinessService
+            实现IPatientService共享接口，与后端标准完全对齐
+            集成患者查询、CRUD操作、状态管理和高级搜索功能
+            适配中医诊所患者档案管理需求，确保数据安全性和操作便利性
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.Services.PatientModule.GetPagedAsync(LYBT.Shared.Models.Contracts.Patients.PatientSearchDto)">
+            <summary>
+            分页查询患者
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.Services.PatientModule.GetByIdAsync(System.Guid)">
+            <summary>
+            根据ID获取患者
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.Services.PatientModule.SearchAsync(System.String)">
+            <summary>
+            搜索患者
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.Services.PatientModule.GetStatisticsAsync">
+            <summary>
+            获取患者统计
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.Services.PatientModule.CreateAsync(LYBT.Shared.Models.Contracts.Patients.PatientCreateDto)">
+            <summary>
+            创建患者
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.Services.PatientModule.UpdateAsync(System.Guid,LYBT.Shared.Models.Contracts.Patients.PatientUpdateDto)">
+            <summary>
+            更新患者
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.Services.PatientModule.EnablePatientAsync(System.Guid)">
+            <summary>
+            启用患者（返回详细结果）
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.Services.PatientModule.DisablePatientAsync(System.Guid)">
+            <summary>
+            禁用患者（返回详细结果）
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.Services.PatientModule.DeleteAsync(System.Guid)">
+            <summary>
+            删除患者
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.Services.PatientModule.DeleteAsync(System.Guid,System.Guid,System.String)">
+            <summary>
+            删除患者（带操作者信息） - 委托给BusinessService
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.Services.PatientModule.SetStatusAsync(System.Guid,System.Boolean,System.Guid,System.String)">
+            <summary>
+            设置患者状态（启用/禁用） - 委托给BusinessService
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.Services.PatientModule.EnableAsync(System.Guid)">
+            <summary>
+            启用患者 - ServiceResult版本
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.Services.PatientModule.DisableAsync(System.Guid)">
+            <summary>
+            禁用患者 - ServiceResult版本
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.Services.PatientModule.GetByIdCardAsync(System.String)">
+            <summary>
+            根据身份证号查找患者 - 委托给SearchAsync实现
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.Services.PatientModule.GetByPhoneAsync(System.String)">
+            <summary>
+            根据电话号码查找患者 - 基础实现
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.Services.PatientModule.GetAllAsync">
+            <summary>
+            获取所有患者列表 - 基础实现
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.Services.PatientModule.GetActivePatientsAsync">
+            <summary>
+            获取可用患者列表 - 基础实现
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.Services.PatientModule.GetByPhoneNumberAsync(System.String)">
+            <summary>
+            根据手机号查找患者 - 基础实现
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.Services.PatientModule.GetByIDNumberAsync(System.String)">
+            <summary>
+            根据身份证号查找患者 - 基础实现
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.Services.PatientModule.AdvancedSearchAsync(LYBT.Shared.Models.Contracts.Patients.PatientAdvancedSearchDto)">
+            <summary>
+            高级搜索患者 - 基础实现
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.Services.PatientModule.CheckDuplicatePatientsAsync(System.String,System.String)">
+            <summary>
+            检查重复患者 - 简单诊所版本基础实现
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.Services.PatientModule.ImportPatientsAsync(System.Collections.Generic.List{LYBT.Shared.Models.Contracts.Patients.PatientCreateDto})">
+            <summary>
+            批量导入患者 - 实际API调用实现
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.Services.PatientModule.ExportPatientsAsync(LYBT.Shared.Models.Contracts.Common.PagedQueryBaseDto)">
+            <summary>
+            导出患者数据 - 实际API调用实现
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.Services.PatientModule.ValidatePatientAsync(LYBT.Shared.Models.Contracts.Patients.PatientCreateDto)">
+            <summary>
+            验证患者信息 - 基础验证实现
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.Services.PatientModule.GetImportTemplateAsync">
+            <summary>
+            获取导入模板 - 生成Excel模板实现
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Patients.Services.PatientQueryService">
+            <summary>
+            患者查询服务 - UltraThink双层架构查询专业层
+            采用UltraThink架构标准，使用C# 12现代化特性
+            职责：患者档案查询、搜索过滤、统计报表、状态监控
+            提供只读查询操作，不涉及数据修改，专注档案检索和状态分析
+            集成企业级日志记录，支持患者管理和档案查询需求
+            适配中医诊所患者档案查询场景，确保查询性能和数据安全
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.Services.PatientQueryService.#ctor(Microsoft.Extensions.Logging.ILogger{LYBT.Desktop.Patients.Services.PatientQueryService})">
+            <summary>
+            患者查询服务 - UltraThink双层架构查询专业层
+            采用UltraThink架构标准，使用C# 12现代化特性
+            职责：患者档案查询、搜索过滤、统计报表、状态监控
+            提供只读查询操作，不涉及数据修改，专注档案检索和状态分析
+            集成企业级日志记录，支持患者管理和档案查询需求
+            适配中医诊所患者档案查询场景，确保查询性能和数据安全
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.Services.PatientQueryService.GetPagedAsync(LYBT.Shared.Models.Contracts.Patients.PatientSearchDto)">
+            <summary>
+            分页查询患者档案列表
+            基于查询条件执行患者分页检索，支持过滤和排序
+            </summary>
+            <param name="query">分页查询参数</param>
+            <returns>包含患者列表和总数的分页结果</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.Services.PatientQueryService.GetByIdAsync(System.Guid)">
+            <summary>
+            根据患者ID获取详细档案
+            查询指定患者的完整档案信息，包含就诊历史和状态
+            </summary>
+            <param name="id">患者唯一标识</param>
+            <returns>患者详细档案DTO</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.Services.PatientQueryService.SearchAsync(System.String)">
+            <summary>
+            关键字搜索患者档案
+            基于关键字执行模糊搜索，支持姓名、电话、身份证等字段匹配
+            </summary>
+            <param name="keyword">搜索关键字</param>
+            <returns>匹配患者列表</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.Services.PatientQueryService.GetStatisticsAsync">
+            <summary>
+            获取患者档案统计数据
+            生成患者管理相关的基础统计信息和报表数据
+            </summary>
+            <returns>患者统计信息DTO</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.Services.PatientQueryService.GetByIdCardAsync(System.String)">
+            <summary>
+            根据身份证号查询患者
+            </summary>
+            <param name="idCard">身份证号</param>
+            <returns>患者信息或空结果</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.Services.PatientQueryService.GetByPhoneAsync(System.String)">
+            <summary>
+            根据电话号码查询患者
+            </summary>
+            <param name="phone">电话号码</param>
+            <returns>匹配的患者列表</returns>
+        </member>
+        <member name="T:LYBT.Desktop.Patients.ViewModels.PatientAddEditDialogViewModel">
+            <summary>
+            患者新增/编辑对话框视图模型 - UltraThink双层架构UI层
+            采用UltraThink架构标准，使用C# 12现代化特性
+            职责：患者CRUD对话框交互逻辑、数据绑定、验证处理、状态管理
+            基于DialogViewModel统一对话框模式，实现ICustomDialogAware接口
+            集成PatientModule双层服务，提供完整的患者档案编辑用户体验
+            支持患者新增/编辑、拼音码生成、数据验证等功能
+            适配中医诊所患者档案管理流程，确保数据录入准确性和操作便利性
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.ViewModels.PatientAddEditDialogViewModel.#ctor(LYBT.Shared.Interfaces.Services.IPatientService,AutoMapper.IMapper,Prism.Events.IEventAggregator,LYBT.Desktop.Core.Interfaces.Services.IErrorHandlingService,LYBT.Shared.Models.Contracts.Patients.PatientDto)">
+            <summary>
+            Initializes a new instance of the <see cref="T:LYBT.Desktop.Patients.ViewModels.PatientAddEditDialogViewModel"/> class.
+            构造函数
+            </summary>
+            <param name="patientService">患者API服务</param>
+            <param name="mapper">AutoMapper实例</param>
+            <param name="eventAggregator">事件聚合器</param>
+            <param name="errorHandlingService">错误处理服务</param>
+            <param name="patient">要编辑的患者信息（null表示新增模式）</param>
+            <summary>
+            构造函数 - UltraThink双层架构依赖注入
+            初始化患者管理模块、映射器、对话框配置和事件订阅
+            </summary>
+            <param name="patientService">患者模块主服务</param>
+            <param name="mapper">对象映射器</param>
+            <param name="eventAggregator">事件聚合器</param>
+            <param name="errorHandlingService">错误处理服务</param>
+            <param name="patient">要编辑的患者信息（null表示新增模式）</param>
+            <exception cref="T:System.ArgumentNullException">当关键参数为空时抛出</exception>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.ViewModels.PatientAddEditDialogViewModel.SaveAsync">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.ViewModels.PatientAddEditDialogViewModel.CanSave">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.ViewModels.PatientAddEditDialogViewModel.InitializeDialog">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.ViewModels.PatientAddEditDialogViewModel.InitializeEditData(LYBT.Shared.Models.Contracts.Patients.PatientDto)">
+            <summary>
+            初始化编辑数据
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.ViewModels.PatientAddEditDialogViewModel.GeneratePinYinCode">
+            <summary>
+            自动生成拼音码
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.ViewModels.PatientAddEditDialogViewModel.CalculateAge">
+            <summary>
+            根据出生日期计算年龄
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Patients.ViewModels.PatientAddEditDialogViewModel.Title">
+            <summary>
+            对话框标题
+            </summary>
+        </member>
+        <member name="E:LYBT.Desktop.Patients.ViewModels.PatientAddEditDialogViewModel.RequestClose">
+            <summary>
+            请求关闭对话框事件
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.ViewModels.PatientAddEditDialogViewModel.CanCloseDialog">
+            <summary>
+            检查是否可以关闭对话框
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.ViewModels.PatientAddEditDialogViewModel.OnDialogOpened(System.Collections.Generic.Dictionary{System.String,System.Object})">
+            <summary>
+            对话框打开时调用
+            </summary>
+            <param name="parameters">传入的参数</param>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.ViewModels.PatientAddEditDialogViewModel.OnDialogClosed">
+            <summary>
+            对话框关闭时调用
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.ViewModels.PatientAddEditDialogViewModel.ExecuteCancel">
+            <summary>
+            重写取消操作以使用ICustomDialogAware接口
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.ViewModels.PatientAddEditDialogViewModel.RaiseRequestClose(System.Nullable{System.Boolean})">
+            <summary>
+            触发关闭对话框请求
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Patients.ViewModels.PatientDetailViewModel">
+            <summary>
+            患者详情视图模型 - UltraThink v2.0架构
+            提供患者详细信息查看功能
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.ViewModels.PatientDetailViewModel.OnNavigatedTo(Prism.Regions.NavigationContext)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.ViewModels.PatientDetailViewModel.IsNavigationTarget(Prism.Regions.NavigationContext)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.ViewModels.PatientDetailViewModel.OnNavigatedFrom(Prism.Regions.NavigationContext)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.ViewModels.PatientDetailViewModel.PrintPatientAsync">
+            <summary>
+            P0-03新增：患者病历打印功能
+            Epic 03-P0-03: 实用化患者病历打印功能，专为小诊所设计
+            使用专业的IPrescriptionPrintService打印患者档案和病历信息
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Patients.ViewModels.PatientImportWizardViewModel">
+            <summary>
+            患者Excel导入向导视图模型
+            实现4步向导UI：模板下载→文件选择→数据预览→导入执行
+            </summary>
+        </member>
+        <member name="E:LYBT.Desktop.Patients.ViewModels.PatientImportWizardViewModel.ImportCompleted">
+            <summary>
+            导入完成事件
+            </summary>
+        </member>
+        <member name="E:LYBT.Desktop.Patients.ViewModels.PatientImportWizardViewModel.ImportCancelled">
+            <summary>
+            导入取消事件
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Patients.ViewModels.PatientImportWizardViewModel.CurrentStep">
+            <summary>
+            当前步骤
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Patients.ViewModels.PatientImportWizardViewModel.SelectedFilePath">
+            <summary>
+            选中的文件路径
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Patients.ViewModels.PatientImportWizardViewModel.PreviewData">
+            <summary>
+            预览数据
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Patients.ViewModels.PatientImportWizardViewModel.ValidationResult">
+            <summary>
+            验证结果
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Patients.ViewModels.PatientImportWizardViewModel.ProgressInfo">
+            <summary>
+            导入进度信息
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Patients.ViewModels.PatientImportWizardViewModel.IsImporting">
+            <summary>
+            是否正在导入
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Patients.ViewModels.PatientImportWizardViewModel.IsLoading">
+            <summary>
+            是否正在加载
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Patients.ViewModels.PatientImportWizardViewModel.Step1Style">
+            <summary>
+            步骤1样式
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Patients.ViewModels.PatientImportWizardViewModel.Step2Style">
+            <summary>
+            步骤2样式
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Patients.ViewModels.PatientImportWizardViewModel.Step3Style">
+            <summary>
+            步骤3样式
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Patients.ViewModels.PatientImportWizardViewModel.Step4Style">
+            <summary>
+            步骤4样式
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Patients.ViewModels.PatientImportWizardViewModel.CurrentStepContent">
+            <summary>
+            当前步骤内容
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Patients.ViewModels.PatientImportWizardViewModel.StepDescription">
+            <summary>
+            步骤描述
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Patients.ViewModels.PatientImportWizardViewModel.NextButtonText">
+            <summary>
+            下一步按钮文本
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Patients.ViewModels.PatientImportWizardViewModel.CanGoNext">
+            <summary>
+            是否可以进入下一步
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Patients.ViewModels.PatientImportWizardViewModel.CanGoPrevious">
+            <summary>
+            是否可以返回上一步
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Patients.ViewModels.PatientImportWizardViewModel.NextCommand">
+            <summary>
+            下一步命令
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Patients.ViewModels.PatientImportWizardViewModel.PreviousCommand">
+            <summary>
+            上一步命令
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Patients.ViewModels.PatientImportWizardViewModel.CancelCommand">
+            <summary>
+            取消命令
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Patients.ViewModels.PatientImportWizardViewModel.DownloadTemplateCommand">
+            <summary>
+            下载模板命令
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Patients.ViewModels.PatientImportWizardViewModel.SelectFileCommand">
+            <summary>
+            选择文件命令
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Patients.ViewModels.PatientImportWizardViewModel.StartImportCommand">
+            <summary>
+            开始导入命令
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Patients.ViewModels.PatientImportWizardViewModel.CancelImportCommand">
+            <summary>
+            取消导入命令
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Patients.ViewModels.PatientManagementViewModel">
+            <summary>
+            患者管理视图模型 - UltraThink双层架构UI层
+            采用UltraThink架构标准，使用C# 12现代化特性
+            职责：患者档案管理界面逻辑、命令处理、状态管理、导入导出控制
+            基于NewBaseListViewModel统一列表管理模式
+            集成PatientModule双层服务，提供完整的患者档案管理用户体验
+            支持患者CRUD操作、状态切换、Excel导入导出等核心管理功能
+            适配中医诊所患者档案管理流程，确保档案数据安全性和界面友好性
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Patients.ViewModels.PatientManagementViewModel.SelectedPatient">
+            <summary>选中的患者 - UltraThink v2.0: 直接使用DTO</summary>
+        </member>
+        <member name="P:LYBT.Desktop.Patients.ViewModels.PatientManagementViewModel.ShowAdvancedSearch">
+            <summary>显示高级搜索面板</summary>
+        </member>
+        <member name="P:LYBT.Desktop.Patients.ViewModels.PatientManagementViewModel.AdvancedSearchExpanded">
+            <summary>高级搜索面板是否展开</summary>
+        </member>
+        <member name="P:LYBT.Desktop.Patients.ViewModels.PatientManagementViewModel.ShowSearchSuggestions">
+            <summary>显示搜索建议</summary>
+        </member>
+        <member name="P:LYBT.Desktop.Patients.ViewModels.PatientManagementViewModel.AdvancedSearch">
+            <summary>高级搜索条件</summary>
+        </member>
+        <member name="P:LYBT.Desktop.Patients.ViewModels.PatientManagementViewModel.SearchSuggestions">
+            <summary>搜索建议列表</summary>
+        </member>
+        <member name="P:LYBT.Desktop.Patients.ViewModels.PatientManagementViewModel.SelectedSearchSuggestion">
+            <summary>选中的搜索建议</summary>
+        </member>
+        <member name="P:LYBT.Desktop.Patients.ViewModels.PatientManagementViewModel.SearchHistory">
+            <summary>搜索历史</summary>
+        </member>
+        <member name="P:LYBT.Desktop.Patients.ViewModels.PatientManagementViewModel.LastUpdateTime">
+            <summary>最后更新时间</summary>
+        </member>
+        <member name="P:LYBT.Desktop.Patients.ViewModels.PatientManagementViewModel.IsOperationInProgress">
+            <summary>是否有操作正在进行</summary>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.ViewModels.PatientManagementViewModel.#ctor(LYBT.Shared.Interfaces.Services.IPatientService,LYBT.Shared.Interfaces.Services.IMedicalCaseService,LYBT.Desktop.Core.Interfaces.Services.ICustomDialogService,AutoMapper.IMapper,LYBT.Desktop.Core.Interfaces.Services.ISessionManager,LYBT.Desktop.Core.Interfaces.Services.INotificationService,Microsoft.Extensions.Logging.ILogger{LYBT.Desktop.Patients.ViewModels.PatientManagementViewModel},LYBT.Desktop.Core.Coordinators.IPaginationCoordinator,LYBT.Desktop.Core.Managers.ISearchManager)">
+            <summary>
+            Initializes a new instance of the <see cref="T:LYBT.Desktop.Patients.ViewModels.PatientManagementViewModel"/> class.
+            构造函数 - UltraThink双层架构依赖注入
+            初始化患者管理模块、对话服务、映射器、命令和事件订阅
+            </summary>
+            <param name="patientService">患者模块主服务</param>
+            <param name="dialogService">自定义对话服务</param>
+            <param name="mapper">对象映射器</param>
+            <param name="sessionManager">会话管理器</param>
+            <param name="notificationService">通知服务</param>
+            <param name="logger">日志记录器</param>
+            <param name="paginationCoordinator">分页协调器</param>
+            <param name="searchManager">搜索管理器</param>
+            <exception cref="T:System.ArgumentNullException">当关键参数为空时抛出</exception>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.ViewModels.PatientManagementViewModel.InitializeCommands">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.ViewModels.PatientManagementViewModel.CanExecuteGeneralCommand">
+            <summary>可以执行一般操作（不依赖选中项）</summary>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.ViewModels.PatientManagementViewModel.LoadDataAsync(LYBT.Shared.Models.Contracts.Common.PagedQueryBaseDto)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.ViewModels.PatientManagementViewModel.ViewHistoryAsync(LYBT.Shared.Models.Contracts.Patients.PatientDto)">
+            <summary>
+            查看患者历史记录
+            </summary>
+            <param name="patient">患者数据</param>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.ViewModels.PatientManagementViewModel.GetMedicalCaseStatusText(System.Int32)">
+            <summary>
+            获取医案状态显示文本
+            </summary>
+            <param name="status">医案状态值</param>
+            <returns>状态文本</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.ViewModels.PatientManagementViewModel.ExportPatientsAsync">
+            <summary>
+            导出患者数据到Excel
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.ViewModels.PatientManagementViewModel.ImportPatientsAsync">
+            <summary>
+            从Excel导入患者数据
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.ViewModels.PatientManagementViewModel.DownloadTemplateAsync">
+            <summary>
+            下载患者数据导入模板
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.ViewModels.PatientManagementViewModel.ParseGender(System.String)">
+            <summary>
+            解析性别字符串
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.ViewModels.PatientManagementViewModel.ParseAge(System.String)">
+            <summary>
+            解析年龄字符串
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.ViewModels.PatientManagementViewModel.OpenImportWizardAsync">
+            <summary>
+            打开导入向导
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.ViewModels.PatientManagementViewModel.ShowSearchHistoryAsync">
+            <summary>显示搜索历史</summary>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.ViewModels.PatientManagementViewModel.ToggleAdvancedSearch">
+            <summary>切换高级搜索面板显示状态</summary>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.ViewModels.PatientManagementViewModel.ClearSearch">
+            <summary>清空搜索条件</summary>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.ViewModels.PatientManagementViewModel.ExecuteAdvancedSearchAsync">
+            <summary>执行高级搜索</summary>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.ViewModels.PatientManagementViewModel.ClearAdvancedSearch">
+            <summary>清空高级搜索条件</summary>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.ViewModels.PatientManagementViewModel.SaveSearchTemplateAsync">
+            <summary>保存搜索模板</summary>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.ViewModels.PatientManagementViewModel.BuildSearchHistoryText(LYBT.Shared.Models.Contracts.Patients.PatientSearchDto)">
+            <summary>构建搜索历史文本</summary>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.ViewModels.PatientManagementViewModel.AddToSearchHistory(System.String)">
+            <summary>添加到搜索历史</summary>
+        </member>
+        <member name="T:LYBT.Desktop.Patients.Views.PatientAddEditDialog">
+            <summary>
+            患者新增/编辑对话框
+            </summary>
+            <summary>
+            PatientAddEditDialog
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.Views.PatientAddEditDialog.OnClosed(System.EventArgs)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.Views.PatientAddEditDialog.InitializeComponent">
+            <summary>
+            InitializeComponent
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Patients.Views.PatientDetailView">
+            <summary>
+            PatientDetailView.xaml 的交互逻辑
+            </summary>
+            <summary>
+            PatientDetailView
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.Views.PatientDetailView.InitializeComponent">
+            <summary>
+            InitializeComponent
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Patients.Views.PatientImportWizardView">
+            <summary>
+            患者Excel导入向导视图
+            </summary>
+            <summary>
+            PatientImportWizardView
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.Views.PatientImportWizardView.InitializeComponent">
+            <summary>
+            InitializeComponent
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Patients.Views.PatientManagementView">
+            <summary>
+            患者管理视图
+            </summary>
+            <summary>
+            PatientManagementView
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.Views.PatientManagementView.PatientManagementView_Loaded(System.Object,System.Windows.RoutedEventArgs)">
+            <summary>
+            UltraThink修复：页面加载时自动加载患者数据
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Patients.Views.PatientManagementView.InitializeComponent">
+            <summary>
+            InitializeComponent
+            </summary>
+        </member>
+    </members>
+</doc>

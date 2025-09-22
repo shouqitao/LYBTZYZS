@@ -122,7 +122,7 @@ public class UnifiedApiClientManager(HttpClient httpClient, ILogger<UnifiedApiCl
     /// 用于JWT Bearer Token认证，支持令牌设置和清除
     /// </summary>
     /// <param name="token">JWT认证令牌，空值将清除当前令牌</param>
-    public void SetAuthorizationToken(string token)
+    public void SetAuthorizationToken(string? token)
     {
         if (string.IsNullOrWhiteSpace(token))
         {
@@ -269,8 +269,8 @@ public class UnifiedApiClientManager(HttpClient httpClient, ILogger<UnifiedApiCl
         _httpClient.DefaultRequestHeaders.Add("X-Client-Type", "Desktop");
         _httpClient.DefaultRequestHeaders.Add("X-Client-Platform", Environment.OSVersion.ToString());
 
-        // 如果BaseAddress未设置，使用默认地址
-        _httpClient.BaseAddress ??= new Uri("https://localhost:7001");
+        // 如果BaseAddress未设置，使用默认地址（Windows 本地部署：5001）
+        _httpClient.BaseAddress ??= new Uri("https://localhost:5001");
 
         _logger.LogDebug(
             "HttpClient配置完成 - 基地址: {BaseAddress}, 超时: {Timeout}s",

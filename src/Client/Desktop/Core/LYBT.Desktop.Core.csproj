@@ -34,12 +34,12 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DocumentationFile>bin\Debug\net8.0-windows\LYBT.Desktop.Core.xml</DocumentationFile>
+    <DocumentationFile>$(OutputPath)$(AssemblyName).xml</DocumentationFile>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <DefineConstants>TRACE</DefineConstants>
-    <DocumentationFile>bin\Release\net8.0-windows\LYBT.Desktop.Core.xml</DocumentationFile>
+    <DocumentationFile>$(OutputPath)$(AssemblyName).xml</DocumentationFile>
     <Optimize>true</Optimize>
   </PropertyGroup>
 

@@ -18,9 +18,10 @@ namespace LYBT.Desktop.Auth.Services;
 ///
 /// 适用场景: 小型诊所20人以下场景，简化认证流程
 /// </summary>
-public class AuthServiceAdapter(IAuthService authService) : IAuthenticationService
+public class AuthServiceAdapter(IAuthService authService, ISessionManager sessionManager) : IAuthenticationService
 {
     private readonly IAuthService _authService = authService ?? throw new ArgumentNullException(nameof(authService));
+    private readonly ISessionManager _sessionManager = sessionManager ?? throw new ArgumentNullException(nameof(sessionManager));
 
     #region 核心认证操作适配
 
@@ -55,33 +56,37 @@ public class AuthServiceAdapter(IAuthService authService) : IAuthenticationServi
     #region 状态查询适配
 
     /// <summary>
-    /// 检查登录状态 - 简化实现
-    /// 小型诊所版本: 暂时返回false，后续可根据需要完善
+    /// 检查登录状态 - 基于会话管理器
     /// </summary>
-    public bool IsLoggedIn => false; // 简化实现
+    public bool IsLoggedIn => _sessionManager.IsLoggedIn;
 
     /// <summary>
-    /// 获取当前用户信息 - 简化实现
-    /// 小型诊所版本: 暂时返回null，后续可根据需要完善
+    /// 获取当前用户信息 - 基于会话管理器
     /// </summary>
     /// <returns>当前用户信息</returns>
     public Task<UserDto?> GetCurrentUserAsync()
-        => Task.FromResult<UserDto?>(null); // 简化实现
+        => Task.FromResult(_sessionManager.CurrentUser);
 
     /// <summary>
-    /// 获取JWT令牌 - 简化实现
-    /// 小型诊所版本: 暂不实现令牌存储
+    /// 获取JWT令牌（当前暂不暴露，会话管理器未提供令牌读取接口）
+    /// 如需返回实际令牌，建议在ISessionManager增加只读Token访问器后改造此实现。
     /// </summary>
     /// <returns>JWT令牌</returns>
-    public string? GetToken() => null; // 简化实现
+    public string? GetToken() => null;
 
     /// <summary>
-    /// 清除认证信息 - 简化实现
-    /// 小型诊所版本: 无需复杂的状态清理
+    /// 清除认证信息 - 触发会话清理
     /// </summary>
     public void ClearAuthInfo()
     {
-        // 简化实现 - 无需特殊操作
+        try
+        {
+            _sessionManager.ClearUserSession();
+        }
+        catch
+        {
+            // 忽略清理错误，保持向后兼容
+        }
     }
 
     #endregion 状态查询适配

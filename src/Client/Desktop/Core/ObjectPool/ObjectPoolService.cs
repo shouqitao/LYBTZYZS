@@ -2,7 +2,7 @@ using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
 
-namespace LYBT.Desktop.Core.ObjectPool
+namespace LYBT.Desktop.Core.Pooling
 {
 
     /// <summary>
