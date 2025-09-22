@@ -284,7 +284,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             try
             {
                 // 开始看诊 = 恢复医疗案例到诊断状态
-                var result = await _medicalCaseService.Resume(medicalCase.Id);
+                var result = await _medicalCaseService.UpdateStatus(medicalCase.Id, (int)LYBT.Shared.Models.Enums.MedicalCaseStatus.Active);
 
                 if (result.IsSuccess)
                 {
