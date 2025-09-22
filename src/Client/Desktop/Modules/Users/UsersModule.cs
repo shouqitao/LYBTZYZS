@@ -25,11 +25,8 @@ namespace LYBT.Desktop.Users
         /// <inheritdoc/>
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            // UltraThink修复：模块自己注册服务接口实现
-            containerRegistry.RegisterSingleton<UserModule>();
-            containerRegistry.RegisterSingleton<IUserService>(container => container.Resolve<UserModule>());
-
-            // 注册视图和视图模型
+            // 服务注册已移至Shell/Extensions/ServiceCollectionExtensions.cs集中管理
+            // 此处仅注册视图和视图模型用于导航
             containerRegistry.RegisterForNavigation<UserManagementView, UserManagementViewModel>();
             containerRegistry.RegisterForNavigation<UserAddEditDialog, UserAddEditDialogViewModel>();
         }
