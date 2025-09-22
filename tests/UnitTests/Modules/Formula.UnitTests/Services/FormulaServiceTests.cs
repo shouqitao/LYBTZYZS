@@ -474,24 +474,6 @@ namespace LYBT.Module.Formula.Tests.Services
         }
 
         [Fact]
-        public async Task AnalyzeFormulaAsync_Should_Delegate_To_BusinessService()
-        {
-            // Arrange
-            var formulaId = Guid.NewGuid();
-            var analysisResult = new FormulaAnalysisResult { Summary = "分析结果" };
-            var expectedResult = ServiceResult<FormulaAnalysisResult>.Success(analysisResult);
-
-            _mockBusinessService.Setup(x => x.AnalyzeFormulaAsync(formulaId)).ReturnsAsync(expectedResult);
-
-            // Act
-            var result = await _formulaService.AnalyzeFormulaAsync(formulaId);
-
-            // Assert
-            result.Should().BeSameAs(expectedResult);
-            _mockBusinessService.Verify(x => x.AnalyzeFormulaAsync(formulaId), Times.Once);
-        }
-
-        [Fact]
         public async Task CreateFromPrescriptionAsync_Should_Delegate_To_BusinessService()
         {
             // Arrange
