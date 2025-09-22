@@ -31,7 +31,7 @@
     <RepositoryType>git</RepositoryType>
     
     <!-- Application Settings -->
-    <ApplicationIcon>..\Assets\Icons\App\app.ico</ApplicationIcon>
+    <!-- ApplicationIcon removed temporarily for build -->
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
   </PropertyGroup>
 

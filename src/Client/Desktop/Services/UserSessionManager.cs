@@ -10,8 +10,9 @@ namespace LYBT.Desktop.Services
 
     /// <summary>
     /// 用户会话管理器 - UltraThink精简版
+    /// 专注于用户权限和角色管理，Token管理已迁移至ISessionManager
     /// </summary>
-    public class UserSessionManager : IUserSessionManager, ITokenManager
+    public class UserSessionManager : IUserSessionManager
     {
         private readonly IPermissionService _permissionService;
         private UserDto? _currentUser;
@@ -115,19 +116,5 @@ namespace LYBT.Desktop.Services
 
         /// <inheritdoc/>
         public string GetCurrentUserWorkbench() => "MainWorkspace"; // 主工作区
-
-        #region ITokenManager 实现
-
-        /// <inheritdoc/>
-        public string? GetToken() => _sessionToken;
-
-        /// <inheritdoc/>
-        public void SetToken(string token)
-            => _sessionToken = token ?? throw new ArgumentNullException(nameof(token));
-
-        /// <inheritdoc/>
-        public void ClearToken() => _sessionToken = null;
-
-        #endregion ITokenManager 实现
     }
 }

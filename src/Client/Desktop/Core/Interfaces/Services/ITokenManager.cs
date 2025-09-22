@@ -1,9 +1,12 @@
+using System;
+
 namespace LYBT.Desktop.Core.Interfaces.Services
 {
 
     /// <summary>
     /// Token管理器接口
     /// </summary>
+    [Obsolete("ITokenManager已废弃，请使用ISessionManager.AuthToken来获取Token。此接口将在下个版本中移除。", false)]
     public interface ITokenManager
     {
 

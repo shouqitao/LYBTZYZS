@@ -10,20 +10,21 @@ namespace LYBT.Desktop.Services.Handlers
 
 /// <summary>
 /// HTTP请求认证头处理器
+/// 统一从ISessionManager获取Token，确保会话状态一致性
 /// </summary>
 public class AuthHeaderHandler : DelegatingHandler
 {
-private readonly ITokenManager _tokenManager;
+private readonly ISessionManager _sessionManager;
 
-public AuthHeaderHandler(ITokenManager tokenManager)
+public AuthHeaderHandler(ISessionManager sessionManager)
 {
-_tokenManager = tokenManager;
+_sessionManager = sessionManager;
 }
 
 /// <inheritdoc/>
 protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
 {
-var token = _tokenManager.GetToken();
+var token = _sessionManager.AuthToken;
 
 System.Diagnostics.Debug.WriteLine($"🔐 AuthHeaderHandler: URL={request.RequestUri}, Token={(!string.IsNullOrEmpty(token) ? "存在" : "空")}");
 

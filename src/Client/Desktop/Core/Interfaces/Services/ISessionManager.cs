@@ -120,6 +120,12 @@ public interface ISessionManager
     /// <value>如果用户已登录且有有效令牌则为 true；否则为 false</value>
     bool IsLoggedIn { get; }
 
+    /// <summary>
+    /// 获取当前的认证令牌（只读）
+    /// </summary>
+    /// <value>JWT认证令牌，如果未登录则为 null</value>
+    string? AuthToken { get; }
+
     #endregion
 }
 

@@ -120,6 +120,12 @@ public class SessionManager(ILogger<SessionManager> logger) : Prism.Mvvm.Bindabl
     /// <value>如果用户已登录且有有效令牌则为 true；否则为 false</value>
     public bool IsLoggedIn => _currentUser != null && !string.IsNullOrEmpty(_authToken);
 
+    /// <summary>
+    /// 获取当前的认证令牌（只读）
+    /// </summary>
+    /// <value>JWT认证令牌，如果未登录则为 null</value>
+    public string? AuthToken => _authToken;
+
     #endregion 公共属性
 
     #region 事件
