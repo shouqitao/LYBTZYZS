@@ -166,7 +166,7 @@ private void ViewDetails()
 if (SelectedConsultation != null)
 {
 // 简单的详情显示，不涉及复杂导航
-ShowInfo($"看诊记录详情:\n患者ID: {SelectedConsultation.PatientId}\n看诊时间: {SelectedConsultation.ConsultationTime:yyyy-MM-dd HH:mm}\n诊断: {SelectedConsultation.Diagnosis ?? "暂无"}");
+ShowInfo($"看诊记录详情:\n患者ID: {SelectedConsultation.PatientId}\n看诊时间: {SelectedConsultation.StartTime:yyyy-MM-dd HH:mm}\n诊断: {SelectedConsultation.TCMDiagnosis ?? "暂无"}");
 }
 }
 
