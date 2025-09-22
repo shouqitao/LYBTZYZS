@@ -11,6 +11,9 @@ namespace LYBT.Desktop.Infrastructure;
 /// 采用UltraThink架构标准，使用C# 12现代化特性
 /// 提供统一的HTTP客户端创建、配置和企业级重试策略
 /// 解决依赖注入中的重复代码和性能问题，适配小型诊所部署环境
+///
+/// 注意：此类作为基础设施层的静态工厂类保留使用
+/// 与Core/Http/HttpClientFactory（已废弃）不同，此类为UnifiedApiClientManager提供基础HttpClient创建服务
 /// </summary>
 public static class HttpClientFactory
 {

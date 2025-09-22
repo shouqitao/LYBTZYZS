@@ -12,7 +12,9 @@ namespace LYBT.Desktop.Core.Http
     /// <summary>
     /// HttpClient工厂 - 管理HTTP客户端生命周期
     /// </summary>
-    [Obsolete("HttpClientFactory已废弃，请使用Infrastructure/UnifiedApiClientManager进行API调用。此类将在下个版本中移除。", false)]
+    [Obsolete("Core.Http.HttpClientFactory已废弃，请使用Infrastructure.Api.UnifiedApiClientManager进行API调用。" +
+              "对于基础HttpClient创建，使用Infrastructure.HttpClientFactory静态工厂类。" +
+              "此类将在下个版本中移除。", false)]
     public interface IHttpClientFactory
     {
 
@@ -26,7 +28,9 @@ namespace LYBT.Desktop.Core.Http
     /// <summary>
     /// HttpClient工厂实现
     /// </summary>
-    [Obsolete("HttpClientFactory已废弃，请使用Infrastructure/UnifiedApiClientManager进行API调用。此类将在下个版本中移除。", false)]
+    [Obsolete("Core.Http.HttpClientFactory已废弃，请使用Infrastructure.Api.UnifiedApiClientManager进行API调用。" +
+              "对于基础HttpClient创建，使用Infrastructure.HttpClientFactory静态工厂类。" +
+              "此类将在下个版本中移除。", false)]
     public class HttpClientFactory : IHttpClientFactory, IDisposable
     {
         private readonly ConcurrentDictionary<string, HttpClientConfiguration> _configurations = new();

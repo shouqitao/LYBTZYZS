@@ -123,9 +123,12 @@ namespace LYBT.Desktop.Shell.Extensions
         /// </summary>
         private static void RegisterHttpServices(IContainerRegistry containerRegistry)
         {
-            // 注册基础HttpClient
+            // 注册基础HttpClient - 为UnifiedApiClientManager准备
+            // 注意: UnifiedApiClientManager会在构造函数中配置HttpClient
             containerRegistry.RegisterSingleton<HttpClient>(() =>
             {
+                // 使用Infrastructure下的HttpClientFactory创建基础客户端
+                // 这个静态工厂类提供了企业级的重试策略和SSL配置
                 return HttpClientFactory.CreateBasicClient(ApiConfiguration.BaseUrl);
             });
         }
