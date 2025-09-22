@@ -68,7 +68,7 @@ public class MedicalCaseQueryService(
         {
             _logger.LogDebug(
                 "执行医案分页查询，页码: {CurrentPage}, 页大小: {PageSize}",
-                query.CurrentPage, query.PageSize);
+                query.PageIndex, query.PageSize);
 
             var emptyResult = new PagedResult<MedicalCaseDto>
             {
