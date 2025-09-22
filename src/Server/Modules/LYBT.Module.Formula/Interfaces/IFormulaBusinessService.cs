@@ -32,11 +32,6 @@ namespace LYBT.Module.Formula.Interfaces
         Task<ServiceResult<bool>> UnshareFormulaAsync(Guid id, Guid operatorId, string operatorName);
 
         /// <summary>
-        /// 分析验方
-        /// </summary>
-        Task<ServiceResult<FormulaAnalysisResult>> AnalyzeFormulaAsync(Guid formulaId);
-
-        /// <summary>
         /// 创建验方
         /// </summary>
         Task<ServiceResult<FormulaDto>> CreateAsync(FormulaCreateDto dto);

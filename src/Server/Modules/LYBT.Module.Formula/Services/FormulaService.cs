@@ -133,9 +133,6 @@ namespace LYBT.Module.Formula.Services
         public async Task<ServiceResult<FormulaDto>> CopyAsync(Guid id, string newName)
             => await _businessService.CopyAsync(id, newName);
 
-        public async Task<ServiceResult<FormulaAnalysisResult>> AnalyzeFormulaAsync(Guid formulaId)
-            => await _businessService.AnalyzeFormulaAsync(formulaId);
-
         /// <inheritdoc/>
         public async Task<ServiceResult<FormulaDto>> CreateFromPrescriptionAsync(Guid prescriptionId, string name)
             => await _businessService.CreateFromPrescriptionAsync(prescriptionId, name);
