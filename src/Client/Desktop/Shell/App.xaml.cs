@@ -6,7 +6,6 @@ using LYBT.Desktop.Herbs;
 using LYBT.Desktop.MedicalCase;
 using LYBT.Desktop.Patients;
 using LYBT.Desktop.Prescriptions;
-using LYBT.Desktop.Services.Registration;
 using LYBT.Desktop.Shell.Extensions;
 using LYBT.Desktop.Shell.ViewModels;
 using LYBT.Desktop.Shell.Views;
@@ -94,10 +93,7 @@ public partial class App : PrismApplication
         // 3. 后台异步任务 - 不阻塞UI主线程
         _ = Task.Run(async () =>
         {
-            // 3.1 服务注册验证（移到后台线程避免UI阻塞）
-            await ValidateServiceRegistrationsAsync().ConfigureAwait(false);
-
-            // 3.2 应用预热优化（继续后台执行）
+            // 应用预热优化（后台执行，不阻塞UI）
             await InitializeApplicationWarmupAsync().ConfigureAwait(false);
         });
     }
@@ -145,52 +141,7 @@ public partial class App : PrismApplication
     /// 异步验证服务注册 - 确保所有自动发现的服务都能正常解析
     /// 优化启动性能：在后台线程执行，避免阻塞UI主线程
     /// </summary>
-    private async Task ValidateServiceRegistrationsAsync()
-    {
-        try
-        {
-            // 使用Task.Delay确保在后台线程执行
-            await Task.Delay(1).ConfigureAwait(false);
-
-            var logger = LoggerFactory.Create(builder => builder.AddDebug())
-                .CreateLogger("ServiceValidation");
-
-            logger.LogInformation("开始异步验证服务注册...");
-
-            // 解析服务注册验证器
-            var validator = Container.Resolve<IModuleServiceRegistrar>();
-            if (validator is ModuleRegistrationValidator moduleValidator)
-            {
-                // 在后台线程执行服务验证
-                var validationResult = await Task.Run(() =>
-                    moduleValidator.ValidateRegistrations(Container)).ConfigureAwait(false);
-
-                if (validationResult.IsAllSuccessful)
-                {
-                    logger.LogInformation(
-                        "服务注册验证通过：所有 {TotalCount} 个服务都可正常解析",
-                        validationResult.TotalCount);
-                }
-                else
-                {
-                    logger.LogWarning(
-                        "服务注册验证失败：{SuccessCount}/{TotalCount} 成功\n失败服务：{FailedServices}",
-                        validationResult.SuccessCount, validationResult.TotalCount,
-                        string.Join(", ", validationResult.FailedServices));
-                }
-
-                // 在后台线程生成诊断报告
-                var report = await Task.Run(() =>
-                    moduleValidator.CreateDiagnosticReport()).ConfigureAwait(false);
-                logger.LogDebug("服务注册诊断报告\n{Report}", report);
-            }
-        }
-        catch (Exception ex)
-        {
-            // 验证失败不应阻塞应用启动，但需记录错误
-            System.Diagnostics.Debug.WriteLine($"异步服务注册验证失败: {ex.Message}");
-        }
-    }
+    // 移除复杂的服务注册验证逻辑（简化版本不再需要自动发现/验证）
 
     /// <summary>
     /// 初始化简化的模块协调器
