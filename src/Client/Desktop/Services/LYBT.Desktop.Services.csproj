@@ -10,7 +10,6 @@
     <PackageReference Include="Refit"  />
     <PackageReference Include="AutoMapper"  />
     <!-- Serilog包已删除 - UltraThink重构：使用标准Microsoft.Extensions.Logging -->
-    <PackageReference Include="System.Net.Http"  />
     <PackageReference Include="Prism.Wpf"  />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory"  />
   </ItemGroup>

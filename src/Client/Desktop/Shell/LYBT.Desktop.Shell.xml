@@ -1,0 +1,718 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>LYBT.Desktop.Shell</name>
+    </assembly>
+    <members>
+        <member name="T:LYBT.Desktop.Shell.App">
+            <summary>
+            应用程序主入口 - WPF应用程序核心启动器
+            采用UltraThink架构标准，使用C# 12现代化特性
+            提供智能模块加载、角色驱动初始化和企业级错误处理
+            集成Prism.DryIoc容器管理，支持8个业务模块的统一协调
+            优化启动性能，提供角色基础的模块按需加载策略
+            适配小型诊所部署环境，确保系统快速启动和稳定运行
+            </summary>
+            <summary>
+            App
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.App.CreateShell">
+            <summary>
+            创建应用程序主窗体
+            从DI容器中解析MainWindow实例
+            </summary>
+            <returns>应用程序主窗体实例</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.App.RegisterTypes(Prism.Ioc.IContainerRegistry)">
+            <summary>
+            注册应用程序类型和服务
+            使用扩展方法统一注册所有业务模块的服务和依赖
+            </summary>
+            <param name="containerRegistry">DI容器注册器</param>
+            <exception cref="T:System.ArgumentNullException">当容器注册器为 null 时抛出</exception>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.App.ConfigureViewModelLocator">
+            <summary>
+            配置ViewModel定位器
+            显式注册View和ViewModel的映射关系，确保依赖注入正确工作
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.App.OnInitialized">
+            <summary>
+            应用程序初始化完成后的回调
+            执行企业级启动流程：错误处理初始化、模块协调器配置、性能优化预热、后台服务验证
+            优化启动性能：关键服务同步初始化，验证和预热异步执行避免UI阻塞
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.App.InitializeApplicationWarmupAsync">
+            <summary>
+            初始化应用程序预热
+            异步预热关键服务，提升用户操作响应速度
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.App.InitializeErrorHandlingService">
+            <summary>
+            初始化错误处理服务
+            注册全局异常处理器，确保系统异常得到妥善处理
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.App.ValidateServiceRegistrationsAsync">
+            <summary>
+            异步验证服务注册 - 确保所有自动发现的服务都能正常解析
+            优化启动性能：在后台线程执行，避免阻塞UI主线程
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.App.InitializeSimplifiedModuleCoordinator">
+            <summary>
+            初始化简化的模块协调器
+            移除复杂的性能监控，专注核心功能和稳定性
+            提供轻量级的模块加载管理，适配小型诊所部署需求
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.App.SubscribeToModuleEvents(Prism.Modularity.IModuleManager,Microsoft.Extensions.Logging.ILogger{LYBT.Desktop.Shell.App})">
+            <summary>
+            订阅模块管理器事件进行性能追踪
+            简化版本：专注错误处理和基础日志记录，移除复杂的性能统计
+            </summary>
+            <param name="moduleManager">模块管理器</param>
+            <param name="logger">日志记录器</param>
+            <exception cref="T:System.ArgumentNullException">当参数为 null 时抛出</exception>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.App.ConfigureModuleCatalog(Prism.Modularity.IModuleCatalog)">
+            <summary>
+            配置模块目录
+            基于角色的智能模块加载策略，显著提升启动性能
+            优先加载核心模块，专业模块按需加载
+            </summary>
+            <param name="moduleCatalog">模块目录</param>
+            <exception cref="T:System.ArgumentNullException">当模块目录为 null 时抛出</exception>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.App.AddCoreModule(Prism.Modularity.IModuleCatalog,System.String,System.Type)">
+            <summary>
+            添加核心模块
+            核心模块在应用启动时立即加载
+            </summary>
+            <param name="moduleCatalog">模块目录</param>
+            <param name="moduleName">模块名称</param>
+            <param name="moduleType">模块类型</param>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.App.AddRoleBasedModule(Prism.Modularity.IModuleCatalog,System.String,System.Type,System.String[])">
+            <summary>
+            添加基于角色的智能模块配置
+            根据用户角色决定模块加载时机，提升启动性能
+            </summary>
+            <param name="moduleCatalog">模块目录</param>
+            <param name="moduleName">模块名称</param>
+            <param name="moduleType">模块类型</param>
+            <param name="requiredRoles">所需角色数组</param>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.App.LoadRoleBasedModulesAsync(System.String)">
+            <summary>
+            用户登录后的角色驱动模块加载
+            根据用户角色智能加载所需模块，避免不必要的资源消耗
+            </summary>
+            <param name="userRole">用户角色</param>
+            <returns>模块加载任务</returns>
+            <exception cref="T:System.ArgumentException">当用户角色为空时抛出</exception>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.App.InitializeComponent">
+            <summary>
+            InitializeComponent
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.App.Main">
+            <summary>
+            Application Entry Point.
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Shell.Dialogs.ViewModels.ConfirmationDialogViewModel">
+            <summary>
+            确认对话框视图模型
+            </summary>
+            <summary>
+            确认对话框ViewModel - UltraThink架构统一
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Shell.Dialogs.ViewModels.ConfirmationDialogViewModel.Message">
+            <summary>
+            对话框消息
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Shell.Dialogs.ViewModels.ConfirmationDialogViewModel.YesCommand">
+            <summary>
+            是命令（兼容性）
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Shell.Dialogs.ViewModels.ConfirmationDialogViewModel.NoCommand">
+            <summary>
+            否命令（兼容性）
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.Dialogs.ViewModels.ConfirmationDialogViewModel.SetContent(System.String,System.String)">
+            <summary>
+            设置对话框内容
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.Dialogs.ViewModels.ConfirmationDialogViewModel.ExecuteConfirmAsync">
+            <summary>
+            执行确认逻辑
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Shell.Dialogs.ViewModels.ErrorDetailsDialogViewModel">
+            <summary>
+            错误详情对话框视图模型
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Shell.Dialogs.ViewModels.InformationDialogViewModel">
+            <summary>
+            信息对话框视图模型
+            </summary>
+            <summary>
+            信息对话框ViewModel - UltraThink架构统一
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Shell.Dialogs.ViewModels.InformationDialogViewModel.Message">
+            <summary>
+            对话框消息
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Shell.Dialogs.ViewModels.InformationDialogViewModel.OkCommand">
+            <summary>
+            确定命令（兼容性）
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.Dialogs.ViewModels.InformationDialogViewModel.SetContent(System.String,System.String)">
+            <summary>
+            设置对话框内容
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.Dialogs.ViewModels.InformationDialogViewModel.ExecuteConfirmAsync">
+            <summary>
+            执行确认逻辑（信息对话框直接关闭）
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Shell.Dialogs.Views.ConfirmationDialog">
+            <summary>
+            ConfirmationDialog.xaml 的交互逻辑
+            </summary>
+            <summary>
+            ConfirmationDialog
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.Dialogs.Views.ConfirmationDialog.InitializeComponent">
+            <summary>
+            InitializeComponent
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Shell.Dialogs.Views.ErrorDetailsDialog">
+            <summary>
+            ErrorDetailsDialog.xaml 的交互逻辑
+            </summary>
+            <summary>
+            ErrorDetailsDialog
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.Dialogs.Views.ErrorDetailsDialog.OnClosed(System.EventArgs)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.Dialogs.Views.ErrorDetailsDialog.InitializeComponent">
+            <summary>
+            InitializeComponent
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Shell.Dialogs.Views.InformationDialog">
+            <summary>
+            InformationDialog.xaml 的交互逻辑
+            </summary>
+            <summary>
+            InformationDialog
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.Dialogs.Views.InformationDialog.InitializeComponent">
+            <summary>
+            InitializeComponent
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Shell.Extensions.ErrorHandlingServiceExtensions">
+            <summary>
+            错误处理和日志服务注册扩展 - UltraThink v2.0简化版
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.Extensions.ErrorHandlingServiceExtensions.RegisterErrorHandlingAndLogging(Prism.Ioc.IContainerRegistry)">
+            <summary>
+            注册错误处理和日志服务
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Shell.Extensions.ServiceCollectionExtensions">
+            <summary>
+            服务注册扩展方法
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.Extensions.ServiceCollectionExtensions.RegisterAllServices(Prism.Ioc.IContainerRegistry)">
+            <summary>
+            注册所有服务
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.Extensions.ServiceCollectionExtensions.RegisterUltraThinkServices(Prism.Ioc.IContainerRegistry)">
+            <summary>
+            注册UltraThink高级服务
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.Extensions.ServiceCollectionExtensions.RegisterErrorHandlingServices(Prism.Ioc.IContainerRegistry)">
+            <summary>
+            注册统一错误处理服务 - UltraThink简化版 + DT-006优化
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.Extensions.ServiceCollectionExtensions.RegisterLogging(Prism.Ioc.IContainerRegistry)">
+            <summary>
+            注册日志服务
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.Extensions.ServiceCollectionExtensions.RegisterAutoMapper(Prism.Ioc.IContainerRegistry)">
+            <summary>
+            注册AutoMapper
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.Extensions.ServiceCollectionExtensions.RegisterCacheServices(Prism.Ioc.IContainerRegistry)">
+            <summary>
+            注册缓存服务 - 优化缓存配置，避免重复注册
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.Extensions.ServiceCollectionExtensions.RegisterHttpServices(Prism.Ioc.IContainerRegistry)">
+            <summary>
+            注册HTTP相关服务
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.Extensions.ServiceCollectionExtensions.RegisterApiServices(Prism.Ioc.IContainerRegistry)">
+            <summary>
+            注册API服务 - UltraThink统一API客户端管理器
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.Extensions.ServiceCollectionExtensions.RegisterModuleServicesManually(Prism.Ioc.IContainerRegistry)">
+            <summary>
+            DT-003优化: 分层模块服务注册 - 按依赖层级防止循环依赖
+            基于依赖分析结果的5层注册策略，确保服务解析顺序正确
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.Extensions.ServiceCollectionExtensions.RegisterLayer1BasicModules(Prism.Ioc.IContainerRegistry)">
+            <summary>
+            Layer 1: 基础模块注册 - Herbs, Formula (无外部依赖)
+            性能优化：改为Scoped注册，避免启动时立即实例化
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.Extensions.ServiceCollectionExtensions.RegisterLayer2AuthModules(Prism.Ioc.IContainerRegistry)">
+            <summary>
+            Layer 2: 认证模块注册 - 依赖基础层
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.Extensions.ServiceCollectionExtensions.RegisterLayer3BusinessDataModules(Prism.Ioc.IContainerRegistry)">
+            <summary>
+            Layer 3: 业务数据模块注册 - 依赖认证层
+            性能优化：改为Scoped注册，避免启动时立即实例化
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.Extensions.ServiceCollectionExtensions.RegisterLayer4ProcessModules(Prism.Ioc.IContainerRegistry)">
+            <summary>
+            Layer 4: 流程协调模块注册 - 依赖业务数据层
+            性能优化：改为Scoped注册，避免启动时立即实例化
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.Extensions.ServiceCollectionExtensions.RegisterLayer5AggregationModules(Prism.Ioc.IContainerRegistry)">
+            <summary>
+            Layer 5: 聚合服务模块注册 - 依赖流程协调层
+            性能优化：改为Scoped注册，避免启动时立即实例化
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.Extensions.ServiceCollectionExtensions.RegisterBusinessServices(Prism.Ioc.IContainerRegistry)">
+            <summary>
+            注册业务服务
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.Extensions.ServiceCollectionExtensions.RegisterCoreServices(Prism.Ioc.IContainerRegistry)">
+            <summary>
+            注册核心基础服务（非业务模块服务）
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.Extensions.ServiceCollectionExtensions.RegisterDomainServices(Prism.Ioc.IContainerRegistry)">
+            <summary>
+            注册领域业务服务
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.Extensions.ServiceCollectionExtensions.RegisterDialogs(Prism.Ioc.IContainerRegistry)">
+            <summary>
+            注册对话框服务
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.Extensions.ServiceCollectionExtensions.RegisterBusinessDialogs(LYBT.Desktop.Core.Interfaces.Services.ICustomDialogService)">
+            <summary>
+            注册业务对话框Views
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.Extensions.ServiceCollectionExtensions.RegisterPerformanceServices(Prism.Ioc.IContainerRegistry)">
+            <summary>
+            注册性能优化服务
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Shell.Models.TodayPatientDto">
+            <summary>
+            今日患者显示数据传输对象
+            用于工作台今日患者列表显示
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Shell.Models.TodayPatientDto.Id">
+            <summary>
+            患者ID
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Shell.Models.TodayPatientDto.Name">
+            <summary>
+            患者姓名
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Shell.Models.TodayPatientDto.Age">
+            <summary>
+            年龄
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Shell.Models.TodayPatientDto.Gender">
+            <summary>
+            性别
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Shell.Models.TodayPatientDto.PhoneNumber">
+            <summary>
+            电话号码
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Shell.Models.TodayPatientDto.MedicalCaseId">
+            <summary>
+            关联的医案ID
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Shell.Models.TodayPatientDto.Status">
+            <summary>
+            状态显示文本
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Shell.Models.TodayPatientDto.StatusColor">
+            <summary>
+            状态颜色
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Shell.Models.TodayPatientDto.CreateTime">
+            <summary>
+            创建时间
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Shell.Models.TodayPatientDto.DoctorName">
+            <summary>
+            医生姓名
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Shell.Models.TodayPatientDto.CaseStatus">
+            <summary>
+            医案状态枚举（用于排序和逻辑判断）
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Shell.Models.TodayPatientDto.GenderDisplay">
+            <summary>
+            性别显示文本
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Shell.Models.TodayPatientDto.CreateTimeDisplay">
+            <summary>
+            创建时间显示文本
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Shell.Models.TodayPatientDto.DetailedStatusDisplay">
+            <summary>
+            详细状态显示（包含医生信息）
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Shell.Models.TodayPatientDto.CanStartConsultation">
+            <summary>
+            是否可以开始诊疗（已挂号状态）
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Shell.Models.TodayPatientDto.IsInConsultation">
+            <summary>
+            是否正在诊疗中
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Shell.ViewModels.HomeViewModel">
+            <summary>
+            主页视图模型 - 基于角色显示不同内容，集成统一会话管理
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.ViewModels.HomeViewModel.OnUserChanged(LYBT.Desktop.Core.Interfaces.Services.UserChangedEventArgs)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.ViewModels.HomeViewModel.LoadTodayDataAsync">
+            <summary>
+            Epic 04-P0-04: 界面响应性提升 - 异步加载今日数据并提供状态反馈
+            专为小诊所优化，提供流畅的用户体验和适当的错误恢复
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.ViewModels.HomeViewModel.GetStatusPriority(LYBT.Shared.Models.Enums.MedicalCaseStatus)">
+            <summary>
+            获取状态优先级，用于排序
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.ViewModels.HomeViewModel.UpdateTodayStatisticsFromPatients(System.Collections.Generic.List{LYBT.Desktop.Shell.Models.TodayPatientDto})">
+            <summary>
+            根据患者列表更新今日统计数据
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.ViewModels.HomeViewModel.OnNavigatedTo(Prism.Regions.NavigationContext)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.ViewModels.HomeViewModel.IsNavigationTarget(Prism.Regions.NavigationContext)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.ViewModels.HomeViewModel.OnNavigatedFrom(Prism.Regions.NavigationContext)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.ViewModels.HomeViewModel.Dispose(System.Boolean)">
+            <inheritdoc/>
+        </member>
+        <member name="T:LYBT.Desktop.Shell.ViewModels.MainWindowViewModel">
+            <summary>
+            主窗口视图模型 - WPF主界面核心控制器
+            采用UltraThink架构标准，使用C# 12主构造函数和现代化特性
+            提供用户登录状态管理、界面导航控制、键盘快捷键支持
+            集成主题切换、时钟显示、角色基础的工作台切换功能
+            支持企业级错误处理和异步操作，适配小型诊所使用需求
+            </summary>
+            <param name="regionManager">区域管理器，用于界面导航</param>
+            <param name="eventAggregator">事件聚合器，用于模块间通信</param>
+            <param name="servicesFacade">服务外观，统一访问各类服务</param>
+            <param name="errorHandlingService">错误处理服务</param>
+            <exception cref="T:System.ArgumentNullException">当任何参数为 null 时抛出</exception>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.ViewModels.MainWindowViewModel.#ctor(Prism.Regions.IRegionManager,Prism.Events.IEventAggregator,LYBT.Desktop.Core.Interfaces.Services.IMainWindowServicesFacade,LYBT.Desktop.Core.Interfaces.Services.IErrorHandlingService)">
+            <summary>
+            主窗口视图模型 - WPF主界面核心控制器
+            采用UltraThink架构标准，使用C# 12主构造函数和现代化特性
+            提供用户登录状态管理、界面导航控制、键盘快捷键支持
+            集成主题切换、时钟显示、角色基础的工作台切换功能
+            支持企业级错误处理和异步操作，适配小型诊所使用需求
+            </summary>
+            <param name="regionManager">区域管理器，用于界面导航</param>
+            <param name="eventAggregator">事件聚合器，用于模块间通信</param>
+            <param name="servicesFacade">服务外观，统一访问各类服务</param>
+            <param name="errorHandlingService">错误处理服务</param>
+            <exception cref="T:System.ArgumentNullException">当任何参数为 null 时抛出</exception>
+        </member>
+        <member name="P:LYBT.Desktop.Shell.ViewModels.MainWindowViewModel.Title">
+            <summary>
+            获取或设置窗口标题
+            显示系统名称和当前用户信息
+            </summary>
+            <value>窗口标题字符串</value>
+        </member>
+        <member name="P:LYBT.Desktop.Shell.ViewModels.MainWindowViewModel.CurrentUser">
+            <summary>
+            获取或设置当前登录用户
+            用于界面显示和权限控制
+            </summary>
+            <value>当前用户信息，未登录时为 null</value>
+        </member>
+        <member name="P:LYBT.Desktop.Shell.ViewModels.MainWindowViewModel.IsLoggedIn">
+            <summary>
+            获取或设置用户登录状态
+            控制界面元素的显示和可用性
+            </summary>
+            <value>如果用户已登录则为 true；否则为 false</value>
+        </member>
+        <member name="P:LYBT.Desktop.Shell.ViewModels.MainWindowViewModel.CurrentTime">
+            <summary>
+            获取或设置当前系统时间显示
+            实时更新的时钟显示
+            </summary>
+            <value>格式化的时间字符串</value>
+        </member>
+        <member name="P:LYBT.Desktop.Shell.ViewModels.MainWindowViewModel.IsNotLoggedIn">
+            <summary>获取是否未登录状态，用于界面绑定</summary>
+        </member>
+        <member name="P:LYBT.Desktop.Shell.ViewModels.MainWindowViewModel.LogoutCommand">
+            <summary>退出登录命令</summary>
+        </member>
+        <member name="P:LYBT.Desktop.Shell.ViewModels.MainWindowViewModel.TestApiCommand">
+            <summary>API测试命令</summary>
+        </member>
+        <member name="P:LYBT.Desktop.Shell.ViewModels.MainWindowViewModel.ShowControlExamplesCommand">
+            <summary>显示控件示例命令</summary>
+        </member>
+        <member name="P:LYBT.Desktop.Shell.ViewModels.MainWindowViewModel.QuickAddPatientCommand">
+            <summary>快速添加患者命令 (Ctrl+N)</summary>
+        </member>
+        <member name="P:LYBT.Desktop.Shell.ViewModels.MainWindowViewModel.QuickStartConsultationCommand">
+            <summary>快速开始看诊命令 (Ctrl+Shift+C)</summary>
+        </member>
+        <member name="P:LYBT.Desktop.Shell.ViewModels.MainWindowViewModel.ShowHelpCommand">
+            <summary>显示帮助命令 (F1)</summary>
+        </member>
+        <member name="P:LYBT.Desktop.Shell.ViewModels.MainWindowViewModel.ShowSettingsCommand">
+            <summary>显示设置命令 (Ctrl+,)</summary>
+        </member>
+        <member name="P:LYBT.Desktop.Shell.ViewModels.MainWindowViewModel.ToggleThemeCommand">
+            <summary>主题切换命令</summary>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.ViewModels.MainWindowViewModel.InitializeViewModel">
+            <summary>
+            初始化MainWindowViewModel实例
+            配置时钟计时器、初始化命令和订阅事件
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.ViewModels.MainWindowViewModel.Create(Prism.Regions.IRegionManager,Prism.Events.IEventAggregator,LYBT.Desktop.Core.Interfaces.Services.IMainWindowServicesFacade,LYBT.Desktop.Core.Interfaces.Services.IErrorHandlingService)">
+            <summary>
+            创建并初始化MainWindowViewModel
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.ViewModels.MainWindowViewModel.ExecuteToggleThemeAsync">
+            <summary>
+            简化主题切换功能
+            提供基础的明暗主题切换，适配小型诊所需求
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.ViewModels.MainWindowViewModel.OnClockTick(System.Object,System.EventArgs)">
+            <summary>时钟计时器事件</summary>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.ViewModels.MainWindowViewModel.ExecuteLogoutAsync">
+            <summary>
+            退出登录命令执行
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.ViewModels.MainWindowViewModel.CheckLoginStatusAsync">
+            <summary>
+            检查登录状态 - UltraThink性能优化版
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.ViewModels.MainWindowViewModel.OnLoginSuccess">
+            <summary>
+            登录成功事件处理
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.ViewModels.MainWindowViewModel.ShowLoginDialog">
+            <summary>
+            显示登录界面
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.ViewModels.MainWindowViewModel.LoadMainContent">
+            <summary>
+            加载主界面内容 - UltraThink Phase 9 性能优化版
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.ViewModels.MainWindowViewModel.EnsureWorkbenchModulesLoaded(LYBT.Shared.Models.Contracts.Users.UserDto)">
+            <summary>
+            确保工作台模块已加载
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.ViewModels.MainWindowViewModel.ExecuteTestApiAsync">
+            <summary>
+            执行API测试
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.ViewModels.MainWindowViewModel.ExecuteQuickAddPatientAsync">
+            <summary>
+            快速添加患者 (Ctrl+N)
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.ViewModels.MainWindowViewModel.ExecuteQuickStartConsultationAsync">
+            <summary>
+            快速开始看诊 (Ctrl+Shift+C)
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.ViewModels.MainWindowViewModel.ExecuteShowHelp">
+            <summary>
+            显示帮助信息 (F1)
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.ViewModels.MainWindowViewModel.ExecuteShowSettings">
+            <summary>
+            显示设置页面 (Ctrl+,)
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.ViewModels.MainWindowViewModel.UpdateKeyboardShortcutCommands">
+            <summary>
+            更新所有键盘快捷键命令的可用状态
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.ViewModels.MainWindowViewModel.ConvertToUserDto(LYBT.Shared.Models.Contracts.Users.UserDto)">
+            <summary>
+            转换用户数据
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.ViewModels.MainWindowViewModel.OnDisposing">
+            <summary>
+            重写OnDisposing方法，清理资源防止内存泄漏
+            DT-013: 修复ViewModel事件订阅泄漏 - 自动清理DispatcherTimer和EventAggregator订阅
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Shell.Views.HomeView">
+            <summary>
+            HomeView.xaml 的交互逻辑
+            </summary>
+            <summary>
+            HomeView
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.Views.HomeView.InitializeComponent">
+            <summary>
+            InitializeComponent
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Shell.Views.MainWindow">
+            <summary>
+            MainWindow.xaml 的交互逻辑
+            </summary>
+            <summary>
+            MainWindow
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.Views.MainWindow.InitializeComponent">
+            <summary>
+            InitializeComponent
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Shell.Views.LoginView">
+            <summary>
+            登录视图
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Shell.Views.PatientListView">
+            <summary>
+            患者列表视图
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Shell.Views.PatientDetailView">
+            <summary>
+            患者详情视图
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Shell.Views.PrescriptionView">
+            <summary>
+            处方视图
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Shell.Views.ConsultationView">
+            <summary>
+            诊疗视图
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Shell.Views.UIShowcaseWindow">
+            <summary>
+            UIShowcaseWindow.xaml 的交互逻辑
+            </summary>
+            <summary>
+            UIShowcaseWindow
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Shell.Views.UIShowcaseWindow.InitializeComponent">
+            <summary>
+            InitializeComponent
+            </summary>
+        </member>
+    </members>
+</doc>

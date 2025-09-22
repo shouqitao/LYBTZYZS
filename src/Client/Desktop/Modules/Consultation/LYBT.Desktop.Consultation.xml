@@ -1,0 +1,401 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>LYBT.Desktop.Consultation</name>
+    </assembly>
+    <members>
+        <member name="T:LYBT.Desktop.Consultation.ConsultationModule">
+            <summary>
+            看诊诊断模块 - UltraThink双层架构Prism模块
+            采用UltraThink架构标准，使用C# 12现代化特性
+            职责：看诊诊断模块依赖注入、服务注册、视图导航配置
+            实现中医四诊（望闻问切）、辨证论治、诊断记录等核心功能
+            集成双层架构服务（QueryService + BusinessService + Module委托）
+            适配中医诊所诊断流程，确保诊疗数据安全和功能完整性
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Consultation.ConsultationModule.OnInitialized(Prism.Ioc.IContainerProvider)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Consultation.ConsultationModule.RegisterTypes(Prism.Ioc.IContainerRegistry)">
+            <inheritdoc/>
+        </member>
+        <member name="T:LYBT.Desktop.Consultation.Interfaces.IConsultationBusinessService">
+            <summary>
+            看诊业务服务接口 - UltraThink双层架构简化版
+            职责：基础业务操作
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Consultation.Interfaces.IConsultationBusinessService.CreateAsync(LYBT.Shared.Models.Contracts.Consultation.ConsultationCreateDto,System.Threading.CancellationToken)">
+            <summary>
+            创建看诊 - DT-011取消令牌支持
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Consultation.Interfaces.IConsultationBusinessService.UpdateAsync(System.Guid,LYBT.Shared.Models.Contracts.Consultation.ConsultationUpdateDto,System.Threading.CancellationToken)">
+            <summary>
+            更新看诊 - DT-011取消令牌支持
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Consultation.Interfaces.IConsultationBusinessService.DeleteAsync(System.Guid)">
+            <summary>
+            删除看诊
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Consultation.Interfaces.IConsultationBusinessService.EnableAsync(System.Guid)">
+            <summary>
+            启用看诊
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Consultation.Interfaces.IConsultationBusinessService.Disable(System.Guid)">
+            <summary>
+            禁用看诊
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Consultation.Interfaces.IConsultationBusinessService.StartAsync(LYBT.Shared.Models.Contracts.Consultation.ConsultationStartDto)">
+            <summary>
+            开始看诊
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Consultation.Interfaces.IConsultationQueryService">
+            <summary>
+            看诊查询服务接口 - UltraThink双层架构简化版
+            职责：查询和搜索操作
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Consultation.Interfaces.IConsultationQueryService.GetPaged(LYBT.Shared.Models.Contracts.Consultation.ConsultationSearchDto)">
+            <summary>
+            分页查询看诊记录
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Consultation.Interfaces.IConsultationQueryService.GetByIdAsync(System.Guid)">
+            <summary>
+            根据ID获取看诊详情
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Consultation.Interfaces.IConsultationQueryService.SearchAsync(System.String)">
+            <summary>
+            搜索看诊记录
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Consultation.Interfaces.IConsultationQueryService.GetStatisticsAsync">
+            <summary>
+            获取看诊统计
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Consultation.Services.ConsultationBusinessService">
+            <summary>
+            看诊诊断业务服务 - UltraThink双层架构业务逻辑层
+            采用UltraThink架构标准，使用C# 12现代化特性
+            职责：处理看诊诊断业务逻辑、CRUD操作、中医四诊数据处理、状态管理
+            集成企业级错误处理和审计日志，提供完整诊断流程管理功能
+            支持中医四诊（望闻问切）、辨证论治、诊断记录等核心诊疗功能
+            适配中医诊所看诊诊断需求，确保诊疗数据完整性和临床安全性
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Consultation.Services.ConsultationBusinessService.#ctor(Microsoft.Extensions.Logging.ILogger{LYBT.Desktop.Consultation.Services.ConsultationBusinessService},LYBT.Shared.Interfaces.Api.IConsultationApi)">
+            <summary>
+            看诊诊断业务服务 - UltraThink双层架构业务逻辑层
+            采用UltraThink架构标准，使用C# 12现代化特性
+            职责：处理看诊诊断业务逻辑、CRUD操作、中医四诊数据处理、状态管理
+            集成企业级错误处理和审计日志，提供完整诊断流程管理功能
+            支持中医四诊（望闻问切）、辨证论治、诊断记录等核心诊疗功能
+            适配中医诊所看诊诊断需求，确保诊疗数据完整性和临床安全性
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Consultation.Services.ConsultationBusinessService.CreateAsync(LYBT.Shared.Models.Contracts.Consultation.ConsultationCreateDto)">
+            <summary>
+            创建看诊诊断业务处理
+            执行完整看诊创建流程：数据验证、诊断建立、中医四诊初始化、审计记录
+            </summary>
+            <param name="createDto">看诊创建请求信息</param>
+            <returns>包含新建看诊信息的业务结果</returns>
+            <exception cref="T:System.ArgumentNullException">当创建请求为空时抛出</exception>
+        </member>
+        <member name="M:LYBT.Desktop.Consultation.Services.ConsultationBusinessService.UpdateAsync(System.Guid,LYBT.Shared.Models.Contracts.Consultation.ConsultationUpdateDto)">
+            <summary>
+            更新看诊诊断业务处理
+            执行完整看诊更新流程：ID验证、数据验证、中医四诊更新、状态处理、审计记录
+            </summary>
+            <param name="id">看诊唯一标识</param>
+            <param name="updateDto">看诊更新请求信息</param>
+            <returns>包含更新后看诊信息的业务结果</returns>
+            <exception cref="T:System.ArgumentNullException">当更新请求为空时抛出</exception>
+        </member>
+        <member name="M:LYBT.Desktop.Consultation.Services.ConsultationBusinessService.DeleteAsync(System.Guid)">
+            <summary>
+            删除看诊诊断业务处理
+            小型诊所版本简化实现：暂不支持诊断删除以确保诊疗历史数据完整性
+            </summary>
+            <param name="consultationId">看诊唯一标识</param>
+            <returns>操作失败结果</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Consultation.Services.ConsultationBusinessService.EnableAsync(System.Guid)">
+            <summary>
+            启用看诊诊断业务处理
+            执行看诊状态转换：转为可用状态
+            </summary>
+            <param name="consultationId">看诊唯一标识</param>
+            <returns>状态转换结果</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Consultation.Services.ConsultationBusinessService.Disable(System.Guid)">
+            <summary>
+            禁用看诊诊断业务处理
+            执行看诊状态转换：转为禁用状态
+            </summary>
+            <param name="consultationId">看诊唯一标识</param>
+            <returns>状态转换结果</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Consultation.Services.ConsultationBusinessService.StartAsync(LYBT.Shared.Models.Contracts.Consultation.ConsultationStartDto)">
+            <summary>
+            开始看诊诊断业务处理
+            执行开始看诊流程：数据验证、看诊开始、状态初始化
+            </summary>
+            <param name="startDto">开始看诊请求信息</param>
+            <returns>包含开始看诊后的看诊信息的业务结果</returns>
+            <exception cref="T:System.ArgumentNullException">当开始请求为空时抛出</exception>
+        </member>
+        <member name="M:LYBT.Desktop.Consultation.Services.ConsultationBusinessService.CreateAsync(LYBT.Shared.Models.Contracts.Consultation.ConsultationCreateDto,System.Threading.CancellationToken)">
+            <summary>
+            创建看诊诊断业务处理 - 支持取消令牌
+            DT-011: 长时间操作取消支持，提升用户体验
+            </summary>
+            <param name="createDto">看诊诊断创建请求信息</param>
+            <param name="cancellationToken">取消令牌</param>
+            <returns>包含新建看诊诊断信息的业务结果</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Consultation.Services.ConsultationBusinessService.UpdateAsync(System.Guid,LYBT.Shared.Models.Contracts.Consultation.ConsultationUpdateDto,System.Threading.CancellationToken)">
+            <summary>
+            更新看诊诊断业务处理 - 支持取消令牌
+            DT-011: 长时间操作取消支持，提升用户体验
+            </summary>
+            <param name="id">看诊诊断唯一标识</param>
+            <param name="updateDto">看诊诊断更新请求信息</param>
+            <param name="cancellationToken">取消令牌</param>
+            <returns>包含更新后看诊诊断信息的业务结果</returns>
+        </member>
+        <member name="T:LYBT.Desktop.Consultation.Services.ConsultationModule">
+            <summary>
+            看诊诊断模块 - UltraThink双层架构纯委托层
+            采用UltraThink架构标准，使用C# 12现代化特性
+            职责：统一服务入口，请求路由分发到QueryService和BusinessService
+            实现IConsultationService接口，与后端标准完全对齐
+            集成中医四诊、辨证论治、诊断记录和状态管理功能
+            适配中医诊所看诊诊断需求，确保诊疗流程完整性和数据安全性
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Consultation.Services.ConsultationModule.#ctor(LYBT.Desktop.Consultation.Interfaces.IConsultationQueryService,LYBT.Desktop.Consultation.Interfaces.IConsultationBusinessService)">
+            <summary>
+            看诊诊断模块 - UltraThink双层架构纯委托层
+            采用UltraThink架构标准，使用C# 12现代化特性
+            职责：统一服务入口，请求路由分发到QueryService和BusinessService
+            实现IConsultationService接口，与后端标准完全对齐
+            集成中医四诊、辨证论治、诊断记录和状态管理功能
+            适配中医诊所看诊诊断需求，确保诊疗流程完整性和数据安全性
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Consultation.Services.ConsultationModule.DeleteAsync(System.Guid)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Consultation.Services.ConsultationModule.GetByIdAsync(System.Guid)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Consultation.Services.ConsultationModule.GetPagedAsync(LYBT.Shared.Models.Contracts.Common.PagedQueryBaseDto)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Consultation.Services.ConsultationModule.SearchAsync(System.String)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Consultation.Services.ConsultationModule.GetByPatientIdAsync(System.Guid)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Consultation.Services.ConsultationModule.GetByMedicalCaseIdAsync(System.Guid)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Consultation.Services.ConsultationModule.StartAsync(LYBT.Shared.Models.Contracts.Consultation.ConsultationStartDto)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Consultation.Services.ConsultationModule.UpdateAsync(System.Guid,LYBT.Shared.Models.Contracts.Consultation.ConsultationDetailDto)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Consultation.Services.ConsultationModule.GetByDoctorIdAsync(System.Guid)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Consultation.Services.ConsultationModule.GetStatisticsAsync(System.Nullable{System.DateTime},System.Nullable{System.DateTime})">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Consultation.Services.ConsultationModule.GetPatientHistoryAsync(System.Guid)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Consultation.Services.ConsultationModule.GetFourDiagnosisByMedicalCaseIdAsync(System.Guid)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Consultation.Services.ConsultationModule.SaveFourDiagnosisAsync(System.Guid,System.Object)">
+            <inheritdoc/>
+        </member>
+        <member name="T:LYBT.Desktop.Consultation.Services.ConsultationQueryService">
+            <summary>
+            看诊诊断查询服务 - UltraThink双层架构查询专业层
+            采用UltraThink架构标准，使用C# 12现代化特性
+            职责：看诊诊断复杂查询、搜索过滤、统计报表、中医四诊数据检索
+            提供只读查询操作，不涉及数据修改，专注诊断记录检索和状态分析
+            集成企业级日志记录，支持诊断管理和档案查询需求
+            适配中医诊所看诊诊断查询场景，确保查询性能和数据安全性
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Consultation.Services.ConsultationQueryService.#ctor(Microsoft.Extensions.Logging.ILogger{LYBT.Desktop.Consultation.Services.ConsultationQueryService},LYBT.Shared.Interfaces.Api.IConsultationApi)">
+            <summary>
+            看诊诊断查询服务 - UltraThink双层架构查询专业层
+            采用UltraThink架构标准，使用C# 12现代化特性
+            职责：看诊诊断复杂查询、搜索过滤、统计报表、中医四诊数据检索
+            提供只读查询操作，不涉及数据修改，专注诊断记录检索和状态分析
+            集成企业级日志记录，支持诊断管理和档案查询需求
+            适配中医诊所看诊诊断查询场景，确保查询性能和数据安全性
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Consultation.Services.ConsultationQueryService.GetPaged(LYBT.Shared.Models.Contracts.Consultation.ConsultationSearchDto)">
+            <summary>
+            分页查询看诊诊断记录列表
+            基于查询条件执行诊断分页检索，支持过滤和排序
+            </summary>
+            <param name="query">分页查询参数</param>
+            <returns>包含诊断记录列表和总数的分页结果</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Consultation.Services.ConsultationQueryService.GetByIdAsync(System.Guid)">
+            <summary>
+            根据诊断ID获取详细档案
+            查询指定诊断的完整档案信息，包含中医四诊数据和诊疗历史
+            </summary>
+            <param name="id">诊断唯一标识</param>
+            <returns>诊断详细档案DTO</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Consultation.Services.ConsultationQueryService.SearchAsync(System.String)">
+            <summary>
+            关键字搜索诊断记录
+            基于关键字执行模糊搜索，支持患者姓名、诊断结果、中医四诊内容匹配
+            </summary>
+            <param name="keyword">搜索关键字</param>
+            <returns>匹配诊断记录列表</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Consultation.Services.ConsultationQueryService.GetStatisticsAsync">
+            <summary>
+            获取诊断统计数据
+            生成诊断管理相关的基础统计信息和报表数据
+            </summary>
+            <returns>诊断统计信息DTO</returns>
+        </member>
+        <member name="T:LYBT.Desktop.Consultation.ViewModels.ConsultationMainViewModel">
+            <summary>
+            看诊主界面视图模型 - 简化版纯数据记录
+            只负责简单的四诊数据录入，不包含流程监管和智能处理
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Consultation.ViewModels.ConsultationMainViewModel.OnNavigatedTo(Prism.Regions.NavigationContext)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Consultation.ViewModels.ConsultationMainViewModel.IsNavigationTarget(Prism.Regions.NavigationContext)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Consultation.ViewModels.ConsultationMainViewModel.OnNavigatedFrom(Prism.Regions.NavigationContext)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Consultation.ViewModels.ConsultationMainViewModel.ViewPatientHistoryAsync">
+            <summary>
+            查看患者历史诊疗记录
+            Epic 03-P0-02: 实用化历史查询功能，专为小诊所设计
+            提供完整的患者诊疗历史，包括医案、诊断、处方等信息
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Consultation.ViewModels.ConsultationMainViewModel.ShowHistoryDialog(LYBT.Shared.Models.Contracts.Patients.PatientDto,System.Collections.Generic.List{LYBT.Desktop.Consultation.ViewModels.ConsultationMainViewModel.PatientHistoryDetail})">
+            <summary>
+            显示患者历史诊疗记录对话框
+            实用化设计：清晰展示关键诊疗信息，便于医生快速了解病史
+            </summary>
+            <param name="patient">患者信息</param>
+            <param name="historyDetails">历史诊疗详情列表</param>
+        </member>
+        <member name="M:LYBT.Desktop.Consultation.ViewModels.ConsultationMainViewModel.GetGenderText(LYBT.Shared.Models.Enums.Gender)">
+            <summary>
+            获取性别显示文本
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Consultation.ViewModels.ConsultationMainViewModel.GetMedicalCaseStatusText(System.Int32)">
+            <summary>
+            获取医案状态显示文本
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Consultation.ViewModels.ConsultationMainViewModel.PatientHistoryDetail">
+            <summary>
+            患者历史诊疗详情数据模型
+            用于整合医案和诊疗记录信息
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Consultation.ViewModels.ConsultationMainViewModel.ShowTemplateMenuAsync">
+            <summary>
+            显示四诊模板选择菜单
+            Epic 03-P0-04: 实用化四诊录入界面简化，专为小诊所设计
+            提供常用四诊模板快速录入，提高医生录入效率
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Consultation.ViewModels.ConsultationMainViewModel.ApplyTemplateAsync(LYBT.Desktop.Consultation.ViewModels.ConsultationMainViewModel.FourDiagnosisTemplate)">
+            <summary>
+            应用选定的四诊模板
+            将模板内容填入四诊录入区域，提高录入效率
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Consultation.ViewModels.ConsultationMainViewModel.BuildTemplateContent(LYBT.Desktop.Consultation.ViewModels.ConsultationMainViewModel.FourDiagnosisTemplate)">
+            <summary>
+            构建四诊模板内容
+            将结构化的模板数据转换为录入格式
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Consultation.ViewModels.ConsultationMainViewModel.GetCommonTemplates">
+            <summary>
+            获取常用四诊模板
+            实用化设计：内置常见中医症候的四诊模板
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Consultation.ViewModels.ConsultationMainViewModel.ShowConfirmationAsync(System.String,System.String)">
+            <summary>
+            显示确认对话框（简化实现）
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Consultation.ViewModels.ConsultationMainViewModel.FourDiagnosisTemplate">
+            <summary>
+            四诊模板数据模型
+            用于存储常用四诊录入模板的结构化数据
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Consultation.ViewModels.ConsultationManagementViewModel">
+            <summary>
+            看诊记录管理视图模型 - 简化版
+            只负责显示和基本管理看诊记录，不包含复杂的流程控制
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Consultation.Views.ConsultationMainView">
+            <summary>
+            ConsultationMainView.xaml 的交互逻辑 - 简化版纯数据记录界面
+            </summary>
+            <summary>
+            ConsultationMainView
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Consultation.Views.ConsultationMainView.InitializeComponent">
+            <summary>
+            InitializeComponent
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Consultation.Views.ConsultationManagementView">
+            <summary>
+            看诊记录管理视图 - UltraThink统一管理模块设计
+            </summary>
+            <summary>
+            ConsultationManagementView
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Consultation.Views.ConsultationManagementView.InitializeComponent">
+            <summary>
+            InitializeComponent
+            </summary>
+        </member>
+    </members>
+</doc>

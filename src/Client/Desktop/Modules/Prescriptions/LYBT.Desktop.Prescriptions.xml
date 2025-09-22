@@ -1,0 +1,1801 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>LYBT.Desktop.Prescriptions</name>
+    </assembly>
+    <members>
+        <member name="T:LYBT.Desktop.Prescriptions.Components.BasicValidator">
+            <summary>
+            处方基础验证组件 - UltraThink简化版本
+            专注于基础数据验证，不包含复杂的业务规则验证
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.Components.BasicValidator.ValidatePrescription(LYBT.Shared.Models.Contracts.Prescriptions.PrescriptionDto)">
+            <summary>
+            验证处方基础信息
+            </summary>
+            <param name="prescription">处方信息</param>
+            <returns>验证结果</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.Components.BasicValidator.ValidateDiagnosis(System.String,LYBT.Desktop.Prescriptions.Components.ValidationResult)">
+            <summary>
+            验证诊断信息
+            </summary>
+            <param name="diagnosis">诊断</param>
+            <param name="result">验证结果</param>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.Components.BasicValidator.ValidateDosageCount(System.Int32,LYBT.Desktop.Prescriptions.Components.ValidationResult)">
+            <summary>
+            验证剂数
+            </summary>
+            <param name="dosageCount">剂数</param>
+            <param name="result">验证结果</param>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.Components.BasicValidator.ValidatePrescriptionItems(System.Collections.Generic.ICollection{LYBT.Shared.Models.Contracts.Prescriptions.PrescriptionItemDto},LYBT.Desktop.Prescriptions.Components.ValidationResult)">
+            <summary>
+            验证处方药材项目
+            </summary>
+            <param name="items">药材项目列表</param>
+            <param name="result">验证结果</param>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.Components.BasicValidator.ValidatePrescriptionItem(LYBT.Shared.Models.Contracts.Prescriptions.PrescriptionItemDto,LYBT.Desktop.Prescriptions.Components.ValidationResult)">
+            <summary>
+            验证单个药材项目
+            </summary>
+            <param name="item">药材项目</param>
+            <param name="result">验证结果</param>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.Components.BasicValidator.CheckDuplicateHerbs(System.Collections.Generic.ICollection{LYBT.Shared.Models.Contracts.Prescriptions.PrescriptionItemDto},LYBT.Desktop.Prescriptions.Components.ValidationResult)">
+            <summary>
+            检查重复药材
+            </summary>
+            <param name="items">药材项目列表</param>
+            <param name="result">验证结果</param>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.Components.BasicValidator.ValidateBasicIds(LYBT.Shared.Models.Contracts.Prescriptions.PrescriptionDto,LYBT.Desktop.Prescriptions.Components.ValidationResult)">
+            <summary>
+            验证基础ID信息
+            </summary>
+            <param name="prescription">处方信息</param>
+            <param name="result">验证结果</param>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.Components.BasicValidator.QuickValidate(LYBT.Shared.Models.Contracts.Prescriptions.PrescriptionDto)">
+            <summary>
+            快速验证 - 仅检查最基础的必填项
+            </summary>
+            <param name="prescription">处方信息</param>
+            <returns>是否通过基础验证</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.Components.BasicValidator.ValidateHerbQuantity(System.String,System.Decimal)">
+            <summary>
+            验证药材用量范围
+            </summary>
+            <param name="herbName">药材名称</param>
+            <param name="quantity">用量</param>
+            <returns>验证结果</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.Components.BasicValidator.GetQuantityWarnings(System.String,System.Decimal)">
+            <summary>
+            获取用量警告信息
+            </summary>
+            <param name="herbName">药材名称</param>
+            <param name="quantity">用量</param>
+            <returns>警告信息</returns>
+        </member>
+        <member name="T:LYBT.Desktop.Prescriptions.Components.ValidationResult">
+            <summary>
+            验证结果
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.Components.ValidationResult.IsValid">
+            <summary>是否验证通过（无错误）</summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.Components.ValidationResult.HasWarnings">
+            <summary>是否有警告</summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.Components.ValidationResult.AddError(System.String)">
+            <summary>添加错误</summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.Components.ValidationResult.AddWarning(System.String)">
+            <summary>添加警告</summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.Components.ValidationResult.GetAllMessages">
+            <summary>获取所有消息</summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.Components.ValidationResult.ToString">
+            <inheritdoc/>
+        </member>
+        <member name="T:LYBT.Desktop.Prescriptions.Components.PriceCalculator">
+            <summary>
+            处方价格计算组件 - UltraThink简化版本
+            专注于价格计算逻辑，不涉及复杂的业务规则
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.Components.PriceCalculator.CalculateSingleDosePrice(System.Collections.Generic.IEnumerable{LYBT.Shared.Models.Contracts.Prescriptions.PrescriptionItemDto},System.Decimal)">
+            <summary>
+            计算单剂价格
+            </summary>
+            <param name="items">处方项目列表</param>
+            <param name="discount">折扣率（默认1.0无折扣）</param>
+            <returns>单剂价格</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.Components.PriceCalculator.CalculateTotalPrice(System.Decimal,System.Int32)">
+            <summary>
+            计算总价格
+            </summary>
+            <param name="singleDosePrice">单剂价格</param>
+            <param name="dosageCount">剂数</param>
+            <returns>总价格</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.Components.PriceCalculator.CalculatePrescriptionPrice(LYBT.Shared.Models.Contracts.Prescriptions.PrescriptionDto)">
+            <summary>
+            计算处方完整价格信息
+            </summary>
+            <param name="prescription">处方信息</param>
+            <returns>价格计算结果</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.Components.PriceCalculator.CalculateTotalWeight(System.Collections.Generic.IEnumerable{LYBT.Shared.Models.Contracts.Prescriptions.PrescriptionItemDto},System.Int32)">
+            <summary>
+            计算总重量
+            </summary>
+            <param name="items">处方项目列表</param>
+            <param name="dosageCount">剂数</param>
+            <returns>总重量</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.Components.PriceCalculator.ValidatePrice(System.Decimal,System.Decimal)">
+            <summary>
+            验证价格合理性
+            </summary>
+            <param name="price">价格</param>
+            <param name="maxPrice">最大合理价格（默认10000）</param>
+            <returns>价格是否合理</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.Components.PriceCalculator.FormatPrice(System.Decimal,System.String)">
+            <summary>
+            格式化价格显示
+            </summary>
+            <param name="price">价格</param>
+            <param name="format">格式（默认C货币格式）</param>
+            <returns>格式化后的价格字符串</returns>
+        </member>
+        <member name="T:LYBT.Desktop.Prescriptions.Components.PriceCalculationResult">
+            <summary>
+            价格计算结果
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.Components.PriceCalculationResult.IsSuccess">
+            <summary>计算是否成功</summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.Components.PriceCalculationResult.ErrorMessage">
+            <summary>错误信息</summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.Components.PriceCalculationResult.SingleDosePrice">
+            <summary>单剂价格</summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.Components.PriceCalculationResult.TotalPrice">
+            <summary>总价格</summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.Components.PriceCalculationResult.TotalWeight">
+            <summary>总重量</summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.Components.PriceCalculationResult.ItemCount">
+            <summary>药材种类数</summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.Components.PriceCalculationResult.DosageCount">
+            <summary>剂数</summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.Components.PriceCalculationResult.Discount">
+            <summary>折扣率</summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.Components.PriceCalculationResult.ToString">
+            <inheritdoc/>
+        </member>
+        <member name="T:LYBT.Desktop.Prescriptions.Constants.PrescriptionConstants">
+            <summary>
+            处方相关常量定义
+            </summary>
+        </member>
+        <member name="F:LYBT.Desktop.Prescriptions.Constants.PrescriptionConstants.CommonDosageCounts">
+            <summary>
+            常用剂数选项
+            </summary>
+        </member>
+        <member name="F:LYBT.Desktop.Prescriptions.Constants.PrescriptionConstants.CommonUsages">
+            <summary>
+            常用用法模板
+            </summary>
+        </member>
+        <member name="F:LYBT.Desktop.Prescriptions.Constants.PrescriptionConstants.UsageHint">
+            <summary>
+            用法用量输入提示
+            </summary>
+        </member>
+        <member name="F:LYBT.Desktop.Prescriptions.Constants.PrescriptionConstants.MedicalAdviceHint">
+            <summary>
+            医嘱输入提示
+            </summary>
+        </member>
+        <member name="F:LYBT.Desktop.Prescriptions.Constants.PrescriptionConstants.RemarkHint">
+            <summary>
+            备注输入提示
+            </summary>
+        </member>
+        <member name="F:LYBT.Desktop.Prescriptions.Constants.PrescriptionConstants.DefaultDosageCount">
+            <summary>
+            默认剂数
+            </summary>
+        </member>
+        <member name="F:LYBT.Desktop.Prescriptions.Constants.PrescriptionConstants.DefaultUsage">
+            <summary>
+            默认用法
+            </summary>
+        </member>
+        <member name="F:LYBT.Desktop.Prescriptions.Constants.PrescriptionConstants.DefaultDiscount">
+            <summary>
+            默认折扣（无折扣）
+            </summary>
+        </member>
+        <member name="F:LYBT.Desktop.Prescriptions.Constants.PrescriptionConstants.PrescriptionNumberPrefix">
+            <summary>
+            处方编号前缀
+            </summary>
+        </member>
+        <member name="F:LYBT.Desktop.Prescriptions.Constants.PrescriptionConstants.MaxDosageCount">
+            <summary>
+            最大剂数限制
+            </summary>
+        </member>
+        <member name="F:LYBT.Desktop.Prescriptions.Constants.PrescriptionConstants.MinDosageCount">
+            <summary>
+            最小剂数限制
+            </summary>
+        </member>
+        <member name="F:LYBT.Desktop.Prescriptions.Constants.PrescriptionConstants.MaxDiscount">
+            <summary>
+            最大折扣率
+            </summary>
+        </member>
+        <member name="F:LYBT.Desktop.Prescriptions.Constants.PrescriptionConstants.MinDiscount">
+            <summary>
+            最小折扣率
+            </summary>
+        </member>
+        <member name="F:LYBT.Desktop.Prescriptions.Constants.PrescriptionConstants.MaxPrescriptionItems">
+            <summary>
+            最大处方项目数量
+            </summary>
+        </member>
+        <member name="F:LYBT.Desktop.Prescriptions.Constants.PrescriptionConstants.PrescriptionNumberFormat">
+            <summary>
+            处方编号格式
+            </summary>
+        </member>
+        <member name="F:LYBT.Desktop.Prescriptions.Constants.PrescriptionConstants.PriceFormat">
+            <summary>
+            价格显示格式
+            </summary>
+        </member>
+        <member name="F:LYBT.Desktop.Prescriptions.Constants.PrescriptionConstants.DosageFormat">
+            <summary>
+            剂量显示格式
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Prescriptions.Interfaces.IPrescriptionsBusinessService">
+            <summary>
+            处方业务服务接口 - UltraThink双层架构简化版
+            职责：基础业务操作
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.Interfaces.IPrescriptionsBusinessService.CreateAsync(LYBT.Shared.Models.Contracts.Prescriptions.PrescriptionCreateDto,System.Threading.CancellationToken)">
+            <summary>
+            创建处方 - DT-011取消令牌支持
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.Interfaces.IPrescriptionsBusinessService.UpdateAsync(System.Guid,LYBT.Shared.Models.Contracts.Prescriptions.PrescriptionEditDto,System.Threading.CancellationToken)">
+            <summary>
+            更新处方 - DT-011取消令牌支持
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.Interfaces.IPrescriptionsBusinessService.Delete(System.Guid)">
+            <summary>
+            删除处方
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.Interfaces.IPrescriptionsBusinessService.Enable(System.Guid)">
+            <summary>
+            启用处方
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.Interfaces.IPrescriptionsBusinessService.Disable(System.Guid)">
+            <summary>
+            禁用处方
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Prescriptions.Interfaces.IPrescriptionsQueryService">
+            <summary>
+            处方查询服务接口 - UltraThink双层架构简化版
+            职责：查询和搜索操作
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.Interfaces.IPrescriptionsQueryService.GetPagedAsync(LYBT.Shared.Models.Contracts.Prescriptions.PrescriptionQueryDto)">
+            <summary>
+            分页查询处方
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.Interfaces.IPrescriptionsQueryService.GetByIdAsync(System.Guid)">
+            <summary>
+            根据ID获取处方
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.Interfaces.IPrescriptionsQueryService.Search(System.String)">
+            <summary>
+            搜索处方
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.Interfaces.IPrescriptionsQueryService.GetStatisticsAsync">
+            <summary>
+            获取处方统计
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Prescriptions.PrescriptionsModule">
+            <summary>
+            处方管理模块 - UltraThink双层架构Prism模块
+            采用UltraThink架构标准，使用C# 12现代化特性
+            职责：处方管理模块依赖注入、服务注册、视图导航配置
+            实现中医处方开具、药材配伍、验方组合、智能计算等核心功能
+            集成双层架构服务（QueryService + BusinessService + Module委托）
+            适配中医诊所处方管理流程，确保配伍安全和计算准确性
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.PrescriptionsModule.OnInitialized(Prism.Ioc.IContainerProvider)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.PrescriptionsModule.RegisterTypes(Prism.Ioc.IContainerRegistry)">
+            <inheritdoc/>
+        </member>
+        <member name="T:LYBT.Desktop.Prescriptions.Services.PrescriptionComposerService">
+            <summary>
+            处方编辑器服务 - UltraThink简化版本
+            专注于处方编辑相关的业务逻辑，不包含复杂的协调功能
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.Services.PrescriptionComposerService.CreateDraftAsync(System.Guid,System.Guid,System.Guid)">
+            <summary>
+            创建新的处方草稿
+            </summary>
+            <param name="medicalCaseId">医疗案例ID</param>
+            <param name="patientId">患者ID</param>
+            <param name="doctorId">医生ID</param>
+            <returns>处方信息</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.Services.PrescriptionComposerService.SaveDraftAsync(LYBT.Shared.Models.Contracts.Prescriptions.PrescriptionDto)">
+            <summary>
+            保存处方草稿
+            </summary>
+            <param name="prescription">处方信息</param>
+            <returns>保存结果</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.Services.PrescriptionComposerService.SavePrescriptionAsync(LYBT.Shared.Models.Contracts.Prescriptions.PrescriptionDto)">
+            <summary>
+            保存正式处方
+            </summary>
+            <param name="prescription">处方信息</param>
+            <returns>保存结果</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.Services.PrescriptionComposerService.ValidatePrescription(LYBT.Shared.Models.Contracts.Prescriptions.PrescriptionDto)">
+            <summary>
+            快速验证处方
+            </summary>
+            <param name="prescription">处方信息</param>
+            <returns>验证结果</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.Services.PrescriptionComposerService.CalculatePrice(LYBT.Shared.Models.Contracts.Prescriptions.PrescriptionDto)">
+            <summary>
+            计算处方价格
+            </summary>
+            <param name="prescription">处方信息</param>
+            <returns>价格计算结果</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.Services.PrescriptionComposerService.ValidateHerbQuantity(System.String,System.Decimal)">
+            <summary>
+            验证药材用量
+            </summary>
+            <param name="herbName">药材名称</param>
+            <param name="quantity">用量</param>
+            <returns>验证结果</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.Services.PrescriptionComposerService.AddHerbToPrescription(LYBT.Shared.Models.Contracts.Prescriptions.PrescriptionDto,LYBT.Shared.Models.Contracts.Prescriptions.PrescriptionItemDto)">
+            <summary>
+            添加药材到处方
+            </summary>
+            <param name="prescription">处方信息</param>
+            <param name="herbItem">药材项目</param>
+            <returns>添加结果</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.Services.PrescriptionComposerService.RemoveHerbFromPrescription(LYBT.Shared.Models.Contracts.Prescriptions.PrescriptionDto,LYBT.Shared.Models.Contracts.Prescriptions.PrescriptionItemDto)">
+            <summary>
+            从处方中移除药材
+            </summary>
+            <param name="prescription">处方信息</param>
+            <param name="herbItem">药材项目</param>
+            <returns>移除结果</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.Services.PrescriptionComposerService.GeneratePrescriptionNoAsync">
+            <summary>
+            生成处方编号
+            </summary>
+            <returns>处方编号</returns>
+        </member>
+        <member name="T:LYBT.Desktop.Prescriptions.Services.IPrescriptionComposerService">
+            <summary>
+            处方编辑器服务接口
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Prescriptions.Services.PrescriptionsBusinessService">
+            <summary>
+            处方管理业务服务 - UltraThink双层架构业务逻辑层
+            采用UltraThink架构标准，使用C# 12现代化特性
+            职责：处理处方管理业务逻辑、CRUD操作、药材配伍验证、价格计算
+            集成企业级错误处理和审计日志，提供完整处方生命周期管理功能
+            支持处方创建、药材组合、配伍检查、价格计算、验方引用等核心功能
+            适配中医诊所处方开具需求，确保配伍安全性和计算准确性
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.Services.PrescriptionsBusinessService.#ctor(Microsoft.Extensions.Logging.ILogger{LYBT.Desktop.Prescriptions.Services.PrescriptionsBusinessService},LYBT.Shared.Interfaces.Api.IPrescriptionApi)">
+            <summary>
+            处方管理业务服务 - UltraThink双层架构业务逻辑层
+            采用UltraThink架构标准，使用C# 12现代化特性
+            职责：处理处方管理业务逻辑、CRUD操作、药材配伍验证、价格计算
+            集成企业级错误处理和审计日志，提供完整处方生命周期管理功能
+            支持处方创建、药材组合、配伍检查、价格计算、验方引用等核心功能
+            适配中医诊所处方开具需求，确保配伍安全性和计算准确性
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.Services.PrescriptionsBusinessService.CreateAsync(LYBT.Shared.Models.Contracts.Prescriptions.PrescriptionCreateDto)">
+            <summary>
+            创建处方业务处理
+            执行完整处方创建流程：数据验证、药材配伍检查、价格计算、审计记录
+            </summary>
+            <param name="createDto">处方创建请求信息</param>
+            <returns>包含新建处方信息的业务结果</returns>
+            <exception cref="T:System.ArgumentNullException">当创建请求为空时抛出</exception>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.Services.PrescriptionsBusinessService.UpdateAsync(System.Guid,LYBT.Shared.Models.Contracts.Prescriptions.PrescriptionEditDto)">
+            <summary>
+            更新处方业务处理
+            执行完整处方更新流程：ID验证、数据验证、配伍重检、价格重算、审计记录
+            </summary>
+            <param name="id">处方唯一标识</param>
+            <param name="updateDto">处方更新请求信息</param>
+            <returns>包含更新后处方信息的业务结果</returns>
+            <exception cref="T:System.ArgumentNullException">当更新请求为空时抛出</exception>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.Services.PrescriptionsBusinessService.Delete(System.Guid)">
+            <summary>
+            删除处方业务处理
+            执行完整删除流程：ID验证、关联检查、安全删除、审计记录
+            </summary>
+            <param name="prescriptionId">处方唯一标识</param>
+            <returns>删除操作结果</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.Services.PrescriptionsBusinessService.Enable(System.Guid)">
+            <summary>
+            启用处方业务处理
+            执行处方状态转换：转为可用状态
+            </summary>
+            <param name="prescriptionId">处方唯一标识</param>
+            <returns>状态转换结果</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.Services.PrescriptionsBusinessService.Disable(System.Guid)">
+            <summary>
+            禁用处方业务处理
+            执行处方状态转换：转为禁用状态
+            </summary>
+            <param name="prescriptionId">处方唯一标识</param>
+            <returns>状态转换结果</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.Services.PrescriptionsBusinessService.CreateAsync(LYBT.Shared.Models.Contracts.Prescriptions.PrescriptionCreateDto,System.Threading.CancellationToken)">
+            <summary>
+            创建处方业务处理 - 支持取消令牌
+            DT-011: 长时间操作取消支持，提升用户体验
+            </summary>
+            <param name="createDto">处方创建请求信息</param>
+            <param name="cancellationToken">取消令牌</param>
+            <returns>包含新建处方信息的业务结果</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.Services.PrescriptionsBusinessService.UpdateAsync(System.Guid,LYBT.Shared.Models.Contracts.Prescriptions.PrescriptionEditDto,System.Threading.CancellationToken)">
+            <summary>
+            更新处方业务处理 - 支持取消令牌
+            DT-011: 长时间操作取消支持，提升用户体验
+            </summary>
+            <param name="id">处方唯一标识</param>
+            <param name="updateDto">处方更新请求信息</param>
+            <param name="cancellationToken">取消令牌</param>
+            <returns>包含更新后处方信息的业务结果</returns>
+        </member>
+        <member name="T:LYBT.Desktop.Prescriptions.Services.PrescriptionsModule">
+            <summary>
+            处方管理模块 - UltraThink双层架构纯委托层
+            采用UltraThink架构标准，使用C# 12现代化特性
+            职责：统一服务入口，请求路由分发到QueryService和BusinessService
+            实现IPrescriptionService接口，与后端标准完全对齐
+            集成处方开具、药材配伍、验方组合、智能计算和打印输出功能
+            适配中医诊所处方管理需求，确保配伍安全性和计算准确性
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.Services.PrescriptionsModule.#ctor(LYBT.Desktop.Prescriptions.Interfaces.IPrescriptionsQueryService,LYBT.Desktop.Prescriptions.Interfaces.IPrescriptionsBusinessService)">
+            <summary>
+            处方管理模块 - UltraThink双层架构纯委托层
+            采用UltraThink架构标准，使用C# 12现代化特性
+            职责：统一服务入口，请求路由分发到QueryService和BusinessService
+            实现IPrescriptionService接口，与后端标准完全对齐
+            集成处方开具、药材配伍、验方组合、智能计算和打印输出功能
+            适配中医诊所处方管理需求，确保配伍安全性和计算准确性
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.Services.PrescriptionsModule.CreateAsync(LYBT.Shared.Models.Contracts.Prescriptions.PrescriptionCreateDto)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.Services.PrescriptionsModule.UpdateAsync(System.Guid,LYBT.Shared.Models.Contracts.Prescriptions.PrescriptionEditDto)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.Services.PrescriptionsModule.DeleteAsync(System.Guid)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.Services.PrescriptionsModule.GetByIdAsync(System.Guid)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.Services.PrescriptionsModule.GetPagedAsync(LYBT.Shared.Models.Contracts.Prescriptions.PrescriptionQueryDto)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.Services.PrescriptionsModule.SearchAsync(System.String)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.Services.PrescriptionsModule.GetByPatientIdAsync(System.Guid)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.Services.PrescriptionsModule.GetByMedicalCaseIdAsync(System.Guid)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.Services.PrescriptionsModule.ValidateAsync(LYBT.Shared.Models.Contracts.Prescriptions.PrescriptionCreateDto)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.Services.PrescriptionsModule.CopyAsync(System.Guid,System.String)">
+            <inheritdoc/>
+        </member>
+        <member name="T:LYBT.Desktop.Prescriptions.Services.PrescriptionsQueryService">
+            <summary>
+            处方管理查询服务 - UltraThink双层架构查询专业层
+            采用UltraThink架构标准，使用C# 12现代化特性
+            职责：处方管理复杂查询、搜索过滤、统计报表、配伍历史检索
+            提供只读查询操作，不涉及数据修改，专注处方记录检索和统计分析
+            集成企业级日志记录，支持处方管理和档案查询需求
+            适配中医诊所处方管理查询场景，确保查询性能和数据安全性
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.Services.PrescriptionsQueryService.#ctor(Microsoft.Extensions.Logging.ILogger{LYBT.Desktop.Prescriptions.Services.PrescriptionsQueryService},LYBT.Shared.Interfaces.Api.IPrescriptionApi)">
+            <summary>
+            处方管理查询服务 - UltraThink双层架构查询专业层
+            采用UltraThink架构标准，使用C# 12现代化特性
+            职责：处方管理复杂查询、搜索过滤、统计报表、配伍历史检索
+            提供只读查询操作，不涉及数据修改，专注处方记录检索和统计分析
+            集成企业级日志记录，支持处方管理和档案查询需求
+            适配中医诊所处方管理查询场景，确保查询性能和数据安全性
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.Services.PrescriptionsQueryService.GetPagedAsync(LYBT.Shared.Models.Contracts.Prescriptions.PrescriptionQueryDto)">
+            <summary>
+            分页查询处方档案列表
+            基于查询条件执行处方分页检索，支持过滤和排序
+            </summary>
+            <param name="query">分页查询参数</param>
+            <returns>包含处方列表和总数的分页结果</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.Services.PrescriptionsQueryService.GetByIdAsync(System.Guid)">
+            <summary>
+            根据处方ID获取详细档案
+            查询指定处方的完整档案信息，包含药材配伍和价格明细
+            </summary>
+            <param name="id">处方唯一标识</param>
+            <returns>处方详细档案DTO</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.Services.PrescriptionsQueryService.Search(System.String)">
+            <summary>
+            关键字搜索处方记录
+            基于关键字执行模糊搜索，支持患者姓名、处方名称、药材名称匹配
+            </summary>
+            <param name="keyword">搜索关键字</param>
+            <returns>匹配处方记录列表</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.Services.PrescriptionsQueryService.GetStatisticsAsync">
+            <summary>
+            获取处方统计数据
+            生成处方管理相关的基础统计信息和报表数据
+            </summary>
+            <returns>处方统计信息DTO</returns>
+        </member>
+        <member name="T:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionCalculator">
+            <summary>
+            处方计算器 - UltraThink专门化组件
+            职责单一：专注处方价格计算和数学运算
+            代码干净：清晰的计算逻辑和精度处理
+            性能出色：优化的计算算法和缓存机制
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionCalculator.CalculatePrescriptionPrice(System.Collections.Generic.IEnumerable{LYBT.Desktop.Prescriptions.ViewModels.PrescriptionItemViewModel},System.Int32,System.Decimal)">
+            <summary>
+            计算处方总价（完整计算）
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionCalculator.CalculateSingleDosagePrice(System.Collections.Generic.IEnumerable{LYBT.Desktop.Prescriptions.ViewModels.PrescriptionItemViewModel})">
+            <summary>
+            计算单剂价格
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionCalculator.CalculateItemSubtotal(System.Decimal,System.Decimal)">
+            <summary>
+            计算单个药材小计
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionCalculator.ApplyDiscount(System.Decimal,System.Decimal)">
+            <summary>
+            应用折扣
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionCalculator.CalculateDiscountAmount(System.Decimal,System.Decimal)">
+            <summary>
+            计算折扣金额
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionCalculator.GenerateDiscountText(System.Decimal)">
+            <summary>
+            生成折扣文本
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionCalculator.UpdateItemSubtotals(System.Collections.Generic.IEnumerable{LYBT.Desktop.Prescriptions.ViewModels.PrescriptionItemViewModel})">
+            <summary>
+            批量更新处方项小计
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionCalculator.AnalyzeCosts(System.Collections.Generic.IEnumerable{LYBT.Desktop.Prescriptions.ViewModels.PrescriptionItemViewModel},System.Int32,System.Decimal)">
+            <summary>
+            计算成本分析
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionCalculator.CalculatePriceTrend(System.Decimal,System.Nullable{System.Decimal})">
+            <summary>
+            计算价格趋势（用于多次保存的处方）
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionCalculator.ValidatePrice(System.Decimal,LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionCalculator.PriceValidationType)">
+            <summary>
+            检查价格是否异常
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionCalculator.RoundToDecimalPlaces(System.Decimal,System.Int32)">
+            <summary>
+            四舍五入到指定精度
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionCommandHandler">
+            <summary>
+            处方命令处理器 - UltraThink专门化组件
+            职责单一：专注处方相关命令的处理和执行
+            代码干净：清晰的命令模式实现和错误处理
+            性能出色：优化的异步命令执行和资源管理
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionCommandHandler.SetDependencies(LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionDataManager,LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionValidator,LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionCalculator)">
+            <summary>
+            设置关联组件（依赖注入）
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionCommandHandler.SaveAsync">
+            <summary>
+            保存处方
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionCommandHandler.Clear">
+            <summary>
+            清空处方
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionCommandHandler.AddHerbAsync">
+            <summary>
+            添加药材
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionCommandHandler.AddHerbItems(System.Object)">
+            <summary>
+            添加药材项
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionCommandHandler.RemoveHerb(LYBT.Desktop.Prescriptions.ViewModels.PrescriptionItemViewModel)">
+            <summary>
+            移除药材
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionCommandHandler.ImportFormulaAsync">
+            <summary>
+            导入验方
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionCommandHandler.ImportFormulaItems(System.Object)">
+            <summary>
+            导入验方项
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionCommandHandler.ImportHistoryAsync">
+            <summary>
+            导入历史处方
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionCommandHandler.ImportHistoryItems(System.Object)">
+            <summary>
+            导入历史处方项
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionCommandHandler.SetDiscount(System.String)">
+            <summary>
+            设置折扣
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionCommandHandler.SetDosage(System.String)">
+            <summary>
+            设置剂数
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionCommandHandler.GeneratePrescriptionNo">
+            <summary>
+            生成处方编号
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionCommandHandler.PrintPreviewAsync">
+            <summary>
+            打印预览
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionCommandHandler.ValidatePrescription">
+            <summary>
+            验证处方
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionCommandHandler.RecalculatePrice">
+            <summary>
+            重新计算价格
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionCommandHandler.ExecuteCommandSafelyAsync(System.Func{System.Threading.Tasks.Task})">
+            <summary>
+            安全执行异步命令
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionCommandHandler.ExecuteCommandSafely(System.Action)">
+            <summary>
+            安全执行同步命令
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionCommandHandler.CreatePrintData">
+            <summary>
+            创建打印数据
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionCommandHandler.ShowErrorMessage(System.String,System.String)">
+            <summary>
+            显示错误消息
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionCommandHandler.ShowWarningMessage(System.String,System.String)">
+            <summary>
+            显示警告消息
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionCommandHandler.ShowInfoMessage(System.String,System.String)">
+            <summary>
+            显示信息消息
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionCommandHandler.ShowConfirmDialog(System.String,System.String)">
+            <summary>
+            显示确认对话框
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionDataManager">
+            <summary>
+            处方数据管理器 - UltraThink专门化组件
+            职责单一：专注处方数据的CRUD操作和状态管理
+            代码干净：清晰的数据管理接口
+            性能出色：优化的数据加载和缓存策略
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionDataManager.InitializeAsync(System.Guid)">
+            <summary>
+            初始化处方数据
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionDataManager.LoadExistingDataAsync">
+            <summary>
+            加载现有处方数据
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionDataManager.SaveAsync">
+            <summary>
+            保存处方数据
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionDataManager.Clear">
+            <summary>
+            清空数据
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionDataManager.AddPrescriptionItem(LYBT.Desktop.Prescriptions.ViewModels.PrescriptionItemViewModel)">
+            <summary>
+            添加处方项
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionDataManager.RemovePrescriptionItem(LYBT.Desktop.Prescriptions.ViewModels.PrescriptionItemViewModel)">
+            <summary>
+            移除处方项
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionDataManager.MarkAsChanged">
+            <summary>
+            标记数据已变更
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionDataManager.ResetToDefault">
+            <summary>
+            重置为默认值
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionDataManager.GeneratePrescriptionNo">
+            <summary>
+            生成处方编号
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionEventCoordinator">
+            <summary>
+            处方事件协调器 - UltraThink专门化组件
+            职责单一：专注处方相关事件的协调和工作流管理
+            代码干净：清晰的事件处理和状态同步
+            性能出色：高效的事件传播和内存管理
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionEventCoordinator.SetDependencies(LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionDataManager,LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionCalculator)">
+            <summary>
+            设置关联组件
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionEventCoordinator.SubscribeToEvents">
+            <summary>
+            订阅系统事件
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionEventCoordinator.OnSaveStepData(LYBT.Desktop.Core.Models.Consultation.WorkflowStep)">
+            <summary>
+            处理工作流步骤保存事件
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionEventCoordinator.OnDataChanged(LYBT.Desktop.Core.Events.DataChangedEventArgs)">
+            <summary>
+            处理数据变更事件
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionEventCoordinator.OnNavigation(LYBT.Desktop.Core.Events.NavigationInfo)">
+            <summary>
+            处理导航事件
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionEventCoordinator.OnPrescriptionChanged(LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionChangeInfo)">
+            <summary>
+            处理处方变更事件
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionEventCoordinator.OnHerbAdded(LYBT.Desktop.Prescriptions.ViewModels.Components.HerbAddedInfo)">
+            <summary>
+            处理药材添加事件
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionEventCoordinator.OnFormulaImported(LYBT.Desktop.Prescriptions.ViewModels.Components.FormulaImportedInfo)">
+            <summary>
+            处理验方导入事件
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionEventCoordinator.PublishPrescriptionSaved">
+            <summary>
+            发布处方保存事件
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionEventCoordinator.PublishPrescriptionCleared">
+            <summary>
+            发布处方清空事件
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionEventCoordinator.PublishPriceRecalculated">
+            <summary>
+            发布价格重算事件
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionEventCoordinator.PublishValidationRequest">
+            <summary>
+            发布验证请求事件
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionEventCoordinator.PublishHerbAddedComplete(LYBT.Desktop.Prescriptions.ViewModels.Components.HerbAddedInfo)">
+            <summary>
+            发布药材添加完成事件
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionEventCoordinator.PublishFormulaImportedComplete(LYBT.Desktop.Prescriptions.ViewModels.Components.FormulaImportedInfo)">
+            <summary>
+            发布验方导入完成事件
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionEventCoordinator.PublishPrescriptionImported">
+            <summary>
+            发布处方导入事件
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionEventCoordinator.RecalculateAndNotify">
+            <summary>
+            重新计算并通知
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionEventCoordinator.ShouldAutoSave(LYBT.Desktop.Core.Events.NavigationInfo)">
+            <summary>
+            判断是否应该自动保存
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionEventCoordinator.RefreshPrescriptionData(System.Guid)">
+            <summary>
+            刷新处方数据
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionEventCoordinator.Unsubscribe">
+            <summary>
+            取消事件订阅
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionValidator">
+            <summary>
+            处方验证器 - UltraThink专门化组件
+            职责单一：专注处方数据验证和业务规则检查
+            代码干净：清晰的验证规则和错误处理
+            性能出色：高效的验证算法和缓存机制
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionValidator.ValidatePrescription(System.Collections.Generic.IEnumerable{LYBT.Desktop.Prescriptions.ViewModels.PrescriptionItemViewModel},System.String,System.Int32,System.String,System.Decimal)">
+            <summary>
+            验证处方完整性
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionValidator.ValidatePrescriptionItem(LYBT.Desktop.Prescriptions.ViewModels.PrescriptionItemViewModel)">
+            <summary>
+            验证单个处方项
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionValidator.ValidateDiscount(System.String,System.Decimal@)">
+            <summary>
+            验证折扣
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionValidator.ValidateDosage(System.String,System.Int32@)">
+            <summary>
+            验证剂数
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionValidator.ValidateBasicInfo(LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionValidator.ValidationResult,System.String,System.Int32,System.String,System.Decimal)">
+            <summary>
+            验证基础信息
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionValidator.ValidatePrescriptionItems(LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionValidator.ValidationResult,System.Collections.Generic.IEnumerable{LYBT.Desktop.Prescriptions.ViewModels.PrescriptionItemViewModel})">
+            <summary>
+            验证处方项集合
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionValidator.ValidateBusinessRules(LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionValidator.ValidationResult,System.Collections.Generic.IEnumerable{LYBT.Desktop.Prescriptions.ViewModels.PrescriptionItemViewModel},System.Int32)">
+            <summary>
+            验证业务规则
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionValidator.CheckCommonIncompatibilities(LYBT.Desktop.Prescriptions.ViewModels.Components.PrescriptionValidator.ValidationResult,System.Collections.Generic.List{LYBT.Desktop.Prescriptions.ViewModels.PrescriptionItemViewModel})">
+            <summary>
+            检查常见配伍禁忌
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Prescriptions.ViewModels.FormulaTemplateDialogViewModel">
+            <summary>
+            验方模板选择对话框视图模型
+            </summary>
+            <summary>
+            验方模板选择对话框ViewModel - UltraThink架构统一
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.ViewModels.FormulaTemplateDialogViewModel.AvailableTemplates">
+            <summary>
+            可选择的验方模板列表
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.ViewModels.FormulaTemplateDialogViewModel.SelectedTemplate">
+            <summary>
+            选中的验方模板
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.ViewModels.FormulaTemplateDialogViewModel.SearchText">
+            <summary>
+            搜索文本
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.ViewModels.FormulaTemplateDialogViewModel.SearchCommand">
+            <summary>
+            搜索命令
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.ViewModels.FormulaTemplateDialogViewModel.ViewDetailsCommand">
+            <summary>
+            查看详情命令
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.ViewModels.FormulaTemplateDialogViewModel.Result">
+            <summary>
+            选中的验方模板（用于返回结果）
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.FormulaTemplateDialogViewModel.LoadTemplatesAsync">
+            <summary>
+            加载验方模板列表
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.FormulaTemplateDialogViewModel.ExecuteSearchAsync">
+            <summary>
+            执行搜索
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.FormulaTemplateDialogViewModel.ExecuteViewDetails(LYBT.Shared.Models.Contracts.Formula.FormulaDto)">
+            <summary>
+            查看验方详情
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.FormulaTemplateDialogViewModel.ExecuteConfirmAsync">
+            <summary>
+            执行确认逻辑
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.FormulaTemplateDialogViewModel.CanConfirm">
+            <summary>
+            检查是否可以确认
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Prescriptions.ViewModels.HerbSelectionDialogViewModel">
+            <summary>
+            中药材选择对话框视图模型
+            </summary>
+            <summary>
+            中药材选择对话框ViewModel - UltraThink架构统一
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.ViewModels.HerbSelectionDialogViewModel.AvailableHerbs">
+            <summary>
+            可选择的中药材列表
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.ViewModels.HerbSelectionDialogViewModel.SelectedHerb">
+            <summary>
+            选中的中药材
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.ViewModels.HerbSelectionDialogViewModel.SearchText">
+            <summary>
+            搜索文本
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.ViewModels.HerbSelectionDialogViewModel.Quantity">
+            <summary>
+            用量
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.ViewModels.HerbSelectionDialogViewModel.Unit">
+            <summary>
+            单位
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.ViewModels.HerbSelectionDialogViewModel.SearchCommand">
+            <summary>
+            搜索命令
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.ViewModels.HerbSelectionDialogViewModel.Result">
+            <summary>
+            选中的中药材信息（用于返回结果）
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.HerbSelectionDialogViewModel.InitializeWithParametersAsync(System.Collections.Generic.Dictionary{System.String,System.Object})">
+            <summary>
+            使用参数初始化（支持编辑模式）
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.HerbSelectionDialogViewModel.LoadHerbsAsync">
+            <summary>
+            加载中药材列表
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.HerbSelectionDialogViewModel.ExecuteSearchAsync">
+            <summary>
+            执行搜索
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.HerbSelectionDialogViewModel.ExecuteConfirmAsync">
+            <summary>
+            执行确认逻辑
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.HerbSelectionDialogViewModel.CanConfirm">
+            <summary>
+            检查是否可以确认
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionComposerViewModel">
+            <summary>
+            处方组成编辑器ViewModel - UltraThink简化版本
+            专注于处方组成编辑，不包含历史管理、复杂协调等功能
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionComposerViewModel.CurrentPrescription">
+            <summary>
+            当前处方信息
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionComposerViewModel.PatientInfo">
+            <summary>
+            患者信息显示
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionComposerViewModel.Diagnosis">
+            <summary>
+            主治（诊断）
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionComposerViewModel.DosageCount">
+            <summary>
+            剂数
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionComposerViewModel.Usage">
+            <summary>
+            用法 - 已注释，Usage字段已从PrescriptionDto中删除
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionComposerViewModel.Advice">
+            <summary>
+            医嘱
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionComposerViewModel.PrescriptionItems">
+            <summary>
+            处方药材项目列表
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionComposerViewModel.SingleDosePrice">
+            <summary>
+            单剂价格
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionComposerViewModel.TotalPrice">
+            <summary>
+            总价格
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionComposerViewModel.OnAddHerbAsync">
+            <summary>
+            添加药材
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionComposerViewModel.OnImportFormulaAsync">
+            <summary>
+            导入验方
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionComposerViewModel.OnEditHerb(LYBT.Shared.Models.Contracts.Prescriptions.PrescriptionItemDto)">
+            <summary>
+            编辑药材
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionComposerViewModel.OnRemoveHerb(LYBT.Shared.Models.Contracts.Prescriptions.PrescriptionItemDto)">
+            <summary>
+            移除药材
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionComposerViewModel.OnClearAll">
+            <summary>
+            清空所有药材
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionComposerViewModel.OnSaveDraftAsync">
+            <summary>
+            保存草稿
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionComposerViewModel.OnSavePrescriptionAsync">
+            <summary>
+            保存处方
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionComposerViewModel.OnClose">
+            <summary>
+            关闭
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionComposerViewModel.AddSelectedHerbs(LYBT.Shared.Models.Contracts.Herbs.HerbDto[])">
+            <summary>
+            添加选中的药材
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionComposerViewModel.ApplyFormulaTemplate(LYBT.Shared.Models.Contracts.Formula.FormulaDto)">
+            <summary>
+            应用验方模板
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionComposerViewModel.RefreshPriceCalculation">
+            <summary>
+            刷新价格计算
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionComposerViewModel.ValidatePrescription">
+            <summary>
+            验证处方数据
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionComposerViewModel.SavePrescriptionCore">
+            <summary>
+            保存处方核心逻辑
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionComposerViewModel.HasUnsavedChanges">
+            <summary>
+            检查是否有未保存的更改
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionComposerViewModel.CloseView">
+            <summary>
+            关闭视图
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionComposerViewModel.ShowMessage(System.String)">
+            <summary>
+            显示消息
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionComposerViewModel.OnNavigatedTo(Prism.Regions.NavigationContext)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionComposerViewModel.IsNavigationTarget(Prism.Regions.NavigationContext)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionComposerViewModel.OnNavigatedFrom(Prism.Regions.NavigationContext)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionComposerViewModel.LoadMedicalCaseInfoAsync(System.Guid)">
+            <summary>
+            加载医疗案例信息
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionEditorDialogViewModel">
+            <summary>
+            处方编辑对话框视图模型
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionEditorDialogViewModel.InitializeWithContextAsync(System.Collections.Generic.Dictionary{System.String,System.Object})">
+            <summary>
+            使用上下文参数初始化（支持从医案跳转）
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionEditorDialogViewModel.CreatePrintData">
+            <summary>
+            创建打印数据
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionItemViewModel">
+            <summary>
+            处方项视图模型
+            封装单个处方药材项的显示和编辑逻辑
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionItemViewModel.HerbId">
+            <summary>
+            药材ID
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionItemViewModel.HerbName">
+            <summary>
+            药材名称
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionItemViewModel.Quantity">
+            <summary>
+            剂量
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionItemViewModel.Unit">
+            <summary>
+            单位
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionItemViewModel.UnitPrice">
+            <summary>
+            单价
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionItemViewModel.Subtotal">
+            <summary>
+            小计金额
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionItemViewModel.Source">
+            <summary>
+            来源（验方、手动添加等）
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionItemViewModel.Remark">
+            <summary>
+            备注信息
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionItemViewModel.DisplayText">
+            <summary>
+            显示文本（药材名 + 剂量）
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionItemViewModel.PriceText">
+            <summary>
+            价格显示文本
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionItemViewModel.GetModel">
+            <summary>
+            获取底层数据模型
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionItemViewModel.UpdateHerbInfo(System.String,System.Decimal,System.String)">
+            <summary>
+            更新药材信息
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionItemViewModel.SetQuantity(System.Decimal)">
+            <summary>
+            设置剂量
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionItemViewModel.Reset">
+            <summary>
+            重置到初始状态
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionItemViewModel.IsValid">
+            <summary>
+            验证数据有效性
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionItemViewModel.Clone">
+            <summary>
+            复制当前项目
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionItemViewModel.ToString">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionItemViewModel.Equals(System.Object)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionItemViewModel.GetHashCode">
+            <inheritdoc/>
+        </member>
+        <member name="T:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionManagementViewModel">
+            <summary>
+            处方管理视图模型（UltraThink 现代架构版）
+            基于ModernManagementViewModel，统一的管理界面模式
+            零编译警告，现代化MVVM架构
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionManagementViewModel.PrintCommand">
+            <summary>打印处方命令</summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionManagementViewModel.ViewPatientHistoryCommand">
+            <summary>P0-02新增：查看患者处方历史命令</summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionManagementViewModel.ExportPrescriptionsCommand">
+            <summary>Epic 04-P0-02新增：导出处方数据命令</summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionManagementViewModel.#ctor(LYBT.Shared.Interfaces.Services.IPrescriptionService,LYBT.Desktop.Core.Interfaces.Services.ICustomDialogService,AutoMapper.IMapper,Prism.Events.IEventAggregator)">
+            <summary>Initializes a new instance of the <see cref="T:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionManagementViewModel"/> class.兼容性构造函数</summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionManagementViewModel.LoadDataAsync(System.Int32,System.Int32,System.String)">
+            <summary>加载数据</summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionManagementViewModel.OnAddAsync">
+            <summary>添加项</summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionManagementViewModel.OnEditAsync(LYBT.Shared.Models.Contracts.Prescriptions.PrescriptionDto)">
+            <summary>编辑项</summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionManagementViewModel.OnDeleteAsync(LYBT.Shared.Models.Contracts.Prescriptions.PrescriptionDto)">
+            <summary>删除项</summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionManagementViewModel.OnViewDetailsAsync(LYBT.Shared.Models.Contracts.Prescriptions.PrescriptionDto)">
+            <summary>查看详情</summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionManagementViewModel.RaiseCanExecuteChanged">
+            <summary>更新Command状态</summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionManagementViewModel.ExecutePrintAsync">
+            <summary>
+            P0-03优化：处方标准打印功能
+            Epic 03-P0-03: 实用化处方标准打印功能，专为小诊所设计
+            使用专业的IPrescriptionPrintService，提供预览和标准化打印
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionManagementViewModel.ViewPatientHistoryAsync">
+            <summary>
+            P0-02新增：查看患者处方历史
+            Epic 03-P0-02: 实用化患者处方历史查询功能
+            专为小诊所设计，快速查看患者的历史处方记录
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionManagementViewModel.ShowPatientPrescriptionHistory(System.String,System.Collections.Generic.List{LYBT.Shared.Models.Contracts.Prescriptions.PrescriptionDto})">
+            <summary>
+            显示患者处方历史对话框
+            实用化设计：清晰展示患者的历史处方信息，便于医生参考既往用药情况
+            </summary>
+            <param name="patientName">患者姓名</param>
+            <param name="prescriptions">历史处方列表</param>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionManagementViewModel.ExportPrescriptionsAsync">
+            <summary>
+            Epic 04-P0-02: 处方数据导出功能
+            专为小诊所设计，支持自定义时间段的处方数据Excel导出
+            提供完整的处方信息，便于统计和分析
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionsMainViewModel">
+            <summary>
+            处方模块主视图模型 - UltraThink v2.0
+            职责：
+            1. 接收导航参数（MedicalCaseId）
+            2. 管理工作流模式（处方编辑/历史管理）
+            3. 处理模块间通信
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionsMainViewModel.CurrentMedicalCaseId">
+            <summary>当前医疗案例ID</summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionsMainViewModel.HasMedicalCase">
+            <summary>是否有关联的医疗案例</summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionsMainViewModel.LoadingMessage">
+            <summary>加载消息</summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionsMainViewModel.CurrentWorkflowContent">
+            <summary>当前工作流内容</summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionsMainViewModel.OnNavigatedTo(Prism.Regions.NavigationContext)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionsMainViewModel.IsNavigationTarget(Prism.Regions.NavigationContext)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionsMainViewModel.OnNavigatedFrom(Prism.Regions.NavigationContext)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionsMainViewModel.LoadWorkflowContent">
+            <summary>加载工作流内容</summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionsMainViewModel.LoadManagementWorkflow">
+            <summary>加载管理工作流</summary>
+        </member>
+        <member name="T:LYBT.Desktop.Prescriptions.ViewModels.ModuleNavigationEventArgs">
+            <summary>模块导航事件参数</summary>
+        </member>
+        <member name="T:LYBT.Desktop.Prescriptions.ViewModels.ModuleNavigationEvent">
+            <summary>模块导航事件</summary>
+        </member>
+        <member name="T:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionViewModelRefactored">
+             <summary>
+             重构后的处方ViewModel - UltraThink架构实现
+             职责单一：作为5个专门组件的协调器和UI绑定层
+             代码干净：简洁的组件组合和清晰的职责分离
+             性能出色：优化的组件协作和资源管理
+            
+             从原来的672行超大文件，重构为简洁的协调器模式：
+             - PrescriptionDataManager: 数据管理
+             - PrescriptionValidator: 验证逻辑
+             - PrescriptionCalculator: 计算引擎
+             - PrescriptionCommandHandler: 命令处理
+             - PrescriptionEventCoordinator: 事件协调
+             </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionViewModelRefactored.SingleDosagePrice">
+            <summary>
+            单剂价格
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionViewModelRefactored.TotalPrice">
+            <summary>
+            总价
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionViewModelRefactored.DiscountedPrice">
+            <summary>
+            优惠后价格
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionViewModelRefactored.DiscountText">
+            <summary>
+            折扣文本
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionViewModelRefactored.MedicalCaseId">
+            <summary>
+            医疗案例ID
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionViewModelRefactored.PrescriptionNo">
+            <summary>
+            处方编号
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionViewModelRefactored.PrescriptionItems">
+            <summary>
+            处方项集合
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionViewModelRefactored.SelectedItem">
+            <summary>
+            选中的处方项
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionViewModelRefactored.DosageCount">
+            <summary>
+            剂数
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionViewModelRefactored.Usage">
+            <summary>
+            用法
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionViewModelRefactored.MedicalAdvice">
+            <summary>
+            医嘱
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionViewModelRefactored.Remark">
+            <summary>
+            备注
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionViewModelRefactored.Discount">
+            <summary>
+            折扣
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionViewModelRefactored.IsLoading">
+            <summary>
+            加载状态
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionViewModelRefactored.HasChanges">
+            <summary>
+            是否有变更
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionViewModelRefactored.EstablishComponentDependencies">
+            <summary>
+            建立组件间的依赖关系
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionViewModelRefactored.SubscribeToComponentEvents">
+            <summary>
+            订阅组件事件
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionViewModelRefactored.InitializeAsync(System.Guid)">
+            <summary>
+            初始化处方数据
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionViewModelRefactored.ValidatePrescription">
+            <summary>
+            验证处方数据
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionViewModelRefactored.RecalculatePrice">
+            <summary>
+            重新计算价格
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionViewModelRefactored.OnPrescriptionSaved">
+            <summary>
+            处方保存完成事件
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionViewModelRefactored.OnPrescriptionCleared">
+            <summary>
+            处方清空完成事件
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionViewModelRefactored.OnPriceRecalculated">
+            <summary>
+            价格重新计算完成事件
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionViewModelRefactored.RefreshAllProperties">
+            <summary>
+            刷新所有属性通知
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.ViewModels.PrescriptionViewModelRefactored.Dispose">
+            <inheritdoc/>
+        </member>
+        <member name="T:LYBT.Desktop.Prescriptions.ViewModels.SelectFormulaDialogViewModel">
+            <summary>
+            验方选择对话框视图模型
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.ViewModels.SelectFormulaDialogViewModel.IsLoading">
+            <summary>
+            是否正在加载
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.ViewModels.SelectFormulaDialogViewModel.SearchKeyword">
+            <summary>
+            搜索关键词
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.ViewModels.SelectFormulaDialogViewModel.SelectedCategory">
+            <summary>
+            选中的分类
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.ViewModels.SelectFormulaDialogViewModel.SelectedFormula">
+            <summary>
+            选中的验方 - UltraThink v2.0: 直接使用FormulaDto
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.ViewModels.SelectFormulaDialogViewModel.Formulas">
+            <summary>
+            验方列表 - UltraThink v2.0: 直接使用FormulaDto
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.ViewModels.SelectFormulaDialogViewModel.Categories">
+            <summary>
+            分类列表
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.ViewModels.SelectFormulaDialogViewModel.PreviewText">
+            <summary>
+            预览文本
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.ViewModels.SelectFormulaDialogViewModel.ShowEmptyState">
+            <summary>
+            是否显示空状态
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Prescriptions.ViewModels.SelectFormulaDialogViewModel.EmptyStateMessage">
+            <summary>
+            空状态消息
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Prescriptions.ViewModels.FormulaCategoryOption">
+            <summary>
+            验方分类选项
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Prescriptions.Views.FormulaTemplateDialog">
+            <summary>
+            FormulaTemplateDialog.xaml 的交互逻辑
+            </summary>
+            <summary>
+            FormulaTemplateDialog
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.Views.FormulaTemplateDialog.InitializeComponent">
+            <summary>
+            InitializeComponent
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Prescriptions.Views.HerbSelectionDialog">
+            <summary>
+            HerbSelectionDialog.xaml 的交互逻辑
+            </summary>
+            <summary>
+            HerbSelectionDialog
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.Views.HerbSelectionDialog.InitializeComponent">
+            <summary>
+            InitializeComponent
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Prescriptions.Views.PrescriptionComposerView">
+            <summary>
+            PrescriptionComposerView - 处方组成编辑器主界面
+            UltraThink简化版本：专注于处方组成编辑，不包含历史管理等复杂功能
+            </summary>
+            <summary>
+            PrescriptionComposerView
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.Views.PrescriptionComposerView.InitializeComponent">
+            <summary>
+            InitializeComponent
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Prescriptions.Views.PrescriptionEditorDialog">
+            <summary>
+            PrescriptionEditorDialog.xaml 的交互逻辑
+            </summary>
+            <summary>
+            PrescriptionEditorDialog
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.Views.PrescriptionEditorDialog.InitializeComponent">
+            <summary>
+            InitializeComponent
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Prescriptions.Views.PrescriptionManagementView">
+            <summary>
+            PrescriptionManagementView.xaml 的交互逻辑
+            </summary>
+            <summary>
+            PrescriptionManagementView
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.Views.PrescriptionManagementView.InitializeComponent">
+            <summary>
+            InitializeComponent
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Prescriptions.Views.PrescriptionsMainView">
+            <summary>
+            PrescriptionsMainView.xaml 的交互逻辑
+            UltraThink v2.0: 处方模块主入口视图
+            </summary>
+            <summary>
+            PrescriptionsMainView
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.Views.PrescriptionsMainView.InitializeComponent">
+            <summary>
+            InitializeComponent
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Prescriptions.Views.PrescriptionView">
+            <summary>
+            PrescriptionView.xaml 的交互逻辑
+            </summary>
+            <summary>
+            PrescriptionView
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.Views.PrescriptionView.InitializeComponent">
+            <summary>
+            InitializeComponent
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Prescriptions.Views.SelectFormulaDialog">
+            <summary>
+            SelectFormulaDialog.xaml 的交互逻辑
+            </summary>
+            <summary>
+            SelectFormulaDialog
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Prescriptions.Views.SelectFormulaDialog.InitializeComponent">
+            <summary>
+            InitializeComponent
+            </summary>
+        </member>
+    </members>
+</doc>

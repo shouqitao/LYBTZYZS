@@ -1,0 +1,507 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>LYBT.Desktop.Users</name>
+    </assembly>
+    <members>
+        <member name="T:LYBT.Desktop.Users.Interfaces.IUserBusinessService">
+            <summary>
+            用户业务服务接口 - UltraThink双层架构简化版
+            职责：基础业务操作（统一标准CRUD命名）
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Users.Interfaces.IUserBusinessService.CreateAsync(LYBT.Shared.Models.Contracts.Users.UserCreateDto,System.Threading.CancellationToken)">
+            <summary>
+            创建用户 - DT-011取消令牌支持
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Users.Interfaces.IUserBusinessService.UpdateAsync(LYBT.Shared.Models.Contracts.Users.UserUpdateDto,System.Threading.CancellationToken)">
+            <summary>
+            更新用户信息 - DT-011取消令牌支持
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Users.Interfaces.IUserBusinessService.DeleteAsync(System.Guid)">
+            <summary>
+            删除用户
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Users.Interfaces.IUserBusinessService.EnableAsync(System.Guid)">
+            <summary>
+            启用用户
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Users.Interfaces.IUserBusinessService.DisableAsync(System.Guid)">
+            <summary>
+            禁用用户
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Users.Interfaces.IUserBusinessService.BatchEnableAsync(System.Collections.Generic.List{System.Guid},System.Threading.CancellationToken)">
+            <summary>
+            批量启用用户 - DT-011取消令牌支持
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Users.Interfaces.IUserBusinessService.BatchDisableAsync(System.Collections.Generic.List{System.Guid},System.Threading.CancellationToken)">
+            <summary>
+            批量禁用用户 - DT-011取消令牌支持
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Users.Interfaces.IUserBusinessService.ResetPasswordAsync(System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            重置用户密码为环境感知的默认密码 - DT-011取消令牌支持
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Users.Interfaces.IUserBusinessService.ChangePasswordAsync(System.Guid,System.String,System.String,System.Threading.CancellationToken)">
+            <summary>
+            修改密码 - DT-011取消令牌支持
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Users.Interfaces.IUserBusinessService.ChangeProfileAsync(LYBT.Shared.Models.Contracts.Users.ChangeProfileDto,System.Threading.CancellationToken)">
+            <summary>
+            修改个人信息 - DT-011取消令牌支持
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Users.Interfaces.IUserQueryService">
+            <summary>
+            用户查询服务接口 - UltraThink双层架构简化版
+            职责：查询和搜索操作（仅保留核心查询功能）
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Users.Interfaces.IUserQueryService.GetPagedAsync(LYBT.Shared.Models.Contracts.Users.UserSearchDto)">
+            <summary>
+            分页查询用户
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Users.Interfaces.IUserQueryService.GetByIdAsync(System.Guid)">
+            <summary>
+            根据ID获取用户
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Users.Interfaces.IUserQueryService.GetByUsernameAsync(System.String)">
+            <summary>
+            根据用户名获取用户
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Users.Interfaces.IUserQueryService.SearchAsync(System.String)">
+            <summary>
+            搜索用户
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Users.Interfaces.IUserQueryService.GetActiveUsersAsync">
+            <summary>
+            获取启用用户列表
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Users.Interfaces.IUserQueryService.GetRolesAsync">
+            <summary>
+            获取所有角色列表
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Users.Interfaces.IUserQueryService.ValidateUsernameAsync(System.String)">
+            <summary>
+            验证用户名是否可用
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Users.Services.UserBusinessService">
+            <summary>
+            用户业务服务 - UltraThink双层架构业务逻辑层
+            职责：处理用户业务逻辑、CRUD操作、状态管理、权限验证（精简版）
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Users.Services.UserBusinessService.#ctor(Microsoft.Extensions.Logging.ILogger{LYBT.Desktop.Users.Services.UserBusinessService},LYBT.Shared.Interfaces.Api.IUserApi,LYBT.Desktop.Core.Services.Exceptions.IExceptionHandler)">
+            <summary>
+            用户业务服务 - UltraThink双层架构业务逻辑层
+            职责：处理用户业务逻辑、CRUD操作、状态管理、权限验证（精简版）
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Users.Services.UserBusinessService.CreateAsync(LYBT.Shared.Models.Contracts.Users.UserCreateDto,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Users.Services.UserBusinessService.UpdateAsync(LYBT.Shared.Models.Contracts.Users.UserUpdateDto,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Users.Services.UserBusinessService.DeleteAsync(System.Guid)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Users.Services.UserBusinessService.EnableAsync(System.Guid)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Users.Services.UserBusinessService.DisableAsync(System.Guid)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Users.Services.UserBusinessService.BatchEnableAsync(System.Collections.Generic.List{System.Guid},System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Users.Services.UserBusinessService.BatchDisableAsync(System.Collections.Generic.List{System.Guid},System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Users.Services.UserBusinessService.ResetPasswordAsync(System.Guid,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Users.Services.UserBusinessService.ChangePasswordAsync(System.Guid,System.String,System.String,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Users.Services.UserBusinessService.ChangeProfileAsync(LYBT.Shared.Models.Contracts.Users.ChangeProfileDto,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="T:LYBT.Desktop.Users.Services.UserModule">
+            <summary>
+            用户模块 - UltraThink双层架构纯委托层（精简版）
+            职责：统一服务入口，请求路由分发到QueryService和BusinessService
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Users.Services.UserModule.#ctor(LYBT.Desktop.Users.Interfaces.IUserQueryService,LYBT.Desktop.Users.Interfaces.IUserBusinessService)">
+            <summary>
+            用户模块 - UltraThink双层架构纯委托层（精简版）
+            职责：统一服务入口，请求路由分发到QueryService和BusinessService
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Users.Services.UserModule.GetByIdAsync(System.Guid)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Users.Services.UserModule.GetPagedAsync(LYBT.Shared.Models.Contracts.Users.UserSearchDto)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Users.Services.UserModule.GetByUsernameAsync(System.String)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Users.Services.UserModule.GetActiveUsersAsync">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Users.Services.UserModule.SearchAsync(System.String)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Users.Services.UserModule.CreateAsync(LYBT.Shared.Models.Contracts.Users.UserCreateDto)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Users.Services.UserModule.UpdateAsync(LYBT.Shared.Models.Contracts.Users.UserUpdateDto)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Users.Services.UserModule.DeleteAsync(System.Guid)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Users.Services.UserModule.EnableAsync(System.Guid)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Users.Services.UserModule.DisableAsync(System.Guid)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Users.Services.UserModule.BatchEnableAsync(System.Collections.Generic.List{System.Guid})">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Users.Services.UserModule.BatchDisableAsync(System.Collections.Generic.List{System.Guid})">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Users.Services.UserModule.ResetPasswordAsync(System.Guid,System.String)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Users.Services.UserModule.ChangePasswordAsync(System.Guid,System.String,System.String)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Users.Services.UserModule.ChangeProfileAsync(LYBT.Shared.Models.Contracts.Users.ChangeProfileDto)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Users.Services.UserModule.GetRolesAsync">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Users.Services.UserModule.ValidateUsernameAsync(System.String)">
+            <inheritdoc/>
+        </member>
+        <member name="T:LYBT.Desktop.Users.Services.UserQueryService">
+            <summary>
+            用户查询服务 - UltraThink双层架构查询专业层（精简版）
+            职责：用户信息查询、搜索过滤（仅保留核心功能）
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Users.Services.UserQueryService.#ctor(Microsoft.Extensions.Logging.ILogger{LYBT.Desktop.Users.Services.UserQueryService},LYBT.Shared.Interfaces.Api.IUserApi)">
+            <summary>
+            用户查询服务 - UltraThink双层架构查询专业层（精简版）
+            职责：用户信息查询、搜索过滤（仅保留核心功能）
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Users.Services.UserQueryService.GetPagedAsync(LYBT.Shared.Models.Contracts.Users.UserSearchDto)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Users.Services.UserQueryService.GetByIdAsync(System.Guid)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Users.Services.UserQueryService.GetByUsernameAsync(System.String)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Users.Services.UserQueryService.SearchAsync(System.String)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Users.Services.UserQueryService.GetActiveUsersAsync">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Users.Services.UserQueryService.GetRolesAsync">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Users.Services.UserQueryService.ValidateUsernameAsync(System.String)">
+            <inheritdoc/>
+        </member>
+        <member name="T:LYBT.Desktop.Users.UsersModule">
+            <summary>
+            用户管理模块 - 独立业务模块
+            对应后端: LYBT.Module.Users
+            遵循原始设计：前后端模块一一对应
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Users.UsersModule.OnInitialized(Prism.Ioc.IContainerProvider)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Users.UsersModule.RegisterTypes(Prism.Ioc.IContainerRegistry)">
+            <inheritdoc/>
+        </member>
+        <member name="T:LYBT.Desktop.Users.ViewModels.UserAddEditDialogViewModel">
+            <summary>
+            用户新增/编辑对话框视图模型 - UltraThink双层架构UI层
+            采用UltraThink架构标准，使用C# 12现代化特性
+            职责：用户CRUD对话框交互逻辑、数据绑定、验证处理、状态管理
+            基于DialogViewModel统一对话框模式，实现ICustomDialogAware接口
+            集成UserModule双层服务，提供完整的用户编辑用户体验
+            支持用户新增/编辑、角色选择、状态切换等功能
+            适配中医诊所用户管理流程，确保数据录入准确性和操作便利性
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Users.ViewModels.UserAddEditDialogViewModel.IsRoleSelectionEnabled">
+            <summary>角色选择是否启用（新建用户时禁用，固定为普通用户）</summary>
+        </member>
+        <member name="P:LYBT.Desktop.Users.ViewModels.UserAddEditDialogViewModel.Username">
+            <summary>用户名</summary>
+        </member>
+        <member name="P:LYBT.Desktop.Users.ViewModels.UserAddEditDialogViewModel.RealName">
+            <summary>真实姓名</summary>
+        </member>
+        <member name="P:LYBT.Desktop.Users.ViewModels.UserAddEditDialogViewModel.Email">
+            <summary>邮箱</summary>
+        </member>
+        <member name="P:LYBT.Desktop.Users.ViewModels.UserAddEditDialogViewModel.PhoneNumber">
+            <summary>电话号码</summary>
+        </member>
+        <member name="P:LYBT.Desktop.Users.ViewModels.UserAddEditDialogViewModel.IsActive">
+            <summary>是否启用</summary>
+        </member>
+        <member name="P:LYBT.Desktop.Users.ViewModels.UserAddEditDialogViewModel.IsNewUser">
+            <summary>是否是新用户（用于界面显示控制）</summary>
+        </member>
+        <member name="P:LYBT.Desktop.Users.ViewModels.UserAddEditDialogViewModel.SelectedRole">
+            <summary>选中的角色</summary>
+        </member>
+        <member name="M:LYBT.Desktop.Users.ViewModels.UserAddEditDialogViewModel.#ctor(LYBT.Shared.Interfaces.Services.IUserService,AutoMapper.IMapper,Prism.Events.IEventAggregator,LYBT.Desktop.Core.Interfaces.Services.IErrorHandlingService,LYBT.Shared.Models.Contracts.Users.UserDto)">
+            <summary>
+            Initializes a new instance of the <see cref="T:LYBT.Desktop.Users.ViewModels.UserAddEditDialogViewModel"/> class.
+            构造函数 - UltraThink双层架构依赖注入
+            初始化用户管理模块、映射器、对话框配置和事件订阅
+            </summary>
+            <param name="userService">用户模块主服务</param>
+            <param name="mapper">对象映射器</param>
+            <param name="eventAggregator">事件聚合器</param>
+            <param name="errorHandlingService">错误处理服务</param>
+            <param name="user">要编辑的用户信息（null表示新增模式）</param>
+            <exception cref="T:System.ArgumentNullException">当关键参数为空时抛出</exception>
+        </member>
+        <member name="M:LYBT.Desktop.Users.ViewModels.UserAddEditDialogViewModel.SaveAsync">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Users.ViewModels.UserAddEditDialogViewModel.CanSave">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Users.ViewModels.UserAddEditDialogViewModel.InitializeDialog">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Users.ViewModels.UserAddEditDialogViewModel.InitializeEditData(LYBT.Shared.Models.Contracts.Users.UserDto)">
+            <summary>
+            初始化编辑数据
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Users.ViewModels.UserAddEditDialogViewModel.Title">
+            <summary>
+            对话框标题
+            </summary>
+        </member>
+        <member name="E:LYBT.Desktop.Users.ViewModels.UserAddEditDialogViewModel.RequestClose">
+            <summary>
+            请求关闭对话框事件
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Users.ViewModels.UserAddEditDialogViewModel.CanCloseDialog">
+            <summary>
+            检查是否可以关闭对话框
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Users.ViewModels.UserAddEditDialogViewModel.OnDialogOpened(System.Collections.Generic.Dictionary{System.String,System.Object})">
+            <summary>
+            对话框打开时调用
+            </summary>
+            <param name="parameters">传入的参数</param>
+        </member>
+        <member name="M:LYBT.Desktop.Users.ViewModels.UserAddEditDialogViewModel.OnDialogClosed">
+            <summary>
+            对话框关闭时调用
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Users.ViewModels.UserAddEditDialogViewModel.ExecuteCancel">
+            <summary>
+            重写取消操作以使用ICustomDialogAware接口
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Users.ViewModels.UserAddEditDialogViewModel.RaiseRequestClose(System.Nullable{System.Boolean})">
+            <summary>
+            触发关闭对话框请求
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Users.ViewModels.RoleItem">
+            <summary>
+            角色项
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Users.ViewModels.UserManagementViewModel">
+            <summary>
+            用户管理视图模型 - UltraThink双层架构UI层
+            采用UltraThink架构标准，使用C# 12现代化特性
+            职责：用户管理界面逻辑、命令处理、状态管理、交互控制
+            基于ModernManagementViewModel统一管理界面模式
+            集成UserModule双层服务，提供完整的用户管理用户体验
+            支持用户CRUD操作、状态切换、密码重置等核心管理功能
+            适配中医诊所用户管理流程，确保操作安全性和界面友好性
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Users.ViewModels.UserManagementViewModel.ResetPasswordCommand">
+            <summary>重置密码命令</summary>
+        </member>
+        <member name="P:LYBT.Desktop.Users.ViewModels.UserManagementViewModel.ToggleStatusCommand">
+            <summary>切换状态命令</summary>
+        </member>
+        <member name="M:LYBT.Desktop.Users.ViewModels.UserManagementViewModel.#ctor(LYBT.Shared.Interfaces.Services.IUserService,LYBT.Desktop.Core.Interfaces.Services.ICustomDialogService,AutoMapper.IMapper,Prism.Events.IEventAggregator,LYBT.Desktop.Core.Interfaces.Services.IErrorHandlingService)">
+            <summary>
+            Initializes a new instance of the <see cref="T:LYBT.Desktop.Users.ViewModels.UserManagementViewModel"/> class.
+            构造函数 - UltraThink双层架构依赖注入
+            初始化用户管理模块、对话服务、映射器、命令和事件订阅
+            </summary>
+            <param name="userService">用户模块主服务</param>
+            <param name="dialogService">自定义对话服务</param>
+            <param name="mapper">对象映射器</param>
+            <param name="eventAggregator">事件聚合器</param>
+            <param name="errorHandlingService">错误处理服务</param>
+            <exception cref="T:System.ArgumentNullException">当关键参数为空时抛出</exception>
+        </member>
+        <member name="M:LYBT.Desktop.Users.ViewModels.UserManagementViewModel.#ctor(LYBT.Shared.Interfaces.Services.IUserService,LYBT.Desktop.Core.Interfaces.Services.ICustomDialogService,AutoMapper.IMapper,Prism.Events.IEventAggregator)">
+            <summary>
+            Initializes a new instance of the <see cref="T:LYBT.Desktop.Users.ViewModels.UserManagementViewModel"/> class.
+            兼容性构造函数 - 支持无错误处理服务的旧版本调用
+            </summary>
+            <param name="userService">用户模块主服务</param>
+            <param name="dialogService">自定义对话服务</param>
+            <param name="mapper">对象映射器</param>
+            <param name="eventAggregator">事件聚合器</param>
+        </member>
+        <member name="M:LYBT.Desktop.Users.ViewModels.UserManagementViewModel.LoadDataAsync(System.Int32,System.Int32,System.String)">
+            <summary>加载数据</summary>
+        </member>
+        <member name="M:LYBT.Desktop.Users.ViewModels.UserManagementViewModel.OnAddAsync">
+            <summary>添加项</summary>
+        </member>
+        <member name="M:LYBT.Desktop.Users.ViewModels.UserManagementViewModel.OnEditAsync(LYBT.Shared.Models.Contracts.Users.UserDto)">
+            <summary>编辑项</summary>
+        </member>
+        <member name="M:LYBT.Desktop.Users.ViewModels.UserManagementViewModel.OnDeleteAsync(LYBT.Shared.Models.Contracts.Users.UserDto)">
+            <summary>删除项（实际是禁用）</summary>
+        </member>
+        <member name="M:LYBT.Desktop.Users.ViewModels.UserManagementViewModel.OnViewDetailsAsync(LYBT.Shared.Models.Contracts.Users.UserDto)">
+            <summary>查看详情</summary>
+        </member>
+        <member name="M:LYBT.Desktop.Users.ViewModels.UserManagementViewModel.RaiseCanExecuteChanged">
+            <summary>更新Command状态</summary>
+        </member>
+        <member name="M:LYBT.Desktop.Users.ViewModels.UserManagementViewModel.ExecuteResetPasswordAsync">
+            <summary>重置密码命令执行</summary>
+        </member>
+        <member name="M:LYBT.Desktop.Users.ViewModels.UserManagementViewModel.ExecuteToggleStatusAsync">
+            <summary>切换状态命令执行</summary>
+        </member>
+        <member name="M:LYBT.Desktop.Users.ViewModels.UserManagementViewModel.ToggleUserStatusAsync(LYBT.Shared.Models.Contracts.Users.UserDto)">
+            <summary>切换用户状态</summary>
+        </member>
+        <member name="T:LYBT.Desktop.Users.Views.ChangePasswordDialog">
+            <summary>
+            ChangePasswordDialog.xaml 的交互逻辑
+            </summary>
+            <summary>
+            ChangePasswordDialog
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Users.Views.ChangePasswordDialog.InitializeComponent">
+            <summary>
+            InitializeComponent
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Users.Views.ResetPasswordDialog">
+            <summary>
+            ResetPasswordDialog.xaml 的交互逻辑
+            </summary>
+            <summary>
+            ResetPasswordDialog
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Users.Views.ResetPasswordDialog.InitializeComponent">
+            <summary>
+            InitializeComponent
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Users.Views.UserAddEditDialog">
+            <summary>
+            UserAddEditDialog.xaml 的交互逻辑
+            </summary>
+            <summary>
+            UserAddEditDialog
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Users.Views.UserAddEditDialog.OnClosed(System.EventArgs)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Users.Views.UserAddEditDialog.InitializeComponent">
+            <summary>
+            InitializeComponent
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Users.Views.UserDetailView">
+            <summary>
+            UserDetailView.xaml 的交互逻辑
+            </summary>
+            <summary>
+            UserDetailView
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Users.Views.UserDetailView.InitializeComponent">
+            <summary>
+            InitializeComponent
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Users.Views.UserManagementView">
+            <summary>
+            UserManagementView.xaml 的交互逻辑
+            </summary>
+            <summary>
+            UserManagementView
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Users.Views.UserManagementView.InitializeComponent">
+            <summary>
+            InitializeComponent
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Users.Views.UserProfileDialog">
+            <summary>
+            UserProfileDialog.xaml 的交互逻辑
+            </summary>
+            <summary>
+            UserProfileDialog
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Users.Views.UserProfileDialog.InitializeComponent">
+            <summary>
+            InitializeComponent
+            </summary>
+        </member>
+    </members>
+</doc>

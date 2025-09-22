@@ -1,0 +1,618 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>LYBT.Desktop.Formula</name>
+    </assembly>
+    <members>
+        <member name="T:LYBT.Desktop.Formula.FormulaModule">
+            <summary>
+            验方管理模块 - UltraThink双层架构Prism模块
+            采用UltraThink架构标准，使用C# 12现代化特性
+            职责：验方管理模块依赖注入、服务注册、视图导航配置
+            实现经典验方库管理、个人验方创建、验方组合、处方引用等功能
+            集成双层架构服务（QueryService + BusinessService + Module委托）
+            适配中医诊所验方管理流程，确保验方质量和临床应用便利性
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.FormulaModule.OnInitialized(Prism.Ioc.IContainerProvider)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.FormulaModule.RegisterTypes(Prism.Ioc.IContainerRegistry)">
+            <inheritdoc/>
+        </member>
+        <member name="T:LYBT.Desktop.Formula.Interfaces.IFormulaBusinessService">
+            <summary>
+            验方业务服务接口 - UltraThink三层架构业务逻辑层
+            职责：业务流程编排、完整事务管理、基础CRUD操作
+            简化版本：对应后端FormulasController实际API
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Interfaces.IFormulaBusinessService.CreateFormulaAsync(LYBT.Shared.Models.Contracts.Formula.FormulaCreateDto)">
+            <summary>
+            创建验方 (对应 POST /formulas)
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Interfaces.IFormulaBusinessService.UpdateFormulaAsync(System.Guid,LYBT.Shared.Models.Contracts.Formula.FormulaUpdateDto)">
+            <summary>
+            更新验方 (对应 PUT /formulas/{id})
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Interfaces.IFormulaBusinessService.DeleteFormulaAsync(System.Guid)">
+            <summary>
+            删除验方 (对应 DELETE /formulas/{id})
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Interfaces.IFormulaBusinessService.UpdateFormulaStatusAsync(System.Guid,System.Boolean)">
+            <summary>
+            更新验方状态 (对应 PATCH /formulas/{id}/status)
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Interfaces.IFormulaBusinessService.EnableAsync(System.Guid)">
+            <summary>
+            启用验方
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Interfaces.IFormulaBusinessService.DisableAsync(System.Guid)">
+            <summary>
+            禁用验方
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Interfaces.IFormulaBusinessService.CloneFormulaAsync(System.Guid,System.String,System.Guid)">
+            <summary>
+            克隆验方 (基于现有验方创建新验方)
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Interfaces.IFormulaBusinessService.CheckNameAvailabilityAsync(System.String,System.Nullable{System.Guid})">
+            <summary>
+            验证验方名称可用性
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Interfaces.IFormulaBusinessService.ValidateFormulaBusinessRules(LYBT.Shared.Models.Contracts.Formula.FormulaDto)">
+            <summary>
+            验证验方业务规则
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Interfaces.IFormulaBusinessService.CheckFormulaOperationPermissionAsync(System.Guid,System.Guid,System.String)">
+            <summary>
+            检查验方操作权限
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Interfaces.IFormulaBusinessService.ProcessFormulaCreationAsync(LYBT.Shared.Models.Contracts.Formula.FormulaCreateDto,System.Guid)">
+            <summary>
+            处理验方创建完整业务流程
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Interfaces.IFormulaBusinessService.ProcessFormulaUpdateAsync(System.Guid,LYBT.Shared.Models.Contracts.Formula.FormulaUpdateDto,System.Guid)">
+            <summary>
+            处理验方更新完整业务流程
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Formula.Interfaces.IFormulaQueryService">
+            <summary>
+            验方查询服务接口 - UltraThink简化版本对应后端实际API
+            移除过度开发功能，仅保留后端支持的基本查询功能
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Interfaces.IFormulaQueryService.GetPagedAsync(LYBT.Shared.Models.Contracts.Formula.FormulaQueryDto)">
+            <summary>
+            获取分页验方列表 (对应 GET /formulas)
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Interfaces.IFormulaQueryService.GetByIdAsync(System.Guid)">
+            <summary>
+            根据ID获取验方详情 (对应 GET /formulas/{id})
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Interfaces.IFormulaQueryService.SearchFormulasAsync(LYBT.Shared.Models.Contracts.Common.PagedQueryBaseDto)">
+            <summary>
+            搜索验方 (对应 GET /formulas/search)
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Interfaces.IFormulaQueryService.SearchAsync(System.String)">
+            <summary>
+            根据关键词搜索验方 - 简化版本
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Interfaces.IFormulaQueryService.GetTemplatesAsync">
+            <summary>
+            获取验方模板 (对应 GET /formulas/templates)
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Interfaces.IFormulaQueryService.GetByTypeAsync(System.String)">
+            <summary>
+            根据类型获取验方 (对应 GET /formulas/by-type/{type})
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Interfaces.IFormulaQueryService.GetCategoriesAsync">
+            <summary>
+            获取验方分类 (对应 GET /formulas/categories)
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Interfaces.IFormulaQueryService.GetBasicStatisticsAsync">
+            <summary>
+            获取基础统计信息 (简化版，基于现有数据计算)
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Formula.Services.FormulaBusinessService">
+            <summary>
+            验方业务服务 - UltraThink双层架构业务逻辑层
+            采用UltraThink架构标准，使用C# 12现代化特性
+            职责：处理验方管理业务逻辑、CRUD操作、验证规则、状态管理
+            集成企业级错误处理和审计日志，提供完整验方生命周期管理功能
+            支持验方创建、信息更新、状态管理等核心功能
+            适配中医诊所验方管理需求，确保验方信息准确性和处方引用便利性
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Services.FormulaBusinessService.#ctor(Microsoft.Extensions.Logging.ILogger{LYBT.Desktop.Formula.Services.FormulaBusinessService},LYBT.Shared.Interfaces.Api.IFormulaApi)">
+            <summary>
+            验方业务服务 - UltraThink双层架构业务逻辑层
+            采用UltraThink架构标准，使用C# 12现代化特性
+            职责：处理验方管理业务逻辑、CRUD操作、验证规则、状态管理
+            集成企业级错误处理和审计日志，提供完整验方生命周期管理功能
+            支持验方创建、信息更新、状态管理等核心功能
+            适配中医诊所验方管理需求，确保验方信息准确性和处方引用便利性
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Services.FormulaBusinessService.CreateFormulaAsync(LYBT.Shared.Models.Contracts.Formula.FormulaCreateDto)">
+            <summary>
+            创建验方业务处理
+            执行完整验方创建流程：数据验证、验方建档、药材组成设置、审计记录
+            </summary>
+            <param name="createDto">验方创建请求信息</param>
+            <returns>包含新建验方信息的业务结果</returns>
+            <exception cref="T:System.ArgumentNullException">当创建请求为空时抛出</exception>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Services.FormulaBusinessService.UpdateFormulaAsync(System.Guid,LYBT.Shared.Models.Contracts.Formula.FormulaUpdateDto)">
+            <summary>
+            更新验方业务处理
+            执行完整验方更新流程：ID验证、数据验证、验方信息更新、审计记录
+            </summary>
+            <param name="id">验方唯一标识</param>
+            <param name="updateDto">验方更新请求信息</param>
+            <returns>包含更新后验方信息的业务结果</returns>
+            <exception cref="T:System.ArgumentNullException">当更新请求为空时抛出</exception>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Services.FormulaBusinessService.DeleteFormulaAsync(System.Guid)">
+            <summary>
+            删除验方业务处理
+            执行完整验方删除流程：ID验证、权限检查、物理删除、审计记录
+            </summary>
+            <param name="id">验方唯一标识</param>
+            <returns>删除操作结果</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Services.FormulaBusinessService.EnableAsync(System.Guid)">
+            <summary>
+            启用验方业务处理
+            切换验方状态为启用，使其可在处方中使用
+            </summary>
+            <param name="id">验方唯一标识</param>
+            <returns>启用操作结果</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Services.FormulaBusinessService.DisableAsync(System.Guid)">
+            <summary>
+            禁用验方业务处理
+            切换验方状态为禁用，阻止其在处方中使用
+            </summary>
+            <param name="id">验方唯一标识</param>
+            <returns>禁用操作结果</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Services.FormulaBusinessService.ToggleFormulaStatusAsync(System.Guid,System.String)">
+            <summary>
+            统一的验方状态切换方法
+            </summary>
+            <param name="id">验方唯一标识</param>
+            <param name="operation">操作类型（启用/禁用）</param>
+            <returns>状态切换结果</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Services.FormulaBusinessService.CheckNameAvailabilityAsync(System.String,System.Nullable{System.Guid})">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Services.FormulaBusinessService.UpdateFormulaStatusAsync(System.Guid,System.Boolean)">
+            <summary>
+            更新验方状态业务处理
+            切换验方启用/禁用状态，基于统一的状态切换方法
+            </summary>
+            <param name="id">验方唯一标识</param>
+            <param name="isEnabled">目标状态（true=启用，false=禁用）</param>
+            <returns>状态更新结果</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Services.FormulaBusinessService.CloneFormulaAsync(System.Guid,System.String,System.Guid)">
+            <summary>
+            克隆验方业务处理
+            基于现有验方创建副本，包含相同的药材组合和配伍信息
+            </summary>
+            <param name="formulaId">源验方ID</param>
+            <param name="newName">新验方名称</param>
+            <param name="userId">操作用户ID</param>
+            <returns>包含新建验方信息的业务结果</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Services.FormulaBusinessService.ValidateFormulaBusinessRules(LYBT.Shared.Models.Contracts.Formula.FormulaDto)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Services.FormulaBusinessService.CheckFormulaOperationPermissionAsync(System.Guid,System.Guid,System.String)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Services.FormulaBusinessService.ProcessFormulaCreationAsync(LYBT.Shared.Models.Contracts.Formula.FormulaCreateDto,System.Guid)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Services.FormulaBusinessService.ProcessFormulaUpdateAsync(System.Guid,LYBT.Shared.Models.Contracts.Formula.FormulaUpdateDto,System.Guid)">
+            <inheritdoc/>
+        </member>
+        <member name="T:LYBT.Desktop.Formula.Services.FormulaModule">
+            <summary>
+            验方管理模块 - UltraThink双层架构纯委托层
+            采用UltraThink架构标准，使用C# 12现代化特性
+            职责：统一服务入口，请求路由分发到QueryService和BusinessService
+            实现IFormulaService接口，与后端标准完全对齐
+            集成经典验方库管理、个人验方创建、验方组合、处方引用功能
+            适配中医诊所验方管理需求，确保验方质量和临床应用便利性
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Services.FormulaModule.#ctor(LYBT.Desktop.Formula.Interfaces.IFormulaQueryService,LYBT.Desktop.Formula.Interfaces.IFormulaBusinessService,AutoMapper.IMapper)">
+            <summary>
+            验方管理模块 - UltraThink双层架构纯委托层
+            采用UltraThink架构标准，使用C# 12现代化特性
+            职责：统一服务入口，请求路由分发到QueryService和BusinessService
+            实现IFormulaService接口，与后端标准完全对齐
+            集成经典验方库管理、个人验方创建、验方组合、处方引用功能
+            适配中医诊所验方管理需求，确保验方质量和临床应用便利性
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Services.FormulaModule.GetPagedAsync(LYBT.Shared.Models.Contracts.Formula.FormulaQueryDto)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Services.FormulaModule.GetByIdAsync(System.Guid)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Services.FormulaModule.CreateAsync(LYBT.Shared.Models.Contracts.Formula.FormulaCreateDto)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Services.FormulaModule.UpdateAsync(System.Guid,LYBT.Shared.Models.Contracts.Formula.FormulaUpdateDto)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Services.FormulaModule.DeleteAsync(System.Guid)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Services.FormulaModule.GetTemplatesAsync">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Services.FormulaModule.GetByTypeAsync(System.String)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Services.FormulaModule.SearchAsync(System.String)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Services.FormulaModule.EnableAsync(System.Guid)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Services.FormulaModule.DisableAsync(System.Guid)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Services.FormulaModule.GetCategoriesAsync">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Services.FormulaModule.CreateFromPrescriptionAsync(System.Guid,System.String)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Services.FormulaModule.ImportFormulasAsync(System.Collections.Generic.List{LYBT.Shared.Models.Contracts.Formula.FormulaCreateDto})">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Services.FormulaModule.ExportFormulasAsync(LYBT.Shared.Models.Contracts.Common.PagedQueryBaseDto)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Services.FormulaModule.GetByNameAsync(System.String)">
+            <summary>
+            根据名称获取验方
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Services.FormulaModule.GetPersonalFormulasAsync(System.Guid)">
+            <summary>
+            获取个人验方
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Services.FormulaModule.GetClassicFormulasAsync">
+            <summary>
+            获取经典验方
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Services.FormulaModule.CloneFormulaAsync(System.Guid,System.String,System.Guid)">
+            <summary>
+            克隆验方
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Services.FormulaModule.BatchEnableAsync(System.Collections.Generic.List{System.Guid})">
+            <summary>
+            批量启用验方
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Services.FormulaModule.BatchDisableAsync(System.Collections.Generic.List{System.Guid})">
+            <summary>
+            批量禁用验方
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Services.FormulaModule.GetFormulaStatisticsAsync">
+            <summary>
+            获取验方统计信息
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Services.FormulaModule.ImportFormulas(LYBT.Shared.Models.Contracts.Formula.FormulaImportDto)">
+            <summary>
+            导入验方
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Services.FormulaModule.Dispose">
+            <inheritdoc/>
+        </member>
+        <member name="T:LYBT.Desktop.Formula.Services.FormulaQueryService">
+            <summary>
+            验方查询服务 - UltraThink双层架构查询专业层
+            采用UltraThink架构标准，使用C# 12现代化特性
+            职责：验方管理复杂查询、搜索过滤、统计报表、验方检索
+            提供只读查询操作，不涉及数据修改，专注验方记录检索和统计分析
+            集成企业级日志记录，支持验方管理和档案查询需求
+            适配中医诊所验方管理查询场景，确保查询性能和数据安全性
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Services.FormulaQueryService.#ctor(Microsoft.Extensions.Logging.ILogger{LYBT.Desktop.Formula.Services.FormulaQueryService},LYBT.Shared.Interfaces.Api.IFormulaApi)">
+            <summary>
+            验方查询服务 - UltraThink双层架构查询专业层
+            采用UltraThink架构标准，使用C# 12现代化特性
+            职责：验方管理复杂查询、搜索过滤、统计报表、验方检索
+            提供只读查询操作，不涉及数据修改，专注验方记录检索和统计分析
+            集成企业级日志记录，支持验方管理和档案查询需求
+            适配中医诊所验方管理查询场景，确保查询性能和数据安全性
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Services.FormulaQueryService.GetPagedAsync(LYBT.Shared.Models.Contracts.Formula.FormulaQueryDto)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Services.FormulaQueryService.GetByIdAsync(System.Guid)">
+            <summary>
+            根据验方ID获取详细档案
+            查询指定验方的完整档案信息，包含药材组成和用法信息
+            </summary>
+            <param name="id">验方唯一标识</param>
+            <returns>验方详细档案DTO</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Services.FormulaQueryService.SearchAsync(System.String)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Services.FormulaQueryService.SearchFormulasAsync(LYBT.Shared.Models.Contracts.Common.PagedQueryBaseDto)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Services.FormulaQueryService.GetTemplatesAsync">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Services.FormulaQueryService.GetByTypeAsync(System.String)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Services.FormulaQueryService.GetCategoriesAsync">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Services.FormulaQueryService.GetBasicStatisticsAsync">
+            <inheritdoc/>
+        </member>
+        <member name="T:LYBT.Desktop.Formula.ViewModels.AddFormulaDialogViewModel">
+            <summary>
+            新增验方对话框视图模型
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.ViewModels.AddFormulaDialogViewModel.#ctor(LYBT.Shared.Interfaces.Services.IFormulaService,LYBT.Shared.Interfaces.Services.IHerbService,Microsoft.Extensions.Logging.ILogger{LYBT.Desktop.Formula.ViewModels.AddFormulaDialogViewModel},Prism.Events.IEventAggregator,LYBT.Desktop.Core.Interfaces.Services.IErrorHandlingService)">
+            <summary>
+            Initializes a new instance of the <see cref="T:LYBT.Desktop.Formula.ViewModels.AddFormulaDialogViewModel"/> class.
+            主构造函数（支持可选错误处理服务）
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.ViewModels.AddFormulaDialogViewModel.CanSave">
+            <inheritdoc/>
+        </member>
+        <member name="P:LYBT.Desktop.Formula.ViewModels.AddFormulaDialogViewModel.Title">
+            <summary>
+            对话框标题
+            </summary>
+        </member>
+        <member name="E:LYBT.Desktop.Formula.ViewModels.AddFormulaDialogViewModel.RequestClose">
+            <summary>
+            请求关闭对话框事件
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.ViewModels.AddFormulaDialogViewModel.CanCloseDialog">
+            <summary>
+            检查是否可以关闭对话框
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.ViewModels.AddFormulaDialogViewModel.OnDialogOpened(System.Collections.Generic.Dictionary{System.String,System.Object})">
+            <summary>
+            对话框打开时调用
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.ViewModels.AddFormulaDialogViewModel.OnDialogClosed">
+            <summary>
+            对话框关闭时调用
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.ViewModels.AddFormulaDialogViewModel.SaveAsync">
+            <summary>
+            实现抽象方法 - 保存数据
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.ViewModels.AddFormulaDialogViewModel.RaiseRequestClose(System.Nullable{System.Boolean})">
+            <summary>
+            请求关闭对话框
+            </summary>
+            <param name="dialogResult">对话框结果</param>
+        </member>
+        <member name="T:LYBT.Desktop.Formula.ViewModels.EditFormulaDialogViewModel">
+            <summary>
+            编辑验方对话框视图模型
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Formula.ViewModels.FormulaDetailViewModel">
+            <summary>
+            验方详情视图模型 - UltraThink v2.0架构
+            提供验方详细信息查看和编辑功能
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.ViewModels.FormulaDetailViewModel.OnNavigatedTo(Prism.Regions.NavigationContext)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.ViewModels.FormulaDetailViewModel.IsNavigationTarget(Prism.Regions.NavigationContext)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.ViewModels.FormulaDetailViewModel.OnNavigatedFrom(Prism.Regions.NavigationContext)">
+            <inheritdoc/>
+        </member>
+        <member name="T:LYBT.Desktop.Formula.ViewModels.FormulaManagementViewModel">
+            <summary>
+            验方管理视图模型（UltraThink 现代架构版）
+            基于ModernManagementViewModel，统一的管理界面模式
+            零编译警告，现代化MVVM架构
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Formula.ViewModels.FormulaManagementViewModel.ToggleStatusCommand">
+            <summary>切换状态命令</summary>
+        </member>
+        <member name="P:LYBT.Desktop.Formula.ViewModels.FormulaManagementViewModel.CopyCommand">
+            <summary>复制验方命令</summary>
+        </member>
+        <member name="P:LYBT.Desktop.Formula.ViewModels.FormulaManagementViewModel.ImportFormulasCommand">
+            <summary>导入验方命令</summary>
+        </member>
+        <member name="P:LYBT.Desktop.Formula.ViewModels.FormulaManagementViewModel.ExportFormulasCommand">
+            <summary>导出验方命令</summary>
+        </member>
+        <member name="P:LYBT.Desktop.Formula.ViewModels.FormulaManagementViewModel.ExportTemplateCommand">
+            <summary>导出模板命令</summary>
+        </member>
+        <member name="P:LYBT.Desktop.Formula.ViewModels.FormulaManagementViewModel.ClearFiltersCommand">
+            <summary>清空筛选命令</summary>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.ViewModels.FormulaManagementViewModel.#ctor(LYBT.Shared.Interfaces.Services.IFormulaService,LYBT.Desktop.Core.Interfaces.Services.ICustomDialogService,AutoMapper.IMapper,Prism.Events.IEventAggregator)">
+            <summary>Initializes a new instance of the <see cref="T:LYBT.Desktop.Formula.ViewModels.FormulaManagementViewModel"/> class.兼容性构造函数</summary>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.ViewModels.FormulaManagementViewModel.LoadDataAsync(System.Int32,System.Int32,System.String)">
+            <summary>加载数据</summary>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.ViewModels.FormulaManagementViewModel.OnAddAsync">
+            <summary>添加项</summary>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.ViewModels.FormulaManagementViewModel.OnEditAsync(LYBT.Shared.Models.Contracts.Formula.FormulaDto)">
+            <summary>编辑项</summary>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.ViewModels.FormulaManagementViewModel.OnDeleteAsync(LYBT.Shared.Models.Contracts.Formula.FormulaDto)">
+            <summary>删除项（实际是禁用）</summary>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.ViewModels.FormulaManagementViewModel.OnViewDetailsAsync(LYBT.Shared.Models.Contracts.Formula.FormulaDto)">
+            <summary>查看详情</summary>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.ViewModels.FormulaManagementViewModel.OnExportAsync">
+            <summary>导出数据（重写基类方法，调用Excel导出）</summary>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.ViewModels.FormulaManagementViewModel.RaiseCanExecuteChanged">
+            <summary>更新Command状态</summary>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.ViewModels.FormulaManagementViewModel.ExecuteToggleStatusAsync">
+            <summary>切换状态命令执行</summary>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.ViewModels.FormulaManagementViewModel.ExecuteCopyAsync">
+            <summary>复制命令执行</summary>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.ViewModels.FormulaManagementViewModel.ExecuteExportAsync">
+            <summary>导出验方数据</summary>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.ViewModels.FormulaManagementViewModel.ExecuteImportAsync">
+            <summary>导入命令执行</summary>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.ViewModels.FormulaManagementViewModel.ExecuteExportTemplateAsync">
+            <summary>导出模板命令执行</summary>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.ViewModels.FormulaManagementViewModel.ParseBoolean(System.String)">
+            <summary>解析布尔值字符串</summary>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.ViewModels.FormulaManagementViewModel.ExecuteClearFiltersAsync">
+            <summary>清空筛选命令执行</summary>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.ViewModels.FormulaManagementViewModel.ToggleFormulaStatusAsync(LYBT.Shared.Models.Contracts.Formula.FormulaDto)">
+            <summary>切换验方状态</summary>
+        </member>
+        <member name="T:LYBT.Desktop.Formula.ViewModels.ViewFormulaDialogViewModel">
+            <summary>
+            查看验方对话框视图模型
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Formula.Views.AddFormulaDialog">
+            <summary>
+            AddFormulaDialog.xaml 的交互逻辑
+            </summary>
+            <summary>
+            AddFormulaDialog
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Views.AddFormulaDialog.OnClosed(System.EventArgs)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Views.AddFormulaDialog.InitializeComponent">
+            <summary>
+            InitializeComponent
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Formula.Views.EditFormulaDialog">
+            <summary>
+            EditFormulaDialog.xaml 的交互逻辑
+            </summary>
+            <summary>
+            EditFormulaDialog
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Views.EditFormulaDialog.OnClosed(System.EventArgs)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Views.EditFormulaDialog.InitializeComponent">
+            <summary>
+            InitializeComponent
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Formula.Views.FormulaDetailView">
+            <summary>
+            FormulaDetailView.xaml 的交互逻辑
+            </summary>
+            <summary>
+            FormulaDetailView
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Views.FormulaDetailView.InitializeComponent">
+            <summary>
+            InitializeComponent
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Formula.Views.FormulaManagementView">
+            <summary>
+            FormulaManagementView.xaml 的交互逻辑
+            </summary>
+            <summary>
+            FormulaManagementView
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Views.FormulaManagementView.InitializeComponent">
+            <summary>
+            InitializeComponent
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Formula.Views.ViewFormulaDialog">
+            <summary>
+            ViewFormulaDialog.xaml 的交互逻辑
+            </summary>
+            <summary>
+            ViewFormulaDialog
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Views.ViewFormulaDialog.OnClosed(System.EventArgs)">
+            <inheritdoc/>
+        </member>
+        <member name="M:LYBT.Desktop.Formula.Views.ViewFormulaDialog.InitializeComponent">
+            <summary>
+            InitializeComponent
+            </summary>
+        </member>
+    </members>
+</doc>

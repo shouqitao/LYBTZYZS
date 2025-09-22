@@ -1,0 +1,497 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>LYBT.Desktop.Workbench.Core</name>
+    </assembly>
+    <members>
+        <member name="T:LYBT.Desktop.Workbench.Core.IWorkbenchNavigator">
+            <summary>
+            工作台导航器接口
+            每个工作台实现自己的导航逻辑
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Workbench.Core.IWorkbenchNavigator.NavigateToAsync(System.String,Prism.Regions.NavigationParameters)">
+            <summary>
+            导航到指定视图
+            </summary>
+            <param name="viewName">视图名称</param>
+            <param name="parameters">导航参数</param>
+            <returns>导航任务</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Workbench.Core.IWorkbenchNavigator.NavigateToDefaultAsync">
+            <summary>
+            导航到默认视图
+            </summary>
+            <returns>导航任务</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Workbench.Core.IWorkbenchNavigator.GoBackAsync">
+            <summary>
+            返回上一个视图
+            </summary>
+            <returns>导航任务</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Workbench.Core.IWorkbenchNavigator.CanNavigateTo(System.String)">
+            <summary>
+            检查是否可以导航到指定视图
+            </summary>
+            <param name="viewName">视图名称</param>
+            <returns>是否可以导航</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Workbench.Core.IWorkbenchNavigator.GetCurrentView">
+            <summary>
+            获取当前视图名称
+            </summary>
+            <returns>当前视图名称</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Workbench.Core.IWorkbenchNavigator.ClearHistory">
+            <summary>
+            清除导航历史
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Workbench.Core.IWorkbenchNavigator.SetRegion(System.String)">
+            <summary>
+            设置导航区域
+            </summary>
+            <param name="regionName">区域名称</param>
+        </member>
+        <member name="M:LYBT.Desktop.Workbench.Core.IWorkbenchNavigator.GetRegionName">
+            <summary>
+            获取导航区域名称
+            </summary>
+            <returns>区域名称</returns>
+        </member>
+        <member name="T:LYBT.Desktop.Workbench.Core.IWorkbenchRouter">
+            <summary>
+            工作台路由接口
+            管理角色到工作台的映射和导航
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Workbench.Core.IWorkbenchRouter.GetWorkbenchForRole(System.String)">
+            <summary>
+            根据用户角色获取对应的工作台视图名称
+            </summary>
+            <param name="role">用户角色（管理员、医生、前台等）</param>
+            <returns>工作台视图名称</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Workbench.Core.IWorkbenchRouter.CanAccessModule(System.String,System.String)">
+            <summary>
+            检查角色是否可以访问指定模块
+            </summary>
+            <param name="role">用户角色</param>
+            <param name="module">模块名称</param>
+            <returns>是否有访问权限</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Workbench.Core.IWorkbenchRouter.GetNavigationItems(System.String)">
+            <summary>
+            获取角色对应的导航项列表
+            </summary>
+            <param name="role">用户角色</param>
+            <returns>导航项列表</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Workbench.Core.IWorkbenchRouter.GetAccessibleModules(System.String)">
+            <summary>
+            获取角色可访问的模块列表
+            </summary>
+            <param name="role">用户角色</param>
+            <returns>可访问的模块名称列表</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Workbench.Core.IWorkbenchRouter.GetDefaultView(System.String)">
+            <summary>
+            获取工作台的默认视图
+            </summary>
+            <param name="workbench">工作台名称</param>
+            <returns>默认视图名称</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Workbench.Core.IWorkbenchRouter.RegisterWorkbench(System.String,System.String,System.Collections.Generic.List{System.String})">
+            <summary>
+            注册新的工作台
+            用于扩展新角色时动态注册
+            </summary>
+            <param name="role">角色名称</param>
+            <param name="workbench">工作台名称</param>
+            <param name="modules">可访问的模块列表</param>
+        </member>
+        <member name="M:LYBT.Desktop.Workbench.Core.IWorkbenchRouter.GetAllWorkbenches">
+            <summary>
+            获取所有已注册的工作台
+            </summary>
+            <returns>工作台信息字典</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Workbench.Core.IWorkbenchRouter.IsWorkbenchRegistered(System.String)">
+            <summary>
+            检查工作台是否已注册
+            </summary>
+            <param name="workbench">工作台名称</param>
+            <returns>是否已注册</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Workbench.Core.IWorkbenchRouter.GetWelcomeMessage(System.String,System.String)">
+            <summary>
+            获取角色的欢迎消息
+            </summary>
+            <param name="role">用户角色</param>
+            <param name="userName">用户姓名</param>
+            <returns>欢迎消息</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Workbench.Core.IWorkbenchRouter.GetRoleDisplayName(System.String)">
+            <summary>
+            获取角色显示名称
+            </summary>
+            <param name="role">角色标识</param>
+            <returns>角色显示名称</returns>
+        </member>
+        <member name="T:LYBT.Desktop.Workbench.Core.NavigationItem">
+            <summary>
+            导航项模型
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Workbench.Core.NavigationItem.Id">
+            <summary>
+            导航项ID
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Workbench.Core.NavigationItem.DisplayName">
+            <summary>
+            显示名称
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Workbench.Core.NavigationItem.Icon">
+            <summary>
+            图标名称或路径
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Workbench.Core.NavigationItem.ViewName">
+            <summary>
+            导航目标视图名称
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Workbench.Core.NavigationItem.Module">
+            <summary>
+            所属模块
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Workbench.Core.NavigationItem.Order">
+            <summary>
+            排序顺序
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Workbench.Core.NavigationItem.IsEnabled">
+            <summary>
+            是否启用
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Workbench.Core.NavigationItem.IsVisible">
+            <summary>
+            是否可见
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Workbench.Core.NavigationItem.Children">
+            <summary>
+            子导航项
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Workbench.Core.NavigationItem.RequiredPermissions">
+            <summary>
+            必需的权限
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Workbench.Core.NavigationItem.ToolTip">
+            <summary>
+            工具提示
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Workbench.Core.NavigationItem.Parameters">
+            <summary>
+            导航参数
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Workbench.Core.NavigationItem.IsSeparator">
+            <summary>
+            是否为分隔符
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Workbench.Core.NavigationItem.BadgeText">
+            <summary>
+            徽章文本（用于显示数字或状态）
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Workbench.Core.NavigationItem.BadgeType">
+            <summary>
+            徽章类型（info, warning, error, success）
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Workbench.Core.NavigationItem.CreateSeparator">
+            <summary>
+            创建分隔符
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Workbench.Core.NavigationItem.HasChildren">
+            <summary>
+            检查是否有子项
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Workbench.Core.WorkbenchRouter">
+            <summary>
+            工作台路由器 - 统一工作台导航和权限管理
+            采用UltraThink架构标准，使用C# 12现代化特性
+            提供基于角色的工作台视图路由、模块权限控制和导航项生成
+            支持UserRole枚举映射和字符串角色向后兼容
+            集成权限验证、缓存优化，适配小型诊所多角色工作需求
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Workbench.Core.WorkbenchRouter.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:LYBT.Desktop.Workbench.Core.WorkbenchRouter"/> class.
+            初始化工作台路由器
+            配置默认工作台和角色权限映射
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Workbench.Core.WorkbenchRouter.InitializeDefaultWorkbenches">
+            <summary>
+            初始化默认工作台配置
+            使用C# 12集合表达式提升代码简洁性
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Workbench.Core.WorkbenchRouter.GetWorkbenchForRole(System.String)">
+            <summary>
+            根据用户角色获取对应的工作台视图
+            UltraThink现代化：优先使用UserRole枚举映射，向后兼容字符串角色
+            </summary>
+            <param name="role">用户角色字符串</param>
+            <returns>工作台视图名称，默认为诊疗工作台</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Workbench.Core.WorkbenchRouter.CanAccessModule(System.String,System.String)">
+            <summary>
+            检查用户角色是否可以访问指定模块
+            企业级权限控制：支持UserRole枚举和字符串角色双重验证
+            </summary>
+            <param name="role">用户角色字符串</param>
+            <param name="module">业务模块名称</param>
+            <returns>是否具有访问权限</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Workbench.Core.WorkbenchRouter.GetNavigationItems(System.String)">
+            <summary>
+            获取用户角色对应的导航项集合
+            智能缓存机制：首次生成后缓存，提升导航性能
+            </summary>
+            <param name="role">用户角色字符串</param>
+            <returns>导航项集合，包含图标、徽章、排序信息</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Workbench.Core.WorkbenchRouter.GenerateNavigationItems(System.String)">
+            <summary>
+            根据角色生成对应的导航项列表
+            C# 12模式匹配优化：简化角色判断逻辑
+            </summary>
+            <param name="role">用户角色字符串</param>
+            <returns>导航项列表</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Workbench.Core.WorkbenchRouter.GetAdminNavigationItems">
+            <summary>
+            获取管理员角色导航项
+            8个核心业务模块完整权限：用户、患者、医案、诊断、药材、验方、处方
+            </summary>
+            <returns>管理员导航项集合</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Workbench.Core.WorkbenchRouter.GetDoctorNavigationItems">
+            <summary>
+            获取医生角色导航项
+            核心诊疗功能：看诊、患者档案、处方管理、病历查询
+            </summary>
+            <returns>医生导航项集合</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Workbench.Core.WorkbenchRouter.GetReceptionNavigationItems">
+            <summary>
+            获取前台接待角色导航项
+            基础接待功能：患者建档、就诊记录查看
+            </summary>
+            <returns>前台接待导航项集合</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Workbench.Core.WorkbenchRouter.GetAccessibleModules(System.String)">
+            <summary>
+            获取用户角色可访问的模块列表
+            权限控制核心：基于角色返回可操作的业务模块集合
+            </summary>
+            <param name="role">用户角色字符串</param>
+            <returns>可访问模块名称集合</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Workbench.Core.WorkbenchRouter.GetDefaultView(System.String)">
+            <summary>
+            获取工作台的默认视图
+            角色导航优化：根据工作台类型返回最合适的默认视图
+            </summary>
+            <param name="workbench">工作台名称</param>
+            <returns>默认视图名称</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Workbench.Core.WorkbenchRouter.RegisterWorkbench(System.String,System.String,System.Collections.Generic.List{System.String})">
+            <summary>
+            注册工作台配置
+            动态工作台管理：运行时注册新的角色-工作台映射关系
+            </summary>
+            <param name="role">用户角色名称</param>
+            <param name="workbench">工作台视图名称</param>
+            <param name="modules">可访问模块列表</param>
+        </member>
+        <member name="M:LYBT.Desktop.Workbench.Core.WorkbenchRouter.GetAllWorkbenches">
+            <summary>
+            获取所有已注册的工作台映射
+            工作台枚举：返回角色到工作台视图的完整映射关系
+            </summary>
+            <returns>角色名称到工作台视图的映射字典</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Workbench.Core.WorkbenchRouter.IsWorkbenchRegistered(System.String)">
+            <summary>
+            检查工作台是否已注册
+            工作台验证：确认指定工作台视图是否在系统中已配置
+            </summary>
+            <param name="workbench">工作台视图名称</param>
+            <returns>是否已注册</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Workbench.Core.WorkbenchRouter.GetWelcomeMessage(System.String,System.String)">
+            <summary>
+            获取用户欢迎消息
+            个性化体验：根据用户角色和姓名生成定制化欢迎信息
+            </summary>
+            <param name="role">用户角色字符串</param>
+            <param name="userName">用户姓名</param>
+            <returns>个性化欢迎消息</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Workbench.Core.WorkbenchRouter.GetRoleDisplayName(System.String)">
+            <summary>
+            获取角色显示名称
+            本地化支持：将内部角色标识转换为用户友好的中文显示名称
+            </summary>
+            <param name="role">用户角色字符串</param>
+            <returns>角色的中文显示名称</returns>
+        </member>
+        <member name="T:LYBT.Desktop.Workbench.Core.WorkbenchRouter.WorkbenchConfig">
+            <summary>
+            工作台配置内部类
+            UltraThink架构：封装角色-工作台-模块的映射配置信息
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Workbench.Core.WorkbenchRouter.WorkbenchConfig.Role">
+            <summary>
+            用户角色名称
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Workbench.Core.WorkbenchRouter.WorkbenchConfig.WorkbenchView">
+            <summary>
+            工作台视图名称
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Workbench.Core.WorkbenchRouter.WorkbenchConfig.AccessibleModules">
+            <summary>
+            可访问的业务模块列表
+            </summary>
+        </member>
+        <member name="T:LYBT.Desktop.Workbench.Core.WorkbenchPermissionMapper">
+            <summary>
+            UltraThink Phase 4.1: UserRole到工作台权限映射器
+            支持UserRole枚举到工作台的正确映射
+            </summary>
+        </member>
+        <member name="F:LYBT.Desktop.Workbench.Core.WorkbenchPermissionMapper.UserRoleWorkbenchMap">
+            <summary>
+            UserRole到工作台的映射关系
+            C# 12集合表达式：简化配置定义，提升可读性
+            </summary>
+        </member>
+        <member name="M:LYBT.Desktop.Workbench.Core.WorkbenchPermissionMapper.GetWorkbenchForRole(LYBT.Shared.Models.Enums.UserRole)">
+            <summary>
+            根据UserRole获取工作台视图名称
+            </summary>
+            <param name="role">用户角色</param>
+            <returns>工作台视图名称</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Workbench.Core.WorkbenchPermissionMapper.CanAccessModule(LYBT.Shared.Models.Enums.UserRole,System.String)">
+            <summary>
+            检查用户角色是否可以访问指定模块
+            </summary>
+            <param name="role">用户角色</param>
+            <param name="module">模块名称</param>
+            <returns>是否有访问权限</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Workbench.Core.WorkbenchPermissionMapper.GetAccessibleModules(LYBT.Shared.Models.Enums.UserRole)">
+            <summary>
+            获取用户角色可访问的所有模块
+            </summary>
+            <param name="role">用户角色</param>
+            <returns>可访问的模块列表</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Workbench.Core.WorkbenchPermissionMapper.GetRoleDisplayName(LYBT.Shared.Models.Enums.UserRole)">
+            <summary>
+            获取角色显示名称
+            </summary>
+            <param name="role">用户角色</param>
+            <returns>角色显示名称</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Workbench.Core.WorkbenchPermissionMapper.GetWelcomeMessage(LYBT.Shared.Models.Enums.UserRole,System.String)">
+            <summary>
+            获取欢迎消息
+            </summary>
+            <param name="role">用户角色</param>
+            <param name="userName">用户姓名</param>
+            <returns>欢迎消息</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Workbench.Core.WorkbenchPermissionMapper.GetAllWorkbenchMappings">
+            <summary>
+            获取所有支持的角色工作台映射
+            </summary>
+            <returns>角色到工作台的映射字典</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Workbench.Core.WorkbenchPermissionMapper.HasManagementAccess(LYBT.Shared.Models.Enums.UserRole)">
+            <summary>
+            检查角色是否有管理权限
+            </summary>
+            <param name="role">用户角色</param>
+            <returns>是否有管理权限</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Workbench.Core.WorkbenchPermissionMapper.HasMedicalAccess(LYBT.Shared.Models.Enums.UserRole)">
+            <summary>
+            检查角色是否有医疗权限
+            </summary>
+            <param name="role">用户角色</param>
+            <returns>是否有医疗权限</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Workbench.Core.WorkbenchPermissionMapper.ConvertToLegacyRoleString(LYBT.Shared.Models.Enums.UserRole)">
+            <summary>
+            从UserRole枚举转换为旧版字符串角色（向后兼容）
+            </summary>
+            <param name="role">UserRole枚举</param>
+            <returns>字符串角色名称</returns>
+        </member>
+        <member name="M:LYBT.Desktop.Workbench.Core.WorkbenchPermissionMapper.ConvertFromLegacyRoleString(System.String)">
+            <summary>
+            从字符串角色转换为UserRole枚举
+            </summary>
+            <param name="roleString">字符串角色名称</param>
+            <returns>UserRole枚举</returns>
+        </member>
+        <member name="T:LYBT.Desktop.Workbench.Core.WorkbenchPermission">
+            <summary>
+            工作台权限配置类
+            UltraThink企业级权限管理：封装角色权限和工作台配置信息
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Workbench.Core.WorkbenchPermission.WorkbenchView">
+            <summary>
+            工作台视图名称
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Workbench.Core.WorkbenchPermission.AccessibleModules">
+            <summary>
+            可访问的模块列表
+            C# 12集合表达式：简化列表初始化
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Workbench.Core.WorkbenchPermission.DisplayName">
+            <summary>
+            角色显示名称
+            </summary>
+        </member>
+        <member name="P:LYBT.Desktop.Workbench.Core.WorkbenchPermission.WelcomeTemplate">
+            <summary>
+            欢迎消息模板（使用{0}占位符表示用户名）
+            </summary>
+        </member>
+    </members>
+</doc>
