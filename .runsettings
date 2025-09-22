@@ -112,7 +112,7 @@
 
   <!-- Parameters used by tests at runtime -->
   <TestRunParameters>
-    <Parameter name="TestDatabaseConnectionString" value="Server=(localdb)\\mssqllocaldb;Database=LYBT_Test;Trusted_Connection=True;MultipleActiveResultSets=true" />
+    <Parameter name="TestDatabaseConnectionString" value="Server=localhost;Database=LYBT_Test;Integrated Security=True;TrustServerCertificate=True;Encrypt=False;MultipleActiveResultSets=True" />
     <Parameter name="TestEnvironment" value="Test" />
     <Parameter name="EnableDetailedLogging" value="false" />
   </TestRunParameters>
