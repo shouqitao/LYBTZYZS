@@ -73,10 +73,10 @@ public class ConsultationQueryService(
                     Id = consultation.Id,
                     PatientId = consultation.PatientId,
                     MedicalCaseId = consultation.MedicalCaseId,
-                    Status = consultation.Status == ConsultationStatus.Completed ? CommonStatus.Enabled : CommonStatus.Disabled,
+                    Status = consultation.ConsultationStatus == ConsultationStatus.Completed ? CommonStatus.Enabled : CommonStatus.Disabled,
                     CreateTime = consultation.CreateTime,
                     UpdateTime = consultation.UpdateTime,
-                    DoctorId = consultation.DoctorId
+                    UserId = consultation.UserId
                 };
 
                 _logger.LogDebug("看诊诊断详细档案查询成功: {ConsultationId}", id);
