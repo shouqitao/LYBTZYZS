@@ -46,7 +46,7 @@ namespace LYBT.Desktop.Core.Converters
                 "管理员" => SystemConstants.AdminRole,
                 "医生" => SystemConstants.DoctorRole,
                 "药师" => "Pharmacist",
-                "前台" => "Receptionist", 
+                "前台" => "Receptionist",
                 "收银员" => "Cashier",
                 "理疗师" => "Therapist",
                 _ => displayName.ToUpper()

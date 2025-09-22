@@ -140,7 +140,7 @@ public class MedicalCaseModule(
         return medicalCaseStatus switch
         {
             MedicalCaseStatus.Active => await _businessService.StartAsync(id),
-            MedicalCaseStatus.Closed  => await _businessService.CompleteAsync(id),
+            MedicalCaseStatus.Closed => await _businessService.CompleteAsync(id),
             _ => ServiceResult<bool>.Failure($"不支持的状态更新: {medicalCaseStatus}")
         };
     }

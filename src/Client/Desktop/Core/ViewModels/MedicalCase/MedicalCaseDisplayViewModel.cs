@@ -1,7 +1,7 @@
+using System.Collections.Generic;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Enums;
 using Prism.Mvvm;
-using System.Collections.Generic;
 
 namespace LYBT.Desktop.Core.ViewModels.MedicalCase
 {

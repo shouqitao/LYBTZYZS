@@ -172,7 +172,7 @@ namespace LYBT.Shared.Utilities.Helpers
         {
             if (password1 == null || password2 == null)
                 return password1 == password2;
-                
+
             if (password1.Length != password2.Length)
                 return false;
 

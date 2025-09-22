@@ -1,10 +1,10 @@
 using LYBT.Desktop.Auth.Interfaces;
 using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Desktop.Infrastructure.Api;
 using LYBT.Shared.Interfaces.Api;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.Extensions.Logging;
-using LYBT.Desktop.Infrastructure.Api;
 
 namespace LYBT.Desktop.Auth.Services;
 

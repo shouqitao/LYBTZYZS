@@ -1,4 +1,4 @@
-﻿using System.Windows.Media;
+using System.Windows.Media;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Enums;
 using Prism.Mvvm;
@@ -211,8 +211,8 @@ namespace LYBT.Desktop.Core.ViewModels.Formulas
             return (_formulaData.HerbCount, _formulaData.TotalPrice) switch
             {
                 (_, > 200) => "high-cost",
-                (> 15, _) => "complex",
-                (<= 3, <= 50) => "simple-affordable",
+                ( > 15, _) => "complex",
+                ( <= 3, <= 50) => "simple-affordable",
                 _ => "normal"
             };
         }
