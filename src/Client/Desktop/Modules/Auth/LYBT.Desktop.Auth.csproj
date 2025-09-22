@@ -42,6 +42,17 @@
     <Optimize>true</Optimize>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Remove="bin\**" />
+    <EmbeddedResource Remove="bin\**" />
+    <None Remove="bin\**" />
+    <Page Remove="bin\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="LYBT.Desktop.Auth.xml" />
+  </ItemGroup>
+
   <!-- Prism and WPF Framework -->
   <ItemGroup Label="WPF and MVVM Framework">
     <PackageReference Include="Prism.Core" />

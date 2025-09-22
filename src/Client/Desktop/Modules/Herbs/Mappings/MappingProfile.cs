@@ -24,64 +24,7 @@ namespace LYBT.Desktop.Herbs.Mappings
         /// </summary>
         private void ConfigureHerbMappings()
         {
-            // UltraThink v2.0: HerbInfo模型已移除，以下映射不再需要
-            // DTO → Info 映射：API响应到前端模型（已废弃）
-            // CreateMap<HerbDto, HerbInfo>()
-            //     .ForMember(dest => dest.TotalPrice, opt => opt.Ignore())
-            //     .ForMember(dest => dest.StatusDescription, opt => opt.Ignore())
-            //     .ForMember(dest => dest.Supplier, opt => opt.Ignore())
-            //     .ForMember(dest => dest.LastOperationTime, opt => opt.Ignore())
-            //     .ForMember(dest => dest.OperatorName, opt => opt.Ignore())
-            //     .ForMember(dest => dest.Category, opt => opt.Ignore())
-            //     .ForMember(dest => dest.IsActive, opt => opt.MapFrom(src => src.Status == LYBT.Shared.Models.Enums.CommonStatus.Active))
-            //     .ForMember(dest => dest.IsSelected, opt => opt.Ignore())
-            //     .ForMember(dest => dest.IsExpanded, opt => opt.Ignore())
-            //     .ForMember(dest => dest.IsEditing, opt => opt.Ignore())
-            //     .ForMember(dest => dest.IsLoading, opt => opt.Ignore());
-
-            // CreateMap<HerbDetailDto, HerbInfo>()
-            //     .ForMember(dest => dest.TotalPrice, opt => opt.Ignore())
-            //     .ForMember(dest => dest.StatusDescription, opt => opt.Ignore())
-            //     .ForMember(dest => dest.Supplier, opt => opt.Ignore())
-            //     .ForMember(dest => dest.LastOperationTime, opt => opt.Ignore())
-            //     .ForMember(dest => dest.OperatorName, opt => opt.Ignore())
-            //     .ForMember(dest => dest.Category, opt => opt.Ignore())
-            //     .ForMember(dest => dest.Stock, opt => opt.Ignore()) // HerbDetailDto没有Stock字段
-            //     .ForMember(dest => dest.IsActive, opt => opt.MapFrom(src => src.Status == LYBT.Shared.Models.Enums.CommonStatus.Active))
-            //     .ForMember(dest => dest.IsSelected, opt => opt.Ignore())
-            //     .ForMember(dest => dest.IsExpanded, opt => opt.Ignore())
-            //     .ForMember(dest => dest.IsEditing, opt => opt.Ignore())
-            //     .ForMember(dest => dest.IsLoading, opt => opt.Ignore());
-
-            // Info → DTO 映射：前端模型到API请求（已废弃）
-            // CreateMap<HerbInfo, HerbCreateDto>()
-            //     .ForMember(dest => dest.Stock, opt => opt.MapFrom(src => (int)src.Stock))
-            //     .ForMember(dest => dest.BatchNo, opt => opt.Ignore())
-            //     .ForMember(dest => dest.ExpireDate, opt => opt.Ignore())
-            //     .ForMember(dest => dest.Status, opt => opt.MapFrom(src =>
-            //         src.IsActive ? LYBT.Shared.Models.Enums.CommonStatus.Active : LYBT.Shared.Models.Enums.CommonStatus.Inactive));
-
-            // CreateMap<HerbInfo, HerbUpdateDto>()
-            //     .ForMember(dest => dest.Status, opt => opt.MapFrom(src =>
-            //         src.IsActive ? LYBT.Shared.Models.Enums.CommonStatus.Active : LYBT.Shared.Models.Enums.CommonStatus.Inactive));
-
-            // Info ↔ DTO 双向映射：为对话框兼容性支持（已废弃）
-            // CreateMap<HerbInfo, HerbDto>()
-            //     .ForMember(dest => dest.Stock, opt => opt.MapFrom(src => (int)src.Stock))
-            //     .ForMember(dest => dest.WuBiCode, opt => opt.Ignore()) // HerbInfo没有WuBiCode属性
-            //     .ReverseMap()
-            //     .ForMember(dest => dest.Stock, opt => opt.MapFrom(src => (decimal)src.Stock))
-            //     .ForMember(dest => dest.IsActive, opt => opt.MapFrom(src => src.Status == LYBT.Shared.Models.Enums.CommonStatus.Active))
-            //     .ForMember(dest => dest.TotalPrice, opt => opt.Ignore())
-            //     .ForMember(dest => dest.StatusDescription, opt => opt.Ignore())
-            //     .ForMember(dest => dest.Supplier, opt => opt.Ignore())
-            //     .ForMember(dest => dest.LastOperationTime, opt => opt.Ignore())
-            //     .ForMember(dest => dest.OperatorName, opt => opt.Ignore())
-            //     .ForMember(dest => dest.Category, opt => opt.Ignore())
-            //     .ForMember(dest => dest.IsSelected, opt => opt.Ignore())
-            //     .ForMember(dest => dest.IsExpanded, opt => opt.Ignore())
-            //     .ForMember(dest => dest.IsEditing, opt => opt.Ignore())
-            //     .ForMember(dest => dest.IsLoading, opt => opt.Ignore());
+            // UltraThink v2.0: 直接使用DTO，无需映射
         }
 
         /// <summary>

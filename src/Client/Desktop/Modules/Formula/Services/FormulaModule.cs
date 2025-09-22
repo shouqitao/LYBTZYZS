@@ -107,8 +107,8 @@ public class FormulaModule(
 
     public async Task<ServiceResult<FormulaDto>> CopyAsync(Guid id, string newName)
     {
-        // 获取当前用户ID (简化实现，实际应从认证上下文获取)
-        var currentUserId = Guid.NewGuid(); // TODO: 从认证上下文获取实际用户ID
+        // 获取当前用户ID (使用默认值，待集成认证服务后更新)
+        var currentUserId = Guid.Empty;
         return await _businessService.CloneFormulaAsync(id, newName, currentUserId);
     }
 

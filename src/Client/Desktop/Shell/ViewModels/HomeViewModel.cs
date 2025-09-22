@@ -109,17 +109,17 @@ namespace LYBT.Desktop.Shell.ViewModels
             set => SetProperty(ref _currentDateTime, value);
         }
 
-        private ObservableCollection<TodayPatientDto> _todayPatients = new();
+        private ObservableCollection<TodayPatientItem> _todayPatients = new();
 
-        public ObservableCollection<TodayPatientDto> TodayPatients
+        public ObservableCollection<TodayPatientItem> TodayPatients
         {
             get => _todayPatients;
             set => SetProperty(ref _todayPatients, value);
         }
 
-        private TodayPatientDto? _selectedPatient;
+        private TodayPatientItem? _selectedPatient;
 
-        public TodayPatientDto? SelectedPatient
+        public TodayPatientItem? SelectedPatient
         {
             get => _selectedPatient;
             set => SetProperty(ref _selectedPatient, value);
@@ -150,8 +150,8 @@ namespace LYBT.Desktop.Shell.ViewModels
         public DelegateCommand NavigateToFormulaManagementCommand { get; }
 
         // 今日患者操作命令
-        public DelegateCommand<TodayPatientDto> StartConsultationForPatientCommand { get; }
-        public DelegateCommand<TodayPatientDto> ViewPatientDetailsCommand { get; }
+        public DelegateCommand<TodayPatientItem> StartConsultationForPatientCommand { get; }
+        public DelegateCommand<TodayPatientItem> ViewPatientDetailsCommand { get; }
         public DelegateCommand RefreshTodayPatientsCommand { get; }
 
         // 非核心功能命令已清理
@@ -197,8 +197,8 @@ namespace LYBT.Desktop.Shell.ViewModels
             NavigateToFormulaManagementCommand = new DelegateCommand(EnterSystemManagementWithFormulaModule);
 
             // 今日患者操作命令
-            StartConsultationForPatientCommand = new DelegateCommand<TodayPatientDto>(async patient => await StartConsultationForPatientAsync(patient), CanExecutePatientCommand);
-            ViewPatientDetailsCommand = new DelegateCommand<TodayPatientDto>(ViewPatientDetails, CanExecutePatientCommand);
+            StartConsultationForPatientCommand = new DelegateCommand<TodayPatientItem>(async patient => await StartConsultationForPatientAsync(patient), CanExecutePatientCommand);
+            ViewPatientDetailsCommand = new DelegateCommand<TodayPatientItem>(ViewPatientDetails, CanExecutePatientCommand);
 
             // Epic 04-P0-04: 界面响应性提升 - 优化刷新命令，使用统一的加载方法
             RefreshTodayPatientsCommand = new DelegateCommand(async () => await LoadTodayDataAsync());
@@ -390,7 +390,7 @@ namespace LYBT.Desktop.Shell.ViewModels
                     .Where(c => c.CreateTime >= todayStart && c.CreateTime <= todayEnd)
                     .ToList();
 
-                    var todayPatientsList = new List<TodayPatientDto>();
+                    var todayPatientsList = new List<TodayPatientItem>();
 
                     if (todayCases.Any())
                     {
@@ -420,7 +420,7 @@ namespace LYBT.Desktop.Shell.ViewModels
                         {
                             if (patientDict.TryGetValue(medicalCase.PatientId, out var patient) && patient != null)
                             {
-                                var todayPatient = new TodayPatientDto
+                                var todayPatient = new TodayPatientItem
                                 {
                                     Id = patient.Id,
                                     Name = patient.Name,
@@ -488,7 +488,7 @@ namespace LYBT.Desktop.Shell.ViewModels
         /// <summary>
         /// 根据患者列表更新今日统计数据
         /// </summary>
-        private void UpdateTodayStatisticsFromPatients(List<TodayPatientDto> patients)
+        private void UpdateTodayStatisticsFromPatients(List<TodayPatientItem> patients)
         {
             try
             {
@@ -642,12 +642,12 @@ namespace LYBT.Desktop.Shell.ViewModels
 
         #region 患者操作方法
 
-        private bool CanExecutePatientCommand(TodayPatientDto? patient)
+        private bool CanExecutePatientCommand(TodayPatientItem? patient)
         {
             return patient != null;
         }
 
-        private async Task StartConsultationForPatientAsync(TodayPatientDto? patient)
+        private async Task StartConsultationForPatientAsync(TodayPatientItem? patient)
         {
             if (patient == null)
             {
@@ -685,7 +685,7 @@ namespace LYBT.Desktop.Shell.ViewModels
             }
         }
 
-        private void ViewPatientDetails(TodayPatientDto? patient)
+        private void ViewPatientDetails(TodayPatientItem? patient)
         {
             if (patient == null)
             {

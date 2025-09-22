@@ -56,7 +56,7 @@ namespace LYBT.Desktop.Services
             => _currentUser != null && _permissionService.HasPermission(_currentUser, permission);
 
         /// <inheritdoc/>
-        public bool HasRole(string role) => false; // 已废弃
+        public bool HasRole(string role) => false;
 
         /// <inheritdoc/>
         public bool IsAdmin() => _currentUser?.Username == "sysadmin";

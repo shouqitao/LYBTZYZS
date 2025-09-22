@@ -73,7 +73,6 @@ namespace LYBT.Desktop.Users.ViewModels
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UserManagementViewModel"/> class.
-        /// 兼容性构造函数 - 支持无错误处理服务的旧版本调用
         /// </summary>
         /// <param name="userService">用户模块主服务</param>
         /// <param name="dialogService">自定义对话服务</param>

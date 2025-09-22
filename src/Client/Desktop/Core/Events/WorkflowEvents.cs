@@ -3,58 +3,43 @@ using Prism.Events;
 
 namespace LYBT.Desktop.Core.Events
 {
-
     /// <summary>
-    /// 工作流步骤完成事件 - Record-Only模式简化版（功能移除）
-    /// </summary>
-    public class WorkflowStepCompletedEvent : PubSubEvent<WorkflowStepData>
-    {
-    }
-
-    /// <summary>
-    /// 工作流完成事件 - Record-Only模式简化版（功能移除）
-    /// </summary>
-    public class WorkflowCompletedEvent : PubSubEvent<WorkflowCompletionData>
-    {
-    }
-
-    /// <summary>
-    /// 导航到步骤事件
+    /// 导航到指定工作流步骤事件。
     /// </summary>
     public class NavigateToStepEvent : PubSubEvent<WorkflowStep>
     {
     }
 
     /// <summary>
-    /// 保存步骤数据事件
+    /// 保存指定步骤数据事件。
     /// </summary>
     public class SaveStepDataEvent : PubSubEvent<WorkflowStep>
     {
     }
 
     /// <summary>
-    /// 步骤验证请求事件 - Record-Only模式简化版（功能移除）
+    /// 步骤校验请求事件（仍保留，便于将来扩展）。
     /// </summary>
     public class StepValidationRequestEvent : PubSubEvent<WorkflowStep>
     {
     }
 
     /// <summary>
-    /// 数据变更事件
+    /// 业务数据变更事件。
     /// </summary>
     public class DataChangedEvent : PubSubEvent<DataChangedEventArgs>
     {
     }
 
     /// <summary>
-    /// 导航事件
+    /// 视图导航事件。
     /// </summary>
     public class NavigationEvent : PubSubEvent<NavigationInfo>
     {
     }
 
     /// <summary>
-    /// 数据变更事件参数
+    /// 业务数据变更事件参数。
     /// </summary>
     public class DataChangedEventArgs
     {
@@ -65,7 +50,7 @@ namespace LYBT.Desktop.Core.Events
     }
 
     /// <summary>
-    /// 导航事件参数
+    /// 导航事件参数。
     /// </summary>
     public class NavigationEventArgs
     {
@@ -93,7 +78,7 @@ namespace LYBT.Desktop.Core.Events
     }
 
     /// <summary>
-    /// 导航信息（工作流步骤间导航）
+    /// 导航信息（从步骤、到步骤、病历ID等）。
     /// </summary>
     public class NavigationInfo
     {
@@ -102,13 +87,5 @@ namespace LYBT.Desktop.Core.Events
         public Guid MedicalCaseId { get; set; } = Guid.Empty;
         public DateTime NavigatedAt { get; set; } = DateTime.Now;
     }
-
-    /// <summary>
-    /// 工作流完成数据
-    /// </summary>
-    public class WorkflowCompletionData
-    {
-        public DateTime CompletionTime { get; set; } = DateTime.Now;
-        public TimeSpan TotalDuration { get; set; } = TimeSpan.Zero;
-    }
 }
+

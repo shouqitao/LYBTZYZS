@@ -169,7 +169,6 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CreateMedicalCaseViewModel"/> class.
-        /// 兼容性构造函数 - 支持无错误处理服务的旧版本调用
         /// </summary>
         /// <param name="medicalCaseService">医疗案例服务</param>
         /// <param name="patientService">患者服务</param>

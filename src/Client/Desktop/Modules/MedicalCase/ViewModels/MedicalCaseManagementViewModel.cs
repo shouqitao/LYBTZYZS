@@ -173,7 +173,6 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 "加载医疗案例数据，页码: {CurrentPage}, 页大小: {PageSize}, 搜索关键词: {SearchKeyword}",
                 request.PageIndex, request.PageSize, request.Keyword);
 
-                // UltraThink v1.0: 使用实际服务加载医疗案例数据
                 var result = await _medicalCaseService.GetPagedAsync(request);
 
                 if (result.IsSuccess)

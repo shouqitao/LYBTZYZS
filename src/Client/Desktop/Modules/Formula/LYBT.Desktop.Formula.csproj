@@ -46,16 +46,27 @@
     <Optimize>true</Optimize>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Remove="bin\**" />
+    <EmbeddedResource Remove="bin\**" />
+    <None Remove="bin\**" />
+    <Page Remove="bin\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="LYBT.Desktop.Formula.xml" />
+  </ItemGroup>
+
   <!-- Prism and WPF Framework -->
   <ItemGroup Label="WPF and MVVM Framework">
-    <PackageReference Include="Prism.Core"  />
-    <PackageReference Include="Prism.DryIoc"  />
-    <PackageReference Include="Prism.Wpf"  />
+    <PackageReference Include="Prism.Core" />
+    <PackageReference Include="Prism.DryIoc" />
+    <PackageReference Include="Prism.Wpf" />
   </ItemGroup>
 
   <!-- Logging -->
   <ItemGroup Label="Logging">
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions"  />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
   </ItemGroup>
 
   <!-- Project References -->

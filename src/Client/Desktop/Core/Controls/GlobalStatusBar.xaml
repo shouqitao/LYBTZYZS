@@ -88,7 +88,7 @@
                 <!-- 加载指示器 -->
                 <StackPanel Grid.Column="0"
                            Orientation="Horizontal"
-                           Visibility="{Binding IsGlobalLoading, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={x:Static local:BooleanToVisibilityConverter.Instance}}">
+                           Visibility="{Binding IsGlobalLoading, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <Ellipse x:Name="LoadingEllipse"
                              Width="16" Height="16"
                              Stroke="#4CAF50"
@@ -154,7 +154,7 @@
                 <TextBlock Grid.Column="2"
                            Text="{Binding OperationProgress, RelativeSource={RelativeSource AncestorType=UserControl}, StringFormat={}{0}%}"
                            Style="{StaticResource StatusTextStyle}"
-                           Visibility="{Binding IsGlobalLoading, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={x:Static local:BooleanToVisibilityConverter.Instance}}" />
+                           Visibility="{Binding IsGlobalLoading, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BooleanToVisibilityConverter}}" />
 
                 <!-- 系统状态 -->
                 <TextBlock Grid.Column="3"
@@ -167,7 +167,7 @@
             <ProgressBar Grid.Row="1"
                          Style="{StaticResource StatusProgressBarStyle}"
                          Value="{Binding OperationProgress, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                         Visibility="{Binding IsGlobalLoading, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={x:Static local:BooleanToVisibilityConverter.Instance}}" />
+                         Visibility="{Binding IsGlobalLoading, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BooleanToVisibilityConverter}}" />
         </Grid>
     </Border>
 </UserControl>

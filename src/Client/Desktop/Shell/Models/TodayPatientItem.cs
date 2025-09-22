@@ -7,7 +7,7 @@ namespace LYBT.Desktop.Shell.Models
     /// 今日患者显示数据传输对象
     /// 用于工作台今日患者列表显示
     /// </summary>
-    public class TodayPatientDto
+    public class TodayPatientItem
     {
         /// <summary>
         /// 患者ID

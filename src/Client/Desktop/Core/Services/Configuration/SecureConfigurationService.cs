@@ -906,7 +906,6 @@ namespace LYBT.Desktop.Core.Services.Configuration
 
         private string GetMachineKey()
         {
-            // 已废弃，仅保留以便向后兼容
             var machineKey = $"{Environment.MachineName}:{Environment.UserName}:{Environment.ProcessorCount}";
             return machineKey;
         }
@@ -914,7 +913,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
         private byte[] EncryptData(string plainText, byte[] key)
         {
             // 使用 AES-GCM 实现 AEAD 加密
-            using (var aesGcm = new AesGcm(key))
+            using (var aesGcm = new AesGcm(key, AesGcm.TagByteSizes.MaxSize))
             {
                 // 生成随机 nonce (12 bytes for AES-GCM)
                 var nonce = new byte[AesGcm.NonceByteSizes.MaxSize];
@@ -946,7 +945,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
             // 使用 AES-GCM 实现 AEAD 解密
             try
             {
-                using (var aesGcm = new AesGcm(key))
+                using (var aesGcm = new AesGcm(key, AesGcm.TagByteSizes.MaxSize))
                 {
                     // 提取 nonce (12 bytes)
                     var nonce = new byte[AesGcm.NonceByteSizes.MaxSize];
