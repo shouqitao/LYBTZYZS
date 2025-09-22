@@ -20,27 +20,6 @@ namespace LYBT.Shared.Models.Contracts.Formula
         public string? Adjustments { get; set; }
     }
 
-    /// <summary>
-    /// 药材兼容性警告
-    /// </summary>
-    public class HerbCompatibilityWarning
-    {
-        public string HerbName1 { get; set; } = string.Empty;
-        public string HerbName2 { get; set; } = string.Empty;
-        public string WarningLevel { get; set; } = string.Empty;
-        public string Description { get; set; } = string.Empty;
-    }
-
-    /// <summary>
-    /// 验方分析结果
-    /// </summary>
-    public class FormulaAnalysisResult
-    {
-        public string Summary { get; set; } = string.Empty;
-        public List<string> Effects { get; set; } = new();
-        public List<string> Contraindications { get; set; } = new();
-        public List<HerbCompatibilityWarning> Warnings { get; set; } = new();
-    }
 
     /// <summary>
     /// 验方历史记录DTO - 继承基础DTO
