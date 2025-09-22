@@ -89,7 +89,7 @@ public class PrescriptionsModule(
                 Diagnosis = original.Indication ?? string.Empty,
                 DosageCount = original.DosageCount,
                 Advice = original.Advice,
-                TotalAmount = original.TotalAmount,
+                TotalAmount = original.TotalPrice,
                 FormulaSource = original.FormulaSource,
                 Remark = $"复制自原处方 - {newName}",
                 Items = original.Items.Select(item => new PrescriptionItemCreateDto

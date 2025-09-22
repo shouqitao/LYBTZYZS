@@ -309,7 +309,7 @@ var prescription = prescriptions[i];
 historyContent.AppendLine($"▶ 第 {i + 1} 张处方 - {prescription.CreateTime:yyyy-MM-dd}");
 historyContent.AppendLine($" 处方ID: {prescription.Id.ToString()[..8]}");
 historyContent.AppendLine($" 剂数: {prescription.DosageCount} 剂");
-historyContent.AppendLine($" 费用: ¥{prescription.TotalAmount:F2}");
+historyContent.AppendLine($" 费用: ¥{prescription.TotalPrice:F2}");
 
 if (!string.IsNullOrEmpty(prescription.Indication))
 {
@@ -418,7 +418,7 @@ CreateTime = p.CreateTime.ToString("yyyy-MM-dd HH:mm"),
 Diagnosis = p.Indication ?? "无主治信息",
 DosageCount = p.DosageCount.ToString(),
 SingleDosePrice = "0.00", // SingleDosePrice字段已删除
-TotalPrice = p.TotalAmount.ToString("F2"),
+TotalPrice = p.TotalPrice.ToString("F2"),
 Discount = p.Discount.ToString("P1"), // 格式化为百分比
 Status = p.Status == LYBT.Shared.Models.Enums.CommonStatus.Enabled ? "正常" : "禁用",
 MainHerbs = p.Items != null && p.Items.Any()
