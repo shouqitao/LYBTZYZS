@@ -341,7 +341,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             try
             {
                 // UltraThink v2.0: 更新状态为看诊中 - 使用CompleteAsync方法
-                var result = await _medicalCaseService.CompleteAsync(MedicalCase.Id, "开始看诊");
+                var result = await _medicalCaseService.CompleteAsync(MedicalCase.Id, "完成病例");
 
                 if (result.IsSuccess)
                 {
@@ -384,7 +384,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             try
             {
                 IsLoading = true;
-                var result = await _medicalCaseService.CompleteAsync(MedicalCase.Id, "案例完成");
+                var result = await _medicalCaseService.UpdateStatus(MedicalCase.Id, (int)MedicalCaseStatus.Active);
 
                 if (result.IsSuccess)
                 {
@@ -512,3 +512,4 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 }
 
  
+
