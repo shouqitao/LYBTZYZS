@@ -65,6 +65,26 @@ public class ArchTests
     }
 
     /// <summary>
+    /// Desktop 不得依赖 WebAPI 层（禁止 UI 直接引用 API 宿主）
+    /// </summary>
+    [Fact]
+    public void LayerDependencyTests_Desktop_Should_Not_Depend_On_WebAPI()
+    {
+        var result = Types.InAssemblies(Assemblies)
+            .That()
+            .ResideInNamespaceMatching(@"^LYBT\.Desktop\..*")
+            .Or()
+            .ResideInNamespaceMatching(@"^LYBT\.Module\..*")
+            .Should()
+            .NotHaveDependencyOn("LYBT.WebAPI")
+            .GetResult();
+
+        Assert.True(
+            result.IsSuccessful,
+            $"Desktop 层不应依赖 WebAPI: {string.Join(", ", result.FailingTypes?.Select(t => t.FullName) ?? Array.Empty<string>())}");
+    }
+
+    /// <summary>
     /// API版本测试 - 所有控制器路由必须使用/api/v1前缀
     /// </summary>
     [Fact]
