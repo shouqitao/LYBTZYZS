@@ -11,6 +11,7 @@ using LYBT.Infrastructure.Data;
 using LYBT.Module.Auth;
 using LYBT.Module.Users;
 using LYBT.WebAPI.Configuration;
+using LYBT.WebAPI.Extensions.ServiceCollection;
 using LYBT.WebAPI.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Hosting;
@@ -60,7 +61,10 @@ public static class UnifiedServiceRegistration
         // 9）速率限制（全局 + 登录）
         services.ConfigureRateLimiting(configuration, environment);
 
-        // 10）环境感知配置校验（生产强校验）- 使用Infrastructure统一实现
+        // 10）安全服务（数据保护、密钥管理、密钥旋转）
+        services.AddSecurityServices(configuration, environment);
+
+        // 11）环境感知配置校验（生产强校验）- 使用Infrastructure统一实现
         services.AddEnvironmentAwareValidation(environment);
 
         return services;
@@ -111,8 +115,8 @@ public static class UnifiedServiceRegistration
         services.AddSingleton<ICacheService, MemoryCacheAdapter>();
 
         // 选项绑定（IOptions）
-        services.AddOptions<JwtOptions>()
-            .Bind(configuration.GetSection(JwtOptions.SectionName))
+        services.AddOptions<LYBT.Infrastructure.Configuration.Options.JwtOptions>()
+            .Bind(configuration.GetSection(LYBT.Infrastructure.Configuration.Options.JwtOptions.SectionName))
             .ValidateDataAnnotations()
             .ValidateOnStart();
 

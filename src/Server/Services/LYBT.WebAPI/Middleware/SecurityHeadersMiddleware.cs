@@ -76,8 +76,8 @@ namespace LYBT.WebAPI.Middleware
             var policies = new[]
             {
                 "default-src 'self'",                              // 默认只允许同源
-                "script-src 'self'",                               // JavaScript只允许同源
-                "style-src 'self' 'unsafe-inline'",                // CSS允许同源和内联样式
+                "script-src 'self'",                               // JavaScript只允许同源（禁用unsafe-inline和unsafe-eval）
+                "style-src 'self'",                                // CSS只允许同源（生产环境禁用unsafe-inline）
                 "img-src 'self' data: https:",                     // 图片允许同源、data URL和HTTPS
                 "font-src 'self'",                                  // 字体只允许同源
                 "connect-src 'self'",                              // AJAX/WebSocket只允许同源
@@ -87,8 +87,11 @@ namespace LYBT.WebAPI.Middleware
                 "base-uri 'self'",                                 // base标签只允许同源
                 "form-action 'self'",                              // 表单提交只允许同源
                 "frame-ancestors 'none'",                          // 禁止被嵌入iframe
+                "worker-src 'self'",                               // Web Worker只允许同源
+                "manifest-src 'self'",                             // Manifest只允许同源
                 "upgrade-insecure-requests",                       // 自动升级HTTP到HTTPS
-                "block-all-mixed-content"                          // 阻止混合内容
+                "block-all-mixed-content",                         // 阻止混合内容
+                "require-trusted-types-for 'script'"               // 要求可信类型（防XSS）
             };
 
             return string.Join("; ", policies);

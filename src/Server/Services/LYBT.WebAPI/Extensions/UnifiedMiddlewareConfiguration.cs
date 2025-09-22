@@ -90,8 +90,13 @@ public static class UnifiedMiddlewareConfiguration
     /// </summary>
     private static WebApplication ConfigureAuthenticationMiddleware(this WebApplication app)
     {
-        // 认证 + 授权
+        // 认证
         app.UseAuthentication();
+
+        // Claims标准化（在认证后，授权前）
+        app.UseClaimsNormalization();
+
+        // 授权
         app.UseAuthorization();
         return app;
     }
