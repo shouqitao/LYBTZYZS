@@ -43,15 +43,6 @@ public partial class UserItem : ObservableObject
     private CommonStatus status;
 
     [ObservableProperty]
-    private DateTime? lastLoginTime;
-
-    [ObservableProperty]
-    private string? lastLoginIp;
-
-    [ObservableProperty]
-    private int loginCount;
-
-    [ObservableProperty]
     private DateTime createTime;
 
     [ObservableProperty]
@@ -83,9 +74,6 @@ public partial class UserItem : ObservableObject
             Title = dto.Title,
             PinYinCode = dto.PinYinCode,
             Status = dto.Status,
-            LastLoginTime = dto.LastLoginTime,
-            LastLoginIp = dto.LastLoginIp,
-            LoginCount = dto.LoginCount,
             CreateTime = dto.CreateTime,
             UpdateTime = dto.UpdateTime
         };
@@ -108,9 +96,6 @@ public partial class UserItem : ObservableObject
             Title = Title,
             PinYinCode = PinYinCode,
             Status = Status,
-            LastLoginTime = LastLoginTime,
-            LastLoginIp = LastLoginIp,
-            LoginCount = LoginCount,
             CreateTime = CreateTime,
             UpdateTime = UpdateTime
         };
@@ -131,9 +116,6 @@ public partial class UserItem : ObservableObject
         Title = dto.Title;
         PinYinCode = dto.PinYinCode;
         Status = dto.Status;
-        LastLoginTime = dto.LastLoginTime;
-        LastLoginIp = dto.LastLoginIp;
-        LoginCount = dto.LoginCount;
         CreateTime = dto.CreateTime;
         UpdateTime = dto.UpdateTime;
     }
@@ -184,34 +166,14 @@ public partial class UserItem : ObservableObject
     public bool IsActive => Status == CommonStatus.Enabled;
 
     /// <summary>
-    /// 是否在线（基于最后登录时间）
+    /// 是否是管理员
     /// </summary>
-    public bool IsOnline => LastLoginTime.HasValue &&
-                            (DateTime.Now - LastLoginTime.Value).TotalMinutes < 30;
+    public bool IsAdmin => Role == UserRole.Admin;
 
     /// <summary>
-    /// 在线状态文本
+    /// 是否是医师
     /// </summary>
-    public string OnlineStatusText
-    {
-        get
-        {
-            if (!LastLoginTime.HasValue)
-                return "从未登录";
-
-            var timeSinceLogin = DateTime.Now - LastLoginTime.Value;
-            if (timeSinceLogin.TotalMinutes < 5)
-                return "在线";
-            if (timeSinceLogin.TotalMinutes < 30)
-                return "活跃";
-            if (timeSinceLogin.TotalHours < 24)
-                return $"{(int)timeSinceLogin.TotalHours}小时前";
-            if (timeSinceLogin.TotalDays < 30)
-                return $"{(int)timeSinceLogin.TotalDays}天前";
-
-            return "离线";
-        }
-    }
+    public bool IsDoctor => Role == UserRole.Doctor;
 
     /// <summary>
     /// 显示文本（用于ComboBox等）
@@ -226,7 +188,7 @@ public partial class UserItem : ObservableObject
     /// <summary>
     /// 是否可以删除
     /// </summary>
-    public bool CanDelete => Id != 1 && !IsOnline; // 系统管理员ID=1不能删除
+    public bool CanDelete => Id != 1; // 系统管理员ID=1不能删除
 
     /// <summary>
     /// 是否可以重置密码

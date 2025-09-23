@@ -1,4 +1,7 @@
-# Desktop项目Prism框架优化方案
+# Desktop 项目 Prism 优化方案（历史调研）
+
+> 重要说明：当前项目基线固定在 .NET 8 + Prism 8.1.97，暂无升级计划。本文件为历史调研与方案备忘，非当前实施计划。实施工作请以 docs/overview/guiding-philosophy.md 为准。
+
 
 ## 一、优化目标
 
