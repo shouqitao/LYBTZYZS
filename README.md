@@ -191,7 +191,7 @@ dotnet run --project src/Server/Services/LYBT.WebAPI
 
 ### 前端技术
 - **WPF (.NET 8)**: Windows桌面应用
-- **Prism.DryIoc 9.0.537**: MVVM框架
+- **Prism.DryIoc 8.1.97**: MVVM框架（集中包管理，见 Directory.Packages.props）
 - **Refit 8.0.0**: 类型安全HTTP客户端
 - **Material Design 5.1.0**: UI组件库
 - **LiveCharts2**: 数据可视化

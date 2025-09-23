@@ -36,7 +36,7 @@
     <AutoMapperVersion>13.0.1</AutoMapperVersion>
     <EntityFrameworkVersion>8.0.17</EntityFrameworkVersion>
     <SwashbuckleVersion>9.0.1</SwashbuckleVersion>
-    <PrismVersion>9.0.537</PrismVersion>
+    <PrismVersion>8.1.97</PrismVersion>
   </PropertyGroup>
 
 

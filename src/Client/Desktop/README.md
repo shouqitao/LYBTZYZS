@@ -1,4 +1,4 @@
-﻿# LYBT.Desktop
+# LYBT.Desktop
 
 > **凌隐宝堂中医诊所 - WPF桌面客户端** 
 > 基于 .NET 8.0 的现代化中医诊所管理桌面应用
@@ -7,7 +7,7 @@
 
 - **项目名称**: LYBT.Desktop (凌隐宝堂中医诊所桌面客户端)
 - **目标框架**: .NET 8.0 Windows 
-- **UI框架**: WPF + Prism.DryIoc 9.0.537
+- **UI框架**: WPF + Prism.DryIoc 8.1.97
 - **架构模式**: 三层MVVM + 模块化
 - **通信方式**: Refit类型安全REST客户端
 
@@ -41,7 +41,7 @@
 
 - **.NET 8.0**: 统一开发平台
 - **WPF**: 原生Windows桌面UI框架
-- **Prism.DryIoc 9.0.537**: MVVM框架 + 依赖注入（DI）容器
+- **Prism.DryIoc 8.1.97**: MVVM框架 + 依赖注入（DI）容器
 - **Refit**: 类型安全的HTTP API客户端
 - **AutoMapper 15.0.1**: 对象映射 (需要ILoggerFactory参数)
 
@@ -73,7 +73,7 @@ dotnet restore LYBT.Desktop.sln
 # (参考后端README启动WebAPI)
 
 # 4. 启动桌面客户端
-dotnet run --project Shell
+dotnet run --project src/Client/Desktop/Shell/LYBT.Desktop.Shell.csproj
 ```
 
 ### 默认登录
@@ -150,3 +150,4 @@ services.AddRefitClient<IAuthApi>()
 - docs/api/README.md
 - docs/modules/index.md
 - [待补充] 本模块相关的设计/实现文档链接
+
