@@ -1,4 +1,4 @@
-using LYBT.Desktop.Core.Interfaces.Services;
+﻿using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.ViewModels;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
@@ -217,8 +217,8 @@ public class MedicalCaseManagementViewModel : ModernManagementViewModel<MedicalC
             return;
         }
 
-        _logger.LogInformation("查看诊疗记录: {CaseId}", medicalCase.Id);
-        // TODO: 实现查看诊疗记录逻辑
+        _logger.LogInformation("查诊疗疗记录: {CaseId}", medicalCase.Id);
+        // TODO: 实现查诊疗疗记录逻辑
         await Task.CompletedTask;
     }
 

@@ -89,7 +89,7 @@
                                    Cursor="Hand">
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="🩺" FontSize="28" Margin="0,0,10,0" />
-                                    <TextBlock Text="开始看诊" VerticalAlignment="Center" />
+                                    <TextBlock Text="开始诊疗" VerticalAlignment="Center" />
                                 </StackPanel>
                             </Button>
                         </Grid>
@@ -362,7 +362,7 @@
                                                                                   FontSize="16"
                                                                                   Foreground="#999"
                                                                                   HorizontalAlignment="Center" />
-                                                                        <TextBlock Text="点击上方'开始看诊'接待新患者"
+                                                                        <TextBlock Text="点击上方'开始诊疗'接待新患者"
                                                                                   FontSize="14"
                                                                                   Foreground="#CCC"
                                                                                   HorizontalAlignment="Center"

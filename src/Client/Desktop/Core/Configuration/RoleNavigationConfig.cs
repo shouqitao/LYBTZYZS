@@ -1,4 +1,4 @@
-namespace LYBT.Desktop.Core.Configuration
+﻿namespace LYBT.Desktop.Core.Configuration
 {
 
     /// <summary>
@@ -18,7 +18,7 @@ namespace LYBT.Desktop.Core.Configuration
             {
                 "管理员" => "AdminMainView",
                 "用户" => "ConsultationMainView",
-                _ => "ConsultationMainView" // 默认显示看诊界面
+                _ => "ConsultationMainView" // 默认显示诊疗界面
             };
         }
 
@@ -70,7 +70,7 @@ namespace LYBT.Desktop.Core.Configuration
         /// <returns>是否有医疗权限</returns>
         public static bool HasMedicalAccess(string role)
         {
-            return role == "用户" || role == "管理员";  // 管理员也可以看诊
+            return role == "用户" || role == "管理员";  // 管理员也可以诊疗
         }
     }
 }

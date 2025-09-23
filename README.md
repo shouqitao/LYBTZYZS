@@ -6,7 +6,7 @@
 | 项目维度 | 当前结论 |
 | --- | --- |
 | 桌面端编译 | ❌ 事件重复定义导致编译失败，需统一到 UnifiedEvents.cs |
-| 服务器测试 | ⚠️ dotnet test LYBT.Server.sln 失败（Consultation AutoMapper、API 契约待修复） |
+| 服务器测试 | ⚠️ dotnet test LYBT.Server.sln 失败（Consultation AutoMapper、API 契约尚未修复） |
 | 术语一致性 | ⚠️ README / UI / 文档正在统一为“诊疗工作台”等最新称谓 |
 | 任务管理 | ✅ Thinker 在 docs/tasks/pending/ 发布任务，完成总结存放于 docs/tasks/completed/ |
 

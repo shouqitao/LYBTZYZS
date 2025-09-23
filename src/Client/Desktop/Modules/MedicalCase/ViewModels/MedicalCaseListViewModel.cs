@@ -1,4 +1,4 @@
-using AutoMapper;
+﻿using AutoMapper;
 using LYBT.Desktop.Core.Constants;
 using LYBT.Desktop.Core.Coordinators;
 using LYBT.Desktop.Core.Interfaces.Services;
@@ -287,34 +287,34 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
             try
             {
-                // 开始看诊 = 恢复医疗案例到诊断状态
+                // 开始诊疗 = 恢复医疗案例到诊断状态
                 var result = await _medicalCaseService.UpdateStatus(medicalCase.Id, (int)LYBT.Shared.Models.Enums.MedicalCaseStatus.Active);
 
                 if (result.IsSuccess)
                 {
-                    // 导航到看诊界面
+                    // 导航到诊疗界面
                     var navigationParameters = new NavigationParameters
                     {
                         { "MedicalCaseId", medicalCase.Id },
                         { "PatientId", medicalCase.PatientId },
                         { "ConsultationMode", "Start" }
                     };
-                    _navigationService.NavigateTo(RegionNames.ConsultationWorkbenchContentRegion, "ConsultationMainView", navigationParameters);
+                    _navigationService.NavigateTo(RegionNames.MedicalWorkbenchContentRegion, "ConsultationMainView", navigationParameters);
 
                     await RefreshDataAsync();
-                    await _dialogService.ShowInformationAsync("已成功开始看诊", "成功");
+                    await _dialogService.ShowInformationAsync("已成功开始诊疗", "成功");
                 }
                 else
                 {
                     await _dialogService.ShowErrorAsync(
-                        result.ErrorMessage ?? "开始看诊失败",
+                        result.ErrorMessage ?? "开始诊疗失败",
                         "错误");
                 }
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "开始看诊失败: {MedicalCaseId}", medicalCase.Id);
-                await _dialogService.ShowErrorAsync($"开始看诊失败: {ex.Message}", "错误");
+                Logger.LogError(ex, "开始诊疗失败: {MedicalCaseId}", medicalCase.Id);
+                await _dialogService.ShowErrorAsync($"开始诊疗失败: {ex.Message}", "错误");
             }
         }
 
@@ -333,7 +333,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             {
                 try
                 {
-                    // 完成看诊，需要提供完成原因
+                    // 完成诊疗，需要提供完成原因
                     var result = await _medicalCaseService.CompleteAsync(medicalCase.Id, "诊断完成");
 
                     if (result.IsSuccess)

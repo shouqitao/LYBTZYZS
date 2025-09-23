@@ -1,4 +1,4 @@
-using LYBT.Desktop.Consultation.Interfaces;
+﻿using LYBT.Desktop.Consultation.Interfaces;
 using LYBT.Shared.Interfaces.Api;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
@@ -8,12 +8,12 @@ using Microsoft.Extensions.Logging;
 namespace LYBT.Desktop.Consultation.Services;
 
 /// <summary>
-/// 看诊诊断查询服务 - UltraThink双层架构查询专业层
+/// 诊疗诊断查询服务 - UltraThink双层架构查询专业层
 /// 采用UltraThink架构标准，使用C# 12现代化特性
-/// 职责：看诊诊断复杂查询、搜索过滤、统计报表、中医四诊数据检索
+/// 职责：诊疗诊断复杂查询、搜索过滤、统计报表、中医四诊数据检索
 /// 提供只读查询操作，不涉及数据修改，专注诊断记录检索和状态分析
 /// 集成企业级日志记录，支持诊断管理和档案查询需求
-/// 适配中医诊所看诊诊断查询场景，确保查询性能和数据安全性
+/// 适配中医诊所诊疗诊断查询场景，确保查询性能和数据安全性
 /// </summary>
 public class ConsultationQueryService(
     ILogger<ConsultationQueryService> logger,
@@ -23,7 +23,7 @@ public class ConsultationQueryService(
     private readonly IConsultationApi _consultationApi = consultationApi ?? throw new ArgumentNullException(nameof(consultationApi));
 
     /// <summary>
-    /// 分页查询看诊诊断记录列表
+    /// 分页查询诊疗诊断记录列表
     /// 基于查询条件执行诊断分页检索，支持过滤和排序
     /// </summary>
     /// <param name="query">分页查询参数</param>
@@ -33,7 +33,7 @@ public class ConsultationQueryService(
         try
         {
             _logger.LogDebug(
-                "执行看诊诊断分页查询，页码: {PageNumber}, 页大小: {PageSize}",
+                "执行诊疗诊断分页查询，页码: {PageNumber}, 页大小: {PageSize}",
                 query.PageIndex, query.PageSize);
 
             var emptyResult = new PagedResult<ConsultationDto>
@@ -46,8 +46,8 @@ public class ConsultationQueryService(
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "看诊诊断分页查询异常");
-            return Task.FromResult(ServiceResult<PagedResult<ConsultationDto>>.Failure("查询看诊诊断列表失败"));
+            _logger.LogError(ex, "诊疗诊断分页查询异常");
+            return Task.FromResult(ServiceResult<PagedResult<ConsultationDto>>.Failure("查询诊疗诊断列表失败"));
         }
     }
 
@@ -61,7 +61,7 @@ public class ConsultationQueryService(
     {
         try
         {
-            _logger.LogDebug("查询看诊诊断详细档案: {ConsultationId}", id);
+            _logger.LogDebug("查询诊疗诊断详细档案: {ConsultationId}", id);
 
             var refitResponse = await _consultationApi.GetByIdAsync(id);
 
@@ -79,12 +79,12 @@ public class ConsultationQueryService(
                     UserId = consultation.UserId
                 };
 
-                _logger.LogDebug("看诊诊断详细档案查询成功: {ConsultationId}", id);
+                _logger.LogDebug("诊疗诊断详细档案查询成功: {ConsultationId}", id);
                 return ServiceResult<ConsultationDto>.Success(consultationDto, "查询诊断详情成功");
             }
 
             _logger.LogWarning(
-                "看诊诊断详细档案HTTP请求失败: {ConsultationId}, 状态码: {StatusCode}",
+                "诊疗诊断详细档案HTTP请求失败: {ConsultationId}, 状态码: {StatusCode}",
                 id, refitResponse.StatusCode);
             return ServiceResult<ConsultationDto>.Failure("查询诊断详情网络请求失败，请检查网络连接");
         }
@@ -105,7 +105,7 @@ public class ConsultationQueryService(
     {
         try
         {
-            _logger.LogDebug("看诊诊断关键字搜索: {Keyword}", keyword);
+            _logger.LogDebug("诊疗诊断关键字搜索: {Keyword}", keyword);
             List<ConsultationDto> emptyList = [];
             return ServiceResult<List<ConsultationDto>>.Success(emptyList);
         }
@@ -125,7 +125,7 @@ public class ConsultationQueryService(
     {
         try
         {
-            _logger.LogDebug("生成看诊诊断统计数据");
+            _logger.LogDebug("生成诊疗诊断统计数据");
             var stats = new ConsultationStatisticsDto();
 
             return ServiceResult<ConsultationStatisticsDto>.Success(stats);

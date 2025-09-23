@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using LYBT.Desktop.Core.Interfaces.Services;
@@ -58,14 +58,14 @@ namespace LYBT.Desktop.Services
             {
                 // 管理员有所有模块
                 return new List<string> {
-                    "患者管理", "药材管理", "处方管理", "看诊管理",
+                    "患者管理", "药材管理", "处方管理", "诊疗管理",
                     "系统设置", "用户管理", "日志管理"
                 };
             }
 
             // 普通用户的基础模块
             return new List<string> {
-                "患者管理", "药材管理", "处方管理", "看诊管理"
+                "患者管理", "药材管理", "处方管理", "诊疗管理"
             };
         }
 

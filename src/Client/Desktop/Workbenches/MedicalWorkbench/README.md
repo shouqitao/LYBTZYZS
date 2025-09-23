@@ -9,17 +9,17 @@
 ## 目录结构
 
 ```
-ConsultationWorkbench/
+MedicalWorkbench/
 ├── Navigation/                         # 导航服务
-│   └── IConsultationWorkbenchNavigator.cs  # 工作台导航接口
+│   └── IMedicalWorkbenchNavigator.cs  # 工作台导航接口
 ├── Services/                          # 业务服务
-│   └── ConsultationWorkbenchNavigator.cs   # 导航实现
+│   └── MedicalWorkbenchNavigator.cs   # 导航实现
 ├── ViewModels/                        # 视图模型
-│   └── ConsultationWorkbenchMainViewModel.cs # 主工作台视图模型
+│   └── MedicalWorkbenchMainViewModel.cs # 主工作台视图模型
 ├── Views/                            # 用户界面
-│   ├── ConsultationWorkbenchMainView.xaml     # 主工作台视图
-│   └── ConsultationWorkbenchMainView.xaml.cs  # 视图代码后置
-└── ConsultationWorkbenchModule.cs    # Prism模块定义
+│   ├── MedicalWorkbenchMainView.xaml     # 主工作台视图
+│   └── MedicalWorkbenchMainView.xaml.cs  # 视图代码后置
+└── MedicalWorkbenchModule.cs    # Prism模块定义
 ```
 
 ## 核心功能
@@ -80,11 +80,11 @@ ConsultationWorkbench/
 
 ## 导航系统
 
-### IConsultationWorkbenchNavigator
+### IMedicalWorkbenchNavigator
 诊疗工作台专用导航接口，提供工作台内部的页面导航功能：
 
 ```csharp
-public interface IConsultationWorkbenchNavigator
+public interface IMedicalWorkbenchNavigator
 {
     // 导航到患者管理
     Task NavigateToPatientManagementAsync();
@@ -107,19 +107,19 @@ public interface IConsultationWorkbenchNavigator
 
 ## 模块注册
 
-### ConsultationWorkbenchModule
+### MedicalWorkbenchModule
 Prism模块定义，负责工作台的初始化和服务注册：
 
 ```csharp
-public class ConsultationWorkbenchModule : IModule
+public class MedicalWorkbenchModule : IModule
 {
     public void RegisterTypes(IContainerRegistry containerRegistry)
     {
         // 注册工作台导航器
-        containerRegistry.RegisterSingleton<IConsultationWorkbenchNavigator, ConsultationWorkbenchNavigator>();
+        containerRegistry.RegisterSingleton<IMedicalWorkbenchNavigator, MedicalWorkbenchNavigator>();
         
         // 注册主视图
-        containerRegistry.RegisterForNavigation<ConsultationWorkbenchMainView>();
+        containerRegistry.RegisterForNavigation<MedicalWorkbenchMainView>();
         
         // UltraThink Phase 3.4: 注册集成的验方管理功能
         containerRegistry.RegisterForNavigation<FormulaManagementView>();
@@ -128,7 +128,7 @@ public class ConsultationWorkbenchModule : IModule
     public void OnInitialized(IContainerProvider containerProvider)
     {
         // 注册ViewModel映射
-        ViewModelLocationProvider.Register<ConsultationWorkbenchMainView, ConsultationWorkbenchMainViewModel>();
+        ViewModelLocationProvider.Register<MedicalWorkbenchMainView, MedicalWorkbenchMainViewModel>();
     }
 }
 ```
@@ -264,5 +264,5 @@ if (await _authService.HasPermissionAsync("consultation:create"))
 - [待补充] 基本操作：dotnet restore/build/test；如何运行/调试当前模块。
 
 ## 🔌 API 接口
-- [待补充] 集成的 API/Refit 客户端：例如 IConsultationWorkbenchApi
+- [待补充] 集成的 API/Refit 客户端：例如 IMedicalWorkbenchApi
 - [待补充] 关键调用路径与鉴权方式（JWT Bearer）

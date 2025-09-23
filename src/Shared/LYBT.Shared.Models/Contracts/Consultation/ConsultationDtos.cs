@@ -8,7 +8,7 @@ namespace LYBT.Shared.Models.Contracts.Consultation
 {
 
     /// <summary>
-    /// 看诊信息DTO - UltraThink v2.0简化版
+    /// 诊疗信息DTO - UltraThink v2.0简化版
     /// 与Consultation实体对齐，实现四诊信息管理
     /// </summary>
     public class ConsultationDto : StatusDto, IRemarkable
@@ -66,16 +66,16 @@ namespace LYBT.Shared.Models.Contracts.Consultation
         [DisplayName("治疗原则")]
         public string? TreatmentPrinciple { get; set; }
 
-        /// <summary>看诊开始时间</summary>
+        /// <summary>诊疗开始时间</summary>
         [DisplayName("开始时间")]
         public DateTime StartTime { get; set; }
 
-        /// <summary>看诊结束时间</summary>
+        /// <summary>诊疗结束时间</summary>
         [DisplayName("结束时间")]
         public DateTime? EndTime { get; set; }
 
-        /// <summary>看诊状态</summary>
-        [DisplayName("看诊状态")]
+        /// <summary>诊疗状态</summary>
+        [DisplayName("诊疗状态")]
         public ConsultationStatus ConsultationStatus { get; set; } = ConsultationStatus.InProgress;
 
         /// <inheritdoc/>
@@ -86,7 +86,7 @@ namespace LYBT.Shared.Models.Contracts.Consultation
     }
 
     /// <summary>
-    /// 看诊详情DTO - 包含完整的四诊信息
+    /// 诊疗详情DTO - 包含完整的四诊信息
     /// </summary>
     public class ConsultationDetailDto : TimestampDto, IRemarkable
     {
@@ -147,20 +147,20 @@ namespace LYBT.Shared.Models.Contracts.Consultation
         [DisplayName("医嘱")]
         public string? MedicalAdvice { get; set; }
 
-        /// <summary>看诊开始时间</summary>
+        /// <summary>诊疗开始时间</summary>
         [DisplayName("开始时间")]
         public DateTime StartTime { get; set; }
 
-        /// <summary>看诊结束时间</summary>
+        /// <summary>诊疗结束时间</summary>
         [DisplayName("结束时间")]
         public DateTime? EndTime { get; set; }
 
-        /// <summary>看诊持续时间(分钟)</summary>
+        /// <summary>诊疗持续时间(分钟)</summary>
         [DisplayName("持续时间")]
         public int Duration => EndTime.HasValue ? (int)(EndTime.Value - StartTime).TotalMinutes : 0;
 
-        /// <summary>看诊状态</summary>
-        [DisplayName("看诊状态")]
+        /// <summary>诊疗状态</summary>
+        [DisplayName("诊疗状态")]
         public ConsultationStatus ConsultationStatus { get; set; } = ConsultationStatus.InProgress;
 
         /// <inheritdoc/>
@@ -175,7 +175,7 @@ namespace LYBT.Shared.Models.Contracts.Consultation
     }
 
     /// <summary>
-    /// 看诊输入基础DTO - 提取创建和更新的共同字段
+    /// 诊疗输入基础DTO - 提取创建和更新的共同字段
     /// </summary>
     public abstract class ConsultationInputBaseDto : IRemarkable
     {
@@ -240,7 +240,7 @@ namespace LYBT.Shared.Models.Contracts.Consultation
     }
 
     /// <summary>
-    /// 看诊创建DTO - 继承输入基础DTO
+    /// 诊疗创建DTO - 继承输入基础DTO
     /// </summary>
     public class ConsultationCreateDto : ConsultationInputBaseDto
     {
@@ -259,7 +259,7 @@ namespace LYBT.Shared.Models.Contracts.Consultation
         [DisplayName("关联用户ID")]
         public Guid UserId { get; set; }
 
-        /// <summary>看诊开始时间</summary>
+        /// <summary>诊疗开始时间</summary>
         [DisplayName("开始时间")]
         public DateTime StartTime { get; set; } = DateTime.Now;
 
@@ -273,26 +273,26 @@ namespace LYBT.Shared.Models.Contracts.Consultation
     }
 
     /// <summary>
-    /// 看诊更新DTO - 继承输入基础DTO并实现ID接口
+    /// 诊疗更新DTO - 继承输入基础DTO并实现ID接口
     /// </summary>
     public class ConsultationUpdateDto : ConsultationInputBaseDto, IIdentifiable<Guid>
     {
-        /// <summary>看诊ID</summary>
-        [Required(ErrorMessage = "看诊ID不能为空")]
-        [DisplayName("看诊ID")]
+        /// <summary>诊疗ID</summary>
+        [Required(ErrorMessage = "诊疗ID不能为空")]
+        [DisplayName("诊疗ID")]
         public Guid Id { get; set; }
 
-        /// <summary>看诊状态</summary>
-        [DisplayName("看诊状态")]
+        /// <summary>诊疗状态</summary>
+        [DisplayName("诊疗状态")]
         public ConsultationStatus? ConsultationStatus { get; set; }
 
-        /// <summary>看诊结束时间</summary>
+        /// <summary>诊疗结束时间</summary>
         [DisplayName("结束时间")]
         public DateTime? EndTime { get; set; }
     }
 
     /// <summary>
-    /// 看诊验证结果
+    /// 诊疗验证结果
     /// </summary>
     public class ConsultationValidationResult
     {

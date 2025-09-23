@@ -11,6 +11,9 @@ namespace LYBT.Shared.Models.Enums
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum ConsultationStatus
     {
+        /// <summary>等待开始</summary>
+        [Description("等待开始")]
+        Pending = 0,
 
         /// <summary>诊疗中</summary>
         [Description("诊疗中")]

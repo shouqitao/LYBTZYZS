@@ -156,7 +156,7 @@
                                         Margin="2"
                                         Command="{Binding DataContext.EditCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                         CommandParameter="{Binding}" />
-                                <Button Content="看诊记录"
+                                <Button Content="诊疗记录"
                                         Style="{StaticResource InfoButton}"
                                         Padding="8,4"
                                         FontSize="12"

@@ -22,7 +22,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Workbench.Core
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Workbench.Admin", "src\Client\Desktop\Workbenches\SystemWorkbench\LYBT.Desktop.Workbench.Admin.csproj", "{C1234567-1234-1234-1234-123456789002}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Workbench.Consultation", "src\Client\Desktop\Workbenches\ConsultationWorkbench\LYBT.Desktop.Workbench.Consultation.csproj", "{C1234567-1234-1234-1234-123456789003}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Workbench.Medical", "src\Client\Desktop\Workbenches\MedicalWorkbench\LYBT.Desktop.Workbench.Medical.csproj", "{C1234567-1234-1234-1234-123456789003}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.Shared.Models", "src\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj", "{91CD7DC5-E0DC-8F45-7AE9-4F1243389D2A}"
 EndProject

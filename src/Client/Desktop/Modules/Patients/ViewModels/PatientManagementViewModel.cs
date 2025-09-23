@@ -1,4 +1,4 @@
-using System.Data;
+﻿using System.Data;
 using AutoMapper;
 using LYBT.Desktop.Core.Coordinators;
 using LYBT.Desktop.Core.Helpers;
@@ -593,7 +593,7 @@ namespace LYBT.Desktop.Patients.ViewModels
                     historyInfo += $"\n【诊疗记录】\n" +
                     $"暂无历史就诊记录\n\n" +
                     $" 提示：\n" +
-                    $"• 该患者尚未有诊疗记录，可开始新的看诊流程\n" +
+                    $"• 该患者尚未有诊疗记录，可开始新的诊疗流程\n" +
                     $"• 可在患者接待或医案管理模块中创建就诊记录\n" +
                     $"• 首次就诊请详细了解病史和过敏史";
                 }

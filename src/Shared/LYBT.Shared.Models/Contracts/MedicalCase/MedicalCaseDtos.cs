@@ -32,7 +32,7 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
         [DisplayName("处方ID")]
         public Guid? PrescriptionId { get; set; }
 
-        [DisplayName("看诊时间")]
+        [DisplayName("诊疗时间")]
         public DateTime ConsultationDate { get; set; } = DateTime.Now;
 
         /// <summary>医疗案例专用状态</summary>
@@ -44,7 +44,7 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
         [StringLength(500, ErrorMessage = "备注长度不能超过500个字符")]
         public string? Remark { get; set; }
 
-        /// <summary>获取优先级 - 基于看诊时间</summary>
+        /// <summary>获取优先级 - 基于诊疗时间</summary>
         public int GetPriority()
         {
             var hoursElapsed = (DateTime.Now - ConsultationDate).TotalHours;
@@ -64,7 +64,7 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
         /// <summary>是否紧急</summary>
         public bool IsUrgent() => GetPriority() >= 3;
 
-        /// <summary>是否需要医生注意 - 基于看诊时间</summary>
+        /// <summary>是否需要医生注意 - 基于诊疗时间</summary>
         public bool NeedsDoctorAttention() => CaseStatus != MedicalCaseStatus.Closed && (DateTime.Now - ConsultationDate).TotalHours > 24;
 
         /// <summary>是否可以开始诊疗</summary>
@@ -303,7 +303,7 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
         [DisplayName("已登记数")]
         public int RegisteredCases { get; set; }
 
-        [DisplayName("看诊中数")]
+        [DisplayName("诊疗中数")]
         public int InConsultationCases { get; set; }
 
         [DisplayName("已完成数")]
@@ -312,7 +312,7 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
         [DisplayName("已取消数")]
         public int CancelledCases { get; set; }
 
-        [DisplayName("平均看诊时长(分钟)")]
+        [DisplayName("平均诊疗时长(分钟)")]
         public double AverageConsultationDuration { get; set; }
 
         [DisplayName("完成率")]
@@ -367,7 +367,7 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
         [DisplayName("完成率")]
         public decimal CompletionRate { get; set; }
 
-        [DisplayName("平均看诊时长(分钟)")]
+        [DisplayName("平均诊疗时长(分钟)")]
         public decimal AverageConsultationTime { get; set; }
 
         [DisplayName("总患者数")]
@@ -596,14 +596,14 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
     }
 
     /// <summary>
-    /// 医案看诊信息DTO
+    /// 医案诊疗信息DTO
     /// </summary>
     public class MedicalCaseConsultationInfoDto
     {
         public Guid MedicalCaseId { get; set; }
         public Guid? ConsultationId { get; set; }
 
-        [DisplayName("看诊状态")]
+        [DisplayName("诊疗状态")]
         public string ConsultationStatus { get; set; } = string.Empty;
 
         [DisplayName("诊断结果")]

@@ -7,8 +7,8 @@ namespace LYBT.Shared.Models.Contracts.Consultation
 {
 
     /// <summary>
-    /// 开始看诊DTO - 前后端共享API契约
-    /// 用于开始看诊的请求模型
+    /// 开始诊疗DTO - 前后端共享API契约
+    /// 用于开始诊疗的请求模型
     /// </summary>
     public class ConsultationStartDto
     {
@@ -31,13 +31,13 @@ namespace LYBT.Shared.Models.Contracts.Consultation
         /// <summary>用户ID（兼容旧属性）</summary>
         public Guid UserId => DoctorId;
 
-        /// <summary>预计看诊时长（分钟）</summary>
-        [Range(5, 480, ErrorMessage = "预计看诊时长必须在5-480分钟之间")]
+        /// <summary>预计诊疗时长（分钟）</summary>
+        [Range(5, 480, ErrorMessage = "预计诊疗时长必须在5-480分钟之间")]
         [DisplayName("预计时长")]
         public int EstimatedDuration { get; set; } = 30;
 
-        /// <summary>看诊类型</summary>
-        [DisplayName("看诊类型")]
+        /// <summary>诊疗类型</summary>
+        [DisplayName("诊疗类型")]
         public string? ConsultationType { get; set; }
 
         /// <summary>初步主诉</summary>
@@ -52,15 +52,15 @@ namespace LYBT.Shared.Models.Contracts.Consultation
     }
 
     /// <summary>
-    /// 完成看诊DTO - 前后端共享API契约
-    /// 用于完成看诊的请求模型
+    /// 完成诊疗DTO - 前后端共享API契约
+    /// 用于完成诊疗的请求模型
     /// </summary>
     public class ConsultationCompleteDto
     {
 
-        /// <summary>看诊ID</summary>
-        [Required(ErrorMessage = "看诊ID不能为空")]
-        [DisplayName("看诊ID")]
+        /// <summary>诊疗ID</summary>
+        [Required(ErrorMessage = "诊疗ID不能为空")]
+        [DisplayName("诊疗ID")]
         public Guid Id { get; set; }
 
         /// <summary>最终诊断</summary>
@@ -98,9 +98,9 @@ namespace LYBT.Shared.Models.Contracts.Consultation
         [DisplayName("预计复诊日期")]
         public DateTime? NextVisitDate { get; set; }
 
-        /// <summary>看诊总结</summary>
-        [StringLength(1000, ErrorMessage = "看诊总结长度不能超过1000个字符")]
-        [DisplayName("看诊总结")]
+        /// <summary>诊疗总结</summary>
+        [StringLength(1000, ErrorMessage = "诊疗总结长度不能超过1000个字符")]
+        [DisplayName("诊疗总结")]
         public string? Summary { get; set; }
 
         /// <summary>完成时间</summary>
@@ -114,7 +114,7 @@ namespace LYBT.Shared.Models.Contracts.Consultation
     }
 
     /// <summary>
-    /// 看诊查询DTO - 基础查询条件
+    /// 诊疗查询DTO - 基础查询条件
     /// </summary>
     public class ConsultationQueryDto : PagedQueryBaseDto
     {
@@ -126,8 +126,8 @@ namespace LYBT.Shared.Models.Contracts.Consultation
         [DisplayName("医生ID")]
         public Guid? DoctorId { get; set; }
 
-        /// <summary>看诊状态</summary>
-        [DisplayName("看诊状态")]
+        /// <summary>诊疗状态</summary>
+        [DisplayName("诊疗状态")]
         public ConsultationStatus? ConsultationStatus { get; set; }
 
         /// <summary>关键词搜索</summary>
@@ -136,7 +136,7 @@ namespace LYBT.Shared.Models.Contracts.Consultation
     }
 
     /// <summary>
-    /// 看诊搜索DTO - 高级搜索条件
+    /// 诊疗搜索DTO - 高级搜索条件
     /// </summary>
     public class ConsultationSearchDto : ConsultationQueryDto
     {
@@ -152,30 +152,30 @@ namespace LYBT.Shared.Models.Contracts.Consultation
         [DisplayName("诊断关键词")]
         public string? Diagnosis { get; set; }
 
-        /// <summary>看诊类型筛选</summary>
-        [DisplayName("看诊类型")]
+        /// <summary>诊疗类型筛选</summary>
+        [DisplayName("诊疗类型")]
         public string? ConsultationType { get; set; }
 
-        /// <summary>是否包含已完成的看诊</summary>
+        /// <summary>是否包含已完成的诊疗</summary>
         [DisplayName("包含已完成")]
         public bool IncludeCompleted { get; set; } = true;
 
-        /// <summary>是否包含取消的看诊</summary>
+        /// <summary>是否包含取消的诊疗</summary>
         [DisplayName("包含已取消")]
         public bool IncludeCancelled { get; set; } = false;
     }
 
 
     /// <summary>
-    /// 看诊状态更新DTO - 前后端共享API契约
-    /// 用于更新看诊状态的请求模型
+    /// 诊疗状态更新DTO - 前后端共享API契约
+    /// 用于更新诊疗状态的请求模型
     /// </summary>
     public class UpdateStatusDto
     {
 
-        /// <summary>看诊ID</summary>
-        [Required(ErrorMessage = "看诊ID不能为空")]
-        [DisplayName("看诊ID")]
+        /// <summary>诊疗ID</summary>
+        [Required(ErrorMessage = "诊疗ID不能为空")]
+        [DisplayName("诊疗ID")]
         public Guid Id { get; set; }
 
         /// <summary>新状态</summary>
@@ -199,27 +199,27 @@ namespace LYBT.Shared.Models.Contracts.Consultation
     }
 
     /// <summary>
-    /// 看诊统计DTO
+    /// 诊疗统计DTO
     /// </summary>
     public class ConsultationStatisticsDto
     {
 
-        /// <summary>总看诊次数</summary>
+        /// <summary>总诊疗次数</summary>
         public int TotalConsultations { get; set; }
 
-        /// <summary>进行中的看诊</summary>
+        /// <summary>进行中的诊疗</summary>
         public int InProgressConsultations { get; set; }
 
-        /// <summary>已完成的看诊</summary>
+        /// <summary>已完成的诊疗</summary>
         public int CompletedConsultations { get; set; }
 
-        /// <summary>已取消的看诊</summary>
+        /// <summary>已取消的诊疗</summary>
         public int CancelledConsultations { get; set; }
 
-        /// <summary>今日看诊次数</summary>
+        /// <summary>今日诊疗次数</summary>
         public int TodayConsultations { get; set; }
 
-        /// <summary>平均看诊时长（分钟）</summary>
+        /// <summary>平均诊疗时长（分钟）</summary>
         public double AverageDuration { get; set; }
 
         /// <summary>最常见诊断TOP5</summary>
@@ -233,7 +233,7 @@ namespace LYBT.Shared.Models.Contracts.Consultation
     }
 
     /// <summary>
-    /// 看诊日程DTO
+    /// 诊疗日程DTO
     /// </summary>
     public class ConsultationScheduleDto
     {
@@ -253,10 +253,10 @@ namespace LYBT.Shared.Models.Contracts.Consultation
         /// <summary>当日总预约数</summary>
         public int TotalAppointments { get; set; }
 
-        /// <summary>已完成看诊数</summary>
+        /// <summary>已完成诊疗数</summary>
         public int CompletedCount { get; set; }
 
-        /// <summary>取消看诊数</summary>
+        /// <summary>取消诊疗数</summary>
         public int CancelledCount { get; set; }
     }
 
@@ -275,7 +275,7 @@ namespace LYBT.Shared.Models.Contracts.Consultation
         /// <summary>患者姓名</summary>
         public string? PatientName { get; set; }
 
-        /// <summary>看诊状态</summary>
+        /// <summary>诊疗状态</summary>
         public ConsultationStatus Status { get; set; }
 
         /// <summary>是否可用</summary>
@@ -283,7 +283,7 @@ namespace LYBT.Shared.Models.Contracts.Consultation
     }
 
     /// <summary>
-    /// 看诊历史查询DTO - 患者看诊历史查询
+    /// 诊疗历史查询DTO - 患者诊疗历史查询
     /// </summary>
     public class ConsultationHistoryQueryDto
     {
@@ -309,7 +309,7 @@ namespace LYBT.Shared.Models.Contracts.Consultation
     }
 
     /// <summary>
-    /// 取消看诊DTO
+    /// 取消诊疗DTO
     /// </summary>
     public class CancelConsultationDto
     {

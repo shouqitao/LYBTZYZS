@@ -25,7 +25,47 @@ namespace LYBT.Desktop.Core.Constants
         /// <summary>
         /// 诊疗工作台内容区域
         /// </summary>
-        public const string ConsultationWorkbenchContentRegion = "ConsultationWorkbenchContentRegion";
+        public const string MedicalWorkbenchContentRegion = "MedicalWorkbenchContentRegion";
+
+        /// <summary>
+        /// 主Shell内容区域
+        /// </summary>
+        public const string ShellContent = "ShellContentRegion";
+        
+        /// <summary>
+        /// 诊疗工作台查询区域
+        /// </summary>
+        public const string MedicalWorkbenchQuery = "MedicalWorkbenchQueryRegion";
+        
+        /// <summary>
+        /// 工作流内容区域
+        /// </summary>
+        public const string WorkflowContent = "WorkflowContentRegion";
+        
+        /// <summary>
+        /// 工作流步骤区域
+        /// </summary>
+        public const string WorkflowSteps = "WorkflowStepsRegion";
+        
+        /// <summary>
+        /// 对话框内容区域
+        /// </summary>
+        public const string DialogContent = "DialogContentRegion";
+        
+        /// <summary>
+        /// 导航菜单区域
+        /// </summary>
+        public const string NavigationMenu = "NavigationMenuRegion";
+        
+        /// <summary>
+        /// 工具栏区域
+        /// </summary>
+        public const string Toolbar = "ToolbarRegion";
+        
+        /// <summary>
+        /// 主要内容区域别名
+        /// </summary>
+        public const string MainContent = ContentRegion;
 
         /// <summary>
         /// 获取工作台内容区域名称
@@ -37,7 +77,7 @@ namespace LYBT.Desktop.Core.Constants
             return workbenchType switch
             {
                 "SystemWorkbench" => SystemWorkbenchContentRegion,
-                "ConsultationWorkbench" => ConsultationWorkbenchContentRegion,
+                "MedicalWorkbench" => MedicalWorkbenchContentRegion,
                 _ => ContentRegion // 默认返回主内容区域
             };
         }
@@ -52,7 +92,7 @@ namespace LYBT.Desktop.Core.Constants
             return workbenchViewName switch
             {
                 "SystemWorkbenchMainView" => SystemWorkbenchContentRegion,
-                "ConsultationWorkbenchMainView" => ConsultationWorkbenchContentRegion,
+                "MedicalWorkbenchMainView" => MedicalWorkbenchContentRegion,
                 _ => ContentRegion
             };
         }

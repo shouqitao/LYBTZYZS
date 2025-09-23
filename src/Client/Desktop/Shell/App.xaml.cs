@@ -11,7 +11,7 @@ using LYBT.Desktop.Shell.ViewModels;
 using LYBT.Desktop.Shell.Views;
 using LYBT.Desktop.Users;
 using LYBT.Desktop.Workbench.Admin;
-using LYBT.Desktop.Workbench.Consultation;
+using LYBT.Desktop.Workbench.Medical;
 using Microsoft.Extensions.Logging;
 using Prism.DryIoc;
 using Prism.Events;
@@ -237,7 +237,7 @@ public partial class App : PrismApplication
         AddRoleBasedModule(moduleCatalog, nameof(SystemWorkbenchModule), typeof(SystemWorkbenchModule),
             ["Admin"]);
 
-        AddRoleBasedModule(moduleCatalog, nameof(ConsultationWorkbenchModule), typeof(ConsultationWorkbenchModule),
+        AddRoleBasedModule(moduleCatalog, nameof(MedicalWorkbenchModule), typeof(MedicalWorkbenchModule),
             ["Doctor", "Admin"]);
 
         base.ConfigureModuleCatalog(moduleCatalog);

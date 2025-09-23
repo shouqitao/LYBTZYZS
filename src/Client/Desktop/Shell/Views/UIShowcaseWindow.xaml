@@ -244,7 +244,7 @@
                         <TextBlock Text="主要按钮"
                                    Style="{StaticResource CaptionTextStyle}"
                                    Margin="0,0,0,8" />
-                        <Button Content="开始看诊"
+                        <Button Content="开始诊疗"
                                 Style="{StaticResource PrimaryButton}"
                                 Width="120" />
                     </StackPanel>
@@ -476,7 +476,7 @@
                                     <Button Content="查看病历"
                                             Style="{StaticResource TextButton}"
                                             Margin="0,0,8,0" />
-                                    <Button Content="开始看诊"
+                                    <Button Content="开始诊疗"
                                             Style="{StaticResource PrimaryButton}"
                                             Width="100" />
                                 </StackPanel>

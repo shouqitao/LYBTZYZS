@@ -1,4 +1,4 @@
-using LYBT.Desktop.Consultation.Interfaces;
+﻿using LYBT.Desktop.Consultation.Interfaces;
 using LYBT.Shared.Interfaces.Api;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
@@ -8,12 +8,12 @@ using Microsoft.Extensions.Logging;
 namespace LYBT.Desktop.Consultation.Services;
 
 /// <summary>
-/// 看诊诊断业务服务 - UltraThink双层架构业务逻辑层
+/// 诊疗诊断业务服务 - UltraThink双层架构业务逻辑层
 /// 采用UltraThink架构标准，使用C# 12现代化特性
-/// 职责：处理看诊诊断业务逻辑、CRUD操作、中医四诊数据处理、状态管理
+/// 职责：处理诊疗诊断业务逻辑、CRUD操作、中医四诊数据处理、状态管理
 /// 集成企业级错误处理和审计日志，提供完整诊断流程管理功能
 /// 支持中医四诊（望闻问切）、辨证论治、诊断记录等核心诊疗功能
-/// 适配中医诊所看诊诊断需求，确保诊疗数据完整性和临床安全性
+/// 适配中医诊所诊疗诊断需求，确保诊疗数据完整性和临床安全性
 /// </summary>
 public class ConsultationBusinessService(
     ILogger<ConsultationBusinessService> logger,
@@ -23,11 +23,11 @@ public class ConsultationBusinessService(
     private readonly IConsultationApi _consultationApi = consultationApi ?? throw new ArgumentNullException(nameof(consultationApi));
 
     /// <summary>
-    /// 创建看诊诊断业务处理
-    /// 执行完整看诊创建流程：数据验证、诊断建立、中医四诊初始化、审计记录
+    /// 创建诊疗诊断业务处理
+    /// 执行完整诊疗创建流程：数据验证、诊断建立、中医四诊初始化、审计记录
     /// </summary>
-    /// <param name="createDto">看诊创建请求信息</param>
-    /// <returns>包含新建看诊信息的业务结果</returns>
+    /// <param name="createDto">诊疗创建请求信息</param>
+    /// <returns>包含新建诊疗信息的业务结果</returns>
     /// <exception cref="ArgumentNullException">当创建请求为空时抛出</exception>
     public async Task<ServiceResult<ConsultationDto>> CreateAsync(ConsultationCreateDto createDto)
     {
@@ -36,7 +36,7 @@ public class ConsultationBusinessService(
         try
         {
             _logger.LogInformation(
-                "开始处理看诊诊断创建: 患者ID: {PatientId}, 医案ID: {MedicalCaseId}",
+                "开始处理诊疗诊断创建: 患者ID: {PatientId}, 医案ID: {MedicalCaseId}",
                 createDto.PatientId, createDto.MedicalCaseId);
 
             // 转换为StartConsultationDto
@@ -61,29 +61,29 @@ public class ConsultationBusinessService(
                     CreateTime = consultation.CreateTime,
                     UserId = consultation.UserId
                 };
-                _logger.LogInformation("看诊诊断创建成功: {ConsultationId}", consultation.Id);
-                return ServiceResult<ConsultationDto>.Success(consultationDto, "看诊诊断创建成功");
+                _logger.LogInformation("诊疗诊断创建成功: {ConsultationId}", consultation.Id);
+                return ServiceResult<ConsultationDto>.Success(consultationDto, "诊疗诊断创建成功");
             }
 
             _logger.LogWarning(
-                "看诊诊断创建HTTP请求失败: 患者ID: {PatientId}, 状态码: {StatusCode}",
+                "诊疗诊断创建HTTP请求失败: 患者ID: {PatientId}, 状态码: {StatusCode}",
                 createDto.PatientId, refitResponse.StatusCode);
-            return ServiceResult<ConsultationDto>.Failure("创建看诊诊断网络请求失败，请检查网络连接");
+            return ServiceResult<ConsultationDto>.Failure("创建诊疗诊断网络请求失败，请检查网络连接");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "看诊诊断创建过程发生异常: 患者ID: {PatientId}", createDto.PatientId);
-            return ServiceResult<ConsultationDto>.Failure($"创建看诊诊断过程发生错误: {ex.Message}");
+            _logger.LogError(ex, "诊疗诊断创建过程发生异常: 患者ID: {PatientId}", createDto.PatientId);
+            return ServiceResult<ConsultationDto>.Failure($"创建诊疗诊断过程发生错误: {ex.Message}");
         }
     }
 
     /// <summary>
-    /// 更新看诊诊断业务处理
-    /// 执行完整看诊更新流程：ID验证、数据验证、中医四诊更新、状态处理、审计记录
+    /// 更新诊疗诊断业务处理
+    /// 执行完整诊疗更新流程：ID验证、数据验证、中医四诊更新、状态处理、审计记录
     /// </summary>
-    /// <param name="id">看诊唯一标识</param>
-    /// <param name="updateDto">看诊更新请求信息</param>
-    /// <returns>包含更新后看诊信息的业务结果</returns>
+    /// <param name="id">诊疗唯一标识</param>
+    /// <param name="updateDto">诊疗更新请求信息</param>
+    /// <returns>包含更新后诊疗信息的业务结果</returns>
     /// <exception cref="ArgumentNullException">当更新请求为空时抛出</exception>
     public async Task<ServiceResult<ConsultationDto>> UpdateAsync(Guid id, ConsultationUpdateDto updateDto)
     {
@@ -91,7 +91,7 @@ public class ConsultationBusinessService(
 
         try
         {
-            _logger.LogInformation("开始处理看诊诊断更新: {ConsultationId}", id);
+            _logger.LogInformation("开始处理诊疗诊断更新: {ConsultationId}", id);
 
             var refitResponse = await _consultationApi.UpdateConsultationAsync(id, updateDto);
 
@@ -107,45 +107,45 @@ public class ConsultationBusinessService(
                     CreateTime = consultation.CreateTime,
                     UserId = consultation.UserId
                 };
-                _logger.LogInformation("看诊诊断更新成功: {ConsultationId}", id);
-                return ServiceResult<ConsultationDto>.Success(consultationDto, "看诊诊断更新成功");
+                _logger.LogInformation("诊疗诊断更新成功: {ConsultationId}", id);
+                return ServiceResult<ConsultationDto>.Success(consultationDto, "诊疗诊断更新成功");
             }
 
             _logger.LogWarning(
-                "看诊诊断更新HTTP请求失败: {ConsultationId}, 状态码: {StatusCode}",
+                "诊疗诊断更新HTTP请求失败: {ConsultationId}, 状态码: {StatusCode}",
                 id, refitResponse.StatusCode);
-            return ServiceResult<ConsultationDto>.Failure("更新看诊诊断网络请求失败，请检查网络连接");
+            return ServiceResult<ConsultationDto>.Failure("更新诊疗诊断网络请求失败，请检查网络连接");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "看诊诊断更新过程发生异常: {ConsultationId}", id);
-            return ServiceResult<ConsultationDto>.Failure($"更新看诊诊断过程发生错误: {ex.Message}");
+            _logger.LogError(ex, "诊疗诊断更新过程发生异常: {ConsultationId}", id);
+            return ServiceResult<ConsultationDto>.Failure($"更新诊疗诊断过程发生错误: {ex.Message}");
         }
     }
 
     /// <summary>
-    /// 删除看诊诊断业务处理
+    /// 删除诊疗诊断业务处理
     /// 小型诊所版本简化实现：暂不支持诊断删除以确保诊疗历史数据完整性
     /// </summary>
-    /// <param name="consultationId">看诊唯一标识</param>
+    /// <param name="consultationId">诊疗唯一标识</param>
     /// <returns>操作失败结果</returns>
     public async Task<ServiceResult<bool>> DeleteAsync(Guid consultationId)
     {
-        _logger.LogWarning("看诊诊断删除请求被拒绝: {ConsultationId} - 确保诊疗历史完整性", consultationId);
-        return ServiceResult<bool>.Failure("简单诊所版本暂不支持删除看诊诊断，确保诊疗历史数据完整性");
+        _logger.LogWarning("诊疗诊断删除请求被拒绝: {ConsultationId} - 确保诊疗历史完整性", consultationId);
+        return ServiceResult<bool>.Failure("简单诊所版本暂不支持删除诊疗诊断，确保诊疗历史数据完整性");
     }
 
     /// <summary>
-    /// 启用看诊诊断业务处理
-    /// 执行看诊状态转换：转为可用状态
+    /// 启用诊疗诊断业务处理
+    /// 执行诊疗状态转换：转为可用状态
     /// </summary>
-    /// <param name="consultationId">看诊唯一标识</param>
+    /// <param name="consultationId">诊疗唯一标识</param>
     /// <returns>状态转换结果</returns>
     public async Task<ServiceResult<bool>> EnableAsync(Guid consultationId)
     {
         try
         {
-            _logger.LogInformation("启用看诊诊断: {ConsultationId}", consultationId);
+            _logger.LogInformation("启用诊疗诊断: {ConsultationId}", consultationId);
 
             // 使用UpdateStatusAsync来启用
             var statusDto = new UpdateStatusDto { Status = ConsultationStatus.InProgress };
@@ -153,60 +153,60 @@ public class ConsultationBusinessService(
 
             if (refitResponse.IsSuccessStatusCode)
             {
-                _logger.LogInformation("看诊诊断启用成功: {ConsultationId}", consultationId);
-                return ServiceResult<bool>.Success(true, "看诊诊断启用成功");
+                _logger.LogInformation("诊疗诊断启用成功: {ConsultationId}", consultationId);
+                return ServiceResult<bool>.Success(true, "诊疗诊断启用成功");
             }
 
             _logger.LogWarning(
-                "看诊诊断启用HTTP请求失败: {ConsultationId}, 状态码: {StatusCode}",
+                "诊疗诊断启用HTTP请求失败: {ConsultationId}, 状态码: {StatusCode}",
                 consultationId, refitResponse.StatusCode);
-            return ServiceResult<bool>.Failure("启用看诊诊断网络请求失败，请检查网络连接");
+            return ServiceResult<bool>.Failure("启用诊疗诊断网络请求失败，请检查网络连接");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "看诊诊断启用过程发生异常: {ConsultationId}", consultationId);
-            return ServiceResult<bool>.Failure($"启用看诊诊断过程发生错误: {ex.Message}");
+            _logger.LogError(ex, "诊疗诊断启用过程发生异常: {ConsultationId}", consultationId);
+            return ServiceResult<bool>.Failure($"启用诊疗诊断过程发生错误: {ex.Message}");
         }
     }
 
     /// <summary>
-    /// 禁用看诊诊断业务处理
-    /// 执行看诊状态转换：转为禁用状态
+    /// 禁用诊疗诊断业务处理
+    /// 执行诊疗状态转换：转为禁用状态
     /// </summary>
-    /// <param name="consultationId">看诊唯一标识</param>
+    /// <param name="consultationId">诊疗唯一标识</param>
     /// <returns>状态转换结果</returns>
     public async Task<ServiceResult<bool>> Disable(Guid consultationId)
     {
         try
         {
-            _logger.LogInformation("禁用看诊诊断: {ConsultationId}", consultationId);
+            _logger.LogInformation("禁用诊疗诊断: {ConsultationId}", consultationId);
 
             var refitResponse = await _consultationApi.DeleteAsync(consultationId);
 
             if (refitResponse.IsSuccessStatusCode)
             {
-                _logger.LogInformation("看诊诊断禁用成功: {ConsultationId}", consultationId);
-                return ServiceResult<bool>.Success(true, "看诊诊断禁用成功");
+                _logger.LogInformation("诊疗诊断禁用成功: {ConsultationId}", consultationId);
+                return ServiceResult<bool>.Success(true, "诊疗诊断禁用成功");
             }
 
             _logger.LogWarning(
-                "看诊诊断禁用HTTP请求失败: {ConsultationId}, 状态码: {StatusCode}",
+                "诊疗诊断禁用HTTP请求失败: {ConsultationId}, 状态码: {StatusCode}",
                 consultationId, refitResponse.StatusCode);
-            return ServiceResult<bool>.Failure("禁用看诊诊断网络请求失败，请检查网络连接");
+            return ServiceResult<bool>.Failure("禁用诊疗诊断网络请求失败，请检查网络连接");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "看诊诊断禁用过程发生异常: {ConsultationId}", consultationId);
-            return ServiceResult<bool>.Failure($"禁用看诊诊断过程发生错误: {ex.Message}");
+            _logger.LogError(ex, "诊疗诊断禁用过程发生异常: {ConsultationId}", consultationId);
+            return ServiceResult<bool>.Failure($"禁用诊疗诊断过程发生错误: {ex.Message}");
         }
     }
 
     /// <summary>
-    /// 开始看诊诊断业务处理
-    /// 执行开始看诊流程：数据验证、看诊开始、状态初始化
+    /// 开始诊疗诊断业务处理
+    /// 执行开始诊疗流程：数据验证、诊疗开始、状态初始化
     /// </summary>
-    /// <param name="startDto">开始看诊请求信息</param>
-    /// <returns>包含开始看诊后的看诊信息的业务结果</returns>
+    /// <param name="startDto">开始诊疗请求信息</param>
+    /// <returns>包含开始诊疗后的诊疗信息的业务结果</returns>
     /// <exception cref="ArgumentNullException">当开始请求为空时抛出</exception>
     public async Task<ServiceResult<ConsultationDto>> StartAsync(ConsultationStartDto startDto)
     {
@@ -215,7 +215,7 @@ public class ConsultationBusinessService(
         try
         {
             _logger.LogInformation(
-                "开始处理看诊开始: 患者ID: {PatientId}, 医案ID: {MedicalCaseId}",
+                "开始处理诊疗开始: 患者ID: {PatientId}, 医案ID: {MedicalCaseId}",
                 startDto.PatientId, startDto.MedicalCaseId);
 
             var refitResponse = await _consultationApi.StartConsultationAsync(startDto);
@@ -233,31 +233,31 @@ public class ConsultationBusinessService(
                     UpdateTime = consultation.UpdateTime
                 };
 
-                _logger.LogInformation("看诊开始成功: {ConsultationId}", consultationDto.Id);
-                return ServiceResult<ConsultationDto>.Success(consultationDto, "看诊开始成功");
+                _logger.LogInformation("诊疗开始成功: {ConsultationId}", consultationDto.Id);
+                return ServiceResult<ConsultationDto>.Success(consultationDto, "诊疗开始成功");
             }
 
             _logger.LogWarning(
-                "看诊开始HTTP请求失败: 患者ID: {PatientId}, 状态码: {StatusCode}",
+                "诊疗开始HTTP请求失败: 患者ID: {PatientId}, 状态码: {StatusCode}",
                 startDto.PatientId, refitResponse.StatusCode);
-            return ServiceResult<ConsultationDto>.Failure("开始看诊网络请求失败，请检查网络连接");
+            return ServiceResult<ConsultationDto>.Failure("开始诊疗网络请求失败，请检查网络连接");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "看诊开始过程发生异常: 患者ID: {PatientId}", startDto.PatientId);
-            return ServiceResult<ConsultationDto>.Failure($"开始看诊过程发生错误: {ex.Message}");
+            _logger.LogError(ex, "诊疗开始过程发生异常: 患者ID: {PatientId}", startDto.PatientId);
+            return ServiceResult<ConsultationDto>.Failure($"开始诊疗过程发生错误: {ex.Message}");
         }
     }
 
     #region DT-011: 取消令牌支持重载方法
 
     /// <summary>
-    /// 创建看诊诊断业务处理 - 支持取消令牌
+    /// 创建诊疗诊断业务处理 - 支持取消令牌
     /// DT-011: 长时间操作取消支持，提升用户体验
     /// </summary>
-    /// <param name="createDto">看诊诊断创建请求信息</param>
+    /// <param name="createDto">诊疗诊断创建请求信息</param>
     /// <param name="cancellationToken">取消令牌</param>
-    /// <returns>包含新建看诊诊断信息的业务结果</returns>
+    /// <returns>包含新建诊疗诊断信息的业务结果</returns>
     public async Task<ServiceResult<ConsultationDto>> CreateAsync(ConsultationCreateDto createDto, CancellationToken cancellationToken = default)
     {
         // 委托到原始方法，CancellationToken通过方法链传递
@@ -265,13 +265,13 @@ public class ConsultationBusinessService(
     }
 
     /// <summary>
-    /// 更新看诊诊断业务处理 - 支持取消令牌
+    /// 更新诊疗诊断业务处理 - 支持取消令牌
     /// DT-011: 长时间操作取消支持，提升用户体验
     /// </summary>
-    /// <param name="id">看诊诊断唯一标识</param>
-    /// <param name="updateDto">看诊诊断更新请求信息</param>
+    /// <param name="id">诊疗诊断唯一标识</param>
+    /// <param name="updateDto">诊疗诊断更新请求信息</param>
     /// <param name="cancellationToken">取消令牌</param>
-    /// <returns>包含更新后看诊诊断信息的业务结果</returns>
+    /// <returns>包含更新后诊疗诊断信息的业务结果</returns>
     public async Task<ServiceResult<ConsultationDto>> UpdateAsync(Guid id, ConsultationUpdateDto updateDto, CancellationToken cancellationToken = default)
     {
         // 委托到原始方法，CancellationToken通过方法链传递

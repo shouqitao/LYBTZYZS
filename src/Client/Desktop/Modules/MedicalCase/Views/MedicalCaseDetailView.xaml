@@ -48,7 +48,7 @@
                             Margin="4">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="🩺" VerticalAlignment="Center" FontSize="16" />
-                            <TextBlock Text="开始看诊" Margin="4,0,0,0" />
+                            <TextBlock Text="开始诊疗" Margin="4,0,0,0" />
                         </StackPanel>
                     </Button>
 
@@ -166,15 +166,15 @@
                     <Expander Header="诊疗记录" IsExpanded="True">
                         <Grid Margin="16">
                             <TabControl>
-                                <!-- 看诊记录 -->
-                                <TabItem Header="看诊记录">
+                                <!-- 诊疗记录 -->
+                                <TabItem Header="诊疗记录">
                                     <DataGrid ItemsSource="{Binding ConsultationHistory}"
                                               SelectedItem="{Binding SelectedConsultation}"
                                               AutoGenerateColumns="False"
                                               CanUserAddRows="False"
                                               MaxHeight="300">
                                         <DataGrid.Columns>
-                                            <DataGridTextColumn Header="看诊时间"
+                                            <DataGridTextColumn Header="诊疗时间"
                                                                 Binding="{Binding ConsultationTime}"
                                                                 Width="150" />
                                             <DataGridTextColumn Header="医生"

@@ -1,26 +1,26 @@
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Input;
 using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.ViewModels.Base;
-using LYBT.Desktop.Workbench.Consultation.Navigation;
+using LYBT.Desktop.Workbench.Medical.Navigation;
 using LYBT.Desktop.Workbench.Core;
 using LYBT.Shared.Interfaces.Services;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Regions;
 
-namespace LYBT.Desktop.Workbench.Consultation.ViewModels
+namespace LYBT.Desktop.Workbench.Medical.ViewModels
 {
 
     /// <summary>
-    /// 看诊工作台主视图模型
-    /// 为医生提供专业的看诊相关功能导航
+    /// 诊疗工作台主视图模型
+    /// 为医生提供专业的诊疗相关功能导航
     /// </summary>
-    public class ConsultationWorkbenchMainViewModel : ServiceViewModel
+    public class MedicalWorkbenchMainViewModel : ServiceViewModel
     {
         private readonly IRegionManager _regionManager;
         private readonly IWorkbenchRouter _workbenchRouter;
-        private readonly IConsultationWorkbenchNavigator _navigator;
+        private readonly IMedicalWorkbenchNavigator _navigator;
         private readonly IPatientService? _patientService;
 
         #region Properties
@@ -62,11 +62,11 @@ namespace LYBT.Desktop.Workbench.Consultation.ViewModels
 
         #endregion Commands
 
-        public ConsultationWorkbenchMainViewModel(
+        public MedicalWorkbenchMainViewModel(
             IRegionManager regionManager,
             IEventAggregator eventAggregator,
             IWorkbenchRouter workbenchRouter,
-            IConsultationWorkbenchNavigator navigator,
+            IMedicalWorkbenchNavigator navigator,
             IErrorHandlingService errorHandlingService,
             IPatientService? patientService = null)
             : base(eventAggregator, errorHandlingService)
@@ -115,14 +115,14 @@ namespace LYBT.Desktop.Workbench.Consultation.ViewModels
         {
             try
             {
-                // 开始看诊 - 先导航到患者管理，让医生选择患者
+                // 开始诊疗 - 先导航到患者管理，让医生选择患者
                 _navigator.NavigateToPatients();
 
                 // TODO: 可以考虑显示今日预约患者列表
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"开始看诊失败: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"开始诊疗失败: {ex.Message}");
             }
         }
 
@@ -146,7 +146,7 @@ namespace LYBT.Desktop.Workbench.Consultation.ViewModels
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"导航到看诊管理失败: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"导航到诊疗管理失败: {ex.Message}");
             }
         }
 
@@ -209,7 +209,7 @@ namespace LYBT.Desktop.Workbench.Consultation.ViewModels
                 // TODO: 实际项目中应该从服务加载真实数据
                 // 这里使用模拟数据作为示例
                 NewPatientsCount = 3; // 新患者数量
-                TodayConsultationsCount = 8; // 今日看诊数量
+                TodayConsultationsCount = 8; // 今日诊疗数量
 
                 // 更新可见性属性
                 RaisePropertyChanged(nameof(PatientsNotificationVisibility));

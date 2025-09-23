@@ -1,4 +1,4 @@
-using AutoMapper;
+﻿using AutoMapper;
 using LYBT.Desktop.Core.Constants;
 using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.Services.Navigation;
@@ -341,12 +341,12 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
             try
             {
-                // UltraThink v2.0: 更新状态为看诊中 - 使用CompleteAsync方法
+                // UltraThink v2.0: 更新状态为诊疗中 - 使用CompleteAsync方法
                 var result = await _medicalCaseService.UpdateStatus(MedicalCase.Id, (int)MedicalCaseStatus.Active);
 
                 if (result.IsSuccess)
                 {
-                    // 导航到看诊界面 - 使用Task.Run包装以修复CS1998警告
+                    // 导航到诊疗界面 - 使用Task.Run包装以修复CS1998警告
                     await Task.Run(() =>
                     {
                         var navigationParameters = new NavigationParameters
@@ -355,18 +355,18 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                             { "PatientId", MedicalCase.PatientId },
                             { "ConsultationMode", "Start" }
                         };
-                        _navigationService.NavigateTo(RegionNames.ConsultationWorkbenchContentRegion, "ConsultationMainView", navigationParameters);
+                        _navigationService.NavigateTo(RegionNames.MedicalWorkbenchContentRegion, "ConsultationMainView", navigationParameters);
                     });
                 }
                 else
                 {
-                    await _dialogService.ShowErrorAsync(result.ErrorMessage ?? "无法开始看诊", "错误");
+                    await _dialogService.ShowErrorAsync(result.ErrorMessage ?? "无法开始诊疗", "错误");
                 }
             }
             catch (Exception ex)
             {
-                HandleError("开始看诊", ex);
-                await _dialogService.ShowErrorAsync($"开始看诊失败: {ex.Message}", "错误");
+                HandleError("开始诊疗", ex);
+                await _dialogService.ShowErrorAsync($"开始诊疗失败: {ex.Message}", "错误");
             }
         }
 
@@ -495,7 +495,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             return status?.ToLower() switch
             {
                 "registered" or "已挂号" => MedicalCaseStatus.Active,
-                "inconsultation" or "看诊中" => MedicalCaseStatus.Active,
+                "inconsultation" or "诊疗中" => MedicalCaseStatus.Active,
                 "completed" or "已完成" => MedicalCaseStatus.Closed,
                 "cancelled" or "已取消" => MedicalCaseStatus.Closed,
                 _ => MedicalCaseStatus.Active

@@ -17,7 +17,7 @@
     <Window.InputBindings>
         <!-- Ctrl+N: 快速添加患者 -->
         <KeyBinding Key="N" Modifiers="Ctrl" Command="{Binding QuickAddPatientCommand}" />
-        <!-- Ctrl+Shift+C: 快速开始看诊 -->
+        <!-- Ctrl+Shift+C: 快速开始诊疗 -->
         <KeyBinding Key="C" Modifiers="Ctrl+Shift" Command="{Binding QuickStartConsultationCommand}" />
         <!-- F1: 显示帮助 -->
         <KeyBinding Key="F1" Command="{Binding ShowHelpCommand}" />

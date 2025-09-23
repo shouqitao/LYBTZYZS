@@ -1,4 +1,4 @@
-using LYBT.Shared.Models.Enums;
+﻿using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Desktop.Workbench.Core;
 
@@ -37,12 +37,12 @@ public class WorkbenchRouter : IWorkbenchRouter
         ]);
 
         // 医生工作台 - 医生角色别名
-        RegisterWorkbench("用户", "ConsultationWorkbenchMainView", [
+        RegisterWorkbench("用户", "MedicalWorkbenchMainView", [
             "Patients", "Consultation", "Prescriptions", "Formula", "MedicalCase"
         ]);
 
         // 医生角色别名
-        RegisterWorkbench("医生", "ConsultationWorkbenchMainView", [
+        RegisterWorkbench("医生", "MedicalWorkbenchMainView", [
             "Patients", "Consultation", "Prescriptions", "Formula", "MedicalCase"
         ]);
     }
@@ -57,7 +57,7 @@ public class WorkbenchRouter : IWorkbenchRouter
     {
         if (string.IsNullOrWhiteSpace(role))
         {
-            return "ConsultationWorkbenchMainView"; // 默认视图
+            return "MedicalWorkbenchMainView"; // 默认视图
         }
 
         // UltraThink Phase 4.1: 优先使用UserRole枚举映射
@@ -183,7 +183,7 @@ public class WorkbenchRouter : IWorkbenchRouter
             new NavigationItem
             {
                 Id = "consultation",
-                DisplayName = "看诊记录",
+                DisplayName = "诊疗记录",
                 Icon = "\uE8D4", // 检查图标
                 ViewName = "ConsultationManagementView", // 修复：使用管理模块视图
                 Module = "Consultation",
@@ -224,7 +224,7 @@ public class WorkbenchRouter : IWorkbenchRouter
 
     /// <summary>
     /// 获取医生角色导航项
-    /// 核心诊疗功能：看诊、患者档案、处方管理、病历查询
+    /// 核心诊疗功能：诊疗、患者档案、处方管理、病历查询
     /// </summary>
     /// <returns>医生导航项集合</returns>
     private IEnumerable<NavigationItem> GetDoctorNavigationItems()
@@ -236,7 +236,7 @@ public class WorkbenchRouter : IWorkbenchRouter
             new NavigationItem
             {
                 Id = "consultation",
-                DisplayName = "看诊",
+                DisplayName = "诊疗",
                 Icon = "Consultation",
                 ViewName = "ConsultationMainView",
                 Module = "Consultation",
@@ -362,9 +362,9 @@ public class WorkbenchRouter : IWorkbenchRouter
         return workbench switch
         {
             "SystemWorkbenchMainView" => "UserManagementView", // 管理员默认进入用户管理
-            "ConsultationWorkbenchMainView" => "ConsultationMainView", // 医生默认进入看诊界面
+            "MedicalWorkbenchMainView" => "ConsultationMainView", // 医生默认进入诊疗界面
             "ReceptionWorkbenchMainView" => "PatientManagementView", // 前台默认进入患者管理
-            _ => "ConsultationMainView" // 默认看诊界面
+            _ => "ConsultationMainView" // 默认诊疗界面
         };
     }
 
@@ -508,7 +508,7 @@ public static class WorkbenchPermissionMapper
         // 医生 - 诊疗工作台
         [UserRole.Doctor] = new()
         {
-            WorkbenchView = "ConsultationWorkbenchMainView",
+            WorkbenchView = "MedicalWorkbenchMainView",
             AccessibleModules = [
                 "Patients", "Consultation", "Prescriptions", "Formula", "MedicalCase"
             ],
@@ -539,7 +539,7 @@ public static class WorkbenchPermissionMapper
     {
         return UserRoleWorkbenchMap.TryGetValue(role, out var permission)
             ? permission.WorkbenchView
-            : "ConsultationWorkbenchMainView"; // 默认诊疗工作台
+            : "MedicalWorkbenchMainView"; // 默认诊疗工作台
     }
 
     /// <summary>

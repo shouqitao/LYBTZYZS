@@ -59,7 +59,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Shared.Utilities", "sr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Workbench.Core", "src\Client\Desktop\Workbenches\Core\LYBT.Desktop.Workbench.Core.csproj", "{88888888-8888-8888-8888-888888888888}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Workbench.Consultation", "src\Client\Desktop\Workbenches\ConsultationWorkbench\LYBT.Desktop.Workbench.Consultation.csproj", "{AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Workbench.Consultation", "src\Client\Desktop\Workbenches\MedicalWorkbench\LYBT.Desktop.Workbench.Consultation.csproj", "{AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.Shared.Interfaces", "src\Shared\LYBT.Shared.Interfaces\LYBT.Shared.Interfaces.csproj", "{F037F0D0-FCFF-4320-975E-3E3F1AC0DCE8}"
 EndProject

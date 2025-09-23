@@ -27,7 +27,7 @@ MedicalCaseModule : IModule        // src\Client\Desktop\Modules\MedicalCase\
 PatientsModule : IModule           // src\Client\Desktop\Modules\Patients\
 PrescriptionsModule : IModule      // src\Client\Desktop\Modules\Prescriptions\
 UsersModule : IModule              // src\Client\Desktop\Modules\Users\
-ConsultationWorkbenchModule : IModule  // Workbenches\ConsultationWorkbench\
+MedicalWorkbenchModule : IModule  // Workbenches\MedicalWorkbench\
 SystemWorkbenchModule : IModule       // Workbenches\SystemWorkbench\
 
 // 业务服务Module（8个）- 实现IService接口
@@ -135,10 +135,10 @@ _regionManager.RequestNavigate(RegionNames.SystemWorkbenchContentRegion, "Formul
 _regionManager.RequestNavigate(RegionNames.SystemWorkbenchContentRegion, "HerbManagementView");
 
 // MedicalCaseDetailViewModel.cs
-_regionManager.RequestNavigate(RegionNames.ConsultationWorkbenchContentRegion, "ConsultationMainView");
+_regionManager.RequestNavigate(RegionNames.MedicalWorkbenchContentRegion, "ConsultationMainView");
 
 // 部分集中管理（Workbench）
-ConsultationWorkbenchNavigator  // 部分集中
+MedicalWorkbenchNavigator  // 部分集中
 SystemWorkbenchNavigator        // 部分集中
 ```
 

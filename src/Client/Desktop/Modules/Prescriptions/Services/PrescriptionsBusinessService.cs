@@ -1,4 +1,4 @@
-using LYBT.Desktop.Prescriptions.Interfaces;
+﻿using LYBT.Desktop.Prescriptions.Interfaces;
 using LYBT.Shared.Interfaces.Api;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
@@ -33,7 +33,7 @@ public class PrescriptionsBusinessService(
         ArgumentNullException.ThrowIfNull(createDto, nameof(createDto));
 
         _logger.LogInformation(
-            "处方创建请求: 患者ID: {PatientId}, 看诊ID: {ConsultationId}",
+            "处方创建请求: 患者ID: {PatientId}, 诊疗ID: {ConsultationId}",
             createDto.PatientId, createDto.ConsultationId);
 
         try

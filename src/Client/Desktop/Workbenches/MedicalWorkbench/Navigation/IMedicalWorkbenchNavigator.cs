@@ -1,11 +1,11 @@
-namespace LYBT.Desktop.Workbench.Consultation.Navigation
+﻿namespace LYBT.Desktop.Workbench.Medical.Navigation
 {
 
     /// <summary>
-    /// 看诊工作台导航接口
-    /// 为医生提供专业的看诊相关功能导航
+    /// 诊疗工作台导航接口
+    /// 为医生提供专业的诊疗相关功能导航
     /// </summary>
-    public interface IConsultationWorkbenchNavigator
+    public interface IMedicalWorkbenchNavigator
     {
 
         /// <summary>
@@ -14,7 +14,7 @@ namespace LYBT.Desktop.Workbench.Consultation.Navigation
         void NavigateToPatients();
 
         /// <summary>
-        /// 导航到看诊管理
+        /// 导航到诊疗管理
         /// </summary>
         void NavigateToConsultations();
 

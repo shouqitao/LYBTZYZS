@@ -9,7 +9,7 @@ namespace LYBT.Desktop.Core.Services.Navigation;
 /// 统一管理所有导航操作，提供导航历史记录和状态管理
 /// 重构：Prism 8.1.97架构优化，解决导航逻辑分散问题
 /// </summary>
-public class NavigationService : INavigationService
+public class NavigationService : ITypedNavigationService
 {
     private readonly IRegionManager _regionManager;
     private readonly ILogger<NavigationService> _logger;
@@ -240,4 +240,138 @@ public class NavigationService : INavigationService
     {
         NavigationFailed?.Invoke(this, e);
     }
+
+    #region 强类型导航方法实现
+
+    /// <inheritdoc/>
+    public void NavigateTo<TContext>(string viewName, TContext context) where TContext : NavigationRequest
+    {
+        NavigateTo<TContext>(DefaultContentRegion, viewName, context);
+    }
+
+    /// <inheritdoc/>
+    public void NavigateTo<TContext>(string regionName, string viewName, TContext context) where TContext : NavigationRequest
+    {
+        // 将强类型上下文转换为NavigationParameters
+        var parameters = ConvertToNavigationParameters(context);
+        NavigateTo(regionName, viewName, parameters);
+    }
+
+    /// <inheritdoc/>
+    public async Task NavigateToAsync<TContext>(string viewName, TContext context) where TContext : NavigationRequest
+    {
+        await NavigateToAsync<TContext>(DefaultContentRegion, viewName, context);
+    }
+
+    /// <inheritdoc/>
+    public async Task NavigateToAsync<TContext>(string regionName, string viewName, TContext context) where TContext : NavigationRequest
+    {
+        var parameters = ConvertToNavigationParameters(context);
+        await NavigateToAsync(regionName, viewName, parameters);
+    }
+
+    /// <inheritdoc/>
+    public void NavigateToPatient(string viewName, Guid patientId, NavigationAction action = NavigationAction.View)
+    {
+        var context = new PatientNavigationRequest 
+        { 
+            PatientId = patientId,
+            Action = action
+        };
+        NavigateTo(viewName, context);
+    }
+
+    /// <inheritdoc/>
+    public void NavigateToMedical(string viewName, Guid patientId, Guid? medicalCaseId = null, NavigationAction action = NavigationAction.View)
+    {
+        var context = new MedicalNavigationRequest
+        {
+            PatientId = patientId,
+            MedicalCaseId = medicalCaseId,
+            Action = action
+        };
+        NavigateTo(viewName, context);
+    }
+
+    /// <inheritdoc/>
+    public void NavigateToManagement(string viewName, string entityType, Guid? entityId = null, NavigationAction action = NavigationAction.View)
+    {
+        var context = new ManagementNavigationRequest
+        {
+            EntityType = entityType,
+            EntityId = entityId ?? Guid.Empty,
+            Action = action
+        };
+        NavigateTo(viewName, context);
+    }
+
+    /// <summary>
+    /// 将强类型上下文转换为NavigationParameters
+    /// </summary>
+    private Prism.Regions.NavigationParameters ConvertToNavigationParameters(NavigationRequest context)
+    {
+        var parameters = new Prism.Regions.NavigationParameters();
+
+        // 添加通用属性
+        parameters.Add("Action", context.Action.ToString());
+        parameters.Add("IsWorkflowMode", context.IsWorkflowMode);
+        
+        if (!string.IsNullOrEmpty(context.SourceView))
+        {
+            parameters.Add("SourceView", context.SourceView);
+        }
+
+        // 根据具体类型添加特定属性
+        switch (context)
+        {
+            case PatientNavigationRequest patientContext:
+                parameters.Add("PatientId", patientContext.PatientId);
+                if (!string.IsNullOrEmpty(patientContext.PatientName))
+                {
+                    parameters.Add("PatientName", patientContext.PatientName);
+                }
+                break;
+
+            case MedicalNavigationRequest medicalContext:
+                parameters.Add("PatientId", medicalContext.PatientId);
+                if (medicalContext.MedicalCaseId.HasValue)
+                {
+                    parameters.Add("MedicalCaseId", medicalContext.MedicalCaseId.Value);
+                }
+                if (medicalContext.ConsultationId.HasValue)
+                {
+                    parameters.Add("ConsultationId", medicalContext.ConsultationId.Value);
+                }
+                if (medicalContext.PrescriptionId.HasValue)
+                {
+                    parameters.Add("PrescriptionId", medicalContext.PrescriptionId.Value);
+                }
+                break;
+
+            case WorkflowNavigationRequest workflowContext:
+                parameters.Add("CurrentStep", workflowContext.CurrentStep);
+                if (!string.IsNullOrEmpty(workflowContext.TargetStep))
+                {
+                    parameters.Add("TargetStep", workflowContext.TargetStep);
+                }
+                if (workflowContext.WorkflowData != null)
+                {
+                    parameters.Add("WorkflowData", workflowContext.WorkflowData);
+                }
+                break;
+
+            case ManagementNavigationRequest managementContext:
+                parameters.Add("EntityId", managementContext.EntityId);
+                parameters.Add("EntityType", managementContext.EntityType);
+                if (managementContext.Filter != null)
+                {
+                    parameters.Add("Filter", managementContext.Filter);
+                }
+                break;
+        }
+
+        return parameters;
+    }
+
+    #endregion
 }

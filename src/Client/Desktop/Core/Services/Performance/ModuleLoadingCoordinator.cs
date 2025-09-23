@@ -63,7 +63,7 @@ namespace LYBT.Desktop.Core.Services.Performance
             ["PrescriptionsModule"] = ModuleLoadingPriority.Medium,
             ["HerbsModule"] = ModuleLoadingPriority.Medium,
             ["FormulaModule"] = ModuleLoadingPriority.Low,
-            ["ConsultationWorkbenchModule"] = ModuleLoadingPriority.Low
+            ["MedicalWorkbenchModule"] = ModuleLoadingPriority.Low
         };
 
         public ModuleLoadingCoordinator(IModuleManager moduleManager, ILogger<ModuleLoadingCoordinator> logger)
@@ -243,7 +243,7 @@ namespace LYBT.Desktop.Core.Services.Performance
             // 基于现有架构的模块依赖关系
             return moduleName switch
             {
-                "ConsultationWorkbenchModule" => new() { "PatientsModule", "ConsultationModule", "MedicalCaseModule" },
+                "MedicalWorkbenchModule" => new() { "PatientsModule", "ConsultationModule", "MedicalCaseModule" },
                 "PrescriptionsModule" => new() { "HerbsModule", "FormulaModule" },
                 "MedicalCaseModule" => new() { "PatientsModule", "ConsultationModule" },
                 _ => new List<string>()

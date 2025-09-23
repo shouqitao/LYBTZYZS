@@ -1,4 +1,4 @@
-using LYBT.Desktop.Core.Constants;
+﻿using LYBT.Desktop.Core.Constants;
 using LYBT.Desktop.Core.Events;
 using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.Services.Navigation;
@@ -280,14 +280,14 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                         Data = CurrentMedicalCaseId
                     });
 
-                // 导航回看诊模块
+                // 导航回诊疗模块
                 var navigationParameters = new Prism.Regions.NavigationParameters();
                 if (HasMedicalCase)
                 {
                     navigationParameters.Add("MedicalCaseId", CurrentMedicalCaseId);
                 }
 
-                _navigationService.NavigateTo(RegionNames.ConsultationWorkbenchContentRegion, "ConsultationMainView", navigationParameters);
+                _navigationService.NavigateTo(RegionNames.MedicalWorkbenchContentRegion, "ConsultationMainView", navigationParameters);
             }
             catch (Exception ex)
             {

@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Windows.Input;
 using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.ViewModels.Base;
@@ -11,8 +11,8 @@ namespace LYBT.Desktop.Consultation.ViewModels
 {
 
     /// <summary>
-    /// 看诊记录管理视图模型 - 简化版
-    /// 只负责显示和基本管理看诊记录，不包含复杂的流程控制
+    /// 诊疗记录管理视图模型 - 简化版
+    /// 只负责显示和基本管理诊疗记录，不包含复杂的流程控制
     /// </summary>
     public class ConsultationManagementViewModel : SessionAwareViewModel
     {
@@ -101,10 +101,10 @@ namespace LYBT.Desktop.Consultation.ViewModels
             }
             catch (Exception ex)
             {
-                LogError(ex, "初始化看诊管理失败");
+                LogError(ex, "初始化诊疗管理失败");
 
                 // 提供用户友好的错误提示
-                ShowError("看诊管理模块初始化失败，请尝试刷新页面");
+                ShowError("诊疗管理模块初始化失败，请尝试刷新页面");
             }
         }
 
@@ -141,7 +141,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
             }
             catch (Exception ex)
             {
-                LogError(ex, "加载看诊记录失败");
+                LogError(ex, "加载诊疗记录失败");
                 ShowError("加载数据失败，请重试");
             }
             finally
@@ -166,7 +166,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
             if (SelectedConsultation != null)
             {
                 // 简单的详情显示，不涉及复杂导航
-                ShowInfo($"看诊记录详情:\n患者ID: {SelectedConsultation.PatientId}\n看诊时间: {SelectedConsultation.StartTime:yyyy-MM-dd HH:mm}\n诊断: {SelectedConsultation.TCMDiagnosis ?? "暂无"}");
+                ShowInfo($"诊疗记录详情:\n患者ID: {SelectedConsultation.PatientId}\n诊疗时间: {SelectedConsultation.StartTime:yyyy-MM-dd HH:mm}\n诊断: {SelectedConsultation.TCMDiagnosis ?? "暂无"}");
             }
         }
 

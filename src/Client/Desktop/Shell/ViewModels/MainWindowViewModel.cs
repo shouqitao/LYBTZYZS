@@ -1,4 +1,4 @@
-using System.Windows;
+﻿using System.Windows;
 using LYBT.Desktop.Core.Constants;
 using LYBT.Desktop.Core.Events;
 using LYBT.Desktop.Core.Interfaces.Services;
@@ -118,7 +118,7 @@ public class MainWindowViewModel : ServiceViewModel
     /// <summary>快速添加患者命令 (Ctrl+N)</summary>
     public DelegateCommand QuickAddPatientCommand { get; set; }
 
-    /// <summary>快速开始看诊命令 (Ctrl+Shift+C)</summary>
+    /// <summary>快速开始诊疗命令 (Ctrl+Shift+C)</summary>
     public DelegateCommand QuickStartConsultationCommand { get; set; }
 
     /// <summary>显示帮助命令 (F1)</summary>
@@ -444,7 +444,7 @@ public class MainWindowViewModel : ServiceViewModel
         else
         {
             // 其他角色默认为医生工作台
-            workbenchView = "ConsultationWorkbenchMainView";
+            workbenchView = "MedicalWorkbenchMainView";
             roleDisplay = "医生";
         }
 
@@ -502,7 +502,7 @@ public class MainWindowViewModel : ServiceViewModel
             }
             else
             {
-                System.Diagnostics.Debug.WriteLine(" 加载ConsultationWorkbenchModule模块...");
+                System.Diagnostics.Debug.WriteLine(" 加载MedicalWorkbenchModule模块...");
                 await app.LoadRoleBasedModulesAsync(SystemConstants.DoctorRole);
             }
 
@@ -571,27 +571,27 @@ public class MainWindowViewModel : ServiceViewModel
     }
 
     /// <summary>
-    /// 快速开始看诊 (Ctrl+Shift+C)
+    /// 快速开始诊疗 (Ctrl+Shift+C)
     /// </summary>
     private async Task ExecuteQuickStartConsultationAsync()
     {
         try
         {
-            // 导航到看诊工作台
-            _regionManager.RequestNavigate(RegionNames.ContentRegion, "ConsultationWorkbenchMainView", navigationResult =>
+            // 导航到诊疗工作台
+            _regionManager.RequestNavigate(RegionNames.ContentRegion, "MedicalWorkbenchMainView", navigationResult =>
             {
                 if (navigationResult.Result == true)
                 {
-                    // 成功导航后，可以发送事件触发快速开始看诊流程
+                    // 成功导航后，可以发送事件触发快速开始诊疗流程
                     // TODO: QuickStartConsultationEvent 已移除，需要使用新的事件机制
                 }
             });
 
-            await _servicesFacade.CustomDialogService.ShowInformationAsync("已切换到看诊工作台，准备开始看诊", "快速操作");
+            await _servicesFacade.CustomDialogService.ShowInformationAsync("已切换到诊疗工作台，准备开始诊疗", "快速操作");
         }
         catch (Exception ex)
         {
-            await _servicesFacade.CustomDialogService.ShowErrorAsync($"快速开始看诊失败：{ex.Message}", "错误");
+            await _servicesFacade.CustomDialogService.ShowErrorAsync($"快速开始诊疗失败：{ex.Message}", "错误");
         }
     }
 
@@ -604,7 +604,7 @@ public class MainWindowViewModel : ServiceViewModel
         {
             var helpMessage = "系统快捷键说明：\n\n" +
             "• Ctrl+N - 快速添加患者\n" +
-            "• Ctrl+Shift+C - 快速开始看诊\n" +
+            "• Ctrl+Shift+C - 快速开始诊疗\n" +
             "• F1 - 显示帮助\n" +
             "• Alt+F4 - 退出系统\n" +
             "• Ctrl+, - 打开设置\n\n" +

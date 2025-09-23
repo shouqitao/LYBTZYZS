@@ -141,7 +141,7 @@ public partial class App : PrismApplication
         // 注册工作台模块
         moduleCatalog.AddModule<WorkbenchCoreModule>();
         moduleCatalog.AddModule<AdminWorkbenchModule>();
-        moduleCatalog.AddModule<ConsultationWorkbenchModule>();
+        moduleCatalog.AddModule<MedicalWorkbenchModule>();
     }
 
     protected override void OnStartup(StartupEventArgs e)
@@ -190,7 +190,7 @@ public partial class App : PrismApplication
         <Menu Grid.Row="1">
             <MenuItem Header="患者管理" Command="{Binding NavigateToCommand}" 
                       CommandParameter="PatientsManagement"/>
-            <MenuItem Header="看诊诊断" Command="{Binding NavigateToCommand}" 
+            <MenuItem Header="诊疗诊断" Command="{Binding NavigateToCommand}" 
                       CommandParameter="ConsultationMain"/>
             <MenuItem Header="处方管理" Command="{Binding NavigateToCommand}" 
                       CommandParameter="PrescriptionsManagement"/>

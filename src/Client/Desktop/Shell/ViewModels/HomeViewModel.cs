@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Threading;
 using LYBT.Desktop.Core.Constants;
@@ -580,7 +580,7 @@ namespace LYBT.Desktop.Shell.ViewModels
         private void StartConsultation()
         {
             NavigateTo("PatientReceptionView");
-            StatusMessage = "开始看诊流程";
+            StatusMessage = "开始诊疗流程";
         }
 
         private void EnterSystemManagementWithUserModule()

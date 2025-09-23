@@ -368,14 +368,21 @@ namespace LYBT.Desktop.Shell.Extensions
             // 凭据服务 - 使用强化的 DPAPI 保护版本
             containerRegistry.RegisterSingleton<ICredentialService, SecureCredentialService>();
 
-            // 会话管理服务 - DT-002修复: UserSessionManager实现多个接口，使用标准注册
-            containerRegistry.RegisterSingleton<UserSessionManager>();
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.IUserSessionManager, UserSessionManager>();
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.ITokenManager, UserSessionManager>();
-
-            // 其他核心服务
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.ISessionManager,
-                LYBT.Desktop.Core.Services.SessionManager>();
+            // 统一会话管理服务 - Phase 2重构: 统一所有Session相关接口
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Services.Session.UnifiedSessionManager>();
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Services.Session.IUnifiedSessionManager, 
+                LYBT.Desktop.Core.Services.Session.UnifiedSessionManager>();
+            
+            // 向后兼容性支持 - 映射到统一Session管理器
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.IUserSessionManager>(provider =>
+                provider.Resolve<LYBT.Desktop.Core.Services.Session.IUnifiedSessionManager>() as LYBT.Desktop.Core.Interfaces.Services.IUserSessionManager
+                ?? throw new InvalidOperationException("UnifiedSessionManager must implement IUserSessionManager"));
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.ITokenManager>(provider =>
+                provider.Resolve<LYBT.Desktop.Core.Services.Session.IUnifiedSessionManager>() as LYBT.Desktop.Core.Interfaces.Services.ITokenManager
+                ?? throw new InvalidOperationException("UnifiedSessionManager must implement ITokenManager"));
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.ISessionManager>(provider =>
+                provider.Resolve<LYBT.Desktop.Core.Services.Session.IUnifiedSessionManager>() as LYBT.Desktop.Core.Interfaces.Services.ISessionManager
+                ?? throw new InvalidOperationException("UnifiedSessionManager must implement ISessionManager"));
             containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.INotificationService,
                 LYBT.Desktop.Core.Services.NotificationService>();
 
@@ -415,9 +422,9 @@ namespace LYBT.Desktop.Shell.Extensions
         /// </summary>
         private static void RegisterDialogs(IContainerRegistry containerRegistry)
         {
-            // 统一对话框服务 - WpfDialogService提供完整功能
+            // 精简对话框服务 - Phase 2重构：SimplifiedDialogService
             containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.ICustomDialogService,
-                LYBT.Desktop.Core.Services.WpfDialogService>();
+                LYBT.Desktop.Core.Services.SimplifiedDialogService>();
 
             // 注册业务对话框（在服务启动后动态注册）
             containerRegistry.RegisterInstance<Action<LYBT.Desktop.Core.Interfaces.Services.ICustomDialogService>>(RegisterBusinessDialogs);
@@ -428,31 +435,8 @@ namespace LYBT.Desktop.Shell.Extensions
         /// </summary>
         private static void RegisterBusinessDialogs(LYBT.Desktop.Core.Interfaces.Services.ICustomDialogService dialogService)
         {
-            // 使用WpfDialogService的RegisterDialog方法注册业务对话框
-            if (dialogService is LYBT.Desktop.Core.Services.WpfDialogService wpfDialogService)
-            {
-                // 患者管理对话框
-                wpfDialogService.RegisterDialog("PatientAddEditDialog", typeof(LYBT.Desktop.Patients.Views.PatientAddEditDialog));
-
-                // 用户管理对话框
-                wpfDialogService.RegisterDialog("UserAddEditDialog", typeof(LYBT.Desktop.Users.Views.UserAddEditDialog));
-
-                // 药材管理对话框
-                wpfDialogService.RegisterDialog("HerbAddEditDialog", typeof(LYBT.Desktop.Herbs.Views.HerbAddEditDialog));
-
-                // 医案管理对话框
-                wpfDialogService.RegisterDialog("CreateMedicalCaseDialog", typeof(LYBT.Desktop.MedicalCase.Views.CreateMedicalCaseDialog));
-
-                // 验方管理对话框
-                wpfDialogService.RegisterDialog("AddFormulaDialog", typeof(LYBT.Desktop.Formula.Views.AddFormulaDialog));
-                wpfDialogService.RegisterDialog("EditFormulaDialog", typeof(LYBT.Desktop.Formula.Views.EditFormulaDialog));
-                wpfDialogService.RegisterDialog("ViewFormulaDialog", typeof(LYBT.Desktop.Formula.Views.ViewFormulaDialog));
-
-                // 处方管理对话框
-                wpfDialogService.RegisterDialog("PrescriptionEditorDialog", typeof(LYBT.Desktop.Prescriptions.Views.PrescriptionEditorDialog));
-                wpfDialogService.RegisterDialog("HerbSelectionDialog", typeof(LYBT.Desktop.Prescriptions.Views.HerbSelectionDialog));
-                wpfDialogService.RegisterDialog("FormulaTemplateDialog", typeof(LYBT.Desktop.Prescriptions.Views.FormulaTemplateDialog));
-            }
+            // Phase 2简化：业务对话框使用约定优于配置，无需手动注册
+            // 注释：对话框服务已简化，使用约定优于配置模式
         }
 
         /// <summary>

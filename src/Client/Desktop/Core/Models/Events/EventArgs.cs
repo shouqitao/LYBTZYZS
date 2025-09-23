@@ -1,4 +1,4 @@
-using Prism.Events;
+﻿using Prism.Events;
 
 namespace LYBT.Desktop.Core.Models.Events
 {
@@ -30,7 +30,7 @@ namespace LYBT.Desktop.Core.Models.Events
         Prescriptions,
 
         /// <summary>
-        /// 看诊数据
+        /// 诊疗数据
         /// </summary>
         Consultations,
 
@@ -227,14 +227,14 @@ namespace LYBT.Desktop.Core.Models.Events
     }
 
     /// <summary>
-    /// 看诊开始事件
+    /// 诊疗开始事件
     /// </summary>
     public class ConsultationStartedEvent : PubSubEvent<ConsultationStartedEventArgs>
     {
     }
 
     /// <summary>
-    /// 看诊开始事件参数
+    /// 诊疗开始事件参数
     /// </summary>
     public class ConsultationStartedEventArgs
     {
@@ -254,14 +254,14 @@ namespace LYBT.Desktop.Core.Models.Events
     }
 
     /// <summary>
-    /// 看诊完成事件
+    /// 诊疗完成事件
     /// </summary>
     public class ConsultationCompletedEvent : PubSubEvent<ConsultationCompletedEventArgs>
     {
     }
 
     /// <summary>
-    /// 看诊完成事件参数
+    /// 诊疗完成事件参数
     /// </summary>
     public class ConsultationCompletedEventArgs
     {

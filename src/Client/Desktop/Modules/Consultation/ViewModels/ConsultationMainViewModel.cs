@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Windows.Input;
 using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.ViewModels.Base;
@@ -13,7 +13,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
 {
 
     /// <summary>
-    /// 看诊主界面视图模型 - 简化版纯数据记录
+    /// 诊疗主界面视图模型 - 简化版纯数据记录
     /// 只负责简单的四诊数据录入，不包含流程监管和智能处理
     /// </summary>
     public class ConsultationMainViewModel : SessionAwareViewModel, INavigationAware
@@ -29,7 +29,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
 
         #region 基本属性
 
-        private string _title = "看诊记录";
+        private string _title = "诊疗记录";
 
         public string Title
         {
@@ -223,7 +223,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
                 if (result.IsSuccess && result.Data != null)
                 {
                     Consultation = result.Data;
-                    ShowSuccess("看诊记录保存成功");
+                    ShowSuccess("诊疗记录保存成功");
                 }
                 else
                 {
@@ -232,7 +232,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
             }
             catch (Exception ex)
             {
-                LogError(ex, "保存看诊记录失败");
+                LogError(ex, "保存诊疗记录失败");
                 ShowError("保存失败，请重试");
             }
             finally
@@ -387,7 +387,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
             {
                 historyContent.AppendLine("【诊疗记录】");
                 historyContent.AppendLine("暂无历史就诊记录");
-                historyContent.AppendLine("\n 提示：该患者尚未有诊疗记录，可开始新的看诊流程。");
+                historyContent.AppendLine("\n 提示：该患者尚未有诊疗记录，可开始新的诊疗流程。");
             }
             else
             {

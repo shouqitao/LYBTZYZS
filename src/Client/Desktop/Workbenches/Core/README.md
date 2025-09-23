@@ -12,7 +12,7 @@ This directory contains the core infrastructure for workbench routing and naviga
 ## Workbench Mapping
 
 - Administrator → SystemWorkbench
-- Doctor → ConsultationWorkbench
+- Doctor → MedicalWorkbench
 - Reception (Future) → ReceptionWorkbench
 
 ## 🎯 项目概述

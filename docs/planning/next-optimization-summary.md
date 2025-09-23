@@ -4,7 +4,7 @@
 - 将前端“看诊”相关文案统一更新为“诊疗”，避免与“诊断模块”混淆。
 - 检查导航项、工作台标题、快捷命令等字符串资源，确保与 `docs/requirements/ui-workflow-spec.md` 一致。
 - 若使用资源字典或常量（如 `NavigationItem`、`RegionNames`），同步调整命名避免旧词残留。
-- 现有 `ConsultationWorkbench*`、`Consultation*ViewModel` 等仅用于诊疗入口，需在命名重构时替换为 `Diagnosis`/`Treatment` 等更准确语义，防止与“诊断（ConsultationService）”概念冲突。
+- 现有 `MedicalWorkbench*`、`Consultation*ViewModel` 等仅用于诊疗入口，需在命名重构时替换为 `Diagnosis`/`Treatment` 等更准确语义，防止与“诊断（ConsultationService）”概念冲突。
 
 ## 角色与权限
 - 后端 `User.Role` 字段已经存在：保持 `sysadmin` 视为超级管理员，其余默认医生，后续扩展时再细化。

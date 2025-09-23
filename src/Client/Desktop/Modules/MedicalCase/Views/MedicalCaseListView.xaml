@@ -148,7 +148,7 @@
                                         FontSize="12"
                                         Margin="2" />
 
-                                <Button Content="看诊"
+                                <Button Content="诊疗"
                                         Command="{Binding DataContext.StartConsultationCommand,
                                                  RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                         CommandParameter="{Binding}"

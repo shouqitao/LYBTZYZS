@@ -7,14 +7,14 @@
         <!-- UltraThink UI/UX优化 Phase 1: 使用统一设计系统样式 -->
         <!-- 所有样式现在从UnifiedDesignSystem.xaml继承，只保留页面特定配置 -->
 
-        <!-- 看诊管理专用DataGrid样式（支持行选择高亮和鼠标悬停效果） -->
+        <!-- 诊疗管理专用DataGrid样式（支持行选择高亮和鼠标悬停效果） -->
         <Style x:Key="ConsultationManagementDataGrid" TargetType="DataGrid" BasedOn="{StaticResource BaseDataGrid}">
             <Setter Property="RowBackground" Value="{StaticResource SurfaceBrush}" />
             <Setter Property="AlternatingRowBackground" Value="{StaticResource BackgroundBrush}" />
             <Setter Property="Margin" Value="20" />
         </Style>
 
-        <!-- 看诊管理专用行样式（增强的交互效果） -->
+        <!-- 诊疗管理专用行样式（增强的交互效果） -->
         <Style x:Key="ConsultationDataGridRow" TargetType="DataGridRow" BasedOn="{StaticResource BaseDataGridRow}">
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
@@ -69,7 +69,7 @@
                             Margin="0,0,10,0"
                             Style="{StaticResource InfoButton}"
                             Command="{Binding StatisticsCommand}"
-                            ToolTip="查看看诊记录统计报告" />
+                            ToolTip="查看诊疗记录统计报告" />
                     <Button Content="刷新"
                             Style="{StaticResource SecondaryButton}"
                             Command="{Binding RefreshCommand}" />
@@ -85,8 +85,8 @@
                   RowStyle="{StaticResource ConsultationDataGridRow}"
                   ColumnHeaderStyle="{StaticResource BaseDataGridColumnHeader}">
             <DataGrid.Columns>
-                <!-- 看诊日期 -->
-                <DataGridTextColumn Header="看诊日期"
+                <!-- 诊疗日期 -->
+                <DataGridTextColumn Header="诊疗日期"
                                     Binding="{Binding ConsultationDate, StringFormat='yyyy-MM-dd HH:mm'}"
                                     Width="140" />
 

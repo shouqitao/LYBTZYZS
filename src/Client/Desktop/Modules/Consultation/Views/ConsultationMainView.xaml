@@ -99,7 +99,7 @@
                                            Background="#4CAF50"
                                            Foreground="White"
                                            ToolTip="查看该患者的历史诊疗记录" />
-                                    <Button Content="开始看诊"
+                                    <Button Content="开始诊疗"
                                            Command="{Binding NewConsultationCommand}"
                                            Padding="10,5"
                                            Margin="5" />

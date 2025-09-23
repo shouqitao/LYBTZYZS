@@ -1,12 +1,12 @@
 ﻿# LYBT.Desktop.Module.Consultation
 
-> **看诊管理客户端模块** - WPF桌面应用看诊管理功能
+> **诊疗管理客户端模块** - WPF桌面应用诊疗管理功能
 > 四诊记录 | 辨证论治 | 诊断管理 | 医嘱记录
 > 模块状态: ✅ **生产就绪** | 🎆 **分层架构完成** | **编译通过** | **2025-09-20更新**
 
 ## 🎯 模块概述
 
-LYBT.Desktop.Module.Consultation是WPF桌面客户端的看诊管理模块，采用MVVM架构和双层服务设计。记录中医四诊（望闻问切）信息，支持辨证论治和诊断记录。
+LYBT.Desktop.Module.Consultation是WPF桌面客户端的诊疗管理模块，采用MVVM架构和双层服务设计。记录中医四诊（望闻问切）信息，支持辨证论治和诊断记录。
 
 **技术栈**: WPF (.NET 8) + Prism.DryIoc + Material Design + Refit
 **架构模式**: MVVM + 分层架构（QueryService + BusinessService）
@@ -40,7 +40,7 @@ LYBT.Desktop.Module.Consultation/
 │
 ├── 📁 Views/                   # WPF视图
 │   ├── ConsultationView.xaml        # 主视图
-│   ├── ConsultationView.xaml      # 看诊主界面
+│   ├── ConsultationView.xaml      # 诊疗主界面
 │   ├── FourDiagnosesView.xaml      # 四诊录入
 │   ├── DiagnosisView.xaml      # 诊断界面
 │   ├── MedicalAdviceView.xaml      # 医嘱管理
@@ -306,7 +306,7 @@ public async Task LoadDataAsync()
 ---
 
 > 📌 **最新成果**: 分层架构在客户端完整实现，MVVM模式规范应用
-> 🎆 **生产就绪**: 完整的看诊管理功能，优秀的用户体验
+> 🎆 **生产就绪**: 完整的诊疗管理功能，优秀的用户体验
 
 ## 🎯 项目概述
 - [待补充] 简要描述 Consultation 的职责、边界及与其他模块关系。

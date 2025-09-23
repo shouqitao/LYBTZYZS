@@ -4,13 +4,13 @@ namespace LYBT.Shared.Interfaces.Api
 {
 
     /// <summary>
-    /// 看诊API客户端接口 - UltraThink统一标准
+    /// 诊疗API客户端接口 - UltraThink统一标准
     /// </summary>
     public interface IConsultationApi
     {
 
         /// <summary>
-        /// 分页查询看诊记录
+        /// 分页查询诊疗记录
         /// </summary>
         [Refit.Get("/api/v1/consultation")]
         Task<Refit.ApiResponse<PagedResult<ConsultationDto>>> GetConsultationsAsync(
@@ -24,37 +24,37 @@ namespace LYBT.Shared.Interfaces.Api
             [Refit.Query] int? status = null);
 
         /// <summary>
-        /// 获取看诊详情
+        /// 获取诊疗详情
         /// </summary>
         [Refit.Get("/api/v1/consultation/{id}")]
         Task<Refit.ApiResponse<ConsultationDetailDto>> GetByIdAsync(Guid id);
 
         /// <summary>
-        /// 根据医疗案例ID获取看诊信息
+        /// 根据医疗案例ID获取诊疗信息
         /// </summary>
         [Refit.Get("/api/v1/consultation/medical-case/{medicalCaseId}")]
         Task<Refit.ApiResponse<ConsultationDetailDto>> GetByMedicalCaseIdAsync(Guid medicalCaseId);
 
         /// <summary>
-        /// 开始看诊
+        /// 开始诊疗
         /// </summary>
         [Refit.Post("/api/v1/consultation/start")]
         Task<Refit.ApiResponse<ConsultationDetailDto>> StartConsultationAsync([Refit.Body] ConsultationStartDto dto);
 
         /// <summary>
-        /// 更新看诊信息
+        /// 更新诊疗信息
         /// </summary>
         [Refit.Put("/api/v1/consultation/{id}")]
         Task<Refit.ApiResponse<ConsultationDetailDto>> UpdateConsultationAsync(Guid id, [Refit.Body] ConsultationUpdateDto dto);
 
         /// <summary>
-        /// 完成看诊
+        /// 完成诊疗
         /// </summary>
         [Refit.Post("/api/v1/consultation/{id}/complete")]
         Task<Refit.ApiResponse<object>> CompleteConsultationAsync(Guid id, [Refit.Body] ConsultationCompleteDto dto);
 
         /// <summary>
-        /// 取消看诊
+        /// 取消诊疗
         /// </summary>
         [Refit.Post("/api/v1/consultation/{id}/cancel")]
         Task<Refit.ApiResponse<object>> CancelConsultationAsync(Guid id, [Refit.Body] string reason);
@@ -68,31 +68,31 @@ namespace LYBT.Shared.Interfaces.Api
             [Refit.Query] DateTime? endDate = null);
 
         /// <summary>
-        /// 获取医生今日看诊列表
+        /// 获取医生今日诊疗列表
         /// </summary>
         [Refit.Get("/api/v1/consultation/doctor/{doctorId}/today")]
         Task<Refit.ApiResponse<List<ConsultationDto>>> GetTodayConsultationsByDoctorAsync(Guid doctorId);
 
         /// <summary>
-        /// 获取患者历史看诊记录
+        /// 获取患者历史诊疗记录
         /// </summary>
         [Refit.Get("/api/v1/consultation/patient/{patientId}/history")]
         Task<Refit.ApiResponse<List<ConsultationDto>>> GetPatientHistoryAsync(Guid patientId);
 
         /// <summary>
-        /// 统计医生看诊数量
+        /// 统计医生诊疗数量
         /// </summary>
         [Refit.Get("/api/v1/consultation/doctor/{doctorId}/count")]
         Task<Refit.ApiResponse<int>> GetDoctorConsultationCountAsync(Guid doctorId, [Refit.Query] DateTime? startDate = null, [Refit.Query] DateTime? endDate = null);
 
         /// <summary>
-        /// 更新看诊状态
+        /// 更新诊疗状态
         /// </summary>
         [Refit.Post("/api/v1/consultation/{id}/update-status")]
         Task<Refit.ApiResponse<ConsultationDetailDto>> UpdateStatusAsync(Guid id, [Refit.Body] UpdateStatusDto dto);
 
         /// <summary>
-        /// 删除看诊记录（软删除）
+        /// 删除诊疗记录（软删除）
         /// </summary>
         [Refit.Delete("/api/v1/consultation/{id}")]
         Task<Refit.ApiResponse<object>> DeleteAsync(Guid id);

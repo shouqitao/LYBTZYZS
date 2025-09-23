@@ -9,15 +9,15 @@
     <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.17" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.17" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.17" />
-    <!-- Microsoft Extensions 系列 - 统一到 8.0.x 版本 -->
+    <!-- Microsoft Extensions 系列 - 统一到 8.0.x 稳定版本 (与 EF Core 8.0.17 兼容) -->
     <PackageVersion Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.FileExtensions" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="8.0.1" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.FileExtensions" Version="8.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="8.0.2" />
-    <PackageVersion Include="Microsoft.Extensions.Logging" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Logging" Version="8.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.2" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="8.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Caching.Abstractions" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="8.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Options" Version="8.0.2" />
@@ -57,7 +57,7 @@
     <PackageVersion Include="Microsoft.Extensions.Http.Polly" Version="8.0.0" />
   </ItemGroup>
   <ItemGroup Label="Data Processing and Validation">
-    <!-- 数据序列化 -->
+    <!-- 数据序列化 (8.0.5修复了高危安全漏洞) -->
     <PackageVersion Include="System.Text.Json" Version="8.0.5" />
     <PackageVersion Include="System.ComponentModel.Annotations" Version="5.0.0" />
     <!-- 数据验证 - 统一到 12.0.0 解决版本冲突 -->
@@ -105,6 +105,7 @@
   <ItemGroup Label="Additional Packages">
     <!-- 数据库和数据处理 -->
     <PackageVersion Include="Microsoft.Data.SqlClient" Version="5.1.7" />
+    <PackageVersion Include="System.Data.SqlClient" Version="4.8.6" />
     <!-- UI和设计 -->
     <PackageVersion Include="MaterialDesignThemes" Version="5.1.0" />
     <PackageVersion Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.135" />

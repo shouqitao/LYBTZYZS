@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.Extensions.Logging;
@@ -165,7 +165,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components
                 {
                     PatientId = Guid.Empty, // 暂时使用空值，需要从MedicalCaseId获取
                     DoctorId = Guid.Empty,  // 暂时使用空值，需要获取当前医生
-                    ConsultationId = MedicalCaseId, // 假设MedicalCaseId是看诊ID
+                    ConsultationId = MedicalCaseId, // 假设MedicalCaseId是诊疗ID
                     Diagnosis = "中医诊断", // 需要从医疗案例获取
                     DosageCount = DosageCount,
                     Quantity = DosageCount,

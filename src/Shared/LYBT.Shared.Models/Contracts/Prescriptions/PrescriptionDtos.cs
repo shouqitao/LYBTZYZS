@@ -157,7 +157,7 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
         [DisplayName("医生ID")]
         public Guid DoctorId { get; set; }
 
-        [DisplayName("看诊ID")]
+        [DisplayName("诊疗ID")]
         public Guid? ConsultationId { get; set; }
 
         [StringLength(50, ErrorMessage = "剂型长度不能超过50个字符")]

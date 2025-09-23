@@ -25,7 +25,7 @@ public class DesktopLayerArchTests
         Assembly.Load("LYBT.Desktop.Herbs"),
         Assembly.Load("LYBT.Desktop.Formula"),
         Assembly.Load("LYBT.Desktop.Workbench.Core"),
-        Assembly.Load("LYBT.Desktop.ConsultationWorkbench"),
+        Assembly.Load("LYBT.Desktop.MedicalWorkbench"),
         Assembly.Load("LYBT.Desktop.SystemWorkbench")
     ];
 
@@ -37,7 +37,7 @@ public class DesktopLayerArchTests
     {
         var result = Types.InAssemblies(DesktopAssemblies)
             .Should()
-            .NotHaveDependencyOnAll("LYBT.Infrastructure", "LYBT.WebAPI", "LYBT.Entities")
+            .NotHaveDependencyOnAll("LYBT.Infrastructure", "LYBT.Entities")
             .GetResult();
 
         Assert.True(

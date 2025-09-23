@@ -1,4 +1,4 @@
-using LYBT.Desktop.Consultation.Services;
+﻿using LYBT.Desktop.Consultation.Services;
 using LYBT.Desktop.Consultation.ViewModels;
 using LYBT.Desktop.Consultation.Views;
 using LYBT.Shared.Interfaces.Services;
@@ -10,9 +10,9 @@ namespace LYBT.Desktop.Consultation
 {
 
     /// <summary>
-    /// 看诊诊断模块 - UltraThink双层架构Prism模块
+    /// 诊疗诊断模块 - UltraThink双层架构Prism模块
     /// 采用UltraThink架构标准，使用C# 12现代化特性
-    /// 职责：看诊诊断模块依赖注入、服务注册、视图导航配置
+    /// 职责：诊疗诊断模块依赖注入、服务注册、视图导航配置
     /// 实现中医四诊（望闻问切）、辨证论治、诊断记录等核心功能
     /// 集成双层架构服务（QueryService + BusinessService + Module委托）
     /// 适配中医诊所诊断流程，确保诊疗数据安全和功能完整性

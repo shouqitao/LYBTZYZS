@@ -7,7 +7,7 @@
 - 应用启动后默认呈现登录界面（`LoginRegion`）。
 - 登录成功后根据用户角色切换到对应工作台：
   - 管理员（或用户名 `sysadmin`）→ 系统管理工作台（`SystemWorkbenchMainView`）。
-- 医生/普通用户 → 诊疗工作台（当前代码名 `ConsultationWorkbenchMainView`，待后续更名为诊疗/Treatment 语义）。
+- 医生/普通用户 → 诊疗工作台（当前代码名 `MedicalWorkbenchMainView`，待后续更名为诊疗/Treatment 语义）。
 - 登录流程成功时自动加载角色所需模块，确保导航目标可用。
 
 ## 管理员工作台

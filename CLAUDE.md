@@ -17,7 +17,7 @@
 ## 当前最高优先级任务
 1. **事件体系统一**：清理 `Core/Events` 目录下所有重复事件与枚举，仅保留权威定义，并统一使用 `StatusMessageType`。
 2. **修复资源引用**：检查 `UnifiedDesignSystem.xaml` 中转换器命名空间，确保 `StringToVisibilityConverter` 所在程序集已被 Shell 正确加载。
-3. **术语与结构调整**：将“看诊”相关命名改为“诊疗”，梳理 `ConsultationWorkbenchMainView` 的职责，更新 UI 文案及 README。
+3. **术语与结构调整**：将“看诊”相关命名改为“诊疗”，梳理 `MedicalWorkbenchMainView` 的职责，更新 UI 文案及 README。
 4. **测试恢复计划**：在完成编译修复后，先解决服务器端失败用例，再为桌面端关键服务（如 `SessionManager`、`UnifiedEventHandler`）补齐首批单元测试。
 
 > 未完成以上事项前，请勿开始新的功能开发。

@@ -6,8 +6,8 @@
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<UseWPF>true</UseWPF>
-		<AssemblyName>LYBT.Desktop.Workbench.Consultation</AssemblyName>
-		<RootNamespace>LYBT.Desktop.Workbench.Consultation</RootNamespace>
+		<AssemblyName>LYBT.Desktop.Workbench.Medical</AssemblyName>
+		<RootNamespace>LYBT.Desktop.Workbench.Medical</RootNamespace>
 	</PropertyGroup>
 
 	<ItemGroup>

@@ -64,9 +64,9 @@
 
 - 区域定义与导航：整体符合 Prism 规范
   - Shell 区域：`ContentRegion`、`LoginRegion`（`src/Client/Desktop/Shell/Views/MainWindow.xaml:44, 99`）
-  - 工作台区域：`SystemWorkbenchContentRegion`、`ConsultationWorkbenchContentRegion`
+  - 工作台区域：`SystemWorkbenchContentRegion`、`MedicalWorkbenchContentRegion`
     - `src/Client/Desktop/Workbenches/SystemWorkbench/Views/SystemWorkbenchMainView.xaml:156`
-    - `src/Client/Desktop/Workbenches/ConsultationWorkbench/Views/ConsultationWorkbenchMainView.xaml:73`
+    - `src/Client/Desktop/Workbenches/MedicalWorkbench/Views/MedicalWorkbenchMainView.xaml:73`
 - 导航注册：大部分视图均使用 `RegisterForNavigation<TView[, TViewModel]>`
   - 例：`src/Client/Desktop/Modules/Patients/PatientsModule.cs:37-40`
 

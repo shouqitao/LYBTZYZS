@@ -56,7 +56,7 @@
 
 ### 3.3 Consultation 模块功能状态
 - 前端将“Consultation”扩展为“诊疗工作台”全流程（患者列表、四诊录入、诊断、处方），与需求中“Consultation=诊断环节”的设计不符。
-- `ConsultationWorkbenchMainView.xaml` 构建了完整工作台布局（患者列表/病历/四诊/处方），并以 Region 请求 `ConsultationMainView` 为默认子视图。
+- `MedicalWorkbenchMainView.xaml` 构建了完整工作台布局（患者列表/病历/四诊/处方），并以 Region 请求 `ConsultationMainView` 为默认子视图。
 - ViewModel 层（`ConsultationMainViewModel`）结合 `SessionManager` 事件驱动业务，命名术语多与“诊疗”“工作台”混用。
 - 需求指出需将“看诊”术语替换为更贴近实际的“诊疗”或拆分为诊断、管理等模块；现有实现需重命名并拆分职责。
 
@@ -122,7 +122,7 @@
 | 需求点 | 当前实现 | 差距/措施 |
 |---------|-----------|-----------|
 | 登录后按角色展示不同主界面 | `WorkbenchRouter` 根据角色返回 `System` or `Consultation` Workbench | 需确保角色映射与最新角色定义一致（`sysadmin` 兼容 `admin`）。
-| 医生主界面包含诊疗/管理/历史查询 | `ConsultationWorkbenchMainView` 聚合流程，但管理功能依赖其他模块页面 | 需要在 Workbench 中提供导航菜单或区域切换，符合“无需回到主界面也可切换”需求。
+| 医生主界面包含诊疗/管理/历史查询 | `MedicalWorkbenchMainView` 聚合流程，但管理功能依赖其他模块页面 | 需要在 Workbench 中提供导航菜单或区域切换，符合“无需回到主界面也可切换”需求。
 | “看诊”术语调整 | 代码/界面混用“Consultation”、“工作台”、“看诊” | 梳理命名，将“Consultation”严格指代诊疗流程环节；界面文案更新。
 | 角色字段与默认值 | User DTO/Session 默认角色 `Doctor` | 确认数据库/登录接口返回的角色值与 `WorkbenchRouter` 配置一致（`sysadmin` -> 管理员；普通用户 -> 医生）。
 | 需求记录 | `docs/requirements/ui-workflow-spec.md` 已记录部分流程 | 可新增需求文档条目，补充角色导航、术语调整、优化点（见下述摘要）。
@@ -148,4 +148,4 @@
    - 建立桌面端单元测试基线；与 Server 测试恢复计划协同。
    - 逐步实现 Phase B/C/D 目标，形成阶段性 PR 与文档更新。
 
-> **提示**：若在后续执行中发现仍有“ConsultationWorkbench”命名与“诊断”场景不符的情况，请在模块重构时同步更名，以免引导需求误解。
+> **提示**：若在后续执行中发现仍有“MedicalWorkbench”命名与“诊断”场景不符的情况，请在模块重构时同步更名，以免引导需求误解。
