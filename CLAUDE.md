@@ -12,7 +12,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Technology Stack
 - **Backend**: .NET 8, ASP.NET Core Web API, Entity Framework Core 8.0.17, SQL Server
-- **Frontend**: WPF (.NET 8), Prism.DryIoc 9.0.537, Refit (type-safe REST client)
+- **Frontend**: WPF (.NET 8), Prism.DryIoc 8.1.97, Refit (type-safe REST client)
 - **Authentication**: JWT Bearer Token with type-safe UserRole enum
 - **Architecture Pattern**:
   - Frontend: UltraThink dual-layer architecture

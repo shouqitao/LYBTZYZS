@@ -219,7 +219,7 @@ public class PatientsModule : IModule
    - 创建ARCHITECTURE-DECISIONS.md文档
 
 ### 长期优化建议
-1. 考虑升级到Prism 9.0（需评估breaking changes）
+1. （历史建议）考虑升级到 Prism 9.0 —— 当前项目基线固定在 .NET 8 + Prism 8.1.97，暂无升级计划，此条仅作调研记录。
 2. 实施CQRS模式进一步解耦查询和命令
 3. 引入MediatR减少模块间直接依赖
 
