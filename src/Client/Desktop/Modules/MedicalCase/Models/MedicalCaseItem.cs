@@ -1,5 +1,5 @@
-using System;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System;
+using Prism.Mvvm;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
@@ -11,138 +11,215 @@ namespace LYBT.Desktop.Modules.MedicalCase.Models;
 /// 替代直接使用MedicalCaseDto，实现Desktop层与Shared层的解耦
 /// 保持属性名与MedicalCaseDto一致，确保XAML绑定兼容
 /// </summary>
-public partial class MedicalCaseItem : ObservableObject
+public class MedicalCaseItem : BindableBase
 {
-    [ObservableProperty]
-    private int id;
+        private Guid _id;
+    public Guid Id
+    {
+        get => _id;
+        set => SetProperty(ref _id, value);
+    }
 
-    [ObservableProperty]
-    private int patientId;
+        private Guid _patientId;
+    public Guid PatientId
+    {
+        get => _patientId;
+        set => SetProperty(ref _patientId, value);
+    }
 
-    [ObservableProperty]
-    private string patientName = string.Empty;
+        private string _patientName = string.Empty;
+    public string PatientName
+    {
+        get => _patientName;
+        set => SetProperty(ref _patientName, value);
+    }
 
-    [ObservableProperty]
-    private string patientGender = string.Empty;
+        private string _patientGender = string.Empty;
+    public string PatientGender
+    {
+        get => _patientGender;
+        set => SetProperty(ref _patientGender, value);
+    }
 
-    [ObservableProperty]
-    private int? patientAge;
+        private int? _patientAge;
+    public int? PatientAge
+    {
+        get => _patientAge;
+        set => SetProperty(ref _patientAge, value);
+    }
 
-    [ObservableProperty]
-    private string caseNumber = string.Empty;
+        private string _caseNumber = string.Empty;
+    public string CaseNumber
+    {
+        get => _caseNumber;
+        set => SetProperty(ref _caseNumber, value);
+    }
 
-    [ObservableProperty]
-    private string chiefComplaint = string.Empty;
+        private string _chiefComplaint = string.Empty;
+    public string ChiefComplaint
+    {
+        get => _chiefComplaint;
+        set => SetProperty(ref _chiefComplaint, value);
+    }
 
-    [ObservableProperty]
-    private string? presentIllness;
+        private string? _presentIllness;
+    public string? PresentIllness
+    {
+        get => _presentIllness;
+        set => SetProperty(ref _presentIllness, value);
+    }
 
-    [ObservableProperty]
-    private string? diagnosis;
+        private string? _diagnosis;
+    public string? Diagnosis
+    {
+        get => _diagnosis;
+        set => SetProperty(ref _diagnosis, value);
+    }
 
-    [ObservableProperty]
-    private string? treatmentPlan;
+        private string? _treatmentPlan;
+    public string? TreatmentPlan
+    {
+        get => _treatmentPlan;
+        set => SetProperty(ref _treatmentPlan, value);
+    }
 
-    [ObservableProperty]
-    private MedicalCaseStatus status;
+        private MedicalCaseStatus _status;
+    public MedicalCaseStatus Status
+    {
+        get => _status;
+        set => SetProperty(ref _status, value);
+    }
 
-    [ObservableProperty]
-    private int? consultationId;
+        private Guid? _consultationId;
+    public Guid? ConsultationId
+    {
+        get => _consultationId;
+        set => SetProperty(ref _consultationId, value);
+    }
 
-    [ObservableProperty]
-    private int? prescriptionId;
+        private Guid? _prescriptionId;
+    public Guid? PrescriptionId
+    {
+        get => _prescriptionId;
+        set => SetProperty(ref _prescriptionId, value);
+    }
 
-    [ObservableProperty]
-    private DateTime createdAt;
+        private DateTime _createdAt;
+    public DateTime CreatedAt
+    {
+        get => _createdAt;
+        set => SetProperty(ref _createdAt, value);
+    }
 
-    [ObservableProperty]
-    private DateTime? completedAt;
+        private DateTime? _completedAt;
+    public DateTime? CompletedAt
+    {
+        get => _completedAt;
+        set => SetProperty(ref _completedAt, value);
+    }
 
-    [ObservableProperty]
-    private string? completionReason;
+        private string? _completionReason;
+    public string? CompletionReason
+    {
+        get => _completionReason;
+        set => SetProperty(ref _completionReason, value);
+    }
 
-    [ObservableProperty]
-    private bool isSelected;
+        private bool _isSelected;
+    public bool IsSelected
+    {
+        get => _isSelected;
+        set => SetProperty(ref _isSelected, value);
+    }
 
-    [ObservableProperty]
-    private bool isHighlighted;
+        private bool _isHighlighted;
+    public bool IsHighlighted
+    {
+        get => _isHighlighted;
+        set => SetProperty(ref _isHighlighted, value);
+    }
 
-    [ObservableProperty]
-    private bool isExpanded;
+        private bool _isExpanded;
+    public bool IsExpanded
+    {
+        get => _isExpanded;
+        set => SetProperty(ref _isExpanded, value);
+    }
 
     /// <summary>
-    /// 从MedicalCaseDto创建MedicalCaseItem
+    /// 从MedicalCaseDetailDto创建MedicalCaseItem
     /// </summary>
-    public static MedicalCaseItem FromDto(MedicalCaseDto dto)
+    public static MedicalCaseItem FromDto(MedicalCaseDetailDto dto)
     {
         return new MedicalCaseItem
         {
             Id = dto.Id,
             PatientId = dto.PatientId,
             PatientName = dto.PatientName ?? string.Empty,
-            PatientGender = dto.PatientGender ?? string.Empty,
-            PatientAge = dto.PatientAge,
-            CaseNumber = dto.CaseNumber,
-            ChiefComplaint = dto.ChiefComplaint,
+            PatientGender = "未知", // DTO中没有此属性，使用默认值
+            PatientAge = null, // DTO中没有此属性
+            CaseNumber = dto.Id.ToString().Substring(0, 8).ToUpper(), // 使用ID前8位作为案例编号
+            ChiefComplaint = dto.ChiefComplaint ?? string.Empty,
             PresentIllness = dto.PresentIllness,
-            Diagnosis = dto.Diagnosis,
+            Diagnosis = dto.DiagnosisResult,
             TreatmentPlan = dto.TreatmentPlan,
-            Status = dto.Status,
+            Status = dto.CaseStatus,
             ConsultationId = dto.ConsultationId,
             PrescriptionId = dto.PrescriptionId,
-            CreatedAt = dto.CreatedAt,
-            CompletedAt = dto.CompletedAt,
-            CompletionReason = dto.CompletionReason
+            CreatedAt = dto.CreateTime,
+            CompletedAt = dto.CaseStatus == MedicalCaseStatus.Closed ? dto.UpdateTime : null,
+            CompletionReason = dto.CaseStatus == MedicalCaseStatus.Closed ? "已完成" : null
         };
     }
 
     /// <summary>
-    /// 转换为MedicalCaseDto（用于API调用）
+    /// 转换为MedicalCaseDetailDto（用于API调用）
     /// </summary>
-    public MedicalCaseDto ToDto()
+    public MedicalCaseDetailDto ToDto()
     {
-        return new MedicalCaseDto
+        return new MedicalCaseDetailDto
         {
             Id = Id,
             PatientId = PatientId,
             PatientName = PatientName,
-            PatientGender = PatientGender,
-            PatientAge = PatientAge,
-            CaseNumber = CaseNumber,
-            ChiefComplaint = ChiefComplaint,
-            PresentIllness = PresentIllness,
-            Diagnosis = Diagnosis,
-            TreatmentPlan = TreatmentPlan,
-            Status = Status,
+            DoctorId = Guid.Empty, // 需要从其他地方获取
+            DoctorName = string.Empty, // 需要从其他地方获取
             ConsultationId = ConsultationId,
             PrescriptionId = PrescriptionId,
-            CreatedAt = CreatedAt,
-            CompletedAt = CompletedAt,
-            CompletionReason = CompletionReason
+            ConsultationDate = CreatedAt,
+            CaseStatus = Status,
+            ChiefComplaint = ChiefComplaint,
+            PresentIllness = PresentIllness,
+            DiagnosisResult = Diagnosis,
+            TreatmentPlan = TreatmentPlan,
+            CreateTime = CreatedAt,
+            UpdateTime = CompletedAt ?? DateTime.Now,
+            Status = Status == MedicalCaseStatus.Active ? CommonStatus.Enabled : CommonStatus.Disabled,
+            Remark = CompletionReason
         };
     }
 
     /// <summary>
-    /// 从MedicalCaseDto更新当前项
+    /// 从MedicalCaseDetailDto更新当前项
     /// </summary>
-    public void UpdateFromDto(MedicalCaseDto dto)
+    public void UpdateFromDto(MedicalCaseDetailDto dto)
     {
         Id = dto.Id;
         PatientId = dto.PatientId;
         PatientName = dto.PatientName ?? string.Empty;
-        PatientGender = dto.PatientGender ?? string.Empty;
-        PatientAge = dto.PatientAge;
-        CaseNumber = dto.CaseNumber;
+        PatientGender = "未知"; // DTO中没有此属性，使用默认值
+        PatientAge = null; // DTO中没有此属性
+        CaseNumber = dto.Id.ToString().Substring(0, 8).ToUpper(); // 使用ID前8位作为案例编号
         ChiefComplaint = dto.ChiefComplaint;
         PresentIllness = dto.PresentIllness;
-        Diagnosis = dto.Diagnosis;
+        Diagnosis = dto.DiagnosisResult;
         TreatmentPlan = dto.TreatmentPlan;
-        Status = dto.Status;
+        Status = dto.CaseStatus;
         ConsultationId = dto.ConsultationId;
         PrescriptionId = dto.PrescriptionId;
-        CreatedAt = dto.CreatedAt;
-        CompletedAt = dto.CompletedAt;
-        CompletionReason = dto.CompletionReason;
+        CreatedAt = dto.CreateTime;
+        CompletedAt = dto.CaseStatus == MedicalCaseStatus.Closed ? dto.UpdateTime : null;
+        CompletionReason = dto.CaseStatus == MedicalCaseStatus.Closed ? "已完成" : null;
     }
 
     /// <summary>

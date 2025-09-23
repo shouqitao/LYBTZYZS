@@ -1,8 +1,9 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using CommunityToolkit.Mvvm.ComponentModel;
+using Prism.Mvvm;
 using LYBT.Shared.Models.Contracts.Formula;
+using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Desktop.Formula.Models;
 
@@ -11,76 +12,168 @@ namespace LYBT.Desktop.Formula.Models;
 /// 替代直接使用FormulaDto，实现Desktop层与Shared层的解耦
 /// 保持属性名与FormulaDto一致，确保XAML绑定兼容
 /// </summary>
-public partial class FormulaItem : ObservableObject
+public class FormulaItem : BindableBase
 {
-    [ObservableProperty]
-    private int id;
+        private Guid _id;
+    public Guid Id
+    {
+        get => _id;
+        set => SetProperty(ref _id, value);
+    }
 
-    [ObservableProperty]
-    private string name = string.Empty;
+        private string _name = string.Empty;
+    public string Name
+    {
+        get => _name;
+        set => SetProperty(ref _name, value);
+    }
 
-    [ObservableProperty]
-    private string? pinyin;
+        private string? _pinyin;
+    public string? Pinyin
+    {
+        get => _pinyin;
+        set => SetProperty(ref _pinyin, value);
+    }
 
-    [ObservableProperty]
-    private string? category;
+        private string? _category;
+    public string? Category
+    {
+        get => _category;
+        set => SetProperty(ref _category, value);
+    }
 
-    [ObservableProperty]
-    private string? source; // 来源
+        private string? _source;
+    public string? Source
+    {
+        get => _source;
+        set => SetProperty(ref _source, value);
+    } // 来源
 
-    [ObservableProperty]
-    private string? composition; // 组成
+        private string? _composition;
+    public string? Composition
+    {
+        get => _composition;
+        set => SetProperty(ref _composition, value);
+    } // 组成
 
-    [ObservableProperty]
-    private string? effect; // 功效
+        private string? _effect;
+    public string? Effect
+    {
+        get => _effect;
+        set => SetProperty(ref _effect, value);
+    } // 功效
 
-    [ObservableProperty]
-    private string? indication; // 主治
+        private string? _indication;
+    public string? Indication
+    {
+        get => _indication;
+        set => SetProperty(ref _indication, value);
+    } // 主治
 
-    [ObservableProperty]
-    private string? usage; // 用法用量
+        private string? _usage;
+    public string? Usage
+    {
+        get => _usage;
+        set => SetProperty(ref _usage, value);
+    } // 用法用量
 
-    [ObservableProperty]
-    private string? modification; // 加减
+        private string? _modification;
+    public string? Modification
+    {
+        get => _modification;
+        set => SetProperty(ref _modification, value);
+    } // 加减
 
-    [ObservableProperty]
-    private string? contraindication; // 禁忌
+        private string? _contraindication;
+    public string? Contraindication
+    {
+        get => _contraindication;
+        set => SetProperty(ref _contraindication, value);
+    } // 禁忌
 
-    [ObservableProperty]
-    private string? note; // 注意事项
+        private string? _note;
+    public string? Note
+    {
+        get => _note;
+        set => SetProperty(ref _note, value);
+    } // 注意事项
 
-    [ObservableProperty]
-    private string? createdBy;
+        private string? _createdBy;
+    public string? CreatedBy
+    {
+        get => _createdBy;
+        set => SetProperty(ref _createdBy, value);
+    }
 
-    [ObservableProperty]
-    private bool isClassic; // 是否经典方
+        private bool _isClassic;
+    public bool IsClassic
+    {
+        get => _isClassic;
+        set => SetProperty(ref _isClassic, value);
+    } // 是否经典方
 
-    [ObservableProperty]
-    private bool isPersonal; // 是否个人验方
+        private bool _isPersonal;
+    public bool IsPersonal
+    {
+        get => _isPersonal;
+        set => SetProperty(ref _isPersonal, value);
+    } // 是否个人验方
 
-    [ObservableProperty]
-    private bool isActive = true;
+        private bool _isActive = true;
+    public bool IsActive
+    {
+        get => _isActive;
+        set => SetProperty(ref _isActive, value);
+    }
 
-    [ObservableProperty]
-    private int usageCount; // 使用次数
+        private int _usageCount;
+    public int UsageCount
+    {
+        get => _usageCount;
+        set => SetProperty(ref _usageCount, value);
+    } // 使用次数
 
-    [ObservableProperty]
-    private DateTime createdAt;
+        private DateTime _createdAt;
+    public DateTime CreatedAt
+    {
+        get => _createdAt;
+        set => SetProperty(ref _createdAt, value);
+    }
 
-    [ObservableProperty]
-    private DateTime? updatedAt;
+        private DateTime? _updatedAt;
+    public DateTime? UpdatedAt
+    {
+        get => _updatedAt;
+        set => SetProperty(ref _updatedAt, value);
+    }
 
-    [ObservableProperty]
-    private List<FormulaHerbItem> herbs = new();
+    private List<FormulaHerbItem> _herbs = new();
+    public List<FormulaHerbItem> Herbs
+    {
+        get => _herbs;
+        set => SetProperty(ref _herbs, value);
+    }
 
-    [ObservableProperty]
-    private bool isSelected;
+        private bool _isSelected;
+    public bool IsSelected
+    {
+        get => _isSelected;
+        set => SetProperty(ref _isSelected, value);
+    }
 
-    [ObservableProperty]
-    private bool isExpanded;
+        private bool _isExpanded;
+    public bool IsExpanded
+    {
+        get => _isExpanded;
+        set => SetProperty(ref _isExpanded, value);
+    }
 
-    [ObservableProperty]
-    private bool isFavorite;
+        private bool _isFavorite;
+    public bool IsFavorite
+    {
+        get => _isFavorite;
+        set => SetProperty(ref _isFavorite, value);
+    }
 
     /// <summary>
     /// 从FormulaDto创建FormulaItem
@@ -91,23 +184,23 @@ public partial class FormulaItem : ObservableObject
         {
             Id = dto.Id,
             Name = dto.Name,
-            Pinyin = dto.Pinyin,
+            Pinyin = null, // FormulaDto中没有此属性
             Category = dto.Category,
-            Source = dto.Source,
-            Composition = dto.Composition,
+            Source = null, // FormulaDto中没有此属性
+            Composition = null, // FormulaDto中没有此属性  
             Effect = dto.Effect,
-            Indication = dto.Indication,
+            Indication = null, // FormulaDto中没有此属性
             Usage = dto.Usage,
-            Modification = dto.Modification,
-            Contraindication = dto.Contraindication,
-            Note = dto.Note,
-            CreatedBy = dto.CreatedBy,
-            IsClassic = dto.IsClassic,
-            IsPersonal = dto.IsPersonal,
-            IsActive = dto.IsActive,
-            UsageCount = dto.UsageCount,
-            CreatedAt = dto.CreatedAt,
-            UpdatedAt = dto.UpdatedAt
+            Modification = null, // FormulaDto中没有此属性
+            Contraindication = null, // FormulaDto中没有此属性
+            Note = dto.Remark, // FormulaDto中是Remark
+            CreatedBy = null, // FormulaDto中没有此属性
+            IsClassic = false, // 默认值
+            IsPersonal = !dto.IsShared, // 根据IsShared推断
+            IsActive = dto.Status == CommonStatus.Enabled,
+            UsageCount = 0, // 默认值
+            CreatedAt = dto.CreateTime,
+            UpdatedAt = dto.UpdateTime
         };
 
         // 转换药材列表
@@ -128,23 +221,14 @@ public partial class FormulaItem : ObservableObject
         {
             Id = Id,
             Name = Name,
-            Pinyin = Pinyin,
-            Category = Category,
-            Source = Source,
-            Composition = Composition,
             Effect = Effect,
-            Indication = Indication,
             Usage = Usage,
-            Modification = Modification,
-            Contraindication = Contraindication,
-            Note = Note,
-            CreatedBy = CreatedBy,
-            IsClassic = IsClassic,
-            IsPersonal = IsPersonal,
-            IsActive = IsActive,
-            UsageCount = UsageCount,
-            CreatedAt = CreatedAt,
-            UpdatedAt = UpdatedAt,
+            Property = null, // FormulaDto中的属性
+            IsShared = !IsPersonal,
+            Remark = Note,
+            Status = IsActive ? CommonStatus.Enabled : CommonStatus.Disabled,
+            CreateTime = CreatedAt,
+            UpdateTime = UpdatedAt,
             Herbs = Herbs.Select(h => h.ToDto()).ToList()
         };
     }
@@ -262,55 +346,79 @@ public partial class FormulaItem : ObservableObject
 /// <summary>
 /// 验方中的药材项
 /// </summary>
-public partial class FormulaHerbItem : ObservableObject
+public class FormulaHerbItem : BindableBase
 {
-    [ObservableProperty]
-    private int herbId;
+        private Guid _herbId;
+    public Guid HerbId
+    {
+        get => _herbId;
+        set => SetProperty(ref _herbId, value);
+    }
 
-    [ObservableProperty]
-    private string herbName = string.Empty;
+        private string _herbName = string.Empty;
+    public string HerbName
+    {
+        get => _herbName;
+        set => SetProperty(ref _herbName, value);
+    }
 
-    [ObservableProperty]
-    private decimal dosage;
+        private decimal _dosage;
+    public decimal Dosage
+    {
+        get => _dosage;
+        set => SetProperty(ref _dosage, value);
+    }
 
-    [ObservableProperty]
-    private string unit = string.Empty;
+        private string _unit = string.Empty;
+    public string Unit
+    {
+        get => _unit;
+        set => SetProperty(ref _unit, value);
+    }
 
-    [ObservableProperty]
-    private string? usage;
+        private string? _usage;
+    public string? Usage
+    {
+        get => _usage;
+        set => SetProperty(ref _usage, value);
+    }
 
-    [ObservableProperty]
-    private int sequence;
+        private int _sequence;
+    public int Sequence
+    {
+        get => _sequence;
+        set => SetProperty(ref _sequence, value);
+    }
 
     /// <summary>
-    /// 从FormulaHerbDto创建
+    /// 从FormulaHerbItemDto创建
     /// </summary>
-    public static FormulaHerbItem FromDto(FormulaHerbDto dto)
+    public static FormulaHerbItem FromDto(FormulaHerbItemDto dto)
     {
         return new FormulaHerbItem
         {
             HerbId = dto.HerbId,
             HerbName = dto.HerbName,
-            Dosage = dto.Dosage,
+            Dosage = dto.Quantity, // FormulaHerbItemDto 中是 Quantity
             Unit = dto.Unit,
             Usage = dto.Usage,
-            Sequence = dto.Sequence
+            Sequence = dto.SortOrder // FormulaHerbItemDto 中是 SortOrder
         };
     }
 
     /// <summary>
     /// 转换为DTO
     /// </summary>
-    public FormulaHerbDto ToDto()
+    public FormulaHerbItemDto ToDto()
     {
-        return new FormulaHerbDto
+        return new FormulaHerbItemDto
         {
             HerbId = HerbId,
             HerbName = HerbName,
-            Dosage = Dosage,
+            Quantity = Dosage, // FormulaHerbItemDto 中是 Quantity
             Unit = Unit,
             Usage = Usage,
-            Sequence = Sequence
+            SortOrder = Sequence // FormulaHerbItemDto 中是 SortOrder
         };
     }
 

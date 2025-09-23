@@ -281,14 +281,7 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.IAuthenticationService,
                 LYBT.Desktop.Auth.Services.AuthServiceAdapter>();
 
-            // Users模块 - 依赖认证模块
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Users.Interfaces.IUserQueryService,
-                LYBT.Desktop.Users.Services.UserQueryService>();
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Users.Interfaces.IUserBusinessService,
-                LYBT.Desktop.Users.Services.UserBusinessService>();
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Users.Services.UserService>();
-            containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Services.IUserService,
-                LYBT.Desktop.Users.Services.UserService>();
+            // Users模块服务注册已移至UsersModule.RegisterTypes - Prism 8.x最佳实践
         }
 
         /// <summary>

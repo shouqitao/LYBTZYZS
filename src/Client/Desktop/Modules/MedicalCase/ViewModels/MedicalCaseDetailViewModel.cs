@@ -1,6 +1,7 @@
 using AutoMapper;
 using LYBT.Desktop.Core.Constants;
 using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Desktop.Core.Services.Navigation;
 using LYBT.Desktop.Core.ViewModels.Base;
 using LYBT.Shared.Interfaces.Services;
 
@@ -21,7 +22,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
     {
         private readonly IMedicalCaseService _medicalCaseService;
         private readonly ICustomDialogService _dialogService;
-        private readonly IRegionManager _regionManager;
+        private readonly INavigationService _navigationService;
         private readonly IMapper _mapper;
 
         #region 属性
@@ -206,7 +207,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         public MedicalCaseDetailViewModel(
             IMedicalCaseService medicalCaseService,
             ICustomDialogService dialogService,
-            IRegionManager regionManager,
+            INavigationService navigationService,
             IEventAggregator eventAggregator,
             IMapper mapper,
             IErrorHandlingService errorHandlingService)
@@ -214,7 +215,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         {
             _medicalCaseService = medicalCaseService;
             _dialogService = dialogService;
-            _regionManager = regionManager;
+            _navigationService = navigationService;
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
 
             // 初始化命令
@@ -328,7 +329,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         private void NavigateBack()
         {
-            _regionManager.RequestNavigate(RegionNames.SystemWorkbenchContentRegion, "MedicalCaseListView");
+            _navigationService.NavigateTo(RegionNames.SystemWorkbenchContentRegion, "MedicalCaseListView");
         }
 
         private async Task StartConsultationAsync()
@@ -348,9 +349,13 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                     // 导航到看诊界面 - 使用Task.Run包装以修复CS1998警告
                     await Task.Run(() =>
                     {
-                        _regionManager.RequestNavigate(
-                            RegionNames.ConsultationWorkbenchContentRegion,
-                            $"ConsultationMainView?MedicalCaseId={MedicalCase.Id}&PatientId={MedicalCase.PatientId}&ConsultationMode=Start");
+                        var navigationParameters = new NavigationParameters
+                        {
+                            { "MedicalCaseId", MedicalCase.Id },
+                            { "PatientId", MedicalCase.PatientId },
+                            { "ConsultationMode", "Start" }
+                        };
+                        _navigationService.NavigateTo(RegionNames.ConsultationWorkbenchContentRegion, "ConsultationMainView", navigationParameters);
                     });
                 }
                 else

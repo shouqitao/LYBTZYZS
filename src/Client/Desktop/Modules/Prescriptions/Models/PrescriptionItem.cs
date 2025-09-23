@@ -1,8 +1,8 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using CommunityToolkit.Mvvm.ComponentModel;
+using Prism.Mvvm;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
 
@@ -13,119 +13,219 @@ namespace LYBT.Desktop.Prescriptions.Models;
 /// 替代直接使用PrescriptionDto，实现Desktop层与Shared层的解耦
 /// 保持属性名与PrescriptionDto一致，确保XAML绑定兼容
 /// </summary>
-public partial class PrescriptionItem : ObservableObject
+public class PrescriptionItem : BindableBase
 {
-    [ObservableProperty]
-    private int id;
+        private Guid _id;
+    public Guid Id
+    {
+        get => _id;
+        set => SetProperty(ref _id, value);
+    }
 
-    [ObservableProperty]
-    private string prescriptionNumber = string.Empty;
+        private string _prescriptionNumber = string.Empty;
+    public string PrescriptionNumber
+    {
+        get => _prescriptionNumber;
+        set => SetProperty(ref _prescriptionNumber, value);
+    }
 
-    [ObservableProperty]
-    private int patientId;
+        private Guid _patientId;
+    public Guid PatientId
+    {
+        get => _patientId;
+        set => SetProperty(ref _patientId, value);
+    }
 
-    [ObservableProperty]
-    private string patientName = string.Empty;
+        private string _patientName = string.Empty;
+    public string PatientName
+    {
+        get => _patientName;
+        set => SetProperty(ref _patientName, value);
+    }
 
-    [ObservableProperty]
-    private string? patientGender;
+        private string? _patientGender;
+    public string? PatientGender
+    {
+        get => _patientGender;
+        set => SetProperty(ref _patientGender, value);
+    }
 
-    [ObservableProperty]
-    private int? patientAge;
+        private int? _patientAge;
+    public int? PatientAge
+    {
+        get => _patientAge;
+        set => SetProperty(ref _patientAge, value);
+    }
 
-    [ObservableProperty]
-    private int? medicalCaseId;
+        private Guid? _medicalCaseId;
+    public Guid? MedicalCaseId
+    {
+        get => _medicalCaseId;
+        set => SetProperty(ref _medicalCaseId, value);
+    }
 
-    [ObservableProperty]
-    private int? consultationId;
+        private Guid? _consultationId;
+    public Guid? ConsultationId
+    {
+        get => _consultationId;
+        set => SetProperty(ref _consultationId, value);
+    }
 
-    [ObservableProperty]
-    private string? diagnosis;
+        private string? _diagnosis;
+    public string? Diagnosis
+    {
+        get => _diagnosis;
+        set => SetProperty(ref _diagnosis, value);
+    }
 
-    [ObservableProperty]
-    private string? syndrome; // 证型
+        private string? _syndrome;
+    public string? Syndrome
+    {
+        get => _syndrome;
+        set => SetProperty(ref _syndrome, value);
+    } // 证型
 
-    [ObservableProperty]
-    private string? treatmentPrinciple; // 治则
+        private string? _treatmentPrinciple;
+    public string? TreatmentPrinciple
+    {
+        get => _treatmentPrinciple;
+        set => SetProperty(ref _treatmentPrinciple, value);
+    } // 治则
 
-    [ObservableProperty]
-    private int doses = 1; // 剂数
+        private int _doses = 1;
+    public int Doses
+    {
+        get => _doses;
+        set => SetProperty(ref _doses, value);
+    } // 剂数
 
-    [ObservableProperty]
-    private string? usage; // 用法
+        private string? _usage;
+    public string? Usage
+    {
+        get => _usage;
+        set => SetProperty(ref _usage, value);
+    } // 用法
 
-    [ObservableProperty]
-    private string? frequency; // 频次
+        private string? _frequency;
+    public string? Frequency
+    {
+        get => _frequency;
+        set => SetProperty(ref _frequency, value);
+    } // 频次
 
-    [ObservableProperty]
-    private string? note; // 备注
+        private string? _note;
+    public string? Note
+    {
+        get => _note;
+        set => SetProperty(ref _note, value);
+    } // 备注
 
-    [ObservableProperty]
-    private decimal totalAmount;
+        private decimal _totalAmount;
+    public decimal TotalAmount
+    {
+        get => _totalAmount;
+        set => SetProperty(ref _totalAmount, value);
+    }
 
-    [ObservableProperty]
-    private PrescriptionStatus status;
+        private PrescriptionStatus _status;
+    public PrescriptionStatus Status
+    {
+        get => _status;
+        set => SetProperty(ref _status, value);
+    }
 
-    [ObservableProperty]
-    private string? doctorName;
+        private string? _doctorName;
+    public string? DoctorName
+    {
+        get => _doctorName;
+        set => SetProperty(ref _doctorName, value);
+    }
 
-    [ObservableProperty]
-    private DateTime createdAt;
+        private DateTime _createdAt;
+    public DateTime CreatedAt
+    {
+        get => _createdAt;
+        set => SetProperty(ref _createdAt, value);
+    }
 
-    [ObservableProperty]
-    private DateTime? dispensedAt; // 配药时间
+        private DateTime? _dispensedAt;
+    public DateTime? DispensedAt
+    {
+        get => _dispensedAt;
+        set => SetProperty(ref _dispensedAt, value);
+    } // 配药时间
 
-    [ObservableProperty]
-    private string? dispensedBy; // 配药人
+        private string? _dispensedBy;
+    public string? DispensedBy
+    {
+        get => _dispensedBy;
+        set => SetProperty(ref _dispensedBy, value);
+    } // 配药人
 
-    [ObservableProperty]
-    private ObservableCollection<PrescriptionHerbItem> herbs = new();
+    private ObservableCollection<PrescriptionHerbItem> _herbs = new();
+    public ObservableCollection<PrescriptionHerbItem> Herbs
+    {
+        get => _herbs;
+        set => SetProperty(ref _herbs, value);
+    }
 
-    [ObservableProperty]
-    private bool isSelected;
+        private bool _isSelected;
+    public bool IsSelected
+    {
+        get => _isSelected;
+        set => SetProperty(ref _isSelected, value);
+    }
 
-    [ObservableProperty]
-    private bool isExpanded;
+        private bool _isExpanded;
+    public bool IsExpanded
+    {
+        get => _isExpanded;
+        set => SetProperty(ref _isExpanded, value);
+    }
 
-    [ObservableProperty]
-    private bool isPrinted;
+        private bool _isPrinted;
+    public bool IsPrinted
+    {
+        get => _isPrinted;
+        set => SetProperty(ref _isPrinted, value);
+    }
 
     /// <summary>
-    /// 从PrescriptionDto创建PrescriptionItem
+    /// 从PrescriptionDetailDto创建PrescriptionItem
     /// </summary>
-    public static PrescriptionItem FromDto(PrescriptionDto dto)
+    public static PrescriptionItem FromDto(PrescriptionDetailDto dto)
     {
         var item = new PrescriptionItem
         {
             Id = dto.Id,
-            PrescriptionNumber = dto.PrescriptionNumber,
+            PrescriptionNumber = dto.PrescriptionNo ?? dto.Id.ToString().Substring(0, 8).ToUpper(),
             PatientId = dto.PatientId,
-            PatientName = dto.PatientName ?? string.Empty,
-            PatientGender = dto.PatientGender,
-            PatientAge = dto.PatientAge,
+            PatientName = string.Empty, // 需要从其他地方获取
+            PatientGender = null, // 需要从其他地方获取
+            PatientAge = null, // 需要从其他地方获取
             MedicalCaseId = dto.MedicalCaseId,
-            ConsultationId = dto.ConsultationId,
-            Diagnosis = dto.Diagnosis,
-            Syndrome = dto.Syndrome,
-            TreatmentPrinciple = dto.TreatmentPrinciple,
-            Doses = dto.Doses,
+            ConsultationId = null, // DTO中没有此属性
+            Diagnosis = dto.Indication,
+            Syndrome = null, // DTO中没有此属性
+            TreatmentPrinciple = null, // DTO中没有此属性
+            Doses = dto.DosageCount,
             Usage = dto.Usage,
-            Frequency = dto.Frequency,
-            Note = dto.Note,
-            TotalAmount = dto.TotalAmount,
-            Status = dto.Status,
-            DoctorName = dto.DoctorName,
-            CreatedAt = dto.CreatedAt,
-            DispensedAt = dto.DispensedAt,
-            DispensedBy = dto.DispensedBy
+            Frequency = null, // DTO中没有此属性
+            Note = dto.Remark,
+            TotalAmount = dto.TotalPrice,
+            Status = PrescriptionStatus.Draft, // 默认状态
+            DoctorName = string.Empty, // 需要从其他地方获取
+            CreatedAt = dto.CreateTime,
+            DispensedAt = null, // DTO中没有此属性
+            DispensedBy = null // DTO中没有此属性
         };
 
         // 转换药材列表
-        if (dto.Herbs != null)
+        if (dto.Items != null)
         {
-            foreach (var herbDto in dto.Herbs)
+            foreach (var itemDto in dto.Items)
             {
-                item.Herbs.Add(PrescriptionHerbItem.FromDto(herbDto));
+                item.Herbs.Add(PrescriptionHerbItem.FromDto(itemDto));
             }
         }
 
@@ -133,34 +233,29 @@ public partial class PrescriptionItem : ObservableObject
     }
 
     /// <summary>
-    /// 转换为PrescriptionDto（用于API调用）
+    /// 转换为PrescriptionDetailDto（用于API调用）
     /// </summary>
-    public PrescriptionDto ToDto()
+    public PrescriptionDetailDto ToDto()
     {
-        return new PrescriptionDto
+        return new PrescriptionDetailDto
         {
             Id = Id,
-            PrescriptionNumber = PrescriptionNumber,
+            MedicalCaseId = MedicalCaseId ?? Guid.Empty,
             PatientId = PatientId,
-            PatientName = PatientName,
-            PatientGender = PatientGender,
-            PatientAge = PatientAge,
-            MedicalCaseId = MedicalCaseId,
-            ConsultationId = ConsultationId,
-            Diagnosis = Diagnosis,
-            Syndrome = Syndrome,
-            TreatmentPrinciple = TreatmentPrinciple,
-            Doses = Doses,
+            UserId = Guid.Empty, // 需要从其他地方获取
+            Indication = Diagnosis,
+            DosageCount = Doses,
+            Discount = 1.0m,
+            Advice = Note,
+            FormulaSource = null,
+            PrescriptionNo = PrescriptionNumber,
             Usage = Usage,
-            Frequency = Frequency,
-            Note = Note,
-            TotalAmount = TotalAmount,
-            Status = Status,
-            DoctorName = DoctorName,
-            CreatedAt = CreatedAt,
-            DispensedAt = DispensedAt,
-            DispensedBy = DispensedBy,
-            Herbs = Herbs.Select(h => h.ToDto()).ToList()
+            MedicalAdvice = Note,
+            Remark = Note,
+            Items = Herbs.Select(h => h.ToDto()).ToList(),
+            CreateTime = CreatedAt,
+            UpdateTime = DateTime.Now,
+            Status = CommonStatus.Enabled
         };
     }
 
@@ -170,10 +265,7 @@ public partial class PrescriptionItem : ObservableObject
     public string StatusText => Status switch
     {
         PrescriptionStatus.Draft => "草稿",
-        PrescriptionStatus.Issued => "已开具",
-        PrescriptionStatus.Dispensed => "已配药",
         PrescriptionStatus.Completed => "已完成",
-        PrescriptionStatus.Cancelled => "已取消",
         _ => "未知"
     };
 
@@ -183,10 +275,7 @@ public partial class PrescriptionItem : ObservableObject
     public string StatusColor => Status switch
     {
         PrescriptionStatus.Draft => "#9E9E9E",
-        PrescriptionStatus.Issued => "#2196F3",
-        PrescriptionStatus.Dispensed => "#FF9800",
         PrescriptionStatus.Completed => "#4CAF50",
-        PrescriptionStatus.Cancelled => "#F44336",
         _ => "#757575"
     };
 
@@ -208,17 +297,17 @@ public partial class PrescriptionItem : ObservableObject
     /// <summary>
     /// 是否可配药
     /// </summary>
-    public bool CanDispense => Status == PrescriptionStatus.Issued;
+    public bool CanDispense => Status == PrescriptionStatus.Draft;
 
     /// <summary>
     /// 是否可打印
     /// </summary>
-    public bool CanPrint => Status != PrescriptionStatus.Draft && Status != PrescriptionStatus.Cancelled;
+    public bool CanPrint => Status == PrescriptionStatus.Completed;
 
     /// <summary>
     /// 是否可取消
     /// </summary>
-    public bool CanCancel => Status == PrescriptionStatus.Draft || Status == PrescriptionStatus.Issued;
+    public bool CanCancel => Status == PrescriptionStatus.Draft;
 
     /// <summary>
     /// 显示文本
@@ -278,49 +367,85 @@ public partial class PrescriptionItem : ObservableObject
 /// <summary>
 /// 处方中的药材项
 /// </summary>
-public partial class PrescriptionHerbItem : ObservableObject
+public class PrescriptionHerbItem : BindableBase
 {
-    [ObservableProperty]
-    private int herbId;
+        private Guid _herbId;
+    public Guid HerbId
+    {
+        get => _herbId;
+        set => SetProperty(ref _herbId, value);
+    }
 
-    [ObservableProperty]
-    private string herbName = string.Empty;
+        private string _herbName = string.Empty;
+    public string HerbName
+    {
+        get => _herbName;
+        set => SetProperty(ref _herbName, value);
+    }
 
-    [ObservableProperty]
-    private decimal dosage;
+        private decimal _dosage;
+    public decimal Dosage
+    {
+        get => _dosage;
+        set => SetProperty(ref _dosage, value);
+    }
 
-    [ObservableProperty]
-    private string unit = string.Empty;
+        private string _unit = string.Empty;
+    public string Unit
+    {
+        get => _unit;
+        set => SetProperty(ref _unit, value);
+    }
 
-    [ObservableProperty]
-    private decimal unitPrice;
+        private decimal _unitPrice;
+    public decimal UnitPrice
+    {
+        get => _unitPrice;
+        set => SetProperty(ref _unitPrice, value);
+    }
 
-    [ObservableProperty]
-    private string? usage; // 特殊用法
+        private string? _usage;
+    public string? Usage
+    {
+        get => _usage;
+        set => SetProperty(ref _usage, value);
+    } // 特殊用法
 
-    [ObservableProperty]
-    private int sequence;
+        private int _sequence;
+    public int Sequence
+    {
+        get => _sequence;
+        set => SetProperty(ref _sequence, value);
+    }
 
-    [ObservableProperty]
-    private decimal subtotal;
+        private decimal _subtotal;
+    public decimal Subtotal
+    {
+        get => _subtotal;
+        set => SetProperty(ref _subtotal, value);
+    }
 
-    [ObservableProperty]
-    private bool isSelected;
+        private bool _isSelected;
+    public bool IsSelected
+    {
+        get => _isSelected;
+        set => SetProperty(ref _isSelected, value);
+    }
 
     /// <summary>
-    /// 从PrescriptionHerbDto创建
+    /// 从PrescriptionItemDto创建
     /// </summary>
-    public static PrescriptionHerbItem FromDto(PrescriptionHerbDto dto)
+    public static PrescriptionHerbItem FromDto(PrescriptionItemDto dto)
     {
         return new PrescriptionHerbItem
         {
             HerbId = dto.HerbId,
             HerbName = dto.HerbName,
-            Dosage = dto.Dosage,
+            Dosage = dto.Quantity,
             Unit = dto.Unit,
             UnitPrice = dto.UnitPrice,
             Usage = dto.Usage,
-            Sequence = dto.Sequence,
+            Sequence = 1, // 默认值，因为PrescriptionItemDto没有Sequence
             Subtotal = dto.Subtotal
         };
     }
@@ -328,17 +453,16 @@ public partial class PrescriptionHerbItem : ObservableObject
     /// <summary>
     /// 转换为DTO
     /// </summary>
-    public PrescriptionHerbDto ToDto()
+    public PrescriptionItemDto ToDto()
     {
-        return new PrescriptionHerbDto
+        return new PrescriptionItemDto
         {
             HerbId = HerbId,
             HerbName = HerbName,
-            Dosage = Dosage,
+            Quantity = Dosage,
             Unit = Unit,
             UnitPrice = UnitPrice,
             Usage = Usage,
-            Sequence = Sequence,
             Subtotal = Subtotal
         };
     }

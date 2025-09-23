@@ -2,6 +2,7 @@ using System.Windows.Input;
 using AutoMapper;
 using LYBT.Desktop.Core.Constants;
 using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Desktop.Core.Services.Navigation;
 using LYBT.Desktop.Core.ViewModels.Base;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Patients;
@@ -23,7 +24,7 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         private readonly IPatientService _patientService;
         private readonly ICustomDialogService _dialogService;
-        private readonly IRegionManager _regionManager;
+        private readonly INavigationService _navigationService;
         private readonly IMapper _mapper;
         private readonly IPrescriptionPrintService _printService;
 
@@ -99,7 +100,7 @@ namespace LYBT.Desktop.Patients.ViewModels
         public PatientDetailViewModel(
             IPatientService patientService,
             ICustomDialogService dialogService,
-            IRegionManager regionManager,
+            INavigationService navigationService,
             IMapper mapper,
             IPrescriptionPrintService printService,
             IErrorHandlingService errorHandlingService,
@@ -108,7 +109,7 @@ namespace LYBT.Desktop.Patients.ViewModels
         {
             _patientService = patientService ?? throw new ArgumentNullException(nameof(patientService));
             _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
-            _regionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
+            _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _printService = printService ?? throw new ArgumentNullException(nameof(printService));
 
@@ -246,7 +247,7 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         private void NavigateBack()
         {
-            _regionManager.RequestNavigate(RegionNames.SystemWorkbenchContentRegion, "PatientManagementView");
+            _navigationService.NavigateTo(RegionNames.SystemWorkbenchContentRegion, "PatientManagementView");
         }
 
         private void EnableEdit()
@@ -323,12 +324,11 @@ namespace LYBT.Desktop.Patients.ViewModels
             try
             {
                 // 导航到医疗历史视图 - 使用Task.Run包装同步操作以修复CS1998警告
-                await Task.Run(() =>
+                var navigationParameters = new NavigationParameters
                 {
-                    _regionManager.RequestNavigate(
-                        RegionNames.SystemWorkbenchContentRegion,
-                        $"MedicalCaseListView?PatientId={Patient.Id}");
-                });
+                    { "PatientId", Patient.Id }
+                };
+                await _navigationService.NavigateToAsync(RegionNames.SystemWorkbenchContentRegion, "MedicalCaseListView", navigationParameters);
             }
             catch (Exception ex)
             {

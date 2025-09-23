@@ -107,22 +107,7 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
             _ = LoadHerbsAsync();
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="HerbSelectionDialogViewModel"/> class.
-        /// 简化构造函数（使用ContainerLocator）
-        /// </summary>
-        public HerbSelectionDialogViewModel(IHerbService herbService)
-            : base()
-        {
-            _herbService = herbService ?? throw new ArgumentNullException(nameof(herbService));
-            Title = "选择中药材";
 
-            SearchCommand = new DelegateCommand(async () => await ExecuteSearchAsync());
-            SortCommand = new DelegateCommand<string>(ExecuteSort);
-
-            // 初始化加载中药材列表
-            _ = LoadHerbsAsync();
-        }
 
         /// <summary>
         /// 加载中药材列表

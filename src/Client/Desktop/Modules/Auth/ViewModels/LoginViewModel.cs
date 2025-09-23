@@ -238,7 +238,12 @@ public class LoginViewModel : ModernViewModelBase
                 await Task.Delay(1000);
 
                 // 通过事件总线通知登录成功
-                EventAggregator.GetEvent<LoginSuccessEvent>().Publish();
+                EventAggregator.GetEvent<LoginSuccessEvent>().Publish(new LoginSuccessEventArgs
+                {
+                    User = result.Data.User,
+                    Token = result.Data.Token,
+                    LoginTime = DateTime.Now
+                });
             }
             else
             {
@@ -262,7 +267,7 @@ public class LoginViewModel : ModernViewModelBase
     /// <summary>
     /// 登出事件处理
     /// </summary>
-    private void OnLogout()
+    private void OnLogout(LogoutEventArgs args)
     {
         ClearError();
         ClearStatus();

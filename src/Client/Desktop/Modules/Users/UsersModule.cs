@@ -25,7 +25,15 @@ namespace LYBT.Desktop.Users
         /// <inheritdoc/>
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            // UltraThink修复：模块自己注册服务接口实现
+            // Prism 8.x最佳实践：模块自己注册完整的服务体系
+
+            // UltraThink双层架构服务注册
+            containerRegistry.Register<LYBT.Desktop.Users.Interfaces.IUserQueryService,
+                LYBT.Desktop.Users.Services.UserQueryService>();
+            containerRegistry.Register<LYBT.Desktop.Users.Interfaces.IUserBusinessService,
+                LYBT.Desktop.Users.Services.UserBusinessService>();
+
+            // 主要模块服务（单例模式，整个应用生命周期内唯一）
             containerRegistry.RegisterSingleton<UserService>();
             containerRegistry.RegisterSingleton<IUserService>(container => container.Resolve<UserService>());
 

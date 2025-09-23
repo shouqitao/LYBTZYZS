@@ -1,5 +1,5 @@
 using System;
-using CommunityToolkit.Mvvm.ComponentModel;
+using Prism.Mvvm;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
 
@@ -10,79 +10,175 @@ namespace LYBT.Desktop.Herbs.Models;
 /// 替代直接使用HerbDto，实现Desktop层与Shared层的解耦
 /// 保持属性名与HerbDto一致，确保XAML绑定兼容
 /// </summary>
-public partial class HerbItem : ObservableObject
+public class HerbItem : BindableBase
 {
-    [ObservableProperty]
-    private int id;
+    private Guid _id;
+    public Guid Id
+    {
+        get => _id;
+        set => SetProperty(ref _id, value);
+    }
 
-    [ObservableProperty]
-    private string name = string.Empty;
+    private string _name = string.Empty;
+    public string Name
+    {
+        get => _name;
+        set => SetProperty(ref _name, value);
+    }
 
-    [ObservableProperty]
-    private string? pinyin;
+    private string? _pinyin;
+    public string? Pinyin
+    {
+        get => _pinyin;
+        set => SetProperty(ref _pinyin, value);
+    }
 
-    [ObservableProperty]
-    private string? category;
+    private string? _category;
+    public string? Category
+    {
+        get => _category;
+        set => SetProperty(ref _category, value);
+    }
 
-    [ObservableProperty]
-    private string? nature; // 性味
+    private string? _nature; // 性味
+    public string? Nature
+    {
+        get => _nature;
+        set => SetProperty(ref _nature, value);
+    }
 
-    [ObservableProperty]
-    private string? meridian; // 归经
+    private string? _meridian; // 归经
+    public string? Meridian
+    {
+        get => _meridian;
+        set => SetProperty(ref _meridian, value);
+    }
 
-    [ObservableProperty]
-    private string? effect; // 功效
+    private string? _effect; // 功效
+    public string? Effect
+    {
+        get => _effect;
+        set => SetProperty(ref _effect, value);
+    }
 
-    [ObservableProperty]
-    private string? indication; // 主治
+    private string? _indication; // 主治
+    public string? Indication
+    {
+        get => _indication;
+        set => SetProperty(ref _indication, value);
+    }
 
-    [ObservableProperty]
-    private string? contraindication; // 禁忌
+    private string? _contraindication; // 禁忌
+    public string? Contraindication
+    {
+        get => _contraindication;
+        set => SetProperty(ref _contraindication, value);
+    }
 
-    [ObservableProperty]
-    private decimal dosageMin;
+    private decimal _dosageMin;
+    public decimal DosageMin
+    {
+        get => _dosageMin;
+        set => SetProperty(ref _dosageMin, value);
+    }
 
-    [ObservableProperty]
-    private decimal dosageMax;
+    private decimal _dosageMax;
+    public decimal DosageMax
+    {
+        get => _dosageMax;
+        set => SetProperty(ref _dosageMax, value);
+    }
 
-    [ObservableProperty]
-    private string? dosageUnit;
+    private string? _dosageUnit;
+    public string? DosageUnit
+    {
+        get => _dosageUnit;
+        set => SetProperty(ref _dosageUnit, value);
+    }
 
-    [ObservableProperty]
-    private string? usage; // 用法
+    private string? _usage; // 用法
+    public string? Usage
+    {
+        get => _usage;
+        set => SetProperty(ref _usage, value);
+    }
 
-    [ObservableProperty]
-    private decimal unitPrice;
+    private decimal _unitPrice;
+    public decimal UnitPrice
+    {
+        get => _unitPrice;
+        set => SetProperty(ref _unitPrice, value);
+    }
 
-    [ObservableProperty]
-    private string? specification; // 规格
+    private string? _specification; // 规格
+    public string? Specification
+    {
+        get => _specification;
+        set => SetProperty(ref _specification, value);
+    }
 
-    [ObservableProperty]
-    private string? manufacturer; // 生产厂家
+    private string? _manufacturer; // 生产厂家
+    public string? Manufacturer
+    {
+        get => _manufacturer;
+        set => SetProperty(ref _manufacturer, value);
+    }
 
-    [ObservableProperty]
-    private bool isActive = true;
+    private bool _isActive = true;
+    public bool IsActive
+    {
+        get => _isActive;
+        set => SetProperty(ref _isActive, value);
+    }
 
-    [ObservableProperty]
-    private int stock;
+    private int _stock;
+    public int Stock
+    {
+        get => _stock;
+        set => SetProperty(ref _stock, value);
+    }
 
-    [ObservableProperty]
-    private string? remark;
+    private string? _remark;
+    public string? Remark
+    {
+        get => _remark;
+        set => SetProperty(ref _remark, value);
+    }
 
-    [ObservableProperty]
-    private DateTime createdAt;
+    private DateTime _createdAt;
+    public DateTime CreatedAt
+    {
+        get => _createdAt;
+        set => SetProperty(ref _createdAt, value);
+    }
 
-    [ObservableProperty]
-    private DateTime? updatedAt;
+    private DateTime? _updatedAt;
+    public DateTime? UpdatedAt
+    {
+        get => _updatedAt;
+        set => SetProperty(ref _updatedAt, value);
+    }
 
-    [ObservableProperty]
-    private bool isSelected;
+    private bool _isSelected;
+    public bool IsSelected
+    {
+        get => _isSelected;
+        set => SetProperty(ref _isSelected, value);
+    }
 
-    [ObservableProperty]
-    private bool isHighlighted;
+    private bool _isHighlighted;
+    public bool IsHighlighted
+    {
+        get => _isHighlighted;
+        set => SetProperty(ref _isHighlighted, value);
+    }
 
-    [ObservableProperty]
-    private decimal currentDosage; // 当前处方剂量
+    private decimal _currentDosage; // 当前处方剂量
+    public decimal CurrentDosage
+    {
+        get => _currentDosage;
+        set => SetProperty(ref _currentDosage, value);
+    }
 
     /// <summary>
     /// 从HerbDto创建HerbItem
@@ -93,25 +189,25 @@ public partial class HerbItem : ObservableObject
         {
             Id = dto.Id,
             Name = dto.Name,
-            Pinyin = dto.Pinyin,
-            Category = dto.Category,
-            Nature = dto.Nature,
-            Meridian = dto.Meridian,
+            Pinyin = dto.PinYinCode,
+            Category = null, // HerbDto中没有此属性
+            Nature = null, // HerbDto中没有此属性
+            Meridian = null, // HerbDto中没有此属性
             Effect = dto.Effect,
-            Indication = dto.Indication,
-            Contraindication = dto.Contraindication,
-            DosageMin = dto.DosageMin,
-            DosageMax = dto.DosageMax,
-            DosageUnit = dto.DosageUnit,
+            Indication = null, // HerbDto中没有此属性
+            Contraindication = null, // HerbDto中没有此属性
+            DosageMin = 0, // HerbDto中没有此属性
+            DosageMax = 0, // HerbDto中没有此属性
+            DosageUnit = dto.Unit,
             Usage = dto.Usage,
-            UnitPrice = dto.UnitPrice,
-            Specification = dto.Specification,
-            Manufacturer = dto.Manufacturer,
-            IsActive = dto.IsActive,
-            Stock = dto.Stock,
+            UnitPrice = dto.Price,
+            Specification = dto.Spec,
+            Manufacturer = null, // HerbDto中没有此属性
+            IsActive = dto.Status == CommonStatus.Enabled,
+            Stock = 0, // HerbDto中没有此属性
             Remark = dto.Remark,
-            CreatedAt = dto.CreatedAt,
-            UpdatedAt = dto.UpdatedAt
+            CreatedAt = dto.CreateTime,
+            UpdatedAt = dto.UpdateTime
         };
     }
 
@@ -124,25 +220,18 @@ public partial class HerbItem : ObservableObject
         {
             Id = Id,
             Name = Name,
-            Pinyin = Pinyin,
-            Category = Category,
-            Nature = Nature,
-            Meridian = Meridian,
+            PinYinCode = Pinyin,
+            Origin = null, // HerbItem中没有此属性
+            Spec = Specification,
+            Unit = DosageUnit ?? "克",
+            Price = UnitPrice,
+            CostPrice = null, // HerbItem中没有此属性
             Effect = Effect,
-            Indication = Indication,
-            Contraindication = Contraindication,
-            DosageMin = DosageMin,
-            DosageMax = DosageMax,
-            DosageUnit = DosageUnit,
             Usage = Usage,
-            UnitPrice = UnitPrice,
-            Specification = Specification,
-            Manufacturer = Manufacturer,
-            IsActive = IsActive,
-            Stock = Stock,
+            Status = IsActive ? CommonStatus.Enabled : CommonStatus.Disabled,
             Remark = Remark,
-            CreatedAt = CreatedAt,
-            UpdatedAt = UpdatedAt
+            CreateTime = CreatedAt,
+            UpdateTime = UpdatedAt
         };
     }
 

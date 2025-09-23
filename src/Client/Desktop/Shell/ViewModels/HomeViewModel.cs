@@ -610,7 +610,7 @@ namespace LYBT.Desktop.Shell.ViewModels
                     // 清除会话状态
                     SessionManager.ClearUserSession();
 
-                    _eventAggregator.GetEvent<LogoutEvent>().Publish();
+                    _eventAggregator.GetEvent<LogoutEvent>().Publish(new LogoutEventArgs { Reason = "用户主动登出" });
                     ShowSuccess("已成功退出登录");
                     LogInfo("用户已退出登录");
                 }

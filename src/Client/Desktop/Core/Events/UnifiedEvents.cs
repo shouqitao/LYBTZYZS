@@ -6,6 +6,7 @@ using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
+using LYBT.Desktop.Core.Models.Consultation;
 
 namespace LYBT.Desktop.Core.Events;
 
@@ -79,6 +80,21 @@ public class MedicalCaseSelectedEventArgs
 {
     public MedicalCaseDto MedicalCase { get; set; } = null!;
     public PatientDto? Patient { get; set; }
+    
+    public MedicalCaseSelectedEventArgs()
+    {
+    }
+    
+    public MedicalCaseSelectedEventArgs(Guid medicalCaseId)
+    {
+        MedicalCase = new MedicalCaseDto { Id = medicalCaseId };
+    }
+    
+    public MedicalCaseSelectedEventArgs(MedicalCaseDto medicalCase, PatientDto? patient = null)
+    {
+        MedicalCase = medicalCase;
+        Patient = patient;
+    }
 }
 
 /// <summary>

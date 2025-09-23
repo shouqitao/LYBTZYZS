@@ -68,7 +68,7 @@ public partial class App : PrismApplication
     {
         base.ConfigureViewModelLocator();
 
-        // 优化启动性能：简化手动映射，使用容器解析代替手动创建
+        // Prism 8.x最佳实践：直接使用容器解析，无需工厂方法
         ViewModelLocationProvider.Register<MainWindow>(() => Container.Resolve<MainWindowViewModel>());
         ViewModelLocationProvider.Register<HomeView, HomeViewModel>();
 
@@ -77,25 +77,14 @@ public partial class App : PrismApplication
 
     /// <summary>
     /// 应用程序初始化完成后的回调
-    /// 执行企业级启动流程：错误处理初始化、模块协调器配置、性能优化预热、后台服务验证
-    /// 优化启动性能：关键服务同步初始化，验证和预热异步执行避免UI阻塞
+    /// 按照Prism 8.x最佳实践，简化启动流程，避免过度复杂的初始化
     /// </summary>
     protected override void OnInitialized()
     {
         base.OnInitialized();
 
-        // 1. 初始化错误处理服务并注册全局异常处理器（同步，确保错误处理就绪）
-        InitializeErrorHandlingService();
-
-        // 2. 简化模块加载协调器（同步，轻量级初始化）
-        InitializeSimplifiedModuleCoordinator();
-
-        // 3. 后台异步任务 - 不阻塞UI主线程
-        _ = Task.Run(async () =>
-        {
-            // 应用预热优化（后台执行，不阻塞UI）
-            await InitializeApplicationWarmupAsync().ConfigureAwait(false);
-        });
+        // Prism 8.x最佳实践：依赖RegisterTypes中注册的服务，避免手动初始化
+        // 错误处理服务和其他服务已在RegisterTypes中正确注册和配置
     }
 
     /// <summary>

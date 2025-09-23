@@ -1,6 +1,8 @@
 using System.Collections.ObjectModel;
+using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.ViewModels;
 using LYBT.Shared.Interfaces.Services;
+using Prism.Events;
 
 // UltraThink v2.0: 直接使用HerbDto，移除Info模型引用
 using LYBT.Shared.Models.Contracts.Herbs;
@@ -84,7 +86,11 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         /// </summary>
         public PrescriptionItemDto? Result { get; private set; }
 
-        public HerbSelectionDialogViewModel(IHerbService herbService) : base()
+        public HerbSelectionDialogViewModel(
+            IEventAggregator eventAggregator,
+            IHerbService herbService,
+            IErrorHandlingService? errorHandlingService = null) 
+            : base(eventAggregator, errorHandlingService)
         {
             _herbService = herbService ?? throw new ArgumentNullException(nameof(herbService));
             Title = "选择中药材";

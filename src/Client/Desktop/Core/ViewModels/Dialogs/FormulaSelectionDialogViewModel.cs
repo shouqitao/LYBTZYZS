@@ -87,21 +87,7 @@ namespace LYBT.Desktop.Core.ViewModels.Dialogs
             _ = LoadFormulasAsync();
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="FormulaSelectionDialogViewModel"/> class.
-        /// 简化构造函数（使用ContainerLocator）
-        /// </summary>
-        public FormulaSelectionDialogViewModel(IFormulaService formulaService)
-            : base()
-        {
-            _formulaService = formulaService ?? throw new ArgumentNullException(nameof(formulaService));
-            Title = "选择验方";
 
-            SearchCommand = new DelegateCommand(async () => await ExecuteSearchAsync());
-
-            // 初始化加载验方列表
-            _ = LoadFormulasAsync();
-        }
 
         #endregion Constructor
 

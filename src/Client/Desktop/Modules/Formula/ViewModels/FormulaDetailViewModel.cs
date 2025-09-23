@@ -3,6 +3,7 @@ using System.Windows.Input;
 using AutoMapper;
 using LYBT.Desktop.Core.Constants;
 using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Desktop.Core.Services.Navigation;
 using LYBT.Desktop.Core.ViewModels.Base;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Formula;
@@ -25,7 +26,7 @@ namespace LYBT.Desktop.Formula.ViewModels
 
         private readonly IFormulaService _formulaService;
         private readonly ICustomDialogService _dialogService;
-        private readonly IRegionManager _regionManager;
+        private readonly INavigationService _navigationService;
         private readonly IMapper _mapper;
 
         private Guid _formulaId;
@@ -100,7 +101,7 @@ namespace LYBT.Desktop.Formula.ViewModels
         public FormulaDetailViewModel(
             IFormulaService formulaService,
             ICustomDialogService dialogService,
-            IRegionManager regionManager,
+            INavigationService navigationService,
             IMapper mapper,
             IErrorHandlingService errorHandlingService,
             IEventAggregator eventAggregator)
@@ -108,7 +109,7 @@ namespace LYBT.Desktop.Formula.ViewModels
         {
             _formulaService = formulaService ?? throw new ArgumentNullException(nameof(formulaService));
             _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
-            _regionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
+            _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
 
             // 初始化命令
@@ -262,7 +263,7 @@ namespace LYBT.Desktop.Formula.ViewModels
 
         private void NavigateBack()
         {
-            _regionManager.RequestNavigate(RegionNames.SystemWorkbenchContentRegion, "FormulaManagementView");
+            _navigationService.NavigateTo(RegionNames.SystemWorkbenchContentRegion, "FormulaManagementView");
         }
 
         private void EnableEdit()

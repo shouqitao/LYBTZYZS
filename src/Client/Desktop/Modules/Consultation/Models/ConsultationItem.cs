@@ -1,5 +1,5 @@
-using System;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System;
+using Prism.Mvvm;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Enums;
 
@@ -10,83 +10,183 @@ namespace LYBT.Desktop.Consultation.Models;
 /// 替代直接使用ConsultationDto，实现Desktop层与Shared层的解耦
 /// 保持属性名与ConsultationDto一致，确保XAML绑定兼容
 /// </summary>
-public partial class ConsultationItem : ObservableObject
+public class ConsultationItem : BindableBase
 {
-    [ObservableProperty]
-    private int id;
+        private Guid _id;
+    public Guid Id
+    {
+        get => _id;
+        set => SetProperty(ref _id, value);
+    }
 
-    [ObservableProperty]
-    private int medicalCaseId;
+        private Guid _medicalCaseId;
+    public Guid MedicalCaseId
+    {
+        get => _medicalCaseId;
+        set => SetProperty(ref _medicalCaseId, value);
+    }
 
-    [ObservableProperty]
-    private int patientId;
+        private Guid _patientId;
+    public Guid PatientId
+    {
+        get => _patientId;
+        set => SetProperty(ref _patientId, value);
+    }
 
-    [ObservableProperty]
-    private string patientName = string.Empty;
+        private string _patientName = string.Empty;
+    public string PatientName
+    {
+        get => _patientName;
+        set => SetProperty(ref _patientName, value);
+    }
 
-    [ObservableProperty]
-    private string patientGender = string.Empty;
+        private string _patientGender = string.Empty;
+    public string PatientGender
+    {
+        get => _patientGender;
+        set => SetProperty(ref _patientGender, value);
+    }
 
-    [ObservableProperty]
-    private int? patientAge;
+        private int? _patientAge;
+    public int? PatientAge
+    {
+        get => _patientAge;
+        set => SetProperty(ref _patientAge, value);
+    }
 
-    [ObservableProperty]
-    private string chiefComplaint = string.Empty;
+        private string _chiefComplaint = string.Empty;
+    public string ChiefComplaint
+    {
+        get => _chiefComplaint;
+        set => SetProperty(ref _chiefComplaint, value);
+    }
 
-    [ObservableProperty]
-    private string? presentIllness;
+        private string? _presentIllness;
+    public string? PresentIllness
+    {
+        get => _presentIllness;
+        set => SetProperty(ref _presentIllness, value);
+    }
 
-    [ObservableProperty]
-    private string? pastHistory;
+        private string? _pastHistory;
+    public string? PastHistory
+    {
+        get => _pastHistory;
+        set => SetProperty(ref _pastHistory, value);
+    }
 
-    [ObservableProperty]
-    private string? personalHistory;
+        private string? _personalHistory;
+    public string? PersonalHistory
+    {
+        get => _personalHistory;
+        set => SetProperty(ref _personalHistory, value);
+    }
 
-    [ObservableProperty]
-    private string? familyHistory;
+        private string? _familyHistory;
+    public string? FamilyHistory
+    {
+        get => _familyHistory;
+        set => SetProperty(ref _familyHistory, value);
+    }
 
-    [ObservableProperty]
-    private string? allergyHistory;
+        private string? _allergyHistory;
+    public string? AllergyHistory
+    {
+        get => _allergyHistory;
+        set => SetProperty(ref _allergyHistory, value);
+    }
 
     // 中医四诊
-    [ObservableProperty]
-    private string? inspection; // 望诊
+        private string? _inspection;
+    public string? Inspection
+    {
+        get => _inspection;
+        set => SetProperty(ref _inspection, value);
+    } // 望诊
 
-    [ObservableProperty]
-    private string? auscultation; // 闻诊
+        private string? _auscultation;
+    public string? Auscultation
+    {
+        get => _auscultation;
+        set => SetProperty(ref _auscultation, value);
+    } // 闻诊
 
-    [ObservableProperty]
-    private string? inquiry; // 问诊
+        private string? _inquiry;
+    public string? Inquiry
+    {
+        get => _inquiry;
+        set => SetProperty(ref _inquiry, value);
+    } // 问诊
 
-    [ObservableProperty]
-    private string? palpation; // 切诊
+        private string? _palpation;
+    public string? Palpation
+    {
+        get => _palpation;
+        set => SetProperty(ref _palpation, value);
+    } // 切诊
 
-    [ObservableProperty]
-    private string? tcmDiagnosis; // 中医诊断
+        private string? _tcmDiagnosis;
+    public string? TcmDiagnosis
+    {
+        get => _tcmDiagnosis;
+        set => SetProperty(ref _tcmDiagnosis, value);
+    } // 中医诊断
 
-    [ObservableProperty]
-    private string? syndrome; // 证型
+        private string? _syndrome;
+    public string? Syndrome
+    {
+        get => _syndrome;
+        set => SetProperty(ref _syndrome, value);
+    } // 证型
 
-    [ObservableProperty]
-    private string? treatmentPrinciple; // 治则
+        private string? _treatmentPrinciple;
+    public string? TreatmentPrinciple
+    {
+        get => _treatmentPrinciple;
+        set => SetProperty(ref _treatmentPrinciple, value);
+    } // 治则
 
-    [ObservableProperty]
-    private ConsultationStatus status;
+        private ConsultationStatus _status;
+    public ConsultationStatus Status
+    {
+        get => _status;
+        set => SetProperty(ref _status, value);
+    }
 
-    [ObservableProperty]
-    private DateTime createdAt;
+        private DateTime _createdAt;
+    public DateTime CreatedAt
+    {
+        get => _createdAt;
+        set => SetProperty(ref _createdAt, value);
+    }
 
-    [ObservableProperty]
-    private DateTime? completedAt;
+        private DateTime? _completedAt;
+    public DateTime? CompletedAt
+    {
+        get => _completedAt;
+        set => SetProperty(ref _completedAt, value);
+    }
 
-    [ObservableProperty]
-    private int? prescriptionId;
+        private Guid? _prescriptionId;
+    public Guid? PrescriptionId
+    {
+        get => _prescriptionId;
+        set => SetProperty(ref _prescriptionId, value);
+    }
 
-    [ObservableProperty]
-    private bool isSelected;
+        private bool _isSelected;
+    public bool IsSelected
+    {
+        get => _isSelected;
+        set => SetProperty(ref _isSelected, value);
+    }
 
-    [ObservableProperty]
-    private bool isExpanded;
+        private bool _isExpanded;
+    public bool IsExpanded
+    {
+        get => _isExpanded;
+        set => SetProperty(ref _isExpanded, value);
+    }
 
     /// <summary>
     /// 从ConsultationDto创建ConsultationItem
@@ -99,25 +199,25 @@ public partial class ConsultationItem : ObservableObject
             MedicalCaseId = dto.MedicalCaseId,
             PatientId = dto.PatientId,
             PatientName = dto.PatientName ?? string.Empty,
-            PatientGender = dto.PatientGender ?? string.Empty,
-            PatientAge = dto.PatientAge,
+            PatientGender = string.Empty, // ConsultationDto中没有此属性
+            PatientAge = null, // ConsultationDto中没有此属性
             ChiefComplaint = dto.ChiefComplaint,
             PresentIllness = dto.PresentIllness,
-            PastHistory = dto.PastHistory,
-            PersonalHistory = dto.PersonalHistory,
-            FamilyHistory = dto.FamilyHistory,
-            AllergyHistory = dto.AllergyHistory,
+            PastHistory = null, // ConsultationDto中没有此属性
+            PersonalHistory = null, // ConsultationDto中没有此属性
+            FamilyHistory = null, // ConsultationDto中没有此属性
+            AllergyHistory = null, // ConsultationDto中没有此属性
             Inspection = dto.Inspection,
-            Auscultation = dto.Auscultation,
+            Auscultation = dto.AuscultationOlfaction, // ConsultationDto中是AuscultationOlfaction
             Inquiry = dto.Inquiry,
             Palpation = dto.Palpation,
-            TcmDiagnosis = dto.TcmDiagnosis,
-            Syndrome = dto.Syndrome,
+            TcmDiagnosis = dto.TCMDiagnosis, // ConsultationDto中是TCMDiagnosis
+            Syndrome = null, // ConsultationDto中没有此属性
             TreatmentPrinciple = dto.TreatmentPrinciple,
-            Status = dto.Status,
-            CreatedAt = dto.CreatedAt,
-            CompletedAt = dto.CompletedAt,
-            PrescriptionId = dto.PrescriptionId
+            Status = dto.ConsultationStatus, // 使用ConsultationStatus而不是Status
+            CreatedAt = dto.CreateTime, // ConsultationDto继承的属性
+            CompletedAt = dto.EndTime, // 使用EndTime
+            PrescriptionId = null // ConsultationDto中没有此属性
         };
     }
 
@@ -132,25 +232,23 @@ public partial class ConsultationItem : ObservableObject
             MedicalCaseId = MedicalCaseId,
             PatientId = PatientId,
             PatientName = PatientName,
-            PatientGender = PatientGender,
-            PatientAge = PatientAge,
+            DoctorName = string.Empty, // 需要从其他地方获取
+            UserId = Guid.Empty, // 需要从其他地方获取
             ChiefComplaint = ChiefComplaint,
             PresentIllness = PresentIllness,
-            PastHistory = PastHistory,
-            PersonalHistory = PersonalHistory,
-            FamilyHistory = FamilyHistory,
-            AllergyHistory = AllergyHistory,
             Inspection = Inspection,
-            Auscultation = Auscultation,
+            AuscultationOlfaction = Auscultation, // ConsultationDto中是AuscultationOlfaction
             Inquiry = Inquiry,
             Palpation = Palpation,
-            TcmDiagnosis = TcmDiagnosis,
-            Syndrome = Syndrome,
+            TCMDiagnosis = TcmDiagnosis, // ConsultationDto中是TCMDiagnosis
             TreatmentPrinciple = TreatmentPrinciple,
-            Status = Status,
-            CreatedAt = CreatedAt,
-            CompletedAt = CompletedAt,
-            PrescriptionId = PrescriptionId
+            ConsultationStatus = Status,
+            StartTime = CreatedAt,
+            EndTime = CompletedAt,
+            Remark = null, // ConsultationItem中没有Note属性
+            Status = Status == ConsultationStatus.Completed ? CommonStatus.Enabled : CommonStatus.Disabled,
+            CreateTime = CreatedAt,
+            UpdateTime = DateTime.Now
         };
     }
 

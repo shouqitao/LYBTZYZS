@@ -1,7 +1,9 @@
 using System.Collections.ObjectModel;
 using LYBT.Desktop.Core.Constants;
+using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.ViewModels;
 using LYBT.Shared.Interfaces.Services;
+using Prism.Events;
 
 // UltraThink v2.0: 直接使用FormulaDto，移除Info模型引用
 using LYBT.Shared.Models.Contracts.Formula;
@@ -71,7 +73,11 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         /// </summary>
         public FormulaDto? Result { get; private set; }
 
-        public FormulaTemplateDialogViewModel(IFormulaService formulaService) : base()
+        public FormulaTemplateDialogViewModel(
+            IEventAggregator eventAggregator,
+            IFormulaService formulaService,
+            IErrorHandlingService? errorHandlingService = null) 
+            : base(eventAggregator, errorHandlingService)
         {
             _formulaService = formulaService ?? throw new ArgumentNullException(nameof(formulaService));
             Title = "选择验方模板";

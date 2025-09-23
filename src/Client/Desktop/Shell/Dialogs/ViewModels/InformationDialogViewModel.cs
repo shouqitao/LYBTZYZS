@@ -1,5 +1,7 @@
 using LYBT.Desktop.Core.ViewModels;
 using Prism.Commands;
+using Prism.Events;
+using LYBT.Desktop.Core.Interfaces.Services;
 
 namespace LYBT.Desktop.Shell.Dialogs.ViewModels
 {
@@ -28,7 +30,10 @@ namespace LYBT.Desktop.Shell.Dialogs.ViewModels
         /// </summary>
         public DelegateCommand OkCommand => ConfirmCommand;
 
-        public InformationDialogViewModel() : base()
+        public InformationDialogViewModel(
+            IEventAggregator eventAggregator,
+            IErrorHandlingService? errorHandlingService = null) 
+            : base(eventAggregator, errorHandlingService)
         {
             Title = "提示";
         }

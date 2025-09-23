@@ -13,24 +13,36 @@ namespace LYBT.Desktop.Shell.ViewModels;
 
 /// <summary>
 /// 主窗口视图模型 - WPF主界面核心控制器
-/// 采用UltraThink架构标准，使用C# 12主构造函数和现代化特性
+/// 采用Prism 8.x最佳实践，使用构造函数注入模式
 /// 提供用户登录状态管理、界面导航控制、键盘快捷键支持
 /// 集成主题切换、时钟显示、角色基础的工作台切换功能
 /// 支持企业级错误处理和异步操作，适配小型诊所使用需求
 /// </summary>
-/// <param name="regionManager">区域管理器，用于界面导航</param>
-/// <param name="eventAggregator">事件聚合器，用于模块间通信</param>
-/// <param name="servicesFacade">服务外观，统一访问各类服务</param>
-/// <param name="errorHandlingService">错误处理服务</param>
-/// <exception cref="ArgumentNullException">当任何参数为 null 时抛出</exception>
-public class MainWindowViewModel(
-IRegionManager regionManager,
-IEventAggregator eventAggregator,
-IMainWindowServicesFacade servicesFacade,
-IErrorHandlingService errorHandlingService) : ServiceViewModel(eventAggregator, errorHandlingService)
+public class MainWindowViewModel : ServiceViewModel
 {
-    private readonly IMainWindowServicesFacade _servicesFacade = servicesFacade ?? throw new ArgumentNullException(nameof(servicesFacade));
-    private readonly IRegionManager _regionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
+    private readonly IMainWindowServicesFacade _servicesFacade;
+    private readonly IRegionManager _regionManager;
+
+    /// <summary>
+    /// 构造函数 - 按照Prism 8.x最佳实践，在构造函数中完成所有初始化
+    /// </summary>
+    /// <param name="regionManager">区域管理器，用于界面导航</param>
+    /// <param name="eventAggregator">事件聚合器，用于模块间通信</param>
+    /// <param name="servicesFacade">服务外观，统一访问各类服务</param>
+    /// <param name="errorHandlingService">错误处理服务</param>
+    /// <exception cref="ArgumentNullException">当任何参数为 null 时抛出</exception>
+    public MainWindowViewModel(
+        IRegionManager regionManager,
+        IEventAggregator eventAggregator,
+        IMainWindowServicesFacade servicesFacade,
+        IErrorHandlingService errorHandlingService) : base(eventAggregator, errorHandlingService)
+    {
+        _servicesFacade = servicesFacade ?? throw new ArgumentNullException(nameof(servicesFacade));
+        _regionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
+
+        // 按照Prism 8.x最佳实践，在构造函数中完成初始化
+        InitializeViewModel();
+    }
 
     // 私有字段
     private string _title = SystemConstants.SystemTitle;
@@ -121,61 +133,79 @@ IErrorHandlingService errorHandlingService) : ServiceViewModel(eventAggregator, 
     #endregion 命令属性
 
     // 构造函数体 - 初始化时钟计时器和命令
+    /// <summary>
+    /// 静态构造函数 - 初始化命令定义
+    /// 按照Prism 8.x最佳实践，在类级别定义命令
+    /// </summary>
     static MainWindowViewModel()
     {
-        // 静态初始化可以在这里添加
+        // 注：具体命令实例在构造函数中初始化
     }
 
     /// <summary>
-    /// 初始化MainWindowViewModel实例
-    /// 配置时钟计时器、初始化命令和订阅事件
+    /// 初始化所有命令和事件订阅
+    /// 按照Prism 8.x最佳实践，在构造函数中完成所有初始化
     /// </summary>
-    private void InitializeViewModel()
+    private void InitializeCommands()
     {
-        // 初始化时钟计时器
+        // 初始化所有命令 - 使用响应式模式
+        LogoutCommand = new DelegateCommand(async () => await ExecuteLogoutAsync().ConfigureAwait(false));
+        TestApiCommand = new DelegateCommand(async () => await ExecuteTestApiAsync().ConfigureAwait(false))
+            .ObservesProperty(() => IsLoggedIn);
+        ShowControlExamplesCommand = new DelegateCommand(ExecuteShowControlExamples)
+            .ObservesProperty(() => IsLoggedIn);
+
+        // 键盘快捷键命令
+        QuickAddPatientCommand = new DelegateCommand(async () => await ExecuteQuickAddPatientAsync().ConfigureAwait(false))
+            .ObservesProperty(() => IsLoggedIn);
+        QuickStartConsultationCommand = new DelegateCommand(async () => await ExecuteQuickStartConsultationAsync().ConfigureAwait(false))
+            .ObservesProperty(() => IsLoggedIn);
+        ShowHelpCommand = new DelegateCommand(ExecuteShowHelp);
+        ShowSettingsCommand = new DelegateCommand(ExecuteShowSettings)
+            .ObservesProperty(() => IsLoggedIn);
+        ToggleThemeCommand = new DelegateCommand(async () => await ExecuteToggleThemeAsync().ConfigureAwait(false));
+    }
+
+    /// <summary>
+    /// 初始化时钟计时器
+    /// </summary>
+    private void InitializeClock()
+    {
         _clockTimer = new System.Windows.Threading.DispatcherTimer
         {
             Interval = TimeSpan.FromSeconds(1)
         };
         _clockTimer.Tick += OnClockTick;
         _clockTimer.Start();
+    }
 
-        // 初始化所有命令
-        LogoutCommand = new DelegateCommand(async () => await ExecuteLogoutAsync().ConfigureAwait(false));
-        TestApiCommand = new DelegateCommand(async () => await ExecuteTestApiAsync().ConfigureAwait(false), () => _isLoggedIn);
-        ShowControlExamplesCommand = new DelegateCommand(ExecuteShowControlExamples, () => _isLoggedIn);
-
-        // 键盘快捷键命令
-        QuickAddPatientCommand = new DelegateCommand(async () => await ExecuteQuickAddPatientAsync().ConfigureAwait(false), () => _isLoggedIn);
-        QuickStartConsultationCommand = new DelegateCommand(async () => await ExecuteQuickStartConsultationAsync().ConfigureAwait(false), () => _isLoggedIn);
-        ShowHelpCommand = new DelegateCommand(ExecuteShowHelp);
-        ShowSettingsCommand = new DelegateCommand(ExecuteShowSettings, () => _isLoggedIn);
-        ToggleThemeCommand = new DelegateCommand(async () => await ExecuteToggleThemeAsync().ConfigureAwait(false));
-
+    /// <summary>
+    /// 初始化事件订阅
+    /// </summary>
+    private void InitializeEvents()
+    {
         // 订阅登录成功事件
         EventAggregator.GetEvent<LoginSuccessEvent>().Subscribe(OnLoginSuccess);
 
         // 延迟检查登录状态，等待主窗口完全加载
         Application.Current.Dispatcher.BeginInvoke(
-        new Action(() =>
-        {
-            _ = CheckLoginStatusAsync();
-        }), System.Windows.Threading.DispatcherPriority.Loaded);
+            new Action(() =>
+            {
+                _ = CheckLoginStatusAsync();
+            }), System.Windows.Threading.DispatcherPriority.Loaded);
     }
 
     /// <summary>
-    /// 创建并初始化MainWindowViewModel
+    /// 执行完整的ViewModel初始化
+    /// 按照Prism 8.x最佳实践，将初始化逻辑整合到构造函数调用链中
     /// </summary>
-    public static MainWindowViewModel Create(
-    IRegionManager regionManager,
-    IEventAggregator eventAggregator,
-    IMainWindowServicesFacade servicesFacade,
-    IErrorHandlingService errorHandlingService)
+    private void InitializeViewModel()
     {
-        var viewModel = new MainWindowViewModel(regionManager, eventAggregator, servicesFacade, errorHandlingService);
-        viewModel.InitializeViewModel();
-        return viewModel;
+        InitializeClock();
+        InitializeCommands();
+        InitializeEvents();
     }
+
 
     /// <summary>
     /// 简化主题切换功能
@@ -295,7 +325,7 @@ IErrorHandlingService errorHandlingService) : ServiceViewModel(eventAggregator, 
                         await _servicesFacade.AuthenticationService.LogoutAsync();
 
                         // 发布登出事件以清除登录状态消息
-                        EventAggregator.GetEvent<LogoutEvent>().Publish();
+                        EventAggregator.GetEvent<LogoutEvent>().Publish(new LogoutEventArgs { Reason = "Token已过期" });
                     }
                     catch (Exception ex)
                     {
@@ -370,7 +400,7 @@ IErrorHandlingService errorHandlingService) : ServiceViewModel(eventAggregator, 
     /// <summary>
     /// 登录成功事件处理
     /// </summary>
-    private void OnLoginSuccess()
+    private void OnLoginSuccess(LoginSuccessEventArgs args)
     {
         // 重新检查登录状态
         _ = CheckLoginStatusAsync();
@@ -553,7 +583,7 @@ IErrorHandlingService errorHandlingService) : ServiceViewModel(eventAggregator, 
                 if (navigationResult.Result == true)
                 {
                     // 成功导航后，可以发送事件触发快速开始看诊流程
-                    EventAggregator.GetEvent<QuickStartConsultationEvent>().Publish();
+                    // TODO: QuickStartConsultationEvent 已移除，需要使用新的事件机制
                 }
             });
 

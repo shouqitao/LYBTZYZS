@@ -1,5 +1,7 @@
 using LYBT.Desktop.Core.Events;
 using LYBT.Desktop.Core.Models.Consultation;
+using LYBT.Desktop.Core.Models.Events;
+using LYBT.Desktop.Core.Models.Navigation;
 using Microsoft.Extensions.Logging;
 using Prism.Events;
 
@@ -59,25 +61,25 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components
             {
                 // 订阅工作流步骤保存事件
                 _eventAggregator.GetEvent<SaveStepDataEvent>()
-                    .Subscribe(OnSaveStepData, ThreadOption.UIThread);
+                    .Subscribe(OnSaveStepData);
 
                 // 订阅数据变更事件
                 _eventAggregator.GetEvent<DataChangedEvent>()
-                    .Subscribe(OnDataChanged, ThreadOption.UIThread);
+                    .Subscribe(OnDataChanged);
 
                 // 订阅导航事件
                 _eventAggregator.GetEvent<NavigationEvent>()
-                    .Subscribe(OnNavigation, ThreadOption.UIThread, false, null);
+                    .Subscribe(OnNavigation);
 
                 // 订阅处方相关的专门事件
                 _eventAggregator.GetEvent<PrescriptionChangedEvent>()
-                    .Subscribe(OnPrescriptionChanged, ThreadOption.UIThread);
+                    .Subscribe(OnPrescriptionChanged);
 
                 _eventAggregator.GetEvent<HerbAddedEvent>()
-                    .Subscribe(OnHerbAdded, ThreadOption.UIThread);
+                    .Subscribe(OnHerbAdded);
 
                 _eventAggregator.GetEvent<FormulaImportedEvent>()
-                    .Subscribe(OnFormulaImported, ThreadOption.UIThread);
+                    .Subscribe(OnFormulaImported);
 
                 _logger.LogDebug("事件订阅初始化完成");
             }
@@ -94,12 +96,12 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components
         /// <summary>
         /// 处理工作流步骤保存事件
         /// </summary>
-        private async void OnSaveStepData(WorkflowStep step)
+        private async void OnSaveStepData(SaveStepDataEventArgs args)
         {
             // 使用适当的async void事件处理器模式
             try
             {
-                if (step != WorkflowStep.Prescription || _dataManager == null)
+                if (args.StepName != "Prescription" || _dataManager == null)
                 {
                     return;
                 }

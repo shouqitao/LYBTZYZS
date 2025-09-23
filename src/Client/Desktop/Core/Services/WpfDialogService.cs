@@ -195,7 +195,7 @@ namespace LYBT.Desktop.Core.Services
         }
 
         /// <summary>
-        /// 显示模态对话框 (字符串名称版本)
+        /// 显示模态对话框 (字符串名称版本) - Prism 8.x优化版本
         /// </summary>
         public async Task<CustomDialogResult> ShowDialogAsync(string dialogName, Dictionary<string, object>? parameters = null)
         {
@@ -212,265 +212,18 @@ namespace LYBT.Desktop.Core.Services
                     var dialogType = _dialogRegistry[dialogName];
                     var dialog = (Window)_container.Resolve(dialogType);
 
-                    // 处方编辑对话框特殊处理
-                    if (dialogName == "PrescriptionEditorDialog")
-                    {
-                        var viewModelTypeName = "LYBT.Desktop.Prescriptions.ViewModels.PrescriptionEditorDialogViewModel";
-                        var assembly = dialog.GetType().Assembly;
-                        var viewModelType = assembly.GetType(viewModelTypeName);
-
-                        if (viewModelType != null)
-                        {
-                            var viewModel = _container.Resolve(viewModelType);
-                            dialog.DataContext = viewModel;
-
-                            // 调用InitializeWithContextAsync方法传递参数
-                            if (parameters != null)
-                            {
-                                var initMethod = viewModelType.GetMethod("InitializeWithContextAsync");
-                                if (initMethod != null)
-                                {
-                                    // 异步调用初始化方法
-                                    _ = Task.Run(async () =>
-                                    {
-                                        try
-                                        {
-                                            var task = initMethod.Invoke(viewModel, new object[] { parameters }) as Task;
-                                            if (task != null)
-                                            {
-                                                await task;
-                                            }
-                                        }
-                                        catch (Exception ex)
-                                        {
-                                            _logger.LogError(ex, "初始化PrescriptionEditorDialog参数时发生错误");
-                                        }
-                                    });
-                                }
-                            }
-                        }
-                        else
-                        {
-                            _logger.LogWarning("无法找到PrescriptionEditorDialogViewModel类型");
-                        }
-                    }
-
-                    // 药材选择对话框特殊处理
-                    else if (dialogName == "HerbSelectionDialog")
-                    {
-                        var viewModelTypeName = "LYBT.Desktop.Prescriptions.ViewModels.HerbSelectionDialogViewModel";
-                        var assembly = dialog.GetType().Assembly;
-                        var viewModelType = assembly.GetType(viewModelTypeName);
-
-                        if (viewModelType != null)
-                        {
-                            var viewModel = _container.Resolve(viewModelType);
-                            dialog.DataContext = viewModel;
-
-                            // 调用InitializeWithParametersAsync方法传递参数
-                            if (parameters != null)
-                            {
-                                var initMethod = viewModelType.GetMethod("InitializeWithParametersAsync");
-                                if (initMethod != null)
-                                {
-                                    // 异步调用初始化方法
-                                    _ = Task.Run(async () =>
-                                    {
-                                        try
-                                        {
-                                            var task = initMethod.Invoke(viewModel, new object[] { parameters }) as Task;
-                                            if (task != null)
-                                            {
-                                                await task;
-                                            }
-                                        }
-                                        catch (Exception ex)
-                                        {
-                                            _logger.LogError(ex, "初始化HerbSelectionDialog参数时发生错误");
-                                        }
-                                    });
-                                }
-                            }
-                        }
-                        else
-                        {
-                            _logger.LogWarning("无法找到HerbSelectionDialogViewModel类型");
-                        }
-                    }
-                    else if (dialogName == "PatientAddEditDialog")
-                    {
-                        // 使用反射来设置ViewModel，避免直接引用模块类型
-                        var viewModelTypeName = "LYBT.Desktop.Patients.ViewModels.PatientAddEditDialogViewModel";
-                        var assembly = dialog.GetType().Assembly;
-                        var viewModelType = assembly.GetType(viewModelTypeName);
-
-                        if (viewModelType != null)
-                        {
-                            var viewModel = _container.Resolve(viewModelType);
-                            dialog.DataContext = viewModel;
-
-                            if (parameters != null && viewModel is ICustomDialogAware dialogAware)
-                            {
-                                dialogAware.OnDialogOpened(parameters);
-                            }
-                        }
-                        else
-                        {
-                            _logger.LogWarning("无法找到PatientAddEditDialogViewModel类型");
-                        }
-                    }
-                    else if (dialogName == "UserAddEditDialog")
-                    {
-                        // 使用反射来设置ViewModel，避免直接引用模块类型
-                        var viewModelTypeName = "LYBT.Desktop.Users.ViewModels.UserAddEditDialogViewModel";
-                        var assembly = dialog.GetType().Assembly;
-                        var viewModelType = assembly.GetType(viewModelTypeName);
-
-                        if (viewModelType != null)
-                        {
-                            var viewModel = _container.Resolve(viewModelType);
-                            dialog.DataContext = viewModel;
-
-                            if (parameters != null && viewModel is ICustomDialogAware dialogAware)
-                            {
-                                dialogAware.OnDialogOpened(parameters);
-                            }
-                        }
-                        else
-                        {
-                            _logger.LogWarning("无法找到UserAddEditDialogViewModel类型");
-                        }
-                    }
-                    else if (dialogName == "HerbAddEditDialog")
-                    {
-                        // 中药材新增/编辑对话框
-                        var viewModelTypeName = "LYBT.Desktop.Herbs.ViewModels.HerbAddEditDialogViewModel";
-                        var assembly = dialog.GetType().Assembly;
-                        var viewModelType = assembly.GetType(viewModelTypeName);
-
-                        if (viewModelType != null)
-                        {
-                            var viewModel = _container.Resolve(viewModelType);
-                            dialog.DataContext = viewModel;
-
-                            if (parameters != null && viewModel is ICustomDialogAware dialogAware)
-                            {
-                                dialogAware.OnDialogOpened(parameters);
-                            }
-                        }
-                        else
-                        {
-                            _logger.LogWarning("无法找到HerbAddEditDialogViewModel类型");
-                        }
-                    }
-                    else if (dialogName == "AddFormulaDialog")
-                    {
-                        // 验方新增对话框
-                        var viewModelTypeName = "LYBT.Desktop.Formula.ViewModels.AddFormulaDialogViewModel";
-                        var assembly = dialog.GetType().Assembly;
-                        var viewModelType = assembly.GetType(viewModelTypeName);
-
-                        if (viewModelType != null)
-                        {
-                            var viewModel = _container.Resolve(viewModelType);
-                            dialog.DataContext = viewModel;
-
-                            if (parameters != null && viewModel is ICustomDialogAware dialogAware)
-                            {
-                                dialogAware.OnDialogOpened(parameters);
-                            }
-                        }
-                        else
-                        {
-                            _logger.LogWarning("无法找到AddFormulaDialogViewModel类型");
-                        }
-                    }
-                    else if (dialogName == "EditFormulaDialog")
-                    {
-                        // 验方编辑对话框
-                        var viewModelTypeName = "LYBT.Desktop.Formula.ViewModels.EditFormulaDialogViewModel";
-                        var assembly = dialog.GetType().Assembly;
-                        var viewModelType = assembly.GetType(viewModelTypeName);
-
-                        if (viewModelType != null)
-                        {
-                            var viewModel = _container.Resolve(viewModelType);
-                            dialog.DataContext = viewModel;
-
-                            if (parameters != null && viewModel is ICustomDialogAware dialogAware)
-                            {
-                                dialogAware.OnDialogOpened(parameters);
-                            }
-                        }
-                        else
-                        {
-                            _logger.LogWarning("无法找到EditFormulaDialogViewModel类型");
-                        }
-                    }
-                    else if (dialogName == "ViewFormulaDialog")
-                    {
-                        // 验方查看对话框
-                        var viewModelTypeName = "LYBT.Desktop.Formula.ViewModels.ViewFormulaDialogViewModel";
-                        var assembly = dialog.GetType().Assembly;
-                        var viewModelType = assembly.GetType(viewModelTypeName);
-
-                        if (viewModelType != null)
-                        {
-                            var viewModel = _container.Resolve(viewModelType);
-                            dialog.DataContext = viewModel;
-
-                            if (parameters != null && viewModel is ICustomDialogAware dialogAware)
-                            {
-                                dialogAware.OnDialogOpened(parameters);
-                            }
-                        }
-                        else
-                        {
-                            _logger.LogWarning("无法找到ViewFormulaDialogViewModel类型");
-                        }
-                    }
-                    else if (dialogName == "CreateMedicalCaseDialog")
-                    {
-                        // 医案创建对话框
-                        var viewModelTypeName = "LYBT.Desktop.MedicalCase.ViewModels.CreateMedicalCaseDialogViewModel";
-                        var assembly = dialog.GetType().Assembly;
-                        var viewModelType = assembly.GetType(viewModelTypeName);
-
-                        if (viewModelType != null)
-                        {
-                            var viewModel = _container.Resolve(viewModelType);
-                            dialog.DataContext = viewModel;
-
-                            if (parameters != null && viewModel is ICustomDialogAware dialogAware)
-                            {
-                                dialogAware.OnDialogOpened(parameters);
-                            }
-                        }
-                        else
-                        {
-                            _logger.LogWarning("无法找到CreateMedicalCaseDialogViewModel类型");
-                        }
-                    }
-
-                    // 通用处理：如果DataContext已经是ICustomDialogAware
-                    else if (dialog.DataContext is ICustomDialogAware dialogAware && parameters != null)
-                    {
-                        dialogAware.OnDialogOpened(parameters);
-                    }
+                    // Prism 8.x标准模式：通过约定解析ViewModel
+                    SetupDialogViewModel(dialog, dialogName, parameters);
 
                     // 设置父窗口
-                    if (Application.Current.MainWindow != null && dialog != Application.Current.MainWindow)
-                    {
-                        dialog.Owner = Application.Current.MainWindow;
-                        dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-                    }
+                    SetupDialogOwner(dialog);
 
                     var result = dialog.ShowDialog();
 
                     // 调用关闭回调
-                    if (dialog.DataContext is ICustomDialogAware dialogAware2)
+                    if (dialog.DataContext is ICustomDialogAware dialogAware)
                     {
-                        dialogAware2.OnDialogClosed();
+                        dialogAware.OnDialogClosed();
                     }
 
                     return CustomDialogResult.Create(result, parameters, dialog.DataContext);
@@ -484,39 +237,155 @@ namespace LYBT.Desktop.Core.Services
         }
 
         /// <summary>
+        /// 设置对话框ViewModel - Prism 8.x标准模式
+        /// </summary>
+        private void SetupDialogViewModel(Window dialog, string dialogName, Dictionary<string, object>? parameters)
+        {
+            try
+            {
+                // 如果DataContext已设置且实现了ICustomDialogAware，直接使用
+                if (dialog.DataContext is ICustomDialogAware existingDialogAware)
+                {
+                    if (parameters != null)
+                    {
+                        existingDialogAware.OnDialogOpened(parameters);
+                    }
+                    return;
+                }
+
+                // 尝试通过约定解析ViewModel：DialogName + "ViewModel"
+                var viewModelName = GetViewModelNameByConvention(dialogName);
+                if (!string.IsNullOrEmpty(viewModelName))
+                {
+                    var viewModelType = FindViewModelType(viewModelName);
+                    if (viewModelType != null)
+                    {
+                        var viewModel = _container.Resolve(viewModelType);
+                        dialog.DataContext = viewModel;
+
+                        if (parameters != null && viewModel is ICustomDialogAware dialogAware)
+                        {
+                            dialogAware.OnDialogOpened(parameters);
+                        }
+                        return;
+                    }
+                }
+
+                _logger.LogWarning("无法为对话框 {DialogName} 找到合适的ViewModel", dialogName);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "设置对话框ViewModel时发生错误: {DialogName}", dialogName);
+            }
+        }
+
+        /// <summary>
+        /// 根据约定获取ViewModel名称
+        /// </summary>
+        private string GetViewModelNameByConvention(string dialogName)
+        {
+            // 移除Dialog后缀，添加ViewModel后缀
+            if (dialogName.EndsWith("Dialog"))
+            {
+                var baseName = dialogName.Substring(0, dialogName.Length - 6);
+                return baseName + "DialogViewModel";
+            }
+            return dialogName + "ViewModel";
+        }
+
+        /// <summary>
+        /// 在所有加载的程序集中查找ViewModel类型
+        /// </summary>
+        private Type? FindViewModelType(string viewModelName)
+        {
+            try
+            {
+                // 在当前应用域的所有程序集中搜索
+                foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+                {
+                    if (assembly.IsDynamic) continue;
+
+                    var types = assembly.GetTypes();
+                    foreach (var type in types)
+                    {
+                        if (type.Name == viewModelName)
+                        {
+                            return type;
+                        }
+                    }
+                }
+                return null;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "查找ViewModel类型时发生错误: {ViewModelName}", viewModelName);
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// 设置对话框父窗口
+        /// </summary>
+        private void SetupDialogOwner(Window dialog)
+        {
+            if (Application.Current.MainWindow != null && dialog != Application.Current.MainWindow)
+            {
+                dialog.Owner = Application.Current.MainWindow;
+                dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            }
+        }
+
+        /// <summary>
+        /// 初始化默认对话框注册
+        /// </summary>
+        private void InitializeDefaultDialogs()
+        {
+            try
+            {
+                // 注册系统基础对话框
+                RegisterBasicDialogs();
+                
+                _logger.LogDebug("默认对话框注册完成，共注册 {Count} 个对话框", _dialogRegistry.Count);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "初始化默认对话框注册时发生错误");
+            }
+        }
+
+        /// <summary>
+        /// 注册基础对话框
+        /// </summary>
+        private void RegisterBasicDialogs()
+        {
+            // 基础对话框注册在这里，业务对话框由各模块自行注册
+            // 避免Core层与业务模块耦合
+        }
+
+        /// <summary>
         /// 注册对话框类型
         /// </summary>
-        /// <param name="dialogName">对话框名称</param>
-        /// <param name="dialogType">对话框窗口类型</param>
         public void RegisterDialog(string dialogName, Type dialogType)
         {
-            if (string.IsNullOrEmpty(dialogName))
-            {
+            if (string.IsNullOrWhiteSpace(dialogName))
                 throw new ArgumentException("对话框名称不能为空", nameof(dialogName));
-            }
 
             if (dialogType == null)
-            {
                 throw new ArgumentNullException(nameof(dialogType));
-            }
 
             if (!typeof(Window).IsAssignableFrom(dialogType))
-            {
-                throw new ArgumentException("对话框类型必须继承自 Window", nameof(dialogType));
-            }
+                throw new ArgumentException("对话框类型必须继承自Window", nameof(dialogType));
 
             _dialogRegistry[dialogName] = dialogType;
-            _logger.LogDebug("注册对话框: {DialogName} -> {DialogType}", dialogName, dialogType.Name);
+            _logger.LogDebug("已注册对话框: {DialogName} -> {DialogType}", dialogName, dialogType.Name);
         }
 
         /// <summary>
         /// 检查对话框是否已注册
         /// </summary>
-        /// <param name="dialogName">对话框名称</param>
-        /// <returns>是否已注册</returns>
         public bool IsDialogRegistered(string dialogName)
         {
-            return !string.IsNullOrEmpty(dialogName) && _dialogRegistry.ContainsKey(dialogName);
+            return !string.IsNullOrWhiteSpace(dialogName) && _dialogRegistry.ContainsKey(dialogName);
         }
 
         /// <summary>
@@ -526,17 +395,24 @@ namespace LYBT.Desktop.Core.Services
         {
             return await Application.Current.Dispatcher.InvokeAsync(() =>
             {
-                var dialog = new Microsoft.Win32.OpenFileDialog
+                try
                 {
-                    Filter = filter
-                };
+                    var dialog = new Microsoft.Win32.OpenFileDialog()
+                    {
+                        Title = title,
+                        Filter = filter,
+                        CheckFileExists = true,
+                        CheckPathExists = true
+                    };
 
-                if (dialog.ShowDialog() == true)
-                {
-                    return dialog.FileName;
+                    var result = dialog.ShowDialog(Application.Current.MainWindow);
+                    return result == true ? dialog.FileName : null;
                 }
-
-                return null;
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "显示打开文件对话框时发生错误");
+                    return null;
+                }
             });
         }
 
@@ -547,59 +423,62 @@ namespace LYBT.Desktop.Core.Services
         {
             return await Application.Current.Dispatcher.InvokeAsync(() =>
             {
-                var dialog = new Microsoft.Win32.SaveFileDialog
+                try
                 {
-                    Filter = filter,
-                    FileName = defaultFileName
-                };
+                    var dialog = new Microsoft.Win32.SaveFileDialog()
+                    {
+                        Title = title,
+                        Filter = filter,
+                        FileName = defaultFileName,
+                        CheckPathExists = true
+                    };
 
-                if (dialog.ShowDialog() == true)
-                {
-                    return dialog.FileName;
+                    var result = dialog.ShowDialog(Application.Current.MainWindow);
+                    return result == true ? dialog.FileName : null;
                 }
-
-                return null;
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "显示保存文件对话框时发生错误");
+                    return null;
+                }
             });
         }
 
         /// <summary>
-        /// 显示文件夹选择对话框
+        /// 显示文件夹选择对话框 (使用WPF原生实现)
         /// </summary>
         public async Task<string?> ShowFolderBrowserDialogAsync(string title = "选择文件夹")
         {
             return await Application.Current.Dispatcher.InvokeAsync(() =>
             {
-                // WPF没有内置的文件夹选择对话框，可以使用Windows Forms或WPF-UI的实现
-                // 这里暂时返回null，可以根据需要后续实现
-                return (string?)null;
+                try
+                {
+                    // 使用WPF原生的OpenFileDialog替代FolderBrowserDialog
+                    var dialog = new Microsoft.Win32.OpenFileDialog()
+                    {
+                        Title = title,
+                        CheckFileExists = false,
+                        CheckPathExists = true,
+                        FileName = "选择文件夹",
+                        Filter = "文件夹|*.folder",
+                        ValidateNames = false
+                    };
+
+                    // 尝试显示文件夹选择
+                    var result = dialog.ShowDialog(Application.Current.MainWindow);
+                    if (result == true)
+                    {
+                        // 返回所选文件的目录
+                        return System.IO.Path.GetDirectoryName(dialog.FileName);
+                    }
+                    return null;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "显示文件夹选择对话框时发生错误");
+                    return null;
+                }
             });
-        }
-
-        /// <summary>
-        /// 初始化默认对话框注册
-        /// </summary>
-        private void InitializeDefaultDialogs()
-        {
-            try
-            {
-                // 注册系统内置对话框
-                // RegisterDialog("InputDialog", typeof(Views.Dialogs.InputDialog));
-                // RegisterDialog("ConfirmationDialog", typeof(ConfirmationDialog)); // Shell项目对话框暂时注释
-                // RegisterDialog("InformationDialog", typeof(InformationDialog)); // Shell项目对话框暂时注释
-                // RegisterDialog("ErrorDialog", typeof(ErrorDetailsDialog)); // Shell项目对话框暂时注释
-
-                // 注册业务对话框
-                RegisterDialog("HerbSelectionDialog", typeof(Views.Dialogs.HerbSelectionDialog));
-                RegisterDialog("FormulaSelectionDialog", typeof(Views.Dialogs.FormulaSelectionDialog));
-
-                // 业务对话框将由各模块在初始化时动态注册
-                // 避免Core层直接依赖业务模块类型
-                _logger.LogDebug("默认对话框注册完成，共注册 {Count} 个对话框", _dialogRegistry.Count);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "初始化默认对话框注册时发生错误");
-            }
         }
     }
 }

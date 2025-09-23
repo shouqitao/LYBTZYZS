@@ -63,15 +63,7 @@ namespace LYBT.Desktop.Core.ViewModels
             CancelCommand = new DelegateCommand(OnCancel);
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DialogViewModelBase"/> class.
-        /// 简化构造函数（使用ContainerLocator）
-        /// </summary>
-        protected DialogViewModelBase() : base(GetEventAggregator(), GetErrorHandlingService())
-        {
-            ConfirmCommand = new DelegateCommand(async () => await OnConfirmAsync(), CanConfirm);
-            CancelCommand = new DelegateCommand(OnCancel);
-        }
+
 
         /// <summary>
         /// 确认操作
@@ -115,37 +107,7 @@ namespace LYBT.Desktop.Core.ViewModels
         /// </summary>
         protected virtual bool CanConfirm() => !IsLoading;
 
-        /// <summary>
-        /// 获取EventAggregator实例
-        /// </summary>
-        private static IEventAggregator GetEventAggregator()
-        {
-            try
-            {
-                return (IEventAggregator?)Prism.Ioc.ContainerLocator.Container?.Resolve(typeof(IEventAggregator))
-                    ?? new EventAggregator();
-            }
-            catch
-            {
-                return new EventAggregator();
-            }
-        }
 
-        /// <summary>
-        /// 获取ErrorHandlingService实例
-        /// </summary>
-        private static IErrorHandlingService GetErrorHandlingService()
-        {
-            try
-            {
-                return (IErrorHandlingService?)Prism.Ioc.ContainerLocator.Container?.Resolve(typeof(IErrorHandlingService))
-                    ?? throw new InvalidOperationException("ErrorHandlingService未注册");
-            }
-            catch
-            {
-                throw new InvalidOperationException("无法解析ErrorHandlingService");
-            }
-        }
 
         /// <summary>
         /// 加载状态变化时更新命令状态

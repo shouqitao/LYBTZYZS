@@ -134,16 +134,7 @@ namespace LYBT.Desktop.Core.ViewModels
         /// 兼容性构造函数（向后兼容）
         /// </summary>
         protected ModernViewModelBase(IEventAggregator eventAggregator)
-            : this(eventAggregator, TryResolveErrorHandlingService())
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ModernViewModelBase"/> class.
-        /// 简化构造函数（使用容器解析）
-        /// </summary>
-        protected ModernViewModelBase()
-            : this(GetEventAggregatorFromContainer(), TryResolveErrorHandlingService())
+            : this(eventAggregator, null)
         {
         }
 
@@ -347,40 +338,7 @@ namespace LYBT.Desktop.Core.ViewModels
 
         #endregion Command实现
 
-        #region 依赖服务解析（兼容性）
 
-        /// <summary>
-        /// 从容器解析EventAggregator
-        /// </summary>
-        private static IEventAggregator GetEventAggregatorFromContainer()
-        {
-            try
-            {
-                return (IEventAggregator?)Prism.Ioc.ContainerLocator.Container?.Resolve(typeof(IEventAggregator))
-                    ?? new EventAggregator();
-            }
-            catch
-            {
-                return new EventAggregator();
-            }
-        }
-
-        /// <summary>
-        /// 尝试从容器解析ErrorHandlingService
-        /// </summary>
-        private static IErrorHandlingService? TryResolveErrorHandlingService()
-        {
-            try
-            {
-                return (IErrorHandlingService?)Prism.Ioc.ContainerLocator.Container?.Resolve(typeof(IErrorHandlingService));
-            }
-            catch
-            {
-                return null;
-            }
-        }
-
-        #endregion 依赖服务解析（兼容性）
 
         #region IDisposable实现
 

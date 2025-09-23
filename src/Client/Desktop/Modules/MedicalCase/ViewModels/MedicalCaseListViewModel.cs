@@ -2,6 +2,7 @@ using AutoMapper;
 using LYBT.Desktop.Core.Constants;
 using LYBT.Desktop.Core.Coordinators;
 using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Desktop.Core.Services.Navigation;
 using LYBT.Desktop.Core.Managers;
 using LYBT.Desktop.Core.ViewModels.Base;
 using LYBT.Shared.Interfaces.Services;
@@ -29,7 +30,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         private readonly IMedicalCaseService _medicalCaseService;
         private readonly ICustomDialogService _dialogService;
-        private readonly IRegionManager _regionManager;
+        private readonly INavigationService _navigationService;
         private readonly IMapper _mapper;
 
         // UltraThink v2.0: 直接使用DTO，移除复杂的ViewModel包装和筛选功能
@@ -85,7 +86,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         public MedicalCaseListViewModel(
             IMedicalCaseService medicalCaseService,
             ICustomDialogService dialogService,
-            IRegionManager regionManager,
+            INavigationService navigationService,
             IMapper mapper,
             ISessionManager sessionManager,
             INotificationService notificationService,
@@ -96,7 +97,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         {
             _medicalCaseService = medicalCaseService ?? throw new ArgumentNullException(nameof(medicalCaseService));
             _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
-            _regionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
+            _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
 
             InitializeCommands();
@@ -262,9 +263,12 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 // 导航到详情界面 - 使用Task.Run包装以修复CS1998警告
                 await Task.Run(() =>
                 {
-                    _regionManager.RequestNavigate(
-                        RegionNames.SystemWorkbenchContentRegion,
-                        $"MedicalCaseDetailView?MedicalCaseId={medicalCase.Id}&ViewMode=Detail");
+                    var navigationParameters = new NavigationParameters
+                    {
+                        { "MedicalCaseId", medicalCase.Id },
+                        { "ViewMode", "Detail" }
+                    };
+                    _navigationService.NavigateTo(RegionNames.SystemWorkbenchContentRegion, "MedicalCaseDetailView", navigationParameters);
                 });
             }
             catch (Exception ex)
@@ -289,9 +293,13 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 if (result.IsSuccess)
                 {
                     // 导航到看诊界面
-                    _regionManager.RequestNavigate(
-                        RegionNames.ConsultationWorkbenchContentRegion,
-                        $"ConsultationMainView?MedicalCaseId={medicalCase.Id}&PatientId={medicalCase.PatientId}&ConsultationMode=Start");
+                    var navigationParameters = new NavigationParameters
+                    {
+                        { "MedicalCaseId", medicalCase.Id },
+                        { "PatientId", medicalCase.PatientId },
+                        { "ConsultationMode", "Start" }
+                    };
+                    _navigationService.NavigateTo(RegionNames.ConsultationWorkbenchContentRegion, "ConsultationMainView", navigationParameters);
 
                     await RefreshDataAsync();
                     await _dialogService.ShowInformationAsync("已成功开始看诊", "成功");

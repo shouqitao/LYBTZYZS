@@ -1,6 +1,7 @@
 using LYBT.Desktop.Core.Constants;
 using LYBT.Desktop.Core.Events;
 using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Desktop.Core.Services.Navigation;
 using LYBT.Desktop.Core.ViewModels;
 using LYBT.Desktop.Prescriptions.Views;
 using Microsoft.Extensions.Logging;
@@ -23,7 +24,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
 
         #region 依赖服务
 
-        private readonly IRegionManager _regionManager;
+        private readonly INavigationService _navigationService;
         private readonly IEventAggregator _eventAggregator;
         private readonly ICustomDialogService _dialogService;
         private readonly ILogger<PrescriptionsMainViewModel> _logger;
@@ -78,13 +79,13 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         #endregion 命令
 
         public PrescriptionsMainViewModel(
-            IRegionManager regionManager,
+            INavigationService navigationService,
             IEventAggregator eventAggregator,
             ICustomDialogService dialogService,
             ILogger<PrescriptionsMainViewModel> logger)
             : base(eventAggregator)
         {
-            _regionManager = regionManager;
+            _navigationService = navigationService;
             _eventAggregator = eventAggregator;
             _dialogService = dialogService;
             _logger = logger;
@@ -286,7 +287,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                     navigationParameters.Add("MedicalCaseId", CurrentMedicalCaseId);
                 }
 
-                _regionManager.RequestNavigate(RegionNames.ConsultationWorkbenchContentRegion, "ConsultationMainView", navigationParameters);
+                _navigationService.NavigateTo(RegionNames.ConsultationWorkbenchContentRegion, "ConsultationMainView", navigationParameters);
             }
             catch (Exception ex)
             {

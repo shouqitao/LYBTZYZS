@@ -1,5 +1,5 @@
 using System;
-using CommunityToolkit.Mvvm.ComponentModel;
+using Prism.Mvvm;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 
@@ -10,52 +10,112 @@ namespace LYBT.Desktop.Users.Models;
 /// 替代直接使用UserDto，实现Desktop层与Shared层的解耦
 /// 保持属性名与UserDto一致，确保XAML绑定兼容
 /// </summary>
-public partial class UserItem : ObservableObject
+public class UserItem : BindableBase
 {
-    [ObservableProperty]
-    private int id;
+    private Guid _id;
+    public Guid Id
+    {
+        get => _id;
+        set => SetProperty(ref _id, value);
+    }
 
-    [ObservableProperty]
-    private string username = string.Empty;
+    private string _username = string.Empty;
+    public string Username
+    {
+        get => _username;
+        set => SetProperty(ref _username, value);
+    }
 
-    [ObservableProperty]
-    private string realName = string.Empty;
+    private string _realName = string.Empty;
+    public string RealName
+    {
+        get => _realName;
+        set => SetProperty(ref _realName, value);
+    }
 
-    [ObservableProperty]
-    private UserRole role;
+    private UserRole _role;
+    public UserRole Role
+    {
+        get => _role;
+        set => SetProperty(ref _role, value);
+    }
 
-    [ObservableProperty]
-    private string? email;
+    private string? _email;
+    public string? Email
+    {
+        get => _email;
+        set => SetProperty(ref _email, value);
+    }
 
-    [ObservableProperty]
-    private string? phoneNumber;
+    private string? _phoneNumber;
+    public string? PhoneNumber
+    {
+        get => _phoneNumber;
+        set => SetProperty(ref _phoneNumber, value);
+    }
 
-    [ObservableProperty]
-    private string? department;
+    private string? _department;
+    public string? Department
+    {
+        get => _department;
+        set => SetProperty(ref _department, value);
+    }
 
-    [ObservableProperty]
-    private string? title;
+    private string? _title;
+    public string? Title
+    {
+        get => _title;
+        set => SetProperty(ref _title, value);
+    }
 
-    [ObservableProperty]
-    private string? pinYinCode;
+    private string? _pinYinCode;
+    public string? PinYinCode
+    {
+        get => _pinYinCode;
+        set => SetProperty(ref _pinYinCode, value);
+    }
 
-    [ObservableProperty]
-    private CommonStatus status;
+    private CommonStatus _status;
+    public CommonStatus Status
+    {
+        get => _status;
+        set => SetProperty(ref _status, value);
+    }
 
-    [ObservableProperty]
-    private DateTime createTime;
+    private DateTime _createTime;
+    public DateTime CreateTime
+    {
+        get => _createTime;
+        set => SetProperty(ref _createTime, value);
+    }
 
-    [ObservableProperty]
-    private DateTime? updateTime;
+    private DateTime? _updateTime;
+    public DateTime? UpdateTime
+    {
+        get => _updateTime;
+        set => SetProperty(ref _updateTime, value);
+    }
 
-    [ObservableProperty]
-    private bool isSelected;
+    private bool _isSelected;
+    public bool IsSelected
+    {
+        get => _isSelected;
+        set => SetProperty(ref _isSelected, value);
+    }
 
-    [ObservableProperty]
-    private bool isHighlighted;
+    private bool _isHighlighted;
+    public bool IsHighlighted
+    {
+        get => _isHighlighted;
+        set => SetProperty(ref _isHighlighted, value);
+    }
 
-    [ObservableProperty]
-    private bool isEditing;
+    private bool _isEditing;
+    public bool IsEditing
+    {
+        get => _isEditing;
+        set => SetProperty(ref _isEditing, value);
+    }
 
     /// <summary>
     /// 从UserDto创建UserItem
@@ -70,8 +130,8 @@ public partial class UserItem : ObservableObject
             Role = dto.Role,
             Email = dto.Email,
             PhoneNumber = dto.PhoneNumber,
-            Department = dto.Department,
-            Title = dto.Title,
+            Department = null, // UserDto中没有此属性
+            Title = null, // UserDto中没有此属性
             PinYinCode = dto.PinYinCode,
             Status = dto.Status,
             CreateTime = dto.CreateTime,
@@ -92,8 +152,7 @@ public partial class UserItem : ObservableObject
             Role = Role,
             Email = Email,
             PhoneNumber = PhoneNumber,
-            Department = Department,
-            Title = Title,
+            // Department 和 Title 在 UserDto 中不存在
             PinYinCode = PinYinCode,
             Status = Status,
             CreateTime = CreateTime,
@@ -112,8 +171,8 @@ public partial class UserItem : ObservableObject
         Role = dto.Role;
         Email = dto.Email;
         PhoneNumber = dto.PhoneNumber;
-        Department = dto.Department;
-        Title = dto.Title;
+        Department = null; // UserDto中没有此属性
+        Title = null; // UserDto中没有此属性
         PinYinCode = dto.PinYinCode;
         Status = dto.Status;
         CreateTime = dto.CreateTime;
@@ -188,7 +247,7 @@ public partial class UserItem : ObservableObject
     /// <summary>
     /// 是否可以删除
     /// </summary>
-    public bool CanDelete => Id != 1; // 系统管理员ID=1不能删除
+    public bool CanDelete => !Username.Equals("sysadmin", StringComparison.OrdinalIgnoreCase); // 系统管理员不能删除
 
     /// <summary>
     /// 是否可以重置密码

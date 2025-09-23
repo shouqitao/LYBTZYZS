@@ -1,6 +1,7 @@
-using System;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System;
+using Prism.Mvvm;
 using LYBT.Shared.Models.Contracts.Patients;
+using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Desktop.Modules.Patients.Models;
 
@@ -9,49 +10,105 @@ namespace LYBT.Desktop.Modules.Patients.Models;
 /// 替代直接使用PatientDto，实现Desktop层与Shared层的解耦
 /// 保持属性名与PatientDto一致，确保XAML绑定兼容
 /// </summary>
-public partial class PatientItem : ObservableObject
+public class PatientItem : BindableBase
 {
-    [ObservableProperty]
-    private int id;
+        private Guid _id;
+    public Guid Id
+    {
+        get => _id;
+        set => SetProperty(ref _id, value);
+    }
 
-    [ObservableProperty]
-    private string name = string.Empty;
+        private string _name = string.Empty;
+    public string Name
+    {
+        get => _name;
+        set => SetProperty(ref _name, value);
+    }
 
-    [ObservableProperty]
-    private string gender = string.Empty;
+        private string _gender = string.Empty;
+    public string Gender
+    {
+        get => _gender;
+        set => SetProperty(ref _gender, value);
+    }
 
-    [ObservableProperty]
-    private int? age;
+        private int? _age;
+    public int? Age
+    {
+        get => _age;
+        set => SetProperty(ref _age, value);
+    }
 
-    [ObservableProperty]
-    private string phoneNumber = string.Empty;
+        private string _phoneNumber = string.Empty;
+    public string PhoneNumber
+    {
+        get => _phoneNumber;
+        set => SetProperty(ref _phoneNumber, value);
+    }
 
-    [ObservableProperty]
-    private string? address;
+        private string? _address;
+    public string? Address
+    {
+        get => _address;
+        set => SetProperty(ref _address, value);
+    }
 
-    [ObservableProperty]
-    private string? idCard;
+        private string? _idCard;
+    public string? IdCard
+    {
+        get => _idCard;
+        set => SetProperty(ref _idCard, value);
+    }
 
-    [ObservableProperty]
-    private string? medicalHistory;
+        private string? _medicalHistory;
+    public string? MedicalHistory
+    {
+        get => _medicalHistory;
+        set => SetProperty(ref _medicalHistory, value);
+    }
 
-    [ObservableProperty]
-    private string? allergyHistory;
+        private string? _allergyHistory;
+    public string? AllergyHistory
+    {
+        get => _allergyHistory;
+        set => SetProperty(ref _allergyHistory, value);
+    }
 
-    [ObservableProperty]
-    private DateTime createdAt;
+        private DateTime _createdAt;
+    public DateTime CreatedAt
+    {
+        get => _createdAt;
+        set => SetProperty(ref _createdAt, value);
+    }
 
-    [ObservableProperty]
-    private DateTime? lastVisitDate;
+        private DateTime? _lastVisitDate;
+    public DateTime? LastVisitDate
+    {
+        get => _lastVisitDate;
+        set => SetProperty(ref _lastVisitDate, value);
+    }
 
-    [ObservableProperty]
-    private int visitCount;
+        private int _visitCount;
+    public int VisitCount
+    {
+        get => _visitCount;
+        set => SetProperty(ref _visitCount, value);
+    }
 
-    [ObservableProperty]
-    private bool isSelected;
+        private bool _isSelected;
+    public bool IsSelected
+    {
+        get => _isSelected;
+        set => SetProperty(ref _isSelected, value);
+    }
 
-    [ObservableProperty]
-    private bool isHighlighted;
+        private bool _isHighlighted;
+    public bool IsHighlighted
+    {
+        get => _isHighlighted;
+        set => SetProperty(ref _isHighlighted, value);
+    }
 
     /// <summary>
     /// 从PatientDto创建PatientItem
@@ -62,15 +119,15 @@ public partial class PatientItem : ObservableObject
         {
             Id = dto.Id,
             Name = dto.Name,
-            Gender = dto.Gender,
-            Age = dto.Age,
-            PhoneNumber = dto.PhoneNumber,
+            Gender = dto.Gender.ToString(), // 枚举转字符串
+            Age = dto.Age, // 使用计算属性
+            PhoneNumber = dto.PhoneNumber ?? string.Empty,
             Address = dto.Address,
-            IdCard = dto.IdCard,
-            MedicalHistory = dto.MedicalHistory,
+            IdCard = dto.IdNumber, // PatientDto中是IdNumber
+            MedicalHistory = null, // PatientDto中没有此属性，将来扩展
             AllergyHistory = dto.AllergyHistory,
-            CreatedAt = dto.CreatedAt,
-            LastVisitDate = dto.LastVisitDate,
+            CreatedAt = dto.CreateTime, // PatientDto中是CreateTime
+            LastVisitDate = dto.LastVisitTime, // PatientDto中是LastVisitTime
             VisitCount = dto.VisitCount
         };
     }
@@ -84,15 +141,16 @@ public partial class PatientItem : ObservableObject
         {
             Id = Id,
             Name = Name,
-            Gender = Gender,
-            Age = Age,
+            Gender = Enum.Parse<Gender>(Gender), // 字符串转枚举
+            BirthDate = Age.HasValue ? DateTime.Today.AddYears(-Age.Value) : null, // 根据年龄推算出生日期
             PhoneNumber = PhoneNumber,
             Address = Address,
-            IdCard = IdCard,
-            MedicalHistory = MedicalHistory,
+            IdNumber = IdCard, // PatientItem的IdCard对应PatientDto的IdNumber
             AllergyHistory = AllergyHistory,
-            CreatedAt = CreatedAt,
-            LastVisitDate = LastVisitDate,
+            Status = CommonStatus.Enabled, // 默认启用状态
+            CreateTime = CreatedAt,
+            UpdateTime = DateTime.Now,
+            LastVisitTime = LastVisitDate,
             VisitCount = VisitCount
         };
     }
@@ -104,15 +162,15 @@ public partial class PatientItem : ObservableObject
     {
         Id = dto.Id;
         Name = dto.Name;
-        Gender = dto.Gender;
-        Age = dto.Age;
-        PhoneNumber = dto.PhoneNumber;
+        Gender = dto.Gender.ToString(); // 枚举转字符串
+        Age = dto.Age; // 使用计算属性
+        PhoneNumber = dto.PhoneNumber ?? string.Empty;
         Address = dto.Address;
-        IdCard = dto.IdCard;
-        MedicalHistory = dto.MedicalHistory;
+        IdCard = dto.IdNumber; // PatientDto中是IdNumber
+        MedicalHistory = null; // PatientDto中没有此属性，将来扩展
         AllergyHistory = dto.AllergyHistory;
-        CreatedAt = dto.CreatedAt;
-        LastVisitDate = dto.LastVisitDate;
+        CreatedAt = dto.CreateTime; // PatientDto中是CreateTime
+        LastVisitDate = dto.LastVisitTime; // PatientDto中是LastVisitTime
         VisitCount = dto.VisitCount;
     }
 
