@@ -2,13 +2,11 @@ using System.Text.RegularExpressions;
 using AutoMapper;
 using LYBT.Infrastructure.Configuration.Options;
 using LYBT.Infrastructure.Configuration.Services;
-using LYBT.Infrastructure.Data;
 using LYBT.Module.Users.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Utilities.Helpers;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -20,13 +18,13 @@ namespace LYBT.Module.Users.Services
     /// 职责：业务逻辑，状态管理，密码管理，批量操作
     /// </summary>
     public partial class UserBusinessService(
-        AppDbContext context,
+        IUserRepository userRepository,
         IMapper mapper,
         ILogger<UserBusinessService> logger,
         IOptions<UserOptions> options,
         DefaultPasswordService defaultPasswordService) : IUserBusinessService
     {
-        private readonly AppDbContext _context = context ?? throw new ArgumentNullException(nameof(context));
+        private readonly IUserRepository _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
         private readonly IMapper _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         private readonly ILogger<UserBusinessService> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         private readonly UserOptions _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
@@ -66,25 +64,17 @@ namespace LYBT.Module.Users.Services
                     return ServiceResult<bool>.Failure("用户ID不能为空");
                 }
 
-                var user = await _context.Users
-                    .FirstOrDefaultAsync(u => u.Id == id);
-
-                if (user == null)
+                var result = await _userRepository.DisableAsync(id);
+                if (result)
                 {
-                    return ServiceResult<bool>.Failure("用户不存在");
+                    var user = await _userRepository.GetByIdAsync(id, includeDisabled: true);
+                    _logger.LogInformation("禁用用户成功: {Username} ({Id})", user?.Username, user?.Id);
+                    return ServiceResult<bool>.Success(true);
                 }
-
-                if (user.Status == CommonStatus.Disabled)
+                else
                 {
-                    return ServiceResult<bool>.Failure("用户已经是禁用状态");
+                    return ServiceResult<bool>.Failure("禁用用户失败");
                 }
-
-                user.Status = CommonStatus.Disabled;
-                _context.Users.Update(user);
-                await _context.SaveChangesAsync();
-
-                _logger.LogInformation("禁用用户成功: {Username} ({Id})", user.Username, user.Id);
-                return ServiceResult<bool>.Success(true);
             }
             catch (Exception ex)
             {
@@ -105,25 +95,17 @@ namespace LYBT.Module.Users.Services
                     return ServiceResult<bool>.Failure("用户ID不能为空");
                 }
 
-                var user = await _context.Users
-                    .FirstOrDefaultAsync(u => u.Id == id);
-
-                if (user == null)
+                var result = await _userRepository.EnableAsync(id);
+                if (result)
                 {
-                    return ServiceResult<bool>.Failure("用户不存在");
+                    var user = await _userRepository.GetByIdAsync(id);
+                    _logger.LogInformation("启用用户成功: {Username} ({Id})", user?.Username, user?.Id);
+                    return ServiceResult<bool>.Success(true);
                 }
-
-                if (user.Status == CommonStatus.Enabled)
+                else
                 {
-                    return ServiceResult<bool>.Failure("用户已经是启用状态");
+                    return ServiceResult<bool>.Failure("启用用户失败");
                 }
-
-                user.Status = CommonStatus.Enabled;
-                _context.Users.Update(user);
-                await _context.SaveChangesAsync();
-
-                _logger.LogInformation("启用用户成功: {Username} ({Id})", user.Username, user.Id);
-                return ServiceResult<bool>.Success(true);
             }
             catch (Exception ex)
             {
@@ -150,10 +132,7 @@ namespace LYBT.Module.Users.Services
                     return ServiceResult<int>.Failure("没有有效的用户ID");
                 }
 
-                var affectedRows = await _context.Users
-                    .Where(u => validIds.Contains(u.Id) && u.Status != CommonStatus.Disabled)
-                    .ExecuteUpdateAsync(setters => setters
-                        .SetProperty(u => u.Status, CommonStatus.Disabled));
+                var affectedRows = await _userRepository.UpdateActiveStatusAsync(validIds, false);
 
                 _logger.LogInformation("批量禁用用户成功，影响行数: {Count}", affectedRows);
                 return ServiceResult<int>.Success(affectedRows);
@@ -183,10 +162,7 @@ namespace LYBT.Module.Users.Services
                     return ServiceResult<int>.Failure("没有有效的用户ID");
                 }
 
-                var affectedRows = await _context.Users
-                    .Where(u => validIds.Contains(u.Id) && u.Status != CommonStatus.Enabled)
-                    .ExecuteUpdateAsync(setters => setters
-                        .SetProperty(u => u.Status, CommonStatus.Enabled));
+                var affectedRows = await _userRepository.UpdateActiveStatusAsync(validIds, true);
 
                 _logger.LogInformation("批量启用用户成功，影响行数: {Count}", affectedRows);
                 return ServiceResult<int>.Success(affectedRows);
@@ -221,8 +197,7 @@ namespace LYBT.Module.Users.Services
                     return ServiceResult<bool>.Failure($"密码不符合复杂度要求：{string.Join("；", errors)}");
                 }
 
-                var user = await _context.Users
-                    .FirstOrDefaultAsync(u => u.Id == id);
+                var user = await _userRepository.GetByIdAsync(id, includeDisabled: true);
 
                 if (user == null)
                 {
@@ -230,9 +205,12 @@ namespace LYBT.Module.Users.Services
                 }
 
                 // 更新密码哈希
-                user.PasswordHash = PasswordHelper.Hash(newPassword);
-                _context.Users.Update(user);
-                await _context.SaveChangesAsync();
+                var passwordHash = PasswordHelper.Hash(newPassword);
+                var updateResult = await _userRepository.UpdatePasswordAsync(id, passwordHash);
+                if (!updateResult)
+                {
+                    return ServiceResult<bool>.Failure("密码更新失败");
+                }
 
                 _logger.LogInformation("重置用户密码成功: {Username} ({Id})", user.Username, user.Id);
                 return ServiceResult<bool>.Success(true);
@@ -272,8 +250,7 @@ namespace LYBT.Module.Users.Services
                     return ServiceResult<bool>.Failure($"密码不符合复杂度要求：{string.Join("；", errors)}");
                 }
 
-                var user = await _context.Users
-                    .FirstOrDefaultAsync(u => u.Id == id);
+                var user = await _userRepository.GetByIdAsync(id, includeDisabled: true);
 
                 if (user == null)
                 {
@@ -287,9 +264,12 @@ namespace LYBT.Module.Users.Services
                 }
 
                 // 更新密码哈希
-                user.PasswordHash = PasswordHelper.Hash(newPassword);
-                _context.Users.Update(user);
-                await _context.SaveChangesAsync();
+                var passwordHash = PasswordHelper.Hash(newPassword);
+                var updateResult = await _userRepository.UpdatePasswordAsync(id, passwordHash);
+                if (!updateResult)
+                {
+                    return ServiceResult<bool>.Failure("密码更新失败");
+                }
 
                 _logger.LogInformation("用户修改密码成功: {Username} ({Id})", user.Username, user.Id);
                 return ServiceResult<bool>.Success(true);
@@ -318,8 +298,7 @@ namespace LYBT.Module.Users.Services
                     return ServiceResult<bool>.Failure("真实姓名不能为空");
                 }
 
-                var user = await _context.Users
-                    .FirstOrDefaultAsync(u => u.Id == userId);
+                var user = await _userRepository.GetByIdAsync(userId, includeDisabled: true);
 
                 if (user == null)
                 {
@@ -331,8 +310,7 @@ namespace LYBT.Module.Users.Services
                 user.PhoneNumber = phoneNumber;
                 user.PinYinCode = string.Empty; // 移除CommonHelper依赖，拼音码功能暂不实现
 
-                _context.Users.Update(user);
-                await _context.SaveChangesAsync();
+                await _userRepository.UpdateAsync(user);
 
                 _logger.LogInformation("用户修改个人信息成功: {Username} ({Id})", user.Username, user.Id);
                 return ServiceResult<bool>.Success(true);
@@ -359,48 +337,32 @@ namespace LYBT.Module.Users.Services
                 }
 
                 // 检查用户名是否重复
-                var existingUser = await _context.Users
-                    .FirstOrDefaultAsync(u => u.Username == dto.Username, cancellationToken);
-                if (existingUser != null)
+                var userExists = await _userRepository.ExistsByUsernameAsync(dto.Username);
+                if (userExists)
                 {
                     return ServiceResult<UserDto>.Failure("用户名已存在");
                 }
 
-                // 使用ExecutionStrategy包装事务确保数据一致性
-                return await _context.Database.CreateExecutionStrategy().ExecuteAsync(async () =>
+                var user = new Entities.Users.User
                 {
-                    await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
-                    try
-                    {
-                        var user = new Entities.Users.User
-                        {
-                            Id = Guid.NewGuid(),
-                            Username = dto.Username,
-                            PasswordHash = PasswordHelper.Hash(dto.Password ?? _defaultPasswordService.GetNewUserPassword() ?? "LybtUser2025#InitPass!"),
-                            RealName = dto.RealName,
-                            Role = dto.Role,
-                            PhoneNumber = dto.PhoneNumber,
-                            Email = dto.Email,
-                            Status = dto.Status,
-                            PinYinCode = string.Empty, // 移除CommonHelper依赖，拼音码功能暂不实现
-                            CreatedTime = DateTime.Now
-                        };
+                    Id = Guid.NewGuid(),
+                    Username = dto.Username,
+                    PasswordHash = PasswordHelper.Hash(dto.Password ?? _defaultPasswordService.GetNewUserPassword() ?? "LybtUser2025#InitPass!"),
+                    RealName = dto.RealName,
+                    Role = dto.Role,
+                    PhoneNumber = dto.PhoneNumber,
+                    Email = dto.Email,
+                    Status = dto.Status,
+                    PinYinCode = string.Empty, // 移除CommonHelper依赖，拼音码功能暂不实现
+                    CreatedTime = DateTime.Now
+                };
 
-                        _context.Users.Add(user);
-                        await _context.SaveChangesAsync(cancellationToken);
-                        await transaction.CommitAsync(cancellationToken);
+                var createdUser = await _userRepository.AddAsync(user);
 
-                        _logger.LogInformation("创建用户成功: {Username} ({Id})", user.Username, user.Id);
+                _logger.LogInformation("创建用户成功: {Username} ({Id})", createdUser.Username, createdUser.Id);
 
-                        var resultDto = _mapper.Map<UserDto>(user);
-                        return ServiceResult<UserDto>.Success(resultDto);
-                    }
-                    catch (Exception)
-                    {
-                        await transaction.RollbackAsync(cancellationToken);
-                        throw;
-                    }
-                });
+                var resultDto = _mapper.Map<UserDto>(createdUser);
+                return ServiceResult<UserDto>.Success(resultDto);
             }
             catch (Exception ex)
             {
@@ -428,50 +390,29 @@ namespace LYBT.Module.Users.Services
                     return ServiceResult<UserDto>.Failure(validationResult.ErrorMessage ?? "用户数据验证失败");
                 }
 
-                var user = await _context.Users
-                    .FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
+                var user = await _userRepository.GetByIdAsync(id, includeDisabled: true);
 
                 if (user == null)
                 {
                     return ServiceResult<UserDto>.Failure("用户不存在");
                 }
 
-                // 使用ExecutionStrategy包装事务确保数据一致性
-                return await _context.Database.CreateExecutionStrategy().ExecuteAsync(async () =>
-                {
-                    await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
-                    try
-                    {
-                        // 更新字段
-                        if (!string.IsNullOrEmpty(dto.RealName))
-                            user.RealName = dto.RealName;
-                        if (dto.Role.HasValue)
-                            user.Role = dto.Role.Value;
-                        user.PhoneNumber = dto.PhoneNumber;
-                        user.Email = dto.Email;
-                        user.Status = dto.Status;
-                        user.PinYinCode = string.Empty; // 移除CommonHelper依赖，拼音码功能暂不实现
+                // 更新字段
+                if (!string.IsNullOrEmpty(dto.RealName))
+                    user.RealName = dto.RealName;
+                if (dto.Role.HasValue)
+                    user.Role = dto.Role.Value;
+                user.PhoneNumber = dto.PhoneNumber;
+                user.Email = dto.Email;
+                user.Status = dto.Status;
+                user.PinYinCode = string.Empty; // 移除CommonHelper依赖，拼音码功能暂不实现
 
-                        _context.Users.Update(user);
-                        await _context.SaveChangesAsync(cancellationToken);
-                        await transaction.CommitAsync(cancellationToken);
+                var updatedUser = await _userRepository.UpdateAsync(user);
 
-                        _logger.LogInformation("更新用户成功: {Username} ({Id})", user.Username, user.Id);
+                _logger.LogInformation("更新用户成功: {Username} ({Id})", updatedUser.Username, updatedUser.Id);
 
-                        var resultDto = _mapper.Map<UserDto>(user);
-                        return ServiceResult<UserDto>.Success(resultDto);
-                    }
-                    catch (Exception)
-                    {
-                        await transaction.RollbackAsync(cancellationToken);
-                        throw;
-                    }
-                });
-            }
-            catch (DbUpdateConcurrencyException ex)
-            {
-                _logger.LogWarning(ex, "用户数据并发冲突: {Id}", id);
-                return ServiceResult<UserDto>.Failure("数据已被其他用户修改，请刷新后重试");
+                var resultDto = _mapper.Map<UserDto>(updatedUser);
+                return ServiceResult<UserDto>.Success(resultDto);
             }
             catch (Exception ex)
             {
@@ -492,8 +433,7 @@ namespace LYBT.Module.Users.Services
                     return ServiceResult<bool>.Failure("用户ID不能为空");
                 }
 
-                var user = await _context.Users
-                    .FirstOrDefaultAsync(u => u.Id == id);
+                var user = await _userRepository.GetByIdAsync(id);
 
                 if (user == null)
                 {
@@ -503,18 +443,20 @@ namespace LYBT.Module.Users.Services
                 // 业务规则：检查是否可以删除
                 if (user.Role == UserRole.Admin)
                 {
-                    var adminCount = await _context.Users
-                        .CountAsync(u => u.Role == UserRole.Admin && u.Status == CommonStatus.Enabled);
+                    var activeUsers = await _userRepository.GetActiveUsersAsync();
+                    var adminCount = activeUsers.Count(u => u.Role == UserRole.Admin);
                     if (adminCount <= 1)
                     {
                         return ServiceResult<bool>.Failure("至少需要保留一个管理员用户");
                     }
                 }
 
-                // 软删除 - 设置状态为禁用
-                user.Status = CommonStatus.Disabled;
-                _context.Users.Update(user);
-                await _context.SaveChangesAsync();
+                // 软删除 - 使用Repository的DisableAsync方法
+                var result = await _userRepository.DisableAsync(id);
+                if (!result)
+                {
+                    return ServiceResult<bool>.Failure("删除用户失败");
+                }
 
                 _logger.LogInformation("删除用户成功: {Username} ({Id})", user.Username, user.Id);
                 return ServiceResult<bool>.Success(true);

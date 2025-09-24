@@ -44,7 +44,7 @@ namespace LYBT.Infrastructure.Data
         // 医疗案例
         public DbSet<MedicalCase> MedicalCases { get; set; }
 
-        // 看诊
+        // 诊断
         public DbSet<Consultation> Consultations { get; set; }
 
         // 处方管理

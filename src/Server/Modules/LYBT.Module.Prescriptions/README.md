@@ -6,7 +6,7 @@
 
 ## 🎯 模块概述
 
-LYBT.Module.Prescriptions是系统的处方管理核心模块，采用分层架构设计，提供完整的中医处方开具、管理、验证和统计功能。与MedicalCase（医案）、Consultation（看诊）和Herbs（药材）模块紧密集成，支撑完整的诊疗流程。
+LYBT.Module.Prescriptions是系统的处方管理核心模块，采用分层架构设计，提供完整的中医处方开具、管理、验证和统计功能。与MedicalCase（医案）、Consultation（诊断）和Herbs（药材）模块紧密集成，支撑完整的诊疗流程。
 
 **技术栈**: .NET 8 + 实体（实体（Entity）） Framework Core 8.0 + AutoMapper 13.0.1 + FluentValidation
 **架构特色**: 分层架构（QueryService + BusinessService）+ 纯委托模式
@@ -416,7 +416,7 @@ public decimal TotalPrice => SingleDosePrice * DosageCount;
 ```
 
 ### 2. 快速保存功能
-支持在看诊过程中快速保存处方草稿：
+支持在诊疗过程中快速保存处方草稿：
 ```csharp
 public async Task<ServiceResult<bool>> QuickSaveAsync(
     Guid prescriptionId,
@@ -495,7 +495,7 @@ public async Task<ServiceResult<PrescriptionStatsDto>> GetStatsAsync()
 ## 📚 相关模块
 
 - [MedicalCase医案模块](../LYBT.Module.MedicalCase/README.md) - 处方所属医案
-- [Consultation看诊模块](../LYBT.Module.Consultation/README.md) - 处方关联看诊
+- [Consultation诊断模块](../LYBT.Module.Consultation/README.md) - 处方关联诊断
 - [Herbs药材模块](../LYBT.Module.Herbs/README.md) - 处方项目药材
 - [Formula验方模块](../LYBT.Module.Formula/README.md) - 处方模板来源
 

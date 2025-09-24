@@ -13,7 +13,7 @@ namespace LYBT.Module.MedicalCase.Services
 {
     /// <summary>
     /// 医疗案例业务逻辑服务 - 简化版本
-    /// 职责：增删查改和看诊流程，符合用户要求
+    /// 职责：增删查改和诊疗流程，符合用户要求
     /// </summary>
     public class MedicalCaseBusinessService : IMedicalCaseBusinessService
     {
