@@ -196,7 +196,7 @@ namespace LYBT.Module.Users.Tests.Services
         {
             // Arrange
             var userId = Guid.NewGuid();
-            var samePassword = "Password123!";
+            var samePassword = "Pass@word1!";
 
             _mockBusinessService.Setup(x => x.ChangePasswordAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>()))
                 .ReturnsAsync(ServiceResult<bool>.Failure("新密码不能与旧密码相同"));

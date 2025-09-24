@@ -28,8 +28,8 @@ namespace LYBT.Entities.Tests.Users
             user.PasswordHash.Should().Be(string.Empty);
             user.FailedLoginCount.Should().Be(0);
             user.LockoutEnd.Should().BeNull();
-            user.CreatedTime.Should().BeCloseTo(DateTime.Now, TimeSpan.FromSeconds(1));
-            user.UpdateTime.Should().BeNull();
+            user.CreatedAt.Should().BeCloseTo(DateTime.Now, TimeSpan.FromSeconds(1));
+            user.UpdatedAt.Should().BeNull();
             user.LastLoginTime.Should().BeNull();
             user.Remark.Should().BeNull();
             user.RowVersion.Should().NotBeNull();
@@ -191,31 +191,31 @@ namespace LYBT.Entities.Tests.Users
         }
 
         [Fact]
-        public void CreatedTime_PropertyCanBeSetAndGet()
+        public void CreatedAt_PropertyCanBeSetAndGet()
         {
             // Arrange
             var user = new User();
             var testTime = new DateTime(2024, 1, 1, 10, 0, 0);
 
             // Act
-            user.CreatedTime = testTime;
+            user.CreatedAt = testTime;
 
             // Assert
-            user.CreatedTime.Should().Be(testTime);
+            user.CreatedAt.Should().Be(testTime);
         }
 
         [Fact]
-        public void UpdateTime_PropertyCanBeSetAndGet()
+        public void UpdatedAt_PropertyCanBeSetAndGet()
         {
             // Arrange
             var user = new User();
             var testTime = new DateTime(2024, 1, 2, 15, 30, 0);
 
             // Act
-            user.UpdateTime = testTime;
+            user.UpdatedAt = testTime;
 
             // Assert
-            user.UpdateTime.Should().Be(testTime);
+            user.UpdatedAt.Should().Be(testTime);
         }
 
         [Fact]
@@ -271,7 +271,7 @@ namespace LYBT.Entities.Tests.Users
             user.PhoneNumber = null;
             user.Email = null;
             user.LockoutEnd = null;
-            user.UpdateTime = null;
+            user.UpdatedAt = null;
             user.LastLoginTime = null;
             user.Remark = null;
 
@@ -280,7 +280,7 @@ namespace LYBT.Entities.Tests.Users
             user.PhoneNumber.Should().BeNull();
             user.Email.Should().BeNull();
             user.LockoutEnd.Should().BeNull();
-            user.UpdateTime.Should().BeNull();
+            user.UpdatedAt.Should().BeNull();
             user.LastLoginTime.Should().BeNull();
             user.Remark.Should().BeNull();
         }
@@ -304,7 +304,7 @@ namespace LYBT.Entities.Tests.Users
             user.Status = CommonStatus.Enabled;
             user.PasswordHash = "hashed_password";
             user.FailedLoginCount = 0;
-            user.CreatedTime = createdTime;
+            user.CreatedAt = createdTime;
             user.Remark = "优秀医生";
 
             // Assert
@@ -318,7 +318,7 @@ namespace LYBT.Entities.Tests.Users
             user.Status.Should().Be(CommonStatus.Enabled);
             user.PasswordHash.Should().Be("hashed_password");
             user.FailedLoginCount.Should().Be(0);
-            user.CreatedTime.Should().Be(createdTime);
+            user.CreatedAt.Should().Be(createdTime);
             user.Remark.Should().Be("优秀医生");
         }
     }

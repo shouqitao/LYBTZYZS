@@ -7,6 +7,9 @@ using LYBT.Infrastructure.Configuration.Options;
 using LYBT.Infrastructure.Configuration.Services;
 using LYBT.Infrastructure.Data;
 using LYBT.Module.Users.Services;
+using LYBT.Module.Users.Interfaces;
+using LYBT.Module.Users.Repositories;
+using Microsoft.Extensions.Caching.Memory;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Utilities.Helpers;
@@ -23,6 +26,7 @@ namespace LYBT.Module.Users.Tests.Services
     public class UserBusinessServiceTests : IDisposable
     {
         private readonly AppDbContext _context;
+        private readonly IUserRepository _userRepository;
         private readonly UserBusinessService _service;
         private readonly Mock<IMapper> _mockMapper;
         private readonly Mock<ILogger<UserBusinessService>> _mockLogger;
@@ -35,7 +39,12 @@ namespace LYBT.Module.Users.Tests.Services
             var options = new DbContextOptionsBuilder<AppDbContext>()
                 .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
                 .Options;
-            _context = new AppDbContext(options);
+            _context = new AppDbContext(options, null);
+
+            // 创建 UserRepository 实例
+            var mockUserRepoLogger = new Mock<ILogger<UserRepository>>();
+            var realCache = new MemoryCache(new MemoryCacheOptions());
+            _userRepository = new UserRepository(_context, mockUserRepoLogger.Object, realCache);
 
             _mockMapper = new Mock<IMapper>();
             _mockLogger = new Mock<ILogger<UserBusinessService>>();
@@ -69,7 +78,7 @@ namespace LYBT.Module.Users.Tests.Services
             _defaultPasswordService = new DefaultPasswordService(defaultPasswordOptions, mockWebHostEnvironment.Object);
 
             _service = new UserBusinessService(
-                _context,
+                _userRepository,
                 _mockMapper.Object,
                 _mockLogger.Object,
                 _mockOptions.Object,
@@ -89,7 +98,7 @@ namespace LYBT.Module.Users.Tests.Services
                     Email = user.Email,
                     PhoneNumber = user.PhoneNumber,
                     Role = user.Role,
-                    CreateTime = user.CreatedTime
+                    CreateTime = user.CreatedAt
                 });
         }
 
@@ -186,14 +195,14 @@ namespace LYBT.Module.Users.Tests.Services
             await _context.Users.AddAsync(user);
             await _context.SaveChangesAsync();
 
-            var newPassword = "NewPassword123!";
+            var newPassword = "NewPass@word2!"; // 符合密码策略，避免连续数字
 
             // Act
             var result = await _service.ResetPasswordAsync(user.Id, newPassword);
 
             // Assert
             result.Should().NotBeNull();
-            result.IsSuccess.Should().BeTrue();
+            result.IsSuccess.Should().BeTrue($"密码重置失败: {result.ErrorMessage}");
             result.Data.Should().BeTrue();
 
             var updatedUser = await _context.Users.FindAsync(user.Id);
@@ -301,13 +310,13 @@ namespace LYBT.Module.Users.Tests.Services
                 Id = Guid.NewGuid(),
                 Username = "testuser",
                 RealName = "Test User",
-                PasswordHash = PasswordHelper.Hash("OldPassword123!")
+                PasswordHash = PasswordHelper.Hash("OldPass@word1!")
             };
             await _context.Users.AddAsync(user);
             await _context.SaveChangesAsync();
 
-            var oldPassword = "OldPassword123!";
-            var newPassword = "NewPassword456!";
+            var oldPassword = "OldPass@word1!";
+            var newPassword = "NewPass@word2!";
 
             // Act
             var result = await _service.ChangePasswordAsync(user.Id, oldPassword, newPassword);
@@ -330,13 +339,13 @@ namespace LYBT.Module.Users.Tests.Services
                 Id = Guid.NewGuid(),
                 Username = "testuser",
                 RealName = "Test User",
-                PasswordHash = PasswordHelper.Hash("OldPassword123!")
+                PasswordHash = PasswordHelper.Hash("OldPass@word1!")
             };
             await _context.Users.AddAsync(user);
             await _context.SaveChangesAsync();
 
             // Act
-            var result = await _service.ChangePasswordAsync(user.Id, "WrongPassword", "NewPassword456!");
+            var result = await _service.ChangePasswordAsync(user.Id, "WrongPassword", "NewPass@word2!");
 
             // Assert
             result.Should().NotBeNull();
@@ -353,13 +362,13 @@ namespace LYBT.Module.Users.Tests.Services
                 Id = Guid.NewGuid(),
                 Username = "testuser",
                 RealName = "Test User",
-                PasswordHash = PasswordHelper.Hash("OldPassword123!")
+                PasswordHash = PasswordHelper.Hash("OldPass@word1!")
             };
             await _context.Users.AddAsync(user);
             await _context.SaveChangesAsync();
 
             // Act
-            var result = await _service.ChangePasswordAsync(user.Id, "OldPassword123!", "weak");
+            var result = await _service.ChangePasswordAsync(user.Id, "OldPass@word1!", "weak");
 
             // Assert
             result.Should().NotBeNull();
@@ -371,7 +380,7 @@ namespace LYBT.Module.Users.Tests.Services
         public async Task ChangePasswordAsync_Should_Return_Failure_When_User_Not_Found()
         {
             // Act
-            var result = await _service.ChangePasswordAsync(Guid.NewGuid(), "OldPassword123!", "NewPassword456!");
+            var result = await _service.ChangePasswordAsync(Guid.NewGuid(), "OldPass@word1!", "NewPass@word2!");
 
             // Assert
             result.Should().NotBeNull();
@@ -516,17 +525,20 @@ namespace LYBT.Module.Users.Tests.Services
                 RealName = "New User",
                 Email = "new@example.com",
                 PhoneNumber = "13800138000",
-                Role = UserRole.Doctor
+                Role = UserRole.Doctor,
+                Password = "NewPass@word2!"  // 添加密码
             };
 
             _mockMapper.Setup(x => x.Map<User>(It.IsAny<UserCreateDto>()))
                 .Returns(new User
                 {
+                    Id = Guid.NewGuid(),  // 需要设置 ID
                     Username = dto.Username,
                     RealName = dto.RealName,
                     Email = dto.Email,
                     PhoneNumber = dto.PhoneNumber,
-                    Role = dto.Role
+                    Role = dto.Role,
+                    Status = CommonStatus.Enabled  // 设置默认状态
                 });
 
             // Act
@@ -534,7 +546,7 @@ namespace LYBT.Module.Users.Tests.Services
 
             // Assert
             result.Should().NotBeNull();
-            result.IsSuccess.Should().BeTrue();
+            result.IsSuccess.Should().BeTrue($"创建用户失败: {result.ErrorMessage}");
             result.Data.Should().NotBeNull();
             result.Data!.Username.Should().Be("newuser");
 
@@ -602,9 +614,12 @@ namespace LYBT.Module.Users.Tests.Services
                 .UseInMemoryDatabase(databaseName: _context.Database.GetDbConnection().Database)
                 .Options;
             
-            using var context2 = new AppDbContext(options);
+            using var context2 = new AppDbContext(options, null);
+            var mockUserRepoLogger2 = new Mock<ILogger<UserRepository>>();
+            var mockCache2 = new Mock<IMemoryCache>();
+            var userRepository2 = new UserRepository(context2, mockUserRepoLogger2.Object, mockCache2.Object);
             var service2 = new UserBusinessService(
-                context2,
+                userRepository2,
                 _mockMapper.Object,
                 _mockLogger.Object,
                 _mockOptions.Object,
@@ -694,16 +709,19 @@ namespace LYBT.Module.Users.Tests.Services
                 Username = "newuser",
                 RealName = "New User",
                 Email = "existing@example.com",
-                Role = UserRole.Doctor
+                Role = UserRole.Doctor,
+                Password = "Pass@word1!" // 添加密码
             };
 
             _mockMapper.Setup(x => x.Map<User>(It.IsAny<UserCreateDto>()))
                 .Returns(new User
                 {
+                    Id = Guid.NewGuid(),
                     Username = dto.Username,
                     RealName = dto.RealName,
                     Email = dto.Email,
-                    Role = dto.Role
+                    Role = dto.Role,
+                    Status = CommonStatus.Enabled
                 });
 
             // Act
@@ -734,16 +752,19 @@ namespace LYBT.Module.Users.Tests.Services
                 Username = "newuser",
                 RealName = "New User",
                 PhoneNumber = "13800138000",
-                Role = UserRole.Doctor
+                Role = UserRole.Doctor,
+                Password = "Pass@word1!" // 添加密码
             };
 
             _mockMapper.Setup(x => x.Map<User>(It.IsAny<UserCreateDto>()))
                 .Returns(new User
                 {
+                    Id = Guid.NewGuid(),
                     Username = dto.Username,
                     RealName = dto.RealName,
                     PhoneNumber = dto.PhoneNumber,
-                    Role = dto.Role
+                    Role = dto.Role,
+                    Status = CommonStatus.Enabled
                 });
 
             // Act
@@ -752,7 +773,7 @@ namespace LYBT.Module.Users.Tests.Services
             // Assert
             result.Should().NotBeNull();
             result.IsSuccess.Should().BeFalse();
-            result.ErrorMessage.Should().Contain("手机号已被使用");
+            result.ErrorMessage.Should().Contain("手机号已存在");
         }
 
         [Theory]
@@ -877,7 +898,8 @@ namespace LYBT.Module.Users.Tests.Services
             {
                 Id = Guid.NewGuid(),
                 Username = "testuser",
-                RealName = "Test User"
+                RealName = "Test User",
+                Status = CommonStatus.Enabled  // 初始状态为启用
             };
             await _context.Users.AddAsync(user);
             await _context.SaveChangesAsync();
@@ -890,8 +912,10 @@ namespace LYBT.Module.Users.Tests.Services
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().BeTrue();
 
+            // 验证软删除 - 用户仍存在但状态为禁用
             var deletedUser = await _context.Users.FindAsync(user.Id);
-            deletedUser.Should().BeNull();
+            deletedUser.Should().NotBeNull();
+            deletedUser!.Status.Should().Be(CommonStatus.Disabled, "软删除后用户状态应为禁用");
         }
 
         #endregion

@@ -57,7 +57,11 @@ namespace LYBT.Module.Users.Services
 
         /// <inheritdoc/>
         public Task<ServiceResult<UserDto>> UpdateAsync(UserUpdateDto dto)
-            => _businessService.UpdateUserAsync(dto.Id, dto);
+        {
+            if (dto == null)
+                throw new ArgumentNullException(nameof(dto));
+            return _businessService.UpdateUserAsync(dto.Id, dto);
+        }
 
         /// <inheritdoc/>
         public Task<ServiceResult<bool>> DeleteAsync(Guid id)

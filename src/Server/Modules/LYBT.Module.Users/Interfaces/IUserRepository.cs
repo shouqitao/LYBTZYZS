@@ -50,6 +50,11 @@ namespace LYBT.Module.Users.Interfaces
         /// 校验用户名是否存在（包括禁用用户）
         /// </summary>
         Task<bool> ExistsByUsernameAsync(string userName);
+        
+        /// <summary>
+        /// 检查手机号是否已存在
+        /// </summary>
+        Task<bool> ExistsByPhoneNumberAsync(string phoneNumber);
 
         /// <summary>
         /// 更新用户密码

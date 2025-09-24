@@ -170,7 +170,10 @@ namespace LYBT.Module.Users.Tests
             var result = await _userService.GetByIdAsync(userId);
 
             // Assert
-            result.Should().BeNull();
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeFalse();
+            result.ErrorMessage.Should().Be("用户不存在");
+            result.Data.Should().BeNull();
             _mockQueryService.Verify(x => x.GetByIdAsync(userId), Times.Once);
         }
 
@@ -219,8 +222,8 @@ namespace LYBT.Module.Users.Tests
             {
                 Username = "existinguser",
                 RealName = "已存在用户",
-                Password = "Password123!",
-                ConfirmPassword = "Password123!",
+                Password = "Pass@word1!",
+                ConfirmPassword = "Pass@word1!",
                 Role = UserRole.Doctor,
                 Status = CommonStatus.Enabled
             };
@@ -252,8 +255,8 @@ namespace LYBT.Module.Users.Tests
                 Username = "newuser",
                 RealName = "新用户",
                 PhoneNumber = "13800138000",
-                Password = "Password123!",
-                ConfirmPassword = "Password123!",
+                Password = "Pass@word1!",
+                ConfirmPassword = "Pass@word1!",
                 Role = UserRole.Doctor,
                 Status = CommonStatus.Enabled
             };
@@ -347,7 +350,7 @@ namespace LYBT.Module.Users.Tests
         {
             // Arrange
             var userId = Guid.NewGuid();
-            var newPassword = "NewPassword123!";
+            var newPassword = "NewPass@word1!";
             var expectedResult = ServiceResult<bool>.Success(true);
 
             _mockBusinessService
@@ -542,8 +545,8 @@ namespace LYBT.Module.Users.Tests
             {
                 Username = username,
                 RealName = "测试用户",
-                Password = "Password123!",
-                ConfirmPassword = "Password123!",
+                Password = "Pass@word1!",
+                ConfirmPassword = "Pass@word1!",
                 Role = UserRole.Doctor,
                 Status = CommonStatus.Enabled
             };
@@ -606,8 +609,8 @@ namespace LYBT.Module.Users.Tests
                 Username = "test_user",
                 RealName = "测试用户", 
                 PhoneNumber = phoneNumber,
-                Password = "Password123!",
-                ConfirmPassword = "Password123!",
+                Password = "Pass@word1!",
+                ConfirmPassword = "Pass@word1!",
                 Role = UserRole.Doctor,
                 Status = CommonStatus.Enabled
             };

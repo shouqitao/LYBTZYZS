@@ -37,7 +37,7 @@ namespace LYBT.Entities.Tests.Patients
             patient.LastVisitTime.Should().BeNull();
             patient.VisitCount.Should().Be(0);
             patient.CreatedAt.Should().BeCloseTo(DateTime.Now, TimeSpan.FromSeconds(1));
-            patient.UpdateTime.Should().BeNull();
+            patient.UpdatedAt.Should().BeNull();
             patient.CreatedBy.Should().BeNull();
             patient.UpdatedBy.Should().BeNull();
             patient.RowVersion.Should().NotBeNull();
@@ -329,17 +329,17 @@ namespace LYBT.Entities.Tests.Patients
         }
 
         [Fact]
-        public void UpdateTime_PropertyCanBeSetAndGet()
+        public void UpdatedAt_PropertyCanBeSetAndGet()
         {
             // Arrange
             var patient = new Patient();
-            var testUpdateTime = new DateTime(2024, 1, 2, 14, 30, 0);
+            var testUpdatedAt = new DateTime(2024, 1, 2, 14, 30, 0);
 
             // Act
-            patient.UpdateTime = testUpdateTime;
+            patient.UpdatedAt = testUpdatedAt;
 
             // Assert
-            patient.UpdateTime.Should().Be(testUpdateTime);
+            patient.UpdatedAt.Should().Be(testUpdatedAt);
         }
 
         [Fact]
@@ -448,7 +448,7 @@ namespace LYBT.Entities.Tests.Patients
             patient.EmergencyContactRelation = null;
             patient.DisableReason = null;
             patient.LastVisitTime = null;
-            patient.UpdateTime = null;
+            patient.UpdatedAt = null;
             patient.CreatedBy = null;
             patient.UpdatedBy = null;
 
@@ -464,7 +464,7 @@ namespace LYBT.Entities.Tests.Patients
             patient.EmergencyContactRelation.Should().BeNull();
             patient.DisableReason.Should().BeNull();
             patient.LastVisitTime.Should().BeNull();
-            patient.UpdateTime.Should().BeNull();
+            patient.UpdatedAt.Should().BeNull();
             patient.CreatedBy.Should().BeNull();
             patient.UpdatedBy.Should().BeNull();
         }

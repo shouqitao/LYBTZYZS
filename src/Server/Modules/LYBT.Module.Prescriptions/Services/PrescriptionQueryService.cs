@@ -103,23 +103,23 @@ namespace LYBT.Module.Prescriptions.Services
                     queryable = queryable.Where(p => p.Status == prescriptionStatus);
                 }
 
-                // 日期范围筛选（注意：实体中没有CreatedTime字段，暂时跳过）
-                // if (query.StartDate.HasValue)
-                // {
-                //     queryable = queryable.Where(p => p.CreatedTime >= query.StartDate.Value);
-                // }
+                // 日期范围筛选
+                if (query.StartDate.HasValue)
+                {
+                    queryable = queryable.Where(p => p.CreatedAt >= query.StartDate.Value);
+                }
 
-                // if (query.EndDate.HasValue)
-                // {
-                //     queryable = queryable.Where(p => p.CreatedTime <= query.EndDate.Value);
-                // }
+                if (query.EndDate.HasValue)
+                {
+                    queryable = queryable.Where(p => p.CreatedAt <= query.EndDate.Value);
+                }
 
                 // 获取总数
                 var totalCount = await queryable.CountAsync();
 
                 // 排序和分页
                 var prescriptions = await queryable
-                    .OrderByDescending(p => p.Id) // 使用ID排序，因为没有CreatedTime
+                    .OrderByDescending(p => p.CreatedAt) // 使用CreatedAt排序
                     .Skip((query.PageIndex - 1) * query.PageSize)
                     .Take(query.PageSize)
                     .Include(p => p.Items)
@@ -159,7 +159,7 @@ namespace LYBT.Module.Prescriptions.Services
                 var prescriptions = await _context.Prescriptions
                     .Where(p => p.PatientId == patientId &&
                                (p.Remark == null || !p.Remark.Contains("处方已删除")))
-                    .OrderByDescending(p => p.Id)
+                    .OrderByDescending(p => p.CreatedAt)
                     .Include(p => p.Items)
                     .ToListAsync();
 
@@ -188,7 +188,7 @@ namespace LYBT.Module.Prescriptions.Services
                 var prescriptions = await _context.Prescriptions
                     .Where(p => p.MedicalCaseId == medicalCaseId &&
                                (p.Remark == null || !p.Remark.Contains("处方已删除")))
-                    .OrderByDescending(p => p.Id)
+                    .OrderByDescending(p => p.CreatedAt)
                     .Include(p => p.Items)
                     .ToListAsync();
 
@@ -220,7 +220,7 @@ namespace LYBT.Module.Prescriptions.Services
                                ((p.Indication != null && p.Indication.Contains(searchTerm)) ||
                                 (p.Advice != null && p.Advice.Contains(searchTerm)) ||
                                 (p.Remark != null && p.Remark.Contains(searchTerm))))
-                    .OrderByDescending(p => p.Id)
+                    .OrderByDescending(p => p.CreatedAt)
                     .Take(50) // 限制搜索结果数量
                     .Include(p => p.Items)
                     .ToListAsync();
@@ -244,7 +244,7 @@ namespace LYBT.Module.Prescriptions.Services
             {
                 var prescriptions = await _context.Prescriptions
                     .Where(p => p.Remark == null || !p.Remark.Contains("处方已删除"))
-                    .OrderByDescending(p => p.Id)
+                    .OrderByDescending(p => p.CreatedAt)
                     .Include(p => p.Items)
                     .ToListAsync();
 
@@ -274,7 +274,7 @@ namespace LYBT.Module.Prescriptions.Services
                 var prescriptions = await _context.Prescriptions
                     .Where(p => p.UserId == doctorId &&
                                (p.Remark == null || !p.Remark.Contains("处方已删除")))
-                    .OrderByDescending(p => p.Id)
+                    .OrderByDescending(p => p.CreatedAt)
                     .Include(p => p.Items)
                     .ToListAsync();
 

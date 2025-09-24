@@ -53,7 +53,7 @@ namespace LYBT.Module.Users.Tests.Services
                     Email = user.Email,
                     PhoneNumber = user.PhoneNumber,
                     Role = user.Role,
-                    CreateTime = user.CreatedTime
+                    CreateTime = user.CreatedAt
                 });
 
             _mockMapper.Setup(x => x.Map<List<UserDto>>(It.IsAny<List<User>>()))
@@ -65,7 +65,7 @@ namespace LYBT.Module.Users.Tests.Services
                     Email = user.Email,
                     PhoneNumber = user.PhoneNumber,
                     Role = user.Role,
-                    CreateTime = user.CreatedTime
+                    CreateTime = user.CreatedAt
                 }).ToList());
 
             _mockMapper.Setup(x => x.Map<PagedResult<UserDto>>(It.IsAny<PagedResult<User>>()))
@@ -79,7 +79,7 @@ namespace LYBT.Module.Users.Tests.Services
                         Email = u.Email,
                         PhoneNumber = u.PhoneNumber,
                         Role = u.Role,
-                        CreateTime = u.CreatedTime
+                        CreateTime = u.CreatedAt
                     }).ToList(),
                     TotalCount = pagedUsers.TotalCount,
                     CurrentPage = pagedUsers.CurrentPage,
@@ -204,15 +204,15 @@ namespace LYBT.Module.Users.Tests.Services
         }
 
         [Fact]
-        public async Task GetPagedAsync_Should_Sort_By_CreatedTime_Descending()
+        public async Task GetPagedAsync_Should_Sort_By_CreatedAt_Descending()
         {
             // Arrange
             var now = DateTime.UtcNow;
             var users = new[]
             {
-                new User { Id = Guid.NewGuid(), Username = "user1", RealName = "User 1", CreatedTime = now.AddDays(-3) },
-                new User { Id = Guid.NewGuid(), Username = "user2", RealName = "User 2", CreatedTime = now.AddDays(-1) },
-                new User { Id = Guid.NewGuid(), Username = "user3", RealName = "User 3", CreatedTime = now.AddDays(-2) }
+                new User { Id = Guid.NewGuid(), Username = "user1", RealName = "User 1", CreatedAt = now.AddDays(-3) },
+                new User { Id = Guid.NewGuid(), Username = "user2", RealName = "User 2", CreatedAt = now.AddDays(-1) },
+                new User { Id = Guid.NewGuid(), Username = "user3", RealName = "User 3", CreatedAt = now.AddDays(-2) }
             };
             await _context.Users.AddRangeAsync(users);
             await _context.SaveChangesAsync();
@@ -224,7 +224,7 @@ namespace LYBT.Module.Users.Tests.Services
                     {
                         Id = u.Id,
                         Username = u.Username,
-                        CreateTime = u.CreatedTime
+                        CreateTime = u.CreatedAt
                     }).ToList(),
                     TotalCount = paged.TotalCount
                 });
@@ -282,8 +282,8 @@ namespace LYBT.Module.Users.Tests.Services
 
             // Assert
             result.Should().NotBeNull();
-            result.IsSuccess.Should().BeTrue();
-            result.Data.Should().BeTrue(); // Invalid usernames are "available"
+            result.IsSuccess.Should().BeFalse(); // Invalid usernames return failure
+            result.ErrorMessage.Should().Contain("用户名不能为空");
         }
 
         [Fact]

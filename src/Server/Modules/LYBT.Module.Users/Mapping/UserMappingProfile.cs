@@ -18,7 +18,9 @@ namespace LYBT.Module.Users.Mapping
 
             // 用户实体转UserDto（API响应和业务逻辑）
             CreateMap<User, UserDto>()
-                .ForMember(dest => dest.Username, opt => opt.MapFrom(src => src.Username)); // 统一命名
+                .ForMember(dest => dest.Username, opt => opt.MapFrom(src => src.Username)) // 统一命名
+                .ForMember(dest => dest.CreateTime, opt => opt.MapFrom(src => src.CreatedAt)) // 映射审计字段
+                .ForMember(dest => dest.UpdateTime, opt => opt.MapFrom(src => src.UpdatedAt)); // 映射审计字段
 
             // UserCreateDto转用户实体
             CreateMap<UserCreateDto, User>()
@@ -28,7 +30,13 @@ namespace LYBT.Module.Users.Mapping
                 .ForMember(dest => dest.LockoutEnd, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
                 .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
-                .ForMember(dest => dest.PinYinCode, opt => opt.Ignore()); // 由业务逻辑自动生成
+                .ForMember(dest => dest.PinYinCode, opt => opt.Ignore()) // 由业务逻辑自动生成
+                .ForMember(dest => dest.LastLoginTime, opt => opt.Ignore())
+                .ForMember(dest => dest.Remark, opt => opt.Ignore())
+                .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
+                .ForMember(dest => dest.UpdatedBy, opt => opt.Ignore())
+                .ForMember(dest => dest.RowVersion, opt => opt.Ignore())
+                .ForMember(dest => dest.IsDeleted, opt => opt.Ignore());
 
             // UserUpdateDto转用户实体
             CreateMap<UserUpdateDto, User>()
@@ -39,7 +47,13 @@ namespace LYBT.Module.Users.Mapping
                 .ForMember(dest => dest.LockoutEnd, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
                 .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
-                .ForMember(dest => dest.PinYinCode, opt => opt.Ignore()); // 由业务逻辑自动生成
+                .ForMember(dest => dest.PinYinCode, opt => opt.Ignore()) // 由业务逻辑自动生成
+                .ForMember(dest => dest.LastLoginTime, opt => opt.Ignore())
+                .ForMember(dest => dest.Remark, opt => opt.Ignore())
+                .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
+                .ForMember(dest => dest.UpdatedBy, opt => opt.Ignore())
+                .ForMember(dest => dest.RowVersion, opt => opt.Ignore())
+                .ForMember(dest => dest.IsDeleted, opt => opt.Ignore());
         }
     }
 }

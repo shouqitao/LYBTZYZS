@@ -126,14 +126,22 @@ namespace LYBT.Module.Users.Services
                     return ServiceResult<int>.Failure("用户ID列表不能为空");
                 }
 
-                var validIds = ids.Where(id => id != Guid.Empty).ToList();
+                // 去重并过滤无效ID
+                var validIds = ids.Where(id => id != Guid.Empty).Distinct().ToList();
                 if (validIds.Count == 0)
                 {
                     return ServiceResult<int>.Failure("没有有效的用户ID");
                 }
 
+                // 检查数量上限
+                if (validIds.Count > _options.MaxBatchOperationSize)
+                {
+                    return ServiceResult<int>.Failure($"批量操作数量不能超过{_options.MaxBatchOperationSize}个");
+                }
+
                 var affectedRows = await _userRepository.UpdateActiveStatusAsync(validIds, false);
 
+                // 即使没有实际更新（都已经是禁用状态），也视为成功
                 _logger.LogInformation("批量禁用用户成功，影响行数: {Count}", affectedRows);
                 return ServiceResult<int>.Success(affectedRows);
             }
@@ -156,14 +164,22 @@ namespace LYBT.Module.Users.Services
                     return ServiceResult<int>.Failure("用户ID列表不能为空");
                 }
 
-                var validIds = ids.Where(id => id != Guid.Empty).ToList();
+                // 去重并过滤无效ID
+                var validIds = ids.Where(id => id != Guid.Empty).Distinct().ToList();
                 if (validIds.Count == 0)
                 {
                     return ServiceResult<int>.Failure("没有有效的用户ID");
                 }
 
+                // 检查数量上限
+                if (validIds.Count > _options.MaxBatchOperationSize)
+                {
+                    return ServiceResult<int>.Failure($"批量操作数量不能超过{_options.MaxBatchOperationSize}个");
+                }
+
                 var affectedRows = await _userRepository.UpdateActiveStatusAsync(validIds, true);
 
+                // 即使没有实际更新（都已经是启用状态），也视为成功
                 _logger.LogInformation("批量启用用户成功，影响行数: {Count}", affectedRows);
                 return ServiceResult<int>.Success(affectedRows);
             }
@@ -343,6 +359,16 @@ namespace LYBT.Module.Users.Services
                     return ServiceResult<UserDto>.Failure("用户名已存在");
                 }
 
+                // 检查手机号是否重复
+                if (!string.IsNullOrWhiteSpace(dto.PhoneNumber))
+                {
+                    var phoneExists = await _userRepository.ExistsByPhoneNumberAsync(dto.PhoneNumber);
+                    if (phoneExists)
+                    {
+                        return ServiceResult<UserDto>.Failure("手机号已存在");
+                    }
+                }
+
                 var user = new Entities.Users.User
                 {
                     Id = Guid.NewGuid(),
@@ -358,6 +384,9 @@ namespace LYBT.Module.Users.Services
                 };
 
                 var createdUser = await _userRepository.AddAsync(user);
+                
+                // 保存到数据库
+                await _userRepository.SaveChangesAsync();
 
                 _logger.LogInformation("创建用户成功: {Username} ({Id})", createdUser.Username, createdUser.Id);
 

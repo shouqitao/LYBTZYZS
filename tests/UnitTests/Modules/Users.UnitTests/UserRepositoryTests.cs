@@ -46,8 +46,8 @@ namespace LYBT.Module.Users.Tests
                 PasswordHash = "TestPasswordHash123",
                 Status = status,
                 Role = UserRole.Doctor,
-                CreatedTime = DateTime.Now,
-                UpdateTime = DateTime.Now
+                CreatedAt = DateTime.Now,
+                UpdatedAt = DateTime.Now
             };
         }
 

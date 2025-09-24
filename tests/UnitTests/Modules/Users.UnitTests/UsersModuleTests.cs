@@ -8,6 +8,12 @@ using LYBT.Shared.Interfaces.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Xunit;
+using Microsoft.EntityFrameworkCore;
+using LYBT.Infrastructure.Data;
+using Microsoft.Extensions.Caching.Memory;
+using LYBT.Module.Users.Mapping;
+using LYBT.Infrastructure.Configuration.Services;
+using Moq;
 
 namespace LYBT.Module.Users.Tests
 {
@@ -21,6 +27,35 @@ namespace LYBT.Module.Users.Tests
 
             // 添加必要的配置
             services.AddLogging();
+            
+            // 添加AppDbContext - 使用InMemory数据库
+            services.AddDbContext<AppDbContext>((serviceProvider, options) =>
+            {
+                options.UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString());
+            });
+            
+            // 添加IMemoryCache
+            services.AddMemoryCache();
+            
+            // 添加AutoMapper
+            services.AddAutoMapper(typeof(UserMappingProfile).Assembly);
+            
+            // 添加DefaultPasswordService及其依赖
+            services.Configure<DefaultPasswordOptions>(options =>
+            {
+                options.SystemAdmin = "AdminPass123!";
+                options.NewUser = "DefaultPass123!";
+                options.EnableInDevelopment = true;
+                options.OnlyWhenDatabaseEmpty = false;
+                options.ExpiryDays = 30;
+            });
+            
+            // Mock IWebHostEnvironment
+            var mockEnvironment = new Mock<Microsoft.AspNetCore.Hosting.IWebHostEnvironment>();
+            mockEnvironment.Setup(x => x.EnvironmentName).Returns("Development");
+            services.AddSingleton(mockEnvironment.Object);
+            
+            services.AddScoped<DefaultPasswordService>();
             services.Configure<UserOptions>(options =>
             {
                 options.EnableUserCache = true;

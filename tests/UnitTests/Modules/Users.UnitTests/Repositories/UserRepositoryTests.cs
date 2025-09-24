@@ -27,7 +27,7 @@ namespace LYBT.Module.Users.Tests.Repositories
                 .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
                 .Options;
 
-            _context = new AppDbContext(_options);
+            _context = new AppDbContext(_options, null); // Pass null for IHttpContextAccessor in tests
             _mockLogger = new Mock<ILogger<UserRepository>>();
             _realCache = new MemoryCache(new MemoryCacheOptions
             {
@@ -1226,7 +1226,7 @@ namespace LYBT.Module.Users.Tests.Repositories
                 .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
                 .Options;
 
-            _context = new AppDbContext(_options);
+            _context = new AppDbContext(_options, null); // Pass null for IHttpContextAccessor in tests
             var logger = new Mock<ILogger<UserRepository>>();
             _cache = new MemoryCache(new MemoryCacheOptions { SizeLimit = 100 });
             _repository = new UserRepository(_context, logger.Object, _cache);

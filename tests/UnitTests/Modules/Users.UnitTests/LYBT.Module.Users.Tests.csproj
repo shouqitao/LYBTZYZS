@@ -20,6 +20,8 @@
     <PackageReference Include="FluentAssertions"  />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer"  />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory"  />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite"  />
+    <PackageReference Include="Microsoft.Data.Sqlite"  />
     <PackageReference Include="Bogus"  />
     <PackageReference Include="Moq"  />
     <PackageReference Include="AutoMapper"  />

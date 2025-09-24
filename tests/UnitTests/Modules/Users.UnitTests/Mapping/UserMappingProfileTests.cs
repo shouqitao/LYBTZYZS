@@ -52,8 +52,8 @@ namespace LYBT.Module.Users.Tests.Mapping
                 PhoneNumber = "13812345678",
                 Role = UserRole.Doctor,
                 Status = CommonStatus.Enabled,
-                CreatedTime = DateTime.Now,
-                UpdateTime = DateTime.Now,
+                CreatedAt = DateTime.Now,
+                UpdatedAt = DateTime.Now,
                 PinYinCode = "CSYH"
             };
 
@@ -95,14 +95,22 @@ namespace LYBT.Module.Users.Tests.Mapping
             user.Role.Should().Be(createDto.Role);
             user.Status.Should().Be(createDto.Status);
 
-            // 验证忽略字段
-            user.Id.Should().Be(Guid.Empty);
-            user.PasswordHash.Should().BeNull();
+            // 验证BaseEntity默认值
+            user.Id.Should().NotBe(Guid.Empty, "BaseEntity构造函数会设置默认ID");
+            user.CreatedAt.Should().BeCloseTo(DateTime.Now, TimeSpan.FromSeconds(1), "BaseEntity设置创建时间");
+            user.RowVersion.Should().NotBeNull().And.HaveCount(8, "BaseEntity初始化版本字段");
+            user.IsDeleted.Should().BeFalse("BaseEntity默认未删除");
+            
+            // 验证映射忽略的字段
+            user.PasswordHash.Should().BeEmpty("密码哈希由业务逻辑处理");
             user.FailedLoginCount.Should().Be(0);
             user.LockoutEnd.Should().BeNull();
-            user.CreatedTime.Should().Be(default);
-            user.UpdateTime.Should().Be(default);
-            user.PinYinCode.Should().BeNull();
+            user.UpdatedAt.Should().BeNull("新建时更新时间为空");
+            user.PinYinCode.Should().BeNull("拼音码由业务逻辑生成");
+            user.LastLoginTime.Should().BeNull();
+            user.Remark.Should().BeNull();
+            user.CreatedBy.Should().BeNull();
+            user.UpdatedBy.Should().BeNull();
         }
 
         [Fact]
@@ -128,15 +136,23 @@ namespace LYBT.Module.Users.Tests.Mapping
             user.Role.Should().Be(updateDto.Role);
             user.Status.Should().Be(updateDto.Status);
 
-            // 验证忽略字段
-            user.Id.Should().Be(Guid.Empty);
-            user.Username.Should().BeNull();
-            user.PasswordHash.Should().BeNull();
+            // 验证BaseEntity默认值（更新操作不应改变这些字段）
+            user.Id.Should().NotBe(Guid.Empty, "BaseEntity构造函数会设置默认ID，更新时由业务逻辑处理");
+            user.CreatedAt.Should().BeCloseTo(DateTime.Now, TimeSpan.FromSeconds(1), "BaseEntity设置创建时间");
+            user.RowVersion.Should().NotBeNull().And.HaveCount(8, "BaseEntity初始化版本字段");
+            user.IsDeleted.Should().BeFalse("BaseEntity默认未删除");
+            
+            // 验证映射忽略的字段
+            user.Username.Should().BeEmpty("用户名不允许修改");
+            user.PasswordHash.Should().BeEmpty("密码哈希由业务逻辑处理");
             user.FailedLoginCount.Should().Be(0);
             user.LockoutEnd.Should().BeNull();
-            user.CreatedTime.Should().Be(default);
-            user.UpdateTime.Should().Be(default);
-            user.PinYinCode.Should().BeNull();
+            user.UpdatedAt.Should().BeNull("更新时间由业务逻辑设置");
+            user.PinYinCode.Should().BeNull("拼音码由业务逻辑生成");
+            user.LastLoginTime.Should().BeNull();
+            user.Remark.Should().BeNull();
+            user.CreatedBy.Should().BeNull();
+            user.UpdatedBy.Should().BeNull();
         }
 
         [Fact]

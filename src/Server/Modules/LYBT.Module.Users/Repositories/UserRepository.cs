@@ -156,7 +156,7 @@ int total = await dbSet.CountAsync();
 // 分页查询 - UltraThink v2.0: 使用用户名排序曷代已删除的CreateTime
 int skip = (query.PageIndex - 1) * query.PageSize;
 var users = await dbSet
-.OrderBy(u => u.Username) // 简化排序：按用户名
+.OrderByDescending(u => u.CreatedAt) // 按创建时间降序排序
 .Skip(skip)
 .Take(query.PageSize)
 .ToListAsync();
@@ -164,7 +164,7 @@ var users = await dbSet
 var result = (Users: users, Total: total);
 
 // 缓存结果
-_cache.Set(cacheKey, result, DefaultCacheDuration);
+SetCacheSafely(cacheKey, result, DefaultCacheDuration);
 
 return result;
 }
@@ -185,7 +185,7 @@ var user = await _dbSet
 .AsNoTracking()
 .FirstOrDefaultAsync(u => u.Username == userName);
 
-_cache.Set(cacheKey, user, DefaultCacheDuration);
+SetCacheSafely(cacheKey, user, DefaultCacheDuration);
 return user;
 }
 
@@ -210,7 +210,7 @@ query = query.Where(u => u.Status == CommonStatus.Enabled);
 }
 
 var user = await query.FirstOrDefaultAsync(u => u.Id == id);
-_cache.Set(cacheKey, user, DefaultCacheDuration);
+SetCacheSafely(cacheKey, user, DefaultCacheDuration);
 return user;
 }
 
@@ -251,9 +251,37 @@ return cached;
 }
 
 var exists = await _dbSet.AsNoTracking().AnyAsync(u => u.Username == userName);
-_cache.Set(cacheKey, exists, DefaultCacheDuration);
+SetCacheSafely(cacheKey, exists, DefaultCacheDuration);
 return exists;
 }
+
+        /// <summary>
+        /// 检查手机号是否已存在
+        /// </summary>
+        public async Task<bool> ExistsByPhoneNumberAsync(string phoneNumber)
+        {
+            if (string.IsNullOrWhiteSpace(phoneNumber))
+            {
+                return false;
+            }
+
+            var cacheKey = $"user:exists:phone:{phoneNumber}";
+            
+            // 尝试从缓存获取
+            if (_cache.TryGetValue<bool>(cacheKey, out var exists))
+            {
+                return exists;
+            }
+
+            // 查询数据库
+            exists = await _dbSet
+                .AnyAsync(u => u.PhoneNumber == phoneNumber && !u.IsDeleted);
+            
+            // 设置缓存
+            SetCacheSafely(cacheKey, exists, DefaultCacheDuration);
+            
+            return exists;
+        }
 
 /// <summary>
 /// 更新用户密码 - 缓存感知版
@@ -290,12 +318,33 @@ if (!ids.Any())
 return 0;
 }
 
-// 安全修复：使用EF Core 7.0 ExecuteUpdate方法，防止SQL注入
-var status = isActive ? CommonStatus.Enabled : CommonStatus.Disabled;
-var result = await _dbSet
-.Where(u => ids.Contains(u.Id))
-.ExecuteUpdateAsync(setters => setters
-.SetProperty(u => u.Status, status));
+            var status = isActive ? CommonStatus.Enabled : CommonStatus.Disabled;
+            int result;
+
+            try
+            {
+                // 优先使用ExecuteUpdateAsync（生产环境）
+                result = await _dbSet
+                    .Where(u => ids.Contains(u.Id))
+                    .ExecuteUpdateAsync(setters => setters
+                        .SetProperty(u => u.Status, status));
+            }
+            catch (InvalidOperationException)
+            {
+                // InMemory数据库回退逻辑
+                var users = await _dbSet
+                    .Where(u => ids.Contains(u.Id))
+                    .ToListAsync();
+
+                foreach (var user in users)
+                {
+                    user.Status = status;
+                    _context.Entry(user).State = EntityState.Modified;
+                }
+
+                await _context.SaveChangesAsync();
+                result = users.Count; // 返回总数，与ExecuteUpdateAsync行为一致
+            }
 
 // 批量缓存失效
 if (result > 0)
@@ -329,7 +378,7 @@ var users = await _dbSet
 .OrderBy(u => u.RealName)
 .ToListAsync();
 
-_cache.Set(cacheKey, users, DefaultCacheDuration);
+SetCacheSafely(cacheKey, users, DefaultCacheDuration);
 return users;
 }
 

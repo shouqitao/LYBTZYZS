@@ -57,7 +57,7 @@ namespace LYBT.Module.Consultation.Services
 
                 // 排序和分页
                 var consultations = await queryable
-                    .OrderByDescending(c => c.Id) // 实体中没有CreatedTime，用Id排序
+                    .OrderByDescending(c => c.CreatedAt) // 使用CreatedAt排序
                     .Skip((query.PageIndex - 1) * query.PageSize)
                     .Take(query.PageSize)
                     .ToListAsync();
@@ -95,7 +95,7 @@ namespace LYBT.Module.Consultation.Services
 
                 var consultations = await _context.Consultations
                     .Where(c => c.PatientId == patientId && c.Status == CommonStatus.Enabled)
-                    .OrderByDescending(c => c.Id) // 实体中没有CreatedTime，用Id排序
+                    .OrderByDescending(c => c.CreatedAt) // 使用CreatedAt排序
                     .ToListAsync();
 
                 var dtos = _mapper.Map<List<ConsultationDto>>(consultations);
@@ -122,7 +122,7 @@ namespace LYBT.Module.Consultation.Services
 
                 var consultations = await _context.Consultations
                     .Where(c => c.MedicalCaseId == medicalCaseId && c.Status == CommonStatus.Enabled)
-                    .OrderByDescending(c => c.Id) // 实体中没有CreatedTime，用Id排序
+                    .OrderByDescending(c => c.CreatedAt) // 使用CreatedAt排序
                     .ToListAsync();
 
                 var dtos = _mapper.Map<List<ConsultationDto>>(consultations);
@@ -149,7 +149,7 @@ namespace LYBT.Module.Consultation.Services
 
                 var consultations = await _context.Consultations
                     .Where(c => c.UserId == doctorId && c.Status == CommonStatus.Enabled)
-                    .OrderByDescending(c => c.Id) // 实体中没有CreatedTime，用Id排序
+                    .OrderByDescending(c => c.CreatedAt) // 使用CreatedAt排序
                     .ToListAsync();
 
                 var dtos = _mapper.Map<List<ConsultationDto>>(consultations);
@@ -180,7 +180,7 @@ namespace LYBT.Module.Consultation.Services
                                ((c.ChiefComplaint != null && c.ChiefComplaint.Contains(searchTerm)) ||
                                 (c.PresentIllness != null && c.PresentIllness.Contains(searchTerm)) ||
                                 (c.TCMDiagnosis != null && c.TCMDiagnosis.Contains(searchTerm))))
-                    .OrderByDescending(c => c.Id) // 实体中没有CreatedTime，用Id排序
+                    .OrderByDescending(c => c.CreatedAt) // 使用CreatedAt排序
                     .Take(50) // 限制搜索结果数量
                     .ToListAsync();
 
@@ -208,7 +208,7 @@ namespace LYBT.Module.Consultation.Services
 
                 var consultations = await _context.Consultations
                     .Where(c => c.PatientId == patientId && c.Status == CommonStatus.Disabled)
-                    .OrderByDescending(c => c.Id) // 实体中没有CreatedTime，用Id排序
+                    .OrderByDescending(c => c.CreatedAt) // 使用CreatedAt排序
                     .ToListAsync();
 
                 var dtos = _mapper.Map<List<ConsultationDto>>(consultations);
