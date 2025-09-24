@@ -48,15 +48,10 @@ namespace LYBT.Module.Users.Tests.Fixtures
                 builder.SetMinimumLevel(LogLevel.Warning);
             });
 
-            // 配置SQLite数据库
-            services.AddDbContext<AppDbContext>((serviceProvider, options) =>
-            {
-                options.UseSqlite(_connection);
-                options.EnableSensitiveDataLogging(); // 测试环境启用敏感数据日志
-
-                // SQLite特定配置
-                options.UseQueryTrackingBehavior(QueryTrackingBehavior.TrackAll);
-            });
+            // 使用工厂方法创建 SQLite 兼容的 DbContext
+            var dbContext = SqliteDbContextFactory.CreateContext(_connection);
+            services.AddSingleton(dbContext);
+            services.AddSingleton<AppDbContext>(dbContext);
 
             // 配置真实的MemoryCache
             services.AddMemoryCache(options =>

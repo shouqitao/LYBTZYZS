@@ -56,7 +56,8 @@ namespace LYBT.Module.Users.Tests.Repositories
                     PasswordHash = PasswordHelper.Hash("Pass@word1!"),
                     RealName = "用户1",
                     Status = CommonStatus.Enabled,
-                    Role = UserRole.Doctor
+                    Role = UserRole.Doctor,
+                    RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 }
                 },
                 new User
                 {
@@ -65,7 +66,8 @@ namespace LYBT.Module.Users.Tests.Repositories
                     PasswordHash = PasswordHelper.Hash("Pass@word1!"),
                     RealName = "用户2",
                     Status = CommonStatus.Enabled,
-                    Role = UserRole.Doctor
+                    Role = UserRole.Doctor,
+                    RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 }
                 },
                 new User
                 {
@@ -74,7 +76,8 @@ namespace LYBT.Module.Users.Tests.Repositories
                     PasswordHash = PasswordHelper.Hash("Pass@word1!"),
                     RealName = "用户3",
                     Status = CommonStatus.Disabled,
-                    Role = UserRole.Admin
+                    Role = UserRole.Admin,
+                    RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 }
                 }
             };
 
@@ -113,7 +116,8 @@ namespace LYBT.Module.Users.Tests.Repositories
                     PasswordHash = PasswordHelper.Hash("Pass@word1!"),
                     RealName = "已启用1",
                     Status = CommonStatus.Enabled,
-                    Role = UserRole.Doctor
+                    Role = UserRole.Doctor,
+                    RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 }
                 },
                 new User
                 {
@@ -122,7 +126,8 @@ namespace LYBT.Module.Users.Tests.Repositories
                     PasswordHash = PasswordHelper.Hash("Pass@word1!"),
                     RealName = "已禁用1",
                     Status = CommonStatus.Disabled,
-                    Role = UserRole.Doctor
+                    Role = UserRole.Doctor,
+                    RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 }
                 },
                 new User
                 {
@@ -131,7 +136,8 @@ namespace LYBT.Module.Users.Tests.Repositories
                     PasswordHash = PasswordHelper.Hash("Pass@word1!"),
                     RealName = "已启用2",
                     Status = CommonStatus.Enabled,
-                    Role = UserRole.Admin
+                    Role = UserRole.Admin,
+                    RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 }
                 }
             };
 
@@ -171,7 +177,8 @@ namespace LYBT.Module.Users.Tests.Repositories
                 PasswordHash = PasswordHelper.Hash("Pass@word1!"),
                 RealName = "事务测试",
                 Status = CommonStatus.Enabled,
-                Role = UserRole.Doctor
+                Role = UserRole.Doctor,
+                RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 }
             };
 
             // Act & Assert
@@ -212,7 +219,8 @@ namespace LYBT.Module.Users.Tests.Repositories
                     PasswordHash = PasswordHelper.Hash("Pass@word1!"),
                     RealName = "事务用户1",
                     Status = CommonStatus.Enabled,
-                    Role = UserRole.Doctor
+                    Role = UserRole.Doctor,
+                    RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 }
                 },
                 new User
                 {
@@ -221,7 +229,8 @@ namespace LYBT.Module.Users.Tests.Repositories
                     PasswordHash = PasswordHelper.Hash("Pass@word1!"),
                     RealName = "事务用户2",
                     Status = CommonStatus.Enabled,
-                    Role = UserRole.Admin
+                    Role = UserRole.Admin,
+                    RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 }
                 }
             };
 
@@ -263,7 +272,7 @@ namespace LYBT.Module.Users.Tests.Repositories
                 RealName = "并发用户",
                 Status = CommonStatus.Enabled,
                 Role = UserRole.Doctor,
-                RowVersion = new byte[] { 1, 2, 3, 4 }
+                RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 }
             };
 
             await _fixture.DbContext.Users.AddAsync(user);
@@ -310,7 +319,8 @@ namespace LYBT.Module.Users.Tests.Repositories
                     RealName = $"用户{i}",
                     Status = i % 2 == 0 ? CommonStatus.Enabled : CommonStatus.Disabled,
                     Role = i % 3 == 0 ? UserRole.Admin : UserRole.Doctor,
-                    CreatedAt = DateTime.Now.AddDays(-i)
+                    CreatedAt = DateTime.Now.AddDays(-i),
+                    RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 }
                 });
             }
 
@@ -353,7 +363,8 @@ namespace LYBT.Module.Users.Tests.Repositories
                     PasswordHash = PasswordHelper.Hash("Pass@word1!"),
                     RealName = "SQL用户1",
                     Status = CommonStatus.Enabled,
-                    Role = UserRole.Doctor
+                    Role = UserRole.Doctor,
+                    RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 }
                 },
                 new User
                 {
@@ -362,7 +373,8 @@ namespace LYBT.Module.Users.Tests.Repositories
                     PasswordHash = PasswordHelper.Hash("Pass@word1!"),
                     RealName = "SQL用户2",
                     Status = CommonStatus.Disabled,
-                    Role = UserRole.Admin
+                    Role = UserRole.Admin,
+                    RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 }
                 }
             };
 

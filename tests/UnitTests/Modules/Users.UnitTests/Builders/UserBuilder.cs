@@ -28,7 +28,8 @@ namespace LYBT.Module.Users.Tests.Builders
                 PinYinCode = "CSYH",
                 IsDeleted = false,
                 CreatedAt = DateTime.Now,
-                UpdatedAt = DateTime.Now
+                UpdatedAt = DateTime.Now,
+                RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 } // 默认RowVersion以支持SQLite测试
             };
         }
 
@@ -114,6 +115,18 @@ namespace LYBT.Module.Users.Tests.Builders
         public UserBuilder WithLastLoginTime(DateTime? lastLoginTime)
         {
             _user.LastLoginTime = lastLoginTime;
+            return this;
+        }
+
+        public UserBuilder WithRowVersion(byte[] rowVersion)
+        {
+            _user.RowVersion = rowVersion;
+            return this;
+        }
+
+        public UserBuilder WithDefaultRowVersion()
+        {
+            _user.RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 };
             return this;
         }
 
