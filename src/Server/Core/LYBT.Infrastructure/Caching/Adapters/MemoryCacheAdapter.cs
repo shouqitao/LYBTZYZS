@@ -2,8 +2,11 @@
 
 using System.Collections.Concurrent;
 using LYBT.Infrastructure.Caching.Interfaces;
+using LYBT.Infrastructure.Caching.Models;
+using LYBT.Infrastructure.Configuration.Options;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace LYBT.Infrastructure.Caching.Adapters
 {
@@ -15,6 +18,7 @@ namespace LYBT.Infrastructure.Caching.Adapters
     /// <para>兼容性: 保持与现有代码的完全兼容</para>
     /// <para>性能: 最小化适配开销，直接委托到底层IMemoryCache</para>
     /// <para>统计: 增加命中率和使用情况统计</para>
+    /// <para>配置驱动: 支持通过CacheOptions配置缓存策略</para>
     /// </remarks>
     public class MemoryCacheAdapter : ICacheService
     {
@@ -22,16 +26,23 @@ namespace LYBT.Infrastructure.Caching.Adapters
         private readonly ILogger<MemoryCacheAdapter> _logger;
         private readonly ConcurrentDictionary<string, bool> _keys;
         private readonly CacheStatistics _statistics;
+        private readonly CacheOptions _cacheOptions;
+        private readonly object _evictionLock = new object();
+        private DateTime _lastEvictionLog = DateTime.MinValue;
 
         /// <summary>
         /// 默认过期时间
         /// </summary>
-        private static readonly TimeSpan DefaultExpiration = TimeSpan.FromMinutes(10);
+        private TimeSpan DefaultExpiration => TimeSpan.FromMinutes(_cacheOptions?.Memory?.DefaultCacheDurationMinutes ?? 10);
 
-        public MemoryCacheAdapter(IMemoryCache memoryCache, ILogger<MemoryCacheAdapter> logger)
+        public MemoryCacheAdapter(
+            IMemoryCache memoryCache,
+            ILogger<MemoryCacheAdapter> logger,
+            IOptions<CacheOptions> cacheOptions = null)
         {
             _memoryCache = memoryCache ?? throw new ArgumentNullException(nameof(memoryCache));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _cacheOptions = cacheOptions?.Value ?? new CacheOptions();
             _keys = new ConcurrentDictionary<string, bool>();
             _statistics = new CacheStatistics();
         }
@@ -65,7 +76,7 @@ namespace LYBT.Infrastructure.Caching.Adapters
         }
 
         /// <inheritdoc/>
-        public void Set<T>(string key, T value, TimeSpan? expiration = null)
+        public void Set<T>(string key, T value, TimeSpan? expiration = null, CachePriority priority = CachePriority.Normal)
         {
             if (string.IsNullOrEmpty(key))
                 throw new ArgumentException("Cache key cannot be null or empty", nameof(key));
@@ -75,10 +86,32 @@ namespace LYBT.Infrastructure.Caching.Adapters
                 var options = new MemoryCacheEntryOptions();
                 var exp = expiration ?? DefaultExpiration;
 
-                options.SetSlidingExpiration(exp);
+                // 设置过期策略
+                if (_cacheOptions.Memory.UseSlidingExpiration)
+                {
+                    options.SlidingExpiration = exp;
+                }
+                else
+                {
+                    options.AbsoluteExpirationRelativeToNow = exp;
+                }
+
+                // 设置缓存项大小
+                if (_cacheOptions.Memory.DefaultItemSize > 0)
+                {
+                    options.Size = _cacheOptions.Memory.DefaultItemSize;
+                }
+
+                // 设置优先级
+                var cacheItemPriority = GetCacheItemPriority(priority);
+                options.Priority = cacheItemPriority;
+
+                // 注册逐出回调
                 options.RegisterPostEvictionCallback((k, v, reason, state) =>
                 {
                     _keys.TryRemove(k.ToString()!, out _);
+
+                    // 更新统计
                     if (reason == EvictionReason.Expired)
                     {
                         _statistics.ExpiredKeys++;
@@ -86,18 +119,94 @@ namespace LYBT.Infrastructure.Caching.Adapters
                     else if (reason == EvictionReason.Capacity || reason == EvictionReason.TokenExpired)
                     {
                         _statistics.EvictedKeys++;
+                        _statistics.EvictionCount++;
+                    }
+
+                    // 记录逐出日志（如果启用）
+                    if (_cacheOptions.Memory.LogEvictions)
+                    {
+                        LogEviction(k.ToString()!, reason, GetEstimatedSize(v));
                     }
                 });
 
                 _memoryCache.Set(key, value, options);
                 _keys.TryAdd(key, true);
+                _statistics.CurrentItemCount = _keys.Count;
 
-                _logger.LogDebug("Cache set for key: {Key}, expiration: {Expiration}", key, exp);
+                _logger.LogDebug("缓存设置 - 键: {Key}, 过期: {Expiration}, 优先级: {Priority}, 大小: {Size}",
+                    key, exp, priority, options.Size);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error setting cache value for key: {Key}", key);
             }
+        }
+
+        /// <summary>
+        /// 将缓存优先级转换为MemoryCache优先级
+        /// </summary>
+        private CacheItemPriority GetCacheItemPriority(CachePriority priority)
+        {
+            return priority switch
+            {
+                CachePriority.Low => CacheItemPriority.Low,
+                CachePriority.Normal => CacheItemPriority.Normal,
+                CachePriority.High => CacheItemPriority.High,
+                CachePriority.NeverRemove => CacheItemPriority.NeverRemove,
+                _ => CacheItemPriority.Normal
+            };
+        }
+
+        /// <summary>
+        /// 记录逐出日志
+        /// </summary>
+        private void LogEviction(string key, EvictionReason reason, long estimatedSize)
+        {
+            // 限制日志频率，避免过多日志输出
+            lock (_evictionLock)
+            {
+                var now = DateTime.UtcNow;
+                if ((now - _lastEvictionLog).TotalSeconds < 1)
+                    return;
+
+                _lastEvictionLog = now;
+            }
+
+            var eventId = new EventId(_cacheOptions.Monitoring.EventIds.HighEvictionRate, "CacheEviction");
+            _logger.LogInformation(eventId,
+                "缓存逐出 - 键前缀: {KeyPrefix}, 原因: {Reason}, 估算大小: {Size}B, 当前项数: {CurrentCount}",
+                GetKeyPrefix(key), reason, estimatedSize, _statistics.CurrentItemCount);
+        }
+
+        /// <summary>
+        /// 获取键前缀（隐私保护）
+        /// </summary>
+        private string GetKeyPrefix(string key)
+        {
+            if (string.IsNullOrEmpty(key))
+                return "unknown";
+
+            var colonIndex = key.IndexOf(':');
+            return colonIndex > 0 ? key.Substring(0, Math.Min(colonIndex, 20)) : key.Substring(0, Math.Min(key.Length, 10));
+        }
+
+        /// <summary>
+        /// 估算对象大小（简单估算）
+        /// </summary>
+        private long GetEstimatedSize(object obj)
+        {
+            if (obj == null)
+                return 0;
+
+            // 简单估算，实际应用中可以使用更精确的方法
+            if (obj is string str)
+                return str.Length * 2; // Unicode字符
+
+            if (obj is byte[] bytes)
+                return bytes.Length;
+
+            // 默认估算
+            return 100;
         }
 
         /// <inheritdoc/>
@@ -170,9 +279,9 @@ namespace LYBT.Infrastructure.Caching.Adapters
         }
 
         /// <inheritdoc/>
-        public Task SetAsync<T>(string key, T value, TimeSpan? expiration = null, CancellationToken cancellationToken = default)
+        public Task SetAsync<T>(string key, T value, TimeSpan? expiration = null, CachePriority priority = CachePriority.Normal, CancellationToken cancellationToken = default)
         {
-            Set(key, value, expiration);
+            Set(key, value, expiration, priority);
             return Task.CompletedTask;
         }
 
@@ -183,7 +292,7 @@ namespace LYBT.Infrastructure.Caching.Adapters
         }
 
         /// <inheritdoc/>
-        public async Task<T> GetOrSetAsync<T>(string key, Func<Task<T>> factory, TimeSpan? expiration = null, CancellationToken cancellationToken = default)
+        public async Task<T> GetOrSetAsync<T>(string key, Func<Task<T>> factory, TimeSpan? expiration = null, CachePriority priority = CachePriority.Normal, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(key))
                 throw new ArgumentException("Cache key cannot be null or empty", nameof(key));
@@ -204,7 +313,7 @@ namespace LYBT.Infrastructure.Caching.Adapters
 
             // Call factory and cache result
             var result = await factory();
-            Set(key, result, expiration);
+            Set(key, result, expiration, priority);
 
             return result;
         }

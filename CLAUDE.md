@@ -35,6 +35,13 @@
 ### 共享层
 - DTO、接口、工具位于 `src/Shared`，禁止在前后端重复定义数据结构或服务接口。
 
+### 架构约束与技术选型
+- **明确禁止**: 项目当前阶段**明确决定不引入**完整的CQRS模式和MediatR库。此决策基于对项目规模的判断，旨在避免过度设计。
+- **禁止推荐**: 在进行任何代码实现或重构建议时，**请勿推荐**使用上述技术。
+- **遵循现有模式**:
+  - **读取操作**: 严格遵循已建立的 `Controller → QueryService → ReadRepository` 只读路径。
+  - **写入操作**: 严格遵循标准的 `Controller → BusinessService → DbContext/WriteRepository` 模式，将业务逻辑封装在 `BusinessService` 中。
+
 ## 常用命令（PowerShell）
 ```powershell
 # 还原 / 构建

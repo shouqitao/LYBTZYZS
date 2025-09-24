@@ -4,7 +4,9 @@ using System.Text.Json.Serialization;
 
 using LYBT.Infrastructure.Caching.Adapters;
 using LYBT.Infrastructure.Caching.Interfaces;
+using LYBT.Infrastructure.Caching.Services;
 using LYBT.Infrastructure.Configuration.Options;
+using LYBT.WebAPI.Services;
 using LYBT.Infrastructure.Configuration.Services;
 using LYBT.Infrastructure.Configuration.Extensions;
 using LYBT.Infrastructure.Data;
@@ -18,6 +20,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.IdentityModel.Tokens;
 
 namespace LYBT.WebAPI.Extensions;
@@ -104,15 +107,47 @@ public static class UnifiedServiceRegistration
             });
         }
 
-        // 内存缓存
-        services.AddMemoryCache(options =>
-        {
-            options.SizeLimit = 100_000;
-            options.CompactionPercentage = 0.25;
-            options.ExpirationScanFrequency = TimeSpan.FromMinutes(1);
-        });
+        // 缓存配置选项
+        services.AddOptions<CacheOptions>()
+            .Bind(configuration.GetSection(CacheOptions.SectionName))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
 
-        services.AddSingleton<ICacheService, MemoryCacheAdapter>();
+        // 内存缓存（使用配置驱动）
+        var cacheOptions = configuration.GetSection(CacheOptions.SectionName).Get<CacheOptions>() ?? new CacheOptions();
+
+        if (!cacheOptions.Enabled)
+        {
+            services.AddSingleton<ICacheService>(new NullCacheService());
+            services.AddMemoryCache(); // 添加基础的MemoryCache，即使禁用也需要
+        }
+        else
+        {
+            services.AddMemoryCache(options =>
+            {
+                // 从配置读取参数，未配置时使用默认值
+                if (cacheOptions.Memory.SizeLimit.HasValue)
+                {
+                    options.SizeLimit = cacheOptions.Memory.SizeLimit.Value;
+                }
+                else
+                {
+                    options.SizeLimit = 10000; // 向后兼容默认值
+                    var logger = services.BuildServiceProvider().GetService<ILogger<MemoryCacheOptions>>();
+                    logger?.LogWarning(new EventId(cacheOptions.Monitoring.EventIds.ConfigMissing, "CacheConfigMissing"),
+                        "未配置缓存大小限制(CacheOptions:Memory:SizeLimit)，使用默认值: {DefaultSize}", 10000);
+                }
+
+                options.CompactionPercentage = cacheOptions.Memory.CompactionPercentage;
+                options.ExpirationScanFrequency = TimeSpan.FromSeconds(cacheOptions.Memory.ExpirationScanFrequencySeconds);
+            });
+
+            services.AddSingleton<ICacheService, MemoryCacheAdapter>();
+
+        // 缓存诊断服务（Phase 3缓存治理）
+        services.AddSingleton<ICacheDiagnosticsService, CacheDiagnosticsService>();
+        services.AddHostedService<CacheHealthBackgroundService>();
+        }
 
         // 选项绑定（IOptions）
         services.AddOptions<LYBT.Infrastructure.Configuration.Options.JwtOptions>()

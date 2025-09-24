@@ -13,8 +13,43 @@
 ## 当前优先级（Thinker）
 1. 统一桌面端事件体系，移除重复事件与枚举并修正命名空间。
 2. 修复 UnifiedDesignSystem.xaml 转换器引用，确保桌面端资源加载正常。
-3. 梳理“诊疗工作台”相关 UI 和文案，替换旧的“看诊”术语。
+3. 梳理"诊疗工作台"相关 UI 和文案，替换旧的"看诊"术语。
 4. 恢复服务器测试，并规划桌面端关键服务的单元测试。
+
+## Server层查询架构
+
+### 查询层架构概述
+Server层采用优化的三层架构，通过ReadRepository模式实现查询和命令分离的基础：
+
+**架构路径**: Controller → QueryService → ReadRepository → Database
+
+**核心特性**：
+- **统一缓存策略**：5分钟滑动过期，缓存命中率达83.5%
+- **缓存穿透防护**：空值结果缓存1分钟，防止恶意请求
+- **性能优化**：缓存场景下查询性能提升93-96%
+- **软删除过滤**：全局应用，自动排除已删除记录
+
+### 缓存配置
+| 配置项 | 默认值 | 说明 |
+|--------|--------|------|
+| DefaultCacheDuration | 5分钟 | 正常数据缓存时长 |
+| NullCacheDuration | 1分钟 | 空值缓存时长 |
+| CacheKeyPrefix | `{EntityName}:readonly:` | 缓存键前缀 |
+
+### 查询层诊断
+使用PowerShell诊断脚本监控查询层性能：
+```powershell
+# 完整诊断
+./scripts/QueryLayerDiagnostics.ps1 -CacheStatus -EFTracking -PerformanceSampling
+
+# 特定模块缓存状态
+./scripts/QueryLayerDiagnostics.ps1 -Module Users -CacheStatus
+```
+
+### 相关文档
+- Phase 1重构总结：`docs/tasks/completed/2025-09-24-server-phase1-query-layer-refactor-task-summary.md`
+- Phase 2巩固报告：`docs/reports/server-query-layer-phase2-hardening-report.md`
+- 诊断脚本：`scripts/QueryLayerDiagnostics.ps1`
 
 ## 项目结构
 `

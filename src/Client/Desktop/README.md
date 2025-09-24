@@ -5,7 +5,7 @@
 
 ## 🎯 项目概述
 
-- **项目名称**: LYBT.Desktop (凌隐宝堂中医诊所桌面客户端)
+- **项目名称**: 凌隐宝堂中医诊所桌面客户端 (LYBT.Desktop)
 - **目标框架**: .NET 8.0 Windows 
 - **UI框架**: WPF + Prism.DryIoc 8.1.97
 - **架构模式**: 三层MVVM + 模块化

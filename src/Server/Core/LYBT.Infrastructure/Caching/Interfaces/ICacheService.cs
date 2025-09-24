@@ -1,6 +1,7 @@
 #nullable enable
 
 using System.ComponentModel;
+using LYBT.Infrastructure.Caching.Models;
 
 namespace LYBT.Infrastructure.Caching.Interfaces
 {
@@ -38,12 +39,13 @@ namespace LYBT.Infrastructure.Caching.Interfaces
         /// <param name="key">缓存键</param>
         /// <param name="value">缓存数据</param>
         /// <param name="expiration">过期时间 - null表示使用默认过期策略</param>
+        /// <param name="priority">缓存优先级 - 决定内存压力时的清理顺序</param>
         /// <remarks>
         /// <para>策略: 支持滑动过期和绝对过期</para>
         /// <para>存储: 自动序列化复杂对象</para>
-        /// <para>淘汰: LRU策略，内存压力自动清理</para>
+        /// <para>淘汰: 基于优先级的LRU策略，内存压力自动清理</para>
         /// </remarks>
-        void Set<T>(string key, T value, TimeSpan? expiration = null);
+        void Set<T>(string key, T value, TimeSpan? expiration = null, CachePriority priority = CachePriority.Normal);
 
         /// <summary>
         /// 移除缓存项 (同步)
@@ -88,9 +90,10 @@ namespace LYBT.Infrastructure.Caching.Interfaces
         /// <param name="key">缓存键</param>
         /// <param name="value">缓存数据</param>
         /// <param name="expiration">过期时间</param>
+        /// <param name="priority">缓存优先级</param>
         /// <param name="cancellationToken">取消令牌</param>
         /// <returns>异步操作任务</returns>
-        Task SetAsync<T>(string key, T value, TimeSpan? expiration = null, CancellationToken cancellationToken = default);
+        Task SetAsync<T>(string key, T value, TimeSpan? expiration = null, CachePriority priority = CachePriority.Normal, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 移除缓存项 (异步)
@@ -107,6 +110,7 @@ namespace LYBT.Infrastructure.Caching.Interfaces
         /// <param name="key">缓存键</param>
         /// <param name="factory">数据工厂方法 - 缓存未命中时调用</param>
         /// <param name="expiration">过期时间</param>
+        /// <param name="priority">缓存优先级</param>
         /// <param name="cancellationToken">取消令牌</param>
         /// <returns>缓存或新获取的数据</returns>
         /// <remarks>
@@ -114,7 +118,7 @@ namespace LYBT.Infrastructure.Caching.Interfaces
         /// <para>性能优势: 一次调用处理缓存逻辑，避免重复检查</para>
         /// <para>线程安全: 并发调用时只有一个工厂方法执行</para>
         /// </remarks>
-        Task<T> GetOrSetAsync<T>(string key, Func<Task<T>> factory, TimeSpan? expiration = null, CancellationToken cancellationToken = default);
+        Task<T> GetOrSetAsync<T>(string key, Func<Task<T>> factory, TimeSpan? expiration = null, CachePriority priority = CachePriority.Normal, CancellationToken cancellationToken = default);
 
         #endregion
 
@@ -184,56 +188,5 @@ namespace LYBT.Infrastructure.Caching.Interfaces
         Task<CacheStatistics> GetStatisticsAsync(CancellationToken cancellationToken = default);
 
         #endregion
-    }
-
-    /// <summary>
-    /// 缓存统计信息
-    /// </summary>
-    public class CacheStatistics
-    {
-        /// <summary>
-        /// 总键数量
-        /// </summary>
-        public long TotalKeys { get; set; }
-
-        /// <summary>
-        /// 命中次数
-        /// </summary>
-        public long HitCount { get; set; }
-
-        /// <summary>
-        /// 未命中次数
-        /// </summary>
-        public long MissCount { get; set; }
-
-        /// <summary>
-        /// 命中率
-        /// </summary>
-        public double HitRatio => TotalRequests > 0 ? (double)HitCount / TotalRequests : 0;
-
-        /// <summary>
-        /// 总请求次数
-        /// </summary>
-        public long TotalRequests => HitCount + MissCount;
-
-        /// <summary>
-        /// 已用内存大小 (字节)
-        /// </summary>
-        public long UsedMemory { get; set; }
-
-        /// <summary>
-        /// 过期键数量
-        /// </summary>
-        public long ExpiredKeys { get; set; }
-
-        /// <summary>
-        /// 淘汰键数量
-        /// </summary>
-        public long EvictedKeys { get; set; }
-
-        /// <summary>
-        /// 统计时间戳
-        /// </summary>
-        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
     }
 }
