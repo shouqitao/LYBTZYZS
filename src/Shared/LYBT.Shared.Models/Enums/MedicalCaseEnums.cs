@@ -11,7 +11,7 @@ namespace LYBT.Shared.Models.Enums
     public enum MedicalCaseStatus
     {
 
-        /// <summary>活跃状态（包含挂号、看诊中、暂停等活跃状态）</summary>
+        /// <summary>活跃状态（包含挂号、诊疗中、暂停等活跃状态）</summary>
         [Description("活跃")]
         Active = 10,
 
@@ -26,8 +26,8 @@ namespace LYBT.Shared.Models.Enums
         [Obsolete("Use Active instead. Registered status merged into Active in Record-Only mode.", false)]
         Registered = 0,
 
-        /// <summary>看诊中 - 已合并到Active状态</summary>
-        [Description("看诊中")]
+        /// <summary>诊疗中 - 已合并到Active状态</summary>
+        [Description("诊疗中")]
         [Obsolete("Use Active instead. InConsultation status merged into Active in Record-Only mode.", false)]
         InConsultation = 1,
 

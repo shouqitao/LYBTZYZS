@@ -11,21 +11,21 @@ namespace LYBT.Module.Consultation.Services
 {
 
     /// <summary>
-    /// 看诊业务服务 - UltraThink架构
+    /// 诊疗业务服务 - UltraThink架构
     /// 职责：业务逻辑处理，工作流管理，状态变更，中医四诊处理
     /// </summary>
     public class ConsultationBusinessService : IConsultationBusinessService
     {
-        private readonly AppDbContext _context;
+        private readonly IConsultationRepository _repository;
         private readonly IMapper _mapper;
         private readonly ILogger<ConsultationBusinessService> _logger;
 
         public ConsultationBusinessService(
-            AppDbContext context,
+            IConsultationRepository repository,
             IMapper mapper,
             ILogger<ConsultationBusinessService> logger)
         {
-            _context = context ?? throw new ArgumentNullException(nameof(context));
+            _repository = repository ?? throw new ArgumentNullException(nameof(repository));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
@@ -36,7 +36,7 @@ namespace LYBT.Module.Consultation.Services
         
 
         /// <summary>
-        /// 开始看诊
+        /// 开始诊疗
         /// </summary>
         public async Task<ServiceResult<ConsultationDto>> StartAsync(ConsultationStartDto dto)
         {
@@ -44,7 +44,7 @@ namespace LYBT.Module.Consultation.Services
             {
                 if (dto == null)
                 {
-                    return ServiceResult<ConsultationDto>.Failure("看诊启动数据不能为空");
+                    return ServiceResult<ConsultationDto>.Failure("诊疗启动数据不能为空");
                 }
 
                 if (dto.PatientId == Guid.Empty)
@@ -62,16 +62,15 @@ namespace LYBT.Module.Consultation.Services
                     return ServiceResult<ConsultationDto>.Failure("医生ID不能为空");
                 }
 
-                // 检查是否已存在进行中的看诊
-                var existingConsultation = await _context.Consultations
-                    .FirstOrDefaultAsync(c => c.MedicalCaseId == dto.MedicalCaseId && c.Status == CommonStatus.Enabled);
+                // 检查是否已存在进行中的诊疗
+                var existingConsultation = await _repository.GetByMedicalCaseIdAsync(dto.MedicalCaseId);
 
                 if (existingConsultation != null)
                 {
-                    return ServiceResult<ConsultationDto>.Failure("该医疗案例已存在进行中的看诊记录");
+                    return ServiceResult<ConsultationDto>.Failure("该医疗案例已存在进行中的诊疗记录");
                 }
 
-                // 创建新的看诊记录
+                // 创建新的诊疗记录
                 var consultation = new LYBT.Entities.Consultation.Consultation
                 {
                     Id = Guid.NewGuid(),
@@ -82,23 +81,23 @@ namespace LYBT.Module.Consultation.Services
                     Status = CommonStatus.Enabled
                 };
 
-                _context.Consultations.Add(consultation);
-                await _context.SaveChangesAsync();
+                await _repository.AddAsync(consultation);
+                await _repository.SaveChangesAsync();
 
                 var resultDto = _mapper.Map<ConsultationDto>(consultation);
-                _logger.LogInformation("开始看诊成功 - 患者: {PatientId}, 医案: {MedicalCaseId}", dto.PatientId, dto.MedicalCaseId);
+                _logger.LogInformation("开始诊疗成功 - 患者: {PatientId}, 医案: {MedicalCaseId}", dto.PatientId, dto.MedicalCaseId);
 
                 return ServiceResult<ConsultationDto>.Success(resultDto);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "开始看诊失败");
-                return ServiceResult<ConsultationDto>.Failure($"开始看诊失败: {ex.Message}");
+                _logger.LogError(ex, "开始诊疗失败");
+                return ServiceResult<ConsultationDto>.Failure($"开始诊疗失败: {ex.Message}");
             }
         }
 
         /// <summary>
-        /// 更新看诊记录
+        /// 更新诊疗记录
         /// </summary>
         public async Task<ServiceResult<ConsultationDto>> UpdateAsync(Guid id, ConsultationDetailDto dto)
         {
@@ -106,7 +105,7 @@ namespace LYBT.Module.Consultation.Services
             {
                 if (id == Guid.Empty)
                 {
-                    return ServiceResult<ConsultationDto>.Failure("看诊ID不能为空");
+                    return ServiceResult<ConsultationDto>.Failure("诊疗ID不能为空");
                 }
 
                 if (dto == null)
@@ -114,20 +113,19 @@ namespace LYBT.Module.Consultation.Services
                     return ServiceResult<ConsultationDto>.Failure("更新数据不能为空");
                 }
 
-                var consultation = await _context.Consultations
-                    .FirstOrDefaultAsync(c => c.Id == id);
+                var consultation = await _repository.GetByIdAsync(id);
 
                 if (consultation == null)
                 {
-                    return ServiceResult<ConsultationDto>.Failure("看诊记录不存在");
+                    return ServiceResult<ConsultationDto>.Failure("诊疗记录不存在");
                 }
 
                 if (consultation.Status == CommonStatus.Disabled)
                 {
-                    return ServiceResult<ConsultationDto>.Failure("已完成的看诊不能修改");
+                    return ServiceResult<ConsultationDto>.Failure("已完成的诊疗不能修改");
                 }
 
-                // 更新看诊信息
+                // 更新诊疗信息
                 consultation.ChiefComplaint = dto.ChiefComplaint;
                 consultation.PresentIllness = dto.PresentIllness;
                 consultation.Inspection = dto.Inspection;
@@ -137,23 +135,23 @@ namespace LYBT.Module.Consultation.Services
                 consultation.TCMDiagnosis = dto.TCMDiagnosis ?? string.Empty; // 修正：使用TCMDiagnosis字段
                 consultation.MedicalAdvice = dto.MedicalAdvice; // 修正：使用MedicalAdvice字段
 
-                _context.Consultations.Update(consultation);
-                await _context.SaveChangesAsync();
+                await _repository.UpdateAsync(consultation);
+                await _repository.SaveChangesAsync();
 
                 var resultDto = _mapper.Map<ConsultationDto>(consultation);
-                _logger.LogInformation("更新看诊记录成功 - ID: {Id}", id);
+                _logger.LogInformation("更新诊疗记录成功 - ID: {Id}", id);
 
                 return ServiceResult<ConsultationDto>.Success(resultDto);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "更新看诊记录失败 - ID: {Id}", id);
-                return ServiceResult<ConsultationDto>.Failure($"更新看诊记录失败: {ex.Message}");
+                _logger.LogError(ex, "更新诊疗记录失败 - ID: {Id}", id);
+                return ServiceResult<ConsultationDto>.Failure($"更新诊疗记录失败: {ex.Message}");
             }
         }
 
         /// <summary>
-        /// 删除看诊记录
+        /// 删除诊疗记录
         /// </summary>
         public async Task<ServiceResult<bool>> DeleteAsync(Guid id)
         {
@@ -161,29 +159,28 @@ namespace LYBT.Module.Consultation.Services
             {
                 if (id == Guid.Empty)
                 {
-                    return ServiceResult<bool>.Failure("看诊ID不能为空");
+                    return ServiceResult<bool>.Failure("诊疗ID不能为空");
                 }
 
-                var consultation = await _context.Consultations
-                    .FirstOrDefaultAsync(c => c.Id == id);
+                var consultation = await _repository.GetByIdAsync(id);
 
                 if (consultation == null)
                 {
-                    return ServiceResult<bool>.Failure("看诊记录不存在");
+                    return ServiceResult<bool>.Failure("诊疗记录不存在");
                 }
 
                 // 软删除：设置状态为禁用
                 consultation.Status = CommonStatus.Disabled;
-                _context.Consultations.Update(consultation);
-                await _context.SaveChangesAsync();
+                await _repository.UpdateAsync(consultation);
+                await _repository.SaveChangesAsync();
 
-                _logger.LogInformation("删除看诊记录成功 - ID: {Id}", id);
+                _logger.LogInformation("删除诊疗记录成功 - ID: {Id}", id);
                 return ServiceResult<bool>.Success(true);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "删除看诊记录失败 - ID: {Id}", id);
-                return ServiceResult<bool>.Failure($"删除看诊记录失败: {ex.Message}");
+                _logger.LogError(ex, "删除诊疗记录失败 - ID: {Id}", id);
+                return ServiceResult<bool>.Failure($"删除诊疗记录失败: {ex.Message}");
             }
         }
     }

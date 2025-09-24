@@ -69,7 +69,7 @@
                             Margin="0,0,10,0"
                             Style="{StaticResource InfoButton}"
                             Command="{Binding StatisticsCommand}"
-                            ToolTip="查看诊疗记录统计报告" />
+                            ToolTip="查诊疗疗记录统计报告" />
                     <Button Content="刷新"
                             Style="{StaticResource SecondaryButton}"
                             Command="{Binding RefreshCommand}" />

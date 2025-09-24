@@ -9,7 +9,7 @@ namespace LYBT.Entities.Consultation
 {
 
     /// <summary>
-    /// 看诊实体 - UltraThink v2.0架构简化版
+    /// 诊疗实体 - UltraThink v2.0架构简化版
     /// 合并了原BaseConsultation和ConsultationModel
     /// 专注于中医诊疗，包含中医四诊和辨证论治
     /// </summary>
@@ -17,9 +17,9 @@ namespace LYBT.Entities.Consultation
     public class Consultation
     {
 
-        /// <summary>看诊ID</summary>
+        /// <summary>诊疗ID</summary>
         [Key]
-        [DisplayName("看诊ID")]
+        [DisplayName("诊疗ID")]
         public Guid Id { get; set; }
 
         /// <summary>医疗案例ID</summary>

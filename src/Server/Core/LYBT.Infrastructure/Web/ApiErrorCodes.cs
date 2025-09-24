@@ -154,7 +154,7 @@ namespace LYBT.Infrastructure.Web
         public const string FORMULANAMEEXISTS = "FORMULA_NAME_EXISTS";
 
         /// <summary>
-        /// 看诊记录不存在
+        /// 诊疗记录不存在
         /// </summary>
         public const string CONSULTATIONNOTFOUND = "CONSULTATION_NOT_FOUND";
 

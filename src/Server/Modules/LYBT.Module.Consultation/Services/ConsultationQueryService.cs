@@ -11,8 +11,8 @@ namespace LYBT.Module.Consultation.Services
 {
 
     /// <summary>
-    /// 看诊查询服务 - UltraThink架构
-    /// 职责：分页查询，搜索筛选，看诊查询，历史记录获取
+    /// 诊疗查询服务 - UltraThink架构
+    /// 职责：分页查询，搜索筛选，诊疗查询，历史记录获取
     /// </summary>
     public class ConsultationQueryService : IConsultationQueryService
     {
@@ -31,7 +31,7 @@ namespace LYBT.Module.Consultation.Services
         }
 
         /// <summary>
-        /// 分页查询看诊记录
+        /// 分页查询诊疗记录
         /// </summary>
         public async Task<ServiceResult<PagedResult<ConsultationDto>>> GetPagedAsync(PagedQueryBaseDto query)
         {
@@ -39,7 +39,7 @@ namespace LYBT.Module.Consultation.Services
             {
                 var queryable = _context.Consultations.AsQueryable();
 
-                // 基础筛选 - 排除已取消的看诊
+                // 基础筛选 - 排除已取消的诊疗
                 queryable = queryable.Where(c => c.Status == CommonStatus.Enabled);
 
                 // 应用搜索条件（如果有关键词搜索）
@@ -76,13 +76,13 @@ namespace LYBT.Module.Consultation.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "分页查询看诊记录失败");
-                return ServiceResult<PagedResult<ConsultationDto>>.Failure($"分页查询看诊记录失败: {ex.Message}");
+                _logger.LogError(ex, "分页查询诊疗记录失败");
+                return ServiceResult<PagedResult<ConsultationDto>>.Failure($"分页查询诊疗记录失败: {ex.Message}");
             }
         }
 
         /// <summary>
-        /// 根据患者ID获取看诊记录
+        /// 根据患者ID获取诊疗记录
         /// </summary>
         public async Task<ServiceResult<List<ConsultationDto>>> GetByPatientIdAsync(Guid patientId)
         {
@@ -103,13 +103,13 @@ namespace LYBT.Module.Consultation.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "获取患者看诊记录失败: {PatientId}", patientId);
-                return ServiceResult<List<ConsultationDto>>.Failure($"获取患者看诊记录失败: {ex.Message}");
+                _logger.LogError(ex, "获取患者诊疗记录失败: {PatientId}", patientId);
+                return ServiceResult<List<ConsultationDto>>.Failure($"获取患者诊疗记录失败: {ex.Message}");
             }
         }
 
         /// <summary>
-        /// 根据医疗案例ID获取看诊记录
+        /// 根据医疗案例ID获取诊疗记录
         /// </summary>
         public async Task<ServiceResult<List<ConsultationDto>>> GetByMedicalCaseIdAsync(Guid medicalCaseId)
         {
@@ -130,13 +130,13 @@ namespace LYBT.Module.Consultation.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "获取医疗案例看诊记录失败: {MedicalCaseId}", medicalCaseId);
-                return ServiceResult<List<ConsultationDto>>.Failure($"获取医疗案例看诊记录失败: {ex.Message}");
+                _logger.LogError(ex, "获取医疗案例诊疗记录失败: {MedicalCaseId}", medicalCaseId);
+                return ServiceResult<List<ConsultationDto>>.Failure($"获取医疗案例诊疗记录失败: {ex.Message}");
             }
         }
 
         /// <summary>
-        /// 根据医生ID获取看诊记录
+        /// 根据医生ID获取诊疗记录
         /// </summary>
         public async Task<ServiceResult<List<ConsultationDto>>> GetByDoctorIdAsync(Guid doctorId)
         {
@@ -157,13 +157,13 @@ namespace LYBT.Module.Consultation.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "获取医生看诊记录失败: {DoctorId}", doctorId);
-                return ServiceResult<List<ConsultationDto>>.Failure($"获取医生看诊记录失败: {ex.Message}");
+                _logger.LogError(ex, "获取医生诊疗记录失败: {DoctorId}", doctorId);
+                return ServiceResult<List<ConsultationDto>>.Failure($"获取医生诊疗记录失败: {ex.Message}");
             }
         }
 
         /// <summary>
-        /// 搜索看诊记录
+        /// 搜索诊疗记录
         /// </summary>
         public async Task<ServiceResult<List<ConsultationDto>>> SearchAsync(string keyword)
         {
@@ -189,8 +189,8 @@ namespace LYBT.Module.Consultation.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "搜索看诊记录失败: {Keyword}", keyword);
-                return ServiceResult<List<ConsultationDto>>.Failure($"搜索看诊记录失败: {ex.Message}");
+                _logger.LogError(ex, "搜索诊疗记录失败: {Keyword}", keyword);
+                return ServiceResult<List<ConsultationDto>>.Failure($"搜索诊疗记录失败: {ex.Message}");
             }
         }
 
@@ -227,7 +227,7 @@ namespace LYBT.Module.Consultation.Services
         
 
         /// <summary>
-        /// 根据ID获取看诊详情
+        /// 根据ID获取诊疗详情
         /// </summary>
         public async Task<ServiceResult<ConsultationDetailDto>> GetByIdAsync(Guid id)
         {
@@ -235,7 +235,7 @@ namespace LYBT.Module.Consultation.Services
             {
                 if (id == Guid.Empty)
                 {
-                    return ServiceResult<ConsultationDetailDto>.Failure("看诊ID不能为空");
+                    return ServiceResult<ConsultationDetailDto>.Failure("诊疗ID不能为空");
                 }
 
                 var consultation = await _context.Consultations
@@ -243,7 +243,7 @@ namespace LYBT.Module.Consultation.Services
 
                 if (consultation == null)
                 {
-                    return ServiceResult<ConsultationDetailDto>.Failure("看诊记录不存在");
+                    return ServiceResult<ConsultationDetailDto>.Failure("诊疗记录不存在");
                 }
 
                 var dto = _mapper.Map<ConsultationDetailDto>(consultation);
@@ -251,8 +251,8 @@ namespace LYBT.Module.Consultation.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "获取看诊详情失败: {Id}", id);
-                return ServiceResult<ConsultationDetailDto>.Failure($"获取看诊详情失败: {ex.Message}");
+                _logger.LogError(ex, "获取诊疗详情失败: {Id}", id);
+                return ServiceResult<ConsultationDetailDto>.Failure($"获取诊疗详情失败: {ex.Message}");
             }
         }
     }

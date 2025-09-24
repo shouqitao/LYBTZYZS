@@ -9,8 +9,8 @@ using Microsoft.Extensions.Logging;
 namespace LYBT.Module.Consultation.Repositories;
 
 /// <summary>
-/// 看诊仓储实现 - 数据层统一化重构
-/// 继承OptimizedBaseRepository获得缓存和性能优化，实现看诊特有业务方法
+/// 诊疗仓储实现 - 数据层统一化重构
+/// 继承OptimizedBaseRepository获得缓存和性能优化，实现诊疗特有业务方法
 /// </summary>
 public class ConsultationRepository : OptimizedBaseRepository<LYBT.Entities.Consultation.Consultation>, IConsultationRepository
 {
@@ -32,7 +32,7 @@ public class ConsultationRepository : OptimizedBaseRepository<LYBT.Entities.Cons
 
         if (_cache.TryGetValue<List<LYBT.Entities.Consultation.Consultation>>(cacheKey, out var cached) && cached != null)
         {
-            _logger.LogDebug("从缓存获取患者看诊记录 {PatientId}", patientId);
+            _logger.LogDebug("从缓存获取患者诊疗记录 {PatientId}", patientId);
             return cached;
         }
 
@@ -52,7 +52,7 @@ public class ConsultationRepository : OptimizedBaseRepository<LYBT.Entities.Cons
 
         if (_cache.TryGetValue<List<LYBT.Entities.Consultation.Consultation>>(cacheKey, out var cached) && cached != null)
         {
-            _logger.LogDebug("从缓存获取医生看诊记录 {DoctorId}", doctorId);
+            _logger.LogDebug("从缓存获取医生诊疗记录 {DoctorId}", doctorId);
             return cached;
         }
 
@@ -71,7 +71,7 @@ public class ConsultationRepository : OptimizedBaseRepository<LYBT.Entities.Cons
 
         if (_cache.TryGetValue<List<LYBT.Entities.Consultation.Consultation>>(cacheKey, out var cached) && cached != null)
         {
-            _logger.LogDebug("从缓存获取状态看诊记录 {Status}", status);
+            _logger.LogDebug("从缓存获取状态诊疗记录 {Status}", status);
             return cached;
         }
 
@@ -94,7 +94,7 @@ public class ConsultationRepository : OptimizedBaseRepository<LYBT.Entities.Cons
 
         if (_cache.TryGetValue<List<LYBT.Entities.Consultation.Consultation>>(cacheKey, out var cached) && cached != null)
         {
-            _logger.LogDebug("从缓存获取日期范围看诊记录 {StartDate}-{EndDate}", startDate.Date, endDate.Date);
+            _logger.LogDebug("从缓存获取日期范围诊疗记录 {StartDate}-{EndDate}", startDate.Date, endDate.Date);
             return cached;
         }
 
@@ -115,7 +115,7 @@ public class ConsultationRepository : OptimizedBaseRepository<LYBT.Entities.Cons
 
         if (_cache.TryGetValue<LYBT.Entities.Consultation.Consultation?>(cacheKey, out var cached))
         {
-            _logger.LogDebug("从缓存获取医案看诊记录 {MedicalCaseId}", medicalCaseId);
+            _logger.LogDebug("从缓存获取医案诊疗记录 {MedicalCaseId}", medicalCaseId);
             return cached;
         }
 

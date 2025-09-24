@@ -10,7 +10,7 @@ using Microsoft.Extensions.Caching.Memory;
 namespace LYBT.WebAPI.Controllers
 {
     /// <summary>
-    /// 看诊业务操作 API 控制器 - 处理开始看诊、保存四诊等业务操作
+    /// 诊疗业务操作 API 控制器 - 处理开始诊疗、保存四诊等业务操作
     /// 对应 IConsultationBusinessService 的业务功能
     /// </summary>
     [ApiController]
@@ -22,7 +22,7 @@ namespace LYBT.WebAPI.Controllers
         private readonly IConsultationBusinessService _businessService;
 
         /// <summary>
-        /// 构造方法，注入看诊业务服务
+        /// 构造方法，注入诊疗业务服务
         /// </summary>
         public ConsultationOperationController(
             IConsultationBusinessService businessService,
@@ -34,7 +34,7 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 开始看诊
+        /// 开始诊疗
         /// </summary>
         [HttpPost("start")]
         public async Task<ActionResult<ApiResponse<ConsultationDto>>> StartConsultation(
@@ -44,7 +44,7 @@ namespace LYBT.WebAPI.Controllers
             {
                 if (startDto == null)
                 {
-                    return ValidationFail<ConsultationDto>("开始看诊数据不能为空", "INVALID_DATA");
+                    return ValidationFail<ConsultationDto>("开始诊疗数据不能为空", "INVALID_DATA");
                 }
 
                 var validationResult = ValidateModel<ConsultationDto>();
@@ -55,16 +55,16 @@ namespace LYBT.WebAPI.Controllers
                 if (!result.IsSuccess || result.Data == null)
                 {
                     return BusinessFail<ConsultationDto>(
-                        result.ErrorMessage ?? "开始看诊失败", 
+                        result.ErrorMessage ?? "开始诊疗失败", 
                         ApiErrorCodes.DATASAVEFAILED);
                 }
 
-                LogOperation("开始看诊", startDto, result.Data.Id);
-                return Success(result.Data, "看诊已开始");
+                LogOperation("开始诊疗", startDto, result.Data.Id);
+                return Success(result.Data, "诊疗已开始");
             }
             catch (Exception ex)
             {
-                return HandleException<ConsultationDto>(ex, "开始看诊", startDto);
+                return HandleException<ConsultationDto>(ex, "开始诊疗", startDto);
             }
         }
 

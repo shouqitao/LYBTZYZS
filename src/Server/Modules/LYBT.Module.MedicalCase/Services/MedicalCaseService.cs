@@ -7,7 +7,7 @@ namespace LYBT.Module.MedicalCase.Services
 {
     /// <summary>
     /// 医疗案例服务 - UltraThink双层架构纯委托模式
-    /// 简化版本：只提供增删查改和看诊流程
+    /// 简化版本：只提供增删查改和诊疗流程
     /// </summary>
     public class MedicalCaseService(
         IMedicalCaseQueryService queryService,
@@ -146,7 +146,7 @@ namespace LYBT.Module.MedicalCase.Services
         /// <inheritdoc/>
         public async Task<ServiceResult<bool>> CancelConsultationAsync(Guid id, string reason)
         {
-            // 简化实现：取消看诊等同于完成案例
+            // 简化实现：取消诊疗等同于完成案例
             return await CompleteAsync(id, reason);
         }
 

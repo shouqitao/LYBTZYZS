@@ -9,15 +9,15 @@ namespace LYBT.Module.Consultation
 {
 
     /// <summary>
-    /// 看诊模块注册 - UltraThink标准化重构
-    /// 负责注册看诊相关的所有服务、仓储和映射配置
+    /// 诊疗模块注册 - UltraThink标准化重构
+    /// 负责注册诊疗相关的所有服务、仓储和映射配置
     /// 采用UltraThink双层架构：QueryService + BusinessService 专业分离
     /// </summary>
     public static class ConsultationModule
     {
 
         /// <summary>
-        /// 注册看诊模块服务 - UltraThink双层架构标准
+        /// 注册诊疗模块服务 - UltraThink双层架构标准
         /// </summary>
         public static IServiceCollection AddConsultationModule(this IServiceCollection services)
         {

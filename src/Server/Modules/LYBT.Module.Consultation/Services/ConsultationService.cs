@@ -8,7 +8,7 @@ namespace LYBT.Module.Consultation.Services
 {
 
     /// <summary>
-    /// 看诊服务 - UltraThink双层架构纯委托模式
+    /// 诊疗服务 - UltraThink双层架构纯委托模式
     /// </summary>
     public class ConsultationService(
         IConsultationQueryService queryService,

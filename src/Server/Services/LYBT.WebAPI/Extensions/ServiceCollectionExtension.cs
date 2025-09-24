@@ -37,7 +37,7 @@ public static class ServiceCollectionExtension
         // 医疗案例模块
         services.AddMedicalCaseModule();
 
-        // 看诊模块
+        // 诊疗模块
         services.AddConsultationModule();
 
         // 处方模块

@@ -37,8 +37,7 @@ namespace LYBT.WebAPI.Controllers
             [FromQuery] string? keyword = null,
             [FromQuery] string? name = null,
             [FromQuery] string? phone = null,
-            [FromQuery] string? idCard = null,
-            [FromQuery] bool? isActive = null)
+            [FromQuery] string? idCard = null)
         {
             try
             {
@@ -55,8 +54,6 @@ namespace LYBT.WebAPI.Controllers
                     Name = name,
                     PhoneNumber = phone, // 使用正确的属性名
                     IDNumber = idCard // 使用正确的属性名
-
-                    // 注意：IsActive属性在DTO中不存在，删除该字段
                 };
 
                 var result = await _service.GetPagedAsync(query);

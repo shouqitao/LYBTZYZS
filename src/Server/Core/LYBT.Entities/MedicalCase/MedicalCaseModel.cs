@@ -53,8 +53,8 @@ namespace LYBT.Entities.MedicalCase
         [DisplayName("创建人")]
         public Guid CreatedBy { get; set; }
 
-        /// <summary>看诊时间（兼容旧字段）</summary>
-        [DisplayName("看诊时间")]
+        /// <summary>诊疗时间（兼容旧字段）</summary>
+        [DisplayName("诊疗时间")]
         public DateTime ConsultationDate { get; set; } = DateTime.Now;
 
         /// <summary>状态</summary>
@@ -73,8 +73,8 @@ namespace LYBT.Entities.MedicalCase
 
         // 导航属性 - 根据文档要求：1:1关系
 
-        /// <summary>看诊记录（导航属性）- 一个医疗案例对应一次看诊 (1:1关系)</summary>
-        [DisplayName("看诊记录")]
+        /// <summary>诊疗记录（导航属性）- 一个医疗案例对应一次诊疗 (1:1关系)</summary>
+        [DisplayName("诊疗记录")]
         public virtual LYBT.Entities.Consultation.Consultation? Consultation { get; set; }
 
         /// <summary>处方信息（导航属性）- 一个医疗案例至多一张处方 (0..1关系)</summary>

@@ -6,7 +6,7 @@ namespace LYBT.Module.Consultation.Mapping
 {
 
     /// <summary>
-    /// 看诊模块 AutoMapper 映射配置
+    /// 诊疗模块 AutoMapper 映射配置
     /// </summary>
     public class ConsultationMappingProfile : Profile
     {
