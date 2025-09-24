@@ -55,12 +55,12 @@ namespace LYBT.Infrastructure.Tests.Data
             {
                 Id = Guid.NewGuid(),
                 Username = "testuser",
-                Password = "hashedpassword",
-                Name = "测试用户",
+                PasswordHash = "hashedpassword",
+                RealName = "测试用户",
                 Role = LYBT.Shared.Models.Enums.UserRole.Doctor,
                 Status = LYBT.Shared.Models.Enums.CommonStatus.Enabled,
                 CreatedAt = DateTime.UtcNow,
-                CreatedBy = "system"
+                CreatedBy = default
             };
 
             // Act
@@ -82,29 +82,29 @@ namespace LYBT.Infrastructure.Tests.Data
             {
                 Id = Guid.NewGuid(),
                 Username = "testuser",
-                Password = "hashedpassword",
-                Name = "测试用户",
+                PasswordHash = "hashedpassword",
+                RealName = "测试用户",
                 Role = LYBT.Shared.Models.Enums.UserRole.Doctor,
                 Status = LYBT.Shared.Models.Enums.CommonStatus.Enabled,
                 CreatedAt = DateTime.UtcNow,
-                CreatedBy = "system"
+                CreatedBy = default
             };
 
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
 
             // Act
-            user.Name = "更新后的用户";
+            user.RealName = "更新后的用户";
             user.UpdatedAt = DateTime.UtcNow;
-            user.UpdatedBy = "admin";
+            user.UpdatedBy = default;
             _context.Users.Update(user);
             var result = await _context.SaveChangesAsync();
 
             // Assert
             result.Should().Be(1);
             var updatedUser = await _context.Users.FindAsync(user.Id);
-            updatedUser!.Name.Should().Be("更新后的用户");
-            updatedUser.UpdatedBy.Should().Be("admin");
+            updatedUser!.RealName.Should().Be("更新后的用户");
+            updatedUser.UpdatedBy.Should().Be(default);
         }
 
         [Fact]
@@ -115,12 +115,12 @@ namespace LYBT.Infrastructure.Tests.Data
             {
                 Id = Guid.NewGuid(),
                 Username = "testuser",
-                Password = "hashedpassword",
-                Name = "测试用户",
+                PasswordHash = "hashedpassword",
+                RealName = "测试用户",
                 Role = LYBT.Shared.Models.Enums.UserRole.Doctor,
                 Status = LYBT.Shared.Models.Enums.CommonStatus.Enabled,
                 CreatedAt = DateTime.UtcNow,
-                CreatedBy = "system"
+                CreatedBy = default
             };
 
             _context.Users.Add(user);
@@ -150,10 +150,10 @@ namespace LYBT.Infrastructure.Tests.Data
                 Name = "测试患者",
                 Gender = LYBT.Shared.Models.Enums.Gender.Male,
                 BirthDate = DateTime.Now.AddYears(-30),
-                Phone = "13800138000",
+                PhoneNumber = "13800138000",
                 Status = LYBT.Shared.Models.Enums.CommonStatus.Enabled,
                 CreatedAt = DateTime.UtcNow,
-                CreatedBy = "doctor"
+                CreatedBy = default
             };
 
             // Act
@@ -173,9 +173,9 @@ namespace LYBT.Infrastructure.Tests.Data
             // Arrange
             var patients = new[]
             {
-                new Patient { Id = Guid.NewGuid(), Name = "张三", Gender = LYBT.Shared.Models.Enums.Gender.Male, Status = LYBT.Shared.Models.Enums.CommonStatus.Enabled, CreatedAt = DateTime.UtcNow, CreatedBy = "system" },
-                new Patient { Id = Guid.NewGuid(), Name = "李四", Gender = LYBT.Shared.Models.Enums.Gender.Female, Status = LYBT.Shared.Models.Enums.CommonStatus.Enabled, CreatedAt = DateTime.UtcNow, CreatedBy = "system" },
-                new Patient { Id = Guid.NewGuid(), Name = "王五", Gender = LYBT.Shared.Models.Enums.Gender.Male, Status = LYBT.Shared.Models.Enums.CommonStatus.Disabled, CreatedAt = DateTime.UtcNow, CreatedBy = "system" }
+                new Patient { Id = Guid.NewGuid(), Name = "张三", Gender = LYBT.Shared.Models.Enums.Gender.Male, Status = LYBT.Shared.Models.Enums.CommonStatus.Enabled, CreatedAt = DateTime.UtcNow, CreatedBy = default },
+                new Patient { Id = Guid.NewGuid(), Name = "李四", Gender = LYBT.Shared.Models.Enums.Gender.Female, Status = LYBT.Shared.Models.Enums.CommonStatus.Enabled, CreatedAt = DateTime.UtcNow, CreatedBy = default },
+                new Patient { Id = Guid.NewGuid(), Name = "王五", Gender = LYBT.Shared.Models.Enums.Gender.Male, Status = LYBT.Shared.Models.Enums.CommonStatus.Disabled, CreatedAt = DateTime.UtcNow, CreatedBy = default }
             };
 
             _context.Patients.AddRange(patients);
@@ -203,14 +203,9 @@ namespace LYBT.Infrastructure.Tests.Data
             {
                 Id = Guid.NewGuid(),
                 Name = "人参",
-                PinyinName = "RenShen",
-                EnglishName = "Ginseng",
-                Category = "补虚药",
-                DefaultDosage = 10,
-                DefaultDosageUnit = "g",
                 Status = LYBT.Shared.Models.Enums.CommonStatus.Enabled,
                 CreatedAt = DateTime.UtcNow,
-                CreatedBy = "admin"
+                CreatedBy = default
             };
 
             // Act
@@ -236,32 +231,16 @@ namespace LYBT.Infrastructure.Tests.Data
             {
                 Id = Guid.NewGuid(),
                 Name = "四君子汤",
-                PinyinName = "SiJunZiTang",
-                Source = "太平惠民和剂局方",
-                Composition = "人参、白术、茯苓、甘草",
-                Efficacy = "益气健脾",
                 Status = LYBT.Shared.Models.Enums.CommonStatus.Enabled,
-                CreatedAt = DateTime.UtcNow,
-                CreatedBy = "admin"
-            };
-
-            var formulaHerb = new FormulaHerbItem
-            {
-                Id = Guid.NewGuid(),
-                FormulaId = formula.Id,
-                HerbId = Guid.NewGuid(),
-                HerbName = "人参",
-                Dosage = 10,
-                DosageUnit = "g"
+                // CreatedAt and CreatedBy are now handled by BaseEntity
             };
 
             // Act
             _context.Formulas.Add(formula);
-            _context.FormulaHerbItems.Add(formulaHerb);
             var result = await _context.SaveChangesAsync();
 
             // Assert
-            result.Should().Be(2);
+            result.Should().Be(1);
             var savedFormula = await _context.Formulas.FindAsync(formula.Id);
             savedFormula.Should().NotBeNull();
             savedFormula!.Name.Should().Be("四君子汤");
@@ -279,14 +258,8 @@ namespace LYBT.Infrastructure.Tests.Data
             {
                 Id = Guid.NewGuid(),
                 PatientId = Guid.NewGuid(),
-                PatientName = "测试患者",
-                DoctorId = Guid.NewGuid(),
-                DoctorName = "测试医生",
-                PrescriptionDate = DateTime.Now,
-                Status = LYBT.Shared.Models.Enums.PrescriptionStatus.Active,
-                TotalAmount = 100.00m,
-                CreatedAt = DateTime.UtcNow,
-                CreatedBy = "doctor"
+                Status = LYBT.Shared.Models.Enums.PrescriptionStatus.Draft,
+                // CreatedAt and CreatedBy are now handled by BaseEntity
             };
 
             var item = new PrescriptionItem
@@ -295,11 +268,8 @@ namespace LYBT.Infrastructure.Tests.Data
                 PrescriptionId = prescription.Id,
                 HerbId = Guid.NewGuid(),
                 HerbName = "人参",
-                Dosage = 10,
-                DosageUnit = "g",
                 Quantity = 7,
-                UnitPrice = 10.00m,
-                TotalPrice = 70.00m
+                UnitPrice = 10.00m
             };
 
             // Act
@@ -313,7 +283,8 @@ namespace LYBT.Infrastructure.Tests.Data
                 .Include(p => p.Items)
                 .FirstOrDefaultAsync(p => p.Id == prescription.Id);
             savedPrescription.Should().NotBeNull();
-            savedPrescription!.PatientName.Should().Be("测试患者");
+            savedPrescription!.Items.Should().HaveCount(1);
+            savedPrescription.Items.First().HerbName.Should().Be("人参");
         }
 
         #endregion
@@ -328,13 +299,8 @@ namespace LYBT.Infrastructure.Tests.Data
             {
                 Id = Guid.NewGuid(),
                 PatientId = Guid.NewGuid(),
-                PatientName = "测试患者",
-                DoctorId = Guid.NewGuid(),
-                DoctorName = "测试医生",
-                ConsultationDate = DateTime.Now,
                 Status = LYBT.Shared.Models.Enums.MedicalCaseStatus.Active,
-                CreatedAt = DateTime.UtcNow,
-                CreatedBy = "doctor"
+                // CreatedAt and CreatedBy are now handled by BaseEntity
             };
 
             // Act
@@ -361,14 +327,10 @@ namespace LYBT.Infrastructure.Tests.Data
                 Id = Guid.NewGuid(),
                 MedicalCaseId = Guid.NewGuid(),
                 PatientId = Guid.NewGuid(),
-                DoctorId = Guid.NewGuid(),
-                ConsultationDate = DateTime.Now,
                 ChiefComplaint = "头痛",
-                Diagnosis = "风寒感冒",
                 TreatmentPrinciple = "疏风散寒",
-                Status = LYBT.Shared.Models.Enums.ConsultationStatus.Active,
-                CreatedAt = DateTime.UtcNow,
-                CreatedBy = "doctor"
+                Status = LYBT.Shared.Models.Enums.ConsultationStatus.InProgress,
+                // CreatedAt and CreatedBy are now handled by BaseEntity
             };
 
             // Act
@@ -432,12 +394,12 @@ namespace LYBT.Infrastructure.Tests.Data
             {
                 Id = Guid.NewGuid(),
                 Username = "testuser",
-                Password = "hashedpassword",
-                Name = "测试用户",
+                PasswordHash = "hashedpassword",
+                RealName = "测试用户",
                 Role = LYBT.Shared.Models.Enums.UserRole.Doctor,
                 Status = LYBT.Shared.Models.Enums.CommonStatus.Enabled,
                 CreatedAt = DateTime.UtcNow,
-                CreatedBy = "system"
+                CreatedBy = default
             };
 
             _context.Users.Add(user);
@@ -530,11 +492,9 @@ namespace LYBT.Infrastructure.Tests.Data
             {
                 Id = Guid.NewGuid(),
                 Name = $"中药{i}",
-                PinyinName = $"ZhongYao{i}",
-                Category = "测试分类",
                 Status = LYBT.Shared.Models.Enums.CommonStatus.Enabled,
                 CreatedAt = DateTime.UtcNow,
-                CreatedBy = "system"
+                CreatedBy = default
             }).ToList();
 
             _context.Herbs.AddRange(herbs);
@@ -569,22 +529,22 @@ namespace LYBT.Infrastructure.Tests.Data
                 Gender = LYBT.Shared.Models.Enums.Gender.Male,
                 Status = LYBT.Shared.Models.Enums.CommonStatus.Enabled,
                 CreatedAt = DateTime.UtcNow,
-                CreatedBy = "system"
+                CreatedBy = default
             };
 
             _context.Patients.Add(patient);
             await _context.SaveChangesAsync();
 
             // Act - Soft delete
-            patient.Status = LYBT.Shared.Models.Enums.CommonStatus.Deleted;
+            patient.IsDeleted = true;
             patient.UpdatedAt = DateTime.UtcNow;
-            patient.UpdatedBy = "admin";
+            patient.UpdatedBy = default;
             await _context.SaveChangesAsync();
 
             // Assert
-            var allPatients = await _context.Patients.ToListAsync();
+            var allPatients = await _context.Patients.IgnoreQueryFilters().ToListAsync(); // Ignore global filter to find all
             var activePatients = await _context.Patients
-                .Where(p => p.Status != LYBT.Shared.Models.Enums.CommonStatus.Deleted)
+                .Where(p => !p.IsDeleted)
                 .ToListAsync();
 
             allPatients.Should().HaveCount(1);

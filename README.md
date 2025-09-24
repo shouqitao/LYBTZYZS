@@ -49,7 +49,34 @@ Server层采用优化的三层架构，通过ReadRepository模式实现查询和
 ### 相关文档
 - Phase 1重构总结：`docs/tasks/completed/2025-09-24-server-phase1-query-layer-refactor-task-summary.md`
 - Phase 2巩固报告：`docs/reports/server-query-layer-phase2-hardening-report.md`
+- Phase 3缓存治理：`docs/tasks/completed/2025-09-24-server-phase3-cache-governance-task-summary.md`
 - 诊断脚本：`scripts/QueryLayerDiagnostics.ps1`
+
+### 缓存诊断脚本使用
+
+Query Layer诊断脚本支持缓存状态监控和性能分析：
+
+```powershell
+# 使用真实API获取缓存数据（推荐）
+.\scripts\QueryLayerDiagnostics.ps1 -CacheStatus -UseRealApi -Token "your-jwt-token"
+
+# API失败时使用离线回退
+.\scripts\QueryLayerDiagnostics.ps1 -CacheStatus -UseRealApi -OfflineFallback -Token "your-jwt-token"
+
+# 详细调试模式
+.\scripts\QueryLayerDiagnostics.ps1 -CacheStatus -UseRealApi -Verbose -Token "your-jwt-token"
+```
+
+**前置条件**：
+- 服务运行在 http://localhost:5001（或通过-BaseUrl指定）
+- 拥有Admin角色的JWT Token
+- 服务已更新到Phase 3版本（包含CacheHealthController）
+
+**故障排查**：
+- HTTP 401：Token无效或过期，重新获取JWT Token
+- HTTP 403：Token权限不足，需要Admin角色
+- 连接失败：检查服务运行状态和端口配置
+- API不存在：确认服务已更新到最新版本
 
 ## 项目结构
 `

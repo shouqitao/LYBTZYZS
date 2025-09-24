@@ -257,7 +257,7 @@ namespace LYBT.Infrastructure.Tests.Configuration.Options
             // Assert
             options.RequirePasswordChangeOnFirstLogin.Should().BeTrue("应要求首次登录时更改密码");
             options.EnableAccountLockout.Should().BeFalse("默认应禁用账户锁定以避免管理员被锁定");
-            options.DefaultPassword.Should().HaveMinimumLength(8, "默认密码应满足最小长度要求");
+            options.DefaultPassword.Should().NotBeNullOrEmpty().And.HaveLengthGreaterThanOrEqualTo(8, "默认密码应满足最小长度要求");
         }
 
         [Fact]

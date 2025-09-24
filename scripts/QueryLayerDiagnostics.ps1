@@ -30,7 +30,13 @@ param(
     [string]$Token = "",
 
     [Parameter(Mandatory=$false)]
-    [switch]$UseRealApi = $false
+    [switch]$UseRealApi = $false,
+
+    [Parameter(Mandatory=$false)]
+    [switch]$OfflineFallback = $false,
+
+    [Parameter(Mandatory=$false)]
+    [switch]$Verbose = $false
 )
 
 # 设置颜色输出
@@ -98,6 +104,7 @@ function Get-CacheStatus {
 
     # 尝试从真实API获取缓存统计
     $stats = $null
+    $apiError = $null
 
     if ($UseRealApi) {
         try {
@@ -108,10 +115,17 @@ function Get-CacheStatus {
 
             if (-not [string]::IsNullOrEmpty($Token)) {
                 $headers["Authorization"] = "Bearer $Token"
+            } else {
+                Write-ColorOutput "  ⚠️ 警告: 未提供认证Token，API调用可能失败" "Warning"
             }
 
             # 调用缓存健康API
             $healthUrl = "$BaseUrl/api/v1/system/cache/health"
+
+            if ($Verbose) {
+                Write-ColorOutput "  正在调用: $healthUrl" "Info"
+            }
+
             $response = Invoke-RestMethod -Uri $healthUrl -Method GET -Headers $headers -ErrorAction Stop
 
             if ($response.success -and $response.data) {
@@ -124,30 +138,82 @@ function Get-CacheStatus {
                     EvictionRate = $response.data.statistics.evictionRate
                     CurrentItems = $response.data.statistics.currentItemCount
                     HasAlert = $response.data.thresholds.hasAnyAlert
+                    DataSource = "Real API"
                 }
 
-                Write-ColorOutput "  成功获取真实缓存数据" "Success"
+                Write-ColorOutput "  ✅ 成功获取真实缓存数据" "Success"
+            } else {
+                $apiError = "API返回了无效响应"
+                Write-ColorOutput "  ❌ API返回了无效响应" "Error"
+            }
+        }
+        catch [System.Net.WebException] {
+            $statusCode = [int]$_.Exception.Response.StatusCode
+            $apiError = "HTTP $statusCode - $($_.Exception.Message)"
+
+            Write-ColorOutput "  ❌ API调用失败: HTTP $statusCode" "Error"
+
+            if ($statusCode -eq 401) {
+                Write-ColorOutput "    认证失败: 请提供有效的Admin Token" "Error"
+                Write-ColorOutput "    使用方式: -Token 'your-jwt-token'" "Info"
+            } elseif ($statusCode -eq 403) {
+                Write-ColorOutput "    权限不足: 需要Admin角色权限" "Error"
+            } elseif ($statusCode -eq 404) {
+                Write-ColorOutput "    API端点不存在: 请检查服务是否已更新到Phase 3版本" "Error"
+            } else {
+                Write-ColorOutput "    错误详情: $($_.Exception.Message)" "Error"
             }
         }
         catch {
-            Write-ColorOutput "  无法连接到API，回退到模拟数据: $_" "Warning"
+            $apiError = $_.Exception.Message
+            Write-ColorOutput "  ❌ API连接失败: $apiError" "Error"
+            Write-ColorOutput "    排查建议:" "Info"
+            Write-ColorOutput "    1. 检查服务是否运行: $BaseUrl" "Info"
+            Write-ColorOutput "    2. 验证Token是否有效且具有Admin权限" "Info"
+            Write-ColorOutput "    3. 确认网络连接和防火墙设置" "Info"
         }
     }
 
-    # 如果API不可用，使用模拟数据
+    # 决定是否使用离线回退数据
     if ($null -eq $stats) {
-        $stats = @{
-            TotalRequests = Get-Random -Minimum 1000 -Maximum 10000
-            CacheHits = 0
-            CacheMisses = 0
+        if ($UseRealApi -and -not $OfflineFallback) {
+            # API模式但不允许回退，返回错误状态
+            $stats = @{
+                TotalRequests = 0
+                CacheHits = 0
+                CacheMisses = 0
+                HitRate = 0
+                CapacityUsage = 0
+                EvictionRate = 0
+                CurrentItems = 0
+                HasAlert = $false
+                DataSource = "Error - No Data"
+                Error = $apiError
+            }
+
+            Write-ColorOutput "  ⚠️ 未获取到真实数据，使用-OfflineFallback参数启用模拟数据" "Warning"
+        } else {
+            # 使用模拟数据
+            $stats = @{
+                TotalRequests = Get-Random -Minimum 1000 -Maximum 10000
+                CacheHits = 0
+                CacheMisses = 0
+            }
+            $stats.CacheHits = [int]($stats.TotalRequests * (Get-Random -Minimum 65 -Maximum 95) / 100)
+            $stats.CacheMisses = $stats.TotalRequests - $stats.CacheHits
+            $stats.HitRate = [math]::Round(($stats.CacheHits / $stats.TotalRequests) * 100, 2)
+            $stats.CapacityUsage = Get-Random -Minimum 30 -Maximum 85
+            $stats.EvictionRate = Get-Random -Minimum 0 -Maximum 50
+            $stats.CurrentItems = Get-Random -Minimum 100 -Maximum 5000
+            $stats.HasAlert = $false
+            $stats.DataSource = "Simulated"
+
+            if ($UseRealApi) {
+                Write-ColorOutput "  📊 使用模拟数据（离线回退模式）" "Warning"
+            } else {
+                Write-ColorOutput "  📊 使用模拟数据" "Info"
+            }
         }
-        $stats.CacheHits = [int]($stats.TotalRequests * (Get-Random -Minimum 65 -Maximum 95) / 100)
-        $stats.CacheMisses = $stats.TotalRequests - $stats.CacheHits
-        $stats.HitRate = [math]::Round(($stats.CacheHits / $stats.TotalRequests) * 100, 2)
-        $stats.CapacityUsage = Get-Random -Minimum 30 -Maximum 85
-        $stats.EvictionRate = Get-Random -Minimum 0 -Maximum 50
-        $stats.CurrentItems = Get-Random -Minimum 100 -Maximum 5000
-        $stats.HasAlert = $false
     }
 
     $statusText = @"
@@ -159,6 +225,17 @@ function Get-CacheStatus {
 空值缓存时长: $($cacheInfo.NullCacheDuration)
 缓存穿透防护: $($cacheInfo.CachePenetrationProtection)
 缓存命中率日志: $($cacheInfo.CacheHitRateLogging)
+数据源: $($stats.DataSource)
+"@
+
+    if ($stats.Error) {
+        $statusText += @"
+
+错误信息: $($stats.Error)
+"@
+    }
+
+    $statusText += @"
 
 缓存统计:
   总请求数: $($stats.TotalRequests)
@@ -391,8 +468,17 @@ Write-Host @"
 
 使用示例:
 --------
-# 诊断所有模块的缓存状态
+# 诊断所有模块的缓存状态（模拟数据）
 .\QueryLayerDiagnostics.ps1 -CacheStatus
+
+# 使用真实API获取缓存数据（需要Admin Token）
+.\QueryLayerDiagnostics.ps1 -CacheStatus -UseRealApi -Token "your-jwt-token"
+
+# 真实API失败时使用离线回退
+.\QueryLayerDiagnostics.ps1 -CacheStatus -UseRealApi -OfflineFallback -Token "your-jwt-token"
+
+# 详细调试模式
+.\QueryLayerDiagnostics.ps1 -CacheStatus -UseRealApi -Verbose -Token "your-jwt-token"
 
 # 诊断特定模块的EF跟踪
 .\QueryLayerDiagnostics.ps1 -Module Users -EFTracking
@@ -400,7 +486,22 @@ Write-Host @"
 # 执行性能采样（20次）
 .\QueryLayerDiagnostics.ps1 -Module Consultation -PerformanceSampling -SampleCount 20
 
-# 完整诊断
-.\QueryLayerDiagnostics.ps1 -CacheStatus -EFTracking -PerformanceSampling
+# 完整诊断（带真实数据）
+.\QueryLayerDiagnostics.ps1 -CacheStatus -EFTracking -PerformanceSampling -UseRealApi -Token "your-jwt-token"
+
+参数说明:
+---------
+  -UseRealApi        : 使用真实API获取缓存数据（需要运行的服务和Admin Token）
+  -Token            : JWT认证令牌，需要Admin角色权限
+  -OfflineFallback  : 当API调用失败时自动回退到模拟数据
+  -Verbose          : 显示详细的调试信息
+  -BaseUrl          : API服务地址（默认: http://localhost:5001）
+
+故障排查:
+---------
+1. HTTP 401 错误: Token无效或过期，请重新获取有效的JWT Token
+2. HTTP 403 错误: Token权限不足，需要Admin角色
+3. 连接失败: 检查服务是否运行，端口是否正确
+4. API不存在: 确认服务已更新到Phase 3版本
 
 "@ -ForegroundColor Cyan

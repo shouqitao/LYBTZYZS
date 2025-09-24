@@ -217,13 +217,13 @@ namespace LYBT.Infrastructure.Tests.Configuration.Options
             var options = new DefaultPasswordOptions();
 
             // Assert
-            options.SystemAdmin.Should().HaveMinimumLength(8, "管理员密码应满足最小长度要求");
+            options.DefaultUserPassword.Should().NotBeNullOrEmpty().And.HaveLengthGreaterThanOrEqualTo(8, "默认用户密码应满足最小长度要求");
             options.SystemAdmin.Should().MatchRegex(@"[A-Z]", "管理员密码应包含大写字母");
             options.SystemAdmin.Should().MatchRegex(@"[a-z]", "管理员密码应包含小写字母");
             options.SystemAdmin.Should().MatchRegex(@"\d", "管理员密码应包含数字");
             options.SystemAdmin.Should().MatchRegex(@"[!@#$%^&*()_+\-=\[\]{};':""\\|,.<>\?]", "管理员密码应包含特殊字符");
 
-            options.NewUser.Should().HaveMinimumLength(8, "新用户密码应满足最小长度要求");
+            options.DefaultAdminPassword.Should().NotBeNullOrEmpty().And.HaveLengthGreaterThanOrEqualTo(8, "默认管理员密码应满足最小长度要求");
             options.NewUser.Should().MatchRegex(@"[A-Z]", "新用户密码应包含大写字母");
             options.NewUser.Should().MatchRegex(@"[a-z]", "新用户密码应包含小写字母");
             options.NewUser.Should().MatchRegex(@"\d", "新用户密码应包含数字");

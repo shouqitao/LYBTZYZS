@@ -379,7 +379,7 @@ namespace LYBT.Infrastructure.Tests.Repositories
     internal class TestUserDto
     {
         public Guid Id { get; set; }
-        public string UserName { get; set; } = string.Empty;
+        public string Username = string.Empty;
         public string Email { get; set; } = string.Empty;
     }
 }
