@@ -115,3 +115,31 @@ dotnet test LYBT.Server.sln -c Release
 
 
 
+
+## MCP 工具快速参考
+
+| 工具 | 调用方式（在 Claude Code 中） | 典型场景 | 关键参数说明 |
+| --- | --- | --- | --- |
+| Serena Server | mcp.run({ server: "serena", method: "execute", params: {...} }) | 复杂分析、架构建议、代码审计 | prompt：输入需求或文件片段，	emperature：生成多样性（默认0.2） |
+| Filesystem Server | mcp.run({ server: "filesystem", method: "readFile", params: { path } }) 等 | 批量读取/写入文件、遍历目录、搜索文本 | 方法：eadFile、writeFile、listDirectory、searchText；path 为绝对或相对路径 |
+| Context7 API | mcp.run({ server: "context7", method: "analyze", params: {...} }) | 法规咨询、专业知识背景、语言风格转换 | 常用方法：nalyze, summarize；需传入 	ext 和 context |
+| Memory Server | mcp.run({ server: "memory", method: "save", params: {...} }) | 在当前会话中保存/检索临时笔记、TODO | save：追加内容；load：获取全部记录；clear：清空 |
+| Git Server | mcp.run({ server: "git", method: "status" }) | 查看 Git 状态、变更、提交历史 | 方法：status, diff, log, stash, checkout 等 |
+| Playwright Server | mcp.run({ server: "playwright", method: "execute", params: {...} }) | 桌面/前端测试脚本录制、运行 UI 自动化 | script：Playwright 代码；rowser：浏览器类型（chromium/firefox/webkit） |
+| SQL Server | mcp.run({ server: "sql-server", method: "executeQuery", params: { query } }) | 针对 LYBTDB 做 SQL 调试、数据核对 | xecuteQuery：返回结果集；xecuteNonQuery：执行更新；database 默认 LYBTDB |
+
+> 引擎会自动处理各 MCP 的启动/认证。调用示例：
+`	s
+await mcp.run({
+  server: "filesystem",
+  method: "readFile",
+  params: { path: "src/Server/Services/LYBT.WebAPI/Program.cs" }
+});
+`
+
+常用技巧：
+1. **批量操作**：使用 Filesystem Server 的 listDirectory + eadFile 快速收集多个文件内容。
+2. **知识补充**：在分析法规、医疗术语时，借助 Context7 获取权威描述，再回到代码落地。
+3. **变量保存**：Memory Server 记录当前任务进度或后续待办，避免上下文丢失。
+4. **SQL 验证**：通过 SQL Server MCP 快速验证 EF 查询结果，与测试数据对齐。
+5. **Playwright 调试**：在需要录制桌面端交互脚本时，调用 Playwright MCP 执行自动化脚本。

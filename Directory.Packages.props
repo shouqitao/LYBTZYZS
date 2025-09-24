@@ -30,7 +30,7 @@
     <PackageVersion Include="Microsoft.Extensions.ObjectPool" Version="8.0.8" />
     <PackageVersion Include="System.Security.Cryptography.ProtectedData" Version="8.0.0" />
     <!-- 对象映射 - 使用MIT开源版本 -->
-    <PackageVersion Include="AutoMapper" Version="14.0.0" />
+    <PackageVersion Include="AutoMapper" Version="13.0.1" />
   </ItemGroup>
   <ItemGroup Label="Web API Packages">
     <!-- ASP.NET Core Web API - 统一到 8.0.x 版本 -->
