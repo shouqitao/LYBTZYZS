@@ -9,7 +9,7 @@ namespace LYBT.Module.Patients.Interfaces
     /// 继承BaseRepository提供通用CRUD，扩展患者特定业务方法
     /// 实现软删除策略：患者档案只能禁用/启用，不能物理删除
     /// </summary>
-    public interface IPatientRepository : IBaseRepository<Patient>
+    public interface IPatientRepository : IRepository<Patient>
     {
         // 注意：基础CRUD方法由IBaseRepository提供
         // 这里只定义患者特有的业务方法

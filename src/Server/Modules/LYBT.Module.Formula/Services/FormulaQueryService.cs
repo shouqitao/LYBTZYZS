@@ -1,33 +1,27 @@
-using AutoMapper;
-using LYBT.Infrastructure.Data;
 using LYBT.Module.Formula.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
-using LYBT.Shared.Models.Enums;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Module.Formula.Services
 {
 
     /// <summary>
-    /// 验方查询服务 - 专注复杂查询和推荐逻辑 (UltraThink重构: <300行)
+    /// 验方查询服务 - UltraThink重构版 (<300行)
     /// 职责：分页查询、筛选、推荐、分类等查询相关功能
+    /// 改为使用ReadRepository，移除直接的DbContext依赖
     /// </summary>
     public class FormulaQueryService : IFormulaQueryService
     {
-        private readonly AppDbContext _dbContext;
-        private readonly IMapper _mapper;
+        private readonly IFormulaReadRepository _readRepository;
         private readonly ILogger<FormulaQueryService> _logger;
 
         public FormulaQueryService(
-            AppDbContext dbContext,
-            IMapper mapper,
+            IFormulaReadRepository readRepository,
             ILogger<FormulaQueryService> logger)
         {
-            _dbContext = dbContext;
-            _mapper = mapper;
-            _logger = logger;
+            _readRepository = readRepository ?? throw new ArgumentNullException(nameof(readRepository));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         #region 分页查询
@@ -41,28 +35,7 @@ namespace LYBT.Module.Formula.Services
         {
             try
             {
-                var queryable = BuildBaseQuery();
-
-                // 应用筛选
-                queryable = ApplyFilters(queryable, query);
-
-                var totalCount = await queryable.CountAsync();
-
-                // 应用分页和排序
-                var items = await queryable
-                    .OrderBy(f => f.Name)
-                    .Skip(query.Skip)
-                    .Take(query.PageSize)
-                    .ToListAsync();
-
-                var dtos = _mapper.Map<List<FormulaDto>>(items);
-                var result = new PagedResult<FormulaDto>
-                {
-                    Items = dtos,
-                    TotalCount = totalCount,
-                    PageSize = query.PageSize
-                };
-
+                var result = await _readRepository.GetPagedFormulaDtosAsync(query);
                 return ServiceResult<PagedResult<FormulaDto>>.Success(result);
             }
             catch (Exception ex)
@@ -81,33 +54,7 @@ namespace LYBT.Module.Formula.Services
         {
             try
             {
-                var queryable = BuildBaseQuery();
-
-                // 关键字搜索
-                if (!string.IsNullOrWhiteSpace(query.Keyword))
-                {
-                    queryable = queryable.Where(f =>
-                        f.Name.Contains(query.Keyword) ||
-                        (f.Effect != null && f.Effect.Contains(query.Keyword)) ||
-                        (f.Usage != null && f.Usage.Contains(query.Keyword)));
-                }
-
-                var totalCount = await queryable.CountAsync();
-
-                var items = await queryable
-                    .OrderBy(f => f.Name)
-                    .Skip(query.Skip)
-                    .Take(query.PageSize)
-                    .ToListAsync();
-
-                var dtos = _mapper.Map<List<FormulaDto>>(items);
-                var result = new PagedResult<FormulaDto>
-                {
-                    Items = dtos,
-                    TotalCount = totalCount,
-                    PageSize = query.PageSize
-                };
-
+                var result = await _readRepository.SearchFormulaDtosAsync(query);
                 return ServiceResult<PagedResult<FormulaDto>>.Success(result);
             }
             catch (Exception ex)
@@ -125,18 +72,17 @@ namespace LYBT.Module.Formula.Services
         /// 获取验方分类列表
         /// </summary>
         /// <returns>包含所有验方分类的服务结果，包括经典验方、临床验方、个人验方</returns>
-        public Task<ServiceResult<List<string>>> GetCategoriesAsync()
+        public async Task<ServiceResult<List<string>>> GetCategoriesAsync()
         {
             try
             {
-                // Formula实体没有Category属性，返回基本分类
-                var categories = new List<string> { "经典验方", "临床验方", "个人验方" };
-                return Task.FromResult(ServiceResult<List<string>>.Success(categories));
+                var categories = await _readRepository.GetCategoriesAsync();
+                return ServiceResult<List<string>>.Success(categories);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "获取验方分类失败");
-                return Task.FromResult(ServiceResult<List<string>>.Failure($"获取分类失败: {ex.Message}"));
+                return ServiceResult<List<string>>.Failure($"获取分类失败: {ex.Message}");
             }
         }
 
@@ -149,19 +95,8 @@ namespace LYBT.Module.Formula.Services
         {
             try
             {
-                var queryable = BuildBaseQuery();
-
-                if (!string.IsNullOrWhiteSpace(keyword))
-                {
-                    queryable = queryable.Where(f => f.Name.Contains(keyword));
-                }
-
-                var formulas = await queryable
-                    .OrderBy(f => f.Name)
-                    .ToListAsync();
-
-                var dtos = _mapper.Map<List<FormulaDto>>(formulas);
-                return ServiceResult<List<FormulaDto>>.Success(dtos);
+                var formulas = await _readRepository.GetFormulaDtosAsync(keyword);
+                return ServiceResult<List<FormulaDto>>.Success(formulas);
             }
             catch (Exception ex)
             {
@@ -178,12 +113,8 @@ namespace LYBT.Module.Formula.Services
         {
             try
             {
-                var formulas = await BuildBaseQuery()
-                    .OrderBy(f => f.Name)
-                    .ToListAsync();
-
-                var dtos = _mapper.Map<List<FormulaDto>>(formulas);
-                return ServiceResult<List<FormulaDto>>.Success(dtos);
+                var formulas = await _readRepository.GetAllFormulaDtosAsync();
+                return ServiceResult<List<FormulaDto>>.Success(formulas);
             }
             catch (Exception ex)
             {
@@ -204,14 +135,8 @@ namespace LYBT.Module.Formula.Services
         {
             try
             {
-                // 获取模板验方（IsShared = true的验方作为模板）
-                var templates = await _dbContext.Formulas
-                    .Where(f => f.Status == CommonStatus.Enabled && f.IsShared)
-                    .OrderBy(f => f.Name)
-                    .ToListAsync();
-
-                var dtos = _mapper.Map<List<FormulaDto>>(templates);
-                return ServiceResult<List<FormulaDto>>.Success(dtos);
+                var templates = await _readRepository.GetTemplateDtosAsync();
+                return ServiceResult<List<FormulaDto>>.Success(templates);
             }
             catch (Exception ex)
             {
@@ -234,16 +159,8 @@ namespace LYBT.Module.Formula.Services
                     return ServiceResult<List<FormulaDto>>.Failure("验方类型不能为空");
                 }
 
-                // 根据验方类型查询（基于名称或功效匹配）
-                var formulas = await _dbContext.Formulas
-                    .Where(f => f.Status == CommonStatus.Enabled &&
-                               (f.Name.Contains(formulaType) ||
-                                (f.Effect != null && f.Effect.Contains(formulaType))))
-                    .OrderBy(f => f.Name)
-                    .ToListAsync();
-
-                var dtos = _mapper.Map<List<FormulaDto>>(formulas);
-                return ServiceResult<List<FormulaDto>>.Success(dtos);
+                var formulas = await _readRepository.GetFormulaDtosByTypeAsync(formulaType);
+                return ServiceResult<List<FormulaDto>>.Success(formulas);
             }
             catch (Exception ex)
             {
@@ -262,27 +179,8 @@ namespace LYBT.Module.Formula.Services
         {
             try
             {
-                var queryable = BuildBaseQuery();
-
-                if (!string.IsNullOrWhiteSpace(keyword))
-                {
-                    queryable = queryable.Where(f => f.Name.Contains(keyword) ||
-                                                    (f.Effect != null && f.Effect.Contains(keyword)));
-                }
-
-                if (!string.IsNullOrWhiteSpace(category))
-                {
-                    // 根据分类过滤（基于名称或效果匹配分类）
-                    queryable = queryable.Where(f => f.Name.Contains(category) ||
-                                                    (f.Effect != null && f.Effect.Contains(category)));
-                }
-
-                var formulas = await queryable
-                    .OrderBy(f => f.Name)
-                    .ToListAsync();
-
-                var dtos = _mapper.Map<List<FormulaDto>>(formulas);
-                return ServiceResult<List<FormulaDto>>.Success(dtos);
+                var formulas = await _readRepository.GetFormulaDtosAsync(keyword, category);
+                return ServiceResult<List<FormulaDto>>.Success(formulas);
             }
             catch (Exception ex)
             {
@@ -292,32 +190,6 @@ namespace LYBT.Module.Formula.Services
         }
 
         #endregion 基础模板功能（Record-Only保留）
-
-        #region 私有辅助方法
-
-        private IQueryable<LYBT.Entities.Formula.Formula> BuildBaseQuery()
-        {
-            return _dbContext.Formulas
-                .Where(f => f.Status == CommonStatus.Enabled);
-        }
-
-        private IQueryable<LYBT.Entities.Formula.Formula> ApplyFilters(IQueryable<LYBT.Entities.Formula.Formula> query, FormulaQueryDto queryDto)
-        {
-            if (!string.IsNullOrWhiteSpace(queryDto.Keyword))
-            {
-                query = query.Where(f => f.Name.Contains(queryDto.Keyword) ||
-                                       (f.Effect != null && f.Effect.Contains(queryDto.Keyword)));
-            }
-
-            if (queryDto.Status.HasValue)
-            {
-                query = query.Where(f => f.Status == queryDto.Status.Value);
-            }
-
-            return query;
-        }
-
-        #endregion 私有辅助方法
 
         #region 搜索接口 - 简化版接口兼容性
 
@@ -349,17 +221,13 @@ namespace LYBT.Module.Formula.Services
                     return ServiceResult<FormulaDto>.Failure("验方ID不能为空");
                 }
 
-                var formula = await _dbContext.Formulas
-                    .Include(f => f.Herbs)
-                    .FirstOrDefaultAsync(f => f.Id == id && f.Status == CommonStatus.Enabled);
-
+                var formula = await _readRepository.GetFormulaDtoByIdAsync(id);
                 if (formula == null)
                 {
                     return ServiceResult<FormulaDto>.Failure("验方不存在或已禁用");
                 }
 
-                var dto = _mapper.Map<FormulaDto>(formula);
-                return ServiceResult<FormulaDto>.Success(dto);
+                return ServiceResult<FormulaDto>.Success(formula);
             }
             catch (Exception ex)
             {

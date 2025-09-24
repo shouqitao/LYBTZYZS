@@ -542,14 +542,22 @@ _dialogService.ShowDialog("ConfirmationDialog", parameters, (result) =>
 *该文档反映当前代码实现状态，与实际功能保持100%同步 - 文档驱动开发标准*
 
 ## 🚀 快速开始
-- [待补充] 基本操作：dotnet restore/build/test；如何运行/调试当前模块。
+- **环境准备**: 确保已安装 .NET 8.0 SDK。
+- **还原依赖**: 在解决方案根目录执行 `dotnet restore`。
+- **构建项目**: `dotnet build LYBT.Desktop.sln`
+- **运行与调试**: 在 Visual Studio 中将 `LYBT.Desktop.Shell` 设置为启动项目后按 F5，或执行以下命令：
+  ```bash
+  dotnet run --project src/Client/Desktop/Shell/LYBT.Desktop.Shell.csproj
+  ```
 
 ## 🔌 API 接口
-- [待补充] 集成的 API/Refit 客户端：例如 IShellApi
-- [待补充] 关键调用路径与鉴权方式（JWT Bearer）
+- **无直接API调用**: `LYBT.Desktop.Shell` 作为应用程序外壳，其本身不包含直接调用后端API的 Refit 客户端。
+- **职责**: 它的核心职责是加载和编排其他业务模块（如 `LYBT.Desktop.Users`, `LYBT.Desktop.Patients` 等）。API 调用由这些具体的业务模块在其各自的服务层中实现和管理。
+- **鉴权流程**: 鉴权（JWT Bearer Token 的获取、刷新、存储）由 `LYBT.Desktop.Auth` 模块和 `LYBT.Desktop.Infrastructure` 中定义的 `HttpClient` 消息处理器统一负责。
 
 ## 📚 相关文档
 - docs/architecture/overview.md
 - docs/api/README.md
 - docs/modules/index.md
-- [待补充] 本模块相关的设计/实现文档链接
+- `docs/reports/prism-8x-desktop-refactor-plan-2025-09-24.md`: 桌面端基于Prism 8.x的重构计划。
+- `docs/architecture/Desktop-UltraThink-Implementation-Guide.md`: 桌面端 UltraThink 架构实施指南。

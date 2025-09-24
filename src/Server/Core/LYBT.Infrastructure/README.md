@@ -1,14 +1,6 @@
-﻿# LYBT.基础设施（基础设施（Infrastructure））
-
-> **基础设施核心模块** - 分层架构优化版 
-> 系统底层数据访问、配置管理和核心服务的统一基础设施
-> 项目状态: ✅ **生产就绪** | 🎆 **P8-01E架构重构完成** | **编译通过**
-
-## 🎯 模块概述
+﻿## 🎯 项目概述
 
 LYBT.Infrastructure是系统的核心基础设施模块，采用分层架构设计，专为小型中医诊所（<20人）优化。提供数据库访问、配置管理、安全服务等核心基础功能，是所有业务模块的统一底层支撑。
-
-**技术栈**: .NET 8.0 + 实体（实体（Entity）） Framework Core 8.0.17 + SQL Server + IMemoryCache
 
 ## 🎆 P8-01E架构重构成果 (历史性完成)
 
@@ -437,17 +429,46 @@ public class AuthService
 > 📌 **分层架构清晰，适合小型诊所部署
 > 🎆 **生产就绪**: 编译通过，完整的安全、缓存、数据库基础设施，可直接投入生产使用
 
-## 🎯 项目概述
-- [待补充] 简要描述 LYBT.Infrastructure 的职责、边界及与其他模块关系。
+
 
 ## 📦 项目结构
-- [待补充] 列出子目录/关键文件与职责（如 Controllers/Services/Repositories 等）。
+## 📦 项目结构
+
+```
+LYBT.Infrastructure/
+├── Configuration/         # 配置管理 (Options, DTOs)
+├── Data/                  # 数据访问核心 (AppDbContext)
+├── Migrations/            # EF Core 数据库迁移
+├── Repositories/          # 通用仓储模式实现
+├── Security/              # 安全服务 (JWT, 加密)
+├── Storage/               # 文件存储服务
+└── Web/                   # Web API 控制器基类
+```
 
 ## 🛠 技术栈
-- [待补充] 框架/库/运行时示例：.NET 8、ASP.NET Core、EF Core、Prism、Refit、AutoMapper 等。
+## 🛠 技术栈
+
+- **.NET 8 / ASP.NET Core 8**: 目标框架。
+- **Entity Framework Core 8**: ORM框架，用于数据访问和数据库迁移。
+- **Microsoft.Extensions**: 用于依赖注入、配置、缓存等核心功能。
+- **JWT (JSON Web Tokens)**: 用于API的安全认证。
 
 ## 🚀 快速开始
-- [待补充] 基本操作：dotnet restore/build/test；如何运行/调试当前模块。
+## 🚀 快速开始
+
+此项目是一个类库，不包含可执行文件，但包含了数据库迁移的核心逻辑。可以通过解决方案或以下命令进行构建：
+
+```bash
+# 还原解决方案依赖
+dotnet restore LYBT.All.sln
+
+# 构建此项目
+dotnet build src\Server\Core\LYBT.Infrastructure\LYBT.Infrastructure.csproj
+```
+
+关于数据库迁移操作，请参考本文档的 `🗃️ 数据库迁移管理` 章节。
 
 ## 🔌 API 接口
-- [待补充] 相关 API 或对外接口描述
+## 🔌 API 接口
+
+此项目为基础设施层，不直接对外提供任何API接口。它为上层服务（如 `LYBT.WebAPI`）提供数据库访问、安全、缓存等底层能力。

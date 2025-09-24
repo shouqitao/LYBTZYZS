@@ -23,6 +23,7 @@ namespace LYBT.Module.Prescriptions
         {
             // 仓储层
             services.AddScoped<IPrescriptionRepository, PrescriptionRepository>();
+            services.AddScoped<IPrescriptionReadRepository, PrescriptionReadRepository>();
 
             // UltraThink双层架构服务 - 查询和业务逻辑分离
             services.AddScoped<IPrescriptionQueryService, PrescriptionQueryService>();

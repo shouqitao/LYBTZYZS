@@ -1,14 +1,6 @@
-﻿# LYBT.Entities
-
-> **数据实体核心模块** 
-> 凌隐宝堂中医诊所系统的核心数据模型和实体类定义
-> 项目状态: ✅ **生产就绪** | 🎆 **分层架构完成** | **编译通过**
-
-## 🎯 模块概述
+﻿## 🎯 项目概述
 
 LYBT.Entities是系统的数据实体核心模块，定义了所有业务核心实体类、基础模型和数据注释规范。作为整个系统的数据结构基础，为业务逻辑、数据访问和接口传输提供统一的类型安全保障。
-
-**技术栈**: .NET 8.0 + 实体（实体（Entity）） Framework Core 8.0.17 + Data Annotations
 
 ## 📦 核心功能
 
@@ -319,17 +311,45 @@ CREATE INDEX IX_Prescriptions_MedicalCaseId ON Prescriptions(MedicalCaseId);
 > 📌 **开发提醒**: 修改实体结构后务必生成数据库迁移并同步更新对应的DTO模型
 > 🎆 **成果**: 实体模型设计简洁高效，完美支持中医诊所核心业务流程
 
-## 🎯 项目概述
-- [待补充] 简要描述 LYBT.Entities 的职责、边界及与其他模块关系。
+
 
 ## 📦 项目结构
-- [待补充] 列出子目录/关键文件与职责（如 Controllers/Services/Repositories 等）。
+## 📦 项目结构
+
+```
+LYBT.Entities/
+├── Models/                     # 核心业务实体
+│   ├── UserModel.cs           # 用户账户实体
+│   ├── PatientModel.cs        # 患者档案实体
+│   ├── MedicalCaseModel.cs    # 医疗案例实体
+│   ├── ConsultationModel.cs   # 诊疗记录实体
+│   ├── PrescriptionModel.cs   # 处方实体
+│   ├── HerbModel.cs           # 中药材实体
+│   └── FormulaModel.cs        # 验方模板实体
+└── Infrastructure/             # 基础设施与基类
+    └── BaseEntity.cs          # 所有实体的通用基类
+```
 
 ## 🛠 技术栈
-- [待补充] 框架/库/运行时示例：.NET 8、ASP.NET Core、EF Core、Prism、Refit、AutoMapper 等。
+## 🛠 技术栈
+
+- **.NET 8**: 目标框架
+- **Entity Framework Core 8**: ORM框架，用于定义数据实体与数据库的映射关系。
 
 ## 🚀 快速开始
-- [待补充] 基本操作：dotnet restore/build/test；如何运行/调试当前模块。
+## 🚀 快速开始
+
+此项目是一个类库，不包含可执行文件。可以通过解决方案或以下命令进行构建：
+
+```bash
+# 还原解决方案依赖
+dotnet restore LYBT.All.sln
+
+# 构建此项目
+dotnet build src\Server\Core\LYBT.Entities\LYBT.Entities.csproj
+```
 
 ## 🔌 API 接口
-- [待补充] 相关 API 或对外接口描述
+## 🔌 API 接口
+
+此项目为数据实体层，不直接对外提供任何API接口。它定义的数据结构被业务服务层和数据访问层使用。

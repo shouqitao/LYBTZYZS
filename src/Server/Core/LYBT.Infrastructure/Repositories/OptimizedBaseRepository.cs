@@ -23,7 +23,7 @@ namespace LYBT.Infrastructure.Repositories
     /// 5. 连接池管理
     /// 6. 查询拦截和优化
     /// </summary>
-    public abstract class OptimizedBaseRepository<TEntity> : IBaseRepository<TEntity>
+    public abstract class OptimizedBaseRepository<TEntity> : IRepository<TEntity>
         where TEntity : class
     {
 

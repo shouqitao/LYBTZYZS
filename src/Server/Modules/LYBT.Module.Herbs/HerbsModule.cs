@@ -23,6 +23,7 @@ namespace LYBT.Module.Herbs
         {
             // 仓储层
             services.AddScoped<IHerbRepository, HerbRepository>();
+            services.AddScoped<IHerbReadRepository, HerbReadRepository>();
 
             // UltraThink双层架构服务 - 查询和业务逻辑分离
             services.AddScoped<IHerbQueryService, HerbQueryService>();

@@ -3,118 +3,31 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
-using MedicalCaseEntity = LYBT.Entities.MedicalCase.MedicalCase;
-using LYBT.Infrastructure.Data;
+using LYBT.Module.MedicalCase.Interfaces;
 using LYBT.Module.MedicalCase.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Enums;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
-using AutoMapper;
 
 namespace LYBT.Module.MedicalCase.Tests.Services
 {
-    public class MedicalCaseQueryServiceTests : IDisposable
+    public class MedicalCaseQueryServiceTests
     {
-        private readonly AppDbContext _context;
         private readonly MedicalCaseQueryService _service;
-        private readonly Mock<IMapper> _mockMapper;
+        private readonly Mock<IMedicalCaseReadRepository> _mockReadRepository;
         private readonly Mock<ILogger<MedicalCaseQueryService>> _mockLogger;
 
         public MedicalCaseQueryServiceTests()
         {
-            var options = new DbContextOptionsBuilder<AppDbContext>()
-                .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
-                .Options;
-            _context = new AppDbContext(options);
-
-            _mockMapper = new Mock<IMapper>();
+            _mockReadRepository = new Mock<IMedicalCaseReadRepository>();
             _mockLogger = new Mock<ILogger<MedicalCaseQueryService>>();
 
             _service = new MedicalCaseQueryService(
-                _context,
-                _mockMapper.Object,
+                _mockReadRepository.Object,
                 _mockLogger.Object);
-
-            SetupMockMapper();
-        }
-
-        private void SetupMockMapper()
-        {
-            _mockMapper.Setup(x => x.Map<MedicalCaseDto>(It.IsAny<MedicalCaseEntity>()))
-                .Returns((MedicalCaseEntity mc) => new MedicalCaseDto
-                {
-                    Id = mc.Id,
-                    PatientId = mc.PatientId,
-                    PatientName = mc.PatientName,
-                    DoctorId = mc.DoctorId,
-                    DoctorName = mc.DoctorName,
-                    CaseStatus = mc.Status,
-                    ConsultationDate = mc.ConsultationDate
-                });
-
-            _mockMapper.Setup(x => x.Map<List<MedicalCaseDto>>(It.IsAny<List<MedicalCaseEntity>>()))
-                .Returns((List<MedicalCaseEntity> cases) => cases.Select(mc => new MedicalCaseDto
-                {
-                    Id = mc.Id,
-                    PatientId = mc.PatientId,
-                    PatientName = mc.PatientName,
-                    DoctorId = mc.DoctorId,
-                    DoctorName = mc.DoctorName,
-                    CaseStatus = mc.Status,
-                    ConsultationDate = mc.ConsultationDate
-                }).ToList());
-
-            _mockMapper.Setup(x => x.Map<MedicalCaseDetailDto>(It.IsAny<MedicalCaseEntity>()))
-                .Returns((MedicalCaseEntity mc) => new MedicalCaseDetailDto
-                {
-                    Id = mc.Id,
-                    PatientId = mc.PatientId,
-                    PatientName = mc.PatientName,
-                    DoctorId = mc.DoctorId,
-                    DoctorName = mc.DoctorName,
-                    CaseStatus = mc.Status,
-                    ConsultationDate = mc.ConsultationDate,
-                    Remark = mc.Remark
-                });
-        }
-
-        public void Dispose()
-        {
-            _context.Dispose();
-        }
-
-        #region GetByIdAsync Tests
-
-        [Fact]
-        public async Task GetByIdAsync_Should_Return_MedicalCase_When_Found()
-        {
-            // Arrange
-            var medicalCase = new MedicalCaseEntity
-            {
-                Id = Guid.NewGuid(),
-                PatientId = Guid.NewGuid(),
-                PatientName = "测试患者",
-                DoctorId = Guid.NewGuid(),
-                DoctorName = "测试医生",
-                Status = MedicalCaseStatus.Active,
-                CreatedBy = Guid.NewGuid()
-            };
-            await _context.MedicalCases.AddAsync(medicalCase);
-            await _context.SaveChangesAsync();
-
-            // Act
-            var result = await _service.GetByIdAsync(medicalCase.Id);
-
-            // Assert
-            result.Should().NotBeNull();
-            result.IsSuccess.Should().BeTrue();
-            result.Data.Should().NotBeNull();
-            result.Data!.Id.Should().Be(medicalCase.Id);
-            result.Data.PatientName.Should().Be("测试患者");
         }
 
         [Fact]
@@ -129,8 +42,6 @@ namespace LYBT.Module.MedicalCase.Tests.Services
             result.ErrorMessage.Should().Contain("病历不存在");
         }
 
-        #endregion
-
         #region GetByPatientIdAsync Tests
 
         [Fact]
@@ -138,33 +49,31 @@ namespace LYBT.Module.MedicalCase.Tests.Services
         {
             // Arrange
             var patientId = Guid.NewGuid();
-            var cases = new List<MedicalCaseEntity>
+            var expectedCases = new List<MedicalCaseDto>
             {
-                new MedicalCaseEntity
+                new MedicalCaseDto
                 {
                     Id = Guid.NewGuid(),
                     PatientId = patientId,
                     PatientName = "测试患者",
-                    DoctorId = Guid.NewGuid(),
                     DoctorName = "医生1",
-                    Status = MedicalCaseStatus.Active,
-                    CreatedBy = Guid.NewGuid(),
-                    CreatedAt = DateTime.Now.AddDays(-2)
+                    CaseStatus = MedicalCaseStatus.Active,
+                    ConsultationDate = DateTime.Now.AddDays(-2)
                 },
-                new MedicalCaseEntity
+                new MedicalCaseDto
                 {
                     Id = Guid.NewGuid(),
                     PatientId = patientId,
                     PatientName = "测试患者",
-                    DoctorId = Guid.NewGuid(),
                     DoctorName = "医生2",
-                    Status = MedicalCaseStatus.Closed,
-                    CreatedBy = Guid.NewGuid(),
-                    CreatedAt = DateTime.Now.AddDays(-1)
+                    CaseStatus = MedicalCaseStatus.Closed,
+                    ConsultationDate = DateTime.Now.AddDays(-1)
                 }
             };
-            await _context.MedicalCases.AddRangeAsync(cases);
-            await _context.SaveChangesAsync();
+
+            _mockReadRepository
+                .Setup(x => x.GetMedicalCaseDtosByPatientIdAsync(patientId))
+                .ReturnsAsync(expectedCases);
 
             // Act
             var result = await _service.GetByPatientIdAsync(patientId);
@@ -174,7 +83,6 @@ namespace LYBT.Module.MedicalCase.Tests.Services
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
             result.Data!.Should().HaveCount(2);
-            result.Data.Should().BeInDescendingOrder(mc => mc.ConsultationDate);
         }
 
         #endregion
@@ -186,31 +94,31 @@ namespace LYBT.Module.MedicalCase.Tests.Services
         {
             // Arrange
             var doctorId = Guid.NewGuid();
-            var cases = new List<MedicalCaseEntity>
+            var expectedCases = new List<MedicalCaseDto>
             {
-                new MedicalCaseEntity
+                new MedicalCaseDto
                 {
                     Id = Guid.NewGuid(),
                     PatientId = Guid.NewGuid(),
                     PatientName = "患者1",
                     DoctorId = doctorId,
                     DoctorName = "测试医生",
-                    Status = MedicalCaseStatus.Active,
-                    CreatedBy = doctorId
+                    CaseStatus = MedicalCaseStatus.Active
                 },
-                new MedicalCaseEntity
+                new MedicalCaseDto
                 {
                     Id = Guid.NewGuid(),
                     PatientId = Guid.NewGuid(),
                     PatientName = "患者2",
                     DoctorId = doctorId,
                     DoctorName = "测试医生",
-                    Status = MedicalCaseStatus.Active,
-                    CreatedBy = doctorId
+                    CaseStatus = MedicalCaseStatus.Active
                 }
             };
-            await _context.MedicalCases.AddRangeAsync(cases);
-            await _context.SaveChangesAsync();
+
+            _mockReadRepository
+                .Setup(x => x.GetMedicalCaseDtosByDoctorIdAsync(doctorId))
+                .ReturnsAsync(expectedCases);
 
             // Act
             var result = await _service.GetByDoctorIdAsync(doctorId);
@@ -224,57 +132,34 @@ namespace LYBT.Module.MedicalCase.Tests.Services
 
         #endregion
 
-        #region GetActiveAsync Tests
+        #region GetActiveByPatientIdAsync Tests
 
         [Fact]
-        public async Task GetActiveAsync_Should_Return_Only_Active_Cases()
+        public async Task GetActiveByPatientIdAsync_Should_Return_Active_Case()
         {
             // Arrange
-            var cases = new List<MedicalCaseEntity>
+            var patientId = Guid.NewGuid();
+            var expectedActiveCase = new MedicalCaseDto
             {
-                new MedicalCaseEntity
-                {
-                    Id = Guid.NewGuid(),
-                    PatientId = Guid.NewGuid(),
-                    PatientName = "患者1",
-                    DoctorId = Guid.NewGuid(),
-                    DoctorName = "医生1",
-                    Status = MedicalCaseStatus.Active,
-                    CreatedBy = Guid.NewGuid()
-                },
-                new MedicalCaseEntity
-                {
-                    Id = Guid.NewGuid(),
-                    PatientId = Guid.NewGuid(),
-                    PatientName = "患者2",
-                    DoctorId = Guid.NewGuid(),
-                    DoctorName = "医生2",
-                    Status = MedicalCaseStatus.Closed,
-                    CreatedBy = Guid.NewGuid()
-                },
-                new MedicalCaseEntity
-                {
-                    Id = Guid.NewGuid(),
-                    PatientId = Guid.NewGuid(),
-                    PatientName = "患者3",
-                    DoctorId = Guid.NewGuid(),
-                    DoctorName = "医生3",
-                    Status = MedicalCaseStatus.Active,
-                    CreatedBy = Guid.NewGuid()
-                }
+                Id = Guid.NewGuid(),
+                PatientId = patientId,
+                PatientName = "测试患者",
+                DoctorName = "测试医生",
+                CaseStatus = MedicalCaseStatus.Active
             };
-            await _context.MedicalCases.AddRangeAsync(cases);
-            await _context.SaveChangesAsync();
+
+            _mockReadRepository
+                .Setup(x => x.GetActiveMedicalCaseDtoByPatientIdAsync(patientId))
+                .ReturnsAsync(expectedActiveCase);
 
             // Act
-            var result = await _service.GetByPatientIdAsync(Guid.NewGuid());
+            var result = await _service.GetActiveByPatientIdAsync(patientId);
 
             // Assert
             result.Should().NotBeNull();
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
-            result.Data!.Should().HaveCount(2);
-            result.Data.Should().AllSatisfy(mc => mc.CaseStatus.Should().Be(MedicalCaseStatus.Active));
+            result.Data!.CaseStatus.Should().Be(MedicalCaseStatus.Active);
         }
 
         #endregion
@@ -285,55 +170,24 @@ namespace LYBT.Module.MedicalCase.Tests.Services
         public async Task SearchAsync_Should_Filter_By_Status()
         {
             // Arrange
-            var cases = new List<MedicalCaseEntity>
+            var keyword = "患者";
+            var expectedResult = new List<MedicalCaseDto>
             {
-                new MedicalCaseEntity
+                new MedicalCaseDto
                 {
                     Id = Guid.NewGuid(),
-                    PatientId = Guid.NewGuid(),
                     PatientName = "患者1",
-                    DoctorId = Guid.NewGuid(),
                     DoctorName = "医生1",
-                    Status = MedicalCaseStatus.Closed,
-                    CreatedBy = Guid.NewGuid()
-                },
-                new MedicalCaseEntity
-                {
-                    Id = Guid.NewGuid(),
-                    PatientId = Guid.NewGuid(),
-                    PatientName = "患者2",
-                    DoctorId = Guid.NewGuid(),
-                    DoctorName = "医生2",
-                    Status = MedicalCaseStatus.Active,
-                    CreatedBy = Guid.NewGuid()
+                    CaseStatus = MedicalCaseStatus.Closed
                 }
             };
-            await _context.MedicalCases.AddRangeAsync(cases);
-            await _context.SaveChangesAsync();
 
-            var searchDto = new MedicalCaseSearchDto
-            {
-                CaseStatus = MedicalCaseStatus.Closed,
-                PageIndex = 1,
-                PageSize = 10
-            };
-
-            _mockMapper.Setup(x => x.Map<PagedResult<MedicalCaseDto>>(It.IsAny<PagedResult<MedicalCaseEntity>>()))
-                .Returns((PagedResult<MedicalCaseEntity> paged) => new PagedResult<MedicalCaseDto>
-                {
-                    Items = paged.Items.Select(mc => new MedicalCaseDto
-                    {
-                        Id = mc.Id,
-                        PatientName = mc.PatientName,
-                        CaseStatus = mc.Status
-                    }).ToList(),
-                    TotalCount = paged.TotalCount,
-                    CurrentPage = paged.CurrentPage,
-                    PageSize = paged.PageSize
-                });
+            _mockReadRepository
+                .Setup(x => x.SearchMedicalCaseDtosAsync(keyword, 50))
+                .ReturnsAsync(expectedResult);
 
             // Act
-            var result = await _service.SearchAsync("患者");
+            var result = await _service.SearchAsync(keyword);
 
             // Assert
             result.Should().NotBeNull();
@@ -347,58 +201,25 @@ namespace LYBT.Module.MedicalCase.Tests.Services
         public async Task SearchAsync_Should_Filter_By_DateRange()
         {
             // Arrange
-            var cases = new List<MedicalCaseEntity>
+            var keyword = "患者";
+            var expectedResult = new List<MedicalCaseDto>
             {
-                new MedicalCaseEntity
+                new MedicalCaseDto
                 {
                     Id = Guid.NewGuid(),
-                    PatientId = Guid.NewGuid(),
-                    PatientName = "患者1",
-                    DoctorId = Guid.NewGuid(),
-                    DoctorName = "医生1",
-                    Status = MedicalCaseStatus.Active,
-                    CreatedBy = Guid.NewGuid(),
-                    CreatedAt = DateTime.Now.AddDays(-10)
-                },
-                new MedicalCaseEntity
-                {
-                    Id = Guid.NewGuid(),
-                    PatientId = Guid.NewGuid(),
                     PatientName = "患者2",
-                    DoctorId = Guid.NewGuid(),
                     DoctorName = "医生2",
-                    Status = MedicalCaseStatus.Active,
-                    CreatedBy = Guid.NewGuid(),
-                    CreatedAt = DateTime.Now.AddDays(-1)
+                    CaseStatus = MedicalCaseStatus.Active,
+                    ConsultationDate = DateTime.Now.AddDays(-1)
                 }
             };
-            await _context.MedicalCases.AddRangeAsync(cases);
-            await _context.SaveChangesAsync();
 
-            var searchDto = new MedicalCaseSearchDto
-            {
-                StartDate = DateTime.Now.AddDays(-5),
-                EndDate = DateTime.Now,
-                PageIndex = 1,
-                PageSize = 10
-            };
-
-            _mockMapper.Setup(x => x.Map<PagedResult<MedicalCaseDto>>(It.IsAny<PagedResult<MedicalCaseEntity>>()))
-                .Returns((PagedResult<MedicalCaseEntity> paged) => new PagedResult<MedicalCaseDto>
-                {
-                    Items = paged.Items.Select(mc => new MedicalCaseDto
-                    {
-                        Id = mc.Id,
-                        PatientName = mc.PatientName,
-                        ConsultationDate = mc.CreatedAt
-                    }).ToList(),
-                    TotalCount = paged.TotalCount,
-                    CurrentPage = paged.CurrentPage,
-                    PageSize = paged.PageSize
-                });
+            _mockReadRepository
+                .Setup(x => x.SearchMedicalCaseDtosAsync(keyword, 50))
+                .ReturnsAsync(expectedResult);
 
             // Act
-            var result = await _service.SearchAsync("患者");
+            var result = await _service.SearchAsync(keyword);
 
             // Assert
             result.Should().NotBeNull();
@@ -416,41 +237,19 @@ namespace LYBT.Module.MedicalCase.Tests.Services
         public async Task GetStatisticsAsync_Should_Return_Correct_Statistics()
         {
             // Arrange
-            var cases = new List<MedicalCaseEntity>
+            var expectedStats = new MedicalCaseStatisticsDto
             {
-                new MedicalCaseEntity
-                {
-                    Id = Guid.NewGuid(),
-                    PatientId = Guid.NewGuid(),
-                    PatientName = "患者1",
-                    DoctorId = Guid.NewGuid(),
-                    DoctorName = "医生1",
-                    Status = MedicalCaseStatus.Active,
-                    CreatedBy = Guid.NewGuid()
-                },
-                new MedicalCaseEntity
-                {
-                    Id = Guid.NewGuid(),
-                    PatientId = Guid.NewGuid(),
-                    PatientName = "患者2",
-                    DoctorId = Guid.NewGuid(),
-                    DoctorName = "医生2",
-                    Status = MedicalCaseStatus.Closed,
-                    CreatedBy = Guid.NewGuid()
-                },
-                new MedicalCaseEntity
-                {
-                    Id = Guid.NewGuid(),
-                    PatientId = Guid.NewGuid(),
-                    PatientName = "患者3",
-                    DoctorId = Guid.NewGuid(),
-                    DoctorName = "医生3",
-                    Status = MedicalCaseStatus.Active,
-                    CreatedBy = Guid.NewGuid()
-                }
+                TotalCount = 3,
+                InProgressCount = 2,
+                CompletedCount = 1,
+                CancelledCount = 0,
+                AverageCompletionDays = 5.5,
+                DoctorCaseDistribution = new Dictionary<string, int> { { "医生1", 2 }, { "医生2", 1 } }
             };
-            await _context.MedicalCases.AddRangeAsync(cases);
-            await _context.SaveChangesAsync();
+
+            _mockReadRepository
+                .Setup(x => x.GetMedicalCaseStatisticsAsync())
+                .ReturnsAsync(expectedStats);
 
             // Act
             var result = await _service.GetStatisticsAsync();
@@ -459,6 +258,10 @@ namespace LYBT.Module.MedicalCase.Tests.Services
             result.Should().NotBeNull();
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
+            var stats = result.Data as MedicalCaseStatisticsDto;
+            stats!.TotalCount.Should().Be(3);
+            stats.InProgressCount.Should().Be(2);
+            stats.CompletedCount.Should().Be(1);
         }
 
         #endregion

@@ -1,10 +1,7 @@
-using AutoMapper;
-using LYBT.Infrastructure.Data;
 using LYBT.Module.Patients.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Module.Patients.Services
@@ -14,20 +11,18 @@ namespace LYBT.Module.Patients.Services
     /// 患者查询服务实现
     /// UltraThink架构 - Query层接口抽象
     /// 职责：患者查询、搜索、统计功能专业化处理
+    /// 改为使用ReadRepository，移除直接的DbContext依赖
     /// </summary>
     public class PatientQueryService : IPatientQueryService
     {
-        private readonly AppDbContext _context;
-        private readonly IMapper _mapper;
+        private readonly IPatientReadRepository _readRepository;
         private readonly ILogger<PatientQueryService> _logger;
 
         public PatientQueryService(
-            AppDbContext context,
-            IMapper mapper,
+            IPatientReadRepository readRepository,
             ILogger<PatientQueryService> logger)
         {
-            _context = context ?? throw new ArgumentNullException(nameof(context));
-            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            _readRepository = readRepository ?? throw new ArgumentNullException(nameof(readRepository));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -38,37 +33,19 @@ namespace LYBT.Module.Patients.Services
         {
             try
             {
-                var patientsQuery = _context.Patients
-                    .Where(p => p.Status == CommonStatus.Enabled)
-                    .AsQueryable();
+                var pageIndex = Math.Max(query.PageIndex, 1);
+                var pageSize = Math.Clamp(query.PageSize, 10, 100);
 
-                // 基础关键词搜索
-                if (!string.IsNullOrWhiteSpace(query.Keyword))
+                var queryDto = new PatientQueryDto
                 {
-                    patientsQuery = patientsQuery.Where(p =>
-                        (p.Name != null && p.Name.Contains(query.Keyword)) ||
-                        (p.PhoneNumber != null && p.PhoneNumber.Contains(query.Keyword)) ||
-                        (p.PinYinCode != null && p.PinYinCode.Contains(query.Keyword.ToUpper())));
-                }
-
-                var totalCount = await patientsQuery.CountAsync();
-                var patients = await patientsQuery
-                    .OrderByDescending(p => p.CreatedAt)
-                    .Skip((query.PageIndex - 1) * query.PageSize)
-                    .Take(query.PageSize)
-                    .ToListAsync();
-
-                var items = _mapper.Map<List<PatientDto>>(patients);
-
-                var result = new PagedResult<PatientDto>
-                {
-                    Items = items,
-                    TotalCount = totalCount,
-                    CurrentPage = query.PageIndex,
-                    PageSize = query.PageSize
+                    PageIndex = pageIndex,
+                    PageSize = pageSize,
+                    Keyword = query.Keyword
                 };
 
-                return ServiceResult<PagedResult<PatientDto>>.Success(result);
+                var pagedResult = await _readRepository.GetPagedPatientDtosAsync(queryDto);
+
+                return ServiceResult<PagedResult<PatientDto>>.Success(pagedResult);
             }
             catch (Exception ex)
             {
@@ -89,16 +66,13 @@ namespace LYBT.Module.Patients.Services
                     return ServiceResult<PatientDto>.Failure("患者ID不能为空");
                 }
 
-                var patient = await _context.Patients
-                    .FirstOrDefaultAsync(p => p.Id == patientId);
-
-                if (patient == null)
+                var dto = await _readRepository.GetPatientDtoByIdAsync(patientId);
+                if (dto == null)
                 {
                     return ServiceResult<PatientDto>.Failure("患者不存在");
                 }
 
-                var patientDto = _mapper.Map<PatientDto>(patient);
-                return ServiceResult<PatientDto>.Success(patientDto);
+                return ServiceResult<PatientDto>.Success(dto);
             }
             catch (Exception ex)
             {
@@ -114,12 +88,8 @@ namespace LYBT.Module.Patients.Services
         {
             try
             {
-                var patients = await _context.Patients
-                    .OrderBy(p => p.Name)
-                    .ToListAsync();
-
-                var patientDtos = _mapper.Map<List<PatientDto>>(patients);
-                return ServiceResult<List<PatientDto>>.Success(patientDtos);
+                var dtos = await _readRepository.GetAllPatientDtosAsync();
+                return ServiceResult<List<PatientDto>>.Success(dtos);
             }
             catch (Exception ex)
             {
@@ -135,13 +105,8 @@ namespace LYBT.Module.Patients.Services
         {
             try
             {
-                var patients = await _context.Patients
-                    .Where(p => p.Status == CommonStatus.Enabled)
-                    .OrderBy(p => p.Name)
-                    .ToListAsync();
-
-                var patientDtos = _mapper.Map<List<PatientDto>>(patients);
-                return ServiceResult<List<PatientDto>>.Success(patientDtos);
+                var dtos = await _readRepository.GetActivePatientDtosAsync();
+                return ServiceResult<List<PatientDto>>.Success(dtos);
             }
             catch (Exception ex)
             {
@@ -162,16 +127,13 @@ namespace LYBT.Module.Patients.Services
                     return ServiceResult<PatientDto>.Failure("身份证号不能为空");
                 }
 
-                var patient = await _context.Patients
-                    .FirstOrDefaultAsync(p => p.IdNumber == idNumber);
-
-                if (patient == null)
+                var dto = await _readRepository.GetPatientDtoByIdNumberAsync(idNumber);
+                if (dto == null)
                 {
                     return ServiceResult<PatientDto>.Failure("未找到患者");
                 }
 
-                var patientDto = _mapper.Map<PatientDto>(patient);
-                return ServiceResult<PatientDto>.Success(patientDto);
+                return ServiceResult<PatientDto>.Success(dto);
             }
             catch (Exception ex)
             {
@@ -192,16 +154,13 @@ namespace LYBT.Module.Patients.Services
                     return ServiceResult<PatientDto>.Failure("手机号码不能为空");
                 }
 
-                var patient = await _context.Patients
-                    .FirstOrDefaultAsync(p => p.PhoneNumber == phoneNumber);
-
-                if (patient == null)
+                var dto = await _readRepository.GetPatientDtoByPhoneNumberAsync(phoneNumber);
+                if (dto == null)
                 {
                     return ServiceResult<PatientDto>.Failure("未找到患者");
                 }
 
-                var patientDto = _mapper.Map<PatientDto>(patient);
-                return ServiceResult<PatientDto>.Success(patientDto);
+                return ServiceResult<PatientDto>.Success(dto);
             }
             catch (Exception ex)
             {
@@ -222,16 +181,13 @@ namespace LYBT.Module.Patients.Services
                     return ServiceResult<PatientDto>.Failure("身份证号不能为空");
                 }
 
-                var patient = await _context.Patients
-                    .FirstOrDefaultAsync(p => p.IdNumber == idCard);
-
-                if (patient == null)
+                var dto = await _readRepository.GetPatientDtoByIdNumberAsync(idCard);
+                if (dto == null)
                 {
                     return ServiceResult<PatientDto>.Failure("未找到患者");
                 }
 
-                var patientDto = _mapper.Map<PatientDto>(patient);
-                return ServiceResult<PatientDto>.Success(patientDto);
+                return ServiceResult<PatientDto>.Success(dto);
             }
             catch (Exception ex)
             {
@@ -252,13 +208,8 @@ namespace LYBT.Module.Patients.Services
                     return ServiceResult<List<PatientDto>>.Failure("手机号码不能为空");
                 }
 
-                var patients = await _context.Patients
-                    .Where(p => p.PhoneNumber != null && p.PhoneNumber.Contains(phone))
-                    .OrderBy(p => p.Name)
-                    .ToListAsync();
-
-                var patientDtos = _mapper.Map<List<PatientDto>>(patients);
-                return ServiceResult<List<PatientDto>>.Success(patientDtos);
+                var dtos = await _readRepository.GetPatientDtosByPhoneAsync(phone);
+                return ServiceResult<List<PatientDto>>.Success(dtos);
             }
             catch (Exception ex)
             {
@@ -279,18 +230,8 @@ namespace LYBT.Module.Patients.Services
                     return ServiceResult<List<PatientDto>>.Success(new List<PatientDto>());
                 }
 
-                var patients = await _context.Patients
-                    .Where(p => p.Status == CommonStatus.Enabled && (
-                        (p.Name != null && p.Name.Contains(keyword)) ||
-                        (p.PhoneNumber != null && p.PhoneNumber.Contains(keyword)) ||
-                        (p.IdNumber != null && p.IdNumber.Contains(keyword)) ||
-                        (p.PinYinCode != null && p.PinYinCode.Contains(keyword.ToUpper()))))
-                    .OrderBy(p => p.Name)
-                    .Take(20)
-                    .ToListAsync();
-
-                var patientDtos = _mapper.Map<List<PatientDto>>(patients);
-                return ServiceResult<List<PatientDto>>.Success(patientDtos);
+                var dtos = await _readRepository.SearchPatientDtosAsync(keyword, 20);
+                return ServiceResult<List<PatientDto>>.Success(dtos);
             }
             catch (Exception ex)
             {
@@ -306,73 +247,11 @@ namespace LYBT.Module.Patients.Services
         {
             try
             {
-                var patientsQuery = _context.Patients
-                    .Where(p => p.Status == CommonStatus.Enabled)
-                    .AsQueryable();
+                var pageIndex = Math.Max(searchDto.PageIndex, 1);
+                var pageSize = Math.Clamp(searchDto.PageSize, 10, 100);
 
-                // 基础关键词搜索
-                if (!string.IsNullOrWhiteSpace(searchDto.Keyword))
-                {
-                    patientsQuery = patientsQuery.Where(p =>
-                        (p.Name != null && p.Name.Contains(searchDto.Keyword)) ||
-                        (p.PhoneNumber != null && p.PhoneNumber.Contains(searchDto.Keyword)) ||
-                        (p.IdNumber != null && p.IdNumber.Contains(searchDto.Keyword)));
-                }
-
-                // 姓名搜索
-                if (!string.IsNullOrWhiteSpace(searchDto.Name))
-                {
-                    patientsQuery = patientsQuery.Where(p => p.Name != null && p.Name.Contains(searchDto.Name));
-                }
-
-                // 手机号搜索
-                if (!string.IsNullOrWhiteSpace(searchDto.PhoneNumber))
-                {
-                    patientsQuery = patientsQuery.Where(p => p.PhoneNumber != null && p.PhoneNumber.Contains(searchDto.PhoneNumber));
-                }
-
-                // 年龄范围搜索
-                if (searchDto.MinAge.HasValue || searchDto.MaxAge.HasValue)
-                {
-                    var today = DateTime.Today;
-
-                    if (searchDto.MinAge.HasValue)
-                    {
-                        var maxBirthDate = today.AddYears(-searchDto.MinAge.Value);
-                        patientsQuery = patientsQuery.Where(p => p.BirthDate <= maxBirthDate);
-                    }
-
-                    if (searchDto.MaxAge.HasValue)
-                    {
-                        var minBirthDate = today.AddYears(-searchDto.MaxAge.Value - 1);
-                        patientsQuery = patientsQuery.Where(p => p.BirthDate >= minBirthDate);
-                    }
-                }
-
-                // 性别搜索
-                if (searchDto.Gender.HasValue)
-                {
-                    patientsQuery = patientsQuery.Where(p => p.Gender == searchDto.Gender.Value);
-                }
-
-                var totalCount = await patientsQuery.CountAsync();
-                var patients = await patientsQuery
-                    .OrderByDescending(p => p.CreatedAt)
-                    .Skip((searchDto.PageIndex - 1) * searchDto.PageSize)
-                    .Take(searchDto.PageSize)
-                    .ToListAsync();
-
-                var items = _mapper.Map<List<PatientDto>>(patients);
-
-                var result = new PagedResult<PatientDto>
-                {
-                    Items = items,
-                    TotalCount = totalCount,
-                    CurrentPage = searchDto.PageIndex,
-                    PageSize = searchDto.PageSize
-                };
-
-                return ServiceResult<PagedResult<PatientDto>>.Success(result);
+                var pagedResult = await _readRepository.AdvancedSearchPatientDtosAsync(searchDto);
+                return ServiceResult<PagedResult<PatientDto>>.Success(pagedResult);
             }
             catch (Exception ex)
             {
@@ -388,40 +267,8 @@ namespace LYBT.Module.Patients.Services
         {
             try
             {
-                var duplicatesQuery = _context.Patients.AsQueryable();
-                var hasDuplicateCondition = false;
-
-                // 检查手机号重复
-                if (!string.IsNullOrWhiteSpace(createDto.PhoneNumber))
-                {
-                    duplicatesQuery = duplicatesQuery.Where(p => p.PhoneNumber == createDto.PhoneNumber);
-                    hasDuplicateCondition = true;
-                }
-
-                // 检查身份证号重复
-                if (!string.IsNullOrWhiteSpace(createDto.IdNumber))
-                {
-                    if (hasDuplicateCondition)
-                    {
-                        duplicatesQuery = _context.Patients
-                            .Where(p => p.PhoneNumber == createDto.PhoneNumber || p.IdNumber == createDto.IdNumber);
-                    }
-                    else
-                    {
-                        duplicatesQuery = duplicatesQuery.Where(p => p.IdNumber == createDto.IdNumber);
-                        hasDuplicateCondition = true;
-                    }
-                }
-
-                if (!hasDuplicateCondition)
-                {
-                    return ServiceResult<List<PatientDto>>.Success(new List<PatientDto>());
-                }
-
-                var duplicatePatients = await duplicatesQuery.ToListAsync();
-                var duplicateDtos = _mapper.Map<List<PatientDto>>(duplicatePatients);
-
-                return ServiceResult<List<PatientDto>>.Success(duplicateDtos);
+                var dtos = await _readRepository.CheckDuplicatePatientDtosAsync(createDto);
+                return ServiceResult<List<PatientDto>>.Success(dtos);
             }
             catch (Exception ex)
             {

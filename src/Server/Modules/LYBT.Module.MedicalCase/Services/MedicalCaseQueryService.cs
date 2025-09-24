@@ -1,10 +1,7 @@
-using AutoMapper;
-using LYBT.Infrastructure.Data;
 using LYBT.Module.MedicalCase.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Enums;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Module.MedicalCase.Services
@@ -13,20 +10,18 @@ namespace LYBT.Module.MedicalCase.Services
     /// <summary>
     /// 医疗案例查询服务 - UltraThink架构
     /// 职责：分页查询，搜索筛选，患者案例查询，活跃案例检查
+    /// 改为使用ReadRepository，移除直接的DbContext依赖
     /// </summary>
     public class MedicalCaseQueryService : IMedicalCaseQueryService
     {
-        private readonly AppDbContext _context;
-        private readonly IMapper _mapper;
+        private readonly IMedicalCaseReadRepository _readRepository;
         private readonly ILogger<MedicalCaseQueryService> _logger;
 
         public MedicalCaseQueryService(
-            AppDbContext context,
-            IMapper mapper,
+            IMedicalCaseReadRepository readRepository,
             ILogger<MedicalCaseQueryService> logger)
         {
-            _context = context ?? throw new ArgumentNullException(nameof(context));
-            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            _readRepository = readRepository ?? throw new ArgumentNullException(nameof(readRepository));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -42,15 +37,12 @@ namespace LYBT.Module.MedicalCase.Services
                     return ServiceResult<MedicalCaseDto>.Failure("医疗案例ID不能为空");
                 }
 
-                var medicalCase = await _context.MedicalCases
-                    .FirstOrDefaultAsync(mc => mc.Id == caseId);
-
-                if (medicalCase == null)
+                var dto = await _readRepository.GetMedicalCaseDtoByIdAsync(caseId);
+                if (dto == null)
                 {
                     return ServiceResult<MedicalCaseDto>.Failure("医疗案例不存在");
                 }
 
-                var dto = _mapper.Map<MedicalCaseDto>(medicalCase);
                 return ServiceResult<MedicalCaseDto>.Success(dto);
             }
             catch (Exception ex)
@@ -67,40 +59,17 @@ namespace LYBT.Module.MedicalCase.Services
         {
             try
             {
-                var queryable = _context.MedicalCases.AsQueryable();
+                var pageIndex = Math.Max(query.PageIndex, 1);
+                var pageSize = Math.Clamp(query.PageSize, 10, 100);
 
-                // 基础筛选 - 排除已删除/关闭的案例
-                queryable = queryable.Where(mc => mc.Status != MedicalCaseStatus.Closed);
-
-                // 应用搜索条件（如果有）
-                if (!string.IsNullOrWhiteSpace(query.Keyword))
+                var queryDto = new MedicalCaseQueryDto
                 {
-                    var keyword = query.Keyword.Trim();
-                    queryable = queryable.Where(mc =>
-                        mc.PatientName.Contains(keyword) ||
-                        mc.DoctorName.Contains(keyword) ||
-                        (mc.Remark != null && mc.Remark.Contains(keyword)));
-                }
-
-                // 获取总数
-                var totalCount = await queryable.CountAsync();
-
-                // 排序和分页
-                var medicalCases = await queryable
-                    .OrderByDescending(mc => mc.ConsultationDate)
-                    .Skip((query.PageIndex - 1) * query.PageSize)
-                    .Take(query.PageSize)
-                    .ToListAsync();
-
-                var dtos = _mapper.Map<List<MedicalCaseDto>>(medicalCases);
-
-                var pagedResult = new PagedResult<MedicalCaseDto>
-                {
-                    Items = dtos,
-                    TotalCount = totalCount,
-                    CurrentPage = query.PageIndex,  // 使用CurrentPage
-                    PageSize = query.PageSize
+                    PageIndex = pageIndex,
+                    PageSize = pageSize,
+                    Keyword = query.Keyword
                 };
+
+                var pagedResult = await _readRepository.GetPagedMedicalCaseDtosAsync(queryDto);
 
                 return ServiceResult<PagedResult<MedicalCaseDto>>.Success(pagedResult);
             }
@@ -123,12 +92,7 @@ namespace LYBT.Module.MedicalCase.Services
                     return ServiceResult<List<MedicalCaseDto>>.Failure("患者ID不能为空");
                 }
 
-                var medicalCases = await _context.MedicalCases
-                    .Where(mc => mc.PatientId == patientId && mc.Status != MedicalCaseStatus.Closed)
-                    .OrderByDescending(mc => mc.ConsultationDate)
-                    .ToListAsync();
-
-                var dtos = _mapper.Map<List<MedicalCaseDto>>(medicalCases);
+                var dtos = await _readRepository.GetMedicalCaseDtosByPatientIdAsync(patientId);
                 return ServiceResult<List<MedicalCaseDto>>.Success(dtos);
             }
             catch (Exception ex)
@@ -150,16 +114,12 @@ namespace LYBT.Module.MedicalCase.Services
                     return ServiceResult<MedicalCaseDto>.Failure("患者ID不能为空");
                 }
 
-                var activeCase = await _context.MedicalCases
-                    .Where(mc => mc.PatientId == patientId && mc.Status == MedicalCaseStatus.Active)
-                    .FirstOrDefaultAsync();
-
-                if (activeCase == null)
+                var dto = await _readRepository.GetActiveMedicalCaseDtoByPatientIdAsync(patientId);
+                if (dto == null)
                 {
                     return ServiceResult<MedicalCaseDto>.Failure("患者暂无活跃的医疗案例");
                 }
 
-                var dto = _mapper.Map<MedicalCaseDto>(activeCase);
                 return ServiceResult<MedicalCaseDto>.Success(dto);
             }
             catch (Exception ex)
@@ -182,16 +142,7 @@ namespace LYBT.Module.MedicalCase.Services
                 }
 
                 var searchTerm = keyword.Trim();
-                var medicalCases = await _context.MedicalCases
-                    .Where(mc => mc.Status != MedicalCaseStatus.Closed &&
-                               (mc.PatientName.Contains(searchTerm) ||
-                                mc.DoctorName.Contains(searchTerm) ||
-                                (mc.Remark != null && mc.Remark.Contains(searchTerm))))
-                    .OrderByDescending(mc => mc.ConsultationDate)
-                    .Take(50) // 限制搜索结果数量
-                    .ToListAsync();
-
-                var dtos = _mapper.Map<List<MedicalCaseDto>>(medicalCases);
+                var dtos = await _readRepository.SearchMedicalCaseDtosAsync(searchTerm, 50);
                 return ServiceResult<List<MedicalCaseDto>>.Success(dtos);
             }
             catch (Exception ex)
@@ -213,9 +164,7 @@ namespace LYBT.Module.MedicalCase.Services
                     return ServiceResult<bool>.Failure("患者ID不能为空");
                 }
 
-                var hasActiveCase = await _context.MedicalCases
-                    .AnyAsync(mc => mc.PatientId == patientId && mc.Status == MedicalCaseStatus.Active);
-
+                var hasActiveCase = await _readRepository.HasActiveCaseAsync(patientId);
                 return ServiceResult<bool>.Success(hasActiveCase);
             }
             catch (Exception ex)
@@ -237,14 +186,7 @@ namespace LYBT.Module.MedicalCase.Services
                     return ServiceResult<List<MedicalCaseDto>>.Failure("患者ID不能为空");
                 }
 
-                // 获取患者的已完成案例作为历史记录
-                var historyCases = await _context.MedicalCases
-                    .Where(mc => mc.PatientId == patientId &&
-                               mc.Status == MedicalCaseStatus.Closed)
-                    .OrderByDescending(mc => mc.ConsultationDate)
-                    .ToListAsync();
-
-                var dtos = _mapper.Map<List<MedicalCaseDto>>(historyCases);
+                var dtos = await _readRepository.GetHistoryMedicalCaseDtosAsync(patientId);
                 return ServiceResult<List<MedicalCaseDto>>.Success(dtos);
             }
             catch (Exception ex)
@@ -293,12 +235,7 @@ namespace LYBT.Module.MedicalCase.Services
                     return ServiceResult<List<MedicalCaseDto>>.Failure("医生ID不能为空");
                 }
 
-                var medicalCases = await _context.MedicalCases
-                    .Where(mc => mc.DoctorId == doctorId && mc.Status != MedicalCaseStatus.Closed)
-                    .OrderByDescending(mc => mc.ConsultationDate)
-                    .ToListAsync();
-
-                var dtos = _mapper.Map<List<MedicalCaseDto>>(medicalCases);
+                var dtos = await _readRepository.GetMedicalCaseDtosByDoctorIdAsync(doctorId);
                 return ServiceResult<List<MedicalCaseDto>>.Success(dtos);
             }
             catch (Exception ex)
@@ -315,12 +252,7 @@ namespace LYBT.Module.MedicalCase.Services
         {
             try
             {
-                var medicalCases = await _context.MedicalCases
-                    .Where(mc => mc.Status == status)
-                    .OrderByDescending(mc => mc.ConsultationDate)
-                    .ToListAsync();
-
-                var dtos = _mapper.Map<List<MedicalCaseDto>>(medicalCases);
+                var dtos = await _readRepository.GetMedicalCaseDtosByStatusAsync(status);
                 return ServiceResult<List<MedicalCaseDto>>.Success(dtos);
             }
             catch (Exception ex)

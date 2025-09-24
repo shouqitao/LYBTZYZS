@@ -1,33 +1,26 @@
-using AutoMapper;
-using LYBT.Entities.Herbs;
-using LYBT.Infrastructure.Data;
 using LYBT.Module.Herbs.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
-using LYBT.Shared.Models.Enums;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Module.Herbs.Services
 {
 
     /// <summary>
-    /// 药材查询服务 - UltraThink架构
+    /// 药材查询服务 - UltraThink架构重构版
     /// 职责：复杂查询、搜索、筛选、分页等只读操作
+    /// 改为使用ReadRepository，移除直接的DbContext依赖
     /// </summary>
     public class HerbQueryService : IHerbQueryService
     {
-        private readonly AppDbContext _context;
-        private readonly IMapper _mapper;
+        private readonly IHerbReadRepository _readRepository;
         private readonly ILogger<HerbQueryService> _logger;
 
         public HerbQueryService(
-            AppDbContext context,
-            IMapper mapper,
+            IHerbReadRepository readRepository,
             ILogger<HerbQueryService> logger)
         {
-            _context = context ?? throw new ArgumentNullException(nameof(context));
-            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            _readRepository = readRepository ?? throw new ArgumentNullException(nameof(readRepository));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -43,15 +36,12 @@ namespace LYBT.Module.Herbs.Services
                     return ServiceResult<HerbDto>.Failure("药材ID不能为空");
                 }
 
-                var herb = await _context.Herbs
-                    .FirstOrDefaultAsync(h => h.Id == id && h.Status == CommonStatus.Enabled);
-
-                if (herb == null)
+                var dto = await _readRepository.GetHerbDtoByIdAsync(id);
+                if (dto == null)
                 {
                     return ServiceResult<HerbDto>.Failure("药材不存在");
                 }
 
-                var dto = _mapper.Map<HerbDto>(herb);
                 return ServiceResult<HerbDto>.Success(dto);
             }
             catch (Exception ex)
@@ -68,11 +58,7 @@ namespace LYBT.Module.Herbs.Services
         {
             try
             {
-                var herbs = await BuildBaseQuery()
-                    .OrderBy(h => h.Name)
-                    .ToListAsync();
-
-                var dtos = _mapper.Map<List<HerbDto>>(herbs);
+                var dtos = await _readRepository.GetAllHerbDtosAsync();
                 return ServiceResult<List<HerbDto>>.Success(dtos);
             }
             catch (Exception ex)
@@ -91,53 +77,20 @@ namespace LYBT.Module.Herbs.Services
             {
                 query ??= new HerbSearchDto();
 
-                var queryable = BuildBaseQuery();
-
-                // 关键词搜索
-                if (!string.IsNullOrWhiteSpace(query.Keyword))
-                {
-                    var keyword = query.Keyword.Trim();
-                    queryable = queryable.Where(h =>
-                        h.Name.Contains(keyword) ||
-                        (h.PinYinCode != null && h.PinYinCode.Contains(keyword)) ||
-                        (h.Origin != null && h.Origin.Contains(keyword)) ||
-                        (h.Effect != null && h.Effect.Contains(keyword)));
-                }
-
-                // 价格范围筛选
-                if (query.MinPrice.HasValue)
-                {
-                    queryable = queryable.Where(h => h.Price >= query.MinPrice.Value);
-                }
-
-                if (query.MaxPrice.HasValue)
-                {
-                    queryable = queryable.Where(h => h.Price <= query.MaxPrice.Value);
-                }
-
-                // 状态筛选 - 默认只返回启用的药材
-                if (!query.IncludeExpired)
-                {
-                    queryable = queryable.Where(h => h.Status == CommonStatus.Enabled);
-                }
-
-                // 总数量
-                var totalCount = await queryable.CountAsync();
-
-                // 排序 - 简化处理，默认按名称排序
-                queryable = queryable.OrderBy(h => h.Name);
-
-                // 分页
                 var pageIndex = Math.Max(query.PageIndex, 1);
                 var pageSize = Math.Clamp(query.PageSize, 10, 100);
 
-                var herbs = await queryable
-                    .Skip((pageIndex - 1) * pageSize)
-                    .Take(pageSize)
-                    .ToListAsync();
+                var searchDto = new HerbSearchDto
+                {
+                    PageIndex = pageIndex,
+                    PageSize = pageSize,
+                    Keyword = query.Keyword,
+                    MinPrice = query.MinPrice,
+                    MaxPrice = query.MaxPrice,
+                    IncludeExpired = query.IncludeExpired
+                };
 
-                var dtos = _mapper.Map<List<HerbDto>>(herbs);
-                var pagedResult = new PagedResult<HerbDto>(dtos, totalCount, pageIndex, pageSize);
+                var pagedResult = await _readRepository.GetPagedHerbDtosAsync(searchDto);
 
                 return ServiceResult<PagedResult<HerbDto>>.Success(pagedResult);
             }
@@ -161,16 +114,7 @@ namespace LYBT.Module.Herbs.Services
                 }
 
                 keyword = keyword.Trim();
-
-                var herbs = await BuildBaseQuery()
-                    .Where(h => h.Name.Contains(keyword) || (h.PinYinCode != null && h.PinYinCode.Contains(keyword)))
-                    .OrderByDescending(h => h.Name.StartsWith(keyword)) // 以关键词开头的排前面
-                    .ThenByDescending(h => h.PinYinCode != null && h.PinYinCode.StartsWith(keyword.ToUpper()))
-                    .ThenBy(h => h.Name)
-                    .Take(50) // 限制搜索结果数量
-                    .ToListAsync();
-
-                var dtos = _mapper.Map<List<HerbDto>>(herbs);
+                var dtos = await _readRepository.SearchHerbDtosAsync(keyword, 50);
                 return ServiceResult<List<HerbDto>>.Success(dtos);
             }
             catch (Exception ex)
@@ -187,12 +131,7 @@ namespace LYBT.Module.Herbs.Services
         {
             try
             {
-                var herbs = await _context.Herbs
-                    .Where(h => h.Status == CommonStatus.Enabled)
-                    .OrderBy(h => h.Name)
-                    .ToListAsync();
-
-                var dtos = _mapper.Map<List<HerbDto>>(herbs);
+                var dtos = await _readRepository.GetAllHerbDtosAsync();
                 return ServiceResult<List<HerbDto>>.Success(dtos);
             }
             catch (Exception ex)
@@ -214,12 +153,7 @@ namespace LYBT.Module.Herbs.Services
                     return ServiceResult<List<HerbDto>>.Success(new List<HerbDto>());
                 }
 
-                var herbs = await _context.Herbs
-                    .Where(h => ids.Contains(h.Id) && h.Status != CommonStatus.Disabled)
-                    .OrderBy(h => h.Name)
-                    .ToListAsync();
-
-                var dtos = _mapper.Map<List<HerbDto>>(herbs);
+                var dtos = await _readRepository.GetHerbDtosByIdsAsync(ids);
                 return ServiceResult<List<HerbDto>>.Success(dtos);
             }
             catch (Exception ex)
@@ -246,13 +180,7 @@ namespace LYBT.Module.Herbs.Services
                     return ServiceResult<List<HerbDto>>.Failure("最小价格不能大于最大价格");
                 }
 
-                var herbs = await BuildBaseQuery()
-                    .Where(h => h.Price >= minPrice && h.Price <= maxPrice)
-                    .OrderBy(h => h.Price)
-                    .ThenBy(h => h.Name)
-                    .ToListAsync();
-
-                var dtos = _mapper.Map<List<HerbDto>>(herbs);
+                var dtos = await _readRepository.GetHerbDtosByPriceRangeAsync(minPrice, maxPrice);
                 return ServiceResult<List<HerbDto>>.Success(dtos);
             }
             catch (Exception ex)
@@ -274,15 +202,12 @@ namespace LYBT.Module.Herbs.Services
                     return ServiceResult<HerbDto>.Failure("药材名称不能为空");
                 }
 
-                var herb = await BuildBaseQuery()
-                    .FirstOrDefaultAsync(h => h.Name == name.Trim());
-
-                if (herb == null)
+                var dto = await _readRepository.GetHerbDtoByNameAsync(name.Trim());
+                if (dto == null)
                 {
                     return ServiceResult<HerbDto>.Failure($"未找到名称为 '{name}' 的药材");
                 }
 
-                var dto = _mapper.Map<HerbDto>(herb);
                 return ServiceResult<HerbDto>.Success(dto);
             }
             catch (Exception ex)
@@ -302,12 +227,7 @@ namespace LYBT.Module.Herbs.Services
             {
                 count = Math.Clamp(count, 1, 50);
 
-                var herbs = await BuildBaseQuery()
-                    .OrderBy(h => h.Name) // 简化实现，实际应该按使用频率排序
-                    .Take(count)
-                    .ToListAsync();
-
-                var dtos = _mapper.Map<List<HerbDto>>(herbs);
+                var dtos = await _readRepository.GetPopularHerbDtosAsync(count);
                 return ServiceResult<List<HerbDto>>.Success(dtos);
             }
             catch (Exception ex)
@@ -317,16 +237,6 @@ namespace LYBT.Module.Herbs.Services
             }
         }
 
-        #region 私有方法
 
-        /// <summary>
-        /// 构建基础查询 - 只查询启用状态的药材
-        /// </summary>
-        private IQueryable<Herb> BuildBaseQuery()
-        {
-            return _context.Herbs.Where(h => h.Status == CommonStatus.Enabled);
-        }
-
-        #endregion 私有方法
     }
 }

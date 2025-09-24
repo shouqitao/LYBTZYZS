@@ -21,6 +21,7 @@ namespace LYBT.Module.Users
         {
             // 仓储层
             services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IUserReadRepository, UserReadRepository>();
 
             // UltraThink双层架构服务 - 查询和业务逻辑分离
             services.AddScoped<IUserQueryService, UserQueryService>();

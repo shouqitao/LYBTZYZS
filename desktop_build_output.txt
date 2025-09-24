@@ -1,0 +1,24 @@
+  LYBT.Shared.Models -> D:\source\repos\LYBTZYZS\BIN\Release\net8.0\LYBT.Shared.Models.dll
+  LYBT.Shared.Utilities -> D:\source\repos\LYBTZYZS\BIN\Release\net8.0\LYBT.Shared.Utilities.dll
+  LYBT.Shared.Interfaces -> D:\source\repos\LYBTZYZS\BIN\Release\net8.0\LYBT.Shared.Interfaces.dll
+  LYBT.Desktop.Core -> D:\source\repos\LYBTZYZS\BIN\Release\net8.0-windows\LYBT.Desktop.Core.dll
+  LYBT.Desktop.Workbench.Core -> D:\source\repos\LYBTZYZS\BIN\Release\net8.0-windows\LYBT.Desktop.Workbench.Core.dll
+  LYBT.Desktop.Infrastructure -> D:\source\repos\LYBTZYZS\BIN\Release\net8.0-windows\LYBT.Desktop.Infrastructure.dll
+  LYBT.Desktop.Services -> D:\source\repos\LYBTZYZS\BIN\Release\net8.0-windows\LYBT.Desktop.Services.dll
+  LYBT.Desktop.Formula -> D:\source\repos\LYBTZYZS\BIN\Release\net8.0-windows\LYBT.Desktop.Formula.dll
+  LYBT.Desktop.Users -> D:\source\repos\LYBTZYZS\BIN\Release\net8.0-windows\LYBT.Desktop.Users.dll
+  LYBT.Desktop.Auth -> D:\source\repos\LYBTZYZS\BIN\Release\net8.0-windows\LYBT.Desktop.Auth.dll
+  LYBT.Desktop.Patients -> D:\source\repos\LYBTZYZS\BIN\Release\net8.0-windows\LYBT.Desktop.Patients.dll
+  LYBT.Desktop.MedicalCase -> D:\source\repos\LYBTZYZS\BIN\Release\net8.0-windows\LYBT.Desktop.MedicalCase.dll
+  LYBT.Desktop.Herbs -> D:\source\repos\LYBTZYZS\BIN\Release\net8.0-windows\LYBT.Desktop.Herbs.dll
+  LYBT.Desktop.Workbench.Admin -> D:\source\repos\LYBTZYZS\BIN\Release\net8.0-windows\LYBT.Desktop.Workbench.Admin.dll
+  LYBT.Desktop.Prescriptions -> D:\source\repos\LYBTZYZS\BIN\Release\net8.0-windows\LYBT.Desktop.Prescriptions.dll
+  LYBT.Desktop.Workbench.Medical -> D:\source\repos\LYBTZYZS\BIN\Release\net8.0-windows\LYBT.Desktop.Workbench.Medical.dll
+  LYBT.Desktop.Consultation -> D:\source\repos\LYBTZYZS\BIN\Release\net8.0-windows\LYBT.Desktop.Consultation.dll
+  LYBT.Desktop.Shell -> D:\source\repos\LYBTZYZS\BIN\Release\net8.0-windows\LYBT.Desktop.Shell.dll
+
+已成功生成。
+    0 个警告
+    0 个错误
+
+已用时间 00:00:01.82

@@ -13,6 +13,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using System;
+using System.Collections.Generic;
 
 namespace LYBT.Module.Users.Tests.Fixtures
 {
@@ -25,7 +26,6 @@ namespace LYBT.Module.Users.Tests.Fixtures
     {
         private readonly SqliteConnection _connection;
         public ServiceProvider ServiceProvider { get; }
-        public AppDbContext DbContext { get; }
         public IMemoryCache MemoryCache { get; }
         public IMapper Mapper { get; }
         public UserOptions UserOptions { get; }
@@ -48,10 +48,15 @@ namespace LYBT.Module.Users.Tests.Fixtures
                 builder.SetMinimumLevel(LogLevel.Warning);
             });
 
-            // 使用工厂方法创建 SQLite 兼容的 DbContext
-            var dbContext = SqliteDbContextFactory.CreateContext(_connection);
-            services.AddSingleton(dbContext);
-            services.AddSingleton<AppDbContext>(dbContext);
+            // 将 DbContext 注册为 Scoped 以支持测试隔离
+            // 使用工厂方法创建SqliteAppDbContext来处理RowVersion
+            services.AddScoped<AppDbContext>(provider =>
+            {
+                var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
+                optionsBuilder.UseSqlite(_connection);
+                optionsBuilder.EnableSensitiveDataLogging();
+                return new SqliteAppDbContext(optionsBuilder.Options);
+            });
 
             // 配置真实的MemoryCache
             services.AddMemoryCache(options =>
@@ -102,15 +107,18 @@ namespace LYBT.Module.Users.Tests.Fixtures
             // 构建ServiceProvider
             ServiceProvider = services.BuildServiceProvider();
 
-            // 获取常用服务实例
-            DbContext = ServiceProvider.GetRequiredService<AppDbContext>();
+            // 获取常用服务实例（非Scoped服务）
             MemoryCache = ServiceProvider.GetRequiredService<IMemoryCache>();
             Mapper = ServiceProvider.GetRequiredService<IMapper>();
             UserOptions = ServiceProvider.GetRequiredService<IOptions<UserOptions>>().Value;
             DefaultPasswordService = ServiceProvider.GetRequiredService<DefaultPasswordService>();
 
-            // 确保数据库架构已创建
-            DbContext.Database.EnsureCreated();
+            // 使用Scope确保数据库架构已创建
+            using (var scope = ServiceProvider.CreateScope())
+            {
+                var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                dbContext.Database.EnsureCreated();
+            }
         }
 
         /// <summary>
@@ -118,24 +126,30 @@ namespace LYBT.Module.Users.Tests.Fixtures
         /// </summary>
         public void ClearData()
         {
-            // SQLite支持事务，可以更高效地清理数据
-            using var transaction = DbContext.Database.BeginTransaction();
-            try
+            // 使用独立的Scope进行数据清理，避免影响测试中的DbContext
+            using (var scope = ServiceProvider.CreateScope())
             {
-                // 清除所有用户数据
-                DbContext.Database.ExecuteSqlRaw("DELETE FROM Users");
+                var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-                // 重置自增ID（如果有）
-                DbContext.Database.ExecuteSqlRaw("DELETE FROM sqlite_sequence WHERE name='Users'");
+                // SQLite支持事务，可以更高效地清理数据
+                using var transaction = dbContext.Database.BeginTransaction();
+                try
+                {
+                    // 清除所有用户数据
+                    dbContext.Database.ExecuteSqlRaw("DELETE FROM Users");
 
-                transaction.Commit();
-            }
-            catch
-            {
-                transaction.Rollback();
-                // 回退到简单清理
-                DbContext.Users.RemoveRange(DbContext.Users);
-                DbContext.SaveChanges();
+                    // 重置自增ID（如果有）
+                    dbContext.Database.ExecuteSqlRaw("DELETE FROM sqlite_sequence WHERE name='Users'");
+
+                    transaction.Commit();
+                }
+                catch
+                {
+                    transaction.Rollback();
+                    // 回退到简单清理
+                    dbContext.Users.RemoveRange(dbContext.Users);
+                    dbContext.SaveChanges();
+                }
             }
 
             // 清除缓存
@@ -156,23 +170,41 @@ namespace LYBT.Module.Users.Tests.Fixtures
         /// <summary>
         /// 开始新的数据库事务
         /// </summary>
-        public IDbContextTransaction BeginTransaction()
+        /// <param name="dbContext">使用的DbContext实例</param>
+        public IDbContextTransaction BeginTransaction(AppDbContext dbContext)
         {
-            return DbContext.Database.BeginTransaction();
+            return dbContext.Database.BeginTransaction();
         }
 
         /// <summary>
         /// 执行原始SQL（用于测试特定场景）
         /// </summary>
-        public int ExecuteSql(string sql, params object[] parameters)
+        /// <param name="dbContext">使用的DbContext实例</param>
+        public int ExecuteSql(AppDbContext dbContext, string sql, params object[] parameters)
         {
-            return DbContext.Database.ExecuteSqlRaw(sql, parameters);
+            // SQLite需要使用SqliteParameter
+            var sqliteParams = new List<Microsoft.Data.Sqlite.SqliteParameter>();
+
+            // 替换SQL中的?占位符为@p0, @p1等，并创建参数
+            var modifiedSql = sql;
+            for (int i = 0; i < parameters.Length; i++)
+            {
+                var paramName = $"@p{i}";
+                // 替换第一个?为参数名
+                var index = modifiedSql.IndexOf('?');
+                if (index >= 0)
+                {
+                    modifiedSql = modifiedSql.Remove(index, 1).Insert(index, paramName);
+                }
+                sqliteParams.Add(new Microsoft.Data.Sqlite.SqliteParameter(paramName, parameters[i]));
+            }
+
+            return dbContext.Database.ExecuteSqlRaw(modifiedSql, sqliteParams.ToArray());
         }
 
         public void Dispose()
         {
             // 清理顺序很重要
-            DbContext?.Dispose();
             ServiceProvider?.Dispose();
             _connection?.Close();
             _connection?.Dispose();

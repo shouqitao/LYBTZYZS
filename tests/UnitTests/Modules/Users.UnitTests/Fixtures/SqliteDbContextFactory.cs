@@ -28,7 +28,7 @@ namespace LYBT.Module.Users.Tests.Fixtures
     /// <summary>
     /// SQLite 专用的 AppDbContext
     /// </summary>
-    internal class SqliteAppDbContext : AppDbContext
+    public class SqliteAppDbContext : AppDbContext
     {
         public SqliteAppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {

@@ -1,32 +1,26 @@
-using AutoMapper;
-using LYBT.Infrastructure.Data;
 using LYBT.Module.Prescriptions.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
-using LYBT.Shared.Models.Enums;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Module.Prescriptions.Services
 {
 
     /// <summary>
-    /// 处方查询服务 - UltraThink架构
+    /// 处方查询服务 - UltraThink架构重构版
     /// 职责：分页查询，搜索筛选，处方查询，历史记录获取
+    /// 改为使用ReadRepository，移除直接的DbContext依赖
     /// </summary>
     public class PrescriptionQueryService : IPrescriptionQueryService
     {
-        private readonly AppDbContext _context;
-        private readonly IMapper _mapper;
+        private readonly IPrescriptionReadRepository _readRepository;
         private readonly ILogger<PrescriptionQueryService> _logger;
 
         public PrescriptionQueryService(
-            AppDbContext context,
-            IMapper mapper,
+            IPrescriptionReadRepository readRepository,
             ILogger<PrescriptionQueryService> logger)
         {
-            _context = context ?? throw new ArgumentNullException(nameof(context));
-            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            _readRepository = readRepository ?? throw new ArgumentNullException(nameof(readRepository));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -42,17 +36,13 @@ namespace LYBT.Module.Prescriptions.Services
                     return ServiceResult<PrescriptionDto>.Failure("处方ID不能为空");
                 }
 
-                var prescription = await _context.Prescriptions
-                    .Include(p => p.Items)
-                    .FirstOrDefaultAsync(p => p.Id == id);
-
+                var prescription = await _readRepository.GetPrescriptionDtoByIdAsync(id);
                 if (prescription == null)
                 {
                     return ServiceResult<PrescriptionDto>.Failure("处方不存在");
                 }
 
-                var dto = _mapper.Map<PrescriptionDto>(prescription);
-                return ServiceResult<PrescriptionDto>.Success(dto);
+                return ServiceResult<PrescriptionDto>.Success(prescription);
             }
             catch (Exception ex)
             {
@@ -68,73 +58,7 @@ namespace LYBT.Module.Prescriptions.Services
         {
             try
             {
-                var queryable = _context.Prescriptions.AsQueryable();
-
-                // 基础筛选 - 排除已删除的处方（通过备注标记判断）
-                queryable = queryable.Where(p => p.Remark == null || !p.Remark.Contains("处方已删除"));
-
-                // 应用搜索条件（如果有）
-                if (!string.IsNullOrWhiteSpace(query.Keyword))
-                {
-                    var keyword = query.Keyword.Trim();
-                    queryable = queryable.Where(p =>
-                        (p.Indication != null && p.Indication.Contains(keyword)) ||
-                        (p.Remark != null && p.Remark.Contains(keyword)) ||
-                        (p.Advice != null && p.Advice.Contains(keyword)));
-                }
-
-                // 患者筛选
-                if (query.PatientId.HasValue)
-                {
-                    queryable = queryable.Where(p => p.PatientId == query.PatientId.Value);
-                }
-
-                // 医生筛选
-                if (query.DoctorId.HasValue)
-                {
-                    queryable = queryable.Where(p => p.UserId == query.DoctorId.Value);
-                }
-
-                // 状态筛选 - 需要将查询DTO的状态转换为实体状态
-                if (query.Status.HasValue)
-                {
-                    // 假设查询DTO使用CommonStatus，需要转换为PrescriptionStatus
-                    var prescriptionStatus = query.Status.Value == 0 ? PrescriptionStatus.Draft : PrescriptionStatus.Completed;
-                    queryable = queryable.Where(p => p.Status == prescriptionStatus);
-                }
-
-                // 日期范围筛选
-                if (query.StartDate.HasValue)
-                {
-                    queryable = queryable.Where(p => p.CreatedAt >= query.StartDate.Value);
-                }
-
-                if (query.EndDate.HasValue)
-                {
-                    queryable = queryable.Where(p => p.CreatedAt <= query.EndDate.Value);
-                }
-
-                // 获取总数
-                var totalCount = await queryable.CountAsync();
-
-                // 排序和分页
-                var prescriptions = await queryable
-                    .OrderByDescending(p => p.CreatedAt) // 使用CreatedAt排序
-                    .Skip((query.PageIndex - 1) * query.PageSize)
-                    .Take(query.PageSize)
-                    .Include(p => p.Items)
-                    .ToListAsync();
-
-                var dtos = _mapper.Map<List<PrescriptionDto>>(prescriptions);
-
-                var pagedResult = new PagedResult<PrescriptionDto>
-                {
-                    Items = dtos,
-                    TotalCount = totalCount,
-                    CurrentPage = query.PageIndex,
-                    PageSize = query.PageSize
-                };
-
+                var pagedResult = await _readRepository.GetPagedPrescriptionDtosAsync(query);
                 return ServiceResult<PagedResult<PrescriptionDto>>.Success(pagedResult);
             }
             catch (Exception ex)
@@ -156,15 +80,8 @@ namespace LYBT.Module.Prescriptions.Services
                     return ServiceResult<List<PrescriptionDto>>.Failure("患者ID不能为空");
                 }
 
-                var prescriptions = await _context.Prescriptions
-                    .Where(p => p.PatientId == patientId &&
-                               (p.Remark == null || !p.Remark.Contains("处方已删除")))
-                    .OrderByDescending(p => p.CreatedAt)
-                    .Include(p => p.Items)
-                    .ToListAsync();
-
-                var dtos = _mapper.Map<List<PrescriptionDto>>(prescriptions);
-                return ServiceResult<List<PrescriptionDto>>.Success(dtos);
+                var prescriptions = await _readRepository.GetPrescriptionDtosByPatientIdAsync(patientId);
+                return ServiceResult<List<PrescriptionDto>>.Success(prescriptions);
             }
             catch (Exception ex)
             {
@@ -185,15 +102,8 @@ namespace LYBT.Module.Prescriptions.Services
                     return ServiceResult<List<PrescriptionDto>>.Failure("医疗案例ID不能为空");
                 }
 
-                var prescriptions = await _context.Prescriptions
-                    .Where(p => p.MedicalCaseId == medicalCaseId &&
-                               (p.Remark == null || !p.Remark.Contains("处方已删除")))
-                    .OrderByDescending(p => p.CreatedAt)
-                    .Include(p => p.Items)
-                    .ToListAsync();
-
-                var dtos = _mapper.Map<List<PrescriptionDto>>(prescriptions);
-                return ServiceResult<List<PrescriptionDto>>.Success(dtos);
+                var prescriptions = await _readRepository.GetPrescriptionDtosByMedicalCaseIdAsync(medicalCaseId);
+                return ServiceResult<List<PrescriptionDto>>.Success(prescriptions);
             }
             catch (Exception ex)
             {
@@ -214,19 +124,8 @@ namespace LYBT.Module.Prescriptions.Services
                     return ServiceResult<List<PrescriptionDto>>.Success(new List<PrescriptionDto>());
                 }
 
-                var searchTerm = keyword.Trim();
-                var prescriptions = await _context.Prescriptions
-                    .Where(p => (p.Remark == null || !p.Remark.Contains("处方已删除")) &&
-                               ((p.Indication != null && p.Indication.Contains(searchTerm)) ||
-                                (p.Advice != null && p.Advice.Contains(searchTerm)) ||
-                                (p.Remark != null && p.Remark.Contains(searchTerm))))
-                    .OrderByDescending(p => p.CreatedAt)
-                    .Take(50) // 限制搜索结果数量
-                    .Include(p => p.Items)
-                    .ToListAsync();
-
-                var dtos = _mapper.Map<List<PrescriptionDto>>(prescriptions);
-                return ServiceResult<List<PrescriptionDto>>.Success(dtos);
+                var prescriptions = await _readRepository.SearchPrescriptionDtosAsync(keyword.Trim());
+                return ServiceResult<List<PrescriptionDto>>.Success(prescriptions);
             }
             catch (Exception ex)
             {
@@ -242,14 +141,8 @@ namespace LYBT.Module.Prescriptions.Services
         {
             try
             {
-                var prescriptions = await _context.Prescriptions
-                    .Where(p => p.Remark == null || !p.Remark.Contains("处方已删除"))
-                    .OrderByDescending(p => p.CreatedAt)
-                    .Include(p => p.Items)
-                    .ToListAsync();
-
-                var dtos = _mapper.Map<List<PrescriptionDto>>(prescriptions);
-                return ServiceResult<List<PrescriptionDto>>.Success(dtos);
+                var prescriptions = await _readRepository.GetAllPrescriptionDtosAsync();
+                return ServiceResult<List<PrescriptionDto>>.Success(prescriptions);
             }
             catch (Exception ex)
             {
@@ -270,16 +163,8 @@ namespace LYBT.Module.Prescriptions.Services
                     return ServiceResult<List<PrescriptionDto>>.Failure("医生ID不能为空");
                 }
 
-                // 注意：实体中没有CreatedTime字段，这里只按医生ID筛选
-                var prescriptions = await _context.Prescriptions
-                    .Where(p => p.UserId == doctorId &&
-                               (p.Remark == null || !p.Remark.Contains("处方已删除")))
-                    .OrderByDescending(p => p.CreatedAt)
-                    .Include(p => p.Items)
-                    .ToListAsync();
-
-                var dtos = _mapper.Map<List<PrescriptionDto>>(prescriptions);
-                return ServiceResult<List<PrescriptionDto>>.Success(dtos);
+                var prescriptions = await _readRepository.GetDoctorTodayPrescriptionDtosAsync(doctorId);
+                return ServiceResult<List<PrescriptionDto>>.Success(prescriptions);
             }
             catch (Exception ex)
             {
@@ -295,18 +180,7 @@ namespace LYBT.Module.Prescriptions.Services
         {
             try
             {
-                var stats = new PrescriptionStatsDto
-                {
-                    TotalCount = await _context.Prescriptions
-                        .CountAsync(p => p.Remark == null || !p.Remark.Contains("处方已删除")),
-                    DraftCount = await _context.Prescriptions
-                        .CountAsync(p => p.Status == PrescriptionStatus.Draft &&
-                                   (p.Remark == null || !p.Remark.Contains("处方已删除"))),
-                    CompletedCount = await _context.Prescriptions
-                        .CountAsync(p => p.Status == PrescriptionStatus.Completed &&
-                                   (p.Remark == null || !p.Remark.Contains("处方已删除")))
-                };
-
+                var stats = await _readRepository.GetPrescriptionStatsAsync();
                 return ServiceResult<PrescriptionStatsDto>.Success(stats);
             }
             catch (Exception ex)

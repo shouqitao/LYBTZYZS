@@ -23,6 +23,7 @@ namespace LYBT.Module.Consultation
         {
             // 仓储层
             services.AddScoped<IConsultationRepository, ConsultationRepository>();
+            services.AddScoped<IConsultationReadRepository, ConsultationReadRepository>();
 
             // UltraThink双层架构服务 - 查询和业务逻辑分离
             services.AddScoped<IConsultationQueryService, ConsultationQueryService>();

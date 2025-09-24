@@ -24,6 +24,7 @@ namespace LYBT.Module.Formula
         {
             // 仓储层
             services.AddScoped<IFormulaRepository, FormulaRepository>();
+            services.AddScoped<IFormulaReadRepository, FormulaReadRepository>();
 
             // UltraThink双层架构服务 - 查询和业务逻辑分离
             services.AddScoped<IFormulaQueryService, FormulaQueryService>();

@@ -7,7 +7,7 @@ namespace LYBT.Module.Consultation.Interfaces
     /// 诊疗仓储接口 - 数据层统一化重构
     /// 继承BaseRepository提供通用CRUD，扩展诊疗特定业务方法
     /// </summary>
-    public interface IConsultationRepository : IBaseRepository<LYBT.Entities.Consultation.Consultation>
+    public interface IConsultationRepository : IRepository<LYBT.Entities.Consultation.Consultation>
     {
         // 注意：基础CRUD方法由IBaseRepository提供
         // 这里只定义诊疗特有的业务方法

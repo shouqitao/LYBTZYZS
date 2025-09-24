@@ -23,6 +23,7 @@ namespace LYBT.Module.MedicalCase
         {
             // 仓储层
             services.AddScoped<IMedicalCaseRepository, MedicalCaseRepository>();
+            services.AddScoped<IMedicalCaseReadRepository, MedicalCaseReadRepository>();
 
             // UltraThink双层架构服务 - 查询和业务逻辑分离
             services.AddScoped<IMedicalCaseQueryService, MedicalCaseQueryService>();
