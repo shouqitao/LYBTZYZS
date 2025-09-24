@@ -1,4 +1,4 @@
-﻿# CLAUDE.md
+# CLAUDE.md
 
 本文件用于指导 Claude Code（claude.ai/code）在本仓库内开展开发工作，请务必遵循以下约定。
 
@@ -121,7 +121,8 @@ dotnet test LYBT.Server.sln -c Release
 | 工具 | 调用方式（在 Claude Code 中） | 典型场景 | 关键参数说明 |
 | --- | --- | --- | --- |
 | Serena Server | mcp.run({ server: "serena", method: "execute", params: {...} }) | 复杂分析、架构建议、代码审计 | prompt：输入需求或文件片段，	emperature：生成多样性（默认0.2） |
-| Filesystem Server | mcp.run({ server: "filesystem", method: "readFile", params: { path } }) 等 | 批量读取/写入文件、遍历目录、搜索文本 | 方法：eadFile、writeFile、listDirectory、searchText；path 为绝对或相对路径 |
+| Filesystem Server | mcp.run({ server: "filesystem", method: "readFile", params: { path } }) 等 | 批量读取/写入文件、遍历目录、搜索文本 | 方法：
+eadFile、writeFile、listDirectory、searchText；path 为绝对或相对路径 |
 | Context7 API | mcp.run({ server: "context7", method: "analyze", params: {...} }) | 法规咨询、专业知识背景、语言风格转换 | 常用方法：nalyze, summarize；需传入 	ext 和 context |
 | Memory Server | mcp.run({ server: "memory", method: "save", params: {...} }) | 在当前会话中保存/检索临时笔记、TODO | save：追加内容；load：获取全部记录；clear：清空 |
 | Git Server | mcp.run({ server: "git", method: "status" }) | 查看 Git 状态、变更、提交历史 | 方法：status, diff, log, stash, checkout 等 |
@@ -138,8 +139,88 @@ await mcp.run({
 `
 
 常用技巧：
-1. **批量操作**：使用 Filesystem Server 的 listDirectory + eadFile 快速收集多个文件内容。
+1. **批量操作**：使用 Filesystem Server 的 listDirectory + 
+eadFile 快速收集多个文件内容。
 2. **知识补充**：在分析法规、医疗术语时，借助 Context7 获取权威描述，再回到代码落地。
 3. **变量保存**：Memory Server 记录当前任务进度或后续待办，避免上下文丢失。
 4. **SQL 验证**：通过 SQL Server MCP 快速验证 EF 查询结果，与测试数据对齐。
-5. **Playwright 调试**：在需要录制桌面端交互脚本时，调用 Playwright MCP 执行自动化脚本。
+5. **Playwright 调试**：在需要录制桌面端交互脚本时，调用 Playwright MCP 执行自动化脚本。test
+### 常用调用示例
+
+```ts
+// Serena：获取重构建议
+await mcp.run({
+  server: "serena",
+  method: "execute",
+  params: { prompt: "审查 PatientBusinessService 的分层问题" }
+});
+
+// Filesystem：批量读取目录
+const files = await mcp.run({
+  server: "filesystem",
+  method: "listDirectory",
+  params: { path: "src/Server/Modules" }
+});
+
+// Context7：医学术语解释
+await mcp.run({
+  server: "context7",
+  method: "analyze",
+  params: { text: "诊疗工作台" }
+});
+
+// Memory：记录 TODO
+await mcp.run({
+  server: "memory",
+  method: "save",
+  params: { content: "待统一所有 BusinessService 依赖" }
+});
+
+// Git：查看最新差异
+await mcp.run({
+  server: "git",
+  method: "diff"
+});
+
+// Playwright：运行自动化脚本
+await mcp.run({
+  server: "playwright",
+  method: "execute",
+  params: { script: "const { chromium } = require('playwright'); /* ... */" }
+});
+
+// SQL Server：检查测试数据库
+await mcp.run({
+  server: "sql-server",
+  method: "executeQuery",
+  params: { query: "SELECT TOP 10 * FROM Patients" }
+});
+```
+### 工具深入用法提示
+- **Serena**（https://github.com/oraios/serena）
+  - 方法：xecute（通用推理）、plan（生成多步骤方案）、proofread（检查代码或文档）
+  - 参数：prompt 输入要分析的问题；可设置 	emperature、maxTokens 控制输出；支持 ttachments 传入文件片段。
+  - 建议：用于复杂架构审查、生成重构计划、对 PR 做技术点评。
+- **Filesystem**（https://github.com/modelcontextprotocol/servers/tree/main/src/filesystem）
+  - 方法：eadFile、writeFile、listDirectory、stat、searchText、createDirectory、delete
+  - 支持一次读取多文件，配合 searchText 可在代码库中定位 TODO/术语。
+  - 写入操作需仔细核对路径，默认相对仓库根目录。
+- **Context7**（https://github.com/upstash/context7）
+  - 针对专业知识/法规问题，通过 nalyze 获取解释；summarize 总结长文本；xpand 用于生成背景说明。
+  - 可传 language 参数控制输出语言；适合处理医疗术语或政策要求。
+- **Memory**（https://github.com/modelcontextprotocol/servers/tree/main/src/memory）
+  - 提供 save、load、delete、clear 方法，用于记录当前会话中的临时结论、下一步计划。
+  - 建议整理任务列表或会议纪要，随时用 load 取出复盘。
+- **Git**（内置 git-mcp-server）
+  - 常用方法：status、diff、log、pplyPatch、commit、checkout。
+  - 可在不离开 Claude 的情况下查看差异、生成 patch；提交前仍需在本地终端验证。
+- **Playwright**（https://github.com/microsoft/playwright-mcp）
+  - 方法：xecute；params.script 为 JS/TS 测试脚本；可设置 rowser、headless。
+  - 用于录制/回放桌面或 Web 交互，支持截图、PDF、视频输出。
+- **SQL Server**（基于 @executeautomation/database-server）
+  - 方法：xecuteQuery（返回结果集）、xecuteNonQuery（执行 DML）、xecuteScalar。
+  - 默认连接 localhost/LYBTDB，凭据 sa / LybtAdmin2025@SecurePass!；执行增删改前需确认是否使用测试数据库。
+
+> 所有工具均可通过 wait mcp.run({ server, method, params }) 调用，可组合使用，例如：
+> 1) Filesystem searchText 找到术语；2) Serena xecute 生成重构方案；3) Git pplyPatch 应用修改；4) SQL Server 验证结果。
+
