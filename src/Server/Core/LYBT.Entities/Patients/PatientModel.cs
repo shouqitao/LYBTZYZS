@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using LYBT.Entities.Attributes;
+using LYBT.Entities.Common;
 using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Entities.Patients
@@ -11,15 +12,13 @@ namespace LYBT.Entities.Patients
     /// 患者实体 - UltraThink v2.0架构简化版
     /// 合并了原BasePatient和PatientModel，包含完整患者档案信息
     /// 删除五笔码字段，保留拼音码用于快速搜索
+    /// 继承BaseEntity实现审计字段自动化
     /// </summary>
     [Table("Patients")]
-    public class Patient
+    public class Patient : BaseEntity
     {
 
-        /// <summary>患者唯一标识</summary>
-        [Key]
-        [DisplayName("患者ID")]
-        public Guid Id { get; set; }
+        // Id字段继承自BaseEntity
 
         /// <summary>患者姓名</summary>
         [Required]
@@ -113,26 +112,7 @@ namespace LYBT.Entities.Patients
         [DisplayName("就诊次数")]
         public int VisitCount { get; set; } = 0;
 
-        /// <summary>创建时间（数据库中存在的字段）</summary>
-        [DisplayName("创建时间")]
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
-
-        /// <summary>更新时间（数据库中存在的字段）</summary>
-        [DisplayName("更新时间")]
-        public DateTime? UpdateTime { get; set; }
-
-        /// <summary>创建者ID（数据库中存在的字段）</summary>
-        [DisplayName("创建者")]
-        public Guid? CreatedBy { get; set; }
-
-        /// <summary>更新者ID（数据库中存在的字段）</summary>
-        [DisplayName("更新者")]
-        public Guid? UpdatedBy { get; set; }
-
-        /// <summary>并发控制字段 - 乐观并发控制</summary>
-        [Timestamp]
-        [DisplayName("版本")]
-        public byte[] RowVersion { get; set; } = new byte[8];
+        // 审计字段（CreatedAt、UpdatedAt、CreatedBy、UpdatedBy）和并发控制字段（RowVersion、IsDeleted）继承自BaseEntity
 
         /// <summary>年龄（计算属性）</summary>
         [NotMapped]

@@ -8,18 +8,28 @@ using LYBT.Entities.Patients;
 using LYBT.Entities.Prescriptions;
 using LYBT.Entities.Users;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Http;
+using System.Security.Claims;
 
 namespace LYBT.Infrastructure.Data
 {
 
     /// <summary>
     /// 统一应用数据库上下文 - 整个项目使用单一数据库LYBTDB
+    /// 集成审计字段自动化功能
     /// </summary>
     public class AppDbContext : DbContext
     {
+        private readonly IHttpContextAccessor? _httpContextAccessor;
 
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
+        }
+
+        public AppDbContext(DbContextOptions<AppDbContext> options, IHttpContextAccessor httpContextAccessor)
+            : base(options)
+        {
+            _httpContextAccessor = httpContextAccessor;
         }
 
         // 用户管理
@@ -473,5 +483,76 @@ namespace LYBT.Infrastructure.Data
         }
 
         // ConfigureTokenStore方法已移除 - UltraThink简化架构，移除过度设计的令牌存储实体
+
+        #region 审计字段自动化
+
+        /// <summary>
+        /// 重写SaveChangesAsync以实现审计字段自动填充
+        /// </summary>
+        public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            SetAuditFields();
+            return await base.SaveChangesAsync(cancellationToken);
+        }
+
+        /// <summary>
+        /// 重写SaveChanges以实现审计字段自动填充
+        /// </summary>
+        public override int SaveChanges()
+        {
+            SetAuditFields();
+            return base.SaveChanges();
+        }
+
+        /// <summary>
+        /// 设置审计字段
+        /// </summary>
+        private void SetAuditFields()
+        {
+            var entries = ChangeTracker.Entries()
+                .Where(e => e.Entity is BaseEntity &&
+                           (e.State == EntityState.Added || e.State == EntityState.Modified));
+
+            var userId = GetCurrentUserId();
+            var timestamp = DateTime.Now;
+
+            foreach (var entry in entries)
+            {
+                var entity = (BaseEntity)entry.Entity;
+
+                if (entry.State == EntityState.Added)
+                {
+                    entity.CreatedAt = timestamp;
+                    entity.CreatedBy = userId;
+                }
+
+                if (entry.State == EntityState.Modified)
+                {
+                    entity.UpdatedAt = timestamp;
+                    entity.UpdatedBy = userId;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 获取当前用户ID
+        /// </summary>
+        private Guid? GetCurrentUserId()
+        {
+            try
+            {
+                var userIdClaim = _httpContextAccessor?.HttpContext?.User?
+                    .FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+                return Guid.TryParse(userIdClaim, out var userId) ? userId : null;
+            }
+            catch
+            {
+                // 在某些情况下（如单元测试、后台服务等），可能无法获取HttpContext
+                return null;
+            }
+        }
+
+        #endregion
     }
 }

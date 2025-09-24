@@ -26,8 +26,8 @@ namespace LYBT.Module.Users.Mapping
                 .ForMember(dest => dest.PasswordHash, opt => opt.Ignore()) // 密码由业务逻辑处理
                 .ForMember(dest => dest.FailedLoginCount, opt => opt.Ignore())
                 .ForMember(dest => dest.LockoutEnd, opt => opt.Ignore())
-                .ForMember(dest => dest.CreatedTime, opt => opt.Ignore())
-                .ForMember(dest => dest.UpdateTime, opt => opt.Ignore())
+                .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+                .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
                 .ForMember(dest => dest.PinYinCode, opt => opt.Ignore()); // 由业务逻辑自动生成
 
             // UserUpdateDto转用户实体
@@ -37,8 +37,8 @@ namespace LYBT.Module.Users.Mapping
                 .ForMember(dest => dest.PasswordHash, opt => opt.Ignore()) // 密码由业务逻辑处理
                 .ForMember(dest => dest.FailedLoginCount, opt => opt.Ignore())
                 .ForMember(dest => dest.LockoutEnd, opt => opt.Ignore())
-                .ForMember(dest => dest.CreatedTime, opt => opt.Ignore())
-                .ForMember(dest => dest.UpdateTime, opt => opt.Ignore())
+                .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+                .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
                 .ForMember(dest => dest.PinYinCode, opt => opt.Ignore()); // 由业务逻辑自动生成
         }
     }

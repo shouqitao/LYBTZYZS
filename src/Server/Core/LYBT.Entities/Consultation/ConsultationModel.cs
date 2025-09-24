@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using LYBT.Entities.Common;
 using LYBT.Entities.Patients;
 using LYBT.Entities.Users;
 using LYBT.Shared.Models.Enums;
@@ -12,15 +13,13 @@ namespace LYBT.Entities.Consultation
     /// 诊疗实体 - UltraThink v2.0架构简化版
     /// 合并了原BaseConsultation和ConsultationModel
     /// 专注于中医诊疗，包含中医四诊和辨证论治
+    /// 继承BaseEntity实现审计字段自动化
     /// </summary>
     [Table("Consultations")]
-    public class Consultation
+    public class Consultation : BaseEntity
     {
 
-        /// <summary>诊疗ID</summary>
-        [Key]
-        [DisplayName("诊疗ID")]
-        public Guid Id { get; set; }
+        // Id字段继承自BaseEntity
 
         /// <summary>医疗案例ID</summary>
         [Required]
@@ -38,9 +37,7 @@ namespace LYBT.Entities.Consultation
         public Guid UserId { get; set; }
 
         /// <summary>创建人ID（医生用户ID）</summary>
-        [Required]
-        [DisplayName("创建人")]
-        public Guid CreatedBy { get; set; }
+        // 审计字段（CreatedBy等）继承自BaseEntity
 
         /// <summary>主诉</summary>
         [StringLength(500)]
@@ -101,10 +98,7 @@ namespace LYBT.Entities.Consultation
         [DisplayName("备注")]
         public string? Remark { get; set; }
 
-        /// <summary>并发控制字段 - 乐观并发控制</summary>
-        [Timestamp]
-        [DisplayName("版本")]
-        public byte[] RowVersion { get; set; } = new byte[8];
+        // RowVersion、IsDeleted等字段继承自BaseEntity
 
         // 导航属性
 

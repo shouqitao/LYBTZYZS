@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using LYBT.Entities.Common;
 using LYBT.Entities.Prescriptions;
 using LYBT.Shared.Models.Enums;
 
@@ -11,15 +12,13 @@ namespace LYBT.Entities.MedicalCase
     /// 医疗案例实体 - 根据20250920文档要求重构
     /// 作为聚合根，管理完整诊疗流程
     /// 一病案一诊断，一病案至多一处方
+    /// 继承BaseEntity实现审计字段自动化
     /// </summary>
     [Table("MedicalCases")]
-    public class MedicalCase
+    public class MedicalCase : BaseEntity
     {
 
-        /// <summary>医疗案例ID</summary>
-        [Key]
-        [DisplayName("医疗案例ID")]
-        public Guid Id { get; set; }
+        // Id字段继承自BaseEntity
 
         /// <summary>患者ID</summary>
         [Required]
@@ -43,15 +42,7 @@ namespace LYBT.Entities.MedicalCase
         [DisplayName("医生姓名")]
         public string DoctorName { get; set; } = string.Empty;
 
-        /// <summary>创建时间（用于同日编辑判定）</summary>
-        [Required]
-        [DisplayName("创建时间")]
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
-
-        /// <summary>创建人ID（医生用户ID）</summary>
-        [Required]
-        [DisplayName("创建人")]
-        public Guid CreatedBy { get; set; }
+        // 审计字段（CreatedAt、CreatedBy等）继承自BaseEntity
 
         /// <summary>诊疗时间（兼容旧字段）</summary>
         [DisplayName("诊疗时间")]
@@ -66,10 +57,7 @@ namespace LYBT.Entities.MedicalCase
         [DisplayName("备注")]
         public string? Remark { get; set; }
 
-        /// <summary>并发控制字段 - 乐观并发控制</summary>
-        [Timestamp]
-        [DisplayName("版本")]
-        public byte[] RowVersion { get; set; } = new byte[8];
+        // RowVersion、IsDeleted等字段继承自BaseEntity
 
         // 导航属性 - 根据文档要求：1:1关系
 

@@ -63,7 +63,7 @@ namespace LYBT.Module.Patients.Services
                 patient.Id = Guid.NewGuid();
                 patient.Status = CommonStatus.Enabled;
                 patient.PinYinCode = string.Empty; // 移除CommonHelper依赖，拼音码功能暂不实现
-                patient.CreatedAt = DateTime.Now;
+
 
                 var createdPatient = await _patientRepository.AddAsync(patient);
 
@@ -116,7 +116,7 @@ namespace LYBT.Module.Patients.Services
                 // 更新字段
                 _mapper.Map(updateDto, patient);
                 patient.PinYinCode = string.Empty; // 移除CommonHelper依赖，拼音码功能暂不实现
-                patient.UpdateTime = DateTime.Now;
+
 
                 var updatedPatient = await _patientRepository.UpdateAsync(patient);
 
@@ -153,7 +153,7 @@ namespace LYBT.Module.Patients.Services
 
                 // 软删除 - 标记为已删除状态
                 patient.Status = CommonStatus.Disabled;
-                patient.UpdateTime = DateTime.Now;
+
 
                 await _patientRepository.UpdateAsync(patient);
 
@@ -189,7 +189,7 @@ namespace LYBT.Module.Patients.Services
                     if (patient != null)
                     {
                         patient.Status = CommonStatus.Disabled;
-                        patient.UpdateTime = DateTime.Now;
+        
                         await _patientRepository.UpdateAsync(patient);
                         count++;
                     }
@@ -226,7 +226,7 @@ namespace LYBT.Module.Patients.Services
                     if (patient != null)
                     {
                         patient.Status = commonStatus;
-                        patient.UpdateTime = DateTime.Now;
+        
                         await _patientRepository.UpdateAsync(patient);
                         count++;
                     }
@@ -262,7 +262,7 @@ namespace LYBT.Module.Patients.Services
                     if (patient != null)
                     {
                         patient.Status = CommonStatus.Enabled;
-                        patient.UpdateTime = DateTime.Now;
+        
                         await _patientRepository.UpdateAsync(patient);
                         count++;
                     }
@@ -298,7 +298,7 @@ namespace LYBT.Module.Patients.Services
                     if (patient != null)
                     {
                         patient.Status = CommonStatus.Disabled;
-                        patient.UpdateTime = DateTime.Now;
+        
                         await _patientRepository.UpdateAsync(patient);
                         count++;
                     }
@@ -377,7 +377,7 @@ namespace LYBT.Module.Patients.Services
                             AllergyHistory = importDto.AllergyHistory,
                             Status = CommonStatus.Enabled,
                             PinYinCode = string.Empty,
-                            CreatedAt = DateTime.Now
+
                         };
 
                         var createdPatient = await _patientRepository.AddAsync(patient);

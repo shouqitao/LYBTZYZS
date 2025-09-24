@@ -354,7 +354,7 @@ namespace LYBT.Module.Users.Services
                     Email = dto.Email,
                     Status = dto.Status,
                     PinYinCode = string.Empty, // 移除CommonHelper依赖，拼音码功能暂不实现
-                    CreatedTime = DateTime.Now
+
                 };
 
                 var createdUser = await _userRepository.AddAsync(user);

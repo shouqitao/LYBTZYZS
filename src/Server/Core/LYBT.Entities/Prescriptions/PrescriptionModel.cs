@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using LYBT.Entities.Common;
 using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Entities.Prescriptions
@@ -10,15 +11,13 @@ namespace LYBT.Entities.Prescriptions
     /// 处方实体 - UltraThink v2.0架构简化版
     /// 合并了原BasePrescription和PrescriptionModel
     /// 价格计算在DTO层处理，实体只存储基础数据和折扣信息
+    /// 继承BaseEntity实现审计字段自动化
     /// </summary>
     [Table("Prescriptions")]
-    public class Prescription
+    public class Prescription : BaseEntity
     {
 
-        /// <summary>处方唯一标识</summary>
-        [Key]
-        [DisplayName("处方ID")]
-        public Guid Id { get; set; }
+        // Id字段继承自BaseEntity
 
         /// <summary>医疗案例ID</summary>
         [Required]
@@ -36,9 +35,7 @@ namespace LYBT.Entities.Prescriptions
         public Guid UserId { get; set; }
 
         /// <summary>创建人ID（医生用户ID）</summary>
-        [Required]
-        [DisplayName("创建人")]
-        public Guid CreatedBy { get; set; }
+        // 审计字段（CreatedBy等）继承自BaseEntity
 
         /// <summary>主治（适应症/主要症状描述）</summary>
         [StringLength(500)]
@@ -73,12 +70,7 @@ namespace LYBT.Entities.Prescriptions
         [DisplayName("备注")]
         public string? Remark { get; set; }
 
-        /// <summary>并发控制字段 - 乐观并发控制</summary>
-        [Timestamp]
-        [DisplayName("版本")]
-        public byte[] RowVersion { get; set; } = new byte[8];
-
-        // 关联数据
+// 关联数据
 
         /// <summary>
         /// 处方项目（药材明细）

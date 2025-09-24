@@ -93,7 +93,7 @@ namespace LYBT.Module.Users.Services
 
                 // 排序和分页
                 var users = await queryable
-                    .OrderByDescending(u => u.CreatedTime)
+                    .OrderByDescending(u => u.CreatedAt)
                     .Skip((query.PageIndex - 1) * query.PageSize)
                     .Take(query.PageSize)
                     .ToListAsync();

@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using LYBT.Entities.Common;
 using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Entities.Users
@@ -10,15 +11,13 @@ namespace LYBT.Entities.Users
     /// 用户实体 - UltraThink v2.0架构简化版
     /// 合并了原BaseUser和UserModel，包含医生功能
     /// 删除五笔码字段，保留拼音码用于快速搜索
+    /// 继承BaseEntity实现审计字段自动化
     /// </summary>
     [Table("Users")]
-    public class User
+    public class User : BaseEntity
     {
 
-        /// <summary>用户唯一标识</summary>
-        [Key]
-        [DisplayName("用户ID")]
-        public Guid Id { get; set; }
+        // Id字段继承自BaseEntity
 
         /// <summary>用户名（统一命名）</summary>
         [Required]
@@ -71,14 +70,7 @@ namespace LYBT.Entities.Users
         public DateTime? LockoutEnd { get; set; }
 
         // ==== 基础时间字段 ====
-
-        /// <summary>创建时间</summary>
-        [DisplayName("创建时间")]
-        public DateTime CreatedTime { get; set; } = DateTime.Now;
-
-        /// <summary>最后更新时间</summary>
-        [DisplayName("更新时间")]
-        public DateTime? UpdateTime { get; set; }
+        // 审计字段（CreatedAt、UpdatedAt、CreatedBy、UpdatedBy）继承自BaseEntity
 
         /// <summary>最后登录时间</summary>
         [DisplayName("最后登录时间")]
@@ -91,9 +83,6 @@ namespace LYBT.Entities.Users
         [StringLength(500)]
         public string? Remark { get; set; }
 
-        /// <summary>并发控制字段 - 乐观并发控制</summary>
-        [Timestamp]
-        [DisplayName("版本")]
-        public byte[] RowVersion { get; set; } = new byte[8];
+        // RowVersion、IsDeleted等字段继承自BaseEntity
     }
 }
