@@ -60,11 +60,35 @@ namespace LYBT.Infrastructure.Caching.Adapters
         #region 异步操作
 
         /// <summary>
+        /// 异步获取缓存（始终返回null）- ICacheService接口方法
+        /// </summary>
+        public Task<T> GetAsync<T>(string key) where T : class
+        {
+            return Task.FromResult<T>(null);
+        }
+
+        /// <summary>
         /// 异步获取缓存（始终返回null）
         /// </summary>
         public Task<T?> GetAsync<T>(string key, CancellationToken cancellationToken = default)
         {
             return Task.FromResult(default(T));
+        }
+
+        /// <summary>
+        /// 异步获取或创建缓存（始终执行factory）- ICacheService接口方法
+        /// </summary>
+        public async Task<T> GetOrCreateAsync<T>(string key, Func<Task<T>> factory, TimeSpan? expiration = null) where T : class
+        {
+            return await factory();
+        }
+
+        /// <summary>
+        /// 异步设置缓存（空操作）- ICacheService接口方法
+        /// </summary>
+        public Task SetAsync<T>(string key, T value, TimeSpan? expiration = null) where T : class
+        {
+            return Task.CompletedTask;
         }
 
         /// <summary>
@@ -76,11 +100,43 @@ namespace LYBT.Infrastructure.Caching.Adapters
         }
 
         /// <summary>
+        /// 异步移除缓存（空操作）- ICacheService接口方法
+        /// </summary>
+        public Task RemoveAsync(string key)
+        {
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
         /// 异步移除缓存（始终返回false）
         /// </summary>
         public Task<bool> RemoveAsync(string key, CancellationToken cancellationToken = default)
         {
             return Task.FromResult(false);
+        }
+
+        /// <summary>
+        /// 检查缓存是否存在（始终返回false）- ICacheService接口方法
+        /// </summary>
+        public Task<bool> ExistsAsync(string key)
+        {
+            return Task.FromResult(false);
+        }
+
+        /// <summary>
+        /// 刷新缓存过期时间（空操作）- ICacheService接口方法
+        /// </summary>
+        public Task RefreshAsync(string key, TimeSpan expiration)
+        {
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// 清空缓存（空操作）- ICacheService接口方法
+        /// </summary>
+        public Task ClearAsync()
+        {
+            return Task.CompletedTask;
         }
 
         /// <summary>
@@ -132,6 +188,14 @@ namespace LYBT.Infrastructure.Caching.Adapters
         }
 
         /// <summary>
+        /// 按前缀移除缓存（返回0）- ICacheService接口方法
+        /// </summary>
+        public Task RemoveByPrefixAsync(string prefix)
+        {
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
         /// 按前缀移除缓存（返回0）
         /// </summary>
         public Task<int> RemoveByPrefixAsync(string prefix, CancellationToken cancellationToken = default)
@@ -165,13 +229,7 @@ namespace LYBT.Infrastructure.Caching.Adapters
             });
         }
 
-        /// <summary>
-        /// 异步清空缓存（空操作）
-        /// </summary>
-        public Task ClearAsync(CancellationToken cancellationToken = default)
-        {
-            return Task.CompletedTask;
-        }
+
 
         #endregion
     }

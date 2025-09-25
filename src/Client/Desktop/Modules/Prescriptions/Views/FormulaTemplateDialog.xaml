@@ -3,7 +3,6 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              xmlns:prism="http://prismlibrary.com/"
              prism:ViewModelLocator.AutoWireViewModel="True"
              mc:Ignorable="d"
@@ -18,9 +17,9 @@
         </Grid.RowDefinitions>
 
         <!-- 标题栏 -->
-        <materialDesign:ColorZone Mode="PrimaryMid" Grid.Row="0" Padding="16">
-            <TextBlock Text="{Binding Title}" Style="{StaticResource MaterialDesignHeadline6TextBlock}" Foreground="White" />
-        </materialDesign:ColorZone>
+        <Border Grid.Row="0" Background="#2196F3" Padding="16">
+            <TextBlock Text="{Binding Title}" FontSize="20" FontWeight="Medium" Foreground="White" />
+        </Border>
 
         <!-- 搜索栏 -->
         <Grid Grid.Row="1" Margin="16,16,16,8">
@@ -36,15 +35,10 @@
                       SelectedItem="{Binding SelectedCategory}"
                       Margin="0,0,16,0" />
 
-            <TextBox Grid.Column="2" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
-                     materialDesign:HintAssist.Hint="搜索验方名称、适应症..."
-                     Style="{StaticResource MaterialDesignFloatingHintTextBox}" />
+            <TextBox Grid.Column="2" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" />
 
             <Button Grid.Column="3" Command="{Binding RefreshCommand}"
-                    Style="{StaticResource MaterialDesignIconButton}"
-                    ToolTip="刷新" Margin="8,0,0,0">
-                <materialDesign:PackIcon Kind="Refresh" />
-            </Button>
+                    ToolTip="刷新" Margin="8,0,0,0" Content="刷新" />
         </Grid>
 
         <!-- 验方列表 -->

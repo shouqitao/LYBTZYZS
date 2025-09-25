@@ -2,6 +2,7 @@ using Prism.Commands;
 using Prism.Events;
 using Prism.Mvvm;
 using System.Windows.Input;
+using System.Reactive.Disposables;
 
 namespace LYBT.Desktop.Core.ViewModels.Base
 {
@@ -9,7 +10,7 @@ namespace LYBT.Desktop.Core.ViewModels.Base
     /// 对话框视图模型基类
     /// 提供对话框通用功能和属性
     /// </summary>
-    public abstract class DialogViewModel : BindableBase
+    public abstract class DialogViewModel : BindableBase, IDisposable
     {
         #region Fields
 
@@ -17,6 +18,8 @@ namespace LYBT.Desktop.Core.ViewModels.Base
         private bool _isBusy;
         private string _busyMessage = "处理中...";
         protected readonly IEventAggregator _eventAggregator;
+        private readonly CompositeDisposable _disposables = new();
+        private bool _disposed;
 
         #endregion
 
@@ -147,6 +150,51 @@ namespace LYBT.Desktop.Core.ViewModels.Base
             {
                 confirmCmd.RaiseCanExecuteChanged();
             }
+        }
+
+        /// <summary>
+        /// 添加需要释放的资源
+        /// </summary>
+        protected void AddDisposable(IDisposable disposable)
+        {
+            _disposables.Add(disposable);
+        }
+
+        #endregion
+
+        #region IDisposable
+
+        /// <summary>
+        /// 释放资源
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// 释放资源的核心实现
+        /// </summary>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed) return;
+            
+            if (disposing)
+            {
+                _disposables?.Dispose();
+                OnDisposing();
+            }
+            
+            _disposed = true;
+        }
+
+        /// <summary>
+        /// 释放时的额外清理工作 - 子类可重写
+        /// </summary>
+        protected virtual void OnDisposing()
+        {
+            // 子类可重写以添加额外的清理逻辑
         }
 
         #endregion

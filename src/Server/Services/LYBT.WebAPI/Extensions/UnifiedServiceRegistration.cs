@@ -4,7 +4,6 @@ using System.Text.Json.Serialization;
 
 using LYBT.Infrastructure.Caching.Adapters;
 using LYBT.Infrastructure.Caching.Interfaces;
-using LYBT.Infrastructure.Caching.Services;
 using LYBT.Infrastructure.Configuration.Options;
 using LYBT.WebAPI.Services;
 using LYBT.Infrastructure.Configuration.Services;
@@ -144,8 +143,9 @@ public static class UnifiedServiceRegistration
             services.AddSingleton<ICacheService, MemoryCacheAdapter>();
 
         // 缓存诊断服务（Phase 3缓存治理）
-        services.AddSingleton<ICacheDiagnosticsService, CacheDiagnosticsService>();
-        services.AddHostedService<CacheHealthBackgroundService>();
+        // TODO: 实现 CacheDiagnosticsService 后启用
+        // services.AddSingleton<ICacheDiagnosticsService, CacheDiagnosticsService>();
+        // services.AddHostedService<CacheHealthBackgroundService>();
         }
 
         // 选项绑定（IOptions）

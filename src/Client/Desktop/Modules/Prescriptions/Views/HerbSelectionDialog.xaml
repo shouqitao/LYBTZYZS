@@ -3,7 +3,6 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              xmlns:prism="http://prismlibrary.com/"
              prism:ViewModelLocator.AutoWireViewModel="True"
              mc:Ignorable="d"
@@ -19,9 +18,9 @@
         </Grid.RowDefinitions>
 
         <!-- 标题栏 -->
-        <materialDesign:ColorZone Mode="PrimaryMid" Grid.Row="0" Padding="16">
-            <TextBlock Text="{Binding Title}" Style="{StaticResource MaterialDesignHeadline6TextBlock}" Foreground="White" />
-        </materialDesign:ColorZone>
+        <Border Grid.Row="0" Background="#2196F3" Padding="16">
+            <TextBlock Text="{Binding Title}" FontSize="20" FontWeight="Medium" Foreground="White" />
+        </Border>
 
         <!-- 搜索栏 -->
         <Grid Grid.Row="1" Margin="16,16,16,8">
@@ -30,16 +29,13 @@
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
-            <TextBox Grid.Column="0" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
-                     materialDesign:HintAssist.Hint="搜索药材名称、拼音码..."
-                     Style="{StaticResource MaterialDesignFloatingHintTextBox}">
+            <TextBox Grid.Column="0" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}">
                 <TextBox.InputBindings>
                     <KeyBinding Key="Enter" Command="{Binding SearchCommand}" />
                 </TextBox.InputBindings>
             </TextBox>
 
             <Button Grid.Column="1" Command="{Binding SearchCommand}"
-                    Style="{StaticResource MaterialDesignRaisedButton}"
                     Content="搜索" Margin="8,0,0,0" MinWidth="80" />
         </Grid>
 
@@ -72,15 +68,13 @@
 
             <TextBlock Grid.Column="0" Text="用量：" VerticalAlignment="Center" Margin="0,0,8,0" />
             <TextBox Grid.Column="1" Text="{Binding Quantity}"
-                     materialDesign:HintAssist.Hint="数量"
-                     Style="{StaticResource MaterialDesignFloatingHintTextBox}" />
+ />
             <TextBlock Grid.Column="2" Text="{Binding SelectedHerb.Unit}"
                        VerticalAlignment="Center" Margin="8,0,16,0" />
 
             <TextBlock Grid.Column="3" Text="单位：" VerticalAlignment="Center" Margin="0,0,8,0" />
             <TextBox Grid.Column="4" Text="{Binding Unit}"
-                     materialDesign:HintAssist.Hint="单位"
-                     Style="{StaticResource MaterialDesignFloatingHintTextBox}" />
+ />
         </Grid>
 
         <!-- 按钮栏 -->
@@ -96,11 +90,9 @@
                          Margin="0,0,8,0" />
 
             <Button Grid.Column="1" Command="{Binding ConfirmCommand}"
-                    Style="{StaticResource MaterialDesignRaisedButton}"
                     Content="确定" Margin="0,0,8,0" MinWidth="80" />
 
             <Button Grid.Column="2" Command="{Binding CancelCommand}"
-                    Style="{StaticResource MaterialDesignFlatButton}"
                     Content="取消" MinWidth="80" />
         </Grid>
     </Grid>

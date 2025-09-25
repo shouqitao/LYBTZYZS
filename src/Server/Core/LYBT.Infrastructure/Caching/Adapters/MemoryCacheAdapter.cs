@@ -280,10 +280,24 @@ namespace LYBT.Infrastructure.Caching.Adapters
         #region 异步操作
 
         /// <inheritdoc/>
+        public Task<T> GetAsync<T>(string key) where T : class
+        {
+            // Memory cache operations are synchronous, wrap in Task
+            return Task.FromResult(Get<T>(key));
+        }
+
+        /// <inheritdoc/>
         public Task<T?> GetAsync<T>(string key, CancellationToken cancellationToken = default)
         {
             // Memory cache operations are synchronous, wrap in Task
             return Task.FromResult(Get<T>(key));
+        }
+
+        /// <inheritdoc/>
+        public Task SetAsync<T>(string key, T value, TimeSpan? expiration = null) where T : class
+        {
+            Set(key, value, expiration);
+            return Task.CompletedTask;
         }
 
         /// <inheritdoc/>
@@ -294,9 +308,52 @@ namespace LYBT.Infrastructure.Caching.Adapters
         }
 
         /// <inheritdoc/>
+        public Task RemoveAsync(string key)
+        {
+            Remove(key);
+            return Task.CompletedTask;
+        }
+
+        /// <inheritdoc/>
         public Task<bool> RemoveAsync(string key, CancellationToken cancellationToken = default)
         {
             return Task.FromResult(Remove(key));
+        }
+
+        /// <inheritdoc/>
+        public Task<bool> ExistsAsync(string key)
+        {
+            return Task.FromResult(Exists(key));
+        }
+
+        /// <inheritdoc/>
+        public Task RefreshAsync(string key, TimeSpan expiration)
+        {
+            // For memory cache, we can't refresh without getting and setting again
+            if (_memoryCache.TryGetValue(key, out var value))
+            {
+                Set(key, value, expiration);
+            }
+            return Task.CompletedTask;
+        }
+
+        /// <inheritdoc/>
+        public Task ClearAsync()
+        {
+            Clear();
+            return Task.CompletedTask;
+        }
+
+        /// <inheritdoc/>
+        public async Task<T> GetOrCreateAsync<T>(string key, Func<Task<T>> factory, TimeSpan? expiration = null) where T : class
+        {
+            var cached = Get<T>(key);
+            if (cached != null)
+                return cached;
+
+            var result = await factory();
+            Set(key, result, expiration);
+            return result;
         }
 
         /// <inheritdoc/>
@@ -423,6 +480,12 @@ namespace LYBT.Infrastructure.Caching.Adapters
 
             _logger.LogDebug("Removed {Count} keys matching pattern: {Pattern}", removedCount, pattern);
             return Task.FromResult(removedCount);
+        }
+
+        /// <inheritdoc/>
+        public Task RemoveByPrefixAsync(string prefix)
+        {
+            return RemoveByPatternAsync($"{prefix}*");
         }
 
         /// <inheritdoc/>

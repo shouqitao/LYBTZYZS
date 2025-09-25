@@ -6,7 +6,6 @@ using LYBT.Module.Users.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
-using LYBT.Shared.Utilities.Helpers;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -556,22 +555,7 @@ namespace LYBT.Module.Users.Services
             return ServiceResult.Success();
         }
 
-        private static ServiceResult ValidatePasswordChangeInput(Guid id, string oldPassword, string newPassword)
-        {
-            if (id == Guid.Empty)
-                return ServiceResult.Failure("用户ID不能为空");
 
-            if (string.IsNullOrWhiteSpace(oldPassword))
-                return ServiceResult.Failure("原密码不能为空");
-
-            if (string.IsNullOrWhiteSpace(newPassword))
-                return ServiceResult.Failure("新密码不能为空");
-
-            if (newPassword.Length < 6 || newPassword.Length > 50)
-                return ServiceResult.Failure("新密码长度必须在6-50个字符之间");
-
-            return ServiceResult.Success();
-        }
 
         private LYBT.Entities.Users.User CreateUserEntity(UserCreateDto createUserDto)
         {

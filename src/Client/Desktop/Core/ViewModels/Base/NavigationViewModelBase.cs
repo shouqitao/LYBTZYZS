@@ -25,7 +25,7 @@ namespace LYBT.Desktop.Core.ViewModels.Base
         
         protected readonly IRegionManager RegionManager;
         protected readonly ISessionManager? SessionManager;
-        protected readonly ILogger<NavigationViewModelBase> Logger;
+        protected new readonly ILogger<NavigationViewModelBase> Logger;
         protected IRegionNavigationService? NavigationService;
         
         #endregion

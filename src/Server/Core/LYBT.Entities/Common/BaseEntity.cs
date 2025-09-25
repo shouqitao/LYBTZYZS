@@ -46,7 +46,7 @@ namespace LYBT.Entities.Common
         /// </summary>
         [Timestamp]
         [DisplayName("版本")]
-        public byte[] RowVersion { get; set; } = new byte[8];
+        public byte[]? RowVersion { get; set; }
 
         /// <summary>
         /// 软删除标记

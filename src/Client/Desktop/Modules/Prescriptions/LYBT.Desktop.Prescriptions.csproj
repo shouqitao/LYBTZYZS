@@ -60,10 +60,6 @@
     <PackageReference Include="Prism.Wpf" />
   </ItemGroup>
 
-  <!-- UI and Design -->
-  <ItemGroup Label="UI Framework">
-    <PackageReference Include="MaterialDesignThemes" />
-  </ItemGroup>
 
   <!-- Logging -->
   <ItemGroup Label="Logging">

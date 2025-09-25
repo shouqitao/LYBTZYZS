@@ -19,9 +19,7 @@
     </PackageReference>
     <PackageReference Include="FluentAssertions"  />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory"  />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions"  />
-    <PackageReference Include="Microsoft.Extensions.Caching.Memory"  />
-    <PackageReference Include="Microsoft.Extensions.Options"  />
+    <!-- Removed conflicting packages - provided by dependencies -->
     <PackageReference Include="Bogus"  />
     <PackageReference Include="AutoMapper"  />
     <PackageReference Include="Moq"  />

@@ -75,6 +75,14 @@ namespace LYBT.Infrastructure.Caching.Interfaces
         #region 异步操作 - 复杂数据处理
 
         /// <summary>
+        /// 获取缓存项 (异步) - 引用类型约束版本
+        /// </summary>
+        /// <typeparam name="T">缓存数据类型（必须是引用类型）</typeparam>
+        /// <param name="key">缓存键</param>
+        /// <returns>缓存的数据项</returns>
+        Task<T> GetAsync<T>(string key) where T : class;
+
+        /// <summary>
         /// 获取缓存项 (异步)
         /// </summary>
         /// <typeparam name="T">缓存数据类型</typeparam>
@@ -82,6 +90,16 @@ namespace LYBT.Infrastructure.Caching.Interfaces
         /// <param name="cancellationToken">取消令牌</param>
         /// <returns>缓存的数据项</returns>
         Task<T?> GetAsync<T>(string key, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// 设置缓存项 (异步) - 引用类型约束版本
+        /// </summary>
+        /// <typeparam name="T">缓存数据类型（必须是引用类型）</typeparam>
+        /// <param name="key">缓存键</param>
+        /// <param name="value">缓存数据</param>
+        /// <param name="expiration">过期时间</param>
+        /// <returns>异步操作任务</returns>
+        Task SetAsync<T>(string key, T value, TimeSpan? expiration = null) where T : class;
 
         /// <summary>
         /// 设置缓存项 (异步)
@@ -96,12 +114,29 @@ namespace LYBT.Infrastructure.Caching.Interfaces
         Task SetAsync<T>(string key, T value, TimeSpan? expiration = null, CachePriority priority = CachePriority.Normal, CancellationToken cancellationToken = default);
 
         /// <summary>
+        /// 移除缓存项 (异步) - 无返回值版本
+        /// </summary>
+        /// <param name="key">要移除的缓存键</param>
+        /// <returns>异步操作任务</returns>
+        Task RemoveAsync(string key);
+
+        /// <summary>
         /// 移除缓存项 (异步)
         /// </summary>
         /// <param name="key">要移除的缓存键</param>
         /// <param name="cancellationToken">取消令牌</param>
         /// <returns>移除操作结果</returns>
         Task<bool> RemoveAsync(string key, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// 获取或创建缓存项 (异步) - 引用类型约束版本
+        /// </summary>
+        /// <typeparam name="T">缓存数据类型（必须是引用类型）</typeparam>
+        /// <param name="key">缓存键</param>
+        /// <param name="factory">数据工厂方法 - 缓存未命中时调用</param>
+        /// <param name="expiration">过期时间</param>
+        /// <returns>缓存或新获取的数据</returns>
+        Task<T> GetOrCreateAsync<T>(string key, Func<Task<T>> factory, TimeSpan? expiration = null) where T : class;
 
         /// <summary>
         /// 获取或设置缓存项 (异步) - 核心缓存模式
@@ -119,6 +154,27 @@ namespace LYBT.Infrastructure.Caching.Interfaces
         /// <para>线程安全: 并发调用时只有一个工厂方法执行</para>
         /// </remarks>
         Task<T> GetOrSetAsync<T>(string key, Func<Task<T>> factory, TimeSpan? expiration = null, CachePriority priority = CachePriority.Normal, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// 检查缓存键是否存在 (异步)
+        /// </summary>
+        /// <param name="key">缓存键</param>
+        /// <returns>true: 存在; false: 不存在或已过期</returns>
+        Task<bool> ExistsAsync(string key);
+
+        /// <summary>
+        /// 刷新缓存项的过期时间 (异步)
+        /// </summary>
+        /// <param name="key">缓存键</param>
+        /// <param name="expiration">新的过期时间</param>
+        /// <returns>异步操作任务</returns>
+        Task RefreshAsync(string key, TimeSpan expiration);
+
+        /// <summary>
+        /// 清空所有缓存 (异步)
+        /// </summary>
+        /// <returns>异步操作任务</returns>
+        Task ClearAsync();
 
         #endregion
 
@@ -167,6 +223,13 @@ namespace LYBT.Infrastructure.Caching.Interfaces
         /// <para>性能: Redis原生支持，Memory需要遍历</para>
         /// </remarks>
         Task<int> RemoveByPatternAsync(string pattern, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// 按前缀移除缓存 (异步) - 无返回值版本
+        /// </summary>
+        /// <param name="prefix">前缀字符串</param>
+        /// <returns>异步操作任务</returns>
+        Task RemoveByPrefixAsync(string prefix);
 
         /// <summary>
         /// 按前缀移除缓存 (异步)
