@@ -360,12 +360,12 @@ namespace LYBT.Infrastructure.Tests.Data
                 {
                     Id = Guid.NewGuid(),
                     Username = "testuser",
-                    Password = "hashedpassword",
-                    Name = "测试用户",
+                    PasswordHash = "hashedpassword",
+                    RealName = "测试用户",
                     Role = LYBT.Shared.Models.Enums.UserRole.Doctor,
                     Status = LYBT.Shared.Models.Enums.CommonStatus.Enabled,
                     CreatedAt = DateTime.UtcNow,
-                    CreatedBy = "system"
+                    CreatedBy = null
                 };
 
                 _context.Users.Add(user);
@@ -424,12 +424,12 @@ namespace LYBT.Infrastructure.Tests.Data
             {
                 Id = userId,
                 Username = "testuser",
-                Password = "hashedpassword",
-                Name = "测试用户",
+                PasswordHash = "hashedpassword",
+                RealName = "测试用户",
                 Role = LYBT.Shared.Models.Enums.UserRole.Doctor,
                 Status = LYBT.Shared.Models.Enums.CommonStatus.Enabled,
                 CreatedAt = DateTime.UtcNow,
-                CreatedBy = "system",
+                CreatedBy = null,
                 RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 }
             };
 
@@ -439,9 +439,9 @@ namespace LYBT.Infrastructure.Tests.Data
             // Simulate concurrent update
             var context2 = new AppDbContext(_options);
             var user2 = await context2.Users.FindAsync(userId);
-            user2!.Name = "并发更新1";
+            user2!.RealName = "并发更新1";
 
-            user.Name = "并发更新2";
+            user.RealName = "并发更新2";
 
             // Act & Assert
             await context2.SaveChangesAsync();
@@ -467,7 +467,7 @@ namespace LYBT.Infrastructure.Tests.Data
                 Gender = i % 2 == 0 ? LYBT.Shared.Models.Enums.Gender.Male : LYBT.Shared.Models.Enums.Gender.Female,
                 Status = LYBT.Shared.Models.Enums.CommonStatus.Enabled,
                 CreatedAt = DateTime.UtcNow,
-                CreatedBy = "system"
+                CreatedBy = null
             }).ToList();
 
             _context.Patients.AddRange(patients);
@@ -563,24 +563,24 @@ namespace LYBT.Infrastructure.Tests.Data
             {
                 Id = Guid.NewGuid(),
                 Username = "uniqueuser",
-                Password = "hashedpassword",
-                Name = "用户1",
+                PasswordHash = "hashedpassword",
+                RealName = "用户1",
                 Role = LYBT.Shared.Models.Enums.UserRole.Doctor,
                 Status = LYBT.Shared.Models.Enums.CommonStatus.Enabled,
                 CreatedAt = DateTime.UtcNow,
-                CreatedBy = "system"
+                CreatedBy = null
             };
 
             var user2 = new User
             {
                 Id = Guid.NewGuid(),
                 Username = "uniqueuser", // Same username
-                Password = "hashedpassword",
-                Name = "用户2",
+                PasswordHash = "hashedpassword",
+                RealName = "用户2",
                 Role = LYBT.Shared.Models.Enums.UserRole.Doctor,
                 Status = LYBT.Shared.Models.Enums.CommonStatus.Enabled,
                 CreatedAt = DateTime.UtcNow,
-                CreatedBy = "system"
+                CreatedBy = null
             };
 
             // Act

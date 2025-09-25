@@ -3,8 +3,8 @@
 本页聚合已完成 PRD 的关键结论与验收口径，作为交付核对清单。
 
 ## 关联 PRD
-- Desktop 快速修复：`docs/ccpm/PRD-desktop-20250921.md`
-- Server 测试覆盖：`docs/ccpm/PRD-server-coverage-20250921.md`
+- Desktop 快速修复：`docs/reports/archive/ccpm/PRD-desktop-20250921.md`
+- Server 测试覆盖：`docs/reports/archive/ccpm/PRD-server-coverage-20250921.md`
 
 ## 技术约束（统一）
 - 输出：根目录 `BIN/`
@@ -24,3 +24,4 @@
 - 路由：统一小写端点（示例：`api/v1/users`）
 
 以上内容与 PRD 同步维护；偏离需先更新 PRD 后实施。
+

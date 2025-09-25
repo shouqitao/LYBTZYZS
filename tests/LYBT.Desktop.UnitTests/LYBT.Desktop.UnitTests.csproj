@@ -1,0 +1,49 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- 测试框架 -->
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.9.0" />
+    <PackageReference Include="xunit" Version="2.6.6" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.5.6">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    
+    <!-- 断言库 -->
+    <PackageReference Include="FluentAssertions" Version="6.12.0" />
+    
+    <!-- 模拟框架 -->
+    <PackageReference Include="Moq" Version="4.20.70" />
+    
+    <!-- 测试数据生成 -->
+    <PackageReference Include="Bogus" Version="35.4.0" />
+    
+    <!-- 覆盖率工具 -->
+    <PackageReference Include="coverlet.collector" Version="6.0.0">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    
+    <!-- Prism相关 -->
+    <PackageReference Include="Prism.DryIoc" Version="8.1.97" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- 引用被测试的项目 -->
+    <ProjectReference Include="..\..\src\Client\Desktop\Core\LYBT.Desktop.Core.csproj" />
+    <ProjectReference Include="..\..\src\Client\Desktop\Shell\LYBT.Desktop.Shell.csproj" />
+    <ProjectReference Include="..\..\src\Client\Desktop\Modules\Patients\LYBT.Desktop.Patients.csproj" />
+    <ProjectReference Include="..\..\src\Client\Desktop\Modules\Prescriptions\LYBT.Desktop.Prescriptions.csproj" />
+    <ProjectReference Include="..\..\src\Client\Desktop\Modules\Users\LYBT.Desktop.Users.csproj" />
+  </ItemGroup>
+
+</Project>

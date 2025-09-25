@@ -3,7 +3,7 @@
 目标：在保证架构与质量门禁的前提下，以最小范围、最短路径交付。
 
 ## 范围与边界
-- 仅在 PRD 既定范围内变更：`docs/ccpm/PRD-desktop-20250921.md`、`docs/ccpm/PRD-server-coverage-20250921.md`
+- 仅在 PRD 既定范围内变更：`docs/reports/archive/ccpm/PRD-desktop-20250921.md`、`docs/reports/archive/ccpm/PRD-server-coverage-20250921.md`
 - 路由/序列化/产物路径不得更改：`/api/v1/*`、System.Text.Json、`BIN/`
 - 依赖变更必须通过 `Directory.Packages.props` 集中管理
 
@@ -27,4 +27,5 @@
 ## 非目标
 - 不新增 UI/大改领域模型；不引入新框架
 - 不修改 PRD 以外模块边界
+
 

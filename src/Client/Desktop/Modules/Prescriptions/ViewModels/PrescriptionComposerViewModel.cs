@@ -13,7 +13,6 @@ using Prism.Events;
 using Prism.Mvvm;
 using Prism.Regions;
 using Prism.Services.Dialogs;
-using CoreEvents = LYBT.Desktop.Core.Models.Events;
 
 namespace LYBT.Desktop.Prescriptions.ViewModels
 {
@@ -435,8 +434,13 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                 ShowMessage("处方保存成功");
 
                 // 发布处方保存事件 - Name字段已删除，使用空字符串
-                _eventAggregator.GetEvent<CoreEvents.PrescriptionSavedEvent>()
-                    .Publish(new CoreEvents.PrescriptionSavedEventArgs(_currentPrescription.Id, _currentPrescription.PatientId, string.Empty, _currentPrescription.TotalPrice));
+                _eventAggregator.GetEvent<PrescriptionSavedEvent>()
+                    .Publish(new PrescriptionSavedEventArgs
+                    {
+                        PrescriptionId = _currentPrescription.Id,
+                        Prescription = _currentPrescription,
+                        IsNew = true // 根据实际情况设定
+                    });
             }
             catch (Exception ex)
             {

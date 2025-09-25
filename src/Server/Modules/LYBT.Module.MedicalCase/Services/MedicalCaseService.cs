@@ -1,208 +1,475 @@
+using AutoMapper;
+using LYBT.Infrastructure.Data;
 using LYBT.Module.MedicalCase.Interfaces;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.MedicalCase;
+using LYBT.Shared.Models.Enums;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.Module.MedicalCase.Services
 {
     /// <summary>
-    /// 医疗案例服务 - UltraThink双层架构纯委托模式
-    /// 简化版本：只提供增删查改和诊疗流程
+    /// 医疗案例服务 - UltraThink架构重构后的统一实现
+    /// 合并原QueryService和BusinessService的所有功能
     /// </summary>
-    public class MedicalCaseService(
-        IMedicalCaseQueryService queryService,
-        IMedicalCaseBusinessService businessService) : IMedicalCaseService
+    public class MedicalCaseService : IMedicalCaseService
     {
-        private readonly IMedicalCaseQueryService _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
-        private readonly IMedicalCaseBusinessService _businessService = businessService ?? throw new ArgumentNullException(nameof(businessService));
+        private readonly IMedicalCaseRepository _repository;
+        private readonly AppDbContext _context;
+        private readonly IMapper _mapper;
+        private readonly ILogger<MedicalCaseService> _logger;
 
-        #region Query Operations (查询操作)
+        public MedicalCaseService(
+            IMedicalCaseRepository repository,
+            AppDbContext context,
+            IMapper mapper,
+            ILogger<MedicalCaseService> logger)
+        {
+            _repository = repository ?? throw new ArgumentNullException(nameof(repository));
+            _context = context ?? throw new ArgumentNullException(nameof(context));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        }
+
+        #region Query Operations
 
         /// <inheritdoc/>
         public async Task<ServiceResult<MedicalCaseDetailDto>> GetByIdAsync(Guid id)
         {
-            var result = await _queryService.GetByIdAsync(id);
-            if (!result.IsSuccess || result.Data == null)
+            try
             {
-                return ServiceResult<MedicalCaseDetailDto>.Failure(result.ErrorMessage ?? "获取失败");
+                var medicalCase = await _repository.GetByIdAsync(id);
+                if (medicalCase == null)
+                {
+                    return ServiceResult<MedicalCaseDetailDto>.Failure($"医疗案例不存在: {id}");
+                }
+
+                var dto = _mapper.Map<MedicalCaseDetailDto>(medicalCase);
+                return ServiceResult<MedicalCaseDetailDto>.Success(dto);
             }
-
-            // 将MedicalCaseDto转换为MedicalCaseDetailDto（简化实现）
-            var detailDto = new MedicalCaseDetailDto
+            catch (Exception ex)
             {
-                Id = result.Data.Id,
-                PatientId = result.Data.PatientId,
-                PatientName = result.Data.PatientName,
-                DoctorId = result.Data.DoctorId,
-                DoctorName = result.Data.DoctorName,
-                ConsultationDate = result.Data.ConsultationDate,
-                Status = result.Data.Status,
-                Remark = result.Data.Remark
-            };
-
-            return ServiceResult<MedicalCaseDetailDto>.Success(detailDto);
+                _logger.LogError(ex, "获取医疗案例详情失败: {Id}", id);
+                return ServiceResult<MedicalCaseDetailDto>.Failure($"获取医疗案例详情失败: {ex.Message}");
+            }
         }
 
         /// <inheritdoc/>
         public async Task<ServiceResult<PagedResult<MedicalCaseDto>>> GetPagedAsync(PagedQueryBaseDto query)
-            => await _queryService.GetPagedAsync(query);
+        {
+            try
+            {
+                var queryable = _context.MedicalCases.AsNoTracking();
+
+                // 应用搜索条件
+                if (!string.IsNullOrEmpty(query.Keyword))
+                {
+                    queryable = queryable.Where(x =>
+                        x.PatientId.ToString().Contains(query.Keyword));
+                }
+
+                // 获取总数
+                var total = await queryable.CountAsync();
+
+                // 分页查询
+                var items = await queryable
+                    .OrderByDescending(x => x.CreatedAt)
+                    .Skip((query.PageIndex - 1) * query.PageSize)
+                    .Take(query.PageSize)
+                    .ToListAsync();
+
+                var dtos = _mapper.Map<List<MedicalCaseDto>>(items);
+
+                var result = new PagedResult<MedicalCaseDto>(
+                    dtos,
+                    total,
+                    query.PageIndex,
+                    query.PageSize
+                );
+
+                return ServiceResult<PagedResult<MedicalCaseDto>>.Success(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "分页查询医疗案例失败");
+                return ServiceResult<PagedResult<MedicalCaseDto>>.Failure($"查询失败: {ex.Message}");
+            }
+        }
 
         /// <inheritdoc/>
         public async Task<ServiceResult<List<MedicalCaseDto>>> GetByPatientIdAsync(Guid patientId)
-            => await _queryService.GetByPatientIdAsync(patientId);
+        {
+            try
+            {
+                var medicalCases = await _repository.GetByPatientIdAsync(patientId);
+                var dtos = _mapper.Map<List<MedicalCaseDto>>(medicalCases);
+                return ServiceResult<List<MedicalCaseDto>>.Success(dtos);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "根据患者ID获取医疗案例失败: {PatientId}", patientId);
+                return ServiceResult<List<MedicalCaseDto>>.Failure($"查询失败: {ex.Message}");
+            }
+        }
 
         /// <inheritdoc/>
         public async Task<ServiceResult<MedicalCaseDto>> GetActiveByPatientIdAsync(Guid patientId)
-            => await _queryService.GetActiveByPatientIdAsync(patientId);
+        {
+            try
+            {
+                var medicalCase = await _context.MedicalCases
+                    .AsNoTracking()
+                    .Where(x => x.PatientId == patientId && x.Status == MedicalCaseStatus.Active)
+                    .OrderByDescending(x => x.CreatedAt)
+                    .FirstOrDefaultAsync();
+
+                if (medicalCase == null)
+                {
+                    return ServiceResult<MedicalCaseDto>.Failure("没有活跃的医疗案例");
+                }
+
+                var dto = _mapper.Map<MedicalCaseDto>(medicalCase);
+                return ServiceResult<MedicalCaseDto>.Success(dto);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取患者活跃医疗案例失败: {PatientId}", patientId);
+                return ServiceResult<MedicalCaseDto>.Failure($"查询失败: {ex.Message}");
+            }
+        }
 
         /// <inheritdoc/>
         public async Task<ServiceResult<List<MedicalCaseDto>>> SearchAsync(string keyword)
-            => await _queryService.SearchAsync(keyword);
-
-        /// <inheritdoc/>
-        public async Task<ServiceResult<List<object>>> GetHistory(Guid patientId)
         {
-            var result = await _queryService.GetHistoryAsync(patientId);
-            if (!result.IsSuccess)
+            try
             {
-                return ServiceResult<List<object>>.Failure(result.ErrorMessage ?? "获取历史记录失败");
-            }
+                var queryable = _context.MedicalCases.AsNoTracking();
 
-            // 将List<MedicalCaseDto>转换为List<object>
-            var objectList = new List<object>();
-            if (result.Data != null)
+                if (!string.IsNullOrEmpty(keyword))
+                {
+                    queryable = queryable.Where(x =>
+                        x.PatientId.ToString().Contains(keyword));
+                }
+
+                var medicalCases = await queryable
+                    .OrderByDescending(x => x.CreatedAt)
+                    .Take(100)
+                    .ToListAsync();
+
+                var dtos = _mapper.Map<List<MedicalCaseDto>>(medicalCases);
+                return ServiceResult<List<MedicalCaseDto>>.Success(dtos);
+            }
+            catch (Exception ex)
             {
-                objectList.AddRange(result.Data);
+                _logger.LogError(ex, "搜索医疗案例失败: {Keyword}", keyword);
+                return ServiceResult<List<MedicalCaseDto>>.Failure($"搜索失败: {ex.Message}");
             }
-
-            return ServiceResult<List<object>>.Success(objectList);
         }
 
-        public async Task<ServiceResult<bool>> HasActiveCaseAsync(Guid patientId)
-            => await _queryService.HasActiveCaseAsync(patientId);
+        /// <inheritdoc/>
+        public async Task<ServiceResult<List<object>>> GetHistory(Guid id)
+        {
+            try
+            {
+                // 简化实现：返回医疗案例的基本历史信息
+                var medicalCase = await _repository.GetByIdAsync(id);
+                if (medicalCase == null)
+                {
+                    return ServiceResult<List<object>>.Failure("医疗案例不存在");
+                }
 
-        #endregion Query Operations
+                var history = new List<object>
+                {
+                    new { Time = medicalCase.CreatedAt, Action = "创建", Status = "新建" },
+                    new { Time = medicalCase.UpdatedAt, Action = "最后更新", Status = medicalCase.Status.ToString() }
+                };
 
-        #region Core Operations (核心CRUD操作)
+                return ServiceResult<List<object>>.Success(history);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取医疗案例历史失败: {Id}", id);
+                return ServiceResult<List<object>>.Failure($"获取历史失败: {ex.Message}");
+            }
+        }
+
+        #endregion
+
+        #region Business Operations
 
         /// <inheritdoc/>
         public async Task<ServiceResult<MedicalCaseDto>> CreateAsync(MedicalCaseCreateDto dto)
-            => await _businessService.CreateAsync(dto);
+        {
+            try
+            {
+                var medicalCase = _mapper.Map<LYBT.Entities.MedicalCase.MedicalCase>(dto);
+                medicalCase.Id = Guid.NewGuid();
+                medicalCase.Status = MedicalCaseStatus.Active;
+                medicalCase.CreatedAt = DateTime.Now;
+                medicalCase.UpdatedAt = DateTime.Now;
+
+                await _repository.AddAsync(medicalCase);
+                await _repository.SaveChangesAsync();
+
+                var resultDto = _mapper.Map<MedicalCaseDto>(medicalCase);
+                return ServiceResult<MedicalCaseDto>.Success(resultDto, "医疗案例创建成功");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "创建医疗案例失败");
+                return ServiceResult<MedicalCaseDto>.Failure($"创建失败: {ex.Message}");
+            }
+        }
 
         /// <inheritdoc/>
         public async Task<ServiceResult<MedicalCaseDto>> UpdateAsync(Guid id, MedicalCaseUpdateDto dto)
-            => await _businessService.UpdateAsync(id, dto);
+        {
+            try
+            {
+                var medicalCase = await _repository.GetByIdAsync(id);
+                if (medicalCase == null)
+                {
+                    return ServiceResult<MedicalCaseDto>.Failure($"医疗案例不存在: {id}");
+                }
+
+                _mapper.Map(dto, medicalCase);
+                medicalCase.UpdatedAt = DateTime.Now;
+
+                await _repository.UpdateAsync(medicalCase);
+                await _repository.SaveChangesAsync();
+
+                var resultDto = _mapper.Map<MedicalCaseDto>(medicalCase);
+                return ServiceResult<MedicalCaseDto>.Success(resultDto, "医疗案例更新成功");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "更新医疗案例失败: {Id}", id);
+                return ServiceResult<MedicalCaseDto>.Failure($"更新失败: {ex.Message}");
+            }
+        }
 
         /// <inheritdoc/>
         public async Task<ServiceResult<bool>> DeleteAsync(Guid id)
-            => await _businessService.DeleteAsync(id);
+        {
+            try
+            {
+                var medicalCase = await _repository.GetByIdAsync(id);
+                if (medicalCase == null)
+                {
+                    return ServiceResult<bool>.Failure($"医疗案例不存在: {id}");
+                }
 
-        #endregion Core Operations
+                await _repository.DeleteAsync(medicalCase);
+                await _repository.SaveChangesAsync();
 
-        #region 简化的状态管理 (只保留基础状态转换)
+                return ServiceResult<bool>.Success(true, "医疗案例删除成功");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "删除医疗案例失败: {Id}", id);
+                return ServiceResult<bool>.Failure($"删除失败: {ex.Message}");
+            }
+        }
 
         /// <inheritdoc/>
         public async Task<ServiceResult<bool>> CompleteAsync(Guid id, string completionReason)
         {
-            // 简化实现：直接使用软删除功能将状态设为Closed
-            return await _businessService.DeleteAsync(id);
-        }
-
-        /// <inheritdoc/>
-        public Task<ServiceResult<bool>> Suspend(Guid id, string reason)
-        {
-            // 简化实现：Record-Only模式不支持复杂状态管理
-            return Task.FromResult(ServiceResult<bool>.Failure("简化版本不支持暂停功能，请使用完成或删除操作"));
-        }
-
-        /// <inheritdoc/>
-        public Task<ServiceResult<bool>> Resume(Guid id)
-        {
-            // 简化实现：Record-Only模式不支持复杂状态管理
-            return Task.FromResult(ServiceResult<bool>.Failure("简化版本不支持恢复功能，请创建新的医疗案例"));
-        }
-
-        /// <inheritdoc/>
-        public async Task<ServiceResult<bool>> Archive(Guid id, string archiveReason)
-        {
-            // 简化实现：归档等同于完成
-            return await CompleteAsync(id, archiveReason);
-        }
-
-        /// <inheritdoc/>
-        public async Task<ServiceResult<bool>> UpdateStatus(Guid id, int status)
-        {
-            // 简化实现：只支持Active(10) -> Closed(20)的状态转换
-            if (status == 20) // Closed
+            try
             {
-                return await _businessService.DeleteAsync(id);
+                var medicalCase = await _repository.GetByIdAsync(id);
+                if (medicalCase == null)
+                {
+                    return ServiceResult<bool>.Failure($"医疗案例不存在: {id}");
+                }
+
+                medicalCase.Status = MedicalCaseStatus.Completed;
+medicalCase.UpdatedAt = DateTime.Now;
+
+                await _repository.UpdateAsync(medicalCase);
+                await _repository.SaveChangesAsync();
+
+                return ServiceResult<bool>.Success(true, "医疗案例已完成");
             }
-            else
+            catch (Exception ex)
             {
-                return ServiceResult<bool>.Failure("简化版本只支持关闭医疗案例，请使用删除操作");
+                _logger.LogError(ex, "完成医疗案例失败: {Id}", id);
+                return ServiceResult<bool>.Failure($"操作失败: {ex.Message}");
+            }
+        }
+
+        /// <inheritdoc/>
+        public async Task<ServiceResult<bool>> Suspend(Guid id, string reason)
+        {
+            try
+            {
+                var medicalCase = await _repository.GetByIdAsync(id);
+                if (medicalCase == null)
+                {
+                    return ServiceResult<bool>.Failure($"医疗案例不存在: {id}");
+                }
+
+                medicalCase.Status = MedicalCaseStatus.Suspended;
+medicalCase.UpdatedAt = DateTime.Now;
+
+                await _repository.UpdateAsync(medicalCase);
+                await _repository.SaveChangesAsync();
+
+                return ServiceResult<bool>.Success(true, "医疗案例已暂停");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "暂停医疗案例失败: {Id}", id);
+                return ServiceResult<bool>.Failure($"操作失败: {ex.Message}");
+            }
+        }
+
+        /// <inheritdoc/>
+        public async Task<ServiceResult<bool>> Resume(Guid id)
+        {
+            try
+            {
+                var medicalCase = await _repository.GetByIdAsync(id);
+                if (medicalCase == null)
+                {
+                    return ServiceResult<bool>.Failure($"医疗案例不存在: {id}");
+                }
+
+                if (medicalCase.Status != MedicalCaseStatus.Suspended)
+                {
+                    return ServiceResult<bool>.Failure("只能恢复已暂停的医疗案例");
+                }
+
+                medicalCase.Status = MedicalCaseStatus.Active;
+medicalCase.UpdatedAt = DateTime.Now;
+
+                await _repository.UpdateAsync(medicalCase);
+                await _repository.SaveChangesAsync();
+
+                return ServiceResult<bool>.Success(true, "医疗案例已恢复");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "恢复医疗案例失败: {Id}", id);
+                return ServiceResult<bool>.Failure($"操作失败: {ex.Message}");
             }
         }
 
         /// <inheritdoc/>
         public async Task<ServiceResult<bool>> CancelConsultationAsync(Guid id, string reason)
         {
-            // 简化实现：取消诊疗等同于完成案例
-            return await CompleteAsync(id, reason);
-        }
-
-        #endregion 简化的状态管理
-
-        #region Batch Operations (批量操作)
-
-        public async Task<ServiceResult<int>> BatchUpdateStatusAsync(Guid[] ids, int status)
-        {
-            // 简化实现：只支持批量关闭
-            if (status != 20) // 只支持Closed状态
+            try
             {
-                return ServiceResult<int>.Failure("简化版本只支持批量关闭医疗案例");
-            }
-
-            int successCount = 0;
-            foreach (var id in ids)
-            {
-                var result = await _businessService.DeleteAsync(id);
-                if (result.IsSuccess)
+                var medicalCase = await _repository.GetByIdAsync(id);
+                if (medicalCase == null)
                 {
-                    successCount++;
+                    return ServiceResult<bool>.Failure($"医疗案例不存在: {id}");
                 }
+
+                medicalCase.Status = MedicalCaseStatus.Cancelled;
+medicalCase.UpdatedAt = DateTime.Now;
+
+                await _repository.UpdateAsync(medicalCase);
+                await _repository.SaveChangesAsync();
+
+                return ServiceResult<bool>.Success(true, "医疗案例已取消");
             }
-
-            return ServiceResult<int>.Success(successCount);
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "取消医疗案例失败: {Id}", id);
+                return ServiceResult<bool>.Failure($"操作失败: {ex.Message}");
+            }
         }
-
-        #endregion Batch Operations
-
-        #region Statistics and Reports (报告功能)
-
-        public async Task<ServiceResult<object>> GetStatisticsAsync()
-            => await _queryService.GetStatisticsAsync();
 
         /// <inheritdoc/>
-        public Task<ServiceResult<object>> GetStatistics(DateTime? startDate, DateTime? endDate)
+        public async Task<ServiceResult<bool>> UpdateStatus(Guid id, int status)
         {
-            // 委托给无参数版本，忽略日期参数（向后兼容）
-            return GetStatisticsAsync();
-        }
-
-        public async Task<ServiceResult<byte[]>> PrintMedicalRecordAsync(Guid caseId)
-        {
-            var printResult = await _businessService.PrintMedicalRecordAsync(caseId, new { Format = "PDF" });
-            if (!printResult.IsSuccess)
+            try
             {
-                return ServiceResult<byte[]>.Failure(printResult.ErrorMessage ?? "打印失败");
-            }
+                var medicalCase = await _repository.GetByIdAsync(id);
+                if (medicalCase == null)
+                {
+                    return ServiceResult<bool>.Failure($"医疗案例不存在: {id}");
+                }
 
-            // 简化实现：返回基础打印数据的字节
-            var printContent = System.Text.Json.JsonSerializer.Serialize(printResult.Data);
-            var bytes = System.Text.Encoding.UTF8.GetBytes(printContent);
-            return ServiceResult<byte[]>.Success(bytes);
+                medicalCase.Status = (MedicalCaseStatus)status;
+                medicalCase.UpdatedAt = DateTime.Now;
+
+                await _repository.UpdateAsync(medicalCase);
+                await _repository.SaveChangesAsync();
+
+                return ServiceResult<bool>.Success(true, "状态更新成功");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "更新医疗案例状态失败: {Id}", id);
+                return ServiceResult<bool>.Failure($"操作失败: {ex.Message}");
+            }
         }
 
-        #endregion Statistics and Reports
+        /// <inheritdoc/>
+        public async Task<ServiceResult<bool>> Archive(Guid id, string archiveReason)
+        {
+            try
+            {
+                var medicalCase = await _repository.GetByIdAsync(id);
+                if (medicalCase == null)
+                {
+                    return ServiceResult<bool>.Failure($"医疗案例不存在: {id}");
+                }
+
+                medicalCase.Status = MedicalCaseStatus.Archived;
+medicalCase.UpdatedAt = DateTime.Now;
+
+                await _repository.UpdateAsync(medicalCase);
+                await _repository.SaveChangesAsync();
+
+                return ServiceResult<bool>.Success(true, "医疗案例已归档");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "归档医疗案例失败: {Id}", id);
+                return ServiceResult<bool>.Failure($"操作失败: {ex.Message}");
+            }
+        }
+
+        /// <inheritdoc/>
+        public async Task<ServiceResult<object>> GetStatistics(DateTime? startDate, DateTime? endDate)
+        {
+            try
+            {
+                var queryable = _context.MedicalCases.AsNoTracking();
+
+                if (startDate.HasValue)
+                {
+                    queryable = queryable.Where(x => x.CreatedAt >= startDate.Value);
+                }
+
+                if (endDate.HasValue)
+                {
+                    queryable = queryable.Where(x => x.CreatedAt <= endDate.Value);
+                }
+
+                var statistics = new
+                {
+                    Total = await queryable.CountAsync(),
+                    InProgress = await queryable.CountAsync(x => x.Status == MedicalCaseStatus.Active),
+                    Completed = await queryable.CountAsync(x => x.Status == MedicalCaseStatus.Completed),
+                    Cancelled = await queryable.CountAsync(x => x.Status == MedicalCaseStatus.Cancelled),
+                    Suspended = await queryable.CountAsync(x => x.Status == MedicalCaseStatus.Suspended),
+                    Archived = await queryable.CountAsync(x => x.Status == MedicalCaseStatus.Archived)
+                };
+
+                return ServiceResult<object>.Success(statistics);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取医疗案例统计信息失败");
+                return ServiceResult<object>.Failure($"获取统计失败: {ex.Message}");
+            }
+        }
+
+        #endregion
     }
 }

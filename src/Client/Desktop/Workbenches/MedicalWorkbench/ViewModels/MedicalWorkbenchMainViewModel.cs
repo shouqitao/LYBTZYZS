@@ -5,6 +5,7 @@ using LYBT.Desktop.Core.ViewModels.Base;
 using LYBT.Desktop.Workbench.Medical.Navigation;
 using LYBT.Desktop.Workbench.Core;
 using LYBT.Shared.Interfaces.Services;
+using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Regions;
@@ -16,7 +17,7 @@ namespace LYBT.Desktop.Workbench.Medical.ViewModels
     /// 诊疗工作台主视图模型
     /// 为医生提供专业的诊疗相关功能导航
     /// </summary>
-    public class MedicalWorkbenchMainViewModel : ServiceViewModel
+    public class MedicalWorkbenchMainViewModel : ModernViewModelBase
     {
         private readonly IRegionManager _regionManager;
         private readonly IWorkbenchRouter _workbenchRouter;
@@ -67,9 +68,10 @@ namespace LYBT.Desktop.Workbench.Medical.ViewModels
             IEventAggregator eventAggregator,
             IWorkbenchRouter workbenchRouter,
             IMedicalWorkbenchNavigator navigator,
+            ILoggerFactory loggerFactory,
             IErrorHandlingService errorHandlingService,
             IPatientService? patientService = null)
-            : base(eventAggregator, errorHandlingService)
+            : base(eventAggregator, loggerFactory, errorHandlingService)
         {
             _regionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
             _workbenchRouter = workbenchRouter ?? throw new ArgumentNullException(nameof(workbenchRouter));

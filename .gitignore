@@ -129,7 +129,6 @@ TestResults/
 *.coveragexml
 
 # 任务管理文件
-tasks/
 
 # IDE和编辑器配置文件（已在上方定义）
 

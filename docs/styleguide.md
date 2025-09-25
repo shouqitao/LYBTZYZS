@@ -1,11 +1,15 @@
-﻿# 代码风格与规范
+# 代码风格与规范
 
 - 缩进：C# 4 空格；XML/JSON/YAML 2 空格；UTF-8，CRLF，去除行尾空白
 - using 顺序：`System.*` 优先；using 放在命名空间外；尽量单行
 - 花括号/换行：左花括号换行；`else/catch/finally` 前换行
 - 命名：类型与非字段成员 PascalCase；接口前缀 `I`；私有字段 `_camelCase`；异步方法以 `Async` 结尾
 - 分析器：启用 StyleCop.Analyzers；修复警告或给出充分理由的抑制
-- 文档：公共 API 适度 XML 注释；示例与命令配短中文说明
+- 文档注释：公共 API 适度 XML 注释；示例与命令配短中文说明
+
+## 文档编写
+- 文档命名、索引与审阅流程遵循 `docs/development/documentation-guidelines.md`
+- 新增文档需更新 `docs/index.md` 与对应分册索引；归档遵循 `docs/ARCHIVE.md`
 
 ## 常见 StyleCop 抑制示例
 - 局部抑制（建议仅限必要范围）：

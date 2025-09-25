@@ -22,9 +22,7 @@ namespace LYBT.Module.Auth
             // 注册Repository层
             services.AddScoped<IAuthRepository, AuthRepository>();
 
-            // 注册核心服务层 - UltraThink双层架构
-            services.AddScoped<IAuthQueryService, AuthQueryService>();       // 查询服务层
-            services.AddScoped<IAuthBusinessService, AuthBusinessService>(); // 业务服务层
+            // 注册核心服务层 - 简化架构
             services.AddScoped<IAuthService, AuthService>();                 // 主服务：纯委托模式
             services.AddScoped<SysAdminHandler>();                           // 管理员特殊处理
 

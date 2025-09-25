@@ -1,5 +1,8 @@
-using LYBT.Desktop.Core.Models.Common;
-using SharedCommon = LYBT.Shared.Models.Contracts.Common;
+using System;
+using System.Threading.Tasks;
+// using LYBT.Desktop.Core.Models.Common; // Removed - ErrorContext now from Shared
+using LYBT.Shared.Models.Contracts.Common;
+using SharedCommon = LYBT.Shared.Models.Contracts.Common.SharedCommon;
 
 namespace LYBT.Desktop.Core.Interfaces.Services
 {

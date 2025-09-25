@@ -1,4 +1,4 @@
-﻿# PRD 完成总结 — server-shared-inventory-and-structure-optimization — 2025-09-21
+# PRD 完成总结 — server-shared-inventory-and-structure-optimization — 2025-09-21
 
 - 关联 PRD：.claude/prds/server-shared-inventory-and-structure-optimization-20250921.md
 
@@ -28,3 +28,4 @@
 ## 建议/下一步
 - 为 Shared 层编写 ArchTests 并接入 CI 门禁
 - 若采纳结构优化方案，则另立实现 PRD 与迁移回滚计划
+

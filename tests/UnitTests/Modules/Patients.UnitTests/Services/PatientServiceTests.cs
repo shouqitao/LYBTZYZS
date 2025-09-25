@@ -1,53 +1,67 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using AutoMapper;
 using FluentAssertions;
+using LYBT.Entities.Patients;
 using LYBT.Module.Patients.Interfaces;
 using LYBT.Module.Patients.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
-using LYBT.Shared.Interfaces.Services;
+using System.Linq.Expressions;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
 namespace LYBT.Module.Patients.Tests.Services
 {
     /// <summary>
-    /// PatientService 完整单元测试 - UltraThink双层架构
-    /// 主Service委托模式测试，验证所有委托调用的正确�?
+    /// PatientService 完整单元测试 - 统一服务架构
+    /// 测试服务层的所有业务逻辑和查询操作
     /// </summary>
     public class PatientServiceTests
     {
         private readonly PatientService _patientService;
-        private readonly Mock<IPatientQueryService> _mockQueryService;
-        private readonly Mock<IPatientBusinessService> _mockBusinessService;
+        private readonly Mock<IPatientRepository> _mockRepository;
+        private readonly Mock<IMapper> _mockMapper;
+        private readonly Mock<ILogger<PatientService>> _mockLogger;
 
         public PatientServiceTests()
         {
-            _mockQueryService = new Mock<IPatientQueryService>();
-            _mockBusinessService = new Mock<IPatientBusinessService>();
-            _patientService = new PatientService(_mockQueryService.Object, _mockBusinessService.Object);
+            _mockRepository = new Mock<IPatientRepository>();
+            _mockMapper = new Mock<IMapper>();
+            _mockLogger = new Mock<ILogger<PatientService>>();
+            _patientService = new PatientService(_mockRepository.Object, _mockMapper.Object, _mockLogger.Object);
         }
 
-        #region 构造函数测�?
+        #region 构造函数测试
 
         [Fact]
-        public void Constructor_Should_Throw_When_QueryService_Is_Null()
+        public void Constructor_Should_Throw_When_Repository_Is_Null()
         {
             // Act & Assert
-            var action = () => new PatientService(null!, _mockBusinessService.Object);
+            var action = () => new PatientService(null!, _mockMapper.Object, _mockLogger.Object);
             action.Should().Throw<ArgumentNullException>()
-                .WithParameterName("queryService");
+                .WithParameterName("patientRepository");
         }
 
         [Fact]
-        public void Constructor_Should_Throw_When_BusinessService_Is_Null()
+        public void Constructor_Should_Throw_When_Mapper_Is_Null()
         {
             // Act & Assert
-            var action = () => new PatientService(_mockQueryService.Object, null!);
+            var action = () => new PatientService(_mockRepository.Object, null!, _mockLogger.Object);
             action.Should().Throw<ArgumentNullException>()
-                .WithParameterName("businessService");
+                .WithParameterName("mapper");
+        }
+
+        [Fact]
+        public void Constructor_Should_Throw_When_Logger_Is_Null()
+        {
+            // Act & Assert
+            var action = () => new PatientService(_mockRepository.Object, _mockMapper.Object, null!);
+            action.Should().Throw<ArgumentNullException>()
+                .WithParameterName("logger");
         }
 
         #endregion
@@ -55,108 +69,69 @@ namespace LYBT.Module.Patients.Tests.Services
         #region 查询操作测试
 
         [Fact]
-        public async Task GetPagedAsync_Should_Delegate_To_QueryService_With_Correct_Mapping()
-        {
-            // Arrange
-            var query = new PatientSearchDto
-            {
-                PageIndex = 1,
-                PageSize = 10,
-                Keyword = "test"
-            };
-            var expectedResult = ServiceResult<PagedResult<PatientDto>>.Success(new PagedResult<PatientDto>());
-
-            _mockQueryService.Setup(x => x.GetPagedAsync(It.IsAny<PagedQueryBaseDto>()))
-                .ReturnsAsync(expectedResult);
-
-            // Act
-            var result = await _patientService.GetPagedAsync(query);
-
-            // Assert
-            result.Should().BeSameAs(expectedResult);
-            _mockQueryService.Verify(x => x.GetPagedAsync(It.Is<PagedQueryBaseDto>(q =>
-                q.PageIndex == query.PageIndex &&
-                q.PageSize == query.PageSize &&
-                q.Keyword == query.Keyword)), Times.Once);
-        }
-
-        [Fact]
-        public async Task GetByIdAsync_Should_Delegate_To_QueryService()
+        public async Task GetByIdAsync_Should_Return_Patient_When_Found()
         {
             // Arrange
             var patientId = Guid.NewGuid();
+            var patient = new Patient { Id = patientId, Name = "张三" };
             var patientDto = new PatientDto { Id = patientId, Name = "张三" };
-            var expectedResult = ServiceResult<PatientDto>.Success(patientDto);
 
-            _mockQueryService.Setup(x => x.GetByIdAsync(patientId)).ReturnsAsync(expectedResult);
+            _mockRepository.Setup(x => x.GetByIdAsync(patientId, false)).ReturnsAsync(patient);
+            _mockMapper.Setup(x => x.Map<PatientDto>(It.IsAny<Patient>())).Returns(patientDto);
 
             // Act
             var result = await _patientService.GetByIdAsync(patientId);
 
             // Assert
-            result.Should().BeSameAs(expectedResult);
-            _mockQueryService.Verify(x => x.GetByIdAsync(patientId), Times.Once);
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().Be(patientDto);
+            _mockRepository.Verify(x => x.GetByIdAsync(patientId, false), Times.Once);
         }
 
         [Fact]
-        public async Task GetByIdCardAsync_Should_Delegate_To_QueryService()
+        public async Task GetByIdAsync_Should_Return_NotFound_When_Patient_Not_Exists()
         {
             // Arrange
-            var idCard = "110101199001011234";
-            var patientDto = new PatientDto { IdNumber = idCard, Name = "张三" };
-            var expectedResult = ServiceResult<PatientDto>.Success(patientDto);
-
-            _mockQueryService.Setup(x => x.GetByIdCardAsync(idCard)).ReturnsAsync(expectedResult);
+            var patientId = Guid.NewGuid();
+            _mockRepository.Setup(x => x.GetByIdAsync(patientId, false)).ReturnsAsync((Patient?)null);
 
             // Act
-            var result = await _patientService.GetByIdCardAsync(idCard);
+            var result = await _patientService.GetByIdAsync(patientId);
 
             // Assert
-            result.Should().BeSameAs(expectedResult);
-            _mockQueryService.Verify(x => x.GetByIdCardAsync(idCard), Times.Once);
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeFalse();
+            result.ErrorMessage.Should().Contain("患者不存在");
         }
 
         [Fact]
-        public async Task GetByPhoneAsync_Should_Delegate_To_QueryService()
-        {
-            // Arrange
-            var phone = "13800138000";
-            var patients = new List<PatientDto>
-            {
-                new() { PhoneNumber = phone, Name = "张三" }
-            };
-            var expectedResult = ServiceResult<List<PatientDto>>.Success(patients);
-
-            _mockQueryService.Setup(x => x.GetByPhoneAsync(phone)).ReturnsAsync(expectedResult);
-
-            // Act
-            var result = await _patientService.GetByPhoneAsync(phone);
-
-            // Assert
-            result.Should().BeSameAs(expectedResult);
-            _mockQueryService.Verify(x => x.GetByPhoneAsync(phone), Times.Once);
-        }
-
-        [Fact]
-        public async Task SearchAsync_Should_Delegate_To_QueryService()
+        public async Task SearchAsync_Should_Return_Patients_Matching_Keyword()
         {
             // Arrange
             var keyword = "张";
-            var patients = new List<PatientDto>
+            var patients = new List<Patient>
             {
                 new() { Name = "张三" },
                 new() { Name = "张四" }
             };
-            var expectedResult = ServiceResult<List<PatientDto>>.Success(patients);
+            var patientDtos = new List<PatientDto>
+            {
+                new() { Name = "张三" },
+                new() { Name = "张四" }
+            };
 
-            _mockQueryService.Setup(x => x.SearchAsync(keyword)).ReturnsAsync(expectedResult);
+            _mockRepository.Setup(x => x.FindAsync(It.IsAny<System.Linq.Expressions.Expression<Func<Patient, bool>>>()))
+                .ReturnsAsync(patients);
+            _mockMapper.Setup(x => x.Map<List<PatientDto>>(patients)).Returns(patientDtos);
 
             // Act
             var result = await _patientService.SearchAsync(keyword);
 
             // Assert
-            result.Should().BeSameAs(expectedResult);
-            _mockQueryService.Verify(x => x.SearchAsync(keyword), Times.Once);
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().HaveCount(2);
         }
 
         #endregion
@@ -164,61 +139,70 @@ namespace LYBT.Module.Patients.Tests.Services
         #region 业务操作测试
 
         [Fact]
-        public async Task CreateAsync_Should_Delegate_To_BusinessService()
+        public async Task CreateAsync_Should_Create_Patient_Successfully()
         {
             // Arrange
             var createDto = new PatientCreateDto
             {
-                Name = "张三",
+                Name = "李四",
                 Gender = Gender.Male,
-                IdNumber = "110101199001011234"
+                BirthDate = DateTime.Today.AddYears(-30),
+                PhoneNumber = "13900139000"
             };
-            var createdPatient = new PatientDto { Id = Guid.NewGuid(), Name = "张三" };
-            var expectedResult = ServiceResult<PatientDto>.Success(createdPatient);
+            var patient = new Patient { Id = Guid.NewGuid(), Name = "李四" };
+            var patientDto = new PatientDto { Id = patient.Id, Name = "李四" };
 
-            _mockBusinessService.Setup(x => x.CreateAsync(It.IsAny<PatientCreateDto>(), It.IsAny<CancellationToken>())).ReturnsAsync(expectedResult);
+            _mockMapper.Setup(x => x.Map<Patient>(It.IsAny<PatientCreateDto>())).Returns(patient);
+            _mockRepository.Setup(x => x.AddAsync(It.IsAny<Patient>())).ReturnsAsync(patient);
+            _mockMapper.Setup(x => x.Map<PatientDto>(It.IsAny<Patient>())).Returns(patientDto);
 
             // Act
             var result = await _patientService.CreateAsync(createDto);
 
             // Assert
-            result.Should().BeSameAs(expectedResult);
-            _mockBusinessService.Verify(x => x.CreateAsync(createDto, It.IsAny<CancellationToken>()), Times.Once);
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().Be(patientDto);
+            _mockRepository.Verify(x => x.AddAsync(It.IsAny<Patient>()), Times.Once);
         }
 
         [Fact]
-        public async Task UpdateAsync_Should_Delegate_To_BusinessService()
+        public async Task UpdateAsync_Should_Update_Patient_When_Exists()
         {
             // Arrange
             var patientId = Guid.NewGuid();
             var updateDto = new PatientUpdateDto
             {
-                Id = patientId,
-                Name = "张三",
-                PhoneNumber = "13800138001" // 正确的属性名
+                Name = "王五",
+                PhoneNumber = "13800138000"
             };
-            var updatedPatient = new PatientDto { Id = patientId, Name = "张三" };
-            var expectedResult = ServiceResult<PatientDto>.Success(updatedPatient);
+            var existingPatient = new Patient { Id = patientId, Name = "张三" };
+            var updatedPatient = new Patient { Id = patientId, Name = "王五" };
+            var patientDto = new PatientDto { Id = patientId, Name = "王五" };
 
-            _mockBusinessService.Setup(x => x.UpdateAsync(It.IsAny<Guid>(), It.IsAny<PatientUpdateDto>())).ReturnsAsync(expectedResult);
+            _mockRepository.Setup(x => x.GetByIdAsync(patientId, true)).ReturnsAsync(existingPatient);
+            _mockMapper.Setup(x => x.Map(It.IsAny<PatientUpdateDto>(), It.IsAny<Patient>())).Returns(updatedPatient);
+            _mockRepository.Setup(x => x.UpdateAsync(It.IsAny<Patient>())).ReturnsAsync(updatedPatient);
+            _mockMapper.Setup(x => x.Map<PatientDto>(updatedPatient)).Returns(patientDto);
 
             // Act
             var result = await _patientService.UpdateAsync(patientId, updateDto);
 
             // Assert
-            result.Should().BeSameAs(expectedResult);
-            _mockBusinessService.Verify(x => x.UpdateAsync(patientId, updateDto), Times.Once);
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().Be(patientDto);
         }
 
         [Fact]
-        public async Task DeleteAsync_Should_Delegate_To_BusinessService()
+        public async Task DeleteAsync_Should_Soft_Delete_Patient()
         {
             // Arrange
             var patientId = Guid.NewGuid();
-            var deletedPatient = new PatientDto { Id = patientId, Name = "已删除患者" };
-            var expectedResult = ServiceResult<PatientDto>.Success(deletedPatient);
+            var patient = new Patient { Id = patientId, Name = "张三", IsDeleted = false };
 
-            _mockBusinessService.Setup(x => x.DeleteAsync(patientId)).ReturnsAsync(expectedResult);
+            _mockRepository.Setup(x => x.GetByIdAsync(patientId, false)).ReturnsAsync(patient);
+            _mockRepository.Setup(x => x.UpdateAsync(It.IsAny<Patient>())).ReturnsAsync((Patient p) => p);
 
             // Act
             var result = await _patientService.DeleteAsync(patientId);
@@ -227,21 +211,18 @@ namespace LYBT.Module.Patients.Tests.Services
             result.Should().NotBeNull();
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().BeTrue();
-            _mockBusinessService.Verify(x => x.DeleteAsync(patientId), Times.Once);
+            _mockRepository.Verify(x => x.UpdateAsync(It.Is<Patient>(p => p.IsDeleted == true)), Times.Once);
         }
 
-        #endregion
-
-        #region 状态操作测试
-
         [Fact]
-        public async Task EnableAsync_Should_Delegate_To_BusinessService()
+        public async Task EnableAsync_Should_Enable_Patient()
         {
             // Arrange
             var patientId = Guid.NewGuid();
-            var expectedResult = ServiceResult<bool>.Success(true);
+            var patient = new Patient { Id = patientId, Name = "张三", Status = CommonStatus.Disabled };
 
-            _mockBusinessService.Setup(x => x.EnableAsync(It.IsAny<List<Guid>>())).Returns(Task.FromResult(expectedResult));
+            _mockRepository.Setup(x => x.GetByIdAsync(patientId, false)).ReturnsAsync(patient);
+            _mockRepository.Setup(x => x.UpdateAsync(It.IsAny<Patient>())).ReturnsAsync((Patient p) => p);
 
             // Act
             var result = await _patientService.EnableAsync(patientId);
@@ -249,18 +230,18 @@ namespace LYBT.Module.Patients.Tests.Services
             // Assert
             result.Should().NotBeNull();
             result.IsSuccess.Should().BeTrue();
-            _mockBusinessService.Verify(x => x.EnableAsync(It.Is<List<Guid>>(list =>
-                list.Count == 1 && list[0] == patientId)), Times.Once);
+            _mockRepository.Verify(x => x.UpdateAsync(It.Is<Patient>(p => p.Status == CommonStatus.Enabled)), Times.Once);
         }
 
         [Fact]
-        public async Task DisableAsync_Should_Delegate_To_BusinessService()
+        public async Task DisableAsync_Should_Disable_Patient()
         {
             // Arrange
             var patientId = Guid.NewGuid();
-            var expectedResult = ServiceResult<bool>.Success(true);
+            var patient = new Patient { Id = patientId, Name = "张三", Status = CommonStatus.Enabled };
 
-            _mockBusinessService.Setup(x => x.DisableAsync(It.IsAny<List<Guid>>())).Returns(Task.FromResult(expectedResult));
+            _mockRepository.Setup(x => x.GetByIdAsync(patientId, false)).ReturnsAsync(patient);
+            _mockRepository.Setup(x => x.UpdateAsync(It.IsAny<Patient>())).ReturnsAsync((Patient p) => p);
 
             // Act
             var result = await _patientService.DisableAsync(patientId);
@@ -268,44 +249,7 @@ namespace LYBT.Module.Patients.Tests.Services
             // Assert
             result.Should().NotBeNull();
             result.IsSuccess.Should().BeTrue();
-            _mockBusinessService.Verify(x => x.DisableAsync(It.Is<List<Guid>>(list =>
-                list.Count == 1 && list[0] == patientId)), Times.Once);
-        }
-
-        [Fact]
-        public async Task EnableAsync_Should_Return_Failure_When_BusinessService_Fails()
-        {
-            // Arrange
-            var patientId = Guid.NewGuid();
-            var expectedResult = ServiceResult<bool>.Failure("启用失败");
-
-            _mockBusinessService.Setup(x => x.EnableAsync(It.IsAny<List<Guid>>())).Returns(Task.FromResult(expectedResult));
-
-            // Act
-            var result = await _patientService.EnableAsync(patientId);
-
-            // Assert
-            result.Should().NotBeNull();
-            result.IsSuccess.Should().BeFalse();
-            result.ErrorMessage.Should().Be("启用失败");
-        }
-
-        [Fact]
-        public async Task DisableAsync_Should_Return_Failure_When_BusinessService_Fails()
-        {
-            // Arrange
-            var patientId = Guid.NewGuid();
-            var expectedResult = ServiceResult<bool>.Failure("禁用失败");
-
-            _mockBusinessService.Setup(x => x.DisableAsync(It.IsAny<List<Guid>>())).Returns(Task.FromResult(expectedResult));
-
-            // Act
-            var result = await _patientService.DisableAsync(patientId);
-
-            // Assert
-            result.Should().NotBeNull();
-            result.IsSuccess.Should().BeFalse();
-            result.ErrorMessage.Should().Be("禁用失败");
+            _mockRepository.Verify(x => x.UpdateAsync(It.Is<Patient>(p => p.Status == CommonStatus.Disabled)), Times.Once);
         }
 
         #endregion
@@ -313,33 +257,19 @@ namespace LYBT.Module.Patients.Tests.Services
         #region 批量操作测试
 
         [Fact]
-        public async Task ImportPatientsAsync_Should_Convert_And_Delegate_To_BusinessService()
+        public async Task ImportPatientsAsync_Should_Import_Multiple_Patients()
         {
             // Arrange
             var patients = new List<PatientCreateDto>
             {
-                new PatientCreateDto
-                {
-                    Name = "张三",
-                    Gender = Gender.Male,
-                    BirthDate = DateTime.Parse("1990-01-01"),
-                    PhoneNumber = "13800138000",
-                    IdNumber = "110101199001011234",
-                    Address = "北京市朝阳区",
-                    EmergencyContactName = "张四",
-                    EmergencyContactPhone = "13800138001",
-                    AllergyHistory = "青霉素过敏"
-                }
+                new() { Name = "患者1", PhoneNumber = "13800000001" },
+                new() { Name = "患者2", PhoneNumber = "13800000002" }
             };
 
-            var importedPatients = new List<PatientDto>
-            {
-                new PatientDto { Id = Guid.NewGuid(), Name = "张三" }
-            };
-            var expectedResult = ServiceResult<List<PatientDto>>.Success(importedPatients);
-
-            _mockBusinessService.Setup(x => x.ImportPatientsAsync(It.IsAny<List<PatientImportDto>>()))
-                .ReturnsAsync(expectedResult);
+            _mockMapper.Setup(x => x.Map<Patient>(It.IsAny<PatientCreateDto>()))
+                .Returns<PatientCreateDto>(dto => new Patient { Name = dto.Name });
+            _mockRepository.Setup(x => x.AddAsync(It.IsAny<Patient>()))
+                .ReturnsAsync((Patient p) => p);
 
             // Act
             var result = await _patientService.ImportPatientsAsync(patients);
@@ -347,114 +277,21 @@ namespace LYBT.Module.Patients.Tests.Services
             // Assert
             result.Should().NotBeNull();
             result.IsSuccess.Should().BeTrue();
-            result.Data.Should().NotBeNull();
-
-            _mockBusinessService.Verify(x => x.ImportPatientsAsync(It.Is<List<PatientImportDto>>(list =>
-                list.Count == 1 &&
-                list[0].Name == "张三" &&
-                list[0].GenderText == "男" &&
-                list[0].BirthDateText == "1990-01-01" &&
-                list[0].PhoneNumber == "13800138000" &&
-                list[0].IdCardNumber == "110101199001011234")), Times.Once);
+            _mockRepository.Verify(x => x.AddAsync(It.IsAny<Patient>()), Times.Exactly(2));
         }
 
         [Fact]
-        public async Task ImportPatientsAsync_Should_Handle_Female_Gender()
+        public async Task ExportPatientsAsync_Should_Export_Patient_Data()
         {
             // Arrange
-            var patients = new List<PatientCreateDto>
+            var query = new PagedQueryBaseDto { PageIndex = 1, PageSize = 10 };
+            var patients = new List<Patient>
             {
-                new PatientCreateDto
-                {
-                    Name = "李四",
-                    Gender = Gender.Female,
-                    BirthDate = DateTime.Parse("1995-05-05")
-                }
+                new() { Name = "张三" },
+                new() { Name = "李四" }
             };
 
-            var importedPatients = new List<PatientDto>
-            {
-                new PatientDto { Id = Guid.NewGuid(), Name = "李四" }
-            };
-            var expectedResult = ServiceResult<List<PatientDto>>.Success(importedPatients);
-
-            _mockBusinessService.Setup(x => x.ImportPatientsAsync(It.IsAny<List<PatientImportDto>>()))
-                .ReturnsAsync(expectedResult);
-
-            // Act
-            var result = await _patientService.ImportPatientsAsync(patients);
-
-            // Assert
-            result.Should().NotBeNull();
-            result.IsSuccess.Should().BeTrue();
-
-            _mockBusinessService.Verify(x => x.ImportPatientsAsync(It.Is<List<PatientImportDto>>(list =>
-                list.Count == 1 &&
-                list[0].GenderText == "女")), Times.Once);
-        }
-
-        [Fact]
-        public async Task ImportPatientsAsync_Should_Return_Failure_When_BusinessService_Fails()
-        {
-            // Arrange
-            var patients = new List<PatientCreateDto>
-            {
-                new PatientCreateDto { Name = "测试患者" }
-            };
-
-            var expectedResult = ServiceResult<List<PatientDto>>.Failure("导入失败");
-
-            _mockBusinessService.Setup(x => x.ImportPatientsAsync(It.IsAny<List<PatientImportDto>>()))
-                .ReturnsAsync(expectedResult);
-
-            // Act
-            var result = await _patientService.ImportPatientsAsync(patients);
-
-            // Assert
-            result.Should().NotBeNull();
-            result.IsSuccess.Should().BeFalse();
-            result.ErrorMessage.Should().Be("导入失败");
-        }
-
-        [Fact]
-        public async Task ExportPatientsAsync_Should_Convert_To_CSV_Bytes()
-        {
-            // Arrange
-            var query = new PagedQueryBaseDto
-            {
-                Keyword = "张",
-                PageIndex = 1,
-                PageSize = 10
-            };
-
-            var patients = new List<PatientDto>
-            {
-                new PatientDto
-                {
-                    Id = Guid.NewGuid(),
-                    Name = "张三",
-                    Gender = Gender.Male,
-                    BirthDate = DateTime.Parse("1990-01-01"),
-                    PhoneNumber = "13800138000",
-                    IdNumber = "110101199001011234",
-                    Address = "北京市朝阳区"
-                },
-                new PatientDto
-                {
-                    Id = Guid.NewGuid(),
-                    Name = "张四",
-                    Gender = Gender.Female,
-                    BirthDate = DateTime.Parse("1995-05-05"),
-                    PhoneNumber = "13800138001",
-                    IdNumber = "110101199505051234",
-                    Address = "上海市浦东区"
-                }
-            };
-
-            var expectedResult = ServiceResult<List<PatientDto>>.Success(patients);
-
-            _mockBusinessService.Setup(x => x.ExportPatientsAsync(It.IsAny<PatientExportDto>()))
-                .ReturnsAsync(expectedResult);
+            _mockRepository.Setup(x => x.GetAllAsync()).ReturnsAsync(patients);
 
             // Act
             var result = await _patientService.ExportPatientsAsync(query);
@@ -463,121 +300,41 @@ namespace LYBT.Module.Patients.Tests.Services
             result.Should().NotBeNull();
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
-
-            var csvContent = System.Text.Encoding.UTF8.GetString(result.Data!);
-            csvContent.Should().Contain("姓名,性别,出生日期,手机号码,身份证号,地址");
-            csvContent.Should().Contain("张三,男,1990-01-01,13800138000,110101199001011234,北京市朝阳区");
-            csvContent.Should().Contain("张四,女,1995-05-05,13800138001,110101199505051234,上海市浦东区");
-
-            _mockBusinessService.Verify(x => x.ExportPatientsAsync(It.Is<PatientExportDto>(dto =>
-                dto.Name == "张")), Times.Once);
-        }
-
-        [Fact]
-        public async Task ExportPatientsAsync_Should_Handle_Empty_Result()
-        {
-            // Arrange
-            var query = new PagedQueryBaseDto { Keyword = "不存在" };
-            var expectedResult = ServiceResult<List<PatientDto>>.Success(new List<PatientDto>());
-
-            _mockBusinessService.Setup(x => x.ExportPatientsAsync(It.IsAny<PatientExportDto>()))
-                .ReturnsAsync(expectedResult);
-
-            // Act
-            var result = await _patientService.ExportPatientsAsync(query);
-
-            // Assert
-            result.Should().NotBeNull();
-            result.IsSuccess.Should().BeTrue();
-            result.Data.Should().NotBeNull();
-
-            var csvContent = System.Text.Encoding.UTF8.GetString(result.Data!);
-            csvContent.Should().Be("姓名,性别,出生日期,手机号码,身份证号,地址\n");
-        }
-
-        [Fact]
-        public async Task ExportPatientsAsync_Should_Return_Failure_When_BusinessService_Fails()
-        {
-            // Arrange
-            var query = new PagedQueryBaseDto { Keyword = "test" };
-            var expectedResult = ServiceResult<List<PatientDto>>.Failure("导出失败");
-
-            _mockBusinessService.Setup(x => x.ExportPatientsAsync(It.IsAny<PatientExportDto>()))
-                .ReturnsAsync(expectedResult);
-
-            // Act
-            var result = await _patientService.ExportPatientsAsync(query);
-
-            // Assert
-            result.Should().NotBeNull();
-            result.IsSuccess.Should().BeFalse();
-            result.ErrorMessage.Should().Be("导出失败");
-        }
-
-        [Fact]
-        public async Task ExportPatientsAsync_Should_Handle_Null_Keyword()
-        {
-            // Arrange
-            var query = new PagedQueryBaseDto { Keyword = null };
-            var expectedResult = ServiceResult<List<PatientDto>>.Success(new List<PatientDto>());
-
-            _mockBusinessService.Setup(x => x.ExportPatientsAsync(It.IsAny<PatientExportDto>()))
-                .ReturnsAsync(expectedResult);
-
-            // Act
-            var result = await _patientService.ExportPatientsAsync(query);
-
-            // Assert
-            result.Should().NotBeNull();
-            result.IsSuccess.Should().BeTrue();
-
-            _mockBusinessService.Verify(x => x.ExportPatientsAsync(It.Is<PatientExportDto>(dto =>
-                dto.Name == string.Empty)), Times.Once);
         }
 
         #endregion
 
-        #region 边界值和异常测试
+        #region 异常处理测试
 
         [Fact]
-        public async Task Query_Methods_Should_Return_Failure_When_QueryService_Fails()
+        public async Task GetByIdAsync_Should_Handle_Repository_Exception()
         {
             // Arrange
             var patientId = Guid.NewGuid();
-            var expectedResult = ServiceResult<PatientDto>.Failure("查询失败");
-
-            _mockQueryService.Setup(x => x.GetByIdAsync(patientId)).ReturnsAsync(expectedResult);
+            _mockRepository.Setup(x => x.GetByIdAsync(patientId, false)).ThrowsAsync(new Exception("Database error"));
 
             // Act
             var result = await _patientService.GetByIdAsync(patientId);
 
             // Assert
-            result.Should().BeSameAs(expectedResult);
+            result.Should().NotBeNull();
             result.IsSuccess.Should().BeFalse();
+            result.ErrorMessage.Should().Contain("获取患者信息失败");
         }
 
         [Fact]
-        public async Task Business_Methods_Should_Return_Failure_When_BusinessService_Fails()
+        public async Task CreateAsync_Should_Handle_Validation_Errors()
         {
             // Arrange
-            var createDto = new PatientCreateDto { Name = "张三" };
-            var expectedResult = ServiceResult<PatientDto>.Failure("创建失败");
-
-            _mockBusinessService.Setup(x => x.CreateAsync(It.IsAny<PatientCreateDto>(), It.IsAny<CancellationToken>())).ReturnsAsync(expectedResult);
+            var createDto = new PatientCreateDto(); // 空数据
 
             // Act
             var result = await _patientService.CreateAsync(createDto);
 
             // Assert
-            result.Should().BeSameAs(expectedResult);
+            result.Should().NotBeNull();
             result.IsSuccess.Should().BeFalse();
-        }
-
-        [Fact]
-        public void PatientService_Should_Implement_IPatientService()
-        {
-            // Assert
-            _patientService.Should().BeAssignableTo<LYBT.Shared.Interfaces.Services.IPatientService>();
+            result.ErrorMessage.Should().NotBeNullOrWhiteSpace();
         }
 
         #endregion

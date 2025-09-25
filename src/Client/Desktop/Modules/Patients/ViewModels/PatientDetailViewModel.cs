@@ -6,6 +6,7 @@ using LYBT.Desktop.Core.Services.Navigation;
 using LYBT.Desktop.Core.ViewModels.Base;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Patients;
+using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Regions;
@@ -17,7 +18,7 @@ namespace LYBT.Desktop.Patients.ViewModels
     /// 患者详情视图模型 - UltraThink v2.0架构
     /// 提供患者详细信息查看功能
     /// </summary>
-    public class PatientDetailViewModel : ServiceViewModel, INavigationAware
+    public class PatientDetailViewModel : NavigationViewModelBase
     {
 
         #region 私有字段
@@ -104,8 +105,16 @@ namespace LYBT.Desktop.Patients.ViewModels
             IMapper mapper,
             IPrescriptionPrintService printService,
             IErrorHandlingService errorHandlingService,
-            IEventAggregator eventAggregator)
-            : base(eventAggregator, errorHandlingService)
+            IEventAggregator eventAggregator,
+            ILoggerFactory loggerFactory,
+            IRegionManager regionManager,
+            ISessionManager? sessionManager = null)
+            : base(eventAggregator, 
+                loggerFactory,
+                regionManager,
+                sessionManager,
+                navigationService,
+                errorHandlingService)
         {
             _patientService = patientService ?? throw new ArgumentNullException(nameof(patientService));
             _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));

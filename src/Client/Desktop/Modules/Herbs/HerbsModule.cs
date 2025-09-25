@@ -38,7 +38,8 @@ namespace LYBT.Desktop.Herbs
 
             // 视图和视图模型注册
             containerRegistry.RegisterForNavigation<HerbManagementView, HerbManagementViewModel>();
-            containerRegistry.RegisterForNavigation<HerbAddEditDialog, HerbAddEditDialogViewModel>();
+            // TODO: Dialog removed during refactoring
+            // containerRegistry.RegisterForNavigation<HerbAddEditDialog, HerbAddEditDialogViewModel>();
             containerRegistry.RegisterForNavigation<HerbDetailView, HerbDetailViewModel>();
         }
     }

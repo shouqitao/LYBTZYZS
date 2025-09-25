@@ -7,7 +7,7 @@
 
 ## 📋 任务概述
 
-根据 `docs/ccpm/PRD-server-tests-architecture-sqlserver-20250922.md` 要求，完成服务器端测试架构的全面实施，实现100%方法覆盖率目标。
+根据 `docs/reports/archive/ccpm/PRD-server-tests-architecture-sqlserver-20250922.md` 要求，完成服务器端测试架构的全面实施，实现100%方法覆盖率目标。
 
 ## ✅ 实施成果
 

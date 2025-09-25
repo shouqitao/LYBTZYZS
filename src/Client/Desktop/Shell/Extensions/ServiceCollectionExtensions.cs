@@ -170,43 +170,44 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterSingleton<LYBT.Desktop.Infrastructure.Api.IUnifiedApiClientManager,
                 LYBT.Desktop.Infrastructure.Api.UnifiedApiClientManager>();
 
-            // 优化API接口注册：缓存统一管理器引用，减少重复解析开销
-            containerRegistry.Register<LYBT.Shared.Interfaces.Api.IAuthApi>(container =>
+            // 优化API接口注册：使用单例模式避免重复解析，消除循环依赖风险
+            // 使用延迟解析模式，只在首次访问时解析UnifiedApiClientManager
+            containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Api.IAuthApi>(container =>
             {
                 var manager = container.Resolve<LYBT.Desktop.Infrastructure.Api.IUnifiedApiClientManager>();
                 return manager.AuthApi;
             });
-            containerRegistry.Register<LYBT.Shared.Interfaces.Api.IUserApi>(container =>
+            containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Api.IUserApi>(container =>
             {
                 var manager = container.Resolve<LYBT.Desktop.Infrastructure.Api.IUnifiedApiClientManager>();
                 return manager.UserApi;
             });
-            containerRegistry.Register<LYBT.Shared.Interfaces.Api.IPatientApi>(container =>
+            containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Api.IPatientApi>(container =>
             {
                 var manager = container.Resolve<LYBT.Desktop.Infrastructure.Api.IUnifiedApiClientManager>();
                 return manager.PatientApi;
             });
-            containerRegistry.Register<LYBT.Shared.Interfaces.Api.IHerbApi>(container =>
+            containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Api.IHerbApi>(container =>
             {
                 var manager = container.Resolve<LYBT.Desktop.Infrastructure.Api.IUnifiedApiClientManager>();
                 return manager.HerbApi;
             });
-            containerRegistry.Register<LYBT.Shared.Interfaces.Api.IFormulaApi>(container =>
+            containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Api.IFormulaApi>(container =>
             {
                 var manager = container.Resolve<LYBT.Desktop.Infrastructure.Api.IUnifiedApiClientManager>();
                 return manager.FormulaApi;
             });
-            containerRegistry.Register<LYBT.Shared.Interfaces.Api.IConsultationApi>(container =>
+            containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Api.IConsultationApi>(container =>
             {
                 var manager = container.Resolve<LYBT.Desktop.Infrastructure.Api.IUnifiedApiClientManager>();
                 return manager.ConsultationApi;
             });
-            containerRegistry.Register<LYBT.Shared.Interfaces.Api.IPrescriptionApi>(container =>
+            containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Api.IPrescriptionApi>(container =>
             {
                 var manager = container.Resolve<LYBT.Desktop.Infrastructure.Api.IUnifiedApiClientManager>();
                 return manager.PrescriptionApi;
             });
-            containerRegistry.Register<LYBT.Shared.Interfaces.Api.IMedicalCaseApi>(container =>
+            containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Api.IMedicalCaseApi>(container =>
             {
                 var manager = container.Resolve<LYBT.Desktop.Infrastructure.Api.IUnifiedApiClientManager>();
                 return manager.MedicalCaseApi;
@@ -389,7 +390,7 @@ namespace LYBT.Desktop.Shell.Extensions
             // 注意：双层架构服务（QueryService/BusinessService）现在由自动发现系统处理
             // DT-002修复: 避免工厂委托，使用标准注册
             containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.IErrorHandlingService,
-                LYBT.Desktop.Services.ErrorHandlingService>();
+                LYBT.Desktop.Core.Services.ErrorHandling.UnifiedErrorHandlingService>();
             containerRegistry.RegisterSingleton<LYBT.Desktop.Workbench.Core.IWorkbenchRouter, LYBT.Desktop.Workbench.Core.WorkbenchRouter>();
 
             // 主窗口服务门面 - 简化MainWindowViewModel的依赖注入

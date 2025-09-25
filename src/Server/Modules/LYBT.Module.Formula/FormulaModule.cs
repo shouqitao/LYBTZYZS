@@ -17,20 +17,15 @@ namespace LYBT.Module.Formula
     {
 
         /// <summary>
-        /// 注册验方模块服务 - UltraThink双层架构标准.
+        /// 注册验方模块服务 - 简化架构标准.
         /// </summary>
         /// <returns></returns>
         public static IServiceCollection AddFormulaModule(this IServiceCollection services)
         {
             // 仓储层
             services.AddScoped<IFormulaRepository, FormulaRepository>();
-            services.AddScoped<IFormulaReadRepository, FormulaReadRepository>();
 
-            // UltraThink双层架构服务 - 查询和业务逻辑分离
-            services.AddScoped<IFormulaQueryService, FormulaQueryService>();
-            services.AddScoped<IFormulaBusinessService, FormulaBusinessService>();
-
-            // 主服务 - UltraThink纯委托模式，委托给专业服务层
+            // 统一服务 - 合并查询和业务逻辑
             services.AddScoped<IFormulaService, FormulaService>();
 
             // AutoMapper配置

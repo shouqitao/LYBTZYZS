@@ -8,6 +8,7 @@ using LYBT.Shared.Models.Contracts.Patients;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Regions;
+using Prism.Events;
 
 namespace LYBT.Desktop.Consultation.ViewModels
 {
@@ -16,7 +17,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
     /// 诊疗主界面视图模型 - 简化版纯数据记录
     /// 只负责简单的四诊数据录入，不包含流程监管和智能处理
     /// </summary>
-    public class ConsultationMainViewModel : SessionAwareViewModel, INavigationAware
+    public class ConsultationMainViewModel : NavigationViewModelBase, INavigationAware
     {
 
         #region 服务依赖
@@ -106,10 +107,11 @@ namespace LYBT.Desktop.Consultation.ViewModels
         IConsultationService consultationService,
         IMedicalCaseService medicalCaseService,
         IPatientService patientService,
-        ISessionManager sessionManager,
-        INotificationService notificationService,
-        ILogger<ConsultationMainViewModel> logger)
-        : base(sessionManager, notificationService, logger)
+        IEventAggregator eventAggregator,
+        ILoggerFactory loggerFactory,
+        IRegionManager regionManager,
+        ISessionManager sessionManager)
+        : base(eventAggregator, loggerFactory, regionManager, sessionManager)
         {
             _consultationService = consultationService ?? throw new ArgumentNullException(nameof(consultationService));
             _medicalCaseService = medicalCaseService ?? throw new ArgumentNullException(nameof(medicalCaseService));
@@ -141,10 +143,9 @@ namespace LYBT.Desktop.Consultation.ViewModels
             }
             catch (Exception ex)
             {
-                LogError(ex, "初始化失败");
+                Logger.LogError(ex, "初始化失败");
 
-                // 可以考虑显示用户友好的错误消息
-                ShowError("系统初始化失败，请稍后重试");
+                // 系统初始化失败
             }
         }
 
@@ -196,7 +197,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
             {
                 if (SelectedPatient == null)
                 {
-                    ShowWarning("请先选择患者");
+                    Logger.LogWarning("请先选择患者");
                     return;
                 }
 
@@ -204,36 +205,36 @@ namespace LYBT.Desktop.Consultation.ViewModels
 
                 // 设置基本信息
                 Consultation.PatientId = SelectedPatient.Id;
-                Consultation.UserId = CurrentUser?.Id ?? Guid.Empty;
+                Consultation.UserId = GetCurrentUser()?.Id ?? Guid.Empty;
                 Consultation.MedicalCaseId = MedicalCaseId ?? Guid.NewGuid();
                 Consultation.StartTime = DateTime.Now;
-                Consultation.DoctorName = CurrentUser?.RealName ?? string.Empty;
+                Consultation.DoctorName = GetCurrentUser()?.RealName ?? string.Empty;
 
                 var createDto = new ConsultationStartDto
                 {
                     PatientId = SelectedPatient.Id,
-                    DoctorId = CurrentUser?.Id ?? Guid.Empty,
+                    DoctorId = GetCurrentUser()?.Id ?? Guid.Empty,
                     MedicalCaseId = MedicalCaseId ?? Guid.NewGuid(),
                     EstimatedDuration = 30,
                     ConsultationType = "门诊",
-                    Remark = $"患者：{SelectedPatient.Name}，医生：{CurrentUser?.RealName ?? string.Empty}"
+                    Remark = $"患者：{SelectedPatient.Name}，医生：{GetCurrentUser()?.RealName ?? string.Empty}"
                 };
 
                 var result = await _consultationService.StartAsync(createDto);
                 if (result.IsSuccess && result.Data != null)
                 {
                     Consultation = result.Data;
-                    ShowSuccess("诊疗记录保存成功");
+                    SetStatus("诊疗记录保存成功");
                 }
                 else
                 {
-                    ShowError($"保存失败: {result.Message}");
+                    Logger.LogError("保存失败: {Message}", result.Message);
                 }
             }
             catch (Exception ex)
             {
-                LogError(ex, "保存诊疗记录失败");
-                ShowError("保存失败，请重试");
+                Logger.LogError(ex, "保存诊疗记录失败");
+                Logger.LogError("保存失败，请重试");
             }
             finally
             {
@@ -289,7 +290,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
         {
             if (SelectedPatient == null)
             {
-                ShowWarning("请先选择患者");
+                Logger.LogWarning("请先选择患者");
                 return;
             }
 
@@ -349,8 +350,8 @@ namespace LYBT.Desktop.Consultation.ViewModels
             }
             catch (Exception ex)
             {
-                LogError(ex, "查看患者历史诊疗记录失败: {PatientId}", SelectedPatient.Id);
-                ShowError($"查看患者历史记录失败: {ex.Message}");
+                Logger.LogError(ex, "查看患者历史诊疗记录失败: {PatientId}", SelectedPatient.Id);
+                // 查看患者历史记录失败
             }
             finally
             {
@@ -443,7 +444,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
             }
 
             // 使用基类的通知方法显示历史信息
-            ShowInfo(historyContent.ToString());
+            SetStatus(historyContent.ToString());
         }
 
         /// <summary>
@@ -506,7 +507,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
 
                 if (!templates.Any())
                 {
-                    ShowInfo("暂无可用的四诊模板");
+                    SetStatus("暂无可用的四诊模板");
                     return;
                 }
 
@@ -528,7 +529,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
 
                 // 简化实现：显示模板信息供参考，不实现复杂的选择逻辑
                 // 为小诊所优化，避免过度复杂的用户交互
-                ShowInfo(menuContent.ToString());
+                SetStatus(menuContent.ToString());
 
                 // 应用第一个最常用的模板作为示例
                 if (templates.Any())
@@ -538,8 +539,8 @@ namespace LYBT.Desktop.Consultation.ViewModels
             }
             catch (Exception ex)
             {
-                LogError(ex, "显示四诊模板菜单失败");
-                ShowError("加载四诊模板失败，请重试");
+                Logger.LogError(ex, "显示四诊模板菜单失败");
+                Logger.LogError("加载四诊模板失败");
             }
         }
 
@@ -576,13 +577,13 @@ namespace LYBT.Desktop.Consultation.ViewModels
                 // 触发属性变更通知
                 Consultation = currentConsultation;
 
-                ShowSuccess($"已应用模板：{template.Name}");
+                SetStatus($"已应用模板：{template.Name}");
                 Logger.LogInformation("应用四诊模板成功: {TemplateName}", template.Name);
             }
             catch (Exception ex)
             {
-                LogError(ex, "应用四诊模板失败: {TemplateName}", template.Name);
-                ShowError("应用模板失败，请重试");
+                Logger.LogError(ex, "应用四诊模板失败: {TemplateName}", template.Name);
+                Logger.LogError("应用模板失败");
             }
         }
 

@@ -134,9 +134,22 @@ public class ConsultationCompletedEvent : PubSubEvent<ConsultationCompletedEvent
 
 public class ConsultationCompletedEventArgs
 {
-    public int ConsultationId { get; set; }
-    public ConsultationDto Consultation { get; set; } = null!;
+    public Guid ConsultationId { get; set; }
+    public ConsultationDto? Consultation { get; set; }
+    public Guid PatientId { get; set; }
+    public bool HasPrescription { get; set; }
     public DateTime CompletedTime { get; set; } = DateTime.Now;
+
+    public ConsultationCompletedEventArgs()
+    {
+    }
+
+    public ConsultationCompletedEventArgs(Guid consultationId, Guid patientId, bool hasPrescription = false)
+    {
+        ConsultationId = consultationId;
+        PatientId = patientId;
+        HasPrescription = hasPrescription;
+    }
 }
 
 /// <summary>
@@ -162,21 +175,143 @@ public class PrescriptionSavedEvent : PubSubEvent<PrescriptionSavedEventArgs> { 
 
 public class PrescriptionSavedEventArgs
 {
-    public int PrescriptionId { get; set; }
+    public Guid PrescriptionId { get; set; }
     public PrescriptionDto Prescription { get; set; } = null!;
     public bool IsNew { get; set; }
 }
 
+
+
 /// <summary>
-/// 处方变更事件
+/// 处方清空事件
+/// </summary>
+public class PrescriptionClearedEvent : PubSubEvent<PrescriptionClearedEventArgs> { }
+
+public class PrescriptionClearedEventArgs
+{
+    public Guid PrescriptionId { get; set; }
+    public string? Reason { get; set; }
+}
+
+/// <summary>
+/// 价格重算事件
+/// </summary>
+public class PriceRecalculatedEvent : PubSubEvent<PriceRecalculatedEventArgs> { }
+
+public class PriceRecalculatedEventArgs
+{
+    public Guid PrescriptionId { get; set; }
+    public decimal OldPrice { get; set; }
+    public decimal NewPrice { get; set; }
+}
+
+/// <summary>
+/// 验证请求事件
+/// </summary>
+public class ValidationRequestEvent : PubSubEvent<ValidationRequestEventArgs> { }
+
+public class ValidationRequestEventArgs
+{
+    public string ValidationType { get; set; } = string.Empty;
+    public object? ValidationData { get; set; }
+}
+
+/// <summary>
+/// 草药添加事件
+/// </summary>
+public class HerbAddedEvent : PubSubEvent<HerbAddedEventArgs> { }
+
+public class HerbAddedEventArgs
+{
+    public Guid HerbId { get; set; }
+    public string HerbName { get; set; } = string.Empty;
+    public decimal Dosage { get; set; }
+}
+
+/// <summary>
+/// 草药添加完成事件
+/// </summary>
+public class HerbAddedCompleteEvent : PubSubEvent<HerbAddedCompleteEventArgs> { }
+
+public class HerbAddedCompleteEventArgs
+{
+    public Guid PrescriptionId { get; set; }
+    public List<Guid> AddedHerbIds { get; set; } = new();
+}
+
+/// <summary>
+/// 方剂导入事件
+/// </summary>
+public class FormulaImportedEvent : PubSubEvent<FormulaImportedEventArgs> { }
+
+public class FormulaImportedEventArgs
+{
+    public int FormulaId { get; set; }
+    public string FormulaName { get; set; } = string.Empty;
+    public int HerbCount { get; set; }
+}
+
+/// <summary>
+/// 方剂导入完成事件
+/// </summary>
+public class FormulaImportedCompleteEvent : PubSubEvent<FormulaImportedCompleteEventArgs> { }
+
+public class FormulaImportedCompleteEventArgs
+{
+    public Guid PrescriptionId { get; set; }
+    public int FormulaId { get; set; }
+    public bool ImportSuccess { get; set; }
+}
+
+/// <summary>
+/// 处方导入事件
+/// </summary>
+public class PrescriptionImportedEvent : PubSubEvent<PrescriptionImportedEventArgs> { }
+
+public class PrescriptionImportedEventArgs
+{
+    public int SourcePrescriptionId { get; set; }
+    public int TargetPrescriptionId { get; set; }
+    public int HerbCount { get; set; }
+}
+
+/// <summary>
+/// 处方变更事件 - 通知处方数据变化
 /// </summary>
 public class PrescriptionChangedEvent : PubSubEvent<PrescriptionChangedEventArgs> { }
 
 public class PrescriptionChangedEventArgs
 {
-    public int PrescriptionId { get; set; }
-    public string ChangeType { get; set; } = string.Empty; // HerbAdded, HerbRemoved, DosageChanged, etc.
+    public Guid PrescriptionId { get; set; }
+    public string ChangeType { get; set; } = string.Empty; // Added, Modified, Deleted, Cleared
     public object? ChangeData { get; set; }
+    public DateTime ChangeTime { get; set; } = DateTime.Now;
+}
+
+/// <summary>
+/// 保存步骤数据事件 - 工作流步骤数据保存
+/// </summary>
+public class SaveStepDataEvent : PubSubEvent<SaveStepDataEventArgs> { }
+
+public class SaveStepDataEventArgs
+{
+    public string StepName { get; set; } = string.Empty;
+    public object? Data { get; set; }
+    public bool IsAsync { get; set; }
+    public DateTime SaveTime { get; set; } = DateTime.Now;
+}
+
+/// <summary>
+/// 处方编辑器关闭事件
+/// </summary>
+public class PrescriptionComposerClosedEvent : PubSubEvent<PrescriptionComposerClosedEventArgs> { }
+
+public class PrescriptionComposerClosedEventArgs
+{
+    public bool SavedChanges { get; set; }
+    public int? PrescriptionId { get; set; }
+    public string? Reason { get; set; }
+    public DateTime ClosedTime { get; set; } = DateTime.Now;
 }
 
 #endregion
@@ -235,11 +370,11 @@ public class StatusMessageEvent : PubSubEvent<StatusMessageEventArgs> { }
 public class StatusMessageEventArgs
 {
     public string Message { get; set; } = string.Empty;
-    public MessageType Type { get; set; } = MessageType.Info;
+    public StatusMessageType Type { get; set; } = StatusMessageType.Info;
     public int? Duration { get; set; } // 显示时长（毫秒）
 }
 
-public enum MessageType
+public enum StatusMessageType
 {
     Info,
     Success,

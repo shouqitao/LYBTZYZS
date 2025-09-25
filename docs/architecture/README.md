@@ -1,0 +1,27 @@
+# 架构文档索引
+
+- **维护人**：Thinker（ChatGPT）
+- **最后更新**：2025-09-25
+
+本目录收录架构相关资料，包含架构总览、决策记录（ADR）、专题分析与实施指南。建议阅读顺序：总览 → ADR → 最新分析/计划。
+
+## 快速索引
+| 文档 | 说明 |
+|------|------|
+| `overview.md` | 系统整体架构概览、技术栈与关键组件。 |
+| `ADR-001-cqrs-mediatr-rejection.md` | CQRS + MediatR 拒绝决策。 |
+| `ADR-002-technology-roadmap-suggestion.md` | 技术路线与阶段目标建议。 |
+| `Desktop-UltraThink-Implementation-Guide.md` | 桌面 UltraThink 架构实现指南。 |
+| `Desktop-UltraThink-Refactoring-Plan.md` | 桌面架构重构计划。 |
+| `Arch-Discussion-Multi-Tenancy-2025-09-23.md` | 多租户讨论记录。 |
+
+## 衔接其他资料
+- 最新架构分析报告：`docs/reports/architecture-analysis-2025-09-25.md`
+- 架构改进建议：`docs/reports/modification-suggestions-2025-09-25.md`
+- 相关任务：参见 `docs/tasks/pending/2025-09-24-all-framework-refactor-task.md`
+
+## 维护规则
+1. 新增架构决策须产出 ADR（`ADR-XXX-标题.md`），并在此表格登记。
+2. 过期或被取代的指南应在文首标注“历史版本”，必要时移动到 `docs/reports/archive/`。
+3. 每次架构评审后，更新“衔接其他资料”中的链接，确保决策链条完整。
+

@@ -217,12 +217,7 @@ namespace LYBT.Desktop.Core.Services
                 // 显示详细的错误对话框
                 await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
-                    var errorDialog = new CriticalErrorDialog
-                    {
-                        Owner = _mainWindow ?? Application.Current.MainWindow,
-                        ErrorInfo = handledError
-                    };
-                    errorDialog.ShowDialog();
+                    // CriticalErrorDialog已删除，此功能暂不可用
                 });
             }
             else

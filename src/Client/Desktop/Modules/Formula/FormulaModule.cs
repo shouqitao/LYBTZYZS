@@ -41,7 +41,8 @@ namespace LYBT.Desktop.Formula
             containerRegistry.RegisterForNavigation<FormulaManagementView, FormulaManagementViewModel>();
 
             // 注册对话框
-            containerRegistry.RegisterForNavigation<AddFormulaDialog, AddFormulaDialogViewModel>();
+            // TODO: Dialog removed during refactoring
+            // containerRegistry.RegisterForNavigation<AddFormulaDialog, AddFormulaDialogViewModel>();
             containerRegistry.RegisterForNavigation<EditFormulaDialog, EditFormulaDialogViewModel>();
             containerRegistry.RegisterForNavigation<ViewFormulaDialog, ViewFormulaDialogViewModel>();
 

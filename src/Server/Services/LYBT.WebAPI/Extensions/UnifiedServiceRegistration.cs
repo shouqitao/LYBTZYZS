@@ -133,9 +133,8 @@ public static class UnifiedServiceRegistration
                 else
                 {
                     options.SizeLimit = 10000; // 向后兼容默认值
-                    var logger = services.BuildServiceProvider().GetService<ILogger<MemoryCacheOptions>>();
-                    logger?.LogWarning(new EventId(cacheOptions.Monitoring.EventIds.ConfigMissing, "CacheConfigMissing"),
-                        "未配置缓存大小限制(CacheOptions:Memory:SizeLimit)，使用默认值: {DefaultSize}", 10000);
+                    // 注意：未配置缓存大小限制时使用默认值10000
+                    // 可以在应用启动后通过日志查看具体配置
                 }
 
                 options.CompactionPercentage = cacheOptions.Memory.CompactionPercentage;

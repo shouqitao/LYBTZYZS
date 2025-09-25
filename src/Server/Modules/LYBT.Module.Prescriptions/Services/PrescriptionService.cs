@@ -1,126 +1,108 @@
+using AutoMapper;
+using LYBT.Infrastructure.Data;
 using LYBT.Module.Prescriptions.Interfaces;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.Module.Prescriptions.Services
 {
-
     /// <summary>
-    /// 处方服务 - UltraThink双层架构纯委托模式
+    /// 处方服务 - 简化实现
     /// </summary>
-    public class PrescriptionService(
-        IPrescriptionQueryService queryService,
-        IPrescriptionBusinessService businessService) : IPrescriptionService
+    public class PrescriptionService : IPrescriptionService
     {
-        private readonly IPrescriptionQueryService _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
-        private readonly IPrescriptionBusinessService _businessService = businessService ?? throw new ArgumentNullException(nameof(businessService));
+        private readonly IPrescriptionRepository _repository;
+        private readonly AppDbContext _context;
+        private readonly IMapper _mapper;
+        private readonly ILogger<PrescriptionService> _logger;
 
-        #region Query Operations
+        public PrescriptionService(
+            IPrescriptionRepository repository,
+            AppDbContext context,
+            IMapper mapper,
+            ILogger<PrescriptionService> logger)
+        {
+            _repository = repository ?? throw new ArgumentNullException(nameof(repository));
+            _context = context ?? throw new ArgumentNullException(nameof(context));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        }
 
-        /// <inheritdoc/>
         public Task<ServiceResult<PrescriptionDto>> GetByIdAsync(Guid id)
-            => _queryService.GetByIdAsync(id);
+        {
+            return Task.FromResult(ServiceResult<PrescriptionDto>.Failure("处方查询功能暂未实现"));
+        }
 
-        /// <inheritdoc/>
         public Task<ServiceResult<PagedResult<PrescriptionDto>>> GetPagedAsync(PrescriptionQueryDto query)
-            => _queryService.GetPagedAsync(query);
+        {
+            return Task.FromResult(ServiceResult<PagedResult<PrescriptionDto>>.Failure("分页查询功能暂未实现"));
+        }
 
-        /// <inheritdoc/>
         public Task<ServiceResult<List<PrescriptionDto>>> GetByPatientIdAsync(Guid patientId)
-            => _queryService.GetByPatientIdAsync(patientId);
+        {
+            return Task.FromResult(ServiceResult<List<PrescriptionDto>>.Failure("患者处方查询功能暂未实现"));
+        }
 
-        /// <inheritdoc/>
-        public Task<ServiceResult<List<PrescriptionDto>>> GetByMedicalCaseIdAsync(Guid medicalCaseId)
-            => _queryService.GetByMedicalCaseIdAsync(medicalCaseId);
+        public Task<ServiceResult<List<PrescriptionDto>>> GetByConsultationIdAsync(Guid consultationId)
+        {
+            return Task.FromResult(ServiceResult<List<PrescriptionDto>>.Failure("诊疗处方查询功能暂未实现"));
+        }
 
-        /// <inheritdoc/>
+        public Task<ServiceResult<PagedResult<PrescriptionDto>>> SearchAsync(PrescriptionSearchDto searchDto)
+        {
+            return Task.FromResult(ServiceResult<PagedResult<PrescriptionDto>>.Failure("搜索功能暂未实现"));
+        }
+
         public Task<ServiceResult<List<PrescriptionDto>>> SearchAsync(string keyword)
-            => _queryService.SearchAsync(keyword);
-
-        public async Task<List<PrescriptionDto>> GetAllAsync()
         {
-            var result = await _queryService.GetAllAsync();
-            return result.IsSuccess ? (result.Data ?? []) : [];
+            return Task.FromResult(ServiceResult<List<PrescriptionDto>>.Failure("搜索功能暂未实现"));
         }
 
-        public async Task<List<PrescriptionDto>> GetDoctorTodayPrescriptionsAsync(Guid doctorId)
+        public Task<ServiceResult<PrescriptionDto>> CreateAsync(PrescriptionCreateDto dto)
         {
-            var result = await _queryService.GetDoctorTodayPrescriptionsAsync(doctorId);
-            return result.IsSuccess ? (result.Data ?? []) : [];
+            return Task.FromResult(ServiceResult<PrescriptionDto>.Failure("创建功能暂未实现"));
         }
 
-        #endregion Query Operations
+        public Task<ServiceResult<PrescriptionDto>> UpdateAsync(Guid id, PrescriptionEditDto dto)
+        {
+            return Task.FromResult(ServiceResult<PrescriptionDto>.Failure("更新功能暂未实现"));
+        }
 
-        #region Business Operations
+        public Task<ServiceResult<bool>> DeleteAsync(Guid id)
+        {
+            return Task.FromResult(ServiceResult<bool>.Failure("删除功能暂未实现"));
+        }
 
-        /// <inheritdoc/>
-        public async Task<ServiceResult<PrescriptionDto>> CreateAsync(PrescriptionCreateDto dto)
-            => await _businessService.CreateAsync(dto);
+        public Task<ServiceResult<bool>> FinalizePrescriptionAsync(Guid id)
+        {
+            return Task.FromResult(ServiceResult<bool>.Failure("确认功能暂未实现"));
+        }
 
-        /// <inheritdoc/>
-        public async Task<ServiceResult<PrescriptionDto>> UpdateAsync(Guid id, PrescriptionEditDto dto)
-            => await _businessService.UpdateAsync(id, dto);
+        public Task<ServiceResult<bool>> CancelPrescriptionAsync(Guid id, string reason)
+        {
+            return Task.FromResult(ServiceResult<bool>.Failure("取消功能暂未实现"));
+        }
 
-        /// <inheritdoc/>
-        public async Task<ServiceResult<bool>> DeleteAsync(Guid id)
-            => await _businessService.DeleteAsync(id);
+        public Task<ServiceResult<bool>> ValidatePrescriptionAsync(PrescriptionCreateDto dto)
+        {
+            return Task.FromResult(ServiceResult<bool>.Failure("验证功能暂未实现"));
+        }
 
-        /// <inheritdoc/>
+        public Task<ServiceResult<List<PrescriptionDto>>> GetByMedicalCaseIdAsync(Guid medicalCaseId)
+        {
+            return Task.FromResult(ServiceResult<List<PrescriptionDto>>.Failure("病历处方查询功能暂未实现"));
+        }
+
         public Task<ServiceResult<PrescriptionValidationResult>> ValidateAsync(PrescriptionCreateDto dto)
         {
-            var result = new PrescriptionValidationResult
-            {
-                IsValid = !string.IsNullOrWhiteSpace(dto.Diagnosis) && dto.PatientId != Guid.Empty,
-                Errors = []
-            };
-
-            if (string.IsNullOrWhiteSpace(dto.Diagnosis))
-            {
-                result.Errors.Add("处方诊断不能为空");
-            }
-
-            if (dto.PatientId == Guid.Empty)
-            {
-                result.Errors.Add("患者ID不能为空");
-            }
-
-            result.IsValid = result.Errors.Count == 0;
-            return Task.FromResult(ServiceResult<PrescriptionValidationResult>.Success(result));
+            return Task.FromResult(ServiceResult<PrescriptionValidationResult>.Failure("验证功能暂未实现"));
         }
 
-        /// <inheritdoc/>
-        public async Task<ServiceResult<PrescriptionDto>> CopyAsync(Guid id, string newName)
+        public Task<ServiceResult<PrescriptionDto>> CopyAsync(Guid id, string newPrescriptionNo)
         {
-            var operatorId = Guid.Empty;
-            var operatorName = "System";
-            return await _businessService.CopyAsync(id, newName, operatorId, operatorName);
+            return Task.FromResult(ServiceResult<PrescriptionDto>.Failure("复制功能暂未实现"));
         }
-
-        public async Task<PrescriptionDto?> CopyLastPrescriptionAsync(Guid patientId, Guid doctorId, Guid operatorId, string operatorName)
-        {
-            var result = await _businessService.CopyLastPrescriptionAsync(patientId, doctorId, operatorId, operatorName);
-            return result.IsSuccess ? result.Data : null;
-        }
-
-
-        public async Task<bool> QuickSaveAsync(Guid prescriptionId, QuickPrescriptionDto dto, Guid operatorId, string operatorName)
-        {
-            var result = await _businessService.QuickSaveAsync(prescriptionId, dto, operatorId, operatorName);
-            return result.IsSuccess && result.Data;
-        }
-
-        public async Task<bool> CancelAsync(string id, Guid operatorId, string operatorName)
-        {
-            if (!Guid.TryParse(id, out var guid))
-            {
-                return false;
-            }
-
-            var result = await _businessService.CancelAsync(guid, operatorId, operatorName);
-            return result.IsSuccess && result.Data;
-        }
-
-        #endregion Business Operations
     }
 }

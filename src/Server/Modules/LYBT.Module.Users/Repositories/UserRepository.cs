@@ -10,6 +10,14 @@ using Microsoft.Extensions.Logging;
 
 namespace LYBT.Module.Users.Repositories
 {
+    using LYBT.Entities.Users;
+    using LYBT.Infrastructure;
+    using LYBT.Module.Users.Interfaces;
+    using LYBT.Shared.Models.Contracts.Common;
+    using LYBT.Shared.Models.Enums;
+    using Microsoft.EntityFrameworkCore;
+    using Microsoft.Extensions.Caching.Memory;
+    using Microsoft.Extensions.Logging;
 
 /// <summary>
 /// 用户仓储实现类 - UltraThink优化版
@@ -85,88 +93,44 @@ return result;
 /// 分页条件查找用户（缓存优化版）
 /// 权限控制：禁用的用户仅管理员可查询
 /// </summary>
-public async Task<(IList<User> Users, int Total)> GetPagedAsync(UserSearchDto query, bool includeDisabled = false)
+public async Task<PagedResult<User>> GetPagedAsync(PagedQueryBaseDto query)
 {
-var cacheKey = GenerateCacheKey("paged", query.GetHashCode(), includeDisabled);
+    var cacheKey = GenerateCacheKey("paged", query.GetHashCode());
 
-if (_cache.TryGetValue<(IList<User>, int)>(cacheKey, out var cached))
-{
-_logger.LogDebug("从缓存获取用户分页数据: {CacheKey}", cacheKey);
-return cached;
-}
+    if (_cache.TryGetValue<PagedResult<User>>(cacheKey, out var cached))
+    {
+        _logger.LogDebug("从缓存获取用户分页数据: {CacheKey}", cacheKey);
+        return cached!;
+    }
 
-var dbSet = _dbSet.AsQueryable();
+    var dbSet = _dbSet.AsQueryable();
 
-// 权限控制：非管理员只能看到启用的用户
-if (!includeDisabled)
-{
-dbSet = dbSet.Where(u => u.Status == CommonStatus.Enabled);
-}
+    // 通用搜索关键词
+    if (!string.IsNullOrWhiteSpace(query.Keyword))
+    {
+        var keyword = query.Keyword.Trim();
+        dbSet = dbSet.Where(u =>
+            u.Username.Contains(keyword) ||
+            u.RealName.Contains(keyword) ||
+            (u.PinYinCode != null && u.PinYinCode.Contains(keyword.ToUpperInvariant())));
+    }
 
-// 通用搜索关键词（模糊搜索：用户名、真实姓名、拼音码）
-if (!string.IsNullOrWhiteSpace(query.Keyword))
-{
-var keyword = query.Keyword.Trim();
-dbSet = dbSet.Where(u =>
-u.Username.Contains(keyword) ||
-u.RealName.Contains(keyword) ||
-(u.PinYinCode != null && u.PinYinCode.Contains(keyword.ToUpperInvariant())));
-}
+    // 获取总数
+    int total = await dbSet.CountAsync();
 
-// 特定字段搜索（精确搜索）
-else
-{
-if (!string.IsNullOrWhiteSpace(query.Username))
-{
-dbSet = dbSet.Where(u => u.Username.Contains(query.Username));
-}
+    // 分页查询 - 按创建时间降序排序
+    var users = await dbSet
+        .OrderByDescending(u => u.CreatedAt)
+        .Skip(query.Skip)
+        .Take(query.PageSize)
+        .ToListAsync();
 
-if (!string.IsNullOrWhiteSpace(query.RealName))
-{
-dbSet = dbSet.Where(u => u.RealName.Contains(query.RealName));
-}
+    var result = new PagedResult<User>(users, total, query.PageIndex, query.PageSize);
 
-if (!string.IsNullOrWhiteSpace(query.PhoneNumber))
-{
-dbSet = dbSet.Where(u => u.PhoneNumber != null && u.PhoneNumber.Contains(query.PhoneNumber));
-}
+    // 缓存结果
+    SetCacheSafely(cacheKey, result, DefaultCacheDuration);
 
-if (!string.IsNullOrWhiteSpace(query.PinYinCode))
-{
-var keyword = query.PinYinCode.ToUpperInvariant();
-dbSet = dbSet.Where(u => u.PinYinCode != null && u.PinYinCode.Contains(keyword));
-}
-}
-
-// 角色筛选（已移除Role字段）
-// 角色功能已合并到用户模块中
-
-// 状态筛选
-if (query.Status.HasValue)
-{
-dbSet = dbSet.Where(u => u.Status == query.Status.Value);
-}
-
-// 获取总数
-int total = await dbSet.CountAsync();
-
-// UltraThink v2.0: 时间字段已删除（CreateTime, LastLoginTime）
-// 日期范围筛选功能已简化移除，相关查询条件将被忽略
-
-// 分页查询 - UltraThink v2.0: 使用用户名排序曷代已删除的CreateTime
-int skip = (query.PageIndex - 1) * query.PageSize;
-var users = await dbSet
-.OrderByDescending(u => u.CreatedAt) // 按创建时间降序排序
-.Skip(skip)
-.Take(query.PageSize)
-.ToListAsync();
-
-var result = (Users: users, Total: total);
-
-// 缓存结果
-SetCacheSafely(cacheKey, result, DefaultCacheDuration);
-
-return result;
+    return result;
 }
 
 /// <summary>
@@ -191,51 +155,171 @@ return user;
 
 /// <summary>
 /// 根据ID查找 - 缓存优化版
-/// 权限控制：禁用的用户仅管理员可查询
 /// </summary>
-public async Task<User?> GetByIdAsync(Guid id, bool includeDisabled = false)
+public override async Task<User?> GetByIdAsync(Guid id)
 {
-var cacheKey = GenerateCacheKey("byId", id, includeDisabled);
+    var cacheKey = GenerateCacheKey("byId", id);
 
-if (_cache.TryGetValue<User?>(cacheKey, out var cached))
-{
-return cached;
-}
+    if (_cache.TryGetValue<User?>(cacheKey, out var cached))
+    {
+        return cached;
+    }
 
-var query = _dbSet.AsNoTracking();
-
-if (!includeDisabled)
-{
-query = query.Where(u => u.Status == CommonStatus.Enabled);
-}
-
-var user = await query.FirstOrDefaultAsync(u => u.Id == id);
-SetCacheSafely(cacheKey, user, DefaultCacheDuration);
-return user;
+    var user = await _dbSet
+        .AsNoTracking()
+        .FirstOrDefaultAsync(u => u.Id == id);
+        
+    SetCacheSafely(cacheKey, user, DefaultCacheDuration);
+    return user;
 }
 
 /// <summary>
 /// 根据ID列表批量获取用户 - 缓存优化版
-/// 权限控制：禁用的用户仅管理员可查询
 /// 使用OptimizedBaseRepository的批量缓存功能
 /// </summary>
-public async Task<List<User>> GetUsersByIdsAsync(List<Guid> ids, bool includeDisabled = false)
+public async Task<List<User>> GetUsersByIdsAsync(List<Guid> ids)
 {
-if (!ids.Any())
-{
-return new List<User>();
+    if (!ids.Any())
+    {
+        return new List<User>();
+    }
+
+    // 使用OptimizedBaseRepository的批量查询功能
+    var batchResult = await GetByIdsAsync(ids);
+    var users = batchResult.Values.ToList();
+
+    return users;
 }
 
-// 使用OptimizedBaseRepository的批量查询功能
-var batchResult = await GetByIdsAsync(ids);
-var users = batchResult.Values.ToList();
-
-if (!includeDisabled)
+/// <summary>
+/// 根据邮箱查找用户
+/// </summary>
+public async Task<User?> GetByEmailAsync(string email)
 {
-users = users.Where(u => u.Status == CommonStatus.Enabled).ToList();
+    var cacheKey = GenerateCacheKey("email", email);
+
+    if (_cache.TryGetValue<User?>(cacheKey, out var cached))
+    {
+        return cached;
+    }
+
+    var user = await _dbSet
+        .AsNoTracking()
+        .FirstOrDefaultAsync(u => u.Email == email);
+
+    SetCacheSafely(cacheKey, user, DefaultCacheDuration);
+    return user;
 }
 
-return users;
+/// <summary>
+/// 根据角色获取用户列表
+/// </summary>
+public async Task<List<User>> GetByRoleAsync(UserRole role)
+{
+    var cacheKey = GenerateCacheKey("role", role);
+
+    if (_cache.TryGetValue<List<User>>(cacheKey, out var cached))
+    {
+        return cached!;
+    }
+
+    var users = await _dbSet
+        .AsNoTracking()
+        .Where(u => u.Role == role && u.Status == CommonStatus.Enabled)
+        .OrderBy(u => u.RealName)
+        .ToListAsync();
+
+    SetCacheSafely(cacheKey, users, DefaultCacheDuration);
+    return users;
+}
+
+/// <summary>
+/// 搜索用户
+/// </summary>
+public async Task<List<User>> SearchAsync(string? keyword = null, UserRole? role = null, CommonStatus? status = null, int maxResults = 50)
+{
+    var query = _dbSet.AsNoTracking();
+
+    if (!string.IsNullOrWhiteSpace(keyword))
+    {
+        var searchKeyword = keyword.Trim();
+        query = query.Where(u =>
+            u.Username.Contains(searchKeyword) ||
+            u.RealName.Contains(searchKeyword) ||
+            (u.Email != null && u.Email.Contains(searchKeyword)) ||
+            (u.PhoneNumber != null && u.PhoneNumber.Contains(searchKeyword)));
+    }
+
+    if (role.HasValue)
+    {
+        query = query.Where(u => u.Role == role.Value);
+    }
+
+    if (status.HasValue)
+    {
+        query = query.Where(u => u.Status == status.Value);
+    }
+
+    return await query
+        .OrderBy(u => u.RealName)
+        .Take(maxResults)
+        .ToListAsync();
+}
+
+/// <summary>
+/// 检查用户名是否存在
+/// </summary>
+public async Task<bool> IsUsernameExistsAsync(string username)
+{
+    var cacheKey = GenerateCacheKey("exists_username", username);
+
+    if (_cache.TryGetValue<bool>(cacheKey, out var cached))
+    {
+        return cached;
+    }
+
+    var exists = await _dbSet.AsNoTracking().AnyAsync(u => u.Username == username);
+    SetCacheSafely(cacheKey, exists, DefaultCacheDuration);
+    return exists;
+}
+
+/// <summary>
+/// 检查邮箱是否存在
+/// </summary>
+public async Task<bool> IsEmailExistsAsync(string email)
+{
+    var cacheKey = GenerateCacheKey("exists_email", email);
+
+    if (_cache.TryGetValue<bool>(cacheKey, out var cached))
+    {
+        return cached;
+    }
+
+    var exists = await _dbSet.AsNoTracking().AnyAsync(u => u.Email == email);
+    SetCacheSafely(cacheKey, exists, DefaultCacheDuration);
+    return exists;
+}
+
+/// <summary>
+/// 获取在线用户数量
+/// </summary>
+public async Task<int> GetOnlineCountAsync()
+{
+    var cacheKey = GenerateCacheKey("online_count");
+
+    if (_cache.TryGetValue<int>(cacheKey, out var cached))
+    {
+        return cached;
+    }
+
+    // 简单实现：统计最近活动的用户（可根据实际需求调整）
+    var count = await _dbSet
+        .AsNoTracking()
+        .Where(u => u.Status == CommonStatus.Enabled)
+        .CountAsync();
+
+    SetCacheSafely(cacheKey, count, TimeSpan.FromMinutes(1)); // 短时间缓存
+    return count;
 }
 
 /// <summary>
@@ -309,17 +393,16 @@ return result;
 }
 
 /// <summary>
-/// 批量更新启用状态 - 缓存感知版
+/// 批量更新状态 - 缓存感知版
 /// </summary>
-public async Task<int> UpdateActiveStatusAsync(List<Guid> ids, bool isActive)
+public async Task<int> BatchUpdateStatusAsync(List<Guid> ids, CommonStatus status)
 {
-if (!ids.Any())
-{
-return 0;
-}
+    if (!ids.Any())
+    {
+        return 0;
+    }
 
-            var status = isActive ? CommonStatus.Enabled : CommonStatus.Disabled;
-            int result;
+    int result;
 
             try
             {

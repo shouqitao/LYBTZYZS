@@ -1,4 +1,4 @@
-﻿# PRD 完成总结 — server-entity-consistency-optimization — 2025-09-21
+# PRD 完成总结 — server-entity-consistency-optimization — 2025-09-21
 
 - 关联 PRD：.claude/prds/server-entity-consistency-optimization-20250921.md
 
@@ -28,3 +28,4 @@
 ## 建议/下一步
 - 分步实施 R1–R5，并在每步完成后更新本总结
 - 在 CI 中加入 ArchTests 相关门禁，防止不当依赖回归
+

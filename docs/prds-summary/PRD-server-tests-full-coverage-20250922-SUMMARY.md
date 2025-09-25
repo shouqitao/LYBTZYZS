@@ -1,6 +1,6 @@
 # PRD 实施总结 · server-tests-full-coverage · 2025-09-22
 
-- 对应 PRD：`docs/ccpm/PRD-server-tests-full-coverage-20250922.md`
+- 对应 PRD：`docs/reports/archive/ccpm/PRD-server-tests-full-coverage-20250922.md`
 - 存档报告：`docs/reports/server-tests-coverage-report-20250922.md`
 
 ## 范围与关键点（占位）
@@ -25,4 +25,5 @@
 
 ## 附注/下一步
 - 若需生产级交付：推进部署与打包 PRD（Phase 3）
+
 

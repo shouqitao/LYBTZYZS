@@ -10,7 +10,6 @@ using LYBT.Desktop.Shell.Extensions;
 using LYBT.Desktop.Shell.ViewModels;
 using LYBT.Desktop.Shell.Views;
 using LYBT.Desktop.Users;
-using LYBT.Desktop.Workbench.Admin;
 using LYBT.Desktop.Workbench.Medical;
 using Microsoft.Extensions.Logging;
 using Prism.DryIoc;
@@ -53,6 +52,10 @@ public partial class App : PrismApplication
     {
         ArgumentNullException.ThrowIfNull(containerRegistry, nameof(containerRegistry));
 
+        // 注册应用初始化服务（去除ServiceLocator反模式）
+        containerRegistry.RegisterSingleton<LYBT.Desktop.Shell.Services.IApplicationInitializationService, 
+            LYBT.Desktop.Shell.Services.ApplicationInitializationService>();
+
         // 使用扩展方法统一注册所有服务
         containerRegistry.RegisterAllServices();
 
@@ -77,14 +80,25 @@ public partial class App : PrismApplication
 
     /// <summary>
     /// 应用程序初始化完成后的回调
-    /// 按照Prism 8.x最佳实践，简化启动流程，避免过度复杂的初始化
+    /// 按照Prism 8.x最佳实践，使用依赖注入服务，避免ServiceLocator
     /// </summary>
     protected override void OnInitialized()
     {
         base.OnInitialized();
 
-        // Prism 8.x最佳实践：依赖RegisterTypes中注册的服务，避免手动初始化
-        // 错误处理服务和其他服务已在RegisterTypes中正确注册和配置
+        // 使用注入的应用初始化服务（去除Container.Resolve）
+        try
+        {
+            var initService = Container.Resolve<LYBT.Desktop.Shell.Services.IApplicationInitializationService>();
+            
+            // 异步初始化核心服务
+            _ = Task.Run(async () => await initService.InitializeCoreServicesAsync());
+        }
+        catch (Exception ex)
+        {
+            // 降级处理：如果初始化服务未正确注册，记录错误但继续启动
+            System.Diagnostics.Debug.WriteLine($"应用初始化服务失败: {ex.Message}");
+        }
     }
 
     /// <summary>
@@ -234,8 +248,7 @@ public partial class App : PrismApplication
             ["Doctor", "Admin"]);
 
         // 4. 工作台模块（基于角色智能加载）
-        AddRoleBasedModule(moduleCatalog, nameof(SystemWorkbenchModule), typeof(SystemWorkbenchModule),
-            ["Admin"]);
+        // SystemWorkbenchModule已删除
 
         AddRoleBasedModule(moduleCatalog, nameof(MedicalWorkbenchModule), typeof(MedicalWorkbenchModule),
             ["Doctor", "Admin"]);

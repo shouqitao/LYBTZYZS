@@ -97,7 +97,6 @@
 
   <ItemGroup Label="Workbenches">
     <ProjectReference Include="..\Workbenches\Core\LYBT.Desktop.Workbench.Core.csproj" />
-    <ProjectReference Include="..\Workbenches\SystemWorkbench\LYBT.Desktop.Workbench.Admin.csproj" />
     <ProjectReference Include="..\Workbenches\MedicalWorkbench\LYBT.Desktop.Workbench.Medical.csproj" />
   </ItemGroup>
 

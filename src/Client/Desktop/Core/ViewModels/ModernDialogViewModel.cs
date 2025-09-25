@@ -1,6 +1,8 @@
 using LYBT.Desktop.Core.Interfaces.Services;
 using Prism.Commands;
 using Prism.Events;
+using Microsoft.Extensions.Logging;
+using LYBT.Desktop.Core.ViewModels.Base;
 
 namespace LYBT.Desktop.Core.ViewModels
 {
@@ -73,8 +75,9 @@ namespace LYBT.Desktop.Core.ViewModels
         /// </summary>
         protected ModernDialogViewModel(
             IEventAggregator eventAggregator,
+            ILoggerFactory loggerFactory,
             IErrorHandlingService? errorHandlingService = null)
-            : base(eventAggregator, errorHandlingService)
+            : base(eventAggregator, loggerFactory, errorHandlingService)
         {
             // 零警告Command初始化
             ConfirmCommand = new DelegateCommand(async () => await OnConfirmAsync(), CanConfirm);
@@ -142,7 +145,7 @@ namespace LYBT.Desktop.Core.ViewModels
             }
             catch (Exception ex)
             {
-                await HandleErrorAsync("确认操作", ex);
+                await HandleErrorAsync(ex, "确认操作");
             }
         }
 
@@ -160,7 +163,7 @@ namespace LYBT.Desktop.Core.ViewModels
             catch (Exception ex)
             {
                 // 取消操作异常处理
-                _ = HandleErrorAsync("取消操作", ex, false);
+                _ = HandleErrorAsync(ex, "取消操作");
                 DialogResult = false;
                 RequestClose?.Invoke(false);
             }

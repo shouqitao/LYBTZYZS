@@ -34,8 +34,9 @@ namespace LYBT.Desktop.Patients
             containerRegistry.RegisterSingleton<IPatientService>(container => container.Resolve<Services.PatientService>());
 
             // 注册视图和视图模型
-            containerRegistry.RegisterForNavigation<PatientManagementView, PatientManagementViewModel>();
-            containerRegistry.RegisterForNavigation<PatientAddEditDialog, PatientAddEditDialogViewModel>();
+            // TODO: Views removed during refactoring - need to restore after architecture cleanup
+            // containerRegistry.RegisterForNavigation<PatientManagementView, PatientManagementViewModel>();
+            // containerRegistry.RegisterDialog<PatientAddEditDialog, PatientAddEditDialogViewModel>();
             containerRegistry.RegisterForNavigation<PatientDetailView, PatientDetailViewModel>();
             containerRegistry.RegisterForNavigation<PatientImportWizardView, PatientImportWizardViewModel>();
         }

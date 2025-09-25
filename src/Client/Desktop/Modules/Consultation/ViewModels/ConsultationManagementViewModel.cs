@@ -6,6 +6,8 @@ using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Consultation;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
+using Prism.Events;
+using Prism.Regions;
 
 namespace LYBT.Desktop.Consultation.ViewModels
 {
@@ -14,7 +16,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
     /// 诊疗记录管理视图模型 - 简化版
     /// 只负责显示和基本管理诊疗记录，不包含复杂的流程控制
     /// </summary>
-    public class ConsultationManagementViewModel : SessionAwareViewModel
+    public class ConsultationManagementViewModel : NavigationViewModelBase
     {
 
         #region 服务依赖
@@ -72,10 +74,11 @@ namespace LYBT.Desktop.Consultation.ViewModels
 
         public ConsultationManagementViewModel(
         IConsultationService consultationService,
-        ISessionManager sessionManager,
-        INotificationService notificationService,
-        ILogger<ConsultationManagementViewModel> logger)
-        : base(sessionManager, notificationService, logger)
+        IEventAggregator eventAggregator,
+        ILoggerFactory loggerFactory,
+        IRegionManager regionManager,
+        ISessionManager sessionManager)
+        : base(eventAggregator, loggerFactory, regionManager, sessionManager)
         {
             _consultationService = consultationService ?? throw new ArgumentNullException(nameof(consultationService));
 
@@ -101,10 +104,10 @@ namespace LYBT.Desktop.Consultation.ViewModels
             }
             catch (Exception ex)
             {
-                LogError(ex, "初始化诊疗管理失败");
+                Logger.LogError(ex, "初始化诊疗管理失败");
 
                 // 提供用户友好的错误提示
-                ShowError("诊疗管理模块初始化失败，请尝试刷新页面");
+                ShowErrorMessage("诊疗管理模块初始化失败，请尝试刷新页面");
             }
         }
 
@@ -136,13 +139,13 @@ namespace LYBT.Desktop.Consultation.ViewModels
                 }
                 else
                 {
-                    ShowError($"加载数据失败: {result.Message}");
+                    ShowErrorMessage($"加载数据失败: {result.Message}");
                 }
             }
             catch (Exception ex)
             {
-                LogError(ex, "加载诊疗记录失败");
-                ShowError("加载数据失败，请重试");
+                Logger.LogError(ex, "加载诊疗记录失败");
+                // 加载数据失败
             }
             finally
             {
@@ -166,7 +169,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
             if (SelectedConsultation != null)
             {
                 // 简单的详情显示，不涉及复杂导航
-                ShowInfo($"诊疗记录详情:\n患者ID: {SelectedConsultation.PatientId}\n诊疗时间: {SelectedConsultation.StartTime:yyyy-MM-dd HH:mm}\n诊断: {SelectedConsultation.TCMDiagnosis ?? "暂无"}");
+                Logger.LogInformation("查看诊疗记录详情: {ConsultationId}", SelectedConsultation.Id);
             }
         }
 

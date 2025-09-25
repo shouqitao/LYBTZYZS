@@ -21,18 +21,11 @@ namespace LYBT.Module.Prescriptions
         /// </summary>
         public static IServiceCollection AddPrescriptionsModule(this IServiceCollection services)
         {
-            // 仓储层
+            // 仓储层 - 统一实现
             services.AddScoped<IPrescriptionRepository, PrescriptionRepository>();
-            services.AddScoped<IPrescriptionReadRepository, PrescriptionReadRepository>();
 
-            // UltraThink双层架构服务 - 查询和业务逻辑分离
-            services.AddScoped<IPrescriptionQueryService, PrescriptionQueryService>();
-            services.AddScoped<IPrescriptionBusinessService, PrescriptionBusinessService>();
-
-            // 主服务 - UltraThink纯委托模式，委托给专业服务层
+            // 服务层 - UltraThink架构重构后的统一服务
             services.AddScoped<IPrescriptionService, PrescriptionService>();
-
-            // 配伍记录服务已移除 - Record-Only模式使用手动备注
 
             // AutoMapper配置
             services.AddAutoMapper(cfg =>

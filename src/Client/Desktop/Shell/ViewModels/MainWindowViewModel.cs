@@ -3,6 +3,7 @@ using LYBT.Desktop.Core.Constants;
 using LYBT.Desktop.Core.Events;
 using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.ViewModels.Base;
+using Microsoft.Extensions.Logging;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using Prism.Commands;
@@ -18,7 +19,7 @@ namespace LYBT.Desktop.Shell.ViewModels;
 /// 集成主题切换、时钟显示、角色基础的工作台切换功能
 /// 支持企业级错误处理和异步操作，适配小型诊所使用需求
 /// </summary>
-public class MainWindowViewModel : ServiceViewModel
+public class MainWindowViewModel : ModernViewModelBase
 {
     private readonly IMainWindowServicesFacade _servicesFacade;
     private readonly IRegionManager _regionManager;
@@ -35,7 +36,8 @@ public class MainWindowViewModel : ServiceViewModel
         IRegionManager regionManager,
         IEventAggregator eventAggregator,
         IMainWindowServicesFacade servicesFacade,
-        IErrorHandlingService errorHandlingService) : base(eventAggregator, errorHandlingService)
+        ILoggerFactory loggerFactory,
+        IErrorHandlingService errorHandlingService) : base(eventAggregator, loggerFactory, errorHandlingService)
     {
         _servicesFacade = servicesFacade ?? throw new ArgumentNullException(nameof(servicesFacade));
         _regionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));

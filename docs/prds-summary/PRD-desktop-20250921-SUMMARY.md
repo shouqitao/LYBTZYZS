@@ -1,4 +1,4 @@
-﻿# PRD 完成总结 — desktop-sln-quick-fix — 2025-09-21
+# PRD 完成总结 — desktop-sln-quick-fix — 2025-09-21
 
 - 关联 PRD：.claude/prds/desktop-sln-quick-fix.md
 
@@ -29,3 +29,4 @@
 ## 建议/下一步
 - 按里程碑（R1–R3）小步提交并验证；完成后更新本总结
 - 在 CI 中加入构建/覆盖率门禁与简单 UI 冒烟验证（可选）
+

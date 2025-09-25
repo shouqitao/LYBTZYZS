@@ -1,218 +1,420 @@
-using LYBT.Desktop.Core.Interfaces.Services;
+using System;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Threading.Tasks;
+using System.Windows.Input;
+using Microsoft.Extensions.Logging;
+using Prism.Commands;
 using Prism.Events;
+using Prism.Regions;
+using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Desktop.Core.Services.Navigation;
+using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Desktop.Core.ViewModels.Base
 {
-
     /// <summary>
-    /// 导航ViewModel基类
-    /// 提供页面导航、参数传递、导航状态管理等功能（简化版，不依赖Prism.Regions）
+    /// 导航页面ViewModel基类 - 第2阶段架构重构
+    /// 为所有支持导航的页面提供统一的基础功能
+    /// 整合了NavigationViewModelBase和SessionAwareViewModel的功能
     /// </summary>
-    public abstract class NavigationViewModelBase : ServiceViewModel
+    public abstract class NavigationViewModelBase : ModernViewModelBase, INavigationAware, IRegionMemberLifetime, IConfirmNavigationRequest
     {
-        private Dictionary<string, object> _navigationParameters = new();
-        private bool _isNavigationTarget = true;
+        #region 依赖服务
+        
+        protected readonly IRegionManager RegionManager;
+        protected readonly ISessionManager? SessionManager;
+        protected readonly ILogger<NavigationViewModelBase> Logger;
+        protected IRegionNavigationService? NavigationService;
+        
+        #endregion
 
+        #region 导航属性
+        
+        private string _pageTitle = string.Empty;
+        private bool _isNavigating;
+        private IRegionNavigationJournal? _navigationJournal;
+        
         /// <summary>
-        /// 导航参数
+        /// 页面标题
         /// </summary>
-        protected Dictionary<string, object> NavigationParameters => _navigationParameters;
-
-        /// <summary>
-        /// 是否为导航目标
-        /// </summary>
-        protected bool IsNavigationTargetFlag
+        public string PageTitle
         {
-            get => _isNavigationTarget;
-            set => SetProperty(ref _isNavigationTarget, value);
+            get => _pageTitle;
+            set => SetProperty(ref _pageTitle, value);
         }
+        
+        /// <summary>
+        /// 是否正在导航
+        /// </summary>
+        public bool IsNavigating
+        {
+            get => _isNavigating;
+            private set => SetProperty(ref _isNavigating, value);
+        }
+        
+        /// <summary>
+        /// 导航日志
+        /// </summary>
+        protected IRegionNavigationJournal? NavigationJournal
+        {
+            get => _navigationJournal;
+            private set => _navigationJournal = value;
+        }
+        
+        #endregion
 
-        public NavigationViewModelBase(
+        #region IRegionMemberLifetime实现
+        
+        /// <summary>
+        /// 是否保持存活（默认为false，导航离开时销毁）
+        /// </summary>
+        public virtual bool KeepAlive => false;
+        
+        #endregion
+
+        #region 导航命令
+        
+        /// <summary>
+        /// 返回命令
+        /// </summary>
+        public DelegateCommand GoBackCommand { get; private set; }
+        
+        /// <summary>
+        /// 前进命令
+        /// </summary>
+        public DelegateCommand GoForwardCommand { get; private set; }
+        
+        /// <summary>
+        /// 刷新命令
+        /// </summary>
+        public DelegateCommand RefreshCommand { get; private set; }
+        
+        #endregion
+
+        #region 构造函数
+        
+        protected NavigationViewModelBase(
             IEventAggregator eventAggregator,
-            IErrorHandlingService errorHandlingService)
-            : base(eventAggregator, errorHandlingService)
+            ILoggerFactory loggerFactory,
+            IRegionManager regionManager,
+            ISessionManager? sessionManager = null,
+            INavigationService? navigationService = null,
+            IErrorHandlingService? errorHandlingService = null)
+            : base(eventAggregator, loggerFactory, errorHandlingService)
         {
-            IsNavigationTargetFlag = true;
+            RegionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
+            SessionManager = sessionManager;
+            Logger = loggerFactory.CreateLogger<NavigationViewModelBase>();
+            // NavigationService will be set during navigation
+            
+            // 初始化命令
+            GoBackCommand = new DelegateCommand(ExecuteGoBack, CanExecuteGoBack);
+            GoForwardCommand = new DelegateCommand(ExecuteGoForward, CanExecuteGoForward);
+            RefreshCommand = new DelegateCommand(async () => await ExecuteRefreshAsync());
         }
+        
+        #endregion
 
+        #region INavigationAware实现
+        
         /// <summary>
-        /// 导航到此视图时调用（简化版）
+        /// 导航到此页面时调用
         /// </summary>
-        public virtual void OnNavigatedTo(Dictionary<string, object>? parameters = null)
+        public virtual void OnNavigatedTo(NavigationContext navigationContext)
         {
-            try
-            {
-                // 保存导航参数
-                _navigationParameters.Clear();
-                if (parameters != null)
-                {
-                    foreach (var parameter in parameters)
-                    {
-                        _navigationParameters[parameter.Key] = parameter.Value;
-                    }
-                }
-
-                // 异步初始化
-                _ = InitializeAsync();
-
-                // 调用子类实现
-                OnNavigatedToOverride(parameters);
-            }
-            catch (Exception ex)
-            {
-                HandleError("导航到页面", ex);
-            }
-        }
-
-        /// <summary>
-        /// 从此视图导航离开时调用
-        /// </summary>
-        public virtual void OnNavigatedFrom()
-        {
-            try
-            {
-                OnNavigatedFromOverride();
-            }
-            catch (Exception ex)
-            {
-                HandleError("导航离开页面", ex);
-            }
-        }
-
-        /// <summary>
-        /// 判断是否为导航目标
-        /// </summary>
-        public virtual bool IsNavigationTarget()
-        {
-            return IsNavigationTargetFlag;
-        }
-
-        /// <summary>
-        /// 确认导航请求（同步版本，用于Prism导航兼容性）
-        /// </summary>
-        public virtual bool ConfirmNavigationRequest()
-        {
-            try
-            {
-                var canNavigate = CanNavigateAway();
-                if (canNavigate)
-                {
-                    return true;
-                }
-                else
-                {
-                    // 如果没有对话框服务，默认允许导航（保守操作）
-                    return true;
-                }
-            }
-            catch (Exception ex)
-            {
-                HandleError("确认导航", ex);
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// 确认导航请求（异步版本，推荐使用）
-        /// </summary>
-        public virtual async Task<bool> ConfirmNavigationRequestAsync()
-        {
-            try
-            {
-                var canNavigate = CanNavigateAway();
-                if (canNavigate)
-                {
-                    return true;
-                }
-                else
-                {
-                    return await ShowConfirmNavigationDialogAsync();
-                }
-            }
-            catch (Exception ex)
-            {
-                HandleError("确认导航", ex);
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// 子类重写此方法处理导航到页面的逻辑
-        /// </summary>
-        protected virtual void OnNavigatedToOverride(Dictionary<string, object>? parameters)
-        {
-            // 子类可以重写此方法
-        }
-
-        /// <summary>
-        /// 子类重写此方法处理导航离开页面的逻辑
-        /// </summary>
-        protected virtual void OnNavigatedFromOverride()
-        {
-            // 子类可以重写此方法
-        }
-
-        /// <summary>
-        /// 判断是否可以导航离开
-        /// </summary>
-        protected virtual bool CanNavigateAway()
-        {
-            // 如果有错误或正在加载，可能需要用户确认
-            return !IsLoading && !HasError;
-        }
-
-        /// <summary>
-        /// 显示导航确认对话框
-        /// </summary>
-        protected virtual async Task<bool> ShowConfirmNavigationDialogAsync()
-        {
-            return await ShowConfirmDialogAsync(
-                "当前页面有未保存的更改或正在进行的操作，确定要离开吗？",
-                "确认导航");
-        }
-
-        /// <summary>
-        /// 获取导航参数
-        /// </summary>
-        protected T? GetNavigationParameter<T>(string key, T? defaultValue = default)
-        {
-            if (_navigationParameters.TryGetValue(key, out var value))
+            Logger.LogDebug("导航到页面: {PageType}", GetType().Name);
+            
+            NavigationJournal = navigationContext.NavigationService.Journal;
+            ProcessNavigationParameters(navigationContext.Parameters);
+            
+            // 异步初始化
+            Task.Run(async () =>
             {
                 try
                 {
-                    return (T)value;
+                    IsNavigating = true;
+                    await OnNavigatedToAsync(navigationContext);
                 }
-                catch
+                catch (Exception ex)
                 {
-                    return defaultValue;
+                    Logger.LogError(ex, "页面加载失败");
+                    var context = new ErrorContext { Operation = "页面加载", Module = GetType().Name };
+                    _ = ErrorHandlingService?.HandleExceptionAsync(ex, context);
                 }
-            }
-
-            return defaultValue;
+                finally
+                {
+                    IsNavigating = false;
+                }
+            });
+            
+            UpdateNavigationCommands();
         }
-
+        
         /// <summary>
-        /// 显示确认对话框
+        /// 从此页面导航离开时调用
         /// </summary>
-        protected async Task<bool> ShowConfirmDialogAsync(string message, string title = "确认")
+        public virtual void OnNavigatedFrom(NavigationContext navigationContext)
+        {
+            Logger.LogDebug("从页面导航离开: {PageType}", GetType().Name);
+            OnNavigatedFromAsync(navigationContext).ConfigureAwait(false);
+        }
+        
+        /// <summary>
+        /// 判断是否为导航目标
+        /// </summary>
+        public virtual bool IsNavigationTarget(NavigationContext navigationContext)
+        {
+            // 默认创建新实例（除非KeepAlive为true）
+            return KeepAlive;
+        }
+        
+        #endregion
+
+        #region IConfirmNavigationRequest实现
+        
+        /// <summary>
+        /// 确认导航请求
+        /// </summary>
+        public virtual void ConfirmNavigationRequest(NavigationContext navigationContext, Action<bool> continuationCallback)
+        {
+            // 检查是否有未保存的更改
+            var canNavigate = !HasUnsavedChanges();
+            
+            if (!canNavigate)
+            {
+                // 可以在这里显示确认对话框
+                Logger.LogDebug("导航被阻止：存在未保存的更改");
+            }
+            
+            continuationCallback(canNavigate);
+        }
+        
+        #endregion
+
+        #region 导航生命周期（异步版本）
+        
+        /// <summary>
+        /// 导航到页面时的异步处理
+        /// </summary>
+        protected virtual async Task OnNavigatedToAsync(NavigationContext navigationContext)
+        {
+            await LoadDataAsync();
+        }
+        
+        /// <summary>
+        /// 导航离开页面时的异步处理
+        /// </summary>
+        protected virtual Task OnNavigatedFromAsync(NavigationContext navigationContext)
+        {
+            return Task.CompletedTask;
+        }
+        
+        /// <summary>
+        /// 处理导航参数
+        /// </summary>
+        protected virtual void ProcessNavigationParameters(Prism.Regions.NavigationParameters parameters)
+        {
+            // 尝试获取页面标题
+            if (parameters.TryGetValue("title", out object titleObj) && titleObj is string title)
+            {
+                PageTitle = title;
+            }
+            
+            // 子类重写以处理特定参数
+        }
+        
+        #endregion
+
+        #region 数据加载
+        
+        /// <summary>
+        /// 加载页面数据
+        /// </summary>
+        protected virtual async Task LoadDataAsync()
         {
             try
             {
-                if (ErrorHandlingService?.CustomDialogService != null)
-                {
-                    return await ErrorHandlingService.CustomDialogService.ShowConfirmationAsync(title, message);
-                }
-                else
-                {
-                    // 没有对话框服务时默认返回false（保守操作）
-                    return false;
-                }
+                IsLoading = true;
+                ClearError();
+                
+                await OnLoadDataAsync();
             }
-            catch
+            catch (Exception ex)
             {
-                // 异常时默认返回false（保守操作）
-                return false;
+                Logger.LogError(ex, "加载数据失败");
+                var context = new ErrorContext { Operation = "加载数据", Module = GetType().Name };
+                _ = ErrorHandlingService?.HandleExceptionAsync(ex, context);
+            }
+            finally
+            {
+                IsLoading = false;
             }
         }
+        
+        /// <summary>
+        /// 子类重写以实现具体的数据加载逻辑
+        /// </summary>
+        protected virtual Task OnLoadDataAsync()
+        {
+            return Task.CompletedTask;
+        }
+        
+        #endregion
+
+        #region 导航命令实现
+        
+        /// <summary>
+        /// 执行后退导航
+        /// </summary>
+        private void ExecuteGoBack()
+        {
+            NavigationJournal?.GoBack();
+        }
+        
+        /// <summary>
+        /// 是否可以后退
+        /// </summary>
+        private bool CanExecuteGoBack()
+        {
+            return NavigationJournal?.CanGoBack ?? false;
+        }
+        
+        /// <summary>
+        /// 执行前进导航
+        /// </summary>
+        private void ExecuteGoForward()
+        {
+            NavigationJournal?.GoForward();
+        }
+        
+        /// <summary>
+        /// 是否可以前进
+        /// </summary>
+        private bool CanExecuteGoForward()
+        {
+            return NavigationJournal?.CanGoForward ?? false;
+        }
+        
+        /// <summary>
+        /// 执行刷新
+        /// </summary>
+        protected virtual async Task ExecuteRefreshAsync()
+        {
+            try
+            {
+                await LoadDataAsync();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "刷新数据失败");
+                var context = new ErrorContext { Operation = "刷新数据", Module = GetType().Name };
+                await ErrorHandlingService?.HandleExceptionAsync(ex, context);
+            }
+        }
+        
+        /// <summary>
+        /// 更新导航命令状态
+        /// </summary>
+        private void UpdateNavigationCommands()
+        {
+            GoBackCommand?.RaiseCanExecuteChanged();
+            GoForwardCommand?.RaiseCanExecuteChanged();
+        }
+        
+        #endregion
+
+        #region 导航辅助方法
+        
+        /// <summary>
+        /// 导航到指定页面
+        /// </summary>
+        protected void NavigateTo(string regionName, string viewName, Prism.Regions.NavigationParameters? parameters = null)
+        {
+            RegionManager.RequestNavigate(regionName, new Uri(viewName, UriKind.RelativeOrAbsolute), parameters);
+        }
+        
+        /// <summary>
+        /// 导航到指定页面（异步）
+        /// </summary>
+        protected Task<Prism.Regions.NavigationResult> NavigateToAsync(string regionName, string viewName, Prism.Regions.NavigationParameters? parameters = null)
+        {
+            var tcs = new TaskCompletionSource<Prism.Regions.NavigationResult>();
+            
+            RegionManager.RequestNavigate(regionName, new Uri(viewName, UriKind.RelativeOrAbsolute), result =>
+            {
+                tcs.SetResult(result);
+            }, parameters);
+            
+            return tcs.Task;
+        }
+        
+        /// <summary>
+        /// 检查是否有未保存的更改
+        /// </summary>
+        protected virtual bool HasUnsavedChanges()
+        {
+            return false;
+        }
+        
+        #endregion
+
+        #region 会话支持（来自SessionAwareViewModel）
+        
+        /// <summary>
+        /// 获取当前用户
+        /// </summary>
+        protected LYBT.Shared.Models.Contracts.Users.UserDto? GetCurrentUser()
+        {
+            return SessionManager?.CurrentUser;
+        }
+        
+        /// <summary>
+        /// 获取当前患者
+        /// </summary>
+        protected LYBT.Shared.Models.Contracts.Patients.PatientDto? GetCurrentPatient()
+        {
+            return SessionManager?.CurrentPatient;
+        }
+        
+        /// <summary>
+        /// 获取当前诊疗记录
+        /// </summary>
+        protected LYBT.Shared.Models.Contracts.Consultation.ConsultationDto? GetCurrentConsultation()
+        {
+            return SessionManager?.ActiveConsultation;
+        }
+        
+        /// <summary>
+        /// 检查是否已登录
+        /// </summary>
+        protected bool IsAuthenticated()
+        {
+            return SessionManager?.IsLoggedIn ?? false;
+        }
+        
+        #endregion
+
+        #region 命令刷新
+        
+        protected override void RaiseCanExecuteChanged()
+        {
+            base.RaiseCanExecuteChanged();
+            UpdateNavigationCommands();
+            RefreshCommand?.RaiseCanExecuteChanged();
+        }
+        
+        #endregion
+
+        #region 清理
+        
+        protected override void OnDisposing()
+        {
+            base.OnDisposing();
+            NavigationJournal = null;
+        }
+        
+        #endregion
     }
 }

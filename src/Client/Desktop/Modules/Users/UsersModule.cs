@@ -39,7 +39,8 @@ namespace LYBT.Desktop.Users
 
             // 注册视图和视图模型
             containerRegistry.RegisterForNavigation<UserManagementView, UserManagementViewModel>();
-            containerRegistry.RegisterForNavigation<UserAddEditDialog, UserAddEditDialogViewModel>();
+            // TODO: Dialog removed during refactoring
+            // containerRegistry.RegisterForNavigation<UserAddEditDialog, UserAddEditDialogViewModel>();
         }
     }
 }

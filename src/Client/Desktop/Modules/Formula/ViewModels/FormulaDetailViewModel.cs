@@ -7,6 +7,7 @@ using LYBT.Desktop.Core.Services.Navigation;
 using LYBT.Desktop.Core.ViewModels.Base;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Formula;
+using Microsoft.Extensions.Logging;
 using LYBT.Shared.Models.Enums;
 using Prism.Commands;
 using Prism.Events;
@@ -19,7 +20,7 @@ namespace LYBT.Desktop.Formula.ViewModels
     /// 验方详情视图模型 - UltraThink v2.0架构
     /// 提供验方详细信息查看和编辑功能
     /// </summary>
-    public class FormulaDetailViewModel : ServiceViewModel, INavigationAware
+    public class FormulaDetailViewModel : NavigationViewModelBase
     {
 
         #region 私有字段
@@ -104,8 +105,16 @@ namespace LYBT.Desktop.Formula.ViewModels
             INavigationService navigationService,
             IMapper mapper,
             IErrorHandlingService errorHandlingService,
-            IEventAggregator eventAggregator)
-            : base(eventAggregator, errorHandlingService)
+            IEventAggregator eventAggregator,
+            ILoggerFactory loggerFactory,
+            IRegionManager regionManager,
+            ISessionManager? sessionManager = null)
+            : base(eventAggregator, 
+                loggerFactory,
+                regionManager,
+                sessionManager,
+                navigationService,
+                errorHandlingService)
         {
             _formulaService = formulaService ?? throw new ArgumentNullException(nameof(formulaService));
             _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));

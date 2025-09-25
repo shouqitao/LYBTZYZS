@@ -14,19 +14,14 @@ public static class PatientsModule
 
     /// <summary>
     /// 注册本模块所有服务到 DI 容器（使用统一数据库上下文）
-    /// UltraThink双层架构：Query(查询专业化) + Business(业务逻辑和CRUD)
+    /// 简化架构：统一服务模式，合并查询和业务逻辑
     /// </summary>
     public static IServiceCollection AddPatientsModuleServices(this IServiceCollection services)
     {
         // 仓储层 - 使用OptimizedBaseRepository优化版本
         services.AddScoped<IPatientRepository, PatientRepository>();
-        services.AddScoped<IPatientReadRepository, PatientReadRepository>();
 
-        // UltraThink双层架构服务 - 查询和业务逻辑分离
-        services.AddScoped<IPatientQueryService, PatientQueryService>();
-        services.AddScoped<IPatientBusinessService, PatientBusinessService>();
-
-        // 主服务 - UltraThink纯委托模式，委托给专业服务层
+        // 统一服务 - 合并查询和业务逻辑
         services.AddScoped<IPatientService, PatientService>();
 
         return services;

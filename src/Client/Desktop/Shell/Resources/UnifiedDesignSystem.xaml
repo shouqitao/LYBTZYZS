@@ -1,104 +1,118 @@
-﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:converters="clr-namespace:LYBT.Desktop.Core.Converters;assembly=LYBT.Desktop.Core">
-    
-    <!-- UltraThink 统一设计系统 -->
-    
-    <!-- 通用转换器（全局） -->
-    <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
-    <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter" />
-    <converters:EmptyStringToVisibilityConverter x:Key="EmptyStringToVisibilityConverter" />
-    <!-- 基础颜色 -->
-    <SolidColorBrush x:Key="PrimaryBrush" Color="#2196F3"/>
-    <SolidColorBrush x:Key="SecondaryBrush" Color="#FF9800"/>
-    <SolidColorBrush x:Key="AccentBrush" Color="#4CAF50"/>
-    
-    <!-- 背景和表面颜色 -->
-    <SolidColorBrush x:Key="BackgroundBrush" Color="#F5F5F5"/>
-    <SolidColorBrush x:Key="SurfaceBrush" Color="#FAFAFA"/>
-    <SolidColorBrush x:Key="StatusBarBrush" Color="#EEEEEE"/>
-    
-    <!-- 覆盖层和边框 -->
-    <SolidColorBrush x:Key="OverlayBrush" Color="#E3F2FD"/>
-    <SolidColorBrush x:Key="AlternateBorderBrush" Color="#E0E0E0"/>
-    
-    <!-- 文本颜色 -->
-    <SolidColorBrush x:Key="TextSecondaryBrush" Color="#666666"/>
-    
-    <!-- 次要颜色画刷 -->
-    <SolidColorBrush x:Key="SecondaryBrush" Color="#6C757D"/>
-    
-    <!-- 基础样式 -->
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="clr-namespace:LYBT.Desktop.Core.Converters;assembly=LYBT.Desktop.Core">
+
+    <!--  UltraThink 统一设计系统  -->
+
+    <!--  合并统一转换器资源字典  -->
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="pack://application:,,,/LYBT.Desktop.Core;component/Resources/UnifiedConverters.xaml" />
+    </ResourceDictionary.MergedDictionaries>
+
+    <!--  基础颜色  -->
+    <SolidColorBrush x:Key="PrimaryBrush" Color="#2196F3" />
+    <SolidColorBrush x:Key="SecondaryBrush" Color="#FF9800" />
+    <SolidColorBrush x:Key="AccentBrush" Color="#4CAF50" />
+
+    <!--  背景和表面颜色  -->
+    <SolidColorBrush x:Key="BackgroundBrush" Color="#F5F5F5" />
+    <SolidColorBrush x:Key="SurfaceBrush" Color="#FAFAFA" />
+    <SolidColorBrush x:Key="StatusBarBrush" Color="#EEEEEE" />
+
+    <!--  覆盖层和边框  -->
+    <SolidColorBrush x:Key="OverlayBrush" Color="#E3F2FD" />
+    <SolidColorBrush x:Key="AlternateBorderBrush" Color="#E0E0E0" />
+
+    <!--  文本颜色  -->
+    <SolidColorBrush x:Key="TextSecondaryBrush" Color="#666666" />
+
+    <!--  灰色画刷  -->
+    <SolidColorBrush x:Key="GrayBrush" Color="#6C757D" />
+
+    <!--  基础样式  -->
     <Style x:Key="BaseTextBlockStyle" TargetType="TextBlock">
-        <Setter Property="FontFamily" Value="Microsoft YaHei"/>
-        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="FontFamily" Value="Microsoft YaHei" />
+        <Setter Property="FontSize" Value="14" />
     </Style>
-    
+
     <Style x:Key="BaseButtonStyle" TargetType="Button">
-        <Setter Property="FontFamily" Value="Microsoft YaHei"/>
-        <Setter Property="FontSize" Value="14"/>
-        <Setter Property="Padding" Value="10,5"/>
-        <Setter Property="Margin" Value="2"/>
+        <Setter Property="FontFamily" Value="Microsoft YaHei" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="Padding" Value="10,5" />
+        <Setter Property="Margin" Value="2" />
     </Style>
-    
-    <!-- 标签文本样式 -->
+
+    <!--  标签文本样式  -->
     <Style x:Key="LabelText" TargetType="TextBlock">
-        <Setter Property="FontFamily" Value="Microsoft YaHei"/>
-        <Setter Property="FontSize" Value="14"/>
-        <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
-        <Setter Property="VerticalAlignment" Value="Center"/>
-        <Setter Property="Margin" Value="0,0,10,0"/>
+        <Setter Property="FontFamily" Value="Microsoft YaHei" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="Margin" Value="0,0,10,0" />
     </Style>
-    
-    <!-- 搜索文本框样式 -->
+
+    <!--  搜索文本框样式  -->
     <Style x:Key="SearchTextBox" TargetType="TextBox">
-        <Setter Property="FontFamily" Value="Microsoft YaHei"/>
-        <Setter Property="FontSize" Value="14"/>
-        <Setter Property="Padding" Value="8,5"/>
-        <Setter Property="Margin" Value="5,0"/>
-        <Setter Property="MinWidth" Value="200"/>
-        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="FontFamily" Value="Microsoft YaHei" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="Padding" Value="8,5" />
+        <Setter Property="Margin" Value="5,0" />
+        <Setter Property="MinWidth" Value="200" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
     </Style>
-    
-    <!-- 主要按钮样式 -->
-    <Style x:Key="PrimaryButton" TargetType="Button" BasedOn="{StaticResource BaseButtonStyle}">
-        <Setter Property="Background" Value="{StaticResource PrimaryBrush}"/>
-        <Setter Property="Foreground" Value="White"/>
-        <Setter Property="BorderThickness" Value="0"/>
-        <Setter Property="Padding" Value="15,8"/>
+
+    <!--  主要按钮样式  -->
+    <Style
+        x:Key="PrimaryButton"
+        BasedOn="{StaticResource BaseButtonStyle}"
+        TargetType="Button">
+        <Setter Property="Background" Value="{StaticResource PrimaryBrush}" />
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="15,8" />
     </Style>
-    
-    <!-- 次要按钮样式 -->
-    <Style x:Key="SecondaryButton" TargetType="Button" BasedOn="{StaticResource BaseButtonStyle}">
-        <Setter Property="Background" Value="{StaticResource SecondaryBrush}"/>
-        <Setter Property="Foreground" Value="White"/>
-        <Setter Property="BorderThickness" Value="0"/>
-        <Setter Property="Padding" Value="15,8"/>
+
+    <!--  次要按钮样式  -->
+    <Style
+        x:Key="SecondaryButton"
+        BasedOn="{StaticResource BaseButtonStyle}"
+        TargetType="Button">
+        <Setter Property="Background" Value="{StaticResource SecondaryBrush}" />
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="15,8" />
     </Style>
-    
-    <!-- 成功按钮样式 -->
-    <Style x:Key="SuccessButton" TargetType="Button" BasedOn="{StaticResource BaseButtonStyle}">
-        <Setter Property="Background" Value="#28A745"/>
-        <Setter Property="Foreground" Value="White"/>
-        <Setter Property="BorderThickness" Value="0"/>
-        <Setter Property="Padding" Value="15,8"/>
+
+    <!--  成功按钮样式  -->
+    <Style
+        x:Key="SuccessButton"
+        BasedOn="{StaticResource BaseButtonStyle}"
+        TargetType="Button">
+        <Setter Property="Background" Value="#28A745" />
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="15,8" />
     </Style>
-    
-    <!-- 危险按钮样式 -->
-    <Style x:Key="DangerButton" TargetType="Button" BasedOn="{StaticResource BaseButtonStyle}">
-        <Setter Property="Background" Value="#DC3545"/>
-        <Setter Property="Foreground" Value="White"/>
-        <Setter Property="BorderThickness" Value="0"/>
-        <Setter Property="Padding" Value="15,8"/>
+
+    <!--  危险按钮样式  -->
+    <Style
+        x:Key="DangerButton"
+        BasedOn="{StaticResource BaseButtonStyle}"
+        TargetType="Button">
+        <Setter Property="Background" Value="#DC3545" />
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="15,8" />
     </Style>
-    
-    <!-- 工具栏容器样式 -->
+
+    <!--  工具栏容器样式  -->
     <Style x:Key="ToolBarContainer" TargetType="Border">
-        <Setter Property="Background" Value="{StaticResource SurfaceBrush}"/>
-        <Setter Property="BorderBrush" Value="{StaticResource AlternateBorderBrush}"/>
-        <Setter Property="BorderThickness" Value="0,0,0,1"/>
-        <Setter Property="Padding" Value="10,8"/>
-        <Setter Property="Margin" Value="0,0,0,5"/>
+        <Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource AlternateBorderBrush}" />
+        <Setter Property="BorderThickness" Value="0,0,0,1" />
+        <Setter Property="Padding" Value="10,8" />
+        <Setter Property="Margin" Value="0,0,0,5" />
     </Style>
-    
+
 </ResourceDictionary>

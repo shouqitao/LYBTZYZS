@@ -1,6 +1,8 @@
 using System.Windows.Input;
 using LYBT.Desktop.Core.ViewModels.Base;
 using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Desktop.Core.Events;
+using LYBT.Desktop.Core.Models.Events;
 using LYBT.Shared.Interfaces.Services;
 using Prism.Commands;
 using Prism.Events;
@@ -13,13 +15,13 @@ namespace LYBT.Desktop.Workbench.Medical.ViewModels.Workflow
     /// 诊疗流程视图模型
     /// 管理患者选择 → 诊断 → 处方的完整流程
     /// </summary>
-    public class MedicalWorkflowViewModel : ServiceViewModel, INavigationAware
+    public class MedicalWorkflowViewModel : ModernViewModelBase, INavigationAware
     {
         private readonly IRegionManager _regionManager;
         private readonly IPatientService _patientService;
         private readonly IConsultationService _consultationService;
         private readonly IPrescriptionService _prescriptionService;
-        private readonly ILogger<MedicalWorkflowViewModel> _logger;
+
         private readonly IErrorHandlingService _errorHandlingService;
 
         #region 流程状态
@@ -106,21 +108,19 @@ namespace LYBT.Desktop.Workbench.Medical.ViewModels.Workflow
         public MedicalWorkflowViewModel(
             IRegionManager regionManager,
             IEventAggregator eventAggregator,
+            ILoggerFactory loggerFactory,
             IErrorHandlingService errorHandlingService,
             IPatientService patientService,
             IConsultationService consultationService,
-            IPrescriptionService prescriptionService,
-            ILogger<MedicalWorkflowViewModel> logger)
-            : base(eventAggregator, errorHandlingService)
+            IPrescriptionService prescriptionService)
+            : base(eventAggregator, loggerFactory, errorHandlingService)
         {
             _regionManager = regionManager;
             _errorHandlingService = errorHandlingService;
             _patientService = patientService;
             _consultationService = consultationService;
             _prescriptionService = prescriptionService;
-            _logger = logger;
-
-            // 初始化命令
+// 初始化命令
             NextStepCommand = new DelegateCommand(ExecuteNextStep, CanExecuteNextStep);
             PreviousStepCommand = new DelegateCommand(ExecutePreviousStep, CanExecutePreviousStep);
             SkipPrescriptionCommand = new DelegateCommand(ExecuteSkipPrescription, CanExecuteSkipPrescription);
@@ -139,7 +139,7 @@ namespace LYBT.Desktop.Workbench.Medical.ViewModels.Workflow
                     {
                         IsPatientStepCompleted = true;
                         CurrentStep = WorkflowStep.Diagnosis;
-                        _logger.LogInformation("进入诊断步骤，患者ID: {PatientId}", SelectedPatientId);
+                        Logger.LogInformation("进入诊断步骤，患者ID: {PatientId}", SelectedPatientId);
                     }
                     break;
 
@@ -148,7 +148,7 @@ namespace LYBT.Desktop.Workbench.Medical.ViewModels.Workflow
                     {
                         IsDiagnosisStepCompleted = true;
                         CurrentStep = WorkflowStep.Prescription;
-                        _logger.LogInformation("进入处方步骤，诊疗ID: {ConsultationId}", CurrentConsultationId);
+                        Logger.LogInformation("进入处方步骤，诊疗ID: {ConsultationId}", CurrentConsultationId);
                     }
                     break;
 
@@ -190,7 +190,7 @@ namespace LYBT.Desktop.Workbench.Medical.ViewModels.Workflow
 
         private void ExecuteSkipPrescription()
         {
-            _logger.LogInformation("跳过处方步骤，完成诊疗流程");
+            Logger.LogInformation("跳过处方步骤，完成诊疗流程");
             IsPrescriptionStepCompleted = false;
             CompleteWorkflow();
         }
@@ -202,7 +202,7 @@ namespace LYBT.Desktop.Workbench.Medical.ViewModels.Workflow
 
         private void ExecuteCompleteWorkflow()
         {
-            _logger.LogInformation("完成诊疗流程");
+            Logger.LogInformation("完成诊疗流程");
             CompleteWorkflow();
         }
 
@@ -213,7 +213,7 @@ namespace LYBT.Desktop.Workbench.Medical.ViewModels.Workflow
 
         private void ExecuteCancelWorkflow()
         {
-            _logger.LogInformation("取消诊疗流程");
+            Logger.LogInformation("取消诊疗流程");
             ResetWorkflow();
 
             // 返回主页或管理界面
@@ -222,7 +222,7 @@ namespace LYBT.Desktop.Workbench.Medical.ViewModels.Workflow
 
         private void CompleteWorkflow()
         {
-            _logger.LogInformation("诊疗流程完成 - 患者: {PatientName}, 诊疗ID: {ConsultationId}",
+            Logger.LogInformation("诊疗流程完成 - 患者: {PatientName}, 诊疗ID: {ConsultationId}",
                 PatientName, CurrentConsultationId);
 
             // 发布诊疗完成事件
@@ -341,21 +341,8 @@ namespace LYBT.Desktop.Workbench.Medical.ViewModels.Workflow
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "加载患者信息失败");
+                Logger.LogError(ex, "加载患者信息失败");
             }
         }
     }
-
-    #region 事件定义
-
-    public class ConsultationCompletedEvent : PubSubEvent<ConsultationCompletedEventArgs> { }
-
-    public class ConsultationCompletedEventArgs
-    {
-        public Guid ConsultationId { get; set; }
-        public Guid PatientId { get; set; }
-        public bool HasPrescription { get; set; }
-    }
-
-    #endregion
 }

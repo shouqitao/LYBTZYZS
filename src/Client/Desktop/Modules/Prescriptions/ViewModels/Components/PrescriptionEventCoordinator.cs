@@ -63,13 +63,13 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components
                 _eventAggregator.GetEvent<SaveStepDataEvent>()
                     .Subscribe(OnSaveStepData);
 
-                // 订阅数据变更事件
-                _eventAggregator.GetEvent<DataChangedEvent>()
-                    .Subscribe(OnDataChanged);
+                // 订阅数据刷新请求事件 - 使用统一事件
+                _eventAggregator.GetEvent<DataRefreshRequestEvent>()
+                    .Subscribe(OnDataRefreshRequest);
 
-                // 订阅导航事件
-                _eventAggregator.GetEvent<NavigationEvent>()
-                    .Subscribe(OnNavigation);
+                // 订阅导航请求事件 - 使用统一事件
+                _eventAggregator.GetEvent<NavigationRequestEvent>()
+                    .Subscribe(OnNavigationRequest);
 
                 // 订阅处方相关的专门事件
                 _eventAggregator.GetEvent<PrescriptionChangedEvent>()
@@ -127,56 +127,64 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components
         /// <summary>
         /// 处理数据变更事件
         /// </summary>
-        private void OnDataChanged(DataChangedEventArgs changeInfo)
+        private void OnDataRefreshRequest(DataRefreshRequestEventArgs refreshRequest)
         {
             try
             {
-                if (changeInfo.Source != "Prescription")
+                // 将统一事件参数转换为原有的数据变更逻辑
+                if (refreshRequest.DataType != "Prescription")
                 {
                     return;
                 }
 
-                _logger.LogDebug("处理处方数据变更事件: {DataType}", changeInfo.DataType);
+                _logger.LogDebug("处理处方数据刷新请求: {DataType}", refreshRequest.DataType);
 
-                // 根据变更类型执行相应操作
-                switch (changeInfo.DataType)
+                // 根据刷新请求执行相应操作
+                if (refreshRequest.ForceRefresh)
                 {
-                    case "ItemAdded":
-                    case "ItemRemoved":
-                    case "ItemModified":
-                        RecalculateAndNotify();
-                        break;
-
-                    case "DiscountChanged":
-                    case "DosageChanged":
-                        RecalculateAndNotify();
-                        break;
-
-                    case "PrescriptionCleared":
-                        PublishPrescriptionCleared();
-                        break;
+                    RecalculateAndNotify();
+                }
+                else if (refreshRequest.EntityId.HasValue)
+                {
+                    // 根据实体ID执行特定刷新
+                    RecalculateAndNotify();
+                }
+                else
+                {
+                    // 默认处理：重新计算并通知
+                    RecalculateAndNotify();
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "处理数据变更事件失败");
+                _logger.LogError(ex, "处理数据刷新请求失败");
             }
         }
 
         /// <summary>
         /// 处理导航事件
         /// </summary>
-        private async void OnNavigation(NavigationInfo navInfo)
+        private async void OnNavigationRequest(NavigationRequestEventArgs navRequest)
         {
             // 使用适当的async void事件处理器模式
             try
             {
+                // 将统一导航事件参数转换为原有的导航逻辑
+                // 从Parameters中提取必要的信息
+                var parameters = navRequest.Parameters as IDictionary<string, object> ?? new Dictionary<string, object>();
+                
+                string fromStep = parameters.ContainsKey("FromStep") ? parameters["FromStep"]?.ToString() ?? "" : "";
+                string toStep = navRequest.ViewName; // 使用ViewName作为ToStep
+                Guid medicalCaseId = parameters.ContainsKey("MedicalCaseId") 
+                    ? (Guid)(parameters["MedicalCaseId"] ?? Guid.Empty) 
+                    : Guid.Empty;
+
                 // 如果从处方步骤导航出去，检查是否需要保存
-                if (navInfo.FromStep == "Prescription" && _dataManager != null)
+                if (fromStep == "Prescription" && _dataManager != null)
                 {
                     if (_dataManager.HasChanges)
                     {
-                        var autoSave = ShouldAutoSave(navInfo);
+                        var autoSave = ShouldAutoSave(navRequest);
                         if (autoSave)
                         {
                             await _dataManager.SaveAsync();
@@ -186,27 +194,28 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components
                 }
 
                 // 如果导航到处方步骤，触发初始化
-                if (navInfo.ToStep == "Prescription" && _dataManager != null)
+                if (toStep == "Prescription" && _dataManager != null)
                 {
-                    await RefreshPrescriptionData(navInfo.MedicalCaseId);
+                    await RefreshPrescriptionData(medicalCaseId);
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "处理导航事件失败");
+                _logger.LogError(ex, "处理导航请求失败");
             }
         }
+
 
         /// <summary>
         /// 处理处方变更事件
         /// </summary>
-        private void OnPrescriptionChanged(PrescriptionChangeInfo changeInfo)
+        private void OnPrescriptionChanged(PrescriptionChangedEventArgs changeInfo)
         {
             try
             {
-                _logger.LogDebug("处理处方变更事件: {Action}", changeInfo.Action);
+                _logger.LogDebug("处理处方变更事件: {Action}", changeInfo.ChangeType);
 
-                switch (changeInfo.Action)
+                switch (changeInfo.ChangeType)
                 {
                     case "Recalculate":
                         RecalculateAndNotify();
@@ -234,7 +243,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components
         /// <summary>
         /// 处理药材添加事件
         /// </summary>
-        private void OnHerbAdded(HerbAddedInfo herbInfo)
+        private void OnHerbAdded(HerbAddedEventArgs herbInfo)
         {
             try
             {
@@ -255,7 +264,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components
         /// <summary>
         /// 处理验方导入事件
         /// </summary>
-        private void OnFormulaImported(FormulaImportedInfo formulaInfo)
+        private void OnFormulaImported(FormulaImportedEventArgs formulaInfo)
         {
             try
             {
@@ -291,12 +300,11 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components
             try
             {
                 _eventAggregator.GetEvent<PrescriptionSavedEvent>()
-                    .Publish(new PrescriptionSavedInfo
+                    .Publish(new PrescriptionSavedEventArgs
                     {
-                        MedicalCaseId = _dataManager?.MedicalCaseId ?? Guid.Empty,
-                        PrescriptionNo = _dataManager?.PrescriptionNo ?? string.Empty,
-                        SavedAt = DateTime.Now,
-                        ItemCount = _dataManager?.PrescriptionItems.Count ?? 0
+                        PrescriptionId = _dataManager?.PrescriptionId ?? Guid.Empty,
+                        Prescription = _dataManager?.CurrentPrescription,
+                        IsNew = _dataManager?.IsNewPrescription ?? false
                     });
 
                 _logger.LogDebug("发布处方保存事件");
@@ -315,10 +323,10 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components
             try
             {
                 _eventAggregator.GetEvent<PrescriptionClearedEvent>()
-                    .Publish(new PrescriptionClearedInfo
+                    .Publish(new PrescriptionClearedEventArgs
                     {
-                        MedicalCaseId = _dataManager?.MedicalCaseId ?? Guid.Empty,
-                        ClearedAt = DateTime.Now
+                        PrescriptionId = _dataManager?.PrescriptionId ?? Guid.Empty,
+                        Reason = "User initiated clear"
                     });
 
                 _logger.LogDebug("发布处方清空事件");
@@ -345,13 +353,11 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components
                     _dataManager.PrescriptionItems, _dataManager.DosageCount, _dataManager.Discount);
 
                 _eventAggregator.GetEvent<PriceRecalculatedEvent>()
-                    .Publish(new PriceRecalculatedInfo
+                    .Publish(new PriceRecalculatedEventArgs
                     {
-                        MedicalCaseId = _dataManager.MedicalCaseId,
-                        SingleDosagePrice = calculation.SingleDosagePrice,
-                        TotalPrice = calculation.TotalPrice,
-                        DiscountedPrice = calculation.DiscountedPrice,
-                        RecalculatedAt = DateTime.Now
+                        PrescriptionId = _dataManager.PrescriptionId,
+                        OldPrice = 0, // TODO: 需要从计算器获取旧价格
+                        NewPrice = calculation.TotalPrice
                     });
 
                 _logger.LogDebug("发布价格重算事件");
@@ -370,11 +376,10 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components
             try
             {
                 _eventAggregator.GetEvent<ValidationRequestEvent>()
-                    .Publish(new ValidationRequestInfo
+                    .Publish(new ValidationRequestEventArgs
                     {
-                        SourceType = "Prescription",
-                        MedicalCaseId = _dataManager?.MedicalCaseId ?? Guid.Empty,
-                        RequestedAt = DateTime.Now
+                        ValidationType = "Prescription",
+                        ValidationData = _dataManager?.CurrentPrescription
                     });
 
                 _logger.LogDebug("发布验证请求事件");
@@ -388,17 +393,15 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components
         /// <summary>
         /// 发布药材添加完成事件
         /// </summary>
-        private void PublishHerbAddedComplete(HerbAddedInfo herbInfo)
+        private void PublishHerbAddedComplete(HerbAddedEventArgs herbInfo)
         {
             try
             {
                 _eventAggregator.GetEvent<HerbAddedCompleteEvent>()
-                    .Publish(new HerbAddedCompleteInfo
+                    .Publish(new HerbAddedCompleteEventArgs
                     {
-                        HerbId = herbInfo.HerbId,
-                        HerbName = herbInfo.HerbName,
-                        AddedAt = DateTime.Now,
-                        MedicalCaseId = _dataManager?.MedicalCaseId ?? Guid.Empty
+                        PrescriptionId = _dataManager?.PrescriptionId ?? Guid.Empty,
+                        AddedHerbIds = new List<Guid> { herbInfo.HerbId }
                     });
             }
             catch (Exception ex)
@@ -410,18 +413,16 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components
         /// <summary>
         /// 发布验方导入完成事件
         /// </summary>
-        private void PublishFormulaImportedComplete(FormulaImportedInfo formulaInfo)
+        private void PublishFormulaImportedComplete(FormulaImportedEventArgs formulaInfo)
         {
             try
             {
                 _eventAggregator.GetEvent<FormulaImportedCompleteEvent>()
-                    .Publish(new FormulaImportedCompleteInfo
+                    .Publish(new FormulaImportedCompleteEventArgs
                     {
+                        PrescriptionId = _dataManager?.PrescriptionId ?? Guid.Empty,
                         FormulaId = formulaInfo.FormulaId,
-                        FormulaName = formulaInfo.FormulaName,
-                        ImportedAt = DateTime.Now,
-                        MedicalCaseId = _dataManager?.MedicalCaseId ?? Guid.Empty,
-                        ItemCount = formulaInfo.ItemCount
+                        ImportSuccess = true
                     });
             }
             catch (Exception ex)
@@ -438,12 +439,11 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components
             try
             {
                 _eventAggregator.GetEvent<PrescriptionImportedEvent>()
-                    .Publish(new PrescriptionImportedInfo
+                    .Publish(new PrescriptionImportedEventArgs
                     {
-                        MedicalCaseId = _dataManager?.MedicalCaseId ?? Guid.Empty,
-                        ImportType = "Formula",
-                        ImportedAt = DateTime.Now,
-                        ItemCount = _dataManager?.PrescriptionItems.Count ?? 0
+                        SourcePrescriptionId = 0, // TODO: 需要从上下文获取源处方ID
+                        TargetPrescriptionId = 0, // TODO: 需要从上下文获取目标处方ID  
+                        HerbCount = _dataManager?.PrescriptionItems.Count ?? 0
                     });
 
                 _logger.LogDebug("发布处方导入事件");
@@ -483,13 +483,18 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components
         }
 
         /// <summary>
-        /// 判断是否应该自动保存
+        /// <summary>
+        /// 判断是否应该自动保存 - 统一事件系统版本
         /// </summary>
-        private bool ShouldAutoSave(NavigationInfo navInfo)
+        private bool ShouldAutoSave(NavigationRequestEventArgs navRequest)
         {
+            // 从参数中提取目标步骤
+            var parameters = navRequest.Parameters as IDictionary<string, object> ?? new Dictionary<string, object>();
+            string toStep = navRequest.ViewName; // 使用ViewName作为目标步骤
+            
             // 根据导航目标决定是否自动保存
             var autoSaveSteps = new[] { "Summary", "Complete", "Print" };
-            return Array.Exists(autoSaveSteps, step => step.Equals(navInfo.ToStep, StringComparison.OrdinalIgnoreCase));
+            return Array.Exists(autoSaveSteps, step => step.Equals(toStep, StringComparison.OrdinalIgnoreCase));
         }
 
         /// <summary>
@@ -523,8 +528,8 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components
             try
             {
                 _eventAggregator.GetEvent<SaveStepDataEvent>().Unsubscribe(OnSaveStepData);
-                _eventAggregator.GetEvent<DataChangedEvent>().Unsubscribe(OnDataChanged);
-                _eventAggregator.GetEvent<NavigationEvent>().Unsubscribe(OnNavigation);
+                _eventAggregator.GetEvent<DataRefreshRequestEvent>().Unsubscribe(OnDataRefreshRequest);
+                _eventAggregator.GetEvent<NavigationRequestEvent>().Unsubscribe(OnNavigationRequest);
                 _eventAggregator.GetEvent<PrescriptionChangedEvent>().Unsubscribe(OnPrescriptionChanged);
                 _eventAggregator.GetEvent<HerbAddedEvent>().Unsubscribe(OnHerbAdded);
                 _eventAggregator.GetEvent<FormulaImportedEvent>().Unsubscribe(OnFormulaImported);
@@ -540,136 +545,4 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components
         #endregion 清理资源
     }
 
-    #region 事件信息类
-
-    public class DataChangeInfo
-    {
-        public string SourceType { get; set; } = string.Empty;
-        public string ChangeType { get; set; } = string.Empty;
-        public DateTime ChangedAt { get; set; } = DateTime.Now;
-    }
-
-    public class PrescriptionChangeInfo
-    {
-        public string Action { get; set; } = string.Empty;
-        public Guid MedicalCaseId { get; set; }
-        public DateTime ChangedAt { get; set; } = DateTime.Now;
-    }
-
-    public class HerbAddedInfo
-    {
-        public Guid HerbId { get; set; }
-        public string HerbName { get; set; } = string.Empty;
-        public decimal Quantity { get; set; }
-        public DateTime AddedAt { get; set; } = DateTime.Now;
-    }
-
-    public class FormulaImportedInfo
-    {
-        public Guid FormulaId { get; set; }
-        public string FormulaName { get; set; } = string.Empty;
-        public int ItemCount { get; set; }
-        public DateTime ImportedAt { get; set; } = DateTime.Now;
-    }
-
-    public class PrescriptionSavedInfo
-    {
-        public Guid MedicalCaseId { get; set; }
-        public string PrescriptionNo { get; set; } = string.Empty;
-        public int ItemCount { get; set; }
-        public DateTime SavedAt { get; set; } = DateTime.Now;
-    }
-
-    public class PrescriptionClearedInfo
-    {
-        public Guid MedicalCaseId { get; set; }
-        public DateTime ClearedAt { get; set; } = DateTime.Now;
-    }
-
-    public class PriceRecalculatedInfo
-    {
-        public Guid MedicalCaseId { get; set; }
-        public decimal SingleDosagePrice { get; set; }
-        public decimal TotalPrice { get; set; }
-        public decimal DiscountedPrice { get; set; }
-        public DateTime RecalculatedAt { get; set; } = DateTime.Now;
-    }
-
-    public class ValidationRequestInfo
-    {
-        public string SourceType { get; set; } = string.Empty;
-        public Guid MedicalCaseId { get; set; }
-        public DateTime RequestedAt { get; set; } = DateTime.Now;
-    }
-
-    public class HerbAddedCompleteInfo
-    {
-        public Guid HerbId { get; set; }
-        public string HerbName { get; set; } = string.Empty;
-        public Guid MedicalCaseId { get; set; }
-        public DateTime AddedAt { get; set; } = DateTime.Now;
-    }
-
-    public class FormulaImportedCompleteInfo
-    {
-        public Guid FormulaId { get; set; }
-        public string FormulaName { get; set; } = string.Empty;
-        public Guid MedicalCaseId { get; set; }
-        public int ItemCount { get; set; }
-        public DateTime ImportedAt { get; set; } = DateTime.Now;
-    }
-
-    public class PrescriptionImportedInfo
-    {
-        public Guid MedicalCaseId { get; set; }
-        public string ImportType { get; set; } = string.Empty;
-        public int ItemCount { get; set; }
-        public DateTime ImportedAt { get; set; } = DateTime.Now;
-    }
-
-    #endregion 事件信息类
-
-    #region 事件定义（需要在事件聚合器中注册）
-
-    public class PrescriptionSavedEvent : PubSubEvent<PrescriptionSavedInfo>
-    {
-    }
-
-    public class PrescriptionClearedEvent : PubSubEvent<PrescriptionClearedInfo>
-    {
-    }
-
-    public class PriceRecalculatedEvent : PubSubEvent<PriceRecalculatedInfo>
-    {
-    }
-
-    public class ValidationRequestEvent : PubSubEvent<ValidationRequestInfo>
-    {
-    }
-
-    public class PrescriptionChangedEvent : PubSubEvent<PrescriptionChangeInfo>
-    {
-    }
-
-    public class HerbAddedEvent : PubSubEvent<HerbAddedInfo>
-    {
-    }
-
-    public class HerbAddedCompleteEvent : PubSubEvent<HerbAddedCompleteInfo>
-    {
-    }
-
-    public class FormulaImportedEvent : PubSubEvent<FormulaImportedInfo>
-    {
-    }
-
-    public class FormulaImportedCompleteEvent : PubSubEvent<FormulaImportedCompleteInfo>
-    {
-    }
-
-    public class PrescriptionImportedEvent : PubSubEvent<PrescriptionImportedInfo>
-    {
-    }
-
-    #endregion 事件定义（需要在事件聚合器中注册）
 }

@@ -29,6 +29,8 @@ namespace LYBT.Infrastructure.Caching.Adapters
         private readonly CacheOptions _cacheOptions;
         private readonly object _evictionLock = new object();
         private DateTime _lastEvictionLog = DateTime.MinValue;
+        private DateTime _lastEvictionRateCalculation = DateTime.UtcNow;
+        private long _evictionCountSinceLastCalculation = 0;
 
         /// <summary>
         /// 默认过期时间
@@ -162,6 +164,10 @@ namespace LYBT.Infrastructure.Caching.Adapters
         /// </summary>
         private void LogEviction(string key, EvictionReason reason, long estimatedSize)
         {
+            // 更新逐出计数
+            _evictionCountSinceLastCalculation++;
+            _statistics.EvictedKeys++;
+
             // 限制日志频率，避免过多日志输出
             lock (_evictionLock)
             {
@@ -175,7 +181,7 @@ namespace LYBT.Infrastructure.Caching.Adapters
             var eventId = new EventId(_cacheOptions.Monitoring.EventIds.HighEvictionRate, "CacheEviction");
             _logger.LogInformation(eventId,
                 "缓存逐出 - 键前缀: {KeyPrefix}, 原因: {Reason}, 估算大小: {Size}B, 当前项数: {CurrentCount}",
-                GetKeyPrefix(key), reason, estimatedSize, _statistics.CurrentItemCount);
+                GetKeyPrefix(key), reason, estimatedSize, _keys.Count);
         }
 
         /// <summary>
@@ -223,6 +229,7 @@ namespace LYBT.Infrastructure.Caching.Adapters
 
                 if (existed)
                 {
+                    _statistics.CurrentItemCount = _keys.Count;
                     _logger.LogDebug("Cache removed for key: {Key}", key);
                 }
 
@@ -249,6 +256,7 @@ namespace LYBT.Infrastructure.Caching.Adapters
                 }
 
                 _keys.Clear();
+                _statistics.CurrentItemCount = 0;
 
                 _logger.LogInformation("Cache cleared, removed {Count} keys", keysToRemove.Count);
             }
@@ -430,6 +438,13 @@ namespace LYBT.Infrastructure.Caching.Adapters
         /// <inheritdoc/>
         public Task<CacheStatistics> GetStatisticsAsync(CancellationToken cancellationToken = default)
         {
+            // 计算逐出速率
+            var now = DateTime.UtcNow;
+            var timeSinceLastCalculation = (now - _lastEvictionRateCalculation).TotalMinutes;
+            var evictionRate = timeSinceLastCalculation > 0 
+                ? _evictionCountSinceLastCalculation / timeSinceLastCalculation 
+                : 0;
+
             var stats = new CacheStatistics
             {
                 TotalKeys = _keys.Count,
@@ -438,6 +453,11 @@ namespace LYBT.Infrastructure.Caching.Adapters
                 ExpiredKeys = _statistics.ExpiredKeys,
                 EvictedKeys = _statistics.EvictedKeys,
                 UsedMemory = EstimateMemoryUsage(),
+                CurrentItemCount = _keys.Count,
+                TotalMemoryUsage = EstimateMemoryUsage(),
+                MaxCapacity = _cacheOptions?.Memory?.SizeLimit,
+                EvictionRate = evictionRate,
+                EvictionCount = _statistics.EvictedKeys,
                 Timestamp = DateTime.UtcNow
             };
 

@@ -21,15 +21,10 @@ namespace LYBT.Module.MedicalCase
         /// </summary>
         public static IServiceCollection AddMedicalCaseModule(this IServiceCollection services)
         {
-            // 仓储层
+            // 仓储层 - 统一实现
             services.AddScoped<IMedicalCaseRepository, MedicalCaseRepository>();
-            services.AddScoped<IMedicalCaseReadRepository, MedicalCaseReadRepository>();
 
-            // UltraThink双层架构服务 - 查询和业务逻辑分离
-            services.AddScoped<IMedicalCaseQueryService, MedicalCaseQueryService>();
-            services.AddScoped<IMedicalCaseBusinessService, MedicalCaseBusinessService>();
-
-            // 主服务 - UltraThink纯委托模式，委托给专业服务层
+            // 服务层 - UltraThink架构重构后的统一服务
             services.AddScoped<IMedicalCaseService, MedicalCaseService>();
 
             // AutoMapper配置

@@ -21,15 +21,10 @@ namespace LYBT.Module.Herbs
         /// </summary>
         public static IServiceCollection AddHerbsModule(this IServiceCollection services)
         {
-            // 仓储层
+            // 仓储层 - 统一实现
             services.AddScoped<IHerbRepository, HerbRepository>();
-            services.AddScoped<IHerbReadRepository, HerbReadRepository>();
 
-            // UltraThink双层架构服务 - 查询和业务逻辑分离
-            services.AddScoped<IHerbQueryService, HerbQueryService>();
-            services.AddScoped<IHerbBusinessService, HerbBusinessService>();
-
-            // 主服务 - UltraThink纯委托模式，委托给专业服务层
+            // 服务层 - UltraThink架构重构后的统一服务
             services.AddScoped<IHerbService, HerbService>();
 
             // AutoMapper配置

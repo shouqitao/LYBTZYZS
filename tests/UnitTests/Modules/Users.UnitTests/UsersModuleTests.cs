@@ -76,13 +76,8 @@ namespace LYBT.Module.Users.Tests
                 .Should().NotBeNull("IUserRepository should be registered");
 
             // Assert - 验证Service注册
-            serviceProvider.GetService<IUserQueryService>()
-                .Should().NotBeNull("IUserQueryService should be registered");
 
-            serviceProvider.GetService<IUserBusinessService>()
-                .Should().NotBeNull("IUserBusinessService should be registered");
-
-            serviceProvider.GetService<IUserService>()
+            serviceProvider.GetService<LYBT.Module.Users.Interfaces.IUserService>()
                 .Should().NotBeNull("IUserService should be registered");
 
             // Assert - 验证Options注册
@@ -106,16 +101,10 @@ namespace LYBT.Module.Users.Tests
                 x.ServiceType == typeof(IUserRepository) &&
                 x.Lifetime == ServiceLifetime.Scoped);
 
-            services.Should().Contain(x =>
-                x.ServiceType == typeof(IUserQueryService) &&
-                x.Lifetime == ServiceLifetime.Scoped);
+            
 
             services.Should().Contain(x =>
-                x.ServiceType == typeof(IUserBusinessService) &&
-                x.Lifetime == ServiceLifetime.Scoped);
-
-            services.Should().Contain(x =>
-                x.ServiceType == typeof(IUserService) &&
+                x.ServiceType == typeof(LYBT.Module.Users.Interfaces.IUserService) &&
                 x.Lifetime == ServiceLifetime.Scoped);
         }
 

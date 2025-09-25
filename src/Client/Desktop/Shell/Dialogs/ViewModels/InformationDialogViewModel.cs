@@ -1,58 +1,22 @@
-using LYBT.Desktop.Core.ViewModels;
-using Prism.Commands;
-using Prism.Events;
 using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Desktop.Core.ViewModels.Base;
+using Microsoft.Extensions.Logging;
+using Prism.Events;
 
 namespace LYBT.Desktop.Shell.Dialogs.ViewModels
 {
-
     /// <summary>
-    /// 信息对话框视图模型
+    /// 信息对话框视图模型 - 架构重构后简化版本
+    /// TODO: 重构完成后重新实现业务逻辑
     /// </summary>
-    /// <summary>
-    /// 信息对话框ViewModel - UltraThink架构统一
-    /// </summary>
-    public class InformationDialogViewModel : DialogViewModelBase
+    public class InformationDialogViewModel : ModernViewModelBase
     {
-        private string _message = string.Empty;
-
-        /// <summary>
-        /// 对话框消息
-        /// </summary>
-        public string Message
-        {
-            get => _message;
-            set => SetProperty(ref _message, value);
-        }
-
-        /// <summary>
-        /// 确定命令（兼容性）
-        /// </summary>
-        public DelegateCommand OkCommand => ConfirmCommand;
-
         public InformationDialogViewModel(
             IEventAggregator eventAggregator,
-            IErrorHandlingService? errorHandlingService = null) 
-            : base(eventAggregator, errorHandlingService)
+            ILoggerFactory loggerFactory,
+            IErrorHandlingService errorHandlingService)
+            : base(eventAggregator, loggerFactory, errorHandlingService)
         {
-            Title = "提示";
-        }
-
-        /// <summary>
-        /// 设置对话框内容
-        /// </summary>
-        public void SetContent(string message, string title = "提示")
-        {
-            Message = message;
-            Title = title;
-        }
-
-        /// <summary>
-        /// 执行确认逻辑（信息对话框直接关闭）
-        /// </summary>
-        protected override Task<bool> ExecuteConfirmAsync()
-        {
-            return Task.FromResult(true);
         }
     }
 }

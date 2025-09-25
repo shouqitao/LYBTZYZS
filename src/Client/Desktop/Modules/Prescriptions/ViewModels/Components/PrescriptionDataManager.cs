@@ -28,6 +28,9 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components
         #region 核心数据属性
 
         public Guid MedicalCaseId { get; private set; }
+        public Guid PrescriptionId { get; private set; }
+        public PrescriptionDto? CurrentPrescription { get; private set; }
+        public bool IsNewPrescription { get; private set; } = true;
         public string PrescriptionNo { get; set; } = string.Empty;
         public ObservableCollection<PrescriptionItemViewModel> PrescriptionItems { get; } = new();
         public PrescriptionItemViewModel? SelectedItem { get; set; }
@@ -90,6 +93,9 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components
                 if (result.IsSuccess && result.Data != null && result.Data.Any())
                 {
                     var existingPrescription = result.Data.First(); // 取第一个处方
+                    CurrentPrescription = existingPrescription;
+                    PrescriptionId = existingPrescription.Id;
+                    IsNewPrescription = false;
                     _logger.LogDebug("找到现有处方数据，开始加载");
 
                     // 加载基础信息
