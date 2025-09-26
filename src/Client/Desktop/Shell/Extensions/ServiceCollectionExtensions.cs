@@ -53,6 +53,9 @@ namespace LYBT.Desktop.Shell.Extensions
         /// </summary>
         public static void RegisterAllServices(this IContainerRegistry containerRegistry)
         {
+            // 注册应用程序启动引导服务（避免Service Locator反模式）
+            RegisterBootstrapServices(containerRegistry);
+            
             RegisterLogging(containerRegistry);
             RegisterAutoMapper(containerRegistry);
             RegisterCacheServices(containerRegistry);
@@ -66,6 +69,24 @@ namespace LYBT.Desktop.Shell.Extensions
             RegisterModuleServicesManually(containerRegistry); // 简化：直接使用手动注册
 
             // ViewModels和Views通过Prism的ViewModelLocator自动解析，无需手动注册
+        }
+
+        /// <summary>
+        /// 注册启动引导相关服务（避免Service Locator反模式）
+        /// </summary>
+        private static void RegisterBootstrapServices(IContainerRegistry containerRegistry)
+        {
+            // 注册应用程序初始化服务
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Shell.Services.IApplicationInitializationService,
+                LYBT.Desktop.Shell.Services.ApplicationInitializationService>();
+            
+            // 注册错误处理服务
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.IErrorHandlingService,
+                LYBT.Desktop.Core.Services.ErrorHandlingService>();
+            
+            // 注册启动优化服务
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Services.Performance.IStartupOptimizationService,
+                LYBT.Desktop.Core.Services.Performance.StartupOptimizationService>();
         }
 
         /// <summary>

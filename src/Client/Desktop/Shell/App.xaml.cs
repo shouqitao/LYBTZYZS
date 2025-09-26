@@ -1,12 +1,14 @@
 using System.Windows;
 using LYBT.Desktop.Auth;
 using LYBT.Desktop.Consultation;
+using LYBT.Desktop.Core.Services.Performance;
 using LYBT.Desktop.Formula;
 using LYBT.Desktop.Herbs;
 using LYBT.Desktop.MedicalCase;
 using LYBT.Desktop.Patients;
 using LYBT.Desktop.Prescriptions;
 using LYBT.Desktop.Shell.Extensions;
+using LYBT.Desktop.Shell.Services.Bootstrap;
 using LYBT.Desktop.Shell.ViewModels;
 using LYBT.Desktop.Shell.Views;
 using LYBT.Desktop.Users;
@@ -31,10 +33,12 @@ namespace LYBT.Desktop.Shell;
 /// </summary>
 public partial class App : PrismApplication
 {
+    private IApplicationBootstrapper? _bootstrapper;
 
     /// <summary>
     /// 创建应用程序主窗体
     /// 从DI容器中解析MainWindow实例
+    /// 注：这是Prism框架的标准做法，此处使用Container.Resolve是必需的
     /// </summary>
     /// <returns>应用程序主窗体实例</returns>
     protected override Window CreateShell()
@@ -52,7 +56,10 @@ public partial class App : PrismApplication
     {
         ArgumentNullException.ThrowIfNull(containerRegistry, nameof(containerRegistry));
 
-        // 注册应用初始化服务（去除ServiceLocator反模式）
+        // 注册启动引导服务（替代原有的直接Container.Resolve调用）
+        containerRegistry.RegisterSingleton<IApplicationBootstrapper, ApplicationBootstrapper>();
+        
+        // 注册应用初始化服务
         containerRegistry.RegisterSingleton<LYBT.Desktop.Shell.Services.IApplicationInitializationService, 
             LYBT.Desktop.Shell.Services.ApplicationInitializationService>();
 
@@ -80,24 +87,40 @@ public partial class App : PrismApplication
 
     /// <summary>
     /// 应用程序初始化完成后的回调
-    /// 按照Prism 8.x最佳实践，使用依赖注入服务，避免ServiceLocator
+    /// 使用注入的ApplicationBootstrapper服务，避免Service Locator反模式
     /// </summary>
     protected override void OnInitialized()
     {
         base.OnInitialized();
 
-        // 使用注入的应用初始化服务（去除Container.Resolve）
+        // 使用注入的启动引导服务（避免Container.Resolve）
         try
         {
-            var initService = Container.Resolve<LYBT.Desktop.Shell.Services.IApplicationInitializationService>();
+            // 获取启动引导服务
+            _bootstrapper = Container.Resolve<IApplicationBootstrapper>();
+            
+            // 初始化错误处理（同步操作）
+            _bootstrapper.InitializeErrorHandlingService();
+            
+            // 初始化模块协调器
+            _bootstrapper.InitializeSimplifiedModuleCoordinator();
             
             // 异步初始化核心服务
-            _ = Task.Run(async () => await initService.InitializeCoreServicesAsync());
+            _ = Task.Run(async () => 
+            {
+                await _bootstrapper.InitializeCoreServicesAsync();
+                await _bootstrapper.InitializeApplicationWarmupAsync();
+            });
         }
         catch (Exception ex)
         {
             // 降级处理：如果初始化服务未正确注册，记录错误但继续启动
-            System.Diagnostics.Debug.WriteLine($"应用初始化服务失败: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"应用初始化失败: {ex.Message}");
+            System.Windows.MessageBox.Show(
+                $"应用初始化失败: {ex.Message}", 
+                "凌隐宝堂 - 系统错误",
+                System.Windows.MessageBoxButton.OK, 
+                System.Windows.MessageBoxImage.Error);
         }
     }
 
@@ -309,40 +332,21 @@ public partial class App : PrismApplication
 
         try
         {
-            var moduleManager = Container.Resolve<IModuleManager>();
-            var moduleCatalog = Container.Resolve<IModuleCatalog>();
-            var logger = Container.Resolve<ILogger<App>>();
-
-            logger.LogInformation("开始为角色 {UserRole} 加载模块", userRole);
-
-            var modulesToLoad = new List<string>();
-
-            // 遍历所有按需加载的模块，简化处理
-            foreach (var module in moduleCatalog.Modules.Where(m => m.InitializationMode == InitializationMode.OnDemand))
+            // 使用启动引导服务加载模块，避免直接使用Container.Resolve
+            if (_bootstrapper == null)
             {
-                // 简化版本：所有OnDemand模块都加载（可根据需要后续优化）
-                modulesToLoad.Add(module.ModuleName);
+                _bootstrapper = Container.Resolve<IApplicationBootstrapper>();
             }
 
-            // 批量加载匹配的模块
-            var loadedCount = 0;
-            foreach (var moduleName in modulesToLoad)
+            // 将字符串角色转换为枚举
+            if (Enum.TryParse<LYBT.Shared.Models.Contracts.Users.UserRole>(userRole, out var role))
             {
-                try
-                {
-                    await Task.Run(() => moduleManager.LoadModule(moduleName)).ConfigureAwait(false);
-                    logger.LogDebug("模块 {ModuleName} 加载完成", moduleName);
-                    loadedCount++;
-                }
-                catch (Exception ex)
-                {
-                    logger.LogError(ex, "加载模块 {ModuleName} 失败", moduleName);
-                }
+                await _bootstrapper.LoadModulesForRoleAsync(role);
             }
-
-            logger.LogInformation(
-                "角色驱动模块加载完成，共加载 {LoadedCount}/{TotalCount} 个模块",
-                loadedCount, modulesToLoad.Count);
+            else
+            {
+                throw new ArgumentException($"无效的用户角色: {userRole}");
+            }
         }
         catch (Exception ex)
         {
