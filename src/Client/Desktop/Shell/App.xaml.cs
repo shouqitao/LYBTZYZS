@@ -124,117 +124,13 @@ public partial class App : PrismApplication
         }
     }
 
-    /// <summary>
-    /// 初始化应用程序预热
-    /// 异步预热关键服务，提升用户操作响应速度
-    /// </summary>
-    private async Task InitializeApplicationWarmupAsync()
-    {
-        try
-        {
-            var startupService = Container.Resolve<LYBT.Desktop.Core.Services.Performance.IStartupOptimizationService>();
-            await startupService.WarmupApplicationAsync().ConfigureAwait(false);
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"应用预热失败: {ex.Message}");
 
-            // 预热失败不影响主流程，仅记录日志
-        }
-    }
 
-    /// <summary>
-    /// 初始化错误处理服务
-    /// 注册全局异常处理器，确保系统异常得到妥善处理
-    /// </summary>
-    private void InitializeErrorHandlingService()
-    {
-        try
-        {
-            var errorHandlingService = Container.Resolve<LYBT.Desktop.Core.Interfaces.Services.IErrorHandlingService>();
-            errorHandlingService.RegisterGlobalExceptionHandlers();
-        }
-        catch (Exception ex)
-        {
-            // 如果错误处理服务初始化失败，使用基本的错误处理
-            System.Diagnostics.Debug.WriteLine($"初始化错误处理服务失败: {ex.Message}");
-            MessageBox.Show($"系统初始化失败: {ex.Message}", "凌隐宝堂 - 系统错误",
-                MessageBoxButton.OK, MessageBoxImage.Error);
-        }
-    }
 
-    /// <summary>
-    /// 异步验证服务注册 - 确保所有自动发现的服务都能正常解析
-    /// 优化启动性能：在后台线程执行，避免阻塞UI主线程
-    /// </summary>
-    // 移除复杂的服务注册验证逻辑（简化版本不再需要自动发现/验证）
 
-    /// <summary>
-    /// 初始化简化的模块协调器
-    /// 移除复杂的性能监控，专注核心功能和稳定性
-    /// 提供轻量级的模块加载管理，适配小型诊所部署需求
-    /// </summary>
-    private void InitializeSimplifiedModuleCoordinator()
-    {
-        try
-        {
-            var logger = Container.Resolve<ILogger<App>>();
-            logger.LogInformation("UltraThink简化模块协调器初始化完成");
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"简化模块协调器初始化异常: {ex}");
 
-            // 模块协调器初始化失败不应阻塞应用启动
-        }
-    }
 
-    /// <summary>
-    /// 订阅模块管理器事件进行性能追踪
-    /// 简化版本：专注错误处理和基础日志记录，移除复杂的性能统计
-    /// </summary>
-    /// <param name="moduleManager">模块管理器</param>
-    /// <param name="logger">日志记录器</param>
-    /// <exception cref="ArgumentNullException">当参数为 null 时抛出</exception>
-    private void SubscribeToModuleEvents(IModuleManager moduleManager, ILogger<App> logger)
-    {
-        ArgumentNullException.ThrowIfNull(moduleManager, nameof(moduleManager));
-        ArgumentNullException.ThrowIfNull(logger, nameof(logger));
 
-        var moduleInitTimes = new Dictionary<string, DateTime>();
-
-        // 模块开始加载事件
-        moduleManager.ModuleDownloadProgressChanged += (sender, e) =>
-        {
-            if (e.ProgressPercentage == 0) // 开始加载
-            {
-                moduleInitTimes[e.ModuleInfo.ModuleName] = DateTime.Now;
-                logger.LogDebug("模块 {ModuleName} 开始加载", e.ModuleInfo.ModuleName);
-            }
-        };
-
-        // 模块加载完成事件
-        moduleManager.LoadModuleCompleted += (sender, e) =>
-        {
-            var moduleName = e.ModuleInfo.ModuleName;
-            if (moduleInitTimes.TryGetValue(moduleName, out var startTime))
-            {
-                var initializationTime = DateTime.Now - startTime;
-                moduleInitTimes.Remove(moduleName);
-
-                logger.LogInformation(
-                    "模块 {ModuleName} 加载完成，耗时 {Duration}ms",
-                    moduleName, initializationTime.TotalMilliseconds);
-            }
-
-            if (!e.IsErrorHandled && e.Error != null)
-            {
-                logger.LogError(e.Error, "模块 {ModuleName} 加载失败", e.ModuleInfo.ModuleName);
-            }
-        };
-
-        logger.LogDebug("模块事件监听已配置完成");
-    }
 
     /// <summary>
     /// 配置模块目录
@@ -332,10 +228,10 @@ public partial class App : PrismApplication
 
         try
         {
-            // 使用启动引导服务加载模块，避免直接使用Container.Resolve
+            // 确保启动引导服务已初始化
             if (_bootstrapper == null)
             {
-                _bootstrapper = Container.Resolve<IApplicationBootstrapper>();
+                throw new InvalidOperationException("应用程序启动引导服务未初始化");
             }
 
             // 将字符串角色转换为枚举
