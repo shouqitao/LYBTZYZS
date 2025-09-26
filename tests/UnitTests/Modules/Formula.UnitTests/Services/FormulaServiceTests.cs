@@ -41,10 +41,9 @@ namespace LYBT.Module.Formula.Tests.Services
             _loggerMock = CreateLoggerMock<FormulaService>();
 
             _formulaService = new FormulaService(
-                _context,
                 _repositoryMock.Object,
-                _loggerMock.Object,
-                Mapper);
+                Mapper,
+                _loggerMock.Object);
         }
 
         protected override void ConfigureServices(IServiceCollection services)

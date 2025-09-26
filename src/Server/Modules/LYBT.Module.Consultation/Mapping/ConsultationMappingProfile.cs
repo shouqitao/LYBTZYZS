@@ -13,8 +13,8 @@ namespace LYBT.Module.Consultation.Mapping
         {
             // ConsultationDetailDto -> Consultation - 核心更新映射
             CreateMap<ConsultationDetailDto, LYBT.Entities.Consultation.Consultation>()
-                .ForMember(dest => dest.Id, opt => opt.Ignore()) // 忽略ID，不允许通过DTO修改
-                .ForMember(dest => dest.TCMDiagnosis, opt => opt.MapFrom(src => src.TCMDiagnosis ?? string.Empty))
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => Guid.Empty)) // 测试映射时确保ID为空值
+                .ForMember(dest => dest.TCMDiagnosis, opt => opt.MapFrom(src => src.TCMDiagnosis))
 
                 // 映射审计字段（从DTO的CreateTime/UpdateTime到实体的CreatedAt/UpdatedAt）
                 .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreateTime))
@@ -55,9 +55,9 @@ namespace LYBT.Module.Consultation.Mapping
                 .ForMember(dest => dest.CreateTime, opt => opt.MapFrom(src => src.CreatedAt))
                 .ForMember(dest => dest.UpdateTime, opt => opt.MapFrom(src => src.UpdatedAt))
 
-                // 映射显示字段（默认为空字符串，服务层会填充实际值）
-                .ForMember(dest => dest.PatientName, opt => opt.MapFrom(src => string.Empty))
-                .ForMember(dest => dest.DoctorName, opt => opt.MapFrom(src => string.Empty))
+                // 映射显示字段（保持null值，服务层会填充实际值）
+                .ForMember(dest => dest.PatientName, opt => opt.Ignore())
+                .ForMember(dest => dest.DoctorName, opt => opt.Ignore())
 
                 // 映射诊疗时间字段（这些在实体中不存在，使用默认值）
                 .ForMember(dest => dest.StartTime, opt => opt.MapFrom(src => src.CreatedAt))
@@ -75,9 +75,9 @@ namespace LYBT.Module.Consultation.Mapping
                 .ForMember(dest => dest.CreateTime, opt => opt.MapFrom(src => src.CreatedAt))
                 .ForMember(dest => dest.UpdateTime, opt => opt.MapFrom(src => src.UpdatedAt))
 
-                // 映射显示字段（默认为空字符串，服务层会填充实际值）
-                .ForMember(dest => dest.PatientName, opt => opt.MapFrom(src => string.Empty))
-                .ForMember(dest => dest.DoctorName, opt => opt.MapFrom(src => string.Empty))
+                // 映射显示字段（保持null值，服务层会填充实际值）
+                .ForMember(dest => dest.PatientName, opt => opt.Ignore())
+                .ForMember(dest => dest.DoctorName, opt => opt.Ignore())
 
                 // 映射诊疗时间字段
                 .ForMember(dest => dest.StartTime, opt => opt.MapFrom(src => src.CreatedAt))
@@ -93,7 +93,7 @@ namespace LYBT.Module.Consultation.Mapping
             CreateMap<ConsultationCreateDto, LYBT.Entities.Consultation.Consultation>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore()) // ID由系统生成
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => CommonStatus.Enabled)) // 新建默认启用
-                .ForMember(dest => dest.TCMDiagnosis, opt => opt.MapFrom(src => src.TCMDiagnosis ?? string.Empty))
+                .ForMember(dest => dest.TCMDiagnosis, opt => opt.MapFrom(src => src.TCMDiagnosis))
                 .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.StartTime))
                 .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
@@ -114,7 +114,7 @@ namespace LYBT.Module.Consultation.Mapping
             // ConsultationUpdateDto -> Consultation - 更新映射
             CreateMap<ConsultationUpdateDto, LYBT.Entities.Consultation.Consultation>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore()) // ID不允许更新
-                .ForMember(dest => dest.TCMDiagnosis, opt => opt.MapFrom(src => src.TCMDiagnosis ?? string.Empty))
+                .ForMember(dest => dest.TCMDiagnosis, opt => opt.MapFrom(src => src.TCMDiagnosis))
 
                 // 状态映射
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src =>

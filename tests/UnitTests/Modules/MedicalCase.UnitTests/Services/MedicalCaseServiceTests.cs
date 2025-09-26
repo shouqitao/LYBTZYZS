@@ -41,10 +41,9 @@ namespace LYBT.Module.MedicalCase.Tests.Services
             _loggerMock = CreateLoggerMock<MedicalCaseService>();
 
             _medicalCaseService = new MedicalCaseService(
-                _context,
                 _repositoryMock.Object,
-                _loggerMock.Object,
-                Mapper);
+                Mapper,
+                _loggerMock.Object);
         }
 
         protected override void ConfigureServices(IServiceCollection services)

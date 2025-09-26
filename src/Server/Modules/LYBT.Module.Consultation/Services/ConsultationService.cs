@@ -85,6 +85,10 @@ namespace LYBT.Module.Consultation.Services
         {
             try
             {
+                // 添加null检查
+                if (dto == null)
+                    return ServiceResult<ConsultationDto>.Failure("数据不能为空");
+
                 var entity = _mapper.Map<ConsultationEntity>(dto);
                 var result = await _repository.AddAsync(entity);
                 var resultDto = _mapper.Map<ConsultationDto>(result);
@@ -101,7 +105,7 @@ namespace LYBT.Module.Consultation.Services
         {
             try
             {
-                var entity = await _repository.GetByIdAsync(id);
+                var entity = await _repository.GetByIdWithDetailsAsync(id);
                 if (entity == null)
                     return ServiceResult<ConsultationDto>.Failure("诊疗记录不存在");
 
@@ -122,7 +126,7 @@ namespace LYBT.Module.Consultation.Services
             try
             {
                 var result = await _repository.DeleteAsync(id);
-                return result ? ServiceResult.Success() : ServiceResult.Failure("删除失败");
+                return result ? ServiceResult.Success("删除成功") : ServiceResult.Failure("删除失败");
             }
             catch (Exception ex)
             {
