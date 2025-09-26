@@ -199,6 +199,7 @@ namespace LYBT.Infrastructure.Data
                 entity.HasIndex(e => e.UserId);
                 entity.HasIndex(e => e.ExpiresAt);
                 entity.HasIndex(e => e.IsRevoked);
+                entity.HasIndex(e => e.Jti); // 添加Jti索引用于快速查找
                 entity.HasIndex(e => new { e.UserId, e.IsRevoked });
                 
                 // 与用户的关系
