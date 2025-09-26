@@ -14,6 +14,7 @@ using LYBT.Desktop.Shell.Views;
 using LYBT.Desktop.Users;
 using LYBT.Desktop.Workbench.Medical;
 using Microsoft.Extensions.Logging;
+using LYBT.Shared.Models.Enums;
 using Prism.DryIoc;
 using Prism.Events;
 using Prism.Ioc;
@@ -235,7 +236,7 @@ public partial class App : PrismApplication
             }
 
             // 将字符串角色转换为枚举
-            if (Enum.TryParse<LYBT.Shared.Models.Contracts.Users.UserRole>(userRole, out var role))
+            if (Enum.TryParse<UserRole>(userRole, out var role))
             {
                 await _bootstrapper.LoadModulesForRoleAsync(role);
             }

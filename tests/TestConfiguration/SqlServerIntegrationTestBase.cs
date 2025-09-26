@@ -35,8 +35,11 @@ namespace LYBT.Tests.Configuration
                         .GetService<DbContextOptions<AppDbContext>>();
                     if (descriptor != null)
                     {
-                        services.Remove(ServiceDescriptor.Scoped<DbContextOptions<AppDbContext>>());
-                        services.Remove(ServiceDescriptor.Scoped<AppDbContext>());
+                        var optionsDescriptor = services.FirstOrDefault(d => d.ServiceType == typeof(DbContextOptions<AppDbContext>));
+                        if (optionsDescriptor != null) services.Remove(optionsDescriptor);
+
+                        var dbContextDescriptor = services.FirstOrDefault(d => d.ServiceType == typeof(AppDbContext));
+                        if (dbContextDescriptor != null) services.Remove(dbContextDescriptor);
                     }
 
                     // 注册SQL Server测试数据库
@@ -68,7 +71,8 @@ namespace LYBT.Tests.Configuration
             _context = _scope.ServiceProvider.GetRequiredService<AppDbContext>();
             _configuration = _scope.ServiceProvider.GetRequiredService<IConfiguration>();
             _logger = _scope.ServiceProvider.GetRequiredService<ILogger<SqlServerIntegrationTestBase>>();
-            _dbFactory = new SqlServerTestDbContextFactory(_configuration, _logger);
+            var dbFactoryLogger = _scope.ServiceProvider.GetRequiredService<ILogger<SqlServerTestDbContextFactory>>();
+            _dbFactory = new SqlServerTestDbContextFactory(_configuration, dbFactoryLogger);
         }
 
         /// <summary>

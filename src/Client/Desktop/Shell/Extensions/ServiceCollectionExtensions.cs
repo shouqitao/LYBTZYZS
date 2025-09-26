@@ -82,7 +82,7 @@ namespace LYBT.Desktop.Shell.Extensions
             
             // 注册错误处理服务
             containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Services.IErrorHandlingService,
-                LYBT.Desktop.Core.Services.ErrorHandlingService>();
+                LYBT.Desktop.Core.Services.ErrorHandling.UnifiedErrorHandlingService>();
             
             // 注册启动优化服务
             containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Services.Performance.IStartupOptimizationService,
@@ -268,20 +268,12 @@ namespace LYBT.Desktop.Shell.Extensions
         {
             // Herbs模块 - 基础药材数据，无外部依赖
             // 改为Scoped以支持懒加载，提升启动性能
-            containerRegistry.Register<LYBT.Desktop.Herbs.Interfaces.IHerbQueryService,
-                LYBT.Desktop.Herbs.Services.HerbQueryService>();
-            containerRegistry.Register<LYBT.Desktop.Herbs.Interfaces.IHerbBusinessService,
-                LYBT.Desktop.Herbs.Services.HerbBusinessService>();
             containerRegistry.Register<LYBT.Desktop.Herbs.Services.HerbService>();
             containerRegistry.Register<LYBT.Shared.Interfaces.Services.IHerbService,
                 LYBT.Desktop.Herbs.Services.HerbService>();
 
             // Formula模块 - 验方模板数据，无外部依赖
             // 改为Scoped以支持懒加载，提升启动性能
-            containerRegistry.Register<LYBT.Desktop.Formula.Interfaces.IFormulaQueryService,
-                LYBT.Desktop.Formula.Services.FormulaQueryService>();
-            containerRegistry.Register<LYBT.Desktop.Formula.Interfaces.IFormulaBusinessService,
-                LYBT.Desktop.Formula.Services.FormulaBusinessService>();
             containerRegistry.Register<LYBT.Desktop.Formula.Services.FormulaService>();
             containerRegistry.Register<LYBT.Shared.Interfaces.Services.IFormulaService,
                 LYBT.Desktop.Formula.Services.FormulaService>();
@@ -293,10 +285,6 @@ namespace LYBT.Desktop.Shell.Extensions
         private static void RegisterLayer2AuthModules(IContainerRegistry containerRegistry)
         {
             // Auth模块 - DT-001/DT-002修复: 适配器模式 + 标准IoC注册
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Auth.Interfaces.IAuthQueryService,
-                LYBT.Desktop.Auth.Services.AuthQueryService>();
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Auth.Interfaces.IAuthBusinessService,
-                LYBT.Desktop.Auth.Services.AuthBusinessService>();
             containerRegistry.RegisterSingleton<LYBT.Desktop.Auth.Services.AuthService>();
             containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Services.IAuthService,
                 LYBT.Desktop.Auth.Services.AuthService>();
@@ -314,10 +302,6 @@ namespace LYBT.Desktop.Shell.Extensions
         {
             // Patients模块 - 患者档案管理
             // 改为Scoped以支持懒加载，提升启动性能
-            containerRegistry.Register<LYBT.Desktop.Patients.Interfaces.IPatientQueryService,
-                LYBT.Desktop.Patients.Services.PatientQueryService>();
-            containerRegistry.Register<LYBT.Desktop.Patients.Interfaces.IPatientBusinessService,
-                LYBT.Desktop.Patients.Services.PatientBusinessService>();
             containerRegistry.Register<LYBT.Desktop.Patients.Services.PatientService>();
             containerRegistry.Register<LYBT.Shared.Interfaces.Services.IPatientService,
                 LYBT.Desktop.Patients.Services.PatientService>();
@@ -330,21 +314,13 @@ namespace LYBT.Desktop.Shell.Extensions
         private static void RegisterLayer4ProcessModules(IContainerRegistry containerRegistry)
         {
             // MedicalCase模块 - 医案流程管理
-            // 改为Scoped以支持懒加载，提升启动性能
-            containerRegistry.Register<LYBT.Desktop.MedicalCase.Interfaces.IMedicalCaseQueryService,
-                LYBT.Desktop.MedicalCase.Services.MedicalCaseQueryService>();
-            containerRegistry.Register<LYBT.Desktop.MedicalCase.Interfaces.IMedicalCaseBusinessService,
-                LYBT.Desktop.MedicalCase.Services.MedicalCaseBusinessService>();
+            // Service Locator重构后，统一使用单一Service模式
             containerRegistry.Register<LYBT.Desktop.MedicalCase.Services.MedicalCaseService>();
             containerRegistry.Register<LYBT.Shared.Interfaces.Services.IMedicalCaseService,
                 LYBT.Desktop.MedicalCase.Services.MedicalCaseService>();
 
             // Consultation模块 - 诊断流程
-            // 改为Scoped以支持懒加载，提升启动性能
-            containerRegistry.Register<LYBT.Desktop.Consultation.Interfaces.IConsultationQueryService,
-                LYBT.Desktop.Consultation.Services.ConsultationQueryService>();
-            containerRegistry.Register<LYBT.Desktop.Consultation.Interfaces.IConsultationBusinessService,
-                LYBT.Desktop.Consultation.Services.ConsultationBusinessService>();
+            // Service Locator重构后，统一使用单一Service模式
             containerRegistry.Register<LYBT.Desktop.Consultation.Services.ConsultationService>();
             containerRegistry.Register<LYBT.Shared.Interfaces.Services.IConsultationService,
                 LYBT.Desktop.Consultation.Services.ConsultationService>();
@@ -357,11 +333,7 @@ namespace LYBT.Desktop.Shell.Extensions
         private static void RegisterLayer5AggregationModules(IContainerRegistry containerRegistry)
         {
             // Prescriptions模块 - 处方聚合服务（依赖Herbs, Formula, Consultation）
-            // 改为Scoped以支持懒加载，提升启动性能
-            containerRegistry.Register<LYBT.Desktop.Prescriptions.Interfaces.IPrescriptionsQueryService,
-                LYBT.Desktop.Prescriptions.Services.PrescriptionsQueryService>();
-            containerRegistry.Register<LYBT.Desktop.Prescriptions.Interfaces.IPrescriptionsBusinessService,
-                LYBT.Desktop.Prescriptions.Services.PrescriptionsBusinessService>();
+            // Service Locator重构后，统一使用单一Service模式
             containerRegistry.Register<LYBT.Desktop.Prescriptions.Services.PrescriptionsService>();
             containerRegistry.Register<LYBT.Shared.Interfaces.Services.IPrescriptionService,
                 LYBT.Desktop.Prescriptions.Services.PrescriptionsService>();

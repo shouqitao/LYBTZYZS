@@ -103,20 +103,7 @@ namespace LYBT.Tests.Common
             cfg.AddProfile<PrescriptionMappingProfile>();
             cfg.AddProfile<UserMappingProfile>();
 
-            // Client端Profile（如果需要测试客户端映射）
-            try
-            {
-                // 客户端Desktop Core
-                cfg.AddProfile<LYBT.Client.Desktop.Core.Mapping.MappingProfile>();
-                
-                // 客户端模块Profile
-                cfg.AddProfile<LYBT.Client.Desktop.Modules.Auth.Mappings.MappingProfile>();
-                cfg.AddProfile<LYBT.Client.Desktop.Modules.Herbs.Mappings.MappingProfile>();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[AutoMapper Warning] Failed to load client profiles: {ex.Message}");
-            }
+            // Client端Profile已在Service Locator重构中移除
         }
 
         /// <summary>
@@ -160,15 +147,12 @@ namespace LYBT.Tests.Common
                 {
                     try
                     {
-                        // 避免重复注册
-                        if (!cfg.AllConfiguredTypeMaps().Any(m => m.Profile?.GetType() == profileType))
+                        // 直接注册，AutoMapper会处理重复
+                        var profile = Activator.CreateInstance(profileType) as Profile;
+                        if (profile != null)
                         {
-                            var profile = Activator.CreateInstance(profileType) as Profile;
-                            if (profile != null)
-                            {
-                                cfg.AddProfile(profile);
-                                Console.WriteLine($"[AutoMapper Info] Registered profile: {profileType.FullName}");
-                            }
+                            cfg.AddProfile(profile);
+                            Console.WriteLine($"[AutoMapper Info] Registered profile: {profileType.FullName}");
                         }
                     }
                     catch (Exception ex)

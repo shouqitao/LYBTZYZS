@@ -156,8 +156,6 @@ appsettings.Local.json
 .env.production
 *.env
 
-docs/_archive/
-
 # Test helper scripts (excluded from VCS)
 tests/*.ps1
 tests/**/*.ps1

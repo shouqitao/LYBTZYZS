@@ -253,7 +253,7 @@ namespace LYBT.Module.Auth.Tests.Services
             var invalidToken = "invalid.token.here";
 
             // Act & Assert
-            Assert.Throws<System.IdentityModel.Tokens.Jwt.SecurityTokenException>(() =>
+            Assert.Throws<Microsoft.IdentityModel.Tokens.SecurityTokenException>(() =>
             {
                 _jwtService.RefreshToken(invalidToken);
             });
