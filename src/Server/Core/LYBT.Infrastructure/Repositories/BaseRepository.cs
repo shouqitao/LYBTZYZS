@@ -141,6 +141,49 @@ namespace LYBT.Infrastructure.Repositories
             return (items, totalCount);
         }
 
+        /// <summary>
+        /// 分页查询（包含关联数据）
+        /// </summary>
+        public virtual async Task<(List<TEntity> Items, int TotalCount)> GetPagedWithIncludesAsync(
+            int pageNumber,
+            int pageSize,
+            Expression<Func<TEntity, bool>> predicate = null,
+            Expression<Func<TEntity, object>> orderBy = null,
+            bool descending = true,
+            params Expression<Func<TEntity, object>>[] includes)
+        {
+            var query = _dbSet.Where(e => !e.IsDeleted);
+
+            // 应用Include
+            foreach (var include in includes)
+            {
+                query = query.Include(include);
+            }
+
+            if (predicate != null)
+            {
+                query = query.Where(predicate);
+            }
+
+            var totalCount = await query.CountAsync();
+
+            if (orderBy != null)
+            {
+                query = descending ? query.OrderByDescending(orderBy) : query.OrderBy(orderBy);
+            }
+            else
+            {
+                query = query.OrderByDescending(e => e.CreatedAt);
+            }
+
+            var items = await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (items, totalCount);
+        }
+
         // IRepository GetPagedAsync实现
         async Task<PagedResult<TEntity>> IRepository<TEntity>.GetPagedAsync(int pageNumber, int pageSize)
         {

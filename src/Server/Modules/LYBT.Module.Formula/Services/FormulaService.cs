@@ -32,7 +32,8 @@ namespace LYBT.Module.Formula.Services
         {
             try
             {
-                var pagedResult = await _repository.GetPagedAsync(page, pageSize);
+                // 使用优化后的查询方法，包含Herbs集合
+                var pagedResult = await _repository.GetPagedWithDetailsAsync(page, pageSize, keyword);
                 var dto = new PagedResult<FormulaDto>
                 {
                     Items = _mapper.Map<List<FormulaDto>>(pagedResult.Items),
@@ -53,7 +54,8 @@ namespace LYBT.Module.Formula.Services
         {
             try
             {
-                var entity = await _repository.GetByIdAsync(id);
+                // 使用优化后的查询方法，包含所有药材配伍
+                var entity = await _repository.GetByIdWithHerbsAsync(id);
                 if (entity == null)
                     return ServiceResult<FormulaDto>.Failure("验方不存在");
 
@@ -113,10 +115,9 @@ namespace LYBT.Module.Formula.Services
                 return ServiceResult<List<FormulaDto>>.Success(new List<FormulaDto>());
             }
 
-            // 查询包含关键字的处方
-            var allFormulas = await _repository.GetAllAsync();
-            var formulas = allFormulas.Where(f =>
-                f.Name.Contains(keyword)).ToList();
+            // 使用优化后的查询方法，搜索并包含药材信息
+            var pagedResult = await _repository.GetPagedWithDetailsAsync(1, 100, keyword);
+            var formulas = pagedResult.Items;
 
             // 转换为DTO
             var formulaDtos = _mapper.Map<List<FormulaDto>>(formulas);

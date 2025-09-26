@@ -32,7 +32,8 @@ namespace LYBT.Module.Prescriptions.Services
         {
             try
             {
-                var pagedResult = await _repository.GetPagedAsync(page, pageSize);
+                // 使用优化后的查询方法，包含Items集合
+                var pagedResult = await _repository.GetPagedWithDetailsAsync(page, pageSize, keyword);
                 var dto = new PagedResult<PrescriptionDto>
                 {
                     Items = _mapper.Map<List<PrescriptionDto>>(pagedResult.Items),
@@ -53,7 +54,8 @@ namespace LYBT.Module.Prescriptions.Services
         {
             try
             {
-                var entity = await _repository.GetByIdAsync(id);
+                // 使用优化后的查询方法，包含处方项
+                var entity = await _repository.GetByIdWithItemsAsync(id);
                 if (entity == null)
                     return ServiceResult<PrescriptionDto>.Failure("处方不存在");
 
@@ -107,9 +109,8 @@ namespace LYBT.Module.Prescriptions.Services
     {
         try
         {
-            // 根据病历ID查询处方列表
-            var allPrescriptions = await _repository.GetAllAsync();
-            var prescriptions = allPrescriptions.Where(p => p.MedicalCaseId == medicalCaseId).ToList();
+            // 使用优化后的查询方法，直接查询并包含Items集合
+            var prescriptions = await _repository.GetByMedicalCaseIdAsync(medicalCaseId);
             
             // 转换为DTO
             var prescriptionDtos = _mapper.Map<List<PrescriptionDto>>(prescriptions);
