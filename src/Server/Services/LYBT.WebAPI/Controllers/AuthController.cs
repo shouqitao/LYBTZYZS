@@ -1,6 +1,7 @@
 using Asp.Versioning;
 using LYBT.Core.Infrastructure.Web;
 using LYBT.Shared.Interfaces.Services;
+using LYBT.Shared.Models.Auth;
 using LYBT.Shared.Models.Contracts.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -159,26 +160,68 @@ namespace LYBT.WebAPI.Controllers
         /// <summary>
         /// 刷新Token
         /// </summary>
-        /// <param name="refreshToken">刷新Token</param>
+        /// <param name="request">刷新Token请求</param>
         /// <returns>新的登录响应</returns>
         [HttpPost("refresh")]
         [AllowAnonymous]  // 刷新令牌允许匿名（使用refresh token验证）
-        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<LoginResponse>>> RefreshTokenAsync([FromBody] string refreshToken)
+        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<LoginResponse>>> RefreshTokenAsync([FromBody] RefreshTokenRequest request)
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(refreshToken))
+                if (request == null)
+                {
+                    return ValidationFail<LoginResponse>("刷新Token请求不能为空");
+                }
+
+                if (string.IsNullOrWhiteSpace(request.RefreshToken))
                 {
                     return ValidationFail<LoginResponse>("刷新Token不能为空");
                 }
 
                 // 调用认证服务刷新Token
-                var result = await _authService.RefreshTokenAsync(refreshToken);
+                var result = await _authService.RefreshTokenAsync(request.RefreshToken);
                 return HandleServiceResult(result, "Token刷新成功");
             }
             catch (Exception ex)
             {
-                return HandleException<LoginResponse>(ex, "刷新Token", refreshToken);
+                return HandleException<LoginResponse>(ex, "刷新Token", request);
+            }
+        }
+
+        /// <summary>
+        /// 撤销Token
+        /// </summary>
+        /// <param name="request">撤销Token请求</param>
+        /// <returns>撤销结果</returns>
+        [HttpPost("revoke")]
+        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse>> RevokeTokenAsync([FromBody] RevokeTokenRequest request)
+        {
+            try
+            {
+                // 参数验证
+                var validation = ValidateModel();
+                if (validation != null)
+                {
+                    return validation;
+                }
+
+                if (request == null)
+                {
+                    return ValidationFail("撤销Token请求不能为空");
+                }
+
+                if (string.IsNullOrWhiteSpace(request.Token))
+                {
+                    return ValidationFail("Token不能为空");
+                }
+
+                // 调用认证服务撤销Token
+                var result = await _authService.RevokeTokenAsync(request);
+                return HandleBoolServiceResult(result, "Token撤销成功");
+            }
+            catch (Exception ex)
+            {
+                return HandleException(ex, "撤销Token", request);
             }
         }
 
