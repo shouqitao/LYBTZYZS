@@ -105,7 +105,7 @@ public class UnifiedSessionManager : IUnifiedSessionManager, IDisposable
             _cache.Clear(); // 清除权限缓存
         }
 
-        _logger.LogInformation("用户会话已设置: {Username} (ID: {UserId})", user.Username, user.Id);
+        _logger.LogInformation("用户会话已设置: {Username} (ID: {UserId})", user.UserName, user.Id);
 
         // 触发事件
         UserSessionChanged?.Invoke(this, new UserSessionChangedEventArgs
@@ -134,7 +134,7 @@ public class UnifiedSessionManager : IUnifiedSessionManager, IDisposable
             _consultationStatus = ConsultationStatus.NotStarted;
         }
 
-        _logger.LogInformation("用户会话已清除: {Username}", previousUser?.Username);
+        _logger.LogInformation("用户会话已清除: {Username}", previousUser?.UserName);
 
         // 触发事件
         UserSessionChanged?.Invoke(this, new UserSessionChangedEventArgs
@@ -188,7 +188,7 @@ public class UnifiedSessionManager : IUnifiedSessionManager, IDisposable
             }
         }
 
-        _logger.LogInformation("用户信息已刷新: {Username}", user.Username);
+        _logger.LogInformation("用户信息已刷新: {Username}", user.UserName);
 
         // 触发事件
         UserSessionChanged?.Invoke(this, new UserSessionChangedEventArgs
@@ -558,7 +558,7 @@ public class UnifiedSessionManager : IUnifiedSessionManager, IDisposable
         }
 
         _logger.LogInformation("会话状态已恢复: User={Username}, Patient={PatientId}", 
-            state.User?.Username, state.Patient?.Id);
+            state.User?.UserName, state.Patient?.Id);
     }
 
     #endregion

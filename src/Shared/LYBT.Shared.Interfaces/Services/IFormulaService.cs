@@ -3,48 +3,20 @@ using LYBT.Shared.Models.Contracts.Formula;
 
 namespace LYBT.Shared.Interfaces.Services
 {
-
     /// <summary>
-    /// 验方服务接口 - UltraThink双层架构精简标准（小诊所适用）
+    /// 验方服务接口 - 简化版，只包含基础CRUD
     /// </summary>
     public interface IFormulaService
     {
-
-        #region 查询操作 - QueryService专业负责
-
         /// <summary>
         /// 分页查询验方
         /// </summary>
-        Task<ServiceResult<PagedResult<FormulaDto>>> GetPagedAsync(FormulaQueryDto query);
+        Task<ServiceResult<PagedResult<FormulaDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null);
 
         /// <summary>
         /// 根据ID获取验方详情
         /// </summary>
         Task<ServiceResult<FormulaDto>> GetByIdAsync(Guid id);
-
-        /// <summary>
-        /// 搜索验方
-        /// </summary>
-        Task<ServiceResult<List<FormulaDto>>> SearchAsync(string keyword);
-
-        /// <summary>
-        /// 获取验方模板
-        /// </summary>
-        Task<ServiceResult<List<FormulaDto>>> GetTemplatesAsync();
-
-        /// <summary>
-        /// 根据类型获取验方
-        /// </summary>
-        Task<ServiceResult<List<FormulaDto>>> GetByTypeAsync(string formulaType);
-
-        /// <summary>
-        /// 获取验方分类
-        /// </summary>
-        Task<ServiceResult<List<string>>> GetCategoriesAsync();
-
-        #endregion 查询操作 - QueryService专业负责
-
-        #region 业务操作 - BusinessService专业负责
 
         /// <summary>
         /// 创建新验方
@@ -59,42 +31,6 @@ namespace LYBT.Shared.Interfaces.Services
         /// <summary>
         /// 删除验方（软删除）
         /// </summary>
-        Task<ServiceResult<bool>> DeleteAsync(Guid id);
-
-        /// <summary>
-        /// 启用验方
-        /// </summary>
-        Task<ServiceResult> EnableAsync(Guid id);
-
-        /// <summary>
-        /// 禁用验方
-        /// </summary>
-        Task<ServiceResult> DisableAsync(Guid id);
-
-        /// <summary>
-        /// 从处方创建验方
-        /// </summary>
-        Task<ServiceResult<FormulaDto>> CreateFromPrescriptionAsync(Guid prescriptionId, string name);
-
-        /// <summary>
-        /// 克隆验方
-        /// </summary>
-        Task<ServiceResult<FormulaDto>> CloneFormulaAsync(Guid formulaId, string newName, Guid userId);
-
-        #endregion 业务操作 - BusinessService专业负责
-
-        #region 批量操作 - 必需功能（用户明确需求）
-
-        /// <summary>
-        /// 批量导入验方
-        /// </summary>
-        Task<ServiceResult<object>> ImportFormulasAsync(List<FormulaCreateDto> formulas);
-
-        /// <summary>
-        /// 导出验方数据
-        /// </summary>
-        Task<ServiceResult<byte[]>> ExportFormulasAsync(PagedQueryBaseDto query);
-
-        #endregion 批量操作 - 必需功能（用户明确需求）
+        Task<ServiceResult> DeleteAsync(Guid id);
     }
 }

@@ -1,4 +1,4 @@
-using LYBT.Infrastructure.Configuration.Options;
+using LYBT.Core.Infrastructure.Configuration.Options;
 using LYBT.WebAPI.Middleware;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Options;
@@ -132,13 +132,13 @@ internal static class SecurityHeadersMiddleware
             {
                 context.Response.Headers["Content-Security-Policy"] = headers.ContentSecurityPolicy;
             }
-            if (!string.IsNullOrWhiteSpace(headers.XFrameOptions))
+            if (!string.IsNullOrWhiteSpace(headers.FrameOptions))
             {
-                context.Response.Headers["X-Frame-Options"] = headers.XFrameOptions;
+                context.Response.Headers["X-Frame-Options"] = headers.FrameOptions;
             }
-            if (!string.IsNullOrWhiteSpace(headers.XContentTypeOptions))
+            if (!string.IsNullOrWhiteSpace(headers.ContentTypeOptions))
             {
-                context.Response.Headers["X-Content-Type-Options"] = headers.XContentTypeOptions;
+                context.Response.Headers["X-Content-Type-Options"] = headers.ContentTypeOptions;
             }
             if (!string.IsNullOrWhiteSpace(headers.ReferrerPolicy))
             {

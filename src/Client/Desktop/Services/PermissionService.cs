@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using LYBT.Desktop.Core.Interfaces.Services;
@@ -25,7 +25,7 @@ namespace LYBT.Desktop.Services
             }
 
             // 只有sysadmin有所有权限
-            return user.Username == "sysadmin";
+            return user.UserName == "sysadmin";
         }
 
         /// <summary>
@@ -33,7 +33,7 @@ namespace LYBT.Desktop.Services
         /// </summary>
         public bool HasAdminPermission(UserDto user)
         {
-            return user?.Username == "sysadmin";
+            return user?.UserName == "sysadmin";
         }
 
         /// <summary>
@@ -41,7 +41,7 @@ namespace LYBT.Desktop.Services
         /// </summary>
         public bool HasSuperAdminPermission(UserDto user)
         {
-            return user?.Username == "sysadmin";
+            return user?.UserName == "sysadmin";
         }
 
         /// <summary>
@@ -54,7 +54,7 @@ namespace LYBT.Desktop.Services
                 return new List<string>();
             }
 
-            if (user.Username == "sysadmin")
+            if (user.UserName == "sysadmin")
             {
                 // 管理员有所有模块
                 return new List<string> {

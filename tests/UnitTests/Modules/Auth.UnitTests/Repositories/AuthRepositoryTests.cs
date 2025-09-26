@@ -84,7 +84,7 @@ namespace LYBT.Module.Auth.Tests.Repositories
             var user = new User
             {
                 Id = Guid.NewGuid(),
-                Username = "testuser",
+                UsernName = "testuser",
                 RealName = "Test User",
                 PasswordHash = "hashedPassword",
                 Role = UserRole.Doctor,
@@ -99,7 +99,7 @@ namespace LYBT.Module.Auth.Tests.Repositories
             // Assert
             result.Should().NotBeNull();
             result!.Id.Should().Be(user.Id);
-            result.Username.Should().Be("testuser");
+            result.UsernName.Should().Be("testuser");
             result.RealName.Should().Be("Test User");
         }
 
@@ -120,7 +120,7 @@ namespace LYBT.Module.Auth.Tests.Repositories
             var user = new User
             {
                 Id = Guid.NewGuid(),
-                Username = "cacheduser",
+                UsernName = "cacheduser",
                 RealName = "Cached User",
                 PasswordHash = "hashedPassword",
                 Role = UserRole.Doctor,
@@ -137,7 +137,7 @@ namespace LYBT.Module.Auth.Tests.Repositories
 
             // Assert
             result.Should().NotBeNull();
-            result!.Username.Should().Be("cacheduser");
+            result!.UsernName.Should().Be("cacheduser");
         }
 
         [Fact]
@@ -147,7 +147,7 @@ namespace LYBT.Module.Auth.Tests.Repositories
             var user = new User
             {
                 Id = Guid.NewGuid(),
-                Username = "TestUser",
+                UsernName = "TestUser",
                 RealName = "Test User",
                 PasswordHash = "hashedPassword",
                 Role = UserRole.Doctor,
@@ -161,7 +161,7 @@ namespace LYBT.Module.Auth.Tests.Repositories
 
             // Assert
             result.Should().NotBeNull();
-            result!.Username.Should().Be("TestUser");
+            result!.UsernName.Should().Be("TestUser");
         }
 
         [Theory]
@@ -389,7 +389,7 @@ namespace LYBT.Module.Auth.Tests.Repositories
             var user = new User
             {
                 Id = Guid.NewGuid(),
-                Username = "testuser",
+                UsernName = "testuser",
                 RealName = "Test User",
                 PasswordHash = "hashedPassword",
                 Role = UserRole.Doctor,
@@ -416,7 +416,7 @@ namespace LYBT.Module.Auth.Tests.Repositories
             var user = new User
             {
                 Id = Guid.NewGuid(),
-                Username = "testuser",
+                UsernName = "testuser",
                 RealName = "Test User",
                 PasswordHash = "hashedPassword",
                 Role = UserRole.Doctor,
@@ -443,7 +443,7 @@ namespace LYBT.Module.Auth.Tests.Repositories
             var user = new User
             {
                 Id = Guid.NewGuid(),
-                Username = "testuser",
+                UsernName = "testuser",
                 RealName = "Test User",
                 PasswordHash = "hashedPassword",
                 Role = UserRole.Doctor,
@@ -487,7 +487,7 @@ namespace LYBT.Module.Auth.Tests.Repositories
             var user = new User
             {
                 Id = Guid.NewGuid(),
-                Username = "testuser",
+                UsernName = "testuser",
                 RealName = "Test User",
                 PasswordHash = "hashedPassword",
                 Role = UserRole.Doctor,
@@ -516,7 +516,7 @@ namespace LYBT.Module.Auth.Tests.Repositories
                 new User
                 {
                     Id = Guid.NewGuid(),
-                    Username = "user1",
+                    UsernName = "user1",
                     RealName = "User 1",
                     PasswordHash = "hash1",
                     Role = UserRole.Doctor,
@@ -525,7 +525,7 @@ namespace LYBT.Module.Auth.Tests.Repositories
                 new User
                 {
                     Id = Guid.NewGuid(),
-                    Username = "user2",
+                    UsernName = "user2",
                     RealName = "User 2",
                     PasswordHash = "hash2",
                     Role = UserRole.Doctor,
@@ -561,7 +561,7 @@ namespace LYBT.Module.Auth.Tests.Repositories
             var user = new User
             {
                 Id = Guid.NewGuid(),
-                Username = "testuser",
+                UsernName = "testuser",
                 RealName = "Test User",
                 PasswordHash = "hashedPassword",
                 Role = UserRole.Doctor,
@@ -605,7 +605,7 @@ namespace LYBT.Module.Auth.Tests.Repositories
             var user = new User
             {
                 Id = Guid.NewGuid(),
-                Username = "testuser",
+                UsernName = "testuser",
                 RealName = "Test User",
                 PasswordHash = "hashedPassword",
                 Role = UserRole.Doctor,
@@ -632,7 +632,7 @@ namespace LYBT.Module.Auth.Tests.Repositories
             var user = new User
             {
                 Id = Guid.NewGuid(),
-                Username = "testuser",
+                UsernName = "testuser",
                 RealName = "Test User",
                 PasswordHash = "hashedPassword",
                 Role = UserRole.Doctor,
@@ -665,7 +665,7 @@ namespace LYBT.Module.Auth.Tests.Repositories
             var user = new User
             {
                 Id = Guid.NewGuid(),
-                Username = "testuser",
+                UsernName = "testuser",
                 RealName = "Test User",
                 PasswordHash = "hashedPassword",
                 Role = UserRole.Doctor,
@@ -680,7 +680,7 @@ namespace LYBT.Module.Auth.Tests.Repositories
             // Assert
             result.Should().NotBeNull();
             result!.Id.Should().Be(user.Id);
-            result.Username.Should().Be("testuser");
+            result.UsernName.Should().Be("testuser");
         }
 
         [Fact]
@@ -690,7 +690,7 @@ namespace LYBT.Module.Auth.Tests.Repositories
             var user = new User
             {
                 Id = Guid.NewGuid(),
-                Username = "newuser",
+                UsernName = "newuser",
                 RealName = "New User",
                 PasswordHash = "hashedPassword",
                 Role = UserRole.Doctor,
@@ -703,11 +703,11 @@ namespace LYBT.Module.Auth.Tests.Repositories
 
             // Assert
             result.Should().NotBeNull();
-            result.Username.Should().Be("newuser");
+            result.UsernName.Should().Be("newuser");
 
             var savedUser = await _context.Users.FindAsync(user.Id);
             savedUser.Should().NotBeNull();
-            savedUser!.Username.Should().Be("newuser");
+            savedUser!.UsernName.Should().Be("newuser");
         }
 
         [Fact]
@@ -717,7 +717,7 @@ namespace LYBT.Module.Auth.Tests.Repositories
             var user = new User
             {
                 Id = Guid.NewGuid(),
-                Username = "originaluser",
+                UsernName = "originaluser",
                 RealName = "Original User",
                 PasswordHash = "hashedPassword",
                 Role = UserRole.Doctor,
@@ -747,7 +747,7 @@ namespace LYBT.Module.Auth.Tests.Repositories
             var user = new User
             {
                 Id = Guid.NewGuid(),
-                Username = "deleteuser",
+                UsernName = "deleteuser",
                 RealName = "Delete User",
                 PasswordHash = "hashedPassword",
                 Role = UserRole.Doctor,
@@ -774,7 +774,7 @@ namespace LYBT.Module.Auth.Tests.Repositories
             var user = new User
             {
                 Id = Guid.NewGuid(),
-                Username = "existsuser",
+                UsernName = "existsuser",
                 RealName = "Exists User",
                 PasswordHash = "hashedPassword",
                 Role = UserRole.Doctor,
@@ -799,7 +799,7 @@ namespace LYBT.Module.Auth.Tests.Repositories
                 new User
                 {
                     Id = Guid.NewGuid(),
-                    Username = "user1",
+                    UsernName = "user1",
                     RealName = "User 1",
                     PasswordHash = "hash1",
                     Role = UserRole.Doctor,
@@ -808,7 +808,7 @@ namespace LYBT.Module.Auth.Tests.Repositories
                 new User
                 {
                     Id = Guid.NewGuid(),
-                    Username = "user2",
+                    UsernName = "user2",
                     RealName = "User 2",
                     PasswordHash = "hash2",
                     Role = UserRole.Admin,
@@ -839,7 +839,7 @@ namespace LYBT.Module.Auth.Tests.Repositories
             var user = new User
             {
                 Id = Guid.NewGuid(),
-                Username = specialUsername,
+                UsernName = specialUsername,
                 RealName = "Special User",
                 PasswordHash = "hashedPassword",
                 Role = UserRole.Doctor,
@@ -853,7 +853,7 @@ namespace LYBT.Module.Auth.Tests.Repositories
 
             // Assert
             result.Should().NotBeNull();
-            result!.Username.Should().Be(specialUsername);
+            result!.UsernName.Should().Be(specialUsername);
         }
 
         [Fact]
@@ -863,7 +863,7 @@ namespace LYBT.Module.Auth.Tests.Repositories
             var user = new User
             {
                 Id = Guid.NewGuid(),
-                Username = "testuser",
+                UsernName = "testuser",
                 RealName = "Test User",
                 PasswordHash = "hashedPassword",
                 Role = UserRole.Doctor,
@@ -890,7 +890,7 @@ namespace LYBT.Module.Auth.Tests.Repositories
             var user = new User
             {
                 Id = Guid.NewGuid(),
-                Username = "concurrentuser",
+                UsernName = "concurrentuser",
                 RealName = "Concurrent User",
                 PasswordHash = "hashedPassword",
                 Role = UserRole.Doctor,
@@ -928,7 +928,7 @@ namespace LYBT.Module.Auth.Tests.Repositories
             var user = new User
             {
                 Id = Guid.NewGuid(),
-                Username = "performanceuser",
+                UsernName = "performanceuser",
                 RealName = "Performance User",
                 PasswordHash = "hashedPassword",
                 Role = UserRole.Doctor,
@@ -990,7 +990,7 @@ namespace LYBT.Module.Auth.Tests.Repositories
             var user = new User
             {
                 Id = Guid.NewGuid(),
-                Username = "integrationuser",
+                UsernName = "integrationuser",
                 RealName = "Integration User",
                 PasswordHash = "hashedPassword123",
                 Role = UserRole.Doctor,
@@ -1005,7 +1005,7 @@ namespace LYBT.Module.Auth.Tests.Repositories
             // 1. 通过用户名查找用户
             var foundUser = await _repository.GetByUsernameAsync("integrationuser");
             foundUser.Should().NotBeNull();
-            foundUser!.Username.Should().Be("integrationuser");
+            foundUser!.UsernName.Should().Be("integrationuser");
 
             // 2. 模拟登录失败，更新失败次数
             await _repository.UpdateFailedLoginInfoAsync(user.Id, 1, null);

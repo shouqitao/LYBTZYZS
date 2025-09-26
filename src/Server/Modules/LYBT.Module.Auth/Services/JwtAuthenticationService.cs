@@ -39,6 +39,10 @@ namespace LYBT.Module.Auth.Services
         /// </summary>
         public string GenerateToken(string userId, string userName, UserRole role, bool rememberMe = false)
         {
+            // 确保参数不为null，避免Claim构造函数异常
+            userId = userId ?? string.Empty;
+            userName = userName ?? string.Empty;
+
             var claims = new List<Claim> {
                 // JWT标准Claims
                 new(JwtRegisteredClaimNames.Sub, userId),
@@ -97,7 +101,9 @@ namespace LYBT.Module.Auth.Services
                             ValidIssuer = _jwtOptions.Issuer,
                             ValidAudience = _jwtOptions.Audience,
                             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret)),
-                            ClockSkew = TimeSpan.Zero
+                            ClockSkew = TimeSpan.FromSeconds(_jwtOptions.ClockSkewSeconds),
+                            NameClaimType = JwtRegisteredClaimNames.UniqueName,
+                            RoleClaimType = ClaimTypes.Role
                         };
 
                         var principal = _tokenHandler.ValidateToken(token, validationParameters, out _);
@@ -136,9 +142,20 @@ namespace LYBT.Module.Auth.Services
                 throw new SecurityTokenException("Invalid token");
             }
 
-            var userId = principal.FindFirst(JwtRegisteredClaimNames.Sub)?.Value ?? string.Empty;
-            var userName = principal.FindFirst(JwtRegisteredClaimNames.UniqueName)?.Value ?? string.Empty;
-            var roleString = principal.FindFirst(ClaimTypes.Role)?.Value ?? RoleHelper.Roles.Doctor;
+            // 尝试多种方式提取userId
+            var userId = principal.FindFirst(JwtRegisteredClaimNames.Sub)?.Value 
+                         ?? principal.FindFirst(ClaimTypes.NameIdentifier)?.Value 
+                         ?? string.Empty;
+
+            // 尝试多种方式提取userName
+            var userName = principal.FindFirst(JwtRegisteredClaimNames.UniqueName)?.Value
+                          ?? principal.FindFirst(ClaimTypes.Name)?.Value
+                          ?? string.Empty;
+
+            var roleString = principal.FindFirst(ClaimTypes.Role)?.Value 
+                            ?? principal.FindFirst("role")?.Value 
+                            ?? RoleHelper.Roles.Doctor;
+
             if (Enum.TryParse<UserRole>(roleString, out var role))
             {
                 return GenerateToken(userId, userName, role);

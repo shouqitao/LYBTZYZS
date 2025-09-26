@@ -1,4 +1,4 @@
-using LYBT.Infrastructure.Security;
+using LYBT.Core.Infrastructure.Security;
 using Microsoft.AspNetCore.DataProtection;
 
 namespace LYBT.WebAPI.Extensions.ServiceCollection

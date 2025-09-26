@@ -1,5 +1,63 @@
 # 凌隐宝堂中医诊所管理系统（LYBTZYZS）
 
+**凌隐宝堂中医诊所管理系统（LYBTZYZS）**是一个基于.NET 8的企业级中医诊所管理解决方案，采用前后端分离架构，专为小型中医诊所（<20人）的诊疗业务场景设计和优化。
+
+## 🎯 系统概览
+
+### 技术架构
+- **后端**: ASP.NET Core 8.0 Web API + Entity Framework Core + SQL Server
+- **前端**: WPF + Prism.DryIoc MVVM架构 + Refit HTTP客户端  
+- **共享**: 统一DTO模型和服务接口定义，确保前后端数据契约一致性
+
+### 核心业务模块（8个）
+| 模块 | 功能描述 | 状态 |
+|------|----------|------|
+| **Auth** | JWT身份认证、RBAC权限控制 | ✅ 完成 |
+| **Users** | 用户管理、Admin/Doctor角色体系 | ✅ 完成 |
+| **Patients** | 患者档案管理、基础信息维护 | ✅ 完成 |
+| **MedicalCase** | 医疗案例管理、诊疗流程控制 | ✅ 完成 |
+| **Consultation** | 中医四诊记录、辨证论治 | ✅ 完成 |
+| **Prescriptions** | 处方开具、剂量计算、价格预览 | ✅ 完成 |
+| **Herbs** | 中药材信息管理、价格维护 | ✅ 完成 |
+| **Formula** | 验方模板管理、经典方剂库 | ✅ 完成 |
+
+### 项目规模统计
+- **总计**: 28个.NET项目，3个解决方案文件
+- **Server端**: 10个项目（2个Core + 8个业务模块）
+- **Client端**: 15个项目（基础设施 + 8个业务模块）
+- **Shared层**: 3个项目（Models + Interfaces + Utilities）
+
+### 架构分层说明
+```
+解决方案架构
+├── LYBT.All.sln          # 完整解决方案（28个项目）
+├── LYBT.Server.sln       # 后端解决方案（10个项目）
+└── LYBT.Desktop.sln      # 前端解决方案（15个项目）
+
+Server端架构
+├── Core/                 # 核心基础设施
+│   ├── LYBT.Entities    # 数据实体模型（8个业务实体）
+│   └── LYBT.Infrastructure # 基础设施实现（数据访问、安全、缓存等）
+├── Modules/              # 业务模块层
+│   └── [8个业务模块]    # 各业务领域的Services、Repositories、Mapping
+└── Services/             # 服务层
+    └── LYBT.WebAPI       # 统一API网关（10个控制器）
+
+Client端架构  
+├── Shell/                # 应用程序启动壳
+├── Core/                 # 核心基础设施
+├── Services/             # 业务服务和API客户端  
+├── Infrastructure/       # UI基础设施和通用组件
+├── Workbenches/          # 工作台系统（Admin/Medical）
+└── Modules/              # 业务模块UI层
+    └── [8个业务模块]    # 各业务领域的Views、ViewModels
+
+Shared层架构
+├── LYBT.Shared.Models    # 统一DTO模型和响应格式
+├── LYBT.Shared.Interfaces # 服务接口定义  
+└── LYBT.Shared.Utilities # 通用工具类和扩展方法
+```
+
 本项目基于 .NET 8，包含 ASP.NET Core Web API 后端与 WPF Prism 桌面客户端。目前正在进行桌面端重构：事件体系尚未统一、桌面应用无法成功编译，服务器测试亦存在失败用例。下述内容以当前进展为准，不再使用“生产就绪”等描述。
 
 ## 当前状态概览（2025-09-24）

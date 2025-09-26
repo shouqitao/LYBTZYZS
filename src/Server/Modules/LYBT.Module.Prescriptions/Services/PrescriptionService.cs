@@ -1,5 +1,5 @@
 using AutoMapper;
-using LYBT.Infrastructure.Data;
+using PrescriptionEntity = LYBT.Entities.Prescriptions.Prescription;
 using LYBT.Module.Prescriptions.Interfaces;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
@@ -9,100 +9,111 @@ using Microsoft.Extensions.Logging;
 namespace LYBT.Module.Prescriptions.Services
 {
     /// <summary>
-    /// 处方服务 - 简化实现
+    /// 处方服务 - 简化版，只包含基础CRUD
     /// </summary>
     public class PrescriptionService : IPrescriptionService
     {
         private readonly IPrescriptionRepository _repository;
-        private readonly AppDbContext _context;
         private readonly IMapper _mapper;
         private readonly ILogger<PrescriptionService> _logger;
 
         public PrescriptionService(
             IPrescriptionRepository repository,
-            AppDbContext context,
             IMapper mapper,
             ILogger<PrescriptionService> logger)
         {
-            _repository = repository ?? throw new ArgumentNullException(nameof(repository));
-            _context = context ?? throw new ArgumentNullException(nameof(context));
-            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _repository = repository;
+            _mapper = mapper;
+            _logger = logger;
         }
 
-        public Task<ServiceResult<PrescriptionDto>> GetByIdAsync(Guid id)
+        public async Task<ServiceResult<PagedResult<PrescriptionDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null)
         {
-            return Task.FromResult(ServiceResult<PrescriptionDto>.Failure("处方查询功能暂未实现"));
+            try
+            {
+                var pagedResult = await _repository.GetPagedAsync(page, pageSize);
+                var dto = new PagedResult<PrescriptionDto>
+                {
+                    Items = _mapper.Map<List<PrescriptionDto>>(pagedResult.Items),
+                    TotalCount = pagedResult.TotalCount,
+                    CurrentPage = pagedResult.CurrentPage,
+                    PageSize = pagedResult.PageSize
+                };
+                return ServiceResult<PagedResult<PrescriptionDto>>.Success(dto);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取处方列表失败");
+                return ServiceResult<PagedResult<PrescriptionDto>>.Failure("获取处方列表失败");
+            }
         }
 
-        public Task<ServiceResult<PagedResult<PrescriptionDto>>> GetPagedAsync(PrescriptionQueryDto query)
+        public async Task<ServiceResult<PrescriptionDto>> GetByIdAsync(Guid id)
         {
-            return Task.FromResult(ServiceResult<PagedResult<PrescriptionDto>>.Failure("分页查询功能暂未实现"));
+            try
+            {
+                var entity = await _repository.GetByIdAsync(id);
+                if (entity == null)
+                    return ServiceResult<PrescriptionDto>.Failure("处方不存在");
+
+                var dto = _mapper.Map<PrescriptionDto>(entity);
+                return ServiceResult<PrescriptionDto>.Success(dto);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取处方详情失败");
+                return ServiceResult<PrescriptionDto>.Failure("获取处方详情失败");
+            }
         }
 
-        public Task<ServiceResult<List<PrescriptionDto>>> GetByPatientIdAsync(Guid patientId)
+        public async Task<ServiceResult<PrescriptionDto>> CreateAsync(PrescriptionCreateDto dto)
         {
-            return Task.FromResult(ServiceResult<List<PrescriptionDto>>.Failure("患者处方查询功能暂未实现"));
+            try
+            {
+                var entity = _mapper.Map<PrescriptionEntity>(dto);
+                var result = await _repository.AddAsync(entity);
+                var resultDto = _mapper.Map<PrescriptionDto>(result);
+                return ServiceResult<PrescriptionDto>.Success(resultDto);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "创建处方失败");
+                return ServiceResult<PrescriptionDto>.Failure("创建处方失败");
+            }
         }
 
-        public Task<ServiceResult<List<PrescriptionDto>>> GetByConsultationIdAsync(Guid consultationId)
+        public async Task<ServiceResult<PrescriptionDto>> UpdateAsync(Guid id, PrescriptionUpdateDto dto)
         {
-            return Task.FromResult(ServiceResult<List<PrescriptionDto>>.Failure("诊疗处方查询功能暂未实现"));
+            try
+            {
+                var entity = await _repository.GetByIdAsync(id);
+                if (entity == null)
+                    return ServiceResult<PrescriptionDto>.Failure("处方不存在");
+
+                _mapper.Map(dto, entity);
+                var result = await _repository.UpdateAsync(entity);
+                var resultDto = _mapper.Map<PrescriptionDto>(result);
+                return ServiceResult<PrescriptionDto>.Success(resultDto);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "更新处方失败");
+                return ServiceResult<PrescriptionDto>.Failure("更新处方失败");
+            }
         }
 
-        public Task<ServiceResult<PagedResult<PrescriptionDto>>> SearchAsync(PrescriptionSearchDto searchDto)
+        public async Task<ServiceResult> DeleteAsync(Guid id)
         {
-            return Task.FromResult(ServiceResult<PagedResult<PrescriptionDto>>.Failure("搜索功能暂未实现"));
-        }
-
-        public Task<ServiceResult<List<PrescriptionDto>>> SearchAsync(string keyword)
-        {
-            return Task.FromResult(ServiceResult<List<PrescriptionDto>>.Failure("搜索功能暂未实现"));
-        }
-
-        public Task<ServiceResult<PrescriptionDto>> CreateAsync(PrescriptionCreateDto dto)
-        {
-            return Task.FromResult(ServiceResult<PrescriptionDto>.Failure("创建功能暂未实现"));
-        }
-
-        public Task<ServiceResult<PrescriptionDto>> UpdateAsync(Guid id, PrescriptionEditDto dto)
-        {
-            return Task.FromResult(ServiceResult<PrescriptionDto>.Failure("更新功能暂未实现"));
-        }
-
-        public Task<ServiceResult<bool>> DeleteAsync(Guid id)
-        {
-            return Task.FromResult(ServiceResult<bool>.Failure("删除功能暂未实现"));
-        }
-
-        public Task<ServiceResult<bool>> FinalizePrescriptionAsync(Guid id)
-        {
-            return Task.FromResult(ServiceResult<bool>.Failure("确认功能暂未实现"));
-        }
-
-        public Task<ServiceResult<bool>> CancelPrescriptionAsync(Guid id, string reason)
-        {
-            return Task.FromResult(ServiceResult<bool>.Failure("取消功能暂未实现"));
-        }
-
-        public Task<ServiceResult<bool>> ValidatePrescriptionAsync(PrescriptionCreateDto dto)
-        {
-            return Task.FromResult(ServiceResult<bool>.Failure("验证功能暂未实现"));
-        }
-
-        public Task<ServiceResult<List<PrescriptionDto>>> GetByMedicalCaseIdAsync(Guid medicalCaseId)
-        {
-            return Task.FromResult(ServiceResult<List<PrescriptionDto>>.Failure("病历处方查询功能暂未实现"));
-        }
-
-        public Task<ServiceResult<PrescriptionValidationResult>> ValidateAsync(PrescriptionCreateDto dto)
-        {
-            return Task.FromResult(ServiceResult<PrescriptionValidationResult>.Failure("验证功能暂未实现"));
-        }
-
-        public Task<ServiceResult<PrescriptionDto>> CopyAsync(Guid id, string newPrescriptionNo)
-        {
-            return Task.FromResult(ServiceResult<PrescriptionDto>.Failure("复制功能暂未实现"));
+            try
+            {
+                var result = await _repository.DeleteAsync(id);
+                return result ? ServiceResult.Success() : ServiceResult.Failure("删除失败");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "删除处方失败");
+                return ServiceResult.Failure("删除处方失败");
+            }
         }
     }
 }

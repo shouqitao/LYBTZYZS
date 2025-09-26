@@ -18,7 +18,7 @@ namespace LYBT.Module.Users.Tests.Builders
             _user = new User
             {
                 Id = Guid.NewGuid(),
-                Username = $"testuser_{Guid.NewGuid():N}".Substring(0, 20),
+                UsernName = $"testuser_{Guid.NewGuid():N}".Substring(0, 20),
                 PasswordHash = PasswordHelper.Hash("TestPass@word1!"),
                 RealName = "测试用户",
                 Role = UserRole.Doctor,
@@ -41,7 +41,7 @@ namespace LYBT.Module.Users.Tests.Builders
 
         public UserBuilder WithUsername(string username)
         {
-            _user.Username = username;
+            _user.UsernName = username;
             return this;
         }
 

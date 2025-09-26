@@ -28,11 +28,7 @@ namespace LYBT.Module.Formula
             // 统一服务 - 合并查询和业务逻辑
             services.AddScoped<IFormulaService, FormulaService>();
 
-            // AutoMapper配置
-            services.AddAutoMapper(cfg =>
-            {
-                cfg.AddProfile<FormulaMappingProfile>();
-            });
+            // AutoMapper配置已在UnifiedServiceRegistration中集中注册
 
             return services;
         }

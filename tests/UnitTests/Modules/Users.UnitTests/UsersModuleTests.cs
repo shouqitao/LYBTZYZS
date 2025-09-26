@@ -1,4 +1,5 @@
 using FluentAssertions;
+using AutoMapper;
 using LYBT.Infrastructure.Configuration.Options;
 using LYBT.Module.Users;
 using LYBT.Module.Users.Interfaces;

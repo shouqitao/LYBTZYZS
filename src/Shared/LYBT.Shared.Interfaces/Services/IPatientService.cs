@@ -3,43 +3,20 @@ using LYBT.Shared.Models.Contracts.Patients;
 
 namespace LYBT.Shared.Interfaces.Services
 {
-
     /// <summary>
-    /// 患者服务接口 - UltraThink双层架构精简标准（小诊所适用）
+    /// 患者服务接口 - 简化版，只包含基础CRUD
     /// </summary>
     public interface IPatientService
     {
-
-        #region 查询操作 - QueryService专业负责
-
         /// <summary>
         /// 分页查询患者
         /// </summary>
-        Task<ServiceResult<PagedResult<PatientDto>>> GetPagedAsync(PatientSearchDto query);
+        Task<ServiceResult<PagedResult<PatientDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null);
 
         /// <summary>
         /// 根据ID获取患者详情
         /// </summary>
         Task<ServiceResult<PatientDto>> GetByIdAsync(Guid id);
-
-        /// <summary>
-        /// 根据身份证号查找患者
-        /// </summary>
-        Task<ServiceResult<PatientDto>> GetByIdCardAsync(string idCard);
-
-        /// <summary>
-        /// 根据电话号码查找患者
-        /// </summary>
-        Task<ServiceResult<List<PatientDto>>> GetByPhoneAsync(string phone);
-
-        /// <summary>
-        /// 搜索患者（按姓名或身份证）
-        /// </summary>
-        Task<ServiceResult<List<PatientDto>>> SearchAsync(string keyword);
-
-        #endregion 查询操作 - QueryService专业负责
-
-        #region 业务操作 - BusinessService专业负责
 
         /// <summary>
         /// 创建新患者
@@ -54,32 +31,6 @@ namespace LYBT.Shared.Interfaces.Services
         /// <summary>
         /// 删除患者（软删除）
         /// </summary>
-        Task<ServiceResult<bool>> DeleteAsync(Guid id);
-
-        /// <summary>
-        /// 启用患者
-        /// </summary>
-        Task<ServiceResult> EnableAsync(Guid id);
-
-        /// <summary>
-        /// 禁用患者
-        /// </summary>
-        Task<ServiceResult> DisableAsync(Guid id);
-
-        #endregion 业务操作 - BusinessService专业负责
-
-        #region 批量操作 - 必需功能（用户明确需求）
-
-        /// <summary>
-        /// 批量导入患者
-        /// </summary>
-        Task<ServiceResult<object>> ImportPatientsAsync(List<PatientCreateDto> patients);
-
-        /// <summary>
-        /// 导出患者数据
-        /// </summary>
-        Task<ServiceResult<byte[]>> ExportPatientsAsync(PagedQueryBaseDto query);
-
-        #endregion 批量操作 - 必需功能（用户明确需求）
+        Task<ServiceResult> DeleteAsync(Guid id);
     }
 }

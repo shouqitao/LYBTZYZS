@@ -5,8 +5,13 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using LYBT.Entities.Common;
 using LYBT.Infrastructure.Data;
+using LYBT.Infrastructure.Interfaces;
+using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace LYBT.Infrastructure.Repositories
 {
@@ -14,7 +19,8 @@ namespace LYBT.Infrastructure.Repositories
     /// 仓储基类
     /// 提供通用的CRUD操作和查询功能
     /// </summary>
-    public abstract class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : BaseEntity
+    public abstract class BaseRepository<TEntity> : IBaseRepository<TEntity>, IRepository<TEntity>
+        where TEntity : BaseEntity
     {
         protected readonly AppDbContext _context;
         protected readonly DbSet<TEntity> _dbSet;
@@ -27,6 +33,10 @@ namespace LYBT.Infrastructure.Repositories
             _dbSet = _context.Set<TEntity>();
         }
 
+        protected BaseRepository(AppDbContext context) : this(context, NullLogger.Instance)
+        {
+        }
+
         #region 查询操作
 
         /// <summary>
@@ -37,6 +47,12 @@ namespace LYBT.Infrastructure.Repositories
             return await _dbSet
                 .Where(e => e.Id == id && !e.IsDeleted)
                 .FirstOrDefaultAsync();
+        }
+
+        // IRepository实现
+        async Task<TEntity?> IRepository<TEntity>.GetByIdAsync(Guid id)
+        {
+            return await GetByIdAsync(id);
         }
 
         /// <summary>
@@ -65,6 +81,12 @@ namespace LYBT.Infrastructure.Repositories
                 .ToListAsync();
         }
 
+        // IRepository实现
+        async Task<IEnumerable<TEntity>> IRepository<TEntity>.GetAllAsync()
+        {
+            return await GetAllAsync();
+        }
+
         /// <summary>
         /// 根据条件查询
         /// </summary>
@@ -75,6 +97,12 @@ namespace LYBT.Infrastructure.Repositories
                 .Where(predicate)
                 .OrderByDescending(e => e.CreatedAt)
                 .ToListAsync();
+        }
+
+        // IRepository实现
+        async Task<IEnumerable<TEntity>> IRepository<TEntity>.FindAsync(Expression<Func<TEntity, bool>> predicate)
+        {
+            return await FindAsync(predicate);
         }
 
         /// <summary>
@@ -113,6 +141,45 @@ namespace LYBT.Infrastructure.Repositories
             return (items, totalCount);
         }
 
+        // IRepository GetPagedAsync实现
+        async Task<PagedResult<TEntity>> IRepository<TEntity>.GetPagedAsync(int pageNumber, int pageSize)
+        {
+            var (items, totalCount) = await GetPagedAsync(pageNumber, pageSize);
+            return new PagedResult<TEntity>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                CurrentPage = pageNumber,
+                PageSize = pageSize
+            };
+        }
+
+        async Task<PagedResult<TEntity>> IRepository<TEntity>.GetPagedAsync(
+            Expression<Func<TEntity, bool>>? predicate,
+            int pageNumber,
+            int pageSize,
+            Expression<Func<TEntity, object>>? orderBy,
+            bool ascending)
+        {
+            var (items, totalCount) = await GetPagedAsync(pageNumber, pageSize, predicate, orderBy, !ascending);
+            return new PagedResult<TEntity>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                CurrentPage = pageNumber,
+                PageSize = pageSize
+            };
+        }
+
+        // IRepository GetSingleAsync实现
+        async Task<TEntity?> IRepository<TEntity>.GetSingleAsync(Expression<Func<TEntity, bool>> predicate)
+        {
+            return await _dbSet
+                .Where(e => !e.IsDeleted)
+                .Where(predicate)
+                .FirstOrDefaultAsync();
+        }
+
         /// <summary>
         /// 检查是否存在
         /// </summary>
@@ -121,6 +188,18 @@ namespace LYBT.Infrastructure.Repositories
             return await _dbSet
                 .Where(e => !e.IsDeleted)
                 .AnyAsync(predicate);
+        }
+
+        // IRepository ExistsAsync(Guid)实现
+        async Task<bool> IRepository<TEntity>.ExistsAsync(Guid id)
+        {
+            return await ExistsAsync(e => e.Id == id);
+        }
+
+        // IRepository ExistsAsync(Expression)实现
+        async Task<bool> IRepository<TEntity>.ExistsAsync(Expression<Func<TEntity, bool>> predicate)
+        {
+            return await ExistsAsync(predicate);
         }
 
         /// <summary>
@@ -136,6 +215,17 @@ namespace LYBT.Infrastructure.Repositories
             }
 
             return await query.CountAsync();
+        }
+
+        // IRepository CountAsync实现
+        async Task<long> IRepository<TEntity>.CountAsync()
+        {
+            return await CountAsync();
+        }
+
+        async Task<long> IRepository<TEntity>.CountAsync(Expression<Func<TEntity, bool>> predicate)
+        {
+            return await CountAsync(predicate);
         }
 
         #endregion
@@ -156,7 +246,7 @@ namespace LYBT.Infrastructure.Repositories
             await _dbSet.AddAsync(entity);
             await SaveChangesAsync();
 
-            _logger.LogDebug("实体已添加 - 类型: {EntityType}, ID: {Id}", typeof(TEntity).Name, entity.Id);
+            _logger?.LogDebug("实体已添加 - 类型: {EntityType}, ID: {Id}", typeof(TEntity).Name, entity.Id);
 
             return entity;
         }
@@ -180,10 +270,16 @@ namespace LYBT.Infrastructure.Repositories
             await _dbSet.AddRangeAsync(entityList);
             await SaveChangesAsync();
 
-            _logger.LogDebug("批量添加实体 - 类型: {EntityType}, 数量: {Count}",
+            _logger?.LogDebug("批量添加实体 - 类型: {EntityType}, 数量: {Count}",
                 typeof(TEntity).Name, entityList.Count);
 
             return entityList;
+        }
+
+        // IRepository AddRangeAsync实现
+        async Task<IEnumerable<TEntity>> IRepository<TEntity>.AddRangeAsync(IEnumerable<TEntity> entities)
+        {
+            return await AddRangeAsync(entities);
         }
 
         #endregion
@@ -203,7 +299,7 @@ namespace LYBT.Infrastructure.Repositories
             _dbSet.Update(entity);
             await SaveChangesAsync();
 
-            _logger.LogDebug("实体已更新 - 类型: {EntityType}, ID: {Id}", typeof(TEntity).Name, entity.Id);
+            _logger?.LogDebug("实体已更新 - 类型: {EntityType}, ID: {Id}", typeof(TEntity).Name, entity.Id);
 
             return entity;
         }
@@ -226,7 +322,7 @@ namespace LYBT.Infrastructure.Repositories
             _dbSet.UpdateRange(entityList);
             await SaveChangesAsync();
 
-            _logger.LogDebug("批量更新实体 - 类型: {EntityType}, 数量: {Count}",
+            _logger?.LogDebug("批量更新实体 - 类型: {EntityType}, 数量: {Count}",
                 typeof(TEntity).Name, entityList.Count);
         }
 
@@ -240,30 +336,52 @@ namespace LYBT.Infrastructure.Repositories
         public virtual async Task<bool> DeleteAsync(Guid id)
         {
             var entity = await GetByIdAsync(id);
-
             if (entity == null)
             {
-                _logger.LogWarning("删除失败，实体不存在 - 类型: {EntityType}, ID: {Id}",
-                    typeof(TEntity).Name, id);
+                _logger?.LogWarning("实体不存在，无法删除 - 类型: {EntityType}, ID: {Id}", typeof(TEntity).Name, id);
                 return false;
             }
 
             entity.IsDeleted = true;
             entity.UpdatedAt = DateTime.Now;
 
-            await UpdateAsync(entity);
+            _dbSet.Update(entity);
+            await SaveChangesAsync();
 
-            _logger.LogDebug("实体已软删除 - 类型: {EntityType}, ID: {Id}", typeof(TEntity).Name, id);
-
+            _logger?.LogDebug("实体已软删除 - 类型: {EntityType}, ID: {Id}", typeof(TEntity).Name, id);
             return true;
         }
 
+        // IRepository DeleteAsync(TEntity)实现
+        async Task<bool> IRepository<TEntity>.DeleteAsync(TEntity entity)
+        {
+            if (entity == null)
+                throw new ArgumentNullException(nameof(entity));
+
+            return await DeleteAsync(entity.Id);
+        }
+
+        // IRepository DeleteAsync(Guid)实现
+        async Task<bool> IRepository<TEntity>.DeleteAsync(Guid id)
+        {
+            return await DeleteAsync(id);
+        }
+
         /// <summary>
-        /// 批量软删除实体
+        /// 批量软删除
         /// </summary>
         public virtual async Task<int> DeleteRangeAsync(Expression<Func<TEntity, bool>> predicate)
         {
-            var entities = await FindAsync(predicate);
+            var entities = await _dbSet
+                .Where(e => !e.IsDeleted)
+                .Where(predicate)
+                .ToListAsync();
+
+            if (!entities.Any())
+            {
+                _logger?.LogWarning("没有找到符合条件的实体进行删除 - 类型: {EntityType}", typeof(TEntity).Name);
+                return 0;
+            }
 
             foreach (var entity in entities)
             {
@@ -271,9 +389,55 @@ namespace LYBT.Infrastructure.Repositories
                 entity.UpdatedAt = DateTime.Now;
             }
 
-            await UpdateRangeAsync(entities);
+            _dbSet.UpdateRange(entities);
+            await SaveChangesAsync();
 
-            _logger.LogDebug("批量软删除实体 - 类型: {EntityType}, 数量: {Count}",
+            _logger?.LogDebug("批量软删除实体 - 类型: {EntityType}, 数量: {Count}",
+                typeof(TEntity).Name, entities.Count);
+
+            return entities.Count;
+        }
+
+        // IRepository DeleteRangeAsync(IEnumerable<TEntity>)实现
+        async Task<int> IRepository<TEntity>.DeleteRangeAsync(IEnumerable<TEntity> entities)
+        {
+            if (entities == null)
+                throw new ArgumentNullException(nameof(entities));
+
+            var entityList = entities.ToList();
+            foreach (var entity in entityList)
+            {
+                entity.IsDeleted = true;
+                entity.UpdatedAt = DateTime.Now;
+            }
+
+            _dbSet.UpdateRange(entityList);
+            await SaveChangesAsync();
+
+            _logger?.LogDebug("批量软删除实体 - 类型: {EntityType}, 数量: {Count}",
+                typeof(TEntity).Name, entityList.Count);
+
+            return entityList.Count;
+        }
+
+        // IRepository DeleteRangeAsync(IEnumerable<Guid>)实现
+        async Task<int> IRepository<TEntity>.DeleteRangeAsync(IEnumerable<Guid> ids)
+        {
+            var idList = ids.ToList();
+            var entities = await _dbSet
+                .Where(e => !e.IsDeleted && idList.Contains(e.Id))
+                .ToListAsync();
+
+            foreach (var entity in entities)
+            {
+                entity.IsDeleted = true;
+                entity.UpdatedAt = DateTime.Now;
+            }
+
+            _dbSet.UpdateRange(entities);
+            await SaveChangesAsync();
+
+            _logger?.LogDebug("批量软删除实体 - 类型: {EntityType}, 数量: {Count}",
                 typeof(TEntity).Name, entities.Count);
 
             return entities.Count;
@@ -285,19 +449,16 @@ namespace LYBT.Infrastructure.Repositories
         public virtual async Task<bool> HardDeleteAsync(Guid id)
         {
             var entity = await _dbSet.FindAsync(id);
-
             if (entity == null)
             {
-                _logger.LogWarning("物理删除失败，实体不存在 - 类型: {EntityType}, ID: {Id}",
-                    typeof(TEntity).Name, id);
+                _logger?.LogWarning("实体不存在，无法物理删除 - 类型: {EntityType}, ID: {Id}", typeof(TEntity).Name, id);
                 return false;
             }
 
             _dbSet.Remove(entity);
             await SaveChangesAsync();
 
-            _logger.LogWarning("实体已物理删除 - 类型: {EntityType}, ID: {Id}", typeof(TEntity).Name, id);
-
+            _logger?.LogDebug("实体已物理删除 - 类型: {EntityType}, ID: {Id}", typeof(TEntity).Name, id);
             return true;
         }
 
@@ -331,12 +492,43 @@ namespace LYBT.Infrastructure.Repositories
 
         #endregion
 
-        #region 事务操作
+        #region 批量操作
+
+        /// <summary>
+        /// 批量软删除
+        /// </summary>
+        public virtual async Task<int> BulkDeleteAsync(List<Guid> ids)
+        {
+            if (ids == null || !ids.Any())
+                throw new ArgumentException("ID列表不能为空", nameof(ids));
+
+            var entities = await _dbSet
+                .Where(e => ids.Contains(e.Id) && !e.IsDeleted)
+                .ToListAsync();
+
+            foreach (var entity in entities)
+            {
+                entity.IsDeleted = true;
+                entity.UpdatedAt = DateTime.Now;
+            }
+
+            _dbSet.UpdateRange(entities);
+            await SaveChangesAsync();
+
+            _logger?.LogDebug("批量软删除实体 - 类型: {EntityType}, 数量: {Count}",
+                typeof(TEntity).Name, entities.Count);
+
+            return entities.Count;
+        }
+
+        #endregion
+
+        #region 事务支持
 
         /// <summary>
         /// 开始事务
         /// </summary>
-        public virtual async Task<Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction> BeginTransactionAsync()
+        public virtual async Task<IDbContextTransaction> BeginTransactionAsync()
         {
             return await _context.Database.BeginTransactionAsync();
         }
@@ -344,16 +536,22 @@ namespace LYBT.Infrastructure.Repositories
         /// <summary>
         /// 提交事务
         /// </summary>
-        public virtual async Task CommitTransactionAsync(Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction transaction)
+        public virtual async Task CommitTransactionAsync(IDbContextTransaction transaction)
         {
+            if (transaction == null)
+                throw new ArgumentNullException(nameof(transaction));
+
             await transaction.CommitAsync();
         }
 
         /// <summary>
         /// 回滚事务
         /// </summary>
-        public virtual async Task RollbackTransactionAsync(Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction transaction)
+        public virtual async Task RollbackTransactionAsync(IDbContextTransaction transaction)
         {
+            if (transaction == null)
+                throw new ArgumentNullException(nameof(transaction));
+
             await transaction.RollbackAsync();
         }
 
@@ -364,7 +562,7 @@ namespace LYBT.Infrastructure.Repositories
         /// <summary>
         /// 保存更改
         /// </summary>
-        protected virtual async Task<int> SaveChangesAsync()
+        public virtual async Task<int> SaveChangesAsync()
         {
             try
             {
@@ -372,12 +570,12 @@ namespace LYBT.Infrastructure.Repositories
             }
             catch (DbUpdateConcurrencyException ex)
             {
-                _logger.LogError(ex, "并发冲突 - 类型: {EntityType}", typeof(TEntity).Name);
+                _logger?.LogError(ex, "并发冲突 - 类型: {EntityType}", typeof(TEntity).Name);
                 throw new InvalidOperationException("数据已被其他用户修改，请刷新后重试", ex);
             }
             catch (DbUpdateException ex)
             {
-                _logger.LogError(ex, "数据库更新失败 - 类型: {EntityType}", typeof(TEntity).Name);
+                _logger?.LogError(ex, "数据库更新失败 - 类型: {EntityType}", typeof(TEntity).Name);
                 throw;
             }
         }

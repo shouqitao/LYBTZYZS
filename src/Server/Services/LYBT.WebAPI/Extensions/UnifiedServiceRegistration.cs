@@ -2,15 +2,21 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json.Serialization;
 
-using LYBT.Infrastructure.Caching.Adapters;
-using LYBT.Infrastructure.Caching.Interfaces;
-using LYBT.Infrastructure.Configuration.Options;
+using LYBT.Core.Infrastructure.Caching.Adapters;
+using LYBT.Core.Infrastructure.Caching.Interfaces;
+using LYBT.Core.Infrastructure.Configuration.Options;
 using LYBT.WebAPI.Services;
-using LYBT.Infrastructure.Configuration.Services;
-using LYBT.Infrastructure.Configuration.Extensions;
-using LYBT.Infrastructure.Data;
+using LYBT.Core.Infrastructure.Configuration.Services;
+using LYBT.Core.Infrastructure.Configuration.Extensions;
+using LYBT.Core.Infrastructure.Data;
 using LYBT.Module.Auth;
 using LYBT.Module.Users;
+using LYBT.Module.Consultation;
+using LYBT.Module.Herbs;
+using LYBT.Module.Prescriptions;
+using LYBT.Module.Patients;
+using LYBT.Module.Formula;
+using LYBT.Module.MedicalCase;
 using LYBT.WebAPI.Configuration;
 using LYBT.WebAPI.Extensions.ServiceCollection;
 using LYBT.WebAPI.Middleware;
@@ -21,6 +27,8 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.IdentityModel.Tokens;
+using AutoMapper;
+
 
 namespace LYBT.WebAPI.Extensions;
 
@@ -45,7 +53,7 @@ public static class UnifiedServiceRegistration
         services.RegisterAuthenticationServices(configuration);
 
         // 3）业务模块
-        services.RegisterBusinessModules();
+        services.RegisterBusinessModules(configuration);
 
         // 4）API 文档
         services.RegisterApiServices();
@@ -75,12 +83,39 @@ public static class UnifiedServiceRegistration
     /// <summary>
     /// 注册基础设施服务。
     /// </summary>
+    /// <summary>
+    /// 注册基础设施服务。
+    /// </summary>
     private static IServiceCollection RegisterInfrastructureServices(
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        // 数据库配置
-        var connectionString = configuration.GetConnectionString("DefaultConnection") ??
+        // =========== UltraThink Phase 2：统一配置管理 ===========
+        // 注册新的统一配置系统，同时保持向后兼容
+        services.AddLybtConfiguration(configuration);
+
+        // 验证配置（生产环境强制验证）
+        var validationResult = configuration.ValidateLybtConfiguration();
+        if (!validationResult.IsValid)
+        {
+            var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production";
+            var errors = string.Join(Environment.NewLine, validationResult.Errors);
+            
+            if (environment.Equals("Production", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException($"生产环境配置验证失败：{Environment.NewLine}{errors}");
+            }
+            else
+            {
+                // 开发环境记录警告但继续运行
+                Console.WriteLine($"配置验证警告：{Environment.NewLine}{errors}");
+            }
+        }
+
+        // 数据库配置 - 从统一配置读取
+        var lybtOptions = configuration.GetLybtOptions();
+        var connectionString = lybtOptions.Infrastructure.Database.ConnectionString ??
+                              configuration.GetConnectionString("DefaultConnection") ??
                               Environment.GetEnvironmentVariable("CONNECTION_STRING") ??
                               string.Empty;
 
@@ -88,34 +123,30 @@ public static class UnifiedServiceRegistration
         {
             services.AddDbContext<AppDbContext>((serviceProvider, options) =>
             {
-                options.UseSqlServer(connectionString, sqlOptions =>
+                var sqlOptions = options.UseSqlServer(connectionString, sqlOptions =>
                 {
                     sqlOptions.MigrationsAssembly("LYBT.Infrastructure");
-                    sqlOptions.EnableRetryOnFailure(3, TimeSpan.FromSeconds(30), null);
+                    sqlOptions.EnableRetryOnFailure(
+                        lybtOptions.Infrastructure.Database.RetryPolicy.MaxRetryCount,
+                        TimeSpan.FromMilliseconds(lybtOptions.Infrastructure.Database.RetryPolicy.MaxDelayMs),
+                        null);
                 });
 
-                var dbOptions = configuration.GetSection("DatabaseOptions").Get<DatabaseOptions>();
-                options.EnableSensitiveDataLogging(dbOptions?.EnableSensitiveDataLogging ?? false);
-                options.EnableDetailedErrors(dbOptions?.EnableDetailedErrors ?? false);
+                // 使用统一配置的监控设置
+                options.EnableSensitiveDataLogging(lybtOptions.Infrastructure.Database.Monitoring.LogAllQueries);
+                options.EnableDetailedErrors(true); // 开发环境启用详细错误
                 options.EnableServiceProviderCaching();
 
-                if (dbOptions?.CommandTimeout > 0)
+                // 设置命令超时
+                if (lybtOptions.Infrastructure.Database.ConnectionPool.CommandTimeoutSeconds > 0)
                 {
-                    options.UseSqlServer(opt => opt.CommandTimeout(dbOptions.CommandTimeout));
+                    options.UseSqlServer(opt => opt.CommandTimeout(lybtOptions.Infrastructure.Database.ConnectionPool.CommandTimeoutSeconds));
                 }
             });
         }
 
-        // 缓存配置选项
-        services.AddOptions<CacheOptions>()
-            .Bind(configuration.GetSection(CacheOptions.SectionName))
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
-
-        // 内存缓存（使用配置驱动）
-        var cacheOptions = configuration.GetSection(CacheOptions.SectionName).Get<CacheOptions>() ?? new CacheOptions();
-
-        if (!cacheOptions.Enabled)
+        // 缓存配置 - 使用统一配置
+        if (lybtOptions.Infrastructure.Cache.MemoryCache.SizeLimit <= 0)
         {
             services.AddSingleton<ICacheService>(new NullCacheService());
             services.AddMemoryCache(); // 添加基础的MemoryCache，即使禁用也需要
@@ -124,75 +155,38 @@ public static class UnifiedServiceRegistration
         {
             services.AddMemoryCache(options =>
             {
-                // 从配置读取参数，未配置时使用默认值
-                if (cacheOptions.Memory.SizeLimit.HasValue)
-                {
-                    options.SizeLimit = cacheOptions.Memory.SizeLimit.Value;
-                }
-                else
-                {
-                    options.SizeLimit = 10000; // 向后兼容默认值
-                    // 注意：未配置缓存大小限制时使用默认值10000
-                    // 可以在应用启动后通过日志查看具体配置
-                }
-
-                options.CompactionPercentage = cacheOptions.Memory.CompactionPercentage;
-                options.ExpirationScanFrequency = TimeSpan.FromSeconds(cacheOptions.Memory.ExpirationScanFrequencySeconds);
+                options.SizeLimit = lybtOptions.Infrastructure.Cache.MemoryCache.SizeLimit;
+                options.CompactionPercentage = lybtOptions.Infrastructure.Cache.MemoryCache.CompactionPercentage;
+                options.ExpirationScanFrequency = TimeSpan.FromSeconds(lybtOptions.Infrastructure.Cache.MemoryCache.ExpirationScanFrequencySeconds);
             });
 
             services.AddSingleton<ICacheService, MemoryCacheAdapter>();
 
-        // 缓存诊断服务（Phase 3缓存治理）
-        // TODO: 实现 CacheDiagnosticsService 后启用
-        // services.AddSingleton<ICacheDiagnosticsService, CacheDiagnosticsService>();
-        // services.AddHostedService<CacheHealthBackgroundService>();
+            // 缓存诊断服务（Phase 3缓存治理）
+            // TODO: 实现 CacheDiagnosticsService 后启用
+            // services.AddSingleton<ICacheDiagnosticsService, CacheDiagnosticsService>();
+            // services.AddHostedService<CacheHealthBackgroundService>();
         }
 
-        // 选项绑定（IOptions）
-        services.AddOptions<LYBT.Infrastructure.Configuration.Options.JwtOptions>()
-            .Bind(configuration.GetSection(LYBT.Infrastructure.Configuration.Options.JwtOptions.SectionName))
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
+        // =========== 保持向后兼容：注册传统配置选项 ===========
+        // 注意：这些配置选项已通过 AddLybtConfiguration 自动映射和注册
+        // 这里仅显式验证关键配置选项以确保启动时验证
 
-        services.AddOptions<AuthOptions>()
-            .Bind(configuration.GetSection(AuthOptions.SectionName))
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
+        // 验证 JWT 配置
+        if (string.IsNullOrEmpty(lybtOptions.Authentication.Jwt.SecretKey))
+        {
+            var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
+            if (environment.Equals("Production", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException("生产环境必须配置 JWT 密钥。");
+            }
+        }
 
-        services.AddOptions<DefaultPasswordOptions>()
-            .Bind(configuration.GetSection(DefaultPasswordOptions.SectionName))
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
-
-        services.AddOptions<SysAdminOptions>()
-            .Bind(configuration.GetSection(SysAdminOptions.SectionName))
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
-
-        services.AddOptions<LYBT.Infrastructure.Configuration.Options.UserOptions>()
-            .Bind(configuration.GetSection("UserOptions"))
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
-
-        services.AddOptions<SecurityOptions>()
-            .Bind(configuration.GetSection(SecurityOptions.SectionName))
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
-
-        services.AddOptions<DatabaseOptions>()
-            .Bind(configuration.GetSection(DatabaseOptions.SectionName))
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
-
-        services.AddOptions<WebApiConfigurationOptions>()
-            .Bind(configuration.GetSection(WebApiConfigurationOptions.SectionName))
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
-
-        services.AddOptions<RateLimitingOptions>()
-            .Bind(configuration.GetSection(RateLimitingOptions.SectionName))
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
+        // 验证数据库连接
+        if (string.IsNullOrEmpty(connectionString))
+        {
+            throw new InvalidOperationException("必须配置数据库连接字符串。");
+        }
 
         // 常用服务
         services.AddHttpContextAccessor();
@@ -205,22 +199,28 @@ public static class UnifiedServiceRegistration
     /// <summary>
     /// 注册认证与安全。
     /// </summary>
+    /// <summary>
+    /// 注册认证与安全。
+    /// </summary>
     private static IServiceCollection RegisterAuthenticationServices(
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        // JWT 认证
+        // =========== UltraThink Phase 2：使用统一配置 ===========
+        var lybtOptions = configuration.GetLybtOptions();
+        
+        // JWT 认证 - 从统一配置读取
         try
         {
             var jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET") ??
-                           configuration["JwtOptions:Secret"];
+                           lybtOptions.Authentication.Jwt.SecretKey;
 
             if (string.IsNullOrEmpty(jwtSecret))
             {
                 var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
                 if (environment.Equals("Production", StringComparison.OrdinalIgnoreCase))
                 {
-                    throw new InvalidOperationException("生产环境必须配置 JWT 密钥（JWT_SECRET 或配置项 JwtOptions:Secret）。");
+                    throw new InvalidOperationException("生产环境必须配置 JWT 密钥（JWT_SECRET 或 Lybt:Authentication:Jwt:SecretKey）。");
                 }
 
                 jwtSecret = "DefaultDevelopmentSecretKeyForJWTAuthentication_ShouldBeReplacedInProduction";
@@ -228,10 +228,9 @@ public static class UnifiedServiceRegistration
 
             if (!string.IsNullOrEmpty(jwtSecret))
             {
-                var jwtSection = configuration.GetSection("JwtOptions");
-                var issuer = jwtSection["Issuer"] ?? "LYBT";
-                var audience = jwtSection["Audience"] ?? "LYBT-Client";
-                var clockSkew = int.TryParse(jwtSection["ClockSkewSeconds"], out var skew) ? skew : 300;
+                var issuer = lybtOptions.Authentication.Jwt.Issuer;
+                var audience = lybtOptions.Authentication.Jwt.Audience;
+                var clockSkew = 300; // 固定5分钟时钟偏差
 
                 services.AddAuthentication(options =>
                 {
@@ -295,12 +294,23 @@ public static class UnifiedServiceRegistration
     /// <summary>
     /// 注册业务模块。
     /// </summary>
-    private static IServiceCollection RegisterBusinessModules(this IServiceCollection services)
+    private static IServiceCollection RegisterBusinessModules(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddAllModules();
+        // 注册各业务模块
+        services.AddAuthModule();
+        services.AddUsersModuleServices();
+        services.AddConsultationModule();
+        services.AddHerbsModule();
+        services.AddPrescriptionsModule();
+        services.AddPatientsModuleServices();
+        services.AddFormulaModule();
+        services.AddMedicalCaseModule();
         return services;
     }
 
+    /// <summary>
+    /// 注册 API 文档（Swagger）与统一异常处理。
+    /// </summary>
     /// <summary>
     /// 注册 API 文档（Swagger）与统一异常处理。
     /// </summary>
@@ -326,24 +336,31 @@ public static class UnifiedServiceRegistration
         services.AddProblemDetails();
         services.AddExceptionHandler<GlobalExceptionHandler>();
 
-        // Swagger（含 JWT）
+        // Swagger（含 JWT）- 从服务提供者获取配置
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen(c =>
         {
+            // 由于这里无法直接访问配置，使用服务提供者在运行时获取配置
+            var serviceProvider = services.BuildServiceProvider();
+            var configuration = serviceProvider.GetRequiredService<IConfiguration>();
+            var lybtOptions = configuration.GetLybtOptions();
+            var swaggerConfig = lybtOptions.Application.WebApi.Swagger;
+            
             c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
             {
-                Title = "凌隐宝堂中医诊所 API",
+                Title = swaggerConfig.Title,
                 Version = "v1",
-                Description = "凌隐宝堂中医诊所 RESTful API 接口文档",
+                Description = swaggerConfig.Description,
                 Contact = new Microsoft.OpenApi.Models.OpenApiContact
                 {
-                    Name = "技术支持",
-                    Email = "support@lybt.com"
+                    Name = swaggerConfig.ContactName,
+                    Email = swaggerConfig.ContactEmail,
+                    Url = !string.IsNullOrEmpty(swaggerConfig.ContactUrl) ? new Uri(swaggerConfig.ContactUrl) : null
                 },
                 License = new Microsoft.OpenApi.Models.OpenApiLicense
                 {
-                    Name = "专有许可",
-                    Url = new Uri("https://lybt.com/license")
+                    Name = swaggerConfig.LicenseName,
+                    Url = !string.IsNullOrEmpty(swaggerConfig.LicenseUrl) ? new Uri(swaggerConfig.LicenseUrl) : null
                 }
             });
 
@@ -369,12 +386,15 @@ public static class UnifiedServiceRegistration
                 }
             });
 
-            // 可选：包含 XML 注释
-            var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
-            var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-            if (File.Exists(xmlPath))
+            // XML 注释 - 使用统一配置控制
+            if (swaggerConfig.EnableXmlComments)
             {
-                c.IncludeXmlComments(xmlPath);
+                var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+                if (File.Exists(xmlPath))
+                {
+                    c.IncludeXmlComments(xmlPath);
+                }
             }
 
             // 避免 Schema ID 冲突
@@ -424,22 +444,41 @@ public static class UnifiedServiceRegistration
     /// <summary>
     /// 注册控制器与 JSON 选项。
     /// </summary>
+    /// <summary>
+    /// 注册控制器与 JSON 选项。
+    /// </summary>
     private static IServiceCollection RegisterControllerServices(this IServiceCollection services, IConfiguration configuration)
     {
+        // =========== UltraThink Phase 2：使用统一配置 ===========
+        var lybtOptions = configuration.GetLybtOptions();
+        var jsonConfig = lybtOptions.Application.WebApi.Json;
+
         // 确保 UTF-8 编码可用
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
         services.AddControllers().AddJsonOptions(options =>
         {
-            options.JsonSerializerOptions.PropertyNamingPolicy = null; // 保持 PascalCase（与 DTO 匹配）
+            // 使用统一配置的属性命名策略
+            options.JsonSerializerOptions.PropertyNamingPolicy = jsonConfig.PropertyNamingPolicy switch
+            {
+                "CamelCase" => System.Text.Json.JsonNamingPolicy.CamelCase,
+                "SnakeCaseLower" => System.Text.Json.JsonNamingPolicy.SnakeCaseLower,
+                "SnakeCaseUpper" => System.Text.Json.JsonNamingPolicy.SnakeCaseUpper,
+                "KebabCaseLower" => System.Text.Json.JsonNamingPolicy.KebabCaseLower,
+                "KebabCaseUpper" => System.Text.Json.JsonNamingPolicy.KebabCaseUpper,
+                _ => null // PascalCase (默认)
+            };
+            
             options.JsonSerializerOptions.PropertyNameCaseInsensitive = true; // 忽略大小写
             options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
             options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
             options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
             options.JsonSerializerOptions.WriteIndented = false;
-            // JSON 编码：默认安全，可通过配置开关放宽
-            var unsafeEscaping = configuration.GetValue<bool>("WebApiOptions:Json:UnsafeRelaxedEscaping", false);
-            options.JsonSerializerOptions.Encoder = unsafeEscaping
+            options.JsonSerializerOptions.IgnoreReadOnlyProperties = jsonConfig.IgnoreReadOnlyProperties;
+            options.JsonSerializerOptions.AllowTrailingCommas = jsonConfig.AllowTrailingCommas;
+            
+            // JSON 编码：使用统一配置的设置
+            options.JsonSerializerOptions.Encoder = jsonConfig.UnsafeRelaxedEscaping
                 ? JavaScriptEncoder.UnsafeRelaxedJsonEscaping
                 : JavaScriptEncoder.Default;
         });
@@ -451,65 +490,20 @@ public static class UnifiedServiceRegistration
     /// <summary>
     /// 配置速率限制（全局与登录端点）。
     /// </summary>
+    /// <summary>
+    /// 配置速率限制（全局与登录端点）。
+    /// </summary>
     private static IServiceCollection ConfigureRateLimiting(
         this IServiceCollection services,
         IConfiguration configuration,
         IWebHostEnvironment environment)
     {
-        // 优先从 SecurityOptions.RateLimit 读取配置
-        var securityOptions = new SecurityOptions();
-        configuration.GetSection(SecurityOptions.SectionName).Bind(securityOptions);
-
-        // 绑定速率限制配置（优先级：SecurityOptions.RateLimit > RateLimiting section > 默认值）
-        var rateLimitingOptions = new RateLimitingOptions();
-
-        // 先尝试从 RateLimiting 节读取
-        if (configuration.GetSection(RateLimitingOptions.SectionName).Exists())
-        {
-            configuration.GetSection(RateLimitingOptions.SectionName).Bind(rateLimitingOptions);
-        }
-        // 如果SecurityOptions.RateLimit存在，则使用它（覆盖RateLimiting节）
-        else if (securityOptions.RateLimit != null)
-        {
-            // 映射 SecurityOptions.RateLimit 到 RateLimitingOptions
-            rateLimitingOptions.Enabled = securityOptions.RateLimit.Enabled;
-
-            // 映射 General 限流规则
-            rateLimitingOptions.Global.PermitLimit = securityOptions.RateLimit.General.RequestsPerMinute;
-            rateLimitingOptions.Global.WindowSeconds = 60; // 固定为每分钟
-            rateLimitingOptions.Global.QueueLimit = securityOptions.RateLimit.General.RequestsPerMinute / 2;
-
-            // 映射 Authentication 限流规则
-            rateLimitingOptions.Login.PermitLimit = securityOptions.RateLimit.Authentication.RequestsPerMinute;
-            rateLimitingOptions.Login.WindowSeconds = 60;
-            rateLimitingOptions.Login.QueueLimit = securityOptions.RateLimit.Authentication.RequestsPerMinute;
-
-            // 映射 API 限流规则
-            rateLimitingOptions.Api.UserPermitLimit = securityOptions.RateLimit.General.RequestsPerMinute;
-            rateLimitingOptions.Api.AdminPermitLimit = securityOptions.RateLimit.ApiKey.RequestsPerMinute;
-            rateLimitingOptions.Api.WindowSeconds = 60;
-            rateLimitingOptions.Api.QueueLimit = securityOptions.RateLimit.General.RequestsPerMinute / 2;
-
-            // 映射白名单IP（如果SecurityOptions中有相关配置）
-            if (securityOptions.Environment?.TrustedProxies != null)
-            {
-                rateLimitingOptions.WhitelistedIPs = securityOptions.Environment.TrustedProxies;
-            }
-        }
-        // 否则使用默认值，生产环境更严格
-        else
-        {
-            if (environment.IsProduction())
-            {
-                rateLimitingOptions.Global.PermitLimit = 60;
-                rateLimitingOptions.Login.PermitLimit = 5;
-                rateLimitingOptions.Api.UserPermitLimit = 60;
-                rateLimitingOptions.Api.AdminPermitLimit = 200;
-            }
-        }
+        // =========== UltraThink Phase 2：使用统一配置 ===========
+        var lybtOptions = configuration.GetLybtOptions();
+        var rateLimitingConfig = lybtOptions.Security.RateLimiting;
 
         // 如果禁用了速率限制，直接返回
-        if (!rateLimitingOptions.Enabled)
+        if (!rateLimitingConfig.Enabled)
         {
             return services;
         }
@@ -518,7 +512,7 @@ public static class UnifiedServiceRegistration
         {
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 
-            // 全局速率限制
+            // 全局速率限制 - 使用统一配置
             options.GlobalLimiter = System.Threading.RateLimiting.PartitionedRateLimiter.Create<HttpContext, string>(context =>
             {
                 var userKey = context.User?.Identity?.IsAuthenticated == true
@@ -529,42 +523,43 @@ public static class UnifiedServiceRegistration
                     partitionKey: userKey,
                     factory: _ => new System.Threading.RateLimiting.FixedWindowRateLimiterOptions
                     {
-                        PermitLimit = rateLimitingOptions.Global.PermitLimit,
-                        Window = TimeSpan.FromSeconds(rateLimitingOptions.Global.WindowSeconds),
-                        QueueProcessingOrder = System.Threading.RateLimiting.QueueProcessingOrder.OldestFirst,
-                        QueueLimit = rateLimitingOptions.Global.QueueLimit
+                        PermitLimit = rateLimitingConfig.GlobalLimit.PermitLimit,
+                        Window = TimeSpan.FromSeconds(rateLimitingConfig.GlobalLimit.WindowSeconds),
+                        QueueProcessingOrder = rateLimitingConfig.GlobalLimit.QueueProcessingOrder == QueueProcessingOrder.OldestFirst 
+                            ? System.Threading.RateLimiting.QueueProcessingOrder.OldestFirst 
+                            : System.Threading.RateLimiting.QueueProcessingOrder.NewestFirst,
+                        QueueLimit = 0 // 不使用队列，直接拒绝
                     });
             });
 
-            // 登录端点速率限制
+            // 登录端点速率限制 - 使用统一配置
             options.AddPolicy("Login", httpContext =>
             {
                 var ip = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown-ip";
 
                 // 检查是否为白名单IP
-                var isWhitelisted = IsWhitelistedIp(ip, rateLimitingOptions.WhitelistedIPs) ||
+                var isWhitelisted = IsWhitelistedIp(ip, lybtOptions.Security.IpSecurity.AllowedIpAddresses) ||
                                    IsPrivateIp(ip);
 
-                var limit = isWhitelisted
-                    ? rateLimitingOptions.Login.InternalPermitLimit
-                    : rateLimitingOptions.Login.PermitLimit;
-
-                var queue = isWhitelisted
-                    ? rateLimitingOptions.Login.InternalQueueLimit
-                    : rateLimitingOptions.Login.QueueLimit;
+                // 如果是白名单IP，使用更宽松的限制
+                var limit = isWhitelisted 
+                    ? rateLimitingConfig.LoginLimit.PermitLimit * 2  // 白名单IP双倍限制
+                    : rateLimitingConfig.LoginLimit.PermitLimit;
 
                 return System.Threading.RateLimiting.RateLimitPartition.GetFixedWindowLimiter(
                     partitionKey: ip,
                     factory: _ => new System.Threading.RateLimiting.FixedWindowRateLimiterOptions
                     {
                         PermitLimit = limit,
-                        Window = TimeSpan.FromSeconds(rateLimitingOptions.Login.WindowSeconds),
-                        QueueProcessingOrder = System.Threading.RateLimiting.QueueProcessingOrder.OldestFirst,
-                        QueueLimit = queue
+                        Window = TimeSpan.FromSeconds(rateLimitingConfig.LoginLimit.WindowSeconds),
+                        QueueProcessingOrder = rateLimitingConfig.LoginLimit.QueueProcessingOrder == QueueProcessingOrder.OldestFirst 
+                            ? System.Threading.RateLimiting.QueueProcessingOrder.OldestFirst 
+                            : System.Threading.RateLimiting.QueueProcessingOrder.NewestFirst,
+                        QueueLimit = 0
                     });
             });
 
-            // API端点速率限制（基于角色）
+            // API端点速率限制 - 使用统一配置
             options.AddPolicy("Api", httpContext =>
             {
                 var user = httpContext.User;
@@ -572,17 +567,19 @@ public static class UnifiedServiceRegistration
                 var userKey = user?.Identity?.Name ?? httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
 
                 var limit = isAdmin
-                    ? rateLimitingOptions.Api.AdminPermitLimit
-                    : rateLimitingOptions.Api.UserPermitLimit;
+                    ? rateLimitingConfig.ApiLimit.PermitLimit * 2  // 管理员双倍限制
+                    : rateLimitingConfig.ApiLimit.PermitLimit;
 
                 return System.Threading.RateLimiting.RateLimitPartition.GetFixedWindowLimiter(
                     partitionKey: userKey,
                     factory: _ => new System.Threading.RateLimiting.FixedWindowRateLimiterOptions
                     {
                         PermitLimit = limit,
-                        Window = TimeSpan.FromSeconds(rateLimitingOptions.Api.WindowSeconds),
-                        QueueProcessingOrder = System.Threading.RateLimiting.QueueProcessingOrder.OldestFirst,
-                        QueueLimit = rateLimitingOptions.Api.QueueLimit
+                        Window = TimeSpan.FromSeconds(rateLimitingConfig.ApiLimit.WindowSeconds),
+                        QueueProcessingOrder = rateLimitingConfig.ApiLimit.QueueProcessingOrder == QueueProcessingOrder.OldestFirst 
+                            ? System.Threading.RateLimiting.QueueProcessingOrder.OldestFirst 
+                            : System.Threading.RateLimiting.QueueProcessingOrder.NewestFirst,
+                        QueueLimit = 0
                     });
             });
         });

@@ -1,8 +1,8 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using LYBT.Infrastructure.Caching.Interfaces;
-using LYBT.Infrastructure.Configuration.Options;
+using LYBT.Core.Infrastructure.Caching.Interfaces;
+using LYBT.Core.Infrastructure.Configuration.Options;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;

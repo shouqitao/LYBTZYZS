@@ -43,7 +43,7 @@ namespace LYBT.Module.Auth.Repositories
 
             var user = await _dbSet
                 .AsNoTracking()
-                .FirstOrDefaultAsync(u => u.Username == userName);
+                .FirstOrDefaultAsync(u => u.UsernName == userName);
 
             // 配置缓存选项，解决SizeLimit配置问题
             var options = new MemoryCacheEntryOptions
@@ -91,12 +91,24 @@ namespace LYBT.Module.Auth.Repositories
         {
             // 使用固定的超级管理员ID，而不是依赖用户名
             var adminSecretId = Guid.Parse("00000000-0000-0000-0000-000000000001");
-            var secret = await _context.AdminSecrets.FirstOrDefaultAsync(s => s.Id == adminSecretId);
-            if (secret != null)
+            
+            if (_context.Database.ProviderName == "Microsoft.EntityFrameworkCore.InMemory")
             {
-                secret.PasswordHash = passwordHash;
-                _context.AdminSecrets.Update(secret);
-                await _context.SaveChangesAsync();
+                // InMemory数据库的特殊处理：使用Find确保实体被追踪
+                var secret = await _context.AdminSecrets.FindAsync(adminSecretId);
+                if (secret != null)
+                {
+                    secret.PasswordHash = passwordHash;
+                    await _context.SaveChangesAsync();
+                }
+            }
+            else
+            {
+                // 生产环境使用ExecuteUpdate以获得更好的性能
+                await _context.AdminSecrets
+                    .Where(s => s.Id == adminSecretId)
+                    .ExecuteUpdateAsync(setters => setters
+                        .SetProperty(s => s.PasswordHash, passwordHash));
             }
         }
 
@@ -119,10 +131,47 @@ namespace LYBT.Module.Auth.Repositories
         /// <param name="lockoutEnd">锁定结束时间</param>
         public async Task UpdateUserSecurityAsync(Guid userId, int failedLoginCount, DateTime? lockoutEnd)
         {
-            await _dbSet.Where(u => u.Id == userId)
-                .ExecuteUpdateAsync(setters => setters
-                    .SetProperty(u => u.FailedLoginCount, failedLoginCount)
-                    .SetProperty(u => u.LockoutEnd, lockoutEnd));
+            // 检查是否使用InMemory数据库，ExecuteUpdate在InMemory中不受支持
+            if (_context.Database.ProviderName == "Microsoft.EntityFrameworkCore.InMemory")
+            {
+                // 先检查实体是否已被跟踪，与UpdateFailedLoginInfoAsync保持一致
+                var trackedEntity = _context.ChangeTracker.Entries<User>()
+                    .FirstOrDefault(e => e.Entity.Id == userId)?.Entity;
+
+                if (trackedEntity != null)
+                {
+                    // 如果已被跟踪，直接更新
+                    trackedEntity.FailedLoginCount = failedLoginCount;
+                    trackedEntity.LockoutEnd = lockoutEnd;
+                }
+                else
+                {
+                    // 如果未被跟踪，查找并附加
+                    var existingUser = await _context.Users.FindAsync(userId);
+                    if (existingUser != null)
+                    {
+                        existingUser.FailedLoginCount = failedLoginCount;
+                        existingUser.LockoutEnd = lockoutEnd;
+                    }
+                }
+                await _context.SaveChangesAsync();
+                
+                // 更新后清理缓存，确保后续查询获取最新数据
+                var cacheKey = $"{CacheKeyPrefix}{userId}";
+                _cache.Remove(cacheKey);
+            }
+            else
+            {
+                // 生产环境使用ExecuteUpdate提高性能
+                await _dbSet.Where(u => u.Id == userId)
+                    .ExecuteUpdateAsync(setters => setters
+                        .SetProperty(u => u.FailedLoginCount, failedLoginCount)
+                        .SetProperty(u => u.LockoutEnd, lockoutEnd));
+                        
+                // 更新后清理缓存
+                var cacheKey = $"{CacheKeyPrefix}{userId}";
+                _cache.Remove(cacheKey);
+            }
         }
 
         /// <summary>
@@ -133,10 +182,47 @@ namespace LYBT.Module.Auth.Repositories
         /// <param name="lockoutEnd">锁定结束时间</param>
         public async Task UpdateFailedLoginInfoAsync(Guid userId, int failedLoginCount, DateTime? lockoutEnd)
         {
-            await _dbSet.Where(u => u.Id == userId)
-                .ExecuteUpdateAsync(setters => setters
-                    .SetProperty(u => u.FailedLoginCount, failedLoginCount)
-                    .SetProperty(u => u.LockoutEnd, lockoutEnd));
+            // 检查是否使用InMemory数据库，ExecuteUpdate在InMemory中不受支持
+            if (_context.Database.ProviderName == "Microsoft.EntityFrameworkCore.InMemory")
+            {
+                // 先检查实体是否已被跟踪
+                var trackedEntity = _context.ChangeTracker.Entries<User>()
+                    .FirstOrDefault(e => e.Entity.Id == userId)?.Entity;
+
+                if (trackedEntity != null)
+                {
+                    // 如果已被跟踪，直接更新
+                    trackedEntity.FailedLoginCount = failedLoginCount;
+                    trackedEntity.LockoutEnd = lockoutEnd;
+                }
+                else
+                {
+                    // 如果未被跟踪，查找并附加
+                    var existingUser = await _context.Users.FindAsync(userId);
+                    if (existingUser != null)
+                    {
+                        existingUser.FailedLoginCount = failedLoginCount;
+                        existingUser.LockoutEnd = lockoutEnd;
+                    }
+                }
+                await _context.SaveChangesAsync();
+                
+                // 更新后清理缓存，确保后续查询获取最新数据
+                var cacheKey = $"{CacheKeyPrefix}{userId}";
+                _cache.Remove(cacheKey);
+            }
+            else
+            {
+                // 生产环境使用ExecuteUpdate提高性能
+                await _dbSet.Where(u => u.Id == userId)
+                    .ExecuteUpdateAsync(setters => setters
+                        .SetProperty(u => u.FailedLoginCount, failedLoginCount)
+                        .SetProperty(u => u.LockoutEnd, lockoutEnd));
+                        
+                // 更新后清理缓存
+                var cacheKey = $"{CacheKeyPrefix}{userId}";
+                _cache.Remove(cacheKey);
+            }
         }
     }
 }

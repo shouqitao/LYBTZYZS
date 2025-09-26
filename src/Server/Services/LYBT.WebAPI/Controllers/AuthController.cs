@@ -1,5 +1,5 @@
 using Asp.Versioning;
-using LYBT.Infrastructure.Web;
+using LYBT.Core.Infrastructure.Web;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Auth;
 using Microsoft.AspNetCore.Authorization;

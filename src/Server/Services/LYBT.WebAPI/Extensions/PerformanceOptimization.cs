@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.ResponseCompression;
 using System.IO.Compression;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-using LYBT.Infrastructure.Data;
+using LYBT.Core.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 

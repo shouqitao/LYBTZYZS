@@ -50,7 +50,7 @@ namespace LYBT.Module.Auth.Tests.Mapping
             var user = new User
             {
                 Id = Guid.NewGuid(),
-                Username = "testuser",
+                UsernName = "testuser",
                 RealName = "测试用户",
                 PhoneNumber = "13812345678",
                 Status = CommonStatus.Enabled
@@ -62,7 +62,7 @@ namespace LYBT.Module.Auth.Tests.Mapping
             // Assert
             userDto.Should().NotBeNull();
             userDto.Id.Should().Be(user.Id);
-            userDto.Username.Should().Be(user.Username);
+            userDto.UserName.Should().Be(user.UsernName);
             userDto.RealName.Should().Be(user.RealName);
             userDto.PhoneNumber.Should().Be(user.PhoneNumber);
             userDto.Status.Should().Be(user.Status);
@@ -199,7 +199,7 @@ namespace LYBT.Module.Auth.Tests.Mapping
             var user = new User
             {
                 Id = Guid.NewGuid(),
-                Username = "testuser",
+                UsernName = "testuser",
                 RealName = null,
                 PhoneNumber = null,
                 Status = CommonStatus.Enabled
@@ -211,7 +211,7 @@ namespace LYBT.Module.Auth.Tests.Mapping
             // Assert
             userDto.Should().NotBeNull();
             userDto.Id.Should().Be(user.Id);
-            userDto.Username.Should().Be(user.Username);
+            userDto.UserName.Should().Be(user.UsernName);
             userDto.RealName.Should().BeNull();
             userDto.PhoneNumber.Should().BeNull();
             userDto.Status.Should().Be(user.Status);
@@ -224,14 +224,14 @@ namespace LYBT.Module.Auth.Tests.Mapping
             var disabledUser = new User
             {
                 Id = Guid.NewGuid(),
-                Username = "disableduser",
+                UsernName = "disableduser",
                 Status = CommonStatus.Disabled
             };
 
             var enabledUser = new User
             {
                 Id = Guid.NewGuid(),
-                Username = "enableduser",
+                UsernName = "enableduser",
                 Status = CommonStatus.Enabled
             };
 

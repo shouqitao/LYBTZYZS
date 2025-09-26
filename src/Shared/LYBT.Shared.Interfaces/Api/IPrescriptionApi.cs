@@ -1,60 +1,44 @@
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
-using LYBT.Shared.Models.Enums;
+
 namespace LYBT.Shared.Interfaces.Api
 {
-
     /// <summary>
-    /// 处方API客户端接口 - UltraThink统一标准
+    /// 处方API客户端接口 - 简化版，只包含基础CRUD
     /// </summary>
     public interface IPrescriptionApi
     {
-
         /// <summary>
         /// 获取处方列表（支持分页和查询）
         /// </summary>
         [Refit.Get("/api/v1/prescriptions")]
-        Task<Refit.ApiResponse<PagedResult<PrescriptionDto>>> GetListAsync(
-            [Refit.Query] int page = 1,
+        Task<Refit.ApiResponse<PagedResult<PrescriptionDto>>> GetPrescriptionsAsync(
+            [Refit.Query] int pageIndex = 1,
             [Refit.Query] int pageSize = 20,
-            [Refit.Query] string? keyword = null,
-            [Refit.Query] string? patientName = null,
-            [Refit.Query] string? doctorName = null,
-            [Refit.Query] string? diagnosis = null,
-            [Refit.Query] PrescriptionStatus? status = null,
-            [Refit.Query] DateTime? startDate = null,
-            [Refit.Query] DateTime? endDate = null,
-            [Refit.Query] int? minDosageCount = null,
-            [Refit.Query] int? maxDosageCount = null);
+            [Refit.Query] string? searchTerm = null);
 
         /// <summary>
         /// 获取处方详情
         /// </summary>
         [Refit.Get("/api/v1/prescriptions/{id}")]
-        Task<Refit.ApiResponse<PrescriptionDetailDto>> GetByIdAsync(Guid id);
+        Task<Refit.ApiResponse<PrescriptionDto>> GetPrescriptionByIdAsync(Guid id);
 
         /// <summary>
         /// 创建处方
         /// </summary>
         [Refit.Post("/api/v1/prescriptions")]
-        Task<Refit.ApiResponse<PrescriptionDto>> CreatePrescriptionAsync([Refit.Body] PrescriptionCreateDto dto);
+        Task<Refit.ApiResponse<PrescriptionDto>> CreatePrescriptionAsync([Refit.Body] PrescriptionCreateDto request);
 
         /// <summary>
         /// 更新处方
         /// </summary>
         [Refit.Put("/api/v1/prescriptions/{id}")]
-        Task<Refit.ApiResponse<PrescriptionDto>> UpdatePrescriptionAsync(Guid id, [Refit.Body] PrescriptionEditDto dto);
+        Task<Refit.ApiResponse<PrescriptionDto>> UpdatePrescriptionAsync(Guid id, [Refit.Body] PrescriptionUpdateDto request);
 
         /// <summary>
         /// 删除处方
         /// </summary>
         [Refit.Delete("/api/v1/prescriptions/{id}")]
-        Task<Refit.ApiResponse<bool>> DeletePrescriptionAsync(Guid id);
-
-        /// <summary>
-        /// 作废处方
-        /// </summary>
-        [Refit.Post("/api/v1/prescriptions/void/{id}")]
-        Task<Refit.ApiResponse<PrescriptionDto>> CancelPrescriptionAsync(Guid id);
+        Task<Refit.ApiResponse<object>> DeletePrescriptionAsync(Guid id);
     }
 }

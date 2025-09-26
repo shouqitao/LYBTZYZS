@@ -1,5 +1,5 @@
 using Asp.Versioning;
-using LYBT.Infrastructure.Web;
+using LYBT.Core.Infrastructure.Web;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
@@ -9,9 +9,8 @@ using Microsoft.Extensions.Caching.Memory;
 
 namespace LYBT.WebAPI.Controllers
 {
-
     /// <summary>
-    /// 验方管理 API - 统一API响应格式
+    /// 验方管理 API - 基础CRUD功能
     /// </summary>
     [ApiController]
     [ApiVersion("1")]
@@ -34,9 +33,7 @@ namespace LYBT.WebAPI.Controllers
         public async Task<ActionResult<ApiResponse<PagedResult<FormulaDto>>>> GetList(
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20,
-            [FromQuery] string? keyword = null,
-            [FromQuery] string? category = null,
-            [FromQuery] string? formulaType = null)
+            [FromQuery] string? keyword = null)
         {
             try
             {
@@ -45,16 +42,7 @@ namespace LYBT.WebAPI.Controllers
                     return ValidationFailPaged<FormulaDto>("页码和页大小参数无效（页码>0，页大小1-100）");
                 }
 
-                var query = new FormulaQueryDto
-                {
-                    PageIndex = page,
-                    PageSize = pageSize,
-                    Keyword = keyword,
-                    Name = keyword, // 使用Name字段进行搜索
-                    Effect = category // 使用Effect字段作为分类筛选
-                };
-
-                var result = await _service.GetPagedAsync(query);
+                var result = await _service.GetPagedAsync(page, pageSize, keyword);
                 return HandlePagedServiceResult(result, "查询成功");
             }
             catch (Exception ex)
@@ -170,7 +158,7 @@ namespace LYBT.WebAPI.Controllers
                 }
 
                 var result = await _service.DeleteAsync(id);
-                if (!result.IsSuccess || !result.Data)
+                if (!result.IsSuccess)
                 {
                     return NotFound("验方不存在", ApiErrorCodes.FORMULANOTFOUND);
                 }
@@ -183,275 +171,5 @@ namespace LYBT.WebAPI.Controllers
                 return HandleException(ex, "删除验方", id);
             }
         }
-
-        /// <summary>
-        /// 获取验方模板
-        /// </summary>
-        [HttpGet("templates")]
-        public async Task<ActionResult<ApiResponse<List<FormulaDto>>>> GetTemplates()
-        {
-            try
-            {
-                var result = await _service.GetTemplatesAsync();
-                if (!result.IsSuccess || result.Data == null)
-                {
-                    return BusinessFail<List<FormulaDto>>(result.ErrorMessage ?? "获取验方模板失败", ApiErrorCodes.INTERNALERROR);
-                }
-
-                return Success(result.Data, "查询成功");
-            }
-            catch (Exception ex)
-            {
-                return HandleException<List<FormulaDto>>(ex, "获取验方模板", null);
-            }
-        }
-
-        /// <summary>
-        /// 根据类型获取验方
-        /// </summary>
-        [HttpGet("by-type/{type}")]
-        public async Task<ActionResult<ApiResponse<List<FormulaDto>>>> GetByType(string type)
-        {
-            try
-            {
-                if (string.IsNullOrWhiteSpace(type))
-                {
-                    return ValidationFail<List<FormulaDto>>("验方类型不能为空");
-                }
-
-                var result = await _service.GetByTypeAsync(type);
-                if (!result.IsSuccess || result.Data == null)
-                {
-                    return Success(new List<FormulaDto>(), "未找到匹配验方");
-                }
-
-                return Success(result.Data, "查询成功");
-            }
-            catch (Exception ex)
-            {
-                return HandleException<List<FormulaDto>>(ex, "根据类型查询验方", type);
-            }
-        }
-
-        /// <summary>
-        /// 从处方创建验方
-        /// </summary>
-        [HttpPost("from-prescription/{prescriptionId}")]
-        public async Task<ActionResult<ApiResponse<FormulaDto>>> CreateFromPrescription(Guid prescriptionId, [FromBody] CreateFromPrescriptionDto dto)
-        {
-            try
-            {
-                var validationResult = ValidateGuid<FormulaDto>(prescriptionId, "处方ID");
-                if (validationResult != null)
-                {
-                    return validationResult;
-                }
-
-                if (string.IsNullOrWhiteSpace(dto.Name))
-                {
-                    return ValidationFail<FormulaDto>("验方名称不能为空");
-                }
-
-                var result = await _service.CreateFromPrescriptionAsync(prescriptionId, dto.Name);
-                if (!result.IsSuccess || result.Data == null)
-                {
-                    return BusinessFail<FormulaDto>(result.ErrorMessage ?? "从处方创建验方失败", ApiErrorCodes.DATASAVEFAILED);
-                }
-
-                LogOperation("从处方创建验方成功", result.Data, prescriptionId);
-                return Success(result.Data, "验方创建成功");
-            }
-            catch (Exception ex)
-            {
-                return HandleException<FormulaDto>(ex, "从处方创建验方", new { prescriptionId, dto });
-            }
-        }
-
-        /// <summary>
-        /// 搜索验方
-        /// </summary>
-        [HttpGet("search")]
-        public async Task<ActionResult<ApiResponse<PagedResult<FormulaDto>>>> Search(
-            [FromQuery] int page = 1,
-            [FromQuery] int pageSize = 20,
-            [FromQuery] string? keyword = null)
-        {
-            try
-            {
-                if (page <= 0 || pageSize <= 0 || pageSize > 100)
-                {
-                    return ValidationFailPaged<FormulaDto>("页码和页大小参数无效（页码>0，页大小1-100）");
-                }
-
-                var query = new PagedQueryBaseDto
-                {
-                    PageIndex = page,
-                    PageSize = pageSize,
-                    Keyword = keyword
-                };
-
-                // 使用SearchAsync替代SearchFormulasAsync (接口简化后的调整)
-                var searchResult = await _service.SearchAsync(keyword ?? string.Empty);
-                if (!searchResult.IsSuccess || searchResult.Data == null)
-                {
-                    var emptyResult = new PagedResult<FormulaDto>
-                    {
-                        Items = [],
-                        TotalCount = 0,
-                        CurrentPage = page,
-                        PageSize = pageSize
-                    };
-                    var result = ServiceResult<PagedResult<FormulaDto>>.Success(emptyResult);
-                    return HandlePagedServiceResult(result, "搜索完成");
-                }
-
-                // 手动分页
-                var totalCount = searchResult.Data.Count;
-                var skip = (page - 1) * pageSize;
-                var items = searchResult.Data.Skip(skip).Take(pageSize).ToList();
-
-                var pagedData = new PagedResult<FormulaDto>
-                {
-                    Items = items,
-                    TotalCount = totalCount,
-                    CurrentPage = page,
-                    PageSize = pageSize
-                };
-                var pagedResult = ServiceResult<PagedResult<FormulaDto>>.Success(pagedData);
-                return HandlePagedServiceResult(pagedResult, "搜索成功");
-            }
-            catch (Exception ex)
-            {
-                return HandleExceptionPaged<FormulaDto>(ex, "搜索验方", new { page, pageSize, keyword });
-            }
-        }
-
-        /// <summary>
-        /// 复制验方
-        /// </summary>
-        [HttpPost("{id}/copy")]
-        public async Task<ActionResult<ApiResponse<FormulaDto>>> Copy(Guid id, [FromBody] CopyFormulaDto dto)
-        {
-            try
-            {
-                await Task.CompletedTask; // 满足async约定
-                
-                var validationResult = ValidateGuid<FormulaDto>(id, "验方ID");
-                if (validationResult != null)
-                {
-                    return validationResult;
-                }
-
-                if (string.IsNullOrWhiteSpace(dto.NewName))
-                {
-                    return ValidationFail<FormulaDto>("新验方名称不能为空");
-                }
-
-                // 接口简化后不再支持复制功能
-                return BusinessFail<FormulaDto>("简单诊所版本不支持验方复制功能", ApiErrorCodes.FEATURENOTIMPLEMENTED);
-            }
-            catch (Exception ex)
-            {
-                return HandleException<FormulaDto>(ex, "复制验方", new { id, dto });
-            }
-        }
-
-        /// <summary>
-        /// 切换验方状态
-        /// </summary>
-        [HttpPost("{id}/toggle-status")]
-        public async Task<ActionResult<ApiResponse>> ToggleStatus(Guid id)
-        {
-            try
-            {
-                await Task.CompletedTask; // 满足async约定
-                
-                var validationResult = ValidateGuid(id, "验方ID");
-                if (validationResult != null)
-                {
-                    return validationResult;
-                }
-
-                // 接口简化后不再支持切换状态功能，建议使用EnableAsync/DisableAsync
-                return BusinessFail("简单诊所版本不支持状态切换功能，请使用启用或禁用功能", ApiErrorCodes.FEATURENOTIMPLEMENTED);
-            }
-            catch (Exception ex)
-            {
-                return HandleException(ex, "切换验方状态", id);
-            }
-        }
-
-        /// <summary>
-        /// 获取验方分类
-        /// </summary>
-        [HttpGet("categories")]
-        public async Task<ActionResult<ApiResponse<List<string>>>> GetCategories()
-        {
-            try
-            {
-                var result = await _service.GetCategoriesAsync();
-                if (!result.IsSuccess || result.Data == null)
-                {
-                    return BusinessFail<List<string>>(result.ErrorMessage ?? "获取分类失败", ApiErrorCodes.INTERNALERROR);
-                }
-
-                return Success(result.Data, "查询成功");
-            }
-            catch (Exception ex)
-            {
-                return HandleException<List<string>>(ex, "获取验方分类", null);
-            }
-        }
-
-        /// <summary>
-        /// 分享验方
-        /// </summary>
-        [HttpPost("{id}/share")]
-        public async Task<ActionResult<ApiResponse>> ShareFormula(Guid id)
-        {
-            try
-            {
-                await Task.CompletedTask; // 满足async约定
-                
-                var validationResult = ValidateGuid(id, "验方ID");
-                if (validationResult != null)
-                {
-                    return validationResult;
-                }
-
-                // 接口简化后不再支持分享功能
-                return BusinessFail("简单诊所版本不支持验方分享功能", ApiErrorCodes.FEATURENOTIMPLEMENTED);
-            }
-            catch (Exception ex)
-            {
-                return HandleException(ex, "分享验方", id);
-            }
-        }
-
-        /// <summary>
-        /// 取消分享验方
-        /// </summary>
-        [HttpPost("{id}/unshare")]
-        public async Task<ActionResult<ApiResponse>> UnshareFormula(Guid id)
-        {
-            try
-            {
-                await Task.CompletedTask; // 满足async约定
-                
-                var validationResult = ValidateGuid(id, "验方ID");
-                if (validationResult != null)
-                {
-                    return validationResult;
-                }
-
-                // 接口简化后不再支持分享功能
-                return BusinessFail("简单诊所版本不支持验方分享功能", ApiErrorCodes.FEATURENOTIMPLEMENTED);
-            }
-            catch (Exception ex)
-            {
-                return HandleException(ex, "取消分享验方", id);
-            }
-        }
-
     }
 }

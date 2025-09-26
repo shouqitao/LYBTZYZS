@@ -1,4 +1,4 @@
-// using LYBT.Infrastructure.Configuration; // Removed - SimplifiedConfigurationService eliminated
+// using LYBT.Core.Infrastructure.Configuration; // Removed - SimplifiedConfigurationService eliminated
 
 // using LYBT.WebAPI.Services; // Removed - enterprise services
 namespace LYBT.WebAPI.Extensions;
@@ -48,7 +48,7 @@ public static class UnifiedApplicationInitialization
     {
         try
         {
-            var dbInitService = scope.ServiceProvider.GetRequiredService<LYBT.Infrastructure.Data.DatabaseInitializationService>();
+            var dbInitService = scope.ServiceProvider.GetRequiredService<LYBT.Core.Infrastructure.Data.DatabaseInitializationService>();
             await dbInitService.InitializeDatabaseAsync();
 
             // 显示数据库信息
@@ -234,7 +234,7 @@ public static class UnifiedApplicationInitialization
 
         try
         {
-            var dbInitService = scope.ServiceProvider.GetService<LYBT.Infrastructure.Data.DatabaseInitializationService>();
+            var dbInitService = scope.ServiceProvider.GetService<LYBT.Core.Infrastructure.Data.DatabaseInitializationService>();
             if (dbInitService != null)
             {
                 var dbInfo = await dbInitService.GetDatabaseInfoAsync();

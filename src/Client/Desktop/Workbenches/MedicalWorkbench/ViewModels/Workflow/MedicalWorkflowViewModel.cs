@@ -1,13 +1,12 @@
 using System.Windows.Input;
-using LYBT.Desktop.Core.ViewModels.Base;
-using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.Events;
-using LYBT.Desktop.Core.Models.Events;
+using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Desktop.Core.ViewModels.Base;
 using LYBT.Shared.Interfaces.Services;
+using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Regions;
-using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Workbench.Medical.ViewModels.Workflow
 {
@@ -120,7 +119,7 @@ namespace LYBT.Desktop.Workbench.Medical.ViewModels.Workflow
             _patientService = patientService;
             _consultationService = consultationService;
             _prescriptionService = prescriptionService;
-// 初始化命令
+            // 初始化命令
             NextStepCommand = new DelegateCommand(ExecuteNextStep, CanExecuteNextStep);
             PreviousStepCommand = new DelegateCommand(ExecutePreviousStep, CanExecutePreviousStep);
             SkipPrescriptionCommand = new DelegateCommand(ExecuteSkipPrescription, CanExecuteSkipPrescription);

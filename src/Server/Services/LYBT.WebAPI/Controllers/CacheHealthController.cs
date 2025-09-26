@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
-using LYBT.Infrastructure.Caching.Interfaces;
-using LYBT.Infrastructure.Web;
+using LYBT.Core.Infrastructure.Caching.Interfaces;
+using LYBT.Core.Infrastructure.Web;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;

@@ -73,8 +73,8 @@ public class AuthQueryService(
             var userDto = new UserDto
             {
                 Id = currentUser.Id,
-                Username = currentUser.Username,
-                RealName = currentUser.RealName ?? currentUser.Username,
+                UserName = currentUser.UserName,
+                RealName = currentUser.RealName ?? currentUser.UserName,
                 Email = currentUser.Email,
                 PhoneNumber = currentUser.PhoneNumber,
                 Role = currentUser.Role,
@@ -85,7 +85,7 @@ public class AuthQueryService(
 
             _logger.LogDebug(
                 "成功获取用户信息: {Username} ({Role})",
-                userDto.Username, userDto.Role);
+                userDto.UserName, userDto.Role);
 
             return Task.FromResult(ServiceResult<UserDto?>.Success(userDto));
         }

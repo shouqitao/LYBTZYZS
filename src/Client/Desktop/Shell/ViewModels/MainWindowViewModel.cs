@@ -1,4 +1,4 @@
-﻿using System.Windows;
+using System.Windows;
 using LYBT.Desktop.Core.Constants;
 using LYBT.Desktop.Core.Events;
 using LYBT.Desktop.Core.Interfaces.Services;
@@ -362,7 +362,7 @@ public class MainWindowViewModel : ModernViewModelBase
 
                 if (user != null)
                 {
-                    System.Diagnostics.Debug.WriteLine($" 获取到当前用户: {user.Username} - {user.RealName}");
+                    System.Diagnostics.Debug.WriteLine($" 获取到当前用户: {user.UserName} - {user.RealName}");
                     CurrentUser = user;
                     IsLoggedIn = true;
 
@@ -435,7 +435,7 @@ public class MainWindowViewModel : ModernViewModelBase
         string roleDisplay;
 
         // 管理员判断（包括sysadmin用户名和Admin角色）
-        bool isAdmin = CurrentUser.Username?.Equals(SystemConstants.SuperAdminUsername, StringComparison.OrdinalIgnoreCase) == true ||
+        bool isAdmin = CurrentUser.UserName?.Equals(SystemConstants.SuperAdminUsername, StringComparison.OrdinalIgnoreCase) == true ||
         CurrentUser.Role == UserRole.Admin;
 
         if (isAdmin)
@@ -451,7 +451,7 @@ public class MainWindowViewModel : ModernViewModelBase
         }
 
         // 更新标题和清理登录区域
-        var userDisplayName = string.IsNullOrEmpty(CurrentUser.RealName) ? CurrentUser.Username : CurrentUser.RealName;
+        var userDisplayName = string.IsNullOrEmpty(CurrentUser.RealName) ? CurrentUser.UserName : CurrentUser.RealName;
         Title = $"凌隐宝堂中医诊所诊疗系统 - {userDisplayName} ({roleDisplay})";
 
         // 清除登录区域
@@ -494,7 +494,7 @@ public class MainWindowViewModel : ModernViewModelBase
             var app = (App)Application.Current;
 
             // 管理员加载SystemWorkbenchModule
-            bool isAdmin = user.Username?.Equals(SystemConstants.SuperAdminUsername, StringComparison.OrdinalIgnoreCase) == true ||
+            bool isAdmin = user.UserName?.Equals(SystemConstants.SuperAdminUsername, StringComparison.OrdinalIgnoreCase) == true ||
             user.Role == UserRole.Admin;
 
             if (isAdmin)

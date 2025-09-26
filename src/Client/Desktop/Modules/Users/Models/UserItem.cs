@@ -125,7 +125,7 @@ public class UserItem : BindableBase
         return new UserItem
         {
             Id = dto.Id,
-            Username = dto.Username,
+            Username = dto.UserName,
             RealName = dto.RealName,
             Role = dto.Role,
             Email = dto.Email,
@@ -147,7 +147,7 @@ public class UserItem : BindableBase
         return new UserDto
         {
             Id = Id,
-            Username = Username,
+            UserName = Username,
             RealName = RealName,
             Role = Role,
             Email = Email,
@@ -166,7 +166,7 @@ public class UserItem : BindableBase
     public void UpdateFromDto(UserDto dto)
     {
         Id = dto.Id;
-        Username = dto.Username;
+        Username = dto.UserName;
         RealName = dto.RealName;
         Role = dto.Role;
         Email = dto.Email;

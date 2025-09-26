@@ -22,8 +22,9 @@ namespace LYBT.Module.Users
             // 仓储层
             services.AddScoped<IUserRepository, UserRepository>();
 
-            // 统一用户服务 - 合并查询和业务逻辑
-            services.AddScoped<LYBT.Module.Users.Interfaces.IUserService, UserService>();
+            // 用户服务
+            services.AddScoped<LYBT.Shared.Interfaces.Services.IUserService, UserService>();
+            services.AddScoped<UserQueryService>();
 
             return services;
         }

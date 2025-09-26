@@ -1,35 +1,16 @@
 using LYBT.Infrastructure.Interfaces;
+using ConsultationEntity = LYBT.Entities.Consultation.Consultation;
 
 namespace LYBT.Module.Consultation.Interfaces
 {
-
     /// <summary>
-    /// 诊疗仓储接口 - 数据层统一化重构
-    /// 继承BaseRepository提供通用CRUD，扩展诊疗特定业务方法
+    /// 诊疗仓储接口 - 简化版，只包含基础CRUD
     /// </summary>
-    public interface IConsultationRepository : IRepository<LYBT.Entities.Consultation.Consultation>
+    public interface IConsultationRepository : IRepository<ConsultationEntity>
     {
-        // 注意：基础CRUD方法由IBaseRepository提供
-        // 这里只定义诊疗特有的业务方法
-
         /// <summary>
-        /// 根据医疗案例ID获取诊疗记录
+        /// 根据患者ID获取诊疗记录
         /// </summary>
-        Task<LYBT.Entities.Consultation.Consultation?> GetByMedicalCaseIdAsync(Guid medicalCaseId);
-
-        /// <summary>
-        /// 根据患者ID获取诊疗历史
-        /// </summary>
-        Task<List<LYBT.Entities.Consultation.Consultation>> GetByPatientIdAsync(Guid patientId);
-
-        /// <summary>
-        /// 根据医生ID获取诊疗记录
-        /// </summary>
-        Task<List<LYBT.Entities.Consultation.Consultation>> GetByDoctorIdAsync(Guid doctorId);
-
-        /// <summary>
-        /// 根据日期范围获取诊疗记录
-        /// </summary>
-        Task<List<LYBT.Entities.Consultation.Consultation>> GetByDateRangeAsync(DateTime startDate, DateTime endDate);
+        Task<List<ConsultationEntity>> GetByPatientIdAsync(Guid patientId);
     }
 }

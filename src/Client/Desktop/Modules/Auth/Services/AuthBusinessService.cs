@@ -58,14 +58,14 @@ public class AuthBusinessService(
                     try
                     {
                         _sessionManager.SetUserSession(response.Data.User, response.Data.Token);
-                        _logger.LogInformation("会话状态已更新: {Username}", response.Data.User.Username);
+                        _logger.LogInformation("会话状态已更新: {Username}", response.Data.User.UserName);
 
                         // 设置统一API客户端的认证令牌，确保后续所有请求携带Bearer
                         _apiClientManager.SetAuthorizationToken(response.Data.Token);
                     }
                     catch (Exception sessionEx)
                     {
-                        _logger.LogError(sessionEx, "更新会话状态失败: {Username}", response.Data.User.Username);
+                        _logger.LogError(sessionEx, "更新会话状态失败: {Username}", response.Data.User.UserName);
 
                         // 即使会话更新失败，登录也应该算成功，因为JWT令牌是有效的
                     }

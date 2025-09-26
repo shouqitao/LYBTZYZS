@@ -1,5 +1,5 @@
 using Asp.Versioning;
-using LYBT.Infrastructure.Web;
+using LYBT.Core.Infrastructure.Web;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
@@ -9,9 +9,8 @@ using Microsoft.Extensions.Caching.Memory;
 
 namespace LYBT.WebAPI.Controllers
 {
-
     /// <summary>
-    /// 药材管理 API 控制器 - 简化版本：只处理名称、剂量、价格
+    /// 药材管理 API - 基础CRUD功能
     /// </summary>
     [ApiController]
     [ApiVersion("1")]
@@ -30,7 +29,7 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 获取药材分页列表 - 统一API响应格式
+        /// 获取药材分页列表
         /// </summary>
         [HttpGet]
         public async Task<ActionResult<ApiResponse<PagedResult<HerbDto>>>> GetList(
@@ -45,14 +44,7 @@ namespace LYBT.WebAPI.Controllers
                     return ValidationFailPaged<HerbDto>("页码和页大小参数无效（页码>0，页大小1-100）");
                 }
 
-                var query = new HerbSearchDto
-                {
-                    PageIndex = page,
-                    PageSize = pageSize,
-                    Keyword = keyword
-                };
-
-                var result = await _herbService.GetPagedAsync(query);
+                var result = await _herbService.GetPagedAsync(page, pageSize, keyword);
                 return HandlePagedServiceResult(result, "查询成功");
             }
             catch (Exception ex)
@@ -62,10 +54,10 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 根据ID获取药材详情 - 统一API响应格式
+        /// 根据ID获取药材详情
         /// </summary>
         [HttpGet("{id}")]
-        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<HerbDto>>> GetById(Guid id)
+        public async Task<ActionResult<ApiResponse<HerbDto>>> GetById(Guid id)
         {
             try
             {
@@ -85,10 +77,10 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 创建新药材 - 统一API响应格式
+        /// 创建新药材
         /// </summary>
         [HttpPost]
-        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<HerbDto>>> Create([FromBody] HerbCreateDto dto)
+        public async Task<ActionResult<ApiResponse<HerbDto>>> Create([FromBody] HerbCreateDto dto)
         {
             try
             {
@@ -113,10 +105,10 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 更新药材信息 - 统一API响应格式
+        /// 更新药材信息
         /// </summary>
         [HttpPut("{id}")]
-        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<HerbDto>>> Update(Guid id, [FromBody] HerbUpdateDto dto)
+        public async Task<ActionResult<ApiResponse<HerbDto>>> Update(Guid id, [FromBody] HerbUpdateDto dto)
         {
             try
             {
@@ -132,10 +124,8 @@ namespace LYBT.WebAPI.Controllers
                     return modelValidation;
                 }
 
-                if (dto.Id != id)
-                {
-                    return ValidationFail<HerbDto>("URL中的ID与请求体中的ID不匹配");
-                }
+                // 确保使用路由中的ID
+                dto.Id = id;
 
                 var result = await _herbService.UpdateAsync(id, dto);
                 if (result.IsSuccess && result.Data != null)
@@ -152,10 +142,10 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 删除药材（软删除） - 统一API响应格式
+        /// 删除药材（软删除）
         /// </summary>
         [HttpDelete("{id}")]
-        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse>> Delete(Guid id)
+        public async Task<ActionResult<ApiResponse>> Delete(Guid id)
         {
             try
             {
@@ -166,81 +156,11 @@ namespace LYBT.WebAPI.Controllers
                 }
 
                 var result = await _herbService.DeleteAsync(id);
-                return HandleBoolServiceResult(result, "删除成功");
+                return HandleServiceResult(result, "删除成功");
             }
             catch (Exception ex)
             {
                 return HandleException(ex, "删除药材", id);
-            }
-        }
-
-        /// <summary>
-        /// 获取药材分类（基于功效分类） - 统一API响应格式
-        /// </summary>
-        [HttpGet("categories")]
-        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<List<string>>>> GetCategories()
-        {
-            try
-            {
-                // 获取所有启用的药材 (使用分页查询替代GetAvailableHerbsAsync)
-                var query = new HerbSearchDto
-                {
-                    PageIndex = 1,
-                    PageSize = 10000,
-                    IncludeExpired = false // 只获取启用的药材
-                };
-                var allHerbsResult = await _herbService.GetPagedAsync(query);
-                if (!allHerbsResult.IsSuccess || allHerbsResult.Data?.Items == null)
-                {
-                    return Success(new List<string>(), "暂无药材分类");
-                }
-
-                // 提取所有非空的功效字段作为分类
-                var categories = allHerbsResult.Data.Items
-                    .Where(h => !string.IsNullOrWhiteSpace(h.Effect))
-                    .Select(h => h.Effect!.Trim())
-                    .Distinct()
-                    .Where(effect => !string.IsNullOrWhiteSpace(effect))
-                    .OrderBy(effect => effect)
-                    .ToList();
-
-                // 如果没有分类，返回默认的中医分类
-                if (categories.Count == 0)
-                {
-                    categories = new List<string>
-                    {
-                        "清热类", "补益类", "解表类", "理气类",
-                        "活血类", "止血类", "化痰类", "消食类", "其他"
-                    };
-                }
-
-                return Success(categories, $"获取分类成功，共{categories.Count}个分类");
-            }
-            catch (Exception ex)
-            {
-                return HandleException<List<string>>(ex, "获取药材分类", null);
-            }
-        }
-
-        /// <summary>
-        /// 搜索药材（用于处方配药） - 统一API响应格式
-        /// </summary>
-        [HttpGet("search")]
-        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<List<HerbDto>>>> Search([FromQuery] string keyword)
-        {
-            try
-            {
-                if (string.IsNullOrWhiteSpace(keyword))
-                {
-                    return ValidationFail<List<HerbDto>>("搜索关键词不能为空");
-                }
-
-                var result = await _herbService.SearchAsync(keyword);
-                return HandleServiceResult(result, $"搜索完成，找到{result.Data?.Count ?? 0}条记录");
-            }
-            catch (Exception ex)
-            {
-                return HandleException<List<HerbDto>>(ex, "搜索药材", keyword);
             }
         }
     }

@@ -59,7 +59,7 @@ namespace LYBT.Desktop.Services
         public bool HasRole(string role) => false;
 
         /// <inheritdoc/>
-        public bool IsAdmin() => _currentUser?.Username == "sysadmin";
+        public bool IsAdmin() => _currentUser?.UserName == "sysadmin";
 
         /// <inheritdoc/>
         public bool IsSuperAdmin() => IsAdmin(); // 简化：与IsAdmin相同

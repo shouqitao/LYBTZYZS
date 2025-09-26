@@ -18,7 +18,7 @@ namespace LYBT.Shared.Models.Contracts.Users
         /// <summary>用户名</summary>
         [DisplayName("用户名")]
         [JsonPropertyName("username")]
-        public string Username { get; set; } = string.Empty;
+        public string UserName { get; set; } = string.Empty;
 
         /// <summary>真实姓名</summary>
         [DisplayName("真实姓名")]

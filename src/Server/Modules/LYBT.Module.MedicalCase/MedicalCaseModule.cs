@@ -27,11 +27,7 @@ namespace LYBT.Module.MedicalCase
             // 服务层 - UltraThink架构重构后的统一服务
             services.AddScoped<IMedicalCaseService, MedicalCaseService>();
 
-            // AutoMapper配置
-            services.AddAutoMapper(cfg =>
-            {
-                cfg.AddProfile<MedicalCaseMappingProfile>();
-            });
+            // AutoMapper配置已在UnifiedServiceRegistration中集中注册
 
             return services;
         }

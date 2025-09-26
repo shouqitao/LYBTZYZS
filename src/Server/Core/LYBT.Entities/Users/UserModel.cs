@@ -24,7 +24,7 @@ namespace LYBT.Entities.Users
         [StringLength(50)]
         [Column("Username")]
         [DisplayName("用户名")]
-        public string Username { get; set; } = string.Empty;
+        public string UsernName { get; set; } = string.Empty;
 
         /// <summary>真实姓名</summary>
         [Required]

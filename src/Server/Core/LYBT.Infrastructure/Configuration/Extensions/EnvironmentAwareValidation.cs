@@ -33,6 +33,13 @@ namespace LYBT.Infrastructure.Configuration.Extensions
                     ValidateSecurityOptions(options, env);
                 });
 
+            // 为AuthOptions添加环境感知验证
+            services.AddOptions<AuthOptions>()
+                .PostConfigure<IWebHostEnvironment>((options, env) =>
+                {
+                    ValidateAuthOptions(options, env);
+                });
+
             // 为DatabaseOptions添加环境感知验证
             services.AddOptions<DatabaseOptions>()
                 .PostConfigure<IWebHostEnvironment>((options, env) =>
@@ -107,7 +114,16 @@ namespace LYBT.Infrastructure.Configuration.Extensions
                 {
                     throw new InvalidOperationException("生产环境必须配置内容安全策略 (SecurityOptions.SecurityHeaders.ContentSecurityPolicy)");
                 }
+            }
+        }
 
+        /// <summary>
+        /// 验证AuthOptions的环境相关配置
+        /// </summary>
+        private static void ValidateAuthOptions(AuthOptions options, IWebHostEnvironment environment)
+        {
+            if (environment.IsProduction())
+            {
                 // 生产环境密码策略验证
                 if (options.PasswordPolicy.MinLength < 12)
                 {
@@ -118,6 +134,17 @@ namespace LYBT.Infrastructure.Configuration.Extensions
                     !options.PasswordPolicy.RequireDigit || !options.PasswordPolicy.RequireSpecialChar)
                 {
                     throw new InvalidOperationException("生产环境必须启用完整的密码复杂度要求");
+                }
+
+                // 生产环境登录失败策略验证
+                if (options.MaxFailedLoginAttempts > 10)
+                {
+                    throw new InvalidOperationException("生产环境登录失败次数不应超过10次");
+                }
+
+                if (options.AccountLockoutDuration < TimeSpan.FromMinutes(10))
+                {
+                    throw new InvalidOperationException("生产环境账户锁定时间不应少于10分钟");
                 }
             }
         }

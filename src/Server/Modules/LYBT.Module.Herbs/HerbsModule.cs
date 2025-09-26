@@ -1,4 +1,5 @@
 using LYBT.Module.Herbs.Interfaces;
+
 using LYBT.Module.Herbs.Mapping;
 using LYBT.Module.Herbs.Repositories;
 using LYBT.Module.Herbs.Services;
@@ -27,11 +28,7 @@ namespace LYBT.Module.Herbs
             // 服务层 - UltraThink架构重构后的统一服务
             services.AddScoped<IHerbService, HerbService>();
 
-            // AutoMapper配置
-            services.AddAutoMapper(cfg =>
-            {
-                cfg.AddProfile<HerbMappingProfile>();
-            });
+            // AutoMapper配置已在UnifiedServiceRegistration中集中注册
 
             return services;
         }

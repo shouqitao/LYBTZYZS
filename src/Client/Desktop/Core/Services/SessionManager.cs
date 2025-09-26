@@ -181,7 +181,7 @@ namespace LYBT.Desktop.Core.Services
             CurrentUser = user;
             StatusMessage?.Invoke(this, new StatusMessageEventArgs
             {
-                Message = $"欢迎 {user.Username}",
+                Message = $"欢迎 {user.UserName}",
                 MessageType = StatusMessageType.Success,
                 Timestamp = DateTime.Now
             });

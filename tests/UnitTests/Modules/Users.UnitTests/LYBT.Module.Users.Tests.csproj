@@ -25,6 +25,7 @@
     <PackageReference Include="Bogus"  />
     <PackageReference Include="Moq"  />
     <PackageReference Include="AutoMapper"  />
+    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection"  />
   </ItemGroup>
 
   <ItemGroup>

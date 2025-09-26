@@ -45,7 +45,7 @@ namespace LYBT.Module.Auth.Tests.Services
 
             _mockJwtOptions.Setup(x => x.Value).Returns(_jwtOptions);
 
-            _jwtAuthenticationService = new JwtAuthenticationService(_mockJwtOptions.Object, _mockLogger.Object);
+            _jwtAuthenticationService = new JwtAuthenticationService(_mockJwtOptions.Object, _mockLogger.Object, null);
         }
 
         #region 构造函数测试
@@ -54,7 +54,7 @@ namespace LYBT.Module.Auth.Tests.Services
         public void Constructor_Should_Throw_When_JwtOptions_Is_Null()
         {
             // Act & Assert
-            var action = () => new JwtAuthenticationService(null!, _mockLogger.Object);
+            var action = () => new JwtAuthenticationService(null!, _mockLogger.Object, null);
             action.Should().Throw<ArgumentNullException>()
                 .WithParameterName("jwtOptions");
         }
@@ -63,7 +63,7 @@ namespace LYBT.Module.Auth.Tests.Services
         public void Constructor_Should_Throw_When_Logger_Is_Null()
         {
             // Act & Assert
-            var action = () => new JwtAuthenticationService(_mockJwtOptions.Object, null!);
+            var action = () => new JwtAuthenticationService(_mockJwtOptions.Object, null!, null);
             action.Should().Throw<ArgumentNullException>()
                 .WithParameterName("logger");
         }
@@ -72,7 +72,7 @@ namespace LYBT.Module.Auth.Tests.Services
         public void Constructor_Should_Create_Instance_When_Dependencies_Are_Valid()
         {
             // Act
-            var service = new JwtAuthenticationService(_mockJwtOptions.Object, _mockLogger.Object);
+            var service = new JwtAuthenticationService(_mockJwtOptions.Object, _mockLogger.Object, null);
 
             // Assert
             service.Should().NotBeNull();
@@ -278,7 +278,7 @@ namespace LYBT.Module.Auth.Tests.Services
                 issuer: _jwtOptions.Issuer,
                 audience: _jwtOptions.Audience,
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(-1), // 过期1分钟
+                expires: DateTime.UtcNow.AddHours(-1), // 过期1小时，远超过ClockSkew容差
                 signingCredentials: creds);
 
             var tokenString = _tokenHandler.WriteToken(expiredToken);

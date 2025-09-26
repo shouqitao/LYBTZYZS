@@ -27,11 +27,7 @@ namespace LYBT.Module.Consultation
             // 服务层 - UltraThink架构重构后的统一服务
             services.AddScoped<IConsultationService, ConsultationService>();
 
-            // AutoMapper配置
-            services.AddAutoMapper(cfg =>
-            {
-                cfg.AddProfile<ConsultationMappingProfile>();
-            });
+            // AutoMapper配置已在UnifiedServiceRegistration中集中注册
 
             return services;
         }
