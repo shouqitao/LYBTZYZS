@@ -1,45 +1,68 @@
-# 任务索引
+# 任务索引 - Issue #756 架构改进管理体系
 
-> 本页列出现有任务，更多详情请进入对应文件。
+> **重要**: 2025-09-26起，所有任务统一纳入Issue #756架构改进管理体系
 
-## 待办任务
-| 文件 | 状态 |
-|------|------|
-| 2025-09-24-all-framework-refactor-task.md | 待办 |
-| 2025-09-24-desktop-warnings-baseline-refresh-task.md | 待办 |
-| 2025-09-24-desktop-warnings-phase1-task.md | 待办 |
-| 2025-09-24-readme-校准任务.md | 待办 |
-| 2025-09-24-server-仓储测试重构.md | 待办 |
-| 2025-09-24-server-审计字段测试适配.md | 待办 |
-| 2025-09-24-server-审计字段自动化.md | 待办 |
-| 2025-09-24-server-重构任务.md | 待办 |
-| 2025-09-24-server-BusinessService重构.md | 待办 |
-| 2025-09-24-server-cache-health-validation-task.md | 待办 |
-| 2025-09-24-server-cache-monitoring-defects-plan.md | 待办 |
-| 2025-09-24-server-phase1-query-layer-refactor-task.md | 待办 |
-| 2025-09-24-server-phase2-query-layer-hardening-task.md | 待办 |
-| 2025-09-24-server-phase3-cache-governance-task.md | 待办 |
-| 2025-09-24-server-testing-架构纠偏.md | 待办 |
-| 2025-09-24-users-模块单元测试核心修复任务.md | 待办 |
-| 2025-09-24-users-模块单元测试契约同步.md | 待办 |
-| 2025-09-24-users-模块单元测试收尾修复.md | 待办 |
-| 2025-09-24-users-模块单元测试重对齐.md | 待办 |
-| 2025-09-24-users-模块业务逻辑测试攻坚任务.md | 待办 |
-| 2025-09-24-users-SQLite-InMemory评估任务.md | 待办 |
-| 2025-09-24-users-SQLite基础设施落地任务.md | 待办 |
-| 2025-09-24-users-SQLite基础设施稳定化任务.md | 待办 |
-| 2025-09-24-users-SQLite兼容推广任务.md | 待办 |
-| 2025-09-24-users-SQLite深层问题剖析任务.md | 待办 |
-| 2025-09-24-desktop-build-optimization-summary.md | 已归档(节选) |
-| 2025-09-24-desktop-warnings-baseline-refresh-summary.md | 已归档(节选) |
-| 2025-09-24-desktop-warnings-phase1-summary.md | 已归档(节选) |
-| 2025-09-24-server-仓储测试重构-summary.md | 已归档(节选) |
-| 2025-09-24-server-审计字段测试适配-summary.md | 已归档(节选) |
-| 2025-09-24-server-BusinessService重构-summary.md | 已归档(节选) |
-| 2025-09-24-server-cache-health-validation-task-summary.md | 已归档(节选) |
-| 2025-09-24-server-cache-monitoring-defects-plan-summary.md | 已归档(节选) |
-| 2025-09-24-server-phase1-query-layer-refactor-task-summary.md | 已归档(节选) |
-| 2025-09-24-server-phase2-query-layer-hardening-task-summary.md | 已归档(节选) |
+## 🎯 当前活跃任务 (基于Issue #756)
 
-如需查看全部已完成任务，请浏览 docs/tasks/completed/ 目录。
+### 📊 总体状态
+- **Issue #756**: 【架构改进】凌隐宝堂系统架构设计问题跟踪 - 总览
+- **架构健康度**: 75/100 (已从65提升)
+- **完成度**: 20% (1/5子任务完成)
 
+### ✅ 已完成的子Issues
+
+| Issue | 任务名称 | 完成日期 | 状态 |
+|-------|----------|----------|------|
+| #757 | Service Locator反模式重构 | 2025-09-26 | ✅ 已完成 |
+
+### ⏳ 待开始的子Issues (按优先级排序)
+
+| Issue | 任务名称 | 优先级 | 预估工期 | 状态 |
+|-------|----------|--------|----------|------|
+| #758 | 测试覆盖率改进 | P0 | 5-7天 | 📋 待开始 |
+| #759 | JWT安全配置强化 | P0 | 2-3天 | 📋 待开始 |  
+| #760 | N+1查询优化 | P1 | 3-4天 | 📋 待开始 |
+| #761 | 模块化架构改进 | P1 | 4-5天 | 📋 待开始 |
+
+## 🔗 快速导航
+
+### 核心文档
+- 📊 [Issue #756 状态总览](architecture-improvement/ISSUE-756-STATUS.md)
+- 📋 [架构问题分析报告](../reports/凌隐宝堂中医诊所管理系统架构设计问题分析报告.md)
+
+### 已完成任务
+- ✅ [#757 Service Locator重构总结](completed/2025-09-26-issue-757-service-locator-refactoring-summary.md)
+
+### 任务模板 
+- 📁 [架构改进任务目录](architecture-improvement/)
+  - `#757-service-locator-refactoring-tasks.md` ✅
+  - `#758-test-coverage-improvement-tasks.md` ⏳
+  - `#759-jwt-security-hardening-tasks.md` ⏳
+  - `#760-n1-query-optimization-tasks.md` ⏳
+  - `#761-modularization-improvement-tasks.md` ⏳
+
+## 📝 推荐下一步
+
+**立即可开始**: Issue #758 测试覆盖率改进
+- 理由: 测试基础设施是后续开发的基石
+- 协同: 与已完成的DI改进形成技术栈协同效应
+- 风险: 低，主要是新增测试代码
+
+## ⚠️ 重要说明
+
+### 任务体系变更 (2025-09-26)
+1. **旧任务系统已废弃**: 原`pending/`目录下的26个任务已存档至`archived/legacy-2025-09-24/`
+2. **新管理体系**: 所有任务现统一管理在Issue #756框架下
+3. **优先级明确**: 严格按P0/P1/P2优先级执行
+4. **协同效应**: 确保任务间技术栈协同和里程碑达成
+
+### 执行原则
+- ✅ **仅执行Issue #756子任务**
+- ❌ **不再基于archived/legacy任务执行**  
+- 🎯 **严格按优先级顺序进行**
+- 📊 **每完成一个子Issue更新架构健康度**
+
+---
+
+*任务体系重构于2025-09-26 by Claude Code*
+*基于Issue #756【架构改进】凌隐宝堂系统架构设计问题跟踪 - 总览*

@@ -317,7 +317,7 @@ namespace LYBT.Desktop.Formula.ViewModels
                 // 使用默认用户ID（暂时方案）
                 var defaultUserId = Guid.NewGuid();
 
-                var result = await _formulaService.CloneFormulaAsync(Formula.Id, newName, defaultUserId);
+                var result = await _formulaService.CloneFormulaAsync(Formula.Id);
 
                 if (result.IsSuccess && result.Data != null)
                 {

@@ -22,26 +22,39 @@
 
 > 未完成以上事项前，请勿开始新的功能开发。
 
-## 核心工作流：GitHub 驱动，Serena 辅助
+## 核心工作流：GitHub 驱动，Claude/Serena 协同
 
-为确保所有开发活动清晰、可控、可追溯，本项目严格遵循以 GitHub 为中心的管理模式。AI (Claude Code) 在此流程中扮演“智能顾问”而非“项目经理”的角色。
+为确保所有开发活动清晰、可控、可追溯，本项目严格遵循以 GitHub 为中心的管理模式。AI (Claude Code) 在此流程中扮演“智能顾问”而非“项目经理”的角色；在代码审查环节，Claude Code 参与自动化初审，Serena 可作为二审/深度校对辅助。
 
 - **GitHub 作为“操作系统”**：
   - **信息记录**: 所有需求、任务、缺陷均须创建为 **GitHub Issues**。
   - **进度跟踪**: 使用 **GitHub Projects**（看板）对 Issues 的状态进行可视化跟踪。
   - **关系管理**: 通过 PR 与 Issue 的自动链接，建立代码变更与任务需求的明确关系。
 
-- **Serena Server 作为“智能顾问”**：
-  - **辅助规划**: 针对复杂的 GitHub Issue，可调用 Serena 的 `plan` 方法生成详细的技术方案和子任务建议。
-  - **辅助审查**: 在提交 Pull Request 后，可调用 Serena 的 `proofread` 方法，审查代码是否符合 Issue 要求及项目规范。
+- **Claude Code / Serena 作为“智能顾问”**：
+  - **辅助规划**：针对复杂的 GitHub Issue，优先由 Claude Code 整理最小变更集与实施计划；必要时调用 Serena 的 `plan` 方法生成详细方案与子任务建议。
+  - **代码审查**：提交 Pull Request 后，先由 Claude Code 进行自动化初审（规范、风险、与 Issue 的一致性）；如需进一步论证或跨文档一致性校验，再调用 Serena 的 `proofread` 方法进行二审。
 
 **开发黄金路径**：
 1.  一切工作始于一个明确的 **GitHub Issue**。
 2.  （可选）针对复杂 Issue，调用 **Serena** 进行规划。
 3.  创建与 Issue 关联的 **Git 分支**进行开发。
-4.  通过 **Pull Request** 提交变更，并关联对应 Issue。
-5.  （可选）调用 **Serena** 对 PR 进行代码审查。
-6.  经人工审核通过后，合并 PR，完成任务。
+4.  通过 **Pull Request** 提交变更，并关联对应 Issue（建议在 PR 描述中使用 `Fixes #<issue>` 关键字实现自动关闭）。
+5.  进行 AI 代码审查：先由 **Claude Code** 初审；必要时再调用 **Serena** 进行二审。
+6.  经人工审核通过后合并 PR；合并后由关键字自动关闭 Issue。若未使用关键字，Actions 会根据 PR 描述中的引用自动关闭相关 Issue（确保任务与 GitHub 状态同步）。
+
+### 人工参与与自动化职责边界
+
+- 人工参与（三步）：
+  - 创建并完善 Issue（含验收标准）。
+  - 启动 Issue（将 Issue 标记为 In-Progress）。
+  - 审核 PR 并决定是否合并（审核通过即任务结束）。
+
+- 自动化执行：
+  - Issue 初始分流与提示（自动添加状态标签、分派模板校验、生成分支命名建议）。
+  - PR 与 Issue 关联校验与提醒（未关联则评论提醒）。
+  - PR 合并后自动关闭关联 Issue，并同步状态标签为 Done。
+  - 可选：若配置了项目看板变量，自动维护 Projects 状态字段。
 
 ## 技术栈与架构
 ### 前端（WPF + Prism.DryIoc）

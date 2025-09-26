@@ -40,6 +40,8 @@ namespace LYBT.Infrastructure.Data
 
         // 认证管理
         public DbSet<AuthSession> AuthSessions { get; set; }
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
+        public DbSet<BlacklistedToken> BlacklistedTokens { get; set; }
 
         // public DbSet<LoginAttempt> LoginAttempts { get; set; } // UltraThink简化：暂时移除
         // public DbSet<SecurityLog> SecurityLogs { get; set; } // UltraThink简化：暂时移除
@@ -177,6 +179,43 @@ namespace LYBT.Infrastructure.Data
                 entity.HasIndex(e => e.UserId);
                 entity.HasIndex(e => e.LoginTime);
                 entity.HasIndex(e => e.Status);
+            });
+
+            // RefreshToken配置
+            modelBuilder.Entity<RefreshToken>(entity =>
+            {
+                entity.ToTable("RefreshTokens");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Token).HasMaxLength(512).IsRequired();
+                entity.Property(e => e.JwtId).HasMaxLength(128).IsRequired();
+                entity.Property(e => e.UserAgent).HasMaxLength(1000);
+                entity.Property(e => e.IpAddress).HasMaxLength(45);
+                entity.Property(e => e.DeviceId).HasMaxLength(128);
+                entity.Property(e => e.RevokedReason).HasMaxLength(500);
+                
+                // 索引
+                entity.HasIndex(e => e.Token).IsUnique();
+                entity.HasIndex(e => e.JwtId);
+                entity.HasIndex(e => e.UserId);
+                entity.HasIndex(e => e.ExpiresAt);
+                entity.HasIndex(e => new { e.UserId, e.IsUsed, e.IsRevoked, e.ExpiresAt });
+            });
+
+            // BlacklistedToken配置
+            modelBuilder.Entity<BlacklistedToken>(entity =>
+            {
+                entity.ToTable("BlacklistedTokens");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.JwtId).HasMaxLength(128).IsRequired();
+                entity.Property(e => e.Reason).HasMaxLength(500).IsRequired();
+                entity.Property(e => e.IpAddress).HasMaxLength(45);
+                entity.Property(e => e.Type).HasConversion<int>();
+                
+                // 索引
+                entity.HasIndex(e => e.JwtId).IsUnique();
+                entity.HasIndex(e => e.UserId);
+                entity.HasIndex(e => e.TokenExpiresAt);
+                entity.HasIndex(e => e.BlacklistedAt);
             });
         }
 

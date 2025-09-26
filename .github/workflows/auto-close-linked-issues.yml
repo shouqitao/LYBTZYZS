@@ -1,0 +1,63 @@
+name: Auto-Close Linked Issues on PR Merge
+
+on:
+  pull_request:
+    types: [closed]
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: read
+
+jobs:
+  close_linked_issues:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Close referenced issues if not auto-closed
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+
+            const body = (pr.body || '');
+            // Match Fixes/Closes/Resolves #123 或裸露的 #123
+            const issueNumbers = new Set();
+            const patterns = [
+              /(fixes|closes|resolves)\s+#(\d+)/gi,
+              /#(\d+)/g
+            ];
+            for (const re of patterns) {
+              let m;
+              while ((m = re.exec(body)) !== null) {
+                const num = parseInt(m[m.length - 1], 10);
+                if (!Number.isNaN(num)) issueNumbers.add(num);
+              }
+            }
+
+            if (issueNumbers.size === 0) {
+              core.info('No referenced issues found in PR body. Nothing to do.');
+              return;
+            }
+
+            for (const number of issueNumbers) {
+              try {
+                const { data: issue } = await github.rest.issues.get({ owner, repo, issue_number: number });
+                if (issue.state === 'closed') {
+                  core.info(`Issue #${number} already closed.`);
+                  continue;
+                }
+                await github.rest.issues.createComment({
+                  owner,
+                  repo,
+                  issue_number: number,
+                  body: `PR #${pr.number} 已合并，自动关闭此 Issue。`
+                });
+                await github.rest.issues.update({ owner, repo, issue_number: number, state: 'closed' });
+                core.info(`Closed issue #${number}.`);
+              } catch (e) {
+                core.warning(`Failed to close issue #${number}: ${e.message}`);
+              }
+            }

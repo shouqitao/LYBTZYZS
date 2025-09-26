@@ -1,3 +1,4 @@
+using System.Linq;
 using AutoMapper;
 using PrescriptionEntity = LYBT.Entities.Prescriptions.Prescription;
 using LYBT.Module.Prescriptions.Interfaces;
@@ -101,6 +102,26 @@ namespace LYBT.Module.Prescriptions.Services
                 return ServiceResult<PrescriptionDto>.Failure("更新处方失败");
             }
         }
+
+    public async Task<ServiceResult<List<PrescriptionDto>>> GetByMedicalCaseIdAsync(Guid medicalCaseId)
+    {
+        try
+        {
+            // 根据病历ID查询处方列表
+            var allPrescriptions = await _repository.GetAllAsync();
+            var prescriptions = allPrescriptions.Where(p => p.MedicalCaseId == medicalCaseId).ToList();
+            
+            // 转换为DTO
+            var prescriptionDtos = _mapper.Map<List<PrescriptionDto>>(prescriptions);
+            
+            return ServiceResult<List<PrescriptionDto>>.Success(prescriptionDtos);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "获取病历相关处方时发生错误，病历ID：{MedicalCaseId}", medicalCaseId);
+            return ServiceResult<List<PrescriptionDto>>.Failure($"获取病历相关处方失败：{ex.Message}");
+        }
+    }
 
         public async Task<ServiceResult> DeleteAsync(Guid id)
         {

@@ -2,6 +2,7 @@ using FluentAssertions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Moq;
+using Xunit;
 using LYBT.Infrastructure.Security;
 
 namespace Infrastructure.UnitTests.Security;
@@ -154,7 +155,7 @@ public class KeyRotationBackgroundServiceTests
             x => x.Log(
                 LogLevel.Error,
                 It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("密钥轮换检查时发生错误")),
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("检查和轮换密钥过程中发生错误")),
                 It.IsAny<Exception>(),
                 It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
             Times.AtLeastOnce);

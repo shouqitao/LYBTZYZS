@@ -41,4 +41,10 @@ public class PrescriptionsService : IPrescriptionService
     {
         return ServiceResult.Failure("删除功能暂未实现");
     }
+
+    public Task<ServiceResult<List<PrescriptionDto>>> GetByMedicalCaseIdAsync(Guid medicalCaseId)
+    {
+        // 暂时返回空列表，后续实现实际逻辑
+        return Task.FromResult(ServiceResult<List<PrescriptionDto>>.Success(new List<PrescriptionDto>()));
+    }
 }
