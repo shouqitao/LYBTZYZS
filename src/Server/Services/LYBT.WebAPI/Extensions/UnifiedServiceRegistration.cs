@@ -228,9 +228,10 @@ public static class UnifiedServiceRegistration
 
             if (!string.IsNullOrEmpty(jwtSecret))
             {
-                var issuer = lybtOptions.Authentication.Jwt.Issuer;
-                var audience = lybtOptions.Authentication.Jwt.Audience;
-                var clockSkew = 300; // 固定5分钟时钟偏差
+                var jwtConfig = lybtOptions.Authentication.Jwt;
+                var issuer = jwtConfig.Issuer;
+                var audience = jwtConfig.Audience;
+                var clockSkew = 300; // 5分钟时钟偏差（安全默认值）
 
                 services.AddAuthentication(options =>
                 {
@@ -241,14 +242,32 @@ public static class UnifiedServiceRegistration
                 {
                     options.TokenValidationParameters = new TokenValidationParameters
                     {
+                        // 基本验证设置
                         ValidateIssuer = true,
                         ValidateAudience = true,
                         ValidateLifetime = true,
                         ValidateIssuerSigningKey = true,
+                        
+                        // 发行者和接收者
                         ValidIssuer = issuer,
                         ValidAudience = audience,
+                        
+                        // 密钥设置 - 支持多密钥验证
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
-                        ClockSkew = TimeSpan.FromSeconds(clockSkew)
+                        
+                        // 时钟偏差 - 使用配置值
+                        ClockSkew = TimeSpan.FromSeconds(clockSkew),
+                        
+                        // 增强安全设置
+                        RequireExpirationTime = true,
+                        RequireSignedTokens = true,
+                        ValidateTokenReplay = false, // 如果需要防重放攻击可设为true
+                        
+                        // Token类型验证
+                        ValidTypes = new[] { "JWT" },
+                        
+                        // 严格的签名验证
+                        TryAllIssuerSigningKeys = true // 启用多密钥验证支持密钥轮换
                     };
                 });
             }

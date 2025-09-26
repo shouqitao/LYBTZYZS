@@ -35,6 +35,10 @@ namespace LYBT.WebAPI.Extensions.ServiceCollection
             // 注册密钥管理服务工厂（避免Service Locator反模式）
             services.AddSingleton<IKeyManagementServiceFactory, KeyManagementServiceFactory>();
 
+            // JWT安全服务
+            // 注册Token黑名单服务
+            services.AddScoped<ITokenBlacklistService, TokenBlacklistService>();
+
             // 添加密钥旋转后台服务（使用工厂模式）
             services.AddHostedService<KeyRotationBackgroundService>();
 
