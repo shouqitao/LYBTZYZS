@@ -107,7 +107,6 @@ namespace LYBT.Module.MedicalCase.Repositories
                 .Where(m => m.DoctorId == doctorId && !m.IsDeleted)
                 .OrderByDescending(m => m.CreatedAt)
                 .ToListAsync();
-        }
-    }
+            }
 }
 }

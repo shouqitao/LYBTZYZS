@@ -30,11 +30,14 @@ namespace LYBT.Module.MedicalCase.Mapping
                 .ForMember(dest => dest.Consultation, opt => opt.Ignore()) // 导航属性忽略
                 .ForMember(dest => dest.Prescription, opt => opt.Ignore()) // 导航属性忽略
 
-                // UltraThink修复：明确忽略不属于MedicalCase实体的DTO字段
-                .ForMember(dest => dest.PatientName, opt => opt.Ignore()) // 显示字段，不更新
-                .ForMember(dest => dest.DoctorName, opt => opt.Ignore()) // 显示字段，不更新
+                // 忽略BaseEntity的审计字段（这些不应该从DTO设置）
+                .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+                .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
+                .ForMember(dest => dest.UpdatedBy, opt => opt.Ignore())
+                .ForMember(dest => dest.RowVersion, opt => opt.Ignore())
+                .ForMember(dest => dest.IsDeleted, opt => opt.Ignore())
 
-                // 以下字段属于Consultation模块，不映射到MedicalCase
+                // 忽略DTO中不存在于实体的字段
                 .ForSourceMember(src => src.DiagnosisSummary, opt => opt.DoNotValidate())
                 .ForSourceMember(src => src.ChiefComplaint, opt => opt.DoNotValidate())
                 .ForSourceMember(src => src.PresentIllness, opt => opt.DoNotValidate())

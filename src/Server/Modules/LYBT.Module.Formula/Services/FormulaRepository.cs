@@ -1,11 +1,10 @@
-using FormulaEntity = LYBT.Entities.Formula.Formula;
-using LYBT.Entities.Formula;
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Repositories;
 using LYBT.Module.Formula.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using FormulaEntity = LYBT.Entities.Formula.Formula;
 
 namespace LYBT.Module.Formula.Repositories
 {
@@ -126,5 +125,4 @@ namespace LYBT.Module.Formula.Repositories
                 .ToListAsync();
         }
     }
-}
 }
