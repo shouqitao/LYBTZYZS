@@ -123,7 +123,7 @@ namespace LYBT.Module.Auth.Tests.Services
             // Arrange
             string userId = null;
             string userName = null;
-            var role = UserRole.Nurse;
+            var role = UserRole.Pharmacist;
 
             // Act
             var token = _jwtService.GenerateToken(userId, userName, role, false);
@@ -307,7 +307,6 @@ namespace LYBT.Module.Auth.Tests.Services
         [Theory]
         [InlineData(UserRole.Admin)]
         [InlineData(UserRole.Doctor)]
-        [InlineData(UserRole.Nurse)]
         [InlineData(UserRole.Pharmacist)]
         public void GenerateToken_WithDifferentRoles_ShouldIncludeCorrectRoleClaim(UserRole role)
         {

@@ -338,7 +338,6 @@ namespace LYBT.Desktop.Shell.Tests.Services
         [Theory]
         [InlineData(UserRole.Admin, new[] { "AuthModule", "UsersModule", "PatientsModule", "HerbsModule", "FormulaModule", "MedicalCaseModule", "ConsultationModule", "PrescriptionsModule", "MedicalWorkbenchModule" })]
         [InlineData(UserRole.Doctor, new[] { "AuthModule", "UsersModule", "PatientsModule", "HerbsModule", "FormulaModule", "MedicalCaseModule", "ConsultationModule", "PrescriptionsModule", "MedicalWorkbenchModule" })]
-        [InlineData(UserRole.Nurse, new[] { "AuthModule", "UsersModule", "PatientsModule", "MedicalCaseModule" })]
         [InlineData(UserRole.Pharmacist, new[] { "AuthModule", "UsersModule", "HerbsModule", "FormulaModule", "PrescriptionsModule" })]
         public async Task LoadModulesForRoleAsync_WithDifferentRoles_ShouldLoadCorrectModules(UserRole role, string[] expectedModules)
         {
@@ -366,7 +365,7 @@ namespace LYBT.Desktop.Shell.Tests.Services
         public async Task LoadModulesForRoleAsync_WhenModuleLoadFails_ShouldContinueWithOtherModules()
         {
             // Arrange
-            var role = UserRole.Nurse;
+            var role = UserRole.Doctor;
             var loadedModules = new System.Collections.Generic.List<string>();
             
             _moduleManagerMock

@@ -32,6 +32,7 @@
     <ProjectReference Include="..\..\..\..\src\Shared\LYBT.Shared.Utilities\LYBT.Shared.Utilities.csproj" />
     <ProjectReference Include="..\..\..\..\src\Shared\LYBT.Shared.Interfaces\LYBT.Shared.Interfaces.csproj" />
     <ProjectReference Include="..\..\..\..\src\Server\Core\LYBT.Entities\LYBT.Entities.csproj" />
+    <ProjectReference Include="..\..\..\TestConfiguration\LYBT.Tests.Configuration.csproj" />
   </ItemGroup>
 
 </Project>

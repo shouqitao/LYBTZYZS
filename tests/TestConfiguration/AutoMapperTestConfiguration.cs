@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using AutoMapper;
-using LYBT.Client.Desktop.Core.Mapping;
 using LYBT.Module.Auth.Mapping;
 using LYBT.Module.Consultation.Mapping;
 using LYBT.Module.Formula.Mapping;

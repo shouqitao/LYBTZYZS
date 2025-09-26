@@ -115,5 +115,22 @@ namespace LYBT.Module.Consultation.Services
                 return ServiceResult.Failure("删除诊疗记录失败");
             }
         }
+
+        public async Task<ServiceResult<List<ConsultationDto>>> GetByMedicalCaseIdAsync(Guid medicalCaseId)
+        {
+            try
+            {
+                // 获取所有诊疗记录然后过滤
+                var allConsultations = await _repository.GetAllAsync();
+                var medicalCaseConsultations = allConsultations.Where(c => c.MedicalCaseId == medicalCaseId).ToList();
+                var dto = _mapper.Map<List<ConsultationDto>>(medicalCaseConsultations);
+                return ServiceResult<List<ConsultationDto>>.Success(dto);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "根据医案ID获取诊疗记录失败");
+                return ServiceResult<List<ConsultationDto>>.Failure("获取诊疗记录失败");
+            }
+        }
     }
 }

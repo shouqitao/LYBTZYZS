@@ -32,5 +32,10 @@ namespace LYBT.Shared.Interfaces.Services
         /// 删除医疗案例（软删除）
         /// </summary>
         Task<ServiceResult> DeleteAsync(Guid id);
+
+        /// <summary>
+        /// 根据患者ID获取医疗案例列表
+        /// </summary>
+        Task<ServiceResult<List<MedicalCaseDto>>> GetByPatientIdAsync(Guid patientId);
     }
 }

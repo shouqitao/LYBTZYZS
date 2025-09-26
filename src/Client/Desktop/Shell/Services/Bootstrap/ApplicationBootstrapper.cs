@@ -5,6 +5,7 @@ using System.Windows;
 using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.Services.Performance;
 using LYBT.Shared.Models.Contracts.Users;
+using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 using Prism.Events;
 using Prism.Modularity;
@@ -225,11 +226,6 @@ namespace LYBT.Desktop.Shell.Services.Bootstrap
                     "ConsultationModule",
                     "PrescriptionsModule",
                     "MedicalWorkbenchModule"
-                },
-                UserRole.Nurse => new[]
-                {
-                    "PatientsModule",
-                    "MedicalCaseModule"
                 },
                 UserRole.Pharmacist => new[]
                 {
