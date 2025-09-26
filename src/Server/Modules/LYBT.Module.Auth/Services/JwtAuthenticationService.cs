@@ -339,7 +339,7 @@ namespace LYBT.Module.Auth.Services
                     ExpiresAt = jsonToken.ValidTo
                 };
             }
-            catch (SecurityTokenMalformedException ex)
+            catch (ArgumentException ex)
             {
                 _logger.LogWarning("JWT Token格式错误，无法解析: {ErrorMessage}", ex.Message);
                 return null;

@@ -78,7 +78,7 @@ namespace LYBT.Module.Users.Tests
 
             // Assert - 验证Service注册
 
-            serviceProvider.GetService<LYBT.Module.Users.Interfaces.IUserService>()
+            serviceProvider.GetService<LYBT.Shared.Interfaces.Services.IUserService>()
                 .Should().NotBeNull("IUserService should be registered");
 
             // Assert - 验证Options注册
@@ -105,7 +105,7 @@ namespace LYBT.Module.Users.Tests
             
 
             services.Should().Contain(x =>
-                x.ServiceType == typeof(LYBT.Module.Users.Interfaces.IUserService) &&
+                x.ServiceType == typeof(LYBT.Shared.Interfaces.Services.IUserService) &&
                 x.Lifetime == ServiceLifetime.Scoped);
         }
 

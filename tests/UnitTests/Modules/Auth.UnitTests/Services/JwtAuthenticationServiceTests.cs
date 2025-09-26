@@ -29,15 +29,15 @@ namespace LYBT.Module.Auth.Tests.Services
 
         public JwtAuthenticationServiceTests()
         {
-            // 配置JWT选项
+            // 配置JWT选项 - 与新的JwtOptions类匹配
             _jwtOptions = new JwtOptions
             {
                 Secret = "J4CM3t5EsIA9COGVMpQJoAHfX/mgeIbKxrlbXNKfv34T6AGxRnD/2fRJmh932xWypxhjl0nm7whrsdK9PcY9fw==",
                 Issuer = "LYBT.WebAPI.Test",
                 Audience = "LYBT.Client.Test",
-                ExpireMinutes = 30,
-                RememberMeExpireMinutes = 10080,
-                ClockSkewSeconds = 300
+                ExpireMinutes = 15, // 使用新的安全默认值：15分钟
+                RememberMeExpireMinutes = 10080, // 7天
+                ClockSkewSeconds = 300 // 5分钟
             };
 
             var optionsMock = new Mock<IOptions<JwtOptions>>();
@@ -56,9 +56,8 @@ namespace LYBT.Module.Auth.Tests.Services
         {
             base.ConfigureServices(services);
 
-            // 注册JWT服务相关的依赖
-            services.AddSingleton(_jwtOptions);
-            services.AddSingleton(_jwtService);
+            // 在这里只注册基本的依赖，不依赖于实例字段
+            // JWT相关的依赖在各个测试方法中独立创建
         }
 
         [Fact]
@@ -213,8 +212,8 @@ namespace LYBT.Module.Auth.Tests.Services
             // 等待一秒确保过期
             System.Threading.Thread.Sleep(1000);
 
-            // Act
-            var principal = _jwtService.ValidateToken(token);
+            // Act - 使用相同的过期服务进行验证
+            var principal = expiredJwtService.ValidateToken(token);
 
             // Assert
             principal.Should().BeNull();
