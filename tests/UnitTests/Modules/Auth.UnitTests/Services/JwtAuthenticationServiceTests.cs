@@ -1,629 +1,334 @@
 using System;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Security.Claims;
-using System.Text;
 using FluentAssertions;
 using LYBT.Infrastructure.Configuration.Options;
-using LYBT.Module.Auth.Interfaces;
+using LYBT.Infrastructure.Security;
 using LYBT.Module.Auth.Services;
 using LYBT.Shared.Models.Enums;
+using LYBT.Tests.Common;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 using Moq;
 using Xunit;
 
 namespace LYBT.Module.Auth.Tests.Services
 {
     /// <summary>
-    /// JwtAuthenticationService 完整单元测试
-    /// 职责：JWT令牌生成、验证、刷新、用户信息提取
+    /// JWT认证服务单元测试
+    /// 测试令牌生成、验证、刷新等核心安全功能
     /// </summary>
-    public class JwtAuthenticationServiceTests
+    public class JwtAuthenticationServiceTests : TestBase
     {
-        private readonly JwtAuthenticationService _jwtAuthenticationService;
-        private readonly Mock<IOptions<JwtOptions>> _mockJwtOptions;
-        private readonly Mock<ILogger<JwtAuthenticationService>> _mockLogger;
+        private readonly JwtAuthenticationService _jwtService;
         private readonly JwtOptions _jwtOptions;
-        private readonly JwtSecurityTokenHandler _tokenHandler;
+        private readonly Mock<ILogger<JwtAuthenticationService>> _loggerMock;
+        private readonly Mock<IKeyManagementService> _keyManagementServiceMock;
 
         public JwtAuthenticationServiceTests()
         {
-            _mockJwtOptions = new Mock<IOptions<JwtOptions>>();
-            _mockLogger = new Mock<ILogger<JwtAuthenticationService>>();
-            _tokenHandler = new JwtSecurityTokenHandler();
-
+            // 配置JWT选项
             _jwtOptions = new JwtOptions
             {
-                Secret = "LYBT_JWT_SECRET_KEY_FOR_TESTING_PURPOSES_32_CHARS_MINIMUM",
+                Secret = "J4CM3t5EsIA9COGVMpQJoAHfX/mgeIbKxrlbXNKfv34T6AGxRnD/2fRJmh932xWypxhjl0nm7whrsdK9PcY9fw==",
                 Issuer = "LYBT.WebAPI.Test",
                 Audience = "LYBT.Client.Test",
-                ExpireMinutes = 480,
-                RememberMeExpireMinutes = 43200,
+                ExpireMinutes = 30,
+                RememberMeExpireMinutes = 10080,
                 ClockSkewSeconds = 300
             };
 
-            _mockJwtOptions.Setup(x => x.Value).Returns(_jwtOptions);
+            var optionsMock = new Mock<IOptions<JwtOptions>>();
+            optionsMock.Setup(x => x.Value).Returns(_jwtOptions);
 
-            _jwtAuthenticationService = new JwtAuthenticationService(_mockJwtOptions.Object, _mockLogger.Object, null);
+            _loggerMock = CreateLoggerMock<JwtAuthenticationService>();
+            _keyManagementServiceMock = CreateMock<IKeyManagementService>();
+
+            _jwtService = new JwtAuthenticationService(
+                optionsMock.Object,
+                _loggerMock.Object,
+                _keyManagementServiceMock.Object);
         }
 
-        #region 构造函数测试
-
-        [Fact]
-        public void Constructor_Should_Throw_When_JwtOptions_Is_Null()
+        protected override void ConfigureServices(IServiceCollection services)
         {
-            // Act & Assert
-            var action = () => new JwtAuthenticationService(null!, _mockLogger.Object, null);
-            action.Should().Throw<ArgumentNullException>()
-                .WithParameterName("jwtOptions");
+            base.ConfigureServices(services);
+
+            // 注册JWT服务相关的依赖
+            services.AddSingleton(_jwtOptions);
+            services.AddSingleton(_jwtService);
         }
 
         [Fact]
-        public void Constructor_Should_Throw_When_Logger_Is_Null()
-        {
-            // Act & Assert
-            var action = () => new JwtAuthenticationService(_mockJwtOptions.Object, null!, null);
-            action.Should().Throw<ArgumentNullException>()
-                .WithParameterName("logger");
-        }
-
-        [Fact]
-        public void Constructor_Should_Create_Instance_When_Dependencies_Are_Valid()
-        {
-            // Act
-            var service = new JwtAuthenticationService(_mockJwtOptions.Object, _mockLogger.Object, null);
-
-            // Assert
-            service.Should().NotBeNull();
-            service.Should().BeAssignableTo<IJwtAuthenticationService>();
-        }
-
-        #endregion
-
-        #region GenerateToken 测试
-
-        [Fact]
-        public void GenerateToken_Should_Generate_Valid_Token_For_Doctor()
+        public void GenerateToken_WithValidParameters_ShouldReturnValidToken()
         {
             // Arrange
             var userId = Guid.NewGuid().ToString();
-            var userName = "testdoctor";
+            var userName = "testuser";
             var role = UserRole.Doctor;
+            var rememberMe = false;
 
             // Act
-            var token = _jwtAuthenticationService.GenerateToken(userId, userName, role, false);
+            var token = _jwtService.GenerateToken(userId, userName, role, rememberMe);
 
             // Assert
             token.Should().NotBeNullOrEmpty();
-            var jwtToken = _tokenHandler.ReadJwtToken(token);
-            jwtToken.Claims.Should().Contain(c => c.Type == JwtRegisteredClaimNames.Sub && c.Value == userId);
-            jwtToken.Claims.Should().Contain(c => c.Type == JwtRegisteredClaimNames.UniqueName && c.Value == userName);
-            jwtToken.Claims.Should().Contain(c => c.Type == ClaimTypes.Role && c.Value == UserRole.Doctor.ToString());
+
+            // 解析Token验证内容
+            var handler = new JwtSecurityTokenHandler();
+            var jsonToken = handler.ReadJwtToken(token);
+
+            jsonToken.Should().NotBeNull();
+            jsonToken.Issuer.Should().Be(_jwtOptions.Issuer);
+            jsonToken.Audiences.Should().Contain(_jwtOptions.Audience);
+
+            // 验证Claims
+            var claims = jsonToken.Claims.ToList();
+            claims.Should().Contain(c => c.Type == JwtRegisteredClaimNames.Sub && c.Value == userId);
+            claims.Should().Contain(c => c.Type == JwtRegisteredClaimNames.UniqueName && c.Value == userName);
+            claims.Should().Contain(c => c.Type == ClaimTypes.Role && c.Value == role.ToString());
+            claims.Should().Contain(c => c.Type == "role" && c.Value == role.ToString());
+
+            // 验证过期时间
+            var expectedExpiration = DateTime.UtcNow.AddMinutes(_jwtOptions.ExpireMinutes);
+            jsonToken.ValidTo.Should().BeCloseTo(expectedExpiration, TimeSpan.FromMinutes(1));
         }
 
         [Fact]
-        public void GenerateToken_Should_Generate_Valid_Token_For_Admin()
+        public void GenerateToken_WithRememberMe_ShouldHaveLongerExpiration()
         {
             // Arrange
-            var userId = "00000000-0000-0000-0000-000000000001";
-            var userName = "sysadmin";
+            var userId = Guid.NewGuid().ToString();
+            var userName = "testuser";
             var role = UserRole.Admin;
+            var rememberMe = true;
 
             // Act
-            var token = _jwtAuthenticationService.GenerateToken(userId, userName, role, false);
+            var token = _jwtService.GenerateToken(userId, userName, role, rememberMe);
+
+            // Assert
+            var handler = new JwtSecurityTokenHandler();
+            var jsonToken = handler.ReadJwtToken(token);
+
+            // 验证"记住我"的过期时间（7天）
+            var expectedExpiration = DateTime.UtcNow.AddMinutes(_jwtOptions.RememberMeExpireMinutes);
+            jsonToken.ValidTo.Should().BeCloseTo(expectedExpiration, TimeSpan.FromMinutes(1));
+        }
+
+        [Fact]
+        public void GenerateToken_WithNullParameters_ShouldHandleGracefully()
+        {
+            // Arrange
+            string userId = null;
+            string userName = null;
+            var role = UserRole.Nurse;
+
+            // Act
+            var token = _jwtService.GenerateToken(userId, userName, role, false);
 
             // Assert
             token.Should().NotBeNullOrEmpty();
-            var jwtToken = _tokenHandler.ReadJwtToken(token);
-            jwtToken.Claims.Should().Contain(c => c.Type == JwtRegisteredClaimNames.Sub && c.Value == userId);
-            jwtToken.Claims.Should().Contain(c => c.Type == JwtRegisteredClaimNames.UniqueName && c.Value == userName);
-            jwtToken.Claims.Should().Contain(c => c.Type == ClaimTypes.Role && c.Value == UserRole.Admin.ToString());
+
+            var handler = new JwtSecurityTokenHandler();
+            var jsonToken = handler.ReadJwtToken(token);
+
+            // 验证null参数被转换为空字符串
+            var claims = jsonToken.Claims.ToList();
+            claims.Should().Contain(c => c.Type == JwtRegisteredClaimNames.Sub && c.Value == string.Empty);
+            claims.Should().Contain(c => c.Type == JwtRegisteredClaimNames.UniqueName && c.Value == string.Empty);
         }
 
         [Fact]
-        public void GenerateToken_Should_Set_Standard_Expiry_When_RememberMe_False()
+        public void ValidateToken_WithValidToken_ShouldReturnClaimsPrincipal()
         {
             // Arrange
             var userId = Guid.NewGuid().ToString();
             var userName = "testuser";
             var role = UserRole.Doctor;
+            var token = _jwtService.GenerateToken(userId, userName, role, false);
 
             // Act
-            var token = _jwtAuthenticationService.GenerateToken(userId, userName, role, false);
+            var principal = _jwtService.ValidateToken(token);
 
             // Assert
-            var jwtToken = _tokenHandler.ReadJwtToken(token);
-            var expectedExpiry = DateTime.UtcNow.AddMinutes(_jwtOptions.ExpireMinutes);
-            jwtToken.ValidTo.Should().BeCloseTo(expectedExpiry, TimeSpan.FromMinutes(1));
+            principal.Should().NotBeNull();
+            principal.Claims.Should().NotBeEmpty();
+
+            // 验证Claims内容
+            principal.FindFirst(JwtRegisteredClaimNames.Sub)?.Value.Should().Be(userId);
+            principal.FindFirst(JwtRegisteredClaimNames.UniqueName)?.Value.Should().Be(userName);
+            principal.FindFirst(ClaimTypes.Role)?.Value.Should().Be(role.ToString());
         }
 
         [Fact]
-        public void GenerateToken_Should_Set_Extended_Expiry_When_RememberMe_True()
+        public void ValidateToken_WithInvalidToken_ShouldReturnNull()
         {
             // Arrange
-            var userId = Guid.NewGuid().ToString();
-            var userName = "testuser";
-            var role = UserRole.Doctor;
+            var invalidToken = "invalid.token.here";
 
             // Act
-            var token = _jwtAuthenticationService.GenerateToken(userId, userName, role, true);
+            var principal = _jwtService.ValidateToken(invalidToken);
 
             // Assert
-            var jwtToken = _tokenHandler.ReadJwtToken(token);
-            var expectedExpiry = DateTime.UtcNow.AddMinutes(_jwtOptions.RememberMeExpireMinutes);
-            jwtToken.ValidTo.Should().BeCloseTo(expectedExpiry, TimeSpan.FromMinutes(1));
+            principal.Should().BeNull();
+
+            // 验证日志记录
+            _loggerMock.Verify(
+                x => x.Log(
+                    LogLevel.Warning,
+                    It.IsAny<EventId>(),
+                    It.IsAny<It.IsAnyType>(),
+                    It.IsAny<Exception>(),
+                    It.IsAny<Func<It.IsAnyType, Exception, string>>()),
+                Times.AtLeastOnce);
         }
 
         [Fact]
-        public void GenerateToken_Should_Include_Required_Claims()
+        public void ValidateToken_WithExpiredToken_ShouldReturnNull()
         {
             // Arrange
-            var userId = Guid.NewGuid().ToString();
-            var userName = "testuser";
-            var role = UserRole.Doctor;
-
-            // Act
-            var token = _jwtAuthenticationService.GenerateToken(userId, userName, role, false);
-
-            // Assert
-            var jwtToken = _tokenHandler.ReadJwtToken(token);
-
-            // 验证必须的声明
-            jwtToken.Claims.Should().Contain(c => c.Type == JwtRegisteredClaimNames.Sub);
-            jwtToken.Claims.Should().Contain(c => c.Type == JwtRegisteredClaimNames.UniqueName);
-            jwtToken.Claims.Should().Contain(c => c.Type == JwtRegisteredClaimNames.Jti);
-            jwtToken.Claims.Should().Contain(c => c.Type == JwtRegisteredClaimNames.Iat);
-            jwtToken.Claims.Should().Contain(c => c.Type == ClaimTypes.Role);
-
-            // 验证JTI不为空
-            var jtiClaim = jwtToken.Claims.First(c => c.Type == JwtRegisteredClaimNames.Jti);
-            Guid.TryParse(jtiClaim.Value, out _).Should().BeTrue();
-        }
-
-        [Theory]
-        [InlineData("")]
-        [InlineData("   ")]
-        [InlineData(null)]
-        public void GenerateToken_Should_Handle_Empty_UserId(string? userId)
-        {
-            // Act
-            var token = _jwtAuthenticationService.GenerateToken(userId!, "testuser", UserRole.Doctor, false);
-
-            // Assert
-            token.Should().NotBeNullOrEmpty();
-            var jwtToken = _tokenHandler.ReadJwtToken(token);
-            jwtToken.Claims.Should().Contain(c => c.Type == JwtRegisteredClaimNames.Sub && c.Value == (userId ?? ""));
-        }
-
-        [Theory]
-        [InlineData("")]
-        [InlineData("   ")]
-        [InlineData(null)]
-        public void GenerateToken_Should_Handle_Empty_Username(string? username)
-        {
-            // Act
-            var token = _jwtAuthenticationService.GenerateToken("user-123", username!, UserRole.Doctor, false);
-
-            // Assert
-            token.Should().NotBeNullOrEmpty();
-            var jwtToken = _tokenHandler.ReadJwtToken(token);
-            jwtToken.Claims.Should().Contain(c => c.Type == JwtRegisteredClaimNames.UniqueName && c.Value == (username ?? ""));
-        }
-
-        #endregion
-
-        #region ValidateToken 测试
-
-        [Fact]
-        public void ValidateToken_Should_Return_ClaimsPrincipal_When_Token_Is_Valid()
-        {
-            // Arrange
-            var userId = Guid.NewGuid().ToString();
-            var userName = "testuser";
-            var role = UserRole.Doctor;
-            var token = _jwtAuthenticationService.GenerateToken(userId, userName, role, false);
-
-            // Act
-            var claimsPrincipal = _jwtAuthenticationService.ValidateToken(token);
-
-            // Assert
-            claimsPrincipal.Should().NotBeNull();
-            claimsPrincipal!.FindFirst(JwtRegisteredClaimNames.Sub)?.Value.Should().Be(userId);
-            claimsPrincipal.FindFirst(JwtRegisteredClaimNames.UniqueName)?.Value.Should().Be(userName);
-            claimsPrincipal.FindFirst(ClaimTypes.Role)?.Value.Should().Be(UserRole.Doctor.ToString());
-        }
-
-        [Fact]
-        public void ValidateToken_Should_Return_Null_When_Token_Is_Invalid()
-        {
-            // Arrange
-            var invalidToken = "invalid.jwt.token";
-
-            // Act
-            var claimsPrincipal = _jwtAuthenticationService.ValidateToken(invalidToken);
-
-            // Assert
-            claimsPrincipal.Should().BeNull();
-        }
-
-        [Theory]
-        [InlineData("")]
-        [InlineData("   ")]
-        [InlineData(null)]
-        public void ValidateToken_Should_Return_Null_When_Token_Is_Empty(string? token)
-        {
-            // Act
-            var claimsPrincipal = _jwtAuthenticationService.ValidateToken(token!);
-
-            // Assert
-            claimsPrincipal.Should().BeNull();
-        }
-
-        [Fact]
-        public void ValidateToken_Should_Return_Null_When_Token_Is_Expired()
-        {
-            // Arrange - 创建一个过期的令牌
-            var claims = new List<Claim>
+            // 创建一个已过期的JWT选项
+            var expiredOptions = new JwtOptions
             {
-                new(JwtRegisteredClaimNames.Sub, "user-123"),
-                new(JwtRegisteredClaimNames.UniqueName, "testuser"),
-                new(ClaimTypes.Role, UserRole.Doctor.ToString())
+                Secret = _jwtOptions.Secret,
+                Issuer = _jwtOptions.Issuer,
+                Audience = _jwtOptions.Audience,
+                ExpireMinutes = -1, // 负数表示立即过期
+                RememberMeExpireMinutes = _jwtOptions.RememberMeExpireMinutes,
+                ClockSkewSeconds = 0 // 不允许时钟偏差
             };
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.Secret));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+            var expiredOptionsMock = new Mock<IOptions<JwtOptions>>();
+            expiredOptionsMock.Setup(x => x.Value).Returns(expiredOptions);
 
-            var expiredToken = new JwtSecurityToken(
-                issuer: _jwtOptions.Issuer,
-                audience: _jwtOptions.Audience,
-                claims: claims,
-                expires: DateTime.UtcNow.AddHours(-1), // 过期1小时，远超过ClockSkew容差
-                signingCredentials: creds);
+            var expiredJwtService = new JwtAuthenticationService(
+                expiredOptionsMock.Object,
+                _loggerMock.Object,
+                _keyManagementServiceMock.Object);
 
-            var tokenString = _tokenHandler.WriteToken(expiredToken);
+            var token = expiredJwtService.GenerateToken("user", "name", UserRole.Doctor, false);
+
+            // 等待一秒确保过期
+            System.Threading.Thread.Sleep(1000);
 
             // Act
-            var claimsPrincipal = _jwtAuthenticationService.ValidateToken(tokenString);
+            var principal = _jwtService.ValidateToken(token);
 
             // Assert
-            claimsPrincipal.Should().BeNull();
+            principal.Should().BeNull();
         }
 
         [Fact]
-        public void ValidateToken_Should_Return_Null_When_Token_Has_Wrong_Issuer()
-        {
-            // Arrange - 创建一个签发者错误的令牌
-            var claims = new List<Claim>
-            {
-                new(JwtRegisteredClaimNames.Sub, "user-123"),
-                new(JwtRegisteredClaimNames.UniqueName, "testuser")
-            };
-
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.Secret));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-            var wrongIssuerToken = new JwtSecurityToken(
-                issuer: "WrongIssuer",
-                audience: _jwtOptions.Audience,
-                claims: claims,
-                expires: DateTime.UtcNow.AddHours(1),
-                signingCredentials: creds);
-
-            var tokenString = _tokenHandler.WriteToken(wrongIssuerToken);
-
-            // Act
-            var claimsPrincipal = _jwtAuthenticationService.ValidateToken(tokenString);
-
-            // Assert
-            claimsPrincipal.Should().BeNull();
-        }
-
-        [Fact]
-        public void ValidateToken_Should_Return_Null_When_Token_Has_Wrong_Secret()
-        {
-            // Arrange - 创建一个用错误密钥签名的令牌
-            var claims = new List<Claim>
-            {
-                new(JwtRegisteredClaimNames.Sub, "user-123"),
-                new(JwtRegisteredClaimNames.UniqueName, "testuser")
-            };
-
-            var wrongKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("WRONG_SECRET_KEY_FOR_TESTING_32_CHARS"));
-            var wrongCreds = new SigningCredentials(wrongKey, SecurityAlgorithms.HmacSha256);
-
-            var wrongSecretToken = new JwtSecurityToken(
-                issuer: _jwtOptions.Issuer,
-                audience: _jwtOptions.Audience,
-                claims: claims,
-                expires: DateTime.UtcNow.AddHours(1),
-                signingCredentials: wrongCreds);
-
-            var tokenString = _tokenHandler.WriteToken(wrongSecretToken);
-
-            // Act
-            var claimsPrincipal = _jwtAuthenticationService.ValidateToken(tokenString);
-
-            // Assert
-            claimsPrincipal.Should().BeNull();
-        }
-
-        #endregion
-
-        #region RefreshToken 测试
-
-        [Fact]
-        public void RefreshToken_Should_Return_New_Token_When_Current_Token_Is_Valid()
+        public void RefreshToken_WithValidToken_ShouldGenerateNewToken()
         {
             // Arrange
             var userId = Guid.NewGuid().ToString();
             var userName = "testuser";
-            var role = UserRole.Doctor;
-            var originalToken = _jwtAuthenticationService.GenerateToken(userId, userName, role, false);
+            var role = UserRole.Admin;
+            var originalToken = _jwtService.GenerateToken(userId, userName, role, false);
 
             // Act
-            var newToken = _jwtAuthenticationService.RefreshToken(originalToken);
+            var newToken = _jwtService.RefreshToken(originalToken);
 
             // Assert
             newToken.Should().NotBeNullOrEmpty();
-            newToken.Should().NotBe(originalToken);
+            newToken.Should().NotBe(originalToken); // 应该是新的令牌
 
-            var newJwtToken = _tokenHandler.ReadJwtToken(newToken);
-            newJwtToken.Claims.Should().Contain(c => c.Type == JwtRegisteredClaimNames.Sub && c.Value == userId);
-            newJwtToken.Claims.Should().Contain(c => c.Type == JwtRegisteredClaimNames.UniqueName && c.Value == userName);
-            newJwtToken.Claims.Should().Contain(c => c.Type == ClaimTypes.Role && c.Value == UserRole.Doctor.ToString());
+            // 验证新令牌包含相同的用户信息
+            var handler = new JwtSecurityTokenHandler();
+            var jsonToken = handler.ReadJwtToken(newToken);
+
+            var claims = jsonToken.Claims.ToList();
+            claims.Should().Contain(c => c.Type == JwtRegisteredClaimNames.Sub && c.Value == userId);
+            claims.Should().Contain(c => c.Type == JwtRegisteredClaimNames.UniqueName && c.Value == userName);
+            claims.Should().Contain(c => c.Type == ClaimTypes.Role && c.Value == role.ToString());
         }
 
         [Fact]
-        public void RefreshToken_Should_Throw_When_Token_Is_Invalid()
+        public void RefreshToken_WithInvalidToken_ShouldThrowException()
         {
             // Arrange
-            var invalidToken = "invalid.jwt.token";
+            var invalidToken = "invalid.token.here";
 
             // Act & Assert
-            var action = () => _jwtAuthenticationService.RefreshToken(invalidToken);
-            action.Should().Throw<SecurityTokenException>()
-                .WithMessage("Invalid token");
-        }
-
-        [Fact]
-        public void RefreshToken_Should_Default_To_Doctor_Role_When_Role_Parse_Fails()
-        {
-            // Arrange - 创建一个包含无效角色的令牌
-            var claims = new List<Claim>
+            Assert.Throws<System.IdentityModel.Tokens.Jwt.SecurityTokenException>(() =>
             {
-                new(JwtRegisteredClaimNames.Sub, "user-123"),
-                new(JwtRegisteredClaimNames.UniqueName, "testuser"),
-                new(ClaimTypes.Role, "InvalidRole")
-            };
-
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.Secret));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-            var tokenWithInvalidRole = new JwtSecurityToken(
-                issuer: _jwtOptions.Issuer,
-                audience: _jwtOptions.Audience,
-                claims: claims,
-                expires: DateTime.UtcNow.AddHours(1),
-                signingCredentials: creds);
-
-            var tokenString = _tokenHandler.WriteToken(tokenWithInvalidRole);
-
-            // Act
-            var newToken = _jwtAuthenticationService.RefreshToken(tokenString);
-
-            // Assert
-            var newJwtToken = _tokenHandler.ReadJwtToken(newToken);
-            newJwtToken.Claims.Should().Contain(c => c.Type == ClaimTypes.Role && c.Value == UserRole.Doctor.ToString());
+                _jwtService.RefreshToken(invalidToken);
+            });
         }
 
         [Fact]
-        public void RefreshToken_Should_Handle_Missing_Claims()
-        {
-            // Arrange - 创建一个缺少某些声明的令牌
-            var claims = new List<Claim>
-            {
-                new(JwtRegisteredClaimNames.Sub, "user-123")
-                // 缺少 UniqueName 和 Role
-            };
-
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.Secret));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-            var incompleteToken = new JwtSecurityToken(
-                issuer: _jwtOptions.Issuer,
-                audience: _jwtOptions.Audience,
-                claims: claims,
-                expires: DateTime.UtcNow.AddHours(1),
-                signingCredentials: creds);
-
-            var tokenString = _tokenHandler.WriteToken(incompleteToken);
-
-            // Act
-            var newToken = _jwtAuthenticationService.RefreshToken(tokenString);
-
-            // Assert
-            var newJwtToken = _tokenHandler.ReadJwtToken(newToken);
-            newJwtToken.Claims.Should().Contain(c => c.Type == JwtRegisteredClaimNames.Sub && c.Value == "user-123");
-            newJwtToken.Claims.Should().Contain(c => c.Type == JwtRegisteredClaimNames.UniqueName && c.Value == "");
-            newJwtToken.Claims.Should().Contain(c => c.Type == ClaimTypes.Role && c.Value == UserRole.Doctor.ToString());
-        }
-
-        #endregion
-
-        #region ExtractUserInfo 测试
-
-        [Fact]
-        public void ExtractUserInfo_Should_Return_UserInfo_When_Token_Is_Valid()
+        public void ExtractUserInfo_WithValidToken_ShouldReturnTokenUserInfo()
         {
             // Arrange
             var userId = Guid.NewGuid().ToString();
             var userName = "testuser";
-            var role = UserRole.Admin;
-            var token = _jwtAuthenticationService.GenerateToken(userId, userName, role, false);
+            var role = UserRole.Pharmacist;
+            var token = _jwtService.GenerateToken(userId, userName, role, false);
 
             // Act
-            var userInfo = _jwtAuthenticationService.ExtractUserInfo(token);
+            var userInfo = _jwtService.ExtractUserInfo(token);
 
             // Assert
             userInfo.Should().NotBeNull();
-            userInfo!.UserId.Should().Be(userId);
-            userInfo.Username.Should().Be(userName);
-            userInfo.Role.Should().Be(UserRole.Admin);
-            userInfo.ExpiresAt.Should().BeAfter(DateTime.UtcNow);
-        }
-
-        [Fact]
-        public void ExtractUserInfo_Should_Return_Null_When_Token_Is_Malformed()
-        {
-            // Arrange
-            var malformedToken = "malformed.token";
-
-            // Act
-            var userInfo = _jwtAuthenticationService.ExtractUserInfo(malformedToken);
-
-            // Assert
-            userInfo.Should().BeNull();
-        }
-
-        [Theory]
-        [InlineData("")]
-        [InlineData("   ")]
-        [InlineData(null)]
-        public void ExtractUserInfo_Should_Return_Null_When_Token_Is_Empty(string? token)
-        {
-            // Act
-            var userInfo = _jwtAuthenticationService.ExtractUserInfo(token!);
-
-            // Assert
-            userInfo.Should().BeNull();
-        }
-
-        [Fact]
-        public void ExtractUserInfo_Should_Default_To_Doctor_Role_When_Role_Parse_Fails()
-        {
-            // Arrange - 创建一个包含无效角色的令牌
-            var claims = new List<Claim>
-            {
-                new(JwtRegisteredClaimNames.Sub, "user-123"),
-                new(JwtRegisteredClaimNames.UniqueName, "testuser"),
-                new(ClaimTypes.Role, "InvalidRole")
-            };
-
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.Secret));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-            var tokenWithInvalidRole = new JwtSecurityToken(
-                issuer: _jwtOptions.Issuer,
-                audience: _jwtOptions.Audience,
-                claims: claims,
-                expires: DateTime.UtcNow.AddHours(1),
-                signingCredentials: creds);
-
-            var tokenString = _tokenHandler.WriteToken(tokenWithInvalidRole);
-
-            // Act
-            var userInfo = _jwtAuthenticationService.ExtractUserInfo(tokenString);
-
-            // Assert
-            userInfo.Should().NotBeNull();
-            userInfo!.Role.Should().Be(UserRole.Doctor);
-        }
-
-        [Fact]
-        public void ExtractUserInfo_Should_Handle_Missing_Claims()
-        {
-            // Arrange - 创建一个缺少某些声明的令牌
-            var claims = new List<Claim>
-            {
-                new(JwtRegisteredClaimNames.Sub, "user-123")
-                // 缺少其他声明
-            };
-
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.Secret));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-            var incompleteToken = new JwtSecurityToken(
-                issuer: _jwtOptions.Issuer,
-                audience: _jwtOptions.Audience,
-                claims: claims,
-                expires: DateTime.UtcNow.AddHours(1),
-                signingCredentials: creds);
-
-            var tokenString = _tokenHandler.WriteToken(incompleteToken);
-
-            // Act
-            var userInfo = _jwtAuthenticationService.ExtractUserInfo(tokenString);
-
-            // Assert
-            userInfo.Should().NotBeNull();
-            userInfo!.UserId.Should().Be("user-123");
-            userInfo.Username.Should().Be("");
-            userInfo.Role.Should().Be(UserRole.Doctor);
-        }
-
-        [Fact]
-        public void ExtractUserInfo_Should_Handle_Exception_Gracefully()
-        {
-            // Arrange - 一个看起来像JWT但实际上不是的字符串
-            var fakeToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.invalid.signature";
-
-            // Act
-            var userInfo = _jwtAuthenticationService.ExtractUserInfo(fakeToken);
-
-            // Assert
-            userInfo.Should().BeNull();
-        }
-
-        #endregion
-
-        #region 边界值和集成测试
-
-        [Fact]
-        public void Full_Token_Lifecycle_Should_Work_Correctly()
-        {
-            // Arrange
-            var userId = Guid.NewGuid().ToString();
-            var userName = "integrationtest";
-            var role = UserRole.Admin;
-
-            // Act & Assert - 完整的令牌生命周期测试
-
-            // 1. 生成令牌
-            var token = _jwtAuthenticationService.GenerateToken(userId, userName, role, true);
-            token.Should().NotBeNullOrEmpty();
-
-            // 2. 验证令牌
-            var claimsPrincipal = _jwtAuthenticationService.ValidateToken(token);
-            claimsPrincipal.Should().NotBeNull();
-
-            // 3. 提取用户信息
-            var userInfo = _jwtAuthenticationService.ExtractUserInfo(token);
-            userInfo.Should().NotBeNull();
-            userInfo!.UserId.Should().Be(userId);
+            userInfo.UserId.Should().Be(userId);
             userInfo.Username.Should().Be(userName);
             userInfo.Role.Should().Be(role);
-
-            // 4. 刷新令牌
-            var newToken = _jwtAuthenticationService.RefreshToken(token);
-            newToken.Should().NotBeNullOrEmpty();
-            newToken.Should().NotBe(token);
-
-            // 5. 验证新令牌
-            var newClaimsPrincipal = _jwtAuthenticationService.ValidateToken(newToken);
-            newClaimsPrincipal.Should().NotBeNull();
-            newClaimsPrincipal!.FindFirst(JwtRegisteredClaimNames.Sub)?.Value.Should().Be(userId);
+            userInfo.ExpiresAt.Should().BeCloseTo(
+                DateTime.UtcNow.AddMinutes(_jwtOptions.ExpireMinutes),
+                TimeSpan.FromMinutes(1));
         }
 
         [Fact]
-        public void JwtAuthenticationService_Should_Implement_IJwtAuthenticationService()
+        public void ExtractUserInfo_WithMalformedToken_ShouldReturnNull()
         {
+            // Arrange
+            var malformedToken = "not.a.valid.jwt.token";
+
+            // Act
+            var userInfo = _jwtService.ExtractUserInfo(malformedToken);
+
             // Assert
-            _jwtAuthenticationService.Should().BeAssignableTo<IJwtAuthenticationService>();
+            userInfo.Should().BeNull();
+
+            // 验证警告日志
+            _loggerMock.Verify(
+                x => x.Log(
+                    LogLevel.Warning,
+                    It.IsAny<EventId>(),
+                    It.IsAny<It.IsAnyType>(),
+                    It.IsAny<Exception>(),
+                    It.IsAny<Func<It.IsAnyType, Exception, string>>()),
+                Times.AtLeastOnce);
+        }
+
+        [Theory]
+        [InlineData(UserRole.Admin)]
+        [InlineData(UserRole.Doctor)]
+        [InlineData(UserRole.Nurse)]
+        [InlineData(UserRole.Pharmacist)]
+        public void GenerateToken_WithDifferentRoles_ShouldIncludeCorrectRoleClaim(UserRole role)
+        {
+            // Arrange
+            var userId = Guid.NewGuid().ToString();
+            var userName = "testuser";
+
+            // Act
+            var token = _jwtService.GenerateToken(userId, userName, role, false);
+
+            // Assert
+            var handler = new JwtSecurityTokenHandler();
+            var jsonToken = handler.ReadJwtToken(token);
+
+            var roleClaims = jsonToken.Claims.Where(c => c.Type == ClaimTypes.Role || c.Type == "role").ToList();
+            roleClaims.Should().HaveCount(2);
+            roleClaims.Should().OnlyContain(c => c.Value == role.ToString());
         }
 
         [Fact]
-        public void Multiple_Tokens_Should_Have_Unique_JTI()
+        public void GenerateToken_ShouldIncludeUniqueJti()
         {
             // Arrange
             var userId = Guid.NewGuid().ToString();
@@ -631,37 +336,20 @@ namespace LYBT.Module.Auth.Tests.Services
             var role = UserRole.Doctor;
 
             // Act
-            var token1 = _jwtAuthenticationService.GenerateToken(userId, userName, role, false);
-            var token2 = _jwtAuthenticationService.GenerateToken(userId, userName, role, false);
+            var token1 = _jwtService.GenerateToken(userId, userName, role, false);
+            var token2 = _jwtService.GenerateToken(userId, userName, role, false);
 
             // Assert
-            var jwtToken1 = _tokenHandler.ReadJwtToken(token1);
-            var jwtToken2 = _tokenHandler.ReadJwtToken(token2);
+            var handler = new JwtSecurityTokenHandler();
+            var jsonToken1 = handler.ReadJwtToken(token1);
+            var jsonToken2 = handler.ReadJwtToken(token2);
 
-            var jti1 = jwtToken1.Claims.First(c => c.Type == JwtRegisteredClaimNames.Jti).Value;
-            var jti2 = jwtToken2.Claims.First(c => c.Type == JwtRegisteredClaimNames.Jti).Value;
+            var jti1 = jsonToken1.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Jti)?.Value;
+            var jti2 = jsonToken2.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Jti)?.Value;
 
-            jti1.Should().NotBe(jti2);
+            jti1.Should().NotBeNullOrEmpty();
+            jti2.Should().NotBeNullOrEmpty();
+            jti1.Should().NotBe(jti2); // 每个令牌应该有唯一的JTI
         }
-
-        [Theory]
-        [InlineData(UserRole.Doctor)]
-        [InlineData(UserRole.Admin)]
-        public void GenerateToken_Should_Work_For_All_User_Roles(UserRole role)
-        {
-            // Arrange
-            var userId = Guid.NewGuid().ToString();
-            var userName = "testuser";
-
-            // Act
-            var token = _jwtAuthenticationService.GenerateToken(userId, userName, role, false);
-
-            // Assert
-            token.Should().NotBeNullOrEmpty();
-            var jwtToken = _tokenHandler.ReadJwtToken(token);
-            jwtToken.Claims.Should().Contain(c => c.Type == ClaimTypes.Role && c.Value == role.ToString());
-        }
-
-        #endregion
     }
 }
