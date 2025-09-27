@@ -13,7 +13,7 @@ using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Security;
 using LYBT.Module.Auth.Interfaces;
 using LYBT.Module.Users.Interfaces;
-using LYBT.Shared.Models.Auth;
+using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;

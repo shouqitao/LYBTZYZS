@@ -157,8 +157,12 @@ dotnet restore LYBT.All.sln
 dotnet build LYBT.Server.sln -c Release --no-restore
 # dotnet build LYBT.Desktop.sln -c Release --no-restore  # 需先统一事件体系
 
-# 运行 WebAPI
+# 运行 WebAPI（默认端口 5001）
+set ASPNETCORE_URLS=http://localhost:5001
 dotnet run --project src/Server/Services/LYBT.WebAPI
+
+# Swagger（开发环境）
+# http://localhost:5001/swagger
 `
 
 ## 测试现状

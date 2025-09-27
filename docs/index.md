@@ -64,6 +64,7 @@ src/
 2. [CLAUDE.md](../CLAUDE.md) → 掌握开发约束  
 3. [开发者指导](DEVELOPER_GUIDE.md) → 环境配置和开发实践
 4. [开发规范](development/README.md) → 编码标准和最佳实践
+5. [最小实践指南](development/minimal-practice.md) → Issue → 清单 → PR → 交付
 
 ### 🔧 日常开发任务
 1. [API开发](api/README.md) → 接口设计和实现
@@ -72,7 +73,7 @@ src/
 4. [测试指导](development/testing-best-practices.md) → 质量保证
 
 ### 📊 项目管理视角
-1. GitHub Issues → 需求规格与变更、讨论与验收
+1. GitHub Issues → 需求/变更/讨论/验收（单一事实源）
 2. [任务跟踪](tasks/) → 进度和完成状态（计划与总结同步）
 3. [分析报告](reports/) → 项目健康度和改进建议
 4. [架构治理](architecture/) → 技术债务和优化方向
@@ -98,6 +99,8 @@ src/
 - **功能说明**：范围、目标、关键特性
 - **导航链接**：上级文档、平级文档、下级文档  
 - **维护规则**：更新条件、归档策略
+
+> 文档白名单：仅保留“架构与决策（ADR/overview）”“开发规范与指南”“技术与安全”“任务（plan/completed）”。PRD/阶段性计划统一走 GitHub Issues。
 
 ## 🛠 文档工具和自动化
 

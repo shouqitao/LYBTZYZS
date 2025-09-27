@@ -25,3 +25,22 @@
 2. 过期或被取代的指南应在文首标注“历史版本”，必要时移动到 `docs/reports/archive/`。
 3. 每次架构评审后，更新“衔接其他资料”中的链接，确保决策链条完整。
 
+# 架构文档（概览）
+
+版本：v1.0  
+维护：Claude Code
+
+## 关键入口（证据）
+- WebAPI 入口：`src/Server/Services/LYBT.WebAPI/Program.cs:39`（创建 Builder）
+- 统一注册：`src/Server/Services/LYBT.WebAPI/Extensions/UnifiedServiceRegistration.cs:22`（RegisterAllApplicationServices）
+- 统一初始化：`src/Server/Services/LYBT.WebAPI/Extensions/UnifiedApplicationInitialization.cs:16`（InitializeAllApplicationServices）
+- 桌面入口：`src/Client/Desktop/Shell/App.xaml.cs:44`（CreateShell）
+
+## 分层
+- Server：Controllers/Services/Core/Modules（EF Core、缓存、鉴权）
+- Client：Shell/Core/Infrastructure/Modules（Prism 模块化）
+- Shared：Models/Interfaces/Utilities（契约与工具）
+
+## 维护规则
+- 入口与装配变更需同步更新此处证据行号
+- 架构决策以 ADR 文档为准（architecture/ADR-*.md）
