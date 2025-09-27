@@ -167,7 +167,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
                     Keyword = string.Empty
                 };
 
-                var result = await _patientService.GetPagedAsync(query);
+                var result = await _patientService.GetPagedAsync(query.PageIndex, query.PageSize, query.Keyword);
                 if (result.IsSuccess && result.Data != null)
                 {
                     Patients.Clear();
@@ -210,17 +210,16 @@ namespace LYBT.Desktop.Consultation.ViewModels
                 Consultation.StartTime = DateTime.Now;
                 Consultation.DoctorName = GetCurrentUser()?.RealName ?? string.Empty;
 
-                var createDto = new ConsultationStartDto
+                var createDto = new ConsultationCreateDto
                 {
                     PatientId = SelectedPatient.Id,
-                    DoctorId = GetCurrentUser()?.Id ?? Guid.Empty,
+                    UserId = GetCurrentUser()?.Id ?? Guid.Empty,
                     MedicalCaseId = MedicalCaseId ?? Guid.NewGuid(),
-                    EstimatedDuration = 30,
-                    ConsultationType = "门诊",
+                    ChiefComplaint = "新诊疗记录",
                     Remark = $"患者：{SelectedPatient.Name}，医生：{GetCurrentUser()?.RealName ?? string.Empty}"
                 };
 
-                var result = await _consultationService.StartAsync(createDto);
+                var result = await _consultationService.CreateAsync(createDto);
                 if (result.IsSuccess && result.Data != null)
                 {
                     Consultation = result.Data;

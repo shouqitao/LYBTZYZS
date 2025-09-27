@@ -31,7 +31,8 @@ namespace LYBT.Module.MedicalCase.Services
         {
             try
             {
-                var pagedResult = await _repository.GetPagedAsync(page, pageSize);
+                // 使用优化后的查询方法，包含Consultation和Prescription
+                var pagedResult = await _repository.GetPagedWithDetailsAsync(page, pageSize, keyword);
                 var dto = new PagedResult<MedicalCaseDto>
                 {
                     Items = _mapper.Map<List<MedicalCaseDto>>(pagedResult.Items),
@@ -52,7 +53,8 @@ namespace LYBT.Module.MedicalCase.Services
         {
             try
             {
-                var entity = await _repository.GetByIdAsync(id);
+                // 使用优化后的查询方法，包含所有关联数据
+                var entity = await _repository.GetByIdWithDetailsAsync(id);
                 if (entity == null)
                     return ServiceResult<MedicalCaseDto>.Failure("医疗案例不存在");
 
@@ -113,6 +115,22 @@ namespace LYBT.Module.MedicalCase.Services
             {
                 _logger.LogError(ex, "删除医疗案例失败");
                 return ServiceResult.Failure("删除医疗案例失败");
+            }
+        }
+
+        public async Task<ServiceResult<List<MedicalCaseDto>>> GetByPatientIdAsync(Guid patientId)
+        {
+            try
+            {
+                // 使用优化后的查询方法，直接查询并包含关联数据
+                var patientCases = await _repository.GetByPatientIdAsync(patientId);
+                var dto = _mapper.Map<List<MedicalCaseDto>>(patientCases);
+                return ServiceResult<List<MedicalCaseDto>>.Success(dto);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "根据患者ID获取医疗案例失败");
+                return ServiceResult<List<MedicalCaseDto>>.Failure("获取医疗案例失败");
             }
         }
     }

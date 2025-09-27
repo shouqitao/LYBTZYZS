@@ -8,6 +8,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using JwtOptions = LYBT.Infrastructure.Configuration.Options.JwtOptions;
+using LYBT.Infrastructure.Data.Interceptors;
+using LYBT.Infrastructure.Data.Monitoring;
 
 namespace LYBT.Infrastructure
 {
@@ -115,7 +117,7 @@ namespace LYBT.Infrastructure
                 throw new InvalidOperationException("Infrastructure database connection string is not configured");
             }
 
-            services.AddDbContext<AppDbContext>(options =>
+            services.AddDbContext<AppDbContext>((serviceProvider, options) =>
             {
                 options.UseSqlServer(connectionString, sqlOptions =>
                 {
@@ -127,6 +129,20 @@ namespace LYBT.Infrastructure
                 });
                 options.EnableSensitiveDataLogging(false);
                 options.EnableServiceProviderCaching();
+                
+                // 添加查询性能监控拦截器
+                var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
+                if (loggerFactory != null)
+                {
+                    var logger = loggerFactory.CreateLogger<QueryPerformanceInterceptor>();
+                    var statisticsCollector = serviceProvider.GetService<IQueryStatisticsCollector>();
+                    var interceptor = new QueryPerformanceInterceptor(
+                        logger,
+                        slowQueryThresholdMs: 100,
+                        includeStackTrace: false,
+                        statisticsCollector);
+                    options.AddInterceptors(interceptor);
+                }
             });
 
             return services;
@@ -149,6 +165,9 @@ namespace LYBT.Infrastructure
 
             // 添加认证配置
             services.AddAuthConfiguration(configuration);
+
+            // 添加查询性能监控服务
+            services.AddSingleton<IQueryStatisticsCollector, QueryStatisticsCollector>();
 
             // 注意：API版本控制在Program.cs中单独配置
             return services;

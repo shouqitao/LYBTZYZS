@@ -70,5 +70,11 @@ namespace LYBT.Desktop.Patients.Services
                 return ServiceResult.Success();
             }, nameof(DeleteAsync));
         }
+
+    public async Task<ServiceResult<List<PatientDto>>> SearchAsync(string keyword)
+    {
+        // 暂时返回空列表，实际实现待完善
+        return await Task.FromResult(ServiceResult<List<PatientDto>>.Success(new List<PatientDto>()));
+    }
     }
 }

@@ -1,4 +1,4 @@
-using LYBT.Core.Infrastructure.Security;
+using LYBT.Infrastructure.Security;
 using Microsoft.AspNetCore.DataProtection;
 
 namespace LYBT.WebAPI.Extensions.ServiceCollection
@@ -28,13 +28,18 @@ namespace LYBT.WebAPI.Extensions.ServiceCollection
                 // services.AddDataProtection().ProtectKeysWithCertificate(certificate);
             }
 
-            // 注册数据保护服务
-            services.AddSingleton<IDataProtectionService, DataProtectionService>();
+            // 移除对不存在服务的注册，使用简化的密钥管理
+            // 注册密钥管理服务
+            services.AddScoped<IKeyManagementService, KeyManagementService>();
+            
+            // 注册密钥管理服务工厂（避免Service Locator反模式）
+            services.AddSingleton<IKeyManagementServiceFactory, KeyManagementServiceFactory>();
 
-            // 注册密钥管理服务（使用简化版本）
-            services.AddScoped<IKeyManagementService, SimpleKeyManagementService>();
+            // JWT安全服务
+            // 注册Token黑名单服务
+            services.AddScoped<ITokenBlacklistService, TokenBlacklistService>();
 
-            // 添加密钥旋转后台服务
+            // 添加密钥旋转后台服务（使用工厂模式）
             services.AddHostedService<KeyRotationBackgroundService>();
 
             return services;

@@ -28,11 +28,11 @@ namespace LYBT.Shared.Models.Contracts.Consultation
 
         /// <summary>患者姓名</summary>
         [DisplayName("患者姓名")]
-        public string PatientName { get; set; } = string.Empty;
+        public string? PatientName { get; set; }
 
         /// <summary>医生姓名</summary>
         [DisplayName("医生姓名")]
-        public string DoctorName { get; set; } = string.Empty;
+        public string? DoctorName { get; set; }
 
         /// <summary>主诉</summary>
         [DisplayName("主诉")]
@@ -105,11 +105,11 @@ namespace LYBT.Shared.Models.Contracts.Consultation
 
         /// <summary>患者姓名</summary>
         [DisplayName("患者姓名")]
-        public string PatientName { get; set; } = string.Empty;
+        public string? PatientName { get; set; }
 
         /// <summary>医生姓名</summary>
         [DisplayName("医生姓名")]
-        public string DoctorName { get; set; } = string.Empty;
+        public string? DoctorName { get; set; }
 
         /// <summary>主诉</summary>
         [DisplayName("主诉")]

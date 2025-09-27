@@ -78,6 +78,23 @@ body:
       description: 如果适用，请添加草图、线框图或设计建议
 
   - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: 验收标准（Acceptance Criteria）
+      description: 明确可验证的完成条件（建议使用清单）
+      placeholder: |
+        - [ ] 新增 API 路由与契约按文档实现
+        - [ ] 单元/集成测试覆盖主要场景
+        - [ ] 相关文档（README/architecture）已更新
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        提示：提交 PR 时在描述中使用 Fixes/Closes/Resolves #<issue> 可在合并后自动关闭 Issue，并保持项目看板同步。
+
+  - type: textarea
     id: additional-context
     attributes:
       label: 附加说明

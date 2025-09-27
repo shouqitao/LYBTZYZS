@@ -1,3 +1,4 @@
+using System.Linq;
 using AutoMapper;
 using LYBT.Entities.Patients;
 using LYBT.Module.Patients.Interfaces;
@@ -101,6 +102,33 @@ namespace LYBT.Module.Patients.Services
                 return ServiceResult<PatientDto>.Failure("更新患者失败");
             }
         }
+
+    public async Task<ServiceResult<List<PatientDto>>> SearchAsync(string keyword)
+    {
+        try
+        {
+            // 如果关键字为空，返回空列表
+            if (string.IsNullOrWhiteSpace(keyword))
+            {
+                return ServiceResult<List<PatientDto>>.Success(new List<PatientDto>());
+            }
+
+            // 搜索匹配关键字的患者（姓名、电话或身份证号）
+            var allPatients = await _repository.GetAllAsync();
+            var patients = allPatients.Where(p =>
+                p.Name.Contains(keyword)).ToList();
+
+            // 转换为DTO
+            var patientDtos = _mapper.Map<List<PatientDto>>(patients);
+
+            return ServiceResult<List<PatientDto>>.Success(patientDtos);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "搜索患者时发生错误，关键字：{Keyword}", keyword);
+            return ServiceResult<List<PatientDto>>.Failure($"搜索患者失败：{ex.Message}");
+        }
+    }
 
         public async Task<ServiceResult> DeleteAsync(Guid id)
         {

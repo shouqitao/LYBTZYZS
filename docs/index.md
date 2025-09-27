@@ -28,13 +28,13 @@
 | 文档路径 | 说明 | 关键内容 |
 |----------|------|----------|
 | [development/](development/README.md) | 开发规范指导集合 | 编码标准、测试指南、审计字段、枚举规范 |
-| [prd/](prd/README.md) | 产品需求文档管理 | PRD模板、需求流程、变更管理 |
+| GitHub Issues | 需求与任务单一事实源 | 需求、讨论、验收、进度（替代本地 PRD） |
 
 #### 任务与交付
 | 文档路径 | 说明 | 关键内容 |
 |----------|------|----------|
 | [tasks/](tasks/) | 任务管理系统 | pending/待办任务、completed/完成总结 |
-| [reports/](reports/) | 分析报告文档 | 架构分析、性能报告、完成总结 |
+| [reports/](reports/) | 分析报告文档 | 架构分析、规范性报告、长期参考（阶段性计划已迁移到 Issues） |
 
 ### 🔧 L3: 实施细节层（开发时查阅）
 
@@ -68,12 +68,12 @@ src/
 ### 🔧 日常开发任务
 1. [API开发](api/README.md) → 接口设计和实现
 2. [架构参考](architecture/README.md) → 设计决策和模式
-3. [任务管理](tasks/) → 当前任务和优先级
+3. [任务管理](tasks/) → 当前任务和优先级（需求与讨论在 GitHub Issues）
 4. [测试指导](development/testing-best-practices.md) → 质量保证
 
 ### 📊 项目管理视角
-1. [PRD管理](prd/README.md) → 需求规格和变更
-2. [任务跟踪](tasks/) → 进度和完成状态
+1. GitHub Issues → 需求规格与变更、讨论与验收
+2. [任务跟踪](tasks/) → 进度和完成状态（计划与总结同步）
 3. [分析报告](reports/) → 项目健康度和改进建议
 4. [架构治理](architecture/) → 技术债务和优化方向
 
@@ -86,11 +86,11 @@ src/
 | **开发实现、技术文档** | Claude Code | CLAUDE.md, development/, api/, src/*/README.md |
 | **完成总结、实施报告** | Claude Code | tasks/completed/, reports/ |
 
-### 文档更新触发规则
-- **架构变更** → 必须更新architecture/和根README.md
-- **API变更** → 必须更新api/README.md和Swagger文档
-- **模块重构** → 必须更新相关src/*/README.md
-- **任务完成** → 必须在tasks/completed/创建总结文档
+### 文档更新触发规则（收敛）
+- 架构变更 → 更新 architecture/ 与根 README.md
+- API 变更 → 更新 api/README.md 与 Swagger
+- 模块重构 → 更新相关 src/*/README.md
+- 任务完成 → 在 tasks/completed/ 添加总结（需求/讨论在 Issues）
 
 ### 文档质量标准
 每个README文件必须包含：

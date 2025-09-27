@@ -49,6 +49,25 @@ namespace LYBT.Infrastructure.Repositories
                 .FirstOrDefaultAsync();
         }
 
+        /// <summary>
+        /// 根据ID获取实体（优化版，支持预加载）
+        /// </summary>
+        /// <param name="id">实体ID</param>
+        /// <param name="includes">要预加载的导航属性</param>
+        /// <returns>实体</returns>
+        public virtual async Task<TEntity?> GetByIdAsync(Guid id, params string[] includes)
+        {
+            var query = _dbSet.Where(e => e.Id == id && !e.IsDeleted);
+            
+            // 应用Include
+            foreach (var include in includes)
+            {
+                query = query.Include(include);
+            }
+            
+            return await query.FirstOrDefaultAsync();
+        }
+
         // IRepository实现
         async Task<TEntity?> IRepository<TEntity>.GetByIdAsync(Guid id)
         {
@@ -99,6 +118,136 @@ namespace LYBT.Infrastructure.Repositories
                 .ToListAsync();
         }
 
+        /// <summary>
+        /// 根据条件查询（优化版，支持预加载和分页）
+        /// </summary>
+        /// <param name="predicate">查询条件</param>
+        /// <param name="includes">要预加载的导航属性</param>
+        /// <param name="orderBy">排序表达式</param>
+        /// <param name="skip">跳过的记录数</param>
+        /// <param name="take">获取的记录数</param>
+        /// <returns>查询结果</returns>
+        public virtual async Task<List<TEntity>> FindAsync(
+            Expression<Func<TEntity, bool>>? predicate = null,
+            Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
+            string[]? includes = null,
+            int? skip = null,
+            int? take = null)
+        {
+            var query = _dbSet.Where(e => !e.IsDeleted);
+
+            // 应用查询条件
+            if (predicate != null)
+            {
+                query = query.Where(predicate);
+            }
+
+            // 应用Include
+            if (includes != null)
+            {
+                foreach (var include in includes)
+                {
+                    query = query.Include(include);
+                }
+            }
+
+            // 应用排序
+            if (orderBy != null)
+            {
+                query = orderBy(query);
+            }
+            else
+            {
+                query = query.OrderByDescending(e => e.CreatedAt);
+            }
+
+            // 应用分页
+            if (skip.HasValue)
+            {
+                query = query.Skip(skip.Value);
+            }
+
+            if (take.HasValue)
+            {
+                query = query.Take(take.Value);
+            }
+
+            return await query.ToListAsync();
+        }
+
+        /// <summary>
+        /// 获取投影查询结果（减少数据传输）
+        /// </summary>
+        /// <typeparam name="TResult">投影结果类型</typeparam>
+        /// <param name="predicate">查询条件</param>
+        /// <param name="selector">投影选择器</param>
+        /// <returns>投影结果列表</returns>
+        public virtual async Task<List<TResult>> SelectAsync<TResult>(
+            Expression<Func<TEntity, bool>>? predicate,
+            Expression<Func<TEntity, TResult>> selector)
+        {
+            var query = _dbSet.Where(e => !e.IsDeleted);
+
+            if (predicate != null)
+            {
+                query = query.Where(predicate);
+            }
+
+            return await query.Select(selector).ToListAsync();
+        }
+
+        /// <summary>
+        /// 获取分页数据
+        /// </summary>
+        /// <param name="pageIndex">页码（从1开始）</param>
+        /// <param name="pageSize">每页大小</param>
+        /// <param name="predicate">查询条件</param>
+        /// <param name="orderBy">排序表达式</param>
+        /// <param name="includes">要预加载的导航属性</param>
+        /// <returns>分页结果</returns>
+        public virtual async Task<PaginatedList<TEntity>> GetPaginatedAsync(
+            int pageIndex,
+            int pageSize,
+            Expression<Func<TEntity, bool>>? predicate = null,
+            Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
+            params string[] includes)
+        {
+            var query = _dbSet.Where(e => !e.IsDeleted);
+
+            // 应用查询条件
+            if (predicate != null)
+            {
+                query = query.Where(predicate);
+            }
+
+            // 应用Include
+            foreach (var include in includes)
+            {
+                query = query.Include(include);
+            }
+
+            // 获取总数
+            var totalCount = await query.CountAsync();
+
+            // 应用排序
+            if (orderBy != null)
+            {
+                query = orderBy(query);
+            }
+            else
+            {
+                query = query.OrderByDescending(e => e.CreatedAt);
+            }
+
+            // 应用分页
+            var items = await query
+                .Skip((pageIndex - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return new PaginatedList<TEntity>(items, totalCount, pageIndex, pageSize);
+        }
+
         // IRepository实现
         async Task<IEnumerable<TEntity>> IRepository<TEntity>.FindAsync(Expression<Func<TEntity, bool>> predicate)
         {
@@ -116,6 +265,49 @@ namespace LYBT.Infrastructure.Repositories
             bool descending = true)
         {
             var query = _dbSet.Where(e => !e.IsDeleted);
+
+            if (predicate != null)
+            {
+                query = query.Where(predicate);
+            }
+
+            var totalCount = await query.CountAsync();
+
+            if (orderBy != null)
+            {
+                query = descending ? query.OrderByDescending(orderBy) : query.OrderBy(orderBy);
+            }
+            else
+            {
+                query = query.OrderByDescending(e => e.CreatedAt);
+            }
+
+            var items = await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (items, totalCount);
+        }
+
+        /// <summary>
+        /// 分页查询（包含关联数据）
+        /// </summary>
+        public virtual async Task<(List<TEntity> Items, int TotalCount)> GetPagedWithIncludesAsync(
+            int pageNumber,
+            int pageSize,
+            Expression<Func<TEntity, bool>> predicate = null,
+            Expression<Func<TEntity, object>> orderBy = null,
+            bool descending = true,
+            params Expression<Func<TEntity, object>>[] includes)
+        {
+            var query = _dbSet.Where(e => !e.IsDeleted);
+
+            // 应用Include
+            foreach (var include in includes)
+            {
+                query = query.Include(include);
+            }
 
             if (predicate != null)
             {

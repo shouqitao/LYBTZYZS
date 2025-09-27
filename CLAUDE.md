@@ -22,26 +22,87 @@
 
 > 未完成以上事项前，请勿开始新的功能开发。
 
-## 核心工作流：GitHub 驱动，Serena 辅助
+#### 任务启动前置检查 (Pre-flight Check)
 
-为确保所有开发活动清晰、可控、可追溯，本项目严格遵循以 GitHub 为中心的管理模式。AI (Claude Code) 在此流程中扮演“智能顾问”而非“项目经理”的角色。
+在着手处理任何 GitHub Issue 前，必须严格执行以下自动化检查，并将检查结果作为你行动方案的第一步依据：
+
+1.  **同步最新代码**：运行 `git pull` 确保本地分支为最新。
+2.  **验证编译状态**：运行 `dotnet build LYBT.All.sln` 确认项目当前是否可编译。如果编译失败，你的首要任务是分析并修复编译错误，而不是继续原定任务。
+3.  **检查测试基线**：运行 `dotnet test LYBT.Server.sln` 确认核心测试是否通过。若存在失败，需在方案中评估其对当前任务的影响。
+
+## 核心工作流：GitHub 驱动，Claude/Serena 协同
+
+为确保所有开发活动清晰、可控、可追溯，本项目严格遵循以 GitHub 为中心的管理模式。AI (Claude Code) 在此流程中扮演“智能顾问”而非“项目经理”的角色；在代码审查环节，Claude Code 参与自动化初审，Serena 可作为二审/深度校对辅助。
+
+#### 任务分解与跟踪原则
+
+1.  **使用任务列表**：对于任何需要分解为多个步骤的复杂 Issue，其创建者（人工）必须在 Issue 的描述中，使用 Markdown 的任务列表（例如 `- [ ] 子任务一`）来明确所有子任务。
+2.  **关联 PR 与任务**：每一个为解决子任务而创建的 PR，都必须在描述中指明它对应的子任务。
+3.  **AI 的执行逻辑**：AI 在处理一个主 Issue 时，必须：
+    a. **首先读取**主 Issue 描述中的任务列表。
+    b. **仅对未勾选**（`- [ ]`）的任务进行分析和执行。
+    c. **忽略所有已勾选**（`- [x]`）的任务，即使主 Issue 仍处于开启状态。
+4.  **更新任务状态**：当一个子任务的 PR 被合并后，相关人员（或自动化脚本）应负责回到主 Issue 中，将对应的任务项勾选为完成（`- [x]`）。
 
 - **GitHub 作为“操作系统”**：
   - **信息记录**: 所有需求、任务、缺陷均须创建为 **GitHub Issues**。
   - **进度跟踪**: 使用 **GitHub Projects**（看板）对 Issues 的状态进行可视化跟踪。
   - **关系管理**: 通过 PR 与 Issue 的自动链接，建立代码变更与任务需求的明确关系。
 
-- **Serena Server 作为“智能顾问”**：
-  - **辅助规划**: 针对复杂的 GitHub Issue，可调用 Serena 的 `plan` 方法生成详细的技术方案和子任务建议。
-  - **辅助审查**: 在提交 Pull Request 后，可调用 Serena 的 `proofread` 方法，审查代码是否符合 Issue 要求及项目规范。
+- **Claude Code / Serena 作为“智能顾问”**：
+  - **辅助规划**：针对复杂的 GitHub Issue，优先由 Claude Code 整理最小变更集与实施计划；必要时调用 Serena 的 `plan` 方法生成详细方案与子任务建议。所有实施计划或方案建议的开头，必须包含一个“**遵循标准**”章节，明确列出本次任务将要遵循的关键技术标准（引自 `docs/development/standards.md`）。如果无相关标准，则注明“无特定标准适用”。
+  - **代码审查**：提交 Pull Request 后，先由 Claude Code 进行自动化初审（规范、风险、与 Issue 的一致性）；如需进一步论证或跨文档一致性校验，再调用 Serena 的 `proofread` 方法进行二审。
 
-**开发黄金路径**：
+#### 原则：Issue 的原子性与生命周期
+
+这是指导所有开发活动的最核心原则：
+- **一个 Issue = 一次独立的、原子的“工作尝试”**。
+- Issue 的生命周期始于创建，终于其对应的 **Pull Request (PR) 到达终态（被合并或被关闭）**。
+- 无论 PR 是被接受还是被拒绝，该 Issue 所代表的“工作尝试”均宣告结束。此举旨在确保历史记录的清晰，并为 AI 提供无歧义的、全新的任务指令。
+
+**开发黄金路径（PR 被接受）**：
 1.  一切工作始于一个明确的 **GitHub Issue**。
 2.  （可选）针对复杂 Issue，调用 **Serena** 进行规划。
 3.  创建与 Issue 关联的 **Git 分支**进行开发。
-4.  通过 **Pull Request** 提交变更，并关联对应 Issue。
-5.  （可选）调用 **Serena** 对 PR 进行代码审查。
-6.  经人工审核通过后，合并 PR，完成任务。
+4.  通过 **Pull Request** 提交变更，并关联对应 Issue（建议在 PR 描述中使用 `Fixes #<issue>` 关键字实现自动关闭）。
+5.  进行 AI 代码审查：先由 **Claude Code** 初审；必要时再调用 **Serena** 进行二审。
+6.  经人工审核通过后 **合并 PR**，关联的 Issue 会被自动关闭。若未使用关键字，Actions 会根据 PR 描述中的引用自动关闭相关 Issue（确保任务与 GitHub 状态同步）。
+
+**PR 审核不通过的处理路径（PR 被拒绝）**：
+1.  **明确拒绝原因**：审核者在 PR 的评论中清晰说明拒绝理由（例如：方案设计不妥）。
+2.  **关闭 Pull Request**：审核者直接关闭该 PR，不进行合并。
+3.  **创建新 Issue**：审核者创建一个全新的 Issue，用于发起新的“工作尝试”。
+    - 在新 Issue 中阐述新的实现方案或验收标准。
+    - 在描述中链接到旧的 Issue 和被关闭的 PR，以保留上下文（例如：“此任务用新方案替代在 #42 中被拒绝的尝试”）。
+
+#### AI 代码审查清单 (AI Code Review Checklist)
+
+在进行代码审查时，必须依据以下清单逐项评估，并以列表形式输出审查结论。**审查的核心目标是判断 PR 是否满足了关联 Issue 中定义的“验收标准”。**
+
+-1. **[ ] 读取技术标准**：在开始任何审查前，必须首先读取 `docs/development/standards.md` 的全部内容，并将其作为本次审查的最高准则。
+0.  **[ ] 读取验收标准**：在开始审查前，必须首先通过 MCP 读取关联 Issue 的描述，并抽取出其中所有的“验收标准”。这是后续所有检查的基准。
+1.  **[ ] 验收标准符合性**：逐一比对代码实现，判断是否**完全满足**了第 0 步中获取的所有验收标准。
+    *   如果**全部满足**，则审查结论为“**通过 (Pass)**”，并明确指出“代码已满足所有验收标准，无需进一步优化”。**即使存在理论上可优化的空间，也应在此终止，避免过度设计。**
+    *   如果**部分或完全不满足**，则审查结论为“**不通过 (Fail)**”，并仅针对**未满足**的标准提出具体的、最小化的修改建议。
+2.  **[ ] 架构约束**：是否引入了如 `MediatR` 等“明确禁止”的技术？是否遵循了读写分离的模式？
+3.  **[ ] 规范遵循**：命名、异步规范、文件体量等是否符合“开发规范要点”？
+4.  **[ ] 依赖注入**：是否出现了 `Container.Resolve` 或 `ServiceLocator` 等反模式？
+5.  **[ ] 文档同步**：相关的业务或技术文档（`docs/`目录下）是否已同步更新？（原则一）
+6.  **[ ] 增量优化**：本次变更是否为“增量式优化”，而非无明确指令的“颠覆性重构”？（原则三）
+7.  **[ ] 测试覆盖**：核心逻辑是否被单元测试或集成测试覆盖？
+
+### 人工参与与自动化职责边界
+
+- 人工参与（三步）：
+  - 创建并完善 Issue（含验收标准）。
+  - 启动 Issue（将 Issue 标记为 In-Progress）。
+  - 审核 PR 并决定是否合并（审核通过即任务结束）。
+
+- 自动化执行：
+  - Issue 初始分流与提示（自动添加状态标签、分派模板校验、生成分支命名建议）。
+  - PR 与 Issue 关联校验与提醒（未关联则评论提醒）。
+  - PR 合并后自动关闭关联 Issue，并同步状态标签为 Done。
+  - 可选：若配置了项目看板变量，自动维护 Projects 状态字段。
 
 ## 技术栈与架构
 ### 前端（WPF + Prism.DryIoc）
@@ -129,7 +190,7 @@ dotnet test LYBT.Server.sln -c Release
 | Serena Server | mcp.run({ server: "serena", method: "execute", params: {...} }) | 复杂分析、架构建议、代码审计 | prompt：输入需求或文件片段，	emperature：生成多样性（默认0.2） |
 | Filesystem Server | mcp.run({ server: "filesystem", method: "readFile", params: { path } }) 等 | 批量读取/写入文件、遍历目录、搜索文本 | 方法：
 eadFile、writeFile、listDirectory、searchText；path 为绝对或相对路径 |
-| Context7 API | mcp.run({ server: "context7", method: "analyze", params: {...} }) | 法规咨询、专业知识背景、语言风格转换 | 常用方法：nalyze, summarize；需传入 	ext 和 context |
+| Context7 API | mcp.run({ server: "context7", method: "query", params: {...} }) | **本地代码库问答**、专业知识查询、术语解释 | **核心方法**：`add` (索引路径), `query` (提问)<br/>**辅助方法**：`analyze`, `summarize` |
 | Memory Server | mcp.run({ server: "memory", method: "save", params: {...} }) | 在当前会话中保存/检索临时笔记、TODO | save：追加内容；load：获取全部记录；clear：清空 |
 | Git Server | mcp.run({ server: "git", method: "status" }) | 查看 Git 状态、变更、提交历史 | 方法：status, diff, log, stash, checkout 等 |
 | Playwright Server | mcp.run({ server: "playwright", method: "execute", params: {...} }) | 桌面/前端测试脚本录制、运行 UI 自动化 | script：Playwright 代码；rowser：浏览器类型（chromium/firefox/webkit） |
@@ -145,12 +206,16 @@ await mcp.run({
 `
 
 常用技巧：
-1. **批量操作**：使用 Filesystem Server 的 listDirectory + 
-eadFile 快速收集多个文件内容。
-2. **知识补充**：在分析法规、医疗术语时，借助 Context7 获取权威描述，再回到代码落地。
-3. **变量保存**：Memory Server 记录当前任务进度或后续待办，避免上下文丢失。
-4. **SQL 验证**：通过 SQL Server MCP 快速验证 EF 查询结果，与测试数据对齐。
-5. **Playwright 调试**：在需要录制桌面端交互脚本时，调用 Playwright MCP 执行自动化脚本。test
+1. **代码库问答**：当需要理解某项功能的实现时，先用 `Context7` 的 `query` 方法提问，获取相关代码片段，再结合 `Serena` 的 `execute` 方法进行深入分析或重构。
+2. **批量操作**：使用 `Filesystem` 的 `listDirectory` + `readFile` 快速收集多个文件内容。
+3. **变量保存**：`Memory Server` 记录当前任务进度或后续待办，避免上下文丢失。
+4. **SQL 验证**：通过 `SQL Server` MCP 快速验证 EF 查询结果，与测试数据对齐。
+5. **Playwright 调试**：在需要录制桌面端交互脚本时，调用 `Playwright` MCP 执行自动化脚本。
+6. **工具容错与重试**：当 `mcp.run()` 调用失败时，应遵循以下步骤：
+    a. **分析错误**：首先读取返回的 `error` 信息。
+    b. **自我修正**：如果是参数错误（如路径错误），应根据错误信息修正 `params` 并重试一次。
+    c. **报告阻塞**：如果重试后依然失败，或错误非自身能解决（如服务器不可用），应立即停止当前任务，并清晰地报告阻塞点和错误信息。
+
 ### 常用调用示例
 
 ```ts
@@ -168,11 +233,28 @@ const files = await mcp.run({
   params: { path: "src/Server/Modules" }
 });
 
-// Context7：医学术语解释
+// Context7: 索引本地代码（初次或代码变更后执行）
 await mcp.run({
   server: "context7",
-  method: "analyze",
-  params: { text: "诊疗工作台" }
+  method: "add",
+  params: { path: "./src" }
+});
+
+// Context7: 查询代码库实现细节
+const codeContext = await mcp.run({
+  server: "context7",
+  method: "query",
+  params: { question: "用户认证流程是如何实现的？" }
+});
+// 接下来，可以将 codeContext 作为上下文交给 Serena 分析
+await mcp.run({
+  server: "serena",
+  method: "execute",
+  params: { 
+    prompt: `基于以下代码上下文，解释用户认证的实现步骤：
+
+${codeContext}`
+  }
 });
 
 // Memory：记录 TODO
@@ -213,8 +295,12 @@ eadFile、writeFile、listDirectory、stat、searchText、createDirectory、dele
   - 支持一次读取多文件，配合 searchText 可在代码库中定位 TODO/术语。
   - 写入操作需仔细核对路径，默认相对仓库根目录。
 - **Context7**（https://github.com/upstash/context7）
-  - 针对专业知识/法规问题，通过 nalyze 获取解释；summarize 总结长文本；xpand 用于生成背景说明。
-  - 可传 language 参数控制输出语言；适合处理医疗术语或政策要求。
+  - **核心定位**：作为本项目的**本地代码知识库**，用于快速检索和理解现有代码实现。
+  - **核心工作流**：
+    1.  **`add` (索引)**：使用 `mcp.run({ server: "context7", method: "add", params: { path: "./src" } })` 将指定目录（如 `src` 或 `docs`）索引到向量数据库。此操作在首次使用或代码库有重大更新后执行。
+    2.  **`query` (查询)**：使用 `mcp.run({ server: "context7", method: "query", params: { question: "..." } })` 提出自然语言问题。它会返回与问题最相关的代码片段作为上下文。
+  - **使用场景**：在进行任何代码分析、重构或新功能开发前，应**首先使用 `query` 方法**来理解相关模块的现有实现。将返回的代码片段作为上下文，再调用 `Serena` 或其他工具进行下一步操作，确保所有 AI 工作都基于真实的项目代码。
+  - **辅助功能**：`analyze`, `summarize` 等方法可用于处理外部文本或专业术语，作为对本地代码库知识的补充。
 - **Memory**（https://github.com/modelcontextprotocol/servers/tree/main/src/memory）
   - 提供 save、load、delete、clear 方法，用于记录当前会话中的临时结论、下一步计划。
   - 建议整理任务列表或会议纪要，随时用 load 取出复盘。

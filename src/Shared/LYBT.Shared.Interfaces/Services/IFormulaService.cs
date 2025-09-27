@@ -32,5 +32,15 @@ namespace LYBT.Shared.Interfaces.Services
         /// 删除验方（软删除）
         /// </summary>
         Task<ServiceResult> DeleteAsync(Guid id);
+
+        /// <summary>
+        /// 搜索验方
+        /// </summary>
+        Task<ServiceResult<List<FormulaDto>>> SearchAsync(string keyword);
+
+        /// <summary>
+        /// 克隆验方
+        /// </summary>
+        Task<ServiceResult<FormulaDto>> CloneFormulaAsync(Guid formulaId);
     }
 }

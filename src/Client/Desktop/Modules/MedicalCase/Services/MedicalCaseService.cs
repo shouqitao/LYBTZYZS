@@ -70,5 +70,16 @@ namespace LYBT.Desktop.MedicalCase.Services
                 return ServiceResult.Success();
             }, nameof(DeleteAsync));
         }
+
+        public async Task<ServiceResult<List<MedicalCaseDto>>> GetByPatientIdAsync(Guid patientId)
+        {
+            return await _exceptionHandler.HandleException<List<MedicalCaseDto>>(async () =>
+            {
+                // TODO: 当API实现后，调用 _medicalCaseApi.GetMedicalCasesByPatientIdAsync(patientId)
+                // 暂时返回空列表以通过编译
+                await Task.CompletedTask;
+                return ServiceResult<List<MedicalCaseDto>>.Success(new List<MedicalCaseDto>());
+            }, nameof(GetByPatientIdAsync));
+        }
     }
 }

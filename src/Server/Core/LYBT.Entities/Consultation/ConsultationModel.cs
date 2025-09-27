@@ -74,10 +74,9 @@ namespace LYBT.Entities.Consultation
         // 中医诊断结果
 
         /// <summary>中医辨证</summary>
-        [Required]
         [StringLength(500)]
         [DisplayName("中医辨证")]
-        public string TCMDiagnosis { get; set; } = string.Empty;
+        public string? TCMDiagnosis { get; set; }
 
         /// <summary>治疗原则</summary>
         [StringLength(500)]

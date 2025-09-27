@@ -70,5 +70,17 @@ namespace LYBT.Desktop.Formula.Services
                 return ServiceResult.Success();
             }, nameof(DeleteAsync));
         }
+
+    public async Task<ServiceResult<List<FormulaDto>>> SearchAsync(string keyword)
+    {
+        // 暂时返回空列表，实际实现待完善
+        return await Task.FromResult(ServiceResult<List<FormulaDto>>.Success(new List<FormulaDto>()));
+    }
+
+    public async Task<ServiceResult<FormulaDto>> CloneFormulaAsync(Guid formulaId)
+    {
+        // 暂时返回null，实际实现待完善
+        return await Task.FromResult(ServiceResult<FormulaDto>.Success(null));
+    }
     }
 }

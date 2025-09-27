@@ -32,5 +32,10 @@ namespace LYBT.Shared.Interfaces.Services
         /// 删除患者（软删除）
         /// </summary>
         Task<ServiceResult> DeleteAsync(Guid id);
+
+        /// <summary>
+        /// 搜索患者
+        /// </summary>
+        Task<ServiceResult<List<PatientDto>>> SearchAsync(string keyword);
     }
 }

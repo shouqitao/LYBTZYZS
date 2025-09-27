@@ -10,6 +10,7 @@ using LYBT.Entities.Users;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
+using LYBT.Infrastructure.Data.Configuration;
 
 namespace LYBT.Infrastructure.Data
 {
@@ -41,6 +42,7 @@ namespace LYBT.Infrastructure.Data
         // 认证管理
         public DbSet<AuthSession> AuthSessions { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
+
 
         // public DbSet<LoginAttempt> LoginAttempts { get; set; } // UltraThink简化：暂时移除
         // public DbSet<SecurityLog> SecurityLogs { get; set; } // UltraThink简化：暂时移除
@@ -89,6 +91,9 @@ namespace LYBT.Infrastructure.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            // 应用查询优化配置（索引、全局过滤器等）
+            modelBuilder.ApplyOptimizations();
 
             // 配置各个实体的映射关系
             ConfigureUsers(modelBuilder);

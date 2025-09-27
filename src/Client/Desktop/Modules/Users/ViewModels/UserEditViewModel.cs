@@ -524,17 +524,17 @@ namespace LYBT.Desktop.Users.ViewModels
 
         #region 属性变化处理
         
-        protected override void OnPropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string? propertyName = null)
+        protected override void OnPropertyChanged(System.ComponentModel.PropertyChangedEventArgs args)
+    {
+        base.OnPropertyChanged(args);
+        
+        // 当关键属性变化时，刷新相关状态
+        if (args.PropertyName is nameof(RealName) or nameof(PhoneNumber) or nameof(Email) 
+            or nameof(SelectedRole) or nameof(Status))
         {
-            base.OnPropertyChanged(propertyName);
-            
-            // 当关键属性变化时，刷新相关状态
-            if (propertyName is nameof(RealName) or nameof(PhoneNumber) or nameof(Email) 
-                or nameof(SelectedRole) or nameof(Status))
-            {
-                RefreshPropertyChanged();
-            }
+            RefreshPropertyChanged();
         }
+    }
         
         #endregion
     }

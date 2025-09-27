@@ -159,8 +159,7 @@ namespace LYBT.Desktop.Formula.ViewModels
         {
             try
             {
-                var query = new HerbSearchDto { PageIndex = 1, PageSize = 1000 };
-                var herbsResult = await _herbService.GetPagedAsync(query);
+                var herbsResult = await _herbService.GetPagedAsync(1, 1000);
                 if (herbsResult.IsSuccess && herbsResult.Data?.Items != null)
                 {
                     // UltraThink v2.0: 直接使用HerbDto

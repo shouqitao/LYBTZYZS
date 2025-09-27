@@ -1,3 +1,4 @@
+using System.Linq;
 using AutoMapper;
 using PrescriptionEntity = LYBT.Entities.Prescriptions.Prescription;
 using LYBT.Module.Prescriptions.Interfaces;
@@ -31,7 +32,8 @@ namespace LYBT.Module.Prescriptions.Services
         {
             try
             {
-                var pagedResult = await _repository.GetPagedAsync(page, pageSize);
+                // 使用优化后的查询方法，包含Items集合
+                var pagedResult = await _repository.GetPagedWithDetailsAsync(page, pageSize, keyword);
                 var dto = new PagedResult<PrescriptionDto>
                 {
                     Items = _mapper.Map<List<PrescriptionDto>>(pagedResult.Items),
@@ -52,7 +54,8 @@ namespace LYBT.Module.Prescriptions.Services
         {
             try
             {
-                var entity = await _repository.GetByIdAsync(id);
+                // 使用优化后的查询方法，包含处方项
+                var entity = await _repository.GetByIdWithItemsAsync(id);
                 if (entity == null)
                     return ServiceResult<PrescriptionDto>.Failure("处方不存在");
 
@@ -101,6 +104,25 @@ namespace LYBT.Module.Prescriptions.Services
                 return ServiceResult<PrescriptionDto>.Failure("更新处方失败");
             }
         }
+
+    public async Task<ServiceResult<List<PrescriptionDto>>> GetByMedicalCaseIdAsync(Guid medicalCaseId)
+    {
+        try
+        {
+            // 使用优化后的查询方法，直接查询并包含Items集合
+            var prescriptions = await _repository.GetByMedicalCaseIdAsync(medicalCaseId);
+            
+            // 转换为DTO
+            var prescriptionDtos = _mapper.Map<List<PrescriptionDto>>(prescriptions);
+            
+            return ServiceResult<List<PrescriptionDto>>.Success(prescriptionDtos);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "获取病历相关处方时发生错误，病历ID：{MedicalCaseId}", medicalCaseId);
+            return ServiceResult<List<PrescriptionDto>>.Failure($"获取病历相关处方失败：{ex.Message}");
+        }
+    }
 
         public async Task<ServiceResult> DeleteAsync(Guid id)
         {

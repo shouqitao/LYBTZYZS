@@ -31,15 +31,25 @@ namespace LYBT.Module.Consultation.Services
         {
             try
             {
-                var pagedResult = await _repository.GetPagedAsync(page, pageSize);
-                var dto = new PagedResult<ConsultationDto>
+                // 使用优化后的查询方法，包含Patient和User信息
+                var pagedResult = await _repository.GetPagedWithDetailsAsync(page, pageSize, keyword);
+                
+                // 手动映射，确保PatientName和DoctorName从预加载的导航属性获取
+                var items = pagedResult.Items.Select(c => {
+                    var dto = _mapper.Map<ConsultationDto>(c);
+                    dto.PatientName = c.Patient?.Name ?? string.Empty;
+                    dto.DoctorName = c.User?.RealName ?? string.Empty;
+                    return dto;
+                }).ToList();
+                
+                var result = new PagedResult<ConsultationDto>
                 {
-                    Items = _mapper.Map<List<ConsultationDto>>(pagedResult.Items),
+                    Items = items,
                     TotalCount = pagedResult.TotalCount,
                     CurrentPage = pagedResult.CurrentPage,
                     PageSize = pagedResult.PageSize
                 };
-                return ServiceResult<PagedResult<ConsultationDto>>.Success(dto);
+                return ServiceResult<PagedResult<ConsultationDto>>.Success(result);
             }
             catch (Exception ex)
             {
@@ -52,11 +62,16 @@ namespace LYBT.Module.Consultation.Services
         {
             try
             {
-                var entity = await _repository.GetByIdAsync(id);
+                // 使用优化后的查询方法，包含所有关联数据
+                var entity = await _repository.GetByIdWithDetailsAsync(id);
                 if (entity == null)
                     return ServiceResult<ConsultationDto>.Failure("诊疗记录不存在");
 
                 var dto = _mapper.Map<ConsultationDto>(entity);
+                // 确保PatientName和DoctorName从预加载的导航属性获取
+                dto.PatientName = entity.Patient?.Name ?? string.Empty;
+                dto.DoctorName = entity.User?.RealName ?? string.Empty;
+                
                 return ServiceResult<ConsultationDto>.Success(dto);
             }
             catch (Exception ex)
@@ -70,6 +85,10 @@ namespace LYBT.Module.Consultation.Services
         {
             try
             {
+                // 添加null检查
+                if (dto == null)
+                    return ServiceResult<ConsultationDto>.Failure("数据不能为空");
+
                 var entity = _mapper.Map<ConsultationEntity>(dto);
                 var result = await _repository.AddAsync(entity);
                 var resultDto = _mapper.Map<ConsultationDto>(result);
@@ -86,7 +105,7 @@ namespace LYBT.Module.Consultation.Services
         {
             try
             {
-                var entity = await _repository.GetByIdAsync(id);
+                var entity = await _repository.GetByIdWithDetailsAsync(id);
                 if (entity == null)
                     return ServiceResult<ConsultationDto>.Failure("诊疗记录不存在");
 
@@ -107,12 +126,37 @@ namespace LYBT.Module.Consultation.Services
             try
             {
                 var result = await _repository.DeleteAsync(id);
-                return result ? ServiceResult.Success() : ServiceResult.Failure("删除失败");
+                return result ? ServiceResult.Success("删除成功") : ServiceResult.Failure("删除失败");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "删除诊疗记录失败");
                 return ServiceResult.Failure("删除诊疗记录失败");
+            }
+        }
+
+        public async Task<ServiceResult<List<ConsultationDto>>> GetByMedicalCaseIdAsync(Guid medicalCaseId)
+        {
+            try
+            {
+                // 使用优化后的查询方法，直接从数据库获取相关记录
+                var consultation = await _repository.GetByMedicalCaseIdAsync(medicalCaseId);
+                if (consultation == null)
+                {
+                    return ServiceResult<List<ConsultationDto>>.Success(new List<ConsultationDto>());
+                }
+                
+                var dto = _mapper.Map<ConsultationDto>(consultation);
+                // 确保PatientName和DoctorName从预加载的导航属性获取
+                dto.PatientName = consultation.Patient?.Name ?? string.Empty;
+                dto.DoctorName = consultation.User?.RealName ?? string.Empty;
+                
+                return ServiceResult<List<ConsultationDto>>.Success(new List<ConsultationDto> { dto });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "根据医案ID获取诊疗记录失败");
+                return ServiceResult<List<ConsultationDto>>.Failure("获取诊疗记录失败");
             }
         }
     }

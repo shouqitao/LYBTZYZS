@@ -71,6 +71,9 @@ public class AuthenticationOptions
 /// <summary>
 /// JWT 配置
 /// </summary>
+/// <summary>
+/// JWT 配置
+/// </summary>
 public class JwtConfiguration
 {
     /// <summary>
@@ -93,20 +96,22 @@ public class JwtConfiguration
 
     /// <summary>
     /// 访问令牌过期时间（分钟）
+    /// 安全最佳实践：15分钟短期令牌，降低令牌泄露风险
     /// </summary>
-    [Range(1, 10080)] // 1分钟到7天
-    public int AccessTokenExpirationMinutes { get; set; } = 480; // 8小时
+    [Range(5, 60)] // 5分钟到1小时，符合OWASP JWT安全建议
+    public int AccessTokenExpirationMinutes { get; set; } = 15; // 15分钟
 
     /// <summary>
     /// 刷新令牌过期时间（天）
+    /// 安全最佳实践：7天，平衡安全性与用户体验
     /// </summary>
-    [Range(1, 365)] // 1天到1年
-    public int RefreshTokenExpirationDays { get; set; } = 30;
+    [Range(1, 30)] // 1天到30天
+    public int RefreshTokenExpirationDays { get; set; } = 7; // 7天
 
     /// <summary>
     /// 记住我模式过期时间（天）
     /// </summary>
-    [Range(7, 365)]
+    [Range(7, 90)] // 限制为最多90天
     public int RememberMeExpirationDays { get; set; } = 30;
 
     /// <summary>
@@ -117,8 +122,26 @@ public class JwtConfiguration
     /// <summary>
     /// 刷新令牌在过期前多少分钟可以刷新
     /// </summary>
-    [Range(1, 60)]
+    [Range(5, 60)] // 5分钟到1小时
     public int RefreshTokenValidityMinutes { get; set; } = 30;
+
+    /// <summary>
+    /// 密钥最小长度要求（位）
+    /// 符合NIST SP 800-131A建议的256位密钥强度
+    /// </summary>
+    [Range(256, 512)]
+    public int MinKeyLengthBits { get; set; } = 256;
+
+    /// <summary>
+    /// JWT时钟偏差容忍度（秒）
+    /// </summary>
+    [Range(0, 600)] // 0到10分钟
+    public int ClockSkewSeconds { get; set; } = 300; // 5分钟
+
+    /// <summary>
+    /// 是否启用多密钥验证（支持密钥轮换）
+    /// </summary>
+    public bool EnableMultiKeyValidation { get; set; } = true;
 }
 
 /// <summary>

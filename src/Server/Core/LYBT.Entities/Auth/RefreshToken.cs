@@ -45,7 +45,7 @@ namespace LYBT.Entities.Auth
         /// <summary>
         /// 撤销原因
         /// </summary>
-        [StringLength(256)]
+       [StringLength(256)]
         public string? RevokedReason { get; set; }
 
         /// <summary>
@@ -54,6 +54,7 @@ namespace LYBT.Entities.Auth
         public DateTime? RevokedAt { get; set; }
 
         /// <summary>
+
         /// 撤销者（用户ID或系统）
         /// </summary>
         [StringLength(128)]

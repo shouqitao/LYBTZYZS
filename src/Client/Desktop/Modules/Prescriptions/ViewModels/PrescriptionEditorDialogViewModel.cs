@@ -468,19 +468,11 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
                 // UltraThink v2.0: TotalPrice是计算属性，无需手动赋值
                 if (IsEditMode && Prescription.Id != Guid.Empty)
                 {
-                    // 直接使用DTO
-                    var updateDto = new PrescriptionEditDto
+                    // 使用正确的更新DTO
+                    var updateDto = new PrescriptionUpdateDto
                     {
-                        Id = Prescription.Id,
-                        PatientId = Prescription.PatientId,
-                        DosageCount = Prescription.DosageCount,
-                        TotalPrice = Prescription.TotalPrice,
-                        Items = PrescriptionItems.Select(item => new PrescriptionItemCreateDto
-                        {
-                            HerbId = item.HerbId,
-                            Quantity = item.Quantity,
-                            UnitPrice = item.UnitPrice
-                        }).ToList()
+                        Diagnosis = Prescription.Indication ?? string.Empty,
+                        Remarks = Prescription.Remark
                     };
 
                     var result = await _prescriptionService.UpdateAsync(Prescription.Id, updateDto);

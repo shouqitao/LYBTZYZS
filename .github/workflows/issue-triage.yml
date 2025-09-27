@@ -1,0 +1,59 @@
+name: Issue Triage & Start Hints
+
+on:
+  issues:
+    types: [opened, edited, labeled]
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  triage:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ensure status label and guidance
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = context.payload.issue;
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+
+            const ensureLabel = async (name, color = 'cfd3d7', description = '') => {
+              try {
+                await github.rest.issues.getLabel({ owner, repo, name });
+              } catch {
+                await github.rest.issues.createLabel({ owner, repo, name, color, description });
+              }
+            };
+
+            const addLabelIfMissing = async (name) => {
+              const labels = (issue.labels || []).map(l => typeof l === 'string' ? l : l.name);
+              if (!labels.includes(name)) {
+                await github.rest.issues.addLabels({ owner, repo, issue_number: issue.number, labels: [name] });
+              }
+            };
+
+            // Create status labels if not exist
+            await ensureLabel('status: todo', 'ededed', 'Backlog / Todo');
+            await ensureLabel('status: in-progress', 'fbca04', 'In Progress');
+            await ensureLabel('status: done', '0e8a16', 'Done');
+
+            if (context.payload.action === 'opened') {
+              // Mark new issues as Todo and provide guidance
+              await addLabelIfMissing('status: todo');
+              const tip = [
+                '感谢提交 Issue！\n',
+                '- 请确保“验收标准（Acceptance Criteria）”清晰可验证；',
+                '- 启动任务时仅需将 Issue 置为 In-Progress（添加标签 `status: in-progress`）；',
+                '- 分支命名建议：`feature/' + issue.number + '-<slug>`；',
+                '- 提交 PR 时在描述中加入 `Fixes #' + issue.number + '`，合并后将自动关闭此 Issue。',
+              ].join('\n');
+              await github.rest.issues.createComment({ owner, repo, issue_number: issue.number, body: tip });
+            }
+
+            // If user labeled as in-progress, flip status labels
+            if (context.payload.action === 'labeled' && context.payload.label && context.payload.label.name === 'status: in-progress') {
+              try { await github.rest.issues.removeLabel({ owner, repo, issue_number: issue.number, name: 'status: todo' }); } catch {}
+            }

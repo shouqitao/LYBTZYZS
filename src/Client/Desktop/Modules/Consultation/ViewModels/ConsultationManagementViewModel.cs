@@ -128,7 +128,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
                     Keyword = SearchKeyword
                 };
 
-                var result = await _consultationService.GetPagedAsync(query);
+                var result = await _consultationService.GetPagedAsync(query.PageIndex, query.PageSize, query.Keyword);
                 if (result.IsSuccess && result.Data != null)
                 {
                     Consultations.Clear();

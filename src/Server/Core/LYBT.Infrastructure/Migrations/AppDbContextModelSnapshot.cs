@@ -71,15 +71,18 @@ namespace LYBT.Infrastructure.Migrations
                     b.ToTable("AuthSessions", (string)null);
                 });
 
+
             modelBuilder.Entity("LYBT.Entities.Auth.RefreshToken", b =>
+
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("ClientIp")
+                   b.Property<string>("ClientIp")
                         .HasMaxLength(45)
                         .HasColumnType("nvarchar(45)");
+
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -90,6 +93,7 @@ namespace LYBT.Infrastructure.Migrations
                     b.Property<string>("DeviceId")
                         .HasMaxLength(128)
                         .HasColumnType("nvarchar(128)");
+
 
                     b.Property<string>("DeviceName")
                         .HasMaxLength(200)
@@ -102,16 +106,19 @@ namespace LYBT.Infrastructure.Migrations
                         .HasMaxLength(128)
                         .HasColumnType("nvarchar(128)");
 
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
                     b.Property<bool>("IsRevoked")
                         .HasColumnType("bit");
 
+
                     b.Property<string>("Jti")
                         .IsRequired()
                         .HasMaxLength(128)
                         .HasColumnType("nvarchar(128)");
+
 
                     b.Property<DateTime?>("LastUsedAt")
                         .HasColumnType("datetime2");
@@ -131,6 +138,7 @@ namespace LYBT.Infrastructure.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .ValueGeneratedOnAddOrUpdate()
@@ -141,11 +149,13 @@ namespace LYBT.Infrastructure.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<Guid?>("UpdatedBy")
                         .HasColumnType("uniqueidentifier");
+
 
                     b.Property<int>("UsageCount")
                         .HasColumnType("int");
@@ -154,6 +164,7 @@ namespace LYBT.Infrastructure.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
+
                     b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier");
 
@@ -161,16 +172,20 @@ namespace LYBT.Infrastructure.Migrations
 
                     b.HasIndex("ExpiresAt");
 
+
                     b.HasIndex("IsRevoked");
 
                     b.HasIndex("Jti");
+
 
                     b.HasIndex("Token")
                         .IsUnique();
 
                     b.HasIndex("UserId");
 
+
                     b.HasIndex("UserId", "IsRevoked");
+
 
                     b.ToTable("RefreshTokens", (string)null);
                 });

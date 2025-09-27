@@ -25,7 +25,7 @@
 │   ├── docs/api/ - API接口文档
 │   ├── docs/architecture/ - 架构设计文档
 │   ├── docs/development/ - 开发规范指导
-│   ├── docs/prd/ - 产品需求文档
+│   ├── docs/prd/ - （废弃）产品需求文档，现使用 GitHub Issues
 │   ├── docs/tasks/ - 任务管理文档
 │   └── docs/reports/ - 分析报告文档
 └── L3: 实施细节层
@@ -96,10 +96,13 @@
 
 ## 🛠 工具和自动化
 
-### 文档生成工具
-- **OpenAPI导出**：自动生成API文档
-- **代码注释提取**：生成技术参考文档
-- **Git Hooks**：提交时检查文档更新
+### 文档白名单（其余统一在 Issues 管理）
+- 架构与决策：architecture/README.md、overview.md、ADR-*.md
+- 规范与指南：development/README.md、documentation-guidelines.md、styleguide.md、testing/README.md
+- 安全与技术：security/*、technical/*
+- 任务与交付：tasks/README.md、tasks/INDEX.md、tasks/plan/*（活跃任务）、tasks/completed/*（完成总结）
+
+说明：PRD、阶段性总结/计划、临时分析等不再保存在 docs 中，统一由 GitHub Issues 跟踪与沉淀。
 
 ### 文档验证脚本
 ```powershell

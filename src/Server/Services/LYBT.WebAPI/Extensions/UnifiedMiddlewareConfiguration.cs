@@ -93,6 +93,9 @@ public static class UnifiedMiddlewareConfiguration
         // 认证
         app.UseAuthentication();
 
+        // JWT黑名单验证（在认证后，Claims标准化前）
+        app.UseJwtBlacklist();
+
         // Claims标准化（在认证后，授权前）
         app.UseClaimsNormalization();
 
