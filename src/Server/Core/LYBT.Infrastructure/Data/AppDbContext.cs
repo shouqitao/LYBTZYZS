@@ -42,7 +42,7 @@ namespace LYBT.Infrastructure.Data
         // 认证管理
         public DbSet<AuthSession> AuthSessions { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
-        public DbSet<BlacklistedToken> BlacklistedTokens { get; set; }
+
 
         // public DbSet<LoginAttempt> LoginAttempts { get; set; } // UltraThink简化：暂时移除
         // public DbSet<SecurityLog> SecurityLogs { get; set; } // UltraThink简化：暂时移除
@@ -190,36 +190,28 @@ namespace LYBT.Infrastructure.Data
             {
                 entity.ToTable("RefreshTokens");
                 entity.HasKey(e => e.Id);
-                entity.Property(e => e.Token).HasMaxLength(512).IsRequired();
-                entity.Property(e => e.JwtId).HasMaxLength(128).IsRequired();
-                entity.Property(e => e.UserAgent).HasMaxLength(1000);
-                entity.Property(e => e.IpAddress).HasMaxLength(45);
+                entity.Property(e => e.Token).IsRequired().HasMaxLength(500);
+                entity.Property(e => e.Jti).IsRequired().HasMaxLength(128);
+                entity.Property(e => e.ClientIp).HasMaxLength(45);
+                entity.Property(e => e.UserAgent).HasMaxLength(500);
+                entity.Property(e => e.RevokedReason).HasMaxLength(200);
+                entity.Property(e => e.ReplacedByToken).HasMaxLength(500);
+                entity.Property(e => e.FamilyId).HasMaxLength(128);
                 entity.Property(e => e.DeviceId).HasMaxLength(128);
-                entity.Property(e => e.RevokedReason).HasMaxLength(500);
+                entity.Property(e => e.DeviceName).HasMaxLength(200);
                 
-                // 索引
                 entity.HasIndex(e => e.Token).IsUnique();
-                entity.HasIndex(e => e.JwtId);
                 entity.HasIndex(e => e.UserId);
                 entity.HasIndex(e => e.ExpiresAt);
-                entity.HasIndex(e => new { e.UserId, e.IsUsed, e.IsRevoked, e.ExpiresAt });
-            });
-
-            // BlacklistedToken配置
-            modelBuilder.Entity<BlacklistedToken>(entity =>
-            {
-                entity.ToTable("BlacklistedTokens");
-                entity.HasKey(e => e.Id);
-                entity.Property(e => e.JwtId).HasMaxLength(128).IsRequired();
-                entity.Property(e => e.Reason).HasMaxLength(500).IsRequired();
-                entity.Property(e => e.IpAddress).HasMaxLength(45);
-                entity.Property(e => e.Type).HasConversion<int>();
+                entity.HasIndex(e => e.IsRevoked);
+                entity.HasIndex(e => e.Jti); // 添加Jti索引用于快速查找
+                entity.HasIndex(e => new { e.UserId, e.IsRevoked });
                 
-                // 索引
-                entity.HasIndex(e => e.JwtId).IsUnique();
-                entity.HasIndex(e => e.UserId);
-                entity.HasIndex(e => e.TokenExpiresAt);
-                entity.HasIndex(e => e.BlacklistedAt);
+                // 与用户的关系
+                entity.HasOne<User>()
+                    .WithMany()
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
             });
         }
 

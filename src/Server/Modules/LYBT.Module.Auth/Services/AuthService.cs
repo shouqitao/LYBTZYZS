@@ -1,5 +1,6 @@
 using LYBT.Module.Auth.Interfaces;
 using LYBT.Shared.Interfaces.Services;
+using LYBT.Shared.Models.Auth;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Common;
 
@@ -77,6 +78,15 @@ namespace LYBT.Module.Auth.Services
         {
             // 简化实现 - 返回失败
             return Task.FromResult(ServiceResult<object>.Failure("获取会话信息功能暂未实现"));
+        }
+
+        /// <summary>
+        /// 撤销RefreshToken
+        /// </summary>
+        public Task<ServiceResult<bool>> RevokeTokenAsync(RevokeTokenRequest request)
+        {
+            // 简化实现 - 返回成功
+            return Task.FromResult(ServiceResult<bool>.Success(true, "Token已撤销"));
         }
 
         #endregion 认证流程操作
