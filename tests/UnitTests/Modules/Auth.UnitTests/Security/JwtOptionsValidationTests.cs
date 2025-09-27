@@ -17,9 +17,9 @@ namespace LYBT.Module.Auth.Tests.Security
             var options = new JwtOptions();
 
             // Assert - 验证默认值的安全性
-            options.AccessTokenExpirationMinutes.Should().BeLessOrEqualTo(30, 
+            options.ExpireMinutes.Should().BeLessOrEqualTo(30, 
                 "AccessToken不应该有过长的有效期");
-            options.RefreshTokenExpirationDays.Should().BeLessOrEqualTo(30,
+            options.RefreshTokenExpireDays.Should().BeLessOrEqualTo(30,
                 "RefreshToken的有效期不应超过30天");
             options.ClockSkewSeconds.Should().BeLessOrEqualTo(300,
                 "时钟偏差不应超过5分钟");
@@ -30,27 +30,27 @@ namespace LYBT.Module.Auth.Tests.Security
         [InlineData(null)]
         [InlineData("short")]
         [InlineData("NotLongEnoughKey123")]
-        public void JwtOptions_ShouldRejectWeakSecretKeys(string? secretKey)
+        public void JwtOptions_ShouldRejectWeakSecrets(string? secretKey)
         {
             // Arrange
-            var options = new JwtOptions { SecretKey = secretKey! };
+            var options = new JwtOptions { Secret = secretKey! };
 
             // Act
-            var isValid = IsSecretKeyValid(options.SecretKey);
+            var isValid = IsSecretValid(options.Secret);
 
             // Assert
             isValid.Should().BeFalse("密钥必须至少32个字符");
         }
 
         [Fact]
-        public void JwtOptions_ShouldAcceptStrongSecretKey()
+        public void JwtOptions_ShouldAcceptStrongSecret()
         {
             // Arrange
-            var strongKey = "ThisIsAVeryStrongSecretKeyThatIsAtLeast32CharactersLong!@#$%";
-            var options = new JwtOptions { SecretKey = strongKey };
+            var strongKey = "ThisIsAVeryStrongSecretThatIsAtLeast32CharactersLong!@#$%";
+            var options = new JwtOptions { Secret = strongKey };
 
             // Act
-            var isValid = IsSecretKeyValid(options.SecretKey);
+            var isValid = IsSecretValid(options.Secret);
 
             // Assert
             isValid.Should().BeTrue();
@@ -67,11 +67,11 @@ namespace LYBT.Module.Auth.Tests.Security
             // Arrange
             var options = new JwtOptions 
             { 
-                AccessTokenExpirationMinutes = minutes 
+                ExpireMinutes = minutes 
             };
 
             // Act
-            var isValid = IsAccessTokenExpirationValid(options.AccessTokenExpirationMinutes);
+            var isValid = IsAccessTokenExpirationValid(options.ExpireMinutes);
 
             // Assert
             isValid.Should().Be(shouldBeValid);
@@ -88,11 +88,11 @@ namespace LYBT.Module.Auth.Tests.Security
             // Arrange
             var options = new JwtOptions 
             { 
-                RefreshTokenExpirationDays = days 
+                RefreshTokenExpireDays = days 
             };
 
             // Act
-            var isValid = IsRefreshTokenExpirationValid(options.RefreshTokenExpirationDays);
+            var isValid = IsRefreshTokenExpirationValid(options.RefreshTokenExpireDays);
 
             // Assert
             isValid.Should().Be(shouldBeValid);
@@ -128,7 +128,7 @@ namespace LYBT.Module.Auth.Tests.Security
 
         #region Helper Methods
 
-        private bool IsSecretKeyValid(string? secretKey)
+        private bool IsSecretValid(string? secretKey)
         {
             return !string.IsNullOrEmpty(secretKey) && secretKey.Length >= 32;
         }

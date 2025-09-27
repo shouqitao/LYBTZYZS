@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
 using LYBT.Module.Herbs.Interfaces;
 using LYBT.Module.Herbs.Services;
 using LYBT.Module.Herbs.Repositories;
@@ -26,7 +25,6 @@ namespace LYBT.Module.Herbs
             
             // 注册服务
             services.AddScoped<IHerbService, HerbService>();
-            services.AddScoped<IHerbQueryService, HerbQueryService>();
             // services.AddScoped<IHerbCategoryService, HerbCategoryService>();
             
             // 注册验证器 - 暂时注释，待修复验证器后启用
@@ -51,13 +49,5 @@ namespace LYBT.Module.Herbs
             return app;
         }
         
-        /// <summary>
-        /// 验证模块健康状态
-        /// </summary>
-        public static IHealthChecksBuilder AddHerbsModuleHealthCheck(this IHealthChecksBuilder builder)
-        {
-            // return builder.AddCheck<HerbsModuleHealthCheck>("herbs_module");
-            return builder;
-        }
     }
 }

@@ -12,6 +12,7 @@ using LYBT.Infrastructure.Configuration.Options;
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Security;
 using LYBT.Module.Auth.Interfaces;
+using AuthISecurityKeyService = LYBT.Module.Auth.Interfaces.ISecurityKeyService;
 using LYBT.Module.Users.Interfaces;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Enums;
@@ -28,7 +29,7 @@ namespace LYBT.Module.Auth.Services
     public class EnhancedJwtService : IJwtAuthenticationService
     {
         private readonly JwtOptions _jwtOptions;
-        private readonly ISecurityKeyService _securityKeyService;
+        private readonly AuthISecurityKeyService _securityKeyService;
         private readonly AppDbContext _context;
         private readonly IUserService _userService;
         private readonly ILogger<EnhancedJwtService> _logger;
@@ -36,7 +37,7 @@ namespace LYBT.Module.Auth.Services
 
         public EnhancedJwtService(
             IOptions<JwtOptions> jwtOptions,
-            ISecurityKeyService securityKeyService,
+            AuthISecurityKeyService securityKeyService,
             AppDbContext context,
             IUserService userService,
             ILogger<EnhancedJwtService> logger)
@@ -75,10 +76,8 @@ namespace LYBT.Module.Auth.Services
                     AccessToken = accessToken,
                     RefreshToken = refreshToken.Token,
                     TokenType = "Bearer",
-                    ExpiresIn = _jwtOptions.ExpireMinutes * 60, // 转换为秒
                     AccessTokenExpires = DateTime.UtcNow.AddMinutes(_jwtOptions.ExpireMinutes),
-                    RefreshTokenExpires = refreshToken.ExpiresAt,
-                    Jti = jti
+                    RefreshTokenExpires = refreshToken.ExpiresAt
                 };
             }
             catch (Exception ex)
@@ -114,11 +113,11 @@ namespace LYBT.Module.Auth.Services
                 new("role_id", ((int)role).ToString()),
                 
                 // 安全相关Claims
-                new("key_version", await _securityKeyService.GetCurrentKeyVersionAsync())
+                new("key_version", await _securityKeyService.GetCurrentKeyIdAsync())
             };
 
             // 获取签名密钥
-            var signingKey = await _securityKeyService.GetCurrentSigningKeyAsync();
+            var signingKey = await _securityKeyService.GetCurrentKeyAsync();
             var signingCredentials = new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256);
 
             // 设置Token过期时间（短生命周期：15分钟）
@@ -362,7 +361,7 @@ namespace LYBT.Module.Auth.Services
             try
             {
                 // 获取所有验证密钥（包括历史密钥）
-                var validationKeys = await _securityKeyService.GetValidationKeysAsync();
+                var validationKeys = await _securityKeyService.GetAllKeysAsync();
 
                 var validationParameters = new TokenValidationParameters
                 {
@@ -488,6 +487,65 @@ namespace LYBT.Module.Auth.Services
             {
                 _logger.LogWarning(ex, "从Token提取用户信息失败");
                 return null;
+            }
+        }
+
+        /// <summary>
+        /// 生成安全的刷新令牌 - 简化实现
+        /// </summary>
+        public SecureTokenRefreshResult SecureRefreshToken(
+            string token,
+            string? deviceFingerprint = null,
+            string? ipAddress = null,
+            string? userAgent = null)
+        {
+            try
+            {
+                // 简化版实现：验证旧token，生成新token对
+                var principal = ValidateToken(token);
+                if (principal == null)
+                {
+                    return new SecureTokenRefreshResult
+                    {
+                        IsSuccess = false,
+                        ErrorMessage = "Invalid token"
+                    };
+                }
+
+                var userId = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                var userName = principal.FindFirst(ClaimTypes.Name)?.Value;
+                var roleClaim = principal.FindFirst(ClaimTypes.Role)?.Value;
+
+                if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(userName))
+                {
+                    return new SecureTokenRefreshResult
+                    {
+                        IsSuccess = false,
+                        ErrorMessage = "Invalid token claims"
+                    };
+                }
+
+                var role = Enum.TryParse<UserRole>(roleClaim, out var userRole) ? userRole : UserRole.Doctor;
+
+                // 生成新的token对
+                var tokenPair = GenerateTokenPairAsync(userId, userName, role).GetAwaiter().GetResult();
+
+                return new SecureTokenRefreshResult
+                {
+                    IsSuccess = true,
+                    AccessToken = tokenPair.AccessToken,
+                    RefreshToken = tokenPair.RefreshToken,
+                    ExpiresAt = DateTime.UtcNow.AddMinutes(_jwtOptions.ExpireMinutes)
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "安全刷新令牌失败");
+                return new SecureTokenRefreshResult
+                {
+                    IsSuccess = false,
+                    ErrorMessage = "Refresh token failed"
+                };
             }
         }
     }
