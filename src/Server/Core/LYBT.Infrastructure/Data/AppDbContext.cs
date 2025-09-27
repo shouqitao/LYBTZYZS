@@ -65,6 +65,8 @@ namespace LYBT.Infrastructure.Data
 
         public DbSet<PrescriptionItem> PrescriptionItems { get; set; }
 
+        public DbSet<PrescriptionPrintLog> PrescriptionPrintLogs { get; set; }
+
         // 药材管理
         public DbSet<Herb> Herbs { get; set; }
 
@@ -347,6 +349,28 @@ namespace LYBT.Infrastructure.Data
                      .HasForeignKey(i => i.PrescriptionId)
                      .IsRequired()
                      .OnDelete(DeleteBehavior.Cascade);
+
+            // 配置PrescriptionPrintLog实体
+            var printLogEntity = modelBuilder.Entity<PrescriptionPrintLog>();
+            printLogEntity.ToTable("PrescriptionPrintLogs");
+            printLogEntity.HasKey(l => l.Id);
+
+            // 配置与Prescription的关系
+            printLogEntity.HasOne(l => l.Prescription)
+                         .WithMany()
+                         .HasForeignKey(l => l.PrescriptionId)
+                         .IsRequired()
+                         .OnDelete(DeleteBehavior.Cascade);
+
+            // 添加索引以优化查询性能
+            printLogEntity.HasIndex(l => l.PrescriptionId)
+                         .HasDatabaseName("IX_PrescriptionPrintLogs_PrescriptionId");
+
+            printLogEntity.HasIndex(l => l.PrintedAt)
+                         .HasDatabaseName("IX_PrescriptionPrintLogs_PrintedAt");
+
+            // 配置并发控制字段
+            printLogEntity.Property(l => l.RowVersion).IsRowVersion().IsConcurrencyToken();
         }
 
         private static void ConfigureHerbs(ModelBuilder modelBuilder)

@@ -37,8 +37,8 @@ namespace LYBT.Module.Consultation.Services
                 // 手动映射，确保PatientName和DoctorName从预加载的导航属性获取
                 var items = pagedResult.Items.Select(c => {
                     var dto = _mapper.Map<ConsultationDto>(c);
-                    dto.PatientName = c.Patient?.Name ?? string.Empty;
-                    dto.DoctorName = c.User?.RealName ?? string.Empty;
+                    dto.PatientName = c.MedicalCase?.PatientName ?? string.Empty;
+                    dto.DoctorName = c.MedicalCase?.DoctorName ?? string.Empty;
                     return dto;
                 }).ToList();
                 
@@ -69,8 +69,8 @@ namespace LYBT.Module.Consultation.Services
 
                 var dto = _mapper.Map<ConsultationDto>(entity);
                 // 确保PatientName和DoctorName从预加载的导航属性获取
-                dto.PatientName = entity.Patient?.Name ?? string.Empty;
-                dto.DoctorName = entity.User?.RealName ?? string.Empty;
+                dto.PatientName = entity.MedicalCase?.PatientName ?? string.Empty;
+                dto.DoctorName = entity.MedicalCase?.DoctorName ?? string.Empty;
                 
                 return ServiceResult<ConsultationDto>.Success(dto);
             }
@@ -141,8 +141,8 @@ namespace LYBT.Module.Consultation.Services
                 
                 var dto = _mapper.Map<ConsultationDto>(consultation);
                 // 确保PatientName和DoctorName从预加载的导航属性获取
-                dto.PatientName = consultation.Patient?.Name ?? string.Empty;
-                dto.DoctorName = consultation.User?.RealName ?? string.Empty;
+                dto.PatientName = consultation.MedicalCase?.PatientName ?? string.Empty;
+                dto.DoctorName = consultation.MedicalCase?.DoctorName ?? string.Empty;
                 
                 return ServiceResult<List<ConsultationDto>>.Success(new List<ConsultationDto> { dto });
             }

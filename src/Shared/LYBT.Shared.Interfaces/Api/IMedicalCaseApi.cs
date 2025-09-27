@@ -24,10 +24,22 @@ namespace LYBT.Shared.Interfaces.Api
         Task<Refit.ApiResponse<MedicalCaseDto>> GetMedicalCaseByIdAsync(Guid id);
 
         /// <summary>
+        /// 获取完整的医疗案例（包含所有关联数据）
+        /// </summary>
+        [Refit.Get("/api/v1/medicalcases/{id}/with-details")]
+        Task<Refit.ApiResponse<MedicalCaseDetailDto>> GetMedicalCaseByIdWithDetailsAsync(Guid id);
+
+        /// <summary>
         /// 创建医疗案例
         /// </summary>
         [Refit.Post("/api/v1/medicalcases")]
         Task<Refit.ApiResponse<MedicalCaseDto>> CreateMedicalCaseAsync([Refit.Body] MedicalCaseCreateDto request);
+
+        /// <summary>
+        /// 创建完整的医疗案例（包含诊疗和可选处方）
+        /// </summary>
+        [Refit.Post("/api/v1/medicalcases/with-details")]
+        Task<Refit.ApiResponse<MedicalCaseDto>> CreateMedicalCaseWithDetailsAsync([Refit.Body] MedicalCaseWithDetailsCreateDto request);
 
         /// <summary>
         /// 更新医疗案例

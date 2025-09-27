@@ -32,8 +32,8 @@ namespace LYBT.Module.Consultation.Repositories
         public async Task<List<ConsultationEntity>> GetByPatientIdAsync(Guid patientId)
         {
             return await _dbSet
-                .Include(c => c.User)  // 包含医生信息，避免N+1查询
-                .Where(c => c.PatientId == patientId && !c.IsDeleted)
+                .Include(c => c.MedicalCase)  // 包含医疗案例信息
+                .Where(c => c.MedicalCase.PatientId == patientId && !c.IsDeleted)
                 .OrderByDescending(c => c.CreatedAt)
                 .ToListAsync();
         }
@@ -48,8 +48,7 @@ namespace LYBT.Module.Consultation.Repositories
             string keyword = null)
         {
             var query = _dbSet
-                .Include(c => c.Patient)  // 预加载患者信息
-                .Include(c => c.User)      // 预加载医生信息
+                .Include(c => c.MedicalCase)  // 预加载病案信息（包含患者和医生信息）
                 .Where(c => !c.IsDeleted);
 
             // 关键字搜索
@@ -58,8 +57,8 @@ namespace LYBT.Module.Consultation.Repositories
                 query = query.Where(c =>
                     c.ChiefComplaint.Contains(keyword) ||
                     c.TCMDiagnosis.Contains(keyword) ||
-                    c.Patient.Name.Contains(keyword) ||
-                    c.User.RealName.Contains(keyword));
+                    c.MedicalCase.PatientName.Contains(keyword) ||
+                    c.MedicalCase.DoctorName.Contains(keyword));
             }
 
             var totalCount = await query.CountAsync();
@@ -85,9 +84,7 @@ namespace LYBT.Module.Consultation.Repositories
         public async Task<ConsultationEntity> GetByIdWithDetailsAsync(Guid id)
         {
             return await _dbSet
-                .Include(c => c.Patient)
-                .Include(c => c.User)
-                .Include(c => c.MedicalCase)
+            .Include(c => c.MedicalCase)
                 .Where(c => c.Id == id && !c.IsDeleted)
                 .FirstOrDefaultAsync();
         }
@@ -98,9 +95,8 @@ namespace LYBT.Module.Consultation.Repositories
         public async Task<ConsultationEntity> GetByMedicalCaseIdAsync(Guid medicalCaseId)
         {
             return await _dbSet
-                .Include(c => c.Patient)
-                .Include(c => c.User)
-                .Where(c => c.MedicalCaseId == medicalCaseId && !c.IsDeleted)
+            .Include(c => c.MedicalCase)
+                .Where(c => c.Id == medicalCaseId && !c.IsDeleted)
                 .FirstOrDefaultAsync();
         }
     }
