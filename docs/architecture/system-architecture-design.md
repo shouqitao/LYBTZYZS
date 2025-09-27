@@ -126,18 +126,18 @@ sequenceDiagram
 
 ## 三、模块设计
 
-### 3.1 核心模块划分
+### 3.1 核心模块划分（实际实现）
 
-| 模块名称 | 职责范围 | 核心实体 |
-|----------|----------|----------|
-| **Auth** | 用户认证、授权、会话管理 | User, Role, RefreshToken |
-| **Patients** | 患者档案管理 | Patient |
-| **MedicalCase** | 病历管理（聚合根） | MedicalCase |
-| **Consultation** | 诊断信息管理 | Consultation |
-| **Prescriptions** | 处方管理 | Prescription, PrescriptionItem |
-| **Herbs** | 药材基础数据 | Herb |
-| **Formula** | 方剂模板管理 | Formula, FormulaItem |
-| **Users** | 用户信息管理 | UserProfile |
+| 模块名称 | 职责范围 | 核心实体 | 实现状态 |
+|----------|----------|----------|----------|
+| **Auth** | JWT认证、RefreshToken管理 | User, RefreshToken | ✅ 完整实现 |
+| **Patients** | 患者档案管理、Excel导入 | Patient | ✅ 完整实现 |
+| **MedicalCase** | 病历管理（聚合根） | MedicalCase | ✅ 聚合根实现 |
+| **Consultation** | 诊疗记录、四诊信息 | Consultation | ✅ 完整实现 |
+| **Prescriptions** | 处方管理、打印功能 | Prescription, PrescriptionItem | ✅ 完整实现 |
+| **Herbs** | 药材管理、价格维护 | Herb | ✅ 完整实现 |
+| **Formula** | 方剂模板、经典方剂 | Formula, FormulaItem | ✅ 完整实现 |
+| **Users** | 用户管理、角色分配 | UserProfile | ✅ 完整实现 |
 
 ### 3.2 模块依赖关系
 
@@ -237,8 +237,10 @@ erDiagram
     MedicalCase {
         guid Id PK
         guid PatientId FK
-        guid UserId FK
-        datetime CreatedAt
+        guid DoctorId FK
+        string PatientName
+        string DoctorName
+        datetime ConsultationDate
         string Status
         string Remark
     }

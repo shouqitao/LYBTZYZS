@@ -13,7 +13,20 @@
 - **依赖倒置**：依赖抽象而非具体实现
 - **开闭原则**：对扩展开放，对修改关闭
 
-### 1.2 模块分层
+### 1.2 实际实现状态
+
+| 模块名称 | 服务层 | 仓储层 | 控制器 | 客户端 | 状态 |
+|---------|--------|--------|--------|--------|------|
+| **Auth** | ✅ AuthService, JwtService | ✅ RefreshTokenRepository | ✅ AuthController | ✅ 完整 | ✅ 已实现 |
+| **Patients** | ✅ PatientService | ✅ PatientRepository | ✅ PatientsController | ✅ 完整 | ✅ 已实现 |
+| **MedicalCase** | ✅ MedicalCaseService（聚合根） | ✅ MedicalCaseRepository | ✅ MedicalCaseController | ✅ 完整 | ✅ 已实现 |
+| **Consultation** | ✅ ConsultationService | ✅ ConsultationRepository | ✅ ConsultationController | ✅ 完整 | ✅ 已实现 |
+| **Prescriptions** | ✅ PrescriptionService | ✅ PrescriptionRepository | ✅ PrescriptionsController | ✅ 完整 | ✅ 已实现 |
+| **Herbs** | ✅ HerbService | ✅ HerbRepository | ✅ HerbsController | ✅ 完整 | ✅ 已实现 |
+| **Formula** | ✅ FormulaService | ✅ FormulaRepository | ✅ FormulasController | ✅ 完整 | ✅ 已实现 |
+| **Users** | ✅ UserService | ✅ UserRepository | ✅ UsersController | ✅ 完整 | ✅ 已实现 |
+
+### 1.3 模块分层（实际实现）
 ```
 Controller层 → Service层 → Repository层 → 数据库
      ↓              ↓            ↓
@@ -89,27 +102,36 @@ public class PatientCreateDto
 }
 ```
 
-### 2.3 接口设计
+### 2.3 接口设计（实际实现）
 
-#### 2.3.1 查询服务
+#### 2.3.1 服务接口
 ```csharp
-public interface IPatientQueryService
+// 实际使用统一服务接口（未分离查询和业务服务）
+public interface IPatientService
 {
-    Task<PatientDetailDto> GetByIdAsync(Guid id);
-    Task<PagedResult<PatientListDto>> GetPagedAsync(PatientQueryDto query);
-    Task<List<PatientListDto>> SearchAsync(string keyword); // 支持拼音码
-    Task<bool> ExistsAsync(string idNumber);
+    // 查询操作
+    Task<ServiceResult<PatientDto>> GetByIdAsync(Guid id);
+    Task<ServiceResult<PagedResult<PatientDto>>> GetPagedAsync(int page, int pageSize, string? keyword);
+    Task<ServiceResult<List<PatientDto>>> SearchAsync(string keyword);
+    Task<ServiceResult<bool>> ExistsAsync(string idNumber);
+    
+    // 业务操作
+    Task<ServiceResult<PatientDto>> CreateAsync(PatientCreateDto dto);
+    Task<ServiceResult<PatientDto>> UpdateAsync(Guid id, PatientUpdateDto dto);
+    Task<ServiceResult> DeleteAsync(Guid id);
+    Task<ServiceResult<ImportResult>> ImportFromExcelAsync(Stream excelStream);
 }
 ```
 
-#### 2.3.2 业务服务
+#### 2.3.2 仓储接口（实际实现）
 ```csharp
-public interface IPatientBusinessService
+public interface IPatientRepository : IRepository<Patient>
 {
-    Task<ServiceResult<PatientDetailDto>> CreateAsync(PatientCreateDto dto);
-    Task<ServiceResult<PatientDetailDto>> UpdateAsync(Guid id, PatientUpdateDto dto);
-    Task<ServiceResult> DeleteAsync(Guid id);
-    Task<ServiceResult<ImportResult>> ImportFromExcelAsync(Stream excelStream);
+    // 继承基础CRUD方法
+    // 特定查询方法
+    Task<Patient?> GetByIdNumberAsync(string idNumber);
+    Task<PagedResult<Patient>> GetPagedAsync(int page, int pageSize, string? keyword);
+    Task<List<Patient>> SearchByKeywordAsync(string keyword);
 }
 ```
 
@@ -144,82 +166,67 @@ graph LR
 ## 三、病历管理模块（MedicalCase）- 核心聚合根
 
 ### 3.1 功能概述
-作为诊疗流程的核心，管理整个就诊过程，包含诊断和处方信息。
+作为系统的**聚合根**，管理整个诊疗流程。一个病历包含一次诊疗记录，可选包含一张处方。实现了"当天可改、过期锁定"的业务规则。
 
-### 3.2 数据模型
+### 3.2 数据模型（实际实现）
 
 #### 3.2.1 聚合根设计
 ```csharp
-public class MedicalCase : AggregateRoot
+public class MedicalCase : BaseEntity  // 实际继承BaseEntity，不是AggregateRoot
 {
     // 基本信息
-    public Guid PatientId { get; private set; }
-    public Guid UserId { get; private set; }
-    public DateTime CreatedAt { get; private set; }
-    public MedicalCaseStatus Status { get; private set; }
-    public string? Remark { get; private set; }
+    public Guid PatientId { get; set; }
+    public string PatientName { get; set; }  // 冗余存储用于显示
+    public Guid DoctorId { get; set; }  // 实际使用DoctorId，不是UserId
+    public string DoctorName { get; set; }  // 冗余存储用于显示
+    public DateTime ConsultationDate { get; set; }  // 诊疗时间
+    public MedicalCaseStatus Status { get; set; }
+    public string? Remark { get; set; }
     
-    // 聚合的实体
-    public virtual Consultation Consultation { get; private set; }
-    public virtual Prescription Prescription { get; private set; }
+    // 聚合的实体（导航属性）
+    public virtual Consultation? Consultation { get; set; }  // 1:1 关系
+    public virtual Prescription? Prescription { get; set; }  // 1:0..1 关系
     
-    // 导航属性
-    public virtual Patient Patient { get; private set; }
-    public virtual User User { get; private set; }
-    
-    // 领域方法
-    public static MedicalCase Create(Guid patientId, Guid userId)
+    // 业务方法（实际实现）
+    public bool CanEdit(bool isAdmin, Guid? currentUserId = null)
     {
-        return new MedicalCase
-        {
-            Id = Guid.NewGuid(),
-            PatientId = patientId,
-            UserId = userId,
-            CreatedAt = DateTime.Now,
-            Status = MedicalCaseStatus.Draft
-        };
-    }
-    
-    public void SaveAsDraft()
-    {
-        if (Status == MedicalCaseStatus.Completed)
-            throw new DomainException("已完成的病历不能改为草稿");
-        
-        Status = MedicalCaseStatus.Draft;
-    }
-    
-    public void Complete()
-    {
-        if (Status != MedicalCaseStatus.Draft)
-            throw new DomainException("只能完成草稿状态的病历");
-        
-        if (Consultation == null)
-            throw new DomainException("必须填写诊断信息");
-        
-        Status = MedicalCaseStatus.Completed;
-        AddDomainEvent(new MedicalCaseCompletedEvent(Id));
-    }
-    
-    public void Cancel()
-    {
-        if (Status == MedicalCaseStatus.Completed)
-            throw new DomainException("已完成的病历不能取消");
-        
-        Status = MedicalCaseStatus.Cancelled;
-        // 取消的病历不保存到数据库
-    }
-    
-    public bool CanModify(Guid userId, bool isAdmin)
-    {
-        if (Status == MedicalCaseStatus.Cancelled) return false;
+        // 管理员可以编辑所有病历
         if (isAdmin) return true;
-        if (UserId != userId) return false;
         
-        // 医生只能修改自己当天的病历
-        return Status == MedicalCaseStatus.Draft || 
-               (Status == MedicalCaseStatus.Completed && 
-                CreatedAt.Date == DateTime.Today);
+        // 创建者当天可编辑
+        if (currentUserId.HasValue && DoctorId == currentUserId.Value)
+        {
+            return CreatedAt.Date == DateTime.Today;
+        }
+        return false;
     }
+    
+    // 判断病历是否已锁定（过了当天）
+    public bool IsLocked => CreatedAt.Date < DateTime.Today;
+}
+```
+
+### 3.3 接口设计（实际实现）
+
+```csharp
+public interface IMedicalCaseService
+{
+    // 基础CRUD
+    Task<ServiceResult<PagedResult<MedicalCaseDto>>> GetPagedAsync(int page, int pageSize, string? keyword);
+    Task<ServiceResult<MedicalCaseDto>> GetByIdAsync(Guid id);
+    Task<ServiceResult<MedicalCaseDto>> CreateAsync(MedicalCaseCreateDto dto);
+    Task<ServiceResult<MedicalCaseDto>> UpdateAsync(Guid id, MedicalCaseUpdateDto dto);
+    Task<ServiceResult> DeleteAsync(Guid id);
+    
+    // 聚合操作
+    Task<ServiceResult<MedicalCaseDto>> CreateWithDetailsAsync(
+        MedicalCaseCreateDto caseDto, 
+        ConsultationCreateDto consultationDto, 
+        PrescriptionCreateDto? prescriptionDto);
+    Task<ServiceResult<MedicalCaseDetailDto>> GetByIdWithDetailsAsync(Guid id);
+    
+    // 根据患者ID获取病历列表
+    Task<ServiceResult<List<MedicalCaseDto>>> GetByPatientIdAsync(Guid patientId);
 }
 ```
 
@@ -227,7 +234,7 @@ public class MedicalCase : AggregateRoot
 ```csharp
 public enum MedicalCaseStatus
 {
-    Draft = 0,      // 草稿/暂存
+    Active = 0,     // 活动状态（实际使用）
     Completed = 1,  // 已完成
     Cancelled = 2   // 已取消（不保存）
 }
