@@ -10,6 +10,7 @@ using Microsoft.IdentityModel.Tokens;
 using JwtOptions = LYBT.Infrastructure.Configuration.Options.JwtOptions;
 using LYBT.Infrastructure.Data.Interceptors;
 using LYBT.Infrastructure.Data.Monitoring;
+using LYBT.Infrastructure.Security;
 
 namespace LYBT.Infrastructure
 {
@@ -168,6 +169,9 @@ namespace LYBT.Infrastructure
 
             // 添加查询性能监控服务
             services.AddSingleton<IQueryStatisticsCollector, QueryStatisticsCollector>();
+
+            // 添加JWT黑名单服务
+            services.AddSingleton<ITokenBlacklistService, TokenBlacklistService>();
 
             // 注意：API版本控制在Program.cs中单独配置
             return services;

@@ -28,6 +28,11 @@ namespace LYBT.Module.Users.Interfaces
         Task<ServiceResult<UserDto>> GetByUsernameAsync(string userName);
 
         /// <summary>
+        /// 根据邮箱获取用户
+        /// </summary>
+        Task<ServiceResult<UserDto>> GetByEmailAsync(string email);
+
+        /// <summary>
         /// 获取启用的用户列表
         /// </summary>
         Task<ServiceResult<List<UserDto>>> GetActiveUsersAsync();
@@ -56,6 +61,40 @@ namespace LYBT.Module.Users.Interfaces
         /// 检查医生是否在线
         /// </summary>
         Task<ServiceResult<bool>> IsDoctorAvailableAsync(Guid doctorId);
+
+        #endregion
+
+        #region 认证操作
+
+        /// <summary>
+        /// 验证用户密码
+        /// </summary>
+        Task<ServiceResult<bool>> ValidatePasswordAsync(Guid userId, string password);
+
+        /// <summary>
+        /// 根据用户名或邮箱获取用户（用于登录）
+        /// </summary>
+        Task<ServiceResult<UserDto>> GetByUsernameOrEmailAsync(string usernameOrEmail);
+
+        /// <summary>
+        /// 更新最后登录时间
+        /// </summary>
+        Task<ServiceResult<bool>> UpdateLastLoginTimeAsync(Guid userId);
+
+        /// <summary>
+        /// 增加失败登录次数
+        /// </summary>
+        Task<ServiceResult<bool>> IncrementFailedLoginCountAsync(Guid userId);
+
+        /// <summary>
+        /// 重置失败登录次数
+        /// </summary>
+        Task<ServiceResult<bool>> ResetFailedLoginCountAsync(Guid userId);
+
+        /// <summary>
+        /// 检查账户是否被锁定
+        /// </summary>
+        Task<ServiceResult<bool>> IsAccountLockedAsync(Guid userId);
 
         #endregion
 

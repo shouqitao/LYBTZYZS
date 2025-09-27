@@ -311,19 +311,38 @@ public static class UnifiedServiceRegistration
     }
 
     /// <summary>
-    /// 注册业务模块。
+    /// 注册业务模块（简化版本）。
+    /// 使用各模块的静态扩展方法进行注册
     /// </summary>
     private static IServiceCollection RegisterBusinessModules(this IServiceCollection services, IConfiguration configuration)
     {
-        // 注册各业务模块
-        services.AddAuthModule();
-        services.AddUsersModuleServices();
-        services.AddConsultationModule();
-        services.AddHerbsModule();
+        // 使用简化的模块注册方法
+        // 每个模块负责注册自己的服务、仓储、验证器等
+        
+        // 1. 认证模块
+        services.AddAuthModule(configuration);
+        
+        // 2. 用户模块
+        services.AddUsersModule(configuration);
+        
+        // 3. 患者模块  
+        services.AddPatientsModule(configuration);
+        
+        // 4. 中药模块
+        services.AddHerbsModule(configuration);
+        
+        // 5. 问诊模块
+        services.AddConsultationModule(configuration);
+        
+        // 6. 处方模块（保持原有注册，等待后续改造）
         services.AddPrescriptionsModule();
-        services.AddPatientsModuleServices();
+        
+        // 7. 配方模块（保持原有注册，等待后续改造）
         services.AddFormulaModule();
+        
+        // 8. 病例模块（保持原有注册，等待后续改造）
         services.AddMedicalCaseModule();
+        
         return services;
     }
 

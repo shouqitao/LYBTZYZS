@@ -159,5 +159,34 @@ namespace LYBT.Module.Consultation.Services
                 return ServiceResult<List<ConsultationDto>>.Failure("获取诊疗记录失败");
             }
         }
+
+        public async Task<ServiceResult<ConsultationDto>> StartAsync(Guid patientId)
+        {
+            try
+            {
+                // 创建新的诊疗会话
+                var consultation = new ConsultationEntity
+                {
+                    Id = Guid.NewGuid(),
+                    PatientId = patientId,
+                    MedicalCaseId = Guid.NewGuid(), // 新建医案ID
+                    UserId = Guid.Empty, // TODO: 应该从当前登录用户获取
+                    CreatedAt = DateTime.Now,
+                    CreatedBy = Guid.Empty, // TODO: 应该从当前登录用户获取
+                    IsDeleted = false
+                };
+
+                await _repository.AddAsync(consultation);
+
+                // 转换为DTO返回
+                var dto = _mapper.Map<ConsultationDto>(consultation);
+                return ServiceResult<ConsultationDto>.Success(dto);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "开始新的诊疗会话失败");
+                return ServiceResult<ConsultationDto>.Failure("开始诊疗会话失败");
+            }
+        }
     }
 }

@@ -89,15 +89,23 @@ namespace LYBT.Infrastructure.Data.Configuration
                     .HasDatabaseName("IX_Patient_CreatedAt");
                 
                 // 配置关系的延迟加载（避免N+1但允许按需加载）
+                // 注意：当前实体未定义导航属性，暂时注释
+                /*
                 entity.HasMany(p => p.Visits)
                     .WithOne(v => v.Patient)
                     .HasForeignKey(v => v.PatientId)
                     .OnDelete(DeleteBehavior.Restrict);
                 
-                entity.HasMany(p => p.Prescriptions)
-                    .WithOne(pr => pr.Patient)
-                    .HasForeignKey(pr => pr.PatientId)
-                    .OnDelete(DeleteBehavior.Restrict);
+                // entity.HasMany(p => p.Prescriptions)
+                //     .WithOne(pr => pr.Patient)
+                //     .HasForeignKey(pr => pr.PatientId)
+                //     .OnDelete(DeleteBehavior.Restrict);
+                */
+                
+                // entity.HasMany(p => p.Prescriptions)
+                //     .WithOne(pr => pr.Patient)
+                //     .HasForeignKey(pr => pr.PatientId)
+                //     .OnDelete(DeleteBehavior.Restrict);
             });
         }
 
@@ -119,6 +127,8 @@ namespace LYBT.Infrastructure.Data.Configuration
                     .HasDatabaseName("IX_MedicalCase_Status_Date");
                 
                 // 配置关系
+                // 注意：当前实体未定义导航属性，暂时注释
+                /*
                 entity.HasOne(m => m.Patient)
                     .WithMany(p => p.Visits)
                     .HasForeignKey(m => m.PatientId)
@@ -133,6 +143,7 @@ namespace LYBT.Infrastructure.Data.Configuration
                     .WithOne(p => p.MedicalCase)
                     .HasForeignKey(p => p.MedicalCaseId)
                     .OnDelete(DeleteBehavior.Cascade);
+                */
             });
         }
 
@@ -143,6 +154,7 @@ namespace LYBT.Infrastructure.Data.Configuration
         {
             modelBuilder.Entity<Prescription>(entity =>
             {
+                // 注释掉所有不存在的属性引用
                 // 复合索引
                 entity.HasIndex(p => new { p.PatientId, p.CreatedAt })
                     .HasDatabaseName("IX_Prescription_Patient_Date");
@@ -150,18 +162,21 @@ namespace LYBT.Infrastructure.Data.Configuration
                 entity.HasIndex(p => new { p.MedicalCaseId, p.Status })
                     .HasDatabaseName("IX_Prescription_MedicalCase_Status");
                 
-                entity.HasIndex(p => new { p.DoctorId, p.CreatedAt })
-                    .HasDatabaseName("IX_Prescription_Doctor_Date");
+                // 注意：DoctorId属性不存在，注释掉
+                // entity.HasIndex(p => new { p.DoctorId, p.CreatedAt })
+                //     .HasDatabaseName("IX_Prescription_Doctor_Date");
                 
                 // 单列索引
-                entity.HasIndex(p => p.PrescriptionNumber)
-                    .IsUnique()
-                    .HasDatabaseName("IX_Prescription_Number");
+                // 注意：PrescriptionNumber属性不存在，注释掉
+                // entity.HasIndex(p => p.PrescriptionNumber)
+                //     .IsUnique()
+                //     .HasDatabaseName("IX_Prescription_Number");
                 
                 entity.HasIndex(p => p.Status)
                     .HasDatabaseName("IX_Prescription_Status");
                 
-                // 配置关系
+                // 配置关系 - 全部注释掉，因为导航属性不存在
+                /*
                 entity.HasOne(p => p.Patient)
                     .WithMany(pat => pat.Prescriptions)
                     .HasForeignKey(p => p.PatientId)
@@ -176,13 +191,16 @@ namespace LYBT.Infrastructure.Data.Configuration
                     .WithMany()
                     .HasForeignKey(p => p.DoctorId)
                     .OnDelete(DeleteBehavior.Restrict);
+                */
                 
-                // 配置JSON存储的处方明细
+                // 配置JSON存储的处方明细 - HerbItems属性不存在，注释掉
+                /*
                 entity.Property(p => p.HerbItems)
                     .HasConversion(
                         v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
                         v => System.Text.Json.JsonSerializer.Deserialize<List<PrescriptionHerbItem>>(v, (System.Text.Json.JsonSerializerOptions?)null) ?? new List<PrescriptionHerbItem>()
                     );
+                */
             });
         }
 
@@ -193,10 +211,12 @@ namespace LYBT.Infrastructure.Data.Configuration
         {
             modelBuilder.Entity<User>(entity =>
             {
+                // 注释掉所有不存在的属性引用
                 // 唯一索引
-                entity.HasIndex(u => u.Username)
-                    .IsUnique()
-                    .HasDatabaseName("IX_User_Username");
+                // 注意：Username属性不存在，注释掉
+                // entity.HasIndex(u => u.Username)
+                //     .IsUnique()
+                //     .HasDatabaseName("IX_User_Username");
                 
                 entity.HasIndex(u => u.Email)
                     .IsUnique()
@@ -205,18 +225,25 @@ namespace LYBT.Infrastructure.Data.Configuration
                 entity.HasIndex(u => u.PhoneNumber)
                     .HasDatabaseName("IX_User_Phone");
                 
-                // 复合索引（登录相关）
+                // 复合索引（登录相关）- Username和IsActive属性不存在，注释掉
+                /*
                 entity.HasIndex(u => new { u.Username, u.IsActive })
                     .HasDatabaseName("IX_User_Username_Active");
                 
                 entity.HasIndex(u => new { u.Role, u.IsActive })
                     .HasDatabaseName("IX_User_Role_Active");
+                */
                 
-                // 配置关系
+                entity.HasIndex(u => u.Role)
+                    .HasDatabaseName("IX_User_Role");
+                
+                // 配置关系 - RefreshTokens导航属性不存在，注释掉
+                /*
                 entity.HasMany(u => u.RefreshTokens)
                     .WithOne(rt => rt.User)
                     .HasForeignKey(rt => rt.UserId)
                     .OnDelete(DeleteBehavior.Cascade);
+                */
             });
         }
 
