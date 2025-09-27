@@ -33,8 +33,6 @@ namespace LYBT.Module.Consultation.Mapping
                         : CommonStatus.Enabled))
 
                 // 忽略导航属性
-                .ForMember(dest => dest.Patient, opt => opt.Ignore())
-                .ForMember(dest => dest.User, opt => opt.Ignore())
                 .ForMember(dest => dest.MedicalCase, opt => opt.Ignore())
 
                 // 忽略DTO中的显示字段（这些不存在于实体中）
@@ -102,8 +100,6 @@ namespace LYBT.Module.Consultation.Mapping
                 .ForMember(dest => dest.IsDeleted, opt => opt.MapFrom(src => false))
 
                 // 忽略导航属性
-                .ForMember(dest => dest.Patient, opt => opt.Ignore())
-                .ForMember(dest => dest.User, opt => opt.Ignore())
                 .ForMember(dest => dest.MedicalCase, opt => opt.Ignore())
 
                 // 忽略DTO中的显示字段
@@ -133,12 +129,7 @@ namespace LYBT.Module.Consultation.Mapping
                 .ForMember(dest => dest.IsDeleted, opt => opt.Ignore())
 
                 // 忽略导航属性
-                .ForMember(dest => dest.Patient, opt => opt.Ignore())
-                .ForMember(dest => dest.User, opt => opt.Ignore())
                 .ForMember(dest => dest.MedicalCase, opt => opt.Ignore())
-                .ForMember(dest => dest.PatientId, opt => opt.Ignore())
-                .ForMember(dest => dest.UserId, opt => opt.Ignore())
-                .ForMember(dest => dest.MedicalCaseId, opt => opt.Ignore())
 
                 // 忽略DTO中的其他字段
                 .ForSourceMember(src => src.ConsultationStatus, opt => opt.DoNotValidate())

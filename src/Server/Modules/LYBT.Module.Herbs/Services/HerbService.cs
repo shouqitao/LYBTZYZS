@@ -11,7 +11,7 @@ namespace LYBT.Module.Herbs.Services
     /// <summary>
     /// 药材服务 - 简化版，只包含基础CRUD
     /// </summary>
-    public class HerbService : IHerbService
+    public class HerbService : Interfaces.IHerbService
     {
         private readonly IHerbRepository _repository;
         private readonly IMapper _mapper;
@@ -113,6 +113,23 @@ namespace LYBT.Module.Herbs.Services
             {
                 _logger.LogError(ex, "删除药材失败");
                 return ServiceResult.Failure("删除药材失败");
+            }
+        }
+
+        public async Task<ServiceResult<List<HerbDto>>> SearchAsync(string keyword)
+        {
+            try
+            {
+                var entities = await _repository.FindAsync(h => 
+                    h.Name.Contains(keyword) || 
+                    (h.PinYinCode != null && h.PinYinCode.Contains(keyword)));
+                var dtos = _mapper.Map<List<HerbDto>>(entities);
+                return ServiceResult<List<HerbDto>>.Success(dtos);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "搜索药材失败: {Keyword}", keyword);
+                return ServiceResult<List<HerbDto>>.Failure("搜索药材失败");
             }
         }
     }

@@ -7,7 +7,7 @@ namespace LYBT.Module.Users.Validators
     {
         public UserCreateDtoValidator()
         {
-            RuleFor(x => x.UserName).NotEmpty();
+            RuleFor(x => x.Username).NotEmpty();
         }
     }
 }

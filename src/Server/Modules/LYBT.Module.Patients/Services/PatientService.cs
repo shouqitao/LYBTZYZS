@@ -12,7 +12,7 @@ namespace LYBT.Module.Patients.Services
     /// <summary>
     /// 患者服务 - 简化版，只包含基础CRUD
     /// </summary>
-    public class PatientService : IPatientService
+    public class PatientService : Interfaces.IPatientService
     {
         private readonly IPatientRepository _repository;
         private readonly IMapper _mapper;

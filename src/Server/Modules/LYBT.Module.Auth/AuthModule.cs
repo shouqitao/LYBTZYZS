@@ -59,11 +59,6 @@ namespace LYBT.Module.Auth
         }
     }
 }
-{
-
-    /// <summary>
-    /// 登录验证模块注册入口
-    /// </summary>
     public static class AuthModule
     {
 

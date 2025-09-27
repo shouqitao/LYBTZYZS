@@ -11,7 +11,7 @@ namespace LYBT.Module.Consultation.Services
     /// <summary>
     /// 诊疗服务 - 简化版，只包含基础CRUD
     /// </summary>
-    public class ConsultationService : IConsultationService
+    public class ConsultationService : Interfaces.IConsultationService
     {
         private readonly IConsultationRepository _repository;
         private readonly IMapper _mapper;
@@ -81,24 +81,17 @@ namespace LYBT.Module.Consultation.Services
             }
         }
 
+        /// <summary>
+        /// 创建诊疗记录（已废弃）
+        /// 注意：诊疗记录应该通过MedicalCase聚合根创建，使用MedicalCaseService.CreateWithDetailsAsync
+        /// </summary>
+        [Obsolete("诊疗记录应该通过MedicalCase聚合根创建，请使用MedicalCaseService.CreateWithDetailsAsync")]
         public async Task<ServiceResult<ConsultationDto>> CreateAsync(ConsultationCreateDto dto)
         {
-            try
-            {
-                // 添加null检查
-                if (dto == null)
-                    return ServiceResult<ConsultationDto>.Failure("数据不能为空");
-
-                var entity = _mapper.Map<ConsultationEntity>(dto);
-                var result = await _repository.AddAsync(entity);
-                var resultDto = _mapper.Map<ConsultationDto>(result);
-                return ServiceResult<ConsultationDto>.Success(resultDto);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "创建诊疗记录失败");
-                return ServiceResult<ConsultationDto>.Failure("创建诊疗记录失败");
-            }
+            // 该方法已废弃，诊疗记录应该通过MedicalCase聚合根创建
+            _logger.LogWarning("使用了已废弃的ConsultationService.CreateAsync方法，应该通过MedicalCase聚合根创建");
+            
+            return ServiceResult<ConsultationDto>.Failure("诊疗记录必须通过医疗案例(MedicalCase)创建，请使用MedicalCaseService.CreateWithDetailsAsync");
         }
 
         public async Task<ServiceResult<ConsultationDto>> UpdateAsync(Guid id, ConsultationUpdateDto dto)
@@ -160,32 +153,34 @@ namespace LYBT.Module.Consultation.Services
             }
         }
 
+        /// <summary>
+        /// 开始新的诊疗会话（已废弃）
+        /// 注意：诊疗会话应该通过MedicalCase聚合根创建，使用MedicalCaseService.CreateWithDetailsAsync
+        /// </summary>
+        [Obsolete("诊疗会话应该通过MedicalCase聚合根创建，请使用MedicalCaseService.CreateWithDetailsAsync")]
         public async Task<ServiceResult<ConsultationDto>> StartAsync(Guid patientId)
+        {
+            // 该方法已废弃，诊疗会话应该通过MedicalCase聚合根创建
+            _logger.LogWarning("使用了已废弃的ConsultationService.StartAsync方法，应该通过MedicalCase聚合根创建");
+            
+            return ServiceResult<ConsultationDto>.Failure("诊疗会话必须通过医疗案例(MedicalCase)创建，请使用MedicalCaseService.CreateWithDetailsAsync");
+        }
+
+        public async Task<ServiceResult<List<ConsultationDto>>> SearchAsync(string keyword)
         {
             try
             {
-                // 创建新的诊疗会话
-                var consultation = new ConsultationEntity
-                {
-                    Id = Guid.NewGuid(),
-                    PatientId = patientId,
-                    MedicalCaseId = Guid.NewGuid(), // 新建医案ID
-                    UserId = Guid.Empty, // TODO: 应该从当前登录用户获取
-                    CreatedAt = DateTime.Now,
-                    CreatedBy = Guid.Empty, // TODO: 应该从当前登录用户获取
-                    IsDeleted = false
-                };
-
-                await _repository.AddAsync(consultation);
-
-                // 转换为DTO返回
-                var dto = _mapper.Map<ConsultationDto>(consultation);
-                return ServiceResult<ConsultationDto>.Success(dto);
+                var entities = await _repository.FindAsync(c => 
+                    (c.ChiefComplaint != null && c.ChiefComplaint.Contains(keyword)) ||
+                    (c.TCMDiagnosis != null && c.TCMDiagnosis.Contains(keyword)) ||
+                    (c.PresentIllness != null && c.PresentIllness.Contains(keyword)));
+                var dtos = _mapper.Map<List<ConsultationDto>>(entities);
+                return ServiceResult<List<ConsultationDto>>.Success(dtos);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "开始新的诊疗会话失败");
-                return ServiceResult<ConsultationDto>.Failure("开始诊疗会话失败");
+                _logger.LogError(ex, "搜索诊疗记录失败: {Keyword}", keyword);
+                return ServiceResult<List<ConsultationDto>>.Failure("搜索诊疗记录失败");
             }
         }
     }

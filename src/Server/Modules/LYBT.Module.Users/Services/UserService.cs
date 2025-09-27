@@ -51,7 +51,7 @@ namespace LYBT.Module.Users.Services
         {
             try
             {
-                var pagedResult = await _repository.GetPagedAsync(query.Page, query.PageSize);
+                var pagedResult = await _repository.GetPagedAsync(query.PageIndex, query.PageSize);
                 var dto = new PagedResult<UserDto>
                 {
                     Items = _mapper.Map<List<UserDto>>(pagedResult.Items),
@@ -108,7 +108,7 @@ namespace LYBT.Module.Users.Services
         {
             try
             {
-                var entities = await _repository.GetActiveUsersAsync();
+                var entities = await _repository.FindAsync(u => u.Status == CommonStatus.Enabled);
                 var dto = _mapper.Map<List<UserDto>>(entities);
                 return ServiceResult<List<UserDto>>.Success(dto);
             }
@@ -123,7 +123,10 @@ namespace LYBT.Module.Users.Services
         {
             try
             {
-                var entities = await _repository.SearchAsync(keyword);
+                var entities = await _repository.FindAsync(u => 
+                    u.UsernName.Contains(keyword) || 
+                    u.RealName.Contains(keyword) || 
+                    (u.Email != null && u.Email.Contains(keyword)));
                 var dto = _mapper.Map<List<UserDto>>(entities);
                 return ServiceResult<List<UserDto>>.Success(dto);
             }
@@ -171,7 +174,7 @@ namespace LYBT.Module.Users.Services
         {
             try
             {
-                var entities = await _repository.GetByRoleAsync(UserRole.Doctor);
+                var entities = await _repository.FindAsync(u => u.Role == UserRole.Doctor);
                 var dto = _mapper.Map<List<UserDto>>(entities);
                 return ServiceResult<List<UserDto>>.Success(dto);
             }
