@@ -1,253 +1,309 @@
-using System;
-using System.Threading.Tasks;
 using FluentAssertions;
+using LYBT.Entities.Consultation;
+using LYBT.Entities.MedicalCase;
 using LYBT.Infrastructure.Data;
 using LYBT.Module.Consultation.Interfaces;
 using LYBT.Module.Consultation.Services;
 using LYBT.Shared.Models.Contracts.Consultation;
-using LYBT.Shared.Models.Common;
-using LYBT.Tests.Common;
+using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
+using System;
+using System.Threading.Tasks;
 using Xunit;
-using ConsultationEntity = LYBT.Entities.Consultation.Consultation;
 
-namespace LYBT.Module.Consultation.Tests.Services
+namespace LYBT.UnitTests.Core.Services
 {
     /// <summary>
-    /// 诊疗服务单元测试
-    /// 测试诊疗记录的创建、查询、更新、删除等核心业务逻辑
+    /// ConsultationService服务层单元测试
     /// </summary>
-    public class ConsultationServiceTests : TestBase
+    public class ConsultationServiceTests : IDisposable
     {
-        private readonly ConsultationService _consultationService;
-        private readonly Mock<IConsultationRepository> _repositoryMock;
-        private readonly Mock<ILogger<ConsultationService>> _loggerMock;
         private readonly AppDbContext _context;
+        private readonly Mock<ILogger<ConsultationBusinessService>> _loggerMock;
+        private readonly ConsultationBusinessService _service;
 
         public ConsultationServiceTests()
         {
-            // 创建内存数据库上下文
+            // 设置内存数据库
             var options = new DbContextOptionsBuilder<AppDbContext>()
-                .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+                .UseInMemoryDatabase(databaseName: $"TestDb_{Guid.NewGuid()}")
                 .Options;
+
             _context = new AppDbContext(options);
+            _loggerMock = new Mock<ILogger<ConsultationBusinessService>>();
 
-            _repositoryMock = CreateMock<IConsultationRepository>();
-            _loggerMock = CreateLoggerMock<ConsultationService>();
-
-            _consultationService = new ConsultationService(
-                _repositoryMock.Object,
-                Mapper,
-                _loggerMock.Object);
+            // 创建服务实例
+            var repository = new ConsultationRepository(_context);
+            _service = new ConsultationBusinessService(repository, _loggerMock.Object);
         }
 
-        protected override void ConfigureServices(IServiceCollection services)
-        {
-            base.ConfigureServices(services);
-            // 不在这里注册服务，因为构造函数还没完成初始化
-        }
-
-        #region 创建诊疗记录测试
+        #region Get Through MedicalCase Tests
 
         [Fact]
-        public async Task CreateAsync_WithValidData_ShouldReturnSuccess()
+        public async Task GetByMedicalCaseId_ShouldReturnConsultation()
         {
             // Arrange
-            var createDto = new ConsultationCreateDto
+            var medicalCaseId = Guid.NewGuid();
+            
+            // 先创建MedicalCase
+            var medicalCase = new MedicalCase
             {
+                Id = medicalCaseId,
                 PatientId = Guid.NewGuid(),
-                UserId = Guid.NewGuid(),
-                MedicalCaseId = Guid.NewGuid(),
-                ChiefComplaint = "头痛发热",
-                PresentIllness = "昨日开始出现头痛，伴有发热38.5度",
-                TCMDiagnosis = "外感风热",
-                Diagnosis = "上呼吸道感染",
-                TreatmentPrinciple = "疏风清热",
-                StartTime = DateTime.Now,
-                PatientName = "测试患者",
-                DoctorName = "测试医生"
+                DoctorId = Guid.NewGuid(),
+                Status = MedicalCaseStatus.Active
             };
 
-            var consultation = new ConsultationEntity
+            // 创建关联的Consultation
+            var consultation = new Consultation
             {
-                Id = Guid.NewGuid(),
-                PatientId = createDto.PatientId,
-                UserId = createDto.UserId,
-                MedicalCaseId = createDto.MedicalCaseId,
-                ChiefComplaint = createDto.ChiefComplaint,
-                TCMDiagnosis = createDto.TCMDiagnosis ?? "测试诊断",
-                CreatedAt = DateTime.Now
-            };
-
-            _repositoryMock.Setup(x => x.AddAsync(It.IsAny<ConsultationEntity>()))
-                .ReturnsAsync(consultation);
-
-            // Act
-            var result = await _consultationService.CreateAsync(createDto);
-
-            // Assert
-            result.Should().NotBeNull();
-            result.IsSuccess.Should().BeTrue();
-            result.Data.Should().NotBeNull();
-            result.Data.PatientId.Should().Be(createDto.PatientId);
-            result.Data.ChiefComplaint.Should().Be(createDto.ChiefComplaint);
-
-            _repositoryMock.Verify(x => x.AddAsync(It.IsAny<ConsultationEntity>()), Times.Once);
-        }
-
-        [Fact]
-        public async Task CreateAsync_WithNullData_ShouldReturnFailure()
-        {
-            // Arrange
-            ConsultationCreateDto createDto = null;
-
-            // Act
-            var result = await _consultationService.CreateAsync(createDto);
-
-            // Assert
-            result.Should().NotBeNull();
-            result.IsSuccess.Should().BeFalse();
-            result.Message.Should().Contain("数据不能为空");
-        }
-
-        #endregion
-
-        #region 查询诊疗记录测试
-
-        [Fact]
-        public async Task GetByIdAsync_WithValidId_ShouldReturnRecord()
-        {
-            // Arrange
-            var consultationId = Guid.NewGuid();
-            var consultation = new ConsultationEntity
-            {
-                Id = consultationId,
-                PatientId = Guid.NewGuid(),
-                UserId = Guid.NewGuid(),
-                MedicalCaseId = Guid.NewGuid(),
+                MedicalCaseId = medicalCaseId,
                 ChiefComplaint = "测试主诉",
-                TCMDiagnosis = "测试诊断",
-                CreatedAt = DateTime.Now
+                PresentIllness = "测试现病史",
+                Diagnosis = "测试诊断",
+                Status = ConsultationStatus.Completed
             };
 
-            _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(consultationId))
-                .ReturnsAsync(consultation);
+            _context.MedicalCases.Add(medicalCase);
+            _context.Consultations.Add(consultation);
+            await _context.SaveChangesAsync();
 
             // Act
-            var result = await _consultationService.GetByIdAsync(consultationId);
+            var result = await _service.GetByMedicalCaseIdAsync(medicalCaseId);
 
             // Assert
             result.Should().NotBeNull();
-            result.IsSuccess.Should().BeTrue();
-            result.Data.Should().NotBeNull();
-            result.Data.Id.Should().Be(consultationId);
-            result.Data.ChiefComplaint.Should().Be(consultation.ChiefComplaint);
+            result!.MedicalCaseId.Should().Be(medicalCaseId);
+            result.ChiefComplaint.Should().Be("测试主诉");
+            result.Diagnosis.Should().Be("测试诊断");
         }
 
         [Fact]
-        public async Task GetByIdAsync_WithInvalidId_ShouldReturnNotFound()
+        public async Task GetByMedicalCaseId_ShouldReturnNull_WhenNoConsultation()
         {
             // Arrange
-            var invalidId = Guid.NewGuid();
-            _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(invalidId))
-                .ReturnsAsync((ConsultationEntity)null);
+            var medicalCaseId = Guid.NewGuid();
+            
+            // 只创建MedicalCase，不创建Consultation
+            var medicalCase = new MedicalCase
+            {
+                Id = medicalCaseId,
+                PatientId = Guid.NewGuid(),
+                DoctorId = Guid.NewGuid()
+            };
+
+            _context.MedicalCases.Add(medicalCase);
+            await _context.SaveChangesAsync();
 
             // Act
-            var result = await _consultationService.GetByIdAsync(invalidId);
+            var result = await _service.GetByMedicalCaseIdAsync(medicalCaseId);
 
             // Assert
-            result.Should().NotBeNull();
-            result.IsSuccess.Should().BeFalse();
-            result.Message.Should().Contain("诊疗记录不存在");
+            result.Should().BeNull("没有关联的Consultation");
         }
 
         #endregion
 
-        #region 更新诊疗记录测试
+        #region Cascade Update Tests
 
         [Fact]
-        public async Task UpdateAsync_WithValidData_ShouldReturnSuccess()
+        public async Task UpdateConsultation_ShouldNotAffectMedicalCase()
         {
             // Arrange
-            var consultationId = Guid.NewGuid();
+            var medicalCaseId = Guid.NewGuid();
+            
+            var medicalCase = new MedicalCase
+            {
+                Id = medicalCaseId,
+                PatientId = Guid.NewGuid(),
+                DoctorId = Guid.NewGuid(),
+                Remark = "原始备注",
+                Status = MedicalCaseStatus.Active
+            };
+
+            var consultation = new Consultation
+            {
+                MedicalCaseId = medicalCaseId,
+                ChiefComplaint = "原始主诉",
+                Status = ConsultationStatus.InProgress
+            };
+
+            _context.MedicalCases.Add(medicalCase);
+            _context.Consultations.Add(consultation);
+            await _context.SaveChangesAsync();
+
+            // Act
             var updateDto = new ConsultationUpdateDto
             {
-                Id = consultationId,
                 ChiefComplaint = "更新后的主诉",
-                PresentIllness = "更新后的现病史",
-                TCMDiagnosis = "更新后的中医诊断",
-                TreatmentPrinciple = "更新后的治则治法"
+                Diagnosis = "新的诊断"
             };
 
-            var existingConsultation = new ConsultationEntity
-            {
-                Id = consultationId,
-                PatientId = Guid.NewGuid(),
-                UserId = Guid.NewGuid(),
-                MedicalCaseId = Guid.NewGuid(),
-                ChiefComplaint = "原始主诉",
-                TCMDiagnosis = "原始诊断",
-                CreatedAt = DateTime.Now.AddDays(-1)
-            };
-
-            _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(consultationId))
-                .ReturnsAsync(existingConsultation);
-
-            _repositoryMock.Setup(x => x.UpdateAsync(It.IsAny<ConsultationEntity>()))
-                .ReturnsAsync(existingConsultation);
-
-            // Act
-            var result = await _consultationService.UpdateAsync(updateDto.Id, updateDto);
+            var result = await _service.UpdateAsync(medicalCaseId, updateDto);
 
             // Assert
             result.Should().NotBeNull();
-            result.IsSuccess.Should().BeTrue();
-            result.Data.Should().NotBeNull();
-            result.Data.Id.Should().Be(consultationId);
+            result!.ChiefComplaint.Should().Be("更新后的主诉");
 
-            _repositoryMock.Verify(x => x.UpdateAsync(It.IsAny<ConsultationEntity>()), Times.Once);
+            // 验证MedicalCase没有被影响
+            var unchangedCase = await _context.MedicalCases.FindAsync(medicalCaseId);
+            unchangedCase!.Remark.Should().Be("原始备注");
         }
 
         #endregion
 
-        #region 删除诊疗记录测试
+        #region Soft Delete Tests
 
         [Fact]
-        public async Task DeleteAsync_WithValidId_ShouldReturnSuccess()
+        public async Task SoftDelete_ShouldMarkAsDeleted()
         {
             // Arrange
-            var consultationId = Guid.NewGuid();
-            var consultation = new ConsultationEntity
+            var medicalCaseId = Guid.NewGuid();
+            
+            var consultation = new Consultation
             {
-                Id = consultationId,
-                PatientId = Guid.NewGuid(),
-                UserId = Guid.NewGuid(),
-                MedicalCaseId = Guid.NewGuid(),
+                MedicalCaseId = medicalCaseId,
                 ChiefComplaint = "测试主诉",
-                TCMDiagnosis = "测试诊断",
                 IsDeleted = false
             };
 
-            _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(consultationId))
-                .ReturnsAsync(consultation);
-
-            _repositoryMock.Setup(x => x.DeleteAsync(consultationId))
-                .ReturnsAsync(true);
+            _context.Consultations.Add(consultation);
+            await _context.SaveChangesAsync();
 
             // Act
-            var result = await _consultationService.DeleteAsync(consultationId);
+            await _service.DeleteAsync(medicalCaseId);
 
             // Assert
-            result.Should().NotBeNull();
-            result.IsSuccess.Should().BeTrue();
-            result.Message.Should().Contain("成功");
+            var deletedConsultation = await _context.Consultations
+                .IgnoreQueryFilters() // 忽略软删除过滤器
+                .FirstOrDefaultAsync(c => c.MedicalCaseId == medicalCaseId);
 
-            _repositoryMock.Verify(x => x.DeleteAsync(consultationId), Times.Once);
+            deletedConsultation.Should().NotBeNull();
+            deletedConsultation!.IsDeleted.Should().BeTrue();
+        }
+
+        [Fact]
+        public async Task GetByMedicalCaseId_ShouldNotReturnSoftDeleted()
+        {
+            // Arrange
+            var medicalCaseId = Guid.NewGuid();
+            
+            var consultation = new Consultation
+            {
+                MedicalCaseId = medicalCaseId,
+                ChiefComplaint = "已删除的诊疗记录",
+                IsDeleted = true
+            };
+
+            _context.Consultations.Add(consultation);
+            await _context.SaveChangesAsync();
+
+            // Act
+            var result = await _service.GetByMedicalCaseIdAsync(medicalCaseId);
+
+            // Assert
+            result.Should().BeNull("软删除的记录不应该被返回");
         }
 
         #endregion
+
+        #region Status Transition Tests
+
+        [Fact]
+        public async Task CompleteConsultation_ShouldUpdateStatusAndTimestamp()
+        {
+            // Arrange
+            var medicalCaseId = Guid.NewGuid();
+            
+            var consultation = new Consultation
+            {
+                MedicalCaseId = medicalCaseId,
+                Status = ConsultationStatus.InProgress,
+                ChiefComplaint = "测试主诉"
+            };
+
+            _context.Consultations.Add(consultation);
+            await _context.SaveChangesAsync();
+
+            // Act
+            var result = await _service.CompleteConsultationAsync(medicalCaseId);
+
+            // Assert
+            result.Should().NotBeNull();
+            result!.Status.Should().Be(ConsultationStatus.Completed);
+            result.CompletedAt.Should().NotBeNull();
+            result.CompletedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
+        }
+
+        [Fact]
+        public async Task CompleteConsultation_ShouldFailForAlreadyCompleted()
+        {
+            // Arrange
+            var medicalCaseId = Guid.NewGuid();
+            var completedTime = DateTime.UtcNow.AddHours(-1);
+            
+            var consultation = new Consultation
+            {
+                MedicalCaseId = medicalCaseId,
+                Status = ConsultationStatus.Completed,
+                CompletedAt = completedTime
+            };
+
+            _context.Consultations.Add(consultation);
+            await _context.SaveChangesAsync();
+
+            // Act
+            Func<Task> act = async () => await _service.CompleteConsultationAsync(medicalCaseId);
+
+            // Assert
+            await act.Should().ThrowAsync<InvalidOperationException>()
+                .WithMessage("*已完成*");
+        }
+
+        #endregion
+
+        #region TCM Diagnosis Tests
+
+        [Fact]
+        public async Task CreateWithTCMDiagnosis_ShouldSaveAllFields()
+        {
+            // Arrange
+            var dto = new ConsultationCreateDto
+            {
+                MedicalCaseId = Guid.NewGuid(),
+                ChiefComplaint = "头痛发热",
+                // 四诊信息
+                Inspection = "面色红润，舌淡红，苔薄白",
+                Auscultation = "声音洪亮",
+                Inquiry = "睡眠欠佳，纳食可",
+                Palpation = "脉浮数",
+                // 中医诊断
+                TcmDiagnosis = "外感风寒",
+                Syndrome = "风寒束表证",
+                TreatmentPrinciple = "疏风散寒，宣肺解表"
+            };
+
+            // Act
+            var result = await _service.CreateAsync(dto);
+
+            // Assert
+            result.Should().NotBeNull();
+            result!.Inspection.Should().Contain("舌淡红");
+            result.Auscultation.Should().Contain("洪亮");
+            result.Inquiry.Should().Contain("睡眠");
+            result.Palpation.Should().Contain("脉浮数");
+            result.TcmDiagnosis.Should().Be("外感风寒");
+            result.Syndrome.Should().Contain("风寒");
+            result.TreatmentPrinciple.Should().Contain("疏风散寒");
+        }
+
+        #endregion
+
+        public void Dispose()
+        {
+            _context?.Dispose();
+        }
     }
 }
