@@ -11,28 +11,26 @@ namespace LYBT.Entities.Prescriptions
     /// 处方实体 - UltraThink v2.0架构简化版
     /// 合并了原BasePrescription和PrescriptionModel
     /// 价格计算在DTO层处理，实体只存储基础数据和折扣信息
-    /// 继承BaseEntity实现审计字段自动化
+    /// 作为MedicalCase的可选组成部分（一对零或一关系）
     /// </summary>
     [Table("Prescriptions")]
     public class Prescription : BaseEntity
     {
-
         // Id字段继承自BaseEntity
 
-        /// <summary>医疗案例ID</summary>
+        /// <summary>医疗案例ID（外键）</summary>
         [Required]
         [DisplayName("医疗案例ID")]
         public Guid MedicalCaseId { get; set; }
 
-        /// <summary>患者ID</summary>
-        [Required]
+        // PatientId和UserId通过MedicalCase获取，保留以保持兼容性
+        /// <summary>患者ID（冗余，通过MedicalCase获取）</summary>
         [DisplayName("患者ID")]
-        public Guid PatientId { get; set; }
+        public Guid? PatientId { get; set; }
 
-        /// <summary>关联用户ID（医生）</summary>
-        [Required]
+        /// <summary>关联用户ID（医生，冗余，通过MedicalCase获取）</summary>
         [DisplayName("关联用户ID")]
-        public Guid UserId { get; set; }
+        public Guid? UserId { get; set; }
 
         /// <summary>创建人ID（医生用户ID）</summary>
         // 审计字段（CreatedBy等）继承自BaseEntity
@@ -77,5 +75,12 @@ namespace LYBT.Entities.Prescriptions
         /// </summary>
         [DisplayName("处方项目")]
         public List<PrescriptionItem> Items { get; set; } = new();
+
+        // 导航属性
+
+        /// <summary>
+        /// 所属医疗案例
+        /// </summary>
+        public virtual MedicalCase.MedicalCase? MedicalCase { get; set; }
     }
 }

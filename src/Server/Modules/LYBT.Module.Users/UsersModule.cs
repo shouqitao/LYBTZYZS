@@ -1,12 +1,17 @@
+using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using FluentValidation;
 using LYBT.Module.Users.Interfaces;
 using LYBT.Module.Users.Services;
 using LYBT.Module.Users.Repositories;
 using LYBT.Module.Users.Configuration;
 using LYBT.Module.Users.HealthChecks;
+using LYBT.Module.Users.Validators;
+using LYBT.Module.Users.Mapping;
+using LYBT.Shared.Models.Contracts.Users;
 using AutoMapper;
 
 namespace LYBT.Module.Users
@@ -18,7 +23,7 @@ namespace LYBT.Module.Users
     /// <summary>
 /// 用户模块服务注册（简化版本）
 /// </summary>
-public class UsersModule
+public static class UsersModule
 {
     /// <summary>
     /// 注册用户模块服务
@@ -27,7 +32,7 @@ public class UsersModule
     {
         // 注册仓储
         services.AddScoped<IUserRepository, UserRepository>();
-        services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+        // services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>(); // JWT简化后已移除
         
         // 注册服务
         services.AddScoped<IUserService, UserService>();
@@ -67,22 +72,20 @@ public class UsersModule
     /// <summary>
     /// 用户模块扩展方法（保持向后兼容）
     /// </summary>
-    public class UsersModuleExtensions
+    public static class UsersModuleExtensions
     {
         /// <summary>
         /// 注册本模块所有服务到 DI 容器（使用统一数据库上下文）
         /// UltraThink双层架构：Query(查询专业化) + Business(业务逻辑和CRUD)
         /// </summary>
-        [Obsolete("建议使用 UsersModule 类替代静态扩展方法")]
+        [Obsolete("建议使用 UsersModule.AddUsersModule 方法")]
         public static IServiceCollection AddUsersModuleServices(this IServiceCollection services)
         {
-            // 为保持向后兼容，委托给模块实例
-            var module = new UsersModule();
-            var configuration = services.BuildServiceProvider().GetService<IConfiguration>() 
+            // 为保持向后兼容，委托给新的静态方法
+            var configuration = services.BuildServiceProvider().GetService<IConfiguration>()
                 ?? throw new InvalidOperationException("IConfiguration not found in service collection");
-            
-            module.ConfigureServices(services, configuration);
-            return services;
+
+            return UsersModule.AddUsersModule(services, configuration);
         }
     }
 }

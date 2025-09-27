@@ -46,7 +46,7 @@ try
     var urls = Environment.GetEnvironmentVariable("ASPNETCORE_URLS");
     if (string.IsNullOrEmpty(urls))
     {
-        urls = "http://localhost:8080";
+        urls = "http://localhost:5001";
         Environment.SetEnvironmentVariable("ASPNETCORE_URLS", urls);
     }
 

@@ -289,13 +289,6 @@ namespace LYBT.Infrastructure.Data
             entity.Property(c => c.TreatmentPrinciple).HasMaxLength(500);
             entity.Property(c => c.MedicalAdvice).HasMaxLength(500);
             entity.Property(c => c.Remark).HasMaxLength(1000);
-            entity.HasIndex(c => c.PatientId);
-            entity.HasIndex(c => c.UserId);
-
-            // 根据文档要求：一病案一诊断 - 唯一索引
-            entity.HasIndex(c => c.MedicalCaseId)
-                  .HasDatabaseName("UX_Consultations_MedicalCaseId")
-                  .IsUnique();
 
             // 添加并发控制
             entity.Property(c => c.RowVersion).IsRowVersion().IsConcurrencyToken();
@@ -303,13 +296,10 @@ namespace LYBT.Infrastructure.Data
             // 添加审计字段
             entity.Property(c => c.CreatedBy).IsRequired();
 
-            // 明确配置外键属性和导航属性关系
-            entity.Property(c => c.MedicalCaseId).HasColumnName("MedicalCaseId").IsRequired();
-
-            // 配置与MedicalCase的一对一关系
+            // 配置与MedicalCase的一对一关系（共享主键）
             entity.HasOne(c => c.MedicalCase)
                   .WithOne(m => m.Consultation)
-                  .HasForeignKey<Consultation>(c => c.MedicalCaseId)
+                  .HasForeignKey<Consultation>(c => c.Id) // 使用Id作为外键（共享主键）
                   .IsRequired()
                   .OnDelete(DeleteBehavior.Cascade); // 级联删除
         }
@@ -335,7 +325,7 @@ namespace LYBT.Infrastructure.Data
             prescriptionEntity.Property(p => p.RowVersion).IsRowVersion().IsConcurrencyToken();
 
             // 配置与MedicalCase的一对一关系
-            prescriptionEntity.HasOne<MedicalCase>()
+            prescriptionEntity.HasOne(p => p.MedicalCase)
                              .WithOne(m => m.Prescription)
                              .HasForeignKey<Prescription>(p => p.MedicalCaseId)
                              .IsRequired()

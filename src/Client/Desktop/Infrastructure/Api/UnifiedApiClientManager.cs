@@ -270,7 +270,7 @@ public class UnifiedApiClientManager(HttpClient httpClient, ILogger<UnifiedApiCl
         _httpClient.DefaultRequestHeaders.Add("X-Client-Platform", Environment.OSVersion.ToString());
 
         // 如果BaseAddress未设置，使用默认地址（Windows 本地部署：5001）
-        _httpClient.BaseAddress ??= new Uri("https://localhost:5001");
+        _httpClient.BaseAddress ??= new Uri("http://localhost:5001");
 
         _logger.LogDebug(
             "HttpClient配置完成 - 基地址: {BaseAddress}, 超时: {Timeout}s",

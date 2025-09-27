@@ -46,11 +46,8 @@ namespace LYBT.Module.MedicalCase.Repositories
         public async Task<MedicalCaseEntity> GetByIdWithDetailsAsync(Guid id)
         {
             return await _dbSet
-                .Include(m => m.Consultation)
-                    .ThenInclude(c => c.Patient)  // 包含诊疗关联的患者
-                .Include(m => m.Consultation)
-                    .ThenInclude(c => c.User)     // 包含诊疗关联的医生
-                .Include(m => m.Prescription)
+                .Include(m => m.Consultation)     // 包含诊疗记录
+                .Include(m => m.Prescription)     // 包含处方
                     .ThenInclude(p => p.Items)    // 包含处方项
                 .Where(m => m.Id == id && !m.IsDeleted)
                 .FirstOrDefaultAsync();
