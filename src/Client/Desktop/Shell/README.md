@@ -334,7 +334,7 @@ public class ConfirmationDialogViewModel : BindableBase, IDialogAware
 #### 应用配置文件 (appsettings.json)
 ```json
 {
-  "ApiBaseUrl": "https://localhost:7001",
+  "ApiBaseUrl": "http://localhost:5001",
   "ConnectionTimeout": 30,
   "IsDebugMode": true,
   "Logging": {

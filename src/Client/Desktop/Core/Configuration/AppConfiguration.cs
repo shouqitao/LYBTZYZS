@@ -14,7 +14,7 @@ namespace LYBT.Desktop.Core.Configuration
         private readonly Dictionary<string, object> _runtimeValues = new();
 
         /// <inheritdoc/>
-        public string ApiBaseUrl => GetValue("ApiBaseUrl", "https://localhost:7001");
+        public string ApiBaseUrl => GetValue("ApiBaseUrl", "http://localhost:5001");
 
         /// <inheritdoc/>
         public int ConnectionTimeout => GetValue("ConnectionTimeout", 30);
@@ -140,7 +140,7 @@ namespace LYBT.Desktop.Core.Configuration
         {
             var inMemoryConfig = new Dictionary<string, string>
             {
-                {"ApiBaseUrl", "https://localhost:7001" },
+                {"ApiBaseUrl", "http://localhost:5001" },
                 {"ConnectionTimeout", "30" },
                 {"IsDebugMode", "true" },
                 {"Cache:DefaultExpirationMinutes", "30" },
@@ -190,7 +190,7 @@ namespace LYBT.Desktop.Core.Configuration
         {
             return new Dictionary<string, string>
             {
-                {"ApiBaseUrl", "https://localhost:7001" },
+                {"ApiBaseUrl", "http://localhost:5001" },
                 {"IsDebugMode", "true" },
                 {"Logging:MinimumLevel", "Debug" },
                 {"Performance:EnableVirtualization", "false" }
