@@ -68,6 +68,24 @@ namespace LYBT.Entities.Prescriptions
         [DisplayName("备注")]
         public string? Remark { get; set; }
 
+        // 打印版本管理字段
+
+        /// <summary>当前打印版本号</summary>
+        [DisplayName("打印版本号")]
+        public int PrintVersion { get; set; } = 1;
+
+        /// <summary>最后打印时间</summary>
+        [DisplayName("最后打印时间")]
+        public DateTime? LastPrintedAt { get; set; }
+
+        /// <summary>打印次数</summary>
+        [DisplayName("打印次数")]
+        public int PrintCount { get; set; } = 0;
+
+        /// <summary>是否已打印</summary>
+        [DisplayName("是否已打印")]
+        public bool IsPrinted { get; set; } = false;
+
 // 关联数据
 
         /// <summary>
@@ -82,5 +100,10 @@ namespace LYBT.Entities.Prescriptions
         /// 所属医疗案例
         /// </summary>
         public virtual MedicalCase.MedicalCase? MedicalCase { get; set; }
+
+        /// <summary>
+        /// 打印日志记录
+        /// </summary>
+        public List<PrescriptionPrintLog> PrintLogs { get; set; } = new();
     }
 }

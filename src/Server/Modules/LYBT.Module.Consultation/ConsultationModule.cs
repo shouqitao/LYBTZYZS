@@ -7,6 +7,7 @@ using LYBT.Module.Consultation.Services;
 using LYBT.Module.Consultation.Repositories;
 using FluentValidation;
 using LYBT.Shared.Models.Contracts.Consultation;
+using LYBT.Module.Consultation.Mapping;
 
 namespace LYBT.Module.Consultation
 {
@@ -22,22 +23,22 @@ namespace LYBT.Module.Consultation
         {
             // 注册仓储
             services.AddScoped<IConsultationRepository, ConsultationRepository>();
-            services.AddScoped<IConsultationRecordRepository, ConsultationRecordRepository>();
+            // services.AddScoped<IConsultationRecordRepository, ConsultationRecordRepository>();  // 不存在的类型
             
             // 注册服务
             services.AddScoped<IConsultationService, ConsultationService>();
             services.AddScoped<IConsultationQueryService, ConsultationQueryService>();
-            services.AddScoped<IDiagnosisService, DiagnosisService>();
+            // services.AddScoped<IDiagnosisService, DiagnosisService>();  // 不存在的类型
             
-            // 注册验证器
-            services.AddScoped<IValidator<ConsultationCreateDto>, ConsultationCreateDtoValidator>();
-            services.AddScoped<IValidator<DiagnosisDto>, DiagnosisDtoValidator>();
+            // 注册验证器 - 暂时注释，待创建后启用
+            // services.AddScoped<IValidator<ConsultationCreateDto>, ConsultationCreateDtoValidator>();
+            // services.AddScoped<IValidator<DiagnosisDto>, DiagnosisDtoValidator>();  // 不存在的类型
             
             // 注册AutoMapper配置
             services.AddAutoMapper(typeof(ConsultationMappingProfile));
             
-            // 注册模块特定的配置
-            services.Configure<ConsultationModuleOptions>(configuration.GetSection("Modules:Consultation"));
+            // 注册模块特定的配置 - 暂时注释，待创建选项类后启用
+            // services.Configure<ConsultationModuleOptions>(configuration.GetSection("Modules:Consultation"));
             
             return services;
         }
@@ -56,7 +57,8 @@ namespace LYBT.Module.Consultation
         /// </summary>
         public static IHealthChecksBuilder AddConsultationModuleHealthCheck(this IHealthChecksBuilder builder)
         {
-            return builder.AddCheck<ConsultationModuleHealthCheck>("consultation_module");
+            // return builder.AddCheck<ConsultationModuleHealthCheck>("consultation_module");  // 待创建健康检查类
+            return builder;
         }
     }
 }

@@ -18,9 +18,9 @@ namespace LYBT.Module.Patients.Validators
                 .Matches(@"^1[3-9]\d{9}$").WithMessage("手机号格式不正确")
                 .When(x => !string.IsNullOrEmpty(x.PhoneNumber));
 
-            RuleFor(x => x.IdCard)
+            RuleFor(x => x.IdNumber)
                 .Matches(@"^\d{15}|\d{18}|\d{17}[xX]$").WithMessage("身份证号格式不正确")
-                .When(x => !string.IsNullOrEmpty(x.IdCard));
+                .When(x => !string.IsNullOrEmpty(x.IdNumber));
         }
     }
 }
