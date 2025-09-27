@@ -1,6 +1,7 @@
 using Asp.Versioning;
 using LYBT.Core.Infrastructure.Web;
 using LYBT.Shared.Interfaces.Services;
+using LYBT.Shared.Models.Auth;
 using LYBT.Shared.Models.Contracts.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -167,14 +168,12 @@ namespace LYBT.WebAPI.Controllers
         {
             try
             {
-                // 参数验证
-                var validation = ValidateModel<LoginResponse>();
-                if (validation != null)
+                if (request == null)
                 {
-                    return validation;
+                    return ValidationFail<LoginResponse>("刷新Token请求不能为空");
                 }
 
-                if (request == null || string.IsNullOrWhiteSpace(request.RefreshToken))
+                if (string.IsNullOrWhiteSpace(request.RefreshToken))
                 {
                     return ValidationFail<LoginResponse>("刷新Token不能为空");
                 }
@@ -186,6 +185,43 @@ namespace LYBT.WebAPI.Controllers
             catch (Exception ex)
             {
                 return HandleException<LoginResponse>(ex, "刷新Token", request);
+            }
+        }
+
+        /// <summary>
+        /// 撤销Token
+        /// </summary>
+        /// <param name="request">撤销Token请求</param>
+        /// <returns>撤销结果</returns>
+        [HttpPost("revoke")]
+        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse>> RevokeTokenAsync([FromBody] RevokeTokenRequest request)
+        {
+            try
+            {
+                // 参数验证
+                var validation = ValidateModel();
+                if (validation != null)
+                {
+                    return validation;
+                }
+
+                if (request == null)
+                {
+                    return ValidationFail("撤销Token请求不能为空");
+                }
+
+                if (string.IsNullOrWhiteSpace(request.Token))
+                {
+                    return ValidationFail("Token不能为空");
+                }
+
+                // 调用认证服务撤销Token
+                var result = await _authService.RevokeTokenAsync(request);
+                return HandleBoolServiceResult(result, "Token撤销成功");
+            }
+            catch (Exception ex)
+            {
+                return HandleException(ex, "撤销Token", request);
             }
         }
 
@@ -269,170 +305,6 @@ namespace LYBT.WebAPI.Controllers
             catch (Exception ex)
             {
                 return HandleException<bool>(ex, "验证Token", token);
-            }
-        }
-
-        /// <summary>
-        /// 撤销RefreshToken
-        /// </summary>
-        /// <param name="request">撤销请求</param>
-        /// <returns>撤销结果</returns>
-        [HttpPost("revoke")]
-        [Authorize]  // 需要认证
-        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse>> RevokeTokenAsync([FromBody] RefreshTokenRequest request)
-        {
-            try
-            {
-                // 参数验证
-                var validation = ValidateModel();
-                if (validation != null)
-                {
-                    return validation;
-                }
-
-                if (request == null || string.IsNullOrWhiteSpace(request.RefreshToken))
-                {
-                    return ValidationFail("RefreshToken不能为空");
-                }
-
-                // 调用JWT服务撤销Token
-                await _authService.LogoutAsync(new LogoutRequest 
-                { 
-                    Username = User.Identity?.Name ?? "",
-                    RefreshToken = request.RefreshToken,
-                    DeviceId = request.DeviceId
-                });
-
-                return Success("Token撤销成功");
-            }
-            catch (Exception ex)
-            {
-                return HandleException(ex, "撤销Token", request);
-            }
-        }
-
-        /// <summary>
-        /// 撤销用户所有Token（强制登出所有设备）
-        /// </summary>
-        /// <returns>撤销结果</returns>
-        [HttpPost("revokeAll")]
-        [Authorize]  // 需要认证
-        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse>> RevokeAllTokensAsync()
-        {
-            try
-            {
-                var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
-                if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
-                {
-                    return ValidationFail("无效的用户身份");
-                }
-
-                // TODO: 这里需要EnhancedJwtService提供RevokeAllUserTokensAsync方法
-                // await _enhancedJwtService.RevokeAllUserTokensAsync(userId);
-
-                return Success("已撤销所有设备的Token");
-            }
-            catch (Exception ex)
-            {
-                return HandleException(ex, "撤销所有Token", null);
-            }
-        }
-
-        /// <summary>
-        /// 获取用户设备列表
-        /// </summary>
-        /// <returns>设备列表</returns>
-        [HttpGet("devices")]
-        [Authorize]  // 需要认证
-        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<object>>> GetUserDevicesAsync()
-        {
-            try
-            {
-                var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
-                if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
-                {
-                    return ValidationFail<object>("无效的用户身份");
-                }
-
-                // TODO: 这里需要RefreshTokenRepository提供GetUserDevicesAsync方法
-                // var devices = await _refreshTokenRepository.GetUserDevicesAsync(userId);
-
-                var devices = new List<object>(); // 临时返回空列表
-                return Success(devices, "获取设备列表成功");
-            }
-            catch (Exception ex)
-            {
-                return HandleException<object>(ex, "获取设备列表", null);
-            }
-        }
-
-        /// <summary>
-        /// 撤销指定设备的所有Token
-        /// </summary>
-        /// <param name="deviceId">设备ID</param>
-        /// <returns>撤销结果</returns>
-        [HttpPost("revokeDevice/{deviceId}")]
-        [Authorize]  // 需要认证
-        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse>> RevokeDeviceTokensAsync(string deviceId)
-        {
-            try
-            {
-                if (string.IsNullOrWhiteSpace(deviceId))
-                {
-                    return ValidationFail("设备ID不能为空");
-                }
-
-                var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
-                if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
-                {
-                    return ValidationFail("无效的用户身份");
-                }
-
-                // TODO: 这里需要EnhancedJwtService提供RevokeDeviceTokensAsync方法
-                // await _enhancedJwtService.RevokeDeviceTokensAsync(userId, deviceId);
-
-                return Success($"已撤销设备 {deviceId} 的所有Token");
-            }
-            catch (Exception ex)
-            {
-                return HandleException(ex, "撤销设备Token", deviceId);
-            }
-        }
-
-        /// <summary>
-        /// 获取Token安全级别信息
-        /// </summary>
-        /// <returns>安全级别信息</returns>
-        [HttpGet("security")]
-        [Authorize]  // 需要认证
-        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<object>>> GetTokenSecurityAsync()
-        {
-            try
-            {
-                // 从Authorization header中提取Token
-                var authHeader = Request.Headers.Authorization.FirstOrDefault();
-                if (string.IsNullOrWhiteSpace(authHeader) || !authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
-                {
-                    return ValidationFail<object>("缺少有效的Authorization header");
-                }
-
-                var token = authHeader.Substring("Bearer ".Length).Trim();
-
-                // TODO: 这里需要EnhancedJwtService提供ValidateTokenSecurityAsync方法
-                // var securityResult = await _enhancedJwtService.ValidateTokenSecurityAsync(token);
-
-                var securityInfo = new
-                {
-                    IsValid = true,
-                    SecurityLevel = "Standard", // 临时返回
-                    Message = "Token安全验证完成"
-                };
-
-                return Success(securityInfo, "获取Token安全信息成功");
-            }
-            catch (Exception ex)
-            {
-                return HandleException<object>(ex, "获取Token安全信息", null);
             }
         }
 

@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Auth;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Common;
 
@@ -44,5 +45,10 @@ namespace LYBT.Shared.Interfaces.Services
         /// 获取用户会话信息
         /// </summary>
         Task<ServiceResult<object>> GetSessionInfoAsync(string token);
+
+        /// <summary>
+        /// 撤销RefreshToken
+        /// </summary>
+        Task<ServiceResult<bool>> RevokeTokenAsync(RevokeTokenRequest request);
     }
 }
