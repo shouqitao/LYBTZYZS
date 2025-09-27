@@ -7,6 +7,7 @@ using LYBT.Shared.Utilities.Security;
 using LYBT.Infrastructure.Configuration.Options;
 using LYBT.Infrastructure.Security;
 using LYBT.Module.Auth.Interfaces;
+using LYBT.Module.Auth.Models;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -249,23 +250,22 @@ namespace LYBT.Module.Auth.Services
             string? ipAddress, 
             string? userAgent)
         {
-            // 创建模拟的RefreshToken实体进行验证
-            var mockRefreshToken = new RefreshToken
+            // 简化的设备安全验证
+            // TODO: 在实际实现中应该从数据库读取RefreshToken并验证
+            var result = new TokenSecurityValidationResult
             {
-                UserId = Guid.Parse(userId),
-                DeviceFingerprint = deviceFingerprint,
-                OriginalIpAddress = ipAddress,
-                UserAgent = userAgent,
-                IsTrustedDevice = false, // 在实际实现中应该从数据库读取
-                UsageCount = 1,
-                LastUsedAt = DateTime.UtcNow.AddMinutes(-5),
-                CreatedAt = DateTime.UtcNow.AddDays(-1),
-                ExpiresAt = DateTime.UtcNow.AddDays(7),
-                IsUsed = false,
-                IsRevoked = false
+                IsValid = true,
+                SecurityLevel = TokenSecurityLevel.Medium
             };
-
-            return mockRefreshToken.ValidateDeviceSecurity(deviceFingerprint, ipAddress, userAgent);
+            
+            // 基础验证：检查IP地址和UserAgent
+            if (string.IsNullOrEmpty(ipAddress) || string.IsNullOrEmpty(userAgent))
+            {
+                result.Reasons.Add("缺少设备信息");
+                result.SecurityLevel = TokenSecurityLevel.Low;
+            }
+            
+            return result;
         }
 
         /// <summary>

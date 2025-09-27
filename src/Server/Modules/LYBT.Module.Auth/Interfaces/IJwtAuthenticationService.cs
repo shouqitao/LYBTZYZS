@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using LYBT.Shared.Models.Enums;
 using LYBT.Entities.Auth;
+using LYBT.Module.Auth.Models;
 
 namespace LYBT.Module.Auth.Interfaces
 {
