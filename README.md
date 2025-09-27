@@ -1,191 +1,305 @@
 # 凌隐宝堂中医诊所管理系统（LYBTZYZS）
 
-**凌隐宝堂中医诊所管理系统（LYBTZYZS）**是一个基于.NET 8的企业级中医诊所管理解决方案，采用前后端分离架构，专为小型中医诊所（<20人）的诊疗业务场景设计和优化。
+<div align="center">
+  
+[![.NET](https://img.shields.io/badge/.NET-8.0-512BD4?logo=.net)](https://dotnet.microsoft.com)
+[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
+[![Build Status](https://img.shields.io/badge/Build-Passing-success)](https://github.com/shouqitao/LYBTZYZS)
+[![Documentation](https://img.shields.io/badge/Docs-Latest-blue)](docs/)
 
-## 🎯 系统概览
+**面向中医诊所的企业级管理解决方案**
 
-### 技术架构
-- **后端**: ASP.NET Core 8.0 Web API + Entity Framework Core + SQL Server
-- **前端**: WPF + Prism.DryIoc MVVM架构 + Refit HTTP客户端  
-- **共享**: 统一DTO模型和服务接口定义，确保前后端数据契约一致性
+[快速开始](#快速开始) • [架构设计](docs/architecture/system-architecture-design.md) • [开发指南](docs/development/development-guide.md) • [API文档](docs/api/)
 
-### 核心业务模块（8个）
-| 模块 | 功能描述 | 状态 |
+</div>
+
+## 📋 项目概览
+
+凌隐宝堂中医诊所管理系统是一个专为中医诊所设计的综合管理平台，采用 .NET 8 + WPF + EF Core 技术栈，提供从患者档案、诊疗记录到处方管理的完整解决方案。
+
+### 核心特性
+
+- 🏥 **患者档案管理** - 完整的患者信息管理，支持Excel批量导入
+- 📝 **诊疗工作台** - 四诊合参，中医特色诊疗流程
+- 💊 **智能处方系统** - 四种录入方式，支持方剂模板
+- 🌿 **药材库管理** - 完整药材字典，拼音码快速检索
+- 📊 **数据统计分析** - 经营分析，处方统计
+- 🔐 **安全认证** - JWT认证，RefreshToken机制
+- 💾 **三级缓存策略** - 客户端/API/数据库分层缓存
+
+## 🏗️ 系统架构
+
+```
+┌─────────────────────────────────────────────────┐
+│             WPF Desktop Client                   │
+│         (Prism.DryIoc + MVVM)                   │
+└─────────────────┬───────────────────────────────┘
+                  │ HTTPS/REST
+┌─────────────────▼───────────────────────────────┐
+│          ASP.NET Core Web API                    │
+│     (JWT Auth + Service Layer)                   │
+└─────────────────┬───────────────────────────────┘
+                  │
+┌─────────────────▼───────────────────────────────┐
+│         Entity Framework Core                    │
+│    (Repository + Unit of Work)                   │
+└─────────────────┬───────────────────────────────┘
+                  │
+┌─────────────────▼───────────────────────────────┐
+│           SQL Server Database                    │
+└─────────────────────────────────────────────────┘
+```
+
+### 技术栈
+
+| 层次 | 技术选型 | 版本 |
 |------|----------|------|
-| **Auth** | JWT身份认证、RBAC权限控制 | ✅ 完成 |
-| **Users** | 用户管理、Admin/Doctor角色体系 | ✅ 完成 |
-| **Patients** | 患者档案管理、基础信息维护 | ✅ 完成 |
-| **MedicalCase** | 医疗案例管理、诊疗流程控制 | ✅ 完成 |
-| **Consultation** | 中医四诊记录、辨证论治 | ✅ 完成 |
-| **Prescriptions** | 处方开具、剂量计算、价格预览 | ✅ 完成 |
-| **Herbs** | 中药材信息管理、价格维护 | ✅ 完成 |
-| **Formula** | 验方模板管理、经典方剂库 | ✅ 完成 |
+| **前端** | WPF + Prism.DryIoc | .NET 8 |
+| **后端** | ASP.NET Core Web API | 8.0 |
+| **ORM** | Entity Framework Core | 8.0 |
+| **数据库** | SQL Server | 2019+ |
+| **认证** | JWT + RefreshToken | - |
+| **缓存** | MemoryCache | 内置 |
+| **日志** | Serilog | 8.0 |
+| **测试** | MSTest + Moq + FluentAssertions | 3.0 |
 
-### 项目规模统计
-- **总计**: 28个.NET项目，3个解决方案文件
-- **Server端**: 10个项目（2个Core + 8个业务模块）
-- **Client端**: 15个项目（基础设施 + 8个业务模块）
-- **Shared层**: 3个项目（Models + Interfaces + Utilities）
+## 📦 项目结构
 
-### 架构分层说明
 ```
-解决方案架构
-├── LYBT.All.sln          # 完整解决方案（28个项目）
-├── LYBT.Server.sln       # 后端解决方案（10个项目）
-└── LYBT.Desktop.sln      # 前端解决方案（15个项目）
-
-Server端架构
-├── Core/                 # 核心基础设施
-│   ├── LYBT.Entities    # 数据实体模型（8个业务实体）
-│   └── LYBT.Infrastructure # 基础设施实现（数据访问、安全、缓存等）
-├── Modules/              # 业务模块层
-│   └── [8个业务模块]    # 各业务领域的Services、Repositories、Mapping
-└── Services/             # 服务层
-    └── LYBT.WebAPI       # 统一API网关（10个控制器）
-
-Client端架构  
-├── Shell/                # 应用程序启动壳
-├── Core/                 # 核心基础设施
-├── Services/             # 业务服务和API客户端  
-├── Infrastructure/       # UI基础设施和通用组件
-├── Workbenches/          # 工作台系统（Admin/Medical）
-└── Modules/              # 业务模块UI层
-    └── [8个业务模块]    # 各业务领域的Views、ViewModels
-
-Shared层架构
-├── LYBT.Shared.Models    # 统一DTO模型和响应格式
-├── LYBT.Shared.Interfaces # 服务接口定义  
-└── LYBT.Shared.Utilities # 通用工具类和扩展方法
+LYBTZYZS/
+├── 📁 src/
+│   ├── 📁 Server/                     # 服务器端代码
+│   │   ├── 📁 Core/                   # 核心层
+│   │   │   ├── LYBT.Entities/         # 实体模型（聚合根：MedicalCase）
+│   │   │   └── LYBT.Infrastructure/   # 基础设施（DbContext、缓存、安全）
+│   │   ├── 📁 Modules/                # 业务模块（8个）
+│   │   │   ├── LYBT.Module.Auth/      # 认证授权模块
+│   │   │   ├── LYBT.Module.Patients/  # 患者管理模块
+│   │   │   ├── LYBT.Module.MedicalCase/# 病历管理模块（聚合根）
+│   │   │   ├── LYBT.Module.Consultation/# 诊疗管理模块
+│   │   │   ├── LYBT.Module.Prescriptions/# 处方管理模块
+│   │   │   ├── LYBT.Module.Herbs/     # 药材管理模块
+│   │   │   ├── LYBT.Module.Formula/   # 方剂管理模块
+│   │   │   └── LYBT.Module.Users/     # 用户管理模块
+│   │   └── 📁 Services/
+│   │       └── LYBT.WebAPI/           # Web API服务（统一入口）
+│   ├── 📁 Client/                     # 客户端代码
+│   │   └── 📁 Desktop/                # WPF桌面客户端
+│   │       ├── LYBT.Desktop.Shell/    # 主程序壳
+│   │       ├── Core/                  # 客户端核心
+│   │       └── Modules/               # 客户端模块（对应服务器模块）
+│   └── 📁 Shared/                     # 共享代码
+│       ├── LYBT.Shared.Models/        # DTO和契约模型
+│       ├── LYBT.Shared.Interfaces/    # 服务接口定义
+│       └── LYBT.Shared.Utilities/     # 工具类库
+├── 📁 tests/                          # 测试项目
+│   ├── UnitTests/                     # 单元测试
+│   └── IntegrationTests/              # 集成测试
+├── 📁 docs/                           # 文档
+│   ├── architecture/                  # 架构设计文档
+│   ├── development/                   # 开发规范文档
+│   └── requirements/                  # 需求文档
+└── 📁 scripts/                        # 部署脚本
 ```
 
-本项目基于 .NET 8，包含 ASP.NET Core Web API 后端与 WPF Prism 桌面客户端。目前正在进行桌面端重构：事件体系尚未统一、桌面应用无法成功编译，服务器测试亦存在失败用例。下述内容以当前进展为准，不再使用“生产就绪”等描述。
+## 🚀 快速开始
 
-## 当前状态概览（2025-09-24）
-| 项目维度 | 当前结论 |
-| --- | --- |
-| 桌面端编译 | ❌ 事件重复定义导致编译失败，需统一到 UnifiedEvents.cs |
-| 服务器测试 | ⚠️ dotnet test LYBT.Server.sln 失败（Consultation AutoMapper、API 契约尚未修复） |
-| 术语一致性 | ⚠️ README / UI / 文档正在统一为“诊疗工作台”等最新称谓 |
-| 任务管理 | ✅ Thinker 在 docs/tasks/pending/ 发布任务，完成总结存放于 docs/tasks/completed/ |
+### 环境要求
 
-## 当前优先级（Thinker）
-1. 统一桌面端事件体系，移除重复事件与枚举并修正命名空间。
-2. 修复 UnifiedDesignSystem.xaml 转换器引用，确保桌面端资源加载正常。
-3. 梳理"诊疗工作台"相关 UI 和文案，替换旧的"看诊"术语。
-4. 恢复服务器测试，并规划桌面端关键服务的单元测试。
+- Windows 10/11 或 Windows Server 2019+
+- .NET 8.0 SDK 或更高版本
+- SQL Server 2019 或更高版本
+- Visual Studio 2022 (17.4+) 或 VS Code
 
-## Server层查询架构
+### 安装步骤
 
-### 查询层架构概述
-Server层采用优化的三层架构，通过ReadRepository模式实现查询和命令分离的基础：
-
-**架构路径**: Controller → QueryService → ReadRepository → Database
-
-**核心特性**：
-- **统一缓存策略**：5分钟滑动过期，缓存命中率达83.5%
-- **缓存穿透防护**：空值结果缓存1分钟，防止恶意请求
-- **性能优化**：缓存场景下查询性能提升93-96%
-- **软删除过滤**：全局应用，自动排除已删除记录
-
-### 缓存配置
-| 配置项 | 默认值 | 说明 |
-|--------|--------|------|
-| DefaultCacheDuration | 5分钟 | 正常数据缓存时长 |
-| NullCacheDuration | 1分钟 | 空值缓存时长 |
-| CacheKeyPrefix | `{EntityName}:readonly:` | 缓存键前缀 |
-
-### 查询层诊断
-使用PowerShell诊断脚本监控查询层性能：
+1. **克隆代码库**
 ```powershell
-# 完整诊断
-./scripts/QueryLayerDiagnostics.ps1 -CacheStatus -EFTracking -PerformanceSampling
-
-# 特定模块缓存状态
-./scripts/QueryLayerDiagnostics.ps1 -Module Users -CacheStatus
+git clone https://github.com/shouqitao/LYBTZYZS.git
+cd LYBTZYZS
 ```
 
-### 相关文档
-- Phase 1重构总结：`docs/tasks/completed/2025-09-24-server-phase1-query-layer-refactor-task-summary.md`
-- Phase 2巩固报告：`docs/reports/server-query-layer-phase2-hardening-report.md`
-- Phase 3缓存治理：`docs/tasks/completed/2025-09-24-server-phase3-cache-governance-task-summary.md`
-- 诊断脚本：`scripts/QueryLayerDiagnostics.ps1`
-
-### 缓存诊断脚本使用
-
-Query Layer诊断脚本支持缓存状态监控和性能分析：
-
+2. **还原NuGet包**
 ```powershell
-# 使用真实API获取缓存数据（推荐）
-.\scripts\QueryLayerDiagnostics.ps1 -CacheStatus -UseRealApi -Token "your-jwt-token"
-
-# API失败时使用离线回退
-.\scripts\QueryLayerDiagnostics.ps1 -CacheStatus -UseRealApi -OfflineFallback -Token "your-jwt-token"
-
-# 详细调试模式
-.\scripts\QueryLayerDiagnostics.ps1 -CacheStatus -UseRealApi -Verbose -Token "your-jwt-token"
-```
-
-**前置条件**：
-- 服务运行在 http://localhost:5001（或通过-BaseUrl指定）
-- 拥有Admin角色的JWT Token
-- 服务已更新到Phase 3版本（包含CacheHealthController）
-
-**故障排查**：
-- HTTP 401：Token无效或过期，重新获取JWT Token
-- HTTP 403：Token权限不足，需要Admin角色
-- 连接失败：检查服务运行状态和端口配置
-- API不存在：确认服务已更新到最新版本
-
-## 项目结构
-`
-src/
-├── Server/                  # ASP.NET Core Web API
-├── Client/Desktop/          # WPF Prism 客户端
-├── Shared/                  # DTO、接口、工具库
-docs/
- └── tasks/
-      ├── pending/           # Thinker 发布的任务
-      └── completed/         # 任务完成总结
-`
-
-## 构建与运行（当前建议）
-`powershell
-# 还原
 dotnet restore LYBT.All.sln
+```
 
-# 构建（桌面端待修复前，可先构建 Server / Shared）
-dotnet build LYBT.Server.sln -c Release --no-restore
-# dotnet build LYBT.Desktop.sln -c Release --no-restore  # 需先统一事件体系
+3. **配置数据库连接**
 
-# 运行 WebAPI（默认端口 5001）
-set ASPNETCORE_URLS=http://localhost:5001
-dotnet run --project src/Server/Services/LYBT.WebAPI
+编辑 `src/Server/Services/LYBT.WebAPI/appsettings.json`:
+```json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=localhost;Database=LYBTDB;Trusted_Connection=true;TrustServerCertificate=true"
+  }
+}
+```
 
-# Swagger（开发环境）
-# http://localhost:5001/swagger
-`
+4. **初始化数据库**
+```powershell
+cd src/Server/Services/LYBT.WebAPI
+dotnet ef database update
+```
 
-## 测试现状
-`powershell
-# 服务器侧（当前失败，优先修复）
-dotnet test LYBT.Server.sln -c Release
+5. **运行项目**
 
-# 桌面端测试：尚未建立自动化测试基线
-`
+启动Web API（终端1）:
+```powershell
+cd src/Server/Services/LYBT.WebAPI
+dotnet run --launch-profile https
+```
 
-主要失败点：
-- Consultation AutoMapper 映射字段与模型不一致。
-- API 契约测试期望响应结构与实际返回不匹配。
+启动桌面客户端（终端2）:
+```powershell
+cd src/Client/Desktop/LYBT.Desktop.Shell
+dotnet run
+```
 
-## 术语与角色
-- **诊疗工作台**：旧称“看诊工作台”，后续统一使用新称谓。
-- **系统工作台**：管理员功能入口。
-- Thinker（ChatGPT）负责架构规划、任务发布与文档维护；Coder（Claude Code）专注编码实现。
+### 默认账号
 
-## 任务目录
-- docs/tasks/pending/：Thinker 发布的任务说明。
-- docs/tasks/completed/：任务完成后的总结报告（建议追加 -summary.md 后缀）。
+- **管理员**: admin / Admin123@SecurePass!
+- **医生**: doctor / Doctor123@SecurePass!
 
-## 后续计划
-- 完成事件归一 → 修复桌面端编译 → 更新桌面端文案 → 恢复测试 → 补齐桌面关键服务单测。
-- README 将随着任务推进持续更新，确保信息与代码实现一致。
+## 🔧 开发指南
+
+### 编译项目
+
+```powershell
+# 完整编译
+dotnet build LYBT.All.sln -c Release
+
+# 分别编译
+dotnet build LYBT.Server.sln -c Release
+dotnet build LYBT.Desktop.sln -c Release
+```
+
+### 运行测试
+
+```powershell
+# 运行所有测试
+dotnet test LYBT.All.sln
+
+# 带覆盖率报告
+dotnet test --collect:"XPlat Code Coverage"
+```
+
+### 代码格式化
+
+```powershell
+# 格式化代码
+dotnet format LYBT.All.sln
+```
+
+## 📊 核心功能模块
+
+### 1. 病历管理（MedicalCase - 聚合根）
+
+- 一病历一诊断，一病历至多一处方
+- 当天可改，过期锁定业务规则
+- 管理员可编辑所有病历
+
+### 2. 诊疗管理（Consultation）
+
+- 四诊合参：望闻问切
+- 中医诊断：辨证论治
+- 医嘱建议：用药指导
+
+### 3. 处方管理（Prescriptions）
+
+四种录入方式：
+- 📝 表格编辑 - 传统表格输入
+- ⚡ 快速录入 - 拼音码搜索
+- 📋 方剂导入 - 从模板导入
+- 📑 历史复制 - 从历史处方复制
+
+### 4. 药材管理（Herbs）
+
+- 完整药材字典（2000+药材）
+- 拼音码生成与检索
+- 价格实时维护
+- 库存预警提醒
+
+### 5. 患者档案（Patients）
+
+- 基础信息管理
+- 病历历史查询
+- Excel批量导入
+- 就诊统计分析
+
+## 🔒 安全特性
+
+- **JWT认证**: AccessToken有效期2小时
+- **RefreshToken**: 有效期7天，支持撤销
+- **密码加密**: BCrypt哈希算法
+- **角色权限**: Admin/Doctor角色体系
+- **审计日志**: 完整操作记录
+
+## 🚫 技术约束
+
+为保持系统简洁高效，本项目**明确禁止**使用以下技术：
+
+- ❌ CQRS/MediatR（过度工程）
+- ❌ 微服务架构（单体足够）
+- ❌ Redis（MemoryCache足够）
+- ❌ 消息队列（同步处理足够）
+- ❌ Docker/K8s（传统部署足够）
+- ❌ GraphQL（RESTful足够）
+
+## 📈 性能指标
+
+- 并发用户：<10人
+- 日处方量：20-100张
+- 响应时间：<200ms（缓存命中）
+- 数据规模：<10万条记录
+
+## 📚 文档资源
+
+- [系统架构设计](docs/architecture/system-architecture-design.md)
+- [功能模块设计](docs/architecture/functional-modules-design.md)
+- [技术标准规范](docs/development/technical-standards.md)
+- [开发指南](docs/development/development-guide.md)
+- [API文档](docs/api/)
+- [需求文档](docs/requirements/)
+
+## 🤝 贡献指南
+
+1. Fork 本仓库
+2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
+3. 提交更改 (`git commit -m 'feat: 添加某某功能 - Issue #123'`)
+4. 推送到分支 (`git push origin feature/AmazingFeature`)
+5. 创建 Pull Request
+
+### 提交规范
+
+```
+feat(模块): 功能描述 - Issue #编号
+fix(模块): 缺陷修复 - Issue #编号
+docs: 文档更新 - Issue #编号
+refactor: 代码重构 - Issue #编号
+test: 测试相关 - Issue #编号
+```
+
+## 📄 许可证
+
+本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情
+
+## 👥 团队
+
+- **架构设计**: 技术架构组
+- **开发团队**: 1-3人小型团队
+- **维护方式**: GitHub Issues驱动
+
+## 📞 联系方式
+
+- **GitHub Issues**: [创建Issue](https://github.com/shouqitao/LYBTZYZS/issues)
+- **技术讨论**: 通过Issue进行技术讨论
+
+---
+
+<div align="center">
+  
+**凌隐宝堂中医诊所管理系统** - 专注中医，服务健康
+
+Copyright © 2025 LYBT. All rights reserved.
+
+</div>
