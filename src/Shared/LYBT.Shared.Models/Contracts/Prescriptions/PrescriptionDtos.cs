@@ -47,19 +47,7 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
 
         /// <summary>单帖价格（计算属性）</summary>
         [DisplayName("单帖价格")]
-        public decimal SingleDosePrice
-        {
-            get
-            {
-                if (Items == null || !Items.Any())
-                {
-                    return 0m;
-                }
-
-                var subtotal = Items.Sum(item => item.UnitPrice * item.Quantity);
-                return subtotal * Discount;
-            }
-        }
+        public decimal SingleDosePrice => CalculateSingleDosePrice();
 
         /// <summary>总价格（计算属性）</summary>
         [DisplayName("总价格")]
@@ -67,17 +55,25 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
 
         /// <summary>总重量（计算属性）</summary>
         [DisplayName("总重量")]
-        public decimal TotalWeight
-        {
-            get
-            {
-                if (Items == null || !Items.Any())
-                {
-                    return 0m;
-                }
+        public decimal TotalWeight => CalculateTotalWeight();
 
-                return Items.Sum(item => item.Quantity) * DosageCount;
-            }
+        /// <summary>
+        /// 计算单帖价格 - 简化逻辑
+        /// </summary>
+        private decimal CalculateSingleDosePrice()
+        {
+            if (Items?.Any() != true) return 0m;
+            var subtotal = Items.Sum(item => item.UnitPrice * item.Quantity);
+            return subtotal * Discount;
+        }
+
+        /// <summary>
+        /// 计算总重量 - 简化逻辑
+        /// </summary>
+        private decimal CalculateTotalWeight()
+        {
+            if (Items?.Any() != true) return 0m;
+            return Items.Sum(item => item.Quantity) * DosageCount;
         }
     }
 
@@ -115,17 +111,15 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
     }
 
     /// <summary>
-    /// 处方输入基础DTO - 提供处方基本信息的验证规则
+    /// 处方输入基础DTO - 简化版，只保留基本验证
     /// </summary>
     public abstract class PrescriptionInputBaseDto : IRemarkable
     {
-
-        [Required(ErrorMessage = "诊断不能为空")]
         [StringLength(500, ErrorMessage = "诊断长度不能超过500个字符")]
         [DisplayName("诊断")]
-        public string Diagnosis { get; set; } = string.Empty;
+        public string? Diagnosis { get; set; }
 
-        [Range(1, 30, ErrorMessage = "剂数必须在1-30之间")]
+        [Range(1, 100, ErrorMessage = "剂数必须在1-100之间")]
         [DisplayName("剂数")]
         public int DosageCount { get; set; } = 7;
 
@@ -133,7 +127,6 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
         [DisplayName("用药建议")]
         public string? Advice { get; set; }
 
-        [Required(ErrorMessage = "必须包含至少一味中药材")]
         [DisplayName("处方项目")]
         public List<PrescriptionItemCreateDto> Items { get; set; } = new();
 

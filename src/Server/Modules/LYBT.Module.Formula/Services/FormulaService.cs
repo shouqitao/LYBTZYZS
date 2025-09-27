@@ -106,63 +106,63 @@ namespace LYBT.Module.Formula.Services
         }
 
     public async Task<ServiceResult<List<FormulaDto>>> SearchAsync(string keyword)
+{
+    try
     {
-        try
+        // 简化搜索逻辑 - 直接使用分页查询，取前100个结果
+        if (string.IsNullOrWhiteSpace(keyword))
         {
-            // 如果关键字为空，返回空列表
-            if (string.IsNullOrWhiteSpace(keyword))
-            {
-                return ServiceResult<List<FormulaDto>>.Success(new List<FormulaDto>());
-            }
-
-            // 使用优化后的查询方法，搜索并包含药材信息
-            var pagedResult = await _repository.GetPagedWithDetailsAsync(1, 100, keyword);
-            var formulas = pagedResult.Items;
-
-            // 转换为DTO
-            var formulaDtos = _mapper.Map<List<FormulaDto>>(formulas);
-
-            return ServiceResult<List<FormulaDto>>.Success(formulaDtos);
+            return ServiceResult<List<FormulaDto>>.Success(new List<FormulaDto>());
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "搜索处方时发生错误，关键字：{Keyword}", keyword);
-            return ServiceResult<List<FormulaDto>>.Failure($"搜索处方失败：{ex.Message}");
-        }
+
+        var pagedResult = await _repository.GetPagedWithDetailsAsync(1, 100, keyword);
+        var formulaDtos = _mapper.Map<List<FormulaDto>>(pagedResult.Items);
+
+        return ServiceResult<List<FormulaDto>>.Success(formulaDtos);
     }
+    catch (Exception ex)
+    {
+        _logger.LogError(ex, "搜索处方时发生错误，关键字：{Keyword}", keyword);
+        return ServiceResult<List<FormulaDto>>.Failure($"搜索处方失败：{ex.Message}");
+    }
+}
 
     public async Task<ServiceResult<FormulaDto>> CloneFormulaAsync(Guid formulaId)
+{
+    try
     {
-        try
+        // 获取原始处方（包含药材信息）
+        var originalFormula = await _repository.GetByIdWithHerbsAsync(formulaId);
+        if (originalFormula == null)
         {
-            // 获取原始处方
-            var originalFormula = await _repository.GetByIdAsync(formulaId);
-            if (originalFormula == null)
-            {
-                return ServiceResult<FormulaDto>.Failure("未找到要克隆的处方");
-            }
-
-            // 创建克隆的处方（简化版本）
-            var clonedFormula = new FormulaEntity
-            {
-                Id = Guid.NewGuid(),
-                Name = $"{originalFormula.Name}_副本"
-            };
-
-            // 保存克隆的处方
-            await _repository.AddAsync(clonedFormula);
-            await _repository.SaveChangesAsync();
-
-            // 转换为DTO并返回
-            var formulaDto = _mapper.Map<FormulaDto>(clonedFormula);
-            return ServiceResult<FormulaDto>.Success(formulaDto);
+            return ServiceResult<FormulaDto>.Failure("未找到要克隆的处方");
         }
-        catch (Exception ex)
+
+        // 简化克隆逻辑 - 仅复制核心信息
+        var clonedFormula = new FormulaEntity
         {
-            _logger.LogError(ex, "克隆处方时发生错误，处方ID：{FormulaId}", formulaId);
-            return ServiceResult<FormulaDto>.Failure($"克隆处方失败：{ex.Message}");
-        }
+            Id = Guid.NewGuid(),
+            Name = $"{originalFormula.Name}_副本",
+            Effect = originalFormula.Effect,
+            Usage = originalFormula.Usage,
+            Category = originalFormula.Category,
+            FormulaType = originalFormula.FormulaType,
+            IsShared = false, // 克隆的方剂默认不共享
+            // 不复制药材配伍，让用户重新配置
+        };
+
+        await _repository.AddAsync(clonedFormula);
+        await _repository.SaveChangesAsync();
+
+        var formulaDto = _mapper.Map<FormulaDto>(clonedFormula);
+        return ServiceResult<FormulaDto>.Success(formulaDto);
     }
+    catch (Exception ex)
+    {
+        _logger.LogError(ex, "克隆处方时发生错误，处方ID：{FormulaId}", formulaId);
+        return ServiceResult<FormulaDto>.Failure($"克隆处方失败：{ex.Message}");
+    }
+}
 
         public async Task<ServiceResult> DeleteAsync(Guid id)
         {

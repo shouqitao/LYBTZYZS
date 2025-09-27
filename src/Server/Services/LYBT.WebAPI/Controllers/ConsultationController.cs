@@ -1,4 +1,4 @@
-using LYBT.Module.Consultation.Interfaces;
+using ConsultationIConsultationService = LYBT.Module.Consultation.Interfaces.IConsultationService;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
@@ -18,9 +18,9 @@ namespace LYBT.WebAPI.Controllers
     [Authorize]
     public class ConsultationController : ControllerBase
     {
-        private readonly IConsultationService _consultationService;
+        private readonly ConsultationIConsultationService _consultationService;
 
-        public ConsultationController(IConsultationService consultationService)
+        public ConsultationController(ConsultationIConsultationService consultationService)
         {
             _consultationService = consultationService ?? throw new ArgumentNullException(nameof(consultationService));
         }

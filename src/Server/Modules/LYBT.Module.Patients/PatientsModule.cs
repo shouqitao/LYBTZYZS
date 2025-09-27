@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
 using LYBT.Module.Patients.Interfaces;
 using LYBT.Module.Patients.Services;
 using LYBT.Module.Patients.Repositories;
@@ -26,7 +25,6 @@ namespace LYBT.Module.Patients
             
             // 注册服务
             services.AddScoped<IPatientService, PatientService>();
-            services.AddScoped<IPatientQueryService, PatientQueryService>();
             // services.AddScoped<IMedicalRecordService, MedicalRecordService>();
             
             // 注册验证器 - 暂时注释，待创建验证器后启用
@@ -51,13 +49,5 @@ namespace LYBT.Module.Patients
             return app;
         }
         
-        /// <summary>
-        /// 验证模块健康状态
-        /// </summary>
-        public static IHealthChecksBuilder AddPatientsModuleHealthCheck(this IHealthChecksBuilder builder)
-        {
-            // return builder.AddCheck<PatientsModuleHealthCheck>("patients_module");
-            return builder;
-        }
     }
 }

@@ -1,7 +1,7 @@
 namespace LYBT.Shared.Models.Contracts.Prescriptions
 {
     /// <summary>
-    /// 处方验证结果
+    /// 处方验证结果 - 简化版，只保留基本验证
     /// </summary>
     public class PrescriptionValidationResult
     {
@@ -15,9 +15,6 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
         /// </summary>
         public List<string> ErrorMessages { get; set; } = new List<string>();
 
-        /// <summary>
-        /// 警告信息列表
-        /// </summary>
-        public List<string> WarningMessages { get; set; } = new List<string>();
+        // 删除警告信息，简化验证逻辑
     }
 }

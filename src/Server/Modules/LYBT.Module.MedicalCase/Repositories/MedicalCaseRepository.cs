@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 namespace LYBT.Module.MedicalCase.Repositories
 {
     /// <summary>
-    /// 病案仓储 - 优化版，包含Include策略以解决N+1查询问题
+    /// 病案仓储 - 简化版，减少过度复杂的Include策略
     /// </summary>
     public class MedicalCaseRepository : BaseRepository<MedicalCaseEntity>, IMedicalCaseRepository
     {
@@ -17,7 +17,7 @@ namespace LYBT.Module.MedicalCase.Repositories
 
         public MedicalCaseRepository(AppDbContext context) : base(context)
         {
-            _logger = null; // 暂时设为null，后续可通过DI注入
+            _logger = null;
         }
 
         public MedicalCaseRepository(AppDbContext context, ILogger<MedicalCaseRepository> logger)
@@ -27,53 +27,61 @@ namespace LYBT.Module.MedicalCase.Repositories
         }
 
         /// <summary>
-        /// 根据患者ID获取医疗案例（包含关联数据）
+        /// 基础查询 - 简化Include逻辑
+        /// </summary>
+        private IQueryable<MedicalCaseEntity> GetBaseQuery()
+        {
+            return _dbSet.Where(m => !m.IsDeleted);
+        }
+
+        /// <summary>
+        /// 详细查询 - 仅在需要时Include关联数据
+        /// </summary>
+        private IQueryable<MedicalCaseEntity> GetDetailQuery()
+        {
+            return _dbSet
+                .Include(m => m.Consultation)
+                .Include(m => m.Prescription)
+                .Where(m => !m.IsDeleted);
+        }
+
+        /// <summary>
+        /// 根据患者ID获取医疗案例（简化版）
         /// </summary>
         public async Task<List<MedicalCaseEntity>> GetByPatientIdAsync(Guid patientId)
         {
-            return await _dbSet
-                .Include(m => m.Consultation)
-                .Include(m => m.Prescription)
-                    .ThenInclude(p => p.Items)  // 包含处方项
-                .Where(m => m.PatientId == patientId && !m.IsDeleted)
+            return await GetBaseQuery()
+                .Where(m => m.PatientId == patientId)
                 .OrderByDescending(m => m.CreatedAt)
                 .ToListAsync();
         }
 
         /// <summary>
-        /// 根据ID获取病案（包含所有关联数据）
+        /// 根据ID获取病案（包含关联数据）
         /// </summary>
         public async Task<MedicalCaseEntity> GetByIdWithDetailsAsync(Guid id)
         {
-            return await _dbSet
-                .Include(m => m.Consultation)     // 包含诊疗记录
-                .Include(m => m.Prescription)     // 包含处方
-                    .ThenInclude(p => p.Items)    // 包含处方项
-                .Where(m => m.Id == id && !m.IsDeleted)
+            return await GetDetailQuery()
+                .Where(m => m.Id == id)
                 .FirstOrDefaultAsync();
         }
 
         /// <summary>
-        /// 获取分页列表（包含关联数据）
-        /// 优化：预加载Consultation和Prescription信息，避免N+1查询
+        /// 获取分页列表（简化版，按需Include）
         /// </summary>
         public async Task<PagedResult<MedicalCaseEntity>> GetPagedWithDetailsAsync(
             int pageNumber,
             int pageSize,
             string keyword = null)
         {
-            var query = _dbSet
-                .Include(m => m.Consultation)
-                .Include(m => m.Prescription)
-                .Where(m => !m.IsDeleted);
+            var query = GetBaseQuery();
 
-            // 关键字搜索
+            // 简化搜索逻辑 - 只搜索基本字段
             if (!string.IsNullOrWhiteSpace(keyword))
             {
                 query = query.Where(m =>
                     m.PatientName.Contains(keyword) ||
-                    m.DoctorName.Contains(keyword) ||
-                    m.Remark.Contains(keyword));
+                    m.DoctorName.Contains(keyword));
             }
 
             var totalCount = await query.CountAsync();
@@ -94,16 +102,14 @@ namespace LYBT.Module.MedicalCase.Repositories
         }
 
         /// <summary>
-        /// 根据医生ID获取病案列表
+        /// 根据医生ID获取病案列表（简化版）
         /// </summary>
         public async Task<List<MedicalCaseEntity>> GetByDoctorIdAsync(Guid doctorId)
         {
-            return await _dbSet
-                .Include(m => m.Consultation)
-                .Include(m => m.Prescription)
-                .Where(m => m.DoctorId == doctorId && !m.IsDeleted)
+            return await GetBaseQuery()
+                .Where(m => m.DoctorId == doctorId)
                 .OrderByDescending(m => m.CreatedAt)
                 .ToListAsync();
-            }
-}
+        }
+    }
 }

@@ -419,24 +419,30 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components
         }
 
         /// <summary>
-        /// 设置折扣
+        /// 设置折扣 - 简化版
         /// </summary>
         private void SetDiscount(string? discountStr)
         {
             try
             {
-                var validation = _validator.ValidateDiscount(discountStr ?? "1.0", out var discount);
-                _dataManager.Discount = discount;
-                _dataManager.MarkAsChanged();
-
-                RecalculatePrice();
-
-                if (!validation.IsValid || validation.Warnings.Any())
+                if (decimal.TryParse(discountStr ?? "1.0", out var discount))
                 {
-                    ShowWarningMessage("折扣设置", validation.GetSummary());
+                    if (_validator.ValidateDiscount(discount))
+                    {
+                        _dataManager.Discount = discount;
+                        _dataManager.MarkAsChanged();
+                        RecalculatePrice();
+                        _logger.LogDebug("设置折扣: {Discount}", discount);
+                    }
+                    else
+                    {
+                        ShowWarningMessage("折扣设置", "折扣必须在0.1到1.0之间");
+                    }
                 }
-
-                _logger.LogDebug("设置折扣: {Discount}", discount);
+                else
+                {
+                    ShowWarningMessage("折扣设置", "折扣格式不正确");
+                }
             }
             catch (Exception ex)
             {
@@ -451,15 +457,15 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components
         {
             try
             {
-                var validation = _validator.ValidateDosage(dosageStr ?? "7", out var dosage);
+                var isValid = _validator.ValidateDosage(dosageStr ?? "7", out var dosage);
                 _dataManager.DosageCount = dosage;
                 _dataManager.MarkAsChanged();
 
                 RecalculatePrice();
 
-                if (!validation.IsValid || validation.Warnings.Any())
+                if (!isValid)
                 {
-                    ShowWarningMessage("剂数设置", validation.GetSummary());
+                    ShowWarningMessage("剂数设置", "剂数输入无效，已使用默认值7剂");
                 }
 
                 _logger.LogDebug("设置剂数: {Dosage}", dosage);
@@ -524,10 +530,10 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components
             {
                 var validation = _validator.ValidatePrescription(
                     _dataManager.PrescriptionItems,
-                    _dataManager.PrescriptionNo,
                     _dataManager.DosageCount,
-                    _dataManager.Usage,
-                    _dataManager.Discount);
+                    _dataManager.Discount,
+                    _dataManager.Usage ?? "",
+                    true); // checkWarnings
 
                 if (!validation.IsValid)
                 {

@@ -9,7 +9,7 @@ using FormulaEntity = LYBT.Entities.Formula.Formula;
 namespace LYBT.Module.Formula.Repositories
 {
     /// <summary>
-    /// 方剂仓储 - 优化版，包含Include策略以解决N+1查询问题
+    /// 方剂仓储 - 简化版，合并冗余查询方法
     /// </summary>
     public class FormulaRepository : BaseRepository<FormulaEntity>, IFormulaRepository
     {
@@ -17,7 +17,7 @@ namespace LYBT.Module.Formula.Repositories
 
         public FormulaRepository(AppDbContext context) : base(context)
         {
-            _logger = null; // 暂时设为null，后续可通过DI注入
+            _logger = null;
         }
 
         public FormulaRepository(AppDbContext context, ILogger<FormulaRepository> logger)
@@ -27,49 +27,49 @@ namespace LYBT.Module.Formula.Repositories
         }
 
         /// <summary>
-        /// 获取启用的方剂模板（包含药材配伍信息）
+        /// 统一的查询方法 - 合并原有的多个查询方法
+        /// </summary>
+        private IQueryable<FormulaEntity> GetBaseQuery()
+        {
+            return _dbSet
+                .Include(f => f.Herbs)
+                .Where(f => !f.IsDeleted);
+        }
+
+        /// <summary>
+        /// 获取启用的方剂模板
         /// </summary>
         public async Task<List<FormulaEntity>> GetTemplatesAsync()
         {
-            return await _dbSet
-                .Include(f => f.Herbs)  // 预加载药材配伍信息
-                .Where(f => !f.IsDeleted)
+            return await GetBaseQuery()
                 .OrderBy(f => f.Name)
                 .ToListAsync();
         }
 
         /// <summary>
-        /// 根据ID获取方剂（包含所有药材配伍）
+        /// 根据ID获取方剂（简化版，使用统一查询）
         /// </summary>
         public async Task<FormulaEntity> GetByIdWithHerbsAsync(Guid id)
         {
-            return await _dbSet
-                .Include(f => f.Herbs)
-                .Where(f => f.Id == id && !f.IsDeleted)
+            return await GetBaseQuery()
+                .Where(f => f.Id == id)
                 .FirstOrDefaultAsync();
         }
 
         /// <summary>
-        /// 获取分页列表（包含药材配伍信息）
-        /// 优化：预加载Herbs集合，避免N+1查询
+        /// 获取分页列表（简化版，减少复杂搜索逻辑）
         /// </summary>
         public async Task<PagedResult<FormulaEntity>> GetPagedWithDetailsAsync(
             int pageNumber,
             int pageSize,
             string keyword = null)
         {
-            var query = _dbSet
-                .Include(f => f.Herbs)  // 预加载药材配伍
-                .Where(f => !f.IsDeleted);
+            var query = GetBaseQuery();
 
-            // 关键字搜索
+            // 简化搜索逻辑 - 只搜索名称和功效
             if (!string.IsNullOrWhiteSpace(keyword))
             {
-                query = query.Where(f =>
-                    f.Name.Contains(keyword) ||
-                    f.Effect.Contains(keyword) ||
-                    f.Usage.Contains(keyword) ||
-                    f.Herbs.Any(h => h.HerbName.Contains(keyword)));
+                query = query.Where(f => f.Name.Contains(keyword) || f.Effect.Contains(keyword));
             }
 
             var totalCount = await query.CountAsync();
@@ -90,37 +90,34 @@ namespace LYBT.Module.Formula.Repositories
         }
 
         /// <summary>
-        /// 根据用户ID获取方剂列表
+        /// 根据用户ID和权限获取方剂列表（合并权限逻辑）
         /// </summary>
         public async Task<List<FormulaEntity>> GetByUserIdAsync(Guid userId)
         {
-            return await _dbSet
-                .Include(f => f.Herbs)
-                .Where(f => f.UserId == userId && !f.IsDeleted)
+            return await GetBaseQuery()
+                .Where(f => f.UserId == userId || f.IsShared) // 简化权限逻辑：自己的+共享的
                 .OrderByDescending(f => f.CreatedAt)
                 .ToListAsync();
         }
 
         /// <summary>
-        /// 获取共享的方剂列表
+        /// 获取共享的方剂列表（保留但简化）
         /// </summary>
         public async Task<List<FormulaEntity>> GetSharedFormulasAsync()
         {
-            return await _dbSet
-                .Include(f => f.Herbs)
-                .Where(f => f.IsShared && !f.IsDeleted)
+            return await GetBaseQuery()
+                .Where(f => f.IsShared)
                 .OrderBy(f => f.Name)
                 .ToListAsync();
         }
 
         /// <summary>
-        /// 根据类别获取方剂列表
+        /// 根据类别获取方剂列表（简化版）
         /// </summary>
         public async Task<List<FormulaEntity>> GetByCategoryAsync(string category)
         {
-            return await _dbSet
-                .Include(f => f.Herbs)
-                .Where(f => f.Category == category && !f.IsDeleted)
+            return await GetBaseQuery()
+                .Where(f => f.Category == category)
                 .OrderBy(f => f.Name)
                 .ToListAsync();
         }

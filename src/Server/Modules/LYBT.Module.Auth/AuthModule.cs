@@ -3,7 +3,10 @@ using LYBT.Module.Auth.Interfaces;
 using LYBT.Module.Auth.Repositories;
 using LYBT.Module.Auth.Services;
 using LYBT.Shared.Interfaces.Services;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace LYBT.Module.Auth
 {
@@ -19,21 +22,23 @@ namespace LYBT.Module.Auth
         {
             // 注册JWT服务
             services.AddScoped<IJwtService, JwtService>();
-            services.AddScoped<IEnhancedJwtService, EnhancedJwtService>();
+            // 暂时注释掉EnhancedJwtService直到修复接口问题
+            // services.AddScoped<IEnhancedJwtService, EnhancedJwtService>();
             
             // 注册认证服务
             services.AddScoped<IAuthService, AuthService>();
             
             // 注册密钥服务
             services.AddScoped<ISecurityKeyService, SecurityKeyService>();
-            services.AddScoped<ISecurityKeyRepository, SecurityKeyRepository>();
+            // 移除过度工程的SecurityKeyRepository
+            // services.AddScoped<ISecurityKeyRepository, SecurityKeyRepository>();
             
             // 注册RefreshToken仓储
             services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
             
-            // 注册验证器
-            services.AddScoped<IValidator<LoginDto>, LoginDtoValidator>();
-            services.AddScoped<IValidator<RefreshTokenDto>, RefreshTokenDtoValidator>();
+            // 移除过度工程的验证器
+            // services.AddScoped<IValidator<LoginDto>, LoginDtoValidator>();
+            // services.AddScoped<IValidator<RefreshTokenDto>, RefreshTokenDtoValidator>();
             
             return services;
         }
@@ -55,40 +60,9 @@ namespace LYBT.Module.Auth
         /// </summary>
         public static IHealthChecksBuilder AddAuthModuleHealthCheck(this IHealthChecksBuilder builder)
         {
-            return builder.AddCheck<AuthModuleHealthCheck>("auth_module");
-        }
-    }
-}
-    public static class AuthModule
-    {
-
-        /// <summary>
-        /// 注册登录验证相关服务 - UltraThink简化架构版
-        /// </summary>
-        public static IServiceCollection AddAuthModule(this IServiceCollection services)
-        {
-            // 注册Repository层
-            services.AddScoped<IAuthRepository, AuthRepository>();
-            services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
-
-            // 注册核心服务层 - 简化架构
-            services.AddScoped<IAuthService, AuthService>();                 // 主服务：纯委托模式
-            services.AddScoped<SysAdminHandler>();                           // 管理员特殊处理
-
-            // 注册JWT服务 - 保留核心JWT功能
-            services.AddScoped<IJwtAuthenticationService, JwtAuthenticationService>();
-            
-            // 注册增强的JWT服务（支持RefreshToken）
-            services.AddScoped<IEnhancedJwtService, EnhancedJwtService>();
-            services.AddScoped<ISecurityKeyService, SecurityKeyService>();
-            
-            // JWT黑名单服务由Infrastructure层提供
-
-            // 注册配置选项
-            services.AddOptions<AuthOptions>();
-            services.AddOptions<SysAdminOptions>();
-
-            return services;
+            // 移除过度工程的健康检查
+            // return builder.AddCheck<AuthModuleHealthCheck>("auth_module");
+            return builder;
         }
     }
 }

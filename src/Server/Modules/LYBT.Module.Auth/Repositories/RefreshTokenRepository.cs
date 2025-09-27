@@ -30,7 +30,6 @@ namespace LYBT.Module.Auth.Repositories
             try
             {
                 return await _dbSet
-                    .Include(rt => rt.User)
                     .FirstOrDefaultAsync(rt => rt.Token == token && !rt.IsDeleted);
             }
             catch (Exception ex)
@@ -41,34 +40,32 @@ namespace LYBT.Module.Auth.Repositories
         }
 
         /// <summary>
-        /// 根据JwtId查找RefreshToken
+        /// 根据JTI查找RefreshToken
         /// </summary>
-        public async Task<RefreshToken?> GetByJwtIdAsync(string jwtId)
+        public async Task<RefreshToken?> GetByJtiAsync(string jti)
         {
             try
             {
                 return await _dbSet
-                    .Include(rt => rt.User)
-                    .FirstOrDefaultAsync(rt => rt.JwtId == jwtId && !rt.IsDeleted);
+                    .FirstOrDefaultAsync(rt => rt.Jti == jti && !rt.IsDeleted);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "根据JwtId查找RefreshToken失败: {JwtId}", jwtId);
+                _logger.LogError(ex, "根据JTI查找RefreshToken失败: {Jti}", jti);
                 throw;
             }
         }
 
         /// <summary>
-        /// 获取用户的所有有效RefreshToken
+        /// 获取用户的所有有效RefreshToken - 实现IRefreshTokenRepository接口
         /// </summary>
-        public async Task<List<RefreshToken>> GetActiveTokensByUserAsync(Guid userId)
+        public async Task<IEnumerable<RefreshToken>> GetActiveTokensByUserIdAsync(Guid userId)
         {
             try
             {
                 return await _dbSet
                     .Where(rt => rt.UserId == userId &&
                            !rt.IsDeleted &&
-                           !rt.IsUsed &&
                            !rt.IsRevoked &&
                            rt.ExpiresAt > DateTime.UtcNow)
                     .OrderByDescending(rt => rt.CreatedAt)
@@ -151,7 +148,7 @@ namespace LYBT.Module.Auth.Repositories
             {
                 var expiredTokens = await _dbSet
                     .Where(rt => rt.ExpiresAt < DateTime.UtcNow ||
-                           (rt.IsUsed && rt.UsedAt < DateTime.UtcNow.AddDays(-7)))
+                           ((rt.UsageCount > 0) && rt.LastUsedAt < DateTime.UtcNow.AddDays(-7)))
                     .ToListAsync();
 
                 if (expiredTokens.Any())
@@ -184,14 +181,14 @@ namespace LYBT.Module.Auth.Repositories
                     return false;
                 }
 
-                if (refreshToken.IsUsed)
+                if (refreshToken.UsageCount > 0)
                 {
                     _logger.LogWarning("RefreshToken已被使用: {Token}", token);
                     return false;
                 }
 
-                refreshToken.IsUsed = true;
-                refreshToken.UsedAt = DateTime.UtcNow;
+                refreshToken.UsageCount++;
+                refreshToken.LastUsedAt = DateTime.UtcNow;
                 refreshToken.UpdatedAt = DateTime.UtcNow;
 
                 await _context.SaveChangesAsync();
@@ -236,6 +233,88 @@ namespace LYBT.Module.Auth.Repositories
                 throw;
             }
         }
+
+        #region 补充接口实现 - 重构简化版
+
+        /// <summary>
+        /// 获取用户的所有令牌（包括无效的）
+        /// </summary>
+        public async Task<IEnumerable<RefreshToken>> GetAllTokensByUserIdAsync(Guid userId)
+        {
+            return await _dbSet
+                .Where(rt => rt.UserId == userId)
+                .ToListAsync();
+        }
+
+        /// <summary>
+        /// 更新刷新令牌 - 简化版
+        /// </summary>
+        public async Task UpdateAsync(RefreshToken refreshToken)
+        {
+            refreshToken.UpdatedAt = DateTime.UtcNow;
+            _dbSet.Update(refreshToken);
+            await _context.SaveChangesAsync();
+        }
+
+        /// <summary>
+        /// 撤销令牌 - 简化版
+        /// </summary>
+        public async Task RevokeAsync(string token, string reason, Guid? revokedByUserId = null)
+        {
+            var refreshToken = await GetByTokenAsync(token);
+            if (refreshToken != null)
+            {
+                refreshToken.IsRevoked = true;
+                refreshToken.RevokedAt = DateTime.UtcNow;
+                refreshToken.UpdatedAt = DateTime.UtcNow;
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        /// <summary>
+        /// 撤销用户的所有令牌 - 简化版
+        /// </summary>
+        public async Task RevokeAllByUserIdAsync(Guid userId, string reason, Guid? revokedByUserId = null)
+        {
+            await RevokeAllUserTokensAsync(userId); // 复用现有方法
+        }
+
+        /// <summary>
+        /// 删除过期的令牌 - 简化版
+        /// </summary>
+        public async Task<int> DeleteExpiredTokensAsync()
+        {
+            return await CleanupExpiredTokensAsync(); // 复用现有方法
+        }
+
+        /// <summary>
+        /// 获取用户的活跃令牌数量 - 简化版
+        /// </summary>
+        public async Task<int> GetActiveTokenCountByUserIdAsync(Guid userId)
+        {
+            return await _dbSet
+                .CountAsync(rt => rt.UserId == userId &&
+                           !rt.IsDeleted &&
+                           !(rt.UsageCount > 0) &&
+                           !rt.IsRevoked &&
+                           rt.ExpiresAt > DateTime.UtcNow);
+        }
+
+        /// <summary>
+        /// 检查令牌是否存在且有效 - 简化版
+        /// </summary>
+        public async Task<bool> IsValidTokenAsync(string token)
+        {
+            var refreshToken = await GetByTokenAsync(token);
+            return refreshToken != null &&
+                   !refreshToken.IsDeleted &&
+                   !(refreshToken.UsageCount > 0) &&
+                   !refreshToken.IsRevoked &&
+                   refreshToken.ExpiresAt > DateTime.UtcNow;
+        }
+
+        #endregion
+
     }
 
     /// <summary>

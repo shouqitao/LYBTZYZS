@@ -7,9 +7,14 @@ using FluentAssertions;
 using LYBT.Entities.Auth;
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Security;
+using LYBT.Infrastructure.Configuration.Options;
+using AuthISecurityKeyService = LYBT.Module.Auth.Interfaces.ISecurityKeyService;
+using UsersIUserService = LYBT.Module.Users.Interfaces.IUserService;
 using LYBT.Module.Auth.Services;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Users;
+using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Interfaces.Services;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -30,8 +35,8 @@ namespace LYBT.Module.Auth.Tests.Security
     {
         private readonly EnhancedJwtService _jwtService;
         private readonly AppDbContext _context;
-        private readonly Mock<IUserService> _mockUserService;
-        private readonly Mock<ISecurityKeyService> _mockSecurityKeyService;
+        private readonly Mock<UsersIUserService> _mockUserService;
+        private readonly Mock<AuthISecurityKeyService> _mockSecurityKeyService;
         private readonly Mock<ILogger<EnhancedJwtService>> _mockLogger;
         private readonly JwtOptions _jwtOptions;
         private readonly SecurityKey _testSecurityKey;
@@ -48,11 +53,11 @@ namespace LYBT.Module.Auth.Tests.Security
             // 配置JWT选项
             _jwtOptions = new JwtOptions
             {
-                SecretKey = _testSecretKey,
+                Secret = _testSecretKey,
                 Issuer = "TestIssuer",
                 Audience = "TestAudience",
-                AccessTokenExpirationMinutes = 15,
-                RefreshTokenExpirationDays = 7,
+                ExpireMinutes = 15,
+                RefreshTokenExpireDays = 7,
                 ClockSkewSeconds = 300
             };
 
@@ -61,25 +66,25 @@ namespace LYBT.Module.Auth.Tests.Security
             _testSecurityKey = new SymmetricSecurityKey(key);
 
             // 设置Mock对象
-            _mockUserService = new Mock<IUserService>();
-            _mockSecurityKeyService = new Mock<ISecurityKeyService>();
+            _mockUserService = new Mock<UsersIUserService>();
+            _mockSecurityKeyService = new Mock<AuthISecurityKeyService>();
             _mockLogger = new Mock<ILogger<EnhancedJwtService>>();
 
             // 配置SecurityKeyService
             _mockSecurityKeyService
-                .Setup(x => x.GetCurrentSigningKeyAsync())
+                .Setup(x => x.GetCurrentKeyAsync())
                 .ReturnsAsync(_testSecurityKey);
             
             _mockSecurityKeyService
-                .Setup(x => x.GetValidationKeysAsync())
+                .Setup(x => x.GetAllKeysAsync())
                 .ReturnsAsync(new[] { _testSecurityKey });
 
             // 创建JWT服务
             _jwtService = new EnhancedJwtService(
+                Options.Create(_jwtOptions),
+                _mockSecurityKeyService.Object,
                 _context,
                 _mockUserService.Object,
-                _mockSecurityKeyService.Object,
-                Options.Create(_jwtOptions),
                 _mockLogger.Object
             );
         }
@@ -103,10 +108,10 @@ namespace LYBT.Module.Auth.Tests.Security
             tokenPair.AccessToken.Should().NotBeNullOrEmpty();
             tokenPair.RefreshToken.Should().NotBeNullOrEmpty();
             tokenPair.AccessTokenExpires.Should().BeCloseTo(
-                DateTime.UtcNow.AddMinutes(_jwtOptions.AccessTokenExpirationMinutes),
+                DateTime.UtcNow.AddMinutes(_jwtOptions.ExpireMinutes),
                 TimeSpan.FromMinutes(1));
             tokenPair.RefreshTokenExpires.Should().BeCloseTo(
-                DateTime.UtcNow.AddDays(_jwtOptions.RefreshTokenExpirationDays),
+                DateTime.UtcNow.AddDays(_jwtOptions.RefreshTokenExpireDays),
                 TimeSpan.FromMinutes(1));
         }
 
@@ -170,19 +175,19 @@ namespace LYBT.Module.Auth.Tests.Security
             // Arrange
             var expiredOptions = new JwtOptions
             {
-                SecretKey = _testSecretKey,
+                Secret = _testSecretKey,
                 Issuer = "TestIssuer",
                 Audience = "TestAudience",
-                AccessTokenExpirationMinutes = -1, // 已过期
-                RefreshTokenExpirationDays = 7,
+                ExpireMinutes = -1, // 已过期
+                RefreshTokenExpireDays = 7,
                 ClockSkewSeconds = 0 // 无时钟偏差
             };
 
             var expiredService = new EnhancedJwtService(
+                Options.Create(expiredOptions),
+                _mockSecurityKeyService.Object,
                 _context,
                 _mockUserService.Object,
-                _mockSecurityKeyService.Object,
-                Options.Create(expiredOptions),
                 _mockLogger.Object
             );
 
@@ -364,7 +369,7 @@ namespace LYBT.Module.Auth.Tests.Security
         public void SecretKey_ShouldBeAtLeast32Characters()
         {
             // Assert
-            _jwtOptions.SecretKey.Length.Should().BeGreaterOrEqualTo(32);
+            _jwtOptions.Secret.Length.Should().BeGreaterOrEqualTo(32);
         }
 
         [Fact]
