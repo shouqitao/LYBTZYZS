@@ -1,36 +1,62 @@
-using LYBT.Module.Herbs.Interfaces;
-
-using LYBT.Module.Herbs.Mapping;
-using LYBT.Module.Herbs.Repositories;
-using LYBT.Module.Herbs.Services;
-using LYBT.Shared.Interfaces.Services;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+using LYBT.Module.Herbs.Interfaces;
+using LYBT.Module.Herbs.Services;
+using LYBT.Module.Herbs.Repositories;
+using FluentValidation;
+using LYBT.Shared.Models.Contracts.Herbs;
 
 namespace LYBT.Module.Herbs
 {
-
     /// <summary>
-    /// 药材模块注册 - UltraThink标准化重构
-    /// 负责注册药材相关的所有服务、仓储和映射配置
-    /// 采用UltraThink双层架构：QueryService + BusinessService 专业分离
+    /// 中药模块服务注册（简化版本）
     /// </summary>
     public static class HerbsModule
     {
-
         /// <summary>
-        /// 注册药材模块服务 - UltraThink双层架构标准
+        /// 注册中药模块服务
         /// </summary>
-        public static IServiceCollection AddHerbsModule(this IServiceCollection services)
+        public static IServiceCollection AddHerbsModule(this IServiceCollection services, IConfiguration configuration)
         {
-            // 仓储层 - 统一实现
+            // 注册仓储
             services.AddScoped<IHerbRepository, HerbRepository>();
-
-            // 服务层 - UltraThink架构重构后的统一服务
+            services.AddScoped<IHerbCategoryRepository, HerbCategoryRepository>();
+            
+            // 注册服务
             services.AddScoped<IHerbService, HerbService>();
-
-            // AutoMapper配置已在UnifiedServiceRegistration中集中注册
-
+            services.AddScoped<IHerbQueryService, HerbQueryService>();
+            services.AddScoped<IHerbCategoryService, HerbCategoryService>();
+            
+            // 注册验证器
+            services.AddScoped<IValidator<HerbCreateDto>, HerbCreateDtoValidator>();
+            services.AddScoped<IValidator<HerbUpdateDto>, HerbUpdateDtoValidator>();
+            
+            // 注册AutoMapper配置
+            services.AddAutoMapper(typeof(HerbMappingProfile));
+            
+            // 注册模块特定的配置
+            services.Configure<HerbModuleOptions>(configuration.GetSection("Modules:Herbs"));
+            
             return services;
+        }
+        
+        /// <summary>
+        /// 配置中药模块中间件（如有需要）
+        /// </summary>
+        public static IApplicationBuilder UseHerbsModule(this IApplicationBuilder app)
+        {
+            // 当前无特殊中间件需求
+            return app;
+        }
+        
+        /// <summary>
+        /// 验证模块健康状态
+        /// </summary>
+        public static IHealthChecksBuilder AddHerbsModuleHealthCheck(this IHealthChecksBuilder builder)
+        {
+            return builder.AddCheck<HerbsModuleHealthCheck>("herbs_module");
         }
     }
 }

@@ -37,5 +37,12 @@ namespace LYBT.Shared.Interfaces.Services
         /// 根据医案ID获取诊疗记录列表
         /// </summary>
         Task<ServiceResult<List<ConsultationDto>>> GetByMedicalCaseIdAsync(Guid medicalCaseId);
+
+        /// <summary>
+        /// 开始新的诊疗会话
+        /// </summary>
+        /// <param name="patientId">患者ID</param>
+        /// <returns>新创建的诊疗记录</returns>
+        Task<ServiceResult<ConsultationDto>> StartAsync(Guid patientId);
     }
 }

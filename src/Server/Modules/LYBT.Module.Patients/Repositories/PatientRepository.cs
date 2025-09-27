@@ -33,8 +33,8 @@ namespace LYBT.Module.Patients.Repositories
         public async Task<Patient?> GetPatientWithVisitsAsync(Guid patientId)
         {
             return await _dbSet
-                .Include(p => p.Visits)
-                    .ThenInclude(v => v.Prescriptions)
+                // .Include(p => p.Visits)  // Patient实体未定义Visits导航属性
+                //     .ThenInclude(v => v.Prescriptions)
                 .Where(p => p.Id == patientId && !p.IsDeleted)
                 .FirstOrDefaultAsync();
         }
@@ -54,13 +54,9 @@ namespace LYBT.Module.Patients.Repositories
                     Id = p.Id,
                     Name = p.Name,
                     Gender = p.Gender,
-                    Age = p.Age,
+                    Age = p.Age ?? 0,  // 处理可能的null值
                     PhoneNumber = p.PhoneNumber,
-                    LastVisitDate = p.Visits
-                        .Where(v => !v.IsDeleted)
-                        .OrderByDescending(v => v.CreatedAt)
-                        .Select(v => v.CreatedAt)
-                        .FirstOrDefault()
+                    LastVisitDate = null  // Patient实体未定义Visits导航属性，暂时返回null
                 });
 
             var totalCount = await query.CountAsync();
@@ -153,8 +149,8 @@ namespace LYBT.Module.Patients.Repositories
                 .Select(g => new PatientStatistics
                 {
                     TotalPatients = g.Count(),
-                    MaleCount = g.Count(p => p.Gender == GenderType.Male),
-                    FemaleCount = g.Count(p => p.Gender == GenderType.Female),
+                    MaleCount = g.Count(p => p.Gender == Gender.Male),
+                    FemaleCount = g.Count(p => p.Gender == Gender.Female),
                     NewPatientsThisMonth = g.Count(p => p.CreatedAt >= thisMonth),
                     AverageAge = g.Average(p => (double)p.Age)
                 })
@@ -187,7 +183,7 @@ namespace LYBT.Module.Patients.Repositories
     {
         public Guid Id { get; set; }
         public string Name { get; set; } = string.Empty;
-        public GenderType Gender { get; set; }
+        public Gender Gender { get; set; }
         public int Age { get; set; }
         public string PhoneNumber { get; set; } = string.Empty;
         public DateTime? LastVisitDate { get; set; }

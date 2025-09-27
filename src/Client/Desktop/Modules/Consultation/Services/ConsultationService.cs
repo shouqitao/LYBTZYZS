@@ -81,5 +81,23 @@ namespace LYBT.Desktop.Consultation.Services
                 return ServiceResult<List<ConsultationDto>>.Success(new List<ConsultationDto>());
             }, nameof(GetByMedicalCaseIdAsync));
         }
+
+        public async Task<ServiceResult<ConsultationDto>> StartAsync(Guid patientId)
+        {
+            return await _exceptionHandler.HandleException<ConsultationDto>(async () =>
+            {
+                // 创建新的诊疗会话
+                var createDto = new ConsultationCreateDto
+                {
+                    PatientId = patientId,
+                    MedicalCaseId = Guid.NewGuid(), // 临时生成，实际应该由API处理
+                    UserId = Guid.Empty, // TODO: 应该从当前登录用户获取
+                    StartTime = DateTime.Now
+                };
+
+                var response = await _consultationApi.CreateConsultationAsync(createDto);
+                return ServiceResult<ConsultationDto>.Success(response.Content);
+            }, nameof(StartAsync));
+        }
     }
 }

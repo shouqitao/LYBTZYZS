@@ -1,29 +1,62 @@
-using LYBT.Module.Patients.Interfaces;
-using LYBT.Module.Patients.Repositories;
-using LYBT.Module.Patients.Services;
-using LYBT.Shared.Interfaces.Services;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+using LYBT.Module.Patients.Interfaces;
+using LYBT.Module.Patients.Services;
+using LYBT.Module.Patients.Repositories;
+using FluentValidation;
+using LYBT.Shared.Models.Contracts.Patients;
 
-namespace LYBT.Module.Patients;
-
-/// <summary>
-/// 患者模块依赖注入注册入口（供主程序统一集成）
-/// </summary>
-public static class PatientsModule
+namespace LYBT.Module.Patients
 {
-
     /// <summary>
-    /// 注册本模块所有服务到 DI 容器（使用统一数据库上下文）
-    /// 简化架构：统一服务模式，合并查询和业务逻辑
+    /// 患者模块服务注册（简化版本）
     /// </summary>
-    public static IServiceCollection AddPatientsModuleServices(this IServiceCollection services)
+    public static class PatientsModule
     {
-        // 仓储层 - 使用OptimizedBaseRepository优化版本
-        services.AddScoped<IPatientRepository, PatientRepository>();
-
-        // 统一服务 - 合并查询和业务逻辑
-        services.AddScoped<IPatientService, PatientService>();
-
-        return services;
+        /// <summary>
+        /// 注册患者模块服务
+        /// </summary>
+        public static IServiceCollection AddPatientsModule(this IServiceCollection services, IConfiguration configuration)
+        {
+            // 注册仓储
+            services.AddScoped<IPatientRepository, PatientRepository>();
+            services.AddScoped<IMedicalRecordRepository, MedicalRecordRepository>();
+            
+            // 注册服务
+            services.AddScoped<IPatientService, PatientService>();
+            services.AddScoped<IPatientQueryService, PatientQueryService>();
+            services.AddScoped<IMedicalRecordService, MedicalRecordService>();
+            
+            // 注册验证器
+            services.AddScoped<IValidator<PatientCreateDto>, PatientCreateDtoValidator>();
+            services.AddScoped<IValidator<PatientUpdateDto>, PatientUpdateDtoValidator>();
+            
+            // 注册AutoMapper配置
+            services.AddAutoMapper(typeof(PatientMappingProfile));
+            
+            // 注册模块特定的配置
+            services.Configure<PatientModuleOptions>(configuration.GetSection("Modules:Patients"));
+            
+            return services;
+        }
+        
+        /// <summary>
+        /// 配置患者模块中间件（如有需要）
+        /// </summary>
+        public static IApplicationBuilder UsePatientsModule(this IApplicationBuilder app)
+        {
+            // 当前无特殊中间件需求
+            return app;
+        }
+        
+        /// <summary>
+        /// 验证模块健康状态
+        /// </summary>
+        public static IHealthChecksBuilder AddPatientsModuleHealthCheck(this IHealthChecksBuilder builder)
+        {
+            return builder.AddCheck<PatientsModuleHealthCheck>("patients_module");
+        }
     }
 }

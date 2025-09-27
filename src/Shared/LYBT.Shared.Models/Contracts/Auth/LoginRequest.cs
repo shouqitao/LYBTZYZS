@@ -36,5 +36,13 @@ namespace LYBT.Shared.Models.Contracts.Auth
         /// <summary>记住我</summary>
         [DisplayName("记住我")]
         public bool RememberMe { get; set; } = false;
+
+        /// <summary>设备ID（用于多设备管理）</summary>
+        [DisplayName("设备ID")]
+        public string? DeviceId { get; set; }
+
+        /// <summary>设备名称（用于多设备管理）</summary>
+        [DisplayName("设备名称")]
+        public string? DeviceName { get; set; }
     }
 }

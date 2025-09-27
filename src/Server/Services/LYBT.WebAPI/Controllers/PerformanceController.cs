@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using Asp.Versioning;
 using LYBT.Infrastructure.Data.Monitoring;
 using LYBT.Infrastructure.Web;
 
@@ -21,6 +23,7 @@ namespace LYBT.WebAPI.Controllers
         public PerformanceController(
             IQueryStatisticsCollector statisticsCollector,
             ILogger<PerformanceController> logger)
+            : base(logger)
         {
             _statisticsCollector = statisticsCollector ?? throw new ArgumentNullException(nameof(statisticsCollector));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
