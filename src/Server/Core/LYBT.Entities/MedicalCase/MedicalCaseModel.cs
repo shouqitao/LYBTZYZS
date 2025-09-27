@@ -68,5 +68,32 @@ namespace LYBT.Entities.MedicalCase
         /// <summary>处方信息（导航属性）- 一个医疗案例至多一张处方 (0..1关系)</summary>
         [DisplayName("处方信息")]
         public virtual Prescription? Prescription { get; set; }
+
+        // 业务方法
+
+        /// <summary>
+        /// 判断病历是否可以编辑
+        /// </summary>
+        /// <param name="isAdmin">是否管理员</param>
+        /// <param name="currentUserId">当前用户ID</param>
+        /// <returns>是否可以编辑</returns>
+        public bool CanEdit(bool isAdmin, Guid? currentUserId = null)
+        {
+            // 管理员可以编辑所有病历
+            if (isAdmin) return true;
+
+            // 医生只能编辑自己创建的当天病历
+            if (currentUserId.HasValue && DoctorId == currentUserId.Value)
+            {
+                return CreatedAt.Date == DateTime.Today;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// 判断病历是否已锁定（过了当天0点）
+        /// </summary>
+        public bool IsLocked => CreatedAt.Date < DateTime.Today;
     }
 }

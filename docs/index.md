@@ -22,12 +22,16 @@
 | 文档路径 | 说明 | 关键内容 |
 |----------|------|----------|
 | [architecture/](architecture/README.md) | 系统架构设计文档集合 | ADR决策记录、UltraThink架构、多租户讨论 |
+| [architecture/tech-design/](architecture/tech-design/000-overview.md) | 本轮技术设计 | 最小闭环：端口/登录/健康检查/BaseUrl |
+| [architecture/modules/](architecture/modules/README.md) | **模块化设计文档** | **Server/Client/Shared层详细设计，依赖关系图** |
 | [api/](api/README.md) | API接口规范与文档 | RESTful接口、Swagger文档、认证授权 |
 
 #### 开发与质量
 | 文档路径 | 说明 | 关键内容 |
 |----------|------|----------|
 | [development/](development/README.md) | 开发规范指导集合 | 编码标准、测试指南、审计字段、枚举规范 |
+| [security/](security/) | 安全指导文档 | JWT安全配置、安全加固指南 |
+| [deployment/](deployment/) | 部署技术文档 | 部署配置、环境设置指南 |
 | GitHub Issues | 需求与任务单一事实源 | 需求、讨论、验收、进度（替代本地 PRD） |
 
 #### 任务与交付
@@ -69,8 +73,9 @@ src/
 ### 🔧 日常开发任务
 1. [API开发](api/README.md) → 接口设计和实现
 2. [架构参考](architecture/README.md) → 设计决策和模式
-3. [任务管理](tasks/) → 当前任务和优先级（需求与讨论在 GitHub Issues）
-4. [测试指导](development/testing-best-practices.md) → 质量保证
+3. [模块设计](architecture/modules/README.md) → **16个业务模块详细设计**
+4. [任务管理](tasks/) → 当前任务和优先级（需求与讨论在 GitHub Issues）
+5. [测试指导](development/testing/README.md) → 质量保证
 
 ### 📊 项目管理视角
 1. GitHub Issues → 需求/变更/讨论/验收（单一事实源）

@@ -14,6 +14,7 @@
 | `Desktop-UltraThink-Implementation-Guide.md` | 桌面 UltraThink 架构实现指南。 |
 | `Desktop-UltraThink-Refactoring-Plan.md` | 桌面架构重构计划。 |
 | `Arch-Discussion-Multi-Tenancy-2025-09-23.md` | 多租户讨论记录。 |
+| **[modules/](modules/README.md)** | **模块化设计文档集合** - **Server/Client/Shared层详细设计** |
 
 ## 衔接其他资料
 - 最新架构分析报告：`docs/reports/architecture-analysis-2025-09-25.md`

@@ -21,8 +21,9 @@
 
 **30分钟深入了解**：
 7. ✅ 浏览 [架构文档](architecture/README.md) - 理解系统设计
-8. ✅ 查看 [API文档](api/README.md) - 熟悉接口规范  
-9. ✅ 阅读 [开发规范](development/README.md) - 掌握编码标准
+8. ✅ 查看 [模块设计](architecture/modules/README.md) - **了解16个业务模块详细设计**
+9. ✅ 查看 [API文档](api/README.md) - 熟悉接口规范
+10. ✅ 阅读 [开发规范](development/README.md) - 掌握编码标准
 
 ### 关键约束提醒 ⚠️
 
@@ -127,6 +128,7 @@ dotnet test LYBT.Server.sln -c Release
 - **QueryService**：只读查询，走ReadRepository
 - **BusinessService**：写操作和业务逻辑
 - 参考：[服务层架构指南](development/README.md#服务层规范)
+- 详细设计：[Server端模块设计](architecture/modules/README.md#server端模块文档)
 
 **数据访问层**（`src/Server/Core/LYBT.Infrastructure/`）：
 - 统一DbContext和ReadRepository模式
@@ -140,6 +142,7 @@ dotnet test LYBT.Server.sln -c Release
 - **ViewModels**：视图逻辑，通过接口注入服务
 - **Models**：数据模型，使用Shared.Models中的DTO
 - 参考：[Desktop开发指南](development/Desktop-UltraThink-Refactoring-2025.md)
+- 详细设计：[Client端模块设计](architecture/modules/README.md#client端模块文档)
 
 **API通信**（Refit HTTP客户端）：
 - 8个强类型API接口（IAuthApi, IUserApi等）

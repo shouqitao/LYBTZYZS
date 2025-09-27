@@ -13,28 +13,15 @@ namespace LYBT.Entities.Consultation
     /// 诊疗实体 - UltraThink v2.0架构简化版
     /// 合并了原BaseConsultation和ConsultationModel
     /// 专注于中医诊疗，包含中医四诊和辨证论治
-    /// 继承BaseEntity实现审计字段自动化
+    /// 作为MedicalCase的一部分，使用共享主键
     /// </summary>
     [Table("Consultations")]
     public class Consultation : BaseEntity
     {
+        // Id字段与MedicalCase共享主键
+        // 通过EF Core配置建立一对一关系
 
-        // Id字段继承自BaseEntity
-
-        /// <summary>医疗案例ID</summary>
-        [Required]
-        [DisplayName("医疗案例ID")]
-        public Guid MedicalCaseId { get; set; }
-
-        /// <summary>患者ID</summary>
-        [Required]
-        [DisplayName("患者ID")]
-        public Guid PatientId { get; set; }
-
-        /// <summary>关联用户ID（医生）</summary>
-        [Required]
-        [DisplayName("关联用户ID")]
-        public Guid UserId { get; set; }
+        // PatientId和UserId通过MedicalCase获取，不需要重复存储
 
         /// <summary>创建人ID（医生用户ID）</summary>
         // 审计字段（CreatedBy等）继承自BaseEntity
@@ -102,18 +89,9 @@ namespace LYBT.Entities.Consultation
         // 导航属性
 
         /// <summary>
-        /// 患者信息
+        /// 所属医疗案例（必需的，通过共享主键关联）
         /// </summary>
-        public virtual Patient? Patient { get; set; }
-
-        /// <summary>
-        /// 医生信息
-        /// </summary>
-        public virtual User? User { get; set; }
-
-        /// <summary>
-        /// 医疗案例
-        /// </summary>
-        public virtual MedicalCase.MedicalCase? MedicalCase { get; set; }
+        [Required]
+        public virtual MedicalCase.MedicalCase MedicalCase { get; set; } = null!;
     }
 }

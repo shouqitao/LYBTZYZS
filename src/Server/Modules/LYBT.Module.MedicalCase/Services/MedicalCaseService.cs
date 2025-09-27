@@ -1,9 +1,13 @@
 using AutoMapper;
 using MedicalCaseEntity = LYBT.Entities.MedicalCase.MedicalCase;
+using ConsultationEntity = LYBT.Entities.Consultation.Consultation;
+using PrescriptionEntity = LYBT.Entities.Prescriptions.Prescription;
 using LYBT.Module.MedicalCase.Interfaces;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.MedicalCase;
+using LYBT.Shared.Models.Contracts.Consultation;
+using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Module.MedicalCase.Services
@@ -131,6 +135,70 @@ namespace LYBT.Module.MedicalCase.Services
             {
                 _logger.LogError(ex, "根据患者ID获取医疗案例失败");
                 return ServiceResult<List<MedicalCaseDto>>.Failure("获取医疗案例失败");
+            }
+        }
+
+        /// <summary>
+        /// 创建完整的医疗案例（包含诊疗记录和可选的处方）
+        /// 作为聚合根统一管理整个诊疗流程
+        /// </summary>
+        public async Task<ServiceResult<MedicalCaseDto>> CreateWithDetailsAsync(
+            MedicalCaseCreateDto caseDto,
+            ConsultationCreateDto consultationDto,
+            PrescriptionCreateDto prescriptionDto = null)
+        {
+            try
+            {
+                // 1. 创建MedicalCase实体（聚合根）
+                var medicalCase = _mapper.Map<MedicalCaseEntity>(caseDto);
+                medicalCase.ConsultationDate = DateTime.Now;
+                
+                // 2. 创建Consultation实体（使用共享主键）
+                var consultation = _mapper.Map<ConsultationEntity>(consultationDto);
+                consultation.Id = medicalCase.Id; // 共享主键
+                medicalCase.Consultation = consultation;
+                
+                // 3. 如果有处方，创建Prescription实体
+                if (prescriptionDto != null)
+                {
+                    var prescription = _mapper.Map<PrescriptionEntity>(prescriptionDto);
+                    prescription.MedicalCaseId = medicalCase.Id;
+                    prescription.PatientId = medicalCase.PatientId;
+                    prescription.UserId = medicalCase.DoctorId;
+                    medicalCase.Prescription = prescription;
+                }
+                
+                // 4. 保存整个聚合
+                var result = await _repository.AddAsync(medicalCase);
+                var resultDto = _mapper.Map<MedicalCaseDto>(result);
+                
+                return ServiceResult<MedicalCaseDto>.Success(resultDto);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "创建完整医疗案例失败");
+                return ServiceResult<MedicalCaseDto>.Failure($"创建医疗案例失败: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 根据ID获取完整的医疗案例（包含所有关联数据）
+        /// </summary>
+        public async Task<ServiceResult<MedicalCaseDetailDto>> GetByIdWithDetailsAsync(Guid id)
+        {
+            try
+            {
+                var entity = await _repository.GetByIdWithDetailsAsync(id);
+                if (entity == null)
+                    return ServiceResult<MedicalCaseDetailDto>.Failure("医疗案例不存在");
+
+                var dto = _mapper.Map<MedicalCaseDetailDto>(entity);
+                return ServiceResult<MedicalCaseDetailDto>.Success(dto);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取完整医疗案例失败");
+                return ServiceResult<MedicalCaseDetailDto>.Failure("获取医疗案例失败");
             }
         }
     }
