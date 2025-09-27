@@ -9,6 +9,8 @@
 | 文档 | 说明 |
 |------|------|
 | `overview.md` | 系统整体架构概览、技术栈与关键组件。 |
+| **`system-architecture-design.md`** | **系统架构设计文档v3.0** - 完整的架构设计规范 |
+| **`functional-modules-design.md`** | **功能模块详细设计v2.0** - 所有模块的详细设计 |
 | `ADR-001-cqrs-mediatr-rejection.md` | CQRS + MediatR 拒绝决策。 |
 | `ADR-002-technology-roadmap-suggestion.md` | 技术路线与阶段目标建议。 |
 | `Desktop-UltraThink-Implementation-Guide.md` | 桌面 UltraThink 架构实现指南。 |
@@ -17,6 +19,7 @@
 | **[modules/](modules/README.md)** | **模块化设计文档集合** - **Server/Client/Shared层详细设计** |
 
 ## 衔接其他资料
+- **技术标准与规范**：`docs/development/technical-standards.md`
 - 最新架构分析报告：`docs/reports/architecture-analysis-2025-09-25.md`
 - 架构改进建议：`docs/reports/modification-suggestions-2025-09-25.md`
 - 相关任务：参见 `docs/tasks/pending/2025-09-24-all-framework-refactor-task.md`
