@@ -2,7 +2,9 @@ using LYBT.Desktop.Core.Services.Exceptions;
 using LYBT.Shared.Interfaces.Api;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
+using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.MedicalCase.Services
@@ -80,6 +82,40 @@ namespace LYBT.Desktop.MedicalCase.Services
                 await Task.CompletedTask;
                 return ServiceResult<List<MedicalCaseDto>>.Success(new List<MedicalCaseDto>());
             }, nameof(GetByPatientIdAsync));
+        }
+
+        /// <summary>
+        /// 获取包含详情的医疗案例
+        /// </summary>
+        public async Task<ServiceResult<MedicalCaseDetailDto>> GetByIdWithDetailsAsync(Guid id)
+        {
+            return await _exceptionHandler.HandleException<MedicalCaseDetailDto>(async () =>
+            {
+                var response = await _medicalCaseApi.GetMedicalCaseByIdWithDetailsAsync(id);
+                return ServiceResult<MedicalCaseDetailDto>.Success(response.Content);
+            }, nameof(GetByIdWithDetailsAsync));
+        }
+
+        /// <summary>
+        /// 创建包含详情的医疗案例（包含诊疗和可选处方）
+        /// </summary>
+        public async Task<ServiceResult<MedicalCaseDto>> CreateWithDetailsAsync(MedicalCaseCreateDto caseDto, 
+            ConsultationCreateDto consultationDto, 
+            PrescriptionCreateDto prescriptionDto = null)
+        {
+            return await _exceptionHandler.HandleException<MedicalCaseDto>(async () =>
+            {
+                // 组装聚合根DTO
+                var dto = new MedicalCaseWithDetailsCreateDto
+                {
+                    MedicalCase = caseDto,
+                    Consultation = consultationDto,
+                    Prescription = prescriptionDto
+                };
+                
+                var response = await _medicalCaseApi.CreateMedicalCaseWithDetailsAsync(dto);
+                return ServiceResult<MedicalCaseDto>.Success(response.Content);
+            }, nameof(CreateWithDetailsAsync));
         }
     }
 }

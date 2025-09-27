@@ -69,51 +69,94 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
-                <!-- 患者基本信息卡片 -->
+                <!-- 医疗案例基本信息卡片 -->
                 <Border Grid.Row="0" Style="{StaticResource CardStyle}" Margin="0,0,0,16">
                     <Grid Margin="16">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
 
-                        <TextBlock Grid.Column="0"
-                                   Text="👤"
-                                   FontSize="32"
-                                   VerticalAlignment="Center"
-                                   HorizontalAlignment="Center"
-                                   Width="48"
-                                   Height="48"
-                                   Margin="0,0,16,0" />
+                        <!-- 标题栏 -->
+                        <Grid Grid.Row="0" Margin="0,0,0,12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
 
-                        <StackPanel Grid.Column="1">
-                            <TextBlock FontSize="18" FontWeight="Bold">
-                                <TextBlock.Text>
-                                    <MultiBinding StringFormat="{}{0} - {1} - {2}岁">
-                                        <Binding Path="PatientName" />
-                                        <Binding Path="PatientGender" />
-                                        <Binding Path="PatientAge" />
-                                    </MultiBinding>
-                                </TextBlock.Text>
+                            <TextBlock Grid.Column="0" FontSize="18" FontWeight="Bold">
+                                <Run Text="医疗案例：" />
+                                <Run Text="{Binding MedicalCaseDetail.CaseNumber}" />
                             </TextBlock>
 
-                            <TextBlock Text="{Binding MedicalCase.CaseNumber}"
-                                       Foreground="Gray"
-                                       Margin="0,4,0,0" />
+                            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                <Border Background="{DynamicResource SuccessBrush}"
+                                        CornerRadius="3"
+                                        Padding="8,4"
+                                        Margin="4,0"
+                                        Visibility="{Binding HasConsultation, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                    <TextBlock Text="已诊疗" Foreground="White" FontSize="12" />
+                                </Border>
+                                
+                                <Border Background="{DynamicResource InfoBrush}"
+                                        CornerRadius="3"
+                                        Padding="8,4"
+                                        Visibility="{Binding HasPrescription, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                    <TextBlock Text="已开方" Foreground="White" FontSize="12" />
+                                </Border>
+                            </StackPanel>
+                        </Grid>
 
-                            <TextBlock Text="{Binding MedicalCase.StatusText}"
-                                       Margin="0,4,0,0"
-                                       Foreground="Gray" />
+                        <!-- 基本信息 -->
+                        <Grid Grid.Row="1">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                                <TextBlock Text="患者" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" />
+                                <TextBlock Text="{Binding MedicalCaseDetail.PatientName}" FontSize="14" Margin="0,4,0,0" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1" Margin="0,0,16,0">
+                                <TextBlock Text="医生" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" />
+                                <TextBlock Text="{Binding MedicalCaseDetail.DoctorName}" FontSize="14" Margin="0,4,0,0" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="2" Margin="0,0,16,0">
+                                <TextBlock Text="创建时间" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" />
+                                <TextBlock Text="{Binding MedicalCaseDetail.CreatedAt, StringFormat='{}{0:yyyy-MM-dd HH:mm}'}" FontSize="14" Margin="0,4,0,0" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="3">
+                                <TextBlock Text="状态" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" />
+                                <TextBlock Text="{Binding MedicalCaseDetail.Status}" FontSize="14" Margin="0,4,0,0" />
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- 备注 -->
+                        <StackPanel Grid.Row="2" Margin="0,12,0,0"
+                                    Visibility="{Binding MedicalCaseDetail.Remark, Converter={StaticResource NullToVisibilityConverter}}">
+                            <TextBlock Text="备注" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" />
+                            <TextBlock Text="{Binding MedicalCaseDetail.Remark}" 
+                                       FontSize="14" 
+                                       TextWrapping="Wrap"
+                                       Margin="0,4,0,0" />
                         </StackPanel>
                     </Grid>
                 </Border>
 
-                <!-- 病历信息 -->
-                <Border Grid.Row="1" Style="{StaticResource CardStyle}" Margin="0,0,0,16">
-                    <Expander Header="病历信息" IsExpanded="True">
+                <!-- 诊疗信息 -->
+                <Border Grid.Row="1" Style="{StaticResource CardStyle}" Margin="0,0,0,16"
+                        Visibility="{Binding HasConsultation, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <Expander Header="诊疗信息" IsExpanded="True">
                         <Grid Margin="16">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
@@ -121,117 +164,203 @@
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
 
-                            <StackPanel Grid.Row="0" Margin="0,0,0,8">
-                                <TextBlock Text="主诉:" FontWeight="Bold" />
-                                <TextBlock Text="{Binding MedicalCase.ChiefComplaint}"
+                            <!-- 主诉 -->
+                            <StackPanel Grid.Row="0" Margin="0,0,0,12"
+                                        Visibility="{Binding MedicalCaseDetail.ChiefComplaint, Converter={StaticResource NullToVisibilityConverter}}">
+                                <TextBlock Text="主诉" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" />
+                                <TextBlock Text="{Binding MedicalCaseDetail.ChiefComplaint}"
                                            TextWrapping="Wrap"
+                                           FontSize="14"
                                            Margin="0,4,0,0" />
                             </StackPanel>
 
-                            <StackPanel Grid.Row="1" Margin="0,0,0,8">
-                                <TextBlock Text="现病史:" FontWeight="Bold" />
-                                <TextBlock Text="{Binding MedicalCase.PresentIllness}"
+                            <!-- 现病史 -->
+                            <StackPanel Grid.Row="1" Margin="0,0,0,12"
+                                        Visibility="{Binding MedicalCaseDetail.PresentIllness, Converter={StaticResource NullToVisibilityConverter}}">
+                                <TextBlock Text="现病史" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" />
+                                <TextBlock Text="{Binding MedicalCaseDetail.PresentIllness}"
                                            TextWrapping="Wrap"
+                                           FontSize="14"
                                            Margin="0,4,0,0" />
                             </StackPanel>
 
-                            <StackPanel Grid.Row="2" Margin="0,0,0,8">
-                                <TextBlock Text="既往史:" FontWeight="Bold" />
-                                <TextBlock Text="{Binding MedicalCase.PastHistory}"
+                            <!-- 既往史 -->
+                            <StackPanel Grid.Row="2" Margin="0,0,0,12"
+                                        Visibility="{Binding MedicalCaseDetail.PastHistory, Converter={StaticResource NullToVisibilityConverter}}">
+                                <TextBlock Text="既往史" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" />
+                                <TextBlock Text="{Binding MedicalCaseDetail.PastHistory}"
                                            TextWrapping="Wrap"
+                                           FontSize="14"
                                            Margin="0,4,0,0" />
                             </StackPanel>
 
-                            <StackPanel Grid.Row="3" Margin="0,0,0,8">
-                                <TextBlock Text="过敏史:" FontWeight="Bold" />
-                                <TextBlock Text="{Binding MedicalCase.AllergyHistory}"
+                            <!-- 诊断 -->
+                            <StackPanel Grid.Row="3" Margin="0,0,0,12"
+                                        Visibility="{Binding MedicalCaseDetail.Diagnosis, Converter={StaticResource NullToVisibilityConverter}}">
+                                <TextBlock Text="诊断" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" />
+                                <TextBlock Text="{Binding MedicalCaseDetail.Diagnosis}"
                                            TextWrapping="Wrap"
+                                           FontSize="14"
                                            Margin="0,4,0,0" />
                             </StackPanel>
 
-                            <StackPanel Grid.Row="4">
-                                <TextBlock Text="家族史:" FontWeight="Bold" />
-                                <TextBlock Text="{Binding MedicalCase.FamilyHistory}"
+                            <!-- 治疗方案 -->
+                            <StackPanel Grid.Row="4" Margin="0,0,0,12"
+                                        Visibility="{Binding MedicalCaseDetail.TreatmentPlan, Converter={StaticResource NullToVisibilityConverter}}">
+                                <TextBlock Text="治疗方案" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" />
+                                <TextBlock Text="{Binding MedicalCaseDetail.TreatmentPlan}"
                                            TextWrapping="Wrap"
+                                           FontSize="14"
                                            Margin="0,4,0,0" />
+                            </StackPanel>
+
+                            <!-- 诊疗时间 -->
+                            <Grid Grid.Row="5">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                
+                                <TextBlock Grid.Column="0" 
+                                           Text="诊疗时间：" 
+                                           FontWeight="SemiBold" 
+                                           Foreground="{StaticResource TextSecondaryBrush}" />
+                                <TextBlock Grid.Column="1" 
+                                           Text="{Binding MedicalCaseDetail.ConsultationDate, StringFormat='{}{0:yyyy-MM-dd HH:mm}'}"
+                                           FontSize="14" />
+                            </Grid>
+                        </Grid>
+                    </Expander>
+                </Border>
+
+                <!-- 处方信息 -->
+                <Border Grid.Row="2" Style="{StaticResource CardStyle}" Margin="0,0,0,16"
+                        Visibility="{Binding HasPrescription, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <Expander Header="处方信息" IsExpanded="True">
+                        <Grid Margin="16">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <!-- 处方基本信息 -->
+                            <Grid Grid.Row="0" Margin="0,0,0,12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                                    <TextBlock Text="处方编号" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" />
+                                    <TextBlock Text="{Binding MedicalCaseDetail.PrescriptionNumber}" FontSize="14" Margin="0,4,0,0" />
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="1" Margin="0,0,16,0">
+                                    <TextBlock Text="处方类型" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" />
+                                    <TextBlock Text="{Binding MedicalCaseDetail.PrescriptionType}" FontSize="14" Margin="0,4,0,0" />
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="2" Margin="0,0,16,0">
+                                    <TextBlock Text="剂数" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" />
+                                    <TextBlock Text="{Binding MedicalCaseDetail.PrescriptionQuantity}" FontSize="14" Margin="0,4,0,0" />
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="3">
+                                    <TextBlock Text="总价" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" />
+                                    <TextBlock Text="{Binding MedicalCaseDetail.TotalAmount, StringFormat='￥{0:F2}'}" FontSize="14" Margin="0,4,0,0" />
+                                </StackPanel>
+                            </Grid>
+
+                            <!-- 用法用量 -->
+                            <StackPanel Grid.Row="1" Margin="0,0,0,12"
+                                        Visibility="{Binding MedicalCaseDetail.PrescriptionUsage, Converter={StaticResource NullToVisibilityConverter}}">
+                                <TextBlock Text="用法用量" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" />
+                                <TextBlock Text="{Binding MedicalCaseDetail.PrescriptionUsage}"
+                                           TextWrapping="Wrap"
+                                           FontSize="14"
+                                           Margin="0,4,0,0" />
+                            </StackPanel>
+
+                            <!-- 处方明细（如果有） -->
+                            <StackPanel Grid.Row="2"
+                                        Visibility="{Binding MedicalCaseDetail.PrescriptionItems, Converter={StaticResource NullToVisibilityConverter}}">
+                                <TextBlock Text="处方明细" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,8" />
+                                
+                                <DataGrid ItemsSource="{Binding MedicalCaseDetail.PrescriptionItems}"
+                                          AutoGenerateColumns="False"
+                                          CanUserAddRows="False"
+                                          MaxHeight="200">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="药材名称"
+                                                            Binding="{Binding HerbName}"
+                                                            Width="*" />
+                                        <DataGridTextColumn Header="剂量"
+                                                            Binding="{Binding Dosage}"
+                                                            Width="80" />
+                                        <DataGridTextColumn Header="单位"
+                                                            Binding="{Binding Unit}"
+                                                            Width="60" />
+                                        <DataGridTextColumn Header="单价"
+                                                            Binding="{Binding UnitPrice, StringFormat='￥{0:F2}'}"
+                                                            Width="80" />
+                                        <DataGridTextColumn Header="小计"
+                                                            Binding="{Binding SubTotal, StringFormat='￥{0:F2}'}"
+                                                            Width="100" />
+                                    </DataGrid.Columns>
+                                </DataGrid>
                             </StackPanel>
                         </Grid>
                     </Expander>
                 </Border>
 
-                <!-- 诊疗记录时间线 -->
-                <Border Grid.Row="2" Style="{StaticResource CardStyle}" Margin="0,0,0,16">
-                    <Expander Header="诊疗记录" IsExpanded="True">
-                        <Grid Margin="16">
-                            <TabControl>
-                                <!-- 诊疗记录 -->
-                                <TabItem Header="诊疗记录">
-                                    <DataGrid ItemsSource="{Binding ConsultationHistory}"
-                                              SelectedItem="{Binding SelectedConsultation}"
-                                              AutoGenerateColumns="False"
-                                              CanUserAddRows="False"
-                                              MaxHeight="300">
-                                        <DataGrid.Columns>
-                                            <DataGridTextColumn Header="诊疗时间"
-                                                                Binding="{Binding ConsultationTime}"
-                                                                Width="150" />
-                                            <DataGridTextColumn Header="医生"
-                                                                Binding="{Binding DoctorName}"
-                                                                Width="100" />
-                                            <DataGridTextColumn Header="诊断"
-                                                                Binding="{Binding Diagnosis}"
-                                                                Width="*" />
-                                            <DataGridTemplateColumn Header="操作" Width="80">
-                                                <DataGridTemplateColumn.CellTemplate>
-                                                    <DataTemplate>
-                                                        <Button Command="{Binding DataContext.ViewConsultationCommand,
-                                                                         RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                                                CommandParameter="{Binding}"
-                                                                Content="查看"
-                                                                Background="Transparent" BorderThickness="0" Padding="8" />
-                                                    </DataTemplate>
-                                                </DataGridTemplateColumn.CellTemplate>
-                                            </DataGridTemplateColumn>
-                                        </DataGrid.Columns>
-                                    </DataGrid>
-                                </TabItem>
+                <!-- 操作按钮栏 -->
+                <Border Grid.Row="3" Style="{StaticResource CardStyle}">
+                    <Grid Margin="16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
 
-                                <!-- 处方记录 -->
-                                <TabItem Header="处方记录">
-                                    <DataGrid ItemsSource="{Binding PrescriptionHistory}"
-                                              SelectedItem="{Binding SelectedPrescription}"
-                                              AutoGenerateColumns="False"
-                                              CanUserAddRows="False"
-                                              MaxHeight="300">
-                                        <DataGrid.Columns>
-                                            <DataGridTextColumn Header="处方编号"
-                                                                Binding="{Binding PrescriptionNo}"
-                                                                Width="150" />
-                                            <DataGridTextColumn Header="剂数"
-                                                                Binding="{Binding DosageCount}"
-                                                                Width="80" />
-                                            <DataGridTextColumn Header="应付金额"
-                                                                Binding="{Binding PayableAmount, StringFormat='￥{0:F2}'}"
-                                                                Width="100" />
-                                            <DataGridTemplateColumn Header="操作" Width="80">
-                                                <DataGridTemplateColumn.CellTemplate>
-                                                    <DataTemplate>
-                                                        <Button Command="{Binding DataContext.ViewPrescriptionCommand,
-                                                                         RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                                                CommandParameter="{Binding}"
-                                                                Content="查看"
-                                                                Background="Transparent" BorderThickness="0" Padding="8" />
-                                                    </DataTemplate>
-                                                </DataGridTemplateColumn.CellTemplate>
-                                            </DataGridTemplateColumn>
-                                        </DataGrid.Columns>
-                                    </DataGrid>
-                                </TabItem>
-                            </TabControl>
-                        </Grid>
-                    </Expander>
+                        <TextBlock Grid.Column="0"
+                                   Text="{Binding MedicalCaseDetail.UpdatedAt, StringFormat='最后更新：{0:yyyy-MM-dd HH:mm}'}"
+                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   VerticalAlignment="Center" />
+
+                        <StackPanel Grid.Column="1" Orientation="Horizontal">
+                            <Button Command="{Binding RefreshCommand}"
+                                    Content="刷新"
+                                    Style="{StaticResource BaseButtonStyle}"
+                                    Margin="0,0,8,0"
+                                    Width="80" />
+
+                            <Button Command="{Binding EditCommand}"
+                                    Content="编辑"
+                                    Style="{StaticResource PrimaryButtonStyle}"
+                                    Margin="0,0,8,0"
+                                    Width="80"
+                                    IsEnabled="{Binding MedicalCaseDetail.CanEdit}" />
+
+                            <Button Command="{Binding PrintPrescriptionCommand}"
+                                    Content="打印处方"
+                                    Style="{StaticResource SuccessButtonStyle}"
+                                    Width="100"
+                                    Visibility="{Binding HasPrescription, Converter={StaticResource BooleanToVisibilityConverter}}" />
+
+                            <Button Command="{Binding CloseCommand}"
+                                    Content="关闭"
+                                    Style="{StaticResource BaseButtonStyle}"
+                                    Background="{StaticResource SecondaryBrush}"
+                                    Foreground="White"
+                                    Margin="8,0,0,0"
+                                    Width="80" />
+                        </StackPanel>
+                    </Grid>
                 </Border>
             </Grid>
         </ScrollViewer>

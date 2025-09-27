@@ -34,120 +34,187 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
-                <!-- 患者选择 -->
-                <GroupBox Grid.Row="0" Header="患者信息" Style="{StaticResource ModernGroupBoxStyle}" Margin="0,0,0,16">
+                <!-- 基本信息 -->
+                <GroupBox Grid.Row="0" Header="基本信息" Style="{StaticResource ModernGroupBoxStyle}" Margin="0,0,0,16">
+                    <Grid Margin="8">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <!-- 患者选择 -->
+                        <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,8,8">
+                            <TextBlock Text="患者 *" Margin="0,0,0,4" FontWeight="SemiBold" />
+                            <ComboBox ItemsSource="{Binding Patients}"
+                                      SelectedValue="{Binding MedicalCase.PatientId}"
+                                      SelectedValuePath="Id"
+                                      DisplayMemberPath="Name"
+                                      Style="{StaticResource ModernComboBoxStyle}" />
+                        </StackPanel>
+
+                        <!-- 医生选择 -->
+                        <StackPanel Grid.Row="0" Grid.Column="1" Margin="8,0,0,8">
+                            <TextBlock Text="医生 *" Margin="0,0,0,4" FontWeight="SemiBold" />
+                            <ComboBox ItemsSource="{Binding Doctors}"
+                                      SelectedValue="{Binding MedicalCase.DoctorId}"
+                                      SelectedValuePath="Id"
+                                      DisplayMemberPath="Name"
+                                      Style="{StaticResource ModernComboBoxStyle}" />
+                        </StackPanel>
+
+                        <!-- 备注 -->
+                        <StackPanel Grid.Row="1" Grid.ColumnSpan="2">
+                            <TextBlock Text="备注" Margin="0,0,0,4" FontWeight="SemiBold" />
+                            <TextBox Text="{Binding MedicalCase.Remark, UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{StaticResource ModernTextBoxStyle}"
+                                     TextWrapping="Wrap"
+                                     AcceptsReturn="True"
+                                     MinHeight="40" />
+                        </StackPanel>
+                    </Grid>
+                </GroupBox>
+
+                <!-- 诊疗信息 -->
+                <GroupBox Grid.Row="1" Header="诊疗信息" Style="{StaticResource ModernGroupBoxStyle}" Margin="0,0,0,16">
                     <Grid Margin="8">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
 
-                        <!-- 患者搜索 -->
-                        <Grid Grid.Row="0" Margin="0,0,0,8">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-
-                            <TextBox Grid.Column="0"
-                                     Text="{Binding PatientSearchKeyword, UpdateSourceTrigger=PropertyChanged}"
+                        <!-- 主诉 -->
+                        <StackPanel Grid.Row="0" Margin="0,0,0,8">
+                            <TextBlock Text="主诉" Margin="0,0,0,4" FontWeight="SemiBold" />
+                            <TextBox Text="{Binding Consultation.ChiefComplaint, UpdateSourceTrigger=PropertyChanged}"
                                      Style="{StaticResource ModernTextBoxStyle}"
-                                     ToolTip="搜索患者姓名或电话..."
-                                     Margin="0,0,8,0" />
+                                     TextWrapping="Wrap"
+                                     AcceptsReturn="True"
+                                     MinHeight="60" />
+                        </StackPanel>
 
-                            <Button Grid.Column="1"
-                                    Command="{Binding SearchPatientCommand}"
-                                    Content="搜索"
-                                    Style="{StaticResource BaseButtonStyle}"
-                                    Background="{StaticResource SecondaryBrush}"
-                                    Foreground="White"
-                                    Margin="0,0,8,0" />
+                        <!-- 现病史 -->
+                        <StackPanel Grid.Row="1" Margin="0,0,0,8">
+                            <TextBlock Text="现病史" Margin="0,0,0,4" FontWeight="SemiBold" />
+                            <TextBox Text="{Binding Consultation.PresentIllness, UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{StaticResource ModernTextBoxStyle}"
+                                     TextWrapping="Wrap"
+                                     AcceptsReturn="True"
+                                     MinHeight="80" />
+                        </StackPanel>
 
-                            <Button Grid.Column="2"
-                                    Command="{Binding CreateNewPatientCommand}"
-                                    Content="新增患者"
-                                    Style="{StaticResource SuccessButtonStyle}" />
-                        </Grid>
+                        <!-- 诊断 -->
+                        <StackPanel Grid.Row="2" Margin="0,0,0,8">
+                            <TextBlock Text="诊断" Margin="0,0,0,4" FontWeight="SemiBold" />
+                            <TextBox Text="{Binding Consultation.Diagnosis, UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{StaticResource ModernTextBoxStyle}"
+                                     TextWrapping="Wrap"
+                                     AcceptsReturn="True"
+                                     MinHeight="60" />
+                        </StackPanel>
 
-                        <!-- 患者列表 -->
-                        <ComboBox Grid.Row="1"
-                                  ItemsSource="{Binding Patients}"
-                                  SelectedItem="{Binding SelectedPatient}"
-                                  DisplayMemberPath="Name"
-                                  Style="{StaticResource ModernComboBoxStyle}"
-                                  Margin="0,0,0,8">
-                            <ComboBox.ItemContainerStyle>
-                                <Style TargetType="ComboBoxItem">
-                                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-                                    <Setter Property="Template">
-                                        <Setter.Value>
-                                            <ControlTemplate TargetType="ComboBoxItem">
-                                                <Border Background="{TemplateBinding Background}" Padding="8">
-                                                    <StackPanel>
-                                                        <TextBlock Text="{Binding Name}" FontWeight="Bold" />
-                                                        <TextBlock Text="{Binding Phone}" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" />
-                                                    </StackPanel>
-                                                </Border>
-                                            </ControlTemplate>
-                                        </Setter.Value>
-                                    </Setter>
-                                </Style>
-                            </ComboBox.ItemContainerStyle>
-                        </ComboBox>
-
-                        <!-- 患者信息显示 -->
-                        <Border Grid.Row="2"
-                                Background="{StaticResource BackgroundBrush}"
-                                BorderBrush="{StaticResource BorderBrush}"
-                                BorderThickness="1"
-                                CornerRadius="4"
-                                Padding="8"
-                                Visibility="{Binding SelectedPatient, Converter={StaticResource NullToVisibilityConverter}}">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="*" />
-                                </Grid.ColumnDefinitions>
-
-                                <TextBlock Grid.Column="0" Margin="4">
-                                    <Run Text="姓名: " FontWeight="Bold" />
-                                    <Run Text="{Binding PatientName}" />
-                                </TextBlock>
-
-                                <TextBlock Grid.Column="1" Margin="4">
-                                    <Run Text="性别: " FontWeight="Bold" />
-                                    <Run Text="{Binding PatientGender}" />
-                                </TextBlock>
-
-                                <TextBlock Grid.Column="2" Margin="4">
-                                    <Run Text="年龄: " FontWeight="Bold" />
-                                    <Run Text="{Binding PatientAge}" />
-                                </TextBlock>
-
-                                <TextBlock Grid.Column="3" Margin="4">
-                                    <Run Text="电话: " FontWeight="Bold" />
-                                    <Run Text="{Binding PatientPhone}" />
-                                </TextBlock>
-                            </Grid>
-                        </Border>
+                        <!-- 治疗方案 -->
+                        <StackPanel Grid.Row="3">
+                            <TextBlock Text="治疗方案" Margin="0,0,0,4" FontWeight="SemiBold" />
+                            <TextBox Text="{Binding Consultation.TreatmentPlan, UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{StaticResource ModernTextBoxStyle}"
+                                     TextWrapping="Wrap"
+                                     AcceptsReturn="True"
+                                     MinHeight="60" />
+                        </StackPanel>
                     </Grid>
                 </GroupBox>
 
-                <!-- 备注信息 -->
-                <GroupBox Grid.Row="1" Header="备注" Style="{StaticResource ModernGroupBoxStyle}">
-                    <TextBox Text="{Binding Remark, UpdateSourceTrigger=PropertyChanged}"
-                             Style="{StaticResource ModernTextBoxStyle}"
-                             ToolTip="请输入备注信息（可选）"
-                             TextWrapping="Wrap"
-                             AcceptsReturn="True"
-                             MinHeight="80"
-                             MaxHeight="120" />
+                <!-- 处方信息（可选） -->
+                <GroupBox Grid.Row="2" Header="处方信息（可选）" Style="{StaticResource ModernGroupBoxStyle}">
+                    <Grid Margin="8">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <!-- 是否包含处方 -->
+                        <CheckBox Grid.Row="0"
+                                  IsChecked="{Binding IncludePrescription}"
+                                  Content="包含处方"
+                                  Margin="0,0,0,8"
+                                  FontWeight="SemiBold" />
+
+                        <!-- 处方详情 -->
+                        <Grid Grid.Row="1"
+                              Visibility="{Binding IncludePrescription, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <!-- 处方类型 -->
+                            <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,8,8">
+                                <TextBlock Text="处方类型" Margin="0,0,0,4" />
+                                <ComboBox SelectedValue="{Binding Prescription.Type}"
+                                          Style="{StaticResource ModernComboBoxStyle}">
+                                    <ComboBoxItem>中药饮片</ComboBoxItem>
+                                    <ComboBoxItem>中成药</ComboBoxItem>
+                                    <ComboBoxItem>配方颗粒</ComboBoxItem>
+                                </ComboBox>
+                            </StackPanel>
+
+                            <!-- 剂数 -->
+                            <StackPanel Grid.Row="0" Grid.Column="1" Margin="8,0,8,8">
+                                <TextBlock Text="剂数" Margin="0,0,0,4" />
+                                <TextBox Text="{Binding Prescription.Quantity, UpdateSourceTrigger=PropertyChanged}"
+                                         Style="{StaticResource ModernTextBoxStyle}" />
+                            </StackPanel>
+
+                            <!-- 用法 -->
+                            <StackPanel Grid.Row="0" Grid.Column="2" Margin="8,0,0,8">
+                                <TextBlock Text="用法" Margin="0,0,0,4" />
+                                <TextBox Text="{Binding Prescription.Usage, UpdateSourceTrigger=PropertyChanged}"
+                                         Style="{StaticResource ModernTextBoxStyle}" />
+                            </StackPanel>
+
+                            <!-- 处方备注 -->
+                            <StackPanel Grid.Row="1" Grid.ColumnSpan="3">
+                                <TextBlock Text="处方备注" Margin="0,0,0,4" />
+                                <TextBox Text="{Binding Prescription.Remark, UpdateSourceTrigger=PropertyChanged}"
+                                         Style="{StaticResource ModernTextBoxStyle}"
+                                         TextWrapping="Wrap"
+                                         AcceptsReturn="True"
+                                         MinHeight="40" />
+                            </StackPanel>
+
+                            <!-- 处方明细（简化显示） -->
+                            <StackPanel Grid.Row="2" Grid.ColumnSpan="3" Margin="0,8,0,0">
+                                <TextBlock Text="处方明细" Margin="0,0,0,4" />
+                                <Border Background="{StaticResource BackgroundBrush}"
+                                        BorderBrush="{StaticResource BorderBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="4"
+                                        Padding="8"
+                                        MinHeight="60">
+                                    <TextBlock Text="（处方明细将在后续步骤中编辑）"
+                                               Foreground="{StaticResource TextSecondaryBrush}"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center" />
+                                </Border>
+                            </StackPanel>
+                        </Grid>
+                    </Grid>
                 </GroupBox>
             </Grid>
         </ScrollViewer>
