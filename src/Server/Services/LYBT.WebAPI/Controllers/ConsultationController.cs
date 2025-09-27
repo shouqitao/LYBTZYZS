@@ -1,5 +1,4 @@
 using LYBT.Module.Consultation.Interfaces;
-using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
 using Asp.Versioning;

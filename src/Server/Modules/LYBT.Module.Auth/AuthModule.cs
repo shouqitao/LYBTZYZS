@@ -59,36 +59,3 @@ namespace LYBT.Module.Auth
         }
     }
 }
-    public static class AuthModule
-    {
-
-        /// <summary>
-        /// 注册登录验证相关服务 - UltraThink简化架构版
-        /// </summary>
-        public static IServiceCollection AddAuthModule(this IServiceCollection services)
-        {
-            // 注册Repository层
-            services.AddScoped<IAuthRepository, AuthRepository>();
-            services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
-
-            // 注册核心服务层 - 简化架构
-            services.AddScoped<IAuthService, AuthService>();                 // 主服务：纯委托模式
-            services.AddScoped<SysAdminHandler>();                           // 管理员特殊处理
-
-            // 注册JWT服务 - 保留核心JWT功能
-            services.AddScoped<IJwtAuthenticationService, JwtAuthenticationService>();
-            
-            // 注册增强的JWT服务（支持RefreshToken）
-            services.AddScoped<IEnhancedJwtService, EnhancedJwtService>();
-            services.AddScoped<ISecurityKeyService, SecurityKeyService>();
-            
-            // JWT黑名单服务由Infrastructure层提供
-
-            // 注册配置选项
-            services.AddOptions<AuthOptions>();
-            services.AddOptions<SysAdminOptions>();
-
-            return services;
-        }
-    }
-}

@@ -66,8 +66,8 @@ namespace LYBT.Module.Prescriptions.Tests.Mapping
             dto.Should().NotBeNull();
             dto.Id.Should().Be(prescription.Id);
             dto.MedicalCaseId.Should().Be(prescription.MedicalCaseId);
-            dto.PatientId.Should().Be(prescription.PatientId);
-            dto.UserId.Should().Be(prescription.UserId);
+            dto.PatientId.Should().Be(prescription.PatientId ?? Guid.Empty);
+            dto.UserId.Should().Be(prescription.UserId ?? Guid.Empty);
             dto.Indication.Should().Be(prescription.Indication);
             dto.DosageCount.Should().Be(prescription.DosageCount);
             dto.Discount.Should().Be(prescription.Discount);
@@ -107,8 +107,8 @@ namespace LYBT.Module.Prescriptions.Tests.Mapping
             detailDto.Should().NotBeNull();
             detailDto.Id.Should().Be(prescription.Id);
             detailDto.MedicalCaseId.Should().Be(prescription.MedicalCaseId);
-            detailDto.PatientId.Should().Be(prescription.PatientId);
-            detailDto.UserId.Should().Be(prescription.UserId);
+            detailDto.PatientId.Should().Be(prescription.PatientId ?? Guid.Empty);
+            detailDto.UserId.Should().Be(prescription.UserId ?? Guid.Empty);
             detailDto.Indication.Should().Be(prescription.Indication);
             detailDto.DosageCount.Should().Be(prescription.DosageCount);
             detailDto.Discount.Should().Be(prescription.Discount);
@@ -313,8 +313,8 @@ namespace LYBT.Module.Prescriptions.Tests.Mapping
             dto.Should().NotBeNull();
             dto.Id.Should().Be(prescription.Id);
             dto.MedicalCaseId.Should().Be(prescription.MedicalCaseId);
-            dto.PatientId.Should().Be(prescription.PatientId);
-            dto.UserId.Should().Be(prescription.UserId);
+            dto.PatientId.Should().Be(prescription.PatientId ?? Guid.Empty);
+            dto.UserId.Should().Be(prescription.UserId ?? Guid.Empty);
             dto.Indication.Should().BeNull();
             dto.Advice.Should().BeNull();
             dto.FormulaSource.Should().BeNull();

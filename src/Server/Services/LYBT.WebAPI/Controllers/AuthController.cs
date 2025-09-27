@@ -209,7 +209,7 @@ namespace LYBT.WebAPI.Controllers
                     return ValidationFail("撤销Token请求不能为空");
                 }
 
-                if (string.IsNullOrWhiteSpace(request.Token))
+                if (string.IsNullOrWhiteSpace(request.RefreshToken))
                 {
                     return ValidationFail("Token不能为空");
                 }

@@ -266,7 +266,7 @@ namespace LYBT.Infrastructure.Data
             entity.HasIndex(m => m.PatientId)
                   .HasDatabaseName("UX_MedicalCases_Patient_ActiveOnly")
                   .IsUnique()
-                  .HasFilter("[Status] = 'Active' OR [Status] = 'Draft'");
+                  .HasFilter("[Status] = 'Active'");
 
             // 删除PrescriptionId外键关系，改为通过Prescription.MedicalCaseId关联
             // 不再需要下面这行
@@ -357,7 +357,7 @@ namespace LYBT.Infrastructure.Data
 
             // 配置与Prescription的关系
             printLogEntity.HasOne(l => l.Prescription)
-                         .WithMany()
+                         .WithMany(p => p.PrintLogs)
                          .HasForeignKey(l => l.PrescriptionId)
                          .IsRequired()
                          .OnDelete(DeleteBehavior.Cascade);

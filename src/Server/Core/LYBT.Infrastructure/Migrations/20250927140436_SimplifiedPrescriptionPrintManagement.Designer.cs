@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LYBT.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250927115157_RefactorMedicalCaseAggregateRoot")]
-    partial class RefactorMedicalCaseAggregateRoot
+    [Migration("20250927140436_SimplifiedPrescriptionPrintManagement")]
+    partial class SimplifiedPrescriptionPrintManagement
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -529,7 +529,7 @@ namespace LYBT.Infrastructure.Migrations
                     b.HasIndex("PatientId")
                         .IsUnique()
                         .HasDatabaseName("UX_MedicalCases_Patient_ActiveOnly")
-                        .HasFilter("[Status] = 'Active' OR [Status] = 'Draft'");
+                        .HasFilter("[Status] = 'Active'");
 
                     b.HasIndex("Status");
 
@@ -689,11 +689,23 @@ namespace LYBT.Infrastructure.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("IsPrinted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastPrintedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<Guid>("MedicalCaseId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("PatientId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("PrintCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PrintVersion")
+                        .HasColumnType("int");
 
                     b.Property<string>("Remark")
                         .HasMaxLength(500)
@@ -776,6 +788,74 @@ namespace LYBT.Infrastructure.Migrations
                     b.HasIndex("PrescriptionId");
 
                     b.ToTable("PrescriptionItems", (string)null);
+                });
+
+            modelBuilder.Entity("LYBT.Entities.Prescriptions.PrescriptionPrintLog", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsSuccess")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("PrescriptionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("PrintVersion")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("PrintedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("PrintedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("PrintedByName")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("PrinterName")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Remark")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PrescriptionId")
+                        .HasDatabaseName("IX_PrescriptionPrintLogs_PrescriptionId");
+
+                    b.HasIndex("PrintedAt")
+                        .HasDatabaseName("IX_PrescriptionPrintLogs_PrintedAt");
+
+                    b.ToTable("PrescriptionPrintLogs", (string)null);
                 });
 
             modelBuilder.Entity("LYBT.Entities.Users.AdminSecretModel", b =>
@@ -933,6 +1013,17 @@ namespace LYBT.Infrastructure.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("LYBT.Entities.Prescriptions.PrescriptionPrintLog", b =>
+                {
+                    b.HasOne("LYBT.Entities.Prescriptions.Prescription", "Prescription")
+                        .WithMany("PrintLogs")
+                        .HasForeignKey("PrescriptionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Prescription");
+                });
+
             modelBuilder.Entity("LYBT.Entities.MedicalCase.MedicalCase", b =>
                 {
                     b.Navigation("Consultation");
@@ -943,6 +1034,8 @@ namespace LYBT.Infrastructure.Migrations
             modelBuilder.Entity("LYBT.Entities.Prescriptions.Prescription", b =>
                 {
                     b.Navigation("Items");
+
+                    b.Navigation("PrintLogs");
                 });
 #pragma warning restore 612, 618
         }
