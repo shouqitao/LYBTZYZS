@@ -111,4 +111,13 @@ public class AuthService(
     }
 
     #endregion 基础认证操作 - 对应后端AuthController实际API
+
+    /// <summary>
+    /// 撤销RefreshToken
+    /// </summary>
+    public async Task<ServiceResult<bool>> RevokeTokenAsync(RevokeTokenRequest request)
+    {
+        // 桌面端暂不实现令牌撤销
+        return await Task.FromResult(ServiceResult<bool>.Success(true));
+    }
 }

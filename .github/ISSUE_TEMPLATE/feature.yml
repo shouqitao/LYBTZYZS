@@ -1,0 +1,81 @@
+name: Feature Request (模块化功能清单)
+description: 提交一个功能/改进请求，并按模块生成功能清单
+labels:
+  - type:feature
+  - needs:ai-plan
+body:
+  - type:markdown
+    attributes:
+      value: |
+        请尽量填写完整，AI 将基于这些信息按模块生成“功能清单 + 实施计划”，并全程跟踪。
+  - type:input
+    id: title
+    attributes:
+      label: 标题
+      description: 一句话描述需求/问题
+    validations:
+      required: true
+  - type:textarea
+    id: background
+    attributes:
+      label: 背景/动机
+      description: 为什么要做？当前存在的问题？
+    validations:
+      required: true
+  - type:textarea
+    id: goal
+    attributes:
+      label: 目标/范围
+      description: 要实现什么（范围内）/不做什么（范围外）
+    validations:
+      required: true
+  - type:textarea
+    id: constraints
+    attributes:
+      label: 约束
+      description: 技术/安全/性能/兼容性等限制
+  - type:textarea
+    id: impact
+    attributes:
+      label: 影响范围
+      description: 代码、配置、脚本、文档等涉及位置
+  - type:textarea
+    id: acceptance
+    attributes:
+      label: 验收标准（AC）
+      description: 可验证的结果与判定方式
+      value: |
+        - 运行命令 … 应得到 …
+        - API 契约 … 返回 … 状态码 …
+        - 文档/脚本已更新为 …
+    validations:
+      required: true
+  - type:dropdown
+    id: modules
+    attributes:
+      label: 涉及模块（多选）
+      multiple: true
+      options:
+        - Server(WebAPI)
+        - Client(Desktop)
+        - Auth
+        - Users
+        - Patients
+        - MedicalCase
+        - Consultation
+        - Prescriptions
+        - Herbs
+        - Formula
+        - Shared
+        - Infra/CI
+        - Docs
+  - type:textarea
+    id: risks
+    attributes:
+      label: 风险与回滚
+  - type:textarea
+    id: references
+    attributes:
+      label: 参考/证据链接
+      description: 相关 Issue/PR、日志、行号证据等
+

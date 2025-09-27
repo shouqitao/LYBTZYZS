@@ -18,7 +18,7 @@ namespace LYBT.Module.Users
     /// <summary>
 /// 用户模块服务注册（简化版本）
 /// </summary>
-public static class UsersModule
+public class UsersModule
 {
     /// <summary>
     /// 注册用户模块服务
@@ -67,7 +67,7 @@ public static class UsersModule
     /// <summary>
     /// 用户模块扩展方法（保持向后兼容）
     /// </summary>
-    public static class UsersModuleExtensions
+    public class UsersModuleExtensions
     {
         /// <summary>
         /// 注册本模块所有服务到 DI 容器（使用统一数据库上下文）

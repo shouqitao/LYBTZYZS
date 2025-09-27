@@ -8,7 +8,7 @@ using LYBT.Entities.Auth;
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Security;
 using LYBT.Module.Auth.Services;
-using LYBT.Shared.Models.Auth;
+using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Interfaces.Services;
 using Microsoft.AspNetCore.Hosting;

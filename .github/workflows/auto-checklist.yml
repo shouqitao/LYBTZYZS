@@ -1,0 +1,81 @@
+name: Auto Checklist Update
+
+on:
+  pull_request_target:
+    types: [closed]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  update-issues:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extract feature IDs from PR
+        id: ids
+        run: |
+          text="${{ github.event.pull_request.title }}
+          ${{ github.event.pull_request.body }}"
+          echo "raw=$text" >> $GITHUB_OUTPUT
+          echo "list=$(echo "$text" | grep -Eo '\\[(SRV|CLI|DOC|AUTH|USR|PAT|MC|CON|PRS|HRB|FRM|SHR|CI)\\-[0-9]+\\]' | tr -d '[]' | tr '\n' ' ' )" >> $GITHUB_OUTPUT
+
+      - name: Search candidate Issues (placeholder)
+        uses: actions/github-script@v7
+        id: search
+        with:
+          script: |
+            const ids = `"${{ steps.ids.outputs.list }}"`.trim().split(/\s+/).filter(Boolean);
+            if (!ids.length) return core.info('No feature IDs found.');
+
+            // NOTE: 占位实现：通过仓库开放的 Issues 搜索接口按编号关键词搜素。
+            // 生产可升级为：在 Issue 顶部“AI 追踪区块”维护一个 Feature-ID → Issue 映射表，或用 label/project 元数据建立映射。
+
+            for (const id of ids) {
+              const q = `${id} repo:${context.repo.owner}/${context.repo.repo} in:title,body is:issue is:open`;
+              const res = await github.rest.search.issuesAndPullRequests({ q });
+              if (!res.data.items.length) { core.info(`No issue found for ${id}`); continue; }
+              const issue = res.data.items[0];
+
+              // 拉取 issue 描述
+              const issueData = await github.rest.issues.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number
+              });
+              let body = issueData.data.body || '';
+
+              // 勾选条目：[ ] [ID] -> [x] [ID]
+              const unchecked = new RegExp(`\\- \\[ \] \\[${id.replace(/[-/\\^$*+?.()|[\]{}]/g, r=>`\\${r}`)}\\]`);
+              const checked   = `- [x] [${id}]`;
+              if (unchecked.test(body)) {
+                body = body.replace(unchecked, checked + ` (via PR #${context.payload.pull_request.number})`);
+                await github.rest.issues.update({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  body
+                });
+              } else {
+                // 若不在描述，追加评论提示
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  body: `检测到功能编号 ${id} 已通过 PR #${context.payload.pull_request.number} 合并，请在“模块化功能清单”中勾选对应条目。`
+                });
+              }
+            }
+
+            core.setOutput('ids', ids.join(' '));
+
+      - name: Optionally close issues when all tasks checked (placeholder)
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // 可扩展：判断 Issue 清单是否全部 [x] 勾选且编译守门工作流通过，再自动关闭 Issue。
+            // 这里作为占位说明，不做实际关闭。
+            return;
+
