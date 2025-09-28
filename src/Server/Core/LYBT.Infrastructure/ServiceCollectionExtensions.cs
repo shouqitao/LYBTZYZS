@@ -171,7 +171,7 @@ namespace LYBT.Infrastructure
             services.AddSingleton<IQueryStatisticsCollector, QueryStatisticsCollector>();
 
             // 添加JWT黑名单服务
-            services.AddSingleton<ITokenBlacklistService, TokenBlacklistService>();
+            // services.AddSingleton<ITokenBlacklistService, TokenBlacklistService>(); // 移除过度工程
 
             // 注意：API版本控制在Program.cs中单独配置
             return services;

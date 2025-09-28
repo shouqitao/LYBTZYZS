@@ -13,9 +13,9 @@ namespace LYBT.Shared.Interfaces.Api
         /// </summary>
         [Refit.Get("/api/v1/medicalcases")]
         Task<Refit.ApiResponse<PagedResult<MedicalCaseDto>>> GetMedicalCasesAsync(
-            [Refit.Query] int pageIndex = 1,
+            [Refit.Query] int page = 1,
             [Refit.Query] int pageSize = 20,
-            [Refit.Query] string? searchTerm = null);
+            [Refit.Query] string? keyword = null);
 
         /// <summary>
         /// 获取医疗案例详情
@@ -51,6 +51,6 @@ namespace LYBT.Shared.Interfaces.Api
         /// 删除医疗案例
         /// </summary>
         [Refit.Delete("/api/v1/medicalcases/{id}")]
-        Task<Refit.ApiResponse<object>> DeleteMedicalCaseAsync(Guid id);
+        Task<Refit.ApiResponse<ApiResponse>> DeleteMedicalCaseAsync(Guid id);
     }
 }

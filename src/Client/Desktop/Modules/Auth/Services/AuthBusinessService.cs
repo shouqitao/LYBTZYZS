@@ -97,7 +97,13 @@ public class AuthBusinessService(
         {
             _logger.LogInformation("开始处理用户登出");
 
-            var response = await _authApi.LogoutAsync();
+            // 创建登出请求
+            var logoutRequest = new LogoutRequest
+            {
+                Username = _sessionManager.CurrentUser?.UserName ?? string.Empty
+            };
+
+            var response = await _authApi.LogoutAsync(logoutRequest);
 
             if (response.Success)
             {
@@ -133,32 +139,16 @@ public class AuthBusinessService(
     }
 
     /// <summary>
-    /// JWT认证令牌刷新处理
+    /// JWT认证令牌刷新处理（简化版本暂不支持）
     /// 延长用户会话时间，避免频繁重新登录，提升用户体验
     /// </summary>
     /// <returns>包含新JWT令牌的认证响应</returns>
     public async Task<ServiceResult<LoginResponse>> RefreshTokenAsync()
     {
-        try
-        {
-            _logger.LogInformation("开始处理JWT令牌刷新");
-
-            var response = await _authApi.RefreshTokenAsync();
-
-            if (response.Success && response.Data != null)
-            {
-                _logger.LogInformation("JWT令牌刷新成功，会话已延长");
-                return ServiceResult<LoginResponse>.Success(response.Data);
-            }
-
-            _logger.LogWarning("JWT令牌刷新失败: {Message}", response.Message);
-            return ServiceResult<LoginResponse>.Failure(response.Message ?? "令牌刷新失败");
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "JWT令牌刷新过程发生异常");
-            return ServiceResult<LoginResponse>.Failure($"令牌刷新过程发生错误: {ex.Message}");
-        }
+        // 简化版本不支持令牌刷新，需要重新登录
+        _logger.LogWarning("简化版本不支持令牌刷新，请重新登录");
+        await Task.CompletedTask;
+        return ServiceResult<LoginResponse>.Failure("简化版本不支持令牌刷新，请重新登录");
     }
 
     /// <summary>
@@ -176,14 +166,7 @@ public class AuthBusinessService(
         {
             _logger.LogInformation("开始处理系统管理员密码修改");
 
-            // 将 ChangeSysAdminPassword 转换为 ChangePasswordRequest
-            var changePasswordRequest = new ChangePasswordRequest
-            {
-                OldPassword = request.OldPassword,
-                NewPassword = request.NewPassword
-            };
-
-            var response = await _authApi.ChangePasswordAsync(changePasswordRequest);
+            var response = await _authApi.ChangeSysAdminPasswordAsync(request);
 
             if (response.Success)
             {

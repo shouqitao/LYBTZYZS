@@ -8,7 +8,6 @@ using LYBT.Core.Infrastructure.Configuration.Options;
 using LYBT.WebAPI.Services;
 using LYBT.Core.Infrastructure.Configuration.Services;
 using LYBT.Core.Infrastructure.Configuration.Extensions;
-using LYBT.Core.Infrastructure.Data;
 // using LYBT.Module.Auth; // 暂时禁用以创建迁移
 using LYBT.Module.Users;
 using LYBT.Module.Consultation;
@@ -68,8 +67,8 @@ public static class UnifiedServiceRegistration
         // 8）API 版本管理
         services.ConfigureApiVersioning();
 
-        // 9）速率限制（全局 + 登录）
-        services.ConfigureRateLimiting(configuration, environment);
+        // 9）速率限制 - 已移除过度工程（小型诊所系统无需复杂限流）
+        // services.ConfigureRateLimiting(configuration, environment); // 简化架构
 
         // 10）安全服务（数据保护、密钥管理、密钥旋转）
         services.AddSecurityServices(configuration, environment);
@@ -119,9 +118,67 @@ public static class UnifiedServiceRegistration
                               Environment.GetEnvironmentVariable("CONNECTION_STRING") ??
                               string.Empty;
 
+        // 缓存配置 - 使用统一配置
+        services.AddMemoryCache(); // 总是添加基础的MemoryCache
+
+        if (lybtOptions.Infrastructure.Cache.MemoryCache.SizeLimit <= 0)
+        {
+            // 使用 NullCacheService
+            services.AddSingleton<LYBT.Core.Infrastructure.Caching.Interfaces.ICacheService, LYBT.Core.Infrastructure.Caching.Adapters.NullCacheService>();
+            // services.AddSingleton<LYBT.Infrastructure.Caching.Interfaces.ICacheService, LYBT.Core.Infrastructure.Caching.Adapters.NullCacheService>(); // 移除复杂缓存
+        }
+        else
+        {
+            // 配置 MemoryCache
+            services.Configure<MemoryCacheOptions>(options =>
+            {
+                options.SizeLimit = lybtOptions.Infrastructure.Cache.MemoryCache.SizeLimit;
+                options.CompactionPercentage = lybtOptions.Infrastructure.Cache.MemoryCache.CompactionPercentage;
+                options.ExpirationScanFrequency = TimeSpan.FromSeconds(lybtOptions.Infrastructure.Cache.MemoryCache.ExpirationScanFrequencySeconds);
+            });
+
+            // 使用 MemoryCacheAdapter
+            services.AddSingleton<LYBT.Core.Infrastructure.Caching.Interfaces.ICacheService, LYBT.Core.Infrastructure.Caching.Adapters.MemoryCacheAdapter>();
+            // services.AddSingleton<LYBT.Infrastructure.Caching.Interfaces.ICacheService, LYBT.Core.Infrastructure.Caching.Adapters.MemoryCacheAdapter>(); // 移除复杂缓存
+
+            // 缓存诊断服务（Phase 3缓存治理）
+            // TODO: 实现 CacheDiagnosticsService 后启用
+            // services.AddSingleton<ICacheDiagnosticsService, CacheDiagnosticsService>();
+            // services.AddHostedService<CacheHealthBackgroundService>();
+        }
+
+        // =========== 保持向后兼容：注册传统配置选项 ===========
+        // 注意：这些配置选项已通过 AddLybtConfiguration 自动映射和注册
+        // 这里仅显式验证关键配置选项以确保启动时验证
+
+        // 验证 JWT 配置
+        if (string.IsNullOrEmpty(lybtOptions.Authentication.Jwt.SecretKey))
+        {
+            var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
+            if (environment.Equals("Production", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException("生产环境必须配置 JWT 密钥。");
+            }
+        }
+
+        // 验证数据库连接 - 仅记录警告，不阻塞启动
+        if (string.IsNullOrEmpty(connectionString))
+        {
+            var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
+            Console.WriteLine($"[WARNING] 数据库连接字符串未配置 (Environment: {environment})");
+
+            // 开发环境使用默认连接字符串
+            if (environment.Equals("Development", StringComparison.OrdinalIgnoreCase))
+            {
+                connectionString = "Server=localhost;Database=LYBTDB;Trusted_Connection=True;TrustServerCertificate=true;MultipleActiveResultSets=true;Connection Timeout=30;Command Timeout=30;Max Pool Size=20;Min Pool Size=2;Pooling=true";
+                Console.WriteLine("[INFO] 开发环境使用默认数据库连接字符串");
+            }
+        }
+
+        // 注册 AppDbContext - 无论连接字符串是否存在都需要注册
         if (!string.IsNullOrEmpty(connectionString))
         {
-            services.AddDbContext<AppDbContext>((serviceProvider, options) =>
+            services.AddDbContext<LYBT.Infrastructure.Data.AppDbContext>((serviceProvider, options) =>
             {
                 var sqlOptions = options.UseSqlServer(connectionString, sqlOptions =>
                 {
@@ -144,54 +201,19 @@ public static class UnifiedServiceRegistration
                 }
             });
         }
-
-        // 缓存配置 - 使用统一配置
-        if (lybtOptions.Infrastructure.Cache.MemoryCache.SizeLimit <= 0)
-        {
-            services.AddSingleton<ICacheService>(new NullCacheService());
-            services.AddMemoryCache(); // 添加基础的MemoryCache，即使禁用也需要
-        }
         else
         {
-            services.AddMemoryCache(options =>
+            // 即使没有连接字符串也注册 AppDbContext，以避免 DI 错误
+            services.AddDbContext<LYBT.Infrastructure.Data.AppDbContext>(options =>
             {
-                options.SizeLimit = lybtOptions.Infrastructure.Cache.MemoryCache.SizeLimit;
-                options.CompactionPercentage = lybtOptions.Infrastructure.Cache.MemoryCache.CompactionPercentage;
-                options.ExpirationScanFrequency = TimeSpan.FromSeconds(lybtOptions.Infrastructure.Cache.MemoryCache.ExpirationScanFrequencySeconds);
+                Console.WriteLine("[WARNING] AppDbContext 注册时没有可用的数据库连接字符串");
             });
-
-            services.AddSingleton<ICacheService, MemoryCacheAdapter>();
-
-            // 缓存诊断服务（Phase 3缓存治理）
-            // TODO: 实现 CacheDiagnosticsService 后启用
-            // services.AddSingleton<ICacheDiagnosticsService, CacheDiagnosticsService>();
-            // services.AddHostedService<CacheHealthBackgroundService>();
-        }
-
-        // =========== 保持向后兼容：注册传统配置选项 ===========
-        // 注意：这些配置选项已通过 AddLybtConfiguration 自动映射和注册
-        // 这里仅显式验证关键配置选项以确保启动时验证
-
-        // 验证 JWT 配置
-        if (string.IsNullOrEmpty(lybtOptions.Authentication.Jwt.SecretKey))
-        {
-            var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
-            if (environment.Equals("Production", StringComparison.OrdinalIgnoreCase))
-            {
-                throw new InvalidOperationException("生产环境必须配置 JWT 密钥。");
-            }
-        }
-
-        // 验证数据库连接
-        if (string.IsNullOrEmpty(connectionString))
-        {
-            throw new InvalidOperationException("必须配置数据库连接字符串。");
         }
 
         // 常用服务
         services.AddHttpContextAccessor();
-        services.AddScoped<DefaultPasswordService>();
-        services.AddScoped<DatabaseInitializationService>();
+        services.AddScoped<LYBT.Infrastructure.Configuration.Services.DefaultPasswordService>();
+        services.AddScoped<LYBT.Infrastructure.Data.DatabaseInitializationService>();
 
         return services;
     }

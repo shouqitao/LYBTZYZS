@@ -33,6 +33,7 @@ namespace LYBT.Shared.Interfaces.Api
         /// <summary>
         /// 用户登出操作
         /// </summary>
+        /// <param name="logoutRequest">登出请求信息</param>
         /// <returns>登出结果确认</returns>
         /// <remarks>
         /// <para>功能: 使当前JWT令牌失效，清理服务端会话状态</para>
@@ -40,55 +41,58 @@ namespace LYBT.Shared.Interfaces.Api
         /// <para>安全: 防止令牌被恶意使用，确保会话完全终止</para>
         /// </remarks>
         [Refit.Post("/api/v1/auth/logout")]
-        Task<LYBT.Shared.Models.Contracts.Common.ApiResponse<object>> LogoutAsync();
+        [Refit.Headers("Authorization: Bearer")]
+        Task<LYBT.Shared.Models.Contracts.Common.ApiResponse> LogoutAsync([Refit.Body] LogoutRequest logoutRequest);
+
 
         /// <summary>
-        /// 获取当前认证用户信息
+        /// 修改系统管理员密码
         /// </summary>
-        /// <returns>当前用户详细信息</returns>
-        /// <remarks>
-        /// <para>功能: 根据JWT令牌获取当前登录用户的完整信息</para>
-        /// <para>信息: 用户ID、用户名、显示名、角色、状态、最后登录时间</para>
-        /// <para>缓存: 用户信息缓存10分钟，减少数据库查询</para>
-        /// </remarks>
-        [Refit.Get("/api/v1/auth/current-user")]
-        Task<LYBT.Shared.Models.Contracts.Common.ApiResponse<UserDto>> GetCurrentUserAsync();
-
-        /// <summary>
-        /// 刷新JWT访问令牌
-        /// </summary>
-        /// <returns>新的JWT令牌对</returns>
-        /// <remarks>
-        /// <para>功能: 使用有效的刷新令牌获取新的访问令牌</para>
-        /// <para>触发: 访问令牌即将过期时自动调用，保持用户会话连续</para>
-        /// <para>安全: 刷新令牌单次使用，更新后旧令牌立即失效</para>
-        /// </remarks>
-        [Refit.Post("/api/v1/auth/refresh-token")]
-        Task<LYBT.Shared.Models.Contracts.Common.ApiResponse<LoginResponse>> RefreshTokenAsync();
-
-        /// <summary>
-        /// 修改用户密码
-        /// </summary>
-        /// <param name="changePasswordRequest">密码修改请求 - 包含旧密码、新密码</param>
+        /// <param name="changeSysAdminPassword">密码修改请求</param>
         /// <returns>密码修改结果</returns>
         /// <remarks>
-        /// <para>功能: 验证旧密码后更新为新密码，强制重新登录</para>
-        /// <para>验证: 旧密码验证、新密码强度检查、密码历史检查</para>
-        /// <para>安全: 密码PBKDF2哈希存储、操作日志记录、会话失效</para>
+        /// <para>功能: 修改系统管理员密码</para>
+        /// <para>验证: 新密码强度检查，至少6位</para>
+        /// <para>权限: 仅管理员角色可访问</para>
         /// </remarks>
-        [Refit.Post("/api/v1/auth/change-password")]
-        Task<LYBT.Shared.Models.Contracts.Common.ApiResponse<object>> ChangePasswordAsync([Refit.Body] ChangePasswordRequest changePasswordRequest);
+        [Refit.Post("/api/v1/auth/changeSysAdminPassword")]
+        [Refit.Headers("Authorization: Bearer")]
+        Task<LYBT.Shared.Models.Contracts.Common.ApiResponse> ChangeSysAdminPasswordAsync([Refit.Body] ChangeSysAdminPassword changeSysAdminPassword);
+
+        /// <summary>
+        /// 验证Token (GET方法)
+        /// </summary>
+        /// <returns>验证结果包含token有效性和用户信息</returns>
+        /// <remarks>
+        /// <para>功能: 从Authorization header中获取Bearer Token进行验证</para>
+        /// <para>返回: Token有效性、用户信息和过期时间</para>
+        /// </remarks>
+        [Refit.Get("/api/v1/auth/validate")]
+        [Refit.Headers("Authorization: Bearer")]
+        Task<LYBT.Shared.Models.Contracts.Common.ApiResponse<object>> ValidateTokenFromHeaderAsync();
+
+        /// <summary>
+        /// 验证Token (POST方法)
+        /// </summary>
+        /// <param name="token">要验证的Token</param>
+        /// <returns>验证结果</returns>
+        /// <remarks>
+        /// <para>功能: 验证指定的Token是否有效</para>
+        /// <para>用途: 用于无法使用Header的场景</para>
+        /// </remarks>
+        [Refit.Post("/api/v1/auth/validate")]
+        Task<LYBT.Shared.Models.Contracts.Common.ApiResponse<bool>> ValidateTokenAsync([Refit.Body] string token);
 
         /// <summary>
         /// API服务健康状态检查
         /// </summary>
-        /// <returns>服务状态响应字符串</returns>
+        /// <returns>健康检查响应</returns>
         /// <remarks>
-        /// <para>功能: 检查认证API服务的可用性和响应时间</para>
+        /// <para>功能: 检查API服务的可用性和响应时间</para>
         /// <para>用途: 客户端连接测试、服务监控、网络诊断</para>
-        /// <para>响应: 简单字符串响应，无需认证，用于快速连通性测试</para>
+        /// <para>响应: 返回服务状态信息，包含状态和时间戳，无需认证</para>
         /// </remarks>
-        [Refit.Get("/api/v1/health/alive")]
-        Task<string> HealthCheckAsync();
+        [Refit.Get("/api/v1/health")]
+        Task<LYBT.Shared.Models.Contracts.Common.HealthCheckResponse> HealthCheckAsync();
     }
 }

@@ -15,9 +15,9 @@ namespace LYBT.Shared.Interfaces.Api
         /// </summary>
         [Refit.Get("/api/v1/patients")]
         Task<Refit.ApiResponse<PagedResult<PatientDto>>> GetPatientsAsync(
-            [Refit.Query] int pageIndex = 1,
+            [Refit.Query] int page = 1,
             [Refit.Query] int pageSize = 20,
-            [Refit.Query] string? searchTerm = null);
+            [Refit.Query] string? keyword = null);
 
         /// <summary>
         /// 获取患者详情
@@ -41,6 +41,6 @@ namespace LYBT.Shared.Interfaces.Api
         /// 删除患者（软删除）
         /// </summary>
         [Refit.Delete("/api/v1/patients/{id}")]
-        Task<Refit.ApiResponse<object>> DeletePatientAsync(Guid id);
+        Task<Refit.ApiResponse<ApiResponse>> DeletePatientAsync(Guid id);
     }
 }

@@ -25,8 +25,8 @@ public static class UnifiedMiddlewareConfiguration
         // 2. 路由中间件
         app.UseRouting();
 
-        // 2.1 速率限制（全局）
-        app.UseRateLimiter();
+        // 2.1 速率限制 - 已移除过度工程（小型诊所系统无需复杂限流）
+        // app.UseRateLimiter(); // 简化架构
 
         // 2.2 性能优化（压缩/响应缓存/输出缓存）
         app.UsePerformanceOptimizations();
@@ -93,8 +93,7 @@ public static class UnifiedMiddlewareConfiguration
         // 认证
         app.UseAuthentication();
 
-        // JWT黑名单验证（在认证后，Claims标准化前）
-        app.UseJwtBlacklist();
+        // JWT黑名单验证已移除（简化版本不需要）
 
         // Claims标准化（在认证后，授权前）
         app.UseClaimsNormalization();

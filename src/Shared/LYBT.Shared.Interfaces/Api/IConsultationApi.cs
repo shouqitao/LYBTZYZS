@@ -13,9 +13,9 @@ namespace LYBT.Shared.Interfaces.Api
         /// </summary>
         [Refit.Get("/api/v1/consultations")]
         Task<Refit.ApiResponse<PagedResult<ConsultationDto>>> GetConsultationsAsync(
-            [Refit.Query] int pageIndex = 1,
+            [Refit.Query] int page = 1,
             [Refit.Query] int pageSize = 20,
-            [Refit.Query] string? searchTerm = null);
+            [Refit.Query] string? keyword = null);
 
         /// <summary>
         /// 获取诊疗记录详情
@@ -39,6 +39,6 @@ namespace LYBT.Shared.Interfaces.Api
         /// 删除诊疗记录
         /// </summary>
         [Refit.Delete("/api/v1/consultations/{id}")]
-        Task<Refit.ApiResponse<object>> DeleteConsultationAsync(Guid id);
+        Task<Refit.ApiResponse<ApiResponse>> DeleteConsultationAsync(Guid id);
     }
 }
