@@ -1,347 +1,224 @@
 # 客户端Consultation模块设计文档
 
+> ⚠️ **当前状态警告**：本文档描述的是设计目标，实际代码仅完成基础框架。大部分功能标记为"设计完成📋"或"待实现⚠️"，不应误解为已完成功能。
+
+## 文档信息
+- **创建时间**: 2025-09-27
+- **模块名称**: LYBT.Desktop.Consultation
+- **模块版本**: 1.0.0-基础框架
+- **技术栈**: WPF + Prism.DryIoc + MVVM
+- **实际状态**: 基础框架已搭建，核心业务逻辑待实现
+
 ## 1. 模块概述
 
 ### 1.1 模块定位
 客户端Consultation模块是凌隐宝堂中医诊所管理系统中的核心诊疗功能模块，负责提供中医诊疗过程的前端界面和业务逻辑。该模块采用简化设计理念，专为小型中医诊所的实际需求而设计，避免过度工程化。
 
-### 1.2 核心功能
-- **诊疗记录创建与管理**：支持新建、编辑、查看诊疗记录
-- **中医四诊录入**：提供望、闻、问、切四诊的结构化录入界面
-- **患者历史查询**：实用化的患者诊疗历史查看功能
-- **四诊模板应用**：内置常用中医症候的录入模板
-- **处方开具界面**：集成处方创建功能（界面已实现，业务逻辑待完善）
+### 1.2 核心功能状态
 
-### 1.3 技术特点
-- 基于WPF + Prism.DryIoc架构
+#### 1.2.1 设计完成📋
+- **诊疗记录管理设计**：新建、编辑、查看诊疗记录的功能规划
+- **中医四诊录入设计**：望、闻、问、切四诊的结构化录入界面设计
+- **患者历史查询设计**：患者诊疗历史查看功能设计
+- **四诊模板设计**：内置常用中医症候的录入模板设计
+
+#### 1.2.2 基础实现✅
+- **ConsultationModule**: Prism模块注册框架
+- **基础服务注册**: IConsultationService接口和实现类框架
+
+#### 1.2.3 待实现⚠️
+- **诊疗记录创建与管理**：所有CRUD操作待实现
+- **中医四诊录入**：四诊的结构化录入界面待实现
+- **患者历史查询**：患者诊疗历史查看功能待实现
+- **四诊模板应用**：录入模板功能待实现
+- **处方开具界面**：集成处方创建功能待实现
+
+### 1.3 技术特点（已实现）
+- 基于WPF + Prism.DryIoc架构框架
 - 遵循MVVM设计模式
 - 采用依赖注入和服务分离
-- 与服务器端通过RESTful API通信
 
-## 2. 架构设计（MVVM模式）
+## 2. 当前架构实现
 
-### 2.1 整体架构
+### 2.1 实际文件结构
+
 ```
-Consultation Module
-├── Views/                  # XAML界面层
-├── ViewModels/            # 视图模型层
-├── Services/              # 前端服务层
-├── Models/                # UI数据模型
-└── ConsultationModule.cs  # 模块注册
+LYBT.Desktop.Consultation/
+├── ConsultationModule.cs           ✅ 已实现（简化版）
+├── Interfaces/                     📋 设计完成
+├── Models/                         📋 设计完成
+├── Services/                       ⚠️ 框架已搭建，业务逻辑待实现
+├── ViewModels/                     ⚠️ 待实现
+└── Views/                          ⚠️ 待实现
 ```
 
-### 2.2 MVVM架构映射
+### 2.2 当前模块注册（实际代码）
+
+```csharp
+public void RegisterTypes(IContainerRegistry containerRegistry)
+{
+    // 注册简化的服务
+    containerRegistry.RegisterSingleton<IConsultationService, ConsultationService>();
+
+    // TODO: 注册简化后的视图和视图模型
+}
+```
+
+### 2.3 实现状态评估
+- **架构设计**: 80% 完成 ✅
+- **基础框架**: 20% 完成 ⚠️
+- **业务逻辑**: 0% 完成 ⚠️
+- **UI实现**: 0% 完成 ⚠️
+- **测试覆盖**: 0% 完成 ⚠️
+
+## 3. 待实现功能规划
+
+### 3.1 高优先级⚠️
+
+1. **基础服务实现**
+   - ConsultationService业务逻辑
+   - 诊疗记录CRUD操作
+   - API集成和错误处理
+
+2. **核心ViewModel实现**
+   - ConsultationMainViewModel
+   - 数据绑定和命令处理
+   - 状态管理
+
+3. **基础UI界面**
+   - ConsultationMainView
+   - 诊疗记录列表界面
+   - 基础数据展示
+
+### 3.2 中优先级📋
+
+1. **诊疗功能实现**
+   - 中医四诊录入界面
+   - 诊疗记录详情页面
+   - 数据验证和保存
+
+2. **患者历史功能**
+   - 历史记录查询
+   - 数据筛选和排序
+   - 记录详情查看
+
+3. **模板系统**
+   - 四诊模板管理
+   - 模板应用功能
+   - 自定义模板支持
+
+### 3.3 低优先级📋
+
+1. **高级功能**
+   - 处方开具集成
+   - 数据导出功能
+   - 打印支持
+
+2. **性能优化**
+   - 数据分页加载
+   - 缓存机制
+   - 响应速度优化
+
+## 4. 设计规划（参考实现）
+
+### 4.1 MVVM架构映射（设计目标）
 - **Model**: ConsultationDto（共享层）+ ConsultationItem（UI模型）
 - **View**: ConsultationMainView + ConsultationManagementView
 - **ViewModel**: ConsultationMainViewModel + ConsultationManagementViewModel
 
-### 2.3 依赖关系
-```
-View → ViewModel → Service → API → Server
-  ↓        ↓         ↓
- XAML   Commands   HTTP    REST    Business Logic
-```
-
-## 3. ViewModels设计
-
-### 3.1 ConsultationMainViewModel
-**职责**：诊疗主界面的核心逻辑控制
-
-**关键属性**：
-- `ObservableCollection<PatientDto> Patients`：患者列表
-- `PatientDto? SelectedPatient`：当前选中患者
-- `ConsultationDto Consultation`：当前诊疗记录
-- `bool IsLoading`：加载状态标识
-
-**核心命令**：
-- `LoadPatientsCommand`：加载患者列表
-- `SaveConsultationCommand`：保存诊疗记录
-- `ViewPatientHistoryCommand`：查看患者历史（P0-02功能）
-- `ShowTemplateMenuCommand`：显示四诊模板（P0-04功能）
-- `ClearDataCommand`：清理数据
-
-**特色功能实现**：
-
-#### P0-02: 患者历史诊疗查询
+### 4.2 服务层设计（参考）
 ```csharp
-private async Task ViewPatientHistoryAsync()
+// 待实现的服务接口
+public interface IConsultationService
 {
-    // 1. 获取患者医案历史
-    // 2. 为每个医案获取诊疗记录
-    // 3. 构建历史详情列表
-    // 4. 显示格式化的历史信息
+    Task<ServiceResult<List<ConsultationDto>>> GetConsultationsAsync();
+    Task<ServiceResult<ConsultationDto>> GetConsultationByIdAsync(int id);
+    Task<ServiceResult<ConsultationDto>> CreateConsultationAsync(CreateConsultationRequest request);
+    Task<ServiceResult<ConsultationDto>> UpdateConsultationAsync(UpdateConsultationRequest request);
+    Task<ServiceResult> DeleteConsultationAsync(int id);
 }
 ```
 
-#### P0-04: 四诊录入模板功能
+### 4.3 ViewModel设计（参考）
 ```csharp
-private async Task ShowTemplateMenuAsync()
+// 待实现的ViewModel基础结构
+public class ConsultationMainViewModel : ModernViewModelBase
 {
-    // 1. 获取内置常用模板（风寒感冒、脾胃虚弱等）
-    // 2. 显示模板选择界面
-    // 3. 应用选定模板到四诊录入区域
+    // 属性绑定
+    public ObservableCollection<ConsultationItem> Consultations { get; set; }
+    public ConsultationItem SelectedConsultation { get; set; }
+    public bool IsLoading { get; set; }
+
+    // 命令绑定
+    public ICommand LoadConsultationsCommand { get; }
+    public ICommand CreateConsultationCommand { get; }
+    public ICommand EditConsultationCommand { get; }
+    public ICommand DeleteConsultationCommand { get; }
 }
 ```
 
-### 3.2 ConsultationManagementViewModel
-**职责**：诊疗记录管理界面的业务逻辑
+## 5. 技术债务
 
-**关键属性**：
-- `ObservableCollection<ConsultationDto> Consultations`：诊疗记录列表
-- `ConsultationDto? SelectedConsultation`：选中的记录
-- `string SearchKeyword`：搜索关键词
+### 5.1 当前问题
+- **模块注册不完整**: 缺少ViewModels和Views的注册
+- **服务层空实现**: ConsultationService可能只有接口没有实现
+- **缺少View和ViewModel**: 核心UI组件完全缺失
+- **没有测试**: 整个模块没有任何测试覆盖
 
-**核心命令**：
-- `LoadDataCommand`：加载数据
-- `SearchCommand`：搜索记录
-- `RefreshCommand`：刷新数据
-- `ViewDetailsCommand`：查看详情
+### 5.2 实现计划
 
-## 4. Views界面设计
+#### 5.2.1 第一阶段（基础框架）
+1. 完成ConsultationService基础实现
+2. 创建ConsultationMainViewModel框架
+3. 创建ConsultationMainView基础界面
 
-### 4.1 ConsultationMainView
-**布局结构**：
-```
-Grid (3列布局)
-├── 左侧 (300px): 患者列表区域
-│   ├── 搜索框
-│   └── 患者ListBox
-├── 中间 (*): 诊疗信息录入区域
-│   ├── 患者基本信息展示
-│   ├── 主诉录入
-│   ├── 四诊合参录入（改进版）
-│   ├── 中医诊断录入
-│   └── 诊疗备注
-└── 右侧 (350px): 处方开具区域
-    ├── 处方项列表
-    ├── 验方快速应用
-    └── 手动添加药材
-```
+#### 5.2.2 第二阶段（核心功能）
+1. 实现诊疗记录CRUD操作
+2. 添加数据绑定和命令处理
+3. 完善错误处理和状态管理
 
-**界面特色**：
-1. **患者历史查询按钮**：位于患者信息区域，提供快速历史查看
-2. **四诊模板功能**：集成在四诊录入区域，支持一键应用常用模板
-3. **改进的四诊录入界面**：
-   - 统一录入区域，避免四个分离的输入框
-   - 底部提示栏显示常见录入内容
-   - 字数统计功能
-   - 工具提示指导录入
+#### 5.2.3 第三阶段（功能完善）
+1. 实现中医四诊录入功能
+2. 添加患者历史查询功能
+3. 实现模板系统和高级功能
 
-### 4.2 ConsultationManagementView
-**功能**：诊疗记录的列表管理（当前为简化实现）
+## 6. 依赖关系
 
-**界面元素**：
-- 搜索和刷新功能
-- 分页数据展示
-- 基本的详情查看
+### 6.1 项目依赖
+```xml
+<ItemGroup>
+  <PackageReference Include="Prism.DryIoc" Version="8.1.97" />
+  <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
+</ItemGroup>
 
-## 5. 前端服务层
-
-### 5.1 ConsultationService
-**位置**：`src/Client/Desktop/Modules/Consultation/Services/ConsultationService.cs`
-
-**接口实现**：`IConsultationService`
-
-**核心方法**：
-- `GetPagedAsync()`：分页查询诊疗记录
-- `GetByIdAsync()`：获取单个记录详情
-- `CreateAsync()`：创建新的诊疗记录
-- `UpdateAsync()`：更新诊疗记录
-- `DeleteAsync()`：删除诊疗记录
-- `GetByMedicalCaseIdAsync()`：根据医案ID查询（支持历史查询功能）
-- `StartAsync()`：开始新的诊疗会话
-
-**错误处理**：集成`IExceptionHandler`统一处理异常
-
-**特点**：
-- 简化的CRUD操作，避免复杂的业务流程
-- 异步操作，提高用户体验
-- 统一的错误处理和日志记录
-
-## 6. 数据绑定与验证
-
-### 6.1 数据模型映射
-
-#### ConsultationItem (UI模型)
-**用途**：专为UI展示设计的本地数据模型
-
-**特点**：
-- 继承`BindableBase`支持属性变更通知
-- 包含UI特有的属性（如IsSelected、IsExpanded）
-- 提供与ConsultationDto的相互转换方法
-- 增加计算属性（如StatusText、StatusColor、DurationMinutes）
-
-**关键映射**：
-```csharp
-// DTO → UI Model
-public static ConsultationItem FromDto(ConsultationDto dto)
-
-// UI Model → DTO  
-public ConsultationDto ToDto()
+<ItemGroup>
+  <ProjectReference Include="..\..\..\Shared\..." />
+  <ProjectReference Include="..\..\Core\..." />
+</ItemGroup>
 ```
 
-### 6.2 数据绑定策略
-- **双向绑定**：表单输入字段使用`{Binding Property, UpdateSourceTrigger=PropertyChanged}`
-- **单向绑定**：只读展示字段使用`{Binding Property}`
-- **命令绑定**：按钮操作使用`{Binding Command}`
-- **集合绑定**：列表控件使用`ObservableCollection<T>`
+### 6.2 共享层依赖
+- LYBT.Shared.Models.Contracts.Consultation.*
+- LYBT.Shared.Interfaces.Services.IConsultationService
+- LYBT.Shared.Interfaces.Api.IConsultationApi
 
-### 6.3 数据验证
-当前为简化实现，主要依赖：
-- 必填字段的空值检查
-- 业务逻辑验证在ViewModel中实现
-- 服务器端验证作为最终保障
+## 7. 状态总结
 
-## 7. 路由与导航
+### 7.1 完成度评估
+- **模块设计**: 70% 完成 ✅
+- **基础框架**: 15% 完成 ⚠️
+- **业务逻辑**: 0% 完成 ⚠️
+- **UI实现**: 0% 完成 ⚠️
+- **测试覆盖**: 0% 完成 ⚠️
 
-### 7.1 模块注册
-**文件**：`ConsultationModule.cs`
-
-**注册内容**：
-```csharp
-public void RegisterTypes(IContainerRegistry containerRegistry)
-{
-    // 注册服务
-    containerRegistry.RegisterSingleton<IConsultationService, ConsultationService>();
-    
-    // TODO: 注册视图和视图模型
-}
-```
-
-### 7.2 导航支持
-- `ConsultationMainViewModel`实现`INavigationAware`
-- 支持通过导航参数传递`MedicalCaseId`
-- 导航生命周期方法：
-  - `OnNavigatedTo()`：接收导航参数
-  - `IsNavigationTarget()`：确定是否可复用实例
-  - `OnNavigatedFrom()`：导航离开时的清理
-
-### 7.3 区域管理
-- 主界面通过Prism Region系统管理
-- 支持与其他模块的界面集成
-- 遵循工作台模式的区域划分
-
-## 8. 状态管理
-
-### 8.1 本地状态
-- **加载状态**：`IsLoading`属性控制加载指示器
-- **选择状态**：`SelectedPatient`、`SelectedConsultation`管理当前选中项
-- **输入状态**：各输入字段通过双向绑定同步状态
-
-### 8.2 会话状态
-- 通过`ISessionManager`获取当前用户信息
-- 诊疗记录与当前登录用户关联
-- 支持会话超时和重新认证
-
-### 8.3 缓存策略
-- 患者列表本地缓存，减少服务器请求
-- 诊疗记录实时保存，避免数据丢失
-- 模板数据内置在代码中，无需网络请求
-
-## 9. API集成
-
-### 9.1 API接口
-**接口定义**：`IConsultationApi` (Shared层)
-
-**支持的端点**：
-- `GET /api/v1/consultations`：分页查询
-- `GET /api/v1/consultations/{id}`：获取详情
-- `POST /api/v1/consultations`：创建记录
-- `PUT /api/v1/consultations/{id}`：更新记录
-- `DELETE /api/v1/consultations/{id}`：删除记录
-
-### 9.2 HTTP客户端
-- 基于Refit生成HTTP客户端
-- 通过`UnifiedApiClientManager`统一管理
-- 支持认证token自动附加
-- 集成重试机制和错误处理
-
-### 9.3 数据传输对象
-**请求DTO**：
-- `ConsultationCreateDto`：创建诊疗记录
-- `ConsultationUpdateDto`：更新诊疗记录
-
-**响应DTO**：
-- `ConsultationDto`：诊疗记录详情
-- `PagedResult<ConsultationDto>`：分页结果
-
-### 9.4 API调用流程
-```
-ViewModel Command → Service Method → API Client → HTTP Request → Server
-                 ←                ←            ←              ←
-```
-
-## 10. 实现状态
-
-### 10.1 已完成功能 ✅
-- [x] 基础MVVM架构搭建
-- [x] 诊疗记录CRUD操作
-- [x] 患者列表加载和选择
-- [x] 四诊录入界面（改进版设计）
-- [x] 患者历史查询功能（P0-02）
-- [x] 四诊录入模板功能（P0-04）
-- [x] API集成基础框架
-- [x] 错误处理和日志记录
-- [x] 基础数据绑定和命令系统
-
-### 10.2 部分实现功能 ⚠️
-- [⚠️] 处方开具界面（UI已实现，业务逻辑待完善）
-- [⚠️] 诊疗记录管理界面（基础功能已实现）
-- [⚠️] 数据验证机制（基础验证已实现）
-- [⚠️] 模块注册（服务已注册，视图注册待完成）
-
-### 10.3 待实现功能 ❌
-- [ ] 处方药材的添加和管理逻辑
-- [ ] 验方快速应用功能
-- [ ] 诊疗记录的打印功能
-- [ ] 高级搜索和筛选功能
-- [ ] 诊疗统计和报表功能
-- [ ] 离线数据缓存和同步
-
-### 10.4 技术债务
-1. **API方法缺失**：`GetByMedicalCaseIdAsync`在API接口中未定义
-2. **处方集成**：处方模块的集成度有待提高
-3. **用户体验**：需要添加更多的加载状态和用户反馈
-4. **数据验证**：客户端验证规则需要完善
-5. **错误处理**：用户友好的错误提示需要改进
-
-## 11. 开发指南
-
-### 11.1 添加新功能
-1. 在对应的ViewModel中添加属性和命令
-2. 在Service层实现业务逻辑
-3. 更新View的XAML绑定
-4. 如需新API，先在Shared层定义接口
-5. 编写单元测试验证功能
-
-### 11.2 数据流处理
-1. **输入验证**：在ViewModel中进行基础验证
-2. **业务验证**：在Service层进行业务规则验证
-3. **服务器验证**：API层进行最终验证
-4. **错误反馈**：通过统一的错误处理机制返回用户友好信息
-
-### 11.3 性能优化建议
-1. 使用虚拟化控件处理大数据集
-2. 实现数据分页和懒加载
-3. 缓存常用数据减少网络请求
-4. 使用异步操作避免UI阻塞
-
-### 11.4 维护注意事项
-1. 保持Service层的职责单一
-2. ViewModel不应包含UI特定逻辑
-3. 及时更新API接口文档
-4. 遵循现有的命名和编码规范
+### 7.2 后续工作重点
+1. **立即需要**: 完成基础服务实现和模块注册
+2. **短期目标**: 创建核心ViewModel和View，实现基础诊疗记录功能
+3. **中期目标**: 完善诊疗功能，添加四诊录入和历史查询
+4. **长期目标**: 实现高级功能、性能优化和测试覆盖
 
 ---
 
-## 文档版本信息
-- **创建日期**：2025-09-27
-- **版本**：v1.0
-- **最后更新**：2025-09-27
-- **维护者**：开发团队
-
-## 相关文档
-- [服务器端Consultation模块设计](../server/consultation-module.md)
-- [API接口规范](../../api/consultation-api.md)
-- [前端架构总览](../../client/frontend-architecture.md)
-- [开发规范指南](../../../development/standards.md)
+*文档版本: 2.0 - 真实状态反映版*  
+*最后更新: 2025-09-28*  
+*状态: 基础框架已搭建，核心功能完全待实现*

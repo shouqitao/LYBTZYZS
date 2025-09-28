@@ -9,29 +9,18 @@
 
 ### 分层结构
 ```
-├── Controllers/           # HTTP控制器
-│   ├── HerbsController.cs
-│   └── HerbCategoriesController.cs
-├── Services/             # 业务服务
-│   ├── HerbService.cs
-│   ├── HerbQueryService.cs
-│   └── HerbCategoryService.cs
+├── Controllers/           # HTTP控制器（位于WebAPI项目）
+│   └── HerbsController.cs
+├── Services/             # 业务服务（简化架构）
+│   └── HerbService.cs       # 主服务（实现IHerbService）
 ├── Repositories/         # 数据访问
-│   ├── HerbRepository.cs
-│   └── HerbCategoryRepository.cs
+│   └── HerbRepository.cs    # 数据访问实现
 ├── Interfaces/           # 服务接口
-│   ├── IHerbService.cs
-│   ├── IHerbQueryService.cs
-│   └── IHerbCategoryService.cs
-├── Validators/           # 验证器
-│   ├── HerbCreateDtoValidator.cs
-│   └── HerbUpdateDtoValidator.cs
+│   ├── IHerbService.cs      # 业务服务接口
+│   └── IHerbRepository.cs   # 仓储接口
 ├── Mapping/             # 对象映射
 │   └── HerbMappingProfile.cs
-├── Health/              # 健康检查
-│   └── HerbsModuleHealthCheck.cs
-├── Options/             # 配置选项
-│   └── HerbModuleOptions.cs
+├── HerbsModule.cs       # 模块依赖注入注册
 └── README.md
 ```
 
@@ -144,9 +133,7 @@
 }
 ```
 
-### PUT /api/v1/herbs/{id}/stock
-**功能**：更新库存
-```csharp
+csharp
 // Request
 {
   "type": "IN",  // IN: 入库, OUT: 出库, ADJUST: 调整
@@ -170,9 +157,7 @@
 }
 ```
 
-### GET /api/v1/herbs/categories
-**功能**：获取药材分类
-```csharp
+csharp
 // Response 200
 [
   {
@@ -201,7 +186,22 @@
 ## 🔧 核心服务
 
 ### HerbService (业务服务)
-**职责**：中药材业务逻辑，写操作
+**职责**：中药材业务逻辑（简化版）
+```csharp
+public interface IHerbService
+{
+    // 基础CRUD - 已实现
+    Task<ServiceResult<PagedResult<HerbDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null);
+    Task<ServiceResult<HerbDto>> GetByIdAsync(Guid id);
+    Task<ServiceResult<HerbDto>> CreateAsync(HerbCreateDto dto);
+    Task<ServiceResult<HerbDto>> UpdateAsync(Guid id, HerbUpdateDto dto);
+    Task<ServiceResult<List<HerbDto>>> SearchAsync(string keyword);
+    Task<ServiceResult> DeleteAsync(Guid id);
+    
+    // 库存管理功能 - 待实现
+    // Task<ServiceResult<HerbDto>> UpdateStockAsync(Guid id, StockUpdateDto dto);
+    // Task<ServiceResult<List<HerbDto>>> GetLowStockHerbsAsync();
+}
 ```csharp
 public interface IHerbService
 {
@@ -216,9 +216,7 @@ public interface IHerbService
 }
 ```
 
-### HerbQueryService (查询服务)
-**职责**：中药材查询优化，只读操作
-```csharp
+csharp
 public interface IHerbQueryService
 {
     Task<PagedResult<HerbDto>> GetPagedHerbsAsync(HerbSearchDto searchDto);
@@ -229,9 +227,7 @@ public interface IHerbQueryService
 }
 ```
 
-### HerbCategoryService (分类服务)
-**职责**：中药材分类管理
-```csharp
+csharp
 public interface IHerbCategoryService
 {
     Task<ServiceResult<List<HerbCategoryDto>>> GetAllCategoriesAsync();
@@ -245,6 +241,48 @@ public interface IHerbCategoryService
 ## 📊 数据模型
 
 ### 核心实体 (Herb)
+```csharp
+public class Herb : BaseEntity
+{
+    [Required, StringLength(100)]
+    public string Name { get; set; } = string.Empty;        // 中文名
+    
+    [StringLength(200)]
+    public string? LatinName { get; set; }                  // 拉丁名
+    
+    [StringLength(50)]
+    public string Code { get; set; } = string.Empty;       // 编码
+    
+    [StringLength(100)]
+    public string? PinYinCode { get; set; }                 // 拼音码
+    
+    [StringLength(100)]
+    public string Specification { get; set; } = string.Empty; // 规格
+    
+    [StringLength(20)]
+    public string Unit { get; set; } = "g";                // 单位
+    
+    public decimal UnitPrice { get; set; }                  // 单价
+    
+    [StringLength(200)]
+    public string? Origin { get; set; }                     // 产地
+    
+    [StringLength(500)]
+    public string? Efficacy { get; set; }                   // 功效
+    
+    [StringLength(200)]
+    public string? Usage { get; set; }                      // 用法用量
+    
+    public CommonStatus Status { get; set; } = CommonStatus.Enabled; // 状态
+    
+    // 简化库存字段（基础版本）
+    public int Stock { get; set; } = 0;                     // 当前库存
+    public int SafetyStock { get; set; } = 0;               // 安全库存
+    
+    // 计算属性
+    [NotMapped]
+    public bool IsLowStock => Stock <= SafetyStock;         // 是否低库存
+}
 ```csharp
 public class Herb : BaseEntity
 {
@@ -297,26 +335,7 @@ public class Herb : BaseEntity
 }
 ```
 
-### 分类实体 (HerbCategory)
-```csharp
-public class HerbCategory : BaseEntity
-{
-    public string Name { get; set; }                     // 分类名称
-    public string Code { get; set; }                     // 分类编码
-    public string? Description { get; set; }             // 描述
-    public Guid? ParentId { get; set; }                  // 父分类ID
-    public int Level { get; set; }                       // 层级
-    public int SortOrder { get; set; }                   // 排序
-    
-    // 导航属性
-    public HerbCategory? Parent { get; set; }
-    public List<HerbCategory> Children { get; set; }
-    public List<Herb> Herbs { get; set; }
-}
-```
-
-### 库存流水 (StockTransaction)
-```csharp
+csharp
 public class StockTransaction : BaseEntity
 {
     public Guid HerbId { get; set; }
@@ -336,6 +355,13 @@ public class StockTransaction : BaseEntity
 ```
 
 ### 枚举定义
+```csharp
+// 药材状态继承自CommonStatus
+public enum CommonStatus
+{
+    Enabled = 1,     // 启用
+    Disabled = 2     // 禁用
+}
 ```csharp
 public enum HerbStatus
 {
@@ -387,38 +413,28 @@ public class HerbCreateDtoValidator : AbstractValidator<HerbCreateDto>
 - 库存操作：药房管理员及以上
 - 价格修改：系统管理员
 
-## 📝 配置管理
-
-### HerbModuleOptions
-```csharp
-public class HerbModuleOptions
-{
-    public int DefaultPageSize { get; set; } = 20;
-    public int MaxPageSize { get; set; } = 100;
-    public bool EnableCache { get; set; } = false;
-    public int CacheExpirationMinutes { get; set; } = 10;
-    public bool EnableBarcodeSupport { get; set; } = false;
-    public bool EnableImageUpload { get; set; } = false;
-    public int LowStockWarningDays { get; set; } = 7;
-    public int ExpiryWarningDays { get; set; } = 30;
-}
-```
-
 ## 📋 实现状态
 
 ### ✅ 已实现
-- 中药材基础CRUD
-- 分类管理
-- 基础验证器
-- AutoMapper映射配置
+- **HerbService基础CRUD** - 完整的药材增删改查操作
+- **HerbRepository数据访问** - 基础数据访问层实现
+- **AutoMapper映射配置** - 实体与DTO间的映射
+- **药材搜索功能** - 支持名称和拼音码搜索
+- **基础库存字段** - Stock和SafetyStock字段已定义
 
-### 🔄 待实现
-- 库存流水记录
-- 批次管理
-- 过期提醒
-- 条码支持
-- 图片上传
-- 供应商管理
+### 🔄 部分实现
+- **HerbsController** - 基础API已实现，功能相对简单
+- **药材分类** - 实体层可能支持，但未在当前服务中实现
+- **库存管理** - 基础字段存在，但缺少更新和查询逻辑
+
+### ❌ 待实现
+- **库存流水记录** - 库存变更的历史追踪
+- **批次管理** - 药材批次号和有效期管理
+- **过期提醒** - 药材过期时间提醒功能
+- **供应商管理** - 药材供应商信息管理
+- **药材分类API** - 完整的分类管理接口
+- **低库存预警** - 自动检测和提醒低库存药材
+- **库存盘点** - 定期库存盘点功能
 
 ## 🧪 测试覆盖
 

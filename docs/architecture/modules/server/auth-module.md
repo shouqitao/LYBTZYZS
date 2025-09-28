@@ -31,6 +31,36 @@
 // Request
 {
   "username": "sysadmin",
+  "password": "password"
+}
+
+// Response 200
+{
+  "code": 200,
+  "message": "登录成功",
+  "data": {
+    "token": "jwt-access-token-string",
+    "refreshToken": "refresh-token-string", 
+    "user": { 
+      "id": "guid",
+      "username": "sysadmin", 
+      "realName": "系统管理员",
+      "role": "Admin" 
+    },
+    "expiresAt": "2024-12-31T23:59:59Z"
+  }
+}
+
+// Response 401
+{
+  "code": 401,
+  "message": "用户名或密码错误",
+  "errorCode": "AUTH_FAILED"
+}
+```csharp
+// Request
+{
+  "username": "sysadmin",
   "password": "password",
   "deviceId": "optional",
   "rememberMe": false
@@ -57,6 +87,20 @@
 // Request Headers
 Authorization: Bearer {jwt-token}
 
+// Request Body
+{
+  "username": "sysadmin"
+}
+
+// Response 200
+{
+  "code": 200,
+  "message": "登出成功"
+}
+```csharp
+// Request Headers
+Authorization: Bearer {jwt-token}
+
 // Response 200
 {
   "message": "Logged out successfully"
@@ -65,6 +109,115 @@ Authorization: Bearer {jwt-token}
 
 ### POST /api/v1/auth/refresh
 **功能**：刷新JWT令牌
+```csharp
+// Request
+{
+  "refreshToken": "refresh-token-string"
+}
+
+// Response 200
+{
+  "code": 200,
+  "message": "Token刷新成功",
+  "data": {
+    "token": "new-jwt-access-token",
+    "refreshToken": "new-refresh-token-string",
+    "expiresAt": "2024-12-31T23:59:59Z"
+  }
+}
+```
+
+### POST /api/v1/auth/revoke
+**功能**：撤销刷新令牌
+```csharp
+// Request Headers
+Authorization: Bearer {jwt-token}
+
+// Request Body
+{
+  "refreshToken": "refresh-token-to-revoke"
+}
+
+// Response 200
+{
+  "code": 200,
+  "message": "Token撤销成功"
+}
+```
+
+### POST /api/v1/auth/changeSysAdminPassword
+**功能**：修改系统管理员密码（仅管理员）
+```csharp
+// Request Headers
+Authorization: Bearer {admin-jwt-token}
+
+// Request Body
+{
+  "newPassword": "NewSecurePassword123!"
+}
+
+// Response 200
+{
+  "code": 200,
+  "message": "密码修改成功"
+}
+```
+
+### GET /api/v1/auth/validate
+**功能**：验证Token（从Authorization header）
+```csharp
+// Request Headers
+Authorization: Bearer {jwt-token}
+
+// Response 200
+{
+  "code": 200,
+  "message": "Token验证成功",
+  "data": {
+    "valid": true,
+    "sub": {
+      "userId": "guid",
+      "username": "admin",
+      "role": "Admin"
+    }
+  }
+}
+```
+
+### POST /api/v1/auth/validate
+**功能**：验证Token（通过请求体）
+```csharp
+// Request Body
+"jwt-token-string"
+
+// Response 200
+{
+  "code": 200,
+  "message": "Token验证完成",
+  "data": true
+}
+```csharp
+// Request
+{
+  "refreshToken": "refresh-token-string"
+}
+
+// Response 200
+{
+  "code": 200,
+  "message": "Token刷新成功",
+  "data": {
+    "token": "new-jwt-access-token",
+    "refreshToken": "new-refresh-token-string",
+    "expiresAt": "2024-12-31T23:59:59Z"
+  }
+}
+
+// Response 401
+{
+  "code": 401,
+  "message": "刷新令牌无效或已过期"
+}
 ```csharp
 // Request
 {
@@ -155,16 +308,24 @@ public interface IJwtService
 ## 📋 实现状态
 
 ### ✅ 已实现
-- AuthController完整实现
-- JWT生成与验证
-- 登录登出流程
-- 密码加密验证
-- 错误处理机制
+- **AuthController完整实现** - 提供登录、登出、Token刷新等完整API
+- **JWT生成与验证** - 支持Access Token和Refresh Token机制  
+- **密码安全管理** - BCrypt加密、密码复杂度验证
+- **Token管理** - 支持Token撤销、验证、会话管理
+- **RefreshToken实体** - 完整的刷新令牌管理（支持设备ID、IP追踪等）
+- **系统管理员密码修改** - 专门的管理员密码修改接口
+- **安全验证** - 参数验证、权限控制、异常处理
 
-### 🔄 待优化
-- 登录失败锁定机制
-- 审计日志记录
-- 多设备会话管理
+### 🔄 部分实现  
+- **登录失败锁定** - User实体包含LockoutEnd字段，但控制器层未完全实现
+- **多设备会话管理** - RefreshToken支持设备管理，但缺少设备列表管理接口
+- **审计日志** - 基础框架已具备，需要具体的日志记录实现
+
+### ❌ 待实现
+- **密码重置功能** - 忘记密码的邮箱重置流程
+- **两步验证** - 短信或TOTP二次验证  
+- **会话管理界面** - 用户查看和管理已登录设备
+- **登录历史查询** - 用户登录记录的查询接口
 
 ## 🧪 测试覆盖
 

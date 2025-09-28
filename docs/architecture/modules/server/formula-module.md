@@ -11,10 +11,12 @@
 ```
 ├── Controllers/               # HTTP控制器（位于WebAPI项目）
 │   └── FormulasController.cs
-├── Services/                 # 业务服务
-│   ├── FormulaService.cs        # 主服务（实现IFormulaService）
-│   └── FormulaRepository.cs     # 数据仓储实现
+├── Services/                 # 业务服务（简化架构）
+│   └── FormulaService.cs        # 主服务（实现IFormulaService）
+├── Repositories/             # 数据仓储
+│   └── FormulaRepository.cs     # 数据访问实现
 ├── Interfaces/               # 服务接口
+│   ├── IFormulaService.cs       # 业务服务接口
 │   └── IFormulaRepository.cs    # 仓储接口
 ├── Mapping/                  # AutoMapper映射配置
 │   └── FormulaMappingProfile.cs
@@ -197,7 +199,21 @@
 ## 🔧 核心服务
 
 ### FormulaService
-**职责**：方剂业务逻辑处理
+**职责**：方剂业务逻辑处理（简化版）
+```csharp
+public interface IFormulaService
+{
+    // 基础CRUD - 已实现
+    Task<ServiceResult<PagedResult<FormulaDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null);
+    Task<ServiceResult<FormulaDto>> GetByIdAsync(Guid id);
+    Task<ServiceResult<FormulaDto>> CreateAsync(FormulaCreateDto dto);
+    Task<ServiceResult<FormulaDto>> UpdateAsync(Guid id, FormulaUpdateDto dto);
+    Task<ServiceResult> DeleteAsync(Guid id);
+    
+    // 扩展功能 - 已实现
+    Task<ServiceResult<List<FormulaDto>>> SearchAsync(string keyword);
+    Task<ServiceResult<FormulaDto>> CloneFormulaAsync(Guid formulaId);
+}
 ```csharp
 public interface IFormulaService
 {
@@ -215,7 +231,17 @@ public interface IFormulaService
 ```
 
 ### FormulaRepository
-**职责**：方剂数据访问层
+**职责**：方剂数据访问层（优化查询）
+```csharp
+public interface IFormulaRepository : IRepository<Formula>
+{
+    // 优化查询方法（解决N+1查询问题）
+    Task<Formula> GetByIdWithHerbsAsync(Guid id);
+    Task<PagedResult<Formula>> GetPagedWithDetailsAsync(int pageNumber, int pageSize, string keyword = null);
+    
+    // 基础仓储方法继承自IRepository<Formula>
+    // AddAsync, UpdateAsync, DeleteAsync, GetByIdAsync等
+}
 ```csharp
 public interface IFormulaRepository : IRepository<Formula>
 {
@@ -395,30 +421,25 @@ public class FormulaHerbItemDto : BaseDto
 ## 📝 实现状态
 
 ### ✅ 已实现
-- 方剂基础CRUD操作
-- 药材组成管理
-- 分页查询和关键词搜索
-- AutoMapper映射配置
-- N+1查询优化（Include策略）
-- 方剂复制功能
-- 软删除机制
+- **FormulaService基础CRUD** - 完整的增删改查操作
+- **FormulaRepository数据访问** - 包含优化查询方法
+- **AutoMapper映射配置** - 实体与DTO间的映射
+- **N+1查询优化** - 使用Include策略预加载药材信息
+- **方剂搜索功能** - 支持关键词搜索
+- **方剂克隆功能** - 支持复制方剂（简化版，不包含药材配伍）
 
-### 🔄 待优化
-- API控制器完整实现（仅基础CRUD）
-- 方剂分类管理
-- 从处方创建方剂功能
-- 方剂使用统计
-- 导入导出功能
-- 方剂效果评估
-- 药材配伍冲突检查
+### 🔄 部分实现
+- **FormulasController** - 基础API已实现，缺少部分高级功能
+- **药材组成管理** - 实体层已定义，服务层需要完善
+- **方剂分类** - 实体层支持，缺少分类管理API
 
 ### ❌ 待实现
-- 方剂模板功能
-- 智能推荐相似方剂
-- 方剂历史版本管理
-- 批量操作功能
-- 方剂打印和导出
-- 中医药理论验证
+- **方剂模板功能** - 预设常用方剂模板
+- **从处方创建方剂** - 将处方转换为方剂模板
+- **方剂使用统计** - 统计方剂在处方中的使用频率
+- **药材配伍检查** - 中医药材相使相畏检查
+- **导入导出功能** - 方剂数据的批量导入导出
+- **智能推荐** - 基于症状或疾病推荐相似方剂
 
 ## 🧪 测试覆盖
 
