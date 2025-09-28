@@ -1,100 +1,152 @@
-﻿# P4 Release - WebAPI运行脚本使用指南
+# 脚本目录说明
 
-本目录包含P4 Release阶段的WebAPI服务运行和健康检查脚本，提供一键启动、停止和监控功能。
+本目录包含所有项目维护和开发相关的脚本文件。
 
-## 🚀 快速开始
+## 📋 脚本分类
 
-### 1. 启动WebAPI服务
+### 构建与部署脚本
+| 脚本名称 | 类型 | 用途说明 |
+|---------|------|----------|
+| `build.bat` | Batch | 构建整个解决方案 |
+| `build-check.bat` | Batch | 构建前检查和验证 |
+| `build-webapi.bat` | Batch | 构建WebAPI服务 |
+| `deploy.bat` | Batch | 部署应用程序 |
+| `install-dependencies.ps1` | PowerShell | 安装项目依赖包 |
 
+### 测试相关脚本
+| 脚本名称 | 类型 | 用途说明 |
+|---------|------|----------|
+| `run-tests.bat` | Batch | 运行所有测试 |
+| `test-port-config.ps1` | PowerShell | 测试端口配置 |
+| `auth-regression-test.ps1` | PowerShell | 认证模块回归测试 |
+| `automapper-validation.ps1` | PowerShell | AutoMapper映射验证 |
+| `clean-test-results.ps1` | PowerShell | 清理测试结果文件 |
+
+### 数据库管理脚本
+| 脚本名称 | 类型 | 用途说明 |
+|---------|------|----------|
+| `backup-database.bat` | Batch | 备份数据库 |
+| `restore-database.bat` | Batch | 恢复数据库 |
+| `initialize-db.bat` | Batch | 初始化数据库 |
+| `check-backup-status.bat` | Batch | 检查备份状态 |
+
+### 清理与维护脚本
+| 脚本名称 | 类型 | 用途说明 |
+|---------|------|----------|
+| `cleanup.ps1` | PowerShell | 清理项目临时文件 |
+| `clean-solution.bat` | Batch | 清理解决方案 |
+| `clean-module-readmes.ps1` | PowerShell | 清理模块README文件 |
+| `clean-test-results.ps1` | PowerShell | 清理测试结果 |
+| `reset-env.bat` | Batch | 重置开发环境 |
+
+### 开发辅助脚本
+| 脚本名称 | 类型 | 用途说明 |
+|---------|------|----------|
+| `create_tasks.sh` | Shell | 创建任务文档（Unix/Linux） |
+| `rename_tasks.ps1` | PowerShell | 批量重命名任务文件 |
+| `create-placeholders.ps1` | PowerShell | 创建占位文件 |
+| `watch.bat` | Batch | 监视文件变化 |
+
+### 文档与术语管理
+| 脚本名称 | 类型 | 用途说明 |
+|---------|------|----------|
+| `terminology-fix.ps1` | PowerShell | 修正术语错误 |
+| `fix_terminology.py` | Python | 批量修正术语（Python版） |
+| `generate-docs.bat` | Batch | 生成文档 |
+
+### 问题修复脚本
+| 脚本名称 | 类型 | 用途说明 |
+|---------|------|----------|
+| `apply-fix.ps1` | PowerShell | 应用补丁修复 |
+| `fix-module-imports.ps1` | PowerShell | 修复模块导入问题 |
+| `fix-xaml-bindings.ps1` | PowerShell | 修复XAML绑定问题 |
+
+### 桌面应用相关
+| 脚本名称 | 类型 | 用途说明 |
+|---------|------|----------|
+| `run-desktop.bat` | Batch | 运行桌面应用 |
+| `debug-desktop.bat` | Batch | 调试模式运行桌面应用 |
+| `migrate-desktop-config.ps1` | PowerShell | 迁移桌面配置 |
+
+### WebAPI运行管理
+| 脚本名称 | 类型 | 用途说明 |
+|---------|------|----------|
+| `run-webapi.ps1` | PowerShell | 启动WebAPI服务 |
+| `health-check.ps1` | PowerShell | WebAPI健康检查 |
+| `stop-webapi.ps1` | PowerShell | 停止WebAPI服务 |
+
+## 🚀 使用说明
+
+### PowerShell脚本执行
 ```powershell
-# 基础启动（默认使用自包含版本）
-.\scripts\run-webapi.ps1
+# 设置执行策略（首次使用）
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 
-# 使用框架依赖版本启动
-.\scripts\run-webapi.ps1 -FrameworkDependent
+# 从项目根目录执行
+.\scripts\[script-name].ps1
 
-# 指定端口和环境
-.\scripts\run-webapi.ps1 -Port "8080" -Environment "Development"
+# 带参数执行
+.\scripts\clean-test-results.ps1 -WhatIf
 ```
 
-### 2. 健康检查
+### Batch脚本执行
+```cmd
+# 在项目根目录执行
+scripts\[script-name].bat
 
-```powershell
-# 基础健康检查
-.\scripts\health-check.ps1
-
-# 详细健康检查（包含业务API）
-.\scripts\health-check.ps1 -Detailed
-
-# 持续监控模式
-.\scripts\health-check.ps1 -Continuous -Interval 60
+# 或进入scripts目录执行
+cd scripts
+[script-name].bat
 ```
 
-### 3. 停止服务
+### Shell脚本执行（Git Bash/WSL）
+```bash
+# 添加执行权限
+chmod +x scripts/[script-name].sh
 
-```powershell
-# 优雅停止
-.\scripts\stop-webapi.ps1
-
-# 强制停止
-.\scripts\stop-webapi.ps1 -Force
+# 执行脚本
+./scripts/[script-name].sh
 ```
 
-## 📋 脚本详细说明
-
-### run-webapi.ps1 - WebAPI启动脚本
-- 自动检测并停止现有WebAPI进程
-- 智能端口占用检查  
-- 自动验证部署产物完整性
-- 启动后自动健康检查
-
-### health-check.ps1 - 健康检查脚本  
-- 核心健康端点检查
-- 业务API健康检查
-- 系统资源监控
-- 健康评分体系(A-F级)
-
-### stop-webapi.ps1 - 服务停止脚本
-- 优雅停止和强制停止
-- 超时保护机制
-- 资源清理和状态报告
-
-## 🔧 故障排除
-
-### 端口占用错误
-```powershell
-.\scripts\stop-webapi.ps1 -Force
-.\scripts\run-webapi.ps1 -Port "5002"
+### Python脚本执行
+```bash
+# 确保安装Python 3.x
+python scripts/[script-name].py
 ```
 
-### 部署产物不存在
-```powershell
-dotnet publish src/Server/Services/LYBT.WebAPI -c Release -o out/webapi-self --self-contained true
-```
+## ⚠️ 注意事项
 
----
-**文档版本**: P4 Release 1.0  
-**更新时间**: 2025-09-12  
-**适用版本**: .NET 8.0 + LYBT系统
+1. **执行权限**：PowerShell脚本可能需要调整执行策略
+2. **路径问题**：所有脚本应从项目根目录执行
+3. **依赖检查**：某些脚本依赖特定工具（如.NET SDK、Python等）
+4. **备份建议**：执行清理或修改脚本前建议先备份重要文件
+5. **编码问题**：PowerShell脚本使用UTF-8编码，避免中文乱码
 
+## 📝 脚本开发规范
 
-## 🧹 文档规范化
+1. **命名规则**：
+   - 使用小写字母和连字符：`script-name.ps1`
+   - 功能明确的动词开头：`clean-`, `build-`, `test-`
 
-- fix-cn-titles.ps1：修正常见中文标题乱码与连写模式；仅处理 Markdown 标题行。
-- clean-module-readmes.ps1：统一 Server/Client 模块 README 的术语与措辞（跳过代码块）。
-- setup-hooks.ps1：配置 Git hooks 使用 .githooks，启用 pre-commit 自动规范。
+2. **文档要求**：
+   - 脚本开头包含用途说明注释
+   - 参数说明和示例用法
 
-本地运行：
+3. **错误处理**：
+   - 包含适当的错误处理逻辑
+   - 提供清晰的错误信息
 
-`powershell
-pwsh -File scripts/fix-cn-titles.ps1 -Root .
-pwsh -File scripts/clean-module-readmes.ps1 -Root .
-``r
+4. **安全性**：
+   - 避免硬编码敏感信息
+   - 使用参数而非固定路径
 
-启用本地 pre-commit：
+## 🔧 维护记录
 
-`powershell
-pwsh -File scripts/setup-hooks.ps1
-``r
-
-CI 校验：.github/workflows/docs-normalization.yml 会在 PR 中运行以上脚本，如存在差异会提示并失败。
+- **2025-09-28**：将根目录脚本统一移至scripts目录
+  - 移动 `create_tasks.sh`
+  - 移动 `create-placeholders.ps1`
+  - 移动 `install-dependencies.ps1`
+  - 移动 `rename_tasks.ps1`
+  - 移动 `test-port-config.ps1`
+- **2025-09-28**：添加术语修正脚本
+- **2025-09-28**：添加测试结果清理脚本
