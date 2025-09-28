@@ -131,12 +131,7 @@ public class HerbItem : BindableBase
         set => SetProperty(ref _isActive, value);
     }
 
-    private int _stock;
-    public int Stock
-    {
-        get => _stock;
-        set => SetProperty(ref _stock, value);
-    }
+    // MVP阶段不实现库存管理，已移除Stock属性
 
     private string? _remark;
     public string? Remark
@@ -204,7 +199,7 @@ public class HerbItem : BindableBase
             Specification = dto.Spec,
             Manufacturer = null, // HerbDto中没有此属性
             IsActive = dto.Status == CommonStatus.Enabled,
-            Stock = 0, // HerbDto中没有此属性
+            // MVP阶段移除Stock属性
             Remark = dto.Remark,
             CreatedAt = dto.CreateTime,
             UpdatedAt = dto.UpdateTime
@@ -245,31 +240,7 @@ public class HerbItem : BindableBase
     /// </summary>
     public string StatusColor => IsActive ? "#4CAF50" : "#F44336";
 
-    /// <summary>
-    /// 库存状态
-    /// </summary>
-    public string StockStatus
-    {
-        get
-        {
-            if (Stock <= 0) return "缺货";
-            if (Stock < 50) return "库存不足";
-            return "充足";
-        }
-    }
-
-    /// <summary>
-    /// 库存状态颜色
-    /// </summary>
-    public string StockColor
-    {
-        get
-        {
-            if (Stock <= 0) return "#F44336";
-            if (Stock < 50) return "#FF9800";
-            return "#4CAF50";
-        }
-    }
+    // MVP阶段已移除库存相关属性：StockStatus, StockColor
 
     /// <summary>
     /// 推荐剂量范围文本
@@ -292,14 +263,9 @@ public class HerbItem : BindableBase
     public string PriceText => $"¥{UnitPrice:F2}/{DosageUnit}";
 
     /// <summary>
-    /// 是否有库存
+    /// 是否可用（仅基于启用状态，MVP阶段不考虑库存）
     /// </summary>
-    public bool HasStock => Stock > 0;
-
-    /// <summary>
-    /// 是否可用（启用且有库存）
-    /// </summary>
-    public bool IsAvailable => IsActive && HasStock;
+    public bool IsAvailable => IsActive;
 
     /// <summary>
     /// 是否有禁忌

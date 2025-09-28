@@ -193,11 +193,8 @@ namespace LYBT.Desktop.Services
 
         private bool HasCashierLevelPermission(string permission)
         {
-            var cashierPermissions = new[]
-            {
-                "PaymentProcess", "InvoiceManagement", "RefundProcess",
-                "PaymentReports", "CashierReports"
-            };
+            // MVP阶段不实现收费管理功能，保留空数组
+            var cashierPermissions = new string[] { };
             return cashierPermissions.Contains(permission);
         }
 
@@ -205,8 +202,8 @@ namespace LYBT.Desktop.Services
         {
             var pharmacistPermissions = new[]
             {
-                "PrescriptionDispense", "InventoryManagement", "DrugCatalog",
-                "PharmacyReports", "DrugInteractionCheck"
+                "PrescriptionDispense", "DrugCatalog", "DrugInteractionCheck"
+                // MVP阶段移除：InventoryManagement, PharmacyReports
             };
             return pharmacistPermissions.Contains(permission);
         }

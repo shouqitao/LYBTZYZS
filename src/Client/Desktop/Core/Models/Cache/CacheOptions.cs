@@ -28,9 +28,9 @@ namespace LYBT.Desktop.Core.Models.Cache
         public TimeSpan CleanupInterval { get; set; } = TimeSpan.FromMinutes(5);
 
         /// <summary>
-        /// 是否启用统计
+        /// 是否启用统计（MVP阶段默认禁用）
         /// </summary>
-        public bool EnableStatistics { get; set; } = true;
+        public bool EnableStatistics { get; set; } = false;
 
         /// <summary>
         /// 是否启用后台清理

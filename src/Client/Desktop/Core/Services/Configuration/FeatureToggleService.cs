@@ -103,17 +103,7 @@ namespace LYBT.Desktop.Core.Services.Configuration
                     ReleaseStage = ReleaseStage.Beta,
                     Tags = new[] { "ui", "prescription", "beta" }
                 },
-                new FeatureDefinition
-                {
-                    Name = "SmartDiagnosis",
-                    DisplayName = "[已移除] 智能诊断辅助",
-                    Description = "Record-Only模式：AI辅助的中医诊断功能已移除",
-                    Category = "Deprecated",
-                    DefaultState = FeatureState.Disabled,
-                    CurrentState = FeatureState.Disabled,
-                    ReleaseStage = ReleaseStage.Alpha,
-                    Tags = new[] { "deprecated", "removed", "record-only" }
-                },
+                // MVP阶段已移除SmartDiagnosis功能
                 new FeatureDefinition
                 {
                     Name = "AdvancedCaching",
