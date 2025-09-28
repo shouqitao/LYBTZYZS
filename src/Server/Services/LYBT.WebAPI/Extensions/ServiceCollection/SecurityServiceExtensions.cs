@@ -37,7 +37,7 @@ namespace LYBT.WebAPI.Extensions.ServiceCollection
 
             // JWT安全服务
             // 注册Token黑名单服务
-            services.AddScoped<ITokenBlacklistService, TokenBlacklistService>();
+            // services.AddScoped<ITokenBlacklistService, TokenBlacklistService>(); // 移除过度工程
 
             // 添加密钥旋转后台服务（使用工厂模式）
             services.AddHostedService<KeyRotationBackgroundService>();
