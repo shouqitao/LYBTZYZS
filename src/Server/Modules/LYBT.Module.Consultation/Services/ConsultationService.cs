@@ -9,7 +9,8 @@ using Microsoft.Extensions.Logging;
 namespace LYBT.Module.Consultation.Services
 {
     /// <summary>
-    /// 诊疗服务 - 简化版，只包含基础CRUD
+    /// 诊疗服务 - 简化版，专注四诊信息的基础录入和管理
+    /// 支持独立创建和通过医案聚合根创建两种方式
     /// </summary>
     public class ConsultationService : Interfaces.IConsultationService
     {
@@ -82,16 +83,23 @@ namespace LYBT.Module.Consultation.Services
         }
 
         /// <summary>
-        /// 创建诊疗记录（已废弃）
-        /// 注意：诊疗记录应该通过MedicalCase聚合根创建，使用MedicalCaseService.CreateWithDetailsAsync
+        /// 创建诊疗记录 - 仅在独立创建时使用
+        /// 注意：推荐通过MedicalCase聚合根创建完整的诊疗流程
         /// </summary>
-        [Obsolete("诊疗记录应该通过MedicalCase聚合根创建，请使用MedicalCaseService.CreateWithDetailsAsync")]
-        public Task<ServiceResult<ConsultationDto>> CreateAsync(ConsultationCreateDto dto)
+        public async Task<ServiceResult<ConsultationDto>> CreateAsync(ConsultationCreateDto dto)
         {
-            // 该方法已废弃，诊疗记录应该通过MedicalCase聚合根创建
-            _logger.LogWarning("使用了已废弃的ConsultationService.CreateAsync方法，应该通过MedicalCase聚合根创建");
-            
-            return Task.FromResult(ServiceResult<ConsultationDto>.Failure("诊疗记录必须通过医疗案例(MedicalCase)创建，请使用MedicalCaseService.CreateWithDetailsAsync"));
+            try
+            {
+                var entity = _mapper.Map<ConsultationEntity>(dto);
+                var result = await _repository.AddAsync(entity);
+                var resultDto = _mapper.Map<ConsultationDto>(result);
+                return ServiceResult<ConsultationDto>.Success(resultDto);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "创建诊疗记录失败");
+                return ServiceResult<ConsultationDto>.Failure("创建诊疗记录失败");
+            }
         }
 
         public async Task<ServiceResult<ConsultationDto>> UpdateAsync(Guid id, ConsultationUpdateDto dto)
@@ -154,16 +162,30 @@ namespace LYBT.Module.Consultation.Services
         }
 
         /// <summary>
-        /// 开始新的诊疗会话（已废弃）
-        /// 注意：诊疗会话应该通过MedicalCase聚合根创建，使用MedicalCaseService.CreateWithDetailsAsync
+        /// 开始新的诊疗会话 - 创建基础诊疗记录
+        /// 注意：推荐通过MedicalCase聚合根创建完整的诊疗流程
         /// </summary>
-        [Obsolete("诊疗会话应该通过MedicalCase聚合根创建，请使用MedicalCaseService.CreateWithDetailsAsync")]
-        public Task<ServiceResult<ConsultationDto>> StartAsync(Guid patientId)
+        public async Task<ServiceResult<ConsultationDto>> StartAsync(Guid patientId)
         {
-            // 该方法已废弃，诊疗会话应该通过MedicalCase聚合根创建
-            _logger.LogWarning("使用了已废弃的ConsultationService.StartAsync方法，应该通过MedicalCase聚合根创建");
-            
-            return Task.FromResult(ServiceResult<ConsultationDto>.Failure("诊疗会话必须通过医疗案例(MedicalCase)创建，请使用MedicalCaseService.CreateWithDetailsAsync"));
+            try
+            {
+                // 创建基础诊疗记录（使用指定ID，通常应与MedicalCase共享主键）
+                var consultation = new ConsultationEntity
+                {
+                    Id = Guid.NewGuid(),
+                    // 注意：PatientId通过MedicalCase关联获取，不在Consultation实体中存储
+                    // 其他字段在后续更新中完善
+                };
+
+                var result = await _repository.AddAsync(consultation);
+                var resultDto = _mapper.Map<ConsultationDto>(result);
+                return ServiceResult<ConsultationDto>.Success(resultDto);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "开始诊疗会话失败");
+                return ServiceResult<ConsultationDto>.Failure("开始诊疗会话失败");
+            }
         }
 
         public async Task<ServiceResult<List<ConsultationDto>>> SearchAsync(string keyword)

@@ -79,8 +79,8 @@ namespace LYBT.Infrastructure.Caching.Interfaces
         /// </summary>
         /// <typeparam name="T">缓存数据类型（必须是引用类型）</typeparam>
         /// <param name="key">缓存键</param>
-        /// <returns>缓存的数据项</returns>
-        Task<T> GetAsync<T>(string key) where T : class;
+        /// <returns>缓存的数据项（可能为null）</returns>
+        Task<T?> GetAsync<T>(string key) where T : class;
 
         /// <summary>
         /// 获取缓存项 (异步)

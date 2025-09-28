@@ -5,7 +5,7 @@ using System.Windows.Data;
 using System.Windows.Media;
 using LYBT.Shared.Models.Enums;
 
-namespace LYBT.Desktop.Core.Converters.Unified
+namespace LYBT.Desktop.Core.Converters
 {
     /// <summary>
     /// 统一的状态到颜色转换器

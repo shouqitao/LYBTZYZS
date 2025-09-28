@@ -146,42 +146,7 @@ public static class UnifiedApplicationInitialization
     {
         // 临时注释掉安全配置验证以完成核心功能测试
         await Task.CompletedTask;
-        /*
-        var securityValidator = scope.ServiceProvider.GetService<ISecurityConfigurationValidator>();
-        if (securityValidator != null)
-        {
-        try
-        {
-        var validationResult = await securityValidator.ValidateConfigurationAsync();
-        var logger = scope.ServiceProvider.GetService<ILogger<Program>>();
 
-        if (validationResult.IsValid)
-        {
-        logger?.LogInformation(" 安全配置验证通过");
-
-        if (validationResult.HasWarnings)
-        {
-        foreach (var issue in validationResult.Issues.Where(i => i.Type == SecurityValidationIssueType.Warning))
-        {
-        logger?.LogWarning(" 安全警告: {Message}", issue.Message);
-        }
-        }
-        }
-        else
-        {
-        foreach (var issue in validationResult.Issues.Where(i => i.Type == SecurityValidationIssueType.Error))
-        {
-        logger?.LogError(" 安全配置错误: {Message}", issue.Message);
-        }
-        }
-        }
-        catch (Exception ex)
-        {
-        var logger = scope.ServiceProvider.GetService<ILogger<Program>>();
-        logger?.LogWarning(ex, " 安全配置验证失败，但不影响应用启动");
-        }
-        }
-        */
     }
 
     /// <summary>

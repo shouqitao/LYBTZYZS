@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using AutoMapper;
-using LYBT.Module.Auth.Mapping;
+// using LYBT.Module.Auth.Mapping; // 已简化，Auth模块不再使用AutoMapper
 using LYBT.Module.Consultation.Mapping;
 using LYBT.Module.Formula.Mapping;
 using LYBT.Module.Herbs.Mapping;
@@ -102,7 +102,7 @@ namespace LYBT.Tests.Common
             try
             {
                 // 加载所有服务端模块的Profile
-                cfg.AddProfile<LYBT.Module.Auth.Mapping.AuthMappingProfile>();
+                // cfg.AddProfile<LYBT.Module.Auth.Mapping.AuthMappingProfile>(); // 已简化，Auth模块不再使用AutoMapper
                 cfg.AddProfile<LYBT.Module.Users.Mapping.UserMappingProfile>();
                 cfg.AddProfile<LYBT.Module.Herbs.Mapping.HerbMappingProfile>();
                 cfg.AddProfile<LYBT.Module.Patients.Mapping.PatientMappingProfile>();
@@ -123,7 +123,7 @@ namespace LYBT.Tests.Common
         private static void RegisterKnownProfiles(IMapperConfigurationExpression cfg)
         {
             // Server端Profile
-            cfg.AddProfile<AuthMappingProfile>();
+            // cfg.AddProfile<AuthMappingProfile>(); // 已简化，Auth模块不再使用AutoMapper
             cfg.AddProfile<ConsultationMappingProfile>();
             cfg.AddProfile<FormulaMappingProfile>();
             cfg.AddProfile<HerbMappingProfile>();

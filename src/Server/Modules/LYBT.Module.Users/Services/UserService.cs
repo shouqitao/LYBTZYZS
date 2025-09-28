@@ -146,7 +146,7 @@ namespace LYBT.Module.Users.Services
                     .Select(r => new { Value = (int)r, Name = r.ToString() })
                     .Cast<object>()
                     .ToList();
-                
+
                 return Task.FromResult(ServiceResult<List<object>>.Success(roles));
             }
             catch (Exception ex)

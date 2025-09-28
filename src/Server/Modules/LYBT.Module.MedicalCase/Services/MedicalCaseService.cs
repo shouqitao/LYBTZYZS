@@ -13,7 +13,8 @@ using Microsoft.Extensions.Logging;
 namespace LYBT.Module.MedicalCase.Services
 {
     /// <summary>
-    /// 医疗案例服务 - 简化版，只包含基础CRUD
+    /// 医疗案例服务 - 简化版，专注核心业务功能
+    /// 移除过度复杂的聚合根逻辑，保持诊疗工作流连贯性
     /// </summary>
     public class MedicalCaseService : IMedicalCaseService
     {
@@ -31,11 +32,13 @@ namespace LYBT.Module.MedicalCase.Services
             _logger = logger;
         }
 
+        /// <summary>
+        /// 获取分页列表
+        /// </summary>
         public async Task<ServiceResult<PagedResult<MedicalCaseDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null)
         {
             try
             {
-                // 使用优化后的查询方法，包含Consultation和Prescription
                 var pagedResult = await _repository.GetPagedWithDetailsAsync(page, pageSize, keyword);
                 var dto = new PagedResult<MedicalCaseDto>
                 {
@@ -53,11 +56,13 @@ namespace LYBT.Module.MedicalCase.Services
             }
         }
 
+        /// <summary>
+        /// 根据ID获取医疗案例
+        /// </summary>
         public async Task<ServiceResult<MedicalCaseDto>> GetByIdAsync(Guid id)
         {
             try
             {
-                // 使用优化后的查询方法，包含所有关联数据
                 var entity = await _repository.GetByIdWithDetailsAsync(id);
                 if (entity == null)
                     return ServiceResult<MedicalCaseDto>.Failure("医疗案例不存在");
@@ -72,13 +77,28 @@ namespace LYBT.Module.MedicalCase.Services
             }
         }
 
+        /// <summary>
+        /// 创建医疗案例 - 使用业务规则验证
+        /// </summary>
         public async Task<ServiceResult<MedicalCaseDto>> CreateAsync(MedicalCaseCreateDto dto)
         {
             try
             {
+                // 使用业务规则类验证
+                var existingCases = await _repository.GetByPatientIdAsync(dto.PatientId);
+                var validation = MedicalCaseBusinessRules.ValidateNewCaseCreation(dto.PatientId, existingCases);
+                
+                if (!validation.IsValid)
+                {
+                    return ServiceResult<MedicalCaseDto>.Failure(validation.ErrorMessage);
+                }
+
                 var entity = _mapper.Map<MedicalCaseEntity>(dto);
+                entity.ConsultationDate = DateTime.Now;
+                
                 var result = await _repository.AddAsync(entity);
                 var resultDto = _mapper.Map<MedicalCaseDto>(result);
+                
                 return ServiceResult<MedicalCaseDto>.Success(resultDto);
             }
             catch (Exception ex)
@@ -88,6 +108,9 @@ namespace LYBT.Module.MedicalCase.Services
             }
         }
 
+        /// <summary>
+        /// 更新医疗案例 - 使用业务规则验证
+        /// </summary>
         public async Task<ServiceResult<MedicalCaseDto>> UpdateAsync(Guid id, MedicalCaseUpdateDto dto)
         {
             try
@@ -96,9 +119,17 @@ namespace LYBT.Module.MedicalCase.Services
                 if (entity == null)
                     return ServiceResult<MedicalCaseDto>.Failure("医疗案例不存在");
 
+                // 使用业务规则类验证（这里需要传入当前用户ID，暂时使用实体的DoctorId）
+                var validation = MedicalCaseBusinessRules.ValidateCaseUpdate(entity, entity.DoctorId);
+                if (!validation.IsValid)
+                {
+                    return ServiceResult<MedicalCaseDto>.Failure(validation.ErrorMessage);
+                }
+
                 _mapper.Map(dto, entity);
                 var result = await _repository.UpdateAsync(entity);
                 var resultDto = _mapper.Map<MedicalCaseDto>(result);
+                
                 return ServiceResult<MedicalCaseDto>.Success(resultDto);
             }
             catch (Exception ex)
@@ -108,10 +139,23 @@ namespace LYBT.Module.MedicalCase.Services
             }
         }
 
+        /// <summary>
+        /// 删除医疗案例 - 使用业务规则验证
+        /// </summary>
         public async Task<ServiceResult> DeleteAsync(Guid id)
         {
             try
             {
+                var entity = await _repository.GetByIdAsync(id);
+                if (entity == null)
+                    return ServiceResult.Failure("医疗案例不存在");
+
+                // 使用业务规则验证
+                if (!MedicalCaseBusinessRules.CanDelete(entity, entity.DoctorId))
+                {
+                    return ServiceResult.Failure("无权限删除此医案或医案已锁定");
+                }
+
                 var result = await _repository.DeleteAsync(id);
                 return result ? ServiceResult.Success() : ServiceResult.Failure("删除失败");
             }
@@ -122,11 +166,13 @@ namespace LYBT.Module.MedicalCase.Services
             }
         }
 
+        /// <summary>
+        /// 根据患者ID获取医疗案例
+        /// </summary>
         public async Task<ServiceResult<List<MedicalCaseDto>>> GetByPatientIdAsync(Guid patientId)
         {
             try
             {
-                // 使用优化后的查询方法，直接查询并包含关联数据
                 var patientCases = await _repository.GetByPatientIdAsync(patientId);
                 var dto = _mapper.Map<List<MedicalCaseDto>>(patientCases);
                 return ServiceResult<List<MedicalCaseDto>>.Success(dto);
@@ -140,7 +186,7 @@ namespace LYBT.Module.MedicalCase.Services
 
         /// <summary>
         /// 创建完整的医疗案例（包含诊疗记录和可选的处方）
-        /// 作为聚合根统一管理整个诊疗流程
+        /// 简化的聚合根创建方法，保持诊疗工作流连贯性
         /// </summary>
         public async Task<ServiceResult<MedicalCaseDto>> CreateWithDetailsAsync(
             MedicalCaseCreateDto caseDto,
@@ -149,16 +195,25 @@ namespace LYBT.Module.MedicalCase.Services
         {
             try
             {
-                // 1. 创建MedicalCase实体（聚合根）
+                // 验证是否可以创建新医案
+                var existingCases = await _repository.GetByPatientIdAsync(caseDto.PatientId);
+                var validation = MedicalCaseBusinessRules.ValidateNewCaseCreation(caseDto.PatientId, existingCases);
+                
+                if (!validation.IsValid)
+                {
+                    return ServiceResult<MedicalCaseDto>.Failure(validation.ErrorMessage);
+                }
+
+                // 创建医案主体
                 var medicalCase = _mapper.Map<MedicalCaseEntity>(caseDto);
                 medicalCase.ConsultationDate = DateTime.Now;
                 
-                // 2. 创建Consultation实体（使用共享主键）
+                // 创建诊疗记录（共享主键）
                 var consultation = _mapper.Map<ConsultationEntity>(consultationDto);
-                consultation.Id = medicalCase.Id; // 共享主键
+                consultation.Id = medicalCase.Id;
                 medicalCase.Consultation = consultation;
                 
-                // 3. 如果有处方，创建Prescription实体
+                // 如果有处方，创建处方
                 if (prescriptionDto != null)
                 {
                     var prescription = _mapper.Map<PrescriptionEntity>(prescriptionDto);
@@ -168,7 +223,7 @@ namespace LYBT.Module.MedicalCase.Services
                     medicalCase.Prescription = prescription;
                 }
                 
-                // 4. 保存整个聚合
+                // 保存聚合
                 var result = await _repository.AddAsync(medicalCase);
                 var resultDto = _mapper.Map<MedicalCaseDto>(result);
                 

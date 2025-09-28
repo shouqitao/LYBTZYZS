@@ -50,7 +50,7 @@ public class KeyManagementService : IKeyManagementService
                     timeSinceLastRotation.TotalHours);
             }
 
-            return await Task.FromResult(needsRotation);
+            return needsRotation;
         }
         catch (Exception ex)
         {

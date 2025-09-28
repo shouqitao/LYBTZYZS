@@ -111,7 +111,16 @@ namespace LYBT.Infrastructure.Caching.Adapters
                 // 注册逐出回调
                 options.RegisterPostEvictionCallback((k, v, reason, state) =>
                 {
-                    _keys.TryRemove(k.ToString()!, out _);
+                    if (k?.ToString() is string keyStr)
+                    {
+                        _keys.TryRemove(keyStr, out _);
+
+                        // 记录逐出日志（如果启用）
+                        if (_cacheOptions.Memory.LogEvictions)
+                        {
+                            LogEviction(keyStr, reason, GetEstimatedSize(v));
+                        }
+                    }
 
                     // 更新统计
                     if (reason == EvictionReason.Expired)
@@ -122,12 +131,6 @@ namespace LYBT.Infrastructure.Caching.Adapters
                     {
                         _statistics.EvictedKeys++;
                         _statistics.EvictionCount++;
-                    }
-
-                    // 记录逐出日志（如果启用）
-                    if (_cacheOptions.Memory.LogEvictions)
-                    {
-                        LogEviction(k.ToString()!, reason, GetEstimatedSize(v));
                     }
                 });
 
@@ -147,17 +150,14 @@ namespace LYBT.Infrastructure.Caching.Adapters
         /// <summary>
         /// 将缓存优先级转换为MemoryCache优先级
         /// </summary>
-        private CacheItemPriority GetCacheItemPriority(CachePriority priority)
+        private CacheItemPriority GetCacheItemPriority(CachePriority priority) => priority switch
         {
-            return priority switch
-            {
-                CachePriority.Low => CacheItemPriority.Low,
-                CachePriority.Normal => CacheItemPriority.Normal,
-                CachePriority.High => CacheItemPriority.High,
-                CachePriority.NeverRemove => CacheItemPriority.NeverRemove,
-                _ => CacheItemPriority.Normal
-            };
-        }
+            CachePriority.Low => CacheItemPriority.Low,
+            CachePriority.Normal => CacheItemPriority.Normal,
+            CachePriority.High => CacheItemPriority.High,
+            CachePriority.NeverRemove => CacheItemPriority.NeverRemove,
+            _ => CacheItemPriority.Normal
+        };
 
         /// <summary>
         /// 记录逐出日志
@@ -193,27 +193,21 @@ namespace LYBT.Infrastructure.Caching.Adapters
                 return "unknown";
 
             var colonIndex = key.IndexOf(':');
-            return colonIndex > 0 ? key.Substring(0, Math.Min(colonIndex, 20)) : key.Substring(0, Math.Min(key.Length, 10));
+            return colonIndex > 0
+                ? key[..Math.Min(colonIndex, 20)]
+                : key[..Math.Min(key.Length, 10)];
         }
 
         /// <summary>
         /// 估算对象大小（简单估算）
         /// </summary>
-        private long GetEstimatedSize(object obj)
+        private long GetEstimatedSize(object? obj) => obj switch
         {
-            if (obj == null)
-                return 0;
-
-            // 简单估算，实际应用中可以使用更精确的方法
-            if (obj is string str)
-                return str.Length * 2; // Unicode字符
-
-            if (obj is byte[] bytes)
-                return bytes.Length;
-
-            // 默认估算
-            return 100;
-        }
+            null => 0,
+            string str => str.Length * 2, // Unicode字符
+            byte[] bytes => bytes.Length,
+            _ => 100 // 默认估算
+        };
 
         /// <inheritdoc/>
         public bool Remove(string key)
@@ -267,31 +261,17 @@ namespace LYBT.Infrastructure.Caching.Adapters
         }
 
         /// <inheritdoc/>
-        public bool Exists(string key)
-        {
-            if (string.IsNullOrEmpty(key))
-                return false;
-
-            return _memoryCache.TryGetValue(key, out _);
-        }
+        public bool Exists(string key) => !string.IsNullOrEmpty(key) && _memoryCache.TryGetValue(key, out _);
 
         #endregion
 
         #region 异步操作
 
         /// <inheritdoc/>
-        public Task<T> GetAsync<T>(string key) where T : class
-        {
-            // Memory cache operations are synchronous, wrap in Task
-            return Task.FromResult(Get<T>(key));
-        }
+        public Task<T?> GetAsync<T>(string key) where T : class => Task.FromResult(Get<T>(key));
 
         /// <inheritdoc/>
-        public Task<T?> GetAsync<T>(string key, CancellationToken cancellationToken = default)
-        {
-            // Memory cache operations are synchronous, wrap in Task
-            return Task.FromResult(Get<T>(key));
-        }
+        public Task<T?> GetAsync<T>(string key, CancellationToken cancellationToken = default) => Task.FromResult(Get<T>(key));
 
         /// <inheritdoc/>
         public Task SetAsync<T>(string key, T value, TimeSpan? expiration = null) where T : class
@@ -315,16 +295,10 @@ namespace LYBT.Infrastructure.Caching.Adapters
         }
 
         /// <inheritdoc/>
-        public Task<bool> RemoveAsync(string key, CancellationToken cancellationToken = default)
-        {
-            return Task.FromResult(Remove(key));
-        }
+        public Task<bool> RemoveAsync(string key, CancellationToken cancellationToken = default) => Task.FromResult(Remove(key));
 
         /// <inheritdoc/>
-        public Task<bool> ExistsAsync(string key)
-        {
-            return Task.FromResult(Exists(key));
-        }
+        public Task<bool> ExistsAsync(string key) => Task.FromResult(Exists(key));
 
         /// <inheritdoc/>
         public Task RefreshAsync(string key, TimeSpan expiration)

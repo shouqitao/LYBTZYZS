@@ -116,7 +116,7 @@ namespace LYBT.Infrastructure.Data
             // UltraThink简化：移除未使用的分布式事务日志配置
 
             // ConfigurePharmacies(modelBuilder); // 模块已删除
-            // ConfigurePharmacyHerbs(modelBuilder); // 模块已删除
+
             // ConfigureCashiers(modelBuilder); // 模块已删除
             // ConfigureTreatmentTasks(modelBuilder); // 模块已删除
             // ConfigureSyncs(modelBuilder); // MVP阶段暂不需要
@@ -445,80 +445,21 @@ namespace LYBT.Infrastructure.Data
 
         // UltraThink简化：ConfigureTransactions方法已删除（对应实体已清理）
 
-        // 药房模块已删除
-        /*        private static void ConfigurePharmacies(ModelBuilder modelBuilder) {
-            var entity = modelBuilder.Entity<PharmacyModel>();
-            entity.ToTable("Pharmacies");
-            entity.HasKey(p => p.Id);
 
-            // 配置药房与药材的一对多关系
-            entity.HasMany(p => p.Herbs)
-                  .WithOne(ph => ph.Pharmacy)
-                  .HasForeignKey(ph => ph.PharmacyId);
-        }*/
 
-        // 药房模块已删除
-        /*
-        private static void ConfigurePharmacyHerbs(ModelBuilder modelBuilder) {
-            var entity = modelBuilder.Entity<PharmacyHerbModel>();
-            entity.ToTable("PharmacyHerbs");
-            entity.HasKey(ph => new { ph.PharmacyId, ph.HerbId });
 
-            entity.HasOne(ph => ph.Pharmacy)
-                  .WithMany(p => p.Herbs)
-                  .HasForeignKey(ph => ph.PharmacyId);
 
-            entity.HasOne(ph => ph.Herb)
-                  .WithMany()
-                  .HasForeignKey(ph => ph.HerbId);
-        }
-        */
 
-        // 收银模块已删除
-        /*
-        private static void ConfigureCashiers(ModelBuilder modelBuilder) {
-            // CashierRecord 配置
-            var cashierEntity = modelBuilder.Entity<CashierRecord>();
-            cashierEntity.HasKey(c => c.Id);
-            cashierEntity.Property(c => c.TotalAmount).HasColumnType("decimal(18,2)");
-            cashierEntity.Property(c => c.PaidAmount).HasColumnType("decimal(18,2)");
-            cashierEntity.Property(c => c.RefundAmount).HasColumnType("decimal(18,2)");
 
-            // CashierItem 配置
-            var itemEntity = modelBuilder.Entity<CashierItem>();
-            itemEntity.ToTable("CashierItems");
-            itemEntity.HasKey(ci => ci.Id);
-            itemEntity.Property(ci => ci.UnitPrice).HasColumnType("decimal(18,2)");
-            itemEntity.Property(ci => ci.Amount).HasColumnType("decimal(18,2)");
 
-            // CashierPayment 配置
-            var paymentEntity = modelBuilder.Entity<CashierPayment>();
-            paymentEntity.ToTable("CashierPayments");
-            paymentEntity.HasKey(cp => cp.Id);
-            paymentEntity.Property(cp => cp.Amount).HasColumnType("decimal(18,2)");
 
-            // DailySettlement 配置
-            var settlementEntity = modelBuilder.Entity<DailySettlement>();
-            settlementEntity.ToTable("DailySettlements");
-            settlementEntity.HasKey(ds => ds.Id);
-            settlementEntity.Property(ds => ds.TotalAmount).HasColumnType("decimal(18,2)");
-            settlementEntity.Property(ds => ds.RefundAmount).HasColumnType("decimal(18,2)");
-            settlementEntity.Property(ds => ds.NetAmount).HasColumnType("decimal(18,2)");
 
-            // Invoice 配置
-            var invoiceEntity = modelBuilder.Entity<Invoice>();
-            invoiceEntity.ToTable("Invoices");
-            invoiceEntity.HasKey(i => i.Id);
-            invoiceEntity.Property(i => i.TotalAmount).HasColumnType("decimal(18,2)");
-        }
-        */
 
-        // 治疗室模块已删除
-        /*        private static void ConfigureTreatmentTasks(ModelBuilder modelBuilder) {
-            var entity = modelBuilder.Entity<TreatmentTaskModel>();
-            entity.ToTable("TreatmentTasks");
-            entity.HasKey(t => t.Id);
-        }*/
+
+
+
+
+
 
         // Sync模块MVP阶段暂不需要
 

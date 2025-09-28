@@ -9,7 +9,7 @@ namespace LYBT.Desktop.Prescriptions.Services;
 /// </summary>
 public class PrescriptionsService : IPrescriptionService
 {
-    public async Task<ServiceResult<PagedResult<PrescriptionDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null)
+    public Task<ServiceResult<PagedResult<PrescriptionDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null)
     {
         // 简化实现：返回空列表
         var emptyResult = new PagedResult<PrescriptionDto>
@@ -19,32 +19,21 @@ public class PrescriptionsService : IPrescriptionService
             CurrentPage = page,
             PageSize = pageSize
         };
-        return ServiceResult<PagedResult<PrescriptionDto>>.Success(emptyResult);
+        return Task.FromResult(ServiceResult<PagedResult<PrescriptionDto>>.Success(emptyResult));
     }
 
-    public async Task<ServiceResult<PrescriptionDto>> GetByIdAsync(Guid id)
-    {
-        return ServiceResult<PrescriptionDto>.Failure("处方不存在");
-    }
+    public Task<ServiceResult<PrescriptionDto>> GetByIdAsync(Guid id) =>
+        Task.FromResult(ServiceResult<PrescriptionDto>.Failure("处方不存在"));
 
-    public async Task<ServiceResult<PrescriptionDto>> CreateAsync(PrescriptionCreateDto dto)
-    {
-        return ServiceResult<PrescriptionDto>.Failure("创建功能暂未实现");
-    }
+    public Task<ServiceResult<PrescriptionDto>> CreateAsync(PrescriptionCreateDto dto) =>
+        Task.FromResult(ServiceResult<PrescriptionDto>.Failure("创建功能暂未实现"));
 
-    public async Task<ServiceResult<PrescriptionDto>> UpdateAsync(Guid id, PrescriptionUpdateDto dto)
-    {
-        return ServiceResult<PrescriptionDto>.Failure("更新功能暂未实现");
-    }
+    public Task<ServiceResult<PrescriptionDto>> UpdateAsync(Guid id, PrescriptionUpdateDto dto) =>
+        Task.FromResult(ServiceResult<PrescriptionDto>.Failure("更新功能暂未实现"));
 
-    public async Task<ServiceResult> DeleteAsync(Guid id)
-    {
-        return ServiceResult.Failure("删除功能暂未实现");
-    }
+    public Task<ServiceResult> DeleteAsync(Guid id) =>
+        Task.FromResult(ServiceResult.Failure("删除功能暂未实现"));
 
-    public Task<ServiceResult<List<PrescriptionDto>>> GetByMedicalCaseIdAsync(Guid medicalCaseId)
-    {
-        // 暂时返回空列表，后续实现实际逻辑
-        return Task.FromResult(ServiceResult<List<PrescriptionDto>>.Success(new List<PrescriptionDto>()));
-    }
+    public Task<ServiceResult<List<PrescriptionDto>>> GetByMedicalCaseIdAsync(Guid medicalCaseId) =>
+        Task.FromResult(ServiceResult<List<PrescriptionDto>>.Success(new List<PrescriptionDto>()));
 }

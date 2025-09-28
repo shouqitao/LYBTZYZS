@@ -3,7 +3,7 @@ using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
 
-namespace LYBT.Desktop.Core.Converters.Unified
+namespace LYBT.Desktop.Core.Converters
 {
     /// <summary>
     /// 统一的日期时间格式转换器

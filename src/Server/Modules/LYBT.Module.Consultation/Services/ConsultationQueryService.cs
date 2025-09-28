@@ -28,7 +28,7 @@ namespace LYBT.Module.Consultation.Services
             _logger = logger;
         }
 
-        public async Task<PagedResult<ConsultationDto>> GetPagedConsultationsAsync(ConsultationSearchDto searchDto)
+        public Task<PagedResult<ConsultationDto>> GetPagedConsultationsAsync(ConsultationSearchDto searchDto)
         {
             _logger.LogDebug("查询诊疗记录列表");
             // TODO: 实现分页查询逻辑
@@ -39,7 +39,7 @@ namespace LYBT.Module.Consultation.Services
                 CurrentPage = searchDto.PageIndex,
                 PageSize = searchDto.PageSize
             };
-            return await Task.FromResult(result);
+            return Task.FromResult(result);
         }
 
         public async Task<ConsultationDto?> GetConsultationByIdAsync(Guid consultationId)

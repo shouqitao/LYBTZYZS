@@ -38,7 +38,7 @@ namespace LYBT.WebAPI.Controllers
         /// <returns>登录响应，包含JWT Token</returns>
         [HttpPost("login")]
         [AllowAnonymous]  // 登录端点允许匿名访问
-        [EnableRateLimiting("Login")]
+        // 移除限流功能：[EnableRateLimiting("Login")] - 简化版本不需要企业级限流
         public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<LoginResponse>>> LoginAsync([FromBody] LoginRequest request)
         {
             try
@@ -140,10 +140,10 @@ namespace LYBT.WebAPI.Controllers
                     return ValidationFail("新密码不能为空");
                 }
 
-                // 验证密码复杂度
-                if (!LYBT.Shared.Utilities.Security.PasswordPolicyValidator.Validate(request.NewPassword, out var errors))
+                // 简化密码验证：仅检查长度（适度设计原则）
+                if (request.NewPassword.Length < 6)
                 {
-                    return ValidationFail($"密码不符合复杂度要求：{string.Join("；", errors)}");
+                    return ValidationFail("新密码长度不能少于6位");
                 }
 
                 // 调用认证服务修改密码
@@ -156,73 +156,8 @@ namespace LYBT.WebAPI.Controllers
             }
         }
 
-        /// <summary>
-        /// 刷新Token
-        /// </summary>
-        /// <param name="request">刷新Token请求</param>
-        /// <returns>新的登录响应</returns>
-        [HttpPost("refresh")]
-        [AllowAnonymous]  // 刷新令牌允许匿名（使用refresh token验证）
-        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<LoginResponse>>> RefreshTokenAsync([FromBody] RefreshTokenRequest request)
-        {
-            try
-            {
-                if (request == null)
-                {
-                    return ValidationFail<LoginResponse>("刷新Token请求不能为空");
-                }
-
-                if (string.IsNullOrWhiteSpace(request.RefreshToken))
-                {
-                    return ValidationFail<LoginResponse>("刷新Token不能为空");
-                }
-
-                // 调用认证服务刷新Token
-                var result = await _authService.RefreshTokenAsync(request.RefreshToken);
-                return HandleServiceResult(result, "Token刷新成功");
-            }
-            catch (Exception ex)
-            {
-                return HandleException<LoginResponse>(ex, "刷新Token", request);
-            }
-        }
-
-        /// <summary>
-        /// 撤销Token
-        /// </summary>
-        /// <param name="request">撤销Token请求</param>
-        /// <returns>撤销结果</returns>
-        [HttpPost("revoke")]
-        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse>> RevokeTokenAsync([FromBody] RevokeTokenRequest request)
-        {
-            try
-            {
-                // 参数验证
-                var validation = ValidateModel();
-                if (validation != null)
-                {
-                    return validation;
-                }
-
-                if (request == null)
-                {
-                    return ValidationFail("撤销Token请求不能为空");
-                }
-
-                if (string.IsNullOrWhiteSpace(request.RefreshToken))
-                {
-                    return ValidationFail("Token不能为空");
-                }
-
-                // 调用认证服务撤销Token
-                var result = await _authService.RevokeTokenAsync(request);
-                return HandleBoolServiceResult(result, "Token撤销成功");
-            }
-            catch (Exception ex)
-            {
-                return HandleException(ex, "撤销Token", request);
-            }
-        }
+        // 移除刷新Token和撤销Token端点
+        // 简化版本不支持刷新令牌机制，遵循适度设计原则
 
         /// <summary>
         /// 验证Token (GET方法)

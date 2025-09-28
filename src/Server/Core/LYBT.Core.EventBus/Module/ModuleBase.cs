@@ -291,10 +291,8 @@ public abstract class ModuleBase : IModule, IModuleLifecycle
     /// </summary>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>健康状态</returns>
-    protected virtual Task<ModuleHealthStatus?> OnCheckHealthAsync(CancellationToken cancellationToken)
-    {
-        return Task.FromResult<ModuleHealthStatus?>(null);
-    }
+    protected virtual Task<ModuleHealthStatus?> OnCheckHealthAsync(CancellationToken cancellationToken) =>
+        Task.FromResult<ModuleHealthStatus?>(null);
 
     /// <summary>
     /// 改变模块状态

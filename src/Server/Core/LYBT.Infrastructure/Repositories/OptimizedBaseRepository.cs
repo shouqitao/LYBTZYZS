@@ -419,7 +419,7 @@ namespace LYBT.Infrastructure.Repositories
 
             InvalidateCache();
 
-            return await Task.FromResult(entry.Entity);
+            return entry.Entity;
         }
 
         /// <summary>
@@ -443,7 +443,7 @@ namespace LYBT.Infrastructure.Repositories
 
             InvalidateCache();
 
-            return await Task.FromResult(true);
+            return true;
         }
 
         /// <summary>
@@ -489,7 +489,7 @@ namespace LYBT.Infrastructure.Repositories
 
             InvalidateCache();
 
-            return await Task.FromResult(entityList.Count);
+            return entityList.Count;
         }
 
         /// <summary>

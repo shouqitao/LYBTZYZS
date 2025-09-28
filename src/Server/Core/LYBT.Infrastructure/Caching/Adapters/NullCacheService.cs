@@ -1,8 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
+// using System; // Moved to GlobalUsings.cs
+// using System.Collections.Generic; // Moved to GlobalUsings.cs
+// using System.Linq; // Moved to GlobalUsings.cs
+// using System.Threading; // Moved to GlobalUsings.cs
+// using System.Threading.Tasks; // Moved to GlobalUsings.cs
 using LYBT.Infrastructure.Caching.Interfaces;
 using LYBT.Infrastructure.Caching.Models;
 
@@ -62,10 +62,7 @@ namespace LYBT.Infrastructure.Caching.Adapters
         /// <summary>
         /// 异步获取缓存（始终返回null）- ICacheService接口方法
         /// </summary>
-        public Task<T> GetAsync<T>(string key) where T : class
-        {
-            return Task.FromResult<T?>(default);
-        }
+        public Task<T?> GetAsync<T>(string key) where T : class => Task.FromResult(default(T));
 
         /// <summary>
         /// 异步获取缓存（始终返回null）
@@ -110,34 +107,22 @@ namespace LYBT.Infrastructure.Caching.Adapters
         /// <summary>
         /// 异步移除缓存（始终返回false）
         /// </summary>
-        public Task<bool> RemoveAsync(string key, CancellationToken cancellationToken = default)
-        {
-            return Task.FromResult(false);
-        }
+        public Task<bool> RemoveAsync(string key, CancellationToken cancellationToken = default) => Task.FromResult(false);
 
         /// <summary>
         /// 检查缓存是否存在（始终返回false）- ICacheService接口方法
         /// </summary>
-        public Task<bool> ExistsAsync(string key)
-        {
-            return Task.FromResult(false);
-        }
+        public Task<bool> ExistsAsync(string key) => Task.FromResult(false);
 
         /// <summary>
         /// 刷新缓存过期时间（空操作）- ICacheService接口方法
         /// </summary>
-        public Task RefreshAsync(string key, TimeSpan expiration)
-        {
-            return Task.CompletedTask;
-        }
+        public Task RefreshAsync(string key, TimeSpan expiration) => Task.CompletedTask;
 
         /// <summary>
         /// 清空缓存（空操作）- ICacheService接口方法
         /// </summary>
-        public Task ClearAsync()
-        {
-            return Task.CompletedTask;
-        }
+        public Task ClearAsync() => Task.CompletedTask;
 
         /// <summary>
         /// 异步获取或设置缓存（始终执行factory）

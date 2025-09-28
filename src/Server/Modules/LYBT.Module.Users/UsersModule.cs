@@ -1,14 +1,10 @@
-using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
 using FluentValidation;
 using LYBT.Module.Users.Interfaces;
 using LYBT.Module.Users.Services;
 using LYBT.Module.Users.Repositories;
-using LYBT.Module.Users.Configuration;
-using LYBT.Module.Users.HealthChecks;
 using LYBT.Module.Users.Validators;
 using LYBT.Module.Users.Mapping;
 using LYBT.Shared.Models.Contracts.Users;
@@ -17,57 +13,38 @@ using AutoMapper;
 namespace LYBT.Module.Users
 {
     /// <summary>
-    /// 用户模块
-    /// 负责用户管理相关的业务逻辑和服务注册
+    /// 用户模块服务注册（遵循适度设计原则的简化版本）
+    /// 仅提供小型中医诊所系统所需的基础用户管理功能
     /// </summary>
-    /// <summary>
-/// 用户模块服务注册（简化版本）
-/// </summary>
-public static class UsersModule
-{
-    /// <summary>
-    /// 注册用户模块服务
-    /// </summary>
-    public static IServiceCollection AddUsersModule(this IServiceCollection services, IConfiguration configuration)
+    public static class UsersModule
     {
-        // 注册仓储
-        services.AddScoped<IUserRepository, UserRepository>();
-        // services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>(); // JWT简化后已移除
-        
-        // 注册服务
-        services.AddScoped<IUserService, UserService>();
-        services.AddScoped<IUserQueryService, UserQueryService>();
-        
-        // 注册验证器
-        services.AddScoped<IValidator<UserCreateDto>, UserCreateDtoValidator>();
-        services.AddScoped<IValidator<UserUpdateDto>, UserUpdateDtoValidator>();
-        
-        // 注册AutoMapper配置
-        services.AddAutoMapper(typeof(UserMappingProfile));
-        
-        // 注册模块特定的配置
-        services.Configure<UserModuleOptions>(configuration.GetSection("Modules:Users"));
-        
-        return services;
+        /// <summary>
+        /// 注册用户模块服务
+        /// </summary>
+        public static IServiceCollection AddUsersModule(this IServiceCollection services, IConfiguration configuration)
+        {
+            // 仅注册必要的核心服务
+            services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IUserService, UserService>();
+
+            // 保留基础验证器（简化但有用）
+            services.AddScoped<IValidator<UserCreateDto>, UserCreateDtoValidator>();
+            services.AddScoped<IValidator<UserUpdateDto>, UserUpdateDtoValidator>();
+
+            // 保留AutoMapper（简化但有用）
+            services.AddAutoMapper(typeof(UserMappingProfile));
+
+            return services;
+        }
+
+        /// <summary>
+        /// 配置用户模块中间件
+        /// </summary>
+        public static IApplicationBuilder UseUsersModule(this IApplicationBuilder app)
+        {
+            return app;
+        }
     }
-    
-    /// <summary>
-    /// 配置用户模块中间件（如有需要）
-    /// </summary>
-    public static IApplicationBuilder UseUsersModule(this IApplicationBuilder app)
-    {
-        // 当前无特殊中间件需求
-        return app;
-    }
-    
-    /// <summary>
-    /// 验证模块健康状态
-    /// </summary>
-    public static IHealthChecksBuilder AddUsersModuleHealthCheck(this IHealthChecksBuilder builder)
-    {
-        return builder.AddCheck<UsersModuleHealthCheck>("users_module");
-    }
-}
 
     /// <summary>
     /// 用户模块扩展方法（保持向后兼容）

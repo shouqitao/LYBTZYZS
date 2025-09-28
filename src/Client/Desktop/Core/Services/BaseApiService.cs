@@ -170,20 +170,14 @@ namespace LYBT.Desktop.Core.Services
         /// <summary>
         /// 处理异常
         /// </summary>
-        private Task<ServiceResult> HandleException(Exception ex)
-        {
-            var result = ExceptionHandler.HandleException(ex, "ApiCall");
-            return Task.FromResult(result);
-        }
+        private Task<ServiceResult> HandleException(Exception ex) =>
+            Task.FromResult(ExceptionHandler.HandleException(ex, "ApiCall"));
 
         /// <summary>
         /// 处理异常（泛型版本）
         /// </summary>
-        private Task<ServiceResult<T>> HandleException<T>(Exception ex)
-        {
-            var result = ExceptionHandler.HandleException<T>(ex, "ApiCall");
-            return Task.FromResult(result);
-        }
+        private Task<ServiceResult<T>> HandleException<T>(Exception ex) =>
+            Task.FromResult(ExceptionHandler.HandleException<T>(ex, "ApiCall"));
 
         /// <summary>
         /// API错误响应模型

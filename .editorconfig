@@ -93,6 +93,364 @@ csharp_style_inlined_variable_declaration = true:suggestion
 # 'using' directive preferences
 csharp_using_directive_placement = outside_namespace:suggestion
 
+# ======================================================================
+# 代码分析规则 - Code Analysis Rules
+# ======================================================================
+
+# ----------------------
+# IDE0xxx - 代码风格规则
+# ----------------------
+
+# 移除不必要的 using
+dotnet_diagnostic.IDE0005.severity = warning
+
+# 移除不可达代码
+dotnet_diagnostic.IDE0035.severity = warning
+
+# 移除不必要的抑制
+dotnet_diagnostic.IDE0079.severity = suggestion
+
+# 移除不必要的抑制运算符
+dotnet_diagnostic.IDE0080.severity = suggestion
+
+# 移除不必要的等式运算符
+dotnet_diagnostic.IDE0100.severity = suggestion
+
+# 简化条件表达式
+dotnet_diagnostic.IDE0075.severity = suggestion
+
+# 使用系统 HashCode
+dotnet_diagnostic.IDE0070.severity = suggestion
+
+# 简化插值
+dotnet_diagnostic.IDE0071.severity = suggestion
+
+# 添加缺失的 case
+dotnet_diagnostic.IDE0072.severity = suggestion
+
+# 使用文件作用域命名空间
+dotnet_diagnostic.IDE0161.severity = suggestion
+csharp_style_namespace_declarations = file_scoped:suggestion
+
+# 使用表达式主体
+dotnet_diagnostic.IDE0022.severity = suggestion
+csharp_style_expression_bodied_methods = when_on_single_line:suggestion
+csharp_style_expression_bodied_constructors = false:suggestion
+csharp_style_expression_bodied_operators = when_on_single_line:suggestion
+csharp_style_expression_bodied_properties = when_on_single_line:suggestion
+csharp_style_expression_bodied_indexers = when_on_single_line:suggestion
+csharp_style_expression_bodied_accessors = when_on_single_line:suggestion
+
+# 使用模式匹配
+dotnet_diagnostic.IDE0020.severity = suggestion
+dotnet_diagnostic.IDE0038.severity = suggestion
+csharp_style_pattern_matching_over_is_with_cast_check = true:suggestion
+csharp_style_pattern_matching_over_as_with_null_check = true:suggestion
+
+# 使用 var 关键字
+dotnet_diagnostic.IDE0007.severity = suggestion
+csharp_style_var_for_built_in_types = false:suggestion
+csharp_style_var_when_type_is_apparent = true:suggestion
+csharp_style_var_elsewhere = false:suggestion
+
+# 使用集合初始化器
+dotnet_diagnostic.IDE0028.severity = suggestion
+
+# 使用自动属性
+dotnet_diagnostic.IDE0032.severity = suggestion
+
+# 使用显式元组名称
+dotnet_diagnostic.IDE0033.severity = suggestion
+
+# 简化默认表达式
+dotnet_diagnostic.IDE0034.severity = suggestion
+
+# 移除不必要的 return
+dotnet_diagnostic.IDE0058.severity = none
+
+# 移除不必要的值赋值
+dotnet_diagnostic.IDE0059.severity = suggestion
+
+# 移除未使用的参数
+dotnet_diagnostic.IDE0060.severity = suggestion
+
+# 使用表达式主体 lambda
+dotnet_diagnostic.IDE0053.severity = suggestion
+csharp_style_expression_bodied_lambdas = when_on_single_line:suggestion
+
+# ----------------------
+# CAxxxx - 代码质量规则
+# ----------------------
+
+# 性能规则
+dotnet_diagnostic.CA1822.severity = suggestion   # 标记成员为静态
+dotnet_diagnostic.CA1825.severity = warning      # 避免零长度数组分配
+dotnet_diagnostic.CA1826.severity = warning      # 使用属性而不是 Linq 方法
+dotnet_diagnostic.CA1827.severity = warning      # 不要使用 Count()/LongCount()
+dotnet_diagnostic.CA1828.severity = warning      # 不要使用 CountAsync() 而使用 AnyAsync()
+dotnet_diagnostic.CA1829.severity = warning      # 使用 Length/Count 属性而不是 Count() 方法
+dotnet_diagnostic.CA1830.severity = suggestion   # 优先使用强类型的 Append 和 Insert 方法
+dotnet_diagnostic.CA1831.severity = warning      # 对字符串使用 AsSpan 而不是基于范围的索引器
+dotnet_diagnostic.CA1832.severity = suggestion   # 使用 AsSpan 或 AsMemory 而不是基于范围的索引器
+dotnet_diagnostic.CA1833.severity = suggestion   # 使用 AsSpan 或 AsMemory 而不是基于范围的索引器
+dotnet_diagnostic.CA1834.severity = suggestion   # 对单字符字符串使用 StringBuilder.Append(char)
+dotnet_diagnostic.CA1835.severity = suggestion   # 优先使用基于 Memory 的 ReadAsync/WriteAsync 方法
+dotnet_diagnostic.CA1836.severity = suggestion   # 如果可用，优先使用 IsEmpty 而不是 Count
+dotnet_diagnostic.CA1837.severity = suggestion   # 使用 Environment.ProcessId 而不是 Process.GetCurrentProcess().Id
+dotnet_diagnostic.CA1838.severity = suggestion   # 避免为 P/Invoke 参数使用 StringBuilder
+
+# 设计规则
+dotnet_diagnostic.CA1000.severity = suggestion   # 不要在泛型类型中声明静态成员
+dotnet_diagnostic.CA1001.severity = warning      # 具有可释放字段的类型应该是可释放的
+dotnet_diagnostic.CA1002.severity = suggestion   # 不要公开泛型列表
+dotnet_diagnostic.CA1003.severity = suggestion   # 使用泛型事件处理程序实例
+dotnet_diagnostic.CA1005.severity = suggestion   # 避免泛型类型的参数过多
+dotnet_diagnostic.CA1008.severity = suggestion   # 枚举应具有零值
+dotnet_diagnostic.CA1010.severity = suggestion   # 集合应实现泛型接口
+dotnet_diagnostic.CA1012.severity = suggestion   # 抽象类型不应具有构造函数
+dotnet_diagnostic.CA1014.severity = none         # 用 CLSCompliantAttribute 标记程序集
+dotnet_diagnostic.CA1016.severity = suggestion   # 用 AssemblyVersionAttribute 标记程序集
+dotnet_diagnostic.CA1017.severity = suggestion   # 用 ComVisibleAttribute 标记程序集
+dotnet_diagnostic.CA1018.severity = suggestion   # 用 AttributeUsageAttribute 标记特性
+dotnet_diagnostic.CA1019.severity = suggestion   # 定义特性参数的访问器
+dotnet_diagnostic.CA1021.severity = suggestion   # 避免使用 out 参数
+dotnet_diagnostic.CA1024.severity = suggestion   # 在适用处使用属性
+dotnet_diagnostic.CA1027.severity = suggestion   # 用 FlagsAttribute 标记枚举
+dotnet_diagnostic.CA1028.severity = suggestion   # 枚举存储应为 Int32
+dotnet_diagnostic.CA1030.severity = suggestion   # 在适用处使用事件
+dotnet_diagnostic.CA1031.severity = suggestion   # 不要捕获一般异常类型
+dotnet_diagnostic.CA1032.severity = suggestion   # 实现标准异常构造函数
+dotnet_diagnostic.CA1033.severity = suggestion   # 接口方法应可由子类型调用
+dotnet_diagnostic.CA1034.severity = suggestion   # 嵌套类型不应是可见的
+dotnet_diagnostic.CA1036.severity = suggestion   # 重写可比较类型中的方法
+dotnet_diagnostic.CA1040.severity = suggestion   # 避免使用空接口
+dotnet_diagnostic.CA1041.severity = suggestion   # 提供 ObsoleteAttribute 消息
+dotnet_diagnostic.CA1043.severity = suggestion   # 将整型或字符串参数用于索引器
+dotnet_diagnostic.CA1044.severity = suggestion   # 属性不应是只写的
+dotnet_diagnostic.CA1045.severity = suggestion   # 不要通过引用传递类型
+dotnet_diagnostic.CA1046.severity = suggestion   # 不要在引用类型中重载运算符 equals
+dotnet_diagnostic.CA1047.severity = suggestion   # 不要在密封类型中声明受保护的成员
+dotnet_diagnostic.CA1050.severity = suggestion   # 在命名空间中声明类型
+dotnet_diagnostic.CA1051.severity = suggestion   # 不要声明可见实例字段
+dotnet_diagnostic.CA1052.severity = suggestion   # 静态容器类型应该是 static 或 NotInheritable
+dotnet_diagnostic.CA1054.severity = suggestion   # URI 参数不应为字符串
+dotnet_diagnostic.CA1055.severity = suggestion   # URI 返回值不应为字符串
+dotnet_diagnostic.CA1056.severity = suggestion   # URI 属性不应为字符串
+dotnet_diagnostic.CA1058.severity = suggestion   # 类型不应扩展某些基类型
+dotnet_diagnostic.CA1060.severity = suggestion   # 将 pinvoke 移到本机方法类
+dotnet_diagnostic.CA1061.severity = suggestion   # 不要隐藏基类方法
+dotnet_diagnostic.CA1062.severity = suggestion   # 验证公共方法的参数
+dotnet_diagnostic.CA1063.severity = suggestion   # 正确实现 IDisposable
+dotnet_diagnostic.CA1064.severity = suggestion   # 异常应该是公共的
+dotnet_diagnostic.CA1065.severity = suggestion   # 不要在意外的位置引发异常
+dotnet_diagnostic.CA1066.severity = suggestion   # 实现 IEquatable 时重写 Equals
+dotnet_diagnostic.CA1067.severity = suggestion   # 实现 IEquatable 时重写 Equals
+dotnet_diagnostic.CA1068.severity = suggestion   # CancellationToken 参数必须最后出现
+dotnet_diagnostic.CA1069.severity = suggestion   # 枚举不应具有重复值
+
+# 全球化规则  
+dotnet_diagnostic.CA1303.severity = none         # 不要将文本作为本地化参数传递
+dotnet_diagnostic.CA1304.severity = suggestion   # 指定 CultureInfo
+dotnet_diagnostic.CA1305.severity = suggestion   # 指定 IFormatProvider
+dotnet_diagnostic.CA1307.severity = suggestion   # 为了清晰起见，请指定 StringComparison
+dotnet_diagnostic.CA1308.severity = suggestion   # 将字符串规范化为大写
+dotnet_diagnostic.CA1309.severity = suggestion   # 使用序号字符串比较
+dotnet_diagnostic.CA1310.severity = suggestion   # 为了正确性，请指定 StringComparison
+
+# 互操作性规则
+dotnet_diagnostic.CA1401.severity = suggestion   # P/Invoke 不应是可见的
+dotnet_diagnostic.CA1416.severity = warning      # 验证平台兼容性
+dotnet_diagnostic.CA1417.severity = warning      # 不要在 P/Invoke 的字符串参数上使用 OutAttribute
+
+# 可维护性规则
+dotnet_diagnostic.CA1501.severity = suggestion   # 避免过度继承
+dotnet_diagnostic.CA1502.severity = suggestion   # 避免过度复杂性
+dotnet_diagnostic.CA1505.severity = suggestion   # 避免不可维护的代码
+dotnet_diagnostic.CA1506.severity = suggestion   # 避免过度类耦合
+dotnet_diagnostic.CA1507.severity = suggestion   # 使用 nameof 表达式命名符号
+dotnet_diagnostic.CA1508.severity = suggestion   # 避免死代码
+dotnet_diagnostic.CA1509.severity = suggestion   # 代码度量配置文件中的条目无效
+
+# 命名规则
+dotnet_diagnostic.CA1700.severity = suggestion   # 不要将枚举值命名为"Reserved"
+dotnet_diagnostic.CA1707.severity = none         # 标识符不应包含下划线
+dotnet_diagnostic.CA1708.severity = suggestion   # 标识符应以大小写之外的差别进行区分
+dotnet_diagnostic.CA1710.severity = suggestion   # 标识符应具有正确的后缀
+dotnet_diagnostic.CA1711.severity = suggestion   # 标识符不应具有不正确的后缀
+dotnet_diagnostic.CA1712.severity = suggestion   # 不要将类型名用作枚举值的前缀
+dotnet_diagnostic.CA1713.severity = suggestion   # 事件不应具有 before 或 after 前缀
+dotnet_diagnostic.CA1714.severity = suggestion   # Flags 枚举应具有复数名称
+dotnet_diagnostic.CA1715.severity = suggestion   # 标识符应具有正确的前缀
+dotnet_diagnostic.CA1716.severity = suggestion   # 标识符不应与关键字冲突
+dotnet_diagnostic.CA1717.severity = suggestion   # 只有 FlagsAttribute 枚举应具有复数名称
+dotnet_diagnostic.CA1720.severity = suggestion   # 标识符包含类型名称
+dotnet_diagnostic.CA1721.severity = suggestion   # 属性名不应与 get 方法冲突
+dotnet_diagnostic.CA1724.severity = suggestion   # 类型名不应与命名空间冲突
+dotnet_diagnostic.CA1725.severity = suggestion   # 参数名应与基声明冲突
+
+# 可靠性规则
+dotnet_diagnostic.CA2000.severity = suggestion   # 丢失范围之前释放对象
+dotnet_diagnostic.CA2002.severity = suggestion   # 不要锁定具有弱标识的对象
+dotnet_diagnostic.CA2007.severity = suggestion   # 考虑对等待的任务调用 ConfigureAwait
+dotnet_diagnostic.CA2008.severity = suggestion   # 不要在未传递 TaskScheduler 的情况下创建任务
+dotnet_diagnostic.CA2009.severity = suggestion   # 不要对 ImmutableCollection 值调用 ToImmutableCollection
+dotnet_diagnostic.CA2011.severity = warning      # 避免无限递归
+dotnet_diagnostic.CA2012.severity = suggestion   # 正确使用 ValueTask
+dotnet_diagnostic.CA2013.severity = warning      # 不要将 ReferenceEquals 与值类型结合使用
+dotnet_diagnostic.CA2014.severity = warning      # 不要在循环中使用 stackalloc
+dotnet_diagnostic.CA2015.severity = warning      # 不要为派生自 MemoryManager<T> 的类型定义终结器
+dotnet_diagnostic.CA2016.severity = suggestion   # 将 CancellationToken 参数转发到采用一个的方法
+
+# 安全规则
+dotnet_diagnostic.CA2100.severity = suggestion   # 检查 SQL 查询是否存在安全漏洞
+dotnet_diagnostic.CA2101.severity = suggestion   # 指定对 P/Invoke 字符串参数进行封送处理
+dotnet_diagnostic.CA2109.severity = suggestion   # 检查可见的事件处理程序
+dotnet_diagnostic.CA2119.severity = suggestion   # 密封满足私有接口的方法
+dotnet_diagnostic.CA2153.severity = warning      # 不要捕获损坏状态异常
+dotnet_diagnostic.CA2300.severity = suggestion   # 不要使用不安全的反序列化程序 BinaryFormatter
+dotnet_diagnostic.CA2301.severity = suggestion   # 在未先设置 BinaryFormatter.Binder 的情况下，请不要调用 BinaryFormatter.Deserialize
+dotnet_diagnostic.CA2302.severity = suggestion   # 在调用 BinaryFormatter.Deserialize 之前，确保设置 BinaryFormatter.Binder
+dotnet_diagnostic.CA2305.severity = suggestion   # 不要使用不安全的反序列化程序 LosFormatter
+dotnet_diagnostic.CA2310.severity = suggestion   # 不要使用不安全的反序列化程序 NetDataContractSerializer
+dotnet_diagnostic.CA2311.severity = suggestion   # 在未先设置 NetDataContractSerializer.Binder 的情况下，请不要反序列化
+dotnet_diagnostic.CA2312.severity = suggestion   # 在反序列化之前，确保设置 NetDataContractSerializer.Binder
+dotnet_diagnostic.CA2315.severity = suggestion   # 不要使用不安全的反序列化程序 ObjectStateFormatter
+dotnet_diagnostic.CA2321.severity = suggestion   # 不要使用 SimpleTypeResolver 对 JavaScriptSerializer 进行反序列化
+dotnet_diagnostic.CA2322.severity = suggestion   # 在反序列化之前，确保未使用 SimpleTypeResolver 初始化 JavaScriptSerializer
+
+# 使用规则
+dotnet_diagnostic.CA2200.severity = suggestion   # 再次引发以保留堆栈详细信息
+dotnet_diagnostic.CA2201.severity = suggestion   # 不要引发保留的异常类型
+dotnet_diagnostic.CA2207.severity = suggestion   # 以内联方式初始化值类型的静态字段
+dotnet_diagnostic.CA2208.severity = suggestion   # 正确实例化参数异常
+dotnet_diagnostic.CA2211.severity = suggestion   # 非常量字段不应是可见的
+dotnet_diagnostic.CA2213.severity = suggestion   # 应释放可释放的字段
+dotnet_diagnostic.CA2214.severity = suggestion   # 不要在构造函数中调用可重写的方法
+dotnet_diagnostic.CA2215.severity = suggestion   # Dispose 方法应调用基类释放
+dotnet_diagnostic.CA2216.severity = suggestion   # 可释放类型应声明终结器
+dotnet_diagnostic.CA2217.severity = suggestion   # 不要使用 FlagsAttribute 标记枚举
+dotnet_diagnostic.CA2218.severity = suggestion   # 重写 Equals 时重写 GetHashCode
+dotnet_diagnostic.CA2219.severity = suggestion   # 不要在 finally 子句中引发异常
+dotnet_diagnostic.CA2224.severity = suggestion   # 重载运算符 equals 时重写 Equals
+dotnet_diagnostic.CA2225.severity = suggestion   # 运算符重载具有命名的备用项
+dotnet_diagnostic.CA2226.severity = suggestion   # 运算符应有对称重载
+dotnet_diagnostic.CA2227.severity = suggestion   # 集合属性应为只读
+dotnet_diagnostic.CA2229.severity = suggestion   # 实现序列化构造函数
+dotnet_diagnostic.CA2231.severity = suggestion   # 重写 ValueType.Equals 时重载运算符 equals
+dotnet_diagnostic.CA2234.severity = suggestion   # 传递 System.Uri 对象，而不传递字符串
+dotnet_diagnostic.CA2235.severity = suggestion   # 标记所有不可序列化的字段
+dotnet_diagnostic.CA2237.severity = suggestion   # 用 SerializableAttribute 标记 ISerializable 类型
+dotnet_diagnostic.CA2241.severity = suggestion   # 为格式化方法提供正确的参数
+dotnet_diagnostic.CA2242.severity = suggestion   # 正确测试 NaN
+dotnet_diagnostic.CA2243.severity = suggestion   # 特性字符串文本应正确分析
+dotnet_diagnostic.CA2244.severity = suggestion   # 不要复制索引元素初始化
+dotnet_diagnostic.CA2245.severity = suggestion   # 不要将属性分配给其自身
+dotnet_diagnostic.CA2246.severity = suggestion   # 不要在同一语句中分配符号及其成员
+dotnet_diagnostic.CA2247.severity = suggestion   # 传递给 TaskCompletionSource 构造函数的参数应为 TaskCreationOptions 枚举，而不是 TaskContinuationOptions 枚举
+dotnet_diagnostic.CA2248.severity = suggestion   # 为 Enum.HasFlag 提供正确的 enum 参数
+dotnet_diagnostic.CA2249.severity = suggestion   # 考虑使用 String.Contains 而不是 String.IndexOf
+
+# ----------------------
+# 异步/任务相关规则
+# ----------------------
+
+# 异步方法命名
+dotnet_diagnostic.VSTHRD200.severity = suggestion  # 异步方法名称应以 "Async" 结尾
+
+# ConfigureAwait 使用
+dotnet_diagnostic.CA2007.severity = none   # 在库代码中考虑 ConfigureAwait(false)
+
+# 异步 void 方法
+dotnet_diagnostic.VSTHRD100.severity = warning     # 避免异步 void 方法
+
+# 同步上下文中阻塞
+dotnet_diagnostic.VSTHRD002.severity = warning     # 避免有问题的同步阻塞
+
+# Task.Result 在异步上下文中的使用
+dotnet_diagnostic.VSTHRD104.severity = warning     # 提供异步选项
+
+# Task.FromResult 优化
+dotnet_diagnostic.CA1849.severity = suggestion     # 在可用时调用异步方法
+
+# ----------------------
+# 未使用代码检测
+# ----------------------
+
+# 未使用的 using 指令
+dotnet_diagnostic.IDE0005.severity = warning
+
+# 未使用的私有成员
+dotnet_diagnostic.IDE0052.severity = suggestion
+
+# 未使用的参数
+dotnet_diagnostic.IDE0060.severity = suggestion
+
+# 未读的私有成员
+dotnet_diagnostic.IDE0051.severity = suggestion
+
+# ----------------------
+# 表达式和语法简化
+# ----------------------
+
+# 使用对象初始化器
+dotnet_diagnostic.IDE0017.severity = suggestion
+
+# 使用集合初始化器  
+dotnet_diagnostic.IDE0028.severity = suggestion
+
+# 简化条件表达式
+dotnet_diagnostic.IDE0075.severity = suggestion
+
+# 简化 LINQ 表达式
+dotnet_diagnostic.IDE0120.severity = suggestion
+
+# 使用 nameof
+dotnet_diagnostic.IDE0040.severity = suggestion
+
+# 移除不必要的强制转换
+dotnet_diagnostic.IDE0004.severity = suggestion
+
+# 移除不必要的导入
+dotnet_diagnostic.IDE0005.severity = warning
+
+# 使用隐式对象创建
+dotnet_diagnostic.IDE0090.severity = suggestion
+
+# ----------------------
+# 现代 C# 语法推荐
+# ----------------------
+
+# 使用文件作用域命名空间
+dotnet_diagnostic.IDE0161.severity = suggestion
+
+# 使用 switch 表达式
+dotnet_diagnostic.IDE0066.severity = suggestion
+
+# 使用模式匹配
+dotnet_diagnostic.IDE0078.severity = suggestion
+
+# 使用 is not
+dotnet_diagnostic.IDE0084.severity = suggestion
+
+# 使用简化的 new 表达式
+dotnet_diagnostic.IDE0090.severity = suggestion
+
+# 使用局部函数而不是 lambda
+dotnet_diagnostic.IDE0039.severity = none
+
+# 使用解构
+dotnet_diagnostic.IDE0042.severity = suggestion
+
+# 使用索引运算符
+dotnet_diagnostic.IDE0056.severity = suggestion
+
+# 使用范围运算符
+dotnet_diagnostic.IDE0057.severity = suggestion
+
+# 使用复合赋值
+dotnet_diagnostic.IDE0054.severity = suggestion
+dotnet_diagnostic.IDE0074.severity = suggestion
+
 # Naming conventions
 dotnet_naming_rule.interface_should_be_prefixed_with_i.severity = suggestion
 dotnet_naming_rule.interface_should_be_prefixed_with_i.symbols = interface
@@ -132,3 +490,150 @@ dotnet_naming_symbols.private_fields.applicable_accessibilities = private
 
 dotnet_naming_style.underscore_camel_case.capitalization = camel_case
 dotnet_naming_style.underscore_camel_case.required_prefix = _
+
+# ======================================================================
+# 项目特定配置 - Project Specific Configuration  
+# ======================================================================
+
+# ----------------------
+# 抑制规则 - 基于项目实际情况
+# ----------------------
+
+# 抑制 XML 文档注释警告（已在 Directory.Build.props 中配置）
+# 这些规则与项目当前文档策略一致
+dotnet_diagnostic.CS1591.severity = none    # 缺少公共可见类型或成员的XML注释
+dotnet_diagnostic.CS1570.severity = none    # XML注释格式错误
+dotnet_diagnostic.CS1572.severity = none    # XML注释包含与实际参数不匹配的参数标记
+dotnet_diagnostic.CS1573.severity = none    # XML注释中的参数与实际参数不匹配
+dotnet_diagnostic.CS1587.severity = none    # XML注释没有放在有效语言元素上
+
+# WPF 和 Prism 相关抑制
+dotnet_diagnostic.CA1822.severity = none    # WPF 事件处理程序不能是静态的
+dotnet_diagnostic.CA1062.severity = none    # WPF 绑定参数可能为 null，但由框架保证
+
+# Entity Framework 相关抑制
+dotnet_diagnostic.CA2007.severity = none    # EF Core 查询不需要 ConfigureAwait(false)
+dotnet_diagnostic.CA1056.severity = none    # 某些 URI 属性可以是字符串（如配置）
+
+# 中医诊所业务相关抑制
+dotnet_diagnostic.CA1303.severity = none    # 暂不考虑本地化，诊所内部使用
+dotnet_diagnostic.CA1307.severity = none    # 中文字符串比较暂用默认规则
+
+# ----------------------
+# 文件类型特定配置
+# ----------------------
+
+# 测试文件配置
+[*Test*.cs,*Tests.cs,*.Test.cs]
+dotnet_diagnostic.CA1062.severity = none    # 测试中的参数验证可以放松
+dotnet_diagnostic.CA2007.severity = none    # 测试中不需要 ConfigureAwait
+dotnet_diagnostic.CA1707.severity = none    # 测试方法名可以包含下划线
+dotnet_diagnostic.CA1822.severity = none    # 测试方法不需要是静态的
+
+# ViewModel 文件配置
+[*ViewModel.cs,*ViewModels.cs]
+dotnet_diagnostic.CA1822.severity = none    # ViewModel 方法通常需要实例绑定
+dotnet_diagnostic.CA1062.severity = none    # Prism 注入的参数由框架保证非空
+
+# 数据传输对象配置
+[*Dto.cs,*Request.cs,*Response.cs,*Model.cs]
+dotnet_diagnostic.CA1051.severity = none    # DTO 可以有公共字段
+dotnet_diagnostic.CA2227.severity = none    # DTO 集合属性可以是可设置的
+
+# 配置文件
+[*Config.cs,*Configuration.cs,*Settings.cs]
+dotnet_diagnostic.CA1051.severity = none    # 配置类可以有公共字段
+dotnet_diagnostic.CA2227.severity = none    # 配置集合属性可以是可设置的
+
+# 迁移文件
+[*Migration*.cs]
+dotnet_diagnostic.IDE0040.severity = none   # 迁移代码中的字符串不需要 nameof
+dotnet_diagnostic.CA1062.severity = none    # 迁移参数由 EF 保证非空
+
+# ----------------------
+# 严格模式文件（核心业务逻辑）
+# ----------------------
+
+# 业务服务层 - 更严格的规则
+[*BusinessService.cs,*Service.cs]
+dotnet_diagnostic.CA1062.severity = warning  # 业务服务必须验证参数
+dotnet_diagnostic.CA2007.severity = suggestion  # 考虑使用 ConfigureAwait
+dotnet_diagnostic.CA1031.severity = warning  # 不要捕获一般异常
+dotnet_diagnostic.IDE0060.severity = warning  # 移除未使用的参数
+
+# 数据访问层 - 数据安全相关
+[*Repository.cs,*DbContext.cs]
+dotnet_diagnostic.CA2100.severity = warning  # 检查 SQL 注入漏洞
+dotnet_diagnostic.CA2007.severity = suggestion  # 数据库操作考虑 ConfigureAwait
+dotnet_diagnostic.CA1062.severity = warning  # 验证数据库参数
+
+# 控制器 - API 安全性
+[*Controller.cs]
+dotnet_diagnostic.CA1062.severity = warning  # 验证 API 参数
+dotnet_diagnostic.CA2100.severity = warning  # 防止 SQL 注入
+dotnet_diagnostic.CA1054.severity = suggestion  # URI 参数类型检查
+
+# ----------------------
+# 性能关键代码配置
+# ----------------------
+
+# 启用所有性能相关警告
+[*Performance*.cs,*Cache*.cs,*Query*.cs]
+dotnet_diagnostic.CA1822.severity = warning  # 性能关键代码建议静态方法
+dotnet_diagnostic.CA1825.severity = warning  # 避免零长度数组
+dotnet_diagnostic.CA1826.severity = warning  # 使用属性而不是 LINQ
+dotnet_diagnostic.CA1827.severity = warning  # 优化 Count() 调用
+dotnet_diagnostic.CA1828.severity = warning  # 优化 CountAsync() 调用
+dotnet_diagnostic.CA1829.severity = warning  # 使用 Length/Count 属性
+dotnet_diagnostic.CA1834.severity = warning  # StringBuilder 优化
+dotnet_diagnostic.CA1835.severity = warning  # 异步 I/O 优化
+
+# ----------------------
+# 代码质量等级设置
+# ----------------------
+
+# 默认质量等级（适中严格度）
+dotnet_analyzer_diagnostic.category-design.severity = suggestion
+dotnet_analyzer_diagnostic.category-performance.severity = suggestion  
+dotnet_analyzer_diagnostic.category-reliability.severity = warning
+dotnet_analyzer_diagnostic.category-security.severity = warning
+dotnet_analyzer_diagnostic.category-usage.severity = suggestion
+
+# ----------------------
+# 自定义规则配置
+# ----------------------
+
+# 针对医疗数据的特殊处理
+# 确保敏感数据处理的安全性
+dotnet_diagnostic.CA5394.severity = warning  # 不要使用不安全的随机性
+dotnet_diagnostic.CA5397.severity = warning  # 不要使用已弃用的 SslProtocols 值
+
+# 确保异步代码的正确性（医疗系统稳定性要求）
+dotnet_diagnostic.VSTHRD002.severity = warning  # 避免同步阻塞
+dotnet_diagnostic.VSTHRD100.severity = error    # 避免异步 void（医疗系统要求更严格）
+dotnet_diagnostic.VSTHRD104.severity = warning  # 提供异步选项
+
+# 确保资源正确释放（医疗数据完整性）
+dotnet_diagnostic.CA2000.severity = warning    # 释放对象
+dotnet_diagnostic.CA1063.severity = warning    # 正确实现 IDisposable
+
+# ----------------------
+# IDE 集成配置
+# ----------------------
+
+# Visual Studio Code 动作设置
+dotnet_style_prefer_conditional_expression_over_assignment = true:suggestion
+dotnet_style_prefer_conditional_expression_over_return = true:suggestion
+dotnet_style_prefer_inferred_tuple_names = true:suggestion
+dotnet_style_prefer_inferred_anonymous_type_member_names = true:suggestion
+
+# 重构建议启用
+dotnet_style_prefer_simplified_boolean_expressions = true:suggestion
+dotnet_style_prefer_compound_assignment = true:suggestion
+
+# ----------------------
+# 编译器配置
+# ----------------------
+
+# 确保与 Directory.Build.props 中的配置一致
+# 这些设置会被构建文件覆盖，但提供 IDE 提示
