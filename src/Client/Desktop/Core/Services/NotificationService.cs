@@ -14,9 +14,9 @@ namespace LYBT.Desktop.Core.Services
         #region 私有字段
 
         private readonly ILogger<NotificationService> _logger;
-        private bool _isLoading;
+        private bool _isLoading = false;
         private string _loadingMessage = string.Empty;
-        private int _currentProgress;
+        private int _currentProgress = 0;
 
         #endregion 私有字段
 

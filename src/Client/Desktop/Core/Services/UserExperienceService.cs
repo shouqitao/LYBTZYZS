@@ -28,11 +28,11 @@ namespace LYBT.Desktop.Core.Services
         private readonly ICustomDialogService _dialogService;
         private readonly DispatcherTimer _feedbackTimer;
 
-        private bool _isGlobalLoading;
+        private bool _isGlobalLoading = false;
         private string _loadingMessage = "加载中...";
         private string _statusMessage = string.Empty;
         private FeedbackType _currentFeedbackType = FeedbackType.None;
-        private int _operationProgress;
+        private int _operationProgress = 0;
 
         #endregion 私有字段
 
@@ -161,7 +161,7 @@ namespace LYBT.Desktop.Core.Services
         }
 
         /// <summary>更新操作进度</summary>
-        public void UpdateProgress(int progress, string message = null)
+        public void UpdateProgress(int progress, string? message = null)
         {
             Application.Current.Dispatcher.BeginInvoke(() =>
             {

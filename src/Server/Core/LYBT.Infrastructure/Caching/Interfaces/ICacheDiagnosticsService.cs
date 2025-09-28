@@ -78,17 +78,17 @@ namespace LYBT.Infrastructure.Caching.Interfaces
         /// <summary>
         /// 缓存统计
         /// </summary>
-        public CacheStatistics Statistics { get; set; }
+        public CacheStatistics Statistics { get; set; } = new();
 
         /// <summary>
         /// 阈值检查结果
         /// </summary>
-        public ThresholdCheckResult ThresholdCheck { get; set; }
+        public ThresholdCheckResult ThresholdCheck { get; set; } = new();
 
         /// <summary>
         /// 健康消息
         /// </summary>
-        public string Message { get; set; }
+        public string Message { get; set; } = string.Empty;
 
         /// <summary>
         /// 建议操作
@@ -145,17 +145,17 @@ namespace LYBT.Infrastructure.Caching.Interfaces
         /// <summary>
         /// 健康状态
         /// </summary>
-        public CacheHealthStatus HealthStatus { get; set; }
+        public CacheHealthStatus HealthStatus { get; set; } = new();
 
         /// <summary>
         /// 性能指标
         /// </summary>
-        public PerformanceMetrics Performance { get; set; }
+        public PerformanceMetrics Performance { get; set; } = new();
 
         /// <summary>
         /// 容量分析
         /// </summary>
-        public CapacityAnalysis Capacity { get; set; }
+        public CapacityAnalysis Capacity { get; set; } = new();
 
         /// <summary>
         /// 诊断耗时（毫秒）
@@ -294,7 +294,7 @@ namespace LYBT.Infrastructure.Caching.Interfaces
         /// <summary>
         /// 统计信息
         /// </summary>
-        public CacheStatistics Statistics { get; set; }
+        public CacheStatistics Statistics { get; set; } = new();
 
         /// <summary>
         /// 健康等级
@@ -304,7 +304,7 @@ namespace LYBT.Infrastructure.Caching.Interfaces
         /// <summary>
         /// 阈值检查结果
         /// </summary>
-        public ThresholdCheckResult ThresholdCheck { get; set; }
+        public ThresholdCheckResult ThresholdCheck { get; set; } = new();
 
         /// <summary>
         /// 采样窗口（秒）

@@ -263,7 +263,7 @@ namespace LYBT.Desktop.Core.Models.Prescriptions
         /// <inheritdoc/>
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        protected bool SetProperty<T>(ref T storage, T value, [CallerMemberName] string propertyName = null!)
+        protected bool SetProperty<T>(ref T storage, T value, [CallerMemberName] string? propertyName = null)
         {
             if (EqualityComparer<T>.Default.Equals(storage, value))
             {
@@ -275,7 +275,7 @@ namespace LYBT.Desktop.Core.Models.Prescriptions
             return true;
         }
 
-        protected void OnPropertyChanged([CallerMemberName] string propertyName = null!)
+        protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
@@ -428,7 +428,7 @@ namespace LYBT.Desktop.Core.Models.Prescriptions
         /// <inheritdoc/>
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        protected bool SetProperty<T>(ref T storage, T value, [CallerMemberName] string propertyName = null!)
+        protected bool SetProperty<T>(ref T storage, T value, [CallerMemberName] string? propertyName = null)
         {
             if (EqualityComparer<T>.Default.Equals(storage, value))
             {
@@ -440,7 +440,7 @@ namespace LYBT.Desktop.Core.Models.Prescriptions
             return true;
         }
 
-        protected void OnPropertyChanged([CallerMemberName] string propertyName = null!)
+        protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }

@@ -72,7 +72,7 @@ namespace LYBT.Module.MedicalCase.Repositories
         public async Task<PagedResult<MedicalCaseEntity>> GetPagedWithDetailsAsync(
             int pageNumber,
             int pageSize,
-            string keyword = null)
+            string? keyword = null)
         {
             var query = GetBaseQuery();
 

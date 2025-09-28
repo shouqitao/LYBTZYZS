@@ -342,11 +342,15 @@ namespace LYBT.Desktop.Core.Modularity
     /// </summary>
     public class ModuleState
     {
-        public string ModuleName { get; set; }
-        public ModuleLoadState State { get; set; }
-        public DateTime LastStateChange { get; set; }
-        public IModuleInfo ModuleInfo { get; set; }
-        public string ErrorMessage { get; set; }
+        public string ModuleName { get; set; } = string.Empty;
+        
+        public ModuleLoadState State { get; set; } = ModuleLoadState.NotLoaded;
+        
+        public IModuleInfo? ModuleInfo { get; set; }
+        
+        public DateTime LastStateChange { get; set; } = DateTime.Now;
+
+        public string ErrorMessage { get; set; } = string.Empty;
     }
 
     /// <summary>
@@ -366,6 +370,6 @@ namespace LYBT.Desktop.Core.Modularity
     /// </summary>
     public class ModuleLoadedEventArgs : EventArgs
     {
-        public string ModuleName { get; set; }
+        public string ModuleName { get; set; } = string.Empty;
     }
 }

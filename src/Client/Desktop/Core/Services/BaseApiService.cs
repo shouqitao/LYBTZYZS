@@ -49,7 +49,7 @@ namespace LYBT.Desktop.Core.Services
         /// <summary>
         /// 执行API调用（无返回值）
         /// </summary>
-        protected async Task<ServiceResult> ExecuteApiCall(Func<Task<IApiResponse>> apiCall, string operationName = null)
+        protected async Task<ServiceResult> ExecuteApiCall(Func<Task<IApiResponse>> apiCall, string? operationName = null)
         {
             try
             {
@@ -77,7 +77,7 @@ namespace LYBT.Desktop.Core.Services
         /// <summary>
         /// 执行API调用（有返回值）
         /// </summary>
-        protected async Task<ServiceResult<T>> ExecuteApiCall<T>(Func<Task<IApiResponse<T>>> apiCall, string operationName = null)
+        protected async Task<ServiceResult<T>> ExecuteApiCall<T>(Func<Task<IApiResponse<T>>> apiCall, string? operationName = null)
         {
             try
             {
@@ -110,7 +110,7 @@ namespace LYBT.Desktop.Core.Services
             string cacheKey,
             Func<Task<IApiResponse<T>>> apiCall,
             TimeSpan? cacheDuration = null,
-            string operationName = null)
+            string? operationName = null)
         {
             // 缓存功能可根据需要实现
             // 这里暂时直接调用API
@@ -190,8 +190,8 @@ namespace LYBT.Desktop.Core.Services
         /// </summary>
         private class ApiErrorResponse
         {
-            public string Message { get; set; }
-            public string Code { get; set; }
+            public string Message { get; set; } = string.Empty;
+            public string Code { get; set; } = string.Empty;
             public object Details { get; set; }
         }
     }

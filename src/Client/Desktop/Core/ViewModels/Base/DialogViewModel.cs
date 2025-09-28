@@ -15,11 +15,11 @@ namespace LYBT.Desktop.Core.ViewModels.Base
         #region Fields
 
         private string _title = string.Empty;
-        private bool _isBusy;
+        private bool _isBusy = false;
         private string _busyMessage = "处理中...";
         protected readonly IEventAggregator _eventAggregator;
         private readonly CompositeDisposable _disposables = new();
-        private bool _disposed;
+        private bool _disposed = false;
 
         #endregion
 

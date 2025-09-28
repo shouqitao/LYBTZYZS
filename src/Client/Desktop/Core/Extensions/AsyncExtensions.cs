@@ -257,8 +257,8 @@ namespace LYBT.Desktop.Core.Extensions
         {
             private readonly int _threshold;
             private readonly TimeSpan _timeout;
-            private int _failureCount;
-            private DateTime _lastFailureTime;
+            private int _failureCount = 0;
+            private DateTime _lastFailureTime = DateTime.MinValue;
             private readonly object _lock = new();
 
             public CircuitBreaker(int threshold = 3, TimeSpan? timeout = null)

@@ -11,10 +11,10 @@ namespace LYBT.Desktop.Core.ViewModels
     public class ErrorNotificationViewModel : BindableBase
     {
         private HandledError? _handledError;
-        private bool _isVisible;
+        private bool _isVisible = false;
         private string _userMessage = string.Empty;
         private ErrorSeverity _severity = ErrorSeverity.Error;
-        private bool _canRetry;
+        private bool _canRetry = false;
         private List<string> _suggestedActions = new List<string>();
 
         public bool IsVisible

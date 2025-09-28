@@ -32,16 +32,16 @@ namespace LYBT.Desktop.Core.ViewModels.Base
         #region 生命周期管理
         
         private readonly CompositeDisposable _disposables = new();
-        private bool _disposed;
+        private bool _disposed = false;
         
         #endregion
 
         #region 状态属性
         
-        private bool _isLoading;
-        private bool _isBusy;
+        private bool _isLoading = false;
+        private bool _isBusy = false;
         private string _statusMessage = string.Empty;
-        private bool _hasError;
+        private bool _hasError = false;
         private string _errorMessage = string.Empty;
         
         /// <summary>

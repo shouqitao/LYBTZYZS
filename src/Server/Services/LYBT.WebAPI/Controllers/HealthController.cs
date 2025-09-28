@@ -336,8 +336,8 @@ public class HealthController : BaseApiController
         }
 
         public string Name { get; }
-        public string Status { get; set; }
-        public string Description { get; set; }
+        public string Status { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
         public object? Data { get; set; }
         public long Duration { get; set; }
         public string? Error { get; set; }

@@ -141,7 +141,7 @@ namespace LYBT.Module.Auth.Services
             return null;
         }
 
-        private async Task<SecurityKey> GetProductionKeyAsync()
+        private Task<SecurityKey> GetProductionKeyAsync()
         {
             // 优先级：
             // 1. Azure Key Vault (需要配置)
@@ -166,7 +166,7 @@ namespace LYBT.Module.Auth.Services
                 throw new InvalidOperationException("生产环境JWT密钥未配置");
             }
 
-            return new SymmetricSecurityKey(Convert.FromBase64String(keyString));
+            return Task.FromResult<SecurityKey>(new SymmetricSecurityKey(Convert.FromBase64String(keyString)));
         }
 
         private SecurityKey GetDevelopmentKey()
@@ -199,7 +199,7 @@ namespace LYBT.Module.Auth.Services
             }
         }
 
-        private async Task<SecurityKey?> GetSecondaryKeyAsync()
+        private Task<SecurityKey?> GetSecondaryKeyAsync()
         {
             var keyString = IsProduction()
                 ? Environment.GetEnvironmentVariable("JWT_SIGNING_KEY_SECONDARY")
@@ -207,20 +207,20 @@ namespace LYBT.Module.Auth.Services
 
             if (string.IsNullOrEmpty(keyString))
             {
-                return null;
+                return Task.FromResult<SecurityKey?>(null);
             }
 
             if (IsBase64String(keyString))
             {
-                return new SymmetricSecurityKey(Convert.FromBase64String(keyString));
+                return Task.FromResult<SecurityKey?>(new SymmetricSecurityKey(Convert.FromBase64String(keyString)));
             }
             else
             {
-                return new SymmetricSecurityKey(Encoding.UTF8.GetBytes(keyString));
+                return Task.FromResult<SecurityKey?>(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(keyString)));
             }
         }
 
-        private async Task StorePrimaryKeyAsync(string keyString)
+        private Task StorePrimaryKeyAsync(string keyString)
         {
             if (IsProduction())
             {
@@ -233,9 +233,10 @@ namespace LYBT.Module.Auth.Services
                 // 开发环境：可以更新用户机密
                 _logger.LogInformation($"新的主密钥：{keyString}");
             }
+            return Task.CompletedTask;
         }
 
-        private async Task StoreSecondaryKeyAsync(string keyString)
+        private Task StoreSecondaryKeyAsync(string keyString)
         {
             if (IsProduction())
             {
@@ -245,6 +246,7 @@ namespace LYBT.Module.Auth.Services
             {
                 _logger.LogInformation($"备用密钥：{keyString}");
             }
+            return Task.CompletedTask;
         }
 
         private string GenerateSecureKey()

@@ -22,7 +22,7 @@ namespace LYBT.Module.MedicalCase.Interfaces
         /// <summary>
         /// 获取分页列表（包含关联数据）
         /// </summary>
-        Task<PagedResult<MedicalCaseEntity>> GetPagedWithDetailsAsync(int pageNumber, int pageSize, string keyword = null);
+        Task<PagedResult<MedicalCaseEntity>> GetPagedWithDetailsAsync(int pageNumber, int pageSize, string? keyword = null);
         
         /// <summary>
         /// 根据医生ID获取病案列表

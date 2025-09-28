@@ -53,7 +53,7 @@ namespace LYBT.Desktop.Core.Controls.Authentication
             }
         }
 
-        private bool _isUpdating;
+        private bool _isUpdating = false;
 
         /// <summary>
         /// 当密码属性变更时更新密码框

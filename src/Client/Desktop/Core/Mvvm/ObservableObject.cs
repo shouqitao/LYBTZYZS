@@ -39,7 +39,7 @@ public abstract class ObservableObject : INotifyPropertyChanged, INotifyProperty
     /// <summary>
     /// 是否正在批量更新
     /// </summary>
-    private int _isBatchUpdating;
+    private int _isBatchUpdating = 0;
 
     /// <summary>
     /// 批量更新期间的更改属性

@@ -45,7 +45,7 @@ namespace LYBT.Module.Consultation.Repositories
         public async Task<PagedResult<ConsultationEntity>> GetPagedWithDetailsAsync(
             int pageNumber,
             int pageSize,
-            string keyword = null)
+            string? keyword = null)
         {
             var query = _dbSet
                 .Include(c => c.MedicalCase)  // 预加载病案信息（包含患者和医生信息）

@@ -15,8 +15,8 @@ namespace LYBT.Desktop.Core.Controls
     /// </summary>
     public partial class VirtualizedDataGrid : UserControl
     {
-        private bool _isNearBottom;
-        private double _lastVerticalOffset;
+        private bool _isNearBottom = false;
+        private double _lastVerticalOffset = 0.0;
 
         public VirtualizedDataGrid()
         {
@@ -181,8 +181,8 @@ namespace LYBT.Desktop.Core.Controls
         private string _searchKeyword = string.Empty;
         private int _currentPage = 1;
         private int _pageSize = 50;
-        private int _totalItems;
-        private int _totalPages;
+        private int _totalItems = 0;
+        private int _totalPages = 0;
         private object? _selectedItem;
         private Func<int, int, string, Task<PagedDataResult>>? _loadDataAsync;
 
@@ -604,7 +604,7 @@ namespace LYBT.Desktop.Core.Controls
         /// <inheritdoc/>
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        protected bool SetProperty<T>(ref T storage, T value, [CallerMemberName] string propertyName = null!)
+        protected bool SetProperty<T>(ref T storage, T value, [CallerMemberName] string? propertyName = null)
         {
             if (Equals(storage, value))
             {
@@ -616,7 +616,7 @@ namespace LYBT.Desktop.Core.Controls
             return true;
         }
 
-        protected void OnPropertyChanged([CallerMemberName] string propertyName = null!)
+        protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }

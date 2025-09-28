@@ -17,7 +17,7 @@ namespace LYBT.Module.Prescriptions.Interfaces
         /// <summary>
         /// 获取分页列表（包含关联数据）
         /// </summary>
-        Task<PagedResult<Prescription>> GetPagedWithDetailsAsync(int pageNumber, int pageSize, string keyword = null);
+        Task<PagedResult<Prescription>> GetPagedWithDetailsAsync(int pageNumber, int pageSize, string? keyword = null);
         
         /// <summary>
         /// 根据患者ID获取处方列表

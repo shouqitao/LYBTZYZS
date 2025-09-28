@@ -19,7 +19,7 @@ namespace LYBT.Desktop.Core.Events
         private readonly Dictionary<Type, object> _eventSubjects;
         private readonly Dictionary<string, SubscriptionToken> _subscriptions;
         private readonly object _lock = new object();
-        private bool _disposed;
+        private bool _disposed = false;
 
         public EventManager(IEventAggregator eventAggregator, ILogger<EventManager> logger)
         {
@@ -309,7 +309,7 @@ namespace LYBT.Desktop.Core.Events
     /// </summary>
     public class ManagerEventStatistics
     {
-        public string EventTypeName { get; set; }
+        public string EventTypeName { get; set; } = string.Empty;
         public int PublishCount { get; set; }
         public int SubscriberCount { get; set; }
         public DateTime LastPublished { get; set; }

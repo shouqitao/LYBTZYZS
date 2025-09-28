@@ -211,7 +211,7 @@ namespace LYBT.Desktop.Core.Memory
         private class StrongSubscription : IDisposable
         {
             private readonly Action _unsubscribe;
-            private bool _disposed;
+            private bool _disposed = false;
 
             public StrongSubscription(EventHandler<TEventArgs> handler, Action unsubscribe)
             {

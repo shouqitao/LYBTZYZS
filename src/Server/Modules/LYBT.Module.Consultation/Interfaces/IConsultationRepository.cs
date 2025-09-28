@@ -17,7 +17,7 @@ namespace LYBT.Module.Consultation.Interfaces
         /// <summary>
         /// 获取分页列表（包含关联数据）
         /// </summary>
-        Task<PagedResult<ConsultationEntity>> GetPagedWithDetailsAsync(int pageNumber, int pageSize, string keyword = null);
+        Task<PagedResult<ConsultationEntity>> GetPagedWithDetailsAsync(int pageNumber, int pageSize, string? keyword = null);
         
         /// <summary>
         /// 根据ID获取诊疗记录（包含所有关联数据）

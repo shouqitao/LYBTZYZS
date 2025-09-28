@@ -34,33 +34,21 @@ namespace LYBT.Desktop.Core.ViewModels.Base.Refactored
         #region 生命周期管理
         
         private readonly CompositeDisposable _disposables = new();
-        private bool _disposed;
-        
-        #endregion
+        private bool _disposed = false;
 
-        #region 验证支持
-        
+        // Loading and Busy states - simplify with modern C# patterns
+
+        private bool _isLoading = false;
+        private bool _isBusy = false;
+
+        private bool _hasError = false;
+        private string _errorMessage = string.Empty;
+        private string _statusMessage = string.Empty;
         private readonly Dictionary<string, List<string>> _validationErrors = new();
         
-        /// <summary>
-        /// 验证错误变化事件
-        /// </summary>
+        // INotifyDataErrorInfo implementation
         public event EventHandler<DataErrorsChangedEventArgs>? ErrorsChanged;
-        
-        /// <summary>
-        /// 是否有验证错误
-        /// </summary>
-        public bool HasErrors => _validationErrors.Count > 0;
-        
-        #endregion
-
-        #region 状态管理属性
-        
-        private bool _isLoading;
-        private bool _isBusy;
-        private string _statusMessage = string.Empty;
-        private bool _hasError;
-        private string _errorMessage = string.Empty;
+        public bool HasErrors => _validationErrors.Any();
         
         /// <summary>
         /// 是否正在加载数据

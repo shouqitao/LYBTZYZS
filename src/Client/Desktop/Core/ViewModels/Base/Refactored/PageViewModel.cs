@@ -26,7 +26,7 @@ namespace LYBT.Desktop.Core.ViewModels.Base.Refactored
         #region 页面属性
         
         private string _pageTitle = string.Empty;
-        private bool _isNavigating;
+        private bool _isNavigating = false;
         
         /// <summary>
         /// 页面标题

@@ -42,8 +42,8 @@ namespace LYBT.Infrastructure.Repositories
         Task<(List<TEntity> Items, int TotalCount)> GetPagedAsync(
             int pageNumber,
             int pageSize,
-            Expression<Func<TEntity, bool>> predicate = null,
-            Expression<Func<TEntity, object>> orderBy = null,
+            Expression<Func<TEntity, bool>>? predicate = null,
+            Expression<Func<TEntity, object>>? orderBy = null,
             bool descending = true);
 
         /// <summary>
@@ -54,7 +54,7 @@ namespace LYBT.Infrastructure.Repositories
         /// <summary>
         /// 获取数量
         /// </summary>
-        Task<int> CountAsync(Expression<Func<TEntity, bool>> predicate = null);
+        Task<int> CountAsync(Expression<Func<TEntity, bool>>? predicate = null);
 
         #endregion
 

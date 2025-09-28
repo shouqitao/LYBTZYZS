@@ -43,7 +43,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
             set => SetProperty(ref _selectedConsultation, value);
         }
 
-        private bool _isLoading;
+        private bool _isLoading = false;
 
         public bool IsLoading
         {

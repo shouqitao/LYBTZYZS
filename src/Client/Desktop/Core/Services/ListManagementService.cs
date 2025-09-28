@@ -112,8 +112,8 @@ namespace LYBT.Desktop.Core.Services
         private readonly ICollectionView _itemsView;
         
         private T? _selectedItem;
-        private bool _isLoading;
-        private int _totalCount;
+        private bool _isLoading = false;
+        private int _totalCount = 0;
         private Func<CancellationToken, Task<IEnumerable<T>>>? _loadFunc;
         private Func<T, bool>? _currentFilter;
         

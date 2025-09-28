@@ -249,7 +249,7 @@ namespace LYBT.Module.Auth.Repositories
         /// <summary>
         /// 更新刷新令牌 - 简化版
         /// </summary>
-        public async Task UpdateAsync(RefreshToken refreshToken)
+        public new async Task UpdateAsync(RefreshToken refreshToken)
         {
             refreshToken.UpdatedAt = DateTime.UtcNow;
             _dbSet.Update(refreshToken);

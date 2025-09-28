@@ -271,6 +271,14 @@ await mcp.run({
 3. **变量保存**：`Memory Server` 记录当前任务进度或后续待办，避免上下文丢失。
 4. **SQL 验证**：通过 `SQL Server` MCP 快速验证 EF 查询结果，与测试数据对齐。
 5. **Playwright 调试**：在需要录制桌面端交互脚本时，调用 `Playwright` MCP 执行自动化脚本。
+
+### Context7 使用强制规则
+
+Always use context7 when I need code generation, setup or configuration steps, or library/API documentation. This means you should automatically use the Context7 MCP tools to resolve library id and get library docs without me having to explicitly ask.
+
+落实要求：
+- 当涉及“代码生成、环境搭建/配置步骤、库或 API 文档查询”时，必须优先调用 Context7 的 MCP 工具（例如 resolve-library-id、get-library-docs）。
+- 默认自动解析库 ID 并抓取文档，不等待人工提示；仅在歧义时发起澄清。
 6. **工具容错与重试**：当 `mcp.run()` 调用失败时，应遵循以下步骤：
     a. **分析错误**：首先读取返回的 `error` 信息。
     b. **自我修正**：如果是参数错误（如路径错误），应根据错误信息修正 `params` 并重试一次。

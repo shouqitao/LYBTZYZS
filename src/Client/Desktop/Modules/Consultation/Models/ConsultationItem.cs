@@ -12,21 +12,29 @@ namespace LYBT.Desktop.Consultation.Models;
 /// </summary>
 public class ConsultationItem : BindableBase
 {
-        private Guid _id;
-    public Guid Id
-    {
-        get => _id;
-        set => SetProperty(ref _id, value);
-    }
+        private Guid _id = Guid.Empty;
 
-        private Guid _medicalCaseId;
-    public Guid MedicalCaseId
-    {
-        get => _medicalCaseId;
-        set => SetProperty(ref _medicalCaseId, value);
-    }
+        /// <summary>
+        /// 问诊记录ID
+        /// </summary>
+        public Guid Id
+        {
+            get => _id;
+            set => SetProperty(ref _id, value);
+        }
 
-        private Guid _patientId;
+        private Guid _medicalCaseId = Guid.Empty;
+
+        /// <summary>
+        /// 关联的病历ID
+        /// </summary>
+        public Guid MedicalCaseId
+        {
+            get => _medicalCaseId;
+            set => SetProperty(ref _medicalCaseId, value);
+        }
+
+        private Guid _patientId = Guid.Empty;
     public Guid PatientId
     {
         get => _patientId;
@@ -146,14 +154,14 @@ public class ConsultationItem : BindableBase
         set => SetProperty(ref _treatmentPrinciple, value);
     } // 治则
 
-        private ConsultationStatus _status;
+        private ConsultationStatus _status = ConsultationStatus.Pending;
     public ConsultationStatus Status
     {
         get => _status;
         set => SetProperty(ref _status, value);
     }
 
-        private DateTime _createdAt;
+        private DateTime _createdAt = DateTime.Now;
     public DateTime CreatedAt
     {
         get => _createdAt;
@@ -174,14 +182,18 @@ public class ConsultationItem : BindableBase
         set => SetProperty(ref _prescriptionId, value);
     }
 
-        private bool _isSelected;
-    public bool IsSelected
-    {
-        get => _isSelected;
-        set => SetProperty(ref _isSelected, value);
-    }
+        private bool _isSelected = false;
 
-        private bool _isExpanded;
+        /// <summary>
+        /// 是否选中
+        /// </summary>
+        public bool IsSelected
+        {
+            get => _isSelected;
+            set => SetProperty(ref _isSelected, value);
+        }
+
+        private bool _isExpanded = false;
     public bool IsExpanded
     {
         get => _isExpanded;

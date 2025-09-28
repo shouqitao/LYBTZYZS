@@ -50,12 +50,9 @@ namespace LYBT.Desktop.Workbench.Core
         /// <summary>
         /// 子导航项
         /// </summary>
-        public List<NavigationItem> Children { get; set; }
+        public List<NavigationItem> Children { get; set; } = new();
 
-        /// <summary>
-        /// 必需的权限
-        /// </summary>
-        public List<string> RequiredPermissions { get; set; }
+        public List<string> RequiredPermissions { get; set; } = new();
 
         /// <summary>
         /// 工具提示

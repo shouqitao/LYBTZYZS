@@ -86,12 +86,12 @@ namespace LYBT.Module.Consultation.Services
         /// 注意：诊疗记录应该通过MedicalCase聚合根创建，使用MedicalCaseService.CreateWithDetailsAsync
         /// </summary>
         [Obsolete("诊疗记录应该通过MedicalCase聚合根创建，请使用MedicalCaseService.CreateWithDetailsAsync")]
-        public async Task<ServiceResult<ConsultationDto>> CreateAsync(ConsultationCreateDto dto)
+        public Task<ServiceResult<ConsultationDto>> CreateAsync(ConsultationCreateDto dto)
         {
             // 该方法已废弃，诊疗记录应该通过MedicalCase聚合根创建
             _logger.LogWarning("使用了已废弃的ConsultationService.CreateAsync方法，应该通过MedicalCase聚合根创建");
             
-            return ServiceResult<ConsultationDto>.Failure("诊疗记录必须通过医疗案例(MedicalCase)创建，请使用MedicalCaseService.CreateWithDetailsAsync");
+            return Task.FromResult(ServiceResult<ConsultationDto>.Failure("诊疗记录必须通过医疗案例(MedicalCase)创建，请使用MedicalCaseService.CreateWithDetailsAsync"));
         }
 
         public async Task<ServiceResult<ConsultationDto>> UpdateAsync(Guid id, ConsultationUpdateDto dto)
@@ -158,12 +158,12 @@ namespace LYBT.Module.Consultation.Services
         /// 注意：诊疗会话应该通过MedicalCase聚合根创建，使用MedicalCaseService.CreateWithDetailsAsync
         /// </summary>
         [Obsolete("诊疗会话应该通过MedicalCase聚合根创建，请使用MedicalCaseService.CreateWithDetailsAsync")]
-        public async Task<ServiceResult<ConsultationDto>> StartAsync(Guid patientId)
+        public Task<ServiceResult<ConsultationDto>> StartAsync(Guid patientId)
         {
             // 该方法已废弃，诊疗会话应该通过MedicalCase聚合根创建
             _logger.LogWarning("使用了已废弃的ConsultationService.StartAsync方法，应该通过MedicalCase聚合根创建");
             
-            return ServiceResult<ConsultationDto>.Failure("诊疗会话必须通过医疗案例(MedicalCase)创建，请使用MedicalCaseService.CreateWithDetailsAsync");
+            return Task.FromResult(ServiceResult<ConsultationDto>.Failure("诊疗会话必须通过医疗案例(MedicalCase)创建，请使用MedicalCaseService.CreateWithDetailsAsync"));
         }
 
         public async Task<ServiceResult<List<ConsultationDto>>> SearchAsync(string keyword)

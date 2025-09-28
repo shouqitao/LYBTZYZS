@@ -44,7 +44,7 @@ namespace LYBT.Module.Prescriptions.Repositories
         public async Task<PagedResult<PrescriptionEntity>> GetPagedWithDetailsAsync(
             int pageNumber,
             int pageSize,
-            string keyword = null)
+            string? keyword = null)
         {
             var query = _dbSet
                 .Include(p => p.Items)  // 预加载处方项

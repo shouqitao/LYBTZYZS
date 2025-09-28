@@ -28,7 +28,7 @@ public interface IFormulaRepository : IRepository<FormulaEntity>
     /// <summary>
     /// 获取分页列表（包含药材配伍信息）
     /// </summary>
-    Task<PagedResult<FormulaEntity>> GetPagedWithDetailsAsync(int pageNumber, int pageSize, string keyword = null);
+    Task<PagedResult<FormulaEntity>> GetPagedWithDetailsAsync(int pageNumber, int pageSize, string? keyword = null);
     
     /// <summary>
     /// 根据用户ID获取方剂列表（包含权限逻辑：自己的+共享的）

@@ -40,7 +40,7 @@ namespace LYBT.Infrastructure.Caching.Adapters
         public MemoryCacheAdapter(
             IMemoryCache memoryCache,
             ILogger<MemoryCacheAdapter> logger,
-            IOptions<CacheOptions> cacheOptions = null)
+            IOptions<CacheOptions>? cacheOptions = null)
         {
             _memoryCache = memoryCache ?? throw new ArgumentNullException(nameof(memoryCache));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));

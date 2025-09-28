@@ -35,14 +35,14 @@ namespace LYBT.Module.Auth.Services
         /// <summary>
         /// 将Token添加到黑名单
         /// </summary>
-        public async Task<bool> AddToBlacklistAsync(string jwtId, DateTime expiration)
+        public Task<bool> AddToBlacklistAsync(string jwtId, DateTime expiration)
         {
             try
             {
                 if (string.IsNullOrWhiteSpace(jwtId))
                 {
                     _logger.LogWarning("尝试添加空的JWT ID到黑名单");
-                    return false;
+                    return Task.FromResult(false);
                 }
 
                 var cacheKey = BLACKLIST_KEY_PREFIX + jwtId;
@@ -62,37 +62,37 @@ namespace LYBT.Module.Auth.Services
                 UpdateTodayStats();
 
                 _logger.LogInformation("JWT已添加到黑名单: {JwtId}, 过期时间: {Expiration}", jwtId, expiration);
-                return true;
+                return Task.FromResult(true);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "添加JWT到黑名单失败: {JwtId}", jwtId);
-                return false;
+                return Task.FromResult(false);
             }
         }
 
         /// <summary>
         /// 检查Token是否在黑名单中
         /// </summary>
-        public async Task<bool> IsBlacklistedAsync(string jwtId)
+        public Task<bool> IsBlacklistedAsync(string jwtId)
         {
             try
             {
                 if (string.IsNullOrWhiteSpace(jwtId))
                 {
-                    return false;
+                    return Task.FromResult(false);
                 }
 
                 var cacheKey = BLACKLIST_KEY_PREFIX + jwtId;
                 var isBlacklisted = _cache.TryGetValue(cacheKey, out _);
 
-                return isBlacklisted;
+                return Task.FromResult(isBlacklisted);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "检查JWT黑名单状态失败: {JwtId}", jwtId);
                 // 出现异常时，为了安全起见返回true（视为已被撤销）
-                return true;
+                return Task.FromResult(true);
             }
         }
 
@@ -129,7 +129,7 @@ namespace LYBT.Module.Auth.Services
         /// <summary>
         /// 清理过期的黑名单记录
         /// </summary>
-        public async Task<int> CleanupExpiredAsync()
+        public Task<int> CleanupExpiredAsync()
         {
             int cleanedCount = 0;
 
@@ -166,19 +166,19 @@ namespace LYBT.Module.Auth.Services
                     _logger.LogInformation("清理过期黑名单记录: {CleanedCount} 个", cleanedCount);
                 }
 
-                return cleanedCount;
+                return Task.FromResult(cleanedCount);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "清理过期黑名单记录失败");
-                return cleanedCount;
+                return Task.FromResult(cleanedCount);
             }
         }
 
         /// <summary>
         /// 获取黑名单统计信息
         /// </summary>
-        public async Task<BlacklistStats> GetStatsAsync()
+        public Task<BlacklistStats> GetStatsAsync()
         {
             try
             {
@@ -193,12 +193,12 @@ namespace LYBT.Module.Auth.Services
                     MemoryUsage = GC.GetTotalMemory(false) // 近似内存使用量
                 };
 
-                return stats;
+                return Task.FromResult(stats);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "获取黑名单统计信息失败");
-                return new BlacklistStats();
+                return Task.FromResult(new BlacklistStats());
             }
         }
 

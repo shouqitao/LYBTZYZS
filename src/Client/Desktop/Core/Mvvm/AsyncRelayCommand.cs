@@ -47,7 +47,7 @@ public class AsyncRelayCommand(
     private readonly Func<bool>? _canExecute = canExecute;
     private readonly Action<Exception>? _errorHandler = errorHandler;
 
-    private bool _isExecuting;
+    private bool _isExecuting = false;
     private CancellationTokenSource? _cancellationTokenSource;
     private NotifyTaskCompletion? _execution;
 
@@ -304,8 +304,8 @@ public class AsyncRelayCommand<T>(
     private readonly Action<Exception>? _errorHandler = errorHandler;
     private readonly IProgress<int>? _progress = progress;
 
-    private bool _isExecuting;
-    private int _progressValue;
+    private bool _isExecuting = false;
+    private int _progressValue = 0;
     private CancellationTokenSource? _cancellationTokenSource;
     private NotifyTaskCompletion? _execution;
 

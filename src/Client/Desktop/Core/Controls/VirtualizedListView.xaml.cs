@@ -18,8 +18,8 @@ namespace LYBT.Desktop.Core.Controls
     {
         private readonly DispatcherTimer _performanceTimer;
         private readonly Stopwatch _renderStopwatch = new();
-        private Process _currentProcess;
-        private long _lastGcMemory;
+        private Process? _currentProcess;
+        private long _lastGcMemory = 0;
 
         public VirtualizedListView()
         {
@@ -170,7 +170,7 @@ namespace LYBT.Desktop.Core.Controls
 
         #region 性能指标属性
 
-        private int _virtualizedItemCount;
+        private int _virtualizedItemCount = 0;
 
         public int VirtualizedItemCount
         {
@@ -182,7 +182,7 @@ namespace LYBT.Desktop.Core.Controls
             }
         }
 
-        private int _realizedItemCount;
+        private int _realizedItemCount = 0;
 
         public int RealizedItemCount
         {
@@ -194,7 +194,7 @@ namespace LYBT.Desktop.Core.Controls
             }
         }
 
-        private double _memoryUsage;
+        private double _memoryUsage = 0.0;
 
         public double MemoryUsage
         {

@@ -33,7 +33,7 @@ namespace LYBT.Desktop.Core.ViewModels.Base
         #region 基础属性
 
         private string _pageTitle = string.Empty;
-        private bool _isNavigating;
+        private bool _isNavigating = false;
 
         /// <summary>
         /// 页面标题
@@ -267,7 +267,7 @@ namespace LYBT.Desktop.Core.ViewModels.Base
 
         private int _currentPage = 1;
         private int _pageSize = 20;
-        private int _totalCount;
+        private int _totalCount = 0;
 
         #endregion
 

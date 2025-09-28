@@ -137,7 +137,7 @@ namespace LYBT.Module.Users.Services
             }
         }
 
-        public async Task<ServiceResult<List<object>>> GetRolesAsync()
+        public Task<ServiceResult<List<object>>> GetRolesAsync()
         {
             try
             {
@@ -147,12 +147,12 @@ namespace LYBT.Module.Users.Services
                     .Cast<object>()
                     .ToList();
                 
-                return ServiceResult<List<object>>.Success(roles);
+                return Task.FromResult(ServiceResult<List<object>>.Success(roles));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "获取角色列表失败");
-                return ServiceResult<List<object>>.Failure("获取角色列表失败");
+                return Task.FromResult(ServiceResult<List<object>>.Failure("获取角色列表失败"));
             }
         }
 

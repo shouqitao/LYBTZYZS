@@ -34,7 +34,7 @@ public class UnifiedApiClientManager(HttpClient httpClient, ILogger<UnifiedApiCl
     private readonly Lazy<IHerbApi> _herbApi = new(() => RestService.For<IHerbApi>(httpClient, CreateRefitSettings()));
     private readonly Lazy<IFormulaApi> _formulaApi = new(() => RestService.For<IFormulaApi>(httpClient, CreateRefitSettings()));
 
-    private bool _disposed;
+    private bool _disposed = false;
 
     // 实例构造函数体 - 初始化HTTP客户端配置
     static UnifiedApiClientManager()

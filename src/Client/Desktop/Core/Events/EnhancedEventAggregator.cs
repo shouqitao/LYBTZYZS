@@ -47,7 +47,7 @@ namespace LYBT.Desktop.Core.Events
         private readonly WeakEventManager<EventArgs> _weakEventManager = new();
         private readonly ConcurrentDictionary<SubscriptionToken, IEventSubscription> _subscriptions = new();
         private readonly object _lock = new();
-        private bool _debugMode;
+        private bool _debugMode = false;
         private ILogger? _logger;
 
         /// <summary>
@@ -443,7 +443,7 @@ namespace LYBT.Desktop.Core.Events
         private readonly ILogger<EnhancedEventAggregator>? _logger;
         private readonly Timer _cleanupTimer;
         private Func<object, bool>? _globalFilter;
-        private bool _debugMode;
+        private bool _debugMode = false;
         private readonly EventStatistics _statistics = new();
 
         public EnhancedEventAggregator(ILogger<EnhancedEventAggregator>? logger = null)

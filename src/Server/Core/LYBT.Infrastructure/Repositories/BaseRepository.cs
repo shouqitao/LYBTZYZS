@@ -260,8 +260,8 @@ namespace LYBT.Infrastructure.Repositories
         public virtual async Task<(List<TEntity> Items, int TotalCount)> GetPagedAsync(
             int pageNumber,
             int pageSize,
-            Expression<Func<TEntity, bool>> predicate = null,
-            Expression<Func<TEntity, object>> orderBy = null,
+            Expression<Func<TEntity, bool>>? predicate = null,
+            Expression<Func<TEntity, object>>? orderBy = null,
             bool descending = true)
         {
             var query = _dbSet.Where(e => !e.IsDeleted);
@@ -296,8 +296,8 @@ namespace LYBT.Infrastructure.Repositories
         public virtual async Task<(List<TEntity> Items, int TotalCount)> GetPagedWithIncludesAsync(
             int pageNumber,
             int pageSize,
-            Expression<Func<TEntity, bool>> predicate = null,
-            Expression<Func<TEntity, object>> orderBy = null,
+            Expression<Func<TEntity, bool>>? predicate = null,
+            Expression<Func<TEntity, object>>? orderBy = null,
             bool descending = true,
             params Expression<Func<TEntity, object>>[] includes)
         {
@@ -397,7 +397,7 @@ namespace LYBT.Infrastructure.Repositories
         /// <summary>
         /// 获取数量
         /// </summary>
-        public virtual async Task<int> CountAsync(Expression<Func<TEntity, bool>> predicate = null)
+        public virtual async Task<int> CountAsync(Expression<Func<TEntity, bool>>? predicate = null)
         {
             var query = _dbSet.Where(e => !e.IsDeleted);
 
