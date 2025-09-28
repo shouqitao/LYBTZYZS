@@ -15,7 +15,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
     /// 处方管理视图模型 - 架构重构后简化版本
     /// TODO: 重构完成后重新实现业务逻辑
     /// </summary>
-    public class PrescriptionManagementViewModel : NavigationViewModelBase
+    public class PrescriptionManagementViewModel : UnifiedViewModelBase
     {
         public PrescriptionManagementViewModel(
             IEventAggregator eventAggregator,
@@ -23,7 +23,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             IRegionManager regionManager,
             ISessionManager sessionManager,
             IErrorHandlingService errorHandlingService)
-            : base(eventAggregator, loggerFactory, regionManager, sessionManager, null, errorHandlingService)
+            : base(eventAggregator, loggerFactory, regionManager, sessionManager, errorHandlingService)
         {
         }
     }

@@ -20,7 +20,13 @@ namespace LYBT.Desktop.Patients
             // 注册简化的服务
             containerRegistry.RegisterSingleton<IPatientService, PatientService>();
 
-            // TODO: 注册简化后的视图和视图模型
+            // 注册视图模型 - MVP核心功能
+            containerRegistry.Register<ViewModels.PatientDetailViewModel>();
+            containerRegistry.Register<ViewModels.PatientImportWizardViewModel>();
+
+            // 注册视图用于导航
+            containerRegistry.RegisterForNavigation<Views.PatientDetailView>();
+            containerRegistry.RegisterForNavigation<Views.PatientImportWizardView>();
         }
     }
 }

@@ -85,7 +85,7 @@ namespace LYBT.Desktop.Core.Events
         public string Subscribe<TEvent, TPayload>(Action<TPayload> action,
             ThreadOption threadOption = ThreadOption.UIThread,
             bool keepSubscriberReferenceAlive = false,
-            Predicate<TPayload> filter = null)
+            Predicate<TPayload>? filter = null)
             where TEvent : PubSubEvent<TPayload>, new()
         {
             try
@@ -116,7 +116,7 @@ namespace LYBT.Desktop.Core.Events
         /// 订阅事件（弱引用）
         /// </summary>
         public string SubscribeWeak<TEvent, TPayload>(Action<TPayload> action,
-            Predicate<TPayload> filter = null)
+            Predicate<TPayload>? filter = null)
             where TEvent : PubSubEvent<TPayload>, new()
         {
             return Subscribe<TEvent, TPayload>(action, ThreadOption.UIThread, false, filter);
@@ -279,10 +279,10 @@ namespace LYBT.Desktop.Core.Events
         string Subscribe<TEvent, TPayload>(Action<TPayload> action,
             ThreadOption threadOption = ThreadOption.UIThread,
             bool keepSubscriberReferenceAlive = false,
-            Predicate<TPayload> filter = null) where TEvent : PubSubEvent<TPayload>, new();
+            Predicate<TPayload>? filter = null) where TEvent : PubSubEvent<TPayload>, new();
 
         string SubscribeWeak<TEvent, TPayload>(Action<TPayload> action,
-            Predicate<TPayload> filter = null) where TEvent : PubSubEvent<TPayload>, new();
+            Predicate<TPayload>? filter = null) where TEvent : PubSubEvent<TPayload>, new();
 
         bool Unsubscribe(string subscriptionId);
 

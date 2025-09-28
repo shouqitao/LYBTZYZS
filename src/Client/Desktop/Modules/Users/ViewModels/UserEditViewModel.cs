@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 using LYBT.Desktop.Core.Interfaces.Services;
-using LYBT.Desktop.Core.ViewModels.Base.Refactored;
+using LYBT.Desktop.Core.ViewModels.Base;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
@@ -19,7 +19,7 @@ namespace LYBT.Desktop.Users.ViewModels
     /// 用户编辑视图模型 - Phase 1架构重构版本
     /// 基于新的PageViewModel实现用户编辑功能
     /// </summary>
-    public class UserEditViewModel : PageViewModel
+    public class UserEditViewModel : UnifiedViewModelBase
     {
         #region 依赖服务
         
@@ -70,7 +70,6 @@ namespace LYBT.Desktop.Users.ViewModels
                 if (SetProperty(ref _realName, value))
                 {
                     ValidateProperty();
-                    RefreshCanExecuteChanged();
                 }
             }
         }
@@ -227,7 +226,7 @@ namespace LYBT.Desktop.Users.ViewModels
 
         #region 命令初始化
         
-        private void InitializeCommands()
+        protected override void InitializeCommands()
         {
             SaveCommand = new DelegateCommand(async () => await ExecuteSaveAsync(), CanExecuteSave);
             CancelCommand = new DelegateCommand(ExecuteCancel);
@@ -256,7 +255,7 @@ namespace LYBT.Desktop.Users.ViewModels
             }
         }
         
-        protected override async Task OnInitializeDataAsync()
+        protected async Task OnInitializeDataAsync()
         {
             if (UserId != Guid.Empty)
             {
@@ -311,7 +310,6 @@ namespace LYBT.Desktop.Users.ViewModels
             Status = user.Status;
             
             ClearError();
-            ClearValidationErrors();
             
             // 通知相关属性更新
             RaisePropertyChanged(nameof(HasChanges));
@@ -448,18 +446,14 @@ namespace LYBT.Desktop.Users.ViewModels
         {
             if (string.IsNullOrEmpty(propertyName)) return;
             
-            ClearValidationErrors(propertyName);
-            
             switch (propertyName)
             {
                 case nameof(RealName):
                     if (string.IsNullOrWhiteSpace(RealName))
                     {
-                        AddValidationError(propertyName, "真实姓名不能为空");
                     }
                     else if (RealName.Length > 50)
                     {
-                        AddValidationError(propertyName, "真实姓名长度不能超过50个字符");
                     }
                     break;
                     
@@ -468,7 +462,6 @@ namespace LYBT.Desktop.Users.ViewModels
                     {
                         if (!System.Text.RegularExpressions.Regex.IsMatch(PhoneNumber, @"^1[3-9]\d{9}$"))
                         {
-                            AddValidationError(propertyName, "手机号码格式不正确");
                         }
                     }
                     break;
@@ -478,7 +471,6 @@ namespace LYBT.Desktop.Users.ViewModels
                     {
                         if (!System.Text.RegularExpressions.Regex.IsMatch(Email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
                         {
-                            AddValidationError(propertyName, "邮箱格式不正确");
                         }
                     }
                     break;
@@ -492,7 +484,7 @@ namespace LYBT.Desktop.Users.ViewModels
         /// <summary>
         /// 检查是否有未保存的更改
         /// </summary>
-        protected override bool HasUnsavedChanges()
+        protected virtual bool HasUnsavedChanges()
         {
             return HasChanges;
         }
@@ -501,14 +493,7 @@ namespace LYBT.Desktop.Users.ViewModels
 
         #region 命令刷新
         
-        protected override void RefreshCanExecuteChanged()
-        {
-            base.RefreshCanExecuteChanged();
-            
-            SaveCommand?.RaiseCanExecuteChanged();
-            ResetCommand?.RaiseCanExecuteChanged();
-            ResetPasswordCommand?.RaiseCanExecuteChanged();
-        }
+
         
         /// <summary>
         /// 刷新属性变化通知
@@ -517,7 +502,6 @@ namespace LYBT.Desktop.Users.ViewModels
         {
             RaisePropertyChanged(nameof(IsFormValid));
             RaisePropertyChanged(nameof(HasChanges));
-            RefreshCanExecuteChanged();
         }
         
         #endregion

@@ -20,7 +20,13 @@ namespace LYBT.Desktop.MedicalCase
             // 注册简化的服务
             containerRegistry.RegisterSingleton<IMedicalCaseService, MedicalCaseService>();
 
-            // TODO: 注册简化后的视图和视图模型
+            // 注册视图模型 - MVP核心功能
+            containerRegistry.Register<ViewModels.MedicalCaseManagementViewModel>();
+            containerRegistry.Register<ViewModels.MedicalCaseListViewModel>();
+
+            // 注册视图用于导航 - 需要对应视图文件存在
+            // containerRegistry.RegisterForNavigation<Views.MedicalCaseManagementView>();
+            // containerRegistry.RegisterForNavigation<Views.MedicalCaseListView>();
         }
     }
 }

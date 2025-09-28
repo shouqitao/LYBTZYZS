@@ -16,7 +16,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
     /// 诊疗记录管理视图模型 - 简化版
     /// 只负责显示和基本管理诊疗记录，不包含复杂的流程控制
     /// </summary>
-    public class ConsultationManagementViewModel : NavigationViewModelBase
+    public class ConsultationManagementViewModel : UnifiedViewModelBase
     {
 
         #region 服务依赖

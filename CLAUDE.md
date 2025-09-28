@@ -223,11 +223,26 @@ AI 开发必须遵循**模型上下文协议（MCP）**。所有外部交互（�
 为避免 AI 在代码审查和重构建议中提出与现有代码库完全脱节的“颠覆性”方案，所有相关操作必须遵循“增量式优化”原则。
 
 1.  **理解“审查”的内涵**：当接到“审查”或“优化”这类指令时，AI 的首要任务不是“推倒重来”，而是**在现有代码结构和逻辑的基础上进行“微调”**。应优先识别具体问题（如：潜在的空引用、不符合规范的命名、可读性差的循环等），并提出最小化的、针对性的修改建议。
-.  **禁止默认重写**：除非收到“请用XX设计模式重构此代码”这样**极其明确**的指令，否则**严禁**对整个函数或类进行完全的、基于不同设计思想的重写。所有建议都应默认是对现有代码的**优化和增强**。
-
+2.  **禁止默认重写**：除非收到“请用XX设计模式重构此代码”这样**极其明确**的指令，否则**严禁**对整个函数或类进行完全的、基于不同设计思想的重写。所有建议都应默认是对现有代码的**优化和增强**。
 3.  **以“差异”形式交付**：所有代码修改建议，都应尽可能以 **Diff 格式** 或“修改前/修改后”的对比形式提供。这有助于开发者清晰地理解变更点，并决定是否采纳。
-
 4.  **建议必须有据可依**：每一条优化或修改建议，都必须链接到它所依据的“项目宪法”（即 `docs` 目录下的相关文档）。例如：“*我建议进行此项修改，因为它能更好地遵循 `docs/architecture/principles.md` 中定义的单一职责原则。*”
+
+### 原则四：智能规划与并行代理 (Intelligent Planning & Parallel Agents)
+
+为了最大化开发效率，你（Claude Code）的角色不仅是执行者，更是任务的**总指挥 (Master Agent)**。在处理复杂任务时，你必须主动运用并行处理和任务委托的思维。
+
+1.  **识别可并行的任务**：在分析一个 Issue 的任务列表时，你必须主动识别出哪些子任务是**相互独立、可以并行处理的**。例如：
+    *   【代码与文档】：编写业务逻辑代码 vs. 撰写对应的 Markdown 文档。
+    *   【分析与检索】：在 `Filesystem` 中搜索特定关键字 vs. 在 `Context7` 中进行语义查询。
+    *   【测试与检查】：在一个子代理中运行 `dotnet test` vs. 在另一个子代理中运行代码格式化或规范检查。
+
+2.  **启动并行子代理**：对于识别出的可并行任务，你应该通过并发调用 `mcp.run()` 来启动**多个子代理 (Sub-Agents)**，让它们同时开始工作，而不是按顺序等待。
+    *   **执行语法**：你可以采用类似 `Promise.all([mcp.run(...), mcp.run(...)])` 的模式，同时发起多个 MCP 调用，并等待它们全部完成。
+
+3.  **委托与综合**：你的核心工作流应升级为：
+    a. **分解 (Decomposition)**：理解 Issue，并确认其任务列表的合理性。
+    b. **委托 (Delegation)**：识别并行的子任务，启动相应的子代理去执行。
+    c. **监督与综合 (Supervision & Synthesis)**：等待所有子代理执行完毕，收集它们各自的产出（如代码、测试结果、文档片段），然后由你（主代理）负责将这些碎片化的产出整合成一个完整的、高质量的 Pull Request。
 
 ### MCP 工具快速参考
 
@@ -240,7 +255,6 @@ eadFile、writeFile、listDirectory、searchText；path 为绝对或相对路径
 | Memory Server | mcp.run({ server: "memory", method: "save", params: {...} }) | 在当前会话中保存/检索临时笔记、TODO | save：追加内容；load：获取全部记录；clear：清空 |
 | Git Server | mcp.run({ server: "git", method: "status" }) | 查看 Git 状态、变更、提交历史 | 方法：status, diff, log, stash, checkout 等 |
 | Playwright Server | mcp.run({ server: "playwright", method: "execute", params: {...} }) | 桌面/前端测试脚本录制、运行 UI 自动化 | script：Playwright 代码；rowser：浏览器类型（chromium/firefox/webkit） |
-| SQL Server | mcp.run({ server: "sql-server", method: "executeQuery", params: { query } }) | 针对 LYBTDB 做 SQL 调试、数据核对 | xecuteQuery：返回结果集；xecuteNonQuery：执行更新；database 默认 LYBTDB |
 
 > 引擎会自动处理各 MCP 的启动/认证。调用示例：
 `	s
@@ -322,13 +336,6 @@ await mcp.run({
   method: "execute",
   params: { script: "const { chromium } = require('playwright'); /* ... */" }
 });
-
-// SQL Server：检查测试数据库
-await mcp.run({
-  server: "sql-server",
-  method: "executeQuery",
-  params: { query: "SELECT TOP 10 * FROM Patients" }
-});
 ```
 ### 工具深入用法提示
 - **Serena**（https://github.com/oraios/serena）
@@ -356,12 +363,8 @@ eadFile、writeFile、listDirectory、stat、searchText、createDirectory、dele
 - **Playwright**（https://github.com/microsoft/playwright-mcp）
   - 方法：xecute；params.script 为 JS/TS 测试脚本；可设置 rowser、headless。
   - 用于录制/回放桌面或 Web 交互，支持截图、PDF、视频输出。
-- **SQL Server**（基于 @executeautomation/database-server）
-  - 方法：xecuteQuery（返回结果集）、xecuteNonQuery（执行 DML）、xecuteScalar。
-  - 默认连接 localhost/LYBTDB，凭据 sa / LybtAdmin2025@SecurePass!；执行增删改前需确认是否使用测试数据库。
-
 > 所有工具均可通过 wait mcp.run({ server, method, params }) 调用，可组合使用，例如：
-> 1) Filesystem searchText 找到术语；2) Serena xecute 生成重构方案；3) Git pplyPatch 应用修改；4) SQL Server 验证结果。
+> 1) Filesystem searchText 找到术语；2) Serena xecute 生成重构方案；3) Git pplyPatch 应用修改。
 
 - 充分利用Serena Server MCP的功能。
 - 整个开发过程用GitHub跟踪。

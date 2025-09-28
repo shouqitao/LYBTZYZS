@@ -181,7 +181,7 @@ namespace LYBT.Core.Infrastructure.Caching
         /// <summary>
         /// 创建用户相关的缓存键
         /// </summary>
-        public static CacheKeyBuilder ForUser(Guid userId, string operation = null)
+        public static CacheKeyBuilder ForUser(Guid userId, string? operation = null)
         {
             var builder = new CacheKeyBuilder("LYBT")
                 .AddSegments("User", userId.ToString("N"));
@@ -197,7 +197,7 @@ namespace LYBT.Core.Infrastructure.Caching
         /// <summary>
         /// 创建患者相关的缓存键
         /// </summary>
-        public static CacheKeyBuilder ForPatient(Guid patientId, string operation = null)
+        public static CacheKeyBuilder ForPatient(Guid patientId, string? operation = null)
         {
             var builder = new CacheKeyBuilder("LYBT")
                 .AddSegments("Patient", patientId.ToString("N"));
@@ -213,7 +213,7 @@ namespace LYBT.Core.Infrastructure.Caching
         /// <summary>
         /// 创建处方相关的缓存键
         /// </summary>
-        public static CacheKeyBuilder ForPrescription(Guid prescriptionId, string operation = null)
+        public static CacheKeyBuilder ForPrescription(Guid prescriptionId, string? operation = null)
         {
             var builder = new CacheKeyBuilder("LYBT")
                 .AddSegments("Prescription", prescriptionId.ToString("N"));
@@ -229,7 +229,7 @@ namespace LYBT.Core.Infrastructure.Caching
         /// <summary>
         /// 创建查询相关的缓存键
         /// </summary>
-        public static CacheKeyBuilder ForQuery(string entityType, object queryParams = null)
+        public static CacheKeyBuilder ForQuery(string entityType, object? queryParams = null)
         {
             var builder = new CacheKeyBuilder("LYBT")
                 .AddSegments("Query", entityType);
@@ -245,7 +245,7 @@ namespace LYBT.Core.Infrastructure.Caching
         /// <summary>
         /// 创建列表相关的缓存键
         /// </summary>
-        public static CacheKeyBuilder ForList(string entityType, int page = 1, int pageSize = 20, string sortBy = null)
+        public static CacheKeyBuilder ForList(string entityType, int page = 1, int pageSize = 20, string? sortBy = null)
         {
             var builder = new CacheKeyBuilder("LYBT")
                 .AddSegments("List", entityType)

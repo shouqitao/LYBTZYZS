@@ -11,7 +11,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
     /// 中药材管理视图模型 - 架构重构后简化版本
     /// TODO: 重构完成后重新实现业务逻辑
     /// </summary>
-    public class HerbManagementViewModel : NavigationViewModelBase
+    public class HerbManagementViewModel : UnifiedViewModelBase
     {
         public HerbManagementViewModel(
             IEventAggregator eventAggregator,
@@ -19,7 +19,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
             IRegionManager regionManager,
             ISessionManager sessionManager,
             IErrorHandlingService errorHandlingService)
-            : base(eventAggregator, loggerFactory, regionManager, sessionManager, null, errorHandlingService)
+            : base(eventAggregator, loggerFactory, regionManager, sessionManager, errorHandlingService)
         {
         }
     }

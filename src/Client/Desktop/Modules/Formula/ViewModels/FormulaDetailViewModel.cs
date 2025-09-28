@@ -20,7 +20,7 @@ namespace LYBT.Desktop.Formula.ViewModels
     /// 验方详情视图模型 - UltraThink v2.0架构
     /// 提供验方详细信息查看和编辑功能
     /// </summary>
-    public class FormulaDetailViewModel : NavigationViewModelBase
+    public class FormulaDetailViewModel : UnifiedViewModelBase
     {
 
         #region 私有字段
@@ -109,11 +109,10 @@ namespace LYBT.Desktop.Formula.ViewModels
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
             ISessionManager? sessionManager = null)
-            : base(eventAggregator, 
+            : base(eventAggregator,
                 loggerFactory,
                 regionManager,
                 sessionManager,
-                navigationService,
                 errorHandlingService)
         {
             _formulaService = formulaService ?? throw new ArgumentNullException(nameof(formulaService));

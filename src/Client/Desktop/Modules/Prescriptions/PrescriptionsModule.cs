@@ -20,7 +20,13 @@ namespace LYBT.Desktop.Prescriptions
             // 注册简化的服务
             containerRegistry.RegisterSingleton<IPrescriptionService, PrescriptionService>();
 
-            // TODO: 注册简化后的视图和视图模型
+            // 注册视图模型 - MVP核心功能
+            containerRegistry.Register<ViewModels.PrescriptionManagementViewModel>();
+            containerRegistry.Register<ViewModels.PrescriptionsMainViewModel>();
+
+            // 注册视图用于导航 - 需要对应视图文件存在
+            // containerRegistry.RegisterForNavigation<Views.PrescriptionManagementView>();
+            // containerRegistry.RegisterForNavigation<Views.PrescriptionsMainView>();
         }
     }
 }

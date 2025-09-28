@@ -10,7 +10,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels.Refactored
     /// 医疗案例列表视图模型 - 架构重构后简化版本
     /// TODO: 重构完成后重新实现业务逻辑
     /// </summary>
-    public class MedicalCaseListViewModel : NavigationViewModelBase
+    public class MedicalCaseListViewModel : UnifiedViewModelBase
     {
         public MedicalCaseListViewModel(
             IEventAggregator eventAggregator,
@@ -18,7 +18,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels.Refactored
             IRegionManager regionManager,
             ISessionManager sessionManager,
             IErrorHandlingService errorHandlingService)
-            : base(eventAggregator, loggerFactory, regionManager, sessionManager, null, errorHandlingService)
+            : base(eventAggregator, loggerFactory, regionManager, sessionManager, errorHandlingService)
         {
         }
     }

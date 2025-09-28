@@ -46,7 +46,7 @@ namespace LYBT.Shared.Interfaces.Services
         /// </summary>
         Task<ServiceResult<MedicalCaseDto>> CreateWithDetailsAsync(MedicalCaseCreateDto caseDto, 
             ConsultationCreateDto consultationDto, 
-            PrescriptionCreateDto prescriptionDto = null);
+            PrescriptionCreateDto? prescriptionDto = null);
 
         /// <summary>
         /// 根据ID获取完整的医疗案例（包含所有关联数据）

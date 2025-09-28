@@ -21,6 +21,14 @@
     <WarningsAsErrors />
     <WarningsNotAsErrors />
 
+    <!-- 抑制XML文档注释警告 - Issue #789 -->
+    <!-- CS1591: 缺少公共可见类型或成员的XML注释 -->
+    <!-- CS1570: XML注释格式错误 -->
+    <!-- CS1572: XML注释包含与实际参数不匹配的参数标记 -->
+    <!-- CS1573: XML注释中的参数与实际参数不匹配 -->
+    <!-- CS1587: XML注释没有放在有效语言元素上 -->
+    <NoWarn>$(NoWarn);CS1591;CS1570;CS1572;CS1573;CS1587</NoWarn>
+
     <!-- 优化设置 -->
     <Optimize Condition="'$(Configuration)' == 'Release'">true</Optimize>
     <DebugType Condition="'$(Configuration)' == 'Release'">portable</DebugType>

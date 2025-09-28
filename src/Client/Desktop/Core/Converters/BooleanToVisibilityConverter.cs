@@ -1,36 +1,27 @@
+using System;
 using System.Globalization;
+using System.Windows;
 using System.Windows.Data;
 
 namespace LYBT.Desktop.Core.Converters
 {
-
     /// <summary>
-    /// 布尔值转换为状态文本转换器
-    /// true -> "启用", false -> "禁用"
+    /// 布尔值到可见性转换器
     /// </summary>
-    public class BooleanToStatusConverter : IValueConverter
+    public class BooleanToVisibilityConverter : IValueConverter
     {
-
-        /// <inheritdoc/>
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value is bool boolValue)
             {
-                return boolValue ? "启用" : "禁用";
+                return boolValue ? Visibility.Visible : Visibility.Collapsed;
             }
-
-            return "未知";
+            return Visibility.Collapsed;
         }
 
-        /// <inheritdoc/>
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is string stringValue)
-            {
-                return stringValue == "启用";
-            }
-
-            return false;
+            return value is Visibility.Visible;
         }
     }
 }

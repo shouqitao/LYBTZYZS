@@ -1,5 +1,5 @@
 using LYBT.Desktop.Core.Interfaces.Services;
-using LYBT.Desktop.Core.ViewModels.Base.Refactored;
+using LYBT.Desktop.Core.ViewModels.Base;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
@@ -15,7 +15,7 @@ namespace LYBT.Desktop.Users.ViewModels
     /// 用户管理视图模型 - Phase 1架构重构版本
     /// 基于新的ListPageViewModel实现完整的用户管理功能
     /// </summary>
-    public class UserManagementViewModel : ListPageViewModel<UserDto>
+    public class UserManagementViewModel : UnifiedListViewModelBase<UserDto>
     {
         #region 依赖服务
 
@@ -160,9 +160,9 @@ namespace LYBT.Desktop.Users.ViewModels
         #region 数据加载
 
         /// <summary>
-        /// 加载分页数据
+        /// 获取数据项
         /// </summary>
-        protected override async Task<PagedResult<UserDto>> LoadPagedDataAsync(int page, int pageSize, string? searchText)
+        protected override async Task<IEnumerable<UserDto>> GetItemsAsync(int page, int pageSize, string? searchText)
         {
             Logger.LogDebug("加载用户数据: 第{Page}页, 每页{PageSize}项, 关键词: {SearchText}", page, pageSize, searchText);
 
@@ -193,30 +193,25 @@ namespace LYBT.Desktop.Users.ViewModels
                         filteredItems = filteredItems.Where(u => u.Status == CommonStatus.Enabled);
                     }
 
-                    return new PagedResult<UserDto>
-                    {
-                        Items = filteredItems.ToList(),
-                        CurrentPage = pagedData.CurrentPage,
-                        PageSize = pagedData.PageSize,
-                        TotalCount = pagedData.TotalCount // 注意：这里的总数可能不准确，因为过滤是在客户端进行的
-                    };
+                    // 设置总数
+                    TotalCount = pagedData.TotalCount;
+                    return filteredItems;
                 }
                 else
                 {
                     Logger.LogWarning("加载用户数据失败: {ErrorMessage}", result.ErrorMessage);
-                    return new PagedResult<UserDto>
-                    {
-                        Items = new List<UserDto>(),
-                        CurrentPage = page,
-                        PageSize = pageSize,
-                        TotalCount = 0
-                    };
+                    TotalCount = 0;
+                    return new List<UserDto>();
                 }
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex, "加载用户数据时发生异常");
-                throw;
+                var context = new ErrorContext { Operation = "加载用户数据", Module = nameof(UserManagementViewModel) };
+                await ErrorHandlingService?.HandleExceptionAsync(ex, context);
+
+                TotalCount = 0;
+                return new List<UserDto>();
             }
         }
 

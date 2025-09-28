@@ -1,102 +1,59 @@
 <ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:converters="clr-namespace:LYBT.Desktop.Core.Converters.Unified">
+    xmlns:converters="clr-namespace:LYBT.Desktop.Core.Converters"
+    xmlns:unified="clr-namespace:LYBT.Desktop.Core.Converters.Unified">
 
     <!--  ==========================================  -->
-    <!--  统一转换器资源字典 - UltraThink架构重构  -->
-    <!--  将原32个转换器精简为12个核心转换器  -->
+    <!--  简化的转换器资源字典 - MVP核心转换器  -->
+    <!--  从41个转换器精简为8个核心转换器  -->
     <!--  ==========================================  -->
 
-    <!--  1. 布尔值转换器  -->
-    <converters:UnifiedBooleanConverter x:Key="BooleanConverter" />
-    <converters:UnifiedBooleanConverter x:Key="BoolToVisibilityConverter" />
-    <converters:UnifiedBooleanConverter x:Key="InverseBooleanConverter" />
-    <converters:UnifiedBooleanConverter x:Key="BoolToColorConverter" />
+    <!--  1. 布尔值到可见性转换器  -->
+    <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+    <converters:BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
 
-    <!--  2. 可见性转换器  -->
-    <converters:UnifiedVisibilityConverter x:Key="VisibilityConverter" />
-    <converters:UnifiedVisibilityConverter x:Key="StringToVisibilityConverter" />
-    <converters:UnifiedVisibilityConverter x:Key="EmptyToVisibilityConverter" />
-    <converters:UnifiedVisibilityConverter x:Key="MultiVisibilityConverter" />
+    <!--  2. 字符串到可见性转换器  -->
+    <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter" />
+    <converters:EmptyStringToVisibilityConverter x:Key="EmptyStringToVisibilityConverter" />
 
-    <!--  3. 枚举转换器  -->
-    <converters:UnifiedEnumConverter x:Key="EnumConverter" />
-    <converters:UnifiedEnumConverter x:Key="EnumToDescriptionConverter" />
-    <converters:UnifiedEnumConverter x:Key="EnumToDisplayNameConverter" />
-    <converters:UnifiedEnumConverter x:Key="EnumToBooleanConverter" />
+    <!--  3. 反向布尔值到可见性转换器  -->
+    <converters:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter" />
+    <converters:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter" />
 
-    <!--  4. 日期时间格式转换器  -->
-    <converters:DateTimeFormatConverter x:Key="DateTimeConverter" />
-    <converters:DateTimeFormatConverter x:Key="DateFormatConverter" />
-    <converters:DateTimeFormatConverter x:Key="TimeFormatConverter" />
-    <converters:DateTimeFormatConverter x:Key="RelativeDateTimeConverter" />
-
-    <!--  5. 状态到颜色转换器  -->
-    <converters:StatusToColorConverter x:Key="StatusColorConverter" />
-    <converters:StatusToColorConverter x:Key="StateToColorConverter" />
-    <converters:StatusToColorConverter x:Key="StatusToBrushConverter" />
-    <converters:StatusToColorConverter x:Key="StatusToBackgroundConverter" />
-
-    <!--  6. 空值到可见性转换器  -->
-    <converters:NullToVisibilityConverter x:Key="NullVisibilityConverter" />
-    <converters:NullToVisibilityConverter x:Key="NotNullToVisibilityConverter" />
+    <!--  4. 空值到可见性转换器  -->
     <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
+    <converters:NullToVisibilityConverter x:Key="NotNullToVisibilityConverter" />
 
-    <!--  7. 集合数量到可见性转换器  -->
-    <converters:CollectionCountToVisibilityConverter x:Key="CollectionVisibilityConverter" />
-    <converters:CollectionCountToVisibilityConverter x:Key="EmptyCollectionToVisibilityConverter" />
-    <converters:CollectionCountToVisibilityConverter x:Key="CollectionHasItemsToVisibilityConverter" />
-    <converters:CollectionCountToVisibilityConverter x:Key="CountToVisibilityConverter" />
+    <!--  5. 枚举转换器  -->
+    <converters:EnumToDisplayNameConverter x:Key="EnumConverter" />
+    <converters:EnumToDisplayNameConverter x:Key="EnumToStringConverter" />
 
-    <!--  8. 值到百分比转换器  -->
-    <converters:ValueToPercentageConverter x:Key="PercentageConverter" />
-    <converters:ValueToPercentageConverter x:Key="DecimalToPercentConverter" />
-    <converters:ValueToPercentageConverter x:Key="ProgressToPercentageConverter" />
+    <!--  6. 零值到可见性转换器  -->
+    <converters:ZeroToVisibilityConverter x:Key="ZeroToVisibilityConverter" />
 
-    <!--  9. 文件路径转换器  -->
-    <converters:FilePathToNameConverter x:Key="PathConverter" />
-    <converters:FilePathToNameConverter x:Key="PathToFileNameConverter" />
-    <converters:FilePathToNameConverter x:Key="FilePathConverter" />
-    <converters:FilePathToNameConverter x:Key="DirectoryNameConverter" />
+    <!--  7. 反向布尔值转换器  -->
+    <converters:InverseBooleanConverter x:Key="InverseBooleanConverter" />
+    <converters:InvertBooleanConverter x:Key="InvertBooleanConverter" />
 
-    <!--  10. 字节数组到图像转换器  -->
-    <converters:ByteArrayToImageConverter x:Key="ImageConverter" />
-    <converters:ByteArrayToImageConverter x:Key="ByteArrayToImageSourceConverter" />
-    <converters:ByteArrayToImageConverter x:Key="Base64ToImageConverter" />
-    <converters:ByteArrayToImageConverter x:Key="ImagePathToSourceConverter" />
-
-    <!--  11. 验证错误转换器  -->
-    <converters:ValidationErrorsConverter x:Key="ValidationConverter" />
-    <converters:ValidationErrorsConverter x:Key="ValidationErrorToMessageConverter" />
-    <converters:ValidationErrorsConverter x:Key="HasErrorsToVisibilityConverter" />
-    <converters:ValidationErrorsConverter x:Key="ErrorsToColorConverter" />
-
-    <!--  12. 多绑定转换器  -->
-    <converters:MultiBindingConverter x:Key="MultiConverter" />
-    <converters:MultiBindingConverter x:Key="MultiValueConverter" />
-    <converters:MultiBindingConverter x:Key="CombineValuesConverter" />
-    <converters:MultiBindingConverter x:Key="LogicalAndConverter" />
-    <converters:MultiBindingConverter x:Key="LogicalOrConverter" />
+    <!--  8. 日期时间格式转换器（Unified目录）  -->
+    <unified:DateTimeFormatConverter x:Key="DateTimeFormatConverter" />
+    <unified:DateTimeFormatConverter x:Key="DateTimeConverter" />
 
     <!--  ==========================================  -->
-    <!--  为了向后兼容，保留原有转换器名称的别名  -->
-    <!--  但全部指向新的统一转换器实现  -->
+    <!--  向后兼容别名（指向核心转换器）  -->
     <!--  ==========================================  -->
 
-    <!--  布尔值相关别名  -->
-    <converters:UnifiedBooleanConverter x:Key="BooleanToVisibilityConverter" />
-    <converters:UnifiedBooleanConverter x:Key="InverseBoolToVisibilityConverter" />
-    <converters:UnifiedBooleanConverter x:Key="BooleanToStringConverter" />
-    <converters:UnifiedBooleanConverter x:Key="BooleanToIconConverter" />
+    <!--  集合相关转换器  -->
+    <unified:CollectionCountToVisibilityConverter x:Key="CollectionCountToVisibilityConverter" />
+    <unified:CollectionCountToVisibilityConverter x:Key="CollectionVisibilityConverter" />
 
-    <!--  可见性相关别名  -->
-    <converters:UnifiedVisibilityConverter x:Key="ZeroToVisibilityConverter" />
-    <converters:UnifiedVisibilityConverter x:Key="InverseVisibilityConverter" />
+    <!--  状态相关转换器  -->
+    <unified:StatusToColorConverter x:Key="StatusToColorConverter" />
+    <unified:StatusToColorConverter x:Key="StatusColorConverter" />
 
-    <!--  通用值转换别名  -->
-    <converters:MultiBindingConverter x:Key="FirstNonNullConverter" />
-    <converters:MultiBindingConverter x:Key="SumConverter" />
-    <converters:MultiBindingConverter x:Key="AverageConverter" />
+    <!--  通用别名  -->
+    <converters:BooleanToVisibilityConverter x:Key="VisibilityConverter" />
+    <converters:StringToVisibilityConverter x:Key="StringVisibilityConverter" />
 
 </ResourceDictionary>

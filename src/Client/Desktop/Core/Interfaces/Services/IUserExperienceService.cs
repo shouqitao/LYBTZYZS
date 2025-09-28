@@ -38,7 +38,7 @@ namespace LYBT.Desktop.Core.Interfaces.Services
         void StopGlobalLoading();
 
         /// <summary>更新操作进度</summary>
-        void UpdateProgress(int progress, string message = null);
+        void UpdateProgress(int progress, string? message = null);
 
         #endregion 加载状态管理
 

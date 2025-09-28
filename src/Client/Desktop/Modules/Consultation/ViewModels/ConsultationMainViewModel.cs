@@ -17,7 +17,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
     /// 诊疗主界面视图模型 - 简化版纯数据记录
     /// 只负责简单的四诊数据录入，不包含流程监管和智能处理
     /// </summary>
-    public class ConsultationMainViewModel : NavigationViewModelBase, INavigationAware
+    public class ConsultationMainViewModel : UnifiedViewModelBase, INavigationAware
     {
 
         #region 服务依赖

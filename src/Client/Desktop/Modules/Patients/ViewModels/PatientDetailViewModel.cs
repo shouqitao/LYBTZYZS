@@ -18,7 +18,7 @@ namespace LYBT.Desktop.Patients.ViewModels
     /// 患者详情视图模型 - UltraThink v2.0架构
     /// 提供患者详细信息查看功能
     /// </summary>
-    public class PatientDetailViewModel : NavigationViewModelBase
+    public class PatientDetailViewModel : UnifiedViewModelBase
     {
 
         #region 私有字段
@@ -109,11 +109,10 @@ namespace LYBT.Desktop.Patients.ViewModels
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
             ISessionManager? sessionManager = null)
-            : base(eventAggregator, 
+            : base(eventAggregator,
                 loggerFactory,
                 regionManager,
                 sessionManager,
-                navigationService,
                 errorHandlingService)
         {
             _patientService = patientService ?? throw new ArgumentNullException(nameof(patientService));

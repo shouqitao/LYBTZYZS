@@ -20,7 +20,13 @@ namespace LYBT.Desktop.Consultation
             // 注册简化的服务
             containerRegistry.RegisterSingleton<IConsultationService, ConsultationService>();
 
-            // TODO: 注册简化后的视图和视图模型
+            // 注册视图模型 - MVP核心功能
+            containerRegistry.Register<ViewModels.ConsultationMainViewModel>();
+            containerRegistry.Register<ViewModels.ConsultationManagementViewModel>();
+
+            // 注册视图用于导航 - 需要对应视图文件存在
+            // containerRegistry.RegisterForNavigation<Views.ConsultationMainView>();
+            // containerRegistry.RegisterForNavigation<Views.ConsultationManagementView>();
         }
     }
 }
