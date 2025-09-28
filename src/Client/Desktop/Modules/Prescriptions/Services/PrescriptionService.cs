@@ -71,10 +71,10 @@ namespace LYBT.Desktop.Prescriptions.Services
             }, nameof(DeleteAsync));
         }
 
-    public async Task<ServiceResult<List<PrescriptionDto>>> GetByMedicalCaseIdAsync(Guid medicalCaseId)
+    public Task<ServiceResult<List<PrescriptionDto>>> GetByMedicalCaseIdAsync(Guid medicalCaseId)
     {
         // 暂时返回空列表，等待API接口实现
-        return await Task.FromResult(ServiceResult<List<PrescriptionDto>>.Success(new List<PrescriptionDto>()));
+        return Task.FromResult(ServiceResult<List<PrescriptionDto>>.Success(new List<PrescriptionDto>()));
     }
     }
 }

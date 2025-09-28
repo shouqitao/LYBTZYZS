@@ -72,7 +72,7 @@ namespace LYBT.Desktop.Prescriptions.Services
                     CreateTime = DateTime.Now
                 };
 
-                return await Task.FromResult(prescription);
+                return prescription;
             }
             catch (Exception ex)
             {
@@ -356,7 +356,7 @@ namespace LYBT.Desktop.Prescriptions.Services
 
                 _logger.LogDebug("生成处方编号: {PrescriptionNo}", prescriptionNo);
 
-                return await Task.FromResult(prescriptionNo);
+                return prescriptionNo;
             }
             catch (Exception ex)
             {

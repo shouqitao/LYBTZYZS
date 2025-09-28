@@ -65,8 +65,8 @@ public class AuthService(
     /// </summary>
     /// <param name="token">待验证的JWT令牌</param>
     /// <returns>令牌验证结果</returns>
-    public Task<ServiceResult<bool>> ValidateTokenAsync(string token)
-        => Task.FromResult(ServiceResult<bool>.Success(false)); // 简单诊所版本简化实现
+    public Task<ServiceResult<bool>> ValidateTokenAsync(string token) =>
+        Task.FromResult(ServiceResult<bool>.Success(false)); // 简单诊所版本简化实现
 
     /// <summary>
     /// 修改系统管理员密码 - IAuthService接口实现
@@ -115,9 +115,9 @@ public class AuthService(
     /// <summary>
     /// 撤销RefreshToken
     /// </summary>
-    public async Task<ServiceResult<bool>> RevokeTokenAsync(RevokeTokenRequest request)
+    public Task<ServiceResult<bool>> RevokeTokenAsync(RevokeTokenRequest request)
     {
         // 桌面端暂不实现令牌撤销
-        return await Task.FromResult(ServiceResult<bool>.Success(true));
+        return Task.FromResult(ServiceResult<bool>.Success(true));
     }
 }

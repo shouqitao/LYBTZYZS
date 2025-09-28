@@ -79,9 +79,7 @@ namespace LYBT.Module.Auth.Services
             try
             {
                 if (string.IsNullOrWhiteSpace(jwtId))
-                {
                     return Task.FromResult(false);
-                }
 
                 var cacheKey = BLACKLIST_KEY_PREFIX + jwtId;
                 var isBlacklisted = _cache.TryGetValue(cacheKey, out _);

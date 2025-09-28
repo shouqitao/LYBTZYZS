@@ -64,8 +64,8 @@ public class AuthServiceAdapter(IAuthService authService, ISessionManager sessio
     /// 获取当前用户信息 - 基于会话管理器
     /// </summary>
     /// <returns>当前用户信息</returns>
-    public Task<UserDto?> GetCurrentUserAsync()
-        => Task.FromResult(_sessionManager.CurrentUser);
+    public Task<UserDto?> GetCurrentUserAsync() =>
+        Task.FromResult(_sessionManager.CurrentUser);
 
     /// <summary>
     /// 获取JWT令牌（当前暂不暴露，会话管理器未提供令牌读取接口）

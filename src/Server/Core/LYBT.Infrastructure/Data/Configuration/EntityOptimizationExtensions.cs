@@ -90,17 +90,7 @@ namespace LYBT.Infrastructure.Data.Configuration
                 
                 // 配置关系的延迟加载（避免N+1但允许按需加载）
                 // 注意：当前实体未定义导航属性，暂时注释
-                /*
-                entity.HasMany(p => p.Visits)
-                    .WithOne(v => v.Patient)
-                    .HasForeignKey(v => v.PatientId)
-                    .OnDelete(DeleteBehavior.Restrict);
-                
-                // entity.HasMany(p => p.Prescriptions)
-                //     .WithOne(pr => pr.Patient)
-                //     .HasForeignKey(pr => pr.PatientId)
-                //     .OnDelete(DeleteBehavior.Restrict);
-                */
+
                 
                 // entity.HasMany(p => p.Prescriptions)
                 //     .WithOne(pr => pr.Patient)
@@ -127,23 +117,7 @@ namespace LYBT.Infrastructure.Data.Configuration
                     .HasDatabaseName("IX_MedicalCase_Status_Date");
                 
                 // 配置关系
-                // 注意：当前实体未定义导航属性，暂时注释
-                /*
-                entity.HasOne(m => m.Patient)
-                    .WithMany(p => p.Visits)
-                    .HasForeignKey(m => m.PatientId)
-                    .OnDelete(DeleteBehavior.Restrict);
-                
-                entity.HasOne(m => m.Doctor)
-                    .WithMany()
-                    .HasForeignKey(m => m.DoctorId)
-                    .OnDelete(DeleteBehavior.Restrict);
-                
-                entity.HasMany(m => m.Prescriptions)
-                    .WithOne(p => p.MedicalCase)
-                    .HasForeignKey(p => p.MedicalCaseId)
-                    .OnDelete(DeleteBehavior.Cascade);
-                */
+
             });
         }
 
@@ -175,32 +149,9 @@ namespace LYBT.Infrastructure.Data.Configuration
                 entity.HasIndex(p => p.Status)
                     .HasDatabaseName("IX_Prescription_Status");
                 
-                // 配置关系 - 全部注释掉，因为导航属性不存在
-                /*
-                entity.HasOne(p => p.Patient)
-                    .WithMany(pat => pat.Prescriptions)
-                    .HasForeignKey(p => p.PatientId)
-                    .OnDelete(DeleteBehavior.Restrict);
+
                 
-                entity.HasOne(p => p.MedicalCase)
-                    .WithMany(m => m.Prescriptions)
-                    .HasForeignKey(p => p.MedicalCaseId)
-                    .OnDelete(DeleteBehavior.Cascade);
-                
-                entity.HasOne(p => p.Doctor)
-                    .WithMany()
-                    .HasForeignKey(p => p.DoctorId)
-                    .OnDelete(DeleteBehavior.Restrict);
-                */
-                
-                // 配置JSON存储的处方明细 - HerbItems属性不存在，注释掉
-                /*
-                entity.Property(p => p.HerbItems)
-                    .HasConversion(
-                        v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
-                        v => System.Text.Json.JsonSerializer.Deserialize<List<PrescriptionHerbItem>>(v, (System.Text.Json.JsonSerializerOptions?)null) ?? new List<PrescriptionHerbItem>()
-                    );
-                */
+
             });
         }
 
@@ -225,59 +176,17 @@ namespace LYBT.Infrastructure.Data.Configuration
                 entity.HasIndex(u => u.PhoneNumber)
                     .HasDatabaseName("IX_User_Phone");
                 
-                // 复合索引（登录相关）- Username和IsActive属性不存在，注释掉
-                /*
-                entity.HasIndex(u => new { u.Username, u.IsActive })
-                    .HasDatabaseName("IX_User_Username_Active");
-                
-                entity.HasIndex(u => new { u.Role, u.IsActive })
-                    .HasDatabaseName("IX_User_Role_Active");
-                */
+
                 
                 entity.HasIndex(u => u.Role)
                     .HasDatabaseName("IX_User_Role");
                 
-                // 配置关系 - RefreshTokens导航属性不存在，注释掉
-                /*
-                entity.HasMany(u => u.RefreshTokens)
-                    .WithOne(rt => rt.User)
-                    .HasForeignKey(rt => rt.UserId)
-                    .OnDelete(DeleteBehavior.Cascade);
-                */
+
             });
         }
 
-        /// <summary>
-        /// 配置分表策略（用于大数据量表）
-        /// </summary>
-        public static void ConfigureTablePartitioning(this ModelBuilder modelBuilder)
-        {
-            // 示例：按月份对就诊记录分表
-            // 注意：SQL Server原生不支持分表，需要使用分区表或手动实现
-            // 这里只是示例配置，实际实现需要数据库层面支持
-            
-            modelBuilder.Entity<MedicalCase>()
-                .HasComment("就诊记录表 - 建议按月分区存储");
-            
-            modelBuilder.Entity<Prescription>()
-                .HasComment("处方表 - 建议按季度分区存储");
-        }
 
-        /// <summary>
-        /// 配置读写分离支持（需要配合连接字符串）
-        /// </summary>
-        public static void ConfigureReadWriteSplitting(this DbContextOptionsBuilder optionsBuilder, string writeConnectionString, string readConnectionString)
-        {
-            // 这需要自定义的DbContext工厂或使用第三方库如Pomelo.EntityFrameworkCore.MySql
-            // 示例配置，实际实现需要根据具体数据库和需求调整
-            
-            optionsBuilder.UseSqlServer(writeConnectionString, sqlOptions =>
-            {
-                sqlOptions.EnableRetryOnFailure(
-                    maxRetryCount: 3,
-                    maxRetryDelay: TimeSpan.FromSeconds(30),
-                    errorNumbersToAdd: null);
-            });
-        }
+
+
     }
 }

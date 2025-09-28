@@ -78,7 +78,7 @@ namespace LYBT.Module.Prescriptions.Services
         {
             // 该方法已废弃，处方应该通过MedicalCase聚合根创建
             _logger.LogWarning("使用了已废弃的PrescriptionService.CreateAsync方法，应该通过MedicalCase聚合根创建");
-            
+
             return Task.FromResult(ServiceResult<PrescriptionDto>.Failure("处方必须通过医疗案例(MedicalCase)创建，请使用MedicalCaseService.CreateWithDetailsAsync"));
         }
 
