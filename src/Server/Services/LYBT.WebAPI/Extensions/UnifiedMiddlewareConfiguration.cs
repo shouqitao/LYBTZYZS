@@ -1,4 +1,5 @@
 using LYBT.Core.Infrastructure.Configuration.Options;
+using LYBT.Infrastructure.Configuration.Extensions;
 using LYBT.WebAPI.Middleware;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Options;
@@ -25,8 +26,12 @@ public static class UnifiedMiddlewareConfiguration
         // 2. 路由中间件
         app.UseRouting();
 
-        // 2.1 速率限制 - 已移除过度工程（小型诊所系统无需复杂限流）
-        // app.UseRateLimiter(); // 简化架构
+        // 2.1 速率限制 - 轻量级登录保护（必要的安全基线）
+        var config = app.Configuration.GetLybtOptions();
+        if (config.Security.RateLimiting.Enabled)
+        {
+            app.UseRateLimiter();
+        }
 
         // 2.2 性能优化（压缩/响应缓存/输出缓存）
         app.UsePerformanceOptimizations();

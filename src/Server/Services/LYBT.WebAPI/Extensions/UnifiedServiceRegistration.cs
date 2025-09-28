@@ -67,8 +67,8 @@ public static class UnifiedServiceRegistration
         // 8）API 版本管理
         services.ConfigureApiVersioning();
 
-        // 9）速率限制 - 已移除过度工程（小型诊所系统无需复杂限流）
-        // services.ConfigureRateLimiting(configuration, environment); // 简化架构
+        // 9）速率限制 - 轻量级登录保护（必要的安全基线）
+        services.ConfigureRateLimiting(configuration, environment);
 
         // 10）安全服务（数据保护、密钥管理、密钥旋转）
         services.AddSecurityServices(configuration, environment);

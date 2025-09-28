@@ -38,7 +38,7 @@ namespace LYBT.WebAPI.Controllers
         /// <returns>登录响应，包含JWT Token</returns>
         [HttpPost("login")]
         [AllowAnonymous]  // 登录端点允许匿名访问
-        // 移除限流功能：[EnableRateLimiting("Login")] - 简化版本不需要企业级限流
+        [EnableRateLimiting("Login")]  // 启用登录限流保护，防暴力破解
         public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<LoginResponse>>> LoginAsync([FromBody] LoginRequest request)
         {
             try
