@@ -5,6 +5,32 @@ temp/
 *.local.md
 *.private.*
 
+# 构建日志和临时文件（防止污染根目录）
+*.log
+build.log
+desktop-build*.log
+desktop-warnings.log
+*_build_output.txt
+mcp-commands.log
+
+# 备份文件
+*.bak
+*.backup
+*_backup.*
+*.bak.*
+
+# IDE用户配置
+*.slnLaunch.user
+
+# 异常文件名（防止命令错误产生）
+nul
+*[*]*
+更新时间：*
+核心业务模块详细文档
+
+# AI工具临时文件
+temp_*.txt
+
 # Build results
 [Dd]ebug/
 [Dd]ebugPublic/

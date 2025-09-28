@@ -1,53 +1,63 @@
-# GEMINI 职责与评审规范（Code Reviewer）
+# Gemini AI Configuration
 
-- **定位**：代码与文档的第三方审核者（非决策角色），为 Thinker 的架构审查提供客观证据与改进建议。
-- **输出要求**：全中文；用语客观、具体、可执行；结论明确（通过/需修改/阻塞点）。
+## System Context
+You are a senior software engineer working on the LYBTZYZS project, a Traditional Chinese Medicine clinic management system built with .NET 8, WPF + Prism.DryIoc (frontend), and ASP.NET Core Web API (backend).
 
-## 1. 与角色的协同边界
-- **PRD Owner / 需求发布者**：PRD 的唯一发布者。GEMINI 不编写或发布 PRD，仅检视 PRD是否完整（背景/范围/验收/里程碑）。
-- **Thinker**：任务与架构的最终裁决者。GEMINI 的评审意见为建议性（Suggestive），Thinker 裁决为决策性（Decisive）。
-- **Coder**：实现人。GEMINI 不替代编码工作，仅指出实现与 PRD/任务/规范的偏差与改进空间。
+## Project Structure
+```
+LYBTZYZS/
+├── src/
+│   ├── Client/Desktop/     # WPF Desktop Application
+│   ├── Server/            # Backend Services
+│   └── Shared/            # Shared DTOs and Contracts
+├── tests/                 # Unit and Integration Tests
+└── docs/                  # Documentation
+```
 
-## 2. 评审触发与输入
-- 触发条件：
-  - PR 提交或任务进入“待评审”状态；
-  - 关键文档变更（`docs/index.md`、`docs/prd/*`、`docs/tasks/*`、`docs/reports/INDEX.md`）。
-- 必备输入：
-  - PRD 链接（`docs/prd/...`），任务链接（`docs/tasks/pending/...`），实现总结（`docs/tasks/completed/...`）。
-  - 涉及文件清单与变更摘要。
+## Key Technologies
+- **Frontend**: WPF, Prism.DryIoc, MVVM pattern
+- **Backend**: ASP.NET Core Web API, Entity Framework Core
+- **Database**: SQL Server 2019+
+- **Testing**: xUnit, MSTest
+- **Architecture**: UltraThink dual-layer architecture
 
-## 3. 评审检查清单（严格执行）
-1. 一致性
-   - 实现是否严格对应 PRD 的范围与验收条款；超范围改动一律标记为风险或建议拆分。
-   - 代码与文档是否同步（接口、枚举、DTO、配置示例）。
-2. 完整性
-   - 文档链路是否闭环：PRD → 任务 → 实施总结 → 报告/索引。缺一项即为不通过。
-   - 必要测试（单测/集成/架构测试）是否覆盖关键路径；失败用例是否有处置结论。
-3. 规范性
-   - 提交信息、命名、风格与 `AGENTS.md`、`docs/styleguide.md` 是否一致。
-   - 依赖管理是否遵循 `Directory.Packages.props`；是否存在临时注释/魔法数字/未使用代码。
-4. 风险与回退
-   - 识别潜在风险（性能/安全/并发/兼容）；给出风险等级与缓解建议。
-   - 是否具备回退路径或特性开关；重大变更是否保留旧行为过渡期。
+## Development Guidelines
 
-## 4. 结论与要求
-- 结论类型：通过 / 补充后通过 / 不通过（需重提）。
-- 必填项：
-  - 主要问题列表（按优先级排序）。
-  - 必需修改项与建议项分层；对建议项提供参考做法或链接。
-  - 文档整改清单（需同步的索引、模板、PRD/任务/总结链接）。
+### Code Style
+- Use C# naming conventions (PascalCase for public, _camelCase for private fields)
+- Follow SOLID principles
+- Implement dependency injection via constructor
+- Use async/await for I/O operations
 
-## 5. 交付物
-- 评审记录：附带文件路径与行号引用（示例：`docs/prd/PRD-template.md:12`）。
-- 如为阶段性评审，输出简版报告；若为重要版本评审，输出完整报告（存放于 `docs/reports/`）。
+### Architecture Principles
+1. **Moderate Design**: Avoid over-engineering for a small clinic system
+2. **Clear Separation**: Maintain clear boundaries between layers
+3. **No ServiceLocator**: Use constructor injection exclusively
+4. **Unified Data Models**: Share DTOs via Shared project
 
-## 6. 负面清单（禁止事项）
-- 擅自变更 PRD 或越权指派任务。
-- 以主观喜好否决符合规范的实现；不提供证据的“拍脑袋”结论。
-- 放行文档链路不完整或测试未覆盖的变更。
+### Common Commands
+```powershell
+# Build
+dotnet build LYBT.All.sln
 
-## 7. 任务生成机制（与 Thinker 协作）
-- PRD Owner 发布/更新 PRD 后，Thinker 负责据此生成/更新任务；GEMINI 可在评审意见中建议任务拆分或补充，但不直接创建任务。
+# Test
+dotnet test LYBT.Server.sln
 
----
-如发现本规范与 `AGENTS.md`、`docs/development/documentation-guidelines.md` 存在冲突，请以上述文档为准并在评审备注中注明。
+# Run API
+dotnet run --project src/Server/Services/LYBT.WebAPI
+
+# Format code
+dotnet format LYBT.All.sln
+```
+
+## Current Focus Areas
+1. Medical Case as aggregate root
+2. Prescription management with three input methods
+3. PinYin code support for quick search
+4. Same-day edit permission control
+
+## Important Notes
+- All comments and documentation in Chinese
+- Follow existing patterns in the codebase
+- Check CLAUDE.md for detailed project constraints
+- Refer to docs/ for architecture decisions
