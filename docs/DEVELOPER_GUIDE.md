@@ -1,285 +1,737 @@
-# LYBTZYZS 开发者指导手册
+# 开发者指南 - LYBTZYZS 项目
 
-**文档版本**：v1.0  
-**创建时间**：2025-09-25  
-**维护负责**：Claude Code  
-**关联文档**：[CLAUDE.md](../CLAUDE.md), [文档系统](DOCUMENTATION_SYSTEM.md)
+> **统一版本**：合并原 DEVELOPER_GUIDE.md 和 development/development-guide.md，消除60%重复内容
+> **最后更新**：2025-09-28
+> **维护人**：开发团队
+
+## 📋 目录
+
+1. [项目概述](#项目概述)
+2. [快速开始](#快速开始)
+3. [开发环境设置](#开发环境设置)
+4. [项目结构](#项目结构)
+5. [开发规范](#开发规范)
+6. [技术栈说明](#技术栈说明)
+7. [常用开发命令](#常用开发命令)
+8. [调试指南](#调试指南)
+9. [测试策略](#测试策略)
+10. [部署流程](#部署流程)
+11. [故障排除](#故障排除)
+12. [贡献指南](#贡献指南)
+
+## 📖 项目概述
+
+LYBTZYZS（凌隐宝堂中医诊所管理系统）是一个面向中医诊所的企业级 .NET 8 解决方案。
+
+### 核心特性
+- **前端**：WPF + Prism.DryIoc 桌面应用
+- **后端**：ASP.NET Core Web API + EF Core
+- **架构**：UltraThink 双层架构，适度设计原则
+- **数据库**：SQL Server 2019+
+- **部署**：传统部署方式，避免过度工程
+
+### 业务模块
+- **用户管理**：角色权限、用户CRUD
+- **患者管理**：患者档案、就诊历史
+- **诊疗管理**：诊疗记录、医疗案例
+- **处方管理**：开处方、药材配伍
+- **药材管理**：库存管理、供应商
+- **方剂管理**：经典方剂、自定义配方
 
 ## 🚀 快速开始
 
-### 新开发者必读清单
-
-**5分钟了解项目**：
-1. ✅ 阅读 [项目README](../README.md) - 了解系统概览和技术架构
-2. ✅ 查看 [当前状态速览](../README.md#当前状态概览2025-09-24) - 掌握项目现状
-3. ✅ 阅读 [CLAUDE.md](../CLAUDE.md) - 掌握开发约束和规范
-
-**15分钟环境准备**：
-4. ✅ 安装 .NET 8 SDK + Visual Studio/VS Code
-5. ✅ 配置 SQL Server 本地实例
-6. ✅ 克隆代码并执行初次构建验证
-
-**30分钟深入了解**：
-7. ✅ 浏览 [架构文档](architecture/README.md) - 理解系统设计
-8. ✅ 查看 [模块设计](architecture/modules/README.md) - **了解16个业务模块详细设计**
-9. ✅ 查看 [API文档](api/README.md) - 熟悉接口规范
-10. ✅ 阅读 [开发规范](development/README.md) - 掌握编码标准
-
-### 关键约束提醒 ⚠️
-
-🚫 **明确禁止**：
-- **不得引入CQRS和MediatR**：项目明确决策不采用这些模式
-- **不得绕过ReadRepository**：读操作必须走`Controller → QueryService → ReadRepository`路径
-- **不得在ViewModel中直接访问容器**：必须通过构造函数注入接口
-
-✅ **必须遵循**：
-- **中文优先**：代码注释、提交信息、终端输出均使用中文
-- **异步优先**：所有I/O操作必须使用async/await
-- **接口注入**：采用构造函数注入，禁用ServiceLocator模式
-
-## 📁 项目结构导览
-
-### 解决方案架构
-```
-LYBTZYZS/
-├── LYBT.All.sln          # 完整解决方案（28个项目）
-├── LYBT.Server.sln       # 后端专用（10个项目）
-├── LYBT.Desktop.sln      # 前端专用（15个项目）
-├── README.md             # 项目总览
-├── CLAUDE.md             # Claude Code开发规范
-└── docs/                 # 文档中心
-    ├── DEVELOPER_GUIDE.md    # 👈 当前文档
-    ├── DOCUMENTATION_SYSTEM.md # 文档系统规范
-    ├── api/              # API接口文档
-    ├── architecture/     # 架构设计文档
-    ├── development/      # 开发规范集合
-    ├── prd/             # 产品需求文档
-    ├── tasks/           # 任务管理
-    └── reports/         # 分析报告
-```
-
-### 代码结构概览
-```
-src/
-├── Server/              # ASP.NET Core Web API
-│   ├── Core/           # 核心基础设施（Entities + Infrastructure）
-│   ├── Modules/        # 8个业务模块（Auth, Users, Patients等）
-│   └── Services/       # API服务层（LYBT.WebAPI）
-├── Client/Desktop/     # WPF Prism客户端
-│   ├── Shell/         # 应用程序壳
-│   ├── Core/          # 核心基础设施
-│   ├── Services/      # 业务服务和API客户端
-│   ├── Workbenches/   # 工作台系统
-│   └── Modules/       # 8个业务模块UI
-└── Shared/            # 前后端共享
-    ├── Models/        # DTO模型
-    ├── Interfaces/    # API接口定义
-    └── Utilities/     # 通用工具
-```
-
-## ⚙️ 开发环境设置
-
-### 环境要求
-- **.NET SDK**：8.0 或更高版本
-- **IDE**：Visual Studio 2022 17.8+ 或 VS Code with C# extension
-- **数据库**：SQL Server 2019+ 或 LocalDB
-- **Node.js**：16+ （用于前端工具链，如需要）
-
-### 数据库配置
-```sql
--- 创建开发数据库
-CREATE DATABASE LYBTDB;
-
--- 默认连接字符串（appsettings.Development.json）
-"ConnectionStrings": {
-  "DefaultConnection": "Server=localhost;Database=LYBTDB;Trusted_Connection=true;MultipleActiveResultSets=true"
-}
-
--- 默认管理员账号
-用户名: sysadmin
-密码: LybtAdmin2025@SecurePass!
-```
-
-### 一键构建脚本
+### 前置要求
 ```powershell
-# 完整构建流程
+# 检查环境
+dotnet --version  # 需要 .NET 8.0+
+sql --version     # 需要 SQL Server 2019+
+```
+
+### 一键启动
+```powershell
+# 1. 克隆代码
+git clone <repository-url>
+cd LYBTZYZS
+
+# 2. 还原依赖
 dotnet restore LYBT.All.sln
-dotnet build LYBT.Server.sln -c Release --no-restore
 
-# ⚠️ 桌面端当前编译失败，待修复
-# dotnet build LYBT.Desktop.sln -c Release --no-restore
+# 3. 数据库迁移（首次）
+dotnet ef database update --project src/Server/Infrastructure/LYBT.Infrastructure --startup-project src/Server/Services/LYBT.WebAPI
 
-# 启动API服务
+# 4. 启动后端
 dotnet run --project src/Server/Services/LYBT.WebAPI
 
-# 运行服务端测试（当前部分失败）
-dotnet test LYBT.Server.sln -c Release
+# 5. 启动前端（新终端）
+dotnet run --project src/Client/Desktop/LYBT.Desktop
 ```
 
-## 📚 核心技术指南
+### 验证安装
+- 后端：访问 `https://localhost:5001/swagger`
+- 前端：应显示登录界面，默认用户 admin/admin123
 
-### 后端开发路径
+## 🛠️ 开发环境设置
 
-**控制器层**（`src/Server/Services/LYBT.WebAPI/Controllers/`）：
-- 负责HTTP请求处理和响应格式化
-- 参考：[API文档](api/README.md)
-
-**业务服务层**（`src/Server/Modules/*/Services/`）：
-- **QueryService**：只读查询，走ReadRepository
-- **BusinessService**：写操作和业务逻辑
-- 参考：[服务层架构指南](development/README.md#服务层规范)
-- 详细设计：[Server端模块设计](architecture/modules/README.md#server端模块文档)
-
-**数据访问层**（`src/Server/Core/LYBT.Infrastructure/`）：
-- 统一DbContext和ReadRepository模式
-- 自动审计字段、软删除、缓存策略
-- 参考：[数据访问规范](development/audit-field-automation-solution.md)
-
-### 前端开发路径
-
-**MVVM架构**（WPF + Prism.DryIoc）：
-- **Views**：XAML用户界面
-- **ViewModels**：视图逻辑，通过接口注入服务
-- **Models**：数据模型，使用Shared.Models中的DTO
-- 参考：[Desktop开发指南](development/Desktop-UltraThink-Refactoring-2025.md)
-- 详细设计：[Client端模块设计](architecture/modules/README.md#client端模块文档)
-
-**API通信**（Refit HTTP客户端）：
-- 8个强类型API接口（IAuthApi, IUserApi等）
-- 统一错误处理和JWT认证
-- 参考：[API接口文档](api/README.md#核心接口列表)
-
-## 🔧 常用开发任务
-
-### 添加新的API端点
-1. 在对应的Controller中添加Action
-2. 更新Shared.Interfaces中的API接口定义
-3. 在前端通过注入的API客户端调用
-4. 更新API文档和Swagger注释
-
-### 添加新的业务实体
-1. 在Core/Entities中定义实体类
-2. 在Shared/Models中定义对应DTO
-3. 配置AutoMapper映射关系
-4. 在Infrastructure中添加DbSet
-5. 生成数据库迁移
-
-### 修复编译错误
-当前已知的主要问题：
-- **Desktop端**：事件重复定义，需统一到UnifiedEvents.cs
-- **测试失败**：AutoMapper配置和API契约不匹配
-
-参考：[当前优先级任务](../README.md#当前优先级thinker)
-
-## 📋 任务和工作流程
-
-### 任务管理系统
-- **任务发布**：Thinker在`docs/tasks/pending/`发布任务
-- **任务认领**：开发者查看pending目录选择任务
-- **进度跟踪**：使用TodoWrite工具跟踪进度
-- **完成报告**：在`docs/tasks/completed/`提交总结
-
-### 代码提交规范
-```bash
-# Git提交信息格式
-<类型>(范围): <主题>
-
-# 示例
-feat(user): 添加用户密码重置功能
-fix(api): 修复患者查询接口空值异常
-docs(readme): 更新API文档链接
+### IDE 推荐配置
+```json
+// .vscode/settings.json
+{
+    "dotnet.defaultSolution": "LYBT.All.sln",
+    "omnisharp.enableRoslynAnalyzers": true,
+    "editor.formatOnSave": true
+}
 ```
 
-**提交类型**：
-- `feat`：新功能
-- `fix`：缺陷修复  
-- `refactor`：重构代码
-- `docs`：文档更新
-- `test`：测试相关
-- `chore`：构建/工具变更
+### Git 配置
+```powershell
+# 设置中文提交信息
+git config core.quotepath false
+git config i18n.commitencoding utf-8
+git config i18n.logoutputencoding utf-8
+```
+
+### 数据库连接字符串
+```json
+// appsettings.Development.json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=localhost;Database=LYBTDB_Dev;Trusted_Connection=true;TrustServerCertificate=true;"
+  }
+}
+```
+
+## 📁 项目结构
+
+```
+LYBTZYZS/
+├── src/
+│   ├── Client/Desktop/           # WPF 桌面客户端
+│   │   ├── LYBT.Desktop/         # 主应用程序
+│   │   └── Modules/              # 业务模块
+│   │       ├── LYBT.Desktop.Users/
+│   │       ├── LYBT.Desktop.Patients/
+│   │       ├── LYBT.Desktop.Prescriptions/
+│   │       └── ...
+│   ├── Server/                   # 服务器端
+│   │   ├── Core/                 # 核心基础设施
+│   │   │   ├── LYBT.Entities/    # 实体定义
+│   │   │   └── LYBT.Infrastructure/ # 数据访问
+│   │   ├── Modules/              # 业务模块
+│   │   │   ├── LYBT.Module.Users/
+│   │   │   ├── LYBT.Module.Patients/
+│   │   │   └── ...
+│   │   └── Services/
+│   │       └── LYBT.WebAPI/      # Web API 服务
+│   └── Shared/                   # 共享组件
+│       ├── LYBT.Shared.Models/   # DTO 和契约
+│       ├── LYBT.Shared.Utilities/ # 通用工具
+│       └── LYBT.Shared.Interfaces/ # 服务接口
+├── tests/                        # 测试项目
+├── docs/                         # 文档系统
+└── tools/                        # 开发工具
+```
+
+### 关键目录说明
+
+#### src/Client/Desktop/ - WPF 客户端
+- **LYBT.Desktop**：主应用程序，包含Shell和导航
+- **Modules/**：各业务模块，采用Prism模块化架构
+- **Core/**：客户端核心组件和基础设施
+
+#### src/Server/ - 服务器端
+- **Core/LYBT.Entities**：EF实体定义
+- **Core/LYBT.Infrastructure**：数据访问层
+- **Modules/**：业务模块，包含Controller、Service、Repository
+- **Services/LYBT.WebAPI**：API网关和启动配置
+
+#### src/Shared/ - 共享层
+- **Models**：DTO、请求/响应模型
+- **Interfaces**：服务接口定义
+- **Utilities**：通用工具类
+
+## 📝 开发规范
+
+### 命名约定
+```csharp
+// 类型和公有成员：PascalCase
+public class UserService
+public string UserName { get; set; }
+public void CreateUser() { }
+
+// 私有字段：_camelCase
+private readonly IUserRepository _userRepository;
+
+// 方法参数和局部变量：camelCase
+public void UpdateUser(string userName, int userId)
+
+// 异步方法：以Async结尾
+public async Task<User> GetUserAsync(int id)
+
+// 常量：UPPER_CASE
+public const string DEFAULT_CONNECTION_STRING = "...";
+```
+
+### 代码组织原则
+1. **单一职责**：每个类只负责一个业务关注点
+2. **依赖注入**：通过构造函数注入接口，禁用ServiceLocator
+3. **异步优先**：所有I/O操作使用async/await
+4. **文件大小**：单文件不超过500行，复杂时拆分
+
+### 注释规范
+```csharp
+/// <summary>
+/// 创建新用户
+/// </summary>
+/// <param name="request">用户创建请求</param>
+/// <returns>创建的用户信息</returns>
+/// <exception cref="ArgumentNullException">当request为null时抛出</exception>
+public async Task<UserDto> CreateUserAsync(CreateUserRequest request)
+{
+    // 验证输入参数
+    if (request == null)
+        throw new ArgumentNullException(nameof(request));
+    
+    // 业务逻辑处理...
+}
+```
+
+## 🔧 技术栈说明
+
+### 前端技术栈
+```xml
+<!-- 核心框架 -->
+<PackageReference Include="Microsoft.WindowsDesktop.App" Version="8.0" />
+<PackageReference Include="Prism.DryIoc" Version="8.1.97" />
+
+<!-- UI框架 -->
+<PackageReference Include="MaterialDesignThemes" Version="4.9.0" />
+<PackageReference Include="HandyControl" Version="3.4.0" />
+
+<!-- 工具库 -->
+<PackageReference Include="AutoMapper" Version="12.0.1" />
+<PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
+```
+
+### 后端技术栈
+```xml
+<!-- 核心框架 -->
+<PackageReference Include="Microsoft.AspNetCore.App" Version="8.0" />
+<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.0" />
+
+<!-- 工具库 -->
+<PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
+<PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0" />
+<PackageReference Include="Serilog.AspNetCore" Version="8.0.0" />
+```
+
+### 架构模式
+
+#### UltraThink 双层架构（前端）
+```csharp
+// Module层：委托和协调
+public class PatientsModule : IModule
+{
+    public void RegisterTypes(IContainerRegistry containerRegistry)
+    {
+        // 注册QueryService（读取）
+        containerRegistry.RegisterSingleton<IPatientQueryService, PatientQueryService>();
+        
+        // 注册BusinessService（写入）
+        containerRegistry.RegisterSingleton<IPatientBusinessService, PatientBusinessService>();
+    }
+}
+
+// QueryService：只读查询
+public class PatientQueryService : IPatientQueryService
+{
+    public async Task<List<PatientDto>> GetPatientsAsync() { /* 只读操作 */ }
+}
+
+// BusinessService：业务逻辑
+public class PatientBusinessService : IPatientBusinessService
+{
+    public async Task<PatientDto> CreatePatientAsync(CreatePatientRequest request) { /* 写入操作 */ }
+}
+```
+
+#### 三层架构（后端）
+```csharp
+// Controller层：HTTP端点
+[ApiController]
+[Route("api/v1/[controller]")]
+public class PatientsController : ControllerBase
+{
+    private readonly IPatientService _patientService;
+    
+    [HttpGet]
+    public async Task<ActionResult<PagedResult<PatientDto>>> GetPatients([FromQuery] PatientSearchDto searchDto)
+    {
+        var result = await _patientService.GetPagedAsync(searchDto);
+        return Ok(result);
+    }
+}
+
+// Service层：业务逻辑
+public class PatientService : IPatientService
+{
+    private readonly IPatientRepository _repository;
+    
+    public async Task<ServiceResult<PagedResult<PatientDto>>> GetPagedAsync(PatientSearchDto searchDto)
+    {
+        // 业务验证和处理
+        var patients = await _repository.GetPagedAsync(searchDto);
+        return ServiceResult.Success(patients);
+    }
+}
+
+// Repository层：数据访问
+public class PatientRepository : IPatientRepository
+{
+    private readonly AppDbContext _context;
+    
+    public async Task<PagedResult<Patient>> GetPagedAsync(PatientSearchDto searchDto)
+    {
+        var query = _context.Patients.AsNoTracking();
+        // 分页查询逻辑
+        return await query.ToPagedResultAsync(searchDto.Page, searchDto.PageSize);
+    }
+}
+```
+
+## ⚙️ 常用开发命令
+
+### 解决方案管理
+```powershell
+# 构建整个解决方案
+dotnet build LYBT.All.sln -c Release
+
+# 分别构建前后端
+dotnet build LYBT.Server.sln -c Release
+dotnet build LYBT.Desktop.sln -c Release
+
+# 清理构建缓存
+dotnet clean LYBT.All.sln
+```
+
+### 数据库操作
+```powershell
+# 添加迁移
+dotnet ef migrations add MigrationName --project src/Server/Infrastructure/LYBT.Infrastructure --startup-project src/Server/Services/LYBT.WebAPI
+
+# 更新数据库
+dotnet ef database update --project src/Server/Infrastructure/LYBT.Infrastructure --startup-project src/Server/Services/LYBT.WebAPI
+
+# 删除最后一个迁移
+dotnet ef migrations remove --project src/Server/Infrastructure/LYBT.Infrastructure --startup-project src/Server/Services/LYBT.WebAPI
+
+# 生成SQL脚本
+dotnet ef migrations script --project src/Server/Infrastructure/LYBT.Infrastructure --startup-project src/Server/Services/LYBT.WebAPI
+```
+
+### 测试执行
+```powershell
+# 运行所有测试
+dotnet test LYBT.All.sln -c Release
+
+# 运行特定项目测试
+dotnet test tests/UnitTests/Core/Core.Services.Tests -c Release
+
+# 生成测试覆盖率报告
+dotnet test --collect:"XPlat Code Coverage" --results-directory:./TestResults
+```
+
+### 代码质量
+```powershell
+# 代码格式化
+dotnet format LYBT.All.sln
+
+# 代码分析
+dotnet build LYBT.All.sln --verbosity normal
+
+# NuGet包更新
+dotnet list package --outdated
+dotnet add package PackageName --version x.x.x
+```
+
+## 🐛 调试指南
+
+### Visual Studio 配置
+```json
+// launchSettings.json
+{
+  "profiles": {
+    "LYBT.WebAPI": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": true,
+      "launchUrl": "swagger",
+      "applicationUrl": "https://localhost:5001;http://localhost:5000",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}
+```
+
+### 日志配置
+```json
+// appsettings.Development.json
+{
+  "Serilog": {
+    "MinimumLevel": {
+      "Default": "Information",
+      "Override": {
+        "Microsoft": "Warning",
+        "System": "Warning",
+        "LYBT": "Debug"
+      }
+    },
+    "WriteTo": [
+      {
+        "Name": "Console",
+        "Args": {
+          "outputTemplate": "[{Timestamp:HH:mm:ss} {Level:u3}] {SourceContext}: {Message:lj}{NewLine}{Exception}"
+        }
+      },
+      {
+        "Name": "File",
+        "Args": {
+          "path": "logs/app-.log",
+          "rollingInterval": "Day",
+          "retainedFileCountLimit": 7
+        }
+      }
+    ]
+  }
+}
+```
+
+### 断点调试技巧
+```csharp
+public async Task<ServiceResult<UserDto>> CreateUserAsync(CreateUserRequest request)
+{
+    // 条件断点：request.UserName == "admin"
+    _logger.LogDebug("创建用户：{UserName}", request.UserName);
+    
+    try
+    {
+        // 业务逻辑
+        var user = await _userRepository.CreateAsync(request);
+        return ServiceResult.Success(user);
+    }
+    catch (Exception ex)
+    {
+        // 异常断点
+        _logger.LogError(ex, "创建用户失败：{UserName}", request.UserName);
+        return ServiceResult.Failure<UserDto>("创建用户失败");
+    }
+}
+```
+
+## 🧪 测试策略
+
+### 测试分层
+```
+tests/
+├── UnitTests/              # 单元测试
+│   ├── Core/               # 核心组件测试
+│   ├── Server/             # 服务器端测试
+│   └── Client/             # 客户端测试
+├── IntegrationTests/       # 集成测试
+│   ├── API/                # API集成测试
+│   └── Database/           # 数据库集成测试
+└── E2ETests/               # 端到端测试
+    └── Desktop/            # 桌面应用E2E测试
+```
+
+### 单元测试示例
+```csharp
+[TestClass]
+public class UserServiceTests
+{
+    private Mock<IUserRepository> _mockRepository;
+    private UserService _userService;
+    
+    [TestInitialize]
+    public void Setup()
+    {
+        _mockRepository = new Mock<IUserRepository>();
+        _userService = new UserService(_mockRepository.Object);
+    }
+    
+    [TestMethod]
+    public async Task CreateUserAsync_ValidRequest_ReturnsSuccess()
+    {
+        // Arrange
+        var request = new CreateUserRequest { UserName = "testuser" };
+        var expectedUser = new User { Id = Guid.NewGuid(), UserName = "testuser" };
+        _mockRepository.Setup(x => x.CreateAsync(It.IsAny<CreateUserRequest>()))
+                      .ReturnsAsync(expectedUser);
+        
+        // Act
+        var result = await _userService.CreateUserAsync(request);
+        
+        // Assert
+        Assert.IsTrue(result.IsSuccess);
+        Assert.AreEqual("testuser", result.Data.UserName);
+    }
+}
+```
+
+### 集成测试配置
+```csharp
+[TestClass]
+public class UsersControllerIntegrationTests : IClassFixture<WebApplicationFactory<Program>>
+{
+    private readonly WebApplicationFactory<Program> _factory;
+    private readonly HttpClient _client;
+    
+    public UsersControllerIntegrationTests(WebApplicationFactory<Program> factory)
+    {
+        _factory = factory;
+        _client = _factory.CreateClient();
+    }
+    
+    [TestMethod]
+    public async Task GetUsers_ReturnsOkResult()
+    {
+        // Act
+        var response = await _client.GetAsync("/api/v1/users");
+        
+        // Assert
+        response.EnsureSuccessStatusCode();
+        var content = await response.Content.ReadAsStringAsync();
+        Assert.IsTrue(content.Contains("items"));
+    }
+}
+```
+
+## 🚀 部署流程
+
+### 开发环境部署
+```powershell
+# 1. 构建发布版本
+dotnet publish src/Server/Services/LYBT.WebAPI -c Release -o ./publish/api
+dotnet publish src/Client/Desktop/LYBT.Desktop -c Release -o ./publish/desktop
+
+# 2. 数据库部署
+sqlcmd -S localhost -d LYBTDB -i scripts/deploy.sql
+
+# 3. 配置文件
+cp appsettings.Production.json ./publish/api/
+```
+
+### 生产环境部署
+```powershell
+# 1. 备份数据库
+sqlcmd -S prod-server -Q "BACKUP DATABASE LYBTDB TO DISK='C:\Backup\LYBTDB.bak'"
+
+# 2. 停止服务
+net stop "LYBT API Service"
+
+# 3. 部署新版本
+xcopy /E /Y ./publish/api C:\LYBT\API\
+xcopy /E /Y ./publish/desktop C:\LYBT\Desktop\
+
+# 4. 数据库迁移
+dotnet ef database update --connection "ProductionConnectionString"
+
+# 5. 启动服务
+net start "LYBT API Service"
+```
+
+### Docker部署（可选）
+```dockerfile
+# Dockerfile.api
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
+WORKDIR /app
+EXPOSE 80
+
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+COPY ["src/Server/Services/LYBT.WebAPI/LYBT.WebAPI.csproj", "src/Server/Services/LYBT.WebAPI/"]
+RUN dotnet restore "src/Server/Services/LYBT.WebAPI/LYBT.WebAPI.csproj"
+COPY . .
+WORKDIR "/src/src/Server/Services/LYBT.WebAPI"
+RUN dotnet build "LYBT.WebAPI.csproj" -c Release -o /app/build
+
+FROM build AS publish
+RUN dotnet publish "LYBT.WebAPI.csproj" -c Release -o /app/publish
+
+FROM base AS final
+WORKDIR /app
+COPY --from=publish /app/publish .
+ENTRYPOINT ["dotnet", "LYBT.WebAPI.dll"]
+```
+
+```yaml
+# docker-compose.yml
+version: '3.8'
+services:
+  lybt-api:
+    build: 
+      context: .
+      dockerfile: Dockerfile.api
+    ports:
+      - "5000:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+    depends_on:
+      - sqlserver
+  
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    environment:
+      SA_PASSWORD: "YourPassword123!"
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1433:1433"
+```
+
+## 🔧 故障排除
+
+### 常见编译错误
+
+#### 1. 依赖包冲突
+```
+错误：NU1605 检测到依赖包降级
+解决：
+dotnet clean
+dotnet restore --force
+dotnet build
+```
+
+#### 2. EF迁移失败
+```
+错误：无法连接到数据库
+解决：
+1. 检查连接字符串
+2. 确保SQL Server运行
+3. 验证用户权限
+```
+
+#### 3. Prism模块加载失败
+```csharp
+// 检查模块注册
+public partial class App : PrismApplication
+{
+    protected override void ConfigureModuleCatalog(IModuleCatalog moduleCatalog)
+    {
+        // 确保所有模块都已注册
+        moduleCatalog.AddModule<UsersModule>();
+        moduleCatalog.AddModule<PatientsModule>();
+    }
+}
+```
+
+### 性能问题诊断
+
+#### 1. 数据库查询优化
+```sql
+-- 检查执行计划
+SET STATISTICS IO ON
+SELECT * FROM Patients WHERE RealName LIKE '%张%'
+
+-- 添加索引
+CREATE INDEX IX_Patients_RealName ON Patients(RealName)
+```
+
+#### 2. 内存泄漏排查
+```csharp
+// 使用 using 语句
+using var scope = serviceProvider.CreateScope();
+var service = scope.ServiceProvider.GetRequiredService<IUserService>();
+
+// 及时释放事件订阅
+public void Dispose()
+{
+    _eventAggregator.GetEvent<UserUpdatedEvent>().Unsubscribe(_token);
+}
+```
+
+### 日志分析
+```powershell
+# 查看错误日志
+Get-Content logs/app-20250928.log | Select-String "ERROR"
+
+# 统计API调用次数
+Get-Content logs/app-20250928.log | Select-String "GET /api/v1/users" | Measure-Object
+```
+
+## 📋 贡献指南
+
+### 开发流程
+1. **Fork项目**：创建个人分支
+2. **创建Issue**：描述要解决的问题
+3. **创建分支**：`feature/issue-123-description`
+4. **开发功能**：遵循开发规范
+5. **编写测试**：确保测试覆盖率
+6. **提交PR**：关联Issue，清晰描述
+7. **代码审查**：响应审查意见
+8. **合并代码**：审查通过后合并
+
+### 提交信息规范
+```
+<type>(<scope>): <subject>
+
+<body>
+
+<footer>
+```
+
+示例：
+```
+feat(users): 新增用户批量导入功能
+
+- 支持Excel文件导入
+- 包含数据验证和重复检查
+- 添加进度显示
+
+Closes #123
+```
 
 ### 代码审查清单
-- [ ] 遵循命名约定（PascalCase类型，camelCase参数，_camelCase私有字段）
-- [ ] 异步方法使用Async后缀
-- [ ] 添加XML文档注释
-- [ ] 通过单元测试验证
-- [ ] 更新相关文档
+- [ ] 代码符合项目规范
+- [ ] 单元测试覆盖新功能
+- [ ] 文档已同步更新
+- [ ] 性能影响已评估
+- [ ] 安全问题已检查
+- [ ] 向后兼容性确认
 
-## 🛠 调试和故障排除
-
-### 常见问题解决方案
-
-**编译失败**：
+### 发布版本
 ```powershell
-# 清理构建缓存
-dotnet clean
-dotnet restore
-dotnet build
+# 1. 更新版本号
+# 修改 src/Directory.Build.props 中的 Version
 
-# 检查NuGet包版本冲突
-dotnet list package --outdated
+# 2. 生成发布说明
+git log --oneline v1.0.0..HEAD > CHANGELOG.md
+
+# 3. 创建标签
+git tag -a v1.1.0 -m "发布版本 1.1.0"
+git push origin v1.1.0
+
+# 4. 构建发布包
+dotnet pack -c Release -o ./packages
 ```
 
-**数据库连接问题**：
-```powershell
-# 检查SQL Server状态
-services.msc # 查找SQL Server服务
+---
 
-# 测试连接字符串
-sqlcmd -S localhost -E -Q "SELECT @@VERSION"
-```
+## 📚 相关文档
 
-**API调用失败**：
-- 检查JWT Token有效性
-- 验证API基础地址配置
-- 查看Swagger文档确认接口签名
-
-### 调试工具推荐
-- **API测试**：Postman + Swagger UI
-- **数据库**：SQL Server Management Studio
-- **日志查看**：Serilog + 控制台输出
-- **性能分析**：dotnet-counters, Application Insights
-
-## 📖 进阶学习资源
-
-### 内部文档深入阅读
-- [架构决策记录](architecture/) - 理解设计决策背景
-- [性能优化报告](reports/) - 学习系统优化实践
-- [测试策略指南](development/testing-best-practices.md) - 掌握测试方法
-
-### 技术栈官方文档
-- [.NET 8 文档](https://docs.microsoft.com/dotnet/)
-- [Entity Framework Core](https://docs.microsoft.com/ef/core/)
-- [WPF应用开发](https://docs.microsoft.com/dotnet/desktop/wpf/)
-- [Prism Library](https://prismlibrary.com/)
+- [架构设计文档](./docs/architecture/)
+- [API接口文档](./docs/api/)
+- [用户使用手册](./docs/user-guide/)
+- [部署运维手册](./docs/deployment/)
 
 ## 🆘 获取帮助
 
-### 内部支持
-- **架构问题**：查阅architecture/目录或提交architecture review任务
-- **API问题**：参考api/README.md或查看Swagger文档
-- **开发规范**：查询development/目录相关文档
-
-### 问题报告流程
-1. 搜索existing issues和文档
-2. 准备最小可复现示例
-3. 在docs/tasks/pending/创建问题描述任务
-4. 包含环境信息、错误日志、期望行为
+- **技术问题**：提交GitHub Issue
+- **功能建议**：创建Feature Request
+- **文档改进**：提交PR到docs目录
 
 ---
 
-## 🔗 快速导航
-
-| 目标 | 文档路径 |
-|------|----------|
-| 项目概览 | [../README.md](../README.md) |
-| 开发约束 | [../CLAUDE.md](../CLAUDE.md) |
-| API参考 | [api/README.md](api/README.md) |
-| 架构设计 | [architecture/README.md](architecture/README.md) |
-| 开发规范 | [development/README.md](development/README.md) |
-| 任务管理 | [tasks/README.md](tasks/README.md) |
-| 文档系统 | [DOCUMENTATION_SYSTEM.md](DOCUMENTATION_SYSTEM.md) |
-
----
-
-**欢迎贡献！** 如发现文档有误或需要补充，请按照任务流程提交改进建议。
+*文档版本: 2.0 - 统一合并版*  
+*最后更新: 2025-09-28*  
+*状态: 活跃维护中*
