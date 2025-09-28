@@ -9,18 +9,15 @@
 
 ### 分层结构
 ```
-├── Controllers/                    # HTTP控制器（位于WebAPI项目）
-│   └── PrescriptionsController.cs  # 处方管理API
 ├── Services/                       # 业务服务
-│   └── PrescriptionService.cs      # 处方业务逻辑
+│   └── PrescriptionService.cs      # 处方业务逻辑实现
 ├── Repositories/                   # 数据仓储
 │   └── PrescriptionRepository.cs   # 处方数据访问
-├── Interfaces/                     # 服务接口
-│   └── IPrescriptionRepository.cs  # 仓储接口
+├── Interfaces/                     # 仓储接口（服务接口在Shared中）
+│   └── IPrescriptionRepository.cs  # 仓储接口定义
 ├── Mapping/                        # AutoMapper配置
 │   └── PrescriptionMappingProfile.cs
-├── PrescriptionsModule.cs          # 模块依赖注册
-└── README.md
+└── PrescriptionsModule.cs          # 模块依赖注册
 ```
 
 ## 🔌 API接口设计
@@ -221,19 +218,41 @@ public interface IPrescriptionRepository : IRepository<Prescription>
 [Table("Prescriptions")]
 public class Prescription : BaseEntity
 {
-    public Guid MedicalCaseId { get; set; }      // 医疗案例ID
-    public Guid PatientId { get; set; }          // 患者ID
-    public Guid UserId { get; set; }             // 医生ID
+    // 关联信息
+    [Required]
+    public Guid MedicalCaseId { get; set; }      // 医疗案例ID（外键，必需）
+    public Guid? PatientId { get; set; }         // 患者ID（冗余，可通过MedicalCase获取）
+    public Guid? UserId { get; set; }            // 医生ID（冗余，可通过MedicalCase获取）
+    
+    // 处方基本信息
+    [StringLength(500)]
     public string? Indication { get; set; }      // 主治（适应症）
     public int DosageCount { get; set; } = 7;    // 处方帖数
+    
+    [Column(TypeName = "decimal(5,4)")]
     public decimal Discount { get; set; } = 1.0m; // 折扣（0-1）
+    
+    [StringLength(500)]
     public string? Advice { get; set; }          // 医嘱
+    
+    [StringLength(200)]
     public string? FormulaSource { get; set; }   // 验方来源
+    
     public PrescriptionStatus Status { get; set; } = PrescriptionStatus.Draft; // 处方状态
+    
+    [StringLength(500)]
     public string? Remark { get; set; }          // 备注
+    
+    // 打印管理字段（新增特性）
+    public int PrintVersion { get; set; } = 1;   // 当前打印版本号
+    public DateTime? LastPrintedAt { get; set; } // 最后打印时间
+    public int PrintCount { get; set; } = 0;     // 打印次数
+    public bool IsPrinted { get; set; } = false; // 是否已打印
     
     // 导航属性
     public List<PrescriptionItem> Items { get; set; } = new(); // 处方项目
+    public virtual MedicalCase.MedicalCase? MedicalCase { get; set; } // 关联病历
+    public List<PrescriptionPrintLog> PrintLogs { get; set; } = new(); // 打印日志
 }
 ```
 
@@ -258,13 +277,17 @@ public class PrescriptionItem
 
 #### PrescriptionStatus（处方状态）
 ```csharp
+[Description("处方状态")]
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum PrescriptionStatus
 {
+    /// <summary>草稿 - 处方正在编辑中</summary>
     [Description("草稿")]
-    Draft = 0,        // 草稿 - 处方正在编辑中
+    Draft = 0,
     
+    /// <summary>已完成 - 处方已完成</summary>
     [Description("已完成")]
-    Completed = 1     // 已完成 - 处方已完成
+    Completed = 1
 }
 ```
 

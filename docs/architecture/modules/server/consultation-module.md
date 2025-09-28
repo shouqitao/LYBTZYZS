@@ -130,13 +130,12 @@
 ```csharp
 public interface IConsultationService
 {
-    Task<ServiceResult<PagedResult<ConsultationDto>>> GetPagedAsync(int page, int pageSize, string? keyword);
+    Task<ServiceResult<PagedResult<ConsultationDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null);
     Task<ServiceResult<ConsultationDto>> GetByIdAsync(Guid id);
     Task<ServiceResult<ConsultationDto>> CreateAsync(ConsultationCreateDto dto);
     Task<ServiceResult<ConsultationDto>> UpdateAsync(Guid id, ConsultationUpdateDto dto);
+    Task<ServiceResult<List<ConsultationDto>>> SearchAsync(string keyword);
     Task<ServiceResult> DeleteAsync(Guid id);
-    Task<ServiceResult<List<ConsultationDto>>> GetByMedicalCaseIdAsync(Guid medicalCaseId);
-    Task<ServiceResult<ConsultationDto>> StartAsync(Guid patientId);
 }
 ```
 
@@ -164,46 +163,62 @@ public interface IConsultationQueryService
 ### 核心实体：Consultation
 **表名**：`Consultations`
 **继承**：`BaseEntity`（提供审计字段）
+**关键特性**：与MedicalCase共享主键，建立1:1关系
 
 ```csharp
+[Table("Consultations")]
 public class Consultation : BaseEntity
 {
-    // 关联信息
-    public Guid MedicalCaseId { get; set; }    // 医疗案例ID
-    public Guid PatientId { get; set; }        // 患者ID
-    public Guid UserId { get; set; }           // 医生ID
+    // 重要：Id字段与MedicalCase共享主键
+    // PatientId和UserId通过MedicalCase获取，不需要重复存储
     
     // 病史信息
-    public string? ChiefComplaint { get; set; }     // 主诉
-    public string? PresentIllness { get; set; }     // 现病史
+    [StringLength(500)]
+    public string? ChiefComplaint { get; set; }         // 主诉
+    
+    [StringLength(1000)]
+    public string? PresentIllness { get; set; }         // 现病史
     
     // 中医四诊
-    public string? Inspection { get; set; }         // 望诊
-    public string? AuscultationOlfaction { get; set; } // 闻诊
-    public string? Inquiry { get; set; }             // 问诊
-    public string? Palpation { get; set; }           // 切诊
+    [StringLength(500)]
+    public string? Inspection { get; set; }             // 望诊
+    
+    [StringLength(500)]
+    public string? AuscultationOlfaction { get; set; }  // 闻诊
+    
+    [StringLength(500)]
+    public string? Inquiry { get; set; }                // 问诊
+    
+    [StringLength(500)]
+    public string? Palpation { get; set; }              // 切诊
     
     // 诊断结果
-    public string? TCMDiagnosis { get; set; }        // 中医辨证
-    public string? TreatmentPrinciple { get; set; }  // 治疗原则
-    public string? MedicalAdvice { get; set; }       // 医嘱
+    [StringLength(500)]
+    public string? TCMDiagnosis { get; set; }           // 中医辨证
+    
+    [StringLength(500)]
+    public string? TreatmentPrinciple { get; set; }     // 治疗原则
+    
+    [StringLength(1000)]
+    public string? MedicalAdvice { get; set; }          // 医嘱
     
     // 状态和备注
-    public CommonStatus Status { get; set; }         // 状态
-    public string? Remark { get; set; }              // 备注
+    public CommonStatus Status { get; set; } = CommonStatus.Enabled;
     
-    // 导航属性
-    public virtual Patient? Patient { get; set; }
-    public virtual User? User { get; set; }
-    public virtual MedicalCase? MedicalCase { get; set; }
+    [StringLength(500)]
+    public string? Remark { get; set; }                 // 备注
+    
+    // 导航属性（必需的，通过共享主键关联）
+    [Required]
+    public virtual MedicalCase.MedicalCase MedicalCase { get; set; } = null!;
 }
 ```
 
 ### DTO模型层次
 
 #### 基础模型
-- **ConsultationDto**：列表展示用DTO
-- **ConsultationDetailDto**：详情展示用DTO，包含计算属性（持续时间、完成状态等）
+- **ConsultationDto**：主要DTO模型，包含MedicalCaseId、PatientId、UserId等完整字段
+- **ConsultationDetailDto**：详情展示用DTO（如需要可扩展）
 
 #### 输入模型  
 - **ConsultationInputBaseDto**：输入基类，包含四诊和诊断字段
@@ -345,13 +360,12 @@ Cancelled ← Cancelled
 
 ### ✅ 已实现
 - 完整的CRUD服务实现
-- N+1查询优化的仓储层
+- 与MedicalCase的1:1关系（共享主键）
 - 全面的DTO模型设计
-- AutoMapper映射配置
-- FluentValidation验证器
-- 模块注册和依赖注入
 - 四诊信息记录功能
 - 中医辨证论治支持
+- 软删除支持
+- 审计字段自动记录
 
 ### ⚠️ 部分实现
 - **DiagnosisService**：接口已定义，具体实现待完善
@@ -380,6 +394,20 @@ Cancelled ← Cancelled
 - 四诊信息完整性测试
 - 诊疗状态流转测试
 - N+1查询优化验证
+
+## ⚠️ 重要实现说明
+
+### 共享主键设计
+Consultation实体与MedicalCase通过**共享主键**建立1:1关系：
+- Consultation的Id字段与MedicalCase的Id相同
+- 不需要单独存储PatientId和UserId（通过MedicalCase获取）
+- 通过EF Core配置建立一对一关系
+- 确保了数据一致性和引用完整性
+
+### 实际与文档差异
+- **实体关系**：实际使用共享主键，而非独立主键+外键
+- **服务接口**：实际接口较简单，无StartAsync等方法
+- **查询服务**：部分模块有QueryService分离，但不是全部
 
 ## 🔗 依赖关系
 

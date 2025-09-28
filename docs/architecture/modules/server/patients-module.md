@@ -7,31 +7,18 @@
 
 ## 🏗️ 架构设计
 
-### 分层结构
+### 分层结构（实际实现）
 ```
-├── Controllers/           # HTTP控制器
-│   └── PatientsController.cs
 ├── Services/             # 业务服务
-│   ├── PatientService.cs
-│   ├── PatientQueryService.cs
-│   └── MedicalRecordService.cs
+│   └── PatientService.cs           # 患者业务逻辑实现
 ├── Repositories/         # 数据访问
-│   ├── PatientRepository.cs
-│   └── MedicalRecordRepository.cs
+│   └── PatientRepository.cs        # 患者数据访问
 ├── Interfaces/           # 服务接口
-│   ├── IPatientService.cs
-│   ├── IPatientQueryService.cs
-│   └── IMedicalRecordService.cs
-├── Validators/           # 验证器
-│   ├── PatientCreateDtoValidator.cs
-│   └── PatientUpdateDtoValidator.cs
+│   ├── IPatientService.cs          # 患者服务接口
+│   └── IPatientRepository.cs       # 患者仓储接口
 ├── Mapping/             # 对象映射
-│   └── PatientMappingProfile.cs
-├── Health/              # 健康检查
-│   └── PatientsModuleHealthCheck.cs
-├── Options/             # 配置选项
-│   └── PatientModuleOptions.cs
-└── README.md
+│   └── PatientMappingProfile.cs    # AutoMapper配置
+└── PatientsModule.cs               # 模块依赖注册
 ```
 
 ## 🔌 API接口设计
@@ -161,11 +148,11 @@
 ## 🔧 核心服务
 
 ### PatientService (业务服务)
-**职责**：患者业务逻辑，写操作
+**职责**：患者业务逻辑，统一的读写操作
 ```csharp
 public interface IPatientService
 {
-    Task<ServiceResult<PagedResult<PatientDto>>> GetPagedAsync(int page, int pageSize, string? keyword);
+    Task<ServiceResult<PagedResult<PatientDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null);
     Task<ServiceResult<PatientDto>> GetByIdAsync(Guid id);
     Task<ServiceResult<PatientDto>> CreateAsync(PatientCreateDto dto);
     Task<ServiceResult<PatientDto>> UpdateAsync(Guid id, PatientUpdateDto dto);
@@ -201,35 +188,67 @@ public interface IMedicalRecordService
 
 ### 核心实体 (Patient)
 ```csharp
+[Table("Patients")]
 public class Patient : BaseEntity
 {
-    public string Name { get; set; }
-    public Gender Gender { get; set; }
-    public DateTime BirthDate { get; set; }
-    public string PhoneNumber { get; set; }
-    public string? Email { get; set; }
-    public string? IdCard { get; set; }
-    public string? Address { get; set; }
-    public string? EmergencyContact { get; set; }
-    public string? EmergencyPhone { get; set; }
-    public string? Occupation { get; set; }
-    public MaritalStatus? MaritalStatus { get; set; }
+    // 基本信息
+    [Required]
+    [StringLength(100)]
+    public string Name { get; set; } = string.Empty;        // 姓名
     
-    // 医疗相关
-    public string? AllergyHistory { get; set; }      // 过敏史
-    public string? ChronicDiseases { get; set; }     // 慢性病史
-    public string? FamilyHistory { get; set; }       // 家族病史
-    public string? PinYinCode { get; set; }          // 拼音码（查询优化）
+    [StringLength(20)]
+    public string? PinYinCode { get; set; }                 // 拼音码（快速搜索）
     
-    // 统计字段
-    public DateTime? LastVisitTime { get; set; }     // 最后就诊时间
-    public int VisitCount { get; set; }              // 就诊次数
-    public decimal TotalSpent { get; set; }          // 总消费金额
-    public PatientStatus Status { get; set; }       // 患者状态
+    public Gender Gender { get; set; } = Gender.Unknown;    // 性别
     
-    // 导航属性
-    public List<MedicalRecord> MedicalRecords { get; set; }
-    public List<ConsultationRecord> ConsultationRecords { get; set; }
+    public int MaritalStatus { get; set; } = 0;             // 婚姻状态（数值存储）
+    
+    public DateTime? BirthDate { get; set; }                // 出生日期
+    
+    // 证件信息
+    public int IdType { get; set; } = 0;                    // 证件类型（数值存储）
+    
+    [StringLength(50)]
+    [SensitiveData(SensitiveDataType.IdentityInfo)]         // Epic 05-P0-03: 敏感数据加密
+    public string? IdNumber { get; set; }                   // 证件号码
+    
+    // 联系方式
+    [StringLength(20)]
+    [SensitiveData(SensitiveDataType.ContactInfo)]          // Epic 05-P0-03: 敏感数据加密
+    public string? PhoneNumber { get; set; }                // 手机号码
+    
+    [StringLength(256)]
+    [SensitiveData(SensitiveDataType.PersonalInfo)]         // Epic 05-P0-03: 敏感数据加密
+    public string? Address { get; set; }                    // 地址
+    
+    // 医疗信息
+    [StringLength(500)]
+    [SensitiveData(SensitiveDataType.MedicalInfo)]          // Epic 05-P0-03: 敏感数据加密
+    public string? AllergyHistory { get; set; }             // 过敏史
+    
+    public int BloodType { get; set; } = 0;                 // 血型（数值存储）
+    
+    // 紧急联系人
+    public string? EmergencyContactName { get; set; }       // 紧急联系人姓名
+    public string? EmergencyContactPhone { get; set; }      // 紧急联系人电话
+    public string? EmergencyContactRelation { get; set; }   // 紧急联系人关系
+    
+    // 状态管理
+    public CommonStatus Status { get; set; } = CommonStatus.Enabled;  // 患者状态
+    
+    [StringLength(128)]
+    public string? DisableReason { get; set; }              // 禁用原因
+    
+    // 就诊统计
+    public DateTime? LastVisitTime { get; set; }            // 最后就诊时间
+    public int VisitCount { get; set; } = 0;                // 就诊次数
+    
+    // 计算属性
+    [NotMapped]
+    public int? Age => BirthDate.HasValue                   // 年龄（根据出生日期计算）
+        ? DateTime.Today.Year - BirthDate.Value.Year - 
+          (BirthDate.Value.Date > DateTime.Today.AddYears(-(DateTime.Today.Year - BirthDate.Value.Year)) ? 1 : 0)
+        : null;
 }
 ```
 
@@ -255,12 +274,18 @@ public class MedicalRecord : BaseEntity
 ```
 
 ### 枚举定义
+
 ```csharp
 public enum Gender
 {
+    [Description("未知")]
+    Unknown = 0,
+    
+    [Description("男")]
     Male = 1,
-    Female = 2,
-    Other = 3
+    
+    [Description("女")] 
+    Female = 2
 }
 
 public enum MaritalStatus

@@ -1,10 +1,10 @@
 # MedicalCase模块设计 - Server端
 
 ## 📋 模块概述
-**职责**：病例管理、诊疗记录、医疗档案、患者就诊历史管理  
+**职责**：病历管理（聚合根）、诊疗流程控制、医疗档案管理  
 **命名空间**：`LYBT.Module.MedicalCase`  
 **API路径**：`/api/v1/medicalcases/*`  
-**核心定位**：作为中医诊所管理系统的核心业务模块，负责管理完整的诊疗流程数据记录
+**核心定位**：作为系统的**聚合根（Aggregate Root）**，管理整个诊疗流程，包含诊疗记录（Consultation）和处方（Prescription）
 
 ## 🏗️ 架构设计
 
@@ -161,11 +161,12 @@
 
 ## 🔧 核心服务
 
-### IMedicalCaseService
-**职责**：医疗案例业务逻辑
+### IMedicalCaseService（实际实现）
+**职责**：医疗案例业务逻辑，包含聚合操作
 ```csharp
 public interface IMedicalCaseService
 {
+    // 基础CRUD操作
     Task<ServiceResult<PagedResult<MedicalCaseDto>>> GetPagedAsync(
         int page = 1, int pageSize = 20, string? keyword = null);
     Task<ServiceResult<MedicalCaseDto>> GetByIdAsync(Guid id);
@@ -173,6 +174,13 @@ public interface IMedicalCaseService
     Task<ServiceResult<MedicalCaseDto>> UpdateAsync(Guid id, MedicalCaseUpdateDto dto);
     Task<ServiceResult> DeleteAsync(Guid id);
     Task<ServiceResult<List<MedicalCaseDto>>> GetByPatientIdAsync(Guid patientId);
+    
+    // 聚合操作（重要）
+    Task<ServiceResult<MedicalCaseDto>> CreateWithDetailsAsync(
+        MedicalCaseCreateDto caseDto, 
+        ConsultationCreateDto consultationDto, 
+        PrescriptionCreateDto prescriptionDto = null);
+    Task<ServiceResult<MedicalCaseDetailDto>> GetByIdWithDetailsAsync(Guid id);
 }
 ```
 
@@ -191,32 +199,46 @@ public interface IMedicalCaseRepository : IRepository<MedicalCaseEntity>
 
 ## 📊 数据模型与实体
 
-### 核心实体：MedicalCase
+### 核心实体：MedicalCase（聚合根）
 **数据表**：`MedicalCases`
 ```csharp
-public class MedicalCase : BaseEntity
+public class MedicalCase : BaseEntity  // 继承BaseEntity提供审计字段
 {
+    // 基础属性
     public Guid PatientId { get; set; }           // 患者ID
-    public string PatientName { get; set; }       // 患者姓名（显示用）
-    public Guid DoctorId { get; set; }           // 医生ID
-    public string DoctorName { get; set; }       // 医生姓名（显示用）
+    public string PatientName { get; set; }       // 患者姓名（冗余存储）
+    public Guid DoctorId { get; set; }            // 医生ID（非UserId）
+    public string DoctorName { get; set; }        // 医生姓名（冗余存储）
     public DateTime ConsultationDate { get; set; } // 诊疗时间
     public MedicalCaseStatus Status { get; set; }  // 状态
     public string? Remark { get; set; }           // 备注
     
-    // 导航属性 - 1:1关系设计
-    public virtual Consultation? Consultation { get; set; }  // 诊疗记录
-    public virtual Prescription? Prescription { get; set; }  // 处方信息
+    // 导航属性（聚合关系）
+    public virtual Consultation? Consultation { get; set; }  // 诊疗记录 (1:1)
+    public virtual Prescription? Prescription { get; set; }  // 处方信息 (1:0..1)
+    
+    // 业务方法（实际实现）
+    public bool CanEdit(bool isAdmin, Guid? currentUserId = null)
+    {
+        if (isAdmin) return true;
+        if (currentUserId.HasValue && DoctorId == currentUserId.Value)
+        {
+            return CreatedAt.Date == DateTime.Today; // 当天可改
+        }
+        return false;
+    }
+    
+    public bool IsLocked => CreatedAt.Date < DateTime.Today; // 过期锁定
 }
 ```
 
-### 状态枚举：MedicalCaseStatus
-**Record-Only模式**：简化状态管理
+### 状态枚举：MedicalCaseStatus（实际实现）
 ```csharp
 public enum MedicalCaseStatus
 {
-    Active = 10,    // 活跃状态（包含挂号、诊疗中、暂停等）
-    Closed = 20     // 已关闭（包含完成、取消、归档等）
+    Active = 0,     // 活动状态（默认）
+    Completed = 1,  // 已完成
+    Cancelled = 2   // 已取消
 }
 ```
 
