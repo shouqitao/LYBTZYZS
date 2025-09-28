@@ -5,7 +5,7 @@
   <!-- Configurations that affect the Test Framework -->
   <RunConfiguration>
     <!-- Path relative to directory that contains .runsettings file-->
-    <ResultsDirectory>.\BIN\TestResults</ResultsDirectory>
+    <ResultsDirectory>.\tests\TestResults</ResultsDirectory>
     
     <!-- x86 or x64 -->
     <TargetPlatform>x64</TargetPlatform>
@@ -71,7 +71,7 @@
                 <Source>.*\\obj\\.*</Source>
                 <Source>.*\\Migrations\\.*</Source>
                 <Source>.*\\.vs\\.*</Source>
-                <Source>.*\\TestResults\\.*</Source>
+                <Source>.*\\tests\\TestResults\\.*</Source>
               </Exclude>
             </Sources>
 
@@ -145,7 +145,7 @@
   <!-- NUnit3 adapter -->
   <NUnit>
     <!-- Test result format -->
-    <OutputXmlFile>TestResults\NUnitResults.xml</OutputXmlFile>
+    <OutputXmlFile>tests\TestResults\NUnitResults.xml</OutputXmlFile>
     <DisposeRunners>true</DisposeRunners>
     <DefaultTimeout>0</DefaultTimeout>
   </NUnit>
@@ -161,13 +161,13 @@
       
       <Logger friendlyName="trx" enabled="True">
         <Configuration>
-          <LogFileName>TestResults.trx</LogFileName>
+          <LogFileName>tests\TestResults\TestResults.trx</LogFileName>
         </Configuration>
       </Logger>
 
       <Logger friendlyName="junit" enabled="True">
         <Configuration>
-          <LogFilePath>BIN\TestResults\junit-results.xml</LogFilePath>
+          <LogFilePath>tests\TestResults\junit-results.xml</LogFilePath>
         </Configuration>
       </Logger>
     </Loggers>

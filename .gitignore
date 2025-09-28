@@ -79,6 +79,10 @@ TestResult.xml
 nunit-*.xml
 *.coverage
 *.coveragexml
+tests/TestResults/
+tests/**/*.trx
+tests/**/*.coverage
+tests/**/TestResults/
 
 # .NET Core
 project.lock.json
@@ -153,6 +157,8 @@ coverage-report/
 TestResults/
 *.trx
 *.coveragexml
+tests/TestResults/
+tests/Coverage/
 
 # 任务管理文件
 

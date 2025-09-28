@@ -1,0 +1,39 @@
+<!-- Directory.Build.props - 测试项目统一配置 -->
+<Project>
+
+  <!-- 导入根目录配置 -->
+  <Import Project="..\Directory.Build.props" />
+
+  <!-- 测试项目特定配置 -->
+  <PropertyGroup>
+    <!-- 测试结果输出路径 -->
+    <TestResultsDirectory>$(MSBuildThisFileDirectory)TestResults\</TestResultsDirectory>
+
+    <!-- 覆盖率报告输出路径 -->
+    <CoverletOutputDirectory>$(MSBuildThisFileDirectory)TestResults\Coverage\</CoverletOutputDirectory>
+
+    <!-- 测试项目不生成XML文档 -->
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+
+    <!-- 测试项目始终包含私有资产 -->
+    <IsPackable>false</IsPackable>
+
+    <!-- 启用测试并行执行 -->
+    <RunParallel>true</RunParallel>
+
+    <!-- 测试运行设置文件 -->
+    <RunSettingsFilePath>$(MSBuildThisFileDirectory)..\runsettings</RunSettingsFilePath>
+  </PropertyGroup>
+
+  <!-- 测试框架包版本管理 -->
+  <PropertyGroup>
+    <XUnitVersion>2.6.6</XUnitVersion>
+    <XUnitRunnerVersion>2.5.7</XUnitRunnerVersion>
+    <MoqVersion>4.20.72</MoqVersion>
+    <FluentAssertionsVersion>6.12.2</FluentAssertionsVersion>
+    <CoverletVersion>6.0.2</CoverletVersion>
+  </PropertyGroup>
+
+  <!-- 通用测试包引用 - 已移至各项目单独配置以避免重复 -->
+
+</Project>
