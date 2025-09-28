@@ -15,20 +15,14 @@ namespace LYBT.Module.Auth.Services
         /// <summary>
         /// 验证用户凭据
         /// </summary>
-        public Task<ServiceResult<string>> VerifyCredentialsAsync(LoginRequest request)
-        {
-            // 简化实现 - 返回失败
-            return Task.FromResult(ServiceResult<string>.Failure("认证功能暂未实现"));
-        }
+        public Task<ServiceResult<string>> VerifyCredentialsAsync(LoginRequest request) =>
+            Task.FromResult(ServiceResult<string>.Failure("认证功能暂未实现"));
 
         /// <summary>
         /// 修改系统管理员密码
         /// </summary>
-        public Task<ServiceResult<bool>> ChangeSysAdminPasswordAsync(ChangeSysAdminPassword request)
-        {
-            // 简化实现 - 返回失败
-            return Task.FromResult(ServiceResult<bool>.Failure("密码修改功能暂未实现"));
-        }
+        public Task<ServiceResult<bool>> ChangeSysAdminPasswordAsync(ChangeSysAdminPassword request) =>
+            Task.FromResult(ServiceResult<bool>.Failure("密码修改功能暂未实现"));
 
         #endregion 核心认证操作
 
@@ -37,20 +31,14 @@ namespace LYBT.Module.Auth.Services
         /// <summary>
         /// 用户登录
         /// </summary>
-        public Task<ServiceResult<LoginResponse>> LoginAsync(LoginRequest request)
-        {
-            // 简化实现 - 返回失败
-            return Task.FromResult(ServiceResult<LoginResponse>.Failure("登录功能暂未实现"));
-        }
+        public Task<ServiceResult<LoginResponse>> LoginAsync(LoginRequest request) =>
+            Task.FromResult(ServiceResult<LoginResponse>.Failure("登录功能暂未实现"));
 
         /// <summary>
         /// 用户登出
         /// </summary>
-        public Task<ServiceResult<bool>> LogoutAsync(LogoutRequest request)
-        {
-            // 简化实现 - 返回成功
-            return Task.FromResult(ServiceResult<bool>.Success(true));
-        }
+        public Task<ServiceResult<bool>> LogoutAsync(LogoutRequest request) =>
+            Task.FromResult(ServiceResult<bool>.Success(true));
 
         /// <summary>
         /// 刷新令牌

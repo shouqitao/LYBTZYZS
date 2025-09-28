@@ -62,7 +62,7 @@ namespace LYBT.Infrastructure.Caching.Adapters
         /// <summary>
         /// 异步获取缓存（始终返回null）- ICacheService接口方法
         /// </summary>
-        public Task<T> GetAsync<T>(string key) where T : class => Task.FromResult(default(T)!);
+        public Task<T?> GetAsync<T>(string key) where T : class => Task.FromResult(default(T));
 
         /// <summary>
         /// 异步获取缓存（始终返回null）

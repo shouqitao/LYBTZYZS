@@ -52,7 +52,7 @@ namespace LYBT.Core.Infrastructure.Repositories
         /// <summary>
         /// 根据ID获取实体（包含关联数据）
         /// </summary>
-        public virtual async Task<TEntity> GetByIdWithIncludesAsync(Guid id, params Expression<Func<TEntity, object>>[] includes)
+        public virtual async Task<TEntity?> GetByIdWithIncludesAsync(Guid id, params Expression<Func<TEntity, object>>[] includes)
         {
             var query = _dbSet.Where(e => e.Id == id && !e.IsDeleted);
 

@@ -19,12 +19,12 @@ namespace LYBT.Infrastructure.Repositories
         /// <summary>
         /// 根据ID获取实体
         /// </summary>
-        Task<TEntity> GetByIdAsync(Guid id);
+        Task<TEntity?> GetByIdAsync(Guid id);
 
         /// <summary>
         /// 根据ID获取实体（包含关联数据）
         /// </summary>
-        Task<TEntity> GetByIdWithIncludesAsync(Guid id, params Expression<Func<TEntity, object>>[] includes);
+        Task<TEntity?> GetByIdWithIncludesAsync(Guid id, params Expression<Func<TEntity, object>>[] includes);
 
         /// <summary>
         /// 获取所有实体
