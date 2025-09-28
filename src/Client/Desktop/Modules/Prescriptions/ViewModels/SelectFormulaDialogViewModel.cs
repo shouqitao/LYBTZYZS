@@ -186,12 +186,12 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             {
                 IsLoading = true;
 
-                // UltraThink v2.0: 直接使用FormulaService搜索DTOs (使用空字符串获取所有)
-                var result = await _formulaService.SearchAsync(string.Empty);
+                // UltraThink v2.0: 使用GetPagedAsync搜索DTOs（简化后的搜索方法）
+                var result = await _formulaService.GetPagedAsync(1, 100, string.Empty);
                 if (result.IsSuccess && result.Data != null)
                 {
-                    // UltraThink v2.0: 直接使用DTOs，无需转换
-                    _allFormulas = result.Data.ToList();
+                    // UltraThink v2.0: 直接使用DTOs，从分页结果中提取数据
+                    _allFormulas = result.Data.Items.ToList();
 
                     // 提取分类
                     var categories = _allFormulas

@@ -438,9 +438,8 @@ namespace LYBT.Desktop.Shell.Extensions
         /// </summary>
         private static void RegisterPerformanceServices(IContainerRegistry containerRegistry)
         {
-            // UltraThink深度清理: 只保留实际使用的模块加载协调器
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Services.Performance.IModuleLoadingCoordinator,
-                LYBT.Desktop.Core.Services.Performance.ModuleLoadingCoordinator>();
+            // UltraThink清理：移除过度工程的ModuleLoadingCoordinator
+            // 小诊所系统不需要复杂的模块加载协调功能
         }
 
         #region 辅助方法

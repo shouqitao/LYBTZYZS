@@ -1,6 +1,5 @@
 using LYBT.Entities.Users;
-using LYBT.Infrastructure.Interfaces;
-using LYBT.Module.Users.Data;
+using LYBT.Infrastructure.Data;
 using LYBT.Module.Users.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.EntityFrameworkCore;
@@ -10,21 +9,21 @@ using System.Linq.Expressions;
 namespace LYBT.Module.Users.Repositories
 {
     /// <summary>
-    /// 用户仓储实现
-    /// 基于模块化架构的用户数据访问层
+    /// 用户仓储实现（简化版本，使用统一数据库上下文）
+    /// 遵循适度设计原则，避免过度的模块化设计
     /// </summary>
     public class UserRepository : IUserRepository
     {
-        private readonly UserDbContext _context;
+        private readonly AppDbContext _context;
         private readonly DbSet<User> _dbSet;
         private readonly ILogger<UserRepository>? _logger;
 
         /// <summary>
         /// 构造函数
         /// </summary>
-        /// <param name="context">用户数据库上下文</param>
+        /// <param name="context">统一数据库上下文</param>
         /// <param name="logger">日志记录器</param>
-        public UserRepository(UserDbContext context, ILogger<UserRepository>? logger = null)
+        public UserRepository(AppDbContext context, ILogger<UserRepository>? logger = null)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _dbSet = _context.Set<User>();

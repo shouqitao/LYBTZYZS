@@ -79,7 +79,7 @@ namespace LYBT.Desktop.Core.Constants
 
             public const string Typography = ThemesBase + "Design/Typography.xaml";
             public const string Spacing = ThemesBase + "Design/Spacing.xaml";
-            public const string Animations = ThemesBase + "Design/Animations.xaml";
+            // 注释：复杂动画系统已移除，小诊所系统无需过度的动画效果
 
             // Control templates
             public const string ModernButton = ThemesBase + "Controls/ModernButton.xaml";
