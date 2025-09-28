@@ -16,14 +16,14 @@
 解决方案结构（48个项目）
 ├── Server（11个项目）- 混合架构
 │   ├── 传统三层架构（7个模块）
-│   └── UltraThink双层架构（Auth模块）
-├── Client/Desktop（17个项目）- UltraThink双层架构
+│   └── 模块化双层架构（Auth模块）
+├── Client/Desktop（17个项目）- 模块化双层架构
 └── Shared（3个项目）- 共享契约
 ```
 
 ### 1.2 架构演进历史
 
-1. **初始设计**：UltraThink双层架构（QueryService + BusinessService）
+1. **初始设计**：模块化双层架构（QueryService + BusinessService）
 2. **第一次重构**：Server端部分模块合并为单Service模式
 3. **第二次重构**：引入ReadRepository层（增加复杂度）
 4. **当前状态**：混合模式共存，缺乏统一标准
@@ -59,7 +59,7 @@ IPrescriptionBusinessService
 
 ### 2.2 客户端问题
 
-#### 问题1：UltraThink双层架构过度设计
+#### 问题1：模块化双层架构过度设计
 ```csharp
 // 每个模块的冗余结构
 Module Service（纯委托）

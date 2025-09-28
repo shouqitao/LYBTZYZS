@@ -4,7 +4,7 @@
 
 ### 发现的N+1查询问题
 
-通过代码分析发现，LYBT项目存在严重的N+1查询性能问题：
+通过代码分析发现，凌隐宝堂项目存在严重的N+1查询性能问题：
 
 #### 1. Consultation模块
 - **问题**：ConsultationDto包含PatientName和DoctorName字段，但查询时未加载Patient和User关联数据

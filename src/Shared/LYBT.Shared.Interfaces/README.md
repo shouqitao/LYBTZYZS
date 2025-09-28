@@ -1,7 +1,7 @@
 ﻿# LYBT.Shared.Interfaces
 
 > **前后端统一契约库** - .NET 8接口定义与API客户端
-> UltraThink架构支持 | Refit类型安全 | ServiceResult统一返回
+> 模块化架构支持 | Refit类型安全 | ServiceResult统一返回
 > **模块状态**: ✅ **生产就绪** | 🎆 **接口统一完成** | **零编译错误** | **2025-09-20更新**
 
 ## 🎯 项目概述
@@ -9,7 +9,7 @@
 LYBT.Shared.Interfaces 是系统核心接口定义库，提供前后端之间的统一契约规范。定义了所有业务服务接口、API客户端接口，确保系统架构的一致性和类型安全性。完成了接口统一化改造，移除了重复的IModule接口。
 
 **技术栈**: .NET 8 + Refit 8.0.0 + ServiceResult模式
-**架构模式**: UltraThink双层架构支持 + 纯委托模式 + 接口统一化
+**架构模式**: 模块化双层架构支持 + 纯委托模式 + 接口统一化
 **最新成就**: 接口统一完成，删除8个重复IModule接口，实现IService单一接口模式
 
 ## 🎆 接口统一化成果
@@ -53,10 +53,10 @@ LYBT.Shared.Interfaces/
 
 ```csharp
 /// <summary>
-/// 用户服务接口 - UltraThink双层架构标准
+/// 用户服务接口 - 模块化双层架构标准
 /// </summary>
 /// <remarks>
-/// 架构设计: UltraThink双层架构 - Module委托 → QueryService/BusinessService专业分工
+/// 架构设计: 模块化双层架构 - Module委托 → QueryService/BusinessService专业分工
 /// 业务范围: 医生和管理员用户的完整生命周期管理
 /// 安全特性: RBAC权限控制、密码安全策略、操作审计日志
 /// </remarks>
@@ -369,7 +369,7 @@ public async Task<IActionResult> CreateUser(UserCreateDto dto)
 }
 ```
 
-## 🎆 UltraThink架构支持
+## 🎆 模块化架构支持
 
 ### 纯委托模式实现
 
@@ -479,4 +479,4 @@ public class UserViewModel : ViewModelBase
 ---
 
 > 📌 **最新成果**: 接口统一完成，IService单一接口模式，架构更清晰
-> 🎆 **生产就绪**: 完整的接口体系，支持UltraThink双层架构
+> 🎆 **生产就绪**: 完整的接口体系，支持模块化双层架构

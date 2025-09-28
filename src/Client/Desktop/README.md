@@ -332,6 +332,6 @@ public class UserModuleService : IUserService
 
 ### 共享组件
 - [Shared层文档](../../../src/Shared/README.md) - 前后端共享组件和DTO模型
-- [UltraThink架构标准](ULTRATHINK_TWO_LAYER_STANDARD.md) - 双层架构设计标准
+- [模块化架构标准](TWO_LAYER_ARCHITECTURE_STANDARD.md) - 双层架构设计标准
 - [Prism框架集成](../../../docs/client/prism-integration.md) - Prism MVVM框架使用指南
 

@@ -26,7 +26,7 @@ LYBTZYZS（凌隐宝堂中医诊所管理系统）是一个面向中医诊所的
 ### 核心特性
 - **前端**：WPF + Prism.DryIoc 桌面应用
 - **后端**：ASP.NET Core Web API + EF Core
-- **架构**：UltraThink 双层架构，适度设计原则
+- **架构**：模块化双层架构，适度设计原则
 - **数据库**：SQL Server 2019+
 - **部署**：传统部署方式，避免过度工程
 
@@ -226,7 +226,7 @@ public async Task<UserDto> CreateUserAsync(CreateUserRequest request)
 
 ### 架构模式
 
-#### UltraThink 双层架构（前端）
+#### 模块化双层架构（前端）
 ```csharp
 // Module层：委托和协调
 public class PatientsModule : IModule

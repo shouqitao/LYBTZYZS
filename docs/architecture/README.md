@@ -13,8 +13,8 @@
 | **`functional-modules-design.md`** | **功能模块详细设计v2.0** - 所有模块的详细设计 |
 | `ADR-001-cqrs-mediatr-rejection.md` | CQRS + MediatR 拒绝决策。 |
 | `ADR-002-technology-roadmap-suggestion.md` | 技术路线与阶段目标建议。 |
-| `Desktop-UltraThink-Implementation-Guide.md` | 桌面 UltraThink 架构实现指南。 |
-| `Desktop-UltraThink-Refactoring-Plan.md` | 桌面架构重构计划。 |
+| `desktop-architecture-guide.md` | 桌面模块化架构实现指南。 |
+| `desktop-refactoring-plan.md` | 桌面架构重构计划。 |
 | `Arch-Discussion-Multi-Tenancy-2025-09-23.md` | 多租户讨论记录。 |
 | **[modules/](modules/README.md)** | **模块化设计文档集合** - **Server/Client/Shared层详细设计** |
 

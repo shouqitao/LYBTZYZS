@@ -306,7 +306,7 @@ public class PagedResult<T>
 
 #### 4.5.1 DTO 继承体系架构
 
-基于 UltraThink 双层架构优化，Shared层实现了简化的 DTO 继承体系：
+基于模块化双层架构优化，Shared层实现了简化的 DTO 继承体系：
 
 ```mermaid
 graph TD
@@ -605,7 +605,7 @@ graph TD
 ```csharp
 /// <summary>
 /// 基础DTO抽象类 - 提供Guid类型的ID字段
-/// UltraThink简化：最小化基础类，只包含ID
+/// 架构简化：最小化基础类，只包含ID
 /// </summary>
 public abstract class BaseDto : IIdentifiable<Guid>
 {
@@ -620,7 +620,7 @@ public abstract class BaseDto : IIdentifiable<Guid>
 ```csharp
 /// <summary>
 /// 时间戳DTO抽象类 - 包含ID和审计时间字段
-/// UltraThink简化：统一审计时间管理
+/// 架构简化：统一审计时间管理
 /// </summary>
 public abstract class TimestampDto : BaseDto, IAuditable
 {
@@ -639,7 +639,7 @@ public abstract class TimestampDto : BaseDto, IAuditable
 ```csharp
 /// <summary>
 /// 状态管理DTO抽象类 - 包含ID、时间戳和状态字段
-/// UltraThink简化：合并状态和时间戳管理
+/// 架构简化：合并状态和时间戳管理
 /// </summary>
 public abstract class StatusDto : TimestampDto, IStatusManageable
 {
@@ -658,7 +658,7 @@ public abstract class StatusDto : TimestampDto, IStatusManageable
 ```csharp
 /// <summary>
 /// 创建操作DTO基类 - 不包含ID（由系统生成）
-/// UltraThink简化：继承状态管理，添加备注支持
+/// 架构简化：继承状态管理，添加备注支持
 /// </summary>
 public abstract class CreateDtoBase : IStatusManageable, IRemarkable
 {
@@ -678,7 +678,7 @@ public abstract class CreateDtoBase : IStatusManageable, IRemarkable
 ```csharp
 /// <summary>
 /// 更新操作DTO基类 - 包含ID用于标识要更新的实体
-/// UltraThink简化：使用StatusDto，添加备注支持
+/// 架构简化：使用StatusDto，添加备注支持
 /// </summary>
 public abstract class UpdateDtoBase : StatusDto, IRemarkable
 {
@@ -694,7 +694,7 @@ public abstract class UpdateDtoBase : StatusDto, IRemarkable
 ```csharp
 /// <summary>
 /// 扩展查询DTO基类 - 在分页基础上添加常用查询字段
-/// UltraThink简化：合并常用查询功能，避免多层继承
+/// 架构简化：合并常用查询功能，避免多层继承
 /// </summary>
 public abstract class ExtendedQueryDto : PagedQueryBaseDto
 {
@@ -725,7 +725,7 @@ public abstract class ExtendedQueryDto : PagedQueryBaseDto
 ```csharp
 /// <summary>
 /// 统计DTO基类 - 提供通用统计字段和状态统计
-/// UltraThink简化：合并基础统计和状态统计功能
+/// 架构简化：合并基础统计和状态统计功能
 /// </summary>
 public abstract class StatisticsDto
 {

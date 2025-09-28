@@ -311,13 +311,13 @@ public async Task<IActionResult> Create(UserCreateDto dto)
 ### 9.2 架构决策记录（ADR）模板
 
 ```markdown
-# ADR-001: 移除UltraThink双层架构
+# ADR-001: 移除模块化双层架构
 
 ## 状态
 提议
 
 ## 背景
-UltraThink双层架构导致代码冗余，维护困难
+模块化双层架构导致代码冗余，维护困难
 
 ## 决策
 采用简单的三层架构

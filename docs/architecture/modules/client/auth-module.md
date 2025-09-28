@@ -6,7 +6,7 @@
 - **创建时间**: 2025-09-27
 - **模块名称**: LYBT.Desktop.Auth
 - **模块版本**: 1.0.0-基础框架
-- **架构标准**: UltraThink双层架构
+- **架构标准**: 模块化双层架构
 - **技术栈**: WPF + Prism.DryIoc + MVVM
 - **实际状态**: 基础框架已搭建，核心业务逻辑待实现
 
@@ -18,7 +18,7 @@
 ### 1.2 核心功能状态
 
 #### 1.2.1 设计完成📋
-- **UltraThink双层架构设计**: 服务层分离设计完成
+- **模块化双层架构设计**: 服务层分离设计完成
 - **Prism模块化架构**: 模块注册和依赖注入框架
 - **MVVM基础框架**: ViewModel基类和View结构
 - **API接口设计**: IAuthApi接口定义完成
@@ -43,7 +43,7 @@
 - **接口驱动**: 通过接口抽象实现松耦合架构
 
 ### 1.4 架构约束
-- 严格遵循UltraThink双层架构：QueryService（查询）+ BusinessService（业务）
+- 严格遵循模块化双层架构：QueryService（查询）+ BusinessService（业务）
 - 禁止使用ServiceLocator反模式，强制使用构造函数注入
 - 所有ViewModel必须继承ModernViewModelBase基类
 - API调用统一通过IAuthApi接口实现
@@ -77,7 +77,7 @@ LYBT.Desktop.Auth/
 ```csharp
 public void RegisterTypes(IContainerRegistry containerRegistry)
 {
-    // UltraThink模块化架构：注册模块业务服务
+    // 模块化架构：注册模块业务服务
     containerRegistry.RegisterSingleton<AuthService>();
 
     // 注册视图模型
@@ -184,7 +184,7 @@ public class LoginViewModel : ModernViewModelBase
 
 ## 5. 接口设计（已完成📋）
 
-### 5.1 UltraThink双层架构接口
+### 5.1 模块化双层架构接口
 
 ```csharp
 // 委托层接口 - 统一服务入口

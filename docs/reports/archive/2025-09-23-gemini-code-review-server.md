@@ -69,7 +69,7 @@
 
 *   **命名与格式**: 大部分代码遵循了 PascalCase 和 `_camelCase` 的命名约定，代码格式化良好。
 *   **异步编程**: `async/await` 在整个代码库中得到了正确且一致的使用。
-*   **注释清晰**: 关键逻辑和 `OnModelCreating` 中的配置都有明确的中文注释，解释了设计决策（如“UltraThink简化”）。
+*   **注释清晰**: 关键逻辑和 `OnModelCreating` 中的配置都有明确的中文注释，解释了设计决策（如“架构简化”）。
 
 ### ⚠️ **待改进 (Areas for Improvement)**
 

@@ -21,7 +21,7 @@
 #### 架构与设计
 | 文档路径 | 说明 | 关键内容 |
 |----------|------|----------|
-| [architecture/](architecture/README.md) | 系统架构设计文档集合 | ADR决策记录、UltraThink架构、多租户讨论 |
+| [architecture/](architecture/README.md) | 系统架构设计文档集合 | ADR决策记录、模块化架构、多租户讨论 |
 | [architecture/tech-design/](architecture/tech-design/000-overview.md) | 本轮技术设计 | 最小闭环：端口/登录/健康检查/BaseUrl |
 | [architecture/modules/](architecture/modules/README.md) | **模块化设计文档** | **Server/Client/Shared层详细设计，依赖关系图** |
 | [api/](api/README.md) | API接口规范与文档 | RESTful接口、Swagger文档、认证授权 |

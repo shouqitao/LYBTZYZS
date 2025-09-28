@@ -116,7 +116,7 @@
 
 ## 技术栈与架构
 ### 前端（WPF + Prism.DryIoc）
-- 采用 **UltraThink 双层架构**：Module（委托层）+ QueryService（查询）+ BusinessService（业务）。
+- 采用 **模块化双层架构**：Module（委托层）+ QueryService（查询）+ BusinessService（业务）。
 - 通过角色驱动的工作台（系统工作台 / 诊疗工作台）实现按需加载与导航。
 - ViewModel 必须通过接口注入服务，禁止直接解析容器或依赖具体模块实现。
 
