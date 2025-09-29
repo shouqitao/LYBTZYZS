@@ -6,6 +6,10 @@
 ## 最新重点报告（按日期倒序）
 | 日期 | 文档 | 范围 |
 |------|------|------|
+| 2025-09-28 | `lybt-shared-models-unused-code.md` | Shared 模型未使用代码清单 |
+| 2025-09-28 | `obsolete-unused-code-report.md` | 废弃代码清理报告 |
+| 2025-09-28 | `unused-private-methods-cleanup-report.md` | 未使用私有方法清理报告 |
+| 2025-09-26 | `jwt-security-code-review-2025-09-26.md` | JWT 安全代码审查 |
 | 2025-09-25 | `architecture-analysis-2025-09-25.md` | 全局架构现状评估 |
 | 2025-09-25 | `modification-suggestions-2025-09-25.md` | 架构重构建议 |
 | 2025-09-25 | `phase3-quality-optimization-summary-2025-09-25.md` | 缓存治理 Phase3 质量总结 |

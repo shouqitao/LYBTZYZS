@@ -19,7 +19,7 @@ namespace LYBT.Module.Auth
         public static IServiceCollection AddAuthModule(this IServiceCollection services, IConfiguration configuration)
         {
             // 仅注册必要的核心服务
-            services.AddScoped<IJwtService, JwtService>();
+            services.AddSingleton<IJwtService, JwtService>(); // 优化：JWT服务无状态，使用Singleton
             services.AddScoped<IAuthService, AuthService>();
 
             return services;

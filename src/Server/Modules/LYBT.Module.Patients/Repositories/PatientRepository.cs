@@ -22,6 +22,7 @@ namespace LYBT.Module.Patients.Repositories
         public async Task<Patient?> GetByNameAsync(string name)
         {
             return await _dbSet
+                .AsNoTracking()
                 .FirstOrDefaultAsync(p => p.Name == name && !p.IsDeleted);
         }
 
@@ -33,6 +34,7 @@ namespace LYBT.Module.Patients.Repositories
         public async Task<Patient?> GetPatientWithVisitsAsync(Guid patientId)
         {
             return await _dbSet
+                .AsNoTracking()
                 // .Include(p => p.Visits)  // Patient实体未定义Visits导航属性
                 //     .ThenInclude(v => v.Prescriptions)
                 .Where(p => p.Id == patientId && !p.IsDeleted)
@@ -48,6 +50,7 @@ namespace LYBT.Module.Patients.Repositories
         public async Task<PaginatedList<PatientSummary>> GetPatientSummariesAsync(int pageIndex, int pageSize)
         {
             var query = _dbSet
+                .AsNoTracking()
                 .Where(p => !p.IsDeleted)
                 .Select(p => new PatientSummary
                 {
@@ -81,7 +84,7 @@ namespace LYBT.Module.Patients.Repositories
             int pageIndex, 
             int pageSize)
         {
-            var query = _dbSet.Where(p => !p.IsDeleted);
+            var query = _dbSet.AsNoTracking().Where(p => !p.IsDeleted);
 
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {
@@ -112,6 +115,7 @@ namespace LYBT.Module.Patients.Repositories
         {
             var idList = patientIds.ToList();
             return await _dbSet
+                .AsNoTracking()
                 .Where(p => idList.Contains(p.Id) && !p.IsDeleted)
                 .ToListAsync();
         }
@@ -124,7 +128,7 @@ namespace LYBT.Module.Patients.Repositories
         /// <returns>是否存在</returns>
         public async Task<bool> PhoneNumberExistsAsync(string phoneNumber, Guid? excludeId = null)
         {
-            var query = _dbSet.Where(p => p.PhoneNumber == phoneNumber && !p.IsDeleted);
+            var query = _dbSet.AsNoTracking().Where(p => p.PhoneNumber == phoneNumber && !p.IsDeleted);
             
             if (excludeId.HasValue)
             {
@@ -144,6 +148,7 @@ namespace LYBT.Module.Patients.Repositories
             var thisMonth = new DateTime(today.Year, today.Month, 1);
 
             var stats = await _dbSet
+                .AsNoTracking()
                 .Where(p => !p.IsDeleted)
                 .GroupBy(p => 1) // 分组以执行聚合
                 .Select(g => new PatientStatistics

@@ -5,6 +5,7 @@ using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace LYBT.WebAPI.Controllers
@@ -30,6 +31,8 @@ namespace LYBT.WebAPI.Controllers
         /// 获取处方列表 - 支持分页和查询
         /// </summary>
         [HttpGet]
+        [ResponseCache(Duration = 600, Location = ResponseCacheLocation.Any)]
+        [OutputCache(PolicyName = "PrescriptionsCache")]
         public async Task<ActionResult<ApiResponse<PagedResult<PrescriptionDto>>>> GetList(
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20,
@@ -55,6 +58,7 @@ namespace LYBT.WebAPI.Controllers
         /// 获取处方详情
         /// </summary>
         [HttpGet("{id}")]
+        [ResponseCache(Duration = 300, VaryByQueryKeys = new[] { "id" })]
         public async Task<ActionResult<ApiResponse<PrescriptionDto>>> GetById(Guid id)
         {
             try

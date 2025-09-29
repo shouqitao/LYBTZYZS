@@ -50,7 +50,7 @@ namespace LYBT.Desktop.Core.ViewModels.Base
         public bool IsNavigating
         {
             get => _isNavigating;
-            private set => SetProperty(ref _isNavigating, value);
+            protected set => SetProperty(ref _isNavigating, value);
         }
 
         /// <summary>

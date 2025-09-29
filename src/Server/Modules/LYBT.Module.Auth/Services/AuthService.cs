@@ -46,7 +46,7 @@ namespace LYBT.Module.Auth.Services
         /// 检查是否为超级管理员凭据
         /// 超级管理员不在Users表中，独立存储在AdminSecrets表
         /// </summary>
-        private async Task<bool> IsSuperAdminCredentials(string username, string password)
+        private async Task<bool> IsSuperAdminCredentials(string username, string password, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -60,7 +60,7 @@ namespace LYBT.Module.Auth.Services
                 }
 
                 // 从AdminSecrets表验证密码
-                var adminSecret = await _dbContext.AdminSecrets.FirstOrDefaultAsync();
+                var adminSecret = await _dbContext.AdminSecrets.FirstOrDefaultAsync(cancellationToken);
                 if (adminSecret == null)
                 {
                     _logger.LogWarning("AdminSecrets表为空，超级管理员未初始化");
@@ -106,7 +106,7 @@ namespace LYBT.Module.Auth.Services
         /// <summary>
         /// 验证用户凭据
         /// </summary>
-        public async Task<ServiceResult<string>> VerifyCredentialsAsync(LoginRequest request)
+        public async Task<ServiceResult<string>> VerifyCredentialsAsync(LoginRequest request, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(request.Username) || string.IsNullOrEmpty(request.Password))
                 return ServiceResult<string>.Failure("用户名和密码不能为空");
@@ -114,9 +114,10 @@ namespace LYBT.Module.Auth.Services
             try
             {
                 // 首先检查是否是超级管理员登录
-                if (await IsSuperAdminCredentials(request.Username, request.Password))
+                if (await IsSuperAdminCredentials(request.Username, request.Password, cancellationToken))
                 {
-                    _logger.LogInformation("超级管理员 {Username} 认证成功", request.Username);
+                    _logger.LogInformation("超级管理员认证成功 [用户名: {Username}] [时间: {Timestamp}]", 
+                    request.Username, DateTime.UtcNow);
                     // 返回特殊的超级管理员标识
                     return ServiceResult<string>.Success("SUPER_ADMIN:" + request.Username);
                 }
@@ -130,16 +131,18 @@ namespace LYBT.Module.Auth.Services
                 var passwordValidation = await _userService.ValidatePasswordAsync(userResult.Data.Id, request.Password);
                 if (passwordValidation.IsSuccess && passwordValidation.Data)
                 {
-                    _logger.LogInformation("用户 {Username} 认证成功", request.Username);
+                    _logger.LogInformation("用户认证成功 [用户名: {Username}] [时间: {Timestamp}]", 
+                    request.Username, DateTime.UtcNow);
                     return ServiceResult<string>.Success(userResult.Data.Id.ToString());
                 }
 
-                _logger.LogWarning("用户 {Username} 认证失败：密码错误", request.Username);
+                _logger.LogWarning("用户认证失败 [用户名: {Username}] [原因: 密码错误] [时间: {Timestamp}]", 
+                request.Username, DateTime.UtcNow);
                 return ServiceResult<string>.Failure("用户名或密码错误");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "验证用户凭据时发生错误");
+                _logger.LogError(ex, "验证用户凭据时发生错误 [时间: {Timestamp}]", DateTime.UtcNow);
                 return ServiceResult<string>.Failure("认证过程中发生错误");
             }
         }
@@ -161,12 +164,12 @@ namespace LYBT.Module.Auth.Services
         /// <summary>
         /// 用户登录
         /// </summary>
-        public async Task<ServiceResult<LoginResponse>> LoginAsync(LoginRequest request)
+        public async Task<ServiceResult<LoginResponse>> LoginAsync(LoginRequest request, CancellationToken cancellationToken = default)
         {
             try
             {
                 // 验证凭据
-                var credentialsResult = await VerifyCredentialsAsync(request);
+                var credentialsResult = await VerifyCredentialsAsync(request, cancellationToken);
                 if (!credentialsResult.IsSuccess)
                     return ServiceResult<LoginResponse>.Failure(credentialsResult.Message);
 
@@ -229,14 +232,15 @@ namespace LYBT.Module.Auth.Services
                         ExpiresAt = DateTime.UtcNow.AddHours(8) // 简化：固定8小时过期
                     };
 
-                    _logger.LogInformation("用户 {Username} 登录成功", request.Username);
+                    _logger.LogInformation("用户登录成功 [用户名: {Username}] [时间: {Timestamp}]", 
+                    request.Username, DateTime.UtcNow);
                 }
 
                 return ServiceResult<LoginResponse>.Success(response);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "用户登录时发生错误");
+                _logger.LogError(ex, "用户登录时发生错误 [时间: {Timestamp}]", DateTime.UtcNow);
                 return ServiceResult<LoginResponse>.Failure("登录过程中发生错误");
             }
         }
@@ -313,6 +317,15 @@ namespace LYBT.Module.Auth.Services
         {
             await Task.CompletedTask;
             return ServiceResult<bool>.Success(true, "简化版本无需撤销令牌");
+        }
+
+        /// <summary>
+        /// 保存认证信息（服务器端为空实现）
+        /// </summary>
+        public async Task SaveAuthenticationAsync(LoginResponse response)
+        {
+            // 服务器端不需要保存认证信息，认证信息存储在客户端
+            await Task.CompletedTask;
         }
 
         #endregion 认证流程操作

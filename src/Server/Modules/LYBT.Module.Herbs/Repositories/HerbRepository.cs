@@ -21,6 +21,7 @@ namespace LYBT.Module.Herbs.Repositories
         public async Task<Herb?> GetByNameAsync(string name)
         {
             return await _dbSet
+                .AsNoTracking()
                 .FirstOrDefaultAsync(h => h.Name == name && !h.IsDeleted);
         }
     }

@@ -1,7 +1,9 @@
 using System.Windows;
+using LYBT.Desktop.Core.Commands;
 using LYBT.Desktop.Core.Constants;
 using LYBT.Desktop.Core.Events;
 using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Desktop.Core.Services.Modules;
 using LYBT.Desktop.Core.ViewModels.Base;
 using Microsoft.Extensions.Logging;
 using LYBT.Shared.Models.Contracts.Users;
@@ -9,6 +11,7 @@ using LYBT.Shared.Models.Enums;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Regions;
+using System.Windows.Input;
 
 namespace LYBT.Desktop.Shell.ViewModels;
 
@@ -23,6 +26,8 @@ public class MainWindowViewModel : ModernViewModelBase
 {
     private readonly IMainWindowServicesFacade _servicesFacade;
     private readonly IRegionManager _regionManager;
+    private readonly IApplicationCommands _applicationCommands;
+    private readonly IModuleLoadingService _moduleLoadingService;
 
     /// <summary>
     /// 构造函数 - 按照Prism 8.x最佳实践，在构造函数中完成所有初始化
@@ -37,10 +42,14 @@ public class MainWindowViewModel : ModernViewModelBase
         IEventAggregator eventAggregator,
         IMainWindowServicesFacade servicesFacade,
         ILoggerFactory loggerFactory,
-        IErrorHandlingService errorHandlingService) : base(eventAggregator, loggerFactory, errorHandlingService)
+        IErrorHandlingService errorHandlingService,
+        IApplicationCommands applicationCommands,
+        IModuleLoadingService moduleLoadingService) : base(eventAggregator, loggerFactory, errorHandlingService)
     {
         _servicesFacade = servicesFacade ?? throw new ArgumentNullException(nameof(servicesFacade));
         _regionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
+        _applicationCommands = applicationCommands ?? throw new ArgumentNullException(nameof(applicationCommands));
+        _moduleLoadingService = moduleLoadingService ?? throw new ArgumentNullException(nameof(moduleLoadingService));
 
         // 按照Prism 8.x最佳实践，在构造函数中完成初始化
         InitializeViewModel();
@@ -134,6 +143,28 @@ public class MainWindowViewModel : ModernViewModelBase
 
     #endregion 命令属性
 
+    #region 全局命令属性 (Phase 3: CompositeCommand)
+
+    /// <summary>全局保存命令 (Ctrl+S)</summary>
+    public ICommand SaveAllCommand => _applicationCommands.SaveAllCommand;
+
+    /// <summary>全局刷新命令 (F5)</summary>
+    public ICommand RefreshAllCommand => _applicationCommands.RefreshAllCommand;
+
+    /// <summary>全局打印命令 (Ctrl+P)</summary>
+    public ICommand PrintCommand => _applicationCommands.PrintCommand;
+
+    /// <summary>全局导出命令</summary>
+    public ICommand ExportCommand => _applicationCommands.ExportCommand;
+
+    /// <summary>全局撤销命令 (Ctrl+Z)</summary>
+    public ICommand UndoCommand => _applicationCommands.UndoCommand;
+
+    /// <summary>全局重做命令 (Ctrl+Y)</summary>
+    public ICommand RedoCommand => _applicationCommands.RedoCommand;
+
+    #endregion
+
     // 构造函数体 - 初始化时钟计时器和命令
     /// <summary>
     /// 静态构造函数 - 初始化命令定义
@@ -166,6 +197,11 @@ public class MainWindowViewModel : ModernViewModelBase
         ShowSettingsCommand = new DelegateCommand(ExecuteShowSettings)
             .ObservesProperty(() => IsLoggedIn);
         ToggleThemeCommand = new DelegateCommand(async () => await ExecuteToggleThemeAsync().ConfigureAwait(false));
+
+        // Phase 3: 初始化全局命令键盘绑定
+        // 这些命令已在ApplicationCommands中初始化，这里只需要暴露给View使用
+        // 实际的命令执行逻辑由各个ViewModel注册到CompositeCommand
+        Logger.LogDebug("全局命令系统已初始化");
     }
 
     /// <summary>
@@ -491,31 +527,95 @@ public class MainWindowViewModel : ModernViewModelBase
     {
         try
         {
-            var app = (App)Application.Current;
-
-            // 管理员加载SystemWorkbenchModule
+            // Phase 3: 使用模块加载服务实现按需加载
             bool isAdmin = user.UserName?.Equals(SystemConstants.SuperAdminUsername, StringComparison.OrdinalIgnoreCase) == true ||
             user.Role == UserRole.Admin;
 
+            // 基础模块加载（登录后立即需要）
+            await LoadBasicModulesAsync();
+
             if (isAdmin)
             {
-                System.Diagnostics.Debug.WriteLine(" 加载SystemWorkbenchModule模块...");
-                await app.LoadRoleBasedModulesAsync(SystemConstants.AdminRole);
+                Logger.LogInformation("管理员登录，加载管理工作台模块");
+                // 管理员需要所有模块
+                await LoadAdminModulesAsync();
             }
-            else
+            else if (user.Role == UserRole.Doctor)
             {
-                System.Diagnostics.Debug.WriteLine(" 加载MedicalWorkbenchModule模块...");
-                await app.LoadRoleBasedModulesAsync(SystemConstants.DoctorRole);
+                Logger.LogInformation("医生登录，加载诊疗工作台模块");
+                await LoadMedicalWorkbenchAsync();
             }
 
-            System.Diagnostics.Debug.WriteLine(" 工作台模块加载完成");
+            Logger.LogInformation("工作台模块加载完成");
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($" 工作台模块加载失败: {ex.Message}");
-
+            Logger.LogError(ex, "工作台模块加载失败");
             // 模块加载失败不应阻塞界面显示
         }
+    }
+
+    /// <summary>
+    /// 加载基础模块（患者管理等）
+    /// </summary>
+    private async Task LoadBasicModulesAsync()
+    {
+        await _moduleLoadingService.LoadModulesAsync(
+            "PatientsModule"  // 患者管理是大多数功能的基础
+        );
+    }
+
+    /// <summary>
+    /// 加载管理员模块
+    /// </summary>
+    private async Task LoadAdminModulesAsync()
+    {
+        // 管理员需要所有模块
+        var results = await _moduleLoadingService.LoadModulesAsync(
+            "HerbsModule",
+            "FormulaModule", 
+            "ConsultationModule",
+            "MedicalCaseModule",
+            "PrescriptionsModule"
+        );
+
+        foreach (var kvp in results)
+        {
+            if (!kvp.Value)
+            {
+                Logger.LogWarning("模块 {ModuleName} 加载失败", kvp.Key);
+            }
+        }
+    }
+
+    /// <summary>
+    /// 加载诊疗工作台模块
+    /// </summary>
+    private async Task LoadMedicalWorkbenchAsync()
+    {
+        // 加载诊疗工作台及其依赖
+        var success = await _moduleLoadingService.LoadModuleAsync("MedicalWorkbenchModule");
+        if (!success)
+        {
+            Logger.LogWarning("诊疗工作台模块加载失败");
+        }
+    }
+
+    /// <summary>
+    /// 用户点击药材管理时触发
+    /// </summary>
+    public async Task LoadHerbsManagementAsync()
+    {
+        await _moduleLoadingService.LoadModuleAsync("HerbsModule");
+    }
+
+    /// <summary>
+    /// 用户点击方剂管理时触发
+    /// </summary>
+    public async Task LoadFormulaManagementAsync()
+    {
+        // 会自动加载HerbsModule依赖
+        await _moduleLoadingService.LoadModuleAsync("FormulaModule");
     }
 
     /// <summary>

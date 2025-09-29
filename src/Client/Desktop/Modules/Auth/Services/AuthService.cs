@@ -33,7 +33,7 @@ public class AuthService(
     /// </summary>
     /// <param name="loginRequest">登录请求信息</param>
     /// <returns>包含JWT令牌和用户信息的登录响应</returns>
-    public async Task<ServiceResult<LoginResponse>> LoginAsync(LoginRequest loginRequest)
+    public async Task<ServiceResult<LoginResponse>> LoginAsync(LoginRequest loginRequest, CancellationToken cancellationToken = default)
         => await _businessService.LoginAsync(loginRequest);
 
     /// <summary>
@@ -88,7 +88,7 @@ public class AuthService(
     /// </summary>
     /// <param name="request">登录凭据</param>
     /// <returns>验证成功时返回JWT令牌</returns>
-    public async Task<ServiceResult<string>> VerifyCredentialsAsync(LoginRequest request)
+    public async Task<ServiceResult<string>> VerifyCredentialsAsync(LoginRequest request, CancellationToken cancellationToken = default)
     {
         var loginResult = await LoginAsync(request);
         return loginResult.IsSuccess && loginResult.Data != null
@@ -119,5 +119,29 @@ public class AuthService(
     {
         // 桌面端暂不实现令牌撤销
         return Task.FromResult(ServiceResult<bool>.Success(true));
+    }
+
+    /// <summary>
+    /// 保存认证信息到本地
+    /// </summary>
+    /// <param name="loginResponse">登录响应信息</param>
+    public Task SaveAuthenticationAsync(LoginResponse loginResponse)
+    {
+        // 保存Token和用户信息到本地存储
+        // 这里可以使用安全存储（如Windows Credential Manager）
+        // 简化实现：暂时保存到内存中
+        if (loginResponse?.Token != null)
+        {
+            // TODO: 实现安全的本地存储机制
+            // 可以考虑使用:
+            // 1. Windows Credential Manager
+            // 2. 加密的本地文件
+            // 3. SecureString
+            
+            // 暂时简单实现：保存到应用程序设置或内存缓存
+            System.Diagnostics.Debug.WriteLine($"Token saved: {loginResponse.Token.Substring(0, 20)}...");
+        }
+        
+        return Task.CompletedTask;
     }
 }

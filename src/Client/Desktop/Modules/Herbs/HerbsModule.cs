@@ -8,6 +8,8 @@ namespace LYBT.Desktop.Herbs
     /// <summary>
     /// 药材管理模块 - 简化版
     /// </summary>
+    [Module(ModuleName = nameof(HerbsModule))]
+    [ModuleDependency("AuthenticationModule")] // 药材模块只依赖认证
     public class HerbsModule : IModule
     {
         public void OnInitialized(IContainerProvider containerProvider)

@@ -8,6 +8,10 @@ namespace LYBT.Desktop.Prescriptions
     /// <summary>
     /// 处方管理模块 - 简化版
     /// </summary>
+    [Module(ModuleName = nameof(PrescriptionsModule))]
+    [ModuleDependency("ConsultationModule")] // 处方依赖诊疗
+    [ModuleDependency("HerbsModule")] // 处方依赖药材
+    [ModuleDependency("FormulaModule")] // 处方依赖方剂
     public class PrescriptionsModule : IModule
     {
         public void OnInitialized(IContainerProvider containerProvider)

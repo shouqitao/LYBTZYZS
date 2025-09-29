@@ -13,7 +13,7 @@ namespace LYBT.Shared.Interfaces.Services
         /// <summary>
         /// 用户登录验证
         /// </summary>
-        Task<ServiceResult<LoginResponse>> LoginAsync(LoginRequest request);
+        Task<ServiceResult<LoginResponse>> LoginAsync(LoginRequest request, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 用户登出
@@ -28,7 +28,7 @@ namespace LYBT.Shared.Interfaces.Services
         /// <summary>
         /// 验证用户凭据
         /// </summary>
-        Task<ServiceResult<string>> VerifyCredentialsAsync(LoginRequest request);
+        Task<ServiceResult<string>> VerifyCredentialsAsync(LoginRequest request, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 刷新Token
@@ -49,5 +49,10 @@ namespace LYBT.Shared.Interfaces.Services
         /// 撤销RefreshToken
         /// </summary>
         Task<ServiceResult<bool>> RevokeTokenAsync(RevokeTokenRequest request);
+
+        /// <summary>
+        /// 保存认证信息到本地
+        /// </summary>
+        Task SaveAuthenticationAsync(LoginResponse loginResponse);
     }
 }

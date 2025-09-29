@@ -5,6 +5,7 @@ using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace LYBT.WebAPI.Controllers
@@ -30,6 +31,8 @@ namespace LYBT.WebAPI.Controllers
         /// 获取验方列表 - 支持分页和查询
         /// </summary>
         [HttpGet]
+        [ResponseCache(Duration = 7200, Location = ResponseCacheLocation.Any)]
+        [OutputCache(PolicyName = "FormulasCache")]
         public async Task<ActionResult<ApiResponse<PagedResult<FormulaDto>>>> GetList(
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20,
@@ -55,6 +58,7 @@ namespace LYBT.WebAPI.Controllers
         /// 获取验方详情
         /// </summary>
         [HttpGet("{id}")]
+        [ResponseCache(Duration = 1800, VaryByQueryKeys = new[] { "id" })]
         public async Task<ActionResult<ApiResponse<FormulaDto>>> GetById(Guid id)
         {
             try
