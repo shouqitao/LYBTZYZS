@@ -359,8 +359,35 @@ public class UserCreateDtoValidator : AbstractValidator<UserCreateDto>
 
 ### 权限控制
 - 系统管理员：完整用户管理权限
-- 普通管理员：受限用户管理权限
+- 普通管理员：受限用户管理权限  
 - 其他角色：只能查看和修改自己的信息
+
+### 超级管理员保护机制
+
+#### 1. 用户名冲突预防
+系统自动防止创建与超级管理员相同的用户名：
+```csharp
+// UserService.CreateAsync 中的保护逻辑
+var sysAdminUsername = _configuration["Lybt:Business:SystemAdmin:Username"] ?? "clinic_admin";
+if (string.Equals(dto.Username, sysAdminUsername, StringComparison.OrdinalIgnoreCase))
+{
+    return ServiceResult<UserDto>.Failure($"用户名 '{dto.Username}' 为系统保留用户名");
+}
+```
+
+#### 2. 保留用户名列表
+```csharp
+private static readonly HashSet<string> ReservedUsernames = new()
+{
+    "admin", "administrator", "root", 
+    "system", "superadmin", "sysadmin"
+};
+```
+
+#### 3. 超级管理员隔离
+- **数据隔离**：超级管理员不存在于 Users 表中
+- **认证隔离**：通过 AdminSecrets 表进行认证
+- **配置驱动**：用户名从配置文件读取，不存储在数据库
 
 ## 📝 配置管理
 

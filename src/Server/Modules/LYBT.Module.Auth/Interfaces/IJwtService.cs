@@ -19,6 +19,16 @@ public interface IJwtService
     string GenerateToken(string userId, string userName, UserRole role);
 
     /// <summary>
+    /// 生成JWT访问令牌（支持额外声明）
+    /// </summary>
+    /// <param name="userId">用户ID</param>
+    /// <param name="userName">用户名</param>
+    /// <param name="role">用户角色</param>
+    /// <param name="additionalClaims">额外的声明</param>
+    /// <returns>JWT令牌字符串</returns>
+    string GenerateToken(string userId, string userName, UserRole role, Dictionary<string, string> additionalClaims);
+
+    /// <summary>
     /// 验证JWT令牌并返回Claims主体
     /// </summary>
     /// <param name="token">要验证的JWT令牌</param>

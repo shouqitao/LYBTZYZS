@@ -562,9 +562,15 @@ public static class UnifiedServiceRegistration
         var lybtOptions = configuration.GetLybtOptions();
         var rateLimitingConfig = lybtOptions.Security.RateLimiting;
 
-        // 如果禁用了速率限制，直接返回
+        // 如果禁用了速率限制，注册一个空的RateLimiter以避免中间件错误
         if (!rateLimitingConfig.Enabled)
         {
+            // 注册一个默认的RateLimiter，但不配置任何限制策略
+            services.AddRateLimiter(options =>
+            {
+                options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+                // 不设置GlobalLimiter，相当于禁用
+            });
             return services;
         }
 
