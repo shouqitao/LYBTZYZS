@@ -17,6 +17,9 @@
 | JWT安全强化 | ✅ 完成 | 512位密钥,15分钟过期 | #759 |
 | N+1查询优化 | ✅ 完成 | 性能提升75% | #760 |
 | 模块化基础 | ✅ 完成 | Phase 1完成 | #761 |
+| Prism架构优化Phase1 | ✅ 完成 | 消除Container.Resolve | #800 |
+| Prism架构优化Phase2 | ✅ 完成 | NavigationJournal导航 | #801 |
+| Prism架构优化Phase3 | ✅ 完成 | 模块依赖与CompositeCommand | #802 |
 
 ### 🚫 已拒绝的过度工程
 | 技术 | 决策 | 原因 |
