@@ -1,5 +1,7 @@
 using System.Windows;
 using LYBT.Desktop.Auth;
+using LYBT.Desktop.AdminWorkstation;
+using LYBT.Desktop.ClinicalWorkstation;
 using LYBT.Desktop.Consultation;
 using LYBT.Desktop.Core.Services.Performance;
 using LYBT.Desktop.Formula;
@@ -180,6 +182,12 @@ public partial class App : PrismApplication
         // ========== 工作台模块 - 用户触发加载 ==========
         // 诊疗工作台 - 顶层集成模块
         moduleCatalog.AddModule<MedicalWorkbenchModule>(InitializationMode.OnDemand);
+        
+        // 管理工作台 - 管理员角色使用
+        moduleCatalog.AddModule<AdminWorkstation.AdminWorkstationModule>(InitializationMode.OnDemand);
+        
+        // 诊疗工作台 - 医生角色使用
+        moduleCatalog.AddModule<ClinicalWorkstation.ClinicalWorkstationModule>(InitializationMode.OnDemand);
 
         base.ConfigureModuleCatalog(moduleCatalog);
     }

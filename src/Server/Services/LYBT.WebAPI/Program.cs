@@ -38,19 +38,14 @@ try
 
     var builder = WebApplication.CreateBuilder(args);
 
+    // 配置环境感知的主机运行模式
+    builder.Host.ConfigureEnvironmentAwareHosting();
+
     // 配置Serilog作为日志提供程序
     builder.Host.UseSerilog();
 
-    // =========== 统一端口配置 ===========
-    // 优先读取ASPNETCORE_URLS环境变量，否则使用默认端口
-    var urls = Environment.GetEnvironmentVariable("ASPNETCORE_URLS");
-    if (string.IsNullOrEmpty(urls))
-    {
-        urls = "http://localhost:5001";
-        Environment.SetEnvironmentVariable("ASPNETCORE_URLS", urls);
-    }
-
-    builder.WebHost.UseUrls(urls);
+    // =========== 端口配置 ===========
+    // 端口配置已移至 appsettings.json 中的 Kestrel 配置
 
     // 移除重复的环境变量配置（已在上面configBuilder中添加）
 
@@ -66,11 +61,17 @@ try
     // =========== UltraThink统一中间件配置 ===========
     app.ConfigureAllMiddleware();
 
+    // =========== 开发模式请求日志中间件 ===========
+    app.UseDevelopmentRequestLogging();
+
     // =========== 显示数据库状态 ===========
     await app.DisplayDatabaseStatusAsync();
 
-    // =========== UltraThink优雅关闭配置 ===========
-    await app.ConfigureGracefulShutdown();
+    // =========== 显示开发模式启动信息 ===========
+    await app.DisplayDevelopmentStartupInfo();
+
+    // =========== 环境感知的优雅关闭配置 ===========
+    await app.ConfigureEnvironmentAwareShutdown();
 }
 catch (Exception ex)
 {

@@ -32,6 +32,7 @@ namespace LYBT.Module.Prescriptions.Repositories
         public async Task<PrescriptionEntity> GetByIdWithItemsAsync(Guid id)
         {
             return await _dbSet
+                .AsNoTracking()
                 .Include(p => p.Items)
                 .Where(p => p.Id == id && !p.IsDeleted)
                 .FirstOrDefaultAsync();
@@ -47,6 +48,7 @@ namespace LYBT.Module.Prescriptions.Repositories
             string? keyword = null)
         {
             var query = _dbSet
+                .AsNoTracking()
                 .Include(p => p.Items)  // 预加载处方项
                 .Where(p => !p.IsDeleted);
 
@@ -82,6 +84,7 @@ namespace LYBT.Module.Prescriptions.Repositories
         public async Task<List<PrescriptionEntity>> GetByPatientIdAsync(Guid patientId)
         {
             return await _dbSet
+                .AsNoTracking()
                 .Include(p => p.Items)
                 .Where(p => p.PatientId == patientId && !p.IsDeleted)
                 .OrderByDescending(p => p.CreatedAt)
@@ -94,6 +97,7 @@ namespace LYBT.Module.Prescriptions.Repositories
         public async Task<List<PrescriptionEntity>> GetByMedicalCaseIdAsync(Guid medicalCaseId)
         {
             return await _dbSet
+                .AsNoTracking()
                 .Include(p => p.Items)
                 .Where(p => p.MedicalCaseId == medicalCaseId && !p.IsDeleted)
                 .OrderByDescending(p => p.CreatedAt)

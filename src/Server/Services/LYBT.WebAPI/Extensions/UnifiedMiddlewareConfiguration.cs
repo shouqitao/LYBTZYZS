@@ -15,60 +15,82 @@ public static class UnifiedMiddlewareConfiguration
     /// <summary>
     /// 配置应用中间件（统一入口）
     /// </summary>
+    /// <summary>
+    /// 配置应用中间件（统一入口）
+    /// 优化后的中间件管道顺序，遵循ASP.NET Core最佳实践
+    /// </summary>
     public static WebApplication ConfigureAllMiddleware(this WebApplication app)
     {
-        // 1. 开发/生产专用中间件
-        app.ConfigureDevelopmentMiddleware();
+        // ===== 阶段1: 错误处理和安全 =====
+        // 1.1 异常处理（最外层，捕获所有异常）
+        if (app.Environment.IsDevelopment())
+        {
+            app.UseDeveloperExceptionPage();
+        }
+        else
+        {
+            app.UseExceptionHandler();
+        }
 
-        // 1.1 安全响应头（使用新的中间件）
+        // 1.2 HTTPS重定向和HSTS（生产环境）
+        if (!app.Environment.IsDevelopment())
+        {
+            app.UseHttpsRedirection();
+            app.UseHsts();
+        }
+
+        // 1.3 安全响应头
         app.UseSecurityHeaders();
 
-        // 2. 路由中间件
+        // ===== 阶段2: 性能优化（早期执行） =====
+        // 2.1 响应压缩（必须在写入响应之前）
+        app.UseResponseCompression();
+
+        // 2.2 静态文件（如果有）
+        // app.UseStaticFiles(); // 当前项目无静态文件
+
+        // ===== 阶段3: 路由和请求处理 =====
+        // 3.1 路由（必须在认证之前）
         app.UseRouting();
 
-        // 2.1 速率限制 - 轻量级登录保护（必要的安全基线）
+        // 3.2 CORS（如需要，在认证之前）
+        // app.UseCors(); // 根据需要启用
+
+        // 3.3 速率限制（在路由之后，认证之前）
         var config = app.Configuration.GetLybtOptions();
         if (config.Security.RateLimiting.Enabled)
         {
             app.UseRateLimiter();
         }
 
-        // 2.2 性能优化（压缩/响应缓存/输出缓存）
-        app.UsePerformanceOptimizations();
+        // ===== 阶段4: 认证和授权 =====
+        // 4.1 认证
+        app.UseAuthentication();
 
-        // 3. API 文档中间件（仅非生产）
+        // 4.2 Claims标准化（在认证后，授权前）
+        app.UseClaimsNormalization();
+
+        // 4.3 授权
+        app.UseAuthorization();
+
+        // ===== 阶段5: 缓存（在认证授权后） =====
+        // 5.1 响应缓存
+        app.UseResponseCaching();
+
+        // 5.2 输出缓存（.NET 7+）
+        app.UseOutputCache();
+
+        // ===== 阶段6: API文档（可选） =====
+        // 6.1 Swagger（仅非生产）
         app.ConfigureSwaggerMiddleware();
 
-        // 4. 认证与授权（置于路由之后）
-        app.ConfigureAuthenticationMiddleware();
-
-        // 5. 终端映射
-        app.ConfigureEndpointMapping();
+        // ===== 阶段7: 终端映射（最后） =====
+        app.MapControllers();
 
         return app;
     }
 
-    /// <summary>
-    /// 配置开发/生产专用中间件
-    /// </summary>
-    private static WebApplication ConfigureDevelopmentMiddleware(this WebApplication app)
-    {
-        if (app.Environment.IsDevelopment())
-        {
-            // 开发异常页
-            app.UseDeveloperExceptionPage();
-        }
-        else
-        {
-            // 生产启用 HTTPS 重定向与 HSTS
-            app.UseHttpsRedirection();
-            app.UseHsts();
-        }
-
-        // 统一全局异常处理（ProblemDetails）
-        app.UseExceptionHandler();
-        return app;
-    }
+    
 
     /// <summary>
     /// 配置 Swagger API 文档
@@ -90,33 +112,9 @@ public static class UnifiedMiddlewareConfiguration
         return app;
     }
 
-    /// <summary>
-    /// 配置认证与授权中间件
-    /// </summary>
-    private static WebApplication ConfigureAuthenticationMiddleware(this WebApplication app)
-    {
-        // 认证
-        app.UseAuthentication();
+    
 
-        // JWT黑名单验证已移除（简化版本不需要）
-
-        // Claims标准化（在认证后，授权前）
-        app.UseClaimsNormalization();
-
-        // 授权
-        app.UseAuthorization();
-        return app;
-    }
-
-    /// <summary>
-    /// 配置终端映射
-    /// </summary>
-    private static WebApplication ConfigureEndpointMapping(this WebApplication app)
-    {
-        // 常规控制器路由
-        app.MapControllers();
-        return app;
-    }
+    
 }
 
 /// <summary>

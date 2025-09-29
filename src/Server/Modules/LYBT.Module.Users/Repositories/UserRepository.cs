@@ -39,18 +39,19 @@ namespace LYBT.Module.Users.Repositories
 
         public async Task<IEnumerable<User>> GetAllAsync()
         {
-            return await _dbSet.ToListAsync();
+            return await _dbSet.AsNoTracking().ToListAsync();
         }
 
         public async Task<IEnumerable<User>> FindAsync(Expression<Func<User, bool>> predicate)
         {
-            return await _dbSet.Where(predicate).ToListAsync();
+            return await _dbSet.AsNoTracking().Where(predicate).ToListAsync();
         }
 
         public async Task<PagedResult<User>> GetPagedAsync(int pageNumber, int pageSize)
         {
             var totalCount = await _dbSet.CountAsync();
             var items = await _dbSet
+                .AsNoTracking()
                 .OrderBy(u => u.Email)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
@@ -66,7 +67,7 @@ namespace LYBT.Module.Users.Repositories
             Expression<Func<User, object>>? orderBy = null,
             bool ascending = true)
         {
-            var query = _dbSet.AsQueryable();
+            var query = _dbSet.AsNoTracking().AsQueryable();
 
             if (predicate != null)
             {
@@ -94,7 +95,7 @@ namespace LYBT.Module.Users.Repositories
 
         public async Task<User?> GetSingleAsync(Expression<Func<User, bool>> predicate)
         {
-            return await _dbSet.FirstOrDefaultAsync(predicate);
+            return await _dbSet.AsNoTracking().FirstOrDefaultAsync(predicate);
         }
 
         public async Task<bool> ExistsAsync(Guid id)

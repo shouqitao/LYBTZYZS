@@ -1,0 +1,43 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <LangVersion>12.0</LangVersion>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+
+    <!-- Package Information -->
+    <PackageId>LYBT.Desktop.ClinicalWorkstation</PackageId>
+    <PackageVersion>2.1.0</PackageVersion>
+    <Authors>LYBT开发团队</Authors>
+    <PackageDescription>诊疗工作台模块</PackageDescription>
+    <PackageTags>WPF;Clinical;诊疗;工作台</PackageTags>
+    <RepositoryUrl>https://github.com/shouqitao/LYBTZYZS</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+  </PropertyGroup>
+
+  <!-- Prism and WPF Framework -->
+  <ItemGroup Label="WPF and MVVM Framework">
+    <PackageReference Include="Prism.Core" />
+    <PackageReference Include="Prism.DryIoc" />
+    <PackageReference Include="Prism.Wpf" />
+  </ItemGroup>
+
+  <!-- Logging -->
+  <ItemGroup Label="Logging">
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+  </ItemGroup>
+
+  <!-- Project References -->
+  <ItemGroup Label="Core Infrastructure">
+    <ProjectReference Include="..\..\Core\LYBT.Desktop.Core.csproj" />
+    <ProjectReference Include="..\..\Infrastructure\LYBT.Desktop.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\Services\LYBT.Desktop.Services.csproj" />
+    <ProjectReference Include="..\..\..\..\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
+    <ProjectReference Include="..\..\..\..\Shared\LYBT.Shared.Interfaces\LYBT.Shared.Interfaces.csproj" />
+  </ItemGroup>
+
+</Project>

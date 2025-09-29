@@ -32,6 +32,7 @@ namespace LYBT.Module.Consultation.Repositories
         public async Task<List<ConsultationEntity>> GetByPatientIdAsync(Guid patientId)
         {
             return await _dbSet
+                .AsNoTracking()
                 .Include(c => c.MedicalCase)  // 包含医疗案例信息
                 .Where(c => c.MedicalCase.PatientId == patientId && !c.IsDeleted)
                 .OrderByDescending(c => c.CreatedAt)
@@ -48,6 +49,7 @@ namespace LYBT.Module.Consultation.Repositories
             string? keyword = null)
         {
             var query = _dbSet
+                .AsNoTracking()
                 .Include(c => c.MedicalCase)  // 预加载病案信息（包含患者和医生信息）
                 .Where(c => !c.IsDeleted);
 
@@ -84,6 +86,7 @@ namespace LYBT.Module.Consultation.Repositories
         public async Task<ConsultationEntity> GetByIdWithDetailsAsync(Guid id)
         {
             return await _dbSet
+            .AsNoTracking()
             .Include(c => c.MedicalCase)
                 .Where(c => c.Id == id && !c.IsDeleted)
                 .FirstOrDefaultAsync();
@@ -95,6 +98,7 @@ namespace LYBT.Module.Consultation.Repositories
         public async Task<ConsultationEntity> GetByMedicalCaseIdAsync(Guid medicalCaseId)
         {
             return await _dbSet
+            .AsNoTracking()
             .Include(c => c.MedicalCase)
                 .Where(c => c.Id == medicalCaseId && !c.IsDeleted)
                 .FirstOrDefaultAsync();

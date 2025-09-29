@@ -121,6 +121,51 @@ public static class UnifiedServiceRegistration
         // 缓存配置 - 使用统一配置
         services.AddMemoryCache(); // 总是添加基础的MemoryCache
 
+        // 响应缓存配置
+        services.AddResponseCaching(options =>
+        {
+            options.MaximumBodySize = 100_000_000;  // 100MB
+            options.UseCaseSensitivePaths = false;
+        });
+
+        // 输出缓存配置（.NET 7+）
+        services.AddOutputCache(options =>
+        {
+            // 默认策略
+            options.AddBasePolicy(builder =>
+                builder.Expire(TimeSpan.FromMinutes(5)));
+
+            // 草药数据缓存1小时
+            options.AddPolicy("HerbsCache", builder =>
+                builder.Expire(TimeSpan.FromHours(1))
+                       .Tag("herbs"));
+
+            // 配方模板缓存2小时
+            options.AddPolicy("FormulasCache", builder =>
+                builder.Expire(TimeSpan.FromHours(2))
+                       .Tag("formulas"));
+            
+            // 患者数据缓存策略（30分钟）
+            options.AddPolicy("PatientsCache", builder =>
+                builder.Expire(TimeSpan.FromMinutes(30))
+                       .Tag("patients"));
+            
+            // 处方缓存策略（10分钟，更新频繁）
+            options.AddPolicy("PrescriptionsCache", builder =>
+                builder.Expire(TimeSpan.FromMinutes(10))
+                       .Tag("prescriptions"));
+            
+            // 病例缓存策略（20分钟）
+            options.AddPolicy("MedicalCaseCache", builder =>
+                builder.Expire(TimeSpan.FromMinutes(20))
+                       .Tag("medicalcases"));
+
+            // 用户权限缓存10分钟
+            options.AddPolicy("UserPermissionsCache", builder =>
+                builder.Expire(TimeSpan.FromMinutes(10))
+                       .Tag("permissions"));
+        });
+
         if (lybtOptions.Infrastructure.Cache.MemoryCache.SizeLimit <= 0)
         {
             // 使用 NullCacheService
@@ -311,10 +356,10 @@ public static class UnifiedServiceRegistration
                 .RequireAuthenticatedUser()
                 .Build();
 
-            // 设置全局回退策略 - 要求所有用户必须认证（未标注任何授权属性的端点）
-            options.FallbackPolicy = new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder()
-                .RequireAuthenticatedUser()
-                .Build();
+            // 不设置全局回退策略，允许未标注授权属性的端点（如Swagger）匿名访问
+            // options.FallbackPolicy = new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder()
+            //     .RequireAuthenticatedUser()
+            //     .Build();
 
             // 定义基于角色的策略
             options.AddPolicy("AdminOnly", policy =>
@@ -434,17 +479,9 @@ public static class UnifiedServiceRegistration
                 Scheme = "Bearer"
             });
 
-            c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement {
-                {
-                    new Microsoft.OpenApi.Models.OpenApiSecurityScheme {
-                        Reference = new Microsoft.OpenApi.Models.OpenApiReference {
-                            Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
-                            Id = "Bearer"
-                        }
-                    },
-                    Array.Empty<string>()
-                }
-            });
+            // 不添加全局安全要求，让每个控制器方法通过[Authorize]特性自己决定是否需要认证
+            // 这样Swagger UI本身就不需要认证，只有标记了[Authorize]的API才需要Token
+            // c.AddSecurityRequirement(...) -- 已移除全局安全要求
 
             // XML 注释 - 使用统一配置控制
             if (swaggerConfig.EnableXmlComments)

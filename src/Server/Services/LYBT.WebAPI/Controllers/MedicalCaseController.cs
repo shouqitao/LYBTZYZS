@@ -7,6 +7,7 @@ using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace LYBT.WebAPI.Controllers
@@ -34,6 +35,8 @@ namespace LYBT.WebAPI.Controllers
         /// 分页查询医疗案例
         /// </summary>
         [HttpGet]
+        [ResponseCache(Duration = 1200, Location = ResponseCacheLocation.Any)]
+        [OutputCache(PolicyName = "MedicalCaseCache")]
         public async Task<ActionResult<ApiResponse<PagedResult<MedicalCaseDto>>>> GetPaged(
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20,
@@ -59,6 +62,7 @@ namespace LYBT.WebAPI.Controllers
         /// 根据ID获取医疗案例详情
         /// </summary>
         [HttpGet("{id}")]
+        [ResponseCache(Duration = 600, VaryByQueryKeys = new[] { "id" })]
         public async Task<ActionResult<ApiResponse<MedicalCaseDto>>> GetById(Guid id)
         {
             try
@@ -82,6 +86,7 @@ namespace LYBT.WebAPI.Controllers
         /// 根据ID获取完整的医疗案例（包含所有关联数据）
         /// </summary>
         [HttpGet("{id}/with-details")]
+        [ResponseCache(Duration = 600, VaryByQueryKeys = new[] { "id" })]
         public async Task<ActionResult<ApiResponse<MedicalCaseDetailDto>>> GetByIdWithDetails(Guid id)
         {
             try

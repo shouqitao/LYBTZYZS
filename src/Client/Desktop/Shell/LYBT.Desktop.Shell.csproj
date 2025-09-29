@@ -86,6 +86,8 @@
 
   <ItemGroup Label="Business Modules">
     <ProjectReference Include="..\Modules\Auth\LYBT.Desktop.Auth.csproj" />
+    <ProjectReference Include="..\Modules\AdminWorkstation\LYBT.Desktop.AdminWorkstation.csproj" />
+    <ProjectReference Include="..\Modules\ClinicalWorkstation\LYBT.Desktop.ClinicalWorkstation.csproj" />
     <ProjectReference Include="..\Modules\Users\LYBT.Desktop.Users.csproj" />
     <ProjectReference Include="..\Modules\Patients\LYBT.Desktop.Patients.csproj" />
     <ProjectReference Include="..\Modules\MedicalCase\LYBT.Desktop.MedicalCase.csproj" />

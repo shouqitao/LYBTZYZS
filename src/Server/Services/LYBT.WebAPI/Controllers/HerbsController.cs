@@ -5,6 +5,7 @@ using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace LYBT.WebAPI.Controllers
@@ -32,6 +33,8 @@ namespace LYBT.WebAPI.Controllers
         /// 获取药材分页列表
         /// </summary>
         [HttpGet]
+        [ResponseCache(Duration = 3600, Location = ResponseCacheLocation.Any)]
+        [OutputCache(PolicyName = "HerbsCache")]
         public async Task<ActionResult<ApiResponse<PagedResult<HerbDto>>>> GetList(
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20,
@@ -57,6 +60,7 @@ namespace LYBT.WebAPI.Controllers
         /// 根据ID获取药材详情
         /// </summary>
         [HttpGet("{id}")]
+        [ResponseCache(Duration = 600, VaryByQueryKeys = new[] { "id" })]
         public async Task<ActionResult<ApiResponse<HerbDto>>> GetById(Guid id)
         {
             try
