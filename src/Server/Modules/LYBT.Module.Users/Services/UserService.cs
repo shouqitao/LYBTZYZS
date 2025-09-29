@@ -4,6 +4,7 @@ using LYBT.Module.Users.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Module.Users.Services
@@ -16,15 +17,18 @@ namespace LYBT.Module.Users.Services
         private readonly IUserRepository _repository;
         private readonly IMapper _mapper;
         private readonly ILogger<UserService> _logger;
+        private readonly IConfiguration _configuration;
 
         public UserService(
             IUserRepository repository,
             IMapper mapper,
-            ILogger<UserService> logger)
+            ILogger<UserService> logger,
+            IConfiguration configuration)
         {
             _repository = repository;
             _mapper = mapper;
             _logger = logger;
+            _configuration = configuration;
         }
 
         #region 查询操作
@@ -346,6 +350,24 @@ namespace LYBT.Module.Users.Services
         {
             try
             {
+                // 获取超级管理员用户名（可配置）
+                var sysAdminUsername = _configuration["Lybt:Business:SystemAdmin:Username"] ?? "clinic_admin";
+                
+                // 检查是否尝试使用超级管理员用户名
+                if (string.Equals(dto.Username, sysAdminUsername, StringComparison.OrdinalIgnoreCase))
+                {
+                    _logger.LogWarning("尝试创建与超级管理员相同的用户名: {Username}", dto.Username);
+                    return ServiceResult<UserDto>.Failure($"用户名 '{dto.Username}' 为系统保留用户名，不可使用");
+                }
+                
+                // 可选：添加其他保留用户名列表
+                var reservedUsernames = new[] { "admin", "administrator", "root", "system", "superadmin", "sysadmin" };
+                if (reservedUsernames.Any(reserved => string.Equals(dto.Username, reserved, StringComparison.OrdinalIgnoreCase)))
+                {
+                    _logger.LogWarning("尝试创建保留用户名: {Username}", dto.Username);
+                    return ServiceResult<UserDto>.Failure($"用户名 '{dto.Username}' 为系统保留用户名，不可使用");
+                }
+                
                 var entity = _mapper.Map<User>(dto);
                 
                 // 对密码进行哈希处理
@@ -356,6 +378,8 @@ namespace LYBT.Module.Users.Services
                 
                 var result = await _repository.AddAsync(entity);
                 var resultDto = _mapper.Map<UserDto>(result);
+                
+                _logger.LogInformation("成功创建用户: {Username}, Role: {Role}", resultDto.UserName, resultDto.Role);
                 return ServiceResult<UserDto>.Success(resultDto);
             }
             catch (Exception ex)
@@ -373,9 +397,14 @@ namespace LYBT.Module.Users.Services
                 if (entity == null)
                     return ServiceResult<UserDto>.Failure("用户不存在");
 
+                // 注意：UserUpdateDto不包含Username属性，用户名一旦创建不可更改
+                // 这也避免了用户后期尝试改为超级管理员用户名的风险
+
                 _mapper.Map(dto, entity);
                 var result = await _repository.UpdateAsync(entity);
                 var resultDto = _mapper.Map<UserDto>(result);
+                
+                _logger.LogInformation("成功更新用户: {UserId}", id);
                 return ServiceResult<UserDto>.Success(resultDto);
             }
             catch (Exception ex)

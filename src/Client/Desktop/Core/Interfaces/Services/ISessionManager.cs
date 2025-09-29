@@ -1,6 +1,7 @@
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Contracts.Users;
+using LYBT.Desktop.Core.Events;
 
 namespace LYBT.Desktop.Core.Interfaces.Services;
 
@@ -206,27 +207,6 @@ public class UserChangedEventArgs : EventArgs
     public DateTime ChangedAt { get; set; } = DateTime.Now;
 }
 
-/// <summary>
-/// 状态消息事件参数
-/// 用于传递全局状态消息和类型信息
-/// </summary>
-public class StatusMessageEventArgs : EventArgs
-{
-    /// <summary>
-    /// 获取或设置状态消息内容
-    /// </summary>
-    public string Message { get; set; } = string.Empty;
-
-    /// <summary>
-    /// 获取或设置消息类型
-    /// </summary>
-    public StatusMessageType MessageType { get; set; }
-
-    /// <summary>
-    /// 获取或设置消息生成的时间戳
-    /// </summary>
-    public DateTime Timestamp { get; set; } = DateTime.Now;
-}
 
 /// <summary>
 /// 诊疗状态枚举
@@ -256,23 +236,5 @@ public enum ConsultationStatus
     Cancelled = 6
 }
 
-/// <summary>
-/// 状态消息类型枚举
-/// 用于区分不同类型的状态消息
-/// </summary>
-public enum StatusMessageType
-{
-    /// <summary>信息 - 一般信息提示</summary>
-    Info = 0,
-
-    /// <summary>成功 - 操作成功的反馈</summary>
-    Success = 1,
-
-    /// <summary>警告 - 需要注意的警告信息</summary>
-    Warning = 2,
-
-    /// <summary>错误 - 错误和异常信息</summary>
-    Error = 3
-}
 
 #endregion

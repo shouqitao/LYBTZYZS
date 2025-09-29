@@ -1,5 +1,6 @@
 using System;
 using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Desktop.Core.Events;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Contracts.Users;
@@ -151,8 +152,8 @@ namespace LYBT.Desktop.Core.Services
                 StatusMessage?.Invoke(this, new StatusMessageEventArgs
                 {
                     Message = "已开始新的诊疗会话",
-                    MessageType = StatusMessageType.Info,
-                    Timestamp = DateTime.Now
+                    Type = StatusMessageType.Info,
+                    Duration = 3000
                 });
             }
         }
@@ -182,8 +183,8 @@ namespace LYBT.Desktop.Core.Services
             StatusMessage?.Invoke(this, new StatusMessageEventArgs
             {
                 Message = $"欢迎 {user.UserName}",
-                MessageType = StatusMessageType.Success,
-                Timestamp = DateTime.Now
+                Type = StatusMessageType.Success,
+                Duration = 3000
             });
         }
 

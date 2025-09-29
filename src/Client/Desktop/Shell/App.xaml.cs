@@ -80,7 +80,9 @@ public partial class App : PrismApplication
         base.ConfigureViewModelLocator();
 
         // Prism 8.x最佳实践：直接使用容器解析，无需工厂方法
-        ViewModelLocationProvider.Register<MainWindow>(() => Container.Resolve<MainWindowViewModel>());
+        // Prism 8.x最佳实践：使用类型映射避免Container.Resolve
+        // 通过泛型重载让框架自动解析依赖，而不是手动调用容器
+        ViewModelLocationProvider.Register<MainWindow, MainWindowViewModel>();
         ViewModelLocationProvider.Register<HomeView, HomeViewModel>();
 
         // Note: 其他View-ViewModel映射通过Prism自动发现机制处理
@@ -98,6 +100,10 @@ public partial class App : PrismApplication
         try
         {
             // 获取启动引导服务
+            // 注：此处Container.Resolve是可接受的，因为：
+            // 1. 位于组合根(App.xaml.cs)
+            // 2. OnInitialized是重写方法，无法使用构造函数注入
+            // 3. 仅在应用启动时调用一次
             _bootstrapper = Container.Resolve<IApplicationBootstrapper>();
             
             // 初始化错误处理（同步操作）

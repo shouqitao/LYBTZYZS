@@ -110,6 +110,36 @@ public class MedicalCaseStatusChangedEventArgs
     public string? Reason { get; set; }
 }
 
+/// <summary>
+/// 医疗案例创建成功事件
+/// </summary>
+public class MedicalCaseCreatedEvent : PubSubEvent<MedicalCaseDto> { }
+
+/// <summary>
+/// 医疗案例创建取消事件
+/// </summary>
+public class MedicalCaseCreateCancelledEvent : PubSubEvent { }
+
+/// <summary>
+/// 医疗案例更新事件
+/// </summary>
+public class MedicalCaseUpdatedEvent : PubSubEvent<MedicalCaseDto> { }
+
+/// <summary>
+/// 医疗案例编辑请求事件
+/// </summary>
+public class MedicalCaseEditRequestedEvent : PubSubEvent<MedicalCaseDetailDto> { }
+
+/// <summary>
+/// 处方打印请求事件
+/// </summary>
+public class PrescriptionPrintRequestedEvent : PubSubEvent<Guid> { }
+
+/// <summary>
+/// 医疗案例详情关闭事件
+/// </summary>
+public class MedicalCaseDetailClosedEvent : PubSubEvent { }
+
 #endregion
 
 #region 问诊事件

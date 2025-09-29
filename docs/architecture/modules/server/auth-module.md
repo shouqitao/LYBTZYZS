@@ -145,6 +145,37 @@ Authorization: Bearer {jwt-token}
 }
 ```
 
+### POST /api/v1/auth/admin/login (隐藏端点)
+**功能**：超级管理员专用登录（不在Swagger中显示）
+```csharp
+// Request Body - 只需密码，用户名从配置读取
+{
+  "password": "SuperSecurePassword123!"
+}
+
+// Response 200
+{
+  "code": 200,
+  "message": "超级管理员登录成功",
+  "data": {
+    "token": "jwt-access-token-string",
+    "user": {
+      "id": "00000000-0000-0000-0000-000000000000",  // 特殊ID
+      "username": "clinic_admin",  // 从配置读取
+      "realName": "系统超级管理员",
+      "role": "Admin"
+    },
+    "expiresAt": "2024-12-31T23:59:59Z"
+  }
+}
+
+// Response 401
+{
+  "code": 401,
+  "message": "认证失败"
+}
+```
+
 ### POST /api/v1/auth/changeSysAdminPassword
 **功能**：修改系统管理员密码（仅管理员）
 ```csharp
@@ -273,6 +304,32 @@ public interface IJwtService
 
 ## 🛡️ 安全设计
 
+### 双轨认证架构
+系统采用双轨认证设计，将超级管理员与普通用户完全隔离：
+
+#### 1. 超级管理员认证轨道
+- **数据源**：`AdminSecrets` 表（仅存储密码哈希）
+- **用户名**：从配置文件读取 (`Lybt:Business:SystemAdmin:Username`)
+- **登录端点**：`/api/v1/auth/admin/login`（隐藏端点）
+- **JWT标识**：包含 `IsSuperAdmin=true` 和 `AuthSource=AdminSecrets` 声明
+- **用户ID**：固定为 `00000000-0000-0000-0000-000000000000`
+
+#### 2. 普通用户认证轨道  
+- **数据源**：`Users` 表
+- **用户名**：存储在数据库中
+- **登录端点**：`/api/v1/auth/login`（公开端点）
+- **JWT标识**：标准用户声明
+- **用户ID**：数据库生成的GUID
+
+#### 认证流程
+```csharp
+// AuthService.VerifyCredentialsAsync 核心逻辑
+1. 检查是否为超级管理员用户名（从配置读取）
+2. 如果是 → 查询AdminSecrets表验证密码
+3. 如果不是 → 查询Users表验证用户凭据
+4. 生成包含相应声明的JWT令牌
+```
+
 ### JWT配置
 - **算法**：HS256
 - **过期时间**：15分钟（可配置）
@@ -285,6 +342,11 @@ public interface IJwtService
 - ✅ 刷新令牌轮换
 - ✅ 登录失败锁定
 - ✅ 敏感信息日志屏蔽
+- ✅ 超级管理员物理隔离（AdminSecrets表）
+- ✅ 用户名冲突预防机制
+- ✅ 保留用户名列表保护
+- ✅ 配置驱动的超级管理员用户名
+- ✅ 隐藏的管理员登录端点
 
 ## 📝 配置管理
 

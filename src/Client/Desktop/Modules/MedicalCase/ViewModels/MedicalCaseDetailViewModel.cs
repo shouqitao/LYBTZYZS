@@ -1,5 +1,6 @@
 using LYBT.Desktop.Core.Interfaces.Services;
 using LYBT.Desktop.Core.ViewModels.Base;
+using LYBT.Desktop.Core.Events;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using Microsoft.Extensions.Logging;
@@ -237,28 +238,4 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         #endregion
     }
-
-    #region Events
-
-    /// <summary>
-    /// 医疗案例更新事件
-    /// </summary>
-    public class MedicalCaseUpdatedEvent : PubSubEvent<MedicalCaseDto> { }
-
-    /// <summary>
-    /// 医疗案例编辑请求事件
-    /// </summary>
-    public class MedicalCaseEditRequestedEvent : PubSubEvent<MedicalCaseDetailDto> { }
-
-    /// <summary>
-    /// 处方打印请求事件
-    /// </summary>
-    public class PrescriptionPrintRequestedEvent : PubSubEvent<Guid> { }
-
-    /// <summary>
-    /// 医疗案例详情关闭事件
-    /// </summary>
-    public class MedicalCaseDetailClosedEvent : PubSubEvent { }
-
-    #endregion
 }

@@ -67,8 +67,8 @@ public static class UnifiedServiceRegistration
         // 8）API 版本管理
         services.ConfigureApiVersioning();
 
-        // 9）速率限制 - 已移除过度工程（小型诊所系统无需复杂限流）
-        // services.ConfigureRateLimiting(configuration, environment); // 简化架构
+        // 9）速率限制 - 轻量级登录保护（必要的安全基线）
+        services.ConfigureRateLimiting(configuration, environment);
 
         // 10）安全服务（数据保护、密钥管理、密钥旋转）
         services.AddSecurityServices(configuration, environment);
@@ -562,9 +562,15 @@ public static class UnifiedServiceRegistration
         var lybtOptions = configuration.GetLybtOptions();
         var rateLimitingConfig = lybtOptions.Security.RateLimiting;
 
-        // 如果禁用了速率限制，直接返回
+        // 如果禁用了速率限制，注册一个空的RateLimiter以避免中间件错误
         if (!rateLimitingConfig.Enabled)
         {
+            // 注册一个默认的RateLimiter，但不配置任何限制策略
+            services.AddRateLimiter(options =>
+            {
+                options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+                // 不设置GlobalLimiter，相当于禁用
+            });
             return services;
         }
 
