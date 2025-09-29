@@ -15,6 +15,11 @@ namespace LYBT.Desktop.Workbench.Medical
     /// 诊疗工作台模块
     /// 为医生提供专业的诊疗管理界面
     /// </summary>
+    [Module(ModuleName = nameof(MedicalWorkbenchModule))]
+    [ModuleDependency("PatientsModule")]
+    [ModuleDependency("ConsultationModule")]
+    [ModuleDependency("MedicalCaseModule")]
+    [ModuleDependency("PrescriptionsModule")]
     public class MedicalWorkbenchModule : IModule
     {
 

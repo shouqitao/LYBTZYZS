@@ -150,34 +150,36 @@ public partial class App : PrismApplication
     {
         ArgumentNullException.ThrowIfNull(moduleCatalog, nameof(moduleCatalog));
 
-        // 1. 核心必需模块（所有角色都需要）
-        AddCoreModule(moduleCatalog, nameof(AuthenticationModule), typeof(AuthenticationModule));
-        AddCoreModule(moduleCatalog, nameof(UsersModule), typeof(UsersModule));
+        // ========== 核心模块 - 立即加载 ==========
+        // 认证模块 - 所有功能的基础
+        moduleCatalog.AddModule<AuthenticationModule>(InitializationMode.WhenAvailable);
+        
+        // 用户模块 - 基础权限管理
+        moduleCatalog.AddModule<UsersModule>(InitializationMode.WhenAvailable);
 
-        // 2. 基础业务模块（医疗相关角色必需）
-        AddCoreModule(moduleCatalog, nameof(PatientsModule), typeof(PatientsModule));
+        // ========== 基础业务模块 - 登录后加载 ==========
+        // 患者管理 - 多数业务的基础
+        moduleCatalog.AddModule<PatientsModule>(InitializationMode.OnDemand);
 
-        // 3. 专业功能模块（按需加载，提升启动速度）
-        AddRoleBasedModule(moduleCatalog, nameof(ConsultationModule), typeof(ConsultationModule),
-            ["Doctor", "Admin"]);
+        // ========== 功能模块 - 按需加载 ==========
+        // 药材管理 - 独立功能，可延迟加载
+        moduleCatalog.AddModule<HerbsModule>(InitializationMode.OnDemand);
+        
+        // 方剂管理 - 依赖药材
+        moduleCatalog.AddModule<FormulaModule>(InitializationMode.OnDemand);
+        
+        // 诊疗管理 - 依赖患者
+        moduleCatalog.AddModule<ConsultationModule>(InitializationMode.OnDemand);
+        
+        // 病历管理 - 复杂依赖
+        moduleCatalog.AddModule<MedicalCaseModule>(InitializationMode.OnDemand);
+        
+        // 处方管理 - 最复杂依赖
+        moduleCatalog.AddModule<PrescriptionsModule>(InitializationMode.OnDemand);
 
-        AddRoleBasedModule(moduleCatalog, nameof(MedicalCaseModule), typeof(MedicalCaseModule),
-            ["Doctor", "Admin"]);
-
-        AddRoleBasedModule(moduleCatalog, nameof(HerbsModule), typeof(HerbsModule),
-            ["Doctor", "Pharmacist", "Admin"]);
-
-        AddRoleBasedModule(moduleCatalog, nameof(PrescriptionsModule), typeof(PrescriptionsModule),
-            ["Doctor", "Pharmacist", "Admin"]);
-
-        AddRoleBasedModule(moduleCatalog, nameof(FormulaModule), typeof(FormulaModule),
-            ["Doctor", "Admin"]);
-
-        // 4. 工作台模块（基于角色智能加载）
-        // SystemWorkbenchModule已删除
-
-        AddRoleBasedModule(moduleCatalog, nameof(MedicalWorkbenchModule), typeof(MedicalWorkbenchModule),
-            ["Doctor", "Admin"]);
+        // ========== 工作台模块 - 用户触发加载 ==========
+        // 诊疗工作台 - 顶层集成模块
+        moduleCatalog.AddModule<MedicalWorkbenchModule>(InitializationMode.OnDemand);
 
         base.ConfigureModuleCatalog(moduleCatalog);
     }

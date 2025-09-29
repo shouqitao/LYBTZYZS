@@ -8,6 +8,8 @@ namespace LYBT.Desktop.Formula
     /// <summary>
     /// 验方管理模块 - 简化版
     /// </summary>
+    [Module(ModuleName = nameof(FormulaModule))]
+    [ModuleDependency("HerbsModule")] // 方剂依赖药材
     public class FormulaModule : IModule
     {
         public void OnInitialized(IContainerProvider containerProvider)

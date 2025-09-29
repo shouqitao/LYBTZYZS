@@ -9,6 +9,8 @@ namespace LYBT.Desktop.Users
     /// <summary>
     /// 用户管理模块 - 简化版
     /// </summary>
+    [Module(ModuleName = nameof(UsersModule))]
+    [ModuleDependency("AuthenticationModule")] // 用户模块依赖认证
     public class UsersModule : IModule
     {
         /// <inheritdoc/>

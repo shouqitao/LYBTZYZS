@@ -8,6 +8,9 @@ namespace LYBT.Desktop.Patients
     /// <summary>
     /// 患者管理模块 - 简化版
     /// </summary>
+    [Module(ModuleName = nameof(PatientsModule))]
+    [ModuleDependency("AuthenticationModule")]
+    [ModuleDependency("UsersModule")] // 患者模块依赖用户和认证
     public class PatientsModule : IModule
     {
         public void OnInitialized(IContainerProvider containerProvider)

@@ -8,6 +8,9 @@ namespace LYBT.Desktop.MedicalCase
     /// <summary>
     /// 医疗案例管理模块 - 简化版
     /// </summary>
+    [Module(ModuleName = nameof(MedicalCaseModule))]
+    [ModuleDependency("PatientsModule")] // 病历依赖患者
+    [ModuleDependency("ConsultationModule")] // 病历依赖诊疗
     public class MedicalCaseModule : IModule
     {
         public void OnInitialized(IContainerProvider containerProvider)

@@ -8,6 +8,8 @@ namespace LYBT.Desktop.Consultation
     /// <summary>
     /// 诊疗管理模块 - 简化版
     /// </summary>
+    [Module(ModuleName = nameof(ConsultationModule))]
+    [ModuleDependency("PatientsModule")] // 诊疗依赖患者
     public class ConsultationModule : IModule
     {
         public void OnInitialized(IContainerProvider containerProvider)

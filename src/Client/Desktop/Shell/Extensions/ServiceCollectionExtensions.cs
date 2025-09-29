@@ -67,6 +67,7 @@ namespace LYBT.Desktop.Shell.Extensions
             RegisterPerformanceServices(containerRegistry);
             RegisterUltraThinkServices(containerRegistry);
             RegisterNavigationServices(containerRegistry); // Phase 2: NavigationJournal支持
+            RegisterCommandServices(containerRegistry); // Phase 3: CompositeCommand全局命令
             RegisterModuleServicesManually(containerRegistry); // 简化：直接使用手动注册
 
             // ViewModels和Views通过Prism的ViewModelLocator自动解析，无需手动注册
@@ -115,6 +116,20 @@ namespace LYBT.Desktop.Shell.Extensions
             // 注册增强导航服务
             containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Interfaces.Navigation.IEnhancedNavigationService,
                 LYBT.Desktop.Core.Services.Navigation.EnhancedNavigationService>();
+        }
+
+        /// <summary>
+        /// 注册全局命令和模块管理服务
+        /// </summary>
+        private static void RegisterCommandServices(IContainerRegistry containerRegistry)
+        {
+            // 注册全局命令系统（Phase 3）
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Commands.IApplicationCommands, 
+                LYBT.Desktop.Core.Commands.ApplicationCommands>();
+            
+            // 注册模块加载服务（Phase 3）
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Core.Services.Modules.IModuleLoadingService,
+                LYBT.Desktop.Core.Services.Modules.ModuleLoadingService>();
         }
 
         /// <summary>

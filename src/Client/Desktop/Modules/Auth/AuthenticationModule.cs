@@ -12,6 +12,8 @@ namespace LYBT.Desktop.Auth
     /// 认证模块 - UltraThink架构标准版本
     /// 注册模块化服务和依赖项，符合模块自包含原则
     /// </summary>
+    [Module(ModuleName = nameof(AuthenticationModule))]
+    // 认证模块是基础模块，无依赖
     public class AuthenticationModule : IModule
     {
 
