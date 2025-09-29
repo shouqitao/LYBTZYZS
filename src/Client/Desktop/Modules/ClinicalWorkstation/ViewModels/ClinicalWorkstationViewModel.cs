@@ -45,6 +45,9 @@ namespace LYBT.Desktop.ClinicalWorkstation.ViewModels
         {
             _regionManager = regionManager;
 
+            // 初始化导航服务
+            NavigationService = new Services.ClinicalNavigator(regionManager);
+
             // 初始化命令
             SelectPatientCommand = new DelegateCommand(ExecuteSelectPatient);
             LogoutCommand = new DelegateCommand(ExecuteLogout);
@@ -67,6 +70,12 @@ namespace LYBT.Desktop.ClinicalWorkstation.ViewModels
             InitializeTestData();
         }
 
+        #region Services
+
+        public Navigation.IClinicalNavigator NavigationService { get; private set; }
+
+        #endregion
+
         #region Properties
 
         public string CurrentUserName
@@ -79,6 +88,15 @@ namespace LYBT.Desktop.ClinicalWorkstation.ViewModels
         {
             get => _currentPatientName;
             set => SetProperty(ref _currentPatientName, value);
+        }
+
+        // 新增导航Tab索引
+        private int _mainTabIndex = 0;
+
+        public int MainTabIndex
+        {
+            get => _mainTabIndex;
+            set => SetProperty(ref _mainTabIndex, value);
         }
 
         public int SelectedTabIndex

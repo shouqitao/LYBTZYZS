@@ -1,13 +1,13 @@
 using System.Windows.Controls;
 
-namespace LYBT.Desktop.Workbench.Medical.Views.Workflow
+namespace LYBT.Desktop.ClinicalWorkstation.Views.Workflow
 {
     /// <summary>
     /// 诊疗流程视图
     /// </summary>
-    public partial class MedicalWorkflowView : UserControl
+    public partial class ClinicalWorkflowView : UserControl
     {
-        public MedicalWorkflowView()
+        public ClinicalWorkflowView()
         {
             InitializeComponent();
         }

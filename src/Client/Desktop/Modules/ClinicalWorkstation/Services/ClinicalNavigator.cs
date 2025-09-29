@@ -1,20 +1,20 @@
 ﻿using LYBT.Desktop.Core.Constants;
-using LYBT.Desktop.Workbench.Medical.Navigation;
+using LYBT.Desktop.ClinicalWorkstation.Navigation;
 using Prism.Regions;
 
-namespace LYBT.Desktop.Workbench.Medical.Services
+namespace LYBT.Desktop.ClinicalWorkstation.Services
 {
 
     /// <summary>
     /// 诊疗工作台导航服务实现
     /// 为医生提供专业的诊疗相关功能导航
     /// </summary>
-    public class MedicalWorkbenchNavigator : IMedicalWorkbenchNavigator
+    public class ClinicalNavigator : IClinicalNavigator
     {
         private readonly IRegionManager _regionManager;
-        private const string ContentRegion = RegionNames.MedicalWorkbenchContentRegion;
+        private const string ContentRegion = "ClinicalContentRegion";
 
-        public MedicalWorkbenchNavigator(IRegionManager regionManager)
+        public ClinicalNavigator(IRegionManager regionManager)
         {
             _regionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
         }

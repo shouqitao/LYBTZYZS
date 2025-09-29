@@ -319,6 +319,15 @@ namespace LYBT.Module.Auth.Services
             return ServiceResult<bool>.Success(true, "简化版本无需撤销令牌");
         }
 
+        /// <summary>
+        /// 保存认证信息（服务器端为空实现）
+        /// </summary>
+        public async Task SaveAuthenticationAsync(LoginResponse response)
+        {
+            // 服务器端不需要保存认证信息，认证信息存储在客户端
+            await Task.CompletedTask;
+        }
+
         #endregion 认证流程操作
 
         // 移除私有密码验证方法，改为委托给用户服务进行验证

@@ -121,7 +121,7 @@
         <Setter Property="FontSize" Value="{StaticResource FontSizeXS}" />
         <Setter Property="FontWeight" Value="{StaticResource FontWeightMedium}" />
         <Setter Property="Foreground" Value="{DynamicResource TextTertiaryBrush}" />
-        <Setter Property="CharacterSpacing" Value="50" />
+        <!-- CharacterSpacing 在WPF中不支持 -->
     </Style>
 
     <!-- 强调文字 -->

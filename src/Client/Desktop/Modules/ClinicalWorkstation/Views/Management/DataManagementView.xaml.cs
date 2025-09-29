@@ -1,13 +1,13 @@
 using System.Windows.Controls;
 
-namespace LYBT.Desktop.Workbench.Medical.Views.Management
+namespace LYBT.Desktop.ClinicalWorkstation.Views.Management
 {
     /// <summary>
     /// 数据管理中心视图
     /// </summary>
-    public partial class MedicalManagementView : UserControl
+    public partial class DataManagementView : UserControl
     {
-        public MedicalManagementView()
+        public DataManagementView()
         {
             InitializeComponent();
         }
