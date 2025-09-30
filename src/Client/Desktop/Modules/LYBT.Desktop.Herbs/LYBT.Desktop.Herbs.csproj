@@ -66,9 +66,9 @@
 
   <!-- Project References -->
   <ItemGroup Label="Infrastructure Dependencies - UltraThink三层架构">
-    <ProjectReference Include="..\..\Core_New\LYBT.Desktop.Infrastructure\LYBT.Desktop.Infrastructure.csproj" />
-    <ProjectReference Include="..\..\Core_New\LYBT.Desktop.Models\LYBT.Desktop.Models.csproj" />
-    <ProjectReference Include="..\..\Core_New\LYBT.Desktop.Services\LYBT.Desktop.Services.csproj" />
+    <ProjectReference Include="..\..\Core\LYBT.Desktop.Infrastructure\LYBT.Desktop.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\Core\LYBT.Desktop.Models\LYBT.Desktop.Models.csproj" />
+    <ProjectReference Include="..\..\Core\LYBT.Desktop.Services\LYBT.Desktop.Services.csproj" />
   </ItemGroup>
 
   <ItemGroup Label="Shared Libraries">

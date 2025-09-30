@@ -62,17 +62,17 @@
 
   <!-- Project References -->
   <ItemGroup Label="Infrastructure Dependencies - 简化三层架构">
-    <ProjectReference Include="..\..\Core_New\LYBT.Desktop.Infrastructure\LYBT.Desktop.Infrastructure.csproj" />
-    <ProjectReference Include="..\..\Core_New\LYBT.Desktop.Models\LYBT.Desktop.Models.csproj" />
+    <ProjectReference Include="..\..\Core\LYBT.Desktop.Infrastructure\LYBT.Desktop.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\Core\LYBT.Desktop.Models\LYBT.Desktop.Models.csproj" />
 
-    <ProjectReference Include="..\..\Core_New\LYBT.Desktop.Services\LYBT.Desktop.Services.csproj" />
+    <ProjectReference Include="..\..\Core\LYBT.Desktop.Services\LYBT.Desktop.Services.csproj" />
   </ItemGroup>
 
   <ItemGroup Label="Business Module Dependencies">
-    <ProjectReference Include="..\Patients\LYBT.Desktop.Patients.csproj" />
-    <ProjectReference Include="..\MedicalCase\LYBT.Desktop.MedicalCase.csproj" />
-    <ProjectReference Include="..\Formula\LYBT.Desktop.Formula.csproj" />
-    <ProjectReference Include="..\Herbs\LYBT.Desktop.Herbs.csproj" />
+    <ProjectReference Include="..\LYBT.Desktop.Patients\LYBT.Desktop.Patients.csproj" />
+    <ProjectReference Include="..\LYBT.Desktop.MedicalCase\LYBT.Desktop.MedicalCase.csproj" />
+    <ProjectReference Include="..\LYBT.Desktop.Formula\LYBT.Desktop.Formula.csproj" />
+    <ProjectReference Include="..\LYBT.Desktop.Herbs\LYBT.Desktop.Herbs.csproj" />
   </ItemGroup>
 
 </Project>
