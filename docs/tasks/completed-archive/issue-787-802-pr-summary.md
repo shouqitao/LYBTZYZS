@@ -91,7 +91,7 @@ AuthenticationModule (核心，无依赖)
     ├── FormulaModule
     └── PrescriptionsModule
 
-MedicalWorkbenchModule (聚合模块)
+MedicalWorkstationModule (聚合模块)
     ├── PatientsModule
     ├── ConsultationModule
     ├── MedicalCaseModule

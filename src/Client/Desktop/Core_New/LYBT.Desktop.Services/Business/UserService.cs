@@ -1,13 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using LYBT.Desktop.Services.Exceptions;
+﻿using LYBT.Desktop.Services.Exceptions;
 using LYBT.Desktop.Services.Repositories.Interfaces;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
-using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Services.Business
@@ -115,17 +110,17 @@ namespace LYBT.Desktop.Services.Business
                 {
                     existing.RealName = dto.RealName;
                 }
-                
+
                 if (!string.IsNullOrEmpty(dto.PhoneNumber))
                 {
                     existing.PhoneNumber = dto.PhoneNumber;
                 }
-                
+
                 if (!string.IsNullOrEmpty(dto.Email))
                 {
                     existing.Email = dto.Email;
                 }
-                
+
                 if (dto.Role.HasValue)
                 {
                     existing.Role = dto.Role.Value;

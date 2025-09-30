@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
@@ -99,7 +99,7 @@ namespace LYBT.Desktop.Services.Http
             // 去重处理
             return await _deduplicator.ExecuteAsync(url, async () =>
             {
-                using var response = await _retryPolicy.ExecuteAsync(async () => 
+                using var response = await _retryPolicy.ExecuteAsync(async () =>
                     await _httpClient.GetAsync(url, cancellationToken));
                 var result = await HandleResponseAsync<TResponse>(response);
 
@@ -125,7 +125,7 @@ namespace LYBT.Desktop.Services.Http
         {
             var content = CreateJsonContent(request);
 
-            using var response = await _retryPolicy.ExecuteAsync(async () => 
+            using var response = await _retryPolicy.ExecuteAsync(async () =>
                 await _httpClient.PostAsync(endpoint, content, cancellationToken));
             return await HandleResponseAsync<TResponse>(response);
         }
@@ -141,7 +141,7 @@ namespace LYBT.Desktop.Services.Http
         {
             var content = CreateJsonContent(request);
 
-            using var response = await _retryPolicy.ExecuteAsync(async () => 
+            using var response = await _retryPolicy.ExecuteAsync(async () =>
                 await _httpClient.PutAsync(endpoint, content, cancellationToken));
             return await HandleResponseAsync<TResponse>(response);
         }
@@ -157,7 +157,7 @@ namespace LYBT.Desktop.Services.Http
         {
             var content = CreateJsonContent(request);
 
-            using var response = await _retryPolicy.ExecuteAsync(async () => 
+            using var response = await _retryPolicy.ExecuteAsync(async () =>
                 await _httpClient.PatchAsync(endpoint, content, cancellationToken));
             return await HandleResponseAsync<TResponse>(response);
         }
@@ -169,7 +169,7 @@ namespace LYBT.Desktop.Services.Http
             string endpoint,
             CancellationToken cancellationToken = default)
         {
-            using var response = await _retryPolicy.ExecuteAsync(async () => 
+            using var response = await _retryPolicy.ExecuteAsync(async () =>
                 await _httpClient.DeleteAsync(endpoint, cancellationToken));
             return response.IsSuccessStatusCode;
         }
@@ -181,7 +181,7 @@ namespace LYBT.Desktop.Services.Http
             string endpoint,
             CancellationToken cancellationToken = default)
         {
-            var response = await _retryPolicy.ExecuteAsync(async () => 
+            var response = await _retryPolicy.ExecuteAsync(async () =>
                 await _httpClient.GetAsync(endpoint, HttpCompletionOption.ResponseHeadersRead, cancellationToken));
             response.EnsureSuccessStatusCode();
 
@@ -214,7 +214,7 @@ namespace LYBT.Desktop.Services.Http
                 }
             }
 
-            using var response = await _retryPolicy.ExecuteAsync(async () => 
+            using var response = await _retryPolicy.ExecuteAsync(async () =>
                 await _httpClient.PostAsync(endpoint, content, cancellationToken));
             return await HandleResponseAsync<TResponse>(response);
         }

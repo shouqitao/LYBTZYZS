@@ -1,4 +1,4 @@
-namespace LYBT.Shared.Utilities.Security
+﻿namespace LYBT.Shared.Utilities.Security
 {
     /// <summary>
     /// 角色管理帮助类

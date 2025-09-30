@@ -1,6 +1,5 @@
-using System.Windows;
+﻿using System.Windows;
 using LYBT.Desktop.Infrastructure.Interfaces;
-using LYBT.Desktop.Models.ViewModels.Base;
 
 namespace LYBT.Desktop.Formula.Views
 {

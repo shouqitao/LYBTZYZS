@@ -1,7 +1,4 @@
-using System;
-using System.Threading.Tasks;
-
-namespace LYBT.Desktop.Services.Navigation
+﻿namespace LYBT.Desktop.Services.Navigation
 {
     /// <summary>
     /// 导航服务接口 - 简化版本

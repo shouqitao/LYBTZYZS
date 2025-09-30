@@ -1,4 +1,4 @@
-using System.Windows;
+﻿using System.Windows;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Services.Notifications
@@ -128,7 +128,7 @@ namespace LYBT.Desktop.Services.Notifications
             try
             {
                 _isLoading = true;
-                
+
                 LoadingStateChanged?.Invoke(this, new LoadingStateChangedEventArgs
                 {
                     IsLoading = true,
@@ -151,7 +151,7 @@ namespace LYBT.Desktop.Services.Notifications
             try
             {
                 _isLoading = false;
-                
+
                 LoadingStateChanged?.Invoke(this, new LoadingStateChangedEventArgs
                 {
                     IsLoading = false,

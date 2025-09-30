@@ -1,4 +1,4 @@
-namespace LYBT.Desktop.Infrastructure.Services
+﻿namespace LYBT.Desktop.Infrastructure.Services
 {
     /// <summary>
     /// 用户体验优化服务接口

@@ -1,10 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using LYBT.Desktop.Services.Http;
+﻿using LYBT.Desktop.Services.Http;
 using LYBT.Desktop.Services.Repositories.Interfaces;
 using LYBT.Shared.Models.Contracts.Users;
-using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Services.Repositories

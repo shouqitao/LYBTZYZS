@@ -1,11 +1,10 @@
 ﻿using System.Collections.ObjectModel;
+using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.Extensions.Logging;
-using LYBT.Desktop.Modules.Prescriptions.ViewModels;
 using Prism.Events;
 using Prism.Regions;
-using LYBT.Desktop.Infrastructure.Interfaces;
 
 namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
 {

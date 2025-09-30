@@ -1,15 +1,14 @@
-using AutoMapper;
+﻿using AutoMapper;
 
-// UltraThink v2.0: HerbInfo模型已被移除，不再引�?
+// UltraThink v2.0: HerbInfo妯″瀷宸茶绉婚櫎锛屼笉鍐嶅紩鐢?
 // using LYBT.Desktop.Models.Herbs;
-using Microsoft.Extensions.Logging.Abstractions;
 
 namespace LYBT.Desktop.Herbs.Mappings
 {
 
     /// <summary>
-    /// Herbs模块 AutoMapper 映射配置
-    /// UltraThink v2.0架构: 移除Info模型映射，直接使用DTO
+    /// Herbs妯″潡 AutoMapper 鏄犲皠閰嶇疆
+    /// UltraThink v2.0鏋舵瀯: 绉婚櫎Info妯″瀷鏄犲皠锛岀洿鎺ヤ娇鐢―TO
     /// </summary>
     public class MappingProfile : Profile
     {
@@ -20,15 +19,15 @@ namespace LYBT.Desktop.Herbs.Mappings
         }
 
         /// <summary>
-        /// 配置中药材相关映�?
+        /// 閰嶇疆涓嵂鏉愮浉鍏虫槧灏?
         /// </summary>
         private void ConfigureHerbMappings()
         {
-            // UltraThink v2.0: 直接使用DTO，无需映射
+            // UltraThink v2.0: 鐩存帴浣跨敤DTO锛屾棤闇€鏄犲皠
         }
 
         /// <summary>
-        /// 创建AutoMapper实例 - 使用开源版�?4.0.0
+        /// 鍒涘缓AutoMapper瀹炰緥 - 浣跨敤寮€婧愮増鏈?4.0.0
         /// </summary>
         public static IMapper CreateMapper()
         {

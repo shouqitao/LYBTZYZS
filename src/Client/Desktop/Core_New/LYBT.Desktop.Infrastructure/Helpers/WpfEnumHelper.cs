@@ -1,8 +1,7 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Extensions;
-using LYBT.Shared.Utilities.Helpers;
 
 namespace LYBT.Desktop.Infrastructure.Helpers
 {

@@ -1,5 +1,4 @@
-using System;
-using System.Globalization;
+﻿using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
 
@@ -94,7 +93,7 @@ namespace LYBT.Desktop.Infrastructure.Converters
                 return $"{(int)(diff.TotalDays / 7)}周前";
             if (diff.TotalDays < 365)
                 return $"{(int)(diff.TotalDays / 30)}个月前";
-            
+
             return $"{(int)(diff.TotalDays / 365)}年前";
         }
     }

@@ -22,7 +22,7 @@ LYBT.All.sln
 │   ├── Shell (主程序入口) - 过重职责
 │   ├── Core (基础设施) - 存在冗余抽象
 │   ├── Modules (业务模块) - 8个模块
-│   └── Workbenches (工作台) - 部分已删除
+│   └── Workstationes (工作台) - 部分已删除
 ├── Server (ASP.NET Core)
 │   ├── Core (实体+基础设施) - 设计合理
 │   ├── Modules (业务模块) - 职责混乱

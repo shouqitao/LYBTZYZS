@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -189,7 +189,7 @@ namespace LYBT.Desktop.Services.Configuration
             try
             {
                 _logger.LogInformation("开始重新加载配置");
-                
+
                 InitializeConfiguration();
                 LoadUserSettings();
 

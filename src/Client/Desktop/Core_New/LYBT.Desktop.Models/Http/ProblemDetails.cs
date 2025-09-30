@@ -1,6 +1,4 @@
-using System.Collections.Generic;
-
-namespace LYBT.Desktop.Models.Http
+﻿namespace LYBT.Desktop.Models.Http
 {
     /// <summary>
     /// RFC 7807 Problem Details for HTTP APIs

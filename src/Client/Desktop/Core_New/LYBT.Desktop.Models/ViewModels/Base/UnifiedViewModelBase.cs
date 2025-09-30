@@ -1,13 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations;
+using LYBT.Desktop.Infrastructure.Interfaces;
 using Microsoft.Extensions.Logging;
 using Prism.Events;
 using Prism.Regions;
-using LYBT.Desktop.Infrastructure.Interfaces;
-using LYBT.Desktop.Infrastructure.Services.ErrorHandling;
 
 namespace LYBT.Desktop.Models.ViewModels.Base
 {
@@ -67,7 +62,7 @@ namespace LYBT.Desktop.Models.ViewModels.Base
             try
             {
                 Logger.LogDebug("导航到视图: {ViewName} (区域: {RegionName})", viewName, regionName);
-                
+
                 parameters ??= new NavigationParameters();
                 RegionManager.RequestNavigate(regionName, viewName, parameters);
             }
@@ -115,7 +110,7 @@ namespace LYBT.Desktop.Models.ViewModels.Base
         public virtual void OnNavigatedTo(NavigationContext navigationContext)
         {
             Logger.LogDebug("进入页面: {PageTitle}", PageTitle);
-            
+
             try
             {
                 ProcessNavigationParameters(navigationContext.Parameters);
@@ -357,7 +352,7 @@ namespace LYBT.Desktop.Models.ViewModels.Base
         protected override void HandleError(Exception ex, string? context = null)
         {
             Logger.LogError(ex, "错误发生在: {Context}", context ?? "未知操作");
-            
+
             if (ErrorHandlingService != null)
             {
                 var contextInfo = $"{context ?? "未知操作"} - 模块:{GetType().Name} - 用户:{SessionManager?.CurrentUser?.Id}";

@@ -1,4 +1,4 @@
-using LYBT.Shared.Models.Contracts.Common;
+﻿using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 
 namespace LYBT.Shared.Interfaces.Api

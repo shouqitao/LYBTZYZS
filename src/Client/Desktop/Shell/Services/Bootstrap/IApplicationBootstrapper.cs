@@ -1,6 +1,4 @@
-using System.Threading.Tasks;
-using LYBT.Shared.Models.Contracts.Users;
-using LYBT.Shared.Models.Enums;
+﻿using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Desktop.Shell.Services.Bootstrap
 {

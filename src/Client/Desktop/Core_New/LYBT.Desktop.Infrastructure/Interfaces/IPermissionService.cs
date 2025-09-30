@@ -1,4 +1,4 @@
-using LYBT.Shared.Models.Enums;
+﻿using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Desktop.Infrastructure.Interfaces
 {

@@ -1,6 +1,4 @@
-using LYBT.Shared.Models.Contracts.Users;
-using System;
-using System.Threading.Tasks;
+﻿using LYBT.Shared.Models.Contracts.Users;
 
 namespace LYBT.Desktop.Infrastructure.Interfaces
 {

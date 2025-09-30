@@ -1,7 +1,4 @@
-using System;
-using System.Collections.Generic;
-
-namespace LYBT.Desktop.Infrastructure.Services.ErrorHandling
+﻿namespace LYBT.Desktop.Infrastructure.Services.ErrorHandling
 {
     /// <summary>
     /// 错误上下文信息

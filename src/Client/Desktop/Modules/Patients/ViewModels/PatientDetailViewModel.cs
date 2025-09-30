@@ -1,11 +1,10 @@
-using System.Windows.Input;
+﻿using System.Windows.Input;
 using AutoMapper;
-using LYBT.Desktop.Infrastructure.Constants;
+using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Services.Dialogs;
-using LYBT.Desktop.Services.Session;
 using LYBT.Desktop.Services.ErrorHandling;
 using LYBT.Desktop.Services.Print;
-using LYBT.Desktop.Models.ViewModels.Base;
+using LYBT.Desktop.Services.Session;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Patients;
 using Microsoft.Extensions.Logging;

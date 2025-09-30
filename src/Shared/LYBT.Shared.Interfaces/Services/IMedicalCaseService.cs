@@ -1,6 +1,6 @@
-using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Shared.Models.Contracts.MedicalCase;
+﻿using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
+using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 
 namespace LYBT.Shared.Interfaces.Services
@@ -44,8 +44,8 @@ namespace LYBT.Shared.Interfaces.Services
         /// 创建完整的医疗案例（包含诊疗记录和可选的处方）
         /// 作为聚合根统一管理整个诊疗流程
         /// </summary>
-        Task<ServiceResult<MedicalCaseDto>> CreateWithDetailsAsync(MedicalCaseCreateDto caseDto, 
-            ConsultationCreateDto consultationDto, 
+        Task<ServiceResult<MedicalCaseDto>> CreateWithDetailsAsync(MedicalCaseCreateDto caseDto,
+            ConsultationCreateDto consultationDto,
             PrescriptionCreateDto? prescriptionDto = null);
 
         /// <summary>

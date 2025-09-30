@@ -1,8 +1,6 @@
-using System;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Windows.Input;
 using LYBT.Desktop.Infrastructure.Interfaces;
-using LYBT.Desktop.Services.ErrorHandling;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Consultation;

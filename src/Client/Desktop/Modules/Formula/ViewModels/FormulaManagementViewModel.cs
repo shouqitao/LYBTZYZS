@@ -1,8 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using LYBT.Desktop.Infrastructure.Interfaces;
+﻿using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
@@ -39,7 +35,7 @@ namespace LYBT.Desktop.Formula.ViewModels
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, errorHandlingService)
         {
             _formulaService = formulaService ?? throw new ArgumentNullException(nameof(formulaService));
-            
+
             PageTitle = "配方管理";
         }
 
@@ -55,16 +51,16 @@ namespace LYBT.Desktop.Formula.ViewModels
             try
             {
                 var result = await _formulaService.GetPagedAsync(page, pageSize, searchText);
-                
+
                 if (result.IsSuccess && result.Data != null)
                 {
                     var pagedData = result.Data;
-                    
+
                     // 更新分页信息
                     TotalCount = pagedData.TotalCount;
                     CurrentPage = pagedData.CurrentPage;
                     PageSize = pagedData.PageSize;
-                    
+
                     return pagedData.Items;
                 }
                 else
@@ -102,7 +98,7 @@ namespace LYBT.Desktop.Formula.ViewModels
             try
             {
                 var result = await _formulaService.DeleteAsync(item.Id);
-                
+
                 if (result.IsSuccess)
                 {
                     await ShowSuccessMessageAsync($"配方 '{item.Name}' 删除成功");
@@ -181,19 +177,19 @@ namespace LYBT.Desktop.Formula.ViewModels
         /// <summary>
         /// 查看配方详情
         /// </summary>
-        public DelegateCommand<FormulaDto> ViewDetailCommand => 
+        public DelegateCommand<FormulaDto> ViewDetailCommand =>
             new DelegateCommand<FormulaDto>(ViewFormulaDetail, CanViewDetail);
 
         /// <summary>
         /// 编辑配方
         /// </summary>
-        public DelegateCommand<FormulaDto> EditFormulaCommand => 
+        public DelegateCommand<FormulaDto> EditFormulaCommand =>
             new DelegateCommand<FormulaDto>(EditFormula, CanEditFormula);
 
         /// <summary>
         /// 复制配方
         /// </summary>
-        public DelegateCommand<FormulaDto> CopyFormulaCommand => 
+        public DelegateCommand<FormulaDto> CopyFormulaCommand =>
             new DelegateCommand<FormulaDto>(CopyFormula, CanCopyFormula);
 
         /// <summary>
@@ -202,7 +198,7 @@ namespace LYBT.Desktop.Formula.ViewModels
         private void ViewFormulaDetail(FormulaDto formula)
         {
             if (formula == null) return;
-            
+
             var parameters = new NavigationParameters
             {
                 { "FormulaId", formula.Id },
@@ -217,7 +213,7 @@ namespace LYBT.Desktop.Formula.ViewModels
         private void EditFormula(FormulaDto formula)
         {
             if (formula == null) return;
-            
+
             var parameters = new NavigationParameters
             {
                 { "FormulaId", formula.Id }
@@ -231,7 +227,7 @@ namespace LYBT.Desktop.Formula.ViewModels
         private void CopyFormula(FormulaDto formula)
         {
             if (formula == null) return;
-            
+
             var parameters = new NavigationParameters
             {
                 { "SourceFormulaId", formula.Id },
@@ -271,7 +267,7 @@ namespace LYBT.Desktop.Formula.ViewModels
         /// <summary>
         /// 按分类搜索
         /// </summary>
-        public DelegateCommand<string> SearchByCategoryCommand => 
+        public DelegateCommand<string> SearchByCategoryCommand =>
             new DelegateCommand<string>(SearchByCategory);
 
         /// <summary>
@@ -280,7 +276,7 @@ namespace LYBT.Desktop.Formula.ViewModels
         private async void SearchByCategory(string category)
         {
             if (string.IsNullOrWhiteSpace(category)) return;
-            
+
             SearchText = $"分类:{category}";
             await LoadPageAsync();
         }

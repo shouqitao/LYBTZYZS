@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 
 // UltraThink v2.0: 直接使用FormulaDto，移除Info模型引用
 using LYBT.Shared.Models.Contracts.Formula;

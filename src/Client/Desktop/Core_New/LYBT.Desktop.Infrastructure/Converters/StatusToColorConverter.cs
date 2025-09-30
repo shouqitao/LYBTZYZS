@@ -1,9 +1,7 @@
-using System;
-using System.Globalization;
+﻿using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Media;
-using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Desktop.Infrastructure.Converters
 {
@@ -110,7 +108,7 @@ namespace LYBT.Desktop.Infrastructure.Converters
                 return "brush";
             if (targetType == typeof(string))
                 return "hex";
-            
+
             return "brush";
         }
 
@@ -121,15 +119,15 @@ namespace LYBT.Desktop.Infrastructure.Converters
                 StartPoint = new Point(0, 0),
                 EndPoint = new Point(1, 1)
             };
-            
+
             brush.GradientStops.Add(new GradientStop(baseColor, 0.0));
             brush.GradientStops.Add(new GradientStop(
-                Color.FromArgb(baseColor.A, 
-                    (byte)(baseColor.R * 0.8), 
-                    (byte)(baseColor.G * 0.8), 
-                    (byte)(baseColor.B * 0.8)), 
+                Color.FromArgb(baseColor.A,
+                    (byte)(baseColor.R * 0.8),
+                    (byte)(baseColor.G * 0.8),
+                    (byte)(baseColor.B * 0.8)),
                 1.0));
-            
+
             return brush;
         }
     }

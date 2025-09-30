@@ -1,5 +1,5 @@
+﻿using LYBT.Desktop.Services.Exceptions;
 using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Desktop.Services.Exceptions;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Services.Extensions;

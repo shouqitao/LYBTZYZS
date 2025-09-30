@@ -1,6 +1,4 @@
-using System;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Prism.Regions;
 
 namespace LYBT.Desktop.Services.Navigation
@@ -44,7 +42,7 @@ namespace LYBT.Desktop.Services.Navigation
                     region.RequestNavigate(viewName, parameters ?? new NavigationParameters());
                     _currentViews[regionName] = viewName;
                 });
-                
+
                 _logger.LogInformation("导航成功：{Region} -> {View}", regionName, viewName);
                 return true;
             }
@@ -67,7 +65,7 @@ namespace LYBT.Desktop.Services.Navigation
                         journal.GoBack();
                     }
                 });
-                
+
                 _logger.LogInformation("导航返回：{Region}", regionName);
                 return true;
             }

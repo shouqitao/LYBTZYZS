@@ -1,8 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Net.Http;
-using System.Threading.Tasks;
-using LYBT.Desktop.Services.Http;
+﻿using LYBT.Desktop.Services.Http;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Services.Repositories

@@ -1,13 +1,11 @@
-using System;
-using System.Net.Http;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
+﻿using System.Net.Http;
 using LYBT.Desktop.Services.Business;
 using LYBT.Desktop.Services.Http;
 using LYBT.Desktop.Services.Repositories;
 using LYBT.Desktop.Services.Repositories.Interfaces;
 using LYBT.Shared.Interfaces.Services;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace LYBT.Desktop.Services.Extensions
 {
@@ -23,7 +21,7 @@ namespace LYBT.Desktop.Services.Extensions
         {
             // 配置HttpClient
             var apiBaseUrl = configuration["ApiSettings:BaseUrl"] ?? "https://localhost:5001";
-            
+
             services.AddHttpClient<IApiService, ApiService>(client =>
             {
                 client.BaseAddress = new Uri(apiBaseUrl);

@@ -1,6 +1,4 @@
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Prism.Events;
 using Prism.Mvvm;
 
@@ -14,7 +12,7 @@ namespace LYBT.Desktop.Models.ViewModels
     {
         protected readonly ILogger Logger;
         protected readonly IEventAggregator? EventAggregator;
-        
+
         private bool _isLoading;
         private bool _isBusy;
         private string _statusMessage = string.Empty;
@@ -182,7 +180,7 @@ namespace LYBT.Desktop.Models.ViewModels
         public virtual void Dispose()
         {
             if (_disposed) return;
-            
+
             OnDisposing();
             _disposed = true;
             GC.SuppressFinalize(this);

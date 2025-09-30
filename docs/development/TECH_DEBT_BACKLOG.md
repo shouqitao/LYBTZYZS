@@ -63,7 +63,7 @@
 ## WPF/Prism 架构与性能（UI/Perf）
 
 - [P0][M] 去除 .Wait()/GetResult()/同步 Dispatcher.Invoke
-  - 证据：`SystemWorkbenchNavigator.cs:160–195`、`PrismDialogService.cs:210`、多处 `Dispatcher.Invoke`
+  - 证据：`SystemWorkstationNavigator.cs:160–195`、`PrismDialogService.cs:210`、多处 `Dispatcher.Invoke`
 - [P1][L] 巨型 VM 拆分（Patients/Prescriptions/Shell/Consultation）
   - 目标：<400 行/VM，命令 ≤10；业务下沉至 Facade/Service
 - [P1][M] 虚拟化控件与大列表性能复核（批量更新/DeferRefresh/增量加载）

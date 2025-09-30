@@ -1,4 +1,4 @@
-using LYBT.Desktop.Services.Auth;
+﻿using LYBT.Desktop.Services.Auth;
 using LYBT.Desktop.Services.Dialogs;
 
 namespace LYBT.Desktop.Infrastructure.Interfaces

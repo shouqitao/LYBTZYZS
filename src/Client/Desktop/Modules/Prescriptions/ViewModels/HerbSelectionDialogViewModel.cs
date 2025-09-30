@@ -1,7 +1,4 @@
-using System;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Collections.ObjectModel;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Interfaces.Services;
@@ -84,7 +81,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
         /// </summary>
         public string[] CategoryOptions { get; } = new[]
         {
-            "全部", "清热药", "解表药", "泻下药", "祛风湿药", 
+            "全部", "清热药", "解表药", "泻下药", "祛风湿药",
             "化湿药", "利水渗湿药", "温里药", "理气药", "消食药",
             "驱虫药", "止血药", "活血化瘀药", "化痰止咳平喘药",
             "安神药", "平肝息风药", "补虚药", "收涩药", "外用药"
@@ -116,8 +113,8 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
         /// <summary>
         /// 选择信息
         /// </summary>
-        public string SelectionInfo => AllowMultipleSelection 
-            ? $"已选择 {SelectedCount} 个药材" 
+        public string SelectionInfo => AllowMultipleSelection
+            ? $"已选择 {SelectedCount} 个药材"
             : SelectedCount > 0 ? "已选择 1 个药材" : "未选择药材";
 
         #endregion
@@ -184,7 +181,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             RefreshCommand = new DelegateCommand(async () => await RefreshAsync());
 
             // 属性变更时刷新命令状态和统计信息
-            PropertyChanged += (s, e) => 
+            PropertyChanged += (s, e) =>
             {
                 UpdateCommandStates();
                 if (e.PropertyName == nameof(SelectedHerbs))
@@ -306,7 +303,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
                     // 按关键字筛选
                     if (!string.IsNullOrWhiteSpace(SearchText))
                     {
-                        filtered = filtered.Where(h => 
+                        filtered = filtered.Where(h =>
                             h.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
                             h.PinyinCode?.Contains(SearchText, StringComparison.OrdinalIgnoreCase) == true ||
                             h.Properties?.Contains(SearchText, StringComparison.OrdinalIgnoreCase) == true);

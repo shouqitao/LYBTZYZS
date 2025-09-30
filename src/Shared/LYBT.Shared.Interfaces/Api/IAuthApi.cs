@@ -1,6 +1,5 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using LYBT.Shared.Models.Contracts.Auth;
-using LYBT.Shared.Models.Contracts.Users;
 namespace LYBT.Shared.Interfaces.Api
 {
 

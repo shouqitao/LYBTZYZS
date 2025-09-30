@@ -1,6 +1,4 @@
-using System;
-
-namespace LYBT.Desktop.Models.Exceptions
+﻿namespace LYBT.Desktop.Models.Exceptions
 {
     /// <summary>
     /// API 调用异常

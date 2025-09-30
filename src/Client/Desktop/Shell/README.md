@@ -139,9 +139,9 @@ public partial class App : PrismApplication
         moduleCatalog.AddModule<FormulaModule>();
         
         // 注册工作台模块
-        moduleCatalog.AddModule<WorkbenchCoreModule>();
-        moduleCatalog.AddModule<AdminWorkbenchModule>();
-        moduleCatalog.AddModule<MedicalWorkbenchModule>();
+        moduleCatalog.AddModule<WorkstationCoreModule>();
+        moduleCatalog.AddModule<AdminWorkstationModule>();
+        moduleCatalog.AddModule<MedicalWorkstationModule>();
     }
 
     protected override void OnStartup(StartupEventArgs e)

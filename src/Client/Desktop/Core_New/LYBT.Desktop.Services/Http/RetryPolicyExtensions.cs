@@ -1,8 +1,7 @@
-using System.Net;
+﻿using System.Net;
 using System.Net.Http;
 using Microsoft.Extensions.Logging;
 using Polly;
-using Polly.Extensions.Http;
 
 namespace LYBT.Desktop.Services.Http
 {

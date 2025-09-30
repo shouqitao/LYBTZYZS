@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
@@ -15,7 +15,7 @@ namespace LYBT.Desktop.Models.ViewModels
         private T? _selectedItem;
         private string _searchText = string.Empty;
 
-        protected ListViewModelBase(ILogger logger, IEventAggregator? eventAggregator = null) 
+        protected ListViewModelBase(ILogger logger, IEventAggregator? eventAggregator = null)
             : base(logger, eventAggregator)
         {
             InitializeCommands();

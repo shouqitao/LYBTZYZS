@@ -11,7 +11,7 @@
 1. **src/Client/Desktop/Core/Constants/RegionNames.cs** (新建)
 2. **src/Client/Desktop/Core/Services/Navigation/NavigationService.cs**
 3. **src/Client/Desktop/Shell/Views/MainWindow.xaml**
-4. **src/Client/Desktop/Workbenches/MedicalWorkbench/Views/MedicalWorkbenchMainView.xaml**
+4. **src/Client/Desktop/Workstationes/MedicalWorkstation/Views/MedicalWorkstationMainView.xaml**
 5. **所有需要导航历史的ViewModel**
 
 ## 详细优化方案
@@ -35,9 +35,9 @@ namespace LYBT.Desktop.Core.Constants
         public const string ToolBarRegion = "ToolBarRegion";
 
         // 工作台级别区域
-        public const string WorkbenchContentRegion = "WorkbenchContentRegion";
-        public const string WorkbenchNavigationRegion = "WorkbenchNavigationRegion";
-        public const string WorkbenchDetailRegion = "WorkbenchDetailRegion";
+        public const string WorkstationContentRegion = "WorkstationContentRegion";
+        public const string WorkstationNavigationRegion = "WorkstationNavigationRegion";
+        public const string WorkstationDetailRegion = "WorkstationDetailRegion";
 
         // 模块级别区域
         public const string PatientListRegion = "PatientListRegion";
@@ -79,7 +79,7 @@ namespace LYBT.Desktop.Core.Services.Navigation
         IRegionNavigationJournal GetJournal(string regionName);
 
         // 全局导航
-        Task<IRegionNavigationResult> NavigateToWorkbenchAsync(string workbenchName);
+        Task<IRegionNavigationResult> NavigateToWorkstationAsync(string workbenchName);
         Task<IRegionNavigationResult> NavigateToModuleAsync(string moduleName, NavigationParameters parameters = null);
     }
 }
@@ -207,11 +207,11 @@ namespace LYBT.Desktop.Core.Services.Navigation
 
         #region 全局导航
 
-        public async Task<IRegionNavigationResult> NavigateToWorkbenchAsync(string workbenchName)
+        public async Task<IRegionNavigationResult> NavigateToWorkstationAsync(string workbenchName)
         {
             var parameters = new NavigationParameters
             {
-                { "WorkbenchName", workbenchName }
+                { "WorkstationName", workbenchName }
             };
 
             return await NavigateAsync(RegionNames.MainContentRegion, workbenchName, parameters);
@@ -224,7 +224,7 @@ namespace LYBT.Desktop.Core.Services.Navigation
             parameters ??= new NavigationParameters();
             parameters.Add("ModuleName", moduleName);
 
-            return await NavigateAsync(RegionNames.WorkbenchContentRegion, moduleName, parameters);
+            return await NavigateAsync(RegionNames.WorkstationContentRegion, moduleName, parameters);
         }
 
         #endregion
@@ -506,7 +506,7 @@ namespace LYBT.Desktop.Modules.Patients.ViewModels
 
             // 导航到诊疗历史
             await EnhancedNavigation.NavigateAsync(
-                RegionNames.WorkbenchContentRegion,
+                RegionNames.WorkstationContentRegion,
                 "ConsultationHistoryView",
                 parameters);
         }

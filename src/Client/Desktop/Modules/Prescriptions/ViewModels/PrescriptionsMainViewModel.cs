@@ -1,6 +1,4 @@
-using System;
-using System.Threading.Tasks;
-using LYBT.Desktop.Infrastructure.Interfaces;
+﻿using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Interfaces.Services;
 using Microsoft.Extensions.Logging;
@@ -132,10 +130,10 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
         protected override async Task OnNavigatedToAsync(NavigationContext navigationContext)
         {
             await base.OnNavigatedToAsync(navigationContext);
-            
+
             // 默认显示处方管理
             ShowManagement();
-            
+
             // 加载统计数据
             await LoadStatisticsAsync();
         }
@@ -276,7 +274,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             catch (Exception ex)
             {
                 Logger.LogError(ex, "加载处方统计数据时发生异常");
-                
+
                 // 设置默认值
                 TotalPrescriptionsCount = 0;
                 TodayPrescriptionsCount = 0;

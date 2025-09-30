@@ -1,14 +1,10 @@
-using System;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Threading;
 using Microsoft.Extensions.Logging;
-using LYBT.Desktop.Services.Notifications;
-using LYBT.Desktop.Services;
 
 namespace LYBT.Desktop.Services.UserExperience
 {

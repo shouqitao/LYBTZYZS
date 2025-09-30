@@ -1,7 +1,6 @@
-using System;
-using Prism.Mvvm;
-using LYBT.Shared.Models.Contracts.Users;
+﻿using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
+using Prism.Mvvm;
 
 namespace LYBT.Desktop.Users.Models;
 

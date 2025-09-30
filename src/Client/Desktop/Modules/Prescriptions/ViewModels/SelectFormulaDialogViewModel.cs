@@ -1,7 +1,4 @@
-using System;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Collections.ObjectModel;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Interfaces.Services;
@@ -91,7 +88,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
         /// </summary>
         public string[] CategoryOptions { get; } = new[]
         {
-            "全部", "解表剂", "泻下剂", "和解剂", "清热剂", 
+            "全部", "解表剂", "泻下剂", "和解剂", "清热剂",
             "祛暑剂", "温里剂", "表里双解剂", "补益剂", "固涩剂",
             "安神剂", "开窍剂", "理气剂", "理血剂", "治风剂",
             "治燥剂", "祛湿剂", "祛痰剂", "消导剂", "驱虫剂"
@@ -332,7 +329,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
                     // 按关键字筛选
                     if (!string.IsNullOrWhiteSpace(SearchText))
                     {
-                        filtered = filtered.Where(f => 
+                        filtered = filtered.Where(f =>
                             f.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
                             f.Description?.Contains(SearchText, StringComparison.OrdinalIgnoreCase) == true ||
                             f.Indications?.Contains(SearchText, StringComparison.OrdinalIgnoreCase) == true);
@@ -397,7 +394,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
                 // 构建详情信息
                 var details = $"验方名称: {formula.Name}\n";
                 details += $"分类: {formula.Category}\n";
-                
+
                 if (!string.IsNullOrEmpty(formula.Source))
                 {
                     details += $"出处: {formula.Source}\n";
@@ -531,7 +528,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
         {
             var info = $"名称: {formula.Name}\n";
             info += $"分类: {formula.Category}\n";
-            
+
             if (!string.IsNullOrEmpty(formula.Source))
             {
                 info += $"出处: {formula.Source}\n";

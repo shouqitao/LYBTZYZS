@@ -39,11 +39,11 @@ graph TD
 graph TD
     AuthC[Auth模块<br/>登录界面] --> UsersC[Users模块<br/>用户管理界面]
     AuthC --> Shell[Shell<br/>主框架]
-    Shell --> Workbench[诊疗工作台]
+    Shell --> Workstation[诊疗工作台]
     
-    Workbench --> ConsultationC[Consultation模块<br/>诊疗界面]
-    Workbench --> PatientsC[Patients模块<br/>患者界面]
-    Workbench --> HerbsC[Herbs模块<br/>药材界面]
+    Workstation --> ConsultationC[Consultation模块<br/>诊疗界面]
+    Workstation --> PatientsC[Patients模块<br/>患者界面]
+    Workstation --> HerbsC[Herbs模块<br/>药材界面]
     
     ConsultationC --> FormulaC[Formula模块<br/>方剂界面]
     ConsultationC --> PrescriptionsC[Prescriptions模块<br/>处方界面]
@@ -62,7 +62,7 @@ graph TD
     style PrescriptionsC fill:#e3f2fd
     style MedicalCaseC fill:#fafafa
     style Shell fill:#ffecb3
-    style Workbench fill:#ffecb3
+    style Workstation fill:#ffecb3
 ```
 
 ### 3. Server-Shared依赖关系

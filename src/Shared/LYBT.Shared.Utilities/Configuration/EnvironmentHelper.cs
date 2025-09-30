@@ -1,4 +1,4 @@
-namespace LYBT.Shared.Utilities.Configuration
+﻿namespace LYBT.Shared.Utilities.Configuration
 {
     /// <summary>
     /// 环境管理帮助类

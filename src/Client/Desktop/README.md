@@ -167,7 +167,7 @@ src/Client/Desktop/
 │       ├── Converters/            # 数据绑定转换器
 │       ├── Behaviors/             # WPF行为扩展
 │       └── Resources/             # 统一样式和模板
-├── Workbenches/                   # 工作台系统
+├── Workstationes/                   # 工作台系统
 │   ├── Core/                      # 工作台核心组件
 │   ├── Admin/                     # 系统管理工作台
 │   └── Medical/                   # 诊疗工作台
@@ -199,7 +199,7 @@ src/Client/Desktop/
 - **Services**: 统一API访问层和业务逻辑，封装后端服务调用
 - **Infrastructure**: UI基础设施，提供通用控件、转换器、样式等
 - **Modules**: 业务功能模块，每个模块包含Views、ViewModels、Services等
-- **Workbenches**: 工作台系统，提供角色驱动的功能导航界面
+- **Workstationes**: 工作台系统，提供角色驱动的功能导航界面
 
 ## 🔌 API 接口
 

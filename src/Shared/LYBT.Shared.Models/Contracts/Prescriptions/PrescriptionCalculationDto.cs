@@ -1,4 +1,4 @@
-namespace LYBT.Shared.Models.Contracts.Prescriptions
+﻿namespace LYBT.Shared.Models.Contracts.Prescriptions
 {
 
     /// <summary>

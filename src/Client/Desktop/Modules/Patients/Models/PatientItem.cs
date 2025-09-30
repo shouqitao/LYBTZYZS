@@ -1,7 +1,6 @@
-﻿using System;
-using Prism.Mvvm;
-using LYBT.Shared.Models.Contracts.Patients;
+﻿using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
+using Prism.Mvvm;
 
 namespace LYBT.Desktop.Modules.Patients.Models;
 
@@ -12,98 +11,98 @@ namespace LYBT.Desktop.Modules.Patients.Models;
 /// </summary>
 public class PatientItem : BindableBase
 {
-        private Guid _id;
+    private Guid _id;
     public Guid Id
     {
         get => _id;
         set => SetProperty(ref _id, value);
     }
 
-        private string _name = string.Empty;
+    private string _name = string.Empty;
     public string Name
     {
         get => _name;
         set => SetProperty(ref _name, value);
     }
 
-        private string _gender = string.Empty;
+    private string _gender = string.Empty;
     public string Gender
     {
         get => _gender;
         set => SetProperty(ref _gender, value);
     }
 
-        private int? _age;
+    private int? _age;
     public int? Age
     {
         get => _age;
         set => SetProperty(ref _age, value);
     }
 
-        private string _phoneNumber = string.Empty;
+    private string _phoneNumber = string.Empty;
     public string PhoneNumber
     {
         get => _phoneNumber;
         set => SetProperty(ref _phoneNumber, value);
     }
 
-        private string? _address;
+    private string? _address;
     public string? Address
     {
         get => _address;
         set => SetProperty(ref _address, value);
     }
 
-        private string? _idCard;
+    private string? _idCard;
     public string? IdCard
     {
         get => _idCard;
         set => SetProperty(ref _idCard, value);
     }
 
-        private string? _medicalHistory;
+    private string? _medicalHistory;
     public string? MedicalHistory
     {
         get => _medicalHistory;
         set => SetProperty(ref _medicalHistory, value);
     }
 
-        private string? _allergyHistory;
+    private string? _allergyHistory;
     public string? AllergyHistory
     {
         get => _allergyHistory;
         set => SetProperty(ref _allergyHistory, value);
     }
 
-        private DateTime _createdAt;
+    private DateTime _createdAt;
     public DateTime CreatedAt
     {
         get => _createdAt;
         set => SetProperty(ref _createdAt, value);
     }
 
-        private DateTime? _lastVisitDate;
+    private DateTime? _lastVisitDate;
     public DateTime? LastVisitDate
     {
         get => _lastVisitDate;
         set => SetProperty(ref _lastVisitDate, value);
     }
 
-        private int _visitCount;
+    private int _visitCount;
     public int VisitCount
     {
         get => _visitCount;
         set => SetProperty(ref _visitCount, value);
     }
 
-        private bool _isSelected;
+    private bool _isSelected;
     public bool IsSelected
     {
         get => _isSelected;
         set => SetProperty(ref _isSelected, value);
     }
 
-        private bool _isHighlighted;
+    private bool _isHighlighted;
     public bool IsHighlighted
     {
         get => _isHighlighted;

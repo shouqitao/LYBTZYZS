@@ -1,8 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using LYBT.Desktop.Services.Exceptions;
+﻿using LYBT.Desktop.Services.Exceptions;
 using LYBT.Desktop.Services.Repositories.Interfaces;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
@@ -129,12 +125,12 @@ namespace LYBT.Desktop.Services.Business
                 existing.TCMDiagnosis = dto.TCMDiagnosis ?? existing.TCMDiagnosis;
                 existing.TreatmentPrinciple = dto.TreatmentPrinciple ?? existing.TreatmentPrinciple;
                 existing.Remark = dto.Remark ?? existing.Remark;
-                
+
                 if (dto.ConsultationStatus.HasValue)
                 {
                     existing.ConsultationStatus = dto.ConsultationStatus.Value;
                 }
-                
+
                 if (dto.EndTime.HasValue)
                 {
                     existing.EndTime = dto.EndTime;

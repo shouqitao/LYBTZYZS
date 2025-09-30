@@ -1,10 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using LYBT.Desktop.Modules.Prescriptions.ViewModels;
-using LYBT.Shared.Models.Contracts.Prescriptions;
-
-namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
+﻿namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
 {
     /// <summary>
     /// 处方验证器 - UltraThink架构实现

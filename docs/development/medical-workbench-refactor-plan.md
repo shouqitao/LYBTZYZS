@@ -1,7 +1,7 @@
-# MedicalWorkbench 工作台职责拆分方案
+# MedicalWorkstation 工作台职责拆分方案
 
 ## 1. 当前问题
-- MedicalWorkbenchMainView 混合了诊疗流程和管理功能
+- MedicalWorkstationMainView 混合了诊疗流程和管理功能
 - 导航菜单过于复杂，职责不清晰
 - 诊疗流程与CRUD管理操作耦合
 
@@ -50,7 +50,7 @@
 
 ### Step 2: 重构导航菜单
 ```csharp
-// MedicalWorkbenchMainView.xaml
+// MedicalWorkstationMainView.xaml
 - 移除诊疗流程相关按钮
 - 保留管理功能入口
 - 简化菜单结构
@@ -65,9 +65,9 @@
 
 ## 5. 文件结构调整
 ```
-MedicalWorkbench/
+MedicalWorkstation/
 ├── Views/
-│   ├── MedicalWorkbenchMainView.xaml        # 主容器
+│   ├── MedicalWorkstationMainView.xaml        # 主容器
 │   ├── Workflow/
 │   │   ├── MedicalWorkflowView.xaml        # 诊疗流程视图
 │   │   ├── PatientSelectionView.xaml       # 患者选择
@@ -78,7 +78,7 @@ MedicalWorkbench/
 │       ├── CaseHistoryView.xaml            # 病历查询
 │       └── FormulaManagementView.xaml      # 方剂管理
 ├── ViewModels/
-│   ├── MedicalWorkbenchMainViewModel.cs    # 主视图模型
+│   ├── MedicalWorkstationMainViewModel.cs    # 主视图模型
 │   ├── Workflow/
 │   │   └── MedicalWorkflowViewModel.cs     # 诊疗流程控制
 │   └── Management/

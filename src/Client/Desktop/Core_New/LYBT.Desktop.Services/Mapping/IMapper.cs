@@ -1,6 +1,4 @@
-using AutoMapper;
-
-namespace LYBT.Desktop.Services.Mapping
+﻿namespace LYBT.Desktop.Services.Mapping
 {
     /// <summary>
     /// 对象映射器接口 - AutoMapper的别名接口

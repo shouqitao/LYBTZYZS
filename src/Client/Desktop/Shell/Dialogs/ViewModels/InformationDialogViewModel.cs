@@ -1,5 +1,4 @@
-using LYBT.Desktop.Services.ErrorHandling;
-using LYBT.Desktop.Models.ViewModels.Base;
+﻿using LYBT.Desktop.Models.ViewModels.Base;
 using Microsoft.Extensions.Logging;
 using Prism.Events;
 using Prism.Regions;

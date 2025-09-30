@@ -13,7 +13,7 @@ public class PatientViewState : BindableBase
     /// <summary>
     /// 当前选中的患者
     /// </summary>
-        private PatientItem? _selectedPatient;
+    private PatientItem? _selectedPatient;
     public PatientItem? SelectedPatient
     {
         get => _selectedPatient;
@@ -33,7 +33,7 @@ public class PatientViewState : BindableBase
     /// <summary>
     /// 搜索关键字
     /// </summary>
-        private string _searchKeyword = string.Empty;
+    private string _searchKeyword = string.Empty;
     public string SearchKeyword
     {
         get => _searchKeyword;
@@ -43,7 +43,7 @@ public class PatientViewState : BindableBase
     /// <summary>
     /// 性别筛选
     /// </summary>
-        private string? _genderFilter;
+    private string? _genderFilter;
     public string? GenderFilter
     {
         get => _genderFilter;
@@ -53,7 +53,7 @@ public class PatientViewState : BindableBase
     /// <summary>
     /// 年龄范围筛选 - 最小值
     /// </summary>
-        private int? _ageRangeMin;
+    private int? _ageRangeMin;
     public int? AgeRangeMin
     {
         get => _ageRangeMin;
@@ -63,7 +63,7 @@ public class PatientViewState : BindableBase
     /// <summary>
     /// 年龄范围筛选 - 最大值
     /// </summary>
-        private int? _ageRangeMax;
+    private int? _ageRangeMax;
     public int? AgeRangeMax
     {
         get => _ageRangeMax;
@@ -73,7 +73,7 @@ public class PatientViewState : BindableBase
     /// <summary>
     /// 是否只显示新患者
     /// </summary>
-        private bool _showNewPatientsOnly;
+    private bool _showNewPatientsOnly;
     public bool ShowNewPatientsOnly
     {
         get => _showNewPatientsOnly;
@@ -83,7 +83,7 @@ public class PatientViewState : BindableBase
     /// <summary>
     /// 是否只显示有过敏史的患者
     /// </summary>
-        private bool _showAllergicPatientsOnly;
+    private bool _showAllergicPatientsOnly;
     public bool ShowAllergicPatientsOnly
     {
         get => _showAllergicPatientsOnly;
@@ -93,7 +93,7 @@ public class PatientViewState : BindableBase
     /// <summary>
     /// 当前页码
     /// </summary>
-        private int _currentPage = 1;
+    private int _currentPage = 1;
     public int CurrentPage
     {
         get => _currentPage;
@@ -103,7 +103,7 @@ public class PatientViewState : BindableBase
     /// <summary>
     /// 每页显示数量
     /// </summary>
-        private int _pageSize = 20;
+    private int _pageSize = 20;
     public int PageSize
     {
         get => _pageSize;
@@ -113,7 +113,7 @@ public class PatientViewState : BindableBase
     /// <summary>
     /// 总记录数
     /// </summary>
-        private int _totalCount;
+    private int _totalCount;
     public int TotalCount
     {
         get => _totalCount;
@@ -123,7 +123,7 @@ public class PatientViewState : BindableBase
     /// <summary>
     /// 排序字段
     /// </summary>
-        private string _sortBy = "Name";
+    private string _sortBy = "Name";
     public string SortBy
     {
         get => _sortBy;
@@ -133,7 +133,7 @@ public class PatientViewState : BindableBase
     /// <summary>
     /// 是否降序
     /// </summary>
-        private bool _isDescending;
+    private bool _isDescending;
     public bool IsDescending
     {
         get => _isDescending;
@@ -143,7 +143,7 @@ public class PatientViewState : BindableBase
     /// <summary>
     /// 是否正在加载
     /// </summary>
-        private bool _isLoading;
+    private bool _isLoading;
     public bool IsLoading
     {
         get => _isLoading;
@@ -153,7 +153,7 @@ public class PatientViewState : BindableBase
     /// <summary>
     /// 是否正在搜索
     /// </summary>
-        private bool _isSearching;
+    private bool _isSearching;
     public bool IsSearching
     {
         get => _isSearching;
@@ -163,7 +163,7 @@ public class PatientViewState : BindableBase
     /// <summary>
     /// 是否处于编辑模式
     /// </summary>
-        private bool _isEditMode;
+    private bool _isEditMode;
     public bool IsEditMode
     {
         get => _isEditMode;
@@ -173,7 +173,7 @@ public class PatientViewState : BindableBase
     /// <summary>
     /// 是否处于批量选择模式
     /// </summary>
-        private bool _isBatchSelectMode;
+    private bool _isBatchSelectMode;
     public bool IsBatchSelectMode
     {
         get => _isBatchSelectMode;
@@ -193,7 +193,7 @@ public class PatientViewState : BindableBase
     /// <summary>
     /// 状态消息
     /// </summary>
-        private string _statusMessage = string.Empty;
+    private string _statusMessage = string.Empty;
     public string StatusMessage
     {
         get => _statusMessage;
@@ -203,7 +203,7 @@ public class PatientViewState : BindableBase
     /// <summary>
     /// 错误消息
     /// </summary>
-        private string? _errorMessage;
+    private string? _errorMessage;
     public string? ErrorMessage
     {
         get => _errorMessage;

@@ -1,4 +1,4 @@
-using LYBT.Shared.Models.Constants;
+﻿using LYBT.Shared.Models.Constants;
 
 namespace LYBT.Shared.Models.Exceptions;
 

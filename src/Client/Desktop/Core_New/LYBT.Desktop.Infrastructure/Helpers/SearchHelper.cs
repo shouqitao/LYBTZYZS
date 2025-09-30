@@ -1,4 +1,4 @@
-namespace LYBT.Desktop.Infrastructure.Helpers
+﻿namespace LYBT.Desktop.Infrastructure.Helpers
 {
 
     /// <summary>

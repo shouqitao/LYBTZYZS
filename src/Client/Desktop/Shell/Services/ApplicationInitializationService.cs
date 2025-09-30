@@ -1,7 +1,6 @@
-using LYBT.Desktop.Services.ErrorHandling;
+﻿using LYBT.Desktop.Services.ErrorHandling;
 using LYBT.Desktop.Services.Performance;
 using Microsoft.Extensions.Logging;
-using Prism.Ioc;
 using Prism.Modularity;
 
 namespace LYBT.Desktop.Shell.Services
@@ -16,17 +15,17 @@ namespace LYBT.Desktop.Shell.Services
         /// 初始化应用程序核心服务
         /// </summary>
         Task InitializeCoreServicesAsync();
-        
+
         /// <summary>
         /// 初始化错误处理
         /// </summary>
         void InitializeErrorHandling();
-        
+
         /// <summary>
         /// 预热应用程序
         /// </summary>
         Task WarmupApplicationAsync();
-        
+
         /// <summary>
         /// 初始化模块协调器
         /// </summary>
@@ -64,18 +63,18 @@ namespace LYBT.Desktop.Shell.Services
         public async Task InitializeCoreServicesAsync()
         {
             _logger.LogInformation("开始初始化应用程序核心服务");
-            
+
             try
             {
                 // 初始化错误处理
                 InitializeErrorHandling();
-                
+
                 // 预热应用程序
                 await WarmupApplicationAsync().ConfigureAwait(false);
-                
+
                 // 初始化模块协调器
                 InitializeModuleCoordinator();
-                
+
                 _logger.LogInformation("应用程序核心服务初始化完成");
             }
             catch (Exception ex)
@@ -135,24 +134,24 @@ namespace LYBT.Desktop.Shell.Services
             try
             {
                 _logger.LogDebug("初始化模块协调器");
-                
+
                 // 记录已加载的模块
                 foreach (var module in _moduleCatalog.Modules)
                 {
-                    _logger.LogDebug("模块已注册 {ModuleName} - {ModuleType}", 
+                    _logger.LogDebug("模块已注册 {ModuleName} - {ModuleType}",
                         module.ModuleName, module.ModuleType);
                 }
-                
+
                 // 获取已加载的模块信息
                 var loadedModules = _moduleManager.GetType()
-                    .GetProperty("LoadedModules", 
-                        System.Reflection.BindingFlags.NonPublic | 
+                    .GetProperty("LoadedModules",
+                        System.Reflection.BindingFlags.NonPublic |
                         System.Reflection.BindingFlags.Instance)
                     ?.GetValue(_moduleManager);
-                
+
                 if (loadedModules != null)
                 {
-                    _logger.LogInformation("模块协调器初始化完成，已加载模块数 {Count}", 
+                    _logger.LogInformation("模块协调器初始化完成，已加载模块数 {Count}",
                         ((IEnumerable<object>)loadedModules).Count());
                 }
                 else

@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using Prism.Mvvm;
+﻿using System.Collections.ObjectModel;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
+using Prism.Mvvm;
 
 namespace LYBT.Desktop.Prescriptions.Models;
 
@@ -15,147 +12,147 @@ namespace LYBT.Desktop.Prescriptions.Models;
 /// </summary>
 public class PrescriptionItem : BindableBase
 {
-        private Guid _id;
+    private Guid _id;
     public Guid Id
     {
         get => _id;
         set => SetProperty(ref _id, value);
     }
 
-        private string _prescriptionNumber = string.Empty;
+    private string _prescriptionNumber = string.Empty;
     public string PrescriptionNumber
     {
         get => _prescriptionNumber;
         set => SetProperty(ref _prescriptionNumber, value);
     }
 
-        private Guid _patientId;
+    private Guid _patientId;
     public Guid PatientId
     {
         get => _patientId;
         set => SetProperty(ref _patientId, value);
     }
 
-        private string _patientName = string.Empty;
+    private string _patientName = string.Empty;
     public string PatientName
     {
         get => _patientName;
         set => SetProperty(ref _patientName, value);
     }
 
-        private string? _patientGender;
+    private string? _patientGender;
     public string? PatientGender
     {
         get => _patientGender;
         set => SetProperty(ref _patientGender, value);
     }
 
-        private int? _patientAge;
+    private int? _patientAge;
     public int? PatientAge
     {
         get => _patientAge;
         set => SetProperty(ref _patientAge, value);
     }
 
-        private Guid? _medicalCaseId;
+    private Guid? _medicalCaseId;
     public Guid? MedicalCaseId
     {
         get => _medicalCaseId;
         set => SetProperty(ref _medicalCaseId, value);
     }
 
-        private Guid? _consultationId;
+    private Guid? _consultationId;
     public Guid? ConsultationId
     {
         get => _consultationId;
         set => SetProperty(ref _consultationId, value);
     }
 
-        private string? _diagnosis;
+    private string? _diagnosis;
     public string? Diagnosis
     {
         get => _diagnosis;
         set => SetProperty(ref _diagnosis, value);
     }
 
-        private string? _syndrome;
+    private string? _syndrome;
     public string? Syndrome
     {
         get => _syndrome;
         set => SetProperty(ref _syndrome, value);
     } // 证型
 
-        private string? _treatmentPrinciple;
+    private string? _treatmentPrinciple;
     public string? TreatmentPrinciple
     {
         get => _treatmentPrinciple;
         set => SetProperty(ref _treatmentPrinciple, value);
     } // 治则
 
-        private int _doses = 1;
+    private int _doses = 1;
     public int Doses
     {
         get => _doses;
         set => SetProperty(ref _doses, value);
     } // 剂数
 
-        private string? _usage;
+    private string? _usage;
     public string? Usage
     {
         get => _usage;
         set => SetProperty(ref _usage, value);
     } // 用法
 
-        private string? _frequency;
+    private string? _frequency;
     public string? Frequency
     {
         get => _frequency;
         set => SetProperty(ref _frequency, value);
     } // 频次
 
-        private string? _note;
+    private string? _note;
     public string? Note
     {
         get => _note;
         set => SetProperty(ref _note, value);
     } // 备注
 
-        private decimal _totalAmount;
+    private decimal _totalAmount;
     public decimal TotalAmount
     {
         get => _totalAmount;
         set => SetProperty(ref _totalAmount, value);
     }
 
-        private PrescriptionStatus _status;
+    private PrescriptionStatus _status;
     public PrescriptionStatus Status
     {
         get => _status;
         set => SetProperty(ref _status, value);
     }
 
-        private string? _doctorName;
+    private string? _doctorName;
     public string? DoctorName
     {
         get => _doctorName;
         set => SetProperty(ref _doctorName, value);
     }
 
-        private DateTime _createdAt;
+    private DateTime _createdAt;
     public DateTime CreatedAt
     {
         get => _createdAt;
         set => SetProperty(ref _createdAt, value);
     }
 
-        private DateTime? _dispensedAt;
+    private DateTime? _dispensedAt;
     public DateTime? DispensedAt
     {
         get => _dispensedAt;
         set => SetProperty(ref _dispensedAt, value);
     } // 配药时间
 
-        private string? _dispensedBy;
+    private string? _dispensedBy;
     public string? DispensedBy
     {
         get => _dispensedBy;
@@ -169,21 +166,21 @@ public class PrescriptionItem : BindableBase
         set => SetProperty(ref _herbs, value);
     }
 
-        private bool _isSelected;
+    private bool _isSelected;
     public bool IsSelected
     {
         get => _isSelected;
         set => SetProperty(ref _isSelected, value);
     }
 
-        private bool _isExpanded;
+    private bool _isExpanded;
     public bool IsExpanded
     {
         get => _isExpanded;
         set => SetProperty(ref _isExpanded, value);
     }
 
-        private bool _isPrinted;
+    private bool _isPrinted;
     public bool IsPrinted
     {
         get => _isPrinted;
@@ -369,63 +366,63 @@ public class PrescriptionItem : BindableBase
 /// </summary>
 public class PrescriptionHerbItem : BindableBase
 {
-        private Guid _herbId;
+    private Guid _herbId;
     public Guid HerbId
     {
         get => _herbId;
         set => SetProperty(ref _herbId, value);
     }
 
-        private string _herbName = string.Empty;
+    private string _herbName = string.Empty;
     public string HerbName
     {
         get => _herbName;
         set => SetProperty(ref _herbName, value);
     }
 
-        private decimal _dosage;
+    private decimal _dosage;
     public decimal Dosage
     {
         get => _dosage;
         set => SetProperty(ref _dosage, value);
     }
 
-        private string _unit = string.Empty;
+    private string _unit = string.Empty;
     public string Unit
     {
         get => _unit;
         set => SetProperty(ref _unit, value);
     }
 
-        private decimal _unitPrice;
+    private decimal _unitPrice;
     public decimal UnitPrice
     {
         get => _unitPrice;
         set => SetProperty(ref _unitPrice, value);
     }
 
-        private string? _usage;
+    private string? _usage;
     public string? Usage
     {
         get => _usage;
         set => SetProperty(ref _usage, value);
     } // 特殊用法
 
-        private int _sequence;
+    private int _sequence;
     public int Sequence
     {
         get => _sequence;
         set => SetProperty(ref _sequence, value);
     }
 
-        private decimal _subtotal;
+    private decimal _subtotal;
     public decimal Subtotal
     {
         get => _subtotal;
         set => SetProperty(ref _subtotal, value);
     }
 
-        private bool _isSelected;
+    private bool _isSelected;
     public bool IsSelected
     {
         get => _isSelected;
