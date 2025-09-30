@@ -269,10 +269,11 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
         /// <summary>
         /// 执行保存
         /// </summary>
-        private async Task ExecuteSaveAsync()
+        private Task ExecuteSaveAsync()
         {
             _logger.LogInformation("执行保存处方");
             OnPrescriptionSaved?.Invoke();
+            return Task.CompletedTask;
         }
 
         /// <summary>

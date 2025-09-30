@@ -184,7 +184,7 @@ namespace LYBT.Desktop.Services.Configuration
         }
 
         /// <inheritdoc/>
-        public async Task ReloadAsync()
+        public Task ReloadAsync()
         {
             try
             {
@@ -194,6 +194,7 @@ namespace LYBT.Desktop.Services.Configuration
                 LoadUserSettings();
 
                 _logger.LogInformation("配置重新加载完成");
+                return Task.CompletedTask;
             }
             catch (Exception ex)
             {

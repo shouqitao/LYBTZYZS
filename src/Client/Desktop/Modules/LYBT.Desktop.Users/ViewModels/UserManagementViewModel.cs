@@ -221,7 +221,7 @@ namespace LYBT.Desktop.Users.ViewModels
         /// <summary>
         /// �������û�
         /// </summary>
-        protected override async Task OnExecuteAddAsync()
+        protected override Task OnExecuteAddAsync()
         {
             Logger.LogDebug("ִ���������û�");
 
@@ -230,6 +230,8 @@ namespace LYBT.Desktop.Users.ViewModels
             {
                 { "title", "�����û�" }
             });
+
+            return Task.CompletedTask;
         }
 
         /// <summary>
@@ -322,7 +324,7 @@ namespace LYBT.Desktop.Users.ViewModels
         {
             if (user == null) return;
 
-            await ExecuteSafelyAsync(async () =>
+            await ExecuteSafelyAsync(() =>
             {
                 Logger.LogDebug("�����û�����: {UserId} - {UserName}", user.Id, user.UserName);
 
@@ -333,8 +335,9 @@ namespace LYBT.Desktop.Users.ViewModels
                 // ʵ��ʵ�ֿ�����Ҫ��
                 // 1. ����������Ի���
                 // 2. ������������API
-                // 3. ��������֪ͨ
+                // 3. ��������֪ͨ
 
+                return Task.CompletedTask;
             }, "��������");
         }
 

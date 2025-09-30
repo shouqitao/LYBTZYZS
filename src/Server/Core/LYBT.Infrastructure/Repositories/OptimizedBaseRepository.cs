@@ -401,7 +401,7 @@ namespace LYBT.Infrastructure.Repositories
         /// <summary>
         /// 更新实体
         /// </summary>
-        public virtual async Task<TEntity> UpdateAsync(TEntity entity)
+        public virtual Task<TEntity> UpdateAsync(TEntity entity)
         {
             if (entity == null)
             {
@@ -419,17 +419,17 @@ namespace LYBT.Infrastructure.Repositories
 
             InvalidateCache();
 
-            return entry.Entity;
+            return Task.FromResult(entry.Entity);
         }
 
         /// <summary>
         /// 删除实体
         /// </summary>
-        public virtual async Task<bool> DeleteAsync(TEntity entity)
+        public virtual Task<bool> DeleteAsync(TEntity entity)
         {
             if (entity == null)
             {
-                return false;
+                return Task.FromResult(false);
             }
 
             _dbSet.Remove(entity);
@@ -443,7 +443,7 @@ namespace LYBT.Infrastructure.Repositories
 
             InvalidateCache();
 
-            return true;
+            return Task.FromResult(true);
         }
 
         /// <summary>
@@ -467,12 +467,12 @@ namespace LYBT.Infrastructure.Repositories
         /// <summary>
         /// 批量删除实体
         /// </summary>
-        public virtual async Task<int> DeleteRangeAsync(IEnumerable<TEntity> entities)
+        public virtual Task<int> DeleteRangeAsync(IEnumerable<TEntity> entities)
         {
             var entityList = entities.ToList();
             if (!entityList.Any())
             {
-                return 0;
+                return Task.FromResult(0);
             }
 
             _dbSet.RemoveRange(entityList);
@@ -489,7 +489,7 @@ namespace LYBT.Infrastructure.Repositories
 
             InvalidateCache();
 
-            return entityList.Count;
+            return Task.FromResult(entityList.Count);
         }
 
         /// <summary>

@@ -44,14 +44,14 @@ public static class EnvironmentAwareHosting
     /// <summary>
     /// 显示开发模式的启动信息
     /// </summary>
-    public static async Task DisplayDevelopmentStartupInfo(this WebApplication app)
+    public static void DisplayDevelopmentStartupInfo(this WebApplication app)
     {
         var environment = app.Environment.EnvironmentName;
-        
+
         if (environment == "Development")
         {
             DisplayDevelopmentConsoleHeader();
-            await DisplayStartupStatus(app);
+            DisplayStartupStatus(app);
         }
     }
 
@@ -80,7 +80,7 @@ public static class EnvironmentAwareHosting
     /// <summary>
     /// 显示启动状态信息
     /// </summary>
-    private static async Task DisplayStartupStatus(WebApplication app)
+    private static void DisplayStartupStatus(WebApplication app)
     {
         var addresses = app.Urls;
         var primaryUrl = addresses.FirstOrDefault() ?? "https://localhost:5001";

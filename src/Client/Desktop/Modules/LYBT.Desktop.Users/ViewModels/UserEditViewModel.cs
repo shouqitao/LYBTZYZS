@@ -407,7 +407,7 @@ namespace LYBT.Desktop.Users.ViewModels
         /// </summary>
         private async Task ExecuteResetPasswordAsync()
         {
-            await ExecuteSafelyAsync(async () =>
+            await ExecuteSafelyAsync(() =>
             {
                 Logger.LogDebug("重置用户密码: {UserId} - {Username}", UserId, Username);
 
@@ -420,6 +420,7 @@ namespace LYBT.Desktop.Users.ViewModels
                 // 2. 调用密码重置API
                 // 3. 发送重置通知
 
+                return Task.CompletedTask;
             }, "重置密码");
         }
 

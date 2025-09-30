@@ -120,7 +120,7 @@ namespace LYBT.Desktop.Shell.Services.Bootstrap
         /// <summary>
         /// 根据用户角色加载模块
         /// </summary>
-        public async Task LoadModulesForRoleAsync(UserRole userRole)
+        public Task LoadModulesForRoleAsync(UserRole userRole)
         {
             try
             {
@@ -143,6 +143,7 @@ namespace LYBT.Desktop.Shell.Services.Bootstrap
                 }
 
                 _logger.LogInformation("角色 {UserRole} 的模块加载完成", userRole);
+                return Task.CompletedTask;
             }
             catch (Exception ex)
             {

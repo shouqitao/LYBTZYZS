@@ -27,7 +27,7 @@ public class KeyManagementService : IKeyManagementService
     /// <summary>
     /// 检查是否需要旋转密钥
     /// </summary>
-    public async Task<bool> ShouldRotateKeyAsync()
+    public Task<bool> ShouldRotateKeyAsync()
     {
         try
         {
@@ -35,14 +35,14 @@ public class KeyManagementService : IKeyManagementService
             if (!_lastRotationTime.HasValue)
             {
                 _logger.LogInformation("首次检查密钥轮换，需要执行轮换");
-                return true;
+                return Task.FromResult(true);
             }
 
             // 默认7天轮换一次
             var rotationInterval = TimeSpan.FromDays(7);
             var timeSinceLastRotation = DateTime.UtcNow - _lastRotationTime.Value;
             var needsRotation = timeSinceLastRotation >= rotationInterval;
-            
+
             if (needsRotation)
             {
                 _logger.LogInformation(
@@ -50,12 +50,12 @@ public class KeyManagementService : IKeyManagementService
                     timeSinceLastRotation.TotalHours);
             }
 
-            return needsRotation;
+            return Task.FromResult(needsRotation);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "检查密钥轮换状态时发生错误");
-            return false;
+            return Task.FromResult(false);
         }
     }
 

@@ -68,7 +68,7 @@ try
     await app.DisplayDatabaseStatusAsync();
 
     // =========== 显示开发模式启动信息 ===========
-    await app.DisplayDevelopmentStartupInfo();
+    app.DisplayDevelopmentStartupInfo();
 
     // =========== 环境感知的优雅关闭配置 ===========
     await app.ConfigureEnvironmentAwareShutdown();
