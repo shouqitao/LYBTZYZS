@@ -223,12 +223,7 @@ namespace LYBT.Desktop.Shell.Services.Bootstrap
                     "PrescriptionsModule",
                     "ClinicalWorkstationModule"
                 },
-                UserRole.Pharmacist => new[]
-                {
-                    "HerbsModule",
-                    "FormulaModule",
-                    "PrescriptionsModule"
-                },
+                // UserRole.Pharmacist 已统一到 Doctor 角色
                 _ => Array.Empty<string>()
             };
 

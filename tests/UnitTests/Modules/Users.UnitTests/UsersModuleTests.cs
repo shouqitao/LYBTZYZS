@@ -21,7 +21,7 @@ namespace LYBT.Module.Users.Tests
     public class UsersModuleTests
     {
         [Fact]
-        public void AddUsersModuleServices_Should_Register_All_Services()
+        public void AddUsersModule_Should_Register_All_Services()
         {
             // Arrange
             var services = new ServiceCollection();
@@ -68,8 +68,11 @@ namespace LYBT.Module.Users.Tests
                 options.EnableOnlineStatusTracking = true;
             });
 
+            // 添加空配置
+            var configuration = new Microsoft.Extensions.Configuration.ConfigurationBuilder().Build();
+
             // Act
-            services.AddUsersModuleServices();
+            services.AddUsersModule(configuration);
             var serviceProvider = services.BuildServiceProvider();
 
             // Assert - 验证Repository注册
@@ -87,15 +90,16 @@ namespace LYBT.Module.Users.Tests
         }
 
         [Fact]
-        public void AddUsersModuleServices_Should_Register_Services_As_Scoped()
+        public void AddUsersModule_Should_Register_Services_As_Scoped()
         {
             // Arrange
             var services = new ServiceCollection();
             services.AddLogging();
+            var configuration = new Microsoft.Extensions.Configuration.ConfigurationBuilder().Build();
             services.Configure<UserOptions>(options => { });
 
             // Act
-            services.AddUsersModuleServices();
+            services.AddUsersModule(configuration);
 
             // Assert - 验证服务生命周期
             services.Should().Contain(x =>
@@ -110,27 +114,29 @@ namespace LYBT.Module.Users.Tests
         }
 
         [Fact]
-        public void AddUsersModuleServices_Should_Return_ServiceCollection()
+        public void AddUsersModule_Should_Return_ServiceCollection()
         {
             // Arrange
             var services = new ServiceCollection();
+            var configuration = new Microsoft.Extensions.Configuration.ConfigurationBuilder().Build();
 
             // Act
-            var result = services.AddUsersModuleServices();
+            var result = services.AddUsersModule(configuration);
 
             // Assert
             result.Should().BeSameAs(services);
         }
 
         [Fact]
-        public void AddUsersModuleServices_Can_Be_Called_Multiple_Times()
+        public void AddUsersModule_Can_Be_Called_Multiple_Times()
         {
             // Arrange
             var services = new ServiceCollection();
+            var configuration = new Microsoft.Extensions.Configuration.ConfigurationBuilder().Build();
 
             // Act
-            services.AddUsersModuleServices();
-            services.AddUsersModuleServices(); // Should not throw
+            services.AddUsersModule(configuration);
+            services.AddUsersModule(configuration); // Should not throw
 
             // Assert
             services.Should().NotBeNull();

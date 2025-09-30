@@ -338,7 +338,7 @@ namespace LYBT.Desktop.Shell.Tests.Services
         [Theory]
         [InlineData(UserRole.Admin, new[] { "AuthModule", "UsersModule", "PatientsModule", "HerbsModule", "FormulaModule", "MedicalCaseModule", "ConsultationModule", "PrescriptionsModule", "MedicalWorkbenchModule" })]
         [InlineData(UserRole.Doctor, new[] { "AuthModule", "UsersModule", "PatientsModule", "HerbsModule", "FormulaModule", "MedicalCaseModule", "ConsultationModule", "PrescriptionsModule", "MedicalWorkbenchModule" })]
-        [InlineData(UserRole.Pharmacist, new[] { "AuthModule", "UsersModule", "HerbsModule", "FormulaModule", "PrescriptionsModule" })]
+        // UserRole.Pharmacist 已过时，统一到 Doctor 角色
         public async Task LoadModulesForRoleAsync_WithDifferentRoles_ShouldLoadCorrectModules(UserRole role, string[] expectedModules)
         {
             // Arrange
