@@ -64,6 +64,11 @@
     <PackageReference Include="Prism.Wpf" />
   </ItemGroup>
 
+  <!-- Object Mapping -->
+  <ItemGroup Label="Data Processing">
+    <PackageReference Include="AutoMapper" />
+  </ItemGroup>
+
   <!-- Project References -->
   <ItemGroup Label="Infrastructure Dependencies - UltraThink三层架构">
     <ProjectReference Include="..\..\Core\LYBT.Desktop.Infrastructure\LYBT.Desktop.Infrastructure.csproj" />
