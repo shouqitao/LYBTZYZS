@@ -1,6 +1,6 @@
-ï»¿using LYBT.Desktop.ClinicalWorkstation.ViewModels;
+using LYBT.Desktop.ClinicalWorkstation.ViewModels;
 using LYBT.Desktop.ClinicalWorkstation.Views;
-using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Desktop.Services.ErrorHandling;
 using Microsoft.Extensions.Logging;
 using Prism.Ioc;
 using Prism.Modularity;
@@ -8,31 +8,31 @@ using Prism.Modularity;
 namespace LYBT.Desktop.ClinicalWorkstation
 {
     /// <summary>
-    /// è¯Šç–—å·¥ä½œå°æ¨¡å—
-    /// æä¾›åŒ»ç”Ÿçš„è¯Šç–—å·¥ä½œå°ç•Œé¢å’Œç›¸å…³åŠŸèƒ½
+    /// ÕïÁÆ¹¤×÷Ì¨Ä£¿é
+    /// Ìá¹©Ò½ÉúµÄÕïÁÆ¹¤×÷Ì¨½çÃæºÍÏà¹Ø¹¦ÄÜ
     /// </summary>
     [Module(ModuleName = nameof(ClinicalWorkstationModule))]
-    [ModuleDependency("AuthenticationModule")] // ä¾èµ–è®¤è¯æ¨¡å—
+    [ModuleDependency("AuthenticationModule")] // ÒÀÀµÈÏÖ¤Ä£¿é
     public class ClinicalWorkstationModule : IModule
     {
         /// <inheritdoc/>
         public void OnInitialized(IContainerProvider containerProvider)
         {
-            // æ¨¡å—åˆå§‹åŒ–å®Œæˆ
+            // Ä£¿é³õÊ¼»¯Íê³É
             var logger = containerProvider.Resolve<ILogger<ClinicalWorkstationModule>>();
-            logger?.LogInformation("è¯Šç–—å·¥ä½œå°æ¨¡å—åˆå§‹åŒ–å®Œæˆ");
+            logger?.LogInformation("ÕïÁÆ¹¤×÷Ì¨Ä£¿é³õÊ¼»¯Íê³É");
         }
 
         /// <inheritdoc/>
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            // æ³¨å†Œè§†å›¾æ¨¡å‹
+            // ×¢²áÊÓÍ¼Ä£ĞÍ
             containerRegistry.Register<ClinicalWorkstationViewModel>();
 
-            // æ³¨å†Œä¸»è§†å›¾ç”¨äºå¯¼èˆª
+            // ×¢²áÖ÷ÊÓÍ¼ÓÃÓÚµ¼º½
             containerRegistry.RegisterForNavigation<ClinicalWorkstationView>();
 
-            // æ³¨å†Œè¯Šç–—åŠŸèƒ½å­è§†å›¾ï¼ˆåç»­æ ¹æ®éœ€è¦æ·»åŠ ï¼‰
+            // ×¢²áÕïÁÆ¹¦ÄÜ×ÓÊÓÍ¼£¨ºóĞø¸ù¾İĞèÒªÌí¼Ó£©
             // containerRegistry.RegisterForNavigation<DiagnosisView>();
             // containerRegistry.RegisterForNavigation<PrescriptionView>();
             // containerRegistry.RegisterForNavigation<PatientHistoryView>();

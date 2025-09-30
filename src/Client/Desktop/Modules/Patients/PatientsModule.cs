@@ -1,4 +1,3 @@
-using LYBT.Desktop.Patients.Services;
 using LYBT.Shared.Interfaces.Services;
 using Prism.Ioc;
 using Prism.Modularity;
@@ -20,8 +19,7 @@ namespace LYBT.Desktop.Patients
 
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            // 注册简化的服务
-            containerRegistry.RegisterSingleton<IPatientService, PatientService>();
+            // Services由Core_New/Services统一注册，不在Module中注册
 
             // 注册视图模型 - MVP核心功能
             containerRegistry.Register<ViewModels.PatientDetailViewModel>();

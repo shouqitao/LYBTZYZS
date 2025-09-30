@@ -1,90 +1,41 @@
+using System;
 using System.Collections.ObjectModel;
-using LYBT.Desktop.Core.Interfaces.Services;
-
-// UltraThink v2.0重构: 直接使用FormulaDto，移除Info模型引用
+using System.Linq;
+using System.Threading.Tasks;
+using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Models.ViewModels.Base;
+using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Formula;
+using Microsoft.Extensions.Logging;
 using Prism.Commands;
-using Prism.Mvvm;
-using IFormulaService = LYBT.Shared.Interfaces.Services.IFormulaService;
+using Prism.Events;
+using Prism.Regions;
+using Prism.Services.Dialogs;
 
-namespace LYBT.Desktop.Prescriptions.ViewModels
+namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
 {
-
     /// <summary>
-    /// 验方选择对话框视图模型
+    /// 选择验方对话框视图模型 - UltraThink精简架构
+    /// 用于从验方库中选择验方模板
     /// </summary>
-    public class SelectFormulaDialogViewModel : BindableBase
+    public class SelectFormulaDialogViewModel : UnifiedViewModelBase, IDialogAware
     {
+        #region 服务依赖
+
         private readonly IFormulaService _formulaService;
-        private readonly ICustomDialogService _dialogService;
 
-        private bool _isLoading;
-        private string _searchKeyword = string.Empty;
-        private string _selectedCategory = "全部";
+        #endregion
+
+        #region 数据属性
+
+        private ObservableCollection<FormulaDto> _formulas = new();
         private FormulaDto? _selectedFormula;
-        private ObservableCollection<FormulaDto> _formulas;
-        private ObservableCollection<string> _categories;
-        private string _previewText = string.Empty;
-
-        #region 属性
+        private string _searchText = string.Empty;
+        private string _categoryFilter = string.Empty;
+        private string _effectFilter = string.Empty;
 
         /// <summary>
-        /// 是否正在加载
-        /// </summary>
-        public bool IsLoading
-        {
-            get => _isLoading;
-            set => SetProperty(ref _isLoading, value);
-        }
-
-        /// <summary>
-        /// 搜索关键词
-        /// </summary>
-        public string SearchKeyword
-        {
-            get => _searchKeyword;
-            set
-            {
-                if (SetProperty(ref _searchKeyword, value))
-                {
-                    SearchCommand.Execute();
-                }
-            }
-        }
-
-        /// <summary>
-        /// 选中的分类
-        /// </summary>
-        public string SelectedCategory
-        {
-            get => _selectedCategory;
-            set
-            {
-                if (SetProperty(ref _selectedCategory, value))
-                {
-                    FilterByCategory();
-                }
-            }
-        }
-
-        /// <summary>
-        /// 选中的验方 - UltraThink v2.0: 直接使用FormulaDto
-        /// </summary>
-        public FormulaDto? SelectedFormula
-        {
-            get => _selectedFormula;
-            set
-            {
-                if (SetProperty(ref _selectedFormula, value))
-                {
-                    UpdatePreview();
-                    ConfirmCommand.RaiseCanExecuteChanged();
-                }
-            }
-        }
-
-        /// <summary>
-        /// 验方列表 - UltraThink v2.0: 直接使用FormulaDto
+        /// 验方列表
         /// </summary>
         public ObservableCollection<FormulaDto> Formulas
         {
@@ -93,287 +44,553 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         }
 
         /// <summary>
-        /// 分类列表
+        /// 选中的验方
         /// </summary>
-        public ObservableCollection<string> Categories
+        public FormulaDto? SelectedFormula
         {
-            get => _categories;
-            set => SetProperty(ref _categories, value);
-        }
-
-        /// <summary>
-        /// 预览文本
-        /// </summary>
-        public string PreviewText
-        {
-            get => _previewText;
-            set => SetProperty(ref _previewText, value);
-        }
-
-        /// <summary>
-        /// 是否显示空状态
-        /// </summary>
-        public bool ShowEmptyState => !IsLoading && (_formulas == null || !_formulas.Any());
-
-        /// <summary>
-        /// 空状态消息
-        /// </summary>
-        public string EmptyStateMessage
-        {
-            get
+            get => _selectedFormula;
+            set
             {
-                if (!string.IsNullOrWhiteSpace(SearchKeyword))
+                if (SetProperty(ref _selectedFormula, value))
                 {
-                    return $"未找到包含 \"{SearchKeyword}\" 的验方";
+                    UpdateCommandStates();
+                    LoadFormulaDetails();
                 }
-
-                if (SelectedCategory != "全部")
-                {
-                    return $"分类 \"{SelectedCategory}\" 下暂无验方";
-                }
-
-                return "暂无验方数据";
             }
         }
 
-        #endregion 属性
+        /// <summary>
+        /// 搜索关键字
+        /// </summary>
+        public string SearchText
+        {
+            get => _searchText;
+            set => SetProperty(ref _searchText, value);
+        }
+
+        /// <summary>
+        /// 分类筛选
+        /// </summary>
+        public string CategoryFilter
+        {
+            get => _categoryFilter;
+            set => SetProperty(ref _categoryFilter, value);
+        }
+
+        /// <summary>
+        /// 功效筛选
+        /// </summary>
+        public string EffectFilter
+        {
+            get => _effectFilter;
+            set => SetProperty(ref _effectFilter, value);
+        }
+
+        /// <summary>
+        /// 分类选项
+        /// </summary>
+        public string[] CategoryOptions { get; } = new[]
+        {
+            "全部", "解表剂", "泻下剂", "和解剂", "清热剂", 
+            "祛暑剂", "温里剂", "表里双解剂", "补益剂", "固涩剂",
+            "安神剂", "开窍剂", "理气剂", "理血剂", "治风剂",
+            "治燥剂", "祛湿剂", "祛痰剂", "消导剂", "驱虫剂"
+        };
+
+        /// <summary>
+        /// 功效选项
+        /// </summary>
+        public string[] EffectOptions { get; } = new[]
+        {
+            "全部", "解表散寒", "解表清热", "扶正解表", "攻里泻热",
+            "润燥通便", "温中祛寒", "回阳救逆", "温经散寒", "清热泻火",
+            "清热凉血", "清热解毒", "清脏腑热", "清虚热", "祛暑解表",
+            "祛暑利湿", "补气", "补血", "气血双补", "补阴", "补阳"
+        };
+
+        #endregion
+
+        #region 详情属性
+
+        private string _formulaDetails = string.Empty;
+        private string _composition = string.Empty;
+        private string _usage = string.Empty;
+        private string _indications = string.Empty;
+
+        /// <summary>
+        /// 验方详情
+        /// </summary>
+        public string FormulaDetails
+        {
+            get => _formulaDetails;
+            set => SetProperty(ref _formulaDetails, value);
+        }
+
+        /// <summary>
+        /// 组成
+        /// </summary>
+        public string Composition
+        {
+            get => _composition;
+            set => SetProperty(ref _composition, value);
+        }
+
+        /// <summary>
+        /// 用法
+        /// </summary>
+        public string Usage
+        {
+            get => _usage;
+            set => SetProperty(ref _usage, value);
+        }
+
+        /// <summary>
+        /// 主治
+        /// </summary>
+        public string Indications
+        {
+            get => _indications;
+            set => SetProperty(ref _indications, value);
+        }
+
+        #endregion
+
+        #region 对话框属性
+
+        /// <summary>
+        /// 对话框标题
+        /// </summary>
+        public string Title { get; set; } = "选择验方";
+
+        /// <summary>
+        /// 对话框关闭事件
+        /// </summary>
+        public event Action<IDialogResult>? RequestClose;
+
+        #endregion
 
         #region 命令
 
-        public DelegateCommand SearchCommand { get; } = null!;
-        public DelegateCommand RefreshCommand { get; } = null!;
-        public DelegateCommand ConfirmCommand { get; } = null!;
-        public DelegateCommand CancelCommand { get; } = null!;
-        public DelegateCommand<FormulaDto> SelectFormulaCommand { get; } = null!;
-        public DelegateCommand<FormulaDto> ViewDetailsCommand { get; } = null!;
+        /// <summary>
+        /// 搜索命令
+        /// </summary>
+        public DelegateCommand SearchCommand { get; }
 
-        #endregion 命令
+        /// <summary>
+        /// 重置筛选命令
+        /// </summary>
+        public DelegateCommand ResetFilterCommand { get; }
 
-        #region 回调
+        /// <summary>
+        /// 确定命令
+        /// </summary>
+        public DelegateCommand ConfirmCommand { get; }
 
-        public Action<FormulaDto>? OnFormulaSelected { get; set; }
-        public Action? OnCancelled { get; set; }
+        /// <summary>
+        /// 取消命令
+        /// </summary>
+        public DelegateCommand CancelCommand { get; }
 
-        #endregion 回调
+        /// <summary>
+        /// 刷新命令
+        /// </summary>
+        public DelegateCommand RefreshCommand { get; }
 
-        private List<FormulaDto> _allFormulas = new();
+        /// <summary>
+        /// 查看详情命令
+        /// </summary>
+        public DelegateCommand ViewDetailsCommand { get; }
+
+        #endregion
+
+        #region 构造函数
 
         public SelectFormulaDialogViewModel(
+            IEventAggregator eventAggregator,
+            ILoggerFactory loggerFactory,
+            IRegionManager regionManager,
             IFormulaService formulaService,
-            ICustomDialogService dialogService)
+            ISessionManager? sessionManager = null,
+            IErrorHandlingService? errorHandlingService = null)
+            : base(eventAggregator, loggerFactory, regionManager, sessionManager, errorHandlingService)
         {
-            _formulaService = formulaService;
-            _dialogService = dialogService;
-
-            _formulas = new ObservableCollection<FormulaDto>();
-            _categories = new ObservableCollection<string> { "全部" };
+            _formulaService = formulaService ?? throw new ArgumentNullException(nameof(formulaService));
 
             // 初始化命令
-            SearchCommand = new DelegateCommand(async () => await ExecuteSearchAsync());
-            RefreshCommand = new DelegateCommand(async () => await LoadFormulasAsync());
-            ConfirmCommand = new DelegateCommand(ExecuteConfirm, CanExecuteConfirm);
-            CancelCommand = new DelegateCommand(ExecuteCancel);
-            SelectFormulaCommand = new DelegateCommand<FormulaDto>(ExecuteSelectFormula);
-            ViewDetailsCommand = new DelegateCommand<FormulaDto>(ExecuteViewDetails);
+            SearchCommand = new DelegateCommand(async () => await SearchAsync());
+            ResetFilterCommand = new DelegateCommand(ResetFilter);
+            ConfirmCommand = new DelegateCommand(Confirm, CanConfirm);
+            CancelCommand = new DelegateCommand(Cancel);
+            RefreshCommand = new DelegateCommand(async () => await RefreshAsync());
+            ViewDetailsCommand = new DelegateCommand(ViewDetails, CanViewDetails);
 
-            // 初始加载
-            Task.Run(async () => await LoadFormulasAsync());
+            // 属性变更时刷新命令状态
+            PropertyChanged += (s, e) => UpdateCommandStates();
         }
 
-        private async Task LoadFormulasAsync()
+        #endregion
+
+        #region IDialogAware 实现
+
+        /// <summary>
+        /// 是否可以关闭对话框
+        /// </summary>
+        public bool CanCloseDialog() => true;
+
+        /// <summary>
+        /// 对话框关闭时调用
+        /// </summary>
+        public void OnDialogClosed() { }
+
+        /// <summary>
+        /// 对话框打开时调用
+        /// </summary>
+        public void OnDialogOpened(IDialogParameters parameters)
         {
             try
             {
-                IsLoading = true;
-
-                // UltraThink v2.0: 使用GetPagedAsync搜索DTOs（简化后的搜索方法）
-                var result = await _formulaService.GetPagedAsync(1, 100, string.Empty);
-                if (result.IsSuccess && result.Data != null)
+                // 获取参数
+                if (parameters.ContainsKey("Title"))
                 {
-                    // UltraThink v2.0: 直接使用DTOs，从分页结果中提取数据
-                    _allFormulas = result.Data.Items.ToList();
+                    Title = parameters.GetValue<string>("Title");
+                }
 
-                    // 提取分类
-                    var categories = _allFormulas
-                        .Where(f => !string.IsNullOrWhiteSpace(f.Category))
-                        .Select(f => f.Category)
-                        .Distinct()
-                        .OrderBy(c => c)
-                        .ToList();
+                if (parameters.ContainsKey("Category"))
+                {
+                    CategoryFilter = parameters.GetValue<string>("Category");
+                }
 
-                    Categories.Clear();
-                    Categories.Add("全部");
-                    foreach (var category in categories)
+                if (parameters.ContainsKey("Effect"))
+                {
+                    EffectFilter = parameters.GetValue<string>("Effect");
+                }
+
+                // 加载数据
+                Task.Run(async () => await LoadDataAsync());
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "打开选择验方对话框时发生异常");
+                ShowErrorMessage("初始化失败，请稍后重试");
+            }
+        }
+
+        #endregion
+
+        #region 数据加载
+
+        /// <summary>
+        /// 加载数据
+        /// </summary>
+        private async Task LoadDataAsync()
+        {
+            try
+            {
+                SetIsBusy(true, "正在加载验方列表...");
+
+                var result = await _formulaService.GetPagedAsync(1, int.MaxValue, null);
+                if (result.IsSuccess && result.Data?.Items != null)
+                {
+                    Formulas.Clear();
+                    foreach (var item in result.Data.Items)
                     {
-                        Categories.Add(category);
+                        Formulas.Add(item);
                     }
 
-                    // 显示所有验方
-                    Formulas = new ObservableCollection<FormulaDto>(_allFormulas);
-                    RaisePropertyChanged(nameof(ShowEmptyState));
-                    RaisePropertyChanged(nameof(EmptyStateMessage));
+                    Logger.LogInformation("验方列表加载完成，共 {Count} 个", Formulas.Count);
                 }
                 else
                 {
-                    await _dialogService.ShowErrorAsync(
-                        result.ErrorMessage ?? "加载验方列表失败",
-                        "加载失败");
+                    await ShowErrorMessageAsync($"加载验方列表失败: {result.ErrorMessage}");
                 }
             }
             catch (Exception ex)
             {
-                await _dialogService.ShowErrorAsync(
-                    $"加载验方列表时发生错误：{ex.Message}",
-                    "系统错误");
+                Logger.LogError(ex, "加载验方列表时发生异常");
+                await ShowErrorMessageAsync("加载验方列表时发生系统错误，请稍后重试");
             }
             finally
             {
-                IsLoading = false;
+                SetIsBusy(false);
             }
         }
 
-        private Task ExecuteSearchAsync()
+        /// <summary>
+        /// 搜索
+        /// </summary>
+        private async Task SearchAsync()
         {
             try
             {
-                IsLoading = true;
+                SetIsBusy(true, "正在搜索...");
 
-                if (string.IsNullOrWhiteSpace(SearchKeyword))
+                var allFormulas = await _formulaService.GetPagedAsync(1, int.MaxValue, null);
+                if (allFormulas.IsSuccess && allFormulas.Data?.Items != null)
                 {
-                    // 如果搜索词为空，显示当前分类的所有验方
-                    FilterByCategory();
-                }
-                else
-                {
-                    // 在当前分类中搜索
-                    var filteredFormulas = _allFormulas.Where(f =>
+                    var filtered = allFormulas.Data.Items.AsEnumerable();
+
+                    // 按关键字筛选
+                    if (!string.IsNullOrWhiteSpace(SearchText))
                     {
-                        // 分类筛选
-                        if (SelectedCategory != "全部" && f.Category != SelectedCategory)
-                        {
-                            return false;
-                        }
+                        filtered = filtered.Where(f => 
+                            f.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
+                            f.Description?.Contains(SearchText, StringComparison.OrdinalIgnoreCase) == true ||
+                            f.Indications?.Contains(SearchText, StringComparison.OrdinalIgnoreCase) == true);
+                    }
 
-                        // 关键词搜索（名称、效果、备注）
-                        var keyword = SearchKeyword.ToLower();
-                        return f.Name.ToLower().Contains(keyword) ||
-                               (!string.IsNullOrWhiteSpace(f.Effect) && f.Effect.ToLower().Contains(keyword)) ||
-                               (!string.IsNullOrWhiteSpace(f.Remark) && f.Remark.ToLower().Contains(keyword));
-                    }).ToList();
+                    // 按分类筛选
+                    if (!string.IsNullOrWhiteSpace(CategoryFilter) && CategoryFilter != "全部")
+                    {
+                        filtered = filtered.Where(f => f.Category == CategoryFilter);
+                    }
 
-                    Formulas = new ObservableCollection<FormulaDto>(filteredFormulas);
-                    RaisePropertyChanged(nameof(ShowEmptyState));
-                    RaisePropertyChanged(nameof(EmptyStateMessage));
+                    // 按功效筛选
+                    if (!string.IsNullOrWhiteSpace(EffectFilter) && EffectFilter != "全部")
+                    {
+                        filtered = filtered.Where(f => f.Effects?.Contains(EffectFilter) == true);
+                    }
+
+                    Formulas.Clear();
+                    foreach (var item in filtered)
+                    {
+                        Formulas.Add(item);
+                    }
+
+                    Logger.LogDebug("搜索完成，找到 {Count} 个验方", Formulas.Count);
                 }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "搜索验方时发生异常");
+                await ShowErrorMessageAsync("搜索失败，请稍后重试");
             }
             finally
             {
-                IsLoading = false;
+                SetIsBusy(false);
             }
-
-            return Task.CompletedTask;
         }
 
-        private void FilterByCategory()
+        /// <summary>
+        /// 刷新
+        /// </summary>
+        private async Task RefreshAsync()
         {
-            if (SelectedCategory == "全部")
-            {
-                Formulas = new ObservableCollection<FormulaDto>(_allFormulas);
-            }
-            else
-            {
-                var filtered = _allFormulas.Where(f => f.Category == SelectedCategory).ToList();
-                Formulas = new ObservableCollection<FormulaDto>(filtered);
-            }
-
-            RaisePropertyChanged(nameof(ShowEmptyState));
-            RaisePropertyChanged(nameof(EmptyStateMessage));
+            ResetFilter();
+            await LoadDataAsync();
         }
 
-        private void UpdatePreview()
+        /// <summary>
+        /// 加载验方详情
+        /// </summary>
+        private void LoadFormulaDetails()
         {
             if (SelectedFormula == null)
             {
-                PreviewText = "请选择一个验方查看详情";
+                ClearDetails();
                 return;
             }
 
-            // UltraThink v2.0: 直接使用DTO属性构建预览
-            var preview = $"【{SelectedFormula.Name}】\n\n";
-
-            if (!string.IsNullOrWhiteSpace(SelectedFormula.Category))
+            try
             {
-                preview += $"分类：{SelectedFormula.Category}\n";
+                var formula = SelectedFormula;
+
+                // 构建详情信息
+                var details = $"验方名称: {formula.Name}\n";
+                details += $"分类: {formula.Category}\n";
+                
+                if (!string.IsNullOrEmpty(formula.Source))
+                {
+                    details += $"出处: {formula.Source}\n";
+                }
+
+                if (!string.IsNullOrEmpty(formula.Description))
+                {
+                    details += $"描述: {formula.Description}\n";
+                }
+
+                FormulaDetails = details;
+
+                // 构建组成信息
+                if (formula.Items?.Any() == true)
+                {
+                    var composition = "组成:\n";
+                    foreach (var item in formula.Items)
+                    {
+                        composition += $"• {item.HerbName} {item.Quantity}{item.Unit}";
+                        if (!string.IsNullOrEmpty(item.Processing))
+                        {
+                            composition += $" ({item.Processing})";
+                        }
+                        composition += "\n";
+                    }
+                    Composition = composition;
+                }
+                else
+                {
+                    Composition = "组成信息暂无";
+                }
+
+                // 用法
+                Usage = !string.IsNullOrEmpty(formula.Usage) ? $"用法: {formula.Usage}" : "用法信息暂无";
+
+                // 主治
+                Indications = !string.IsNullOrEmpty(formula.Indications) ? $"主治: {formula.Indications}" : "主治信息暂无";
+
+                Logger.LogDebug("加载验方详情: {FormulaName}", formula.Name);
             }
-
-            // 注释：Source字段已从FormulaDto中删除
-            // if (!string.IsNullOrWhiteSpace(SelectedFormula.Source))
-            // {
-            //     preview += $"来源：{SelectedFormula.Source}\n";
-            // }
-
-            if (!string.IsNullOrWhiteSpace(SelectedFormula.Effect))
+            catch (Exception ex)
             {
-                preview += $"功效：{SelectedFormula.Effect}\n";
+                Logger.LogError(ex, "加载验方详情时发生异常");
+                ClearDetails();
             }
-
-            if (!string.IsNullOrWhiteSpace(SelectedFormula.Remark))
-            {
-                preview += $"备注：{SelectedFormula.Remark}\n";
-            }
-
-            preview += $"\n创建时间：{SelectedFormula.CreateTime:yyyy-MM-dd HH:mm}";
-
-            PreviewText = preview;
         }
 
-        private void ExecuteSelectFormula(FormulaDto formula)
+        /// <summary>
+        /// 清空详情
+        /// </summary>
+        private void ClearDetails()
         {
-            SelectedFormula = formula;
+            FormulaDetails = string.Empty;
+            Composition = string.Empty;
+            Usage = string.Empty;
+            Indications = string.Empty;
         }
 
-        private void ExecuteViewDetails(FormulaDto formula)
+        #endregion
+
+        #region 命令实现
+
+        /// <summary>
+        /// 重置筛选
+        /// </summary>
+        private void ResetFilter()
         {
-            if (formula == null)
-            {
-                return;
-            }
-
-            // 选中并更新预览
-            SelectedFormula = formula;
-
-            // 可以在这里添加更多详情展示逻辑
-            _dialogService.ShowInformationAsync(
-                PreviewText,
-                $"验方详情 - {formula.Name}");
+            SearchText = string.Empty;
+            CategoryFilter = "全部";
+            EffectFilter = "全部";
         }
 
-        private bool CanExecuteConfirm()
-        {
-            return SelectedFormula != null;
-        }
-
-        private void ExecuteConfirm()
+        /// <summary>
+        /// 确定
+        /// </summary>
+        private void Confirm()
         {
             if (SelectedFormula != null)
             {
-                OnFormulaSelected?.Invoke(SelectedFormula);
+                var parameters = new DialogParameters
+                {
+                    { "SelectedFormula", SelectedFormula }
+                };
+
+                RequestClose?.Invoke(new DialogResult(ButtonResult.OK, parameters));
+                Logger.LogInformation("选择验方: {FormulaName}", SelectedFormula.Name);
             }
         }
 
-        private void ExecuteCancel()
+        /// <summary>
+        /// 取消
+        /// </summary>
+        private void Cancel()
         {
-            OnCancelled?.Invoke();
+            RequestClose?.Invoke(new DialogResult(ButtonResult.Cancel));
         }
-    }
 
-    /// <summary>
-    /// 验方分类选项
-    /// </summary>
-    public class FormulaCategoryOption
-    {
-        public string Name { get; set; } = string.Empty;
-        public string Description { get; set; } = string.Empty;
-        public int Count { get; set; } = 0;
+        /// <summary>
+        /// 查看详情
+        /// </summary>
+        private void ViewDetails()
+        {
+            if (SelectedFormula != null)
+            {
+                var detailInfo = GenerateDetailInfo(SelectedFormula);
+                ShowInfoMessage($"验方详情\n\n{detailInfo}");
+            }
+        }
+
+        #endregion
+
+        #region 命令状态检查
+
+        private bool CanConfirm() => SelectedFormula != null && !IsBusy;
+        private bool CanViewDetails() => SelectedFormula != null;
+
+        private void UpdateCommandStates()
+        {
+            ConfirmCommand.RaiseCanExecuteChanged();
+            ViewDetailsCommand.RaiseCanExecuteChanged();
+        }
+
+        #endregion
+
+        #region 辅助方法
+
+        /// <summary>
+        /// 生成详细信息
+        /// </summary>
+        private string GenerateDetailInfo(FormulaDto formula)
+        {
+            var info = $"名称: {formula.Name}\n";
+            info += $"分类: {formula.Category}\n";
+            
+            if (!string.IsNullOrEmpty(formula.Source))
+            {
+                info += $"出处: {formula.Source}\n";
+            }
+
+            if (!string.IsNullOrEmpty(formula.Description))
+            {
+                info += $"描述: {formula.Description}\n";
+            }
+
+            if (formula.Items?.Any() == true)
+            {
+                info += "\n药材组成:\n";
+                foreach (var item in formula.Items)
+                {
+                    info += $"• {item.HerbName} {item.Quantity}{item.Unit}";
+                    if (!string.IsNullOrEmpty(item.Processing))
+                    {
+                        info += $" ({item.Processing})";
+                    }
+                    info += "\n";
+                }
+            }
+
+            if (!string.IsNullOrEmpty(formula.Usage))
+            {
+                info += $"\n用法: {formula.Usage}\n";
+            }
+
+            if (!string.IsNullOrEmpty(formula.Indications))
+            {
+                info += $"\n主治: {formula.Indications}\n";
+            }
+
+            if (!string.IsNullOrEmpty(formula.Contraindications))
+            {
+                info += $"\n禁忌: {formula.Contraindications}\n";
+            }
+
+            if (!string.IsNullOrEmpty(formula.Notes))
+            {
+                info += $"\n备注: {formula.Notes}";
+            }
+
+            return info;
+        }
+
+        /// <summary>
+        /// 检查验方是否符合搜索条件
+        /// </summary>
+        public bool DoesFormulaMatchSearch(FormulaDto formula)
+        {
+            if (string.IsNullOrWhiteSpace(SearchText)) return true;
+
+            return formula.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
+                   formula.Description?.Contains(SearchText, StringComparison.OrdinalIgnoreCase) == true ||
+                   formula.Indications?.Contains(SearchText, StringComparison.OrdinalIgnoreCase) == true;
+        }
+
+        #endregion
     }
 }

@@ -1,4 +1,3 @@
-using LYBT.Desktop.Users.Services;
 using LYBT.Desktop.Users.ViewModels;
 using LYBT.Shared.Interfaces.Services;
 using Prism.Ioc;
@@ -22,8 +21,7 @@ namespace LYBT.Desktop.Users
         /// <inheritdoc/>
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            // 注册简化的服务
-            containerRegistry.RegisterSingleton<IUserService, UserService>();
+            // Services由Core_New/Services统一注册，不在Module中注册
 
             // 注册视图模型 - MVP核心功能
             containerRegistry.Register<UserManagementViewModel>();
@@ -33,7 +31,7 @@ namespace LYBT.Desktop.Users
             // 注册实际存在的视图用于导航
             containerRegistry.RegisterForNavigation<Views.UserManagementView>();
             containerRegistry.RegisterForNavigation<Views.UserDetailView>();
-            
+
             // 注册对话框视图
             containerRegistry.RegisterDialog<Views.ChangePasswordDialog>();
             containerRegistry.RegisterDialog<Views.ResetPasswordDialog>();

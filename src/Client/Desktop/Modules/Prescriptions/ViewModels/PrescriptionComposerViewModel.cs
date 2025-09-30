@@ -1,105 +1,130 @@
+using System;
 using System.Collections.ObjectModel;
-using System.Windows.Input;
-using AutoMapper;
-using LYBT.Desktop.Core.Events;
+using System.Linq;
+using System.Threading.Tasks;
+using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Models.ViewModels.Base;
+using LYBT.Desktop.Modules.Prescriptions.ViewModels;
+using LYBT.Desktop.Modules.Prescriptions.ViewModels.Components;
 using LYBT.Shared.Interfaces.Services;
-using LYBT.Shared.Models.Contracts.Formula;
-using LYBT.Shared.Models.Contracts.Herbs;
-using LYBT.Shared.Models.Contracts.Prescriptions;
-using LYBT.Shared.Models.Enums;
+using LYBT.Shared.Models.Contracts.MedicalCase;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
-using Prism.Mvvm;
 using Prism.Regions;
-using Prism.Services.Dialogs;
 
-namespace LYBT.Desktop.Prescriptions.ViewModels
+namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
 {
-
     /// <summary>
-    /// 处方组成编辑器ViewModel - UltraThink简化版本
-    /// 专注于处方组成编辑，不包含历史管理、复杂协调等功能
+    /// 处方编写器视图模型 - UltraThink精简架构
+    /// 核心处方编写界面，整合所有处方组件
     /// </summary>
-    public class PrescriptionComposerViewModel : BindableBase, INavigationAware
+    public class PrescriptionComposerViewModel : UnifiedViewModelBase
     {
+        #region 服务依赖
 
-        #region 私有字段
-
-        private readonly IMapper _mapper;
-        private readonly IDialogService _dialogService;
-        private readonly IEventAggregator _eventAggregator;
         private readonly IPrescriptionService _prescriptionService;
-        private readonly IHerbService _herbService;
-        private readonly IFormulaService _formulaService;
-        private readonly ILogger<PrescriptionComposerViewModel> _logger;
+        private readonly IMedicalCaseService _medicalCaseService;
 
-        private PrescriptionDto _currentPrescription = new();
-        private Guid? _currentMedicalCaseId;
+        #endregion
+
+        #region 组件依赖
+
+        private readonly PrescriptionDataManager _dataManager;
+        private readonly PrescriptionCalculator _calculator;
+        private readonly PrescriptionValidator _validator;
+        private readonly PrescriptionCommandHandler _commandHandler;
+        private readonly PrescriptionEventCoordinator _eventCoordinator;
+
+        #endregion
+
+        #region 数据属性
+
+        private Guid _medicalCaseId;
+        private MedicalCaseDto? _currentMedicalCase;
         private string _patientInfo = string.Empty;
-
-        #endregion 私有字段
-
-        #region 构造函数
-
-        public PrescriptionComposerViewModel(
-            IMapper mapper,
-            IDialogService dialogService,
-            IEventAggregator eventAggregator,
-            IPrescriptionService prescriptionService,
-            IHerbService herbService,
-            IFormulaService formulaService,
-            ILogger<PrescriptionComposerViewModel> logger)
-        {
-            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
-            _eventAggregator = eventAggregator ?? throw new ArgumentNullException(nameof(eventAggregator));
-            _prescriptionService = prescriptionService ?? throw new ArgumentNullException(nameof(prescriptionService));
-            _herbService = herbService ?? throw new ArgumentNullException(nameof(herbService));
-            _formulaService = formulaService ?? throw new ArgumentNullException(nameof(formulaService));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-
-            InitializeCommands();
-            InitializePrescription();
-        }
-
-        #endregion 构造函数
-
-        #region 公共属性
+        private string _doctorInfo = string.Empty;
 
         /// <summary>
-        /// 当前处方信息
+        /// 医疗案例ID
         /// </summary>
-        public PrescriptionDto CurrentPrescription
+        public Guid MedicalCaseId
         {
-            get => _currentPrescription;
+            get => _medicalCaseId;
+            set => SetProperty(ref _medicalCaseId, value);
+        }
+
+        /// <summary>
+        /// 当前医疗案例
+        /// </summary>
+        public MedicalCaseDto? CurrentMedicalCase
+        {
+            get => _currentMedicalCase;
             set
             {
-                SetProperty(ref _currentPrescription, value);
-                OnPrescriptionChanged();
+                if (SetProperty(ref _currentMedicalCase, value))
+                {
+                    UpdatePatientInfo();
+                }
             }
         }
 
         /// <summary>
-        /// 患者信息显示
+        /// 患者信息
         /// </summary>
         public string PatientInfo
         {
             get => _patientInfo;
-            private set => SetProperty(ref _patientInfo, value);
+            set => SetProperty(ref _patientInfo, value);
         }
 
         /// <summary>
-        /// 主治（诊断）
+        /// 医生信息
         /// </summary>
-        public string Diagnosis
+        public string DoctorInfo
         {
-            get => _currentPrescription.Indication ?? string.Empty;
+            get => _doctorInfo;
+            set => SetProperty(ref _doctorInfo, value);
+        }
+
+        #endregion
+
+        #region 处方数据绑定
+
+        /// <summary>
+        /// 处方项集合
+        /// </summary>
+        public ObservableCollection<PrescriptionItemViewModel> PrescriptionItems => _dataManager.PrescriptionItems;
+
+        /// <summary>
+        /// 选中的处方项
+        /// </summary>
+        public PrescriptionItemViewModel? SelectedItem
+        {
+            get => _dataManager.SelectedItem;
             set
             {
-                if (_currentPrescription.Indication != value)
+                if (_dataManager.SelectedItem != value)
                 {
-                    _currentPrescription.Indication = value;
+                    _dataManager.SelectedItem = value;
+                    RaisePropertyChanged();
+                    UpdateCommandStates();
+                }
+            }
+        }
+
+        /// <summary>
+        /// 处方编号
+        /// </summary>
+        public string PrescriptionNo
+        {
+            get => _dataManager.PrescriptionNo;
+            set
+            {
+                if (_dataManager.PrescriptionNo != value)
+                {
+                    _dataManager.PrescriptionNo = value;
+                    _dataManager.MarkAsChanged();
                     RaisePropertyChanged();
                 }
             }
@@ -110,594 +135,468 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         /// </summary>
         public int DosageCount
         {
-            get => _currentPrescription.DosageCount;
+            get => _dataManager.DosageCount;
             set
             {
-                if (_currentPrescription.DosageCount != value && value > 0)
+                if (_dataManager.DosageCount != value)
                 {
-                    _currentPrescription.DosageCount = value;
+                    _dataManager.DosageCount = value;
+                    _dataManager.MarkAsChanged();
                     RaisePropertyChanged();
-                    RaisePropertyChanged(nameof(TotalPrice));
+                    RecalculatePrice();
                 }
             }
         }
 
         /// <summary>
-        /// 用法 - 已注释，Usage字段已从PrescriptionDto中删除
+        /// 用法
         /// </summary>
         public string Usage
         {
-            get => string.Empty; // _currentPrescription.Usage ?? string.Empty;
+            get => _dataManager.Usage;
             set
             {
-                // Usage字段已从PrescriptionDto中删除
-                // if (_currentPrescription.Usage != value)
-                // {
-                //     _currentPrescription.Usage = value;
-                //     RaisePropertyChanged();
-                // }
+                if (_dataManager.Usage != value)
+                {
+                    _dataManager.Usage = value;
+                    _dataManager.MarkAsChanged();
+                    RaisePropertyChanged();
+                }
             }
         }
 
         /// <summary>
         /// 医嘱
         /// </summary>
-        public string Advice
+        public string MedicalAdvice
         {
-            get => _currentPrescription.Advice ?? string.Empty;
+            get => _dataManager.MedicalAdvice;
             set
             {
-                if (_currentPrescription.Advice != value)
+                if (_dataManager.MedicalAdvice != value)
                 {
-                    _currentPrescription.Advice = value;
+                    _dataManager.MedicalAdvice = value;
+                    _dataManager.MarkAsChanged();
                     RaisePropertyChanged();
                 }
             }
         }
 
         /// <summary>
-        /// 处方药材项目列表
+        /// 备注
         /// </summary>
-        public ObservableCollection<PrescriptionItemDto> PrescriptionItems { get; private set; } = new();
+        public string Remark
+        {
+            get => _dataManager.Remark;
+            set
+            {
+                if (_dataManager.Remark != value)
+                {
+                    _dataManager.Remark = value;
+                    _dataManager.MarkAsChanged();
+                    RaisePropertyChanged();
+                }
+            }
+        }
+
+        /// <summary>
+        /// 折扣
+        /// </summary>
+        public decimal Discount
+        {
+            get => _dataManager.Discount;
+            set
+            {
+                if (_dataManager.Discount != value)
+                {
+                    _dataManager.Discount = value;
+                    _dataManager.MarkAsChanged();
+                    RaisePropertyChanged();
+                    RecalculatePrice();
+                }
+            }
+        }
+
+        #endregion
+
+        #region 计算属性
+
+        private PrescriptionCalculator.CalculationResult? _calculationResult;
+
+        /// <summary>
+        /// 计算结果
+        /// </summary>
+        public PrescriptionCalculator.CalculationResult? CalculationResult
+        {
+            get => _calculationResult;
+            set => SetProperty(ref _calculationResult, value);
+        }
 
         /// <summary>
         /// 单剂价格
         /// </summary>
-        public decimal SingleDosePrice
-        {
-            get
-            {
-                if (!PrescriptionItems.Any())
-                {
-                    return 0m;
-                }
-
-                return PrescriptionItems.Sum(item => item.UnitPrice * item.Quantity);
-            }
-        }
+        public decimal SingleDosagePrice => CalculationResult?.SingleDosagePrice ?? 0m;
 
         /// <summary>
         /// 总价格
         /// </summary>
-        public decimal TotalPrice => SingleDosePrice * DosageCount;
+        public decimal TotalPrice => CalculationResult?.TotalPrice ?? 0m;
 
-        #endregion 公共属性
+        /// <summary>
+        /// 优惠后价格
+        /// </summary>
+        public decimal DiscountedPrice => CalculationResult?.DiscountedPrice ?? 0m;
 
-        #region 命令属性
+        /// <summary>
+        /// 节省金额
+        /// </summary>
+        public decimal TotalSaved => CalculationResult?.TotalSaved ?? 0m;
 
-        public ICommand AddHerbCommand { get; private set; } = null!;
-        public ICommand ImportFormulaCommand { get; private set; } = null!;
-        public ICommand EditHerbCommand { get; private set; } = null!;
-        public ICommand RemoveHerbCommand { get; private set; } = null!;
-        public ICommand ClearAllCommand { get; private set; } = null!;
-        public ICommand SaveDraftCommand { get; private set; } = null!;
-        public ICommand SavePrescriptionCommand { get; private set; } = null!;
-        public ICommand CloseCommand { get; private set; } = null!;
+        /// <summary>
+        /// 实际总价（等同于优惠后价格）
+        /// </summary>
+        public decimal ActualTotal => DiscountedPrice;
 
-        #endregion 命令属性
+        /// <summary>
+        /// 优惠金额
+        /// </summary>
+        public decimal DiscountAmount => TotalPrice - DiscountedPrice;
 
-        #region 私有方法
+        /// <summary>
+        /// 项目数量
+        /// </summary>
+        public int ItemCount => PrescriptionItems?.Count ?? 0;
 
-        private void InitializeCommands()
+        #endregion
+
+        #region 命令
+
+        /// <summary>
+        /// 保存处方命令
+        /// </summary>
+        public DelegateCommand SaveCommand => _commandHandler.SaveCommand as DelegateCommand ?? new DelegateCommand(() => { });
+
+        /// <summary>
+        /// 清空处方命令
+        /// </summary>
+        public DelegateCommand ClearCommand => _commandHandler.ClearCommand as DelegateCommand ?? new DelegateCommand(() => { });
+
+        /// <summary>
+        /// 添加药材命令
+        /// </summary>
+        public DelegateCommand AddHerbCommand => _commandHandler.AddHerbCommand as DelegateCommand ?? new DelegateCommand(() => { });
+
+        /// <summary>
+        /// 移除药材命令
+        /// </summary>
+        public DelegateCommand<PrescriptionItemViewModel> RemoveHerbCommand => 
+            _commandHandler.RemoveHerbCommand as DelegateCommand<PrescriptionItemViewModel> ?? 
+            new DelegateCommand<PrescriptionItemViewModel>(_ => { });
+
+        /// <summary>
+        /// 导入验方命令
+        /// </summary>
+        public DelegateCommand ImportFormulaCommand => _commandHandler.ImportFormulaCommand as DelegateCommand ?? new DelegateCommand(() => { });
+
+        /// <summary>
+        /// 生成处方编号命令
+        /// </summary>
+        public DelegateCommand GeneratePrescriptionNoCommand => _commandHandler.GeneratePrescriptionNoCommand as DelegateCommand ?? new DelegateCommand(() => { });
+
+        /// <summary>
+        /// 验证处方命令
+        /// </summary>
+        public DelegateCommand ValidateCommand => _commandHandler.ValidateCommand as DelegateCommand ?? new DelegateCommand(() => { });
+
+        /// <summary>
+        /// 重新计算命令
+        /// </summary>
+        public DelegateCommand RecalculateCommand => _commandHandler.RecalculateCommand as DelegateCommand ?? new DelegateCommand(() => { });
+
+        /// <summary>
+        /// 打印预览命令
+        /// </summary>
+        public DelegateCommand PrintPreviewCommand => _commandHandler.PrintPreviewCommand as DelegateCommand ?? new DelegateCommand(() => { });
+
+        /// <summary>
+        /// 返回命令
+        /// </summary>
+        public DelegateCommand BackCommand { get; }
+
+        #endregion
+
+        #region 构造函数
+
+        public PrescriptionComposerViewModel(
+            IEventAggregator eventAggregator,
+            ILoggerFactory loggerFactory,
+            IRegionManager regionManager,
+            IPrescriptionService prescriptionService,
+            IMedicalCaseService medicalCaseService,
+            PrescriptionDataManager dataManager,
+            PrescriptionCalculator calculator,
+            PrescriptionValidator validator,
+            PrescriptionCommandHandler commandHandler,
+            PrescriptionEventCoordinator eventCoordinator,
+            ISessionManager? sessionManager = null,
+            IErrorHandlingService? errorHandlingService = null)
+            : base(eventAggregator, loggerFactory, regionManager, sessionManager, errorHandlingService)
         {
-            AddHerbCommand = new DelegateCommand(async () => await OnAddHerbAsync());
-            ImportFormulaCommand = new DelegateCommand(async () => await OnImportFormulaAsync());
-            EditHerbCommand = new DelegateCommand<PrescriptionItemDto>(OnEditHerb);
-            RemoveHerbCommand = new DelegateCommand<PrescriptionItemDto>(OnRemoveHerb);
-            ClearAllCommand = new DelegateCommand(OnClearAll);
-            SaveDraftCommand = new DelegateCommand(async () => await OnSaveDraftAsync());
-            SavePrescriptionCommand = new DelegateCommand(async () => await OnSavePrescriptionAsync());
-            CloseCommand = new DelegateCommand(OnClose);
+            _prescriptionService = prescriptionService ?? throw new ArgumentNullException(nameof(prescriptionService));
+            _medicalCaseService = medicalCaseService ?? throw new ArgumentNullException(nameof(medicalCaseService));
+            _dataManager = dataManager ?? throw new ArgumentNullException(nameof(dataManager));
+            _calculator = calculator ?? throw new ArgumentNullException(nameof(calculator));
+            _validator = validator ?? throw new ArgumentNullException(nameof(validator));
+            _commandHandler = commandHandler ?? throw new ArgumentNullException(nameof(commandHandler));
+            _eventCoordinator = eventCoordinator ?? throw new ArgumentNullException(nameof(eventCoordinator));
+
+            // 设置命令处理器的依赖
+            _commandHandler.SetDependencies(_dataManager, _validator, _calculator);
+
+            // 初始化自有命令
+            BackCommand = new DelegateCommand(Back);
+
+            // 订阅事件
+            SubscribeToEvents();
+
+            // 设置当前医生信息
+            UpdateDoctorInfo();
         }
 
-        private void InitializePrescription()
-        {
-            _currentPrescription = new PrescriptionDto
-            {
-                Id = Guid.NewGuid(),
-                DosageCount = 7
-                // Usage 和 DosageForm 字段已从PrescriptionDto中删除
-            };
-        }
+        #endregion
 
-        private void OnPrescriptionChanged()
+        #region 生命周期
+
+        /// <summary>
+        /// 页面导航时调用
+        /// </summary>
+        protected override async Task OnNavigatedToAsync(NavigationContext navigationContext)
         {
-            // 同步药材列表
-            PrescriptionItems.Clear();
-            if (_currentPrescription.Items?.Any() == true)
+            await base.OnNavigatedToAsync(navigationContext);
+
+            try
             {
-                foreach (var item in _currentPrescription.Items)
+                // 获取参数
+                if (navigationContext.Parameters.ContainsKey("MedicalCaseId"))
                 {
-                    PrescriptionItems.Add(item);
+                    MedicalCaseId = navigationContext.Parameters.GetValue<Guid>("MedicalCaseId");
                 }
-            }
 
-            // 刷新价格相关属性
-            RaisePropertyChanged(nameof(SingleDosePrice));
-            RaisePropertyChanged(nameof(TotalPrice));
-        }
-
-        #endregion 私有方法
-
-        #region 命令处理
-
-        /// <summary>
-        /// 添加药材
-        /// </summary>
-        private Task OnAddHerbAsync()
-        {
-            try
-            {
-                _logger.LogInformation("开始选择药材");
-
-                // 调用Herbs模块选择药材
-                var dialogParameters = new DialogParameters();
-                _dialogService.ShowDialog("HerbSelectionDialog", dialogParameters, r =>
+                if (MedicalCaseId != Guid.Empty)
                 {
-                    if (r.Result == ButtonResult.OK && r.Parameters.ContainsKey("SelectedHerbs"))
-                    {
-                        var selectedHerbs = r.Parameters.GetValue<HerbDto[]>("SelectedHerbs");
-                        AddSelectedHerbs(selectedHerbs);
-                    }
-                });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "添加药材时发生错误");
-            }
-
-            return Task.CompletedTask;
-        }
-
-        /// <summary>
-        /// 导入验方
-        /// </summary>
-        private Task OnImportFormulaAsync()
-        {
-            try
-            {
-                _logger.LogInformation("开始选择验方模板");
-
-                // 调用Formula模块选择验方
-                var dialogParameters = new DialogParameters();
-                _dialogService.ShowDialog("FormulaSelectionDialog", dialogParameters, r =>
+                    await InitializeAsync();
+                }
+                else
                 {
-                    if (r.Result == ButtonResult.OK && r.Parameters.ContainsKey("SelectedFormula"))
-                    {
-                        var selectedFormula = r.Parameters.GetValue<FormulaDto>("SelectedFormula");
-                        ApplyFormulaTemplate(selectedFormula);
-                    }
-                });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "导入验方时发生错误");
-            }
-
-            return Task.CompletedTask;
-        }
-
-        /// <summary>
-        /// 编辑药材
-        /// </summary>
-        private void OnEditHerb(PrescriptionItemDto item)
-        {
-            if (item == null)
-            {
-                return;
-            }
-
-            try
-            {
-                var dialogParameters = new DialogParameters
-                {
-                    { "PrescriptionItem", item }
-                };
-
-                _dialogService.ShowDialog("PrescriptionItemEditDialog", dialogParameters, r =>
-                {
-                    if (r.Result == ButtonResult.OK)
-                    {
-                        RefreshPriceCalculation();
-                    }
-                });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "编辑药材时发生错误: {HerbName}", item.HerbName);
-            }
-        }
-
-        /// <summary>
-        /// 移除药材
-        /// </summary>
-        private void OnRemoveHerb(PrescriptionItemDto item)
-        {
-            if (item == null)
-            {
-                return;
-            }
-
-            try
-            {
-                PrescriptionItems.Remove(item);
-                _currentPrescription.Items.Remove(item);
-                RefreshPriceCalculation();
-
-                _logger.LogInformation("已移除药材: {HerbName}", item.HerbName);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "移除药材时发生错误: {HerbName}", item.HerbName);
-            }
-        }
-
-        /// <summary>
-        /// 清空所有药材
-        /// </summary>
-        private void OnClearAll()
-        {
-            try
-            {
-                if (PrescriptionItems.Any())
-                {
-                    // 确认对话框
-                    _dialogService.ShowDialog(
-                        "ConfirmDialog",
-                        new DialogParameters { { "Message", "确定要清空所有药材吗？" } },
-                        r =>
-                        {
-                            if (r.Result == ButtonResult.OK)
-                            {
-                                PrescriptionItems.Clear();
-                                _currentPrescription.Items.Clear();
-                                RefreshPriceCalculation();
-                                _logger.LogInformation("已清空所有药材");
-                            }
-                        });
+                    await ShowErrorMessageAsync("未提供有效的医疗案例ID");
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "清空药材时发生错误");
+                Logger.LogError(ex, "初始化处方编写器时发生异常");
+                await ShowErrorMessageAsync("初始化失败，请稍后重试");
             }
         }
 
+        #endregion
+
+        #region 初始化
+
         /// <summary>
-        /// 保存草稿
+        /// 初始化数据
         /// </summary>
-        private async Task OnSaveDraftAsync()
+        private async Task InitializeAsync()
         {
             try
             {
-                _logger.LogInformation("保存处方草稿");
+                SetIsBusy(true, "正在初始化处方数据...");
 
-                // 基础验证
-                if (string.IsNullOrWhiteSpace(Diagnosis))
-                {
-                    ShowMessage("请输入诊断信息");
-                    return;
-                }
+                // 加载医疗案例信息
+                await LoadMedicalCaseAsync();
 
-                // 设置为草稿状态并保存
-                _currentPrescription.Status = CommonStatus.Disabled; // 草稿状态
-                await SavePrescriptionCore();
+                // 初始化处方数据管理器
+                await _dataManager.InitializeAsync(MedicalCaseId);
 
-                ShowMessage("草稿保存成功");
+                // 初始计算
+                RecalculatePrice();
+
+                Logger.LogInformation("处方编写器初始化完成");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "保存草稿时发生错误");
-                ShowMessage("保存草稿失败");
+                Logger.LogError(ex, "初始化处方编写器失败");
+                throw;
             }
-        }
-
-        /// <summary>
-        /// 保存处方
-        /// </summary>
-        private async Task OnSavePrescriptionAsync()
-        {
-            try
+            finally
             {
-                _logger.LogInformation("保存处方");
-
-                // 完整验证
-                if (!ValidatePrescription())
-                {
-                    return;
-                }
-
-                // 设置为正式状态并保存
-                _currentPrescription.Status = CommonStatus.Enabled; // 正式状态
-                await SavePrescriptionCore();
-
-                ShowMessage("处方保存成功");
-
-                // 发布处方保存事件 - Name字段已删除，使用空字符串
-                _eventAggregator.GetEvent<PrescriptionSavedEvent>()
-                    .Publish(new PrescriptionSavedEventArgs
-                    {
-                        PrescriptionId = _currentPrescription.Id,
-                        Prescription = _currentPrescription,
-                        IsNew = true // 根据实际情况设定
-                    });
+                SetIsBusy(false);
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "保存处方时发生错误");
-                ShowMessage("保存处方失败");
-            }
-        }
-
-        /// <summary>
-        /// 关闭
-        /// </summary>
-        private void OnClose()
-        {
-            // 检查是否有未保存的更改
-            if (HasUnsavedChanges())
-            {
-                _dialogService.ShowDialog(
-                    "ConfirmDialog",
-                    new DialogParameters { { "Message", "有未保存的更改，确定要关闭吗？" } },
-                    r =>
-                    {
-                        if (r.Result == ButtonResult.OK)
-                        {
-                            CloseView();
-                        }
-                    });
-            }
-            else
-            {
-                CloseView();
-            }
-        }
-
-        #endregion 命令处理
-
-        #region 辅助方法
-
-        /// <summary>
-        /// 添加选中的药材
-        /// </summary>
-        private void AddSelectedHerbs(HerbDto[] herbs)
-        {
-            if (herbs?.Any() != true)
-            {
-                return;
-            }
-
-            foreach (var herb in herbs)
-            {
-                // 检查是否已存在
-                if (PrescriptionItems.Any(x => x.HerbId == herb.Id))
-                {
-                    _logger.LogWarning("药材 {HerbName} 已存在于处方中", herb.Name);
-                    continue;
-                }
-
-                var item = new PrescriptionItemDto
-                {
-                    Id = Guid.NewGuid(),
-                    HerbId = herb.Id,
-                    HerbName = herb.Name,
-                    Quantity = 10, // 默认用量
-                    Unit = herb.Unit,
-                    UnitPrice = herb.Price
-                };
-
-                PrescriptionItems.Add(item);
-                _currentPrescription.Items.Add(item);
-            }
-
-            RefreshPriceCalculation();
-            _logger.LogInformation("已添加 {Count} 味药材", herbs.Length);
-        }
-
-        /// <summary>
-        /// 应用验方模板
-        /// </summary>
-        private void ApplyFormulaTemplate(FormulaDto formula)
-        {
-            if (formula?.Items?.Any() != true)
-            {
-                return;
-            }
-
-            // 清空现有药材（可选择性清空）
-            _dialogService.ShowDialog(
-                "ConfirmDialog",
-                new DialogParameters { { "Message", "是否清空现有药材后导入验方？" } },
-                r =>
-                {
-                    if (r.Result == ButtonResult.OK)
-                    {
-                        PrescriptionItems.Clear();
-                        _currentPrescription.Items.Clear();
-                    }
-
-                    // 导入验方药材
-                    foreach (var formulaItem in formula.Items)
-                    {
-                        var item = new PrescriptionItemDto
-                        {
-                            Id = Guid.NewGuid(),
-                            HerbId = formulaItem.HerbId,
-                            HerbName = formulaItem.HerbName,
-                            Quantity = formulaItem.Quantity,
-                            Unit = formulaItem.Unit,
-                            UnitPrice = formulaItem.UnitPrice
-                        };
-
-                        PrescriptionItems.Add(item);
-                        _currentPrescription.Items.Add(item);
-                    }
-
-                    // 设置验方来源
-                    _currentPrescription.FormulaSource = formula.Name;
-
-                    RefreshPriceCalculation();
-                    _logger.LogInformation("已导入验方: {FormulaName}", formula.Name);
-                });
-        }
-
-        /// <summary>
-        /// 刷新价格计算
-        /// </summary>
-        private void RefreshPriceCalculation()
-        {
-            RaisePropertyChanged(nameof(SingleDosePrice));
-            RaisePropertyChanged(nameof(TotalPrice));
-        }
-
-        /// <summary>
-        /// 验证处方数据
-        /// </summary>
-        private bool ValidatePrescription()
-        {
-            if (string.IsNullOrWhiteSpace(Diagnosis))
-            {
-                ShowMessage("请输入诊断信息");
-                return false;
-            }
-
-            if (!PrescriptionItems.Any())
-            {
-                ShowMessage("请添加至少一味中药材");
-                return false;
-            }
-
-            if (DosageCount <= 0)
-            {
-                ShowMessage("剂数必须大于0");
-                return false;
-            }
-
-            return true;
-        }
-
-        /// <summary>
-        /// 保存处方核心逻辑
-        /// </summary>
-        private async Task SavePrescriptionCore()
-        {
-            // 这里调用后端服务保存处方
-            // await _prescriptionService.SaveAsync(_currentPrescription);
-
-            // 暂时模拟保存成功
-            await Task.Delay(500);
-        }
-
-        /// <summary>
-        /// 检查是否有未保存的更改
-        /// </summary>
-        private bool HasUnsavedChanges()
-        {
-            // 简单检查：如果有诊断或药材，就认为有更改
-            return !string.IsNullOrWhiteSpace(Diagnosis) || PrescriptionItems.Any();
-        }
-
-        /// <summary>
-        /// 关闭视图
-        /// </summary>
-        private void CloseView()
-        {
-            // 发布关闭事件或进行导航
-            _eventAggregator.GetEvent<PrescriptionComposerClosedEvent>()
-                .Publish(new PrescriptionComposerClosedEventArgs());
-        }
-
-        /// <summary>
-        /// 显示消息
-        /// </summary>
-        private void ShowMessage(string message)
-        {
-            _dialogService.ShowDialog(
-                "MessageDialog",
-                new DialogParameters { { "Message", message } },
-                r => { /* 回调处理，这里不需要特殊处理 */ });
-        }
-
-        #endregion 辅助方法
-
-        #region INavigationAware 实现
-
-        /// <inheritdoc/>
-        public void OnNavigatedTo(NavigationContext navigationContext)
-        {
-            // 接收医疗案例ID参数
-            if (navigationContext.Parameters.TryGetValue<object>("MedicalCaseId", out var medicalCaseIdParam)
-                && medicalCaseIdParam is Guid medicalCaseId)
-            {
-                _currentMedicalCaseId = medicalCaseId;
-                _currentPrescription.MedicalCaseId = medicalCaseId;
-
-                _logger.LogInformation("处方编辑器导航到医疗案例: {MedicalCaseId}", medicalCaseId);
-
-                // 加载医疗案例相关信息
-                _ = LoadMedicalCaseInfoAsync(medicalCaseId);
-            }
-
-            // 接收患者信息参数
-            if (navigationContext.Parameters.TryGetValue("PatientInfo", out string patientInfo))
-            {
-                PatientInfo = patientInfo;
-            }
-        }
-
-        /// <inheritdoc/>
-        public bool IsNavigationTarget(NavigationContext navigationContext)
-        {
-            return true;
-        }
-
-        /// <inheritdoc/>
-        public void OnNavigatedFrom(NavigationContext navigationContext)
-        {
-            // 清理资源
         }
 
         /// <summary>
         /// 加载医疗案例信息
         /// </summary>
-        private Task LoadMedicalCaseInfoAsync(Guid medicalCaseId)
+        private async Task LoadMedicalCaseAsync()
         {
             try
             {
-                // 这里可以调用服务加载医疗案例信息
-                // var medicalCase = await _medicalCaseService.GetByIdAsync(medicalCaseId);
-                // 更新患者信息显示
-                _logger.LogInformation("已加载医疗案例信息: {MedicalCaseId}", medicalCaseId);
+                var result = await _medicalCaseService.GetByIdAsync(MedicalCaseId);
+                if (result.IsSuccess && result.Data != null)
+                {
+                    CurrentMedicalCase = result.Data;
+                }
+                else
+                {
+                    Logger.LogWarning("未找到医疗案例，ID: {MedicalCaseId}", MedicalCaseId);
+                }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "加载医疗案例信息失败: {MedicalCaseId}", medicalCaseId);
+                Logger.LogError(ex, "加载医疗案例失败，ID: {MedicalCaseId}", MedicalCaseId);
             }
-
-            return Task.CompletedTask;
         }
 
-        #endregion INavigationAware 实现
+        #endregion
+
+        #region 事件处理
+
+        /// <summary>
+        /// 订阅事件
+        /// </summary>
+        private void SubscribeToEvents()
+        {
+            // 订阅价格重算事件
+            _commandHandler.OnPriceRecalculated += OnPriceRecalculated;
+
+            // 订阅保存成功事件
+            _commandHandler.OnPrescriptionSaved += OnPrescriptionSaved;
+
+            // 订阅清空事件
+            _commandHandler.OnPrescriptionCleared += OnPrescriptionCleared;
+        }
+
+        private void OnPriceRecalculated()
+        {
+            RecalculatePrice();
+        }
+
+        private void OnPrescriptionSaved()
+        {
+            // 处方保存成功后的操作
+            Logger.LogInformation("处方保存成功");
+        }
+
+        private void OnPrescriptionCleared()
+        {
+            // 处方清空后的操作
+            RecalculatePrice();
+        }
+
+        #endregion
+
+        #region 命令实现
+
+        /// <summary>
+        /// 返回
+        /// </summary>
+        private void Back()
+        {
+            NavigateTo("MainRegion", "PrescriptionManagementView");
+        }
+
+        /// <summary>
+        /// 重新计算价格
+        /// </summary>
+        private void RecalculatePrice()
+        {
+            try
+            {
+                CalculationResult = _calculator.CalculatePrescriptionPrice(
+                    PrescriptionItems, 
+                    DosageCount, 
+                    Discount);
+
+                // 通知价格相关属性变更
+                RaisePropertyChanged(nameof(TotalPrice));
+                RaisePropertyChanged(nameof(ActualTotal));
+                RaisePropertyChanged(nameof(DiscountAmount));
+                RaisePropertyChanged(nameof(ItemCount));
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "重新计算价格时发生异常");
+            }
+        }
+
+        #endregion
+
+        #region 辅助方法
+
+        /// <summary>
+        /// 更新患者信息
+        /// </summary>
+        private void UpdatePatientInfo()
+        {
+            if (CurrentMedicalCase != null)
+            {
+                PatientInfo = $"患者: {CurrentMedicalCase.PatientName} | 性别: {CurrentMedicalCase.PatientGender} | 年龄: {CurrentMedicalCase.PatientAge}";
+            }
+            else
+            {
+                PatientInfo = "患者信息未加载";
+            }
+        }
+
+        /// <summary>
+        /// 更新医生信息
+        /// </summary>
+        private void UpdateDoctorInfo()
+        {
+            if (SessionManager?.CurrentUser != null)
+            {
+                DoctorInfo = $"医生: {SessionManager.CurrentUser.RealName} | 科室: {SessionManager.CurrentUser.Role}";
+            }
+            else
+            {
+                DoctorInfo = "医生信息未获取";
+            }
+        }
+
+        /// <summary>
+        /// 更新命令状态
+        /// </summary>
+        private void UpdateCommandStates()
+        {
+            // 命令状态由各自的CanExecute方法控制
+            // 这里可以添加额外的状态更新逻辑
+        }
+
+        #endregion
+
+        #region 资源清理
+
+        /// <summary>
+        /// 清理资源
+        /// </summary>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                // 取消事件订阅
+                if (_commandHandler != null)
+                {
+                    _commandHandler.OnPriceRecalculated -= OnPriceRecalculated;
+                    _commandHandler.OnPrescriptionSaved -= OnPrescriptionSaved;
+                    _commandHandler.OnPrescriptionCleared -= OnPrescriptionCleared;
+                }
+
+                // 清理事件协调器
+                _eventCoordinator?.Dispose();
+            }
+
+            base.Dispose(disposing);
+        }
+
+        #endregion
     }
 }

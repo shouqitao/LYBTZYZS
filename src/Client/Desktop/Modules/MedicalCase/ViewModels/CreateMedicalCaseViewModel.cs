@@ -1,192 +1,289 @@
-using LYBT.Desktop.Core.Interfaces.Services;
-using LYBT.Desktop.Core.ViewModels.Base;
-using LYBT.Desktop.Core.Events;
+using System;
+using System.ComponentModel.DataAnnotations;
+using System.Threading.Tasks;
+using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Shared.Interfaces.Services;
-using LYBT.Shared.Models.Contracts.Consultation;
+using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.MedicalCase;
-using LYBT.Shared.Models.Contracts.Prescriptions;
+using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
-using System.Windows.Input;
+using Prism.Regions;
 
 namespace LYBT.Desktop.MedicalCase.ViewModels
 {
     /// <summary>
-    /// 创建医疗案例视图模型 - 支持聚合根模式（MedicalCase + Consultation + 可选Prescription）
+    /// 创建医疗案例视图模型 - UltraThink简化架构
     /// </summary>
-    public class CreateMedicalCaseViewModel : ModernViewModelBase
+    public class CreateMedicalCaseViewModel : UnifiedViewModelBase
     {
+        #region 服务依赖
+
         private readonly IMedicalCaseService _medicalCaseService;
-        private readonly ILogger<CreateMedicalCaseViewModel> _logger;
 
-        #region Properties
+        #endregion
 
-        private MedicalCaseCreateDto _medicalCase = new();
+        #region 属性
+
+        private string _caseNumber = string.Empty;
+        private Guid? _patientId;
+        private string _patientName = string.Empty;
+        private string _chiefComplaint = string.Empty;
+        private string _presentIllnessHistory = string.Empty;
+        private string _pastMedicalHistory = string.Empty;
+        private CaseStatus _status = CaseStatus.Active;
+
         /// <summary>
-        /// 医案基础信息
+        /// 案例编号
         /// </summary>
-        public MedicalCaseCreateDto MedicalCase
+        [Required(ErrorMessage = "案例编号不能为空")]
+        [StringLength(50, ErrorMessage = "案例编号长度不能超过50个字符")]
+        public string CaseNumber
         {
-            get => _medicalCase;
-            set => SetProperty(ref _medicalCase, value);
-        }
-
-        private ConsultationCreateDto _consultation = new();
-        /// <summary>
-        /// 诊疗信息
-        /// </summary>
-        public ConsultationCreateDto Consultation
-        {
-            get => _consultation;
-            set => SetProperty(ref _consultation, value);
-        }
-
-        private PrescriptionCreateDto? _prescription;
-        /// <summary>
-        /// 处方信息（可选）
-        /// </summary>
-        public PrescriptionCreateDto? Prescription
-        {
-            get => _prescription;
-            set => SetProperty(ref _prescription, value);
-        }
-
-        private bool _includePrescription;
-        /// <summary>
-        /// 是否包含处方
-        /// </summary>
-        public bool IncludePrescription
-        {
-            get => _includePrescription;
+            get => _caseNumber;
             set
             {
-                if (SetProperty(ref _includePrescription, value))
+                if (SetProperty(ref _caseNumber, value))
                 {
-                    if (value && Prescription == null)
-                    {
-                        Prescription = new PrescriptionCreateDto();
-                    }
-                    else if (!value)
-                    {
-                        Prescription = null;
-                    }
+                    ValidateProperty();
                 }
             }
         }
 
-        #endregion
-
-        #region Commands
+        /// <summary>
+        /// 患者ID
+        /// </summary>
+        public Guid? PatientId
+        {
+            get => _patientId;
+            set => SetProperty(ref _patientId, value);
+        }
 
         /// <summary>
-        /// 保存命令
+        /// 患者姓名
         /// </summary>
-        public ICommand SaveCommand { get; }
+        [Required(ErrorMessage = "患者姓名不能为空")]
+        public string PatientName
+        {
+            get => _patientName;
+            set
+            {
+                if (SetProperty(ref _patientName, value))
+                {
+                    ValidateProperty();
+                }
+            }
+        }
+
+        /// <summary>
+        /// 主诉
+        /// </summary>
+        [Required(ErrorMessage = "主诉不能为空")]
+        [StringLength(500, ErrorMessage = "主诉长度不能超过500个字符")]
+        public string ChiefComplaint
+        {
+            get => _chiefComplaint;
+            set
+            {
+                if (SetProperty(ref _chiefComplaint, value))
+                {
+                    ValidateProperty();
+                }
+            }
+        }
+
+        /// <summary>
+        /// 现病史
+        /// </summary>
+        [StringLength(2000, ErrorMessage = "现病史长度不能超过2000个字符")]
+        public string PresentIllnessHistory
+        {
+            get => _presentIllnessHistory;
+            set
+            {
+                if (SetProperty(ref _presentIllnessHistory, value))
+                {
+                    ValidateProperty();
+                }
+            }
+        }
+
+        /// <summary>
+        /// 既往史
+        /// </summary>
+        [StringLength(1000, ErrorMessage = "既往史长度不能超过1000个字符")]
+        public string PastMedicalHistory
+        {
+            get => _pastMedicalHistory;
+            set
+            {
+                if (SetProperty(ref _pastMedicalHistory, value))
+                {
+                    ValidateProperty();
+                }
+            }
+        }
+
+        /// <summary>
+        /// 案例状态
+        /// </summary>
+        public CaseStatus Status
+        {
+            get => _status;
+            set => SetProperty(ref _status, value);
+        }
+
+        #endregion
+
+        #region 命令
+
+        /// <summary>
+        /// 创建命令
+        /// </summary>
+        public DelegateCommand CreateCommand { get; }
 
         /// <summary>
         /// 取消命令
         /// </summary>
-        public ICommand CancelCommand { get; }
+        public DelegateCommand CancelCommand { get; }
+
+        /// <summary>
+        /// 重置表单命令
+        /// </summary>
+        public DelegateCommand ResetFormCommand { get; }
 
         #endregion
 
+        #region 构造函数
+
         public CreateMedicalCaseViewModel(
-            IMedicalCaseService medicalCaseService,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
+            IRegionManager regionManager,
+            IMedicalCaseService medicalCaseService,
+            ISessionManager? sessionManager = null,
             IErrorHandlingService? errorHandlingService = null)
-            : base(eventAggregator, loggerFactory, errorHandlingService)
+            : base(eventAggregator, loggerFactory, regionManager, sessionManager, errorHandlingService)
         {
             _medicalCaseService = medicalCaseService ?? throw new ArgumentNullException(nameof(medicalCaseService));
-            _logger = loggerFactory.CreateLogger<CreateMedicalCaseViewModel>();
 
-            SaveCommand = new DelegateCommand(ExecuteSave, CanExecuteSave);
-            CancelCommand = new DelegateCommand(ExecuteCancel);
+            // 初始化命令
+            CreateCommand = new DelegateCommand(async () => await CreateAsync(), CanCreate);
+            CancelCommand = new DelegateCommand(Cancel);
+            ResetFormCommand = new DelegateCommand(ResetForm);
+
+            // 属性变更时刷新命令状态
+            PropertyChanged += (s, e) => CreateCommand.RaiseCanExecuteChanged();
+
+            // 生成默认案例编号
+            GenerateDefaultCaseNumber();
         }
 
-        #region Command Methods
+        #endregion
 
-        private async void ExecuteSave()
+        #region 命令实现
+
+        /// <summary>
+        /// 创建医疗案例
+        /// </summary>
+        private async Task CreateAsync()
         {
             try
             {
-                IsBusy = true;
+                SetIsBusy(true, "正在创建医疗案例...");
 
-                // 调用服务创建（使用新的接口签名）
-                var result = await _medicalCaseService.CreateWithDetailsAsync(
-                    MedicalCase,
-                    Consultation,
-                    IncludePrescription ? Prescription : null);
+                var createDto = new MedicalCaseCreateDto
+                {
+                    CaseNumber = CaseNumber.Trim(),
+                    PatientId = PatientId ?? Guid.Empty,
+                    DoctorId = SessionManager?.CurrentUser?.Id ?? Guid.Empty,
+                    ChiefComplaint = ChiefComplaint.Trim(),
+                    PresentIllnessHistory = string.IsNullOrWhiteSpace(PresentIllnessHistory) ? null : PresentIllnessHistory.Trim(),
+                    PastMedicalHistory = string.IsNullOrWhiteSpace(PastMedicalHistory) ? null : PastMedicalHistory.Trim(),
+                    Status = (MedicalCaseStatus)Status
+                };
 
+                var result = await _medicalCaseService.CreateAsync(createDto);
                 if (result.IsSuccess)
                 {
-                    _logger.LogInformation($"成功创建医疗案例 ID: {result.Data?.Id}");
-
-                    // 发布创建成功事件
-                    EventAggregator.GetEvent<MedicalCaseCreatedEvent>()?.Publish(result.Data);
-
-                    // 清空表单
-                    ClearForm();
-
-                    // 显示成功消息
-                    ShowMessage("创建成功", "医疗案例已成功创建");
+                    await ShowSuccessMessageAsync("医疗案例创建成功");
+                    NavigateToMedicalCaseManagement();
                 }
                 else
                 {
-                    _logger.LogWarning($"创建医疗案例失败: {result.ErrorMessage}");
-                    ShowError("创建失败", result.ErrorMessage);
+                    await ShowErrorMessageAsync($"创建医疗案例失败: {result.ErrorMessage}");
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "创建医疗案例时发生异常");
-                ShowError("创建失败", "创建医疗案例时发生异常，请重试");
+                Logger.LogError(ex, "创建医疗案例时发生异常");
+                await ShowErrorMessageAsync("创建医疗案例时发生系统错误，请稍后重试");
             }
             finally
             {
-                IsBusy = false;
+                SetIsBusy(false);
             }
         }
 
-        private bool CanExecuteSave()
+        /// <summary>
+        /// 检查是否可以创建
+        /// </summary>
+        private bool CanCreate()
         {
-            // 基本验证：必须有患者ID和医生ID
-            return MedicalCase != null &&
-                   MedicalCase.PatientId != Guid.Empty &&
-                   MedicalCase.DoctorId != Guid.Empty &&
-                   !IsBusy;
+            return !IsBusy &&
+                   !string.IsNullOrWhiteSpace(CaseNumber) &&
+                   !string.IsNullOrWhiteSpace(PatientName) &&
+                   !string.IsNullOrWhiteSpace(ChiefComplaint) &&
+                   !HasErrors;
         }
 
-        private void ExecuteCancel()
+        /// <summary>
+        /// 取消操作
+        /// </summary>
+        private void Cancel()
         {
-            ClearForm();
-            // 发布取消事件
-            EventAggregator.GetEvent<MedicalCaseCreateCancelledEvent>()?.Publish();
+            NavigateToMedicalCaseManagement();
         }
 
-        private void ClearForm()
+        /// <summary>
+        /// 重置表单
+        /// </summary>
+        private void ResetForm()
         {
-            MedicalCase = new MedicalCaseCreateDto();
-            Consultation = new ConsultationCreateDto();
-            Prescription = null;
-            IncludePrescription = false;
+            CaseNumber = string.Empty;
+            PatientId = null;
+            PatientName = string.Empty;
+            ChiefComplaint = string.Empty;
+            PresentIllnessHistory = string.Empty;
+            PastMedicalHistory = string.Empty;
+            Status = CaseStatus.Active;
+
+            // 清除验证错误
+            ClearAllErrors();
+
+            // 重新生成案例编号
+            GenerateDefaultCaseNumber();
         }
 
         #endregion
 
-        #region Helper Methods
+        #region 辅助方法
 
-        private void ShowMessage(string title, string message)
+        /// <summary>
+        /// 生成默认案例编号
+        /// </summary>
+        private void GenerateDefaultCaseNumber()
         {
-            // TODO: 使用通知服务显示消息
-            _logger.LogInformation($"{title}: {message}");
+            CaseNumber = $"MC{DateTime.Now:yyyyMMddHHmmss}";
         }
 
-        private void ShowError(string title, string message)
+        /// <summary>
+        /// 导航到医疗案例管理页面
+        /// </summary>
+        private void NavigateToMedicalCaseManagement()
         {
-            // TODO: 使用通知服务显示错误
-            _logger.LogError($"{title}: {message}");
+            NavigateTo("MainRegion", "MedicalCaseManagementView");
         }
 
         #endregion

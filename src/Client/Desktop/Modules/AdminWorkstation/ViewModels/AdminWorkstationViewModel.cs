@@ -1,6 +1,6 @@
-﻿using LYBT.Desktop.Core.ViewModels.Base;
-using LYBT.Desktop.Core.Events;
-using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Desktop.Models.ViewModels.Base;
+using LYBT.Desktop.Infrastructure.Events;
+using LYBT.Desktop.Infrastructure.Interfaces;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
@@ -10,14 +10,14 @@ using System.Windows.Input;
 namespace LYBT.Desktop.AdminWorkstation.ViewModels
 {
     /// <summary>
-    /// 管理工作台视图模型
+    /// ��������̨��ͼģ��
     /// </summary>
-    public class AdminWorkstationViewModel : ModernViewModelBase
+    public class AdminWorkstationViewModel : UnifiedViewModelBase
     {
         private readonly IRegionManager _regionManager;
         private string _currentUserName = string.Empty;
 
-        // 导航选中状态
+        // ����ѡ��״̬
         private bool _isUserManagementSelected = true;
         private bool _isHerbManagementSelected;
         private bool _isPatientManagementSelected;
@@ -29,19 +29,19 @@ namespace LYBT.Desktop.AdminWorkstation.ViewModels
             IRegionManager regionManager,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
-            IErrorHandlingService errorHandlingService)
-            : base(eventAggregator, loggerFactory, errorHandlingService)
+            IErrorHandlingService? errorHandlingService = null)
+            : base(eventAggregator, loggerFactory, regionManager, null, errorHandlingService)
         {
             _regionManager = regionManager;
 
-            // 初始化命令
+            // ��ʼ������
             NavigateCommand = new DelegateCommand<string>(ExecuteNavigate);
             LogoutCommand = new DelegateCommand(ExecuteLogout);
 
-            // 订阅登录成功事件
+            // ���ĵ�¼�ɹ��¼�
             EventAggregator.GetEvent<UserLoggedInEvent>().Subscribe(OnUserLoggedIn);
 
-            // 默认导航到用户管理
+            // Ĭ�ϵ������û�����
             ExecuteNavigate("UserManagement");
         }
 
@@ -104,12 +104,12 @@ namespace LYBT.Desktop.AdminWorkstation.ViewModels
         {
             try
             {
-                Logger.LogInformation($"导航到管理模块：{targetView}");
+                Logger.LogInformation($"����������ģ�飺{targetView}");
 
-                // 更新选中状态
+                // ����ѡ��״̬
                 UpdateSelectionState(targetView);
 
-                // 导航到对应的视图
+                // ��������Ӧ����ͼ
                 string viewName = targetView switch
                 {
                     "UserManagement" => "UserManagementView",
@@ -125,14 +125,14 @@ namespace LYBT.Desktop.AdminWorkstation.ViewModels
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, $"导航到{targetView}失败");
-                ShowErrorMessage($"导航失败：{ex.Message}");
+                Logger.LogError(ex, $"������{targetView}ʧ��");
+                ShowErrorMessage($"����ʧ�ܣ�{ex.Message}");
             }
         }
 
         private void UpdateSelectionState(string selectedModule)
         {
-            // 重置所有选中状态
+            // ��������ѡ��״̬
             IsUserManagementSelected = false;
             IsHerbManagementSelected = false;
             IsPatientManagementSelected = false;
@@ -140,7 +140,7 @@ namespace LYBT.Desktop.AdminWorkstation.ViewModels
             IsMedicalCaseManagementSelected = false;
             IsSystemSettingsSelected = false;
 
-            // 设置选中状态
+            // ����ѡ��״̬
             switch (selectedModule)
             {
                 case "UserManagement":
@@ -168,25 +168,25 @@ namespace LYBT.Desktop.AdminWorkstation.ViewModels
         {
             try
             {
-                Logger.LogInformation("用户请求退出登录");
+                Logger.LogInformation("�û������˳���¼");
 
-                // 发布登出事件
+                // �����ǳ��¼�
                 EventAggregator.GetEvent<UserLoggedOutEvent>().Publish();
 
-                // 导航回登录界面
+                // �����ص�¼����
                 _regionManager.RequestNavigate("ContentRegion", "LoginView");
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "退出登录失败");
-                ShowErrorMessage($"退出登录失败：{ex.Message}");
+                Logger.LogError(ex, "�˳���¼ʧ��");
+                ShowErrorMessage($"�˳���¼ʧ�ܣ�{ex.Message}");
             }
         }
 
         private void OnUserLoggedIn(UserLoggedInEventArgs args)
         {
             CurrentUserName = args.Username;
-            Logger.LogInformation($"管理员 {args.Username} 已登录");
+            Logger.LogInformation($"����Ա {args.Username} �ѵ�¼");
         }
 
         #endregion

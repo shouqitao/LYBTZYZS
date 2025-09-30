@@ -1,5 +1,5 @@
-using LYBT.Desktop.Core.Interfaces.Services;
-using LYBT.Desktop.Core.Services.Performance;
+using LYBT.Desktop.Services.ErrorHandling;
+using LYBT.Desktop.Services.Performance;
 using Microsoft.Extensions.Logging;
 using Prism.Ioc;
 using Prism.Modularity;
@@ -139,7 +139,7 @@ namespace LYBT.Desktop.Shell.Services
                 // 记录已加载的模块
                 foreach (var module in _moduleCatalog.Modules)
                 {
-                    _logger.LogDebug("模块已注册: {ModuleName} - {ModuleType}", 
+                    _logger.LogDebug("模块已注册 {ModuleName} - {ModuleType}", 
                         module.ModuleName, module.ModuleType);
                 }
                 
@@ -152,7 +152,7 @@ namespace LYBT.Desktop.Shell.Services
                 
                 if (loadedModules != null)
                 {
-                    _logger.LogInformation("模块协调器初始化完成，已加载模块数: {Count}", 
+                    _logger.LogInformation("模块协调器初始化完成，已加载模块数 {Count}", 
                         ((IEnumerable<object>)loadedModules).Count());
                 }
                 else

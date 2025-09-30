@@ -1,14 +1,14 @@
-using LYBT.Desktop.Core.Interfaces.Services;
-using LYBT.Desktop.Core.ViewModels.Base;
+using LYBT.Desktop.Services.ErrorHandling;
+using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Interfaces.Services;
-using LYBT.Desktop.Core.Events;
+using LYBT.Desktop.Infrastructure.Events;
 using Microsoft.Extensions.Logging;
 using Prism.Events;
 using Prism.Commands;
 using System.Windows.Input;
-using LYBT.Desktop.Auth.Services;
 using Prism.Regions;
 using LYBT.Shared.Models.Contracts.Auth;
+using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using System.Threading.Tasks;
 using System;
@@ -18,7 +18,7 @@ namespace LYBT.Desktop.Auth.ViewModels
     /// <summary>
     /// 登录视图模型 - 实现基于角色的导航
     /// </summary>
-    public class LoginViewModel : ModernViewModelBase
+    public class LoginViewModel : ViewModelBase
     {
         private readonly IAuthService _authService;
         private readonly IRegionManager _regionManager;
@@ -35,9 +35,8 @@ namespace LYBT.Desktop.Auth.ViewModels
             IAuthService authService,
             IRegionManager regionManager,
             IEventAggregator eventAggregator,
-            ILoggerFactory loggerFactory,
-            IErrorHandlingService errorHandlingService)
-            : base(eventAggregator, loggerFactory, errorHandlingService)
+            ILoggerFactory loggerFactory)
+            : base(eventAggregator, loggerFactory)
         {
             _authService = authService;
             _regionManager = regionManager;
@@ -73,13 +72,13 @@ namespace LYBT.Desktop.Auth.ViewModels
             set => SetProperty(ref _rememberMe, value);
         }
 
-        public bool IsLoading
+        public new bool IsLoading
         {
             get => _isLoading;
             set => SetProperty(ref _isLoading, value);
         }
 
-        public string StatusMessage
+        public new string StatusMessage
         {
             get => _statusMessage;
             set
@@ -89,7 +88,7 @@ namespace LYBT.Desktop.Auth.ViewModels
             }
         }
 
-        public string ErrorMessage
+        public new string ErrorMessage
         {
             get => _errorMessage;
             set
@@ -151,7 +150,7 @@ namespace LYBT.Desktop.Auth.ViewModels
                     await _authService.SaveAuthenticationAsync(response.Data);
                     
                     // 根据角色导航到对应的工作台
-                    NavigateBasedOnRole(response.Data.User.Role);
+                    NavigateBasedOnRole(response.Data.User.Role, response.Data.User, response.Data.Token);
                 }
                 else
                 {
@@ -172,7 +171,7 @@ namespace LYBT.Desktop.Auth.ViewModels
             }
         }
 
-        private void NavigateBasedOnRole(UserRole role)
+        private void NavigateBasedOnRole(UserRole role, UserDto user, string token)
         {
             try
             {
@@ -189,12 +188,7 @@ namespace LYBT.Desktop.Auth.ViewModels
                 _regionManager.RequestNavigate("ContentRegion", targetView);
                 
                 // 发布登录成功事件
-                EventAggregator.GetEvent<UserLoggedInEvent>().Publish(new UserLoggedInEventArgs
-                {
-                    Username = Username,
-                    Role = role,
-                    LoginTime = DateTime.Now
-                });
+                EventAggregator.GetEvent<UserLoggedInEvent>().Publish(new UserLoggedInEventArgs(user, token));
             }
             catch (Exception ex)
             {

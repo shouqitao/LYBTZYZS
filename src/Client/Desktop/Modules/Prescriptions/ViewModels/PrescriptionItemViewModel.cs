@@ -1,247 +1,174 @@
-using LYBT.Desktop.Core.Models.Prescriptions;
-using Prism.Mvvm;
+using System;
+using System.ComponentModel.DataAnnotations;
+using LYBT.Desktop.Models.ViewModels.Base;
+using LYBT.Shared.Models.Contracts.Prescriptions;
+using LYBT.Shared.Models.Contracts.Herbs;
+using Microsoft.Extensions.Logging;
+using Prism.Events;
+using Prism.Regions;
+using LYBT.Desktop.Infrastructure.Interfaces;
 
-namespace LYBT.Desktop.Prescriptions.ViewModels
+namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
 {
-
     /// <summary>
-    /// 处方项视图模型
-    /// 封装单个处方药材项的显示和编辑逻辑
+    /// 处方项目视图模型 - UltraThink架构实现
     /// </summary>
-    public class PrescriptionItemViewModel : BindableBase
+    public class PrescriptionItemViewModel : UnifiedViewModelBase
     {
+        #region 属性
 
-        #region 私有字段
-
-        private readonly PrescriptionItem _item;
-
-        #endregion 私有字段
-
-        #region 构造函数
-
-        public PrescriptionItemViewModel(PrescriptionItem item)
-        {
-            _item = item ?? new PrescriptionItem();
-        }
-
-        public PrescriptionItemViewModel() : this(new PrescriptionItem())
-        {
-        }
-
-        #endregion 构造函数
-
-        #region 公共属性
+        private Guid _herbId;
+        private string _herbName = string.Empty;
+        private decimal _dosage;
+        private string _unit = "g";
+        private string? _notes;
+        private decimal _quantity = 1;
+        private decimal _unitPrice;
+        private string? _remark;
 
         /// <summary>
         /// 药材ID
         /// </summary>
+        [Required(ErrorMessage = "药材不能为空")]
         public Guid HerbId
         {
-            get => _item.HerbId;
-            set
-            {
-                _item.HerbId = value;
-                RaisePropertyChanged();
-            }
+            get => _herbId;
+            set => SetProperty(ref _herbId, value);
         }
 
         /// <summary>
         /// 药材名称
         /// </summary>
+        [Required(ErrorMessage = "药材名称不能为空")]
+        [StringLength(100, ErrorMessage = "药材名称长度不能超过100个字符")]
         public string HerbName
         {
-            get => _item.HerbName;
-            set
-            {
-                _item.HerbName = value;
-                RaisePropertyChanged();
-            }
+            get => _herbName;
+            set => SetProperty(ref _herbName, value);
         }
 
         /// <summary>
-        /// 剂量
+        /// 用量
         /// </summary>
-        public decimal Quantity
+        [Required(ErrorMessage = "用量不能为空")]
+        [Range(0.1, 999.9, ErrorMessage = "用量必须在0.1-999.9之间")]
+        public decimal Dosage
         {
-            get => _item.Quantity;
-            set
-            {
-                _item.Quantity = value;
-                RaisePropertyChanged();
-                RaisePropertyChanged(nameof(Subtotal));
-                RaisePropertyChanged(nameof(DisplayText));
-                RaisePropertyChanged(nameof(PriceText));
-            }
+            get => _dosage;
+            set => SetProperty(ref _dosage, value);
         }
 
         /// <summary>
         /// 单位
         /// </summary>
+        [Required(ErrorMessage = "单位不能为空")]
         public string Unit
         {
-            get => _item.Unit;
-            set
-            {
-                _item.Unit = value;
-                RaisePropertyChanged();
-            }
+            get => _unit;
+            set => SetProperty(ref _unit, value);
+        }
+
+        /// <summary>
+        /// 备注
+        /// </summary>
+        [StringLength(500, ErrorMessage = "备注长度不能超过500个字符")]
+        public string? Notes
+        {
+            get => _notes;
+            set => SetProperty(ref _notes, value);
+        }
+
+        /// <summary>
+        /// 数量
+        /// </summary>
+        [Required(ErrorMessage = "数量不能为空")]
+        [Range(0.1, 999.9, ErrorMessage = "数量必须在0.1-999.9之间")]
+        public decimal Quantity
+        {
+            get => _quantity;
+            set => SetProperty(ref _quantity, value);
         }
 
         /// <summary>
         /// 单价
         /// </summary>
+        [Range(0, 99999.99, ErrorMessage = "单价必须在0-99999.99之间")]
         public decimal UnitPrice
         {
-            get => _item.UnitPrice;
-            set
-            {
-                _item.UnitPrice = value;
-                RaisePropertyChanged();
-                RaisePropertyChanged(nameof(Subtotal));
-                RaisePropertyChanged(nameof(PriceText));
-            }
+            get => _unitPrice;
+            set => SetProperty(ref _unitPrice, value);
         }
 
         /// <summary>
-        /// 小计金额
+        /// 备注（别名，与Notes保持兼容）
         /// </summary>
-        public decimal Subtotal => _item.Subtotal;
-
-        /// <summary>
-        /// 来源（验方、手动添加等）
-        /// </summary>
-        public string? Source
+        [StringLength(500, ErrorMessage = "备注长度不能超过500个字符")]
+        public string? Remark
         {
-            get => _item.ImportSource;
-            set
-            {
-                _item.ImportSource = value;
-                RaisePropertyChanged();
-            }
+            get => _remark;
+            set => SetProperty(ref _remark, value);
         }
 
-        /// <summary>
-        /// 备注信息
-        /// </summary>
-        public string Remark
+        #endregion
+
+        #region 构造函数
+
+        public PrescriptionItemViewModel(
+            IEventAggregator eventAggregator,
+            ILoggerFactory loggerFactory,
+            IRegionManager regionManager,
+            ISessionManager? sessionManager = null,
+            IErrorHandlingService? errorHandlingService = null)
+            : base(eventAggregator, loggerFactory, regionManager, sessionManager, errorHandlingService)
         {
-            get => _item.Remark;
-            set
-            {
-                _item.Remark = value;
-                RaisePropertyChanged();
-            }
         }
 
-        /// <summary>
-        /// 显示文本（药材名 + 剂量）
-        /// </summary>
-        public string DisplayText => _item.DisplayText;
-
-        /// <summary>
-        /// 价格显示文本
-        /// </summary>
-        public string PriceText => _item.PriceText;
-
-        #endregion 公共属性
+        #endregion
 
         #region 公共方法
 
         /// <summary>
-        /// 获取底层数据模型
+        /// 转换为处方项目DTO
         /// </summary>
-        public PrescriptionItem GetModel() => _item;
-
-        /// <summary>
-        /// 更新药材信息
-        /// </summary>
-        public void UpdateHerbInfo(string herbName, decimal unitPrice, string unit)
+        public PrescriptionItemDto ToDto()
         {
-            HerbName = herbName;
-            UnitPrice = unitPrice;
-            Unit = unit;
-        }
-
-        /// <summary>
-        /// 设置剂量
-        /// </summary>
-        public void SetQuantity(decimal quantity)
-        {
-            if (quantity > 0)
-            {
-                Quantity = quantity;
-            }
-        }
-
-        /// <summary>
-        /// 重置到初始状态
-        /// </summary>
-        public void Reset()
-        {
-            HerbId = Guid.Empty;
-            HerbName = string.Empty;
-            Quantity = 0;
-            Unit = "g";
-            UnitPrice = 0;
-            Source = string.Empty;
-            Remark = string.Empty;
-        }
-
-        /// <summary>
-        /// 验证数据有效性
-        /// </summary>
-        public bool IsValid()
-        {
-            return HerbId != Guid.Empty
-                && !string.IsNullOrWhiteSpace(HerbName)
-                && Quantity > 0
-                && UnitPrice >= 0;
-        }
-
-        /// <summary>
-        /// 复制当前项目
-        /// </summary>
-        public PrescriptionItemViewModel Clone()
-        {
-            return new PrescriptionItemViewModel(new PrescriptionItem
+            return new PrescriptionItemDto
             {
                 HerbId = HerbId,
                 HerbName = HerbName,
-                Quantity = Quantity,
+                Dosage = Dosage,
                 Unit = Unit,
-                UnitPrice = UnitPrice,
-                ImportSource = Source,
-                Remark = Remark
-            });
+                Notes = Notes
+            };
         }
 
-        #endregion 公共方法
-
-        #region 重写方法
-
-        /// <inheritdoc/>
-        public override string ToString()
+        /// <summary>
+        /// 从DTO加载数据
+        /// </summary>
+        public void LoadFromDto(PrescriptionItemDto dto)
         {
-            return $"{HerbName} {Quantity}{Unit} @ {UnitPrice:F2}元/{Unit}";
+            if (dto == null) return;
+
+            HerbId = dto.HerbId;
+            HerbName = dto.HerbName ?? string.Empty;
+            Dosage = dto.Dosage;
+            Unit = dto.Unit ?? "g";
+            Notes = dto.Notes;
         }
 
-        /// <inheritdoc/>
-        public override bool Equals(object? obj)
+        /// <summary>
+        /// 从药材DTO加载数据
+        /// </summary>
+        public void LoadFromHerb(HerbDto herb, decimal dosage = 10m)
         {
-            if (obj is PrescriptionItemViewModel other)
-            {
-                return HerbId == other.HerbId;
-            }
+            if (herb == null) return;
 
-            return false;
+            HerbId = herb.Id;
+            HerbName = herb.Name ?? string.Empty;
+            Dosage = dosage;
+            Unit = "g";
         }
 
-        /// <inheritdoc/>
-        public override int GetHashCode()
-        {
-            return HerbId.GetHashCode();
-        }
-
-        #endregion 重写方法
+        #endregion
     }
 }

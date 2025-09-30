@@ -13,12 +13,21 @@ namespace LYBT.Shared.Models.Contracts.Formula
     /// </summary>
     public class FormulaDto : StatusDto, IRemarkable
     {
-
         [DisplayName("验方名称")]
         public string Name { get; set; } = string.Empty;
 
         [DisplayName("功效")]
         public string? Effect { get; set; }
+        
+        [DisplayName("主治")]
+        public string? Indications { get; set; }
+        
+        [DisplayName("功效")]
+        public string? Effects { get => Effect; set => Effect = value; }
+        
+        [DisplayName("验方描述")]
+        [StringLength(1000, ErrorMessage = "验方描述长度不能超过1000个字符")]
+        public string? Description { get; set; }
 
         [DisplayName("用法")]
         public string? Usage { get; set; }
@@ -29,10 +38,26 @@ namespace LYBT.Shared.Models.Contracts.Formula
         [DisplayName("是否共享")]
         public bool IsShared { get; set; } = false;
 
+        [DisplayName("来源")]
+        [StringLength(100, ErrorMessage = "来源长度不能超过100个字符")]
+        public string? Source { get; set; }
+
         /// <inheritdoc/>
         [DisplayName("备注")]
         [StringLength(500, ErrorMessage = "备注长度不能超过500个字符")]
         public string? Remark { get; set; }
+
+        [DisplayName("禁忌症")]
+        [StringLength(500, ErrorMessage = "禁忌症长度不能超过500个字符")]
+        public string? Contraindications { get; set; }
+
+        /// <summary>备注别名（兼容性）</summary>
+        [DisplayName("备注")]
+        public string? Notes
+        {
+            get => Remark;
+            set => Remark = value;
+        }
 
         [DisplayName("药材组成")]
         public List<FormulaHerbItemDto> Herbs { get; set; } = new();
@@ -127,7 +152,6 @@ namespace LYBT.Shared.Models.Contracts.Formula
                 return "验方"; // 默认分类
             }
         }
-
     }
 
     /// <summary>
@@ -143,7 +167,6 @@ namespace LYBT.Shared.Models.Contracts.Formula
     /// </summary>
     public class FormulaHerbItemDto : BaseDto
     {
-
         [DisplayName("中药材ID")]
         public Guid HerbId { get; set; }
 
@@ -158,6 +181,9 @@ namespace LYBT.Shared.Models.Contracts.Formula
 
         [DisplayName("炮制方法")]
         public string? Preparation { get; set; }
+
+        [DisplayName("加工方法")]
+        public string? Processing { get => ProcessingMethod; set => ProcessingMethod = value; }
 
         [DisplayName("用法")]
         public string? Usage { get; set; }
@@ -198,10 +224,20 @@ namespace LYBT.Shared.Models.Contracts.Formula
         [StringLength(200, ErrorMessage = "功效描述不能超过200个字符")]
         [DisplayName("功效")]
         public string Effect { get; set; } = string.Empty;
+        [StringLength(1000, ErrorMessage = "验方描述不能超过1000个字符")]
+        [DisplayName("验方描述")]
+        public string? Description { get; set; }
 
         [StringLength(200, ErrorMessage = "用法描述不能超过200个字符")]
         [DisplayName("用法")]
         public string Usage { get; set; } = string.Empty;
+        [StringLength(200, ErrorMessage = "性味归经不能超过200个字符")]
+        [DisplayName("性味归经")]
+        public string? Property { get; set; }
+
+        [StringLength(100, ErrorMessage = "验方分类不能超过100个字符")]
+        [DisplayName("验方分类")]
+        public string? Category { get; set; }
 
         [DisplayName("是否共享")]
         public bool IsShared { get; set; } = false;
@@ -271,6 +307,8 @@ namespace LYBT.Shared.Models.Contracts.Formula
         [Required(ErrorMessage = "验方ID不能为空")]
         [DisplayName("验方ID")]
         public Guid Id { get; set; }
+        [DisplayName("状态")]
+        public CommonStatus Status { get; set; } = CommonStatus.Enabled;
 
         [Required(ErrorMessage = "必须包含至少一味中药材")]
         [DisplayName("中药材组成")]

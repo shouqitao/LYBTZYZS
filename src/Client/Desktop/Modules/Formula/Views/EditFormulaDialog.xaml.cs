@@ -1,6 +1,6 @@
 using System.Windows;
-using LYBT.Desktop.Core.Interfaces;
-using LYBT.Desktop.Core.Models.Common;
+using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Models.ViewModels.Base;
 
 namespace LYBT.Desktop.Formula.Views
 {
@@ -47,11 +47,11 @@ namespace LYBT.Desktop.Formula.Views
             base.OnClosed(e);
         }
 
-        public void Initialize(Guid formulaId)
+        public async void Initialize(Guid formulaId)
         {
             if (DataContext is ViewModels.EditFormulaDialogViewModel viewModel)
             {
-                viewModel.Initialize(formulaId);
+                await viewModel.InitializeAsync(formulaId);
             }
         }
     }

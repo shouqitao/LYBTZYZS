@@ -1,4 +1,4 @@
-using LYBT.Desktop.Prescriptions.Services;
+using LYBT.Desktop.Modules.Prescriptions.ViewModels;
 using LYBT.Shared.Interfaces.Services;
 using Prism.Ioc;
 using Prism.Modularity;
@@ -21,12 +21,11 @@ namespace LYBT.Desktop.Prescriptions
 
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            // 注册简化的服务
-            containerRegistry.RegisterSingleton<IPrescriptionService, PrescriptionService>();
+            // Services由Core_New/Services统一注册，不在Module中注册
 
             // 注册视图模型 - MVP核心功能
-            containerRegistry.Register<ViewModels.PrescriptionManagementViewModel>();
-            containerRegistry.Register<ViewModels.PrescriptionsMainViewModel>();
+            containerRegistry.Register<PrescriptionManagementViewModel>();
+            containerRegistry.Register<PrescriptionsMainViewModel>();
 
             // 注册视图用于导航 - 需要对应视图文件存在
             // containerRegistry.RegisterForNavigation<Views.PrescriptionManagementView>();

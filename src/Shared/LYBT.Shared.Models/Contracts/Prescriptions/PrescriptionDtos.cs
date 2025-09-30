@@ -28,6 +28,9 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
         [DisplayName("剂数")]
         public int DosageCount { get; set; } = 7;
 
+        [DisplayName("用法")]
+        public string? Usage { get; set; }
+
         [DisplayName("折扣")]
         public decimal Discount { get; set; } = 1.0m;
 
@@ -52,6 +55,12 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
         /// <summary>总价格（计算属性）</summary>
         [DisplayName("总价格")]
         public decimal TotalPrice => SingleDosePrice * DosageCount;
+
+        /// <summary>
+        /// 总金额（兼容性别名，映射到TotalPrice）
+        /// </summary>
+        [DisplayName("总金额")]
+        public decimal TotalAmount => TotalPrice;
 
         /// <summary>总重量（计算属性）</summary>
         [DisplayName("总重量")]
@@ -141,6 +150,33 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
     /// </summary>
     public class PrescriptionCreateDto : PrescriptionInputBaseDto
     {
+        /// <summary>
+        /// 处方编号
+        /// </summary>
+        [DisplayName("处方编号")]
+        [StringLength(50)]
+        public string? PrescriptionNumber { get; set; }
+
+        /// <summary>
+        /// 患者姓名
+        /// </summary>
+        [DisplayName("患者姓名")]
+        [StringLength(50)]
+        public string? PatientName { get; set; }
+
+        /// <summary>
+        /// 医生姓名
+        /// </summary>
+        [DisplayName("医生姓名")]
+        [StringLength(50)]
+        public string? DoctorName { get; set; }
+
+        /// <summary>
+        /// 备注
+        /// </summary>
+        [DisplayName("备注")]
+        [StringLength(500)]
+        public string? Notes { get; set; }
 
         [Required(ErrorMessage = "患者ID不能为空")]
         [DisplayName("患者ID")]
@@ -172,6 +208,11 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
         [StringLength(100, ErrorMessage = "方剂来源不能超过100个字符")]
         [DisplayName("方剂来源")]
         public string? FormulaSource { get; set; }
+
+        /// <summary>
+        /// 草药项目列表
+        /// </summary>
+        public List<PrescriptionItemCreateDto> Items { get; set; } = new();
     }
 
     /// <summary>
@@ -207,7 +248,6 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
     /// </summary>
     public class PrescriptionItemDto : BaseDto, IRemarkable
     {
-
         [DisplayName("中药材ID")]
         public Guid HerbId { get; set; }
 
@@ -222,6 +262,9 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
 
         [DisplayName("单价")]
         public decimal UnitPrice { get; set; }
+
+        [DisplayName("剂量")]
+        public decimal Dosage { get; set; }
 
         [DisplayName("总价")]
         public decimal TotalPrice { get; set; }
@@ -239,11 +282,56 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
         [DisplayName("备注")]
         [StringLength(500, ErrorMessage = "备注长度不能超过500个字符")]
         public string? Remark { get; set; }
+
+        /// <summary>
+        /// 备注(兼容旧代码)
+        /// </summary>
+        [DisplayName("备注")]
+        public string? Notes { get => Remark; set => Remark = value; }
     }
 
     /// <summary>
     /// 创建处方项目DTO
     /// </summary>
+    /// <summary>
+    /// 处方项更新DTO
+    /// </summary>
+    public class PrescriptionItemUpdateDto
+    {
+        /// <summary>
+        /// 草药ID
+        /// </summary>
+        [DisplayName("草药ID")]
+        public Guid HerbId { get; set; }
+
+        /// <summary>
+        /// 数量
+        /// </summary>
+        [DisplayName("数量")]
+        [Range(0.01, 9999.99)]
+        public decimal Quantity { get; set; }
+
+        /// <summary>
+        /// 单位
+        /// </summary>
+        [DisplayName("单位")]
+        [StringLength(20)]
+        public string Unit { get; set; } = string.Empty;
+
+        /// <summary>
+        /// 剂量
+        /// </summary>
+        [DisplayName("剂量")]
+        public decimal Dosage { get; set; }
+
+        /// <summary>
+        /// 备注
+        /// </summary>
+        [DisplayName("备注")]
+        [StringLength(200)]
+        public string? Remark { get; set; }
+    }
+
     public class PrescriptionItemCreateDto
     {
 

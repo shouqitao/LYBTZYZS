@@ -2,8 +2,12 @@
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.Extensions.Logging;
+using LYBT.Desktop.Modules.Prescriptions.ViewModels;
+using Prism.Events;
+using Prism.Regions;
+using LYBT.Desktop.Infrastructure.Interfaces;
 
-namespace LYBT.Desktop.Prescriptions.ViewModels.Components
+namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
 {
 
     /// <summary>
@@ -16,13 +20,28 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components
     {
         private readonly IPrescriptionService _prescriptionService;
         private readonly ILogger<PrescriptionDataManager> _logger;
+        private readonly IEventAggregator _eventAggregator;
+        private readonly ILoggerFactory _loggerFactory;
+        private readonly IRegionManager _regionManager;
+        private readonly ISessionManager? _sessionManager;
+        private readonly IErrorHandlingService? _errorHandlingService;
 
         public PrescriptionDataManager(
             IPrescriptionService prescriptionService,
-            ILogger<PrescriptionDataManager> logger)
+            ILogger<PrescriptionDataManager> logger,
+            IEventAggregator eventAggregator,
+            ILoggerFactory loggerFactory,
+            IRegionManager regionManager,
+            ISessionManager? sessionManager = null,
+            IErrorHandlingService? errorHandlingService = null)
         {
             _prescriptionService = prescriptionService ?? throw new ArgumentNullException(nameof(prescriptionService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _eventAggregator = eventAggregator ?? throw new ArgumentNullException(nameof(eventAggregator));
+            _loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
+            _regionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
+            _sessionManager = sessionManager;
+            _errorHandlingService = errorHandlingService;
         }
 
         #region 核心数据属性
@@ -115,7 +134,12 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components
                     {
                         foreach (var item in existingPrescription.Items)
                         {
-                            var viewModel = new PrescriptionItemViewModel
+                            var viewModel = new PrescriptionItemViewModel(
+                                _eventAggregator,
+                                _loggerFactory,
+                                _regionManager,
+                                _sessionManager,
+                                _errorHandlingService)
                             {
                                 HerbId = item.HerbId,
                                 HerbName = item.HerbName,

@@ -1,6 +1,6 @@
-﻿using LYBT.Desktop.Core.ViewModels.Base;
-using LYBT.Desktop.Core.Events;
-using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Desktop.Models.ViewModels.Base;
+using LYBT.Desktop.Infrastructure.Events;
+using LYBT.Desktop.Infrastructure.Interfaces;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
@@ -13,25 +13,25 @@ using Prism.Mvvm;
 namespace LYBT.Desktop.ClinicalWorkstation.ViewModels
 {
     /// <summary>
-    /// 诊疗工作台视图模型
+    /// ���ƹ���̨��ͼģ��
     /// </summary>
-    public class ClinicalWorkstationViewModel : ModernViewModelBase
+    public class ClinicalWorkstationViewModel : UnifiedViewModelBase
     {
         private readonly IRegionManager _regionManager;
 
         private string _currentUserName = string.Empty;
-        private string _currentPatientName = "未选择";
+        private string _currentPatientName = "δѡ��";
         private int _selectedTabIndex = 0;
 
-        // 诊断数据
+        // �������
         private DiagnosisData _diagnosis = new();
         private ObservableCollection<DiagnosisHistoryItem> _diagnosisHistory = new();
 
-        // 处方数据
+        // ��������
         private ObservableCollection<PrescriptionGridItem> _prescriptionGrid = new();
         private ObservableCollection<FormulaTemplate> _formulaTemplates = new();
         private FormulaTemplate? _selectedFormula;
-        private string _cookingInstructions = "水煎服，一日一剂，分两次温服";
+        private string _cookingInstructions = "ˮ�����һ��һ�����������·�";
         private int _prescriptionCount = 7;
         private decimal _unitPrice = 0;
         private decimal _totalPrice = 0;
@@ -40,15 +40,15 @@ namespace LYBT.Desktop.ClinicalWorkstation.ViewModels
             IRegionManager regionManager,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
-            IErrorHandlingService errorHandlingService)
-            : base(eventAggregator, loggerFactory, errorHandlingService)
+            IErrorHandlingService? errorHandlingService = null)
+            : base(eventAggregator, loggerFactory, regionManager, null, errorHandlingService)
         {
             _regionManager = regionManager;
 
-            // 初始化导航服务
+            // ��ʼ����������
             NavigationService = new Services.ClinicalNavigator(regionManager);
 
-            // 初始化命令
+            // ��ʼ������
             SelectPatientCommand = new DelegateCommand(ExecuteSelectPatient);
             LogoutCommand = new DelegateCommand(ExecuteLogout);
             ImportDiagnosisCommand = new DelegateCommand<DiagnosisHistoryItem>(ExecuteImportDiagnosis);
@@ -60,13 +60,13 @@ namespace LYBT.Desktop.ClinicalWorkstation.ViewModels
             SavePrescriptionCommand = new DelegateCommand(ExecuteSavePrescription);
             PrintPrescriptionCommand = new DelegateCommand(ExecutePrintPrescription);
 
-            // 订阅登录成功事件
+            // ���ĵ�¼�ɹ��¼�
             EventAggregator.GetEvent<UserLoggedInEvent>().Subscribe(OnUserLoggedIn);
 
-            // 初始化处方网格（4×6）
+            // ��ʼ����������4��6��
             InitializePrescriptionGrid();
 
-            // 初始化测试数据
+            // ��ʼ����������
             InitializeTestData();
         }
 
@@ -90,7 +90,7 @@ namespace LYBT.Desktop.ClinicalWorkstation.ViewModels
             set => SetProperty(ref _currentPatientName, value);
         }
 
-        // 新增导航Tab索引
+        // ��������Tab����
         private int _mainTabIndex = 0;
 
         public int MainTabIndex
@@ -105,7 +105,7 @@ namespace LYBT.Desktop.ClinicalWorkstation.ViewModels
             set => SetProperty(ref _selectedTabIndex, value);
         }
 
-        // 诊断属性
+        // �������
         public DiagnosisData Diagnosis
         {
             get => _diagnosis;
@@ -118,7 +118,7 @@ namespace LYBT.Desktop.ClinicalWorkstation.ViewModels
             set => SetProperty(ref _diagnosisHistory, value);
         }
 
-        // 处方属性
+        // ��������
         public ObservableCollection<PrescriptionGridItem> PrescriptionGrid
         {
             get => _prescriptionGrid;
@@ -185,7 +185,7 @@ namespace LYBT.Desktop.ClinicalWorkstation.ViewModels
 
         private void InitializePrescriptionGrid()
         {
-            // 初始化4×6网格（24个格子）
+            // ��ʼ��4��6����24�����ӣ�
             for (int i = 0; i < 24; i++)
             {
                 PrescriptionGrid.Add(new PrescriptionGridItem());
@@ -194,41 +194,41 @@ namespace LYBT.Desktop.ClinicalWorkstation.ViewModels
 
         private void InitializeTestData()
         {
-            // 添加测试历史诊断数据
+            // ���Ӳ�����ʷ�������
             DiagnosisHistory.Add(new DiagnosisHistoryItem
             {
                 Date = DateTime.Now.AddDays(-7),
-                ChiefComplaint = "失眠多梦，心悸",
-                Diagnosis = "心脾两虚证",
-                DoctorName = "张医生"
+                ChiefComplaint = "ʧ�߶��Σ��ļ�",
+                Diagnosis = "��Ƣ����֤",
+                DoctorName = "��ҽ��"
             });
 
             DiagnosisHistory.Add(new DiagnosisHistoryItem
             {
                 Date = DateTime.Now.AddDays(-14),
-                ChiefComplaint = "头晕目眩，乏力",
-                Diagnosis = "气血不足证",
-                DoctorName = "李医生"
+                ChiefComplaint = "ͷ��Ŀѣ������",
+                Diagnosis = "��Ѫ����֤",
+                DoctorName = "��ҽ��"
             });
 
-            // 添加测试验方模板
-            FormulaTemplates.Add(new FormulaTemplate { Name = "四物汤", Id = 1 });
-            FormulaTemplates.Add(new FormulaTemplate { Name = "六君子汤", Id = 2 });
-            FormulaTemplates.Add(new FormulaTemplate { Name = "逍遥散", Id = 3 });
+            // ���Ӳ����鷽ģ��
+            FormulaTemplates.Add(new FormulaTemplate { Name = "������", Id = 1 });
+            FormulaTemplates.Add(new FormulaTemplate { Name = "��������", Id = 2 });
+            FormulaTemplates.Add(new FormulaTemplate { Name = "��ңɢ", Id = 3 });
         }
 
         private void ExecuteSelectPatient()
         {
             try
             {
-                Logger.LogInformation("选择患者");
-                // TODO: 弹出患者选择对话框
-                CurrentPatientName = "张三（测试）";
+                Logger.LogInformation("ѡ����");
+                // TODO: ��������ѡ��Ի���
+                CurrentPatientName = "���������ԣ�";
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "选择患者失败");
-                ShowErrorMessage($"选择患者失败：{ex.Message}");
+                Logger.LogError(ex, "ѡ����ʧ��");
+                ShowErrorMessage($"ѡ����ʧ�ܣ�{ex.Message}");
             }
         }
 
@@ -236,18 +236,18 @@ namespace LYBT.Desktop.ClinicalWorkstation.ViewModels
         {
             try
             {
-                Logger.LogInformation("医生请求退出登录");
+                Logger.LogInformation("ҽ�������˳���¼");
 
-                // 发布登出事件
+                // �����ǳ��¼�
                 EventAggregator.GetEvent<UserLoggedOutEvent>().Publish();
 
-                // 导航回登录界面
+                // �����ص�¼����
                 _regionManager.RequestNavigate("ContentRegion", "LoginView");
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "退出登录失败");
-                ShowErrorMessage($"退出登录失败：{ex.Message}");
+                Logger.LogError(ex, "�˳���¼ʧ��");
+                ShowErrorMessage($"�˳���¼ʧ�ܣ�{ex.Message}");
             }
         }
 
@@ -255,42 +255,42 @@ namespace LYBT.Desktop.ClinicalWorkstation.ViewModels
         {
             if (item == null) return;
 
-            Logger.LogInformation($"导入历史诊断：{item.Date:yyyy-MM-dd} - {item.ChiefComplaint}");
+            Logger.LogInformation($"������ʷ��ϣ�{item.Date:yyyy-MM-dd} - {item.ChiefComplaint}");
 
-            // 导入诊断数据到当前诊断
+            // ����������ݵ���ǰ���
             Diagnosis.ChiefComplaint = item.ChiefComplaint;
             Diagnosis.DiagnosisResult = item.Diagnosis;
         }
 
         private void ExecuteSearchHerb()
         {
-            Logger.LogInformation("打开药材搜索");
-            // TODO: 弹出药材搜索对话框
+            Logger.LogInformation("��ҩ������");
+            // TODO: ����ҩ�������Ի���
         }
 
         private void ExecuteImportFormula()
         {
             if (SelectedFormula == null)
             {
-                SetStatus("请先选择一个验方");
+                SetStatus("����ѡ��һ���鷽");
                 return;
             }
 
-            Logger.LogInformation($"导入验方：{SelectedFormula.Name}");
-            // TODO: 导入验方到处方网格
+            Logger.LogInformation($"�����鷽��{SelectedFormula.Name}");
+            // TODO: �����鷽����������
         }
 
         private void ExecuteShowHistory()
         {
-            Logger.LogInformation("显示历史处方");
-            // TODO: 弹出历史处方对话框
+            Logger.LogInformation("��ʾ��ʷ����");
+            // TODO: ������ʷ�����Ի���
         }
 
         private void ExecuteClearPrescription()
         {
-            Logger.LogInformation("清空处方");
+            Logger.LogInformation("��մ���");
 
-            // 清空所有处方格子
+            // ������д�������
             foreach (var item in PrescriptionGrid)
             {
                 item.HerbName = string.Empty;
@@ -303,28 +303,28 @@ namespace LYBT.Desktop.ClinicalWorkstation.ViewModels
 
         private void ExecuteSavePrescription()
         {
-            Logger.LogInformation("保存处方");
-            // TODO: 保存处方到数据库
-            SetStatus("处方已保存");
+            Logger.LogInformation("���洦��");
+            // TODO: ���洦�������ݿ�
+            SetStatus("�����ѱ���");
         }
 
         private void ExecutePrintPrescription()
         {
-            Logger.LogInformation("打印处方");
-            // TODO: 调用打印功能
-            SetStatus("正在打印处方...");
+            Logger.LogInformation("��ӡ����");
+            // TODO: ���ô�ӡ����
+            SetStatus("���ڴ�ӡ����...");
         }
 
         private void CalculateTotalPrice()
         {
-            // 计算总价
+            // �����ܼ�
             TotalPrice = UnitPrice * PrescriptionCount;
         }
 
         private void OnUserLoggedIn(UserLoggedInEventArgs args)
         {
             CurrentUserName = args.Username;
-            Logger.LogInformation($"医生 {args.Username} 已登录诊疗工作台");
+            Logger.LogInformation($"ҽ�� {args.Username} �ѵ�¼���ƹ���̨");
         }
 
         #endregion
@@ -333,7 +333,7 @@ namespace LYBT.Desktop.ClinicalWorkstation.ViewModels
     #region Data Models
 
     /// <summary>
-    /// 诊断数据模型
+    /// �������ģ��
     /// </summary>
     public class DiagnosisData : BindableBase
     {
@@ -357,7 +357,7 @@ namespace LYBT.Desktop.ClinicalWorkstation.ViewModels
     }
 
     /// <summary>
-    /// 历史诊断项
+    /// ��ʷ�����
     /// </summary>
     public class DiagnosisHistoryItem
     {
@@ -368,7 +368,7 @@ namespace LYBT.Desktop.ClinicalWorkstation.ViewModels
     }
 
     /// <summary>
-    /// 处方网格项
+    /// ����������
     /// </summary>
     public class PrescriptionGridItem : BindableBase
     {
@@ -380,7 +380,7 @@ namespace LYBT.Desktop.ClinicalWorkstation.ViewModels
     }
 
     /// <summary>
-    /// 验方模板
+    /// �鷽ģ��
     /// </summary>
     public class FormulaTemplate
     {

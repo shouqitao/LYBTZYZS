@@ -60,16 +60,17 @@
     <PackageReference Include="Prism.Wpf" />
   </ItemGroup>
 
-
   <!-- Logging -->
   <ItemGroup Label="Logging">
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
   </ItemGroup>
 
   <!-- Project References -->
-  <ItemGroup Label="Infrastructure Dependencies">
-    <ProjectReference Include="..\..\Core\LYBT.Desktop.Core.csproj" />
-    <ProjectReference Include="..\..\Services\LYBT.Desktop.Services.csproj" />
+  <ItemGroup Label="Infrastructure Dependencies - 简化三层架构">
+    <ProjectReference Include="..\..\Core_New\LYBT.Desktop.Infrastructure\LYBT.Desktop.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\Core_New\LYBT.Desktop.Models\LYBT.Desktop.Models.csproj" />
+
+    <ProjectReference Include="..\..\Core_New\LYBT.Desktop.Services\LYBT.Desktop.Services.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,5 +1,5 @@
-﻿using LYBT.Desktop.Core.Interfaces.Services;
-using LYBT.Desktop.Core.ViewModels.Base;
+using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
@@ -12,25 +12,25 @@ using Prism.Regions;
 namespace LYBT.Desktop.Users.ViewModels
 {
     /// <summary>
-    /// 用户管理视图模型 - Phase 1架构重构版本
-    /// 基于新的ListPageViewModel实现完整的用户管理功能
+    /// �û�������ͼģ�� - Phase 1�ܹ��ع��汾
+    /// �����µ�ListPageViewModelʵ���������û���������
     /// </summary>
     public class UserManagementViewModel : UnifiedListViewModelBase<UserDto>
     {
-        #region 依赖服务
+        #region ��������
 
         private readonly IUserService _userService;
 
         #endregion
 
-        #region 筛选属性
+        #region ɸѡ����
 
         private UserRole? _selectedRole;
         private CommonStatus? _selectedStatus;
         private bool _showInactiveUsers;
 
         /// <summary>
-        /// 选中的角色筛选
+        /// ѡ�еĽ�ɫɸѡ
         /// </summary>
         public UserRole? SelectedRole
         {
@@ -45,7 +45,7 @@ namespace LYBT.Desktop.Users.ViewModels
         }
 
         /// <summary>
-        /// 选中的状态筛选
+        /// ѡ�е�״̬ɸѡ
         /// </summary>
         public CommonStatus? SelectedStatus
         {
@@ -60,7 +60,7 @@ namespace LYBT.Desktop.Users.ViewModels
         }
 
         /// <summary>
-        /// 是否显示已禁用用户
+        /// �Ƿ���ʾ�ѽ����û�
         /// </summary>
         public bool ShowInactiveUsers
         {
@@ -75,47 +75,47 @@ namespace LYBT.Desktop.Users.ViewModels
         }
 
         /// <summary>
-        /// 角色选项
+        /// ��ɫѡ��
         /// </summary>
         public IEnumerable<UserRole> RoleOptions { get; }
 
         /// <summary>
-        /// 状态选项
+        /// ״̬ѡ��
         /// </summary>
         public IEnumerable<CommonStatus> StatusOptions { get; }
 
         #endregion
 
-        #region 用户特定命令
+        #region �û��ض�����
 
         /// <summary>
-        /// 编辑用户命令
+        /// �༭�û�����
         /// </summary>
         public DelegateCommand<UserDto> EditUserCommand { get; private set; }
 
         /// <summary>
-        /// 重置密码命令
+        /// ������������
         /// </summary>
         public DelegateCommand<UserDto> ResetPasswordCommand { get; private set; }
 
         /// <summary>
-        /// 启用/禁用用户命令
+        /// ����/�����û�����
         /// </summary>
         public DelegateCommand<UserDto> ToggleUserStatusCommand { get; private set; }
 
         /// <summary>
-        /// 查看详情命令
+        /// �鿴��������
         /// </summary>
         public DelegateCommand<UserDto> ViewDetailsCommand { get; private set; }
 
         /// <summary>
-        /// 清除筛选命令
+        /// ���ɸѡ����
         /// </summary>
         public DelegateCommand ClearFiltersCommand { get; private set; }
 
         #endregion
 
-        #region 构造函数
+        #region ���캯��
 
         public UserManagementViewModel(
             IEventAggregator eventAggregator,
@@ -128,23 +128,23 @@ namespace LYBT.Desktop.Users.ViewModels
         {
             _userService = userService ?? throw new ArgumentNullException(nameof(userService));
 
-            // 初始化选项
+            // ��ʼ��ѡ��
             RoleOptions = Enum.GetValues<UserRole>();
             StatusOptions = Enum.GetValues<CommonStatus>();
 
-            // 初始化页面属性
-            PageTitle = "用户管理";
+            // ��ʼ��ҳ������
+            PageTitle = "�û�����";
             PageSize = 20;
 
-            // 初始化用户特定命令
+            // ��ʼ���û��ض�����
             InitializeUserCommands();
 
-            Logger.LogDebug("用户管理ViewModel已初始化");
+            Logger.LogDebug("�û�����ViewModel�ѳ�ʼ��");
         }
 
         #endregion
 
-        #region 命令初始化
+        #region �����ʼ��
 
         private void InitializeUserCommands()
         {
@@ -157,25 +157,25 @@ namespace LYBT.Desktop.Users.ViewModels
 
         #endregion
 
-        #region 数据加载
+        #region ���ݼ���
 
         /// <summary>
-        /// 获取数据项
+        /// ��ȡ������
         /// </summary>
         protected override async Task<IEnumerable<UserDto>> GetItemsAsync(int page, int pageSize, string? searchText)
         {
-            Logger.LogDebug("加载用户数据: 第{Page}页, 每页{PageSize}项, 关键词: {SearchText}", page, pageSize, searchText);
+            Logger.LogDebug("�����û�����: ��{Page}ҳ, ÿҳ{PageSize}��, �ؼ���: {SearchText}", page, pageSize, searchText);
 
             try
             {
-                // 构建查询条件，这里简化处理，实际可能需要更复杂的查询参数传递
+                // ������ѯ����������򻯴�����ʵ�ʿ�����Ҫ�����ӵĲ�ѯ��������
                 var result = await _userService.GetPagedAsync(page, pageSize, searchText);
 
                 if (result.IsSuccess && result.Data != null)
                 {
                     var pagedData = result.Data;
 
-                    // 如果有筛选条件，在客户端进一步过滤（实际项目中应该在服务端处理）
+                    // �����ɸѡ�������ڿͻ��˽�һ�����ˣ�ʵ����Ŀ��Ӧ���ڷ���˴�����
                     var filteredItems = pagedData.Items.AsEnumerable();
 
                     if (SelectedRole.HasValue)
@@ -193,22 +193,22 @@ namespace LYBT.Desktop.Users.ViewModels
                         filteredItems = filteredItems.Where(u => u.Status == CommonStatus.Enabled);
                     }
 
-                    // 设置总数
+                    // ��������
                     TotalCount = pagedData.TotalCount;
                     return filteredItems;
                 }
                 else
                 {
-                    Logger.LogWarning("加载用户数据失败: {ErrorMessage}", result.ErrorMessage);
+                    Logger.LogWarning("�����û�����ʧ��: {ErrorMessage}", result.ErrorMessage);
                     TotalCount = 0;
                     return new List<UserDto>();
                 }
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "加载用户数据时发生异常");
-                var context = new ErrorContext { Operation = "加载用户数据", Module = nameof(UserManagementViewModel) };
-                await ErrorHandlingService?.HandleExceptionAsync(ex, context);
+                Logger.LogError(ex, "�����û�����ʱ�����쳣");
+                var contextMessage = $"加载用户列表 - 模块:{nameof(UserManagementViewModel)}";
+                await ErrorHandlingService?.HandleExceptionAsync(ex, contextMessage);
 
                 TotalCount = 0;
                 return new List<UserDto>();
@@ -217,39 +217,39 @@ namespace LYBT.Desktop.Users.ViewModels
 
         #endregion
 
-        #region 用户操作实现
+        #region �û�����ʵ��
 
         /// <summary>
-        /// 添加新用户
+        /// �������û�
         /// </summary>
         protected override async Task OnExecuteAddAsync()
         {
-            Logger.LogDebug("执行添加新用户");
+            Logger.LogDebug("ִ���������û�");
 
-            // 导航到用户创建页面
+            // �������û�����ҳ��
             NavigateTo("ContentRegion", "UserCreateView", new Prism.Regions.NavigationParameters
             {
-                { "title", "新增用户" }
+                { "title", "�����û�" }
             });
         }
 
         /// <summary>
-        /// 删除用户
+        /// ɾ���û�
         /// </summary>
         protected override async Task OnExecuteDeleteAsync(UserDto user)
         {
             if (user == null) return;
 
-            Logger.LogDebug("删除用户: {UserId} - {UserName}", user.Id, user.UserName);
+            Logger.LogDebug("ɾ���û�: {UserId} - {UserName}", user.Id, user.UserName);
 
             var result = await _userService.DeleteAsync(user.Id);
             if (!result.IsSuccess)
             {
-                Logger.LogWarning("删除用户失败: {ErrorMessage}", result.ErrorMessage);
-                throw new InvalidOperationException($"删除用户失败: {result.ErrorMessage}");
+                Logger.LogWarning("ɾ���û�ʧ��: {ErrorMessage}", result.ErrorMessage);
+                throw new InvalidOperationException($"ɾ���û�ʧ��: {result.ErrorMessage}");
             }
 
-            Logger.LogInformation("成功删除用户: {UserName}", user.UserName);
+            Logger.LogInformation("�ɹ�ɾ���û�: {UserName}", user.UserName);
         }
 
         /// <summary>
@@ -280,7 +280,7 @@ namespace LYBT.Desktop.Users.ViewModels
 
             if (failedUsers.Count > 0)
             {
-                var errorMessage = $"部分用户删除失败:{string.Join("", failedUsers)}";
+                var errorMessage = $"以下用户删除失败：{string.Join("; ", failedUsers)}";
                 Logger.LogWarning("批量删除部分失败: {FailedCount}/{TotalCount}", failedUsers.Count, users.Count);
                 throw new InvalidOperationException(errorMessage);
             }
@@ -290,26 +290,26 @@ namespace LYBT.Desktop.Users.ViewModels
 
         #endregion
 
-        #region 用户特定命令实现
+        #region �û��ض�����ʵ��
 
         /// <summary>
-        /// 编辑用户
+        /// �༭�û�
         /// </summary>
         private void ExecuteEditUser(UserDto user)
         {
             if (user == null) return;
 
-            Logger.LogDebug("编辑用户: {UserId} - {UserName}", user.Id, user.UserName);
+            Logger.LogDebug("�༭�û�: {UserId} - {UserName}", user.Id, user.UserName);
 
             NavigateTo("ContentRegion", "UserEditView", new Prism.Regions.NavigationParameters
             {
                 { "userId", user.Id },
-                { "title", $"编辑用户 - {user.RealName}" }
+                { "title", $"�༭�û� - {user.RealName}" }
             });
         }
 
         /// <summary>
-        /// 是否可以编辑用户
+        /// �Ƿ���Ա༭�û�
         /// </summary>
         private bool CanExecuteEditUser(UserDto user)
         {
@@ -317,7 +317,7 @@ namespace LYBT.Desktop.Users.ViewModels
         }
 
         /// <summary>
-        /// 重置密码
+        /// ��������
         /// </summary>
         private async Task ExecuteResetPasswordAsync(UserDto user)
         {
@@ -325,22 +325,22 @@ namespace LYBT.Desktop.Users.ViewModels
 
             await ExecuteSafelyAsync(async () =>
             {
-                Logger.LogDebug("重置用户密码: {UserId} - {UserName}", user.Id, user.UserName);
+                Logger.LogDebug("�����û�����: {UserId} - {UserName}", user.Id, user.UserName);
 
-                // 这里应该调用密码重置服务，或者打开重置密码对话框
-                // 暂时记录日志
-                Logger.LogInformation("用户 {UserName} 的密码重置请求已提交", user.UserName);
+                // ����Ӧ�õ����������÷��񣬻��ߴ���������Ի���
+                // ��ʱ��¼��־
+                Logger.LogInformation("�û� {UserName} �����������������ύ", user.UserName);
 
-                // 实际实现可能需要：
-                // 1. 打开重置密码对话框
-                // 2. 调用密码重置API
-                // 3. 发送重置通知
+                // ʵ��ʵ�ֿ�����Ҫ��
+                // 1. ����������Ի���
+                // 2. ������������API
+                // 3. ��������֪ͨ
 
-            }, "重置密码");
+            }, "��������");
         }
 
         /// <summary>
-        /// 是否可以重置密码
+        /// �Ƿ������������
         /// </summary>
         private bool CanExecuteResetPassword(UserDto user)
         {
@@ -348,7 +348,7 @@ namespace LYBT.Desktop.Users.ViewModels
         }
 
         /// <summary>
-        /// 切换用户状态
+        /// �л��û�״̬
         /// </summary>
         private async Task ExecuteToggleUserStatusAsync(UserDto user)
         {
@@ -357,9 +357,9 @@ namespace LYBT.Desktop.Users.ViewModels
             await ExecuteSafelyAsync(async () =>
             {
                 var newStatus = user.Status == CommonStatus.Enabled ? CommonStatus.Disabled : CommonStatus.Enabled;
-                var action = newStatus == CommonStatus.Enabled ? "启用" : "禁用";
+                var action = newStatus == CommonStatus.Enabled ? "����" : "����";
 
-                Logger.LogDebug("{Action}用户: {UserId} - {UserName}", action, user.Id, user.UserName);
+                Logger.LogDebug("{Action}�û�: {UserId} - {UserName}", action, user.Id, user.UserName);
 
                 var updateDto = new UserUpdateDto
                 {
@@ -370,20 +370,20 @@ namespace LYBT.Desktop.Users.ViewModels
                 var result = await _userService.UpdateAsync(user.Id, updateDto);
                 if (result.IsSuccess)
                 {
-                    Logger.LogInformation("成功{Action}用户: {UserName}", action, user.UserName);
-                    await LoadPageAsync(); // 刷新数据
+                    Logger.LogInformation("�ɹ�{Action}�û�: {UserName}", action, user.UserName);
+                    await LoadPageAsync(); // ˢ������
                 }
                 else
                 {
-                    Logger.LogWarning("{Action}用户失败: {ErrorMessage}", action, result.ErrorMessage);
-                    throw new InvalidOperationException($"{action}用户失败: {result.ErrorMessage}");
+                    Logger.LogWarning("{Action}�û�ʧ��: {ErrorMessage}", action, result.ErrorMessage);
+                    throw new InvalidOperationException($"{action}�û�ʧ��: {result.ErrorMessage}");
                 }
 
-            }, user.Status == CommonStatus.Enabled ? "禁用用户" : "启用用户");
+            }, user.Status == CommonStatus.Enabled ? "�����û�" : "�����û�");
         }
 
         /// <summary>
-        /// 是否可以切换用户状态
+        /// �Ƿ�����л��û�״̬
         /// </summary>
         private bool CanExecuteToggleUserStatus(UserDto user)
         {
@@ -391,23 +391,23 @@ namespace LYBT.Desktop.Users.ViewModels
         }
 
         /// <summary>
-        /// 查看详情
+        /// �鿴����
         /// </summary>
         private void ExecuteViewDetails(UserDto user)
         {
             if (user == null) return;
 
-            Logger.LogDebug("查看用户详情: {UserId} - {UserName}", user.Id, user.UserName);
+            Logger.LogDebug("�鿴�û�����: {UserId} - {UserName}", user.Id, user.UserName);
 
             NavigateTo("ContentRegion", "UserDetailsView", new Prism.Regions.NavigationParameters
             {
                 { "userId", user.Id },
-                { "title", $"用户详情 - {user.RealName}" }
+                { "title", $"�û����� - {user.RealName}" }
             });
         }
 
         /// <summary>
-        /// 清除筛选
+        /// ���ɸѡ
         /// </summary>
         private void ExecuteClearFilters()
         {
@@ -418,7 +418,7 @@ namespace LYBT.Desktop.Users.ViewModels
         }
 
         /// <summary>
-        /// 是否有活动筛选
+        /// �Ƿ��лɸѡ
         /// </summary>
         private bool HasActiveFilters =>
             SelectedRole.HasValue ||
@@ -428,7 +428,7 @@ namespace LYBT.Desktop.Users.ViewModels
 
         #endregion
 
-        #region 命令刷新
+        #region ����ˢ��
 
         protected override void RefreshCanExecuteChanged()
         {

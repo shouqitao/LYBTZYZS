@@ -1,10 +1,11 @@
 using System.Windows;
-using LYBT.Desktop.Core.Commands;
-using LYBT.Desktop.Core.Constants;
-using LYBT.Desktop.Core.Events;
-using LYBT.Desktop.Core.Interfaces.Services;
-using LYBT.Desktop.Core.Services.Modules;
-using LYBT.Desktop.Core.ViewModels.Base;
+using LYBT.Desktop.Infrastructure.Commands;
+using LYBT.Desktop.Infrastructure.Constants;
+using LYBT.Desktop.Infrastructure.Events;
+using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Services.ErrorHandling;
+using LYBT.Desktop.Services.Modules;
+using LYBT.Desktop.Models.ViewModels.Base;
 using Microsoft.Extensions.Logging;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
@@ -22,7 +23,7 @@ namespace LYBT.Desktop.Shell.ViewModels;
 /// 集成主题切换、时钟显示、角色基础的工作台切换功能
 /// 支持企业级错误处理和异步操作，适配小型诊所使用需求
 /// </summary>
-public class MainWindowViewModel : ModernViewModelBase
+public class MainWindowViewModel : UnifiedViewModelBase
 {
     private readonly IMainWindowServicesFacade _servicesFacade;
     private readonly IRegionManager _regionManager;
@@ -42,9 +43,9 @@ public class MainWindowViewModel : ModernViewModelBase
         IEventAggregator eventAggregator,
         IMainWindowServicesFacade servicesFacade,
         ILoggerFactory loggerFactory,
-        IErrorHandlingService errorHandlingService,
+        LYBT.Desktop.Infrastructure.Interfaces.IErrorHandlingService errorHandlingService,
         IApplicationCommands applicationCommands,
-        IModuleLoadingService moduleLoadingService) : base(eventAggregator, loggerFactory, errorHandlingService)
+        IModuleLoadingService moduleLoadingService) : base(eventAggregator, loggerFactory, regionManager, null, errorHandlingService)
     {
         _servicesFacade = servicesFacade ?? throw new ArgumentNullException(nameof(servicesFacade));
         _regionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
@@ -95,7 +96,7 @@ public class MainWindowViewModel : ModernViewModelBase
         get => _isLoggedIn;
         set
         {
-            System.Diagnostics.Debug.WriteLine($" MainWindow.IsLoggedIn设置为: {value} (之前: {_isLoggedIn})");
+            System.Diagnostics.Debug.WriteLine($" MainWindow.IsLoggedIn设置为 {value} (之前: {_isLoggedIn})");
             SetProperty(ref _isLoggedIn, value);
             RaisePropertyChanged(nameof(IsNotLoggedIn)); // 确保通知界面更新
         }
@@ -126,10 +127,10 @@ public class MainWindowViewModel : ModernViewModelBase
     /// <summary>显示控件示例命令</summary>
     public DelegateCommand ShowControlExamplesCommand { get; set; }
 
-    /// <summary>快速添加患者命令 (Ctrl+N)</summary>
+    /// <summary>快速添加患者命令(Ctrl+N)</summary>
     public DelegateCommand QuickAddPatientCommand { get; set; }
 
-    /// <summary>快速开始诊疗命令 (Ctrl+Shift+C)</summary>
+    /// <summary>快速开始诊疗命令(Ctrl+Shift+C)</summary>
     public DelegateCommand QuickStartConsultationCommand { get; set; }
 
     /// <summary>显示帮助命令 (F1)</summary>
@@ -143,7 +144,7 @@ public class MainWindowViewModel : ModernViewModelBase
 
     #endregion 命令属性
 
-    #region 全局命令属性 (Phase 3: CompositeCommand)
+    #region 全局命令属性(Phase 3: CompositeCommand)
 
     /// <summary>全局保存命令 (Ctrl+S)</summary>
     public ICommand SaveAllCommand => _applicationCommands.SaveAllCommand;
@@ -363,7 +364,7 @@ public class MainWindowViewModel : ModernViewModelBase
                         await _servicesFacade.AuthenticationService.LogoutAsync();
 
                         // 发布登出事件以清除登录状态消息
-                        EventAggregator.GetEvent<LogoutEvent>().Publish(new LogoutEventArgs { Reason = "Token已过期" });
+                        EventAggregator.GetEvent<LogoutEvent>().Publish(new LogoutEventArgs { Reason = LogoutReason.SessionTimeout, Message = "Token已过期" });
                     }
                     catch (Exception ex)
                     {
@@ -398,7 +399,7 @@ public class MainWindowViewModel : ModernViewModelBase
 
                 if (user != null)
                 {
-                    System.Diagnostics.Debug.WriteLine($" 获取到当前用户: {user.UserName} - {user.RealName}");
+                    System.Diagnostics.Debug.WriteLine($" 获取到当前用户 {user.UserName} - {user.RealName}");
                     CurrentUser = user;
                     IsLoggedIn = true;
 
@@ -407,7 +408,7 @@ public class MainWindowViewModel : ModernViewModelBase
                     ShowControlExamplesCommand.RaiseCanExecuteChanged();
                     UpdateKeyboardShortcutCommands();
 
-                    System.Diagnostics.Debug.WriteLine(" 准备加载主界面内容...");
+                    System.Diagnostics.Debug.WriteLine(" 准备加载主界面内容..");
 
                     // 加载工作台模块
                     await EnsureWorkbenchModulesLoaded(user);
@@ -438,7 +439,7 @@ public class MainWindowViewModel : ModernViewModelBase
     /// <summary>
     /// 登录成功事件处理
     /// </summary>
-    private void OnLoginSuccess(LoginSuccessEventArgs args)
+    private void OnLoginSuccess(UserDto user)
     {
         // 重新检查登录状态
         _ = CheckLoginStatusAsync();
@@ -497,25 +498,25 @@ public class MainWindowViewModel : ModernViewModelBase
         }
 
         // 导航到对应的工作台
-        System.Diagnostics.Debug.WriteLine($" 导航到: {workbenchView}");
+        System.Diagnostics.Debug.WriteLine($" 导航到 {workbenchView}");
         _regionManager.RequestNavigate(RegionNames.ContentRegion, workbenchView, navigationResult =>
         {
             if (navigationResult.Result != true)
             {
                 // 导航失败时显示错误信息
                 var errorMessage = navigationResult.Error?.Message ?? "未知导航错误";
-                System.Diagnostics.Debug.WriteLine($" 工作台导航失败: {errorMessage}");
+                System.Diagnostics.Debug.WriteLine($" 工作台导航失败 {errorMessage}");
 
                 // 异步显示错误对话框
                 _ = Task.Run(async () =>
         {
             await _servicesFacade.CustomDialogService.ShowErrorAsync(
-    $"无法加载工作台: {errorMessage}", "系统错误");
+    $"无法加载工作台 {errorMessage}", "系统错误");
         });
             }
             else
             {
-                System.Diagnostics.Debug.WriteLine($" 成功导航到: {workbenchView}");
+                System.Diagnostics.Debug.WriteLine($" 成功导航到 {workbenchView}");
             }
         });
     }
@@ -561,7 +562,7 @@ public class MainWindowViewModel : ModernViewModelBase
     private async Task LoadBasicModulesAsync()
     {
         await _moduleLoadingService.LoadModulesAsync(
-            "PatientsModule"  // 患者管理是大多数功能的基础
+            new[] { "PatientsModule" }  // 患者管理是大多数功能的基础
         );
     }
 
@@ -571,21 +572,14 @@ public class MainWindowViewModel : ModernViewModelBase
     private async Task LoadAdminModulesAsync()
     {
         // 管理员需要所有模块
-        var results = await _moduleLoadingService.LoadModulesAsync(
+        await _moduleLoadingService.LoadModulesAsync(new[]
+        {
             "HerbsModule",
             "FormulaModule", 
             "ConsultationModule",
             "MedicalCaseModule",
             "PrescriptionsModule"
-        );
-
-        foreach (var kvp in results)
-        {
-            if (!kvp.Value)
-            {
-                Logger.LogWarning("模块 {ModuleName} 加载失败", kvp.Key);
-            }
-        }
+        });
     }
 
     /// <summary>
@@ -594,11 +588,8 @@ public class MainWindowViewModel : ModernViewModelBase
     private async Task LoadMedicalWorkbenchAsync()
     {
         // 加载诊疗工作台及其依赖
-        var success = await _moduleLoadingService.LoadModuleAsync("MedicalWorkbenchModule");
-        if (!success)
-        {
-            Logger.LogWarning("诊疗工作台模块加载失败");
-        }
+        await _moduleLoadingService.LoadModuleAsync("MedicalWorkbenchModule");
+        Logger.LogDebug("诊疗工作台模块加载完成");
     }
 
     /// <summary>
@@ -651,7 +642,7 @@ public class MainWindowViewModel : ModernViewModelBase
     #region UltraThink Phase H: 键盘快捷键功能实现
 
     /// <summary>
-    /// 快速添加患者 (Ctrl+N)
+    /// 快速添加患者(Ctrl+N)
     /// </summary>
     private async Task ExecuteQuickAddPatientAsync()
     {
@@ -673,7 +664,7 @@ public class MainWindowViewModel : ModernViewModelBase
     }
 
     /// <summary>
-    /// 快速开始诊疗 (Ctrl+Shift+C)
+    /// 快速开始诊疗(Ctrl+Shift+C)
     /// </summary>
     private async Task ExecuteQuickStartConsultationAsync()
     {

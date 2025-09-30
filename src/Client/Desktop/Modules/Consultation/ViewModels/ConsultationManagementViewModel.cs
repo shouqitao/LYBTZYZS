@@ -1,7 +1,9 @@
-﻿using System.Collections.ObjectModel;
+using System;
+using System.Collections.ObjectModel;
 using System.Windows.Input;
-using LYBT.Desktop.Core.Interfaces.Services;
-using LYBT.Desktop.Core.ViewModels.Base;
+using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Services.ErrorHandling;
+using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Consultation;
 using Microsoft.Extensions.Logging;
@@ -13,19 +15,19 @@ namespace LYBT.Desktop.Consultation.ViewModels
 {
 
     /// <summary>
-    /// 诊疗记录管理视图模型 - 简化版
-    /// 只负责显示和基本管理诊疗记录，不包含复杂的流程控制
+    /// ���Ƽ�¼������ͼģ�� - �򻯰�
+    /// ֻ������ʾ�ͻ����������Ƽ�¼�����������ӵ����̿���
     /// </summary>
     public class ConsultationManagementViewModel : UnifiedViewModelBase
     {
 
-        #region 服务依赖
+        #region ��������
 
         private readonly IConsultationService _consultationService;
 
-        #endregion 服务依赖
+        #endregion ��������
 
-        #region 属性
+        #region ����
 
         private ObservableCollection<ConsultationDto> _consultations = new();
 
@@ -59,18 +61,18 @@ namespace LYBT.Desktop.Consultation.ViewModels
             set => SetProperty(ref _searchKeyword, value);
         }
 
-        #endregion 属性
+        #endregion ����
 
-        #region 命令
+        #region ����
 
         public ICommand LoadDataCommand { get; }
         public ICommand SearchCommand { get; }
         public ICommand RefreshCommand { get; }
         public ICommand ViewDetailsCommand { get; }
 
-        #endregion 命令
+        #endregion ����
 
-        #region 构造函数
+        #region ���캯��
 
         public ConsultationManagementViewModel(
         IConsultationService consultationService,
@@ -88,13 +90,13 @@ namespace LYBT.Desktop.Consultation.ViewModels
             ViewDetailsCommand = new DelegateCommand(ViewDetails, () => SelectedConsultation != null)
             .ObservesProperty(() => SelectedConsultation);
 
-            // 修复: 使用Task.Run安全初始化，防止未处理异常
+            // �޸�: ʹ��Task.Run��ȫ��ʼ������ֹδ�����쳣
             _ = Task.Run(async () => await InitializeAsync());
         }
 
-        #endregion 构造函数
+        #endregion ���캯��
 
-        #region 初始化
+        #region ��ʼ��
 
         private async Task InitializeAsync()
         {
@@ -104,16 +106,16 @@ namespace LYBT.Desktop.Consultation.ViewModels
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "初始化诊疗管理失败");
+                Logger.LogError(ex, "��ʼ�����ƹ���ʧ��");
 
-                // 提供用户友好的错误提示
-                ShowErrorMessage("诊疗管理模块初始化失败，请尝试刷新页面");
+                // �ṩ�û��ѺõĴ�����ʾ
+                ShowErrorMessage("���ƹ���ģ���ʼ��ʧ�ܣ��볢��ˢ��ҳ��");
             }
         }
 
-        #endregion 初始化
+        #endregion ��ʼ��
 
-        #region 数据操作
+        #region ���ݲ���
 
         private async Task LoadDataAsync()
         {
@@ -139,13 +141,13 @@ namespace LYBT.Desktop.Consultation.ViewModels
                 }
                 else
                 {
-                    ShowErrorMessage($"加载数据失败: {result.Message}");
+                    ShowErrorMessage($"��������ʧ��: {result.Message}");
                 }
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "加载诊疗记录失败");
-                // 加载数据失败
+                Logger.LogError(ex, "�������Ƽ�¼ʧ��");
+                // ��������ʧ��
             }
             finally
             {
@@ -168,11 +170,11 @@ namespace LYBT.Desktop.Consultation.ViewModels
         {
             if (SelectedConsultation != null)
             {
-                // 简单的详情显示，不涉及复杂导航
-                Logger.LogInformation("查看诊疗记录详情: {ConsultationId}", SelectedConsultation.Id);
+                // �򵥵�������ʾ�����漰���ӵ���
+                Logger.LogInformation("�鿴���Ƽ�¼����: {ConsultationId}", SelectedConsultation.Id);
             }
         }
 
-        #endregion 数据操作
+        #endregion ���ݲ���
     }
 }

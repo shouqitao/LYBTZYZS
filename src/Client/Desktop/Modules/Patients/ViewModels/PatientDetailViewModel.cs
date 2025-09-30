@@ -1,9 +1,11 @@
 using System.Windows.Input;
 using AutoMapper;
-using LYBT.Desktop.Core.Constants;
-using LYBT.Desktop.Core.Interfaces.Services;
-using LYBT.Desktop.Core.Services.Navigation;
-using LYBT.Desktop.Core.ViewModels.Base;
+using LYBT.Desktop.Infrastructure.Constants;
+using LYBT.Desktop.Services.Dialogs;
+using LYBT.Desktop.Services.Session;
+using LYBT.Desktop.Services.ErrorHandling;
+using LYBT.Desktop.Services.Print;
+using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Patients;
 using Microsoft.Extensions.Logging;
@@ -18,14 +20,14 @@ namespace LYBT.Desktop.Patients.ViewModels
     /// 患者详情视图模型 - UltraThink v2.0架构
     /// 提供患者详细信息查看功能
     /// </summary>
-    public class PatientDetailViewModel : UnifiedViewModelBase
+    public class PatientDetailViewModel : ViewModelBase
     {
 
         #region 私有字段
 
         private readonly IPatientService _patientService;
         private readonly ICustomDialogService _dialogService;
-        private readonly INavigationService _navigationService;
+        private readonly IRegionManager _navigationService;
         private readonly IMapper _mapper;
         private readonly IPrescriptionPrintService _printService;
 
@@ -101,7 +103,7 @@ namespace LYBT.Desktop.Patients.ViewModels
         public PatientDetailViewModel(
             IPatientService patientService,
             ICustomDialogService dialogService,
-            INavigationService navigationService,
+            IRegionManager navigationService,
             IMapper mapper,
             IPrescriptionPrintService printService,
             IErrorHandlingService errorHandlingService,
@@ -109,11 +111,7 @@ namespace LYBT.Desktop.Patients.ViewModels
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
             ISessionManager? sessionManager = null)
-            : base(eventAggregator,
-                loggerFactory,
-                regionManager,
-                sessionManager,
-                errorHandlingService)
+            : base(eventAggregator, loggerFactory)
         {
             _patientService = patientService ?? throw new ArgumentNullException(nameof(patientService));
             _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
@@ -232,7 +230,7 @@ namespace LYBT.Desktop.Patients.ViewModels
                     RefreshProperties();
                     RaiseCanExecuteChanged();
 
-                    await _dialogService.ShowSuccessAsync("患者信息保存成功", "成功");
+                    await _dialogService.ShowMessageAsync("患者信息保存成功", "成功");
                 }
                 else
                 {
@@ -255,7 +253,7 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         private void NavigateBack()
         {
-            _navigationService.NavigateTo(RegionNames.SystemWorkbenchContentRegion, "PatientManagementView");
+            _navigationService.RequestNavigate("ContentRegion", "PatientManagementView");
         }
 
         private void EnableEdit()
@@ -288,33 +286,11 @@ namespace LYBT.Desktop.Patients.ViewModels
             try
             {
                 // P0-03核心：使用专业打印服务生成患者病历预览
-                var previewResult = await _printService.PreviewPrescriptionAsync(Patient);
-
-                if (!previewResult.Success)
-                {
-                    await _dialogService.ShowErrorAsync(previewResult.Message, "预览失败");
-                    return;
-                }
-
-                // P0-03核心：显示标准化病历打印预览对话框
-                var previewDialog = new LYBT.Desktop.Core.Views.PrintPreviewDialog(
-                    previewResult.Content,
-                    _printService,
-                    Patient);
-
-                // 设置对话框标题和属性
-                previewDialog.Title = $"患者病历打印预览 - {Patient.Name}";
-                previewDialog.Owner = System.Windows.Application.Current.MainWindow;
-                previewDialog.WindowStartupLocation = System.Windows.WindowStartupLocation.CenterOwner;
-
-                var dialogResult = previewDialog.ShowDialog();
-
-                if (dialogResult == true)
-                {
-                    await _dialogService.ShowSuccessAsync(
-                        $"患者 {Patient.Name} 病历打印操作完成",
-                        "打印成功");
-                }
+                // TODO: 需要修改打印服务或创建患者专用打印方法
+                // var previewResult = await _printService.PreviewPatientAsync(Patient);
+                // 暂时注释掉打印功能
+                await _dialogService.ShowWarningAsync("打印功能正在开发中", "提示");
+                return;
             }
             catch (Exception ex)
             {
@@ -336,7 +312,9 @@ namespace LYBT.Desktop.Patients.ViewModels
                 {
                     { "PatientId", Patient.Id }
                 };
-                await _navigationService.NavigateToAsync(RegionNames.SystemWorkbenchContentRegion, "MedicalCaseListView", navigationParameters);
+                // 使用同步导航
+                _navigationService.RequestNavigate("ContentRegion", "MedicalCaseListView", navigationParameters);
+                await Task.CompletedTask; // 保持异步签名
             }
             catch (Exception ex)
             {

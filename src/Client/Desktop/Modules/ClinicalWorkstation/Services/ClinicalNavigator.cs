@@ -1,10 +1,8 @@
-﻿using LYBT.Desktop.Core.Constants;
 using LYBT.Desktop.ClinicalWorkstation.Navigation;
 using Prism.Regions;
 
 namespace LYBT.Desktop.ClinicalWorkstation.Services
 {
-
     /// <summary>
     /// 诊疗工作台导航服务实现
     /// 为医生提供专业的诊疗相关功能导航

@@ -1,204 +1,268 @@
-using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using LYBT.Desktop.Modules.Prescriptions.ViewModels;
+using LYBT.Shared.Models.Contracts.Prescriptions;
 
-namespace LYBT.Desktop.Prescriptions.ViewModels.Components
+namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
 {
-
     /// <summary>
-    /// 处方验证器 - 简化版，只保留基本验证
-    /// 去除过度设计，保持简单实用
+    /// 处方验证器 - UltraThink架构实现
+    /// 负责处方的各种验证逻辑
     /// </summary>
     public class PrescriptionValidator
     {
-        private readonly ILogger<PrescriptionValidator> _logger;
-
-        public PrescriptionValidator(ILogger<PrescriptionValidator> logger)
-        {
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        }
-
-        #region 验证结果类 - 简化版
-
-        public class ValidationResult
-        {
-            public bool IsValid { get; set; } = true;
-            public List<string> Errors { get; set; } = new();
-            public List<string> Warnings { get; set; } = new();
-
-            public void AddError(string error)
-            {
-                Errors.Add(error);
-                IsValid = false;
-            }
-
-            public void AddWarning(string warning)
-            {
-                Warnings.Add(warning);
-            }
-
-            public string GetErrorSummary()
-            {
-                return Errors.Any() ? string.Join("; ", Errors) : string.Empty;
-            }
-
-            public string GetSummary()
-            {
-                var parts = new List<string>();
-                if (Errors.Any())
-                    parts.Add($"错误: {string.Join("; ", Errors)}");
-                if (Warnings.Any())
-                    parts.Add($"警告: {string.Join("; ", Warnings)}");
-                return parts.Any() ? string.Join(" | ", parts) : "验证通过";
-            }
-        }
-
-        #endregion 验证结果类
-
-        #region 核心验证方法 - 简化版
+        #region 基础验证
 
         /// <summary>
-        /// 验证处方完整性 - 只保留基本验证
+        /// 验证处方基本信息
         /// </summary>
-        public ValidationResult ValidatePrescription(
-            IEnumerable<PrescriptionItemViewModel> items,
-            int dosageCount)
+        public ValidationResult ValidateBasicInfo(string prescriptionNumber, Guid patientId, string doctorName)
         {
             var result = new ValidationResult();
 
-            try
+            if (string.IsNullOrWhiteSpace(prescriptionNumber))
             {
-                // 简化验证，只检查最基本的规则
-                var itemList = items?.ToList() ?? new List<PrescriptionItemViewModel>();
-
-                if (!itemList.Any())
-                {
-                    result.AddError("处方至少需要一个药材");
-                    return result;
-                }
-
-                if (dosageCount < 1 || dosageCount > 100)
-                {
-                    result.AddError("剂数必须在1-100之间");
-                }
-
-                // 验证各个处方项
-                foreach (var item in itemList)
-                {
-                    ValidatePrescriptionItem(result, item);
-                }
-
-                return result;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "处方验证失败");
-                result.AddError("验证过程中发生错误");
-                return result;
-            }
-        }
-
-        /// <summary>
-        /// 验证处方完整性 - 5参数重载版本
-        /// </summary>
-        public ValidationResult ValidatePrescription(
-            IEnumerable<PrescriptionItemViewModel> items,
-            int dosageCount,
-            decimal discount,
-            string notes,
-            bool checkWarnings)
-        {
-            var result = ValidatePrescription(items, dosageCount);
-
-            // 添加额外验证
-            if (!ValidateDiscount(discount))
-            {
-                result.AddError("折扣必须在0.1-1.0之间");
+                result.AddError("处方编号不能为空");
             }
 
-            if (checkWarnings)
+            if (patientId == Guid.Empty)
             {
-                // 添加一些警告检查
-                if (items?.Count() > 20)
-                {
-                    result.AddWarning("处方药材超过20种，请确认是否合理");
-                }
+                result.AddError("患者信息不能为空");
+            }
 
-                if (dosageCount > 30)
-                {
-                    result.AddWarning("剂数超过30剂，请确认患者是否需要长期服药");
-                }
+            if (string.IsNullOrWhiteSpace(doctorName))
+            {
+                result.AddError("医生信息不能为空");
             }
 
             return result;
         }
 
         /// <summary>
-        /// 验证单个处方项 - 简化版
+        /// 验证处方项目列表
         /// </summary>
-        private void ValidatePrescriptionItem(ValidationResult result, PrescriptionItemViewModel item)
+        public ValidationResult ValidatePrescriptionItems(IEnumerable<PrescriptionItemViewModel> items)
         {
-            if (item == null)
+            var result = new ValidationResult();
+
+            if (items == null || !items.Any())
             {
-                result.AddError("处方项不能为空");
-                return;
+                result.AddError("处方至少需要包含一味药材");
+                return result;
             }
 
-            // 只验证基本必要字段
+            var itemList = items.ToList();
+
+            // 检查重复药材
+            var duplicateHerbs = itemList
+                .GroupBy(i => i.HerbId)
+                .Where(g => g.Count() > 1)
+                .Select(g => g.First().HerbName)
+                .ToList();
+
+            if (duplicateHerbs.Any())
+            {
+                result.AddError($"处方中存在重复药材：{string.Join("、", duplicateHerbs)}");
+            }
+
+            // 验证每个项目
+            foreach (var item in itemList)
+            {
+                var itemValidation = ValidatePrescriptionItem(item);
+                result.Merge(itemValidation);
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// 验证单个处方项目
+        /// </summary>
+        public ValidationResult ValidatePrescriptionItem(PrescriptionItemViewModel item)
+        {
+            var result = new ValidationResult();
+
+            if (item == null)
+            {
+                result.AddError("处方项目不能为空");
+                return result;
+            }
+
+            if (item.HerbId == Guid.Empty)
+            {
+                result.AddError("药材不能为空");
+            }
+
             if (string.IsNullOrWhiteSpace(item.HerbName))
             {
                 result.AddError("药材名称不能为空");
             }
 
-            if (item.Quantity <= 0)
+            if (item.Dosage <= 0)
             {
-                result.AddError($"药材 '{item.HerbName}' 的数量必须大于0");
+                result.AddError($"{item.HerbName} 用量必须大于0");
             }
 
-            if (item.UnitPrice <= 0)
+            if (item.Dosage > 500)
             {
-                result.AddError($"药材 '{item.HerbName}' 的单价必须大于0");
-            }
-        }
-
-        /// <summary>
-        /// 验证折扣 - 简化版
-        /// </summary>
-        public bool ValidateDiscount(decimal discount)
-        {
-            return discount >= 0.1m && discount <= 1.0m;
-        }
-
-        /// <summary>
-        /// 验证剂数 - 简化版
-        /// </summary>
-        public bool ValidateDosageCount(int dosageCount)
-        {
-            return dosageCount >= 1 && dosageCount <= 100;
-        }
-
-        /// <summary>
-        /// 验证剂数字符串并转换为数值 - 支持PrescriptionCommandHandler
-        /// </summary>
-        public bool ValidateDosage(string dosageStr, out int dosage)
-        {
-            dosage = 7; // 默认值
-
-            if (string.IsNullOrWhiteSpace(dosageStr))
-            {
-                return true; // 使用默认值
+                result.AddWarning($"{item.HerbName} 用量较大（{item.Dosage}{item.Unit}），请确认是否正确");
             }
 
-            if (int.TryParse(dosageStr, out var parsed))
+            if (string.IsNullOrWhiteSpace(item.Unit))
             {
-                if (parsed >= 1 && parsed <= 100)
+                result.AddError($"{item.HerbName} 单位不能为空");
+            }
+
+            return result;
+        }
+
+        #endregion
+
+        #region 药材相互作用验证
+
+        /// <summary>
+        /// 验证药材相互作用
+        /// </summary>
+        public ValidationResult ValidateHerbInteractions(IEnumerable<PrescriptionItemViewModel> items)
+        {
+            var result = new ValidationResult();
+
+            if (items == null || !items.Any())
+            {
+                return result;
+            }
+
+            var herbNames = items.Select(i => i.HerbName).ToList();
+
+            // 简化的配伍禁忌检查（实际应该基于药材数据库）
+            var knownContraindications = GetKnownContraindications();
+
+            foreach (var contraindication in knownContraindications)
+            {
+                if (herbNames.Contains(contraindication.Herb1) && herbNames.Contains(contraindication.Herb2))
                 {
-                    dosage = parsed;
-                    return true;
+                    result.AddWarning($"注意：{contraindication.Herb1} 与 {contraindication.Herb2} 可能存在配伍禁忌");
                 }
             }
 
-            return false;
+            return result;
         }
 
-        #endregion 核心验证方法
+        #endregion
+
+        #region 用量安全验证
+
+        /// <summary>
+        /// 验证用量安全性
+        /// </summary>
+        public ValidationResult ValidateDosageSafety(IEnumerable<PrescriptionItemViewModel> items)
+        {
+            var result = new ValidationResult();
+
+            if (items == null || !items.Any())
+            {
+                return result;
+            }
+
+            var calculator = new PrescriptionCalculator();
+            var analysis = calculator.AnalyzeDosageDistribution(items);
+            var warnings = calculator.ValidateDosageReasonableness(items);
+
+            foreach (var warning in warnings)
+            {
+                result.AddWarning(warning);
+            }
+
+            // 检查处方总剂数
+            if (analysis.TotalItems > 20)
+            {
+                result.AddWarning($"处方药味较多（{analysis.TotalItems}味），请确认是否合理");
+            }
+
+            // 检查用量分布
+            if (analysis.StandardDeviation > 50)
+            {
+                result.AddWarning("处方各味药用量差异较大，请确认配比是否合理");
+            }
+
+            return result;
+        }
+
+        #endregion
+
+        #region 私有方法
+
+        /// <summary>
+        /// 获取已知的配伍禁忌
+        /// </summary>
+        private List<HerbContraindication> GetKnownContraindications()
+        {
+            // 简化实现，实际应该从数据库或配置文件读取
+            return new List<HerbContraindication>
+            {
+                new("甘草", "甘遂"),
+                new("甘草", "大戟"),
+                new("甘草", "芫花"),
+                new("乌头", "半夏"),
+                new("乌头", "瓜蒌"),
+                new("藜芦", "人参"),
+                new("藜芦", "沙参")
+            };
+        }
+
+        #endregion
     }
+
+    /// <summary>
+    /// 验证结果
+    /// </summary>
+    public class ValidationResult
+    {
+        public List<string> Errors { get; set; } = new();
+        public List<string> Warnings { get; set; } = new();
+
+        public bool IsValid => !Errors.Any();
+        public bool HasWarnings => Warnings.Any();
+
+        public void AddError(string error)
+        {
+            if (!string.IsNullOrWhiteSpace(error))
+            {
+                Errors.Add(error);
+            }
+        }
+
+        public void AddWarning(string warning)
+        {
+            if (!string.IsNullOrWhiteSpace(warning))
+            {
+                Warnings.Add(warning);
+            }
+        }
+
+        public void Merge(ValidationResult other)
+        {
+            if (other != null)
+            {
+                Errors.AddRange(other.Errors);
+                Warnings.AddRange(other.Warnings);
+            }
+        }
+
+        public string GetErrorSummary()
+        {
+            return string.Join("; ", Errors);
+        }
+
+        public string GetWarningSummary()
+        {
+            return string.Join("; ", Warnings);
+        }
+    }
+
+    /// <summary>
+    /// 药材配伍禁忌
+    /// </summary>
+    public record HerbContraindication(string Herb1, string Herb2);
 }

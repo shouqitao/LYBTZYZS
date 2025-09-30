@@ -1,7 +1,12 @@
-﻿using System.Collections.ObjectModel;
+using System;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using System.Windows.Input;
-using LYBT.Desktop.Core.Interfaces.Services;
-using LYBT.Desktop.Core.ViewModels.Base;
+using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Services.ErrorHandling;
+using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.Patients;
@@ -14,23 +19,23 @@ namespace LYBT.Desktop.Consultation.ViewModels
 {
 
     /// <summary>
-    /// 诊疗主界面视图模型 - 简化版纯数据记录
-    /// 只负责简单的四诊数据录入，不包含流程监管和智能处理
+    /// ������������ͼģ�� - �򻯰洿���ݼ�¼
+    /// ֻ����򵥵���������¼�룬���������̼�ܺ����ܴ���
     /// </summary>
     public class ConsultationMainViewModel : UnifiedViewModelBase, INavigationAware
     {
 
-        #region 服务依赖
+        #region ��������
 
         private readonly IConsultationService _consultationService;
         private readonly IMedicalCaseService _medicalCaseService;
         private readonly IPatientService _patientService;
 
-        #endregion 服务依赖
+        #endregion ��������
 
-        #region 基本属性
+        #region ��������
 
-        private string _title = "诊疗记录";
+        private string _title = "���Ƽ�¼";
 
         public string Title
         {
@@ -55,7 +60,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
             {
                 if (SetProperty(ref _selectedPatient, value))
                 {
-                    // P0-02优化：当选择患者时，更新历史查询命令状态
+                    // P0-02�Ż�����ѡ����ʱ��������ʷ��ѯ����״̬
                     ((DelegateCommand)ViewPatientHistoryCommand).RaiseCanExecuteChanged();
                 }
             }
@@ -85,23 +90,23 @@ namespace LYBT.Desktop.Consultation.ViewModels
             set => SetProperty(ref _isLoading, value);
         }
 
-        #endregion 基本属性
+        #endregion ��������
 
-        #region 命令
+        #region ����
 
         public ICommand LoadPatientsCommand { get; }
         public ICommand SaveConsultationCommand { get; }
         public ICommand ClearDataCommand { get; }
 
-        // P0-02新增：患者历史诊疗查询功能
+        // P0-02������������ʷ���Ʋ�ѯ����
         public ICommand ViewPatientHistoryCommand { get; }
 
-        // P0-04新增：四诊录入模板功能
+        // P0-04����������¼��ģ�幦��
         public ICommand ShowTemplateMenuCommand { get; }
 
-        #endregion 命令
+        #endregion ����
 
-        #region 构造函数
+        #region ���캯��
 
         public ConsultationMainViewModel(
         IConsultationService consultationService,
@@ -121,19 +126,19 @@ namespace LYBT.Desktop.Consultation.ViewModels
             SaveConsultationCommand = new DelegateCommand(async () => await SaveConsultationAsync());
             ClearDataCommand = new DelegateCommand(ClearData);
 
-            // P0-02新增：初始化患者历史查询命令
+            // P0-02��������ʼ��������ʷ��ѯ����
             ViewPatientHistoryCommand = new DelegateCommand(async () => await ViewPatientHistoryAsync(), () => SelectedPatient != null);
 
-            // P0-04新增：初始化四诊模板命令
+            // P0-04��������ʼ������ģ������
             ShowTemplateMenuCommand = new DelegateCommand(async () => await ShowTemplateMenuAsync());
 
-            // 修复: 使用Task.Run等待初始化，防止fire-and-forget
+            // �޸�: ʹ��Task.Run�ȴ���ʼ������ֹfire-and-forget
             _ = Task.Run(async () => await InitializeAsync());
         }
 
-        #endregion 构造函数
+        #endregion ���캯��
 
-        #region 初始化
+        #region ��ʼ��
 
         private async Task InitializeAsync()
         {
@@ -143,15 +148,15 @@ namespace LYBT.Desktop.Consultation.ViewModels
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "初始化失败");
+                Logger.LogError(ex, "��ʼ��ʧ��");
 
-                // 系统初始化失败
+                // ϵͳ��ʼ��ʧ��
             }
         }
 
-        #endregion 初始化
+        #endregion ��ʼ��
 
-        #region 数据加载
+        #region ���ݼ���
 
         private async Task LoadPatientsAsync()
         {
@@ -159,7 +164,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
             {
                 IsLoading = true;
 
-                // 使用分页查询获取患者列表
+                // ʹ�÷�ҳ��ѯ��ȡ�����б�
                 var query = new LYBT.Shared.Models.Contracts.Patients.PatientSearchDto
                 {
                     PageIndex = 1,
@@ -179,7 +184,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "加载患者列表失败");
+                Logger.LogError(ex, "���ػ����б�ʧ��");
             }
             finally
             {
@@ -187,9 +192,9 @@ namespace LYBT.Desktop.Consultation.ViewModels
             }
         }
 
-        #endregion 数据加载
+        #endregion ���ݼ���
 
-        #region 数据保存
+        #region ���ݱ���
 
         private async Task SaveConsultationAsync()
         {
@@ -197,43 +202,43 @@ namespace LYBT.Desktop.Consultation.ViewModels
             {
                 if (SelectedPatient == null)
                 {
-                    Logger.LogWarning("请先选择患者");
+                    Logger.LogWarning("����ѡ����");
                     return;
                 }
 
                 IsLoading = true;
 
-                // 设置基本信息
+                // ���û�����Ϣ
                 Consultation.PatientId = SelectedPatient.Id;
-                Consultation.UserId = GetCurrentUser()?.Id ?? Guid.Empty;
+                Consultation.UserId = SessionManager?.CurrentUser?.Id ?? Guid.Empty;
                 Consultation.MedicalCaseId = MedicalCaseId ?? Guid.NewGuid();
                 Consultation.StartTime = DateTime.Now;
-                Consultation.DoctorName = GetCurrentUser()?.RealName ?? string.Empty;
+                Consultation.DoctorName = SessionManager?.CurrentUser?.RealName ?? string.Empty;
 
                 var createDto = new ConsultationCreateDto
                 {
                     PatientId = SelectedPatient.Id,
-                    UserId = GetCurrentUser()?.Id ?? Guid.Empty,
+                    UserId = SessionManager?.CurrentUser?.Id ?? Guid.Empty,
                     MedicalCaseId = MedicalCaseId ?? Guid.NewGuid(),
-                    ChiefComplaint = "新诊疗记录",
-                    Remark = $"患者：{SelectedPatient.Name}，医生：{GetCurrentUser()?.RealName ?? string.Empty}"
+                    ChiefComplaint = "�����Ƽ�¼",
+                    Remark = $"���ߣ�{SelectedPatient.Name}��ҽ����{SessionManager?.CurrentUser?.RealName ?? string.Empty}"
                 };
 
                 var result = await _consultationService.CreateAsync(createDto);
                 if (result.IsSuccess && result.Data != null)
                 {
                     Consultation = result.Data;
-                    SetStatus("诊疗记录保存成功");
+                    SetStatus("���Ƽ�¼����ɹ�");
                 }
                 else
                 {
-                    Logger.LogError("保存失败: {Message}", result.Message);
+                    Logger.LogError("����ʧ��: {Message}", result.Message);
                 }
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "保存诊疗记录失败");
-                Logger.LogError("保存失败，请重试");
+                Logger.LogError(ex, "�������Ƽ�¼ʧ��");
+                Logger.LogError("����ʧ�ܣ�������");
             }
             finally
             {
@@ -241,9 +246,9 @@ namespace LYBT.Desktop.Consultation.ViewModels
             }
         }
 
-        #endregion 数据保存
+        #endregion ���ݱ���
 
-        #region 数据清理
+        #region ��������
 
         private void ClearData()
         {
@@ -252,9 +257,9 @@ namespace LYBT.Desktop.Consultation.ViewModels
             MedicalCaseId = null;
         }
 
-        #endregion 数据清理
+        #endregion ��������
 
-        #region 导航接口实现
+        #region �����ӿ�ʵ��
 
         /// <inheritdoc/>
         public void OnNavigatedTo(NavigationContext navigationContext)
@@ -276,20 +281,20 @@ namespace LYBT.Desktop.Consultation.ViewModels
         {
         }
 
-        #endregion 导航接口实现
+        #endregion �����ӿ�ʵ��
 
-        #region P0-02: 患者历史诊疗查询功能
+        #region P0-02: ������ʷ���Ʋ�ѯ����
 
         /// <summary>
-        /// 查看患者历史诊疗记录
-        /// Epic 03-P0-02: 实用化历史查询功能，专为小诊所设计
-        /// 提供完整的患者诊疗历史，包括医案、诊断、处方等信息
+        /// �鿴������ʷ���Ƽ�¼
+        /// Epic 03-P0-02: ʵ�û���ʷ��ѯ���ܣ�רΪС�������
+        /// �ṩ�����Ļ���������ʷ������ҽ������ϡ���������Ϣ
         /// </summary>
         private async Task ViewPatientHistoryAsync()
         {
             if (SelectedPatient == null)
             {
-                Logger.LogWarning("请先选择患者");
+                Logger.LogWarning("����ѡ����");
                 return;
             }
 
@@ -297,7 +302,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
             {
                 IsLoading = true;
 
-                // 获取患者的所有医案历史
+                // ��ȡ���ߵ�����ҽ����ʷ
                 var medicalCasesResult = await _medicalCaseService.GetByPatientIdAsync(SelectedPatient.Id);
 
                 if (!medicalCasesResult.IsSuccess || medicalCasesResult.Data == null || !medicalCasesResult.Data.Any())
@@ -310,10 +315,10 @@ namespace LYBT.Desktop.Consultation.ViewModels
                 .OrderByDescending(mc => mc.CreateTime)
                 .ToList();
 
-                // 为每个医案获取相关诊疗记录
+                // Ϊÿ��ҽ����ȡ������Ƽ�¼
                 var historyDetails = new List<PatientHistoryDetail>();
 
-                foreach (var medicalCase in medicalCases.Take(20)) // 最多显示20条历史记录
+                foreach (var medicalCase in medicalCases.Take(20)) // �����ʾ20����ʷ��¼
                 {
                     var detail = new PatientHistoryDetail
                     {
@@ -322,13 +327,13 @@ namespace LYBT.Desktop.Consultation.ViewModels
                         Status = GetMedicalCaseStatusText((int)medicalCase.Status)
                     };
 
-                    // 尝试获取该医案的诊疗记录
+                    // ���Ի�ȡ��ҽ�������Ƽ�¼
                     try
                     {
                         var consultationResult = await _consultationService.GetByMedicalCaseIdAsync(medicalCase.Id);
                         if (consultationResult.IsSuccess && consultationResult.Data != null)
                         {
-                            // 修复：取第一个诊疗记录
+                            // �޸���ȡ��һ�����Ƽ�¼
                             var consultations = consultationResult.Data;
                             if (consultations.Any())
                             {
@@ -339,7 +344,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
                     }
                     catch (Exception ex)
                     {
-                        Logger.LogWarning(ex, "获取医案 {MedicalCaseId} 的诊疗记录失败", medicalCase.Id);
+                        Logger.LogWarning(ex, "��ȡҽ�� {MedicalCaseId} �����Ƽ�¼ʧ��", medicalCase.Id);
                     }
 
                     historyDetails.Add(detail);
@@ -349,8 +354,8 @@ namespace LYBT.Desktop.Consultation.ViewModels
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "查看患者历史诊疗记录失败: {PatientId}", SelectedPatient.Id);
-                // 查看患者历史记录失败
+                Logger.LogError(ex, "�鿴������ʷ���Ƽ�¼ʧ��: {PatientId}", SelectedPatient.Id);
+                // �鿴������ʷ��¼ʧ��
             }
             finally
             {
@@ -359,57 +364,57 @@ namespace LYBT.Desktop.Consultation.ViewModels
         }
 
         /// <summary>
-        /// 显示患者历史诊疗记录对话框
-        /// 实用化设计：清晰展示关键诊疗信息，便于医生快速了解病史
+        /// ��ʾ������ʷ���Ƽ�¼�Ի���
+        /// ʵ�û���ƣ�����չʾ�ؼ�������Ϣ������ҽ�������˽ⲡʷ
         /// </summary>
-        /// <param name="patient">患者信息</param>
-        /// <param name="historyDetails">历史诊疗详情列表</param>
+        /// <param name="patient">������Ϣ</param>
+        /// <param name="historyDetails">��ʷ���������б�</param>
         private void ShowHistoryDialog(PatientDto patient, List<PatientHistoryDetail>? historyDetails)
         {
             var historyContent = new System.Text.StringBuilder();
 
-            // 患者基本信息
-            historyContent.AppendLine("=== 患者历史诊疗记录 ===\n");
-            historyContent.AppendLine("【患者信息】");
-            historyContent.AppendLine($"姓名: {patient.Name}");
-            historyContent.AppendLine($"性别: {GetGenderText(patient.Gender)}");
-            historyContent.AppendLine($"年龄: {patient.Age}岁");
-            historyContent.AppendLine($"电话: {patient.PhoneNumber ?? "未填写"}");
+            // ���߻�����Ϣ
+            historyContent.AppendLine("=== ������ʷ���Ƽ�¼ ===\n");
+            historyContent.AppendLine("��������Ϣ��");
+            historyContent.AppendLine($"����: {patient.Name}");
+            historyContent.AppendLine($"�Ա�: {GetGenderText(patient.Gender)}");
+            historyContent.AppendLine($"����: {patient.Age}��");
+            historyContent.AppendLine($"�绰: {patient.PhoneNumber ?? "δ��д"}");
 
-            if (!string.IsNullOrEmpty(patient.AllergyHistory) && patient.AllergyHistory != "无")
+            if (!string.IsNullOrEmpty(patient.AllergyHistory) && patient.AllergyHistory != "��")
             {
-                historyContent.AppendLine($" 过敏史: {patient.AllergyHistory}");
+                historyContent.AppendLine($" ����ʷ: {patient.AllergyHistory}");
             }
 
             historyContent.AppendLine();
 
             if (historyDetails == null || !historyDetails.Any())
             {
-                historyContent.AppendLine("【诊疗记录】");
-                historyContent.AppendLine("暂无历史就诊记录");
-                historyContent.AppendLine("\n 提示：该患者尚未有诊疗记录，可开始新的诊疗流程。");
+                historyContent.AppendLine("�����Ƽ�¼��");
+                historyContent.AppendLine("������ʷ�����¼");
+                historyContent.AppendLine("\n ��ʾ���û�����δ�����Ƽ�¼���ɿ�ʼ�µ��������̡�");
             }
             else
             {
-                historyContent.AppendLine($"【诊疗记录】(共 {historyDetails.Count} 次就诊)\n");
+                historyContent.AppendLine($"�����Ƽ�¼��(�� {historyDetails.Count} �ξ���)\n");
 
                 for (int i = 0; i < historyDetails.Count; i++)
                 {
                     var detail = historyDetails[i];
                     var medicalCase = detail.MedicalCase;
 
-                    historyContent.AppendLine($"▶ 第 {i + 1} 次就诊 - {detail.CreateTime:yyyy-MM-dd HH:mm}");
-                    historyContent.AppendLine($" 状态: {detail.Status}");
+                    historyContent.AppendLine($"? �� {i + 1} �ξ��� - {detail.CreateTime:yyyy-MM-dd HH:mm}");
+                    historyContent.AppendLine($" ״̬: {detail.Status}");
 
                     if (!string.IsNullOrEmpty(medicalCase.Remark))
                     {
                         var remark = medicalCase.Remark.Length > 50 ?
                         medicalCase.Remark.Substring(0, 50) + "..." :
                         medicalCase.Remark;
-                        historyContent.AppendLine($" 备注: {remark}");
+                        historyContent.AppendLine($" ��ע: {remark}");
                     }
 
-                    // 显示诊断信息
+                    // ��ʾ�����Ϣ
                     if (detail.HasConsultation && detail.Consultation != null)
                     {
                         var consultation = detail.Consultation;
@@ -419,7 +424,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
                             var complaint = consultation.ChiefComplaint.Length > 40 ?
                             consultation.ChiefComplaint.Substring(0, 40) + "..." :
                             consultation.ChiefComplaint;
-                            historyContent.AppendLine($" 主诉: {complaint}");
+                            historyContent.AppendLine($" ����: {complaint}");
                         }
 
                         if (!string.IsNullOrEmpty(consultation.TCMDiagnosis))
@@ -427,7 +432,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
                             var diagnosis = consultation.TCMDiagnosis.Length > 40 ?
                             consultation.TCMDiagnosis.Substring(0, 40) + "..." :
                             consultation.TCMDiagnosis;
-                            historyContent.AppendLine($" 诊断: {diagnosis}");
+                            historyContent.AppendLine($" ���: {diagnosis}");
                         }
                     }
 
@@ -436,48 +441,48 @@ namespace LYBT.Desktop.Consultation.ViewModels
 
                 if (historyDetails.Count >= 20)
                 {
-                    historyContent.AppendLine(" 注：为保持界面简洁，仅显示最近20条记录。");
+                    historyContent.AppendLine(" ע��Ϊ���ֽ����࣬����ʾ���20����¼��");
                 }
 
-                historyContent.AppendLine(" 提示：可在医案管理模块查看完整详细记录。");
+                historyContent.AppendLine(" ��ʾ������ҽ������ģ��鿴������ϸ��¼��");
             }
 
-            // 使用基类的通知方法显示历史信息
+            // ʹ�û����֪ͨ������ʾ��ʷ��Ϣ
             SetStatus(historyContent.ToString());
         }
 
         /// <summary>
-        /// 获取性别显示文本
+        /// ��ȡ�Ա���ʾ�ı�
         /// </summary>
         private string GetGenderText(LYBT.Shared.Models.Enums.Gender gender)
         {
             return gender switch
             {
-                LYBT.Shared.Models.Enums.Gender.Male => "男",
-                LYBT.Shared.Models.Enums.Gender.Female => "女",
-                _ => "未知"
+                LYBT.Shared.Models.Enums.Gender.Male => "��",
+                LYBT.Shared.Models.Enums.Gender.Female => "Ů",
+                _ => "δ֪"
             };
         }
 
         /// <summary>
-        /// 获取医案状态显示文本
+        /// ��ȡҽ��״̬��ʾ�ı�
         /// </summary>
         private string GetMedicalCaseStatusText(int status)
         {
             return status switch
             {
-                0 => "已登记",
-                1 => "诊疗中",
-                2 => "已完成",
-                3 => "已取消",
-                4 => "已暂停",
-                _ => "未知状态"
+                0 => "�ѵǼ�",
+                1 => "������",
+                2 => "�����",
+                3 => "��ȡ��",
+                4 => "����ͣ",
+                _ => "δ֪״̬"
             };
         }
 
         /// <summary>
-        /// 患者历史诊疗详情数据模型
-        /// 用于整合医案和诊疗记录信息
+        /// ������ʷ������������ģ��
+        /// ��������ҽ�������Ƽ�¼��Ϣ
         /// </summary>
         private class PatientHistoryDetail
         {
@@ -488,49 +493,49 @@ namespace LYBT.Desktop.Consultation.ViewModels
             public bool HasConsultation { get; set; }
         }
 
-        #endregion P0-02: 患者历史诊疗查询功能
+        #endregion P0-02: ������ʷ���Ʋ�ѯ����
 
-        #region P0-04: 四诊录入模板功能
+        #region P0-04: ����¼��ģ�幦��
 
         /// <summary>
-        /// 显示四诊模板选择菜单
-        /// Epic 03-P0-04: 实用化四诊录入界面简化，专为小诊所设计
-        /// 提供常用四诊模板快速录入，提高医生录入效率
+        /// ��ʾ����ģ��ѡ��˵�
+        /// Epic 03-P0-04: ʵ�û�����¼�����򻯣�רΪС�������
+        /// �ṩ��������ģ�����¼�룬���ҽ��¼��Ч��
         /// </summary>
         private async Task ShowTemplateMenuAsync()
         {
             try
             {
-                // 获取常用四诊模板列表
+                // ��ȡ��������ģ���б�
                 var templates = GetCommonTemplates();
 
                 if (!templates.Any())
                 {
-                    SetStatus("暂无可用的四诊模板");
+                    SetStatus("���޿��õ�����ģ��");
                     return;
                 }
 
-                // 构建模板选择菜单内容
+                // ����ģ��ѡ��˵�����
                 var menuContent = new System.Text.StringBuilder();
-                menuContent.AppendLine("=== 常用四诊录入模板 ===\n");
-                menuContent.AppendLine("请选择要使用的模板（输入数字序号）：\n");
+                menuContent.AppendLine("=== ��������¼��ģ�� ===\n");
+                menuContent.AppendLine("��ѡ��Ҫʹ�õ�ģ�壨����������ţ���\n");
 
                 for (int i = 0; i < templates.Count; i++)
                 {
                     var template = templates[i];
                     menuContent.AppendLine($"{i + 1}. {template.Name}");
-                    menuContent.AppendLine($" 适用症状：{template.Symptoms}");
-                    menuContent.AppendLine($" 典型体征：{template.Signs}");
+                    menuContent.AppendLine($" ����֢״��{template.Symptoms}");
+                    menuContent.AppendLine($" ����������{template.Signs}");
                     menuContent.AppendLine();
                 }
 
-                menuContent.AppendLine(" 提示：选择模板后将自动填入四诊内容，您可以根据实际情况进行调整");
+                menuContent.AppendLine(" ��ʾ��ѡ��ģ����Զ������������ݣ������Ը���ʵ��������е���");
 
-                // 简化实现：显示模板信息供参考，不实现复杂的选择逻辑
-                // 为小诊所优化，避免过度复杂的用户交互
+                // ��ʵ�֣���ʾģ����Ϣ���ο�����ʵ�ָ��ӵ�ѡ���߼�
+                // ΪС�����Ż���������ȸ��ӵ��û�����
                 SetStatus(menuContent.ToString());
 
-                // 应用第一个最常用的模板作为示例
+                // Ӧ�õ�һ����õ�ģ����Ϊʾ��
                 if (templates.Any())
                 {
                     await ApplyTemplateAsync(templates[0]);
@@ -538,27 +543,27 @@ namespace LYBT.Desktop.Consultation.ViewModels
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "显示四诊模板菜单失败");
-                Logger.LogError("加载四诊模板失败");
+                Logger.LogError(ex, "��ʾ����ģ��˵�ʧ��");
+                Logger.LogError("��������ģ��ʧ��");
             }
         }
 
         /// <summary>
-        /// 应用选定的四诊模板
-        /// 将模板内容填入四诊录入区域，提高录入效率
+        /// Ӧ��ѡ��������ģ��
+        /// ��ģ��������������¼���������¼��Ч��
         /// </summary>
         private async Task ApplyTemplateAsync(FourDiagnosisTemplate template)
         {
             try
             {
-                await Task.Delay(50); // 避免异步警告
+                await Task.Delay(50); // �����첽����
 
-                // 检查是否已有内容，避免覆盖
+                // ����Ƿ��������ݣ����⸲��
                 if (!string.IsNullOrEmpty(Consultation.Palpation?.Trim()))
                 {
                     var confirmOverwrite = await ShowConfirmationAsync(
-                    "当前四诊内容不为空，是否要替换为模板内容？",
-                    "确认替换");
+                    "��ǰ�������ݲ�Ϊ�գ��Ƿ�Ҫ�滻Ϊģ�����ݣ�",
+                    "ȷ���滻");
 
                     if (!confirmOverwrite)
                     {
@@ -566,67 +571,67 @@ namespace LYBT.Desktop.Consultation.ViewModels
                     }
                 }
 
-                // 应用模板内容到四诊录入区域
+                // Ӧ��ģ�����ݵ�����¼������
                 var templateContent = BuildTemplateContent(template);
 
-                // 更新四诊录入内容（映射到Palpation字段）
+                // ��������¼�����ݣ�ӳ�䵽Palpation�ֶΣ�
                 var currentConsultation = Consultation;
                 currentConsultation.Palpation = templateContent;
 
-                // 触发属性变更通知
+                // �������Ա��֪ͨ
                 Consultation = currentConsultation;
 
-                SetStatus($"已应用模板：{template.Name}");
-                Logger.LogInformation("应用四诊模板成功: {TemplateName}", template.Name);
+                SetStatus($"��Ӧ��ģ�壺{template.Name}");
+                Logger.LogInformation("Ӧ������ģ��ɹ�: {TemplateName}", template.Name);
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "应用四诊模板失败: {TemplateName}", template.Name);
-                Logger.LogError("应用模板失败");
+                Logger.LogError(ex, "Ӧ������ģ��ʧ��: {TemplateName}", template.Name);
+                Logger.LogError("Ӧ��ģ��ʧ��");
             }
         }
 
         /// <summary>
-        /// 构建四诊模板内容
-        /// 将结构化的模板数据转换为录入格式
+        /// ��������ģ������
+        /// ���ṹ����ģ������ת��Ϊ¼���ʽ
         /// </summary>
         private string BuildTemplateContent(FourDiagnosisTemplate template)
         {
             var content = new System.Text.StringBuilder();
 
-            content.AppendLine($"【{template.Name}】");
+            content.AppendLine($"��{template.Name}��");
             content.AppendLine();
 
-            content.AppendLine("望诊：");
-            content.AppendLine($" 面色：{template.FaceColor}");
-            content.AppendLine($" 舌质：{template.TongueBody}");
-            content.AppendLine($" 舌苔：{template.TongueCoating}");
+            content.AppendLine("���");
+            content.AppendLine($" ��ɫ��{template.FaceColor}");
+            content.AppendLine($" ���ʣ�{template.TongueBody}");
+            content.AppendLine($" ��̦��{template.TongueCoating}");
             content.AppendLine();
 
-            content.AppendLine("闻诊：");
-            content.AppendLine($" 声音：{template.Voice}");
-            content.AppendLine($" 呼吸：{template.Breathing}");
+            content.AppendLine("���");
+            content.AppendLine($" ������{template.Voice}");
+            content.AppendLine($" ������{template.Breathing}");
             content.AppendLine();
 
-            content.AppendLine("问诊：");
-            content.AppendLine($" 主要症状：{template.MainSymptoms}");
-            content.AppendLine($" 伴随症状：{template.AccompanyingSymptoms}");
+            content.AppendLine("���");
+            content.AppendLine($" ��Ҫ֢״��{template.MainSymptoms}");
+            content.AppendLine($" ����֢״��{template.AccompanyingSymptoms}");
             content.AppendLine();
 
-            content.AppendLine("切诊：");
-            content.AppendLine($" 脉象：{template.Pulse}");
-            content.AppendLine($" 腹诊：{template.Abdomen}");
+            content.AppendLine("���");
+            content.AppendLine($" ����{template.Pulse}");
+            content.AppendLine($" ���{template.Abdomen}");
             content.AppendLine();
 
-            content.AppendLine("【辨证要点】");
+            content.AppendLine("����֤Ҫ�㡿");
             content.AppendLine($" {template.DiagnosisPoints}");
 
             return content.ToString();
         }
 
         /// <summary>
-        /// 获取常用四诊模板
-        /// 实用化设计：内置常见中医症候的四诊模板
+        /// ��ȡ��������ģ��
+        /// ʵ�û���ƣ����ó�����ҽ֢�������ģ��
         /// </summary>
         private List<FourDiagnosisTemplate> GetCommonTemplates()
         {
@@ -634,101 +639,101 @@ namespace LYBT.Desktop.Consultation.ViewModels
 {
 new FourDiagnosisTemplate
 {
-Name = "风寒感冒",
-Symptoms = "恶寒、发热、无汗、头痛",
-Signs = "鼻塞声重、流清涕、咳嗽咯痰白",
-FaceColor = "面色苍白或微红",
-TongueBody = "舌质淡红",
-TongueCoating = "舌苔薄白",
-Voice = "声音沉重",
-Breathing = "呼吸平缓",
-MainSymptoms = "恶寒重、发热轻、无汗、头痛身痛",
-AccompanyingSymptoms = "鼻塞、流清涕、咳嗽、痰稀白",
-Pulse = "脉浮紧",
-Abdomen = "腹部无异常",
-DiagnosisPoints = "风寒束表，卫阳被遏，治宜辛温解表"
+Name = "�纮��ð",
+Symptoms = "�񺮡����ȡ��޺���ͷʹ",
+Signs = "�������ء������顢���Կ�̵��",
+FaceColor = "��ɫ�԰׻�΢��",
+TongueBody = "���ʵ���",
+TongueCoating = "��̦����",
+Voice = "��������",
+Breathing = "����ƽ��",
+MainSymptoms = "���ء������ᡢ�޺���ͷʹ��ʹ",
+AccompanyingSymptoms = "�����������顢���ԡ�̵ϡ��",
+Pulse = "������",
+Abdomen = "�������쳣",
+DiagnosisPoints = "�纮�����������������������½��"
 },
 new FourDiagnosisTemplate
 {
-Name = "脾胃虚弱",
-Symptoms = "食少腹胀、便溏乏力",
-Signs = "面色萎黄、形体消瘦、倦怠懒言",
-FaceColor = "面色萎黄无华",
-TongueBody = "舌质淡胖",
-TongueCoating = "舌苔白腻",
-Voice = "声音低弱",
-Breathing = "呼吸短浅",
-MainSymptoms = "食少纳呆、脘腹胀满、便溏",
-AccompanyingSymptoms = "神疲乏力、少气懒言、面色无华",
-Pulse = "脉细弱",
-Abdomen = "腹部柔软，按之不适",
-DiagnosisPoints = "脾气虚弱，运化失职，治宜健脾益气"
+Name = "Ƣθ����",
+Symptoms = "ʳ�ٸ��͡����緦��",
+Signs = "��ɫή�ơ��������ݡ��뵡����",
+FaceColor = "��ɫή���޻�",
+TongueBody = "���ʵ���",
+TongueCoating = "��̦����",
+Voice = "��������",
+Breathing = "������ǳ",
+MainSymptoms = "ʳ���ɴ����丹����������",
+AccompanyingSymptoms = "��ƣ�������������ԡ���ɫ�޻�",
+Pulse = "��ϸ��",
+Abdomen = "������������֮����",
+DiagnosisPoints = "Ƣ���������˻�ʧְ�����˽�Ƣ����"
 },
 new FourDiagnosisTemplate
 {
-Name = "肝郁气滞",
-Symptoms = "情志不畅、胁肋胀痛",
-Signs = "急躁易怒、善太息、胸胁胀满",
-FaceColor = "面色正常或略暗",
-TongueBody = "舌质正常或略红",
-TongueCoating = "舌苔薄白或微黄",
-Voice = "声音正常或略高",
-Breathing = "呼吸时深时浅",
-MainSymptoms = "情志不舒、胸胁胀满疼痛、善太息",
-AccompanyingSymptoms = "急躁易怒、失眠多梦、食欲不振",
-Pulse = "脉弦",
-Abdomen = "腹部按之不适，胁下满闷",
-DiagnosisPoints = "肝失疏泄，气机郁滞，治宜疏肝解郁"
+Name = "��������",
+Symptoms = "��־������в����ʹ",
+Signs = "������ŭ����̫Ϣ����в����",
+FaceColor = "��ɫ�������԰�",
+TongueBody = "�����������Ժ�",
+TongueCoating = "��̦���׻�΢��",
+Voice = "�����������Ը�",
+Breathing = "����ʱ��ʱǳ",
+MainSymptoms = "��־���桢��в������ʹ����̫Ϣ",
+AccompanyingSymptoms = "������ŭ��ʧ�߶��Ρ�ʳ������",
+Pulse = "����",
+Abdomen = "������֮���ʣ�в������",
+DiagnosisPoints = "��ʧ��й���������ͣ�������ν���"
 },
 new FourDiagnosisTemplate
 {
-Name = "肾阳虚",
-Symptoms = "畏寒肢冷、腰膝酸软",
-Signs = "精神萎靡、面色苍白、形寒肢冷",
-FaceColor = "面色苍白无华",
-TongueBody = "舌质淡胖",
-TongueCoating = "舌苔白滑",
-Voice = "声音低沉",
-Breathing = "呼吸微弱",
-MainSymptoms = "畏寒怕冷、四肢不温、腰膝酸软冷痛",
-AccompanyingSymptoms = "精神不振、小便清长、大便溏薄",
-Pulse = "脉沉迟无力",
-Abdomen = "腹部喜按喜温",
-DiagnosisPoints = "肾阳不足，温煦失职，治宜温补肾阳"
+Name = "������",
+Symptoms = "η��֫�䡢��ϥ����",
+Signs = "����ή�ҡ���ɫ�԰ס��κ�֫��",
+FaceColor = "��ɫ�԰��޻�",
+TongueBody = "���ʵ���",
+TongueCoating = "��̦�׻�",
+Voice = "�����ͳ�",
+Breathing = "����΢��",
+MainSymptoms = "η�����䡢��֫���¡���ϥ������ʹ",
+AccompanyingSymptoms = "������С���峤������籡",
+Pulse = "����������",
+Abdomen = "����ϲ��ϲ��",
+DiagnosisPoints = "�������㣬����ʧְ�������²�����"
 },
 new FourDiagnosisTemplate
 {
-Name = "阴虚火旺",
-Symptoms = "潮热盗汗、口干咽燥",
-Signs = "形体消瘦、颧红、心烦失眠",
-FaceColor = "面色潮红或颧红",
-TongueBody = "舌质红少津",
-TongueCoating = "舌苔少或无苔",
-Voice = "声音沙哑或正常",
-Breathing = "呼吸略急",
-MainSymptoms = "潮热、盗汗、口干咽燥、五心烦热",
-AccompanyingSymptoms = "失眠多梦、头晕耳鸣、腰膝酸软",
-Pulse = "脉细数",
-Abdomen = "腹部无异常",
-DiagnosisPoints = "阴液不足，虚火上炎，治宜滋阴降火"
+Name = "�������",
+Symptoms = "���ȵ������ڸ�����",
+Signs = "�������ݡ�ȧ�졢�ķ�ʧ��",
+FaceColor = "��ɫ�����ȧ��",
+TongueBody = "���ʺ��ٽ�",
+TongueCoating = "��̦�ٻ���̦",
+Voice = "����ɳ�ƻ�����",
+Breathing = "�����Լ�",
+MainSymptoms = "���ȡ��������ڸ�������ķ���",
+AccompanyingSymptoms = "ʧ�߶��Ρ�ͷ�ζ�������ϥ����",
+Pulse = "��ϸ��",
+Abdomen = "�������쳣",
+DiagnosisPoints = "��Һ���㣬������ף�������������"
 }
 };
         }
 
         /// <summary>
-        /// 显示确认对话框（简化实现）
+        /// ��ʾȷ�϶Ի��򣨼�ʵ�֣�
         /// </summary>
         private async Task<bool> ShowConfirmationAsync(string message, string title)
         {
-            await Task.Delay(50); // 避免异步警告
+            await Task.Delay(50); // �����첽����
 
-            // 简化实现：默认确认，避免复杂的UI交互
+            // ��ʵ�֣�Ĭ��ȷ�ϣ����⸴�ӵ�UI����
             return true;
         }
 
         /// <summary>
-        /// 四诊模板数据模型
-        /// 用于存储常用四诊录入模板的结构化数据
+        /// ����ģ������ģ��
+        /// ���ڴ洢��������¼��ģ��Ľṹ������
         /// </summary>
         private class FourDiagnosisTemplate
         {
@@ -747,6 +752,6 @@ DiagnosisPoints = "阴液不足，虚火上炎，治宜滋阴降火"
             public required string DiagnosisPoints { get; set; }
         }
 
-        #endregion P0-04: 四诊录入模板功能
+        #endregion P0-04: ����¼��ģ�幦��
     }
 }

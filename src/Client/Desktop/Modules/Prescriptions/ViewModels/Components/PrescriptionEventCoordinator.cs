@@ -1,28 +1,23 @@
-using LYBT.Desktop.Core.Events;
-using LYBT.Desktop.Core.Models.Consultation;
-using LYBT.Desktop.Core.Models.Events;
-using LYBT.Desktop.Core.Models.Navigation;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Extensions.Logging;
 using Prism.Events;
+using LYBT.Desktop.Modules.Prescriptions.ViewModels;
 
-namespace LYBT.Desktop.Prescriptions.ViewModels.Components
+namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
 {
-
     /// <summary>
     /// 处方事件协调器 - UltraThink专门化组件
-    /// 职责单一：专注处方相关事件的协调和工作流管理
-    /// 代码干净：清晰的事件处理和状态同步
-    /// 性能出色：高效的事件传播和内存管理
+    /// 职责单一：专注处方模块内部事件的协调和通信
+    /// 代码干净：清晰的事件发布订阅模式
+    /// 性能出色：优化的事件处理和内存管理
     /// </summary>
     public class PrescriptionEventCoordinator
     {
         private readonly IEventAggregator _eventAggregator;
         private readonly ILogger<PrescriptionEventCoordinator> _logger;
-
-        // 关联的组件
-        private PrescriptionDataManager? _dataManager;
-
-        private PrescriptionCalculator? _calculator;
+        private readonly List<SubscriptionToken> _subscriptions = new();
 
         public PrescriptionEventCoordinator(
             IEventAggregator eventAggregator,
@@ -30,284 +25,379 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components
         {
             _eventAggregator = eventAggregator ?? throw new ArgumentNullException(nameof(eventAggregator));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        }
 
-        #region 依赖注入
-
-        /// <summary>
-        /// 设置关联组件
-        /// </summary>
-        public void SetDependencies(
-            PrescriptionDataManager dataManager,
-            PrescriptionCalculator calculator)
-        {
-            _dataManager = dataManager ?? throw new ArgumentNullException(nameof(dataManager));
-            _calculator = calculator ?? throw new ArgumentNullException(nameof(calculator));
-
-            // 初始化事件订阅
             SubscribeToEvents();
         }
 
-        #endregion 依赖注入
+        #region 事件定义
+
+        /// <summary>
+        /// 处方项添加事件
+        /// </summary>
+        public class PrescriptionItemAddedEvent : PubSubEvent<PrescriptionItemEventArgs> { }
+
+        /// <summary>
+        /// 处方项移除事件
+        /// </summary>
+        public class PrescriptionItemRemovedEvent : PubSubEvent<PrescriptionItemEventArgs> { }
+
+        /// <summary>
+        /// 处方项更新事件
+        /// </summary>
+        public class PrescriptionItemUpdatedEvent : PubSubEvent<PrescriptionItemEventArgs> { }
+
+        /// <summary>
+        /// 处方保存事件
+        /// </summary>
+        public class PrescriptionSavedEvent : PubSubEvent<PrescriptionEventArgs> { }
+
+        /// <summary>
+        /// 处方删除事件
+        /// </summary>
+        public class PrescriptionDeletedEvent : PubSubEvent<PrescriptionEventArgs> { }
+
+        /// <summary>
+        /// 处方状态变更事件
+        /// </summary>
+        public class PrescriptionStatusChangedEvent : PubSubEvent<PrescriptionStatusEventArgs> { }
+
+        /// <summary>
+        /// 价格重算事件
+        /// </summary>
+        public class PriceRecalculatedEvent : PubSubEvent<PriceEventArgs> { }
+
+        /// <summary>
+        /// 验证结果事件
+        /// </summary>
+        public class ValidationResultEvent : PubSubEvent<ValidationEventArgs> { }
+
+        /// <summary>
+        /// 数据同步事件
+        /// </summary>
+        public class DataSyncEvent : PubSubEvent<DataSyncEventArgs> { }
+
+        #endregion
+
+        #region 事件参数类
+
+        public class PrescriptionItemEventArgs
+        {
+            public PrescriptionItemViewModel Item { get; set; } = null!;
+            public string Action { get; set; } = string.Empty;
+            public DateTime Timestamp { get; set; } = DateTime.Now;
+            public string Source { get; set; } = string.Empty;
+        }
+
+        public class PrescriptionEventArgs
+        {
+            public Guid PrescriptionId { get; set; }
+            public string Action { get; set; } = string.Empty;
+            public DateTime Timestamp { get; set; } = DateTime.Now;
+            public string Source { get; set; } = string.Empty;
+            public object? Data { get; set; }
+        }
+
+        public class PrescriptionStatusEventArgs
+        {
+            public Guid PrescriptionId { get; set; }
+            public string OldStatus { get; set; } = string.Empty;
+            public string NewStatus { get; set; } = string.Empty;
+            public DateTime Timestamp { get; set; } = DateTime.Now;
+            public string Reason { get; set; } = string.Empty;
+        }
+
+        public class PriceEventArgs
+        {
+            public decimal SingleDosagePrice { get; set; }
+            public decimal TotalPrice { get; set; }
+            public decimal DiscountedPrice { get; set; }
+            public int ItemCount { get; set; }
+            public DateTime Timestamp { get; set; } = DateTime.Now;
+        }
+
+        public class ValidationEventArgs
+        {
+            public bool IsValid { get; set; }
+            public List<string> Errors { get; set; } = new();
+            public List<string> Warnings { get; set; } = new();
+            public DateTime Timestamp { get; set; } = DateTime.Now;
+            public string Source { get; set; } = string.Empty;
+        }
+
+        public class DataSyncEventArgs
+        {
+            public string SyncType { get; set; } = string.Empty;
+            public bool IsSuccess { get; set; }
+            public string Message { get; set; } = string.Empty;
+            public DateTime Timestamp { get; set; } = DateTime.Now;
+            public int AffectedCount { get; set; }
+        }
+
+        #endregion
 
         #region 事件订阅
 
-        /// <summary>
-        /// 订阅系统事件
-        /// </summary>
         private void SubscribeToEvents()
         {
             try
             {
-                // 订阅工作流步骤保存事件
-                _eventAggregator.GetEvent<SaveStepDataEvent>()
-                    .Subscribe(OnSaveStepData);
+                // 订阅处方项事件
+                var itemAddedToken = _eventAggregator.GetEvent<PrescriptionItemAddedEvent>().Subscribe(OnPrescriptionItemAdded);
+                var itemRemovedToken = _eventAggregator.GetEvent<PrescriptionItemRemovedEvent>().Subscribe(OnPrescriptionItemRemoved);
+                var itemUpdatedToken = _eventAggregator.GetEvent<PrescriptionItemUpdatedEvent>().Subscribe(OnPrescriptionItemUpdated);
 
-                // 订阅数据刷新请求事件 - 使用统一事件
-                _eventAggregator.GetEvent<DataRefreshRequestEvent>()
-                    .Subscribe(OnDataRefreshRequest);
+                // 订阅处方事件
+                var savedToken = _eventAggregator.GetEvent<PrescriptionSavedEvent>().Subscribe(OnPrescriptionSaved);
+                var deletedToken = _eventAggregator.GetEvent<PrescriptionDeletedEvent>().Subscribe(OnPrescriptionDeleted);
+                var statusChangedToken = _eventAggregator.GetEvent<PrescriptionStatusChangedEvent>().Subscribe(OnPrescriptionStatusChanged);
 
-                // 订阅导航请求事件 - 使用统一事件
-                _eventAggregator.GetEvent<NavigationRequestEvent>()
-                    .Subscribe(OnNavigationRequest);
+                // 订阅计算事件
+                var priceRecalculatedToken = _eventAggregator.GetEvent<PriceRecalculatedEvent>().Subscribe(OnPriceRecalculated);
 
-                // 订阅处方相关的专门事件
-                _eventAggregator.GetEvent<PrescriptionChangedEvent>()
-                    .Subscribe(OnPrescriptionChanged);
+                // 订阅验证事件
+                var validationToken = _eventAggregator.GetEvent<ValidationResultEvent>().Subscribe(OnValidationResult);
 
-                _eventAggregator.GetEvent<HerbAddedEvent>()
-                    .Subscribe(OnHerbAdded);
+                // 订阅数据同步事件
+                var dataSyncToken = _eventAggregator.GetEvent<DataSyncEvent>().Subscribe(OnDataSync);
 
-                _eventAggregator.GetEvent<FormulaImportedEvent>()
-                    .Subscribe(OnFormulaImported);
+                // 保存订阅令牌以便后续取消订阅
+                _subscriptions.AddRange(new[]
+                {
+                    itemAddedToken, itemRemovedToken, itemUpdatedToken,
+                    savedToken, deletedToken, statusChangedToken,
+                    priceRecalculatedToken, validationToken, dataSyncToken
+                });
 
-                _logger.LogDebug("事件订阅初始化完成");
+                _logger.LogDebug("处方事件订阅完成，共订阅 {Count} 个事件", _subscriptions.Count);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "初始化事件订阅失败");
+                _logger.LogError(ex, "订阅处方事件失败");
             }
         }
 
-        #endregion 事件订阅
+        #endregion
 
-        #region 事件处理方法
+        #region 事件处理
 
-        /// <summary>
-        /// 处理工作流步骤保存事件
-        /// </summary>
-        private async void OnSaveStepData(SaveStepDataEventArgs args)
+        private void OnPrescriptionItemAdded(PrescriptionItemEventArgs args)
         {
-            // 使用适当的async void事件处理器模式
             try
             {
-                if (args.StepName != "Prescription" || _dataManager == null)
-                {
-                    return;
-                }
-
-                _logger.LogDebug("处理处方步骤保存事件");
-
-                // 自动保存当前处方数据
-                if (_dataManager.HasChanges && _dataManager.PrescriptionItems.Count > 0)
-                {
-                    await _dataManager.SaveAsync();
-                    _logger.LogInformation("工作流触发：处方数据已自动保存");
-                }
-
-                // 发布处方保存完成事件
-                PublishPrescriptionSaved();
+                _logger.LogDebug("处方项已添加: {HerbName}", args.Item.HerbName);
+                
+                // 触发价格重算
+                PublishPriceRecalculationRequest();
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "处理工作流步骤保存事件失败");
+                _logger.LogError(ex, "处理处方项添加事件失败");
             }
         }
 
-        /// <summary>
-        /// 处理数据变更事件
-        /// </summary>
-        private void OnDataRefreshRequest(DataRefreshRequestEventArgs refreshRequest)
+        private void OnPrescriptionItemRemoved(PrescriptionItemEventArgs args)
         {
             try
             {
-                // 将统一事件参数转换为原有的数据变更逻辑
-                if (refreshRequest.DataType != "Prescription")
-                {
-                    return;
-                }
+                _logger.LogDebug("处方项已移除: {HerbName}", args.Item.HerbName);
+                
+                // 触发价格重算
+                PublishPriceRecalculationRequest();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "处理处方项移除事件失败");
+            }
+        }
 
-                _logger.LogDebug("处理处方数据刷新请求: {DataType}", refreshRequest.DataType);
+        private void OnPrescriptionItemUpdated(PrescriptionItemEventArgs args)
+        {
+            try
+            {
+                _logger.LogDebug("处方项已更新: {HerbName}", args.Item.HerbName);
+                
+                // 触发价格重算
+                PublishPriceRecalculationRequest();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "处理处方项更新事件失败");
+            }
+        }
 
-                // 根据刷新请求执行相应操作
-                if (refreshRequest.ForceRefresh)
+        private void OnPrescriptionSaved(PrescriptionEventArgs args)
+        {
+            try
+            {
+                _logger.LogInformation("处方已保存: {PrescriptionId}", args.PrescriptionId);
+                
+                // 可以触发UI刷新或其他相关操作
+                PublishDataSyncEvent("PrescriptionSaved", true, "处方保存成功", 1);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "处理处方保存事件失败");
+            }
+        }
+
+        private void OnPrescriptionDeleted(PrescriptionEventArgs args)
+        {
+            try
+            {
+                _logger.LogInformation("处方已删除: {PrescriptionId}", args.PrescriptionId);
+                
+                // 触发数据同步事件
+                PublishDataSyncEvent("PrescriptionDeleted", true, "处方删除成功", 1);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "处理处方删除事件失败");
+            }
+        }
+
+        private void OnPrescriptionStatusChanged(PrescriptionStatusEventArgs args)
+        {
+            try
+            {
+                _logger.LogDebug("处方状态变更: {PrescriptionId} 从 {OldStatus} 到 {NewStatus}", 
+                    args.PrescriptionId, args.OldStatus, args.NewStatus);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "处理处方状态变更事件失败");
+            }
+        }
+
+        private void OnPriceRecalculated(PriceEventArgs args)
+        {
+            try
+            {
+                _logger.LogDebug("价格已重算: 总价 {TotalPrice}, 优惠后 {DiscountedPrice}", 
+                    args.TotalPrice, args.DiscountedPrice);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "处理价格重算事件失败");
+            }
+        }
+
+        private void OnValidationResult(ValidationEventArgs args)
+        {
+            try
+            {
+                if (args.IsValid)
                 {
-                    RecalculateAndNotify();
-                }
-                else if (refreshRequest.EntityId.HasValue)
-                {
-                    // 根据实体ID执行特定刷新
-                    RecalculateAndNotify();
+                    _logger.LogDebug("验证通过");
                 }
                 else
                 {
-                    // 默认处理：重新计算并通知
-                    RecalculateAndNotify();
+                    _logger.LogWarning("验证失败: {Errors}", string.Join("; ", args.Errors));
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "处理数据刷新请求失败");
+                _logger.LogError(ex, "处理验证结果事件失败");
             }
         }
 
-        /// <summary>
-        /// 处理导航事件
-        /// </summary>
-        private async void OnNavigationRequest(NavigationRequestEventArgs navRequest)
-        {
-            // 使用适当的async void事件处理器模式
-            try
-            {
-                // 将统一导航事件参数转换为原有的导航逻辑
-                // 从Parameters中提取必要的信息
-                var parameters = navRequest.Parameters as IDictionary<string, object> ?? new Dictionary<string, object>();
-                
-                string fromStep = parameters.ContainsKey("FromStep") ? parameters["FromStep"]?.ToString() ?? "" : "";
-                string toStep = navRequest.ViewName; // 使用ViewName作为ToStep
-                Guid medicalCaseId = parameters.ContainsKey("MedicalCaseId") 
-                    ? (Guid)(parameters["MedicalCaseId"] ?? Guid.Empty) 
-                    : Guid.Empty;
-
-                // 如果从处方步骤导航出去，检查是否需要保存
-                if (fromStep == "Prescription" && _dataManager != null)
-                {
-                    if (_dataManager.HasChanges)
-                    {
-                        var autoSave = ShouldAutoSave(navRequest);
-                        if (autoSave)
-                        {
-                            await _dataManager.SaveAsync();
-                            _logger.LogInformation("导航触发：处方数据已自动保存");
-                        }
-                    }
-                }
-
-                // 如果导航到处方步骤，触发初始化
-                if (toStep == "Prescription" && _dataManager != null)
-                {
-                    await RefreshPrescriptionData(medicalCaseId);
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "处理导航请求失败");
-            }
-        }
-
-
-        /// <summary>
-        /// 处理处方变更事件
-        /// </summary>
-        private void OnPrescriptionChanged(PrescriptionChangedEventArgs changeInfo)
+        private void OnDataSync(DataSyncEventArgs args)
         {
             try
             {
-                _logger.LogDebug("处理处方变更事件: {Action}", changeInfo.ChangeType);
-
-                switch (changeInfo.ChangeType)
-                {
-                    case "Recalculate":
-                        RecalculateAndNotify();
-                        break;
-
-                    case "Validate":
-                        PublishValidationRequest();
-                        break;
-
-                    case "Clear":
-                        PublishPrescriptionCleared();
-                        break;
-
-                    case "Import":
-                        PublishPrescriptionImported();
-                        break;
-                }
+                _logger.LogDebug("数据同步: {SyncType} - {Message}", args.SyncType, args.Message);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "处理处方变更事件失败");
+                _logger.LogError(ex, "处理数据同步事件失败");
             }
         }
 
-        /// <summary>
-        /// 处理药材添加事件
-        /// </summary>
-        private void OnHerbAdded(HerbAddedEventArgs herbInfo)
-        {
-            try
-            {
-                _logger.LogDebug("处理药材添加事件: {HerbName}", herbInfo.HerbName);
-
-                // 发布药材添加完成事件
-                PublishHerbAddedComplete(herbInfo);
-
-                // 触发重新计算
-                RecalculateAndNotify();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "处理药材添加事件失败");
-            }
-        }
-
-        /// <summary>
-        /// 处理验方导入事件
-        /// </summary>
-        private void OnFormulaImported(FormulaImportedEventArgs formulaInfo)
-        {
-            try
-            {
-                _logger.LogDebug("处理验方导入事件: {FormulaName}", formulaInfo.FormulaName);
-
-                // 发布验方导入完成事件
-                PublishFormulaImportedComplete(formulaInfo);
-
-                // 触发重新计算
-                RecalculateAndNotify();
-
-                // 标记数据已变更
-                if (_dataManager != null)
-                {
-                    _dataManager.MarkAsChanged();
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "处理验方导入事件失败");
-            }
-        }
-
-        #endregion 事件处理方法
+        #endregion
 
         #region 事件发布方法
 
         /// <summary>
-        /// 发布处方保存事件
+        /// 发布处方项添加事件
         /// </summary>
-        public void PublishPrescriptionSaved()
+        public void PublishPrescriptionItemAdded(PrescriptionItemViewModel item, string source = "")
         {
             try
             {
-                _eventAggregator.GetEvent<PrescriptionSavedEvent>()
-                    .Publish(new PrescriptionSavedEventArgs
-                    {
-                        PrescriptionId = _dataManager?.PrescriptionId ?? Guid.Empty,
-                        Prescription = _dataManager?.CurrentPrescription,
-                        IsNew = _dataManager?.IsNewPrescription ?? false
-                    });
+                var args = new PrescriptionItemEventArgs
+                {
+                    Item = item,
+                    Action = "Added",
+                    Source = source
+                };
 
-                _logger.LogDebug("发布处方保存事件");
+                _eventAggregator.GetEvent<PrescriptionItemAddedEvent>().Publish(args);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "发布处方项添加事件失败");
+            }
+        }
+
+        /// <summary>
+        /// 发布处方项移除事件
+        /// </summary>
+        public void PublishPrescriptionItemRemoved(PrescriptionItemViewModel item, string source = "")
+        {
+            try
+            {
+                var args = new PrescriptionItemEventArgs
+                {
+                    Item = item,
+                    Action = "Removed",
+                    Source = source
+                };
+
+                _eventAggregator.GetEvent<PrescriptionItemRemovedEvent>().Publish(args);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "发布处方项移除事件失败");
+            }
+        }
+
+        /// <summary>
+        /// 发布处方项更新事件
+        /// </summary>
+        public void PublishPrescriptionItemUpdated(PrescriptionItemViewModel item, string source = "")
+        {
+            try
+            {
+                var args = new PrescriptionItemEventArgs
+                {
+                    Item = item,
+                    Action = "Updated",
+                    Source = source
+                };
+
+                _eventAggregator.GetEvent<PrescriptionItemUpdatedEvent>().Publish(args);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "发布处方项更新事件失败");
+            }
+        }
+
+        /// <summary>
+        /// 发布处方保存事件
+        /// </summary>
+        public void PublishPrescriptionSaved(Guid prescriptionId, string source = "", object? data = null)
+        {
+            try
+            {
+                var args = new PrescriptionEventArgs
+                {
+                    PrescriptionId = prescriptionId,
+                    Action = "Saved",
+                    Source = source,
+                    Data = data
+                };
+
+                _eventAggregator.GetEvent<PrescriptionSavedEvent>().Publish(args);
             }
             catch (Exception ex)
             {
@@ -316,233 +406,101 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components
         }
 
         /// <summary>
-        /// 发布处方清空事件
+        /// 发布价格重算请求
         /// </summary>
-        public void PublishPrescriptionCleared()
+        public void PublishPriceRecalculationRequest()
         {
             try
             {
-                _eventAggregator.GetEvent<PrescriptionClearedEvent>()
-                    .Publish(new PrescriptionClearedEventArgs
-                    {
-                        PrescriptionId = _dataManager?.PrescriptionId ?? Guid.Empty,
-                        Reason = "User initiated clear"
-                    });
-
-                _logger.LogDebug("发布处方清空事件");
+                // 这是一个通知事件，具体的计算由PrescriptionCalculator处理
+                var args = new PriceEventArgs();
+                _eventAggregator.GetEvent<PriceRecalculatedEvent>().Publish(args);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "发布处方清空事件失败");
+                _logger.LogError(ex, "发布价格重算请求失败");
             }
         }
 
         /// <summary>
-        /// 发布价格重算事件
+        /// 发布验证结果事件
         /// </summary>
-        public void PublishPriceRecalculated()
+        public void PublishValidationResult(bool isValid, List<string> errors, List<string> warnings, string source = "")
         {
             try
             {
-                if (_dataManager == null || _calculator == null)
+                var args = new ValidationEventArgs
                 {
-                    return;
+                    IsValid = isValid,
+                    Errors = errors,
+                    Warnings = warnings,
+                    Source = source
+                };
+
+                _eventAggregator.GetEvent<ValidationResultEvent>().Publish(args);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "发布验证结果事件失败");
+            }
+        }
+
+        /// <summary>
+        /// 发布数据同步事件
+        /// </summary>
+        public void PublishDataSyncEvent(string syncType, bool isSuccess, string message, int affectedCount)
+        {
+            try
+            {
+                var args = new DataSyncEventArgs
+                {
+                    SyncType = syncType,
+                    IsSuccess = isSuccess,
+                    Message = message,
+                    AffectedCount = affectedCount
+                };
+
+                _eventAggregator.GetEvent<DataSyncEvent>().Publish(args);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "发布数据同步事件失败");
+            }
+        }
+
+        #endregion
+
+        #region 资源清理
+
+        /// <summary>
+        /// 清理资源
+        /// </summary>
+        public void Dispose()
+        {
+            try
+            {
+                // 取消所有事件订阅
+                foreach (var token in _subscriptions)
+                {
+                    try
+                    {
+                        token.Dispose();
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "取消事件订阅失败");
+                    }
                 }
 
-                var calculation = _calculator.CalculatePrescriptionPrice(
-                    _dataManager.PrescriptionItems, _dataManager.DosageCount, _dataManager.Discount);
-
-                _eventAggregator.GetEvent<PriceRecalculatedEvent>()
-                    .Publish(new PriceRecalculatedEventArgs
-                    {
-                        PrescriptionId = _dataManager.PrescriptionId,
-                        OldPrice = 0, // TODO: 需要从计算器获取旧价格
-                        NewPrice = calculation.TotalPrice
-                    });
-
-                _logger.LogDebug("发布价格重算事件");
+                _subscriptions.Clear();
+                _logger.LogDebug("处方事件协调器资源已清理");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "发布价格重算事件失败");
+                _logger.LogError(ex, "清理处方事件协调器资源失败");
             }
         }
 
-        /// <summary>
-        /// 发布验证请求事件
-        /// </summary>
-        public void PublishValidationRequest()
-        {
-            try
-            {
-                _eventAggregator.GetEvent<ValidationRequestEvent>()
-                    .Publish(new ValidationRequestEventArgs
-                    {
-                        ValidationType = "Prescription",
-                        ValidationData = _dataManager?.CurrentPrescription
-                    });
-
-                _logger.LogDebug("发布验证请求事件");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "发布验证请求事件失败");
-            }
-        }
-
-        /// <summary>
-        /// 发布药材添加完成事件
-        /// </summary>
-        private void PublishHerbAddedComplete(HerbAddedEventArgs herbInfo)
-        {
-            try
-            {
-                _eventAggregator.GetEvent<HerbAddedCompleteEvent>()
-                    .Publish(new HerbAddedCompleteEventArgs
-                    {
-                        PrescriptionId = _dataManager?.PrescriptionId ?? Guid.Empty,
-                        AddedHerbIds = new List<Guid> { herbInfo.HerbId }
-                    });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "发布药材添加完成事件失败");
-            }
-        }
-
-        /// <summary>
-        /// 发布验方导入完成事件
-        /// </summary>
-        private void PublishFormulaImportedComplete(FormulaImportedEventArgs formulaInfo)
-        {
-            try
-            {
-                _eventAggregator.GetEvent<FormulaImportedCompleteEvent>()
-                    .Publish(new FormulaImportedCompleteEventArgs
-                    {
-                        PrescriptionId = _dataManager?.PrescriptionId ?? Guid.Empty,
-                        FormulaId = formulaInfo.FormulaId,
-                        ImportSuccess = true
-                    });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "发布验方导入完成事件失败");
-            }
-        }
-
-        /// <summary>
-        /// 发布处方导入事件
-        /// </summary>
-        public void PublishPrescriptionImported()
-        {
-            try
-            {
-                _eventAggregator.GetEvent<PrescriptionImportedEvent>()
-                    .Publish(new PrescriptionImportedEventArgs
-                    {
-                        SourcePrescriptionId = 0, // TODO: 需要从上下文获取源处方ID
-                        TargetPrescriptionId = 0, // TODO: 需要从上下文获取目标处方ID  
-                        HerbCount = _dataManager?.PrescriptionItems.Count ?? 0
-                    });
-
-                _logger.LogDebug("发布处方导入事件");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "发布处方导入事件失败");
-            }
-        }
-
-        #endregion 事件发布方法
-
-        #region 辅助方法
-
-        /// <summary>
-        /// 重新计算并通知
-        /// </summary>
-        private void RecalculateAndNotify()
-        {
-            try
-            {
-                if (_dataManager == null || _calculator == null)
-                {
-                    return;
-                }
-
-                // 更新小计
-                _calculator.UpdateItemSubtotals(_dataManager.PrescriptionItems);
-
-                // 发布价格重算事件
-                PublishPriceRecalculated();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "重新计算并通知失败");
-            }
-        }
-
-        /// <summary>
-        /// <summary>
-        /// 判断是否应该自动保存 - 统一事件系统版本
-        /// </summary>
-        private bool ShouldAutoSave(NavigationRequestEventArgs navRequest)
-        {
-            // 从参数中提取目标步骤
-            var parameters = navRequest.Parameters as IDictionary<string, object> ?? new Dictionary<string, object>();
-            string toStep = navRequest.ViewName; // 使用ViewName作为目标步骤
-            
-            // 根据导航目标决定是否自动保存
-            var autoSaveSteps = new[] { "Summary", "Complete", "Print" };
-            return Array.Exists(autoSaveSteps, step => step.Equals(toStep, StringComparison.OrdinalIgnoreCase));
-        }
-
-        /// <summary>
-        /// 刷新处方数据
-        /// </summary>
-        private async Task RefreshPrescriptionData(Guid medicalCaseId)
-        {
-            try
-            {
-                if (_dataManager != null && medicalCaseId != Guid.Empty)
-                {
-                    await _dataManager.InitializeAsync(medicalCaseId);
-                    _logger.LogDebug("处方数据已刷新");
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "刷新处方数据失败");
-            }
-        }
-
-        #endregion 辅助方法
-
-        #region 清理资源
-
-        /// <summary>
-        /// 取消事件订阅
-        /// </summary>
-        public void Unsubscribe()
-        {
-            try
-            {
-                _eventAggregator.GetEvent<SaveStepDataEvent>().Unsubscribe(OnSaveStepData);
-                _eventAggregator.GetEvent<DataRefreshRequestEvent>().Unsubscribe(OnDataRefreshRequest);
-                _eventAggregator.GetEvent<NavigationRequestEvent>().Unsubscribe(OnNavigationRequest);
-                _eventAggregator.GetEvent<PrescriptionChangedEvent>().Unsubscribe(OnPrescriptionChanged);
-                _eventAggregator.GetEvent<HerbAddedEvent>().Unsubscribe(OnHerbAdded);
-                _eventAggregator.GetEvent<FormulaImportedEvent>().Unsubscribe(OnFormulaImported);
-
-                _logger.LogDebug("事件订阅已取消");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "取消事件订阅失败");
-            }
-        }
-
-        #endregion 清理资源
+        #endregion
     }
-
 }
