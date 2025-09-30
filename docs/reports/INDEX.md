@@ -6,6 +6,8 @@
 ## 最新重点报告（按日期倒序）
 | 日期 | 文档 | 范围 |
 |------|------|------|
+| 2025-09-30 | `desktop-folder-structure-analysis.md` | Desktop文件夹结构分析 - 识别架构问题和构建产物污染 |
+| 2025-09-30 | `project-cleanup-analysis.md` | 项目清理分析 - 识别不需要的文件和目录 |
 | 2025-09-30 | `Issue-815-Phase3-Completion-Report.md` | Issue #815 Phase 3完成报告 - Workstations层实施 |
 | 2025-09-30 | `Issue-815-Phase1-Completion-Report.md` | Issue #815 Phase 1完成报告 |
 | 2025-09-30 | `Issue-815-UltraThink-Architecture-Implementation-Report.md` | Issue #815 UltraThink架构实施完成报告 |
