@@ -6,8 +6,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{A1234567-1
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BusinessModules", "BusinessModules", "{B1234567-1234-1234-1234-123456789999}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Workbenches", "Workbenches", "{C1234567-1234-1234-1234-123456789010}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SharedResources", "SharedResources", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Shell", "src\Client\Desktop\Shell\LYBT.Desktop.Shell.csproj", "{A1234567-1234-1234-1234-123456789001}"
