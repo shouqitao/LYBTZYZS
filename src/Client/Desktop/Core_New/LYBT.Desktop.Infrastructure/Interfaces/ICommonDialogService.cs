@@ -1,6 +1,4 @@
-using System.Threading.Tasks;
-
-namespace LYBT.Desktop.Infrastructure.Interfaces
+﻿namespace LYBT.Desktop.Infrastructure.Interfaces
 {
     /// <summary>
     /// 通用对话框服务接口 - UltraThink架构对话框抽象

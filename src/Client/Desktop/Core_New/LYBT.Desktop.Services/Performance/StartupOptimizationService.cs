@@ -1,6 +1,4 @@
-using System;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Services.Performance
 {
@@ -24,14 +22,14 @@ namespace LYBT.Desktop.Services.Performance
         public async Task OptimizeStartupAsync()
         {
             _logger.LogInformation("开始启动优化");
-            
+
             // 并行加载非关键资源
             await Task.Run(() =>
             {
                 _logger.LogDebug("异步加载非关键资源");
                 // 延迟加载非必需组件
             });
-            
+
             _endTime = DateTime.Now;
             _logger.LogInformation("启动优化完成，用时：{Duration}ms", GetStartupDuration().TotalMilliseconds);
         }

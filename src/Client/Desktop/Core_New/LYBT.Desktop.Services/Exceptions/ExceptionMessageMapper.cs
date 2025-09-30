@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Net;
 using System.Net.Http;
 
@@ -51,13 +51,13 @@ namespace LYBT.Desktop.Services.Exceptions
             {
                 HttpRequestException httpEx when TryGetHttpStatusCode(httpEx, out var statusCode)
                     => GetHttpStatusMessage(statusCode),
-                
+
                 AggregateException aggEx when aggEx.InnerExceptions.Count == 1
                     => GetUserFriendlyMessage(aggEx.InnerExceptions.First()),
-                
+
                 _ when ExceptionMessages.TryGetValue(exception.GetType(), out var message)
                     => message,
-                
+
                 _ => GetDefaultMessage(exception)
             };
         }

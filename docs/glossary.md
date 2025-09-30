@@ -63,8 +63,8 @@
 | 中文术语 | 英文术语 | 说明 |
 |---------|---------|------|
 | 患者档案 | Patient Archive | 患者的基本信息和病历记录 |
-| 诊疗工作台 | Consultation Workbench | 医生进行诊疗的主界面 |
-| 系统工作台 | System Workbench | 管理员管理系统的主界面 |
+| 诊疗工作台 | Consultation Workstation | 医生进行诊疗的主界面 |
+| 系统工作台 | System Workstation | 管理员管理系统的主界面 |
 | 快速录入 | Quick Entry | 使用拼音码快速输入处方 |
 | 方剂导入 | Formula Import | 从模板导入标准方剂 |
 | 历史复制 | History Copy | 复制历史处方进行修改 |

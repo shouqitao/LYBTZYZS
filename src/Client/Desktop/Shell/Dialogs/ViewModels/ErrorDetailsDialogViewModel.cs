@@ -1,4 +1,4 @@
-using System.Windows;
+﻿using System.Windows;
 using Prism.Commands;
 using Prism.Mvvm;
 using SharedCommon = LYBT.Shared.Models.Contracts.Common;

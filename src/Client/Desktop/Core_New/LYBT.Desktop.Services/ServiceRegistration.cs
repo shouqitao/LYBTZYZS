@@ -1,4 +1,4 @@
-using System;
+﻿using System.Net.Http;
 using LYBT.Desktop.Services.Business;
 using LYBT.Desktop.Services.Exceptions;
 using LYBT.Desktop.Services.Http;
@@ -7,8 +7,6 @@ using LYBT.Desktop.Services.Repositories.Interfaces;
 using LYBT.Shared.Interfaces.Services;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Http;
-using System.Net.Http;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Services
@@ -32,17 +30,17 @@ namespace LYBT.Desktop.Services
             });
 
             // 注册IApiService - 使用HttpClient工厂创建的实例
-            services.AddScoped<IApiService>(provider => 
+            services.AddScoped<IApiService>(provider =>
             {
                 var httpClientFactory = provider.GetRequiredService<IHttpClientFactory>();
                 var httpClient = httpClientFactory.CreateClient(nameof(ApiService));
                 var cache = provider.GetService<IMemoryCache>();
                 var logger = provider.GetService<ILogger<ApiService>>();
                 var retryOptions = provider.GetService<RetryPolicyOptions>();
-                
+
                 return new ApiService(httpClient, cache, logger, retryOptions);
             });
-            
+
             // 注册异常处理器
             services.AddScoped<IExceptionHandler, StandardExceptionHandler>();
 

@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
@@ -18,13 +18,13 @@ namespace LYBT.Shared.Models.Contracts.Formula
 
         [DisplayName("功效")]
         public string? Effect { get; set; }
-        
+
         [DisplayName("主治")]
         public string? Indications { get; set; }
-        
+
         [DisplayName("功效")]
         public string? Effects { get => Effect; set => Effect = value; }
-        
+
         [DisplayName("验方描述")]
         [StringLength(1000, ErrorMessage = "验方描述长度不能超过1000个字符")]
         public string? Description { get; set; }

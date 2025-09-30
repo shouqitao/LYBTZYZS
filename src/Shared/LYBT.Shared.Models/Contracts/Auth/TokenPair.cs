@@ -1,6 +1,4 @@
-using System;
-
-namespace LYBT.Shared.Models.Contracts.Auth
+﻿namespace LYBT.Shared.Models.Contracts.Auth
 {
     /// <summary>
     /// JWT令牌对 - 包含Access Token和Refresh Token

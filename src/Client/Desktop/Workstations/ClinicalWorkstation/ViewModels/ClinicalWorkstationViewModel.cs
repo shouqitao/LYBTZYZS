@@ -1,14 +1,13 @@
-using LYBT.Desktop.Models.ViewModels.Base;
+﻿using System.Collections.ObjectModel;
+using System.Windows.Input;
 using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Models.ViewModels.Base;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
-using Prism.Regions;
-using System.Windows.Input;
-using System;
-using System.Collections.ObjectModel;
 using Prism.Mvvm;
+using Prism.Regions;
 
 namespace LYBT.Desktop.ClinicalWorkstation.ViewModels
 {

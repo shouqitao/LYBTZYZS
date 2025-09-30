@@ -1,7 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using LYBT.Shared.Models.Contracts.Prescriptions;
+﻿using LYBT.Shared.Models.Contracts.Prescriptions;
 
 namespace LYBT.Desktop.Services.Repositories.Interfaces
 {

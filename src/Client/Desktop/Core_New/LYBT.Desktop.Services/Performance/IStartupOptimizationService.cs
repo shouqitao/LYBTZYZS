@@ -1,7 +1,4 @@
-using System;
-using System.Threading.Tasks;
-
-namespace LYBT.Desktop.Services.Performance
+﻿namespace LYBT.Desktop.Services.Performance
 {
     /// <summary>
     /// 启动优化服务接口 - 提升应用程序启动性能

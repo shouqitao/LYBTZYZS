@@ -1,9 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Prism.Events;
-using LYBT.Desktop.Modules.Prescriptions.ViewModels;
 
 namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
 {
@@ -185,7 +181,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
             try
             {
                 _logger.LogDebug("处方项已添加: {HerbName}", args.Item.HerbName);
-                
+
                 // 触发价格重算
                 PublishPriceRecalculationRequest();
             }
@@ -200,7 +196,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
             try
             {
                 _logger.LogDebug("处方项已移除: {HerbName}", args.Item.HerbName);
-                
+
                 // 触发价格重算
                 PublishPriceRecalculationRequest();
             }
@@ -215,7 +211,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
             try
             {
                 _logger.LogDebug("处方项已更新: {HerbName}", args.Item.HerbName);
-                
+
                 // 触发价格重算
                 PublishPriceRecalculationRequest();
             }
@@ -230,7 +226,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
             try
             {
                 _logger.LogInformation("处方已保存: {PrescriptionId}", args.PrescriptionId);
-                
+
                 // 可以触发UI刷新或其他相关操作
                 PublishDataSyncEvent("PrescriptionSaved", true, "处方保存成功", 1);
             }
@@ -245,7 +241,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
             try
             {
                 _logger.LogInformation("处方已删除: {PrescriptionId}", args.PrescriptionId);
-                
+
                 // 触发数据同步事件
                 PublishDataSyncEvent("PrescriptionDeleted", true, "处方删除成功", 1);
             }
@@ -259,7 +255,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
         {
             try
             {
-                _logger.LogDebug("处方状态变更: {PrescriptionId} 从 {OldStatus} 到 {NewStatus}", 
+                _logger.LogDebug("处方状态变更: {PrescriptionId} 从 {OldStatus} 到 {NewStatus}",
                     args.PrescriptionId, args.OldStatus, args.NewStatus);
             }
             catch (Exception ex)
@@ -272,7 +268,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
         {
             try
             {
-                _logger.LogDebug("价格已重算: 总价 {TotalPrice}, 优惠后 {DiscountedPrice}", 
+                _logger.LogDebug("价格已重算: 总价 {TotalPrice}, 优惠后 {DiscountedPrice}",
                     args.TotalPrice, args.DiscountedPrice);
             }
             catch (Exception ex)

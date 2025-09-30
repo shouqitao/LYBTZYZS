@@ -1,11 +1,11 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Data;
 using System.IO;
 using System.Windows;
 using System.Windows.Input;
 using LYBT.Desktop.Infrastructure.Helpers;
-using LYBT.Desktop.Services.Dialogs;
 using LYBT.Desktop.Patients.Models;
+using LYBT.Desktop.Services.Dialogs;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
@@ -21,7 +21,7 @@ namespace LYBT.Desktop.Patients.ViewModels
     /// 患者Excel导入向导视图模型
     /// 实现4步向导UI：模板下载→文件选择→数据预览→导入执行
     /// </summary>
-    public class PatientImportWizardViewModel : BindableBase
+    public class PatientImportWizardViewModel : BindableBase, IDisposable
     {
 
         #region Fields
@@ -1052,6 +1052,11 @@ namespace LYBT.Desktop.Patients.ViewModels
             }
 
             return null;
+        }
+
+        public void Dispose()
+        {
+            throw new NotImplementedException();
         }
 
         #endregion Helper Methods

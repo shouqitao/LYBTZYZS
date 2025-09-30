@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.Windows.Data;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Extensions;

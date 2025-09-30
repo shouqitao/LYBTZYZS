@@ -1,4 +1,4 @@
-namespace LYBT.Shared.Models.Contracts.Prescriptions
+﻿namespace LYBT.Shared.Models.Contracts.Prescriptions
 {
     /// <summary>
     /// 处方验证结果 - 简化版，只保留基本验证

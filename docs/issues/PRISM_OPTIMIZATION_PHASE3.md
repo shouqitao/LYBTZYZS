@@ -95,13 +95,13 @@ public class FormulaModule : IModule
     // 实现...
 }
 
-// src/Client/Desktop/Modules/MedicalWorkbench/MedicalWorkbenchModule.cs
-[Module(ModuleName = nameof(MedicalWorkbenchModule))]
+// src/Client/Desktop/Modules/MedicalWorkstation/MedicalWorkstationModule.cs
+[Module(ModuleName = nameof(MedicalWorkstationModule))]
 [ModuleDependency(nameof(PatientsModule))]
 [ModuleDependency(nameof(ConsultationModule))]
 [ModuleDependency(nameof(MedicalCaseModule))]
 [ModuleDependency(nameof(PrescriptionsModule))]
-public class MedicalWorkbenchModule : IModule
+public class MedicalWorkstationModule : IModule
 {
     // 诊疗工作台是最高层模块，依赖多个业务模块
 }
@@ -155,7 +155,7 @@ protected override void ConfigureModuleCatalog(IModuleCatalog moduleCatalog)
 
     // ========== 工作台模块 - 用户触发加载 ==========
     // 诊疗工作台 - 顶层集成模块
-    moduleCatalog.AddModule<MedicalWorkbenchModule>(
+    moduleCatalog.AddModule<MedicalWorkstationModule>(
         dependsOn: new[] {
             nameof(PatientsModule),
             nameof(ConsultationModule),
@@ -176,12 +176,12 @@ public class MainWindowViewModel : UnifiedViewModelBase
     }
 
     // 用户点击诊疗工作台时触发
-    public async Task LoadMedicalWorkbenchAsync()
+    public async Task LoadMedicalWorkstationAsync()
     {
         // 加载诊疗工作台及其所有依赖
         await Task.Run(() =>
         {
-            _moduleManager.LoadModule(nameof(MedicalWorkbenchModule));
+            _moduleManager.LoadModule(nameof(MedicalWorkstationModule));
         });
     }
 
@@ -231,7 +231,7 @@ namespace LYBT.Desktop.Core.Commands
         CompositeCommand ExportCommand { get; }
 
         // 工作台切换命令
-        CompositeCommand SwitchWorkbenchCommand { get; }
+        CompositeCommand SwitchWorkstationCommand { get; }
     }
 }
 
@@ -245,7 +245,7 @@ namespace LYBT.Desktop.Core.Commands
         public CompositeCommand ValidateAllCommand { get; }
         public CompositeCommand PrintCommand { get; }
         public CompositeCommand ExportCommand { get; }
-        public CompositeCommand SwitchWorkbenchCommand { get; }
+        public CompositeCommand SwitchWorkstationCommand { get; }
 
         public ApplicationCommands()
         {
@@ -254,7 +254,7 @@ namespace LYBT.Desktop.Core.Commands
             ValidateAllCommand = new CompositeCommand();
             PrintCommand = new CompositeCommand();
             ExportCommand = new CompositeCommand();
-            SwitchWorkbenchCommand = new CompositeCommand();
+            SwitchWorkstationCommand = new CompositeCommand();
         }
     }
 }
@@ -543,7 +543,7 @@ public class ModuleLoadingService : IModuleLoadingService
 3. PatientsModule、FormulaModule（二级依赖）
 4. ConsultationModule、MedicalCaseModule（三级依赖）
 5. PrescriptionsModule（四级依赖）
-6. MedicalWorkbenchModule（顶级依赖）
+6. MedicalWorkstationModule（顶级依赖）
 
 ### Step 3: 实现按需加载（优先级：中）
 1. 修改App.xaml.cs的ConfigureModuleCatalog

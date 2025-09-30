@@ -64,7 +64,7 @@ dotnet build LYBT.Desktop.sln -c Release
 
 ### 3. 配置一致性
 - GenerateDocumentationFile配置不统一（13/18）
-- Services、Workbench.Admin、Workbench.Medical未启用文档生成
+- Services、Workstation.Admin、Workstation.Medical未启用文档生成
 - 所有项目TreatWarningsAsErrors=false
 
 ## 已更新文档

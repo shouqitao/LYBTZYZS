@@ -1,7 +1,4 @@
-using System;
-using System.Collections.Generic;
-
-namespace LYBT.Shared.Models.Contracts.Common
+﻿namespace LYBT.Shared.Models.Contracts.Common
 {
     /// <summary>
     /// 错误上下文信息

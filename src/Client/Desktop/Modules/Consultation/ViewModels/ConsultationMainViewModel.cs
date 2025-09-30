@@ -1,19 +1,14 @@
-using System;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.ObjectModel;
 using System.Windows.Input;
 using LYBT.Desktop.Infrastructure.Interfaces;
-using LYBT.Desktop.Services.ErrorHandling;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.Patients;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
-using Prism.Regions;
 using Prism.Events;
+using Prism.Regions;
 
 namespace LYBT.Desktop.Consultation.ViewModels
 {

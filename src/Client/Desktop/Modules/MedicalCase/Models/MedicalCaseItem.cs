@@ -1,8 +1,6 @@
-﻿using System;
-using Prism.Mvvm;
-using LYBT.Shared.Models.Contracts.MedicalCase;
-using LYBT.Shared.Models.Contracts.Patients;
+﻿using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Enums;
+using Prism.Mvvm;
 
 namespace LYBT.Desktop.Modules.MedicalCase.Models;
 
@@ -13,133 +11,133 @@ namespace LYBT.Desktop.Modules.MedicalCase.Models;
 /// </summary>
 public class MedicalCaseItem : BindableBase
 {
-        private Guid _id;
+    private Guid _id;
     public Guid Id
     {
         get => _id;
         set => SetProperty(ref _id, value);
     }
 
-        private Guid _patientId;
+    private Guid _patientId;
     public Guid PatientId
     {
         get => _patientId;
         set => SetProperty(ref _patientId, value);
     }
 
-        private string _patientName = string.Empty;
+    private string _patientName = string.Empty;
     public string PatientName
     {
         get => _patientName;
         set => SetProperty(ref _patientName, value);
     }
 
-        private string _patientGender = string.Empty;
+    private string _patientGender = string.Empty;
     public string PatientGender
     {
         get => _patientGender;
         set => SetProperty(ref _patientGender, value);
     }
 
-        private int? _patientAge;
+    private int? _patientAge;
     public int? PatientAge
     {
         get => _patientAge;
         set => SetProperty(ref _patientAge, value);
     }
 
-        private string _caseNumber = string.Empty;
+    private string _caseNumber = string.Empty;
     public string CaseNumber
     {
         get => _caseNumber;
         set => SetProperty(ref _caseNumber, value);
     }
 
-        private string _chiefComplaint = string.Empty;
+    private string _chiefComplaint = string.Empty;
     public string ChiefComplaint
     {
         get => _chiefComplaint;
         set => SetProperty(ref _chiefComplaint, value);
     }
 
-        private string? _presentIllness;
+    private string? _presentIllness;
     public string? PresentIllness
     {
         get => _presentIllness;
         set => SetProperty(ref _presentIllness, value);
     }
 
-        private string? _diagnosis;
+    private string? _diagnosis;
     public string? Diagnosis
     {
         get => _diagnosis;
         set => SetProperty(ref _diagnosis, value);
     }
 
-        private string? _treatmentPlan;
+    private string? _treatmentPlan;
     public string? TreatmentPlan
     {
         get => _treatmentPlan;
         set => SetProperty(ref _treatmentPlan, value);
     }
 
-        private MedicalCaseStatus _status;
+    private MedicalCaseStatus _status;
     public MedicalCaseStatus Status
     {
         get => _status;
         set => SetProperty(ref _status, value);
     }
 
-        private Guid? _consultationId;
+    private Guid? _consultationId;
     public Guid? ConsultationId
     {
         get => _consultationId;
         set => SetProperty(ref _consultationId, value);
     }
 
-        private Guid? _prescriptionId;
+    private Guid? _prescriptionId;
     public Guid? PrescriptionId
     {
         get => _prescriptionId;
         set => SetProperty(ref _prescriptionId, value);
     }
 
-        private DateTime _createdAt;
+    private DateTime _createdAt;
     public DateTime CreatedAt
     {
         get => _createdAt;
         set => SetProperty(ref _createdAt, value);
     }
 
-        private DateTime? _completedAt;
+    private DateTime? _completedAt;
     public DateTime? CompletedAt
     {
         get => _completedAt;
         set => SetProperty(ref _completedAt, value);
     }
 
-        private string? _completionReason;
+    private string? _completionReason;
     public string? CompletionReason
     {
         get => _completionReason;
         set => SetProperty(ref _completionReason, value);
     }
 
-        private bool _isSelected;
+    private bool _isSelected;
     public bool IsSelected
     {
         get => _isSelected;
         set => SetProperty(ref _isSelected, value);
     }
 
-        private bool _isHighlighted;
+    private bool _isHighlighted;
     public bool IsHighlighted
     {
         get => _isHighlighted;
         set => SetProperty(ref _isHighlighted, value);
     }
 
-        private bool _isExpanded;
+    private bool _isExpanded;
     public bool IsExpanded
     {
         get => _isExpanded;

@@ -1,6 +1,4 @@
-using System;
-
-namespace LYBT.Desktop.Infrastructure.Interfaces
+﻿namespace LYBT.Desktop.Infrastructure.Interfaces
 {
     /// <summary>
     /// 自定义对话框感知接口 - UltraThink架构实现

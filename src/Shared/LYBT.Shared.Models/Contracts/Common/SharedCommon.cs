@@ -1,7 +1,4 @@
-using System;
-using System.Collections.Generic;
-
-namespace LYBT.Shared.Models.Contracts.Common
+﻿namespace LYBT.Shared.Models.Contracts.Common
 {
     /// <summary>
     /// 共享通用类型定义

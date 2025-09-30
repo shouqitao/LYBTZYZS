@@ -85,10 +85,13 @@
     <ProjectReference Include="..\Core_New\LYBT.Desktop.Services\LYBT.Desktop.Services.csproj" />
   </ItemGroup>
 
+  <ItemGroup Label="Workstation Modules">
+    <ProjectReference Include="..\Workstations\AdminWorkstation\LYBT.Desktop.AdminWorkstation.csproj" />
+    <ProjectReference Include="..\Workstations\ClinicalWorkstation\LYBT.Desktop.ClinicalWorkstation.csproj" />
+  </ItemGroup>
+
   <ItemGroup Label="Business Modules">
     <ProjectReference Include="..\Modules\Auth\LYBT.Desktop.Auth.csproj" />
-    <ProjectReference Include="..\Modules\AdminWorkstation\LYBT.Desktop.AdminWorkstation.csproj" />
-    <ProjectReference Include="..\Modules\ClinicalWorkstation\LYBT.Desktop.ClinicalWorkstation.csproj" />
     <ProjectReference Include="..\Modules\Users\LYBT.Desktop.Users.csproj" />
     <ProjectReference Include="..\Modules\Patients\LYBT.Desktop.Patients.csproj" />
     <ProjectReference Include="..\Modules\MedicalCase\LYBT.Desktop.MedicalCase.csproj" />

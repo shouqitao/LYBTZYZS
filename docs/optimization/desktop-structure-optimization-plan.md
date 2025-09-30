@@ -118,7 +118,7 @@ src/Client/Desktop/
 | Core/Models/ | LYBT.Desktop.Models/ |
 
 #### 清理项目
-- 删除Workbenches文件夹（如果还存在）
+- 删除Workstationes文件夹（如果还存在）
 - 删除重复的Services文件夹
 - 合并Configuration到Shell项目
 

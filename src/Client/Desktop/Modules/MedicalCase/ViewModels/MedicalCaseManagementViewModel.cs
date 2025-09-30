@@ -1,6 +1,4 @@
-using System;
-using System.Threading.Tasks;
-using LYBT.Desktop.Infrastructure.Interfaces;
+﻿using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Interfaces.Services;
 using Microsoft.Extensions.Logging;
@@ -91,7 +89,7 @@ namespace LYBT.Desktop.Modules.MedicalCase.ViewModels
         protected override async Task OnNavigatedToAsync(NavigationContext navigationContext)
         {
             await base.OnNavigatedToAsync(navigationContext);
-            
+
             // 默认显示病历列表
             ShowList();
         }

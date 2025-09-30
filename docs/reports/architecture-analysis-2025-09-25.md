@@ -162,7 +162,7 @@ Module Service（纯委托）
 
 2. **未使用的ViewModels**
    - 已删除的Dialog相关ViewModels
-   - SystemWorkbench相关代码
+   - SystemWorkstation相关代码
 
 ### 6.3 预计代码缩减
 

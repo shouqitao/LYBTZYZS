@@ -1,11 +1,11 @@
-using LYBT.Desktop.Models.ViewModels.Base;
+﻿using System.Windows.Input;
 using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Models.ViewModels.Base;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Regions;
-using System.Windows.Input;
 
 namespace LYBT.Desktop.AdminWorkstation.ViewModels
 {

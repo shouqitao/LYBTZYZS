@@ -1,7 +1,4 @@
-using System;
-using System.Threading.Tasks;
-
-namespace LYBT.Desktop.Infrastructure.Interfaces
+﻿namespace LYBT.Desktop.Infrastructure.Interfaces
 {
     /// <summary>
     /// 错误处理服务接口 - UltraThink架构

@@ -1,6 +1,4 @@
-using System;
-using System.Threading.Tasks;
-using LYBT.Desktop.Infrastructure.Interfaces;
+﻿using LYBT.Desktop.Infrastructure.Interfaces;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Infrastructure.Services.ErrorHandling
@@ -23,7 +21,7 @@ namespace LYBT.Desktop.Infrastructure.Services.ErrorHandling
         public async Task HandleExceptionAsync(Exception exception, string? context = null)
         {
             _logger.LogError(exception, "异常处理: {Context}", context ?? "未知上下文");
-            
+
             var errorMessage = GetUserFriendlyMessage(exception);
             if (_dialogService != null)
             {
@@ -35,7 +33,7 @@ namespace LYBT.Desktop.Infrastructure.Services.ErrorHandling
         public async Task ShowErrorAsync(string message, string? title = null)
         {
             _logger.LogError("错误消息: {Message}", message);
-            
+
             if (_dialogService != null)
             {
                 await _dialogService.ShowErrorAsync(message, title ?? "错误");
@@ -46,7 +44,7 @@ namespace LYBT.Desktop.Infrastructure.Services.ErrorHandling
         public async Task ShowSuccessAsync(string message, string? title = null)
         {
             _logger.LogInformation("成功消息: {Message}", message);
-            
+
             if (_dialogService != null)
             {
                 await _dialogService.ShowInfoAsync(message, title ?? "成功");
@@ -57,7 +55,7 @@ namespace LYBT.Desktop.Infrastructure.Services.ErrorHandling
         public async Task ShowWarningAsync(string message, string? title = null)
         {
             _logger.LogWarning("警告消息: {Message}", message);
-            
+
             if (_dialogService != null)
             {
                 await _dialogService.ShowWarningAsync(message, title ?? "警告");
@@ -68,7 +66,7 @@ namespace LYBT.Desktop.Infrastructure.Services.ErrorHandling
         public async Task ShowInfoAsync(string message, string? title = null)
         {
             _logger.LogInformation("信息消息: {Message}", message);
-            
+
             if (_dialogService != null)
             {
                 await _dialogService.ShowInfoAsync(message, title ?? "信息");
@@ -79,12 +77,12 @@ namespace LYBT.Desktop.Infrastructure.Services.ErrorHandling
         public async Task<bool> ShowConfirmAsync(string message, string? title = null)
         {
             _logger.LogInformation("确认对话框: {Message}", message);
-            
+
             if (_dialogService != null)
             {
                 return await _dialogService.ShowConfirmAsync(message, title ?? "确认");
             }
-            
+
             return false;
         }
 

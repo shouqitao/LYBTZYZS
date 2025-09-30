@@ -1,11 +1,7 @@
-using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.Net.Http;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Desktop.Services.Notifications;
-using LYBT.Desktop.Services;
+using Microsoft.Extensions.Logging;
 using SharedCommon = LYBT.Shared.Models.Contracts.Common.SharedCommon;
 
 namespace LYBT.Desktop.Services.ErrorHandling

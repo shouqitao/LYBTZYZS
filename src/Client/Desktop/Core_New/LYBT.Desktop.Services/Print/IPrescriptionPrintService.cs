@@ -1,6 +1,4 @@
-using System;
-using System.Threading.Tasks;
-using LYBT.Shared.Models.Contracts.Prescriptions;
+﻿using LYBT.Shared.Models.Contracts.Prescriptions;
 
 namespace LYBT.Desktop.Services.Print
 {

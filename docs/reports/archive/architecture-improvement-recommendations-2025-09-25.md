@@ -1217,7 +1217,7 @@ Client/Desktop/
 ├── LYBT.Desktop.Infrastructure/ # 基础设施
 ├── LYBT.Desktop.Shell/          # 应用外壳
 ├── LYBT.Desktop.Modules/        # 合并所有业务模块
-├── LYBT.Desktop.Workbenches/    # 工作台
+├── LYBT.Desktop.Workstationes/    # 工作台
 └── LYBT.Desktop.Tests/          # 合并所有客户端测试
 
 # 共享 (5 个项目 -> 5 个项目，保持不变)
@@ -1386,22 +1386,22 @@ public interface IUserService
 ## 8. 工作台架构重构方案
 
 ### 8.1 当前问题
-- SystemWorkbench 和 MedicalWorkbench 职责不清晰
+- SystemWorkstation 和 MedicalWorkstation 职责不清晰
 - 用户体验不一致
 - 导航逻辑复杂
 
 ### 8.2 重构目标
 ```csharp
 // ✅ 统一的工作台架构
-public interface IWorkbench
+public interface IWorkstation
 {
     string Name { get; }
     string Title { get; }
-    IEnumerable<IWorkbenchModule> Modules { get; }
+    IEnumerable<IWorkstationModule> Modules { get; }
     bool IsAvailableForUser(UserRole role);
 }
 
-public interface IWorkbenchModule
+public interface IWorkstationModule
 {
     string Name { get; }
     string Title { get; }
@@ -1411,32 +1411,32 @@ public interface IWorkbenchModule
 }
 
 // 系统管理工作台
-public class SystemWorkbench : IWorkbench
+public class SystemWorkstation : IWorkstation
 {
     public string Name => "System";
     public string Title => "系统管理工作台";
 
-    public IEnumerable<IWorkbenchModule> Modules => new[]
+    public IEnumerable<IWorkstationModule> Modules => new[]
     {
-        new WorkbenchModule("Users", "用户管理", "/Icons/Users.png", "UserManagementView", new[] { "User.View" }),
-        new WorkbenchModule("Settings", "系统设置", "/Icons/Settings.png", "SettingsView", new[] { "System.Configure" }),
+        new WorkstationModule("Users", "用户管理", "/Icons/Users.png", "UserManagementView", new[] { "User.View" }),
+        new WorkstationModule("Settings", "系统设置", "/Icons/Settings.png", "SettingsView", new[] { "System.Configure" }),
     };
 
     public bool IsAvailableForUser(UserRole role) => role == UserRole.Admin;
 }
 
 // 诊疗工作台
-public class MedicalWorkbench : IWorkbench
+public class MedicalWorkstation : IWorkstation
 {
     public string Name => "Medical";
     public string Title => "诊疗工作台";
 
-    public IEnumerable<IWorkbenchModule> Modules => new[]
+    public IEnumerable<IWorkstationModule> Modules => new[]
     {
-        new WorkbenchModule("Patients", "患者管理", "/Icons/Patients.png", "PatientManagementView", new[] { "Patient.View" }),
-        new WorkbenchModule("Consultation", "诊疗管理", "/Icons/Consultation.png", "ConsultationView", new[] { "Consultation.View" }),
-        new WorkbenchModule("Prescription", "处方管理", "/Icons/Prescription.png", "PrescriptionView", new[] { "Prescription.View" }),
-        new WorkbenchModule("Herbs", "药材管理", "/Icons/Herbs.png", "HerbManagementView", new[] { "Herb.View" }),
+        new WorkstationModule("Patients", "患者管理", "/Icons/Patients.png", "PatientManagementView", new[] { "Patient.View" }),
+        new WorkstationModule("Consultation", "诊疗管理", "/Icons/Consultation.png", "ConsultationView", new[] { "Consultation.View" }),
+        new WorkstationModule("Prescription", "处方管理", "/Icons/Prescription.png", "PrescriptionView", new[] { "Prescription.View" }),
+        new WorkstationModule("Herbs", "药材管理", "/Icons/Herbs.png", "HerbManagementView", new[] { "Herb.View" }),
     };
 
     public bool IsAvailableForUser(UserRole role) =>

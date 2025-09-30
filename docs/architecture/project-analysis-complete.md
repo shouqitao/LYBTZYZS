@@ -146,7 +146,7 @@
 - `LYBT.Desktop.Core` - 核心框架
 - `LYBT.Desktop.Infrastructure` - 基础设施
 - `LYBT.Desktop.Services` - 服务层
-- `LYBT.Desktop.Workbench.Core` - 工作台核心
+- `LYBT.Desktop.Workstation.Core` - 工作台核心
 
 **业务模块项目 (8个)**
 - `LYBT.Desktop.Auth` - 认证模块
@@ -159,7 +159,7 @@
 - `LYBT.Desktop.Prescriptions` - 处方管理
 
 **工作台项目 (1个)**
-- `LYBT.Desktop.Workbench.Medical` - 诊疗工作台
+- `LYBT.Desktop.Workstation.Medical` - 诊疗工作台
 
 **客户端组织项目 (2个)**
 - `Client` - 客户端文件夹
@@ -228,7 +228,7 @@ Client/Desktop/
 ├── LYBT.Desktop.Infrastructure # 保持基础设施
 ├── LYBT.Desktop.Shell          # 保持应用外壳
 ├── LYBT.Desktop.Modules        # 合并所有8个业务模块
-├── LYBT.Desktop.Workbenches    # 合并工作台项目
+├── LYBT.Desktop.Workstationes    # 合并工作台项目
 └── LYBT.Desktop.Tests          # 合并所有桌面端测试
 ```
 
@@ -315,14 +315,14 @@ LYBT.Desktop.Modules/
     └── ContainerRegistryExtensions.cs
 ```
 
-**创建 LYBT.Desktop.Workbenches 项目结构**
+**创建 LYBT.Desktop.Workstationes 项目结构**
 ```csharp
-LYBT.Desktop.Workbenches/
-├── Core/                       # 原 LYBT.Desktop.Workbench.Core
-├── Medical/                    # 原 LYBT.Desktop.Workbench.Medical
+LYBT.Desktop.Workstationes/
+├── Core/                       # 原 LYBT.Desktop.Workstation.Core
+├── Medical/                    # 原 LYBT.Desktop.Workstation.Medical
 ├── System/                     # 系统工作台（如果需要）
 ├── Common/                     # 共同基础
-└── WorkbenchModule.cs         # 工作台模块注册
+└── WorkstationModule.cs         # 工作台模块注册
 ```
 
 #### 4.2.3 测试项目合并策略
@@ -400,7 +400,7 @@ LYBT.Tests.Desktop/
 5. 更新 Prism 模块注册
 
 **步骤 2.2: 合并工作台项目**
-1. 将 `LYBT.Desktop.Workbench.Core` 和 `LYBT.Desktop.Workbench.Medical` 合并到 `LYBT.Desktop.Workbenches`
+1. 将 `LYBT.Desktop.Workstation.Core` 和 `LYBT.Desktop.Workstation.Medical` 合并到 `LYBT.Desktop.Workstationes`
 2. 统一工作台接口和实现
 
 **步骤 2.3: 更新 Shell 项目依赖**

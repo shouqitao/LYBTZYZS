@@ -1,5 +1,4 @@
-using System;
-using System.Reactive.Disposables;
+﻿using System.Reactive.Disposables;
 using System.Windows.Input;
 using Prism.Commands;
 using Prism.Events;

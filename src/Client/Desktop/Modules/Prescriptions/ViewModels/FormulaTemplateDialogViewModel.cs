@@ -1,7 +1,4 @@
-using System;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Collections.ObjectModel;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Interfaces.Services;
@@ -80,7 +77,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
         /// </summary>
         public string[] CategoryOptions { get; } = new[]
         {
-            "全部", "补益方", "解表方", "清热方", "泻下方", 
+            "全部", "补益方", "解表方", "清热方", "泻下方",
             "化痰止咳方", "理气方", "活血化瘀方", "温里方", "其他"
         };
 
@@ -252,7 +249,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
                     // 按关键字筛选
                     if (!string.IsNullOrWhiteSpace(SearchText))
                     {
-                        filtered = filtered.Where(f => 
+                        filtered = filtered.Where(f =>
                             f.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
                             f.Description?.Contains(SearchText, StringComparison.OrdinalIgnoreCase) == true);
                     }
@@ -358,7 +355,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
         {
             var info = $"名称: {formula.Name}\n";
             info += $"分类: {formula.Category}\n";
-            
+
             if (!string.IsNullOrEmpty(formula.Description))
             {
                 info += $"描述: {formula.Description}\n";

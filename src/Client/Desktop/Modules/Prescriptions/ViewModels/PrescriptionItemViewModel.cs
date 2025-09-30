@@ -1,12 +1,11 @@
-using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
-using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Contracts.Herbs;
+using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.Extensions.Logging;
 using Prism.Events;
 using Prism.Regions;
-using LYBT.Desktop.Infrastructure.Interfaces;
 
 namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
 {

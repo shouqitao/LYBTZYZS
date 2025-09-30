@@ -1,25 +1,11 @@
-using System.Net.Http;
+﻿using System.Net.Http;
 using AutoMapper;
-using LYBT.Desktop.Infrastructure.Configuration;
-using LYBT.Desktop.Infrastructure.Mapping;
 using LYBT.Desktop.Infrastructure.Commands;
-using LYBT.Desktop.Infrastructure.Interfaces;
-using LYBT.Desktop.Services.Api.Managers;
-using LYBT.Desktop.Services.Auth;
-using LYBT.Desktop.Services.Business;
-using LYBT.Desktop.Services.Dialogs;
-using LYBT.Desktop.Services.ErrorHandling;
-using LYBT.Desktop.Services.Http;
 using LYBT.Desktop.Services.Modules;
-using LYBT.Desktop.Services.Navigation;
-using LYBT.Desktop.Services.Notifications;
 using LYBT.Desktop.Services.Performance;
 using LYBT.Desktop.Services.Repositories.Interfaces;
-using LYBT.Desktop.Services.Session;
-using LYBT.Desktop.Services.Theming;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Prism.Ioc;
 
 namespace LYBT.Desktop.Shell.Extensions
@@ -34,7 +20,7 @@ namespace LYBT.Desktop.Shell.Extensions
     ///    - 基础设施服务：ILoggerFactory, IMemoryCache, HttpClient, IThemeService
     ///    - 认证服务：AuthService, UserService（保持会话状态）
     ///    - 系统服务：IPermissionService, IUserSessionManager, INavigationService
-    ///    - 工作台服务：IWorkbenchRouter, IMainWindowServicesFacade
+    ///    - 工作台服务：IWorkstationRouter, IMainWindowServicesFacade
     ///
     /// 2. Scoped（作用域） 按需创建，同一作用域内复用
     ///    - 业务服务：PatientService, HerbService, FormulaService
@@ -67,7 +53,7 @@ namespace LYBT.Desktop.Shell.Extensions
         {
             // 注册应用程序启动引导服务（避免Service Locator反模式）
             RegisterBootstrapServices(containerRegistry);
-            
+
             RegisterLogging(containerRegistry);
             RegisterAutoMapper(containerRegistry);
             RegisterCacheServices(containerRegistry);
@@ -93,7 +79,7 @@ namespace LYBT.Desktop.Shell.Extensions
             // 注册应用程序初始化服�?
             containerRegistry.RegisterSingleton<LYBT.Desktop.Shell.Services.IApplicationInitializationService,
                 LYBT.Desktop.Shell.Services.ApplicationInitializationService>();
-            
+
             // 注册错误处理服务 - 使用 Services 层的 IErrorHandlingService 接口
             containerRegistry.RegisterSingleton<LYBT.Desktop.Services.ErrorHandling.IErrorHandlingService,
                 LYBT.Desktop.Services.ErrorHandling.UnifiedErrorHandlingService>();
@@ -480,7 +466,7 @@ namespace LYBT.Desktop.Shell.Extensions
             // containerRegistry.RegisterSingleton<LYBT.Desktop.Infrastructure.Interfaces.IErrorHandlingService,
             //     LYBT.Desktop.Services.ErrorHandling.UnifiedErrorHandlingService>();
             // TODO: Issue #815 Phase 3 - 恢复工作台路由服�?
-            // containerRegistry.RegisterSingleton<LYBT.Desktop.Workbench.Core.IWorkbenchRouter, LYBT.Desktop.Workbench.Core.WorkbenchRouter>();
+            // containerRegistry.RegisterSingleton<LYBT.Desktop.Workstation.Core.IWorkstationRouter, LYBT.Desktop.Workstation.Core.WorkstationRouter>();
 
             // 主窗口服务门�?- 简化MainWindowViewModel的依赖注�?
             containerRegistry.RegisterSingleton<LYBT.Desktop.Infrastructure.Interfaces.IMainWindowServicesFacade,

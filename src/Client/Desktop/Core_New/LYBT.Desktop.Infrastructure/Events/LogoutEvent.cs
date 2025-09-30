@@ -1,5 +1,4 @@
-using System;
-using Prism.Events;
+﻿using Prism.Events;
 
 namespace LYBT.Desktop.Infrastructure.Events
 {

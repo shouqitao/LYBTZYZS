@@ -1,7 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using LYBT.Desktop.Services.Http;
+﻿using LYBT.Desktop.Services.Http;
 using LYBT.Desktop.Services.Repositories.Interfaces;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using Microsoft.Extensions.Logging;

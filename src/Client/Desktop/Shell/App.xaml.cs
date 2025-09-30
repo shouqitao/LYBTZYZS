@@ -1,9 +1,6 @@
-using System.Windows;
+﻿using System.Windows;
 using LYBT.Desktop.Auth;
-using LYBT.Desktop.AdminWorkstation;
-using LYBT.Desktop.ClinicalWorkstation;
 using LYBT.Desktop.Consultation;
-using LYBT.Desktop.Services.Performance;
 using LYBT.Desktop.Formula;
 using LYBT.Desktop.Herbs;
 using LYBT.Desktop.MedicalCase;
@@ -14,109 +11,106 @@ using LYBT.Desktop.Shell.Services.Bootstrap;
 using LYBT.Desktop.Shell.ViewModels;
 using LYBT.Desktop.Shell.Views;
 using LYBT.Desktop.Users;
-// TODO: Issue #815 Phase 3 - 恢复Workbench引用
-// using LYBT.Desktop.Workbench.Medical;
-using Microsoft.Extensions.Logging;
 using LYBT.Shared.Models.Enums;
+// TODO: Issue #815 Phase 3 - 鎭㈠Workstation寮曠敤
+// using LYBT.Desktop.Workstation.Medical;
 using Prism.DryIoc;
-using Prism.Events;
 using Prism.Ioc;
 using Prism.Modularity;
 using Prism.Mvvm;
-using Prism.Regions;
 
 namespace LYBT.Desktop.Shell;
 
 /// <summary>
-/// 应用程序主入�?- WPF应用程序核心启动�?
-/// 采用UltraThink架构标准，使用C# 12现代化特�?
-/// 提供智能模块加载、角色驱动初始化和企业级错误处理
-/// 集成Prism.DryIoc容器管理，支�?个业务模块的统一协调
-/// 优化启动性能，提供角色基础的模块按需加载策略
-/// 适配小型诊所部署环境，确保系统快速启动和稳定运行
+/// 搴旂敤绋嬪簭涓诲叆鍙?- WPF搴旂敤绋嬪簭鏍稿績鍚姩鍣?
+/// 閲囩敤UltraThink鏋舵瀯鏍囧噯锛屼娇鐢–# 12鐜颁唬鍖栫壒鎬?
+/// 鎻愪緵鏅鸿兘妯″潡鍔犺浇銆佽鑹查┍鍔ㄥ垵濮嬪寲鍜屼紒涓氱骇閿欒澶勭悊
+/// 闆嗘垚Prism.DryIoc瀹瑰櫒绠＄悊锛屾敮鎸?涓笟鍔℃ā鍧楃殑缁熶竴鍗忚皟
+/// 浼樺寲鍚姩鎬ц兘锛屾彁渚涜鑹插熀纭€鐨勬ā鍧楁寜闇€鍔犺浇绛栫暐
+/// 閫傞厤灏忓瀷璇婃墍閮ㄧ讲鐜锛岀‘淇濈郴缁熷揩閫熷惎鍔ㄥ拰绋冲畾杩愯
 /// </summary>
 public partial class App : PrismApplication
 {
     private IApplicationBootstrapper? _bootstrapper;
 
     /// <summary>
-    /// 创建应用程序主窗�?
-    /// 从DI容器中解析MainWindow实例
-    /// 注：这是Prism框架的标准做法，此处使用Container.Resolve是必需�?
+    /// 鍒涘缓搴旂敤绋嬪簭涓荤獥浣?
+    /// 浠嶥I瀹瑰櫒涓В鏋怣ainWindow瀹炰緥
+    /// 娉細杩欐槸Prism妗嗘灦鐨勬爣鍑嗗仛娉曪紝姝ゅ浣跨敤Container.Resolve鏄繀闇€鐨?
     /// </summary>
-    /// <returns>应用程序主窗体实�?/returns>
+    /// <returns>搴旂敤绋嬪簭涓荤獥浣撳疄渚?/returns>
     protected override Window CreateShell()
     {
         return Container.Resolve<MainWindow>();
     }
 
     /// <summary>
-    /// 注册应用程序类型和服�?
-    /// 使用扩展方法统一注册所有业务模块的服务和依�?
+    /// 娉ㄥ唽搴旂敤绋嬪簭绫诲瀷鍜屾湇鍔?
+    /// 浣跨敤鎵╁睍鏂规硶缁熶竴娉ㄥ唽鎵€鏈変笟鍔℃ā鍧楃殑鏈嶅姟鍜屼緷璧?
     /// </summary>
-    /// <param name="containerRegistry">DI容器注册�?/param>
-    /// <exception cref="ArgumentNullException">当容器注册器�?null 时抛�?/exception>
+    /// <param name="containerRegistry">DI瀹瑰櫒娉ㄥ唽鍣?/param>
+    /// <exception cref="ArgumentNullException">褰撳鍣ㄦ敞鍐屽櫒涓?null 鏃舵姏鍑?/exception>
     protected override void RegisterTypes(IContainerRegistry containerRegistry)
     {
         ArgumentNullException.ThrowIfNull(containerRegistry, nameof(containerRegistry));
 
-        // 注册启动引导服务（替代原有的直接Container.Resolve调用�?
+        // 娉ㄥ唽鍚姩寮曞鏈嶅姟锛堟浛浠ｅ師鏈夌殑鐩存帴Container.Resolve璋冪敤锛?
         containerRegistry.RegisterSingleton<IApplicationBootstrapper, ApplicationBootstrapper>();
-        
-        // 注册应用初始化服�?
-        containerRegistry.RegisterSingleton<LYBT.Desktop.Shell.Services.IApplicationInitializationService, 
+
+        // 娉ㄥ唽搴旂敤鍒濆鍖栨湇鍔?
+        containerRegistry.RegisterSingleton<LYBT.Desktop.Shell.Services.IApplicationInitializationService,
             LYBT.Desktop.Shell.Services.ApplicationInitializationService>();
 
-        // 使用扩展方法统一注册所有服�?
+        // 浣跨敤鎵╁睍鏂规硶缁熶竴娉ㄥ唽鎵€鏈夋湇鍔?
         containerRegistry.RegisterAllServices();
 
-        // 显式配置ViewModelLocator映射
+        // 鏄惧紡閰嶇疆ViewModelLocator鏄犲皠
         ConfigureViewModelLocator();
     }
 
     /// <summary>
-    /// 配置ViewModel定位�?
-    /// 显式注册View和ViewModel的映射关系，确保依赖注入正确工作
+    /// 閰嶇疆ViewModel瀹氫綅鍣?
+    /// 鏄惧紡娉ㄥ唽View鍜孷iewModel鐨勬槧灏勫叧绯伙紝纭繚渚濊禆娉ㄥ叆姝ｇ‘宸ヤ綔
     /// </summary>
     protected override void ConfigureViewModelLocator()
     {
         base.ConfigureViewModelLocator();
 
-        // Prism 8.x最佳实践：直接使用容器解析，无需工厂方法
-        // Prism 8.x最佳实践：使用类型映射避免Container.Resolve
-        // 通过泛型重载让框架自动解析依赖，而不是手动调用容�?
+        // Prism 8.x鏈€浣冲疄璺碉細鐩存帴浣跨敤瀹瑰櫒瑙ｆ瀽锛屾棤闇€宸ュ巶鏂规硶
+        // Prism 8.x鏈€浣冲疄璺碉細浣跨敤绫诲瀷鏄犲皠閬垮厤Container.Resolve
+        // 閫氳繃娉涘瀷閲嶈浇璁╂鏋惰嚜鍔ㄨВ鏋愪緷璧栵紝鑰屼笉鏄墜鍔ㄨ皟鐢ㄥ鍣?
         ViewModelLocationProvider.Register<MainWindow, MainWindowViewModel>();
         ViewModelLocationProvider.Register<HomeView, HomeViewModel>();
 
-        // Note: 其他View-ViewModel映射通过Prism自动发现机制处理
+        // Note: 鍏朵粬View-ViewModel鏄犲皠閫氳繃Prism鑷姩鍙戠幇鏈哄埗澶勭悊
     }
 
     /// <summary>
-    /// 应用程序初始化完成后的回�?
-    /// 使用注入的ApplicationBootstrapper服务，避免Service Locator反模�?
+    /// 搴旂敤绋嬪簭鍒濆鍖栧畬鎴愬悗鐨勫洖璋?
+    /// 浣跨敤娉ㄥ叆鐨凙pplicationBootstrapper鏈嶅姟锛岄伩鍏峉ervice Locator鍙嶆ā寮?
     /// </summary>
     protected override void OnInitialized()
     {
         base.OnInitialized();
 
-        // 使用注入的启动引导服务（避免Container.Resolve�?
+        // 浣跨敤娉ㄥ叆鐨勫惎鍔ㄥ紩瀵兼湇鍔★紙閬垮厤Container.Resolve锛?
         try
         {
-            // 获取启动引导服务
-            // 注：此处Container.Resolve是可接受的，因为�?
-            // 1. 位于组合�?App.xaml.cs)
-            // 2. OnInitialized是重写方法，无法使用构造函数注�?
-            // 3. 仅在应用启动时调用一�?
+            // 鑾峰彇鍚姩寮曞鏈嶅姟
+            // 娉細姝ゅContainer.Resolve鏄彲鎺ュ彈鐨勶紝鍥犱负锛?
+            // 1. 浣嶄簬缁勫悎鏍?App.xaml.cs)
+            // 2. OnInitialized鏄噸鍐欐柟娉曪紝鏃犳硶浣跨敤鏋勯€犲嚱鏁版敞鍏?
+            // 3. 浠呭湪搴旂敤鍚姩鏃惰皟鐢ㄤ竴娆?
             _bootstrapper = Container.Resolve<IApplicationBootstrapper>();
-            
-            // 初始化错误处理（同步操作�?
+
+            // 鍒濆鍖栭敊璇鐞嗭紙鍚屾鎿嶄綔锛?
             _bootstrapper.InitializeErrorHandlingService();
-            
-            // 初始化模块协调器
+
+            // 鍒濆鍖栨ā鍧楀崗璋冨櫒
             _bootstrapper.InitializeSimplifiedModuleCoordinator();
-            
-            // 异步初始化核心服�?
-            _ = Task.Run(async () => 
+
+            // 寮傛鍒濆鍖栨牳蹇冩湇鍔?
+            _ = Task.Run(async () =>
             {
                 await _bootstrapper.InitializeCoreServicesAsync();
                 await _bootstrapper.InitializeApplicationWarmupAsync();
@@ -124,12 +118,12 @@ public partial class App : PrismApplication
         }
         catch (Exception ex)
         {
-            // 降级处理：如果初始化服务未正确注册，记录错误但继续启�?
-            System.Diagnostics.Debug.WriteLine($"应用初始化失�? {ex.Message}");
+            // 闄嶇骇澶勭悊锛氬鏋滃垵濮嬪寲鏈嶅姟鏈纭敞鍐岋紝璁板綍閿欒浣嗙户缁惎鍔?
+            System.Diagnostics.Debug.WriteLine($"搴旂敤鍒濆鍖栧け璐? {ex.Message}");
             System.Windows.MessageBox.Show(
-                $"应用初始化失�? {ex.Message}", 
-                "凌隐宝堂 - 系统错误",
-                System.Windows.MessageBoxButton.OK, 
+                $"搴旂敤鍒濆鍖栧け璐? {ex.Message}",
+                "鍑岄殣瀹濆爞 - 绯荤粺閿欒",
+                System.Windows.MessageBoxButton.OK,
                 System.Windows.MessageBoxImage.Error);
         }
     }
@@ -143,64 +137,64 @@ public partial class App : PrismApplication
 
 
     /// <summary>
-    /// 配置模块目录
-    /// 基于角色的智能模块加载策略，显著提升启动性能
-    /// 优先加载核心模块，专业模块按需加载
+    /// 閰嶇疆妯″潡鐩綍
+    /// 鍩轰簬瑙掕壊鐨勬櫤鑳芥ā鍧楀姞杞界瓥鐣ワ紝鏄捐憲鎻愬崌鍚姩鎬ц兘
+    /// 浼樺厛鍔犺浇鏍稿績妯″潡锛屼笓涓氭ā鍧楁寜闇€鍔犺浇
     /// </summary>
-    /// <param name="moduleCatalog">模块目录</param>
-    /// <exception cref="ArgumentNullException">当模块目录为 null 时抛�?/exception>
+    /// <param name="moduleCatalog">妯″潡鐩綍</param>
+    /// <exception cref="ArgumentNullException">褰撴ā鍧楃洰褰曚负 null 鏃舵姏鍑?/exception>
     protected override void ConfigureModuleCatalog(IModuleCatalog moduleCatalog)
     {
         ArgumentNullException.ThrowIfNull(moduleCatalog, nameof(moduleCatalog));
 
-        // ========== 核心模块 - 立即加载 ==========
-        // 认证模块 - 所有功能的基础
+        // ========== 鏍稿績妯″潡 - 绔嬪嵆鍔犺浇 ==========
+        // 璁よ瘉妯″潡 - 鎵€鏈夊姛鑳界殑鍩虹
         moduleCatalog.AddModule<AuthenticationModule>(InitializationMode.WhenAvailable);
-        
-        // 用户模块 - 基础权限管理
+
+        // 鐢ㄦ埛妯″潡 - 鍩虹鏉冮檺绠＄悊
         moduleCatalog.AddModule<UsersModule>(InitializationMode.WhenAvailable);
 
-        // ========== 基础业务模块 - 登录后加�?==========
-        // 患者管�?- 多数业务的基础
+        // ========== 鍩虹涓氬姟妯″潡 - 鐧诲綍鍚庡姞杞?==========
+        // 鎮ｈ€呯鐞?- 澶氭暟涓氬姟鐨勫熀纭€
         moduleCatalog.AddModule<PatientsModule>(InitializationMode.OnDemand);
 
-        // ========== 功能模块 - 按需加载 ==========
-        // 药材管理 - 独立功能，可延迟加载
+        // ========== 鍔熻兘妯″潡 - 鎸夐渶鍔犺浇 ==========
+        // 鑽潗绠＄悊 - 鐙珛鍔熻兘锛屽彲寤惰繜鍔犺浇
         moduleCatalog.AddModule<HerbsModule>(InitializationMode.OnDemand);
-        
-        // 方剂管理 - 依赖药材
+
+        // 鏂瑰墏绠＄悊 - 渚濊禆鑽潗
         moduleCatalog.AddModule<FormulaModule>(InitializationMode.OnDemand);
-        
-        // 诊疗管理 - 依赖患�?
+
+        // 璇婄枟绠＄悊 - 渚濊禆鎮ｈ€?
         moduleCatalog.AddModule<ConsultationModule>(InitializationMode.OnDemand);
-        
-        // 病历管理 - 复杂依赖
+
+        // 鐥呭巻绠＄悊 - 澶嶆潅渚濊禆
         moduleCatalog.AddModule<MedicalCaseModule>(InitializationMode.OnDemand);
-        
-        // 处方管理 - 最复杂依赖
+
+        // 澶勬柟绠＄悊 - 鏈€澶嶆潅渚濊禆
         moduleCatalog.AddModule<PrescriptionsModule>(InitializationMode.OnDemand);
 
-        // ========== 工作台模�?- 用户触发加载 ==========
-        // 诊疗工作�?- 顶层集成模块
-        // TODO: Issue #815 Phase 3 - 恢复诊疗工作台模�?
-        // moduleCatalog.AddModule<MedicalWorkbenchModule>(InitializationMode.OnDemand);
-        
-        // 管理工作�?- 管理员角色使�?
+        // ========== 宸ヤ綔鍙版ā鍧?- 鐢ㄦ埛瑙﹀彂鍔犺浇 ==========
+        // 璇婄枟宸ヤ綔鍙?- 椤跺眰闆嗘垚妯″潡
+        // TODO: Issue #815 Phase 3 - 鎭㈠璇婄枟宸ヤ綔鍙版ā鍧?
+        // moduleCatalog.AddModule<MedicalWorkstationModule>(InitializationMode.OnDemand);
+
+        // 绠＄悊宸ヤ綔鍙?- 绠＄悊鍛樿鑹蹭娇鐢?
         moduleCatalog.AddModule<AdminWorkstation.AdminWorkstationModule>(InitializationMode.OnDemand);
-        
-        // 诊疗工作�?- 医生角色使用
+
+        // 璇婄枟宸ヤ綔鍙?- 鍖荤敓瑙掕壊浣跨敤
         moduleCatalog.AddModule<ClinicalWorkstation.ClinicalWorkstationModule>(InitializationMode.OnDemand);
 
         base.ConfigureModuleCatalog(moduleCatalog);
     }
 
     /// <summary>
-    /// 添加核心模块
-    /// 核心模块在应用启动时立即加载
+    /// 娣诲姞鏍稿績妯″潡
+    /// 鏍稿績妯″潡鍦ㄥ簲鐢ㄥ惎鍔ㄦ椂绔嬪嵆鍔犺浇
     /// </summary>
-    /// <param name="moduleCatalog">模块目录</param>
-    /// <param name="moduleName">模块名称</param>
-    /// <param name="moduleType">模块类型</param>
+    /// <param name="moduleCatalog">妯″潡鐩綍</param>
+    /// <param name="moduleName">妯″潡鍚嶇О</param>
+    /// <param name="moduleType">妯″潡绫诲瀷</param>
     private static void AddCoreModule(IModuleCatalog moduleCatalog, string moduleName, Type moduleType)
     {
         moduleCatalog.AddModule(new ModuleInfo
@@ -212,13 +206,13 @@ public partial class App : PrismApplication
     }
 
     /// <summary>
-    /// 添加基于角色的智能模块配�?
-    /// 根据用户角色决定模块加载时机，提升启动性能
+    /// 娣诲姞鍩轰簬瑙掕壊鐨勬櫤鑳芥ā鍧楅厤缃?
+    /// 鏍规嵁鐢ㄦ埛瑙掕壊鍐冲畾妯″潡鍔犺浇鏃舵満锛屾彁鍗囧惎鍔ㄦ€ц兘
     /// </summary>
-    /// <param name="moduleCatalog">模块目录</param>
-    /// <param name="moduleName">模块名称</param>
-    /// <param name="moduleType">模块类型</param>
-    /// <param name="requiredRoles">所需角色数组</param>
+    /// <param name="moduleCatalog">妯″潡鐩綍</param>
+    /// <param name="moduleName">妯″潡鍚嶇О</param>
+    /// <param name="moduleType">妯″潡绫诲瀷</param>
+    /// <param name="requiredRoles">鎵€闇€瑙掕壊鏁扮粍</param>
     private static void AddRoleBasedModule(IModuleCatalog moduleCatalog, string moduleName, Type moduleType, string[] requiredRoles)
     {
         var moduleInfo = new ModuleInfo
@@ -226,46 +220,46 @@ public partial class App : PrismApplication
             ModuleName = moduleName,
             ModuleType = moduleType.AssemblyQualifiedName,
 
-            // 设为按需加载，登录后根据角色决定是否立即加载
+            // 璁句负鎸夐渶鍔犺浇锛岀櫥褰曞悗鏍规嵁瑙掕壊鍐冲畾鏄惁绔嬪嵆鍔犺浇
             InitializationMode = InitializationMode.OnDemand
         };
 
-        // 记录模块角色信息（简化处理，当前不限制角色访问）
+        // 璁板綍妯″潡瑙掕壊淇℃伅锛堢畝鍖栧鐞嗭紝褰撳墠涓嶉檺鍒惰鑹茶闂級
         moduleCatalog.AddModule(moduleInfo);
     }
 
     /// <summary>
-    /// 用户登录后的角色驱动模块加载
-    /// 根据用户角色智能加载所需模块，避免不必要的资源消�?
+    /// 鐢ㄦ埛鐧诲綍鍚庣殑瑙掕壊椹卞姩妯″潡鍔犺浇
+    /// 鏍规嵁鐢ㄦ埛瑙掕壊鏅鸿兘鍔犺浇鎵€闇€妯″潡锛岄伩鍏嶄笉蹇呰鐨勮祫婧愭秷鑰?
     /// </summary>
-    /// <param name="userRole">用户角色</param>
-    /// <returns>模块加载任务</returns>
-    /// <exception cref="ArgumentException">当用户角色为空时抛出</exception>
+    /// <param name="userRole">鐢ㄦ埛瑙掕壊</param>
+    /// <returns>妯″潡鍔犺浇浠诲姟</returns>
+    /// <exception cref="ArgumentException">褰撶敤鎴疯鑹蹭负绌烘椂鎶涘嚭</exception>
     public async Task LoadRoleBasedModulesAsync(string userRole)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(userRole, nameof(userRole));
 
         try
         {
-            // 确保启动引导服务已初始化
+            // 纭繚鍚姩寮曞鏈嶅姟宸插垵濮嬪寲
             if (_bootstrapper == null)
             {
-                throw new InvalidOperationException("应用程序启动引导服务未初始化");
+                throw new InvalidOperationException("搴旂敤绋嬪簭鍚姩寮曞鏈嶅姟鏈垵濮嬪寲");
             }
 
-            // 将字符串角色转换为枚�?
+            // 灏嗗瓧绗︿覆瑙掕壊杞崲涓烘灇涓?
             if (Enum.TryParse<UserRole>(userRole, out var role))
             {
                 await _bootstrapper.LoadModulesForRoleAsync(role);
             }
             else
             {
-                throw new ArgumentException($"无效的用户角�? {userRole}");
+                throw new ArgumentException($"鏃犳晥鐨勭敤鎴疯鑹? {userRole}");
             }
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"角色驱动模块加载异常: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"瑙掕壊椹卞姩妯″潡鍔犺浇寮傚父: {ex.Message}");
             throw;
         }
     }

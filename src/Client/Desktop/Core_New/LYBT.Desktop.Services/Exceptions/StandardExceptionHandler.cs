@@ -1,8 +1,8 @@
-using System.Net.Http;
+﻿using System.Net.Http;
 using System.Net.Sockets;
-using Microsoft.Extensions.Logging;
-using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Desktop.Services.ErrorHandling;
+using LYBT.Shared.Models.Contracts.Common;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Services.Exceptions
 {
@@ -26,7 +26,7 @@ namespace LYBT.Desktop.Services.Exceptions
         {
             LogException(exception, methodName, context);
             var userMessage = ExceptionMessageMapper.GetUserFriendlyMessage(exception);
-            
+
             if (!string.IsNullOrWhiteSpace(context))
                 userMessage = $"{context}: {userMessage}";
 
@@ -40,7 +40,7 @@ namespace LYBT.Desktop.Services.Exceptions
         {
             LogException(exception, methodName, context);
             var userMessage = ExceptionMessageMapper.GetUserFriendlyMessage(exception);
-            
+
             if (!string.IsNullOrWhiteSpace(context))
                 userMessage = $"{context}: {userMessage}";
 
@@ -84,7 +84,7 @@ namespace LYBT.Desktop.Services.Exceptions
         {
             var logLevel = DetermineLogLevel(exception);
             var message = "服务方法执行异常 - 方法: {MethodName}, 上下文: {Context}, 异常: {ExceptionType}";
-            
+
             switch (logLevel)
             {
                 case LogLevel.Error:

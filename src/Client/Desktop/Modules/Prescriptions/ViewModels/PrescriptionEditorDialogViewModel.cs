@@ -1,6 +1,4 @@
-using System;
-using System.ComponentModel.DataAnnotations;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Interfaces.Services;
@@ -260,7 +258,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             ValidateCommand = new DelegateCommand(ValidateAllWrapper);
 
             // 属性变更时刷新命令状态
-            PropertyChanged += (s, e) => 
+            PropertyChanged += (s, e) =>
             {
                 UpdateCommandStates();
                 if (e.PropertyName == nameof(HasChanges))

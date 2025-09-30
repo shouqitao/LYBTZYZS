@@ -1,10 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using LYBT.Desktop.Modules.Prescriptions.ViewModels;
-using LYBT.Shared.Models.Contracts.Prescriptions;
-
-namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
+﻿namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
 {
     /// <summary>
     /// 处方计算器 - UltraThink架构实现
@@ -20,7 +14,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
         public decimal CalculateTotalDosage(IEnumerable<PrescriptionItemViewModel> items)
         {
             if (items == null) return 0;
-            
+
             return items.Sum(item => item.Dosage);
         }
 
@@ -30,7 +24,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
         public decimal CalculateTotalWeight(IEnumerable<PrescriptionItemViewModel> items)
         {
             if (items == null) return 0;
-            
+
             return items.Sum(item => ConvertToGrams(item.Dosage, item.Unit));
         }
 
@@ -40,10 +34,10 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
         public decimal CalculateItemRatio(PrescriptionItemViewModel item, IEnumerable<PrescriptionItemViewModel> allItems)
         {
             if (item == null || allItems == null) return 0;
-            
+
             var totalDosage = CalculateTotalDosage(allItems);
             if (totalDosage == 0) return 0;
-            
+
             return (item.Dosage / totalDosage) * 100;
         }
 
@@ -57,8 +51,8 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
         public decimal CalculateEstimatedTotalPrice(IEnumerable<PrescriptionItemViewModel> items, Dictionary<Guid, decimal> herbPrices)
         {
             if (items == null || herbPrices == null) return 0;
-            
-            return items.Sum(item => 
+
+            return items.Sum(item =>
             {
                 if (herbPrices.TryGetValue(item.HerbId, out var unitPrice))
                 {
@@ -73,8 +67,8 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
         /// 计算处方价格详情
         /// </summary>
         public CalculationResult CalculatePrescriptionPrice(
-            IEnumerable<PrescriptionItemViewModel> items, 
-            int dosageCount = 1, 
+            IEnumerable<PrescriptionItemViewModel> items,
+            int dosageCount = 1,
             decimal discount = 1.0m)
         {
             try
@@ -131,7 +125,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
             }
 
             var dosages = items.Select(i => i.Dosage).ToList();
-            
+
             return new PrescriptionDosageAnalysis
             {
                 TotalItems = dosages.Count,
@@ -149,9 +143,9 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
         public List<string> ValidateDosageReasonableness(IEnumerable<PrescriptionItemViewModel> items)
         {
             var warnings = new List<string>();
-            
+
             if (items == null) return warnings;
-            
+
             foreach (var item in items)
             {
                 // 检查单味药用量是否过大
@@ -159,14 +153,14 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
                 {
                     warnings.Add($"{item.HerbName} 用量过大（{item.Dosage}{item.Unit}），请检查是否正确");
                 }
-                
+
                 // 检查单味药用量是否过小
                 if (item.Dosage < 0.1m)
                 {
                     warnings.Add($"{item.HerbName} 用量过小（{item.Dosage}{item.Unit}），请检查是否正确");
                 }
             }
-            
+
             // 检查总用量
             var totalWeight = CalculateTotalWeight(items);
             if (totalWeight > 500)
@@ -177,7 +171,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
             {
                 warnings.Add($"处方总重量过小（{totalWeight:F1}g），请检查是否合理");
             }
-            
+
             return warnings;
         }
 
@@ -207,11 +201,11 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
         private decimal CalculateStandardDeviation(List<decimal> values)
         {
             if (values.Count <= 1) return 0;
-            
+
             var average = values.Average();
             var sumOfSquaresOfDifferences = values.Sum(val => (decimal)Math.Pow((double)(val - average), 2));
             var standardDeviation = (decimal)Math.Sqrt((double)(sumOfSquaresOfDifferences / values.Count));
-            
+
             return standardDeviation;
         }
 

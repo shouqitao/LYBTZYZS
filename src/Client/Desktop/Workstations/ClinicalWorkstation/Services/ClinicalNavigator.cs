@@ -1,4 +1,4 @@
-using LYBT.Desktop.ClinicalWorkstation.Navigation;
+﻿using LYBT.Desktop.ClinicalWorkstation.Navigation;
 using Prism.Regions;
 
 namespace LYBT.Desktop.ClinicalWorkstation.Services

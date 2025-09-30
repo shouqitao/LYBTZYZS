@@ -1,4 +1,4 @@
-namespace LYBT.Desktop.Infrastructure.Constants
+﻿namespace LYBT.Desktop.Infrastructure.Constants
 {
 
     /// <summary>

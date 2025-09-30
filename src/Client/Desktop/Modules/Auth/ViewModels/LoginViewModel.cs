@@ -1,17 +1,14 @@
-using LYBT.Desktop.Services.ErrorHandling;
+﻿using System.Windows.Input;
+using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Interfaces.Services;
-using LYBT.Desktop.Infrastructure.Events;
-using Microsoft.Extensions.Logging;
-using Prism.Events;
-using Prism.Commands;
-using System.Windows.Input;
-using Prism.Regions;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
-using System.Threading.Tasks;
-using System;
+using Microsoft.Extensions.Logging;
+using Prism.Commands;
+using Prism.Events;
+using Prism.Regions;
 
 namespace LYBT.Desktop.Auth.ViewModels
 {
@@ -22,7 +19,7 @@ namespace LYBT.Desktop.Auth.ViewModels
     {
         private readonly IAuthService _authService;
         private readonly IRegionManager _regionManager;
-        
+
         private string _username = string.Empty;
         private string _password = string.Empty;
         private bool _rememberMe;
@@ -40,7 +37,7 @@ namespace LYBT.Desktop.Auth.ViewModels
         {
             _authService = authService;
             _regionManager = regionManager;
-            
+
             LoginCommand = new DelegateCommand(async () => await ExecuteLoginAsync(), CanExecuteLogin);
         }
 
@@ -118,8 +115,8 @@ namespace LYBT.Desktop.Auth.ViewModels
 
         private bool CanExecuteLogin()
         {
-            return !string.IsNullOrWhiteSpace(Username) && 
-                   !string.IsNullOrWhiteSpace(Password) && 
+            return !string.IsNullOrWhiteSpace(Username) &&
+                   !string.IsNullOrWhiteSpace(Password) &&
                    !IsLoading;
         }
 
@@ -141,14 +138,14 @@ namespace LYBT.Desktop.Auth.ViewModels
 
                 // 调用认证服务
                 var response = await _authService.LoginAsync(loginRequest);
-                
+
                 if (response.IsSuccess && response.Data != null)
                 {
                     StatusMessage = "登录成功，正在跳转...";
-                    
+
                     // 保存Token和用户信息
                     await _authService.SaveAuthenticationAsync(response.Data);
-                    
+
                     // 根据角色导航到对应的工作台
                     NavigateBasedOnRole(response.Data.User.Role, response.Data.User, response.Data.Token);
                 }
@@ -183,10 +180,10 @@ namespace LYBT.Desktop.Auth.ViewModels
                 };
 
                 Logger.LogInformation($"根据角色 {role} 导航到 {targetView}");
-                
+
                 // 导航到主窗口并设置内容区域
                 _regionManager.RequestNavigate("ContentRegion", targetView);
-                
+
                 // 发布登录成功事件
                 EventAggregator.GetEvent<UserLoggedInEvent>().Publish(new UserLoggedInEventArgs(user, token));
             }

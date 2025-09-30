@@ -1,9 +1,4 @@
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Runtime.CompilerServices;
-
-namespace LYBT.Desktop.Infrastructure.Extensions
+﻿namespace LYBT.Desktop.Infrastructure.Extensions
 {
     /// <summary>
     /// 异步扩展方法 - 第3阶段质量优化
@@ -34,13 +29,13 @@ namespace LYBT.Desktop.Infrastructure.Extensions
         {
             using var cts = new CancellationTokenSource(timeout);
             var completedTask = await Task.WhenAny(task, Task.Delay(timeout, cts.Token)).ConfigureAwait(false);
-            
+
             if (completedTask == task)
             {
                 cts.Cancel(); // 取消延迟任务
                 return await task.ConfigureAwait(false);
             }
-            
+
             throw new TimeoutException($"操作超时，超时时间: {timeout}");
         }
 
@@ -51,14 +46,14 @@ namespace LYBT.Desktop.Infrastructure.Extensions
         {
             using var cts = new CancellationTokenSource(timeout);
             var completedTask = await Task.WhenAny(task, Task.Delay(timeout, cts.Token)).ConfigureAwait(false);
-            
+
             if (completedTask == task)
             {
                 cts.Cancel(); // 取消延迟任务
                 await task.ConfigureAwait(false);
                 return;
             }
-            
+
             throw new TimeoutException($"操作超时，超时时间: {timeout}");
         }
 
@@ -68,7 +63,7 @@ namespace LYBT.Desktop.Infrastructure.Extensions
         public static async Task<T> WithCancellation<T>(this Task<T> task, CancellationToken cancellationToken)
         {
             var tcs = new TaskCompletionSource<bool>();
-            
+
             using (cancellationToken.Register(s => ((TaskCompletionSource<bool>)s!).TrySetResult(true), tcs))
             {
                 if (task != await Task.WhenAny(task, tcs.Task).ConfigureAwait(false))
@@ -76,7 +71,7 @@ namespace LYBT.Desktop.Infrastructure.Extensions
                     throw new OperationCanceledException(cancellationToken);
                 }
             }
-            
+
             return await task.ConfigureAwait(false);
         }
 
@@ -93,7 +88,7 @@ namespace LYBT.Desktop.Infrastructure.Extensions
             shouldRetry ??= (_, attempt) => attempt < maxRetries;
 
             Exception? lastException = null;
-            
+
             for (int attempt = 0; attempt <= maxRetries; attempt++)
             {
                 try
@@ -103,7 +98,7 @@ namespace LYBT.Desktop.Infrastructure.Extensions
                 catch (Exception ex)
                 {
                     lastException = ex;
-                    
+
                     if (attempt < maxRetries && shouldRetry(ex, attempt))
                     {
                         await Task.Delay(delay).ConfigureAwait(false);
@@ -116,7 +111,7 @@ namespace LYBT.Desktop.Infrastructure.Extensions
                     }
                 }
             }
-            
+
             throw lastException ?? new InvalidOperationException("重试失败");
         }
 
@@ -155,16 +150,16 @@ namespace LYBT.Desktop.Infrastructure.Extensions
             {
                 var result = await task.ConfigureAwait(false);
                 results[index] = result;
-                
+
                 var completedCount = Interlocked.Increment(ref completed);
                 progress?.Report((double)completedCount / total);
-                
+
                 return result;
             }
 
             var wrappedTasks = tasks.Select((task, index) => WrapTask(task, index));
             await Task.WhenAll(wrappedTasks).ConfigureAwait(false);
-            
+
             return results;
         }
 
@@ -178,7 +173,7 @@ namespace LYBT.Desktop.Infrastructure.Extensions
             {
                 await taskFactory().ConfigureAwait(false);
             }
-            
+
             return default!;
         }
 
@@ -246,7 +241,7 @@ namespace LYBT.Desktop.Infrastructure.Extensions
                     semaphore.Release();
                 }
             });
-            
+
             return await Task.WhenAll(tasks).ConfigureAwait(false);
         }
 
@@ -277,7 +272,7 @@ namespace LYBT.Desktop.Infrastructure.Extensions
                         {
                             throw new InvalidOperationException("断路器已打开，操作被阻止");
                         }
-                        
+
                         // 重置断路器
                         _failureCount = 0;
                     }
@@ -286,12 +281,12 @@ namespace LYBT.Desktop.Infrastructure.Extensions
                 try
                 {
                     var result = await operation().ConfigureAwait(false);
-                    
+
                     lock (_lock)
                     {
                         _failureCount = 0; // 成功时重置计数
                     }
-                    
+
                     return result;
                 }
                 catch (Exception)

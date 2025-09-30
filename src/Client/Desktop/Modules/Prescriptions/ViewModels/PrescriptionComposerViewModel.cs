@@ -1,10 +1,6 @@
-using System;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Collections.ObjectModel;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
-using LYBT.Desktop.Modules.Prescriptions.ViewModels;
 using LYBT.Desktop.Modules.Prescriptions.ViewModels.Components;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.MedicalCase;
@@ -289,8 +285,8 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
         /// <summary>
         /// 移除药材命令
         /// </summary>
-        public DelegateCommand<PrescriptionItemViewModel> RemoveHerbCommand => 
-            _commandHandler.RemoveHerbCommand as DelegateCommand<PrescriptionItemViewModel> ?? 
+        public DelegateCommand<PrescriptionItemViewModel> RemoveHerbCommand =>
+            _commandHandler.RemoveHerbCommand as DelegateCommand<PrescriptionItemViewModel> ??
             new DelegateCommand<PrescriptionItemViewModel>(_ => { });
 
         /// <summary>
@@ -512,8 +508,8 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             try
             {
                 CalculationResult = _calculator.CalculatePrescriptionPrice(
-                    PrescriptionItems, 
-                    DosageCount, 
+                    PrescriptionItems,
+                    DosageCount,
                     Discount);
 
                 // 通知价格相关属性变更

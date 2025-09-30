@@ -1,4 +1,4 @@
-namespace LYBT.Desktop.Services.Api.Managers
+﻿namespace LYBT.Desktop.Services.Api.Managers
 {
     /// <summary>
     /// 统一API客户端管理器接口 - 简化版本

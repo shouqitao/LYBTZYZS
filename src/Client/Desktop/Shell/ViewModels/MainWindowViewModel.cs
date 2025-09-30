@@ -1,18 +1,17 @@
-using System.Windows;
+﻿using System.Windows;
+using System.Windows.Input;
 using LYBT.Desktop.Infrastructure.Commands;
 using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Infrastructure.Interfaces;
-using LYBT.Desktop.Services.ErrorHandling;
-using LYBT.Desktop.Services.Modules;
 using LYBT.Desktop.Models.ViewModels.Base;
-using Microsoft.Extensions.Logging;
+using LYBT.Desktop.Services.Modules;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
+using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Regions;
-using System.Windows.Input;
 
 namespace LYBT.Desktop.Shell.ViewModels;
 
@@ -411,7 +410,7 @@ public class MainWindowViewModel : UnifiedViewModelBase
                     System.Diagnostics.Debug.WriteLine(" 准备加载主界面内容..");
 
                     // 加载工作台模块
-                    await EnsureWorkbenchModulesLoaded(user);
+                    await EnsureWorkstationModulesLoaded(user);
 
                     LoadMainContent();
                     return;
@@ -477,7 +476,7 @@ public class MainWindowViewModel : UnifiedViewModelBase
 
         if (isAdmin)
         {
-            workbenchView = "SystemWorkbenchMainView";
+            workbenchView = "SystemWorkstationMainView";
             roleDisplay = "管理员";
         }
         else
@@ -524,7 +523,7 @@ public class MainWindowViewModel : UnifiedViewModelBase
     /// <summary>
     /// 确保工作台模块已加载
     /// </summary>
-    private async Task EnsureWorkbenchModulesLoaded(LYBT.Shared.Models.Contracts.Users.UserDto user)
+    private async Task EnsureWorkstationModulesLoaded(LYBT.Shared.Models.Contracts.Users.UserDto user)
     {
         try
         {
@@ -575,7 +574,7 @@ public class MainWindowViewModel : UnifiedViewModelBase
         await _moduleLoadingService.LoadModulesAsync(new[]
         {
             "HerbsModule",
-            "FormulaModule", 
+            "FormulaModule",
             "ConsultationModule",
             "MedicalCaseModule",
             "PrescriptionsModule"

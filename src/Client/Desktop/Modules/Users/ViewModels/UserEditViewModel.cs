@@ -1,8 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Interfaces.Services;
@@ -22,13 +18,13 @@ namespace LYBT.Desktop.Users.ViewModels
     public class UserEditViewModel : UnifiedViewModelBase
     {
         #region 依赖服务
-        
+
         private readonly IUserService _userService;
-        
+
         #endregion
 
         #region 用户信息
-        
+
         private Guid _userId;
         private UserDto? _originalUser;
         private string _username = string.Empty;
@@ -38,7 +34,7 @@ namespace LYBT.Desktop.Users.ViewModels
         private UserRole _selectedRole = UserRole.Doctor;
         private CommonStatus _status = CommonStatus.Enabled;
         private bool _isUserLoaded;
-        
+
         /// <summary>
         /// 用户ID
         /// </summary>
@@ -47,7 +43,7 @@ namespace LYBT.Desktop.Users.ViewModels
             get => _userId;
             private set => SetProperty(ref _userId, value);
         }
-        
+
         /// <summary>
         /// 用户名（只读）
         /// </summary>
@@ -56,7 +52,7 @@ namespace LYBT.Desktop.Users.ViewModels
             get => _username;
             private set => SetProperty(ref _username, value);
         }
-        
+
         /// <summary>
         /// 真实姓名
         /// </summary>
@@ -73,7 +69,7 @@ namespace LYBT.Desktop.Users.ViewModels
                 }
             }
         }
-        
+
         /// <summary>
         /// 手机号码
         /// </summary>
@@ -88,7 +84,7 @@ namespace LYBT.Desktop.Users.ViewModels
                 }
             }
         }
-        
+
         /// <summary>
         /// 邮箱地址
         /// </summary>
@@ -103,7 +99,7 @@ namespace LYBT.Desktop.Users.ViewModels
                 }
             }
         }
-        
+
         /// <summary>
         /// 选中的用户角色
         /// </summary>
@@ -112,7 +108,7 @@ namespace LYBT.Desktop.Users.ViewModels
             get => _selectedRole;
             set => SetProperty(ref _selectedRole, value);
         }
-        
+
         /// <summary>
         /// 用户状态
         /// </summary>
@@ -121,7 +117,7 @@ namespace LYBT.Desktop.Users.ViewModels
             get => _status;
             set => SetProperty(ref _status, value);
         }
-        
+
         /// <summary>
         /// 用户是否已加载
         /// </summary>
@@ -130,21 +126,21 @@ namespace LYBT.Desktop.Users.ViewModels
             get => _isUserLoaded;
             private set => SetProperty(ref _isUserLoaded, value);
         }
-        
+
         /// <summary>
         /// 角色选项
         /// </summary>
         public IEnumerable<UserRole> RoleOptions { get; }
-        
+
         /// <summary>
         /// 状态选项
         /// </summary>
         public IEnumerable<CommonStatus> StatusOptions { get; }
-        
+
         #endregion
 
         #region 验证属性
-        
+
         /// <summary>
         /// 表单是否有效
         /// </summary>
@@ -152,7 +148,7 @@ namespace LYBT.Desktop.Users.ViewModels
             IsUserLoaded &&
             !string.IsNullOrWhiteSpace(RealName) &&
             !HasErrors;
-        
+
         /// <summary>
         /// 是否有更改
         /// </summary>
@@ -161,7 +157,7 @@ namespace LYBT.Desktop.Users.ViewModels
             get
             {
                 if (_originalUser == null || !IsUserLoaded) return false;
-                
+
                 return _originalUser.RealName != RealName ||
                        _originalUser.PhoneNumber != PhoneNumber ||
                        _originalUser.Email != Email ||
@@ -169,35 +165,35 @@ namespace LYBT.Desktop.Users.ViewModels
                        _originalUser.Status != Status;
             }
         }
-        
+
         #endregion
 
         #region 命令
-        
+
         /// <summary>
         /// 保存命令
         /// </summary>
         public DelegateCommand SaveCommand { get; private set; }
-        
+
         /// <summary>
         /// 取消命令
         /// </summary>
         public DelegateCommand CancelCommand { get; private set; }
-        
+
         /// <summary>
         /// 重置命令
         /// </summary>
         public DelegateCommand ResetCommand { get; private set; }
-        
+
         /// <summary>
         /// 重置密码命令
         /// </summary>
         public DelegateCommand ResetPasswordCommand { get; private set; }
-        
+
         #endregion
 
         #region 构造函数
-        
+
         public UserEditViewModel(
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
@@ -208,24 +204,24 @@ namespace LYBT.Desktop.Users.ViewModels
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, errorHandlingService)
         {
             _userService = userService ?? throw new ArgumentNullException(nameof(userService));
-            
+
             // 初始化选项
             RoleOptions = Enum.GetValues<UserRole>();
             StatusOptions = Enum.GetValues<CommonStatus>();
-            
+
             // 初始化页面属性
             PageTitle = "编辑用户";
-            
+
             // 初始化命令
             InitializeCommands();
-            
+
             Logger.LogDebug("用户编辑ViewModel已初始化");
         }
-        
+
         #endregion
 
         #region 命令初始化
-        
+
         protected override void InitializeCommands()
         {
             SaveCommand = new DelegateCommand(async () => await ExecuteSaveAsync(), CanExecuteSave);
@@ -233,15 +229,15 @@ namespace LYBT.Desktop.Users.ViewModels
             ResetCommand = new DelegateCommand(ExecuteReset, () => IsUserLoaded);
             ResetPasswordCommand = new DelegateCommand(async () => await ExecuteResetPasswordAsync(), CanExecuteResetPassword);
         }
-        
+
         #endregion
 
         #region 导航处理
-        
+
         protected override void ProcessNavigationParameters(Prism.Regions.NavigationParameters parameters)
         {
             base.ProcessNavigationParameters(parameters);
-            
+
             // 获取用户ID
             if (parameters.TryGetValue("userId", out object userIdObj) && userIdObj is Guid userId)
             {
@@ -254,7 +250,7 @@ namespace LYBT.Desktop.Users.ViewModels
                 // 可以考虑导航回列表页面或显示错误
             }
         }
-        
+
         protected async Task OnInitializeDataAsync()
         {
             if (UserId != Guid.Empty)
@@ -262,11 +258,11 @@ namespace LYBT.Desktop.Users.ViewModels
                 await LoadUserAsync();
             }
         }
-        
+
         #endregion
 
         #region 数据加载
-        
+
         /// <summary>
         /// 加载用户数据
         /// </summary>
@@ -275,17 +271,17 @@ namespace LYBT.Desktop.Users.ViewModels
             await ExecuteSafelyAsync(async () =>
             {
                 Logger.LogDebug("开始加载用户数据: {UserId}", UserId);
-                
+
                 var result = await _userService.GetByIdAsync(UserId);
-                
+
                 if (result.IsSuccess && result.Data != null)
                 {
                     _originalUser = result.Data;
                     LoadUserData(_originalUser);
                     IsUserLoaded = true;
-                    
+
                     PageTitle = $"编辑用户 - {_originalUser.RealName}";
-                    
+
                     Logger.LogDebug("成功加载用户数据: {Username} - {RealName}", _originalUser.UserName, _originalUser.RealName);
                 }
                 else
@@ -293,10 +289,10 @@ namespace LYBT.Desktop.Users.ViewModels
                     Logger.LogWarning("加载用户数据失败: {ErrorMessage}", result.ErrorMessage);
                     throw new InvalidOperationException($"加载用户数据失败: {result.ErrorMessage}");
                 }
-                
+
             }, "加载用户数据");
         }
-        
+
         /// <summary>
         /// 将用户数据加载到ViewModel属性
         /// </summary>
@@ -308,17 +304,17 @@ namespace LYBT.Desktop.Users.ViewModels
             Email = user.Email;
             SelectedRole = user.Role;
             Status = user.Status;
-            
+
             ClearValidationErrors();
-            
+
             // 通知相关属性更新
             RaisePropertyChanged(nameof(HasChanges));
         }
-        
+
         #endregion
 
         #region 命令实现
-        
+
         /// <summary>
         /// 执行保存
         /// </summary>
@@ -329,11 +325,11 @@ namespace LYBT.Desktop.Users.ViewModels
                 Logger.LogWarning("表单无效或无更改，无法保存用户");
                 return;
             }
-            
+
             await ExecuteSafelyAsync(async () =>
             {
                 Logger.LogDebug("开始更新用户: {UserId} - {Username}", UserId, Username);
-                
+
                 var updateDto = new UserUpdateDto
                 {
                     Id = UserId,
@@ -343,19 +339,19 @@ namespace LYBT.Desktop.Users.ViewModels
                     Role = SelectedRole,
                     Status = Status
                 };
-                
+
                 var result = await _userService.UpdateAsync(UserId, updateDto);
-                
+
                 if (result.IsSuccess && result.Data != null)
                 {
                     _originalUser = result.Data;
                     LoadUserData(_originalUser);
-                    
+
                     Logger.LogInformation("成功更新用户: {Username} - {RealName}", Username, RealName);
-                    
+
                     // 发布用户更新成功事件
                     EventAggregator.GetEvent<PubSubEvent<string>>().Publish($"用户 {RealName} 更新成功");
-                    
+
                     // 导航回用户管理页面
                     NavigateTo("ContentRegion", "UserManagementView");
                 }
@@ -364,10 +360,10 @@ namespace LYBT.Desktop.Users.ViewModels
                     Logger.LogWarning("更新用户失败: {ErrorMessage}", result.ErrorMessage);
                     throw new InvalidOperationException($"更新用户失败: {result.ErrorMessage}");
                 }
-                
+
             }, "更新用户");
         }
-        
+
         /// <summary>
         /// 是否可以保存
         /// </summary>
@@ -375,25 +371,25 @@ namespace LYBT.Desktop.Users.ViewModels
         {
             return IsFormValid && HasChanges && !IsLoading;
         }
-        
+
         /// <summary>
         /// 执行取消
         /// </summary>
         private void ExecuteCancel()
         {
             Logger.LogDebug("取消编辑用户");
-            
+
             // 检查是否有未保存的更改
             if (HasChanges)
             {
                 Logger.LogDebug("存在未保存的更改，直接导航回列表");
                 // 这里可以显示确认对话框
             }
-            
+
             // 导航回用户管理页面
             NavigateTo("ContentRegion", "UserManagementView");
         }
-        
+
         /// <summary>
         /// 执行重置
         /// </summary>
@@ -405,7 +401,7 @@ namespace LYBT.Desktop.Users.ViewModels
                 LoadUserData(_originalUser);
             }
         }
-        
+
         /// <summary>
         /// 执行重置密码
         /// </summary>
@@ -414,19 +410,19 @@ namespace LYBT.Desktop.Users.ViewModels
             await ExecuteSafelyAsync(async () =>
             {
                 Logger.LogDebug("重置用户密码: {UserId} - {Username}", UserId, Username);
-                
+
                 // 这里应该调用密码重置服务，或者打开重置密码对话框
                 // 暂时记录日志
                 Logger.LogInformation("用户 {Username} 的密码重置请求已提交", Username);
-                
+
                 // 实际实现可能需要：
                 // 1. 打开重置密码对话框
                 // 2. 调用密码重置API
                 // 3. 发送重置通知
-                
+
             }, "重置密码");
         }
-        
+
         /// <summary>
         /// 是否可以重置密码
         /// </summary>
@@ -434,18 +430,18 @@ namespace LYBT.Desktop.Users.ViewModels
         {
             return IsUserLoaded && Status == CommonStatus.Enabled && !IsLoading;
         }
-        
+
         #endregion
 
         #region 验证
-        
+
         /// <summary>
         /// 验证指定属性
         /// </summary>
         private void ValidateProperty([System.Runtime.CompilerServices.CallerMemberName] string? propertyName = null)
         {
             if (string.IsNullOrEmpty(propertyName)) return;
-            
+
             switch (propertyName)
             {
                 case nameof(RealName):
@@ -462,7 +458,7 @@ namespace LYBT.Desktop.Users.ViewModels
                         ClearValidationErrors(propertyName);
                     }
                     break;
-                    
+
                 case nameof(PhoneNumber):
                     if (!string.IsNullOrWhiteSpace(PhoneNumber))
                     {
@@ -480,7 +476,7 @@ namespace LYBT.Desktop.Users.ViewModels
                         ClearValidationErrors(propertyName);
                     }
                     break;
-                    
+
                 case nameof(Email):
                     if (!string.IsNullOrWhiteSpace(Email))
                     {
@@ -499,12 +495,12 @@ namespace LYBT.Desktop.Users.ViewModels
                     }
                     break;
             }
-            
+
             // 更新相关属性
             RaisePropertyChanged(nameof(IsFormValid));
             RaisePropertyChanged(nameof(HasChanges));
         }
-        
+
         /// <summary>
         /// 检查是否有未保存的更改
         /// </summary>
@@ -512,18 +508,18 @@ namespace LYBT.Desktop.Users.ViewModels
         {
             return HasChanges;
         }
-        
+
         #endregion
 
         #region 命令刷新
-        
+
         protected virtual void RefreshCanExecuteChanged()
         {
             SaveCommand?.RaiseCanExecuteChanged();
             ResetCommand?.RaiseCanExecuteChanged();
             ResetPasswordCommand?.RaiseCanExecuteChanged();
         }
-        
+
         /// <summary>
         /// 刷新属性变化通知
         /// </summary>
@@ -532,23 +528,23 @@ namespace LYBT.Desktop.Users.ViewModels
             RaisePropertyChanged(nameof(IsFormValid));
             RaisePropertyChanged(nameof(HasChanges));
         }
-        
+
         #endregion
 
         #region 属性变化处理
-        
+
         protected override void OnPropertyChanged(System.ComponentModel.PropertyChangedEventArgs args)
         {
             base.OnPropertyChanged(args);
-            
+
             // 当关键属性变化时，刷新相关状态
-            if (args.PropertyName is nameof(RealName) or nameof(PhoneNumber) or nameof(Email) 
+            if (args.PropertyName is nameof(RealName) or nameof(PhoneNumber) or nameof(Email)
                 or nameof(SelectedRole) or nameof(Status))
             {
                 RefreshPropertyChanged();
             }
         }
-        
+
         #endregion
     }
 }

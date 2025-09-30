@@ -1,4 +1,4 @@
-using System.Windows;
+﻿using System.Windows;
 using LYBT.Desktop.Shell.Dialogs.ViewModels;
 
 namespace LYBT.Desktop.Shell.Dialogs.Views

@@ -1,7 +1,4 @@
-using System;
-using System.Threading.Tasks;
-
-namespace LYBT.Desktop.Services.ErrorHandling
+﻿namespace LYBT.Desktop.Services.ErrorHandling
 {
     /// <summary>
     /// 异常处理器接口 - 简化版本

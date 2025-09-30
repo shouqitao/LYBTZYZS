@@ -1,17 +1,11 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using System.Reactive.Disposables;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using Microsoft.Extensions.Logging;
 using Prism.Events;
 using Prism.Mvvm;
-using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Desktop.Models.ViewModels.Base
 {

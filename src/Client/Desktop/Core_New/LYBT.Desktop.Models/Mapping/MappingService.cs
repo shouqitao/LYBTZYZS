@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Models.Mapping;
@@ -74,7 +74,7 @@ public class MappingService : IMappingService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "映射失败: {SourceType} -> {DestType}", 
+            _logger.LogError(ex, "映射失败: {SourceType} -> {DestType}",
                 typeof(TSource).Name, typeof(TDestination).Name);
             return new TDestination();
         }
@@ -92,7 +92,7 @@ public class MappingService : IMappingService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "映射列表失败: {SourceType} -> {DestType}", 
+            _logger.LogError(ex, "映射列表失败: {SourceType} -> {DestType}",
                 typeof(TSource).Name, typeof(TDestination).Name);
             return new List<TDestination>();
         }

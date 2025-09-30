@@ -1,7 +1,4 @@
-using System;
-using System.Threading.Tasks;
-using LYBT.Shared.Interfaces.Services;
-using LYBT.Shared.Models.Contracts.Users;
+﻿using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 

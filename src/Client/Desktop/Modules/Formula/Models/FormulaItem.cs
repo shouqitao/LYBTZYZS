@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Prism.Mvvm;
-using LYBT.Shared.Models.Contracts.Formula;
+﻿using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Enums;
+using Prism.Mvvm;
 
 namespace LYBT.Desktop.Formula.Models;
 
@@ -14,133 +11,133 @@ namespace LYBT.Desktop.Formula.Models;
 /// </summary>
 public class FormulaItem : BindableBase
 {
-        private Guid _id;
+    private Guid _id;
     public Guid Id
     {
         get => _id;
         set => SetProperty(ref _id, value);
     }
 
-        private string _name = string.Empty;
+    private string _name = string.Empty;
     public string Name
     {
         get => _name;
         set => SetProperty(ref _name, value);
     }
 
-        private string? _pinyin;
+    private string? _pinyin;
     public string? Pinyin
     {
         get => _pinyin;
         set => SetProperty(ref _pinyin, value);
     }
 
-        private string? _category;
+    private string? _category;
     public string? Category
     {
         get => _category;
         set => SetProperty(ref _category, value);
     }
 
-        private string? _source;
+    private string? _source;
     public string? Source
     {
         get => _source;
         set => SetProperty(ref _source, value);
     } // 来源
 
-        private string? _composition;
+    private string? _composition;
     public string? Composition
     {
         get => _composition;
         set => SetProperty(ref _composition, value);
     } // 组成
 
-        private string? _effect;
+    private string? _effect;
     public string? Effect
     {
         get => _effect;
         set => SetProperty(ref _effect, value);
     } // 功效
 
-        private string? _indication;
+    private string? _indication;
     public string? Indication
     {
         get => _indication;
         set => SetProperty(ref _indication, value);
     } // 主治
 
-        private string? _usage;
+    private string? _usage;
     public string? Usage
     {
         get => _usage;
         set => SetProperty(ref _usage, value);
     } // 用法用量
 
-        private string? _modification;
+    private string? _modification;
     public string? Modification
     {
         get => _modification;
         set => SetProperty(ref _modification, value);
     } // 加减
 
-        private string? _contraindication;
+    private string? _contraindication;
     public string? Contraindication
     {
         get => _contraindication;
         set => SetProperty(ref _contraindication, value);
     } // 禁忌
 
-        private string? _note;
+    private string? _note;
     public string? Note
     {
         get => _note;
         set => SetProperty(ref _note, value);
     } // 注意事项
 
-        private string? _createdBy;
+    private string? _createdBy;
     public string? CreatedBy
     {
         get => _createdBy;
         set => SetProperty(ref _createdBy, value);
     }
 
-        private bool _isClassic;
+    private bool _isClassic;
     public bool IsClassic
     {
         get => _isClassic;
         set => SetProperty(ref _isClassic, value);
     } // 是否经典方
 
-        private bool _isPersonal;
+    private bool _isPersonal;
     public bool IsPersonal
     {
         get => _isPersonal;
         set => SetProperty(ref _isPersonal, value);
     } // 是否个人验方
 
-        private bool _isActive = true;
+    private bool _isActive = true;
     public bool IsActive
     {
         get => _isActive;
         set => SetProperty(ref _isActive, value);
     }
 
-        private int _usageCount;
+    private int _usageCount;
     public int UsageCount
     {
         get => _usageCount;
         set => SetProperty(ref _usageCount, value);
     } // 使用次数
 
-        private DateTime _createdAt;
+    private DateTime _createdAt;
     public DateTime CreatedAt
     {
         get => _createdAt;
         set => SetProperty(ref _createdAt, value);
     }
 
-        private DateTime? _updatedAt;
+    private DateTime? _updatedAt;
     public DateTime? UpdatedAt
     {
         get => _updatedAt;
@@ -154,21 +151,21 @@ public class FormulaItem : BindableBase
         set => SetProperty(ref _herbs, value);
     }
 
-        private bool _isSelected;
+    private bool _isSelected;
     public bool IsSelected
     {
         get => _isSelected;
         set => SetProperty(ref _isSelected, value);
     }
 
-        private bool _isExpanded;
+    private bool _isExpanded;
     public bool IsExpanded
     {
         get => _isExpanded;
         set => SetProperty(ref _isExpanded, value);
     }
 
-        private bool _isFavorite;
+    private bool _isFavorite;
     public bool IsFavorite
     {
         get => _isFavorite;
@@ -348,42 +345,42 @@ public class FormulaItem : BindableBase
 /// </summary>
 public class FormulaHerbItem : BindableBase
 {
-        private Guid _herbId;
+    private Guid _herbId;
     public Guid HerbId
     {
         get => _herbId;
         set => SetProperty(ref _herbId, value);
     }
 
-        private string _herbName = string.Empty;
+    private string _herbName = string.Empty;
     public string HerbName
     {
         get => _herbName;
         set => SetProperty(ref _herbName, value);
     }
 
-        private decimal _dosage;
+    private decimal _dosage;
     public decimal Dosage
     {
         get => _dosage;
         set => SetProperty(ref _dosage, value);
     }
 
-        private string _unit = string.Empty;
+    private string _unit = string.Empty;
     public string Unit
     {
         get => _unit;
         set => SetProperty(ref _unit, value);
     }
 
-        private string? _usage;
+    private string? _usage;
     public string? Usage
     {
         get => _usage;
         set => SetProperty(ref _usage, value);
     }
 
-        private int _sequence;
+    private int _sequence;
     public int Sequence
     {
         get => _sequence;

@@ -1,13 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Collections.ObjectModel;
+using LYBT.Desktop.Infrastructure.Interfaces;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Regions;
-using LYBT.Desktop.Infrastructure.Interfaces;
 
 namespace LYBT.Desktop.Models.ViewModels.Base
 {
@@ -268,9 +264,9 @@ namespace LYBT.Desktop.Models.ViewModels.Base
             await ExecuteSafelyAsync(async () =>
             {
                 IsLoading = true;
-                
+
                 var items = await GetItemsAsync(CurrentPage, PageSize, SearchText);
-                
+
                 RunOnUIThread(() =>
                 {
                     Items.Clear();
@@ -278,10 +274,10 @@ namespace LYBT.Desktop.Models.ViewModels.Base
                     {
                         Items.Add(item);
                     }
-                    
+
                     RefreshPagingProperties();
                 });
-                
+
             }, "加载数据");
         }
 

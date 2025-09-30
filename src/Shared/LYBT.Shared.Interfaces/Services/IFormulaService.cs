@@ -1,4 +1,4 @@
-using LYBT.Shared.Models.Contracts.Common;
+﻿using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
 
 namespace LYBT.Shared.Interfaces.Services

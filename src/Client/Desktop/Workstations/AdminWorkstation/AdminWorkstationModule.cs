@@ -1,6 +1,5 @@
-using LYBT.Desktop.AdminWorkstation.ViewModels;
+ï»¿using LYBT.Desktop.AdminWorkstation.ViewModels;
 using LYBT.Desktop.AdminWorkstation.Views;
-using LYBT.Desktop.Services.ErrorHandling;
 using Microsoft.Extensions.Logging;
 using Prism.Ioc;
 using Prism.Modularity;
@@ -8,31 +7,31 @@ using Prism.Modularity;
 namespace LYBT.Desktop.AdminWorkstation
 {
     /// <summary>
-    /// ¹ÜÀí¹¤×÷Ì¨Ä£¿é
-    /// Ìá¹©¹ÜÀíÔ±µÄ¹¤×÷Ì¨½çÃæºÍÏà¹Ø¹¦ÄÜ
+    /// ç®¡ç†å·¥ä½œå°æ¨¡å—
+    /// æä¾›ç®¡ç†å‘˜çš„å·¥ä½œå°ç•Œé¢å’Œç›¸å…³åŠŸèƒ½
     /// </summary>
     [Module(ModuleName = nameof(AdminWorkstationModule))]
-    [ModuleDependency("AuthenticationModule")] // ÒÀÀµÈÏÖ¤Ä£¿é
+    [ModuleDependency("AuthenticationModule")] // ä¾èµ–è®¤è¯æ¨¡å—
     public class AdminWorkstationModule : IModule
     {
         /// <inheritdoc/>
         public void OnInitialized(IContainerProvider containerProvider)
         {
-            // Ä£¿é³õÊ¼»¯Íê³É
+            // æ¨¡å—åˆå§‹åŒ–å®Œæˆ
             var logger = containerProvider.Resolve<ILogger<AdminWorkstationModule>>();
-            logger?.LogInformation("¹ÜÀí¹¤×÷Ì¨Ä£¿é³õÊ¼»¯Íê³É");
+            logger?.LogInformation("ç®¡ç†å·¥ä½œå°æ¨¡å—åˆå§‹åŒ–å®Œæˆ");
         }
 
         /// <inheritdoc/>
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            // ×¢²áÊÓÍ¼Ä£ĞÍ
+            // æ³¨å†Œè§†å›¾æ¨¡å‹
             containerRegistry.Register<AdminWorkstationViewModel>();
 
-            // ×¢²áÖ÷ÊÓÍ¼ÓÃÓÚµ¼º½
+            // æ³¨å†Œä¸»è§†å›¾ç”¨äºå¯¼èˆª
             containerRegistry.RegisterForNavigation<AdminWorkstationView>();
 
-            // ×¢²á¹ÜÀí¹¦ÄÜ×ÓÊÓÍ¼£¨ºóĞø¸ù¾İĞèÒªÌí¼Ó£©
+            // æ³¨å†Œç®¡ç†åŠŸèƒ½å­è§†å›¾ï¼ˆåç»­æ ¹æ®éœ€è¦æ·»åŠ ï¼‰
             // containerRegistry.RegisterForNavigation<UserManagementView>();
             // containerRegistry.RegisterForNavigation<HerbManagementView>();
             // containerRegistry.RegisterForNavigation<PatientManagementView>();

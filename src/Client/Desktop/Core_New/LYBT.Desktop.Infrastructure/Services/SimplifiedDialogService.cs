@@ -1,6 +1,6 @@
+﻿using System.Windows;
 using LYBT.Desktop.Services.Dialogs;
 using Microsoft.Extensions.Logging;
-using System.Windows;
 
 namespace LYBT.Desktop.Infrastructure.Services
 {

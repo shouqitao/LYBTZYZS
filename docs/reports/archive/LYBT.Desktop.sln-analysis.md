@@ -18,7 +18,7 @@
 
 **结构与一致性检查**
 - 解决方案结构
-  - 优点：已分为 `Core/BusinessModules/Workbenches/SharedResources` 等文件夹，项目包含完整的 Shell/Core/Infrastructure/Services/Modules/Workbenches，以及 Shared 模块，覆盖前端主要层次。
+  - 优点：已分为 `Core/BusinessModules/Workstationes/SharedResources` 等文件夹，项目包含完整的 Shell/Core/Infrastructure/Services/Modules/Workstationes，以及 Shared 模块，覆盖前端主要层次。
   - 建议：将 Shared 项目的项目类型 GUID 统一为 SDK 风格（`{9A19103F-...}`）以与其他项目及 `LYBT.All.sln` 一致，减少历史残留差异。
 
 - 统一输出目录（BIN/）
@@ -26,7 +26,7 @@
     - 证据：
       - `src/Client/Desktop/Core/LYBT.Desktop.Core.csproj:37`、`:42`
       - `src/Client/Desktop/Shell/LYBT.Desktop.Shell.csproj:40`、`:45`
-      - `src/Client/Desktop/Workbenches/Core/LYBT.Desktop.Workbench.Core.csproj:40`、`:45`
+      - `src/Client/Desktop/Workstationes/Core/LYBT.Desktop.Workstation.Core.csproj:40`、`:45`
       - `src/Client/Desktop/Modules/Users/LYBT.Desktop.Users.csproj:40`、`:45`
   - 建议：删除项目内的 `<DocumentationFile>` 定制或改为 `$(OutputPath)$(AssemblyName).xml`，与统一输出目录保持一致。
 
@@ -79,7 +79,7 @@
 
 3) 统一文档输出到 `BIN/`
    - 删除/改造各项目内 `<DocumentationFile>` 路径，改为 `$(OutputPath)$(AssemblyName).xml` 或直接依赖默认行为。
-   - 受影响文件：`LYBT.Desktop.Core.csproj`、`LYBT.Desktop.Shell.csproj`、`LYBT.Desktop.Workbench.Core.csproj`、`LYBT.Desktop.Users.csproj`（见上文行号）。
+   - 受影响文件：`LYBT.Desktop.Core.csproj`、`LYBT.Desktop.Shell.csproj`、`LYBT.Desktop.Workstation.Core.csproj`、`LYBT.Desktop.Users.csproj`（见上文行号）。
 
 4) 统一 JSON 序列化栈（建议）
    - 去除 `Refit.Newtonsoft.Json` 依赖（`LYBT.Desktop.Infrastructure.csproj`），保持 `UnifiedApiClientManager` 已配置的 System.Text.Json；评估并最小化前端对 `Newtonsoft.Json` 的显式依赖。
@@ -123,7 +123,7 @@
 - 文档输出（示例）：
   - `src/Client/Desktop/Core/LYBT.Desktop.Core.csproj:37`、`:42`
   - `src/Client/Desktop/Shell/LYBT.Desktop.Shell.csproj:40`、`:45`
-  - `src/Client/Desktop/Workbenches/Core/LYBT.Desktop.Workbench.Core.csproj:40`、`:45`
+  - `src/Client/Desktop/Workstationes/Core/LYBT.Desktop.Workstation.Core.csproj:40`、`:45`
   - `src/Client/Desktop/Modules/Users/LYBT.Desktop.Users.csproj:40`、`:45`
 - WinForms 标记：`src/Client/Desktop/Services/LYBT.Desktop.Services.csproj:7`
 - 路由常量：`src/Client/Desktop/Core/Constants/ApiEndpoints.cs`

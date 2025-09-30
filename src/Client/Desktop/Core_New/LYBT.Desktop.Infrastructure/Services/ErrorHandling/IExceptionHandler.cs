@@ -1,7 +1,4 @@
-using System;
-using System.Threading.Tasks;
-
-namespace LYBT.Desktop.Infrastructure.Services.ErrorHandling
+﻿namespace LYBT.Desktop.Infrastructure.Services.ErrorHandling
 {
     /// <summary>
     /// 异常处理器接口 - UltraThink架构

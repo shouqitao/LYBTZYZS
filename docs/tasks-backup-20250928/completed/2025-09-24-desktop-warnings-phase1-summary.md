@@ -25,9 +25,9 @@
 | LYBT.Desktop.Modules.Consultation | ~15 | true | 无 |
 | LYBT.Desktop.Modules.Prescriptions | ~12 | true | 无 |
 | LYBT.Desktop.Modules.MedicalCase | ~8 | true | 无 |
-| LYBT.Desktop.Workbench.Core | ~20 | true | 无 |
-| LYBT.Desktop.Workbench.Admin | ~15 | false | 无 |
-| LYBT.Desktop.Workbench.Medical | ~25 | false | 无 |
+| LYBT.Desktop.Workstation.Core | ~20 | true | 无 |
+| LYBT.Desktop.Workstation.Admin | ~15 | false | 无 |
+| LYBT.Desktop.Workstation.Medical | ~25 | false | 无 |
 | **总计** | **519** | 13/18启用 | 仅Core配置 |
 
 ### 事件定义统计（CS0067潜在警告源）
@@ -56,7 +56,7 @@
 ### 2. 配置不一致问题
 - **GenerateDocumentationFile配置不统一**：
   - 13个项目启用，5个项目未启用
-  - Services、Workbench.Admin、Workbench.Medical未启用
+  - Services、Workstation.Admin、Workstation.Medical未启用
 
 - **NoWarn配置集中在Core项目**：
   - Core项目屏蔽了6类警告
@@ -100,10 +100,10 @@
    - Formula模块：~10个公共类型
    - MedicalCase模块：~8个公共类型
 
-### 第四阶段：Workbench治理（3-4天）
-1. **Workbench.Core**：~20个公共类型
-2. **Workbench.Medical**：~25个公共类型（需先启用文档生成）
-3. **Workbench.Admin**：~15个公共类型（需先启用文档生成）
+### 第四阶段：Workstation治理（3-4天）
+1. **Workstation.Core**：~20个公共类型
+2. **Workstation.Medical**：~25个公共类型（需先启用文档生成）
+3. **Workstation.Admin**：~15个公共类型（需先启用文档生成）
 
 ### 第五阶段：事件清理（2-3天）
 1. **事件使用审查**
@@ -120,7 +120,7 @@
 
 ### 中期目标（第3-4阶段）
 - [ ] 所有业务模块0警告
-- [ ] Workbench模块0警告
+- [ ] Workstation模块0警告
 - [ ] XML文档覆盖率达到80%
 
 ### 长期目标（第5阶段及后续）

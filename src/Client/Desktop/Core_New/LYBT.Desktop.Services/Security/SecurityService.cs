@@ -1,6 +1,5 @@
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using System.Text;
-using System.Text.Json;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Services.Security;
@@ -76,7 +75,7 @@ public class SecurityService : ISecurityService
         try
         {
             var data = Convert.FromBase64String(encryptedText);
-            
+
             using var aes = Aes.Create();
             aes.Key = _key;
 

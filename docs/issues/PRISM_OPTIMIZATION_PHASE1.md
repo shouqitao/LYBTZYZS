@@ -272,7 +272,7 @@ public class PatientDetailViewModel : UnifiedViewModelBase
 6. HerbsModule
 7. PrescriptionsModule
 8. FormulaModule
-9. MedicalWorkbenchModule
+9. MedicalWorkstationModule
 
 ### Step 3: 优化ViewModelBase（优先级：中）
 1. 修改UnifiedViewModelBase构造函数

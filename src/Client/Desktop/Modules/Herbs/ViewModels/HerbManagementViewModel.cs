@@ -1,8 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using LYBT.Desktop.Infrastructure.Interfaces;
+﻿using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
@@ -39,7 +35,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, errorHandlingService)
         {
             _herbService = herbService ?? throw new ArgumentNullException(nameof(herbService));
-            
+
             PageTitle = "药材管理";
         }
 
@@ -55,16 +51,16 @@ namespace LYBT.Desktop.Herbs.ViewModels
             try
             {
                 var result = await _herbService.GetPagedAsync(page, pageSize, searchText);
-                
+
                 if (result.IsSuccess && result.Data != null)
                 {
                     var pagedData = result.Data;
-                    
+
                     // 更新分页信息
                     TotalCount = pagedData.TotalCount;
                     CurrentPage = pagedData.CurrentPage;
                     PageSize = pagedData.PageSize;
-                    
+
                     return pagedData.Items;
                 }
                 else
@@ -102,7 +98,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
             try
             {
                 var result = await _herbService.DeleteAsync(item.Id);
-                
+
                 if (result.IsSuccess)
                 {
                     await ShowSuccessMessageAsync($"药材 '{item.Name}' 删除成功");
@@ -181,19 +177,19 @@ namespace LYBT.Desktop.Herbs.ViewModels
         /// <summary>
         /// 查看药材详情
         /// </summary>
-        public DelegateCommand<HerbDto> ViewDetailCommand => 
+        public DelegateCommand<HerbDto> ViewDetailCommand =>
             new DelegateCommand<HerbDto>(ViewHerbDetail, CanViewDetail);
 
         /// <summary>
         /// 编辑药材
         /// </summary>
-        public DelegateCommand<HerbDto> EditHerbCommand => 
+        public DelegateCommand<HerbDto> EditHerbCommand =>
             new DelegateCommand<HerbDto>(EditHerb, CanEditHerb);
 
         /// <summary>
         /// 复制药材
         /// </summary>
-        public DelegateCommand<HerbDto> CopyHerbCommand => 
+        public DelegateCommand<HerbDto> CopyHerbCommand =>
             new DelegateCommand<HerbDto>(CopyHerb, CanCopyHerb);
 
         /// <summary>
@@ -202,7 +198,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
         private void ViewHerbDetail(HerbDto herb)
         {
             if (herb == null) return;
-            
+
             var parameters = new NavigationParameters
             {
                 { "HerbId", herb.Id },
@@ -217,7 +213,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
         private void EditHerb(HerbDto herb)
         {
             if (herb == null) return;
-            
+
             var parameters = new NavigationParameters
             {
                 { "HerbId", herb.Id }
@@ -231,7 +227,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
         private void CopyHerb(HerbDto herb)
         {
             if (herb == null) return;
-            
+
             var parameters = new NavigationParameters
             {
                 { "SourceHerbId", herb.Id },
@@ -271,7 +267,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
         /// <summary>
         /// 按分类搜索
         /// </summary>
-        public DelegateCommand<string> SearchByCategoryCommand => 
+        public DelegateCommand<string> SearchByCategoryCommand =>
             new DelegateCommand<string>(SearchByCategory);
 
         /// <summary>
@@ -280,7 +276,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
         private async void SearchByCategory(string category)
         {
             if (string.IsNullOrWhiteSpace(category)) return;
-            
+
             SearchText = $"分类:{category}";
             await LoadPageAsync();
         }

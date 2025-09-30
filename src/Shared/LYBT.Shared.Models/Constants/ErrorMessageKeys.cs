@@ -1,4 +1,4 @@
-namespace LYBT.Shared.Models.Constants
+﻿namespace LYBT.Shared.Models.Constants
 {
     /// <summary>
     /// 异常消息键值常量 - 国际化准备

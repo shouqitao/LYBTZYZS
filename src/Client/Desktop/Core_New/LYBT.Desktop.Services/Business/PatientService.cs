@@ -1,13 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using LYBT.Desktop.Services.Exceptions;
+﻿using LYBT.Desktop.Services.Exceptions;
 using LYBT.Desktop.Services.Repositories.Interfaces;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
-using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Services.Business

@@ -1,4 +1,4 @@
-namespace LYBT.Shared.Models.Constants
+﻿namespace LYBT.Shared.Models.Constants
 {
     /// <summary>
     /// 全局验证常量定义 - 统一管理所有DTO的验证规则

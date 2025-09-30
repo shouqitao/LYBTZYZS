@@ -20,11 +20,11 @@
    - 在回传文档中附表列出：项目、警告类型、主要文件数量
 
 2. **重点范围确认**
-   - 锁定处理优先级：`LYBT.Desktop.Core`、`LYBT.Desktop.Shell`、关键 Workbench 模块
+   - 锁定处理优先级：`LYBT.Desktop.Core`、`LYBT.Desktop.Shell`、关键 Workstation 模块
    - 明确 CS0067 是否可通过移除事件或添加 `#pragma warning disable`（注记理由）治理
 
 3. **整改计划**
-   - 拟定分批修复方案（例如：第 1 批 Core/Shell 注释完善，第 2 批 Modules，第 3 批 Workbench）
+   - 拟定分批修复方案（例如：第 1 批 Core/Shell 注释完善，第 2 批 Modules，第 3 批 Workstation）
    - 约定验收方式：`dotnet build` 警告数目标、代码审查点
 
 4. **文档输出**

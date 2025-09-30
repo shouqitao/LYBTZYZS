@@ -14,7 +14,7 @@
 - **初始状态**：97个编译错误，2957个警告
 - **当前状态**：40个编译错误，104个警告
 - **完成的修复**：
-  - 删除SystemWorkbench失效项目引用
+  - 删除SystemWorkstation失效项目引用
   - 修复大部分ServiceResult.Failed → ServiceResult.Failure
   - 统一部分实体属性命名（CreateTime→CreatedAt, UpdateTime→UpdatedAt）
 - **剩余问题**：

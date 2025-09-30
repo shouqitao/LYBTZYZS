@@ -1,5 +1,4 @@
-using System.Windows.Controls;
-using LYBT.Desktop.Auth.ViewModels;
+﻿using System.Windows.Controls;
 
 namespace LYBT.Desktop.Auth.Views
 {

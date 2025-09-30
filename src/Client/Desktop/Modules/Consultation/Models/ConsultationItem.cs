@@ -1,7 +1,6 @@
-﻿using System;
-using Prism.Mvvm;
-using LYBT.Shared.Models.Contracts.Consultation;
+﻿using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Enums;
+using Prism.Mvvm;
 
 namespace LYBT.Desktop.Consultation.Models;
 
@@ -12,92 +11,92 @@ namespace LYBT.Desktop.Consultation.Models;
 /// </summary>
 public class ConsultationItem : BindableBase
 {
-        private Guid _id = Guid.Empty;
+    private Guid _id = Guid.Empty;
 
-        /// <summary>
-        /// 问诊记录ID
-        /// </summary>
-        public Guid Id
-        {
-            get => _id;
-            set => SetProperty(ref _id, value);
-        }
+    /// <summary>
+    /// 问诊记录ID
+    /// </summary>
+    public Guid Id
+    {
+        get => _id;
+        set => SetProperty(ref _id, value);
+    }
 
-        private Guid _medicalCaseId = Guid.Empty;
+    private Guid _medicalCaseId = Guid.Empty;
 
-        /// <summary>
-        /// 关联的病历ID
-        /// </summary>
-        public Guid MedicalCaseId
-        {
-            get => _medicalCaseId;
-            set => SetProperty(ref _medicalCaseId, value);
-        }
+    /// <summary>
+    /// 关联的病历ID
+    /// </summary>
+    public Guid MedicalCaseId
+    {
+        get => _medicalCaseId;
+        set => SetProperty(ref _medicalCaseId, value);
+    }
 
-        private Guid _patientId = Guid.Empty;
+    private Guid _patientId = Guid.Empty;
     public Guid PatientId
     {
         get => _patientId;
         set => SetProperty(ref _patientId, value);
     }
 
-        private string _patientName = string.Empty;
+    private string _patientName = string.Empty;
     public string PatientName
     {
         get => _patientName;
         set => SetProperty(ref _patientName, value);
     }
 
-        private string _patientGender = string.Empty;
+    private string _patientGender = string.Empty;
     public string PatientGender
     {
         get => _patientGender;
         set => SetProperty(ref _patientGender, value);
     }
 
-        private int? _patientAge;
+    private int? _patientAge;
     public int? PatientAge
     {
         get => _patientAge;
         set => SetProperty(ref _patientAge, value);
     }
 
-        private string _chiefComplaint = string.Empty;
+    private string _chiefComplaint = string.Empty;
     public string ChiefComplaint
     {
         get => _chiefComplaint;
         set => SetProperty(ref _chiefComplaint, value);
     }
 
-        private string? _presentIllness;
+    private string? _presentIllness;
     public string? PresentIllness
     {
         get => _presentIllness;
         set => SetProperty(ref _presentIllness, value);
     }
 
-        private string? _pastHistory;
+    private string? _pastHistory;
     public string? PastHistory
     {
         get => _pastHistory;
         set => SetProperty(ref _pastHistory, value);
     }
 
-        private string? _personalHistory;
+    private string? _personalHistory;
     public string? PersonalHistory
     {
         get => _personalHistory;
         set => SetProperty(ref _personalHistory, value);
     }
 
-        private string? _familyHistory;
+    private string? _familyHistory;
     public string? FamilyHistory
     {
         get => _familyHistory;
         set => SetProperty(ref _familyHistory, value);
     }
 
-        private string? _allergyHistory;
+    private string? _allergyHistory;
     public string? AllergyHistory
     {
         get => _allergyHistory;
@@ -105,95 +104,95 @@ public class ConsultationItem : BindableBase
     }
 
     // 中医四诊
-        private string? _inspection;
+    private string? _inspection;
     public string? Inspection
     {
         get => _inspection;
         set => SetProperty(ref _inspection, value);
     } // 望诊
 
-        private string? _auscultation;
+    private string? _auscultation;
     public string? Auscultation
     {
         get => _auscultation;
         set => SetProperty(ref _auscultation, value);
     } // 闻诊
 
-        private string? _inquiry;
+    private string? _inquiry;
     public string? Inquiry
     {
         get => _inquiry;
         set => SetProperty(ref _inquiry, value);
     } // 问诊
 
-        private string? _palpation;
+    private string? _palpation;
     public string? Palpation
     {
         get => _palpation;
         set => SetProperty(ref _palpation, value);
     } // 切诊
 
-        private string? _tcmDiagnosis;
+    private string? _tcmDiagnosis;
     public string? TcmDiagnosis
     {
         get => _tcmDiagnosis;
         set => SetProperty(ref _tcmDiagnosis, value);
     } // 中医诊断
 
-        private string? _syndrome;
+    private string? _syndrome;
     public string? Syndrome
     {
         get => _syndrome;
         set => SetProperty(ref _syndrome, value);
     } // 证型
 
-        private string? _treatmentPrinciple;
+    private string? _treatmentPrinciple;
     public string? TreatmentPrinciple
     {
         get => _treatmentPrinciple;
         set => SetProperty(ref _treatmentPrinciple, value);
     } // 治则
 
-        private ConsultationStatus _status = ConsultationStatus.Pending;
+    private ConsultationStatus _status = ConsultationStatus.Pending;
     public ConsultationStatus Status
     {
         get => _status;
         set => SetProperty(ref _status, value);
     }
 
-        private DateTime _createdAt = DateTime.Now;
+    private DateTime _createdAt = DateTime.Now;
     public DateTime CreatedAt
     {
         get => _createdAt;
         set => SetProperty(ref _createdAt, value);
     }
 
-        private DateTime? _completedAt;
+    private DateTime? _completedAt;
     public DateTime? CompletedAt
     {
         get => _completedAt;
         set => SetProperty(ref _completedAt, value);
     }
 
-        private Guid? _prescriptionId;
+    private Guid? _prescriptionId;
     public Guid? PrescriptionId
     {
         get => _prescriptionId;
         set => SetProperty(ref _prescriptionId, value);
     }
 
-        private bool _isSelected = false;
+    private bool _isSelected = false;
 
-        /// <summary>
-        /// 是否选中
-        /// </summary>
-        public bool IsSelected
-        {
-            get => _isSelected;
-            set => SetProperty(ref _isSelected, value);
-        }
+    /// <summary>
+    /// 是否选中
+    /// </summary>
+    public bool IsSelected
+    {
+        get => _isSelected;
+        set => SetProperty(ref _isSelected, value);
+    }
 
-        private bool _isExpanded = false;
+    private bool _isExpanded = false;
     public bool IsExpanded
     {
         get => _isExpanded;

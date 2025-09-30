@@ -1,5 +1,5 @@
+﻿using LYBT.Shared.Models.Contracts.Users;
 using Prism.Events;
-using LYBT.Shared.Models.Contracts.Users;
 
 namespace LYBT.Desktop.Infrastructure.Events
 {

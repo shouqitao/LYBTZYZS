@@ -56,7 +56,7 @@
   - 删除 `LYBT.Desktop.Services.csproj` 中 `<UseWindowsForms>true</UseWindowsForms>`。
   - 清理 `Directory.Packages.props` 中重复的 `coverlet.collector` 定义，仅保留一处。
 - R2 一致性治理（应做）
-  - 移除或统一 `<DocumentationFile>` 至 `$(OutputPath)$(AssemblyName).xml`，与 `BIN/` 对齐（Core/Shell/Workbench.Core/Modules.Users 等）。
+  - 移除或统一 `<DocumentationFile>` 至 `$(OutputPath)$(AssemblyName).xml`，与 `BIN/` 对齐（Core/Shell/Workstation.Core/Modules.Users 等）。
   - 移除 `Refit.Newtonsoft.Json` 依赖，保持 `UnifiedApiClientManager` 的 System.Text.Json 配置；保留最小必要的 `Newtonsoft.Json` 使用点（如确有兼容场景）。
   - `ApiEndpoints` 常量改为小写路径片段（如 `"api/v1/users"`）。
   - Shell 资源：避免大范围通配 `<Resource Include=*.xaml>`；遵循 SDK 默认 WPF Page 规则或通过 `MergedDictionaries` 精确引用。

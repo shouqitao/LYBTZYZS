@@ -1,5 +1,4 @@
-using System;
-using LYBT.Shared.Models.Contracts.Users;
+﻿using LYBT.Shared.Models.Contracts.Users;
 
 namespace LYBT.Desktop.Services.Session
 {

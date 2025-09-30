@@ -1,10 +1,6 @@
-using System;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Windows;
+﻿using System.Windows;
 using LYBT.Desktop.Services.ErrorHandling;
 using LYBT.Desktop.Services.Performance;
-using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 using Prism.Events;
@@ -110,7 +106,7 @@ namespace LYBT.Desktop.Shell.Services.Bootstrap
             try
             {
                 _logger.LogInformation("UltraThink简化模块协调器初始化完成");
-                
+
                 // 订阅模块事件
                 SubscribeToModuleEvents();
             }
@@ -180,8 +176,8 @@ namespace LYBT.Desktop.Shell.Services.Bootstrap
                 {
                     var initializationTime = DateTime.Now - startTime;
                     moduleInitTimes.Remove(moduleName);
-                    
-                    _logger.LogInformation("模块 {ModuleName} 加载完成，耗时 {ElapsedTime}ms", 
+
+                    _logger.LogInformation("模块 {ModuleName} 加载完成，耗时 {ElapsedTime}ms",
                         moduleName, initializationTime.TotalMilliseconds);
                 }
 

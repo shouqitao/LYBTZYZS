@@ -1,7 +1,4 @@
-using System;
-using System;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Services.ErrorHandling
 {
@@ -29,9 +26,9 @@ namespace LYBT.Desktop.Services.ErrorHandling
             try
             {
                 _logger.LogError(exception, "标准异常处理: {Context}", context ?? "未知上下文");
-                
+
                 await _errorHandlingService.HandleExceptionAsync(exception, null);
-                
+
                 return true;
             }
             catch (Exception ex)
@@ -49,9 +46,9 @@ namespace LYBT.Desktop.Services.ErrorHandling
             try
             {
                 _logger.LogError(exception, "标准异常处理: {Context}", context ?? "未知上下文");
-                
+
                 _errorHandlingService.HandleException(exception, null);
-                
+
                 return true;
             }
             catch (Exception ex)

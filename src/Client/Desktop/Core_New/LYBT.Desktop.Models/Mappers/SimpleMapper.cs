@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 
 namespace LYBT.Desktop.Models.Mappers
 {
@@ -71,9 +71,9 @@ namespace LYBT.Desktop.Models.Mappers
             {
                 if (!sourceProp.CanRead) continue;
 
-                var targetProp = targetProperties.FirstOrDefault(p => 
-                    p.Name == sourceProp.Name && 
-                    p.PropertyType == sourceProp.PropertyType && 
+                var targetProp = targetProperties.FirstOrDefault(p =>
+                    p.Name == sourceProp.Name &&
+                    p.PropertyType == sourceProp.PropertyType &&
                     p.CanWrite);
 
                 if (targetProp != null)

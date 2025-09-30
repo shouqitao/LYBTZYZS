@@ -1,8 +1,6 @@
-using System;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
+﻿using LYBT.Desktop.Services.Exceptions;
 using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Desktop.Services.Exceptions;
+using Microsoft.Extensions.Logging;
 using Polly;
 using Polly.Timeout;
 using Refit;
@@ -176,7 +174,7 @@ namespace LYBT.Desktop.Services
             {
                 return Task.FromResult(standardHandler.HandleException(ex, "ApiCall", null));
             }
-            
+
             // 回退到默认处理
             Logger.LogError(ex, "API调用异常");
             return Task.FromResult(ServiceResult.Failure("操作失败，请稍后重试"));
@@ -191,7 +189,7 @@ namespace LYBT.Desktop.Services
             {
                 return Task.FromResult(standardHandler.HandleException<T>(ex, "ApiCall", null));
             }
-            
+
             // 回退到默认处理
             Logger.LogError(ex, "API调用异常");
             return Task.FromResult(ServiceResult<T>.Failure("操作失败，请稍后重试"));
