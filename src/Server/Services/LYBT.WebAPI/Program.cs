@@ -52,6 +52,23 @@ try
     // =========== UltraThink统一服务注册 ===========
     builder.Services.RegisterAllApplicationServices(builder.Configuration, builder.Environment);
 
+    // =========== Production 配置验证 ===========
+    if (builder.Environment.IsProduction())
+    {
+        var validator = new LYBT.Infrastructure.Configuration.Validation.ProductionConfigurationValidator(builder.Configuration);
+        try
+        {
+            validator.ValidateOrThrow();
+            Log.Information("✅ Production 配置验证通过");
+        }
+        catch (LYBT.Infrastructure.Configuration.Validation.ProductionConfigurationException ex)
+        {
+            Log.Fatal(ex, "❌ Production 配置验证失败");
+            Console.Error.WriteLine(ex.Message);
+            Environment.Exit(1);
+        }
+    }
+
     // =========== 构建应用 ===========
     var app = builder.Build();
 
