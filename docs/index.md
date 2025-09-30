@@ -32,7 +32,7 @@
 | [development/](development/README.md) | 开发规范指导集合 | 编码标准、测试指南、审计字段、枚举规范 |
 | [development/ai-assisted-automation-workflow.md](development/ai-assisted-automation-workflow.md) | **AI辅助自动化工作流程** | **Issue驱动开发、Claude+Serena双重审查、GitHub自动化** |
 | [security/](security/) | 安全指导文档 | JWT安全配置、安全加固指南 |
-| [deployment/](deployment/) | 部署技术文档 | 部署配置、环境设置指南 |
+| [deployment/](deployment/) | **部署与配置指南** | **Production环境配置、环境变量设置、配置验证脚本** |
 | GitHub Issues | 需求与任务单一事实源 | 需求、讨论、验收、进度（替代本地 PRD） |
 
 #### 任务与交付
