@@ -4,7 +4,7 @@
 ## 1. Directory Structure / 目录结构
 
 ```
-src/Frontend/Desktop/
+src/Client/Desktop/Shell/
 ├── Assets/                    # Static resources / 静态资源
 │   ├── Images/                # Image files / 图片文件
 │   │   ├── Backgrounds/       # Background images / 背景图
@@ -83,12 +83,12 @@ src/Frontend/Desktop/
 ### 4.1 Pack URI Syntax / Pack URI语法
 
 ```xml
-<!-- Absolute Pack URI -->
-<Image Source="pack://application:,,,/Assets/Icons/App/app.ico"/>
+<!-- Absolute Pack URI (with Assembly Reference) -->
+<Image Source="pack://application:,,,/LYBT.Desktop.Shell;component/Assets/Icons/App/app.ico"/>
 
 <!-- Resource Dictionary -->
-<BitmapImage x:Key="SaveIcon" 
-             UriSource="pack://application:,,,/Assets/Icons/Actions/icon-save-24.png"/>
+<BitmapImage x:Key="SaveIcon"
+             UriSource="pack://application:,,,/LYBT.Desktop.Shell;component/Assets/Icons/Actions/icon-save-24.png"/>
 ```
 
 ### 4.2 Build Action Settings / 生成操作设置
@@ -192,12 +192,12 @@ bitmap.Freeze(); // Makes immutable and thread-safe
 
 ### 8.2 Example: Adding a New Icon / 示例：添加新图标
 
-1. **Save file / 保存文件**: `Assets/Icons/Actions/icon-export-24.png`
+1. **Save file / 保存文件**: `Shell/Assets/Icons/Actions/icon-export-24.png`
 2. **Add to project / 添加到项目**: Set Build Action = Resource
 3. **Add to dictionary / 添加到字典**:
    ```xml
-   <BitmapImage x:Key="ExportIcon" 
-                UriSource="pack://application:,,,/Assets/Icons/Actions/icon-export-24.png"/>
+   <BitmapImage x:Key="ExportIcon"
+                UriSource="pack://application:,,,/LYBT.Desktop.Shell;component/Assets/Icons/Actions/icon-export-24.png"/>
    ```
 4. **Update ResourcePaths.cs**:
    ```csharp

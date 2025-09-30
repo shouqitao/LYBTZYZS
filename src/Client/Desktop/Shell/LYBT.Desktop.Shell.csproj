@@ -31,7 +31,7 @@
     <RepositoryType>git</RepositoryType>
     
     <!-- Application Settings -->
-    <ApplicationIcon>..\Assets\Icons\App\app.ico</ApplicationIcon>
+    <ApplicationIcon>Assets\Icons\App\app.ico</ApplicationIcon>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
   </PropertyGroup>
 
@@ -79,10 +79,10 @@
   <!-- Project References -->
   <ItemGroup Label="Core Infrastructure - 简化三层架构">
     <ProjectReference Include="..\..\..\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
-    <ProjectReference Include="..\Core_New\LYBT.Desktop.Infrastructure\LYBT.Desktop.Infrastructure.csproj" />
-    <ProjectReference Include="..\Core_New\LYBT.Desktop.Models\LYBT.Desktop.Models.csproj" />
+    <ProjectReference Include="..\Core\LYBT.Desktop.Infrastructure\LYBT.Desktop.Infrastructure.csproj" />
+    <ProjectReference Include="..\Core\LYBT.Desktop.Models\LYBT.Desktop.Models.csproj" />
 
-    <ProjectReference Include="..\Core_New\LYBT.Desktop.Services\LYBT.Desktop.Services.csproj" />
+    <ProjectReference Include="..\Core\LYBT.Desktop.Services\LYBT.Desktop.Services.csproj" />
   </ItemGroup>
 
   <ItemGroup Label="Workstation Modules">
@@ -91,14 +91,14 @@
   </ItemGroup>
 
   <ItemGroup Label="Business Modules">
-    <ProjectReference Include="..\Modules\Auth\LYBT.Desktop.Auth.csproj" />
-    <ProjectReference Include="..\Modules\Users\LYBT.Desktop.Users.csproj" />
-    <ProjectReference Include="..\Modules\Patients\LYBT.Desktop.Patients.csproj" />
-    <ProjectReference Include="..\Modules\MedicalCase\LYBT.Desktop.MedicalCase.csproj" />
-    <ProjectReference Include="..\Modules\Consultation\LYBT.Desktop.Consultation.csproj" />
-    <ProjectReference Include="..\Modules\Prescriptions\LYBT.Desktop.Prescriptions.csproj" />
-    <ProjectReference Include="..\Modules\Herbs\LYBT.Desktop.Herbs.csproj" />
-    <ProjectReference Include="..\Modules\Formula\LYBT.Desktop.Formula.csproj" />
+    <ProjectReference Include="..\Modules\LYBT.Desktop.Auth\LYBT.Desktop.Auth.csproj" />
+    <ProjectReference Include="..\Modules\LYBT.Desktop.Users\LYBT.Desktop.Users.csproj" />
+    <ProjectReference Include="..\Modules\LYBT.Desktop.Patients\LYBT.Desktop.Patients.csproj" />
+    <ProjectReference Include="..\Modules\LYBT.Desktop.MedicalCase\LYBT.Desktop.MedicalCase.csproj" />
+    <ProjectReference Include="..\Modules\LYBT.Desktop.Consultation\LYBT.Desktop.Consultation.csproj" />
+    <ProjectReference Include="..\Modules\LYBT.Desktop.Prescriptions\LYBT.Desktop.Prescriptions.csproj" />
+    <ProjectReference Include="..\Modules\LYBT.Desktop.Herbs\LYBT.Desktop.Herbs.csproj" />
+    <ProjectReference Include="..\Modules\LYBT.Desktop.Formula\LYBT.Desktop.Formula.csproj" />
   </ItemGroup>
 
   <!-- Configuration Files -->
@@ -113,7 +113,7 @@
 
   <!-- Resource Files -->
   <ItemGroup Label="Application Resources">
-    <Resource Include="..\Assets\Icons\App\app.ico" />
+    <Resource Include="Assets\Icons\App\app.ico" />
     <Resource Include="..\Themes\Design\*.xaml" />
     <Resource Include="..\Themes\Controls\*.xaml" />
     <Resource Include="..\Resources\*.xaml" />

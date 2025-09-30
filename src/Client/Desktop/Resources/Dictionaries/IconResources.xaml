@@ -7,28 +7,28 @@
     <!-- ====================================== -->
     
     <!-- Application Icons / 应用图标 -->
-    <BitmapImage x:Key="AppIconLarge" UriSource="pack://application:,,,/Assets/Icons/App/app.ico"/>
+    <BitmapImage x:Key="AppIconLarge" UriSource="pack://application:,,,/LYBT.Desktop.Shell;component/Assets/Icons/App/app.ico"/>
     
     <!-- Action Icons / 操作图标 -->
     <!-- These will be populated when actual icon files are added -->
     <!-- 当添加实际图标文件时会填充这些资源 -->
     
     <!-- Example usage / 使用示例:
-    <BitmapImage x:Key="SaveIcon" UriSource="pack://application:,,,/Assets/Icons/Actions/icon-save-24.png"/>
-    <BitmapImage x:Key="DeleteIcon" UriSource="pack://application:,,,/Assets/Icons/Actions/icon-delete-24.png"/>
-    <BitmapImage x:Key="EditIcon" UriSource="pack://application:,,,/Assets/Icons/Actions/icon-edit-24.png"/>
-    <BitmapImage x:Key="AddIcon" UriSource="pack://application:,,,/Assets/Icons/Actions/icon-add-24.png"/>
-    <BitmapImage x:Key="SearchIcon" UriSource="pack://application:,,,/Assets/Icons/Actions/icon-search-24.png"/>
-    <BitmapImage x:Key="PrintIcon" UriSource="pack://application:,,,/Assets/Icons/Actions/icon-print-24.png"/>
-    <BitmapImage x:Key="RefreshIcon" UriSource="pack://application:,,,/Assets/Icons/Actions/icon-refresh-24.png"/>
+    <BitmapImage x:Key="SaveIcon" UriSource="pack://application:,,,/LYBT.Desktop.Shell;component/Assets/Icons/Actions/icon-save-24.png"/>
+    <BitmapImage x:Key="DeleteIcon" UriSource="pack://application:,,,/LYBT.Desktop.Shell;component/Assets/Icons/Actions/icon-delete-24.png"/>
+    <BitmapImage x:Key="EditIcon" UriSource="pack://application:,,,/LYBT.Desktop.Shell;component/Assets/Icons/Actions/icon-edit-24.png"/>
+    <BitmapImage x:Key="AddIcon" UriSource="pack://application:,,,/LYBT.Desktop.Shell;component/Assets/Icons/Actions/icon-add-24.png"/>
+    <BitmapImage x:Key="SearchIcon" UriSource="pack://application:,,,/LYBT.Desktop.Shell;component/Assets/Icons/Actions/icon-search-24.png"/>
+    <BitmapImage x:Key="PrintIcon" UriSource="pack://application:,,,/LYBT.Desktop.Shell;component/Assets/Icons/Actions/icon-print-24.png"/>
+    <BitmapImage x:Key="RefreshIcon" UriSource="pack://application:,,,/LYBT.Desktop.Shell;component/Assets/Icons/Actions/icon-refresh-24.png"/>
     -->
     
     <!-- Status Icons / 状态图标 -->
     <!-- Example usage / 使用示例:
-    <BitmapImage x:Key="SuccessIcon" UriSource="pack://application:,,,/Assets/Icons/Status/icon-success-16.png"/>
-    <BitmapImage x:Key="WarningIcon" UriSource="pack://application:,,,/Assets/Icons/Status/icon-warning-16.png"/>
-    <BitmapImage x:Key="ErrorIcon" UriSource="pack://application:,,,/Assets/Icons/Status/icon-error-16.png"/>
-    <BitmapImage x:Key="InfoIcon" UriSource="pack://application:,,,/Assets/Icons/Status/icon-info-16.png"/>
+    <BitmapImage x:Key="SuccessIcon" UriSource="pack://application:,,,/LYBT.Desktop.Shell;component/Assets/Icons/Status/icon-success-16.png"/>
+    <BitmapImage x:Key="WarningIcon" UriSource="pack://application:,,,/LYBT.Desktop.Shell;component/Assets/Icons/Status/icon-warning-16.png"/>
+    <BitmapImage x:Key="ErrorIcon" UriSource="pack://application:,,,/LYBT.Desktop.Shell;component/Assets/Icons/Status/icon-error-16.png"/>
+    <BitmapImage x:Key="InfoIcon" UriSource="pack://application:,,,/LYBT.Desktop.Shell;component/Assets/Icons/Status/icon-info-16.png"/>
     -->
     
     <!-- Vector Icons using Path Geometry / 使用路径几何的矢量图标 -->

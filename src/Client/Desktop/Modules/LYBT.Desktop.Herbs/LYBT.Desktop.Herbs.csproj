@@ -11,28 +11,28 @@
     <WarningsAsErrors />
     
     <!-- Assembly Information -->
-    <AssemblyTitle>LYBT.Desktop.Patients</AssemblyTitle>
-    <AssemblyDescription>凌隐宝堂中医诊所系统 - 患者管理模块 | 患者档案管理 | 就诊历史跟踪</AssemblyDescription>
+    <AssemblyTitle>LYBT.Desktop.Herbs</AssemblyTitle>
+    <AssemblyDescription>凌隐宝堂中医诊所系统 - 中药材管理模块 | 药材信息 | 单价管理</AssemblyDescription>
     <AssemblyCompany>凌隐宝堂中医诊所</AssemblyCompany>
     <AssemblyProduct>LYBT诊疗管理系统</AssemblyProduct>
     <AssemblyCopyright>Copyright © 凌隐宝堂中医诊所 2025</AssemblyCopyright>
     <AssemblyVersion>2.1.0.0</AssemblyVersion>
     <FileVersion>2.1.0.0</FileVersion>
-    <InformationalVersion>2.1.0-patients-enterprise</InformationalVersion>
+    <InformationalVersion>2.1.0-herbs-enterprise</InformationalVersion>
     
     <!-- Package Information -->
-    <PackageId>LYBT.Desktop.Patients</PackageId>
+    <PackageId>LYBT.Desktop.Herbs</PackageId>
     <PackageVersion>2.1.0</PackageVersion>
     <Authors>LYBT开发团队</Authors>
-    <PackageDescription>LYBT患者管理模块 - 患者档案、基础信息、联系方式、就诊历史 | UltraThink双层架构标准</PackageDescription>
-    <PackageTags>WPF;患者管理;档案;就诊历史;联系方式;中医;诊所;UltraThink</PackageTags>
+    <PackageDescription>LYBT中药材管理模块 - 药材信息维护、单价管理、用法指导 | UltraThink双层架构标准</PackageDescription>
+    <PackageTags>WPF;中药材;药材管理;单价;中医;诊所;UltraThink</PackageTags>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <RepositoryUrl>https://github.com/shouqitao/LYBTZYZS</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     
     <!-- Naming Configuration -->
-    <AssemblyName>LYBT.Desktop.Patients</AssemblyName>
-    <RootNamespace>LYBT.Desktop.Patients</RootNamespace>
+    <AssemblyName>LYBT.Desktop.Herbs</AssemblyName>
+    <RootNamespace>LYBT.Desktop.Herbs</RootNamespace>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -54,7 +54,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="LYBT.Desktop.Patients.xml" />
+    <None Remove="LYBT.Desktop.Herbs.xml" />
   </ItemGroup>
 
   <!-- Prism and WPF Framework -->
@@ -64,14 +64,20 @@
     <PackageReference Include="Prism.Wpf" />
   </ItemGroup>
 
+  <!-- Object Mapping -->
+  <ItemGroup Label="Data Processing">
+    <PackageReference Include="AutoMapper" />
+  </ItemGroup>
+
   <!-- Project References -->
-  <ItemGroup Label="Infrastructure Dependencies - 简化三层架构">
-    <ProjectReference Include="..\..\Core_New\LYBT.Desktop.Infrastructure\LYBT.Desktop.Infrastructure.csproj" />
-    <ProjectReference Include="..\..\Core_New\LYBT.Desktop.Services\LYBT.Desktop.Services.csproj" />
-    <ProjectReference Include="..\..\Core_New\LYBT.Desktop.Models\LYBT.Desktop.Models.csproj" />
+  <ItemGroup Label="Infrastructure Dependencies - UltraThink三层架构">
+    <ProjectReference Include="..\..\Core\LYBT.Desktop.Infrastructure\LYBT.Desktop.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\Core\LYBT.Desktop.Models\LYBT.Desktop.Models.csproj" />
+    <ProjectReference Include="..\..\Core\LYBT.Desktop.Services\LYBT.Desktop.Services.csproj" />
   </ItemGroup>
 
   <ItemGroup Label="Shared Libraries">
+    <ProjectReference Include="..\..\..\..\Shared\LYBT.Shared.Interfaces\LYBT.Shared.Interfaces.csproj" />
     <ProjectReference Include="..\..\..\..\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
   </ItemGroup>
 

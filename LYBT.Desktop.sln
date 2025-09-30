@@ -10,11 +10,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SharedResources", "SharedRe
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Shell", "src\Client\Desktop\Shell\LYBT.Desktop.Shell.csproj", "{A1234567-1234-1234-1234-123456789001}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Services", "src\Client\Desktop\Core_New\LYBT.Desktop.Services\LYBT.Desktop.Services.csproj", "{A1234567-1234-1234-1234-123456789003}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Services", "src\Client\Desktop\Core\LYBT.Desktop.Services\LYBT.Desktop.Services.csproj", "{A1234567-1234-1234-1234-123456789003}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Infrastructure", "src\Client\Desktop\Core_New\LYBT.Desktop.Infrastructure\LYBT.Desktop.Infrastructure.csproj", "{A1234567-1234-1234-1234-123456789004}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Infrastructure", "src\Client\Desktop\Core\LYBT.Desktop.Infrastructure\LYBT.Desktop.Infrastructure.csproj", "{A1234567-1234-1234-1234-123456789004}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Models", "src\Client\Desktop\Core_New\LYBT.Desktop.Models\LYBT.Desktop.Models.csproj", "{A1234567-1234-1234-1234-123456789005}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Models", "src\Client\Desktop\Core\LYBT.Desktop.Models\LYBT.Desktop.Models.csproj", "{A1234567-1234-1234-1234-123456789005}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.Shared.Models", "src\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj", "{91CD7DC5-E0DC-8F45-7AE9-4F1243389D2A}"
 EndProject
@@ -22,21 +22,21 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.Shared.Utilities", "sr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.Shared.Interfaces", "src\Shared\LYBT.Shared.Interfaces\LYBT.Shared.Interfaces.csproj", "{12217A0D-1329-C351-C2A9-9B89C9371BAE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.Desktop.Auth", "src\Client\Desktop\Modules\Auth\LYBT.Desktop.Auth.csproj", "{E24BE124-77B9-8D33-D2FF-973DED5300B8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.Desktop.Auth", "src\Client\Desktop\Modules\LYBT.Desktop.Auth\LYBT.Desktop.Auth.csproj", "{E24BE124-77B9-8D33-D2FF-973DED5300B8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.Desktop.Consultation", "src\Client\Desktop\Modules\Consultation\LYBT.Desktop.Consultation.csproj", "{B7B234B1-5918-5904-EC08-559894F4D126}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.Desktop.Consultation", "src\Client\Desktop\Modules\LYBT.Desktop.Consultation\LYBT.Desktop.Consultation.csproj", "{B7B234B1-5918-5904-EC08-559894F4D126}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.Desktop.Formula", "src\Client\Desktop\Modules\Formula\LYBT.Desktop.Formula.csproj", "{B9D29E3D-6E3D-725E-15C9-AFD55B7B0781}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.Desktop.Formula", "src\Client\Desktop\Modules\LYBT.Desktop.Formula\LYBT.Desktop.Formula.csproj", "{B9D29E3D-6E3D-725E-15C9-AFD55B7B0781}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.Desktop.Herbs", "src\Client\Desktop\Modules\Herbs\LYBT.Desktop.Herbs.csproj", "{4C4FBB8B-D46B-D98B-A469-D83CA92944BE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.Desktop.Herbs", "src\Client\Desktop\Modules\LYBT.Desktop.Herbs\LYBT.Desktop.Herbs.csproj", "{4C4FBB8B-D46B-D98B-A469-D83CA92944BE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.Desktop.MedicalCase", "src\Client\Desktop\Modules\MedicalCase\LYBT.Desktop.MedicalCase.csproj", "{E2329CF8-5DED-4CB4-2D27-C59D9D636966}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.Desktop.MedicalCase", "src\Client\Desktop\Modules\LYBT.Desktop.MedicalCase\LYBT.Desktop.MedicalCase.csproj", "{E2329CF8-5DED-4CB4-2D27-C59D9D636966}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.Desktop.Patients", "src\Client\Desktop\Modules\Patients\LYBT.Desktop.Patients.csproj", "{CE7094CA-1795-7D22-C606-2BE51D5620F4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.Desktop.Patients", "src\Client\Desktop\Modules\LYBT.Desktop.Patients\LYBT.Desktop.Patients.csproj", "{CE7094CA-1795-7D22-C606-2BE51D5620F4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.Desktop.Prescriptions", "src\Client\Desktop\Modules\Prescriptions\LYBT.Desktop.Prescriptions.csproj", "{A9A88A29-1982-FD6C-7A42-1FA728E171D2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.Desktop.Prescriptions", "src\Client\Desktop\Modules\LYBT.Desktop.Prescriptions\LYBT.Desktop.Prescriptions.csproj", "{A9A88A29-1982-FD6C-7A42-1FA728E171D2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.Desktop.Users", "src\Client\Desktop\Modules\Users\LYBT.Desktop.Users.csproj", "{3CDE3D2B-F2F7-FA0E-51BC-0F4CD9831411}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.Desktop.Users", "src\Client\Desktop\Modules\LYBT.Desktop.Users\LYBT.Desktop.Users.csproj", "{3CDE3D2B-F2F7-FA0E-51BC-0F4CD9831411}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{BF5EB070-7871-4999-BBB1-3AA5B58063ED}"
 EndProject
