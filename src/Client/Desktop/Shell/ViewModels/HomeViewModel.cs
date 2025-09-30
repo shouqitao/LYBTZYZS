@@ -9,7 +9,7 @@ namespace LYBT.Desktop.Shell.ViewModels
     /// <summary>
     /// 主页视图模型 - 简化版本，删除错误较多的业务代�?
     /// </summary>
-    public class HomeViewModel : UnifiedViewModelBase, INavigationAware
+    public class HomeViewModel : UnifiedViewModelBase
     {
         #region 依赖服务
 

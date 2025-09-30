@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
 using Asp.Versioning;
 using LYBT.Infrastructure.Data.Monitoring;
 using LYBT.Infrastructure.Web;

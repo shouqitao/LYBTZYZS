@@ -179,7 +179,7 @@ public class MainWindowViewModel : UnifiedViewModelBase
     /// 初始化所有命令和事件订阅
     /// 按照Prism 8.x最佳实践，在构造函数中完成所有初始化
     /// </summary>
-    private void InitializeCommands()
+    private new void InitializeCommands()
     {
         // 初始化所有命令 - 使用响应式模式
         LogoutCommand = new DelegateCommand(async () => await ExecuteLogoutAsync().ConfigureAwait(false));

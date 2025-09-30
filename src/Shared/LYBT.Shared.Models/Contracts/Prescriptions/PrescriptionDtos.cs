@@ -105,7 +105,7 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
         public string? PrescriptionNo { get; set; }
 
         [DisplayName("用法")]
-        public string? Usage { get; set; }
+        public new string? Usage { get; set; }
 
         [DisplayName("医嘱")]
         public string? MedicalAdvice { get; set; }
@@ -212,7 +212,7 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
         /// <summary>
         /// 草药项目列表
         /// </summary>
-        public List<PrescriptionItemCreateDto> Items { get; set; } = new();
+        public new List<PrescriptionItemCreateDto> Items { get; set; } = new();
     }
 
     /// <summary>

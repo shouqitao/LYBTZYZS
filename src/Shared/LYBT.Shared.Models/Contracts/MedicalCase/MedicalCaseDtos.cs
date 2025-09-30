@@ -107,7 +107,7 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
     {
 
         [DisplayName("主诉")]
-        public string? ChiefComplaint { get; set; }
+        public new string? ChiefComplaint { get; set; }
 
         [DisplayName("现病史")]
         public string? PresentIllness { get; set; }

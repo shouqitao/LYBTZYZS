@@ -17,7 +17,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
     /// ������������ͼģ�� - �򻯰洿���ݼ�¼
     /// ֻ����򵥵���������¼�룬���������̼�ܺ����ܴ���
     /// </summary>
-    public class ConsultationMainViewModel : UnifiedViewModelBase, INavigationAware
+    public class ConsultationMainViewModel : UnifiedViewModelBase
     {
 
         #region ��������
