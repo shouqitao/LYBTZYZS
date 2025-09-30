@@ -127,26 +127,31 @@
 - **统一入口**：AI 协同的全流程（需求澄清、方案拟定、检索/分析、实现、审查、文档与报告维护）均应尽可能通过 `mcp.run()` 调用完成，形成可复现的操作日志与高效分工。
 - **效率优先**：在不违反仓库约束（MVP、Issue 先行、文档/输出归位等）的前提下，优先选择使用 MCP 工具提升速度与质量：
   - 需求阶段：用 `sequential-thinking` 梳理步骤与依赖；用 `time` 标注时序与截止；必要时用 `context7` 查询历史实现/文档。
-  - 方案阶段：结合 `context7` 引用文档与代码片段，快速产出最小变更集与 AC；必要时调用 `serena.plan/execute` 做深度论证。
+  - 方案阶段：结合 `context7` 引用文档与代码片段，快速产出最小变更集与 AC；必要时用 `serena.find_symbol` 分析现有实现与依赖关系。
   - 实施阶段：用 `filesystem` 定位/读写文件，`git` 生成差异与补丁；遵循 Issue 先行与文档归位。
-  - 审查阶段：用 `serena.proofread` 与自检清单校验一致性；`context7` 回溯依据；`git` 生成 PR 草稿补丁。
+  - 审查阶段：用 `serena.find_referencing_symbols` 检查改动影响范围，结合自检清单校验一致性；`context7` 回溯依据；`git` 生成 PR 草稿补丁。
   - 文档与报告：将分析输出统一落在 `docs/` 与 `scripts/analysis/outputs/`，并通过 MCP 完成索引更新与链接校验。
 - **核心服务**：
   - `filesystem`：目录遍历、读写文件；写入前确认路径。
   - `git`：`status`、`diff`、`log`、`applyPatch`、`commit`。
   - `context7`：索引与查询 `src/`、`docs/` 内容；缺乏上下文时先 `add` 再 `query`。
-  - `serena`：`plan`（复杂任务拆解）、`execute`（深度分析）、`proofread`（PR 审查）。
+  - `serena`：语义代码检索与编辑工具（基于 LSP）
+    - 符号搜索：`find_symbol`（全局/局部符号搜索，支持类型过滤）、`find_referencing_symbols`（查找引用关系）
+    - 代码编辑：`replace_symbol_body`（替换符号定义）、`insert_after_symbol`/`insert_before_symbol`（精确位置插入）
+    - 项目管理：`activate_project`（激活项目）、`execute_shell_command`（执行 shell 命令）
+    - 文件操作：`read_file`（读取文件）、`create_text_file`（创建/覆盖文件）
+    - 最佳实践：始于干净 git 状态，使用结构化代码库，利用类型注解，谨慎审查变更
   - `memory`：记录临时笔记或 TODO。
   - `playwright`：运行桌面/Web 自动化脚本（仅在任务要求时使用）。
   - `sequential-thinking`：在复杂任务或需要严密推理时生成逐步思考记录；调用后按返回的步骤逐一落实，可作为方案/复盘的附件引用。
   - `time`：获取标准化时间信息（UTC、本地时区、倒计时等）；用于安排截止日期、记录操作时间戳或在文档中标记时间。
 - **容错策略**：调用失败时解析错误 → 修正参数重试一次；仍失败即报告阻塞及报错信息。
 - **文档/库查询**：涉及外部依赖或 API 时优先通过 `context7__resolve-library-id`、`context7__get-library-docs` 获取权威说明。
- - **AI 辅助协同逻辑（优先使用 MCP 工具）**：Serena（深度分析/方案）、sequential-thinking（步骤化推理）、Context7（代码/库文档检索）需协调工作：
+ - **AI 辅助协同逻辑（优先使用 MCP 工具）**：Serena（语义代码操作）、sequential-thinking（步骤化推理）、Context7（代码/库文档检索）需协调工作：
    1) 先用 Context7 获取权威资料与代码片段（契约/接口/最佳实践）；
    2) 用 sequential-thinking 拆解任务，形成最小闭环步骤与验收点；
-   3) 需要方案权衡时调用 Serena 产出“最小变更可行方案 + 取舍说明 + 风险与回滚”；
-   4) 执行阶段全程用 MCP 工具（filesystem/git/context7）记录操作，保证“代码即日志”。
+   3) 涉及精确代码修改时，用 Serena 的符号搜索（`find_symbol`/`find_referencing_symbols`）定位目标，再用符号级编辑工具（`replace_symbol_body`/`insert_after_symbol`）执行语义安全的修改；
+   4) 执行阶段全程用 MCP 工具（serena/filesystem/git/context7）记录操作，保证"代码即日志"。
 - **使用指引**：
   - 处理跨模块或高风险任务时，优先调用 `sequential-thinking` 输出结构化步骤，再据此安排 `filesystem`/`git` 操作，并在 Issue/文档中引用该步骤列表。
   - 需要记录或比较截止时间、部署窗口、执行耗时时，调用 `time` 获取标准化时间戳（UTC 与本地）并写入 Issue、报告或日志。
