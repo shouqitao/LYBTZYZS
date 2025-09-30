@@ -1,6 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
-using LYBT.Desktop.Core.Interfaces.Services;
-using LYBT.Desktop.Core.ViewModels.Base;
+using System;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Threading.Tasks;
+using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
@@ -12,18 +15,18 @@ using Prism.Regions;
 namespace LYBT.Desktop.Users.ViewModels
 {
     /// <summary>
-    /// 用户创建视图模型 - Phase 1架构重构版本
+    /// 用户创建视图模型 - Phase 1重构简化版本
     /// 基于新的PageViewModel实现用户创建功能
     /// </summary>
     public class UserCreateViewModel : UnifiedViewModelBase
     {
-        #region 依赖服务
+        #region 服务依赖
 
         private readonly IUserService _userService;
 
         #endregion
 
-        #region 用户创建属性
+        #region 用户输入属性
 
         private string _username = string.Empty;
         private string _realName = string.Empty;
@@ -72,7 +75,7 @@ namespace LYBT.Desktop.Users.ViewModels
         /// 密码
         /// </summary>
         [Required(ErrorMessage = "密码不能为空")]
-        [StringLength(128, MinimumLength = 6, ErrorMessage = "密码长度必须在6-128个字符之间")]
+        [StringLength(100, MinimumLength = 6, ErrorMessage = "密码长度必须在6-100个字符之间")]
         public string Password
         {
             get => _password;
@@ -81,7 +84,7 @@ namespace LYBT.Desktop.Users.ViewModels
                 if (SetProperty(ref _password, value))
                 {
                     ValidateProperty();
-                    // 重新验证确认密码
+                    // 当密码改变时，重新验证确认密码
                     ValidateProperty(nameof(ConfirmPassword));
                 }
             }
@@ -134,7 +137,7 @@ namespace LYBT.Desktop.Users.ViewModels
         }
 
         /// <summary>
-        /// 选中的用户角色
+        /// 选中的角色
         /// </summary>
         public UserRole SelectedRole
         {
@@ -151,84 +154,38 @@ namespace LYBT.Desktop.Users.ViewModels
             set => SetProperty(ref _status, value);
         }
 
+        #endregion
+
+        #region 选项集合
+
         /// <summary>
         /// 角色选项
         /// </summary>
-        public IEnumerable<UserRole> RoleOptions { get; }
+        public UserRole[] RoleOptions { get; }
 
         /// <summary>
         /// 状态选项
         /// </summary>
-        public IEnumerable<CommonStatus> StatusOptions { get; }
-
-        #endregion
-
-        #region 验证属性
-
-        /// <summary>
-        /// 表单是否有效
-        /// </summary>
-        public bool IsFormValid =>
-            !string.IsNullOrWhiteSpace(Username) &&
-            !string.IsNullOrWhiteSpace(RealName) &&
-            !string.IsNullOrWhiteSpace(Password) &&
-            !string.IsNullOrWhiteSpace(ConfirmPassword) &&
-            Password == ConfirmPassword &&
-            !HasErrors;
-
-        /// <summary>
-        /// 密码是否匹配
-        /// </summary>
-        public bool PasswordsMatch => Password == ConfirmPassword;
-
-        /// <summary>
-        /// 密码强度描述
-        /// </summary>
-        public string PasswordStrength
-        {
-            get
-            {
-                if (string.IsNullOrEmpty(Password))
-                    return "请输入密码";
-
-                if (Password.Length < 6)
-                    return "密码长度至少6位";
-
-                var score = 0;
-                if (Password.Any(char.IsUpper)) score++;
-                if (Password.Any(char.IsLower)) score++;
-                if (Password.Any(char.IsDigit)) score++;
-                if (Password.Any(c => !char.IsLetterOrDigit(c))) score++;
-
-                return score switch
-                {
-                    1 => "弱",
-                    2 => "一般",
-                    3 => "强",
-                    4 => "很强",
-                    _ => "弱"
-                };
-            }
-        }
+        public CommonStatus[] StatusOptions { get; }
 
         #endregion
 
         #region 命令
 
         /// <summary>
-        /// 保存命令
+        /// 创建用户命令
         /// </summary>
-        public DelegateCommand SaveCommand { get; private set; }
+        public DelegateCommand CreateUserCommand { get; }
 
         /// <summary>
         /// 取消命令
         /// </summary>
-        public DelegateCommand CancelCommand { get; private set; }
+        public DelegateCommand CancelCommand { get; }
 
         /// <summary>
-        /// 重置命令
+        /// 重置表单命令
         /// </summary>
-        public DelegateCommand ResetCommand { get; private set; }
+        public DelegateCommand ResetFormCommand { get; }
 
         #endregion
 
@@ -249,39 +206,13 @@ namespace LYBT.Desktop.Users.ViewModels
             RoleOptions = Enum.GetValues<UserRole>();
             StatusOptions = Enum.GetValues<CommonStatus>();
 
-            // 初始化页面属性
-            PageTitle = "创建用户";
-
             // 初始化命令
-            InitializeCommands();
+            CreateUserCommand = new DelegateCommand(async () => await CreateUserAsync(), CanCreateUser);
+            CancelCommand = new DelegateCommand(Cancel);
+            ResetFormCommand = new DelegateCommand(ResetForm);
 
-            Logger.LogDebug("用户创建ViewModel已初始化");
-        }
-
-        #endregion
-
-        #region 命令初始化
-
-        protected override void InitializeCommands()
-        {
-            SaveCommand = new DelegateCommand(async () => await ExecuteSaveAsync(), CanExecuteSave);
-            CancelCommand = new DelegateCommand(ExecuteCancel);
-            ResetCommand = new DelegateCommand(ExecuteReset);
-        }
-
-        #endregion
-
-        #region 导航处理
-
-        protected override void ProcessNavigationParameters(Prism.Regions.NavigationParameters parameters)
-        {
-            base.ProcessNavigationParameters(parameters);
-
-            // 处理可能的预设值
-            if (parameters.TryGetValue("role", out object roleObj) && roleObj is UserRole role)
-            {
-                SelectedRole = role;
-            }
+            // 属性变更时刷新命令状态
+            PropertyChanged += (s, e) => CreateUserCommand.RaiseCanExecuteChanged();
         }
 
         #endregion
@@ -289,86 +220,81 @@ namespace LYBT.Desktop.Users.ViewModels
         #region 命令实现
 
         /// <summary>
-        /// 执行保存
+        /// 创建用户
         /// </summary>
-        private async Task ExecuteSaveAsync()
+        private async Task CreateUserAsync()
         {
-            if (!IsFormValid)
+            try
             {
-                Logger.LogWarning("表单验证失败，无法保存用户");
-                return;
-            }
+                IsBusy = true;
+                StatusMessage = "正在创建用户...";
 
-            await ExecuteSafelyAsync(async () =>
-            {
-                Logger.LogDebug("开始创建用户: {Username}", Username);
-
+                // 创建用户数据传输对象
                 var createDto = new UserCreateDto
                 {
                     Username = Username.Trim(),
                     RealName = RealName.Trim(),
                     Password = Password,
-                    ConfirmPassword = ConfirmPassword,
                     PhoneNumber = string.IsNullOrWhiteSpace(PhoneNumber) ? null : PhoneNumber.Trim(),
                     Email = string.IsNullOrWhiteSpace(Email) ? null : Email.Trim(),
                     Role = SelectedRole,
                     Status = Status
                 };
 
+                // 调用服务创建用户
                 var result = await _userService.CreateAsync(createDto);
-
                 if (result.IsSuccess)
                 {
-                    Logger.LogInformation("成功创建用户: {Username} - {RealName}", Username, RealName);
+                    StatusMessage = "用户创建成功";
+                    System.Windows.MessageBox.Show("用户创建成功", "成功", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
 
-                    // 发布用户创建成功事件
-                    EventAggregator.GetEvent<PubSubEvent<string>>().Publish($"用户 {RealName} 创建成功");
-
-                    // 导航回用户管理页面
-                    NavigateTo("ContentRegion", "UserManagementView");
+                    // 创建成功后导航回用户管理页面
+                    NavigateToUserManagement();
                 }
                 else
                 {
-                    Logger.LogWarning("创建用户失败: {ErrorMessage}", result.ErrorMessage);
-                    throw new InvalidOperationException($"创建用户失败: {result.ErrorMessage}");
+                    ErrorMessage = $"创建用户失败: {result.ErrorMessage}";
+                    System.Windows.MessageBox.Show(ErrorMessage, "错误", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
                 }
-
-            }, "创建用户");
-        }
-
-        /// <summary>
-        /// 是否可以保存
-        /// </summary>
-        private bool CanExecuteSave()
-        {
-            return IsFormValid && !IsLoading;
-        }
-
-        /// <summary>
-        /// 执行取消
-        /// </summary>
-        private void ExecuteCancel()
-        {
-            Logger.LogDebug("取消创建用户");
-
-            // 检查是否有未保存的更改
-            if (HasUnsavedChanges())
-            {
-                // 这里可以显示确认对话框
-                Logger.LogDebug("存在未保存的更改，直接导航回列表");
             }
-
-            // 导航回用户管理页面
-            NavigateTo("ContentRegion", "UserManagementView");
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "创建用户时发生异常");
+                HandleError(ex, "创建用户");
+            }
+            finally
+            {
+                IsBusy = false;
+            }
         }
 
         /// <summary>
-        /// 执行重置
+        /// 检查是否可以创建用户
         /// </summary>
-        private void ExecuteReset()
+        private bool CanCreateUser()
         {
-            Logger.LogDebug("重置用户创建表单");
+            return !IsBusy &&
+                   !string.IsNullOrWhiteSpace(Username) &&
+                   !string.IsNullOrWhiteSpace(RealName) &&
+                   !string.IsNullOrWhiteSpace(Password) &&
+                   !string.IsNullOrWhiteSpace(ConfirmPassword) &&
+                   Password == ConfirmPassword &&
+                   !HasErrors;
+        }
 
+        /// <summary>
+        /// 取消操作
+        /// </summary>
+        private void Cancel()
+        {
+            NavigateToUserManagement();
+        }
+
+        /// <summary>
+        /// 重置表单
+        /// </summary>
+        private void ResetForm()
+        {
             Username = string.Empty;
             RealName = string.Empty;
             Password = string.Empty;
@@ -378,112 +304,63 @@ namespace LYBT.Desktop.Users.ViewModels
             SelectedRole = UserRole.Doctor;
             Status = CommonStatus.Enabled;
 
-            ClearError();
+            // 清除验证错误
+            ClearValidationErrors();
         }
 
         #endregion
 
-        #region 验证
+        #region 验证方法
 
         /// <summary>
-        /// 验证指定属性
+        /// 验证确认密码
         /// </summary>
-        private void ValidateProperty([System.Runtime.CompilerServices.CallerMemberName] string? propertyName = null)
+        protected virtual void ValidateProperty([System.Runtime.CompilerServices.CallerMemberName] string? propertyName = null)
         {
-            if (string.IsNullOrEmpty(propertyName)) return;
+            // 基础验证通过DataAnnotations自动处理
 
-            var validationResults = new List<ValidationResult>();
-            var validationContext = new ValidationContext(this) { MemberName = propertyName };
-
-            switch (propertyName)
+            // 特殊验证：确认密码
+            if (propertyName == nameof(ConfirmPassword))
             {
-                case nameof(Username):
-                    if (string.IsNullOrWhiteSpace(Username))
-                    {
-                    }
-                    else if (Username.Length < 3 || Username.Length > 32)
-                    {
-                    }
-                    else if (!System.Text.RegularExpressions.Regex.IsMatch(Username, @"^[a-zA-Z0-9_]+$"))
-                    {
-                    }
-                    break;
-
-                case nameof(RealName):
-                    if (string.IsNullOrWhiteSpace(RealName))
-                    {
-                    }
-                    else if (RealName.Length > 50)
-                    {
-                    }
-                    break;
-
-                case nameof(Password):
-                    if (string.IsNullOrWhiteSpace(Password))
-                    {
-                    }
-                    else if (Password.Length < 6)
-                    {
-                    }
-                    else if (Password.Length > 128)
-                    {
-                    }
-                    break;
-
-                case nameof(ConfirmPassword):
-                    if (string.IsNullOrWhiteSpace(ConfirmPassword))
-                    {
-                    }
-                    else if (Password != ConfirmPassword)
-                    {
-                    }
-                    break;
-
-                case nameof(PhoneNumber):
-                    if (!string.IsNullOrWhiteSpace(PhoneNumber))
-                    {
-                        if (!System.Text.RegularExpressions.Regex.IsMatch(PhoneNumber, @"^1[3-9]\d{9}$"))
-                        {
-                        }
-                    }
-                    break;
-
-                case nameof(Email):
-                    if (!string.IsNullOrWhiteSpace(Email))
-                    {
-                        if (!System.Text.RegularExpressions.Regex.IsMatch(Email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
-                        {
-                        }
-                    }
-                    break;
+                ClearValidationErrors(nameof(ConfirmPassword));
+                if (Password != ConfirmPassword)
+                {
+                    AddValidationError(nameof(ConfirmPassword), "两次输入的密码不一致");
+                }
             }
 
-            // 更新相关属性
-            RaisePropertyChanged(nameof(IsFormValid));
-            RaisePropertyChanged(nameof(PasswordsMatch));
-            if (propertyName == nameof(Password))
+            // 特殊验证：手机号码格式
+            if (propertyName == nameof(PhoneNumber) && !string.IsNullOrWhiteSpace(PhoneNumber))
             {
-                RaisePropertyChanged(nameof(PasswordStrength));
+                ClearValidationErrors(nameof(PhoneNumber));
+                if (!System.Text.RegularExpressions.Regex.IsMatch(PhoneNumber, @"^1[3-9]\d{9}$"))
+                {
+                    AddValidationError(nameof(PhoneNumber), "请输入有效的手机号码");
+                }
             }
-        }
 
-        /// <summary>
-        /// 检查是否有未保存的更改
-        /// </summary>
-        protected virtual bool HasUnsavedChanges()
-        {
-            return !string.IsNullOrWhiteSpace(Username) ||
-                   !string.IsNullOrWhiteSpace(RealName) ||
-                   !string.IsNullOrWhiteSpace(Password) ||
-                   !string.IsNullOrWhiteSpace(PhoneNumber) ||
-                   !string.IsNullOrWhiteSpace(Email);
+            // 特殊验证：邮箱格式
+            if (propertyName == nameof(Email) && !string.IsNullOrWhiteSpace(Email))
+            {
+                ClearValidationErrors(nameof(Email));
+                if (!System.Text.RegularExpressions.Regex.IsMatch(Email, @"^[^\s@]+@[^\s@]+\.[^\s@]+$"))
+                {
+                    AddValidationError(nameof(Email), "请输入有效的邮箱地址");
+                }
+            }
         }
 
         #endregion
 
-        #region 命令刷新
+        #region 辅助方法
 
-
+        /// <summary>
+        /// 导航到用户管理页面
+        /// </summary>
+        private void NavigateToUserManagement()
+        {
+            NavigateTo("MainRegion", "UserManagementView");
+        }
 
         #endregion
     }

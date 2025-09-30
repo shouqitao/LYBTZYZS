@@ -3,8 +3,8 @@ using System.Data;
 using System.IO;
 using System.Windows;
 using System.Windows.Input;
-using LYBT.Desktop.Core.Helpers;
-using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Desktop.Infrastructure.Helpers;
+using LYBT.Desktop.Services.Dialogs;
 using LYBT.Desktop.Patients.Models;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Patients;
@@ -746,7 +746,7 @@ namespace LYBT.Desktop.Patients.ViewModels
                     "• 证件号：建议15位或18位\n\n" +
                     "请按照模板格式填写患者数据，然后使用导入功能。";
 
-                await _dialogService.ShowSuccessAsync(successMessage, "模板下载成功");
+                await _dialogService.ShowMessageAsync(successMessage, "模板下载成功");
             }
             catch (Exception ex)
             {
@@ -948,7 +948,7 @@ namespace LYBT.Desktop.Patients.ViewModels
 
             if (e.Cancelled)
             {
-                await _dialogService.ShowInformationAsync("导入操作已取消\n已处理的数据未被保存。", "导入取消");
+                await _dialogService.ShowMessageAsync("导入操作已取消\n已处理的数据未被保存。", "导入取消");
             }
             else if (e.Error != null)
             {
@@ -1003,7 +1003,7 @@ namespace LYBT.Desktop.Patients.ViewModels
                 if (successCount > 0 && failCount == 0)
                 {
                     // 完全成功
-                    await _dialogService.ShowSuccessAsync(message, "导入成功");
+                    await _dialogService.ShowMessageAsync(message, "导入成功");
                 }
                 else if (successCount > 0 && failCount > 0)
                 {
@@ -1018,7 +1018,7 @@ namespace LYBT.Desktop.Patients.ViewModels
                 else
                 {
                     // 异常情况
-                    await _dialogService.ShowInformationAsync(message, "导入结果");
+                    await _dialogService.ShowMessageAsync(message, "导入结果");
                 }
 
                 // 只有在有成功导入的情况下才触发刷新事件

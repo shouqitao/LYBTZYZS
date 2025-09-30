@@ -2,8 +2,8 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
-using LYBT.Desktop.Core.Interfaces.Services;
-using LYBT.Desktop.Core.Services.Performance;
+using LYBT.Desktop.Services.ErrorHandling;
+using LYBT.Desktop.Services.Performance;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
@@ -60,7 +60,7 @@ namespace LYBT.Desktop.Shell.Services.Bootstrap
             {
                 _logger.LogError(ex, "核心服务初始化失败");
                 // 降级处理：记录错误但继续启动
-                System.Diagnostics.Debug.WriteLine($"应用初始化服务失败: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"应用初始化服务失败 {ex.Message}");
             }
         }
 
@@ -97,7 +97,7 @@ namespace LYBT.Desktop.Shell.Services.Bootstrap
             {
                 // 如果错误处理服务初始化失败，使用基本的错误处理
                 _logger.LogError(ex, "初始化错误处理服务失败");
-                MessageBox.Show($"系统初始化失败: {ex.Message}", "凌隐宝堂 - 系统错误",
+                MessageBox.Show($"系统初始化失败 {ex.Message}", "凌隐宝堂 - 系统错误",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }

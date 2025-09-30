@@ -1,272 +1,274 @@
-using System.Collections.ObjectModel;
-using LYBT.Desktop.Core.Constants;
+using System;
+using System.ComponentModel.DataAnnotations;
+using System.Threading.Tasks;
+using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Interfaces.Services;
-
-// UltraThink v2.0: 直接使用DTOs，移除Info模型引用
 using LYBT.Shared.Models.Contracts.Formula;
-using LYBT.Shared.Models.Contracts.Herbs;
+using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
-using Prism.Mvvm;
+using Prism.Events;
+using Prism.Regions;
 
 namespace LYBT.Desktop.Formula.ViewModels
 {
-
     /// <summary>
-    /// 编辑验方对话框视图模型
+    /// 配方编辑对话框视图模型 - UltraThink简化版本
+    /// 基于UnifiedViewModelBase实现配方编辑功能
     /// </summary>
-    public class EditFormulaDialogViewModel : BindableBase
+    public class EditFormulaDialogViewModel : UnifiedViewModelBase
     {
+        #region 服务依赖
+
         private readonly IFormulaService _formulaService;
-        private readonly IHerbService _herbService;
-        private readonly ILogger<EditFormulaDialogViewModel> _logger;
-        private Guid _formulaId;
 
-        #region Properties
+        #endregion
 
-        private FormulaDto _formula = new();
+        #region 配方属性
 
-        public FormulaDto Formula
+        private Guid? _formulaId;
+        private string _formulaName = string.Empty;
+        private string _description = string.Empty;
+        private CommonStatus _status = CommonStatus.Enabled;
+
+        /// <summary>
+        /// 配方ID
+        /// </summary>
+        public Guid? FormulaId
         {
-            get => _formula;
-            set => SetProperty(ref _formula, value);
+            get => _formulaId;
+            set => SetProperty(ref _formulaId, value);
         }
 
-        private ObservableCollection<FormulaHerbItemDto> _herbItems = new();
-
-        public ObservableCollection<FormulaHerbItemDto> HerbItems
+        /// <summary>
+        /// 配方名称
+        /// </summary>
+        [Required(ErrorMessage = "配方名称不能为空")]
+        [StringLength(100, ErrorMessage = "配方名称长度不能超过100个字符")]
+        public string FormulaName
         {
-            get => _herbItems;
-            set => SetProperty(ref _herbItems, value);
+            get => _formulaName;
+            set
+            {
+                if (SetProperty(ref _formulaName, value))
+                {
+                    ValidateProperty();
+                }
+            }
         }
 
-        private FormulaHerbItemDto? _selectedHerbItem;
-
-        public FormulaHerbItemDto? SelectedHerbItem
+        /// <summary>
+        /// 配方描述
+        /// </summary>
+        [StringLength(500, ErrorMessage = "配方描述长度不能超过500个字符")]
+        public string Description
         {
-            get => _selectedHerbItem;
-            set => SetProperty(ref _selectedHerbItem, value);
+            get => _description;
+            set
+            {
+                if (SetProperty(ref _description, value))
+                {
+                    ValidateProperty();
+                }
+            }
         }
 
-        private bool _isLoading;
-
-        public bool IsLoading
+        /// <summary>
+        /// 配方状态
+        /// </summary>
+        public CommonStatus Status
         {
-            get => _isLoading;
-            set => SetProperty(ref _isLoading, value);
+            get => _status;
+            set => SetProperty(ref _status, value);
         }
 
-        private string _statusMessage = string.Empty;
+        #endregion
 
-        public string StatusMessage
-        {
-            get => _statusMessage;
-            set => SetProperty(ref _statusMessage, value);
-        }
+        #region 选项集合
 
-        public ObservableCollection<string> Categories { get; } = new()
-        {
-            "内科方", "外科方", "妇科方", "儿科方",
-            "皮肤科方", "五官科方", "骨伤科方", "经典方",
-            "时方", "验方", "其他"
-        };
+        /// <summary>
+        /// 状态选项
+        /// </summary>
+        public CommonStatus[] StatusOptions { get; }
 
-        public ObservableCollection<HerbDto> AvailableHerbs { get; } = new();
+        #endregion
 
-        #endregion Properties
+        #region 命令
 
-        #region Commands
+        /// <summary>
+        /// 保存命令
+        /// </summary>
+        public DelegateCommand SaveCommand { get; }
 
-        public DelegateCommand SaveCommand { get; } = null!;
-        public DelegateCommand CancelCommand { get; } = null!;
-        public DelegateCommand AddHerbCommand { get; } = null!;
-        public DelegateCommand<FormulaHerbItemDto> RemoveHerbCommand { get; } = null!;
-        public DelegateCommand<FormulaHerbItemDto> EditHerbCommand { get; } = null!;
-        public DelegateCommand LoadDataCommand { get; } = null!;
+        /// <summary>
+        /// 取消命令
+        /// </summary>
+        public DelegateCommand CancelCommand { get; }
 
-        #endregion Commands
+        #endregion
 
-        #region Constructor
+        #region 构造函数
 
         public EditFormulaDialogViewModel(
+            IEventAggregator eventAggregator,
+            ILoggerFactory loggerFactory,
+            IRegionManager regionManager,
             IFormulaService formulaService,
-            IHerbService herbService,
-            ILogger<EditFormulaDialogViewModel> logger)
+            ISessionManager? sessionManager = null,
+            IErrorHandlingService? errorHandlingService = null)
+            : base(eventAggregator, loggerFactory, regionManager, sessionManager, errorHandlingService)
         {
             _formulaService = formulaService ?? throw new ArgumentNullException(nameof(formulaService));
-            _herbService = herbService ?? throw new ArgumentNullException(nameof(herbService));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+
+            // 初始化选项
+            StatusOptions = Enum.GetValues<CommonStatus>();
 
             // 初始化命令
-            SaveCommand = new DelegateCommand(async () => await SaveFormulaAsync(), CanSave)
-                .ObservesProperty(() => Formula)
-                .ObservesProperty(() => HerbItems);
+            SaveCommand = new DelegateCommand(async () => await SaveFormulaAsync(), CanSave);
             CancelCommand = new DelegateCommand(Cancel);
-            AddHerbCommand = new DelegateCommand(AddHerb);
-            RemoveHerbCommand = new DelegateCommand<FormulaHerbItemDto>(RemoveHerb);
-            EditHerbCommand = new DelegateCommand<FormulaHerbItemDto>(EditHerb);
-            LoadDataCommand = new DelegateCommand(async () => await LoadFormulaAsync());
 
-            // 加载可用药材
-            Task.Run(async () => await LoadAvailableHerbsAsync());
+            // 属性变更时刷新命令状态
+            PropertyChanged += (s, e) => SaveCommand.RaiseCanExecuteChanged();
         }
 
-        #endregion Constructor
+        #endregion
 
-        #region Methods
+        #region 命令实现
 
-        public void Initialize(Guid formulaId)
-        {
-            _formulaId = formulaId;
-            Task.Run(async () => await LoadFormulaAsync());
-        }
-
-        private async Task LoadFormulaAsync()
+        /// <summary>
+        /// 保存配方
+        /// </summary>
+        private async Task SaveFormulaAsync()
         {
             try
             {
-                IsLoading = true;
-                StatusMessage = "正在加载验方数据...";
+                SetIsBusy(true, "正在保存配方...");
 
-                var result = await _formulaService.GetByIdAsync(_formulaId);
-                if (result.IsSuccess && result.Data != null)
+                if (FormulaId.HasValue)
                 {
-                    // UltraThink v2.0: 直接使用FormulaDto
-                    Formula = result.Data;
+                    // 更新现有配方
+                    var updateDto = new FormulaUpdateDto
+                    {
+                        Name = FormulaName.Trim(),
+                        Remark = string.IsNullOrWhiteSpace(Description) ? null : Description.Trim()
+                    };
 
-                    // TODO: 需要根据实际的FormulaDto结构来处理药材项目
-                    // 暂时创建空的药材项目列表
-                    HerbItems = new ObservableCollection<FormulaHerbItemDto>();
-                    StatusMessage = string.Empty;
+                    var result = await _formulaService.UpdateAsync(FormulaId.Value, updateDto);
+                    if (result.IsSuccess)
+                    {
+                        await ShowSuccessMessageAsync("配方更新成功");
+                        // 通知保存成功，关闭对话框
+                        // TODO: 实现对话框关闭逻辑
+                    }
+                    else
+                    {
+                        await ShowErrorMessageAsync($"更新配方失败: {result.ErrorMessage}");
+                    }
                 }
                 else
                 {
-                    StatusMessage = result.ErrorMessage ?? "加载验方失败";
-                }
-            }
-            catch (Exception ex)
-            {
-                StatusMessage = $"加载失败: {ex.Message}";
-                _logger.LogError(ex, "加载验方时出错");
-            }
-            finally
-            {
-                IsLoading = false;
-            }
-        }
-
-        private async Task LoadAvailableHerbsAsync()
-        {
-            try
-            {
-                var herbsResult = await _herbService.GetPagedAsync(1, 1000);
-                if (herbsResult.IsSuccess && herbsResult.Data?.Items != null)
-                {
-                    // UltraThink v2.0: 直接使用HerbDto
-                    AvailableHerbs.Clear();
-                    foreach (var herb in herbsResult.Data.Items)
+                    // 创建新配方
+                    var createDto = new FormulaCreateDto
                     {
-                        AvailableHerbs.Add(herb);
+                        Name = FormulaName.Trim(),
+                        Remark = string.IsNullOrWhiteSpace(Description) ? null : Description.Trim()
+                    };
+
+                    var result = await _formulaService.CreateAsync(createDto);
+                    if (result.IsSuccess)
+                    {
+                        await ShowSuccessMessageAsync("配方创建成功");
+                        // 通知保存成功，关闭对话框
+                        // TODO: 实现对话框关闭逻辑
+                    }
+                    else
+                    {
+                        await ShowErrorMessageAsync($"创建配方失败: {result.ErrorMessage}");
                     }
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "加载药材列表失败");
-            }
-        }
-
-        private bool CanSave()
-        {
-            return !string.IsNullOrWhiteSpace(Formula?.Name) && HerbItems.Count > 0;
-        }
-
-        private async Task SaveFormulaAsync()
-        {
-            try
-            {
-                IsLoading = true;
-                StatusMessage = "正在保存验方...";
-
-                // UltraThink v2.0: 直接使用FormulaDto属性创建UpdateDto
-                var updateDto = new FormulaUpdateDto
-                {
-                    Id = Formula.Id,
-                    Name = Formula.Name,
-                    Effect = Formula.Effect ?? string.Empty,
-                    Usage = Formula.Usage ?? string.Empty,
-                    Remark = Formula.Remark,
-                    Herbs = HerbItems.Select(h => new FormulaHerbItemUpdateDto
-                    {
-                        HerbId = h.HerbId,
-                        Quantity = h.Quantity,
-                        Preparation = h.Preparation,
-                        Usage = h.Usage,
-                        SortOrder = 0
-                    }).ToList()
-                };
-
-                var result = await _formulaService.UpdateAsync(Formula.Id, updateDto);
-                if (result.IsSuccess)
-                {
-                    StatusMessage = "验方保存成功";
-
-                    // TODO: Close dialog with success
-                }
-                else
-                {
-                    StatusMessage = result.ErrorMessage ?? "保存失败";
-                }
-            }
-            catch (Exception ex)
-            {
-                StatusMessage = $"保存失败: {ex.Message}";
-                _logger.LogError(ex, "保存验方时出错");
+                Logger.LogError(ex, "保存配方时发生异常");
+                await ShowErrorMessageAsync("保存配方时发生系统错误，请稍后重试");
             }
             finally
             {
-                IsLoading = false;
+                SetIsBusy(false);
             }
         }
 
+        /// <summary>
+        /// 检查是否可以保存
+        /// </summary>
+        private bool CanSave()
+        {
+            return !IsBusy &&
+                   !string.IsNullOrWhiteSpace(FormulaName) &&
+                   !HasErrors;
+        }
+
+        /// <summary>
+        /// 取消操作
+        /// </summary>
         private void Cancel()
         {
-            // TODO: Close dialog without saving
+            // TODO: 实现对话框关闭逻辑
         }
 
-        private void AddHerb()
-        {
-            // TODO: 实现添加药材对话框
-            var newItem = new FormulaHerbItemDto
-            {
-                HerbId = Guid.NewGuid(),
-                HerbName = "新药材",
-                Quantity = 10,
-                Unit = "克",
-                Preparation = "煎服"
-            };
-            HerbItems.Add(newItem);
-        }
+        #endregion
 
-        private void RemoveHerb(FormulaHerbItemDto? item)
+        #region 初始化方法
+
+        /// <summary>
+        /// 初始化编辑配方数据
+        /// </summary>
+        public async Task InitializeAsync(Guid? formulaId = null)
         {
-            if (item != null)
+            try
             {
-                HerbItems.Remove(item);
+                FormulaId = formulaId;
+
+                if (formulaId.HasValue)
+                {
+                    SetIsBusy(true, "正在加载配方信息...");
+
+                    var result = await _formulaService.GetByIdAsync(formulaId.Value);
+                    if (result.IsSuccess && result.Data != null)
+                    {
+                        var formula = result.Data;
+                        FormulaName = formula.Name ?? string.Empty;
+                        Description = formula.Remark ?? string.Empty;
+                        Status = formula.Status;
+                    }
+                    else
+                    {
+                        await ShowErrorMessageAsync("加载配方信息失败");
+                    }
+                }
+                else
+                {
+                    // 新建配方，重置为默认值
+                    FormulaName = string.Empty;
+                    Description = string.Empty;
+                    Status = CommonStatus.Enabled;
+                }
+
+                // 清除验证错误
+                ClearAllErrors();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "初始化配方编辑数据时发生异常");
+                await ShowErrorMessageAsync("初始化配方数据时发生系统错误");
+            }
+            finally
+            {
+                SetIsBusy(false);
             }
         }
 
-        private void EditHerb(FormulaHerbItemDto? item)
-        {
-            if (item == null)
-            {
-                return;
-            }
-
-            // TODO: 实现编辑药材对话框
-            StatusMessage = string.Format(SystemConstants.FeaturePendingTemplate, $"编辑药材 '{item.HerbName}'");
-        }
-
-        #endregion Methods
+        #endregion
     }
 }

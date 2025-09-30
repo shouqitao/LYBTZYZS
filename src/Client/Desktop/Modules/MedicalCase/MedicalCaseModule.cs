@@ -1,4 +1,4 @@
-using LYBT.Desktop.MedicalCase.Services;
+using LYBT.Desktop.MedicalCase.ViewModels;
 using LYBT.Shared.Interfaces.Services;
 using Prism.Ioc;
 using Prism.Modularity;
@@ -20,12 +20,12 @@ namespace LYBT.Desktop.MedicalCase
 
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            // 注册简化的服务
-            containerRegistry.RegisterSingleton<IMedicalCaseService, MedicalCaseService>();
+            // Services由Core_New/Services统一注册，不在Module中注册
 
             // 注册视图模型 - MVP核心功能
-            containerRegistry.Register<ViewModels.MedicalCaseManagementViewModel>();
-            containerRegistry.Register<ViewModels.MedicalCaseListViewModel>();
+            // TODO: 修复编译错误后再启用
+            // containerRegistry.Register<MedicalCaseManagementViewModel>();
+            // containerRegistry.Register<MedicalCaseListViewModel>();
 
             // 注册视图用于导航 - 需要对应视图文件存在
             // containerRegistry.RegisterForNavigation<Views.MedicalCaseManagementView>();

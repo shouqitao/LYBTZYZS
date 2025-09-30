@@ -14,12 +14,25 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
     /// </summary>
     public class MedicalCaseDto : StatusDto, IRemarkable
     {
+        [DisplayName("案例编号")]
+        [StringLength(50, ErrorMessage = "案例编号长度不能超过50个字符")]
+        public string? CaseNumber { get; set; }
+
+        [DisplayName("主诉")]
+        [StringLength(500, ErrorMessage = "主诉长度不能超过500个字符")]
+        public string? ChiefComplaint { get; set; }
 
         [DisplayName("患者ID")]
         public Guid PatientId { get; set; }
 
         [DisplayName("患者姓名")]
         public string PatientName { get; set; } = string.Empty;
+
+        [DisplayName("患者性别")]
+        public string? PatientGender { get; set; }
+
+        [DisplayName("患者年龄")]
+        public int? PatientAge { get; set; }
 
         [DisplayName("医生ID")]
         public Guid DoctorId { get; set; }
@@ -131,6 +144,24 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
     /// </summary>
     public class MedicalCaseCreateDto : MedicalCaseInputBaseDto
     {
+        [DisplayName("案例编号")]
+        [StringLength(50, ErrorMessage = "案例编号长度不能超过50个字符")]
+        public string? CaseNumber { get; set; }
+
+        [DisplayName("主诉")]
+        [StringLength(1000, ErrorMessage = "主诉长度不能超过1000个字符")]
+        public string? ChiefComplaint { get; set; }
+
+        [DisplayName("现病史")]
+        [StringLength(2000, ErrorMessage = "现病史长度不能超过2000个字符")]
+        public string? PresentIllnessHistory { get; set; }
+
+        [DisplayName("既往史")]
+        [StringLength(1000, ErrorMessage = "既往史长度不能超过1000个字符")]
+        public string? PastMedicalHistory { get; set; }
+
+        [DisplayName("状态")]
+        public MedicalCaseStatus Status { get; set; } = MedicalCaseStatus.Active;
 
         [StringLength(200, ErrorMessage = "诊断摘要长度不能超过200个字符")]
         [DisplayName("诊断摘要")]

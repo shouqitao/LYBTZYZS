@@ -1,30 +1,410 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Collections.ObjectModel;
 using System.Threading.Tasks;
-using LYBT.Desktop.Core.Interfaces.Services;
-using LYBT.Desktop.Core.ViewModels.Base;
+using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Models.ViewModels.Base;
+using LYBT.Shared.Interfaces.Services;
+using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.Extensions.Logging;
+using Prism.Commands;
 using Prism.Events;
 using Prism.Regions;
 
-namespace LYBT.Desktop.Prescriptions.ViewModels
+namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
 {
     /// <summary>
-    /// 处方管理视图模型 - 架构重构后简化版本
-    /// TODO: 重构完成后重新实现业务逻辑
+    /// 处方管理视图模型 - UltraThink精简架构
+    /// 作为处方模块的主导航和管理容器
     /// </summary>
     public class PrescriptionManagementViewModel : UnifiedViewModelBase
     {
+        #region 服务依赖
+
+        private readonly IPrescriptionService _prescriptionService;
+
+        #endregion
+
+        #region 数据属性
+
+        private ObservableCollection<PrescriptionDto> _prescriptions = new();
+        private PrescriptionDto? _selectedPrescription;
+        private string _searchText = string.Empty;
+        private DateTime? _startDate;
+        private DateTime? _endDate;
+        private int _totalCount;
+        private int _currentPage = 1;
+        private int _pageSize = 20;
+
+        /// <summary>
+        /// 处方列表
+        /// </summary>
+        public ObservableCollection<PrescriptionDto> Prescriptions
+        {
+            get => _prescriptions;
+            set => SetProperty(ref _prescriptions, value);
+        }
+
+        /// <summary>
+        /// 选中的处方
+        /// </summary>
+        public PrescriptionDto? SelectedPrescription
+        {
+            get => _selectedPrescription;
+            set
+            {
+                if (SetProperty(ref _selectedPrescription, value))
+                {
+                    UpdateCommandStates();
+                }
+            }
+        }
+
+        /// <summary>
+        /// 搜索关键字
+        /// </summary>
+        public string SearchText
+        {
+            get => _searchText;
+            set => SetProperty(ref _searchText, value);
+        }
+
+        /// <summary>
+        /// 开始日期
+        /// </summary>
+        public DateTime? StartDate
+        {
+            get => _startDate;
+            set => SetProperty(ref _startDate, value);
+        }
+
+        /// <summary>
+        /// 结束日期
+        /// </summary>
+        public DateTime? EndDate
+        {
+            get => _endDate;
+            set => SetProperty(ref _endDate, value);
+        }
+
+        /// <summary>
+        /// 总记录数
+        /// </summary>
+        public int TotalCount
+        {
+            get => _totalCount;
+            set => SetProperty(ref _totalCount, value);
+        }
+
+        /// <summary>
+        /// 当前页码
+        /// </summary>
+        public int CurrentPage
+        {
+            get => _currentPage;
+            set => SetProperty(ref _currentPage, value);
+        }
+
+        /// <summary>
+        /// 每页大小
+        /// </summary>
+        public int PageSize
+        {
+            get => _pageSize;
+            set => SetProperty(ref _pageSize, value);
+        }
+
+        #endregion
+
+        #region 命令
+
+        /// <summary>
+        /// 加载数据命令
+        /// </summary>
+        public DelegateCommand LoadDataCommand { get; }
+
+        /// <summary>
+        /// 搜索命令
+        /// </summary>
+        public DelegateCommand SearchCommand { get; }
+
+        /// <summary>
+        /// 创建处方命令
+        /// </summary>
+        public DelegateCommand CreateCommand { get; }
+
+        /// <summary>
+        /// 编辑处方命令
+        /// </summary>
+        public DelegateCommand EditCommand { get; }
+
+        /// <summary>
+        /// 删除处方命令
+        /// </summary>
+        public DelegateCommand DeleteCommand { get; }
+
+        /// <summary>
+        /// 查看详情命令
+        /// </summary>
+        public DelegateCommand ViewDetailCommand { get; }
+
+        /// <summary>
+        /// 打印命令
+        /// </summary>
+        public DelegateCommand PrintCommand { get; }
+
+        /// <summary>
+        /// 刷新命令
+        /// </summary>
+        public DelegateCommand RefreshCommand { get; }
+
+        /// <summary>
+        /// 上一页命令
+        /// </summary>
+        public DelegateCommand PreviousPageCommand { get; }
+
+        /// <summary>
+        /// 下一页命令
+        /// </summary>
+        public DelegateCommand NextPageCommand { get; }
+
+        #endregion
+
+        #region 构造函数
+
         public PrescriptionManagementViewModel(
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
-            ISessionManager sessionManager,
-            IErrorHandlingService errorHandlingService)
+            IPrescriptionService prescriptionService,
+            ISessionManager? sessionManager = null,
+            IErrorHandlingService? errorHandlingService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, errorHandlingService)
         {
+            _prescriptionService = prescriptionService ?? throw new ArgumentNullException(nameof(prescriptionService));
+
+            // 初始化命令
+            LoadDataCommand = new DelegateCommand(async () => await LoadDataAsync());
+            SearchCommand = new DelegateCommand(async () => await SearchAsync());
+            CreateCommand = new DelegateCommand(Create);
+            EditCommand = new DelegateCommand(Edit, CanEdit);
+            DeleteCommand = new DelegateCommand(async () => await DeleteAsync(), CanDelete);
+            ViewDetailCommand = new DelegateCommand(ViewDetail, CanViewDetail);
+            PrintCommand = new DelegateCommand(Print, CanPrint);
+            RefreshCommand = new DelegateCommand(async () => await RefreshAsync());
+            PreviousPageCommand = new DelegateCommand(async () => await PreviousPageAsync(), CanPreviousPage);
+            NextPageCommand = new DelegateCommand(async () => await NextPageAsync(), CanNextPage);
+
+            // 属性变更时刷新命令状态
+            PropertyChanged += (s, e) => UpdateCommandStates();
         }
+
+        #endregion
+
+        #region 生命周期
+
+        /// <summary>
+        /// 页面加载时调用
+        /// </summary>
+        protected override async Task OnNavigatedToAsync(NavigationContext navigationContext)
+        {
+            await base.OnNavigatedToAsync(navigationContext);
+            await LoadDataAsync();
+        }
+
+        #endregion
+
+        #region 命令实现
+
+        /// <summary>
+        /// 加载数据
+        /// </summary>
+        private async Task LoadDataAsync()
+        {
+            try
+            {
+                SetIsBusy(true, "正在加载处方列表...");
+
+                var result = await _prescriptionService.GetPagedAsync(CurrentPage, PageSize, SearchText);
+                if (result.IsSuccess && result.Data != null)
+                {
+                    Prescriptions.Clear();
+                    foreach (var item in result.Data.Items)
+                    {
+                        Prescriptions.Add(item);
+                    }
+                    TotalCount = result.Data.TotalCount;
+                }
+                else
+                {
+                    await ShowErrorMessageAsync($"加载处方列表失败: {result.ErrorMessage}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "加载处方列表时发生异常");
+                await ShowErrorMessageAsync("加载处方列表时发生系统错误，请稍后重试");
+            }
+            finally
+            {
+                SetIsBusy(false);
+            }
+        }
+
+        /// <summary>
+        /// 搜索
+        /// </summary>
+        private async Task SearchAsync()
+        {
+            CurrentPage = 1;
+            await LoadDataAsync();
+        }
+
+        /// <summary>
+        /// 创建处方
+        /// </summary>
+        private void Create()
+        {
+            NavigateTo("MainRegion", "PrescriptionComposerView");
+        }
+
+        /// <summary>
+        /// 编辑处方
+        /// </summary>
+        private void Edit()
+        {
+            if (SelectedPrescription != null)
+            {
+                var parameters = new NavigationParameters
+                {
+                    { "PrescriptionId", SelectedPrescription.Id }
+                };
+                NavigateTo("MainRegion", "PrescriptionComposerView", parameters);
+            }
+        }
+
+        /// <summary>
+        /// 删除处方
+        /// </summary>
+        private async Task DeleteAsync()
+        {
+            if (SelectedPrescription == null) return;
+
+            var confirmed = await ShowConfirmMessageAsync($"确定要删除处方吗？");
+            if (!confirmed) return;
+
+            try
+            {
+                SetIsBusy(true, "正在删除处方...");
+
+                var result = await _prescriptionService.DeleteAsync(SelectedPrescription.Id);
+                if (result.IsSuccess)
+                {
+                    await ShowSuccessMessageAsync("处方删除成功");
+                    await LoadDataAsync();
+                }
+                else
+                {
+                    await ShowErrorMessageAsync($"删除处方失败: {result.ErrorMessage}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "删除处方时发生异常");
+                await ShowErrorMessageAsync("删除处方时发生系统错误，请稍后重试");
+            }
+            finally
+            {
+                SetIsBusy(false);
+            }
+        }
+
+        /// <summary>
+        /// 查看详情
+        /// </summary>
+        private void ViewDetail()
+        {
+            if (SelectedPrescription != null)
+            {
+                var parameters = new NavigationParameters
+                {
+                    { "PrescriptionId", SelectedPrescription.Id },
+                    { "IsReadOnly", true }
+                };
+                NavigateTo("MainRegion", "PrescriptionDetailView", parameters);
+            }
+        }
+
+        /// <summary>
+        /// 打印
+        /// </summary>
+        private void Print()
+        {
+            if (SelectedPrescription != null)
+            {
+                Logger.LogInformation("打印处方: {PrescriptionId}", SelectedPrescription.Id);
+                // 实现打印逻辑
+                ShowInfoMessage("打印功能暂未实现");
+            }
+        }
+
+        /// <summary>
+        /// 刷新
+        /// </summary>
+        private async Task RefreshAsync()
+        {
+            await LoadDataAsync();
+        }
+
+        /// <summary>
+        /// 上一页
+        /// </summary>
+        private async Task PreviousPageAsync()
+        {
+            if (CurrentPage > 1)
+            {
+                CurrentPage--;
+                await LoadDataAsync();
+            }
+        }
+
+        /// <summary>
+        /// 下一页
+        /// </summary>
+        private async Task NextPageAsync()
+        {
+            var totalPages = (int)Math.Ceiling((double)TotalCount / PageSize);
+            if (CurrentPage < totalPages)
+            {
+                CurrentPage++;
+                await LoadDataAsync();
+            }
+        }
+
+        #endregion
+
+        #region 命令状态检查
+
+        private bool CanEdit() => SelectedPrescription != null && !IsBusy;
+        private bool CanDelete() => SelectedPrescription != null && !IsBusy;
+        private bool CanViewDetail() => SelectedPrescription != null;
+        private bool CanPrint() => SelectedPrescription != null;
+        private bool CanPreviousPage() => CurrentPage > 1 && !IsBusy;
+        private bool CanNextPage()
+        {
+            var totalPages = (int)Math.Ceiling((double)TotalCount / PageSize);
+            return CurrentPage < totalPages && !IsBusy;
+        }
+
+        private void UpdateCommandStates()
+        {
+            EditCommand.RaiseCanExecuteChanged();
+            DeleteCommand.RaiseCanExecuteChanged();
+            ViewDetailCommand.RaiseCanExecuteChanged();
+            PrintCommand.RaiseCanExecuteChanged();
+            PreviousPageCommand.RaiseCanExecuteChanged();
+            NextPageCommand.RaiseCanExecuteChanged();
+        }
+
+        #endregion
     }
 }

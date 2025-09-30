@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
-using LYBT.Desktop.Core.Interfaces.Services;
-using LYBT.Desktop.Core.ViewModels.Base;
+using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
@@ -309,7 +309,7 @@ namespace LYBT.Desktop.Users.ViewModels
             SelectedRole = user.Role;
             Status = user.Status;
             
-            ClearError();
+            ClearValidationErrors();
             
             // 通知相关属性更新
             RaisePropertyChanged(nameof(HasChanges));
@@ -451,9 +451,15 @@ namespace LYBT.Desktop.Users.ViewModels
                 case nameof(RealName):
                     if (string.IsNullOrWhiteSpace(RealName))
                     {
+                        AddValidationError(propertyName, "$1");
                     }
                     else if (RealName.Length > 50)
                     {
+                        AddValidationError(propertyName, "$1");
+                    }
+                    else
+                    {
+                        ClearValidationErrors(propertyName);
                     }
                     break;
                     
@@ -462,7 +468,16 @@ namespace LYBT.Desktop.Users.ViewModels
                     {
                         if (!System.Text.RegularExpressions.Regex.IsMatch(PhoneNumber, @"^1[3-9]\d{9}$"))
                         {
+                            AddValidationError(propertyName, "$1");
                         }
+                        else
+                        {
+                            ClearValidationErrors(propertyName);
+                        }
+                    }
+                    else
+                    {
+                        ClearValidationErrors(propertyName);
                     }
                     break;
                     
@@ -471,7 +486,16 @@ namespace LYBT.Desktop.Users.ViewModels
                     {
                         if (!System.Text.RegularExpressions.Regex.IsMatch(Email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
                         {
+                            AddValidationError(propertyName, "$1");
                         }
+                        else
+                        {
+                            ClearValidationErrors(propertyName);
+                        }
+                    }
+                    else
+                    {
+                        ClearValidationErrors(propertyName);
                     }
                     break;
             }
@@ -493,7 +517,12 @@ namespace LYBT.Desktop.Users.ViewModels
 
         #region 命令刷新
         
-
+        protected virtual void RefreshCanExecuteChanged()
+        {
+            SaveCommand?.RaiseCanExecuteChanged();
+            ResetCommand?.RaiseCanExecuteChanged();
+            ResetPasswordCommand?.RaiseCanExecuteChanged();
+        }
         
         /// <summary>
         /// 刷新属性变化通知
@@ -509,16 +538,16 @@ namespace LYBT.Desktop.Users.ViewModels
         #region 属性变化处理
         
         protected override void OnPropertyChanged(System.ComponentModel.PropertyChangedEventArgs args)
-    {
-        base.OnPropertyChanged(args);
-        
-        // 当关键属性变化时，刷新相关状态
-        if (args.PropertyName is nameof(RealName) or nameof(PhoneNumber) or nameof(Email) 
-            or nameof(SelectedRole) or nameof(Status))
         {
-            RefreshPropertyChanged();
+            base.OnPropertyChanged(args);
+            
+            // 当关键属性变化时，刷新相关状态
+            if (args.PropertyName is nameof(RealName) or nameof(PhoneNumber) or nameof(Email) 
+                or nameof(SelectedRole) or nameof(Status))
+            {
+                RefreshPropertyChanged();
+            }
         }
-    }
         
         #endregion
     }

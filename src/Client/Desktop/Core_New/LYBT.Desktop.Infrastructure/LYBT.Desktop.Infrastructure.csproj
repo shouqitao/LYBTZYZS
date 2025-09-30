@@ -1,0 +1,56 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <LangVersion>12.0</LangVersion>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+
+    <!-- Assembly Information -->
+    <AssemblyTitle>LYBT.Desktop.Infrastructure</AssemblyTitle>
+    <AssemblyDescription>凌隐宝堂中医诊所系统 - WPF基础设施库 | 主题、控件、工具类 | Issue #815 Phase 1</AssemblyDescription>
+    <AssemblyCompany>凌隐宝堂中医诊所</AssemblyCompany>
+    <AssemblyProduct>LYBT诊疗管理系统</AssemblyProduct>
+    <AssemblyCopyright>Copyright © 凌隐宝堂中医诊所 2025</AssemblyCopyright>
+    <AssemblyVersion>2.1.0.0</AssemblyVersion>
+    <FileVersion>2.1.0.0</FileVersion>
+    <InformationalVersion>2.1.0-infrastructure</InformationalVersion>
+
+    <!-- Package Information -->
+    <PackageId>LYBT.Desktop.Infrastructure</PackageId>
+    <PackageVersion>2.1.0</PackageVersion>
+    <Authors>LYBT开发团队</Authors>
+    <PackageDescription>LYBT WPF基础设施 - 主题系统、自定义控件、UI工具类库</PackageDescription>
+    <PackageTags>WPF;UI;Infrastructure;中医;诊所;主题;控件</PackageTags>
+  </PropertyGroup>
+
+  <!-- WPF Framework Dependencies -->
+  <ItemGroup Label="WPF Framework">
+    <PackageReference Include="NPOI" />
+    <PackageReference Include="Prism.Core" />
+    <PackageReference Include="Prism.Wpf" />
+    <PackageReference Include="System.ComponentModel.Annotations" />
+    <PackageReference Include="System.Reactive" />
+  </ItemGroup>
+
+  <!-- Configuration -->
+  <ItemGroup Label="Configuration">
+    <PackageReference Include="Microsoft.Extensions.Configuration" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
+  </ItemGroup>
+
+  <!-- Project References -->
+  <ItemGroup Label="Shared Libraries">
+    <ProjectReference Include="..\..\..\..\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
+    <ProjectReference Include="..\..\..\..\Shared\LYBT.Shared.Utilities\LYBT.Shared.Utilities.csproj" />
+  </ItemGroup>
+
+  <!-- Core_New Dependencies -->
+  <ItemGroup Label="Core_New Dependencies">
+    <ProjectReference Include="..\LYBT.Desktop.Services\LYBT.Desktop.Services.csproj" />
+  </ItemGroup>
+
+</Project>

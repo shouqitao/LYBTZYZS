@@ -1,7 +1,7 @@
 using AutoMapper;
 
-// UltraThink v2.0: HerbInfo模型已被移除，不再引用
-// using LYBT.Desktop.Core.Models.Herbs;
+// UltraThink v2.0: HerbInfo模型已被移除，不再引�?
+// using LYBT.Desktop.Models.Herbs;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace LYBT.Desktop.Herbs.Mappings
@@ -20,7 +20,7 @@ namespace LYBT.Desktop.Herbs.Mappings
         }
 
         /// <summary>
-        /// 配置中药材相关映射
+        /// 配置中药材相关映�?
         /// </summary>
         private void ConfigureHerbMappings()
         {
@@ -28,7 +28,7 @@ namespace LYBT.Desktop.Herbs.Mappings
         }
 
         /// <summary>
-        /// 创建AutoMapper实例 - 使用开源版本14.0.0
+        /// 创建AutoMapper实例 - 使用开源版�?4.0.0
         /// </summary>
         public static IMapper CreateMapper()
         {

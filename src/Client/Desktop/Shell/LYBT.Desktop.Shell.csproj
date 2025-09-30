@@ -77,11 +77,12 @@
   </ItemGroup>
 
   <!-- Project References -->
-  <ItemGroup Label="Core Infrastructure">
+  <ItemGroup Label="Core Infrastructure - 简化三层架构">
     <ProjectReference Include="..\..\..\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
-    <ProjectReference Include="..\Core\LYBT.Desktop.Core.csproj" />
-    <ProjectReference Include="..\Infrastructure\LYBT.Desktop.Infrastructure.csproj" />
-    <ProjectReference Include="..\Services\LYBT.Desktop.Services.csproj" />
+    <ProjectReference Include="..\Core_New\LYBT.Desktop.Infrastructure\LYBT.Desktop.Infrastructure.csproj" />
+    <ProjectReference Include="..\Core_New\LYBT.Desktop.Models\LYBT.Desktop.Models.csproj" />
+
+    <ProjectReference Include="..\Core_New\LYBT.Desktop.Services\LYBT.Desktop.Services.csproj" />
   </ItemGroup>
 
   <ItemGroup Label="Business Modules">
@@ -95,11 +96,6 @@
     <ProjectReference Include="..\Modules\Prescriptions\LYBT.Desktop.Prescriptions.csproj" />
     <ProjectReference Include="..\Modules\Herbs\LYBT.Desktop.Herbs.csproj" />
     <ProjectReference Include="..\Modules\Formula\LYBT.Desktop.Formula.csproj" />
-  </ItemGroup>
-
-  <ItemGroup Label="Workbenches">
-    <ProjectReference Include="..\Workbenches\Core\LYBT.Desktop.Workbench.Core.csproj" />
-    <ProjectReference Include="..\Workbenches\MedicalWorkbench\LYBT.Desktop.Workbench.Medical.csproj" />
   </ItemGroup>
 
   <!-- Configuration Files -->

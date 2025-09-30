@@ -9,6 +9,10 @@ namespace LYBT.Shared.Models.Contracts.Herbs
     /// 药材信息DTO - UltraThink v2.0简化版
     /// 与Herb实体对齐，删除库存管理和时间字段
     /// </summary>
+    /// <summary>
+    /// 药材信息DTO - UltraThink v2.0简化版
+    /// 与Herb实体对齐，删除库存管理和时间字段
+    /// </summary>
     public class HerbDto : StatusDto, IRemarkable
     {
 
@@ -20,6 +24,18 @@ namespace LYBT.Shared.Models.Contracts.Herbs
         [StringLength(50, ErrorMessage = "拼音码长度不能超过50个字符")]
         [DisplayName("拼音码")]
         public string? PinYinCode { get; set; }
+
+        /// <summary>拼音码(兼容)</summary>
+        [DisplayName("拼音码")]
+        public string? PinyinCode { get => PinYinCode; set => PinYinCode = value; }
+
+        /// <summary>药材分类</summary>
+        [DisplayName("分类")]
+        public string? Category { get; set; }
+
+        /// <summary>药材性味</summary>
+        [DisplayName("性味")]
+        public string? Properties { get; set; }
 
         /// <summary>产地</summary>
         [DisplayName("产地")]

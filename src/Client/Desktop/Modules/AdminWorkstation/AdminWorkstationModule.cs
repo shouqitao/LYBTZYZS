@@ -1,6 +1,6 @@
-ï»¿using LYBT.Desktop.AdminWorkstation.ViewModels;
+using LYBT.Desktop.AdminWorkstation.ViewModels;
 using LYBT.Desktop.AdminWorkstation.Views;
-using LYBT.Desktop.Core.Interfaces.Services;
+using LYBT.Desktop.Services.ErrorHandling;
 using Microsoft.Extensions.Logging;
 using Prism.Ioc;
 using Prism.Modularity;
@@ -8,31 +8,31 @@ using Prism.Modularity;
 namespace LYBT.Desktop.AdminWorkstation
 {
     /// <summary>
-    /// ç®¡ç†å·¥ä½œå°æ¨¡å—
-    /// æä¾›ç®¡ç†å‘˜çš„å·¥ä½œå°ç•Œé¢å’Œç›¸å…³åŠŸèƒ½
+    /// ¹ÜÀí¹¤×÷Ì¨Ä£¿é
+    /// Ìá¹©¹ÜÀíÔ±µÄ¹¤×÷Ì¨½çÃæºÍÏà¹Ø¹¦ÄÜ
     /// </summary>
     [Module(ModuleName = nameof(AdminWorkstationModule))]
-    [ModuleDependency("AuthenticationModule")] // ä¾èµ–è®¤è¯æ¨¡å—
+    [ModuleDependency("AuthenticationModule")] // ÒÀÀµÈÏÖ¤Ä£¿é
     public class AdminWorkstationModule : IModule
     {
         /// <inheritdoc/>
         public void OnInitialized(IContainerProvider containerProvider)
         {
-            // æ¨¡å—åˆå§‹åŒ–å®Œæˆ
+            // Ä£¿é³õÊ¼»¯Íê³É
             var logger = containerProvider.Resolve<ILogger<AdminWorkstationModule>>();
-            logger?.LogInformation("ç®¡ç†å·¥ä½œå°æ¨¡å—åˆå§‹åŒ–å®Œæˆ");
+            logger?.LogInformation("¹ÜÀí¹¤×÷Ì¨Ä£¿é³õÊ¼»¯Íê³É");
         }
 
         /// <inheritdoc/>
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            // æ³¨å†Œè§†å›¾æ¨¡å‹
+            // ×¢²áÊÓÍ¼Ä£ĞÍ
             containerRegistry.Register<AdminWorkstationViewModel>();
 
-            // æ³¨å†Œä¸»è§†å›¾ç”¨äºå¯¼èˆª
+            // ×¢²áÖ÷ÊÓÍ¼ÓÃÓÚµ¼º½
             containerRegistry.RegisterForNavigation<AdminWorkstationView>();
 
-            // æ³¨å†Œç®¡ç†åŠŸèƒ½å­è§†å›¾ï¼ˆåç»­æ ¹æ®éœ€è¦æ·»åŠ ï¼‰
+            // ×¢²á¹ÜÀí¹¦ÄÜ×ÓÊÓÍ¼£¨ºóĞø¸ù¾İĞèÒªÌí¼Ó£©
             // containerRegistry.RegisterForNavigation<UserManagementView>();
             // containerRegistry.RegisterForNavigation<HerbManagementView>();
             // containerRegistry.RegisterForNavigation<PatientManagementView>();

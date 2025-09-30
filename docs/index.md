@@ -30,6 +30,7 @@
 | 文档路径 | 说明 | 关键内容 |
 |----------|------|----------|
 | [development/](development/README.md) | 开发规范指导集合 | 编码标准、测试指南、审计字段、枚举规范 |
+| [development/ai-assisted-automation-workflow.md](development/ai-assisted-automation-workflow.md) | **AI辅助自动化工作流程** | **Issue驱动开发、Claude+Serena双重审查、GitHub自动化** |
 | [security/](security/) | 安全指导文档 | JWT安全配置、安全加固指南 |
 | [deployment/](deployment/) | 部署技术文档 | 部署配置、环境设置指南 |
 | GitHub Issues | 需求与任务单一事实源 | 需求、讨论、验收、进度（替代本地 PRD） |
@@ -37,6 +38,8 @@
 #### 任务与交付
 | 文档路径 | 说明 | 关键内容 |
 |----------|------|----------|
+| [issues/](issues/) | Issue追踪文档 | 问题分析、技术方案、验收标准 |
+| [issues/ISSUE_808_DESKTOP_ARCHITECTURE_OPTIMIZATION.md](issues/ISSUE_808_DESKTOP_ARCHITECTURE_OPTIMIZATION.md) | **Desktop架构适度优化Issue #815** | **Core层重组、业务模块标准化、工作台层独立** |
 | [tasks/](tasks/) | 任务管理系统 | pending/待办任务、completed/完成总结 |
 | [reports/](reports/) | 分析报告文档 | 架构分析、规范性报告、长期参考（阶段性计划已迁移到 Issues） |
 

@@ -1,6 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Windows;
-using LYBT.Desktop.Core.ViewModels.Base;
+using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Interfaces.Services;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
@@ -10,9 +10,9 @@ using Prism.Regions;
 namespace LYBT.Desktop.Shell.ViewModels
 {
     /// <summary>
-    /// 主页视图模型 - 简化版本，删除错误较多的业务代码
+    /// 主页视图模型 - 简化版本，删除错误较多的业务代�?
     /// </summary>
-    public class HomeViewModel : ModernViewModelBase, INavigationAware
+    public class HomeViewModel : UnifiedViewModelBase, INavigationAware
     {
         #region 依赖服务
 
@@ -20,7 +20,7 @@ namespace LYBT.Desktop.Shell.ViewModels
 
         #endregion 依赖服务
 
-        #region 属性
+        #region 属�?
 
         private string _welcomeMessage = "欢迎使用凌隐宝堂中医诊所管理系统";
 
@@ -30,7 +30,7 @@ namespace LYBT.Desktop.Shell.ViewModels
             set => SetProperty(ref _welcomeMessage, value);
         }
 
-        #endregion 属性
+        #endregion 属�?
 
         #region 命令
 
@@ -39,22 +39,22 @@ namespace LYBT.Desktop.Shell.ViewModels
 
         #endregion 命令
 
-        #region 构造函数
+        #region 构造函�?
 
         public HomeViewModel(
             IRegionManager regionManager,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory)
-            : base(eventAggregator, loggerFactory)
+            : base(eventAggregator, loggerFactory, regionManager)
         {
             _regionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
 
-            // 初始化命令
+            // 初始化命�?
             NavigateToPatientManagementCommand = new DelegateCommand(() => NavigateTo("PatientManagementView"));
             NavigateToConsultationCommand = new DelegateCommand(() => NavigateTo("ConsultationView"));
         }
 
-        #endregion 构造函数
+        #endregion 构造函�?
 
         #region 导航方法
 
@@ -66,7 +66,7 @@ namespace LYBT.Desktop.Shell.ViewModels
             }
             catch
             {
-                // 简化错误处理 - 静默处理导航失败
+                // 简化错误处�?- 静默处理导航失败
             }
         }
 
@@ -76,7 +76,7 @@ namespace LYBT.Desktop.Shell.ViewModels
 
         public void OnNavigatedTo(NavigationContext navigationContext)
         {
-            // 简化实现 - 仅设置基本状态
+            // 简化实�?- 仅设置基本状�?
         }
 
         public bool IsNavigationTarget(NavigationContext navigationContext)
@@ -86,7 +86,7 @@ namespace LYBT.Desktop.Shell.ViewModels
 
         public void OnNavigatedFrom(NavigationContext navigationContext)
         {
-            // 简化实现 - 无需清理
+            // 简化实�?- 无需清理
         }
 
         #endregion INavigationAware

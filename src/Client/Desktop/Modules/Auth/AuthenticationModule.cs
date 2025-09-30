@@ -1,4 +1,3 @@
-using LYBT.Desktop.Auth.Services;
 using LYBT.Desktop.Auth.ViewModels;
 using LYBT.Desktop.Auth.Views;
 using Microsoft.Extensions.Logging;
@@ -28,8 +27,7 @@ namespace LYBT.Desktop.Auth
         /// <inheritdoc/>
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            // UltraThink模块化架构：注册模块业务服务
-            containerRegistry.RegisterSingleton<AuthService>();
+            // Services由Core_New/Services统一注册，不在Module中注册
 
             // 注册视图模型
             containerRegistry.Register<LoginViewModel>();

@@ -1,239 +1,254 @@
-using LYBT.Desktop.Core.Interfaces.Services;
-using LYBT.Desktop.Core.ViewModels.Base;
-using LYBT.Desktop.Core.Events;
+using System;
+using System.ComponentModel.DataAnnotations;
+using System.Threading.Tasks;
+using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Shared.Interfaces.Services;
+using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.MedicalCase;
+using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Regions;
-using System.Windows.Input;
 
 namespace LYBT.Desktop.MedicalCase.ViewModels
 {
     /// <summary>
-    /// 医疗案例详情视图模型 - 支持显示聚合根完整详情
+    /// 医疗案例详情视图模型 - UltraThink简化架构
     /// </summary>
-    public class MedicalCaseDetailViewModel : ModernViewModelBase, INavigationAware
+    public class MedicalCaseDetailViewModel : UnifiedViewModelBase
     {
+        #region 服务依赖
+
         private readonly IMedicalCaseService _medicalCaseService;
-        private readonly ILogger<MedicalCaseDetailViewModel> _logger;
 
-        #region Properties
+        #endregion
 
-        private MedicalCaseDetailDto? _medicalCaseDetail;
+        #region 属性
+
+        private MedicalCaseDto? _medicalCase;
+        private string _caseNumber = string.Empty;
+        private string _patientName = string.Empty;
+        private string _chiefComplaint = string.Empty;
+        private CaseStatus _status = CaseStatus.Active;
+
         /// <summary>
-        /// 医疗案例详情（包含诊疗和处方信息）
+        /// 医疗案例
         /// </summary>
-        public MedicalCaseDetailDto? MedicalCaseDetail
+        public MedicalCaseDto? MedicalCase
         {
-            get => _medicalCaseDetail;
-            set => SetProperty(ref _medicalCaseDetail, value);
+            get => _medicalCase;
+            set => SetProperty(ref _medicalCase, value);
         }
 
-        private Guid _medicalCaseId;
         /// <summary>
-        /// 当前医疗案例ID
+        /// 案例编号
         /// </summary>
-        public Guid MedicalCaseId
+        [Required(ErrorMessage = "案例编号不能为空")]
+        public string CaseNumber
         {
-            get => _medicalCaseId;
-            set => SetProperty(ref _medicalCaseId, value);
+            get => _caseNumber;
+            set
+            {
+                if (SetProperty(ref _caseNumber, value))
+                {
+                    ValidateProperty();
+                }
+            }
         }
 
-        private bool _hasConsultation;
         /// <summary>
-        /// 是否有诊疗记录
+        /// 患者姓名
         /// </summary>
-        public bool HasConsultation
+        [Required(ErrorMessage = "患者姓名不能为空")]
+        public string PatientName
         {
-            get => _hasConsultation;
-            set => SetProperty(ref _hasConsultation, value);
+            get => _patientName;
+            set
+            {
+                if (SetProperty(ref _patientName, value))
+                {
+                    ValidateProperty();
+                }
+            }
         }
 
-        private bool _hasPrescription;
         /// <summary>
-        /// 是否有处方
+        /// 主诉
         /// </summary>
-        public bool HasPrescription
+        [Required(ErrorMessage = "主诉不能为空")]
+        public string ChiefComplaint
         {
-            get => _hasPrescription;
-            set => SetProperty(ref _hasPrescription, value);
+            get => _chiefComplaint;
+            set
+            {
+                if (SetProperty(ref _chiefComplaint, value))
+                {
+                    ValidateProperty();
+                }
+            }
+        }
+
+        /// <summary>
+        /// 案例状态
+        /// </summary>
+        public CaseStatus Status
+        {
+            get => _status;
+            set => SetProperty(ref _status, value);
         }
 
         #endregion
 
-        #region Commands
+        #region 命令
 
         /// <summary>
-        /// 刷新命令
+        /// 保存命令
         /// </summary>
-        public ICommand RefreshCommand { get; }
+        public DelegateCommand SaveCommand { get; }
 
         /// <summary>
-        /// 编辑命令
+        /// 取消命令
         /// </summary>
-        public ICommand EditCommand { get; }
-
-        /// <summary>
-        /// 打印处方命令
-        /// </summary>
-        public ICommand PrintPrescriptionCommand { get; }
-
-        /// <summary>
-        /// 关闭命令
-        /// </summary>
-        public ICommand CloseCommand { get; }
+        public DelegateCommand CancelCommand { get; }
 
         #endregion
+
+        #region 构造函数
 
         public MedicalCaseDetailViewModel(
-            IMedicalCaseService medicalCaseService,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
+            IRegionManager regionManager,
+            IMedicalCaseService medicalCaseService,
+            ISessionManager? sessionManager = null,
             IErrorHandlingService? errorHandlingService = null)
-            : base(eventAggregator, loggerFactory, errorHandlingService)
+            : base(eventAggregator, loggerFactory, regionManager, sessionManager, errorHandlingService)
         {
             _medicalCaseService = medicalCaseService ?? throw new ArgumentNullException(nameof(medicalCaseService));
-            _logger = loggerFactory.CreateLogger<MedicalCaseDetailViewModel>();
 
-            RefreshCommand = new DelegateCommand(async () => await LoadMedicalCaseDetailsAsync());
-            EditCommand = new DelegateCommand(ExecuteEdit, CanExecuteEdit);
-            PrintPrescriptionCommand = new DelegateCommand(ExecutePrintPrescription, CanExecutePrintPrescription);
-            CloseCommand = new DelegateCommand(ExecuteClose);
+            // 初始化命令
+            SaveCommand = new DelegateCommand(async () => await SaveAsync(), CanSave);
+            CancelCommand = new DelegateCommand(Cancel);
 
-            // 订阅医疗案例更新事件
-            EventAggregator.GetEvent<MedicalCaseUpdatedEvent>()?.Subscribe(OnMedicalCaseUpdated);
-        }
-
-        #region Navigation
-
-        public void OnNavigatedTo(NavigationContext navigationContext)
-        {
-            // 从导航参数获取医疗案例ID
-            if (navigationContext.Parameters.ContainsKey("MedicalCaseId"))
-            {
-                if (Guid.TryParse(navigationContext.Parameters["MedicalCaseId"].ToString(), out var id))
-                {
-                    MedicalCaseId = id;
-                    _ = LoadMedicalCaseDetailsAsync();
-                }
-            }
-        }
-
-        public bool IsNavigationTarget(NavigationContext navigationContext)
-        {
-            // 如果是相同的医疗案例ID，则重用视图
-            if (navigationContext.Parameters.ContainsKey("MedicalCaseId"))
-            {
-                if (Guid.TryParse(navigationContext.Parameters["MedicalCaseId"].ToString(), out var id))
-                {
-                    return MedicalCaseId == id;
-                }
-            }
-            return false;
-        }
-
-        public void OnNavigatedFrom(NavigationContext navigationContext)
-        {
-            // 导航离开时的清理工作
+            // 属性变更时刷新命令状态
+            PropertyChanged += (s, e) => SaveCommand.RaiseCanExecuteChanged();
         }
 
         #endregion
 
-        #region Command Methods
+        #region 命令实现
 
-        private async Task LoadMedicalCaseDetailsAsync()
+        /// <summary>
+        /// 保存
+        /// </summary>
+        /// <summary>
+        /// 保存
+        /// </summary>
+        /// <summary>
+        /// 保存
+        /// </summary>
+        private async Task SaveAsync()
         {
-            if (MedicalCaseId == Guid.Empty) return;
-
             try
             {
-                IsBusy = true;
+                SetIsBusy(true, "正在保存医疗案例...");
 
-                // 获取包含详情的医疗案例
-                var result = await _medicalCaseService.GetByIdWithDetailsAsync(MedicalCaseId);
-
-                if (result.IsSuccess && result.Data != null)
+                if (MedicalCase == null)
                 {
-                    MedicalCaseDetail = result.Data;
+                    await ShowErrorMessageAsync("医疗案例数据无效");
+                    return;
+                }
 
-                    // 更新状态标志
-                    HasConsultation = !string.IsNullOrEmpty(MedicalCaseDetail.ChiefComplaint) ||
-                                      !string.IsNullOrEmpty(MedicalCaseDetail.PresentIllness);
-                    HasPrescription = MedicalCaseDetail.PrescriptionId.HasValue;
+                // 更新案例信息
+                MedicalCase.CaseNumber = CaseNumber.Trim();
+                MedicalCase.ChiefComplaint = ChiefComplaint.Trim();
 
-                    _logger.LogInformation($"成功加载医疗案例详情 ID: {MedicalCaseId}");
+                // 创建MedicalCaseUpdateDto对象 - 使用正确的属性结构
+                var updateDto = new MedicalCaseUpdateDto
+                {
+                    Id = MedicalCase.Id,
+                    PatientId = MedicalCase.PatientId,
+                    DoctorId = MedicalCase.DoctorId,
+                    Remark = MedicalCase.Remark,
+                    ChiefComplaint = MedicalCase.ChiefComplaint,
+                    PresentIllness = MedicalCase.ChiefComplaint, // 使用主诉作为现病史
+                    PhysicalExamination = "",
+                    AuxiliaryExamination = "",
+                    PrescriptionInfo = "",
+                    FollowUpPlan = ""
+                };
+
+                var result = await _medicalCaseService.UpdateAsync(MedicalCase.Id, updateDto);
+                if (result.IsSuccess)
+                {
+                    await ShowSuccessMessageAsync("医疗案例保存成功");
+                    // 修复NavigateBack调用 - 提供区域名称
+                    RegionManager.RequestNavigate("ContentRegion", "MedicalCaseListView");
                 }
                 else
                 {
-                    _logger.LogWarning($"加载医疗案例详情失败: {result.ErrorMessage}");
-                    ShowError("加载失败", result.ErrorMessage ?? "无法加载医疗案例详情");
+                    await ShowErrorMessageAsync($"保存失败: {result.ErrorMessage}");
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"加载医疗案例详情时发生异常 ID: {MedicalCaseId}");
-                ShowError("加载失败", "加载医疗案例详情时发生异常");
+                Logger.LogError(ex, "保存医疗案例时发生异常");
+                await ShowErrorMessageAsync("保存医疗案例时发生系统错误，请稍后重试");
             }
             finally
             {
-                IsBusy = false;
+                SetIsBusy(false);
             }
         }
 
-        private void ExecuteEdit()
+        /// <summary>
+        /// 检查是否可以保存
+        /// </summary>
+        private bool CanSave()
         {
-            if (MedicalCaseDetail != null)
-            {
-                // 发布编辑事件
-                EventAggregator.GetEvent<MedicalCaseEditRequestedEvent>()?.Publish(MedicalCaseDetail);
-            }
+            return !IsBusy &&
+                   !string.IsNullOrWhiteSpace(CaseNumber) &&
+                   !string.IsNullOrWhiteSpace(PatientName) &&
+                   !string.IsNullOrWhiteSpace(ChiefComplaint) &&
+                   !HasErrors;
         }
 
-        private bool CanExecuteEdit()
+        /// <summary>
+        /// 取消操作
+        /// </summary>
+        private void Cancel()
         {
-            return MedicalCaseDetail != null && MedicalCaseDetail.CanEdit();
-        }
-
-        private void ExecutePrintPrescription()
-        {
-            if (MedicalCaseDetail?.PrescriptionId.HasValue == true)
-            {
-                // 发布打印处方事件
-                EventAggregator.GetEvent<PrescriptionPrintRequestedEvent>()?.Publish(MedicalCaseDetail.PrescriptionId.Value);
-                _logger.LogInformation($"请求打印处方 ID: {MedicalCaseDetail.PrescriptionId}");
-            }
-        }
-
-        private bool CanExecutePrintPrescription()
-        {
-            return HasPrescription && MedicalCaseDetail?.PrescriptionId.HasValue == true;
-        }
-
-        private void ExecuteClose()
-        {
-            // 发布关闭事件
-            EventAggregator.GetEvent<MedicalCaseDetailClosedEvent>()?.Publish();
-        }
-
-        private void OnMedicalCaseUpdated(MedicalCaseDto updatedCase)
-        {
-            // 如果是当前显示的医疗案例，则刷新
-            if (updatedCase?.Id == MedicalCaseId)
-            {
-                _ = LoadMedicalCaseDetailsAsync();
-            }
+            NavigateBack("ContentRegion");
         }
 
         #endregion
 
-        #region Helper Methods
+        #region 导航方法
 
-        private void ShowError(string title, string message)
+        /// <summary>
+        /// 导航参数处理
+        /// </summary>
+        public override void OnNavigatedTo(NavigationContext navigationContext)
         {
-            // TODO: 使用通知服务显示错误
-            _logger.LogError($"{title}: {message}");
+            base.OnNavigatedTo(navigationContext);
+
+            if (navigationContext.Parameters.TryGetValue("MedicalCase", out MedicalCaseDto medicalCase))
+            {
+                LoadMedicalCase(medicalCase);
+            }
+        }
+
+        /// <summary>
+        /// 加载医疗案例
+        /// </summary>
+        private void LoadMedicalCase(MedicalCaseDto medicalCase)
+        {
+            MedicalCase = medicalCase;
+            CaseNumber = medicalCase.CaseNumber ?? string.Empty;
+            PatientName = medicalCase.PatientName ?? string.Empty;
+            ChiefComplaint = medicalCase.ChiefComplaint ?? string.Empty;
+            Status = (CaseStatus)medicalCase.CaseStatus;
         }
 
         #endregion

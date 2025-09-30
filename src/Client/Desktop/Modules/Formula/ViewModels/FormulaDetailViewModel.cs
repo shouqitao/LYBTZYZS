@@ -1,258 +1,393 @@
+using System;
 using System.Collections.ObjectModel;
-using System.Windows.Input;
-using AutoMapper;
-using LYBT.Desktop.Core.Constants;
-using LYBT.Desktop.Core.Interfaces.Services;
-using LYBT.Desktop.Core.Services.Navigation;
-using LYBT.Desktop.Core.ViewModels.Base;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Threading.Tasks;
+using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Formula;
-using Microsoft.Extensions.Logging;
 using LYBT.Shared.Models.Enums;
+using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Regions;
 
 namespace LYBT.Desktop.Formula.ViewModels
 {
-
     /// <summary>
-    /// 验方详情视图模型 - UltraThink v2.0架构
-    /// 提供验方详细信息查看和编辑功能
+    /// 配方详情视图模型 - UltraThink架构重构版本
+    /// 基于UnifiedViewModelBase实现配方详细信息查看和编辑功能
     /// </summary>
     public class FormulaDetailViewModel : UnifiedViewModelBase
     {
+        #region 服务依赖
+
+        private readonly IFormulaService _formulaService;
+
+        #endregion
 
         #region 私有字段
 
-        private readonly IFormulaService _formulaService;
-        private readonly ICustomDialogService _dialogService;
-        private readonly INavigationService _navigationService;
-        private readonly IMapper _mapper;
-
         private Guid _formulaId;
         private FormulaDto? _formula;
-        private bool _isLoading;
-        private bool _isReadOnly = true;
+        private bool _isEditMode;
+        private string _formulaName = string.Empty;
+        private string _effect = string.Empty;
+        private string _usage = string.Empty;
+        private string _property = string.Empty;
+        private string _remark = string.Empty;
+        private bool _isShared;
+        private string _category = string.Empty;
 
-        #endregion 私有字段
+        #endregion
 
-        #region 属性
+        #region 核心属性
 
+        /// <summary>
+        /// 配方ID
+        /// </summary>
         public Guid FormulaId
         {
             get => _formulaId;
             set => SetProperty(ref _formulaId, value);
         }
 
+        /// <summary>
+        /// 配方详情
+        /// </summary>
         public FormulaDto? Formula
         {
             get => _formula;
-            set => SetProperty(ref _formula, value);
+            set
+            {
+                if (SetProperty(ref _formula, value))
+                {
+                    LoadFormulaData();
+                }
+            }
         }
 
-        public new bool IsLoading
+        /// <summary>
+        /// 是否为编辑模式
+        /// </summary>
+        public bool IsEditMode
         {
-            get => _isLoading;
-            set => SetProperty(ref _isLoading, value);
+            get => _isEditMode;
+            set
+            {
+                if (SetProperty(ref _isEditMode, value))
+                {
+                    UpdateCommandStates();
+                }
+            }
         }
 
-        public bool IsReadOnly
+        #endregion
+
+        #region 编辑属性
+
+        /// <summary>
+        /// 配方名称
+        /// </summary>
+        [Required(ErrorMessage = "配方名称不能为空")]
+        [StringLength(100, ErrorMessage = "配方名称长度不能超过100个字符")]
+        public string FormulaName
         {
-            get => _isReadOnly;
-            set => SetProperty(ref _isReadOnly, value);
+            get => _formulaName;
+            set
+            {
+                if (SetProperty(ref _formulaName, value))
+                {
+                    ValidateProperty();
+                    UpdateCommandStates();
+                }
+            }
         }
 
-        // 验方基本信息属性
-        public string FormulaName => Formula?.Name ?? string.Empty;
+        /// <summary>
+        /// 功效
+        /// </summary>
+        [StringLength(500, ErrorMessage = "功效描述长度不能超过500个字符")]
+        public string Effect
+        {
+            get => _effect;
+            set
+            {
+                if (SetProperty(ref _effect, value))
+                {
+                    ValidateProperty();
+                }
+            }
+        }
 
-        public string Effect => Formula?.Effect ?? string.Empty;
-        public string Usage => Formula?.Usage ?? string.Empty;
-        public string Property => Formula?.Property ?? string.Empty;
-        public string Remark => Formula?.Remark ?? string.Empty;
-        public bool IsShared => Formula?.IsShared ?? false;
-        public DateTime? CreateTime => Formula?.CreateTime;
-        public DateTime? UpdateTime => Formula?.UpdateTime;
-        public string StatusText => GetStatusText();
-        public int HerbCount => Formula?.HerbCount ?? 0;
-        public decimal TotalPrice => Formula?.TotalPrice ?? 0;
-        public string HerbNames => Formula?.GetHerbNamesList(5) ?? "暂无药材";
-        public string Category => Formula?.Category ?? "未分类";
+        /// <summary>
+        /// 用法用量
+        /// </summary>
+        [StringLength(500, ErrorMessage = "用法用量描述长度不能超过500个字符")]
+        public string Usage
+        {
+            get => _usage;
+            set
+            {
+                if (SetProperty(ref _usage, value))
+                {
+                    ValidateProperty();
+                }
+            }
+        }
 
-        // 药材组成
-        public ObservableCollection<FormulaHerbItemDto> HerbItems { get; set; } = new();
+        /// <summary>
+        /// 性味
+        /// </summary>
+        [StringLength(200, ErrorMessage = "性味描述长度不能超过200个字符")]
+        public string Property
+        {
+            get => _property;
+            set
+            {
+                if (SetProperty(ref _property, value))
+                {
+                    ValidateProperty();
+                }
+            }
+        }
 
-        #endregion 属性
+        /// <summary>
+        /// 备注
+        /// </summary>
+        [StringLength(1000, ErrorMessage = "备注长度不能超过1000个字符")]
+        public string Remark
+        {
+            get => _remark;
+            set
+            {
+                if (SetProperty(ref _remark, value))
+                {
+                    ValidateProperty();
+                }
+            }
+        }
+
+        /// <summary>
+        /// 是否共享
+        /// </summary>
+        public bool IsShared
+        {
+            get => _isShared;
+            set => SetProperty(ref _isShared, value);
+        }
+
+        /// <summary>
+        /// 分类
+        /// </summary>
+        [StringLength(50, ErrorMessage = "分类名称长度不能超过50个字符")]
+        public string Category
+        {
+            get => _category;
+            set
+            {
+                if (SetProperty(ref _category, value))
+                {
+                    ValidateProperty();
+                }
+            }
+        }
+
+        #endregion
+
+        #region 显示属性
+
+        /// <summary>
+        /// 创建时间显示
+        /// </summary>
+        public string CreateTimeDisplay => Formula?.CreateTime.ToString("yyyy-MM-dd HH:mm") ?? "未知";
+
+        /// <summary>
+        /// 更新时间显示
+        /// </summary>
+        public string UpdateTimeDisplay => Formula?.UpdateTime?.ToString("yyyy-MM-dd HH:mm") ?? "未知";
+
+        /// <summary>
+        /// 状态显示
+        /// </summary>
+        public string StatusDisplay => Formula?.Status == CommonStatus.Enabled ? "正常" : "已禁用";
+
+        /// <summary>
+        /// 药材数量
+        /// </summary>
+        public int HerbCount => HerbItems.Count;
+
+        /// <summary>
+        /// 总价格
+        /// </summary>
+        public decimal TotalPrice => HerbItems.Sum(h => h.Price * h.Quantity);
+
+        /// <summary>
+        /// 药材组成集合
+        /// </summary>
+        public ObservableCollection<FormulaHerbItemDto> HerbItems { get; } = new();
+
+        #endregion
 
         #region 命令
 
-        public ICommand LoadDataCommand { get; } = null!;
-        public ICommand BackCommand { get; } = null!;
-        public ICommand EditCommand { get; } = null!;
-        public ICommand SaveCommand { get; } = null!;
-        public ICommand CancelEditCommand { get; } = null!;
-        public ICommand PrintCommand { get; } = null!;
-        public ICommand CopyFormulaCommand { get; } = null!;
-        public ICommand ViewUsageHistoryCommand { get; } = null!;
+        /// <summary>
+        /// 加载数据命令
+        /// </summary>
+        public DelegateCommand LoadDataCommand { get; }
 
-        #endregion 命令
+        /// <summary>
+        /// 编辑命令
+        /// </summary>
+        public DelegateCommand EditCommand { get; }
+
+        /// <summary>
+        /// 保存命令
+        /// </summary>
+        public DelegateCommand SaveCommand { get; }
+
+        /// <summary>
+        /// 取消编辑命令
+        /// </summary>
+        public DelegateCommand CancelEditCommand { get; }
+
+        /// <summary>
+        /// 返回命令
+        /// </summary>
+        public DelegateCommand BackCommand { get; }
+
+        /// <summary>
+        /// 复制配方命令
+        /// </summary>
+        public DelegateCommand CopyFormulaCommand { get; }
+
+        #endregion
 
         #region 构造函数
 
         public FormulaDetailViewModel(
-            IFormulaService formulaService,
-            ICustomDialogService dialogService,
-            INavigationService navigationService,
-            IMapper mapper,
-            IErrorHandlingService errorHandlingService,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
-            ISessionManager? sessionManager = null)
-            : base(eventAggregator,
-                loggerFactory,
-                regionManager,
-                sessionManager,
-                errorHandlingService)
+            IFormulaService formulaService,
+            ISessionManager? sessionManager = null,
+            IErrorHandlingService? errorHandlingService = null)
+            : base(eventAggregator, loggerFactory, regionManager, sessionManager, errorHandlingService)
         {
             _formulaService = formulaService ?? throw new ArgumentNullException(nameof(formulaService));
-            _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
-            _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
-            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
 
             // 初始化命令
             LoadDataCommand = new DelegateCommand(async () => await LoadDataAsync());
-            BackCommand = new DelegateCommand(NavigateBack);
             EditCommand = new DelegateCommand(EnableEdit, CanEdit);
             SaveCommand = new DelegateCommand(async () => await SaveAsync(), CanSave);
             CancelEditCommand = new DelegateCommand(CancelEdit, CanCancelEdit);
-            PrintCommand = new DelegateCommand(async () => await PrintFormulaAsync());
-            CopyFormulaCommand = new DelegateCommand(async () => await CopyFormulaAsync());
-            ViewUsageHistoryCommand = new DelegateCommand(async () => await ViewUsageHistoryAsync());
+            BackCommand = new DelegateCommand(NavigateBack);
+            CopyFormulaCommand = new DelegateCommand(async () => await CopyFormulaAsync(), CanCopyFormula);
+
+            // 属性变更时刷新命令状态
+            PropertyChanged += (s, e) => UpdateCommandStates();
         }
 
-        #endregion 构造函数
+        #endregion
 
-        #region INavigationAware 实现
+        #region 导航接口实现
 
         /// <inheritdoc/>
-        public void OnNavigatedTo(NavigationContext navigationContext)
+        public override void OnNavigatedTo(NavigationContext navigationContext)
         {
+            base.OnNavigatedTo(navigationContext);
+
             if (navigationContext.Parameters.ContainsKey("FormulaId"))
             {
                 FormulaId = navigationContext.Parameters.GetValue<Guid>("FormulaId");
-
-                if (navigationContext.Parameters.ContainsKey("ViewMode"))
-                {
-                    var viewMode = navigationContext.Parameters.GetValue<string>("ViewMode");
-                    IsReadOnly = viewMode != "Edit";
-                }
-
                 Task.Run(async () => await LoadDataAsync());
+            }
+
+            // 检查是否直接进入编辑模式
+            if (navigationContext.Parameters.ContainsKey("EditMode"))
+            {
+                var editMode = navigationContext.Parameters.GetValue<bool>("EditMode");
+                IsEditMode = editMode;
             }
         }
 
         /// <inheritdoc/>
-        public bool IsNavigationTarget(NavigationContext navigationContext)
+        public override bool IsNavigationTarget(NavigationContext navigationContext)
         {
             if (navigationContext.Parameters.ContainsKey("FormulaId"))
             {
-                var targetFormulaId = navigationContext.Parameters.GetValue<Guid>("FormulaId");
-                return FormulaId == targetFormulaId;
+                var targetId = navigationContext.Parameters.GetValue<Guid>("FormulaId");
+                return FormulaId == targetId;
             }
-
             return true;
         }
 
-        /// <inheritdoc/>
-        public void OnNavigatedFrom(NavigationContext navigationContext)
-        {
-            if (!IsReadOnly && HasUnsavedChanges())
-            {
-                // 可以在这里添加保存确认逻辑
-            }
-        }
-
-        #endregion INavigationAware 实现
+        #endregion
 
         #region 数据操作
 
+        /// <summary>
+        /// 加载配方数据
+        /// </summary>
         private async Task LoadDataAsync()
         {
             if (FormulaId == Guid.Empty)
             {
+                await ShowErrorMessageAsync("配方ID无效");
                 return;
             }
 
             try
             {
-                IsLoading = true;
+                SetIsBusy(true, "正在加载配方详情...");
 
                 var result = await _formulaService.GetByIdAsync(FormulaId);
-
                 if (result.IsSuccess && result.Data != null)
                 {
                     Formula = result.Data;
-                    LoadHerbItems();
-                    RefreshProperties();
                 }
                 else
                 {
-                    await _dialogService.ShowErrorAsync($"加载验方详情失败: {result.ErrorMessage}", "错误");
+                    await ShowErrorMessageAsync($"加载配方详情失败: {result.ErrorMessage}");
                 }
             }
             catch (Exception ex)
             {
-                await _dialogService.ShowErrorAsync($"加载验方详情失败: {ex.Message}", "错误");
+                Logger.LogError(ex, "加载配方详情时发生异常");
+                await ShowErrorMessageAsync("加载配方详情时发生系统错误，请稍后重试");
             }
             finally
             {
-                IsLoading = false;
+                SetIsBusy(false);
             }
         }
 
-        private async Task SaveAsync()
+        /// <summary>
+        /// 加载配方数据到编辑属性
+        /// </summary>
+        private void LoadFormulaData()
         {
-            if (Formula == null)
-            {
-                return;
-            }
+            if (Formula == null) return;
 
-            try
-            {
-                IsLoading = true;
+            FormulaName = Formula.Name ?? string.Empty;
+            Effect = Formula.Effect ?? string.Empty;
+            Usage = Formula.Usage ?? string.Empty;
+            Property = Formula.Property ?? string.Empty;
+            Remark = Formula.Remark ?? string.Empty;
+            IsShared = Formula.IsShared;
+            Category = Formula.Category ?? string.Empty;
 
-                // 更新药材组成
-                Formula.Herbs = HerbItems.ToList();
+            // 加载药材组成
+            LoadHerbItems();
 
-                var updateDto = _mapper.Map<FormulaUpdateDto>(Formula);
-                var result = await _formulaService.UpdateAsync(Formula.Id, updateDto);
-
-                if (result.IsSuccess && result.Data != null)
-                {
-                    Formula = result.Data;
-                    LoadHerbItems();
-                    IsReadOnly = true;
-                    RefreshProperties();
-                    RaiseCanExecuteChanged();
-
-                    await _dialogService.ShowSuccessAsync("验方信息保存成功", "成功");
-                }
-                else
-                {
-                    await _dialogService.ShowErrorAsync($"保存失败: {result.ErrorMessage}", "错误");
-                }
-            }
-            catch (Exception ex)
-            {
-                await _dialogService.ShowErrorAsync($"保存失败: {ex.Message}", "错误");
-            }
-            finally
-            {
-                IsLoading = false;
-            }
+            // 刷新显示属性
+            RefreshDisplayProperties();
         }
 
+        /// <summary>
+        /// 加载药材组成
+        /// </summary>
         private void LoadHerbItems()
         {
             HerbItems.Clear();
@@ -263,169 +398,232 @@ namespace LYBT.Desktop.Formula.ViewModels
                     HerbItems.Add(herb);
                 }
             }
+            RefreshDisplayProperties();
         }
 
-        #endregion 数据操作
-
-        #region 命令处理
-
-        private void NavigateBack()
+        /// <summary>
+        /// 保存配方
+        /// </summary>
+        private async Task SaveAsync()
         {
-            _navigationService.NavigateTo(RegionNames.SystemWorkbenchContentRegion, "FormulaManagementView");
-        }
-
-        private void EnableEdit()
-        {
-            IsReadOnly = false;
-            RaiseCanExecuteChanged();
-        }
-
-        private void CancelEdit()
-        {
-            IsReadOnly = true;
-
-            // 重新加载数据以取消更改
-            Task.Run(async () => await LoadDataAsync());
-        }
-
-        private async Task PrintFormulaAsync()
-        {
-            try
-            {
-                await _dialogService.ShowInformationAsync(
-                    "验方打印功能将在后续版本中提供\n\n当前支持的操作：\n• 查看验方详情\n• 编辑验方信息\n• 复制验方\n• 查看药材组成",
-                    "功能说明");
-            }
-            catch (Exception ex)
-            {
-                await _dialogService.ShowErrorAsync($"打印失败: {ex.Message}", "错误");
-            }
-        }
-
-        private async Task CopyFormulaAsync()
-        {
-            if (Formula == null)
+            if (Formula == null || !ValidateInputs())
             {
                 return;
             }
 
             try
             {
-                var newName = $"{Formula.Name}_副本";
+                SetIsBusy(true, "正在保存配方...");
 
-                // 使用默认用户ID（暂时方案）
-                var defaultUserId = Guid.NewGuid();
-
-                // 简化后的克隆实现：获取原验方 + 创建新验方
-                var getResult = await _formulaService.GetByIdAsync(Formula.Id);
-                if (getResult.IsSuccess && getResult.Data != null)
+                var updateDto = new FormulaUpdateDto
                 {
-                    var original = getResult.Data;
-                    var createDto = new FormulaCreateDto
+                    Name = FormulaName.Trim(),
+                    Effect = string.IsNullOrWhiteSpace(Effect) ? null : Effect.Trim(),
+                    Usage = string.IsNullOrWhiteSpace(Usage) ? null : Usage.Trim(),
+                    Remark = string.IsNullOrWhiteSpace(Remark) ? null : Remark.Trim(),
+                    IsShared = IsShared,
+                    Herbs = HerbItems.Select(h => new FormulaHerbItemUpdateDto
                     {
-                        Name = $"{original.Name}_复制",
-                        Effect = original.Effect ?? "复制的验方",
-                        Usage = original.Usage ?? "",
-                        IsShared = original.IsShared
-                        // 注意：这里简化处理，实际项目中需要复制草药成分列表
-                    };
+                        Id = h.Id,
+                        HerbId = h.HerbId,
+                        Quantity = h.Quantity,
+                        Preparation = h.Preparation,
+                        Usage = h.Usage,
+                        SortOrder = h.SortOrder
+                    }).ToList()
+                };
 
-                    var createResult = await _formulaService.CreateAsync(createDto);
-                    if (createResult.IsSuccess && createResult.Data != null)
-                    {
-                        await _dialogService.ShowSuccessAsync($"验方复制成功！新验方: {createResult.Data.Name}", "成功");
-
-                        // 刷新当前页面显示新的验方信息
-                        FormulaId = createResult.Data.Id;
-                        await LoadDataAsync();
-                    }
-                    else
-                    {
-                        await _dialogService.ShowErrorAsync(createResult.Message ?? "创建验方失败", "错误");
-                    }
+                var result = await _formulaService.UpdateAsync(Formula.Id, updateDto);
+                if (result.IsSuccess && result.Data != null)
+                {
+                    Formula = result.Data;
+                    IsEditMode = false;
+                    await ShowSuccessMessageAsync("配方保存成功");
                 }
                 else
                 {
-                    await _dialogService.ShowErrorAsync(getResult.Message ?? "获取验方信息失败", "错误");
+                    await ShowErrorMessageAsync($"保存配方失败: {result.ErrorMessage}");
                 }
             }
             catch (Exception ex)
             {
-                await _dialogService.ShowErrorAsync($"复制失败: {ex.Message}", "错误");
+                Logger.LogError(ex, "保存配方时发生异常");
+                await ShowErrorMessageAsync("保存配方时发生系统错误，请稍后重试");
+            }
+            finally
+            {
+                SetIsBusy(false);
             }
         }
 
-        private async Task ViewUsageHistoryAsync()
+        /// <summary>
+        /// 复制配方
+        /// </summary>
+        private async Task CopyFormulaAsync()
         {
-            if (Formula == null)
-            {
-                return;
-            }
+            if (Formula == null) return;
 
             try
             {
-                await _dialogService.ShowInformationAsync("使用历史功能正在开发中", "提示");
+                SetIsBusy(true, "正在复制配方...");
+
+                var createDto = new FormulaCreateDto
+                {
+                    Name = $"{Formula.Name}_副本",
+                    Effect = Formula.Effect,
+                    Usage = Formula.Usage,
+                    Remark = Formula.Remark,
+                    IsShared = false, // 副本默认不共享
+                    Herbs = Formula.Herbs?.Select(h => new FormulaHerbItemCreateDto
+                    {
+                        HerbId = h.HerbId,
+                        Quantity = h.Quantity,
+                        Preparation = h.Preparation,
+                        Usage = h.Usage,
+                        SortOrder = h.SortOrder
+                    }).ToList() ?? new List<FormulaHerbItemCreateDto>()
+                };
+
+                var result = await _formulaService.CreateAsync(createDto);
+                if (result.IsSuccess && result.Data != null)
+                {
+                    await ShowSuccessMessageAsync($"配方复制成功！新配方名称：{result.Data.Name}");
+
+                    // 导航到新配方
+                    FormulaId = result.Data.Id;
+                    await LoadDataAsync();
+                }
+                else
+                {
+                    await ShowErrorMessageAsync($"复制配方失败: {result.ErrorMessage}");
+                }
             }
             catch (Exception ex)
             {
-                await _dialogService.ShowErrorAsync($"操作失败: {ex.Message}", "错误");
+                Logger.LogError(ex, "复制配方时发生异常");
+                await ShowErrorMessageAsync("复制配方时发生系统错误，请稍后重试");
+            }
+            finally
+            {
+                SetIsBusy(false);
             }
         }
 
-        #endregion 命令处理
+        #endregion
+
+        #region 命令实现
+
+        /// <summary>
+        /// 启用编辑模式
+        /// </summary>
+        private void EnableEdit()
+        {
+            IsEditMode = true;
+        }
+
+        /// <summary>
+        /// 取消编辑
+        /// </summary>
+        private void CancelEdit()
+        {
+            IsEditMode = false;
+            LoadFormulaData(); // 重新加载原始数据
+            ClearAllErrors(); // 清除验证错误
+        }
+
+        /// <summary>
+        /// 返回配方管理页面
+        /// </summary>
+        private void NavigateBack()
+        {
+            NavigateTo("MainRegion", "FormulaManagementView");
+        }
+
+        #endregion
 
         #region 命令状态
 
-        private bool CanEdit() => Formula != null && IsReadOnly && !IsLoading;
-
-        private bool CanSave() => Formula != null && !IsReadOnly && !IsLoading;
-
-        private bool CanCancelEdit() => Formula != null && !IsReadOnly && !IsLoading;
-
-        private new void RaiseCanExecuteChanged()
+        /// <summary>
+        /// 检查是否可以编辑
+        /// </summary>
+        private bool CanEdit()
         {
-            ((DelegateCommand)EditCommand).RaiseCanExecuteChanged();
-            ((DelegateCommand)SaveCommand).RaiseCanExecuteChanged();
-            ((DelegateCommand)CancelEditCommand).RaiseCanExecuteChanged();
+            return !IsBusy && Formula != null && !IsEditMode;
         }
 
-        #endregion 命令状态
+        /// <summary>
+        /// 检查是否可以保存
+        /// </summary>
+        private bool CanSave()
+        {
+            return !IsBusy && Formula != null && IsEditMode &&
+                   !string.IsNullOrWhiteSpace(FormulaName) && !HasErrors;
+        }
+
+        /// <summary>
+        /// 检查是否可以取消编辑
+        /// </summary>
+        private bool CanCancelEdit()
+        {
+            return !IsBusy && Formula != null && IsEditMode;
+        }
+
+        /// <summary>
+        /// 检查是否可以复制配方
+        /// </summary>
+        private bool CanCopyFormula()
+        {
+            return !IsBusy && Formula != null && !IsEditMode;
+        }
+
+        /// <summary>
+        /// 更新命令状态
+        /// </summary>
+        private void UpdateCommandStates()
+        {
+            EditCommand.RaiseCanExecuteChanged();
+            SaveCommand.RaiseCanExecuteChanged();
+            CancelEditCommand.RaiseCanExecuteChanged();
+            CopyFormulaCommand.RaiseCanExecuteChanged();
+        }
+
+        #endregion
+
+        #region 验证方法
+
+        /// <summary>
+        /// 验证输入
+        /// </summary>
+        private bool ValidateInputs()
+        {
+            ClearAllErrors();
+
+            // 验证必填字段
+            if (string.IsNullOrWhiteSpace(FormulaName))
+            {
+                AddError(nameof(FormulaName), "配方名称不能为空");
+                return false;
+            }
+
+            return !HasErrors;
+        }
+
+        #endregion
 
         #region 辅助方法
 
-        private void RefreshProperties()
+        /// <summary>
+        /// 刷新显示属性
+        /// </summary>
+        private void RefreshDisplayProperties()
         {
-            RaisePropertyChanged(nameof(FormulaName));
-            RaisePropertyChanged(nameof(Effect));
-            RaisePropertyChanged(nameof(Usage));
-            RaisePropertyChanged(nameof(Property));
-            RaisePropertyChanged(nameof(Remark));
-            RaisePropertyChanged(nameof(IsShared));
-            RaisePropertyChanged(nameof(CreateTime));
-            RaisePropertyChanged(nameof(UpdateTime));
-            RaisePropertyChanged(nameof(StatusText));
+            RaisePropertyChanged(nameof(CreateTimeDisplay));
+            RaisePropertyChanged(nameof(UpdateTimeDisplay));
+            RaisePropertyChanged(nameof(StatusDisplay));
             RaisePropertyChanged(nameof(HerbCount));
             RaisePropertyChanged(nameof(TotalPrice));
-            RaisePropertyChanged(nameof(HerbNames));
-            RaisePropertyChanged(nameof(Category));
         }
 
-        private string GetStatusText()
-        {
-            if (Formula?.Status == CommonStatus.Enabled)
-            {
-                return "正常";
-            }
-
-            return "已禁用";
-        }
-
-        private bool HasUnsavedChanges()
-        {
-            // 简单实现：如果处于编辑模式就认为有未保存的更改
-            return !IsReadOnly;
-        }
-
-        #endregion 辅助方法
+        #endregion
     }
 }

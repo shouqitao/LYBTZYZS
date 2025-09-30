@@ -84,10 +84,25 @@ LYBTZYZS/
 │   │   └── 📁 Services/
 │   │       └── LYBT.WebAPI/           # Web API服务（统一入口）
 │   ├── 📁 Client/                     # 客户端代码
-│   │   └── 📁 Desktop/                # WPF桌面客户端
-│   │       ├── LYBT.Desktop.Shell/    # 主程序壳
-│   │       ├── Core/                  # 客户端核心
-│   │       └── Modules/               # 客户端模块（对应服务器模块）
+│   │   └── 📁 Desktop/                # WPF桌面客户端（Issue #815 Core_New架构）
+│   │       ├── 📁 Core_New/           # 三层基础架构
+│   │       │   ├── LYBT.Desktop.Infrastructure/  # 基础设施层（Commands, Events, Interfaces, Themes）
+│   │       │   ├── LYBT.Desktop.Models/          # 模型层（ViewModels基类, Mapping, Validation）
+│   │       │   └── LYBT.Desktop.Services/        # 服务层（Business, Repositories, Http, Navigation等）
+│   │       ├── 📁 Modules/            # 业务模块层（8个模块）
+│   │       │   ├── LYBT.Desktop.Auth/            # 认证模块
+│   │       │   ├── LYBT.Desktop.Patients/        # 患者管理
+│   │       │   ├── LYBT.Desktop.MedicalCase/     # 病历管理
+│   │       │   ├── LYBT.Desktop.Consultation/    # 诊疗管理
+│   │       │   ├── LYBT.Desktop.Prescriptions/   # 处方管理
+│   │       │   ├── LYBT.Desktop.Herbs/           # 药材管理
+│   │       │   ├── LYBT.Desktop.Formula/         # 方剂管理
+│   │       │   └── LYBT.Desktop.Users/           # 用户管理
+│   │       ├── 📁 Workstations/       # 工作台层（聚合层）
+│   │       │   ├── LYBT.Desktop.ClinicalWorkstation/  # 诊疗工作台
+│   │       │   └── LYBT.Desktop.AdminWorkstation/     # 管理工作台
+│   │       └── 📁 Shell/              # 启动层
+│   │           └── LYBT.Desktop.Shell/           # 主程序壳、DI注册、启动引导
 │   └── 📁 Shared/                     # 共享代码
 │       ├── LYBT.Shared.Models/        # DTO和契约模型
 │       ├── LYBT.Shared.Interfaces/    # 服务接口定义

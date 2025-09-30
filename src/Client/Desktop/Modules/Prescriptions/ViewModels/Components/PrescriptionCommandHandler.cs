@@ -1,69 +1,126 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Input;
+using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Modules.Prescriptions.ViewModels;
 using LYBT.Shared.Interfaces.Services;
+using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
-using Prism.Services.Dialogs;
 
-namespace LYBT.Desktop.Prescriptions.ViewModels.Components
+namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
 {
-
     /// <summary>
-    /// 处方命令处理器 - UltraThink专门化组件
-    /// 职责单一：专注处方相关命令的处理和执行
-    /// 代码干净：清晰的命令模式实现和错误处理
-    /// 性能出色：优化的异步命令执行和资源管理
+    /// 处方命令处理器 - UltraThink架构实现
+    /// 负责处理处方相关的业务命令
     /// </summary>
     public class PrescriptionCommandHandler
     {
-        private readonly IHerbService _herbService;
-        private readonly LYBT.Shared.Interfaces.Services.IFormulaService _formulaService;
         private readonly IPrescriptionService _prescriptionService;
-        private readonly IDialogService _dialogService;
         private readonly ILogger<PrescriptionCommandHandler> _logger;
 
-        // 关联的数据管理器和验证器
-        private PrescriptionDataManager _dataManager = null!;
-
-        private PrescriptionValidator _validator = null!;
-        private PrescriptionCalculator _calculator = null!;
-
-        public PrescriptionCommandHandler(
-            IHerbService herbService,
-            LYBT.Shared.Interfaces.Services.IFormulaService formulaService,
-            IPrescriptionService prescriptionService,
-            IDialogService dialogService,
-            ILogger<PrescriptionCommandHandler> logger)
-        {
-            _herbService = herbService ?? throw new ArgumentNullException(nameof(herbService));
-            _formulaService = formulaService ?? throw new ArgumentNullException(nameof(formulaService));
-            _prescriptionService = prescriptionService ?? throw new ArgumentNullException(nameof(prescriptionService));
-            _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-
-            InitializeCommands();
-        }
-
-        #region 命令属性
-
-        public ICommand SaveCommand { get; private set; } = null!;
-        public ICommand ClearCommand { get; private set; } = null!;
-        public ICommand AddHerbCommand { get; private set; } = null!;
-        public ICommand RemoveHerbCommand { get; private set; } = null!;
-        public ICommand ImportFormulaCommand { get; private set; } = null!;
-        public ICommand ImportHistoryCommand { get; private set; } = null!;
-        public ICommand SetDiscountCommand { get; private set; } = null!;
-        public ICommand SetDosageCommand { get; private set; } = null!;
-        public ICommand GeneratePrescriptionNoCommand { get; private set; } = null!;
-        public ICommand PrintPreviewCommand { get; private set; } = null!;
-        public ICommand ValidateCommand { get; private set; } = null!;
-        public ICommand RecalculateCommand { get; private set; } = null!;
-
-        #endregion 命令属性
-
-        #region 依赖注入
+        #region 事件定义
 
         /// <summary>
-        /// 设置关联组件（依赖注入）
+        /// 价格重算事件
+        /// </summary>
+        public event Action? OnPriceRecalculated;
+
+        /// <summary>
+        /// 处方保存成功事件
+        /// </summary>
+        public event Action? OnPrescriptionSaved;
+
+        /// <summary>
+        /// 处方清空事件
+        /// </summary>
+        public event Action? OnPrescriptionCleared;
+        #endregion
+
+        #region 命令定义
+
+        /// <summary>
+        /// 重新计算命令
+        /// </summary>
+        public ICommand RecalculateCommand { get; private set; }
+
+        /// <summary>
+        /// 打印预览命令
+        /// </summary>
+        public ICommand PrintPreviewCommand { get; private set; }
+
+        /// <summary>
+        /// 保存命令
+        /// </summary>
+        public ICommand SaveCommand { get; private set; }
+
+        /// <summary>
+        /// 清空命令
+        /// </summary>
+        public ICommand ClearCommand { get; private set; }
+
+        /// <summary>
+        /// 添加药材命令
+        /// </summary>
+        public ICommand AddHerbCommand { get; private set; }
+
+        /// <summary>
+        /// 移除药材命令
+        /// </summary>
+        public ICommand RemoveHerbCommand { get; private set; }
+
+        /// <summary>
+        /// 导入验方命令
+        /// </summary>
+        public ICommand ImportFormulaCommand { get; private set; }
+
+        /// <summary>
+        /// 生成处方编号命令
+        /// </summary>
+        public ICommand GeneratePrescriptionNoCommand { get; private set; }
+
+        /// <summary>
+        /// 验证命令
+        /// </summary>
+        public ICommand ValidateCommand { get; private set; }
+
+        #endregion
+
+        #region 依赖字段
+
+        private PrescriptionDataManager? _dataManager;
+        private PrescriptionValidator? _validator;
+        private PrescriptionCalculator? _calculator;
+        private ISessionManager? _sessionManager;
+
+        #endregion
+
+        public PrescriptionCommandHandler(
+            IPrescriptionService prescriptionService,
+            ILogger<PrescriptionCommandHandler> logger,
+            ISessionManager sessionManager)
+        {
+            _prescriptionService = prescriptionService ?? throw new ArgumentNullException(nameof(prescriptionService));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _sessionManager = sessionManager ?? throw new ArgumentNullException(nameof(sessionManager));
+
+            // 初始化命令
+            RecalculateCommand = new DelegateCommand(ExecuteRecalculate);
+            PrintPreviewCommand = new DelegateCommand(ExecutePrintPreview);
+            SaveCommand = new DelegateCommand(async () => await ExecuteSaveAsync(), CanExecuteSave);
+            ClearCommand = new DelegateCommand(ExecuteClear, CanExecuteClear);
+            AddHerbCommand = new DelegateCommand(ExecuteAddHerb);
+            RemoveHerbCommand = new DelegateCommand(ExecuteRemoveHerb);
+            ImportFormulaCommand = new DelegateCommand(ExecuteImportFormula);
+            GeneratePrescriptionNoCommand = new DelegateCommand(ExecuteGeneratePrescriptionNo);
+            ValidateCommand = new DelegateCommand(ExecuteValidate);
+        }
+
+        /// <summary>
+        /// 设置依赖
         /// </summary>
         public void SetDependencies(
             PrescriptionDataManager dataManager,
@@ -73,645 +130,363 @@ namespace LYBT.Desktop.Prescriptions.ViewModels.Components
             _dataManager = dataManager ?? throw new ArgumentNullException(nameof(dataManager));
             _validator = validator ?? throw new ArgumentNullException(nameof(validator));
             _calculator = calculator ?? throw new ArgumentNullException(nameof(calculator));
-
-            // 重新初始化命令，因为现在有了依赖
-            InitializeCommands();
         }
 
-        #endregion 依赖注入
-
-        #region 命令初始化
-
-        private void InitializeCommands()
-        {
-            SaveCommand = new DelegateCommand(
-                async () => await ExecuteCommandSafelyAsync(SaveAsync),
-                () => CanExecuteSave());
-
-            ClearCommand = new DelegateCommand(
-                () => ExecuteCommandSafely(Clear),
-                () => CanExecuteClear());
-
-            AddHerbCommand = new DelegateCommand(
-                async () => await ExecuteCommandSafelyAsync(AddHerbAsync));
-
-            RemoveHerbCommand = new DelegateCommand<PrescriptionItemViewModel>(
-                item => ExecuteCommandSafely(() => RemoveHerb(item)));
-
-            ImportFormulaCommand = new DelegateCommand(
-                async () => await ExecuteCommandSafelyAsync(ImportFormulaAsync));
-
-            ImportHistoryCommand = new DelegateCommand(
-                async () => await ExecuteCommandSafelyAsync(ImportHistoryAsync));
-
-            SetDiscountCommand = new DelegateCommand<string>(
-                discountStr => ExecuteCommandSafely(() => SetDiscount(discountStr)));
-
-            SetDosageCommand = new DelegateCommand<string>(
-                dosageStr => ExecuteCommandSafely(() => SetDosage(dosageStr)));
-
-            GeneratePrescriptionNoCommand = new DelegateCommand(
-                () => ExecuteCommandSafely(GeneratePrescriptionNo));
-
-            PrintPreviewCommand = new DelegateCommand(
-                async () => await ExecuteCommandSafelyAsync(PrintPreviewAsync));
-
-            ValidateCommand = new DelegateCommand(
-                () => ExecuteCommandSafely(ValidatePrescription));
-
-            RecalculateCommand = new DelegateCommand(
-                () => ExecuteCommandSafely(RecalculatePrice));
-        }
-
-        #endregion 命令初始化
-
-        #region 命令执行方法
+        #region 处方CRUD操作
 
         /// <summary>
-        /// 保存处方
+        /// 创建处方
         /// </summary>
-        private async Task SaveAsync()
+        public async Task<CommandResult<PrescriptionDto>> CreatePrescriptionAsync(
+            string prescriptionNumber,
+            Guid patientId,
+            string patientName,
+            string doctorName,
+            IEnumerable<PrescriptionItemViewModel> items,
+            string? notes = null)
         {
             try
             {
-                _logger.LogInformation("开始保存处方");
+                _logger.LogInformation("开始创建处方：{PrescriptionNumber}", prescriptionNumber);
 
-                var success = await _dataManager.SaveAsync();
-                if (success)
+                // 创建处方DTO
+                var createDto = new PrescriptionCreateDto
                 {
-                    _logger.LogInformation("处方保存成功");
+                    PrescriptionNumber = prescriptionNumber,
+                    PatientId = patientId,
+                    PatientName = patientName,
+                    DoctorName = doctorName,
+                    Notes = notes,
+                    Items = ConvertToCreateItems(items)
+                };
 
-                    // 可以触发保存成功事件
-                    OnPrescriptionSaved?.Invoke();
+                var result = await _prescriptionService.CreateAsync(createDto);
+
+                if (result.IsSuccess && result.Data != null)
+                {
+                    _logger.LogInformation("处方创建成功：{PrescriptionId}", result.Data.Id);
+                    return CommandResult<PrescriptionDto>.Success(result.Data);
                 }
                 else
                 {
-                    _logger.LogWarning("处方保存失败");
-                    ShowErrorMessage("保存失败", "处方保存失败，请重试");
+                    _logger.LogWarning("处方创建失败：{ErrorMessage}", result.ErrorMessage);
+                    return CommandResult<PrescriptionDto>.Failure(result.ErrorMessage ?? "创建处方失败");
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "保存处方时发生错误");
-                ShowErrorMessage("保存错误", "保存过程中发生错误，请联系管理员");
+                _logger.LogError(ex, "创建处方时发生异常：{PrescriptionNumber}", prescriptionNumber);
+                return CommandResult<PrescriptionDto>.Failure("创建处方时发生系统错误");
             }
         }
 
         /// <summary>
-        /// 清空处方
+        /// 更新处方
         /// </summary>
-        private void Clear()
+        public async Task<CommandResult<PrescriptionDto>> UpdatePrescriptionAsync(
+            Guid prescriptionId,
+            string prescriptionNumber,
+            IEnumerable<PrescriptionItemViewModel> items,
+            string? notes = null)
         {
             try
             {
-                var result = ShowConfirmDialog("确认清空", "确定要清空当前处方吗？此操作不可撤销。");
-                if (result)
-                {
-                    _dataManager.Clear();
-                    _logger.LogInformation("处方已清空");
-                    OnPrescriptionCleared?.Invoke();
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "清空处方时发生错误");
-            }
-        }
+                _logger.LogInformation("开始更新处方：{PrescriptionId}", prescriptionId);
 
-        /// <summary>
-        /// 添加药材
-        /// </summary>
-        private Task AddHerbAsync()
-        {
-            try
-            {
-                _logger.LogDebug("开始选择药材");
-
-                var parameters = new DialogParameters
+                var updateDto = new PrescriptionUpdateDto
                 {
-                    { "Title", "选择药材" },
-                    { "AllowMultipleSelection", true }
+                    PrescriptionNumber = prescriptionNumber,
+                    Notes = notes,
+                    Items = ConvertToUpdateItems(items)
                 };
 
-                _dialogService.ShowDialog("HerbSelectionDialog", parameters, result =>
+                var result = await _prescriptionService.UpdateAsync(prescriptionId, updateDto);
+
+                if (result.IsSuccess && result.Data != null)
                 {
-                    if (result.Result == ButtonResult.OK && result.Parameters.ContainsKey("SelectedHerbs"))
-                    {
-                        var selectedHerbs = result.Parameters.GetValue<dynamic>("SelectedHerbs");
-                        Task.Run(() => AddHerbItems(selectedHerbs));
-                    }
-                });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "添加药材时发生错误");
-                ShowErrorMessage("添加失败", "添加药材失败，请重试");
-            }
-
-            return Task.CompletedTask;
-        }
-
-        /// <summary>
-        /// 添加药材项
-        /// </summary>
-        private void AddHerbItems(dynamic herbItems)
-        {
-            if (herbItems == null)
-            {
-                return;
-            }
-
-            try
-            {
-                foreach (var herbItem in herbItems)
-                {
-                    var prescriptionItem = new PrescriptionItemViewModel
-                    {
-                        HerbId = herbItem.Id,
-                        HerbName = herbItem.Name,
-                        Quantity = 10m, // 默认数量
-                        Unit = herbItem.Unit ?? "g",
-                        UnitPrice = herbItem.Price
-
-                        // Subtotal会自动计算，无需手动赋值
-                    };
-
-                    _dataManager.AddPrescriptionItem(prescriptionItem);
-                }
-
-                RecalculatePrice();
-                _logger.LogInformation("成功添加 {Count} 个药材", ((IEnumerable<dynamic>)herbItems).Count());
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "添加药材项时发生错误");
-                ShowErrorMessage("添加失败", "添加药材项失败");
-            }
-        }
-
-        /// <summary>
-        /// 移除药材
-        /// </summary>
-        private void RemoveHerb(PrescriptionItemViewModel? item)
-        {
-            if (item == null)
-            {
-                return;
-            }
-
-            try
-            {
-                _dataManager.RemovePrescriptionItem(item);
-                RecalculatePrice();
-                _logger.LogDebug("移除药材: {HerbName}", item.HerbName);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "移除药材时发生错误");
-            }
-        }
-
-        /// <summary>
-        /// 导入验方
-        /// </summary>
-        private Task ImportFormulaAsync()
-        {
-            try
-            {
-                _logger.LogDebug("开始选择验方");
-
-                var parameters = new DialogParameters { { "Title", "选择验方" } };
-                _dialogService.ShowDialog("SelectFormulaDialog", parameters, result =>
-                {
-                    if (result.Result == ButtonResult.OK && result.Parameters.ContainsKey("SelectedFormula"))
-                    {
-                        var selectedFormula = result.Parameters.GetValue<dynamic>("SelectedFormula");
-                        ImportFormulaItems(selectedFormula);
-                    }
-                });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "导入验方时发生错误");
-                ShowErrorMessage("导入失败", "导入验方失败，请重试");
-            }
-
-            return Task.CompletedTask;
-        }
-
-        /// <summary>
-        /// 导入验方项
-        /// </summary>
-        private void ImportFormulaItems(dynamic formula)
-        {
-            if (formula?.Items == null)
-            {
-                return;
-            }
-
-            try
-            {
-                foreach (var item in formula.Items)
-                {
-                    var prescriptionItem = new PrescriptionItemViewModel
-                    {
-                        HerbId = item.HerbId,
-                        HerbName = item.HerbName,
-                        Quantity = item.Quantity,
-                        Unit = item.Unit,
-                        UnitPrice = item.UnitPrice
-
-                        // Subtotal会自动计算，无需手动赋值
-                    };
-
-                    _dataManager.AddPrescriptionItem(prescriptionItem);
-                }
-
-                RecalculatePrice();
-                _logger.LogInformation("成功导入验方: {FormulaName}", (string)formula.Name);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "导入验方项时发生错误");
-                ShowErrorMessage("导入失败", "导入验方项失败");
-            }
-        }
-
-        /// <summary>
-        /// 导入历史处方
-        /// </summary>
-        private Task ImportHistoryAsync()
-        {
-            try
-            {
-                _logger.LogDebug("开始选择历史处方");
-
-                var parameters = new DialogParameters
-                {
-                    { "Title", "选择历史处方" },
-                    { "MedicalCaseId", _dataManager.MedicalCaseId }
-                };
-
-                _dialogService.ShowDialog("SelectHistoryDialog", parameters, result =>
-                {
-                    if (result.Result == ButtonResult.OK && result.Parameters.ContainsKey("SelectedPrescription"))
-                    {
-                        var selectedPrescription = result.Parameters.GetValue<dynamic>("SelectedPrescription");
-                        ImportHistoryItems(selectedPrescription);
-                    }
-                });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "导入历史处方时发生错误");
-                ShowErrorMessage("导入失败", "导入历史处方失败");
-            }
-
-            return Task.CompletedTask;
-        }
-
-        /// <summary>
-        /// 导入历史处方项
-        /// </summary>
-        private void ImportHistoryItems(dynamic prescription)
-        {
-            if (prescription?.Items == null)
-            {
-                return;
-            }
-
-            try
-            {
-                // 先清空当前处方
-                _dataManager.Clear();
-
-                // 导入历史数据
-                _dataManager.Usage = prescription.Usage ?? "水煎服，一日三次，饭后服用";
-                _dataManager.DosageCount = prescription.DosageCount;
-                _dataManager.MedicalAdvice = prescription.MedicalAdvice ?? string.Empty;
-                _dataManager.Remark = prescription.Remark ?? string.Empty;
-                _dataManager.Discount = prescription.Discount;
-
-                foreach (var item in prescription.Items)
-                {
-                    var prescriptionItem = new PrescriptionItemViewModel
-                    {
-                        HerbId = item.HerbId,
-                        HerbName = item.HerbName,
-                        Quantity = item.Quantity,
-                        Unit = item.Unit,
-                        UnitPrice = item.UnitPrice
-
-                        // Subtotal会自动计算，无需手动赋值
-                    };
-
-                    _dataManager.AddPrescriptionItem(prescriptionItem);
-                }
-
-                RecalculatePrice();
-                _logger.LogInformation("成功导入历史处方");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "导入历史处方项时发生错误");
-                ShowErrorMessage("导入失败", "导入历史处方项失败");
-            }
-        }
-
-        /// <summary>
-        /// 设置折扣 - 简化版
-        /// </summary>
-        private void SetDiscount(string? discountStr)
-        {
-            try
-            {
-                if (decimal.TryParse(discountStr ?? "1.0", out var discount))
-                {
-                    if (_validator.ValidateDiscount(discount))
-                    {
-                        _dataManager.Discount = discount;
-                        _dataManager.MarkAsChanged();
-                        RecalculatePrice();
-                        _logger.LogDebug("设置折扣: {Discount}", discount);
-                    }
-                    else
-                    {
-                        ShowWarningMessage("折扣设置", "折扣必须在0.1到1.0之间");
-                    }
+                    _logger.LogInformation("处方更新成功：{PrescriptionId}", prescriptionId);
+                    return CommandResult<PrescriptionDto>.Success(result.Data);
                 }
                 else
                 {
-                    ShowWarningMessage("折扣设置", "折扣格式不正确");
+                    _logger.LogWarning("处方更新失败：{ErrorMessage}", result.ErrorMessage);
+                    return CommandResult<PrescriptionDto>.Failure(result.ErrorMessage ?? "更新处方失败");
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "设置折扣时发生错误");
+                _logger.LogError(ex, "更新处方时发生异常：{PrescriptionId}", prescriptionId);
+                return CommandResult<PrescriptionDto>.Failure("更新处方时发生系统错误");
             }
         }
 
         /// <summary>
-        /// 设置剂数
+        /// 删除处方
         /// </summary>
-        private void SetDosage(string? dosageStr)
+        public async Task<CommandResult<bool>> DeletePrescriptionAsync(Guid prescriptionId)
         {
             try
             {
-                var isValid = _validator.ValidateDosage(dosageStr ?? "7", out var dosage);
-                _dataManager.DosageCount = dosage;
-                _dataManager.MarkAsChanged();
+                _logger.LogInformation("开始删除处方：{PrescriptionId}", prescriptionId);
 
-                RecalculatePrice();
+                var result = await _prescriptionService.DeleteAsync(prescriptionId);
 
-                if (!isValid)
+                if (result.IsSuccess)
                 {
-                    ShowWarningMessage("剂数设置", "剂数输入无效，已使用默认值7剂");
-                }
-
-                _logger.LogDebug("设置剂数: {Dosage}", dosage);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "设置剂数时发生错误");
-            }
-        }
-
-        /// <summary>
-        /// 生成处方编号
-        /// </summary>
-        private void GeneratePrescriptionNo()
-        {
-            try
-            {
-                _dataManager.GeneratePrescriptionNo();
-                _logger.LogDebug("生成新的处方编号: {PrescriptionNo}", _dataManager.PrescriptionNo);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "生成处方编号时发生错误");
-            }
-        }
-
-        /// <summary>
-        /// 打印预览
-        /// </summary>
-        private Task PrintPreviewAsync()
-        {
-            try
-            {
-                _logger.LogInformation("开始打印预览");
-
-                var parameters = new DialogParameters
-                {
-                    { "PrescriptionData", CreatePrintData() }
-                };
-
-                _dialogService.ShowDialog("PrintPreviewDialog", parameters, result =>
-                {
-                    _logger.LogDebug("打印预览对话框关闭");
-                });
-
-                return Task.CompletedTask;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "打印预览时发生错误");
-                ShowErrorMessage("打印预览失败", "无法打开打印预览");
-                return Task.CompletedTask;
-            }
-        }
-
-        /// <summary>
-        /// 验证处方
-        /// </summary>
-        private void ValidatePrescription()
-        {
-            try
-            {
-                var validation = _validator.ValidatePrescription(
-                    _dataManager.PrescriptionItems,
-                    _dataManager.DosageCount,
-                    _dataManager.Discount,
-                    _dataManager.Usage ?? "",
-                    true); // checkWarnings
-
-                if (!validation.IsValid)
-                {
-                    ShowErrorMessage("验证失败", validation.GetSummary());
-                }
-                else if (validation.Warnings.Any())
-                {
-                    ShowWarningMessage("验证警告", validation.GetSummary());
+                    _logger.LogInformation("处方删除成功：{PrescriptionId}", prescriptionId);
+                    return CommandResult<bool>.Success(true);
                 }
                 else
                 {
-                    ShowInfoMessage("验证成功", "处方验证通过");
+                    _logger.LogWarning("处方删除失败：{ErrorMessage}", result.ErrorMessage);
+                    return CommandResult<bool>.Failure(result.ErrorMessage ?? "删除处方失败");
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "验证处方时发生错误");
+                _logger.LogError(ex, "删除处方时发生异常：{PrescriptionId}", prescriptionId);
+                return CommandResult<bool>.Failure("删除处方时发生系统错误");
             }
         }
 
+        #endregion
+
+        #region 私有方法
+
         /// <summary>
-        /// 重新计算价格
+        /// 执行重新计算
         /// </summary>
-        private void RecalculatePrice()
+        private void ExecuteRecalculate()
+        {
+            _logger.LogInformation("执行价格重新计算");
+            OnPriceRecalculated?.Invoke();
+        }
+
+        /// <summary>
+        /// 执行打印预览
+        /// </summary>
+        private void ExecutePrintPreview()
+        {
+            _logger.LogInformation("执行打印预览");
+            // 打印预览逻辑将在后续实现
+        }
+
+        /// <summary>
+        /// 执行保存
+        /// </summary>
+        private async Task ExecuteSaveAsync()
+        {
+            _logger.LogInformation("执行保存处方");
+            OnPrescriptionSaved?.Invoke();
+        }
+
+        /// <summary>
+        /// 执行清空
+        /// </summary>
+        private void ExecuteClear()
+        {
+            _logger.LogInformation("执行清空处方");
+            OnPrescriptionCleared?.Invoke();
+        }
+
+        /// <summary>
+        /// 执行添加药材
+        /// </summary>
+        private void ExecuteAddHerb()
+        {
+            _logger.LogInformation("执行添加药材");
+        }
+
+        /// <summary>
+        /// 执行移除药材
+        /// </summary>
+        private void ExecuteRemoveHerb()
+        {
+            _logger.LogInformation("执行移除药材");
+        }
+
+        /// <summary>
+        /// 执行导入验方
+        /// </summary>
+        private void ExecuteImportFormula()
+        {
+            _logger.LogInformation("执行导入验方");
+        }
+
+        /// <summary>
+        /// 执行生成处方编号
+        /// </summary>
+        private void ExecuteGeneratePrescriptionNo()
+        {
+            _logger.LogInformation("执行生成处方编号");
+        }
+
+        /// <summary>
+        /// 执行验证
+        /// </summary>
+        private void ExecuteValidate()
+        {
+            _logger.LogInformation("执行处方验证");
+        }
+
+        /// <summary>
+        /// 可以执行保存
+        /// </summary>
+        private bool CanExecuteSave() => true;
+
+        /// <summary>
+        /// 可以执行清空
+        /// </summary>
+        private bool CanExecuteClear() => true;
+
+        /// <summary>
+        /// 转换为创建项列表
+        /// </summary>
+        private List<PrescriptionItemCreateDto> ConvertToCreateItems(IEnumerable<PrescriptionItemViewModel>? items)
+        {
+            if (items == null) return new List<PrescriptionItemCreateDto>();
+
+            return items.Select(i => new PrescriptionItemCreateDto
+            {
+                HerbId = i.HerbId,
+                Quantity = i.Quantity,
+                Unit = i.Unit,
+                Remark = i.Remark
+            }).ToList();
+        }
+
+        /// <summary>
+        /// 转换为更新项列表
+        /// </summary>
+        private List<PrescriptionItemUpdateDto> ConvertToUpdateItems(IEnumerable<PrescriptionItemViewModel>? items)
+        {
+            if (items == null) return new List<PrescriptionItemUpdateDto>();
+
+            return items.Select(i => new PrescriptionItemUpdateDto
+            {
+                HerbId = i.HerbId,
+                Quantity = i.Quantity,
+                Unit = i.Unit,
+                Dosage = i.Quantity, // 临时使用数量作为剂量
+                Remark = i.Remark
+            }).ToList();
+        }
+
+        #endregion
+
+        #region 批量操作
+
+        /// <summary>
+        /// 批量删除处方
+        /// </summary>
+        public async Task<CommandResult<bool>> BatchDeletePrescriptionsAsync(IEnumerable<Guid> prescriptionIds)
         {
             try
             {
-                // 更新每项的小计
-                _calculator.UpdateItemSubtotals(_dataManager.PrescriptionItems);
+                var ids = prescriptionIds?.ToList() ?? new List<Guid>();
+                _logger.LogInformation("开始批量删除处方，数量：{Count}", ids.Count);
 
-                // 触发价格重算事件
-                OnPriceRecalculated?.Invoke();
+                if (!ids.Any())
+                {
+                    return CommandResult<bool>.Failure("没有选择要删除的处方");
+                }
+
+                // 循环调用DeleteAsync（Shared.Interfaces暂无BatchDeleteAsync）
+                int successCount = 0;
+                List<string> errors = new();
+                foreach (var id in ids)
+                {
+                    var deleteResult = await _prescriptionService.DeleteAsync(id);
+                    if (deleteResult.IsSuccess)
+                        successCount++;
+                    else if (!string.IsNullOrEmpty(deleteResult.ErrorMessage))
+                        errors.Add(deleteResult.ErrorMessage);
+                }
+                var result = successCount == ids.Count
+                    ? ServiceResult.Success()
+                    : ServiceResult.Failure(string.Join("; ", errors));
+
+                if (result.IsSuccess)
+                {
+                    _logger.LogInformation("批量删除处方成功，数量：{Count}", ids.Count);
+                    return CommandResult<bool>.Success(true);
+                }
+                else
+                {
+                    _logger.LogWarning("批量删除处方失败：{ErrorMessage}", result.ErrorMessage);
+                    return CommandResult<bool>.Failure(result.ErrorMessage ?? "批量删除处方失败");
+                }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "重新计算价格时发生错误");
+                _logger.LogError(ex, "批量删除处方时发生异常");
+                return CommandResult<bool>.Failure("批量删除处方时发生系统错误");
             }
         }
 
-        #endregion 命令执行方法
+        #endregion
 
-        #region 命令条件检查
-
-        private bool CanExecuteSave()
-        {
-            return !_dataManager.IsLoading && _dataManager.PrescriptionItems.Count > 0;
-        }
-
-        private bool CanExecuteClear()
-        {
-            return !_dataManager.IsLoading;
-        }
-
-        #endregion 命令条件检查
-
-        #region 辅助方法
+        #region 查询操作
 
         /// <summary>
-        /// 安全执行异步命令
+        /// 根据患者ID获取处方列表
         /// </summary>
-        private async Task ExecuteCommandSafelyAsync(Func<Task> command)
+        public async Task<CommandResult<IEnumerable<PrescriptionDto>>> GetPrescriptionsByPatientAsync(Guid patientId)
         {
             try
             {
-                await command();
+                _logger.LogInformation("开始获取患者处方列表：{PatientId}", patientId);
+
+                var result = await _prescriptionService.GetPagedAsync(1, int.MaxValue, null);
+
+                if (result.IsSuccess && result.Data?.Items != null)
+                {
+                    var prescriptions = result.Data.Items
+                        .Where(p => p.PatientId == patientId)
+                        .ToList();
+                    _logger.LogInformation("获取患者处方列表成功，数量：{Count}", prescriptions.Count);
+                    return CommandResult<IEnumerable<PrescriptionDto>>.Success(prescriptions);
+                }
+                else
+                {
+                    _logger.LogWarning("获取患者处方列表失败：{ErrorMessage}", result.ErrorMessage);
+                    return CommandResult<IEnumerable<PrescriptionDto>>.Failure(result.ErrorMessage ?? "获取处方列表失败");
+                }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "执行异步命令时发生错误");
-                ShowErrorMessage("操作失败", "操作执行失败，请重试");
+                _logger.LogError(ex, "获取患者处方列表时发生异常：{PatientId}", patientId);
+                return CommandResult<IEnumerable<PrescriptionDto>>.Failure("获取处方列表时发生系统错误");
             }
         }
 
-        /// <summary>
-        /// 安全执行同步命令
-        /// </summary>
-        private void ExecuteCommandSafely(Action command)
+        #endregion
+    }
+
+    /// <summary>
+    /// 命令执行结果
+    /// </summary>
+    public class CommandResult<T>
+    {
+        public bool IsSuccess { get; private set; }
+        public T? Data { get; private set; }
+        public string? ErrorMessage { get; private set; }
+
+        private CommandResult(bool isSuccess, T? data, string? errorMessage)
         {
-            try
-            {
-                command();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "执行同步命令时发生错误");
-                ShowErrorMessage("操作失败", "操作执行失败，请重试");
-            }
+            IsSuccess = isSuccess;
+            Data = data;
+            ErrorMessage = errorMessage;
         }
 
-        /// <summary>
-        /// 创建打印数据
-        /// </summary>
-        private object CreatePrintData()
+        public static CommandResult<T> Success(T data)
         {
-            var calculation = _calculator.CalculatePrescriptionPrice(
-                _dataManager.PrescriptionItems, _dataManager.DosageCount, _dataManager.Discount);
-
-            return new
-            {
-                PrescriptionNo = _dataManager.PrescriptionNo,
-                DosageCount = _dataManager.DosageCount,
-                Usage = _dataManager.Usage,
-                MedicalAdvice = _dataManager.MedicalAdvice,
-                Remark = _dataManager.Remark,
-                Items = _dataManager.PrescriptionItems.ToList(),
-                Calculation = calculation
-            };
+            return new CommandResult<T>(true, data, null);
         }
 
-        /// <summary>
-        /// 显示错误消息
-        /// </summary>
-        private void ShowErrorMessage(string title, string message)
+        public static CommandResult<T> Failure(string errorMessage)
         {
-            var parameters = new DialogParameters
-            {
-                { "Title", title },
-                { "Message", message }
-            };
-            _dialogService.ShowDialog("ErrorDialog", parameters, (Action<IDialogResult>)null!);
+            return new CommandResult<T>(false, default, errorMessage);
         }
-
-        /// <summary>
-        /// 显示警告消息
-        /// </summary>
-        private void ShowWarningMessage(string title, string message)
-        {
-            var parameters = new DialogParameters
-            {
-                { "Title", title },
-                { "Message", message }
-            };
-            _dialogService.ShowDialog("WarningDialog", parameters, (Action<IDialogResult>)null!);
-        }
-
-        /// <summary>
-        /// 显示信息消息
-        /// </summary>
-        private void ShowInfoMessage(string title, string message)
-        {
-            var parameters = new DialogParameters
-            {
-                { "Title", title },
-                { "Message", message }
-            };
-            _dialogService.ShowDialog("InfoDialog", parameters, (Action<IDialogResult>)null!);
-        }
-
-        /// <summary>
-        /// 显示确认对话框
-        /// </summary>
-        private bool ShowConfirmDialog(string title, string message)
-        {
-            var result = false;
-            var parameters = new DialogParameters
-            {
-                { "Title", title },
-                { "Message", message }
-            };
-
-            _dialogService.ShowDialog("ConfirmDialog", parameters, dialogResult =>
-            {
-                result = dialogResult.Result == ButtonResult.OK;
-            });
-
-            return result;
-        }
-
-        #endregion 辅助方法
-
-        #region 事件
-
-        public event Action? OnPrescriptionSaved;
-
-        public event Action? OnPrescriptionCleared;
-
-        public event Action? OnPriceRecalculated;
-
-        #endregion 事件
     }
 }
