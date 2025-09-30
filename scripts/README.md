@@ -75,6 +75,7 @@
 | `health-check.ps1` | PowerShell | WebAPI健康检查 |
 | `stop-webapi.ps1` | PowerShell | 停止WebAPI服务 |
 | `check-webapi-startup.ps1` | PowerShell | WebAPI启动前环境检查（Issue #827） |
+| `validate-production-config.ps1` | PowerShell | **Production配置验证**（Phase 1） |
 
 ## 🚀 使用说明
 
@@ -143,6 +144,11 @@ python scripts/[script-name].py
 
 ## 🔧 维护记录
 
+- **2025-09-30**：添加 Production 配置验证脚本（Phase 1）
+  - 新增 `validate-production-config.ps1`
+  - 功能：验证 7 个生产环境配置项、检测占位符、格式验证
+  - 用途：部署前配置检查，确保 Production 环境可正常启动
+  - 关联：`docs/deployment/production-setup.md`、`docs/deployment/environment-variables.md`
 - **2025-09-30**：添加 WebAPI 启动前环境检查脚本（Issue #827）
   - 新增 `check-webapi-startup.ps1`
   - 功能：检查残留进程、端口占用、SQL Server 状态
