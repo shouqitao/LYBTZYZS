@@ -215,7 +215,7 @@ namespace LYBT.Desktop.Shell.Services.Bootstrap
                     "MedicalCaseModule",
                     "ConsultationModule",
                     "PrescriptionsModule",
-                    "MedicalWorkbenchModule"
+                    "ClinicalWorkstationModule"
                 },
                 UserRole.Doctor => new[]
                 {
@@ -225,7 +225,7 @@ namespace LYBT.Desktop.Shell.Services.Bootstrap
                     "MedicalCaseModule",
                     "ConsultationModule",
                     "PrescriptionsModule",
-                    "MedicalWorkbenchModule"
+                    "ClinicalWorkstationModule"
                 },
                 UserRole.Pharmacist => new[]
                 {

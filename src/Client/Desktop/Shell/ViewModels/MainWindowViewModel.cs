@@ -483,7 +483,7 @@ public class MainWindowViewModel : UnifiedViewModelBase
         else
         {
             // 其他角色默认为医生工作台
-            workbenchView = "MedicalWorkbenchMainView";
+            workbenchView = "ClinicalWorkstationView";
             roleDisplay = "医生";
         }
 
@@ -544,7 +544,7 @@ public class MainWindowViewModel : UnifiedViewModelBase
             else if (user.Role == UserRole.Doctor)
             {
                 Logger.LogInformation("医生登录，加载诊疗工作台模块");
-                await LoadMedicalWorkbenchAsync();
+                await LoadClinicalWorkstationAsync();
             }
 
             Logger.LogInformation("工作台模块加载完成");
@@ -585,10 +585,10 @@ public class MainWindowViewModel : UnifiedViewModelBase
     /// <summary>
     /// 加载诊疗工作台模块
     /// </summary>
-    private async Task LoadMedicalWorkbenchAsync()
+    private async Task LoadClinicalWorkstationAsync()
     {
         // 加载诊疗工作台及其依赖
-        await _moduleLoadingService.LoadModuleAsync("MedicalWorkbenchModule");
+        await _moduleLoadingService.LoadModuleAsync("ClinicalWorkstationModule");
         Logger.LogDebug("诊疗工作台模块加载完成");
     }
 
@@ -671,7 +671,7 @@ public class MainWindowViewModel : UnifiedViewModelBase
         try
         {
             // 导航到诊疗工作台
-            _regionManager.RequestNavigate(RegionNames.ContentRegion, "MedicalWorkbenchMainView", navigationResult =>
+            _regionManager.RequestNavigate(RegionNames.ContentRegion, "ClinicalWorkstationView", navigationResult =>
             {
                 if (navigationResult.Result == true)
                 {
