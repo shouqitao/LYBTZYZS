@@ -74,6 +74,7 @@
 | `run-webapi.ps1` | PowerShell | 启动WebAPI服务 |
 | `health-check.ps1` | PowerShell | WebAPI健康检查 |
 | `stop-webapi.ps1` | PowerShell | 停止WebAPI服务 |
+| `check-webapi-startup.ps1` | PowerShell | WebAPI启动前环境检查（Issue #827） |
 
 ## 🚀 使用说明
 
@@ -142,6 +143,10 @@ python scripts/[script-name].py
 
 ## 🔧 维护记录
 
+- **2025-09-30**：添加 WebAPI 启动前环境检查脚本（Issue #827）
+  - 新增 `check-webapi-startup.ps1`
+  - 功能：检查残留进程、端口占用、SQL Server 状态
+  - 用途：解决 Visual Studio 中 WebAPI 无法启动问题
 - **2025-09-28**：将根目录脚本统一移至scripts目录
   - 移动 `create_tasks.sh`
   - 移动 `create-placeholders.ps1`
