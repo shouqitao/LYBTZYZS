@@ -6,6 +6,7 @@
 ## 最新重点报告（按日期倒序）
 | 日期 | 文档 | 范围 |
 |------|------|------|
+| 2025-09-30 | `issue-825-code-quality-warnings-fix.md` | Issue #825 代码质量警告修复完成报告（33个警告，UltraThink验证） |
 | 2025-09-30 | `Issue-815-Phase3-Completion-Report.md` | Issue #815 Phase 3完成报告 - Workstations层实施 |
 | 2025-09-30 | `Issue-815-Phase1-Completion-Report.md` | Issue #815 Phase 1完成报告 |
 | 2025-09-30 | `Issue-815-UltraThink-Architecture-Implementation-Report.md` | Issue #815 UltraThink架构实施完成报告 |
