@@ -6,6 +6,7 @@
 ## 最新重点报告（按日期倒序）
 | 日期 | 文档 | 范围 |
 |------|------|------|
+| 2025-10-01 | `../architecture/desktop-prism-refactoring-plan.md` | Desktop Prism架构重构计划（UltraThink 22步分析，3阶段路线图，10-13周） |
 | 2025-10-01 | `issue-827-vs-webapi-startup-failure.md` | Issue #827 VS中WebAPI无法启动问题分析报告（进程残留、端口冲突、UltraThink分析） |
 | 2025-09-30 | `issue-825-code-quality-warnings-fix.md` | Issue #825 代码质量警告修复完成报告（33个警告，UltraThink验证） |
 | 2025-09-30 | `Issue-815-Phase3-Completion-Report.md` | Issue #815 Phase 3完成报告 - Workstations层实施 |
