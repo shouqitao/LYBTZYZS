@@ -96,6 +96,7 @@ namespace LYBT.Desktop.Shell.Extensions
             // 使用新版 INotificationService (LYBT.Desktop.Services.Notifications)
             // 提供同步+异步接口、确认对话框、加载状态、事件通知等完整功能
             // 替代旧版仅异步方法的简陋接口，提升用户体验和代码可维护性
+            // 必须在 UnifiedErrorHandlingService 之前注册,因为后者依赖此服务
             containerRegistry.RegisterSingleton<LYBT.Desktop.Services.Notifications.INotificationService,
                 LYBT.Desktop.Services.Notifications.NotificationService>();
 
