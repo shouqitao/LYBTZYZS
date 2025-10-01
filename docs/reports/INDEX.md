@@ -6,6 +6,7 @@
 ## 最新重点报告（按日期倒序）
 | 日期 | 文档 | 范围 |
 |------|------|------|
+| 2025-10-01 | `issue-828-phase2-completion.md` | Issue #828 Phase 2完成报告 - Desktop Prism Region Navigation 实施（7个模块，导航历史，生命周期） |
 | 2025-10-01 | `issue-829-phase1-completion.md` | Issue #829 Phase 1完成报告 - Desktop Prism基础重构（已在Issue #815完成） |
 | 2025-10-01 | `../architecture/desktop-prism-refactoring-plan.md` | Desktop Prism架构重构计划（UltraThink 22步分析，3阶段路线图，10-13周） |
 | 2025-10-01 | `issue-827-vs-webapi-startup-failure.md` | Issue #827 VS中WebAPI无法启动问题分析报告（进程残留、端口冲突、UltraThink分析） |
