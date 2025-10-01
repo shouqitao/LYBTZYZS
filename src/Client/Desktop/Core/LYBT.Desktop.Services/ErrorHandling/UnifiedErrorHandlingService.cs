@@ -2,6 +2,7 @@
 using System.Net.Http;
 using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.Extensions.Logging;
+using LYBT.Desktop.Services.Notifications;
 using SharedCommon = LYBT.Shared.Models.Contracts.Common.SharedCommon;
 
 namespace LYBT.Desktop.Services.ErrorHandling
@@ -101,7 +102,7 @@ namespace LYBT.Desktop.Services.ErrorHandling
                 _ => "错误"
             };
 
-            await _notificationService.ShowNotificationAsync(title, handledError.UserMessage, NotificationType.Error);
+            await _notificationService.ShowErrorAsync(handledError.UserMessage, title);
         }
 
         /// <inheritdoc/>

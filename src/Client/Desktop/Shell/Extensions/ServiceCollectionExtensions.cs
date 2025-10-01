@@ -92,8 +92,10 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterSingleton<LYBT.Desktop.Infrastructure.Interfaces.IUserNotificationService,
                 LYBT.Desktop.Infrastructure.Services.UserNotificationService>();
 
-            // Issue #841: 注册通知服务 - 必须在 UnifiedErrorHandlingService 之前
-            // UnifiedErrorHandlingService 依赖 INotificationService,因此必须先注册
+            // Issue #844: 统一通知服务接口 - 已完成 UltraThink 重构目标
+            // 使用新版 INotificationService (LYBT.Desktop.Services.Notifications)
+            // 提供同步+异步接口、确认对话框、加载状态、事件通知等完整功能
+            // 替代旧版仅异步方法的简陋接口，提升用户体验和代码可维护性
             containerRegistry.RegisterSingleton<LYBT.Desktop.Services.Notifications.INotificationService,
                 LYBT.Desktop.Services.Notifications.NotificationService>();
 
