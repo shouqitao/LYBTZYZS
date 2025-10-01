@@ -41,6 +41,24 @@ public partial class App : PrismApplication
     /// <returns>搴旂敤绋嬪簭涓荤獥浣撳疄渚?/returns>
     protected override Window CreateShell()
     {
+        // Issue #837 诊断: 逐步测试依赖链
+        try
+        {
+            System.Diagnostics.Debug.WriteLine("=== Issue #837 诊断: 逐步解析 MainWindowViewModel 依赖 ===");
+
+            var facade = Container.Resolve<LYBT.Desktop.Infrastructure.Interfaces.IMainWindowServicesFacade>();
+            System.Diagnostics.Debug.WriteLine($"✓ IMainWindowServicesFacade: {facade != null}");
+
+            var viewModel = Container.Resolve<MainWindowViewModel>();
+            System.Diagnostics.Debug.WriteLine($"✓ MainWindowViewModel: {viewModel != null}");
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"✗ 解析失败: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"  InnerException: {ex.InnerException?.Message}");
+            throw;
+        }
+
         return Container.Resolve<MainWindow>();
     }
 

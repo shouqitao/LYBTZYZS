@@ -61,6 +61,7 @@ namespace LYBT.Desktop.Shell.Extensions
             RegisterHttpServices(containerRegistry);
             RegisterApiServices(containerRegistry);
             RegisterBusinessServices(containerRegistry);
+            RegisterCoreServices(containerRegistry); // Issue #837: 添加缺失的核心服务注册
             RegisterErrorHandlingServices(containerRegistry);
             RegisterDialogs(containerRegistry);
             RegisterPerformanceServices(containerRegistry);

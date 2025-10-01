@@ -13,6 +13,9 @@
     </ResourceDictionary.MergedDictionaries>
     -->
 
+    <!--  Issue #837: 添加 WPF 内置转换器到全局资源  -->
+    <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+
     <!--  基础颜色  -->
     <SolidColorBrush x:Key="PrimaryBrush" Color="#2196F3" />
     <SolidColorBrush x:Key="SecondaryBrush" Color="#FF9800" />
