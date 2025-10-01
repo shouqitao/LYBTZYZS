@@ -120,7 +120,8 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterSingleton<LYBT.Desktop.Services.Theming.IThemeService,
                 LYBT.Desktop.Services.Theming.ThemeService>();
 
-            // Issue #837: IStartupOptimizationService 已在 RegisterPerformanceServices 中注册,移除重复注册
+            // Note: IStartupOptimizationService 实际在 RegisterBootstrapServices 中注册（lines 104-105）
+            // RegisterPerformanceServices 当前为空实现，未来可能扩展性能监控服务
         }
 
         /// <summary>
