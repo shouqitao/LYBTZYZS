@@ -1,14 +1,25 @@
 <ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:converters="clr-namespace:LYBT.Desktop.Core.Converters;assembly=LYBT.Desktop.Core">
+    xmlns:converters="clr-namespace:LYBT.Desktop.Core.Converters;assembly=LYBT.Desktop.Core"
+    xmlns:infraConverters="clr-namespace:LYBT.Desktop.Infrastructure.Converters;assembly=LYBT.Desktop.Infrastructure">
 
     <!--  UltraThink 统一设计系统  -->
 
     <!--  合并统一转换器资源字典  -->
+    <!-- Issue #837: UnifiedConverters.xaml 文件不存在,暂时注释掉此引用 -->
+    <!--
     <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="pack://application:,,,/LYBT.Desktop.Core;component/Resources/UnifiedConverters.xaml" />
     </ResourceDictionary.MergedDictionaries>
+    -->
+
+    <!--  Issue #837: 添加 WPF 内置转换器到全局资源  -->
+    <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+
+    <!--  Issue #837: 添加自定义转换器到全局资源  -->
+    <!--  StringToVisibilityConverter: 字符串非空时显示,空时隐藏  -->
+    <infraConverters:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
 
     <!--  基础颜色  -->
     <SolidColorBrush x:Key="PrimaryBrush" Color="#2196F3" />

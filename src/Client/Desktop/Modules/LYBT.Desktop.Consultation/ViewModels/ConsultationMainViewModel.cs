@@ -79,7 +79,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
 
         private bool _isLoading = false;
 
-        public bool IsLoading
+        public new bool IsLoading
         {
             get => _isLoading;
             set => SetProperty(ref _isLoading, value);
@@ -252,12 +252,12 @@ namespace LYBT.Desktop.Consultation.ViewModels
             MedicalCaseId = null;
         }
 
-        #endregion ��������
+        #endregion 命令初始化
 
-        #region �����ӿ�ʵ��
+        #region 导航接口实现
 
         /// <inheritdoc/>
-        public void OnNavigatedTo(NavigationContext navigationContext)
+        public override void OnNavigatedTo(NavigationContext navigationContext)
         {
             if (navigationContext.Parameters["MedicalCaseId"] is Guid caseId)
             {
@@ -266,19 +266,19 @@ namespace LYBT.Desktop.Consultation.ViewModels
         }
 
         /// <inheritdoc/>
-        public bool IsNavigationTarget(NavigationContext navigationContext)
+        public override bool IsNavigationTarget(NavigationContext navigationContext)
         {
             return true;
         }
 
         /// <inheritdoc/>
-        public void OnNavigatedFrom(NavigationContext navigationContext)
+        public override void OnNavigatedFrom(NavigationContext navigationContext)
         {
         }
 
-        #endregion �����ӿ�ʵ��
+        #endregion 导航接口实现
 
-        #region P0-02: ������ʷ���Ʋ�ѯ����
+        #region P0-02: 就诊历史和复诊查询功能
 
         /// <summary>
         /// �鿴������ʷ���Ƽ�¼
@@ -718,7 +718,7 @@ DiagnosisPoints = "��Һ���㣬������ף�������
         /// <summary>
         /// ��ʾȷ�϶Ի��򣨼�ʵ�֣�
         /// </summary>
-        private async Task<bool> ShowConfirmationAsync(string message, string title)
+        private new async Task<bool> ShowConfirmationAsync(string message, string title)
         {
             await Task.Delay(50); // �����첽����
 

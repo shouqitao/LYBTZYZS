@@ -23,7 +23,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
         private readonly ILoggerFactory _loggerFactory;
         private readonly IRegionManager _regionManager;
         private readonly ISessionManager? _sessionManager;
-        private readonly IErrorHandlingService? _errorHandlingService;
+        private readonly IUserNotificationService? _userNotificationService;
 
         public PrescriptionDataManager(
             IPrescriptionService prescriptionService,
@@ -32,7 +32,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
             ISessionManager? sessionManager = null,
-            IErrorHandlingService? errorHandlingService = null)
+            IUserNotificationService? userNotificationService = null)
         {
             _prescriptionService = prescriptionService ?? throw new ArgumentNullException(nameof(prescriptionService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -40,7 +40,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
             _loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
             _regionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
             _sessionManager = sessionManager;
-            _errorHandlingService = errorHandlingService;
+            _userNotificationService = userNotificationService;
         }
 
         #region 核心数据属性
@@ -138,7 +138,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
                                 _loggerFactory,
                                 _regionManager,
                                 _sessionManager,
-                                _errorHandlingService)
+                                _userNotificationService)
                             {
                                 HerbId = item.HerbId,
                                 HerbName = item.HerbName,

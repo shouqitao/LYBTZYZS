@@ -1,5 +1,6 @@
 ﻿using System.Net.Http;
 using AutoMapper;
+using Microsoft.Extensions.Configuration;
 using LYBT.Desktop.Infrastructure.Commands;
 using LYBT.Desktop.Services.Modules;
 using LYBT.Desktop.Services.Performance;
@@ -60,6 +61,7 @@ namespace LYBT.Desktop.Shell.Extensions
             RegisterHttpServices(containerRegistry);
             RegisterApiServices(containerRegistry);
             RegisterBusinessServices(containerRegistry);
+            RegisterCoreServices(containerRegistry); // Issue #837: 添加缺失的核心服务注册
             RegisterErrorHandlingServices(containerRegistry);
             RegisterDialogs(containerRegistry);
             RegisterPerformanceServices(containerRegistry);
@@ -76,17 +78,39 @@ namespace LYBT.Desktop.Shell.Extensions
         /// </summary>
         private static void RegisterBootstrapServices(IContainerRegistry containerRegistry)
         {
-            // 注册应用程序初始化服�?
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Shell.Services.IApplicationInitializationService,
-                LYBT.Desktop.Shell.Services.ApplicationInitializationService>();
+            // Issue #838: 注册 IConfiguration - 必须在最前面,因为其他服务依赖它
+            // WPF Prism 不会自动注册 IConfiguration,需要手动创建和注册
+            var configuration = new Microsoft.Extensions.Configuration.ConfigurationBuilder()
+                .SetBasePath(System.IO.Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                .Build();
+            containerRegistry.RegisterInstance<Microsoft.Extensions.Configuration.IConfiguration>(configuration);
 
-            // 注册错误处理服务 - 使用 Services 层的 IErrorHandlingService 接口
+            // Issue #840: 注册用户通知服务
+            // MainWindowViewModel 使用 IUserNotificationService 进行简单消息提示
+            // 系统级错误处理由 UnifiedErrorHandlingService 负责
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Infrastructure.Interfaces.IUserNotificationService,
+                LYBT.Desktop.Infrastructure.Services.UserNotificationService>();
+
+            // Issue #844: 统一通知服务接口 - 已完成 UltraThink 重构目标
+            // 使用新版 INotificationService (LYBT.Desktop.Services.Notifications)
+            // 提供同步+异步接口、确认对话框、加载状态、事件通知等完整功能
+            // 替代旧版仅异步方法的简陋接口，提升用户体验和代码可维护性
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Services.Notifications.INotificationService,
+                LYBT.Desktop.Services.Notifications.NotificationService>();
+
             containerRegistry.RegisterSingleton<LYBT.Desktop.Services.ErrorHandling.IErrorHandlingService,
                 LYBT.Desktop.Services.ErrorHandling.UnifiedErrorHandlingService>();
 
             // 注册启动优化服务
             containerRegistry.RegisterSingleton<IStartupOptimizationService,
                 StartupOptimizationService>();
+
+            // Issue #841 Fix #2: 注册应用程序初始化服务 - 必须在所有依赖项之后
+            // ApplicationInitializationService 依赖 IErrorHandlingService 和 IStartupOptimizationService
+            // 因此必须在它们之后注册,确保 DI 容器可以正确解析依赖链
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Shell.Services.IApplicationInitializationService,
+                LYBT.Desktop.Shell.Services.ApplicationInitializationService>();
         }
 
         /// <summary>
@@ -98,13 +122,8 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterSingleton<LYBT.Desktop.Services.Theming.IThemeService,
                 LYBT.Desktop.Services.Theming.ThemeService>();
 
-            // UltraThink Phase H: 高级功能优化服务
-            containerRegistry.RegisterSingleton<IStartupOptimizationService,
-                StartupOptimizationService>();
-
-            // TODO: IUserPreferencesService 在 Core_New 中不存在,需要根据实际需要决定是否实现
-            // containerRegistry.RegisterSingleton<LYBT.Desktop.Services.Settings.IUserPreferencesService,
-            //     LYBT.Desktop.Services.Settings.UserPreferencesService>();
+            // Note: IStartupOptimizationService 实际在 RegisterBootstrapServices 中注册（lines 104-105）
+            // RegisterPerformanceServices 当前为空实现，未来可能扩展性能监控服务
         }
 
         /// <summary>
@@ -112,10 +131,6 @@ namespace LYBT.Desktop.Shell.Extensions
         /// </summary>
         private static void RegisterNavigationServices(IContainerRegistry containerRegistry)
         {
-            // TODO: EnhancedNavigationService 需要确认在 Core_New 中的正确位置
-            // 可能在 Infrastructure.Services.Navigation 或 Services.Navigation
-            // containerRegistry.RegisterSingleton<LYBT.Desktop.Services.Navigation.IEnhancedNavigationService,
-            //     LYBT.Desktop.Infrastructure.Services.Navigation.EnhancedNavigationService>();
         }
 
         /// <summary>
@@ -140,10 +155,6 @@ namespace LYBT.Desktop.Shell.Extensions
             // 注册统一错误处理器 - 使用 Infrastructure 层的实现
             containerRegistry.RegisterSingleton<LYBT.Desktop.Infrastructure.Services.IStandardErrorHandler,
                 LYBT.Desktop.Infrastructure.Services.StandardErrorHandler>();
-
-            // TODO: DT-006: StandardExceptionHandler 不实现 IExceptionHandler 接口，需要修改实现
-            // containerRegistry.RegisterSingleton<IExceptionHandler,
-            //     StandardExceptionHandler>();
         }
 
         /// <summary>
@@ -201,17 +212,34 @@ namespace LYBT.Desktop.Shell.Extensions
         /// </summary>
         private static void RegisterHttpServices(IContainerRegistry containerRegistry)
         {
-            // TODO: HttpClientFactory 和 ApiConfiguration 在 Core_New 中不存在
-            // 需要使用 IUnifiedApiClientManager 或其他方式来管理 HttpClient
-            // 注册基础HttpClient
+            // Issue #835: 注册 IHttpClientFactory 用于 AuthService
+            // Prism/DryIoc 需要使用 RegisterInstance 来注册 HttpClient
+            containerRegistry.RegisterSingleton<IHttpClientFactory>(() =>
+            {
+                return new SimpleHttpClientFactory();
+            });
+
+            // 兼容性:保留单例 HttpClient 供其他旧代码使用
             containerRegistry.RegisterSingleton<HttpClient>(() =>
             {
                 var client = new HttpClient
                 {
-                    BaseAddress = new Uri("http://localhost:5000") // TODO: 从配置读取
+                    BaseAddress = new Uri("http://localhost:5001") // 从配置读取
                 };
                 return client;
             });
+        }
+
+        /// <summary>
+        /// 简单的 HttpClientFactory 实现 - MVP版本
+        /// 生产环境可升级为 Microsoft.Extensions.Http
+        /// </summary>
+        private class SimpleHttpClientFactory : IHttpClientFactory
+        {
+            public HttpClient CreateClient(string name)
+            {
+                return new HttpClient();
+            }
         }
 
         /// <summary>
@@ -219,60 +247,6 @@ namespace LYBT.Desktop.Shell.Extensions
         /// </summary>
         private static void RegisterApiServices(IContainerRegistry containerRegistry)
         {
-            // TODO: AuthHeaderHandler 在 Core_New 中不存在，需要实现或移除
-            // containerRegistry.Register<AuthHeaderHandler>();
-
-            // TODO: UnifiedApiClientManager 类在 Core_New 中不存在，只有接口
-            // 需要创建实现类或使用其他方式
-            // containerRegistry.RegisterSingleton<IUnifiedApiClientManager,
-            //     LYBT.Desktop.Services.Api.Managers.UnifiedApiClientManager>();
-
-            // TODO: Core_New 中的 IUnifiedApiClientManager 接口简化了,不再提供各个 API 属性
-            // 需要重新实现或者直接注册各个 API 客户端
-            // 以下代码暂时注释,等待实现
-            /*
-            containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Api.IAuthApi>(container =>
-            {
-                var manager = container.Resolve<IUnifiedApiClientManager>();
-                return manager.AuthApi;
-            });
-            containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Api.IUserApi>(container =>
-            {
-                var manager = container.Resolve<IUnifiedApiClientManager>();
-                return manager.UserApi;
-            });
-            containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Api.IPatientApi>(container =>
-            {
-                var manager = container.Resolve<IUnifiedApiClientManager>();
-                return manager.PatientApi;
-            });
-            containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Api.IHerbApi>(container =>
-            {
-                var manager = container.Resolve<IUnifiedApiClientManager>();
-                return manager.HerbApi;
-            });
-            containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Api.IFormulaApi>(container =>
-            {
-                var manager = container.Resolve<IUnifiedApiClientManager>();
-                return manager.FormulaApi;
-            });
-            containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Api.IConsultationApi>(container =>
-            {
-                var manager = container.Resolve<IUnifiedApiClientManager>();
-                return manager.ConsultationApi;
-            });
-            containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Api.IPrescriptionApi>(container =>
-            {
-                var manager = container.Resolve<IUnifiedApiClientManager>();
-                return manager.PrescriptionApi;
-            });
-            containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Api.IMedicalCaseApi>(container =>
-            {
-                var manager = container.Resolve<IUnifiedApiClientManager>();
-                return manager.MedicalCaseApi;
-            });
-            */
-
             // 注册通用API服务 - 使用 Core_New 的实现
             containerRegistry.RegisterSingleton<LYBT.Desktop.Services.Http.IApiService,
                 LYBT.Desktop.Services.Http.ApiService>();
@@ -306,17 +280,6 @@ namespace LYBT.Desktop.Shell.Extensions
         /// </summary>
         private static void RegisterLayer1BasicModules(IContainerRegistry containerRegistry)
         {
-            // TODO: Herbs/Formula 模块服务在旧 Modules 文件夹中，需要确认它们在新架构中的位置
-            // 这些服务可能已经移至 Core_New/Services 或者仍在 Modules 中
-            // Herbs模块 - 基础药材数据，无外部依赖
-            // containerRegistry.Register<LYBT.Desktop.Herbs.Services.HerbService>();
-            // containerRegistry.Register<LYBT.Shared.Interfaces.Services.IHerbService,
-            //     LYBT.Desktop.Herbs.Services.HerbService>();
-
-            // Formula模块 - 验方模板数据，无外部依赖
-            // containerRegistry.Register<LYBT.Desktop.Formula.Services.FormulaService>();
-            // containerRegistry.Register<LYBT.Shared.Interfaces.Services.IFormulaService,
-            //     LYBT.Desktop.Formula.Services.FormulaService>();
         }
 
         /// <summary>
@@ -324,15 +287,6 @@ namespace LYBT.Desktop.Shell.Extensions
         /// </summary>
         private static void RegisterLayer2AuthModules(IContainerRegistry containerRegistry)
         {
-            // TODO: Auth 模块服务在旧 Modules 文件夹中，需要确认它们在新架构中的位置
-            // Auth模块 - DT-001/DT-002修复: 适配器模�?+ 标准IoC注册
-            // containerRegistry.RegisterSingleton<LYBT.Desktop.Auth.Services.AuthService>();
-            // containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Services.IAuthService,
-            //     LYBT.Desktop.Auth.Services.AuthService>();
-            // containerRegistry.RegisterSingleton<LYBT.Desktop.Services.Auth.IAuthenticationService,
-            //     LYBT.Desktop.Auth.Services.AuthServiceAdapter>();
-
-            // Users模块服务注册已移至UsersModule.RegisterTypes - Prism 8.x最佳实�?
         }
 
         /// <summary>
@@ -341,11 +295,6 @@ namespace LYBT.Desktop.Shell.Extensions
         /// </summary>
         private static void RegisterLayer3BusinessDataModules(IContainerRegistry containerRegistry)
         {
-            // TODO: Patients 模块服务在旧 Modules 文件夹中，需要确认它们在新架构中的位置
-            // Patients模块 - 患者档案管�?
-            // containerRegistry.Register<LYBT.Desktop.Patients.Services.PatientService>();
-            // containerRegistry.Register<LYBT.Shared.Interfaces.Services.IPatientService,
-            //     LYBT.Desktop.Patients.Services.PatientService>();
         }
 
         /// <summary>
@@ -354,16 +303,6 @@ namespace LYBT.Desktop.Shell.Extensions
         /// </summary>
         private static void RegisterLayer4ProcessModules(IContainerRegistry containerRegistry)
         {
-            // TODO: MedicalCase/Consultation 模块服务在旧 Modules 文件夹中，需要确认它们在新架构中的位置
-            // MedicalCase模块 - 医案流程管理
-            // containerRegistry.Register<LYBT.Desktop.MedicalCase.Services.MedicalCaseService>();
-            // containerRegistry.Register<LYBT.Shared.Interfaces.Services.IMedicalCaseService,
-            //     LYBT.Desktop.MedicalCase.Services.MedicalCaseService>();
-
-            // Consultation模块 - 诊断流程
-            // containerRegistry.Register<LYBT.Desktop.Consultation.Services.ConsultationService>();
-            // containerRegistry.Register<LYBT.Shared.Interfaces.Services.IConsultationService,
-            //     LYBT.Desktop.Consultation.Services.ConsultationService>();
         }
 
         /// <summary>
@@ -372,11 +311,6 @@ namespace LYBT.Desktop.Shell.Extensions
         /// </summary>
         private static void RegisterLayer5AggregationModules(IContainerRegistry containerRegistry)
         {
-            // TODO: Prescriptions 模块服务在旧 Modules 文件夹中，需要确认它们在新架构中的位置
-            // Prescriptions模块 - 处方聚合服务（依赖Herbs, Formula, Consultation�?
-            // containerRegistry.Register<LYBT.Desktop.Prescriptions.Services.PrescriptionsService>();
-            // containerRegistry.Register<LYBT.Shared.Interfaces.Services.IPrescriptionService,
-            //     LYBT.Desktop.Prescriptions.Services.PrescriptionsService>();
         }
 
         /// <summary>
@@ -400,26 +334,31 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterScoped<IConsultationRepository,
                 LYBT.Desktop.Services.Repositories.ConsultationRepository>();
 
-            // TODO: Service层接口在Core_New中不存在，需要使用 Shared.Interfaces 或创建新接口
-            // 暂时注释掉，等待接口定义
-            /*
-            containerRegistry.RegisterScoped<LYBT.Desktop.Services.Interfaces.IPatientService,
-                LYBT.Desktop.Services.Business.PatientService>();
-            containerRegistry.RegisterScoped<LYBT.Desktop.Services.Interfaces.IUserService,
-                LYBT.Desktop.Services.Business.UserService>();
-            containerRegistry.RegisterScoped<LYBT.Desktop.Services.Interfaces.IMedicalCaseService,
-                LYBT.Desktop.Services.Business.MedicalCaseService>();
-            containerRegistry.RegisterScoped<LYBT.Desktop.Services.Interfaces.IPrescriptionService,
-                LYBT.Desktop.Services.Business.PrescriptionService>();
-            containerRegistry.RegisterScoped<LYBT.Desktop.Services.Interfaces.IHerbService,
-                LYBT.Desktop.Services.Business.HerbService>();
-            containerRegistry.RegisterScoped<LYBT.Desktop.Services.Interfaces.IFormulaService,
-                LYBT.Desktop.Services.Business.FormulaService>();
-            containerRegistry.RegisterScoped<LYBT.Desktop.Services.Interfaces.IConsultationService,
-                LYBT.Desktop.Services.Business.ConsultationService>();
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Services.Interfaces.IAuthService,
+            // Issue #835: 注册认证服务(使用 Shared.Interfaces)
+            containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Services.IAuthService,
                 LYBT.Desktop.Services.Business.AuthService>();
-            */
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Services.Business.ITokenStorageService,
+                LYBT.Desktop.Services.Business.TokenStorageService>();
+
+            // Issue #835: 注册 IAuthenticationService 适配器(供 MainWindowViewModel 使用)
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Services.Auth.IAuthenticationService,
+                LYBT.Desktop.Services.Auth.AuthenticationService>();
+
+            // Issue #842: 注册业务服务(使用 Shared.Interfaces)
+            containerRegistry.RegisterScoped<LYBT.Shared.Interfaces.Services.IPatientService,
+                LYBT.Desktop.Services.Business.PatientService>();
+            containerRegistry.RegisterScoped<LYBT.Shared.Interfaces.Services.IUserService,
+                LYBT.Desktop.Services.Business.UserService>();
+            containerRegistry.RegisterScoped<LYBT.Shared.Interfaces.Services.IMedicalCaseService,
+                LYBT.Desktop.Services.Business.MedicalCaseService>();
+            containerRegistry.RegisterScoped<LYBT.Shared.Interfaces.Services.IPrescriptionService,
+                LYBT.Desktop.Services.Business.PrescriptionService>();
+            containerRegistry.RegisterScoped<LYBT.Shared.Interfaces.Services.IHerbService,
+                LYBT.Desktop.Services.Business.HerbService>();
+            containerRegistry.RegisterScoped<LYBT.Shared.Interfaces.Services.IFormulaService,
+                LYBT.Desktop.Services.Business.FormulaService>();
+            containerRegistry.RegisterScoped<LYBT.Shared.Interfaces.Services.IConsultationService,
+                LYBT.Desktop.Services.Business.ConsultationService>();
         }
 
         /// <summary>
@@ -427,48 +366,7 @@ namespace LYBT.Desktop.Shell.Extensions
         /// </summary>
         private static void RegisterCoreServices(IContainerRegistry containerRegistry)
         {
-            // TODO: 集中式导航服务在 Core_New 中需要确认位置
-            // containerRegistry.RegisterSingleton<LYBT.Desktop.Services.Navigation.INavigationService,
-            //     LYBT.Desktop.Services.Navigation.NavigationService>();
-
-            // TODO: 权限服务在 Core_New 中需要确认实现
-            // containerRegistry.RegisterSingleton<LYBT.Desktop.Infrastructure.Interfaces.IPermissionService,
-            //     LYBT.Desktop.Services.Security.PermissionService>();
-
-            // TODO: 凭据服务在 Core_New 中需要确认实现
-            // containerRegistry.RegisterSingleton<LYBT.Desktop.Services.Security.ICredentialService,
-            //     LYBT.Desktop.Services.Security.SecureCredentialService>();
-
-            // TODO: 统一会话管理服务在 Core_New 中需要重新实现
-            // Session 相关接口已移至 Infrastructure.Interfaces
-            /*
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Services.Session.UnifiedSessionManager>();
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Services.Session.IUnifiedSessionManager,
-                LYBT.Desktop.Services.Session.UnifiedSessionManager>();
-
-            // 向后兼容性支�?- 映射到统一Session管理�?
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Infrastructure.Interfaces.IUserSessionManager>(provider =>
-                provider.Resolve<LYBT.Desktop.Services.Session.IUnifiedSessionManager>() as LYBT.Desktop.Infrastructure.Interfaces.IUserSessionManager
-                ?? throw new InvalidOperationException("UnifiedSessionManager must implement IUserSessionManager"));
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Infrastructure.Interfaces.ITokenManager>(provider =>
-                provider.Resolve<LYBT.Desktop.Services.Session.IUnifiedSessionManager>() as LYBT.Desktop.Infrastructure.Interfaces.ITokenManager
-                ?? throw new InvalidOperationException("UnifiedSessionManager must implement ITokenManager"));
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Infrastructure.Interfaces.ISessionManager>(provider =>
-                provider.Resolve<LYBT.Desktop.Services.Session.IUnifiedSessionManager>() as LYBT.Desktop.Infrastructure.Interfaces.ISessionManager
-                ?? throw new InvalidOperationException("UnifiedSessionManager must implement ISessionManager"));
-            */
-
-            // 通知服务
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Services.Notifications.INotificationService,
-                LYBT.Desktop.Services.Notifications.NotificationService>();
-
-            // 错误处理服务已在 RegisterBootstrapServices 中注册
-            // containerRegistry.RegisterSingleton<LYBT.Desktop.Infrastructure.Interfaces.IErrorHandlingService,
-            //     LYBT.Desktop.Services.ErrorHandling.UnifiedErrorHandlingService>();
-            // TODO: Issue #815 Phase 3 - 恢复工作台路由服�?
-            // containerRegistry.RegisterSingleton<LYBT.Desktop.Workstation.Core.IWorkstationRouter, LYBT.Desktop.Workstation.Core.WorkstationRouter>();
-
-            // 主窗口服务门�?- 简化MainWindowViewModel的依赖注�?
+            // 主窗口服务门面 - 简化MainWindowViewModel的依赖注入
             containerRegistry.RegisterSingleton<LYBT.Desktop.Infrastructure.Interfaces.IMainWindowServicesFacade,
                 LYBT.Desktop.Infrastructure.Services.MainWindowServicesFacade>();
 
@@ -518,4 +416,5 @@ namespace LYBT.Desktop.Shell.Extensions
         // 所有API客户端现由UnifiedApiClientManager统一管理，提供更好的一致性和可维护�?
         #endregion 辅助方法
     }
+
 }

@@ -39,8 +39,8 @@ namespace LYBT.Desktop.ClinicalWorkstation.ViewModels
             IRegionManager regionManager,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
-            IErrorHandlingService? errorHandlingService = null)
-            : base(eventAggregator, loggerFactory, regionManager, null, errorHandlingService)
+            IUserNotificationService? userNotificationService = null)
+            : base(eventAggregator, loggerFactory, regionManager, null, userNotificationService)
         {
             _regionManager = regionManager;
 

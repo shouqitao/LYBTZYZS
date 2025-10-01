@@ -45,7 +45,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
 
         private bool _isLoading = false;
 
-        public bool IsLoading
+        public new bool IsLoading
         {
             get => _isLoading;
             set => SetProperty(ref _isLoading, value);

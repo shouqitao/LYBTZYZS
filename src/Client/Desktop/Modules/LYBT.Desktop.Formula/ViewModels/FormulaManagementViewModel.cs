@@ -31,8 +31,8 @@ namespace LYBT.Desktop.Formula.ViewModels
             IRegionManager regionManager,
             IFormulaService formulaService,
             ISessionManager? sessionManager = null,
-            IErrorHandlingService? errorHandlingService = null)
-            : base(eventAggregator, loggerFactory, regionManager, sessionManager, errorHandlingService)
+            IUserNotificationService? userNotificationService = null)
+            : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
             _formulaService = formulaService ?? throw new ArgumentNullException(nameof(formulaService));
 

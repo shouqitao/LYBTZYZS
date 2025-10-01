@@ -11,6 +11,7 @@
         Background="White">
 
     <Window.Resources>
+        <!-- 转换器已在 UnifiedDesignSystem.xaml 全局定义 -->
     </Window.Resources>
 
     <!-- UltraThink Phase H: 全局键盘快捷键绑定 -->

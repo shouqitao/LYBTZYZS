@@ -16,7 +16,7 @@ namespace LYBT.Desktop.Models.ViewModels.Base
 
         protected readonly IRegionManager RegionManager;
         protected readonly ISessionManager? SessionManager;
-        protected readonly IErrorHandlingService? ErrorHandlingService;
+        protected readonly IUserNotificationService? UserNotificationService;
 
         #endregion
 
@@ -42,12 +42,12 @@ namespace LYBT.Desktop.Models.ViewModels.Base
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
             ISessionManager? sessionManager = null,
-            IErrorHandlingService? errorHandlingService = null)
+            IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory)
         {
             RegionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
             SessionManager = sessionManager;
-            ErrorHandlingService = errorHandlingService;
+            UserNotificationService = userNotificationService;
         }
 
         #endregion
@@ -415,10 +415,10 @@ namespace LYBT.Desktop.Models.ViewModels.Base
         {
             Logger.LogError(ex, "错误发生在: {Context}", context ?? "未知操作");
 
-            if (ErrorHandlingService != null)
+            if (UserNotificationService != null)
             {
                 var contextInfo = $"{context ?? "未知操作"} - 模块:{GetType().Name} - 用户:{SessionManager?.CurrentUser?.Id}";
-                _ = Task.Run(async () => await ErrorHandlingService.HandleExceptionAsync(ex, contextInfo));
+                _ = Task.Run(async () => await UserNotificationService.HandleExceptionAsync(ex, contextInfo));
             }
             else
             {

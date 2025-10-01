@@ -67,8 +67,8 @@ namespace LYBT.Desktop.Modules.MedicalCase.ViewModels
             IRegionManager regionManager,
             IMedicalCaseService medicalCaseService,
             ISessionManager? sessionManager = null,
-            IErrorHandlingService? errorHandlingService = null)
-            : base(eventAggregator, loggerFactory, regionManager, sessionManager, errorHandlingService)
+            IUserNotificationService? userNotificationService = null)
+            : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
             _medicalCaseService = medicalCaseService ?? throw new ArgumentNullException(nameof(medicalCaseService));
 

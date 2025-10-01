@@ -335,8 +335,8 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             PrescriptionCommandHandler commandHandler,
             PrescriptionEventCoordinator eventCoordinator,
             ISessionManager? sessionManager = null,
-            IErrorHandlingService? errorHandlingService = null)
-            : base(eventAggregator, loggerFactory, regionManager, sessionManager, errorHandlingService)
+            IUserNotificationService? userNotificationService = null)
+            : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
             _prescriptionService = prescriptionService ?? throw new ArgumentNullException(nameof(prescriptionService));
             _medicalCaseService = medicalCaseService ?? throw new ArgumentNullException(nameof(medicalCaseService));
