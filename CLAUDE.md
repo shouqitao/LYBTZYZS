@@ -134,6 +134,7 @@
 - **核心服务**：
   - `filesystem`：目录遍历、读写文件；写入前确认路径。
   - `git`：`status`、`diff`、`log`、`applyPatch`、`commit`。
+  - `github-cli` (`gh`)：统一使用 `gh` 命令行工具处理所有与 GitHub 平台相关的交互，包括但不限于 Issue 的创建与更新、Pull Request 的提交与管理。确保自动化流程的一致性与可追溯性。
   - `context7`：索引与查询 `src/`、`docs/` 内容；缺乏上下文时先 `add` 再 `query`。
   - `serena`：语义代码检索与编辑工具（基于 LSP）
     - 符号搜索：`find_symbol`（全局/局部符号搜索，支持类型过滤）、`find_referencing_symbols`（查找引用关系）
