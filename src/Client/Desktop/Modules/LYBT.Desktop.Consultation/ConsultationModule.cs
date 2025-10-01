@@ -23,9 +23,9 @@ namespace LYBT.Desktop.Consultation
             containerRegistry.Register<ViewModels.ConsultationMainViewModel>();
             containerRegistry.Register<ViewModels.ConsultationManagementViewModel>();
 
-            // 注册视图用于导航 - 需要对应视图文件存在
-            // containerRegistry.RegisterForNavigation<Views.ConsultationMainView>();
-            // containerRegistry.RegisterForNavigation<Views.ConsultationManagementView>();
+            // Phase 2: 启用 Region Navigation 注册
+            containerRegistry.RegisterForNavigation<Views.ConsultationMainView>();
+            containerRegistry.RegisterForNavigation<Views.ConsultationManagementView>();
         }
     }
 }
