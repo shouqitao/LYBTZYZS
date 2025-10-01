@@ -1,17 +1,17 @@
-﻿<Window x:Class="LYBT.Desktop.Prescriptions.Views.SelectFormulaDialog"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d"
-        Title="选择验方模板"
-        Height="700" Width="1000"
-        WindowStartupLocation="CenterOwner"
-        TextElement.Foreground="Black"
-        Background="White"
-        TextElement.FontWeight="Regular"
-        TextElement.FontSize="14"
-        FontFamily="Segoe UI">
+﻿<UserControl x:Class="LYBT.Desktop.Prescriptions.Views.SelectFormulaDialog"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:prism="http://prismlibrary.com/"
+             mc:Ignorable="d"
+             prism:Dialog.WindowStyle="{StaticResource CustomDialogWindowStyle}"
+             d:DesignHeight="700" d:DesignWidth="1000"
+             TextElement.Foreground="Black"
+             Background="White"
+             TextElement.FontWeight="Regular"
+             TextElement.FontSize="14"
+             FontFamily="Segoe UI">
 
     <Grid>
         <Grid.RowDefinitions>
@@ -247,4 +247,4 @@
             </Grid>
         </Border>
     </Grid>
-</Window>
+</UserControl>
