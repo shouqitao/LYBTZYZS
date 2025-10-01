@@ -6,6 +6,7 @@
 ## 最新重点报告（按日期倒序）
 | 日期 | 文档 | 范围 |
 |------|------|------|
+| 2025-10-01 | `issue-828-phase3-prism-dialog-migration.md` | Issue #828 Phase 3完成报告 - Prism Dialog 标准化迁移总结（10个对话框，5个模块，完全移除旧Dialog系统，代码净减少312行） |
 | 2025-10-01 | `issue-828-phase3.1-completion.md` | Issue #828 Phase 3.1完成报告 - Prescriptions 模块 Dialog 标准化（4个对话框，SelectFormulaDialog Window→UserControl 迁移） |
 | 2025-10-01 | `issue-828-phase2-completion.md` | Issue #828 Phase 2完成报告 - Desktop Prism Region Navigation 实施（7个模块，导航历史，生命周期） |
 | 2025-10-01 | `issue-829-phase1-completion.md` | Issue #829 Phase 1完成报告 - Desktop Prism基础重构（已在Issue #815完成） |
