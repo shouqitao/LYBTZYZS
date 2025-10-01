@@ -6,9 +6,12 @@
     <!--  UltraThink 统一设计系统  -->
 
     <!--  合并统一转换器资源字典  -->
+    <!-- Issue #837: UnifiedConverters.xaml 文件不存在,暂时注释掉此引用 -->
+    <!--
     <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="pack://application:,,,/LYBT.Desktop.Core;component/Resources/UnifiedConverters.xaml" />
     </ResourceDictionary.MergedDictionaries>
+    -->
 
     <!--  基础颜色  -->
     <SolidColorBrush x:Key="PrimaryBrush" Color="#2196F3" />

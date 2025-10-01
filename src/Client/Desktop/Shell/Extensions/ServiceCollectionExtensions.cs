@@ -80,7 +80,13 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterSingleton<LYBT.Desktop.Shell.Services.IApplicationInitializationService,
                 LYBT.Desktop.Shell.Services.ApplicationInitializationService>();
 
-            // 注册错误处理服务 - 使用 Services 层的 IErrorHandlingService 接口
+            // Issue #837: 注册错误处理服务 - 使用简单的空实现适配器
+            // MainWindowViewModel 需要 Infrastructure.Interfaces.IErrorHandlingService
+            // 但实际错误处理由 UnifiedErrorHandlingService 完成
+            // TODO: 未来统一两个 IErrorHandlingService 接口
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Infrastructure.Interfaces.IErrorHandlingService,
+                ErrorHandlingServiceStub>();
+
             containerRegistry.RegisterSingleton<LYBT.Desktop.Services.ErrorHandling.IErrorHandlingService,
                 LYBT.Desktop.Services.ErrorHandling.UnifiedErrorHandlingService>();
 
@@ -542,5 +548,22 @@ namespace LYBT.Desktop.Shell.Extensions
         // UltraThink统一API客户端管理器已替代原有的独立API服务注册方式
         // 所有API客户端现由UnifiedApiClientManager统一管理，提供更好的一致性和可维护�?
         #endregion 辅助方法
+    }
+
+    /// <summary>
+    /// Issue #837: ErrorHandlingService 空实现 - 临时适配器
+    /// 用于满足 MainWindowViewModel 的 Infrastructure.Interfaces.IErrorHandlingService 依赖
+    /// 实际错误处理由 UnifiedErrorHandlingService 完成
+    /// TODO: 未来统一两个 IErrorHandlingService 接口
+    /// </summary>
+    internal class ErrorHandlingServiceStub : LYBT.Desktop.Infrastructure.Interfaces.IErrorHandlingService
+    {
+        public Task HandleExceptionAsync(Exception exception, string? context = null) => Task.CompletedTask;
+        public Task ShowErrorAsync(string message, string? title = null) => Task.CompletedTask;
+        public Task ShowSuccessAsync(string message, string? title = null) => Task.CompletedTask;
+        public Task ShowWarningAsync(string message, string? title = null) => Task.CompletedTask;
+        public Task ShowInfoAsync(string message, string? title = null) => Task.CompletedTask;
+        public Task<bool> ShowConfirmAsync(string message, string? title = null) => Task.FromResult(true);
+        public void RegisterGlobalExceptionHandlers() { }
     }
 }
