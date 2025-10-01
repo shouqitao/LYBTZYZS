@@ -76,6 +76,14 @@ namespace LYBT.Desktop.Shell.Extensions
         /// </summary>
         private static void RegisterBootstrapServices(IContainerRegistry containerRegistry)
         {
+            // Issue #838: 注册 IConfiguration - 必须在最前面,因为其他服务依赖它
+            // WPF Prism 不会自动注册 IConfiguration,需要手动创建和注册
+            var configuration = new Microsoft.Extensions.Configuration.ConfigurationBuilder()
+                .SetBasePath(System.IO.Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                .Build();
+            containerRegistry.RegisterInstance<Microsoft.Extensions.Configuration.IConfiguration>(configuration);
+
             // 注册应用程序初始化服�?
             containerRegistry.RegisterSingleton<LYBT.Desktop.Shell.Services.IApplicationInitializationService,
                 LYBT.Desktop.Shell.Services.ApplicationInitializationService>();
