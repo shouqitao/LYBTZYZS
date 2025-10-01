@@ -10,12 +10,14 @@
     
     <!-- Server 项目输出到 BIN\Server\ -->
     <BaseOutputPath Condition="'$(IsServerProject)' == 'true'">$(MSBuildThisFileDirectory)BIN\Server\</BaseOutputPath>
-    
+
     <!-- Desktop 项目输出到 BIN\Desktop\ -->
     <BaseOutputPath Condition="'$(IsDesktopProject)' == 'true'">$(MSBuildThisFileDirectory)BIN\Desktop\</BaseOutputPath>
-    
-    <!-- 其他项目（Tests, Shared 等）输出到 BIN\Shared\ -->
-    <BaseOutputPath Condition="'$(IsServerProject)' != 'true' AND '$(IsDesktopProject)' != 'true'">$(MSBuildThisFileDirectory)BIN\Shared\</BaseOutputPath>
+
+    <!-- Tests 项目输出到 BIN\Tests\ -->
+    <BaseOutputPath Condition="$(MSBuildProjectDirectory.Contains('tests\')) OR $(MSBuildProjectDirectory.Contains('tests/'))">$(MSBuildThisFileDirectory)BIN\Tests\</BaseOutputPath>
+
+    <!-- Shared 项目不设置独立输出路径,跟随引用方输出 -->
 
     <!-- 确保输出目录存在 -->
     <CreateOutputPath>true</CreateOutputPath>
