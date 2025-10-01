@@ -23,9 +23,9 @@ namespace LYBT.Desktop.Herbs
             containerRegistry.Register<ViewModels.HerbManagementViewModel>();
             containerRegistry.Register<ViewModels.HerbDetailViewModel>();
 
-            // 注册视图用于导航 - 需要对应视图文件存在
-            // containerRegistry.RegisterForNavigation<Views.HerbManagementView>();
-            // containerRegistry.RegisterForNavigation<Views.HerbDetailView>();
+            // Phase 2: 启用 Region Navigation 注册（试点模块）
+            containerRegistry.RegisterForNavigation<Views.HerbManagementView>();
+            containerRegistry.RegisterForNavigation<Views.HerbDetailView>();
         }
     }
 }

@@ -20,6 +20,9 @@ namespace LYBT.Desktop.MedicalCase
         {
             // Services由Core_New/Services统一注册，不在Module中注册
 
+            // Phase 3.4: 启用 Prism Dialog 注册
+            containerRegistry.RegisterDialog<Views.CreateMedicalCaseDialog, ViewModels.CreateMedicalCaseDialogViewModel>();
+
             // 注册视图模型 - MVP核心功能
             // TODO: 修复编译错误后再启用
             // containerRegistry.Register<MedicalCaseManagementViewModel>();

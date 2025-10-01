@@ -1,57 +1,15 @@
-﻿using System.Windows;
-using LYBT.Desktop.Infrastructure.Interfaces;
+﻿using System.Windows.Controls;
 
 namespace LYBT.Desktop.Formula.Views
 {
-
     /// <summary>
     /// EditFormulaDialog.xaml 的交互逻辑
     /// </summary>
-    public partial class EditFormulaDialog : Window
+    public partial class EditFormulaDialog : UserControl
     {
-
         public EditFormulaDialog()
         {
             InitializeComponent();
-            Loaded += EditFormulaDialog_Loaded;
-        }
-
-        private void EditFormulaDialog_Loaded(object sender, RoutedEventArgs e)
-        {
-            if (DataContext is ICustomDialogAware dialogAware)
-            {
-                dialogAware.RequestClose += OnRequestClose;
-            }
-        }
-
-        private void OnRequestClose(CustomDialogResult result)
-        {
-            if (DataContext is ICustomDialogAware dialogAware)
-            {
-                dialogAware.RequestClose -= OnRequestClose;
-            }
-
-            DialogResult = result.Result;
-            Close();
-        }
-
-        /// <inheritdoc/>
-        protected override void OnClosed(System.EventArgs e)
-        {
-            if (DataContext is ICustomDialogAware dialogAware)
-            {
-                dialogAware.RequestClose -= OnRequestClose;
-            }
-
-            base.OnClosed(e);
-        }
-
-        public async void Initialize(Guid formulaId)
-        {
-            if (DataContext is ViewModels.EditFormulaDialogViewModel viewModel)
-            {
-                await viewModel.InitializeAsync(formulaId);
-            }
         }
     }
 }

@@ -5,7 +5,6 @@ using System.Windows;
 using System.Windows.Input;
 using LYBT.Desktop.Infrastructure.Helpers;
 using LYBT.Desktop.Patients.Models;
-using LYBT.Desktop.Services.Dialogs;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
@@ -27,7 +26,6 @@ namespace LYBT.Desktop.Patients.ViewModels
         #region Fields
 
         private readonly IPatientService _patientService;
-        private readonly ICustomDialogService _dialogService;
         private readonly ILogger<PatientImportWizardViewModel> _logger;
 
         private ImportWizardStep _currentStep = ImportWizardStep.TemplateDownload;
@@ -216,11 +214,9 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         public PatientImportWizardViewModel(
             IPatientService patientService,
-            ICustomDialogService dialogService,
             ILogger<PatientImportWizardViewModel> logger)
         {
             _patientService = patientService;
-            _dialogService = dialogService;
             _logger = logger;
 
             // 初始化命令
@@ -332,7 +328,7 @@ namespace LYBT.Desktop.Patients.ViewModels
             catch (Exception ex)
             {
                 _logger.LogError(ex, "下载模板失败");
-                await _dialogService.ShowErrorAsync($"下载模板失败: {ex.Message}", "错误");
+                MessageBox.Show($"下载模板失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -487,7 +483,7 @@ namespace LYBT.Desktop.Patients.ViewModels
         {
             if (string.IsNullOrEmpty(SelectedFilePath) || !File.Exists(SelectedFilePath))
             {
-                _ = _dialogService.ShowWarningAsync("请选择有效的Excel文件", "文件选择");
+                MessageBox.Show("请选择有效的Excel文件", "文件选择", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return false;
             }
 
@@ -512,7 +508,7 @@ namespace LYBT.Desktop.Patients.ViewModels
             catch (Exception ex)
             {
                 _logger.LogError(ex, "加载数据预览失败");
-                await _dialogService.ShowErrorAsync($"加载数据失败: {ex.Message}", "数据预览");
+                MessageBox.Show($"加载数据失败: {ex.Message}", "数据预览", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
             {
@@ -746,12 +742,12 @@ namespace LYBT.Desktop.Patients.ViewModels
                     "• 证件号：建议15位或18位\n\n" +
                     "请按照模板格式填写患者数据，然后使用导入功能。";
 
-                await _dialogService.ShowMessageAsync(successMessage, "模板下载成功");
+                MessageBox.Show(successMessage, "模板下载成功", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "下载模板失败: {FilePath}", filePath);
-                await _dialogService.ShowErrorAsync($"下载模板失败: {ex.Message}\n\n请检查文件路径是否正确，或选择其他保存位置。", "下载失败");
+                MessageBox.Show($"下载模板失败: {ex.Message}\n\n请检查文件路径是否正确，或选择其他保存位置。", "下载失败", MessageBoxButton.OK, MessageBoxImage.Error);
                 throw;
             }
         }
@@ -948,11 +944,11 @@ namespace LYBT.Desktop.Patients.ViewModels
 
             if (e.Cancelled)
             {
-                await _dialogService.ShowMessageAsync("导入操作已取消\n已处理的数据未被保存。", "导入取消");
+                MessageBox.Show("导入操作已取消\n已处理的数据未被保存。", "导入取消", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             else if (e.Error != null)
             {
-                await _dialogService.ShowErrorAsync($"导入过程中发生严重错误:\n{e.Error.Message}\n\n请检查Excel文件格式是否正确，或联系技术支持。", "导入错误");
+                MessageBox.Show($"导入过程中发生严重错误:\n{e.Error.Message}\n\n请检查Excel文件格式是否正确，或联系技术支持。", "导入错误", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             else if (e.Result is { } result)
             {
@@ -1003,22 +999,22 @@ namespace LYBT.Desktop.Patients.ViewModels
                 if (successCount > 0 && failCount == 0)
                 {
                     // 完全成功
-                    await _dialogService.ShowMessageAsync(message, "导入成功");
+                    MessageBox.Show(message, "导入成功", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
                 else if (successCount > 0 && failCount > 0)
                 {
                     // 部分成功
-                    await _dialogService.ShowWarningAsync(message, "导入部分成功");
+                    MessageBox.Show(message, "导入部分成功", MessageBoxButton.OK, MessageBoxImage.Warning);
                 }
                 else if (successCount == 0 && failCount > 0)
                 {
                     // 完全失败
-                    await _dialogService.ShowErrorAsync(message, "导入失败");
+                    MessageBox.Show(message, "导入失败", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
                 else
                 {
                     // 异常情况
-                    await _dialogService.ShowMessageAsync(message, "导入结果");
+                    MessageBox.Show(message, "导入结果", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
 
                 // 只有在有成功导入的情况下才触发刷新事件

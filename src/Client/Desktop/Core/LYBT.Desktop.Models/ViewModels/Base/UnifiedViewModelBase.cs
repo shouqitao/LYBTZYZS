@@ -10,7 +10,7 @@ namespace LYBT.Desktop.Models.ViewModels.Base
     /// 统一ViewModel基类 - UltraThink架构重构版本
     /// 提供统一的导航、错误处理、会话管理功能
     /// </summary>
-    public abstract class UnifiedViewModelBase : ViewModelBase, INavigationAware
+    public abstract class UnifiedViewModelBase : ViewModelBase, INavigationAware, IRegionMemberLifetime
     {
         #region 依赖服务
 
@@ -84,12 +84,74 @@ namespace LYBT.Desktop.Models.ViewModels.Base
                 if (region?.NavigationService?.Journal?.CanGoBack == true)
                 {
                     region.NavigationService.Journal.GoBack();
+                    Logger.LogDebug("导航回退成功: {RegionName}", regionName);
+                }
+                else
+                {
+                    Logger.LogWarning("无法回退，导航历史为空: {RegionName}", regionName);
                 }
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex, "导航回退失败");
                 HandleError(ex, "导航回退");
+            }
+        }
+
+        /// <summary>
+        /// 导航前进
+        /// </summary>
+        protected virtual void NavigateForward(string regionName)
+        {
+            try
+            {
+                var region = RegionManager.Regions[regionName];
+                if (region?.NavigationService?.Journal?.CanGoForward == true)
+                {
+                    region.NavigationService.Journal.GoForward();
+                    Logger.LogDebug("导航前进成功: {RegionName}", regionName);
+                }
+                else
+                {
+                    Logger.LogWarning("无法前进，导航历史为空: {RegionName}", regionName);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "导航前进失败");
+                HandleError(ex, "导航前进");
+            }
+        }
+
+        /// <summary>
+        /// 检查指定区域是否可以回退
+        /// </summary>
+        protected virtual bool CanNavigateBack(string regionName)
+        {
+            try
+            {
+                var region = RegionManager.Regions[regionName];
+                return region?.NavigationService?.Journal?.CanGoBack ?? false;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 检查指定区域是否可以前进
+        /// </summary>
+        protected virtual bool CanNavigateForward(string regionName)
+        {
+            try
+            {
+                var region = RegionManager.Regions[regionName];
+                return region?.NavigationService?.Journal?.CanGoForward ?? false;
+            }
+            catch
+            {
+                return false;
             }
         }
 
@@ -383,6 +445,16 @@ namespace LYBT.Desktop.Models.ViewModels.Base
         {
             return SessionManager?.IsAuthenticated ?? false;
         }
+
+        #endregion
+
+        #region IRegionMemberLifetime 实现
+
+        /// <summary>
+        /// 控制视图在导航离开后是否保持活动状态（缓存）
+        /// 默认为 false，子类可重写以启用视图缓存
+        /// </summary>
+        public virtual bool KeepAlive => false;
 
         #endregion
     }

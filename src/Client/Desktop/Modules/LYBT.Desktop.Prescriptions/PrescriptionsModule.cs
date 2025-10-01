@@ -26,9 +26,15 @@ namespace LYBT.Desktop.Prescriptions
             containerRegistry.Register<PrescriptionManagementViewModel>();
             containerRegistry.Register<PrescriptionsMainViewModel>();
 
-            // 注册视图用于导航 - 需要对应视图文件存在
-            // containerRegistry.RegisterForNavigation<Views.PrescriptionManagementView>();
-            // containerRegistry.RegisterForNavigation<Views.PrescriptionsMainView>();
+            // Phase 2: 启用 Region Navigation 注册
+            containerRegistry.RegisterForNavigation<Views.PrescriptionManagementView>();
+            containerRegistry.RegisterForNavigation<Views.PrescriptionsMainView>();
+
+            // Phase 3: 启用 Prism Dialog 注册
+            containerRegistry.RegisterDialog<Views.FormulaTemplateDialog, FormulaTemplateDialogViewModel>();
+            containerRegistry.RegisterDialog<Views.HerbSelectionDialog, HerbSelectionDialogViewModel>();
+            containerRegistry.RegisterDialog<Views.PrescriptionEditorDialog, PrescriptionEditorDialogViewModel>();
+            containerRegistry.RegisterDialog<Views.SelectFormulaDialog, SelectFormulaDialogViewModel>();
         }
     }
 }

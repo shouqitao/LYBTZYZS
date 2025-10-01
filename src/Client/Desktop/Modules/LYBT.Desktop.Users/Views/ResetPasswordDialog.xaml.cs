@@ -7,7 +7,7 @@ namespace LYBT.Desktop.Users.Views
     /// <summary>
     /// ResetPasswordDialog.xaml 的交互逻辑
     /// </summary>
-    public partial class ResetPasswordDialog : Window
+    public partial class ResetPasswordDialog : UserControl
     {
 
         public ResetPasswordDialog()

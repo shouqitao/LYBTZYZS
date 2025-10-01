@@ -1,25 +1,32 @@
 ﻿using System.Collections.ObjectModel;
-
-// UltraThink v2.0: 直接使用FormulaDto，移除Info模型引用
+using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Models.ViewModels.Base;
+using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Formula;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
-using Prism.Mvvm;
-using IFormulaService = LYBT.Shared.Interfaces.Services.IFormulaService;
+using Prism.Events;
+using Prism.Regions;
+using Prism.Services.Dialogs;
 
 namespace LYBT.Desktop.Formula.ViewModels
 {
 
     /// <summary>
-    /// 查看验方对话框视图模型
+    /// 查看验方对话框视图模型 - UltraThink重构版本
+    /// 基于UnifiedViewModelBase实现验方查看功能
     /// </summary>
-    public class ViewFormulaDialogViewModel : BindableBase
+    public class ViewFormulaDialogViewModel : UnifiedViewModelBase, IDialogAware
     {
-        private readonly IFormulaService _formulaService;
-        private readonly ILogger<ViewFormulaDialogViewModel> _logger;
-        private Guid _formulaId;
+        #region 服务依赖
 
-        #region Properties
+        private readonly IFormulaService _formulaService;
+
+        #endregion
+
+        #region 数据属性
+
+        private Guid _formulaId;
 
         private FormulaDto _formula = new();
 
@@ -37,21 +44,7 @@ namespace LYBT.Desktop.Formula.ViewModels
             set => SetProperty(ref _herbItems, value);
         }
 
-        private bool _isLoading;
 
-        public bool IsLoading
-        {
-            get => _isLoading;
-            set => SetProperty(ref _isLoading, value);
-        }
-
-        private string _statusMessage = string.Empty;
-
-        public string StatusMessage
-        {
-            get => _statusMessage;
-            set => SetProperty(ref _statusMessage, value);
-        }
 
         private decimal _totalCost;
 
@@ -61,24 +54,28 @@ namespace LYBT.Desktop.Formula.ViewModels
             set => SetProperty(ref _totalCost, value);
         }
 
-        #endregion Properties
+        #endregion
 
-        #region Commands
+        #region 命令
 
-        public DelegateCommand CloseCommand { get; } = null!;
-        public DelegateCommand PrintCommand { get; } = null!;
-        public DelegateCommand ExportCommand { get; } = null!;
+        public DelegateCommand CloseCommand { get; }
+        public DelegateCommand PrintCommand { get; }
+        public DelegateCommand ExportCommand { get; }
 
-        #endregion Commands
+        #endregion
 
-        #region Constructor
+        #region 构造函数
 
         public ViewFormulaDialogViewModel(
+            IEventAggregator eventAggregator,
+            ILoggerFactory loggerFactory,
+            IRegionManager regionManager,
             IFormulaService formulaService,
-            ILogger<ViewFormulaDialogViewModel> logger)
+            ISessionManager? sessionManager = null,
+            IErrorHandlingService? errorHandlingService = null)
+            : base(eventAggregator, loggerFactory, regionManager, sessionManager, errorHandlingService)
         {
             _formulaService = formulaService ?? throw new ArgumentNullException(nameof(formulaService));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
             // 初始化命令
             CloseCommand = new DelegateCommand(Close);
@@ -86,48 +83,81 @@ namespace LYBT.Desktop.Formula.ViewModels
             ExportCommand = new DelegateCommand(async () => await ExportFormulaAsync());
         }
 
-        #endregion Constructor
+        #endregion
 
-        #region Methods
+        #region IDialogAware 实现
 
-        public void Initialize(Guid formulaId)
+        /// <summary>
+        /// 对话框标题
+        /// </summary>
+        public string Title => "验方模板详情";
+
+        /// <summary>
+        /// 对话框关闭事件
+        /// </summary>
+        public event Action<IDialogResult>? RequestClose;
+
+        /// <summary>
+        /// 是否可以关闭对话框
+        /// </summary>
+        public bool CanCloseDialog() => true;
+
+        /// <summary>
+        /// 对话框关闭时调用
+        /// </summary>
+        public void OnDialogClosed() { }
+
+        /// <summary>
+        /// 对话框打开时调用
+        /// </summary>
+        public void OnDialogOpened(IDialogParameters parameters)
         {
-            _formulaId = formulaId;
-            Task.Run(async () => await LoadFormulaAsync());
+            try
+            {
+                // 从参数中获取配方ID
+                if (parameters.TryGetValue("FormulaId", out Guid formulaId))
+                {
+                    _formulaId = formulaId;
+                    _ = LoadFormulaAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "打开对话框时发生异常");
+            }
         }
+
+        #endregion
+
+        #region 数据加载方法
 
         private async Task LoadFormulaAsync()
         {
             try
             {
-                IsLoading = true;
-                StatusMessage = "正在加载验方详情...";
+                SetIsBusy(true, "正在加载验方详情...");
 
                 var result = await _formulaService.GetByIdAsync(_formulaId);
                 if (result.IsSuccess && result.Data != null)
                 {
-                    // UltraThink v2.0: 直接使用FormulaDto
                     Formula = result.Data;
-
-                    // TODO: 需要根据实际的FormulaDto结构来处理药材项目
-                    // 暂时创建空的药材项目列表
                     HerbItems = new ObservableCollection<FormulaHerbItemDto>();
                     CalculateTotalCost();
                     StatusMessage = string.Empty;
                 }
                 else
                 {
-                    StatusMessage = result.ErrorMessage ?? "加载验方失败";
+                    await ShowErrorMessageAsync(result.ErrorMessage ?? "加载验方失败");
                 }
             }
             catch (Exception ex)
             {
-                StatusMessage = $"加载失败: {ex.Message}";
-                _logger.LogError(ex, "加载验方详情时出错");
+                Logger.LogError(ex, "加载验方详情时出错");
+                await ShowErrorMessageAsync($"加载失败: {ex.Message}");
             }
             finally
             {
-                IsLoading = false;
+                SetIsBusy(false);
             }
         }
 
@@ -145,16 +175,18 @@ namespace LYBT.Desktop.Formula.ViewModels
         {
             try
             {
-                StatusMessage = "正在准备打印...";
-
-                // TODO: 实现打印功能
-                await Task.Delay(1000); // 模拟打印准备
-                StatusMessage = "验方已发送到打印机";
+                SetIsBusy(true, "正在准备打印...");
+                await Task.Delay(1000); // TODO: 实现打印功能
+                await ShowSuccessMessageAsync("验方已发送到打印机");
             }
             catch (Exception ex)
             {
-                StatusMessage = $"打印失败: {ex.Message}";
-                _logger.LogError(ex, "打印验方时出错");
+                Logger.LogError(ex, "打印验方时出错");
+                await ShowErrorMessageAsync($"打印失败: {ex.Message}");
+            }
+            finally
+            {
+                SetIsBusy(false);
             }
         }
 
@@ -162,24 +194,26 @@ namespace LYBT.Desktop.Formula.ViewModels
         {
             try
             {
-                StatusMessage = "正在导出验方...";
-
-                // TODO: 实现导出功能（PDF或Excel）
-                await Task.Delay(500); // 模拟导出
-                StatusMessage = "验方导出成功";
+                SetIsBusy(true, "正在导出验方...");
+                await Task.Delay(500); // TODO: 实现导出功能（PDF或Excel）
+                await ShowSuccessMessageAsync("验方导出成功");
             }
             catch (Exception ex)
             {
-                StatusMessage = $"导出失败: {ex.Message}";
-                _logger.LogError(ex, "导出验方时出错");
+                Logger.LogError(ex, "导出验方时出错");
+                await ShowErrorMessageAsync($"导出失败: {ex.Message}");
+            }
+            finally
+            {
+                SetIsBusy(false);
             }
         }
 
         private void Close()
         {
-            // TODO: Close dialog
+            RequestClose?.Invoke(new DialogResult(ButtonResult.Cancel));
         }
 
-        #endregion Methods
+        #endregion
     }
 }

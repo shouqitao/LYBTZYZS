@@ -1,10 +1,9 @@
 ﻿using LYBT.Desktop.Services.Auth;
-using LYBT.Desktop.Services.Dialogs;
 
 namespace LYBT.Desktop.Infrastructure.Interfaces
 {
     /// <summary>
-    /// 主窗口服务门面接口 - 聚合认证和对话框服务
+    /// 主窗口服务门面接口 - Phase 3.4: 移除对话框服务,仅保留认证服务
     /// </summary>
     public interface IMainWindowServicesFacade
     {
@@ -12,10 +11,5 @@ namespace LYBT.Desktop.Infrastructure.Interfaces
         /// 认证服务
         /// </summary>
         IAuthenticationService AuthenticationService { get; }
-
-        /// <summary>
-        /// 自定义对话框服务
-        /// </summary>
-        ICustomDialogService CustomDialogService { get; }
     }
 }

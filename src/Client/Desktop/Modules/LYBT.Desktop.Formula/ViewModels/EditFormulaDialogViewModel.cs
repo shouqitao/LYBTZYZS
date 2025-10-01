@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Regions;
+using Prism.Services.Dialogs;
 
 namespace LYBT.Desktop.Formula.ViewModels
 {
@@ -15,7 +16,7 @@ namespace LYBT.Desktop.Formula.ViewModels
     /// 配方编辑对话框视图模型 - UltraThink简化版本
     /// 基于UnifiedViewModelBase实现配方编辑功能
     /// </summary>
-    public class EditFormulaDialogViewModel : UnifiedViewModelBase
+    public class EditFormulaDialogViewModel : UnifiedViewModelBase, IDialogAware
     {
         #region 服务依赖
 
@@ -155,9 +156,12 @@ namespace LYBT.Desktop.Formula.ViewModels
                     var result = await _formulaService.UpdateAsync(FormulaId.Value, updateDto);
                     if (result.IsSuccess)
                     {
-                        await ShowSuccessMessageAsync("配方更新成功");
-                        // 通知保存成功，关闭对话框
-                        // TODO: 实现对话框关闭逻辑
+                        var parameters = new DialogParameters
+                        {
+                            { "Formula", result.Data }
+                        };
+                        RequestClose?.Invoke(new DialogResult(ButtonResult.OK, parameters));
+                        Logger.LogInformation("配方更新成功: {FormulaId}", FormulaId);
                     }
                     else
                     {
@@ -176,9 +180,12 @@ namespace LYBT.Desktop.Formula.ViewModels
                     var result = await _formulaService.CreateAsync(createDto);
                     if (result.IsSuccess)
                     {
-                        await ShowSuccessMessageAsync("配方创建成功");
-                        // 通知保存成功，关闭对话框
-                        // TODO: 实现对话框关闭逻辑
+                        var parameters = new DialogParameters
+                        {
+                            { "Formula", result.Data }
+                        };
+                        RequestClose?.Invoke(new DialogResult(ButtonResult.OK, parameters));
+                        Logger.LogInformation("配方创建成功");
                     }
                     else
                     {
@@ -212,7 +219,54 @@ namespace LYBT.Desktop.Formula.ViewModels
         /// </summary>
         private void Cancel()
         {
-            // TODO: 实现对话框关闭逻辑
+            RequestClose?.Invoke(new DialogResult(ButtonResult.Cancel));
+        }
+
+        #endregion
+
+        #region IDialogAware 实现
+
+        /// <summary>
+        /// 对话框标题
+        /// </summary>
+        public string Title => FormulaId.HasValue ? "编辑验方模板" : "新建验方模板";
+
+        /// <summary>
+        /// 对话框关闭事件
+        /// </summary>
+        public event Action<IDialogResult>? RequestClose;
+
+        /// <summary>
+        /// 是否可以关闭对话框
+        /// </summary>
+        public bool CanCloseDialog() => true;
+
+        /// <summary>
+        /// 对话框关闭时调用
+        /// </summary>
+        public void OnDialogClosed() { }
+
+        /// <summary>
+        /// 对话框打开时调用
+        /// </summary>
+        public void OnDialogOpened(IDialogParameters parameters)
+        {
+            try
+            {
+                // 从参数中获取配方ID
+                if (parameters.TryGetValue("FormulaId", out Guid formulaId))
+                {
+                    _ = InitializeAsync(formulaId);
+                }
+                else
+                {
+                    _ = InitializeAsync(null);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "打开对话框时发生异常");
+            }
         }
 
         #endregion
