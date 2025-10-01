@@ -123,7 +123,7 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterSingleton<LYBT.Desktop.Services.Theming.IThemeService,
                 LYBT.Desktop.Services.Theming.ThemeService>();
 
-            // Note: IStartupOptimizationService 实际在 RegisterBootstrapServices 中注册（lines 104-105）
+            // Note: IStartupOptimizationService 实际在 RegisterBootstrapServices 中注册（lines 107-108）
             // RegisterPerformanceServices 当前为空实现，未来可能扩展性能监控服务
         }
 
