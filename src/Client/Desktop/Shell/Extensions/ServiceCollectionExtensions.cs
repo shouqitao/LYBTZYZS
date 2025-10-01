@@ -201,17 +201,34 @@ namespace LYBT.Desktop.Shell.Extensions
         /// </summary>
         private static void RegisterHttpServices(IContainerRegistry containerRegistry)
         {
-            // TODO: HttpClientFactory 和 ApiConfiguration 在 Core_New 中不存在
-            // 需要使用 IUnifiedApiClientManager 或其他方式来管理 HttpClient
-            // 注册基础HttpClient
+            // Issue #835: 注册 IHttpClientFactory 用于 AuthService
+            // Prism/DryIoc 需要使用 RegisterInstance 来注册 HttpClient
+            containerRegistry.RegisterSingleton<IHttpClientFactory>(() =>
+            {
+                return new SimpleHttpClientFactory();
+            });
+
+            // 兼容性:保留单例 HttpClient 供其他旧代码使用
             containerRegistry.RegisterSingleton<HttpClient>(() =>
             {
                 var client = new HttpClient
                 {
-                    BaseAddress = new Uri("http://localhost:5000") // TODO: 从配置读取
+                    BaseAddress = new Uri("http://localhost:5001") // 从配置读取
                 };
                 return client;
             });
+        }
+
+        /// <summary>
+        /// 简单的 HttpClientFactory 实现 - MVP版本
+        /// 生产环境可升级为 Microsoft.Extensions.Http
+        /// </summary>
+        private class SimpleHttpClientFactory : IHttpClientFactory
+        {
+            public HttpClient CreateClient(string name)
+            {
+                return new HttpClient();
+            }
         }
 
         /// <summary>
@@ -400,6 +417,12 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterScoped<IConsultationRepository,
                 LYBT.Desktop.Services.Repositories.ConsultationRepository>();
 
+            // Issue #835: 注册认证服务(使用 Shared.Interfaces)
+            containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Services.IAuthService,
+                LYBT.Desktop.Services.Business.AuthService>();
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Services.Business.ITokenStorageService,
+                LYBT.Desktop.Services.Business.TokenStorageService>();
+
             // TODO: Service层接口在Core_New中不存在，需要使用 Shared.Interfaces 或创建新接口
             // 暂时注释掉，等待接口定义
             /*
@@ -417,8 +440,6 @@ namespace LYBT.Desktop.Shell.Extensions
                 LYBT.Desktop.Services.Business.FormulaService>();
             containerRegistry.RegisterScoped<LYBT.Desktop.Services.Interfaces.IConsultationService,
                 LYBT.Desktop.Services.Business.ConsultationService>();
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Services.Interfaces.IAuthService,
-                LYBT.Desktop.Services.Business.AuthService>();
             */
         }
 
