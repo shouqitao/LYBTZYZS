@@ -1,10 +1,8 @@
 ﻿using System.Windows.Input;
 using AutoMapper;
+using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
-using LYBT.Desktop.Services.Dialogs;
-using LYBT.Desktop.Services.ErrorHandling;
 using LYBT.Desktop.Services.Print;
-using LYBT.Desktop.Services.Session;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Patients;
 using Microsoft.Extensions.Logging;
@@ -19,13 +17,12 @@ namespace LYBT.Desktop.Patients.ViewModels
     /// 患者详情视图模型 - UltraThink v2.0架构
     /// 提供患者详细信息查看功能
     /// </summary>
-    public class PatientDetailViewModel : ViewModelBase
+    public class PatientDetailViewModel : UnifiedViewModelBase
     {
 
         #region 私有字段
 
         private readonly IPatientService _patientService;
-        private readonly ICustomDialogService _dialogService;
         private readonly IRegionManager _navigationService;
         private readonly IMapper _mapper;
         private readonly IPrescriptionPrintService _printService;
@@ -101,19 +98,17 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         public PatientDetailViewModel(
             IPatientService patientService,
-            ICustomDialogService dialogService,
             IRegionManager navigationService,
             IMapper mapper,
             IPrescriptionPrintService printService,
-            IErrorHandlingService errorHandlingService,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
-            ISessionManager? sessionManager = null)
-            : base(eventAggregator, loggerFactory)
+            ISessionManager? sessionManager = null,
+            IErrorHandlingService? errorHandlingService = null)
+            : base(eventAggregator, loggerFactory, regionManager, sessionManager, errorHandlingService)
         {
             _patientService = patientService ?? throw new ArgumentNullException(nameof(patientService));
-            _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
             _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _printService = printService ?? throw new ArgumentNullException(nameof(printService));
@@ -194,12 +189,12 @@ namespace LYBT.Desktop.Patients.ViewModels
                 }
                 else
                 {
-                    await _dialogService.ShowErrorAsync($"加载患者详情失败: {result.ErrorMessage}", "错误");
+                    await ShowErrorMessageAsync($"加载患者详情失败: {result.ErrorMessage}");
                 }
             }
             catch (Exception ex)
             {
-                await _dialogService.ShowErrorAsync($"加载患者详情失败: {ex.Message}", "错误");
+                await ShowErrorMessageAsync($"加载患者详情失败: {ex.Message}");
             }
             finally
             {
@@ -229,16 +224,16 @@ namespace LYBT.Desktop.Patients.ViewModels
                     RefreshProperties();
                     RaiseCanExecuteChanged();
 
-                    await _dialogService.ShowMessageAsync("患者信息保存成功", "成功");
+                    await ShowSuccessMessageAsync("患者信息保存成功");
                 }
                 else
                 {
-                    await _dialogService.ShowErrorAsync($"保存失败: {result.ErrorMessage}", "错误");
+                    await ShowErrorMessageAsync($"保存失败: {result.ErrorMessage}");
                 }
             }
             catch (Exception ex)
             {
-                await _dialogService.ShowErrorAsync($"保存失败: {ex.Message}", "错误");
+                await ShowErrorMessageAsync($"保存失败: {ex.Message}");
             }
             finally
             {
@@ -278,7 +273,7 @@ namespace LYBT.Desktop.Patients.ViewModels
         {
             if (Patient == null)
             {
-                await _dialogService.ShowWarningAsync("患者信息不完整，无法打印", "提示");
+                await ShowWarningMessageAsync("患者信息不完整，无法打印");
                 return;
             }
 
@@ -288,12 +283,12 @@ namespace LYBT.Desktop.Patients.ViewModels
                 // TODO: 需要修改打印服务或创建患者专用打印方法
                 // var previewResult = await _printService.PreviewPatientAsync(Patient);
                 // 暂时注释掉打印功能
-                await _dialogService.ShowWarningAsync("打印功能正在开发中", "提示");
+                await ShowWarningMessageAsync("打印功能正在开发中");
                 return;
             }
             catch (Exception ex)
             {
-                await _dialogService.ShowErrorAsync($"打印病历失败: {ex.Message}", "打印错误");
+                await ShowErrorMessageAsync($"打印病历失败: {ex.Message}");
             }
         }
 
@@ -317,7 +312,7 @@ namespace LYBT.Desktop.Patients.ViewModels
             }
             catch (Exception ex)
             {
-                await _dialogService.ShowErrorAsync($"操作失败: {ex.Message}", "错误");
+                await ShowErrorMessageAsync($"操作失败: {ex.Message}");
             }
         }
 

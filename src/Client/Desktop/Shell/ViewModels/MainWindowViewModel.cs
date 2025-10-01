@@ -273,11 +273,11 @@ public class MainWindowViewModel : UnifiedViewModelBase
                 }
             });
 
-            await _servicesFacade.CustomDialogService.ShowInformationAsync("主题已切换", "提示");
+            await ShowSuccessMessageAsync("主题已切换");
         }
         catch (Exception ex)
         {
-            await _servicesFacade.CustomDialogService.ShowErrorAsync($"主题切换失败：{ex.Message}", "错误");
+            await ShowErrorMessageAsync($"主题切换失败:{ex.Message}");
         }
     }
 
@@ -334,7 +334,7 @@ public class MainWindowViewModel : UnifiedViewModelBase
     /// </summary>
     private async Task ExecuteLogoutAsync()
     {
-        var result = await _servicesFacade.CustomDialogService.ShowConfirmationAsync("确定要退出登录吗？", "退出确认");
+        var result = await ShowConfirmationAsync("确定要退出登录吗？");
         if (result)
         {
             try
@@ -374,7 +374,7 @@ public class MainWindowViewModel : UnifiedViewModelBase
             }
             catch (Exception ex)
             {
-                await _servicesFacade.CustomDialogService.ShowErrorAsync($"退出登录失败：{ex.Message}", "错误");
+                await ShowErrorMessageAsync($"退出登录失败:{ex.Message}");
             }
         }
     }
@@ -430,7 +430,7 @@ public class MainWindowViewModel : UnifiedViewModelBase
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($" CheckLoginStatusAsync 异常: {ex.Message}");
-            await _servicesFacade.CustomDialogService.ShowErrorAsync($"检查登录状态失败：{ex.Message}", "错误");
+            await ShowErrorMessageAsync($"检查登录状态失败:{ex.Message}");
             ShowLoginDialog();
         }
     }
@@ -509,8 +509,7 @@ public class MainWindowViewModel : UnifiedViewModelBase
                 // 异步显示错误对话框
                 _ = Task.Run(async () =>
         {
-            await _servicesFacade.CustomDialogService.ShowErrorAsync(
-    $"无法加载工作台 {errorMessage}", "系统错误");
+            await ShowErrorMessageAsync($"无法加载工作台 {errorMessage}");
         });
             }
             else
@@ -615,11 +614,11 @@ public class MainWindowViewModel : UnifiedViewModelBase
     {
         try
         {
-            await _servicesFacade.CustomDialogService.ShowInformationAsync("API测试功能将在未来版本中实现", "提示");
+            await ShowSuccessMessageAsync("API测试功能将在未来版本中实现");
         }
         catch (Exception ex)
         {
-            await _servicesFacade.CustomDialogService.ShowErrorAsync($"API测试失败: {ex.Message}", "错误");
+            await ShowErrorMessageAsync($"API测试失败: {ex.Message}");
         }
     }
 
@@ -654,11 +653,11 @@ public class MainWindowViewModel : UnifiedViewModelBase
             _regionManager.RequestNavigate(RegionNames.ContentRegion, "PatientManagementView", navigationParams);
 
             // 显示成功提示
-            await _servicesFacade.CustomDialogService.ShowInformationAsync("已切换到患者管理页面，准备添加新患者", "快速操作");
+            await ShowSuccessMessageAsync("已切换到患者管理页面，准备添加新患者");
         }
         catch (Exception ex)
         {
-            await _servicesFacade.CustomDialogService.ShowErrorAsync($"快速添加患者失败：{ex.Message}", "错误");
+            await ShowErrorMessageAsync($"快速添加患者失败:{ex.Message}");
         }
     }
 
@@ -679,11 +678,11 @@ public class MainWindowViewModel : UnifiedViewModelBase
                 }
             });
 
-            await _servicesFacade.CustomDialogService.ShowInformationAsync("已切换到诊疗工作台，准备开始诊疗", "快速操作");
+            await ShowSuccessMessageAsync("已切换到诊疗工作台，准备开始诊疗");
         }
         catch (Exception ex)
         {
-            await _servicesFacade.CustomDialogService.ShowErrorAsync($"快速开始诊疗失败：{ex.Message}", "错误");
+            await ShowErrorMessageAsync($"快速开始诊疗失败:{ex.Message}");
         }
     }
 
@@ -702,7 +701,7 @@ public class MainWindowViewModel : UnifiedViewModelBase
             "• Ctrl+, - 打开设置\n\n" +
             "更多功能正在开发中...";
 
-            _ = _servicesFacade.CustomDialogService.ShowInformationAsync(helpMessage, "系统帮助");
+            _ = ShowSuccessMessageAsync(helpMessage);
         }
         catch (Exception ex)
         {
@@ -718,7 +717,7 @@ public class MainWindowViewModel : UnifiedViewModelBase
         try
         {
             // 将来可以导航到设置页面
-            _ = _servicesFacade.CustomDialogService.ShowInformationAsync("用户设置功能将在未来版本中实现", "设置");
+            _ = ShowSuccessMessageAsync("用户设置功能将在未来版本中实现");
         }
         catch (Exception ex)
         {

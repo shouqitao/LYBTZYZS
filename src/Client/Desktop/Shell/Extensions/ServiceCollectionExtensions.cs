@@ -498,21 +498,9 @@ namespace LYBT.Desktop.Shell.Extensions
         /// </summary>
         private static void RegisterDialogs(IContainerRegistry containerRegistry)
         {
-            // 精简对话框服�?- Phase 2重构：SimplifiedDialogService
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Services.Dialogs.ICustomDialogService,
-                LYBT.Desktop.Infrastructure.Services.SimplifiedDialogService>();
-
-            // 注册业务对话框（在服务启动后动态注册）
-            containerRegistry.RegisterInstance<Action<LYBT.Desktop.Services.Dialogs.ICustomDialogService>>(RegisterBusinessDialogs);
-        }
-
-        /// <summary>
-        /// 注册业务对话框Views
-        /// </summary>
-        private static void RegisterBusinessDialogs(LYBT.Desktop.Services.Dialogs.ICustomDialogService dialogService)
-        {
-            // Phase 2简化：业务对话框使用约定优于配置，无需手动注册
-            // 注释：对话框服务已简化，使用约定优于配置模式
+            // Phase 3.4: 所有 Dialog 现在使用 Prism Dialog System
+            // SimplifiedDialogService 和 ICustomDialogService 已删除
+            // 各模块通过 containerRegistry.RegisterDialog&lt;TView, TViewModel&gt;() 注册
         }
 
         /// <summary>
