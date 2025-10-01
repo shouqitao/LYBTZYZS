@@ -423,6 +423,10 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterSingleton<LYBT.Desktop.Services.Business.ITokenStorageService,
                 LYBT.Desktop.Services.Business.TokenStorageService>();
 
+            // Issue #835: 注册 IAuthenticationService 适配器(供 MainWindowViewModel 使用)
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Services.Auth.IAuthenticationService,
+                LYBT.Desktop.Services.Auth.AuthenticationService>();
+
             // TODO: Service层接口在Core_New中不存在，需要使用 Shared.Interfaces 或创建新接口
             // 暂时注释掉，等待接口定义
             /*

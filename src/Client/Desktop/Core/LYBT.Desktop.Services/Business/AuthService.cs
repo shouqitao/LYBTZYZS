@@ -57,9 +57,14 @@ namespace LYBT.Desktop.Services.Business
                     if (apiResponse?.Success == true && apiResponse.Data != null)
                     {
                         _currentLoginResponse = apiResponse.Data;
-                        _logger.LogInformation("用户登录成功: {Username}, Role: {Role}",
+
+                        // 保存 Token 到本地(根据 RememberMe 决定是否持久化)
+                        await _tokenStorage.SaveAuthenticationAsync(apiResponse.Data, request.RememberMe);
+
+                        _logger.LogInformation("用户登录成功: {Username}, Role: {Role}, RememberMe: {RememberMe}",
                             apiResponse.Data.User.UserName,
-                            apiResponse.Data.User.Role);
+                            apiResponse.Data.User.Role,
+                            request.RememberMe);
 
                         return ServiceResult<LoginResponse>.Success(apiResponse.Data);
                     }
@@ -255,13 +260,15 @@ namespace LYBT.Desktop.Services.Business
         }
 
         /// <summary>
-        /// 保存认证信息到本地
+        /// 保存认证信息到本地 - 供外部调用(如 LoginViewModel)
+        /// 注意:LoginAsync 已自动保存 Token,此方法可用于重新保存或更新
         /// </summary>
         public async Task SaveAuthenticationAsync(LoginResponse loginResponse)
         {
-            // 使用 TokenStorageService 保存
+            // 默认持久化保存(LoginViewModel 期望的行为)
             await _tokenStorage.SaveAuthenticationAsync(loginResponse, rememberMe: true);
-            _logger.LogInformation("认证信息已保存");
+            _currentLoginResponse = loginResponse;
+            _logger.LogInformation("认证信息已保存(外部调用)");
         }
 
         /// <summary>
