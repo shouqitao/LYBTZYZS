@@ -9,8 +9,6 @@ using Microsoft.Extensions.Logging;
 using LYBT.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace LYBT.Module.Auth.Services
 {
@@ -50,16 +48,7 @@ namespace LYBT.Module.Auth.Services
         {
             try
             {
-                // 从配置获取超级管理员用户名
-                var sysAdminUsername = _configuration["Lybt:Business:SystemAdmin:Username"] ?? "clinic_admin";
-                
-                // 用户名不匹配则不是超级管理员
-                if (!string.Equals(username, sysAdminUsername, StringComparison.OrdinalIgnoreCase))
-                {
-                    return false;
-                }
-
-                // 从AdminSecrets表验证密码
+                // 从AdminSecrets表获取超级管理员信息
                 var adminSecret = await _dbContext.AdminSecrets.FirstOrDefaultAsync(cancellationToken);
                 if (adminSecret == null)
                 {
@@ -67,13 +56,18 @@ namespace LYBT.Module.Auth.Services
                     return false;
                 }
 
-                // 验证密码哈希
-                var hashedPassword = HashPassword(password);
-                bool isValid = string.Equals(adminSecret.PasswordHash, hashedPassword, StringComparison.Ordinal);
-                
+                // 直接使用数据库中的用户名，保证一致性
+                if (!string.Equals(username, adminSecret.UserName, StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+
+                // 使用 BCrypt 验证密码（与普通用户一致）
+                bool isValid = BCrypt.Net.BCrypt.Verify(password, adminSecret.PasswordHash);
+
                 if (isValid)
                 {
-                    _logger.LogInformation("超级管理员认证成功（隐藏的用户名）");
+                    _logger.LogInformation("超级管理员登录成功: {Username}", username);
                 }
                 else
                 {
@@ -87,16 +81,6 @@ namespace LYBT.Module.Auth.Services
                 _logger.LogError(ex, "验证超级管理员凭据时发生错误");
                 return false;
             }
-        }
-
-        /// <summary>
-        /// 简单的密码哈希方法（生产环境应使用BCrypt或Argon2）
-        /// </summary>
-        private string HashPassword(string password)
-        {
-            using var sha256 = SHA256.Create();
-            var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
-            return Convert.ToBase64String(hashedBytes);
         }
 
         #endregion
