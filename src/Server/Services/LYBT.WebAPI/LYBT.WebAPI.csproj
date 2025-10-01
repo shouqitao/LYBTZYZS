@@ -58,8 +58,8 @@
 		<ProjectReference Include="..\..\..\Shared\LYBT.Shared.Utilities\LYBT.Shared.Utilities.csproj" />
 		<!-- Phase 3: 项目结构优化 - 使用统一的Core和Modules项目 -->
 		<ProjectReference Include="..\..\Core\LYBT.Core\LYBT.Core.csproj" />
-		<!-- 暂时禁用Auth模块以创建迁移 -->
-		<!-- <ProjectReference Include="..\..\Modules\LYBT.Module.Auth\LYBT.Module.Auth.csproj" /> -->
+		<!-- Phase 3: Auth模块已启用 -->
+		<ProjectReference Include="..\..\Modules\LYBT.Module.Auth\LYBT.Module.Auth.csproj" />
 		<ProjectReference Include="..\..\Modules\LYBT.Module.Users\LYBT.Module.Users.csproj" />
 		<ProjectReference Include="..\..\Modules\LYBT.Module.Consultation\LYBT.Module.Consultation.csproj" />
 		<ProjectReference Include="..\..\Modules\LYBT.Module.Herbs\LYBT.Module.Herbs.csproj" />

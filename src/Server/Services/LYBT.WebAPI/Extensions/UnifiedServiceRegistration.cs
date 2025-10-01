@@ -8,7 +8,7 @@ using LYBT.Core.Infrastructure.Configuration.Options;
 using LYBT.WebAPI.Services;
 using LYBT.Core.Infrastructure.Configuration.Services;
 using LYBT.Core.Infrastructure.Configuration.Extensions;
-// using LYBT.Module.Auth; // 暂时禁用以创建迁移
+using LYBT.Module.Auth;
 using LYBT.Module.Users;
 using LYBT.Module.Consultation;
 using LYBT.Module.Herbs;
@@ -386,8 +386,8 @@ public static class UnifiedServiceRegistration
         // 使用简化的模块注册方法
         // 每个模块负责注册自己的服务、仓储、验证器等
         
-        // 1. 认证模块 - 暂时禁用以创建迁移
-        // services.AddAuthModule(configuration);
+        // 1. 认证模块
+        services.AddAuthModule(configuration);
         
         // 2. 用户模块
         services.AddUsersModule(configuration);

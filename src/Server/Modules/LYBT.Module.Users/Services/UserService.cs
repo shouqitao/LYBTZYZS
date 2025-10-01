@@ -127,9 +127,9 @@ namespace LYBT.Module.Users.Services
         {
             try
             {
-                var entities = await _repository.FindAsync(u => 
-                    u.UsernName.Contains(keyword) || 
-                    u.RealName.Contains(keyword) || 
+                var entities = await _repository.FindAsync(u =>
+                    u.UserName.Contains(keyword) ||
+                    u.RealName.Contains(keyword) ||
                     (u.Email != null && u.Email.Contains(keyword)));
                 var dto = _mapper.Map<List<UserDto>>(entities);
                 return ServiceResult<List<UserDto>>.Success(dto);
@@ -164,7 +164,7 @@ namespace LYBT.Module.Users.Services
         {
             try
             {
-                var exists = await _repository.ExistsAsync(u => u.UsernName == userName);
+                var exists = await _repository.ExistsAsync(u => u.UserName == userName);
                 return ServiceResult<bool>.Success(!exists);
             }
             catch (Exception ex)

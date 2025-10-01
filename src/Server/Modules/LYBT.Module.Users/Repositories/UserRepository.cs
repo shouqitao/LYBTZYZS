@@ -200,8 +200,9 @@ namespace LYBT.Module.Users.Repositories
             if (string.IsNullOrWhiteSpace(username))
                 return null;
 
+            // 支持用户名或邮箱登录
             return await _dbSet
-                .FirstOrDefaultAsync(u => u.Email == username && !u.IsDeleted);
+                .FirstOrDefaultAsync(u => (u.UserName == username || u.Email == username) && !u.IsDeleted);
         }
 
         public async Task<User?> GetByEmailAsync(string email)

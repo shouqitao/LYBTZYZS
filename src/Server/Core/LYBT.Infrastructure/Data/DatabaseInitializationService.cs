@@ -21,18 +21,18 @@ public class DatabaseInitializationService
     }
 
     /// <summary>
-    /// 初始化数据库 - 简化版本
+    /// 初始化数据库 - 使用 EF Migrations
     /// </summary>
     public async Task InitializeDatabaseAsync()
     {
         try
     {
-            _logger.LogInformation("开始初始化数据库");
-            
-            // 确保数据库已创建
-            await _context.Database.EnsureCreatedAsync();
-            
-            _logger.LogInformation("数据库初始化完成");
+            _logger.LogInformation("开始初始化数据库并应用迁移");
+
+            // 使用 Migrations 自动应用待执行的迁移
+            await _context.Database.MigrateAsync();
+
+            _logger.LogInformation("数据库初始化完成，所有迁移已应用");
         }
         catch (Exception ex)
         {

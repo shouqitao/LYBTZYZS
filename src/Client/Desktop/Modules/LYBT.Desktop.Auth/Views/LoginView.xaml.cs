@@ -15,7 +15,10 @@ namespace LYBT.Desktop.Auth.Views
 
         private void PasswordBox_PasswordChanged(object sender, System.Windows.RoutedEventArgs e)
         {
-            // TODO: 重构后重新实现
+            if (DataContext is Auth.ViewModels.LoginViewModel viewModel && sender is PasswordBox passwordBox)
+            {
+                viewModel.Password = passwordBox.Password;
+            }
         }
     }
 }

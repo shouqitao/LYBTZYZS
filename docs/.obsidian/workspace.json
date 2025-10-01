@@ -170,5 +170,8 @@
     }
   },
   "active": "dc4dd32996aa7a1c",
-  "lastOpenFiles": []
+  "lastOpenFiles": [
+    "development/ef-migrations-guide.md",
+    "reports/desktop-architecture-audit-2025-10-01.md"
+  ]
 }

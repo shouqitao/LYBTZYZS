@@ -18,13 +18,13 @@ namespace LYBT.Module.Users.Mapping
 
             // 用户实体转UserDto（API响应和业务逻辑）
             CreateMap<User, UserDto>()
-                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.UsernName)) // 统一命名
+                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.UserName)) // 统一命名
                 .ForMember(dest => dest.CreateTime, opt => opt.MapFrom(src => src.CreatedAt)) // 映射审计字段
                 .ForMember(dest => dest.UpdateTime, opt => opt.MapFrom(src => src.UpdatedAt)); // 映射审计字段
 
             // UserCreateDto转用户实体
             CreateMap<UserCreateDto, User>()
-                .ForMember(dest => dest.UsernName, opt => opt.MapFrom(src => src.Username)) // 映射Username到UsernName
+                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Username)) // 映射Username到UserName
                 .ForMember(dest => dest.Id, opt => opt.Ignore()) // ID由业务逻辑处理
                 .ForMember(dest => dest.PasswordHash, opt => opt.Ignore()) // 密码由业务逻辑处理
                 .ForMember(dest => dest.FailedLoginCount, opt => opt.Ignore())
@@ -42,7 +42,7 @@ namespace LYBT.Module.Users.Mapping
             // UserUpdateDto转用户实体
             CreateMap<UserUpdateDto, User>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore()) // ID由业务逻辑处理
-                .ForMember(dest => dest.UsernName, opt => opt.Ignore()) // 用户名不允许修改
+                .ForMember(dest => dest.UserName, opt => opt.Ignore()) // 用户名不允许修改
                 .ForMember(dest => dest.PasswordHash, opt => opt.Ignore()) // 密码由业务逻辑处理
                 .ForMember(dest => dest.FailedLoginCount, opt => opt.Ignore())
                 .ForMember(dest => dest.LockoutEnd, opt => opt.Ignore())

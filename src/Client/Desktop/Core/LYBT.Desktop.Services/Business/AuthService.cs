@@ -48,7 +48,7 @@ namespace LYBT.Desktop.Services.Business
                 httpClient.Timeout = TimeSpan.FromSeconds(_configuration.GetValue<int>("ApiSettings:TimeoutSeconds", 60));
 
                 // 调用 Server API
-                var response = await httpClient.PostAsJsonAsync("/api/auth/login", request, cancellationToken);
+                var response = await httpClient.PostAsJsonAsync("/api/v1/auth/login", request, cancellationToken);
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -128,7 +128,7 @@ namespace LYBT.Desktop.Services.Business
                 }
 
                 // 调用 Server API
-                var response = await httpClient.PostAsJsonAsync("/api/auth/logout", request);
+                var response = await httpClient.PostAsJsonAsync("/api/v1/auth/logout", request);
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -186,7 +186,7 @@ namespace LYBT.Desktop.Services.Business
                 httpClient.BaseAddress = new Uri(baseUrl);
 
                 // 调用 Server API (假设有刷新Token端点)
-                var response = await httpClient.PostAsJsonAsync("/api/auth/refresh", new { RefreshToken = refreshToken });
+                var response = await httpClient.PostAsJsonAsync("/api/v1/auth/refresh", new { RefreshToken = refreshToken });
 
                 if (response.IsSuccessStatusCode)
                 {
