@@ -114,9 +114,7 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterSingleton<LYBT.Desktop.Services.Theming.IThemeService,
                 LYBT.Desktop.Services.Theming.ThemeService>();
 
-            // UltraThink Phase H: 高级功能优化服务
-            containerRegistry.RegisterSingleton<IStartupOptimizationService,
-                StartupOptimizationService>();
+            // Issue #837: IStartupOptimizationService 已在 RegisterPerformanceServices 中注册,移除重复注册
 
             // TODO: IUserPreferencesService 在 Core_New 中不存在,需要根据实际需要决定是否实现
             // containerRegistry.RegisterSingleton<LYBT.Desktop.Services.Settings.IUserPreferencesService,
