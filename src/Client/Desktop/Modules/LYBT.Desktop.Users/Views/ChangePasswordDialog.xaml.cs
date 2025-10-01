@@ -7,7 +7,7 @@ namespace LYBT.Desktop.Users.Views
     /// <summary>
     /// ChangePasswordDialog.xaml 的交互逻辑
     /// </summary>
-    public partial class ChangePasswordDialog : Window
+    public partial class ChangePasswordDialog : UserControl
     {
 
         public ChangePasswordDialog()

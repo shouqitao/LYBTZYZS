@@ -31,10 +31,10 @@ namespace LYBT.Desktop.Users
             containerRegistry.RegisterForNavigation<Views.UserManagementView>();
             containerRegistry.RegisterForNavigation<Views.UserDetailView>();
 
-            // 注册对话框视图
-            containerRegistry.RegisterDialog<Views.ChangePasswordDialog>();
-            containerRegistry.RegisterDialog<Views.ResetPasswordDialog>();
-            containerRegistry.RegisterDialog<Views.UserProfileDialog>();
+            // Phase 3: 启用 Prism Dialog 注册
+            containerRegistry.RegisterDialog<Views.ChangePasswordDialog, ViewModels.ChangePasswordDialogViewModel>();
+            containerRegistry.RegisterDialog<Views.ResetPasswordDialog, ViewModels.ResetPasswordDialogViewModel>();
+            containerRegistry.RegisterDialog<Views.UserProfileDialog, ViewModels.UserProfileDialogViewModel>();
         }
     }
 }
