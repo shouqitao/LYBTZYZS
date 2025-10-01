@@ -26,6 +26,10 @@ namespace LYBT.Desktop.Formula
             // Phase 2: 启用 Region Navigation 注册
             containerRegistry.RegisterForNavigation<Views.FormulaManagementView>();
             containerRegistry.RegisterForNavigation<Views.FormulaDetailView>();
+
+            // Phase 3: 启用 Prism Dialog 注册
+            containerRegistry.RegisterDialog<Views.EditFormulaDialog, ViewModels.EditFormulaDialogViewModel>();
+            containerRegistry.RegisterDialog<Views.ViewFormulaDialog, ViewModels.ViewFormulaDialogViewModel>();
         }
     }
 }
