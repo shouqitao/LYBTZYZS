@@ -439,7 +439,7 @@ namespace LYBT.Desktop.Users.ViewModels
         /// <summary>
         /// 验证指定属性
         /// </summary>
-        private void ValidateProperty([System.Runtime.CompilerServices.CallerMemberName] string? propertyName = null)
+        protected override void ValidateProperty([System.Runtime.CompilerServices.CallerMemberName] string? propertyName = null)
         {
             if (string.IsNullOrEmpty(propertyName)) return;
 

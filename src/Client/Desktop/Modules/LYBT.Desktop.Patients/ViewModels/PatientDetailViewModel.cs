@@ -128,7 +128,7 @@ namespace LYBT.Desktop.Patients.ViewModels
         #region INavigationAware 实现
 
         /// <inheritdoc/>
-        public void OnNavigatedTo(NavigationContext navigationContext)
+        public override void OnNavigatedTo(NavigationContext navigationContext)
         {
             if (navigationContext.Parameters.ContainsKey("PatientId"))
             {
@@ -145,7 +145,7 @@ namespace LYBT.Desktop.Patients.ViewModels
         }
 
         /// <inheritdoc/>
-        public bool IsNavigationTarget(NavigationContext navigationContext)
+        public override bool IsNavigationTarget(NavigationContext navigationContext)
         {
             if (navigationContext.Parameters.ContainsKey("PatientId"))
             {
@@ -157,7 +157,7 @@ namespace LYBT.Desktop.Patients.ViewModels
         }
 
         /// <inheritdoc/>
-        public void OnNavigatedFrom(NavigationContext navigationContext)
+        public override void OnNavigatedFrom(NavigationContext navigationContext)
         {
             if (!IsReadOnly && HasUnsavedChanges())
             {

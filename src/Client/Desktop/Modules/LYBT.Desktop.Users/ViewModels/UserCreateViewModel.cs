@@ -312,7 +312,7 @@ namespace LYBT.Desktop.Users.ViewModels
         /// <summary>
         /// 验证确认密码
         /// </summary>
-        protected virtual void ValidateProperty([System.Runtime.CompilerServices.CallerMemberName] string? propertyName = null)
+        protected override void ValidateProperty([System.Runtime.CompilerServices.CallerMemberName] string? propertyName = null)
         {
             // 基础验证通过DataAnnotations自动处理
 
