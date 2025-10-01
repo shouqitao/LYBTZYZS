@@ -565,7 +565,7 @@ namespace LYBT.Desktop.Shell.Extensions
     /// 实际错误处理由 UnifiedErrorHandlingService 完成
     /// TODO: 未来统一两个 IErrorHandlingService 接口
     /// </summary>
-    internal class ErrorHandlingServiceStub : LYBT.Desktop.Infrastructure.Interfaces.IErrorHandlingService
+    public class ErrorHandlingServiceStub : LYBT.Desktop.Infrastructure.Interfaces.IErrorHandlingService
     {
         public Task HandleExceptionAsync(Exception exception, string? context = null) => Task.CompletedTask;
         public Task ShowErrorAsync(string message, string? title = null) => Task.CompletedTask;
