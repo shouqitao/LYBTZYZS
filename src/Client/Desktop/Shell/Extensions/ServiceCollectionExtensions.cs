@@ -1,5 +1,6 @@
 ﻿using System.Net.Http;
 using AutoMapper;
+using Microsoft.Extensions.Configuration;
 using LYBT.Desktop.Infrastructure.Commands;
 using LYBT.Desktop.Services.Modules;
 using LYBT.Desktop.Services.Performance;
