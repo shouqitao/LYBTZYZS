@@ -122,8 +122,8 @@ namespace LYBT.Desktop.Users.ViewModels
             IRegionManager regionManager,
             IUserService userService,
             ISessionManager? sessionManager = null,
-            IErrorHandlingService? errorHandlingService = null)
-            : base(eventAggregator, loggerFactory, regionManager, sessionManager, errorHandlingService)
+            IUserNotificationService? userNotificationService = null)
+            : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
             _userService = userService ?? throw new ArgumentNullException(nameof(userService));
 
@@ -207,7 +207,7 @@ namespace LYBT.Desktop.Users.ViewModels
             {
                 Logger.LogError(ex, "�����û�����ʱ�����쳣");
                 var contextMessage = $"加载用户列表 - 模块:{nameof(UserManagementViewModel)}";
-                await ErrorHandlingService?.HandleExceptionAsync(ex, contextMessage);
+                await UserNotificationService?.HandleExceptionAsync(ex, contextMessage);
 
                 TotalCount = 0;
                 return new List<UserDto>();

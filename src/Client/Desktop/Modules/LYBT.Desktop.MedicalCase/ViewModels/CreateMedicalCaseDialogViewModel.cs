@@ -83,8 +83,8 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
             ISessionManager? sessionManager = null,
-            IErrorHandlingService? errorHandlingService = null)
-            : base(eventAggregator, loggerFactory, regionManager, sessionManager, errorHandlingService)
+            IUserNotificationService? userNotificationService = null)
+            : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
             SaveCommand = new DelegateCommand(async () => await SaveAsync(), CanSave)
                 .ObservesProperty(() => MedicalCase.PatientId)

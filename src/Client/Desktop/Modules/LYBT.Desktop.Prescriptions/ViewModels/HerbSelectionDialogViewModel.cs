@@ -166,8 +166,8 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             IRegionManager regionManager,
             IHerbService herbService,
             ISessionManager? sessionManager = null,
-            IErrorHandlingService? errorHandlingService = null)
-            : base(eventAggregator, loggerFactory, regionManager, sessionManager, errorHandlingService)
+            IUserNotificationService? userNotificationService = null)
+            : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
             _herbService = herbService ?? throw new ArgumentNullException(nameof(herbService));
 

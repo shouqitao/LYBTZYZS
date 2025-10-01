@@ -90,12 +90,11 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterSingleton<LYBT.Desktop.Shell.Services.IApplicationInitializationService,
                 LYBT.Desktop.Shell.Services.ApplicationInitializationService>();
 
-            // Issue #837: 注册错误处理服务 - 使用简单的空实现适配器
-            // MainWindowViewModel 需要 Infrastructure.Interfaces.IErrorHandlingService
-            // 但实际错误处理由 UnifiedErrorHandlingService 完成
-            // TODO: 未来统一两个 IErrorHandlingService 接口
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Infrastructure.Interfaces.IErrorHandlingService,
-                ErrorHandlingServiceStub>();
+            // Issue #840: 注册用户通知服务
+            // MainWindowViewModel 使用 IUserNotificationService 进行简单消息提示
+            // 系统级错误处理由 UnifiedErrorHandlingService 负责
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Infrastructure.Interfaces.IUserNotificationService,
+                LYBT.Desktop.Infrastructure.Services.UserNotificationService>();
 
             containerRegistry.RegisterSingleton<LYBT.Desktop.Services.ErrorHandling.IErrorHandlingService,
                 LYBT.Desktop.Services.ErrorHandling.UnifiedErrorHandlingService>();
@@ -558,20 +557,4 @@ namespace LYBT.Desktop.Shell.Extensions
         #endregion 辅助方法
     }
 
-    /// <summary>
-    /// Issue #837: ErrorHandlingService 空实现 - 临时适配器
-    /// 用于满足 MainWindowViewModel 的 Infrastructure.Interfaces.IErrorHandlingService 依赖
-    /// 实际错误处理由 UnifiedErrorHandlingService 完成
-    /// TODO: 未来统一两个 IErrorHandlingService 接口
-    /// </summary>
-    public class ErrorHandlingServiceStub : LYBT.Desktop.Infrastructure.Interfaces.IErrorHandlingService
-    {
-        public Task HandleExceptionAsync(Exception exception, string? context = null) => Task.CompletedTask;
-        public Task ShowErrorAsync(string message, string? title = null) => Task.CompletedTask;
-        public Task ShowSuccessAsync(string message, string? title = null) => Task.CompletedTask;
-        public Task ShowWarningAsync(string message, string? title = null) => Task.CompletedTask;
-        public Task ShowInfoAsync(string message, string? title = null) => Task.CompletedTask;
-        public Task<bool> ShowConfirmAsync(string message, string? title = null) => Task.FromResult(true);
-        public void RegisterGlobalExceptionHandlers() { }
-    }
 }

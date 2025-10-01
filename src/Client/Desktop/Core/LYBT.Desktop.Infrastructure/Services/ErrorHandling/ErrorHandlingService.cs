@@ -4,9 +4,10 @@ using Microsoft.Extensions.Logging;
 namespace LYBT.Desktop.Infrastructure.Services.ErrorHandling
 {
     /// <summary>
-    /// 错误处理服务实现 - UltraThink架构
+    /// 用户通知服务实现 - UltraThink架构
+    /// Issue #840: 从 IErrorHandlingService 更新为 IUserNotificationService
     /// </summary>
-    public class ErrorHandlingService : IErrorHandlingService
+    public class ErrorHandlingService : IUserNotificationService
     {
         private readonly ILogger<ErrorHandlingService> _logger;
         private readonly ICommonDialogService? _dialogService;
