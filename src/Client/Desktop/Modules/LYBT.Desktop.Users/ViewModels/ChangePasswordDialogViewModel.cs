@@ -146,8 +146,8 @@ namespace LYBT.Desktop.Users.ViewModels
             IRegionManager regionManager,
             AuthService authService,
             ISessionManager? sessionManager = null,
-            IErrorHandlingService? errorHandlingService = null)
-            : base(eventAggregator, loggerFactory, regionManager, sessionManager, errorHandlingService)
+            IUserNotificationService? userNotificationService = null)
+            : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
             _authService = authService ?? throw new ArgumentNullException(nameof(authService));
 

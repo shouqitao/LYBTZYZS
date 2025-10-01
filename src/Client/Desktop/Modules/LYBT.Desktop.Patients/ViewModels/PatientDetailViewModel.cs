@@ -105,8 +105,8 @@ namespace LYBT.Desktop.Patients.ViewModels
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
             ISessionManager? sessionManager = null,
-            IErrorHandlingService? errorHandlingService = null)
-            : base(eventAggregator, loggerFactory, regionManager, sessionManager, errorHandlingService)
+            IUserNotificationService? userNotificationService = null)
+            : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
             _patientService = patientService ?? throw new ArgumentNullException(nameof(patientService));
             _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
@@ -128,7 +128,7 @@ namespace LYBT.Desktop.Patients.ViewModels
         #region INavigationAware 实现
 
         /// <inheritdoc/>
-        public void OnNavigatedTo(NavigationContext navigationContext)
+        public override void OnNavigatedTo(NavigationContext navigationContext)
         {
             if (navigationContext.Parameters.ContainsKey("PatientId"))
             {
@@ -145,7 +145,7 @@ namespace LYBT.Desktop.Patients.ViewModels
         }
 
         /// <inheritdoc/>
-        public bool IsNavigationTarget(NavigationContext navigationContext)
+        public override bool IsNavigationTarget(NavigationContext navigationContext)
         {
             if (navigationContext.Parameters.ContainsKey("PatientId"))
             {
@@ -157,7 +157,7 @@ namespace LYBT.Desktop.Patients.ViewModels
         }
 
         /// <inheritdoc/>
-        public void OnNavigatedFrom(NavigationContext navigationContext)
+        public override void OnNavigatedFrom(NavigationContext navigationContext)
         {
             if (!IsReadOnly && HasUnsavedChanges())
             {

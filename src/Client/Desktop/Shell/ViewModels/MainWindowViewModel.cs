@@ -35,16 +35,16 @@ public class MainWindowViewModel : UnifiedViewModelBase
     /// <param name="regionManager">区域管理器，用于界面导航</param>
     /// <param name="eventAggregator">事件聚合器，用于模块间通信</param>
     /// <param name="servicesFacade">服务外观，统一访问各类服务</param>
-    /// <param name="errorHandlingService">错误处理服务</param>
+    /// <param name="userNotificationService">用户通知服务</param>
     /// <exception cref="ArgumentNullException">当任何参数为 null 时抛出</exception>
     public MainWindowViewModel(
         IRegionManager regionManager,
         IEventAggregator eventAggregator,
         IMainWindowServicesFacade servicesFacade,
         ILoggerFactory loggerFactory,
-        LYBT.Desktop.Infrastructure.Interfaces.IErrorHandlingService errorHandlingService,
+        LYBT.Desktop.Infrastructure.Interfaces.IUserNotificationService userNotificationService,
         IApplicationCommands applicationCommands,
-        IModuleLoadingService moduleLoadingService) : base(eventAggregator, loggerFactory, regionManager, null, errorHandlingService)
+        IModuleLoadingService moduleLoadingService) : base(eventAggregator, loggerFactory, regionManager, null, userNotificationService)
     {
         _servicesFacade = servicesFacade ?? throw new ArgumentNullException(nameof(servicesFacade));
         _regionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));

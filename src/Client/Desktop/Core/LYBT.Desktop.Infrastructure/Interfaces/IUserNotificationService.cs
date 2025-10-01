@@ -1,12 +1,14 @@
 ﻿namespace LYBT.Desktop.Infrastructure.Interfaces
 {
     /// <summary>
-    /// 错误处理服务接口 - UltraThink架构
+    /// 用户通知服务接口 - UltraThink架构
+    /// 提供简单的消息提示和用户交互对话框功能
+    /// Issue #840: 从 IErrorHandlingService 重命名以消除与 Services.ErrorHandling.IErrorHandlingService 的命名冲突
     /// </summary>
-    public interface IErrorHandlingService
+    public interface IUserNotificationService
     {
         /// <summary>
-        /// 处理异常
+        /// 处理异常并显示给用户
         /// </summary>
         Task HandleExceptionAsync(Exception exception, string? context = null);
 
