@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Threading;
 using Microsoft.Extensions.Logging;
+using LYBT.Desktop.Services.Notifications;
 
 namespace LYBT.Desktop.Services.UserExperience
 {
@@ -297,7 +298,7 @@ namespace LYBT.Desktop.Services.UserExperience
                 ? userFriendlyMessage
                 : $"{context}: {userFriendlyMessage}";
 
-            await _notificationService.ShowNotificationAsync("操作失败", fullMessage, NotificationType.Error);
+            await _notificationService.ShowErrorAsync(fullMessage, "操作失败");
             ShowErrorFeedback(userFriendlyMessage);
         }
 
