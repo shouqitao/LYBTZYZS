@@ -61,7 +61,7 @@ public class MainWindowViewModel : UnifiedViewModelBase
     private UserDto? _currentUser;
     private bool _isLoggedIn = false;
     private string _currentTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-    private System.Windows.Threading.DispatcherTimer _clockTimer;
+    private System.Windows.Threading.DispatcherTimer _clockTimer = null!;
 
     /// <summary>
     /// 获取或设置窗口标题
@@ -118,25 +118,25 @@ public class MainWindowViewModel : UnifiedViewModelBase
     #region 命令属性
 
     /// <summary>退出登录命令</summary>
-    public DelegateCommand LogoutCommand { get; set; }
+    public DelegateCommand LogoutCommand { get; set; } = null!;
 
     /// <summary>API测试命令</summary>
-    public DelegateCommand TestApiCommand { get; set; }
+    public DelegateCommand TestApiCommand { get; set; } = null!;
 
     /// <summary>显示控件示例命令</summary>
-    public DelegateCommand ShowControlExamplesCommand { get; set; }
+    public DelegateCommand ShowControlExamplesCommand { get; set; } = null!;
 
     /// <summary>快速添加患者命令(Ctrl+N)</summary>
-    public DelegateCommand QuickAddPatientCommand { get; set; }
+    public DelegateCommand QuickAddPatientCommand { get; set; } = null!;
 
     /// <summary>快速开始诊疗命令(Ctrl+Shift+C)</summary>
-    public DelegateCommand QuickStartConsultationCommand { get; set; }
+    public DelegateCommand QuickStartConsultationCommand { get; set; } = null!;
 
     /// <summary>显示帮助命令 (F1)</summary>
-    public DelegateCommand ShowHelpCommand { get; set; }
+    public DelegateCommand ShowHelpCommand { get; set; } = null!;
 
     /// <summary>显示设置命令 (Ctrl+,)</summary>
-    public DelegateCommand ShowSettingsCommand { get; set; }
+    public DelegateCommand ShowSettingsCommand { get; set; } = null!;
 
     /// <summary>主题切换命令</summary>
     public DelegateCommand ToggleThemeCommand { get; set; }

@@ -71,20 +71,20 @@ namespace LYBT.Desktop.Shell.ViewModels
 
         #region INavigationAware
 
-        public void OnNavigatedTo(NavigationContext navigationContext)
-        {
-            // 简化实�?- 仅设置基本状�?
-        }
+        public override void OnNavigatedTo(NavigationContext navigationContext)
+{
+    // 简化实现 - 仅设置基本状态
+}
 
-        public bool IsNavigationTarget(NavigationContext navigationContext)
-        {
-            return true;
-        }
+        public override bool IsNavigationTarget(NavigationContext navigationContext)
+{
+    return true;
+}
 
-        public void OnNavigatedFrom(NavigationContext navigationContext)
-        {
-            // 简化实�?- 无需清理
-        }
+        public override void OnNavigatedFrom(NavigationContext navigationContext)
+{
+    // 简化实现 - 无需清理
+}
 
         #endregion INavigationAware
     }
