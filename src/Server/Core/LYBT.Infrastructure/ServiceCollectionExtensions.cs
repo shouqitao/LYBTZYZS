@@ -103,6 +103,23 @@ namespace LYBT.Infrastructure
         }
 
         /// <summary>
+        /// 添加并验证统一配置系统 (LybtOptions)
+        /// </summary>
+        /// <param name="services">服务集合</param>
+        /// <param name="configuration">配置</param>
+        /// <returns>服务集合</returns>
+        public static IServiceCollection AddLybtOptions(this IServiceCollection services, IConfiguration configuration)
+        {
+            // 注册 LybtOptions 配置并启用启动时验证
+            services.AddOptions<LybtOptions>()
+                .Bind(configuration.GetSection("Lybt"))
+                .ValidateDataAnnotations() // 验证 [Required], [Range] 等特性
+                .ValidateOnStart(); // 应用启动时立即验证，快速失败
+
+            return services;
+        }
+
+        /// <summary>
         /// 添加基础设施数据库上下文
         /// </summary>
         /// <param name="services">服务集合</param>
@@ -158,6 +175,10 @@ namespace LYBT.Infrastructure
         public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
         {
             // UltraThink深度清理：只保留实际需要的服务
+
+            // 添加并验证统一配置系统 (Issue #850 - 配置验证)
+            services.AddLybtOptions(configuration);
+
             // 添加数据库上下文
             services.AddInfrastructureDbContext(configuration);
 

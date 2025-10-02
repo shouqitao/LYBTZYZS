@@ -80,7 +80,7 @@ public class JwtConfiguration
     /// JWT 密钥
     /// </summary>
     [Required, MinLength(32)]
-    public string SecretKey { get; set; } = string.Empty;
+    public string SecretKey { get; set; } = null!;
 
     /// <summary>
     /// 发行者
@@ -511,7 +511,7 @@ public class DatabaseConfiguration
     /// 连接字符串
     /// </summary>
     [Required]
-    public string ConnectionString { get; set; } = string.Empty;
+    public string ConnectionString { get; set; } = null!;
 
     /// <summary>
     /// 连接池配置
