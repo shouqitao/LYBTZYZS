@@ -491,7 +491,7 @@ public class MainWindowViewModel : UnifiedViewModelBase
 
         if (isAdmin)
         {
-            workbenchView = "SystemWorkstationMainView";
+            workbenchView = "AdminWorkstationView";
             roleDisplay = "管理员";
         }
         else
