@@ -10,7 +10,9 @@ namespace LYBT.Desktop.Services.Notifications
     public class NotificationService : INotificationService
     {
         private readonly ILogger<NotificationService> _logger;
+#pragma warning disable CS0414 // Field is assigned but never used
         private bool _isLoading = false;
+#pragma warning restore CS0414
 
         public NotificationService(ILogger<NotificationService> logger)
         {

@@ -163,12 +163,12 @@ namespace LYBT.Module.Auth.Services
                 // 验证凭据
                 var credentialsResult = await VerifyCredentialsAsync(request, cancellationToken);
                 if (!credentialsResult.IsSuccess)
-                    return ServiceResult<LoginResponse>.Failure(credentialsResult.Message);
+                    return ServiceResult<LoginResponse>.Failure(credentialsResult.Message ?? "凭据验证失败");
 
                 LoginResponse response;
 
                 // 检查是否是超级管理员
-                if (credentialsResult.Data.StartsWith("SUPER_ADMIN:"))
+                if (credentialsResult.Data != null && credentialsResult.Data.StartsWith("SUPER_ADMIN:"))
                 {
                     // 超级管理员登录
                     var sysAdminUsername = credentialsResult.Data.Substring("SUPER_ADMIN:".Length);

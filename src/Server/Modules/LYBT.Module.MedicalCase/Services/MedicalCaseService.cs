@@ -191,7 +191,7 @@ namespace LYBT.Module.MedicalCase.Services
         public async Task<ServiceResult<MedicalCaseDto>> CreateWithDetailsAsync(
             MedicalCaseCreateDto caseDto,
             ConsultationCreateDto consultationDto,
-            PrescriptionCreateDto prescriptionDto = null)
+            PrescriptionCreateDto? prescriptionDto = null)
         {
             try
             {

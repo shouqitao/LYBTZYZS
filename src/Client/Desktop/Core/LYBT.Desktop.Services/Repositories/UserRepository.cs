@@ -37,7 +37,7 @@ namespace LYBT.Desktop.Services.Repositories
             if (user?.Id == null)
             {
                 _logger.LogError("Cannot update user with null or invalid id");
-                return Task.FromResult<UserDto>(null);
+                return Task.FromResult<UserDto>(null!);
             }
             return base.UpdateAsync(user.Id, user);
         }
@@ -51,7 +51,7 @@ namespace LYBT.Desktop.Services.Repositories
         {
             try
             {
-                return await _apiService.GetAsync<UserDto>($"{_endpoint}/username/{username}");
+                return (await _apiService.GetAsync<UserDto>($"{_endpoint}/username/{username}"))!;
             }
             catch (Exception ex)
             {

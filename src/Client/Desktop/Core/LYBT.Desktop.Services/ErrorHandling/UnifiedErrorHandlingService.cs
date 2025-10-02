@@ -270,7 +270,7 @@ namespace LYBT.Desktop.Services.ErrorHandling
         /// <summary>
         /// 处理未观察到的任务异常
         /// </summary>
-        private void OnUnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)
+        private void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
         {
             try
             {

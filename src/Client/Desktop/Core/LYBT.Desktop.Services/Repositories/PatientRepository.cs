@@ -37,7 +37,7 @@ namespace LYBT.Desktop.Services.Repositories
             if (patient?.Id == null)
             {
                 _logger.LogError("Cannot update patient with null or invalid id");
-                return Task.FromResult<PatientDto>(null);
+                return Task.FromResult<PatientDto>(null!);
             }
             return base.UpdateAsync(patient.Id, patient);
         }

@@ -37,7 +37,7 @@ namespace LYBT.Desktop.Services.Repositories
             if (formula?.Id == null)
             {
                 _logger.LogError("Cannot update formula with null or invalid id");
-                return Task.FromResult<FormulaDto>(null);
+                return Task.FromResult<FormulaDto>(null!);
             }
             return base.UpdateAsync(formula.Id, formula);
         }
@@ -71,7 +71,7 @@ namespace LYBT.Desktop.Services.Repositories
         {
             try
             {
-                return await _apiService.PostAsync<object, FormulaDto>($"{_endpoint}/{formulaId}/duplicate", null);
+                return (await _apiService.PostAsync<object, FormulaDto>($"{_endpoint}/{formulaId}/duplicate", null!))!;
             }
             catch (Exception ex)
             {

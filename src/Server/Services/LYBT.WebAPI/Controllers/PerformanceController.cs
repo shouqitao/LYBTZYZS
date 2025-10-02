@@ -17,15 +17,12 @@ namespace LYBT.WebAPI.Controllers
     public class PerformanceController : BaseApiController
     {
         private readonly IQueryStatisticsCollector _statisticsCollector;
-        private readonly ILogger<PerformanceController> _logger;
 
         public PerformanceController(
             IQueryStatisticsCollector statisticsCollector,
-            ILogger<PerformanceController> logger)
-            : base(logger)
+            ILogger<PerformanceController> logger) : base(logger)
         {
             _statisticsCollector = statisticsCollector ?? throw new ArgumentNullException(nameof(statisticsCollector));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         /// <summary>

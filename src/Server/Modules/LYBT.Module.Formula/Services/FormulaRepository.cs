@@ -13,17 +13,13 @@ namespace LYBT.Module.Formula.Repositories
     /// </summary>
     public class FormulaRepository : BaseRepository<FormulaEntity>, IFormulaRepository
     {
-        private readonly ILogger<FormulaRepository> _logger;
-
         public FormulaRepository(AppDbContext context) : base(context)
         {
-            _logger = null;
         }
 
         public FormulaRepository(AppDbContext context, ILogger<FormulaRepository> logger)
             : base(context, logger)
         {
-            _logger = logger;
         }
 
         /// <summary>
@@ -51,9 +47,9 @@ namespace LYBT.Module.Formula.Repositories
         /// </summary>
         public async Task<FormulaEntity> GetByIdWithHerbsAsync(Guid id)
         {
-            return await GetBaseQuery()
+            return (await GetBaseQuery()
                 .Where(f => f.Id == id)
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync())!;
         }
 
         /// <summary>
@@ -69,7 +65,7 @@ namespace LYBT.Module.Formula.Repositories
             // 简化搜索逻辑 - 只搜索名称和功效
             if (!string.IsNullOrWhiteSpace(keyword))
             {
-                query = query.Where(f => f.Name.Contains(keyword) || f.Effect.Contains(keyword));
+                query = query.Where(f => f.Name.Contains(keyword) || (f.Effect != null && f.Effect.Contains(keyword)));
             }
 
             var totalCount = await query.CountAsync();

@@ -58,7 +58,7 @@ namespace LYBT.Module.Patients.Repositories
                     Name = p.Name,
                     Gender = p.Gender,
                     Age = p.Age ?? 0,  // 处理可能的null值
-                    PhoneNumber = p.PhoneNumber,
+                    PhoneNumber = p.PhoneNumber ?? string.Empty,
                     LastVisitDate = null  // Patient实体未定义Visits导航属性，暂时返回null
                 });
 
@@ -91,9 +91,9 @@ namespace LYBT.Module.Patients.Repositories
                 var term = searchTerm.ToLower();
                 query = query.Where(p =>
                     p.Name.ToLower().Contains(term) ||
-                    p.PinYinCode.ToLower().Contains(term) ||
-                    p.PhoneNumber.Contains(term) ||
-                    p.IdNumber.Contains(term));
+                    (p.PinYinCode != null && p.PinYinCode.ToLower().Contains(term)) ||
+                    (p.PhoneNumber != null && p.PhoneNumber.Contains(term)) ||
+                    (p.IdNumber != null && p.IdNumber.Contains(term)));
             }
 
             var totalCount = await query.CountAsync();
@@ -157,7 +157,7 @@ namespace LYBT.Module.Patients.Repositories
                     MaleCount = g.Count(p => p.Gender == Gender.Male),
                     FemaleCount = g.Count(p => p.Gender == Gender.Female),
                     NewPatientsThisMonth = g.Count(p => p.CreatedAt >= thisMonth),
-                    AverageAge = g.Average(p => (double)p.Age)
+                    AverageAge = g.Average(p => p.Age.HasValue ? (double)p.Age.Value : 0.0)
                 })
                 .FirstOrDefaultAsync() ?? new PatientStatistics();
 

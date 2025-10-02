@@ -47,7 +47,7 @@ namespace LYBT.Module.Patients.Tests
             result.Should().NotBeNull();
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
-            result.Data.Name.Should().Be("测试患者");
+            result.Data!.Name.Should().Be("测试患者");
         }
 
         [Fact]
@@ -84,7 +84,7 @@ namespace LYBT.Module.Patients.Tests
             result.Should().NotBeNull();
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
-            result.Data.Name.Should().Be("新患者");
+            result.Data!.Name.Should().Be("新患者");
         }
 
         [Fact]
@@ -109,7 +109,7 @@ namespace LYBT.Module.Patients.Tests
             result.Should().NotBeNull();
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
-            result.Data.Name.Should().Be("更新后的名字");
+            result.Data!.Name.Should().Be("更新后的名字");
         }
 
         [Fact]
@@ -161,8 +161,8 @@ namespace LYBT.Module.Patients.Tests
             result.Should().NotBeNull();
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
-            result.Data.Items.Should().HaveCount(2);
-            result.Data.TotalCount.Should().Be(2);
+            result.Data!.Items.Should().HaveCount(2);
+            result.Data!.TotalCount.Should().Be(2);
         }
     }
 }

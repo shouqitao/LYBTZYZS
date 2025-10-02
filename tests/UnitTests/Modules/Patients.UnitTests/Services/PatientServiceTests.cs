@@ -52,7 +52,7 @@ namespace LYBT.Module.Patients.Tests.Services
             // Assert
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
-            result.Data.Items.Should().HaveCount(1);
+            result.Data!.Items.Should().HaveCount(1);
         }
 
         [Fact]
@@ -72,7 +72,7 @@ namespace LYBT.Module.Patients.Tests.Services
             // Assert
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
-            result.Data.Id.Should().Be(id);
+            result.Data!.Id.Should().Be(id);
         }
 
         [Fact]
@@ -80,7 +80,7 @@ namespace LYBT.Module.Patients.Tests.Services
         {
             // Arrange
             var id = Guid.NewGuid();
-            _mockRepository.Setup(x => x.GetByIdAsync(id)).ReturnsAsync((Patient)null);
+            _mockRepository.Setup(x => x.GetByIdAsync(id)).ReturnsAsync((Patient?)null);
 
             // Act
             var result = await _patientService.GetByIdAsync(id);
@@ -108,6 +108,7 @@ namespace LYBT.Module.Patients.Tests.Services
             // Assert
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
+            result.Data!.Should().NotBeNull();
         }
 
         [Fact]
@@ -131,6 +132,7 @@ namespace LYBT.Module.Patients.Tests.Services
             // Assert
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
+            result.Data!.Should().NotBeNull();
         }
 
         [Fact]
@@ -139,7 +141,7 @@ namespace LYBT.Module.Patients.Tests.Services
             // Arrange
             var id = Guid.NewGuid();
             var updateDto = new PatientUpdateDto { Name = "李四" };
-            _mockRepository.Setup(x => x.GetByIdAsync(id)).ReturnsAsync((Patient)null);
+            _mockRepository.Setup(x => x.GetByIdAsync(id)).ReturnsAsync((Patient?)null);
 
             // Act
             var result = await _patientService.UpdateAsync(id, updateDto);

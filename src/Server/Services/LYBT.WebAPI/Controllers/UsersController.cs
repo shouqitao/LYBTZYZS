@@ -40,7 +40,7 @@ namespace LYBT.WebAPI.Controllers
                 {
                     return Ok(ApiResponse<PagedResult<UserDto>>.CreateSuccess(result.Data));
                 }
-                return BadRequest(ApiResponse<PagedResult<UserDto>>.CreateFail(result.Message));
+                return BadRequest(ApiResponse<PagedResult<UserDto>>.CreateFail(result.Message ?? "获取用户列表失败"));
             }
             catch (Exception ex)
             {
@@ -91,7 +91,7 @@ namespace LYBT.WebAPI.Controllers
                     return CreatedAtAction(nameof(GetUser), new { id = result.Data.Id },
                         ApiResponse<UserDto>.CreateSuccess(result.Data));
                 }
-                return BadRequest(ApiResponse<UserDto>.CreateFail(result.Message));
+                return BadRequest(ApiResponse<UserDto>.CreateFail(result.Message ?? "创建用户失败"));
             }
             catch (Exception ex)
             {
@@ -116,7 +116,7 @@ namespace LYBT.WebAPI.Controllers
                 {
                     return Ok(ApiResponse<UserDto>.CreateSuccess(result.Data));
                 }
-                return BadRequest(ApiResponse<UserDto>.CreateFail(result.Message));
+                return BadRequest(ApiResponse<UserDto>.CreateFail(result.Message ?? "更新用户失败"));
             }
             catch (Exception ex)
             {
@@ -141,7 +141,7 @@ namespace LYBT.WebAPI.Controllers
                 {
                     return Ok(ApiResponse<object>.CreateSuccess(null, "删除成功"));
                 }
-                return BadRequest(ApiResponse<object>.CreateFail(result.Message));
+                return BadRequest(ApiResponse<object>.CreateFail(result.Message ?? "删除用户失败"));
             }
             catch (Exception ex)
             {

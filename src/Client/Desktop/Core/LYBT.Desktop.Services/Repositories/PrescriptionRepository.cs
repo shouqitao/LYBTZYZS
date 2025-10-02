@@ -37,7 +37,7 @@ namespace LYBT.Desktop.Services.Repositories
             if (prescription?.Id == null)
             {
                 _logger.LogError("Cannot update prescription with null or invalid id");
-                return Task.FromResult<PrescriptionDto>(null);
+                return Task.FromResult<PrescriptionDto>(null!);
             }
             return base.UpdateAsync(prescription.Id, prescription);
         }
@@ -85,7 +85,7 @@ namespace LYBT.Desktop.Services.Repositories
         {
             try
             {
-                return await _apiService.PostAsync<object, PrescriptionDto>($"{_endpoint}/{prescriptionId}/duplicate", null);
+                return (await _apiService.PostAsync<object, PrescriptionDto>($"{_endpoint}/{prescriptionId}/duplicate", null!))!;
             }
             catch (Exception ex)
             {

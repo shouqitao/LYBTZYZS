@@ -37,7 +37,7 @@ namespace LYBT.Desktop.Services.Repositories
             if (consultation?.Id == null)
             {
                 _logger.LogError("Cannot update consultation with null or invalid id");
-                return Task.FromResult<ConsultationDto>(null);
+                return Task.FromResult<ConsultationDto>(null!);
             }
             return base.UpdateAsync(consultation.Id, consultation);
         }
@@ -84,7 +84,7 @@ namespace LYBT.Desktop.Services.Repositories
         {
             try
             {
-                return await _apiService.GetAsync<ConsultationDto>($"{_endpoint}/patient/{patientId}/active");
+                return (await _apiService.GetAsync<ConsultationDto>($"{_endpoint}/patient/{patientId}/active"))!;
             }
             catch (Exception ex)
             {
@@ -97,7 +97,7 @@ namespace LYBT.Desktop.Services.Repositories
         {
             try
             {
-                await _apiService.PostAsync<object, object>($"{_endpoint}/{consultationId}/complete", null);
+                await _apiService.PostAsync<object, object>($"{_endpoint}/{consultationId}/complete", null!);
                 return true;
             }
             catch (Exception ex)
@@ -126,7 +126,7 @@ namespace LYBT.Desktop.Services.Repositories
         {
             try
             {
-                return await _apiService.GetAsync<ConsultationDto>($"{_endpoint}/patient/{patientId}/latest");
+                return (await _apiService.GetAsync<ConsultationDto>($"{_endpoint}/patient/{patientId}/latest"))!;
             }
             catch (Exception ex)
             {

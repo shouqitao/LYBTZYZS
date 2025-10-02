@@ -13,17 +13,13 @@ namespace LYBT.Module.MedicalCase.Repositories
     /// </summary>
     public class MedicalCaseRepository : BaseRepository<MedicalCaseEntity>, IMedicalCaseRepository
     {
-        private readonly ILogger<MedicalCaseRepository> _logger;
-
         public MedicalCaseRepository(AppDbContext context) : base(context)
         {
-            _logger = null;
         }
 
         public MedicalCaseRepository(AppDbContext context, ILogger<MedicalCaseRepository> logger)
             : base(context, logger)
         {
-            _logger = logger;
         }
 
         /// <summary>
@@ -61,9 +57,9 @@ namespace LYBT.Module.MedicalCase.Repositories
         /// </summary>
         public async Task<MedicalCaseEntity> GetByIdWithDetailsAsync(Guid id)
         {
-            return await GetDetailQuery()
+            return (await GetDetailQuery()
                 .Where(m => m.Id == id)
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync())!;
         }
 
         /// <summary>
