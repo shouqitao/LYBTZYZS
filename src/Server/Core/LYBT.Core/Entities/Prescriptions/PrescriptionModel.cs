@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using LYBT.Core.Entities.Common;
@@ -70,7 +70,7 @@ namespace LYBT.Core.Entities.Prescriptions
         [DisplayName("备注")]
         public string? Remark { get; set; }
 
-// 关联数据
+        // 关联数据
 
         /// <summary>
         /// 处方项目（药材明细）

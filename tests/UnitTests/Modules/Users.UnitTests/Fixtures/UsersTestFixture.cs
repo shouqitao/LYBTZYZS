@@ -1,4 +1,4 @@
-using AutoMapper;
+﻿using AutoMapper;
 using LYBT.Infrastructure.Configuration.Options;
 using LYBT.Infrastructure.Configuration.Services;
 using LYBT.Infrastructure.Data;
@@ -10,7 +10,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
-using System;
 
 namespace LYBT.Module.Users.Tests.Fixtures
 {
@@ -57,7 +56,7 @@ namespace LYBT.Module.Users.Tests.Fixtures
             {
                 cfg.AddProfile<UserMappingProfile>();
             });
-            
+
             mapperConfig.AssertConfigurationIsValid(); // 验证映射配置
             services.AddSingleton(mapperConfig.CreateMapper());
 

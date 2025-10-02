@@ -1,8 +1,8 @@
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Asp.Versioning;
+﻿using Asp.Versioning;
 using LYBT.Infrastructure.Data.Monitoring;
 using LYBT.Infrastructure.Web;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace LYBT.WebAPI.Controllers
 {
@@ -61,11 +61,11 @@ namespace LYBT.WebAPI.Controllers
             {
                 var jsonData = _statisticsCollector.ExportStatisticsAsJson();
                 _logger.LogInformation("导出查询统计数据");
-                
+
                 // 返回JSON文件下载
                 var bytes = System.Text.Encoding.UTF8.GetBytes(jsonData);
                 var fileName = $"query_statistics_{DateTime.Now:yyyyMMdd_HHmmss}.json";
-                
+
                 return File(bytes, "application/json", fileName);
             }
             catch (Exception ex)
@@ -110,12 +110,12 @@ namespace LYBT.WebAPI.Controllers
                 // 获取统计数据的简化版本用于健康检查
                 var report = _statisticsCollector.GetStatisticsReport();
                 var lines = report.Split('\n');
-                
+
                 // 提取关键指标
                 var totalQueries = 0;
                 var avgQueryTime = 0.0;
                 var slowQueryCount = 0;
-                
+
                 foreach (var line in lines)
                 {
                     if (line.Contains("总查询次数:"))
@@ -137,18 +137,18 @@ namespace LYBT.WebAPI.Controllers
                 // 判断健康状态
                 var status = "Healthy";
                 var issues = new List<string>();
-                
+
                 if (avgQueryTime > 200)
                 {
                     status = "Degraded";
                     issues.Add($"平均查询时间过高: {avgQueryTime:F2}ms (阈值: 200ms)");
                 }
-                
+
                 if (avgQueryTime > 500)
                 {
                     status = "Unhealthy";
                 }
-                
+
                 if (slowQueryCount > 10)
                 {
                     if (status == "Healthy") status = "Degraded";
@@ -230,7 +230,7 @@ namespace LYBT.WebAPI.Controllers
                 // 目前返回基于统计收集器的数据
                 var report = _statisticsCollector.GetStatisticsReport();
                 var lines = report.Split('\n');
-                
+
                 // 解析并返回简化的实时指标
                 return Ok(new
                 {

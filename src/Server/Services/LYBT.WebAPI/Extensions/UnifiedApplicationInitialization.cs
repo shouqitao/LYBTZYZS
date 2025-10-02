@@ -1,4 +1,4 @@
-// using LYBT.Core.Infrastructure.Configuration; // Removed - SimplifiedConfigurationService eliminated
+﻿// using LYBT.Core.Infrastructure.Configuration; // Removed - SimplifiedConfigurationService eliminated
 
 // using LYBT.WebAPI.Services; // Removed - enterprise services
 namespace LYBT.WebAPI.Extensions;

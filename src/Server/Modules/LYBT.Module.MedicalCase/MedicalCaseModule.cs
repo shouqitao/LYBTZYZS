@@ -1,5 +1,4 @@
-using LYBT.Module.MedicalCase.Interfaces;
-using LYBT.Module.MedicalCase.Mapping;
+﻿using LYBT.Module.MedicalCase.Interfaces;
 using LYBT.Module.MedicalCase.Repositories;
 using LYBT.Module.MedicalCase.Services;
 using LYBT.Shared.Interfaces.Services;

@@ -1,10 +1,10 @@
+﻿using System.Linq.Expressions;
 using LYBT.Entities.Users;
 using LYBT.Infrastructure.Data;
 using LYBT.Module.Users.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using System.Linq.Expressions;
 
 namespace LYBT.Module.Users.Repositories
 {

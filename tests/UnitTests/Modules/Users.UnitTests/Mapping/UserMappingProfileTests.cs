@@ -1,11 +1,10 @@
-using AutoMapper;
+﻿using AutoMapper;
 using FluentAssertions;
 using LYBT.Entities.Users;
 using LYBT.Module.Users.Mapping;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using Xunit;
-using System;
 
 namespace LYBT.Module.Users.Tests.Mapping
 {
@@ -100,7 +99,7 @@ namespace LYBT.Module.Users.Tests.Mapping
             user.CreatedAt.Should().BeCloseTo(DateTime.Now, TimeSpan.FromSeconds(1), "BaseEntity设置创建时间");
             user.RowVersion.Should().BeNull("BaseEntity不会自动初始化版本字段");
             user.IsDeleted.Should().BeFalse("BaseEntity默认未删除");
-            
+
             // 验证映射忽略的字段
             user.PasswordHash.Should().BeEmpty("密码哈希由业务逻辑处理");
             user.FailedLoginCount.Should().Be(0);
@@ -141,7 +140,7 @@ namespace LYBT.Module.Users.Tests.Mapping
             user.CreatedAt.Should().BeCloseTo(DateTime.Now, TimeSpan.FromSeconds(1), "BaseEntity设置创建时间");
             user.RowVersion.Should().BeNull("BaseEntity不会自动初始化版本字段");
             user.IsDeleted.Should().BeFalse("BaseEntity默认未删除");
-            
+
             // 验证映射忽略的字段
             user.UsernName.Should().BeEmpty("用户名不允许修改");
             user.PasswordHash.Should().BeEmpty("密码哈希由业务逻辑处理");

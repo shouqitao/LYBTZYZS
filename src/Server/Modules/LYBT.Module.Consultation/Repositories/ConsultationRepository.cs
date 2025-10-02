@@ -1,10 +1,10 @@
-using ConsultationEntity = LYBT.Entities.Consultation.Consultation;
-using LYBT.Infrastructure.Data;
+﻿using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Repositories;
 using LYBT.Module.Consultation.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using ConsultationEntity = LYBT.Entities.Consultation.Consultation;
 
 namespace LYBT.Module.Consultation.Repositories
 {

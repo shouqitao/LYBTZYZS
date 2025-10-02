@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Net.Http;
+using LYBT.Desktop.Services.Notifications;
 using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.Extensions.Logging;
-using LYBT.Desktop.Services.Notifications;
 using SharedCommon = LYBT.Shared.Models.Contracts.Common.SharedCommon;
 
 namespace LYBT.Desktop.Services.ErrorHandling

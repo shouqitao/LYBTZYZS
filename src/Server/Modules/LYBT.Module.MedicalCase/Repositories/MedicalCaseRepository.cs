@@ -1,10 +1,10 @@
-using MedicalCaseEntity = LYBT.Entities.MedicalCase.MedicalCase;
-using LYBT.Infrastructure.Data;
+﻿using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Repositories;
 using LYBT.Module.MedicalCase.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using MedicalCaseEntity = LYBT.Entities.MedicalCase.MedicalCase;
 
 namespace LYBT.Module.MedicalCase.Repositories
 {

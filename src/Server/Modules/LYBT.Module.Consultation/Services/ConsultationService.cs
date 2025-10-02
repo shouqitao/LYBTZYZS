@@ -1,10 +1,9 @@
-using AutoMapper;
-using ConsultationEntity = LYBT.Entities.Consultation.Consultation;
+﻿using AutoMapper;
 using LYBT.Module.Consultation.Interfaces;
-using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
 using Microsoft.Extensions.Logging;
+using ConsultationEntity = LYBT.Entities.Consultation.Consultation;
 
 namespace LYBT.Module.Consultation.Services
 {
@@ -34,15 +33,16 @@ namespace LYBT.Module.Consultation.Services
             {
                 // 使用优化后的查询方法，包含Patient和User信息
                 var pagedResult = await _repository.GetPagedWithDetailsAsync(page, pageSize, keyword);
-                
+
                 // 手动映射，确保PatientName和DoctorName从预加载的导航属性获取
-                var items = pagedResult.Items.Select(c => {
+                var items = pagedResult.Items.Select(c =>
+                {
                     var dto = _mapper.Map<ConsultationDto>(c);
                     dto.PatientName = c.MedicalCase?.PatientName ?? string.Empty;
                     dto.DoctorName = c.MedicalCase?.DoctorName ?? string.Empty;
                     return dto;
                 }).ToList();
-                
+
                 var result = new PagedResult<ConsultationDto>
                 {
                     Items = items,
@@ -72,7 +72,7 @@ namespace LYBT.Module.Consultation.Services
                 // 确保PatientName和DoctorName从预加载的导航属性获取
                 dto.PatientName = entity.MedicalCase?.PatientName ?? string.Empty;
                 dto.DoctorName = entity.MedicalCase?.DoctorName ?? string.Empty;
-                
+
                 return ServiceResult<ConsultationDto>.Success(dto);
             }
             catch (Exception ex)
@@ -146,12 +146,12 @@ namespace LYBT.Module.Consultation.Services
                 {
                     return ServiceResult<List<ConsultationDto>>.Success(new List<ConsultationDto>());
                 }
-                
+
                 var dto = _mapper.Map<ConsultationDto>(consultation);
                 // 确保PatientName和DoctorName从预加载的导航属性获取
                 dto.PatientName = consultation.MedicalCase?.PatientName ?? string.Empty;
                 dto.DoctorName = consultation.MedicalCase?.DoctorName ?? string.Empty;
-                
+
                 return ServiceResult<List<ConsultationDto>>.Success(new List<ConsultationDto> { dto });
             }
             catch (Exception ex)
@@ -192,7 +192,7 @@ namespace LYBT.Module.Consultation.Services
         {
             try
             {
-                var entities = await _repository.FindAsync(c => 
+                var entities = await _repository.FindAsync(c =>
                     (c.ChiefComplaint != null && c.ChiefComplaint.Contains(keyword)) ||
                     (c.TCMDiagnosis != null && c.TCMDiagnosis.Contains(keyword)) ||
                     (c.PresentIllness != null && c.PresentIllness.Contains(keyword)));

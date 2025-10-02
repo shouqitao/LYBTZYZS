@@ -1,5 +1,4 @@
-using System;
-using AutoMapper;
+﻿using AutoMapper;
 using FluentAssertions;
 using LYBT.Entities.Herbs;
 using LYBT.Module.Herbs.Mapping;

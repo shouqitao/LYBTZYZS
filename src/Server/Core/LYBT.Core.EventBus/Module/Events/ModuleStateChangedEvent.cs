@@ -1,4 +1,4 @@
-using LYBT.Core.EventBus.Events;
+﻿using LYBT.Core.EventBus.Events;
 
 namespace LYBT.Core.EventBus.Module.Events;
 
@@ -60,7 +60,7 @@ public class ModuleStateChangedEvent : IntegrationEventBase
         ModuleState newState,
         string? reason = null,
         IReadOnlyDictionary<string, object>? additionalData = null,
-        string source = "ModuleManager") 
+        string source = "ModuleManager")
         : base(source)
     {
         ModuleId = moduleId ?? throw new ArgumentNullException(nameof(moduleId));
@@ -153,7 +153,7 @@ public class ModuleStateChangedEvent : IntegrationEventBase
     public override string GetDescription()
     {
         var description = $"模块 '{ModuleName}' (ID: {ModuleId}) 状态从 '{OldState.GetDisplayName()}' 变更为 '{NewState.GetDisplayName()}'";
-        
+
         if (!string.IsNullOrWhiteSpace(Reason))
         {
             description += $", 原因: {Reason}";
@@ -169,7 +169,7 @@ public class ModuleStateChangedEvent : IntegrationEventBase
     public string GetChangeSummary()
     {
         var summary = $"{ModuleName}: {OldState.GetDisplayName()} → {NewState.GetDisplayName()}";
-        
+
         if (IsCriticalChange())
         {
             summary += " [关键]";

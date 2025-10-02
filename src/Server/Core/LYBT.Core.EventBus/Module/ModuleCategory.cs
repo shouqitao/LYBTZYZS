@@ -1,4 +1,4 @@
-namespace LYBT.Core.EventBus.Module;
+﻿namespace LYBT.Core.EventBus.Module;
 
 /// <summary>
 /// 模块类别枚举
@@ -135,8 +135,8 @@ public static class ModuleCategoryExtensions
     /// <returns>是否为可选类别</returns>
     public static bool IsOptional(this ModuleCategory category)
     {
-        return category is ModuleCategory.ThirdParty or 
-                          ModuleCategory.Experimental or 
+        return category is ModuleCategory.ThirdParty or
+                          ModuleCategory.Experimental or
                           ModuleCategory.Testing;
     }
 

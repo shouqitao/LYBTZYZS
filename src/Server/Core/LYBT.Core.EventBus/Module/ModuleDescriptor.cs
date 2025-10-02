@@ -1,4 +1,4 @@
-namespace LYBT.Core.EventBus.Module;
+﻿namespace LYBT.Core.EventBus.Module;
 
 /// <summary>
 /// 模块描述符

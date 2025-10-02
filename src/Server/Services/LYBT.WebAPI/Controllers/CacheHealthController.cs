@@ -1,11 +1,8 @@
-using System;
-using System.Threading.Tasks;
-using LYBT.Core.Infrastructure.Caching.Interfaces;
+﻿using LYBT.Core.Infrastructure.Caching.Interfaces;
 using LYBT.Core.Infrastructure.Web;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Logging;
 
 namespace LYBT.WebAPI.Controllers
 {

@@ -1,4 +1,4 @@
-using LYBT.Core.EventBus.Abstractions;
+﻿using LYBT.Core.EventBus.Abstractions;
 using LYBT.Core.EventBus.Module.Events;
 using Microsoft.Extensions.Logging;
 
@@ -27,8 +27,8 @@ public class ModuleCommunicationExample
     public async Task PublishModuleRegisteredAsync(ModuleDescriptor moduleDescriptor)
     {
         var moduleRegisteredEvent = new ModuleRegisteredEvent(moduleDescriptor);
-        
-        _logger.LogInformation("发布模块注册事件: {ModuleName} v{Version}", 
+
+        _logger.LogInformation("发布模块注册事件: {ModuleName} v{Version}",
             moduleDescriptor.Name, moduleDescriptor.Version);
 
         await _eventBus.PublishAsync(moduleRegisteredEvent);
@@ -44,16 +44,16 @@ public class ModuleCommunicationExample
     /// <param name="reason">变更原因</param>
     /// <returns>发布任务</returns>
     public async Task PublishModuleStateChangedAsync(
-        string moduleId, 
-        string moduleName, 
-        ModuleState oldState, 
-        ModuleState newState, 
+        string moduleId,
+        string moduleName,
+        ModuleState oldState,
+        ModuleState newState,
         string? reason = null)
     {
         var stateChangedEvent = new ModuleStateChangedEvent(
             moduleId, moduleName, oldState, newState, reason);
-        
-        _logger.LogInformation("发布模块状态变更事件: {ModuleName} {OldState} -> {NewState}", 
+
+        _logger.LogInformation("发布模块状态变更事件: {ModuleName} {OldState} -> {NewState}",
             moduleName, oldState.GetDisplayName(), newState.GetDisplayName());
 
         await _eventBus.PublishAsync(stateChangedEvent);
@@ -75,8 +75,8 @@ public class ModuleCommunicationExample
     {
         var healthChangedEvent = new ModuleHealthChangedEvent(
             moduleId, moduleName, oldStatus, newHealthStatus);
-        
-        _logger.LogInformation("发布模块健康状态变更事件: {ModuleName} {OldStatus} -> {NewStatus}", 
+
+        _logger.LogInformation("发布模块健康状态变更事件: {ModuleName} {OldStatus} -> {NewStatus}",
             moduleName, oldStatus.GetDisplayName(), newHealthStatus.Status.GetDisplayName());
 
         await _eventBus.PublishAsync(healthChangedEvent);
@@ -101,10 +101,10 @@ public class ModuleCommunicationExample
         bool isOptional = false)
     {
         var dependencyEvent = new ModuleDependencyEvent(
-            moduleId, moduleName, eventType, 
+            moduleId, moduleName, eventType,
             dependencyModuleId, dependencyModuleName, isOptional);
-        
-        _logger.LogInformation("发布模块依赖事件: {ModuleName} -> {DependencyModule} ({EventType})", 
+
+        _logger.LogInformation("发布模块依赖事件: {ModuleName} -> {DependencyModule} ({EventType})",
             moduleName, dependencyModuleName, eventType);
 
         await _eventBus.PublishAsync(dependencyEvent);
@@ -115,7 +115,7 @@ public class ModuleCommunicationExample
 /// 模块事件处理器示例
 /// 展示如何处理模块相关事件
 /// </summary>
-public class ModuleEventHandlerExample : 
+public class ModuleEventHandlerExample :
     IIntegrationEventHandler<ModuleRegisteredEvent>,
     IIntegrationEventHandler<ModuleStateChangedEvent>,
     IIntegrationEventHandler<ModuleHealthChangedEvent>,
@@ -140,10 +140,10 @@ public class ModuleEventHandlerExample :
     public async Task HandleAsync(ModuleRegisteredEvent @event, CancellationToken cancellationToken = default)
     {
         _logger.LogInformation("处理模块注册事件: {Description}", @event.GetDescription());
-        
+
         // 这里可以添加模块注册后的处理逻辑
         // 例如：更新模块注册表、通知其他系统组件等
-        
+
         await Task.CompletedTask;
     }
 
@@ -156,7 +156,7 @@ public class ModuleEventHandlerExample :
     public async Task HandleAsync(ModuleStateChangedEvent @event, CancellationToken cancellationToken = default)
     {
         _logger.LogInformation("处理模块状态变更事件: {Description}", @event.GetDescription());
-        
+
         // 根据状态变更类型执行相应操作
         if (@event.IsCriticalChange())
         {
@@ -168,7 +168,7 @@ public class ModuleEventHandlerExample :
             _logger.LogInformation("模块状态正向变更: {Summary}", @event.GetChangeSummary());
             // 执行正向变更的处理逻辑
         }
-        
+
         await Task.CompletedTask;
     }
 
@@ -181,7 +181,7 @@ public class ModuleEventHandlerExample :
     public async Task HandleAsync(ModuleHealthChangedEvent @event, CancellationToken cancellationToken = default)
     {
         _logger.LogInformation("处理模块健康状态变更事件: {Description}", @event.GetDescription());
-        
+
         // 根据健康状态变更严重程度执行相应操作
         var severity = @event.GetSeverity();
         switch (severity)
@@ -190,18 +190,18 @@ public class ModuleEventHandlerExample :
                 _logger.LogError("模块健康状态严重变更: {Summary}", @event.GetHealthSummary());
                 // 执行严重健康问题的处理逻辑，如发送告警、尝试恢复等
                 break;
-                
+
             case HealthChangeSeverity.Warning:
                 _logger.LogWarning("模块健康状态警告变更: {Summary}", @event.GetHealthSummary());
                 // 执行警告级别的处理逻辑
                 break;
-                
+
             case HealthChangeSeverity.Info:
                 _logger.LogInformation("模块健康状态信息变更: {Summary}", @event.GetHealthSummary());
                 // 执行信息级别的处理逻辑
                 break;
         }
-        
+
         await Task.CompletedTask;
     }
 
@@ -214,36 +214,36 @@ public class ModuleEventHandlerExample :
     public async Task HandleAsync(ModuleDependencyEvent @event, CancellationToken cancellationToken = default)
     {
         _logger.LogInformation("处理模块依赖事件: {Description}", @event.GetDescription());
-        
+
         // 根据依赖事件类型和严重程度执行相应操作
         if (@event.IsCritical())
         {
             _logger.LogError("检测到关键模块依赖问题: {Summary}", @event.GetDependencySummary());
             // 执行关键依赖问题的处理逻辑
         }
-        
+
         var severity = @event.GetSeverity();
         switch (@event.EventType)
         {
             case DependencyEventType.DependencyUnavailable:
-                _logger.LogWarning("模块依赖不可用: {ModuleName} -> {DependencyName}", 
+                _logger.LogWarning("模块依赖不可用: {ModuleName} -> {DependencyName}",
                     @event.ModuleName, @event.DependencyModuleName);
                 // 处理依赖不可用的逻辑
                 break;
-                
+
             case DependencyEventType.CircularDependencyDetected:
-                _logger.LogError("检测到循环依赖: {ModuleName} <-> {DependencyName}", 
+                _logger.LogError("检测到循环依赖: {ModuleName} <-> {DependencyName}",
                     @event.ModuleName, @event.DependencyModuleName);
                 // 处理循环依赖的逻辑
                 break;
-                
+
             case DependencyEventType.DependencyResolved:
-                _logger.LogInformation("模块依赖已解析: {ModuleName} -> {DependencyName}", 
+                _logger.LogInformation("模块依赖已解析: {ModuleName} -> {DependencyName}",
                     @event.ModuleName, @event.DependencyModuleName);
                 // 处理依赖解析成功的逻辑
                 break;
         }
-        
+
         await Task.CompletedTask;
     }
 }

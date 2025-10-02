@@ -1,10 +1,9 @@
-using AutoMapper;
+﻿using AutoMapper;
 using FluentAssertions;
 using LYBT.Entities.Patients;
 using LYBT.Module.Patients.Mapping;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
-using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace LYBT.Module.Patients.Tests.Mapping

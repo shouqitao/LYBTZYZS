@@ -1,5 +1,5 @@
+﻿using LYBT.Shared.Models.Contracts.Common;
 using Xunit;
-using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Shared.Models.Tests
 {

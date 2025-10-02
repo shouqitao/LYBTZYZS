@@ -1,7 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using AutoMapper;
+﻿using AutoMapper;
 using FluentAssertions;
 using LYBT.Entities.Patients;
 using LYBT.Module.Patients.Interfaces;
@@ -37,15 +34,15 @@ namespace LYBT.Module.Patients.Tests.Services
         {
             // Arrange
             var entities = new List<Patient> { new Patient { Id = Guid.NewGuid(), Name = "张三" } };
-            var pagedResult = new PagedResult<Patient> 
-            { 
-                Items = entities, 
-                TotalCount = 1, 
-                CurrentPage = 1, 
-                PageSize = 20 
+            var pagedResult = new PagedResult<Patient>
+            {
+                Items = entities,
+                TotalCount = 1,
+                CurrentPage = 1,
+                PageSize = 20
             };
             var dtos = new List<PatientDto> { new PatientDto { Id = entities[0].Id, Name = "张三" } };
-            
+
             _mockRepository.Setup(x => x.GetPagedAsync(1, 20)).ReturnsAsync(pagedResult);
             _mockMapper.Setup(x => x.Map<List<PatientDto>>(entities)).Returns(dtos);
 
@@ -65,7 +62,7 @@ namespace LYBT.Module.Patients.Tests.Services
             var id = Guid.NewGuid();
             var entity = new Patient { Id = id, Name = "张三" };
             var dto = new PatientDto { Id = id, Name = "张三" };
-            
+
             _mockRepository.Setup(x => x.GetByIdAsync(id)).ReturnsAsync(entity);
             _mockMapper.Setup(x => x.Map<PatientDto>(entity)).Returns(dto);
 
@@ -100,7 +97,7 @@ namespace LYBT.Module.Patients.Tests.Services
             var createDto = new PatientCreateDto { Name = "张三", Gender = LYBT.Shared.Models.Enums.Gender.Male, PhoneNumber = "13800138000" };
             var entity = new Patient { Id = Guid.NewGuid(), Name = "张三" };
             var dto = new PatientDto { Id = entity.Id, Name = "张三" };
-            
+
             _mockMapper.Setup(x => x.Map<Patient>(createDto)).Returns(entity);
             _mockRepository.Setup(x => x.AddAsync(entity)).ReturnsAsync(entity);
             _mockMapper.Setup(x => x.Map<PatientDto>(entity)).Returns(dto);
@@ -122,7 +119,7 @@ namespace LYBT.Module.Patients.Tests.Services
             var entity = new Patient { Id = id, Name = "张三" };
             var updatedEntity = new Patient { Id = id, Name = "李四" };
             var dto = new PatientDto { Id = id, Name = "李四" };
-            
+
             _mockRepository.Setup(x => x.GetByIdAsync(id)).ReturnsAsync(entity);
             _mockMapper.Setup(x => x.Map(updateDto, entity)).Returns(updatedEntity);
             _mockRepository.Setup(x => x.UpdateAsync(entity)).ReturnsAsync(updatedEntity);

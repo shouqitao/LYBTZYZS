@@ -1,3 +1,4 @@
+﻿using System.Linq.Expressions;
 using AutoMapper;
 using FluentAssertions;
 using LYBT.Entities.Consultation;
@@ -6,14 +7,8 @@ using LYBT.Module.Consultation.Interfaces;
 using LYBT.Module.Consultation.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
-using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 using Moq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace LYBT.UnitTests.Core.Services
@@ -90,7 +85,7 @@ namespace LYBT.UnitTests.Core.Services
         {
             // Arrange
             var medicalCaseId = Guid.NewGuid();
-            
+
             _repositoryMock.Setup(x => x.GetByMedicalCaseIdAsync(medicalCaseId))
                 .ReturnsAsync((Consultation)null);
 
@@ -178,7 +173,7 @@ namespace LYBT.UnitTests.Core.Services
         {
             // Arrange
             var consultationId = Guid.NewGuid();
-            
+
             _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(consultationId))
                 .ReturnsAsync((Consultation)null);
 
@@ -253,7 +248,7 @@ namespace LYBT.UnitTests.Core.Services
         {
             // Arrange
             var consultationId = Guid.NewGuid();
-            
+
             _repositoryMock.Setup(x => x.DeleteAsync(consultationId))
                 .ReturnsAsync(true);
 
@@ -271,7 +266,7 @@ namespace LYBT.UnitTests.Core.Services
         {
             // Arrange
             var consultationId = Guid.NewGuid();
-            
+
             _repositoryMock.Setup(x => x.DeleteAsync(consultationId))
                 .ReturnsAsync(false);
 
@@ -295,21 +290,21 @@ namespace LYBT.UnitTests.Core.Services
             var keyword = "头痛";
             var consultations = new List<Consultation>
             {
-                new Consultation 
-                { 
-                    Id = Guid.NewGuid(), 
-                    ChiefComplaint = "头痛发热", 
-                    TCMDiagnosis = "外感风寒" 
+                new Consultation
+                {
+                    Id = Guid.NewGuid(),
+                    ChiefComplaint = "头痛发热",
+                    TCMDiagnosis = "外感风寒"
                 }
             };
 
             var consultationDtos = new List<ConsultationDto>
             {
-                new ConsultationDto 
-                { 
-                    Id = consultations[0].Id, 
-                    ChiefComplaint = "头痛发热", 
-                    TCMDiagnosis = "外感风寒" 
+                new ConsultationDto
+                {
+                    Id = consultations[0].Id,
+                    ChiefComplaint = "头痛发热",
+                    TCMDiagnosis = "外感风寒"
                 }
             };
 
@@ -339,14 +334,14 @@ namespace LYBT.UnitTests.Core.Services
             // Arrange
             var consultations = new List<Consultation>
             {
-                new Consultation 
-                { 
-                    Id = Guid.NewGuid(), 
+                new Consultation
+                {
+                    Id = Guid.NewGuid(),
                     ChiefComplaint = "测试主诉1",
-                    MedicalCase = new MedicalCase 
-                    { 
-                        PatientName = "患者1", 
-                        DoctorName = "医生1" 
+                    MedicalCase = new MedicalCase
+                    {
+                        PatientName = "患者1",
+                        DoctorName = "医生1"
                     }
                 }
             };
@@ -361,9 +356,9 @@ namespace LYBT.UnitTests.Core.Services
 
             var consultationDtos = new List<ConsultationDto>
             {
-                new ConsultationDto 
-                { 
-                    Id = consultations[0].Id, 
+                new ConsultationDto
+                {
+                    Id = consultations[0].Id,
                     ChiefComplaint = "测试主诉1",
                     PatientName = "患者1",
                     DoctorName = "医生1"

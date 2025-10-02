@@ -1,5 +1,4 @@
-using Microsoft.Extensions.Hosting.WindowsServices;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 namespace LYBT.WebAPI.Extensions;
@@ -18,7 +17,7 @@ public static class EnvironmentAwareHosting
     public static IHostBuilder ConfigureEnvironmentAwareHosting(this IHostBuilder hostBuilder)
     {
         var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production";
-        
+
         if (environment == "Development")
         {
             // 开发模式：控制台运行
@@ -84,12 +83,12 @@ public static class EnvironmentAwareHosting
     {
         var addresses = app.Urls;
         var primaryUrl = addresses.FirstOrDefault() ?? "https://localhost:5001";
-        
+
         Console.WriteLine($"[启动] ✅ 环境: {app.Environment.EnvironmentName}");
         Console.WriteLine($"[启动] ✅ 服务地址: {primaryUrl}");
         Console.WriteLine($"[启动] ✅ Swagger文档: {primaryUrl}/swagger");
         Console.WriteLine($"[启动] ✅ 启动时间: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
-        
+
         // 检查数据库连接状态
         try
         {
@@ -102,7 +101,7 @@ public static class EnvironmentAwareHosting
             Console.WriteLine($"[启动] ❌ 数据库连接失败: {ex.Message}");
             Console.ResetColor();
         }
-        
+
         Console.WriteLine();
         Console.ForegroundColor = ConsoleColor.Green;
         Console.WriteLine("🚀 服务启动完成！按 Ctrl+C 停止服务");
@@ -117,28 +116,28 @@ public static class EnvironmentAwareHosting
     public static IApplicationBuilder UseDevelopmentRequestLogging(this IApplicationBuilder app)
     {
         var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production";
-        
+
         if (environment == "Development")
         {
             app.Use(async (context, next) =>
             {
                 var stopwatch = Stopwatch.StartNew();
                 var startTime = DateTime.Now;
-                
+
                 await next();
-                
+
                 stopwatch.Stop();
-                
+
                 var statusColor = context.Response.StatusCode >= 400 ? ConsoleColor.Red :
                                 context.Response.StatusCode >= 300 ? ConsoleColor.Yellow :
                                 ConsoleColor.Green;
-                
+
                 Console.ForegroundColor = statusColor;
                 Console.WriteLine($"[请求] {startTime:HH:mm:ss} {context.Request.Method} {context.Request.Path} ({stopwatch.ElapsedMilliseconds}ms) → {context.Response.StatusCode}");
                 Console.ResetColor();
             });
         }
-        
+
         return app;
     }
 
@@ -148,7 +147,7 @@ public static class EnvironmentAwareHosting
     public static async Task ConfigureEnvironmentAwareShutdown(this WebApplication app)
     {
         var environment = app.Environment.EnvironmentName;
-        
+
         if (environment == "Development")
         {
             await ConfigureDevelopmentShutdown(app);

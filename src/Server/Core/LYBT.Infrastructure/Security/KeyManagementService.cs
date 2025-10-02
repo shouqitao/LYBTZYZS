@@ -1,9 +1,7 @@
-using System;
-using System.Threading.Tasks;
+﻿using System.Security;
+using LYBT.Infrastructure.Configuration.Options;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System.Security;
-using LYBT.Infrastructure.Configuration.Options;
 
 namespace LYBT.Infrastructure.Security;
 
@@ -102,10 +100,10 @@ public class KeyManagementService : IKeyManagementService
             await RecordRotationAsync(newSecret, DateTime.UtcNow);
 
             _logger.LogInformation(
-                "JWT密钥轮换成功，密钥强度: {Bits} 位，Base64长度: {Length} 字符", 
-                keyBytes * 8, 
+                "JWT密钥轮换成功，密钥强度: {Bits} 位，Base64长度: {Length} 字符",
+                keyBytes * 8,
                 newSecret.Length);
-            
+
             return newSecret;
         }
         catch (Exception ex)
@@ -149,7 +147,7 @@ public class KeyManagementService : IKeyManagementService
                 return false;
             }
 
-            _logger.LogDebug("密钥强度验证通过，长度: {Length} 字节，唯一字节数: {Unique}", 
+            _logger.LogDebug("密钥强度验证通过，长度: {Length} 字节，唯一字节数: {Unique}",
                 keyBytes.Length, uniqueBytes);
 
             return true;

@@ -1,6 +1,8 @@
-using System.Text;
+﻿using System.Text;
 using LYBT.Infrastructure.Configuration.Options;
 using LYBT.Infrastructure.Data;
+using LYBT.Infrastructure.Data.Interceptors;
+using LYBT.Infrastructure.Data.Monitoring;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -8,9 +10,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using JwtOptions = LYBT.Infrastructure.Configuration.Options.JwtOptions;
-using LYBT.Infrastructure.Data.Interceptors;
-using LYBT.Infrastructure.Data.Monitoring;
-using LYBT.Infrastructure.Security;
 
 namespace LYBT.Infrastructure
 {
@@ -130,7 +129,7 @@ namespace LYBT.Infrastructure
                 });
                 options.EnableSensitiveDataLogging(false);
                 options.EnableServiceProviderCaching();
-                
+
                 // 添加查询性能监控拦截器
                 var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
                 if (loggerFactory != null)

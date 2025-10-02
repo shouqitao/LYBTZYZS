@@ -1,4 +1,4 @@
-using AutoMapper;
+﻿using AutoMapper;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 
 namespace LYBT.Module.MedicalCase.Mapping

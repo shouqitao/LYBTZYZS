@@ -1,11 +1,9 @@
+﻿using LYBT.Module.Herbs.Interfaces;
+using LYBT.Module.Herbs.Repositories;
+using LYBT.Module.Herbs.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using LYBT.Module.Herbs.Interfaces;
-using LYBT.Module.Herbs.Services;
-using LYBT.Module.Herbs.Repositories;
-using FluentValidation;
-using LYBT.Shared.Models.Contracts.Herbs;
 
 namespace LYBT.Module.Herbs
 {
@@ -22,24 +20,24 @@ namespace LYBT.Module.Herbs
             // 注册仓储
             services.AddScoped<IHerbRepository, HerbRepository>();
             // services.AddScoped<IHerbCategoryRepository, HerbCategoryRepository>();
-            
+
             // 注册服务
             services.AddScoped<IHerbService, HerbService>();
             // services.AddScoped<IHerbCategoryService, HerbCategoryService>();
-            
+
             // 注册验证器 - 暂时注释，待修复验证器后启用
             // services.AddScoped<IValidator<HerbCreateDto>, HerbCreateDtoValidator>();
             // services.AddScoped<IValidator<HerbUpdateDto>, HerbUpdateDtoValidator>();
-            
+
             // 注册AutoMapper配置 - 暂时注释，待创建配置文件后启用
             // services.AddAutoMapper(typeof(HerbMappingProfile));
-            
+
             // 注册模块特定的配置 - 暂时注释，待创建选项类后启用
             // services.Configure<HerbModuleOptions>(configuration.GetSection("Modules:Herbs"));
-            
+
             return services;
         }
-        
+
         /// <summary>
         /// 配置中药模块中间件（如有需要）
         /// </summary>
@@ -48,6 +46,6 @@ namespace LYBT.Module.Herbs
             // 当前无特殊中间件需求
             return app;
         }
-        
+
     }
 }
