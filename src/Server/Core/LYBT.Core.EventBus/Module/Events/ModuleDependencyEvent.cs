@@ -1,4 +1,4 @@
-using LYBT.Core.EventBus.Events;
+﻿using LYBT.Core.EventBus.Events;
 
 namespace LYBT.Core.EventBus.Module.Events;
 
@@ -74,7 +74,7 @@ public class ModuleDependencyEvent : IntegrationEventBase
         bool isOptional = false,
         bool isSatisfied = true,
         string? additionalInfo = null,
-        string source = "ModuleManager") 
+        string source = "ModuleManager")
         : base(source)
     {
         ModuleId = moduleId ?? throw new ArgumentNullException(nameof(moduleId));
@@ -139,15 +139,15 @@ public class ModuleDependencyEvent : IntegrationEventBase
 
         var description = EventType switch
         {
-            DependencyEventType.DependencyResolved => 
+            DependencyEventType.DependencyResolved =>
                 $"模块 '{ModuleName}' 的{dependencyType} '{DependencyModuleName}' 已解析",
-            DependencyEventType.DependencyUnavailable => 
+            DependencyEventType.DependencyUnavailable =>
                 $"模块 '{ModuleName}' 的{dependencyType} '{DependencyModuleName}' 不可用",
-            DependencyEventType.DependencyAvailable => 
+            DependencyEventType.DependencyAvailable =>
                 $"模块 '{ModuleName}' 的{dependencyType} '{DependencyModuleName}' 现已可用",
-            DependencyEventType.DependencyVersionMismatch => 
+            DependencyEventType.DependencyVersionMismatch =>
                 $"模块 '{ModuleName}' 的{dependencyType} '{DependencyModuleName}' 版本不匹配",
-            DependencyEventType.CircularDependencyDetected => 
+            DependencyEventType.CircularDependencyDetected =>
                 $"检测到模块 '{ModuleName}' 与 '{DependencyModuleName}' 之间的循环依赖",
             _ => $"模块 '{ModuleName}' 的依赖 '{DependencyModuleName}' 发生了变化"
         };
@@ -167,7 +167,7 @@ public class ModuleDependencyEvent : IntegrationEventBase
     public string GetDependencySummary()
     {
         var summary = $"{ModuleName} → {DependencyModuleName}";
-        
+
         if (IsOptional)
         {
             summary += " [可选]";

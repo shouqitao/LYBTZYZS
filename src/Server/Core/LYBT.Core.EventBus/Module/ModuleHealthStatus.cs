@@ -1,4 +1,4 @@
-namespace LYBT.Core.EventBus.Module;
+﻿namespace LYBT.Core.EventBus.Module;
 
 /// <summary>
 /// 模块健康状态
@@ -23,7 +23,7 @@ public class ModuleHealthStatus
     /// <summary>
     /// 额外数据
     /// </summary>
-    public IReadOnlyDictionary<string, object> Data { get; init; } = 
+    public IReadOnlyDictionary<string, object> Data { get; init; } =
         new Dictionary<string, object>();
 
     /// <summary>
@@ -144,7 +144,7 @@ public class ModuleHealthStatus
     public string GetSummary()
     {
         var summary = $"状态: {Status.GetDisplayName()}";
-        
+
         if (!string.IsNullOrWhiteSpace(Description))
         {
             summary += $", 描述: {Description}";

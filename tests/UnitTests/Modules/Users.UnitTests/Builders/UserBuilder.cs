@@ -1,8 +1,7 @@
-using LYBT.Entities.Users;
+﻿using LYBT.Entities.Users;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Utilities.Helpers;
-using System;
 
 namespace LYBT.Module.Users.Tests.Builders
 {

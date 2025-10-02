@@ -1,5 +1,5 @@
+﻿using System.ComponentModel.DataAnnotations;
 using LYBT.Core.Infrastructure.Configuration.Options;
-using System.ComponentModel.DataAnnotations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -23,7 +23,7 @@ public static class ConfigurationExtensions
     /// <param name="configuration">配置对象</param>
     /// <returns>服务集合</returns>
     public static IServiceCollection AddLybtConfiguration(
-        this IServiceCollection services, 
+        this IServiceCollection services,
         IConfiguration configuration)
     {
         // 注册统一配置
@@ -62,7 +62,7 @@ public static class ConfigurationExtensions
 
         // 验证必填项
         ValidateRequiredSettings(options, validationResults);
-        
+
         // 验证业务逻辑
         ValidateBusinessLogic(options, validationResults);
 
@@ -78,7 +78,7 @@ public static class ConfigurationExtensions
     /// 用于向后兼容，逐步迁移到统一配置
     /// </summary>
     private static void RegisterLegacyCompatibilityOptions(
-        IServiceCollection services, 
+        IServiceCollection services,
         IConfiguration configuration)
     {
         var lybtOptions = configuration.GetLybtOptions();
@@ -208,7 +208,7 @@ public static class ConfigurationExtensions
     private static void ValidateBusinessLogic(LybtOptions options, List<string> validationResults)
     {
         // 验证令牌过期时间逻辑
-        if (options.Authentication.Jwt.AccessTokenExpirationMinutes >= 
+        if (options.Authentication.Jwt.AccessTokenExpirationMinutes >=
             options.Authentication.Jwt.RefreshTokenExpirationDays * 1440)
         {
             validationResults.Add("Access token expiration should be less than refresh token expiration");
@@ -221,7 +221,7 @@ public static class ConfigurationExtensions
         }
 
         // 验证数据库连接池配置
-        if (options.Infrastructure.Database.ConnectionPool.MinConnections > 
+        if (options.Infrastructure.Database.ConnectionPool.MinConnections >
             options.Infrastructure.Database.ConnectionPool.MaxConnections)
         {
             validationResults.Add("Database MinConnections cannot be greater than MaxConnections");
@@ -345,7 +345,7 @@ public class ConfigurationValidator<TOptions> : IValidateOptions<TOptions>
     {
         var context = new ValidationContext(options);
         var validationResults = new List<ValidationResult>();
-        
+
         bool isValid = Validator.TryValidateObject(options, context, validationResults, true);
 
         if (isValid)

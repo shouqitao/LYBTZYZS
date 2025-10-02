@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using LYBT.Entities.Common;
@@ -78,25 +78,25 @@ namespace LYBT.Entities.MedicalCase
         /// <param name="currentUserId">当前用户ID</param>
         /// <returns>是否可以编辑</returns>
         /// <summary>
-/// 判断病历是否可以编辑 - 简化版本
-/// 核心业务规则：当天可改、过期锁定
-/// </summary>
-/// <param name="isAdmin">是否管理员</param>
-/// <param name="currentUserId">当前用户ID</param>
-/// <returns>是否可以编辑</returns>
-public bool CanEdit(bool isAdmin, Guid? currentUserId = null)
-{
-    // 管理员可以编辑所有病历
-    if (isAdmin) return true;
+        /// 判断病历是否可以编辑 - 简化版本
+        /// 核心业务规则：当天可改、过期锁定
+        /// </summary>
+        /// <param name="isAdmin">是否管理员</param>
+        /// <param name="currentUserId">当前用户ID</param>
+        /// <returns>是否可以编辑</returns>
+        public bool CanEdit(bool isAdmin, Guid? currentUserId = null)
+        {
+            // 管理员可以编辑所有病历
+            if (isAdmin) return true;
 
-    // 简化逻辑：创建者当天可编辑
-    if (currentUserId.HasValue && DoctorId == currentUserId.Value)
-    {
-        return CreatedAt.Date == DateTime.Today;
-    }
+            // 简化逻辑：创建者当天可编辑
+            if (currentUserId.HasValue && DoctorId == currentUserId.Value)
+            {
+                return CreatedAt.Date == DateTime.Today;
+            }
 
-    return false;
-}
+            return false;
+        }
 
         /// <summary>
         /// 判断病历是否已锁定（过了当天0点）

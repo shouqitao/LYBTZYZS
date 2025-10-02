@@ -1,3 +1,4 @@
+﻿using System;
 using AutoMapper;
 using FluentAssertions;
 using LYBT.Entities.Prescriptions;
@@ -5,7 +6,6 @@ using LYBT.Module.Prescriptions.Mapping;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
 using Xunit;
-using System;
 
 namespace LYBT.Module.Prescriptions.Tests.Mapping
 {

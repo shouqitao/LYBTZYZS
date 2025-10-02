@@ -1,4 +1,4 @@
-namespace LYBT.Core.EventBus.Module;
+﻿namespace LYBT.Core.EventBus.Module;
 
 /// <summary>
 /// 模块状态枚举
@@ -99,9 +99,9 @@ public static class ModuleStateExtensions
     /// <returns>是否处于过渡状态</returns>
     public static bool IsTransitioning(this ModuleState state)
     {
-        return state is ModuleState.Initializing or 
-                       ModuleState.Starting or 
-                       ModuleState.Stopping or 
+        return state is ModuleState.Initializing or
+                       ModuleState.Starting or
+                       ModuleState.Stopping or
                        ModuleState.Disposing;
     }
 
@@ -112,7 +112,7 @@ public static class ModuleStateExtensions
     /// <returns>是否可以启动</returns>
     public static bool CanStart(this ModuleState state)
     {
-        return state is ModuleState.Initialized or 
+        return state is ModuleState.Initialized or
                        ModuleState.Stopped;
     }
 

@@ -1,7 +1,7 @@
-using System.Data.Common;
+﻿using System.Data.Common;
+using LYBT.Infrastructure.Data.Monitoring;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Logging;
-using LYBT.Infrastructure.Data.Monitoring;
 
 namespace LYBT.Infrastructure.Data.Interceptors
 {
@@ -120,8 +120,8 @@ namespace LYBT.Infrastructure.Data.Interceptors
 
             // 记录到统计收集器
             _statisticsCollector?.RecordQueryExecution(
-                command.CommandText, 
-                duration.TotalMilliseconds, 
+                command.CommandText,
+                duration.TotalMilliseconds,
                 isSlowQuery);
 
             // 记录所有查询的基本统计信息（仅在Debug级别）
@@ -138,7 +138,7 @@ namespace LYBT.Infrastructure.Data.Interceptors
             {
                 var commandText = command.CommandText;
                 var parameters = GetParameterInfo(command);
-                
+
                 var logMessage = $"慢查询检测: {duration.TotalMilliseconds:F2}ms (阈值: {_slowQueryThresholdMs}ms)\n" +
                                $"SQL: {commandText}\n" +
                                $"参数: {parameters}";
@@ -210,15 +210,15 @@ namespace LYBT.Infrastructure.Data.Interceptors
         {
             // 简单的启发式检测：如果在短时间内执行了多个相似的单行查询，可能是N+1问题
             var lowerCommand = commandText.ToLower();
-            
+
             // 检查是否为单行查询（包含TOP 1或LIMIT 1）
-            bool isSingleRowQuery = lowerCommand.Contains("top(1)") || 
+            bool isSingleRowQuery = lowerCommand.Contains("top(1)") ||
                                   lowerCommand.Contains("top 1") ||
                                   lowerCommand.Contains("limit 1");
 
             // 检查是否为通过外键查询
-            bool hasForeignKeyPattern = lowerCommand.Contains("where") && 
-                                       (lowerCommand.Contains("_id = @") || 
+            bool hasForeignKeyPattern = lowerCommand.Contains("where") &&
+                                       (lowerCommand.Contains("_id = @") ||
                                         lowerCommand.Contains("id] = @"));
 
             if (isSingleRowQuery && hasForeignKeyPattern)

@@ -1,8 +1,6 @@
-using System.Linq;
-using AutoMapper;
+﻿using AutoMapper;
 using LYBT.Entities.Patients;
 using LYBT.Module.Patients.Interfaces;
-using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
 using Microsoft.Extensions.Logging;
@@ -103,32 +101,32 @@ namespace LYBT.Module.Patients.Services
             }
         }
 
-    public async Task<ServiceResult<List<PatientDto>>> SearchAsync(string keyword)
-    {
-        try
+        public async Task<ServiceResult<List<PatientDto>>> SearchAsync(string keyword)
         {
-            // 如果关键字为空，返回空列表
-            if (string.IsNullOrWhiteSpace(keyword))
+            try
             {
-                return ServiceResult<List<PatientDto>>.Success(new List<PatientDto>());
+                // 如果关键字为空，返回空列表
+                if (string.IsNullOrWhiteSpace(keyword))
+                {
+                    return ServiceResult<List<PatientDto>>.Success(new List<PatientDto>());
+                }
+
+                // 搜索匹配关键字的患者（姓名、电话或身份证号）
+                var allPatients = await _repository.GetAllAsync();
+                var patients = allPatients.Where(p =>
+                    p.Name.Contains(keyword)).ToList();
+
+                // 转换为DTO
+                var patientDtos = _mapper.Map<List<PatientDto>>(patients);
+
+                return ServiceResult<List<PatientDto>>.Success(patientDtos);
             }
-
-            // 搜索匹配关键字的患者（姓名、电话或身份证号）
-            var allPatients = await _repository.GetAllAsync();
-            var patients = allPatients.Where(p =>
-                p.Name.Contains(keyword)).ToList();
-
-            // 转换为DTO
-            var patientDtos = _mapper.Map<List<PatientDto>>(patients);
-
-            return ServiceResult<List<PatientDto>>.Success(patientDtos);
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "搜索患者时发生错误，关键字：{Keyword}", keyword);
+                return ServiceResult<List<PatientDto>>.Failure($"搜索患者失败：{ex.Message}");
+            }
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "搜索患者时发生错误，关键字：{Keyword}", keyword);
-            return ServiceResult<List<PatientDto>>.Failure($"搜索患者失败：{ex.Message}");
-        }
-    }
 
         public async Task<ServiceResult> DeleteAsync(Guid id)
         {

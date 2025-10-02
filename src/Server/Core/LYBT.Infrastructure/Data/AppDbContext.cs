@@ -1,3 +1,4 @@
+﻿using System.Security.Claims;
 using LYBT.Entities.Auth;
 using LYBT.Entities.Common;
 using LYBT.Entities.Consultation;
@@ -7,10 +8,9 @@ using LYBT.Entities.MedicalCase;
 using LYBT.Entities.Patients;
 using LYBT.Entities.Prescriptions;
 using LYBT.Entities.Users;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Http;
-using System.Security.Claims;
 using LYBT.Infrastructure.Data.Configuration;
+using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 
 namespace LYBT.Infrastructure.Data
 {
@@ -201,14 +201,14 @@ namespace LYBT.Infrastructure.Data
                 entity.Property(e => e.FamilyId).HasMaxLength(128);
                 entity.Property(e => e.DeviceId).HasMaxLength(128);
                 entity.Property(e => e.DeviceName).HasMaxLength(200);
-                
+
                 entity.HasIndex(e => e.Token).IsUnique();
                 entity.HasIndex(e => e.UserId);
                 entity.HasIndex(e => e.ExpiresAt);
                 entity.HasIndex(e => e.IsRevoked);
                 entity.HasIndex(e => e.Jti); // 添加Jti索引用于快速查找
                 entity.HasIndex(e => new { e.UserId, e.IsRevoked });
-                
+
                 // 与用户的关系
                 entity.HasOne<User>()
                     .WithMany()
@@ -385,7 +385,7 @@ namespace LYBT.Infrastructure.Data
             entity.Property(h => h.Unit).HasMaxLength(10);
             entity.Property(h => h.Effect).HasMaxLength(500);
             entity.Property(h => h.Usage).HasMaxLength(500);
-            
+
             // P1 Batch1: 统一使用 HasPrecision 配置 decimal 精度
             entity.Property(h => h.Price).HasPrecision(18, 2);
             entity.Property(h => h.CostPrice).HasPrecision(18, 2);
@@ -420,7 +420,7 @@ namespace LYBT.Infrastructure.Data
             var entity = modelBuilder.Entity<SystemLog>();
             entity.ToTable("SystemLogs");
             entity.HasKey(sl => sl.Id);
-            
+
             // 配置字段
             entity.Property(sl => sl.Timestamp).IsRequired();
             entity.Property(sl => sl.Level).HasMaxLength(50).IsRequired();
@@ -432,7 +432,7 @@ namespace LYBT.Infrastructure.Data
             entity.Property(sl => sl.MachineName).HasMaxLength(100);
             entity.Property(sl => sl.ThreadId);
             entity.Property(sl => sl.Properties);
-            
+
             // 添加索引以提高查询性能
             entity.HasIndex(sl => sl.Timestamp).HasDatabaseName("IX_SystemLogs_Timestamp");
             entity.HasIndex(sl => sl.Level).HasDatabaseName("IX_SystemLogs_Level");

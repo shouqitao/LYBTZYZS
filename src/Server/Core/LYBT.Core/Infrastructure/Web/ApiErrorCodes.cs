@@ -1,4 +1,4 @@
-namespace LYBT.Core.Infrastructure.Web
+﻿namespace LYBT.Core.Infrastructure.Web
 {
 
     /// <summary>

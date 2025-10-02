@@ -1,9 +1,9 @@
-using LYBT.Entities.Patients;
+﻿using LYBT.Entities.Patients;
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Repositories;
 using LYBT.Module.Patients.Interfaces;
-using Microsoft.EntityFrameworkCore;
 using LYBT.Shared.Models.Enums;
+using Microsoft.EntityFrameworkCore;
 
 namespace LYBT.Module.Patients.Repositories
 {
@@ -80,8 +80,8 @@ namespace LYBT.Module.Patients.Repositories
         /// <param name="pageSize">每页大小</param>
         /// <returns>搜索结果</returns>
         public async Task<PaginatedList<Patient>> SearchPatientsAsync(
-            string? searchTerm, 
-            int pageIndex, 
+            string? searchTerm,
+            int pageIndex,
             int pageSize)
         {
             var query = _dbSet.AsNoTracking().Where(p => !p.IsDeleted);
@@ -89,7 +89,7 @@ namespace LYBT.Module.Patients.Repositories
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {
                 var term = searchTerm.ToLower();
-                query = query.Where(p => 
+                query = query.Where(p =>
                     p.Name.ToLower().Contains(term) ||
                     p.PinYinCode.ToLower().Contains(term) ||
                     p.PhoneNumber.Contains(term) ||
@@ -129,7 +129,7 @@ namespace LYBT.Module.Patients.Repositories
         public async Task<bool> PhoneNumberExistsAsync(string phoneNumber, Guid? excludeId = null)
         {
             var query = _dbSet.AsNoTracking().Where(p => p.PhoneNumber == phoneNumber && !p.IsDeleted);
-            
+
             if (excludeId.HasValue)
             {
                 query = query.Where(p => p.Id != excludeId.Value);
@@ -172,7 +172,7 @@ namespace LYBT.Module.Patients.Repositories
         public async Task UpdateLastVisitDateAsync(IEnumerable<Guid> patientIds, DateTime visitDate)
         {
             var idList = patientIds.ToList();
-            
+
             // 使用ExecuteUpdateAsync进行批量更新（EF Core 7.0+）
             await _dbSet
                 .Where(p => idList.Contains(p.Id) && !p.IsDeleted)

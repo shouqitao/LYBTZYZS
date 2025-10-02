@@ -1,4 +1,4 @@
-using AutoMapper;
+﻿using AutoMapper;
 using LYBT.Infrastructure.Configuration.Options;
 using LYBT.Infrastructure.Configuration.Services;
 using LYBT.Infrastructure.Data;
@@ -12,8 +12,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
-using System;
-using System.Collections.Generic;
 
 namespace LYBT.Module.Users.Tests.Fixtures
 {

@@ -1,4 +1,4 @@
-using LYBT.Shared.Models.Contracts.Auth;
+﻿using LYBT.Shared.Models.Contracts.Auth;
 
 namespace LYBT.Desktop.Services.Business
 {

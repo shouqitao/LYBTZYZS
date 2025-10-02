@@ -1,5 +1,4 @@
-using System;
-using AutoMapper;
+﻿using AutoMapper;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -53,7 +52,7 @@ namespace LYBT.Tests.Common
                 {
                     ConfigureMapperProfiles(cfg);
                 });
-                
+
                 Services.AddSingleton<IMapper>(mapper);
             }
             else
@@ -69,7 +68,7 @@ namespace LYBT.Tests.Common
         private bool HasCustomMapperConfiguration()
         {
             // 通过反射检查子类是否重写了ConfigureMapperProfiles方法
-            var method = GetType().GetMethod("ConfigureMapperProfiles", 
+            var method = GetType().GetMethod("ConfigureMapperProfiles",
                 System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
             return method != null && method.DeclaringType != typeof(TestBase);
         }

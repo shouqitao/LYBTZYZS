@@ -1,5 +1,4 @@
-using System.ComponentModel.DataAnnotations;
-using Microsoft.Extensions.Caching.Memory;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace LYBT.Infrastructure.Configuration.Options
 {

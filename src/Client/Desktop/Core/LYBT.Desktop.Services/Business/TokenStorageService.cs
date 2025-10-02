@@ -1,7 +1,7 @@
+﻿using System.IO;
+using System.Text.Json;
 using LYBT.Shared.Models.Contracts.Auth;
 using Microsoft.Extensions.Logging;
-using System.IO;
-using System.Text.Json;
 
 namespace LYBT.Desktop.Services.Business
 {

@@ -1,6 +1,6 @@
-using Microsoft.Extensions.Configuration;
-using System.Text;
+﻿using System.Text;
 using System.Text.RegularExpressions;
+using Microsoft.Extensions.Configuration;
 
 namespace LYBT.Infrastructure.Configuration.Validation;
 

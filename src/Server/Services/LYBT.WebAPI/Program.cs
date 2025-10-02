@@ -1,4 +1,4 @@
-/// <summary>
+﻿/// <summary>
 /// 凌隐宝堂中医诊所诊疗系统 WebAPI 程序入口
 /// UltraThink重构：采用统一服务注入管理，简化代码结构，提高可维护性
 /// UltraThink v2.0 Security: 加载.env文件和环境变量替换支持

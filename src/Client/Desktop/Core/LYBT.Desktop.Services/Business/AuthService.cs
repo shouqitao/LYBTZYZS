@@ -1,10 +1,10 @@
+﻿using System.Net.Http;
+using System.Net.Http.Json;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using System.Net.Http;
-using System.Net.Http.Json;
 
 namespace LYBT.Desktop.Services.Business
 {

@@ -1,5 +1,4 @@
-using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using LYBT.Entities.Common;
 
@@ -45,7 +44,7 @@ namespace LYBT.Entities.Auth
         /// <summary>
         /// 撤销原因
         /// </summary>
-       [StringLength(256)]
+        [StringLength(256)]
         public string? RevokedReason { get; set; }
 
         /// <summary>
@@ -117,8 +116,8 @@ namespace LYBT.Entities.Auth
         /// </summary>
         public bool IsValid()
         {
-            return !IsRevoked && 
-                   !IsDeleted && 
+            return !IsRevoked &&
+                   !IsDeleted &&
                    ExpiresAt > DateTime.UtcNow;
         }
 

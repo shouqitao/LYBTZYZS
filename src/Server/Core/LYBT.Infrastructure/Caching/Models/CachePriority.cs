@@ -1,4 +1,4 @@
-namespace LYBT.Infrastructure.Caching.Models
+﻿namespace LYBT.Infrastructure.Caching.Models
 {
     /// <summary>
     /// 缓存优先级枚举

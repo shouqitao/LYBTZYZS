@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using LYBT.Entities.Common;
@@ -86,7 +86,7 @@ namespace LYBT.Entities.Prescriptions
         [DisplayName("是否已打印")]
         public bool IsPrinted { get; set; } = false;
 
-// 关联数据
+        // 关联数据
 
         /// <summary>
         /// 处方项目（药材明细）

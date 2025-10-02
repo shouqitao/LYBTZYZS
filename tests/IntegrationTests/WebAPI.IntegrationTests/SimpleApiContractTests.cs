@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Text;
 using System.Text.Json;
 using FluentAssertions;
@@ -46,19 +46,19 @@ namespace LYBT.WebAPI.Tests
 
             // Assert
             var responseContent = await response.Content.ReadAsStringAsync();
-            
+
             // 验证基本响应格式
             response.Content.Headers.ContentType?.MediaType.Should().Be("application/json");
-            
+
             // 解析JSON响应
             var jsonDoc = JsonDocument.Parse(responseContent);
             var root = jsonDoc.RootElement;
-            
+
             // 验证标准ApiResponse格式
             root.TryGetProperty("success", out var success).Should().BeTrue();
             root.TryGetProperty("message", out var message).Should().BeTrue();
             root.TryGetProperty("data", out var data).Should().BeTrue();
-            
+
             // 如果登录成功，验证认证数据结构
             if (success.GetBoolean())
             {
@@ -88,11 +88,11 @@ namespace LYBT.WebAPI.Tests
             var responseContent = await response.Content.ReadAsStringAsync();
             var jsonDoc = JsonDocument.Parse(responseContent);
             var root = jsonDoc.RootElement;
-            
+
             // 验证错误响应结构
             root.TryGetProperty("success", out var success).Should().BeTrue();
             success.GetBoolean().Should().BeFalse();
-            
+
             root.TryGetProperty("message", out var message).Should().BeTrue();
             message.GetString().Should().NotBeNullOrEmpty();
         }
@@ -110,15 +110,15 @@ namespace LYBT.WebAPI.Tests
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             response.Content.Headers.ContentType?.MediaType.Should().Be("application/json");
-            
+
             var responseContent = await response.Content.ReadAsStringAsync();
             var jsonDoc = JsonDocument.Parse(responseContent);
             var root = jsonDoc.RootElement;
-            
+
             // 验证健康检查响应包含状态信息
             root.TryGetProperty("success", out var success).Should().BeTrue();
             success.GetBoolean().Should().BeTrue();
-            
+
             // 健康检查响应应该有data字段
             root.TryGetProperty("data", out var data).Should().BeTrue();
         }
@@ -131,15 +131,15 @@ namespace LYBT.WebAPI.Tests
 
             // Assert
             response.IsSuccessStatusCode.Should().BeTrue();
-            
+
             var responseContent = await response.Content.ReadAsStringAsync();
             var jsonDoc = JsonDocument.Parse(responseContent);
             var root = jsonDoc.RootElement;
-            
+
             // 数据库健康检查应该包含状态信息
             var hasStatus = root.TryGetProperty("status", out _) ||
                            (root.TryGetProperty("data", out var data) && data.TryGetProperty("status", out _));
-            
+
             hasStatus.Should().BeTrue("数据库健康检查应该包含状态信息");
         }
 
@@ -162,13 +162,13 @@ namespace LYBT.WebAPI.Tests
         {
             // Arrange
             var token = await AuthenticateAsync();
-            if (string.IsNullOrEmpty(token)) 
+            if (string.IsNullOrEmpty(token))
             {
                 // 如果无法认证，跳过此测试
                 return;
             }
-            
-            _client.DefaultRequestHeaders.Authorization = 
+
+            _client.DefaultRequestHeaders.Authorization =
                 new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
             // Act
@@ -180,13 +180,13 @@ namespace LYBT.WebAPI.Tests
                 var responseContent = await response.Content.ReadAsStringAsync();
                 var jsonDoc = JsonDocument.Parse(responseContent);
                 var root = jsonDoc.RootElement;
-                
+
                 // 验证分页响应结构
                 root.TryGetProperty("success", out var success).Should().BeTrue();
                 success.GetBoolean().Should().BeTrue();
-                
+
                 root.TryGetProperty("data", out var data).Should().BeTrue();
-                
+
                 // 验证分页字段
                 data.TryGetProperty("items", out _).Should().BeTrue();
                 data.TryGetProperty("totalCount", out _).Should().BeTrue();
@@ -233,7 +233,7 @@ namespace LYBT.WebAPI.Tests
             foreach (var endpoint in endpoints)
             {
                 var response = await _client.GetAsync(endpoint);
-                
+
                 if (response.IsSuccessStatusCode)
                 {
                     response.Content.Headers.ContentType?.MediaType.Should().Be("application/json",
@@ -263,12 +263,12 @@ namespace LYBT.WebAPI.Tests
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 
                 var response = await _client.PostAsync("/api/v1/auth/login", content);
-                
+
                 if (response.IsSuccessStatusCode)
                 {
                     var responseContent = await response.Content.ReadAsStringAsync();
                     var jsonDoc = JsonDocument.Parse(responseContent);
-                    
+
                     if (jsonDoc.RootElement.TryGetProperty("data", out var data) &&
                         data.TryGetProperty("token", out var token))
                     {
@@ -314,7 +314,7 @@ namespace LYBT.WebAPI.Tests
             foreach (var endpoint in endpoints)
             {
                 var response = await _client.GetAsync(endpoint);
-                
+
                 if (response.IsSuccessStatusCode)
                 {
                     var responseContent = await response.Content.ReadAsStringAsync();
@@ -338,20 +338,20 @@ namespace LYBT.WebAPI.Tests
             {
                 var response = await _client.GetAsync(endpoint);
                 response.StatusCode.Should().Be(expectedStatus);
-                
+
                 var responseContent = await response.Content.ReadAsStringAsync();
-                
+
                 if (!string.IsNullOrEmpty(responseContent))
                 {
                     var jsonDoc = JsonDocument.Parse(responseContent);
                     var root = jsonDoc.RootElement;
-                    
+
                     // 验证错误响应有success字段且为false
                     if (root.TryGetProperty("success", out var success))
                     {
                         success.GetBoolean().Should().BeFalse($"错误响应 {endpoint} 的success字段应该为false");
                     }
-                    
+
                     // 验证错误响应有message字段
                     if (root.TryGetProperty("message", out var message))
                     {
@@ -365,14 +365,14 @@ namespace LYBT.WebAPI.Tests
         {
             var jsonDoc = JsonDocument.Parse(responseContent);
             var root = jsonDoc.RootElement;
-            
+
             // 验证标准ApiResponse<T>结构
             root.TryGetProperty("success", out var success).Should().BeTrue($"{endpoint} 响应应该包含success字段");
             success.ValueKind.Should().Be(JsonValueKind.True, $"{endpoint} 的success字段应该是布尔类型");
-            
+
             root.TryGetProperty("message", out var message).Should().BeTrue($"{endpoint} 响应应该包含message字段");
             message.ValueKind.Should().Be(JsonValueKind.String, $"{endpoint} 的message字段应该是字符串类型");
-            
+
             // data字段可能存在也可能不存在，但如果存在就验证
             if (root.TryGetProperty("data", out var data))
             {

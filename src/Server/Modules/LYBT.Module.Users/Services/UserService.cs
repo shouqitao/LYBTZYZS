@@ -1,4 +1,4 @@
-using AutoMapper;
+﻿using AutoMapper;
 using LYBT.Entities.Users;
 using LYBT.Module.Users.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
@@ -194,11 +194,11 @@ namespace LYBT.Module.Users.Services
             try
             {
                 var entity = await _repository.GetByIdAsync(doctorId);
-                bool isAvailable = entity != null && 
-                                  entity.Role == UserRole.Doctor && 
+                bool isAvailable = entity != null &&
+                                  entity.Role == UserRole.Doctor &&
                                   entity.Status == CommonStatus.Enabled &&
                                   !entity.IsDeleted;
-                
+
                 return ServiceResult<bool>.Success(isAvailable);
             }
             catch (Exception ex)
@@ -237,7 +237,7 @@ namespace LYBT.Module.Users.Services
             {
                 // 先尝试按用户名查找
                 var entity = await _repository.GetByUsernameAsync(usernameOrEmail);
-                
+
                 // 如果未找到，再尝试按邮箱查找
                 if (entity == null)
                 {
@@ -267,7 +267,7 @@ namespace LYBT.Module.Users.Services
 
                 entity.LastLoginTime = DateTime.UtcNow;
                 await _repository.UpdateAsync(entity);
-                
+
                 return ServiceResult<bool>.Success(true);
             }
             catch (Exception ex)
@@ -286,13 +286,13 @@ namespace LYBT.Module.Users.Services
                     return ServiceResult<bool>.Failure("用户不存在");
 
                 entity.FailedLoginCount++;
-                
+
                 // 如果失败次数达到5次，锁定账户1小时
                 if (entity.FailedLoginCount >= 5)
                 {
                     entity.LockoutEnd = DateTime.UtcNow.AddHours(1);
                 }
-                
+
                 await _repository.UpdateAsync(entity);
                 return ServiceResult<bool>.Success(true);
             }
@@ -314,7 +314,7 @@ namespace LYBT.Module.Users.Services
                 entity.FailedLoginCount = 0;
                 entity.LockoutEnd = null;
                 await _repository.UpdateAsync(entity);
-                
+
                 return ServiceResult<bool>.Success(true);
             }
             catch (Exception ex)
@@ -352,14 +352,14 @@ namespace LYBT.Module.Users.Services
             {
                 // 获取超级管理员用户名（可配置）
                 var sysAdminUsername = _configuration["Lybt:Business:SystemAdmin:Username"] ?? "clinic_admin";
-                
+
                 // 检查是否尝试使用超级管理员用户名
                 if (string.Equals(dto.Username, sysAdminUsername, StringComparison.OrdinalIgnoreCase))
                 {
                     _logger.LogWarning("尝试创建与超级管理员相同的用户名: {Username}", dto.Username);
                     return ServiceResult<UserDto>.Failure($"用户名 '{dto.Username}' 为系统保留用户名，不可使用");
                 }
-                
+
                 // 可选：添加其他保留用户名列表
                 var reservedUsernames = new[] { "admin", "administrator", "root", "system", "superadmin", "sysadmin" };
                 if (reservedUsernames.Any(reserved => string.Equals(dto.Username, reserved, StringComparison.OrdinalIgnoreCase)))
@@ -367,18 +367,18 @@ namespace LYBT.Module.Users.Services
                     _logger.LogWarning("尝试创建保留用户名: {Username}", dto.Username);
                     return ServiceResult<UserDto>.Failure($"用户名 '{dto.Username}' 为系统保留用户名，不可使用");
                 }
-                
+
                 var entity = _mapper.Map<User>(dto);
-                
+
                 // 对密码进行哈希处理
                 if (!string.IsNullOrEmpty(dto.Password))
                 {
                     entity.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password);
                 }
-                
+
                 var result = await _repository.AddAsync(entity);
                 var resultDto = _mapper.Map<UserDto>(result);
-                
+
                 _logger.LogInformation("成功创建用户: {Username}, Role: {Role}", resultDto.UserName, resultDto.Role);
                 return ServiceResult<UserDto>.Success(resultDto);
             }
@@ -403,7 +403,7 @@ namespace LYBT.Module.Users.Services
                 _mapper.Map(dto, entity);
                 var result = await _repository.UpdateAsync(entity);
                 var resultDto = _mapper.Map<UserDto>(result);
-                
+
                 _logger.LogInformation("成功更新用户: {UserId}", id);
                 return ServiceResult<UserDto>.Success(resultDto);
             }

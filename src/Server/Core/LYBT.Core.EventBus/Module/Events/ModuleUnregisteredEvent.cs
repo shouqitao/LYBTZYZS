@@ -1,4 +1,4 @@
-using LYBT.Core.EventBus.Events;
+﻿using LYBT.Core.EventBus.Events;
 
 namespace LYBT.Core.EventBus.Module.Events;
 
@@ -46,10 +46,10 @@ public class ModuleUnregisteredEvent : IntegrationEventBase
     /// <param name="isForced">是否为强制注销</param>
     /// <param name="source">事件来源</param>
     public ModuleUnregisteredEvent(
-        ModuleDescriptor moduleDescriptor, 
-        string? reason = null, 
+        ModuleDescriptor moduleDescriptor,
+        string? reason = null,
         bool isForced = false,
-        string source = "ModuleManager") 
+        string source = "ModuleManager")
         : base(source)
     {
         if (moduleDescriptor == null)
@@ -70,7 +70,7 @@ public class ModuleUnregisteredEvent : IntegrationEventBase
     public override string GetDescription()
     {
         var description = $"模块 '{ModuleName}' (ID: {ModuleId}) v{Version} 已从系统注销";
-        
+
         if (!string.IsNullOrWhiteSpace(Reason))
         {
             description += $", 原因: {Reason}";

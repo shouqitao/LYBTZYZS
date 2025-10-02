@@ -1,4 +1,4 @@
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Core.Infrastructure.Interfaces

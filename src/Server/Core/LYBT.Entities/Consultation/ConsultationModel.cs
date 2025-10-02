@@ -1,9 +1,7 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using LYBT.Entities.Common;
-using LYBT.Entities.Patients;
-using LYBT.Entities.Users;
 using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Entities.Consultation

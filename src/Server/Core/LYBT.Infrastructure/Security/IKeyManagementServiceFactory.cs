@@ -1,4 +1,4 @@
-namespace LYBT.Infrastructure.Security
+﻿namespace LYBT.Infrastructure.Security
 {
     /// <summary>
     /// 密钥管理服务工厂接口

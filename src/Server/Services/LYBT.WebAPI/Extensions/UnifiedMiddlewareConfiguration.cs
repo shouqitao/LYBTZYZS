@@ -1,7 +1,6 @@
-using LYBT.Core.Infrastructure.Configuration.Options;
+﻿using LYBT.Core.Infrastructure.Configuration.Options;
 using LYBT.Infrastructure.Configuration.Extensions;
 using LYBT.WebAPI.Middleware;
-using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Options;
 
 namespace LYBT.WebAPI.Extensions;
@@ -90,7 +89,7 @@ public static class UnifiedMiddlewareConfiguration
         return app;
     }
 
-    
+
 
     /// <summary>
     /// 配置 Swagger API 文档
@@ -112,9 +111,9 @@ public static class UnifiedMiddlewareConfiguration
         return app;
     }
 
-    
 
-    
+
+
 }
 
 /// <summary>

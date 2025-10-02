@@ -1,5 +1,5 @@
+﻿using LYBT.Shared.Models.Enums;
 using MedicalCaseEntity = LYBT.Entities.MedicalCase.MedicalCase;
-using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Module.MedicalCase.Services
 {

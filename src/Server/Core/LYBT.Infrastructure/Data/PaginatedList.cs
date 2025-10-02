@@ -1,4 +1,4 @@
-namespace LYBT.Infrastructure.Data
+﻿namespace LYBT.Infrastructure.Data
 {
     /// <summary>
     /// 分页列表

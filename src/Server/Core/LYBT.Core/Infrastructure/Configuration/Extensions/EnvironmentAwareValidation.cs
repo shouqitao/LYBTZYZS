@@ -1,4 +1,4 @@
-using LYBT.Core.Infrastructure.Configuration.Options;
+﻿using LYBT.Core.Infrastructure.Configuration.Options;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;

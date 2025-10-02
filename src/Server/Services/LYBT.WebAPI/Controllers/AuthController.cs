@@ -1,4 +1,4 @@
-using Asp.Versioning;
+﻿using Asp.Versioning;
 using LYBT.Core.Infrastructure.Web;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Auth;
@@ -122,13 +122,13 @@ namespace LYBT.WebAPI.Controllers
 
                 // 调用认证服务进行登录
                 var result = await _authService.LoginAsync(loginRequest);
-                
+
                 // 如果登录成功且是超级管理员，返回成功
                 if (result.IsSuccess && result.Data != null && result.Data.User.Id == Guid.Empty)
                 {
                     return HandleServiceResult(result, "超级管理员登录成功");
                 }
-                
+
                 // 登录失败或不是超级管理员
                 return ValidationFail<LoginResponse>("认证失败");
             }

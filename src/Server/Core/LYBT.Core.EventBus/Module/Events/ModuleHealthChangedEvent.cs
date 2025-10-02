@@ -1,4 +1,4 @@
-using LYBT.Core.EventBus.Events;
+﻿using LYBT.Core.EventBus.Events;
 
 namespace LYBT.Core.EventBus.Module.Events;
 
@@ -66,7 +66,7 @@ public class ModuleHealthChangedEvent : IntegrationEventBase
         string moduleName,
         HealthStatus oldStatus,
         ModuleHealthStatus newHealthStatus,
-        string source = "ModuleManager") 
+        string source = "ModuleManager")
         : base(source)
     {
         ModuleId = moduleId ?? throw new ArgumentNullException(nameof(moduleId));
@@ -152,7 +152,7 @@ public class ModuleHealthChangedEvent : IntegrationEventBase
     public override string GetDescription()
     {
         var description = $"模块 '{ModuleName}' (ID: {ModuleId}) 健康状态从 '{OldStatus.GetDisplayName()}' 变更为 '{NewStatus.GetDisplayName()}'";
-        
+
         if (!string.IsNullOrWhiteSpace(Description) && Description != NewStatus.GetDefaultDescription())
         {
             description += $", 详情: {Description}";
@@ -173,7 +173,7 @@ public class ModuleHealthChangedEvent : IntegrationEventBase
     public string GetHealthSummary()
     {
         var summary = $"{ModuleName}: {OldStatus.GetDisplayName()} → {NewStatus.GetDisplayName()}";
-        
+
         var severity = GetSeverity();
         summary += severity switch
         {

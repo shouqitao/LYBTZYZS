@@ -1,12 +1,11 @@
-using System.Linq;
-using System.Text;
+﻿using System.Text;
 using AutoMapper;
-using PrescriptionEntity = LYBT.Entities.Prescriptions.Prescription;
 using LYBT.Module.Prescriptions.Interfaces;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.Extensions.Logging;
+using PrescriptionEntity = LYBT.Entities.Prescriptions.Prescription;
 
 namespace LYBT.Module.Prescriptions.Services
 {
@@ -80,9 +79,9 @@ namespace LYBT.Module.Prescriptions.Services
             try
             {
                 var entity = _mapper.Map<PrescriptionEntity>(dto);
-                
+
                 // 注意：处方总价在DTO层计算，实体层不存储
-                
+
                 var result = await _repository.AddAsync(entity);
                 var resultDto = _mapper.Map<PrescriptionDto>(result);
                 return ServiceResult<PrescriptionDto>.Success(resultDto);

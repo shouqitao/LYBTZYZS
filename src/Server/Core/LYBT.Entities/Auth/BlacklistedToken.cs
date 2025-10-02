@@ -1,5 +1,4 @@
-using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using LYBT.Entities.Common;
 
 namespace LYBT.Entities.Auth

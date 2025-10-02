@@ -1,8 +1,7 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using FluentAssertions.Execution;
 using FluentAssertions.Primitives;
 using LYBT.Shared.Models.Contracts.Common;
-using System;
 
 namespace LYBT.Module.Users.Tests.Assertions
 {
@@ -41,14 +40,14 @@ namespace LYBT.Module.Users.Tests.Assertions
                 .FailWith("Expected {context:ServiceResult} to be successful{reason}, but it was <null>.")
                 .Then
                 .ForCondition(result => result!.IsSuccess)
-                .FailWith("Expected {context:ServiceResult} to be successful{reason}, but IsSuccess was {0}.", 
+                .FailWith("Expected {context:ServiceResult} to be successful{reason}, but IsSuccess was {0}.",
                     result => result.IsSuccess)
                 .Then
                 .ForCondition(result => result.Data != null)
                 .FailWith("Expected {context:ServiceResult} to have data{reason}, but Data was <null>.")
                 .Then
                 .ForCondition(result => string.IsNullOrEmpty(result.ErrorMessage))
-                .FailWith("Expected {context:ServiceResult} to have no error message{reason}, but ErrorMessage was {0}.", 
+                .FailWith("Expected {context:ServiceResult} to have no error message{reason}, but ErrorMessage was {0}.",
                     result => result.ErrorMessage);
 
             return new AndConstraint<ServiceResultAssertions<T>>(this);
@@ -66,7 +65,7 @@ namespace LYBT.Module.Users.Tests.Assertions
                 .FailWith("Expected {context:ServiceResult} to be failure{reason}, but it was <null>.")
                 .Then
                 .ForCondition(result => !result!.IsSuccess)
-                .FailWith("Expected {context:ServiceResult} to be failure{reason}, but IsSuccess was {0}.", 
+                .FailWith("Expected {context:ServiceResult} to be failure{reason}, but IsSuccess was {0}.",
                     result => result.IsSuccess)
                 .Then
                 .ForCondition(result => !string.IsNullOrEmpty(result.ErrorMessage))
@@ -98,8 +97,8 @@ namespace LYBT.Module.Users.Tests.Assertions
             Execute.Assertion
                 .BecauseOf(because, becauseArgs)
                 .Given(() => Subject)
-                .ForCondition(result => result != null && 
-                    !string.IsNullOrEmpty(result.ErrorMessage) && 
+                .ForCondition(result => result != null &&
+                    !string.IsNullOrEmpty(result.ErrorMessage) &&
                     result.ErrorMessage.Contains(expectedText))
                 .FailWith("Expected {context:ServiceResult} error message to contain {0}{reason}, but it was {1}.",
                     expectedText, Subject?.ErrorMessage ?? "<null>");

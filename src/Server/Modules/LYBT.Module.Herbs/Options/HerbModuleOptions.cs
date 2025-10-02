@@ -1,4 +1,4 @@
-namespace LYBT.Module.Herbs.Options
+﻿namespace LYBT.Module.Herbs.Options
 {
     /// <summary>
     /// 中药模块配置选项

@@ -1,14 +1,11 @@
-using System;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Models.ViewModels.Base;
+using LYBT.Shared.Interfaces.Services;
+using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Regions;
 using Prism.Services.Dialogs;
-using Microsoft.Extensions.Logging;
-using LYBT.Desktop.Infrastructure.Interfaces;
-using LYBT.Desktop.Models.ViewModels.Base;
-using LYBT.Shared.Interfaces.Services;
 
 namespace LYBT.Desktop.Users.ViewModels
 {

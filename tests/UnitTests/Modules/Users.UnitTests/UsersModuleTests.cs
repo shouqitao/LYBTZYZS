@@ -1,20 +1,14 @@
-using FluentAssertions;
-using AutoMapper;
+﻿using FluentAssertions;
 using LYBT.Infrastructure.Configuration.Options;
-using LYBT.Module.Users;
+using LYBT.Infrastructure.Configuration.Services;
+using LYBT.Infrastructure.Data;
 using LYBT.Module.Users.Interfaces;
-using LYBT.Module.Users.Services;
-using LYBT.Module.Users.Repositories;
-using LYBT.Shared.Interfaces.Services;
+using LYBT.Module.Users.Mapping;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using Xunit;
-using Microsoft.EntityFrameworkCore;
-using LYBT.Infrastructure.Data;
-using Microsoft.Extensions.Caching.Memory;
-using LYBT.Module.Users.Mapping;
-using LYBT.Infrastructure.Configuration.Services;
 using Moq;
+using Xunit;
 
 namespace LYBT.Module.Users.Tests
 {
@@ -28,19 +22,19 @@ namespace LYBT.Module.Users.Tests
 
             // 添加必要的配置
             services.AddLogging();
-            
+
             // 添加AppDbContext - 使用InMemory数据库
             services.AddDbContext<AppDbContext>((serviceProvider, options) =>
             {
                 options.UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString());
             });
-            
+
             // 添加IMemoryCache
             services.AddMemoryCache();
-            
+
             // 添加AutoMapper
             services.AddAutoMapper(typeof(UserMappingProfile).Assembly);
-            
+
             // 添加DefaultPasswordService及其依赖
             services.Configure<DefaultPasswordOptions>(options =>
             {
@@ -50,12 +44,12 @@ namespace LYBT.Module.Users.Tests
                 options.OnlyWhenDatabaseEmpty = false;
                 options.ExpiryDays = 30;
             });
-            
+
             // Mock IWebHostEnvironment
             var mockEnvironment = new Mock<Microsoft.AspNetCore.Hosting.IWebHostEnvironment>();
             mockEnvironment.Setup(x => x.EnvironmentName).Returns("Development");
             services.AddSingleton(mockEnvironment.Object);
-            
+
             services.AddScoped<DefaultPasswordService>();
             services.Configure<UserOptions>(options =>
             {
@@ -106,7 +100,7 @@ namespace LYBT.Module.Users.Tests
                 x.ServiceType == typeof(IUserRepository) &&
                 x.Lifetime == ServiceLifetime.Scoped);
 
-            
+
 
             services.Should().Contain(x =>
                 x.ServiceType == typeof(LYBT.Shared.Interfaces.Services.IUserService) &&

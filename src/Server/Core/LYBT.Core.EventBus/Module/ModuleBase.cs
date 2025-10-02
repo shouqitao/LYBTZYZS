@@ -1,6 +1,4 @@
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -49,10 +47,10 @@ public abstract class ModuleBase : IModule, IModuleLifecycle
     public virtual void ConfigureServices(IServiceCollection services, IConfiguration configuration)
     {
         Configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
-        
+
         // 注册模块自身
         services.AddSingleton<IModule>(this);
-        
+
         // 调用子类的服务配置
         OnConfigureServices(services, configuration);
     }
@@ -67,7 +65,7 @@ public abstract class ModuleBase : IModule, IModuleLifecycle
             Logger = ServiceProvider.GetRequiredService<ILoggerFactory>()
                                   .CreateLogger(GetType());
         }
-        
+
         // 调用子类的应用配置
         OnConfigure(app, environment);
     }
@@ -303,7 +301,7 @@ public abstract class ModuleBase : IModule, IModuleLifecycle
         var oldState = State;
         State = newState;
 
-        Logger?.LogDebug("模块 {ModuleName} 状态从 {OldState} 变更为 {NewState}", 
+        Logger?.LogDebug("模块 {ModuleName} 状态从 {OldState} 变更为 {NewState}",
             Descriptor.Name, oldState.GetDisplayName(), newState.GetDisplayName());
 
         StateChanged?.Invoke(this, new ModuleStateChangedEventArgs(this, oldState, newState));

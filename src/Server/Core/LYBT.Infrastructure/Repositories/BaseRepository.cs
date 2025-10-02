@@ -1,15 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Threading.Tasks;
+﻿using System.Linq.Expressions;
 using LYBT.Entities.Common;
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -58,13 +53,13 @@ namespace LYBT.Infrastructure.Repositories
         public virtual async Task<TEntity?> GetByIdAsync(Guid id, params string[] includes)
         {
             var query = _dbSet.Where(e => e.Id == id && !e.IsDeleted);
-            
+
             // 应用Include
             foreach (var include in includes)
             {
                 query = query.Include(include);
             }
-            
+
             return await query.FirstOrDefaultAsync();
         }
 
