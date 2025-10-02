@@ -441,22 +441,4 @@
         <Setter Property="Padding" Value="16,12" />
         <Setter Property="Margin" Value="0,0,0,8" />
     </Style>
-
-    <!-- ==================== 文本样式 ==================== -->
-
-    <!-- 标签文本 -->
-    <Style x:Key="LabelText" TargetType="TextBlock">
-        <Setter Property="FontSize" Value="{StaticResource FontSizeNormal}" />
-        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
-        <Setter Property="VerticalAlignment" Value="Center" />
-        <Setter Property="Margin" Value="0,0,8,0" />
-    </Style>
-
-    <!-- ==================== 输入控件样式 ==================== -->
-
-    <!-- 搜索文本框 -->
-    <Style x:Key="SearchTextBox" TargetType="TextBox" BasedOn="{StaticResource BaseTextBox}">
-        <Setter Property="MinWidth" Value="200" />
-        <Setter Property="Margin" Value="0,0,10,0" />
-    </Style>
 </ResourceDictionary>
