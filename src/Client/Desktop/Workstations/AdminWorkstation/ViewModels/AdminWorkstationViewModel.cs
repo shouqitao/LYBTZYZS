@@ -1,4 +1,6 @@
-﻿using System.Windows.Input;
+﻿using System.Windows;
+using System.Windows.Input;
+using System.Windows.Threading;
 using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
@@ -191,11 +193,14 @@ namespace LYBT.Desktop.AdminWorkstation.ViewModels
         {
             base.OnNavigatedTo(navigationContext);
 
-            // UltraThink�޸���ȷ���� XAML ���ؼ��� Region ע���ٵ������û�����
+            // UltraThink�޸���ʹ�� Dispatcher �ӳٵ���ȷ�� Region ��ȫע��
             if (!_isInitialized)
             {
                 _isInitialized = true;
-                ExecuteNavigate("UserManagement");
+                Application.Current.Dispatcher.InvokeAsync(() =>
+                {
+                    ExecuteNavigate("UserManagement");
+                }, DispatcherPriority.Loaded);
             }
         }
 
