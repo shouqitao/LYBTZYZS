@@ -6,6 +6,7 @@
 ## 最新重点报告（按日期倒序）
 | 日期 | 文档 | 范围 |
 |------|------|------|
+| 2025-10-02 | `issue-847-config-audit-phase1.md` | **Issue #847 Phase 1 快速审计报告** - 配置绑定与服务注册对齐性审计（发现6个问题：1个CRITICAL双重配置系统，2个HIGH空默认值+路径不一致，3个MEDIUM嵌套风险） |
 | 2025-10-01 | `issue-828-epic-completion.md` | **Issue #828 Epic 完成报告** - Desktop Prism 架构重构总结（3个Phase全部完成，Prism符合度53%→98%，代码净减少42行，工期5天） |
 | 2025-10-01 | `issue-828-phase3-prism-dialog-migration.md` | Issue #828 Phase 3完成报告 - Prism Dialog 标准化迁移总结（10个对话框，5个模块，完全移除旧Dialog系统，代码净减少312行） |
 | 2025-10-01 | `issue-828-phase1-completion.md` | Issue #828 Phase 1完成报告 - Desktop Prism 基础重构（模块依赖声明，事件标准化，Service Locator消除） |

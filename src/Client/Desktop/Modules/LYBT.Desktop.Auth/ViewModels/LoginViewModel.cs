@@ -181,11 +181,22 @@ namespace LYBT.Desktop.Auth.ViewModels
 
                 Logger.LogInformation($"根据角色 {role} 导航到 {targetView}");
 
-                // 导航到主窗口并设置内容区域
-                _regionManager.RequestNavigate("ContentRegion", targetView);
+                // 导航到主窗口并设置内容区域（添加回调验证）
+                _regionManager.RequestNavigate("ContentRegion", targetView, navigationResult =>
+                {
+                    if (navigationResult.Result != true)
+                    {
+                        Logger.LogError("导航失败: {Error}", navigationResult.Error?.Message);
+                        ErrorMessage = $"导航失败：{navigationResult.Error?.Message}";
+                    }
+                    else
+                    {
+                        Logger.LogInformation("导航成功到 {TargetView}", targetView);
+                    }
+                });
 
-                // 发布登录成功事件
-                EventAggregator.GetEvent<UserLoggedInEvent>().Publish(new UserLoggedInEventArgs(user, token));
+                // 发布登录成功事件 - 修复 Issue #848：使用 LoginSuccessEvent 触发主窗口 UI 更新
+                EventAggregator.GetEvent<LoginSuccessEvent>().Publish(user);
             }
             catch (Exception ex)
             {
