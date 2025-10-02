@@ -1,5 +1,6 @@
 ﻿using LYBT.Module.Consultation.Interfaces;
 using LYBT.Module.Consultation.Mapping;
+using LYBT.Module.Consultation.Options;
 using LYBT.Module.Consultation.Repositories;
 using LYBT.Module.Consultation.Services;
 using Microsoft.AspNetCore.Builder;
@@ -34,8 +35,11 @@ namespace LYBT.Module.Consultation
             // 注册AutoMapper配置
             services.AddAutoMapper(typeof(ConsultationMappingProfile));
 
-            // 注册模块特定的配置 - 暂时注释，待创建选项类后启用
-            // services.Configure<ConsultationModuleOptions>(configuration.GetSection("Modules:Consultation"));
+            // 注册模块特定的配置(带启动验证)
+            services.AddOptions<ConsultationModuleOptions>()
+                .Bind(configuration.GetSection("Modules:Consultation"))
+                .ValidateDataAnnotations()
+                .ValidateOnStart();
 
             return services;
         }
