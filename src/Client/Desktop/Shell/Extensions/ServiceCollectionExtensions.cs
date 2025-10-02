@@ -335,6 +335,10 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterScoped<IConsultationRepository,
                 LYBT.Desktop.Services.Repositories.ConsultationRepository>();
 
+            // UltraThink修复 Issue #856: 注册异常处理服务(业务服务依赖)
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Services.Exceptions.IExceptionHandler,
+                LYBT.Desktop.Services.Exceptions.StandardExceptionHandler>();
+
             // Issue #835: 注册认证服务(使用 Shared.Interfaces)
             containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Services.IAuthService,
                 LYBT.Desktop.Services.Business.AuthService>();
