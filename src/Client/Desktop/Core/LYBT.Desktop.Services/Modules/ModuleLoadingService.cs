@@ -12,6 +12,7 @@ namespace LYBT.Desktop.Services.Modules
         private readonly IModuleCatalog _moduleCatalog;
         private readonly ILogger<ModuleLoadingService> _logger;
         private readonly HashSet<string> _loadedModules = new();
+        private readonly object _lock = new();
 
         public event EventHandler<string>? ModuleLoaded;
 
@@ -29,20 +30,30 @@ namespace LYBT.Desktop.Services.Modules
         {
             try
             {
+                bool shouldRaiseEvent = false;
                 await Task.Run(() =>
                 {
-                    if (!_loadedModules.Contains(moduleName))
+                    lock (_lock)
                     {
-                        _moduleManager.LoadModule(moduleName);
-                        _loadedModules.Add(moduleName);
-                        _logger.LogInformation("模块加载成功：{ModuleName}", moduleName);
-                        ModuleLoaded?.Invoke(this, moduleName);
-                    }
-                    else
-                    {
-                        _logger.LogDebug("模块已加载：{ModuleName}", moduleName);
+                        if (!_loadedModules.Contains(moduleName))
+                        {
+                            _moduleManager.LoadModule(moduleName);
+                            _loadedModules.Add(moduleName);
+                            _logger.LogInformation("模块加载成功：{ModuleName}", moduleName);
+                            shouldRaiseEvent = true;
+                        }
+                        else
+                        {
+                            _logger.LogDebug("模块已加载：{ModuleName}", moduleName);
+                        }
                     }
                 });
+
+                // UltraThink修复：事件触发移到 lock 外部，避免重入锁风险
+                if (shouldRaiseEvent)
+                {
+                    ModuleLoaded?.Invoke(this, moduleName);
+                }
             }
             catch (Exception ex)
             {
@@ -71,12 +82,18 @@ namespace LYBT.Desktop.Services.Modules
 
         public IEnumerable<string> GetLoadedModules()
         {
-            return _loadedModules.ToList();
+            lock (_lock)
+            {
+                return _loadedModules.ToList();
+            }
         }
 
         public bool IsModuleLoaded(string moduleName)
         {
-            return _loadedModules.Contains(moduleName);
+            lock (_lock)
+            {
+                return _loadedModules.Contains(moduleName);
+            }
         }
 
         public async Task LoadModulesAsync(IEnumerable<string>? moduleNames = null)
