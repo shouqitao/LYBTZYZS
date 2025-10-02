@@ -50,8 +50,28 @@ namespace LYBT.Desktop.Auth.ViewModels
 
             // 延迟健康检查到 UI 线程空闲时执行,避免构造函数阻塞
             Application.Current.Dispatcher.BeginInvoke(
-                new Action(async () => await CheckApiHealthAsync()),
+                new Action(() => _ = CheckApiHealthAsyncSafe()),
                 DispatcherPriority.Loaded);
+        }
+
+        /// <summary>
+        /// 安全启动健康检查(fire-and-forget)
+        /// </summary>
+        private async Task CheckApiHealthAsyncSafe()
+        {
+            try
+            {
+                await CheckApiHealthAsync();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "健康检查过程中发生错误");
+                RunOnUIThread(() =>
+                {
+                    ApiStatus = ApiHealthStatus.Unhealthy;
+                    ApiStatusMessage = $"健康检查失败: {ex.Message}";
+                });
+            }
         }
 
         #region Properties
@@ -142,7 +162,7 @@ namespace LYBT.Desktop.Auth.ViewModels
         {
             if (_apiHealthCheckService == null)
             {
-                RunOnUIThread(() =>
+                await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
                     ApiStatus = ApiHealthStatus.Unhealthy;
                     ApiStatusMessage = "健康检查服务未配置";
@@ -154,7 +174,7 @@ namespace LYBT.Desktop.Auth.ViewModels
             {
                 var status = await _apiHealthCheckService.CheckHealthAsync();
 
-                RunOnUIThread(() =>
+                await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
                     ApiStatus = status;
                     ApiStatusMessage = status switch
@@ -168,7 +188,7 @@ namespace LYBT.Desktop.Auth.ViewModels
             catch (Exception ex)
             {
                 Logger.LogError(ex, "健康检查失败");
-                RunOnUIThread(() =>
+                await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
                     ApiStatus = ApiHealthStatus.Unhealthy;
                     ApiStatusMessage = $"健康检查异常: {ex.Message}";
