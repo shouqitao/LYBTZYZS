@@ -25,6 +25,31 @@ public class JwtService : IJwtService
         _options = options.Value ?? throw new ArgumentNullException(nameof(options));
         _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         _tokenHandler = new JwtSecurityTokenHandler();
+
+        // 启动时验证 JWT 密钥强度(方案A:最小加固)
+        ValidateSecretKeyStrength();
+    }
+
+    /// <summary>
+    /// 验证 JWT 密钥强度,确保符合安全基线要求
+    /// </summary>
+    private void ValidateSecretKeyStrength()
+    {
+        var secretKey = _configuration["Lybt:Authentication:Jwt:SecretKey"];
+
+        if (string.IsNullOrEmpty(secretKey))
+        {
+            throw new InvalidOperationException(
+                "JWT SecretKey 未配置。请在 appsettings.json 中设置 Lybt:Authentication:Jwt:SecretKey 配置项。");
+        }
+
+        if (secretKey.Length < 32)
+        {
+            throw new ArgumentException(
+                $"JWT SecretKey 长度不足,需至少 32 字符(当前 {secretKey.Length} 字符)。" +
+                "这是安全基线要求,可使用以下命令生成符合要求的密钥:\n" +
+                "PowerShell: [Convert]::ToBase64String([System.Security.Cryptography.RandomNumberGenerator]::GetBytes(64))");
+        }
     }
 
     /// <summary>
