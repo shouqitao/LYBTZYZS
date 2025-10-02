@@ -1,4 +1,6 @@
-﻿using System.Windows.Input;
+﻿using System.Windows;
+using System.Windows.Input;
+using System.Windows.Threading;
 using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Services.Interfaces;
@@ -46,8 +48,10 @@ namespace LYBT.Desktop.Auth.ViewModels
 
             LoginCommand = new DelegateCommand(async () => await ExecuteLoginAsync(), CanExecuteLogin);
 
-            // 异步启动健康检查（不阻塞 UI）
-            _ = Task.Run(async () => await CheckApiHealthAsync());
+            // 延迟健康检查到 UI 线程空闲时执行,避免构造函数阻塞
+            Application.Current.Dispatcher.BeginInvoke(
+                new Action(async () => await CheckApiHealthAsync()),
+                DispatcherPriority.Loaded);
         }
 
         #region Properties
