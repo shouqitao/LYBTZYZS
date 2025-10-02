@@ -123,9 +123,10 @@ backup_*/
 shrimp-data/
 *.backup
 
-# 应用图标和资源文件（根目录下的）
-app.ico
-*.ico
+# 应用图标和资源文件（仅根目录下的临时文件）
+/app.ico
+# 允许 Assets 目录下的应用图标
+!**/Assets/**/*.ico
 
 # Python脚本和临时工具（非开发必需）
 fix_*.py
