@@ -449,11 +449,16 @@ public class MainWindowViewModel : UnifiedViewModelBase
     /// </summary>
     private void ShowLoginDialog()
     {
-        // 在单窗口模式下，导航到登录视图
-        if (_regionManager != null)
+        // UltraThink修复 Issue #858: 确保在 UI 线程上执行导航
+        // 原因：此方法可能从后台线程（Task.Run）调用，需要 marshal 到 UI 线程
+        Application.Current.Dispatcher.InvokeAsync(() =>
         {
-            _regionManager.RequestNavigate(RegionNames.LoginRegion, "LoginView");
-        }
+            if (_regionManager != null)
+            {
+                System.Diagnostics.Debug.WriteLine(" ShowLoginDialog: 导航到登录视图");
+                _regionManager.RequestNavigate(RegionNames.LoginRegion, "LoginView");
+            }
+        });
     }
 
     /// <summary>
@@ -496,27 +501,43 @@ public class MainWindowViewModel : UnifiedViewModelBase
             _regionManager.Regions[RegionNames.LoginRegion].RemoveAll();
         }
 
-        // 导航到对应的工作台
-        System.Diagnostics.Debug.WriteLine($" 导航到 {workbenchView}");
-        _regionManager.RequestNavigate(RegionNames.ContentRegion, workbenchView, navigationResult =>
+        // UltraThink修复 Issue #858: 使用 Dispatcher.InvokeAsync 确保 UI 绑定更新后再导航
+        // 原因：IsLoggedIn 属性变化后，UI 绑定不会立即生效，ContentRegion 可能仍处于 Collapsed 状态
+        // 解决：延迟导航到下一个 UI 帧，确保 ContentRegion 已经可见
+        System.Diagnostics.Debug.WriteLine($" 准备导航到 {workbenchView}（延迟到下一帧）");
+        Application.Current.Dispatcher.InvokeAsync(() =>
         {
-            if (navigationResult.Result != true)
+            System.Diagnostics.Debug.WriteLine($" UI更新完成，开始导航到 {workbenchView}");
+            _regionManager.RequestNavigate(RegionNames.ContentRegion, workbenchView, navigationResult =>
             {
-                // 导航失败时显示错误信息
-                var errorMessage = navigationResult.Error?.Message ?? "未知导航错误";
-                System.Diagnostics.Debug.WriteLine($" 工作台导航失败 {errorMessage}");
+                if (navigationResult.Result != true)
+                {
+                    // 导航失败时显示错误信息
+                    var errorMessage = navigationResult.Error?.Message ?? "未知导航错误";
+                    System.Diagnostics.Debug.WriteLine($" 工作台导航失败 {errorMessage}");
 
-                // 异步显示错误对话框
-                _ = Task.Run(async () =>
-        {
-            await ShowErrorMessageAsync($"无法加载工作台 {errorMessage}");
-        });
-            }
-            else
-            {
-                System.Diagnostics.Debug.WriteLine($" 成功导航到 {workbenchView}");
-            }
-        });
+                    // UltraThink修复：导航失败时，清除登录状态并回退到登录界面
+                    IsLoggedIn = false;
+                    CurrentUser = null;
+                    Title = "凌隐宝堂中医诊所诊疗系统 - 系统超级管理员 (管理员)";
+
+                    // 异步显示错误对话框
+                    _ = Task.Run(async () =>
+                    {
+                        await ShowErrorMessageAsync($"无法加载工作台 {errorMessage}");
+                        // 错误对话框关闭后，显示登录界面
+                        await Application.Current.Dispatcher.InvokeAsync(() =>
+                        {
+                            ShowLoginDialog();
+                        });
+                    });
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($" 成功导航到 {workbenchView}");
+                }
+            });
+        }, System.Windows.Threading.DispatcherPriority.Loaded); // 使用 Loaded 优先级确保布局完成
     }
 
     /// <summary>
