@@ -490,7 +490,9 @@ namespace LYBT.Desktop.Patients.ViewModels
             return true;
         }
 
+#pragma warning disable CS1998 // Async method lacks 'await' operators
         private async Task LoadDataPreviewAsync()
+#pragma warning restore CS1998
         {
             try
             {
@@ -712,7 +714,9 @@ namespace LYBT.Desktop.Patients.ViewModels
             return result;
         }
 
+#pragma warning disable CS1998 // Async method lacks 'await' operators
         private async Task DownloadTemplateAsync(string filePath)
+#pragma warning restore CS1998
         {
             try
             {
@@ -937,7 +941,9 @@ namespace LYBT.Desktop.Patients.ViewModels
             }
         }
 
+#pragma warning disable CS1998 // Async method lacks 'await' operators
         private async void ImportWorker_RunWorkerCompleted(object? sender, RunWorkerCompletedEventArgs e)
+#pragma warning restore CS1998
         {
             IsImporting = false;
             UpdateButtonStates();

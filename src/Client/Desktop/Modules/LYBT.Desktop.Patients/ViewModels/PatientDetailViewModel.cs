@@ -326,7 +326,7 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         private bool CanCancelEdit() => Patient != null && !IsReadOnly && !IsLoading;
 
-        private new void RaiseCanExecuteChanged()
+        private void RaiseCanExecuteChanged()
         {
             ((DelegateCommand)EditCommand).RaiseCanExecuteChanged();
             ((DelegateCommand)SaveCommand).RaiseCanExecuteChanged();
