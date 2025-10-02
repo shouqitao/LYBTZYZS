@@ -220,7 +220,7 @@ namespace LYBT.Module.Users.Repositories
                 return false;
 
             return await _dbSet
-                .AnyAsync(u => u.Email == username && !u.IsDeleted);
+                .AnyAsync(u => u.UserName == username && !u.IsDeleted);
         }
 
         public async Task<bool> IsEmailExistsAsync(string email)

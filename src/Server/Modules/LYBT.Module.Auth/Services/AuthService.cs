@@ -42,23 +42,32 @@ namespace LYBT.Module.Auth.Services
 
         /// <summary>
         /// 检查是否为超级管理员凭据
-        /// 超级管理员不在Users表中，独立存储在AdminSecrets表
+        /// 超级管理员不在Users表中，密码哈希独立存储在AdminSecrets表
+        /// 用户名从配置文件读取，不存储在数据库中，防止SQL注入后暴露账户名
         /// </summary>
         private async Task<bool> IsSuperAdminCredentials(string username, string password, CancellationToken cancellationToken = default)
         {
             try
             {
-                // 从AdminSecrets表获取超级管理员信息
+                // 从配置获取超级管理员用户名
+                var configUsername = _configuration["Lybt:Business:SystemAdmin:Username"];
+                if (string.IsNullOrEmpty(configUsername))
+                {
+                    _logger.LogWarning("配置中未找到超级管理员用户名");
+                    return false;
+                }
+
+                // 验证用户名是否匹配
+                if (!string.Equals(username, configUsername, StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+
+                // 从AdminSecrets表获取超级管理员密码哈希
                 var adminSecret = await _dbContext.AdminSecrets.FirstOrDefaultAsync(cancellationToken);
                 if (adminSecret == null)
                 {
                     _logger.LogWarning("AdminSecrets表为空，超级管理员未初始化");
-                    return false;
-                }
-
-                // 直接使用数据库中的用户名，保证一致性
-                if (!string.Equals(username, adminSecret.UserName, StringComparison.OrdinalIgnoreCase))
-                {
                     return false;
                 }
 
@@ -67,7 +76,7 @@ namespace LYBT.Module.Auth.Services
 
                 if (isValid)
                 {
-                    _logger.LogInformation("超级管理员登录成功: {Username}", username);
+                    _logger.LogInformation("超级管理员登录成功");
                 }
                 else
                 {
