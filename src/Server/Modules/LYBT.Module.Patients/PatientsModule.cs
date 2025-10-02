@@ -1,4 +1,5 @@
 ﻿using LYBT.Module.Patients.Interfaces;
+using LYBT.Module.Patients.Options;
 using LYBT.Module.Patients.Repositories;
 using LYBT.Module.Patients.Services;
 using Microsoft.AspNetCore.Builder;
@@ -32,8 +33,8 @@ namespace LYBT.Module.Patients
             // 注册AutoMapper配置 - 暂时注释，待创建配置文件后启用
             // services.AddAutoMapper(typeof(PatientMappingProfile));
 
-            // 注册模块特定的配置 - 暂时注释，待创建选项类后启用
-            // services.Configure<PatientModuleOptions>(configuration.GetSection("Modules:Patients"));
+            // 注册模块特定的配置
+            services.Configure<PatientModuleOptions>(configuration.GetSection("Modules:Patients"));
 
             return services;
         }
