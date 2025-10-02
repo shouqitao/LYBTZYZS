@@ -603,6 +603,8 @@ public class MainWindowViewModel : UnifiedViewModelBase
         // 管理员需要所有模块
         await _moduleLoadingService.LoadModulesAsync(new[]
         {
+            "AdminWorkstationModule",  // UltraThink修复 Issue #856: 工作台模块必须加载才能注册视图
+            "UsersModule",             // 管理员需要用户管理功能
             "HerbsModule",
             "FormulaModule",
             "ConsultationModule",
