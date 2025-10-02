@@ -225,12 +225,12 @@ public class MainWindowViewModel : UnifiedViewModelBase
         // 订阅登录成功事件
         EventAggregator.GetEvent<LoginSuccessEvent>().Subscribe(OnLoginSuccess);
 
-        // 延迟检查登录状态，等待主窗口完全加载
-        Application.Current.Dispatcher.BeginInvoke(
-            new Action(() =>
-            {
-                _ = CheckLoginStatusAsync();
-            }), System.Windows.Threading.DispatcherPriority.Loaded);
+        // 在后台线程检查登录状态，避免阻塞UI线程
+        _ = Task.Run(async () =>
+        {
+            await Task.Delay(100); // 短暂延迟，让UI先完成初始化
+            await CheckLoginStatusAsync();
+        });
     }
 
     /// <summary>
@@ -388,8 +388,8 @@ public class MainWindowViewModel : UnifiedViewModelBase
         try
         {
             // UltraThink修复: 使用AuthenticationService进行状态检查，确保与登录流程一致
-            var isLoggedIn = _servicesFacade.AuthenticationService.IsLoggedIn;
-            System.Diagnostics.Debug.WriteLine($" AuthenticationService.IsLoggedIn = {isLoggedIn}");
+            var isLoggedIn = await _servicesFacade.AuthenticationService.IsLoggedInAsync();
+            System.Diagnostics.Debug.WriteLine($" AuthenticationService.IsLoggedInAsync = {isLoggedIn}");
 
             if (isLoggedIn)
             {

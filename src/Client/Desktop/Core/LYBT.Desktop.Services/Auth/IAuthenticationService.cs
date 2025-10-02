@@ -12,9 +12,9 @@ namespace LYBT.Desktop.Services.Auth
     public interface IAuthenticationService
     {
         /// <summary>
-        /// 用户是否已登录
+        /// 异步检查用户是否已登录
         /// </summary>
-        bool IsLoggedIn { get; }
+        Task<bool> IsLoggedInAsync();
 
         /// <summary>
         /// 用户登录
