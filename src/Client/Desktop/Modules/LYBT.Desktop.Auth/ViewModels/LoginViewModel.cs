@@ -48,10 +48,12 @@ namespace LYBT.Desktop.Auth.ViewModels
 
             LoginCommand = new DelegateCommand(async () => await ExecuteLoginAsync(), CanExecuteLogin);
 
-            // 延迟健康检查到 UI 线程空闲时执行,避免构造函数阻塞
-            Application.Current.Dispatcher.BeginInvoke(
-                new Action(() => _ = CheckApiHealthAsyncSafe()),
-                DispatcherPriority.Loaded);
+            // 在后台线程启动健康检查,避免阻塞 UI 线程
+            _ = Task.Run(async () =>
+            {
+                await Task.Delay(100); // 短暂延迟,让 UI 先完成初始化
+                await CheckApiHealthAsyncSafe();
+            });
         }
 
         /// <summary>
