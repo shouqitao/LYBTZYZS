@@ -138,28 +138,37 @@ namespace LYBT.Desktop.Auth.ViewModels
         {
             if (_apiHealthCheckService == null)
             {
-                ApiStatus = ApiHealthStatus.Unhealthy;
-                ApiStatusMessage = "健康检查服务未配置";
+                RunOnUIThread(() =>
+                {
+                    ApiStatus = ApiHealthStatus.Unhealthy;
+                    ApiStatusMessage = "健康检查服务未配置";
+                });
                 return;
             }
 
             try
             {
                 var status = await _apiHealthCheckService.CheckHealthAsync();
-                ApiStatus = status;
 
-                ApiStatusMessage = status switch
+                RunOnUIThread(() =>
                 {
-                    ApiHealthStatus.Healthy => "WebAPI 已连接",
-                    ApiHealthStatus.Unhealthy => $"WebAPI 连接失败: {_apiHealthCheckService.LastErrorMessage}",
-                    _ => "正在检查连接..."
-                };
+                    ApiStatus = status;
+                    ApiStatusMessage = status switch
+                    {
+                        ApiHealthStatus.Healthy => "WebAPI 已连接",
+                        ApiHealthStatus.Unhealthy => $"WebAPI 连接失败: {_apiHealthCheckService.LastErrorMessage}",
+                        _ => "正在检查连接..."
+                    };
+                });
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex, "健康检查失败");
-                ApiStatus = ApiHealthStatus.Unhealthy;
-                ApiStatusMessage = $"健康检查异常: {ex.Message}";
+                RunOnUIThread(() =>
+                {
+                    ApiStatus = ApiHealthStatus.Unhealthy;
+                    ApiStatusMessage = $"健康检查异常: {ex.Message}";
+                });
             }
         }
 
