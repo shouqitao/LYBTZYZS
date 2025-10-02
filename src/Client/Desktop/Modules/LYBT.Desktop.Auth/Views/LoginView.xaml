@@ -2,14 +2,18 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:prism="http://prismlibrary.com/"
+             xmlns:converters="clr-namespace:LYBT.Desktop.Infrastructure.Converters;assembly=LYBT.Desktop.Infrastructure"
              prism:ViewModelLocator.AutoWireViewModel="True">
     <UserControl.Resources>
+        <converters:ApiHealthStatusToColorConverter x:Key="ApiHealthStatusToColorConverter" />
     </UserControl.Resources>
     <!-- 登录内容，移除外层边框，因为主窗口已经有了 -->
     <Grid Margin="25">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="25" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="20" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="12" />
             <RowDefinition Height="Auto" />
@@ -36,8 +40,28 @@
                        Margin="0,3,0,0" />
         </StackPanel>
 
+        <!-- WebAPI 状态指示器 -->
+        <Border Grid.Row="2"
+                Background="#F5F5F5"
+                CornerRadius="4"
+                Padding="12,8"
+                HorizontalAlignment="Stretch">
+            <StackPanel Orientation="Horizontal">
+                <!-- 状态指示圆点 -->
+                <Ellipse Width="8" Height="8"
+                         Fill="{Binding ApiStatus, Converter={StaticResource ApiHealthStatusToColorConverter}}"
+                         VerticalAlignment="Center"
+                         Margin="0,0,8,0" />
+                <!-- 状态文本 -->
+                <TextBlock Text="{Binding ApiStatusMessage}"
+                           FontSize="12"
+                           Foreground="#666"
+                           VerticalAlignment="Center" />
+            </StackPanel>
+        </Border>
+
         <!-- 用户名输入 -->
-        <StackPanel Grid.Row="2">
+        <StackPanel Grid.Row="4">
             <TextBlock Text="用户名" FontSize="14" Foreground="#333" Margin="0,0,0,5" />
             <TextBox Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}"
                      Height="40"
@@ -81,7 +105,7 @@
         </StackPanel>
 
         <!-- 密码输入 -->
-        <StackPanel Grid.Row="4">
+        <StackPanel Grid.Row="6">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
@@ -141,14 +165,14 @@
         </StackPanel>
 
         <!-- 记住我 -->
-        <CheckBox Grid.Row="6"
+        <CheckBox Grid.Row="8"
                   Content="记住我"
                   IsChecked="{Binding RememberMe}"
                   FontSize="12"
                   Foreground="#666" />
 
         <!-- 登录按钮 -->
-        <Button Grid.Row="8"
+        <Button Grid.Row="10"
                 Content="登录"
                 Height="40"
                 FontSize="15"
@@ -187,7 +211,7 @@
         </Button>
 
         <!-- 状态和错误消息区域 -->
-        <Border Grid.Row="10" Background="#F8F9FA" CornerRadius="4" Padding="10,5" Margin="0,5,0,0"
+        <Border Grid.Row="12" Background="#F8F9FA" CornerRadius="4" Padding="10,5" Margin="0,5,0,0"
                 Visibility="{Binding HasMessage, Converter={StaticResource BooleanToVisibilityConverter}}">
             <StackPanel>
                 <!-- 状态消息 -->
@@ -209,7 +233,7 @@
         </Border>
 
         <!-- 加载遮罩 -->
-        <Grid Grid.RowSpan="12"
+        <Grid Grid.RowSpan="14"
               Background="#80000000"
               Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}">
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
