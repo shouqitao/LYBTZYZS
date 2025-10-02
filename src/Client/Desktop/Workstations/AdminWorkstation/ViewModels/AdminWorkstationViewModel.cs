@@ -200,7 +200,7 @@ namespace LYBT.Desktop.AdminWorkstation.ViewModels
                 Application.Current.Dispatcher.InvokeAsync(() =>
                 {
                     ExecuteNavigate("UserManagement");
-                }, DispatcherPriority.Loaded);
+                }, DispatcherPriority.ApplicationIdle);
             }
         }
 
