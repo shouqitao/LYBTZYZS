@@ -448,6 +448,9 @@ public class MainWindowViewModel : UnifiedViewModelBase
     /// </summary>
     public async Task OnWindowLoadedAsync()
     {
+        // UltraThink修复：增加延迟确保 Prism Region 完全注册
+        // Loaded 事件后 Region 注册仍是异步的，需要额外等待时间
+        await Task.Delay(500);
         await CheckLoginStatusAsync();
     }
 
@@ -544,7 +547,7 @@ public class MainWindowViewModel : UnifiedViewModelBase
                     System.Diagnostics.Debug.WriteLine($" 成功导航到 {workbenchView}");
                 }
             });
-        }, System.Windows.Threading.DispatcherPriority.Loaded); // 使用 Loaded 优先级确保布局完成
+        }, System.Windows.Threading.DispatcherPriority.ApplicationIdle); // UltraThink修复 Issue #856: 使用 ApplicationIdle 确保所有初始化完成
     }
 
     /// <summary>
