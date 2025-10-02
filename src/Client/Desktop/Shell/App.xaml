@@ -12,6 +12,7 @@
             <!--  合并统一设计系统资源  -->
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Resources/UnifiedDesignSystem.xaml" />
+                <ResourceDictionary Source="Styles/CommonStyles.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
             <!--  基础转换器 - 引用 Infrastructure 中的统一定义  -->
