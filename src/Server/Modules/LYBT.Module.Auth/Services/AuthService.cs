@@ -1,6 +1,4 @@
-﻿using System.Security.Cryptography;
-using System.Text;
-using LYBT.Infrastructure.Data;
+﻿using LYBT.Infrastructure.Data;
 using LYBT.Module.Auth.Interfaces;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Auth;
@@ -43,22 +41,28 @@ namespace LYBT.Module.Auth.Services
 
         /// <summary>
         /// 检查是否为超级管理员凭据
-        /// 超级管理员不在Users表中，独立存储在AdminSecrets表
+        /// 超级管理员不在Users表中，密码哈希独立存储在AdminSecrets表
+        /// 用户名从配置文件读取，不存储在数据库中，防止SQL注入后暴露账户名
         /// </summary>
         private async Task<bool> IsSuperAdminCredentials(string username, string password, CancellationToken cancellationToken = default)
         {
             try
             {
                 // 从配置获取超级管理员用户名
-                var sysAdminUsername = _configuration["Lybt:Business:SystemAdmin:Username"] ?? "clinic_admin";
+                var configUsername = _configuration["Lybt:Business:SystemAdmin:Username"];
+                if (string.IsNullOrEmpty(configUsername))
+                {
+                    _logger.LogWarning("配置中未找到超级管理员用户名");
+                    return false;
+                }
 
-                // 用户名不匹配则不是超级管理员
-                if (!string.Equals(username, sysAdminUsername, StringComparison.OrdinalIgnoreCase))
+                // 验证用户名是否匹配
+                if (!string.Equals(username, configUsername, StringComparison.OrdinalIgnoreCase))
                 {
                     return false;
                 }
 
-                // 从AdminSecrets表验证密码
+                // 从AdminSecrets表获取超级管理员密码哈希
                 var adminSecret = await _dbContext.AdminSecrets.FirstOrDefaultAsync(cancellationToken);
                 if (adminSecret == null)
                 {
@@ -66,13 +70,12 @@ namespace LYBT.Module.Auth.Services
                     return false;
                 }
 
-                // 验证密码哈希
-                var hashedPassword = HashPassword(password);
-                bool isValid = string.Equals(adminSecret.PasswordHash, hashedPassword, StringComparison.Ordinal);
+                // 使用 BCrypt 验证密码（与普通用户一致）
+                bool isValid = BCrypt.Net.BCrypt.Verify(password, adminSecret.PasswordHash);
 
                 if (isValid)
                 {
-                    _logger.LogInformation("超级管理员认证成功（隐藏的用户名）");
+                    _logger.LogInformation("超级管理员登录成功");
                 }
                 else
                 {
@@ -86,16 +89,6 @@ namespace LYBT.Module.Auth.Services
                 _logger.LogError(ex, "验证超级管理员凭据时发生错误");
                 return false;
             }
-        }
-
-        /// <summary>
-        /// 简单的密码哈希方法（生产环境应使用BCrypt或Argon2）
-        /// </summary>
-        private string HashPassword(string password)
-        {
-            using var sha256 = SHA256.Create();
-            var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
-            return Convert.ToBase64String(hashedBytes);
         }
 
         #endregion

@@ -46,7 +46,7 @@ namespace LYBT.Module.Users.Tests.Mapping
             var user = new User
             {
                 Id = Guid.NewGuid(),
-                UsernName = "testuser",
+                UserName = "testuser",
                 RealName = "测试用户",
                 PhoneNumber = "13812345678",
                 Role = UserRole.Doctor,
@@ -62,7 +62,7 @@ namespace LYBT.Module.Users.Tests.Mapping
             // Assert
             userDto.Should().NotBeNull();
             userDto.Id.Should().Be(user.Id);
-            userDto.UserName.Should().Be(user.UsernName);
+            userDto.UserName.Should().Be(user.UserName);
             userDto.RealName.Should().Be(user.RealName);
             userDto.PhoneNumber.Should().Be(user.PhoneNumber);
             userDto.Role.Should().Be(user.Role);
@@ -88,7 +88,7 @@ namespace LYBT.Module.Users.Tests.Mapping
 
             // Assert
             user.Should().NotBeNull();
-            user.UsernName.Should().Be(createDto.Username);
+            user.UserName.Should().Be(createDto.Username);
             user.RealName.Should().Be(createDto.RealName);
             user.PhoneNumber.Should().Be(createDto.PhoneNumber);
             user.Role.Should().Be(createDto.Role);
@@ -142,7 +142,7 @@ namespace LYBT.Module.Users.Tests.Mapping
             user.IsDeleted.Should().BeFalse("BaseEntity默认未删除");
 
             // 验证映射忽略的字段
-            user.UsernName.Should().BeEmpty("用户名不允许修改");
+            user.UserName.Should().BeEmpty("用户名不允许修改");
             user.PasswordHash.Should().BeEmpty("密码哈希由业务逻辑处理");
             user.FailedLoginCount.Should().Be(0);
             user.LockoutEnd.Should().BeNull();
@@ -161,7 +161,7 @@ namespace LYBT.Module.Users.Tests.Mapping
             var user = new User
             {
                 Id = Guid.NewGuid(),
-                UsernName = "admin",
+                UserName = "admin",
                 RealName = "管理员",
                 Role = UserRole.Admin,
                 Status = CommonStatus.Enabled
@@ -184,7 +184,7 @@ namespace LYBT.Module.Users.Tests.Mapping
             var user = new User
             {
                 Id = Guid.NewGuid(),
-                UsernName = "doctor",
+                UserName = "doctor",
                 RealName = "医生",
                 Role = UserRole.Doctor,
                 Status = CommonStatus.Enabled
@@ -207,7 +207,7 @@ namespace LYBT.Module.Users.Tests.Mapping
             var user = new User
             {
                 Id = Guid.NewGuid(),
-                UsernName = "lockeduser",
+                UserName = "lockeduser",
                 Status = CommonStatus.Disabled,
                 FailedLoginCount = 5,
                 LockoutEnd = DateTime.Now.AddHours(1)
@@ -241,7 +241,7 @@ namespace LYBT.Module.Users.Tests.Mapping
 
             // Assert
             user.Should().NotBeNull();
-            user.UsernName.Should().Be(createDto.Username);
+            user.UserName.Should().Be(createDto.Username);
             user.Role.Should().Be(createDto.Role);
             user.Status.Should().Be(createDto.Status);
             user.RealName.Should().BeNull();
@@ -279,7 +279,7 @@ namespace LYBT.Module.Users.Tests.Mapping
             var user = new User
             {
                 Id = Guid.NewGuid(),
-                UsernName = "user_with-special.chars",
+                UserName = "user_with-special.chars",
                 RealName = "用户（特殊字符）",
                 PhoneNumber = "+86-138-1234-5678",
                 PinYinCode = "YHTSZKF"

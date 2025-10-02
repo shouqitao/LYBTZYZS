@@ -49,7 +49,7 @@ namespace LYBT.Infrastructure.Security
                 if (_environment.IsProduction())
                 {
                     // 生产环境：从Azure Key Vault或环境变量获取
-                    secretKey = _configuration["Authentication:Jwt:SecretKey"]
+                    secretKey = _configuration["Lybt:Authentication:Jwt:SecretKey"]
                         ?? Environment.GetEnvironmentVariable("JWT_SECRET_KEY");
 
                     if (string.IsNullOrEmpty(secretKey))
@@ -61,7 +61,7 @@ namespace LYBT.Infrastructure.Security
                 else if (_environment.IsDevelopment())
                 {
                     // 开发环境：优先使用用户机密，其次使用配置文件
-                    secretKey = _configuration["Authentication:Jwt:SecretKey"];
+                    secretKey = _configuration["Lybt:Authentication:Jwt:SecretKey"];
 
                     if (string.IsNullOrEmpty(secretKey))
                     {
@@ -73,7 +73,7 @@ namespace LYBT.Infrastructure.Security
                 else
                 {
                     // 测试或其他环境
-                    secretKey = _configuration["Authentication:Jwt:SecretKey"]
+                    secretKey = _configuration["Lybt:Authentication:Jwt:SecretKey"]
                         ?? _jwtOptions.Secret;
                 }
 

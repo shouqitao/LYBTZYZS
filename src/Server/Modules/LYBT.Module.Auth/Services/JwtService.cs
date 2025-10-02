@@ -4,6 +4,7 @@ using System.Text;
 using LYBT.Infrastructure.Configuration.Options;
 using LYBT.Module.Auth.Interfaces;
 using LYBT.Shared.Models.Enums;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
@@ -16,11 +17,13 @@ namespace LYBT.Module.Auth.Services;
 public class JwtService : IJwtService
 {
     private readonly LybtOptions _options;
+    private readonly IConfiguration _configuration;
     private readonly JwtSecurityTokenHandler _tokenHandler;
 
-    public JwtService(IOptions<LybtOptions> options)
+    public JwtService(IOptions<LybtOptions> options, IConfiguration configuration)
     {
         _options = options.Value ?? throw new ArgumentNullException(nameof(options));
+        _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         _tokenHandler = new JwtSecurityTokenHandler();
     }
 
@@ -35,6 +38,13 @@ public class JwtService : IJwtService
         if (string.IsNullOrEmpty(userName))
             throw new ArgumentException("用户名不能为空", nameof(userName));
 
+        // 直接从配置读取 JWT 密钥（解决配置绑定问题）
+        var secretKey = _configuration["Lybt:Authentication:Jwt:SecretKey"];
+        if (string.IsNullOrEmpty(secretKey))
+        {
+            throw new InvalidOperationException("JWT SecretKey 配置未找到或为空。请检查 appsettings.json 中的 Lybt:Authentication:Jwt:SecretKey 配置。");
+        }
+
         var jwtConfig = _options.Authentication.Jwt;
 
         // 创建Claims
@@ -48,7 +58,7 @@ public class JwtService : IJwtService
         };
 
         // 创建签名密钥
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtConfig.SecretKey));
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         // 设置合理的过期时间（8小时，符合适度设计原则）
@@ -80,6 +90,13 @@ public class JwtService : IJwtService
         if (string.IsNullOrEmpty(userName))
             throw new ArgumentException("用户名不能为空", nameof(userName));
 
+        // 直接从配置读取 JWT 密钥（解决配置绑定问题）
+        var secretKey = _configuration["Lybt:Authentication:Jwt:SecretKey"];
+        if (string.IsNullOrEmpty(secretKey))
+        {
+            throw new InvalidOperationException("JWT SecretKey 配置未找到或为空。请检查 appsettings.json 中的 Lybt:Authentication:Jwt:SecretKey 配置。");
+        }
+
         var jwtConfig = _options.Authentication.Jwt;
 
         // 创建基础Claims
@@ -102,7 +119,7 @@ public class JwtService : IJwtService
         }
 
         // 创建签名密钥
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtConfig.SecretKey));
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         // 设置合理的过期时间（8小时，符合适度设计原则）
