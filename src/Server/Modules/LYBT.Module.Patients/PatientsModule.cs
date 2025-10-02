@@ -33,8 +33,11 @@ namespace LYBT.Module.Patients
             // 注册AutoMapper配置 - 暂时注释，待创建配置文件后启用
             // services.AddAutoMapper(typeof(PatientMappingProfile));
 
-            // 注册模块特定的配置
-            services.Configure<PatientModuleOptions>(configuration.GetSection("Modules:Patients"));
+            // 注册模块特定的配置(带启动验证)
+            services.AddOptions<PatientModuleOptions>()
+                .Bind(configuration.GetSection("Modules:Patients"))
+                .ValidateDataAnnotations()
+                .ValidateOnStart();
 
             return services;
         }

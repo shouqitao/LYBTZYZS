@@ -35,8 +35,11 @@ namespace LYBT.Module.Consultation
             // 注册AutoMapper配置
             services.AddAutoMapper(typeof(ConsultationMappingProfile));
 
-            // 注册模块特定的配置
-            services.Configure<ConsultationModuleOptions>(configuration.GetSection("Modules:Consultation"));
+            // 注册模块特定的配置(带启动验证)
+            services.AddOptions<ConsultationModuleOptions>()
+                .Bind(configuration.GetSection("Modules:Consultation"))
+                .ValidateDataAnnotations()
+                .ValidateOnStart();
 
             return services;
         }

@@ -33,8 +33,11 @@ namespace LYBT.Module.Herbs
             // 注册AutoMapper配置 - 暂时注释，待创建配置文件后启用
             // services.AddAutoMapper(typeof(HerbMappingProfile));
 
-            // 注册模块特定的配置
-            services.Configure<HerbModuleOptions>(configuration.GetSection("Modules:Herbs"));
+            // 注册模块特定的配置(带启动验证)
+            services.AddOptions<HerbModuleOptions>()
+                .Bind(configuration.GetSection("Modules:Herbs"))
+                .ValidateDataAnnotations()
+                .ValidateOnStart();
 
             return services;
         }
