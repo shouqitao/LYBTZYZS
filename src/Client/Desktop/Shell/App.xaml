@@ -14,6 +14,7 @@
             </ResourceDictionary.MergedDictionaries>
 
             <!--  简化的资源字典 - 仅包含基础转换器  -->
+            <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
 
 
             <!--  应用级全局样式覆盖  -->
