@@ -441,4 +441,13 @@
         <Setter Property="Padding" Value="16,12" />
         <Setter Property="Margin" Value="0,0,0,8" />
     </Style>
+
+    <!-- 状态栏容器 -->
+    <Style x:Key="StatusBarContainer" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
+        <Setter Property="BorderThickness" Value="0,1,0,0" />
+        <Setter Property="Padding" Value="16,12" />
+        <Setter Property="Margin" Value="0,8,0,0" />
+    </Style>
 </ResourceDictionary>
