@@ -1,4 +1,4 @@
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using LYBT.Infrastructure.Data;
@@ -26,7 +26,7 @@ namespace LYBT.Infrastructure.Repositories
         // 缓存配置
         protected virtual TimeSpan DefaultCacheDuration => TimeSpan.FromMinutes(5);
         protected virtual string CacheKeyPrefix => $"{typeof(TEntity).Name}:readonly:";
-        
+
         // 缓存穿透防护配置
         protected virtual TimeSpan NullCacheDuration => TimeSpan.FromMinutes(1); // 空结果缓存时间更短
         protected const string NullValueMarker = "__NULL__"; // 空值标记
@@ -52,19 +52,19 @@ namespace LYBT.Infrastructure.Repositories
             if (_cache.TryGetValue(cacheKey, out var cached))
             {
                 _logger.LogDebug("缓存命中 - 实体 {EntityType}:{Id}, 命中率统计已记录", typeof(TEntity).Name, id);
-                
+
                 // 缓存穿透防护：检查是否为空值标记
                 if (cached is string marker && marker == NullValueMarker)
                 {
                     _logger.LogDebug("缓存命中空值标记 - 实体 {EntityType}:{Id}", typeof(TEntity).Name, id);
                     return null;
                 }
-                
+
                 return cached as TEntity;
             }
 
             _logger.LogDebug("缓存未命中 - 实体 {EntityType}:{Id}, 从数据库查询", typeof(TEntity).Name, id);
-            
+
             var entity = await _dbSet
                 .AsNoTrackingWithIdentityResolution()
                 .FirstOrDefaultAsync(e => EF.Property<Guid>(e, "Id") == id);
@@ -96,7 +96,7 @@ namespace LYBT.Infrastructure.Repositories
 
             _logger.LogDebug("缓存未命中 - 获取全部 {EntityType} 实体，从数据库查询", typeof(TEntity).Name);
             var entities = await BuildOptimizedQuery().ToListAsync();
-            
+
             // 缓存穿透防护：即使结果为空也缓存
             if (entities.Count == 0)
             {
@@ -133,12 +133,12 @@ namespace LYBT.Infrastructure.Repositories
 
             if (_cache.TryGetValue<PagedResult<TEntity>>(cacheKey, out var cached))
             {
-                _logger.LogDebug("缓存命中 - 分页查询 {EntityType} Page:{PageNumber} Size:{PageSize}", 
+                _logger.LogDebug("缓存命中 - 分页查询 {EntityType} Page:{PageNumber} Size:{PageSize}",
                     typeof(TEntity).Name, pageNumber, pageSize);
                 return cached!;
             }
 
-            _logger.LogDebug("缓存未命中 - 分页查询 {EntityType} Page:{PageNumber} Size:{PageSize}，从数据库查询", 
+            _logger.LogDebug("缓存未命中 - 分页查询 {EntityType} Page:{PageNumber} Size:{PageSize}，从数据库查询",
                 typeof(TEntity).Name, pageNumber, pageSize);
 
             var query = BuildOptimizedQuery(predicate);

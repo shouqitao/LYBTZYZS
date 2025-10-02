@@ -1,9 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using LYBT.Core.Infrastructure.Caching.Interfaces;
+﻿using LYBT.Core.Infrastructure.Caching.Interfaces;
 using LYBT.Core.Infrastructure.Caching.Models;
 
 namespace LYBT.Core.Infrastructure.Caching.Adapters

@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -49,10 +49,10 @@ namespace LYBT.Entities.Formula
         /// Gets or sets 剂量（与Quantity同义，为兼容性保留）
         /// </summary>
         [NotMapped]
-        public int Dosage 
-        { 
-            get => Quantity; 
-            set => Quantity = value; 
+        public int Dosage
+        {
+            get => Quantity;
+            set => Quantity = value;
         }
 
         /// <summary>

@@ -1,10 +1,8 @@
+﻿using System.Data.SqlClient;
+using LYBT.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using LYBT.Infrastructure.Data;
-using System;
-using System.Data.SqlClient;
-using System.Threading.Tasks;
 
 namespace LYBT.Tests.Configuration
 {
@@ -60,7 +58,7 @@ namespace LYBT.Tests.Configuration
                 // 确保数据库存在
                 await _context.Database.EnsureCreatedAsync();
                 _logger.LogInformation("测试数据库已创建: {DatabaseName}", _testDatabaseName);
-                
+
                 return _context;
             }
             catch (Exception ex)

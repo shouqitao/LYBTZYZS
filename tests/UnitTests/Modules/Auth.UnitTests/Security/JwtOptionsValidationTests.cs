@@ -1,6 +1,5 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using LYBT.Infrastructure.Configuration.Options;
-using LYBT.Shared.Models.Contracts.Users;
 using Xunit;
 
 namespace LYBT.Module.Auth.Tests.Security
@@ -17,7 +16,7 @@ namespace LYBT.Module.Auth.Tests.Security
             var options = new JwtOptions();
 
             // Assert - 验证默认值的安全性
-            options.ExpireMinutes.Should().BeLessOrEqualTo(30, 
+            options.ExpireMinutes.Should().BeLessOrEqualTo(30,
                 "AccessToken不应该有过长的有效期");
             options.RefreshTokenExpireDays.Should().BeLessOrEqualTo(30,
                 "RefreshToken的有效期不应超过30天");
@@ -65,9 +64,9 @@ namespace LYBT.Module.Auth.Tests.Security
         public void AccessTokenExpiration_ShouldBeReasonable(int minutes, bool shouldBeValid)
         {
             // Arrange
-            var options = new JwtOptions 
-            { 
-                ExpireMinutes = minutes 
+            var options = new JwtOptions
+            {
+                ExpireMinutes = minutes
             };
 
             // Act
@@ -86,9 +85,9 @@ namespace LYBT.Module.Auth.Tests.Security
         public void RefreshTokenExpiration_ShouldBeReasonable(int days, bool shouldBeValid)
         {
             // Arrange
-            var options = new JwtOptions 
-            { 
-                RefreshTokenExpireDays = days 
+            var options = new JwtOptions
+            {
+                RefreshTokenExpireDays = days
             };
 
             // Act

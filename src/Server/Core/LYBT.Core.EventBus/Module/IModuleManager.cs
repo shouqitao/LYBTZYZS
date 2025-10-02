@@ -1,4 +1,4 @@
-namespace LYBT.Core.EventBus.Module;
+﻿namespace LYBT.Core.EventBus.Module;
 
 /// <summary>
 /// 模块管理器接口
@@ -381,7 +381,7 @@ public class ModuleDependencyResult
     /// <summary>
     /// 可选依赖状态
     /// </summary>
-    public IReadOnlyDictionary<string, bool> OptionalDependencies { get; init; } = 
+    public IReadOnlyDictionary<string, bool> OptionalDependencies { get; init; } =
         new Dictionary<string, bool>();
 }
 
@@ -418,13 +418,13 @@ public class ModuleStatistics
     /// <summary>
     /// 按类别分组的模块数
     /// </summary>
-    public IReadOnlyDictionary<ModuleCategory, int> ModulesByCategory { get; init; } = 
+    public IReadOnlyDictionary<ModuleCategory, int> ModulesByCategory { get; init; } =
         new Dictionary<ModuleCategory, int>();
 
     /// <summary>
     /// 按状态分组的模块数
     /// </summary>
-    public IReadOnlyDictionary<ModuleState, int> ModulesByState { get; init; } = 
+    public IReadOnlyDictionary<ModuleState, int> ModulesByState { get; init; } =
         new Dictionary<ModuleState, int>();
 
     /// <summary>

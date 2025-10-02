@@ -1,16 +1,13 @@
+﻿using LYBT.Infrastructure.Data;
 using LYBT.Module.Auth.Interfaces;
-using LYBT.Module.Users.Interfaces;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
-using Microsoft.Extensions.Logging;
-using LYBT.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using System.Security.Cryptography;
-using System.Text;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.Module.Auth.Services
 {
@@ -44,22 +41,28 @@ namespace LYBT.Module.Auth.Services
 
         /// <summary>
         /// 检查是否为超级管理员凭据
-        /// 超级管理员不在Users表中，独立存储在AdminSecrets表
+        /// 超级管理员不在Users表中，密码哈希独立存储在AdminSecrets表
+        /// 用户名从配置文件读取，不存储在数据库中，防止SQL注入后暴露账户名
         /// </summary>
         private async Task<bool> IsSuperAdminCredentials(string username, string password, CancellationToken cancellationToken = default)
         {
             try
             {
                 // 从配置获取超级管理员用户名
-                var sysAdminUsername = _configuration["Lybt:Business:SystemAdmin:Username"] ?? "clinic_admin";
-                
-                // 用户名不匹配则不是超级管理员
-                if (!string.Equals(username, sysAdminUsername, StringComparison.OrdinalIgnoreCase))
+                var configUsername = _configuration["Lybt:Business:SystemAdmin:Username"];
+                if (string.IsNullOrEmpty(configUsername))
+                {
+                    _logger.LogWarning("配置中未找到超级管理员用户名");
+                    return false;
+                }
+
+                // 验证用户名是否匹配
+                if (!string.Equals(username, configUsername, StringComparison.OrdinalIgnoreCase))
                 {
                     return false;
                 }
 
-                // 从AdminSecrets表验证密码
+                // 从AdminSecrets表获取超级管理员密码哈希
                 var adminSecret = await _dbContext.AdminSecrets.FirstOrDefaultAsync(cancellationToken);
                 if (adminSecret == null)
                 {
@@ -67,13 +70,12 @@ namespace LYBT.Module.Auth.Services
                     return false;
                 }
 
-                // 验证密码哈希
-                var hashedPassword = HashPassword(password);
-                bool isValid = string.Equals(adminSecret.PasswordHash, hashedPassword, StringComparison.Ordinal);
-                
+                // 使用 BCrypt 验证密码（与普通用户一致）
+                bool isValid = BCrypt.Net.BCrypt.Verify(password, adminSecret.PasswordHash);
+
                 if (isValid)
                 {
-                    _logger.LogInformation("超级管理员认证成功（隐藏的用户名）");
+                    _logger.LogInformation("超级管理员登录成功");
                 }
                 else
                 {
@@ -87,16 +89,6 @@ namespace LYBT.Module.Auth.Services
                 _logger.LogError(ex, "验证超级管理员凭据时发生错误");
                 return false;
             }
-        }
-
-        /// <summary>
-        /// 简单的密码哈希方法（生产环境应使用BCrypt或Argon2）
-        /// </summary>
-        private string HashPassword(string password)
-        {
-            using var sha256 = SHA256.Create();
-            var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
-            return Convert.ToBase64String(hashedBytes);
         }
 
         #endregion
@@ -116,7 +108,7 @@ namespace LYBT.Module.Auth.Services
                 // 首先检查是否是超级管理员登录
                 if (await IsSuperAdminCredentials(request.Username, request.Password, cancellationToken))
                 {
-                    _logger.LogInformation("超级管理员认证成功 [用户名: {Username}] [时间: {Timestamp}]", 
+                    _logger.LogInformation("超级管理员认证成功 [用户名: {Username}] [时间: {Timestamp}]",
                     request.Username, DateTime.UtcNow);
                     // 返回特殊的超级管理员标识
                     return ServiceResult<string>.Success("SUPER_ADMIN:" + request.Username);
@@ -131,12 +123,12 @@ namespace LYBT.Module.Auth.Services
                 var passwordValidation = await _userService.ValidatePasswordAsync(userResult.Data.Id, request.Password);
                 if (passwordValidation.IsSuccess && passwordValidation.Data)
                 {
-                    _logger.LogInformation("用户认证成功 [用户名: {Username}] [时间: {Timestamp}]", 
+                    _logger.LogInformation("用户认证成功 [用户名: {Username}] [时间: {Timestamp}]",
                     request.Username, DateTime.UtcNow);
                     return ServiceResult<string>.Success(userResult.Data.Id.ToString());
                 }
 
-                _logger.LogWarning("用户认证失败 [用户名: {Username}] [原因: 密码错误] [时间: {Timestamp}]", 
+                _logger.LogWarning("用户认证失败 [用户名: {Username}] [原因: 密码错误] [时间: {Timestamp}]",
                 request.Username, DateTime.UtcNow);
                 return ServiceResult<string>.Failure("用户名或密码错误");
             }
@@ -174,20 +166,20 @@ namespace LYBT.Module.Auth.Services
                     return ServiceResult<LoginResponse>.Failure(credentialsResult.Message);
 
                 LoginResponse response;
-                
+
                 // 检查是否是超级管理员
                 if (credentialsResult.Data.StartsWith("SUPER_ADMIN:"))
                 {
                     // 超级管理员登录
                     var sysAdminUsername = credentialsResult.Data.Substring("SUPER_ADMIN:".Length);
-                    
+
                     // 生成超级管理员专用的JWT令牌
                     var token = _jwtService.GenerateToken(
                         "00000000-0000-0000-0000-000000000000", // 特殊ID表示超级管理员
                         sysAdminUsername,
                         UserRole.Admin, // 使用Admin角色，但通过特殊ID区分
-                        new Dictionary<string, string> 
-                        { 
+                        new Dictionary<string, string>
+                        {
                             { "IsSuperAdmin", "true" },
                             { "AuthSource", "AdminSecrets" }
                         });
@@ -195,7 +187,7 @@ namespace LYBT.Module.Auth.Services
                     response = new LoginResponse
                     {
                         Token = token,
-                        User = new UserDto 
+                        User = new UserDto
                         {
                             Id = Guid.Empty, // 特殊ID
                             UserName = sysAdminUsername,
@@ -232,7 +224,7 @@ namespace LYBT.Module.Auth.Services
                         ExpiresAt = DateTime.UtcNow.AddHours(8) // 简化：固定8小时过期
                     };
 
-                    _logger.LogInformation("用户登录成功 [用户名: {Username}] [时间: {Timestamp}]", 
+                    _logger.LogInformation("用户登录成功 [用户名: {Username}] [时间: {Timestamp}]",
                     request.Username, DateTime.UtcNow);
                 }
 

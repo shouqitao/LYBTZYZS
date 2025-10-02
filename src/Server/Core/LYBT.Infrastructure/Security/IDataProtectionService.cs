@@ -1,4 +1,4 @@
-namespace LYBT.Infrastructure.Security
+﻿namespace LYBT.Infrastructure.Security
 {
     /// <summary>
     /// 数据保护服务接口 - 提供数据的加密和解密功能

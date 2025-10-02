@@ -1,3 +1,4 @@
+﻿using System.Security.Claims;
 using LYBT.Core.Entities.Auth;
 using LYBT.Core.Entities.Common;
 using LYBT.Core.Entities.Consultation;
@@ -7,9 +8,8 @@ using LYBT.Core.Entities.MedicalCase;
 using LYBT.Core.Entities.Patients;
 using LYBT.Core.Entities.Prescriptions;
 using LYBT.Core.Entities.Users;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Http;
-using System.Security.Claims;
+using Microsoft.EntityFrameworkCore;
 
 namespace LYBT.Core.Infrastructure.Data
 {
@@ -336,7 +336,7 @@ namespace LYBT.Core.Infrastructure.Data
             entity.Property(h => h.Unit).HasMaxLength(10);
             entity.Property(h => h.Effect).HasMaxLength(500);
             entity.Property(h => h.Usage).HasMaxLength(500);
-            
+
             // P1 Batch1: 统一使用 HasPrecision 配置 decimal 精度
             entity.Property(h => h.Price).HasPrecision(18, 2);
             entity.Property(h => h.CostPrice).HasPrecision(18, 2);
@@ -371,7 +371,7 @@ namespace LYBT.Core.Infrastructure.Data
             var entity = modelBuilder.Entity<SystemLog>();
             entity.ToTable("SystemLogs");
             entity.HasKey(sl => sl.Id);
-            
+
             // 配置字段
             entity.Property(sl => sl.Timestamp).IsRequired();
             entity.Property(sl => sl.Level).HasMaxLength(50).IsRequired();
@@ -383,7 +383,7 @@ namespace LYBT.Core.Infrastructure.Data
             entity.Property(sl => sl.MachineName).HasMaxLength(100);
             entity.Property(sl => sl.ThreadId);
             entity.Property(sl => sl.Properties);
-            
+
             // 添加索引以提高查询性能
             entity.HasIndex(sl => sl.Timestamp).HasDatabaseName("IX_SystemLogs_Timestamp");
             entity.HasIndex(sl => sl.Level).HasDatabaseName("IX_SystemLogs_Level");

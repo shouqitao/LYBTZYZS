@@ -1,6 +1,6 @@
+﻿using LYBT.Shared.Utilities.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.DependencyInjection;
-using LYBT.Shared.Utilities.Security;
 
 namespace LYBT.Infrastructure.Authorization
 {

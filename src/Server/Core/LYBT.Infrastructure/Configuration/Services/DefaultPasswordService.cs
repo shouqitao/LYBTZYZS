@@ -1,4 +1,4 @@
-using LYBT.Infrastructure.Configuration.Options;
+﻿using LYBT.Infrastructure.Configuration.Options;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;

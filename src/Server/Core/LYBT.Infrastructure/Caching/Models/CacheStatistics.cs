@@ -1,6 +1,4 @@
-using System;
-
-namespace LYBT.Infrastructure.Caching.Models
+﻿namespace LYBT.Infrastructure.Caching.Models
 {
     /// <summary>
     /// 缓存统计信息

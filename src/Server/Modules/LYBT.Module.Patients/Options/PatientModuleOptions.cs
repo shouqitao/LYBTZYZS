@@ -1,4 +1,4 @@
-namespace LYBT.Module.Patients.Options
+﻿namespace LYBT.Module.Patients.Options
 {
     /// <summary>
     /// 患者模块配置选项

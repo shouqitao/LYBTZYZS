@@ -1,16 +1,14 @@
-using System.Text;
+﻿using System.Text;
 using LYBT.Infrastructure.Configuration.Options;
 using LYBT.Infrastructure.Data;
+using LYBT.Infrastructure.Data.Interceptors;
+using LYBT.Infrastructure.Data.Monitoring;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
-using JwtOptions = LYBT.Infrastructure.Configuration.Options.JwtOptions;
-using LYBT.Infrastructure.Data.Interceptors;
-using LYBT.Infrastructure.Data.Monitoring;
-using LYBT.Infrastructure.Security;
 
 namespace LYBT.Infrastructure
 {
@@ -29,14 +27,18 @@ namespace LYBT.Infrastructure
         /// <returns>服务集合</returns>
         public static IServiceCollection AddJwtAuthentication(this IServiceCollection services, IConfiguration configuration)
         {
-            var jwtSection = configuration.GetSection("JwtOptions");
-            services.Configure<JwtOptions>(jwtSection);
-
-            var jwtOptions = jwtSection.Get<JwtOptions>();
-            if (jwtOptions == null)
+            // 使用统一的 LybtOptions 配置系统
+            var lybtOptions = configuration.GetSection("Lybt").Get<LybtOptions>();
+            if (lybtOptions?.Authentication?.Jwt == null)
             {
-                throw new InvalidOperationException("JWT configuration is missing");
+                throw new InvalidOperationException(
+                    "JWT 配置缺失。请检查 appsettings.json 中的 Lybt:Authentication:Jwt 配置节。");
             }
+
+            var jwtConfig = lybtOptions.Authentication.Jwt;
+
+            // 注册 LybtOptions 到 DI 容器（供其他服务如 JwtService 使用）
+            services.Configure<LybtOptions>(configuration.GetSection("Lybt"));
 
             services.AddAuthentication(options =>
             {
@@ -52,10 +54,10 @@ namespace LYBT.Infrastructure
                     ValidateAudience = true,
                     ValidateLifetime = true,
                     ValidateIssuerSigningKey = true,
-                    ValidIssuer = jwtOptions.Issuer,
-                    ValidAudience = jwtOptions.Audience,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.Secret)),
-                    ClockSkew = TimeSpan.FromSeconds(jwtOptions.ClockSkewSeconds)
+                    ValidIssuer = jwtConfig.Issuer,
+                    ValidAudience = jwtConfig.Audience,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtConfig.SecretKey)),
+                    ClockSkew = TimeSpan.FromSeconds(jwtConfig.ClockSkewSeconds)
                 };
 
                 options.Events = new JwtBearerEvents
@@ -91,18 +93,6 @@ namespace LYBT.Infrastructure
         }
 
         /// <summary>
-        /// 添加认证配置
-        /// </summary>
-        /// <param name="services">服务集合</param>
-        /// <param name="configuration">配置</param>
-        /// <returns>服务集合</returns>
-        public static IServiceCollection AddAuthConfiguration(this IServiceCollection services, IConfiguration configuration)
-        {
-            services.Configure<AuthOptions>(configuration.GetSection("AuthOptions"));
-            return services;
-        }
-
-        /// <summary>
         /// 添加基础设施数据库上下文
         /// </summary>
         /// <param name="services">服务集合</param>
@@ -130,7 +120,7 @@ namespace LYBT.Infrastructure
                 });
                 options.EnableSensitiveDataLogging(false);
                 options.EnableServiceProviderCaching();
-                
+
                 // 添加查询性能监控拦截器
                 var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
                 if (loggerFactory != null)
@@ -163,9 +153,6 @@ namespace LYBT.Infrastructure
 
             // 添加JWT认证
             services.AddJwtAuthentication(configuration);
-
-            // 添加认证配置
-            services.AddAuthConfiguration(configuration);
 
             // 添加查询性能监控服务
             services.AddSingleton<IQueryStatisticsCollector, QueryStatisticsCollector>();

@@ -1,4 +1,4 @@
-using LYBT.Core.EventBus.Events;
+﻿using LYBT.Core.EventBus.Events;
 
 namespace LYBT.Core.EventBus.Module.Events;
 
@@ -53,7 +53,7 @@ public class ModuleRegisteredEvent : IntegrationEventBase
     /// </summary>
     /// <param name="moduleDescriptor">模块描述符</param>
     /// <param name="source">事件来源</param>
-    public ModuleRegisteredEvent(ModuleDescriptor moduleDescriptor, string source = "ModuleManager") 
+    public ModuleRegisteredEvent(ModuleDescriptor moduleDescriptor, string source = "ModuleManager")
         : base(source)
     {
         if (moduleDescriptor == null)

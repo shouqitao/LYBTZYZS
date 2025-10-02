@@ -1,11 +1,10 @@
-using ConsultationIConsultationService = LYBT.Module.Consultation.Interfaces.IConsultationService;
-using LYBT.Shared.Interfaces.Services;
+﻿using Asp.Versioning;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
-using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
+using ConsultationIConsultationService = LYBT.Module.Consultation.Interfaces.IConsultationService;
 
 namespace LYBT.WebAPI.Controllers
 {

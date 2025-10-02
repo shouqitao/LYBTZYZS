@@ -1,4 +1,4 @@
-#nullable enable
+﻿#nullable enable
 
 using System.ComponentModel;
 using LYBT.Core.Infrastructure.Caching.Models;

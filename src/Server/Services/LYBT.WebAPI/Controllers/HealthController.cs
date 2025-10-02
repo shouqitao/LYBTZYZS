@@ -1,12 +1,11 @@
-using System.Reflection;
+﻿using System.Reflection;
 using Asp.Versioning;
+using LYBT.Core.Infrastructure.Data;
+using LYBT.Core.Infrastructure.Web;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
-using LYBT.Core.Infrastructure.Data;
-using LYBT.Core.Infrastructure.Web;
 
 namespace LYBT.WebAPI.Controllers;
 
@@ -159,9 +158,9 @@ public class HealthController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Detailed health check failed after {Duration}ms", 
+            _logger.LogError(ex, "Detailed health check failed after {Duration}ms",
                 (DateTime.UtcNow - startTime).TotalMilliseconds);
-            
+
             return StatusCode(503, new
             {
                 status = "Unhealthy",
@@ -181,11 +180,11 @@ public class HealthController : BaseApiController
         try
         {
             await Task.CompletedTask; // 满足async约定
-            
+
             var assembly = Assembly.GetExecutingAssembly();
             var version = assembly.GetName().Version?.ToString() ?? "Unknown";
             var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Unknown";
-            
+
             check.Status = "Healthy";
             check.Data = new
             {
@@ -228,10 +227,10 @@ public class HealthController : BaseApiController
             var pendingCount = pendingMigrations.Count();
 
             check.Status = pendingCount == 0 ? "Healthy" : "Degraded";
-            check.Description = pendingCount == 0 
-                ? "Database connection and migrations OK" 
+            check.Description = pendingCount == 0
+                ? "Database connection and migrations OK"
                 : $"{pendingCount} pending migrations";
-            
+
             check.Data = new
             {
                 connected = true,

@@ -1,4 +1,4 @@
-namespace LYBT.Core.EventBus.Module;
+﻿namespace LYBT.Core.EventBus.Module;
 
 /// <summary>
 /// 模块验证结果
@@ -194,7 +194,7 @@ public class ModuleValidationException : Exception
     /// </summary>
     /// <param name="message">异常消息</param>
     /// <param name="validationResult">验证结果</param>
-    public ModuleValidationException(string message, ModuleValidationResult validationResult) 
+    public ModuleValidationException(string message, ModuleValidationResult validationResult)
         : base(message)
     {
         ValidationResult = validationResult ?? throw new ArgumentNullException(nameof(validationResult));
@@ -206,7 +206,7 @@ public class ModuleValidationException : Exception
     /// <param name="message">异常消息</param>
     /// <param name="validationResult">验证结果</param>
     /// <param name="innerException">内部异常</param>
-    public ModuleValidationException(string message, ModuleValidationResult validationResult, Exception innerException) 
+    public ModuleValidationException(string message, ModuleValidationResult validationResult, Exception innerException)
         : base(message, innerException)
     {
         ValidationResult = validationResult ?? throw new ArgumentNullException(nameof(validationResult));

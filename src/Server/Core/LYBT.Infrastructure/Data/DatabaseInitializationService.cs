@@ -1,6 +1,5 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using LYBT.Infrastructure.Data;
 
 namespace LYBT.Infrastructure.Data;
 
@@ -27,7 +26,7 @@ public class DatabaseInitializationService
     public async Task InitializeDatabaseAsync()
     {
         try
-    {
+        {
             _logger.LogInformation("开始初始化数据库并应用迁移");
 
             // 使用 Migrations 自动应用待执行的迁移
