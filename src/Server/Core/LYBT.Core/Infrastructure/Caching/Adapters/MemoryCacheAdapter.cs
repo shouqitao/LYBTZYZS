@@ -40,7 +40,7 @@ namespace LYBT.Core.Infrastructure.Caching.Adapters
         public MemoryCacheAdapter(
             IMemoryCache memoryCache,
             ILogger<MemoryCacheAdapter> logger,
-            IOptions<CacheOptions> cacheOptions = null)
+            IOptions<CacheOptions>? cacheOptions = null)
         {
             _memoryCache = memoryCache ?? throw new ArgumentNullException(nameof(memoryCache));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -199,7 +199,7 @@ namespace LYBT.Core.Infrastructure.Caching.Adapters
         /// <summary>
         /// 估算对象大小（简单估算）
         /// </summary>
-        private long GetEstimatedSize(object obj)
+        private long GetEstimatedSize(object? obj)
         {
             if (obj == null)
                 return 0;
@@ -283,7 +283,7 @@ namespace LYBT.Core.Infrastructure.Caching.Adapters
         public Task<T> GetAsync<T>(string key) where T : class
         {
             // Memory cache operations are synchronous, wrap in Task
-            return Task.FromResult(Get<T>(key));
+            return Task.FromResult(Get<T>(key))!;
         }
 
         /// <inheritdoc/>

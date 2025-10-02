@@ -97,7 +97,9 @@ public static class ConfigurationExtensions
         // 注册传统 JwtOptions
         services.Configure<JwtOptions>(opt =>
         {
+#pragma warning disable CS0618 // 类型或成员已过时
             opt.Secret = lybtOptions.Authentication.Jwt.SecretKey;
+#pragma warning restore CS0618 // 类型或成员已过时
             opt.Issuer = lybtOptions.Authentication.Jwt.Issuer;
             opt.Audience = lybtOptions.Authentication.Jwt.Audience;
             opt.ExpireMinutes = lybtOptions.Authentication.Jwt.AccessTokenExpirationMinutes;

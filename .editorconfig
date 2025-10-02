@@ -569,7 +569,7 @@ dotnet_diagnostic.CA1062.severity = warning  # 验证数据库参数
 
 # 控制器 - API 安全性
 [*Controller.cs]
-dotnet_diagnostic.CA1062.severity = warning  # 验证 API 参数
+dotnet_diagnostic.CA1062.severity = suggestion  # ASP.NET Core 参数由框架验证
 dotnet_diagnostic.CA2100.severity = warning  # 防止 SQL 注入
 dotnet_diagnostic.CA1054.severity = suggestion  # URI 参数类型检查
 

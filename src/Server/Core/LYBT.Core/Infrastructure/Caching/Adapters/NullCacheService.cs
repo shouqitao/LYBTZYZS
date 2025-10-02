@@ -59,7 +59,7 @@ namespace LYBT.Core.Infrastructure.Caching.Adapters
         /// </summary>
         public Task<T> GetAsync<T>(string key) where T : class
         {
-            return Task.FromResult<T>(null);
+            return Task.FromResult<T>(null!);
         }
 
         /// <summary>
