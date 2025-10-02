@@ -371,6 +371,10 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterSingleton<LYBT.Desktop.Infrastructure.Interfaces.IMainWindowServicesFacade,
                 LYBT.Desktop.Infrastructure.Services.MainWindowServicesFacade>();
 
+            // Issue #856: WebAPI 健康检查服务 - 登录界面状态指示器
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Services.Interfaces.IApiHealthCheckService,
+                LYBT.Desktop.Services.HealthCheck.ApiHealthCheckService>();
+
             // P7-03: 处方打印服务 - UltraThink标准打印系统
             containerRegistry.RegisterSingleton<LYBT.Desktop.Infrastructure.Services.IPrescriptionPrintService,
                 LYBT.Desktop.Infrastructure.Services.PrescriptionPrintService>();
