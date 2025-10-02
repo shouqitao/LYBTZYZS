@@ -40,10 +40,10 @@ jobs:
         dotnet-version: ${{ env.DOTNET_VERSION }}
 
     - name: 📦 恢复NuGet包
-      run: dotnet restore
+      run: dotnet restore LYBT.All.sln
 
     - name: 🔨 构建解决方案
-      run: dotnet build --configuration Release --no-restore
+      run: dotnet build LYBT.All.sln --configuration Release --no-restore
 
     - name: 🧪 运行测试并收集覆盖率
       run: |
