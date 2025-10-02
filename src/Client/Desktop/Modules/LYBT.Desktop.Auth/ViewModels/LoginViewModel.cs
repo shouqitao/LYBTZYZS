@@ -66,7 +66,7 @@ namespace LYBT.Desktop.Auth.ViewModels
             catch (Exception ex)
             {
                 Logger.LogError(ex, "健康检查过程中发生错误");
-                RunOnUIThread(() =>
+                await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
                     ApiStatus = ApiHealthStatus.Unhealthy;
                     ApiStatusMessage = $"健康检查失败: {ex.Message}";
