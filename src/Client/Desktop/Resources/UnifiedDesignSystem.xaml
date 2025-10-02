@@ -222,6 +222,20 @@
         <Setter Property="Foreground" Value="White" />
     </Style>
 
+    <!-- 信息按钮 -->
+    <Style x:Key="InfoButton" TargetType="Button" BasedOn="{StaticResource BaseButtonStyle}">
+        <Setter Property="Background" Value="{StaticResource InfoBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource InfoBrush}" />
+        <Setter Property="Foreground" Value="White" />
+    </Style>
+
+    <!-- 警告按钮 -->
+    <Style x:Key="WarningButton" TargetType="Button" BasedOn="{StaticResource BaseButtonStyle}">
+        <Setter Property="Background" Value="{StaticResource WarningBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource WarningBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+    </Style>
+
     <!-- 危险按钮 -->
     <Style x:Key="DangerButton" TargetType="Button" BasedOn="{StaticResource BaseButtonStyle}">
         <Setter Property="Background" Value="{StaticResource DangerBrush}" />

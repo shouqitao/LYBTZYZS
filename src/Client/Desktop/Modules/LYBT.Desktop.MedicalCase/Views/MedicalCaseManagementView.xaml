@@ -86,43 +86,43 @@
                 <!-- 案例编号 -->
                 <DataGridTextColumn Header="案例编号"
                                     Binding="{Binding CaseNumber}"
-                                    Width="{StaticResource DataGridPhoneColumnWidth}" />
+                                    Width="120" />
 
                 <!-- 创建时间 -->
                 <DataGridTextColumn Header="创建时间"
                                     Binding="{Binding CreatedAt, StringFormat='yyyy-MM-dd HH:mm'}"
-                                    Width="{StaticResource DataGridColumnWidthLarge}" />
+                                    Width="150" />
 
                 <!-- 患者信息 -->
                 <DataGridTextColumn Header="患者姓名"
                                     Binding="{Binding PatientName}"
-                                    Width="{StaticResource DataGridColumnWidthNormal}" />
+                                    Width="100" />
 
                 <DataGridTextColumn Header="性别"
                                     Binding="{Binding PatientGender}"
-                                    Width="{StaticResource DataGridColumnWidthSmall}" />
+                                    Width="60" />
 
                 <DataGridTextColumn Header="年龄"
                                     Binding="{Binding PatientAge}"
-                                    Width="{StaticResource DataGridColumnWidthSmall}" />
+                                    Width="60" />
 
                 <!-- 接诊医生 -->
                 <DataGridTextColumn Header="接诊医生"
                                     Binding="{Binding DoctorName}"
-                                    Width="{StaticResource DataGridColumnWidthNormal}" />
+                                    Width="100" />
 
                 <!-- 主诉 -->
                 <DataGridTextColumn Header="主诉症状"
                                     Binding="{Binding ChiefComplaint}"
-                                    Width="{StaticResource DataGridColumnWidthXLarge}" />
+                                    Width="200" />
 
                 <!-- 诊断 -->
                 <DataGridTextColumn Header="诊断结果"
                                     Binding="{Binding Diagnosis}"
-                                    Width="{StaticResource DataGridColumnWidthLarge}" />
+                                    Width="150" />
 
                 <!-- 状态 -->
-                <DataGridTemplateColumn Header="状态" Width="{StaticResource DataGridStatusColumnWidth}">
+                <DataGridTemplateColumn Header="状态" Width="80">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <Border Background="{Binding StatusColor}"

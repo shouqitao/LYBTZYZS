@@ -17,6 +17,8 @@
 
             <!--  基础转换器 - 引用 Infrastructure 中的统一定义  -->
             <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+            <converters:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter" />
+            <converters:BoolToBrushConverter x:Key="BoolToBrushConverter" />
 
 
             <!--  应用级全局样式覆盖  -->
