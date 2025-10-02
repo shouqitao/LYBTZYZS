@@ -16,6 +16,7 @@ namespace LYBT.Desktop.AdminWorkstation.ViewModels
     {
         private readonly IRegionManager _regionManager;
         private string _currentUserName = string.Empty;
+        private bool _isInitialized = false;
 
         // ����ѡ��״̬
         private bool _isUserManagementSelected = true;
@@ -40,9 +41,6 @@ namespace LYBT.Desktop.AdminWorkstation.ViewModels
 
             // ���ĵ�¼�ɹ��¼�
             EventAggregator.GetEvent<UserLoggedInEvent>().Subscribe(OnUserLoggedIn);
-
-            // Ĭ�ϵ������û�����
-            ExecuteNavigate("UserManagement");
         }
 
         #region Properties
@@ -187,6 +185,18 @@ namespace LYBT.Desktop.AdminWorkstation.ViewModels
         {
             CurrentUserName = args.Username;
             Logger.LogInformation($"����Ա {args.Username} �ѵ�¼");
+        }
+
+        public override void OnNavigatedTo(NavigationContext navigationContext)
+        {
+            base.OnNavigatedTo(navigationContext);
+
+            // UltraThink�޸���ȷ���� XAML ���ؼ��� Region ע���ٵ������û�����
+            if (!_isInitialized)
+            {
+                _isInitialized = true;
+                ExecuteNavigate("UserManagement");
+            }
         }
 
         #endregion
