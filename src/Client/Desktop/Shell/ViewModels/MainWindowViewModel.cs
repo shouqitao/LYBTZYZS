@@ -225,12 +225,10 @@ public class MainWindowViewModel : UnifiedViewModelBase
         // 订阅登录成功事件
         EventAggregator.GetEvent<LoginSuccessEvent>().Subscribe(OnLoginSuccess);
 
-        // 在后台线程检查登录状态，避免阻塞UI线程
-        _ = Task.Run(async () =>
-        {
-            await Task.Delay(100); // 短暂延迟，让UI先完成初始化
-            await CheckLoginStatusAsync();
-        });
+        // UltraThink修复 Issue #856: 移除构造函数中的自动登录检查
+        // 原因：Task.Run在100ms延迟后执行可能早于MainWindow.Loaded，此时ContentRegion尚未注册
+        // 解决：改为在MainWindow.Loaded事件中触发CheckLoginStatusAsync，确保所有Region已就绪
+        // 详见：MainWindow.xaml.cs OnWindowLoaded事件处理器
     }
 
     /// <summary>
@@ -442,6 +440,15 @@ public class MainWindowViewModel : UnifiedViewModelBase
     {
         // 重新检查登录状态
         _ = CheckLoginStatusAsync();
+    }
+
+    /// <summary>
+    /// 窗口加载完成回调 - UltraThink修复 Issue #856
+    /// 在MainWindow.Loaded事件中调用，确保所有Region已注册后再检查登录状态
+    /// </summary>
+    public async Task OnWindowLoadedAsync()
+    {
+        await CheckLoginStatusAsync();
     }
 
     /// <summary>
