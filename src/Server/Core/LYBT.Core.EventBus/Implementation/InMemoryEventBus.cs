@@ -1,7 +1,6 @@
+﻿using System.Collections.Concurrent;
 using LYBT.Core.EventBus.Abstractions;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using System.Collections.Concurrent;
 
 namespace LYBT.Core.EventBus.Implementation;
 
@@ -143,7 +142,7 @@ public class InMemoryEventBus : IEventBus
             if (_subscriptions.TryGetValue(eventType, out var handlers))
             {
                 var updatedHandlers = new ConcurrentBag<Type>(handlers.Where(h => h != handlerType));
-                
+
                 if (updatedHandlers.IsEmpty)
                 {
                     _subscriptions.TryRemove(eventType, out _);

@@ -1,8 +1,5 @@
-using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace LYBT.Infrastructure.Security;
 
@@ -56,7 +53,7 @@ public class KeyRotationBackgroundService : BackgroundService
         {
             // 使用工厂创建密钥管理服务实例
             var keyManagementService = _keyManagementServiceFactory.CreateKeyManagementService();
-            
+
             if (keyManagementService == null)
             {
                 _logger.LogError("无法创建密钥管理服务实例");
@@ -67,9 +64,9 @@ public class KeyRotationBackgroundService : BackgroundService
             if (await keyManagementService.ShouldRotateKeyAsync())
             {
                 _logger.LogInformation("开始JWT密钥轮换");
-                
+
                 var newSecret = await keyManagementService.RotateJwtSecretAsync();
-                
+
                 _logger.LogInformation("JWT密钥轮换成功完成");
             }
             else

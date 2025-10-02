@@ -1,8 +1,4 @@
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Hosting;
-
-namespace LYBT.WebAPI.Extensions.Application
+﻿namespace LYBT.WebAPI.Extensions.Application
 {
     /// <summary>
     /// 中间件配置扩展方法 - 已废弃，请使用UnifiedMiddlewareConfiguration

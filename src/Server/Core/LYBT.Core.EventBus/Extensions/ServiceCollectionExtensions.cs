@@ -1,4 +1,4 @@
-using LYBT.Core.EventBus.Abstractions;
+﻿using LYBT.Core.EventBus.Abstractions;
 using LYBT.Core.EventBus.Implementation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -24,13 +24,13 @@ public static class ServiceCollectionExtensions
     {
         // 注册事件总线为单例
         services.TryAddSingleton<IEventBus, InMemoryEventBus>();
-        
+
         // 注册订阅配置选项
         services.Configure<EventBusSubscriptionOptions>(_ => { });
-        
+
         // 注册托管服务
         services.AddHostedService<Services.EventBusHostedService>();
-        
+
         return services;
     }
 
@@ -50,7 +50,7 @@ public static class ServiceCollectionExtensions
     {
         // 注册处理器
         services.Add(new ServiceDescriptor(typeof(THandler), typeof(THandler), lifetime));
-        
+
         return services;
     }
 
@@ -70,13 +70,13 @@ public static class ServiceCollectionExtensions
     {
         // 注册处理器
         services.AddEventHandler<TEvent, THandler>(lifetime);
-        
+
         // 添加配置回调，在服务构建完成后自动订阅
         services.Configure<EventBusSubscriptionOptions>(options =>
         {
             options.AddSubscription<TEvent, THandler>();
         });
-        
+
         return services;
     }
 }

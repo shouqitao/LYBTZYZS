@@ -1,12 +1,9 @@
+﻿using LYBT.Infrastructure.Data;
+using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.EntityFrameworkCore;
-using LYBT.Infrastructure.Data;
-using LYBT.WebAPI;
-using System;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace LYBT.Tests.Configuration
@@ -45,7 +42,7 @@ namespace LYBT.Tests.Configuration
                     // 注册SQL Server测试数据库
                     var configuration = services.BuildServiceProvider().GetRequiredService<IConfiguration>();
                     var connectionString = configuration.GetConnectionString("SqlServerConnection");
-                    
+
                     if (string.IsNullOrEmpty(connectionString))
                     {
                         throw new InvalidOperationException("未找到SQL Server连接字符串配置");
@@ -115,13 +112,13 @@ namespace LYBT.Tests.Configuration
                 // 清理所有表的数据，但保留表结构
                 var tables = new[]
                 {
-                    "Prescriptions", "ConsultationRecords", "MedicalCases", 
+                    "Prescriptions", "ConsultationRecords", "MedicalCases",
                     "Patients", "Herbs", "Formulas", "Users"
                 };
 
                 foreach (var table in tables)
                 {
-                    await _context.Database.ExecuteSqlRawAsync($"DELETE FROM [{table}]");
+                    await _context.Database.ExecuteSqlAsync($"DELETE FROM [{table}]");
                 }
 
                 _logger.LogInformation("测试数据已清理");

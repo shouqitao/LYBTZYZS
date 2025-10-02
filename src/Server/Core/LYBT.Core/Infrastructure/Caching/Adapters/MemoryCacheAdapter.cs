@@ -1,4 +1,4 @@
-#nullable enable
+﻿#nullable enable
 
 using System.Collections.Concurrent;
 using LYBT.Core.Infrastructure.Caching.Interfaces;
@@ -504,8 +504,8 @@ namespace LYBT.Core.Infrastructure.Caching.Adapters
             // 计算逐出速率
             var now = DateTime.UtcNow;
             var timeSinceLastCalculation = (now - _lastEvictionRateCalculation).TotalMinutes;
-            var evictionRate = timeSinceLastCalculation > 0 
-                ? _evictionCountSinceLastCalculation / timeSinceLastCalculation 
+            var evictionRate = timeSinceLastCalculation > 0
+                ? _evictionCountSinceLastCalculation / timeSinceLastCalculation
                 : 0;
 
             var stats = new CacheStatistics

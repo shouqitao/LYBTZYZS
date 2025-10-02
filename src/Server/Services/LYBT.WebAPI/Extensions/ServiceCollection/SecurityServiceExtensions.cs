@@ -1,4 +1,4 @@
-using LYBT.Infrastructure.Security;
+﻿using LYBT.Infrastructure.Security;
 using Microsoft.AspNetCore.DataProtection;
 
 namespace LYBT.WebAPI.Extensions.ServiceCollection
@@ -31,7 +31,7 @@ namespace LYBT.WebAPI.Extensions.ServiceCollection
             // 移除对不存在服务的注册，使用简化的密钥管理
             // 注册密钥管理服务
             services.AddScoped<IKeyManagementService, KeyManagementService>();
-            
+
             // 注册密钥管理服务工厂（避免Service Locator反模式）
             services.AddSingleton<IKeyManagementServiceFactory, KeyManagementServiceFactory>();
 

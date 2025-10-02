@@ -1,4 +1,4 @@
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Infrastructure.Data.Monitoring
@@ -41,7 +41,7 @@ namespace LYBT.Infrastructure.Data.Monitoring
         public void RecordQueryExecution(string commandText, double durationMs, bool isSlowQuery)
         {
             var queryPattern = ExtractQueryPattern(commandText);
-            
+
             _statistics.AddOrUpdate(queryPattern,
                 // 新增
                 key =>
@@ -56,12 +56,12 @@ namespace LYBT.Infrastructure.Data.Monitoring
                         FirstExecutedAt = DateTime.UtcNow,
                         LastExecutedAt = DateTime.UtcNow
                     };
-                    
+
                     if (isSlowQuery)
                     {
                         stats.SlowExecutions.Add($"{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss} - {durationMs:F2}ms");
                     }
-                    
+
                     return stats;
                 },
                 // 更新
@@ -74,7 +74,7 @@ namespace LYBT.Infrastructure.Data.Monitoring
                         existing.MaxDurationMs = Math.Max(existing.MaxDurationMs, durationMs);
                         existing.MinDurationMs = Math.Min(existing.MinDurationMs, durationMs);
                         existing.LastExecutedAt = DateTime.UtcNow;
-                        
+
                         if (isSlowQuery && existing.SlowExecutions.Count < _maxSlowExecutionsPerQuery)
                         {
                             existing.SlowExecutions.Add($"{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss} - {durationMs:F2}ms");
@@ -97,16 +97,16 @@ namespace LYBT.Infrastructure.Data.Monitoring
                 commandText,
                 @"@p\d+|@__[\w_]+_\d+|'[^']*'|\b\d+\b",
                 "?");
-            
+
             // 移除多余空格
             pattern = System.Text.RegularExpressions.Regex.Replace(pattern, @"\s+", " ");
-            
+
             // 截断过长的模式
             if (pattern.Length > 500)
             {
                 pattern = pattern.Substring(0, 497) + "...";
             }
-            
+
             return pattern.Trim();
         }
 
@@ -123,7 +123,7 @@ namespace LYBT.Infrastructure.Data.Monitoring
             if (timeDiff > 0 && timeDiff < 60) // 1分钟内
             {
                 var queryRate = stats.ExecutionCount / timeDiff; // 每秒查询数
-                
+
                 if (queryRate > 5) // 每秒超过5次相同查询
                 {
                     _logger.LogWarning(

@@ -1,6 +1,4 @@
-using Microsoft.AspNetCore.Hosting;
-
-namespace LYBT.WebAPI.Middleware
+﻿namespace LYBT.WebAPI.Middleware
 {
     /// <summary>
     /// 安全头中间件 - 添加安全相关的HTTP响应头

@@ -1,12 +1,12 @@
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using System.Text;
-using Microsoft.Extensions.Configuration;
+using LYBT.Infrastructure.Configuration.Options;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using LYBT.Infrastructure.Configuration.Options;
 
 namespace LYBT.Infrastructure.Security
 {
@@ -20,7 +20,7 @@ namespace LYBT.Infrastructure.Security
         private readonly ILogger<SecurityKeyService> _logger;
         private readonly JwtOptions _jwtOptions;
         private readonly IWebHostEnvironment _environment;
-        
+
         private SecurityKey? _currentKey;
         private readonly List<SecurityKey> _validationKeys = new();
         private DateTime _keyRotationTime;
@@ -36,7 +36,7 @@ namespace LYBT.Infrastructure.Security
             _logger = logger;
             _jwtOptions = jwtOptions.Value;
             _environment = environment;
-            
+
             InitializeKeys();
         }
 
@@ -49,9 +49,9 @@ namespace LYBT.Infrastructure.Security
                 if (_environment.IsProduction())
                 {
                     // 生产环境：从Azure Key Vault或环境变量获取
-                    secretKey = _configuration["Authentication:Jwt:SecretKey"] 
+                    secretKey = _configuration["Authentication:Jwt:SecretKey"]
                         ?? Environment.GetEnvironmentVariable("JWT_SECRET_KEY");
-                        
+
                     if (string.IsNullOrEmpty(secretKey))
                     {
                         _logger.LogError("JWT密钥未配置！请设置环境变量JWT_SECRET_KEY");
@@ -62,7 +62,7 @@ namespace LYBT.Infrastructure.Security
                 {
                     // 开发环境：优先使用用户机密，其次使用配置文件
                     secretKey = _configuration["Authentication:Jwt:SecretKey"];
-                    
+
                     if (string.IsNullOrEmpty(secretKey))
                     {
                         // 如果没有配置，生成一个临时密钥（仅开发环境）
@@ -73,7 +73,7 @@ namespace LYBT.Infrastructure.Security
                 else
                 {
                     // 测试或其他环境
-                    secretKey = _configuration["Authentication:Jwt:SecretKey"] 
+                    secretKey = _configuration["Authentication:Jwt:SecretKey"]
                         ?? _jwtOptions.Secret;
                 }
 
@@ -87,7 +87,7 @@ namespace LYBT.Infrastructure.Security
 
                 // 设置密钥轮换时间（30天后）
                 _keyRotationTime = DateTime.UtcNow.AddDays(30);
-                
+
                 _logger.LogInformation("JWT密钥初始化成功，版本：{KeyVersion}", _currentKeyVersion);
             }
             catch (Exception ex)
@@ -135,7 +135,7 @@ namespace LYBT.Infrastructure.Security
             {
                 throw new InvalidOperationException("JWT signing key is not initialized");
             }
-            
+
             return Task.FromResult(_currentKey);
         }
 
@@ -203,12 +203,12 @@ namespace LYBT.Infrastructure.Security
         public Task<bool> IsKeyRotationRequiredAsync()
         {
             var isRequired = DateTime.UtcNow >= _keyRotationTime;
-            
+
             if (isRequired)
             {
                 _logger.LogWarning("密钥即将过期，需要进行轮换");
             }
-            
+
             return Task.FromResult(isRequired);
         }
     }

@@ -1,14 +1,14 @@
-using AutoMapper;
-using MedicalCaseEntity = LYBT.Entities.MedicalCase.MedicalCase;
-using ConsultationEntity = LYBT.Entities.Consultation.Consultation;
-using PrescriptionEntity = LYBT.Entities.Prescriptions.Prescription;
+﻿using AutoMapper;
 using LYBT.Module.MedicalCase.Interfaces;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Consultation;
+using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.Extensions.Logging;
+using ConsultationEntity = LYBT.Entities.Consultation.Consultation;
+using MedicalCaseEntity = LYBT.Entities.MedicalCase.MedicalCase;
+using PrescriptionEntity = LYBT.Entities.Prescriptions.Prescription;
 
 namespace LYBT.Module.MedicalCase.Services
 {
@@ -87,7 +87,7 @@ namespace LYBT.Module.MedicalCase.Services
                 // 使用业务规则类验证
                 var existingCases = await _repository.GetByPatientIdAsync(dto.PatientId);
                 var validation = MedicalCaseBusinessRules.ValidateNewCaseCreation(dto.PatientId, existingCases);
-                
+
                 if (!validation.IsValid)
                 {
                     return ServiceResult<MedicalCaseDto>.Failure(validation.ErrorMessage);
@@ -95,10 +95,10 @@ namespace LYBT.Module.MedicalCase.Services
 
                 var entity = _mapper.Map<MedicalCaseEntity>(dto);
                 entity.ConsultationDate = DateTime.Now;
-                
+
                 var result = await _repository.AddAsync(entity);
                 var resultDto = _mapper.Map<MedicalCaseDto>(result);
-                
+
                 return ServiceResult<MedicalCaseDto>.Success(resultDto);
             }
             catch (Exception ex)
@@ -129,7 +129,7 @@ namespace LYBT.Module.MedicalCase.Services
                 _mapper.Map(dto, entity);
                 var result = await _repository.UpdateAsync(entity);
                 var resultDto = _mapper.Map<MedicalCaseDto>(result);
-                
+
                 return ServiceResult<MedicalCaseDto>.Success(resultDto);
             }
             catch (Exception ex)
@@ -198,7 +198,7 @@ namespace LYBT.Module.MedicalCase.Services
                 // 验证是否可以创建新医案
                 var existingCases = await _repository.GetByPatientIdAsync(caseDto.PatientId);
                 var validation = MedicalCaseBusinessRules.ValidateNewCaseCreation(caseDto.PatientId, existingCases);
-                
+
                 if (!validation.IsValid)
                 {
                     return ServiceResult<MedicalCaseDto>.Failure(validation.ErrorMessage);
@@ -207,12 +207,12 @@ namespace LYBT.Module.MedicalCase.Services
                 // 创建医案主体
                 var medicalCase = _mapper.Map<MedicalCaseEntity>(caseDto);
                 medicalCase.ConsultationDate = DateTime.Now;
-                
+
                 // 创建诊疗记录（共享主键）
                 var consultation = _mapper.Map<ConsultationEntity>(consultationDto);
                 consultation.Id = medicalCase.Id;
                 medicalCase.Consultation = consultation;
-                
+
                 // 如果有处方，创建处方
                 if (prescriptionDto != null)
                 {
@@ -222,11 +222,11 @@ namespace LYBT.Module.MedicalCase.Services
                     prescription.UserId = medicalCase.DoctorId;
                     medicalCase.Prescription = prescription;
                 }
-                
+
                 // 保存聚合
                 var result = await _repository.AddAsync(medicalCase);
                 var resultDto = _mapper.Map<MedicalCaseDto>(result);
-                
+
                 return ServiceResult<MedicalCaseDto>.Success(resultDto);
             }
             catch (Exception ex)

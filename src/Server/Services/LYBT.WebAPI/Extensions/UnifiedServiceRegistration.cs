@@ -1,32 +1,22 @@
-using System.Text;
+﻿using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json.Serialization;
-
-using LYBT.Core.Infrastructure.Caching.Adapters;
-using LYBT.Core.Infrastructure.Caching.Interfaces;
-using LYBT.Core.Infrastructure.Configuration.Options;
-using LYBT.WebAPI.Services;
-using LYBT.Core.Infrastructure.Configuration.Services;
 using LYBT.Core.Infrastructure.Configuration.Extensions;
+using LYBT.Core.Infrastructure.Configuration.Options;
 using LYBT.Module.Auth;
-using LYBT.Module.Users;
 using LYBT.Module.Consultation;
-using LYBT.Module.Herbs;
-using LYBT.Module.Prescriptions;
-using LYBT.Module.Patients;
 using LYBT.Module.Formula;
+using LYBT.Module.Herbs;
 using LYBT.Module.MedicalCase;
-using LYBT.WebAPI.Configuration;
+using LYBT.Module.Patients;
+using LYBT.Module.Prescriptions;
+using LYBT.Module.Users;
 using LYBT.WebAPI.Extensions.ServiceCollection;
 using LYBT.WebAPI.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.IdentityModel.Tokens;
-using AutoMapper;
 
 
 namespace LYBT.WebAPI.Extensions;
@@ -99,7 +89,7 @@ public static class UnifiedServiceRegistration
         {
             var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production";
             var errors = string.Join(Environment.NewLine, validationResult.Errors);
-            
+
             if (environment.Equals("Production", StringComparison.OrdinalIgnoreCase))
             {
                 throw new InvalidOperationException($"生产环境配置验证失败：{Environment.NewLine}{errors}");
@@ -144,17 +134,17 @@ public static class UnifiedServiceRegistration
             options.AddPolicy("FormulasCache", builder =>
                 builder.Expire(TimeSpan.FromHours(2))
                        .Tag("formulas"));
-            
+
             // 患者数据缓存策略（30分钟）
             options.AddPolicy("PatientsCache", builder =>
                 builder.Expire(TimeSpan.FromMinutes(30))
                        .Tag("patients"));
-            
+
             // 处方缓存策略（10分钟，更新频繁）
             options.AddPolicy("PrescriptionsCache", builder =>
                 builder.Expire(TimeSpan.FromMinutes(10))
                        .Tag("prescriptions"));
-            
+
             // 病例缓存策略（20分钟）
             options.AddPolicy("MedicalCaseCache", builder =>
                 builder.Expire(TimeSpan.FromMinutes(20))
@@ -275,7 +265,7 @@ public static class UnifiedServiceRegistration
     {
         // =========== UltraThink Phase 2：使用统一配置 ===========
         var lybtOptions = configuration.GetLybtOptions();
-        
+
         // JWT 认证 - 从统一配置读取
         try
         {
@@ -314,25 +304,25 @@ public static class UnifiedServiceRegistration
                         ValidateAudience = true,
                         ValidateLifetime = true,
                         ValidateIssuerSigningKey = true,
-                        
+
                         // 发行者和接收者
                         ValidIssuer = issuer,
                         ValidAudience = audience,
-                        
+
                         // 密钥设置 - 支持多密钥验证
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
-                        
+
                         // 时钟偏差 - 使用配置值
                         ClockSkew = TimeSpan.FromSeconds(clockSkew),
-                        
+
                         // 增强安全设置
                         RequireExpirationTime = true,
                         RequireSignedTokens = true,
                         ValidateTokenReplay = false, // 如果需要防重放攻击可设为true
-                        
+
                         // Token类型验证
                         ValidTypes = new[] { "JWT" },
-                        
+
                         // 严格的签名验证
                         TryAllIssuerSigningKeys = true // 启用多密钥验证支持密钥轮换
                     };
@@ -385,31 +375,31 @@ public static class UnifiedServiceRegistration
     {
         // 使用简化的模块注册方法
         // 每个模块负责注册自己的服务、仓储、验证器等
-        
+
         // 1. 认证模块
         services.AddAuthModule(configuration);
-        
+
         // 2. 用户模块
         services.AddUsersModule(configuration);
-        
+
         // 3. 患者模块  
         services.AddPatientsModule(configuration);
-        
+
         // 4. 中药模块
         services.AddHerbsModule(configuration);
-        
+
         // 5. 问诊模块
         services.AddConsultationModule(configuration);
-        
+
         // 6. 处方模块（保持原有注册，等待后续改造）
         services.AddPrescriptionsModule();
-        
+
         // 7. 配方模块（保持原有注册，等待后续改造）
         services.AddFormulaModule();
-        
+
         // 8. 病例模块（保持原有注册，等待后续改造）
         services.AddMedicalCaseModule();
-        
+
         return services;
     }
 
@@ -450,7 +440,7 @@ public static class UnifiedServiceRegistration
             var configuration = serviceProvider.GetRequiredService<IConfiguration>();
             var lybtOptions = configuration.GetLybtOptions();
             var swaggerConfig = lybtOptions.Application.WebApi.Swagger;
-            
+
             c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
             {
                 Title = swaggerConfig.Title,
@@ -565,7 +555,7 @@ public static class UnifiedServiceRegistration
                 "KebabCaseUpper" => System.Text.Json.JsonNamingPolicy.KebabCaseUpper,
                 _ => null // PascalCase (默认)
             };
-            
+
             options.JsonSerializerOptions.PropertyNameCaseInsensitive = true; // 忽略大小写
             options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
             options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
@@ -573,7 +563,7 @@ public static class UnifiedServiceRegistration
             options.JsonSerializerOptions.WriteIndented = false;
             options.JsonSerializerOptions.IgnoreReadOnlyProperties = jsonConfig.IgnoreReadOnlyProperties;
             options.JsonSerializerOptions.AllowTrailingCommas = jsonConfig.AllowTrailingCommas;
-            
+
             // JSON 编码：使用统一配置的设置
             options.JsonSerializerOptions.Encoder = jsonConfig.UnsafeRelaxedEscaping
                 ? JavaScriptEncoder.UnsafeRelaxedJsonEscaping
@@ -628,8 +618,8 @@ public static class UnifiedServiceRegistration
                     {
                         PermitLimit = rateLimitingConfig.GlobalLimit.PermitLimit,
                         Window = TimeSpan.FromSeconds(rateLimitingConfig.GlobalLimit.WindowSeconds),
-                        QueueProcessingOrder = rateLimitingConfig.GlobalLimit.QueueProcessingOrder == QueueProcessingOrder.OldestFirst 
-                            ? System.Threading.RateLimiting.QueueProcessingOrder.OldestFirst 
+                        QueueProcessingOrder = rateLimitingConfig.GlobalLimit.QueueProcessingOrder == QueueProcessingOrder.OldestFirst
+                            ? System.Threading.RateLimiting.QueueProcessingOrder.OldestFirst
                             : System.Threading.RateLimiting.QueueProcessingOrder.NewestFirst,
                         QueueLimit = 0 // 不使用队列，直接拒绝
                     });
@@ -645,7 +635,7 @@ public static class UnifiedServiceRegistration
                                    IsPrivateIp(ip);
 
                 // 如果是白名单IP，使用更宽松的限制
-                var limit = isWhitelisted 
+                var limit = isWhitelisted
                     ? rateLimitingConfig.LoginLimit.PermitLimit * 2  // 白名单IP双倍限制
                     : rateLimitingConfig.LoginLimit.PermitLimit;
 
@@ -655,8 +645,8 @@ public static class UnifiedServiceRegistration
                     {
                         PermitLimit = limit,
                         Window = TimeSpan.FromSeconds(rateLimitingConfig.LoginLimit.WindowSeconds),
-                        QueueProcessingOrder = rateLimitingConfig.LoginLimit.QueueProcessingOrder == QueueProcessingOrder.OldestFirst 
-                            ? System.Threading.RateLimiting.QueueProcessingOrder.OldestFirst 
+                        QueueProcessingOrder = rateLimitingConfig.LoginLimit.QueueProcessingOrder == QueueProcessingOrder.OldestFirst
+                            ? System.Threading.RateLimiting.QueueProcessingOrder.OldestFirst
                             : System.Threading.RateLimiting.QueueProcessingOrder.NewestFirst,
                         QueueLimit = 0
                     });
@@ -679,8 +669,8 @@ public static class UnifiedServiceRegistration
                     {
                         PermitLimit = limit,
                         Window = TimeSpan.FromSeconds(rateLimitingConfig.ApiLimit.WindowSeconds),
-                        QueueProcessingOrder = rateLimitingConfig.ApiLimit.QueueProcessingOrder == QueueProcessingOrder.OldestFirst 
-                            ? System.Threading.RateLimiting.QueueProcessingOrder.OldestFirst 
+                        QueueProcessingOrder = rateLimitingConfig.ApiLimit.QueueProcessingOrder == QueueProcessingOrder.OldestFirst
+                            ? System.Threading.RateLimiting.QueueProcessingOrder.OldestFirst
                             : System.Threading.RateLimiting.QueueProcessingOrder.NewestFirst,
                         QueueLimit = 0
                     });

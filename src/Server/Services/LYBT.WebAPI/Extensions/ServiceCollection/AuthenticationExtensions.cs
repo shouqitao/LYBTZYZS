@@ -1,11 +1,4 @@
-using System.Text;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.IdentityModel.Tokens;
-
-namespace LYBT.WebAPI.Extensions.ServiceCollection
+﻿namespace LYBT.WebAPI.Extensions.ServiceCollection
 {
     /// <summary>
     /// JWT认证相关的扩展方法 - 已废弃，请使用UnifiedServiceRegistration

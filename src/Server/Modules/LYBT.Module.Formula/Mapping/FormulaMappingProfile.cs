@@ -1,4 +1,4 @@
-using AutoMapper;
+﻿using AutoMapper;
 using LYBT.Entities.Formula;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Enums;
@@ -30,7 +30,7 @@ namespace LYBT.Module.Formula.Mapping
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => CommonStatus.Enabled))
                 .ForMember(dest => dest.Property, opt => opt.Ignore()) // 实体特有字段，不从DTO更新
-                
+
                 // 忽略BaseEntity的审计字段
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
                 .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
@@ -38,7 +38,7 @@ namespace LYBT.Module.Formula.Mapping
                 .ForMember(dest => dest.UpdatedBy, opt => opt.Ignore())
                 .ForMember(dest => dest.RowVersion, opt => opt.Ignore())
                 .ForMember(dest => dest.IsDeleted, opt => opt.Ignore())
-                
+
                 // 忽略导航属性
                 .ForMember(dest => dest.Herbs, opt => opt.Ignore())
 
@@ -54,7 +54,7 @@ namespace LYBT.Module.Formula.Mapping
                 .ForMember(dest => dest.Status, opt => opt.Ignore()) // 状态不通过UpdateDto更新
                 .ForMember(dest => dest.Property, opt => opt.Ignore()) // 保持原有Property值
                 .ForMember(dest => dest.Herbs, opt => opt.Ignore()) // Herbs需要特殊处理，不直接映射
-                
+
                 // 忽略BaseEntity的审计字段
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
                 .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())

@@ -1,4 +1,4 @@
-namespace LYBT.Module.Consultation.Options
+﻿namespace LYBT.Module.Consultation.Options
 {
     /// <summary>
     /// 诊疗模块配置选项

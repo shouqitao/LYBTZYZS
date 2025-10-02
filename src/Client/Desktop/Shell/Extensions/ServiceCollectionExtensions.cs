@@ -1,11 +1,11 @@
 ﻿using System.Net.Http;
 using AutoMapper;
-using Microsoft.Extensions.Configuration;
 using LYBT.Desktop.Infrastructure.Commands;
 using LYBT.Desktop.Services.Modules;
 using LYBT.Desktop.Services.Performance;
 using LYBT.Desktop.Services.Repositories.Interfaces;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Prism.Ioc;
 

@@ -1,15 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using FluentAssertions;
-using LYBT.Module.Consultation.Interfaces;
-using LYBT.Module.Consultation.Services;
-using LYBT.Shared.Models.Common;
-using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Shared.Models.Contracts.Consultation;
-using LYBT.Shared.Models.Enums;
-using Moq;
-using Xunit;
+﻿using LYBT.Module.Consultation.Services;
 
 namespace LYBT.Module.Consultation.Tests
 {
@@ -26,7 +15,7 @@ namespace LYBT.Module.Consultation.Tests
         public SimpleConsultationServiceTests()
         {
             // UltraThink双层架构Mock配置
-}
+        }
 
-}
+    }
 }

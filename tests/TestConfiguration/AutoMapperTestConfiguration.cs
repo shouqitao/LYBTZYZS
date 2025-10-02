@@ -1,7 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
+﻿using System.Reflection;
 using AutoMapper;
 // using LYBT.Module.Auth.Mapping; // 已简化，Auth模块不再使用AutoMapper
 using LYBT.Module.Consultation.Mapping;
@@ -76,7 +73,7 @@ namespace LYBT.Tests.Common
                     // 只注册基础的AutoMapper配置，不加载复杂的Profile
                     cfg.AllowNullDestinationValues = true;
                     cfg.AllowNullCollections = true;
-                    
+
                     // 添加基础的映射配置
                     ConfigureBasicMappings(cfg);
                 }
@@ -144,8 +141,8 @@ namespace LYBT.Tests.Common
             {
                 // 获取所有已加载的程序集
                 var assemblies = AppDomain.CurrentDomain.GetAssemblies()
-                    .Where(a => !a.IsDynamic && 
-                               !a.FullName.StartsWith("System") && 
+                    .Where(a => !a.IsDynamic &&
+                               !a.FullName.StartsWith("System") &&
                                !a.FullName.StartsWith("Microsoft") &&
                                a.FullName.Contains("LYBT"))
                     .ToList();
@@ -157,11 +154,11 @@ namespace LYBT.Tests.Common
                     try
                     {
                         var types = assembly.GetTypes()
-                            .Where(t => t.IsClass && 
-                                       !t.IsAbstract && 
+                            .Where(t => t.IsClass &&
+                                       !t.IsAbstract &&
                                        typeof(Profile).IsAssignableFrom(t))
                             .ToList();
-                        
+
                         profileTypes.AddRange(types);
                     }
                     catch (ReflectionTypeLoadException ex)
@@ -217,7 +214,7 @@ namespace LYBT.Tests.Common
             {
                 // 注册基础Profile
                 RegisterKnownProfiles(cfg);
-                
+
                 // 应用自定义配置
                 configure?.Invoke(cfg);
             });

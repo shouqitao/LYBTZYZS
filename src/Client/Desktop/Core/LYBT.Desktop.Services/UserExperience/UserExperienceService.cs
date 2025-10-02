@@ -4,8 +4,8 @@ using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Threading;
-using Microsoft.Extensions.Logging;
 using LYBT.Desktop.Services.Notifications;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Services.UserExperience
 {

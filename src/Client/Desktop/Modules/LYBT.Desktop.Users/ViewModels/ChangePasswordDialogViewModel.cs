@@ -1,14 +1,12 @@
-using System;
-using System.Threading.Tasks;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
+using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Models.ViewModels.Base;
+using LYBT.Desktop.Services.Business;
+using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Regions;
 using Prism.Services.Dialogs;
-using Microsoft.Extensions.Logging;
-using LYBT.Desktop.Infrastructure.Interfaces;
-using LYBT.Desktop.Models.ViewModels.Base;
-using LYBT.Desktop.Services.Business;
 
 namespace LYBT.Desktop.Users.ViewModels
 {

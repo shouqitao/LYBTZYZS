@@ -1,5 +1,4 @@
-using System.Linq;
-using System.Reflection;
+﻿using System.Reflection;
 using NetArchTest.Rules;
 using Xunit;
 

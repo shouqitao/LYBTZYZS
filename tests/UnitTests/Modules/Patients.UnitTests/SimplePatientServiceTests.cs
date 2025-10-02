@@ -1,7 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using AutoMapper;
+﻿using AutoMapper;
 using FluentAssertions;
 using LYBT.Entities.Patients;
 using LYBT.Module.Patients.Interfaces;
@@ -39,7 +36,7 @@ namespace LYBT.Module.Patients.Tests
             var patientId = Guid.NewGuid();
             var patient = new Patient { Id = patientId, Name = "测试患者" };
             var patientDto = new PatientDto { Id = patientId, Name = "测试患者" };
-            
+
             _mockRepository.Setup(r => r.GetByIdAsync(patientId)).ReturnsAsync(patient);
             _mockMapper.Setup(m => m.Map<PatientDto>(patient)).Returns(patientDto);
 
@@ -57,21 +54,21 @@ namespace LYBT.Module.Patients.Tests
         public async Task CreateAsync_Should_Create_New_Patient()
         {
             // Arrange
-            var createDto = new PatientCreateDto 
-            { 
+            var createDto = new PatientCreateDto
+            {
                 Name = "新患者",
                 Gender = LYBT.Shared.Models.Enums.Gender.Male,
                 PhoneNumber = "13800138000"
             };
-            
-            var patient = new Patient 
-            { 
+
+            var patient = new Patient
+            {
                 Id = Guid.NewGuid(),
                 Name = "新患者"
             };
-            
-            var patientDto = new PatientDto 
-            { 
+
+            var patientDto = new PatientDto
+            {
                 Id = patient.Id,
                 Name = "新患者"
             };
@@ -139,7 +136,7 @@ namespace LYBT.Module.Patients.Tests
                 new Patient { Id = Guid.NewGuid(), Name = "患者1" },
                 new Patient { Id = Guid.NewGuid(), Name = "患者2" }
             };
-            
+
             var pagedResult = new PagedResult<Patient>
             {
                 Items = patients,

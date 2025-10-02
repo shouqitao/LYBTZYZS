@@ -1,11 +1,11 @@
-using System.IdentityModel.Tokens.Jwt;
+﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 using LYBT.Infrastructure.Configuration.Options;
 using LYBT.Module.Auth.Interfaces;
 using LYBT.Shared.Models.Enums;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 
 namespace LYBT.Module.Auth.Services;
 
@@ -31,12 +31,12 @@ public class JwtService : IJwtService
     {
         if (string.IsNullOrEmpty(userId))
             throw new ArgumentException("用户ID不能为空", nameof(userId));
-        
+
         if (string.IsNullOrEmpty(userName))
             throw new ArgumentException("用户名不能为空", nameof(userName));
 
         var jwtConfig = _options.Authentication.Jwt;
-        
+
         // 创建Claims
         var claims = new[]
         {
@@ -76,12 +76,12 @@ public class JwtService : IJwtService
     {
         if (string.IsNullOrEmpty(userId))
             throw new ArgumentException("用户ID不能为空", nameof(userId));
-        
+
         if (string.IsNullOrEmpty(userName))
             throw new ArgumentException("用户名不能为空", nameof(userName));
 
         var jwtConfig = _options.Authentication.Jwt;
-        
+
         // 创建基础Claims
         var claims = new List<Claim>
         {

@@ -1,7 +1,6 @@
-using AutoMapper;
+﻿using AutoMapper;
 using LYBT.Entities.Herbs;
 using LYBT.Module.Herbs.Interfaces;
-using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
 using Microsoft.Extensions.Logging;
@@ -120,8 +119,8 @@ namespace LYBT.Module.Herbs.Services
         {
             try
             {
-                var entities = await _repository.FindAsync(h => 
-                    h.Name.Contains(keyword) || 
+                var entities = await _repository.FindAsync(h =>
+                    h.Name.Contains(keyword) ||
                     (h.PinYinCode != null && h.PinYinCode.Contains(keyword)));
                 var dtos = _mapper.Map<List<HerbDto>>(entities);
                 return ServiceResult<List<HerbDto>>.Success(dtos);
