@@ -10,7 +10,7 @@
         <ResourceDictionary>
             <!--  合并统一设计系统资源  -->
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/LYBT.Desktop.Shell;component/../Resources/UnifiedDesignSystem.xaml" />
+                <ResourceDictionary Source="Resources/UnifiedDesignSystem.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
             <!--  简化的资源字典 - 仅包含基础转换器  -->
