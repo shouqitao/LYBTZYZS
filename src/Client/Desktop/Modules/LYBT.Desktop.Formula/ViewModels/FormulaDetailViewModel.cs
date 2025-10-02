@@ -414,10 +414,10 @@ namespace LYBT.Desktop.Formula.ViewModels
 
                 var updateDto = new FormulaUpdateDto
                 {
-                    Name = FormulaName.Trim(),
-                    Effect = string.IsNullOrWhiteSpace(Effect) ? null : Effect.Trim(),
-                    Usage = string.IsNullOrWhiteSpace(Usage) ? null : Usage.Trim(),
-                    Remark = string.IsNullOrWhiteSpace(Remark) ? null : Remark.Trim(),
+                    Name = FormulaName!.Trim(),
+                    Effect = string.IsNullOrWhiteSpace(Effect) ? null! : Effect!.Trim(),
+                    Usage = string.IsNullOrWhiteSpace(Usage) ? null! : Usage!.Trim(),
+                    Remark = string.IsNullOrWhiteSpace(Remark) ? null! : Remark!.Trim(),
                     IsShared = IsShared,
                     Herbs = HerbItems.Select(h => new FormulaHerbItemUpdateDto
                     {
@@ -467,9 +467,9 @@ namespace LYBT.Desktop.Formula.ViewModels
                 var createDto = new FormulaCreateDto
                 {
                     Name = $"{Formula.Name}_副本",
-                    Effect = Formula.Effect,
-                    Usage = Formula.Usage,
-                    Remark = Formula.Remark,
+                    Effect = Formula.Effect!,
+                    Usage = Formula.Usage!,
+                    Remark = Formula.Remark!,
                     IsShared = false, // 副本默认不共享
                     Herbs = Formula.Herbs?.Select(h => new FormulaHerbItemCreateDto
                     {

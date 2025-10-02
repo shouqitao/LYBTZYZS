@@ -459,7 +459,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
         /// <summary>
         /// 订阅事件
         /// </summary>
-        private void SubscribeToEvents()
+        protected override void SubscribeToEvents()
         {
             // 订阅价格重算事件
             _commandHandler.OnPriceRecalculated += OnPriceRecalculated;

@@ -139,7 +139,7 @@ public class MainWindowViewModel : UnifiedViewModelBase
     public DelegateCommand ShowSettingsCommand { get; set; } = null!;
 
     /// <summary>主题切换命令</summary>
-    public DelegateCommand ToggleThemeCommand { get; set; }
+    public DelegateCommand ToggleThemeCommand { get; set; } = null!;
 
     #endregion 命令属性
 

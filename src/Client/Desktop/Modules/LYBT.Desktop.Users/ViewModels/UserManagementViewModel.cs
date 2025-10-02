@@ -90,27 +90,27 @@ namespace LYBT.Desktop.Users.ViewModels
         /// <summary>
         /// �༭�û�����
         /// </summary>
-        public DelegateCommand<UserDto> EditUserCommand { get; private set; }
+        public DelegateCommand<UserDto> EditUserCommand { get; private set; } = null!;
 
         /// <summary>
         /// ������������
         /// </summary>
-        public DelegateCommand<UserDto> ResetPasswordCommand { get; private set; }
+        public DelegateCommand<UserDto> ResetPasswordCommand { get; private set; } = null!;
 
         /// <summary>
         /// ����/�����û�����
         /// </summary>
-        public DelegateCommand<UserDto> ToggleUserStatusCommand { get; private set; }
+        public DelegateCommand<UserDto> ToggleUserStatusCommand { get; private set; } = null!;
 
         /// <summary>
         /// �鿴��������
         /// </summary>
-        public DelegateCommand<UserDto> ViewDetailsCommand { get; private set; }
+        public DelegateCommand<UserDto> ViewDetailsCommand { get; private set; } = null!;
 
         /// <summary>
         /// ���ɸѡ����
         /// </summary>
-        public DelegateCommand ClearFiltersCommand { get; private set; }
+        public DelegateCommand ClearFiltersCommand { get; private set; } = null!;
 
         #endregion
 
@@ -207,7 +207,7 @@ namespace LYBT.Desktop.Users.ViewModels
             {
                 Logger.LogError(ex, "�����û�����ʱ�����쳣");
                 var contextMessage = $"加载用户列表 - 模块:{nameof(UserManagementViewModel)}";
-                await UserNotificationService?.HandleExceptionAsync(ex, contextMessage);
+                await UserNotificationService!.HandleExceptionAsync(ex, contextMessage);
 
                 TotalCount = 0;
                 return new List<UserDto>();
