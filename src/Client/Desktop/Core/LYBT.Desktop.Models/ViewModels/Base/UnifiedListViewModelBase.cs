@@ -145,42 +145,42 @@ namespace LYBT.Desktop.Models.ViewModels.Base
         /// <summary>
         /// 搜索命令
         /// </summary>
-        public DelegateCommand SearchCommand { get; private set; }
+        public DelegateCommand SearchCommand { get; private set; } = null!;
 
         /// <summary>
         /// 刷新命令
         /// </summary>
-        public DelegateCommand RefreshCommand { get; private set; }
+        public DelegateCommand RefreshCommand { get; private set; } = null!;
 
         /// <summary>
         /// 添加命令
         /// </summary>
-        public DelegateCommand AddCommand { get; private set; }
+        public DelegateCommand AddCommand { get; private set; } = null!;
 
         /// <summary>
         /// 删除命令
         /// </summary>
-        public DelegateCommand<T> DeleteCommand { get; private set; }
+        public DelegateCommand<T> DeleteCommand { get; private set; } = null!;
 
         /// <summary>
         /// 批量删除命令
         /// </summary>
-        public DelegateCommand BatchDeleteCommand { get; private set; }
+        public DelegateCommand BatchDeleteCommand { get; private set; } = null!;
 
         /// <summary>
         /// 上一页命令
         /// </summary>
-        public DelegateCommand PreviousPageCommand { get; private set; }
+        public DelegateCommand PreviousPageCommand { get; private set; } = null!;
 
         /// <summary>
         /// 下一页命令
         /// </summary>
-        public DelegateCommand NextPageCommand { get; private set; }
+        public DelegateCommand NextPageCommand { get; private set; } = null!;
 
         /// <summary>
         /// 清除搜索命令
         /// </summary>
-        public DelegateCommand ClearSearchCommand { get; private set; }
+        public DelegateCommand ClearSearchCommand { get; private set; } = null!;
 
         #endregion
 

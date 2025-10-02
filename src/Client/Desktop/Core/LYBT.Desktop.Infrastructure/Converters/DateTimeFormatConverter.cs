@@ -68,12 +68,14 @@ namespace LYBT.Desktop.Infrastructure.Converters
 
             // 支持多值输入，第二个值可以是格式字符串
             var format = values.Length > 1 && values[1] is string fmt ? fmt : parameter as string;
-            return Convert(dateTime, targetType, format, culture);
+            return Convert(dateTime, targetType, format, culture) ?? DependencyProperty.UnsetValue;
         }
 
         public object?[] ConvertBack(object value, Type[] targetTypes, object? parameter, CultureInfo culture)
         {
+#pragma warning disable CS8603 // Possible null reference return
             throw new NotImplementedException();
+#pragma warning restore CS8603
         }
 
         private static string GetRelativeTime(DateTime dateTime)

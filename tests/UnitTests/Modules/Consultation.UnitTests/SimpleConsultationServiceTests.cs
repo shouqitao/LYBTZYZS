@@ -8,9 +8,9 @@ namespace LYBT.Module.Consultation.Tests
     /// </summary>
     public class SimpleConsultationServiceTests
     {
-        private readonly ConsultationService _consultationService;
-
-
+#pragma warning disable CS0169 // Field is never used
+        private readonly ConsultationService? _consultationService;
+#pragma warning restore CS0169
 
         public SimpleConsultationServiceTests()
         {
