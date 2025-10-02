@@ -1,6 +1,5 @@
 ﻿using System.Windows;
 using System.Windows.Input;
-using System.Windows.Threading;
 using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Services.Interfaces;

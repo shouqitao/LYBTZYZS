@@ -1,6 +1,4 @@
-using LYBT.Shared.Models.Enums;
-
-namespace LYBT.Desktop.Services.Interfaces;
+﻿namespace LYBT.Desktop.Services.Interfaces;
 
 /// <summary>
 /// WebAPI 健康检查服务接口
