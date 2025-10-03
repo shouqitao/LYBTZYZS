@@ -19,6 +19,7 @@
     <PackageReference Include="Moq"  />
     <PackageReference Include="FluentAssertions"  />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory"  />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite"  />
   </ItemGroup>
 
   <ItemGroup>

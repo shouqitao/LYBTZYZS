@@ -257,9 +257,7 @@ namespace LYBT.Infrastructure.Data
             // 添加并发控制
             entity.Property(m => m.RowVersion).IsRowVersion().IsConcurrencyToken();
 
-            // 添加审计字段
-            entity.Property(m => m.CreatedBy).IsRequired();
-            entity.Property(m => m.CreatedAt).IsRequired();
+            // 审计字段继承自 BaseEntity，无需显式配置
 
             // 根据文档要求：单患者仅一条未完成病案 - 过滤唯一索引
             // Status枚举值：Active=1, Completed=2, Cancelled=3
@@ -295,8 +293,7 @@ namespace LYBT.Infrastructure.Data
             // 添加并发控制
             entity.Property(c => c.RowVersion).IsRowVersion().IsConcurrencyToken();
 
-            // 添加审计字段
-            entity.Property(c => c.CreatedBy).IsRequired();
+            // 审计字段继承自 BaseEntity，无需显式配置
 
             // 配置与MedicalCase的一对一关系（共享主键）
             entity.HasOne(c => c.MedicalCase)
@@ -320,8 +317,7 @@ namespace LYBT.Infrastructure.Data
                              .HasDatabaseName("UX_Prescriptions_MedicalCaseId")
                              .IsUnique();
 
-            // 添加审计字段
-            prescriptionEntity.Property(p => p.CreatedBy).IsRequired();
+            // 审计字段继承自 BaseEntity，无需显式配置
 
             // 配置并发控制字段
             prescriptionEntity.Property(p => p.RowVersion).IsRowVersion().IsConcurrencyToken();
