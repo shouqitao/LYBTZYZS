@@ -175,8 +175,15 @@ public class JwtService : IJwtService
 
         try
         {
+            // 直接从配置读取 JWT 密钥（与 GenerateToken 保持一致）
+            var secretKey = _configuration["Lybt:Authentication:Jwt:SecretKey"];
+            if (string.IsNullOrEmpty(secretKey))
+            {
+                throw new InvalidOperationException("JWT SecretKey 配置未找到或为空。");
+            }
+
             var jwtConfig = _options.Authentication.Jwt;
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtConfig.SecretKey));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
 
             var validationParameters = new TokenValidationParameters
             {
